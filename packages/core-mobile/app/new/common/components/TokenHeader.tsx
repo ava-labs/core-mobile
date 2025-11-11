@@ -5,7 +5,7 @@ import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { PrivacyModeAlert } from '@avalabs/k2-alpine'
 import { useTokenNameForDisplay } from 'common/hooks/useTokenNameForDisplay'
-import { LocalTokenWithBalance } from '../../../store/balance/types'
+import { LocalTokenWithBalance } from 'store/balance/types'
 import { HiddenBalanceText } from './HiddenBalanceText'
 import { SubTextNumber } from './SubTextNumber'
 
@@ -92,7 +92,7 @@ export const TokenHeader = ({
           ) : isPrivacyModeEnabled ? (
             <PrivacyModeAlert />
           ) : (
-            <Text variant="body2">
+            <Text testID="token_header_fiat_balance" variant="body2">
               {formattedBalance} {currency}
             </Text>
           )}

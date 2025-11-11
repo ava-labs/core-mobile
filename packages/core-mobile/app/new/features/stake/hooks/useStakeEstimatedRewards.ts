@@ -1,7 +1,6 @@
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import EarnService from 'services/earn/EarnService'
-import { selectAvaxPrice } from 'store/balance/slice'
 import { UseQueryResult, useQuery } from '@tanstack/react-query'
 import { pvm } from '@avalabs/avalanchejs'
 import { convertToSeconds, MilliSeconds } from 'types/siUnits'
@@ -12,6 +11,7 @@ import {
   DurationOptionWithDays,
   getStakeDuration
 } from 'services/earn/getStakeEndDate'
+import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 
 /**
  *
@@ -37,7 +37,7 @@ export const useStakeEstimatedRewards = ({
   Error
 > => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const avaxPrice = useSelector(selectAvaxPrice)
+  const avaxPrice = useAvaxPrice()
   const provider = useAvalancheXpProvider(isDeveloperMode)
   const { networkToken } = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 

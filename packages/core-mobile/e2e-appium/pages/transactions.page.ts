@@ -2,11 +2,31 @@
 import { actions } from '../helpers/actions'
 import { selectors } from '../helpers/selectors'
 import txLoc from '../locators/transactions.loc'
+import browserPage from './browser.page'
+import commonElsPage from './commonEls.page'
+import portfolioPage from './portfolio.page'
 
 class TransactionsPage {
   get sendButton() {
     return selectors.getById(txLoc.sendButton)
   }
+
+  get receiveButton() {
+    return selectors.getById(txLoc.receiveButton)
+  }
+
+  get buyButton() {
+    return selectors.getById(txLoc.buyButton)
+  }
+
+  get bridgeButton() {
+    return selectors.getById(txLoc.bridgeButton)
+  }
+
+  get withdrawButton() {
+    return selectors.getById(txLoc.withdrawButton)
+  }
+
   get swapButton() {
     return selectors.getById(txLoc.swapButton)
   }
@@ -51,6 +71,10 @@ class TransactionsPage {
     return selectors.getById(txLoc.nextBtn)
   }
 
+  get nextBtnDisabled() {
+    return selectors.getById(txLoc.nextBtnDisabled)
+  }
+
   get transactionsuccess() {
     return selectors.getByText(txLoc.transactionSuccess)
   }
@@ -72,7 +96,39 @@ class TransactionsPage {
   }
 
   get errorMsg() {
-    return selectors.getByText(txLoc.errorMsg)
+    return selectors.getById(txLoc.errorMsg)
+  }
+
+  get receiveCryptoTitle() {
+    return selectors.getByText(txLoc.receiveCryptoTitle)
+  }
+
+  get receiveCryptoSubtitle() {
+    return selectors.getByText(txLoc.receiveCryptoSubtitle)
+  }
+
+  get receiveQrCode() {
+    return selectors.getById(txLoc.receiveQrCode)
+  }
+
+  get selectReceiveNetwork() {
+    return selectors.getById(txLoc.selectReceiveNetwork)
+  }
+
+  get selectOtherTokenBtn() {
+    return selectors.getById(txLoc.selectOtherTokenBtn)
+  }
+
+  get evmSupportedAddressText() {
+    return selectors.getById(txLoc.evmSupportedAddressText)
+  }
+
+  get countrySelector() {
+    return selectors.getById(txLoc.countrySelector)
+  }
+
+  get currencySelector() {
+    return selectors.getById(txLoc.currencySelector)
   }
 
   async tapSelectTokenTitle() {
@@ -92,10 +148,28 @@ class TransactionsPage {
   }
 
   async tapSend() {
+    await actions.waitFor(this.sendButton, 40000)
     await actions.tap(this.sendButton)
   }
 
+  async tapReceive() {
+    await actions.waitFor(this.receiveButton, 40000)
+    await actions.tap(this.receiveButton)
+  }
+
+  async tapBuy() {
+    await actions.waitFor(this.buyButton, 40000)
+    await actions.tap(this.buyButton)
+  }
+
+  async tapWithdraw() {
+    await actions.waitFor(this.receiveButton, 40000)
+    await actions.dragAndDrop(this.receiveButton, [-500, 0])
+    await actions.tap(this.withdrawButton)
+  }
+
   async tapSwap() {
+    await actions.waitFor(this.swapButton, 40000)
     await actions.tap(this.swapButton)
   }
 
@@ -132,6 +206,10 @@ class TransactionsPage {
     await actions.tap(this.approveBtn)
   }
 
+  async tapRecentAccount(account: string) {
+    await actions.tap(selectors.getById(`recent_contacts__${account}`))
+  }
+
   async send(
     token: string | undefined,
     amount: string,
@@ -140,7 +218,7 @@ class TransactionsPage {
     await this.tapSend()
     await this.dismissTransactionOnboarding()
     await this.typeSearchBar(account)
-    await actions.tap(selectors.getById(`recent_contacts__${account}`))
+    await this.tapRecentAccount(account)
     if (token) {
       await this.goToSelectTokenList()
       await this.selectToken(token)
@@ -254,6 +332,86 @@ class TransactionsPage {
     await this.tapNext()
     await this.tapApprove()
     await this.verifySuccessToast()
+  }
+
+  async sendNft(nftName = 'ABC', account = txLoc.accountTwo) {
+    await this.tapNftByName(nftName)
+    await portfolioPage.swipeUpForNftDetails()
+    await this.tapSend()
+    await this.dismissTransactionOnboarding()
+    await this.typeSearchBar(account)
+    await this.tapRecentAccount(account)
+    await this.tapApprove()
+  }
+
+  async tapNftByName(nftName = 'ABC') {
+    const ele = selectors.getById(`collectible_name__${nftName}`)
+    await actions.waitFor(ele, 40000)
+    await actions.click(ele)
+  }
+
+  async verifyReceiveScreen(network: string, address: string) {
+    await actions.waitFor(this.receiveCryptoTitle)
+    await actions.isVisible(this.receiveCryptoSubtitle)
+    await actions.isVisible(this.receiveQrCode)
+    await actions.isVisible(this.selectReceiveNetwork)
+    await actions.isVisible(selectors.getById(`copy_btn__${network}`))
+    await actions.isVisible(selectors.getById(`receive_address__${address}`))
+    await actions.isVisible(selectors.getById(`receive_network__${network}`))
+    await actions.isVisible(selectors.getByText(network))
+    if (network === txLoc.evmNetwork) {
+      await actions.isVisible(this.evmSupportedAddressText)
+    }
+  }
+
+  async selectNetwork(network: string) {
+    await actions.tap(this.selectReceiveNetwork)
+    await actions.tap(selectors.getById(`select_network__${network}`))
+  }
+
+  async buy(token: string) {
+    const amounts = [100, 200, 500]
+    const randomAmount = amounts[Math.floor(Math.random() * amounts.length)]
+    await this.tapBuy()
+    await this.tapNext()
+    const tokenEle = selectors.getById(`list_item__${token}`)
+    if (!(await actions.getVisible(tokenEle))) {
+      await actions.tap(this.selectOtherTokenBtn)
+      await actions.type(commonElsPage.searchBar, token)
+      await actions.tap(selectors.getById(`token_selector__${token}`))
+    } else {
+      await actions.tap(selectors.getById(`list_item__${token}`))
+    }
+    await actions.tap(selectors.getById(`fiat_amount_button__${randomAmount}`))
+    await actions.tap(this.nextBtn)
+    await browserPage.tapClose()
+    await commonElsPage.dismissBottomSheet()
+  }
+
+  async withdraw(token = 'AVAX') {
+    await this.tapWithdraw()
+    await this.tapNext()
+    await actions.tap(selectors.getById(`list_item__${token}`))
+    await actions.type(selectors.getById('fiat_amount_input'), '100')
+    await actions.waitFor(this.errorMsg)
+    await actions.isNotVisible(this.nextBtn)
+    await actions.isVisible(this.nextBtnDisabled)
+    await commonElsPage.dismissBottomSheet()
+  }
+
+  async verifyLocale(locale: string, currency: string) {
+    await actions.waitFor(selectors.getById(`right_value__${locale}`), 20000)
+    await actions.waitFor(selectors.getById(`right_value__${currency}`), 20000)
+  }
+
+  async setLocale(locale: string, currency: string) {
+    await actions.tap(this.countrySelector)
+    await actions.type(commonElsPage.searchBar, locale)
+    await actions.tap(selectors.getById(`select_country__${locale}`))
+    await actions.tap(this.currencySelector)
+    await actions.type(commonElsPage.searchBar, currency)
+    await actions.tap(selectors.getById(`currency__${currency}`))
+    await this.verifyLocale(locale, currency)
   }
 }
 

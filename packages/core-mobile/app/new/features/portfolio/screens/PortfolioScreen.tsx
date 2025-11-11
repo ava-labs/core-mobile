@@ -1,7 +1,6 @@
 import {
   BalanceHeader,
   NavigationTitleHeader,
-  PriceChangeStatus,
   SegmentedControl,
   useTheme,
   View
@@ -15,7 +14,11 @@ import {
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
-
+import { useAccountPerformanceSummary } from 'features/portfolio/hooks/useAccountPerformanceSummary'
+import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
+import { useBalanceTotalPriceChangeForAccount } from 'features/portfolio/hooks/useBalanceTotalPriceChangeForAccount'
+import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalanceAccurate'
+import { useIsBalanceLoadedForAccount } from 'features/portfolio/hooks/useIsBalanceLoadedForAccount'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
@@ -34,7 +37,6 @@ import { CollectiblesScreen } from 'features/portfolio/collectibles/screens/Coll
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
 import { useSendSelectedToken } from 'features/send/store'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
@@ -52,22 +54,17 @@ import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AnalyticsEventName } from 'services/analytics/types'
 import { selectActiveAccount } from 'store/account'
+import { LocalTokenWithBalance } from 'store/balance/types'
 import {
-  LocalTokenWithBalance,
-  selectBalanceForAccountIsAccurate,
-  selectBalanceTotalInCurrencyForAccount,
-  selectIsBalanceLoadedForAccount,
-  selectIsLoadingBalances,
-  selectIsRefetchingBalances,
-  selectTokensWithBalanceForAccount
-} from 'store/balance'
-import { selectTokenVisibility } from 'store/portfolio'
-import { selectIsMeldOfframpBlocked } from 'store/posthog'
+  selectIsBridgeBlocked,
+  selectIsMeldOfframpBlocked
+} from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { RootState } from 'store/types'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
+import { useIsRefetchingBalancesForAccount } from '../hooks/useIsRefetchingBalancesForAccount'
+import { useIsLoadingBalancesForAccount } from '../hooks/useIsLoadingBalancesForAccount'
 
 const SEGMENT_ITEMS = [
   { title: 'Assets' },
@@ -85,6 +82,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
   const headerHeight = useHeaderHeight()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
+  const isBridgeBlocked = useSelector(selectIsBridgeBlocked)
 
   const { navigateToBuy } = useBuy()
   const { navigateToWithdraw } = useWithdraw()
@@ -110,25 +108,16 @@ const PortfolioHomeScreen = (): JSX.Element => {
   })
   const selectedSegmentIndex = useSharedValue(0)
   const activeAccount = useFocusedSelector(selectActiveAccount)
-  const isBalanceLoading = useFocusedSelector(selectIsLoadingBalances)
-  const isRefetchingBalance = useFocusedSelector(selectIsRefetchingBalances)
+  const isRefetchingBalance = useIsRefetchingBalancesForAccount(activeAccount)
   const isDeveloperMode = useFocusedSelector(selectIsDeveloperMode)
-  const tokenVisibility = useFocusedSelector(selectTokenVisibility)
-  const balanceTotalInCurrency = useFocusedSelector(
-    selectBalanceTotalInCurrencyForAccount(
-      activeAccount?.id ?? '',
-      tokenVisibility
-    )
-  )
-
+  const balanceTotalInCurrency =
+    useBalanceTotalInCurrencyForAccount(activeAccount)
+  const totalPriceChange = useBalanceTotalPriceChangeForAccount(activeAccount)
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
-  const isBalanceLoaded = useFocusedSelector(
-    selectIsBalanceLoadedForAccount(activeAccount?.id ?? '')
-  )
-  const isLoading = isBalanceLoading || isRefetchingBalance || !isBalanceLoaded
-  const balanceAccurate = useFocusedSelector(
-    selectBalanceForAccountIsAccurate(activeAccount?.id ?? '')
-  )
+  const isBalanceLoaded = useIsBalanceLoadedForAccount(activeAccount)
+  const isLoadingBalances = useIsLoadingBalancesForAccount(activeAccount)
+  const isLoading = isRefetchingBalance || !isBalanceLoaded
+  const balanceAccurate = useIsAccountBalanceAccurate(activeAccount)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
   const formattedBalance = useMemo(() => {
@@ -141,47 +130,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
         })
   }, [balanceAccurate, balanceTotalInCurrency, formatCurrency])
 
-  const { getMarketTokenBySymbol } = useWatchlist()
-  const tokens = useFocusedSelector((state: RootState) =>
-    selectTokensWithBalanceForAccount(state, activeAccount?.id ?? '')
-  )
-
-  const totalPriceChanged = useMemo(
-    () =>
-      tokens.reduce((acc, token) => {
-        const marketToken = getMarketTokenBySymbol(token.symbol)
-        const percentChange = marketToken?.priceChangePercentage24h ?? 0
-        const priceChange = token.balanceInCurrency
-          ? (token.balanceInCurrency * percentChange) / 100
-          : 0
-        return acc + priceChange
-      }, 0),
-    [getMarketTokenBySymbol, tokens]
-  )
-
-  const formattedPriceChange =
-    totalPriceChanged !== 0
-      ? formatCurrency({ amount: Math.abs(totalPriceChanged) })
-      : undefined
-
-  const indicatorStatus =
-    totalPriceChanged > 0
-      ? PriceChangeStatus.Up
-      : totalPriceChanged < 0
-      ? PriceChangeStatus.Down
-      : PriceChangeStatus.Neutral
-
-  const totalPriceChangedInPercent = useMemo(() => {
-    return (totalPriceChanged / balanceTotalInCurrency) * 100
-  }, [balanceTotalInCurrency, totalPriceChanged])
-
-  const formattedPercent = useMemo(
-    () =>
-      !isFinite(totalPriceChangedInPercent) || totalPriceChangedInPercent === 0
-        ? undefined
-        : totalPriceChangedInPercent.toFixed(2) + '%',
-    [totalPriceChangedInPercent]
-  )
+  const { percentChange24h, valueChange24h, indicatorStatus } =
+    useAccountPerformanceSummary(activeAccount)
 
   const handleStickyHeaderLayout = useCallback(
     (event: LayoutChangeEvent): void => {
@@ -272,11 +222,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
       icon: 'receive',
       onPress: handleReceive
     })
-    buttons.push({
-      title: ActionButtonTitle.Bridge,
-      icon: 'bridge',
-      onPress: handleBridge
-    })
+    if (!isBridgeBlocked) {
+      buttons.push({
+        title: ActionButtonTitle.Bridge,
+        icon: 'bridge',
+        onPress: handleBridge
+      })
+    }
     if (!isMeldOfframpBlocked) {
       buttons.push({
         title: ActionButtonTitle.Withdraw,
@@ -293,7 +245,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleReceive,
     handleBridge,
     navigateToSwap,
-    isMeldOfframpBlocked
+    isMeldOfframpBlocked,
+    isBridgeBlocked
   ])
 
   const renderMaskView = useCallback((): JSX.Element => {
@@ -323,18 +276,19 @@ const PortfolioHomeScreen = (): JSX.Element => {
               formattedBalance={formattedBalance}
               currency={selectedCurrency}
               priceChange={
-                totalPriceChanged !== 0
+                totalPriceChange !== 0
                   ? {
-                      formattedPrice: formattedPriceChange,
+                      formattedPrice: valueChange24h,
                       status: indicatorStatus,
-                      formattedPercent
+                      formattedPercent: percentChange24h
                     }
                   : undefined
               }
               errorMessage={
                 balanceAccurate ? undefined : 'Unable to load all balances'
               }
-              isLoading={isLoading}
+              isLoading={isLoading && balanceTotalInCurrency === 0}
+              isLoadingBalances={isLoadingBalances || isLoading}
               isPrivacyModeEnabled={isPrivacyModeEnabled}
               isDeveloperModeEnabled={isDeveloperMode}
               renderMaskView={renderMaskView}
@@ -361,12 +315,14 @@ const PortfolioHomeScreen = (): JSX.Element => {
     activeAccount?.name,
     formattedBalance,
     selectedCurrency,
-    totalPriceChanged,
-    formattedPriceChange,
+    totalPriceChange,
+    valueChange24h,
     indicatorStatus,
-    formattedPercent,
+    percentChange24h,
     balanceAccurate,
     isLoading,
+    balanceTotalInCurrency,
+    isLoadingBalances,
     isPrivacyModeEnabled,
     isDeveloperMode,
     renderMaskView,

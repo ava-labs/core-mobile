@@ -14,6 +14,7 @@ import { HandleNotificationCallback } from 'contexts/DeeplinkContext/types'
 import { fromUnixTime, isPast } from 'date-fns'
 import { Linking, Platform } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { EVENT_TO_CH_ID } from 'services/fcm/FCMService'
 import {
   ChannelId,
   DEFAULT_ANDROID_CHANNEL,
@@ -24,7 +25,6 @@ import { DisplayNotificationParams } from 'services/notifications/types'
 import { StakeCompleteNotification } from 'store/notifications'
 import { audioFiles } from 'utils/AudioFeedback'
 import Logger from 'utils/Logger'
-import { EVENT_TO_CH_ID } from 'services/fcm/FCMService'
 import {
   LAUNCH_ACTIVITY,
   PressActionId,

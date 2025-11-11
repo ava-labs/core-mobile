@@ -14,16 +14,16 @@ import { selectActiveAccount } from 'store/account'
 import {
   AssetManageView,
   AssetNetworkFilter,
-  LocalTokenWithBalance,
-  selectBalanceTotalInCurrencyForAccount,
-  selectIsAllBalancesError,
-  selectIsAllBalancesInaccurate,
-  selectIsBalanceLoadedForAccount,
-  selectIsLoadingBalances,
-  selectIsRefetchingBalances
+  LocalTokenWithBalance
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
-import { selectTokenVisibility } from 'store/portfolio'
+import { useIsRefetchingBalancesForAccount } from 'features/portfolio/hooks/useIsRefetchingBalancesForAccount'
+import { useIsBalanceLoadedForAccount } from 'features/portfolio/hooks/useIsBalanceLoadedForAccount'
+import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
+import { useIsPollingBalancesForAccount } from 'features/portfolio/hooks/useIsPollingBalancesForAccount'
+import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
+import { useIsAllBalancesInaccurateForAccount } from 'features/portfolio/hooks/useIsAllBalancesInaccurateForAccount'
+import { useIsAllBalancesErrorForAccount } from 'features/portfolio/hooks/useIsAllBalancesErrorForAccount'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { EmptyState } from './EmptyState'
 import { TokenListItem } from './TokenListItem'
@@ -50,22 +50,15 @@ const AssetsScreen: FC<Props> = ({
   const activeAccount = useSelector(selectActiveAccount)
   const enabledNetworks = useSelector(selectEnabledNetworks)
 
-  const isAllBalancesInaccurate = useSelector(
-    selectIsAllBalancesInaccurate(activeAccount?.id)
-  )
-  const isBalanceLoaded = useSelector(
-    selectIsBalanceLoadedForAccount(activeAccount?.id ?? '')
-  )
-  const isAllBalancesError = useSelector(selectIsAllBalancesError)
-  const isBalanceLoading = useSelector(selectIsLoadingBalances)
-  const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
-  const tokenVisibility = useSelector(selectTokenVisibility)
-  const balanceTotalInCurrency = useSelector(
-    selectBalanceTotalInCurrencyForAccount(
-      activeAccount?.id ?? '',
-      tokenVisibility
-    )
-  )
+  const isAllBalancesInaccurate =
+    useIsAllBalancesInaccurateForAccount(activeAccount)
+  const isBalanceLoaded = useIsBalanceLoadedForAccount(activeAccount)
+  const isAllBalancesError = useIsAllBalancesErrorForAccount(activeAccount)
+  const isBalanceLoading = useIsLoadingBalancesForAccount(activeAccount)
+  const isBalancePolling = useIsPollingBalancesForAccount(activeAccount)
+  const isRefetchingBalance = useIsRefetchingBalancesForAccount(activeAccount)
+  const balanceTotalInCurrency =
+    useBalanceTotalInCurrencyForAccount(activeAccount)
 
   const handleManageList = useCallback(
     (value: string): void => {
@@ -80,11 +73,13 @@ const AssetsScreen: FC<Props> = ({
     [goToTokenManagement, view, onScrollResync]
   )
 
-  const isLoadingBalance = isRefetchingBalance || isBalanceLoading
+  const isLoadingBalance =
+    isRefetchingBalance || isBalanceLoading || isBalancePolling
+
   const isGridView = view.selected === AssetManageView.Grid
   const numColumns = isGridView ? 2 : 1
 
-  // Only show loading state for initial load, not during background polling
+  // Only show loading state for initial load
   const isInitialLoading = isLoadingBalance && !isBalanceLoaded
 
   const hasNoAssets =
@@ -211,7 +206,7 @@ const AssetsScreen: FC<Props> = ({
     }
   }
 
-  if (isBalanceLoading || enabledNetworks.length === 0) {
+  if (!isBalanceLoaded || enabledNetworks.length === 0) {
     return (
       <LoadingState
         sx={{

@@ -5,6 +5,7 @@ import commonEls from '../locators/commonEls.loc'
 import portfolio from '../locators/portfolio.loc'
 import bottomTabsPage from './bottomTabs.page'
 import commonElsPage from './commonEls.page'
+import txPage from './transactions.page'
 
 class PortfolioPage {
   get avaxNetwork() {
@@ -41,6 +42,10 @@ class PortfolioPage {
 
   get colectiblesTab() {
     return selectors.getByText(portfolio.collectiblesTab)
+  }
+
+  get collectiblesHandler() {
+    return selectors.getById(portfolio.collectiblesHandler)
   }
 
   get collectiblesTab() {
@@ -179,16 +184,80 @@ class PortfolioPage {
     return selectors.getById(portfolio.bridgeButton)
   }
 
-  get receiveButton() {
-    return selectors.getById(portfolio.receiveButton)
-  }
-
   get sort() {
     return selectors.getById(portfolio.sort)
   }
 
   get view() {
     return selectors.getById(portfolio.view)
+  }
+
+  get defiDetailTitle() {
+    return selectors.getById(portfolio.defiDetailTitle)
+  }
+
+  get defiDetailPrice() {
+    return selectors.getById(portfolio.defiDetailPrice)
+  }
+
+  get defiEmptyScreenTitle() {
+    return selectors.getByText(portfolio.defiEmptyScreenTitle)
+  }
+
+  get defiEmptyScreenDescription() {
+    return selectors.getByText(portfolio.defiEmptyScreenDescription)
+  }
+
+  get defiEmptyScreenExploreBtn() {
+    return selectors.getByText(portfolio.defiEmptyScreenExploreBtn)
+  }
+
+  get defiDetailBrowserBtn() {
+    return selectors.getById(portfolio.defiDetailBrowserBtn)
+  }
+
+  get hideBtn() {
+    return selectors.getById(portfolio.hideBtn)
+  }
+
+  get resetFilterBtn() {
+    return selectors.getById(portfolio.resetFilterBtn)
+  }
+
+  get noCollectiblesTitle() {
+    return selectors.getByText(portfolio.noCollectiblesTitle)
+  }
+
+  get noCollectiblesDescription() {
+    return selectors.getBySomeText(portfolio.noCollectiblesDescription)
+  }
+
+  get collectibleHero() {
+    return selectors.getById(portfolio.collectibleHero)
+  }
+
+  get nftCreatedByTitle() {
+    return selectors.getById(portfolio.nftCreatedByTitle)
+  }
+
+  get nftStandardTitle() {
+    return selectors.getById(portfolio.nftStandardTitle)
+  }
+
+  get nftChainTitle() {
+    return selectors.getById(portfolio.nftChainTitle)
+  }
+
+  get refreshBtn() {
+    return selectors.getById(portfolio.refreshBtn)
+  }
+
+  get setAsMyAvatarBtn() {
+    return selectors.getById(portfolio.setAsMyAvatarBtn)
+  }
+
+  get untitledDisplayed() {
+    return selectors.getById(portfolio.untitledDisplayed)
   }
 
   async verifyPorfolioScreen() {
@@ -199,21 +268,9 @@ class PortfolioPage {
     await actions.isVisible(this.colectiblesTab)
   }
 
-  // async verifySubTab(tab: string) {
-  //   if (tab === 'Assets') {
-  //     await actions.isVisible(this.favoritesHeader)
-  //     await actions.isVisible(this.networksHeader)
-  //     await actions.isVisible(collectiblesPage.gridItem, false)
-  //   } else if (tab === 'Collectibles') {
-  //     await actions.isVisible(collectiblesPage.gridItem)
-  //     await actions.isVisible(collectiblesPage.listSvg)
-  //     await actions.isVisible(this.networksHeader, false)
-  //   } else {
-  //     await actions.isVisible(this.benqi)
-  //     await actions.isVisible(this.networksHeader, false)
-  //     await actions.isVisible(collectiblesPage.gridItem, false)
-  //   }
-  // }
+  async swipeUpForNftDetails() {
+    await actions.dragAndDrop(this.collectiblesHandler, [0, -1000])
+  }
 
   async verifySubTabs(all = true) {
     await actions.isVisible(this.assetsTab)
@@ -252,11 +309,11 @@ class PortfolioPage {
   }
 
   async tapCollectiblesTab() {
-    await actions.tap(this.collectiblesTab)
+    await actions.click(this.collectiblesTab)
   }
 
   async tapDefiTab() {
-    await actions.tap(this.defiTab)
+    await actions.click(this.defiTab)
   }
 
   async tapEthNetwork() {
@@ -319,10 +376,27 @@ class PortfolioPage {
     await actions.tap(selectors.getById(portfolio.activeNetwork + network))
   }
 
-  async tapToken(token = 'Avalanche') {
+  async tapToken(token = 'avax') {
     await actions.tap(
       selectors.getById(`${portfolio.portfolioTokenItem}${token}`)
     )
+  }
+
+  async getFiatBalance() {
+    const balance = await actions.getText(
+      selectors.getById('token_header_fiat_balance')
+    )
+    const amount = balance.split(' ')[0] || '0'
+    console.log(`Fiat balance: ${amount}`)
+    return amount
+  }
+
+  async verifyOwnedTokenActionButtons(buttons: string[]) {
+    for (const button of buttons) {
+      if (button) {
+        await actions.waitFor(selectors.getById(`action_button__${button}`))
+      }
+    }
   }
 
   async verifyActiveNetwork(network: string) {
@@ -368,14 +442,38 @@ class PortfolioPage {
   async verifyAssetRow(index: number, isListView = true) {
     const prefix = isListView ? 'list' : 'grid'
     await actions.waitFor(selectors.getById(`${prefix}_fiat_balance__${index}`))
-    await actions.waitFor(
+    await actions.isVisible(
       selectors.getById(`${prefix}_token_balance__${index}`)
     )
-    await actions.waitFor(selectors.getById(`${prefix}_token_name__${index}`))
+  }
+
+  async verifyCollectibleRow(isListView = false) {
+    const viewType = isListView ? 'list' : 'grid'
+    await actions.waitFor(selectors.getById(`nft_${viewType}_item__0`), 60000)
+  }
+
+  async verifyCollectiblesByNetwork(networkId: string | undefined = undefined) {
+    if (networkId) {
+      const shouldNotVisibleNetworkId =
+        networkId === commonEls.cChainId
+          ? commonEls.ethChainId
+          : commonEls.cChainId
+      await actions.isVisible(selectors.getById(`nft_by_network__${networkId}`))
+      await actions.isNotVisible(
+        selectors.getById(`nft_by_network__${shouldNotVisibleNetworkId}`)
+      )
+    } else {
+      await actions.isVisible(
+        selectors.getById(`nft_by_network__${commonEls.cChainId}`)
+      )
+      await actions.isVisible(
+        selectors.getById(`nft_by_network__${commonEls.ethChainId}`)
+      )
+    }
   }
 
   async displayAssetsByNetwork(network: string) {
-    if (network !== commonEls.bitcoinNetwork) {
+    if (network !== commonEls.bitcoin) {
       if (network === commonEls.pChain_2 || network === commonEls.xChain_2) {
         try {
           await actions.waitFor(selectors.getByText('No assets yet'))
@@ -389,28 +487,28 @@ class PortfolioPage {
 
     const networksToHide = {
       [commonEls.cChain_2]: [
-        commonEls.pChain_2,
-        commonEls.xChain_2,
+        commonEls.pChain_3,
+        commonEls.xChain_3,
         commonEls.ethereum
       ],
-      [commonEls.pChain_2]: [
+      [commonEls.pChain_3]: [
         commonEls.cChain_2,
-        commonEls.xChain_2,
+        commonEls.xChain_3,
         commonEls.ethereum
       ],
-      [commonEls.xChain_2]: [
+      [commonEls.xChain_3]: [
         commonEls.pChain_2,
         commonEls.cChain_2,
         commonEls.ethereum
       ],
       [commonEls.ethereum]: [
-        commonEls.pChain_2,
-        commonEls.xChain_2,
+        commonEls.pChain_3,
+        commonEls.xChain_3,
         commonEls.cChain_2
       ],
       default: [
-        commonEls.pChain_2,
-        commonEls.xChain_2,
+        commonEls.pChain_3,
+        commonEls.xChain_3,
         commonEls.ethereum,
         commonEls.cChain_2
       ]
@@ -441,24 +539,12 @@ class PortfolioPage {
     assert(fiatBal.includes(currency), 'Fiat currency not found')
   }
 
-  async tapSend() {
-    await actions.tap(this.sendButton)
-  }
-
-  async tapSwap() {
-    await actions.tap(this.swapButton)
-  }
-
   async tapBuy() {
     await actions.tap(this.buyButton)
   }
 
   async tapBridge() {
     await actions.tap(this.bridgeButton)
-  }
-
-  async tapReceive() {
-    await actions.tap(this.receiveButton)
   }
 
   async verifyActivityItem(
@@ -470,8 +556,137 @@ class PortfolioPage {
   }
 
   async selectView(viewType = 'List view') {
-    await actions.tap(this.view)
+    await actions.click(this.view)
     await commonElsPage.selectDropdownItem(viewType)
+  }
+
+  async verifyOwnedTokenDetail(token: string, buttons: string[]) {
+    await this.tapToken(token)
+    await this.verifyOwnedTokenActionButtons(buttons)
+    const fiatBalance = await this.getFiatBalance()
+    await commonElsPage.goBack(selectors.getByText(fiatBalance))
+  }
+
+  async toggleCollectible(goOff = true, prefix = 'The Free Mint') {
+    const testID = goOff ? `${prefix}_displayed` : `${prefix}_blocked`
+    await actions.longPress(selectors.getById(testID))
+  }
+
+  async verifyCollectibleDetail(isCChain = true, index = 0) {
+    const network = isCChain ? commonEls.cChain_2 : commonEls.ethereum
+    await actions.tap(selectors.getById(`${portfolio.nftListItem}${index}`))
+    await actions.waitFor(this.collectibleHero)
+    await this.swipeUpForNftDetails()
+    // top actions buttons
+    await actions.waitFor(this.hideBtn)
+    await actions.isVisible(txPage.sendButton)
+    // contents
+    await actions.isVisible(this.nftCreatedByTitle)
+    await actions.verifyText('ERC1155', this.nftStandardTitle)
+    await actions.verifyText(network, this.nftChainTitle)
+    // bottom buttons
+    if (isCChain) {
+      await actions.isVisible(this.refreshBtn)
+    }
+  }
+
+  async verifyNftEmptyScreen(isEmpty = true) {
+    if (isEmpty) {
+      await actions.waitFor(this.noCollectiblesTitle)
+      await actions.isVisible(this.noCollectiblesDescription)
+    } else {
+      await actions.isNotVisible(this.noCollectiblesTitle)
+      await actions.isNotVisible(this.noCollectiblesDescription)
+    }
+  }
+
+  async verifyDefiSort(ascending = true, isGrid = true) {
+    const prefix = isGrid ? portfolio.defiGridTitle : portfolio.defiListTitle
+    const first = await actions.getText(selectors.getById(`${prefix}__0`))
+    const second = await actions.getText(selectors.getById(`${prefix}__2`))
+    console.log(`First: ${first}, Second: ${second}, Ascending: ${ascending}`)
+    const compare = first.localeCompare(second)
+    const isSorted = ascending ? compare <= 0 : compare >= 0
+    assert.ok(isSorted, `Defi not sorted ${ascending ? 'A-Z' : 'Z-A'}`)
+  }
+
+  async verifyCollectiblesSort(ascending = true) {
+    const prefix = portfolio.collectibleListTitle
+    const first = await actions.getText(selectors.getById(`${prefix}__0`))
+    const second = await actions.getText(selectors.getById(`${prefix}__1`))
+    console.log(`First: ${first}, Second: ${second}, Ascending: ${ascending}`)
+    const compare = first.localeCompare(second)
+    const isSorted = ascending ? compare <= 0 : compare >= 0
+    assert.ok(isSorted, `Defi not sorted ${ascending ? 'A-Z' : 'Z-A'}`)
+  }
+
+  async tapDefiItem(index = 0, isGrid = true) {
+    const prefix = isGrid ? portfolio.defiGridItem : portfolio.defiListItem
+    await actions.waitFor(selectors.getById(`${prefix}__${index}`))
+    await actions.tap(selectors.getById(`${prefix}__${index}`))
+  }
+
+  async tapDefiDetailBrowserBtn() {
+    await actions.tap(this.defiDetailBrowserBtn)
+  }
+
+  async tapDefiBrowserBtn(index = 0, isGrid = true) {
+    const prefix = isGrid
+      ? portfolio.defiGridBrowserBtn
+      : portfolio.defiListBrowserBtn
+    await actions.tap(selectors.getById(`${prefix}__${index}`))
+  }
+
+  async getDefiItemPrice(index = 0, isGrid = true) {
+    const prefix = isGrid ? portfolio.defiGridPrice : portfolio.defiListPrice
+    return await actions.getText(selectors.getById(`${prefix}__${index}`))
+  }
+
+  async getDefiItemTitle(index = 0, isGrid = true) {
+    const prefix = isGrid ? portfolio.defiGridTitle : portfolio.defiListTitle
+    return await actions.getText(selectors.getById(`${prefix}__${index}`))
+  }
+
+  async verifyDefiItem(price: string, title: string) {
+    await actions.waitFor(this.defiDetailPrice)
+    await actions.isVisible(this.defiDetailTitle)
+    await actions.verifyText(price, this.defiDetailPrice)
+    await actions.verifyText(title, this.defiDetailTitle)
+  }
+
+  async verifyEmptyDefiScreen() {
+    await actions.waitFor(this.defiEmptyScreenTitle)
+    await actions.isVisible(this.defiEmptyScreenDescription)
+    await actions.isVisible(this.defiEmptyScreenExploreBtn)
+  }
+
+  async tapHide() {
+    await actions.tap(this.hideBtn)
+    await actions.delay(1000)
+  }
+
+  async tapResetFilterBtn() {
+    await actions.tap(this.resetFilterBtn)
+  }
+
+  async verifyCollectibleHidden(nft = portfolio.managedNft) {
+    await commonElsPage.typeSearchBar(nft)
+    await this.toggleCollectible(true, nft)
+    await commonElsPage.dismissBottomSheet()
+    await actions.isNotVisible(selectors.getByText(nft))
+  }
+
+  async verifyCollectibleShown(nft = portfolio.managedNft) {
+    await commonElsPage.typeSearchBar(nft)
+    await this.toggleCollectible(false, nft)
+    await commonElsPage.dismissBottomSheet()
+    await actions.isVisible(selectors.getByText(nft))
+  }
+
+  async verifyUnreachableHidden() {
+    await actions.isEnabled(this.untitledDisplayed, false)
+    await commonElsPage.dismissBottomSheet()
+    await actions.isNotVisible(selectors.getByText(portfolio.untitledNft))
   }
 }
 

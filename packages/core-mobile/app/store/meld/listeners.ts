@@ -1,9 +1,8 @@
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
-import { selectTokensWithBalanceForAccount } from 'store/balance'
 import { Account, selectActiveAccount } from 'store/account'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import NetworkService from 'services/network/NetworkService'
-import { selectNetwork } from 'store/network'
+import { selectEnabledNetworksMap, selectNetwork } from 'store/network'
 import Logger from 'utils/Logger'
 import {
   NetworkTokenWithBalance,
@@ -46,6 +45,7 @@ import { HyperSDKClient } from 'hypersdk-client'
 import { isAnyOf } from '@reduxjs/toolkit'
 import { onAppUnlocked } from 'store/app'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
+import { getTokensWithBalanceForAccountFromCache } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import { offrampSend } from './slice'
 
 const handleOfframpSend = async (
@@ -112,7 +112,12 @@ const handleOfframpSend = async (
     ? selectNetwork(Number(chainId))(state)
     : undefined
 
-  const tokens = selectTokensWithBalanceForAccount(state, activeAccount?.id)
+  const tokens = getTokensWithBalanceForAccountFromCache({
+    account: activeAccount,
+    networks: selectEnabledNetworksMap(state),
+    isDeveloperMode
+  })
+
   const token = tokens.find(
     tk =>
       (tk.symbol === symbol && tk.networkChainId === Number(chainId)) ||

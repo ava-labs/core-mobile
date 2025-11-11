@@ -4,6 +4,7 @@ export default {
   buyButton: 'action_button__Buy',
   bridgeButton: 'action_button__Bridge',
   receiveButton: 'action_button__Receive',
+  withdrawButton: 'action_button__Withdraw',
   accountTwo: 'Account 2',
   accountOneAddress: '0xAa7C5180e46e8c995413B9FbDFEDE46f4B2B9Dc2',
   accountTwoAddress: '0xE7B75AB160cf38F090A099e2e311969aCBD25293',
@@ -48,6 +49,7 @@ export default {
   transactionOnboardingNext: 'transaction_onboarding__next',
   transactionSuccess: 'Transaction successful',
   nextBtn: 'next_btn',
+  nextBtnDisabled: 'next_btn_disabled',
   approveBtn: 'approve_button',
   rejectBtn: 'reject_button',
   dropdownScrollView: 'dropdown_scroll_view',
@@ -82,5 +84,15 @@ export default {
   solana: 'Solana',
   swapText: 'Swap',
   swapVerticalIcon: 'swap_vertical_icon',
-  trendingDetailSwapBtn: 'token_detail_swap_btn'
+  trendingDetailSwapBtn: 'token_detail_swap_btn',
+  receiveIcon: 'receive_icon',
+  receiveCryptoTitle: 'Receive crypto',
+  receiveCryptoSubtitle:
+    'To receive funds you can choose to share\nyour unique QR code or address below with\nthe sender',
+  receiveQrCode: 'receive_token_qr_code',
+  selectReceiveNetwork: 'select_receive_network',
+  evmSupportedAddressText: 'evm_supported_address_text',
+  countrySelector: 'list_item__Country',
+  currencySelector: 'list_item__Currency',
+  selectOtherTokenBtn: 'list_item__Select other token'
 }

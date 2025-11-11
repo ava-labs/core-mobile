@@ -47,13 +47,12 @@ import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import GaslessService from 'services/gasless/GaslessService'
 import { selectActiveAccount } from 'store/account'
-import { selectAvailableNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
+import { useAvailableNativeTokenBalanceForNetworkAndAccount } from 'features/portfolio/hooks/useAvailableNativeTokenBalanceForNetworkAndAccount'
 import {
   selectIsGaslessBlocked,
   selectIsHallidayBridgeBannerBlocked
 } from 'store/posthog'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
-import { RootState } from 'store/types'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import Logger from 'utils/Logger'
@@ -139,12 +138,9 @@ export const BridgeScreen = (): JSX.Element => {
       estimatedReceiveAmount === 0n,
     [hasValidAmount, estimatedReceiveAmount]
   )
-  const nativeTokenBalance = useSelector((state: RootState) =>
-    selectAvailableNativeTokenBalanceForNetworkAndAccount(
-      state,
-      sourceNetwork?.chainId,
-      activeAccount?.id
-    )
+  const nativeTokenBalance = useAvailableNativeTokenBalanceForNetworkAndAccount(
+    activeAccount,
+    sourceNetwork?.chainId
   )
 
   const isNativeBalanceNotEnoughForNetworkFee = useMemo(() => {
@@ -444,7 +440,7 @@ export const BridgeScreen = (): JSX.Element => {
           onBlur={() => setIsInputFocused(false)}
           onSelectToken={handleSelectToken}
           maximum={maximum}
-          inputTextColor={errorMessage ? colors.$textDanger : undefined}
+          valid={!errorMessage}
         />
       </Animated.View>
     )

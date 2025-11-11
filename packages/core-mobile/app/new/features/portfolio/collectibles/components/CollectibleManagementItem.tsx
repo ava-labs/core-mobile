@@ -51,6 +51,7 @@ export const CollectibleManagementItem = ({
 
   return (
     <Pressable
+      testID={`nft_mange_list_item__${index}`}
       style={{
         height,
         flexDirection: 'row',
@@ -115,8 +116,8 @@ export const CollectibleManagementItem = ({
           <Toggle
             testID={
               isToggledOn
-                ? `${collectible?.localId}_displayed`
-                : `${collectible?.localId}_blocked`
+                ? `${collectibleName}_displayed`
+                : `${collectibleName}_blocked`
             }
             value={isToggledOn}
             onValueChange={handleChange}

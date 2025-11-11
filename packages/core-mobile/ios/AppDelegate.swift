@@ -3,6 +3,7 @@ import Firebase
 import React
 import ReactAppDependencyProvider
 import RNBranch
+import AppTrackingTransparency
 
 @main
 class AppDelegate: ExpoAppDelegate {
@@ -18,11 +19,23 @@ class AppDelegate: ExpoAppDelegate {
     // Firebase App Check and configuration
     RNFBAppCheckModule.sharedInstance()
     FirebaseApp.configure()
-    
-    if let displayName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String, displayName.lowercased().contains("internal")  {
+        
+    if let bundleId = Bundle.main.object(forInfoDictionaryKey: "CFBundleIdentifier") as? String, bundleId.lowercased().contains("internal")  {
       RNBranch.useTestInstance()
     }
+        
     RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
+    if #available(iOS 14.0, *) {
+      DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        if ATTrackingManager.trackingAuthorizationStatus == .notDetermined {
+          ATTrackingManager.requestTrackingAuthorization { status in
+            if (status == .authorized) {
+              RNBranch.branch.handleATTAuthorizationStatus(status.rawValue)
+            }
+          }
+        }
+      }
+    }
     
     let delegate = ReactNativeDelegate()
     let factory = ExpoReactNativeFactory(delegate: delegate)

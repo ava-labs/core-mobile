@@ -1,0 +1,45 @@
+/**
+ * This is the whitelist of deeplinks that are allowed to be opened in the app
+ * It is used to prevent malicious deeplinks from being opened in the app
+ * It is also used to prevent deeplinks from being opened in the app that are not allowed
+ **/
+export const DEEPLINK_WHITELIST = [
+  'core://solanaLaunch',
+  'core://stakecomplete',
+  'core://watchlist',
+  'core://portfolio',
+  'core://onrampcompleted',
+  'core://offrampcompleted',
+  'core://receive',
+  'core://trackTokenDetail',
+  'core://track',
+  'core://meld/onramp',
+  'core://meld/offramp',
+  'core://stake',
+  'core://claimStakeReward',
+  'core://addStake',
+  'core://discoverCollectibles',
+  'core://collectibleManagement',
+  'core://tokenManagement',
+  'core://send',
+  'core://swap',
+  'core://walletConnectScan',
+  'core://activity',
+  'core://browser',
+  'core://browser/tabs',
+  'core://browser/history',
+  'core://accountSettings',
+  'core://accountSettings/selectCurrency',
+  'core://accountSettings/selectAppearance',
+  'core://accountSettings/securityAndPrivacy',
+  'core://accountSettings/connectedSites',
+  'core://accountSettings/changePin',
+  'core://accountSettings/manageAccounts',
+  'core://accountSettings/manageNetworks',
+  'core://accountSettings/addressBook',
+  'core://accountSettings/selectAvatar',
+  'core://accountSettings/notificationPreferences',
+  'core://accountSettings/importWallet',
+  'core://accountSettings/importPrivateKey',
+  'core://accountSettings/importSeedWallet'
+]

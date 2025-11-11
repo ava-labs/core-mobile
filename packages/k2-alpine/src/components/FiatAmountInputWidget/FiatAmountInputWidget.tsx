@@ -123,9 +123,10 @@ export const FiatAmountInputWidget = ({
           formatInSubTextNumber={formatInSubTextNumber}
         />
         {enableAmountSelection && (
-          <View sx={{ flexDirection: 'row', gap: 7, marginTop: 25 }}>
+          <View sx={{ flexDirection: 'row', gap: 7, marginTop: 16 }}>
             {predefinedAmountButtons.map((button, index) => (
               <Button
+                testID={`fiat_amount_button__${button.predefinedAmount}`}
                 key={index}
                 size="small"
                 type={button.isSelected ? 'primary' : 'secondary'}

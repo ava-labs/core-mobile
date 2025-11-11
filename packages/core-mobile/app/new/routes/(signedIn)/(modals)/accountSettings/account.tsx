@@ -1,6 +1,6 @@
 import { BalanceHeader, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { useBalanceForAccount } from 'common/contexts/useBalanceForAccount'
+import { useBalanceForAccount } from 'features/portfolio/hooks/useBalanceForAccount'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
@@ -9,13 +9,6 @@ import { AccountButtons } from 'features/accountSettings/components/AccountButto
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccountById } from 'store/account'
-import {
-  selectBalanceForAccountIsAccurate,
-  selectBalanceTotalInCurrencyForAccount,
-  selectIsLoadingBalances,
-  selectIsRefetchingBalances
-} from 'store/balance'
-import { selectTokenVisibility } from 'store/portfolio'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
@@ -23,6 +16,10 @@ import { WalletInfo } from 'features/accountSettings/components/WalletInfo'
 import { selectWalletById } from 'store/wallet/slice'
 import { CoreAccountType } from '@avalabs/types'
 import { WalletType } from 'services/wallet/types'
+import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
+import { useIsRefetchingBalancesForAccount } from 'features/portfolio/hooks/useIsRefetchingBalancesForAccount'
+import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalanceAccurate'
+import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
 
 const AccountScreen = (): JSX.Element => {
   const router = useRouter()
@@ -31,16 +28,11 @@ const AccountScreen = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const account = useSelector(selectAccountById(accountId ?? ''))
   const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
-  const isBalanceLoading = useSelector(selectIsLoadingBalances)
-  const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
-  const tokenVisibility = useSelector(selectTokenVisibility)
-  const balanceTotalInCurrency = useSelector(
-    selectBalanceTotalInCurrencyForAccount(accountId, tokenVisibility)
-  )
+  const isBalanceLoading = useIsLoadingBalancesForAccount(account)
+  const isRefetchingBalance = useIsRefetchingBalancesForAccount(account)
+  const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount(account)
   const isLoading = isBalanceLoading || isRefetchingBalance
-  const balanceAccurate = useSelector(
-    selectBalanceForAccountIsAccurate(accountId)
-  )
+  const balanceAccurate = useIsAccountBalanceAccurate(account)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
   const formattedBalance = useMemo(() => {

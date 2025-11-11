@@ -15,6 +15,7 @@ export type SpanName =
  * Keeps track of all possible op names
  */
 export type OpName =
+  | 'svc.balance.get_for_xp_networks'
   | 'svc.balance.get_for_account'
   | 'svc.balance.get_for_address'
   | 'svc.balance.btc.get'
