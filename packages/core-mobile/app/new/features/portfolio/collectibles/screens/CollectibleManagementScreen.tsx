@@ -106,6 +106,11 @@ const CollectibleManagementOptions = (): ReactNode => {
       }}>
       <Text>Hide unreachable collectibles</Text>
       <Toggle
+        testID={
+          collectibleUnprocessableVisibility
+            ? 'unreachable_displayed'
+            : 'unreachable_blocked'
+        }
         value={collectibleUnprocessableVisibility}
         onValueChange={handleChange}
       />

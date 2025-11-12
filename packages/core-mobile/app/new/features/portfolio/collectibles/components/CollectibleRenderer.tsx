@@ -22,6 +22,7 @@ export interface CollectibleRendererProps {
   videoProps?: VideoProps
   onLoaded?: () => void
   iconSize?: number
+  testID?: string
 }
 
 export const CollectibleRenderer = memo(
@@ -31,7 +32,8 @@ export const CollectibleRenderer = memo(
     onLoaded,
     videoProps,
     style,
-    iconSize = 24
+    iconSize = 24,
+    testID
   }: // eslint-disable-next-line sonarjs/cognitive-complexity
   CollectibleRendererProps): ReactNode => {
     const {
@@ -156,6 +158,7 @@ export const CollectibleRenderer = memo(
           style
         ]}>
         <View
+          testID={testID}
           style={{
             position: 'absolute',
             top: 0,

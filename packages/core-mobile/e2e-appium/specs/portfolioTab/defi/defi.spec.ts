@@ -6,8 +6,8 @@ import browserPage from '../../../pages/browser.page'
 import portfolioLoc from '../../../locators/portfolio.loc'
 import bottomTabsPage from '../../../pages/bottomTabs.page'
 
-describe('Defi', () => {
-  it('Should verify the defi detail', async () => {
+describe('Portfolio tab', () => {
+  it('Defi - Should verify the defi detail', async () => {
     await warmup()
     await portfolioPage.tapDefiTab()
 
@@ -25,7 +25,7 @@ describe('Defi', () => {
     await portfolioPage.verifyDefiItem(defiListPrice, defiListTitle)
   })
 
-  it('Should verify the defi browser', async () => {
+  it('Defi - Should verify the defi browser', async () => {
     await portfolioPage.tapDefiDetailBrowserBtn()
     await browserPage.verifyUrl(portfolioLoc.aaveDefiUrl)
     await bottomTabsPage.tapPortfolioTab()
@@ -40,7 +40,7 @@ describe('Defi', () => {
     await bottomTabsPage.tapPortfolioTab()
   })
 
-  it('Should sort defi by name', async () => {
+  it('Defi - Should sort defi by name', async () => {
     // Ascending order
     // ascending order in grid view
     await portfolioPage.verifyDefiSort()
@@ -59,7 +59,7 @@ describe('Defi', () => {
     await portfolioPage.verifyDefiSort(false, true)
   })
 
-  it('Should verify the empty defi screen', async () => {
+  it('Defi - Should verify the empty defi screen', async () => {
     await settingsPage.goSettings()
     await settingsPage.switchAccountByCarousel('Account 2')
     await portfolioPage.verifyEmptyDefiScreen()
