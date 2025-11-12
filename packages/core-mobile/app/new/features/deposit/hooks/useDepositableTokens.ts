@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { DefiAssetDetails } from '../types'
-import { useAvailableMarkets } from './useAvaliableMarkets'
+import { useAvailableMarkets } from './useAvailableMarkets'
 
 export const useDepositableTokens = (): {
   tokens: DefiAssetDetails[]

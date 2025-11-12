@@ -14,7 +14,7 @@ import { useLocalSearchParams } from 'expo-router'
 import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { Address } from 'viem'
 import errorIcon from '../../../assets/icons/melting_face.png'
-import { useAvailableMarkets } from '../hooks/useAvaliableMarkets'
+import { useAvailableMarkets } from '../hooks/useAvailableMarkets'
 import { DefiMarket } from '../types'
 import { DefiMarketLogo } from '../components/DefiMarketLogo'
 

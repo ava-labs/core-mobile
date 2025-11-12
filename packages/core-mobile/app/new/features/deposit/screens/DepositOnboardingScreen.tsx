@@ -4,7 +4,7 @@ import { GroupList, Icons, useTheme } from '@avalabs/k2-alpine'
 import { ViewOnceKey } from 'store/viewOnce'
 import { useRouter } from 'expo-router'
 import { LoadingState } from 'common/components/LoadingState'
-import { useAvailableMarkets } from '../hooks/useAvaliableMarkets'
+import { useAvailableMarkets } from '../hooks/useAvailableMarkets'
 
 export const DepositOnboardingScreen = (): JSX.Element => {
   const { navigate } = useRouter()
