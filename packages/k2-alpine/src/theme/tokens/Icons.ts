@@ -99,6 +99,9 @@ import IconDownload from '../../assets/icons/download.svg'
 import IconEncrypted from '../../assets/icons/shield.svg'
 import IconSwapProviderAuto from '../../assets/icons/swap_auto.svg'
 import IconLedger from '../../assets/icons/ledger_logo.svg'
+import AvalancheLogo from '../../assets/icons/avalanche_logo.svg'
+import SolanaLogo from '../../assets/icons/solana_logo.svg'
+
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
 import IconTxTypeAdvanceTime from '../../assets/icons/advance-time.svg'
@@ -338,7 +341,9 @@ export const Icons = {
     Download: IconDownload,
     SwapProviderAuto: IconSwapProviderAuto,
     Ledger: IconLedger,
-    Bluetooth: IconBluetooth
+    Bluetooth: IconBluetooth,
+    Avalanche: AvalancheLogo,
+    Solana: SolanaLogo
   },
   RecoveryMethod: {
     Passkey: IconPasskey,
