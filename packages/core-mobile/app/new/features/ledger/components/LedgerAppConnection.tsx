@@ -2,8 +2,8 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { View } from 'react-native'
 import { Text, Button, useTheme, Icons } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { LoadingState } from 'common/components/LoadingState'
 import { LedgerDerivationPathType } from 'services/ledger/types'
+import { AnimatedIconWithText } from './AnimatedIconWithText'
 
 enum AppConnectionStep {
   AVALANCHE_CONNECT = 'avalanche-connect',
@@ -109,24 +109,19 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     switch (currentStep) {
       case AppConnectionStep.AVALANCHE_CONNECT:
         return (
-          <View style={{ alignItems: 'center', paddingVertical: 48 }}>
-            <Icons.TokenLogos.AVAX width={64} height={64} />
-            <Text
-              variant="heading4"
-              style={{ textAlign: 'center', marginTop: 24, marginBottom: 16 }}>
-              Connect to Avalanche App
-            </Text>
-            <Text
-              variant="body1"
-              style={{
-                textAlign: 'center',
-                color: colors.$textSecondary,
-                marginBottom: 32,
-                maxWidth: 320
-              }}>
-              Open the Avalanche app on your {deviceName} and press continue
-              when ready.
-            </Text>
+          <View style={{ flex: 1 }}>
+            <AnimatedIconWithText
+              icon={
+                <Icons.Custom.Avalanche
+                  width={44}
+                  height={40}
+                  color={colors.$textPrimary}
+                />
+              }
+              title="Connect to Avalanche App"
+              subtitle={`Open the Avalanche app on your ${deviceName} and press continue when ready.`}
+              showAnimation={false}
+            />
 
             {error && (
               <View
@@ -135,7 +130,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
                   borderRadius: 12,
                   padding: 16,
                   marginBottom: 24,
-                  maxWidth: 320
+                  marginHorizontal: 32,
+                  marginTop: 'auto'
                 }}>
                 <Text
                   variant="body2"
@@ -145,39 +141,42 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
               </View>
             )}
 
-            <Button
-              type="primary"
-              size="large"
-              onPress={handleConnectAvalanche}
-              style={{ marginBottom: 16 }}>
-              Continue
-            </Button>
+            <View
+              style={{
+                marginTop: error ? 0 : 'auto',
+                paddingHorizontal: 32,
+                paddingBottom: 32
+              }}>
+              <Button
+                type="primary"
+                size="large"
+                onPress={handleConnectAvalanche}
+                style={{ marginBottom: 16 }}>
+                Continue
+              </Button>
 
-            <Button type="tertiary" size="large" onPress={onCancel}>
-              Cancel Setup
-            </Button>
+              <Button type="tertiary" size="large" onPress={onCancel}>
+                Cancel Setup
+              </Button>
+            </View>
           </View>
         )
 
       case AppConnectionStep.AVALANCHE_LOADING:
         return (
-          <View style={{ alignItems: 'center', paddingVertical: 48 }}>
-            <LoadingState sx={{ marginBottom: 24 }} />
-            <Text
-              variant="heading4"
-              style={{ textAlign: 'center', marginBottom: 16 }}>
-              Connecting to Avalanche
-            </Text>
-            <Text
-              variant="body1"
-              style={{
-                textAlign: 'center',
-                color: colors.$textSecondary,
-                maxWidth: 320
-              }}>
-              Please confirm the connection on your {deviceName}. We're
-              retrieving your Avalanche addresses...
-            </Text>
+          <View style={{ flex: 1 }}>
+            <AnimatedIconWithText
+              icon={
+                <Icons.Custom.Avalanche
+                  width={44}
+                  height={40}
+                  color={colors.$textPrimary}
+                />
+              }
+              title="Connecting to Avalanche"
+              subtitle={`Please confirm the connection on your ${deviceName}. We're retrieving your Avalanche addresses...`}
+              showAnimation={true}
+            />
           </View>
         )
 
@@ -220,24 +219,19 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
 
       case AppConnectionStep.SOLANA_CONNECT:
         return (
-          <View style={{ alignItems: 'center', paddingVertical: 48 }}>
-            <Icons.TokenLogos.SOL width={64} height={64} />
-            <Text
-              variant="heading4"
-              style={{ textAlign: 'center', marginTop: 24, marginBottom: 16 }}>
-              Connect to Solana App
-            </Text>
-            <Text
-              variant="body1"
-              style={{
-                textAlign: 'center',
-                color: colors.$textSecondary,
-                marginBottom: 32,
-                maxWidth: 320
-              }}>
-              Close the Avalanche app and open the Solana app on your{' '}
-              {deviceName}, then press continue.
-            </Text>
+          <View style={{ flex: 1 }}>
+            <AnimatedIconWithText
+              icon={
+                <Icons.Custom.Solana
+                  width={40}
+                  height={32}
+                  color={colors.$textPrimary}
+                />
+              }
+              title="Connect to Solana App"
+              subtitle={`Close the Avalanche app and open the Solana app on your ${deviceName}, then press continue.`}
+              showAnimation={false}
+            />
 
             {error && (
               <View
@@ -246,7 +240,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
                   borderRadius: 12,
                   padding: 16,
                   marginBottom: 24,
-                  maxWidth: 320
+                  marginHorizontal: 32,
+                  marginTop: 'auto'
                 }}>
                 <Text
                   variant="body2"
@@ -256,39 +251,42 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
               </View>
             )}
 
-            <Button
-              type="primary"
-              size="large"
-              onPress={handleConnectSolana}
-              style={{ marginBottom: 16 }}>
-              Continue
-            </Button>
+            <View
+              style={{
+                marginTop: error ? 0 : 'auto',
+                paddingHorizontal: 32,
+                paddingBottom: 32
+              }}>
+              <Button
+                type="primary"
+                size="large"
+                onPress={handleConnectSolana}
+                style={{ marginBottom: 16 }}>
+                Continue
+              </Button>
 
-            <Button type="tertiary" size="large" onPress={onCancel}>
-              Cancel Setup
-            </Button>
+              <Button type="tertiary" size="large" onPress={onCancel}>
+                Cancel Setup
+              </Button>
+            </View>
           </View>
         )
 
       case AppConnectionStep.SOLANA_LOADING:
         return (
-          <View style={{ alignItems: 'center', paddingVertical: 48 }}>
-            <LoadingState sx={{ marginBottom: 24 }} />
-            <Text
-              variant="heading4"
-              style={{ textAlign: 'center', marginBottom: 16 }}>
-              Connecting to Solana
-            </Text>
-            <Text
-              variant="body1"
-              style={{
-                textAlign: 'center',
-                color: colors.$textSecondary,
-                maxWidth: 320
-              }}>
-              Please confirm the connection on your {deviceName}. We're
-              retrieving your Solana addresses...
-            </Text>
+          <View style={{ flex: 1 }}>
+            <AnimatedIconWithText
+              icon={
+                <Icons.Custom.Solana
+                  width={40}
+                  height={32}
+                  color={colors.$textPrimary}
+                />
+              }
+              title="Connecting to Solana"
+              subtitle={`Please confirm the connection on your ${deviceName}. We're retrieving your Solana addresses...`}
+              showAnimation={true}
+            />
           </View>
         )
 
