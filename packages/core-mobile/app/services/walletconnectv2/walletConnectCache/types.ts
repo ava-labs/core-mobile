@@ -31,6 +31,7 @@ export type ApprovalParams = {
     account,
     maxFeePerGas,
     maxPriorityFeePerGas,
+    gasLimit,
     overrideData
   }: {
     walletId: string
@@ -39,6 +40,7 @@ export type ApprovalParams = {
     account: Account
     maxFeePerGas?: bigint
     maxPriorityFeePerGas?: bigint
+    gasLimit?: number
     overrideData?: string
   }) => Promise<void>
   onReject: (message?: string) => void
