@@ -58,11 +58,12 @@ export const TokenUnitInputWidget = ({
     index: number
   ): void => {
     const value = balance.mul(percent)
-    textInputRef.current?.setValue(value.toDisplay())
+    const displayValue = value.toDisplay({ asNumber: true })
+    textInputRef.current?.setValue(displayValue.toString())
 
     onChange?.(
       new TokenUnit(
-        Number(value.toDisplay({ asNumber: true })) * 10 ** token.maxDecimals,
+        displayValue * 10 ** token.maxDecimals,
         token.maxDecimals,
         token.symbol
       )
