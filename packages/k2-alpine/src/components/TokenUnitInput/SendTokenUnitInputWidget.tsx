@@ -43,6 +43,7 @@ type SendTokenUnitInputWidgetProps = {
   returnKeyType?: ReturnKeyTypeOptions
   autoFocus?: boolean
   testID?: string
+  maxAmount?: TokenUnit
 }
 
 export const SendTokenUnitInputWidget = forwardRef<
@@ -61,7 +62,8 @@ export const SendTokenUnitInputWidget = forwardRef<
       sx,
       disabled,
       returnKeyType,
-      autoFocus
+      autoFocus,
+      maxAmount
     },
     ref
     // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -113,11 +115,11 @@ export const SendTokenUnitInputWidget = forwardRef<
       }
       presets.push({
         text: 'Max',
-        amount: balance,
+        amount: maxAmount ?? balance,
         isSelected: false
       })
       return presets
-    }, [balance, token.maxDecimals, token.symbol])
+    }, [balance, token.maxDecimals, token.symbol, maxAmount])
 
     useImperativeHandle(ref, () => ({
       setValue: (newValue: string) => textInputRef.current?.setValue(newValue)
