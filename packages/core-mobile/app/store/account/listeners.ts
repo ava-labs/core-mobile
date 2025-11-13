@@ -268,11 +268,6 @@ export const addAccountListeners = (
   startListening: AppStartListening
 ): void => {
   startListening({
-    actionCreator: onLogIn,
-    effect: initAccounts
-  })
-
-  startListening({
     actionCreator: toggleDeveloperMode,
     effect: reloadAccounts
   })
