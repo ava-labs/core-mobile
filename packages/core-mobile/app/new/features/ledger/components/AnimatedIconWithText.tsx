@@ -15,8 +15,11 @@ interface AnimatedIconWithTextProps {
   subtitle: string
   /** Whether to show the animation behind the icon */
   showAnimation?: boolean
-  /** Custom animation source (defaults to connect-waves.json) */
-  animationSource?: any
+  /** Custom animation source (defaults to connect-waves.json) - Lottie animation JSON
+   * In React Native, require() for a Lottie JSON returns either a number (asset reference) or an object (parsed JSON).
+   * This union type matches what LottieView expects and removes the any lint error.
+   */
+  animationSource?: number | object
   /** Custom animation size (defaults to 220x220) */
   animationSize?: { width: number; height: number }
   /** Custom icon positioning offset for animation centering */
@@ -63,7 +66,6 @@ export const AnimatedIconWithText: React.FC<AnimatedIconWithTextProps> = ({
       <View
         style={{
           marginTop: baseTopPosition,
-          marginBottom: 0,
           alignItems: 'center',
           justifyContent: 'center'
         }}>

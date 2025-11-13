@@ -22,6 +22,7 @@ interface LedgerAppConnectionProps {
   getAvalancheKeys: () => Promise<void>
   deviceName: string
   selectedDerivationPath: LedgerDerivationPathType | null
+  isCreatingWallet?: boolean
 }
 
 export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
@@ -30,7 +31,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   getSolanaKeys,
   getAvalancheKeys,
   deviceName,
-  selectedDerivationPath
+  selectedDerivationPath,
+  isCreatingWallet = false
 }) => {
   const {
     theme: { colors }
@@ -57,9 +59,12 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
         }, 2000)
         break
       case AppConnectionStep.COMPLETE:
-        timeoutId = setTimeout(() => {
-          onComplete()
-        }, 1500)
+        // Don't auto-navigate if wallet is being created
+        if (!isCreatingWallet) {
+          timeoutId = setTimeout(() => {
+            onComplete()
+          }, 1500)
+        }
         break
     }
 
@@ -68,7 +73,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
         clearTimeout(timeoutId)
       }
     }
-  }, [currentStep, onComplete])
+  }, [currentStep, onComplete, isCreatingWallet])
 
   const handleConnectAvalanche = useCallback(async () => {
     try {
@@ -327,37 +332,59 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
       case AppConnectionStep.COMPLETE:
         return (
           <View style={{ alignItems: 'center', paddingVertical: 48 }}>
-            <View
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 32,
-                backgroundColor: colors.$textSuccess,
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 24
-              }}>
-              <Icons.Action.CheckCircle
-                color={colors.$white}
-                width={32}
-                height={32}
-              />
-            </View>
-            <Text
-              variant="heading4"
-              style={{ textAlign: 'center', marginBottom: 16 }}>
-              Apps Connected!
-            </Text>
-            <Text
-              variant="body1"
-              style={{
-                textAlign: 'center',
-                color: colors.$textSecondary,
-                maxWidth: 320
-              }}>
-              Both Avalanche and Solana apps are connected. Proceeding to wallet
-              setup...
-            </Text>
+            {isCreatingWallet ? (
+              <>
+                <LoadingState sx={{ marginBottom: 24 }} />
+                <Text
+                  variant="heading4"
+                  style={{ textAlign: 'center', marginBottom: 16 }}>
+                  Creating Wallet...
+                </Text>
+                <Text
+                  variant="body1"
+                  style={{
+                    textAlign: 'center',
+                    color: colors.$textSecondary,
+                    maxWidth: 320
+                  }}>
+                  Setting up your Ledger wallet. This may take a moment...
+                </Text>
+              </>
+            ) : (
+              <>
+                <View
+                  style={{
+                    width: 64,
+                    height: 64,
+                    borderRadius: 32,
+                    backgroundColor: colors.$textSuccess,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 24
+                  }}>
+                  <Icons.Action.CheckCircle
+                    color={colors.$white}
+                    width={32}
+                    height={32}
+                  />
+                </View>
+                <Text
+                  variant="heading4"
+                  style={{ textAlign: 'center', marginBottom: 16 }}>
+                  Apps Connected!
+                </Text>
+                <Text
+                  variant="body1"
+                  style={{
+                    textAlign: 'center',
+                    color: colors.$textSecondary,
+                    maxWidth: 320
+                  }}>
+                  Both Avalanche and Solana apps are connected. Proceeding to wallet
+                  setup...
+                </Text>
+              </>
+            )}
           </View>
         )
 

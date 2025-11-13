@@ -6,7 +6,7 @@ import {
 import { LedgerSetupProvider } from 'new/features/ledger/contexts/LedgerSetupContext'
 import React from 'react'
 
-export default function LedgerSetupLayout(): JSX.Element {
+export default function Ledger(): JSX.Element {
   return (
     <LedgerSetupProvider>
       <Stack

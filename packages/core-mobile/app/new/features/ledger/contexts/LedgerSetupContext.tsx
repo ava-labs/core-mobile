@@ -8,19 +8,24 @@ import React, {
 } from 'react'
 import {
   LedgerDerivationPathType,
-  WalletCreationOptions
+  WalletCreationOptions,
+  LedgerDevice,
+  SetupProgress,
+  LedgerTransportState
 } from 'services/ledger/types'
-import { useLedgerWallet } from '../hooks/useLedgerWallet'
+import {
+  useLedgerWallet,
+  UseLedgerWalletReturn
+} from '../hooks/useLedgerWallet'
 
-interface LedgerSetupState {
+interface LedgerSetupContextValue {
+  // State values
   selectedDerivationPath: LedgerDerivationPathType | null
   connectedDeviceId: string | null
   connectedDeviceName: string
   isCreatingWallet: boolean
   hasStartedSetup: boolean
-}
 
-interface LedgerSetupContextValue extends LedgerSetupState {
   // State setters
   setSelectedDerivationPath: (path: LedgerDerivationPathType) => void
   setConnectedDevice: (deviceId: string, deviceName: string) => void
@@ -28,18 +33,18 @@ interface LedgerSetupContextValue extends LedgerSetupState {
   setHasStartedSetup: (started: boolean) => void
 
   // Ledger wallet hook values
-  devices: any[]
+  devices: LedgerDevice[]
   isScanning: boolean
   isConnecting: boolean
-  transportState: unknown
+  transportState: LedgerTransportState
   scanForDevices: () => void
   connectToDevice: (deviceId: string) => Promise<void>
   disconnectDevice: () => Promise<void>
   getSolanaKeys: () => Promise<void>
   getAvalancheKeys: () => Promise<void>
   createLedgerWallet: (options: WalletCreationOptions) => Promise<string>
-  setupProgress: any
-  keys: any
+  setupProgress: SetupProgress | null
+  keys: UseLedgerWalletReturn['keys']
 
   // Helper methods
   resetSetup: () => void
@@ -54,70 +59,92 @@ interface LedgerSetupProviderProps {
 export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
   children
 }) => {
-  const [state, setState] = useState<LedgerSetupState>({
-    selectedDerivationPath: null,
-    connectedDeviceId: null,
-    connectedDeviceName: 'Ledger Device',
-    isCreatingWallet: false,
-    hasStartedSetup: false
-  })
+  const [selectedDerivationPath, setSelectedDerivationPath] =
+    useState<LedgerDerivationPathType | null>(null)
+  const [connectedDeviceId, setConnectedDeviceId] = useState<string | null>(
+    null
+  )
+  const [connectedDeviceName, setConnectedDeviceName] =
+    useState<string>('Ledger Device')
+  const [isCreatingWallet, setIsCreatingWallet] = useState<boolean>(false)
+  const [hasStartedSetup, setHasStartedSetup] = useState<boolean>(false)
 
   // Use the existing ledger wallet hook
-  const ledgerWallet = useLedgerWallet()
+  const {
+    devices,
+    isScanning,
+    isConnecting,
+    transportState,
+    scanForDevices,
+    connectToDevice,
+    disconnectDevice,
+    getSolanaKeys,
+    getAvalancheKeys,
+    createLedgerWallet,
+    setupProgress,
+    keys
+  } = useLedgerWallet()
 
-  const setSelectedDerivationPath = useCallback(
-    (path: LedgerDerivationPathType) => {
-      setState(prev => ({ ...prev, selectedDerivationPath: path }))
-    },
-    []
-  )
-
-  const setConnectedDevice = useCallback(
+  const handleSetConnectedDevice = useCallback(
     (deviceId: string, deviceName: string) => {
-      setState(prev => ({
-        ...prev,
-        connectedDeviceId: deviceId,
-        connectedDeviceName: deviceName
-      }))
+      setConnectedDeviceId(deviceId)
+      setConnectedDeviceName(deviceName)
     },
     []
   )
-
-  const setIsCreatingWallet = useCallback((creating: boolean) => {
-    setState(prev => ({ ...prev, isCreatingWallet: creating }))
-  }, [])
-
-  const setHasStartedSetup = useCallback((started: boolean) => {
-    setState(prev => ({ ...prev, hasStartedSetup: started }))
-  }, [])
 
   const resetSetup = useCallback(() => {
-    setState({
-      selectedDerivationPath: null,
-      connectedDeviceId: null,
-      connectedDeviceName: 'Ledger Device',
-      isCreatingWallet: false,
-      hasStartedSetup: false
-    })
+    setSelectedDerivationPath(null)
+    setConnectedDeviceId(null)
+    setConnectedDeviceName('Ledger Device')
+    setIsCreatingWallet(false)
+    setHasStartedSetup(false)
   }, [])
 
   const contextValue: LedgerSetupContextValue = useMemo(
     () => ({
-      ...state,
-      ...ledgerWallet,
+      selectedDerivationPath,
+      connectedDeviceId,
+      connectedDeviceName,
+      isCreatingWallet,
+      hasStartedSetup,
+      devices,
+      isScanning,
+      isConnecting,
+      transportState,
+      scanForDevices,
+      connectToDevice,
+      disconnectDevice,
+      getSolanaKeys,
+      getAvalancheKeys,
+      createLedgerWallet,
+      setupProgress,
+      keys,
       setSelectedDerivationPath,
-      setConnectedDevice,
+      setConnectedDevice: handleSetConnectedDevice,
       setIsCreatingWallet,
       setHasStartedSetup,
       resetSetup
     }),
     [
-      state,
-      ledgerWallet,
-      setSelectedDerivationPath,
-      setConnectedDevice,
-      setIsCreatingWallet,
-      setHasStartedSetup,
+      selectedDerivationPath,
+      connectedDeviceId,
+      connectedDeviceName,
+      isCreatingWallet,
+      hasStartedSetup,
+      devices,
+      isScanning,
+      isConnecting,
+      transportState,
+      scanForDevices,
+      connectToDevice,
+      disconnectDevice,
+      getSolanaKeys,
+      getAvalancheKeys,
+      createLedgerWallet,
+      setupProgress,
+      keys,
+      handleSetConnectedDevice,
       resetSetup
     ]
   )

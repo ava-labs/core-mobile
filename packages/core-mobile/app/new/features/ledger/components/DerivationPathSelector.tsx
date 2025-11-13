@@ -138,9 +138,7 @@ const OptionCard: React.FC<OptionCardProps> = ({ option, onPress }) => {
             </Text>
           </View>
         </View>
-        {onPress && (
-          <Icons.Navigation.ChevronRight color={colors.$textSecondary} />
-        )}
+        <Icons.Navigation.ChevronRight color={colors.$textSecondary} />
       </View>
 
       {/* Divider that spans from text start to card end */}
@@ -236,7 +234,7 @@ export const DerivationPathSelector: React.FC<DerivationPathSelectorProps> = ({
 }) => {
   return (
     <ScrollScreen
-      title="First, choose your setup Method"
+      title="First, choose your setup method"
       subtitle="Select how you would like to set up your Ledger wallet. Both options are secure"
       isModal
       contentContainerStyle={{
