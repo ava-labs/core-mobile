@@ -5,13 +5,14 @@ import {
 } from 'store/settings/advanced'
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { AnyAction } from '@reduxjs/toolkit'
-import { onAppUnlocked, onLogIn } from 'store/app/slice'
+import { onAppUnlocked } from 'store/app/slice'
 import { WalletType } from 'services/wallet/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { recentAccountsStore } from 'new/features/accountSettings/store'
 import {
   selectActiveWallet,
+  selectIsMigratingActiveAccounts,
   selectSeedlessWallet,
   selectWallets,
   setWalletName
@@ -196,8 +197,11 @@ const migrateActiveAccountsIfNeeded = async (
   const state = listenerApi.getState()
   const activeWallet = selectActiveWallet(state)
   const activeAccount = selectActiveAccount(state)
+  const isMigratingActiveAccounts = selectIsMigratingActiveAccounts(state)
+
   if (
     !activeWallet ||
+    isMigratingActiveAccounts ||
     !canMigrateActiveAccounts(activeWallet) ||
     !activeAccount
   ) {
@@ -241,14 +245,28 @@ const migrateSolanaAddressesIfNeeded = async (
   }
 }
 
+const handleInitAccountsIfNeeded = async (
+  _action: AnyAction,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const state = listenerApi.getState()
+  const accounts = selectAccounts(state)
+
+  // if there are no accounts, we need to initialize them
+  // initAcounts after onboarding might have failed
+  // or user might have force quit the app while creating the first account
+  if (Object.keys(accounts).length === 0) {
+    await initAccounts(_action, listenerApi)
+    return
+  }
+
+  // if there are accounts, we need to migrate them
+  migrateActiveAccountsIfNeeded(_action, listenerApi)
+}
+
 export const addAccountListeners = (
   startListening: AppStartListening
 ): void => {
-  startListening({
-    actionCreator: onLogIn,
-    effect: initAccounts
-  })
-
   startListening({
     actionCreator: toggleDeveloperMode,
     effect: reloadAccounts
@@ -261,7 +279,7 @@ export const addAccountListeners = (
 
   startListening({
     actionCreator: onAppUnlocked,
-    effect: migrateActiveAccountsIfNeeded
+    effect: handleInitAccountsIfNeeded
   })
 
   startListening({
