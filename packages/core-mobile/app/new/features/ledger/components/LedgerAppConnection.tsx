@@ -380,8 +380,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
                     color: colors.$textSecondary,
                     maxWidth: 320
                   }}>
-                  Both Avalanche and Solana apps are connected. Proceeding to wallet
-                  setup...
+                  Both Avalanche and Solana apps are connected. Proceeding to
+                  wallet setup...
                 </Text>
               </>
             )}
