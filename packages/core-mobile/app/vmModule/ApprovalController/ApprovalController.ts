@@ -84,6 +84,7 @@ class ApprovalController implements VmModuleApprovalController {
         account,
         maxFeePerGas,
         maxPriorityFeePerGas,
+        gasLimit,
         overrideData
       }: {
         walletId: string
@@ -92,6 +93,7 @@ class ApprovalController implements VmModuleApprovalController {
         account: Account
         maxFeePerGas?: bigint
         maxPriorityFeePerGas?: bigint
+        gasLimit?: number
         overrideData?: string
       }): Promise<void> => {
         switch (signingData.type) {
@@ -129,6 +131,7 @@ class ApprovalController implements VmModuleApprovalController {
               account,
               maxFeePerGas,
               maxPriorityFeePerGas,
+              gasLimit,
               overrideData,
               resolve
             })

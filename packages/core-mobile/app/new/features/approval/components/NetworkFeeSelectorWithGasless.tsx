@@ -12,6 +12,7 @@ type Props = {
   gasLimit: number | undefined
   handleFeesChange: (fees: Eip1559Fees) => void
   caip2ChainId: string
+  errorMessage: string | undefined
 }
 
 export const NetworkFeeSelectorWithGasless = ({
@@ -20,7 +21,8 @@ export const NetworkFeeSelectorWithGasless = ({
   shouldShowGaslessSwitch,
   gasLimit,
   caip2ChainId,
-  handleFeesChange
+  handleFeesChange,
+  errorMessage
 }: Props): JSX.Element => {
   const { theme } = useTheme()
   const chainId = getChainIdFromCaip2(caip2ChainId)
@@ -92,6 +94,13 @@ export const NetworkFeeSelectorWithGasless = ({
     <View>
       <View>{renderGaslessSwitch()}</View>
       {renderNetworkFeeSelector()}
+      {errorMessage && (
+        <Text
+          variant="caption"
+          sx={{ color: '$textDanger', alignSelf: 'center', marginTop: 8 }}>
+          {errorMessage}
+        </Text>
+      )}
     </View>
   )
 }
