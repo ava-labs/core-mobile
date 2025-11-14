@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccountById } from 'store/account'
 import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
@@ -14,21 +13,16 @@ export const useBalanceForAccount = (
   balance: number
 } => {
   const account = useSelector(selectAccountById(accountId))
-  const { results, refetch } = useAccountBalances(account, {
+  const { isLoading, isFetching, refetch } = useAccountBalances(account, {
     enabled: false
   })
   const accountBalance = useBalanceTotalInCurrencyForAccount(account)
   const isBalanceLoaded = useIsBalanceLoadedForAccount(account)
 
-  const isFetching = useMemo(
-    () => results.some(r => r.isLoading || r.isFetching),
-    [results]
-  )
-
   return {
     balance: accountBalance,
     fetchBalance: refetch,
-    isFetchingBalance: isFetching,
+    isFetchingBalance: isLoading || isFetching,
     isBalanceLoaded
   }
 }
