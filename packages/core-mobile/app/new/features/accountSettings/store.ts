@@ -9,6 +9,8 @@ export const useNewContactAvatar = createZustandStore<AvatarType | undefined>(
   undefined
 )
 
+export const useDisableLockAppStore = create(() => ({ disableLockApp: false }))
+
 interface RecentAccountsState {
   recentAccountIds: string[]
   addRecentAccounts: (accountIds: string[]) => void

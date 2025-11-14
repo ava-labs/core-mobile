@@ -33,6 +33,7 @@ import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
+import { useDisableLockAppStore } from 'features/accountSettings/store'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -114,7 +115,9 @@ const lockApp = async (
   const lockWalletWithPIN = selectLockWalletWithPIN(state)
   const isLocked = selectIsLocked(state)
 
-  if (isLocked || !lockWalletWithPIN) {
+  const disabledLockApp = useDisableLockAppStore.getState().disableLockApp
+
+  if (isLocked || !lockWalletWithPIN || disabledLockApp) {
     // bail out if already locked or if lock wallet with PIN is disabled
     return
   }
