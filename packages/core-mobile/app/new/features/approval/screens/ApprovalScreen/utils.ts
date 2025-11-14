@@ -2,7 +2,8 @@ import {
   RpcRequest,
   DetailItem,
   RpcMethod,
-  DetailItemType
+  DetailItemType,
+  SigningData
 } from '@avalabs/vm-module-types'
 import { RequestContext } from 'store/rpc/types'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
@@ -48,4 +49,12 @@ export const overrideContractItem = (
   }
 
   return item
+}
+
+export const getInitialGasLimit = (data: SigningData): number | undefined => {
+  if (!data || data.type !== RpcMethod.ETH_SEND_TRANSACTION) {
+    return undefined
+  }
+
+  return data.data.gasLimit ? Number(data.data.gasLimit) : undefined
 }
