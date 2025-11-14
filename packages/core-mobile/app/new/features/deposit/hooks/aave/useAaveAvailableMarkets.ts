@@ -68,23 +68,32 @@ export const useAaveAvailableMarkets = (): {
     queryFn:
       cChainClient && cChainNetwork && !isPendingMeritAprs
         ? async () => {
-            const rawMarketsData = await readContract(cChainClient, {
+            // Step 1: Fetch all available reserve data from Aave V3 pool
+            // getReservesData(in AAVE_POOL_DATA_PROVIDER abi) returns a tuple: [AggregatedReserveData[], BaseCurrencyInfo]
+            // [0] = array of market data (USDC, USDT, WETH.e, etc.)
+            // [1] = base currency info (USD prices, etc.) - not used currently
+            const [marketsData] = await readContract(cChainClient, {
               address: AAVE_UI_POOL_DATA_PROVIDER_C_CHAIN_ADDRESS,
               abi: AAVE_POOL_DATA_PROVIDER,
               functionName: 'getReservesData',
               args: [AAVE_POOL_ADDRESSES_PROVIDER_C_CHAIN_ADDRESS]
             })
 
-            const filteredMarkets = getAaveFilteredMarketData(rawMarketsData[0])
+            // Step 2: Filter out inactive, paused, or frozen markets
+            const filteredMarkets = getAaveFilteredMarketData(marketsData)
 
+            // Step 3: Enrich each market with additional data (APY, balances, historical data)
             const results = await Promise.all(
               filteredMarkets.map(async market => {
                 const decimals = bigIntToBig(market.decimals).toNumber()
+
+                // Calculate current APY from on-chain liquidity rate
                 const liveAprPercent = formatAaveInterest(
                   bigIntToBig(market.liquidityRate)
                 )
                 const supplyApyPercent = formatAaveSupplyApy(liveAprPercent)
 
+                // Get total supply to calculate total deposits
                 const totalSupply = await readContract(cChainClient, {
                   address: market.mintTokenAddress,
                   abi: erc20Abi,
@@ -99,6 +108,7 @@ export const useAaveAvailableMarkets = (): {
                   bigIntToBig(market.supplyCap)
                 )
 
+                // Fetch historical APY data (30-day average) from Aave GraphQL API
                 const supplyApyHistoryResponse = await gqlQuery(
                   AAVE_V3_GQL_API_URL,
                   `
@@ -120,6 +130,7 @@ export const useAaveAvailableMarkets = (): {
                   }
                 )
 
+                // Add Merit protocol rewards if available for this asset
                 const formattedSymbol = market.symbol
                   .replace(/[^a-zA-Z0-9]/g, '')
                   .toLowerCase()
@@ -129,6 +140,7 @@ export const useAaveAvailableMarkets = (): {
                   : 0
                 const guaranteedMeritApr = maybeMeritApr ?? 0
 
+                // Parse and calculate average historical APY
                 const supplyApyHistory = supplyApyHistorySchema.safeParse(
                   supplyApyHistoryResponse
                 )
@@ -144,6 +156,7 @@ export const useAaveAvailableMarkets = (): {
                     return accumulator + formattedNumber
                   }, 0) / safeData.length
 
+                // Match with user's token balance
                 const balance = findMatchingTokenWithBalance(
                   {
                     symbol: market.symbol,
@@ -152,11 +165,13 @@ export const useAaveAvailableMarkets = (): {
                   tokens
                 )
 
+                // Get token metadata (logo, etc.)
                 const token = getCChainToken(
                   market.symbol,
                   market.underlyingAsset
                 )
 
+                // Construct market data with all enriched information
                 const marketData = {
                   marketName: MarketNames.aave,
                   network: cChainNetwork,
@@ -181,7 +196,7 @@ export const useAaveAvailableMarkets = (): {
                       underlyingAssetAddress: market.underlyingAsset
                     })
                   },
-                  supplyApyPercent: supplyApyPercent + guaranteedMeritApr,
+                  supplyApyPercent: supplyApyPercent + guaranteedMeritApr, // Base APY + Merit rewards
                   historicalApyPercent
                 }
 
@@ -192,6 +207,8 @@ export const useAaveAvailableMarkets = (): {
               })
             )
 
+            // Step 4: Add AVAX (native token) market data
+            // Aave uses WAVAX wrapper, so we need to manually insert AVAX with user's balance
             const avaxBalance = findMatchingTokenWithBalance(
               {
                 symbol: cChainNetwork.networkToken.symbol,

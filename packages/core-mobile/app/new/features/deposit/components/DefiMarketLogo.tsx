@@ -16,6 +16,7 @@ export const DefiMarketLogo = ({
   const width = 36
   const networkLogoInset = -4
   const networkLogoSize = 18
+  const borderWidth = 2
 
   return (
     <View sx={{ width: width, height: width }}>
@@ -41,11 +42,11 @@ export const DefiMarketLogo = ({
           bottom: networkLogoInset,
           right: networkLogoInset,
           borderColor,
-          borderWidth: 2
+          borderWidth
         }}>
         <Logo
           logoUri={item.network.logoUri}
-          size={networkLogoSize - 4}
+          size={networkLogoSize - borderWidth * 2}
           testID={`network_logo__${item.network.chainName}`}
         />
       </View>
