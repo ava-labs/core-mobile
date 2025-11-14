@@ -2,6 +2,7 @@ import { Linking } from 'react-native'
 import InAppBrowser, {
   InAppBrowserOptions
 } from 'react-native-inappbrowser-reborn'
+import { useDisableLockAppStore } from 'features/accountSettings/store'
 import Logger from './Logger'
 
 // @deprecated use openUrl from useCoreBrowser hook instead
@@ -11,7 +12,11 @@ export const openInAppBrowser = async (
 ): Promise<void> => {
   try {
     if (await InAppBrowser.isAvailable()) {
-      InAppBrowser.open(url, options)
+      useDisableLockAppStore.setState({ disableLockApp: true })
+      const result = await InAppBrowser.open(url, options)
+      if (result.type === 'cancel' || result.type === 'dismiss') {
+        useDisableLockAppStore.setState({ disableLockApp: false })
+      }
     } else {
       failSafe(url)
     }
@@ -21,6 +26,7 @@ export const openInAppBrowser = async (
 }
 
 export const closeInAppBrowser = async (): Promise<void> => {
+  useDisableLockAppStore.setState({ disableLockApp: false })
   InAppBrowser.close()
 }
 
