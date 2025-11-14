@@ -85,7 +85,6 @@ export default {
   swapText: 'Swap',
   swapVerticalIcon: 'swap_vertical_icon',
   trendingDetailSwapBtn: 'token_detail_swap_btn',
-  collectiblesHandler: 'collectibles_handler',
   receiveIcon: 'receive_icon',
   receiveCryptoTitle: 'Receive crypto',
   receiveCryptoSubtitle:

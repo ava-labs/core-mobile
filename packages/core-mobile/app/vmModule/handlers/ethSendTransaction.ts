@@ -14,6 +14,7 @@ export const ethSendTransaction = async ({
   walletType,
   maxFeePerGas,
   maxPriorityFeePerGas,
+  gasLimit,
   overrideData,
   resolve
 }: {
@@ -24,10 +25,19 @@ export const ethSendTransaction = async ({
   walletType: WalletType
   maxFeePerGas: bigint | undefined
   maxPriorityFeePerGas: bigint | undefined
+  gasLimit: number | undefined
   overrideData: string | undefined
   resolve: (value: ApprovalResponse) => void
 }): Promise<void> => {
-  const { gasLimit, type, nonce, data, from, to, value } = transactionRequest
+  const {
+    gasLimit: defaultGasLimit,
+    type,
+    nonce,
+    data,
+    from,
+    to,
+    value
+  } = transactionRequest
 
   const transaction = {
     nonce,
@@ -35,7 +45,7 @@ export const ethSendTransaction = async ({
     chainId: network.chainId,
     maxFeePerGas,
     maxPriorityFeePerGas,
-    gasLimit,
+    gasLimit: gasLimit ? BigInt(gasLimit) : defaultGasLimit,
     data: overrideData ?? data,
     from,
     to,

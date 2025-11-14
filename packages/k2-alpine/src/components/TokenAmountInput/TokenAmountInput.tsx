@@ -2,11 +2,11 @@ import { bigintToBig, bigToBigInt } from '@avalabs/core-utils-sdk'
 import Big from 'big.js'
 import React, {
   forwardRef,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useRef,
-  useState,
-  useCallback
+  useState
 } from 'react'
 import {
   NativeSyntheticEvent,
@@ -16,13 +16,12 @@ import {
   TextInputProps
 } from 'react-native'
 import { useTheme } from '../../hooks'
-import { alpha } from '../../utils'
 import {
   normalizeNumericTextInput,
   splitIntegerAndFraction
 } from '../../utils/tokenUnitInput'
+import { AutoSizeTextInput } from '../AutoSizeTextInput/AutoSizeTextInput'
 import { useCursorSelection } from './useCursorSelection'
-
 export interface TokenAmountInputRef {
   focus: () => void
   blur: () => void
@@ -48,6 +47,7 @@ export const TokenAmountInput = forwardRef<
       onBlur,
       onFocus,
       testID,
+      valid = true,
       ...props
     },
     ref
@@ -122,6 +122,20 @@ export const TokenAmountInput = forwardRef<
       }
     }, [valueAsString])
 
+    useEffect(() => {
+      if (autoFocus) {
+        requestAnimationFrame(() => {
+          inputRef.current?.focus()
+        })
+      }
+    }, [autoFocus])
+
+    useEffect(() => {
+      if (inputRef.current) {
+        inputRef.current?.setNativeProps({ text: valueAsString })
+      }
+    }, [valueAsString])
+
     const handleBlur = useCallback(
       (e: NativeSyntheticEvent<TextInputFocusEventData>): void => {
         onBlur?.(e)
@@ -139,35 +153,29 @@ export const TokenAmountInput = forwardRef<
     )
 
     return (
-      <TextInput
+      <AutoSizeTextInput
         {...props}
+        value={valueAsString}
         ref={inputRef}
-        /**
-         * keyboardType="numeric" causes noticeable input lag on Android.
-         * Using inputMode="numeric" provides the same behavior without the performance issues.
-         * See: https://github.com/expo/expo/issues/34156
-         */
         testID={testID}
         keyboardType={Platform.OS === 'ios' ? 'numeric' : undefined}
         inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
         onChangeText={handleChangeText}
-        numberOfLines={1}
-        placeholderTextColor={alpha(theme.colors.$textSecondary, 0.2)}
         selectionColor={theme.colors.$textPrimary}
-        allowFontScaling={false}
-        style={[{ color: theme.colors.$textPrimary }, props.style]}
+        style={props.style}
         onBlur={handleBlur}
         onFocus={handleFocus}
         selection={selection}
         onSelectionChange={handleSelectionChange}
+        valid={valid}
       />
     )
   }
 )
-
 interface TokenAmountInputProps
   extends Omit<TextInputProps, 'onChange' | 'value'> {
   value?: bigint
+  valid?: boolean
   denomination: number
 
   onChange?(val: TokenAmount): void

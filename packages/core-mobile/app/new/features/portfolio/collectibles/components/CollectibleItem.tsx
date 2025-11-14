@@ -98,6 +98,7 @@ export const CollectibleListItem = memo(
 
     return (
       <Pressable
+        testID={`nft_list_item__${index}`}
         onPress={onPress}
         style={{
           height,
@@ -113,6 +114,7 @@ export const CollectibleListItem = memo(
             borderRadius: 12
           }}>
           <CollectibleRenderer
+            testID={`nft_by_network__${collectible.networkChainId}`}
             videoProps={{
               hideControls: true
             }}
@@ -142,7 +144,10 @@ export const CollectibleListItem = memo(
               style={{
                 flex: 1
               }}>
-              <Text variant="buttonMedium" numberOfLines={1}>
+              <Text
+                variant="buttonMedium"
+                numberOfLines={1}
+                testID={`nft_list_title__${index}`}>
                 {collectibleName}
               </Text>
               <Text
@@ -210,7 +215,10 @@ export const CollectibleGridItem = memo(
     const collectibleName = getCollectibleName(collectible)
     const height = getGridCardHeight(type, index)
     return (
-      <AnimatedPressable onPress={onPress} {...props}>
+      <AnimatedPressable
+        onPress={onPress}
+        {...props}
+        testID={`nft_grid_item__${index}`}>
         <CardContainer
           testID={`collectible_name__${collectibleName}`}
           style={[

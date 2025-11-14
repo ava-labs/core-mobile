@@ -1,5 +1,5 @@
 import { AVM, EVM, PVM, VM } from '@avalabs/avalanchejs'
-import { Account, AccountCollection } from 'store/account/types'
+import { Account } from 'store/account/types'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import WalletFactory from 'services/wallet/WalletFactory'
 import { WalletType } from 'services/wallet/types'
@@ -17,6 +17,7 @@ import { StorageKey } from 'resources/Constants'
 import { appendToStoredArray, loadArrayFromStorage } from 'utils/mmkv/storages'
 import { setIsMigratingActiveAccounts } from 'store/wallet/slice'
 import WalletService from 'services/wallet/WalletService'
+import { selectWalletState, WalletState } from 'store/app'
 import { setAccounts, setNonActiveAccounts } from './slice'
 
 export function getAddressByVM(
@@ -103,8 +104,9 @@ export const migrateRemainingActiveAccounts = async ({
   walletId: string
   walletType: WalletType.SEEDLESS | WalletType.MNEMONIC | WalletType.KEYSTONE
   startIndex: number
-}): Promise<AccountCollection> => {
-  listenerApi.dispatch(setIsMigratingActiveAccounts(true))
+}): Promise<void> => {
+  const { getState, dispatch } = listenerApi
+  dispatch(setIsMigratingActiveAccounts(true))
 
   try {
     const toastId = uuid()
@@ -119,6 +121,17 @@ export const migrateRemainingActiveAccounts = async ({
       walletType,
       startIndex
     })
+
+    const state = getState()
+    const walletState = selectWalletState(state)
+    if (walletState !== WalletState.ACTIVE) {
+      Logger.error(
+        'Wallet is not active, skipping migrateRemainingActiveAccounts'
+      )
+      dispatch(setIsMigratingActiveAccounts(false))
+      global.toast?.hideAll()
+      return
+    }
 
     const accountIds = Object.keys(accounts)
     if (accountIds.length > 0) {
@@ -147,16 +160,13 @@ export const migrateRemainingActiveAccounts = async ({
     }
 
     markWalletAsMigrated(walletId)
-
-    return accounts
   } catch (error) {
     Logger.error('Failed to fetch remaining active accounts', error)
     transactionSnackbar.error({
       error: 'Failed to add accounts'
     })
-    return {}
   } finally {
-    listenerApi.dispatch(setIsMigratingActiveAccounts(false))
+    dispatch(setIsMigratingActiveAccounts(false))
   }
 }
 

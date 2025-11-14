@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from 'react'
-import { View } from 'react-native'
-import { Text, Button, useTheme, GroupList, Icons } from '@avalabs/k2-alpine'
+import React from 'react'
+import { View, TouchableOpacity } from 'react-native'
+import { Text, useTheme, Icons } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { LedgerDerivationPathType } from 'services/ledger/types'
 
@@ -17,15 +17,193 @@ interface DerivationPathOption {
 
 interface DerivationPathSelectorProps {
   onSelect: (derivationPathType: LedgerDerivationPathType) => void
+  onCancel?: () => void
+}
+
+interface ListItemProps {
+  text: string
+  type: 'benefit' | 'consideration'
+  isFirst?: boolean
+}
+
+const ListItem: React.FC<ListItemProps> = ({ text, type, isFirst = false }) => {
+  const {
+    theme: { colors }
+  } = useTheme()
+
+  const iconProps =
+    type === 'benefit'
+      ? {
+          Icon: Icons.Custom.CheckSmall,
+          color: colors.$textSuccess
+        }
+      : {
+          Icon: Icons.Custom.RedExclamation,
+          color: colors.$textDanger,
+          width: 16,
+          height: 12
+        }
+
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: isFirst ? 4 : 0
+      }}>
+      <iconProps.Icon
+        color={iconProps.color}
+        {...(iconProps.width && {
+          width: iconProps.width,
+          height: iconProps.height
+        })}
+      />
+      <Text
+        variant="subtitle2"
+        style={{
+          color: colors.$textPrimary,
+          lineHeight: 18,
+          marginLeft: type === 'consideration' ? 4 : 0
+        }}>
+        {text}
+      </Text>
+    </View>
+  )
+}
+
+interface OptionCardProps {
+  option: DerivationPathOption
+  onPress?: () => void
+}
+
+const OptionCard: React.FC<OptionCardProps> = ({ option, onPress }) => {
+  const {
+    theme: { colors }
+  } = useTheme()
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={{
+        width: '100%',
+        borderRadius: 12,
+        overflow: 'hidden',
+        backgroundColor: colors.$surfaceSecondary
+      }}>
+      <View
+        style={{
+          padding: 16,
+          paddingBottom: 12,
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+        <View
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 16
+          }}>
+          <Icons.Custom.Ledger
+            color={colors.$textPrimary}
+            width={24}
+            height={24}
+          />
+          <View
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 4
+            }}>
+            <Text
+              variant="subtitle1"
+              style={{
+                color: colors.$textPrimary,
+                fontWeight: '500',
+                fontSize: 16,
+                lineHeight: 16
+              }}>
+              {option.title}
+            </Text>
+            <Text
+              variant="caption"
+              style={{
+                color: colors.$textSecondary,
+                fontSize: 12,
+                lineHeight: 15
+              }}>
+              {option.subtitle}
+            </Text>
+          </View>
+        </View>
+        <Icons.Navigation.ChevronRight color={colors.$textSecondary} />
+      </View>
+
+      {/* Divider that spans from text start to card end */}
+      <View
+        style={{
+          height: 1,
+          backgroundColor: colors.$borderPrimary,
+          width: '85%',
+          alignSelf: 'flex-end'
+        }}
+      />
+
+      <View style={{ paddingTop: 12, paddingStart: '15%' }}>
+        <Text
+          variant="caption"
+          style={{
+            color: colors.$textSecondary,
+            fontSize: 12,
+            lineHeight: 15
+          }}>
+          Benefits
+        </Text>
+        {option.benefits.map((benefit, index) => (
+          <ListItem
+            key={index}
+            text={benefit}
+            type="benefit"
+            isFirst={index === 0}
+          />
+        ))}
+      </View>
+
+      {option.warnings.length > 0 && (
+        <View
+          style={{ paddingTop: 12, paddingStart: '15%', paddingBottom: 12 }}>
+          <Text
+            variant="caption"
+            style={{
+              color: colors.$textSecondary,
+              fontSize: 12,
+              lineHeight: 15
+            }}>
+            Considerations
+          </Text>
+          {option.warnings.map((warning, index) => (
+            <ListItem
+              key={index}
+              text={warning}
+              type="consideration"
+              isFirst={index === 0}
+            />
+          ))}
+        </View>
+      )}
+    </TouchableOpacity>
+  )
 }
 
 const derivationPathOptions: DerivationPathOption[] = [
   {
     type: LedgerDerivationPathType.BIP44,
-    title: 'BIP44 (Recommended)',
-    subtitle: 'Standard approach for most users',
+    title: 'BIP44',
+    subtitle: 'Recommended for most users',
     benefits: [
-      'Faster setup (~15 seconds)',
+      'Faster setup, about 15 seconds',
       'Create new accounts without device',
       'Industry standard approach',
       'Better for multiple accounts'
@@ -54,210 +232,25 @@ const derivationPathOptions: DerivationPathOption[] = [
 export const DerivationPathSelector: React.FC<DerivationPathSelectorProps> = ({
   onSelect
 }) => {
-  const {
-    theme: { colors }
-  } = useTheme()
-  const [selectedType, setSelectedType] =
-    useState<LedgerDerivationPathType | null>(null)
-
-  const selectedOption = derivationPathOptions.find(
-    option => option.type === selectedType
-  )
-
-  const renderFooter = useCallback(() => {
-    return (
-      <View style={{ padding: 16, gap: 12 }}>
-        <Button
-          type="primary"
-          size="large"
-          disabled={!selectedType}
-          onPress={() => selectedType && onSelect(selectedType)}>
-          Continue
-        </Button>
-      </View>
-    )
-  }, [selectedType, onSelect])
-
-  const groupListData = derivationPathOptions.map(option => ({
-    title: option.title,
-    subtitle: (
-      <Text variant="caption" sx={{ fontSize: 12, paddingTop: 4 }}>
-        {option.subtitle}
-      </Text>
-    ),
-    leftIcon: (
-      <View
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: 20,
-          backgroundColor: option.recommended
-            ? colors.$textSuccess
-            : colors.$surfaceSecondary,
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-        <Icons.Device.Encrypted
-          color={option.recommended ? colors.$white : colors.$textPrimary}
-          width={20}
-          height={20}
-        />
-      </View>
-    ),
-    accessory:
-      selectedType === option.type ? (
-        <Icons.Action.CheckCircle
-          color={colors.$textSuccess}
-          width={24}
-          height={24}
-        />
-      ) : (
-        <View
-          style={{
-            width: 24,
-            height: 24,
-            borderRadius: 12,
-            borderWidth: 2,
-            borderColor: colors.$borderPrimary
-          }}
-        />
-      ),
-    onPress: () => setSelectedType(option.type)
-  }))
-
   return (
     <ScrollScreen
-      title="Choose Setup Method"
-      subtitle="Select how you'd like to set up your Ledger wallet. Both options are secure."
+      title="First, choose your setup method"
+      subtitle="Select how you would like to set up your Ledger wallet. Both options are secure"
       isModal
-      renderFooter={renderFooter}
-      contentContainerStyle={{ padding: 16, flex: 1 }}>
-      <View style={{ marginTop: 24 }}>
-        <GroupList itemHeight={70} data={groupListData} />
-      </View>
+      contentContainerStyle={{
+        padding: 16,
+        gap: 16,
+        paddingBottom: 100
+      }}>
+      <View style={{ marginTop: 8 }} />
 
-      {selectedOption && (
-        <View style={{ marginTop: 32 }}>
-          {/* Recommendation badge */}
-          {selectedOption.recommended && (
-            <View
-              style={{
-                backgroundColor: colors.$textSuccess,
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 16,
-                alignSelf: 'flex-start',
-                marginBottom: 16
-              }}>
-              <Text
-                variant="caption"
-                style={{ color: colors.$white, fontWeight: '600' }}>
-                RECOMMENDED
-              </Text>
-            </View>
-          )}
-
-          {/* Quick stats */}
-          <View
-            style={{
-              backgroundColor: colors.$surfaceSecondary,
-              borderRadius: 12,
-              padding: 16,
-              marginBottom: 24
-            }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between'
-              }}>
-              <View style={{ flex: 1 }}>
-                <Text
-                  variant="caption"
-                  style={{ color: colors.$textSecondary }}>
-                  Setup Time
-                </Text>
-                <Text
-                  variant="body1"
-                  style={{ fontWeight: '600', marginTop: 4 }}>
-                  {selectedOption.setupTime}
-                </Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text
-                  variant="caption"
-                  style={{ color: colors.$textSecondary }}>
-                  New Accounts
-                </Text>
-                <Text
-                  variant="body1"
-                  style={{ fontWeight: '600', marginTop: 4 }}>
-                  {selectedOption.newAccountRequirement}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Benefits */}
-          <View style={{ marginBottom: 24 }}>
-            <Text
-              variant="heading6"
-              style={{ marginBottom: 12, color: colors.$textSuccess }}>
-              ✓ Benefits
-            </Text>
-            {selectedOption.benefits.map((benefit, index) => (
-              <View
-                key={index}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'flex-start',
-                  marginBottom: 8
-                }}>
-                <Text
-                  variant="body2"
-                  style={{ color: colors.$textSuccess, marginRight: 8 }}>
-                  •
-                </Text>
-                <Text
-                  variant="body2"
-                  style={{ color: colors.$textSecondary, flex: 1 }}>
-                  {benefit}
-                </Text>
-              </View>
-            ))}
-          </View>
-
-          {/* Considerations */}
-          {selectedOption.warnings.length > 0 && (
-            <View>
-              <Text
-                variant="heading6"
-                style={{ marginBottom: 12, color: colors.$textSecondary }}>
-                ⚠️ Considerations
-              </Text>
-              {selectedOption.warnings.map((warning, index) => (
-                <View
-                  key={index}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'flex-start',
-                    marginBottom: 8
-                  }}>
-                  <Text
-                    variant="body2"
-                    style={{ color: colors.$textSecondary, marginRight: 8 }}>
-                    •
-                  </Text>
-                  <Text
-                    variant="body2"
-                    style={{ color: colors.$textSecondary, flex: 1 }}>
-                    {warning}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
-      )}
+      {derivationPathOptions.map(option => (
+        <OptionCard
+          key={option.type}
+          option={option}
+          onPress={() => onSelect(option.type)}
+        />
+      ))}
     </ScrollScreen>
   )
 }

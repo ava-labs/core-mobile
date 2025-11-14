@@ -41,6 +41,7 @@ export const CollectibleDetailsFooter = ({
         {collectible?.networkChainId &&
         isAvalancheCChainId(collectible?.networkChainId) ? (
           <Button
+            testID="refresh_btn"
             disabled={isRefreshing}
             type="secondary"
             size="large"
@@ -58,6 +59,7 @@ export const CollectibleDetailsFooter = ({
         {collectible?.status === NftLocalStatus.Processed &&
         isSupportedAvatar ? (
           <Button
+            testID="set_as_my_avatar_btn"
             type="secondary"
             size="large"
             onPress={handleSaveAvatar}

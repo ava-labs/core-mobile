@@ -6,6 +6,7 @@ import { ServiceProviderCategories } from '../consts'
 import { useMeldFiatAmount } from '../store'
 import { useGetTradeLimits } from './useGetTradeLimits'
 import { useMeldTokenWithBalance } from './useMeldTokenWithBalance'
+import { useWithdrawAmountLimit } from './useWithdrawAmountLimit'
 
 export const useFiatSourceAmount = ({
   category
@@ -23,6 +24,8 @@ export const useFiatSourceAmount = ({
   hasValidSourceAmount: boolean
   // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
+  const { getWithdrawAmountMinLimit, getWithdrawAmountMaxLimit } =
+    useWithdrawAmountLimit()
   const [sourceAmount, setSourceAmount] = useMeldFiatAmount()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const token = useMeldTokenWithBalance({ category })
@@ -53,19 +56,31 @@ export const useFiatSourceAmount = ({
     if (category === ServiceProviderCategories.CRYPTO_ONRAMP) {
       return selectedTradeLimitCurrency?.minimumAmount ?? undefined
     }
-    return selectedTradeLimitCurrency?.minimumAmount && currentTokenPrice
-      ? selectedTradeLimitCurrency.minimumAmount * currentTokenPrice
-      : undefined
-  }, [category, selectedTradeLimitCurrency, currentTokenPrice])
+    return getWithdrawAmountMinLimit(
+      selectedTradeLimitCurrency,
+      currentTokenPrice
+    )
+  }, [
+    category,
+    selectedTradeLimitCurrency,
+    getWithdrawAmountMinLimit,
+    currentTokenPrice
+  ])
 
   const maximumLimit = useMemo(() => {
     if (category === ServiceProviderCategories.CRYPTO_ONRAMP) {
       return selectedTradeLimitCurrency?.maximumAmount ?? undefined
     }
-    return selectedTradeLimitCurrency?.maximumAmount && currentTokenPrice
-      ? selectedTradeLimitCurrency.maximumAmount * currentTokenPrice
-      : undefined
-  }, [category, selectedTradeLimitCurrency?.maximumAmount, currentTokenPrice])
+    return getWithdrawAmountMaxLimit(
+      selectedTradeLimitCurrency,
+      currentTokenPrice
+    )
+  }, [
+    category,
+    getWithdrawAmountMaxLimit,
+    selectedTradeLimitCurrency,
+    currentTokenPrice
+  ])
 
   const isAboveMinimumLimit = useMemo(() => {
     if (minimumLimit === undefined) {

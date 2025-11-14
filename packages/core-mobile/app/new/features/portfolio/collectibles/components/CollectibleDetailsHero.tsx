@@ -88,6 +88,7 @@ export const CollectibleDetailsHero = forwardRef<
 
   return (
     <View
+      testID="collectible_hero"
       style={{
         position: 'relative',
         zIndex: 1,
