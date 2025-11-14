@@ -1,0 +1,16 @@
+{
+  "cxxNamespace": ["nitroavalabscrypto"],
+  "ios": {
+    "iosModuleName": "NitroAvalabsCrypto"
+  },
+  "android": {
+    "androidNamespace": ["nitroavalabscrypto"],
+    "androidCxxLibName": "nitroavalabscrypto"
+  },
+  "autolinking": {
+    "Crypto": {
+      "cpp": "CryptoHybrid"
+    }
+  },
+  "ignorePaths": ["node_modules"]
+}
