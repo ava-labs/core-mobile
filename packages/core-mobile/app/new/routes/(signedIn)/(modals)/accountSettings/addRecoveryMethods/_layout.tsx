@@ -1,9 +1,18 @@
 import { Stack } from 'common/components/Stack'
 import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
 import { RecoverMethodsProvider } from 'features/accountSettings/context/RecoverMethodsProvider'
-import React from 'react'
+import { useDisableLockAppStore } from 'features/accountSettings/store'
+import React, { useEffect } from 'react'
 
 export default function AddRecoveryMethodsLayout(): JSX.Element {
+  useEffect(() => {
+    useDisableLockAppStore.setState({ disableLockApp: true })
+
+    return () => {
+      useDisableLockAppStore.setState({ disableLockApp: false })
+    }
+  }, [])
+
   return (
     <RecoverMethodsProvider>
       <Stack

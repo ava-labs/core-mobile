@@ -44,6 +44,7 @@ import {
   setIsIdled,
   setWalletType
 } from './slice'
+import { useDisableLockAppStore } from 'features/accountSettings/store'
 
 const TIME_TO_LOCK_IN_SECONDS = 5
 
@@ -114,7 +115,9 @@ const lockApp = async (
   const lockWalletWithPIN = selectLockWalletWithPIN(state)
   const isLocked = selectIsLocked(state)
 
-  if (isLocked || !lockWalletWithPIN) {
+  const disabledLockApp = useDisableLockAppStore.getState().disableLockApp
+
+  if (isLocked || !lockWalletWithPIN || disabledLockApp) {
     // bail out if already locked or if lock wallet with PIN is disabled
     return
   }
