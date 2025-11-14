@@ -18,9 +18,11 @@ export const openInAppBrowser = async (
         useDisableLockAppStore.setState({ disableLockApp: false })
       }
     } else {
+      useDisableLockAppStore.setState({ disableLockApp: false })
       failSafe(url)
     }
   } catch (e) {
+    useDisableLockAppStore.setState({ disableLockApp: false })
     failSafe(url)
   }
 }
