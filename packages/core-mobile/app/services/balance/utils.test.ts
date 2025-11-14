@@ -1,5 +1,6 @@
 import {
   NetworkContractToken,
+  TokenType,
   TokenWithBalance
 } from '@avalabs/vm-module-types'
 import { getLocalTokenId } from './utils'
@@ -11,10 +12,10 @@ describe('getLocalTokenId', () => {
       | NetworkContractToken
     expect(getLocalTokenId(token)).toBe('0x123')
   })
-  it('returns the token name and symbol if address does not exist', () => {
-    const token = { name: 'name', symbol: 'symbol' } as
+  it('returns the token type and symbol if address does not exist', () => {
+    const token = { type: TokenType.NATIVE, symbol: 'symbol' } as
       | TokenWithBalance
       | NetworkContractToken
-    expect(getLocalTokenId(token)).toBe('namesymbol')
+    expect(getLocalTokenId(token)).toBe('NATIVE-symbol')
   })
 })
