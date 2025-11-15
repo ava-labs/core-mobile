@@ -12,11 +12,11 @@ import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
  */
 export function useAvaxPrice(): number {
   const activeAccount = useSelector(selectActiveAccount)
-  const { results } = useAccountBalances(activeAccount, { enabled: false })
+  const { data } = useAccountBalances(activeAccount)
 
   return useMemo(() => {
-    for (const result of results) {
-      const tokens = result.data?.tokens ?? []
+    for (const balance of data) {
+      const tokens = balance.tokens ?? []
       for (const token of tokens) {
         if (
           token.type === TokenType.NATIVE &&
@@ -28,5 +28,5 @@ export function useAvaxPrice(): number {
       }
     }
     return 0
-  }, [results])
+  }, [data])
 }

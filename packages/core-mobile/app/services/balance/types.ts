@@ -9,8 +9,3 @@ export type NormalizedBalancesForAccount = {
   dataAccurate: boolean
   error: Error | null
 }
-
-export type NormalizedBalancesForXpAddress = Omit<
-  NormalizedBalancesForAccount,
-  'accountId'
->

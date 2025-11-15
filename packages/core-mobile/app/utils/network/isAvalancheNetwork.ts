@@ -22,3 +22,9 @@ export function isAvmNetwork(
 ): network is Network & { vmName: NetworkVMType.AVM } {
   return network?.vmName === NetworkVMType.AVM
 }
+
+export const isXPNetwork = (
+  network?: Network
+): network is Network & { vmName: NetworkVMType.PVM | NetworkVMType.AVM } => {
+  return isPvmNetwork(network) || isAvmNetwork(network)
+}

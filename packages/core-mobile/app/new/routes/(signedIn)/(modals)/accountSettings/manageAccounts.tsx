@@ -4,7 +4,6 @@ import {
   alpha,
   AnimatedBalance,
   Icons,
-  Pressable,
   SCREEN_WIDTH,
   SearchBar,
   Text,
@@ -445,12 +444,8 @@ const AccountBalance = ({
   const {
     theme: { colors }
   } = useTheme()
-  const {
-    balance: accountBalance,
-    fetchBalance,
-    isFetchingBalance,
-    isBalanceLoaded
-  } = useBalanceForAccount(accountId)
+  const { balance: accountBalance, isLoadingBalance } =
+    useBalanceForAccount(accountId)
   const { formatCurrency } = useFormatCurrency()
 
   const balance = useMemo(() => {
@@ -473,16 +468,8 @@ const AccountBalance = ({
     )
   }, [colors.$textPrimary, isActive])
 
-  if (isFetchingBalance) {
+  if (isLoadingBalance) {
     return <ActivityIndicator size="small" sx={{ marginRight: 4 }} />
-  }
-
-  if (!isBalanceLoaded) {
-    return (
-      <Pressable onPress={fetchBalance}>
-        <Icons.Custom.BalanceRefresh color={colors.$textPrimary} />
-      </Pressable>
-    )
   }
 
   return (
