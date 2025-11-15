@@ -6,13 +6,18 @@ import {
   type NetworkContractToken,
   type TokenWithBalance,
   type Error,
-  TokenType
+  TokenType,
+  GetBalancesResponse
 } from '@avalabs/vm-module-types'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
-import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
+import {
+  isPChain,
+  isXChain,
+  isXPNetwork
+} from 'utils/network/isAvalancheNetwork'
 import Logger from 'utils/Logger'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { NormalizedBalancesForAccount } from './types'
@@ -90,11 +95,6 @@ export class BalanceService {
           try {
             const module = await ModuleManager.loadModuleByNetwork(network)
 
-            const tokenTypes =
-              network.vmName === NetworkVMType.SVM
-                ? [TokenType.NATIVE, TokenType.SPL]
-                : [TokenType.NATIVE, TokenType.ERC20]
-
             // Map address → account
             const addressMap = accounts.reduce((acc, account) => {
               acc[getAddressByNetwork(account, network)] = account
@@ -102,15 +102,66 @@ export class BalanceService {
             }, {} as Record<string, Account>)
 
             const addresses = Object.keys(addressMap)
+            const customTokensForNetwork =
+              customTokens[network.chainId.toString()] ?? []
+            const storage = coingeckoInMemoryCache
 
-            const balancesResponse = await module.getBalances({
-              customTokens: customTokens[network.chainId.toString()] ?? [],
-              addresses,
-              currency,
-              network: mapToVmNetwork(network),
-              storage: coingeckoInMemoryCache,
-              tokenTypes
-            })
+            let balancesResponse: GetBalancesResponse
+
+            /**
+             * SPECIAL CASE:
+             * For AVM / PVM network, module.getBalances()
+             * only returns the first address.
+             * → We must loop each address and run getBalances in parallel.
+             */
+            if (isXPNetwork(network)) {
+              const perAddressPromises = addresses.map(address =>
+                module
+                  .getBalances({
+                    customTokens: customTokensForNetwork,
+                    addresses: [address],
+                    currency,
+                    network: mapToVmNetwork(network),
+                    storage,
+                    tokenTypes: [TokenType.NATIVE]
+                  })
+                  .then(res => ({ address, res }))
+                  .catch(err => ({
+                    address,
+                    res: { [address]: { error: err as Error } }
+                  }))
+              )
+
+              const settled = await Promise.allSettled(perAddressPromises)
+
+              balancesResponse = settled.reduce((acc, r) => {
+                if (r.status === 'fulfilled') {
+                  const { address, res } = r.value
+                  acc[address] = Object.assign({}, res[address])
+                }
+                return acc
+              }, {} as GetBalancesResponse)
+
+              /**
+               * NORMAL CASE :
+               * For other networks, module.getBalances() handles batching correctly
+               * For AVM / PVM network, module.getBalances()
+               */
+            } else {
+              const tokenTypes =
+                network.vmName === NetworkVMType.SVM
+                  ? [TokenType.NATIVE, TokenType.SPL]
+                  : [TokenType.NATIVE, TokenType.ERC20]
+
+              balancesResponse = await module.getBalances({
+                customTokens: customTokensForNetwork,
+                addresses,
+                currency,
+                network: mapToVmNetwork(network),
+                storage,
+                tokenTypes
+              })
+            }
 
             // Process accounts
             for (const address of addresses) {

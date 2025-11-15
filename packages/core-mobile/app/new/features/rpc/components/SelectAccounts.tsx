@@ -5,7 +5,6 @@ import {
   alpha,
   GroupList,
   Icons,
-  Pressable,
   Separator,
   Text,
   Toggle,
@@ -118,25 +117,14 @@ const Account = ({
   const {
     theme: { colors }
   } = useTheme()
-  const {
-    balance: accountBalance,
-    isBalanceLoaded,
-    isFetchingBalance,
-    fetchBalance
-  } = useBalanceForAccount(account.id)
+  const { balance: accountBalance, isLoadingBalance } = useBalanceForAccount(
+    account.id
+  )
   const { formatCurrency } = useFormatCurrency()
 
   const renderBalance = useCallback(() => {
-    if (isFetchingBalance) {
+    if (isLoadingBalance) {
       return <ActivityIndicator style={{ marginRight: 14 }} size="small" />
-    }
-
-    if (!isBalanceLoaded) {
-      return (
-        <Pressable onPress={fetchBalance} style={{ marginRight: 14 }}>
-          <Icons.Custom.BalanceRefresh color={colors.$textPrimary} />
-        </Pressable>
-      )
     }
 
     return (
@@ -152,14 +140,7 @@ const Account = ({
         {formatCurrency({ amount: accountBalance })}
       </Text>
     )
-  }, [
-    isFetchingBalance,
-    isBalanceLoaded,
-    accountBalance,
-    formatCurrency,
-    fetchBalance,
-    colors.$textPrimary
-  ])
+  }, [isLoadingBalance, accountBalance, formatCurrency])
 
   return (
     <>

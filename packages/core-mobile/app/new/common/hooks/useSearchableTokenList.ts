@@ -87,9 +87,7 @@ export function useSearchableTokenList({
     activeAccount,
     chainId
   )
-  const { refetch, isRefetching } = useAccountBalances(activeAccount, {
-    enabled: false
-  })
+  const { refetch, isRefetching } = useAccountBalances(activeAccount)
 
   // 1. merge tokens with balance with the remaining
   // zero balance tokens from avalanche and ethereum networks

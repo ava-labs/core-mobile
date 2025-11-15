@@ -6,7 +6,7 @@ import { useAccountBalances } from './useAccountBalances'
  * Returns whether all balances for the given account are accurate (no errors).
  */
 export function useIsAccountBalanceAccurate(account?: Account): boolean {
-  const { data } = useAccountBalances(account, { enabled: false })
+  const { data } = useAccountBalances(account)
 
   return useMemo(() => {
     if (!account || data.length === 0) return false

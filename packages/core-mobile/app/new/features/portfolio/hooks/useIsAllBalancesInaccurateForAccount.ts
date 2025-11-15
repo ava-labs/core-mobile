@@ -9,7 +9,7 @@ import { Account } from 'store/account/types'
 export function useIsAllBalancesInaccurateForAccount(
   account?: Account
 ): boolean {
-  const { data } = useAccountBalances(account, { enabled: false })
+  const { data } = useAccountBalances(account)
 
   return useMemo(() => {
     if (!account || data.length === 0) return false

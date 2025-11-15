@@ -11,7 +11,7 @@ export function useTokensWithBalanceByNetworkForAccount(
   account?: Account,
   chainId?: number
 ): LocalTokenWithBalance[] {
-  const { data } = useAccountBalances(account, { enabled: false })
+  const { data } = useAccountBalances(account)
 
   return useMemo(() => {
     if (!account || !chainId) return []

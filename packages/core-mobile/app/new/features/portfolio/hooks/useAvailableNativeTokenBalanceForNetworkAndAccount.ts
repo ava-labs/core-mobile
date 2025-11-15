@@ -18,7 +18,7 @@ export function useAvailableNativeTokenBalanceForNetworkAndAccount(
   account?: Account,
   chainId?: number
 ): bigint {
-  const { data } = useAccountBalances(account, { enabled: false })
+  const { data } = useAccountBalances(account)
 
   return useMemo(() => {
     if (!account || !chainId) return 0n

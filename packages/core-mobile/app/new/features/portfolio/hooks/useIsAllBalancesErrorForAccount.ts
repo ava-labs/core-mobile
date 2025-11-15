@@ -7,7 +7,7 @@ import { Account } from 'store/account/types'
  * ended with an error.
  */
 export function useIsAllBalancesErrorForAccount(account?: Account): boolean {
-  const { data } = useAccountBalances(account, { enabled: false })
+  const { data } = useAccountBalances(account)
 
   return useMemo(() => {
     if (!account || data.length === 0) return false

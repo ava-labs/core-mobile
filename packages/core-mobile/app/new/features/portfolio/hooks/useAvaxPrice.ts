@@ -12,7 +12,7 @@ import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
  */
 export function useAvaxPrice(): number {
   const activeAccount = useSelector(selectActiveAccount)
-  const { data } = useAccountBalances(activeAccount, { enabled: false })
+  const { data } = useAccountBalances(activeAccount)
 
   return useMemo(() => {
     for (const balance of data) {

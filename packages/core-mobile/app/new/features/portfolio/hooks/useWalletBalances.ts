@@ -16,12 +16,7 @@ export const balanceKey = (wallet: Wallet | undefined) =>
 /**
  * Stale time in milliseconds
  */
-const staleTime = 20_000
-
-/**
- * Refetch interval in milliseconds
- */
-const refetchInterval = 30_000
+const staleTime = 30_000
 
 type AccountId = string
 
@@ -29,14 +24,13 @@ type AccountId = string
  * Fetches balances for all accounts within a wallet across all enabled networks (C-Chain, X-Chain, P-Chain, other EVMs, BTC, SOL, etc.)
  *
  * 🔁 Runs one query for all enabled networks via React Query.
- *
- * ⚙️ Supports lazy fetching:
- *   - Pass `{ enabled: false }` to defer fetching until `refetch()` is called.
  */
 export function useWalletBalances(
-  wallet?: Wallet,
-  options?: { enabled?: boolean }
-): QueryObserverResult<Record<AccountId, NormalizedBalancesForAccount>, Error> {
+  wallet?: Wallet
+): QueryObserverResult<
+  Record<AccountId, NormalizedBalancesForAccount[]>,
+  Error
+> {
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const currency = useSelector(selectSelectedCurrency)
   const customTokens = useSelector(selectAllCustomTokens)
@@ -47,13 +41,12 @@ export function useWalletBalances(
   const isNotReady =
     !wallet || accounts.length === 0 || enabledNetworks.length === 0
 
-  const enabled = isNotReady ? false : options?.enabled ?? true
+  const enabled = !isNotReady
 
   return useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: balanceKey(wallet),
     enabled,
-    refetchInterval,
     staleTime,
     queryFn: async () => {
       if (isNotReady) return {}

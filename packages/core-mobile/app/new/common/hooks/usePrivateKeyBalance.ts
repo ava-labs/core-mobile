@@ -21,7 +21,6 @@ export const usePrivateKeyBalance = (
 
   const account = tempAccountDetails ?? undefined
   const { isLoading, isFetching, refetch } = useAccountBalances(account, {
-    enabled: true,
     refetchInterval: 60000 // 1 minute
   })
   const currentTempAccountBalance = useBalanceTotalInCurrencyForAccount(account)

@@ -18,7 +18,8 @@ const staleTime = 20_000
 /**
  * Refetch interval in milliseconds
  */
-const refetchInterval = 5_000
+// TODO: adjust to 5 seconds after integrating with the new backend balance service
+const refetchInterval = 10_000
 
 export const balanceKey = (account: Account | undefined) =>
   [ReactQueryKeys.ACCOUNT_BALANCE, account?.id] as const
@@ -27,14 +28,10 @@ export const balanceKey = (account: Account | undefined) =>
  * Fetches balances for the specified account across all enabled networks (C-Chain, X-Chain, P-Chain, other EVMs, BTC, SOL, etc.)
  *
  * 🔁 Runs one query for all enabled networks via React Query.
- *
- * ⚙️ Supports lazy fetching:
- *   - Pass `{ enabled: false }` to defer fetching until `refetch()` is called.
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity
 export function useAccountBalances(
   account?: Account,
-  options?: { enabled?: boolean; refetchInterval?: number }
+  options?: { refetchInterval?: number }
 ): {
   data: NormalizedBalancesForAccount[]
   isLoading: boolean
@@ -50,7 +47,7 @@ export function useAccountBalances(
 
   const isNotReady = !account || enabledNetworks.length === 0
 
-  const enabled = isNotReady ? false : options?.enabled ?? true
+  const enabled = !isNotReady
 
   const {
     data,

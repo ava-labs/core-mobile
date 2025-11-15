@@ -22,7 +22,7 @@ export function useTokensWithBalanceForAccount(
 ): LocalTokenWithBalance[] {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const networks = useSelector(selectEnabledNetworksMap)
-  const { data } = useAccountBalances(account, { enabled: false })
+  const { data } = useAccountBalances(account)
 
   return useMemo(() => {
     if (!account) return []
