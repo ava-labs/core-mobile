@@ -28,6 +28,7 @@ export default function AccountSettingsLayout(): JSX.Element {
       <Stack.Screen name="importWallet" />
       <Stack.Screen name="importPrivateKey" />
       <Stack.Screen name="importSeedWallet" />
+      <Stack.Screen name="ledger" />
       <Stack.Screen name="verifyPin" />
       <Stack.Screen name="viewPrivateKey" />
       <Stack.Screen name="verifyPinForPrivateKey" />
