@@ -50,6 +50,8 @@ interface TextInputProps extends _TextInputProps {
   suffixFontSizeMultiplier?: number
   /** Whether the input is valid */
   valid?: boolean
+  /** Whether the input is disabled */
+  disabled?: boolean
 }
 
 export const AutoSizeTextInput = forwardRef<
@@ -76,6 +78,7 @@ export const AutoSizeTextInput = forwardRef<
       onChangeText,
       editable = true,
       valid = true,
+      disabled = false,
       ...props
     },
     ref
