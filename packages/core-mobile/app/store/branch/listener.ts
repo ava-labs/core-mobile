@@ -4,6 +4,7 @@ import { selectDistinctID } from 'store/posthog'
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import Branch, { BranchEvent } from 'react-native-branch'
 import Logger from 'utils/Logger'
+import { Platform } from 'react-native'
 
 export const addBranchListeners = (startListening: AppStartListening): void => {
   const branchIdentifyUser = async (
@@ -35,12 +36,21 @@ export const addBranchListeners = (startListening: AppStartListening): void => {
     }
 
     const event = new BranchEvent('app_opened', [branchUniversalObject], params)
+
     event
       .logEvent()
       .then(() => {
+        console.log(
+          '------branch custom event [app_opened] logged successfully',
+          Platform.OS
+        )
         Logger.info('branch custom event [app_opened] logged successfully')
       })
       .catch(error => {
+        console.log(
+          '------branch custom event [app_opened] logging failed',
+          error
+        )
         Logger.error('branch custom event [app_opened] logging failed', error)
       })
   }
