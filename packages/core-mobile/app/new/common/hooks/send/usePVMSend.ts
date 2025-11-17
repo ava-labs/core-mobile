@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
 import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
-import { GAS_LIMIT_FOR_X_CHAIN } from 'consts/fees'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
@@ -161,16 +160,18 @@ const usePVMSend: SendAdapterPVM = ({
     handleError
   ])
 
-  // TODO: use correct max amount for P-chain
+  // P-Chain uses dynamic fees
+  // We can simulate a transaction to get the exact fee necessary
+  // But we get the fee amount as an error string and we have to extract it and then subtract it from balance
+  // Conservative solution: estimate as 1% of balance
   const getMaxAmount = useCallback(async () => {
     if (!selectedToken || !isTokenWithBalancePVM(selectedToken)) {
       return
     }
 
-    const fee = maxFee ? BigInt(GAS_LIMIT_FOR_X_CHAIN) * maxFee : 0n
-
     const balance = selectedToken.available ?? 0n
-    const maxAmountValue = balance - fee
+    const estimatedFeePercent = balance / 100n
+    const maxAmountValue = balance - estimatedFeePercent
     const maxAmount = maxAmountValue > 0n ? maxAmountValue : 0n
 
     return new TokenUnit(
@@ -178,7 +179,7 @@ const usePVMSend: SendAdapterPVM = ({
       selectedToken.decimals,
       selectedToken.symbol
     )
-  }, [maxFee, selectedToken])
+  }, [selectedToken])
 
   useEffect(() => {
     if (canValidate) {
