@@ -246,7 +246,7 @@ export const SendTokenUnitInputWidget = forwardRef<
               marginTop: 16,
               alignItems: 'center'
             }}>
-            <Icons.Action.Info color={colors.$textDanger} />
+            <Icons.Alert.ErrorOutline color={colors.$textDanger} />
             <Text
               sx={{
                 flexShrink: 1,
