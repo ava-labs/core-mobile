@@ -50,6 +50,7 @@ class MainApplication : Application(), ReactApplication {
 
         increaseWindowCursorSize()
 
+        RNBranchModule.enableLogging();
         RNBranchModule.getAutoInstance(this);
         
         // Manually set user agent to our format. This helps avoid getting identified as a bot and rate limited by cloudflare
