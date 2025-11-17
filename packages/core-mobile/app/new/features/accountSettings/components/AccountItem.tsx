@@ -5,7 +5,6 @@ import {
   AnimatedBalance,
   AnimatedPressable,
   Icons,
-  Pressable,
   Text,
   useTheme,
   usePreventParentPress,
@@ -14,7 +13,7 @@ import {
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { getItemEnteringAnimation } from 'common/utils/animations'
-import { useBalanceForAccount } from 'features/portfolio/hooks/useBalanceForAccount'
+import { useBalanceInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
 import React, { memo, useCallback, useMemo } from 'react'
 import { TouchableOpacity } from 'react-native'
 import Animated, { LinearTransition } from 'react-native-reanimated'
@@ -37,14 +36,9 @@ export const AccountItem = memo(
     onSelectAccount: (account: Account) => void
     gotoAccountDetails: (accountId: string) => void
     testID?: string
-    // eslint-disable-next-line sonarjs/cognitive-complexity
   }): React.JSX.Element => {
-    const {
-      balance: accountBalance,
-      fetchBalance,
-      isFetchingBalance,
-      isBalanceLoaded
-    } = useBalanceForAccount(account.id)
+    const { balance: accountBalance, isLoadingBalance } =
+      useBalanceInCurrencyForAccount(account.id)
     const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
     const {
       theme: { colors, isDark }
@@ -61,10 +55,6 @@ export const AccountItem = memo(
     const handleAccountDetails = createChildPressHandler(() =>
       gotoAccountDetails(account.id)
     )
-
-    const handleFetchBalance = createChildPressHandler(() => {
-      fetchBalance()
-    })
 
     const balance = useMemo(() => {
       // CP-10570: Balances should never show $0.00
@@ -104,7 +94,7 @@ export const AccountItem = memo(
     }, [accountNameColor])
 
     const renderBalance = useCallback(() => {
-      if (isFetchingBalance) {
+      if (isLoadingBalance) {
         return (
           <ActivityIndicator
             style={{
@@ -116,20 +106,6 @@ export const AccountItem = memo(
         )
       }
 
-      if (!isBalanceLoaded) {
-        return (
-          <View
-            sx={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginLeft: -4
-            }}>
-            <Pressable onPress={handleFetchBalance}>
-              <Icons.Custom.BalanceRefresh color={colors.$textPrimary} />
-            </Pressable>
-          </View>
-        )
-      }
       return (
         <AnimatedBalance
           variant="heading6"
@@ -140,14 +116,11 @@ export const AccountItem = memo(
         />
       )
     }, [
-      isFetchingBalance,
-      isBalanceLoaded,
+      isLoadingBalance,
       balance,
       isPrivacyModeEnabled,
       renderMaskView,
-      accountNameColor,
-      handleFetchBalance,
-      colors.$textPrimary
+      accountNameColor
     ])
 
     return (

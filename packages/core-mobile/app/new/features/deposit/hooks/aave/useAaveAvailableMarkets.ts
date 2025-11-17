@@ -9,6 +9,7 @@ import { readContract } from 'viem/actions'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
+import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
 import { findMatchingTokenWithBalance } from 'features/deposit/utils/findMatchingTokenWithBalance'
 import { type DefiMarket, MarketNames } from '../../types'
 import { gqlQuery } from '../../utils/gqlQuery'
@@ -32,7 +33,6 @@ import { getUniqueMarketId } from '../../utils/getUniqueMarketId'
 import { isMeritSupplyKey } from '../../utils/isMeritSupplyKey'
 import { bigIntToBig } from '../../utils/bigInt'
 import { useCChainClient } from '../useCChainClient'
-import { useCChainTokensWithBalance } from '../useCChainTokensWithBalance'
 import { useGetCChainToken } from '../useGetCChainToken'
 import { useMeritAprs } from './useMeritAprs'
 
@@ -54,7 +54,10 @@ export const useAaveAvailableMarkets = (): {
   const addressEVM = activeAccount?.addressC
   const { data: meritAprs, isPending: isPendingMeritAprs } = useMeritAprs()
   const getCChainToken = useGetCChainToken()
-  const { tokens } = useCChainTokensWithBalance()
+  const tokens = useTokensWithBalanceByNetworkForAccount(
+    activeAccount,
+    cChainNetwork?.chainId
+  )
 
   const {
     data: enrichedMarkets,
