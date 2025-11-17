@@ -23,7 +23,9 @@ export const usePrivateKeyBalance = (
   const { isLoading, isFetching, refetch } = useAccountBalances(account, {
     refetchInterval: 60000 // 1 minute
   })
-  const currentTempAccountBalance = useBalanceTotalInCurrencyForAccount(account)
+  const currentTempAccountBalance = useBalanceTotalInCurrencyForAccount({
+    account
+  })
   const isOurBalanceDataLoadedInStore = useIsBalanceLoadedForAccount(account)
 
   useEffect(() => {

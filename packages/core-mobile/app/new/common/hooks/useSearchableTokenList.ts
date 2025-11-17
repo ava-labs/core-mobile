@@ -83,10 +83,10 @@ export function useSearchableTokenList({
   const activeAccount = useSelector(selectActiveAccount)
   const isLoadingBalances = useIsLoadingBalancesForAccount(activeAccount)
   const enabledChainIds = useSelector(selectEnabledChainIds)
-  const tokensWithBalance = useTokensWithBalanceForAccount(
-    activeAccount,
+  const tokensWithBalance = useTokensWithBalanceForAccount({
+    account: activeAccount,
     chainId
-  )
+  })
   const { refetch, isRefetching } = useAccountBalances(activeAccount)
 
   // 1. merge tokens with balance with the remaining

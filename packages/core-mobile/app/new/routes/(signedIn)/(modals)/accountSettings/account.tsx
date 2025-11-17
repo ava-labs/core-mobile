@@ -29,7 +29,9 @@ const AccountScreen = (): JSX.Element => {
   const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
   const isBalanceLoading = useIsLoadingBalancesForAccount(account)
   const isRefetchingBalance = useIsRefetchingBalancesForAccount(account)
-  const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount(account)
+  const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
+    account
+  })
   const isLoading = isBalanceLoading || isRefetchingBalance
   const balanceAccurate = useIsAccountBalanceAccurate(account)
   const selectedCurrency = useSelector(selectSelectedCurrency)

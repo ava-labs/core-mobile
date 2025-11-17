@@ -15,17 +15,28 @@ import { balanceKey, useAccountBalances } from './useAccountBalances'
  * - If `chainId` is provided → returns tokens for that network only.
  * - If no `chainId` is provided → returns tokens across all enabled networks
  *   (filtered by developer mode to include only testnet/mainnet as appropriate).
+ *
+ * Notes: when source data is provided, it will be used instead of data from useAccountBalances
  */
-export function useTokensWithBalanceForAccount(
-  account?: Account,
+export function useTokensWithBalanceForAccount({
+  account,
+  chainId,
+  sourceData
+}: {
+  account?: Account
   chainId?: number
-): LocalTokenWithBalance[] {
+  sourceData?: NormalizedBalancesForAccount[]
+}): LocalTokenWithBalance[] {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const networks = useSelector(selectEnabledNetworksMap)
-  const { data } = useAccountBalances(account)
+  const { data: fetchedData } = useAccountBalances(
+    sourceData ? undefined : account
+  )
+
+  const data = sourceData ?? fetchedData
 
   return useMemo(() => {
-    if (!account) return []
+    if (!account || !data) return []
 
     const balancesForAccount = data.filter(
       balance => balance.accountId === account.id

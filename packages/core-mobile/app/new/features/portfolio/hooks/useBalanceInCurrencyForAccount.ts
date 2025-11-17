@@ -1,9 +1,9 @@
 import { useSelector } from 'react-redux'
 import { selectAccountById, selectActiveAccount } from 'store/account'
 import { selectActiveWallet } from 'store/wallet/slice'
-import { useBalanceTotalInCurrencyForAccountFromSource } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccountFromSource'
 import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
 import { useWalletBalances } from './useWalletBalances'
+import { useBalanceTotalInCurrencyForAccount } from './useBalanceTotalInCurrencyForAccount'
 
 /**
  * Returns the total balance and loading state for a given account.
@@ -32,7 +32,7 @@ export const useBalanceInCurrencyForAccount = (
 
   const { data: walletBalances } = useWalletBalances(activeWallet)
 
-  const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccountFromSource({
+  const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
     account,
     sourceData: isActiveAccount ? accountBalance : walletBalances?.[accountId]
   })
