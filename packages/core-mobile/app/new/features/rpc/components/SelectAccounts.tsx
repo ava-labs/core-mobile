@@ -13,7 +13,7 @@ import {
 } from '@avalabs/k2-alpine'
 import type { Account, AccountCollection } from 'store/account/types'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
-import { useBalanceForAccount } from 'features/portfolio/hooks/useBalanceForAccount'
+import { useBalanceInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 
 type Props = {
@@ -117,9 +117,8 @@ const Account = ({
   const {
     theme: { colors }
   } = useTheme()
-  const { balance: accountBalance, isLoadingBalance } = useBalanceForAccount(
-    account.id
-  )
+  const { balance: accountBalance, isLoadingBalance } =
+    useBalanceInCurrencyForAccount(account.id)
   const { formatCurrency } = useFormatCurrency()
 
   const renderBalance = useCallback(() => {

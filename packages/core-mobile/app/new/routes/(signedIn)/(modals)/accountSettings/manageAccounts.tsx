@@ -22,7 +22,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { WalletDisplayData } from 'common/types'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
-import { useBalanceForAccount } from 'features/portfolio/hooks/useBalanceForAccount'
+import { useBalanceInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
@@ -445,7 +445,7 @@ const AccountBalance = ({
     theme: { colors }
   } = useTheme()
   const { balance: accountBalance, isLoadingBalance } =
-    useBalanceForAccount(accountId)
+    useBalanceInCurrencyForAccount(accountId)
   const { formatCurrency } = useFormatCurrency()
 
   const balance = useMemo(() => {

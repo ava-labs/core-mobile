@@ -13,7 +13,7 @@ import {
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { getItemEnteringAnimation } from 'common/utils/animations'
-import { useBalanceForAccount } from 'features/portfolio/hooks/useBalanceForAccount'
+import { useBalanceInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
 import React, { memo, useCallback, useMemo } from 'react'
 import { TouchableOpacity } from 'react-native'
 import Animated, { LinearTransition } from 'react-native-reanimated'
@@ -37,9 +37,8 @@ export const AccountItem = memo(
     gotoAccountDetails: (accountId: string) => void
     testID?: string
   }): React.JSX.Element => {
-    const { balance: accountBalance, isLoadingBalance } = useBalanceForAccount(
-      account.id
-    )
+    const { balance: accountBalance, isLoadingBalance } =
+      useBalanceInCurrencyForAccount(account.id)
     const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
     const {
       theme: { colors, isDark }

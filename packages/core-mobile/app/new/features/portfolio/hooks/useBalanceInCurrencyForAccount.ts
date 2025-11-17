@@ -5,7 +5,16 @@ import { useBalanceTotalInCurrencyForAccountFromSource } from 'features/portfoli
 import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
 import { useWalletBalances } from './useWalletBalances'
 
-export const useBalanceForAccount = (
+/**
+ * Returns the total balance and loading state for a given account.
+ *
+ * Behavior:
+ * - For the active account, this hook uses data from `useAccountBalances`,
+ *   which fetches balance updates more frequently.
+ * - For non-active accounts, it falls back to data from `useWalletBalances`,
+ *   which loads once on mount and reuses cached wallet-level data.
+ */
+export const useBalanceInCurrencyForAccount = (
   accountId: string
 ): {
   isLoadingBalance: boolean
