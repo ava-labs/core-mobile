@@ -14,8 +14,10 @@ import { HandleNotificationCallback } from 'contexts/DeeplinkContext/types'
 import { fromUnixTime, isPast } from 'date-fns'
 import { Linking, Platform } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { EVENT_TO_CH_ID } from 'services/fcm/FCMService'
 import {
   ChannelId,
+  DEFAULT_ANDROID_CHANNEL,
   NewsChannelId,
   notificationChannels
 } from 'services/notifications/channels'
@@ -303,6 +305,15 @@ class NotificationsService {
     return messaging()
       .getInitialNotification()
       .then(notification => {
+        // if the notification has a url, we need to capture the analytics for the push notification pressed
+        if (notification && notification.data?.url) {
+          AnalyticsService.capture('PushNotificationPressed', {
+            channelId:
+              EVENT_TO_CH_ID[notification.data.event as string] ??
+              DEFAULT_ANDROID_CHANNEL,
+            deeplinkUrl: notification.data?.url as string
+          })
+        }
         callback(notification?.data)
       })
   }
