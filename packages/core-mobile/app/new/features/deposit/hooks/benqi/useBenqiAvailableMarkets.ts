@@ -19,9 +19,9 @@ import { getBenqiUnderlyingTotalSupply } from 'features/deposit//utils/getBenqiU
 import { getUniqueMarketId } from 'features/deposit/utils/getUniqueMarketId'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { findMatchingTokenWithBalance } from 'features/deposit/utils/findMatchingTokenWithBalance'
+import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
 import { useCChainClient } from '../useCChainClient'
 import { useGetCChainToken } from '../useGetCChainToken'
-import { useCChainTokensWithBalance } from '../useCChainTokensWithBalance'
 
 export const useBenqiAvailableMarkets = (): {
   data: DefiMarket[] | undefined
@@ -39,7 +39,10 @@ export const useBenqiAvailableMarkets = (): {
   const cChainClient = useCChainClient()
   const activeAccount = useSelector(selectActiveAccount)
   const addressEVM = activeAccount?.addressC
-  const { tokens } = useCChainTokensWithBalance()
+  const tokens = useTokensWithBalanceByNetworkForAccount(
+    activeAccount,
+    cChainNetwork?.chainId
+  )
   const getCChainToken = useGetCChainToken()
 
   const {
