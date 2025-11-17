@@ -197,6 +197,8 @@
     "react-native-localize": "3.2.1",
     "react-native-mmkv": "3.2.0",
     "react-native-modal-datetime-picker": "18.0.0",
+    "react-native-nitro-avalabs-crypto": "workspace:*",
+    "react-native-nitro-modules": "^0.30.2",
     "react-native-os": "1.2.6",
     "react-native-pager-view": "6.7.1",
     "react-native-passkey": "3.1.0",
@@ -302,7 +304,7 @@
     "babel-loader": "9.2.1",
     "babel-plugin-inline-dotenv": "1.7.0",
     "babel-plugin-module-resolver": "5.0.2",
-    "babel-plugin-react-compiler": "19.1.0-rc.3",
+    "babel-plugin-react-compiler": "latest",
     "babel-plugin-react-require": "4.0.3",
     "detox": "20.41.1",
     "eslint": "8.50.0",
@@ -367,7 +369,9 @@
       "@wdio/cli>tsx>esbuild": true,
       "appium": true,
       "appium-xcuitest-driver>appium-ios-remotexpc>appium-ios-tuntap": false,
-      "appium>@appium/support>sharp": true
+      "appium>@appium/support>sharp": true,
+      "react-native-nitro-modules": true,
+      "react-native-nitro-avalabs-crypto>react-native-nitro-modules": true
     }
   },
   "react-native": {

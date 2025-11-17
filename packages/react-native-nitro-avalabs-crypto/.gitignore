@@ -81,3 +81,6 @@ lib/
 .eslintcache
 .cache
 *.tsbuildinfo
+
+# Nitro Modules
+nitrogen/
