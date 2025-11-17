@@ -12,11 +12,12 @@ import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { usePrevious } from 'common/hooks/usePrevious'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useDepositSelectedMarket, useDepositSelectedToken } from '../store'
-import { useDepositContext } from '../context/DepositContext'
 
 export const SelectAmountScreen = (): JSX.Element => {
-  const { amount, setAmount, network, resetAmount } = useDepositContext()
+  const cchainNetwork = useCChainNetwork()
+  const [amount, setAmount] = useState<TokenUnit>()
   const [isSubmitting] = useState(false)
   const [selectedToken] = useDepositSelectedToken()
   const prevSelectedToken = usePrevious(selectedToken)
@@ -25,21 +26,21 @@ export const SelectAmountScreen = (): JSX.Element => {
   const { getMarketTokenBySymbol } = useWatchlist()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const tokenBalance = useMemo(() => {
-    if (!selectedToken || !network) {
+    if (!selectedToken || !cchainNetwork) {
       return undefined
     }
 
     const decimals =
       'decimals' in selectedToken
         ? selectedToken.decimals
-        : network.networkToken.decimals
+        : cchainNetwork.networkToken.decimals
 
     return new TokenUnit(
       selectedToken.balance ?? 0n,
       decimals,
       selectedToken.symbol
     )
-  }, [network, selectedToken])
+  }, [cchainNetwork, selectedToken])
 
   const formatInCurrency = useCallback(
     (amt: TokenUnit, symbol: string): string => {
@@ -90,10 +91,10 @@ export const SelectAmountScreen = (): JSX.Element => {
 
   useEffect(() => {
     if (prevSelectedToken !== selectedToken) {
-      resetAmount()
+      setAmount(undefined)
       tokenUnitInputWidgetRef.current?.setValue('')
     }
-  }, [prevSelectedToken, selectedToken, resetAmount])
+  }, [prevSelectedToken, selectedToken])
 
   return (
     <ScrollScreen

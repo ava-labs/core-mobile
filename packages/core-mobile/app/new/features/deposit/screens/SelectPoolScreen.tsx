@@ -16,8 +16,8 @@ import { Address } from 'viem'
 import errorIcon from '../../../assets/icons/melting_face.png'
 import { DefiMarket } from '../types'
 import { DefiMarketLogo } from '../components/DefiMarketLogo'
-import { useDepositContext } from '../context/DepositContext'
 import { useDepositSelectedMarket } from '../store'
+import { useAvailableMarkets } from '../hooks/useAvailableMarkets'
 
 export const SelectPoolScreen = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -28,7 +28,7 @@ export const SelectPoolScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { markets, isLoadingMarkets } = useDepositContext()
+  const { data: markets, isPending: isLoadingMarkets } = useAvailableMarkets({})
   const [, setSelectedMarket] = useDepositSelectedMarket()
   const filteredAvailableMarkets = useMemo(() => {
     return markets.filter(market => {

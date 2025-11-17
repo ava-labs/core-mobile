@@ -16,17 +16,30 @@ import { useRouter } from 'expo-router'
 import { useBuy } from 'features/meld/hooks/useBuy'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
+import { selectActiveAccount } from 'store/account'
+import { useSelector } from 'react-redux'
 import errorIcon from '../../../assets/icons/melting_face.png'
 import { DefiAssetDetails } from '../types'
 import { DefiAssetLogo } from '../components/DefiAssetLogo'
 import { findMatchingTokenWithBalance } from '../utils/findMatchingTokenWithBalance'
-import { useDepositContext } from '../context/DepositContext'
 import { useDepositSelectedToken } from '../store'
+import { useAvailableMarkets } from '../hooks/useAvailableMarkets'
+import { useDepositableTokens } from '../hooks/useDepositableTokens'
 
 export const SelectAssetScreen = (): JSX.Element => {
   const { navigate } = useRouter()
-  const { depositableTokens, isLoadingMarkets, network, tokensWithBalance } =
-    useDepositContext()
+  const activeAccount = useSelector(selectActiveAccount)
+  const cChainNetwork = useCChainNetwork()
+  const tokensWithBalance = useTokensWithBalanceForAccount({
+    account: activeAccount,
+    chainId: cChainNetwork?.chainId
+  })
+  const { data: markets, isPending: isLoadingMarkets } = useAvailableMarkets({
+    tokensWithBalance
+  })
+  const depositableTokens = useDepositableTokens(markets)
   const {
     theme: { colors }
   } = useTheme()
@@ -87,7 +100,7 @@ export const SelectAssetScreen = (): JSX.Element => {
             }}>
             <DefiAssetLogo
               asset={item}
-              network={item.contractAddress ? network : undefined}
+              network={item.contractAddress ? cChainNetwork : undefined}
             />
             <View sx={{ flex: 1 }}>
               <Text
@@ -117,7 +130,7 @@ export const SelectAssetScreen = (): JSX.Element => {
         </TouchableOpacity>
       )
     },
-    [colors, formatCurrency, handleSelectToken, network]
+    [colors, formatCurrency, handleSelectToken, cChainNetwork]
   )
 
   const renderEmpty = useCallback(() => {

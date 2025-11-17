@@ -1,19 +1,16 @@
 import { useMemo } from 'react'
-import { Network } from '@avalabs/core-chains-sdk'
-import { PublicClient } from 'viem'
+import { createPublicClient, http } from 'viem'
 import { LocalTokenWithBalance } from 'store/balance'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import { getViemChain } from 'utils/getViemChain/getViemChain'
 import { DefiMarket } from '../types'
 import { useAaveAvailableMarkets } from './aave/useAaveAvailableMarkets'
 import { useBenqiAvailableMarkets } from './benqi/useBenqiAvailableMarkets'
 
 export const useAvailableMarkets = ({
-  network,
-  networkClient,
-  tokensWithBalance
+  tokensWithBalance = []
 }: {
-  network: Network | undefined
-  networkClient: PublicClient | undefined
-  tokensWithBalance: LocalTokenWithBalance[]
+  tokensWithBalance?: LocalTokenWithBalance[]
 }): {
   data: DefiMarket[]
   error: Error | null
@@ -21,20 +18,39 @@ export const useAvailableMarkets = ({
   isPending: boolean
   isFetching: boolean
 } => {
+  const cChainNetwork = useCChainNetwork()
+  const networkClient = useMemo(() => {
+    if (!cChainNetwork) {
+      return undefined
+    }
+
+    const cChain = getViemChain(cChainNetwork)
+
+    return createPublicClient({ chain: cChain, transport: http() })
+  }, [cChainNetwork])
+
   const {
     data: aaveMarkets,
     isLoading: isLoadingAaveMarkets,
     error: errorAaveMarkets,
     isPending: isPendingAaveMarkets,
     isFetching: isFetchingAave
-  } = useAaveAvailableMarkets({ network, networkClient, tokensWithBalance })
+  } = useAaveAvailableMarkets({
+    network: cChainNetwork,
+    networkClient,
+    tokensWithBalance
+  })
   const {
     data: benqiMarkets,
     isLoading: isLoadingBenqiMarkets,
     error: errorBenqiMarkets,
     isPending: isPendingBenqiMarkets,
     isFetching: isFetchingBenqi
-  } = useBenqiAvailableMarkets({ network, networkClient, tokensWithBalance })
+  } = useBenqiAvailableMarkets({
+    network: cChainNetwork,
+    networkClient,
+    tokensWithBalance
+  })
 
   const safeMarkets = useMemo(() => {
     const safeAave = aaveMarkets ?? []

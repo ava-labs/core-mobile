@@ -4,7 +4,7 @@ import { GroupList, Icons, useTheme } from '@avalabs/k2-alpine'
 import { ViewOnceKey } from 'store/viewOnce'
 import { useRouter } from 'expo-router'
 import { LoadingState } from 'common/components/LoadingState'
-import { useDepositContext } from '../context/DepositContext'
+import { useAvailableMarkets } from '../hooks/useAvailableMarkets'
 
 export const DepositOnboardingScreen = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -15,7 +15,7 @@ export const DepositOnboardingScreen = (): JSX.Element => {
     navigate('/deposit/selectAsset')
   }, [navigate])
 
-  const { markets, isLoadingMarkets } = useDepositContext()
+  const { data: markets, isPending: isLoadingMarkets } = useAvailableMarkets({})
   const highestApyMarket = markets
     ?.sort((a, b) => b.supplyApyPercent - a.supplyApyPercent)[0]
     ?.supplyApyPercent?.toFixed(2)
