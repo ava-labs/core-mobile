@@ -15,23 +15,32 @@ import { balanceKey, useAccountBalances } from './useAccountBalances'
  * - If `chainId` is provided → returns tokens for that network only.
  * - If no `chainId` is provided → returns tokens across all enabled networks
  *   (filtered by developer mode to include only testnet/mainnet as appropriate).
+ *
+ * Notes: when source data is provided, it will be used instead of data from useAccountBalances
  */
-export function useTokensWithBalanceForAccount(
-  account?: Account,
+export function useTokensWithBalanceForAccount({
+  account,
+  chainId,
+  sourceData
+}: {
+  account?: Account
   chainId?: number
-): LocalTokenWithBalance[] {
+  sourceData?: NormalizedBalancesForAccount[]
+}): LocalTokenWithBalance[] {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const networks = useSelector(selectEnabledNetworksMap)
-  const { results } = useAccountBalances(account, { enabled: false })
+  const { data: fetchedData } = useAccountBalances(
+    sourceData ? undefined : account
+  )
+
+  const data = sourceData ?? fetchedData
 
   return useMemo(() => {
-    if (!account) return []
+    if (!account || !data) return []
 
-    // Each query result corresponds to one network’s balances
-    const balancesForAccount = results
-      .map(result => result.data)
-      .filter(isDefined)
-      .filter(balance => balance.accountId === account.id)
+    const balancesForAccount = data.filter(
+      balance => balance.accountId === account.id
+    )
 
     // If chainId provided → return that specific network’s tokens
     if (chainId) {
@@ -54,7 +63,7 @@ export function useTokensWithBalanceForAccount(
 
     // Flatten all tokens into one array
     return filteredBalances.flatMap(balance => balance.tokens)
-  }, [account, results, chainId, networks, isDeveloperMode])
+  }, [account, data, chainId, networks, isDeveloperMode])
 }
 
 /**
@@ -71,20 +80,13 @@ export function getTokensWithBalanceForAccountFromCache({
 }): LocalTokenWithBalance[] {
   if (!account) return []
 
-  const networkList = Object.values(networks)
+  const results = (
+    queryClient.getQueryData(balanceKey(account)) as
+      | NormalizedBalancesForAccount[]
+      | undefined
+  )?.filter(balance => balance.accountId === account.id)
 
-  // Skip XP networks (AVM/PVM)
-  // const nonXpNetworks = networkList.filter(n => !isXpNetwork(n))
-
-  const results = networkList
-    .map(
-      network =>
-        queryClient.getQueryData(balanceKey(account, network)) as
-          | NormalizedBalancesForAccount
-          | undefined
-    )
-    .filter(isDefined)
-    .filter(balance => balance.accountId === account.id)
+  if (!results) return []
 
   // Filter by developer mode (mainnet vs testnet)
   const filteredBalances = results.filter(balance => {

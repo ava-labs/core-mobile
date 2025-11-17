@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useEffect, useState } from 'react'
+import { useDispatch } from 'react-redux'
 import { ImportedAccount } from 'store/account/types'
-import { selectAccountById } from 'store/account'
 import { useIsBalanceLoadedForAccount } from 'features/portfolio/hooks/useIsBalanceLoadedForAccount'
 import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
 import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
@@ -12,7 +11,6 @@ export const usePrivateKeyBalance = (
 ): {
   totalBalanceDisplay: string | null
   isFetching: boolean
-  // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
   const [totalBalanceDisplay, setTotalBalanceDisplay] = useState<string | null>(
     null
@@ -21,21 +19,22 @@ export const usePrivateKeyBalance = (
   const dispatch = useDispatch()
   const { formatCurrency } = useFormatCurrency()
 
-  const accountIdForBalance = tempAccountDetails ? tempAccountDetails.id : ''
-  const account = useSelector(selectAccountById(accountIdForBalance))
-  const { results, refetch } = useAccountBalances(account, {
-    enabled: false
+  const account = tempAccountDetails ?? undefined
+  const { isLoading, isFetching, refetch } = useAccountBalances(account, {
+    refetchInterval: 60000 // 1 minute
   })
-  const currentTempAccountBalance = useBalanceTotalInCurrencyForAccount(account)
+  const currentTempAccountBalance = useBalanceTotalInCurrencyForAccount({
+    account
+  })
   const isOurBalanceDataLoadedInStore = useIsBalanceLoadedForAccount(account)
 
-  const isFetching = useMemo(
-    () => results.some(r => r.isLoading || r.isFetching),
-    [results]
-  )
-
   useEffect(() => {
-    if (!tempAccountDetails || isFetching || isOurBalanceDataLoadedInStore) {
+    if (
+      !tempAccountDetails ||
+      isLoading ||
+      isFetching ||
+      isOurBalanceDataLoadedInStore
+    ) {
       return
     }
     refetch()
@@ -43,6 +42,7 @@ export const usePrivateKeyBalance = (
     tempAccountDetails,
     dispatch,
     refetch,
+    isLoading,
     isFetching,
     totalBalanceDisplay,
     isOurBalanceDataLoadedInStore,

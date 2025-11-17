@@ -7,8 +7,6 @@ import { addCustomNetwork, selectEnabledNetworks } from 'store/network/slice'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import NetworkService from 'services/network/NetworkService'
 import { selectActiveAccount } from 'store/account/slice'
-import { selectActiveWallet } from 'store/wallet/slice'
-import { useWalletXpBalances } from 'features/portfolio/hooks/useWalletXpBalances'
 import { addCustomToken } from 'store/customToken/slice'
 import { addListener, isAnyOf } from '@reduxjs/toolkit'
 
@@ -22,8 +20,7 @@ import { addListener, isAnyOf } from '@reduxjs/toolkit'
  *
  * 🔍 Responsibilities:
  * - Mounts:
- *    • `useAccountBalances(activeAccount)` → fetches balances for all enabled non-XP networks (EVM, BTC, SOL, etc.)
- *    • `useWalletXpBalances(activeWallet)` → fetches balances for all XP networks (X- and P-Chains)
+ *    • `useAccountBalances(activeAccount)` → fetches balances for the active account on all enabled networks
  *
  * - Ensures network data is preloaded (via `NetworkService.getNetworks`) when missing.
  *
@@ -33,10 +30,8 @@ import { addListener, isAnyOf } from '@reduxjs/toolkit'
 export const BalanceManager = (): null => {
   const dispatch = useDispatch()
   const activeAccount = useSelector(selectActiveAccount)
-  const activeWallet = useSelector(selectActiveWallet)
-  const { invalidate: invalidateAccountBalances } =
-    useAccountBalances(activeAccount)
-  useWalletXpBalances(activeWallet)
+
+  const { refetch: refetchAccountBalances } = useAccountBalances(activeAccount)
 
   const queryClient = useQueryClient()
   const enabledNetworks = useSelector(selectEnabledNetworks)
@@ -67,11 +62,11 @@ export const BalanceManager = (): null => {
         matcher: isAnyOf(addCustomToken, addCustomNetwork),
         effect: async () => {
           if (!activeAccount) return
-          await invalidateAccountBalances()
+          await refetchAccountBalances()
         }
       })
     )
-  }, [activeAccount, dispatch, invalidateAccountBalances])
+  }, [activeAccount, dispatch, refetchAccountBalances])
 
   return null
 }

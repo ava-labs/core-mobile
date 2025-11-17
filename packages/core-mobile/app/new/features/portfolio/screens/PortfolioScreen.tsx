@@ -110,8 +110,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const activeAccount = useFocusedSelector(selectActiveAccount)
   const isRefetchingBalance = useIsRefetchingBalancesForAccount(activeAccount)
   const isDeveloperMode = useFocusedSelector(selectIsDeveloperMode)
-  const balanceTotalInCurrency =
-    useBalanceTotalInCurrencyForAccount(activeAccount)
+  const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
+    account: activeAccount
+  })
   const totalPriceChange = useBalanceTotalPriceChangeForAccount(activeAccount)
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const isBalanceLoaded = useIsBalanceLoadedForAccount(activeAccount)

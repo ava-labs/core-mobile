@@ -17,12 +17,14 @@ import { useBuy } from 'features/meld/hooks/useBuy'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
+import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
 import { useDepositableTokens } from '../hooks/useDepositableTokens'
 import errorIcon from '../../../assets/icons/melting_face.png'
 import { DefiAssetDetails } from '../types'
 import { DefiAssetLogo } from '../components/DefiAssetLogo'
 import { findMatchingTokenWithBalance } from '../utils/findMatchingTokenWithBalance'
-import { useCChainTokensWithBalance } from '../hooks/useCChainTokensWithBalance'
 
 export const SelectAssetScreen = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -34,7 +36,11 @@ export const SelectAssetScreen = (): JSX.Element => {
   const { navigateToBuy, isBuyable } = useBuy()
   const { navigateToSwap } = useNavigateToSwap()
   const cChainNetwork = useCChainNetwork()
-  const { tokens: tokensWithBalance } = useCChainTokensWithBalance()
+  const activeAccount = useSelector(selectActiveAccount)
+  const tokensWithBalance = useTokensWithBalanceByNetworkForAccount(
+    activeAccount,
+    cChainNetwork?.chainId
+  )
 
   const handleSelectToken = useCallback(
     (marketAsset: DefiAssetDetails) => {

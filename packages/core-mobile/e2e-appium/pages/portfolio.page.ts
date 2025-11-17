@@ -3,6 +3,7 @@ import { actions } from '../helpers/actions'
 import { selectors } from '../helpers/selectors'
 import commonEls from '../locators/commonEls.loc'
 import portfolio from '../locators/portfolio.loc'
+import { Network } from '../helpers/networks'
 import bottomTabsPage from './bottomTabs.page'
 import commonElsPage from './commonEls.page'
 import txPage from './transactions.page'
@@ -102,34 +103,6 @@ class PortfolioPage {
 
   get noAssetsHeader() {
     return selectors.getByText(portfolio.noAssetsHeader)
-  }
-
-  get networksDropdownBTC() {
-    return selectors.getById(portfolio.networksDropdownBTC)
-  }
-
-  get networksDropdownBTCTestNet() {
-    return selectors.getById(portfolio.networksDropdownBTCTestNet)
-  }
-
-  get networksDropdownETH() {
-    return selectors.getById(portfolio.networksDropdownETH)
-  }
-
-  get networksDropdownAVAX() {
-    return selectors.getById(portfolio.networksDropdownAVAX)
-  }
-
-  get networksDropdownPChain() {
-    return selectors.getById(portfolio.networksDropdownPChain)
-  }
-
-  get networksDropdownXChain() {
-    return selectors.getById(portfolio.networksDropdownXChain)
-  }
-
-  get networksDropdownManage() {
-    return selectors.getById(portfolio.networksDropdownManage)
   }
 
   get networksDropdown() {
@@ -329,28 +302,7 @@ class PortfolioPage {
   }
 
   async tapNetworksDropdown() {
-    await actions.tap(this.networksDropdown)
-  }
-
-  async tapNetworksDropdownBTC() {
-    try {
-      await actions.tap(this.networksDropdownBTC)
-    } catch (error) {
-      console.log(error)
-      await actions.tap(this.manageNetworks)
-    }
-  }
-
-  async tapNetworksDropdownBTCTestNet() {
-    await actions.tap(this.networksDropdownBTCTestNet)
-  }
-
-  async tapNetworksDropdownETH() {
-    await actions.tap(this.networksDropdownETH)
-  }
-
-  async tapNetworksDropdownAVAX(network = this.networksDropdownAVAX) {
-    await actions.tap(network)
+    await actions.click(this.networksDropdown)
   }
 
   async tapManageNetworks() {
@@ -399,24 +351,49 @@ class PortfolioPage {
     }
   }
 
-  async verifyActiveNetwork(network: string) {
-    await actions.waitFor(
-      selectors.getById(portfolio.activeNetwork + network),
-      60000
-    )
+  async verifyNetworksRemoved(networks: Network[]) {
+    await bottomTabsPage.tapPortfolioTab()
+    await actions.click(commonElsPage.filterDropdown)
+    for (const { name, haveToggle } of networks) {
+      if (haveToggle) await actions.isNotVisible(selectors.getByText(name))
+    }
+    await this.dismissFilterDropdown()
+    await bottomTabsPage.tapActivityTab()
     await this.tapNetworksDropdown()
-    await actions.waitFor(
-      selectors.getById(portfolio.networkDropdownCheckMark + network)
-    )
-    await actions.tap(selectors.getByText(network))
+    for (const { name, haveToggle } of networks) {
+      if (haveToggle) await actions.isNotVisible(selectors.getByText(name))
+    }
+    await this.dismissNetworkDropdown()
   }
 
-  async verifyNetworkRemoved(network: string) {
+  async dismissNetworkDropdown(network = commonEls.cChain) {
+    if (driver.isAndroid) {
+      await actions.click(selectors.getBySomeText(network))
+    }
+  }
+
+  async dismissFilterDropdown() {
+    if (driver.isAndroid) {
+      await actions.click(selectors.getByText(commonEls.allNetworks))
+    } else {
+      await actions.tap(commonElsPage.accountOne)
+    }
+  }
+
+  async verifyNetworksAdded(networks: Network[]) {
+    await bottomTabsPage.tapPortfolioTab()
+    await actions.click(commonElsPage.filterDropdown)
+    for (const { name, haveToggle } of networks) {
+      if (haveToggle) await actions.isVisible(selectors.getByText(name))
+    }
+    await this.dismissFilterDropdown()
+    await bottomTabsPage.tapActivityTab()
     await this.tapNetworksDropdown()
-    await actions.isNotVisible(
-      selectors.getById(portfolio.networksDropdownItem + network)
-    )
-    await this.tapNetworksDropdownAVAX()
+    for (const { name, haveToggle } of networks) {
+      if (haveToggle) await actions.isVisible(selectors.getByText(name))
+    }
+    await this.dismissNetworkDropdown()
+    await bottomTabsPage.tapPortfolioTab()
   }
 
   async verifyAccountName(name: string) {
