@@ -340,10 +340,7 @@ export const useSelectAmount = ({
     }
 
     if (cryptoQuotesError?.statusCode) {
-      return (
-        cryptoQuotesError.message ??
-        'We are unable to fetch the quotes, please check your input. Adjust the country, currency, token, or amount and try again.'
-      )
+      return 'We are unable to fetch the quotes, please check your input. Adjust the country, currency, token, or amount and try again.'
     }
 
     return undefined

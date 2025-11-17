@@ -128,6 +128,7 @@ export const migrateRemainingActiveAccounts = async ({
       Logger.error(
         'Wallet is not active, skipping migrateRemainingActiveAccounts'
       )
+      dispatch(setIsMigratingActiveAccounts(false))
       global.toast?.hideAll()
       return
     }
@@ -165,7 +166,7 @@ export const migrateRemainingActiveAccounts = async ({
       error: 'Failed to add accounts'
     })
   } finally {
-    listenerApi.dispatch(setIsMigratingActiveAccounts(false))
+    dispatch(setIsMigratingActiveAccounts(false))
   }
 }
 
