@@ -17,19 +17,15 @@ import { getBenqiSupplyApyPercent } from 'features/deposit/utils/getBenqiLiveApy
 import { getBenqiUnderlyingTokenDetails } from 'features/deposit/utils/getBenqiUnderlyingTokenDetails'
 import { getBenqiUnderlyingTotalSupply } from 'features/deposit//utils/getBenqiUnderlyingTotalSupply'
 import { getUniqueMarketId } from 'features/deposit/utils/getUniqueMarketId'
-import { findMatchingTokenWithBalance } from 'features/deposit/utils/findMatchingTokenWithBalance'
 import { Network } from '@avalabs/core-chains-sdk'
-import { LocalTokenWithBalance } from 'store/balance'
 import { useGetCChainToken } from '../useGetCChainToken'
 
 export const useBenqiAvailableMarkets = ({
   network,
-  networkClient,
-  tokensWithBalance
+  networkClient
 }: {
   network: Network | undefined
   networkClient: PublicClient | undefined
-  tokensWithBalance: LocalTokenWithBalance[]
 }): {
   data: DefiMarket[] | undefined
   error: Error | null
@@ -54,12 +50,7 @@ export const useBenqiAvailableMarkets = ({
     error: errorEnrichedMarkets,
     refetch
   } = useQuery({
-    queryKey: [
-      'useBenqiAvailableMarkets',
-      networkClient,
-      network,
-      tokensWithBalance
-    ],
+    queryKey: ['useBenqiAvailableMarkets', networkClient, network],
     queryFn:
       networkClient && network
         ? async () => {
@@ -109,14 +100,6 @@ export const useBenqiAvailableMarkets = ({
                     cChainClient: networkClient
                   })
 
-                  const balance = findMatchingTokenWithBalance(
-                    {
-                      symbol: underlyingTokenSymbol,
-                      contractAddress: underlyingTokenAddress
-                    },
-                    tokensWithBalance
-                  )
-
                   const token = getCChainToken(
                     underlyingTokenSymbol,
                     underlyingTokenAddress
@@ -132,7 +115,6 @@ export const useBenqiAvailableMarkets = ({
                       iconUrl: token?.logoUri,
                       symbol: underlyingTokenSymbol,
                       contractAddress: underlyingTokenAddress,
-                      underlyingTokenBalance: balance,
                       mintTokenBalance: await getBenqiDepositedBalance({
                         cChainClient: networkClient,
                         underlyingTokenDecimals,

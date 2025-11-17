@@ -36,10 +36,8 @@ export const SelectAssetScreen = (): JSX.Element => {
     account: activeAccount,
     chainId: cChainNetwork?.chainId
   })
-  const { data: markets, isPending: isLoadingMarkets } = useAvailableMarkets({
-    tokensWithBalance
-  })
-  const depositableTokens = useDepositableTokens(markets)
+  const { data: markets, isPending: isLoadingMarkets } = useAvailableMarkets()
+  const depositableTokens = useDepositableTokens(markets, tokensWithBalance)
   const {
     theme: { colors }
   } = useTheme()
@@ -84,6 +82,11 @@ export const SelectAssetScreen = (): JSX.Element => {
 
   const renderItem = useCallback(
     ({ item }: { item: DefiAssetDetails }) => {
+      const tokenWithBalance = findMatchingTokenWithBalance(
+        item,
+        tokensWithBalance
+      )
+
       return (
         <TouchableOpacity onPress={() => handleSelectToken(item)}>
           <View
@@ -111,9 +114,9 @@ export const SelectAssetScreen = (): JSX.Element => {
               <Text
                 variant="subtitle2"
                 sx={{ color: colors.$textSecondary, fontWeight: 500 }}>
-                {item.underlyingTokenBalance?.balanceInCurrency
+                {tokenWithBalance?.balanceInCurrency
                   ? formatCurrency({
-                      amount: item.underlyingTokenBalance.balanceInCurrency
+                      amount: tokenWithBalance.balanceInCurrency
                     })
                   : UNKNOWN_AMOUNT}
               </Text>
@@ -122,15 +125,19 @@ export const SelectAssetScreen = (): JSX.Element => {
               type="secondary"
               size="small"
               onPress={() => handleSelectToken(item)}>
-              {item.underlyingTokenBalance?.balanceInCurrency
-                ? 'Deposit'
-                : 'Buy'}
+              {tokenWithBalance?.balanceInCurrency ? 'Deposit' : 'Buy'}
             </Button>
           </View>
         </TouchableOpacity>
       )
     },
-    [colors, formatCurrency, handleSelectToken, cChainNetwork]
+    [
+      colors,
+      formatCurrency,
+      handleSelectToken,
+      cChainNetwork,
+      tokensWithBalance
+    ]
   )
 
   const renderEmpty = useCallback(() => {

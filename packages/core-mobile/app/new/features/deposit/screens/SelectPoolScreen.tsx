@@ -28,7 +28,7 @@ export const SelectPoolScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { data: markets, isPending: isLoadingMarkets } = useAvailableMarkets({})
+  const { data: markets, isPending: isLoadingMarkets } = useAvailableMarkets()
   const [, setSelectedMarket] = useDepositSelectedMarket()
   const filteredAvailableMarkets = useMemo(() => {
     return markets.filter(market => {

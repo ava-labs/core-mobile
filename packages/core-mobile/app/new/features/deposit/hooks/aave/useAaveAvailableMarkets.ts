@@ -8,9 +8,7 @@ import { erc20Abi, Address, PublicClient } from 'viem'
 import { readContract } from 'viem/actions'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import { findMatchingTokenWithBalance } from 'features/deposit/utils/findMatchingTokenWithBalance'
 import { Network } from '@avalabs/core-chains-sdk'
-import { LocalTokenWithBalance } from 'store/balance'
 import { type DefiMarket, MarketNames } from '../../types'
 import { gqlQuery } from '../../utils/gqlQuery'
 import {
@@ -37,12 +35,10 @@ import { useMeritAprs } from './useMeritAprs'
 
 export const useAaveAvailableMarkets = ({
   network,
-  networkClient,
-  tokensWithBalance
+  networkClient
 }: {
   network: Network | undefined
   networkClient: PublicClient | undefined
-  tokensWithBalance: LocalTokenWithBalance[]
 }): {
   data: DefiMarket[] | undefined
   error: Error | null
@@ -68,12 +64,7 @@ export const useAaveAvailableMarkets = ({
     error: errorEnrichedMarkets,
     refetch
   } = useQuery({
-    queryKey: [
-      'useAaveAvailableMarkets',
-      networkClient,
-      network,
-      tokensWithBalance
-    ],
+    queryKey: ['useAaveAvailableMarkets', networkClient, network],
     queryFn:
       networkClient && network && !isPendingMeritAprs
         ? async () => {
@@ -165,15 +156,6 @@ export const useAaveAvailableMarkets = ({
                     return accumulator + formattedNumber
                   }, 0) / safeData.length
 
-                // Match with user's token balance
-                const balance = findMatchingTokenWithBalance(
-                  {
-                    symbol: market.symbol,
-                    contractAddress: market.underlyingAsset
-                  },
-                  tokensWithBalance
-                )
-
                 // Get token metadata (logo, etc.)
                 const token = getCChainToken(
                   market.symbol,
@@ -197,7 +179,6 @@ export const useAaveAvailableMarkets = ({
                     iconUrl: token?.logoUri,
                     symbol: market.symbol,
                     contractAddress: market.underlyingAsset,
-                    underlyingTokenBalance: balance,
                     mintTokenBalance: await getAaveDepositedBalance({
                       cChainClient: networkClient,
                       walletAddress: addressEVM as Address,
@@ -216,17 +197,7 @@ export const useAaveAvailableMarkets = ({
               })
             )
 
-            // Step 4: Add AVAX (native token) market data
-            // Aave uses WAVAX wrapper, so we need to manually insert AVAX with user's balance
-            const avaxBalance = findMatchingTokenWithBalance(
-              {
-                symbol: network.networkToken.symbol,
-                contractAddress: undefined
-              },
-              tokensWithBalance
-            )
-
-            return aaveInsertAvax(results, avaxBalance)
+            return aaveInsertAvax(results)
           }
         : skipToken
   })

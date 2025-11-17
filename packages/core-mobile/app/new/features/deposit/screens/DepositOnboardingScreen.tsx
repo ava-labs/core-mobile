@@ -15,7 +15,7 @@ export const DepositOnboardingScreen = (): JSX.Element => {
     navigate('/deposit/selectAsset')
   }, [navigate])
 
-  const { data: markets, isPending: isLoadingMarkets } = useAvailableMarkets({})
+  const { data: markets, isPending: isLoadingMarkets } = useAvailableMarkets()
   const highestApyMarket = markets
     ?.sort((a, b) => b.supplyApyPercent - a.supplyApyPercent)[0]
     ?.supplyApyPercent?.toFixed(2)

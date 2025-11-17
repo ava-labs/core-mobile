@@ -1,17 +1,12 @@
 import { useMemo } from 'react'
 import { createPublicClient, http } from 'viem'
-import { LocalTokenWithBalance } from 'store/balance'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { getViemChain } from 'utils/getViemChain/getViemChain'
 import { DefiMarket } from '../types'
 import { useAaveAvailableMarkets } from './aave/useAaveAvailableMarkets'
 import { useBenqiAvailableMarkets } from './benqi/useBenqiAvailableMarkets'
 
-export const useAvailableMarkets = ({
-  tokensWithBalance = []
-}: {
-  tokensWithBalance?: LocalTokenWithBalance[]
-}): {
+export const useAvailableMarkets = (): {
   data: DefiMarket[]
   error: Error | null
   isLoading: boolean
@@ -37,8 +32,7 @@ export const useAvailableMarkets = ({
     isFetching: isFetchingAave
   } = useAaveAvailableMarkets({
     network: cChainNetwork,
-    networkClient,
-    tokensWithBalance
+    networkClient
   })
   const {
     data: benqiMarkets,
@@ -48,8 +42,7 @@ export const useAvailableMarkets = ({
     isFetching: isFetchingBenqi
   } = useBenqiAvailableMarkets({
     network: cChainNetwork,
-    networkClient,
-    tokensWithBalance
+    networkClient
   })
 
   const safeMarkets = useMemo(() => {
