@@ -52,7 +52,7 @@ async function waitForDisplayed(ele: ChainablePromiseElement, timeout = 20000) {
 async function isVisible(ele: ChainablePromiseElement) {
   const visible = await ele.isDisplayed()
   const eleSelector = await ele.selector
-  console.log(`${eleSelector} isVisible? `, visible)
+  console.log(`[${eleSelector}] visible? TRUE ===`, visible)
   assert.equal(visible, true, `${eleSelector} is not visible`)
   return visible
 }
@@ -60,7 +60,7 @@ async function isVisible(ele: ChainablePromiseElement) {
 async function isNotVisible(ele: ChainablePromiseElement) {
   const visible = await ele.isDisplayed()
   const eleSelector = await ele.selector
-  console.log(`${eleSelector} isVisible? `, visible)
+  console.log(`[${eleSelector}] NOT visible? FALSE ===`, visible)
   assert.equal(visible, false, `${eleSelector} is still visible`)
   return visible
 }
