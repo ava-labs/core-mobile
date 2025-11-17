@@ -44,7 +44,8 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
     network,
     amount,
     setAmount,
-    resetAmount
+    resetAmount,
+    maxAmount
   } = useSendContext()
 
   const { navigate } = useRouter()
@@ -337,6 +338,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
           validateAmount={validateSendAmount}
           disabled={isSending || selectedToken === undefined}
           autoFocus
+          maxAmount={maxAmount}
         />
       )}
     </ScrollScreen>

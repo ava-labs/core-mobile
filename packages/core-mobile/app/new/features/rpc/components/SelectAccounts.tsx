@@ -5,7 +5,6 @@ import {
   alpha,
   GroupList,
   Icons,
-  Pressable,
   Separator,
   Text,
   Toggle,
@@ -14,7 +13,7 @@ import {
 } from '@avalabs/k2-alpine'
 import type { Account, AccountCollection } from 'store/account/types'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
-import { useBalanceForAccount } from 'features/portfolio/hooks/useBalanceForAccount'
+import { useBalanceInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 
 type Props = {
@@ -118,25 +117,13 @@ const Account = ({
   const {
     theme: { colors }
   } = useTheme()
-  const {
-    balance: accountBalance,
-    isBalanceLoaded,
-    isFetchingBalance,
-    fetchBalance
-  } = useBalanceForAccount(account.id)
+  const { balance: accountBalance, isLoadingBalance } =
+    useBalanceInCurrencyForAccount(account.id)
   const { formatCurrency } = useFormatCurrency()
 
   const renderBalance = useCallback(() => {
-    if (isFetchingBalance) {
+    if (isLoadingBalance) {
       return <ActivityIndicator style={{ marginRight: 14 }} size="small" />
-    }
-
-    if (!isBalanceLoaded) {
-      return (
-        <Pressable onPress={fetchBalance} style={{ marginRight: 14 }}>
-          <Icons.Custom.BalanceRefresh color={colors.$textPrimary} />
-        </Pressable>
-      )
     }
 
     return (
@@ -152,14 +139,7 @@ const Account = ({
         {formatCurrency({ amount: accountBalance })}
       </Text>
     )
-  }, [
-    isFetchingBalance,
-    isBalanceLoaded,
-    accountBalance,
-    formatCurrency,
-    fetchBalance,
-    colors.$textPrimary
-  ])
+  }, [isLoadingBalance, accountBalance, formatCurrency])
 
   return (
     <>

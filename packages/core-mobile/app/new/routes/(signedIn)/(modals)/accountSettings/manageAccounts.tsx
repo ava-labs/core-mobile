@@ -4,7 +4,6 @@ import {
   alpha,
   AnimatedBalance,
   Icons,
-  Pressable,
   SCREEN_WIDTH,
   SearchBar,
   Text,
@@ -23,7 +22,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { WalletDisplayData } from 'common/types'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
-import { useBalanceForAccount } from 'features/portfolio/hooks/useBalanceForAccount'
+import { useBalanceInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
@@ -445,12 +444,8 @@ const AccountBalance = ({
   const {
     theme: { colors }
   } = useTheme()
-  const {
-    balance: accountBalance,
-    fetchBalance,
-    isFetchingBalance,
-    isBalanceLoaded
-  } = useBalanceForAccount(accountId)
+  const { balance: accountBalance, isLoadingBalance } =
+    useBalanceInCurrencyForAccount(accountId)
   const { formatCurrency } = useFormatCurrency()
 
   const balance = useMemo(() => {
@@ -473,16 +468,8 @@ const AccountBalance = ({
     )
   }, [colors.$textPrimary, isActive])
 
-  if (isFetchingBalance) {
+  if (isLoadingBalance) {
     return <ActivityIndicator size="small" sx={{ marginRight: 4 }} />
-  }
-
-  if (!isBalanceLoaded) {
-    return (
-      <Pressable onPress={fetchBalance}>
-        <Icons.Custom.BalanceRefresh color={colors.$textPrimary} />
-      </Pressable>
-    )
   }
 
   return (
