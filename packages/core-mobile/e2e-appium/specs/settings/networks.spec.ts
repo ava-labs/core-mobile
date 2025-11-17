@@ -27,7 +27,7 @@ describe('Settings', () => {
     await settings.goNetworks()
     console.log('Disabled default networks')
     // Enable default networks
-    await settings.tapNetworkS\witches(false)
+    await settings.tapNetworkSwitches(false)
     await common.dismissBottomSheet()
     await portfolioPage.verifyNetworksAdded(networks)
     console.log('Enabled default networks')
