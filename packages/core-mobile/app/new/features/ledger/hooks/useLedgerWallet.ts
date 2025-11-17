@@ -484,8 +484,11 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           `Creating ${derivationPathType} Ledger wallet with generated keys...`
         )
 
-        if (!avalancheKeys || solanaKeys.length === 0 || !bitcoinAddress) {
-          throw new Error('Missing required keys for wallet creation')
+        if (!avalancheKeys) {
+          throw new Error('Missing Avalanche keys for wallet creation')
+        }
+        if (solanaKeys.length === 0) {
+          throw new Error('Missing Solana keys for wallet creation')
         }
 
         updateProgress('Generating wallet ID...')

@@ -33,7 +33,11 @@ import { Details } from '../../components/Details'
 import { Network } from '../../components/Network'
 import { NetworkFeeSelectorWithGasless } from '../../components/NetworkFeeSelectorWithGasless'
 import { SpendLimits } from '../../components/SpendLimits/SpendLimits'
-import { overrideContractItem, removeWebsiteItemIfNecessary } from './utils'
+import {
+  getInitialGasLimit,
+  overrideContractItem,
+  removeWebsiteItemIfNecessary
+} from './utils'
 
 const ApprovalScreen = ({
   params: { request, displayData, signingData, onApprove, onReject }
@@ -63,6 +67,9 @@ const ApprovalScreen = ({
   const account = useSelector(accountSelector)
 
   const [submitting, setSubmitting] = useState(false)
+  const [gasLimit, setGasLimit] = useState<number | undefined>(
+    getInitialGasLimit(signingData)
+  )
   const [maxFeePerGas, setMaxFeePerGas] = useState<bigint | undefined>()
   const [maxPriorityFeePerGas, setMaxPriorityFeePerGas] = useState<
     bigint | undefined
@@ -137,6 +144,7 @@ const ApprovalScreen = ({
         account,
         maxFeePerGas,
         maxPriorityFeePerGas,
+        gasLimit,
         overrideData: hashedCustomSpend
       })
       router.canGoBack() && router.back()
@@ -157,6 +165,7 @@ const ApprovalScreen = ({
     network,
     maxFeePerGas,
     maxPriorityFeePerGas,
+    gasLimit,
     hashedCustomSpend
   ])
 
@@ -171,11 +180,11 @@ const ApprovalScreen = ({
     const ethSendTx = signingData.data
 
     try {
-      const gasLimit = ethSendTx.gasLimit ? BigInt(ethSendTx.gasLimit) : 0n
+      const gasLimitToValidate = gasLimit ? BigInt(gasLimit) : 0n
       const amount = ethSendTx.value ? BigInt(ethSendTx.value) : 0n
 
       validateFee({
-        gasLimit,
+        gasLimit: gasLimitToValidate,
         maxFee: maxFeePerGas || 0n,
         amount,
         nativeToken,
@@ -190,9 +199,10 @@ const ApprovalScreen = ({
         setAmountError(SendErrorMessage.UNKNOWN_ERROR)
       }
     }
-  }, [signingData, network, maxFeePerGas, nativeToken])
+  }, [signingData, network, maxFeePerGas, nativeToken, gasLimit])
 
   const handleFeesChange = useCallback((fees: Eip1559Fees) => {
+    setGasLimit(fees.gasLimit)
     setMaxFeePerGas(fees.maxFeePerGas)
     setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas)
   }, [])
@@ -354,15 +364,6 @@ const ApprovalScreen = ({
     useCallback((): JSX.Element | null => {
       if (!displayData.networkFeeSelector) return null
 
-      let gasLimit: number | undefined
-
-      if (
-        typeof signingData.data === 'object' &&
-        'gasLimit' in signingData.data
-      ) {
-        gasLimit = Number(signingData.data.gasLimit || 0)
-      }
-
       return (
         <View sx={{ marginTop: 12 }}>
           <NetworkFeeSelectorWithGasless
@@ -372,6 +373,7 @@ const ApprovalScreen = ({
             caip2ChainId={caip2ChainId}
             handleFeesChange={handleFeesChange}
             shouldShowGaslessSwitch={shouldShowGaslessSwitch}
+            errorMessage={amountError}
           />
         </View>
       )
@@ -381,8 +383,9 @@ const ApprovalScreen = ({
       gaslessEnabled,
       setGaslessEnabled,
       shouldShowGaslessSwitch,
-      signingData.data,
-      handleFeesChange
+      gasLimit,
+      handleFeesChange,
+      amountError
     ])
 
   const alert = displayData.alert

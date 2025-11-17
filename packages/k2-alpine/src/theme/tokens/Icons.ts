@@ -97,6 +97,7 @@ import IconAch from '../../assets/icons/ach.svg'
 import IconDownload from '../../assets/icons/download.svg'
 import IconEncrypted from '../../assets/icons/shield.svg'
 import IconSwapProviderAuto from '../../assets/icons/swap_auto.svg'
+import IconLedger from '../../assets/icons/ledger_logo.svg'
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
 import IconTxTypeAdvanceTime from '../../assets/icons/advance-time.svg'
@@ -111,6 +112,7 @@ import IconTxTypeSubnet from '../../assets/icons/transaction-subnet.svg'
 import IconTxTypeUnwrap from '../../assets/icons/unwrap.svg'
 import IconTxTypeUnknown from '../../assets/icons/unknown.svg'
 import IconPsychiatry from '../../assets/icons/psychiatry.svg'
+import IconBluetooth from '../../assets/icons/bluetooth.svg'
 
 // token logos
 import AAVE from '../../assets/tokenLogos/AAVE.svg'
@@ -332,7 +334,9 @@ export const Icons = {
     ShopeePay: IconShopeePay,
     Ach: IconAch,
     Download: IconDownload,
-    SwapProviderAuto: IconSwapProviderAuto
+    SwapProviderAuto: IconSwapProviderAuto,
+    Ledger: IconLedger,
+    Bluetooth: IconBluetooth
   },
   RecoveryMethod: {
     Passkey: IconPasskey,
