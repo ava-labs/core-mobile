@@ -28,7 +28,7 @@ import Logger from 'utils/Logger'
 
 type UnsubscribeFunc = () => void
 
-const EVENT_TO_CH_ID: Record<string, ChannelId> = {
+export const EVENT_TO_CH_ID: Record<string, ChannelId> = {
   [BalanceChangeEvents.ALLOWANCE_APPROVED]: ChannelId.BALANCE_CHANGES,
   [BalanceChangeEvents.BALANCES_SPENT]: ChannelId.BALANCE_CHANGES,
   [BalanceChangeEvents.BALANCES_RECEIVED]: ChannelId.BALANCE_CHANGES,
