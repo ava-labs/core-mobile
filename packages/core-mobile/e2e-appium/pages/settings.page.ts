@@ -3,6 +3,7 @@ import { actions } from '../helpers/actions'
 import settings from '../locators/settings.loc'
 import { selectors } from '../helpers/selectors'
 import commonElsLoc from '../locators/commonEls.loc'
+import { Network, networks } from '../helpers/networks'
 import common from './commonEls.page'
 import onboardingPage from './onboarding.page'
 import portfolioPage from './portfolio.page'
@@ -42,7 +43,7 @@ class Settings {
   }
 
   get networks() {
-    return selectors.getByText(settings.networks)
+    return selectors.getBySomeText(settings.networks)
   }
 
   get addNetworkBtn() {
@@ -54,23 +55,23 @@ class Settings {
   }
 
   get networkRpcUrl() {
-    return selectors.getByText(settings.networkRpcUrl)
+    return selectors.getById(settings.networkRpcUrl)
   }
 
   get chainId() {
-    return selectors.getByText(settings.chainId)
+    return selectors.getById(settings.chainId)
   }
 
   get tokenSymbol() {
-    return selectors.getByText(settings.tokenSymbol)
+    return selectors.getById(settings.tokenSymbol)
   }
 
   get tokenName() {
-    return selectors.getByText(settings.tokenName)
+    return selectors.getById(settings.tokenName)
   }
 
   get explorerUrl() {
-    return selectors.getByText(settings.explorerUrl)
+    return selectors.getById(settings.explorerUrl)
   }
 
   get renameAccount() {
@@ -171,6 +172,26 @@ class Settings {
 
   get emptyContacts() {
     return selectors.getByText(settings.emptyContacts)
+  }
+
+  networkList(name: string) {
+    return selectors.getById(`network_list__${name}`)
+  }
+
+  networkEnabled(name: string) {
+    return selectors.getById(`network_toggle_enabled__${name}`)
+  }
+
+  networkDisabled(name: string) {
+    return selectors.getById(`network_toggle_disabled__${name}`)
+  }
+
+  networkDetails(name: string) {
+    return selectors.getById(`advanced_subtitle__${name}`)
+  }
+
+  networkName(name: string) {
+    return selectors.getById(`network_name__${name}`)
   }
 
   get hkd() {
@@ -331,6 +352,24 @@ class Settings {
     await actions.tap(this.addNetworkBtn)
   }
 
+  async goNetworks() {
+    await this.goSettings()
+    await this.tapNetworks()
+  }
+
+  async verifyDefaultNetworks() {
+    await actions.waitFor(this.addNetworkBtn)
+    for (const network of networks) {
+      await actions.isVisible(this.networkList(network.name))
+      if (network.haveToggle) {
+        await actions.isVisible(this.networkEnabled(network.name))
+      } else {
+        await actions.isNotVisible(this.networkEnabled(network.name))
+        await actions.isNotVisible(this.networkDisabled(network.name))
+      }
+    }
+  }
+
   async addContactOrNetworkName(name: string) {
     await actions.tap(this.nameContactBtn)
     await actions.type(common.dialogInput, name)
@@ -400,46 +439,42 @@ class Settings {
   }
 
   async tapNetworkByName(networkName: string) {
-    if (
-      !(await actions.getVisible(
-        selectors.getById(`network_list__${networkName}`)
-      ))
-    ) {
-      await actions.swipe('up', 0.2, this.networks)
+    try {
+      await actions.tap(this.networkList(networkName))
+    } catch (e) {
+      await common.typeSearchBar(networkName)
+      await actions.tap(this.networkList(networkName))
     }
-    await actions.tap(selectors.getById(`network_list__${networkName}`))
   }
 
-  async verifyNetworkDetails(network: string, networkData: any) {
-    const subtitle = 'advanced_subtitle__'
-    await actions.waitFor(selectors.getById(`network_name__${network}`))
-    if (network === commonElsLoc.bitcoin || network === commonElsLoc.solana) {
-      await actions.isNotVisible(this.networkRpcUrl)
-    } else {
+  async verifyNetworkDetails(network: Network) {
+    await this.tapNetworkByName(network.name)
+    await actions.waitFor(this.networkName(network.name))
+    if (![commonElsLoc.bitcoin, commonElsLoc.solana].includes(network.name)) {
       await actions.isVisible(this.networkRpcUrl)
+      await actions.isVisible(this.networkDetails(network.data?.rpcUrl ?? ''))
     }
-    await actions.isVisible(this.chainId)
-    await actions.isVisible(this.tokenSymbol)
-    await actions.isVisible(this.tokenName)
-    await actions.isVisible(this.explorerUrl)
     await actions.isVisible(
-      selectors.getById(`${subtitle}${networkData.explorerUrl}`)
+      this.networkDetails(network.data?.explorerUrl ?? '')
     )
+    await actions.isVisible(this.networkDetails(network.data?.chainId ?? ''))
     await actions.isVisible(
-      selectors.getById(`${subtitle}${networkData.chainId}`)
+      this.networkDetails(network.data?.tokenSymbol ?? '')
     )
-    await actions.isVisible(
-      selectors.getById(`${subtitle}${networkData.tokenSymbol}`)
-    )
-    await actions.isVisible(
-      selectors.getById(`${subtitle}${networkData.tokenName}`)
-    )
+    await actions.isVisible(this.networkDetails(network.data?.tokenName ?? ''))
+    await common.goBack()
   }
 
-  async tapNetworkSwitch(network: string, isEnabled = true) {
+  async tapNetworkSwitch(networkName: string, isEnabled = true) {
     const toggle = isEnabled ? 'enabled' : 'disabled'
-    const networkPrefix = `network_toggle_${toggle}__${network}`
-    await actions.tap(selectors.getById(networkPrefix))
+    const networkPrefix = `network_toggle_${toggle}__${networkName}`
+    await actions.longPress(selectors.getById(networkPrefix))
+  }
+
+  async tapNetworkSwitches(isEnabled = true) {
+    for (const { name, haveToggle } of networks) {
+      if (haveToggle) await this.tapNetworkSwitch(name, isEnabled)
+    }
   }
 
   async goToAccountDetail(
