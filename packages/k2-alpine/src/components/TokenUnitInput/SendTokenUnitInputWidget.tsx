@@ -168,11 +168,6 @@ export const SendTokenUnitInputWidget = forwardRef<
       [onChange, validateAmount, balance]
     )
 
-    const isDisabled = useMemo(
-      () => maxAmount?.eq(0) || disabled,
-      [maxAmount, disabled]
-    )
-
     return (
       <View sx={{ gap: 8, ...sx }}>
         <View
@@ -186,7 +181,7 @@ export const SendTokenUnitInputWidget = forwardRef<
           }}>
           <TokenUnitInput
             returnKeyType={returnKeyType}
-            editable={!isDisabled}
+            editable={!disabled}
             ref={textInputRef}
             token={token}
             amount={amount}
@@ -203,7 +198,7 @@ export const SendTokenUnitInputWidget = forwardRef<
                 style={{
                   minWidth: 72
                 }}
-                disabled={isDisabled}
+                disabled={maxAmount?.eq(0)}
                 onPress={() => {
                   handlePressPresetButton(button.amount, index)
                 }}>
