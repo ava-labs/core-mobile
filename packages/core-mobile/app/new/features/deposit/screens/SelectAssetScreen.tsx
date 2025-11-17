@@ -16,37 +16,32 @@ import { useRouter } from 'expo-router'
 import { useBuy } from 'features/meld/hooks/useBuy'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
-import useCChainNetwork from 'hooks/earn/useCChainNetwork'
-import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
-import { useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/account'
-import { useDepositableTokens } from '../hooks/useDepositableTokens'
 import errorIcon from '../../../assets/icons/melting_face.png'
 import { DefiAssetDetails } from '../types'
 import { DefiAssetLogo } from '../components/DefiAssetLogo'
 import { findMatchingTokenWithBalance } from '../utils/findMatchingTokenWithBalance'
+import { useDepositContext } from '../context/DepositContext'
+import { useDepositSelectedToken } from '../store'
 
 export const SelectAssetScreen = (): JSX.Element => {
   const { navigate } = useRouter()
-  const { tokens, isPending } = useDepositableTokens()
+  const { depositableTokens, isLoadingMarkets, network, tokensWithBalance } =
+    useDepositContext()
   const {
     theme: { colors }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
   const { navigateToBuy, isBuyable } = useBuy()
   const { navigateToSwap } = useNavigateToSwap()
-  const cChainNetwork = useCChainNetwork()
-  const activeAccount = useSelector(selectActiveAccount)
-  const tokensWithBalance = useTokensWithBalanceByNetworkForAccount(
-    activeAccount,
-    cChainNetwork?.chainId
-  )
+  const [, setSelectedToken] = useDepositSelectedToken()
 
   const handleSelectToken = useCallback(
     (marketAsset: DefiAssetDetails) => {
       const token = findMatchingTokenWithBalance(marketAsset, tokensWithBalance)
 
       if (token) {
+        setSelectedToken(token)
+
         navigate({
           // @ts-ignore TODO: make routes typesafe
           pathname: '/deposit/selectPool',
@@ -64,7 +59,14 @@ export const SelectAssetScreen = (): JSX.Element => {
         navigateToSwap(AVAX_TOKEN_ID, marketAsset.contractAddress)
       }
     },
-    [navigate, navigateToBuy, isBuyable, navigateToSwap, tokensWithBalance]
+    [
+      navigate,
+      navigateToBuy,
+      isBuyable,
+      navigateToSwap,
+      tokensWithBalance,
+      setSelectedToken
+    ]
   )
 
   const renderItem = useCallback(
@@ -85,7 +87,7 @@ export const SelectAssetScreen = (): JSX.Element => {
             }}>
             <DefiAssetLogo
               asset={item}
-              network={item.contractAddress ? cChainNetwork : undefined}
+              network={item.contractAddress ? network : undefined}
             />
             <View sx={{ flex: 1 }}>
               <Text
@@ -115,11 +117,11 @@ export const SelectAssetScreen = (): JSX.Element => {
         </TouchableOpacity>
       )
     },
-    [colors, formatCurrency, handleSelectToken, cChainNetwork]
+    [colors, formatCurrency, handleSelectToken, network]
   )
 
   const renderEmpty = useCallback(() => {
-    if (isPending) {
+    if (isLoadingMarkets) {
       return <LoadingState sx={{ flex: 1 }} />
     }
     return (
@@ -130,12 +132,12 @@ export const SelectAssetScreen = (): JSX.Element => {
         description=""
       />
     )
-  }, [isPending])
+  }, [isLoadingMarkets])
 
   return (
     <ListScreen
       title="Select an asset to deposit"
-      data={tokens}
+      data={depositableTokens}
       renderItem={renderItem}
       renderEmpty={renderEmpty}
       keyExtractor={item => item.symbol}

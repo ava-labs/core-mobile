@@ -1,7 +1,6 @@
 import React, {
   useRef,
   useState,
-  useMemo,
   useEffect,
   useCallback,
   forwardRef,
@@ -44,6 +43,7 @@ type SendTokenUnitInputWidgetProps = {
   autoFocus?: boolean
   testID?: string
   maxAmount?: TokenUnit
+  presetPercentages?: number[]
 }
 
 export const SendTokenUnitInputWidget = forwardRef<
@@ -63,7 +63,8 @@ export const SendTokenUnitInputWidget = forwardRef<
       disabled,
       returnKeyType,
       autoFocus,
-      maxAmount
+      maxAmount,
+      presetPercentages
     },
     ref
     // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -78,56 +79,72 @@ export const SendTokenUnitInputWidget = forwardRef<
       PresetAmount[]
     >([])
 
-    const presetAmounts = useMemo(() => {
-      const presets = []
-      if (balance.gt(5)) {
-        presets.push({
-          text: '5 ' + token.symbol,
-          amount: new TokenUnit(
-            5 * 10 ** token.maxDecimals,
-            balance.getMaxDecimals(),
-            balance.getSymbol()
-          ),
-          isSelected: false
-        })
-      }
-      if (balance.gt(10)) {
-        presets.push({
-          text: '10 ' + token.symbol,
-          amount: new TokenUnit(
-            10 * 10 ** token.maxDecimals,
-            balance.getMaxDecimals(),
-            balance.getSymbol()
-          ),
-          isSelected: false
-        })
-      }
-      if (balance.gt(20)) {
-        presets.push({
-          text: '20 ' + token.symbol,
-          amount: new TokenUnit(
-            20 * 10 ** token.maxDecimals,
-            balance.getMaxDecimals(),
-            balance.getSymbol()
-          ),
-          isSelected: false
-        })
-      }
-      presets.push({
-        text: 'Max',
-        amount: maxAmount ?? balance,
-        isSelected: false
-      })
-      return presets
-    }, [balance, token.maxDecimals, token.symbol, maxAmount])
-
     useImperativeHandle(ref, () => ({
       setValue: (newValue: string) => textInputRef.current?.setValue(newValue)
     }))
 
     useEffect(() => {
-      setPresetAmonuntButtons(presetAmounts)
-    }, [presetAmounts])
+      const presets = []
+      if (presetPercentages && presetPercentages.length > 0) {
+        presetPercentages.forEach(percentage => {
+          const value = balance.mul(percentage).div(100)
+          presets.push({
+            text: `${percentage}%`,
+            amount: new TokenUnit(
+              value.toSubUnit(),
+              balance.getMaxDecimals(),
+              balance.getSymbol()
+            ),
+            isSelected: amount
+              ? amount.toSubUnit() === value.toSubUnit()
+              : false
+          })
+        })
+      } else {
+        if (balance.gt(5)) {
+          presets.push({
+            text: '5 ' + token.symbol,
+            amount: new TokenUnit(
+              5 * 10 ** token.maxDecimals,
+              balance.getMaxDecimals(),
+              balance.getSymbol()
+            ),
+            isSelected: false
+          })
+        }
+        if (balance.gt(10)) {
+          presets.push({
+            text: '10 ' + token.symbol,
+            amount: new TokenUnit(
+              10 * 10 ** token.maxDecimals,
+              balance.getMaxDecimals(),
+              balance.getSymbol()
+            ),
+            isSelected: false
+          })
+        }
+        if (balance.gt(20)) {
+          presets.push({
+            text: '20 ' + token.symbol,
+            amount: new TokenUnit(
+              20 * 10 ** token.maxDecimals,
+              balance.getMaxDecimals(),
+              balance.getSymbol()
+            ),
+            isSelected: false
+          })
+        }
+      }
+
+      const max = maxAmount ?? balance
+      presets.push({
+        text: 'Max',
+        amount: max,
+        isSelected: amount ? amount.toSubUnit() === max.toSubUnit() : false
+      })
+
+      setPresetAmonuntButtons(presets)
+    }, [balance, token, maxAmount, presetPercentages, amount])
 
     const handlePressPresetButton = (amt: TokenUnit, index: number): void => {
       textInputRef.current?.setValue(amt.toDisplay())

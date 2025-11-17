@@ -4,13 +4,13 @@ import {
   skipToken,
   useQuery
 } from '@tanstack/react-query'
-import { erc20Abi, Address } from 'viem'
+import { erc20Abi, Address, PublicClient } from 'viem'
 import { readContract } from 'viem/actions'
-import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
 import { findMatchingTokenWithBalance } from 'features/deposit/utils/findMatchingTokenWithBalance'
+import { Network } from '@avalabs/core-chains-sdk'
+import { LocalTokenWithBalance } from 'store/balance'
 import { type DefiMarket, MarketNames } from '../../types'
 import { gqlQuery } from '../../utils/gqlQuery'
 import {
@@ -32,11 +32,18 @@ import { getAaveFilteredMarketData } from '../../utils/getAaveFilteredMarketData
 import { getUniqueMarketId } from '../../utils/getUniqueMarketId'
 import { isMeritSupplyKey } from '../../utils/isMeritSupplyKey'
 import { bigIntToBig } from '../../utils/bigInt'
-import { useCChainClient } from '../useCChainClient'
 import { useGetCChainToken } from '../useGetCChainToken'
 import { useMeritAprs } from './useMeritAprs'
 
-export const useAaveAvailableMarkets = (): {
+export const useAaveAvailableMarkets = ({
+  network,
+  networkClient,
+  tokensWithBalance
+}: {
+  network: Network | undefined
+  networkClient: PublicClient | undefined
+  tokensWithBalance: LocalTokenWithBalance[]
+}): {
   data: DefiMarket[] | undefined
   error: Error | null
   isLoading: boolean
@@ -48,16 +55,10 @@ export const useAaveAvailableMarkets = (): {
       ) => Promise<QueryObserverResult<DefiMarket[], Error>>)
     | (() => void)
 } => {
-  const cChainNetwork = useCChainNetwork()
-  const cChainClient = useCChainClient()
   const activeAccount = useSelector(selectActiveAccount)
   const addressEVM = activeAccount?.addressC
   const { data: meritAprs, isPending: isPendingMeritAprs } = useMeritAprs()
   const getCChainToken = useGetCChainToken()
-  const tokens = useTokensWithBalanceByNetworkForAccount(
-    activeAccount,
-    cChainNetwork?.chainId
-  )
 
   const {
     data: enrichedMarkets,
@@ -67,15 +68,20 @@ export const useAaveAvailableMarkets = (): {
     error: errorEnrichedMarkets,
     refetch
   } = useQuery({
-    queryKey: ['useAaveAvailableMarkets', cChainClient, cChainNetwork, tokens],
+    queryKey: [
+      'useAaveAvailableMarkets',
+      networkClient,
+      network,
+      tokensWithBalance
+    ],
     queryFn:
-      cChainClient && cChainNetwork && !isPendingMeritAprs
+      networkClient && network && !isPendingMeritAprs
         ? async () => {
             // Step 1: Fetch all available reserve data from Aave V3 pool
             // getReservesData(in AAVE_POOL_DATA_PROVIDER abi) returns a tuple: [AggregatedReserveData[], BaseCurrencyInfo]
             // [0] = array of market data (USDC, USDT, WETH.e, etc.)
             // [1] = base currency info (USD prices, etc.) - not used currently
-            const [marketsData] = await readContract(cChainClient, {
+            const [marketsData] = await readContract(networkClient, {
               address: AAVE_UI_POOL_DATA_PROVIDER_C_CHAIN_ADDRESS,
               abi: AAVE_POOL_DATA_PROVIDER,
               functionName: 'getReservesData',
@@ -97,7 +103,7 @@ export const useAaveAvailableMarkets = (): {
                 const supplyApyPercent = formatAaveSupplyApy(liveAprPercent)
 
                 // Get total supply to calculate total deposits
-                const totalSupply = await readContract(cChainClient, {
+                const totalSupply = await readContract(networkClient, {
                   address: market.mintTokenAddress,
                   abi: erc20Abi,
                   functionName: 'totalSupply'
@@ -125,7 +131,7 @@ export const useAaveAvailableMarkets = (): {
                   `,
                   {
                     request: {
-                      chainId: cChainNetwork?.chainId,
+                      chainId: network?.chainId,
                       market: AAVE_POOL_C_CHAIN_ADDRESS,
                       underlyingToken: market.underlyingAsset,
                       window: 'LAST_MONTH'
@@ -165,7 +171,7 @@ export const useAaveAvailableMarkets = (): {
                     symbol: market.symbol,
                     contractAddress: market.underlyingAsset
                   },
-                  tokens
+                  tokensWithBalance
                 )
 
                 // Get token metadata (logo, etc.)
@@ -177,7 +183,7 @@ export const useAaveAvailableMarkets = (): {
                 // Construct market data with all enriched information
                 const marketData = {
                   marketName: MarketNames.aave,
-                  network: cChainNetwork,
+                  network,
                   type: 'lending' as const,
                   supplyCapReached,
                   totalDeposits: formatAmount(
@@ -193,7 +199,7 @@ export const useAaveAvailableMarkets = (): {
                     contractAddress: market.underlyingAsset,
                     underlyingTokenBalance: balance,
                     mintTokenBalance: await getAaveDepositedBalance({
-                      cChainClient,
+                      cChainClient: networkClient,
                       walletAddress: addressEVM as Address,
                       underlyingTokenDecimals: decimals,
                       underlyingAssetAddress: market.underlyingAsset
@@ -214,10 +220,10 @@ export const useAaveAvailableMarkets = (): {
             // Aave uses WAVAX wrapper, so we need to manually insert AVAX with user's balance
             const avaxBalance = findMatchingTokenWithBalance(
               {
-                symbol: cChainNetwork.networkToken.symbol,
+                symbol: network.networkToken.symbol,
                 contractAddress: undefined
               },
-              tokens
+              tokensWithBalance
             )
 
             return aaveInsertAvax(results, avaxBalance)
@@ -232,6 +238,6 @@ export const useAaveAvailableMarkets = (): {
     isPending: isPendingEnrichedMarkets,
     isFetching: isFetchingEnrichedMarkets,
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    refetch: cChainClient && !isPendingMeritAprs ? refetch : () => {}
+    refetch: networkClient && !isPendingMeritAprs ? refetch : () => {}
   }
 }

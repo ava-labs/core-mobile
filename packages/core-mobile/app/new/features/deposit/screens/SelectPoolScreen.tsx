@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { ListScreen } from 'common/components/ListScreen'
 import {
   Icons,
@@ -10,15 +10,17 @@ import {
 } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
-import { useLocalSearchParams } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { Address } from 'viem'
 import errorIcon from '../../../assets/icons/melting_face.png'
-import { useAvailableMarkets } from '../hooks/useAvailableMarkets'
 import { DefiMarket } from '../types'
 import { DefiMarketLogo } from '../components/DefiMarketLogo'
+import { useDepositContext } from '../context/DepositContext'
+import { useDepositSelectedMarket } from '../store'
 
 export const SelectPoolScreen = (): JSX.Element => {
+  const { navigate } = useRouter()
   const { contractAddress, symbol } = useLocalSearchParams<{
     contractAddress?: Address
     symbol: string
@@ -26,14 +28,34 @@ export const SelectPoolScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { data: markets, isPending } = useAvailableMarkets({
-    contractAddress,
-    symbol
-  })
+  const { markets, isLoadingMarkets } = useDepositContext()
+  const [, setSelectedMarket] = useDepositSelectedMarket()
+  const filteredAvailableMarkets = useMemo(() => {
+    return markets.filter(market => {
+      if (contractAddress) {
+        return (
+          market.asset.contractAddress?.toLowerCase() ===
+          contractAddress?.toLowerCase()
+        )
+      }
+      if (symbol) {
+        return market.asset.symbol.toLowerCase() === symbol.toLowerCase()
+      }
+      return true
+    })
+  }, [markets, contractAddress, symbol])
 
-  const handleSelectPool = useCallback((_: DefiMarket) => {
-    // TODO
-  }, [])
+  const handleSelectPool = useCallback(
+    (market: DefiMarket) => {
+      setSelectedMarket(market)
+      navigate({
+        // @ts-ignore TODO: make routes typesafe
+        pathname: '/deposit/selectAmount',
+        params: {}
+      })
+    },
+    [navigate, setSelectedMarket]
+  )
 
   const renderItem = useCallback(
     ({ item }: { item: DefiMarket }) => {
@@ -109,7 +131,7 @@ export const SelectPoolScreen = (): JSX.Element => {
   )
 
   const renderEmpty = useCallback(() => {
-    if (isPending) {
+    if (isLoadingMarkets) {
       return <LoadingState sx={{ flex: 1 }} />
     }
 
@@ -121,12 +143,12 @@ export const SelectPoolScreen = (): JSX.Element => {
         description=""
       />
     )
-  }, [isPending])
+  }, [isLoadingMarkets])
 
   return (
     <ListScreen
       title={`Choose a pool to\nstart earning`}
-      data={isPending ? [] : markets}
+      data={isLoadingMarkets ? [] : filteredAvailableMarkets}
       renderItem={renderItem}
       renderEmpty={renderEmpty}
       keyExtractor={item => item.uniqueMarketId}

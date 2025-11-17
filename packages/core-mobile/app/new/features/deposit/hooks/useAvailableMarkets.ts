@@ -1,12 +1,19 @@
 import { useMemo } from 'react'
-import { Address } from 'viem'
+import { Network } from '@avalabs/core-chains-sdk'
+import { PublicClient } from 'viem'
+import { LocalTokenWithBalance } from 'store/balance'
 import { DefiMarket } from '../types'
 import { useAaveAvailableMarkets } from './aave/useAaveAvailableMarkets'
 import { useBenqiAvailableMarkets } from './benqi/useBenqiAvailableMarkets'
 
-export const useAvailableMarkets = (filter?: {
-  symbol: string
-  contractAddress: Address | undefined
+export const useAvailableMarkets = ({
+  network,
+  networkClient,
+  tokensWithBalance
+}: {
+  network: Network | undefined
+  networkClient: PublicClient | undefined
+  tokensWithBalance: LocalTokenWithBalance[]
 }): {
   data: DefiMarket[]
   error: Error | null
@@ -20,32 +27,21 @@ export const useAvailableMarkets = (filter?: {
     error: errorAaveMarkets,
     isPending: isPendingAaveMarkets,
     isFetching: isFetchingAave
-  } = useAaveAvailableMarkets()
+  } = useAaveAvailableMarkets({ network, networkClient, tokensWithBalance })
   const {
     data: benqiMarkets,
     isLoading: isLoadingBenqiMarkets,
     error: errorBenqiMarkets,
     isPending: isPendingBenqiMarkets,
     isFetching: isFetchingBenqi
-  } = useBenqiAvailableMarkets()
+  } = useBenqiAvailableMarkets({ network, networkClient, tokensWithBalance })
 
   const safeMarkets = useMemo(() => {
     const safeAave = aaveMarkets ?? []
     const safeBenqi = benqiMarkets ?? []
-    let mergedSafely = [...safeAave, ...safeBenqi]
-    if (filter) {
-      mergedSafely = mergedSafely.filter(market => {
-        if (filter.contractAddress) {
-          return (
-            market.asset.contractAddress?.toLowerCase() ===
-            filter.contractAddress.toLowerCase()
-          )
-        }
-        return market.asset.symbol.toLowerCase() === filter.symbol.toLowerCase()
-      })
-    }
+    const mergedSafely = [...safeAave, ...safeBenqi]
     return mergedSafely.sort((a, b) => b.supplyApyPercent - a.supplyApyPercent)
-  }, [aaveMarkets, benqiMarkets, filter])
+  }, [aaveMarkets, benqiMarkets])
 
   return {
     data: safeMarkets,
