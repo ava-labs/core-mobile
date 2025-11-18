@@ -15,19 +15,17 @@ describe('Settings', () => {
   })
 
   it('Custom Networks - should toggle a custom network', async () => {
-    // Enable a L1 network
+    // Enable a custom network
     await common.typeSearchBar(customNetwork.name)
     await settings.tapNetworkSwitch(customNetwork.name)
     await common.dismissBottomSheet()
     await portfolioPage.verifyNetworksRemoved([customNetwork])
     await settings.goNetworks()
-    console.log('Disabled a custom network')
     // Disable a custom network
     await common.typeSearchBar(customNetwork.name)
     await settings.tapNetworkSwitch(customNetwork.name, false)
     await common.dismissBottomSheet()
     await portfolioPage.verifyNetworksAdded([customNetwork])
-    console.log('Enabled a custom network')
   })
 
   it('Custom Networks - should edit a custom network', async () => {
