@@ -11,6 +11,7 @@ import React, {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState
 } from 'react'
@@ -66,6 +67,8 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   disableStickyFooter?: boolean
   /** Title to be displayed in the navigation header */
   navigationTitle?: string
+  /** Custom component to render in the navigation header title area (replaces navigationTitle) */
+  renderNavigationHeader?: () => React.ReactNode
   /** Custom header component to be rendered */
   renderHeader?: () => React.ReactNode
   /** Custom footer component to be rendered at the bottom of the screen */
@@ -96,6 +99,7 @@ export const ScrollScreen = ({
   hasParent,
   isModal,
   navigationTitle,
+  renderNavigationHeader,
   shouldAvoidKeyboard,
   disableStickyFooter,
   showNavigationHeaderTitle = true,
@@ -118,9 +122,16 @@ export const ScrollScreen = ({
   const footerHeight = useSharedValue<number>(0)
   const footerRef = useRef<View>(null)
 
+  const navigationHeader = useMemo(() => {
+    if (renderNavigationHeader) {
+      return renderNavigationHeader()
+    }
+    return <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />
+  }, [renderNavigationHeader, navigationTitle, title])
+
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
-      header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
+      header: navigationHeader,
       targetLayout: headerLayout,
       shouldHeaderHaveGrabber: isModal,
       hasParent,

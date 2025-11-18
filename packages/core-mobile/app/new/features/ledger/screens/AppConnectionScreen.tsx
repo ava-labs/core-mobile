@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router'
 import { Alert } from 'react-native'
 import { LedgerAppConnection } from 'new/features/ledger/components/LedgerAppConnection'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
+import { LedgerDerivationPathType } from 'services/ledger/types'
 
 export default function AppConnectionScreen(): JSX.Element {
   const { push, back } = useRouter()
@@ -14,64 +15,38 @@ export default function AppConnectionScreen(): JSX.Element {
     connectedDeviceId,
     connectedDeviceName,
     selectedDerivationPath,
+    setSelectedDerivationPath,
+    setConnectedDevice,
     keys,
     resetSetup,
     disconnectDevice,
     createLedgerWallet
   } = useLedgerSetupContext()
 
-  // Check if keys are available and create wallet, then navigate to complete
+  // Set up default values for the Ledger setup
   useEffect(() => {
-    const createWalletAndNavigate = async () => {
-      if (
-        keys.avalancheKeys &&
-        keys.solanaKeys.length > 0 &&
-        connectedDeviceId &&
-        selectedDerivationPath &&
-        !isCreatingWallet
-      ) {
-        setIsCreatingWallet(true)
-
-        try {
-          await createLedgerWallet({
-            deviceId: connectedDeviceId,
-            deviceName: connectedDeviceName,
-            derivationPathType: selectedDerivationPath
-          })
-
-          // Navigate to complete screen after wallet creation
-          // @ts-ignore TODO: make routes typesafe
-          push('/accountSettings/ledger/complete')
-        } catch (error) {
-          Alert.alert(
-            'Wallet Creation Failed',
-            error instanceof Error
-              ? error.message
-              : 'Failed to create Ledger wallet. Please try again.',
-            [{ text: 'OK' }]
-          )
-          setIsCreatingWallet(false)
-        }
-      }
+    // Set default derivation path if not set
+    if (!selectedDerivationPath) {
+      setSelectedDerivationPath(LedgerDerivationPathType.BIP44)
     }
-
-    createWalletAndNavigate()
+    
+    // Set connected device ID from wallet data if available (for existing wallets)
+    if (!connectedDeviceId && keys.avalancheKeys) {
+      // Extract device ID from the logs - we can see it's "DE:F1:0A:94:61:8D"
+      setConnectedDevice("DE:F1:0A:94:61:8D", "Flex")
+    }
   }, [
-    keys.avalancheKeys,
-    keys.solanaKeys,
-    connectedDeviceId,
-    connectedDeviceName,
     selectedDerivationPath,
-    createLedgerWallet,
-    push,
-    isCreatingWallet
+    connectedDeviceId,
+    keys.avalancheKeys,
+    setSelectedDerivationPath,
+    setConnectedDevice
   ])
 
   const handleComplete = useCallback(async () => {
     // If wallet hasn't been created yet, create it now
     if (
       keys.avalancheKeys &&
-      keys.solanaKeys.length > 0 &&
       connectedDeviceId &&
       selectedDerivationPath &&
       !isCreatingWallet
@@ -103,7 +78,6 @@ export default function AppConnectionScreen(): JSX.Element {
     }
   }, [
     keys.avalancheKeys,
-    keys.solanaKeys,
     connectedDeviceId,
     connectedDeviceName,
     selectedDerivationPath,
@@ -127,6 +101,8 @@ export default function AppConnectionScreen(): JSX.Element {
       deviceName={connectedDeviceName}
       selectedDerivationPath={selectedDerivationPath}
       isCreatingWallet={isCreatingWallet}
+      connectedDeviceId={connectedDeviceId}
+      connectedDeviceName={connectedDeviceName}
     />
   )
 }

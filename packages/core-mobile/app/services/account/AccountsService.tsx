@@ -107,6 +107,7 @@ class AccountsService {
     walletId: string
     name: string
   }): Promise<Account> {
+
     if (walletType === WalletType.UNSET) throw new Error('invalid wallet type')
 
     if (walletType === WalletType.SEEDLESS) {
@@ -218,17 +219,20 @@ class AccountsService {
     accountIndex?: number
     isTestnet: boolean
   }): Promise<Record<NetworkVMType, string>> {
+
     // all vm modules need is just the isTestnet flag
     const network = {
       isTestnet
     } as Network
 
-    return ModuleManager.deriveAddresses({
+    const addresses = await ModuleManager.deriveAddresses({
       walletId,
       walletType,
       accountIndex,
       network
     })
+
+    return addresses
   }
 
   async getAccountName({

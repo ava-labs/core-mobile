@@ -74,10 +74,12 @@ export class LedgerWallet implements Wallet {
   private bitcoinWallet?: BitcoinLedgerWallet
 
   constructor(ledgerData: LedgerWalletData) {
+
     this.deviceId = ledgerData.deviceId
     this.derivationPath = ledgerData.derivationPath
     this.derivationPathSpec = ledgerData.derivationPathSpec
     this.publicKeys = ledgerData.publicKeys
+
 
     /**
      * Handle extended keys based on derivation path type
@@ -793,6 +795,7 @@ export class LedgerWallet implements Wallet {
     derivationPath?: string
     curve: Curve
   }): Promise<string> {
+
     if (derivationPath === undefined) {
       throw new Error(
         'derivationPath is required to get public key for LedgerWallet'
@@ -803,11 +806,13 @@ export class LedgerWallet implements Wallet {
       throw new Error('No public keys available for LedgerWallet')
     }
 
+
     // Find the public key that matches the derivation path and curve
     const matchingPublicKey = this.publicKeys.find(pk => {
       const curveMatches =
         (curve === Curve.SECP256K1 && pk.curve === 'secp256k1') ||
         (curve === Curve.ED25519 && pk.curve === 'ed25519')
+
 
       return curveMatches && pk.derivationPath === derivationPath
     })

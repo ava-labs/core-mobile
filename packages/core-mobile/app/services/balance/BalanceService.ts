@@ -29,7 +29,10 @@ import { getLocalTokenId } from './utils/getLocalTokenId'
 import { mapBalanceResponseToLegacy } from './utils/mapBalanceResponseToLegacy'
 import { buildRequestItemsForAccount } from './utils/buildRequestItemsForAccount'
 
-type AccountId = string
+type NonXpNetwork = Exclude<
+  Network,
+  { vmName: NetworkVMType.AVM | NetworkVMType.PVM }
+>
 
 export class BalanceService {
   /**
@@ -63,11 +66,10 @@ export class BalanceService {
     networks,
     accounts,
     currency,
-    customTokens,
-    onBalanceLoaded
+    customTokens
   }: {
-    networks: Network[]
-    accounts: Account[]
+    network: NonXpNetwork
+    account: Account
     currency: string
     customTokens: Record<string, NetworkContractToken[] | undefined>
     onBalanceLoaded?: (
@@ -176,22 +178,17 @@ export class BalanceService {
                   ? [TokenType.NATIVE, TokenType.SPL]
                   : [TokenType.NATIVE, TokenType.ERC20]
 
-              balancesResponse = await module.getBalances({
-                customTokens: customTokensForNetwork,
-                addresses,
-                currency,
-                network: mapToVmNetwork(network),
-                storage,
-                tokenTypes
-              })
-            }
+        try {
+          const balancesResponse = await module.getBalances({
+            customTokens,
+            addresses: [accountAddress],
+            currency,
+            network: mapToVmNetwork(network),
+            storage: coingeckoInMemoryCache,
+            tokenTypes
+          })
 
-            // Process accounts
-            for (const address of addresses) {
-              const account = addressMap[address]
-              const balances = balancesResponse[address]
-
-              if (!account || !balances) continue
+          const balances = balancesResponse[accountAddress] ?? {}
 
               if ('error' in balances) {
                 partial[account.id] = {
@@ -204,22 +201,24 @@ export class BalanceService {
                 continue
               }
 
-              const tokens = Object.values(balances)
-                .filter((t): t is TokenWithBalance => !('error' in t))
-                .map(token => {
-                  const localId = isPChain(network.chainId)
-                    ? AVAX_P_ID
-                    : isXChain(network.chainId)
-                    ? AVAX_X_ID
-                    : getLocalTokenId(token)
+          const tokens = Object.values(balances)
+            // Keep only successful token entries
+            .filter((t): t is TokenWithBalance => !('error' in t))
+            .map(token => {
+              // TODO: remove xp network logic when platform account redesign is completed
+              const localId = isPChain(network.chainId)
+                ? AVAX_P_ID
+                : isXChain(network.chainId)
+                ? AVAX_X_ID
+                : getLocalTokenId(token)
 
-                  return {
-                    ...token,
-                    localId,
-                    networkChainId: network.chainId,
-                    isDataAccurate: true
-                  }
-                })
+              return {
+                ...token,
+                localId,
+                networkChainId: network.chainId,
+                isDataAccurate: true
+              }
+            })
 
               partial[account.id] = {
                 accountId: account.id,
