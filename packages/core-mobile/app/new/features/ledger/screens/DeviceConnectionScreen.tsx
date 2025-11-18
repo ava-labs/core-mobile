@@ -1,15 +1,11 @@
 import React, { useCallback } from 'react'
 import { View, Alert, ActivityIndicator } from 'react-native'
 import { useRouter } from 'expo-router'
-import { Text, Button, useTheme, GroupList, Icons } from '@avalabs/k2-alpine'
+import { Button, useTheme, Icons } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIconWithText'
-
-interface LedgerDevice {
-  id: string
-  name: string
-}
+import { LedgerDeviceList } from 'new/features/ledger/components/LedgerDeviceList'
 
 export default function DeviceConnectionScreen(): JSX.Element {
   const { push, back } = useRouter()
@@ -52,44 +48,6 @@ export default function DeviceConnectionScreen(): JSX.Element {
     resetSetup()
     back()
   }, [resetSetup, back])
-
-  const deviceListData = devices.map((device: LedgerDevice) => ({
-    title: device.name || 'Ledger Device',
-    subtitle: (
-      <Text
-        variant="caption"
-        sx={{ fontSize: 13, paddingTop: 4, color: colors.$textSecondary }}>
-        Found over Bluetooth
-      </Text>
-    ),
-    leftIcon: (
-      <View
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: 20,
-          backgroundColor: colors.$surfaceSecondary,
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-        <Icons.Custom.Bluetooth
-          color={colors.$textPrimary}
-          width={24}
-          height={24}
-        />
-      </View>
-    ),
-    accessory: (
-      <Button
-        type="primary"
-        size="small"
-        onPress={() => handleDeviceConnection(device.id, device.name)}
-        disabled={isConnecting}>
-        {isConnecting ? 'Connecting...' : 'Connect'}
-      </Button>
-    ),
-    onPress: () => handleDeviceConnection(device.id, device.name)
-  }))
 
   const renderFooter = useCallback(() => {
     return (
@@ -171,7 +129,11 @@ export default function DeviceConnectionScreen(): JSX.Element {
               ? { justifyContent: 'flex-end', marginBottom: -20 }
               : { paddingTop: 24 })
           }}>
-          <GroupList itemHeight={56} data={deviceListData} />
+          <LedgerDeviceList
+            devices={devices}
+            onDevicePress={handleDeviceConnection}
+            isConnecting={isConnecting}
+          />
         </View>
       )}
     </ScrollScreen>

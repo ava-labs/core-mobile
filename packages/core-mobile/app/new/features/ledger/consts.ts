@@ -5,7 +5,7 @@ export const DERIVATION_PATHS = {
     EVM: "m/44'/60'/0'/0/0",
     AVALANCHE: "m/44'/9000'/0'/0/0",
     PVM: "m/44'/9000'/0'/0/0", // Same as Avalanche for now
-    SOLANA: "m/44'/501'/0'/0'",
+    SOLANA: "m/44'/501'/0'/0/0",
     BITCOIN: "m/44'/0'/0'/0/0"
   },
 
@@ -14,7 +14,7 @@ export const DERIVATION_PATHS = {
     EVM: (accountIndex: number) => `m/44'/60'/${accountIndex}'/0/0`,
     AVALANCHE: (accountIndex: number) => `m/44'/9000'/${accountIndex}'/0/0`,
     PVM: (accountIndex: number) => `m/44'/9000'/${accountIndex}'/0/0`,
-    SOLANA: (accountIndex: number) => `m/44'/501'/${accountIndex}'/0'`,
+    SOLANA: (accountIndex: number) => `m/44'/501'/${accountIndex}'/0/0`,
     BITCOIN: (accountIndex: number) => `m/44'/0'/${accountIndex}'/0/0`
   },
 
@@ -26,10 +26,10 @@ export const DERIVATION_PATHS = {
 } as const
 
 // Raw derivation paths for Solana (without m/ prefix)
-export const SOLANA_DERIVATION_PATH = "44'/501'/0'/0'/0"
+export const SOLANA_DERIVATION_PATH = "44'/501'/0'/0/0"
 
 // Solana derivation path prefix for generating indexed paths
-export const SOLANA_DERIVATION_PATH_PREFIX = "44'/501'/0'/0'"
+export const SOLANA_DERIVATION_PATH_PREFIX = "44'/501'/0'/0"
 
 /**
  * Generate a Solana derivation path for a specific account index
