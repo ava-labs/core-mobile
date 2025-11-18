@@ -6,263 +6,238 @@ import {
   type NetworkContractToken,
   type TokenWithBalance,
   type Error,
-  TokenType,
-  GetBalancesResponse
+  TokenType
 } from '@avalabs/vm-module-types'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
-import {
-  isPChain,
-  isXChain,
-  isXPNetwork
-} from 'utils/network/isAvalancheNetwork'
+import { chunk } from 'lodash'
+import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import Logger from 'utils/Logger'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { NormalizedBalancesForAccount } from './types'
+import { LocalTokenWithBalance } from 'store/balance/types'
+import {
+  NormalizedBalancesForAccount,
+  NormalizedBalancesForXpAddress
+} from './types'
 import { AVAX_P_ID, AVAX_X_ID } from './const'
 import { getLocalTokenId } from './utils'
 
-type AccountId = string
+type NonXpNetwork = Exclude<
+  Network,
+  { vmName: NetworkVMType.AVM | NetworkVMType.PVM }
+>
 
 export class BalanceService {
   /**
-   * Fetch balances for multiple accounts across multiple networks.
-   * Uses Promise.allSettled so each network resolves independently.
-   *
-   * @returns a map of accountId → NormalizedBalancesForAccount[]
-   * @example
-   * {
-   *   'some-account-id': [
-   *     {
-   *       accountId: 'some-account-id',
-   *       chainId: 43114,
-   *       accountAddress: '0x123',
-   *       tokens: [
-   *         {
-   *           address: '0x123',
-   *           balance: '100',
-   *           decimals: 18,
-   *           symbol: 'ETH',
-   *           name: 'Ethereum'
-   *         }
-   *       ],
-   *       dataAccurate: true,
-   *       error: null
-   *     }
-   *   ]
-   * }
+   * Fetch balances for an account on a given non XP network
+   * and return normalized results with accuracy + localId mapping.
    */
-  // eslint-disable-next-line sonarjs/cognitive-complexity
-  async getBalancesForAccounts({
-    networks,
-    accounts,
+  async getBalancesForAccount({
+    network,
+    account,
     currency,
-    customTokens,
-    onBalanceLoaded
+    customTokens
   }: {
-    networks: Network[]
-    accounts: Account[]
+    network: NonXpNetwork
+    account: Account
     currency: string
-    customTokens: Record<string, NetworkContractToken[] | undefined>
-    onBalanceLoaded?: (
-      networkChainId: number,
-      partial: Record<AccountId, NormalizedBalancesForAccount>
-    ) => void
-  }): Promise<Record<AccountId, NormalizedBalancesForAccount[]>> {
-    // Final aggregated result
-    const finalResults: Record<AccountId, NormalizedBalancesForAccount[]> = {}
-    for (const account of accounts) {
-      finalResults[account.id] = []
-    }
+    customTokens?: NetworkContractToken[]
+  }): Promise<NormalizedBalancesForAccount> {
+    return SentryWrapper.startSpan(
+      {
+        name: 'get-balances',
+        contextName: 'svc.balance.get_for_account',
+        attributes: {
+          chainId: network.chainId,
+          chainName: network.chainName
+        }
+      },
+      async span => {
+        const accountAddress = getAddressByNetwork(account, network)
+        const module = await ModuleManager.loadModuleByNetwork(network)
 
-    const networkPromises = networks.map(network =>
-      SentryWrapper.startSpan(
-        {
-          name: 'get-balances',
-          contextName: 'svc.balance.get_for_accounts',
-          attributes: {
-            chainId: network.chainId,
-            chainName: network.chainName,
-            accountLength: accounts.length
+        const tokenTypes =
+          network.vmName === NetworkVMType.SVM
+            ? [TokenType.NATIVE, TokenType.SPL]
+            : [TokenType.NATIVE, TokenType.ERC20]
+
+        try {
+          const balancesResponse = await module.getBalances({
+            customTokens,
+            addresses: [accountAddress],
+            currency,
+            network: mapToVmNetwork(network),
+            storage: coingeckoInMemoryCache,
+            tokenTypes
+          })
+
+          const balances = balancesResponse[accountAddress] ?? {}
+
+          if ('error' in balances) {
+            throw balances.error
           }
-        },
-        async span => {
-          // Prepare partial result for this single network
-          const partial: Record<AccountId, NormalizedBalancesForAccount> = {}
 
-          try {
-            const module = await ModuleManager.loadModuleByNetwork(network)
+          const tokens = Object.values(balances)
+            // Keep only successful token entries
+            .filter((t): t is TokenWithBalance => !('error' in t))
+            .map(token => {
+              // TODO: remove xp network logic when platform account redesign is completed
+              const localId = isPChain(network.chainId)
+                ? AVAX_P_ID
+                : isXChain(network.chainId)
+                ? AVAX_X_ID
+                : getLocalTokenId(token)
 
-            // Map address → account
-            const addressMap = accounts.reduce((acc, account) => {
-              acc[getAddressByNetwork(account, network)] = account
-              return acc
-            }, {} as Record<string, Account>)
-
-            const addresses = Object.keys(addressMap)
-            const customTokensForNetwork =
-              customTokens[network.chainId.toString()] ?? []
-            const storage = coingeckoInMemoryCache
-
-            let balancesResponse: GetBalancesResponse
-
-            /**
-             * SPECIAL CASE:
-             * For AVM / PVM network, module.getBalances()
-             * only returns the first address.
-             * → We must loop each address and run getBalances in parallel.
-             */
-            if (isXPNetwork(network)) {
-              const perAddressPromises = addresses.map(address =>
-                module
-                  .getBalances({
-                    customTokens: customTokensForNetwork,
-                    addresses: [address],
-                    currency,
-                    network: mapToVmNetwork(network),
-                    storage,
-                    tokenTypes: [TokenType.NATIVE]
-                  })
-                  .then(res => ({ address, res }))
-                  .catch(err => ({
-                    address,
-                    res: { [address]: { error: err as Error } }
-                  }))
-              )
-
-              const settled = await Promise.allSettled(perAddressPromises)
-
-              balancesResponse = settled.reduce((acc, r) => {
-                if (r.status === 'fulfilled') {
-                  const { address, res } = r.value
-                  acc[address] = Object.assign({}, res[address])
-                }
-                return acc
-              }, {} as GetBalancesResponse)
-
-              /**
-               * NORMAL CASE :
-               * For other networks, module.getBalances() handles batching correctly
-               * For AVM / PVM network, module.getBalances()
-               */
-            } else {
-              const tokenTypes =
-                network.vmName === NetworkVMType.SVM
-                  ? [TokenType.NATIVE, TokenType.SPL]
-                  : [TokenType.NATIVE, TokenType.ERC20]
-
-              balancesResponse = await module.getBalances({
-                customTokens: customTokensForNetwork,
-                addresses,
-                currency,
-                network: mapToVmNetwork(network),
-                storage,
-                tokenTypes
-              })
-            }
-
-            // Process accounts
-            for (const address of addresses) {
-              const account = addressMap[address]
-              const balances = balancesResponse[address]
-
-              if (!account || !balances) continue
-
-              if ('error' in balances) {
-                partial[account.id] = {
-                  accountId: account.id,
-                  chainId: network.chainId,
-                  accountAddress: address,
-                  tokens: [],
-                  dataAccurate: false,
-                  error: balances.error as Error
-                }
-                continue
+              return {
+                ...token,
+                localId,
+                networkChainId: network.chainId,
+                isDataAccurate: true
               }
-
-              const tokens = Object.values(balances)
-                .filter((t): t is TokenWithBalance => !('error' in t))
-                .map(token => {
-                  const localId = isPChain(network.chainId)
-                    ? AVAX_P_ID
-                    : isXChain(network.chainId)
-                    ? AVAX_X_ID
-                    : getLocalTokenId(token)
-
-                  return {
-                    ...token,
-                    localId,
-                    networkChainId: network.chainId,
-                    isDataAccurate: true
-                  }
-                })
-
-              partial[account.id] = {
-                accountId: account.id,
-                chainId: network.chainId,
-                accountAddress: address,
-                tokens,
-                dataAccurate: true,
-                error: null
-              }
-            }
-
-            // Progressive update callback
-            onBalanceLoaded?.(network.chainId, partial)
-
-            // Merge into final result
-            for (const accountId of Object.keys(partial)) {
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              finalResults[accountId]!.push(partial[accountId]!)
-            }
-          } catch (err) {
-            span?.setStatus({
-              code: SPAN_STATUS_ERROR,
-              message: err instanceof Error ? err.message : 'unknown error'
             })
 
-            Logger.error(
-              `[BalanceService][getBalancesForAccounts] failed for network ${network.chainId}`,
-              err
-            )
-
-            // Create error partial for this network
-            const errorPartial: Record<
-              AccountId,
-              NormalizedBalancesForAccount
-            > = {}
-
-            // Mark all accounts errored for this network
-            for (const account of accounts) {
-              const address = getAddressByNetwork(account, network)
-
-              errorPartial[account.id] = {
-                accountId: account.id,
-                chainId: network.chainId,
-                accountAddress: address,
-                tokens: [],
-                dataAccurate: false,
-                error: err as Error
-              }
-
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              finalResults[account.id]!.push(errorPartial[account.id]!)
-            }
-            // Still notify UI for progressive updates
-            onBalanceLoaded?.(network.chainId, errorPartial)
-          } finally {
-            span?.end()
+          return {
+            accountId: account.id,
+            chainId: network.chainId,
+            accountAddress,
+            tokens,
+            dataAccurate: true,
+            error: null
           }
+        } catch (err) {
+          span?.setStatus({
+            code: SPAN_STATUS_ERROR,
+            message: err instanceof Error ? err.message : 'unknown error'
+          })
+          Logger.error(
+            `[BalanceService][getBalancesForAccount] failed to fetch balances for network ${network.chainId}`,
+            err
+          )
+          return {
+            accountId: account.id,
+            chainId: network.chainId,
+            accountAddress,
+            tokens: [],
+            dataAccurate: false,
+            error: err as Error
+          }
+        } finally {
+          span?.end()
         }
-      )
+      }
+    )
+  }
+
+  /**
+   * Get balances for active addresses on XP chains (P-Chain / X-Chain).
+   *
+   * Handles batching up to 64 addresses per request and returns
+   * a map of address → normalized balance object (including token metadata and accuracy flags).
+   */
+  async getXPBalances({
+    currency,
+    network,
+    addresses
+  }: {
+    currency: string
+    network: Network & { vmName: NetworkVMType.AVM | NetworkVMType.PVM }
+    addresses: string[]
+  }): Promise<Record<string, NormalizedBalancesForXpAddress>> {
+    const allBalances: Record<string, NormalizedBalancesForXpAddress> = {}
+
+    // avalancheModule.getBalances can only process up to 64 addresses at a time
+    const chunkSize = 64
+    const chunks = chunk(addresses, chunkSize)
+
+    await Promise.all(
+      // eslint-disable-next-line sonarjs/cognitive-complexity
+      chunks.map(async (batch: string[]) => {
+        return SentryWrapper.startSpan(
+          {
+            name: 'get-balances',
+            contextName: 'svc.balance.get_for_xp_networks',
+            attributes: {
+              chainId: network.chainId,
+              chainName: network.chainName,
+              batchSize: batch.length
+            }
+          },
+          async span => {
+            try {
+              const balancesResponse =
+                await ModuleManager.avalancheModule.getBalances({
+                  addresses: batch,
+                  currency,
+                  network: mapToVmNetwork(network),
+                  storage: coingeckoInMemoryCache,
+                  tokenTypes: [TokenType.NATIVE]
+                })
+
+              for (const address in balancesResponse) {
+                const balances = balancesResponse[address] ?? {}
+
+                // Handle RPC or Glacier error per address
+                if ('error' in balances) {
+                  allBalances[address] = {
+                    accountAddress: address,
+                    chainId: network.chainId,
+                    tokens: [],
+                    dataAccurate: false,
+                    error: balances.error as Error
+                  }
+
+                  continue
+                }
+
+                // Normalize tokens
+                const tokens = Object.values(balances).map(token => ({
+                  ...token,
+                  localId: isPChain(network.chainId) ? AVAX_P_ID : AVAX_X_ID,
+                  networkChainId: network.chainId,
+                  isDataAccurate: !('error' in token),
+                  error: 'error' in token ? token.error : null
+                })) as LocalTokenWithBalance[]
+
+                const dataAccurate = tokens.every(t => t.isDataAccurate)
+
+                allBalances[address] = {
+                  accountAddress: address,
+                  chainId: network.chainId,
+                  tokens,
+                  dataAccurate,
+                  error: null
+                }
+              }
+            } catch (err) {
+              span?.setStatus({
+                code: SPAN_STATUS_ERROR,
+                message: err instanceof Error ? err.message : 'unknown error'
+              })
+              Logger.error(
+                `[BalanceService][getXPBalances] failed to fetch balances for network ${network.chainId}`,
+                err
+              )
+              // Handle chunk-level error gracefully
+              batch.forEach(address => {
+                allBalances[address] = {
+                  accountAddress: address,
+                  chainId: network.chainId,
+                  tokens: [],
+                  dataAccurate: false,
+                  error: err as Error
+                }
+              })
+            } finally {
+              span?.end()
+            }
+          }
+        )
+      })
     )
 
-    // Execute everything in parallel
-    await Promise.allSettled(networkPromises)
-
-    return finalResults
+    return allBalances
   }
 }
 
