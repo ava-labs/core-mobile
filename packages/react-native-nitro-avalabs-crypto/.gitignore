@@ -84,3 +84,7 @@ lib/
 
 # Nitro Modules
 nitrogen/
+
+ios/secp256k1-src
+ios/secp-build
+ios/secp-out
