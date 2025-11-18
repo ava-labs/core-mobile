@@ -43,7 +43,8 @@ import {
   InteractionManager,
   LayoutChangeEvent,
   LayoutRectangle,
-  Platform
+  Platform,
+  Pressable
 } from 'react-native'
 import Animated, {
   useAnimatedStyle,
@@ -254,6 +255,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
     return <HiddenBalanceText variant={'heading2'} sx={{ lineHeight: 38 }} />
   }, [])
 
+  const openWalletsModal = useCallback(() => {
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/(signedIn)/(modals)/wallets'
+    })
+  }, [navigate])
+
   const renderHeader = useCallback((): JSX.Element => {
     return (
       <View
@@ -271,29 +279,31 @@ const PortfolioHomeScreen = (): JSX.Element => {
               },
               animatedHeaderStyle
             ]}>
-            <BalanceHeader
-              testID="portfolio"
-              accountName={activeAccount?.name}
-              formattedBalance={formattedBalance}
-              currency={selectedCurrency}
-              priceChange={
-                totalPriceChange !== 0
-                  ? {
-                      formattedPrice: valueChange24h,
-                      status: indicatorStatus,
-                      formattedPercent: percentChange24h
-                    }
-                  : undefined
-              }
-              errorMessage={
-                balanceAccurate ? undefined : 'Unable to load all balances'
-              }
-              isLoading={isLoading && balanceTotalInCurrency === 0}
-              isLoadingBalances={isLoadingBalances || isLoading}
-              isPrivacyModeEnabled={isPrivacyModeEnabled}
-              isDeveloperModeEnabled={isDeveloperMode}
-              renderMaskView={renderMaskView}
-            />
+            <Pressable onPress={openWalletsModal}>
+              <BalanceHeader
+                testID="portfolio"
+                accountName={activeAccount?.name}
+                formattedBalance={formattedBalance}
+                currency={selectedCurrency}
+                priceChange={
+                  totalPriceChange !== 0
+                    ? {
+                        formattedPrice: valueChange24h,
+                        status: indicatorStatus,
+                        formattedPercent: percentChange24h
+                      }
+                    : undefined
+                }
+                errorMessage={
+                  balanceAccurate ? undefined : 'Unable to load all balances'
+                }
+                isLoading={isLoading && balanceTotalInCurrency === 0}
+                isLoadingBalances={isLoadingBalances || isLoading}
+                isPrivacyModeEnabled={isPrivacyModeEnabled}
+                isDeveloperModeEnabled={isDeveloperMode}
+                renderMaskView={renderMaskView}
+              />
+            </Pressable>
           </Animated.View>
         </View>
 
@@ -313,6 +323,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleStickyHeaderLayout,
     handleBalanceHeaderLayout,
     animatedHeaderStyle,
+    openWalletsModal,
     activeAccount?.name,
     formattedBalance,
     selectedCurrency,

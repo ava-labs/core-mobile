@@ -63,6 +63,8 @@ interface ListScreenProps<T>
   > {
   /** The title displayed in the screen header */
   title: string
+  /** Optional subtitle displayed below the title */
+  subtitle?: string
   /** Optional title to display in the navigation bar */
   navigationTitle?: string
   /** Array of data items to be rendered in the list */
@@ -88,6 +90,7 @@ const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 export const ListScreen = <T,>({
   data,
   title,
+  subtitle,
   navigationTitle,
   hasParent,
   isModal,
@@ -195,9 +198,15 @@ export const ListScreen = <T,>({
               <View
                 ref={headerRef}
                 style={{
-                  paddingBottom: 12
+                  paddingBottom: 12,
+                  gap: 6
                 }}>
                 <Text variant="heading2">{title}</Text>
+                {subtitle ? (
+                  <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
+                    {subtitle}
+                  </Text>
+                ) : null}
               </View>
             </Animated.View>
           ) : null}
@@ -231,7 +240,8 @@ export const ListScreen = <T,>({
     headerRef,
     headerHeight,
     renderHeader,
-    title
+    title,
+    subtitle
   ])
 
   const ListEmptyComponent = useMemo(() => {
