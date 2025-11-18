@@ -2,11 +2,6 @@ import { NetworkContractToken, NetworkToken } from '@avalabs/vm-module-types'
 import { useAvalancheErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useCallback } from 'react'
-import { LocalTokenWithBalance } from 'store/balance'
-import { useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/account'
-import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
-import { findMatchingTokenWithBalance } from '../utils/findMatchingTokenWithBalance'
 
 export const useGetCChainToken = (): ((
   symbol: string,
@@ -33,23 +28,5 @@ export const useGetCChainToken = (): ((
       return undefined
     },
     [avalancheErc20ContractTokens, cChainNetwork]
-  )
-}
-
-export const useGetCChainTokenWithBalance = (): ((asset: {
-  symbol: string
-  contractAddress?: string
-}) => LocalTokenWithBalance | undefined) => {
-  const activeAccount = useSelector(selectActiveAccount)
-  const cChainNetwork = useCChainNetwork()
-  const tokens = useTokensWithBalanceByNetworkForAccount(
-    activeAccount,
-    cChainNetwork?.chainId
-  )
-  return useCallback(
-    (asset: { symbol: string; contractAddress?: string }) => {
-      return findMatchingTokenWithBalance(asset, tokens)
-    },
-    [tokens]
   )
 }
