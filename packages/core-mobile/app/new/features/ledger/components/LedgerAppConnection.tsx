@@ -1,17 +1,18 @@
-import React, { useState, useCallback, useEffect } from 'react'
-import { View } from 'react-native'
-import { Text, Button, useTheme, Icons } from '@avalabs/k2-alpine'
-import { ScrollScreen } from 'common/components/ScrollScreen'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
+import { View, ScrollView } from 'react-native'
+import { Text, Button, useTheme, Icons, GroupList } from '@avalabs/k2-alpine'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { ProgressDots } from 'common/components/ProgressDots'
+import { LoadingState } from 'common/components/LoadingState'
 import { LedgerDerivationPathType } from 'services/ledger/types'
 import { AnimatedIconWithText } from './AnimatedIconWithText'
+import { LedgerDeviceList } from './LedgerDeviceList'
 
 enum AppConnectionStep {
   AVALANCHE_CONNECT = 'avalanche-connect',
   AVALANCHE_LOADING = 'avalanche-loading',
-  AVALANCHE_SUCCESS = 'avalanche-success',
   SOLANA_CONNECT = 'solana-connect',
   SOLANA_LOADING = 'solana-loading',
-  SOLANA_SUCCESS = 'solana-success',
   COMPLETE = 'complete'
 }
 
@@ -23,6 +24,8 @@ interface LedgerAppConnectionProps {
   deviceName: string
   selectedDerivationPath: LedgerDerivationPathType | null
   isCreatingWallet?: boolean
+  connectedDeviceId?: string | null
+  connectedDeviceName?: string
 }
 
 export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
@@ -31,12 +34,15 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   getSolanaKeys,
   getAvalancheKeys,
   deviceName,
-  selectedDerivationPath,
-  isCreatingWallet = false
+  selectedDerivationPath: _selectedDerivationPath,
+  isCreatingWallet = false,
+  connectedDeviceId,
+  connectedDeviceName
 }) => {
   const {
     theme: { colors }
   } = useTheme()
+  const insets = useSafeAreaInsets()
 
   const [currentStep, setCurrentStep] = useState<AppConnectionStep>(
     AppConnectionStep.AVALANCHE_CONNECT
@@ -45,31 +51,12 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
 
   // Auto-progress through steps
   useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout>
+    if (currentStep === AppConnectionStep.COMPLETE && !isCreatingWallet) {
+      const timeoutId = setTimeout(() => {
+        onComplete()
+      }, 1500)
 
-    switch (currentStep) {
-      case AppConnectionStep.AVALANCHE_SUCCESS:
-        timeoutId = setTimeout(() => {
-          setCurrentStep(AppConnectionStep.SOLANA_CONNECT)
-        }, 2000)
-        break
-      case AppConnectionStep.SOLANA_SUCCESS:
-        timeoutId = setTimeout(() => {
-          setCurrentStep(AppConnectionStep.COMPLETE)
-        }, 2000)
-        break
-      case AppConnectionStep.COMPLETE:
-        // Don't auto-navigate if wallet is being created
-        if (!isCreatingWallet) {
-          timeoutId = setTimeout(() => {
-            onComplete()
-          }, 1500)
-        }
-        break
-    }
-
-    return () => {
-      if (timeoutId) {
+      return () => {
         clearTimeout(timeoutId)
       }
     }
@@ -81,7 +68,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
       setCurrentStep(AppConnectionStep.AVALANCHE_LOADING)
 
       await getAvalancheKeys()
-      setCurrentStep(AppConnectionStep.AVALANCHE_SUCCESS)
+      // Skip success step and go directly to Solana connect
+      setCurrentStep(AppConnectionStep.SOLANA_CONNECT)
     } catch (err) {
       setError(
         'Failed to connect to Avalanche app. Please make sure the Avalanche app is open on your Ledger.'
@@ -96,7 +84,9 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
       setCurrentStep(AppConnectionStep.SOLANA_LOADING)
 
       await getSolanaKeys()
-      setCurrentStep(AppConnectionStep.SOLANA_SUCCESS)
+      
+      // Skip success step and go directly to complete
+      setCurrentStep(AppConnectionStep.COMPLETE)
     } catch (err) {
       setError(
         'Failed to connect to Solana app. Please make sure the Solana app is open on your Ledger.'
@@ -104,6 +94,11 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
       setCurrentStep(AppConnectionStep.SOLANA_CONNECT)
     }
   }, [getSolanaKeys])
+
+  const handleSkipSolana = useCallback(() => {
+    // Skip Solana and proceed to complete step
+    setCurrentStep(AppConnectionStep.COMPLETE)
+  }, [])
 
   const renderStepContent = (): React.ReactNode => {
     switch (currentStep) {
@@ -180,43 +175,6 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           </View>
         )
 
-      case AppConnectionStep.AVALANCHE_SUCCESS:
-        return (
-          <View style={{ alignItems: 'center', paddingVertical: 48 }}>
-            <View
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 32,
-                backgroundColor: colors.$textSuccess,
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 24
-              }}>
-              <Icons.Action.CheckCircle
-                color={colors.$white}
-                width={32}
-                height={32}
-              />
-            </View>
-            <Text
-              variant="heading4"
-              style={{ textAlign: 'center', marginBottom: 16 }}>
-              Avalanche Connected!
-            </Text>
-            <Text
-              variant="body1"
-              style={{
-                textAlign: 'center',
-                color: colors.$textSecondary,
-                maxWidth: 320
-              }}>
-              Successfully retrieved your Avalanche addresses. Now let's connect
-              to Solana...
-            </Text>
-          </View>
-        )
-
       case AppConnectionStep.SOLANA_CONNECT:
         return (
           <View style={{ flex: 1 }}>
@@ -265,8 +223,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
                 Continue
               </Button>
 
-              <Button type="tertiary" size="large" onPress={onCancel}>
-                Cancel Setup
+              <Button type="tertiary" size="large" onPress={handleSkipSolana}>
+                Skip Solana
               </Button>
             </View>
           </View>
@@ -290,99 +248,91 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           </View>
         )
 
-      case AppConnectionStep.SOLANA_SUCCESS:
-        return (
-          <View style={{ alignItems: 'center', paddingVertical: 48 }}>
-            <View
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 32,
-                backgroundColor: colors.$textSuccess,
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 24
-              }}>
-              <Icons.Action.CheckCircle
-                color={colors.$white}
-                width={32}
-                height={32}
-              />
-            </View>
-            <Text
-              variant="heading4"
-              style={{ textAlign: 'center', marginBottom: 16 }}>
-              Solana Connected!
-            </Text>
-            <Text
-              variant="body1"
-              style={{
-                textAlign: 'center',
-                color: colors.$textSecondary,
-                maxWidth: 320
-              }}>
-              Successfully retrieved your Solana addresses. Setting up your
-              wallet...
-            </Text>
-          </View>
-        )
-
       case AppConnectionStep.COMPLETE:
         return (
-          <View style={{ alignItems: 'center', paddingVertical: 48 }}>
-            {isCreatingWallet ? (
-              <>
-                <LoadingState sx={{ marginBottom: 24 }} />
-                <Text
-                  variant="heading4"
-                  style={{ textAlign: 'center', marginBottom: 16 }}>
-                  Creating Wallet...
-                </Text>
-                <Text
-                  variant="body1"
-                  style={{
-                    textAlign: 'center',
-                    color: colors.$textSecondary,
-                    maxWidth: 320
-                  }}>
-                  Setting up your Ledger wallet. This may take a moment...
-                </Text>
-              </>
-            ) : (
-              <>
-                <View
-                  style={{
-                    width: 64,
-                    height: 64,
-                    borderRadius: 32,
-                    backgroundColor: colors.$textSuccess,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: 24
-                  }}>
-                  <Icons.Action.CheckCircle
-                    color={colors.$white}
-                    width={32}
-                    height={32}
-                  />
-                </View>
-                <Text
-                  variant="heading4"
-                  style={{ textAlign: 'center', marginBottom: 16 }}>
-                  Apps Connected!
-                </Text>
-                <Text
-                  variant="body1"
-                  style={{
-                    textAlign: 'center',
-                    color: colors.$textSecondary,
-                    maxWidth: 320
-                  }}>
-                  Both Avalanche and Solana apps are connected. Proceeding to
-                  wallet setup...
-                </Text>
-              </>
-            )}
+          <View style={{ flex: 1, paddingHorizontal: 16 }}>
+            {/* Header with refresh icon and title */}
+            <View style={{ alignItems: 'center', paddingVertical: 32 }}>
+              <View
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 40,
+                  backgroundColor: colors.$surfaceSecondary,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 24
+                }}>
+                <Icons.Action.CheckCircle
+                  color={colors.$textPrimary}
+                  width={40}
+                  height={40}
+                />
+              </View>
+
+              <Text
+                variant="heading3"
+                style={{ textAlign: 'center', marginBottom: 8 }}>
+                Your Ledger wallet
+              </Text>
+              <Text
+                variant="heading3"
+                style={{ textAlign: 'center', marginBottom: 16 }}>
+                is being set up
+              </Text>
+
+              <Text
+                variant="body1"
+                style={{
+                  textAlign: 'center',
+                  color: colors.$textSecondary,
+                  maxWidth: 280,
+                  lineHeight: 20
+                }}>
+                The BIP44 setup is in progress and should take about 15 seconds.
+                Keep your device connected during setup.
+              </Text>
+            </View>
+
+            {/* Setup progress list */}
+            <View style={{ flex: 1, marginTop: 32 }}>
+              <GroupList
+                data={[
+                  {
+                    title: 'Lorem ipsum dolor',
+                    rightIcon: (
+                      <Icons.Action.CheckCircle
+                        color={colors.$textSuccess}
+                        width={24}
+                        height={24}
+                      />
+                    )
+                  },
+                  {
+                    title: 'Sit amet lorem ipsum',
+                    rightIcon: (
+                      <Icons.Action.CheckCircle
+                        color={colors.$textSuccess}
+                        width={24}
+                        height={24}
+                      />
+                    )
+                  },
+                  {
+                    title: 'Storing wallet data',
+                    rightIcon: <LoadingState />
+                  }
+                ]}
+                itemHeight={56}
+              />
+            </View>
+
+            {/* Cancel button */}
+            <View style={{ paddingBottom: 32, paddingTop: 16 }}>
+              <Button type="tertiary" size="large" onPress={onCancel}>
+                Cancel setup
+              </Button>
+            </View>
           </View>
         )
 
@@ -391,37 +341,61 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     }
   }
 
-  const getProgressText = (): string => {
-    const pathType =
-      selectedDerivationPath === LedgerDerivationPathType.LedgerLive
-        ? 'Ledger Live'
-        : 'BIP44'
-
+  const progressDotsCurrentStep = useMemo(() => {
     switch (currentStep) {
       case AppConnectionStep.AVALANCHE_CONNECT:
       case AppConnectionStep.AVALANCHE_LOADING:
-      case AppConnectionStep.AVALANCHE_SUCCESS:
-        return `Step 1 of 2: Avalanche (${pathType})`
+        return 0
+
       case AppConnectionStep.SOLANA_CONNECT:
       case AppConnectionStep.SOLANA_LOADING:
-      case AppConnectionStep.SOLANA_SUCCESS:
-        return `Step 2 of 2: Solana (${pathType})`
+        return 1
+
       case AppConnectionStep.COMPLETE:
-        return `Complete (${pathType})`
+        return 2
+
       default:
-        return ''
+        return 0
     }
-  }
+  }, [currentStep])
+
+  // Create device object for display
+  const connectedDevice = connectedDeviceId
+    ? [{ id: connectedDeviceId, name: connectedDeviceName || deviceName }]
+    : []
 
   return (
-    <ScrollScreen
-      title="Connect Ledger Apps"
-      subtitle={getProgressText()}
-      isModal
-      contentContainerStyle={{ padding: 16, flex: 1 }}>
-      <View style={{ flex: 1, justifyContent: 'center' }}>
-        {renderStepContent()}
+    <View style={{ flex: 1, backgroundColor: colors.$surfacePrimary }}>
+      <View
+        style={{
+          paddingTop: insets.top,
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          alignItems: 'center'
+        }}>
+        <ProgressDots totalSteps={3} currentStep={progressDotsCurrentStep} />
       </View>
-    </ScrollScreen>
+
+      {/* Show connected device */}
+      {connectedDevice.length > 0 && (
+        <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+          <LedgerDeviceList
+            devices={connectedDevice}
+            subtitleText="Connected via Bluetooth"
+            testID="connected_device_list"
+          />
+        </View>
+      )}
+
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          flex: 1,
+          padding: 16,
+          justifyContent: 'center'
+        }}>
+        {renderStepContent()}
+      </ScrollView>
+    </View>
   )
 }

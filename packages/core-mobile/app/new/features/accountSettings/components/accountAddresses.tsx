@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import {
   GroupList,
   useTheme,
@@ -27,9 +27,9 @@ export const AccountAddresses = ({
   } = useTheme()
   const { networks } = useCombinedPrimaryNetworks()
 
-  const onCopyAddress = (value: string, message: string): void => {
+  const onCopyAddress = useCallback((value: string, message: string): void => {
     copyToClipboard(value, message)
-  }
+  }, [])
 
   const data = useMemo(() => {
     return networks
@@ -87,7 +87,8 @@ export const AccountAddresses = ({
     account.addressPVM,
     account.addressSVM,
     colors.$surfaceSecondary,
-    networks
+    networks,
+    onCopyAddress
   ])
 
   return (
