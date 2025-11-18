@@ -70,12 +70,15 @@ class WalletFactory {
       }
       case WalletType.LEDGER:
       case WalletType.LEDGER_LIVE: {
+        
         const walletSecret = await BiometricsSDK.loadWalletSecret(walletId)
         if (!walletSecret.success) {
           throw new Error('Failed to load wallet secret')
         }
 
+        
         const ledgerData = JSON.parse(walletSecret.value)
+        
         return new LedgerWallet(ledgerData)
       }
       default:
