@@ -150,11 +150,11 @@ android {
         internal {
             applicationIdSuffix ".internal"
             buildConfigField "boolean", "ENABLE_FLAG_SECURE", "false"
-            manifestPlaceholders = [BRANCH_TEST_MODE:"true", BRANCH_KEY: project.env.get("BRANCH_KEY")]
+            manifestPlaceholders = [BRANCH_TEST_MODE:"true"]
         }
         external {
             buildConfigField "boolean", "ENABLE_FLAG_SECURE", "false"
-            manifestPlaceholders = [BRANCH_TEST_MODE:"false", BRANCH_KEY: project.env.get("BRANCH_KEY")]
+            manifestPlaceholders = [BRANCH_TEST_MODE:"false"]
         }
     }
 
