@@ -1,14 +1,10 @@
-import {
-  type QueryObserverResult,
-  type RefetchOptions,
-  skipToken,
-  useQuery
-} from '@tanstack/react-query'
+import { skipToken, useQuery } from '@tanstack/react-query'
 import { erc20Abi, Address, PublicClient } from 'viem'
 import { readContract } from 'viem/actions'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { Network } from '@avalabs/core-chains-sdk'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { type DefiMarket, MarketNames } from '../../types'
 import { gqlQuery } from '../../utils/gqlQuery'
 import {
@@ -45,11 +41,6 @@ export const useAaveAvailableMarkets = ({
   isLoading: boolean
   isPending: boolean
   isFetching: boolean
-  refetch:
-    | ((
-        options?: RefetchOptions
-      ) => Promise<QueryObserverResult<DefiMarket[], Error>>)
-    | (() => void)
 } => {
   const activeAccount = useSelector(selectActiveAccount)
   const addressEVM = activeAccount?.addressC
@@ -61,10 +52,10 @@ export const useAaveAvailableMarkets = ({
     isLoading: isLoadingEnrichedMarkets,
     isPending: isPendingEnrichedMarkets,
     isFetching: isFetchingEnrichedMarkets,
-    error: errorEnrichedMarkets,
-    refetch
+    error: errorEnrichedMarkets
   } = useQuery({
-    queryKey: ['useAaveAvailableMarkets', networkClient, network],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    queryKey: [ReactQueryKeys.AAVE_AVAILABLE_MARKETS, networkClient?.chain?.id],
     queryFn:
       networkClient && network && !isPendingMeritAprs
         ? async () => {
@@ -122,7 +113,7 @@ export const useAaveAvailableMarkets = ({
                   `,
                   {
                     request: {
-                      chainId: network?.chainId,
+                      chainId: network.chainId,
                       market: AAVE_POOL_C_CHAIN_ADDRESS,
                       underlyingToken: market.underlyingAsset,
                       window: 'LAST_MONTH'
@@ -207,8 +198,6 @@ export const useAaveAvailableMarkets = ({
     error: errorEnrichedMarkets,
     isLoading: isLoadingEnrichedMarkets,
     isPending: isPendingEnrichedMarkets,
-    isFetching: isFetchingEnrichedMarkets,
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    refetch: networkClient && !isPendingMeritAprs ? refetch : () => {}
+    isFetching: isFetchingEnrichedMarkets
   }
 }

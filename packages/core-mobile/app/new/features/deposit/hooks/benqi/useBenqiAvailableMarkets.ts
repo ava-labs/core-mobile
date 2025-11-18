@@ -1,9 +1,4 @@
-import {
-  type QueryObserverResult,
-  type RefetchOptions,
-  skipToken,
-  useQuery
-} from '@tanstack/react-query'
+import { skipToken, useQuery } from '@tanstack/react-query'
 import { readContract } from 'viem/actions'
 import { DefiMarket, MarketNames } from 'features/deposit/types'
 import { useSelector } from 'react-redux'
@@ -18,6 +13,7 @@ import { getBenqiUnderlyingTokenDetails } from 'features/deposit/utils/getBenqiU
 import { getBenqiUnderlyingTotalSupply } from 'features/deposit//utils/getBenqiUnderlyingTotalSupply'
 import { getUniqueMarketId } from 'features/deposit/utils/getUniqueMarketId'
 import { Network } from '@avalabs/core-chains-sdk'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useGetCChainToken } from '../useGetCChainToken'
 
 export const useBenqiAvailableMarkets = ({
@@ -32,11 +28,6 @@ export const useBenqiAvailableMarkets = ({
   isLoading: boolean
   isPending: boolean
   isFetching: boolean
-  refetch:
-    | ((
-        options?: RefetchOptions
-      ) => Promise<QueryObserverResult<DefiMarket[], Error>>)
-    | (() => void)
 } => {
   const activeAccount = useSelector(selectActiveAccount)
   const addressEVM = activeAccount?.addressC
@@ -47,10 +38,13 @@ export const useBenqiAvailableMarkets = ({
     isLoading: isLoadingEnrichedMarkets,
     isPending: isPendingEnrichedMarkets,
     isFetching: isFetchingEnrichedMarkets,
-    error: errorEnrichedMarkets,
-    refetch
+    error: errorEnrichedMarkets
   } = useQuery({
-    queryKey: ['useBenqiAvailableMarkets', networkClient, network],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    queryKey: [
+      ReactQueryKeys.BENQI_AVAILABLE_MARKETS,
+      networkClient?.chain?.id
+    ],
     queryFn:
       networkClient && network
         ? async () => {
@@ -157,8 +151,6 @@ export const useBenqiAvailableMarkets = ({
     error: errorEnrichedMarkets ?? null,
     isLoading: isLoadingEnrichedMarkets,
     isPending: isPendingEnrichedMarkets,
-    isFetching: isFetchingEnrichedMarkets,
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    refetch: networkClient ? refetch : () => {}
+    isFetching: isFetchingEnrichedMarkets
   }
 }
