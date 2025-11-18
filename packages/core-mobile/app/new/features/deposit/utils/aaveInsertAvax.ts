@@ -1,6 +1,5 @@
 import { BIG_ZERO } from '@avalabs/core-utils-sdk'
 import { CurrencyCode } from '@avalabs/glacier-sdk'
-import { LocalTokenWithBalance } from 'store/balance'
 import { AVALANCHE_MAINNET_NETWORK } from 'services/network/consts'
 import type { DefiMarket } from '../types'
 import {
@@ -17,10 +16,7 @@ import { getUniqueMarketId } from './getUniqueMarketId'
  * @param markets
  * @returns
  */
-export const aaveInsertAvax = (
-  markets: DefiMarket[],
-  avaxBalance: LocalTokenWithBalance | undefined
-): DefiMarket[] => {
+export const aaveInsertAvax = (markets: DefiMarket[]): DefiMarket[] => {
   const wavaxMarket = markets.find(
     market => market.asset.contractAddress === AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS
   )
@@ -76,8 +72,7 @@ export const aaveInsertAvax = (
       assetName: AVALANCHE_MAINNET_NETWORK.networkToken.name,
       symbol: AVALANCHE_MAINNET_NETWORK.networkToken.symbol,
       decimals: AVALANCHE_MAINNET_NETWORK.networkToken.decimals,
-      mintTokenAddress: AAVE_WRAPPED_AVAX_GATEWAY_ADDRESS,
-      underlyingTokenBalance: avaxBalance
+      mintTokenAddress: AAVE_WRAPPED_AVAX_GATEWAY_ADDRESS
     }
   }
 
