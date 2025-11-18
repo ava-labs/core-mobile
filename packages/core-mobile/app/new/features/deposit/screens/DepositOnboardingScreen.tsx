@@ -15,9 +15,8 @@ export const DepositOnboardingScreen = (): JSX.Element => {
     navigate('/deposit/selectAsset')
   }, [navigate])
 
-  const { data: availableMarkets, isPending: isPendingAvailableMarkets } =
-    useAvailableMarkets()
-  const highestApyMarket = availableMarkets
+  const { data: markets, isPending: isLoadingMarkets } = useAvailableMarkets()
+  const highestApyMarket = markets
     ?.sort((a, b) => b.supplyApyPercent - a.supplyApyPercent)[0]
     ?.supplyApyPercent?.toFixed(2)
 
@@ -50,7 +49,7 @@ export const DepositOnboardingScreen = (): JSX.Element => {
     )
   }, [theme, highestApyMarket])
 
-  if (isPendingAvailableMarkets) {
+  if (isLoadingMarkets) {
     return <LoadingState sx={{ flex: 1 }} />
   }
 

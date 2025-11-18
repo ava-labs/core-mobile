@@ -34,6 +34,7 @@ interface ButtonProps {
   style?: StyleProp<ViewStyle>
   textStyle?: StyleProp<TextStyle>
   testID?: string
+  accessible?: boolean
   type: ButtonType
   size: ButtonSize
   leftIcon?: ButtonIconType | JSX.Element
@@ -54,6 +55,7 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
       textStyle,
       children,
       testID,
+      accessible = false,
       shouldInverseTheme = false,
       ...rest
     },
@@ -86,7 +88,7 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
     return (
       <TouchableOpacity
         ref={ref}
-        accessible={false}
+        accessible={accessible}
         testID={testID}
         disabled={disabled}
         style={[

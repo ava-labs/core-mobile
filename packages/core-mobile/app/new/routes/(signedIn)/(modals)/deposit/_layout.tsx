@@ -26,6 +26,7 @@ export default function DepositLayout(): JSX.Element {
         options={shouldHideOnboarding ? modalFirstScreenOptions : undefined}
       />
       <Stack.Screen name="selectPool" />
+      <Stack.Screen name="selectAmount" />
     </Stack>
   )
 }
