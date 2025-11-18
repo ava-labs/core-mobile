@@ -12,11 +12,10 @@ import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { usePrevious } from 'common/hooks/usePrevious'
-import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import { TokenType } from '@avalabs/vm-module-types'
 import { useDepositSelectedMarket, useDepositSelectedToken } from '../store'
 
 export const SelectAmountScreen = (): JSX.Element => {
-  const cchainNetwork = useCChainNetwork()
   const [amount, setAmount] = useState<TokenUnit>()
   const [isSubmitting] = useState(false)
   const [selectedToken] = useDepositSelectedToken()
@@ -26,21 +25,20 @@ export const SelectAmountScreen = (): JSX.Element => {
   const { getMarketTokenBySymbol } = useWatchlist()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const tokenBalance = useMemo(() => {
-    if (!selectedToken || !cchainNetwork) {
+    if (
+      !selectedToken ||
+      (selectedToken.type !== TokenType.NATIVE &&
+        selectedToken.type !== TokenType.ERC20)
+    ) {
       return undefined
     }
 
-    const decimals =
-      'decimals' in selectedToken
-        ? selectedToken.decimals
-        : cchainNetwork.networkToken.decimals
-
     return new TokenUnit(
       selectedToken.balance ?? 0n,
-      decimals,
+      selectedToken.decimals,
       selectedToken.symbol
     )
-  }, [cchainNetwork, selectedToken])
+  }, [selectedToken])
 
   const formatInCurrency = useCallback(
     (amt: TokenUnit, symbol: string): string => {
