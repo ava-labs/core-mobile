@@ -9,7 +9,23 @@ export const transformKeyInfosToPubKeys = (
   const requiredKeyTypes: cs.KeyTypeApi[] = [cs.Secp256k1.Evm, cs.Secp256k1.Ava]
   const optionalKeyTypes: cs.KeyTypeApi[] = [cs.Ed25519.Solana]
   const allowedKeyTypes = [...requiredKeyTypes, ...optionalKeyTypes]
-  const keys = keyInfos
+
+  // filter out key_type of Ava and AvaTest with derivation_path in format m/44'/${coinIndex}'/${accountIndex}'/0/0
+  const filteredKeyInfos = keyInfos?.filter(k => {
+    if (
+      k.key_type === cs.Secp256k1.Ava ||
+      k.key_type === cs.Secp256k1.AvaTest
+    ) {
+      return (
+        parseInt(
+          k.derivation_info?.derivation_path.split('/').at(-3) as string
+        ) === 0
+      )
+    }
+    return true
+  })
+
+  const keys = filteredKeyInfos
     ?.filter(
       k =>
         k.enabled &&
