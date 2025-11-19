@@ -15,6 +15,7 @@ export interface WalletsState {
 
 export interface StoreWalletParams {
   walletId: WalletId
+  walletName?: string
   walletSecret: string
   type: WalletType
   name?: string
