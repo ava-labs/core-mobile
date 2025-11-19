@@ -15,7 +15,13 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { LayoutRectangle, StyleProp, View, ViewStyle } from 'react-native'
+import {
+  LayoutRectangle,
+  StyleProp,
+  View,
+  ViewStyle,
+  Platform
+} from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import {
   KeyboardAwareScrollView,
@@ -83,6 +89,10 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   headerStyle?: StyleProp<ViewStyle>
   /** Whether this screen should hide the header background  */
   hideHeaderBackground?: boolean
+  /** Whether the navigation header should allow overflow (for custom components like progress dots) */
+  allowHeaderOverflow?: boolean
+  /** Custom component to render centered in the header area, vertically level with back arrow */
+  renderHeaderCenterComponent?: () => React.ReactNode
   /** TestID for the screen */
   testID?: string
 }
@@ -104,6 +114,8 @@ export const ScrollScreen = ({
   disableStickyFooter,
   showNavigationHeaderTitle = true,
   hideHeaderBackground,
+  allowHeaderOverflow,
+  renderHeaderCenterComponent,
   headerStyle,
   testID,
   renderHeader,
@@ -137,7 +149,8 @@ export const ScrollScreen = ({
       hasParent,
       hideHeaderBackground,
       renderHeaderRight,
-      showNavigationHeaderTitle
+      showNavigationHeaderTitle,
+      allowHeaderOverflow
     }
   )
 
@@ -322,6 +335,38 @@ export const ScrollScreen = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [headerHeight])
 
+  const renderHeaderCenterOverlay = useCallback(() => {
+    if (!renderHeaderCenterComponent) {
+      return null
+    }
+
+    const paddingValue =
+      Platform.OS === 'ios'
+        ? isModal
+          ? 15 // iOS modal - positive padding to move dots down
+          : 10 // iOS regular - positive padding
+        : isModal
+        ? 50 // Android modal
+        : 45 // Android regular
+
+    return (
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: headerHeight,
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingTop: paddingValue
+        }}>
+        {renderHeaderCenterComponent()}
+      </View>
+    )
+  }, [renderHeaderCenterComponent, headerHeight, isModal])
+
   // 90% of our screens reuse this component but only some need keyboard avoiding
   // If you have an input on the screen, you need to enable this prop
   if (shouldAvoidKeyboard) {
@@ -355,6 +400,7 @@ export const ScrollScreen = ({
 
         {renderFooterContent()}
         {renderHeaderBackground()}
+        {renderHeaderCenterOverlay()}
       </View>
     )
   }
@@ -384,6 +430,7 @@ export const ScrollScreen = ({
 
       {renderFooterContent()}
       {renderHeaderBackground()}
+      {renderHeaderCenterOverlay()}
     </View>
   )
 }
