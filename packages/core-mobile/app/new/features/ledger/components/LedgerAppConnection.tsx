@@ -1,8 +1,6 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react'
-import { View, Platform, Alert, ActivityIndicator } from 'react-native'
+import { View, Alert, ActivityIndicator } from 'react-native'
 import { Text, Button, useTheme, Icons, GroupList } from '@avalabs/k2-alpine'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { ProgressDots } from 'common/components/ProgressDots'
 import { LoadingState } from 'common/components/LoadingState'
 import { LedgerDerivationPathType } from 'services/ledger/types'
 import { AnimatedIconWithText } from './AnimatedIconWithText'
@@ -42,6 +40,7 @@ interface LedgerAppConnectionProps {
   isCreatingWallet?: boolean
   connectedDeviceId?: string | null
   connectedDeviceName?: string
+  onStepChange?: (step: number) => void
 }
 
 export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
@@ -53,12 +52,12 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   selectedDerivationPath: _selectedDerivationPath,
   isCreatingWallet = false,
   connectedDeviceId,
-  connectedDeviceName
+  connectedDeviceName,
+  onStepChange
 }) => {
   const {
     theme: { colors }
   } = useTheme()
-  const insets = useSafeAreaInsets()
 
   const [currentStep, setCurrentStep] = useState<AppConnectionStep>(
     AppConnectionStep.AVALANCHE_CONNECT
@@ -318,7 +317,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           </View>
 
           <View>
-            <View style={{ paddingHorizontal: 32, paddingBottom: 32 }}>
+            <View style={{ paddingHorizontal: 16, paddingBottom: 32 }}>
               <View
                 style={{
                   height: 48,
@@ -348,7 +347,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     return (
       <View style={{ flex: 1, justifyContent: 'space-between' }}>
         <View style={{ height: 300, justifyContent: 'center' }}>
-          <View style={{ alignItems: 'center', paddingHorizontal: 32 }}>
+          <View style={{ alignItems: 'center', paddingHorizontal: 16 }}>
             {config.icon}
             <Text
               variant="heading6"
@@ -372,7 +371,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
         </View>
 
         <View>
-          <View style={{ paddingHorizontal: 32, paddingBottom: 32 }}>
+          <View style={{ paddingHorizontal: 16, paddingBottom: 32 }}>
             {config.primaryButton && (
               <Button
                 type="primary"
@@ -415,42 +414,30 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     }
   }, [currentStep])
 
+  // Notify parent of step changes
+  useEffect(() => {
+    onStepChange?.(progressDotsCurrentStep)
+  }, [progressDotsCurrentStep, onStepChange])
+
   // Create device object for display
   const connectedDevice = connectedDeviceId
     ? [{ id: connectedDeviceId, name: connectedDeviceName || deviceName }]
     : []
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.$surfacePrimary }}>
-      <View
-        style={{
-          position: 'absolute',
-          top: Platform.OS === 'ios' ? insets.top - 32 : insets.top + 12, // Adjust this value to align with back button
-          left: 0,
-          right: 0,
-          height: 32,
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 10
-        }}>
-        <ProgressDots totalSteps={3} currentStep={progressDotsCurrentStep} />
-      </View>
+    <View style={{ flex: 1 }}>
+      {/* Show connected device */}
+      {connectedDevice.length > 0 && (
+        <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+          <LedgerDeviceList
+            devices={connectedDevice}
+            subtitleText="Connected via Bluetooth"
+            testID="connected_device_list"
+          />
+        </View>
+      )}
 
-      {/* Content with top padding to avoid overlap */}
-      <View style={{ flex: 1, paddingTop: insets.top + 56 }}>
-        {/* Show connected device */}
-        {connectedDevice.length > 0 && (
-          <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
-            <LedgerDeviceList
-              devices={connectedDevice}
-              subtitleText="Connected via Bluetooth"
-              testID="connected_device_list"
-            />
-          </View>
-        )}
-
-        <View style={{ flex: 1, padding: 16 }}>{renderStepContent()}</View>
-      </View>
+      <View style={{ flex: 1, paddingHorizontal: 16 }}>{renderStepContent()}</View>
     </View>
   )
 }
