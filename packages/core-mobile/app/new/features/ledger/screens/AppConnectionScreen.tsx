@@ -29,12 +29,6 @@ export default function AppConnectionScreen(): JSX.Element {
     if (!selectedDerivationPath) {
       setSelectedDerivationPath(LedgerDerivationPathType.BIP44)
     }
-    
-    // Set connected device ID from wallet data if available (for existing wallets)
-    if (!connectedDeviceId && keys.avalancheKeys) {
-      // Extract device ID from the logs - we can see it's "DE:F1:0A:94:61:8D"
-      setConnectedDevice("DE:F1:0A:94:61:8D", "Flex")
-    }
   }, [
     selectedDerivationPath,
     connectedDeviceId,
