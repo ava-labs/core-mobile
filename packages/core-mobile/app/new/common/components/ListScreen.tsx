@@ -176,7 +176,7 @@ export const ListScreen = <T,>({
     const translateY = interpolate(
       scrollY.value,
       [0, titleHeight.value + subtitleHeight.value],
-      [0, -titleHeight.value - subtitleHeight.value - 8],
+      [0, -titleHeight.value - subtitleHeight.value - 16],
       'clamp'
     )
 
@@ -199,91 +199,71 @@ export const ListScreen = <T,>({
     }
   })
 
-  const animatedHeaderBackgroundStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(scrollY.value, [headerHeight, 0], [1, 0])
-    return {
-      opacity
-    }
-  })
-
   const ListHeaderComponent = useMemo(() => {
     return (
       <Animated.View style={[animatedHeaderContainerStyle, { gap: 12 }]}>
-        <Animated.View
-          style={[
-            animatedHeaderBackgroundStyle,
-            {
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0
-            }
-          ]}>
-          <BlurViewWithFallback
-            backgroundColor={backgroundColor}
-            style={{ flex: 1 }}
-          />
-        </Animated.View>
-        <View
-          style={{
-            paddingTop: renderHeader ? headerHeight + 16 : headerHeight,
-            gap: 6,
-            paddingHorizontal: 16
-          }}>
-          {title ? (
-            <Animated.View
-              ref={titleRef}
-              style={[
-                animatedHeaderStyle,
-                {
-                  paddingBottom: subtitle ? 0 : 12
-                }
-              ]}>
-              <Text variant="heading2">{title}</Text>
-            </Animated.View>
-          ) : null}
+        <BlurViewWithFallback
+          backgroundColor={backgroundColor}
+          style={{ flex: 1 }}>
+          <View
+            style={{
+              paddingTop: renderHeader ? headerHeight + 16 : headerHeight,
+              gap: 6,
+              paddingHorizontal: 16
+            }}>
+            {title ? (
+              <Animated.View
+                ref={titleRef}
+                style={[
+                  animatedHeaderStyle,
+                  {
+                    paddingBottom: subtitle ? 0 : 12
+                  }
+                ]}>
+                <Text variant="heading2">{title}</Text>
+              </Animated.View>
+            ) : null}
 
-          {subtitle ? (
-            <Animated.View
-              ref={subtitleRef}
-              style={[
-                animatedSubtitleStyle,
-                {
-                  paddingBottom: 12
-                }
-              ]}>
-              <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
-                {subtitle}
-              </Text>
-            </Animated.View>
-          ) : null}
-        </View>
+            {subtitle ? (
+              <Animated.View
+                ref={subtitleRef}
+                style={[
+                  animatedSubtitleStyle,
+                  {
+                    paddingBottom: 12
+                  }
+                ]}>
+                <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
+                  {subtitle}
+                </Text>
+              </Animated.View>
+            ) : null}
+          </View>
 
-        <View
-          style={{
-            paddingBottom: renderHeader ? 12 : 0,
-            paddingHorizontal: 16
-          }}>
-          {renderHeader?.()}
-        </View>
-        <Animated.View
-          style={[
-            animatedBorderStyle,
-            {
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0
-            }
-          ]}>
-          <Separator />
-        </Animated.View>
+          <View
+            style={{
+              paddingBottom: renderHeader ? 12 : 0,
+              paddingHorizontal: 16
+            }}>
+            {renderHeader?.()}
+          </View>
+          <Animated.View
+            style={[
+              animatedBorderStyle,
+              {
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0
+              }
+            ]}>
+            <Separator />
+          </Animated.View>
+        </BlurViewWithFallback>
       </Animated.View>
     )
   }, [
     animatedHeaderContainerStyle,
-    animatedHeaderBackgroundStyle,
     backgroundColor,
     renderHeader,
     headerHeight,

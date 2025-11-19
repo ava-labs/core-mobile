@@ -98,6 +98,7 @@ export const BalanceHeader = ({
     errorMessage,
     isDeveloperModeEnabled,
     isPrivacyModeEnabled,
+    onErrorPress,
     priceChange
   ])
 
@@ -146,42 +147,43 @@ export const BalanceHeader = ({
   ])
 
   return (
-    <View
-      onLayout={onLayout}
-      style={{
-        gap: 4
-      }}>
-      {walletName && (
-        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <Icons.Custom.Wallet
-            color={colors.$textSecondary}
-            width={16}
-            height={16}
-          />
-          <Text
-            testID={`${testID}__balance_header_wallet_name`}
-            variant="buttonMedium"
-            sx={{
-              lineHeight: 16,
-              color: colors.$textSecondary
-            }}
-            numberOfLines={1}>
-            {walletName}
-          </Text>
-        </View>
-      )}
-      <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-        {accountName && (
-          <Text
-            testID={`${testID}__balance_header_account_name`}
-            variant="heading2"
-            sx={{ color: '$textSecondary', lineHeight: 38 }}
-            numberOfLines={1}>
-            {accountName}
-          </Text>
+    <View onLayout={onLayout}>
+      <View sx={{ gap: 4 }}>
+        {walletName && (
+          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Icons.Custom.Wallet
+              color={colors.$textSecondary}
+              width={16}
+              height={16}
+            />
+            <Text
+              testID={`${testID}__balance_header_wallet_name`}
+              variant="buttonMedium"
+              sx={{
+                lineHeight: 16,
+                color: colors.$textSecondary
+              }}
+              numberOfLines={1}>
+              {walletName}
+            </Text>
+          </View>
         )}
-        <Icons.Navigation.ExpandAll color={colors.$textSecondary} />
+        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          {accountName && (
+            <Text
+              testID={`${testID}__balance_header_account_name`}
+              variant="heading2"
+              sx={{ color: '$textSecondary', lineHeight: 38 }}
+              numberOfLines={1}>
+              {accountName}
+            </Text>
+          )}
+          {walletName && (
+            <Icons.Navigation.ExpandAll color={colors.$textSecondary} />
+          )}
+        </View>
       </View>
+
       {renderBalance()}
     </View>
   )

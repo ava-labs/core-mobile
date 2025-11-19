@@ -8,15 +8,16 @@ import {
 } from '@avalabs/k2-alpine'
 import { useManageWallet } from 'common/hooks/useManageWallet'
 import { WalletDisplayData } from 'common/types'
-import { AccountBalance } from 'features/wallets/components/AccountBalance'
+import { WalletBalance } from 'features/wallets/components/WalletBalance'
 import React, { useCallback, useMemo } from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
-import { DropdownMenu } from './DropdownMenu'
 import { useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/account'
 import { selectActiveWalletId } from 'store/wallet/slice'
+import { DropdownMenu } from './DropdownMenu'
+import { AccountListItem } from 'features/wallets/components/AccountListItem'
 
 const ITEM_HEIGHT = 50
+const HEADER_HEIGHT = 64
 
 const WalletCard = ({
   wallet,
@@ -82,18 +83,22 @@ const WalletCard = ({
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          minHeight: 48
+          minHeight: HEADER_HEIGHT
         }}>
         <View
           sx={{
             flexDirection: 'row',
             alignItems: 'center',
             gap: 8,
-            flex: 1,
-            padding: 10,
-            paddingVertical: 14
+            flex: 1
           }}>
-          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <View
+            sx={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+              paddingLeft: 7
+            }}>
             {renderExpansionIcon()}
             {renderWalletIcon()}
           </View>
@@ -139,7 +144,7 @@ const WalletCard = ({
         </View>
 
         <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
-          {/* <AccountBalance accountId={wallet.accounts[0]?.id} isActive={true} /> */}
+          <WalletBalance wallet={wallet} />
           {showMoreButton && (
             <DropdownMenu
               groups={[
@@ -152,13 +157,12 @@ const WalletCard = ({
                 handleDropdownSelect(event.nativeEvent.event, wallet)
               }>
               <TouchableOpacity
-                hitSlop={8}
                 style={{
-                  minHeight: 48,
+                  minHeight: HEADER_HEIGHT,
+                  minWidth: HEADER_HEIGHT,
                   paddingRight: 22,
-                  paddingLeft: 12,
                   justifyContent: 'center',
-                  alignItems: 'center'
+                  alignItems: 'flex-end'
                 }}>
                 <Icons.Navigation.MoreHoriz
                   color={colors.$textPrimary}
@@ -172,9 +176,12 @@ const WalletCard = ({
       </TouchableOpacity>
 
       {isExpanded && (
-        <View sx={{ padding: 8, paddingTop: 0, gap: 8 }}>
+        <View sx={{ padding: 12, paddingTop: 0, gap: 8 }}>
           {wallet.accounts.length > 0 ? (
-            <GroupList itemHeight={ITEM_HEIGHT} data={wallet.accounts} />
+            <AccountListItem
+              testID={`manage_accounts_list__${wallet.name}`}
+              {...wallet.accounts}
+            />
           ) : (
             !searchText && (
               <View

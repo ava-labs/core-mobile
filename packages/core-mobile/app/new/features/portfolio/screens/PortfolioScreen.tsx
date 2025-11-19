@@ -64,7 +64,7 @@ import {
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { selectActiveWallet } from 'store/wallet/slice'
+import { selectActiveWallet, selectWallets } from 'store/wallet/slice'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { useIsLoadingBalancesForAccount } from '../hooks/useIsLoadingBalancesForAccount'
 import { useIsRefetchingBalancesForAccount } from '../hooks/useIsRefetchingBalancesForAccount'
@@ -121,6 +121,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const isBalanceLoaded = useIsBalanceLoadedForAccount(activeAccount)
   const isLoadingBalances = useIsLoadingBalancesForAccount(activeAccount)
   const isLoading = isRefetchingBalance || !isBalanceLoaded
+  const activeWallet = useSelector(selectActiveWallet)
+  const wallets = useSelector(selectWallets)
+  const walletsCount = Object.keys(wallets).length
   const balanceAccurate = useIsAccountBalanceAccurate(activeAccount)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
@@ -264,8 +267,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
     })
   }, [navigate])
 
-  const activeWallet = useSelector(selectActiveWallet)
-
   const handleErrorPress = useCallback(() => {
     showAlert({
       title: 'Unable to load balances',
@@ -292,10 +293,15 @@ const PortfolioHomeScreen = (): JSX.Element => {
               },
               animatedHeaderStyle
             ]}>
-            <Pressable onPress={openWalletsModal}>
+            <Pressable
+              hitSlop={10}
+              onPress={openWalletsModal}
+              style={{
+                justifyContent: 'flex-start'
+              }}>
               <BalanceHeader
                 testID="portfolio"
-                walletName={activeWallet?.name}
+                walletName={walletsCount > 1 ? activeWallet?.name : undefined}
                 accountName={activeAccount?.name}
                 formattedBalance={formattedBalance}
                 currency={selectedCurrency}
@@ -339,6 +345,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleBalanceHeaderLayout,
     animatedHeaderStyle,
     openWalletsModal,
+    walletsCount,
     activeWallet?.name,
     activeAccount?.name,
     formattedBalance,

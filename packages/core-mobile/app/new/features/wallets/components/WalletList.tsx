@@ -170,7 +170,6 @@ export const WalletList = ({
       const accountsForWallet = accountSearchResults.filter(
         account => account.walletId === wallet.id
       )
-
       if (accountsForWallet.length === 0) {
         return null
       }
@@ -224,12 +223,18 @@ export const WalletList = ({
           ) : (
             <View sx={{ width: 24 }} />
           ),
-          value: <AccountBalance accountId={account.id} isActive={isActive} />,
+          value: (
+            <AccountBalance
+              variant="skeleton"
+              account={account}
+              isActive={isActive}
+            />
+          ),
           onPress: () => handleSetActiveAccount(account.id),
           accessory: (
             <TouchableOpacity
               hitSlop={16}
-              sx={{ marginLeft: 4 }}
+              sx={{ marginLeft: 8 }}
               onPress={() => gotoAccountDetails(account.id)}>
               <Icons.Alert.AlertCircle
                 testID={`account_detail_icon__${wallet.name}_${account.name}`}
@@ -310,7 +315,13 @@ export const WalletList = ({
           ) : (
             <View sx={{ width: 24 }} />
           ),
-          value: <AccountBalance accountId={account.id} isActive={isActive} />,
+          value: (
+            <AccountBalance
+              variant="skeleton"
+              account={account}
+              isActive={isActive}
+            />
+          ),
           onPress: () => handleSetActiveAccount(account.id),
           accessory: (
             <TouchableOpacity
@@ -403,7 +414,7 @@ export const WalletList = ({
     return (
       <View
         style={{
-          gap: 8
+          gap: 16
         }}>
         {hasSearch && (
           <SearchBar onTextChanged={setSearchText} searchText={searchText} />
