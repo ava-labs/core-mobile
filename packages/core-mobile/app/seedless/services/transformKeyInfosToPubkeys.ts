@@ -10,7 +10,9 @@ export const transformKeyInfosToPubKeys = (
   const optionalKeyTypes: cs.KeyTypeApi[] = [cs.Ed25519.Solana]
   const allowedKeyTypes = [...requiredKeyTypes, ...optionalKeyTypes]
 
-  // filter out key_type of Ava and AvaTest with derivation_path spec m/44'/${coinIndex}'/${accountIndex}'/0/0
+  // we are migrating to the new account model with new derivation path spec for Ava and AvaTest: m/44'/${coinIndex}'/${accountIndex}'/0/0
+  // in the backend, we are returning the keys with new spec and existing spec for backward compatibility,
+  // to prepare for this change, we need to filter out the keys with new spec to avoid getting the wrong derivation path
   const filteredKeyInfos = keyInfos?.filter(k => {
     if (
       k.key_type === cs.Secp256k1.Ava ||
