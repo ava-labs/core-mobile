@@ -29,7 +29,6 @@ export const addBranchListeners = (startListening: AppStartListening): void => {
   const createBranchOpenedEvent = async (distinctId: string): Promise<void> => {
     const latestReferringParams = await Branch.getLatestReferringParams()
 
-    console.log('------latestReferringParams', latestReferringParams)
     const branchUniversalObject = await Branch.createBranchUniversalObject(
       'app_opened',
       {}
