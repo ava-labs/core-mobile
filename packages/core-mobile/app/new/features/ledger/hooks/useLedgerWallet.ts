@@ -268,10 +268,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         '@avalabs/core-wallets-sdk'
       )
       const derivationPath = getSolanaDerivationPath(0)
-      console.log(
-        '🔍 SOLANA DEBUG - Using Extension SDK derivation path:',
-        derivationPath
-      )
 
       // Convert to the format expected by Ledger (without m/ prefix)
       const ledgerDerivationPath = derivationPath.replace('m/', '')
@@ -281,9 +277,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       // Get the raw public key (what the SVM module expects)
       const solanaPublicKey = Buffer.from(result.address).toString('hex')
 
-      // Also convert to address for logging
-      const solanaAddress = bs58.encode(new Uint8Array(result.address))
-
       setSolanaKeys([
         {
           key: solanaPublicKey, // Store the raw public key, not the address
@@ -291,13 +284,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           curve: Curve.ED25519
         }
       ])
-      console.log(
-        '🔍 SOLANA DEBUG - Stored public key with derivation path:',
-        derivationPath
-      )
-      console.log('🔍 SOLANA DEBUG - Public key (hex):', solanaPublicKey)
-      console.log('🔍 SOLANA DEBUG - Derived address:', solanaAddress)
-      Logger.info('Successfully got Solana address', solanaAddress)
     } catch (error) {
       Logger.error('Failed to get Solana keys', error)
       throw error
@@ -559,12 +545,11 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
             : [])
         ]
 
-        console.log('🔍 WALLET DEBUG - Storing publicKeys:', publicKeysToStore)
-
         // Store the Ledger wallet with the specified derivation path type
         await dispatch(
           storeWallet({
             walletId: newWalletId,
+            walletName: `Ledger ${deviceName}`,
             walletSecret: JSON.stringify({
               deviceId,
               deviceName,
@@ -593,40 +578,11 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         ).unwrap()
 
         dispatch(setActiveWallet(newWalletId))
-        console.log(`✅ WALLET CREATION - Wallet stored and activated:`, {
-          walletId: newWalletId.slice(0, 8) + '...',
-          walletType:
-            derivationPathType === LedgerDerivationPathType.BIP44
-              ? 'LEDGER'
-              : 'LEDGER_LIVE'
-        })
-
-        // Use AccountsService to properly create the account with correct addresses
-        console.log(
-          `🏗️ WALLET CREATION - Starting AccountsService.createNextAccount...`
-        )
-        console.log(`📋 Wallet details:`, {
-          walletId: newWalletId,
-          walletType:
-            derivationPathType === LedgerDerivationPathType.BIP44
-              ? WalletType.LEDGER
-              : WalletType.LEDGER_LIVE,
-          avalancheKeys: {
-            evm: avalancheKeys.evm
-              ? `${avalancheKeys.evm.slice(0, 8)}...`
-              : 'MISSING',
-            avalanche: avalancheKeys.avalanche
-              ? `${avalancheKeys.avalanche.slice(0, 8)}...`
-              : 'MISSING',
-            pvm: avalancheKeys.pvm
-              ? `${avalancheKeys.pvm.slice(0, 8)}...`
-              : 'MISSING'
-          }
-        })
 
         const AccountsService = (
           await import('services/account/AccountsService')
         ).default
+
         const newAccount = await AccountsService.createNextAccount({
           index: 0,
           walletType:
@@ -636,25 +592,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           isTestnet: false, // TODO: Get from settings
           walletId: newWalletId,
           name: `Account ${Object.keys(allAccounts).length + 1}`
-        })
-
-        console.log(`✅ Account created:`, {
-          accountId: newAccount.id,
-          addressC: newAccount.addressC
-            ? `${newAccount.addressC.slice(0, 8)}...`
-            : '❌ MISSING',
-          addressBTC: newAccount.addressBTC
-            ? `${newAccount.addressBTC.slice(0, 8)}...`
-            : '❌ MISSING',
-          addressAVM: newAccount.addressAVM
-            ? `${newAccount.addressAVM.slice(0, 8)}...`
-            : '❌ MISSING',
-          addressPVM: newAccount.addressPVM
-            ? `${newAccount.addressPVM.slice(0, 8)}...`
-            : '❌ MISSING',
-          addressSVM: newAccount.addressSVM
-            ? `${newAccount.addressSVM.slice(0, 8)}...`
-            : '❌ MISSING'
         })
 
         dispatch(setAccount(newAccount))

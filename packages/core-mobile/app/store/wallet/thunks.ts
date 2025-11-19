@@ -30,7 +30,10 @@ export const storeWallet = createAsyncThunk<
   ThunkApi
 >(
   `${reducerName}/storeWallet`,
-  async ({ walletId, walletSecret, type }: StoreWalletParams, thunkApi) => {
+  async (
+    { walletId, walletSecret, type, walletName }: StoreWalletParams,
+    thunkApi
+  ) => {
     const success = await BiometricsSDK.storeWalletSecret(
       walletId,
       walletSecret
@@ -45,7 +48,7 @@ export const storeWallet = createAsyncThunk<
 
     return {
       id: walletId,
-      name: generateWalletName(walletCount + 1),
+      name: walletName || generateWalletName(walletCount + 1),
       type
     }
   }
