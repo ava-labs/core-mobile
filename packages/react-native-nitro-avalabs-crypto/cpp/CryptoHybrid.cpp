@@ -52,7 +52,7 @@ std::vector<uint8_t> CryptoHybrid::hexToBytes(const std::string& h) {
   return out;
 }
 
-std::vector<uint8_t> CryptoHybrid::bytesFromVariant(const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& v) {
+std::vector<uint8_t> CryptoHybrid::bytesFromVariant(const BufferOrString& v) {
   if (std::holds_alternative<std::string>(v)) {
     return hexToBytes(std::get<std::string>(v));
   } else {
@@ -63,7 +63,7 @@ std::vector<uint8_t> CryptoHybrid::bytesFromVariant(const std::variant<std::stri
   }
 }
 
-std::array<uint8_t,32> CryptoHybrid::require32(const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& v, const char* what) {
+std::array<uint8_t,32> CryptoHybrid::require32(const BufferOrString& v, const char* what) {
   auto bytes = bytesFromVariant(v);
   if (bytes.size() != 32) {
     throw std::invalid_argument(std::string(what) + " must be 32 bytes");
@@ -137,8 +137,8 @@ std::shared_ptr<ArrayBuffer> CryptoHybrid::getPublicKeyFromArrayBuffer(const std
 /* ------------------------ pointAddScalar: P + t·G ------------------------- */
 
 std::shared_ptr<ArrayBuffer> CryptoHybrid::pointAddScalar(
-  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& publicKey,
-  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& tweak,
+  const BufferOrString& publicKey,
+  const BufferOrString& tweak,
   std::optional<bool> isCompressed
 ) {
   bool comp = isCompressed.value_or(true);
@@ -159,8 +159,8 @@ std::shared_ptr<ArrayBuffer> CryptoHybrid::pointAddScalar(
 /* Assumption: message is a 32-byte digest (e.g., SHA-256). */
 
 std::shared_ptr<ArrayBuffer> CryptoHybrid::sign(
-  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& secretKey,
-  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& message
+  const BufferOrString& secretKey,
+  const BufferOrString& message
 ) {
   auto sk = require32(secretKey, "secretKey");
   auto msg32 = require32(message, "message");
@@ -184,9 +184,9 @@ std::shared_ptr<ArrayBuffer> CryptoHybrid::sign(
 }
 
 bool CryptoHybrid::verify(
-  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& publicKey,
-  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& message,
-  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& signature
+  const BufferOrString& publicKey,
+  const BufferOrString& message,
+  const BufferOrString& signature
 ) {
   auto pkBytes = bytesFromVariant(publicKey);
   auto msg32 = require32(message, "message");
@@ -219,9 +219,9 @@ bool CryptoHybrid::verify(
    or 33/65-byte normal EC key (we’ll convert to xonly). */
 
 std::shared_ptr<ArrayBuffer> CryptoHybrid::signSchnorr(
-  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& secretKey,
-  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& messageHash,
-  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& auxRand
+  const BufferOrString& secretKey,
+  const BufferOrString& messageHash,
+  const BufferOrString& auxRand
 ) {
   auto sk    = require32(secretKey,   "secretKey");
   auto msg32 = require32(messageHash, "messageHash");
@@ -286,9 +286,9 @@ std::shared_ptr<ArrayBuffer> CryptoHybrid::signSchnorr(
 }
 
 bool CryptoHybrid::verifySchnorr(
-  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& publicKey,
-  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& messageHash,
-  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& signature
+  const BufferOrString& publicKey,
+  const BufferOrString& messageHash,
+  const BufferOrString& signature
 ) {
   auto msg32 = require32(messageHash, "messageHash");
   auto sig = bytesFromVariant(signature);

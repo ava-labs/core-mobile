@@ -46,9 +46,10 @@ class MainApplication : Application(), ReactApplication {
     override fun onCreate() {
         super.onCreate()
 
-        RootedCheck.precompute(this);
+        RootedCheck.precompute(this)
 
         increaseWindowCursorSize()
+
         RNBranchModule.getAutoInstance(this);
         
         // Manually set user agent to our format. This helps avoid getting identified as a bot and rate limited by cloudflare

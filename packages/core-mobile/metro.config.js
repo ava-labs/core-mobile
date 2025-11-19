@@ -1,12 +1,15 @@
+const path = require('path')
 const { mergeConfig } = require('@react-native/metro-config')
 const { getSentryExpoConfig } = require('@sentry/react-native/metro')
 const merge = require('lodash.merge')
-const path = require('path')
 
 // Workspace paths (adjust if your monorepo depth is different)
 const projectRoot = __dirname
 const workspaceRoot = path.resolve(projectRoot, '..', '..')
-const nitroCryptoPath = path.resolve(workspaceRoot, 'packages/react-native-nitro-avalabs-crypto')
+const nitroCryptoPath = path.resolve(
+  workspaceRoot,
+  'packages/react-native-nitro-avalabs-crypto'
+)
 
 const monorepoConfig = require('./metro.monorepo.config')
 const defaultConfig = getSentryExpoConfig(__dirname)
@@ -31,21 +34,18 @@ const baseConfig = {
     }),
     babelTransformerPath: require.resolve('react-native-svg-transformer')
   },
-  watchFolders: [
-    workspaceRoot,
-    nitroCryptoPath,
-  ],
+  watchFolders: [workspaceRoot, nitroCryptoPath],
   resolver: {
     // mute warnings about circular dependencies
     requireCycleIgnorePatterns: [/^app\/.*/, /^node_modules\/.*/],
     extraNodeModules: {
       stream: require.resolve('./node_modules/stream-browserify'),
       '@noble/hashes': require.resolve('./node_modules/@noble/hashes'),
-      "react-native-nitro-avalabs-crypto": nitroCryptoPath
+      'react-native-nitro-avalabs-crypto': nitroCryptoPath
     },
     nodeModulesPaths: [
       path.resolve(workspaceRoot, 'node_modules'),
-      path.resolve(projectRoot, 'node_modules'),
+      path.resolve(projectRoot, 'node_modules')
     ],
     // TODO: should this be a temporary fix?
     unstable_enablePackageExports: false,

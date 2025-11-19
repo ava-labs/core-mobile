@@ -45,16 +45,7 @@ index a7a912fa46128bbc36eeefe67e6ba16855992917..7716bccc380e5d0e8eccbd7e4a2294b7
       */
      function getPublicKey(secretKey, isCompressed = true) {
 -        return Point.BASE.multiply(_normFnElement(Fn, secretKey)).toBytes(isCompressed);
-+      //          const con = console;
-+       //         con.log(" aaaaa Getting public key for secret key!");
-+       // con.log("aaaaa Getting public key for secret key:", secretKey.toString('hex'));
-+        //const res =  Point.BASE.multiply(_normFnElement(Fn, secretKey)).toBytes(isCompressed);
 +        const nativeRes = getPublicKeyFromNativeLib(secretKey, isCompressed);
-+        
-+
-+      //  con.log("aaaaa native res", nativeRes.toString('hex'));
-+      //  con.log("aaaaa JS res", res.toString('hex'));
-+
 +        return nativeRes;
      }
      function keygen(seed) {

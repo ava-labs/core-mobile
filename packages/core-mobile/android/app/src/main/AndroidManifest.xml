@@ -35,7 +35,7 @@
                 android:name="com.google.firebase.messaging.default_notification_icon"
                 android:resource="@drawable/notification_icon" />
         <!-- Branch init -->
-		<meta-data android:name="io.branch.sdk.BranchKey" android:value="${BRANCH_KEY}" />
+        <meta-data android:name="io.branch.sdk.BranchKey" android:value="${BRANCH_KEY}" />
         <meta-data android:name="io.branch.sdk.BranchKey.test" android:value="${BRANCH_KEY}" />
 		<!-- Set to `true` to use `BranchKey.test` -->
 		<meta-data android:name="io.branch.sdk.TestMode" android:value="${BRANCH_TEST_MODE}" />

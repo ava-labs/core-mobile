@@ -23,6 +23,8 @@ public:
   // Per your spec’s note: explicitly call HybridObject(TAG) in ctor
   CryptoHybrid() : HybridObject(TAG) {}
   ~CryptoHybrid() override = default;
+    
+    typedef std::variant<std::shared_ptr<ArrayBuffer>, std::string> BufferOrString;
 
   // ---- Spec methods ----
   std::shared_ptr<ArrayBuffer> getPublicKey(
@@ -32,29 +34,29 @@ public:
   std::shared_ptr<ArrayBuffer> getPublicKeyFromString(const std::string& secretKey, std::optional<bool> isCompressed) override;
   std::shared_ptr<ArrayBuffer> getPublicKeyFromArrayBuffer(const std::shared_ptr<ArrayBuffer>& secretKey, std::optional<bool> isCompressed) override;
   std::shared_ptr<ArrayBuffer> pointAddScalar(
-    const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& publicKey,
-    const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& tweak,
+    const BufferOrString& publicKey,
+    const BufferOrString& tweak,
     std::optional<bool> isCompressed) override;
 
   std::shared_ptr<ArrayBuffer> sign(
-    const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& secretKey,
-    const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& message) override;
+    const BufferOrString& secretKey,
+    const BufferOrString& message) override;
 
   bool verify(
-    const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& publicKey,
-    const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& message,
-    const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& signature) override;
+    const BufferOrString& publicKey,
+    const BufferOrString& message,
+    const BufferOrString& signature) override;
 
   std::shared_ptr<ArrayBuffer> signSchnorr(
-  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& secretKey,
-  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& messageHash,
-  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& auxRand
+  const BufferOrString& secretKey,
+  const BufferOrString& messageHash,
+  const BufferOrString& auxRand
   ) override;
 
   bool verifySchnorr(
-    const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& publicKey,
-    const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& messageHash,
-    const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& signature) override;
+    const BufferOrString& publicKey,
+    const BufferOrString& messageHash,
+    const BufferOrString& signature) override;
 
 
 protected:
@@ -67,8 +69,8 @@ private:
 
   // helpers
   static std::vector<uint8_t> hexToBytes(const std::string& hex);
-  static std::vector<uint8_t> bytesFromVariant(const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& v);
-  static std::array<uint8_t,32> require32(const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& v, const char* what);
+  static std::vector<uint8_t> bytesFromVariant(const BufferOrString& v);
+  static std::array<uint8_t,32> require32(const BufferOrString& v, const char* what);
   static std::vector<uint8_t> serializePubkey(const secp256k1_pubkey& pk, bool compressed);
   static secp256k1_pubkey parsePubkey(const std::vector<uint8_t>& in);
   static std::shared_ptr<ArrayBuffer> toAB(const std::vector<uint8_t>& v);

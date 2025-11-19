@@ -1,5 +1,6 @@
 package com.avaxwallet
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDelegate
@@ -10,7 +11,6 @@ import com.facebook.react.defaults.DefaultReactActivityDelegate
 import com.zoontek.rnbootsplash.RNBootSplash
 import expo.modules.ReactActivityDelegateWrapper
 import io.branch.rnbranch.*
-import android.content.Intent
 
 class MainActivity : ReactActivity() {
 

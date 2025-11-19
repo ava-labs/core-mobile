@@ -10,12 +10,15 @@ Pod::Spec.new do |s|
   s.license      = package["license"]
   s.authors      = package["author"]
 
-  s.platforms    = { :ios => min_ios_version_supported }
-  s.source       = { :git => "https://github.com/Szymon20000/react-native-nitro-avalabs-crypto.git", :tag => "#{s.version}" }
+  s.platforms    = { :ios => min_ios_version_supported, :visionos => 1.0 }
+  s.source       = { :git => "https://github.com/mrousavy/nitro.git", :tag => "#{s.version}" }
 
   s.source_files = [
+    # Implementation (Swift)
     "ios/**/*.{swift}",
+    # Autolinking/Registration (Objective-C++)
     "ios/**/*.{m,mm}",
+    # Implementation (C++ objects)
     "cpp/**/*.{hpp,cpp}",
   ]
 
@@ -25,7 +28,8 @@ Pod::Spec.new do |s|
   load 'nitrogen/generated/ios/NitroAvalabsCrypto+autolinking.rb'
   add_nitrogen_files(s)
 
-  # -----------------------------------------------------------------
+
+    # -----------------------------------------------------------------
   # Build script – produces secp256k1.xcframework
   # -----------------------------------------------------------------
   s.script_phases = [{
@@ -62,6 +66,5 @@ Pod::Spec.new do |s|
     'OTHER_LDFLAGS' => '$(inherited) -lsecp256k1'
 }
 
-  s.static_framework = true
   install_modules_dependencies(s)
 end
