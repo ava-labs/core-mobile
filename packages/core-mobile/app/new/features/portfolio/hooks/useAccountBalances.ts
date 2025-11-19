@@ -1,11 +1,6 @@
 import { useCallback, useMemo } from 'react'
-import {
-  QueryObserverResult,
-  useQueries,
-  useQueryClient
-} from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import BalanceService from 'services/balance/BalanceService'
-import { Network } from '@avalabs/core-chains-sdk'
 import { useSelector } from 'react-redux'
 import { selectEnabledNetworks } from 'store/network/slice'
 import { Account } from 'store/account/types'
@@ -13,41 +8,36 @@ import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { selectAllCustomTokens } from 'store/customToken'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { NormalizedBalancesForAccount } from 'services/balance/types'
-import { useStable } from 'common/hooks/useStable'
 import * as store from '../store'
-import { getFetchingInterval } from './utils'
 
 /**
  * Stale time in milliseconds
  */
 const staleTime = 20_000
 
-export const balanceKey = (account: Account, network: Network) =>
-  [ReactQueryKeys.ACCOUNT_BALANCE, account.id, network.chainId] as const
+/**
+ * Refetch interval in milliseconds
+ */
+// TODO: adjust to 5 seconds after integrating with the new backend balance service
+const refetchInterval = 10_000
+
+export const balanceKey = (account: Account | undefined) =>
+  [ReactQueryKeys.ACCOUNT_BALANCE, account?.id] as const
 
 /**
- * Fetches balances for all enabled non-XP networks (C-Chain, other EVMs, BTC, SOL, etc.)
- * belonging to the specified account.
+ * Fetches balances for the specified account across all enabled networks (C-Chain, X-Chain, P-Chain, other EVMs, BTC, SOL, etc.)
  *
- * 🔁 Runs one query per network in parallel via React Query.
- * 🕒 Auto-refresh cadence:
- *   - C-Chain: every 15s
- *   - Other EVMs: every 30s
- *   - BTC/SOL: every 60s
- *
- * ⚙️ Supports lazy fetching:
- *   - By default, queries start automatically when the hook mounts.
- *   - Pass `{ enabled: false }` to prevent automatic fetching.
- *   - When disabled, use the returned `refetch()` method to manually trigger balance retrieval.
+ * 🔁 Runs one query for all enabled networks via React Query.
  */
 export function useAccountBalances(
   account?: Account,
-  options?: { enabled?: boolean }
+  options?: { refetchInterval?: number }
 ): {
-  results: QueryObserverResult<NormalizedBalancesForAccount, Error>[]
-  refetch: () => Promise<void>
+  data: NormalizedBalancesForAccount[]
+  isLoading: boolean
+  isFetching: boolean
   isRefetching: boolean
-  invalidate: () => Promise<void>
+  refetch: () => Promise<void>
 } {
   const queryClient = useQueryClient()
   const [isRefetching, setIsRefetching] = store.useIsRefetchingAccountBalances()
@@ -55,77 +45,77 @@ export function useAccountBalances(
   const currency = useSelector(selectSelectedCurrency)
   const customTokens = useSelector(selectAllCustomTokens)
 
-  const enabled = options?.enabled ?? true
-
-  // Skip XP networks (PVM / AVM) - they are handled in the useWalletXpBalances hook
-  // const nonXpNetworks = useMemo(
-  //   () => enabledNetworks.filter(n => !isXpNetwork(n)),
-  //   [enabledNetworks]
-  // )
-
   const isNotReady = !account || enabledNetworks.length === 0
 
-  const queries = useMemo(() => {
-    if (isNotReady) return []
+  const enabled = !isNotReady
 
-    return enabledNetworks.map((network: Network) => ({
-      // eslint-disable-next-line @tanstack/query/exhaustive-deps
-      queryKey: balanceKey(account, network),
-      queryFn: () => {
-        return BalanceService.getBalancesForAccount({
-          network,
-          account,
-          currency: currency.toLowerCase(),
-          customTokens: customTokens[network.chainId.toString()] ?? []
-        })
-      },
-      refetchInterval: getFetchingInterval(network),
-      staleTime,
-      enabled
-    }))
-  }, [isNotReady, account, enabledNetworks, currency, customTokens, enabled])
+  const {
+    data,
+    isFetching,
+    refetch: refetchFn
+  } = useQuery({
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    queryKey: balanceKey(account),
+    enabled,
+    refetchInterval: options?.refetchInterval ?? refetchInterval,
+    staleTime,
+    queryFn: async () => {
+      if (isNotReady) return []
 
-  const results = useQueries({
-    queries
+      const balances = await BalanceService.getBalancesForAccounts({
+        networks: enabledNetworks,
+        accounts: [account],
+        currency: currency.toLowerCase(),
+        customTokens,
+        onBalanceLoaded: (chainId, partialMap) => {
+          const partial = partialMap[account.id]
+          if (!partial) return
+
+          queryClient.setQueryData(
+            balanceKey(account),
+            (prev: NormalizedBalancesForAccount[] | undefined) => {
+              if (!prev) return [partial]
+              const filtered = prev.filter(p => p.chainId !== chainId)
+              return [...filtered, partial]
+            }
+          )
+        }
+      })
+
+      return balances[account.id] ?? []
+    }
   })
 
-  const refetchFns = useStable(results.map(r => r.refetch))
-
-  /**
-   * Manually refetch all enabled networks.
-   * ✅ Works even when `enabled: false`, since it calls each query's refetch function directly.
-   */
   const refetch = useCallback(async (): Promise<void> => {
     if (isNotReady) return
 
     setIsRefetching(prev => ({ ...prev, [account.id]: true }))
 
     try {
-      // Call each query’s own refetch function to force actual data fetching
-      await Promise.allSettled(refetchFns.map(fn => fn()))
+      await refetchFn()
     } finally {
       setIsRefetching(prev => ({ ...prev, [account.id]: false }))
     }
-  }, [refetchFns, isNotReady, account?.id, setIsRefetching])
+  }, [isNotReady, account?.id, setIsRefetching, refetchFn])
 
-  /** Invalidate all balances (causes auto refetch on focus/mount) */
-  const invalidate = useCallback(async (): Promise<void> => {
-    if (!isNotReady) return
-
-    await Promise.allSettled(
-      enabledNetworks.map(network =>
-        queryClient.invalidateQueries({
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          queryKey: balanceKey(account!, network)
-        })
-      )
+  const isLoading = useMemo(() => {
+    // still loading if:
+    // - account missing, OR
+    // - no data, OR
+    // - fewer results than enabled networks
+    return (
+      !account ||
+      !data ||
+      data.length === 0 ||
+      data.length < enabledNetworks.length
     )
-  }, [enabledNetworks, isNotReady, account, queryClient])
+  }, [account, data, enabledNetworks])
 
   return {
-    results,
-    refetch,
+    data: data ?? [],
+    isLoading,
+    isFetching,
     isRefetching: isRefetching[account?.id ?? ''] ?? false,
-    invalidate
+    refetch
   }
 }

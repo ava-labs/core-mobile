@@ -330,6 +330,8 @@ export const AddEditNetworkScreen = (): JSX.Element => {
             gap: 16
           }}>
           <Button
+            accessible={true}
+            testID="save_network_btn"
             type="primary"
             size="large"
             onPress={handleSubmit}
@@ -405,6 +407,8 @@ export const AddEditNetworkScreen = (): JSX.Element => {
               alignItems: 'center'
             }}>
             <Icons.Custom.Category
+              testID="custom_avatar"
+              accessible={true}
               width={40}
               height={40}
               color={theme.colors.$textSecondary}

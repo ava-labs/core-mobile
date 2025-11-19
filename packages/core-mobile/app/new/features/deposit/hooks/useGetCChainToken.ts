@@ -2,9 +2,6 @@ import { NetworkContractToken, NetworkToken } from '@avalabs/vm-module-types'
 import { useAvalancheErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useCallback } from 'react'
-import { LocalTokenWithBalance } from 'store/balance'
-import { findMatchingTokenWithBalance } from '../utils/findMatchingTokenWithBalance'
-import { useCChainTokensWithBalance } from './useCChainTokensWithBalance'
 
 export const useGetCChainToken = (): ((
   symbol: string,
@@ -31,19 +28,5 @@ export const useGetCChainToken = (): ((
       return undefined
     },
     [avalancheErc20ContractTokens, cChainNetwork]
-  )
-}
-
-export const useGetCChainTokenWithBalance = (): ((asset: {
-  symbol: string
-  contractAddress?: string
-}) => LocalTokenWithBalance | undefined) => {
-  const { tokens } = useCChainTokensWithBalance()
-
-  return useCallback(
-    (asset: { symbol: string; contractAddress?: string }) => {
-      return findMatchingTokenWithBalance(asset, tokens)
-    },
-    [tokens]
   )
 }

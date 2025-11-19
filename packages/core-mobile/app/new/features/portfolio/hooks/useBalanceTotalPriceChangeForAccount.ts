@@ -18,7 +18,7 @@ export const useBalanceTotalPriceChangeForAccount = (
   account?: Account
 ): number => {
   const { getMarketTokenBySymbol } = useWatchlist()
-  const tokens = useTokensWithBalanceForAccount(account)
+  const tokens = useTokensWithBalanceForAccount({ account })
 
   return useMemo(
     () =>

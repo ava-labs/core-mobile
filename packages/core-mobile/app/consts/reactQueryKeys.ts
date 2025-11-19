@@ -1,6 +1,6 @@
 export enum ReactQueryKeys {
   ACCOUNT_BALANCE = 'accountBalance',
-  WALLET_XP_BALANCE = 'walletXpBalance',
+  WALLET_BALANCE = 'walletBalance',
 
   // defi
   DEFI_EXCHANGE_RATES = 'defiExchangeRates',
@@ -44,5 +44,9 @@ export enum ReactQueryKeys {
   TERMS_OF_USE = 'termsOfUse',
 
   // bridge
-  BRIDGE_CONFIG = 'bridgeConfig'
+  BRIDGE_CONFIG = 'bridgeConfig',
+
+  // deposit
+  AAVE_AVAILABLE_MARKETS = 'aaveAvailableMarkets',
+  BENQI_AVAILABLE_MARKETS = 'benqiAvailableMarkets'
 }

@@ -276,9 +276,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/bridge-unified@npm:4.0.3":
-  version: 4.0.3
-  resolution: "@avalabs/bridge-unified@npm:4.0.3"
+"@avalabs/bridge-unified@npm:4.3.0":
+  version: 4.3.0
+  resolution: "@avalabs/bridge-unified@npm:4.3.0"
   dependencies:
     "@noble/hashes": 1.5.0
     "@scure/base": 1.1.9
@@ -288,7 +288,7 @@ __metadata:
     lodash: 4.17.21
     viem: 2.11.1
     zod: 3.23.8
-  checksum: 72fdd9ba42e46ec4fe20d4ce19401c6f399b10060f0cdeb2040650afbeebb901868d78a22915aad3ba499608fbfe951d8e5515969e52d352e706ed2fdd3e0a21
+  checksum: d0a532a9339f7506ad08ce8011dd950252eadc819e3c1f42aa00374f1bf1b42152b192e58f3ee2b89e81dd7d9f3a3a289a7d8de00361bd5c5d422d6d8d8519f6
   languageName: node
   linkType: hard
 
@@ -353,7 +353,7 @@ __metadata:
     "@avalabs/avalanche-module": 1.11.0
     "@avalabs/avalanchejs": 5.1.0-alpha.2
     "@avalabs/bitcoin-module": 1.11.0
-    "@avalabs/bridge-unified": 4.0.3
+    "@avalabs/bridge-unified": 4.3.0
     "@avalabs/core-bridge-sdk": 3.1.0-alpha.61
     "@avalabs/core-chains-sdk": 3.1.0-alpha.61
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.61
@@ -30593,7 +30593,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitrogen@npm:*, nitrogen@npm:0.31.6":
+"nitrogen@npm:*":
+  version: 0.31.8
+  resolution: "nitrogen@npm:0.31.8"
+  dependencies:
+    chalk: ^5.3.0
+    react-native-nitro-modules: ^0.31.8
+    ts-morph: ^27.0.0
+    yargs: ^18.0.0
+    zod: ^4.0.5
+  bin:
+    nitrogen: lib/index.js
+  checksum: 00c53f2d7ba5a82f2dd78cc8cb797fa7224b25ec45ac53bb0464abb2a96eea4e8b847a632f3bd11d95b80d3fd54cfdc726121318b0ddd8238d42d23a566efad9
+  languageName: node
+  linkType: hard
+
+"nitrogen@npm:0.31.6":
   version: 0.31.6
   resolution: "nitrogen@npm:0.31.6"
   dependencies:
@@ -33651,13 +33666,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"react-native-nitro-modules@npm:0.31.6, react-native-nitro-modules@npm:^0.31.6":
+"react-native-nitro-modules@npm:0.31.6":
   version: 0.31.6
   resolution: "react-native-nitro-modules@npm:0.31.6"
   peerDependencies:
     react: "*"
     react-native: "*"
   checksum: d9b5074ae30901d5ef305c3771c87a7eb4872b9f0411fbc0c12d51a3be28d016dc21419fedad9119cdba19977ed826c5c5d716601115f306faccce6a3392d8da
+  languageName: node
+  linkType: hard
+
+"react-native-nitro-modules@npm:^0.31.6, react-native-nitro-modules@npm:^0.31.8":
+  version: 0.31.8
+  resolution: "react-native-nitro-modules@npm:0.31.8"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 3976b93015011585112c939ba762240b4cd913435de1a5321d18bbb719624fbfcf8ceca68575b5a03528211d02e36982043363fee8d3c874ac358c2f055f7fdf
   languageName: node
   linkType: hard
 

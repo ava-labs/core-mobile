@@ -27,7 +27,9 @@ export const useAccountPerformanceSummary = (
 } => {
   const { formatCurrency } = useFormatCurrency()
   const totalPriceChange = useBalanceTotalPriceChangeForAccount(account)
-  const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount(account)
+  const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
+    account
+  })
 
   const valueChange24h =
     totalPriceChange !== 0
