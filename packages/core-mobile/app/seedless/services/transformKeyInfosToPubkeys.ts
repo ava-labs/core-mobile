@@ -1,6 +1,7 @@
 import * as cs from '@cubist-labs/cubesigner-sdk'
 import { strip0x } from '@avalabs/core-utils-sdk'
 import { AddressPublicKey, Curve } from 'utils/publicKeys'
+import { DERIVATION_PATHS } from 'features/ledger/consts'
 
 export const transformKeyInfosToPubKeys = (
   keyInfos: cs.KeyInfo[]
@@ -18,10 +19,8 @@ export const transformKeyInfosToPubKeys = (
       k.key_type === cs.Secp256k1.Ava ||
       k.key_type === cs.Secp256k1.AvaTest
     ) {
-      return (
-        parseInt(
-          k.derivation_info?.derivation_path.split('/').at(-3) as string
-        ) === 0
+      return k.derivation_info?.derivation_path?.startsWith(
+        DERIVATION_PATHS.EXTENDED.AVALANCHE
       )
     }
     return true
