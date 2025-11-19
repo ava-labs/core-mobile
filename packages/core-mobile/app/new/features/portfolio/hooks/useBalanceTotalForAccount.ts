@@ -13,7 +13,7 @@ import { useTokensWithBalanceForAccount } from './useTokensWithBalanceForAccount
 export function useBalanceTotalForAccount(account?: Account): bigint {
   const tokenVisibility = useSelector(selectTokenVisibility)
   const enabledChainIds = useSelector(selectEnabledChainIds)
-  const tokens = useTokensWithBalanceForAccount(account)
+  const tokens = useTokensWithBalanceForAccount({ account })
 
   return useMemo(() => {
     if (!account) return 0n

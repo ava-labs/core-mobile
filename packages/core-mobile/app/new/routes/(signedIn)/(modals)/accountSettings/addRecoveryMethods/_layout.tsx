@@ -2,8 +2,11 @@ import { Stack } from 'common/components/Stack'
 import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
 import { RecoverMethodsProvider } from 'features/accountSettings/context/RecoverMethodsProvider'
 import React from 'react'
+import { useDisableLockApp } from 'common/hooks/useDisableLockApp'
 
 export default function AddRecoveryMethodsLayout(): JSX.Element {
+  useDisableLockApp()
+
   return (
     <RecoverMethodsProvider>
       <Stack

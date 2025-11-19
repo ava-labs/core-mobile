@@ -69,11 +69,11 @@ export default {
   celoNativeTokenSymbol: 'CELO',
   celoNativeTokenName: 'Celo',
   celoExplorerUrl: 'https://explorer.celo.org',
-  networkRpcUrl: 'Network RPC URL',
-  chainId: 'Chain ID',
-  tokenSymbol: 'Token symbol',
-  tokenName: 'Token name',
-  explorerUrl: 'Explorer URL',
+  networkRpcUrl: 'advanced_title__Network RPC URL',
+  chainId: 'advanced_title__Chain ID',
+  tokenSymbol: 'advanced_title__Token symbol',
+  tokenName: 'advanced_title__Token name',
+  explorerUrl: 'advanced_title__Explorer URL',
   iWroteItDownButton: 'I wrote it down',
   contacts: 'Contacts',
   currencyId: 'list_item__Currency',
@@ -81,5 +81,9 @@ export default {
   nameContactBtn: 'name_btn',
   typeInOrPasteAddress: 'Type in or paste address',
   contactPreviewAddress: 'contact_preview_address',
-  hkd: 'HKD'
+  hkd: 'HKD',
+  beamL1: 'Beam L1',
+  customAvatar: 'custom_avatar',
+  nameThisNetworkBtn: 'Name this network',
+  saveNetworkBtn: 'save_network_btn'
 }

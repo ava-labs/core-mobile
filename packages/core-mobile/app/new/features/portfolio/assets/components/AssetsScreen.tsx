@@ -57,8 +57,9 @@ const AssetsScreen: FC<Props> = ({
   const isBalanceLoading = useIsLoadingBalancesForAccount(activeAccount)
   const isBalancePolling = useIsPollingBalancesForAccount(activeAccount)
   const isRefetchingBalance = useIsRefetchingBalancesForAccount(activeAccount)
-  const balanceTotalInCurrency =
-    useBalanceTotalInCurrencyForAccount(activeAccount)
+  const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
+    account: activeAccount
+  })
 
   const handleManageList = useCallback(
     (value: string): void => {

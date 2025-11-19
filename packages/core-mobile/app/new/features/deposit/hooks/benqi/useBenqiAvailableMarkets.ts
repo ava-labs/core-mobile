@@ -1,14 +1,9 @@
-import {
-  type QueryObserverResult,
-  type RefetchOptions,
-  skipToken,
-  useQuery
-} from '@tanstack/react-query'
+import { skipToken, useQuery } from '@tanstack/react-query'
 import { readContract } from 'viem/actions'
 import { DefiMarket, MarketNames } from 'features/deposit/types'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import { Address } from 'viem'
+import { Address, PublicClient } from 'viem'
 import { BENQI_COMPTROLLER } from 'features/deposit/abis/benqiComptroller'
 import { BENQI_COMPTROLLER_C_CHAIN_ADDRESS } from 'features/deposit/consts'
 import Logger from 'utils/Logger'
@@ -17,29 +12,25 @@ import { getBenqiSupplyApyPercent } from 'features/deposit/utils/getBenqiLiveApy
 import { getBenqiUnderlyingTokenDetails } from 'features/deposit/utils/getBenqiUnderlyingTokenDetails'
 import { getBenqiUnderlyingTotalSupply } from 'features/deposit//utils/getBenqiUnderlyingTotalSupply'
 import { getUniqueMarketId } from 'features/deposit/utils/getUniqueMarketId'
-import useCChainNetwork from 'hooks/earn/useCChainNetwork'
-import { findMatchingTokenWithBalance } from 'features/deposit/utils/findMatchingTokenWithBalance'
-import { useCChainClient } from '../useCChainClient'
+import { Network } from '@avalabs/core-chains-sdk'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useGetCChainToken } from '../useGetCChainToken'
-import { useCChainTokensWithBalance } from '../useCChainTokensWithBalance'
 
-export const useBenqiAvailableMarkets = (): {
+export const useBenqiAvailableMarkets = ({
+  network,
+  networkClient
+}: {
+  network: Network | undefined
+  networkClient: PublicClient | undefined
+}): {
   data: DefiMarket[] | undefined
   error: Error | null
   isLoading: boolean
   isPending: boolean
   isFetching: boolean
-  refetch:
-    | ((
-        options?: RefetchOptions
-      ) => Promise<QueryObserverResult<DefiMarket[], Error>>)
-    | (() => void)
 } => {
-  const cChainNetwork = useCChainNetwork()
-  const cChainClient = useCChainClient()
   const activeAccount = useSelector(selectActiveAccount)
   const addressEVM = activeAccount?.addressC
-  const { tokens } = useCChainTokensWithBalance()
   const getCChainToken = useGetCChainToken()
 
   const {
@@ -47,14 +38,17 @@ export const useBenqiAvailableMarkets = (): {
     isLoading: isLoadingEnrichedMarkets,
     isPending: isPendingEnrichedMarkets,
     isFetching: isFetchingEnrichedMarkets,
-    error: errorEnrichedMarkets,
-    refetch
+    error: errorEnrichedMarkets
   } = useQuery({
-    queryKey: ['useBenqiAvailableMarkets', cChainClient, cChainNetwork, tokens],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    queryKey: [
+      ReactQueryKeys.BENQI_AVAILABLE_MARKETS,
+      networkClient?.chain?.id
+    ],
     queryFn:
-      cChainClient && cChainNetwork
+      networkClient && network
         ? async () => {
-            const qTokenAddresses = (await readContract(cChainClient, {
+            const qTokenAddresses = (await readContract(networkClient, {
               address: BENQI_COMPTROLLER_C_CHAIN_ADDRESS,
               abi: BENQI_COMPTROLLER,
               functionName: 'getAllMarkets',
@@ -64,7 +58,7 @@ export const useBenqiAvailableMarkets = (): {
             const results = await Promise.allSettled(
               qTokenAddresses.map(async qTokenAddress => {
                 try {
-                  const isPaused = await readContract(cChainClient, {
+                  const isPaused = await readContract(networkClient, {
                     address: BENQI_COMPTROLLER_C_CHAIN_ADDRESS,
                     abi: BENQI_COMPTROLLER,
                     functionName: 'mintGuardianPaused',
@@ -82,13 +76,13 @@ export const useBenqiAvailableMarkets = (): {
                     underlyingTokenDecimals,
                     underlyingTokenSymbol
                   } = await getBenqiUnderlyingTokenDetails({
-                    cChainClient,
+                    cChainClient: networkClient,
                     qTokenAddress
                   })
 
                   const underlyingTotalSupply =
                     await getBenqiUnderlyingTotalSupply({
-                      cChainClient,
+                      cChainClient: networkClient,
                       qTokenAddress,
                       underlyingTokenDecimals
                     })
@@ -97,16 +91,8 @@ export const useBenqiAvailableMarkets = (): {
                     qTokenAddress,
                     underlyingTokenDecimals,
                     underlyingTotalSupply,
-                    cChainClient
+                    cChainClient: networkClient
                   })
-
-                  const balance = findMatchingTokenWithBalance(
-                    {
-                      symbol: underlyingTokenSymbol,
-                      contractAddress: underlyingTokenAddress
-                    },
-                    tokens
-                  )
 
                   const token = getCChainToken(
                     underlyingTokenSymbol,
@@ -115,7 +101,7 @@ export const useBenqiAvailableMarkets = (): {
 
                   const marketData = {
                     marketName: MarketNames.benqi,
-                    network: cChainNetwork,
+                    network,
                     asset: {
                       mintTokenAddress: qTokenAddress,
                       assetName: underlyingTokenName,
@@ -123,9 +109,8 @@ export const useBenqiAvailableMarkets = (): {
                       iconUrl: token?.logoUri,
                       symbol: underlyingTokenSymbol,
                       contractAddress: underlyingTokenAddress,
-                      underlyingTokenBalance: balance,
                       mintTokenBalance: await getBenqiDepositedBalance({
-                        cChainClient,
+                        cChainClient: networkClient,
                         underlyingTokenDecimals,
                         walletAddress: addressEVM as Address,
                         qTokenAddress
@@ -166,8 +151,6 @@ export const useBenqiAvailableMarkets = (): {
     error: errorEnrichedMarkets ?? null,
     isLoading: isLoadingEnrichedMarkets,
     isPending: isPendingEnrichedMarkets,
-    isFetching: isFetchingEnrichedMarkets,
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    refetch: cChainClient ? refetch : () => {}
+    isFetching: isFetchingEnrichedMarkets
   }
 }

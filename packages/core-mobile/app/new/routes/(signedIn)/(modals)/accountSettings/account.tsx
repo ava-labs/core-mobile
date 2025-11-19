@@ -1,12 +1,11 @@
 import { BalanceHeader, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { useBalanceForAccount } from 'features/portfolio/hooks/useBalanceForAccount'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { AccountAddresses } from 'features/accountSettings/components/accountAddresses'
 import { AccountButtons } from 'features/accountSettings/components/AccountButtons'
-import React, { useCallback, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccountById } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -30,7 +29,9 @@ const AccountScreen = (): JSX.Element => {
   const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
   const isBalanceLoading = useIsLoadingBalancesForAccount(account)
   const isRefetchingBalance = useIsRefetchingBalancesForAccount(account)
-  const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount(account)
+  const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
+    account
+  })
   const isLoading = isBalanceLoading || isRefetchingBalance
   const balanceAccurate = useIsAccountBalanceAccurate(account)
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -45,20 +46,12 @@ const AccountScreen = (): JSX.Element => {
         })
   }, [balanceAccurate, balanceTotalInCurrency, formatCurrency])
 
-  const { fetchBalance } = useBalanceForAccount(account?.id ?? '')
-
   const isPrivateKeyAvailable = useMemo(
     () =>
       account?.type === CoreAccountType.IMPORTED ||
       (account?.type === CoreAccountType.PRIMARY &&
         wallet?.type === WalletType.MNEMONIC),
     [account?.type, wallet?.type]
-  )
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchBalance()
-    }, [fetchBalance])
   )
 
   const handleShowPrivateKey = (): void => {

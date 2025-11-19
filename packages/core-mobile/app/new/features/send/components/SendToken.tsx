@@ -44,7 +44,8 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
     network,
     amount,
     setAmount,
-    resetAmount
+    resetAmount,
+    maxAmount
   } = useSendContext()
 
   const { navigate } = useRouter()
@@ -203,7 +204,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
 
   return (
     <ScrollScreen
-      bottomOffset={150}
+      bottomOffset={maxAmount?.eq(0) ? 400 : 150}
       isModal
       title={`${'How much would\nyou like to send?'}`}
       navigationTitle="How much would you like to send?"
@@ -337,6 +338,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
           validateAmount={validateSendAmount}
           disabled={isSending || selectedToken === undefined}
           autoFocus
+          maxAmount={maxAmount}
         />
       )}
     </ScrollScreen>

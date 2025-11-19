@@ -863,6 +863,8 @@ workflows:
       opts:
         is_expand: false
     steps:
+    - deploy-to-bitrise-io@2:
+        is_always_run: true
     - deploy-to-itunesconnect-application-loader@1:
         inputs:
         - api_key_path: $BITRISEIO_APPSTORE_CONNECT_API_KEY_URL
@@ -1002,6 +1004,8 @@ workflows:
       opts:
         is_expand: false
     steps:
+    - deploy-to-bitrise-io@2:
+        is_always_run: true
     - deploy-to-itunesconnect-application-loader@1:
         inputs:
         - api_key_path: $BITRISEIO_APPSTORE_CONNECT_API_KEY_URL

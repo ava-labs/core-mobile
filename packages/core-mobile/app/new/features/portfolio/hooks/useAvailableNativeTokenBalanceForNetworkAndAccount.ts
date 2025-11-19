@@ -18,15 +18,15 @@ export function useAvailableNativeTokenBalanceForNetworkAndAccount(
   account?: Account,
   chainId?: number
 ): bigint {
-  const { results } = useAccountBalances(account, { enabled: false })
+  const { data } = useAccountBalances(account)
 
   return useMemo(() => {
     if (!account || !chainId) return 0n
 
     // Find the balance entry for the requested network
-    const balanceForNetworkAndAccount = results
-      .map(r => r.data)
-      .find(b => b?.chainId === chainId && b.accountId === account.id)
+    const balanceForNetworkAndAccount = data.find(
+      balance => balance.chainId === chainId && balance.accountId === account.id
+    )
 
     if (!balanceForNetworkAndAccount) return 0n
 
@@ -46,5 +46,5 @@ export function useAvailableNativeTokenBalanceForNetworkAndAccount(
     }
 
     return nativeToken.balance ?? 0n
-  }, [account, chainId, results])
+  }, [account, chainId, data])
 }
