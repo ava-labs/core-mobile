@@ -282,6 +282,7 @@ workflows:
   _install-and-set-env:
     before_run:
     - _install-node-20
+    - _install-brew-packages
     steps:
     - restore-cache@1:
         title: Restore NPM Cache
@@ -332,6 +333,14 @@ workflows:
             /root/.nvm/*
         - is_key_unique: "true"
         - key: node-20-{{ .OS }}-{{ .Arch }}
+  
+  _install-brew-packages:
+    steps:
+    - script-runner@0:
+        title: Brew Setup
+        inputs:
+        - file_path: scripts/bitrise/brewSetup.sh
+
   _run_android_core_web_tests:
     steps:
     - script-runner@0:
