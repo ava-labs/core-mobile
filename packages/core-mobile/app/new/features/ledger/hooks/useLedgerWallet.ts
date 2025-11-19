@@ -274,10 +274,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         '@avalabs/core-wallets-sdk'
       )
       const derivationPath = getSolanaDerivationPath(0)
-      console.log(
-        '🔍 SOLANA DEBUG - Using Extension SDK derivation path:',
-        derivationPath
-      )
 
       // Convert to the format expected by Ledger (without m/ prefix)
       const ledgerDerivationPath = derivationPath.replace('m/', '')
@@ -287,9 +283,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       // Get the raw public key (what the SVM module expects)
       const solanaPublicKey = Buffer.from(result.address).toString('hex')
 
-      // Also convert to address for logging
-      const solanaAddress = bs58.encode(new Uint8Array(result.address))
-
       setSolanaKeys([
         {
           key: solanaPublicKey, // Store the raw public key, not the address
@@ -297,13 +290,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           curve: Curve.ED25519
         }
       ])
-      console.log(
-        '🔍 SOLANA DEBUG - Stored public key with derivation path:',
-        derivationPath
-      )
-      console.log('🔍 SOLANA DEBUG - Public key (hex):', solanaPublicKey)
-      console.log('🔍 SOLANA DEBUG - Derived address:', solanaAddress)
-      Logger.info('Successfully got Solana address', solanaAddress)
     } catch (error) {
       Logger.error('Failed to get Solana keys', error)
       throw error
@@ -565,12 +551,11 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
             : [])
         ]
 
-        console.log('🔍 WALLET DEBUG - Storing publicKeys:', publicKeysToStore)
-
         // Store the Ledger wallet with the specified derivation path type
         await dispatch(
           storeWallet({
             walletId: newWalletId,
+            walletName: `Ledger ${deviceName}`,
             walletSecret: JSON.stringify({
               deviceId,
               deviceName,

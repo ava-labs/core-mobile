@@ -68,7 +68,7 @@ export const ProgressDots: React.FC<ProgressDotsProps> = ({
         flexDirection: 'row',
         alignItems: 'center',
         gap,
-        height: Platform.OS === 'ios' ? '100%' : 56,
+        height: 56,
         justifyContent: 'center'
       }}>
       {Array.from({ length: totalSteps }).map((_, index) => (
