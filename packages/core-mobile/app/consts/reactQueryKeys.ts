@@ -44,5 +44,9 @@ export enum ReactQueryKeys {
   TERMS_OF_USE = 'termsOfUse',
 
   // bridge
-  BRIDGE_CONFIG = 'bridgeConfig'
+  BRIDGE_CONFIG = 'bridgeConfig',
+
+  // deposit
+  AAVE_AVAILABLE_MARKETS = 'aaveAvailableMarkets',
+  BENQI_AVAILABLE_MARKETS = 'benqiAvailableMarkets'
 }

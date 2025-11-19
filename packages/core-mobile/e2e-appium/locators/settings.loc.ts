@@ -82,5 +82,8 @@ export default {
   typeInOrPasteAddress: 'Type in or paste address',
   contactPreviewAddress: 'contact_preview_address',
   hkd: 'HKD',
-  beamL1: 'Beam L1'
+  beamL1: 'Beam L1',
+  customAvatar: 'custom_avatar',
+  nameThisNetworkBtn: 'Name this network',
+  saveNetworkBtn: 'save_network_btn'
 }

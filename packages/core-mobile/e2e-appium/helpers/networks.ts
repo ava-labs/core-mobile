@@ -5,10 +5,21 @@ export type Network = {
   haveToggle: boolean
   data?: {
     rpcUrl?: string
-    explorerUrl: string
+    explorerUrl?: string
     tokenSymbol: string
     tokenName: string
     chainId: string
+  }
+}
+
+export const customNetwork: Network = {
+  name: 'POLYGON',
+  haveToggle: true,
+  data: {
+    rpcUrl: 'https://polygon-rpc.com',
+    chainId: '137',
+    tokenSymbol: 'POLY',
+    tokenName: 'Polygon Ecosystem Token'
   }
 }
 export const networks: Network[] = [

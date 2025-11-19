@@ -1,4 +1,3 @@
-/* eslint-disable max-params */
 import { actions } from '../helpers/actions'
 import settings from '../locators/settings.loc'
 import { selectors } from '../helpers/selectors'
@@ -54,8 +53,16 @@ class Settings {
     return selectors.getById(settings.nameContactBtn)
   }
 
+  get nameThisNetworkBtn() {
+    return selectors.getByText(settings.nameThisNetworkBtn)
+  }
+
   get networkRpcUrl() {
     return selectors.getById(settings.networkRpcUrl)
+  }
+
+  get saveNetworkBtn() {
+    return selectors.getById(settings.saveNetworkBtn)
   }
 
   get chainId() {
@@ -174,6 +181,10 @@ class Settings {
     return selectors.getByText(settings.emptyContacts)
   }
 
+  get customAvatar() {
+    return selectors.getById(settings.customAvatar)
+  }
+
   networkList(name: string) {
     return selectors.getById(`network_list__${name}`)
   }
@@ -207,7 +218,7 @@ class Settings {
     contactName: string
   ) {
     // add contact name
-    await this.addContactOrNetworkName(contactName)
+    await this.addContactName(contactName)
     // add contact addresses
     for (const [network, address] of Object.entries(networkAndAddress)) {
       await actions.click(selectors.getById(`contact_delete_btn__${network}`))
@@ -244,7 +255,7 @@ class Settings {
     contactName: string
   ) {
     // add contact name
-    await this.addContactOrNetworkName(contactName)
+    await this.addContactName(contactName)
     // add contact addresses
     for (const [network, address] of Object.entries(networkAndAddress)) {
       await this.setAddress(network, address, contactName)
@@ -370,8 +381,15 @@ class Settings {
     }
   }
 
-  async addContactOrNetworkName(name: string) {
+  async addContactName(name: string) {
     await actions.tap(this.nameContactBtn)
+    await actions.type(common.dialogInput, name)
+    await actions.tapEnterOnKeyboard()
+    await common.tapSaveAlert()
+  }
+
+  async addNetworkName(name: string) {
+    await actions.tap(this.nameThisNetworkBtn)
     await actions.type(common.dialogInput, name)
     await actions.tapEnterOnKeyboard()
     await common.tapSaveAlert()
@@ -379,27 +397,42 @@ class Settings {
 
   async setNetworkData(type: string, value: string) {
     await actions.tap(selectors.getByText(`Add ${type}`))
+    await actions.dragAndDrop(this.nameThisNetworkBtn, [0, -500])
     await actions.type(
       selectors.getById(`advanced_input__${type.toLowerCase()}`),
       value
     )
-    await actions.dismissKeyboard()
+    try {
+      await actions.tapEnterOnKeyboard()
+    } catch (e) {
+      await actions.dismissKeyboard(`advanced_input__${type.toLowerCase()}`)
+    }
   }
 
-  async addNetwork(
-    networkName: string,
-    rpcUrl: string,
-    chainId: string,
-    nativeTokenSymbol: string,
-    nativeTokenName: string
-  ) {
+  async addNetwork(network: Network) {
+    const { name, data } = network
     await this.tapAddNetworkBtn()
-    await this.addContactOrNetworkName(networkName)
-    await this.setNetworkData('Network RPC URL', rpcUrl)
-    await this.setNetworkData('Chain ID', chainId)
-    await this.setNetworkData('token symbol', nativeTokenSymbol)
-    await this.setNetworkData('token name', nativeTokenName)
-    await common.tapSave()
+    await this.setNetworkData('Network RPC URL', data?.rpcUrl ?? '')
+    await this.setNetworkData('Chain ID', data?.chainId ?? '')
+    await this.setNetworkData('token symbol', data?.tokenSymbol ?? '')
+    await this.setNetworkData('token name', data?.tokenName ?? '')
+    await this.addNetworkName(name)
+    await this.tapSaveNetworkBtn()
+  }
+
+  async tapSaveNetworkBtn() {
+    await actions.tap(this.saveNetworkBtn)
+  }
+
+  async editNetwork(networkName: string) {
+    await this.addNetworkName(networkName)
+    await this.tapSaveNetworkBtn()
+  }
+
+  async removeNetwork(networkName: string) {
+    await this.tapNetworkByName(networkName)
+    await common.tapDelete()
+    await common.tapDeleteAlert()
   }
 
   async verifySettingsRow(row: string, rightVal: string | undefined) {
@@ -454,9 +487,11 @@ class Settings {
       await actions.isVisible(this.networkRpcUrl)
       await actions.isVisible(this.networkDetails(network.data?.rpcUrl ?? ''))
     }
-    await actions.isVisible(
-      this.networkDetails(network.data?.explorerUrl ?? '')
-    )
+
+    if (network.data?.explorerUrl) {
+      await actions.isVisible(this.networkDetails(network.data?.explorerUrl))
+    }
+
     await actions.isVisible(this.networkDetails(network.data?.chainId ?? ''))
     await actions.isVisible(
       this.networkDetails(network.data?.tokenSymbol ?? '')
