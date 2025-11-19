@@ -1,17 +1,16 @@
 import { useMemo } from 'react'
-import { DefiAssetDetails } from '../types'
-import { useAvailableMarkets } from './useAvailableMarkets'
+import { LocalTokenWithBalance } from 'store/balance'
+import { DefiAssetDetails, DefiMarket } from '../types'
+import { findMatchingTokenWithBalance } from '../utils/findMatchingTokenWithBalance'
 
-export const useDepositableTokens = (): {
-  tokens: DefiAssetDetails[]
-  isPending: boolean
-} => {
-  const { data: markets, isPending } = useAvailableMarkets()
-
-  const depositableTokens = useMemo(() => {
+export const useDepositableTokens = (
+  markets: DefiMarket[],
+  tokensWithBalance: LocalTokenWithBalance[]
+): DefiAssetDetails[] => {
+  return useMemo(() => {
     const uniqueAssets = new Map<string, DefiAssetDetails>()
 
-    markets?.forEach(market => {
+    markets.forEach(market => {
       const asset = market.asset
       // Use contractAddress if available, otherwise use lowercase symbol
       const key = asset.contractAddress ?? asset.symbol.toLowerCase()
@@ -26,24 +25,28 @@ export const useDepositableTokens = (): {
       if (a.symbol.toLowerCase() === 'avax') return -1
       if (b.symbol.toLowerCase() === 'avax') return 1
 
+      const tokenWithBalanceA = findMatchingTokenWithBalance(
+        a,
+        tokensWithBalance
+      )
+      const tokenWithBalanceB = findMatchingTokenWithBalance(
+        b,
+        tokensWithBalance
+      )
+
       if (
-        a.underlyingTokenBalance?.balanceInCurrency &&
-        b.underlyingTokenBalance?.balanceInCurrency
+        tokenWithBalanceA?.balanceInCurrency &&
+        tokenWithBalanceB?.balanceInCurrency
       ) {
         return (
-          b.underlyingTokenBalance.balanceInCurrency -
-          a.underlyingTokenBalance.balanceInCurrency
+          tokenWithBalanceB.balanceInCurrency -
+          tokenWithBalanceA.balanceInCurrency
         )
       }
-      if (a.underlyingTokenBalance?.balanceInCurrency) return -1
-      if (b.underlyingTokenBalance?.balanceInCurrency) return 1
+      if (tokenWithBalanceA?.balanceInCurrency) return -1
+      if (tokenWithBalanceB?.balanceInCurrency) return 1
 
       return a.symbol.toLowerCase().localeCompare(b.symbol.toLowerCase())
     })
-  }, [markets])
-
-  return {
-    tokens: depositableTokens,
-    isPending
-  }
+  }, [markets, tokensWithBalance])
 }

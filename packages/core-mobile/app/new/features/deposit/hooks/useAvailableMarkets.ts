@@ -1,51 +1,56 @@
 import { useMemo } from 'react'
-import { Address } from 'viem'
+import { createPublicClient, http } from 'viem'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import { getViemChain } from 'utils/getViemChain/getViemChain'
 import { DefiMarket } from '../types'
 import { useAaveAvailableMarkets } from './aave/useAaveAvailableMarkets'
 import { useBenqiAvailableMarkets } from './benqi/useBenqiAvailableMarkets'
 
-export const useAvailableMarkets = (filter?: {
-  symbol: string
-  contractAddress: Address | undefined
-}): {
+export const useAvailableMarkets = (): {
   data: DefiMarket[]
   error: Error | null
   isLoading: boolean
   isPending: boolean
   isFetching: boolean
 } => {
+  const cChainNetwork = useCChainNetwork()
+  const networkClient = useMemo(() => {
+    if (!cChainNetwork) {
+      return undefined
+    }
+
+    const cChain = getViemChain(cChainNetwork)
+
+    return createPublicClient({ chain: cChain, transport: http() })
+  }, [cChainNetwork])
+
   const {
     data: aaveMarkets,
     isLoading: isLoadingAaveMarkets,
     error: errorAaveMarkets,
     isPending: isPendingAaveMarkets,
     isFetching: isFetchingAave
-  } = useAaveAvailableMarkets()
+  } = useAaveAvailableMarkets({
+    network: cChainNetwork,
+    networkClient
+  })
   const {
     data: benqiMarkets,
     isLoading: isLoadingBenqiMarkets,
     error: errorBenqiMarkets,
     isPending: isPendingBenqiMarkets,
     isFetching: isFetchingBenqi
-  } = useBenqiAvailableMarkets()
+  } = useBenqiAvailableMarkets({
+    network: cChainNetwork,
+    networkClient
+  })
 
   const safeMarkets = useMemo(() => {
     const safeAave = aaveMarkets ?? []
     const safeBenqi = benqiMarkets ?? []
-    let mergedSafely = [...safeAave, ...safeBenqi]
-    if (filter) {
-      mergedSafely = mergedSafely.filter(market => {
-        if (filter.contractAddress) {
-          return (
-            market.asset.contractAddress?.toLowerCase() ===
-            filter.contractAddress.toLowerCase()
-          )
-        }
-        return market.asset.symbol.toLowerCase() === filter.symbol.toLowerCase()
-      })
-    }
+    const mergedSafely = [...safeAave, ...safeBenqi]
     return mergedSafely.sort((a, b) => b.supplyApyPercent - a.supplyApyPercent)
-  }, [aaveMarkets, benqiMarkets, filter])
+  }, [aaveMarkets, benqiMarkets])
 
   return {
     data: safeMarkets,

@@ -17,36 +17,42 @@ import { useBuy } from 'features/meld/hooks/useBuy'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
-import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
-import { useSelector } from 'react-redux'
+import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import { selectActiveAccount } from 'store/account'
-import { useDepositableTokens } from '../hooks/useDepositableTokens'
+import { useSelector } from 'react-redux'
 import errorIcon from '../../../assets/icons/melting_face.png'
 import { DefiAssetDetails } from '../types'
 import { DefiAssetLogo } from '../components/DefiAssetLogo'
 import { findMatchingTokenWithBalance } from '../utils/findMatchingTokenWithBalance'
+import { useDepositSelectedToken } from '../store'
+import { useAvailableMarkets } from '../hooks/useAvailableMarkets'
+import { useDepositableTokens } from '../hooks/useDepositableTokens'
 
 export const SelectAssetScreen = (): JSX.Element => {
   const { navigate } = useRouter()
-  const { tokens, isPending } = useDepositableTokens()
+  const activeAccount = useSelector(selectActiveAccount)
+  const cChainNetwork = useCChainNetwork()
+  const tokensWithBalance = useTokensWithBalanceForAccount({
+    account: activeAccount,
+    chainId: cChainNetwork?.chainId
+  })
+  const { data: markets, isPending: isLoadingMarkets } = useAvailableMarkets()
+  const depositableTokens = useDepositableTokens(markets, tokensWithBalance)
   const {
     theme: { colors }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
   const { navigateToBuy, isBuyable } = useBuy()
   const { navigateToSwap } = useNavigateToSwap()
-  const cChainNetwork = useCChainNetwork()
-  const activeAccount = useSelector(selectActiveAccount)
-  const tokensWithBalance = useTokensWithBalanceByNetworkForAccount(
-    activeAccount,
-    cChainNetwork?.chainId
-  )
+  const [, setSelectedToken] = useDepositSelectedToken()
 
   const handleSelectToken = useCallback(
     (marketAsset: DefiAssetDetails) => {
       const token = findMatchingTokenWithBalance(marketAsset, tokensWithBalance)
 
       if (token) {
+        setSelectedToken(token)
+
         navigate({
           // @ts-ignore TODO: make routes typesafe
           pathname: '/deposit/selectPool',
@@ -64,11 +70,23 @@ export const SelectAssetScreen = (): JSX.Element => {
         navigateToSwap(AVAX_TOKEN_ID, marketAsset.contractAddress)
       }
     },
-    [navigate, navigateToBuy, isBuyable, navigateToSwap, tokensWithBalance]
+    [
+      navigate,
+      navigateToBuy,
+      isBuyable,
+      navigateToSwap,
+      tokensWithBalance,
+      setSelectedToken
+    ]
   )
 
   const renderItem = useCallback(
     ({ item }: { item: DefiAssetDetails }) => {
+      const tokenWithBalance = findMatchingTokenWithBalance(
+        item,
+        tokensWithBalance
+      )
+
       return (
         <TouchableOpacity onPress={() => handleSelectToken(item)}>
           <View
@@ -96,9 +114,9 @@ export const SelectAssetScreen = (): JSX.Element => {
               <Text
                 variant="subtitle2"
                 sx={{ color: colors.$textSecondary, fontWeight: 500 }}>
-                {item.underlyingTokenBalance?.balanceInCurrency
+                {tokenWithBalance?.balanceInCurrency
                   ? formatCurrency({
-                      amount: item.underlyingTokenBalance.balanceInCurrency
+                      amount: tokenWithBalance.balanceInCurrency
                     })
                   : UNKNOWN_AMOUNT}
               </Text>
@@ -107,19 +125,23 @@ export const SelectAssetScreen = (): JSX.Element => {
               type="secondary"
               size="small"
               onPress={() => handleSelectToken(item)}>
-              {item.underlyingTokenBalance?.balanceInCurrency
-                ? 'Deposit'
-                : 'Buy'}
+              {tokenWithBalance?.balanceInCurrency ? 'Deposit' : 'Buy'}
             </Button>
           </View>
         </TouchableOpacity>
       )
     },
-    [colors, formatCurrency, handleSelectToken, cChainNetwork]
+    [
+      colors,
+      formatCurrency,
+      handleSelectToken,
+      cChainNetwork,
+      tokensWithBalance
+    ]
   )
 
   const renderEmpty = useCallback(() => {
-    if (isPending) {
+    if (isLoadingMarkets) {
       return <LoadingState sx={{ flex: 1 }} />
     }
     return (
@@ -130,12 +152,12 @@ export const SelectAssetScreen = (): JSX.Element => {
         description=""
       />
     )
-  }, [isPending])
+  }, [isLoadingMarkets])
 
   return (
     <ListScreen
       title="Select an asset to deposit"
-      data={tokens}
+      data={depositableTokens}
       renderItem={renderItem}
       renderEmpty={renderEmpty}
       keyExtractor={item => item.symbol}
