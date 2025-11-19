@@ -74,7 +74,7 @@ export const WalletBalance = ({
         </ContentLoader>
       )
     }
-    return <ActivityIndicator size="small" sx={{ marginRight: 4 }} />
+    return <ActivityIndicator size="small" />
   }
 
   return (

@@ -1,5 +1,4 @@
 import {
-  GroupList,
   Icons,
   Text,
   TouchableOpacity,
@@ -8,15 +7,14 @@ import {
 } from '@avalabs/k2-alpine'
 import { useManageWallet } from 'common/hooks/useManageWallet'
 import { WalletDisplayData } from 'common/types'
+import { AccountListItem } from 'features/wallets/components/AccountListItem'
 import { WalletBalance } from 'features/wallets/components/WalletBalance'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback } from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectActiveWalletId } from 'store/wallet/slice'
 import { DropdownMenu } from './DropdownMenu'
-import { AccountListItem } from 'features/wallets/components/AccountListItem'
 
-const ITEM_HEIGHT = 50
 const HEADER_HEIGHT = 64
 
 const WalletCard = ({
@@ -61,10 +59,6 @@ const WalletCard = ({
     return <Icons.Custom.WalletClosed color={colors.$textPrimary} />
   }, [colors.$textPrimary, isExpanded])
 
-  const totalBalance = useMemo(() => {
-    return 0
-  }, [])
-
   return (
     <View
       style={[
@@ -97,7 +91,7 @@ const WalletCard = ({
               flexDirection: 'row',
               alignItems: 'center',
               gap: 4,
-              paddingLeft: 7
+              paddingLeft: 5
             }}>
             {renderExpansionIcon()}
             {renderWalletIcon()}
@@ -159,8 +153,8 @@ const WalletCard = ({
               <TouchableOpacity
                 style={{
                   minHeight: HEADER_HEIGHT,
-                  minWidth: HEADER_HEIGHT,
-                  paddingRight: 22,
+                  minWidth: 54,
+                  paddingRight: 21,
                   justifyContent: 'center',
                   alignItems: 'flex-end'
                 }}>
@@ -176,12 +170,17 @@ const WalletCard = ({
       </TouchableOpacity>
 
       {isExpanded && (
-        <View sx={{ padding: 12, paddingTop: 0, gap: 8 }}>
+        <View sx={{ paddingHorizontal: 10, gap: 10, paddingBottom: 10 }}>
           {wallet.accounts.length > 0 ? (
-            <AccountListItem
-              testID={`manage_accounts_list__${wallet.name}`}
-              {...wallet.accounts}
-            />
+            <View>
+              {wallet.accounts.map((account, index) => (
+                <AccountListItem
+                  key={index}
+                  testID={`manage_accounts_list__${account.account.name}`}
+                  {...account}
+                />
+              ))}
+            </View>
           ) : (
             !searchText && (
               <View

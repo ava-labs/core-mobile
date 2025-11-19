@@ -1,11 +1,8 @@
 import {
-  alpha,
   Button,
   Icons,
-  SCREEN_WIDTH,
   SearchBar,
   Text,
-  TouchableOpacity,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -32,7 +29,6 @@ import {
 import { selectActiveWalletId, selectWallets } from 'store/wallet/slice'
 import { Wallet } from 'store/wallet/types'
 import Logger from 'utils/Logger'
-import { AccountBalance } from './AccountBalance'
 
 const IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID = 'imported-accounts-wallet-id'
 const IMPORTED_ACCOUNTS_VIRTUAL_WALLET_NAME = 'Imported'
@@ -177,87 +173,30 @@ export const WalletList = ({
       const accountDataForWallet = accountsForWallet.map((account, index) => {
         const isActive = account.id === activeAccount?.id
         const nextAccount = accountsForWallet[index + 1]
-        const hideSeparator = isActive || nextAccount?.id === activeAccount?.id
+        const hideSeparator =
+          isActive ||
+          nextAccount?.id === activeAccount?.id ||
+          index === accountsForWallet.length - 1
 
         return {
           wallet,
+          account,
+          isActive,
           hideSeparator,
-          containerSx: {
-            backgroundColor: isActive
-              ? alpha(colors.$textPrimary, 0.1)
-              : 'transparent',
-            borderRadius: 8
-          },
-          title: (
-            <Text
-              testID={`manage_accounts_list__${account.name}`}
-              variant="body1"
-              numberOfLines={2}
-              sx={{
-                color: colors.$textPrimary,
-                fontSize: 15,
-                fontFamily: 'Inter-Medium',
-                lineHeight: 16
-              }}>
-              {account.name}
-            </Text>
-          ),
-          // subtitle: (
-          //   <Text
-          //     variant="mono"
-          //     sx={{
-          //       color: alpha(colors.$textPrimary, 0.6),
-          //       fontSize: 13,
-          //       lineHeight: 16,
-          //       fontWeight: '500'
-          //     }}>
-          //     {truncateAddress(account.addressC, TRUNCATE_ADDRESS_LENGTH)}
-          //   </Text>
-          // ),
-          leftIcon: isActive ? (
-            <Icons.Custom.CheckSmall
-              color={colors.$textPrimary}
-              width={24}
-              height={24}
-            />
-          ) : (
-            <View sx={{ width: 24 }} />
-          ),
-          value: (
-            <AccountBalance
-              variant="skeleton"
-              account={account}
-              isActive={isActive}
-            />
-          ),
           onPress: () => handleSetActiveAccount(account.id),
-          accessory: (
-            <TouchableOpacity
-              hitSlop={16}
-              sx={{ marginLeft: 8 }}
-              onPress={() => gotoAccountDetails(account.id)}>
-              <Icons.Alert.AlertCircle
-                testID={`account_detail_icon__${wallet.name}_${account.name}`}
-                color={colors.$textSecondary}
-                width={18}
-                height={18}
-              />
-            </TouchableOpacity>
-          )
+          onPressDetails: () => gotoAccountDetails(account.id)
         }
       })
 
       return {
         ...wallet,
         accounts: accountDataForWallet
-      }
+      } as WalletDisplayData
     })
   }, [
     primaryWallets,
     accountSearchResults,
     activeAccount?.id,
-    colors.$textPrimary,
-    colors.$textSecondary,
     handleSetActiveAccount,
     gotoAccountDetails
   ])
@@ -280,61 +219,18 @@ export const WalletList = ({
       (account, index) => {
         const isActive = account.id === activeAccount?.id
         const nextAccount = allPrivateKeyAccounts[index + 1]
-        const hideSeparator = isActive || nextAccount?.id === activeAccount?.id
+        const hideSeparator =
+          isActive ||
+          nextAccount?.id === activeAccount?.id ||
+          index === allPrivateKeyAccounts.length - 1
 
         return {
           wallet: importedWallets.find(w => w.id === account.walletId),
+          account,
+          isActive,
           hideSeparator,
-          containerSx: {
-            backgroundColor: isActive
-              ? alpha(colors.$textPrimary, 0.1)
-              : 'transparent',
-            borderRadius: 8
-          },
-          title: (
-            <Text
-              testID={`manage_accounts_list__${account.name}`}
-              variant="body1"
-              numberOfLines={2}
-              sx={{
-                color: colors.$textPrimary,
-                fontSize: 14,
-                lineHeight: 16,
-                fontWeight: '500',
-                width: SCREEN_WIDTH * 0.3
-              }}>
-              {account.name}
-            </Text>
-          ),
-          leftIcon: isActive ? (
-            <Icons.Custom.CheckSmall
-              color={colors.$textPrimary}
-              width={24}
-              height={24}
-            />
-          ) : (
-            <View sx={{ width: 24 }} />
-          ),
-          value: (
-            <AccountBalance
-              variant="skeleton"
-              account={account}
-              isActive={isActive}
-            />
-          ),
           onPress: () => handleSetActiveAccount(account.id),
-          accessory: (
-            <TouchableOpacity
-              hitSlop={16}
-              sx={{ marginLeft: 4 }}
-              onPress={() => gotoAccountDetails(account.id)}>
-              <Icons.Alert.AlertCircle
-                color={colors.$textSecondary}
-                width={18}
-                height={18}
-              />
-            </TouchableOpacity>
-          )
+          onPressDetails: () => gotoAccountDetails(account.id)
         }
       }
     )
@@ -345,13 +241,11 @@ export const WalletList = ({
       name: IMPORTED_ACCOUNTS_VIRTUAL_WALLET_NAME,
       type: WalletType.PRIVATE_KEY,
       accounts: privateKeyAccountData
-    }
+    } as WalletDisplayData
   }, [
     importedWallets,
     accountSearchResults,
     activeAccount?.id,
-    colors.$textPrimary,
-    colors.$textSecondary,
     handleSetActiveAccount,
     gotoAccountDetails
   ])
