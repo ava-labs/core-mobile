@@ -9,6 +9,7 @@ export const BlurViewWithFallback = ({
   children,
   intensity = 75,
   shouldDelayBlurOniOS = false,
+  backgroundColor,
   style
 }: {
   children?: React.ReactNode
@@ -23,6 +24,7 @@ export const BlurViewWithFallback = ({
    * reference: https://docs.expo.dev/versions/latest/sdk/blur-view/#known-issues
    */
   shouldDelayBlurOniOS?: boolean
+  backgroundColor?: string
   style?: ViewStyle
 }): JSX.Element | null => {
   const [ready, setReady] = useState(
@@ -45,17 +47,23 @@ export const BlurViewWithFallback = ({
       {
         // alpha('#afafd0', 0.1) is a color value found through experimentation
         // to make the blur effect appear the same as $surfacePrimary(neutral-850) in dark mode.
-        backgroundColor:
-          colorScheme === 'dark' ? alpha('#afafd0', 0.1) : undefined
+        backgroundColor: backgroundColor
+          ? alpha(backgroundColor, 0.1)
+          : colorScheme === 'dark'
+          ? alpha('#afafd0', 0.1)
+          : undefined
       },
       style
     ],
-    [colorScheme, style]
+    [backgroundColor, colorScheme, style]
   )
 
   const androidContainerStyle = useMemo(
-    () => [{ backgroundColor: theme.colors.$surfacePrimary }, style],
-    [style, theme.colors.$surfacePrimary]
+    () => [
+      { backgroundColor: backgroundColor ?? theme.colors.$surfacePrimary },
+      style
+    ],
+    [backgroundColor, style, theme.colors.$surfacePrimary]
   )
 
   if (!ready || Platform.OS === 'android') {

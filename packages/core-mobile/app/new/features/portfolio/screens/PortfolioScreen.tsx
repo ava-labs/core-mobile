@@ -2,6 +2,7 @@ import {
   BalanceHeader,
   NavigationTitleHeader,
   SegmentedControl,
+  showAlert,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -14,11 +15,6 @@ import {
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
-import { useAccountPerformanceSummary } from 'features/portfolio/hooks/useAccountPerformanceSummary'
-import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
-import { useBalanceTotalPriceChangeForAccount } from 'features/portfolio/hooks/useBalanceTotalPriceChangeForAccount'
-import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalanceAccurate'
-import { useIsBalanceLoadedForAccount } from 'features/portfolio/hooks/useIsBalanceLoadedForAccount'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
@@ -35,6 +31,11 @@ import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collectibles/hooks/useCollectiblesFilterAndSort'
 import { CollectiblesScreen } from 'features/portfolio/collectibles/screens/CollectiblesScreen'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
+import { useAccountPerformanceSummary } from 'features/portfolio/hooks/useAccountPerformanceSummary'
+import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
+import { useBalanceTotalPriceChangeForAccount } from 'features/portfolio/hooks/useBalanceTotalPriceChangeForAccount'
+import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalanceAccurate'
+import { useIsBalanceLoadedForAccount } from 'features/portfolio/hooks/useIsBalanceLoadedForAccount'
 import { useSendSelectedToken } from 'features/send/store'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
@@ -63,9 +64,10 @@ import {
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { selectActiveWallet } from 'store/wallet/slice'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
-import { useIsRefetchingBalancesForAccount } from '../hooks/useIsRefetchingBalancesForAccount'
 import { useIsLoadingBalancesForAccount } from '../hooks/useIsLoadingBalancesForAccount'
+import { useIsRefetchingBalancesForAccount } from '../hooks/useIsRefetchingBalancesForAccount'
 
 const SEGMENT_ITEMS = [
   { title: 'Assets' },
@@ -262,6 +264,17 @@ const PortfolioHomeScreen = (): JSX.Element => {
     })
   }, [navigate])
 
+  const activeWallet = useSelector(selectActiveWallet)
+
+  const handleErrorPress = useCallback(() => {
+    showAlert({
+      title: 'Unable to load balances',
+      description:
+        'This total may be incomplete since Core was unable to load all of the balances across each network.',
+      buttons: [{ text: 'Dismiss' }]
+    })
+  }, [])
+
   const renderHeader = useCallback((): JSX.Element => {
     return (
       <View
@@ -282,6 +295,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
             <Pressable onPress={openWalletsModal}>
               <BalanceHeader
                 testID="portfolio"
+                walletName={activeWallet?.name}
                 accountName={activeAccount?.name}
                 formattedBalance={formattedBalance}
                 currency={selectedCurrency}
@@ -297,6 +311,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
                 errorMessage={
                   balanceAccurate ? undefined : 'Unable to load all balances'
                 }
+                onErrorPress={handleErrorPress}
                 isLoading={isLoading && balanceTotalInCurrency === 0}
                 isLoadingBalances={isLoadingBalances || isLoading}
                 isPrivacyModeEnabled={isPrivacyModeEnabled}
@@ -324,6 +339,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleBalanceHeaderLayout,
     animatedHeaderStyle,
     openWalletsModal,
+    activeWallet?.name,
     activeAccount?.name,
     formattedBalance,
     selectedCurrency,
@@ -332,6 +348,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     indicatorStatus,
     percentChange24h,
     balanceAccurate,
+    handleErrorPress,
     isLoading,
     balanceTotalInCurrency,
     isLoadingBalances,

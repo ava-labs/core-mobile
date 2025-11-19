@@ -1,9 +1,6 @@
-import React from 'react'
-import { truncateAddress } from '@avalabs/core-utils-sdk/dist'
 import {
-  ActivityIndicator,
   alpha,
-  AnimatedBalance,
+  Button,
   Icons,
   SCREEN_WIDTH,
   SearchBar,
@@ -14,37 +11,47 @@ import {
 } from '@avalabs/k2-alpine'
 import { CoreAccountType } from '@avalabs/types'
 import { ErrorState } from 'common/components/ErrorState'
-import { ListScreen } from 'common/components/ListScreen'
-import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
+import { ListScreen, ListScreenProps } from 'common/components/ListScreen'
+import NavigationBarButton from 'common/components/NavigationBarButton'
+import WalletCard from 'common/components/WalletCard'
 import { WalletDisplayData } from 'common/types'
+import { showSnackbar } from 'common/utils/toast'
 import { useRouter } from 'expo-router'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalanceAccurate'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
 import {
   Account,
+  addAccount,
   selectAccounts,
   selectActiveAccount,
   setActiveAccount
 } from 'store/account'
 import { selectActiveWalletId, selectWallets } from 'store/wallet/slice'
-import NavigationBarButton from 'common/components/NavigationBarButton'
-import WalletCard from 'common/components/WalletCard'
-import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { useBalanceInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
+import { Wallet } from 'store/wallet/types'
+import Logger from 'utils/Logger'
+import { AccountBalance } from './AccountBalance'
 
 const IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID = 'imported-accounts-wallet-id'
 const IMPORTED_ACCOUNTS_VIRTUAL_WALLET_NAME = 'Imported'
 
 export const WalletList = ({
-  title,
-  subtitle
-}: {
-  title: string
-  subtitle: string
+  hasSearch,
+  backgroundColor,
+  ...props
+}: Omit<
+  ListScreenProps<WalletDisplayData>,
+  | 'data'
+  | 'renderItem'
+  | 'keyExtractor'
+  | 'renderHeader'
+  | 'renderHeaderRight'
+  | 'renderEmpty'
+> & {
+  hasSearch?: boolean
+  backgroundColor?: string
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -56,6 +63,10 @@ export const WalletList = ({
   const allWallets = useSelector(selectWallets)
   const activeWalletId = useSelector(selectActiveWalletId)
   const activeAccount = useSelector(selectActiveAccount)
+  const balanceAccurate = useIsAccountBalanceAccurate(activeAccount)
+  const errorMessage = balanceAccurate
+    ? undefined
+    : 'Unable to load all balances'
 
   const [expandedWallets, setExpandedWallets] = useState<
     Record<string, boolean>
@@ -170,6 +181,7 @@ export const WalletList = ({
         const hideSeparator = isActive || nextAccount?.id === activeAccount?.id
 
         return {
+          wallet,
           hideSeparator,
           containerSx: {
             backgroundColor: isActive
@@ -184,26 +196,25 @@ export const WalletList = ({
               numberOfLines={2}
               sx={{
                 color: colors.$textPrimary,
-                fontSize: 14,
-                lineHeight: 16,
-                fontWeight: '500',
-                width: SCREEN_WIDTH * 0.3
+                fontSize: 15,
+                fontFamily: 'Inter-Medium',
+                lineHeight: 16
               }}>
               {account.name}
             </Text>
           ),
-          subtitle: (
-            <Text
-              variant="mono"
-              sx={{
-                color: alpha(colors.$textPrimary, 0.6),
-                fontSize: 13,
-                lineHeight: 16,
-                fontWeight: '500'
-              }}>
-              {truncateAddress(account.addressC, TRUNCATE_ADDRESS_LENGTH)}
-            </Text>
-          ),
+          // subtitle: (
+          //   <Text
+          //     variant="mono"
+          //     sx={{
+          //       color: alpha(colors.$textPrimary, 0.6),
+          //       fontSize: 13,
+          //       lineHeight: 16,
+          //       fontWeight: '500'
+          //     }}>
+          //     {truncateAddress(account.addressC, TRUNCATE_ADDRESS_LENGTH)}
+          //   </Text>
+          // ),
           leftIcon: isActive ? (
             <Icons.Custom.CheckSmall
               color={colors.$textPrimary}
@@ -267,6 +278,7 @@ export const WalletList = ({
         const hideSeparator = isActive || nextAccount?.id === activeAccount?.id
 
         return {
+          wallet: importedWallets.find(w => w.id === account.walletId),
           hideSeparator,
           containerSx: {
             backgroundColor: isActive
@@ -287,18 +299,6 @@ export const WalletList = ({
                 width: SCREEN_WIDTH * 0.3
               }}>
               {account.name}
-            </Text>
-          ),
-          subtitle: (
-            <Text
-              variant="mono"
-              sx={{
-                color: alpha(colors.$textPrimary, 0.6),
-                fontSize: 13,
-                lineHeight: 16,
-                fontWeight: '500'
-              }}>
-              {truncateAddress(account.addressC, TRUNCATE_ADDRESS_LENGTH)}
             </Text>
           ),
           leftIcon: isActive ? (
@@ -361,17 +361,66 @@ export const WalletList = ({
     navigate('/accountSettings/importWallet')
   }, [navigate])
 
+  const [isAddingAccount, setIsAddingAccount] = useState(false)
+
+  const addAccountToWallet = useCallback(
+    async (wallet: Wallet): Promise<void> => {
+      if (isAddingAccount) return
+
+      try {
+        // TODO: Add tracking for adding an account to a wallet
+        // AnalyticsService.capture('AccountSelectorAddAccount', {
+        //   accountNumber: Object.keys(accounts).length + 1
+        // })
+
+        setIsAddingAccount(true)
+        await dispatch(addAccount(wallet.id)).unwrap()
+
+        AnalyticsService.capture('CreatedANewAccountSuccessfully', {
+          walletType: wallet.type
+        })
+
+        showSnackbar('Account added successfully')
+      } catch (error) {
+        Logger.error('Unable to add account', error)
+        showSnackbar('Unable to add account')
+      } finally {
+        setIsAddingAccount(false)
+      }
+    },
+    [isAddingAccount, dispatch]
+  )
+
   const renderHeaderRight = useCallback(() => {
     return (
       <NavigationBarButton testID="add_wallet_btn" onPress={handleAddAccount}>
-        <Icons.Content.Add color={colors.$textPrimary} />
+        <Icons.Content.Add width={32} height={32} color={colors.$textPrimary} />
       </NavigationBarButton>
     )
   }, [colors.$textPrimary, handleAddAccount])
 
   const renderHeader = useCallback(() => {
-    return <SearchBar onTextChanged={setSearchText} searchText={searchText} />
-  }, [searchText])
+    return (
+      <View
+        style={{
+          gap: 8
+        }}>
+        {hasSearch && (
+          <SearchBar onTextChanged={setSearchText} searchText={searchText} />
+        )}
+        {errorMessage && (
+          <View sx={{ gap: 8, alignItems: 'center', flexDirection: 'row' }}>
+            <Icons.Alert.ErrorOutline color={colors.$textDanger} />
+            <Text
+              variant="buttonMedium"
+              sx={{ fontFamily: 'Inter-Medium', color: colors.$textDanger }}>
+              {errorMessage}
+            </Text>
+          </View>
+        )}
+      </View>
+    )
+  }, [colors.$textDanger, errorMessage, hasSearch, searchText])
 
   useEffect(() => {
     // When searching, expand all wallets
@@ -402,6 +451,25 @@ export const WalletList = ({
           wallet={item}
           isExpanded={isExpanded}
           searchText={searchText}
+          renderBottom={() =>
+            item.type !== WalletType.PRIVATE_KEY ? (
+              <Button
+                size="medium"
+                leftIcon={
+                  <Icons.Content.Add
+                    color={colors.$textPrimary}
+                    width={24}
+                    height={24}
+                  />
+                }
+                type="secondary"
+                onPress={() => addAccountToWallet(item)}>
+                Add account
+              </Button>
+            ) : (
+              <></>
+            )
+          }
           onToggleExpansion={() => toggleWalletExpansion(item.id)}
           showMoreButton={item.id !== IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID}
           style={{
@@ -411,7 +479,13 @@ export const WalletList = ({
         />
       )
     },
-    [expandedWallets, searchText, toggleWalletExpansion]
+    [
+      addAccountToWallet,
+      colors.$textPrimary,
+      expandedWallets,
+      searchText,
+      toggleWalletExpansion
+    ]
   )
 
   useEffect(() => {
@@ -439,71 +513,14 @@ export const WalletList = ({
 
   return (
     <ListScreen
-      title={title}
-      subtitle={subtitle}
-      isModal
+      {...props}
+      backgroundColor={backgroundColor}
       renderHeader={renderHeader}
       renderHeaderRight={renderHeaderRight}
       renderEmpty={renderEmpty}
       data={walletsDisplayData.filter(Boolean) as WalletDisplayData[]}
       keyExtractor={item => item.id}
       renderItem={renderItem}
-    />
-  )
-}
-
-const AccountBalance = ({
-  isActive,
-  accountId
-}: {
-  isActive: boolean
-  accountId: string
-}): React.JSX.Element => {
-  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
-  const {
-    theme: { colors }
-  } = useTheme()
-  const { balance: accountBalance, isLoadingBalance } =
-    useBalanceInCurrencyForAccount(accountId)
-  const { formatCurrency } = useFormatCurrency()
-
-  const balance = useMemo(() => {
-    return accountBalance === 0
-      ? formatCurrency({ amount: 0 }).replace(/[\d.,]+/g, UNKNOWN_AMOUNT)
-      : formatCurrency({ amount: accountBalance })
-  }, [accountBalance, formatCurrency])
-
-  const renderMaskView = useCallback(() => {
-    return (
-      <HiddenBalanceText
-        variant={'heading6'}
-        sx={{
-          color: isActive
-            ? colors.$textPrimary
-            : alpha(colors.$textPrimary, 0.6),
-          lineHeight: 18
-        }}
-      />
-    )
-  }, [colors.$textPrimary, isActive])
-
-  if (isLoadingBalance) {
-    return <ActivityIndicator size="small" sx={{ marginRight: 4 }} />
-  }
-
-  return (
-    <AnimatedBalance
-      variant="body1"
-      balance={balance}
-      shouldMask={isPrivacyModeEnabled}
-      balanceSx={{
-        color: isActive ? colors.$textPrimary : alpha(colors.$textPrimary, 0.6),
-        lineHeight: 18,
-        width: SCREEN_WIDTH * 0.3,
-        textAlign: 'right'
-      }}
-      renderMaskView={renderMaskView}
-      shouldAnimate={false}
     />
   )
 }

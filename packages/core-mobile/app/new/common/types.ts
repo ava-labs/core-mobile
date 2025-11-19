@@ -1,4 +1,5 @@
 import { WalletType } from 'services/wallet/types'
+import { Wallet } from 'store/wallet/types'
 import { DropdownGroup } from './components/DropdownMenu'
 
 export type DropdownSelection = {
@@ -18,6 +19,7 @@ export type WalletDisplayData = {
   name: string
   type: WalletType
   accounts: Array<{
+    wallet: Wallet
     hideSeparator: boolean
     containerSx: {
       backgroundColor: string

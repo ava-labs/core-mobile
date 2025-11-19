@@ -8,9 +8,13 @@ import {
 } from '@avalabs/k2-alpine'
 import { useManageWallet } from 'common/hooks/useManageWallet'
 import { WalletDisplayData } from 'common/types'
-import React, { useCallback } from 'react'
+import { AccountBalance } from 'features/wallets/components/AccountBalance'
+import React, { useCallback, useMemo } from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
 import { DropdownMenu } from './DropdownMenu'
+import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
+import { selectActiveWalletId } from 'store/wallet/slice'
 
 const ITEM_HEIGHT = 50
 
@@ -20,7 +24,8 @@ const WalletCard = ({
   searchText,
   onToggleExpansion,
   showMoreButton = true,
-  style
+  style,
+  renderBottom
 }: {
   wallet: WalletDisplayData
   isExpanded: boolean
@@ -28,7 +33,10 @@ const WalletCard = ({
   onToggleExpansion: () => void
   showMoreButton?: boolean
   style?: StyleProp<ViewStyle>
+  renderBottom?: () => React.JSX.Element
 }): React.JSX.Element => {
+  const activeWalletId = useSelector(selectActiveWalletId)
+
   const {
     theme: { colors }
   } = useTheme()
@@ -52,11 +60,17 @@ const WalletCard = ({
     return <Icons.Custom.WalletClosed color={colors.$textPrimary} />
   }, [colors.$textPrimary, isExpanded])
 
+  const totalBalance = useMemo(() => {
+    return 0
+  }, [])
+
   return (
     <View
       style={[
         {
           backgroundColor: colors.$surfaceSecondary,
+          borderWidth: 1,
+          borderColor: colors.$borderPrimary,
           borderRadius: 12,
           overflow: 'hidden'
         },
@@ -76,56 +90,89 @@ const WalletCard = ({
             alignItems: 'center',
             gap: 8,
             flex: 1,
-            paddingHorizontal: 10
+            padding: 10,
+            paddingVertical: 14
           }}>
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             {renderExpansionIcon()}
             {renderWalletIcon()}
           </View>
-          <Text
-            testID={`manage_accounts_wallet_name__${wallet.name}`}
-            variant="buttonSmall"
-            numberOfLines={1}
+          <View
             style={{
-              fontSize: 14,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 5,
               flex: 1
             }}>
-            {wallet.name}
-          </Text>
+            <View sx={{ gap: 2 }}>
+              <Text
+                testID={`manage_accounts_wallet_name__${wallet.name}`}
+                variant="heading4"
+                style={{
+                  lineHeight: 24
+                }}
+                numberOfLines={1}>
+                {wallet.name}
+              </Text>
+              <Text
+                testID={`manage_accounts_wallet_name__${wallet.name}`}
+                numberOfLines={1}
+                style={{
+                  fontSize: 12,
+                  lineHeight: 12,
+                  color: colors.$textSecondary
+                }}>
+                {wallet.accounts.length} accounts
+              </Text>
+            </View>
+            {activeWalletId === wallet.id && (
+              <View
+                style={{
+                  width: 6,
+                  height: 6,
+                  backgroundColor: colors.$textSuccess,
+                  borderRadius: 100
+                }}
+              />
+            )}
+          </View>
         </View>
 
-        {showMoreButton && (
-          <DropdownMenu
-            groups={[
-              {
-                key: 'wallet-actions',
-                items: getDropdownItems(wallet)
-              }
-            ]}
-            onPressAction={(event: { nativeEvent: { event: string } }) =>
-              handleDropdownSelect(event.nativeEvent.event, wallet)
-            }>
-            <TouchableOpacity
-              hitSlop={8}
-              style={{
-                minHeight: 48,
-                paddingRight: 24,
-                paddingLeft: 12,
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}>
-              <Icons.Navigation.MoreHoriz
-                color={colors.$textSecondary}
-                width={20}
-                height={20}
-              />
-            </TouchableOpacity>
-          </DropdownMenu>
-        )}
+        <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
+          {/* <AccountBalance accountId={wallet.accounts[0]?.id} isActive={true} /> */}
+          {showMoreButton && (
+            <DropdownMenu
+              groups={[
+                {
+                  key: 'wallet-actions',
+                  items: getDropdownItems(wallet)
+                }
+              ]}
+              onPressAction={(event: { nativeEvent: { event: string } }) =>
+                handleDropdownSelect(event.nativeEvent.event, wallet)
+              }>
+              <TouchableOpacity
+                hitSlop={8}
+                style={{
+                  minHeight: 48,
+                  paddingRight: 22,
+                  paddingLeft: 12,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                <Icons.Navigation.MoreHoriz
+                  color={colors.$textPrimary}
+                  width={24}
+                  height={24}
+                />
+              </TouchableOpacity>
+            </DropdownMenu>
+          )}
+        </View>
       </TouchableOpacity>
 
       {isExpanded && (
-        <View sx={{ padding: 8, paddingTop: 0 }}>
+        <View sx={{ padding: 8, paddingTop: 0, gap: 8 }}>
           {wallet.accounts.length > 0 ? (
             <GroupList itemHeight={ITEM_HEIGHT} data={wallet.accounts} />
           ) : (
@@ -142,6 +189,7 @@ const WalletCard = ({
               </View>
             )
           )}
+          {renderBottom?.()}
         </View>
       )}
     </View>

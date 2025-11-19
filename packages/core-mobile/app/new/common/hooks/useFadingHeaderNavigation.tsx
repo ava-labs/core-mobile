@@ -35,7 +35,8 @@ export const useFadingHeaderNavigation = ({
   shouldDelayBlurOniOS = false,
   hasParent = false,
   renderHeaderRight,
-  showNavigationHeaderTitle = true
+  showNavigationHeaderTitle = true,
+  headerBackgroundColor
 }: {
   header?: React.ReactNode
   targetLayout?: LayoutRectangle
@@ -46,6 +47,7 @@ export const useFadingHeaderNavigation = ({
   hasParent?: boolean
   renderHeaderRight?: () => React.ReactNode
   showNavigationHeaderTitle?: boolean
+  headerBackgroundColor?: string
 }): {
   onScroll: (
     event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
@@ -135,6 +137,7 @@ export const useFadingHeaderNavigation = ({
           </Pressable>
         ) : (
           <BlurredBackgroundView
+            backgroundColor={headerBackgroundColor}
             shouldDelayBlurOniOS={shouldDelayBlurOniOS}
             hasGrabber={shouldHeaderHaveGrabber}
             separator={
