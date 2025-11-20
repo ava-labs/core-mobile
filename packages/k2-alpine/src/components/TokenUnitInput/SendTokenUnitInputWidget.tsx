@@ -1,19 +1,20 @@
-import React, {
-  useRef,
-  useState,
-  useEffect,
-  useCallback,
-  forwardRef,
-  useImperativeHandle
-} from 'react'
-import { SxProp } from 'dripsy'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { SxProp } from 'dripsy'
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState
+} from 'react'
 import { ReturnKeyTypeOptions } from 'react-native'
-import { normalizeErrorMessage } from '../../utils/tokenUnitInput'
 import { useTheme } from '../../hooks'
-import { Text, View } from '../Primitives'
+import { Icons } from '../../theme/tokens/Icons'
 import { alpha } from '../../utils'
+import { normalizeErrorMessage } from '../../utils/tokenUnitInput'
 import { Button } from '../Button/Button'
+import { Text, View } from '../Primitives'
 import { TokenUnitInput, TokenUnitInputHandle } from './TokenUnitInput'
 
 interface PresetAmount {
@@ -214,7 +215,7 @@ export const SendTokenUnitInputWidget = forwardRef<
                 style={{
                   minWidth: 72
                 }}
-                disabled={disabled}
+                disabled={maxAmount?.eq(0)}
                 onPress={() => {
                   handlePressPresetButton(button.amount, index)
                 }}>
@@ -247,6 +248,27 @@ export const SendTokenUnitInputWidget = forwardRef<
             ? normalizeErrorMessage(errorMessage)
             : `Balance: ${balance.toDisplay()} ${token.symbol}`}
         </Text>
+
+        {/* Show additional error message if max amount is 0 */}
+        {maxAmount?.eq(0) && (
+          <View
+            sx={{
+              flexDirection: 'row',
+              gap: 8,
+              marginTop: 16,
+              alignItems: 'center'
+            }}>
+            <Icons.Alert.ErrorOutline color={colors.$textDanger} />
+            <Text
+              sx={{
+                flexShrink: 1,
+                color: '$textDanger',
+                fontFamily: 'Inter-Medium'
+              }}>
+              You don't have enough gas fees for this transaction
+            </Text>
+          </View>
+        )}
       </View>
     )
   }
