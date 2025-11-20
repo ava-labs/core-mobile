@@ -19,12 +19,14 @@ export type WalletDisplayData = {
   id: string
   name: string
   type: WalletType
-  accounts: Array<{
-    wallet: Wallet
-    account: Account
-    isActive: boolean
-    hideSeparator: boolean
-    onPress: () => void
-    onPressDetails: () => void
-  }>
+  accounts: Array<AccountDisplayData>
+}
+
+export type AccountDisplayData = {
+  wallet: Wallet
+  account: Account
+  isActive: boolean
+  hideSeparator: boolean
+  onPress: () => void
+  onPressDetails: () => void
 }

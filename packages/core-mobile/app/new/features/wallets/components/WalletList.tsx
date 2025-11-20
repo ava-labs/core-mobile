@@ -6,7 +6,6 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { CoreAccountType } from '@avalabs/types'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen, ListScreenProps } from 'common/components/ListScreen'
 import NavigationBarButton from 'common/components/NavigationBarButton'
@@ -360,7 +359,7 @@ export const WalletList = ({
           showMoreButton={item.id !== IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID}
           style={{
             marginHorizontal: 16,
-            marginTop: 12
+            marginVertical: 6
           }}
         />
       )

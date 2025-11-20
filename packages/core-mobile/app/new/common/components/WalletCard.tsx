@@ -6,11 +6,11 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useManageWallet } from 'common/hooks/useManageWallet'
-import { WalletDisplayData } from 'common/types'
+import { AccountDisplayData, WalletDisplayData } from 'common/types'
 import { AccountListItem } from 'features/wallets/components/AccountListItem'
 import { WalletBalance } from 'features/wallets/components/WalletBalance'
 import React, { useCallback } from 'react'
-import { StyleProp, ViewStyle } from 'react-native'
+import { FlatList, ListRenderItem, StyleProp, ViewStyle } from 'react-native'
 import { DropdownMenu } from './DropdownMenu'
 
 const HEADER_HEIGHT = 64
@@ -56,6 +56,37 @@ const WalletCard = ({
     }
     return <Icons.Custom.WalletClosed color={colors.$textPrimary} />
   }, [colors.$textPrimary, isExpanded])
+
+  const renderAccountItem: ListRenderItem<AccountDisplayData> = useCallback(
+    ({ item }) => {
+      return (
+        <AccountListItem
+          testID={`manage_accounts_list__${item.account.name}`}
+          {...item}
+        />
+      )
+    },
+    []
+  )
+
+  const renderEmpty = useCallback(() => {
+    if (!searchText) {
+      return (
+        <View
+          sx={{
+            paddingVertical: 20,
+            alignItems: 'center',
+            backgroundColor: colors.$surfaceSecondary
+          }}>
+          <Text sx={{ color: colors.$textSecondary }}>
+            No accounts in this wallet.
+          </Text>
+        </View>
+      )
+    }
+
+    return null
+  }, [])
 
   return (
     <View
@@ -176,30 +207,13 @@ const WalletCard = ({
 
       {isExpanded && (
         <View sx={{ paddingHorizontal: 10, gap: 10, paddingBottom: 10 }}>
-          {wallet.accounts.length > 0 ? (
-            <View>
-              {wallet.accounts.map((account, index) => (
-                <AccountListItem
-                  key={index}
-                  testID={`manage_accounts_list__${account.account.name}`}
-                  {...account}
-                />
-              ))}
-            </View>
-          ) : (
-            !searchText && (
-              <View
-                sx={{
-                  paddingVertical: 20,
-                  alignItems: 'center',
-                  backgroundColor: colors.$surfaceSecondary
-                }}>
-                <Text sx={{ color: colors.$textSecondary }}>
-                  No accounts in this wallet.
-                </Text>
-              </View>
-            )
-          )}
+          <FlatList
+            data={wallet.accounts}
+            renderItem={renderAccountItem}
+            keyExtractor={item => item.account.id}
+            ListEmptyComponent={renderEmpty}
+            scrollEnabled={false}
+          />
           {renderBottom?.()}
         </View>
       )}

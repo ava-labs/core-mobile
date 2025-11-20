@@ -344,6 +344,12 @@ export const ListScreen = <T,>({
         contentContainerStyle={contentContainerStyle}
         updateCellsBatchingPeriod={50}
         {...rest}
+        style={[
+          rest.style,
+          {
+            backgroundColor: backgroundColor ?? 'transparent'
+          }
+        ]}
         ListHeaderComponent={ListHeaderComponent}
         ListEmptyComponent={ListEmptyComponent}
       />

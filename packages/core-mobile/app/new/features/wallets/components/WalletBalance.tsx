@@ -2,14 +2,16 @@ import {
   ActivityIndicator,
   alpha,
   AnimatedBalance,
-  useTheme
+  Icons,
+  useTheme,
+  View
 } from '@avalabs/k2-alpine'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useWalletBalances } from 'features/portfolio/hooks/useWalletBalances'
 import React, { useCallback, useMemo } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
+import { Pressable } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { Wallet } from 'store/wallet/types'
@@ -20,30 +22,31 @@ export const WalletBalance = ({
 }: {
   wallet: Wallet
   variant?: 'spinner' | 'skeleton'
-}): React.JSX.Element => {
+}): JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const {
     theme: { colors, isDark }
   } = useTheme()
-  const { data: walletBalances } = useWalletBalances(wallet)
-
   const { formatCurrency } = useFormatCurrency()
+
+  // TODO: get wallet balance
   const walletBalance = 1000
+  // TODO: get wallet balance accurate
+  const isBalanceAccurate = true
 
   const isLoadingBalance = useMemo(() => {
     return false
-    return walletBalances?.[wallet.id] === undefined
-  }, [walletBalances, wallet.id])
+  }, [])
 
+  // TODO: implement refetch balance
   const refetchBalance = useCallback(() => {
-    // TODO: implement refetch balance
     // dispatch(refetchBalanceForAccount(account.id))
   }, [])
 
   const balance = useMemo(() => {
-    return walletBalance === 0
-      ? formatCurrency({ amount: 0 }).replace(/[\d.,]+/g, UNKNOWN_AMOUNT)
-      : formatCurrency({ amount: walletBalance })
+    return walletBalance > 0
+      ? formatCurrency({ amount: walletBalance })
+      : formatCurrency({ amount: 0 }).replace(/[\d.,]+/g, UNKNOWN_AMOUNT)
   }, [walletBalance, formatCurrency])
 
   const renderMaskView = useCallback(() => {
@@ -73,6 +76,38 @@ export const WalletBalance = ({
       )
     }
     return <ActivityIndicator size="small" />
+  }
+
+  if (!isBalanceAccurate) {
+    return (
+      <View
+        sx={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          flexShrink: 1,
+          gap: 6
+        }}>
+        <Pressable hitSlop={16} onPress={refetchBalance}>
+          <Icons.Alert.Error
+            color={colors.$textDanger}
+            width={14}
+            height={14}
+          />
+        </Pressable>
+        <AnimatedBalance
+          variant="heading4"
+          balance={balance}
+          shouldMask={isPrivacyModeEnabled}
+          balanceSx={{
+            lineHeight: 21,
+            fontSize: 21,
+            textAlign: 'right'
+          }}
+          renderMaskView={renderMaskView}
+        />
+      </View>
+    )
   }
 
   return (
