@@ -7,7 +7,7 @@ import {
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   FlatListProps,
   LayoutChangeEvent,
@@ -26,6 +26,7 @@ import {
   useKeyboardState
 } from 'react-native-keyboard-controller'
 import Animated, {
+  Extrapolation,
   interpolate,
   useAnimatedStyle,
   useSharedValue
@@ -101,6 +102,7 @@ export const ListScreen = <T,>({
   const [targetLayout, setTargetLayout] = useState<
     LayoutRectangle | undefined
   >()
+  const scrollViewRef = useRef<FlatList>(null)
 
   const titleHeight = useSharedValue<number>(0)
   const subtitleHeight = useSharedValue<number>(0)
@@ -190,7 +192,7 @@ export const ListScreen = <T,>({
       scrollY.value,
       [0, contentHeaderHeight.value],
       [0, -contentHeaderHeight.value - (isModal ? 16 : 24)],
-      'clamp'
+      Extrapolation.CLAMP
     )
 
     return {
@@ -335,6 +337,24 @@ export const ListScreen = <T,>({
     )
   }, [renderEmpty])
 
+  const onScrollEndDrag = useCallback((): void => {
+    'worklet'
+    if (scrollY.value > titleHeight.value + subtitleHeight.value) {
+      scrollViewRef.current?.scrollToOffset({
+        offset: contentHeaderHeight.value
+      })
+    } else {
+      scrollViewRef.current?.scrollToOffset({
+        offset: 0
+      })
+    }
+  }, [
+    contentHeaderHeight.value,
+    scrollY.value,
+    subtitleHeight.value,
+    titleHeight.value
+  ])
+
   return (
     <Animated.View
       style={[{ flex: 1 }]}
@@ -343,8 +363,10 @@ export const ListScreen = <T,>({
       {/* @ts-expect-error */}
       <AnimatedFlatList
         data={data}
+        ref={scrollViewRef}
         renderScrollComponent={RenderScrollComponent}
         onScroll={onScrollEvent}
+        onScrollEndDrag={onScrollEndDrag}
         keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
