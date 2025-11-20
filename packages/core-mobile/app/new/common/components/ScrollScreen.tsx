@@ -89,8 +89,6 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   headerStyle?: StyleProp<ViewStyle>
   /** Whether this screen should hide the header background  */
   hideHeaderBackground?: boolean
-  /** Whether the navigation header should allow overflow (for custom components like progress dots) */
-  allowHeaderOverflow?: boolean
   /** Custom component to render centered in the header area, vertically level with back arrow */
   renderHeaderCenterComponent?: () => React.ReactNode
   /** TestID for the screen */
@@ -114,7 +112,6 @@ export const ScrollScreen = ({
   disableStickyFooter,
   showNavigationHeaderTitle = true,
   hideHeaderBackground,
-  allowHeaderOverflow,
   renderHeaderCenterComponent,
   headerStyle,
   testID,
@@ -149,8 +146,7 @@ export const ScrollScreen = ({
       hasParent,
       hideHeaderBackground,
       renderHeaderRight,
-      showNavigationHeaderTitle,
-      allowHeaderOverflow
+      showNavigationHeaderTitle
     }
   )
 
