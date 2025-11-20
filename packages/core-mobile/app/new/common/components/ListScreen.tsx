@@ -341,7 +341,10 @@ export const ListScreen = <T,>({
     'worklet'
     if (scrollY.value > titleHeight.value + subtitleHeight.value) {
       scrollViewRef.current?.scrollToOffset({
-        offset: contentHeaderHeight.value
+        offset:
+          scrollY.value > contentHeaderHeight.value
+            ? scrollY.value
+            : contentHeaderHeight.value
       })
     } else {
       scrollViewRef.current?.scrollToOffset({
