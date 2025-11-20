@@ -17,6 +17,7 @@ import {
   LEDGER_TIMEOUTS,
   getSolanaDerivationPath
 } from 'new/features/ledger/consts'
+import { getSolanaDerivationPath as getSolanaDerivationPathSDK } from '@avalabs/core-wallets-sdk'
 import { assertNotNull } from 'utils/assertions'
 import {
   AddressInfo,
@@ -24,7 +25,8 @@ import {
   PublicKeyInfo,
   LedgerAppType,
   LedgerReturnCode,
-  AppInfo
+  AppInfo,
+  LedgerDevice
 } from './types'
 
 export class LedgerService {
@@ -32,6 +34,13 @@ export class LedgerService {
   private currentAppType: LedgerAppType = LedgerAppType.UNKNOWN
   private appPollingInterval: number | null = null
   private appPollingEnabled = false
+
+  // Device scanning state
+  private scanSubscription: { unsubscribe: () => void } | null = null
+  private scanInterval: ReturnType<typeof setInterval> | null = null
+  private deviceListeners: Set<(devices: LedgerDevice[]) => void> = new Set()
+  private currentDevices: LedgerDevice[] = []
+  private isScanning = false
 
   // Transport getter/setter with automatic error handling
   private get transport(): TransportBLE {
@@ -107,6 +116,142 @@ export class LedgerService {
       this.appPollingInterval = null
     }
     this.appPollingEnabled = false
+  }
+
+  // Device scanning methods
+  async startDeviceScanning(): Promise<void> {
+    if (this.isScanning) {
+      Logger.info('Device scanning already in progress')
+      return
+    }
+
+    Logger.info('Starting device scanning...')
+    this.isScanning = true
+    this.currentDevices = []
+
+    // Track devices found in current scan for intelligent removal
+    const devicesFoundInCurrentScan = new Set<string>()
+
+    try {
+      this.scanSubscription = TransportBLE.listen({
+        next: (event: {
+          type: string
+          descriptor: { id: string; name?: string; rssi?: number }
+        }) => {
+          if (event.type === 'add') {
+            const device: LedgerDevice = {
+              id: event.descriptor.id,
+              name: event.descriptor.name || 'Unknown Device',
+              rssi: event.descriptor.rssi
+            }
+
+            // Track this device as found in current scan
+            devicesFoundInCurrentScan.add(device.id)
+
+            // Update device list
+            const existingIndex = this.currentDevices.findIndex(
+              d => d.id === device.id
+            )
+            if (existingIndex === -1) {
+              this.currentDevices = [...this.currentDevices, device]
+            } else {
+              // Update existing device with latest info (e.g., RSSI)
+              this.currentDevices = this.currentDevices.map(d =>
+                d.id === device.id ? device : d
+              )
+            }
+
+            // Notify all listeners
+            this.notifyDeviceListeners()
+          }
+        },
+        error: (error: Error) => {
+          Logger.error('Device scanning error:', error)
+          this.stopDeviceScanning()
+        },
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        complete: () => {}
+      })
+
+      // Periodically remove devices not seen recently (every 3 seconds during scan)
+      this.scanInterval = setInterval(() => {
+        this.currentDevices = this.currentDevices.filter(device =>
+          devicesFoundInCurrentScan.has(device.id)
+        )
+        this.notifyDeviceListeners()
+
+        // Reset the tracking set for the next interval
+        devicesFoundInCurrentScan.clear()
+      }, 3000)
+
+      // Stop scanning after timeout
+      setTimeout(() => {
+        this.stopDeviceScanning()
+
+        // Final cleanup: Remove devices not found in current scan
+        this.currentDevices = this.currentDevices.filter(device =>
+          devicesFoundInCurrentScan.has(device.id)
+        )
+        this.notifyDeviceListeners()
+      }, LEDGER_TIMEOUTS.SCAN_TIMEOUT)
+    } catch (error) {
+      Logger.error('Failed to start device scanning:', error)
+      this.stopDeviceScanning()
+      throw error
+    }
+  }
+
+  stopDeviceScanning(): void {
+    if (!this.isScanning) return
+
+    Logger.info('Stopping device scanning...')
+
+    if (this.scanSubscription) {
+      this.scanSubscription.unsubscribe()
+      this.scanSubscription = null
+    }
+
+    if (this.scanInterval) {
+      clearInterval(this.scanInterval)
+      this.scanInterval = null
+    }
+
+    this.isScanning = false
+  }
+
+  addDeviceListener(callback: (devices: LedgerDevice[]) => void): void {
+    this.deviceListeners.add(callback)
+    // Immediately notify with current devices
+    callback(this.currentDevices)
+  }
+
+  removeDeviceListener(callback: (devices: LedgerDevice[]) => void): void {
+    this.deviceListeners.delete(callback)
+  }
+
+  private notifyDeviceListeners(): void {
+    this.deviceListeners.forEach(callback => {
+      try {
+        callback([...this.currentDevices])
+      } catch (error) {
+        Logger.error('Error in device listener callback:', error)
+      }
+    })
+  }
+
+  getIsScanning(): boolean {
+    return this.isScanning
+  }
+
+  getCurrentDevices(): LedgerDevice[] {
+    return [...this.currentDevices]
+  }
+
+  removeDevice(deviceId: string): void {
+    this.currentDevices = this.currentDevices.filter(
+      device => device.id !== deviceId
+    )
+    this.notifyDeviceListeners()
   }
 
   // Get current app info from device
@@ -662,6 +807,103 @@ export class LedgerService {
   // Get the current transport (for compatibility with existing code)
   async getTransport(): Promise<TransportBLE> {
     return this.transport
+  }
+
+  // ============================================================================
+  // KEY RETRIEVAL METHODS
+  // ============================================================================
+
+  /**
+   * Get Solana keys from the connected Ledger device
+   * @returns Array of Solana keys with derivation paths
+   */
+  async getSolanaKeys(): Promise<
+    Array<{
+      key: string
+      derivationPath: string
+      curve: string
+    }>
+  > {
+    Logger.info('Getting Solana keys with passive app detection')
+    await this.waitForApp(LedgerAppType.SOLANA)
+
+    // Get address directly from Solana app
+    const transport = await this.getTransport()
+    const solanaApp = new AppSolana(transport as Transport)
+
+    // Use the same derivation path approach as Extension (from @avalabs/core-wallets-sdk)
+    const derivationPath = getSolanaDerivationPathSDK(0)
+
+    // Convert to the format expected by Ledger (without m/ prefix)
+    const ledgerDerivationPath = derivationPath.replace('m/', '')
+
+    const result = await solanaApp.getAddress(ledgerDerivationPath, false)
+
+    // Get the raw public key (what the SVM module expects)
+    const solanaPublicKey = Buffer.isBuffer(result.address)
+      ? result.address.toString('hex')
+      : Buffer.from(result.address).toString('hex')
+
+    return [
+      {
+        key: solanaPublicKey, // Store the raw public key, not the address
+        derivationPath, // Use the SVM module's derivation path for compatibility
+        curve: 'ED25519'
+      }
+    ]
+  }
+
+  /**
+   * Get Avalanche keys from the connected Ledger device
+   * @returns Avalanche keys for EVM, Avalanche, and PVM chains
+   */
+  async getAvalancheKeys(): Promise<{
+    evm: string
+    avalanche: string
+    pvm: string
+  }> {
+    Logger.info('Getting Avalanche keys')
+
+    // Get public keys instead of addresses to avoid double 0x prefix issues
+    const publicKeys = await this.getPublicKeys(0, 1)
+
+    // Find the public keys for each chain
+    const evmPublicKey =
+      publicKeys.find(key => key.derivationPath.includes("44'/60'"))?.key || ''
+    const avmPublicKey =
+      publicKeys.find(key => key.derivationPath.includes("44'/9000'"))?.key ||
+      ''
+
+    // Store the public keys (not addresses) to avoid VM module issues
+    return {
+      evm: evmPublicKey, // Use public key instead of address
+      avalanche: avmPublicKey, // Use public key instead of address
+      pvm: avmPublicKey // Use same key for PVM
+    }
+  }
+
+  /**
+   * Get Bitcoin and XP addresses from Avalanche keys
+   * @param avalancheKeys The avalanche keys to derive addresses from
+   * @returns Bitcoin and XP addresses
+   */
+  async getBitcoinAndXPAddresses(): Promise<{
+    bitcoinAddress: string
+    xpAddress: string
+  }> {
+    const addresses = await this.getAllAddresses(0, 1)
+
+    // Get addresses for display
+    const xChainAddress =
+      addresses.find(addr => addr.network === ChainName.AVALANCHE_X)?.address ||
+      ''
+    const btcAddress =
+      addresses.find(addr => addr.network === ChainName.BITCOIN)?.address || ''
+
+    return {
+      bitcoinAddress: btcAddress,
+      xpAddress: xChainAddress
+    }
   }
 }
 
