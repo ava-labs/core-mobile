@@ -1,7 +1,10 @@
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import queryString from 'query-string'
-import { createApiClient, api as noOpApiClient } from './glacierApi.client'
+import {
+  createApiClient,
+  api as noOpApiClient
+} from './generated/glacierApi.client'
 import { CORE_HEADERS } from './constants'
 
 if (!Config.GLACIER_URL) Logger.warn('GLACIER_URL ENV is missing')
@@ -41,6 +44,7 @@ export const glacierApi = GLACIER_URL
         // instead of the default repeated keys (txTypes[]=...).
         paramsSerializer: params =>
           queryString.stringify(params, { arrayFormat: 'comma' })
-      }
+      },
+      validate: __DEV__
     })
   : noOpApiClient

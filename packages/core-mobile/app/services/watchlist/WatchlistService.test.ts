@@ -1,38 +1,155 @@
 import TokenService from 'services/token/TokenService'
-import TOP_MARKETS from '../token/__mocks__/tokens.json'
+import { transformSparklineData } from 'services/token/utils'
+import { tokenAggregatorApi } from 'utils/network/tokenAggregator'
+import { MarketType } from 'store/watchlist'
 import WATCHLIST_PRICE from '../token/__mocks__/watchlistPrice.json'
 import ADDITIONAL_WATCHLIST_PRICE from '../token/__mocks__/additionalWatchlistPrice.json'
 import WatchlistService from './WatchlistService'
 
-describe('getTokens', () => {
-  const getMarketsFromWatchlistCacheMock = jest.spyOn(
-    TokenService,
-    'getMarketsFromWatchlistCache'
-  )
-  const getMarketsMock = jest.spyOn(TokenService, 'getMarkets')
-  it('should return all market data', async () => {
-    getMarketsFromWatchlistCacheMock.mockImplementation(
-      () => TOP_MARKETS as never
-    )
-    getMarketsMock.mockImplementation(() => TOP_MARKETS as never)
-    const result = await WatchlistService.getTokens('usd')
-    expect(Object.keys(result.tokens).length).toEqual(1758)
+jest.mock('utils/network/tokenAggregator', () => ({
+  tokenAggregatorApi: {
+    getV1watchlistmarkets: jest.fn() // <-- Make sure this IS jest.fn()
+  }
+}))
+
+jest.mock('services/token/utils', () => ({
+  transformSparklineData: jest.fn()
+}))
+
+jest.mock('services/token/TokenService', () => ({
+  getTokenSearch: jest.fn(),
+  getSimplePrice: jest.fn(),
+  getMarkets: jest.fn(),
+  fetchPriceWithMarketData: jest.fn()
+}))
+
+describe('getTopMarkets', () => {
+  const apiMock = tokenAggregatorApi.getV1watchlistmarkets as jest.Mock
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should call token aggregator API with correct params', async () => {
+    apiMock.mockResolvedValue([])
+
+    await WatchlistService.getTopTokens('USD')
+
+    expect(apiMock).toHaveBeenCalledWith({
+      queries: { currency: 'usd', topMarkets: true }
+    })
+  })
+
+  it('should return correctly mapped markets', async () => {
+    apiMock.mockResolvedValue([
+      {
+        internalId: 'avax',
+        coingeckoId: 'avalanche-2',
+        platforms: { 43114: '0x123' },
+        symbol: 'AVAX',
+        name: 'Avalanche',
+        meta: { logoUri: 'avax.png' },
+        current_price: 35,
+        price_change_24h: 1.2,
+        price_change_percentage_24h: -3.4
+      }
+    ])
+
+    const result = await WatchlistService.getTopTokens('USD')
+    const m = result.tokens
+
+    expect(Object.keys(m)).toEqual(['avax'])
+
+    expect(m.avax).toEqual({
+      marketType: MarketType.TOP,
+      id: 'avax',
+      coingeckoId: 'avalanche-2',
+      platforms: { 43114: '0x123' },
+      symbol: 'AVAX',
+      name: 'Avalanche',
+      logoUri: 'avax.png',
+      currentPrice: 35,
+      priceChange24h: 1.2,
+      priceChangePercentage24h: -3.4
+    })
+  })
+
+  it('should map sparkline chart data when present', async () => {
+    apiMock.mockResolvedValue([
+      {
+        internalId: 'avax',
+        sparkline_in_7d: { price: [1, 2, 3] }
+      }
+    ])
+    ;(transformSparklineData as jest.Mock).mockReturnValue([10, 20, 30])
+
+    const { charts } = await WatchlistService.getTopTokens('USD')
+
+    expect(transformSparklineData).toHaveBeenCalledWith([1, 2, 3])
+    expect(charts.avax).toEqual([10, 20, 30])
+  })
+
+  it('should NOT add chart entry when sparkline is missing', async () => {
+    apiMock.mockResolvedValue([
+      {
+        internalId: 'avax',
+        sparkline_in_7d: null
+      }
+    ])
+
+    const { charts } = await WatchlistService.getTopTokens('USD')
+    expect(charts).toEqual({})
+  })
+
+  it('should return empty markets and charts when API returns empty array', async () => {
+    apiMock.mockResolvedValue([])
+
+    const result = await WatchlistService.getTopTokens('USD')
+
+    expect(result.tokens).toEqual({})
+    expect(result.charts).toEqual({})
+  })
+
+  it('should handle missing optional fields gracefully', async () => {
+    apiMock.mockResolvedValue([
+      {
+        internalId: 'test',
+        symbol: 'TST',
+        name: 'TestToken'
+        // everything else undefined
+      }
+    ])
+
+    const { tokens } = await WatchlistService.getTopTokens('USD')
+
+    expect(tokens.test).toEqual({
+      marketType: MarketType.TOP,
+      id: 'test',
+      coingeckoId: undefined,
+      platforms: {},
+      symbol: 'TST',
+      name: 'TestToken',
+      logoUri: undefined,
+      currentPrice: undefined,
+      priceChange24h: undefined,
+      priceChangePercentage24h: undefined
+    })
   })
 })
 
 describe('getPrices', () => {
-  const fetchPriceWithMarketDataMock = jest.spyOn(
-    TokenService,
-    'fetchPriceWithMarketData'
-  )
-  const getSimplePriceMock = jest.spyOn(TokenService, 'getSimplePrice')
-  it('should return all price data', async () => {
-    fetchPriceWithMarketDataMock.mockImplementation(
-      () => WATCHLIST_PRICE as never
-    )
-    getSimplePriceMock.mockImplementation(
-      () => ADDITIONAL_WATCHLIST_PRICE as never
-    )
+  const fetchPriceWithMarketDataMock =
+    TokenService.fetchPriceWithMarketData as jest.Mock
+  const getSimplePriceMock = TokenService.getSimplePrice as jest.Mock
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should return all merged price data from cache + simple price API', async () => {
+    fetchPriceWithMarketDataMock.mockResolvedValue(WATCHLIST_PRICE)
+    getSimplePriceMock.mockResolvedValue(ADDITIONAL_WATCHLIST_PRICE)
+
     const result = await WatchlistService.getPrices(
       [
         'test-aave',
@@ -43,52 +160,108 @@ describe('getPrices', () => {
       ],
       'usd'
     )
+
     expect(fetchPriceWithMarketDataMock).toHaveBeenCalledTimes(1)
     expect(getSimplePriceMock).toHaveBeenCalledTimes(1)
-    expect(Object.keys(result).length).toEqual(5)
+    expect(Object.keys(result)).toHaveLength(5)
   })
 
-  it('should return only cached price data', async () => {
-    fetchPriceWithMarketDataMock.mockImplementation(
-      () => WATCHLIST_PRICE as never
-    )
-    getSimplePriceMock.mockImplementation(
-      () => ADDITIONAL_WATCHLIST_PRICE as never
-    )
+  it('should return only cached price data when all IDs exist in cache', async () => {
+    fetchPriceWithMarketDataMock.mockResolvedValue(WATCHLIST_PRICE)
+    getSimplePriceMock.mockResolvedValue(ADDITIONAL_WATCHLIST_PRICE)
+
     const result = await WatchlistService.getPrices(
       ['test-aave', 'test'],
       'usd'
     )
+
     expect(fetchPriceWithMarketDataMock).toHaveBeenCalledTimes(1)
     expect(getSimplePriceMock).not.toHaveBeenCalled()
-    expect(Object.keys(result).length).toEqual(2)
+    expect(Object.keys(result)).toHaveLength(2)
   })
 })
 
 describe('tokenSearch', () => {
-  const getTokenSearchMock = jest.spyOn(TokenService, 'getTokenSearch')
-
-  it('should return token data by search query', async () => {
-    getTokenSearchMock.mockImplementationOnce(async () => {
-      return [
-        {
-          id: 'test'
-        },
-        {
-          id: 'test-aave'
-        },
-        {
-          id: 'test01'
-        }
-      ] as never
-    })
-
-    const result = await WatchlistService.tokenSearch('test', 'usd')
-    expect(Object.keys(result?.tokens as never).length).toEqual(1758)
+  beforeEach(() => {
+    jest.clearAllMocks()
   })
 
-  it('should return undefined if query does not match any token', async () => {
-    getTokenSearchMock.mockImplementationOnce(async () => [])
+  it('should return tokens, prices, and charts for a valid query', async () => {
+    // 1. Mock search results
+    ;(TokenService.getTokenSearch as jest.Mock).mockResolvedValue([
+      { id: 'test', symbol: 'TEST', name: 'Test Token' },
+      { id: 'test-aave', symbol: 'AAVE', name: 'Aave Test' }
+    ])
+
+    // 2. Mock markets returned by getMarketsByCoinIds()
+    ;(TokenService.getMarkets as jest.Mock).mockResolvedValue([
+      {
+        id: 'test',
+        symbol: 'TEST',
+        name: 'Test Token',
+        image: 'test.png',
+        price_change_24h: 1,
+        price_change_percentage_24h: 2,
+        sparkline_in_7d: { price: [1, 2, 3] }
+      },
+      {
+        id: 'test-aave',
+        symbol: 'AAVE',
+        name: 'Aave Test',
+        image: 'aave.png',
+        sparkline_in_7d: null
+      }
+    ])
+
+    // 3. Mock prices returned by getSimplePrice()
+    ;(TokenService.getSimplePrice as jest.Mock).mockResolvedValue({
+      test: {
+        usd: { price: 100, change24: 1, marketCap: 999, vol24: 200 }
+      },
+      'test-aave': {
+        usd: { price: 50, change24: -1, marketCap: 500, vol24: 120 }
+      }
+    })
+    ;(transformSparklineData as jest.Mock).mockReturnValue([10, 20, 30])
+
+    const result = await WatchlistService.tokenSearch('test', 'usd')
+    expect(result).toBeDefined()
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const { tokens, charts, prices } = result!
+
+    // TOKENS
+    expect(tokens).toHaveLength(2)
+    expect(tokens[0]).toMatchObject({
+      marketType: 'SEARCH',
+      id: 'search:test',
+      coingeckoId: 'test',
+      symbol: 'TEST',
+      name: 'Test Token',
+      currentPrice: 100
+    })
+
+    expect(tokens[1]).toMatchObject({
+      id: 'search:test-aave',
+      currentPrice: 50
+    })
+
+    // CHARTS (only first has sparkline)
+    expect(charts.test).toEqual([10, 20, 30])
+    expect(charts['test-aave']).toBeUndefined()
+
+    // PRICES
+    expect(prices.test).toEqual({
+      priceInCurrency: 100,
+      change24: 1,
+      marketCap: 999,
+      vol24: 200
+    })
+  })
+
+  it('should return undefined when search yields no results', async () => {
+    ;(TokenService.getTokenSearch as jest.Mock).mockResolvedValue([])
+
     const result = await WatchlistService.tokenSearch('unknown', 'usd')
     expect(result).toBeUndefined()
   })
