@@ -1,12 +1,13 @@
 import React from 'react'
 import { View } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useNavigation } from '@react-navigation/native'
+import { CommonActions } from '@react-navigation/native'
 import { Text, Button, useTheme, Icons } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 
 export default function CompleteScreen(): JSX.Element {
-  const router = useRouter()
+  const navigation = useNavigation()
   const {
     theme: { colors }
   } = useTheme()
@@ -15,14 +16,16 @@ export default function CompleteScreen(): JSX.Element {
 
   const handleComplete = (): void => {
     resetSetup()
-    // Keep going back until we can't go back anymore (should reach manage accounts)
-    const goBackToRoot = (): void => {
-      if (router.canGoBack()) {
-        router.back()
-        setTimeout(goBackToRoot, 50)
-      }
-    }
-    goBackToRoot()
+    // Reset the accountSettings stack to have index as first screen and manageAccounts as second (active)
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 1, // manageAccounts will be the active screen
+        routes: [
+          { name: 'index' }, // accountSettings index screen (first in stack)
+          { name: 'manageAccounts' } // manageAccounts screen (second in stack, active)
+        ]
+      })
+    )
   }
 
   return (
