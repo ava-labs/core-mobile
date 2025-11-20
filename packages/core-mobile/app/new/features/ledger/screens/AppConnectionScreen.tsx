@@ -79,14 +79,10 @@ export default function AppConnectionScreen(): JSX.Element {
   const [currentStep, setCurrentStep] = useState(0)
 
   const {
-    getSolanaKeys,
-    getAvalancheKeys,
     connectedDeviceId,
     connectedDeviceName,
     selectedDerivationPath,
     setSelectedDerivationPath,
-    setConnectedDevice,
-    keys,
     resetSetup,
     disconnectDevice,
     createLedgerWallet
@@ -98,15 +94,14 @@ export default function AppConnectionScreen(): JSX.Element {
     if (!selectedDerivationPath) {
       setSelectedDerivationPath(LedgerDerivationPathType.BIP44)
     }
-  }, [
-    selectedDerivationPath,
-    connectedDeviceId,
-    keys.avalancheKeys,
-    setSelectedDerivationPath,
-    setConnectedDevice
-  ])
+  }, [selectedDerivationPath, setSelectedDerivationPath])
 
-  const handleComplete = useCallback(async () => {
+  const handleComplete = useCallback(async (keys: {
+    solanaKeys: Array<{ key: string; derivationPath: string; curve: string }>
+    avalancheKeys: { evm: string; avalanche: string; pvm: string } | null
+    bitcoinAddress: string
+    xpAddress: string
+  }) => {
     // If wallet hasn't been created yet, create it now
     if (
       keys.avalancheKeys &&
@@ -120,7 +115,10 @@ export default function AppConnectionScreen(): JSX.Element {
         await createLedgerWallet({
           deviceId: connectedDeviceId,
           deviceName: connectedDeviceName,
-          derivationPathType: selectedDerivationPath
+          derivationPathType: selectedDerivationPath,
+          // Pass the keys directly to the wallet creation
+          avalancheKeys: keys.avalancheKeys,
+          solanaKeys: keys.solanaKeys
         })
 
         // @ts-ignore TODO: make routes typesafe
@@ -140,7 +138,6 @@ export default function AppConnectionScreen(): JSX.Element {
       push('/accountSettings/ledger/complete')
     }
   }, [
-    keys.avalancheKeys,
     connectedDeviceId,
     connectedDeviceName,
     selectedDerivationPath,
@@ -170,15 +167,12 @@ export default function AppConnectionScreen(): JSX.Element {
       <LedgerAppConnection
         onComplete={handleComplete}
         onCancel={handleCancel}
-        getSolanaKeys={getSolanaKeys}
-        getAvalancheKeys={getAvalancheKeys}
         deviceName={connectedDeviceName}
         selectedDerivationPath={selectedDerivationPath}
         isCreatingWallet={isCreatingWallet}
         connectedDeviceId={connectedDeviceId}
         connectedDeviceName={connectedDeviceName}
         onStepChange={setCurrentStep}
-        keys={keys}
       />
     </ScrollScreen>
   )

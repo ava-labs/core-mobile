@@ -35,48 +35,17 @@ import {
 
 export interface UseLedgerWalletReturn {
   // Connection state
-  devices: LedgerDevice[]
-  isScanning: boolean
   isConnecting: boolean
   isLoading: boolean
-  setupProgress: SetupProgress | null
   transportState: LedgerTransportState
 
-  // Key states and methods
-  keys: {
-    solanaKeys: Array<{
-      key: string
-      derivationPath: string
-      curve: Curve
-    }>
-    avalancheKeys: {
-      evm: string
-      avalanche: string
-      pvm: string
-    } | null
-    bitcoinAddress: string
-    xpAddress: string
-  }
-
   // Methods
-  scanForDevices: () => Promise<void>
   connectToDevice: (deviceId: string) => Promise<void>
   disconnectDevice: () => Promise<void>
-  getSolanaKeys: () => Promise<void>
-  getAvalancheKeys: () => Promise<void>
-  getLedgerLiveKeys: (
-    accountCount?: number,
-    progressCallback?: (
-      step: string,
-      progress: number,
-      totalSteps: number
-    ) => void
-  ) => Promise<{
-    avalancheKeys: { evm: string; avalanche: string; pvm: string } | null
-    individualKeys: Array<{ key: string; derivationPath: string; curve: Curve }>
-  }>
-  resetKeys: () => void
-  createLedgerWallet: (options: WalletCreationOptions) => Promise<string>
+  createLedgerWallet: (options: WalletCreationOptions & {
+    avalancheKeys?: { evm: string; avalanche: string; pvm: string }
+    solanaKeys?: Array<{ key: string; derivationPath: string; curve: string }>
+  }) => Promise<string>
 }
 
 export function useLedgerWallet(): UseLedgerWalletReturn {
@@ -85,18 +54,8 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
     available: false,
     powered: false
   })
-  const [devices, setDevices] = useState<LedgerDevice[]>([])
-  const [isScanning, setIsScanning] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [setupProgress, setSetupProgress] = useState<SetupProgress | null>(null)
-
-  // Key states
-  const [solanaKeys, setSolanaKeys] = useState<LedgerKeys['solanaKeys']>([])
-  const [avalancheKeys, setAvalancheKeys] =
-    useState<LedgerKeys['avalancheKeys']>(null)
-  const [bitcoinAddress, setBitcoinAddress] = useState<string>('')
-  const [xpAddress, setXpAddress] = useState<string>('')
 
   // Monitor BLE transport state
   useEffect(() => {
@@ -121,111 +80,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       subscription.unsubscribe()
     }
   }, [])
-
-  // Request Bluetooth permissions
-  const requestBluetoothPermissions = useCallback(async () => {
-    if (Platform.OS === 'android') {
-      try {
-        const permissions = [
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-        ].filter(Boolean)
-
-        const granted = await PermissionsAndroid.requestMultiple(permissions)
-        return Object.values(granted).every(
-          permission => permission === 'granted'
-        )
-      } catch (err) {
-        return false
-      }
-    }
-    return true
-  }, [])
-
-  // Handle scan errors
-  const handleScanError = useCallback((error: Error) => {
-    setIsScanning(false)
-
-    if (
-      error.message?.includes('not authorized') ||
-      error.message?.includes('Origin: 101')
-    ) {
-      Alert.alert(
-        'Bluetooth Permission Required',
-        'Please enable Bluetooth permissions in your device settings to scan for Ledger devices.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Open Settings',
-            onPress: () => {
-              // Handle settings navigation if needed
-            }
-          }
-        ]
-      )
-    } else {
-      Alert.alert('Scan Error', `Failed to scan for devices: ${error.message}`)
-    }
-  }, [])
-
-  // Scan for Ledger devices
-  const scanForDevices = useCallback(async () => {
-    if (!transportState.available) {
-      Alert.alert(
-        'Bluetooth Unavailable',
-        'Please enable Bluetooth to scan for Ledger devices'
-      )
-      return
-    }
-
-    const hasPermissions = await requestBluetoothPermissions()
-    if (!hasPermissions) {
-      Alert.alert(
-        'Permission Required',
-        'Bluetooth permissions are required to scan for Ledger devices.'
-      )
-      return
-    }
-
-    setIsScanning(true)
-    setDevices([])
-
-    try {
-      const subscription = TransportBLE.listen({
-        next: (event: {
-          type: string
-          descriptor: { id: string; name?: string; rssi?: number }
-        }) => {
-          if (event.type === 'add') {
-            const device: LedgerDevice = {
-              id: event.descriptor.id,
-              name: event.descriptor.name || 'Unknown Device',
-              rssi: event.descriptor.rssi
-            }
-
-            setDevices(prev => {
-              const exists = prev.find(d => d.id === device.id)
-              if (!exists) {
-                return [...prev, device]
-              }
-              return prev
-            })
-          }
-        },
-        error: handleScanError,
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        complete: () => {}
-      })
-
-      setTimeout(() => {
-        subscription.unsubscribe()
-        setIsScanning(false)
-      }, LEDGER_TIMEOUTS.SCAN_TIMEOUT)
-    } catch (error) {
-      handleScanError(error as Error)
-    }
-  }, [transportState.available, requestBluetoothPermissions, handleScanError])
 
   // Connect to device
   const connectToDevice = useCallback(async (deviceId: string) => {
@@ -252,246 +106,25 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
     }
   }, [])
 
-  // Get Solana keys
-  const getSolanaKeys = useCallback(async () => {
-    // Prevent multiple simultaneous calls
-    if (isLoading) {
-      Logger.info('Solana key retrieval already in progress, skipping')
-      return
-    }
 
-    try {
-      setIsLoading(true)
-      Logger.info('Getting Solana keys with passive app detection')
-      await LedgerService.waitForApp(LedgerAppType.SOLANA)
 
-      // Get address directly from Solana app
-      const transport = await LedgerService.getTransport()
-      const solanaApp = new AppSolana(transport as Transport)
 
-      // Use the same derivation path approach as Extension (from @avalabs/core-wallets-sdk)
-      const { getSolanaDerivationPath } = await import(
-        '@avalabs/core-wallets-sdk'
-      )
-      const derivationPath = getSolanaDerivationPath(0)
-
-      // Convert to the format expected by Ledger (without m/ prefix)
-      const ledgerDerivationPath = derivationPath.replace('m/', '')
-
-      const result = await solanaApp.getAddress(ledgerDerivationPath, false)
-
-      // Get the raw public key (what the SVM module expects)
-      const solanaPublicKey = Buffer.from(result.address).toString('hex')
-
-      setSolanaKeys([
-        {
-          key: solanaPublicKey, // Store the raw public key, not the address
-          derivationPath, // Use the SVM module's derivation path for compatibility
-          curve: Curve.ED25519
-        }
-      ])
-    } catch (error) {
-      Logger.error('Failed to get Solana keys', error)
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
-  }, [isLoading])
-
-  // Get Avalanche keys
-  const getAvalancheKeys = useCallback(async () => {
-    // Prevent multiple simultaneous calls
-    if (isLoading) {
-      Logger.info('Avalanche key retrieval already in progress, skipping')
-      return
-    }
-
-    try {
-      setIsLoading(true)
-      Logger.info('Getting Avalanche keys')
-
-      // Get public keys instead of addresses to avoid double 0x prefix issues
-      const publicKeys = await LedgerService.getPublicKeys(0, 1)
-      const addresses = await LedgerService.getAllAddresses(0, 1)
-
-      // Find the public keys for each chain
-      const evmPublicKey =
-        publicKeys.find(key => key.derivationPath.includes("44'/60'"))?.key ||
-        ''
-      const avmPublicKey =
-        publicKeys.find(key => key.derivationPath.includes("44'/9000'"))?.key ||
-        ''
-
-      // Get addresses for display/validation
-      const xChainAddress =
-        addresses.find(addr => addr.network === ChainName.AVALANCHE_X)
-          ?.address || ''
-      const btcAddress =
-        addresses.find(addr => addr.network === ChainName.BITCOIN)?.address ||
-        ''
-
-      // Store the public keys (not addresses) to avoid VM module issues
-      setAvalancheKeys({
-        evm: evmPublicKey, // Use public key instead of address
-        avalanche: avmPublicKey, // Use public key instead of address
-        pvm: avmPublicKey // Use same key for PVM
-      })
-      setBitcoinAddress(btcAddress)
-      setXpAddress(xChainAddress)
-
-      Logger.info('Successfully got Avalanche keys')
-    } catch (error) {
-      Logger.error('Failed to get Avalanche keys', error)
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
-  }, [isLoading])
-
-  const resetKeys = useCallback(() => {
-    setSolanaKeys([])
-    setAvalancheKeys(null)
-    setBitcoinAddress('')
-    setXpAddress('')
-  }, [])
-
-  // New method: Get individual keys for Ledger Live (sequential device confirmations)
-  const getLedgerLiveKeys = useCallback(
-    async (
-      accountCount = 3,
-      progressCallback?: (
-        step: string,
-        progress: number,
-        totalSteps: number
-      ) => void
-    ) => {
-      try {
-        setIsLoading(true)
-        Logger.info(
-          `Starting Ledger Live key retrieval for ${accountCount} accounts`
-        )
-
-        const totalSteps = accountCount // One step per account (gets both EVM and AVM)
-        const individualKeys: Array<{
-          key: string
-          derivationPath: string
-          curve: Curve
-        }> = []
-        let avalancheKeysResult: LedgerKeys['avalancheKeys'] = null
-
-        // Sequential address retrieval - each account requires device confirmation
-        for (
-          let accountIndex = 0;
-          accountIndex < accountCount;
-          accountIndex++
-        ) {
-          const stepName = `Getting keys for account ${accountIndex + 1}...`
-          const progress = Math.round(((accountIndex + 1) / totalSteps) * 100)
-          progressCallback?.(stepName, progress, totalSteps)
-
-          Logger.info(
-            `Requesting addresses for account ${accountIndex} (Ledger Live style)`
-          )
-
-          // Get public keys for this specific account (1 at a time for device confirmation)
-          const publicKeys = await LedgerService.getPublicKeys(accountIndex, 1)
-
-          // Also get addresses for display purposes
-          const addresses = await LedgerService.getAllAddresses(accountIndex, 1)
-
-          // Extract the keys for this account
-          const evmPublicKey = publicKeys.find(key =>
-            key.derivationPath.includes("44'/60'")
-          )
-          const avmPublicKey = publicKeys.find(key =>
-            key.derivationPath.includes("44'/9000'")
-          )
-
-          // Extract addresses for this account
-          const evmAddress = addresses.find(
-            addr => addr.network === ChainName.AVALANCHE_C_EVM
-          )
-          const xChainAddr = addresses.find(
-            addr => addr.network === ChainName.AVALANCHE_X
-          )
-
-          if (evmPublicKey) {
-            individualKeys.push({
-              key: evmPublicKey.key,
-              derivationPath: DERIVATION_PATHS.LEDGER_LIVE.EVM(accountIndex),
-              curve: evmPublicKey.curve as Curve
-            })
-          }
-
-          if (avmPublicKey) {
-            individualKeys.push({
-              key: avmPublicKey.key,
-              derivationPath:
-                DERIVATION_PATHS.LEDGER_LIVE.AVALANCHE(accountIndex),
-              curve: avmPublicKey.curve as Curve
-            })
-          }
-
-          // Store first account's keys as primary
-          if (accountIndex === 0) {
-            avalancheKeysResult = {
-              evm: evmAddress?.address || '',
-              avalanche: xChainAddr?.address || '',
-              pvm: '' // Will be set when PVM addresses are implemented
-            }
-          }
-        }
-
-        // Update state with the retrieved keys
-        if (avalancheKeysResult) {
-          setAvalancheKeys(avalancheKeysResult)
-        }
-
-        Logger.info(
-          `Successfully retrieved Ledger Live keys for ${accountCount} accounts`
-        )
-        Logger.info('Individual keys count:', individualKeys.length)
-
-        return { avalancheKeys: avalancheKeysResult, individualKeys }
-      } catch (error) {
-        Logger.error('Failed to get Ledger Live keys:', error)
-        throw error
-      } finally {
-        setIsLoading(false)
-      }
-    },
-    []
-  )
 
   const createLedgerWallet = useCallback(
     async ({
       deviceId,
       deviceName = 'Ledger Device',
       derivationPathType = LedgerDerivationPathType.BIP44,
-      individualKeys = []
-    }: WalletCreationOptions) => {
+      individualKeys = [],
+      avalancheKeys,
+      solanaKeys = []
+    }: WalletCreationOptions & {
+      avalancheKeys?: { evm: string; avalanche: string; pvm: string }
+      solanaKeys?: Array<{ key: string; derivationPath: string; curve: string }>
+    }) => {
       try {
         setIsLoading(true)
 
-        // Initialize progress tracking
-        const totalSteps =
-          derivationPathType === LedgerDerivationPathType.BIP44 ? 3 : 6
-        let currentStep = 1
-
-        const updateProgress = (stepName: string): void => {
-          const progress = {
-            currentStep: stepName,
-            progress: Math.round((currentStep / totalSteps) * 100),
-            totalSteps,
-            estimatedTimeRemaining:
-              (totalSteps - currentStep) *
-              (derivationPathType === LedgerDerivationPathType.BIP44 ? 5 : 8)
-          }
-          setSetupProgress(progress)
-          currentStep++
-        }
-
-        updateProgress('Validating keys...')
         Logger.info(
           `Creating ${derivationPathType} Ledger wallet with generated keys...`
         )
@@ -501,10 +134,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         }
         // Solana keys are optional - wallet can be created with only Avalanche keys
 
-        updateProgress('Generating wallet ID...')
         const newWalletId = uuid()
-
-        updateProgress('Storing wallet data...')
 
         // Fix key formatting - remove double 0x prefixes that cause VM module errors
         const formattedAvalancheKeys = {
@@ -623,32 +253,17 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         throw error
       } finally {
         setIsLoading(false)
-        setSetupProgress(null)
       }
     },
     [avalancheKeys, solanaKeys, bitcoinAddress, dispatch]
   )
 
   return {
-    devices,
-    isScanning,
     isConnecting,
     transportState,
-    scanForDevices,
     connectToDevice,
     disconnectDevice,
     isLoading,
-    getSolanaKeys,
-    getAvalancheKeys,
-    getLedgerLiveKeys,
-    resetKeys,
-    keys: {
-      solanaKeys,
-      avalancheKeys,
-      bitcoinAddress,
-      xpAddress
-    },
-    createLedgerWallet,
-    setupProgress
+    createLedgerWallet
   }
 }

@@ -3,8 +3,14 @@ import { useNavigation } from 'expo-router'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import React from 'react'
 import { View } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
+import { CommonActions } from '@react-navigation/native'
+import { Text, Button, useTheme, Icons } from '@avalabs/k2-alpine'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 
 export default function CompleteScreen(): JSX.Element {
+  const navigation = useNavigation()
   const navigation = useNavigation()
   const {
     theme: { colors }
@@ -14,7 +20,16 @@ export default function CompleteScreen(): JSX.Element {
 
   const handleComplete = (): void => {
     resetSetup()
-    navigation.getParent()?.goBack()
+    // Reset the accountSettings stack to have index as first screen and manageAccounts as second (active)
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 1, // manageAccounts will be the active screen
+        routes: [
+          { name: 'index' }, // accountSettings index screen (first in stack)
+          { name: 'manageAccounts' } // manageAccounts screen (second in stack, active)
+        ]
+      })
+    )
   }
 
   return (
