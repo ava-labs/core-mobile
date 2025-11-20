@@ -66,9 +66,23 @@ export const addBranchListeners = (startListening: AppStartListening): void => {
       }
     }
 
-    const url = params['+non_branch_link']
+    const nonBranchUrl = params['+non_branch_link']
       ? new URL(params['+non_branch_link'] as string)
       : undefined
+    if (nonBranchUrl) {
+      return {
+        posthog_distinct_id: distinctId,
+        ...Object.fromEntries(
+          Object.entries(nonBranchUrl.searchParams).map(([key, value]) => [
+            key,
+            value.toString()
+          ])
+        )
+      }
+    }
+
+    const url = params['+url'] ? new URL(params['+url'] as string) : undefined
+
     if (url) {
       return {
         posthog_distinct_id: distinctId,
