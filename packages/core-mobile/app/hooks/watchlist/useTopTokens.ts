@@ -19,6 +19,6 @@ export const useTopTokens = (): UseQueryResult<TokensAndCharts, Error> => {
         return WatchlistService.getTopTokens(currency)
       })
     },
-    refetchInterval: 60000 // 1 minute
+    refetchInterval: 120000 // 2 minutes
   })
 }
