@@ -15,7 +15,7 @@ export const SimpleTextInput = ({
   maxLength,
   autoFocus,
   secureTextEntry,
-  testID = 'text_input'
+  testID = 'input_text'
 }: {
   value: string
   onChangeText: (name: string) => void

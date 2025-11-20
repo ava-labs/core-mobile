@@ -242,8 +242,50 @@ async function verifyText(text: string, ele: ChainablePromiseElement) {
   )
 }
 
+// test/helpers/clipboardPaste.ts
+async function pasteText(inputElement: ChainablePromiseElement, text: string) {
+  const encodedText = Buffer.from(text, 'utf-8').toString('base64')
+  if (driver.isIOS) {
+    await driver.setClipboard(encodedText)
+  } else {
+    await driver.setClipboard(encodedText, 'plaintext')
+  }
+
+  await waitFor(inputElement)
+  await inputElement.longPress({
+    x: 0,
+    y: 0,
+    duration: 600
+  })
+
+  if (driver.isIOS) {
+    await click(selectors.getByText('Paste'))
+  } else {
+    await tapXY(160, 650)
+  }
+
+  await tapEnterOnKeyboard()
+}
+
+async function tapXY(x: number, y: number) {
+  await driver.performActions([
+    {
+      type: 'pointer',
+      id: 'finger1',
+      parameters: { pointerType: 'touch' },
+      actions: [
+        { type: 'pointerMove', duration: 0, x, y },
+        { type: 'pointerDown', button: 0 },
+        { type: 'pause', duration: 100 },
+        { type: 'pointerUp', button: 0 }
+      ]
+    }
+  ])
+}
+
 export const actions = {
   type,
+  pasteText,
   tapNumberPad,
   verifyElementText,
   waitFor,
