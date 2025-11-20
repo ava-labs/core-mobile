@@ -3,6 +3,18 @@ import { View, Alert, ActivityIndicator } from 'react-native'
 import { Text, Button, useTheme, Icons, GroupList } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
 import { LedgerDerivationPathType } from 'services/ledger/types'
+import { showSnackbar } from 'common/utils/toast'
+import { truncateAddress } from '@avalabs/core-utils-sdk'
+import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
+import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
+import { isXPChain } from 'utils/network/isAvalancheNetwork'
+import bs58 from 'bs58'
+import {
+  AVALANCHE_MAINNET_NETWORK,
+  NETWORK_SOLANA
+} from 'services/network/consts'
+import { BITCOIN_NETWORK, AVALANCHE_XP_NETWORK } from '@avalabs/core-chains-sdk'
+import { ChainName } from 'services/network/consts'
 import { AnimatedIconWithText } from './AnimatedIconWithText'
 import { LedgerDeviceList } from './LedgerDeviceList'
 
@@ -41,6 +53,20 @@ interface LedgerAppConnectionProps {
   connectedDeviceId?: string | null
   connectedDeviceName?: string
   onStepChange?: (step: number) => void
+  keys: {
+    solanaKeys: Array<{
+      key: string
+      derivationPath: string
+      curve: string
+    }>
+    avalancheKeys: {
+      evm: string
+      avalanche: string
+      pvm: string
+    } | null
+    bitcoinAddress: string
+    xpAddress: string
+  }
 }
 
 export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
@@ -53,7 +79,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   isCreatingWallet = false,
   connectedDeviceId,
   connectedDeviceName,
-  onStepChange
+  onStepChange,
+  keys
 }) => {
   const {
     theme: { colors }
@@ -81,6 +108,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
       setCurrentStep(AppConnectionStep.AVALANCHE_LOADING)
       await getAvalancheKeys()
 
+      // Show success toast notification
+      showSnackbar('Avalanche app connected')
       // if get avalanche keys succeeds move forward to solana connect
       setCurrentStep(AppConnectionStep.SOLANA_CONNECT)
     } catch (err) {
@@ -99,6 +128,9 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
 
       await getSolanaKeys()
 
+      // Show success toast notification
+      showSnackbar('Solana app connected')
+
       // Skip success step and go directly to complete
       setCurrentStep(AppConnectionStep.COMPLETE)
     } catch (err) {
@@ -115,6 +147,127 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     // Skip Solana and proceed to complete step
     setCurrentStep(AppConnectionStep.COMPLETE)
   }, [])
+
+  // Generate address list data for the complete step
+  const addressListData = useMemo(() => {
+    const addresses = []
+
+    // C-Chain/EVM address (derived from avalanche keys)
+    if (keys.avalancheKeys?.evm) {
+      addresses.push({
+        title: AVALANCHE_MAINNET_NETWORK.chainName,
+        subtitle: truncateAddress(
+          keys.avalancheKeys.evm,
+          TRUNCATE_ADDRESS_LENGTH
+        ),
+        value: (
+          <Icons.Navigation.Check
+            color={colors.$textSuccess}
+            width={24}
+            height={24}
+          />
+        ),
+        leftIcon: (
+          <NetworkLogoWithChain
+            network={AVALANCHE_MAINNET_NETWORK}
+            networkSize={36}
+            outerBorderColor={colors.$surfaceSecondary}
+            showChainLogo={isXPChain(AVALANCHE_MAINNET_NETWORK.chainId)}
+          />
+        )
+      })
+    }
+
+    // X/P Chain address
+    if (keys.xpAddress) {
+      const xpNetwork = {
+        ...AVALANCHE_XP_NETWORK,
+        chainName: ChainName.AVALANCHE_XP
+      }
+      addresses.push({
+        title: xpNetwork.chainName,
+        subtitle: truncateAddress(keys.xpAddress, TRUNCATE_ADDRESS_LENGTH),
+        value: (
+          <Icons.Navigation.Check
+            color={colors.$textSuccess}
+            width={24}
+            height={24}
+          />
+        ),
+        leftIcon: (
+          <NetworkLogoWithChain
+            network={xpNetwork}
+            networkSize={36}
+            outerBorderColor={colors.$surfaceSecondary}
+            showChainLogo={isXPChain(xpNetwork.chainId)}
+          />
+        )
+      })
+    }
+
+    // Bitcoin address
+    if (keys.bitcoinAddress) {
+      const bitcoinNetwork = {
+        ...BITCOIN_NETWORK,
+        chainName: ChainName.BITCOIN
+      }
+      addresses.push({
+        title: bitcoinNetwork.chainName,
+        subtitle: truncateAddress(keys.bitcoinAddress, TRUNCATE_ADDRESS_LENGTH),
+        value: (
+          <Icons.Navigation.Check
+            color={colors.$textSuccess}
+            width={24}
+            height={24}
+          />
+        ),
+        leftIcon: (
+          <NetworkLogoWithChain
+            network={bitcoinNetwork}
+            networkSize={36}
+            outerBorderColor={colors.$surfaceSecondary}
+            showChainLogo={false}
+          />
+        )
+      })
+    }
+
+    // Solana address
+    if (keys.solanaKeys.length > 0 && keys.solanaKeys[0]?.key) {
+      // Convert public key to Solana address (Base58 encoding)
+      const solanaAddress = bs58.encode(
+        Uint8Array.from(Buffer.from(keys.solanaKeys[0].key, 'hex'))
+      )
+
+      addresses.push({
+        title: NETWORK_SOLANA.chainName,
+        subtitle: truncateAddress(solanaAddress, TRUNCATE_ADDRESS_LENGTH),
+        value: (
+          <Icons.Navigation.Check
+            color={colors.$textSuccess}
+            width={24}
+            height={24}
+          />
+        ),
+        leftIcon: (
+          <NetworkLogoWithChain
+            network={NETWORK_SOLANA}
+            networkSize={36}
+            outerBorderColor={colors.$surfaceSecondary}
+            showChainLogo={false}
+          />
+        )
+      })
+    }
+
+    // Always add the "Storing wallet data" row at the end
+    addresses.push({
+      title: 'Storing wallet data',
+      value: <LoadingState />
+    })
+
+    return addresses
+  }, [keys, colors])
 
   // Step configurations
   const getStepConfig = (step: AppConnectionStep): StepConfig | null => {
@@ -213,82 +366,37 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
         <View style={{ flex: 1, paddingHorizontal: 16 }}>
           {/* Header with refresh icon and title */}
           <View style={{ alignItems: 'center', paddingVertical: 32 }}>
-            <View
-              style={{
-                width: 80,
-                height: 80,
-                borderRadius: 40,
-                backgroundColor: colors.$surfaceSecondary,
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 24
-              }}>
-              <Icons.Action.CheckCircle
-                color={colors.$textPrimary}
-                width={40}
-                height={40}
-              />
-            </View>
-
-            <Text
-              variant="heading3"
-              style={{ textAlign: 'center', marginBottom: 8 }}>
-              Your Ledger wallet
-            </Text>
-            <Text
-              variant="heading3"
-              style={{ textAlign: 'center', marginBottom: 16 }}>
-              is being set up
-            </Text>
-
-            <Text
-              variant="body1"
-              style={{
-                textAlign: 'center',
-                color: colors.$textSecondary,
-                maxWidth: 280,
-                lineHeight: 20
-              }}>
-              The BIP44 setup is in progress and should take about 15 seconds.
-              Keep your device connected during setup.
-            </Text>
-          </View>
-
-          {/* Setup progress list */}
-          <View style={{ flex: 1, marginTop: 32 }}>
-            <GroupList
-              data={[
-                {
-                  title: 'Lorem ipsum dolor',
-                  rightIcon: (
-                    <Icons.Action.CheckCircle
-                      color={colors.$textSuccess}
-                      width={24}
-                      height={24}
-                    />
-                  )
-                },
-                {
-                  title: 'Sit amet lorem ipsum',
-                  rightIcon: (
-                    <Icons.Action.CheckCircle
-                      color={colors.$textSuccess}
-                      width={24}
-                      height={24}
-                    />
-                  )
-                },
-                {
-                  title: 'Storing wallet data',
-                  rightIcon: <LoadingState />
-                }
-              ]}
-              itemHeight={56}
+            <Icons.Notification.Sync
+              color={colors.$textPrimary}
+              width={75}
+              height={75}
             />
+
+            <View
+              style={{ marginTop: 24, width: '100%', alignItems: 'center' }}>
+              <Text
+                variant="heading3"
+                style={{ textAlign: 'center', marginBottom: 8 }}>
+                {`Your Ledger wallet \nis being set up`}
+              </Text>
+
+              <Text
+                variant="body1"
+                style={{
+                  textAlign: 'center',
+                  color: colors.$textSecondary,
+                  lineHeight: 20
+                }}>
+                {`The BIP44 setup is in progress and should \n take about 15 seconds. Keep your device \n connected during setup.`}
+              </Text>
+            </View>
           </View>
 
-          {/* Cancel button */}
-          <View style={{ paddingBottom: 32, paddingTop: 16 }}>
+          <View style={{ flex: 1 }}>
+            <GroupList data={addressListData} itemHeight={56} />
+          </View>
+
+          <View style={{ paddingBottom: 16, paddingTop: 16 }}>
             <Button type="tertiary" size="large" onPress={onCancel}>
               Cancel setup
             </Button>
@@ -437,7 +545,9 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
         </View>
       )}
 
-      <View style={{ flex: 1, paddingHorizontal: 16 }}>{renderStepContent()}</View>
+      <View style={{ flex: 1, paddingHorizontal: 16 }}>
+        {renderStepContent()}
+      </View>
     </View>
   )
 }
