@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'expo-router'
-import { Alert, Platform } from 'react-native'
+import { Alert } from 'react-native'
 import { useTheme, View } from '@avalabs/k2-alpine'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -16,7 +16,7 @@ const AnimatedDot = ({
 }: {
   isActive: boolean
   dotSize: number
-  colors: any
+  colors: Record<string, string>
 }): JSX.Element => {
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -155,9 +155,7 @@ export default function AppConnectionScreen(): JSX.Element {
     back()
   }, [disconnectDevice, resetSetup, back])
 
-
   const renderHeaderCenterComponent = useCallback(() => {
-    console.log('🟢 renderHeaderCenterComponent called, currentStep:', currentStep, 'timestamp:', Date.now(), 'Platform:', Platform.OS)
     return <HeaderProgressDots totalSteps={3} currentStep={currentStep} />
   }, [currentStep])
 
@@ -180,6 +178,7 @@ export default function AppConnectionScreen(): JSX.Element {
         connectedDeviceId={connectedDeviceId}
         connectedDeviceName={connectedDeviceName}
         onStepChange={setCurrentStep}
+        keys={keys}
       />
     </ScrollScreen>
   )
