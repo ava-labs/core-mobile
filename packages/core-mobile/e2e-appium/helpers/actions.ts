@@ -242,7 +242,6 @@ async function verifyText(text: string, ele: ChainablePromiseElement) {
   )
 }
 
-// test/helpers/clipboardPaste.ts
 async function pasteText(inputElement: ChainablePromiseElement, text: string) {
   const encodedText = Buffer.from(text, 'utf-8').toString('base64')
   if (driver.isIOS) {
@@ -308,5 +307,6 @@ export const actions = {
   scrollTo,
   log,
   getAmount,
-  verifyText
+  verifyText,
+  tapXY
 }

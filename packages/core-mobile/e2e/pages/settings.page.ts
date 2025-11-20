@@ -496,8 +496,10 @@ class Settings {
     await commonElsPage.tapSave()
   }
 
-  async addAccount(accountNum = 2) {
-    const ele = by.id(`manage_accounts_list__Account ${accountNum}`)
+  async addAccount(accountNum = 2, walletName = 'Wallet 1') {
+    const ele = by.id(
+      `manage_accounts_list__${walletName}__Account ${accountNum}`
+    )
     while (!(await Actions.isVisible(ele))) {
       await this.tapAddWalletBtn()
       await Actions.tap(this.createNewAccountBtn)
