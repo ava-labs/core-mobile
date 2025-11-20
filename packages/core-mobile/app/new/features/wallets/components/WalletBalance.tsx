@@ -14,13 +14,12 @@ import ContentLoader, { Rect } from 'react-content-loader/native'
 import { Pressable } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { Wallet } from 'store/wallet/types'
 
 export const WalletBalance = ({
-  wallet,
+  // wallet,
   variant = 'spinner'
 }: {
-  wallet: Wallet
+  // wallet: Wallet
   variant?: 'spinner' | 'skeleton'
 }): JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)

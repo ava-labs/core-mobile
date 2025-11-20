@@ -174,7 +174,9 @@ const WalletCard = ({
             alignItems: 'center',
             paddingRight: showMoreButton ? 0 : 24
           }}>
-          <WalletBalance wallet={wallet} />
+          <WalletBalance
+          // wallet={wallet}
+          />
           {showMoreButton && (
             <DropdownMenu
               groups={[

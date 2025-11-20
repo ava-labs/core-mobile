@@ -1,5 +1,4 @@
 import {
-  ANIMATED,
   NavigationTitleHeader,
   Separator,
   SPRING_LINEAR_TRANSITION,
@@ -29,8 +28,7 @@ import {
 import Animated, {
   interpolate,
   useAnimatedStyle,
-  useSharedValue,
-  withTiming
+  useSharedValue
 } from 'react-native-reanimated'
 import {
   useSafeAreaFrame,
