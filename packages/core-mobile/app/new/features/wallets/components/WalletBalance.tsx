@@ -30,24 +30,21 @@ export const WalletBalance = ({
   const { formatCurrency } = useFormatCurrency()
 
   // TODO: get wallet balance
-  const walletBalance = 1000
-  // TODO: get wallet balance accurate
+  const walletBalance = 74235
   const isBalanceAccurate = true
-
-  const isLoadingBalance = useMemo(() => {
-    return false
-  }, [])
-
-  // TODO: implement refetch balance
+  const isLoadingBalance = false
   const refetchBalance = useCallback(() => {
     // dispatch(refetchBalanceForAccount(account.id))
   }, [])
 
   const balance = useMemo(() => {
     return walletBalance > 0
-      ? formatCurrency({ amount: walletBalance })
+      ? formatCurrency({
+          amount: walletBalance,
+          notation: walletBalance < 100000 ? undefined : 'compact'
+        })
       : formatCurrency({ amount: 0 }).replace(/[\d.,]+/g, UNKNOWN_AMOUNT)
-  }, [walletBalance, formatCurrency])
+  }, [formatCurrency, walletBalance])
 
   const renderMaskView = useCallback(() => {
     return (

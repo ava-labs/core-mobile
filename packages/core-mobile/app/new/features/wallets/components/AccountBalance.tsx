@@ -45,7 +45,10 @@ export const AccountBalance = ({
   const balance = useMemo(() => {
     return accountBalance === 0
       ? formatCurrency({ amount: 0 }).replace(/[\d.,]+/g, UNKNOWN_AMOUNT)
-      : formatCurrency({ amount: accountBalance })
+      : formatCurrency({
+          amount: accountBalance,
+          notation: accountBalance < 100000 ? undefined : 'compact'
+        })
   }, [accountBalance, formatCurrency])
 
   const renderMaskView = useCallback(() => {

@@ -148,7 +148,7 @@ export const BalanceHeader = ({
 
   return (
     <View onLayout={onLayout}>
-      <View sx={{ gap: 4 }}>
+      <View sx={{ paddingRight: 16, gap: 4 }}>
         {walletName && (
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <Icons.Custom.Wallet
@@ -168,7 +168,13 @@ export const BalanceHeader = ({
             </Text>
           </View>
         )}
-        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+        <View
+          sx={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            flex: 1,
+            gap: 4
+          }}>
           {accountName && (
             <Text
               testID={`${testID}__balance_header_account_name`}
