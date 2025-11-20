@@ -174,9 +174,14 @@ export const ListScreen = <T,>({
     (event: LayoutChangeEvent) => {
       const { height, x, y, width } = event.nativeEvent.layout
       contentHeaderHeight.value = height
-      setTargetLayout({ x, y, width, height: height / 2 })
+      setTargetLayout({
+        x,
+        y,
+        width,
+        height: height - titleHeight.value
+      })
     },
-    [contentHeaderHeight]
+    [contentHeaderHeight, titleHeight.value]
   )
 
   const onScrollEvent = useCallback(
@@ -250,15 +255,38 @@ export const ListScreen = <T,>({
     isModal
   ])
 
+  const animatedHeaderBlurStyle = useAnimatedStyle(() => {
+    return {
+      opacity: targetHiddenProgress.value
+    }
+  })
+
   const ListHeaderComponent = useMemo(() => {
     return (
       <Animated.View style={[animatedHeaderContainerStyle]}>
-        <BlurViewWithFallback
-          backgroundColor={backgroundColor}
+        <View
           style={{
             paddingTop: renderHeader ? headerHeight + 16 : headerHeight,
             paddingBottom: renderHeader ? 12 : 0
           }}>
+          <Animated.View
+            style={[
+              animatedHeaderBlurStyle,
+              {
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0
+              }
+            ]}>
+            <BlurViewWithFallback
+              backgroundColor={backgroundColor}
+              style={{
+                flex: 1
+              }}
+            />
+          </Animated.View>
           <View
             onLayout={handleContentHeaderLayout}
             style={{
@@ -293,7 +321,7 @@ export const ListScreen = <T,>({
               {renderHeader?.()}
             </View>
           )}
-        </BlurViewWithFallback>
+        </View>
         <Animated.View
           style={[
             animatedBorderStyle,
@@ -310,9 +338,10 @@ export const ListScreen = <T,>({
     )
   }, [
     animatedHeaderContainerStyle,
-    backgroundColor,
     renderHeader,
     headerHeight,
+    animatedHeaderBlurStyle,
+    backgroundColor,
     handleContentHeaderLayout,
     title,
     handleTitleLayout,
@@ -339,7 +368,7 @@ export const ListScreen = <T,>({
 
   const onScrollEndDrag = useCallback((): void => {
     'worklet'
-    if (scrollY.value > titleHeight.value + subtitleHeight.value) {
+    if (scrollY.value > titleHeight.value) {
       scrollViewRef.current?.scrollToOffset({
         offset:
           scrollY.value > contentHeaderHeight.value
@@ -351,12 +380,7 @@ export const ListScreen = <T,>({
         offset: 0
       })
     }
-  }, [
-    contentHeaderHeight.value,
-    scrollY.value,
-    subtitleHeight.value,
-    titleHeight.value
-  ])
+  }, [contentHeaderHeight.value, scrollY.value, titleHeight.value])
 
   return (
     <Animated.View

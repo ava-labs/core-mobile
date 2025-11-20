@@ -45,11 +45,11 @@ export const BlurViewWithFallback = ({
   const iosContainerStyle = useMemo(
     () => [
       {
-        // alpha('#afafd0', 0.1) is a color value found through experimentation
-        // to make the blur effect appear the same as $surfacePrimary(neutral-850) in dark mode.
         backgroundColor: backgroundColor
           ? alpha(backgroundColor, 0.1)
-          : colorScheme === 'dark'
+          : // alpha('#afafd0', 0.1) is a color value found through experimentation
+          // to make the blur effect appear the same as $surfacePrimary(neutral-850) in dark mode.
+          colorScheme === 'dark'
           ? alpha('#afafd0', 0.1)
           : undefined
       },

@@ -3,6 +3,7 @@ import {
   alpha,
   AnimatedBalance,
   Icons,
+  SxProp,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -17,9 +18,11 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 
 export const WalletBalance = ({
   // wallet,
+  balanceSx,
   variant = 'spinner'
 }: {
   // wallet: Wallet
+  balanceSx?: SxProp
   variant?: 'spinner' | 'skeleton'
 }): JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
@@ -96,6 +99,7 @@ export const WalletBalance = ({
           balance={balance}
           shouldMask={isPrivacyModeEnabled}
           balanceSx={{
+            ...balanceSx,
             lineHeight: 21,
             fontSize: 21,
             textAlign: 'right'
@@ -112,6 +116,7 @@ export const WalletBalance = ({
       balance={balance}
       shouldMask={isPrivacyModeEnabled}
       balanceSx={{
+        ...balanceSx,
         lineHeight: 21,
         fontSize: 21,
         textAlign: 'right'

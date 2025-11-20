@@ -401,7 +401,6 @@ export const WalletList = ({
     <ListScreen
       {...props}
       data={walletsDisplayData.filter(Boolean) as WalletDisplayData[]}
-      keyExtractor={item => item.id}
       backgroundColor={backgroundColor}
       renderHeader={renderHeader}
       renderHeaderRight={renderHeaderRight}

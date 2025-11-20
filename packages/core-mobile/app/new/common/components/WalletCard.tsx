@@ -86,16 +86,16 @@ const WalletCard = ({
     }
 
     return null
-  }, [])
+  }, [colors.$surfaceSecondary, colors.$textSecondary, searchText])
 
   return (
     <View
       style={[
         {
-          backgroundColor: colors.$surfaceSecondary,
+          backgroundColor: colors.$surfacePrimary,
           borderWidth: 1,
           borderColor: colors.$borderPrimary,
-          borderRadius: 12,
+          borderRadius: 16,
           overflow: 'hidden'
         },
         style
@@ -175,7 +175,10 @@ const WalletCard = ({
             paddingRight: showMoreButton ? 0 : 24
           }}>
           <WalletBalance
-          // wallet={wallet}
+            balanceSx={{
+              color: isActive ? colors.$textPrimary : colors.$textSecondary
+            }}
+            // wallet={wallet}
           />
           {showMoreButton && (
             <DropdownMenu
