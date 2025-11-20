@@ -1,5 +1,4 @@
 import {
-  ANIMATED,
   NavigationTitleHeader,
   Separator,
   SPRING_LINEAR_TRANSITION,
@@ -8,15 +7,10 @@ import {
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import React, {
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   FlatListProps,
+  LayoutChangeEvent,
   LayoutRectangle,
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -32,10 +26,10 @@ import {
   useKeyboardState
 } from 'react-native-keyboard-controller'
 import Animated, {
+  Extrapolation,
   interpolate,
   useAnimatedStyle,
-  useSharedValue,
-  withSpring
+  useSharedValue
 } from 'react-native-reanimated'
 import {
   useSafeAreaFrame,
@@ -56,13 +50,15 @@ import { ErrorState } from './ErrorState'
 
 // Used by all screens that display a list of items
 
-interface ListScreenProps<T>
+export interface ListScreenProps<T>
   extends Omit<
     FlatListProps<T>,
     'ListHeaderComponent' | 'ListFooterComponent'
   > {
   /** The title displayed in the screen header */
   title: string
+  /** Optional subtitle displayed below the title */
+  subtitle?: string
   /** Optional title to display in the navigation bar */
   navigationTitle?: string
   /** Array of data items to be rendered in the list */
@@ -81,6 +77,8 @@ interface ListScreenProps<T>
   renderHeaderRight?: () => React.ReactNode
   /** Optional function to render content when the list is empty */
   renderEmpty?: () => React.ReactNode
+  /** Optional background color for the header */
+  backgroundColor?: string
 }
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
@@ -88,41 +86,133 @@ const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 export const ListScreen = <T,>({
   data,
   title,
+  subtitle,
   navigationTitle,
   hasParent,
   isModal,
   hasTabBar,
   showNavigationHeaderTitle = true,
+  backgroundColor,
   renderEmpty,
   renderHeader,
   renderHeaderRight,
   ...rest
 }: ListScreenProps<T>): JSX.Element => {
   const insets = useSafeAreaInsets()
+  const headerHeight = useHeaderHeight()
+  const keyboard = useKeyboardState()
+  const frame = useSafeAreaFrame()
 
-  const [headerLayout, setHeaderLayout] = useState<
+  const [targetLayout, setTargetLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const headerRef = useRef<View>(null)
+  const scrollViewRef = useRef<FlatList>(null)
+
+  const titleHeight = useSharedValue<number>(0)
+  const subtitleHeight = useSharedValue<number>(0)
   const contentHeaderHeight = useSharedValue<number>(0)
-  const keyboard = useKeyboardState()
+  const renderHeaderHeight = useSharedValue<number>(0)
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
       header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
-      targetLayout: headerLayout,
+      targetLayout,
       shouldHeaderHaveGrabber: isModal,
+      hideHeaderBackground: true,
       hasSeparator: renderHeader ? false : true,
+      backgroundColor,
       hasParent,
       showNavigationHeaderTitle,
       renderHeaderRight
     }
   )
 
-  const animatedHeaderStyle = useAnimatedStyle(() => {
+  const onScrollEvent = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      onScroll(event)
+    },
+    [onScroll]
+  )
+
+  const onScrollEndDrag = useCallback((): void => {
+    'worklet'
+    if (scrollY.value > titleHeight.value) {
+      scrollViewRef.current?.scrollToOffset({
+        offset:
+          scrollY.value > contentHeaderHeight.value
+            ? scrollY.value
+            : contentHeaderHeight.value
+      })
+    } else {
+      scrollViewRef.current?.scrollToOffset({
+        offset: 0
+      })
+    }
+  }, [contentHeaderHeight.value, scrollY.value, titleHeight.value])
+
+  const handleTitleLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const { height } = event.nativeEvent.layout
+      titleHeight.value = height
+    },
+    [titleHeight]
+  )
+
+  const handleSubtitleLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const { height } = event.nativeEvent.layout
+      subtitleHeight.value = height
+    },
+    [subtitleHeight]
+  )
+
+  const handleRenderHeaderLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const { height } = event.nativeEvent.layout
+      renderHeaderHeight.value = height
+    },
+    [renderHeaderHeight]
+  )
+
+  const handleContentHeaderLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const { height, x, y, width } = event.nativeEvent.layout
+      contentHeaderHeight.value = height
+      setTargetLayout({
+        x,
+        y,
+        width,
+        height: height - titleHeight.value
+      })
+    },
+    [contentHeaderHeight, titleHeight.value]
+  )
+
+  const animatedHeaderContainerStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      scrollY.value,
+      [0, contentHeaderHeight.value],
+      [0, -contentHeaderHeight.value - (isModal ? 16 : 24)],
+      Extrapolation.CLAMP
+    )
+
+    return {
+      transform: [
+        {
+          translateY
+        }
+      ]
+    }
+  })
+
+  const animatedTitleStyle = useAnimatedStyle(() => {
     const scale = interpolate(
       scrollY.value,
-      [-contentHeaderHeight.value, 0, contentHeaderHeight.value],
+      [
+        -titleHeight.value - subtitleHeight.value,
+        0,
+        titleHeight.value + subtitleHeight.value
+      ],
       [0.94, 1, 0.94]
     )
     return {
@@ -131,123 +221,29 @@ export const ListScreen = <T,>({
     }
   })
 
-  useLayoutEffect(() => {
-    if (headerRef.current) {
-      // eslint-disable-next-line max-params
-      headerRef.current.measure((x, y, w, h) => {
-        contentHeaderHeight.value = h
-        setHeaderLayout({ x, y, width: w, height: h / 2 })
-      })
-    }
-  }, [contentHeaderHeight])
-
-  const onScrollEvent = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      onScroll(event)
-    },
-    [onScroll]
-  )
-  const headerHeight = useHeaderHeight()
-
-  const animatedHeaderContainerStyle = useAnimatedStyle(() => {
-    const translateY = interpolate(
-      scrollY.value,
-      [0, contentHeaderHeight.value],
-      [0, -contentHeaderHeight.value - 8],
-      'clamp'
-    )
-
+  const animatedSubtitleStyle = useAnimatedStyle(() => {
     return {
-      transform: [
-        {
-          translateY: withSpring(translateY, {
-            ...ANIMATED.SPRING_CONFIG,
-            stiffness: 100
-          })
-        }
-      ]
+      opacity: 1 - targetHiddenProgress.value
+    }
+  })
+
+  const animatedHeaderBlurStyle = useAnimatedStyle(() => {
+    return {
+      opacity: targetHiddenProgress.value
     }
   })
 
   const animatedBorderStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
+    // On iOS, we need to animate the opacity of the border
+    // because of the blur tint effect that changes the backgroundColor
+    const opacity =
+      Platform.OS === 'ios'
+        ? interpolate(scrollY.value, [0, headerHeight], [0, 1])
+        : 1
     return {
       opacity
     }
   })
-
-  const ListHeaderComponent = useMemo(() => {
-    return (
-      <Animated.View style={[animatedHeaderContainerStyle, { gap: 12 }]}>
-        <BlurViewWithFallback
-          style={{
-            paddingTop: renderHeader ? 16 : 0
-          }}>
-          {title ? (
-            <Animated.View
-              style={[
-                animatedHeaderStyle,
-                {
-                  paddingTop: headerHeight,
-                  paddingHorizontal: 16
-                }
-              ]}>
-              <View
-                ref={headerRef}
-                style={{
-                  paddingBottom: 12
-                }}>
-                <Text variant="heading2">{title}</Text>
-              </View>
-            </Animated.View>
-          ) : null}
-
-          <View
-            style={{
-              paddingBottom: renderHeader ? 12 : 0,
-              paddingHorizontal: 16
-            }}>
-            {renderHeader?.()}
-          </View>
-          <Animated.View
-            style={[
-              animatedBorderStyle,
-              {
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0
-              }
-            ]}>
-            <Separator />
-          </Animated.View>
-        </BlurViewWithFallback>
-      </Animated.View>
-    )
-  }, [
-    animatedBorderStyle,
-    animatedHeaderContainerStyle,
-    animatedHeaderStyle,
-    headerRef,
-    headerHeight,
-    renderHeader,
-    title
-  ])
-
-  const ListEmptyComponent = useMemo(() => {
-    if (renderEmpty) {
-      return <>{renderEmpty()}</>
-    }
-    return (
-      <ErrorState
-        sx={{ flex: 1 }}
-        title="No results"
-        description="Try a different search"
-      />
-    )
-  }, [renderEmpty])
-
-  const frame = useSafeAreaFrame()
 
   const contentContainerStyle = useMemo(() => {
     const paddingBottom = keyboard.isVisible
@@ -265,11 +261,12 @@ export const ListScreen = <T,>({
       {
         paddingBottom,
         minHeight:
-          frame.height -
-          (headerLayout?.height ?? 0) +
+          frame.height +
+          (contentHeaderHeight?.value ?? 0) -
+          (renderHeaderHeight?.value ?? 0) +
           // Android formsheet in native-stack has a default top padding of insets.top
           // so we need to add this to adjust the height of the list
-          (isModal && Platform.OS === 'android' ? insets.top - 16 : 0)
+          (isModal ? (Platform.OS === 'android' ? insets.top + 8 : -24) : 16)
       }
     ] as StyleProp<ViewStyle>[]
   }, [
@@ -280,9 +277,115 @@ export const ListScreen = <T,>({
     rest?.contentContainerStyle,
     data.length,
     frame.height,
-    headerLayout?.height,
+    contentHeaderHeight?.value,
+    renderHeaderHeight?.value,
     isModal
   ])
+
+  const ListHeaderComponent = useMemo(() => {
+    return (
+      <Animated.View style={[animatedHeaderContainerStyle]}>
+        <View
+          style={{
+            paddingTop: renderHeader ? headerHeight + 16 : headerHeight,
+            paddingBottom: renderHeader ? 12 : 0
+          }}>
+          <Animated.View
+            style={[
+              animatedHeaderBlurStyle,
+              {
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0
+              }
+            ]}>
+            <BlurViewWithFallback
+              backgroundColor={backgroundColor}
+              style={{
+                flex: 1
+              }}
+            />
+          </Animated.View>
+          <View
+            onLayout={handleContentHeaderLayout}
+            style={{
+              gap: 12,
+              paddingHorizontal: 16,
+              paddingBottom: 12
+            }}>
+            {title ? (
+              <Animated.View
+                onLayout={handleTitleLayout}
+                style={animatedTitleStyle}>
+                <Text variant="heading2">{title}</Text>
+              </Animated.View>
+            ) : null}
+
+            {subtitle ? (
+              <Animated.View
+                onLayout={handleSubtitleLayout}
+                style={[animatedSubtitleStyle]}>
+                <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
+                  {subtitle}
+                </Text>
+              </Animated.View>
+            ) : null}
+          </View>
+          {renderHeader && (
+            <View
+              onLayout={handleRenderHeaderLayout}
+              style={{
+                paddingHorizontal: 16
+              }}>
+              {renderHeader?.()}
+            </View>
+          )}
+        </View>
+        <Animated.View
+          style={[
+            animatedBorderStyle,
+            {
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0
+            }
+          ]}>
+          <Separator />
+        </Animated.View>
+      </Animated.View>
+    )
+  }, [
+    animatedHeaderContainerStyle,
+    renderHeader,
+    headerHeight,
+    animatedHeaderBlurStyle,
+    backgroundColor,
+    handleContentHeaderLayout,
+    title,
+    handleTitleLayout,
+    animatedTitleStyle,
+    subtitle,
+    handleSubtitleLayout,
+    animatedSubtitleStyle,
+    handleRenderHeaderLayout,
+    animatedBorderStyle
+  ])
+
+  const ListEmptyComponent = useMemo(() => {
+    if (renderEmpty) {
+      return <>{renderEmpty()}</>
+    }
+    return (
+      <ErrorState
+        sx={{ flex: 1 }}
+        title="No results"
+        description="Try a different search"
+      />
+    )
+  }, [renderEmpty])
 
   return (
     <Animated.View
@@ -292,8 +395,10 @@ export const ListScreen = <T,>({
       {/* @ts-expect-error */}
       <AnimatedFlatList
         data={data}
+        ref={scrollViewRef}
         renderScrollComponent={RenderScrollComponent}
         onScroll={onScrollEvent}
+        onScrollEndDrag={onScrollEndDrag}
         keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -304,6 +409,12 @@ export const ListScreen = <T,>({
         contentContainerStyle={contentContainerStyle}
         updateCellsBatchingPeriod={50}
         {...rest}
+        style={[
+          rest.style,
+          {
+            backgroundColor: backgroundColor ?? 'transparent'
+          }
+        ]}
         ListHeaderComponent={ListHeaderComponent}
         ListEmptyComponent={ListEmptyComponent}
       />

@@ -53,6 +53,7 @@ export const SimpleTextInput = ({
           fontFamily: 'Inter-Regular',
           height: 44,
           fontSize: 16,
+          lineHeight: 20,
           color: colors.$textPrimary
         }}
         value={value}

@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
-import { LayoutChangeEvent } from 'react-native'
+import { LayoutChangeEvent, Pressable } from 'react-native'
+import { useTheme } from '../../hooks'
 import { Icons } from '../../theme/tokens/Icons'
-import { colors } from '../../theme/tokens/colors'
 import { AnimatedBalance } from '../AnimatedBalance/AnimatedBalance'
 import { LoadingContent } from '../LoadingContent/LoadingContent'
 import { PriceChangeIndicator } from '../PriceChangeIndicator/PriceChangeIndicator'
@@ -12,6 +12,7 @@ import { PrivacyModeAlert } from './PrivacyModeAlert'
 
 export const BalanceHeader = ({
   accountName,
+  walletName,
   formattedBalance,
   currency,
   errorMessage,
@@ -22,9 +23,11 @@ export const BalanceHeader = ({
   isPrivacyModeEnabled = false,
   isDeveloperModeEnabled = false,
   renderMaskView,
-  testID
+  testID,
+  onErrorPress
 }: {
   accountName?: string
+  walletName?: string
   formattedBalance: string
   currency: string
   errorMessage?: string
@@ -35,8 +38,12 @@ export const BalanceHeader = ({
   isPrivacyModeEnabled?: boolean
   isDeveloperModeEnabled?: boolean
   testID?: string
+  onErrorPress?: () => void
   renderMaskView?: () => React.JSX.Element
 }): React.JSX.Element => {
+  const {
+    theme: { colors }
+  } = useTheme()
   const renderPriceChangeIndicator = useCallback((): React.JSX.Element => {
     if (isDeveloperModeEnabled) {
       return (
@@ -59,16 +66,18 @@ export const BalanceHeader = ({
     }
     if (errorMessage) {
       return (
-        <View sx={{ gap: 4, alignItems: 'center', flexDirection: 'row' }}>
+        <Pressable
+          onPress={onErrorPress}
+          style={{ gap: 4, alignItems: 'center', flexDirection: 'row' }}>
           <Icons.Alert.Error
             width={16}
             height={16}
-            color={colors.$accentDanger}
+            color={colors.$textDanger}
           />
-          <Text variant="buttonMedium" sx={{ color: colors.$accentDanger }}>
+          <Text variant="buttonMedium" sx={{ color: colors.$textDanger }}>
             {errorMessage}
           </Text>
-        </View>
+        </Pressable>
       )
     }
 
@@ -84,7 +93,14 @@ export const BalanceHeader = ({
         animated={true}
       />
     )
-  }, [errorMessage, isDeveloperModeEnabled, isPrivacyModeEnabled, priceChange])
+  }, [
+    colors.$textDanger,
+    errorMessage,
+    isDeveloperModeEnabled,
+    isPrivacyModeEnabled,
+    onErrorPress,
+    priceChange
+  ])
 
   const renderBalance = useCallback((): React.JSX.Element => {
     if (isLoading) {
@@ -132,15 +148,48 @@ export const BalanceHeader = ({
 
   return (
     <View onLayout={onLayout}>
-      {accountName && (
-        <Text
-          testID={`${testID}__balance_header_account_name`}
-          variant="heading2"
-          sx={{ color: '$textSecondary', lineHeight: 38 }}
-          numberOfLines={1}>
-          {accountName}
-        </Text>
-      )}
+      <View sx={{ paddingRight: 16, gap: 4 }}>
+        {walletName && (
+          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Icons.Custom.Wallet
+              color={colors.$textSecondary}
+              width={16}
+              height={16}
+            />
+            <Text
+              testID={`${testID}__balance_header_wallet_name`}
+              variant="buttonMedium"
+              sx={{
+                lineHeight: 16,
+                color: colors.$textSecondary
+              }}
+              numberOfLines={1}>
+              {walletName}
+            </Text>
+          </View>
+        )}
+        <View
+          sx={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            flex: 1,
+            gap: 4
+          }}>
+          {accountName && (
+            <Text
+              testID={`${testID}__balance_header_account_name`}
+              variant="heading2"
+              sx={{ color: '$textSecondary', lineHeight: 38 }}
+              numberOfLines={1}>
+              {accountName}
+            </Text>
+          )}
+          {walletName && (
+            <Icons.Navigation.ExpandAll color={colors.$textSecondary} />
+          )}
+        </View>
+      </View>
+
       {renderBalance()}
     </View>
   )
