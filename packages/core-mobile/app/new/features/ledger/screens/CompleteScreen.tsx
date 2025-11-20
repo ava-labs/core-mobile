@@ -18,31 +18,51 @@ export default function CompleteScreen(): JSX.Element {
   }
 
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 24,
-        backgroundColor: colors.$surfacePrimary
-      }}>
-      <Text
-        variant="heading4"
-        style={{ textAlign: 'center', marginBottom: 16 }}>
-        🎉 Wallet created successfully!
-      </Text>
-      <Text
-        variant="body1"
+    <ScrollScreen
+      hasParent={true}
+      isModal={true}
+      scrollEnabled={false}
+      contentContainerStyle={{ flex: 1 }}>
+      <View
         style={{
-          textAlign: 'center',
-          color: colors.$textSecondary,
-          marginBottom: 32
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingHorizontal: 24
         }}>
-        Your Ledger wallet has been set up and is ready to use.
-      </Text>
-      <Button type="primary" size="large" onPress={handleComplete}>
-        Continue to wallet
-      </Button>
-    </View>
+        <Icons.Action.CheckCircleOutline
+          color={colors.$textSuccess}
+          width={75}
+          height={75}
+        />
+        <Text
+          variant="heading3"
+          style={{
+            textAlign: 'center',
+            marginTop: 24,
+            marginBottom: 18,
+            fontWeight: '600'
+          }}>
+          Ledger wallet{'\n'}successfully added
+        </Text>
+        <Text
+          variant="body1"
+          style={{
+            textAlign: 'center',
+            color: colors.$textSecondary,
+            lineHeight: 20,
+            marginBottom: 80
+          }}>
+          You can now start buying, swapping, sending, receiving crypto and
+          collectibles via the app with your Ledger wallet
+        </Text>
+      </View>
+
+      <View style={{ paddingHorizontal: 24, paddingBottom: 32 }}>
+        <Button type="primary" size="large" onPress={handleComplete}>
+          Done
+        </Button>
+      </View>
+    </ScrollScreen>
   )
 }
