@@ -97,3 +97,7 @@ expo-env.d.ts
 
 # Branch
 /ios/config.xcconfig
+
+# generated api clients
+app/utils/network/generated/glacierApi.client.ts
+app/utils/network/generated/tokenAggregatorApi.client.ts

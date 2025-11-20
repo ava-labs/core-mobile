@@ -17,7 +17,7 @@ export const useWatchlistListener = (): void => {
         effect: async () => {
           await queryClient.invalidateQueries({
             queryKey: [
-              ReactQueryKeys.WATCHLIST_TOKENS_AND_CHARTS,
+              ReactQueryKeys.WATCHLIST_TOP_TOKENS,
               ReactQueryKeys.WATCHLIST_PRICES
             ]
           })
