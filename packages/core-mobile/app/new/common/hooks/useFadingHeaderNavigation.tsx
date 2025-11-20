@@ -29,14 +29,14 @@ import Grabber from 'common/components/Grabber'
 export const useFadingHeaderNavigation = ({
   header,
   targetLayout,
+  backgroundColor,
   shouldHeaderHaveGrabber = false,
   hideHeaderBackground = false,
   hasSeparator = true,
   shouldDelayBlurOniOS = false,
   hasParent = false,
   renderHeaderRight,
-  showNavigationHeaderTitle = true,
-  headerBackgroundColor
+  showNavigationHeaderTitle = true
 }: {
   header?: React.ReactNode
   targetLayout?: LayoutRectangle
@@ -47,7 +47,7 @@ export const useFadingHeaderNavigation = ({
   hasParent?: boolean
   renderHeaderRight?: () => React.ReactNode
   showNavigationHeaderTitle?: boolean
-  headerBackgroundColor?: string
+  backgroundColor?: string
 }): {
   onScroll: (
     event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
@@ -137,7 +137,7 @@ export const useFadingHeaderNavigation = ({
           </Pressable>
         ) : (
           <BlurredBackgroundView
-            backgroundColor={headerBackgroundColor}
+            backgroundColor={backgroundColor}
             shouldDelayBlurOniOS={shouldDelayBlurOniOS}
             hasGrabber={shouldHeaderHaveGrabber}
             separator={

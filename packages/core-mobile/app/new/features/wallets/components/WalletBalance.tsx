@@ -2,10 +2,7 @@ import {
   ActivityIndicator,
   alpha,
   AnimatedBalance,
-  Icons,
-  Pressable,
-  useTheme,
-  View
+  useTheme
 } from '@avalabs/k2-alpine'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
@@ -34,6 +31,7 @@ export const WalletBalance = ({
   const walletBalance = 1000
 
   const isLoadingBalance = useMemo(() => {
+    return false
     return walletBalances?.[wallet.id] === undefined
   }, [walletBalances, wallet.id])
 
@@ -78,28 +76,16 @@ export const WalletBalance = ({
   }
 
   return (
-    <View
-      sx={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        flexShrink: 1,
-        gap: 6
-      }}>
-      <Pressable hitSlop={16} onPress={refetchBalance}>
-        <Icons.Alert.Error color={colors.$textDanger} width={14} height={14} />
-      </Pressable>
-      <AnimatedBalance
-        variant="body1"
-        balance={balance}
-        shouldMask={isPrivacyModeEnabled}
-        balanceSx={{
-          color: alpha(colors.$textPrimary, 0.6),
-          lineHeight: 16,
-          textAlign: 'right'
-        }}
-        renderMaskView={renderMaskView}
-      />
-    </View>
+    <AnimatedBalance
+      variant="heading4"
+      balance={balance}
+      shouldMask={isPrivacyModeEnabled}
+      balanceSx={{
+        lineHeight: 21,
+        fontSize: 21,
+        textAlign: 'right'
+      }}
+      renderMaskView={renderMaskView}
+    />
   )
 }

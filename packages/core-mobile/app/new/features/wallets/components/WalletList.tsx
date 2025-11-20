@@ -11,27 +11,26 @@ import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen, ListScreenProps } from 'common/components/ListScreen'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import WalletCard from 'common/components/WalletCard'
+import { useManageWallet } from 'common/hooks/useManageWallet'
 import { WalletDisplayData } from 'common/types'
-import { showSnackbar } from 'common/utils/toast'
 import { useRouter } from 'expo-router'
 import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalanceAccurate'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
 import {
   Account,
-  addAccount,
   selectAccounts,
   selectActiveAccount,
   setActiveAccount
 } from 'store/account'
-import { selectActiveWalletId, selectWallets } from 'store/wallet/slice'
+import { selectWallets } from 'store/wallet/slice'
 import { Wallet } from 'store/wallet/types'
-import Logger from 'utils/Logger'
-
-const IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID = 'imported-accounts-wallet-id'
-const IMPORTED_ACCOUNTS_VIRTUAL_WALLET_NAME = 'Imported'
+import {
+  IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID,
+  IMPORTED_ACCOUNTS_VIRTUAL_WALLET_NAME
+} from '../consts'
+import { getIsActiveWallet } from '../utils'
 
 export const WalletList = ({
   hasSearch,
@@ -54,19 +53,26 @@ export const WalletList = ({
   } = useTheme()
   const dispatch = useDispatch()
   const { navigate, dismiss } = useRouter()
+  const { handleAddAccount: handleAddAccountToWallet } = useManageWallet()
+
   const [searchText, setSearchText] = useState('')
+  const [expandedWallets, setExpandedWallets] = useState<
+    Record<string, boolean>
+  >({})
+
   const accountCollection = useSelector(selectAccounts)
   const allWallets = useSelector(selectWallets)
-  const activeWalletId = useSelector(selectActiveWalletId)
   const activeAccount = useSelector(selectActiveAccount)
   const balanceAccurate = useIsAccountBalanceAccurate(activeAccount)
+
   const errorMessage = balanceAccurate
     ? undefined
     : 'Unable to load all balances'
 
-  const [expandedWallets, setExpandedWallets] = useState<
-    Record<string, boolean>
-  >({})
+  const allAccountsArray: Account[] = useMemo(
+    () => Object.values(accountCollection),
+    [accountCollection]
+  )
 
   useMemo(() => {
     const initialExpansionState: Record<string, boolean> = {}
@@ -77,19 +83,11 @@ export const WalletList = ({
     if (walletIds.length > 0) {
       // Expand only the active wallet by default
       walletIds.forEach(id => {
-        initialExpansionState[id] =
-          id === activeWalletId ||
-          (id === IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID &&
-            activeAccount?.type === CoreAccountType.IMPORTED)
+        initialExpansionState[id] = getIsActiveWallet(id, activeAccount)
       })
     }
     setExpandedWallets(initialExpansionState)
-  }, [allWallets, activeWalletId, activeAccount?.type])
-
-  const allAccountsArray: Account[] = useMemo(
-    () => Object.values(accountCollection),
-    [accountCollection]
-  )
+  }, [allWallets, activeAccount])
 
   const gotoAccountDetails = useCallback(
     (accountId: string): void => {
@@ -266,34 +264,15 @@ export const WalletList = ({
     navigate('/accountSettings/importWallet')
   }, [navigate])
 
-  const [isAddingAccount, setIsAddingAccount] = useState(false)
-
   const addAccountToWallet = useCallback(
-    async (wallet: Wallet): Promise<void> => {
-      if (isAddingAccount) return
-
-      try {
-        // TODO: Add tracking for adding an account to a wallet
-        // AnalyticsService.capture('AccountSelectorAddAccount', {
-        //   accountNumber: Object.keys(accounts).length + 1
-        // })
-
-        setIsAddingAccount(true)
-        await dispatch(addAccount(wallet.id)).unwrap()
-
-        AnalyticsService.capture('CreatedANewAccountSuccessfully', {
-          walletType: wallet.type
-        })
-
-        showSnackbar('Account added successfully')
-      } catch (error) {
-        Logger.error('Unable to add account', error)
-        showSnackbar('Unable to add account')
-      } finally {
-        setIsAddingAccount(false)
-      }
+    (wallet: Wallet) => {
+      // TODO: Add tracking for adding an account to a wallet
+      // AnalyticsService.capture('AccountSelectorAddAccount', {
+      //   accountNumber: Object.keys(accounts).length + 1
+      // })
+      handleAddAccountToWallet(wallet)
     },
-    [isAddingAccount, dispatch]
+    [handleAddAccountToWallet]
   )
 
   const renderHeaderRight = useCallback(() => {
@@ -346,6 +325,7 @@ export const WalletList = ({
         return null
       }
       const isExpanded = expandedWallets[item.id] ?? false
+      const isActive = getIsActiveWallet(item.id, activeAccount)
 
       if (searchText && item.accounts.length === 0) {
         return null
@@ -354,6 +334,7 @@ export const WalletList = ({
       return (
         <WalletCard
           wallet={item}
+          isActive={isActive}
           isExpanded={isExpanded}
           searchText={searchText}
           renderBottom={() =>
@@ -385,6 +366,7 @@ export const WalletList = ({
       )
     },
     [
+      activeAccount,
       addAccountToWallet,
       colors.$textPrimary,
       expandedWallets,
@@ -419,12 +401,12 @@ export const WalletList = ({
   return (
     <ListScreen
       {...props}
+      data={walletsDisplayData.filter(Boolean) as WalletDisplayData[]}
+      keyExtractor={item => item.id}
       backgroundColor={backgroundColor}
       renderHeader={renderHeader}
       renderHeaderRight={renderHeaderRight}
       renderEmpty={renderEmpty}
-      data={walletsDisplayData.filter(Boolean) as WalletDisplayData[]}
-      keyExtractor={item => item.id}
       renderItem={renderItem}
     />
   )

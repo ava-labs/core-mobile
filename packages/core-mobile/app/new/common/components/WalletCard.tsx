@@ -11,31 +11,29 @@ import { AccountListItem } from 'features/wallets/components/AccountListItem'
 import { WalletBalance } from 'features/wallets/components/WalletBalance'
 import React, { useCallback } from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
-import { useSelector } from 'react-redux'
-import { selectActiveWalletId } from 'store/wallet/slice'
 import { DropdownMenu } from './DropdownMenu'
 
 const HEADER_HEIGHT = 64
 
 const WalletCard = ({
   wallet,
+  isActive,
   isExpanded,
   searchText,
-  onToggleExpansion,
   showMoreButton = true,
   style,
-  renderBottom
+  renderBottom,
+  onToggleExpansion
 }: {
   wallet: WalletDisplayData
+  isActive: boolean
   isExpanded: boolean
   searchText: string
-  onToggleExpansion: () => void
   showMoreButton?: boolean
   style?: StyleProp<ViewStyle>
   renderBottom?: () => React.JSX.Element
+  onToggleExpansion: () => void
 }): React.JSX.Element => {
-  const activeWalletId = useSelector(selectActiveWalletId)
-
   const {
     theme: { colors }
   } = useTheme()
@@ -90,7 +88,7 @@ const WalletCard = ({
             sx={{
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 4,
+              gap: 2,
               paddingLeft: 5
             }}>
             {renderExpansionIcon()}
@@ -121,10 +119,12 @@ const WalletCard = ({
                   lineHeight: 12,
                   color: colors.$textSecondary
                 }}>
-                {wallet.accounts.length} accounts
+                {wallet.accounts.length > 1
+                  ? `${wallet.accounts.length} accounts`
+                  : '1 account'}
               </Text>
             </View>
-            {activeWalletId === wallet.id && (
+            {isActive && (
               <View
                 style={{
                   width: 6,
@@ -137,7 +137,12 @@ const WalletCard = ({
           </View>
         </View>
 
-        <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View
+          sx={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingRight: showMoreButton ? 0 : 24
+          }}>
           <WalletBalance wallet={wallet} />
           {showMoreButton && (
             <DropdownMenu

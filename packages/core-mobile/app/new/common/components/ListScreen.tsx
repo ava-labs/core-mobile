@@ -119,7 +119,7 @@ export const ListScreen = <T,>({
       targetLayout: titleLayout,
       shouldHeaderHaveGrabber: isModal,
       hasSeparator: renderHeader ? false : true,
-      headerBackgroundColor: backgroundColor,
+      backgroundColor,
       hasParent,
       showNavigationHeaderTitle,
       renderHeaderRight

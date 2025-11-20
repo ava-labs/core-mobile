@@ -47,7 +47,7 @@ export const AccountListItem = ({
             : 'transparent'
         }}>
         <View
-          sx={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 14 }}>
+          sx={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 }}>
           <View sx={{ height: 24, width: 24 }}>
             {isActive && (
               <Icons.Custom.CheckSmall
@@ -60,10 +60,9 @@ export const AccountListItem = ({
           <View
             sx={{
               flex: 1,
-
               flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'space-between'
+              gap: 16
             }}>
             <View
               sx={{
@@ -71,29 +70,23 @@ export const AccountListItem = ({
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: 12
+                gap: 12,
+                marginVertical: 14
               }}>
-              <View
+              <Text
+                testID={testID}
+                variant="body1"
+                numberOfLines={1}
                 sx={{
-                  marginVertical: 14,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 8
+                  color: theme.colors.$textPrimary,
+                  fontSize: 15,
+                  fontFamily: 'Inter-Medium',
+                  lineHeight: 20
                 }}>
-                <Text
-                  testID={testID}
-                  variant="body1"
-                  numberOfLines={2}
-                  sx={{
-                    color: theme.colors.$textPrimary,
-                    fontSize: 15,
-                    fontFamily: 'Inter-Medium',
-                    lineHeight: 16
-                  }}>
-                  {account.name}
-                </Text>
-              </View>
+                {account.name}
+              </Text>
             </View>
+
             <View
               sx={{
                 flexDirection: 'row',
@@ -110,7 +103,7 @@ export const AccountListItem = ({
               <TouchableOpacity hitSlop={16} onPress={onPressDetails}>
                 <Icons.Alert.AlertCircle
                   testID={`account_detail_icon__${wallet.name}_${account.name}`}
-                  color={theme.colors.$textSecondary}
+                  color={theme.colors.$textPrimary}
                   width={18}
                   height={18}
                 />

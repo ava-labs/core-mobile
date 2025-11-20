@@ -293,12 +293,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
               },
               animatedHeaderStyle
             ]}>
-            <Pressable
-              hitSlop={10}
-              onPress={openWalletsModal}
-              style={{
-                justifyContent: 'flex-start'
-              }}>
+            <Pressable hitSlop={10} onPress={openWalletsModal}>
               <BalanceHeader
                 testID="portfolio"
                 walletName={walletsCount > 1 ? activeWallet?.name : undefined}
