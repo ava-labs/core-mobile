@@ -99,6 +99,10 @@ export const ListScreen = <T,>({
   ...rest
 }: ListScreenProps<T>): JSX.Element => {
   const insets = useSafeAreaInsets()
+  const headerHeight = useHeaderHeight()
+  const keyboard = useKeyboardState()
+  const frame = useSafeAreaFrame()
+
   const [targetLayout, setTargetLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -108,7 +112,6 @@ export const ListScreen = <T,>({
   const subtitleHeight = useSharedValue<number>(0)
   const contentHeaderHeight = useSharedValue<number>(0)
   const renderHeaderHeight = useSharedValue<number>(0)
-  const keyboard = useKeyboardState()
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
@@ -124,27 +127,28 @@ export const ListScreen = <T,>({
     }
   )
 
-  const animatedHeaderStyle = useAnimatedStyle(() => {
-    const scale = interpolate(
-      scrollY.value,
-      [
-        -titleHeight.value - subtitleHeight.value,
-        0,
-        titleHeight.value + subtitleHeight.value
-      ],
-      [0.94, 1, 0.94]
-    )
-    return {
-      opacity: 1 - targetHiddenProgress.value,
-      transform: [{ scale: data.length === 0 ? 1 : scale }]
-    }
-  })
+  const onScrollEvent = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      onScroll(event)
+    },
+    [onScroll]
+  )
 
-  const animatedSubtitleStyle = useAnimatedStyle(() => {
-    return {
-      opacity: 1 - targetHiddenProgress.value
+  const onScrollEndDrag = useCallback((): void => {
+    'worklet'
+    if (scrollY.value > titleHeight.value) {
+      scrollViewRef.current?.scrollToOffset({
+        offset:
+          scrollY.value > contentHeaderHeight.value
+            ? scrollY.value
+            : contentHeaderHeight.value
+      })
+    } else {
+      scrollViewRef.current?.scrollToOffset({
+        offset: 0
+      })
     }
-  })
+  }, [contentHeaderHeight.value, scrollY.value, titleHeight.value])
 
   const handleTitleLayout = useCallback(
     (event: LayoutChangeEvent) => {
@@ -184,14 +188,6 @@ export const ListScreen = <T,>({
     [contentHeaderHeight, titleHeight.value]
   )
 
-  const onScrollEvent = useCallback(
-    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      onScroll(event)
-    },
-    [onScroll]
-  )
-  const headerHeight = useHeaderHeight()
-
   const animatedHeaderContainerStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
       scrollY.value,
@@ -209,14 +205,45 @@ export const ListScreen = <T,>({
     }
   })
 
+  const animatedTitleStyle = useAnimatedStyle(() => {
+    const scale = interpolate(
+      scrollY.value,
+      [
+        -titleHeight.value - subtitleHeight.value,
+        0,
+        titleHeight.value + subtitleHeight.value
+      ],
+      [0.94, 1, 0.94]
+    )
+    return {
+      opacity: 1 - targetHiddenProgress.value,
+      transform: [{ scale: data.length === 0 ? 1 : scale }]
+    }
+  })
+
+  const animatedSubtitleStyle = useAnimatedStyle(() => {
+    return {
+      opacity: 1 - targetHiddenProgress.value
+    }
+  })
+
+  const animatedHeaderBlurStyle = useAnimatedStyle(() => {
+    return {
+      opacity: targetHiddenProgress.value
+    }
+  })
+
   const animatedBorderStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
+    // On iOS, we need to animate the opacity of the border
+    // because of the blur tint effect that changes the backgroundColor
+    const opacity =
+      Platform.OS === 'ios'
+        ? interpolate(scrollY.value, [0, headerHeight], [0, 1])
+        : 1
     return {
       opacity
     }
   })
-
-  const frame = useSafeAreaFrame()
 
   const contentContainerStyle = useMemo(() => {
     const paddingBottom = keyboard.isVisible
@@ -255,12 +282,6 @@ export const ListScreen = <T,>({
     isModal
   ])
 
-  const animatedHeaderBlurStyle = useAnimatedStyle(() => {
-    return {
-      opacity: targetHiddenProgress.value
-    }
-  })
-
   const ListHeaderComponent = useMemo(() => {
     return (
       <Animated.View style={[animatedHeaderContainerStyle]}>
@@ -297,7 +318,7 @@ export const ListScreen = <T,>({
             {title ? (
               <Animated.View
                 onLayout={handleTitleLayout}
-                style={[animatedHeaderStyle]}>
+                style={animatedTitleStyle}>
                 <Text variant="heading2">{title}</Text>
               </Animated.View>
             ) : null}
@@ -345,7 +366,7 @@ export const ListScreen = <T,>({
     handleContentHeaderLayout,
     title,
     handleTitleLayout,
-    animatedHeaderStyle,
+    animatedTitleStyle,
     subtitle,
     handleSubtitleLayout,
     animatedSubtitleStyle,
@@ -365,22 +386,6 @@ export const ListScreen = <T,>({
       />
     )
   }, [renderEmpty])
-
-  const onScrollEndDrag = useCallback((): void => {
-    'worklet'
-    if (scrollY.value > titleHeight.value) {
-      scrollViewRef.current?.scrollToOffset({
-        offset:
-          scrollY.value > contentHeaderHeight.value
-            ? scrollY.value
-            : contentHeaderHeight.value
-      })
-    } else {
-      scrollViewRef.current?.scrollToOffset({
-        offset: 0
-      })
-    }
-  }, [contentHeaderHeight.value, scrollY.value, titleHeight.value])
 
   return (
     <Animated.View
