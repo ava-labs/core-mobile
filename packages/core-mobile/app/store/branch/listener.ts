@@ -72,12 +72,7 @@ export const addBranchListeners = (startListening: AppStartListening): void => {
     if (nonBranchUrl) {
       return {
         posthog_distinct_id: distinctId,
-        ...Object.fromEntries(
-          Object.entries(nonBranchUrl.searchParams).map(([key, value]) => [
-            key,
-            value.toString()
-          ])
-        )
+        ...Object.fromEntries(new URLSearchParams(nonBranchUrl.search))
       }
     }
 
@@ -86,12 +81,7 @@ export const addBranchListeners = (startListening: AppStartListening): void => {
     if (url) {
       return {
         posthog_distinct_id: distinctId,
-        ...Object.fromEntries(
-          Object.entries(url.searchParams).map(([key, value]) => [
-            key,
-            value.toString()
-          ])
-        )
+        ...Object.fromEntries(new URLSearchParams(url.search))
       }
     }
   }
