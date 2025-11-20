@@ -15,8 +15,10 @@ import {
 } from 'services/network/consts'
 import { BITCOIN_NETWORK, AVALANCHE_XP_NETWORK } from '@avalabs/core-chains-sdk'
 import { ChainName } from 'services/network/consts'
-import { AnimatedIconWithText } from './AnimatedIconWithText'
+import LedgerService from 'services/ledger/LedgerService'
+import Logger from 'utils/Logger'
 import { LedgerDeviceList } from './LedgerDeviceList'
+import { AnimatedIconWithText } from './AnimatedIconWithText'
 
 enum AppConnectionStep {
   AVALANCHE_CONNECT = 'avalanche-connect',
@@ -43,44 +45,40 @@ interface StepConfig {
 }
 
 interface LedgerAppConnectionProps {
-  onComplete: () => void
+  onComplete: (keys: LocalKeyState) => void
   onCancel: () => void
-  getSolanaKeys: () => Promise<void>
-  getAvalancheKeys: () => Promise<void>
   deviceName: string
   selectedDerivationPath: LedgerDerivationPathType | null
   isCreatingWallet?: boolean
   connectedDeviceId?: string | null
   connectedDeviceName?: string
   onStepChange?: (step: number) => void
-  keys: {
-    solanaKeys: Array<{
-      key: string
-      derivationPath: string
-      curve: string
-    }>
-    avalancheKeys: {
-      evm: string
-      avalanche: string
-      pvm: string
-    } | null
-    bitcoinAddress: string
-    xpAddress: string
-  }
+}
+
+interface LocalKeyState {
+  solanaKeys: Array<{
+    key: string
+    derivationPath: string
+    curve: string
+  }>
+  avalancheKeys: {
+    evm: string
+    avalanche: string
+    pvm: string
+  } | null
+  bitcoinAddress: string
+  xpAddress: string
 }
 
 export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   onComplete,
   onCancel,
-  getSolanaKeys,
-  getAvalancheKeys,
   deviceName,
   selectedDerivationPath: _selectedDerivationPath,
   isCreatingWallet = false,
   connectedDeviceId,
   connectedDeviceName,
-  onStepChange,
-  keys
+  onStepChange
 }) => {
   const {
     theme: { colors }
@@ -90,29 +88,49 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     AppConnectionStep.AVALANCHE_CONNECT
   )
 
+  // Local key state - managed only in this component
+  const [keys, setKeys] = useState<LocalKeyState>({
+    solanaKeys: [],
+    avalancheKeys: null,
+    bitcoinAddress: '',
+    xpAddress: ''
+  })
+
   // Auto-progress through steps
   useEffect(() => {
     if (currentStep === AppConnectionStep.COMPLETE && !isCreatingWallet) {
       const timeoutId = setTimeout(() => {
-        onComplete()
+        onComplete(keys)
       }, 1500)
 
       return () => {
         clearTimeout(timeoutId)
       }
     }
-  }, [currentStep, onComplete, isCreatingWallet])
+  }, [currentStep, onComplete, isCreatingWallet, keys])
 
   const handleConnectAvalanche = useCallback(async () => {
     try {
       setCurrentStep(AppConnectionStep.AVALANCHE_LOADING)
-      await getAvalancheKeys()
+      
+      // Get keys from service
+      const avalancheKeys = await LedgerService.getAvalancheKeys()
+      const { bitcoinAddress, xpAddress } = await LedgerService.getBitcoinAndXPAddresses()
+      
+      // Update local state
+      setKeys(prev => ({
+        ...prev,
+        avalancheKeys,
+        bitcoinAddress,
+        xpAddress
+      }))
 
       // Show success toast notification
       showSnackbar('Avalanche app connected')
       // if get avalanche keys succeeds move forward to solana connect
       setCurrentStep(AppConnectionStep.SOLANA_CONNECT)
     } catch (err) {
+      Logger.error('Failed to connect to Avalanche app', err)
       setCurrentStep(AppConnectionStep.AVALANCHE_CONNECT)
       Alert.alert(
         'Connection Failed',
@@ -120,13 +138,20 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
         [{ text: 'OK' }]
       )
     }
-  }, [getAvalancheKeys])
+  }, [])
 
   const handleConnectSolana = useCallback(async () => {
     try {
       setCurrentStep(AppConnectionStep.SOLANA_LOADING)
 
-      await getSolanaKeys()
+      // Get keys from service
+      const solanaKeys = await LedgerService.getSolanaKeys()
+      
+      // Update local state
+      setKeys(prev => ({
+        ...prev,
+        solanaKeys
+      }))
 
       // Show success toast notification
       showSnackbar('Solana app connected')
@@ -134,6 +159,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
       // Skip success step and go directly to complete
       setCurrentStep(AppConnectionStep.COMPLETE)
     } catch (err) {
+      Logger.error('Failed to connect to Solana app', err)
       setCurrentStep(AppConnectionStep.SOLANA_CONNECT)
       Alert.alert(
         'Connection Failed',
@@ -141,7 +167,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
         [{ text: 'OK' }]
       )
     }
-  }, [getSolanaKeys])
+  }, [])
 
   const handleSkipSolana = useCallback(() => {
     // Skip Solana and proceed to complete step
@@ -454,7 +480,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     // Non-loading step
     return (
       <View style={{ flex: 1, justifyContent: 'space-between' }}>
-        <View style={{ height: 300, justifyContent: 'center' }}>
+        <View style={{ flex: 1, justifyContent: 'center' }}>
           <View style={{ alignItems: 'center', paddingHorizontal: 16 }}>
             {config.icon}
             <Text
