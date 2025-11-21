@@ -195,7 +195,6 @@ export default function DeviceConnectionScreen(): JSX.Element {
       renderFooter={renderFooter}
       contentContainerStyle={{ flex: 1 }}>
       <View style={{ flex: 1, padding: 16 }}>
-        {/* Always render the same AnimatedIconWithText component */}
         <View
           style={{
             position: 'absolute',

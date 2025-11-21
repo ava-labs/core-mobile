@@ -383,7 +383,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
       return (
         <View style={{ flex: 1, paddingHorizontal: 16 }}>
           {/* Header with refresh icon and title */}
-          <View style={{ alignItems: 'center', paddingVertical: 32 }}>
+          <View style={{ alignItems: 'center', paddingVertical: 24 }}>
             <Icons.Notification.Sync
               color={colors.$textPrimary}
               width={75}
@@ -411,10 +411,10 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           </View>
 
           <View style={{ flex: 1 }}>
-            <GroupList data={addressListData} itemHeight={48} />
+            <GroupList data={addressListData} itemHeight={40} />
           </View>
 
-          <View style={{ paddingBottom: 16, paddingTop: 16 }}>
+          <View style={{ paddingBottom: 8, paddingTop: 12 }}>
             <Button type="tertiary" size="large" onPress={onCancel}>
               Cancel setup
             </Button>
