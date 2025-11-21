@@ -4,10 +4,12 @@ import { useMemo } from 'react'
 
 type UseMaxDepositAmountParams = {
   gasAmount: number
+  additionalBuffer?: bigint
 }
 
 export const useGasCost = ({
-  gasAmount
+  gasAmount,
+  additionalBuffer = 3n
 }: UseMaxDepositAmountParams): {
   gasCost: bigint | undefined
 } => {
@@ -18,10 +20,9 @@ export const useGasCost = ({
     if (!networkFee) return undefined
 
     const maxFeePerGas = networkFee.high.maxFeePerGas
-    const additionalBuffer = 3n
     const bufferedMaxFeesPerGas = maxFeePerGas * additionalBuffer
     return bufferedMaxFeesPerGas * BigInt(gasAmount)
-  }, [networkFee, gasAmount])
+  }, [networkFee, gasAmount, additionalBuffer])
 
   return { gasCost }
 }
