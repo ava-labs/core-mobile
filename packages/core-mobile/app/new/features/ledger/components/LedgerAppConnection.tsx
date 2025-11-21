@@ -112,11 +112,12 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   const handleConnectAvalanche = useCallback(async () => {
     try {
       setCurrentStep(AppConnectionStep.AVALANCHE_LOADING)
-      
+
       // Get keys from service
       const avalancheKeys = await LedgerService.getAvalancheKeys()
-      const { bitcoinAddress, xpAddress } = await LedgerService.getBitcoinAndXPAddresses()
-      
+      const { bitcoinAddress, xpAddress } =
+        await LedgerService.getBitcoinAndXPAddresses()
+
       // Update local state
       setKeys(prev => ({
         ...prev,
@@ -146,7 +147,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
 
       // Get keys from service
       const solanaKeys = await LedgerService.getSolanaKeys()
-      
+
       // Update local state
       setKeys(prev => ({
         ...prev,
@@ -212,7 +213,10 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
       }
       addresses.push({
         title: xpNetwork.chainName,
-        subtitle: truncateAddress(keys.xpAddress, TRUNCATE_ADDRESS_LENGTH),
+        subtitle: truncateAddress(
+          keys.xpAddress.replace(/^[XP]-/, ''),
+          TRUNCATE_ADDRESS_LENGTH
+        ),
         value: (
           <Icons.Navigation.Check
             color={colors.$textSuccess}
@@ -289,7 +293,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     // Always add the "Storing wallet data" row at the end
     addresses.push({
       title: 'Storing wallet data',
-      value: <LoadingState />
+      value: <LoadingState sx={{ width: 16, height: 16 }} />
     })
 
     return addresses
@@ -313,10 +317,6 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
             text: 'Continue',
             onPress: handleConnectAvalanche
           },
-          secondaryButton: {
-            text: 'Cancel Setup',
-            onPress: onCancel
-          },
           showAnimation: false
         }
 
@@ -331,10 +331,6 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           ),
           title: 'Connecting to Avalanche app',
           subtitle: `Please keep your Avalanche app open on your ${deviceName}, We're retrieving your Avalanche addresses...`,
-          secondaryButton: {
-            text: 'Cancel Setup',
-            onPress: onCancel
-          },
           showAnimation: true,
           isLoading: true
         }
@@ -372,10 +368,6 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           ),
           title: 'Connecting to Solana',
           subtitle: `Please keep your Solana app open on your ${deviceName}, We're retrieving your Solana address...`,
-          secondaryButton: {
-            text: 'Cancel Setup',
-            onPress: onCancel
-          },
           showAnimation: true,
           isLoading: true
         }
@@ -419,7 +411,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           </View>
 
           <View style={{ flex: 1 }}>
-            <GroupList data={addressListData} itemHeight={56} />
+            <GroupList data={addressListData} itemHeight={48} />
           </View>
 
           <View style={{ paddingBottom: 16, paddingTop: 16 }}>
