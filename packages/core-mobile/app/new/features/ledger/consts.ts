@@ -25,9 +25,6 @@ export const DERIVATION_PATHS = {
   }
 } as const
 
-// Raw derivation paths for Solana (without m/ prefix)
-export const SOLANA_DERIVATION_PATH = "44'/501'/0'/0/0"
-
 // Solana derivation path prefix for generating indexed paths
 export const SOLANA_DERIVATION_PATH_PREFIX = "44'/501'/0'/0"
 
