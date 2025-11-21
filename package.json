@@ -13,6 +13,7 @@
     "tsc": "yarn workspaces foreach -p run tsc",
     "test": "yarn workspaces foreach -p run test",
     "core": "yarn workspace @avalabs/core-mobile",
+    "crypto": "yarn workspace react-native-nitro-avalabs-crypto",
     "k2": "yarn workspace @avalabs/k2-alpine"
   },
   "devDependencies": {
@@ -58,5 +59,9 @@
     "node": ">=20.18.0",
     "yarn": ">=3.6.4"
   },
-  "packageManager": "yarn@3.6.4"
+  "packageManager": "yarn@3.6.4",
+  "dependencies": {
+    "nitrogen": "0.31.6",
+    "react-native-nitro-modules": "0.31.6"
+  }
 }
