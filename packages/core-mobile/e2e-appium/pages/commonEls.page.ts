@@ -264,6 +264,10 @@ class CommonElsPage {
     return selectors.getByText(commonEls.hkd)
   }
 
+  listItem(name: string) {
+    return selectors.getById(`list_item__${name}`)
+  }
+
   async filter(
     item = commonEls.cChain_2,
     filterDropdown = this.filterDropdown
@@ -419,6 +423,18 @@ class CommonElsPage {
       }
     } else {
       await actions.click(selectors.getBySmartText(commonEls.delete))
+    }
+  }
+
+  async tapRemoveAlert() {
+    if (driver.isIOS) {
+      try {
+        await actions.click(selectors.getById(commonEls.remove))
+      } catch (e) {
+        console.log('Appium handled the auto accept alerts')
+      }
+    } else {
+      await actions.click(selectors.getBySmartText(commonEls.remove))
     }
   }
 

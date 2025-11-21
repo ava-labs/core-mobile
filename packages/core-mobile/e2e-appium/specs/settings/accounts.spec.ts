@@ -8,7 +8,7 @@ describe('Settings', () => {
     // go to the account detail from the accounts carousel
     await warmup()
     await settings.goSettings()
-    await settings.goToAccountDetail(sl.account)
+    await settings.goToAccountDetail(undefined, sl.account)
     await common.verifyAccountName(sl.account)
   })
 

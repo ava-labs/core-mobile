@@ -123,6 +123,8 @@ const ImportSeedWallet = (): React.JSX.Element => {
           gap: 12
         }}>
         <Button
+          accessible={true}
+          testID="import_wallet"
           size="large"
           type="primary"
           onPress={handleImport}

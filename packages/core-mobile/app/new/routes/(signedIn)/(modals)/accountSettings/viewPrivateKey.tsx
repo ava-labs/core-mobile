@@ -68,6 +68,7 @@ const ViewPrivateKeyScreen = (): JSX.Element => {
             height: 120
           }}>
           <Text
+            testID="private_key"
             variant="mono"
             selectable
             sx={{

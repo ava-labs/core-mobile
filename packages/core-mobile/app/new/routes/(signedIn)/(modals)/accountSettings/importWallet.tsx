@@ -79,7 +79,10 @@ const ImportWalletScreen = (): JSX.Element => {
       {
         title: 'Type in a recovery phrase',
         subtitle: (
-          <Text variant="caption" sx={{ fontSize: 12, paddingTop: 4 }}>
+          <Text
+            testID="import_recovery_phrase_btn"
+            variant="caption"
+            sx={{ fontSize: 12, paddingTop: 4 }}>
             Access with your recovery phrase
           </Text>
         ),
@@ -98,7 +101,10 @@ const ImportWalletScreen = (): JSX.Element => {
       {
         title: 'Import a private key',
         subtitle: (
-          <Text variant="caption" sx={{ fontSize: 12, paddingTop: 4 }}>
+          <Text
+            testID="import_private_key_btn"
+            variant="caption"
+            sx={{ fontSize: 12, paddingTop: 4 }}>
             Access with an existing private key
           </Text>
         ),

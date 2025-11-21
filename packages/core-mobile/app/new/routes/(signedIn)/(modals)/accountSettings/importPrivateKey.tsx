@@ -72,6 +72,8 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
 
     return (
       <Button
+        accessible={true}
+        testID="import_wallet"
         type="primary"
         size="large"
         onPress={handleImportPrivateKey}
