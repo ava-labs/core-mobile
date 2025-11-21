@@ -1,5 +1,7 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { Money as BaseMoney } from '@avalabs/glacier-sdk'
+import { TokenType } from '@avalabs/vm-module-types'
+import { LocalTokenWithBalance } from 'store/balance'
 import { Address } from 'viem'
 
 export type Money = Omit<BaseMoney, 'value'> & {
@@ -89,4 +91,9 @@ export type AaveReserveData = {
   readonly borrowableInIsolation: boolean
   readonly virtualAccActive: boolean
   readonly virtualUnderlyingBalance: bigint
+}
+
+export type DepositAsset = {
+  token: LocalTokenWithBalance & { type: TokenType.ERC20 | TokenType.NATIVE }
+  nativeToken: (LocalTokenWithBalance & { type: TokenType.NATIVE }) | undefined
 }

@@ -1,9 +1,8 @@
 import { createZustandStore } from 'common/utils/createZustandStore'
-import { LocalTokenWithBalance } from 'store/balance'
-import { DefiMarket } from './types'
+import { DefiMarket, DepositAsset } from './types'
 
-export const useDepositSelectedToken = createZustandStore<
-  LocalTokenWithBalance | undefined
+export const useDepositSelectedAsset = createZustandStore<
+  DepositAsset | undefined
 >(undefined)
 
 export const useDepositSelectedMarket = createZustandStore<

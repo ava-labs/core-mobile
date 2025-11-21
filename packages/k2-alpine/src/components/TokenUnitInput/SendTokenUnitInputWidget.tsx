@@ -147,10 +147,29 @@ export const SendTokenUnitInputWidget = forwardRef<
       setPresetAmonuntButtons(presets)
     }, [balance, token, maxAmount, presetPercentages, amount])
 
+    const handleValidateAmount = useCallback(
+      async (value: TokenUnit): Promise<void> => {
+        if (validateAmount) {
+          try {
+            await validateAmount(value)
+
+            setErrorMessage(undefined)
+          } catch (e) {
+            if (e instanceof Error) {
+              setErrorMessage(e.message)
+            }
+          }
+        }
+      },
+      [validateAmount]
+    )
+
     const handlePressPresetButton = (amt: TokenUnit, index: number): void => {
       textInputRef.current?.setValue(amt.toDisplay())
 
       onChange?.(amt)
+
+      handleValidateAmount(amt)
 
       setPresetAmonuntButtons(prevButtons =>
         prevButtons.map((b, i) =>
@@ -170,19 +189,9 @@ export const SendTokenUnitInputWidget = forwardRef<
 
         onChange?.(value)
 
-        if (validateAmount) {
-          try {
-            await validateAmount(value)
-
-            setErrorMessage(undefined)
-          } catch (e) {
-            if (e instanceof Error) {
-              setErrorMessage(e.message)
-            }
-          }
-        }
+        handleValidateAmount(value)
       },
-      [onChange, validateAmount, balance]
+      [onChange, balance, handleValidateAmount]
     )
 
     return (
