@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { Account } from 'store/account'
 import { useAccountBalances } from './useAccountBalances'
-import Logger from 'utils/Logger'
 
 /**
  * Returns whether all balances for the given account are accurate (no errors).
