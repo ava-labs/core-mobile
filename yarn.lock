@@ -534,6 +534,7 @@ __metadata:
     expo-localization: 16.1.6
     expo-router: 5.1.4
     expo-sms: 13.1.4
+    expo-tracking-transparency: 6.0.7
     expo-video: 2.2.2
     fast-equals: 5.2.2
     https-browserify: 1.0.0
@@ -23165,6 +23166,16 @@ __metadata:
   peerDependencies:
     expo: "*"
   checksum: 4031fc8c6ec289932a5fc26899bf91f0f8bbd590d4d45cd19d9d8b20fc70c9ee49f324674827d81be1f07ffa9ac1690daf29b0b3ddc6c77a4ef59a2fefde1d61
+  languageName: node
+  linkType: hard
+
+"expo-tracking-transparency@npm:6.0.7":
+  version: 6.0.7
+  resolution: "expo-tracking-transparency@npm:6.0.7"
+  peerDependencies:
+    expo: "*"
+    react-native: "*"
+  checksum: b660c9dd6939490f0f8b5f16dd0efefdddc6b4034b58c45fac9f8c12d673ecd01a6dea09d2f9ab7a88a30c06499571e654442775a3e8aeb26c9fda196bed0f86
   languageName: node
   linkType: hard
 

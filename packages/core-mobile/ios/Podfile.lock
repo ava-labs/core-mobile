@@ -395,6 +395,8 @@ PODS:
     - Yoga
   - ExpoSMS (13.1.4):
     - ExpoModulesCore
+  - ExpoTrackingTransparency (6.0.7):
+    - ExpoModulesCore
   - ExpoVideo (2.2.2):
     - ExpoModulesCore
   - EXUpdatesInterface (1.1.0):
@@ -3399,6 +3401,7 @@ DEPENDENCIES:
   - ExpoLocalization (from `../node_modules/expo-localization/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
   - ExpoSMS (from `../node_modules/expo-sms/ios`)
+  - ExpoTrackingTransparency (from `../node_modules/expo-tracking-transparency/ios`)
   - ExpoVideo (from `../node_modules/expo-video/ios`)
   - EXUpdatesInterface (from `../node_modules/expo-updates-interface/ios`)
   - fast_float (from `../node_modules/react-native/third-party-podspecs/fast_float.podspec`)
@@ -3636,6 +3639,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-modules-core"
   ExpoSMS:
     :path: "../node_modules/expo-sms/ios"
+  ExpoTrackingTransparency:
+    :path: "../node_modules/expo-tracking-transparency/ios"
   ExpoVideo:
     :path: "../node_modules/expo-video/ios"
   EXUpdatesInterface:
@@ -3935,6 +3940,7 @@ SPEC CHECKSUMS:
   ExpoLocalization: 999a1ff61a7f5917d65c2bd9234883009019ca9f
   ExpoModulesCore: 00a1b5c73248465bd0b93f59f8538c4573dac579
   ExpoSMS: 770f0b60a777f5d3f65fd7fc369ff62ff97e09a9
+  ExpoTrackingTransparency: f9ad2b1955c71085aa9208ed180721301614bac9
   ExpoVideo: ada534976cfd4a6bf082cc61aa1b17920a251e32
   EXUpdatesInterface: 7ff005b7af94ee63fa452ea7bb95d7a8ff40277a
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
