@@ -11,10 +11,7 @@ import {
   WalletCreationOptions,
   LedgerTransportState
 } from 'services/ledger/types'
-import {
-  useLedgerWallet,
-  UseLedgerWalletReturn
-} from '../hooks/useLedgerWallet'
+import { useLedgerWallet } from '../hooks/useLedgerWallet'
 
 interface LedgerSetupContextValue {
   // State values
@@ -35,7 +32,12 @@ interface LedgerSetupContextValue {
   transportState: LedgerTransportState
   connectToDevice: (deviceId: string) => Promise<void>
   disconnectDevice: () => Promise<void>
-  createLedgerWallet: (options: WalletCreationOptions) => Promise<string>
+  createLedgerWallet: (
+    options: WalletCreationOptions & {
+      avalancheKeys?: { evm: string; avalanche: string; pvm: string }
+      solanaKeys?: Array<{ key: string; derivationPath: string; curve: string }>
+    }
+  ) => Promise<string>
 
   // Helper methods
   resetSetup: () => void

@@ -193,9 +193,22 @@ export default function DeviceConnectionScreen(): JSX.Element {
       title={`Connect \nYour Ledger`}
       isModal
       renderFooter={renderFooter}
-      contentContainerStyle={{ padding: 16, flex: 1 }}>
-      {isScanning && devices.length === 0 && (
-        <View style={{ flex: 1, justifyContent: 'center' }}>
+      contentContainerStyle={{ flex: 1 }}>
+      <View style={{ flex: 1, padding: 16 }}>
+        {/* Always render the same AnimatedIconWithText component */}
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingHorizontal: 16,
+            zIndex: 1,
+            pointerEvents: 'none'
+          }}>
           <AnimatedIconWithText
             icon={
               <Icons.Custom.Ledger
@@ -204,67 +217,25 @@ export default function DeviceConnectionScreen(): JSX.Element {
                 height={44}
               />
             }
-            title="Looking for devices..."
+            title={
+              isScanning ? 'Looking for devices...' : 'Get your Ledger ready'
+            }
             subtitle="Make sure your Ledger device is unlocked and the Avalanche app is open"
-            showAnimation={true}
+            showAnimation={isScanning}
           />
         </View>
-      )}
 
-      {isScanning && devices.length > 0 && (
-        <View style={{ flex: 1 }}>
-          <View
-            style={{ height: 300, justifyContent: 'center', marginTop: 60 }}>
-            <AnimatedIconWithText
-              icon={
-                <Icons.Custom.Ledger
-                  color={colors.$textPrimary}
-                  width={44}
-                  height={44}
-                />
-              }
-              title="Looking for devices..."
-              subtitle="Make sure your Ledger device is unlocked and the Avalanche app is open"
-              showAnimation={true}
-            />
-          </View>
-          <View
-            style={{ flex: 1, justifyContent: 'flex-end', marginBottom: -20 }}>
+        {/* Device list appears when devices are found */}
+        {devices.length > 0 && (
+          <View style={{ flex: 1, justifyContent: 'flex-end' }}>
             <LedgerDeviceList
               devices={devices}
               onDevicePress={handleDeviceConnection}
               isConnecting={isConnecting}
             />
           </View>
-        </View>
-      )}
-
-      {!isScanning && devices.length === 0 && (
-        <View style={{ flex: 1, justifyContent: 'center' }}>
-          <AnimatedIconWithText
-            icon={
-              <Icons.Custom.Ledger
-                color={colors.$textPrimary}
-                width={44}
-                height={44}
-              />
-            }
-            title="Get your Ledger ready"
-            subtitle="Make sure your Ledger device is unlocked and ready to connect"
-            showAnimation={false}
-          />
-        </View>
-      )}
-
-      {!isScanning && devices.length > 0 && (
-        <View style={{ flex: 1, paddingTop: 24 }}>
-          <LedgerDeviceList
-            devices={devices}
-            onDevicePress={handleDeviceConnection}
-            isConnecting={isConnecting}
-          />
-        </View>
-      )}
+        )}
+      </View>
     </ScrollScreen>
   )
 }
