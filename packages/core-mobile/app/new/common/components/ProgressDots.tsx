@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Platform } from 'react-native'
+import { View } from 'react-native'
 import { useTheme } from '@avalabs/k2-alpine'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 
