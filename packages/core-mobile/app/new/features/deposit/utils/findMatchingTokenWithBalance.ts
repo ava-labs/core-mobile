@@ -1,6 +1,5 @@
 import { TokenType } from '@avalabs/vm-module-types'
 import { LocalTokenWithBalance } from 'store/balance'
-import { isNetworkContractToken } from 'utils/isNetworkContractToken'
 
 /**
  * Finds a token with balance that matches the given asset criteria.
@@ -16,23 +15,34 @@ export const findMatchingTokenWithBalance = (
     contractAddress?: string
   },
   tokensWithBalance: LocalTokenWithBalance[]
-): LocalTokenWithBalance | undefined => {
-  return tokensWithBalance.find(tokenWithBalance => {
-    // For native tokens (e.g., AVAX), match by symbol
-    if (tokenWithBalance.type === TokenType.NATIVE && !asset.contractAddress) {
-      return (
-        asset.symbol.toLowerCase() === tokenWithBalance.symbol.toLowerCase()
-      )
-    }
+):
+  | (LocalTokenWithBalance & { type: TokenType.ERC20 | TokenType.NATIVE })
+  | undefined => {
+  return tokensWithBalance
+    .filter(
+      tokenWithBalance =>
+        tokenWithBalance.type === TokenType.ERC20 ||
+        tokenWithBalance.type === TokenType.NATIVE
+    )
+    .find(tokenWithBalance => {
+      // For native tokens (e.g., AVAX), match by symbol
+      if (
+        tokenWithBalance.type === TokenType.NATIVE &&
+        !asset.contractAddress
+      ) {
+        return (
+          asset.symbol.toLowerCase() === tokenWithBalance.symbol.toLowerCase()
+        )
+      }
 
-    // For ERC20 tokens, match by contract address
-    if (isNetworkContractToken(tokenWithBalance)) {
-      return (
-        asset.contractAddress?.toLowerCase() ===
-        tokenWithBalance.address.toLowerCase()
-      )
-    }
+      // For ERC20 tokens, match by contract address
+      if (tokenWithBalance.type === TokenType.ERC20) {
+        return (
+          asset.contractAddress?.toLowerCase() ===
+          tokenWithBalance.address.toLowerCase()
+        )
+      }
 
-    return false
-  })
+      return false
+    })
 }
