@@ -33,7 +33,12 @@ interface LedgerSetupContextValue {
   transportState: LedgerTransportState
   connectToDevice: (deviceId: string) => Promise<void>
   disconnectDevice: () => Promise<void>
-  createLedgerWallet: (options: WalletCreationOptions) => Promise<string>
+  createLedgerWallet: (
+    options: WalletCreationOptions & {
+      avalancheKeys?: { evm: string; avalanche: string; pvm: string }
+      solanaKeys?: Array<{ key: string; derivationPath: string; curve: string }>
+    }
+  ) => Promise<string>
 
   // Helper methods
   resetSetup: () => void
