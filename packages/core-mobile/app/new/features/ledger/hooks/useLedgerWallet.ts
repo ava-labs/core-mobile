@@ -29,10 +29,12 @@ export interface UseLedgerWalletReturn {
   // Methods
   connectToDevice: (deviceId: string) => Promise<void>
   disconnectDevice: () => Promise<void>
-  createLedgerWallet: (options: WalletCreationOptions & {
-    avalancheKeys?: { evm: string; avalanche: string; pvm: string }
-    solanaKeys?: Array<{ key: string; derivationPath: string; curve: string }>
-  }) => Promise<string>
+  createLedgerWallet: (
+    options: WalletCreationOptions & {
+      avalancheKeys?: { evm: string; avalanche: string; pvm: string }
+      solanaKeys?: Array<{ key: string; derivationPath: string; curve: string }>
+    }
+  ) => Promise<string>
 }
 
 export function useLedgerWallet(): UseLedgerWalletReturn {
@@ -93,10 +95,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       throw error
     }
   }, [])
-
-
-
-
 
   const createLedgerWallet = useCallback(
     async ({
