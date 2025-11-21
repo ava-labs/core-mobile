@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import {
   GroupList,
   useTheme,
@@ -26,59 +26,64 @@ export const AccountAddresses = ({
   } = useTheme()
   const { networks } = useCombinedPrimaryNetworks()
 
-  const onCopyAddress = (value: string, message: string): void => {
+  const onCopyAddress = useCallback((value: string, message: string): void => {
     copyToClipboard(value, message)
-  }
+  }, [])
 
   const data = useMemo(() => {
-    return networks.map(network => {
-      const address = (() => {
-        switch (network.vmName) {
-          case NetworkVMType.AVM:
-          case NetworkVMType.PVM:
-            return account.addressPVM.replace(/^[XP]-/, '')
-          case NetworkVMType.BITCOIN:
-            return account.addressBTC
-          case NetworkVMType.EVM:
-            return account.addressC
-          case NetworkVMType.SVM:
-            return account.addressSVM
-          default:
-            return undefined
-        }
-      })()
+    return networks
+      .map(network => {
+        const address = (() => {
+          switch (network.vmName) {
+            case NetworkVMType.AVM:
+            case NetworkVMType.PVM:
+              return account.addressPVM.replace(/^[XP]-/, '')
+            case NetworkVMType.BITCOIN:
+              return account.addressBTC
+            case NetworkVMType.EVM:
+              return account.addressC
+            case NetworkVMType.SVM:
+              return account.addressSVM
+            default:
+              return undefined
+          }
+        })()
 
-      return {
-        subtitle: address
-          ? truncateAddress(address, TRUNCATE_ADDRESS_LENGTH)
-          : '',
-        title: network.chainName,
-        leftIcon: (
-          <NetworkLogoWithChain
-            network={network}
-            networkSize={36}
-            outerBorderColor={colors.$surfaceSecondary}
-            showChainLogo={isXPChain(network.chainId)}
-          />
-        ),
-        value: (
-          <CopyButton
-            testID={`copy_btn__${network.chainName}`}
-            onPress={() =>
-              address &&
-              onCopyAddress(address, `${network.chainName} address copied`)
-            }
-          />
-        )
-      }
-    })
+        // Only return data if we have a valid address
+        if (!address) {
+          return null
+        }
+
+        return {
+          subtitle: truncateAddress(address, TRUNCATE_ADDRESS_LENGTH),
+          title: network.chainName,
+          leftIcon: (
+            <NetworkLogoWithChain
+              network={network}
+              networkSize={36}
+              outerBorderColor={colors.$surfaceSecondary}
+              showChainLogo={isXPChain(network.chainId)}
+            />
+          ),
+          value: (
+            <CopyButton
+              testID={`copy_btn__${network.chainName}`}
+              onPress={() =>
+                onCopyAddress(address, `${network.chainName} address copied`)
+              }
+            />
+          )
+        }
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null) // Type-safe filter
   }, [
     account.addressBTC,
     account.addressC,
     account.addressPVM,
     account.addressSVM,
     colors.$surfaceSecondary,
-    networks
+    networks,
+    onCopyAddress
   ])
 
   return (

@@ -1,4 +1,5 @@
 import { Network } from '@avalabs/core-chains-sdk'
+
 import { SPAN_STATUS_ERROR } from '@sentry/core'
 import { Account } from 'store/account/types'
 import { getAddressByNetwork } from 'store/account/utils'
@@ -133,7 +134,6 @@ export class BalanceService {
               )
 
               const settled = await Promise.allSettled(perAddressPromises)
-
               balancesResponse = settled.reduce((acc, r) => {
                 if (r.status === 'fulfilled') {
                   const { address, res } = r.value
@@ -222,7 +222,6 @@ export class BalanceService {
               code: SPAN_STATUS_ERROR,
               message: err instanceof Error ? err.message : 'unknown error'
             })
-
             Logger.error(
               `[BalanceService][getBalancesForAccounts] failed for network ${network.chainId}`,
               err
@@ -237,7 +236,6 @@ export class BalanceService {
             // Mark all accounts errored for this network
             for (const account of accounts) {
               const address = getAddressByNetwork(account, network)
-
               errorPartial[account.id] = {
                 accountId: account.id,
                 chainId: network.chainId,
@@ -246,10 +244,10 @@ export class BalanceService {
                 dataAccurate: false,
                 error: err as Error
               }
-
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               finalResults[account.id]!.push(errorPartial[account.id]!)
             }
+
             // Still notify UI for progressive updates
             onBalanceLoaded?.(network.chainId, errorPartial)
           } finally {
