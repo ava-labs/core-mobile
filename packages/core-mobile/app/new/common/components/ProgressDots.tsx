@@ -1,5 +1,5 @@
 import React from 'react'
-import { View } from 'react-native'
+import { View, Platform } from 'react-native'
 import { useTheme } from '@avalabs/k2-alpine'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 
@@ -12,8 +12,6 @@ interface ProgressDotsProps {
   dotSize?: number
   /** Gap between dots */
   gap?: number
-  /** Custom height for the container */
-  height?: number
   /** Test ID for testing */
   testID?: string
 }
@@ -57,7 +55,6 @@ export const ProgressDots: React.FC<ProgressDotsProps> = ({
   currentStep,
   dotSize = 6,
   gap = 6,
-  height,
   testID
 }) => {
   const {
@@ -71,7 +68,7 @@ export const ProgressDots: React.FC<ProgressDotsProps> = ({
         flexDirection: 'row',
         alignItems: 'center',
         gap,
-        ...(height && { height }),
+        height: 56,
         justifyContent: 'center'
       }}>
       {Array.from({ length: totalSteps }).map((_, index) => (
