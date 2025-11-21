@@ -337,6 +337,8 @@ export const ScrollScreen = ({
       return null
     }
 
+    // try insetsbottom + 16 for android
+    // be sure to check 3 button bottom and manual test on android with native buttons on the bottom of the screen
     const paddingValue =
       Platform.OS === 'ios'
         ? isModal
