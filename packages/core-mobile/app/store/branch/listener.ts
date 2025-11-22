@@ -3,7 +3,6 @@ import { onLogOut, onRehydrationComplete } from 'store/app'
 import { selectDistinctID } from 'store/posthog'
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import Branch from 'react-native-branch'
-import * as TrackingTransparency from 'expo-tracking-transparency'
 
 export const addBranchListeners = (startListening: AppStartListening): void => {
   const branchIdentifyUser = async (
@@ -47,18 +46,6 @@ export const addBranchListeners = (startListening: AppStartListening): void => {
         }
       }
     })
-    requestTrackingPermission()
-  }
-
-  const requestTrackingPermission = async (): Promise<void> => {
-    const { status } = await TrackingTransparency.getTrackingPermissionsAsync()
-    if (status === TrackingTransparency.PermissionStatus.UNDETERMINED) {
-      const { status: newStatus } =
-        await TrackingTransparency.requestTrackingPermissionsAsync()
-      if (newStatus === TrackingTransparency.PermissionStatus.GRANTED) {
-        Branch.handleATTAuthorizationStatus('authorized')
-      }
-    }
   }
 
   const branchLogout = (_: Action, __: AppListenerEffectAPI): void => {

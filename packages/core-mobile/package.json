@@ -150,7 +150,6 @@
     "expo-localization": "16.1.6",
     "expo-router": "5.1.4",
     "expo-sms": "13.1.4",
-    "expo-tracking-transparency": "6.0.7",
     "expo-video": "2.2.2",
     "fast-equals": "5.2.2",
     "https-browserify": "1.0.0",
