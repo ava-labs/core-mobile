@@ -24,6 +24,7 @@ class AppDelegate: ExpoAppDelegate {
       RNBranch.useTestInstance()
     }
         
+    RNBranch.enableLogging()
     RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
     if #available(iOS 14.0, *) {
       DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
