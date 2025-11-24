@@ -152,7 +152,7 @@ export const useDelegation = (): {
               isDevMode: isDeveloperMode,
               nodeId,
               stakeAmountNanoAvax: step.amount,
-              startDate: startDate,
+              startDate: delegateStartDate,
               feeState: defaultFeeState,
               pFeeAdjustmentThreshold
             })
