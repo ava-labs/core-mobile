@@ -15,12 +15,10 @@ export const useIssueDelegation = ({
 }): {
   issueDelegation: ({
     nodeId,
-    startDate,
     endDate,
     recomputeSteps
   }: {
     nodeId: string
-    startDate: Date
     endDate: Date
     recomputeSteps?: boolean
   }) => Promise<void>
@@ -30,12 +28,10 @@ export const useIssueDelegation = ({
   const mutationFn = useCallback(
     async ({
       nodeId,
-      startDate,
       endDate,
       recomputeSteps = false
     }: {
       nodeId: string
-      startDate: Date
       endDate: Date
       recomputeSteps?: boolean
     }) => {
@@ -43,7 +39,6 @@ export const useIssueDelegation = ({
         const newSteps = await compute(stakeAmount.toSubUnit())
         return delegate({
           steps: newSteps,
-          startDate,
           endDate,
           nodeId
         })
@@ -51,7 +46,6 @@ export const useIssueDelegation = ({
 
       return delegate({
         steps,
-        startDate,
         endDate,
         nodeId
       })
