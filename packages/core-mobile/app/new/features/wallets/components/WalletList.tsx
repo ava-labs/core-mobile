@@ -14,6 +14,7 @@ import WalletCard from 'common/components/WalletCard'
 import { useManageWallet } from 'common/hooks/useManageWallet'
 import { WalletDisplayData } from 'common/types'
 import { useRouter } from 'expo-router'
+import { useRecentAccounts } from 'features/accountSettings/store'
 import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalanceAccurate'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
@@ -73,11 +74,13 @@ export const WalletList = ({
   const errorMessage = balanceAccurate
     ? undefined
     : 'Unable to load all balances'
+  const { recentAccountIds, updateRecentAccount } = useRecentAccounts()
 
-  const allAccountsArray: Account[] = useMemo(
-    () => Object.values(accountCollection),
-    [accountCollection]
-  )
+  const allAccountsArray = useMemo(() => {
+    return recentAccountIds
+      .map(id => accountCollection[id])
+      .filter((account): account is Account => account !== undefined)
+  }, [accountCollection, recentAccountIds])
 
   useMemo(() => {
     const initialExpansionState: Record<string, boolean> = {}
@@ -157,11 +160,12 @@ export const WalletList = ({
         return
       }
       dispatch(setActiveAccount(accountId))
+      updateRecentAccount(accountId)
 
       dismiss()
       dismiss()
     },
-    [activeAccount?.id, dispatch, dismiss]
+    [activeAccount?.id, dispatch, updateRecentAccount, dismiss]
   )
 
   const importedWallets = useMemo(() => {
@@ -218,11 +222,15 @@ export const WalletList = ({
 
   const importedWalletsDisplayData = useMemo(() => {
     // Get all accounts from private key wallets
-    const allPrivateKeyAccounts = importedWallets.flatMap(wallet => {
-      return accountSearchResults.filter(
-        account => account.walletId === wallet.id
-      )
-    })
+    const allPrivateKeyAccounts = importedWallets
+      .flatMap(wallet => {
+        return accountSearchResults.filter(
+          account => account.walletId === wallet.id
+        )
+      })
+      .sort((a, b) => {
+        return recentAccountIds.indexOf(a.id) - recentAccountIds.indexOf(b.id)
+      })
 
     if (allPrivateKeyAccounts.length === 0) {
       return null
