@@ -136,11 +136,19 @@ export const useDelegation = (): {
             // otherwise, the transaction will fail with a "Start date must be in future" error
             const delegateStartDate = new Date(Date.now() + 1 * 60 * 1000)
 
+            // get the difference in milliseconds between the original start date and the fresh start date
+            const differenceInMilliseconds =
+              delegateStartDate.getTime() - startDate.getTime()
+            // add the difference in milliseconds to the original end date, so the duration is the same as the original
+            const delegateEndDate = new Date(
+              endDate.getTime() + differenceInMilliseconds
+            )
+
             txHash = await EarnService.issueAddDelegatorTransaction({
               walletId: activeWallet.id,
               walletType: activeWallet.type,
               activeAccount,
-              endDate,
+              endDate: delegateEndDate,
               isDevMode: isDeveloperMode,
               nodeId,
               stakeAmountNanoAvax: step.amount,
