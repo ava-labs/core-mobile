@@ -350,7 +350,8 @@ export const WalletList = ({
       }
       const isExpanded = expandedWallets[item.id] ?? false
       const isActive = getIsActiveWallet(item.id, activeAccount)
-      const isAddingAccountToActiveWallet = item.accounts.some(i => i?.isActive)
+      const isAddingAccountToActiveWallet =
+        item.accounts.some(i => i?.isActive) && isAddingAccount
 
       if (searchText && item.accounts.length === 0) {
         return null
