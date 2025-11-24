@@ -12,6 +12,7 @@ import { WalletBalance } from 'features/wallets/components/WalletBalance'
 import React, { useCallback } from 'react'
 import { FlatList, ListRenderItem, StyleProp, ViewStyle } from 'react-native'
 import { DropdownMenu } from './DropdownMenu'
+import { WalletType } from 'services/wallet/types'
 
 const HEADER_HEIGHT = 64
 
@@ -51,11 +52,17 @@ const WalletCard = ({
   }, [colors.$textPrimary, isExpanded])
 
   const renderWalletIcon = useCallback(() => {
+    if (
+      wallet.type === WalletType.LEDGER ||
+      wallet.type === WalletType.LEDGER_LIVE
+    ) {
+      return <Icons.Custom.Ledger color={colors.$textPrimary} />
+    }
     if (isExpanded) {
       return <Icons.Custom.Wallet color={colors.$textPrimary} />
     }
     return <Icons.Custom.WalletClosed color={colors.$textPrimary} />
-  }, [colors.$textPrimary, isExpanded])
+  }, [colors.$textPrimary, isExpanded, wallet.type])
 
   const renderAccountItem: ListRenderItem<AccountDisplayData> = useCallback(
     ({ item }) => {
