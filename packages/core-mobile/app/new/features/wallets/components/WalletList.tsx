@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Button,
   Icons,
   SearchBar,
@@ -25,7 +26,6 @@ import {
   setActiveAccount
 } from 'store/account'
 import { selectWallets } from 'store/wallet/slice'
-import { Wallet } from 'store/wallet/types'
 import {
   IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID,
   IMPORTED_ACCOUNTS_VIRTUAL_WALLET_NAME
@@ -55,7 +55,8 @@ export const WalletList = ({
   } = useTheme()
   const dispatch = useDispatch()
   const { navigate, dismiss } = useRouter()
-  const { handleAddAccount: handleAddAccountToWallet } = useManageWallet()
+  const { handleAddAccount: handleAddAccountToWallet, isAddingAccount } =
+    useManageWallet()
 
   const [searchText, setSearchText] = useState('')
   const [expandedWallets, setExpandedWallets] = useState<
@@ -66,6 +67,8 @@ export const WalletList = ({
   const allWallets = useSelector(selectWallets)
   const activeAccount = useSelector(selectActiveAccount)
   const balanceAccurate = useIsAccountBalanceAccurate(activeAccount)
+  // TODO: Implement refresh
+  const isRefreshing = false
 
   const errorMessage = balanceAccurate
     ? undefined
@@ -261,21 +264,15 @@ export const WalletList = ({
     }))
   }, [])
 
+  const onRefresh = useCallback(() => {
+    // TODO: Implement refresh
+    // dispatch(fetchWallets())
+  }, [])
+
   const handleAddAccount = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
     navigate('/accountSettings/importWallet')
   }, [navigate])
-
-  const addAccountToWallet = useCallback(
-    (wallet: Wallet) => {
-      // TODO: Add tracking for adding an account to a wallet
-      // AnalyticsService.capture('AccountSelectorAddAccount', {
-      //   accountNumber: Object.keys(accounts).length + 1
-      // })
-      handleAddAccountToWallet(wallet)
-    },
-    [handleAddAccountToWallet]
-  )
 
   const renderHeaderRight = useCallback(() => {
     return (
@@ -350,15 +347,22 @@ export const WalletList = ({
               <Button
                 size="medium"
                 leftIcon={
-                  <Icons.Content.Add
-                    color={colors.$textPrimary}
-                    width={24}
-                    height={24}
-                  />
+                  !isAddingAccount ? (
+                    <Icons.Content.Add
+                      color={colors.$textPrimary}
+                      width={24}
+                      height={24}
+                    />
+                  ) : undefined
                 }
                 type="secondary"
-                onPress={() => addAccountToWallet(item)}>
-                Add account
+                disabled={isAddingAccount}
+                onPress={() => handleAddAccountToWallet(item)}>
+                {isAddingAccount ? (
+                  <ActivityIndicator size="small" color={colors.$textPrimary} />
+                ) : (
+                  'Add account'
+                )}
               </Button>
             ) : (
               <></>
@@ -378,10 +382,11 @@ export const WalletList = ({
     },
     [
       activeAccount,
-      addAccountToWallet,
       colors.$textPrimary,
       expandedWallets,
+      isAddingAccount,
       searchText,
+      handleAddAccountToWallet,
       toggleWalletExpansion,
       walletStyle
     ]
@@ -416,6 +421,8 @@ export const WalletList = ({
       data={walletsDisplayData.filter(Boolean) as WalletDisplayData[]}
       backgroundColor={backgroundColor}
       renderHeader={renderHeader}
+      onRefresh={onRefresh}
+      refreshing={isRefreshing}
       renderHeaderRight={renderHeaderRight}
       renderEmpty={renderEmpty}
       renderItem={renderItem}

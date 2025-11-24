@@ -25,6 +25,7 @@ export const useManageWallet = (): {
   handleAddAccount: (wallet: Wallet) => void
   getDropdownItems: (wallet: Wallet) => DropdownItem[]
   handleDropdownSelect: (action: string, wallet: Wallet) => void
+  isAddingAccount: boolean
 } => {
   const [isAddingAccount, setIsAddingAccount] = useState(false)
   const dispatch = useDispatch<AppThunkDispatch>()
@@ -211,6 +212,7 @@ export const useManageWallet = (): {
   )
 
   return {
+    isAddingAccount,
     handleAddAccount,
     getDropdownItems,
     handleDropdownSelect
