@@ -350,6 +350,7 @@ export const WalletList = ({
       }
       const isExpanded = expandedWallets[item.id] ?? false
       const isActive = getIsActiveWallet(item.id, activeAccount)
+      const isAddingAccountToActiveWallet = item.accounts.some(i => i?.isActive)
 
       if (searchText && item.accounts.length === 0) {
         return null
@@ -366,18 +367,18 @@ export const WalletList = ({
               <Button
                 size="medium"
                 leftIcon={
-                  !isAddingAccount && isActive ? (
+                  isAddingAccountToActiveWallet ? undefined : (
                     <Icons.Content.Add
                       color={colors.$textPrimary}
                       width={24}
                       height={24}
                     />
-                  ) : undefined
+                  )
                 }
                 type="secondary"
-                disabled={isAddingAccount && isActive}
+                disabled={isAddingAccountToActiveWallet}
                 onPress={() => handleAddAccountToWallet(item)}>
-                {isAddingAccount && isActive ? (
+                {isAddingAccountToActiveWallet ? (
                   <ActivityIndicator size="small" color={colors.$textPrimary} />
                 ) : (
                   'Add account'
