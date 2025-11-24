@@ -82,7 +82,7 @@ const StakeConfirmScreen = (): JSX.Element => {
     }
     return 0
   }, [validator?.endTime])
-  const { validatedStakingEndTime, validatedStakingDuration } =
+  const { minStartTime, validatedStakingEndTime, validatedStakingDuration } =
     useValidateStakingEndTime(stakeEndTimeInMilliseconds, validatorEndTimeUnix)
 
   const localValidatedStakingEndTime = useMemo(() => {
@@ -299,11 +299,12 @@ const StakeConfirmScreen = (): JSX.Element => {
 
       issueDelegation({
         nodeId: validator.nodeID,
+        startDate: minStartTime,
         endDate: validatedStakingEndTime,
         recomputeSteps
       })
     },
-    [issueDelegation, validatedStakingEndTime, validator]
+    [issueDelegation, minStartTime, validatedStakingEndTime, validator]
   )
 
   usePreventScreenRemoval(isIssueDelegationPending)

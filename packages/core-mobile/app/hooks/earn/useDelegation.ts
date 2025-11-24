@@ -108,7 +108,7 @@ export const useDelegation = (): {
 
   const delegate: Delegate = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-shadow
-    async ({ steps, endDate, nodeId }) => {
+    async ({ steps, startDate, endDate, nodeId }) => {
       if (activeAccount === undefined) {
         throw new Error('No active account')
       }
