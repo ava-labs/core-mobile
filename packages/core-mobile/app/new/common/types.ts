@@ -1,7 +1,7 @@
 import { WalletType } from 'services/wallet/types'
+import { Account } from 'store/account'
 import { Wallet } from 'store/wallet/types'
 import { DropdownGroup } from './components/DropdownMenu'
-import { Account } from 'store/account'
 
 export type DropdownSelection = {
   title: string
