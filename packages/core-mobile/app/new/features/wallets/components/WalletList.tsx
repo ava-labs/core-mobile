@@ -74,7 +74,7 @@ export const WalletList = ({
   const errorMessage = balanceAccurate
     ? undefined
     : 'Unable to load all balances'
-  const { recentAccountIds, updateRecentAccount } = useRecentAccounts()
+  const { recentAccountIds } = useRecentAccounts()
 
   const allAccountsArray = useMemo(() => {
     return recentAccountIds
@@ -160,12 +160,11 @@ export const WalletList = ({
         return
       }
       dispatch(setActiveAccount(accountId))
-      updateRecentAccount(accountId)
 
       dismiss()
       dismiss()
     },
-    [activeAccount?.id, dispatch, updateRecentAccount, dismiss]
+    [activeAccount?.id, dispatch, dismiss]
   )
 
   const importedWallets = useMemo(() => {
@@ -267,6 +266,7 @@ export const WalletList = ({
   }, [
     importedWallets,
     accountSearchResults,
+    recentAccountIds,
     activeAccount?.id,
     handleSetActiveAccount,
     gotoAccountDetails
