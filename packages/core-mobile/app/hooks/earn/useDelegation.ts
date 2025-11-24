@@ -125,20 +125,18 @@ export const useDelegation = (): {
       let txHash
 
       for (const step of steps) {
-        // check if start date is less than current date + 1 minute
-        // the recompute step logic could take a while, so we need to ensure the start date is not in the past
-        // otherwise, the transaction will fail with a "Start date must be in future" error
-        const minStartDate = new Date(Date.now() + 1 * 60 * 1000)
-        const delegateStartDate =
-          step.operation === Operation.DELEGATE && startDate < minStartDate
-            ? minStartDate
-            : startDate
-
         switch (step.operation) {
-          case Operation.DELEGATE:
+          case Operation.DELEGATE: {
             Logger.info(
               `delegating ${step.amount} with estimated fee ${step.fee}`
             )
+
+            // check if start date is less than current date + 1 minute
+            // the recompute step logic could take a while, so we need to ensure the start date is not in the past
+            // otherwise, the transaction will fail with a "Start date must be in future" error
+            const minStartDate = new Date(Date.now() + 1 * 60 * 1000)
+            const delegateStartDate =
+              startDate < minStartDate ? minStartDate : startDate
 
             txHash = await EarnService.issueAddDelegatorTransaction({
               walletId: activeWallet.id,
@@ -153,7 +151,7 @@ export const useDelegation = (): {
               pFeeAdjustmentThreshold
             })
             break
-
+          }
           case Operation.IMPORT_P:
             Logger.info(`importing P-Chain with estimated fee ${step.fee}`)
 
