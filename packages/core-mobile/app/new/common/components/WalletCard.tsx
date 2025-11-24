@@ -11,8 +11,8 @@ import { AccountListItem } from 'features/wallets/components/AccountListItem'
 import { WalletBalance } from 'features/wallets/components/WalletBalance'
 import React, { useCallback } from 'react'
 import { FlatList, ListRenderItem, StyleProp, ViewStyle } from 'react-native'
-import { DropdownMenu } from './DropdownMenu'
 import { WalletType } from 'services/wallet/types'
+import { DropdownMenu } from './DropdownMenu'
 
 const HEADER_HEIGHT = 64
 
