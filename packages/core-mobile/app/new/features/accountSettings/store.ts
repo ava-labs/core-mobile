@@ -25,17 +25,14 @@ export const recentAccountsStore = create<RecentAccountsState>()(
       recentAccountIds: [],
       addRecentAccounts: (accountIds: string[]) =>
         set(state => ({
-          recentAccountIds: [...state.recentAccountIds, ...accountIds].slice(
-            0,
-            MAX_RECENT_ACCOUNTS
-          )
+          recentAccountIds: [...state.recentAccountIds, ...accountIds]
         })),
       updateRecentAccount: (accountId: string) =>
         set(state => ({
           recentAccountIds: [
             accountId,
             ...state.recentAccountIds.filter(id => id !== accountId)
-          ].slice(0, MAX_RECENT_ACCOUNTS)
+          ]
         })),
       deleteRecentAccounts: () =>
         set({
@@ -65,4 +62,3 @@ export const useRecentAccounts = (): RecentAccountsState => {
   return recentAccountsStore()
 }
 
-const MAX_RECENT_ACCOUNTS = 5

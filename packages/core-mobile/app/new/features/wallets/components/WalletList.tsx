@@ -366,7 +366,7 @@ export const WalletList = ({
               <Button
                 size="medium"
                 leftIcon={
-                  !isAddingAccount ? (
+                  !isAddingAccount && isActive ? (
                     <Icons.Content.Add
                       color={colors.$textPrimary}
                       width={24}
@@ -375,9 +375,9 @@ export const WalletList = ({
                   ) : undefined
                 }
                 type="secondary"
-                disabled={isAddingAccount}
+                disabled={isAddingAccount && isActive}
                 onPress={() => handleAddAccountToWallet(item)}>
-                {isAddingAccount ? (
+                {isAddingAccount && isActive ? (
                   <ActivityIndicator size="small" color={colors.$textPrimary} />
                 ) : (
                   'Add account'
