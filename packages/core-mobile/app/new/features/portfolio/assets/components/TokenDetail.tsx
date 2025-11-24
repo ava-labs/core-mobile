@@ -49,24 +49,47 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
     const isXChainToken = token && isTokenWithBalanceAVM(token)
 
     if (isPChainToken) {
-      return Object.keys(token.balancePerType).sort((a, b) => {
-        return Number(
-          (token.balancePerType[b as PChainBalanceType] ?? 0n) -
-            (token.balancePerType[a as PChainBalanceType] ?? 0n)
-        )
-      })
+      return [
+        ...Object.keys(token.balancePerType).sort((a, b) => {
+          return Number(
+            (token.balancePerType[b as PChainBalanceType] ?? 0n) -
+              (token.balancePerType[a as PChainBalanceType] ?? 0n)
+          )
+        }),
+        'Total'
+      ]
     }
 
     if (isXChainToken) {
-      return Object.keys(token.balancePerType).sort((a, b) => {
-        return Number(
-          (token.balancePerType[b as XChainBalanceType] ?? 0n) -
-            (token.balancePerType[a as XChainBalanceType] ?? 0n)
-        )
-      })
+      return [
+        ...Object.keys(token.balancePerType).sort((a, b) => {
+          return Number(
+            (token.balancePerType[b as XChainBalanceType] ?? 0n) -
+              (token.balancePerType[a as XChainBalanceType] ?? 0n)
+          )
+        }),
+        'Total'
+      ]
     }
     return []
   }, [token])
+
+  const totalBalance = useMemo(() => {
+    return data
+      .filter(item => item !== 'Total')
+      .reduce((acc, item) => {
+        const { balance } = getBalanceAndAssetName(item)
+        if (balance) {
+          const balanceUnit = new TokenUnit(
+            balance,
+            xpChainToken.maxDecimals,
+            xpChainToken.symbol
+          )
+          return acc.add(balanceUnit)
+        }
+        return acc
+      }, new TokenUnit(0n, xpChainToken.maxDecimals, xpChainToken.symbol))
+  }, [data, getBalanceAndAssetName])
 
   const renderItem = useCallback(
     ({ item, index }: { item: string; index: number }): React.JSX.Element => {
@@ -75,12 +98,21 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
       const balanceInAvax = balance
         ? new TokenUnit(balance, xpChainToken.maxDecimals, xpChainToken.symbol)
         : undefined
+
       const formattedBalanceInAvax =
         balanceInAvax?.toDisplay({
           fixedDp: 2,
           asNumber: true
         }) ?? 0
 
+      const formattedBalance =
+        totalBalance?.toDisplay({
+          fixedDp: 2,
+          asNumber: true
+        }) ?? 0
+
+      const title = item === 'Total' ? 'Total balance' : assetName
+      const value = item === 'Total' ? formattedBalance : formattedBalanceInAvax
       const isFirst = index === 0
       const isLast = index === data.length - 1
 
@@ -106,7 +138,7 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
               height: 48
             }}>
             <Text variant="subtitle2" numberOfLines={1} sx={{ fontSize: 16 }}>
-              {assetName}
+              {title}
             </Text>
             <BalanceText
               variant="subtitle2"
@@ -115,13 +147,13 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
                 color: '$textSecondary',
                 fontSize: 16
               }}>
-              {formattedBalanceInAvax} {xpChainToken.symbol}
+              {value} {xpChainToken.symbol}
             </BalanceText>
           </View>
         </View>
       )
     },
-    [getBalanceAndAssetName, data.length]
+    [getBalanceAndAssetName, totalBalance, data.length]
   )
 
   const renderHeader = useCallback((): JSX.Element => {
@@ -129,7 +161,7 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
 
     // TODO: Add after ledger is implemented
     // return (
-    //   <View sx={{ marginBottom: 12, marginTop: 8 }}>
+    //   <View sx={{ marginTop: 8 }}>
     //     <GroupList
     //       data={[
     //         {
@@ -153,7 +185,8 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
       <CollapsibleTabs.FlatList
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingBottom: 16
+          paddingBottom: 16,
+          paddingTop: 12
         }}
         data={data}
         ListHeaderComponent={renderHeader}
