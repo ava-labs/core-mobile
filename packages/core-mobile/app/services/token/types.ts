@@ -8,7 +8,6 @@ import {
   record,
   string,
   tuple,
-  union,
   z
 } from 'zod'
 
@@ -94,33 +93,6 @@ export const CoinMarketSchema = object({
 })
 
 export type CoinMarket = z.infer<typeof CoinMarketSchema>
-
-export const TopTokenSchema = object({
-  symbol: string(),
-  internalId: string(),
-  coingeckoId: string(),
-  platforms: union([record(string(), string()), object({}).strict()]),
-  name: string(),
-  price: number().optional().nullable(),
-  image: string().optional(),
-  sparkline_in_7d: object({
-    price: array(number())
-  })
-    .nullable()
-    .optional(),
-  price_change_24h: number().optional().nullable(),
-  price_change_percentage_24h: number().optional().nullable(),
-  price_change_percentage_1h_in_currency: number().optional().nullable(),
-  price_change_percentage_24h_in_currency: number().optional().nullable(),
-  price_change_percentage_7d_in_currency: number().optional().nullable(),
-  market_cap: number().nullable().optional(),
-  total_volume: number().nullable().optional(),
-  circulating_supply: number().nullable().optional(),
-  current_price: number().optional().nullable(),
-  last_updated: string().optional().nullable()
-})
-
-export type TopToken = z.infer<typeof TopTokenSchema>
 
 export const TrendingTokenSchema = z.object({
   internalId: z.string(),

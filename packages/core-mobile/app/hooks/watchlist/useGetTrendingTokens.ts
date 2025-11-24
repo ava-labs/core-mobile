@@ -18,10 +18,7 @@ export const useGetTrendingTokens = <TData = TrendingToken[]>(
 
   return useQuery({
     enabled: isFocused,
-    queryKey: [
-      ReactQueryKeys.WATCHLIST_TRENDING_TOKENS_AND_CHARTS,
-      exchangeRate
-    ],
+    queryKey: [ReactQueryKeys.WATCHLIST_TRENDING_TOKENS, exchangeRate],
     queryFn: async () => {
       const tokens = await runAfterInteractions(async () => {
         return WatchlistService.getTrendingTokens(exchangeRate)

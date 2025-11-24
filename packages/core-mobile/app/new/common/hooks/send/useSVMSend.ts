@@ -69,11 +69,9 @@ const useSVMSend: SendAdapterSVM = ({
     }
 
     if (selectedToken.type === TokenType.NATIVE) {
-      return new TokenUnit(
-        selectedToken.balance - SOLANA_FIXED_BASE_FEE,
-        nativeToken.decimals,
-        nativeToken.symbol
-      )
+      const maxAmountValue = selectedToken.balance - SOLANA_FIXED_BASE_FEE
+      const maxAmount = maxAmountValue > 0n ? maxAmountValue : 0n
+      return new TokenUnit(maxAmount, nativeToken.decimals, nativeToken.symbol)
     } else {
       const splToken = selectedToken as TokenWithBalanceSPL
       return new TokenUnit(splToken.balance, splToken.decimals, splToken.symbol)

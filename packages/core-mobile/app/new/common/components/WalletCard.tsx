@@ -167,6 +167,8 @@ const WalletCard = ({
         </View>
 
         <View
+          accessible={true}
+          testID={`more_icon__${wallet.name}`}
           sx={{
             flexDirection: 'row',
             alignItems: 'center',

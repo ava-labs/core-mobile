@@ -180,13 +180,10 @@ const useEVMSend: SendAdapterEVM = ({
 
     const totalFee = gasLimit * maxFee
     const maxAmountValue = nativeToken.balance - totalFee
+    const maxAmount = maxAmountValue > 0n ? maxAmountValue : 0n
 
     if (selectedToken.type === TokenType.NATIVE) {
-      return new TokenUnit(
-        maxAmountValue ?? 0n,
-        nativeToken.decimals,
-        nativeToken.symbol
-      )
+      return new TokenUnit(maxAmount, nativeToken.decimals, nativeToken.symbol)
     } else if (selectedToken.type === TokenType.ERC20) {
       return new TokenUnit(
         selectedToken.balance,

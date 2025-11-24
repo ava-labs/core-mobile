@@ -1,6 +1,7 @@
 import * as cs from '@cubist-labs/cubesigner-sdk'
 import { strip0x } from '@avalabs/core-utils-sdk'
 import { AddressPublicKey, Curve } from 'utils/publicKeys'
+import { DEPRECATED_AVALANCHE_DERIVATION_PATH_PREFIX } from 'features/ledger/consts'
 
 export const transformKeyInfosToPubKeys = (
   keyInfos: cs.KeyInfo[]
@@ -9,7 +10,23 @@ export const transformKeyInfosToPubKeys = (
   const requiredKeyTypes: cs.KeyTypeApi[] = [cs.Secp256k1.Evm, cs.Secp256k1.Ava]
   const optionalKeyTypes: cs.KeyTypeApi[] = [cs.Ed25519.Solana]
   const allowedKeyTypes = [...requiredKeyTypes, ...optionalKeyTypes]
-  const keys = keyInfos
+
+  // we are migrating to the new account model with new derivation path spec for Ava and AvaTest: m/44'/${coinIndex}'/${accountIndex}'/0/0
+  // in the backend, we are returning the keys with new spec and existing spec for backward compatibility,
+  // to prepare for this change, we need to filter out the keys with new spec to avoid getting the wrong derivation path
+  const filteredKeyInfos = keyInfos?.filter(k => {
+    if (
+      k.key_type === cs.Secp256k1.Ava ||
+      k.key_type === cs.Secp256k1.AvaTest
+    ) {
+      return k.derivation_info?.derivation_path?.startsWith(
+        DEPRECATED_AVALANCHE_DERIVATION_PATH_PREFIX
+      )
+    }
+    return true
+  })
+
+  const keys = filteredKeyInfos
     ?.filter(
       k =>
         k.enabled &&
