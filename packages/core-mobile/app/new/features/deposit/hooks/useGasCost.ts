@@ -9,7 +9,7 @@ type UseMaxDepositAmountParams = {
 
 export const useGasCost = ({
   gasAmount,
-  additionalBuffer = 3n
+  additionalBuffer = 3n // 3x buffer to account for gas price volatility and ensure transaction success
 }: UseMaxDepositAmountParams): {
   gasCost: bigint | undefined
 } => {

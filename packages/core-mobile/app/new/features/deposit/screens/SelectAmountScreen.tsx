@@ -18,39 +18,39 @@ export const SelectAmountScreen = (): JSX.Element => {
     back()
   }, [dismissAll, back])
 
-  return (
-    <>
-      {selectedAsset &&
-        selectedMarket &&
-        (selectedMarket.marketName === MarketNames.aave ? (
-          selectedAsset.token.type === TokenType.NATIVE ? (
-            <AaveAvaxSelectAmountForm
-              asset={selectedAsset}
-              market={selectedMarket}
-              onSuccess={handleSuccess}
-            />
-          ) : (
-            <AaveErc20SelectAmountForm
-              asset={selectedAsset}
-              market={selectedMarket}
-              onSuccess={handleSuccess}
-            />
-          )
-        ) : selectedMarket.marketName === MarketNames.benqi ? (
-          selectedAsset.token.type === TokenType.NATIVE ? (
-            <BenqiAvaxSelectAmountForm
-              asset={selectedAsset}
-              market={selectedMarket}
-              onSuccess={handleSuccess}
-            />
-          ) : (
-            <BenqiErc20SelectAmountForm
-              asset={selectedAsset}
-              market={selectedMarket}
-              onSuccess={handleSuccess}
-            />
-          )
-        ) : null)}
-    </>
-  )
+  if (!selectedAsset || !selectedMarket) {
+    return <></>
+  }
+
+  if (selectedMarket.marketName === MarketNames.aave) {
+    return selectedAsset.token.type === TokenType.NATIVE ? (
+      <AaveAvaxSelectAmountForm
+        asset={selectedAsset}
+        market={selectedMarket}
+        onSuccess={handleSuccess}
+      />
+    ) : (
+      <AaveErc20SelectAmountForm
+        asset={selectedAsset}
+        market={selectedMarket}
+        onSuccess={handleSuccess}
+      />
+    )
+  } else if (selectedMarket.marketName === MarketNames.benqi) {
+    return selectedAsset.token.type === TokenType.NATIVE ? (
+      <BenqiAvaxSelectAmountForm
+        asset={selectedAsset}
+        market={selectedMarket}
+        onSuccess={handleSuccess}
+      />
+    ) : (
+      <BenqiErc20SelectAmountForm
+        asset={selectedAsset}
+        market={selectedMarket}
+        onSuccess={handleSuccess}
+      />
+    )
+  }
+
+  return <></>
 }
