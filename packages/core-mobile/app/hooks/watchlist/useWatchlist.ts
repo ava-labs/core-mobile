@@ -16,7 +16,7 @@ import { LocalTokenWithBalance } from 'store/balance/types'
 import { getCaip2ChainIdForToken } from 'utils/caip2ChainIds'
 import { isNetworkContractToken } from 'utils/isNetworkContractToken'
 import { useGetPrices } from './useGetPrices'
-import { useGetTokensAndCharts } from './useGetTokensAndCharts'
+import { useTopTokens } from './useTopTokens'
 import { useGetTrendingTokens } from './useGetTrendingTokens'
 
 type UseWatchListReturnType = {
@@ -47,7 +47,7 @@ export const useWatchlist = (): UseWatchListReturnType => {
     isLoading: isLoadingTopTokens,
     refetch: refetchTopTokens,
     isRefetching: isRefetchingTopTokens
-  } = useGetTokensAndCharts()
+  } = useTopTokens()
   const {
     data: trendingTokensResponse,
     isLoading: isLoadingTrendingTokens,

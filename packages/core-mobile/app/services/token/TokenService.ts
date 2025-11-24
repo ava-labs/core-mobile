@@ -32,8 +32,7 @@ import {
   CoinsSearchResponse,
   ContractMarketChartResponse,
   CoinsInfoResponse,
-  TrendingToken,
-  TopToken
+  TrendingToken
 } from './types'
 import {
   coingeckoRetry,
@@ -97,31 +96,6 @@ export class TokenService {
       type: TokenType.ERC20,
       chainId: network.chainId
     }
-  }
-
-  /**
-   * Get market data from cached watchlist
-   * @param currency the currency to be used
-   * @returns the cached markets
-   */
-  async getMarketsFromWatchlistCache({
-    currency = VsCurrencyType.USD
-  }: GetMarketsParams): Promise<TopToken[]> {
-    let data: TopToken[] | undefined
-
-    const cacheId = `getMarkets-${currency}`
-
-    data = getCache(cacheId)
-
-    if (data === undefined) {
-      data = await watchListCacheClient.tokens({
-        queries: { currency }
-      })
-
-      setCache(cacheId, data)
-    }
-
-    return data ?? []
   }
 
   /**

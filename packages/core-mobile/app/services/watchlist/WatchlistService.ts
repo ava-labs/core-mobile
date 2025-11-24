@@ -15,10 +15,25 @@ import {
   Prices
 } from 'store/watchlist/types'
 import Logger from 'utils/Logger'
+import { tokenAggregatorApi } from 'utils/network/tokenAggregator'
+import { WatchlistMarketsResponse } from './types'
+
+const fetchTopMarkets = async ({
+  currency
+}: {
+  currency: string
+}): Promise<WatchlistMarketsResponse> => {
+  return tokenAggregatorApi.getV1watchlistmarkets({
+    queries: {
+      currency: currency,
+      topMarkets: true
+    }
+  })
+}
 
 /*
  WatchlistService handles the following 3 API calls:
-  1. getTokens: get token data from cache
+  1. getTopTokens: get top tokens
   2. getPrices
     - get price data from cache
     - get price data from network (tokens not in cache)
@@ -28,28 +43,28 @@ import Logger from 'utils/Logger'
     - get price and market data from network (tokens not in cache)
 */
 class WatchlistService {
-  async getTokens(currency: string): Promise<{
+  async getTopTokens(currency: string): Promise<{
     tokens: Record<string, MarketToken>
     charts: Charts
   }> {
-    const cachedTokens = await TokenService.getMarketsFromWatchlistCache({
-      currency: currency.toLowerCase() as VsCurrencyType
+    const topMarkets = await fetchTopMarkets({
+      currency: currency.toLowerCase()
     })
 
     const tokens: Record<string, MarketToken> = {}
     const charts: Charts = {}
 
-    cachedTokens.forEach(token => {
+    topMarkets.forEach(token => {
       const id = token.internalId
 
       const tokenToAdd = {
         marketType: MarketType.TOP,
         id,
         coingeckoId: token.coingeckoId,
-        platforms: token.platforms,
+        platforms: token.platforms ?? {},
         symbol: token.symbol,
         name: token.name,
-        logoUri: token.image,
+        logoUri: token.meta?.logoUri ?? undefined,
         currentPrice: token.current_price ?? undefined,
         priceChange24h: token.price_change_24h ?? undefined,
         priceChangePercentage24h: token.price_change_percentage_24h ?? undefined

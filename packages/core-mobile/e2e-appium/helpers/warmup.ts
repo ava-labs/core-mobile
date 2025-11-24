@@ -1,9 +1,7 @@
 import onboardingPage from '../pages/onboarding.page'
-import settingsPage from '../pages/settings.page'
 import { actions } from './actions'
 
 export default async function warmup(
-  addAccount = false,
   mnemonic = process.env.E2E_MNEMONIC as string
 ) {
   await onboardingPage.exitMetro()
@@ -19,9 +17,6 @@ export default async function warmup(
   await onboardingPage.tapNextBtnOnAvatarScreen()
   await onboardingPage.tapLetsGo()
   await onboardingPage.verifyLoggedIn()
-  if (addAccount) {
-    await settingsPage.createNthAccount()
-  }
 }
 
 export async function unlockLoggedIn(pin = '000000') {

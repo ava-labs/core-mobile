@@ -24,7 +24,7 @@ public:
   CryptoHybrid() : HybridObject(TAG) {}
   ~CryptoHybrid() override = default;
     
-    typedef std::variant<std::shared_ptr<ArrayBuffer>, std::string> BufferOrString;
+  typedef std::variant<std::shared_ptr<ArrayBuffer>, std::string> BufferOrString;
 
   // ---- Spec methods ----
   std::shared_ptr<ArrayBuffer> getPublicKey(

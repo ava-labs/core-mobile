@@ -70,6 +70,7 @@ export default {
   usdcAddress: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
   ethAddress: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
   delete: 'Delete',
+  remove: 'Remove',
   cancel: 'Cancel',
   approvePopupTitle: 'Do you approve this transaction?',
   approvePopupSpendTitle: 'Do you approve this spend limit?',

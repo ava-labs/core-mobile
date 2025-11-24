@@ -3,6 +3,7 @@ export default {
   chooseWalletTitle: 'How would you like to access your existing wallet?',
   typeRecoverPhase: 'list_item__Type in a recovery phrase',
   recoveryPhraseInput: `text_area__recovery_phrase`,
+  enterRecoveryPhraseTitle: 'Enter your\nrecovery phrase',
   letsGo: 'lets_go_btn',
   unlockBtn: 'unlock_btn',
   agreeAndContinue: 'agreeAndContinueBtn',
