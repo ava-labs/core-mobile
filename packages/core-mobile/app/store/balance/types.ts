@@ -23,7 +23,7 @@ export const assetXDisplayNames: Record<string, string> = {
   locked: 'Locked',
   unlocked: 'Unlocked',
   atomicMemoryLocked: 'Atomic memory locked',
-  atomicMemoryUnlocked: 'Atomic nemory unlocked'
+  atomicMemoryUnlocked: 'Atomic memory unlocked'
 }
 
 // Assets
