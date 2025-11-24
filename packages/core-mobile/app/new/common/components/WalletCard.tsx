@@ -92,9 +92,7 @@ const WalletCard = ({
     <View
       style={[
         {
-          backgroundColor: colors.$surfacePrimary,
-          borderWidth: 1,
-          borderColor: colors.$borderPrimary,
+          backgroundColor: colors.$surfaceSecondary,
           borderRadius: 16,
           overflow: 'hidden'
         },

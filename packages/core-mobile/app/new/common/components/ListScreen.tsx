@@ -69,6 +69,8 @@ export interface ListScreenProps<T>
   isModal?: boolean
   /** Whether this screen has a tab bar */
   hasTabBar?: boolean
+  /** Optional background color */
+  backgroundColor?: string
   /** Whether to show the navigation header title */
   showNavigationHeaderTitle?: boolean
   /** Optional function to render a custom sticky header component */
@@ -77,8 +79,6 @@ export interface ListScreenProps<T>
   renderHeaderRight?: () => React.ReactNode
   /** Optional function to render content when the list is empty */
   renderEmpty?: () => React.ReactNode
-  /** Optional background color for the header */
-  backgroundColor?: string
 }
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
@@ -88,15 +88,15 @@ export const ListScreen = <T,>({
   title,
   subtitle,
   navigationTitle,
-  hasParent,
-  isModal,
-  hasTabBar,
   showNavigationHeaderTitle = true,
+  hasParent,
+  hasTabBar,
   backgroundColor,
+  isModal,
   renderEmpty,
   renderHeader,
   renderHeaderRight,
-  ...rest
+  ...props
 }: ListScreenProps<T>): JSX.Element => {
   const insets = useSafeAreaInsets()
   const headerHeight = useHeaderHeight()
@@ -134,26 +134,37 @@ export const ListScreen = <T,>({
     [onScroll]
   )
 
-  const onScrollEndDrag = useCallback((): void => {
-    'worklet'
-    if (scrollY.value > titleHeight.value) {
-      scrollViewRef.current?.scrollToOffset({
-        offset:
-          scrollY.value > contentHeaderHeight.value
-            ? scrollY.value
-            : contentHeaderHeight.value
-      })
-    } else {
-      scrollViewRef.current?.scrollToOffset({
-        offset: 0
-      })
-    }
-  }, [contentHeaderHeight.value, scrollY.value, titleHeight.value])
+  const onScrollEndDrag = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>): void => {
+      'worklet'
+      if (event.nativeEvent.contentOffset.y < contentHeaderHeight.value) {
+        if (event.nativeEvent.contentOffset.y > titleHeight.value) {
+          scrollViewRef.current?.scrollToOffset({
+            offset:
+              event.nativeEvent.contentOffset.y > contentHeaderHeight.value
+                ? event.nativeEvent.contentOffset.y
+                : contentHeaderHeight.value
+          })
+        } else {
+          scrollViewRef.current?.scrollToOffset({
+            offset: 0
+          })
+        }
+      }
+    },
+    [contentHeaderHeight.value, titleHeight.value]
+  )
 
   const handleTitleLayout = useCallback(
     (event: LayoutChangeEvent) => {
-      const { height } = event.nativeEvent.layout
+      const { height, x, y, width } = event.nativeEvent.layout
       titleHeight.value = height
+      setTargetLayout({
+        x,
+        y,
+        width,
+        height
+      })
     },
     [titleHeight]
   )
@@ -176,23 +187,17 @@ export const ListScreen = <T,>({
 
   const handleContentHeaderLayout = useCallback(
     (event: LayoutChangeEvent) => {
-      const { height, x, y, width } = event.nativeEvent.layout
+      const { height } = event.nativeEvent.layout
       contentHeaderHeight.value = height
-      setTargetLayout({
-        x,
-        y,
-        width,
-        height: height - titleHeight.value
-      })
     },
-    [contentHeaderHeight, titleHeight.value]
+    [contentHeaderHeight]
   )
 
   const animatedHeaderContainerStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
       scrollY.value,
       [0, contentHeaderHeight.value],
-      [0, -contentHeaderHeight.value - (isModal ? 16 : 24)],
+      [0, -contentHeaderHeight.value - (isModal ? 16 : 20)],
       Extrapolation.CLAMP
     )
 
@@ -213,7 +218,7 @@ export const ListScreen = <T,>({
         0,
         titleHeight.value + subtitleHeight.value
       ],
-      [0.94, 1, 0.94]
+      [0.95, 1, 0.95]
     )
     return {
       opacity: 1 - targetHiddenProgress.value,
@@ -228,18 +233,15 @@ export const ListScreen = <T,>({
   })
 
   const animatedHeaderBlurStyle = useAnimatedStyle(() => {
+    // if we have a background color, we need to animate the opacity of the blur view
+    // so that it blends with the background color after scrolling
     return {
-      opacity: targetHiddenProgress.value
+      opacity: backgroundColor ? targetHiddenProgress.value : 1
     }
   })
 
   const animatedBorderStyle = useAnimatedStyle(() => {
-    // On iOS, we need to animate the opacity of the border
-    // because of the blur tint effect that changes the backgroundColor
-    const opacity =
-      Platform.OS === 'ios'
-        ? interpolate(scrollY.value, [0, headerHeight], [0, 1])
-        : 1
+    const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
     return {
       opacity
     }
@@ -250,8 +252,19 @@ export const ListScreen = <T,>({
       ? keyboard.height + 16
       : insets.bottom + 16
 
+    // Android formsheet in native-stack has a default top padding of insets.top
+    // so we need to add this to adjust the height of the list
+    const extraPadding =
+      Platform.OS === 'android'
+        ? isModal
+          ? insets.top + 16
+          : 16
+        : isModal
+        ? 10
+        : 30
+
     return [
-      rest?.contentContainerStyle,
+      props?.contentContainerStyle,
       data.length === 0
         ? {
             justifyContent: 'center',
@@ -264,22 +277,20 @@ export const ListScreen = <T,>({
           frame.height +
           (contentHeaderHeight?.value ?? 0) -
           (renderHeaderHeight?.value ?? 0) +
-          // Android formsheet in native-stack has a default top padding of insets.top
-          // so we need to add this to adjust the height of the list
-          (isModal ? (Platform.OS === 'android' ? insets.top + 8 : -24) : 16)
+          extraPadding
       }
     ] as StyleProp<ViewStyle>[]
   }, [
-    keyboard.isVisible,
-    keyboard.height,
-    insets.bottom,
-    insets.top,
-    rest?.contentContainerStyle,
+    contentHeaderHeight?.value,
     data.length,
     frame.height,
-    contentHeaderHeight?.value,
+    insets.bottom,
+    insets.top,
+    isModal,
+    keyboard.height,
+    keyboard.isVisible,
     renderHeaderHeight?.value,
-    isModal
+    props?.contentContainerStyle
   ])
 
   const ListHeaderComponent = useMemo(() => {
@@ -406,11 +417,12 @@ export const ListScreen = <T,>({
         maxToRenderPerBatch={15}
         windowSize={12}
         initialNumToRender={15}
+        removeClippedSubviews={Platform.OS === 'android'}
         contentContainerStyle={contentContainerStyle}
         updateCellsBatchingPeriod={50}
-        {...rest}
+        {...props}
         style={[
-          rest.style,
+          props.style,
           {
             backgroundColor: backgroundColor ?? 'transparent'
           }

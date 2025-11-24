@@ -15,6 +15,7 @@ import { WalletDisplayData } from 'common/types'
 import { useRouter } from 'expo-router'
 import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalanceAccurate'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { StyleProp, ViewStyle } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
 import {
@@ -34,6 +35,7 @@ import { getIsActiveWallet } from '../utils'
 export const WalletList = ({
   hasSearch,
   backgroundColor,
+  walletStyle,
   ...props
 }: Omit<
   ListScreenProps<WalletDisplayData>,
@@ -46,6 +48,7 @@ export const WalletList = ({
 > & {
   hasSearch?: boolean
   backgroundColor?: string
+  walletStyle?: StyleProp<ViewStyle>
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -292,7 +295,13 @@ export const WalletList = ({
           <SearchBar onTextChanged={setSearchText} searchText={searchText} />
         )}
         {errorMessage && (
-          <View sx={{ gap: 8, alignItems: 'center', flexDirection: 'row' }}>
+          <View
+            sx={{
+              gap: 8,
+              alignItems: 'center',
+              flexDirection: 'row',
+              marginTop: hasSearch ? 0 : 8
+            }}>
             <Icons.Alert.ErrorOutline color={colors.$textDanger} />
             <Text
               variant="buttonMedium"
@@ -357,10 +366,13 @@ export const WalletList = ({
           }
           onToggleExpansion={() => toggleWalletExpansion(item.id)}
           showMoreButton={item.id !== IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID}
-          style={{
-            marginHorizontal: 16,
-            marginVertical: 6
-          }}
+          style={[
+            {
+              marginHorizontal: 16,
+              marginVertical: 6
+            },
+            walletStyle
+          ]}
         />
       )
     },
@@ -370,7 +382,8 @@ export const WalletList = ({
       colors.$textPrimary,
       expandedWallets,
       searchText,
-      toggleWalletExpansion
+      toggleWalletExpansion,
+      walletStyle
     ]
   )
 

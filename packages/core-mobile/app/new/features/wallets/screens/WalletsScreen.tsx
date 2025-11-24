@@ -9,6 +9,11 @@ const WalletsScreen = (): JSX.Element => {
       title="My wallets"
       subtitle={`An overview of your wallets\nand associated accounts`}
       backgroundColor={theme.isDark ? '#121213' : '#F1F1F4'}
+      walletStyle={{
+        backgroundColor: theme.colors.$surfacePrimary,
+        borderColor: theme.colors.$borderPrimary,
+        borderWidth: 1
+      }}
     />
   )
 }
