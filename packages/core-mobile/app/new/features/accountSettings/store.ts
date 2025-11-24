@@ -61,4 +61,3 @@ export const recentAccountsStore = create<RecentAccountsState>()(
 export const useRecentAccounts = (): RecentAccountsState => {
   return recentAccountsStore()
 }
-
