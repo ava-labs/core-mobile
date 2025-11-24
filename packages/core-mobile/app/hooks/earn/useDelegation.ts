@@ -131,12 +131,10 @@ export const useDelegation = (): {
               `delegating ${step.amount} with estimated fee ${step.fee}`
             )
 
-            // check if start date is less than current date + 1 minute
+            // always use current date + 1 minute for the start date
             // the recompute step logic could take a while, so we need to ensure the start date is not in the past
             // otherwise, the transaction will fail with a "Start date must be in future" error
-            const minStartDate = new Date(Date.now() + 1 * 60 * 1000)
-            const delegateStartDate =
-              startDate < minStartDate ? minStartDate : startDate
+            const delegateStartDate = new Date(Date.now() + 1 * 60 * 1000)
 
             txHash = await EarnService.issueAddDelegatorTransaction({
               walletId: activeWallet.id,
