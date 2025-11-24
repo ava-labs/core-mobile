@@ -28,7 +28,6 @@ const MarketScreen = ({
     isLoadingTopTokens,
     refetchTopTokens
   } = useWatchlist()
-
   const { data, sort, view } = useTrackSortAndView(topTokens, prices)
   const listType = view.selected as MarketView
 
