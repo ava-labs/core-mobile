@@ -21,6 +21,10 @@ class OnboardingPage {
     return selectors.getById(onboardingLoc.recoveryPhraseInput)
   }
 
+  get enterRecoveryPhraseTitle() {
+    return selectors.getByText(onboardingLoc.enterRecoveryPhraseTitle)
+  }
+
   get letsGo() {
     return selectors.getById(onboardingLoc.letsGo)
   }
@@ -141,7 +145,7 @@ class OnboardingPage {
 
   async enterRecoveryPhrase(recoveryPhrase: string) {
     await actions.type(this.recoveryPhraseInput, recoveryPhrase)
-    await actions.dismissKeyboard(onboardingLoc.recoveryPhraseInput)
+    await actions.tap(this.enterRecoveryPhraseTitle)
   }
 
   async enterWalletName(walletName: string | undefined = undefined) {
