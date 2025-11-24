@@ -95,32 +95,34 @@ const WalletCard = ({
         </View>
 
         {showMoreButton && (
-          <DropdownMenu
-            groups={[
-              {
-                key: 'wallet-actions',
-                items: getDropdownItems(wallet)
-              }
-            ]}
-            onPressAction={(event: { nativeEvent: { event: string } }) =>
-              handleDropdownSelect(event.nativeEvent.event, wallet)
-            }>
-            <TouchableOpacity
-              hitSlop={8}
-              style={{
-                minHeight: 48,
-                paddingRight: 24,
-                paddingLeft: 12,
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}>
-              <Icons.Navigation.MoreHoriz
-                color={colors.$textSecondary}
-                width={20}
-                height={20}
-              />
-            </TouchableOpacity>
-          </DropdownMenu>
+          <View accessible={true} testID={`more_icon__${wallet.name}`}>
+            <DropdownMenu
+              groups={[
+                {
+                  key: 'wallet-actions',
+                  items: getDropdownItems(wallet)
+                }
+              ]}
+              onPressAction={(event: { nativeEvent: { event: string } }) =>
+                handleDropdownSelect(event.nativeEvent.event, wallet)
+              }>
+              <TouchableOpacity
+                hitSlop={8}
+                style={{
+                  minHeight: 48,
+                  paddingRight: 24,
+                  paddingLeft: 12,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                <Icons.Navigation.MoreHoriz
+                  color={colors.$textSecondary}
+                  width={20}
+                  height={20}
+                />
+              </TouchableOpacity>
+            </DropdownMenu>
+          </View>
         )}
       </TouchableOpacity>
 
