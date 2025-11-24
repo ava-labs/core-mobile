@@ -103,47 +103,53 @@ export const WalletList = ({
     [navigate]
   )
 
-const accountSearchResults = useMemo(() => {
-  if (!searchText) {
-    return allAccountsArray;
-  }
-
-  const lowerSearchText = searchText.toLowerCase(); // Calculate once
-  
-  return allAccountsArray.filter(account => {
-    const wallet = allWallets[account.walletId];
-    if (!wallet) return false;
-
-    const isPrivateKeyAccount = wallet.type === WalletType.PRIVATE_KEY;
-    
-    // Check virtual wallet first (most specific)
-    if (isPrivateKeyAccount && 
-        IMPORTED_ACCOUNTS_VIRTUAL_WALLET_NAME.toLowerCase().includes(lowerSearchText)) {
-      return true;
+  const accountSearchResults = useMemo(() => {
+    if (!searchText) {
+      return allAccountsArray
     }
-    
-    // Check wallet name
-    if (!isPrivateKeyAccount && 
-        wallet.name.toLowerCase().includes(lowerSearchText)) {
-      return true;
-    }
-    
-    // Check account fields with early returns
-    const fieldsToCheck = [
-      account.name,
-      account.addressC,
-      account.addressBTC,
-      account.addressAVM,
-      account.addressPVM,
-      account.addressSVM,
-      account.addressCoreEth
-    ];
-    
-    return fieldsToCheck.some(field => 
-      field?.toLowerCase().includes(lowerSearchText)
-    );
-  });
-}, [allAccountsArray, allWallets, searchText]);
+
+    const lowerSearchText = searchText.toLowerCase() // Calculate once
+
+    return allAccountsArray.filter(account => {
+      const wallet = allWallets[account.walletId]
+      if (!wallet) return false
+
+      const isPrivateKeyAccount = wallet.type === WalletType.PRIVATE_KEY
+
+      // Check virtual wallet first (most specific)
+      if (
+        isPrivateKeyAccount &&
+        IMPORTED_ACCOUNTS_VIRTUAL_WALLET_NAME.toLowerCase().includes(
+          lowerSearchText
+        )
+      ) {
+        return true
+      }
+
+      // Check wallet name
+      if (
+        !isPrivateKeyAccount &&
+        wallet.name.toLowerCase().includes(lowerSearchText)
+      ) {
+        return true
+      }
+
+      // Check account fields with early returns
+      const fieldsToCheck = [
+        account.name,
+        account.addressC,
+        account.addressBTC,
+        account.addressAVM,
+        account.addressPVM,
+        account.addressSVM,
+        account.addressCoreEth
+      ]
+
+      return fieldsToCheck.some(field =>
+        field?.toLowerCase().includes(lowerSearchText)
+      )
+    })
+  }, [allAccountsArray, allWallets, searchText])
 
   const handleSetActiveAccount = useCallback(
     (accountId: string) => {
