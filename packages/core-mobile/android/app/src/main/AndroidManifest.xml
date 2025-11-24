@@ -60,6 +60,22 @@
                 <data android:scheme="wc" />
                 <data android:scheme="core" />
             </intent-filter>
+            <!-- Branch App Links - Live App -->
+			<intent-filter android:autoVerify="true">
+				<action android:name="android.intent.action.VIEW" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+				<data android:scheme="https" android:host="nlfvn.app.link" />
+				<data android:scheme="https" android:host="nlfvn-alternate.app.link" />
+			</intent-filter>
+			<!-- Branch App Links - Test App -->
+			<intent-filter android:autoVerify="true">
+				<action android:name="android.intent.action.VIEW" />
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+				<data android:scheme="https" android:host="nlfvn.test-app.link" />
+				<data android:scheme="https" android:host="nlfvn-alternate.test-app.link" />
+			</intent-filter>
         </activity>
     </application>
 </manifest>
