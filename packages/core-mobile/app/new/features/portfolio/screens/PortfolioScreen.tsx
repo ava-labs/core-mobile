@@ -55,6 +55,7 @@ import { useSafeAreaFrame } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AnalyticsEventName } from 'services/analytics/types'
+import { WalletType } from 'services/wallet/types'
 import { selectActiveAccount } from 'store/account'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import {
@@ -297,6 +298,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
               <BalanceHeader
                 testID="portfolio"
                 walletName={walletsCount > 1 ? activeWallet?.name : undefined}
+                walletIcon={
+                  activeWallet?.type === WalletType.LEDGER ||
+                  activeWallet?.type === WalletType.LEDGER_LIVE
+                    ? 'ledger'
+                    : 'wallet'
+                }
                 accountName={activeAccount?.name}
                 formattedBalance={formattedBalance}
                 currency={selectedCurrency}
@@ -342,6 +349,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     openWalletsModal,
     walletsCount,
     activeWallet?.name,
+    activeWallet?.type,
     activeAccount?.name,
     formattedBalance,
     selectedCurrency,

@@ -13,6 +13,7 @@ import { PrivacyModeAlert } from './PrivacyModeAlert'
 export const BalanceHeader = ({
   accountName,
   walletName,
+  walletIcon,
   formattedBalance,
   currency,
   errorMessage,
@@ -32,6 +33,7 @@ export const BalanceHeader = ({
   currency: string
   errorMessage?: string
   priceChange?: PriceChange
+  walletIcon?: 'wallet' | 'ledger'
   onLayout?: (event: LayoutChangeEvent) => void
   isLoading?: boolean
   isLoadingBalances?: boolean
@@ -146,16 +148,32 @@ export const BalanceHeader = ({
     renderPriceChangeIndicator
   ])
 
+  const renderWalletIcon = useCallback((): JSX.Element => {
+    if (walletIcon === 'ledger') {
+      return (
+        <Icons.Custom.Ledger
+          color={colors.$textSecondary}
+          width={16}
+          height={16}
+        />
+      )
+    }
+
+    return (
+      <Icons.Custom.Wallet
+        color={colors.$textSecondary}
+        width={16}
+        height={16}
+      />
+    )
+  }, [colors.$textSecondary, walletIcon])
+
   return (
     <View onLayout={onLayout}>
       <View sx={{ paddingRight: 16, gap: 4 }}>
         {walletName && (
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <Icons.Custom.Wallet
-              color={colors.$textSecondary}
-              width={16}
-              height={16}
-            />
+            {renderWalletIcon()}
             <Text
               testID={`${testID}__balance_header_wallet_name`}
               variant="buttonMedium"
