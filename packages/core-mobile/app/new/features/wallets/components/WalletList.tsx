@@ -85,12 +85,10 @@ export const WalletList = ({
       ...Object.keys(allWallets),
       IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID
     ]
-    if (walletIds.length > 0) {
-      // Expand only the active wallet by default
-      walletIds.forEach(id => {
-        initialExpansionState[id] = getIsActiveWallet(id, activeAccount)
-      })
-    }
+    // Expand only the active wallet by default
+    walletIds.forEach(id => {
+      initialExpansionState[id] = getIsActiveWallet(id, activeAccount)
+    })
     setExpandedWallets(initialExpansionState)
   }, [allWallets, activeAccount])
 
