@@ -108,10 +108,13 @@ export const ListScreen = <T,>({
   >()
   const scrollViewRef = useRef<FlatList>(null)
 
+  // Shared values for worklets (UI thread animations)
   const titleHeight = useSharedValue<number>(0)
   const subtitleHeight = useSharedValue<number>(0)
-  const contentHeaderHeight = useSharedValue<number>(0)
-  const renderHeaderHeight = useSharedValue<number>(0)
+
+  // State for React re-renders (used in useMemo)
+  const [contentHeaderHeight, setContentHeaderHeight] = useState<number>(0)
+  const [renderHeaderHeight, setRenderHeaderHeight] = useState<number>(0)
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
@@ -137,13 +140,13 @@ export const ListScreen = <T,>({
   const onScrollEndDrag = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>): void => {
       'worklet'
-      if (event.nativeEvent.contentOffset.y < contentHeaderHeight.value) {
+      if (event.nativeEvent.contentOffset.y < contentHeaderHeight) {
         if (event.nativeEvent.contentOffset.y > titleHeight.value) {
           scrollViewRef.current?.scrollToOffset({
             offset:
-              event.nativeEvent.contentOffset.y > contentHeaderHeight.value
+              event.nativeEvent.contentOffset.y > contentHeaderHeight
                 ? event.nativeEvent.contentOffset.y
-                : contentHeaderHeight.value
+                : contentHeaderHeight
           })
         } else {
           scrollViewRef.current?.scrollToOffset({
@@ -152,7 +155,7 @@ export const ListScreen = <T,>({
         }
       }
     },
-    [contentHeaderHeight.value, titleHeight.value]
+    [contentHeaderHeight, titleHeight]
   )
 
   const handleTitleLayout = useCallback(
@@ -177,27 +180,21 @@ export const ListScreen = <T,>({
     [subtitleHeight]
   )
 
-  const handleRenderHeaderLayout = useCallback(
-    (event: LayoutChangeEvent) => {
-      const { height } = event.nativeEvent.layout
-      renderHeaderHeight.value = height
-    },
-    [renderHeaderHeight]
-  )
+  const handleRenderHeaderLayout = useCallback((event: LayoutChangeEvent) => {
+    const { height } = event.nativeEvent.layout
+    setRenderHeaderHeight(height)
+  }, [])
 
-  const handleContentHeaderLayout = useCallback(
-    (event: LayoutChangeEvent) => {
-      const { height } = event.nativeEvent.layout
-      contentHeaderHeight.value = height
-    },
-    [contentHeaderHeight]
-  )
+  const handleContentHeaderLayout = useCallback((event: LayoutChangeEvent) => {
+    const { height } = event.nativeEvent.layout
+    setContentHeaderHeight(height)
+  }, [])
 
   const animatedHeaderContainerStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
       scrollY.value,
-      [0, contentHeaderHeight.value],
-      [0, -contentHeaderHeight.value - (isModal ? 16 : 20)],
+      [0, contentHeaderHeight],
+      [0, -contentHeaderHeight - (isModal ? 16 : 20)],
       Extrapolation.CLAMP
     )
 
@@ -257,11 +254,11 @@ export const ListScreen = <T,>({
     const extraPadding =
       Platform.OS === 'android'
         ? isModal
-          ? insets.top + 16
-          : 16
+          ? insets.top - 24
+          : 32
         : isModal
-        ? 10
-        : 30
+        ? -32
+        : 8
 
     return [
       props?.contentContainerStyle,
@@ -274,14 +271,11 @@ export const ListScreen = <T,>({
       {
         paddingBottom,
         minHeight:
-          frame.height +
-          (contentHeaderHeight?.value ?? 0) -
-          (renderHeaderHeight?.value ?? 0) +
-          extraPadding
+          frame.height + contentHeaderHeight + extraPadding - renderHeaderHeight
       }
     ] as StyleProp<ViewStyle>[]
   }, [
-    contentHeaderHeight?.value,
+    contentHeaderHeight,
     data.length,
     frame.height,
     insets.bottom,
@@ -289,7 +283,7 @@ export const ListScreen = <T,>({
     isModal,
     keyboard.height,
     keyboard.isVisible,
-    renderHeaderHeight?.value,
+    renderHeaderHeight,
     props?.contentContainerStyle
   ])
 
