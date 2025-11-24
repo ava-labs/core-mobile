@@ -172,7 +172,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
           },
           title: (
             <Text
-              testID={`manage_accounts_list__${account.name}`}
+              testID={`manage_accounts_list__${wallet.name}__${account.name}`}
               variant="body1"
               numberOfLines={2}
               sx={{
@@ -210,11 +210,11 @@ const ManageAccountsScreen = (): React.JSX.Element => {
           onPress: () => handleSetActiveAccount(account.id),
           accessory: (
             <TouchableOpacity
+              testID={`account_detail_icon__${wallet.name}_${account.name}`}
               hitSlop={16}
               sx={{ marginLeft: 4 }}
               onPress={() => gotoAccountDetails(account.id)}>
               <Icons.Alert.AlertCircle
-                testID={`account_detail_icon__${wallet.name}_${account.name}`}
                 color={colors.$textSecondary}
                 width={18}
                 height={18}
@@ -269,7 +269,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
           },
           title: (
             <Text
-              testID={`manage_accounts_list__${account.name}`}
+              testID={`private_key_account__${account.name}`}
               variant="body1"
               numberOfLines={2}
               sx={{
@@ -307,6 +307,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
           onPress: () => handleSetActiveAccount(account.id),
           accessory: (
             <TouchableOpacity
+              testID={`account_detail_icon__${account.name}`}
               hitSlop={16}
               sx={{ marginLeft: 4 }}
               onPress={() => gotoAccountDetails(account.id)}>
