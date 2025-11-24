@@ -223,14 +223,13 @@ export const WalletList = ({
   const importedWalletsDisplayData = useMemo(() => {
     // Get all accounts from private key wallets
     const allPrivateKeyAccounts = importedWallets
-      .flatMap(wallet => {
-        return accountSearchResults.filter(
-          account => account.walletId === wallet.id
-        )
-      })
-      .sort((a, b) => {
-        return recentAccountIds.indexOf(a.id) - recentAccountIds.indexOf(b.id)
-      })
+      .flatMap(wallet =>
+        accountSearchResults.filter(account => account.walletId === wallet.id)
+      )
+      .sort(
+        (a, b) =>
+          recentAccountIds.indexOf(a.id) - recentAccountIds.indexOf(b.id)
+      )
 
     if (allPrivateKeyAccounts.length === 0) {
       return null
