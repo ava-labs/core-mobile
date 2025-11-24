@@ -108,7 +108,7 @@ export const useDelegation = (): {
 
   const delegate: Delegate = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-shadow
-    async ({ steps, endDate, nodeId }) => {
+    async ({ steps, startDate, endDate, nodeId }) => {
       if (activeAccount === undefined) {
         throw new Error('No active account')
       }
@@ -126,15 +126,10 @@ export const useDelegation = (): {
 
       for (const step of steps) {
         switch (step.operation) {
-          case Operation.DELEGATE: {
+          case Operation.DELEGATE:
             Logger.info(
               `delegating ${step.amount} with estimated fee ${step.fee}`
             )
-
-            // always use current date + 1 minute for the start date
-            // the recompute step logic could take a while, so we need to ensure the start date is not in the past
-            // otherwise, the transaction will fail with a "Start date must be in future" error
-            const delegateStartDate = new Date(Date.now() + 1 * 60 * 1000)
 
             txHash = await EarnService.issueAddDelegatorTransaction({
               walletId: activeWallet.id,
@@ -144,12 +139,12 @@ export const useDelegation = (): {
               isDevMode: isDeveloperMode,
               nodeId,
               stakeAmountNanoAvax: step.amount,
-              startDate: delegateStartDate,
+              startDate: startDate,
               feeState: defaultFeeState,
               pFeeAdjustmentThreshold
             })
             break
-          }
+
           case Operation.IMPORT_P:
             Logger.info(`importing P-Chain with estimated fee ${step.fee}`)
 

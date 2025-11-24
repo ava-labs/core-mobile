@@ -17,10 +17,12 @@ type TransactionHash = string
 
 export type Delegate = ({
   steps,
+  startDate,
   endDate,
   nodeId
 }: {
   steps: Step[]
+  startDate: Date
   endDate: Date
   nodeId: string
 }) => Promise<TransactionHash>
