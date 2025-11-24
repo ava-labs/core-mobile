@@ -36,3 +36,6 @@
 
 # react-native-skia
 -keep class com.shopify.reactnative.skia.** { *; }
+
+# To collect the Google Advertising ID, you must ensure that ProGuard doesn't remove the necessary Google Ads class.
+-keep class com.google.android.gms.** { *; }
