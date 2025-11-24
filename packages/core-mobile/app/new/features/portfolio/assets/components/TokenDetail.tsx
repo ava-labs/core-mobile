@@ -4,16 +4,10 @@ import {
 } from '@avalabs/avalanche-module'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { PChainBalance, XChainBalances } from '@avalabs/glacier-sdk'
-import {
-  Icons,
-  SPRING_LINEAR_TRANSITION,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { SPRING_LINEAR_TRANSITION, Text, View } from '@avalabs/k2-alpine'
+import { BalanceText } from 'common/components/BalanceText'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
 import React, { FC, useCallback, useMemo } from 'react'
 import Animated from 'react-native-reanimated'
 import {
@@ -22,9 +16,6 @@ import {
   LocalTokenWithBalance
 } from 'store/balance'
 import { xpChainToken } from 'utils/units/knownTokens'
-import { BalanceText } from 'common/components/BalanceText'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { LogoWithNetwork } from './LogoWithNetwork'
 
 type PChainBalanceType = keyof PChainBalance
 type XChainBalanceType = keyof XChainBalances
@@ -34,35 +25,6 @@ interface Props {
 }
 
 const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
-  const { formatCurrency } = useFormatCurrency()
-
-  const assetTypes = useMemo(() => {
-    if (token && isTokenWithBalancePVM(token)) {
-      return Object.keys(token.balancePerType)
-        .sort((a, b) => {
-          return Number(
-            (token.balancePerType[b as PChainBalanceType] ?? 0n) -
-              (token.balancePerType[a as PChainBalanceType] ?? 0n)
-          )
-        })
-        .filter(k => (token.balancePerType[k as PChainBalanceType] ?? 0) > 0)
-    }
-    if (token && isTokenWithBalanceAVM(token)) {
-      return Object.keys(token.balancePerType)
-        .sort((a, b) => {
-          return Number(
-            (token.balancePerType[b as XChainBalanceType] ?? 0n) -
-              (token.balancePerType[a as XChainBalanceType] ?? 0n)
-          )
-        })
-        .filter(k => (token.balancePerType[k as XChainBalanceType] ?? 0) > 0)
-    }
-    return []
-  }, [token])
-
   const getBalanceAndAssetName = useCallback(
     (item: string) => {
       const balance =
@@ -82,129 +44,120 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
     [token]
   )
 
+  const data = useMemo(() => {
+    const isPChainToken = token && isTokenWithBalancePVM(token)
+    const isXChainToken = token && isTokenWithBalanceAVM(token)
+
+    if (isPChainToken) {
+      return Object.keys(token.balancePerType).sort((a, b) => {
+        return Number(
+          (token.balancePerType[b as PChainBalanceType] ?? 0n) -
+            (token.balancePerType[a as PChainBalanceType] ?? 0n)
+        )
+      })
+    }
+
+    if (isXChainToken) {
+      return Object.keys(token.balancePerType).sort((a, b) => {
+        return Number(
+          (token.balancePerType[b as XChainBalanceType] ?? 0n) -
+            (token.balancePerType[a as XChainBalanceType] ?? 0n)
+        )
+      })
+    }
+    return []
+  }, [token])
+
   const renderItem = useCallback(
-    ({ item }: { item: string }): React.JSX.Element => {
+    ({ item, index }: { item: string; index: number }): React.JSX.Element => {
       const { balance, assetName } = getBalanceAndAssetName(item)
 
       const balanceInAvax = balance
         ? new TokenUnit(balance, xpChainToken.maxDecimals, xpChainToken.symbol)
         : undefined
-      const formattedBalance =
-        balanceInAvax && token?.priceInCurrency
-          ? formatCurrency({
-              amount: balanceInAvax
-                .mul(token.priceInCurrency)
-                .toDisplay({ fixedDp: 2, asNumber: true })
-            })
-          : UNKNOWN_AMOUNT
+      const formattedBalanceInAvax =
+        balanceInAvax?.toDisplay({
+          fixedDp: 2,
+          asNumber: true
+        }) ?? 0
 
-      const isAvailableBalanceType =
-        item === 'unlockedUnstaked' || item === 'unlocked'
+      const isFirst = index === 0
+      const isLast = index === data.length - 1
+
+      const containerSx = {
+        paddingHorizontal: 16,
+        backgroundColor: '$surfaceSecondary',
+        ...(isFirst && { borderTopLeftRadius: 16, borderTopRightRadius: 16 }),
+        ...(isLast && {
+          borderBottomLeftRadius: 16,
+          borderBottomRightRadius: 16
+        })
+      }
 
       return (
-        <View
-          sx={{
-            borderRadius: 18,
-            paddingLeft: 16,
-            paddingRight: 12,
-            paddingVertical: 12,
-            flexDirection: 'row',
-            alignItems: 'center',
-            backgroundColor: '$surfaceSecondary',
-            marginBottom: 12
-          }}>
-          {token && isAvailableBalanceType ? (
-            <LogoWithNetwork
-              token={token}
-              outerBorderColor={colors.$surfaceSecondary}
-            />
-          ) : (
-            <View
-              sx={{
-                width: 36,
-                height: 36,
-                borderRadius: 18,
-                justifyContent: 'center',
-                alignItems: 'center',
-                overflow: 'hidden',
-                backgroundColor: '$borderPrimary',
-                borderColor: '$borderPrimary'
-              }}>
-              <Icons.Custom.Psychiatry
-                width={24}
-                height={24}
-                color={colors.$textPrimary}
-              />
-            </View>
-          )}
+        <View sx={containerSx}>
           <View
             sx={{
-              flexGrow: 1,
-              marginHorizontal: 12,
+              borderBottomWidth: isLast ? 0 : 1,
+              borderBottomColor: '$borderPrimary',
               flexDirection: 'row',
-              justifyContent: 'space-between'
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              height: 48
             }}>
-            <View
+            <Text variant="subtitle2" numberOfLines={1} sx={{ fontSize: 16 }}>
+              {assetName}
+            </Text>
+            <BalanceText
+              variant="subtitle2"
+              numberOfLines={1}
               sx={{
-                flexShrink: 1
+                color: '$textSecondary',
+                fontSize: 16
               }}>
-              <Text variant="buttonMedium" numberOfLines={1} sx={{ flex: 1 }}>
-                {assetName}
-              </Text>
-              <BalanceText
-                variant="body2"
-                sx={{ lineHeight: 16, flex: 1 }}
-                ellipsizeMode="tail"
-                isCurrency={false}
-                maskType="covered"
-                numberOfLines={1}>
-                {balanceInAvax?.toDisplay()} {xpChainToken.symbol}
-              </BalanceText>
-            </View>
-            <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <BalanceText
-                variant="buttonMedium"
-                numberOfLines={1}
-                sx={{ lineHeight: 18, marginBottom: 1 }}>
-                {formattedBalance}
-              </BalanceText>
-            </View>
+              {formattedBalanceInAvax} {xpChainToken.symbol}
+            </BalanceText>
           </View>
         </View>
       )
     },
-    [
-      colors.$textPrimary,
-      colors.$surfaceSecondary,
-      getBalanceAndAssetName,
-      token,
-      formatCurrency
-    ]
+    [getBalanceAndAssetName, data.length]
   )
 
-  const renderHeader = (): JSX.Element => {
-    return (
-      <Text variant="heading3" sx={{ marginBottom: 12 }}>
-        Token breakdown
-      </Text>
-    )
-  }
+  const renderHeader = useCallback((): JSX.Element => {
+    return <></>
+
+    // TODO: Add after ledger is implemented
+    // return (
+    //   <View sx={{ marginBottom: 12, marginTop: 8 }}>
+    //     <GroupList
+    //       data={[
+    //         {
+    //           title:
+    //             'UTXOs across multiple addresses. View all of your balances and UTXOs',
+    //           leftIcon: <Icons.Action.Info color={colors.$textPrimary} />,
+    //           onPress: () => {
+    //             // console.log('info')
+    //           }
+    //         }
+    //       ]}
+    //     />
+    //   </View>
+    // )
+  }, [])
 
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(5)}
       layout={SPRING_LINEAR_TRANSITION}>
       <CollapsibleTabs.FlatList
-        style={{
-          paddingTop: 4
-        }}
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingBottom: 16
         }}
-        data={assetTypes}
+        data={data}
+        ListHeaderComponent={renderHeader}
         renderItem={renderItem}
-        ListHeaderComponent={renderHeader()}
         showsVerticalScrollIndicator={false}
         keyExtractor={item => item}
       />
