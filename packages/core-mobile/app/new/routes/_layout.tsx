@@ -23,17 +23,12 @@ import {
 } from 'store/settings/appearance'
 import { FloatingDevTools } from 'common/containers/FloatingDevTools'
 import { RootNavigator } from './RootNavigator'
-import Branch from 'react-native-branch'
 
 export default function Root(): JSX.Element | null {
   const dispatch = useDispatch()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedAppearance = useSelector(selectSelectedAppearance)
   const colorScheme = useSelector(selectSelectedColorScheme)
-
-  useEffect(() => {
-    Branch.validateSDKIntegration()
-  }, [])
 
   useEffect(() => {
     const subscription = RnAppearance.addChangeListener(

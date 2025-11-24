@@ -3,6 +3,7 @@ import { onLogOut, onRehydrationComplete } from 'store/app'
 import { selectDistinctID } from 'store/posthog'
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import Branch from 'react-native-branch'
+import { noop } from '@avalabs/core-utils-sdk/dist'
 
 export const addBranchListeners = (startListening: AppStartListening): void => {
   const branchIdentifyUser = async (
@@ -12,40 +13,7 @@ export const addBranchListeners = (startListening: AppStartListening): void => {
     const distinctId = selectDistinctID(listenerApi.getState())
     Branch.setIdentity(distinctId)
     Branch.setRequestMetadata('posthog_distinct_id', distinctId)
-    Branch.subscribe({
-      onOpenStart: ({ uri, cachedInitialEvent }) => {
-        console.log(
-          'subscribe onOpenStart, will open ' +
-            uri +
-            ' cachedInitialEvent is ' +
-            cachedInitialEvent
-        )
-      },
-      onOpenComplete: ({ error, params, uri }) => {
-        if (error) {
-          console.log(
-            'subscribe onOpenComplete, Error from opening uri: ' +
-              uri +
-              ' error: ' +
-              error
-          )
-        } else if (params) {
-          if (!params['+clicked_branch_link']) {
-            if (params['+non_branch_link']) {
-              console.log('non_branch_link: ' + uri)
-              // Route based on non-Branch links
-              return
-            }
-          } else {
-            // Handle params
-            let deepLinkPath = params.$deeplink_path as string
-            let canonicalUrl = params.$canonical_url as string
-            // Route based on Branch link data
-            return
-          }
-        }
-      }
-    })
+    Branch.subscribe(() => noop)
   }
 
   const branchLogout = (_: Action, __: AppListenerEffectAPI): void => {
