@@ -7,12 +7,12 @@ import {
   sendResult,
   uploadScreenshotToResult
 } from './testrail/testrail.service'
-import fs from 'fs'
+
 let runId: number | undefined
 const sectionCache: Record<string, number> = {}
 const isBitrise = process.env.CI === 'true'
 const goHeadless = isBitrise ? true : false
-const goRetry = isBitrise ? 1 : 0
+// const goRetry = isBitrise ? 1 : 0
 const iosLocalPath = process.env.E2E_LOCAL_PATH
   ? '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
   : './ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
@@ -87,7 +87,7 @@ export const config: WebdriverIO.Config = {
   logLevel: 'error',
   bail: 0,
   waitforTimeout: 20000,
-  specFileRetries: goRetry,
+  specFileRetries: 0,
   connectionRetryTimeout: 120000,
   connectionRetryCount: 2,
   framework: 'mocha',
