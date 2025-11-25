@@ -958,6 +958,25 @@ class WalletService {
     Logger.info('burned amount is valid')
   }
 
+  /**
+   * Get X-Chain or P-Chain addresses for the given accounts.
+   *
+   * This method retrieves all external addresses for the specified accounts on either X-Chain or P-Chain.
+   * It supports different wallet types with different derivation strategies:
+   *
+   * - **Xpub wallets (Mnemonic, Keystone, Ledger)**: Derives addresses from each account's extended public key
+   * - **Seedless wallets**: Retrieves addresses from stored public keys
+   * - **Other wallet types**: Returns an empty array
+   *
+   * @param accounts - Array of accounts to get addresses for
+   * @param walletId - Unique identifier of the wallet
+   * @param walletType - Type of wallet (Mnemonic, Keystone, Ledger, Seedless, etc.)
+   * @param isTestnet - Whether to use testnet or mainnet
+   * @param networkType - Chain type: NetworkVMType.AVM for X-Chain or NetworkVMType.PVM for P-Chain
+   * @param onlyWithActivity - If true, only return addresses that have been used (xpub wallets only)
+   *
+   * @returns Promise resolving to an array of addresses (e.g., ["avax1...", "avax2..."])
+   */
   async getXPAddresses({
     accounts,
     walletId,
