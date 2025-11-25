@@ -37,8 +37,15 @@ import {
 import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'
 import { SpanName } from 'services/sentry/types'
-import { Curve } from 'utils/publicKeys'
+import { Curve, isAvalanchePublicKey } from 'utils/publicKeys'
 import fetchWithAppCheck from 'utils/httpClient'
+import {
+  AVALANCHE_MAINNET_NETWORK,
+  AVALANCHE_TESTNET_NETWORK
+} from 'services/network/consts'
+import ModuleManager from 'vmModule/ModuleManager'
+import { Network as VmNetwork } from '@avalabs/vm-module-types'
+import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import {
   getAddressDerivationPath,
   getAssetId,
@@ -244,10 +251,12 @@ class WalletService {
 
   public async getRawXpubXP({
     walletId,
-    walletType
+    walletType,
+    accountIndex
   }: {
     walletId: string
     walletType: WalletType
+    accountIndex: number
   }): Promise<string> {
     if (!this.hasXpub(walletType)) {
       throw new Error('Unable to get raw xpub XP: unsupported wallet type')
@@ -268,25 +277,28 @@ class WalletService {
       )
     }
 
-    return wallet.getRawXpubXP()
+    return wallet.getRawXpubXP(accountIndex)
   }
 
   public async getAddressesFromXpubXP({
     walletId,
     walletType,
+    accountIndex,
     networkType,
     isTestnet = false,
     onlyWithActivity
   }: {
     walletId: string
     walletType: WalletType
+    accountIndex: number
     networkType: NetworkVMType.AVM | NetworkVMType.PVM
     isTestnet: boolean
     onlyWithActivity: boolean
   }): Promise<NetworkAddresses> {
     const xpubXP = await this.getRawXpubXP({
       walletId,
-      walletType
+      walletType,
+      accountIndex
     })
 
     try {
@@ -309,57 +321,6 @@ class WalletService {
       Logger.error(`[WalletService.ts][getAddressesFromXpubXP]${err}`)
       throw err
     }
-  }
-
-  public async getAddressesByIndices({
-    walletId,
-    walletType,
-    indices,
-    chainAlias,
-    isChange,
-    isTestnet
-  }: {
-    walletId: string
-    walletType: WalletType
-    indices: number[]
-    chainAlias: 'X' | 'P'
-    isChange: boolean
-    isTestnet: boolean
-  }): Promise<string[]> {
-    if (
-      walletType === WalletType.SEEDLESS ||
-      walletType === WalletType.PRIVATE_KEY ||
-      (isChange && chainAlias !== 'X')
-    ) {
-      return []
-    }
-
-    if ([WalletType.MNEMONIC, WalletType.KEYSTONE].includes(walletType)) {
-      const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
-
-      const xpubXP = await this.getRawXpubXP({ walletId, walletType })
-
-      return xpubXP
-        ? indices.map(index => {
-            try {
-              return Avalanche.getAddressFromXpub(
-                xpubXP,
-                index,
-                provXP,
-                chainAlias,
-                isChange
-              )
-            } catch (e) {
-              Logger.error('error getting address from xpub', e)
-              return ''
-            }
-          })
-        : []
-    }
-
-    throw new Error(
-      'Unable to get addresses by indices: unsupported wallet type'
-    )
   }
 
   /**
@@ -480,7 +441,20 @@ class WalletService {
       avaxXPNetwork
     )
 
-    const nonce = await readOnlySigner.getNonce()
+    // Get nonce from C-Chain EVM provider
+    const evmAddress = readOnlySigner.getAddressEVM()
+    // Get C-Chain network based on testnet flag
+    const cChainNetwork = avaxXPNetwork.isTestnet
+      ? AVALANCHE_TESTNET_NETWORK
+      : AVALANCHE_MAINNET_NETWORK
+
+    const evmProvider = await NetworkService.getProviderForNetwork(
+      cChainNetwork
+    )
+    if (!(evmProvider instanceof JsonRpcBatchInternal)) {
+      throw new Error('Unable to get nonce: wrong provider obtained')
+    }
+    const nonce = await evmProvider.getTransactionCount(evmAddress)
 
     const unsignedTx = readOnlySigner.exportC(
       amountInNAvax,
@@ -982,6 +956,61 @@ class WalletService {
     }
 
     Logger.info('burned amount is valid')
+  }
+
+  async getXPAddresses({
+    accounts,
+    walletId,
+    walletType,
+    isTestnet,
+    networkType,
+    onlyWithActivity
+  }: {
+    accounts: Account[]
+    walletId: string
+    walletType: WalletType
+    isTestnet: boolean
+    networkType: NetworkVMType.AVM | NetworkVMType.PVM
+    onlyWithActivity: boolean
+  }): Promise<string[]> {
+    if (this.hasXpub(walletType)) {
+      const promises = accounts
+        .map(account => account.index)
+        .map(accountIndex =>
+          this.getAddressesFromXpubXP({
+            walletId,
+            walletType,
+            networkType,
+            isTestnet,
+            accountIndex,
+            onlyWithActivity
+          })
+        )
+
+      const networkAddresses = await Promise.all(promises)
+      return networkAddresses
+        .map(address => address.externalAddresses)
+        .flat()
+        .map(address => address.address)
+    }
+
+    if (walletType === WalletType.SEEDLESS) {
+      const storedPubKeys = await SeedlessPubKeysStorage.retrieve()
+      const publicKeys = storedPubKeys.filter(isAvalanchePublicKey)
+
+      const provider = await ModuleManager.avalancheModule.getProvider({
+        isTestnet
+      } as VmNetwork)
+      return publicKeys.map(publicKey => {
+        const publicKeyXP = Buffer.from(publicKey.key, 'hex')
+        return provider.getAddress(
+          publicKeyXP,
+          networkType === NetworkVMType.AVM ? 'X' : 'P'
+        )
+      })
+    }
+
+    return []
   }
 }
 

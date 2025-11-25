@@ -1,4 +1,4 @@
-import { Account, AccountCollection } from 'store/account/types'
+import { Account } from 'store/account/types'
 import { importPWithBalanceCheck } from 'services/earn/importP'
 import Big from 'big.js'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
@@ -29,7 +29,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { AvaxXP } from 'types/AvaxXP'
-import AccountsService from 'services/account/AccountsService'
+import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -352,7 +352,7 @@ class EarnService {
   }: {
     walletId: string
     walletType: WalletType
-    accounts: AccountCollection
+    accounts: Account[]
     isTestnet: boolean
     startTimestamp?: number
   }): Promise<
@@ -365,44 +365,47 @@ class EarnService {
       }[]
     | undefined
   > => {
-    const accountsArray = Object.values(accounts)
-
     try {
-      const currentNetworkAddresses = accountsArray
-        .map(account => account.addressPVM)
-        .filter((address): address is string => address !== undefined)
-      const currentNetworkTransactions = await getTransformedTransactions(
-        currentNetworkAddresses,
+      const currentNetworkAddresses = await WalletService.getXPAddresses({
+        accounts,
+        walletId,
+        walletType,
         isTestnet,
-        startTimestamp
-      )
+        networkType: NetworkVMType.PVM,
+        onlyWithActivity: true
+      })
+      const currentNetworkTransactions =
+        currentNetworkAddresses.length > 0
+          ? await getTransformedTransactions(
+              currentNetworkAddresses,
+              isTestnet,
+              startTimestamp
+            )
+          : []
 
-      const oppositeNetworkAddresses = (
-        await Promise.all(
-          accountsArray.map(account =>
-            AccountsService.getAddresses({
-              walletId,
-              walletType,
-              accountIndex: account.index,
-              isTestnet
-            })
-          )
-        )
-      ).map(address => address.PVM)
-      const oppositeNetworkTransactions = await getTransformedTransactions(
-        oppositeNetworkAddresses,
-        !isTestnet,
-        startTimestamp
-      )
+      const oppositeNetworkAddresses = await WalletService.getXPAddresses({
+        accounts,
+        walletId,
+        walletType,
+        isTestnet: !isTestnet,
+        networkType: NetworkVMType.PVM,
+        onlyWithActivity: true
+      })
+      const oppositeNetworkTransactions =
+        oppositeNetworkAddresses.length > 0
+          ? await getTransformedTransactions(
+              oppositeNetworkAddresses,
+              !isTestnet,
+              startTimestamp
+            )
+          : []
 
       const now = new Date()
       return currentNetworkTransactions
         .concat(oppositeNetworkTransactions)
         .flatMap(transaction => {
           // find account that matches the transaction's index
-          const account = accountsArray.find(
-            acc => acc.index === transaction.index
-          )
+          const account = accounts.find(acc => acc.index === transaction.index)
 
           // flat map will remove this
           if (!account) return []

@@ -36,7 +36,11 @@ class AvalancheGetAccountsHandler
       walletType: WalletType
     ): Promise<string | undefined> => {
       try {
-        return await WalletService.getRawXpubXP({ walletId, walletType })
+        return await WalletService.getRawXpubXP({
+          walletId,
+          walletType,
+          accountIndex: activeAccount.index
+        })
       } catch (error) {
         return undefined
       }
