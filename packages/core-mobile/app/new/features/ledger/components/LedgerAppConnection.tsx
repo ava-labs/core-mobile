@@ -8,7 +8,6 @@ import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
-import bs58 from 'bs58'
 import {
   AVALANCHE_MAINNET_NETWORK,
   NETWORK_SOLANA
@@ -96,18 +95,15 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     xpAddress: ''
   })
 
-  // Auto-progress through steps
-  useEffect(() => {
-    if (currentStep === AppConnectionStep.COMPLETE && !isCreatingWallet) {
-      const timeoutId = setTimeout(() => {
-        onComplete(keys)
-      }, 1500)
-
-      return () => {
-        clearTimeout(timeoutId)
-      }
-    }
-  }, [currentStep, onComplete, isCreatingWallet, keys])
+  // Handler for completing wallet creation
+  const handleCompleteWallet = useCallback(() => {
+    Logger.info('User clicked complete wallet button', {
+      hasAvalancheKeys: !!keys.avalancheKeys,
+      hasSolanaKeys: keys.solanaKeys.length > 0,
+      solanaKeysCount: keys.solanaKeys.length
+    })
+    onComplete(keys)
+  }, [keys, onComplete])
 
   const handleConnectAvalanche = useCallback(async () => {
     try {
@@ -264,10 +260,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
 
     // Solana address
     if (keys.solanaKeys.length > 0 && keys.solanaKeys[0]?.key) {
-      // Convert public key to Solana address (Base58 encoding)
-      const solanaAddress = bs58.encode(
-        Uint8Array.from(Buffer.from(keys.solanaKeys[0].key, 'hex'))
-      )
+      // The key is already a Solana address (Base58 encoded) from LedgerService
+      const solanaAddress = keys.solanaKeys[0].key
 
       addresses.push({
         title: NETWORK_SOLANA.chainName,
@@ -405,7 +399,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
                   color: colors.$textSecondary,
                   lineHeight: 20
                 }}>
-                {`The BIP44 setup is in progress and should \n take about 15 seconds. Keep your device \n connected during setup.`}
+                {`Review your addresses below and press \n Complete Setup to finish wallet creation.`}
               </Text>
             </View>
           </View>
@@ -415,9 +409,14 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           </View>
 
           <View style={{ paddingBottom: 8, paddingTop: 12 }}>
-            <Button type="tertiary" size="large" onPress={onCancel}>
-              Cancel setup
+            <Button type="primary" size="large" onPress={handleCompleteWallet}>
+              Complete Setup
             </Button>
+            <View style={{ marginTop: 12 }}>
+              <Button type="tertiary" size="large" onPress={onCancel}>
+                Cancel setup
+              </Button>
+            </View>
           </View>
         </View>
       )
