@@ -9,8 +9,15 @@ import { useManageWallet } from 'common/hooks/useManageWallet'
 import { AccountDisplayData, WalletDisplayData } from 'common/types'
 import { AccountListItem } from 'features/wallets/components/AccountListItem'
 import { WalletBalance } from 'features/wallets/components/WalletBalance'
-import React, { useCallback } from 'react'
-import { FlatList, ListRenderItem, StyleProp, ViewStyle } from 'react-native'
+import React, { useCallback, useState } from 'react'
+import {
+  FlatList,
+  LayoutChangeEvent,
+  ListRenderItem,
+  StyleProp,
+  ViewStyle
+} from 'react-native'
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { WalletType } from 'services/wallet/types'
 import { DropdownMenu } from './DropdownMenu'
 
@@ -95,9 +102,24 @@ const WalletCard = ({
     return null
   }, [colors.$surfaceSecondary, colors.$textSecondary, searchText])
 
+  const [contentHeight, setContentHeight] = useState(HEADER_HEIGHT)
+  const onContentLayout = useCallback((event: LayoutChangeEvent) => {
+    const { height } = event.nativeEvent.layout
+    setContentHeight(height)
+  }, [])
+
+  const animatedContentStyle = useAnimatedStyle(() => {
+    return {
+      minHeight: withTiming(
+        isExpanded ? contentHeight + HEADER_HEIGHT * 2 : HEADER_HEIGHT
+      )
+    }
+  })
+
   return (
-    <View
+    <Animated.View
       style={[
+        animatedContentStyle,
         {
           backgroundColor: colors.$surfaceSecondary,
           borderRadius: 16,
@@ -105,13 +127,34 @@ const WalletCard = ({
         },
         style
       ]}>
+      <View
+        sx={{
+          paddingHorizontal: 10,
+          gap: 10,
+          paddingBottom: 10,
+          position: 'absolute',
+          top: HEADER_HEIGHT,
+          left: 0,
+          right: 0
+        }}>
+        <FlatList
+          data={wallet.accounts}
+          onLayout={onContentLayout}
+          renderItem={renderAccountItem}
+          keyExtractor={item => item.account.id}
+          ListEmptyComponent={renderEmpty}
+          scrollEnabled={false}
+        />
+        {renderBottom?.()}
+      </View>
+
       <TouchableOpacity
         onPress={onToggleExpansion}
         sx={{
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          minHeight: HEADER_HEIGHT
+          height: HEADER_HEIGHT
         }}>
         <View
           sx={{
@@ -217,19 +260,8 @@ const WalletCard = ({
         </View>
       </TouchableOpacity>
 
-      {isExpanded && (
-        <View sx={{ paddingHorizontal: 10, gap: 10, paddingBottom: 10 }}>
-          <FlatList
-            data={wallet.accounts}
-            renderItem={renderAccountItem}
-            keyExtractor={item => item.account.id}
-            ListEmptyComponent={renderEmpty}
-            scrollEnabled={false}
-          />
-          {renderBottom?.()}
-        </View>
-      )}
-    </View>
+      <View sx={{ flex: 1 }} />
+    </Animated.View>
   )
 }
 
