@@ -37,7 +37,7 @@ import {
 import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'
 import { SpanName } from 'services/sentry/types'
-import { Curve, isAvalanchePublicKey } from 'utils/publicKeys'
+import { AVALANCHE_DERIVATION_PATH_PREFIX, Curve } from 'utils/publicKeys'
 import fetchWithAppCheck from 'utils/httpClient'
 import {
   AVALANCHE_MAINNET_NETWORK,
@@ -996,7 +996,13 @@ class WalletService {
 
     if (walletType === WalletType.SEEDLESS) {
       const storedPubKeys = await SeedlessPubKeysStorage.retrieve()
-      const publicKeys = storedPubKeys.filter(isAvalanchePublicKey)
+      const publicKeys = storedPubKeys.filter(publicKey =>
+        accounts.some(account =>
+          publicKey.derivationPath.startsWith(
+            AVALANCHE_DERIVATION_PATH_PREFIX + account.index
+          )
+        )
+      )
 
       const provider = await ModuleManager.avalancheModule.getProvider({
         isTestnet

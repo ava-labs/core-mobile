@@ -1,7 +1,10 @@
 import * as cs from '@cubist-labs/cubesigner-sdk'
 import { strip0x } from '@avalabs/core-utils-sdk'
-import { AddressPublicKey, Curve } from 'utils/publicKeys'
-import { DEPRECATED_AVALANCHE_DERIVATION_PATH_PREFIX } from 'features/ledger/consts'
+import {
+  AddressPublicKey,
+  Curve,
+  DEPRECATED_AVALANCHE_DERIVATION_PATH_PREFIX
+} from 'utils/publicKeys'
 
 export const transformKeyInfosToPubKeys = (
   keyInfos: cs.KeyInfo[]
