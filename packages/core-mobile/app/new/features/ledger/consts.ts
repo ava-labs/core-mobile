@@ -34,6 +34,8 @@ export const SOLANA_DERIVATION_PATH_PREFIX = "44'/501'/0'/0'"
 // Deprecated Avalanche public key path prefix
 export const DEPRECATED_AVALANCHE_DERIVATION_PATH_PREFIX = "m/44'/9000'/0'"
 
+export const AVALANCHE_DERIVATION_PATH_PREFIX = "m/44'/9000'"
+
 /**
  * Generate a Solana derivation path for a specific account index
  * @param accountIndex - The account index to generate the path for

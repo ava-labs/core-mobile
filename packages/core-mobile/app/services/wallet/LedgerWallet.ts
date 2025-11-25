@@ -822,7 +822,7 @@ export class LedgerWallet implements Wallet {
     }
   }
 
-  public async getRawXpubXP(): Promise<string> {
+  public async getRawXpubXP(_accountIndex: number): Promise<string> {
     // TODO: implement this
     throw new Error('getRawXpubXP not implemented yet for LedgerWallet')
   }
