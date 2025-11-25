@@ -287,7 +287,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
                   : undefined
               }
               errorMessage={
-                balanceAccurate ? undefined : 'Unable to load all balances'
+                allBalancesInaccurate
+                  ? 'Unable to load all balances'
+                  : undefined
               }
               isLoading={isLoading && balanceTotalInCurrency === 0}
               isLoadingBalances={isLoadingBalances || isLoading}
@@ -321,7 +323,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     valueChange24h,
     indicatorStatus,
     percentChange24h,
-    balanceAccurate,
+    allBalancesInaccurate,
     isLoading,
     balanceTotalInCurrency,
     isLoadingBalances,

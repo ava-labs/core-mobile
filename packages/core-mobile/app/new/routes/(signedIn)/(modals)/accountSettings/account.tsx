@@ -80,7 +80,7 @@ const AccountScreen = (): JSX.Element => {
         formattedBalance={formattedBalance}
         currency={selectedCurrency}
         errorMessage={
-          balanceAccurate ? undefined : 'Unable to load all balances'
+          allBalancesInaccurate ? 'Unable to load all balances' : undefined
         }
         isLoading={isLoading}
         isPrivacyModeEnabled={isPrivacyModeEnabled}
