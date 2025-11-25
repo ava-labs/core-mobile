@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable max-params */
 import { Readable } from 'stream'
 import FormData from 'form-data'
 import axios from 'axios'
@@ -91,9 +93,9 @@ export async function sendResult(
 ) {
   let comment = ''
 
+  // get error message if the test failed
   if (error) {
     const msg = error?.message || error.toString()
-
     comment = `FAILED:\n\n${msg}`
   } else {
     comment = 'PASSED'
@@ -141,6 +143,7 @@ export async function addCaseToRun(runId: number, caseId: number) {
   }
 }
 
+// 6. upload screenshot to testrail if the test failed
 export async function uploadScreenshotToResult(
   resultId: number,
   base64: string
