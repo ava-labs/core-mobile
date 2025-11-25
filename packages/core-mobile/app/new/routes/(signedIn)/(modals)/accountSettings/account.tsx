@@ -17,8 +17,8 @@ import { CoreAccountType } from '@avalabs/types'
 import { WalletType } from 'services/wallet/types'
 import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
 import { useIsRefetchingBalancesForAccount } from 'features/portfolio/hooks/useIsRefetchingBalancesForAccount'
-import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalanceAccurate'
 import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
+import { useIsAllBalancesInaccurateForAccount } from 'features/portfolio/hooks/useIsAllBalancesInaccurateForAccount'
 
 const AccountScreen = (): JSX.Element => {
   const router = useRouter()
@@ -33,7 +33,7 @@ const AccountScreen = (): JSX.Element => {
     account
   })
   const isLoading = isBalanceLoading || isRefetchingBalance
-  const balanceAccurate = useIsAccountBalanceAccurate(account)
+  const balanceAccurate = useIsAllBalancesInaccurateForAccount(account)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
   const formattedBalance = useMemo(() => {

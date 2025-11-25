@@ -17,7 +17,6 @@ import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useAccountPerformanceSummary } from 'features/portfolio/hooks/useAccountPerformanceSummary'
 import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
 import { useBalanceTotalPriceChangeForAccount } from 'features/portfolio/hooks/useBalanceTotalPriceChangeForAccount'
-import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalanceAccurate'
 import { useIsBalanceLoadedForAccount } from 'features/portfolio/hooks/useIsBalanceLoadedForAccount'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
@@ -65,6 +64,7 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { useIsRefetchingBalancesForAccount } from '../hooks/useIsRefetchingBalancesForAccount'
 import { useIsLoadingBalancesForAccount } from '../hooks/useIsLoadingBalancesForAccount'
+import { useIsAllBalancesInaccurateForAccount } from '../hooks/useIsAllBalancesInaccurateForAccount'
 
 const SEGMENT_ITEMS = [
   { title: 'Assets' },
@@ -118,7 +118,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const isBalanceLoaded = useIsBalanceLoadedForAccount(activeAccount)
   const isLoadingBalances = useIsLoadingBalancesForAccount(activeAccount)
   const isLoading = isRefetchingBalance || !isBalanceLoaded
-  const balanceAccurate = useIsAccountBalanceAccurate(activeAccount)
+  const balanceAccurate = useIsAllBalancesInaccurateForAccount(activeAccount)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
   const formattedBalance = useMemo(() => {
