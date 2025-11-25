@@ -86,14 +86,25 @@ export async function getTestCase(title: string, sectionId?: number) {
 export async function sendResult(
   runId: number,
   caseId: number,
-  statusId: number
+  statusId: number,
+  error?: any
 ) {
-  // post result to testrail
+  let comment = ''
+
+  if (error) {
+    const msg = error?.message || error.toString()
+
+    comment = `FAILED:\n\n${msg}`
+  } else {
+    comment = 'PASSED'
+  }
+
   try {
     const resp = await testrail.post(
       `/add_result_for_case/${runId}/${caseId}`,
       {
-        status_id: statusId
+        status_id: statusId,
+        comment: comment
       }
     )
     console.info('result sent')

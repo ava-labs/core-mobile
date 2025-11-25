@@ -118,14 +118,14 @@ export const config: WebdriverIO.Config = {
   },
 
   // hoook afterTest: make or get testCase and send result after test
-  afterTest: async (test, _, { passed }) => {
+  afterTest: async (test, _, { passed, error }) => {
     const sectionTitle = test.parent
     const sectionId = sectionCache[sectionTitle]
     const caseId = await getTestCase(test.title, sectionId)
     const statusId = passed ? 1 : 5
     if (runId) {
       await addCaseToRun(runId, caseId)
-      const resultId = await sendResult(runId, caseId, statusId)
+      const resultId = await sendResult(runId, caseId, statusId, error)
 
       if (!passed && resultId) {
         const screenshotBase64 = await driver.takeScreenshot()
