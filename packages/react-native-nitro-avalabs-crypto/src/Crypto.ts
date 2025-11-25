@@ -1,3 +1,4 @@
+/* eslint-disable no-bitwise */
 import { NitroModules } from 'react-native-nitro-modules'
 import type { Crypto } from './specs/Crypto.nitro'
 
@@ -26,21 +27,19 @@ function hexToArrayBuffer(hex: string): ArrayBuffer {
 }
 
 /** Convert a Uint8Array or ArrayBuffer to a tight ArrayBuffer view. */
-function toArrayBuffer(
-  input: Uint8Array | ArrayBuffer
-): ArrayBuffer | SharedArrayBuffer {
+function toArrayBuffer(input: Uint8Array | ArrayBuffer): ArrayBuffer {
   if (input instanceof ArrayBuffer) return input
   // Make a tight copy that respects byteOffset/byteLength
   return input.buffer.slice(
     input.byteOffset,
     input.byteOffset + input.byteLength
-  )
+  ) as ArrayBuffer
 }
 
 /** Accepts string (hex), ArrayBuffer, or Uint8Array and returns ArrayBuffer */
 function hexLikeToArrayBuffer(
   input: string | ArrayBuffer | Uint8Array
-): ArrayBuffer | SharedArrayBuffer {
+): ArrayBuffer {
   if (typeof input === 'string') return hexToArrayBuffer(input)
   if (input instanceof ArrayBuffer) return input
   if (input instanceof Uint8Array) return toArrayBuffer(input)
@@ -69,9 +68,10 @@ function bigintToArrayBuffer32(n: bigint): ArrayBuffer {
 }
 
 /** bigint → 64-char hex string (left-padded). Throws if it doesn't fit. */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function bigintToHex64(n: bigint): string {
   if (n < 0n) throw new TypeError('Secret key must be non-negative')
-  let hex = n.toString(16)
+  const hex = n.toString(16)
   if (hex.length > 64) throw new RangeError('bigint does not fit into 32 bytes')
   return hex.padStart(64, '0').toLowerCase()
 }
@@ -180,7 +180,7 @@ function be32ToDerInt(src: Uint8Array): Uint8Array {
   // Strip leading zeros
   let i = 0
   while (i < src.length - 1 && src[i] === 0) i++
-  let v = src.subarray(i)
+  const v = src.subarray(i)
   // If high bit set, prepend 0x00 to force positive
   if (v[0] & 0x80) {
     const out = new Uint8Array(v.length + 1)
@@ -219,8 +219,8 @@ export function sign(
   message: string | ArrayBuffer | Uint8Array
 ): Uint8Array {
   con.log('[Crypto] sign called')
-  const skAB = hexLikeToArrayBuffer(secretKey as any)
-  const msgAB = hexLikeToArrayBuffer(message as any)
+  const skAB = hexLikeToArrayBuffer(secretKey)
+  const msgAB = hexLikeToArrayBuffer(message)
   if (msgAB.byteLength !== 32)
     throw new TypeError('ECDSA message must be 32 bytes')
   const out = NativeCrypto.sign(skAB, msgAB)
@@ -236,6 +236,7 @@ export function sign(
 }
 
 /** Parse minimal ASN.1 DER ECDSA signature and return {r,s} raw big-endian bytes (unpadded). */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 function parseDerEcdsa(sig: Uint8Array): { r: Uint8Array; s: Uint8Array } {
   if (sig.length < 8 || sig[0] !== 0x30)
     throw new TypeError('Invalid DER: no SEQ')
@@ -250,12 +251,12 @@ function parseDerEcdsa(sig: Uint8Array): { r: Uint8Array; s: Uint8Array } {
   }
   if (p + len !== sig.length) throw new TypeError('Invalid DER: len mismatch')
   if (sig[p++] !== 0x02) throw new TypeError('Invalid DER: missing r INTEGER')
-  let rLen = sig[p++]
+  const rLen = sig[p++]
   if (p + rLen > sig.length) throw new TypeError('Invalid DER: r overflow')
   let r = sig.subarray(p, p + rLen)
   p += rLen
   if (sig[p++] !== 0x02) throw new TypeError('Invalid DER: missing s INTEGER')
-  let sLen = sig[p++]
+  const sLen = sig[p++]
   if (p + sLen > sig.length) throw new TypeError('Invalid DER: s overflow')
   let s = sig.subarray(p, p + sLen)
   // Strip an optional leading 0x00 that enforces positive INTEGER
@@ -265,7 +266,7 @@ function parseDerEcdsa(sig: Uint8Array): { r: Uint8Array; s: Uint8Array } {
 }
 
 /** Convert DER ECDSA signature to compact 64-byte (r||s). */
-function derToCompact64(sigDer: Uint8Array): Uint8Array {
+function derToCompact64(sigDer: Uint8Array): Uint8Array<ArrayBuffer> {
   const { r, s } = parseDerEcdsa(sigDer)
   if (r.length > 32 || s.length > 32)
     throw new TypeError('Invalid DER: r/s too long')
@@ -284,9 +285,9 @@ export function verify(
   signature: string | ArrayBuffer | Uint8Array
 ): boolean {
   con.log('[Crypto] verify called')
-  const pkAB = hexLikeToArrayBuffer(publicKey as any)
-  const msgAB = hexLikeToArrayBuffer(message as any)
-  const sigAB0 = hexLikeToArrayBuffer(signature as any)
+  const pkAB = hexLikeToArrayBuffer(publicKey)
+  const msgAB = hexLikeToArrayBuffer(message)
+  const sigAB0 = hexLikeToArrayBuffer(signature)
   if (msgAB.byteLength !== 32)
     throw new TypeError('ECDSA message must be 32 bytes')
 
@@ -295,7 +296,7 @@ export function verify(
   if (!isDerSignature(sigU8)) {
     if (sigU8.length === 64) {
       con.log('[Crypto] verify: converting compact(64) signature to DER')
-      sigU8 = compact64ToDer(sigU8)
+      sigU8 = compact64ToDer(sigU8) as Uint8Array<ArrayBuffer>
     } else {
       con.log(
         '[Crypto] verify: non-DER signature with unexpected length',
@@ -321,12 +322,9 @@ export function signSchnorr(
 
   const msgAB = ensure32(
     'Schnorr messageHash',
-    hexLikeToArrayBuffer(messageHash as any)
+    hexLikeToArrayBuffer(messageHash)
   )
-  const skAB = ensure32(
-    'Schnorr secretKey',
-    hexLikeToArrayBuffer(secretKey as any)
-  )
+  const skAB = ensure32('Schnorr secretKey', hexLikeToArrayBuffer(secretKey))
 
   let auxAB: ArrayBuffer
   if (auxRand === undefined) {
@@ -353,9 +351,9 @@ export function verifySchnorr(
   signature: string | ArrayBuffer | Uint8Array
 ): boolean {
   con.log('[Crypto] verifySchnorr called')
-  const pkAB = hexLikeToArrayBuffer(publicKey as any)
-  const msgAB = hexLikeToArrayBuffer(messageHash as any)
-  const sigAB = hexLikeToArrayBuffer(signature as any)
+  const pkAB = hexLikeToArrayBuffer(publicKey)
+  const msgAB = hexLikeToArrayBuffer(messageHash)
+  const sigAB = hexLikeToArrayBuffer(signature)
   if (msgAB.byteLength !== 32)
     throw new TypeError('Schnorr messageHash must be 32 bytes')
   if (sigAB.byteLength !== 64)

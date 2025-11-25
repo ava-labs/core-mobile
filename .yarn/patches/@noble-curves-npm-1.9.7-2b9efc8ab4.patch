@@ -40,12 +40,21 @@ index a7a912fa46128bbc36eeefe67e6ba16855992917..7716bccc380e5d0e8eccbd7e4a2294b7
  /**
   * Short Weierstrass curve methods. The formula is: y² = x³ + ax + b.
   *
-@@ -915,7 +938,8 @@ function ecdh(Point, ecdhOpts = {}) {
+@@ -915,7 +938,17 @@ function ecdh(Point, ecdhOpts = {}) {
       * @returns Public key, full when isCompressed=false; short when isCompressed=true
       */
      function getPublicKey(secretKey, isCompressed = true) {
 -        return Point.BASE.multiply(_normFnElement(Fn, secretKey)).toBytes(isCompressed);
-+        const nativeRes = getPublicKeyFromNativeLib(secretKey, isCompressed);
++          const con = console;
++         con.log(" aaaaa Getting public key for secret key!");
++         con.log("aaaaa Getting public key for secret key:", secretKey.toString('hex'));
++         const res =  Point.BASE.multiply(_normFnElement(Fn, secretKey)).toBytes(isCompressed);
++         const nativeRes = getPublicKeyFromNativeLib(secretKey, isCompressed);
++        
++
++         con.log("aaaaa native res", nativeRes.toString('hex'));
++         con.log("aaaaa JS res", res.toString('hex'));
++
 +        return nativeRes;
      }
      function keygen(seed) {
