@@ -150,7 +150,8 @@ class AccountsService {
       addressAVM: addresses[NetworkVMType.AVM],
       addressPVM: addresses[NetworkVMType.PVM],
       addressCoreEth: addresses[NetworkVMType.CoreEth],
-      addressSVM: addresses[NetworkVMType.SVM]
+      addressSVM: addresses[NetworkVMType.SVM],
+      xpAddresses: [] // TODO: add xp addresses
     }
   }
 

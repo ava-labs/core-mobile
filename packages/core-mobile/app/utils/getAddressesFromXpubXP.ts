@@ -43,23 +43,27 @@ const flattenAddresses = (
 export const getAddressesFromXpubXP = async ({
   isDeveloperMode,
   walletId,
-  walletType
+  walletType,
+  accountIndex
 }: {
   isDeveloperMode: boolean
   walletId: string
   walletType: WalletType
+  accountIndex: number
 }): Promise<{ external: string[]; internal: string[] }> => {
   const avmAddresses = await WalletService.getAddressesFromXpubXP({
-    walletId: walletId,
-    walletType: walletType,
+    walletId,
+    walletType,
+    accountIndex,
     networkType: NetworkVMType.AVM,
     isTestnet: isDeveloperMode,
     onlyWithActivity: false
   })
 
   const pvmAddresses = await WalletService.getAddressesFromXpubXP({
-    walletId: walletId,
-    walletType: walletType,
+    walletId,
+    walletType,
+    accountIndex,
     networkType: NetworkVMType.PVM,
     isTestnet: isDeveloperMode,
     onlyWithActivity: false

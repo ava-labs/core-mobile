@@ -3,7 +3,6 @@ import { Account } from 'store/account/types'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import WalletFactory from 'services/wallet/WalletFactory'
 import { WalletType } from 'services/wallet/types'
-import { uniqWith } from 'lodash'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { transactionSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
@@ -16,7 +15,6 @@ import { commonStorage } from 'utils/mmkv'
 import { StorageKey } from 'resources/Constants'
 import { appendToStoredArray, loadArrayFromStorage } from 'utils/mmkv/storages'
 import { setIsMigratingActiveAccounts } from 'store/wallet/slice'
-import WalletService from 'services/wallet/WalletService'
 import { selectWalletState, WalletState } from 'store/app'
 import { setAccounts, setNonActiveAccounts } from './slice'
 
@@ -218,47 +216,4 @@ const markWalletAsMigrated = (walletId: string): void => {
     StorageKey.MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS,
     walletId
   )
-}
-export async function getAddressesForXP({
-  isDeveloperMode,
-  walletId,
-  walletType,
-  networkType,
-  onlyWithActivity
-}: {
-  isDeveloperMode: boolean
-  walletId: string | null
-  walletType: WalletType | undefined
-  networkType: NetworkVMType.AVM | NetworkVMType.PVM
-  onlyWithActivity: boolean
-}): Promise<string[]> {
-  if (!walletId) {
-    throw new Error('Wallet ID is required')
-  }
-  if (!walletType) {
-    throw new Error('Wallet type is unknown')
-  }
-  try {
-    const activeAddresses = await WalletService.getAddressesFromXpubXP({
-      walletId,
-      walletType,
-      networkType,
-      isTestnet: isDeveloperMode,
-      onlyWithActivity
-    })
-
-    const externalAddresses = activeAddresses.externalAddresses.map(
-      address => address.address
-    )
-    const internalAddresses = activeAddresses.internalAddresses.map(
-      address => address.address
-    )
-    return uniqWith(
-      [...externalAddresses, ...internalAddresses],
-      (a, b) => a === b
-    )
-  } catch (error) {
-    Logger.error('Failed to get addresses for XP', error)
-    throw new Error('Failed to get addresses for XP')
-  }
 }

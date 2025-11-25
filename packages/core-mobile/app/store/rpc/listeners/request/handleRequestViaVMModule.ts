@@ -154,7 +154,11 @@ const getContext = async ({
     const context: Record<string, string> = { currentAddress }
 
     if (walletType === WalletType.MNEMONIC && activeAccount) {
-      const xpubXP = await WalletService.getRawXpubXP({ walletId, walletType })
+      const xpubXP = await WalletService.getRawXpubXP({
+        walletId,
+        walletType,
+        accountIndex: activeAccount.index
+      })
 
       if (xpubXP) {
         context.xpubXP = xpubXP
