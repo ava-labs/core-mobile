@@ -1,12 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable max-params */
+import { Readable } from 'stream'
+import FormData from 'form-data'
 import axios from 'axios'
 import { testRailConfig } from './testrail.config'
 
 const { domain, username, apiKey, projectId, suiteId } = testRailConfig
-
-const testrail = axios.create({
+const authConfig = {
   baseURL: (domain ?? '') + '/index.php?/api/v2',
   auth: { username: username ?? '', password: apiKey ?? '' }
-})
+}
+const testrail = axios.create(authConfig)
 
 // 1. api call to create testrun
 export async function getTestRun(platform: string) {
@@ -84,14 +88,29 @@ export async function getTestCase(title: string, sectionId?: number) {
 export async function sendResult(
   runId: number,
   caseId: number,
-  statusId: number
+  statusId: number,
+  error?: any
 ) {
-  // post result to testrail
+  let comment = ''
+
+  // get error message if the test failed
+  if (error) {
+    const msg = error?.message || error.toString()
+    comment = `FAILED:\n\n${msg}`
+  } else {
+    comment = 'PASSED'
+  }
+
   try {
-    await testrail.post(`/add_result_for_case/${runId}/${caseId}`, {
-      status_id: statusId
-    })
+    const resp = await testrail.post(
+      `/add_result_for_case/${runId}/${caseId}`,
+      {
+        status_id: statusId,
+        comment: comment
+      }
+    )
     console.info('result sent')
+    return resp.data?.id
   } catch (e: any) {
     console.error('error sending result', e.response?.data || e.message)
   }
@@ -121,5 +140,32 @@ export async function addCaseToRun(runId: number, caseId: number) {
     console.info(`case ${caseId} added to run ${runId}`)
   } catch (e: any) {
     console.error('error updating run with case', e.response?.data || e.message)
+  }
+}
+
+// 6. upload screenshot to testrail if the test failed
+export async function uploadScreenshotToResult(
+  resultId: number,
+  base64: string
+) {
+  try {
+    const buffer = Buffer.from(base64, 'base64')
+    const stream = Readable.from(buffer)
+
+    const form = new FormData()
+    form.append('attachment', stream, {
+      filename: 'screenshot.png',
+      contentType: 'image/png'
+    })
+
+    await testrail.post(`/add_attachment_to_result/${resultId}`, form, {
+      headers: form.getHeaders()
+    })
+    console.log(`Screenshot uploaded: result_id=${resultId}`)
+  } catch (e: any) {
+    console.log(
+      `Screenshot upload failed: result_id=${resultId}`,
+      e.response?.data || e.message
+    )
   }
 }

@@ -64,6 +64,8 @@ describe('Portfolio tab', () => {
 
       previousAmount = currentAmount
     }
+
+    await commonElsPage.selectDropdown('sort', 'High to low balance')
   })
 
   it('Assets - view assets by grid and list', async () => {
