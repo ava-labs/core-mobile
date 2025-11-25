@@ -1,4 +1,5 @@
 import {
+  ANIMATED,
   Icons,
   Text,
   TouchableOpacity,
@@ -111,7 +112,8 @@ const WalletCard = ({
   const animatedContentStyle = useAnimatedStyle(() => {
     return {
       minHeight: withTiming(
-        isExpanded ? contentHeight + HEADER_HEIGHT * 2 : HEADER_HEIGHT
+        isExpanded ? contentHeight + HEADER_HEIGHT * 2 : HEADER_HEIGHT,
+        ANIMATED.TIMING_CONFIG
       )
     }
   })
