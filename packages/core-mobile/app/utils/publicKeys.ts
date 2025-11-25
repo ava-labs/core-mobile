@@ -1,5 +1,4 @@
 import { NetworkVMType } from '@avalabs/vm-module-types'
-import { AVALANCHE_DERIVATION_PATH_PREFIX } from 'features/ledger/consts'
 
 export const emptyAddresses = (): Record<NetworkVMType, string> => ({
   [NetworkVMType.AVM]: '',
@@ -22,6 +21,11 @@ export enum Curve {
 export const EVM_BASE_DERIVATION_PATH_PREFIX = "m/44'/60'/"
 export const SVM_BASE_DERIVATION_PATH_PREFIX = "m/44'/501'/"
 
+// Deprecated Avalanche public key path prefix
+export const DEPRECATED_AVALANCHE_DERIVATION_PATH_PREFIX = "m/44'/9000'/0'/"
+
+export const AVALANCHE_DERIVATION_PATH_PREFIX = "m/44'/9000'/"
+
 export type AddressPublicKey = {
   curve: Curve
   derivationPath: string
@@ -34,6 +38,3 @@ export type SeedlessPublicKeys = {
 
 export const isEvmPublicKey = (publicKey: AddressPublicKey): boolean =>
   publicKey.derivationPath.startsWith(EVM_BASE_DERIVATION_PATH_PREFIX)
-
-export const isAvalanchePublicKey = (publicKey: AddressPublicKey): boolean =>
-  publicKey.derivationPath.startsWith(AVALANCHE_DERIVATION_PATH_PREFIX)

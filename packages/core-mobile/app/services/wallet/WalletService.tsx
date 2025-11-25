@@ -21,7 +21,7 @@ import {
   TypedDataV1
 } from '@avalabs/vm-module-types'
 import { SpanName } from 'services/sentry/types'
-import { Curve, isAvalanchePublicKey } from 'utils/publicKeys'
+import { AVALANCHE_DERIVATION_PATH_PREFIX, Curve } from 'utils/publicKeys'
 import fetchWithAppCheck from 'utils/httpClient'
 import {
   AVALANCHE_MAINNET_NETWORK,
