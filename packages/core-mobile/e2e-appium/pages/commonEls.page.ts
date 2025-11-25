@@ -383,7 +383,11 @@ class CommonElsPage {
 
   async dismissBottomSheet(element = this.grabber) {
     await actions.waitFor(element, 20000)
-    await actions.dragAndDrop(this.grabber, [0, 1500])
+    while (await actions.getVisible(element)) {
+      await actions.dragAndDrop(element, [0, 1500])
+      await actions.delay(1000)
+    }
+    console.log('Dismissed bottom sheet')
   }
 
   async visibleDropdown(name: string, isVisible = true) {
