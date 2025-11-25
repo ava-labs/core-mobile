@@ -158,6 +158,9 @@ class TransactionsPage {
   }
 
   async tapBuy() {
+    if (await actions.getVisible(commonElsPage.grabber)) {
+      await commonElsPage.dismissBottomSheet()
+    }
     await actions.waitFor(this.buyButton, 40000)
     await actions.tap(this.buyButton)
   }
