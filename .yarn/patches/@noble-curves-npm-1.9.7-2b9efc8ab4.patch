@@ -7,7 +7,7 @@ index 0000000000000000000000000000000000000000..3117a90a0d1c52a564b798d5ebe84c35
 +
 \ No newline at end of file
 diff --git a/abstract/weierstrass.js b/abstract/weierstrass.js
-index a7a912fa46128bbc36eeefe67e6ba16855992917..7716bccc380e5d0e8eccbd7e4a2294b70114825c 100644
+index a7a912fa46128bbc36eeefe67e6ba16855992917..ca5d7be1c7c57a9bd82159196d0397ac4331544f 100644
 --- a/abstract/weierstrass.js
 +++ b/abstract/weierstrass.js
 @@ -11,6 +11,29 @@ exports.ecdsa = ecdsa;
@@ -45,17 +45,17 @@ index a7a912fa46128bbc36eeefe67e6ba16855992917..7716bccc380e5d0e8eccbd7e4a2294b7
       */
      function getPublicKey(secretKey, isCompressed = true) {
 -        return Point.BASE.multiply(_normFnElement(Fn, secretKey)).toBytes(isCompressed);
-+          const con = console;
-+         con.log(" aaaaa Getting public key for secret key!");
-+         con.log("aaaaa Getting public key for secret key:", secretKey.toString('hex'));
-+         const res =  Point.BASE.multiply(_normFnElement(Fn, secretKey)).toBytes(isCompressed);
-+         const nativeRes = getPublicKeyFromNativeLib(secretKey, isCompressed);
-+        
++        const con = console;
++        try {
++            const nativeRes = getPublicKeyFromNativeLib(secretKey, isCompressed);
++            return nativeRes;
++        } catch (e) {
++            con.log(`Native lib failed, falling back to JS implementation ${e}`);
++            // fall through to JS implementation below
++        }
 +
-+         con.log("aaaaa native res", nativeRes.toString('hex'));
-+         con.log("aaaaa JS res", res.toString('hex'));
-+
-+        return nativeRes;
++        const res =  Point.BASE.multiply(_normFnElement(Fn, secretKey)).toBytes(isCompressed);
++        return res;
      }
      function keygen(seed) {
          const secretKey = randomSecretKey(seed);
