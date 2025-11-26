@@ -79,6 +79,6 @@
   "packageManager": "yarn@3.6.4",
   "dependencies": {
     "nitrogen": "0.31.6",
-    "react-native-nitro-modules": "0.31.6"
+    "react-native-nitro-modules": "0.31.10"
   }
 }

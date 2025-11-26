@@ -2,9 +2,9 @@
   "name": "react-native-nitro-avalabs-crypto",
   "version": "0.0.1",
   "description": "react-native-nitro-avalabs-crypto",
-  "main": "lib/src/index",
-  "module": "lib/src/index",
-  "types": "lib/src/index.d.ts",
+  "main": "lib/index",
+  "module": "lib/index",
+  "types": "lib/index.d.ts",
   "react-native": "src/index",
   "source": "src/index",
   "files": [
@@ -63,7 +63,7 @@
     "nitrogen": "*",
     "react": "19.0.0",
     "react-native": "0.79.5",
-    "react-native-nitro-modules": "0.31.6",
+    "react-native-nitro-modules": "0.31.10",
     "typescript": "^5.8.3"
   },
   "peerDependencies": {

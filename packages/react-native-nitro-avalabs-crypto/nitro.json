@@ -12,7 +12,11 @@
     ],
     "androidCxxLibName": "NitroAvalabsCrypto"
   },
-  "autolinking": {},
+  "autolinking": {
+    "Crypto": {
+      "cpp": "CryptoHybrid"
+    }
+  },
   "ignorePaths": [
     "**/node_modules"
   ]

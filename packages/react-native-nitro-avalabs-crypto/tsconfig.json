@@ -1,16 +1,20 @@
 {
   "include": [
-    "src"
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "*.d.ts",
+    ".eslintrc.js",
+  ],
+    "exclude": [
+    "example",
+    "node_modules",
+    "dist"
   ],
   "compilerOptions": {
     "composite": true,
     "outDir": "lib",
     "rootDir": ".",
-    "paths": {
-      "react-native-nitro-avalabs-crypto": [
-        "./src/index"
-      ]
-    },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
     "esModuleInterop": true,
@@ -20,10 +24,11 @@
       "esnext",
       "DOM"
     ],
-    "module": "esnext",
-    "moduleResolution": "bundler",
+    "module": "commonjs",
+    "moduleResolution": "node",
     "noEmit": false,
     "noFallthroughCasesInSwitch": true,
+    "ignoreDeprecations": "6.0",
     "noImplicitReturns": true,
     "noImplicitUseStrict": false,
     "noStrictGenericChecks": false,
@@ -34,6 +39,6 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "esnext",
-    "verbatimModuleSyntax": true
+    "declaration": true
   }
 }

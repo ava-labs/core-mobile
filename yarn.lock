@@ -595,7 +595,7 @@ __metadata:
     react-native-mmkv: 3.2.0
     react-native-modal-datetime-picker: 18.0.0
     react-native-nitro-avalabs-crypto: "workspace:*"
-    react-native-nitro-modules: 0.31.6
+    react-native-nitro-modules: 0.31.10
     react-native-os: 1.2.6
     react-native-pager-view: 6.7.1
     react-native-passkey: 3.1.0
@@ -29752,7 +29752,7 @@ __metadata:
     husky: 9.1.6
     lint-staged: 15.2.10
     nitrogen: 0.31.6
-    react-native-nitro-modules: 0.31.6
+    react-native-nitro-modules: 0.31.10
   languageName: unknown
   linkType: soft
 
@@ -33159,7 +33159,7 @@ __metadata:
     nitrogen: "*"
     react: 19.0.0
     react-native: 0.79.5
-    react-native-nitro-modules: 0.31.6
+    react-native-nitro-modules: 0.31.10
     typescript: ^5.8.3
   peerDependencies:
     react: "*"
@@ -33168,13 +33168,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"react-native-nitro-modules@npm:0.31.6":
-  version: 0.31.6
-  resolution: "react-native-nitro-modules@npm:0.31.6"
+"react-native-nitro-modules@npm:0.31.10":
+  version: 0.31.10
+  resolution: "react-native-nitro-modules@npm:0.31.10"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: d9b5074ae30901d5ef305c3771c87a7eb4872b9f0411fbc0c12d51a3be28d016dc21419fedad9119cdba19977ed826c5c5d716601115f306faccce6a3392d8da
+  checksum: 1c8d2f12ff29b6733c784c5fd0dedcbec4ceec9f82eb49f49e7734f31b9367346938010dcacf69bf695a352e36fec5aa23fd57b8091f6acd78c3d9a61e14ea7f
   languageName: node
   linkType: hard
 

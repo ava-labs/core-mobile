@@ -80,6 +80,7 @@ function bigintToHex64(n: bigint): string {
  * Public JS API — accepts Uint8Array | ArrayBuffer | string | bigint.
  * Returns Uint8Array for ergonomic use in JS.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export function getPublicKey(
   secretKey: Uint8Array | ArrayBuffer | string | bigint,
   isCompressed = true
@@ -127,8 +128,12 @@ export function getPublicKey(
     // fallback: convert buffer to hex and use string method; native returns ArrayBuffer
     const bytes = new Uint8Array(ab)
     let h = ''
-    for (let i = 0; i < bytes.length; i++)
-      h += bytes[i]?.toString(16).padStart(2, '0')
+    for (let i = 0; i < bytes.length; i++) {
+      const byte = bytes[i]
+      if (byte !== undefined) {
+        h += byte.toString(16).padStart(2, '0')
+      }
+    }
     outBuf = NativeCrypto.getPublicKeyFromString(h, isCompressed)
   } else {
     throw new Error(
@@ -138,9 +143,9 @@ export function getPublicKey(
 
   con.log(
     '[Crypto] Native call succeeded, result byteLength:',
-    outBuf?.byteLength
+    outBuf.byteLength
   )
-  con.log('[Crypto] Returning Uint8Array with length', outBuf?.byteLength)
+  con.log('[Crypto] Returning Uint8Array with length', outBuf.byteLength)
   try {
     const res = new Uint8Array(outBuf)
     con.log('[Crypto] getPublicKey completed')
@@ -182,7 +187,7 @@ function be32ToDerInt(src: Uint8Array): Uint8Array {
   while (i < src.length - 1 && src[i] === 0) i++
   const v = src.subarray(i)
   // If high bit set, prepend 0x00 to force positive
-  if (v[0] & 0x80) {
+  if ((v[0] ?? 0) & 0x80) {
     const out = new Uint8Array(v.length + 1)
     out[0] = 0x00
     out.set(v, 1)
@@ -241,22 +246,22 @@ function parseDerEcdsa(sig: Uint8Array): { r: Uint8Array; s: Uint8Array } {
   if (sig.length < 8 || sig[0] !== 0x30)
     throw new TypeError('Invalid DER: no SEQ')
   let p = 1
-  let len = sig[p++]
+  let len = sig[p++] ?? 0
   if (len & 0x80) {
     const n = len & 0x7f
     if (n === 0 || n > 2) throw new TypeError('Invalid DER: long len too big')
     if (p + n > sig.length) throw new TypeError('Invalid DER: length overflow')
     len = 0
-    for (let i = 0; i < n; i++) len = (len << 8) | sig[p++]
+    for (let i = 0; i < n; i++) len = (len << 8) | (sig[p++] ?? 0)
   }
   if (p + len !== sig.length) throw new TypeError('Invalid DER: len mismatch')
   if (sig[p++] !== 0x02) throw new TypeError('Invalid DER: missing r INTEGER')
-  const rLen = sig[p++]
+  const rLen = sig[p++] ?? 0
   if (p + rLen > sig.length) throw new TypeError('Invalid DER: r overflow')
   let r = sig.subarray(p, p + rLen)
   p += rLen
   if (sig[p++] !== 0x02) throw new TypeError('Invalid DER: missing s INTEGER')
-  const sLen = sig[p++]
+  const sLen = sig[p++] ?? 0
   if (p + sLen > sig.length) throw new TypeError('Invalid DER: s overflow')
   let s = sig.subarray(p, p + sLen)
   // Strip an optional leading 0x00 that enforces positive INTEGER

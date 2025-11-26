@@ -1,11 +1,17 @@
 buildscript {
+  ext.getExtOrDefault = {name ->
+    return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['NitroAvalabsCrypto_' + name]
+  }
+
   repositories {
     google()
     mavenCentral()
   }
 
   dependencies {
-    classpath "com.android.tools.build:gradle:8.13.0"
+    classpath "com.android.tools.build:gradle:8.7.2"
+    // noinspection DifferentKotlinGradleVersion
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${getExtOrDefault('kotlinVersion')}"
   }
 }
 
@@ -14,42 +20,286 @@ def reactNativeArchitectures() {
   return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
 }
 
-def isNewArchitectureEnabled() {
-  return rootProject.hasProperty("newArchEnabled") && rootProject.getProperty("newArchEnabled") == "true"
-}
-
 apply plugin: "com.android.library"
-apply plugin: 'org.jetbrains.kotlin.android'
-apply from: '../nitrogen/generated/android/NitroAvalabsCrypto+autolinking.gradle'
-apply from: "./fix-prefab.gradle"
+apply plugin: "kotlin-android"
+apply from: '../nitrogen/generated/android/nitroavalabscrypto+autolinking.gradle'
 
-if (isNewArchitectureEnabled()) {
-  apply plugin: "com.facebook.react"
-}
-
-def getExtOrDefault(name) {
-  return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties["NitroAvalabsCrypto_" + name]
-}
+apply plugin: "com.facebook.react"
 
 def getExtOrIntegerDefault(name) {
   return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["NitroAvalabsCrypto_" + name]).toInteger()
 }
 
+// === secp256k1 Android build wiring (headers + .so per ABI) ===
+ext {
+  SECP_OUTPUTS_INCLUDE_DIR = "$buildDir/outputs/include"
+  SECP_OUTPUTS_ROOT        = "$buildDir/outputs/android" // <abi>/lib/libsecp256k1.so
+}
+
+ext {
+  secpRepoUrl       = 'https://github.com/bitcoin-core/secp256k1.git'
+  secpTag           = 'v0.7.0'
+  secpCommit        = ''
+  workDir           = file("$buildDir/secp256k1")
+  installRoot       = file("$buildDir/secp-android")
+  outputsRoot       = file(SECP_OUTPUTS_ROOT)
+  outputsIncludeDir = file(SECP_OUTPUTS_INCLUDE_DIR)
+  enableModules     = (project.findProperty('secpModules')  ?: '')   // e.g., ecdh,recovery,schnorrsig,extrakeys
+  // Use the same API level for all ABIs; default to max(minSdkVersion, 21). Override with -PsecpApi.
+  secpApi           = (project.findProperty('secpApi') ?: Math.max(getExtOrIntegerDefault("minSdkVersion"), 21)).toString()
+}
+
+import org.apache.tools.ant.taskdefs.condition.Os
+
+def isMac() { Os.isFamily(Os.FAMILY_MAC) }
+
+def findNdkRoot() {
+  ['ANDROID_NDK_HOME','ANDROID_NDK_ROOT','ANDROID_NDK'].collect { System.getenv(it) }
+      .find { it && file(it).exists() } ?:
+      { ->
+        def home = System.getenv('HOME')
+        def ndkBundle = file("$home/Library/Android/sdk/ndk-bundle")
+        if (ndkBundle.exists()) return ndkBundle
+        def ndkMulti = file("$home/Library/Android/sdk/ndk")
+        if (ndkMulti.exists()) {
+          def versions = ndkMulti.listFiles()?.findAll { it.isDirectory() }?.sort { a, b -> a.name <=> b.name }
+          if (versions && !versions.isEmpty()) return versions.last()
+        }
+        throw new GradleException("Android NDK not found. Set ANDROID_NDK_HOME / ANDROID_NDK_ROOT / ANDROID_NDK.")
+      }.call()
+}
+
+def ndkRoot = file(findNdkRoot())
+
+def hostTag = ['darwin-arm64','darwin-x86_64'].find { new File(ndkRoot, "toolchains/llvm/prebuilt/${it}").exists() } ?:
+        new File(ndkRoot, "toolchains/llvm/prebuilt").listFiles()?.find { it.isDirectory() }?.name
+if (!hostTag) throw new GradleException("Cannot locate NDK llvm/prebuilt host tag under ${ndkRoot}.")
+
+def toolBin = file("${ndkRoot}/toolchains/llvm/prebuilt/${hostTag}/bin")
+
+def abiMatrix = {
+  [
+    'armeabi-v7a': [ host:'arm-linux-androideabi',  target:'armv7a-linux-androideabi', api: secpApi ],
+    'arm64-v8a'  : [ host:'aarch64-linux-android',  target:'aarch64-linux-android',    api: secpApi ],
+    'x86'        : [ host:'i686-linux-android',     target:'i686-linux-android',       api: secpApi ],
+    'x86_64'     : [ host:'x86_64-linux-android',   target:'x86_64-linux-android',     api: secpApi ],
+  ]
+}.call()
+
+def moduleFlagsString = {
+  def map = [
+    ecdh      : '--enable-module-ecdh',
+    recovery  : '--enable-module-recovery',
+    extrakeys : '--enable-module-extrakeys',
+    schnorrsig: '--enable-module-schnorrsig',
+  ]
+  (enableModules ?: '').split(',').collect { it.trim() }.findAll { it }.collect { map[it] ?: '' }.findAll { it }.join(' ')
+}.call()
+
+// Fetch repo at pinned tag or commit (incremental)
+tasks.register('fetchSecp256k1') {
+  inputs.property('repoUrl', secpRepoUrl)
+  inputs.property('tag',     secpTag)
+  inputs.property('commit',  secpCommit)
+  outputs.dir(workDir)
+  doLast {
+    if (!workDir.exists()) {
+      workDir.mkdirs()
+    }
+
+    // Determine ref to check out: prefer tag, then commit, else default branch
+    def ref = (secpTag ?: secpCommit ?: '').trim()
+    if (ref) {
+      // --- Try Git first (annotated tags need refs/tags/<tag>) ---
+      def ok = true
+      try {
+        exec { workingDir workDir; commandLine 'git', 'init'; ignoreExitValue true }
+        exec { workingDir workDir; commandLine 'git', 'remote', 'remove', 'origin'; ignoreExitValue true }
+        exec { workingDir workDir; commandLine 'git', 'remote', 'add', 'origin', secpRepoUrl; ignoreExitValue true }
+        exec { workingDir workDir; commandLine 'git', 'fetch', '--tags', '--prune', 'origin' }
+        def co1 = exec { workingDir workDir; commandLine 'git', 'checkout', "refs/tags/${ref}"; ignoreExitValue true }
+        if (co1.exitValue != 0) {
+          def co2 = exec { workingDir workDir; commandLine 'git', 'checkout', ref; ignoreExitValue true }
+          if (co2.exitValue != 0) ok = false
+        }
+      } catch (Exception e) {
+        ok = false
+      }
+
+      if (!ok) {
+        // --- Fallback: download release tarball ---
+        def url = "https://github.com/bitcoin-core/secp256k1/archive/refs/tags/${ref}.tar.gz"
+        def tarFile = file("${buildDir}/secp256k1-${ref}.tar.gz")
+        def refNoV = ref.startsWith('v') ? ref.substring(1) : ref
+        def extractDir = file("${buildDir}/secp256k1-${refNoV}")
+
+        println "[secp] Git checkout failed for '${ref}', falling back to tarball: ${url}"
+        def curlRes = exec { commandLine 'curl', '-fL', '-o', tarFile.absolutePath, url; ignoreExitValue true }
+        if (curlRes.exitValue != 0) {
+          throw new GradleException("Failed to download ${url}. Try setting -PsecpTag to a valid release (e.g., v0.6.0).")
+        }
+        // Ensure clean target
+        if (extractDir.exists()) extractDir.deleteDir()
+        exec { commandLine 'tar', '-xzf', tarFile.absolutePath, '-C', buildDir.absolutePath }
+
+        if (!extractDir.exists()) {
+          throw new GradleException("Expected extracted folder ${extractDir} not found after untar. Tag '${ref}' may be invalid.")
+        }
+        // Move to workDir
+        if (workDir.exists() && workDir.listFiles()?.length) workDir.deleteDir()
+        extractDir.renameTo(workDir)
+        println "[secp] Extracted to ${workDir}"
+      } else {
+        println "[secp] Checked out ${ref} via git"
+      }
+    } else {
+      // No explicit ref: clone/update default branch best-effort
+      if (!new File(workDir, '.git').exists()) {
+        exec { commandLine 'git', 'clone', secpRepoUrl, workDir.absolutePath }
+      } else {
+        exec { workingDir workDir; commandLine 'git', 'pull', '--ff-only', 'origin'; ignoreExitValue true }
+      }
+    }
+  }
+}
+
+// Per-ABI configure/build (incremental)
+
+def abis = ['armeabi-v7a','arm64-v8a','x86','x86_64']
+
+abis.each { abi ->
+  def meta        = abiMatrix[abi]
+  def ccTrip      = "${meta.target}${meta.api}-clang"
+  def arTool      = "${meta.host}-ar"
+  def ranlibTool  = "${meta.host}-ranlib"
+  def stripTool   = "${meta.host}-strip"
+
+  def installDir  = file("${installRoot}/${abi}")
+  def stagedLib   = file("${outputsRoot}/${abi}/lib/libsecp256k1.so")
+  def libDirOut   = stagedLib.parentFile
+  def stampFile   = file("${buildDir}/stamps/secp_${abi}.stamp")
+
+  tasks.register("configureSecp_${abi}") {
+    dependsOn 'fetchSecp256k1'
+
+    inputs.property('host',    meta.host)
+    inputs.property('target',  meta.target)
+    inputs.property('api',     meta.api)
+    inputs.property('commit',  secpCommit)
+    inputs.property('modules', enableModules)
+    inputs.property('ndkRoot', ndkRoot.absolutePath)
+    inputs.property('hostTag', hostTag)
+    inputs.files(fileTree(dir: workDir, includes: ['configure.ac','Makefile.am','autogen.sh'])).withPathSensitivity(PathSensitivity.RELATIVE)
+    outputs.file(stampFile)
+
+    onlyIf { !(stampFile.exists() && stagedLib.exists()) }
+
+    doLast {
+      outputsIncludeDir.mkdirs()
+      installDir.mkdirs()
+      libDirOut.mkdirs()
+      file("${buildDir}/stamps").mkdirs()
+
+      exec { workingDir workDir; commandLine 'bash', '-lc', './autogen.sh' }
+
+      println "[secp:${abi}] Using API level ${meta.api} (unified)"
+
+      exec {
+        workingDir workDir
+        environment 'CC',       new File(toolBin, ccTrip).absolutePath
+        // Use LLVM binutils with libtool-friendly flags (NDK r25+)
+        environment 'AR',       new File(toolBin, 'llvm-ar').absolutePath
+        environment 'ARFLAGS',  'crs'
+        environment 'RANLIB',   new File(toolBin, 'llvm-ranlib').absolutePath
+        environment 'NM',       new File(toolBin, 'llvm-nm').absolutePath
+        environment 'STRIP',    new File(toolBin, stripTool).absolutePath
+        // Safer CFLAGS for cross builds
+        environment 'CFLAGS',   "-fPIC -O2 --sysroot=${new File(ndkRoot, 'toolchains/llvm/prebuilt/' + hostTag + '/sysroot').absolutePath}"
+        environment 'LDFLAGS',  ''
+        // Link against Android log for __android_log_print and enable optional configure logging
+        environment 'LIBS',              '-llog'
+         // On macOS, libtool is glibtool/gnulibtool; autogen.sh already glibtoolize's, but keep these for safety
+        environment 'LIBTOOLIZE', 'glibtoolize'
+        environment 'LIBTOOL',    'glibtool'
+        commandLine 'bash', '-lc', ([
+          './configure',
+          "--host=${meta.host}",
+          '--enable-shared',
+          '--disable-static',
+          '--with-pic',
+          '--disable-benchmark',
+          '--disable-tests',
+          "--prefix=${installDir.absolutePath}",
+          moduleFlagsString
+        ].findAll { it }.join(' '))
+      }
+
+      stampFile.text = "configured:${abi}:${secpCommit}:${enableModules}:${meta.api}:${hostTag}:${ndkRoot}"
+    }
+  }
+
+  tasks.register("buildSecp_${abi}") {
+    dependsOn "configureSecp_${abi}"
+
+    inputs.file(file("${workDir}/Makefile"))
+    inputs.property('commit',  secpCommit)
+    inputs.property('modules', enableModules)
+    outputs.file(stagedLib)
+
+    onlyIf { !stagedLib.exists() }
+
+    doLast {
+      def jobs = project.findProperty('jobs') ?: Runtime.runtime.availableProcessors()
+      exec {
+        workingDir workDir
+        environment 'LIBS', '-llog'
+        commandLine 'bash', '-lc', "make -j${jobs} && make install"
+      }
+
+      libDirOut.mkdirs()
+      copy {
+        from file("${installDir}/lib")
+        include 'libsecp256k1.so*'
+        into libDirOut
+      }
+
+      if (!outputsIncludeDir.exists() || outputsIncludeDir.listFiles() == null || outputsIncludeDir.listFiles().length == 0) {
+        copy {
+          from file("${installDir}/include")
+          into outputsIncludeDir
+        }
+      }
+      println "[${abi}] staged -> ${stagedLib}"
+    }
+  }
+}
+
+// Aggregate task
+ tasks.register('buildSecpAllAndroid') {
+   group = 'build'
+   description = 'Build secp256k1 Android .so for all ABIs and stage headers (incremental)'
+   dependsOn abis.collect { "buildSecp_${it}" }
+ }
+
+// Clean helper
+ tasks.register('cleanSecpAndroid') {
+   doLast { delete workDir, installRoot, outputsRoot, outputsIncludeDir, file("${buildDir}/stamps") }
+ }
+
 android {
   namespace "com.margelo.nitro.nitroavalabscrypto"
 
-  ndkVersion getExtOrDefault("ndkVersion")
   compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
 
   defaultConfig {
     minSdkVersion getExtOrIntegerDefault("minSdkVersion")
     targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
-    buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
 
     externalNativeBuild {
       cmake {
-        cppFlags "-frtti -fexceptions -Wall -Wextra -fstack-protector-all"
-        arguments "-DANDROID_STL=c++_shared", "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+        cppFlags "-frtti -fexceptions -Wall -fstack-protector-all"
+        arguments "-DANDROID_STL=c++_shared", "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON",
+                  "-DSECP256K1_INCLUDE_DIR=${SECP_OUTPUTS_INCLUDE_DIR}", "-DSECP256K1_ANDROID_ROOT=${SECP_OUTPUTS_ROOT}"
         abiFilters (*reactNativeArchitectures())
 
         buildTypes {
@@ -98,7 +348,7 @@ android {
 
   buildTypes {
     release {
-      minifyEnabled true
+      minifyEnabled false
     }
   }
 
@@ -107,17 +357,34 @@ android {
   }
 
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
   }
 
   sourceSets {
     main {
-      if (isNewArchitectureEnabled()) {
-        java.srcDirs += [
-          // React Codegen files
-          "${project.buildDir}/generated/source/codegen/java"
-        ]
+      java.srcDirs += [
+        "generated/java",
+        "generated/jni"
+      ]
+    }
+  }
+}
+
+// Ensure native build tasks run after secp outputs are prepared (AGP 8.x safe)
+afterEvaluate {
+  def secpTask = tasks.named('buildSecpAllAndroid')
+
+  tasks.configureEach { t ->
+    def n = t.name
+    if (n.startsWith('externalNativeBuild') ||
+        n.startsWith('configureCMake') ||
+        n.startsWith('buildCMake') ||
+        n.startsWith('generateJsonModel') ||
+        n.startsWith('prefabGenerate')) {
+      t.dependsOn(secpTask)
+      t.doFirst {
+        println "[secp] '${n}' dependsOn buildSecpAllAndroid"
       }
     }
   }
@@ -128,14 +395,10 @@ repositories {
   google()
 }
 
+def kotlin_version = getExtOrDefault("kotlinVersion")
 
 dependencies {
-  // For < 0.71, this will be from the local maven repo
-  // For > 0.71, this will be replaced by `com.facebook.react:react-android:$version` by react gradle plugin
-  //noinspection GradleDynamicVersion
-  implementation "com.facebook.react:react-native:+"
-
-  // Add a dependency on NitroModules
+  implementation "com.facebook.react:react-android"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   implementation project(":react-native-nitro-modules")
 }
-
