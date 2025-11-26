@@ -49,7 +49,7 @@ export function stripChainAddress(address: string): string {
 export function getAddressByNetwork(
   account: Account,
   network: Network
-): string {
+): string | undefined {
   switch (network.vmName) {
     case NetworkVMType.EVM:
       return account.addressC
@@ -216,6 +216,22 @@ const markWalletAsMigrated = (walletId: string): void => {
   appendToStoredArray(
     commonStorage,
     StorageKey.MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS,
+    walletId
+  )
+}
+
+export const isWalletXpMigrated = (walletId: string): boolean => {
+  const migratedXpWalletIds = loadArrayFromStorage(
+    commonStorage,
+    StorageKey.MIGRATED_XP_ADDRESSES_WALLET_IDS
+  )
+  return migratedXpWalletIds.includes(walletId)
+}
+
+export const markWalletXpMigrated = (walletId: string): void => {
+  appendToStoredArray(
+    commonStorage,
+    StorageKey.MIGRATED_XP_ADDRESSES_WALLET_IDS,
     walletId
   )
 }
