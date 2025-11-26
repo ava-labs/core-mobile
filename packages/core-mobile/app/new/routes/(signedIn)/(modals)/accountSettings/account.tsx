@@ -1,11 +1,11 @@
-import { BalanceHeader, View } from '@avalabs/k2-alpine'
+import { BalanceHeader, showAlert, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { AccountAddresses } from 'features/accountSettings/components/accountAddresses'
 import { AccountButtons } from 'features/accountSettings/components/AccountButtons'
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccountById } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -17,8 +17,8 @@ import { CoreAccountType } from '@avalabs/types'
 import { WalletType } from 'services/wallet/types'
 import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
 import { useIsRefetchingBalancesForAccount } from 'features/portfolio/hooks/useIsRefetchingBalancesForAccount'
-import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalanceAccurate'
 import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
+import { useIsAllBalancesInaccurateForAccount } from 'features/portfolio/hooks/useIsAllBalancesInaccurateForAccount'
 
 const AccountScreen = (): JSX.Element => {
   const router = useRouter()
@@ -33,18 +33,18 @@ const AccountScreen = (): JSX.Element => {
     account
   })
   const isLoading = isBalanceLoading || isRefetchingBalance
-  const balanceAccurate = useIsAccountBalanceAccurate(account)
+  const allBalancesInaccurate = useIsAllBalancesInaccurateForAccount(account)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
   const formattedBalance = useMemo(() => {
     // CP-10570: Balances should never show $0.00
-    return !balanceAccurate || balanceTotalInCurrency === 0
+    return allBalancesInaccurate || balanceTotalInCurrency === 0
       ? UNKNOWN_AMOUNT
       : formatCurrency({
           amount: balanceTotalInCurrency,
           withoutCurrencySuffix: true
         })
-  }, [balanceAccurate, balanceTotalInCurrency, formatCurrency])
+  }, [allBalancesInaccurate, balanceTotalInCurrency, formatCurrency])
 
   const isPrivateKeyAvailable = useMemo(
     () =>
@@ -53,6 +53,15 @@ const AccountScreen = (): JSX.Element => {
         wallet?.type === WalletType.MNEMONIC),
     [account?.type, wallet?.type]
   )
+
+  const handleErrorPress = useCallback(() => {
+    showAlert({
+      title: 'Unable to load balances',
+      description:
+        'This total may be incomplete since Core was unable to load all of the balances across each network.',
+      buttons: [{ text: 'Dismiss' }]
+    })
+  }, [])
 
   const handleShowPrivateKey = (): void => {
     if (!account) {
@@ -80,8 +89,9 @@ const AccountScreen = (): JSX.Element => {
         formattedBalance={formattedBalance}
         currency={selectedCurrency}
         errorMessage={
-          balanceAccurate ? undefined : 'Unable to load account balance'
+          allBalancesInaccurate ? 'Unable to load all balances' : undefined
         }
+        onErrorPress={handleErrorPress}
         isLoading={isLoading}
         isPrivacyModeEnabled={isPrivacyModeEnabled}
         isDeveloperModeEnabled={isDeveloperMode}

@@ -34,7 +34,6 @@ import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
 import { useAccountPerformanceSummary } from 'features/portfolio/hooks/useAccountPerformanceSummary'
 import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
 import { useBalanceTotalPriceChangeForAccount } from 'features/portfolio/hooks/useBalanceTotalPriceChangeForAccount'
-import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalanceAccurate'
 import { useIsBalanceLoadedForAccount } from 'features/portfolio/hooks/useIsBalanceLoadedForAccount'
 import { useSendSelectedToken } from 'features/send/store'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
@@ -67,6 +66,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { selectActiveWallet, selectWallets } from 'store/wallet/slice'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
+import { useIsAllBalancesInaccurateForAccount } from '../hooks/useIsAllBalancesInaccurateForAccount'
 import { useIsLoadingBalancesForAccount } from '../hooks/useIsLoadingBalancesForAccount'
 import { useIsRefetchingBalancesForAccount } from '../hooks/useIsRefetchingBalancesForAccount'
 
@@ -122,21 +122,22 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const isBalanceLoaded = useIsBalanceLoadedForAccount(activeAccount)
   const isLoadingBalances = useIsLoadingBalancesForAccount(activeAccount)
   const isLoading = isRefetchingBalance || !isBalanceLoaded
+  const allBalancesInaccurate =
+    useIsAllBalancesInaccurateForAccount(activeAccount)
   const activeWallet = useSelector(selectActiveWallet)
   const wallets = useSelector(selectWallets)
   const walletsCount = Object.keys(wallets).length
-  const balanceAccurate = useIsAccountBalanceAccurate(activeAccount)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
   const formattedBalance = useMemo(() => {
     // CP-10570: Balances should never show $0.00
-    return !balanceAccurate || balanceTotalInCurrency === 0
+    return allBalancesInaccurate || balanceTotalInCurrency === 0
       ? UNKNOWN_AMOUNT
       : formatCurrency({
           amount: balanceTotalInCurrency,
           withoutCurrencySuffix: true
         })
-  }, [balanceAccurate, balanceTotalInCurrency, formatCurrency])
+  }, [allBalancesInaccurate, balanceTotalInCurrency, formatCurrency])
 
   const { percentChange24h, valueChange24h, indicatorStatus } =
     useAccountPerformanceSummary(activeAccount)
@@ -317,7 +318,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
                     : undefined
                 }
                 errorMessage={
-                  balanceAccurate ? undefined : 'Unable to load all balances'
+                  allBalancesInaccurate
+                    ? 'Unable to load all balances'
+                    : undefined
                 }
                 onErrorPress={handleErrorPress}
                 isLoading={isLoading && balanceTotalInCurrency === 0}
@@ -357,7 +360,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     valueChange24h,
     indicatorStatus,
     percentChange24h,
-    balanceAccurate,
+    allBalancesInaccurate,
     handleErrorPress,
     isLoading,
     balanceTotalInCurrency,
