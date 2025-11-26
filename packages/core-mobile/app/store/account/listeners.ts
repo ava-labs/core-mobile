@@ -1,4 +1,5 @@
 import AccountsService from 'services/account/AccountsService'
+import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
@@ -22,6 +23,7 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import KeystoneService from 'features/keystone/services/KeystoneService'
 import { pendingSeedlessWalletNameStore } from 'features/onboarding/store'
+import { isWalletXpMigrated, markWalletXpMigrated } from './utils'
 import {
   selectAccounts,
   setAccounts,
@@ -264,6 +266,106 @@ const handleInitAccountsIfNeeded = async (
   migrateActiveAccountsIfNeeded(_action, listenerApi)
 }
 
+const migrateXpAddressesIfNeeded = async (
+  _action: AnyAction,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const state = listenerApi.getState()
+  Logger.info('Migrating XP addresses if needed')
+
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const wallets = selectWallets(state)
+  const allAccounts = selectAccounts(state)
+  const updatedAccounts = { ...allAccounts }
+  let hasUpdates = false
+
+  Logger.info('Wallets', wallets)
+  Logger.info('Wallets keys', Object.keys(wallets))
+
+  for (const wallet of Object.values(wallets)) {
+    Logger.info('Wallet', wallet)
+
+    // Check if this wallet has already been migrated
+    if (isWalletXpMigrated(wallet.id)) {
+      Logger.info(
+        `XP address derivation already completed for wallet ${wallet.id}`
+      )
+      continue
+    }
+
+    if (WalletType.PRIVATE_KEY.includes(wallet.type)) {
+      Logger.info(
+        `Skipping XP address derivation for private key wallet of type ${wallet.type}`
+      )
+      // Mark as migrated since private key wallets don't need X/P addresses
+      markWalletXpMigrated(wallet.id)
+      continue
+    }
+
+    const accounts = selectAccountsByWalletId(state, wallet.id)
+
+    for (const account of accounts) {
+      if (
+        [
+          WalletType.KEYSTONE,
+          WalletType.LEDGER,
+          WalletType.LEDGER_LIVE
+        ].includes(wallet.type) &&
+        account.index !== 0
+      ) {
+        Logger.info(
+          `Setting XP addresses to undefined for account as it is a wallet of type ${wallet.type} and index is ${account.index}`
+        )
+        // keystone wallets require connection to the device to derive new addresses we'll handle this later
+        updatedAccounts[account.id] = {
+          ...account,
+          addressAVM: undefined,
+          addressPVM: undefined
+        }
+        hasUpdates = true
+        continue
+      }
+
+      try {
+        const addresses = await AccountsService.getAddresses({
+          walletId: wallet.id,
+          walletType: wallet.type,
+          accountIndex: account.index,
+          isTestnet: isDeveloperMode
+        })
+
+        Logger.info(
+          `Setting XP addresses for account as it is a wallet of type ${wallet.type} and index is ${account.index}`,
+          addresses
+        )
+
+        updatedAccounts[account.id] = {
+          ...account,
+          addressAVM: addresses[NetworkVMType.AVM],
+          addressPVM: addresses[NetworkVMType.PVM]
+        }
+        hasUpdates = true
+      } catch (error) {
+        Logger.error(
+          `Failed to derive XP addresses for account ${account.index} in wallet ${wallet.id}`,
+          error
+        )
+        // Don't mark wallet as migrated if we failed
+        continue
+      }
+    }
+
+    // Mark wallet as migrated after successfully processing all its accounts
+    markWalletXpMigrated(wallet.id)
+  }
+
+  // Save the updated accounts to the store only if we have updates
+  if (hasUpdates) {
+    Logger.info('Updating accounts with derived XP addresses')
+    listenerApi.dispatch(setAccounts(updatedAccounts))
+  }
+}
+
 export const addAccountListeners = (
   startListening: AppStartListening
 ): void => {
@@ -285,5 +387,10 @@ export const addAccountListeners = (
   startListening({
     actionCreator: onAppUnlocked,
     effect: migrateSolanaAddressesIfNeeded
+  })
+
+  startListening({
+    actionCreator: onAppUnlocked,
+    effect: migrateXpAddressesIfNeeded
   })
 }

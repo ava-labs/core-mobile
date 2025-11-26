@@ -6,6 +6,7 @@ export type PrimaryAccount = Omit<
 > & {
   walletId: string
   index: number
+  xpAddresses?: string[]
 }
 
 export type ImportedAccount = Omit<CoreImportedAccount, 'active'> & {
