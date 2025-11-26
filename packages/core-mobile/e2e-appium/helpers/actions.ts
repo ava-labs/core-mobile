@@ -66,7 +66,7 @@ async function isNotVisible(ele: ChainablePromiseElement) {
 }
 
 async function getVisible(ele: ChainablePromiseElement) {
-  return await ele.isDisplayed()
+  return (await ele.isDisplayed()) || (await ele.isExisting())
 }
 
 async function isSelected(ele: ChainablePromiseElement, targetBool = true) {

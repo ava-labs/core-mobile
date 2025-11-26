@@ -147,6 +147,10 @@ class Settings {
     return selectors.getById(settings.testnetSwitchOn)
   }
 
+  get testnetIsOn() {
+    return selectors.getByText(settings.testnetModeOnToast)
+  }
+
   get testnetAvatar() {
     return selectors.getById(settings.testnetAvatar)
   }
@@ -822,6 +826,7 @@ class Settings {
   async verifyTestnetMode() {
     await actions.waitFor(this.testnetSwitchOn)
     await actions.isVisible(this.testnetAvatar)
+    await actions.isNotVisible(this.testnetIsOn)
     await common.dismissBottomSheet()
     await actions.waitFor(portfolioPage.testnetModeIsOn, 40000)
   }

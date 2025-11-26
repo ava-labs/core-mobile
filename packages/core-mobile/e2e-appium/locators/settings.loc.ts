@@ -53,6 +53,7 @@ export default {
   testnetSwitchOff: 'testnet_disabled',
   testnetModeToast: 'testnet_toast',
   testnetModeOffToast: 'Testnet mode is now off',
+  testnetModeOnToast: 'Testnet mode is now on',
   fujiFunds: 'Fuji funds',
   totalNetWorth: 'Total net worth',
   mainnetAvatar: 'mainnet_avatar',
