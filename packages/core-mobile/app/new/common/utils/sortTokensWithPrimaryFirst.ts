@@ -3,6 +3,7 @@ import { AVAX_P_ID, AVAX_X_ID } from 'services/balance/const'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { TokenSymbol } from 'store/network'
+import { AVAX_TOKEN_ID } from 'common/consts/swap'
 
 export const sortTokensWithPrimaryFirst = ({
   tokens,
@@ -15,8 +16,7 @@ export const sortTokensWithPrimaryFirst = ({
   const primaryTokens: LocalTokenWithBalance[] = []
 
   const cChainToken = tokens.find(
-    token =>
-      token.type === TokenType.NATIVE && token.localId === 'AvalancheAVAX'
+    token => token.type === TokenType.NATIVE && token.localId === AVAX_TOKEN_ID
   )
   if (cChainToken) primaryTokens.push(cChainToken)
 
