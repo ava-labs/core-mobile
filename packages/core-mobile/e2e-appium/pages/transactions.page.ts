@@ -104,7 +104,7 @@ class TransactionsPage {
   }
 
   get receiveCryptoSubtitle() {
-    return selectors.getByText(txLoc.receiveCryptoSubtitle)
+    return selectors.getBySomeText(txLoc.receiveCryptoSubtitle)
   }
 
   get receiveQrCode() {

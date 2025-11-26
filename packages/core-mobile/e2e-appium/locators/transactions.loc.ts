@@ -87,8 +87,7 @@ export default {
   trendingDetailSwapBtn: 'token_detail_swap_btn',
   receiveIcon: 'receive_icon',
   receiveCryptoTitle: 'Receive crypto',
-  receiveCryptoSubtitle:
-    'To receive funds you can choose to share\nyour unique QR code or address below with\nthe sender',
+  receiveCryptoSubtitle: 'To receive funds you can choose to share',
   receiveQrCode: 'receive_token_qr_code',
   selectReceiveNetwork: 'select_receive_network',
   evmSupportedAddressText: 'evm_supported_address_text',

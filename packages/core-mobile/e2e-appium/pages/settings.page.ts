@@ -116,19 +116,19 @@ class Settings {
   }
 
   get themeTitle() {
-    return selectors.getByText(settings.themeTitle)
+    return selectors.getBySomeText(settings.themeTitle)
   }
 
   get enterYourNewPinTitle() {
-    return selectors.getByText(settings.enterYourNewPinTitle)
+    return selectors.getBySomeText(settings.enterYourNewPinTitle)
   }
 
   get confirmYourNewPinTitle() {
-    return selectors.getByText(settings.confirmYourNewPinTitle)
+    return selectors.getBySomeText(settings.confirmYourNewPinTitle)
   }
 
   get securityAndPrivacy() {
-    return selectors.getByText(settings.securityAndPrivacy)
+    return selectors.getBySomeText(settings.securityAndPrivacy)
   }
 
   get changePin() {
@@ -136,7 +136,7 @@ class Settings {
   }
 
   get enterYourCurrentPinTitle() {
-    return selectors.getByText(settings.enterYourCurrentPinTitle)
+    return selectors.getBySomeText(settings.enterYourCurrentPinTitle)
   }
 
   get testnetSwitchOff() {
@@ -172,7 +172,7 @@ class Settings {
   }
 
   get notificationsPreferencesTitle() {
-    return selectors.getByText(settings.notificationsPreferencesTitle)
+    return selectors.getBySomeText(settings.notificationsPreferencesTitle)
   }
 
   get currency() {
@@ -192,7 +192,7 @@ class Settings {
   }
 
   get showRecoveryPhraseTitle() {
-    return selectors.getByText(settings.showRecoveryPhraseTitle)
+    return selectors.getBySomeText(settings.showRecoveryPhraseTitle)
   }
 
   get privateKeyWarning() {
