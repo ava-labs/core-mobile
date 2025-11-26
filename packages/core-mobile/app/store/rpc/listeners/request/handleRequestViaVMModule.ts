@@ -15,6 +15,9 @@ import { Account, selectActiveAccount } from 'store/account'
 import { selectActiveWallet } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
+import { CurrentAvalancheAccount } from '@avalabs/avalanche-module'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP'
 import { AgnosticRpcProvider, Request } from '../../types'
 
 export const handleRequestViaVMModule = async ({
@@ -67,8 +70,10 @@ export const handleRequestViaVMModule = async ({
   }
 
   const { getState } = listenerApi
-  const activeAccount = selectActiveAccount(getState())
-  const activeWallet = selectActiveWallet(getState())
+  const state = getState()
+  const activeAccount = selectActiveAccount(state)
+  const activeWallet = selectActiveWallet(state)
+  const isDeveloperMode = selectIsDeveloperMode(state)
 
   if (!activeWallet || !activeAccount) {
     Logger.error('Active wallet or account not found')
@@ -102,7 +107,8 @@ export const handleRequestViaVMModule = async ({
           params,
           activeAccount,
           walletId: activeWallet.id,
-          walletType: activeWallet.type
+          walletType: activeWallet.type,
+          isTestnet: isDeveloperMode
         }))
     },
     mapToVmNetwork(network)
@@ -128,14 +134,16 @@ const getContext = async ({
   params,
   activeAccount,
   walletId,
-  walletType
+  walletType,
+  isTestnet
 }: {
   method: VmModuleRpcMethod
   params: unknown
   activeAccount: Account | undefined
   walletId: string
   walletType: WalletType
-}): Promise<Record<string, string> | undefined> => {
+  isTestnet: boolean
+}): Promise<Record<string, unknown> | undefined> => {
   if (
     method === VmModuleRpcMethod.AVALANCHE_SEND_TRANSACTION ||
     method === VmModuleRpcMethod.AVALANCHE_SIGN_TRANSACTION
@@ -144,24 +152,33 @@ const getContext = async ({
       return undefined
     }
 
-    const vm = Avalanche.getVmByChainAlias(params.chainAlias as string)
-    const currentAddress = getAddressByVM(vm, activeAccount)
+    const context: Record<string, unknown> = {}
 
-    if (!currentAddress) {
-      return undefined
-    }
+    if (activeAccount) {
+      const vm = Avalanche.getVmByChainAlias(params.chainAlias as string)
+      const currentAddress = getAddressByVM(vm, activeAccount)
 
-    const context: Record<string, string> = { currentAddress }
+      if (currentAddress && (vm === 'AVM' || vm === 'PVM')) {
+        const xpubXP = await getXpubXPIfAvailable({
+          walletId,
+          walletType,
+          accountIndex: activeAccount.index
+        })
 
-    if (walletType === WalletType.MNEMONIC && activeAccount) {
-      const xpubXP = await WalletService.getRawXpubXP({
-        walletId,
-        walletType,
-        accountIndex: activeAccount.index
-      })
+        const externalXPAddresses = await WalletService.getXPExternalAddresses({
+          account: activeAccount,
+          walletId,
+          walletType,
+          isTestnet
+        })
+        const account: CurrentAvalancheAccount = {
+          xpAddress: currentAddress,
+          evmAddress: activeAccount.addressC,
+          xpubXP,
+          externalXPAddresses
+        }
 
-      if (xpubXP) {
-        context.xpubXP = xpubXP
+        context.account = account
       }
     }
 

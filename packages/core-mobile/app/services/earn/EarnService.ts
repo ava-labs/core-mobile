@@ -29,7 +29,6 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { AvaxXP } from 'types/AvaxXP'
-import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -366,35 +365,47 @@ class EarnService {
     | undefined
   > => {
     try {
-      const currentNetworkAddresses = await WalletService.getXPAddresses({
-        accounts,
-        walletId,
-        walletType,
-        isTestnet,
-        networkType: NetworkVMType.PVM,
-        onlyWithActivity: true
-      })
+      const currentNetworkAddressesPromises = accounts.map(account =>
+        WalletService.getXPExternalAddresses({
+          account,
+          walletId,
+          walletType,
+          isTestnet
+        })
+      )
+      const currentNetworkAddresses = await Promise.all(
+        currentNetworkAddressesPromises
+      )
+      const currentNetworkAddressesArray = currentNetworkAddresses
+        .flat()
+        .map(address => address.address)
       const currentNetworkTransactions =
-        currentNetworkAddresses.length > 0
+        currentNetworkAddressesArray.length > 0
           ? await getTransformedTransactions(
-              currentNetworkAddresses,
+              currentNetworkAddressesArray,
               isTestnet,
               startTimestamp
             )
           : []
 
-      const oppositeNetworkAddresses = await WalletService.getXPAddresses({
-        accounts,
-        walletId,
-        walletType,
-        isTestnet: !isTestnet,
-        networkType: NetworkVMType.PVM,
-        onlyWithActivity: true
-      })
+      const oppositeNetworkAddressesPromises = accounts.map(account =>
+        WalletService.getXPExternalAddresses({
+          account,
+          walletId,
+          walletType,
+          isTestnet: !isTestnet
+        })
+      )
+      const oppositeNetworkAddresses = await Promise.all(
+        oppositeNetworkAddressesPromises
+      )
+      const oppositeNetworkAddressesArray = oppositeNetworkAddresses
+        .flat()
+        .map(address => address.address)
       const oppositeNetworkTransactions =
-        oppositeNetworkAddresses.length > 0
+        oppositeNetworkAddressesArray.length > 0
           ? await getTransformedTransactions(
-              oppositeNetworkAddresses,
+              oppositeNetworkAddressesArray,
               !isTestnet,
               startTimestamp
             )
