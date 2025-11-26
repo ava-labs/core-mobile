@@ -3,7 +3,7 @@ import { Zodios } from '@zodios/core'
 import Config from 'react-native-config'
 import { array, z } from 'zod'
 import Logger from 'utils/Logger'
-import { SimplePriceResponseSchema, TrendingTokenSchema } from '../token/types'
+import { TrendingTokenSchema } from '../token/types'
 
 if (!Config.PROXY_URL)
   Logger.warn('PROXY_URL is missing in env file. Watchlist is disabled.')
@@ -11,19 +11,12 @@ if (!Config.PROXY_URL)
 const baseUrl = `${Config.PROXY_URL}/watchlist`
 
 // Infer types from schemas for typings
-export type SimplePriceResponse = z.infer<typeof SimplePriceResponseSchema>
 export type TrendingToken = z.infer<typeof TrendingTokenSchema>
 
 // Dev (validated) and Prod (raw) clients
 const devClient = new Zodios(
   baseUrl,
   [
-    {
-      method: 'get',
-      path: '/price',
-      alias: 'simplePrice',
-      response: SimplePriceResponseSchema
-    },
     {
       method: 'get',
       path: '/trending',
@@ -47,17 +40,6 @@ const prodClient = axios.create({
 const useValidation = __DEV__ //in normal use
 
 export const watchListCacheClient = {
-  /**
-   * GET /price
-   */
-  async simplePrice(): Promise<SimplePriceResponse> {
-    if (useValidation) {
-      return devClient.simplePrice()
-    }
-    const { data } = await prodClient.get<SimplePriceResponse>('/price')
-    return data
-  },
-
   /**
    * GET /trending
    */

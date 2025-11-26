@@ -20,7 +20,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
  * TODO: Adjust import back to expo-router once the bug is resolved.
  */
 import { truncateAddress } from '@avalabs/core-utils-sdk'
-import { useIsFocused } from '@react-navigation/native'
 import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { ShareBarButton } from 'common/components/ShareBarButton'
@@ -36,7 +35,6 @@ import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { SelectedChartDataIndicator } from 'features/track/components/SelectedChartDataIndicator'
 import { TokenDetailChart } from 'features/track/components/TokenDetailChart'
 import { TokenHeader } from 'features/track/components/TokenHeader'
-import { useGetPrices } from 'hooks/watchlist/useGetPrices'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import Animated, {
@@ -93,17 +91,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     token
   } = useTokenDetails({ tokenId, marketType })
 
-  const isFocused = useIsFocused()
   const { navigateToBuy } = useBuy()
-
-  const { data: prices } = useGetPrices({
-    coingeckoIds: [coingeckoId],
-    enabled:
-      isFocused &&
-      tokenInfo !== undefined &&
-      tokenInfo.currentPrice === undefined &&
-      coingeckoId.length > 0
-  })
 
   const selectedSegmentIndex = useSharedValue(0)
 
@@ -372,12 +360,8 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   }, [actions])
 
   const currentPrice = useMemo(() => {
-    return (
-      tokenInfo?.currentPrice ??
-      prices?.[coingeckoId]?.priceInCurrency ??
-      token?.currentPrice
-    )
-  }, [tokenInfo?.currentPrice, prices, coingeckoId, token?.currentPrice])
+    return tokenInfo?.currentPrice ?? token?.currentPrice
+  }, [tokenInfo?.currentPrice, token?.currentPrice])
 
   const range = useMemo(() => {
     return {

@@ -13,6 +13,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import { differenceInDays, getUnixTime, millisecondsToSeconds } from 'date-fns'
 import { useRouter } from 'expo-router'
+import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import {
   DurationOptions,
   getCustomDurationIndex,
@@ -24,7 +25,6 @@ import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedR
 import { useStakeEstimatedRewards } from 'features/stake/hooks/useStakeEstimatedRewards'
 import { convertToDurationInSeconds } from 'features/stake/utils'
 import { useNow } from 'hooks/time/useNow'
-import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import { useDebounce } from 'hooks/useDebounce'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
@@ -48,7 +48,7 @@ const StakeDurationScreen = (): JSX.Element => {
 
   const { stakeAmount } = useDelegationContext()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
+  const avaxPrice = useAvaxPrice()
   const { formatCurrency } = useFormatCurrency()
   const now = useNow()
   const rewardChartRef = useRef<StakeRewardChartHandle>(null)

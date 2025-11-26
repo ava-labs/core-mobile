@@ -36,13 +36,6 @@ export const ChartDataSchema = object({
 
 export type ChartData = z.infer<typeof ChartDataSchema>
 
-export type PriceWithMarketData = {
-  price: number
-  change24: number
-  marketCap: number
-  vol24: number
-}
-
 export type GetMarketsParams = {
   currency?: VsCurrencyType
   sparkline?: boolean
