@@ -1,9 +1,8 @@
 import { AppListenerEffectAPI } from 'store/types'
 import { selectAccounts, selectActiveAccount } from 'store/account/slice'
-import { selectWalletById } from 'store/wallet/slice'
+import { selectActiveWallet } from 'store/wallet/slice'
 import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import { rpcErrors } from '@metamask/rpc-errors'
-import { WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 
@@ -21,7 +20,14 @@ class AvalancheGetAccountsHandler
   ): HandleResponse => {
     const state = listenerApi.getState()
     const accounts = selectAccounts(state)
+    const activeWallet = selectActiveWallet(state)
     const activeAccount = selectActiveAccount(state)
+    if (!activeWallet) {
+      return {
+        success: false,
+        error: rpcErrors.internal('no active wallet')
+      }
+    }
 
     if (!activeAccount) {
       return {
@@ -33,15 +39,22 @@ class AvalancheGetAccountsHandler
     // Process accounts and add xpubXP where available
     const accountsArray = await Promise.all(
       Object.values(accounts).map(async account => {
-        const wallet = selectWalletById(account.walletId)(state)
-        const xpubXP = wallet
-          ? await this.getXpubXP(account.walletId, wallet.type, account.index)
-          : undefined
+        let xpubXP
+
+        try {
+          xpubXP = await WalletService.getRawXpubXP({
+            walletId: activeWallet.id,
+            walletType: activeWallet.type,
+            accountIndex: account.index
+          })
+        } catch (error) {
+          xpubXP = undefined
+        }
 
         return {
           ...account,
-          walletType: wallet?.type,
-          walletName: wallet?.name,
+          walletType: activeWallet.type,
+          walletName: activeWallet.name,
           xpubXP,
           active: account.id === activeAccount.id
         }
@@ -49,23 +62,6 @@ class AvalancheGetAccountsHandler
     )
 
     return { success: true, value: accountsArray }
-  }
-
-  // Helper function to get xpubXP for supported wallet types
-  private getXpubXP = async (
-    walletId: string,
-    walletType: WalletType,
-    accountIndex: number
-  ): Promise<string | undefined> => {
-    try {
-      return await WalletService.getRawXpubXP({
-        walletId,
-        walletType,
-        accountIndex
-      })
-    } catch (error) {
-      return undefined
-    }
   }
 }
 
