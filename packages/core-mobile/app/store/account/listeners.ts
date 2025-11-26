@@ -280,7 +280,6 @@ const migrateXpAddressesIfNeeded = async (
   let hasUpdates = false
 
   Logger.info('Wallets', wallets)
-  Logger.info('Wallets keys', Object.keys(wallets))
 
   for (const wallet of Object.values(wallets)) {
     Logger.info('Wallet', wallet)
@@ -305,6 +304,13 @@ const migrateXpAddressesIfNeeded = async (
     const accounts = selectAccountsByWalletId(state, wallet.id)
 
     for (const account of accounts) {
+      Logger.info(
+        `Processing account ${account.index} (${account.id}) for wallet ${wallet.type}`
+      )
+      Logger.info(
+        `Current addresses - AVM: ${account.addressAVM}, PVM: ${account.addressPVM}`
+      )
+
       if (
         [
           WalletType.KEYSTONE,
@@ -314,7 +320,7 @@ const migrateXpAddressesIfNeeded = async (
         account.index !== 0
       ) {
         Logger.info(
-          `Setting XP addresses to undefined for account as it is a wallet of type ${wallet.type} and index is ${account.index}`
+          `Setting XP addresses to undefined for hardware wallet account ${account.index} (requires device connection)`
         )
         // keystone wallets require connection to the device to derive new addresses we'll handle this later
         updatedAccounts[account.id] = {
@@ -322,11 +328,15 @@ const migrateXpAddressesIfNeeded = async (
           addressAVM: undefined,
           addressPVM: undefined
         }
+        Logger.info(
+          `Updated account ${account.index} - AVM: undefined, PVM: undefined`
+        )
         hasUpdates = true
         continue
       }
 
       try {
+        Logger.info(`Deriving XP addresses for account ${account.index}...`)
         const addresses = await AccountsService.getAddresses({
           walletId: wallet.id,
           walletType: wallet.type,
@@ -334,16 +344,24 @@ const migrateXpAddressesIfNeeded = async (
           isTestnet: isDeveloperMode
         })
 
+        const newAVM = addresses[NetworkVMType.AVM]
+        const newPVM = addresses[NetworkVMType.PVM]
+
         Logger.info(
-          `Setting XP addresses for account as it is a wallet of type ${wallet.type} and index is ${account.index}`,
-          addresses
+          `Successfully derived XP addresses for account ${account.index}:`
         )
+        Logger.info(`  AVM (X-Chain): ${newAVM}`)
+        Logger.info(`  PVM (P-Chain): ${newPVM}`)
 
         updatedAccounts[account.id] = {
           ...account,
-          addressAVM: addresses[NetworkVMType.AVM],
-          addressPVM: addresses[NetworkVMType.PVM]
+          addressAVM: newAVM,
+          addressPVM: newPVM
         }
+
+        Logger.info(
+          `Stored new XP addresses for account ${account.index} in updatedAccounts`
+        )
         hasUpdates = true
       } catch (error) {
         Logger.error(
@@ -356,13 +374,40 @@ const migrateXpAddressesIfNeeded = async (
     }
 
     // Mark wallet as migrated after successfully processing all its accounts
+    Logger.info(
+      `✅ Marking wallet ${wallet.id} (${wallet.name}) as XP migrated`
+    )
     markWalletXpMigrated(wallet.id)
+    Logger.info(
+      `Wallet ${wallet.id} migration status saved to persistent storage`
+    )
   }
 
   // Save the updated accounts to the store only if we have updates
   if (hasUpdates) {
-    Logger.info('Updating accounts with derived XP addresses')
+    Logger.info('=== STORING UPDATED ACCOUNTS TO REDUX STORE ===')
+    Logger.info(
+      `Total accounts being updated: ${Object.keys(updatedAccounts).length}`
+    )
+
+    // Log a summary of what's being stored
+    Object.values(updatedAccounts).forEach(account => {
+      if (
+        account.addressAVM !== undefined ||
+        account.addressPVM !== undefined
+      ) {
+        Logger.info(
+          `Account ${account.index}: AVM=${account.addressAVM}, PVM=${account.addressPVM}`
+        )
+      }
+    })
+
     listenerApi.dispatch(setAccounts(updatedAccounts))
+    Logger.info(
+      '✅ Successfully dispatched setAccounts with updated XP addresses'
+    )
+  } else {
+    Logger.info('No XP address updates needed for any accounts')
   }
 }
 
