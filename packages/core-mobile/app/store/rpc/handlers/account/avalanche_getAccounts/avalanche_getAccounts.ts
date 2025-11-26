@@ -30,28 +30,12 @@ class AvalancheGetAccountsHandler
       }
     }
 
-    // Helper function to get xpubXP for supported wallet types
-    const getXpubXP = async (
-      walletId: string,
-      walletType: WalletType
-    ): Promise<string | undefined> => {
-      try {
-        return await WalletService.getRawXpubXP({
-          walletId,
-          walletType,
-          accountIndex: activeAccount.index
-        })
-      } catch (error) {
-        return undefined
-      }
-    }
-
     // Process accounts and add xpubXP where available
     const accountsArray = await Promise.all(
       Object.values(accounts).map(async account => {
         const wallet = selectWalletById(account.walletId)(state)
         const xpubXP = wallet
-          ? await getXpubXP(account.walletId, wallet.type)
+          ? await this.getXpubXP(account.walletId, wallet.type, account.index)
           : undefined
 
         return {
@@ -65,6 +49,23 @@ class AvalancheGetAccountsHandler
     )
 
     return { success: true, value: accountsArray }
+  }
+
+  // Helper function to get xpubXP for supported wallet types
+  private getXpubXP = async (
+    walletId: string,
+    walletType: WalletType,
+    accountIndex: number
+  ): Promise<string | undefined> => {
+    try {
+      return await WalletService.getRawXpubXP({
+        walletId,
+        walletType,
+        accountIndex
+      })
+    } catch (error) {
+      return undefined
+    }
   }
 }
 
