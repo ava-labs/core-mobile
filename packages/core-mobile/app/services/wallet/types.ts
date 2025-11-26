@@ -16,6 +16,7 @@ import {
 } from '@avalabs/vm-module-types'
 import { SolanaProvider } from '@avalabs/core-wallets-sdk'
 import { Curve } from 'utils/publicKeys'
+import { AddressIndex } from '@avalabs/types'
 
 export type SignTransactionRequest =
   | TransactionRequest
@@ -267,4 +268,9 @@ export interface NetworkAddresses {
   networkType: NetworkVMType.AVM | NetworkVMType.PVM
   externalAddresses: { address: string; index: number; hasActivity: boolean }[]
   internalAddresses: { address: string; index: number; hasActivity: boolean }[]
+}
+
+export type NormalizedXPAddresses = {
+  externalAddresses: AddressIndex[]
+  internalAddresses: AddressIndex[]
 }

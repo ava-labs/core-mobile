@@ -68,12 +68,18 @@ class AvalancheGetAddressesInRangeHandler
 
     try {
       const addresses = await getAddressesFromXpubXP({
-        isDeveloperMode: isDeveloperMode,
+        isTestnet: isDeveloperMode,
         walletId: activeWallet.id,
         walletType: activeWallet.type,
         accountIndex: activeAccount.index
       })
-      return { success: true, value: addresses }
+      return {
+        success: true,
+        value: {
+          external: addresses.externalAddresses.map(address => address.address),
+          internal: addresses.internalAddresses.map(address => address.address)
+        }
+      }
     } catch (e) {
       return {
         success: false,

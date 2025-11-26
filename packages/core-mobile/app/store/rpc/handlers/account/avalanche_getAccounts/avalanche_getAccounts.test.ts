@@ -12,6 +12,14 @@ jest.mock('store/account/slice', () => {
   }
 })
 
+jest.mock('store/settings/advanced', () => {
+  const actual = jest.requireActual('store/settings/advanced')
+  return {
+    ...actual,
+    selectIsDeveloperMode: () => true
+  }
+})
+
 jest.mock('store/wallet/slice', () => ({
   selectWalletById: () => () => ({
     id: 'wallet-1',
@@ -27,7 +35,8 @@ jest.mock('services/wallet/WalletService', () => ({
       .fn()
       .mockResolvedValue(
         'xpub6D4BDPcP2GT577Vvch3R8wDkScZWzQzMMUm3PWbmWvVJrZwQY4VUNgqFJPMM3No2dFDFGTsxxpG5uJh7n7epu4trkrX7x7DogT5Uv6fcLW5'
-      )
+      ),
+    getXPExternalAddresses: jest.fn().mockResolvedValue([])
   }
 }))
 
@@ -89,7 +98,8 @@ describe('avalanche_getAccounts handler', () => {
             walletType: 'MNEMONIC',
             walletName: 'Test Wallet',
             xpubXP:
-              'xpub6D4BDPcP2GT577Vvch3R8wDkScZWzQzMMUm3PWbmWvVJrZwQY4VUNgqFJPMM3No2dFDFGTsxxpG5uJh7n7epu4trkrX7x7DogT5Uv6fcLW5'
+              'xpub6D4BDPcP2GT577Vvch3R8wDkScZWzQzMMUm3PWbmWvVJrZwQY4VUNgqFJPMM3No2dFDFGTsxxpG5uJh7n7epu4trkrX7x7DogT5Uv6fcLW5',
+            xpAddresses: []
           },
           {
             id: '1',
@@ -107,7 +117,8 @@ describe('avalanche_getAccounts handler', () => {
             walletType: 'MNEMONIC',
             walletName: 'Test Wallet',
             xpubXP:
-              'xpub6D4BDPcP2GT577Vvch3R8wDkScZWzQzMMUm3PWbmWvVJrZwQY4VUNgqFJPMM3No2dFDFGTsxxpG5uJh7n7epu4trkrX7x7DogT5Uv6fcLW5'
+              'xpub6D4BDPcP2GT577Vvch3R8wDkScZWzQzMMUm3PWbmWvVJrZwQY4VUNgqFJPMM3No2dFDFGTsxxpG5uJh7n7epu4trkrX7x7DogT5Uv6fcLW5',
+            xpAddresses: []
           }
         ]
       })
@@ -132,6 +143,7 @@ describe('avalanche_getAccounts handler', () => {
 
       expect(result.success).toBe(true)
       if (result.success) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const accounts = result.value as any[]
         expect(accounts).toHaveLength(2)
         expect(accounts[0].xpubXP).toBeUndefined()
