@@ -76,9 +76,5 @@
     "node": ">=20.18.0",
     "yarn": ">=3.6.4"
   },
-  "packageManager": "yarn@3.6.4",
-  "dependencies": {
-    "nitrogen": "0.31.6",
-    "react-native-nitro-modules": "0.31.10"
-  }
+  "packageManager": "yarn@3.6.4"
 }

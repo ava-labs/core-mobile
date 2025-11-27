@@ -9354,10 +9354,10 @@ __metadata:
 
 "@noble/curves@patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch::locator=mobile-monorepo%40workspace%3A.":
   version: 1.9.7
-  resolution: "@noble/curves@patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch::version=1.9.7&hash=622003&locator=mobile-monorepo%40workspace%3A."
+  resolution: "@noble/curves@patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch::version=1.9.7&hash=9b53f1&locator=mobile-monorepo%40workspace%3A."
   dependencies:
     "@noble/hashes": 1.8.0
-  checksum: f0e45baedeeff9df785eaa942493b143cd10d76a0aa2292fb097bf17cd87f12d126a4d6328a6c70b282ac535ee6fec772475cc58d7e0bd7db7a838f35fb1e38c
+  checksum: f2934f924a64903713b98c4abb3efc0f97e71d4a2f69b50d30412bcee4be30cd2d2b7b0004d78321e43297de4e88ad7e73e6e574c8e40abcb5d7a5875fd6f25c
   languageName: node
   linkType: hard
 
@@ -29751,8 +29751,6 @@ __metadata:
   dependencies:
     husky: 9.1.6
     lint-staged: 15.2.10
-    nitrogen: 0.31.6
-    react-native-nitro-modules: 0.31.10
   languageName: unknown
   linkType: soft
 
@@ -30126,21 +30124,6 @@ __metadata:
   bin:
     nitrogen: lib/index.js
   checksum: 00c53f2d7ba5a82f2dd78cc8cb797fa7224b25ec45ac53bb0464abb2a96eea4e8b847a632f3bd11d95b80d3fd54cfdc726121318b0ddd8238d42d23a566efad9
-  languageName: node
-  linkType: hard
-
-"nitrogen@npm:0.31.6":
-  version: 0.31.6
-  resolution: "nitrogen@npm:0.31.6"
-  dependencies:
-    chalk: ^5.3.0
-    react-native-nitro-modules: ^0.31.6
-    ts-morph: ^27.0.0
-    yargs: ^18.0.0
-    zod: ^4.0.5
-  bin:
-    nitrogen: lib/index.js
-  checksum: 8c0ea6fa929fd8a358e1cca9e6518902b0ebfd11a1b5ad325fd0807aefa4e7ee4231ded3448208b10765a687d32a99f8e35f46e45effaedec176c16ffdf36eed
   languageName: node
   linkType: hard
 
@@ -33178,7 +33161,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-nitro-modules@npm:^0.31.6, react-native-nitro-modules@npm:^0.31.8":
+"react-native-nitro-modules@npm:^0.31.8":
   version: 0.31.8
   resolution: "react-native-nitro-modules@npm:0.31.8"
   peerDependencies:
