@@ -1,27 +1,54 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "allowJs": true,
-    "forceConsistentCasingInFileNames": true,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "isolatedModules": true,
-    "jsx": "react",
-    "lib": ["DOM", "ESNext"],
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
+    // MARK: - Core Settings
+    // Set the language target to a modern version for better performance and features.
+    "target": "ES2020", 
+    // Do not generate JavaScript output files, let the bundler (e.g., Metro, Webpack) handle compilation.
     "noEmit": true,
-    "strict": true,
-    "target": "ES2020",
-    "noUnusedLocals": true,
-    "noFallthroughCasesInSwitch": true,
-    "pretty": true,
+    // Specify the module system for the generated code (crucial when `noEmit` is false, but good for clarity).
+    "module": "ESNext",
+    // Use the bundler's module resolution strategy (modern and efficient).
+    "moduleResolution": "bundler",
+    // Include the standard JavaScript library files for DOM and modern ECMAScript features.
+    "lib": ["DOM", "ESNext"],
+    // Allow JavaScript files to be included in the type checking process.
+    "allowJs": true,
+    // Allow synthetic default imports for compatibility with non-ESM modules (like commonjs).
+    "allowSyntheticDefaultImports": true,
+    // Provide compatibility for CommonJS and ES Module imports/exports.
+    "esModuleInterop": true,
+    // Process string literals in json files as modules.
     "resolveJsonModule": true,
+    // Enables experimental support for decorators (commonly used in React Native/MobX).
+    "experimentalDecorators": true,
+
+    // MARK: - Strictness and Quality
+    // Enable all strict type-checking options for maximum safety.
+    "strict": true, 
+    // Ensure consistent casing in file paths (important for cross-platform projects).
+    "forceConsistentCasingInFileNames": true,
+    // Ensure each file can be compiled without relying on types from other files (improves build speed).
+    "isolatedModules": true,
+    // Flag errors for local variables that are not used.
+    "noUnusedLocals": true,
+    // Flag errors for fallthrough cases in switch statements.
+    "noFallthroughCasesInSwitch": true,
+    // Enforce usage of 'override' keyword for method overrides in classes (improves maintenance).
+    "noImplicitOverride": true,
+    // Adds undefined to the types of object accesses with an index signature (e.g., array[i]).
+    // Ensures safer access, especially crucial for large codebases.
     "noUncheckedIndexedAccess": true,
-    "sourceMap": true,
-    "strictPropertyInitialization": false
+    // Ensures strict checking of class properties initialization (re-enabled by removing `false` override).
+    "strictPropertyInitialization": true, 
+
+    // MARK: - Ecosystem Specific
+    // Enable JSX parsing for React components.
+    "jsx": "react", 
+    // Skip type checking of declaration files (faster compilation, but relies on accurate library types).
+    "skipLibCheck": true 
   },
   "exclude": ["node_modules"],
+  // Automatically acquire types for global libraries used in the project.
   "typeAcquisition": { "include": ["jest", "detox"] }
 }
