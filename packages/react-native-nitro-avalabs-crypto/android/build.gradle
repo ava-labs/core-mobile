@@ -1,8 +1,8 @@
 buildscript {
-  ext.getExtOrDefault = {name ->
-    return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['NitroAvalabsCrypto_' + name]
-  }
 
+  // Buildscript is evaluated before everything else so we can't use getExtOrDefault
+  def kotlin_version = rootProject.ext.has("kotlinVersion") ? rootProject.ext.get("kotlinVersion") : project.properties["NitroAvalabsCrypto_kotlinVersion"]
+  
   repositories {
     google()
     mavenCentral()
@@ -11,24 +11,37 @@ buildscript {
   dependencies {
     classpath "com.android.tools.build:gradle:8.7.2"
     // noinspection DifferentKotlinGradleVersion
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${getExtOrDefault('kotlinVersion')}"
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlin_version}"
   }
 }
 
 def reactNativeArchitectures() {
   def value = rootProject.getProperties().get("reactNativeArchitectures")
-  return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
+  def res = value ? value.split(",") : ["armeabi-v7a", "arm64-v8a"]
+  println "[reactNativeArchitectures] Using architectures: ${res}"
+  return res
 }
 
-apply plugin: "com.android.library"
-apply plugin: "kotlin-android"
-apply from: '../nitrogen/generated/android/NitroAvalabsCrypto+autolinking.gradle'
+def isNewArchitectureEnabled() {
+  return rootProject.hasProperty("newArchEnabled") && rootProject.getProperty("newArchEnabled") == "true"
+}
 
-apply plugin: "com.facebook.react"
+def getExtOrDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties["NitroAvalabsCrypto_" + name]
+}
 
 def getExtOrIntegerDefault(name) {
   return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["NitroAvalabsCrypto_" + name]).toInteger()
 }
+
+apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
+
+if (isNewArchitectureEnabled()) {
+  apply plugin: "com.facebook.react"
+}
+
+apply from: '../nitrogen/generated/android/NitroAvalabsCrypto+autolinking.gradle'
 
 // === secp256k1 Android build wiring (headers + .so per ABI) ===
 ext {
@@ -52,37 +65,133 @@ ext {
 import org.apache.tools.ant.taskdefs.condition.Os
 
 def isMac() { Os.isFamily(Os.FAMILY_MAC) }
+def isLinux() { Os.isFamily(Os.FAMILY_UNIX) && !Os.isFamily(Os.FAMILY_MAC) }
+def isWindows() { Os.isFamily(Os.FAMILY_WINDOWS) }
+def standardOutput = new ByteArrayOutputStream()
+def errorOutput = new ByteArrayOutputStream()
 
 def findNdkRoot() {
-  ['ANDROID_NDK_HOME','ANDROID_NDK_ROOT','ANDROID_NDK'].collect { System.getenv(it) }
-      .find { it && file(it).exists() } ?:
-      { ->
-        def home = System.getenv('HOME')
-        def ndkBundle = file("$home/Library/Android/sdk/ndk-bundle")
-        if (ndkBundle.exists()) return ndkBundle
-        def ndkMulti = file("$home/Library/Android/sdk/ndk")
-        if (ndkMulti.exists()) {
-          def versions = ndkMulti.listFiles()?.findAll { it.isDirectory() }?.sort { a, b -> a.name <=> b.name }
-          if (versions && !versions.isEmpty()) return versions.last()
+  // First, check environment variables (works for Bitrise and most CI)
+  def fromEnv = ['ANDROID_NDK_HOME','ANDROID_NDK_ROOT','ANDROID_NDK'].collect { System.getenv(it) }
+      .find { it && file(it).exists() }
+  
+  if (fromEnv) {
+    println "[NDK] Found NDK via environment: ${fromEnv}"
+    return fromEnv
+  }
+
+  // Fallback: try to find in SDK directory
+  def home = System.getenv('HOME') ?: System.getProperty('user.home')
+  def sdkRoot = System.getenv('ANDROID_SDK_ROOT') ?: System.getenv('ANDROID_HOME')
+  
+  // Common SDK locations by platform
+  def sdkPaths = []
+  if (sdkRoot) {
+    sdkPaths << file(sdkRoot)
+  }
+  if (isMac()) {
+    sdkPaths << file("${home}/Library/Android/sdk")
+  } else if (isLinux()) {
+    sdkPaths << file("/opt/android-sdk-linux")  // Common Bitrise location
+    sdkPaths << file("/opt/android-sdk")
+    sdkPaths << file("${home}/Android/Sdk")
+    sdkPaths << file("${home}/android-sdk")
+  } else if (isWindows()) {
+    sdkPaths << file("${home}/AppData/Local/Android/Sdk")
+  }
+
+  // Try ndk-bundle first (legacy)
+  for (sdkPath in sdkPaths) {
+    if (sdkPath.exists()) {
+      def ndkBundle = new File(sdkPath, "ndk-bundle")
+      if (ndkBundle.exists()) {
+        println "[NDK] Found NDK bundle: ${ndkBundle}"
+        return ndkBundle.absolutePath
+      }
+    }
+  }
+
+  // Try versioned NDK directory (newer approach)
+  for (sdkPath in sdkPaths) {
+    if (sdkPath.exists()) {
+      def ndkDir = new File(sdkPath, "ndk")
+      if (ndkDir.exists()) {
+        def versions = ndkDir.listFiles()?.findAll { it.isDirectory() }?.sort { a, b -> 
+          // Sort by version number (descending) to get latest
+          b.name.replaceAll(/[^\d.]/, '') <=> a.name.replaceAll(/[^\d.]/, '')
         }
-        throw new GradleException("Android NDK not found. Set ANDROID_NDK_HOME / ANDROID_NDK_ROOT / ANDROID_NDK.")
-      }.call()
+        if (versions && !versions.isEmpty()) {
+          println "[NDK] Found versioned NDK: ${versions.first()}"
+          return versions.first().absolutePath
+        }
+      }
+    }
+  }
+
+  throw new GradleException("""
+    Android NDK not found!
+    For local development:
+    - Install NDK via Android Studio SDK Manager
+    - Or set ANDROID_NDK_HOME environment variable
+    
+    Current search paths tried: ${sdkPaths.collect { it.absolutePath }.join(', ')}
+  """)
 }
 
 def ndkRoot = file(findNdkRoot())
+println "[NDK] Using NDK root: ${ndkRoot.absolutePath}"
 
-def hostTag = ['darwin-arm64','darwin-x86_64'].find { new File(ndkRoot, "toolchains/llvm/prebuilt/${it}").exists() } ?:
-        new File(ndkRoot, "toolchains/llvm/prebuilt").listFiles()?.find { it.isDirectory() }?.name
-if (!hostTag) throw new GradleException("Cannot locate NDK llvm/prebuilt host tag under ${ndkRoot}.")
+// Detect host tag (platform-specific prebuilt toolchain directory)
+def detectHostTag() {
+    def ndkRoot = file(findNdkRoot())
+  def prebuiltDir = file("${ndkRoot}/toolchains/llvm/prebuilt")
+  
+  if (!prebuiltDir.exists()) {
+    throw new GradleException("NDK toolchain not found at ${prebuiltDir}. Your NDK installation may be corrupted.")
+  }
 
+  def candidates = []
+  if (isMac()) {
+    candidates = ['darwin-arm64', 'darwin-x86_64']
+  } else if (isLinux()) {
+    candidates = ['linux-x86_64', 'linux-x86']
+  } else if (isWindows()) {
+    candidates = ['windows-x86_64', 'windows']
+  }
+
+  // Try expected candidates first
+  def found = candidates.find { new File(prebuiltDir, it).exists() }
+  if (found) {
+    println "[NDK] Detected host tag: ${found}"
+    return found
+  }
+
+  // Fallback: find any directory
+  def dirs = prebuiltDir.listFiles()?.findAll { it.isDirectory() }
+  if (dirs && !dirs.isEmpty()) {
+    def fallback = dirs.first().name
+    println "[NDK] Using fallback host tag: ${fallback}"
+    return fallback
+  }
+
+  throw new GradleException("Cannot locate NDK llvm/prebuilt host tag under ${prebuiltDir}. Available: ${prebuiltDir.list()?.join(', ')}")
+}
+
+def hostTag = detectHostTag()
 def toolBin = file("${ndkRoot}/toolchains/llvm/prebuilt/${hostTag}/bin")
+
+if (!toolBin.exists()) {
+  throw new GradleException("NDK toolchain bin directory not found: ${toolBin}")
+}
+
+println "[NDK] Toolchain bin: ${toolBin.absolutePath}"
 
 def abiMatrix = {
   [
-    'armeabi-v7a': [ host:'arm-linux-androideabi',  target:'armv7a-linux-androideabi', api: secpApi ],
-    'arm64-v8a'  : [ host:'aarch64-linux-android',  target:'aarch64-linux-android',    api: secpApi ],
-    'x86'        : [ host:'i686-linux-android',     target:'i686-linux-android',       api: secpApi ],
-    'x86_64'     : [ host:'x86_64-linux-android',   target:'x86_64-linux-android',     api: secpApi ],
+    'armeabi-v7a': [ host:'arm-linux-androideabi',  target:'armv7a-linux-androideabi', api: secpApi, march: 'armv7-a', mfpu: 'neon' ],
+    'arm64-v8a'  : [ host:'aarch64-linux-android',  target:'aarch64-linux-android',    api: secpApi, march: null, mfpu: null ],
+    'x86'        : [ host:'i686-linux-android',     target:'i686-linux-android',       api: secpApi, march: null, mfpu: null ],
+    'x86_64'     : [ host:'x86_64-linux-android',   target:'x86_64-linux-android',     api: secpApi, march: null, mfpu: null ],
   ]
 }.call()
 
@@ -96,12 +205,85 @@ def moduleFlagsString = {
   (enableModules ?: '').split(',').collect { it.trim() }.findAll { it }.collect { map[it] ?: '' }.findAll { it }.join(' ')
 }.call()
 
+// Check for required build tools
+def checkBuildTools() {
+  def requiredTools = []
+  
+  // Check for git (preferred for fetching)
+  def hasGit = false
+  try {
+    exec { commandLine 'git', '--version'; standardOutput = new ByteArrayOutputStream(); ignoreExitValue = true }
+    hasGit = true
+  } catch (Exception e) {
+    println "[secp] Warning: git not found, will use tarball download"
+  }
+  
+  // Check for curl (needed for tarball fallback)
+  def hasCurl = false
+  try {
+    exec { commandLine 'curl', '--version'; standardOutput = new ByteArrayOutputStream(); ignoreExitValue = true }
+    hasCurl = true
+  } catch (Exception e) {
+    requiredTools << 'curl'
+  }
+  
+  // Check for tar (needed for tarball extraction)
+  def hasTar = false
+  try {
+    exec { commandLine 'tar', '--version'; standardOutput = new ByteArrayOutputStream(); ignoreExitValue = true }
+    hasTar = true
+  } catch (Exception e) {
+    requiredTools << 'tar'
+  }
+  
+  // Check for autotools (needed for building secp256k1)
+  def hasAutotools = false
+  try {
+    exec { commandLine 'sh', '-c', 'command -v autoconf && command -v automake && command -v libtool'; standardOutput = new ByteArrayOutputStream(); ignoreExitValue = true }
+    hasAutotools = true
+  } catch (Exception e) {
+    println "[secp] Warning: autotools not fully available"
+  }
+  
+  if (!hasCurl || !hasTar) {
+    throw new GradleException("""
+      Missing required build tools: ${requiredTools.join(', ')}
+      
+      For Bitrise, add this step before gradle build:
+      
+      - script:
+          title: Install build dependencies
+          inputs:
+            - content: |
+                #!/bin/bash
+                set -ex
+                # Ubuntu/Debian
+                sudo apt-get update
+                sudo apt-get install -y build-essential autoconf automake libtool curl tar git
+    """)
+  }
+  
+  if (!hasAutotools) {
+    println "[secp] WARNING: autotools may not be fully installed. Build might fail."
+    println "[secp] Install with: sudo apt-get install -y build-essential autoconf automake libtool"
+  }
+  
+  return [hasGit: hasGit, hasCurl: hasCurl, hasTar: hasTar, hasAutotools: hasAutotools]
+}
+
+
 // Fetch repo at pinned tag or commit (incremental)
 tasks.register('fetchSecp256k1') {
   inputs.property('repoUrl', secpRepoUrl)
   inputs.property('tag',     secpTag)
   inputs.property('commit',  secpCommit)
   outputs.dir(workDir)
+
+  doFirst {
+    def tools = checkBuildTools()
+    println "[secp] Build tools available: ${tools}"
+  }
+
   doLast {
     if (!workDir.exists()) {
       workDir.mkdirs()
@@ -165,7 +347,7 @@ tasks.register('fetchSecp256k1') {
 
 // Per-ABI configure/build (incremental)
 
-def abis = ['armeabi-v7a','arm64-v8a','x86','x86_64']
+def abis = ['armeabi-v7a','arm64-v8a']
 
 abis.each { abi ->
   def meta        = abiMatrix[abi]
@@ -204,7 +386,30 @@ abis.each { abi ->
 
       println "[secp:${abi}] Using API level ${meta.api} (unified)"
 
+      // Platform-specific libtool names
+      def libtoolize = isMac() ? 'glibtoolize' : 'libtoolize'
+      def libtool = isMac() ? 'glibtool' : 'libtool'
+
+      def sysroot = new File(ndkRoot, "toolchains/llvm/prebuilt/${hostTag}/sysroot").absolutePath
+
+      // Build CFLAGS with proper architecture flags
+      def cflags = ["-fPIC", "-O2", "--sysroot=${sysroot}"]
+      def ldflags = []
+      
+      // ARM-specific flags
+      if (abi == 'armeabi-v7a') {
+        cflags += ["-march=${meta.march}", "-mthumb", "-mfpu=${meta.mfpu}", "-mfloat-abi=softfp"]
+        ldflags += ["-march=${meta.march}"]
+      }
+      
+      def cflagsStr = cflags.join(' ')
+      def ldflagsStr = ldflags.join(' ')
+      
+      println "[secp:${abi}] CFLAGS: ${cflagsStr}"
+      println "[secp:${abi}] LDFLAGS: ${ldflagsStr}"
+
       exec {
+
         workingDir workDir
         environment 'CC',       new File(toolBin, ccTrip).absolutePath
         // Use LLVM binutils with libtool-friendly flags (NDK r25+)
@@ -213,15 +418,20 @@ abis.each { abi ->
         environment 'RANLIB',   new File(toolBin, 'llvm-ranlib').absolutePath
         environment 'NM',       new File(toolBin, 'llvm-nm').absolutePath
         environment 'STRIP',    new File(toolBin, stripTool).absolutePath
-        // Safer CFLAGS for cross builds
-        environment 'CFLAGS',   "-fPIC -O2 --sysroot=${new File(ndkRoot, 'toolchains/llvm/prebuilt/' + hostTag + '/sysroot').absolutePath}"
-        environment 'LDFLAGS',  ''
+        // Architecture-appropriate CFLAGS
+        environment 'CFLAGS',   cflagsStr
+        environment 'LDFLAGS',  ldflagsStr
         // Link against Android log for __android_log_print and enable optional configure logging
         environment 'LIBS',              '-llog'
          // On macOS, libtool is glibtool/gnulibtool; autogen.sh already glibtoolize's, but keep these for safety
-        environment 'LIBTOOLIZE', 'glibtoolize'
-        environment 'LIBTOOL',    'glibtool'
-        commandLine 'bash', '-lc', ([
+        environment 'LIBTOOLIZE', libtoolize
+        environment 'LIBTOOL',    libtool
+
+        // Disable PIE for older Android (if needed)
+        environment 'lt_cv_prog_compiler_pic_works', 'yes'
+        environment 'lt_cv_prog_compiler_static_works', 'yes'
+
+        def configureArgs = [
           './configure',
           "--host=${meta.host}",
           '--enable-shared',
@@ -231,7 +441,19 @@ abis.each { abi ->
           '--disable-tests',
           "--prefix=${installDir.absolutePath}",
           moduleFlagsString
-        ].findAll { it }.join(' '))
+        ].findAll { it }.join(' ')
+
+        // Don't use login shell
+        commandLine 'bash', '-c', configureArgs
+      }
+  
+      // Capture output for debugging
+      standardOutput = new ByteArrayOutputStream()
+      errorOutput = new ByteArrayOutputStream()
+
+      println "[secp:${abi}] configure output: ${standardOutput.toString()}"
+      if (errorOutput.toString()) {
+        println "[secp:${abi}] configure errors: ${errorOutput.toString()}"
       }
 
       stampFile.text = "configured:${abi}:${secpCommit}:${enableModules}:${meta.api}:${hostTag}:${ndkRoot}"
@@ -250,13 +472,32 @@ abis.each { abi ->
 
     doLast {
       def jobs = project.findProperty('jobs') ?: Runtime.runtime.availableProcessors()
+           // Platform-specific libtool
+      def libtoolize = isMac() ? 'glibtoolize' : 'libtoolize'
+      def libtool = isMac() ? 'glibtool' : 'libtool'
       exec {
         workingDir workDir
         environment 'LIBS', '-llog'
         commandLine 'bash', '-lc', "make -j${jobs} && make install"
       }
 
-      libDirOut.mkdirs()
+   exec {
+        workingDir workDir
+        environment 'LIBS', '-llog'
+        environment 'LIBTOOLIZE', libtoolize
+        environment 'LIBTOOL',    libtool
+        // Don't use login shell
+        commandLine 'bash', '-c', "make -j${jobs} && make install"
+        
+        // Capture output
+        standardOutput = new ByteArrayOutputStream()
+        errorOutput = new ByteArrayOutputStream()
+        println "[secp:${abi}] build output (last 50 lines): ${standardOutput.toString().readLines().takeRight(50).join('\n')}"
+        if (errorOutput.toString()) {
+          println "[secp:${abi}] build errors: ${errorOutput.toString()}"
+        }
+      }
+    
       copy {
         from file("${installDir}/lib")
         include 'libsecp256k1.so*'
@@ -339,6 +580,7 @@ android {
             "**/libreact_nativemodule_core.so",
             "**/libjscexecutor.so"
     ]
+    pickFirst "**/libsecp256k1.so"
   }
 
   buildFeatures {
