@@ -25,6 +25,7 @@ if (__DEV__) {
   console.reportErrorsAsExceptions = false
 }
 
+// TODO: remove this once we integrate with the new balance service
 setupDeBankCaching()
 
 SentryService.init()
