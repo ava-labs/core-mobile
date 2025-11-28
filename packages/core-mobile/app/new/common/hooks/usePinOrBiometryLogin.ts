@@ -198,6 +198,8 @@ export function usePinOrBiometryLogin({
             return new NothingToLoad()
           } else {
             setVerified(false)
+            setIsBiometricAvailable(false)
+            setBioType(BiometricType.NONE)
             return new NothingToLoad()
           }
         }
