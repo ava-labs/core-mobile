@@ -205,73 +205,6 @@ def moduleFlagsString = {
   (enableModules ?: '').split(',').collect { it.trim() }.findAll { it }.collect { map[it] ?: '' }.findAll { it }.join(' ')
 }.call()
 
-// Check for required build tools
-def checkBuildTools() {
-  def requiredTools = []
-  
-  // Check for git (preferred for fetching)
-  def hasGit = false
-  try {
-    exec { commandLine 'git', '--version'; standardOutput = new ByteArrayOutputStream(); ignoreExitValue = true }
-    hasGit = true
-  } catch (Exception e) {
-    println "[secp] Warning: git not found, will use tarball download"
-  }
-  
-  // Check for curl (needed for tarball fallback)
-  def hasCurl = false
-  try {
-    exec { commandLine 'curl', '--version'; standardOutput = new ByteArrayOutputStream(); ignoreExitValue = true }
-    hasCurl = true
-  } catch (Exception e) {
-    requiredTools << 'curl'
-  }
-  
-  // Check for tar (needed for tarball extraction)
-  def hasTar = false
-  try {
-    exec { commandLine 'tar', '--version'; standardOutput = new ByteArrayOutputStream(); ignoreExitValue = true }
-    hasTar = true
-  } catch (Exception e) {
-    requiredTools << 'tar'
-  }
-  
-  // Check for autotools (needed for building secp256k1)
-  def hasAutotools = false
-  try {
-    exec { commandLine 'sh', '-c', 'command -v autoconf && command -v automake && command -v libtool'; standardOutput = new ByteArrayOutputStream(); ignoreExitValue = true }
-    hasAutotools = true
-  } catch (Exception e) {
-    println "[secp] Warning: autotools not fully available"
-  }
-  
-  if (!hasCurl || !hasTar) {
-    throw new GradleException("""
-      Missing required build tools: ${requiredTools.join(', ')}
-      
-      For Bitrise, add this step before gradle build:
-      
-      - script:
-          title: Install build dependencies
-          inputs:
-            - content: |
-                #!/bin/bash
-                set -ex
-                # Ubuntu/Debian
-                sudo apt-get update
-                sudo apt-get install -y build-essential autoconf automake libtool curl tar git
-    """)
-  }
-  
-  if (!hasAutotools) {
-    println "[secp] WARNING: autotools may not be fully installed. Build might fail."
-    println "[secp] Install with: sudo apt-get install -y build-essential autoconf automake libtool"
-  }
-  
-  return [hasGit: hasGit, hasCurl: hasCurl, hasTar: hasTar, hasAutotools: hasAutotools]
-}
-
-
 // Fetch repo at pinned tag or commit (incremental)
 tasks.register('fetchSecp256k1') {
   inputs.property('repoUrl', secpRepoUrl)
@@ -279,20 +212,13 @@ tasks.register('fetchSecp256k1') {
   inputs.property('commit',  secpCommit)
   outputs.dir(workDir)
 
-  doFirst {
-    def tools = checkBuildTools()
-    println "[secp] Build tools available: ${tools}"
-  }
-
   doLast {
     if (!workDir.exists()) {
       workDir.mkdirs()
     }
 
-    // Determine ref to check out: prefer tag, then commit, else default branch
     def ref = (secpTag ?: secpCommit ?: '').trim()
     if (ref) {
-      // --- Try Git first (annotated tags need refs/tags/<tag>) ---
       def ok = true
       try {
         exec { workingDir workDir; commandLine 'git', 'init'; ignoreExitValue true }
@@ -352,9 +278,10 @@ def abis = ['armeabi-v7a','arm64-v8a']
 abis.each { abi ->
   def meta        = abiMatrix[abi]
   def ccTrip      = "${meta.target}${meta.api}-clang"
-  def arTool      = "${meta.host}-ar"
-  def ranlibTool  = "${meta.host}-ranlib"
-  def stripTool   = "${meta.host}-strip"
+  // Use LLVM tools for consistency (NDK r25+)
+  def arTool      = 'llvm-ar'
+  def ranlibTool  = 'llvm-ranlib'
+  def stripTool   = 'llvm-strip'
 
   def installDir  = file("${installRoot}/${abi}")
   def stagedLib   = file("${outputsRoot}/${abi}/lib/libsecp256k1.so")
@@ -382,7 +309,19 @@ abis.each { abi ->
       libDirOut.mkdirs()
       file("${buildDir}/stamps").mkdirs()
 
-      exec { workingDir workDir; commandLine 'bash', '-lc', './autogen.sh' }
+      // Run autogen.sh if configure script doesn't exist
+      def configureScript = new File(workDir, 'configure')
+      if (!configureScript.exists()) {
+        println "[secp:${abi}] Running autogen.sh to generate configure script..."
+        exec { 
+          workingDir workDir
+          commandLine 'bash', '-c', './autogen.sh'
+          // Ensure PATH includes standard locations for autotools
+          environment 'PATH', System.getenv('PATH')
+        }
+      } else {
+        println "[secp:${abi}] Configure script already exists, skipping autogen.sh"
+      }
 
       println "[secp:${abi}] Using API level ${meta.api} (unified)"
 
@@ -413,9 +352,9 @@ abis.each { abi ->
         workingDir workDir
         environment 'CC',       new File(toolBin, ccTrip).absolutePath
         // Use LLVM binutils with libtool-friendly flags (NDK r25+)
-        environment 'AR',       new File(toolBin, 'llvm-ar').absolutePath
+        environment 'AR',       new File(toolBin, arTool).absolutePath
         environment 'ARFLAGS',  'crs'
-        environment 'RANLIB',   new File(toolBin, 'llvm-ranlib').absolutePath
+        environment 'RANLIB',   new File(toolBin, ranlibTool).absolutePath
         environment 'NM',       new File(toolBin, 'llvm-nm').absolutePath
         environment 'STRIP',    new File(toolBin, stripTool).absolutePath
         // Architecture-appropriate CFLAGS
@@ -472,30 +411,33 @@ abis.each { abi ->
 
     doLast {
       def jobs = project.findProperty('jobs') ?: Runtime.runtime.availableProcessors()
-           // Platform-specific libtool
+      def buildOutput = new ByteArrayOutputStream()
+      def buildError = new ByteArrayOutputStream()
+      
+      // Platform-specific libtool
       def libtoolize = isMac() ? 'glibtoolize' : 'libtoolize'
       def libtool = isMac() ? 'glibtool' : 'libtool'
+      
       exec {
         workingDir workDir
         environment 'LIBS', '-llog'
-        commandLine 'bash', '-lc', "make -j${jobs} && make install"
-      }
-
-   exec {
-        workingDir workDir
-        environment 'LIBS', '-llog'
         environment 'LIBTOOLIZE', libtoolize
-        environment 'LIBTOOL',    libtool
+        environment 'LIBTOOL', libtool
         // Don't use login shell
         commandLine 'bash', '-c', "make -j${jobs} && make install"
-        
-        // Capture output
-        standardOutput = new ByteArrayOutputStream()
-        errorOutput = new ByteArrayOutputStream()
-        println "[secp:${abi}] build output (last 50 lines): ${standardOutput.toString().readLines().takeRight(50).join('\n')}"
-        if (errorOutput.toString()) {
-          println "[secp:${abi}] build errors: ${errorOutput.toString()}"
-        }
+        standardOutput = buildOutput
+        errorOutput = buildError
+      }
+      
+      // Print output for debugging
+      def outputLines = buildOutput.toString().readLines()
+      if (outputLines.size() > 50) {
+        println "[secp:${abi}] build output (last 50 lines): ${outputLines.takeRight(50).join('\n')}"
+      } else {
+        println "[secp:${abi}] build output: ${buildOutput.toString()}"
+      }
+      if (buildError.toString()) {
+        println "[secp:${abi}] build errors: ${buildError.toString()}"
       }
     
       copy {

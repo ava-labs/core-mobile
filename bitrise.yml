@@ -144,6 +144,13 @@ workflows:
       opts:
         is_expand: false
     steps:
+    - script:
+        title: Install build dependencies
+        inputs:
+          - content: |
+              #!/usr/bin/env bash
+              set -ex
+              sudo apt-get install -y build-essential autoconf automake libtool tar
     - set-java-version@1:
         inputs:
         - set_java_version: "17"
