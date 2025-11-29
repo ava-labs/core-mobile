@@ -190,17 +190,22 @@ export function usePinOrBiometryLogin({
             }
           }
           //already migrated
-          const isSuccess = await onBiometricPrompt()
-
-          if (isSuccess) {
-            setVerified(true)
-            resetRateLimiter()
-            return new NothingToLoad()
-          } else {
+          try {
+            const isSuccess = await onBiometricPrompt()
+            if (isSuccess) {
+              setVerified(true)
+              resetRateLimiter()
+              return new NothingToLoad()
+            } else {
+              setVerified(false)
+              return new NothingToLoad()
+            }
+          } catch (err) {
+            Logger.error('Error in biometric authentication', err)
             setVerified(false)
             setIsBiometricAvailable(false)
             setBioType(BiometricType.NONE)
-            return new NothingToLoad()
+            throw err
           }
         }
 
