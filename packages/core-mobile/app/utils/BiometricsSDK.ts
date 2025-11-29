@@ -421,9 +421,11 @@ class BiometricsSDK {
           if(isEnrolled) {
             return false
           }
-          throw new Error('Biometric authentication failed: ' + result.error)
+          Logger.error('Failed to authenticate with biometric', new Error(result.error))
+          throw new Error(result.error)
         }
-        throw new Error('Biometric authentication failed: ' + result.error)
+        Logger.error('Failed to authenticate with biometric', new Error(result.error))
+        throw new Error(result.error)
       }
       return result.success
     } catch (error) {
