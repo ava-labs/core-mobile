@@ -121,6 +121,7 @@
     "@walletconnect/utils": "2.17.2",
     "@zodios/core": "10.9.6",
     "assert": "2.1.0",
+    "avalabs-nitro-fetch": "workspace:*",
     "axios": "1.12.2",
     "base-64": "1.0.0",
     "big.js": "6.2.2",
@@ -380,7 +381,9 @@
       "appium>@appium/support>sharp": true,
       "react-native-nitro-modules": true,
       "react-native-nitro-avalabs-crypto": true,
-      "react-native-nitro-avalabs-crypto>react-native-nitro-modules": true
+      "react-native-nitro-avalabs-crypto>react-native-nitro-modules": true,
+      "avalabs-nitro-fetch>react-native-nitro-modules": true,
+      "avalabs-nitro-fetch": true
     }
   },
   "react-native": {

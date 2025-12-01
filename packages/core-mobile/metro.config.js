@@ -11,6 +11,11 @@ const nitroCryptoPath = path.resolve(
   'packages/react-native-nitro-avalabs-crypto'
 )
 
+const nitroFetchPath = path.resolve(
+  workspaceRoot,
+  'packages/avalabs-nitro-fetch'
+)
+
 const monorepoConfig = require('./metro.monorepo.config')
 const defaultConfig = getSentryExpoConfig(__dirname)
 const { assetExts, sourceExts } = defaultConfig.resolver
@@ -34,14 +39,15 @@ const baseConfig = {
     }),
     babelTransformerPath: require.resolve('react-native-svg-transformer')
   },
-  watchFolders: [workspaceRoot, nitroCryptoPath],
+  watchFolders: [workspaceRoot, nitroCryptoPath, nitroFetchPath],
   resolver: {
     // mute warnings about circular dependencies
     requireCycleIgnorePatterns: [/^app\/.*/, /^node_modules\/.*/],
     extraNodeModules: {
       stream: require.resolve('./node_modules/stream-browserify'),
       '@noble/hashes': require.resolve('./node_modules/@noble/hashes'),
-      'react-native-nitro-avalabs-crypto': nitroCryptoPath
+      'react-native-nitro-avalabs-crypto': nitroCryptoPath,
+      'react-native-nitro-fetch': nitroFetchPath
     },
     nodeModulesPaths: [
       path.resolve(workspaceRoot, 'node_modules'),

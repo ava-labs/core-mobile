@@ -493,6 +493,7 @@ __metadata:
     appium-uiautomator2-driver: 5.0.3
     appium-xcuitest-driver: 10.1.2
     assert: 2.1.0
+    avalabs-nitro-fetch: "workspace:*"
     axios: 1.12.2
     babel-jest: 30.1.2
     babel-loader: 9.2.1
@@ -9716,6 +9717,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@pkgr/core@npm:^0.2.9":
+  version: 0.2.9
+  resolution: "@pkgr/core@npm:0.2.9"
+  checksum: bb2fb86977d63f836f8f5b09015d74e6af6488f7a411dcd2bfdca79d76b5a681a9112f41c45bdf88a9069f049718efc6f3900d7f1de66a2ec966068308ae517f
+  languageName: node
+  linkType: hard
+
 "@playwright/test@npm:1.48.0":
   version: 1.48.0
   resolution: "@playwright/test@npm:1.48.0"
@@ -17444,6 +17452,29 @@ __metadata:
   languageName: node
   linkType: hard
 
+"avalabs-nitro-fetch@workspace:*, avalabs-nitro-fetch@workspace:packages/avalabs-nitro-fetch":
+  version: 0.0.0-use.local
+  resolution: "avalabs-nitro-fetch@workspace:packages/avalabs-nitro-fetch"
+  dependencies:
+    "@react-native/eslint-config": 0.82.0
+    "@types/react": ^19.1.03
+    eslint: ^8.57.0
+    eslint-config-prettier: ^9.1.0
+    eslint-plugin-prettier: ^5.2.1
+    nitrogen: "*"
+    prettier: ^3.3.3
+    react: 19.1.1
+    react-native: 0.79.5
+    react-native-nitro-fetch: ^0.1.5
+    react-native-nitro-modules: "*"
+    typescript: ^5.8.3
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+    react-native-nitro-modules: "*"
+  languageName: unknown
+  linkType: soft
+
 "await-to-js@npm:^3.0.0":
   version: 3.0.0
   resolution: "await-to-js@npm:3.0.0"
@@ -22461,6 +22492,26 @@ __metadata:
     eslint-config-prettier:
       optional: true
   checksum: b9e839d2334ad8ec7a5589c5cb0f219bded260839a857d7a486997f9870e95106aa59b8756ff3f37202085ebab658de382b0267cae44c3a7f0eb0bcc03a4f6d6
+  languageName: node
+  linkType: hard
+
+"eslint-plugin-prettier@npm:^5.2.1":
+  version: 5.5.4
+  resolution: "eslint-plugin-prettier@npm:5.5.4"
+  dependencies:
+    prettier-linter-helpers: ^1.0.0
+    synckit: ^0.11.7
+  peerDependencies:
+    "@types/eslint": ">=8.0.0"
+    eslint: ">=8.0.0"
+    eslint-config-prettier: ">= 7.0.0 <10.0.0 || >=10.1.0"
+    prettier: ">=3.0.0"
+  peerDependenciesMeta:
+    "@types/eslint":
+      optional: true
+    eslint-config-prettier:
+      optional: true
+  checksum: 0dd05ed85018ab0e98da80325b7bd4c4ab6dd684398f1270a7c8cf4261df714dd4502ba4c7f85f651aade9989da0a7d2adda03af8873b73b52014141abf385de
   languageName: node
   linkType: hard
 
@@ -32041,6 +32092,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prettier@npm:^3.3.3":
+  version: 3.7.3
+  resolution: "prettier@npm:3.7.3"
+  bin:
+    prettier: bin/prettier.cjs
+  checksum: fc3da17f1394f7e634eee762b1a42e0324cc6d78f8f966c746aed82c2712d24451db919e9dfa381b6fb4684b9cb04e25cfd08f47c55da92a814f9fa1e2427433
+  languageName: node
+  linkType: hard
+
 "prettier@npm:^3.5.3":
   version: 3.6.2
   resolution: "prettier@npm:3.6.2"
@@ -33242,7 +33302,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"react-native-nitro-fetch@npm:^0.1.6":
+"react-native-nitro-fetch@npm:^0.1.5, react-native-nitro-fetch@npm:^0.1.6":
   version: 0.1.6
   resolution: "react-native-nitro-fetch@npm:0.1.6"
   peerDependencies:
@@ -33257,7 +33317,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-nitro-modules@npm:0.31.10, react-native-nitro-modules@npm:^0.31.10":
+"react-native-nitro-modules@npm:*, react-native-nitro-modules@npm:0.31.10, react-native-nitro-modules@npm:^0.31.10":
   version: 0.31.10
   resolution: "react-native-nitro-modules@npm:0.31.10"
   peerDependencies:
@@ -33891,6 +33951,13 @@ react-native-webview@ava-labs/react-native-webview:
   version: 19.0.0
   resolution: "react@npm:19.0.0"
   checksum: 86de15d85b2465feb40297a90319c325cb07cf27191a361d47bcfe8c6126c973d660125aa67b8f4cbbe39f15a2f32efd0c814e98196d8e5b68c567ba40a399c6
+  languageName: node
+  linkType: hard
+
+"react@npm:19.1.1":
+  version: 19.1.1
+  resolution: "react@npm:19.1.1"
+  checksum: f2f18fea5deac87b1167365bd5160bcba64d383c26a37afa905b714ca424f423ef97d8daf53f041ab9ac25a06357fafcf0b5d3b6b84c9d1eace0e621bfeae629
   languageName: node
   linkType: hard
 
@@ -36779,6 +36846,15 @@ react-native-webview@ava-labs/react-native-webview:
   version: 2.0.17
   resolution: "synchronous-promise@npm:2.0.17"
   checksum: 7b1342c93741f3f92ebde1edf5d6ce8dde2278de948d84e9bd85e232c16c0d77c90c4940f9975be3effcb20f047cfb0f16fa311c3b4e092c22f3bf2889fb0fb4
+  languageName: node
+  linkType: hard
+
+"synckit@npm:^0.11.7":
+  version: 0.11.11
+  resolution: "synckit@npm:0.11.11"
+  dependencies:
+    "@pkgr/core": ^0.2.9
+  checksum: bc896d4320525501495654766e6b0aa394e522476ea0547af603bdd9fd7e9b65dcd6e3a237bc7eb3ab7e196376712f228bf1bf6ed1e1809f4b32dc9baf7ad413
   languageName: node
   linkType: hard
 
