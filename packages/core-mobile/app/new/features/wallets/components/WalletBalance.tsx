@@ -2,17 +2,14 @@ import {
   ActivityIndicator,
   alpha,
   AnimatedBalance,
-  Icons,
   SxProp,
-  useTheme,
-  View
+  useTheme
 } from '@avalabs/k2-alpine'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import React, { useCallback, useMemo } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
-import { Pressable } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 
@@ -33,11 +30,7 @@ export const WalletBalance = ({
 
   // TODO: get wallet balance
   const walletBalance = 74235
-  const isBalanceAccurate = true
   const isLoadingBalance = false
-  const refetchBalance = useCallback(() => {
-    // dispatch(refetchBalanceForAccount(account.id))
-  }, [])
 
   const balance = useMemo(() => {
     return walletBalance > 0
@@ -75,39 +68,6 @@ export const WalletBalance = ({
       )
     }
     return <ActivityIndicator size="small" />
-  }
-
-  if (!isBalanceAccurate) {
-    return (
-      <View
-        sx={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'flex-start',
-          flexShrink: 1,
-          gap: 6
-        }}>
-        <Pressable hitSlop={16} onPress={refetchBalance}>
-          <Icons.Alert.Error
-            color={colors.$textDanger}
-            width={14}
-            height={14}
-          />
-        </Pressable>
-        <AnimatedBalance
-          variant="heading4"
-          balance={balance}
-          shouldMask={isPrivacyModeEnabled}
-          balanceSx={{
-            ...balanceSx,
-            lineHeight: 21,
-            fontSize: 21,
-            textAlign: 'right'
-          }}
-          renderMaskView={renderMaskView}
-        />
-      </View>
-    )
   }
 
   return (

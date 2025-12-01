@@ -83,16 +83,16 @@ export const AccountBalance = ({
     return <ActivityIndicator size="small" sx={{ marginRight: 4 }} />
   }
 
-  if (!isBalanceAccurate) {
-    return (
-      <View
-        sx={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'flex-start',
-          flexShrink: 1,
-          gap: 6
-        }}>
+  return (
+    <View
+      sx={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        flexShrink: 1,
+        gap: 6
+      }}>
+      {!accountBalance ? null : !isBalanceAccurate ? (
         <Pressable hitSlop={16} onPress={refetchBalance}>
           <Icons.Alert.Error
             color={colors.$textDanger}
@@ -100,36 +100,21 @@ export const AccountBalance = ({
             height={14}
           />
         </Pressable>
-        <AnimatedBalance
-          variant="body1"
-          balance={balance}
-          shouldMask={isPrivacyModeEnabled}
-          balanceSx={{
-            color: isActive
-              ? colors.$textPrimary
-              : alpha(colors.$textPrimary, 0.6),
-            lineHeight: 16,
-            textAlign: 'right'
-          }}
-          renderMaskView={renderMaskView}
-          shouldAnimate={false}
-        />
-      </View>
-    )
-  }
-
-  return (
-    <AnimatedBalance
-      variant="body1"
-      balance={balance}
-      shouldMask={isPrivacyModeEnabled}
-      balanceSx={{
-        color: isActive ? colors.$textPrimary : alpha(colors.$textPrimary, 0.6),
-        lineHeight: 16,
-        textAlign: 'right'
-      }}
-      renderMaskView={renderMaskView}
-      shouldAnimate={false}
-    />
+      ) : null}
+      <AnimatedBalance
+        variant="body1"
+        balance={balance}
+        shouldMask={isPrivacyModeEnabled}
+        balanceSx={{
+          color: isActive
+            ? colors.$textPrimary
+            : alpha(colors.$textPrimary, 0.6),
+          lineHeight: 16,
+          textAlign: 'right'
+        }}
+        renderMaskView={renderMaskView}
+        shouldAnimate={false}
+      />
+    </View>
   )
 }

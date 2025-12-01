@@ -67,6 +67,8 @@ export const WalletList = ({
   const accountCollection = useSelector(selectAccounts)
   const allWallets = useSelector(selectWallets)
   const activeAccount = useSelector(selectActiveAccount)
+
+  // TODO: check if any account on any wallet has balanceAccurate === false
   const balanceAccurate = useIsAccountBalanceAccurate(activeAccount)
   // TODO: Implement refresh
   const isRefreshing = false
@@ -77,9 +79,18 @@ export const WalletList = ({
   const { recentAccountIds } = useRecentAccounts()
 
   const allAccountsArray = useMemo(() => {
-    return recentAccountIds
-      .map(id => accountCollection[id])
-      .filter((account): account is Account => account !== undefined)
+    const allAccounts = Object.values(accountCollection).filter(
+      (account): account is Account => account !== undefined
+    )
+
+    return allAccounts.sort((a, b) => {
+      const indexA = recentAccountIds.indexOf(a.id)
+      const indexB = recentAccountIds.indexOf(b.id)
+
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB
+
+      return 0
+    })
   }, [accountCollection, recentAccountIds])
 
   useMemo(() => {
@@ -161,8 +172,13 @@ export const WalletList = ({
       }
       dispatch(setActiveAccount(accountId))
 
-      dismiss()
-      dismiss()
+      // Delay the dismiss to display the sorting list animation
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          dismiss()
+          dismiss()
+        }, 300)
+      })
     },
     [activeAccount?.id, dispatch, dismiss]
   )

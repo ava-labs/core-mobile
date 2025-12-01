@@ -156,7 +156,8 @@ const WalletCard = ({
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          height: HEADER_HEIGHT
+          height: HEADER_HEIGHT,
+          gap: 12
         }}>
         <View
           sx={{
@@ -193,7 +194,6 @@ const WalletCard = ({
                 {wallet.name}
               </Text>
               <Text
-                testID={`manage_accounts_wallet_name__${wallet.name}`}
                 numberOfLines={1}
                 style={{
                   fontSize: 12,
