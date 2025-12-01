@@ -469,7 +469,9 @@ __metadata:
     "@types/jest": 30.0.0
     "@types/lodash.debounce": 4.0.9
     "@types/lodash.isempty": 4.4.9
+    "@types/lodash.isnil": 4.0.9
     "@types/lodash.isstring": 4.0.9
+    "@types/lodash.merge": 4.6.9
     "@types/mocha": 10.0.10
     "@types/numeral": 2.0.5
     "@types/react": 19.0.10
@@ -545,6 +547,7 @@ __metadata:
     json-stringify-pretty-compact: 4.0.0
     lodash.debounce: 4.0.8
     lodash.isempty: 4.4.0
+    lodash.isnil: 4.0.0
     lodash.isstring: 4.0.1
     lodash.merge: 4.6.2
     lottie-react-native: 7.2.2
@@ -14413,12 +14416,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/lodash.isnil@npm:4.0.9":
+  version: 4.0.9
+  resolution: "@types/lodash.isnil@npm:4.0.9"
+  dependencies:
+    "@types/lodash": "*"
+  checksum: f9c14cf414e28a0bd144bd97264e9875f4c2fc89d7950f58bd158d34b9b640358b9a5ddb428c28aeecbf9cff4b5f0602ce9173b65d3de56142183d0d537055b3
+  languageName: node
+  linkType: hard
+
 "@types/lodash.isstring@npm:4.0.9":
   version: 4.0.9
   resolution: "@types/lodash.isstring@npm:4.0.9"
   dependencies:
     "@types/lodash": "*"
   checksum: ef381be69b459caa42d7c5dc4ff5b3653e6b3c9b2393f6e92848efeafe7690438e058b26f036b11b4e535fc7645ff12d1203847b9a82e9ae0593bdd3b25a971b
+  languageName: node
+  linkType: hard
+
+"@types/lodash.merge@npm:4.6.9":
+  version: 4.6.9
+  resolution: "@types/lodash.merge@npm:4.6.9"
+  dependencies:
+    "@types/lodash": "*"
+  checksum: d0dd6654547c9d8d905184d14aa5c2a37a1ed1c3204f5ab20b7d591a05f34859ef09d3b72c065e94ca1989abf9109eb8230f67c4d64a5768b1d65b9ed8baf8e7
   languageName: node
   linkType: hard
 
@@ -28335,6 +28356,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lodash.isnil@npm:4.0.0":
+  version: 4.0.0
+  resolution: "lodash.isnil@npm:4.0.0"
+  checksum: ebf8df69879badd6ad99c4f64c54c470248df5cf92b208ca730861b1d8ac058da7b632ac811d18b0929d93cbac8d8fc866e781ee816b0142c56952e85edc682f
+  languageName: node
+  linkType: hard
+
 "lodash.isplainobject@npm:^4.0.6":
   version: 4.0.6
   resolution: "lodash.isplainobject@npm:4.0.6"
@@ -33284,7 +33312,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: e08d1254d04f3074970b63cdf0a363d6b189009270d457e868a26ef534addd69b320b85bef2a22e4eddb79006751bded431b56aaf2baf41976a6d0a5a2a2b91e
+  checksum: d6ceb75e1d0f5755370d6d91f67902bd2b8a23a3ca43cb853d2964b43798f30477e8ab0223ea8b620534fbdf5f56d39550f40d24bec2d2398c323ccfe8a5a556
   languageName: node
   linkType: hard
 

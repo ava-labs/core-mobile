@@ -178,7 +178,10 @@ export class MnemonicWallet implements Wallet {
     this.#mnemonic = mnemonic
   }
 
-  public getRawXpubXP(): string {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public getRawXpubXP(accountIndex: number): string {
+    // TODO pass correct account index after
+    // https://github.com/ava-labs/avalanche-sdks/pull/765/files is merged
     return Avalanche.getXpubFromMnemonic(this.mnemonic)
   }
 
