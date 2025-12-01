@@ -146,7 +146,9 @@ export const migrateRemainingActiveAccounts = async ({
 
       if (shouldShowToast) {
         transactionSnackbar.success({
-          message: `${accountIds.length} accounts successfully added`,
+          message: `${accountIds.length} ${
+            accountIds.length > 1 ? 'accounts' : 'account'
+          } successfully added`,
           toastId
         })
       }
