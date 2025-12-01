@@ -36,7 +36,7 @@ let code = fs.readFileSync(file, 'utf8')
 // Fix any "z.string().and(z.string())" occurrences
 code = code.replace(
   /z\.string\(\)\.and\(z\.string\(\)\)((?:\.\w+\([^()]*\))*)/g,
-  (_match: string, tail: string) => `z.string()${tail}`
+  (_match, tail) => `z.string()${tail}`
 )
 
 fs.writeFileSync(file, code, 'utf8')

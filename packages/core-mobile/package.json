@@ -19,7 +19,7 @@
     "gen:contracts": "typechain --target=ethers-v6 --out-dir app/contracts/openzeppelin ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC721.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC1155.json",
     "gen:glacierApi": "npx openapi-zod-client 'https://glacier-api-dev.avax.network/api-json' -o './app/utils/apiClient/generated/glacierApi.client.ts'",
     "gen:tokenAggregatorApi": "npx openapi-zod-client 'https://core-token-aggregator.avax-test.network/schema.json' -o './app/utils/apiClient/generated/tokenAggregatorApi.client.ts'",
-    "gen:profileApi": "npx openapi-zod-client 'https://core-profile-api.avax-test.network/schema.json' -o './app/utils/apiClient/generated/profileApi.client.ts' && node ./app/utils/apiClient/scripts/fixZodIntersections.ts ./app/utils/apiClient/generated/profileApi.client.ts",
+    "gen:profileApi": "npx openapi-zod-client 'https://core-profile-api.avax-test.network/schema.json' -o './app/utils/apiClient/generated/profileApi.client.ts' && node ./app/utils/apiClient/scripts/fixZodIntersections.js ./app/utils/apiClient/generated/profileApi.client.ts",
     "codegen": "mkdir -p app/utils/apiClient/generated && yarn gen:contracts && yarn gen:glacierApi && yarn gen:tokenAggregatorApi && yarn gen:profileApi",
     "appium:ios": "PLATFORM=ios wdio run ./e2e-appium/wdio.conf.ts",
     "appium:android": "PLATFORM=android wdio run ./e2e-appium/wdio.conf.ts",
