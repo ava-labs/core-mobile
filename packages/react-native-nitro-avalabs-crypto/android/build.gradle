@@ -53,13 +53,13 @@ ext {
   secpRepoUrl       = 'https://github.com/bitcoin-core/secp256k1.git'
   secpTag           = 'v0.7.0'
   secpCommit        = ''
-  workDir           = file("$buildDir/secp256k1")
+  workDirBase           = file("$buildDir/secp256k1")
   installRoot       = file("$buildDir/secp-android")
   outputsRoot       = file(SECP_OUTPUTS_ROOT)
   outputsIncludeDir = file(SECP_OUTPUTS_INCLUDE_DIR)
   enableModules     = (project.findProperty('secpModules')  ?: '')   // e.g., ecdh,recovery,schnorrsig,extrakeys
   // Use the same API level for all ABIs; default to max(minSdkVersion, 21). Override with -PsecpApi.
-  secpApi           = (project.findProperty('secpApi') ?: Math.max(getExtOrIntegerDefault("minSdkVersion"), 21)).toString()
+  secpApi           = (project.findProperty('secpApi') ?: Math.max(getExtOrIntegerDefault("minSdkVersion"), 21)).toString()  // Base directory
 }
 
 import org.apache.tools.ant.taskdefs.condition.Os
@@ -210,6 +210,7 @@ tasks.register('fetchSecp256k1') {
   inputs.property('repoUrl', secpRepoUrl)
   inputs.property('tag',     secpTag)
   inputs.property('commit',  secpCommit)
+  def workDir = workDirBase
   outputs.dir(workDir)
 
   doLast {
@@ -283,6 +284,8 @@ abis.each { abi ->
   def ranlibTool  = 'llvm-ranlib'
   def stripTool   = 'llvm-strip'
 
+  def workDir     = file("${workDirBase}/${abi}")
+
   def installDir  = file("${installRoot}/${abi}")
   def stagedLib   = file("${outputsRoot}/${abi}/lib/libsecp256k1.so")
   def libDirOut   = stagedLib.parentFile
@@ -298,12 +301,22 @@ abis.each { abi ->
     inputs.property('modules', enableModules)
     inputs.property('ndkRoot', ndkRoot.absolutePath)
     inputs.property('hostTag', hostTag)
-    inputs.files(fileTree(dir: workDir, includes: ['configure.ac','Makefile.am','autogen.sh'])).withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.files(fileTree(dir: workDirBase, includes: ['configure.ac','Makefile.am','autogen.sh'])).withPathSensitivity(PathSensitivity.RELATIVE)
     outputs.file(stampFile)
 
     onlyIf { !(stampFile.exists() && stagedLib.exists()) }
 
     doLast {
+
+    // Copy source to ABI-specific directory
+      if (!workDir.exists() || !new File(workDir, 'configure.ac').exists()) {
+        workDir.mkdirs()
+        copy {
+          from workDirBase
+          into workDir
+        }
+      }
+  
       outputsIncludeDir.mkdirs()
       installDir.mkdirs()
       libDirOut.mkdirs()
@@ -466,7 +479,7 @@ abis.each { abi ->
 
 // Clean helper
  tasks.register('cleanSecpAndroid') {
-   doLast { delete workDir, installRoot, outputsRoot, outputsIncludeDir, file("${buildDir}/stamps") }
+   doLast { delete workDirBase, installRoot, outputsRoot, outputsIncludeDir, file("${buildDir}/stamps") }
  }
 
 android {

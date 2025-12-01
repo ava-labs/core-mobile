@@ -24,6 +24,13 @@ workflows:
     - set-java-version@1:
         inputs:
         - set_java_version: "17"
+    - script:
+        title: Install build dependencies
+        inputs:
+          - content: |
+              #!/usr/bin/env bash
+              set -ex
+              sudo apt-get install -y build-essential autoconf automake libtool tar
     - install-missing-android-tools@3:
         inputs:
         - ndk_version: 27.1.12297006
@@ -144,13 +151,6 @@ workflows:
       opts:
         is_expand: false
     steps:
-    - script:
-        title: Install build dependencies
-        inputs:
-          - content: |
-              #!/usr/bin/env bash
-              set -ex
-              sudo apt-get install -y build-essential autoconf automake libtool tar
     - set-java-version@1:
         inputs:
         - set_java_version: "17"
