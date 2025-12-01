@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 
 /* eslint-disable no-console */
-//
-// z.string().and(z.string()).min(...).max(...)
 
 /**
  * This script patches incorrect openapi-zod-client output like:

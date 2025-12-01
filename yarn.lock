@@ -469,7 +469,6 @@ __metadata:
     "@types/jest": 30.0.0
     "@types/lodash.debounce": 4.0.9
     "@types/lodash.isempty": 4.4.9
-    "@types/lodash.isnil": 4.0.9
     "@types/lodash.isstring": 4.0.9
     "@types/lodash.merge": 4.6.9
     "@types/mocha": 10.0.10
@@ -547,7 +546,6 @@ __metadata:
     json-stringify-pretty-compact: 4.0.0
     lodash.debounce: 4.0.8
     lodash.isempty: 4.4.0
-    lodash.isnil: 4.0.0
     lodash.isstring: 4.0.1
     lodash.merge: 4.6.2
     lottie-react-native: 7.2.2
@@ -14413,15 +14411,6 @@ __metadata:
   dependencies:
     "@types/lodash": "*"
   checksum: 89f94bac5364850cb2f49a414a1632371541bdb2e6c00d73fbe2f7ad827a3ced3eaa42d64d9463eced4499d99c0619757605322f45c5b0d36cd761c561dcf8a2
-  languageName: node
-  linkType: hard
-
-"@types/lodash.isnil@npm:4.0.9":
-  version: 4.0.9
-  resolution: "@types/lodash.isnil@npm:4.0.9"
-  dependencies:
-    "@types/lodash": "*"
-  checksum: f9c14cf414e28a0bd144bd97264e9875f4c2fc89d7950f58bd158d34b9b640358b9a5ddb428c28aeecbf9cff4b5f0602ce9173b65d3de56142183d0d537055b3
   languageName: node
   linkType: hard
 
@@ -28353,13 +28342,6 @@ __metadata:
   version: 3.3.2
   resolution: "lodash.isfinite@npm:3.3.2"
   checksum: 5e9f9c27fdcdb940f7d4bd3546f584502448004825ce42dc6c40cbee6a3de73d825f9aced3f5b50ff0f613b8dcb1b985fe6e29d172522d1d7975d3f8d02cef86
-  languageName: node
-  linkType: hard
-
-"lodash.isnil@npm:4.0.0":
-  version: 4.0.0
-  resolution: "lodash.isnil@npm:4.0.0"
-  checksum: ebf8df69879badd6ad99c4f64c54c470248df5cf92b208ca730861b1d8ac058da7b632ac811d18b0929d93cbac8d8fc866e781ee816b0142c56952e85edc682f
   languageName: node
   linkType: hard
 
