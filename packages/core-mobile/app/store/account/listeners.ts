@@ -22,6 +22,7 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import KeystoneService from 'features/keystone/services/KeystoneService'
 import { pendingSeedlessWalletNameStore } from 'features/onboarding/store'
+import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import {
   selectAccounts,
   setAccounts,
@@ -264,6 +265,47 @@ const handleInitAccountsIfNeeded = async (
   migrateActiveAccountsIfNeeded(_action, listenerApi)
 }
 
+const migrateXpAddressesIfNeeded = async (
+  _action: AnyAction,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const state = listenerApi.getState()
+  const wallets = selectWallets(state)
+  const isDeveloperMode = selectIsDeveloperMode(state)
+
+  for (const wallet of Object.values(wallets)) {
+    if (wallet.type !== WalletType.MNEMONIC) continue
+
+    const accounts = selectAccountsByWalletId(state, wallet.id)
+
+    for (const account of accounts) {
+      console.log('BEFORE ADDRESS FETCH', {
+        accountIndex: account.index,
+        walletId: wallet.id,
+        x: account.addressAVM,
+        p: account.addressPVM
+      })
+
+      const addresses = await AccountsService.getAddresses({
+        walletId: wallet.id,
+        walletType: wallet.type,
+        accountIndex: account.index,
+        isTestnet: isDeveloperMode
+      })
+
+      console.log('AFTER ADDRESS FETCH', {
+        accountIndex: account.index,
+        walletId: wallet.id,
+        x: addresses[NetworkVMType.AVM],
+        p: addresses[NetworkVMType.PVM]
+      })
+
+      account.addressAVM = addresses[NetworkVMType.AVM]
+      account.addressPVM = addresses[NetworkVMType.PVM]
+    }
+  }
+}
+
 export const addAccountListeners = (
   startListening: AppStartListening
 ): void => {
@@ -285,5 +327,10 @@ export const addAccountListeners = (
   startListening({
     actionCreator: onAppUnlocked,
     effect: migrateSolanaAddressesIfNeeded
+  })
+
+  startListening({
+    actionCreator: onAppUnlocked,
+    effect: migrateXpAddressesIfNeeded
   })
 }
