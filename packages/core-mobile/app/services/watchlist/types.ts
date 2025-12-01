@@ -1,4 +1,4 @@
-import { tokenAggregatorApi } from 'utils/network/tokenAggregator'
+import { tokenAggregatorApi } from 'utils/apiClient/tokenAggregator'
 
 export type WatchlistMarketsResponse = Awaited<
   ReturnType<typeof tokenAggregatorApi.getV1watchlistmarkets>
