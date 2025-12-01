@@ -5,18 +5,17 @@ import AppCheckService from 'services/fcm/AppCheckService'
 import {
   createApiClient,
   api as noOpApiClient
-} from './generated/tokenAggregatorApi.client'
-import { CORE_HEADERS } from './constants'
+} from '../generated/profileApi.client'
+import { CORE_HEADERS } from '../constants'
 
-if (!Config.TOKEN_AGGREGATOR_URL)
-  Logger.warn('TOKEN_AGGREGATOR_URL ENV is missing')
+if (!Config.CORE_PROFILE_URL) Logger.warn('CORE_PROFILE_URL ENV is missing')
 
-export const TOKEN_AGGREGATOR_URL = Config.TOKEN_AGGREGATOR_URL
+export const CORE_PROFILE_URL = Config.CORE_PROFILE_URL
 
-let tokenAggregatorApi: ReturnType<typeof createApiClient>
+let profileApi: ReturnType<typeof createApiClient>
 
-if (TOKEN_AGGREGATOR_URL) {
-  tokenAggregatorApi = createApiClient(TOKEN_AGGREGATOR_URL, {
+if (CORE_PROFILE_URL) {
+  profileApi = createApiClient(CORE_PROFILE_URL, {
     axiosConfig: {
       headers: CORE_HEADERS,
       // Use query-string's stringify with arrayFormat 'comma'
@@ -29,13 +28,13 @@ if (TOKEN_AGGREGATOR_URL) {
     validate: __DEV__
   })
 
-  tokenAggregatorApi.axios.interceptors.request.use(async config => {
+  profileApi.axios.interceptors.request.use(async config => {
     const appCheckToken = await AppCheckService.getToken()
     config.headers['X-Firebase-AppCheck'] = appCheckToken.token
     return config
   })
 } else {
-  tokenAggregatorApi = noOpApiClient
+  profileApi = noOpApiClient
 }
 
-export { tokenAggregatorApi }
+export { profileApi }

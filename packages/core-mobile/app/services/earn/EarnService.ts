@@ -24,7 +24,7 @@ import {
   SortOrder
 } from '@avalabs/glacier-sdk'
 import { isOnGoing } from 'utils/earn/status'
-import { glacierApi } from 'utils/apiClient/glacier'
+import { glacierApi } from 'utils/apiClient/glacier/glacierApi'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Avalanche } from '@avalabs/core-wallets-sdk'

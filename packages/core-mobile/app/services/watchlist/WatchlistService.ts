@@ -15,8 +15,8 @@ import {
   Prices
 } from 'store/watchlist/types'
 import Logger from 'utils/Logger'
-import { tokenAggregatorApi } from 'utils/apiClient/tokenAggregator'
-import { WatchlistMarketsResponse } from './types'
+import { tokenAggregatorApi } from 'utils/apiClient/tokenAggregator/tokenAggregatorApi'
+import { WatchlistMarketsResponse } from 'utils/apiClient/tokenAggregator/types'
 
 const fetchTopMarkets = async ({
   currency

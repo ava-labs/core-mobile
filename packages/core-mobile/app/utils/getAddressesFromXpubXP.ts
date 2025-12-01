@@ -1,7 +1,8 @@
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import WalletService from 'services/wallet/WalletService'
-import { WalletType, NetworkAddresses } from 'services/wallet/types'
+import { WalletType } from 'services/wallet/types'
 import { xpAddressWithoutPrefix } from 'new/common/utils/xpAddressWIthoutPrefix'
+import { GetAddressesResponse } from './apiClient/profile/types'
 
 type FlattenedAddresses = {
   external: string[]
@@ -9,15 +10,15 @@ type FlattenedAddresses = {
 }
 
 const isResponseLonger = (
-  response1: NetworkAddresses,
-  response2: NetworkAddresses
+  response1: GetAddressesResponse,
+  response2: GetAddressesResponse
 ): boolean => {
   return response1.externalAddresses.length > response2.externalAddresses.length
 }
 
 const flattenAddresses = (
-  pAddresses: NetworkAddresses,
-  xAddresses: NetworkAddresses
+  pAddresses: GetAddressesResponse,
+  xAddresses: GetAddressesResponse
 ): FlattenedAddresses => {
   const longerResponse = isResponseLonger(pAddresses, xAddresses)
     ? pAddresses

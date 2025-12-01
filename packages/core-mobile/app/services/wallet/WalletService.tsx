@@ -1,4 +1,3 @@
-import Config from 'react-native-config'
 import {
   Avalanche,
   BitcoinProvider,
@@ -12,7 +11,6 @@ import {
   CreateImportCTxParams,
   CreateImportPTxParams,
   CreateSendPTxParams,
-  NetworkAddresses,
   PubKeyType,
   SignTransactionRequest,
   Wallet,
@@ -38,7 +36,8 @@ import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'
 import { SpanName } from 'services/sentry/types'
 import { Curve } from 'utils/publicKeys'
-import fetchWithAppCheck from 'utils/httpClient'
+import { profileApi } from 'utils/apiClient/profile/profileApi'
+import { GetAddressesResponse } from 'utils/apiClient/profile/types'
 import {
   getAddressDerivationPath,
   getAssetId,
@@ -283,28 +282,19 @@ class WalletService {
     networkType: NetworkVMType.AVM | NetworkVMType.PVM
     isTestnet: boolean
     onlyWithActivity: boolean
-  }): Promise<NetworkAddresses> {
+  }): Promise<GetAddressesResponse> {
     const xpubXP = await this.getRawXpubXP({
       walletId,
       walletType
     })
 
     try {
-      const res = await fetchWithAppCheck(
-        `${Config.CORE_PROFILE_URL}/v1/get-addresses`,
-        JSON.stringify({
-          networkType: networkType,
-          extendedPublicKey: xpubXP,
-          isTestnet,
-          onlyWithActivity
-        })
-      )
-
-      if (!res.ok) {
-        throw new Error(`${res.status}:${res.statusText}`)
-      }
-
-      return res.json()
+      return await profileApi.postV1getAddresses({
+        networkType: networkType,
+        extendedPublicKey: xpubXP,
+        isTestnet,
+        onlyWithActivity
+      })
     } catch (err) {
       Logger.error(`[WalletService.ts][getAddressesFromXpubXP]${err}`)
       throw err

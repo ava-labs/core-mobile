@@ -1,6 +1,6 @@
 import TokenService from 'services/token/TokenService'
 import { transformSparklineData } from 'services/token/utils'
-import { tokenAggregatorApi } from 'utils/apiClient/tokenAggregator'
+import { tokenAggregatorApi } from 'utils/apiClient/tokenAggregator/tokenAggregatorApi'
 import { MarketType } from 'store/watchlist'
 import WATCHLIST_PRICE from '../token/__mocks__/watchlistPrice.json'
 import ADDITIONAL_WATCHLIST_PRICE from '../token/__mocks__/additionalWatchlistPrice.json'
