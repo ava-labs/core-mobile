@@ -14,6 +14,7 @@ import SentryService from 'services/sentry/SentryService'
 import NewApp from 'new/ContextApp'
 import { expo } from './app.json'
 import { server } from './tests/msw/native/server'
+import { setupDeBankCaching } from './app/utils/setupDeBankCaching'
 
 if (__DEV__) {
   require('./ReactotronConfig')
@@ -23,6 +24,9 @@ if (__DEV__) {
   // eslint-disable-next-line no-console
   console.reportErrorsAsExceptions = false
 }
+
+// TODO: remove this once we integrate with the new balance service
+setupDeBankCaching()
 
 SentryService.init()
 
