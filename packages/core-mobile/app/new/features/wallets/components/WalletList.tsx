@@ -69,13 +69,16 @@ export const WalletList = ({
   const activeAccount = useSelector(selectActiveAccount)
 
   // TODO: check if any account on any wallet has balanceAccurate === false
+  // Also check if balance is loading for any account on any wallet isLoadingWalletBalance === false
   const balanceAccurate = useIsAccountBalanceAccurate(activeAccount)
+  const isLoadingWalletBalance = false
   // TODO: Implement refresh
   const isRefreshing = false
 
-  const errorMessage = balanceAccurate
-    ? undefined
-    : 'Unable to load all balances'
+  const errorMessage =
+    balanceAccurate && !isLoadingWalletBalance
+      ? undefined
+      : 'Unable to load all balances'
   const { recentAccountIds } = useRecentAccounts()
 
   const allAccountsArray = useMemo(() => {
