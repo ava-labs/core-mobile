@@ -52,9 +52,8 @@ export const overrideContractItem = (
 }
 
 export const getInitialGasLimit = (data: SigningData): number | undefined => {
-  if (!data || data.type !== RpcMethod.ETH_SEND_TRANSACTION) {
-    return undefined
+  if (typeof data.data === 'object' && 'gasLimit' in data.data) {
+    return Number(data.data.gasLimit || 0)
   }
-
-  return data.data.gasLimit ? Number(data.data.gasLimit) : undefined
+  return undefined
 }
