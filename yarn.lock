@@ -525,6 +525,7 @@ __metadata:
     expo-blur: 14.1.5
     expo-build-properties: 0.14.8
     expo-camera: 16.1.11
+    expo-clipboard: 8.0.7
     expo-constants: 17.1.7
     expo-dev-client: 5.2.4
     expo-haptics: 14.1.4
@@ -23078,6 +23079,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-clipboard@npm:8.0.7":
+  version: 8.0.7
+  resolution: "expo-clipboard@npm:8.0.7"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+  checksum: 0c674c9b9cab8cbb39dc284e37712995f8caedd6c52265a4ca1424f50e5669d1e9129cfad3576e80fe66f0f0ab75053a5d7c396a9b5220da165239df26335002
+  languageName: node
+  linkType: hard
+
 "expo-constants@npm:17.1.7, expo-constants@npm:~17.1.7":
   version: 17.1.7
   resolution: "expo-constants@npm:17.1.7"
@@ -26836,8 +26848,8 @@ __metadata:
 
 "jail-monkey@patch:jail-monkey@npm%3A2.8.0#./.yarn/patches/jail-monkey-npm-2.8.0-77e4d06b40.patch::locator=mobile-monorepo%40workspace%3A.":
   version: 2.8.0
-  resolution: "jail-monkey@patch:jail-monkey@npm%3A2.8.0#./.yarn/patches/jail-monkey-npm-2.8.0-77e4d06b40.patch::version=2.8.0&hash=5a71d1&locator=mobile-monorepo%40workspace%3A."
-  checksum: e46a3eb6b071371220d916a96f758e0d5cf6f5d06269802b0943f5ebbc4ee30ac86ef244832632a97a9eac3c41a5121c25d3821d9501ca6f1a4b0e399ef2f00f
+  resolution: "jail-monkey@patch:jail-monkey@npm%3A2.8.0#./.yarn/patches/jail-monkey-npm-2.8.0-77e4d06b40.patch::version=2.8.0&hash=225a6a&locator=mobile-monorepo%40workspace%3A."
+  checksum: c5caacdc4a38dcdd45209f55c3376d39cd2ea7ae788f90e4bdb270838cb8f13c1b5001a79cd7c6f1ed7f0d462c9ef2d0fbc959e1e48a26dff4dd9aa7ab9ab4f4
   languageName: node
   linkType: hard
 
