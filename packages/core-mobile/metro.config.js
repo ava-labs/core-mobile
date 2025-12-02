@@ -43,10 +43,6 @@ const baseConfig = {
       '@noble/hashes': require.resolve('./node_modules/@noble/hashes'),
       'react-native-nitro-avalabs-crypto': nitroCryptoPath
     },
-    nodeModulesPaths: [
-      path.resolve(workspaceRoot, 'node_modules'),
-      path.resolve(projectRoot, 'node_modules')
-    ],
     // TODO: should this be a temporary fix?
     unstable_enablePackageExports: false,
     // sbmodern is needed for storybook
