@@ -1,4 +1,3 @@
-import Config from 'react-native-config'
 import {
   Avalanche,
   BitcoinProvider,
@@ -12,7 +11,6 @@ import {
   CreateImportCTxParams,
   CreateImportPTxParams,
   CreateSendPTxParams,
-  NetworkAddresses,
   PubKeyType,
   SignTransactionRequest,
   Wallet,
@@ -38,7 +36,8 @@ import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'
 import { SpanName } from 'services/sentry/types'
 import { Curve } from 'utils/publicKeys'
-import fetchWithAppCheck from 'utils/httpClient'
+import { profileApi } from 'utils/apiClient/profile/profileApi'
+import { GetAddressesResponse } from 'utils/apiClient/profile/types'
 import {
   getAddressDerivationPath,
   getAssetId,
@@ -244,10 +243,12 @@ class WalletService {
 
   public async getRawXpubXP({
     walletId,
-    walletType
+    walletType,
+    accountIndex
   }: {
     walletId: string
     walletType: WalletType
+    accountIndex: number
   }): Promise<string> {
     if (!this.hasXpub(walletType)) {
       throw new Error('Unable to get raw xpub XP: unsupported wallet type')
@@ -268,98 +269,43 @@ class WalletService {
       )
     }
 
-    return wallet.getRawXpubXP()
+    return wallet.getRawXpubXP(accountIndex)
   }
 
+  // TODO pass correct account index after
+  // https://github.com/ava-labs/avalanche-sdks/pull/765/files is merged
   public async getAddressesFromXpubXP({
     walletId,
     walletType,
+    accountIndex,
     networkType,
     isTestnet = false,
     onlyWithActivity
   }: {
     walletId: string
     walletType: WalletType
+    accountIndex: number
     networkType: NetworkVMType.AVM | NetworkVMType.PVM
     isTestnet: boolean
     onlyWithActivity: boolean
-  }): Promise<NetworkAddresses> {
+  }): Promise<GetAddressesResponse> {
     const xpubXP = await this.getRawXpubXP({
       walletId,
-      walletType
+      walletType,
+      accountIndex
     })
 
     try {
-      const res = await fetchWithAppCheck(
-        `${Config.CORE_PROFILE_URL}/v1/get-addresses`,
-        JSON.stringify({
-          networkType: networkType,
-          extendedPublicKey: xpubXP,
-          isTestnet,
-          onlyWithActivity
-        })
-      )
-
-      if (!res.ok) {
-        throw new Error(`${res.status}:${res.statusText}`)
-      }
-
-      return res.json()
+      return await profileApi.postV1getAddresses({
+        networkType: networkType,
+        extendedPublicKey: xpubXP,
+        isTestnet,
+        onlyWithActivity
+      })
     } catch (err) {
       Logger.error(`[WalletService.ts][getAddressesFromXpubXP]${err}`)
       throw err
     }
-  }
-
-  public async getAddressesByIndices({
-    walletId,
-    walletType,
-    indices,
-    chainAlias,
-    isChange,
-    isTestnet
-  }: {
-    walletId: string
-    walletType: WalletType
-    indices: number[]
-    chainAlias: 'X' | 'P'
-    isChange: boolean
-    isTestnet: boolean
-  }): Promise<string[]> {
-    if (
-      walletType === WalletType.SEEDLESS ||
-      walletType === WalletType.PRIVATE_KEY ||
-      (isChange && chainAlias !== 'X')
-    ) {
-      return []
-    }
-
-    if ([WalletType.MNEMONIC, WalletType.KEYSTONE].includes(walletType)) {
-      const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
-
-      const xpubXP = await this.getRawXpubXP({ walletId, walletType })
-
-      return xpubXP
-        ? indices.map(index => {
-            try {
-              return Avalanche.getAddressFromXpub(
-                xpubXP,
-                index,
-                provXP,
-                chainAlias,
-                isChange
-              )
-            } catch (e) {
-              Logger.error('error getting address from xpub', e)
-              return ''
-            }
-          })
-        : []
-    }
-
-    throw new Error(
-      'Unable to get addresses by indices: unsupported wallet type'
-    )
   }
 
   /**

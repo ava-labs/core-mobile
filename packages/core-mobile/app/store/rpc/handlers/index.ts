@@ -10,7 +10,6 @@ import { RpcRequestHandler } from './types'
 import { avalancheGetAccountPubKeyHandler } from './avalanche_getAccountPubKey/avalanche_getAccountPubKey'
 import { avalancheSetDeveloperModeHandler } from './avalanche_setDeveloperMode/avalanche_setDeveloperMode'
 import { walletGetEthereumChainHandler } from './chain/wallet_getEthereumChain/wallet_getEthereumChain'
-import { avalancheGetAddressesInRangeHandler } from './avalanche_getAddressesInRange/avalanche_getAddressesInRange'
 import { avalancheRenameAccountHandler } from './account/avalanche_renameAccount/avalanche_renameAccount'
 import { walletGetNetworkStateHandler } from './wallet_getNetworkState/wallet_getNetworkState'
 import { avalancheAddAccountHandler } from './account/avalanche_addAccount/avalanche_addAccount'
@@ -27,7 +26,6 @@ const handlerMap = [
   walletGetEthereumChainHandler,
   avalancheGetAccountPubKeyHandler,
   avalancheSetDeveloperModeHandler,
-  avalancheGetAddressesInRangeHandler,
   avalancheRenameAccountHandler,
   walletGetNetworkStateHandler,
   avalancheAddAccountHandler

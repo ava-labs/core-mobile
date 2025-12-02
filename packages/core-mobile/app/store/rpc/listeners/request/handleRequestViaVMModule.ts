@@ -154,7 +154,13 @@ const getContext = async ({
     const context: Record<string, string> = { currentAddress }
 
     if (walletType === WalletType.MNEMONIC && activeAccount) {
-      const xpubXP = await WalletService.getRawXpubXP({ walletId, walletType })
+      // TODO pass correct account index after
+      // https://github.com/ava-labs/avalanche-sdks/pull/765/files is merged
+      const xpubXP = await WalletService.getRawXpubXP({
+        walletId,
+        walletType,
+        accountIndex: 0
+      })
 
       if (xpubXP) {
         context.xpubXP = xpubXP
