@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react'
 import { LayoutChangeEvent, Pressable } from 'react-native'
+import { SCREEN_WIDTH } from '../../const'
 import { useTheme } from '../../hooks'
 import { Icons } from '../../theme/tokens/Icons'
 import { AnimatedBalance } from '../AnimatedBalance/AnimatedBalance'
@@ -170,15 +171,22 @@ export const BalanceHeader = ({
 
   return (
     <View onLayout={onLayout}>
-      <View sx={{ paddingRight: 16, gap: 4 }}>
+      <View sx={{ paddingRight: 16 }}>
         {walletName && (
-          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <View
+            sx={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+              width: SCREEN_WIDTH * 0.5
+            }}>
             {renderWalletIcon()}
             <Text
               testID={`${testID}__balance_header_wallet_name`}
               variant="buttonMedium"
               sx={{
-                lineHeight: 16,
+                lineHeight: 20,
+                width: '100%',
                 color: colors.$textSecondary
               }}
               numberOfLines={1}>
@@ -197,7 +205,7 @@ export const BalanceHeader = ({
             <Text
               testID={`${testID}__balance_header_account_name`}
               variant="heading2"
-              sx={{ color: '$textSecondary', lineHeight: 38 }}
+              sx={{ color: '$textSecondary', lineHeight: 42 }}
               numberOfLines={1}>
               {accountName}
             </Text>

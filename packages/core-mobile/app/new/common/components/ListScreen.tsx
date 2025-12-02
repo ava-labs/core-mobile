@@ -316,7 +316,7 @@ export const ListScreen = <T,>({
           <View
             onLayout={handleContentHeaderLayout}
             style={{
-              gap: 12,
+              gap: 6,
               paddingHorizontal: 16,
               paddingBottom: 12
             }}>

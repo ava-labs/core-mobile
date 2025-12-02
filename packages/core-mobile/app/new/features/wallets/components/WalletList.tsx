@@ -175,13 +175,8 @@ export const WalletList = ({
       }
       dispatch(setActiveAccount(accountId))
 
-      // Delay the dismiss to display the sorting list animation
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          dismiss()
-          dismiss()
-        }, 300)
-      })
+      dismiss()
+      dismiss()
     },
     [activeAccount?.id, dispatch, dismiss]
   )

@@ -51,13 +51,13 @@ const WalletCard = ({
   const renderExpansionIcon = useCallback(() => {
     return (
       <Icons.Navigation.ChevronRight
-        color={colors.$textPrimary}
+        color={colors.$textSecondary}
         width={20}
         height={20}
         transform={[{ rotate: isExpanded ? '-90deg' : '90deg' }]}
       />
     )
-  }, [colors.$textPrimary, isExpanded])
+  }, [colors.$textSecondary, isExpanded])
 
   const renderWalletIcon = useCallback(() => {
     if (
@@ -184,15 +184,27 @@ const WalletCard = ({
               flex: 1
             }}>
             <View sx={{ gap: 2 }}>
-              <Text
-                testID={`manage_accounts_wallet_name__${wallet.name}`}
-                variant="heading4"
-                style={{
-                  lineHeight: 24
-                }}
-                numberOfLines={1}>
-                {wallet.name}
-              </Text>
+              <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Text
+                  testID={`manage_accounts_wallet_name__${wallet.name}`}
+                  variant="heading4"
+                  style={{
+                    lineHeight: 24
+                  }}
+                  numberOfLines={1}>
+                  {wallet.name}
+                </Text>
+                {isActive && (
+                  <View
+                    style={{
+                      width: 6,
+                      height: 6,
+                      backgroundColor: colors.$textSuccess,
+                      borderRadius: 100
+                    }}
+                  />
+                )}
+              </View>
               <Text
                 numberOfLines={1}
                 style={{
@@ -205,16 +217,6 @@ const WalletCard = ({
                   : '1 account'}
               </Text>
             </View>
-            {isActive && (
-              <View
-                style={{
-                  width: 6,
-                  height: 6,
-                  backgroundColor: colors.$textSuccess,
-                  borderRadius: 100
-                }}
-              />
-            )}
           </View>
         </View>
 
