@@ -1,28 +1,27 @@
 import { CoreAccountType } from '@avalabs/types'
 import { createAsyncThunk } from '@reduxjs/toolkit'
+import AccountsService from 'services/account/AccountsService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
 import {
   Account,
   ImportedAccount,
-  selectAccounts,
   setAccount,
   setActiveAccount
 } from 'store/account'
-import { ThunkApi } from 'store/types'
-import { reducerName, selectWallets, setActiveWallet } from 'store/wallet/slice'
-import { StoreWalletParams, Wallet } from 'store/wallet/types'
-import BiometricsSDK from 'utils/BiometricsSDK'
-import { uuid } from 'utils/uuid'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import {
   removeAccount,
   selectAccountsByWalletId,
   setActiveAccountId
 } from 'store/account/slice'
-import AccountsService from 'services/account/AccountsService'
-import { generateWalletName } from './utils'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { ThunkApi } from 'store/types'
+import { reducerName, selectWallets, setActiveWallet } from 'store/wallet/slice'
+import { StoreWalletParams, Wallet } from 'store/wallet/types'
+import BiometricsSDK from 'utils/BiometricsSDK'
+import { uuid } from 'utils/uuid'
 import { _removeWallet, selectActiveWalletId } from './slice'
+import { generateWalletName } from './utils'
 
 export const storeWallet = createAsyncThunk<
   Wallet,
@@ -119,9 +118,6 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
 
     thunkApi.dispatch(setActiveWallet(newWalletId))
 
-    const allAccounts = selectAccounts(state)
-    const allAccountsCount = Object.keys(allAccounts).length
-
     const addresses = await AccountsService.getAddresses({
       walletId: newWalletId,
       walletType: WalletType.MNEMONIC,
@@ -133,7 +129,7 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
     const newAccount: Account = {
       id: newAccountId,
       walletId: newWalletId,
-      name: `Account ${allAccountsCount + 1}`,
+      name: `Account 1`,
       type: CoreAccountType.PRIMARY,
       index: 0,
       addressC: addresses.EVM,

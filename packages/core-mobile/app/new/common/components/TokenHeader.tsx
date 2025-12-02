@@ -56,7 +56,7 @@ export const TokenHeader = ({
               sx={{ lineHeight: 38, flexShrink: 1 }}
               numberOfLines={1}>
               {token?.balanceDisplayValue ? (
-                <View sx={{ flexDirection: 'row' }}>
+                <View sx={{ flexDirection: 'row', alignItems: 'flex-end' }}>
                   <SubTextNumber
                     number={token.balanceDisplayValue}
                     textColor={colors.$textPrimary}
@@ -66,9 +66,12 @@ export const TokenHeader = ({
                     variant="heading2"
                     sx={{
                       fontFamily: 'Aeonik-Medium',
-                      color: colors.$textPrimary
+                      color: colors.$textPrimary,
+                      fontSize: 18,
+                      lineHeight: 18,
+                      marginBottom: 4
                     }}>
-                    {' ' + token.symbol}
+                    {token.symbol}
                   </Text>
                 </View>
               ) : (

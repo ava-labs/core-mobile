@@ -415,13 +415,30 @@ class BiometricsSDK {
         )
         return false
       }
-      const result = await LocalAuthentication.authenticateAsync(
-        bioAuthenticationOptions
-      )
+      const result: LocalAuthentication.LocalAuthenticationResult =
+        await LocalAuthentication.authenticateAsync(bioAuthenticationOptions)
+      if (!result.success) {
+        if (result.error === 'user_cancel') {
+          const isEnrolled = await LocalAuthentication.isEnrolledAsync()
+          if (isEnrolled) {
+            return false
+          }
+          Logger.error(
+            'Failed to authenticate with biometric',
+            new Error(result.error)
+          )
+          throw new Error(result.error)
+        }
+        Logger.error(
+          'Failed to authenticate with biometric',
+          new Error(result.error)
+        )
+        throw new Error(result.error)
+      }
       return result.success
     } catch (error) {
       Logger.error('Failed to authenticate with biometric', error)
-      return false
+      throw error
     }
   }
 }

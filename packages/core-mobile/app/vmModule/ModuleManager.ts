@@ -21,7 +21,10 @@ import {
   getEvmCaip2ChainId,
   getSolanaCaip2ChainId
 } from 'utils/caip2ChainIds'
-import { APPLICATION_NAME, APPLICATION_VERSION } from 'utils/network/constants'
+import {
+  APPLICATION_NAME,
+  APPLICATION_VERSION
+} from 'utils/apiClient/constants'
 import { DerivationPath } from '@avalabs/core-wallets-sdk'
 import { emptyAddresses } from 'utils/publicKeys'
 import { WalletType } from 'services/wallet/types'
