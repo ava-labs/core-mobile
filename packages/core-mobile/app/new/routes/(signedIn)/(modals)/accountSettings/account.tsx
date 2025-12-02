@@ -5,7 +5,7 @@ import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { AccountAddresses } from 'features/accountSettings/components/accountAddresses'
 import { AccountButtons } from 'features/accountSettings/components/AccountButtons'
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccountById } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -93,6 +93,25 @@ const AccountScreen = (): JSX.Element => {
     return <AccountButtons accountId={account.id} walletType={wallet.type} />
   }
 
+  const shouldShowRegenerateXpButton =
+    wallet.type === WalletType.KEYSTONE &&
+    (!account.addressAVM || !account.addressPVM)
+
+  const handleRegenerateXp = useCallback(() => {
+    if (!account) {
+      return
+    }
+
+    router.push({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/accountSettings/regenerateKeystoneXp',
+      params: {
+        accountId: account.id,
+        walletId: wallet.id
+      }
+    })
+  }, [account, router, wallet.id])
+
   return (
     <ScrollScreen
       renderHeader={renderHeader}
@@ -101,7 +120,13 @@ const AccountScreen = (): JSX.Element => {
       navigationTitle={account?.name ?? ''}
       contentContainerStyle={{ padding: 16 }}>
       <View sx={{ gap: 16, marginTop: 24 }}>
-        <AccountAddresses account={account} />
+        <AccountAddresses
+          account={account}
+          showRegenerateXpButton={shouldShowRegenerateXpButton}
+          onRegenerateXp={
+            shouldShowRegenerateXpButton ? handleRegenerateXp : undefined
+          }
+        />
         <WalletInfo
           onShowPrivateKey={
             isPrivateKeyAvailable ? handleShowPrivateKey : undefined

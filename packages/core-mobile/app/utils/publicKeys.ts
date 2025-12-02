@@ -26,6 +26,9 @@ export const DEPRECATED_AVALANCHE_DERIVATION_PATH_PREFIX = "m/44'/9000'/0'/"
 
 export const AVALANCHE_DERIVATION_PATH_PREFIX = "m/44'/9000'/"
 
+export const getAvalancheExtendedKeyPath = (accountIndex: number): string =>
+  `${AVALANCHE_DERIVATION_PATH_PREFIX}${accountIndex}'`
+
 export type AddressPublicKey = {
   curve: Curve
   derivationPath: string

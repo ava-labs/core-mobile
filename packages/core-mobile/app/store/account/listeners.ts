@@ -3,7 +3,7 @@ import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
-import { AppListenerEffectAPI, AppStartListening } from 'store/types'
+import { AppListenerEffectAPI, AppStartListening, RootState } from 'store/types'
 import { AnyAction } from '@reduxjs/toolkit'
 import { onAppUnlocked } from 'store/app/slice'
 import { WalletType } from 'services/wallet/types'
@@ -21,8 +21,12 @@ import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import KeystoneService from 'features/keystone/services/KeystoneService'
+import { KeystoneDataStorage } from 'features/keystone/storage/KeystoneDataStorage'
+import { bip32 } from 'utils/bip32'
 import { pendingSeedlessWalletNameStore } from 'features/onboarding/store'
+import { Wallet as WalletState } from 'store/wallet/types'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
+import { getAvalancheExtendedKeyPath } from 'utils/publicKeys'
 import {
   selectAccounts,
   setAccounts,
@@ -34,6 +38,8 @@ import { AccountCollection } from './types'
 import {
   canMigrateActiveAccounts,
   deriveMissingSeedlessSessionKeys,
+  isXpMigrationCompleted,
+  markXpMigrationCompleted,
   migrateRemainingActiveAccounts,
   shouldMigrateActiveAccounts
 } from './utils'
@@ -265,6 +271,49 @@ const handleInitAccountsIfNeeded = async (
   migrateActiveAccountsIfNeeded(_action, listenerApi)
 }
 
+const migrateKeystoneWalletAddresses = async ({
+  state,
+  wallet
+}: {
+  state: RootState
+  wallet: WalletState
+}): Promise<void> => {
+  const accounts = selectAccountsByWalletId(state, wallet.id)
+  const keystoneData = await KeystoneDataStorage.retrieve()
+
+  // find the first accounts derivation path
+  const firstAccountDerivationPath = getAvalancheExtendedKeyPath(0)
+
+  // check if were storing an extended public key for the first account
+  const hasAccountZero = keystoneData.extendedPublicKeys?.some(
+    key => key.path === firstAccountDerivationPath
+  )
+
+  // if we're not storing an extended public key for the first account, we need to add it
+  if (!hasAccountZero && keystoneData.xp) {
+    const node = bip32.fromBase58(keystoneData.xp)
+
+    keystoneData.extendedPublicKeys = [
+      ...(keystoneData.extendedPublicKeys ?? []),
+      {
+        path: firstAccountDerivationPath,
+        key: keystoneData.xp,
+        chainCode: node.chainCode.toString('hex')
+      }
+    ]
+
+    await KeystoneDataStorage.save(keystoneData)
+  }
+
+  for (const account of accounts) {
+    // clear out addressAVM / addressPVM as we'll need to re pull these from the keystone device with an incremented account index
+    if (account.index !== 0) {
+      account.addressAVM = undefined
+      account.addressPVM = undefined
+    }
+  }
+}
+
 const migrateXpAddressesIfNeeded = async (
   _action: AnyAction,
   listenerApi: AppListenerEffectAPI
@@ -273,37 +322,38 @@ const migrateXpAddressesIfNeeded = async (
   const wallets = selectWallets(state)
   const isDeveloperMode = selectIsDeveloperMode(state)
 
+  if (isXpMigrationCompleted()) {
+    Logger.info('XP addresses migration already completed')
+    return
+  }
+
   for (const wallet of Object.values(wallets)) {
-    if (wallet.type !== WalletType.MNEMONIC) continue
+    if (wallet.type === WalletType.MNEMONIC) {
+      const accounts = selectAccountsByWalletId(state, wallet.id)
 
-    const accounts = selectAccountsByWalletId(state, wallet.id)
+      for (const account of accounts) {
+        const addresses = await AccountsService.getAddresses({
+          walletId: wallet.id,
+          walletType: wallet.type,
+          accountIndex: account.index,
+          isTestnet: isDeveloperMode
+        })
 
-    for (const account of accounts) {
-      console.log('BEFORE ADDRESS FETCH', {
-        accountIndex: account.index,
-        walletId: wallet.id,
-        x: account.addressAVM,
-        p: account.addressPVM
+        account.addressAVM = addresses[NetworkVMType.AVM]
+        account.addressPVM = addresses[NetworkVMType.PVM]
+      }
+    }
+
+    if (wallet.type === WalletType.KEYSTONE) {
+      await migrateKeystoneWalletAddresses({
+        state,
+        wallet
       })
-
-      const addresses = await AccountsService.getAddresses({
-        walletId: wallet.id,
-        walletType: wallet.type,
-        accountIndex: account.index,
-        isTestnet: isDeveloperMode
-      })
-
-      console.log('AFTER ADDRESS FETCH', {
-        accountIndex: account.index,
-        walletId: wallet.id,
-        x: addresses[NetworkVMType.AVM],
-        p: addresses[NetworkVMType.PVM]
-      })
-
-      account.addressAVM = addresses[NetworkVMType.AVM]
-      account.addressPVM = addresses[NetworkVMType.PVM]
     }
   }
+
+  markXpMigrationCompleted()
+  Logger.info('XP addresses migration completed')
 }
 
 export const addAccountListeners = (

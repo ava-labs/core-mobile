@@ -2,12 +2,14 @@ import { UR } from '@ngraveio/bc-ur'
 import KeystoneSDK from '@keystonehq/keystone-sdk'
 import { bip32 } from 'utils/bip32'
 import { KeystoneDataStorage } from 'features/keystone/storage/KeystoneDataStorage'
+import { ExtendedPublicKey } from 'services/ledger/types'
 
 class KeystoneService {
   private walletInfo = {
     evm: '',
     xp: '',
-    mfp: ''
+    mfp: '',
+    extendedPublicKeys: [] as ExtendedPublicKey[]
   }
 
   init(ur: UR): void {
@@ -33,6 +35,19 @@ class KeystoneService {
       )
       .toBase58()
     this.walletInfo.mfp = mfp
+    this.walletInfo.extendedPublicKeys =
+      accounts.keys
+        .filter(key => key.chain === 'AVAX')
+        .map(key => ({
+          path: key.path,
+          key: bip32
+            .fromPublicKey(
+              Buffer.from(key.publicKey, 'hex'),
+              Buffer.from(key.chainCode, 'hex')
+            )
+            .toBase58(),
+          chainCode: key.chainCode
+        })) ?? []
   }
 
   async save(): Promise<void> {

@@ -17,9 +17,13 @@ import { NetworkVMType } from '@avalabs/vm-module-types'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 
 export const AccountAddresses = ({
-  account
+  account,
+  onRegenerateXp,
+  showRegenerateXpButton = false
 }: {
   account: Account
+  onRegenerateXp?: () => void
+  showRegenerateXpButton?: boolean
 }): React.JSX.Element => {
   const {
     theme: { colors }
@@ -36,7 +40,7 @@ export const AccountAddresses = ({
         switch (network.vmName) {
           case NetworkVMType.AVM:
           case NetworkVMType.PVM:
-            return account.addressPVM.replace(/^[XP]-/, '')
+            return account.addressPVM?.replace(/^[XP]-/, '')
           case NetworkVMType.BITCOIN:
             return account.addressBTC
           case NetworkVMType.EVM:
@@ -48,10 +52,17 @@ export const AccountAddresses = ({
         }
       })()
 
+      const truncateAddressValue =
+        address && truncateAddress(address, TRUNCATE_ADDRESS_LENGTH)
+
+      const shouldShowRegenerateButton =
+        showRegenerateXpButton &&
+        !address &&
+        (network.vmName === NetworkVMType.AVM ||
+          network.vmName === NetworkVMType.PVM)
+
       return {
-        subtitle: address
-          ? truncateAddress(address, TRUNCATE_ADDRESS_LENGTH)
-          : '',
+        subtitle: address ? truncateAddressValue : '',
         title: network.chainName,
         leftIcon: (
           <NetworkLogoWithChain
@@ -61,7 +72,12 @@ export const AccountAddresses = ({
             showChainLogo={isXPChain(network.chainId)}
           />
         ),
-        value: (
+        value: shouldShowRegenerateButton ? (
+          <RegenerateButton
+            onPress={onRegenerateXp}
+            testID={`regen_btn__${network.chainName}`}
+          />
+        ) : (
           <CopyButton
             testID={`copy_btn__${network.chainName}`}
             onPress={() =>
@@ -78,7 +94,9 @@ export const AccountAddresses = ({
     account.addressPVM,
     account.addressSVM,
     colors.$surfaceSecondary,
-    networks
+    networks,
+    onRegenerateXp,
+    showRegenerateXpButton
   ])
 
   return (
@@ -127,6 +145,42 @@ const CopyButton = ({
           sx={{ fontSize: 14 }}
           numberOfLines={1}>
           Copy
+        </Text>
+      </TouchableOpacity>
+    </View>
+  )
+}
+
+const RegenerateButton = ({
+  onPress,
+  testID
+}: {
+  onPress?: () => void
+  testID?: string
+}): React.JSX.Element => {
+  const {
+    theme: { colors }
+  } = useTheme()
+  return (
+    <View style={{ marginLeft: 16 }}>
+      <TouchableOpacity
+        onPress={onPress}
+        disabled={!onPress}
+        style={{
+          backgroundColor: colors.$borderPrimary,
+          paddingHorizontal: 17,
+          paddingVertical: 5,
+          borderRadius: 17
+        }}>
+        <Text
+          testID={testID}
+          variant="buttonMedium"
+          sx={{
+            fontSize: 14,
+            color: colors.$textPrimary
+          }}
+          numberOfLines={1}>
+          Regenerate
         </Text>
       </TouchableOpacity>
     </View>

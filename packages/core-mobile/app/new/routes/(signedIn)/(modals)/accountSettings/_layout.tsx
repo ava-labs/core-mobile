@@ -33,6 +33,7 @@ export default function AccountSettingsLayout(): JSX.Element {
       <Stack.Screen name="viewPrivateKey" />
       <Stack.Screen name="verifyPinForPrivateKey" />
       <Stack.Screen name="verifyPinForImportPrivateKey" />
+      <Stack.Screen name="regenerateKeystoneXp" />
     </Stack>
   )
 }
