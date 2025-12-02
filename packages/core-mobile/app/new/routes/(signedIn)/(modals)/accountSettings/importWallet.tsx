@@ -9,9 +9,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
 import { addAccount } from 'store/account'
-import { selectAccounts } from 'store/account/slice'
+import { selectAccountsByWalletId } from 'store/account/slice'
 import { selectIsLedgerSupportBlocked } from 'store/posthog'
-import { AppThunkDispatch } from 'store/types'
+import { AppThunkDispatch, RootState } from 'store/types'
 import { selectIsMigratingActiveAccounts } from 'store/wallet/slice'
 import Logger from 'utils/Logger'
 
@@ -23,18 +23,21 @@ const ImportWalletScreen = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const [isAddingAccount, setIsAddingAccount] = useState(false)
-  const accounts = useSelector(selectAccounts)
   const dispatch = useDispatch<AppThunkDispatch>()
   const activeWallet = useActiveWallet()
   const isLedgerSupportBlocked = useSelector(selectIsLedgerSupportBlocked)
   const isMigratingActiveAccounts = useSelector(selectIsMigratingActiveAccounts)
+  const accountsByWalletId = useSelector((state: RootState) =>
+    selectAccountsByWalletId(state, activeWallet.id)
+  )
 
   const handleCreateNewAccount = useCallback(async (): Promise<void> => {
     if (isAddingAccount) return
 
     try {
+      // TODO: figure out how to get the account number and if we should include the wallet ID
       AnalyticsService.capture('AccountSelectorAddAccount', {
-        accountNumber: Object.keys(accounts).length + 1
+        accountNumber: accountsByWalletId.length + 1
       })
 
       setIsAddingAccount(true)
@@ -52,7 +55,7 @@ const ImportWalletScreen = (): JSX.Element => {
     }
   }, [
     isAddingAccount,
-    accounts,
+    accountsByWalletId.length,
     dispatch,
     activeWallet.id,
     activeWallet.type,

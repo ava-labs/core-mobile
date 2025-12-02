@@ -52,12 +52,10 @@ export const useDeriveAddresses = (
         isTestnet ? networks.testnet : networks.bitcoin
       )
 
-      const accountsCount = Object.keys(accounts).length + 1
-
       const newTempAccountData = {
         id: uuid(),
         index: 0,
-        name: `Account ${accountsCount}`,
+        name: `Account 1`,
         type: CoreAccountType.IMPORTED,
         walletId: CORE_MOBILE_WALLET_ID,
         addressC,
