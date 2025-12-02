@@ -555,6 +555,8 @@ __metadata:
     moment: 2.30.1
     msw: 1.3.2
     node-fetch: 3.3.2
+    openapi-fetch: ^0.15.0
+    openapi-typescript: ^7.10.1
     patch-package: 8.0.0
     path-browserify: 1.0.1
     playwright-extra: 4.3.6
@@ -597,7 +599,8 @@ __metadata:
     react-native-mmkv: 3.2.0
     react-native-modal-datetime-picker: 18.0.0
     react-native-nitro-avalabs-crypto: "workspace:*"
-    react-native-nitro-modules: 0.31.10
+    react-native-nitro-fetch: ^0.1.6
+    react-native-nitro-modules: ^0.31.10
     react-native-os: 1.2.6
     react-native-pager-view: 6.7.1
     react-native-passkey: 3.1.0
@@ -11801,6 +11804,42 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@redocly/ajv@npm:^8.11.2":
+  version: 8.17.1
+  resolution: "@redocly/ajv@npm:8.17.1"
+  dependencies:
+    fast-deep-equal: ^3.1.3
+    fast-uri: ^3.0.1
+    json-schema-traverse: ^1.0.0
+    require-from-string: ^2.0.2
+  checksum: 7f90a264233263f17fbe8ff6397bc793ebe2bec600595ece11fbb144d440d06270e81ea60a42b865f7515bc022e9b4a6b6680dc58a41fa8a9ac9f6e367e08c98
+  languageName: node
+  linkType: hard
+
+"@redocly/config@npm:^0.22.0":
+  version: 0.22.2
+  resolution: "@redocly/config@npm:0.22.2"
+  checksum: 0461486fdc938a3b1d88ce2c6a4ad88469cc1f642b6c31bb4e941c5198dd27c62382fd687124559d893ec1faaa824afdb497f904c10b8da979f02044eb80db02
+  languageName: node
+  linkType: hard
+
+"@redocly/openapi-core@npm:^1.34.5":
+  version: 1.34.5
+  resolution: "@redocly/openapi-core@npm:1.34.5"
+  dependencies:
+    "@redocly/ajv": ^8.11.2
+    "@redocly/config": ^0.22.0
+    colorette: ^1.2.0
+    https-proxy-agent: ^7.0.5
+    js-levenshtein: ^1.1.6
+    js-yaml: ^4.1.0
+    minimatch: ^5.0.1
+    pluralize: ^8.0.0
+    yaml-ast-parser: 0.0.43
+  checksum: 4b07d7629f027751c80b991babe10e3da51d4687e887aa850767107a2ff496dfed1a806f754283c7f20c8925af8b207c365bd78f31baedbdb95f9eb114d72f90
+  languageName: node
+  linkType: hard
+
 "@reduxjs/toolkit@npm:1.8.1":
   version: 1.8.1
   resolution: "@reduxjs/toolkit@npm:1.8.1"
@@ -18944,7 +18983,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"change-case@npm:^5.4.3":
+"change-case@npm:^5.4.3, change-case@npm:^5.4.4":
   version: 5.4.4
   resolution: "change-case@npm:5.4.4"
   checksum: a22a25a763719658424ffbcd41e931d2d19cc22399cc765dca447fbe1eaf13e179d5e8ab1677af75f2e814dbddf74e42ffdecb526cd5bc906cc859f62aa154b2
@@ -19422,7 +19461,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"colorette@npm:^1.0.7":
+"colorette@npm:^1.0.7, colorette@npm:^1.2.0":
   version: 1.4.0
   resolution: "colorette@npm:1.4.0"
   checksum: 01c3c16058b182a4ab4c126a65a75faa4d38a20fa7c845090b25453acec6c371bb2c5dceb0a2338511f17902b9d1a9af0cadd8509c9403894b79311032c256c3
@@ -25670,6 +25709,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"index-to-position@npm:^1.1.0":
+  version: 1.2.0
+  resolution: "index-to-position@npm:1.2.0"
+  checksum: 2026188af74d4f4c19de44ca29116f093daf072ff4f4b8dda61668463bd28b097164d43f819684cb2f65ff749bc0dec14fb3956da0299a36faa68255c4eb6858
+  languageName: node
+  linkType: hard
+
 "indexof@npm:~0.0.1":
   version: 0.0.1
   resolution: "indexof@npm:0.0.1"
@@ -30992,10 +31038,44 @@ __metadata:
   languageName: node
   linkType: hard
 
+"openapi-fetch@npm:^0.15.0":
+  version: 0.15.0
+  resolution: "openapi-fetch@npm:0.15.0"
+  dependencies:
+    openapi-typescript-helpers: ^0.0.15
+  checksum: 054263a5fdad08933be8b5da280321ddaa03506bcace78704b5ba04327f90c74f892e7ffa4effaf20095fd1e6cbbd5d4b75f3c52807938eb49086a4a0d1e8173
+  languageName: node
+  linkType: hard
+
+"openapi-typescript-helpers@npm:^0.0.15":
+  version: 0.0.15
+  resolution: "openapi-typescript-helpers@npm:0.0.15"
+  checksum: feec0f25d708aaacc086dafd3e21001329b47984f30e24877b34d053fbccd52f3b3a19b1715fda2ed5afaca7056872576eed7de8f64855d2472507dc6df626ca
+  languageName: node
+  linkType: hard
+
 "openapi-typescript-helpers@npm:^0.0.5":
   version: 0.0.5
   resolution: "openapi-typescript-helpers@npm:0.0.5"
   checksum: 1c1024e552af9f3bdf3ab7a76bd7208f783f9af53b9cfebc86984e700e85df071a73cf5f560cb295a547a0dc88ccd87a689a7fd286781e3b04716af8aa583898
+  languageName: node
+  linkType: hard
+
+"openapi-typescript@npm:^7.10.1":
+  version: 7.10.1
+  resolution: "openapi-typescript@npm:7.10.1"
+  dependencies:
+    "@redocly/openapi-core": ^1.34.5
+    ansi-colors: ^4.1.3
+    change-case: ^5.4.4
+    parse-json: ^8.3.0
+    supports-color: ^10.2.2
+    yargs-parser: ^21.1.1
+  peerDependencies:
+    typescript: ^5.x
+  bin:
+    openapi-typescript: bin/cli.js
+  checksum: 948a6302d6e74810a3bc32cc634722569b6c71b16dc40024d2ddc4696d3e66c6a62ad43429e1d7710db97232fda6c5464e147d1d7494f0e3a25b87865b0e52a3
   languageName: node
   linkType: hard
 
@@ -31294,6 +31374,17 @@ __metadata:
     lines-and-columns: ^2.0.3
     type-fest: ^3.8.0
   checksum: 187275c7ac097dcfb3c7420bca2399caa4da33bcd5d5aac3604bda0e2b8eee4df61cc26aa0d79fab97f0d67bf42d41d332baa9f9f56ad27636ad785f1ae639e5
+  languageName: node
+  linkType: hard
+
+"parse-json@npm:^8.3.0":
+  version: 8.3.0
+  resolution: "parse-json@npm:8.3.0"
+  dependencies:
+    "@babel/code-frame": ^7.26.2
+    index-to-position: ^1.1.0
+    type-fest: ^4.39.1
+  checksum: 23812dd66a8ceedfeb0fd8a92c96b88b18bc1030cf1f07cd29146b711a208ef91ac995cf14517422f908fa930f84324086bf22fdcc1013029776cc01d589bae4
   languageName: node
   linkType: hard
 
@@ -33171,6 +33262,21 @@ __metadata:
     react-native-nitro-modules: "*"
   languageName: unknown
   linkType: soft
+
+"react-native-nitro-fetch@npm:^0.1.6":
+  version: 0.1.6
+  resolution: "react-native-nitro-fetch@npm:0.1.6"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+    react-native-nitro-modules: ^0.29.2
+    react-native-worklets-core: ^1.6.0
+  peerDependenciesMeta:
+    react-native-worklets-core:
+      optional: true
+  checksum: a46cce48b7b20af075aad995fed5b0c915d7bc7ec97d4f03212ac5ae808731f23d6265a36d5e23e9ccdb1525dfd3fb558d08ecad57dc0d87be069c005a67b5c7
+  languageName: node
+  linkType: hard
 
 "react-native-nitro-modules@npm:0.31.10, react-native-nitro-modules@npm:^0.31.10":
   version: 0.31.10
@@ -36608,6 +36714,13 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
+"supports-color@npm:^10.2.2":
+  version: 10.2.2
+  resolution: "supports-color@npm:10.2.2"
+  checksum: bd132705fc07213a4024131fb061f0a46a48b49ecaf434bb029c0a5aa0339b969236d496d63969e3c248a90fdcac16d4f9c5bf187e7be0bfb5e804ed13bef6b0
+  languageName: node
+  linkType: hard
+
 "supports-color@npm:^5.3.0":
   version: 5.5.0
   resolution: "supports-color@npm:5.5.0"
@@ -37494,7 +37607,7 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"type-fest@npm:4.41.0, type-fest@npm:^4.2.0, type-fest@npm:^4.31.0, type-fest@npm:^4.41.0":
+"type-fest@npm:4.41.0, type-fest@npm:^4.2.0, type-fest@npm:^4.31.0, type-fest@npm:^4.39.1, type-fest@npm:^4.41.0":
   version: 4.41.0
   resolution: "type-fest@npm:4.41.0"
   checksum: 7055c0e3eb188425d07403f1d5dc175ca4c4f093556f26871fe22041bc93d137d54bef5851afa320638ca1379106c594f5aa153caa654ac1a7f22c71588a4e80
@@ -39782,6 +39895,13 @@ react-native-webview@ava-labs/react-native-webview:
   version: 5.0.0
   resolution: "yallist@npm:5.0.0"
   checksum: eba51182400b9f35b017daa7f419f434424410691bbc5de4f4240cc830fdef906b504424992700dc047f16b4d99100a6f8b8b11175c193f38008e9c96322b6a5
+  languageName: node
+  linkType: hard
+
+"yaml-ast-parser@npm:0.0.43":
+  version: 0.0.43
+  resolution: "yaml-ast-parser@npm:0.0.43"
+  checksum: fb5df4c067b6ccbd00953a46faf6ff27f0e290d623c712dc41f330251118f110e22cfd184bbff498bd969cbcda3cd27e0f9d0adb9e6d90eb60ccafc0d8e28077
   languageName: node
   linkType: hard
 

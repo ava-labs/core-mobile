@@ -2,13 +2,13 @@ import { defaultChartData } from 'store/watchlist'
 import { RetryBackoffPolicy, retry } from 'utils/js/retry'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import Logger from 'utils/Logger'
+import { TrendingToken } from 'utils/api/aggregatedTokensNitroFetchClient'
 import {
   ChartData,
   Error,
   SimplePriceResponse,
   RawSimplePriceResponse,
-  SparklineData,
-  TrendingToken
+  SparklineData
 } from './types'
 
 // data is of 7 days
@@ -121,7 +121,7 @@ export const applyExchangeRateToTrendingTokens = (
 ): TrendingToken[] => {
   return trendingTokens.map(item => ({
     ...item,
-    price: item.price * exchangeRate,
+    price: (item.price ?? 0) * exchangeRate,
     marketcap:
       typeof item.marketcap === 'number'
         ? item.marketcap * exchangeRate

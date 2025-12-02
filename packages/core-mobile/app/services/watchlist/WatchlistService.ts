@@ -3,8 +3,7 @@ import TokenService from 'services/token/TokenService'
 import {
   SimplePriceResponse,
   CoinMarket,
-  SimplePriceInCurrencyResponse,
-  TrendingToken
+  SimplePriceInCurrencyResponse
 } from 'services/token/types'
 import { transformSparklineData } from 'services/token/utils'
 import {
@@ -14,21 +13,21 @@ import {
   PriceData,
   Prices
 } from 'store/watchlist/types'
+import { TrendingToken, WatchlistMarketsResponse } from 'utils/api/types'
+import { getV1watchlistmarkets } from 'utils/api/aggregatedTokensNitroFetchClient'
 import Logger from 'utils/Logger'
-import { tokenAggregatorApi } from 'utils/apiClient/tokenAggregator/tokenAggregatorApi'
-import { WatchlistMarketsResponse } from 'utils/apiClient/tokenAggregator/types'
 
+/**
+ * Fetches top markets from the token aggregator API
+ * @param currency - The currency to fetch markets for
+ * @returns Promise resolving to WatchlistMarketsResponse
+ */
 const fetchTopMarkets = async ({
   currency
 }: {
   currency: string
 }): Promise<WatchlistMarketsResponse> => {
-  return tokenAggregatorApi.getV1watchlistmarkets({
-    queries: {
-      currency: currency,
-      topMarkets: true
-    }
-  })
+  return getV1watchlistmarkets(currency)
 }
 
 /*

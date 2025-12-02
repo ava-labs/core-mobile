@@ -126,7 +126,7 @@ export const TrendingTokenSchema = z.object({
     .optional()
 })
 
-export type TrendingToken = z.infer<typeof TrendingTokenSchema>
+export type TrendingTokenLegacy = z.infer<typeof TrendingTokenSchema>
 
 export type Error = {
   status: {
