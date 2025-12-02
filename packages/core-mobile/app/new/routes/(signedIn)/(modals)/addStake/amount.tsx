@@ -148,6 +148,7 @@ const StakeAmountScreen = (): JSX.Element => {
   return (
     <ScrollScreen
       title={`How much would\nyou like to stake?`}
+      hideHeaderBackground
       navigationTitle="How much would you like to stake?"
       renderFooter={renderFooter}
       isModal

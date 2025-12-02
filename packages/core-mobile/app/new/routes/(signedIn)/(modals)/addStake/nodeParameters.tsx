@@ -1,7 +1,6 @@
 import { Button, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { NodeParameterWidget } from 'features/stake/components/NodeParameterWidget'
 import React, { useCallback } from 'react'
 import { useSharedValue } from 'react-native-reanimated'
 
@@ -43,7 +42,7 @@ const StakeNodeParameter = (): JSX.Element => {
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16 }}>
       <View sx={{ gap: 12, marginTop: 16 }}>
-        <NodeParameterWidget
+        {/* <NodeParameterWidget
           title="Minimum uptime"
           value={minimumUptime}
           tooltipMessage="This is a validator's uptime, the minimum threshold for rewards is 80%"
@@ -56,7 +55,7 @@ const StakeNodeParameter = (): JSX.Element => {
           tooltipMessage="This is a range set by the protocol."
           minimumValue={2}
           maximumValue={20}
-        />
+        /> */}
       </View>
     </ScrollScreen>
   )

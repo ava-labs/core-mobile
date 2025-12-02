@@ -1,9 +1,6 @@
-import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   Button,
-  GroupList,
-  GroupListItem,
   Icons,
   showAlert,
   Text,
@@ -13,40 +10,29 @@ import {
 import { UTCDate } from '@date-fns/utc'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
-import { copyToClipboard } from 'common/utils/clipboard'
 import { transactionSnackbar } from 'common/utils/toast'
 import { useDelegationContext } from 'contexts/DelegationContext'
-import {
-  differenceInDays,
-  format,
-  getUnixTime,
-  secondsToMilliseconds
-} from 'date-fns'
+import { getUnixTime, secondsToMilliseconds } from 'date-fns'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
-import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedReward'
 import { useValidateStakingEndTime } from 'features/stake/utils/useValidateStakingEndTime'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
 import { useNodes } from 'hooks/earn/useNodes'
 import { useRefreshStakingBalances } from 'hooks/earn/useRefreshStakingBalances'
 import { useSearchNode } from 'hooks/earn/useSearchNode'
-import { useNow } from 'hooks/time/useNow'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import NetworkService from 'services/network/NetworkService'
 import { selectActiveAccount } from 'store/account'
 import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { truncateNodeId } from 'utils/Utils'
 
 const StakeConfirmScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { back, dismissAll, navigate } = useRouter()
   const dispatch = useDispatch()
 
-  const { stakeAmount, networkFees } = useDelegationContext()
+  const { stakeAmount } = useDelegationContext()
   const { stakeEndTime, nodeId } = useLocalSearchParams<{
     stakeEndTime: string
     nodeId?: string
@@ -55,7 +41,7 @@ const StakeConfirmScreen = (): JSX.Element => {
     () => new UTCDate(secondsToMilliseconds(Number(stakeEndTime))),
     [stakeEndTime]
   )
-  const now = useNow()
+  // const now = useNow()
   const {
     isFetching: isFetchingNodes,
     error,
@@ -82,119 +68,121 @@ const StakeConfirmScreen = (): JSX.Element => {
     }
     return 0
   }, [validator?.endTime])
-  const { minStartTime, validatedStakingEndTime, validatedStakingDuration } =
-    useValidateStakingEndTime(stakeEndTimeInMilliseconds, validatorEndTimeUnix)
+  const { minStartTime, validatedStakingEndTime } = useValidateStakingEndTime(
+    stakeEndTimeInMilliseconds,
+    validatorEndTimeUnix
+  )
 
-  const localValidatedStakingEndTime = useMemo(() => {
-    return new Date(validatedStakingEndTime.getTime())
-  }, [validatedStakingEndTime])
-  const estimatedReward = useStakeEstimatedReward({
-    amount: stakeAmount,
-    duration: validatedStakingDuration,
-    delegationFee: Number(validator?.delegationFee)
-  })
+  // const localValidatedStakingEndTime = useMemo(() => {
+  //   return new Date(validatedStakingEndTime.getTime())
+  // }, [validatedStakingEndTime])
+  // const estimatedReward = useStakeEstimatedReward({
+  //   amount: stakeAmount,
+  //   duration: validatedStakingDuration,
+  //   delegationFee: Number(validator?.delegationFee)
+  // })
   const [isAlertVisible, setIsAlertVisible] = useState(false)
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const refreshStakingBalances = useRefreshStakingBalances()
 
-  const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
-  const networkFeesInAvax = useMemo(
-    () =>
-      new TokenUnit(
-        networkFees,
-        pNetwork.networkToken.decimals,
-        pNetwork.networkToken.symbol
-      ).toDisplay({ fixedDp: 6 }),
-    [networkFees, pNetwork.networkToken.decimals, pNetwork.networkToken.symbol]
-  )
+  // const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
+  // const networkFeesInAvax = useMemo(
+  //   () =>
+  //     new TokenUnit(
+  //       networkFees,
+  //       pNetwork.networkToken.decimals,
+  //       pNetwork.networkToken.symbol
+  //     ).toDisplay({ fixedDp: 6 }),
+  //   [networkFees, pNetwork.networkToken.decimals, pNetwork.networkToken.symbol]
+  // )
 
-  const delegationFee = useMemo(() => {
-    if (
-      estimatedReward?.estimatedTokenReward === undefined ||
-      validator?.delegationFee === undefined
-    )
-      return undefined
+  // const delegationFee = useMemo(() => {
+  //   if (
+  //     estimatedReward?.estimatedTokenReward === undefined ||
+  //     validator?.delegationFee === undefined
+  //   )
+  //     return undefined
 
-    return estimatedReward.estimatedTokenReward
-      .mul(validator.delegationFee)
-      .div(100)
-  }, [estimatedReward?.estimatedTokenReward, validator?.delegationFee])
+  //   return estimatedReward.estimatedTokenReward
+  //     .mul(validator.delegationFee)
+  //     .div(100)
+  // }, [estimatedReward?.estimatedTokenReward, validator?.delegationFee])
 
-  const amountSection: GroupListItem[] = useMemo(() => {
-    const section = [
-      {
-        title: 'Staked amount',
-        value: <StakeTokenUnitValue value={stakeAmount} />
-      }
-    ]
+  // const amountSection: GroupListItem[] = useMemo(() => {
+  //   const section = [
+  //     {
+  //       title: 'Staked amount',
+  //       value: <StakeTokenUnitValue value={stakeAmount} />
+  //     }
+  //   ]
 
-    if (estimatedReward) {
-      section.push({
-        title: 'Estimated reward',
-        value: (
-          <StakeTokenUnitValue
-            value={estimatedReward?.estimatedTokenReward}
-            isReward
-          />
-        )
-      })
-    }
+  //   if (estimatedReward) {
+  //     section.push({
+  //       title: 'Estimated reward',
+  //       value: (
+  //         <StakeTokenUnitValue
+  //           value={estimatedReward?.estimatedTokenReward}
+  //           isReward
+  //         />
+  //       )
+  //     })
+  //   }
 
-    return section
-  }, [stakeAmount, estimatedReward])
+  //   return section
+  // }, [stakeAmount, estimatedReward])
 
-  const stakeSection: GroupListItem[] = useMemo(() => {
-    const section = []
+  // const stakeSection: GroupListItem[] = useMemo(() => {
+  //   const section = []
 
-    if (selectedValidator) {
-      section.push({
-        title: 'NodeID',
-        subtitle: truncateNodeId(selectedValidator.nodeID, 14),
-        accessory: (
-          <Button
-            size="small"
-            type="secondary"
-            onPress={() => copyToClipboard(selectedValidator.nodeID)}>
-            Copy
-          </Button>
-        ),
-        onPress: () => {
-          copyToClipboard(selectedValidator.nodeID)
-        }
-      })
-    }
+  //   if (selectedValidator) {
+  //     section.push({
+  //       title: 'NodeID',
+  //       subtitle: truncateNodeId(selectedValidator.nodeID, 14),
+  //       accessory: (
+  //         <Button
+  //           size="small"
+  //           type="secondary"
+  //           onPress={() => copyToClipboard(selectedValidator.nodeID)}>
+  //           Copy
+  //         </Button>
+  //       ),
+  //       onPress: () => {
+  //         copyToClipboard(selectedValidator.nodeID)
+  //       }
+  //     })
+  //   }
 
-    section.push(
-      ...[
-        {
-          title: 'Time to unlock',
-          value: `${differenceInDays(validatedStakingEndTime, now)} days`
-        },
-        {
-          title: 'Locked until',
-          value: format(localValidatedStakingEndTime, 'MM/dd/yyyy h:mm aa')
-        },
-        {
-          title: 'Estimated network fee',
-          value: `${networkFeesInAvax} AVAX`
-        },
-        {
-          title: 'Stake fee',
-          value: `${delegationFee?.toDisplay()} AVAX`
-        }
-      ]
-    )
+  //   section.push(
+  //     ...[
+  //       {
+  //         title: 'Time to unlock',
+  //         value: `${differenceInDays(validatedStakingEndTime, now)} days`
+  //       },
+  //       {
+  //         title: 'Locked until',
+  //         value: format(localValidatedStakingEndTime, 'MM/dd/yyyy h:mm aa')
+  //       },
+  //       {
+  //         title: 'Estimated network fee',
+  //         value: `${networkFeesInAvax} AVAX`
+  //       },
+  //       {
+  //         title: 'Stake fee',
+  //         value: `${delegationFee?.toDisplay()} AVAX`
+  //       }
+  //     ]
+  //   )
 
-    return section
-  }, [
-    validatedStakingEndTime,
-    localValidatedStakingEndTime,
-    delegationFee,
-    networkFeesInAvax,
-    now,
-    selectedValidator
-  ])
+  //   return section
+  // }, [
+  //   validatedStakingEndTime,
+  //   localValidatedStakingEndTime,
+  //   delegationFee,
+  //   networkFeesInAvax,
+  //   now,
+  //   selectedValidator
+  // ])
 
   const handleStartOver = useCallback((): void => {
     dismissAll()
@@ -407,13 +395,13 @@ const StakeConfirmScreen = (): JSX.Element => {
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16 }}>
       <View sx={{ gap: 12, marginTop: 16 }}>
-        <GroupList
+        {/* <GroupList
           data={amountSection}
           textContainerSx={{
             marginTop: 0
           }}
         />
-        <GroupList data={stakeSection} />
+        <GroupList data={stakeSection} /> */}
       </View>
     </ScrollScreen>
   )

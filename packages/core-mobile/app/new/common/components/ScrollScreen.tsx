@@ -1,9 +1,4 @@
-import {
-  NavigationTitleHeader,
-  Separator,
-  SxProp,
-  Text
-} from '@avalabs/k2-alpine'
+import { NavigationTitleHeader, SxProp, Text } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import React, {
@@ -27,7 +22,6 @@ import Animated, {
   useSharedValue
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
 
@@ -157,13 +151,6 @@ export const ScrollScreen = ({
     })
   }, [footerHeight])
 
-  const animatedBorderStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
-    return {
-      opacity
-    }
-  })
-
   const renderHeaderContent = useCallback(() => {
     if (title || subtitle || renderHeader) {
       return (
@@ -279,39 +266,6 @@ export const ScrollScreen = ({
     insets.bottom
   ])
 
-  const renderHeaderBackground = useCallback(() => {
-    return (
-      <View
-        pointerEvents="none"
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: headerHeight
-        }}>
-        <BlurViewWithFallback
-          style={{
-            flex: 1
-          }}
-        />
-        <Animated.View
-          style={[
-            animatedBorderStyle,
-            {
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0
-            }
-          ]}>
-          <Separator />
-        </Animated.View>
-      </View>
-    )
-  }, [headerHeight, animatedBorderStyle])
-
   // 90% of our screens reuse this component but only some need keyboard avoiding
   // If you have an input on the screen, you need to enable this prop
   if (shouldAvoidKeyboard) {
@@ -344,7 +298,6 @@ export const ScrollScreen = ({
         </KeyboardScrollView>
 
         {renderFooterContent()}
-        {renderHeaderBackground()}
       </View>
     )
   }
@@ -373,7 +326,6 @@ export const ScrollScreen = ({
       </ScrollView>
 
       {renderFooterContent()}
-      {renderHeaderBackground()}
     </View>
   )
 }

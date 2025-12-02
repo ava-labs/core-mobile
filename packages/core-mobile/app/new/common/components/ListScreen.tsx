@@ -1,11 +1,7 @@
 import {
-  ANIMATED,
   NavigationTitleHeader,
-  Separator,
-  SPRING_LINEAR_TRANSITION,
-  Text
+  SPRING_LINEAR_TRANSITION
 } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, {
@@ -31,17 +27,11 @@ import {
   KeyboardAwareScrollView,
   useKeyboardState
 } from 'react-native-keyboard-controller'
-import Animated, {
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring
-} from 'react-native-reanimated'
+import Animated, { useSharedValue } from 'react-native-reanimated'
 import {
   useSafeAreaFrame,
   useSafeAreaInsets
 } from 'react-native-safe-area-context'
-import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { ErrorState } from './ErrorState'
 
 // Use this component when you need to display a list of items in a screen.
@@ -107,28 +97,14 @@ export const ListScreen = <T,>({
   const contentHeaderHeight = useSharedValue<number>(0)
   const keyboard = useKeyboardState()
 
-  const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
-    {
-      header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
-      targetLayout: headerLayout,
-      shouldHeaderHaveGrabber: isModal,
-      hasSeparator: renderHeader ? false : true,
-      hasParent,
-      showNavigationHeaderTitle,
-      renderHeaderRight
-    }
-  )
-
-  const animatedHeaderStyle = useAnimatedStyle(() => {
-    const scale = interpolate(
-      scrollY.value,
-      [-contentHeaderHeight.value, 0, contentHeaderHeight.value],
-      [0.94, 1, 0.94]
-    )
-    return {
-      opacity: 1 - targetHiddenProgress.value,
-      transform: [{ scale: data.length === 0 ? 1 : scale }]
-    }
+  const { onScroll } = useFadingHeaderNavigation({
+    header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
+    targetLayout: headerLayout,
+    shouldHeaderHaveGrabber: isModal,
+    hasSeparator: renderHeader ? false : true,
+    hasParent,
+    showNavigationHeaderTitle,
+    renderHeaderRight
   })
 
   useLayoutEffect(() => {
@@ -147,92 +123,6 @@ export const ListScreen = <T,>({
     },
     [onScroll]
   )
-  const headerHeight = useHeaderHeight()
-
-  const animatedHeaderContainerStyle = useAnimatedStyle(() => {
-    const translateY = interpolate(
-      scrollY.value,
-      [0, contentHeaderHeight.value],
-      [0, -contentHeaderHeight.value - 8],
-      'clamp'
-    )
-
-    return {
-      transform: [
-        {
-          translateY: withSpring(translateY, {
-            ...ANIMATED.SPRING_CONFIG,
-            stiffness: 100
-          })
-        }
-      ]
-    }
-  })
-
-  const animatedBorderStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
-    return {
-      opacity
-    }
-  })
-
-  const ListHeaderComponent = useMemo(() => {
-    return (
-      <Animated.View style={[animatedHeaderContainerStyle, { gap: 12 }]}>
-        <BlurViewWithFallback
-          style={{
-            paddingTop: renderHeader ? 16 : 0
-          }}>
-          {title ? (
-            <Animated.View
-              style={[
-                animatedHeaderStyle,
-                {
-                  paddingTop: headerHeight,
-                  paddingHorizontal: 16
-                }
-              ]}>
-              <View
-                ref={headerRef}
-                style={{
-                  paddingBottom: 12
-                }}>
-                <Text variant="heading2">{title}</Text>
-              </View>
-            </Animated.View>
-          ) : null}
-
-          <View
-            style={{
-              paddingBottom: renderHeader ? 12 : 0,
-              paddingHorizontal: 16
-            }}>
-            {renderHeader?.()}
-          </View>
-          <Animated.View
-            style={[
-              animatedBorderStyle,
-              {
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0
-              }
-            ]}>
-            <Separator />
-          </Animated.View>
-        </BlurViewWithFallback>
-      </Animated.View>
-    )
-  }, [
-    animatedBorderStyle,
-    animatedHeaderContainerStyle,
-    animatedHeaderStyle,
-    headerRef,
-    headerHeight,
-    renderHeader,
-    title
-  ])
 
   const ListEmptyComponent = useMemo(() => {
     if (renderEmpty) {
@@ -304,7 +194,6 @@ export const ListScreen = <T,>({
         contentContainerStyle={contentContainerStyle}
         updateCellsBatchingPeriod={50}
         {...rest}
-        ListHeaderComponent={ListHeaderComponent}
         ListEmptyComponent={ListEmptyComponent}
       />
     </Animated.View>

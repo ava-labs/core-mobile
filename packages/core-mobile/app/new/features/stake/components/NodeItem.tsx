@@ -10,8 +10,6 @@ import { NodeValidator } from 'types/earn'
 import { truncateNodeId } from 'utils/Utils'
 import { format } from 'date-fns'
 import { formatNumber } from 'utils/formatNumber/formatNumber'
-import NodeStable from '../../../assets/icons/node_stable.svg'
-import NodeUnstable from '../../../assets/icons/node_unstable.svg'
 
 export const NodeItem = ({
   node,
@@ -43,7 +41,7 @@ export const NodeItem = ({
           alignItems: 'center'
         }}>
         <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          {shouldWarn ? <NodeUnstable /> : <NodeStable />}
+          {/* {shouldWarn ? <NodeUnstable /> : <NodeStable />} */}
           <View sx={{ gap: 2 }}>
             <Text variant="body1" sx={{ fontWeight: 600 }}>
               {truncateNodeId(node.nodeID)}

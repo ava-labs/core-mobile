@@ -79,7 +79,8 @@ export const secondaryModalScreensOptions: NativeStackNavigationOptions = {
 
 export const modalStackNavigatorScreenOptions: NativeStackNavigationOptions = {
   ...modalScreensOptions,
-  presentation: 'card'
+  presentation: 'card',
+  freezeOnBlur: true
 }
 
 // Options for the first screen of a modal stack navigator.
