@@ -24,6 +24,7 @@ import { type Compute, type Delegate } from 'contexts/DelegationContext'
 import Logger from 'utils/Logger'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { selectActiveAccount } from 'store/account'
+import { getMinimumStakeDurationMs } from 'services/earn/utils'
 import { useAvalancheXpProvider } from '../networks/networkProviderHooks'
 import useCChainNetwork from './useCChainNetwork'
 
@@ -139,9 +140,17 @@ export const useDelegation = (): {
             // get the difference in milliseconds between the original start date and the fresh start date
             const differenceInMilliseconds =
               delegateStartDate.getTime() - startDate.getTime()
+
+            const minimumStakeDurationMs =
+              getMinimumStakeDurationMs(isDeveloperMode)
+
+            const isStakingMinimumDuration =
+              endDate.getTime() - startDate.getTime() <= minimumStakeDurationMs
+
             // add the difference in milliseconds to the original end date, so the duration is the same as the original
             const delegateEndDate = new Date(
-              endDate.getTime() + differenceInMilliseconds
+              endDate.getTime() +
+                (isStakingMinimumDuration ? differenceInMilliseconds : 0)
             )
 
             txHash = await EarnService.issueAddDelegatorTransaction({
