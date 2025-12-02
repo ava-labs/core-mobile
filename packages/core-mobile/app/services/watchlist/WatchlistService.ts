@@ -1,10 +1,14 @@
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
+import {
+  ByCurrencyMetaInfo,
+  getV1WatchlistMarkets
+} from 'generated/orval/tokens/schema'
+// import { ByCurrencyMetaInfo, getV1WatchlistMarkets } from 'generated/orval/tokens/schema'
 import TokenService from 'services/token/TokenService'
 import {
   SimplePriceResponse,
   CoinMarket,
-  SimplePriceInCurrencyResponse,
-  TrendingToken
+  SimplePriceInCurrencyResponse
 } from 'services/token/types'
 import { transformSparklineData } from 'services/token/utils'
 import {
@@ -14,11 +18,12 @@ import {
   PriceData,
   Prices
 } from 'store/watchlist/types'
+import { TrendingToken } from 'utils/api/aggregatedTokensNitroFetchClient'
 import Logger from 'utils/Logger'
-import {
-  WatchlistMarketsResponse,
-  getV1watchlistmarkets
-} from 'utils/api/aggregatedTokensNitroFetchClient'
+// import {
+//   WatchlistMarketsResponse,
+//   getV1watchlistmarkets
+// } from 'utils/api/aggregatedTokensNitroFetchClient'
 
 /**
  * Fetches top markets from the token aggregator API
@@ -29,8 +34,8 @@ const fetchTopMarkets = async ({
   currency
 }: {
   currency: string
-}): Promise<WatchlistMarketsResponse> => {
-  return getV1watchlistmarkets(currency)
+}): Promise<ByCurrencyMetaInfo> => {
+  return getV1WatchlistMarkets({ currency })
 }
 
 /*

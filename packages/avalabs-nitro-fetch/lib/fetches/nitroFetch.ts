@@ -16,6 +16,5 @@ export const fetchWithNitroConfig = async <T>(endpoint: EndpointConfig): Promise
 
 export const fetchWithNitro = async (input: RequestInfo, init?: RequestInit): Promise<Response> => {
   const result = await nitroFetch(input, init);
-  console.log('fetchWithNitro result', result);
   return result;
 };

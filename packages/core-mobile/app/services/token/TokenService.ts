@@ -19,9 +19,13 @@ import { MarketToken } from 'store/watchlist/types'
 import xss from 'xss'
 import promiseWithTimeout, { TimeoutError } from 'utils/js/promiseWithTimeout'
 import { coingeckoProxyClient } from 'services/token/coingeckoProxyClient'
-import { watchListCacheClient } from 'services/watchlist/watchListCacheClient'
 import Logger from 'utils/Logger'
 import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
+import {
+  getPrices,
+  getTrendingTokens,
+  TrendingToken
+} from 'utils/api/aggregatedTokensNitroFetchClient'
 import {
   ChartData,
   CoinMarket,
@@ -31,8 +35,7 @@ import {
   SimplePriceResponse,
   CoinsSearchResponse,
   ContractMarketChartResponse,
-  CoinsInfoResponse,
-  TrendingToken
+  CoinsInfoResponse
 } from './types'
 import {
   coingeckoRetry,
@@ -266,7 +269,7 @@ export class TokenService {
       data = getCache(cacheId)
 
       if (data === undefined) {
-        data = await watchListCacheClient.simplePrice()
+        data = await getPrices()
         setCache(cacheId, data)
       }
       return data
@@ -368,7 +371,7 @@ export class TokenService {
     data = getCache(cacheId)
 
     if (data === undefined) {
-      data = await watchListCacheClient.trending()
+      data = await getTrendingTokens()
 
       if (exchangeRate && exchangeRate !== 1) {
         data = applyExchangeRateToTrendingTokens(data, exchangeRate)
