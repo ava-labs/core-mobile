@@ -125,7 +125,10 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     token?.networkChainId
   )
 
-  const isBalanceLoading = useIsLoadingBalancesForAccount(activeAccount)
+  const isBalanceLoading = useIsLoadingBalancesForAccount(
+    activeAccount,
+    token?.networkChainId
+  )
 
   const handleHeaderLayout = useCallback((event: LayoutChangeEvent): void => {
     setTokenHeaderLayout(event.nativeEvent.layout)
@@ -434,7 +437,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     return isXpToken
       ? [
           {
-            tabName: TokenDetailTab.Tokens,
+            tabName: TokenDetailTab.Assets,
             component: <TokenDetail token={token} />
           },
           activityTab
@@ -468,11 +471,11 @@ export const TokenDetailScreen = (): React.JSX.Element => {
 }
 
 export enum TokenDetailTab {
-  Tokens = 'Tokens',
+  Assets = 'Assets',
   Activity = 'Activity'
 }
 
 const SEGMENT_ITEMS = [
-  { title: TokenDetailTab.Tokens },
+  { title: TokenDetailTab.Assets },
   { title: TokenDetailTab.Activity }
 ]

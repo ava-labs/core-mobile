@@ -33,6 +33,7 @@ export const CreatePin = ({
   isModal?: boolean
 }): React.JSX.Element => {
   const ref = useRef<PinInputActions>(null)
+  const processedValidPinRef = useRef<string | undefined>(undefined)
   const { biometricType } = useStoredBiometrics()
   const {
     onEnterChosenPin,
@@ -55,6 +56,7 @@ export const CreatePin = ({
   useFocusEffect(
     useCallback(() => {
       resetPin()
+      processedValidPinRef.current = undefined
       InteractionManager.runAfterInteractions(() => {
         ref.current?.focus()
       })
@@ -62,7 +64,9 @@ export const CreatePin = ({
   )
 
   useEffect(() => {
-    if (validPin) {
+    // Only process the valid pin if it hasn't been processed yet
+    if (validPin && processedValidPinRef.current !== validPin) {
+      processedValidPinRef.current = validPin
       onEnteredValidPin(validPin)
     }
   }, [validPin, onEnteredValidPin])
