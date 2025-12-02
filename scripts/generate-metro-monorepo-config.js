@@ -8,25 +8,42 @@ const path = require('path')
 const fs = require('fs')
 
 const METRO_CONFIG_NAME = 'metro.monorepo.config.js'
-const AVALABS_ALIAS = '@avalabs'
+const AVALABS_SCOPE = '@avalabs'
 const PACKAGES_TO_PROCESS = ['k2-alpine', 'react-native-nitro-avalabs-crypto']
 const CWD = process.cwd()
 
 function getSymlinkedDependenciesPaths() {
-  const symlinkedDependencies = fs
-    .readdirSync(`${CWD}/node_modules/${AVALABS_ALIAS}`)
-    .filter(dependency => {
-      return (
-        PACKAGES_TO_PROCESS.includes(dependency) &&
-        fs
-          .lstatSync(`node_modules/${AVALABS_ALIAS}/${dependency}`)
-          .isSymbolicLink()
-      )
-    })
+  const nodeModulesPath = path.join(CWD, 'node_modules')
 
-  return symlinkedDependencies.map(dependency =>
-    fs.realpathSync(`node_modules/${AVALABS_ALIAS}/${dependency}`)
-  )
+  const results = []
+
+  // handle scoped packages under @avalabs/*
+  const avalabsPath = path.join(nodeModulesPath, AVALABS_SCOPE)
+  if (fs.existsSync(avalabsPath)) {
+    const scopedDeps = fs.readdirSync(avalabsPath)
+
+    scopedDeps.forEach(dep => {
+      if (!PACKAGES_TO_PROCESS.includes(dep)) return
+
+      const fullPath = path.join(avalabsPath, dep)
+      if (fs.lstatSync(fullPath).isSymbolicLink()) {
+        results.push(fs.realpathSync(fullPath))
+      }
+    })
+  }
+
+  // handle unscoped packages in node_modules/*
+  PACKAGES_TO_PROCESS.forEach(pkg => {
+    // skip packages that belong to @avalabs scope — already processed
+    if (pkg.startsWith('@avalabs/')) return
+
+    const pkgPath = path.join(nodeModulesPath, pkg)
+    if (fs.existsSync(pkgPath) && fs.lstatSync(pkgPath).isSymbolicLink()) {
+      results.push(fs.realpathSync(pkgPath))
+    }
+  })
+
+  return results
 }
 
 function getPeerDependencies(symlinkedDependenciesPaths) {
