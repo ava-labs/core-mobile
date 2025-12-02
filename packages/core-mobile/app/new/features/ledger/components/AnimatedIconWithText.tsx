@@ -52,20 +52,14 @@ export const AnimatedIconWithText: React.FC<AnimatedIconWithTextProps> = ({
     left: -(animationRadius - iconRadius)
   }
 
-  // Calculate consistent text position regardless of animation state
-  const baseTopPosition = 160 // Base centering position
-  const textOverlapPosition = baseTopPosition + iconContainerHeight + 16 // Keep text close to icon for both states
-
   return (
     <View
       style={{
-        flex: 1,
         alignItems: 'center',
-        paddingHorizontal: 32
+        paddingHorizontal: 16
       }}>
       <View
         style={{
-          marginTop: baseTopPosition,
           alignItems: 'center',
           justifyContent: 'center'
         }}>
@@ -92,33 +86,24 @@ export const AnimatedIconWithText: React.FC<AnimatedIconWithTextProps> = ({
         )}
         {icon}
       </View>
-      <View
+      <Text
+        variant="heading6"
         style={{
-          position: 'absolute',
-          top: textOverlapPosition,
-          left: 0,
-          right: 0,
-          alignItems: 'center',
-          paddingHorizontal: 32
+          textAlign: 'center',
+          marginTop: 24,
+          marginBottom: 8
         }}>
-        <Text
-          variant="heading6"
-          style={{
-            textAlign: 'center',
-            marginBottom: 4
-          }}>
-          {title}
-        </Text>
-        <Text
-          variant="body1"
-          style={{
-            textAlign: 'center',
-            color: colors.$textSecondary,
-            maxWidth: 280
-          }}>
-          {subtitle}
-        </Text>
-      </View>
+        {title}
+      </Text>
+      <Text
+        variant="body1"
+        style={{
+          textAlign: 'center',
+          color: colors.$textSecondary,
+          maxWidth: 280
+        }}>
+        {subtitle}
+      </Text>
     </View>
   )
 }

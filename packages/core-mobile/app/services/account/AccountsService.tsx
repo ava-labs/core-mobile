@@ -170,7 +170,7 @@ class AccountsService {
       isTestnet
     } as Network
 
-    return ModuleManager.deriveAddresses({
+    return await ModuleManager.deriveAddresses({
       walletId,
       walletType,
       accountIndex,

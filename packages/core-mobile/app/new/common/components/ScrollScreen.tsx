@@ -10,10 +10,17 @@ import React, {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState
 } from 'react'
-import { LayoutRectangle, StyleProp, View, ViewStyle } from 'react-native'
+import {
+  LayoutRectangle,
+  StyleProp,
+  View,
+  ViewStyle,
+  Platform
+} from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import {
   KeyboardAwareScrollView,
@@ -66,6 +73,8 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   disableStickyFooter?: boolean
   /** Title to be displayed in the navigation header */
   navigationTitle?: string
+  /** Custom component to render in the navigation header title area (replaces navigationTitle) */
+  renderNavigationHeader?: () => React.ReactNode
   /** Custom header component to be rendered */
   renderHeader?: () => React.ReactNode
   /** Custom footer component to be rendered at the bottom of the screen */
@@ -80,6 +89,8 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   headerStyle?: StyleProp<ViewStyle>
   /** Whether this screen should hide the header background  */
   hideHeaderBackground?: boolean
+  /** Custom component to render centered in the header area, vertically level with back arrow */
+  renderHeaderCenterComponent?: () => React.ReactNode
   /** TestID for the screen */
   testID?: string
 }
@@ -96,10 +107,12 @@ export const ScrollScreen = ({
   hasParent,
   isModal,
   navigationTitle,
+  renderNavigationHeader,
   shouldAvoidKeyboard,
   disableStickyFooter,
   showNavigationHeaderTitle = true,
   hideHeaderBackground,
+  renderHeaderCenterComponent,
   headerStyle,
   testID,
   renderHeader,
@@ -118,9 +131,16 @@ export const ScrollScreen = ({
   const footerHeight = useSharedValue<number>(0)
   const footerRef = useRef<View>(null)
 
+  const navigationHeader = useMemo(() => {
+    if (renderNavigationHeader) {
+      return renderNavigationHeader()
+    }
+    return <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />
+  }, [renderNavigationHeader, navigationTitle, title])
+
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
-      header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
+      header: navigationHeader,
       targetLayout: headerLayout,
       shouldHeaderHaveGrabber: isModal,
       hasParent,
@@ -173,7 +193,8 @@ export const ScrollScreen = ({
             style={[
               headerStyle,
               {
-                gap: 8
+                gap: 8,
+                paddingHorizontal: 16
               }
             ]}>
             {title ? (
@@ -312,6 +333,40 @@ export const ScrollScreen = ({
     )
   }, [headerHeight, animatedBorderStyle])
 
+  const renderHeaderCenterOverlay = useCallback(() => {
+    if (!renderHeaderCenterComponent) {
+      return null
+    }
+
+    // try insetsbottom + 16 for android
+    // be sure to check 3 button bottom and manual test on android with native buttons on the bottom of the screen
+    const paddingValue =
+      Platform.OS === 'ios'
+        ? isModal
+          ? 15 // iOS modal - positive padding to move dots down
+          : 10 // iOS regular - positive padding
+        : isModal
+        ? 50 // Android modal
+        : 45 // Android regular
+
+    return (
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: headerHeight,
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingTop: paddingValue
+        }}>
+        {renderHeaderCenterComponent()}
+      </View>
+    )
+  }, [renderHeaderCenterComponent, headerHeight, isModal])
+
   // 90% of our screens reuse this component but only some need keyboard avoiding
   // If you have an input on the screen, you need to enable this prop
   if (shouldAvoidKeyboard) {
@@ -345,6 +400,7 @@ export const ScrollScreen = ({
 
         {renderFooterContent()}
         {renderHeaderBackground()}
+        {renderHeaderCenterOverlay()}
       </View>
     )
   }
@@ -374,6 +430,7 @@ export const ScrollScreen = ({
 
       {renderFooterContent()}
       {renderHeaderBackground()}
+      {renderHeaderCenterOverlay()}
     </View>
   )
 }

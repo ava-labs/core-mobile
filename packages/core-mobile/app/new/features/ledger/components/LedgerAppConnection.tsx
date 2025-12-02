@@ -1,38 +1,84 @@
-import React, { useState, useCallback, useEffect } from 'react'
-import { View } from 'react-native'
-import { Text, Button, useTheme, Icons } from '@avalabs/k2-alpine'
-import { ScrollScreen } from 'common/components/ScrollScreen'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
+import { View, Alert, ActivityIndicator } from 'react-native'
+import { Text, Button, useTheme, Icons, GroupList } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
 import { LedgerDerivationPathType } from 'services/ledger/types'
+import { showSnackbar } from 'common/utils/toast'
+import { truncateAddress } from '@avalabs/core-utils-sdk'
+import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
+import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
+import { isXPChain } from 'utils/network/isAvalancheNetwork'
+import bs58 from 'bs58'
+import {
+  AVALANCHE_MAINNET_NETWORK,
+  NETWORK_SOLANA
+} from 'services/network/consts'
+import { BITCOIN_NETWORK, AVALANCHE_XP_NETWORK } from '@avalabs/core-chains-sdk'
+import { ChainName } from 'services/network/consts'
+import LedgerService from 'services/ledger/LedgerService'
+import Logger from 'utils/Logger'
+import { LedgerDeviceList } from './LedgerDeviceList'
+import { AnimatedIconWithText } from './AnimatedIconWithText'
 
 enum AppConnectionStep {
   AVALANCHE_CONNECT = 'avalanche-connect',
   AVALANCHE_LOADING = 'avalanche-loading',
-  AVALANCHE_SUCCESS = 'avalanche-success',
   SOLANA_CONNECT = 'solana-connect',
   SOLANA_LOADING = 'solana-loading',
-  SOLANA_SUCCESS = 'solana-success',
   COMPLETE = 'complete'
 }
 
+interface StepConfig {
+  icon: React.ReactNode
+  title: string
+  subtitle: string
+  primaryButton?: {
+    text: string
+    onPress: () => void
+  }
+  secondaryButton?: {
+    text: string
+    onPress: () => void
+  }
+  showAnimation?: boolean
+  isLoading?: boolean
+}
+
 interface LedgerAppConnectionProps {
-  onComplete: () => void
+  onComplete: (keys: LocalKeyState) => void
   onCancel: () => void
-  getSolanaKeys: () => Promise<void>
-  getAvalancheKeys: () => Promise<void>
   deviceName: string
   selectedDerivationPath: LedgerDerivationPathType | null
   isCreatingWallet?: boolean
+  connectedDeviceId?: string | null
+  connectedDeviceName?: string
+  onStepChange?: (step: number) => void
+}
+
+interface LocalKeyState {
+  solanaKeys: Array<{
+    key: string
+    derivationPath: string
+    curve: string
+  }>
+  avalancheKeys: {
+    evm: string
+    avalanche: string
+    pvm: string
+  } | null
+  bitcoinAddress: string
+  xpAddress: string
 }
 
 export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   onComplete,
   onCancel,
-  getSolanaKeys,
-  getAvalancheKeys,
   deviceName,
-  selectedDerivationPath,
-  isCreatingWallet = false
+  selectedDerivationPath: _selectedDerivationPath,
+  isCreatingWallet = false,
+  connectedDeviceId,
+  connectedDeviceName,
+  onStepChange
 }) => {
   const {
     theme: { colors }
@@ -41,389 +87,485 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   const [currentStep, setCurrentStep] = useState<AppConnectionStep>(
     AppConnectionStep.AVALANCHE_CONNECT
   )
-  const [error, setError] = useState<string | null>(null)
+
+  // Local key state - managed only in this component
+  const [keys, setKeys] = useState<LocalKeyState>({
+    solanaKeys: [],
+    avalancheKeys: null,
+    bitcoinAddress: '',
+    xpAddress: ''
+  })
 
   // Auto-progress through steps
   useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout>
+    if (currentStep === AppConnectionStep.COMPLETE && !isCreatingWallet) {
+      const timeoutId = setTimeout(() => {
+        onComplete(keys)
+      }, 1500)
 
-    switch (currentStep) {
-      case AppConnectionStep.AVALANCHE_SUCCESS:
-        timeoutId = setTimeout(() => {
-          setCurrentStep(AppConnectionStep.SOLANA_CONNECT)
-        }, 2000)
-        break
-      case AppConnectionStep.SOLANA_SUCCESS:
-        timeoutId = setTimeout(() => {
-          setCurrentStep(AppConnectionStep.COMPLETE)
-        }, 2000)
-        break
-      case AppConnectionStep.COMPLETE:
-        // Don't auto-navigate if wallet is being created
-        if (!isCreatingWallet) {
-          timeoutId = setTimeout(() => {
-            onComplete()
-          }, 1500)
-        }
-        break
-    }
-
-    return () => {
-      if (timeoutId) {
+      return () => {
         clearTimeout(timeoutId)
       }
     }
-  }, [currentStep, onComplete, isCreatingWallet])
+  }, [currentStep, onComplete, isCreatingWallet, keys])
 
   const handleConnectAvalanche = useCallback(async () => {
     try {
-      setError(null)
       setCurrentStep(AppConnectionStep.AVALANCHE_LOADING)
 
-      await getAvalancheKeys()
-      setCurrentStep(AppConnectionStep.AVALANCHE_SUCCESS)
+      // Get keys from service
+      const avalancheKeys = await LedgerService.getAvalancheKeys()
+      const { bitcoinAddress, xpAddress } =
+        await LedgerService.getBitcoinAndXPAddresses()
+
+      // Update local state
+      setKeys(prev => ({
+        ...prev,
+        avalancheKeys,
+        bitcoinAddress,
+        xpAddress
+      }))
+
+      // Show success toast notification
+      showSnackbar('Avalanche app connected')
+      // if get avalanche keys succeeds move forward to solana connect
+      setCurrentStep(AppConnectionStep.SOLANA_CONNECT)
     } catch (err) {
-      setError(
-        'Failed to connect to Avalanche app. Please make sure the Avalanche app is open on your Ledger.'
-      )
+      Logger.error('Failed to connect to Avalanche app', err)
       setCurrentStep(AppConnectionStep.AVALANCHE_CONNECT)
+      Alert.alert(
+        'Connection Failed',
+        'Failed to connect to Avalanche app. Please make sure the Avalanche app is open on your Ledger.',
+        [{ text: 'OK' }]
+      )
     }
-  }, [getAvalancheKeys])
+  }, [])
 
   const handleConnectSolana = useCallback(async () => {
     try {
-      setError(null)
       setCurrentStep(AppConnectionStep.SOLANA_LOADING)
 
-      await getSolanaKeys()
-      setCurrentStep(AppConnectionStep.SOLANA_SUCCESS)
+      // Get keys from service
+      const solanaKeys = await LedgerService.getSolanaKeys()
+
+      // Update local state
+      setKeys(prev => ({
+        ...prev,
+        solanaKeys
+      }))
+
+      // Show success toast notification
+      showSnackbar('Solana app connected')
+
+      // Skip success step and go directly to complete
+      setCurrentStep(AppConnectionStep.COMPLETE)
     } catch (err) {
-      setError(
-        'Failed to connect to Solana app. Please make sure the Solana app is open on your Ledger.'
-      )
+      Logger.error('Failed to connect to Solana app', err)
       setCurrentStep(AppConnectionStep.SOLANA_CONNECT)
+      Alert.alert(
+        'Connection Failed',
+        'Failed to connect to Solana app. Please make sure the Solana app is installed and open on your Ledger.',
+        [{ text: 'OK' }]
+      )
     }
-  }, [getSolanaKeys])
+  }, [])
 
-  const renderStepContent = (): React.ReactNode => {
-    switch (currentStep) {
-      case AppConnectionStep.AVALANCHE_CONNECT:
-        return (
-          <View style={{ alignItems: 'center', paddingVertical: 48 }}>
-            <Icons.TokenLogos.AVAX width={64} height={64} />
-            <Text
-              variant="heading4"
-              style={{ textAlign: 'center', marginTop: 24, marginBottom: 16 }}>
-              Connect to Avalanche App
-            </Text>
-            <Text
-              variant="body1"
-              style={{
-                textAlign: 'center',
-                color: colors.$textSecondary,
-                marginBottom: 32,
-                maxWidth: 320
-              }}>
-              Open the Avalanche app on your {deviceName} and press continue
-              when ready.
-            </Text>
+  const handleSkipSolana = useCallback(() => {
+    // Skip Solana and proceed to complete step
+    setCurrentStep(AppConnectionStep.COMPLETE)
+  }, [])
 
-            {error && (
-              <View
-                style={{
-                  backgroundColor: colors.$surfaceSecondary,
-                  borderRadius: 12,
-                  padding: 16,
-                  marginBottom: 24,
-                  maxWidth: 320
-                }}>
-                <Text
-                  variant="body2"
-                  style={{ color: colors.$textDanger, textAlign: 'center' }}>
-                  {error}
-                </Text>
-              </View>
-            )}
+  // Generate address list data for the complete step
+  const addressListData = useMemo(() => {
+    const addresses = []
 
-            <Button
-              type="primary"
-              size="large"
-              onPress={handleConnectAvalanche}
-              style={{ marginBottom: 16 }}>
-              Continue
-            </Button>
-
-            <Button type="tertiary" size="large" onPress={onCancel}>
-              Cancel Setup
-            </Button>
-          </View>
+    // C-Chain/EVM address (derived from avalanche keys)
+    if (keys.avalancheKeys?.evm) {
+      addresses.push({
+        title: AVALANCHE_MAINNET_NETWORK.chainName,
+        subtitle: truncateAddress(
+          keys.avalancheKeys.evm,
+          TRUNCATE_ADDRESS_LENGTH
+        ),
+        value: (
+          <Icons.Navigation.Check
+            color={colors.$textSuccess}
+            width={24}
+            height={24}
+          />
+        ),
+        leftIcon: (
+          <NetworkLogoWithChain
+            network={AVALANCHE_MAINNET_NETWORK}
+            networkSize={36}
+            outerBorderColor={colors.$surfaceSecondary}
+            showChainLogo={isXPChain(AVALANCHE_MAINNET_NETWORK.chainId)}
+          />
         )
+      })
+    }
+
+    // X/P Chain address
+    if (keys.xpAddress) {
+      const xpNetwork = {
+        ...AVALANCHE_XP_NETWORK,
+        chainName: ChainName.AVALANCHE_XP
+      }
+      addresses.push({
+        title: xpNetwork.chainName,
+        subtitle: truncateAddress(
+          keys.xpAddress.replace(/^[XP]-/, ''),
+          TRUNCATE_ADDRESS_LENGTH
+        ),
+        value: (
+          <Icons.Navigation.Check
+            color={colors.$textSuccess}
+            width={24}
+            height={24}
+          />
+        ),
+        leftIcon: (
+          <NetworkLogoWithChain
+            network={xpNetwork}
+            networkSize={36}
+            outerBorderColor={colors.$surfaceSecondary}
+            showChainLogo={isXPChain(xpNetwork.chainId)}
+          />
+        )
+      })
+    }
+
+    // Bitcoin address
+    if (keys.bitcoinAddress) {
+      const bitcoinNetwork = {
+        ...BITCOIN_NETWORK,
+        chainName: ChainName.BITCOIN
+      }
+      addresses.push({
+        title: bitcoinNetwork.chainName,
+        subtitle: truncateAddress(keys.bitcoinAddress, TRUNCATE_ADDRESS_LENGTH),
+        value: (
+          <Icons.Navigation.Check
+            color={colors.$textSuccess}
+            width={24}
+            height={24}
+          />
+        ),
+        leftIcon: (
+          <NetworkLogoWithChain
+            network={bitcoinNetwork}
+            networkSize={36}
+            outerBorderColor={colors.$surfaceSecondary}
+            showChainLogo={false}
+          />
+        )
+      })
+    }
+
+    // Solana address
+    if (keys.solanaKeys.length > 0 && keys.solanaKeys[0]?.key) {
+      // Convert public key to Solana address (Base58 encoding)
+      const solanaAddress = bs58.encode(
+        Uint8Array.from(Buffer.from(keys.solanaKeys[0].key, 'hex'))
+      )
+
+      addresses.push({
+        title: NETWORK_SOLANA.chainName,
+        subtitle: truncateAddress(solanaAddress, TRUNCATE_ADDRESS_LENGTH),
+        value: (
+          <Icons.Navigation.Check
+            color={colors.$textSuccess}
+            width={24}
+            height={24}
+          />
+        ),
+        leftIcon: (
+          <NetworkLogoWithChain
+            network={NETWORK_SOLANA}
+            networkSize={36}
+            outerBorderColor={colors.$surfaceSecondary}
+            showChainLogo={false}
+          />
+        )
+      })
+    }
+
+    // Always add the "Storing wallet data" row at the end
+    addresses.push({
+      title: 'Storing wallet data',
+      value: <LoadingState sx={{ width: 16, height: 16 }} />
+    })
+
+    return addresses
+  }, [keys, colors])
+
+  // Step configurations
+  const getStepConfig = (step: AppConnectionStep): StepConfig | null => {
+    switch (step) {
+      case AppConnectionStep.AVALANCHE_CONNECT:
+        return {
+          icon: (
+            <Icons.Custom.Avalanche
+              width={44}
+              height={40}
+              color={colors.$textPrimary}
+            />
+          ),
+          title: 'Connect to Avalanche App',
+          subtitle: `Open the Avalanche app on your ${deviceName}, then press Continue when ready.`,
+          primaryButton: {
+            text: 'Continue',
+            onPress: handleConnectAvalanche
+          },
+          showAnimation: false
+        }
 
       case AppConnectionStep.AVALANCHE_LOADING:
-        return (
-          <View style={{ alignItems: 'center', paddingVertical: 48 }}>
-            <LoadingState sx={{ marginBottom: 24 }} />
-            <Text
-              variant="heading4"
-              style={{ textAlign: 'center', marginBottom: 16 }}>
-              Connecting to Avalanche
-            </Text>
-            <Text
-              variant="body1"
-              style={{
-                textAlign: 'center',
-                color: colors.$textSecondary,
-                maxWidth: 320
-              }}>
-              Please confirm the connection on your {deviceName}. We're
-              retrieving your Avalanche addresses...
-            </Text>
-          </View>
-        )
-
-      case AppConnectionStep.AVALANCHE_SUCCESS:
-        return (
-          <View style={{ alignItems: 'center', paddingVertical: 48 }}>
-            <View
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 32,
-                backgroundColor: colors.$textSuccess,
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 24
-              }}>
-              <Icons.Action.CheckCircle
-                color={colors.$white}
-                width={32}
-                height={32}
-              />
-            </View>
-            <Text
-              variant="heading4"
-              style={{ textAlign: 'center', marginBottom: 16 }}>
-              Avalanche Connected!
-            </Text>
-            <Text
-              variant="body1"
-              style={{
-                textAlign: 'center',
-                color: colors.$textSecondary,
-                maxWidth: 320
-              }}>
-              Successfully retrieved your Avalanche addresses. Now let's connect
-              to Solana...
-            </Text>
-          </View>
-        )
+        return {
+          icon: (
+            <Icons.Custom.Avalanche
+              width={44}
+              height={40}
+              color={colors.$textPrimary}
+            />
+          ),
+          title: 'Connecting to Avalanche app',
+          subtitle: `Please keep your Avalanche app open on your ${deviceName}, We're retrieving your Avalanche addresses...`,
+          showAnimation: true,
+          isLoading: true
+        }
 
       case AppConnectionStep.SOLANA_CONNECT:
-        return (
-          <View style={{ alignItems: 'center', paddingVertical: 48 }}>
-            <Icons.TokenLogos.SOL width={64} height={64} />
-            <Text
-              variant="heading4"
-              style={{ textAlign: 'center', marginTop: 24, marginBottom: 16 }}>
-              Connect to Solana App
-            </Text>
-            <Text
-              variant="body1"
-              style={{
-                textAlign: 'center',
-                color: colors.$textSecondary,
-                marginBottom: 32,
-                maxWidth: 320
-              }}>
-              Close the Avalanche app and open the Solana app on your{' '}
-              {deviceName}, then press continue.
-            </Text>
-
-            {error && (
-              <View
-                style={{
-                  backgroundColor: colors.$surfaceSecondary,
-                  borderRadius: 12,
-                  padding: 16,
-                  marginBottom: 24,
-                  maxWidth: 320
-                }}>
-                <Text
-                  variant="body2"
-                  style={{ color: colors.$textDanger, textAlign: 'center' }}>
-                  {error}
-                </Text>
-              </View>
-            )}
-
-            <Button
-              type="primary"
-              size="large"
-              onPress={handleConnectSolana}
-              style={{ marginBottom: 16 }}>
-              Continue
-            </Button>
-
-            <Button type="tertiary" size="large" onPress={onCancel}>
-              Cancel Setup
-            </Button>
-          </View>
-        )
+        return {
+          icon: (
+            <Icons.Custom.Solana
+              width={40}
+              height={32}
+              color={colors.$textPrimary}
+            />
+          ),
+          title: 'Connect to Solana App',
+          subtitle: `Close the Avalanche app and open the Solana app on your ${deviceName}, then press Continue when ready.`,
+          primaryButton: {
+            text: 'Continue',
+            onPress: handleConnectSolana
+          },
+          secondaryButton: {
+            text: 'Skip Solana',
+            onPress: handleSkipSolana
+          },
+          showAnimation: false
+        }
 
       case AppConnectionStep.SOLANA_LOADING:
-        return (
-          <View style={{ alignItems: 'center', paddingVertical: 48 }}>
-            <LoadingState sx={{ marginBottom: 24 }} />
-            <Text
-              variant="heading4"
-              style={{ textAlign: 'center', marginBottom: 16 }}>
-              Connecting to Solana
-            </Text>
-            <Text
-              variant="body1"
-              style={{
-                textAlign: 'center',
-                color: colors.$textSecondary,
-                maxWidth: 320
-              }}>
-              Please confirm the connection on your {deviceName}. We're
-              retrieving your Solana addresses...
-            </Text>
-          </View>
-        )
-
-      case AppConnectionStep.SOLANA_SUCCESS:
-        return (
-          <View style={{ alignItems: 'center', paddingVertical: 48 }}>
-            <View
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 32,
-                backgroundColor: colors.$textSuccess,
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 24
-              }}>
-              <Icons.Action.CheckCircle
-                color={colors.$white}
-                width={32}
-                height={32}
-              />
-            </View>
-            <Text
-              variant="heading4"
-              style={{ textAlign: 'center', marginBottom: 16 }}>
-              Solana Connected!
-            </Text>
-            <Text
-              variant="body1"
-              style={{
-                textAlign: 'center',
-                color: colors.$textSecondary,
-                maxWidth: 320
-              }}>
-              Successfully retrieved your Solana addresses. Setting up your
-              wallet...
-            </Text>
-          </View>
-        )
-
-      case AppConnectionStep.COMPLETE:
-        return (
-          <View style={{ alignItems: 'center', paddingVertical: 48 }}>
-            {isCreatingWallet ? (
-              <>
-                <LoadingState sx={{ marginBottom: 24 }} />
-                <Text
-                  variant="heading4"
-                  style={{ textAlign: 'center', marginBottom: 16 }}>
-                  Creating Wallet...
-                </Text>
-                <Text
-                  variant="body1"
-                  style={{
-                    textAlign: 'center',
-                    color: colors.$textSecondary,
-                    maxWidth: 320
-                  }}>
-                  Setting up your Ledger wallet. This may take a moment...
-                </Text>
-              </>
-            ) : (
-              <>
-                <View
-                  style={{
-                    width: 64,
-                    height: 64,
-                    borderRadius: 32,
-                    backgroundColor: colors.$textSuccess,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: 24
-                  }}>
-                  <Icons.Action.CheckCircle
-                    color={colors.$white}
-                    width={32}
-                    height={32}
-                  />
-                </View>
-                <Text
-                  variant="heading4"
-                  style={{ textAlign: 'center', marginBottom: 16 }}>
-                  Apps Connected!
-                </Text>
-                <Text
-                  variant="body1"
-                  style={{
-                    textAlign: 'center',
-                    color: colors.$textSecondary,
-                    maxWidth: 320
-                  }}>
-                  Both Avalanche and Solana apps are connected. Proceeding to
-                  wallet setup...
-                </Text>
-              </>
-            )}
-          </View>
-        )
+        return {
+          icon: (
+            <Icons.Custom.Solana
+              width={40}
+              height={32}
+              color={colors.$textPrimary}
+            />
+          ),
+          title: 'Connecting to Solana',
+          subtitle: `Please keep your Solana app open on your ${deviceName}, We're retrieving your Solana address...`,
+          showAnimation: true,
+          isLoading: true
+        }
 
       default:
         return null
     }
   }
 
-  const getProgressText = (): string => {
-    const pathType =
-      selectedDerivationPath === LedgerDerivationPathType.LedgerLive
-        ? 'Ledger Live'
-        : 'BIP44'
+  const renderStepContent = (): React.ReactNode => {
+    // Handle COMPLETE step separately as it has unique layout
+    if (currentStep === AppConnectionStep.COMPLETE) {
+      return (
+        <View style={{ flex: 1, paddingHorizontal: 16 }}>
+          {/* Header with refresh icon and title */}
+          <View style={{ alignItems: 'center', paddingVertical: 24 }}>
+            <Icons.Notification.Sync
+              color={colors.$textPrimary}
+              width={75}
+              height={75}
+            />
 
+            <View
+              style={{ marginTop: 24, width: '100%', alignItems: 'center' }}>
+              <Text
+                variant="heading3"
+                style={{ textAlign: 'center', marginBottom: 8 }}>
+                {`Your Ledger wallet \nis being set up`}
+              </Text>
+
+              <Text
+                variant="body1"
+                style={{
+                  textAlign: 'center',
+                  color: colors.$textSecondary,
+                  lineHeight: 20
+                }}>
+                {`The BIP44 setup is in progress and should \n take about 15 seconds. Keep your device \n connected during setup.`}
+              </Text>
+            </View>
+          </View>
+
+          <View style={{ flex: 1 }}>
+            <GroupList data={addressListData} itemHeight={40} />
+          </View>
+
+          <View style={{ paddingBottom: 8, paddingTop: 12 }}>
+            <Button type="tertiary" size="large" onPress={onCancel}>
+              Cancel setup
+            </Button>
+          </View>
+        </View>
+      )
+    }
+
+    // Use template for all other steps
+    const config = getStepConfig(currentStep)
+    if (!config) {
+      return null
+    }
+
+    // Render step using inline template logic
+    if (config.isLoading) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'space-between' }}>
+          <View style={{ flex: 1, justifyContent: 'center' }}>
+            <AnimatedIconWithText
+              icon={config.icon}
+              title={config.title}
+              subtitle={config.subtitle}
+              showAnimation={config.showAnimation ?? false}
+            />
+          </View>
+
+          <View>
+            <View style={{ paddingHorizontal: 16, paddingBottom: 32 }}>
+              <View
+                style={{
+                  height: 48,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderRadius: 12,
+                  marginBottom: 16
+                }}>
+                <ActivityIndicator size="small" color={colors.$textPrimary} />
+              </View>
+
+              {config.secondaryButton && (
+                <Button
+                  type="tertiary"
+                  size="large"
+                  onPress={config.secondaryButton.onPress}>
+                  {config.secondaryButton.text}
+                </Button>
+              )}
+            </View>
+          </View>
+        </View>
+      )
+    }
+
+    // Non-loading step
+    return (
+      <View style={{ flex: 1, justifyContent: 'space-between' }}>
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          <View style={{ alignItems: 'center', paddingHorizontal: 16 }}>
+            {config.icon}
+            <Text
+              variant="heading6"
+              style={{
+                textAlign: 'center',
+                marginTop: 24,
+                marginBottom: 8
+              }}>
+              {config.title}
+            </Text>
+            <Text
+              variant="body1"
+              style={{
+                textAlign: 'center',
+                color: colors.$textSecondary,
+                maxWidth: 280
+              }}>
+              {config.subtitle}
+            </Text>
+          </View>
+        </View>
+
+        <View>
+          <View style={{ paddingHorizontal: 16, paddingBottom: 32 }}>
+            {config.primaryButton && (
+              <Button
+                type="primary"
+                size="large"
+                onPress={config.primaryButton.onPress}
+                style={{ marginBottom: 16 }}>
+                {config.primaryButton.text}
+              </Button>
+            )}
+
+            {config.secondaryButton && (
+              <Button
+                type="tertiary"
+                size="large"
+                onPress={config.secondaryButton.onPress}>
+                {config.secondaryButton.text}
+              </Button>
+            )}
+          </View>
+        </View>
+      </View>
+    )
+  }
+
+  const progressDotsCurrentStep = useMemo(() => {
     switch (currentStep) {
       case AppConnectionStep.AVALANCHE_CONNECT:
       case AppConnectionStep.AVALANCHE_LOADING:
-      case AppConnectionStep.AVALANCHE_SUCCESS:
-        return `Step 1 of 2: Avalanche (${pathType})`
+        return 0
+
       case AppConnectionStep.SOLANA_CONNECT:
       case AppConnectionStep.SOLANA_LOADING:
-      case AppConnectionStep.SOLANA_SUCCESS:
-        return `Step 2 of 2: Solana (${pathType})`
+        return 1
+
       case AppConnectionStep.COMPLETE:
-        return `Complete (${pathType})`
+        return 2
+
       default:
-        return ''
+        return 0
     }
-  }
+  }, [currentStep])
+
+  // Notify parent of step changes
+  useEffect(() => {
+    onStepChange?.(progressDotsCurrentStep)
+  }, [progressDotsCurrentStep, onStepChange])
+
+  // Create device object for display
+  const connectedDevice = connectedDeviceId
+    ? [{ id: connectedDeviceId, name: connectedDeviceName || deviceName }]
+    : []
 
   return (
-    <ScrollScreen
-      title="Connect Ledger Apps"
-      subtitle={getProgressText()}
-      isModal
-      contentContainerStyle={{ padding: 16, flex: 1 }}>
-      <View style={{ flex: 1, justifyContent: 'center' }}>
+    <View style={{ flex: 1 }}>
+      {/* Show connected device */}
+      {connectedDevice.length > 0 && (
+        <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+          <LedgerDeviceList
+            devices={connectedDevice}
+            subtitleText="Connected via Bluetooth"
+            testID="connected_device_list"
+          />
+        </View>
+      )}
+
+      <View style={{ flex: 1, paddingHorizontal: 16 }}>
         {renderStepContent()}
       </View>
-    </ScrollScreen>
+    </View>
   )
 }
