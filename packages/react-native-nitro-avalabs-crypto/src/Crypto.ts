@@ -67,14 +67,15 @@ function bigintToArrayBuffer32(n: bigint): ArrayBuffer {
   return out.buffer
 }
 
-/** bigint → 64-char hex string (left-padded). Throws if it doesn't fit. */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+/** bigint → 64-char hex string (left-padded). Throws if it doesn't fit.
+ * 
 function bigintToHex64(n: bigint): string {
   if (n < 0n) throw new TypeError('Secret key must be non-negative')
   const hex = n.toString(16)
   if (hex.length > 64) throw new RangeError('bigint does not fit into 32 bytes')
   return hex.padStart(64, '0').toLowerCase()
 }
+*/
 
 /**
  * Public JS API — accepts Uint8Array | ArrayBuffer | string | bigint.
