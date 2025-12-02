@@ -32,9 +32,8 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf android/build node_modules/**/android/build lib",
     "lint": "eslint .",
-    "tsc": "tsc -p .",
     "specs": "tsc --noEmit false && nitrogen --logLevel=\"debug\"",
-    "setup": "npx nitrogen"
+    "setup": "npx nitrogen && tsc -p ."
   },
   "keywords": [
     "react-native",
