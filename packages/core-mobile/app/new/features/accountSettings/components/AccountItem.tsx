@@ -21,7 +21,7 @@ import { useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
 import { Account } from 'store/account'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { selectWalletById } from 'store/wallet/slice'
+import { selectWalletById, selectWallets } from 'store/wallet/slice'
 import { ACCOUNT_CARD_SIZE } from './AcccountList'
 
 export const AccountItem = memo(
@@ -40,6 +40,8 @@ export const AccountItem = memo(
     testID?: string
     // eslint-disable-next-line sonarjs/cognitive-complexity
   }): React.JSX.Element => {
+    const wallets = useSelector(selectWallets)
+    const walletsCount = Object.keys(wallets).length
     const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
     const { balance: accountBalance, isLoadingBalance } =
       useBalanceInCurrencyForAccount(account.id)
@@ -157,22 +159,25 @@ export const AccountItem = memo(
           }}>
           <View sx={{ gap: 4 }}>
             <View>
-              <View
-                sx={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 4,
-                  paddingRight: 16
-                }}>
-                {renderWalletIcon()}
-                <Text
-                  variant="buttonMedium"
-                  testID={`account_carousel_item__${wallet?.name}`}
-                  numberOfLines={1}
-                  sx={{ color: subtitleColor, lineHeight: 20 }}>
-                  {wallet?.name}
-                </Text>
-              </View>
+              {walletsCount > 1 && (
+                <View
+                  sx={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 4,
+                    paddingRight: 16
+                  }}>
+                  {renderWalletIcon()}
+                  <Text
+                    variant="buttonMedium"
+                    testID={`account_carousel_item__${wallet?.name}`}
+                    numberOfLines={1}
+                    sx={{ color: subtitleColor, lineHeight: 20 }}>
+                    {wallet?.name}
+                  </Text>
+                </View>
+              )}
+
               <Text
                 variant="heading6"
                 testID={`account_carousel_item__${account.name}`}
