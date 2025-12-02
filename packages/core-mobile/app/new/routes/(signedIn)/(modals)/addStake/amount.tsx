@@ -12,11 +12,11 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import { useRouter } from 'expo-router'
+import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { useGetStuckBalance } from 'hooks/earn/useGetStuckBalance'
 import useStakingParams from 'hooks/earn/useStakingParams'
-import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { cChainToken, xpChainToken } from 'utils/units/knownTokens'
@@ -55,7 +55,7 @@ const StakeAmountScreen = (): JSX.Element => {
   const notEnoughBalance = cumulativeBalance?.lt(stakeAmount) ?? true
   const inputValid =
     !amountNotEnough && !notEnoughBalance && !stakeAmount.isZero()
-  const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
+  const avaxPrice = useAvaxPrice()
   const { formatCurrency } = useFormatCurrency()
 
   const handleAmountChange = useCallback(

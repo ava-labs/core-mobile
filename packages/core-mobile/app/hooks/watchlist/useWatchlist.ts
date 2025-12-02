@@ -11,11 +11,9 @@ import {
 import { useSelector } from 'react-redux'
 import { ChartData } from 'services/token/types'
 import { transformTrendingTokens } from 'services/watchlist/utils/transform'
-import { useIsFocused } from '@react-navigation/native'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import { getCaip2ChainIdForToken } from 'utils/caip2ChainIds'
 import { isNetworkContractToken } from 'utils/isNetworkContractToken'
-import { useGetPrices } from './useGetPrices'
 import { useTopTokens } from './useTopTokens'
 import { useGetTrendingTokens } from './useGetTrendingTokens'
 
@@ -60,37 +58,6 @@ export const useWatchlist = (): UseWatchListReturnType => {
     () => transformTrendingTokens(trendingTokensResponse ?? []),
     [trendingTokensResponse]
   )
-
-  const topTokensCoingeckoIds = useMemo(() => {
-    return Object.values(topTokensResponse?.tokens ?? {})
-      .map(token => token.coingeckoId)
-      .filter((id): id is string => typeof id === 'string')
-  }, [topTokensResponse?.tokens])
-
-  const isFocused = useIsFocused()
-
-  const { data: topTokenPrices } = useGetPrices({
-    coingeckoIds: topTokensCoingeckoIds,
-    enabled: isFocused && topTokensCoingeckoIds.length > 0
-  })
-
-  // Map prices from coingeckoId back to internalId for consistent access
-  const topTokenPricesById = useMemo(() => {
-    if (!topTokenPrices || !topTokensResponse?.tokens) {
-      return {}
-    }
-
-    const pricesById: Prices = {}
-    Object.values(topTokensResponse.tokens).forEach(token => {
-      const price = token.coingeckoId
-        ? topTokenPrices[token.coingeckoId]
-        : undefined
-      if (price) {
-        pricesById[token.id] = price
-      }
-    })
-    return pricesById
-  }, [topTokenPrices, topTokensResponse?.tokens])
 
   const isLoadingFavorites = favoriteIds.length > 0 && isLoading
 
@@ -150,9 +117,9 @@ export const useWatchlist = (): UseWatchListReturnType => {
   const prices = useMemo(() => {
     return {
       ...transformedTrendingTokens?.prices,
-      ...topTokenPricesById
+      ...topTokensResponse?.prices
     }
-  }, [topTokenPricesById, transformedTrendingTokens?.prices])
+  }, [topTokensResponse?.prices, transformedTrendingTokens?.prices])
 
   const getWatchlistPrice = useCallback(
     (id: string): PriceData | undefined => {

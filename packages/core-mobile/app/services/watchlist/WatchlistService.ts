@@ -3,56 +3,38 @@ import TokenService from 'services/token/TokenService'
 import {
   SimplePriceResponse,
   CoinMarket,
-  SimplePriceInCurrencyResponse,
   TrendingToken
 } from 'services/token/types'
 import { transformSparklineData } from 'services/token/utils'
-import {
-  Charts,
-  MarketToken,
-  MarketType,
-  PriceData,
-  Prices
-} from 'store/watchlist/types'
+import { Charts, MarketToken, MarketType, Prices } from 'store/watchlist/types'
 import Logger from 'utils/Logger'
 import { tokenAggregatorApi } from 'utils/network/tokenAggregator'
-import { WatchlistMarketsResponse } from './types'
-
-const fetchTopMarkets = async ({
-  currency
-}: {
-  currency: string
-}): Promise<WatchlistMarketsResponse> => {
-  return tokenAggregatorApi.getV1watchlistmarkets({
-    queries: {
-      currency: currency,
-      topMarkets: true
-    }
-  })
-}
 
 /*
  WatchlistService handles the following 3 API calls:
   1. getTopTokens: get top tokens
-  2. getPrices
-    - get price data from cache
-    - get price data from network (tokens not in cache)
-  3. tokenSearch
+  2. tokenSearch
     - get token Id from network
     - get price and market data from cached
     - get price and market data from network (tokens not in cache)
+  3. getTrendingTokens: get trending tokens
 */
 class WatchlistService {
   async getTopTokens(currency: string): Promise<{
     tokens: Record<string, MarketToken>
     charts: Charts
+    prices: Prices
   }> {
-    const topMarkets = await fetchTopMarkets({
-      currency: currency.toLowerCase()
+    const topMarkets = await tokenAggregatorApi.getV1watchlistmarkets({
+      queries: {
+        currency: currency.toLowerCase(),
+        topMarkets: true
+      }
     })
 
     const tokens: Record<string, MarketToken> = {}
     const charts: Charts = {}
+    const prices: Prices = {}
 
     topMarkets.forEach(token => {
       const id = token.internalId
@@ -75,45 +57,16 @@ class WatchlistService {
       if (token.sparkline_in_7d?.price) {
         charts[id] = transformSparklineData(token.sparkline_in_7d.price)
       }
+
+      prices[id] = {
+        priceInCurrency: token.current_price ?? 0,
+        change24: token.price_change_24h ?? 0,
+        marketCap: token.market_cap ?? 0,
+        vol24: token.total_volume ?? 0
+      }
     })
 
-    return { tokens, charts }
-  }
-
-  async getPrices(coingeckoIds: string[], currency: string): Promise<Prices> {
-    const allPriceData = await TokenService.fetchPriceWithMarketData()
-    const prices: Prices = {}
-    const otherIds: string[] = []
-
-    coingeckoIds.forEach(tokenId => {
-      const pricesInCurrency = allPriceData?.[tokenId]
-
-      if (!pricesInCurrency) {
-        otherIds.push(tokenId)
-        return
-      }
-      prices[tokenId] = this.getPriceInCurrency(pricesInCurrency, currency)
-    })
-
-    if (otherIds.length !== 0) {
-      const otherPriceData = await TokenService.getSimplePrice({
-        coinIds: otherIds,
-        currency: currency as VsCurrencyType
-      })
-
-      for (const tokenId in otherPriceData) {
-        const otherPriceInCurrency = otherPriceData?.[tokenId]
-        if (!otherPriceInCurrency) {
-          continue
-        }
-        prices[tokenId] = this.getPriceInCurrency(
-          otherPriceInCurrency,
-          currency
-        )
-      }
-    }
-
-    return prices
+    return { tokens, charts, prices }
   }
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -202,19 +155,6 @@ class WatchlistService {
     return TokenService.getTrendingTokens(exchangeRate)
   }
 
-  private getPriceInCurrency(
-    priceData: SimplePriceInCurrencyResponse,
-    currency: string
-  ): PriceData {
-    const price = priceData[currency as VsCurrencyType]
-    return {
-      priceInCurrency: price?.price ?? 0,
-      change24: price?.change24 ?? 0,
-      marketCap: price?.marketCap ?? 0,
-      vol24: price?.vol24 ?? 0
-    }
-  }
-
   private async getPriceWithMarketDataByCoinIds(
     coinIds: string[],
     currency: string
@@ -222,7 +162,8 @@ class WatchlistService {
     try {
       return TokenService.getSimplePrice({
         coinIds,
-        currency: currency as VsCurrencyType
+        currency: currency as VsCurrencyType,
+        includeMarketData: true
       })
     } catch (error) {
       Logger.error('Failed to fetch price data', { error })

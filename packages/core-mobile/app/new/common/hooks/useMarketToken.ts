@@ -18,7 +18,7 @@ export const useMarketToken = ({
 
     const resolvedMarketToken = resolveMarketToken(token)
     if (errorContext && !resolvedMarketToken) {
-      Logger.error(`[${errorContext}] Market token not found`, {
+      Logger.warn(`[${errorContext}] Market token not found`, {
         symbol: token.symbol
       })
     }
@@ -26,7 +26,7 @@ export const useMarketToken = ({
       errorContext &&
       resolvedMarketToken?.priceChangePercentage24h === undefined
     ) {
-      Logger.error(
+      Logger.warn(
         `[${errorContext}] Market token priceChangePercentage24h is undefined`,
         {
           symbol: token.symbol

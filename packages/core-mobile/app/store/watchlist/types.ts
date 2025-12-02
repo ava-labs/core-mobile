@@ -56,11 +56,6 @@ export type Charts = { [tokenId: string]: ChartData }
 
 export type Prices = { [tokenId: string]: PriceData }
 
-export type TokensAndCharts = {
-  tokens: Record<string, MarketToken>
-  charts: Charts
-}
-
 export type WatchListFavoriteState = {
   favorites: InternalId[]
 }
