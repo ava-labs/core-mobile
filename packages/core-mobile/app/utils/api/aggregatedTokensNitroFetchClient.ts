@@ -31,9 +31,14 @@ const authMiddleware: Middleware = {
 
 tokenAggregatorApi.use(authMiddleware)
 
-export const getV1watchlistmarkets = async (
+export const getV1watchlistmarketsV2 = async (
   currency: string
 ): Promise<WatchlistMarketsResponse> => {
+  // eslint-disable-next-line no-console
+  console.log(
+    '🚀 ~ file: aggregatedTokensNitroFetchClient.ts:36 ~ currency:',
+    currency
+  )
   const { data, error } = await tokenAggregatorApi.GET(
     '/v1/watchlist/markets',
     {
