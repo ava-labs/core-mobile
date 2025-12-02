@@ -15,20 +15,22 @@ import {
   Prices
 } from 'store/watchlist/types'
 import Logger from 'utils/Logger'
-import { tokenAggregatorApi } from 'utils/network/tokenAggregator'
-import { WatchlistMarketsResponse } from './types'
+import {
+  WatchlistMarketsResponse,
+  getV1watchlistmarkets
+} from 'utils/api/aggregatedTokensNitroFetchClient'
 
+/**
+ * Fetches top markets from the token aggregator API
+ * @param currency - The currency to fetch markets for
+ * @returns Promise resolving to WatchlistMarketsResponse
+ */
 const fetchTopMarkets = async ({
   currency
 }: {
   currency: string
 }): Promise<WatchlistMarketsResponse> => {
-  return tokenAggregatorApi.getV1watchlistmarkets({
-    queries: {
-      currency: currency,
-      topMarkets: true
-    }
-  })
+  return getV1watchlistmarkets(currency)
 }
 
 /*

@@ -17465,8 +17465,7 @@ __metadata:
     prettier: ^3.3.3
     react: 19.1.1
     react-native: 0.79.5
-    react-native-nitro-fetch: ^0.1.5
-    react-native-nitro-modules: "*"
+    react-native-nitro-fetch: ^0.1.6
     typescript: ^5.8.3
   peerDependencies:
     react: "*"
@@ -33302,7 +33301,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"react-native-nitro-fetch@npm:^0.1.5, react-native-nitro-fetch@npm:^0.1.6":
+"react-native-nitro-fetch@npm:^0.1.6":
   version: 0.1.6
   resolution: "react-native-nitro-fetch@npm:0.1.6"
   peerDependencies:
@@ -33317,7 +33316,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-nitro-modules@npm:*, react-native-nitro-modules@npm:0.31.10, react-native-nitro-modules@npm:^0.31.10":
+"react-native-nitro-modules@npm:0.31.10, react-native-nitro-modules@npm:^0.31.10":
   version: 0.31.10
   resolution: "react-native-nitro-modules@npm:0.31.10"
   peerDependencies:

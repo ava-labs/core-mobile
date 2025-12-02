@@ -20,3 +20,16 @@ export const fetchOnWorklet = async <T>(endpoint: EndpointConfig): Promise<T> =>
   con.log('Mapping response on worklet', data);
   return data;
 };
+
+export const fetchWithNitroOnWorklet = async <R>(request: Request): Promise<R> => {
+  const data = await nitroFetchOnWorklet(request, { 
+    method: request.method,
+    headers: request.headers,
+    body: request.body || undefined,
+  }, (payload: { bodyString?: string }) => {
+    'worklet';
+    return JSON.parse(payload.bodyString ?? '{}') as R;
+  }, { preferBytes: false });
+
+  return data;
+};

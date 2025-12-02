@@ -16,15 +16,9 @@ import {
 } from 'services/earn/types'
 import { getUnixTime } from 'date-fns'
 import { Seconds } from 'types/siUnits'
-import {
-  BlockchainId,
-  Network as GlacierNetwork,
-  PChainTransaction,
-  PChainTransactionType,
-  SortOrder
-} from '@avalabs/glacier-sdk'
+import { PChainTransaction, SortOrder } from '@avalabs/glacier-sdk'
+import { listLatestPrimaryNetworkTransactions } from 'utils/api/glacierNitroFetchClient'
 import { isOnGoing } from 'utils/earn/status'
-import { glacierApi } from 'utils/network/glacier'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
@@ -314,33 +308,12 @@ class EarnService {
     startTimestamp?: number
     sortOrder?: SortOrder
   }): Promise<PChainTransaction[]> => {
-    const addressesStr = addresses.join(',')
-    let pageToken: string | undefined
-    const transactions: PChainTransaction[] = []
-
-    do {
-      const response = await glacierApi.listLatestPrimaryNetworkTransactions({
-        params: {
-          network: isTestnet ? GlacierNetwork.FUJI : GlacierNetwork.MAINNET,
-          blockchainId: BlockchainId.P_CHAIN
-        },
-        queries: {
-          addresses: addressesStr,
-          pageSize: 100,
-          sortOrder,
-          pageToken,
-          txTypes: [
-            PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX,
-            PChainTransactionType.ADD_DELEGATOR_TX
-          ],
-          startTimestamp
-        }
-      })
-      pageToken = response.nextPageToken
-      transactions.push(...(response.transactions as PChainTransaction[]))
-    } while (pageToken)
-
-    return transactions
+    return listLatestPrimaryNetworkTransactions({
+      isTestnet,
+      addresses,
+      startTimestamp,
+      sortOrder
+    })
   }
 
   getTransformedStakesForAllAccounts = async ({

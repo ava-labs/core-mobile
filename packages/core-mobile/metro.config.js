@@ -47,7 +47,7 @@ const baseConfig = {
       stream: require.resolve('./node_modules/stream-browserify'),
       '@noble/hashes': require.resolve('./node_modules/@noble/hashes'),
       'react-native-nitro-avalabs-crypto': nitroCryptoPath,
-      'react-native-nitro-fetch': nitroFetchPath
+      'avalabs-nitro-fetch': nitroFetchPath
     },
     nodeModulesPaths: [
       path.resolve(workspaceRoot, 'node_modules'),
