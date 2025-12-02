@@ -6,8 +6,8 @@ import {
   AnimatedPressable,
   Icons,
   Text,
-  useTheme,
   usePreventParentPress,
+  useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
@@ -18,8 +18,10 @@ import React, { memo, useCallback, useMemo } from 'react'
 import { TouchableOpacity } from 'react-native'
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
+import { WalletType } from 'services/wallet/types'
 import { Account } from 'store/account'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { selectWalletById } from 'store/wallet/slice'
 import { ACCOUNT_CARD_SIZE } from './AcccountList'
 
 export const AccountItem = memo(
@@ -36,7 +38,9 @@ export const AccountItem = memo(
     onSelectAccount: (account: Account) => void
     gotoAccountDetails: (accountId: string) => void
     testID?: string
+    // eslint-disable-next-line sonarjs/cognitive-complexity
   }): React.JSX.Element => {
+    const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
     const { balance: accountBalance, isLoadingBalance } =
       useBalanceInCurrencyForAccount(account.id)
     const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
@@ -123,6 +127,20 @@ export const AccountItem = memo(
       accountNameColor
     ])
 
+    const renderWalletIcon = useCallback(() => {
+      if (
+        wallet?.type === WalletType.LEDGER ||
+        wallet?.type === WalletType.LEDGER_LIVE
+      ) {
+        return (
+          <Icons.Custom.Ledger width={16} height={16} color={subtitleColor} />
+        )
+      }
+      return (
+        <Icons.Custom.Wallet width={16} height={16} color={subtitleColor} />
+      )
+    }, [wallet?.type, subtitleColor])
+
     return (
       <Animated.View
         entering={getItemEnteringAnimation(index)}
@@ -137,14 +155,33 @@ export const AccountItem = memo(
             padding: 16,
             justifyContent: 'space-between'
           }}>
-          <View>
-            <Text
-              variant="heading6"
-              testID={`account_carousel_item__${account.name}`}
-              numberOfLines={2}
-              sx={{ color: accountNameColor, marginBottom: 2 }}>
-              {account.name}
-            </Text>
+          <View sx={{ gap: 4 }}>
+            <View>
+              <View
+                sx={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4,
+                  paddingRight: 16
+                }}>
+                {renderWalletIcon()}
+                <Text
+                  variant="buttonMedium"
+                  testID={`account_carousel_item__${wallet?.name}`}
+                  numberOfLines={1}
+                  sx={{ color: subtitleColor, lineHeight: 20 }}>
+                  {wallet?.name}
+                </Text>
+              </View>
+              <Text
+                variant="heading6"
+                testID={`account_carousel_item__${account.name}`}
+                numberOfLines={2}
+                sx={{ color: accountNameColor, lineHeight: 24 }}>
+                {account.name}
+              </Text>
+            </View>
+
             {renderBalance()}
           </View>
           <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
