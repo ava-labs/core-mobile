@@ -19,8 +19,9 @@ class AvalancheGetAccountPubKeyHandler
     _request: AvalancheGetAccountPubKeyRpcRequest,
     listenerApi: AppListenerEffectAPI
   ): HandleResponse<PubKeyType> => {
-    const activeAccount = selectActiveAccount(listenerApi.getState())
-    const activeWallet = selectActiveWallet(listenerApi.getState())
+    const state = listenerApi.getState()
+    const activeAccount = selectActiveAccount(state)
+    const activeWallet = selectActiveWallet(state)
 
     if (!activeAccount || !activeWallet) {
       return {
@@ -32,7 +33,7 @@ class AvalancheGetAccountPubKeyHandler
     const publicKey = await walletService.getPublicKey(
       activeWallet.id,
       activeWallet.type,
-      activeAccount
+      activeAccount.index
     )
 
     return { success: true, value: publicKey }

@@ -30,6 +30,7 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { AvaxXP } from 'types/AvaxXP'
 import AccountsService from 'services/account/AccountsService'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -80,7 +81,7 @@ class EarnService {
         if (retryIndex !== 0) {
           progressEvents?.(RecoveryEvents.GetAtomicUTXOsFailIng)
         }
-        return WalletService.getAtomicUTXOs({
+        return AvalancheWalletService.getAtomicUTXOs({
           account,
           isTestnet
         })
@@ -234,7 +235,7 @@ class EarnService {
     const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isTestnet)
     const rewardAddress = activeAccount.addressPVM
 
-    const unsignedTx = await WalletService.createAddDelegatorTx({
+    const unsignedTx = await AvalancheWalletService.createAddDelegatorTx({
       account: activeAccount,
       isTestnet,
       rewardAddress,

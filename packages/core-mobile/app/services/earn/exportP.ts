@@ -7,6 +7,7 @@ import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import NetworkService from 'services/network/NetworkService'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportPParams = {
@@ -35,7 +36,7 @@ export async function exportP({
   }
   const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isTestnet)
 
-  const unsignedTx = await WalletService.createExportPTx({
+  const unsignedTx = await AvalancheWalletService.createExportPTx({
     amountInNAvax: requiredAmount.toSubUnit(),
     account,
     isTestnet,

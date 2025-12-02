@@ -8,6 +8,7 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { exportP } from 'services/earn/exportP'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { WalletType } from 'services/wallet/types'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 
 describe('earn/exportP', () => {
   describe('exportP', () => {
@@ -33,10 +34,12 @@ describe('earn/exportP', () => {
       )
     })
 
-    jest.mock('services/wallet/WalletService')
-    jest.spyOn(WalletService, 'createExportPTx').mockImplementation(() => {
-      return Promise.resolve({} as UnsignedTx)
-    })
+    jest.mock('services/wallet/AvalancheWalletService')
+    jest
+      .spyOn(AvalancheWalletService, 'createExportPTx')
+      .mockImplementation(() => {
+        return Promise.resolve({} as UnsignedTx)
+      })
     jest.spyOn(WalletService, 'sign').mockImplementation(() => {
       return Promise.resolve(
         JSON.stringify({
@@ -80,7 +83,7 @@ describe('earn/exportP', () => {
           isTestnet: false,
           account: {} as Account
         })
-        expect(WalletService.createExportPTx).toHaveBeenCalledWith({
+        expect(AvalancheWalletService.createExportPTx).toHaveBeenCalledWith({
           amountInNAvax: BigInt(10000000000),
           account: {},
           destinationChain: 'C',

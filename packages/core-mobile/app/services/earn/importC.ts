@@ -11,6 +11,7 @@ import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import { weiToNano } from 'utils/units/converter'
 import { cChainToken } from 'utils/units/knownTokens'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import {
   maxTransactionCreationRetries,
   maxTransactionStatusCheckRetries
@@ -48,7 +49,7 @@ export async function importC({
     baseFeeAvax,
     cBaseFeeMultiplier
   )
-  const unsignedTx = await WalletService.createImportCTx({
+  const unsignedTx = await AvalancheWalletService.createImportCTx({
     account,
     baseFeeInNAvax: weiToNano(instantBaseFee.toSubUnit()),
     isTestnet,

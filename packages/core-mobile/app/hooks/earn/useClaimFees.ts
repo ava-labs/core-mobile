@@ -7,7 +7,6 @@ import {
   selectCBaseFeeMultiplier
 } from 'store/posthog/slice'
 import NetworkService from 'services/network/NetworkService'
-import WalletService from 'services/wallet/WalletService'
 import Logger from 'utils/Logger'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
@@ -21,6 +20,7 @@ import { SendErrorMessage } from 'errors/sendError'
 import { PvmCapableAccount } from 'common/hooks/send/utils/types'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { selectActiveAccount } from 'store/account'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { usePChainBalance } from './usePChainBalance'
 import { useGetFeeState } from './useGetFeeState'
 import { extractNeededAmount } from './utils/extractNeededAmount'
@@ -86,7 +86,7 @@ export const useClaimFees = (): {
         cBaseFeeMultiplier
       )
 
-      const unsignedTx = await WalletService.createImportCTx({
+      const unsignedTx = await AvalancheWalletService.createImportCTx({
         account: activeAccount,
         baseFeeInNAvax: weiToNano(instantBaseFee.toSubUnit()),
         isTestnet: isDevMode,
@@ -187,7 +187,7 @@ const getExportPFee = async ({
   let unsignedTxP
 
   try {
-    unsignedTxP = await WalletService.createExportPTx({
+    unsignedTxP = await AvalancheWalletService.createExportPTx({
       amountInNAvax: amountInNAvax.toSubUnit(),
       account: activeAccount,
       isTestnet: Boolean(avaxXPNetwork.isTestnet),
@@ -230,7 +230,7 @@ const getExportPFee = async ({
       throw error
     }
 
-    unsignedTxP = await WalletService.createExportPTx({
+    unsignedTxP = await AvalancheWalletService.createExportPTx({
       amountInNAvax: amountAvailableToClaim,
       account: activeAccount,
       isTestnet: Boolean(avaxXPNetwork.isTestnet),

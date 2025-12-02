@@ -9,6 +9,7 @@ import { FundsStuckError } from 'hooks/earn/errors'
 import { assertNotUndefined } from 'utils/assertions'
 import { Network } from '@avalabs/core-chains-sdk'
 import { getPChainBalance } from 'services/balance/getPChainBalance'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import {
   maxBalanceCheckRetries,
   maxTransactionCreationRetries,
@@ -34,7 +35,7 @@ export async function importP({
   Logger.info('importing P started')
 
   const avaxPNetwork = NetworkService.getAvalancheNetworkP(isTestnet)
-  const unsignedTx = await WalletService.createImportPTx({
+  const unsignedTx = await AvalancheWalletService.createImportPTx({
     account,
     isTestnet,
     sourceChain: 'C',

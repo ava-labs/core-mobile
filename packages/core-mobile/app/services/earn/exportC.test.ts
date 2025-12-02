@@ -7,6 +7,7 @@ import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import mockNetworks from 'tests/fixtures/networks.json'
 import { Network } from '@avalabs/core-chains-sdk'
 import { WalletType } from 'services/wallet/types'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 
 const testCBaseFeeMultiplier = 1
 
@@ -36,10 +37,12 @@ describe('earn/exportC', () => {
       )
     })
 
-    jest.mock('services/wallet/WalletService')
-    jest.spyOn(WalletService, 'createExportCTx').mockImplementation(() => {
-      return Promise.resolve({} as UnsignedTx)
-    })
+    jest.mock('services/wallet/AvalancheWalletService')
+    jest
+      .spyOn(AvalancheWalletService, 'createExportCTx')
+      .mockImplementation(() => {
+        return Promise.resolve({} as UnsignedTx)
+      })
     jest.spyOn(WalletService, 'sign').mockImplementation(() => {
       return Promise.resolve(
         JSON.stringify({
@@ -98,7 +101,7 @@ describe('earn/exportC', () => {
           account: {} as Account,
           cBaseFeeMultiplier: testCBaseFeeMultiplier
         })
-        expect(WalletService.createExportCTx).toHaveBeenCalledWith({
+        expect(AvalancheWalletService.createExportCTx).toHaveBeenCalledWith({
           amountInNAvax: 1000000000n,
           baseFeeInNAvax: 1n,
           destinationChain: 'P',

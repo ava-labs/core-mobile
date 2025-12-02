@@ -5,7 +5,6 @@ import { getAvalancheCaip2ChainId } from 'utils/caip2ChainIds'
 import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 import { pvm, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { Network } from '@avalabs/core-chains-sdk'
-import WalletService from 'services/wallet/WalletService'
 import { stripChainAddress } from 'store/account/utils'
 import { SpanName } from 'services/sentry/types'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
@@ -13,6 +12,7 @@ import { SPAN_STATUS_ERROR } from '@sentry/core'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { WalletType } from 'services/wallet/types'
 import { Account } from 'store/account'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
 export const send = async ({
@@ -42,7 +42,7 @@ export const send = async ({
       try {
         const isTestnet = Boolean(network.isTestnet)
         const destinationAddress = 'P-' + stripChainAddress(toAddress ?? '')
-        const unsignedTx = await WalletService.createSendPTx({
+        const unsignedTx = await AvalancheWalletService.createSendPTx({
           account,
           amountInNAvax,
           isTestnet,

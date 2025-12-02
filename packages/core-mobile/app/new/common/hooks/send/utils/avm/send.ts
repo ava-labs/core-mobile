@@ -5,7 +5,6 @@ import { Request } from 'store/rpc/utils/createInAppRequest'
 import { getAvalancheCaip2ChainId } from 'utils/caip2ChainIds'
 import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 import { stripChainAddress } from 'store/account/utils'
-import WalletService from 'services/wallet/WalletService'
 import { utils } from '@avalabs/avalanchejs'
 import { SpanName } from 'services/sentry/types'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
@@ -13,6 +12,7 @@ import { SPAN_STATUS_ERROR } from '@sentry/core'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { AvmCapableAccount } from 'common/hooks/send/utils/types'
 import { Account } from 'store/account'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
 export const send = async ({
@@ -93,7 +93,7 @@ const getTransactionRequest = ({
     { name: sentrySpanName, contextName: 'svc.send.avm.get_trx_request' },
     async () => {
       const destinationAddress = 'X-' + stripChainAddress(toAddress ?? '')
-      const unsignedTx = await WalletService.createSendXTx({
+      const unsignedTx = await AvalancheWalletService.createSendXTx({
         account,
         amountInNAvax: amount,
         isTestnet,

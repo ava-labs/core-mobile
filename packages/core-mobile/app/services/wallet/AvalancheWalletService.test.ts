@@ -1,11 +1,11 @@
 import { AddDelegatorProps } from 'services/wallet/types'
-import WalletService from 'services/wallet/WalletService'
 import { add, getUnixTime, sub } from 'date-fns'
 import { Utxo } from '@avalabs/avalanchejs'
 import { PChainId } from '@avalabs/glacier-sdk'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import mockMnemonic from 'tests/fixtures/mockMnemonic.json'
 import { Account } from 'store/account'
+import AvalancheWalletService from './AvalancheWalletService'
 
 jest.mock('@avalabs/core-wallets-sdk', () => ({
   ...jest.requireActual('@avalabs/core-wallets-sdk'),
@@ -47,15 +47,15 @@ describe('WalletService', () => {
     })
 
     beforeAll(() => {
-      jest.mock('services/wallet/WalletService')
+      jest.mock('services/wallet/AvalancheWalletService')
 
       jest // @ts-ignore
-        .spyOn(WalletService, 'getReadOnlyAvaSigner')
+        .spyOn(AvalancheWalletService, 'getReadOnlySigner')
         // @ts-ignore
         .mockImplementation(() => mockWallet())
 
       jest // @ts-ignore
-        .spyOn(WalletService, 'validateAvalancheFee')
+        .spyOn(AvalancheWalletService, 'validateFee')
         // @ts-ignore
         .mockImplementation(mockValidateFee)
     })
@@ -70,7 +70,7 @@ describe('WalletService', () => {
         nodeId: invalidNodeId
       } as AddDelegatorProps
       await expect(async () => {
-        await WalletService.createAddDelegatorTx(params)
+        await AvalancheWalletService.createAddDelegatorTx(params)
       }).rejects.toThrow('Invalid node id: InvalidNodeID-23420390293d9j09v')
     })
     it('should throw if stake amount is less than 1Avax on Fuji', async () => {
@@ -80,7 +80,7 @@ describe('WalletService', () => {
         isTestnet: true
       } as AddDelegatorProps
       await expect(async () => {
-        await WalletService.createAddDelegatorTx(params)
+        await AvalancheWalletService.createAddDelegatorTx(params)
       }).rejects.toThrow('Stake amount less than minimum')
     })
     it('should throw if stake amount is less than 25Avax on Mainnet', async () => {
@@ -90,7 +90,7 @@ describe('WalletService', () => {
         isTestnet: false
       } as AddDelegatorProps
       await expect(async () => {
-        await WalletService.createAddDelegatorTx(params)
+        await AvalancheWalletService.createAddDelegatorTx(params)
       }).rejects.toThrow('Stake amount less than minimum')
     })
     it('should throw if staking date is in past', async () => {
@@ -101,7 +101,7 @@ describe('WalletService', () => {
         isTestnet: true
       } as AddDelegatorProps
       await expect(async () => {
-        await WalletService.createAddDelegatorTx(params)
+        await AvalancheWalletService.createAddDelegatorTx(params)
       }).rejects.toThrow('Start date must be in future: ')
     })
     it('should throw if staking duration is less than 2 weeks for Mainnet', async () => {
@@ -115,7 +115,7 @@ describe('WalletService', () => {
         isTestnet: false
       } as AddDelegatorProps
       await expect(async () => {
-        await WalletService.createAddDelegatorTx(params)
+        await AvalancheWalletService.createAddDelegatorTx(params)
       }).rejects.toThrow('Stake duration too short')
     })
     it('should throw if stake duration is less than 24 hours for Fuji', async () => {
@@ -127,7 +127,7 @@ describe('WalletService', () => {
         isTestnet: true
       } as AddDelegatorProps
       await expect(async () => {
-        await WalletService.createAddDelegatorTx(params)
+        await AvalancheWalletService.createAddDelegatorTx(params)
       }).rejects.toThrow('Stake duration too short')
     })
     it('should throw if reward address is not from P chain', async () => {
@@ -140,7 +140,7 @@ describe('WalletService', () => {
         isTestnet: true
       } as AddDelegatorProps
       await expect(async () => {
-        await WalletService.createAddDelegatorTx(params)
+        await AvalancheWalletService.createAddDelegatorTx(params)
       }).rejects.toThrow('Reward address must be from P chain')
     })
 
@@ -160,7 +160,7 @@ describe('WalletService', () => {
       })
 
       await expect(async () => {
-        await WalletService.createAddDelegatorTx(params)
+        await AvalancheWalletService.createAddDelegatorTx(params)
       }).rejects.toThrow('test fee validation error')
     })
 
@@ -181,7 +181,7 @@ describe('WalletService', () => {
       })
 
       await expect(async () => {
-        await WalletService.createAddDelegatorTx(params)
+        await AvalancheWalletService.createAddDelegatorTx(params)
       }).not.toThrow('test fee validation error')
     })
 
@@ -195,7 +195,9 @@ describe('WalletService', () => {
         rewardAddress: validRewardAddress,
         isTestnet: true
       } as AddDelegatorProps
-      const unsignedTx = await WalletService.createAddDelegatorTx(params)
+      const unsignedTx = await AvalancheWalletService.createAddDelegatorTx(
+        params
+      )
       expect(getUTXOsMock).toHaveBeenCalled()
       expect(addPermissionlessDelegatorMock).toHaveBeenCalledWith({
         utxoSet: getUTXOsMockValue,

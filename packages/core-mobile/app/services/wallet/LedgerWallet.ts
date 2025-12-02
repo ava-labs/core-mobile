@@ -812,12 +812,6 @@ export class LedgerWallet implements Wallet {
     return matchingPublicKey.key
   }
 
-  public async getReadOnlyAvaSigner(): Promise<Avalanche.AddressWallet> {
-    // For Ledger wallets, we don't have a read-only signer
-    // We always need the device for signing
-    throw new Error('getReadOnlyAvaSigner not supported for LedgerWallet')
-  }
-
   // Cleanup method to disconnect LedgerService when wallet is no longer needed
   public async cleanup(): Promise<void> {
     try {

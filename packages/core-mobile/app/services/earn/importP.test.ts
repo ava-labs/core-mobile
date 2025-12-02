@@ -6,6 +6,7 @@ import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { importP } from 'services/earn/importP'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import { WalletType } from 'services/wallet/types'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 
 describe('earn/importP', () => {
   describe('importP', () => {
@@ -26,10 +27,12 @@ describe('earn/importP', () => {
       return Promise.resolve('mockTxHash')
     })
 
-    jest.mock('services/wallet/WalletService')
-    jest.spyOn(WalletService, 'createImportPTx').mockImplementation(() => {
-      return Promise.resolve({} as UnsignedTx)
-    })
+    jest.mock('services/wallet/AvalancheWalletService')
+    jest
+      .spyOn(AvalancheWalletService, 'createImportPTx')
+      .mockImplementation(() => {
+        return Promise.resolve({} as UnsignedTx)
+      })
     jest.spyOn(WalletService, 'sign').mockImplementation(() => {
       return Promise.resolve(
         JSON.stringify({
@@ -50,7 +53,7 @@ describe('earn/importP', () => {
       } as UnsignedTx
     })
 
-    it('should call walletService.createImportPTx', async () => {
+    it('should call AvalancheWalletService.createImportPTx', async () => {
       await importP({
         walletId: 'test-wallet-id',
         walletType: WalletType.MNEMONIC,
@@ -58,7 +61,7 @@ describe('earn/importP', () => {
         isTestnet: false,
         selectedCurrency: VsCurrencyType.USD
       })
-      expect(WalletService.createImportPTx).toHaveBeenCalled()
+      expect(AvalancheWalletService.createImportPTx).toHaveBeenCalled()
     })
 
     it('should call walletService.signAvaxTx', async () => {

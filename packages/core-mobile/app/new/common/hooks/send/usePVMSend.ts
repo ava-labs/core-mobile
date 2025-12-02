@@ -6,7 +6,6 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { UnsignedTx } from '@avalabs/avalanchejs'
-import WalletService from 'services/wallet/WalletService'
 import { stripChainAddress } from 'store/account/utils'
 import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
 import { useGetFeeState } from 'hooks/earn/useGetFeeState'
@@ -14,6 +13,7 @@ import { useSendContext } from 'new/features/send/context/sendContext'
 import { useSendSelectedToken } from 'new/features/send/store'
 import { assertNotUndefined } from 'utils/assertions'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { SendAdapterPVM, SendErrorMessage } from './utils/types'
 import { send as sendPVM } from './utils/pvm/send'
 import { validate as validatePVMSend } from './utils/pvm/validate'
@@ -46,7 +46,7 @@ const usePVMSend: SendAdapterPVM = ({
       assertNotUndefined(network)
 
       const destinationAddress = 'P-' + stripChainAddress(addressToSend ?? '')
-      return await WalletService.createSendPTx({
+      return await AvalancheWalletService.createSendPTx({
         account,
         amountInNAvax,
         isTestnet: Boolean(network.isTestnet),

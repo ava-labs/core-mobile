@@ -10,6 +10,7 @@ import { AvaxC } from 'types/AvaxC'
 import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import { weiToNano } from 'utils/units/converter'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportCParams = {
@@ -53,7 +54,7 @@ export async function exportC({
     throw Error('Not enough balance on C chain')
   }
 
-  const unsignedTxWithFee = await WalletService.createExportCTx({
+  const unsignedTxWithFee = await AvalancheWalletService.createExportCTx({
     amountInNAvax: weiToNano(requiredAmountAvax.toSubUnit()),
     baseFeeInNAvax: weiToNano(instantBaseFeeAvax.toSubUnit()),
     account,
