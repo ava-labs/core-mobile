@@ -24,6 +24,7 @@ import { type Compute, type Delegate } from 'contexts/DelegationContext'
 import Logger from 'utils/Logger'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { selectActiveAccount } from 'store/account'
+import { getMinimumStakeDurationMs } from 'services/earn/utils'
 import { useAvalancheXpProvider } from '../networks/networkProviderHooks'
 import useCChainNetwork from './useCChainNetwork'
 
@@ -126,25 +127,46 @@ export const useDelegation = (): {
 
       for (const step of steps) {
         switch (step.operation) {
-          case Operation.DELEGATE:
+          case Operation.DELEGATE: {
             Logger.info(
               `delegating ${step.amount} with estimated fee ${step.fee}`
+            )
+
+            // always use current date + 1 minute for the start date
+            // the recompute step logic could take a while, so we need to ensure the start date is not in the past
+            // otherwise, the transaction will fail with a "Start date must be in future" error
+            const delegateStartDate = new Date(Date.now() + 1 * 60 * 1000)
+
+            // get the difference in milliseconds between the original start date and the fresh start date
+            const differenceInMilliseconds =
+              delegateStartDate.getTime() - startDate.getTime()
+
+            const minimumStakeDurationMs =
+              getMinimumStakeDurationMs(isDeveloperMode)
+
+            const isStakingMinimumDuration =
+              endDate.getTime() - startDate.getTime() <= minimumStakeDurationMs
+
+            // add the difference in milliseconds to the original end date, so the duration is the same as the original
+            const delegateEndDate = new Date(
+              endDate.getTime() +
+                (isStakingMinimumDuration ? differenceInMilliseconds : 0)
             )
 
             txHash = await EarnService.issueAddDelegatorTransaction({
               walletId: activeWallet.id,
               walletType: activeWallet.type,
               activeAccount,
-              endDate,
+              endDate: delegateEndDate,
               isDevMode: isDeveloperMode,
               nodeId,
               stakeAmountNanoAvax: step.amount,
-              startDate: startDate,
+              startDate: delegateStartDate,
               feeState: defaultFeeState,
               pFeeAdjustmentThreshold
             })
             break
-
+          }
           case Operation.IMPORT_P:
             Logger.info(`importing P-Chain with estimated fee ${step.fee}`)
 

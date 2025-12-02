@@ -17,8 +17,8 @@ import { CoreAccountType } from '@avalabs/types'
 import { WalletType } from 'services/wallet/types'
 import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
 import { useIsRefetchingBalancesForAccount } from 'features/portfolio/hooks/useIsRefetchingBalancesForAccount'
-import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalanceAccurate'
 import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
+import { useIsAllBalancesInaccurateForAccount } from 'features/portfolio/hooks/useIsAllBalancesInaccurateForAccount'
 
 const AccountScreen = (): JSX.Element => {
   const router = useRouter()
@@ -33,18 +33,18 @@ const AccountScreen = (): JSX.Element => {
     account
   })
   const isLoading = isBalanceLoading || isRefetchingBalance
-  const balanceAccurate = useIsAccountBalanceAccurate(account)
+  const allBalancesInaccurate = useIsAllBalancesInaccurateForAccount(account)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
   const formattedBalance = useMemo(() => {
     // CP-10570: Balances should never show $0.00
-    return !balanceAccurate || balanceTotalInCurrency === 0
+    return allBalancesInaccurate || balanceTotalInCurrency === 0
       ? UNKNOWN_AMOUNT
       : formatCurrency({
           amount: balanceTotalInCurrency,
           withoutCurrencySuffix: true
         })
-  }, [balanceAccurate, balanceTotalInCurrency, formatCurrency])
+  }, [allBalancesInaccurate, balanceTotalInCurrency, formatCurrency])
 
   const isPrivateKeyAvailable = useMemo(
     () =>
@@ -80,7 +80,7 @@ const AccountScreen = (): JSX.Element => {
         formattedBalance={formattedBalance}
         currency={selectedCurrency}
         errorMessage={
-          balanceAccurate ? undefined : 'Unable to load all balances'
+          allBalancesInaccurate ? 'Unable to load all balances' : undefined
         }
         isLoading={isLoading}
         isPrivacyModeEnabled={isPrivacyModeEnabled}

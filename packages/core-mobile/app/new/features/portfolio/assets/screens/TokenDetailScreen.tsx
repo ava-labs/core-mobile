@@ -125,7 +125,10 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     token?.networkChainId
   )
 
-  const isBalanceLoading = useIsLoadingBalancesForAccount(activeAccount)
+  const isBalanceLoading = useIsLoadingBalancesForAccount(
+    activeAccount,
+    token?.networkChainId
+  )
 
   const handleHeaderLayout = useCallback((event: LayoutChangeEvent): void => {
     setTokenHeaderLayout(event.nativeEvent.layout)

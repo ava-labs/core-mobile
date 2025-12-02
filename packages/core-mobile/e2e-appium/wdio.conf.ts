@@ -4,14 +4,15 @@ import {
   getSection,
   getTestCase,
   getTestRun,
-  sendResult
+  sendResult,
+  uploadScreenshotToResult
 } from './testrail/testrail.service'
 
 let runId: number | undefined
 const sectionCache: Record<string, number> = {}
 const isBitrise = process.env.CI === 'true'
 const goHeadless = isBitrise ? true : false
-const goRetry = isBitrise ? 1 : 0
+// const goRetry = isBitrise ? 1 : 0
 const iosLocalPath = process.env.E2E_LOCAL_PATH
   ? '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
   : './ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
@@ -86,7 +87,7 @@ export const config: WebdriverIO.Config = {
   logLevel: 'error',
   bail: 0,
   waitforTimeout: 20000,
-  specFileRetries: goRetry,
+  specFileRetries: 0,
   connectionRetryTimeout: 120000,
   connectionRetryCount: 2,
   framework: 'mocha',
@@ -101,12 +102,14 @@ export const config: WebdriverIO.Config = {
   before: async () => {
     const platform = driver.isAndroid ? 'Android' : 'iOS'
     runId = await getTestRun(platform)
+    console.log(`------------Starting test run------------`)
   },
 
   // hoook beforeTest: make or get testSection before test
   beforeTest: async test => {
     const sectionTitle = test.parent
     sectionCache[sectionTitle] = await getSection(sectionTitle)
+    console.log('TEST: ', test.title)
   },
 
   after: async function () {
@@ -115,14 +118,19 @@ export const config: WebdriverIO.Config = {
   },
 
   // hoook afterTest: make or get testCase and send result after test
-  afterTest: async (test, _, { passed }) => {
+  afterTest: async (test, _, { passed, error }) => {
     const sectionTitle = test.parent
     const sectionId = sectionCache[sectionTitle]
     const caseId = await getTestCase(test.title, sectionId)
     const statusId = passed ? 1 : 5
     if (runId) {
       await addCaseToRun(runId, caseId)
-      await sendResult(runId, caseId, statusId)
+      const resultId = await sendResult(runId, caseId, statusId, error)
+
+      if (!passed && resultId) {
+        const screenshotBase64 = await driver.takeScreenshot()
+        await uploadScreenshotToResult(resultId, screenshotBase64)
+      }
     } else {
       console.error('testRun not found')
     }

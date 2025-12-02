@@ -15,18 +15,17 @@
 		501C50832C35C63800DAFF77 /* core_send.wav in Resources */ = {isa = PBXBuildFile; fileRef = 501C50822C35C63800DAFF77 /* core_send.wav */; };
 		5084807F2C3C3E78008762B2 /* core_send.wav in Resources */ = {isa = PBXBuildFile; fileRef = 501C50822C35C63800DAFF77 /* core_send.wav */; };
 		541718823F103C58523330E0 /* libPods-common-AvaxWalletInternal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 98B4FBA16D8159067E38BF66 /* libPods-common-AvaxWalletInternal.a */; };
-		813492142EBD3FC700925AF4 /* branch.json in Sources */ = {isa = PBXBuildFile; fileRef = 813492132EBD3FC400925AF4 /* branch.json */; };
-		813492152EBD3FC700925AF4 /* branch.json in Sources */ = {isa = PBXBuildFile; fileRef = 813492132EBD3FC400925AF4 /* branch.json */; };
 		81548E882EB2430100600BA3 /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 81548E872EB2430100600BA3 /* AdSupport.framework */; };
 		81548E8A2EB2430D00600BA3 /* AppTrackingTransparency.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 81548E892EB2430D00600BA3 /* AppTrackingTransparency.framework */; };
 		81548E8B2EB2431300600BA3 /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 81548E872EB2430100600BA3 /* AdSupport.framework */; };
 		81548E8C2EB2431900600BA3 /* AppTrackingTransparency.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 81548E892EB2430D00600BA3 /* AppTrackingTransparency.framework */; };
 		815E55482C94A396000F8E0F /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815E55472C94A396000F8E0F /* NotificationService.swift */; };
 		815E55532C989231000F8E0F /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815E55472C94A396000F8E0F /* NotificationService.swift */; };
+		816F9FEE2ED10A20001A5187 /* branch.json in Sources */ = {isa = PBXBuildFile; fileRef = 816F9FED2ED10A1D001A5187 /* branch.json */; };
+		816F9FEF2ED10A20001A5187 /* branch.json in Sources */ = {isa = PBXBuildFile; fileRef = 816F9FED2ED10A1D001A5187 /* branch.json */; };
+		816F9FF02ED61135001A5187 /* branch.json in Resources */ = {isa = PBXBuildFile; fileRef = 816F9FED2ED10A1D001A5187 /* branch.json */; };
 		81ACC3932BD1B2860089FEBA /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */; };
 		81ACC3942BD1B2860089FEBA /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */; };
-		8E0F57062EA194A0003A8BDB /* config.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 8E0F57052EA194A0003A8BDB /* config.xcconfig */; };
-		8E0F57072EA194A0003A8BDB /* config.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 8E0F57052EA194A0003A8BDB /* config.xcconfig */; };
 		8E3793752CA2790500D3A9B4 /* NotificationServiceExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 815E55452C94A396000F8E0F /* NotificationServiceExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		8E3793792CA2790C00D3A9B4 /* NotificationServiceExtensionInternal.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 815E550F2C92071A000F8E0F /* NotificationServiceExtensionInternal.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		8E80035A2CAAF3E400FFC562 /* Aeonik-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 8E8003532CAAF3D800FFC562 /* Aeonik-Bold.otf */; };
@@ -144,7 +143,6 @@
 		743FA70F1387A05E00866EBF /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-common-AvaxWalletInternal/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		762C9EF0EF8C043AB7880CD7 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-common-AvaxWallet/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		7CA105A259461A15C6B2A56F /* Pods-common-AvaxWallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWallet.release.xcconfig"; path = "Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet.release.xcconfig"; sourceTree = "<group>"; };
-		813492132EBD3FC400925AF4 /* branch.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = branch.json; sourceTree = "<group>"; };
 		81548E872EB2430100600BA3 /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
 		81548E892EB2430D00600BA3 /* AppTrackingTransparency.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppTrackingTransparency.framework; path = System/Library/Frameworks/AppTrackingTransparency.framework; sourceTree = SDKROOT; };
 		815E550F2C92071A000F8E0F /* NotificationServiceExtensionInternal.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationServiceExtensionInternal.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -154,8 +152,8 @@
 		815E55472C94A396000F8E0F /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		815E55492C94A396000F8E0F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		815E55502C94A3A8000F8E0F /* NotificationServiceExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NotificationServiceExtension.entitlements; sourceTree = "<group>"; };
+		816F9FED2ED10A1D001A5187 /* branch.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = branch.json; sourceTree = "<group>"; };
 		81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = BootSplash.storyboard; sourceTree = "<group>"; };
-		8E0F57052EA194A0003A8BDB /* config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = config.xcconfig; sourceTree = "<group>"; };
 		8E8003532CAAF3D800FFC562 /* Aeonik-Bold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Aeonik-Bold.otf"; path = "../app/assets/fonts/Aeonik-Bold.otf"; sourceTree = "<group>"; };
 		8E8003542CAAF3D800FFC562 /* Aeonik-Medium.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Aeonik-Medium.otf"; path = "../app/assets/fonts/Aeonik-Medium.otf"; sourceTree = "<group>"; };
 		8E8003552CAAF3D800FFC562 /* Inter-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Inter-ExtraBold.ttf"; path = "../app/assets/fonts/Inter-ExtraBold.ttf"; sourceTree = "<group>"; };
@@ -312,7 +310,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				813492132EBD3FC400925AF4 /* branch.json */,
+				816F9FED2ED10A1D001A5187 /* branch.json */,
 				0B36FA512CD3DD170030C8B9 /* Library */,
 				0B73DE0A2C80D72900DED1DF /* GoogleService-Info.plist */,
 				501C50822C35C63800DAFF77 /* core_send.wav */,
@@ -326,7 +324,6 @@
 				F8B72680A82297B40C47D111 /* Pods */,
 				D43AD4CD4B1C41E484E6B9ED /* Resources */,
 				6493DFA96F0295D04CEC5E67 /* ExpoModulesProviders */,
-				8E0F57052EA194A0003A8BDB /* config.xcconfig */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -531,7 +528,6 @@
 				8E80035C2CAAF3E400FFC562 /* DejaVuSansMono.ttf in Resources */,
 				8E80035D2CAAF3E400FFC562 /* Inter-Bold.ttf in Resources */,
 				8E80035E2CAAF3E400FFC562 /* Inter-ExtraBold.ttf in Resources */,
-				8E0F57072EA194A0003A8BDB /* config.xcconfig in Resources */,
 				8E80035F2CAAF3E400FFC562 /* Inter-Regular.ttf in Resources */,
 				8E8003602CAAF3E400FFC562 /* Inter-SemiBold.ttf in Resources */,
 				501C50832C35C63800DAFF77 /* core_send.wav in Resources */,
@@ -562,12 +558,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				816F9FF02ED61135001A5187 /* branch.json in Resources */,
 				8E8003612CAAF3F100FFC562 /* Aeonik-Bold.otf in Resources */,
 				8E8003622CAAF3F100FFC562 /* Aeonik-Medium.otf in Resources */,
 				8E8003632CAAF3F100FFC562 /* DejaVuSansMono.ttf in Resources */,
 				8E8003642CAAF3F100FFC562 /* Inter-Bold.ttf in Resources */,
 				8E8003652CAAF3F100FFC562 /* Inter-ExtraBold.ttf in Resources */,
-				8E0F57062EA194A0003A8BDB /* config.xcconfig in Resources */,
 				8E8003662CAAF3F100FFC562 /* Inter-Regular.ttf in Resources */,
 				8E8003672CAAF3F100FFC562 /* Inter-SemiBold.ttf in Resources */,
 				5084807F2C3C3E78008762B2 /* core_send.wav in Resources */,
@@ -606,9 +602,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWalletInternal/Pods-common-AvaxWalletInternal-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWalletInternal/Pods-common-AvaxWalletInternal-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -623,9 +623,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -790,9 +794,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWalletInternal/Pods-common-AvaxWalletInternal-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWalletInternal/Pods-common-AvaxWalletInternal-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -821,9 +829,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -875,7 +887,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				813492142EBD3FC700925AF4 /* branch.json in Sources */,
+				816F9FEE2ED10A20001A5187 /* branch.json in Sources */,
 				8EA4B4D128EF9B4D00A06DBA /* AppDelegate.swift in Sources */,
 				A96E77CAD2ABB49A6ACACD2C /* ExpoModulesProvider.swift in Sources */,
 			);
@@ -901,7 +913,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				813492152EBD3FC700925AF4 /* branch.json in Sources */,
+				816F9FEF2ED10A20001A5187 /* branch.json in Sources */,
 				8EA3A01428EF82E100F753C2 /* AppDelegate.swift in Sources */,
 				C7062D69B313585A64C52506 /* ExpoModulesProvider.swift in Sources */,
 			);
@@ -1215,7 +1227,6 @@
 		};
 		83CBBA201A601CBA00E9B192 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8E0F57052EA194A0003A8BDB /* config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
@@ -1299,7 +1310,6 @@
 		};
 		83CBBA211A601CBA00E9B192 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8E0F57052EA194A0003A8BDB /* config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
