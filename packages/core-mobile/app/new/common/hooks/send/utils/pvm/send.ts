@@ -46,7 +46,7 @@ export const send = async ({
           account,
           amountInNAvax,
           isTestnet,
-          destinationAddress: destinationAddress,
+          destinationAddress,
           sourceAddress: fromAddress,
           feeState
         })

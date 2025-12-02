@@ -50,7 +50,7 @@ const usePVMSend: SendAdapterPVM = ({
         account,
         amountInNAvax,
         isTestnet: Boolean(network.isTestnet),
-        destinationAddress: destinationAddress,
+        destinationAddress,
         sourceAddress: fromAddress,
         feeState: getFeeState(price)
       })
