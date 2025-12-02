@@ -7,17 +7,6 @@ type CacheEntry = {
 
 const debankCache = new Map<string, CacheEntry>()
 
-// TTL rules
-const getTTL = (url: string): number => {
-  const chainId = new URL(url).searchParams.get('chain_id')
-
-  // ETH → 15 seconds
-  if (chainId === 'eth') return 15_000
-
-  // Everything else → 30 seconds
-  return 30_000
-}
-
 // Helper to rebuild a Response object from JSON
 const buildResponse = (entry: CacheEntry): Response => {
   return new Response(JSON.stringify(entry.json), {
@@ -70,7 +59,7 @@ export const setupDeBankCaching = (): void => {
       json,
       status: res.status,
       headers: res.headers,
-      expiry: Date.now() + getTTL(url)
+      expiry: Date.now() + 30_000 // 30 seconds from now
     })
 
     return res
