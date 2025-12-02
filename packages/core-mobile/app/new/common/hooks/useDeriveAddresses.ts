@@ -1,18 +1,18 @@
-import { useCallback, useEffect, useState } from 'react'
+import { strip0x } from '@avalabs/core-utils-sdk'
 import {
   getBtcAddressFromPubKey,
   getEvmAddressFromPubKey,
   getPublicKeyFromPrivateKey
 } from '@avalabs/core-wallets-sdk'
-import { strip0x } from '@avalabs/core-utils-sdk'
-import { networks } from 'bitcoinjs-lib'
 import { CoreAccountType } from '@avalabs/types'
-import { uuid } from 'utils/uuid'
-import { ImportedAccount } from 'store/account/types'
-import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
-import Logger from 'utils/Logger'
+import { networks } from 'bitcoinjs-lib'
+import { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { selectAccounts } from 'store/account'
+import { ImportedAccount } from 'store/account/types'
+import Logger from 'utils/Logger'
+import { uuid } from 'utils/uuid'
 
 export interface DerivedAddress {
   address: string
@@ -52,10 +52,15 @@ export const useDeriveAddresses = (
         isTestnet ? networks.testnet : networks.bitcoin
       )
 
+      const accountsCount =
+        Object.values(accounts).filter(
+          account => account.type === CoreAccountType.IMPORTED
+        ).length + 1
+
       const newTempAccountData = {
         id: uuid(),
         index: 0,
-        name: `Account 1`,
+        name: `Account ${accountsCount}`,
         type: CoreAccountType.IMPORTED,
         walletId: CORE_MOBILE_WALLET_ID,
         addressC,
