@@ -16,19 +16,39 @@ index 018d7051a57a2250c738e018ba8e1518d1b9525a..e89a135c10edc50174315c5cf0a3c987
  }
 +
 diff --git a/android/src/main/java/com/gantix/JailMonkey/Rooted/RootedCheck.java b/android/src/main/java/com/gantix/JailMonkey/Rooted/RootedCheck.java
-index bf75f27fd11293205bf6d58de4f8069ea0a155fe..2151858623d5be0f58aa752a1d8b16bafc133dd0 100644
+index bf75f27fd11293205bf6d58de4f8069ea0a155fe..d63ac51b87e456bd13e252c7ca691c07e28704a5 100644
 --- a/android/src/main/java/com/gantix/JailMonkey/Rooted/RootedCheck.java
 +++ b/android/src/main/java/com/gantix/JailMonkey/Rooted/RootedCheck.java
-@@ -4,6 +4,7 @@ import android.content.Context;
+@@ -4,25 +4,44 @@ import android.content.Context;
  import com.scottyab.rootbeer.RootBeer;
  import java.util.HashMap;
  import java.util.Map;
 +import java.util.concurrent.CountDownLatch;
++
++import androidx.tracing.Trace;
  
  public class RootedCheck {
      private static boolean checkWithJailMonkeyMethod() {
-@@ -17,12 +18,23 @@ public class RootedCheck {
-         return check.checkRooted();
+-        CheckApiVersion check;
+-
+-        if (android.os.Build.VERSION.SDK_INT >= 23) {
+-            check = new GreaterThan23();
+-        } else {
+-            check = new LessThan23();
++        Trace.beginSection("[JailMonkey] checkWithJailMonkeyMethod");
++        try {
++            CheckApiVersion check;
++
++            if (android.os.Build.VERSION.SDK_INT >= 23) {
++                check = new GreaterThan23();
++            } else {
++                check = new LessThan23();
++            }
++            return check.checkRooted();
++        } finally {
++            Trace.endSection();
+         }
+-        return check.checkRooted();
      }
  
 -    private final boolean jailMonkeyResult;
@@ -55,49 +75,8 @@ index bf75f27fd11293205bf6d58de4f8069ea0a155fe..2151858623d5be0f58aa752a1d8b16ba
      }
  
      public boolean isJailBroken() {
-@@ -87,3 +99,4 @@ public class RootedCheck {
+@@ -87,3 +106,4 @@ public class RootedCheck {
          }
      }
  }
 +
-diff --git a/package.json b/package.json
-index 31d682cd52b478e9de01b09838f19975a87352d1..0049a8b91762f6208d3b2e6256895da6c034b727 100644
---- a/package.json
-+++ b/package.json
-@@ -61,5 +61,35 @@
-     "ts-check": "npx tsc jailmonkey.d.ts --noEmit"
-   },
-   "typings": "./jailmonkey.d.ts",
--  "version": "2.8.0"
-+  "version": "2.8.0",
-+  "react-native": {
-+    "zlib": "browserify-zlib",
-+    "http": "@tradle/react-native-http",
-+    "https": "https-browserify",
-+    "os": "react-native-os",
-+    "path": "path-browserify",
-+    "fs": "react-native-level-fs",
-+    "_stream_transform": "readable-stream/transform",
-+    "_stream_readable": "readable-stream/readable",
-+    "_stream_writable": "readable-stream/writable",
-+    "_stream_duplex": "readable-stream/duplex",
-+    "_stream_passthrough": "readable-stream/passthrough",
-+    "stream": "stream-browserify",
-+    "vm": "vm-browserify"
-+  },
-+  "browser": {
-+    "zlib": "browserify-zlib",
-+    "http": "@tradle/react-native-http",
-+    "https": "https-browserify",
-+    "os": "react-native-os",
-+    "path": "path-browserify",
-+    "fs": "react-native-level-fs",
-+    "_stream_transform": "readable-stream/transform",
-+    "_stream_readable": "readable-stream/readable",
-+    "_stream_writable": "readable-stream/writable",
-+    "_stream_duplex": "readable-stream/duplex",
-+    "_stream_passthrough": "readable-stream/passthrough",
-+    "stream": "stream-browserify",
-+    "vm": "vm-browserify"
-+  }
- }
