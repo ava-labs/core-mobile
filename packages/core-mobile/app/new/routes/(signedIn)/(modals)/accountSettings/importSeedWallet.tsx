@@ -1,4 +1,11 @@
-import { Button, showAlert, View, Text, useTheme } from '@avalabs/k2-alpine'
+import {
+  Button,
+  showAlert,
+  View,
+  Text,
+  useTheme,
+  ActivityIndicator
+} from '@avalabs/k2-alpine'
 import * as bip39 from 'bip39'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { useCallback, useState, useEffect } from 'react'
@@ -129,7 +136,7 @@ const ImportSeedWallet = (): React.JSX.Element => {
           type="primary"
           onPress={handleImport}
           disabled={disabled}>
-          Import
+          {isImporting ? <ActivityIndicator size="small" /> : 'Import'}
         </Button>
       </View>
     )
