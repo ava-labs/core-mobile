@@ -149,10 +149,7 @@ export interface BIP44LedgerWalletData extends BaseLedgerWalletData {
   derivationPathSpec: LedgerDerivationPathType.BIP44
   derivationPath: string
   // Extended keys required for BIP44
-  extendedPublicKeys: {
-    evm: string
-    avalanche: string
-  }
+  extendedPublicKeys: ExtendedPublicKey[]
 }
 
 // Ledger Live specific wallet data

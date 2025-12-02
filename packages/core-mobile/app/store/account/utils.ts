@@ -219,3 +219,11 @@ const markWalletAsMigrated = (walletId: string): void => {
     walletId
   )
 }
+
+export const isXpMigrationCompleted = (): boolean => {
+  return commonStorage.getBoolean(StorageKey.XP_ADDRESSES_MIGRATED) ?? false
+}
+
+export const markXpMigrationCompleted = (): void => {
+  commonStorage.set(StorageKey.XP_ADDRESSES_MIGRATED, true)
+}

@@ -31,7 +31,8 @@ import LedgerService from 'services/ledger/LedgerService'
 import {
   LedgerAppType,
   LedgerDerivationPathType,
-  LedgerWalletData
+  LedgerWalletData,
+  ExtendedPublicKey
 } from 'services/ledger/types'
 import {
   LEDGER_TIMEOUTS,
@@ -55,7 +56,7 @@ export class LedgerWallet implements Wallet {
   private deviceId: string
   private derivationPath: string
   private derivationPathSpec: LedgerDerivationPathType
-  private extendedPublicKeys?: { evm: string; avalanche: string }
+  private extendedPublicKeys: ExtendedPublicKey[] = []
   private publicKeys: Array<{
     key: string
     derivationPath: string
@@ -84,7 +85,7 @@ export class LedgerWallet implements Wallet {
      * For Ledger Live, extendedPublicKeys remains undefined
      */
     if (ledgerData.derivationPathSpec === LedgerDerivationPathType.BIP44) {
-      this.extendedPublicKeys = ledgerData.extendedPublicKeys
+      this.extendedPublicKeys = ledgerData.extendedPublicKeys ?? []
     }
   }
 
@@ -292,29 +293,60 @@ export class LedgerWallet implements Wallet {
    * Throws error for Ledger Live wallets
    */
   private getExtendedPublicKeyFor(
-    vmType: NetworkVMType
-  ): { key: string } | null {
+    vmType: NetworkVMType,
+    accountIndex = 0
+  ): ExtendedPublicKey | null {
     if (this.isLedgerLive()) {
       throw new Error(
         'Extended public keys are not available for Ledger Live wallets'
       )
     }
 
-    if (!this.extendedPublicKeys) {
+    if (!this.extendedPublicKeys?.length) {
       return null
     }
 
-    switch (vmType) {
-      case NetworkVMType.EVM:
-        return this.extendedPublicKeys.evm
-          ? { key: this.extendedPublicKeys.evm }
-          : null
-      case NetworkVMType.AVM:
-        return this.extendedPublicKeys.avalanche
-          ? { key: this.extendedPublicKeys.avalanche }
-          : null
-      default:
+    const extendedKeyPath = this.getExtendedKeyPath(vmType, accountIndex)
+
+    if (!extendedKeyPath) {
+      return null
+    }
+
+    return (
+      this.extendedPublicKeys.find(
+        extendedKey => extendedKey.path === extendedKeyPath
+      ) ?? null
+    )
+  }
+
+  private getExtendedKeyPath(
+    vmType: NetworkVMType,
+    accountIndex: number
+  ): string | null {
+    try {
+      if (
+        vmType !== NetworkVMType.EVM &&
+        vmType !== NetworkVMType.AVM &&
+        // AVM corresponds to the Avalanche X-Chain (the “X” in X/P). Even though
+        // we only have one enum here, downstream logic derives both X and P
+        // addresses from this same AVM extended key, so we must keep AVM allowed.
+        vmType !== NetworkVMType.CoreEth
+      ) {
         return null
+      }
+
+      const derivationPath = getAddressDerivationPath({
+        accountIndex,
+        vmType,
+        derivationPathType:
+          this.derivationPathSpec === LedgerDerivationPathType.BIP44
+            ? 'bip44'
+            : 'ledger_live'
+      })
+
+      return derivationPath.replace('/0/0', '')
+    } catch {
+      return null
     }
   }
 

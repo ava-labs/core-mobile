@@ -40,7 +40,7 @@
     "@avalabs/glacier-sdk": "3.1.0-alpha.58",
     "@avalabs/k2-alpine": "workspace:*",
     "@avalabs/svm-module": "1.11.0",
-    "@avalabs/types": "3.1.0-alpha.58",
+    "@avalabs/types": "3.1.0-canary.9974863.0",
     "@avalabs/vm-module-types": "1.11.0",
     "@babel/runtime": "7.25.7",
     "@bitcoinerlab/secp256k1": "1.2.0",

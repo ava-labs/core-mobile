@@ -1,13 +1,15 @@
-import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
-import SeedlessService from 'seedless/services/SeedlessService'
-import BiometricsSDK from 'utils/BiometricsSDK'
-import { PrivateKeyWallet } from 'services/wallet/PrivateKeyWallet'
-import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import { KeystoneDataStorage } from 'features/keystone/storage/KeystoneDataStorage'
+import { LedgerWalletData } from 'services/ledger/types'
+import { migrateLegacyLedgerExtendedKeys } from 'services/ledger/migrateLegacyLedgerExtendedKeys'
 import KeystoneWallet from 'services/wallet/KeystoneWallet'
-import { Wallet, WalletType } from './types'
-import { MnemonicWallet } from './MnemonicWallet'
+import { PrivateKeyWallet } from 'services/wallet/PrivateKeyWallet'
+import SeedlessService from 'seedless/services/SeedlessService'
+import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
+import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
+import BiometricsSDK from 'utils/BiometricsSDK'
 import { LedgerWallet } from './LedgerWallet'
+import { MnemonicWallet } from './MnemonicWallet'
+import { Wallet, WalletType } from './types'
 
 class WalletFactory {
   async createWallet({
@@ -64,7 +66,10 @@ class WalletFactory {
           throw new Error('Failed to load wallet secret')
         }
 
-        const ledgerData = JSON.parse(walletSecret.value)
+        const ledgerData: LedgerWalletData = JSON.parse(walletSecret.value)
+
+        await migrateLegacyLedgerExtendedKeys({ ledgerData, walletId })
+
         return new LedgerWallet(ledgerData)
       }
       default:

@@ -365,7 +365,7 @@ __metadata:
     "@avalabs/k2-alpine": "workspace:*"
     "@avalabs/svm-module": 1.11.0
     "@avalabs/tsconfig-mobile": "workspace:*"
-    "@avalabs/types": 3.1.0-alpha.58
+    "@avalabs/types": 3.1.0-canary.9974863.0
     "@avalabs/vm-module-types": 1.11.0
     "@babel/core": 7.28.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
@@ -879,17 +879,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/types@npm:3.1.0-alpha.58":
-  version: 3.1.0-alpha.58
-  resolution: "@avalabs/types@npm:3.1.0-alpha.58"
-  checksum: adcfbb800777981962a24e575e551be78c062bebcc32b6800af834d7a4e732b09109019f5e75d94c64ef7741cbde1d5948b84913678cb6c097d7bc78995689fb
-  languageName: node
-  linkType: hard
-
 "@avalabs/types@npm:3.1.0-alpha.61":
   version: 3.1.0-alpha.61
   resolution: "@avalabs/types@npm:3.1.0-alpha.61"
   checksum: f4ed84c6615d284379ecc45a5f8431cf9be3ac0e43df9f5fd84576343447dc0308f4baed9a9d3592f44599d5667f89910d658793efbe81b2a3586c3db37fefe5
+  languageName: node
+  linkType: hard
+
+"@avalabs/types@npm:3.1.0-canary.9974863.0":
+  version: 3.1.0-canary.9974863.0
+  resolution: "@avalabs/types@npm:3.1.0-canary.9974863.0"
+  checksum: f39c2b20f39d66fc56c0bcc71739b5e72ebb4c89ff99c8a07168f9a187c607aeae7ece20a6bc478bfe5aee7b62c284e97e5934e728063f240d31925c546ccde8
   languageName: node
   linkType: hard
 
@@ -33306,7 +33306,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: e08d1254d04f3074970b63cdf0a363d6b189009270d457e868a26ef534addd69b320b85bef2a22e4eddb79006751bded431b56aaf2baf41976a6d0a5a2a2b91e
+  checksum: 57322e733d20b38881da9514a1ebb03a24a2457ed59683e4f714630c2a0ab29eb9981ad9acb02d7b7b32d7a0f5c02791146fc23c13a39c8254f7d0437844dcb4
   languageName: node
   linkType: hard
 
