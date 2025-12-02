@@ -64,8 +64,8 @@ describe('earn/exportP', () => {
           walletType: WalletType.MNEMONIC,
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(13 * 10 ** 9, 9, 'AVAX'),
-          isDevMode: false,
-          activeAccount: {} as Account
+          isTestnet: false,
+          account: {} as Account
         })
       }).rejects.toThrow('Not enough balance on P chain')
     })
@@ -77,18 +77,16 @@ describe('earn/exportP', () => {
           walletType: WalletType.MNEMONIC,
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
-          isDevMode: false,
-          activeAccount: {} as Account
+          isTestnet: false,
+          account: {} as Account
         })
         expect(WalletService.createExportPTx).toHaveBeenCalledWith({
           amountInNAvax: BigInt(10000000000),
-          accountIndex: undefined,
-          avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
+          account: {},
           destinationChain: 'C',
           destinationAddress: undefined,
           feeState: undefined,
-          walletId: 'wallet-1',
-          walletType: 'MNEMONIC'
+          isTestnet: false
         })
       }).not.toThrow()
     })
@@ -100,8 +98,8 @@ describe('earn/exportP', () => {
           walletType: WalletType.MNEMONIC,
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
-          isDevMode: false,
-          activeAccount: {} as Account
+          isTestnet: false,
+          account: {} as Account
         })
         expect(WalletService.sign).toHaveBeenCalled()
       }).not.toThrow()
@@ -114,8 +112,8 @@ describe('earn/exportP', () => {
           walletType: WalletType.MNEMONIC,
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
-          isDevMode: false,
-          activeAccount: {} as Account
+          isTestnet: false,
+          account: {} as Account
         })
         expect(NetworkService.sendTransaction).toHaveBeenCalled()
       }).not.toThrow()

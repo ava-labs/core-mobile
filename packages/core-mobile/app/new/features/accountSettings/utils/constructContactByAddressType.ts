@@ -1,5 +1,5 @@
 import { Contact } from 'store/addressBook'
-import { xpAddressWithoutPrefix } from 'common/utils/xpAddressWIthoutPrefix'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { AddressType } from '../consts'
 
 export const constructContactByAddressType = (
@@ -15,7 +15,7 @@ export const constructContactByAddressType = (
     case AddressType.XP_TESTNET: {
       return {
         ...contact,
-        addressXP: address ? xpAddressWithoutPrefix(address) : undefined
+        addressXP: address ? stripAddressPrefix(address) : undefined
       }
     }
     case AddressType.BTC:

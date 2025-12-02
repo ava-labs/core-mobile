@@ -16,6 +16,7 @@ import {
 } from '@avalabs/vm-module-types'
 import { SolanaProvider } from '@avalabs/core-wallets-sdk'
 import { Curve } from 'utils/publicKeys'
+import { Account } from 'store/account'
 
 export type SignTransactionRequest =
   | TransactionRequest
@@ -53,8 +54,8 @@ export type PubKeyType = {
 }
 
 export type AddDelegatorProps = {
-  accountIndex: number
-  avaxXPNetwork: Network
+  account: Account
+  isTestnet: boolean
   // Id of the node to delegate. starts with "NodeID-"
   nodeId: string
   //Amount to be delegated in nAVAX
@@ -65,15 +66,14 @@ export type AddDelegatorProps = {
   endDate: number
   // The addresses which will receive the rewards from the delegated stake.
   rewardAddress: string
-  isDevMode: boolean
   shouldValidateBurnedAmount?: boolean
   feeState?: pvm.FeeState
   pFeeAdjustmentThreshold: number
 }
 
 export interface CommonAvalancheTxParamsBase {
-  accountIndex: number
-  avaxXPNetwork: Network
+  account: Account
+  isTestnet: boolean
   destinationAddress: string | undefined
   shouldValidateBurnedAmount?: boolean
   feeState?: pvm.FeeState
@@ -224,22 +224,6 @@ export interface Wallet {
     derivationPath?: string
     curve: Curve
   }): Promise<string>
-
-  /**
-   * Retrieves a read-only Avalanche signer that can be used to
-   * - retrieve transaction info (e.g. utxo, nonce,...)
-   * - generate transaction object (e.g. export/import tx)
-   *
-   * @param accountIndex - The index of the account.
-   * @param provXP - The Avalanche JSON RPC provider.
-   */
-  getReadOnlyAvaSigner({
-    accountIndex,
-    provXP
-  }: {
-    accountIndex: number
-    provXP: Avalanche.JsonRpcProvider
-  }): Promise<Avalanche.WalletVoid | Avalanche.StaticSigner>
 
   /**
    * Signs a Solana transaction using the specified account, transaction request, network, and Solana provider.

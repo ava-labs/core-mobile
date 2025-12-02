@@ -19,24 +19,24 @@ import {
 export type ImportCParams = {
   walletId: string
   walletType: WalletType
-  activeAccount: Account
-  isDevMode: boolean
+  account: Account
+  isTestnet: boolean
   cBaseFeeMultiplier: number
 }
 
 export async function importC({
   walletId,
   walletType,
-  activeAccount,
-  isDevMode,
+  account,
+  isTestnet,
   cBaseFeeMultiplier
 }: ImportCParams): Promise<void> {
   Logger.info(
     `importing C started with base fee multiplier: ${cBaseFeeMultiplier}`
   )
 
-  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
-  const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
+  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isTestnet)
+  const avaxProvider = await NetworkService.getAvalancheProviderXP(isTestnet)
 
   const baseFee = await avaxProvider.getApiC().getBaseFee() //in WEI
   const baseFeeAvax = new TokenUnit(
@@ -49,13 +49,11 @@ export async function importC({
     cBaseFeeMultiplier
   )
   const unsignedTx = await WalletService.createImportCTx({
-    walletId,
-    walletType,
-    accountIndex: activeAccount.index,
+    account,
     baseFeeInNAvax: weiToNano(instantBaseFee.toSubUnit()),
-    avaxXPNetwork,
+    isTestnet,
     sourceChain: 'P',
-    destinationAddress: activeAccount.addressC
+    destinationAddress: account.addressC
   })
 
   const signedTxJson = await WalletService.sign({
@@ -66,7 +64,7 @@ export async function importC({
       externalIndices: [],
       internalIndices: []
     } as AvalancheTransactionRequest,
-    accountIndex: activeAccount.index,
+    accountIndex: account.index,
     network: avaxXPNetwork
   })
   const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()

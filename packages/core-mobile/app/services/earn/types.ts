@@ -11,7 +11,7 @@ export type AddDelegatorTransactionProps = {
   startDate: Date
   // The Date time when the delegation ends.
   endDate: Date
-  isDevMode: boolean
+  isTestnet: boolean
   feeState?: pvm.FeeState
   pFeeAdjustmentThreshold: number
 }
@@ -23,7 +23,7 @@ export type CollectTokensForStakingParams = {
   cChainBalanceWei: bigint
   requiredAmountWei: bigint
   activeAccount: Account
-  isDevMode: boolean
+  isTestnet: boolean
   selectedCurrency: string
   feeState?: pvm.FeeState
 }

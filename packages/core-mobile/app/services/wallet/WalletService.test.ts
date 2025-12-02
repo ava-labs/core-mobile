@@ -1,11 +1,11 @@
-import { AddDelegatorProps, WalletType } from 'services/wallet/types'
+import { AddDelegatorProps } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
 import { add, getUnixTime, sub } from 'date-fns'
 import { Utxo } from '@avalabs/avalanchejs'
 import { PChainId } from '@avalabs/glacier-sdk'
-import NetworkService from 'services/network/NetworkService'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import mockMnemonic from 'tests/fixtures/mockMnemonic.json'
+import { Account } from 'store/account'
 
 jest.mock('@avalabs/core-wallets-sdk', () => ({
   ...jest.requireActual('@avalabs/core-wallets-sdk'),
@@ -26,7 +26,6 @@ jest
 
 describe('WalletService', () => {
   describe('createAddDelegatorTx', () => {
-    const network = NetworkService.getAvalancheNetworkP(false)
     const validNodeId = 'NodeID-23420390293d9j09v'
     const invalidNodeId = 'InvalidNodeID-23420390293d9j09v'
     const fujiValidStakeAmount = BigInt(2e9)
@@ -67,47 +66,40 @@ describe('WalletService', () => {
 
     it('should throw if Node ID is invalid', async () => {
       const params = {
-        walletId: 'test-wallet-id',
-        walletType: WalletType.MNEMONIC,
+        isTestnet: true,
         nodeId: invalidNodeId
-      } as AddDelegatorProps & { walletId: string; walletType: WalletType }
+      } as AddDelegatorProps
       await expect(async () => {
         await WalletService.createAddDelegatorTx(params)
       }).rejects.toThrow('Invalid node id: InvalidNodeID-23420390293d9j09v')
     })
     it('should throw if stake amount is less than 1Avax on Fuji', async () => {
       const params = {
-        walletId: 'test-wallet-id',
-        walletType: WalletType.MNEMONIC,
         nodeId: validNodeId,
         stakeAmountInNAvax: BigInt(1e8),
-        isDevMode: true
-      } as AddDelegatorProps & { walletId: string; walletType: WalletType }
+        isTestnet: true
+      } as AddDelegatorProps
       await expect(async () => {
         await WalletService.createAddDelegatorTx(params)
       }).rejects.toThrow('Stake amount less than minimum')
     })
     it('should throw if stake amount is less than 25Avax on Mainnet', async () => {
       const params = {
-        walletId: 'test-wallet-id',
-        walletType: WalletType.MNEMONIC,
         nodeId: validNodeId,
         stakeAmountInNAvax: BigInt(24e9),
-        isDevMode: false
-      } as AddDelegatorProps & { walletId: string; walletType: WalletType }
+        isTestnet: false
+      } as AddDelegatorProps
       await expect(async () => {
         await WalletService.createAddDelegatorTx(params)
       }).rejects.toThrow('Stake amount less than minimum')
     })
     it('should throw if staking date is in past', async () => {
       const params = {
-        walletId: 'test-wallet-id',
-        walletType: WalletType.MNEMONIC,
         nodeId: validNodeId,
         stakeAmountInNAvax: fujiValidStakeAmount,
         startDate: getUnixTime(sub(new Date(), { minutes: 1 })),
-        isDevMode: true
-      } as AddDelegatorProps & { walletId: string; walletType: WalletType }
+        isTestnet: true
+      } as AddDelegatorProps
       await expect(async () => {
         await WalletService.createAddDelegatorTx(params)
       }).rejects.toThrow('Start date must be in future: ')
@@ -116,43 +108,37 @@ describe('WalletService', () => {
       const twoWeeks = 14 * 24 * 60 * 60
       const twoSeconds = 2
       const params = {
-        walletId: 'test-wallet-id',
-        walletType: WalletType.MNEMONIC,
         nodeId: validNodeId,
         stakeAmountInNAvax: BigInt(25e9),
         startDate: validStartDate,
         endDate: validStartDate + twoWeeks - twoSeconds,
-        isDevMode: false
-      } as AddDelegatorProps & { walletId: string; walletType: WalletType }
+        isTestnet: false
+      } as AddDelegatorProps
       await expect(async () => {
         await WalletService.createAddDelegatorTx(params)
       }).rejects.toThrow('Stake duration too short')
     })
     it('should throw if stake duration is less than 24 hours for Fuji', async () => {
       const params = {
-        walletId: 'test-wallet-id',
-        walletType: WalletType.MNEMONIC,
         nodeId: validNodeId,
         stakeAmountInNAvax: fujiValidStakeAmount,
         startDate: validStartDate,
         endDate: getUnixTime(sub(day, { seconds: 2 })),
-        isDevMode: true
-      } as AddDelegatorProps & { walletId: string; walletType: WalletType }
+        isTestnet: true
+      } as AddDelegatorProps
       await expect(async () => {
         await WalletService.createAddDelegatorTx(params)
       }).rejects.toThrow('Stake duration too short')
     })
     it('should throw if reward address is not from P chain', async () => {
       const params = {
-        walletId: 'test-wallet-id',
-        walletType: WalletType.MNEMONIC,
         nodeId: validNodeId,
         stakeAmountInNAvax: fujiValidStakeAmount,
         startDate: validStartDate,
         endDate: getUnixTime(day),
         rewardAddress: 'invalid address',
-        isDevMode: true
-      } as AddDelegatorProps & { walletId: string; walletType: WalletType }
+        isTestnet: true
+      } as AddDelegatorProps
       await expect(async () => {
         await WalletService.createAddDelegatorTx(params)
       }).rejects.toThrow('Reward address must be from P chain')
@@ -160,16 +146,14 @@ describe('WalletService', () => {
 
     it('should throw if failed to validate fee', async () => {
       const params = {
-        walletId: 'test-wallet-id',
-        walletType: WalletType.MNEMONIC,
-        avaxXPNetwork: network,
+        account: { index: 0 } as Account,
         nodeId: validNodeId,
         stakeAmountInNAvax: fujiValidStakeAmount,
         startDate: validStartDate,
         endDate: validEndDateFuji,
         rewardAddress: validRewardAddress,
-        isDevMode: true
-      } as AddDelegatorProps & { walletId: string; walletType: WalletType }
+        isTestnet: true
+      } as AddDelegatorProps
 
       mockValidateFee.mockImplementationOnce(() => {
         throw new Error('test fee validation error')
@@ -182,17 +166,15 @@ describe('WalletService', () => {
 
     it('should not throw if failed to validate fee when shouldValidateBurnedAmount is false', async () => {
       const params = {
-        walletId: 'test-wallet-id',
-        walletType: WalletType.MNEMONIC,
-        avaxXPNetwork: network,
+        account: { index: 0 } as Account,
         nodeId: validNodeId,
         stakeAmountInNAvax: fujiValidStakeAmount,
         startDate: validStartDate,
         endDate: validEndDateFuji,
         rewardAddress: validRewardAddress,
-        isDevMode: true,
+        isTestnet: true,
         shouldValidateBurnedAmount: false
-      } as AddDelegatorProps & { walletId: string; walletType: WalletType }
+      } as AddDelegatorProps
 
       mockValidateFee.mockImplementationOnce(() => {
         throw new Error('test fee validation error')
@@ -205,16 +187,14 @@ describe('WalletService', () => {
 
     it('should create delegator tx successfully', async () => {
       const params = {
-        walletId: 'test-wallet-id',
-        walletType: WalletType.MNEMONIC,
-        avaxXPNetwork: network,
+        account: { index: 0 } as Account,
         nodeId: validNodeId,
         stakeAmountInNAvax: fujiValidStakeAmount,
         startDate: validStartDate,
         endDate: validEndDateFuji,
         rewardAddress: validRewardAddress,
-        isDevMode: true
-      } as AddDelegatorProps & { walletId: string; walletType: WalletType }
+        isTestnet: true
+      } as AddDelegatorProps
       const unsignedTx = await WalletService.createAddDelegatorTx(params)
       expect(getUTXOsMock).toHaveBeenCalled()
       expect(addPermissionlessDelegatorMock).toHaveBeenCalledWith({

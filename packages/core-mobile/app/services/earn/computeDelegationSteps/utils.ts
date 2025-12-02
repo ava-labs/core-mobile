@@ -10,47 +10,39 @@ import {
 } from '@avalabs/avalanchejs'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { Network } from '@avalabs/core-chains-sdk'
 import { pvm, utils } from '@avalabs/avalanchejs'
 import { getUnixTime } from 'date-fns'
 import WalletService from 'services/wallet/WalletService'
-import { getAssetId } from 'services/wallet/utils'
+import { getAvaxAssetId } from 'services/wallet/utils'
 import { weiToNano } from 'utils/units/converter'
 import { calculateCChainFee } from 'services/earn/calculateCrossChainFees'
 import { extractNeededAmount } from 'hooks/earn/utils/extractNeededAmount'
 import { addBufferToCChainBaseFee } from 'services/wallet/utils'
 import Logger from 'utils/Logger'
-import { WalletType } from 'services/wallet/types'
+import { Account } from 'store/account'
 
 const DUMMY_AMOUNT = 1000000n
 const DUMMY_UTXO_ID = 'dummy'
 
 export const getDelegationFee = async ({
-  walletId,
-  walletType,
   stakeAmount,
-  accountIndex,
-  avaxXPNetwork,
+  account,
+  isTestnet,
   pAddress,
   feeState,
   provider,
   pFeeAdjustmentThreshold
 }: {
-  walletId: string
-  walletType: WalletType
   stakeAmount: bigint
-  accountIndex: number
-  avaxXPNetwork: Network
+  account: Account
+  isTestnet: boolean
   pAddress: string
   feeState: pvm.FeeState
   provider: Avalanche.JsonRpcProvider
   pFeeAdjustmentThreshold: number
 }): Promise<bigint> => {
   const unsignedTx = await WalletService.createAddDelegatorTx({
-    walletId,
-    walletType,
-    accountIndex,
-    avaxXPNetwork,
+    account,
     nodeId: 'NodeID-1',
     stakeAmountInNAvax: stakeAmount,
     startDate: getUnixTime(new Date()),
@@ -58,7 +50,7 @@ export const getDelegationFee = async ({
     // get the end date 1 month from now
     endDate: getUnixTime(new Date()) + 60 * 60 * 24 * 30,
     rewardAddress: pAddress,
-    isDevMode: Boolean(avaxXPNetwork.isTestnet),
+    isTestnet,
     shouldValidateBurnedAmount: true,
     feeState,
     pFeeAdjustmentThreshold
@@ -70,35 +62,29 @@ export const getDelegationFee = async ({
 }
 
 export const getDelegationFeePostPImport = async ({
-  walletId,
-  walletType,
   stakeAmount,
-  accountIndex,
-  avaxXPNetwork,
+  account,
+  isTestnet,
   pAddress,
   feeState,
   pChainAtomicBalance,
   importPFee,
   provider
 }: {
-  walletId: string
-  walletType: WalletType
   stakeAmount: bigint
-  accountIndex: number
-  avaxXPNetwork: Network
+  account: Account
+  isTestnet: boolean
   pAddress: string
   feeState: pvm.FeeState
   pChainAtomicBalance: bigint
   importPFee: bigint
   provider: Avalanche.JsonRpcProvider
 }): Promise<bigint> => {
-  const assetId = getAssetId(avaxXPNetwork)
+  const assetId = getAvaxAssetId(isTestnet)
 
   const pChainUTXOs = await WalletService.getPChainUTXOs({
-    walletId,
-    walletType,
-    accountIndex,
-    avaxXPNetwork
+    account,
+    isTestnet
   })
 
   // put the incoming UTXO on top as if the import P already happened
@@ -114,11 +100,9 @@ export const getDelegationFeePostPImport = async ({
   const utxoSet = new utils.UtxoSet(simulatedUTXOs)
 
   const unsignedTx = await WalletService.simulateAddPermissionlessDelegatorTx({
-    walletId,
-    walletType,
     utxos: utxoSet,
-    accountIndex,
-    avaxXPNetwork,
+    account,
+    isTestnet,
     stakeAmountInNAvax: stakeAmount,
     destinationAddress: pAddress,
     feeState
@@ -130,35 +114,29 @@ export const getDelegationFeePostPImport = async ({
 }
 
 export const getDelegationFeePostCExportAndPImport = async ({
-  walletId,
-  walletType,
   stakeAmount,
-  accountIndex,
-  avaxXPNetwork,
+  account,
+  isTestnet,
   pAddress,
   feeState,
   provider,
   pChainBalance = 0n,
   pFeeAdjustmentThreshold
 }: {
-  walletId: string
-  walletType: WalletType
   stakeAmount: bigint
-  accountIndex: number
-  avaxXPNetwork: Network
+  account: Account
+  isTestnet: boolean
   pAddress: string
   feeState: pvm.FeeState
   provider: Avalanche.JsonRpcProvider
   pChainBalance?: bigint
   pFeeAdjustmentThreshold: number
 }): Promise<bigint> => {
-  const assetId = getAssetId(avaxXPNetwork)
+  const assetId = getAvaxAssetId(isTestnet)
 
   const pChainUTXOs = await WalletService.getPChainUTXOs({
-    walletId,
-    walletType,
-    accountIndex,
-    avaxXPNetwork
+    account,
+    isTestnet
   })
 
   // put the incoming UTXO on top as if the export C + import P already happened
@@ -181,11 +159,9 @@ export const getDelegationFeePostCExportAndPImport = async ({
     const utxoSet = new utils.UtxoSet(simulatedUTXOs)
 
     unsignedTx = await WalletService.simulateAddPermissionlessDelegatorTx({
-      walletId,
-      walletType,
       utxos: utxoSet,
-      accountIndex,
-      avaxXPNetwork,
+      account,
+      isTestnet,
       stakeAmountInNAvax: stakeAmount,
       destinationAddress: pAddress,
       feeState
@@ -193,10 +169,7 @@ export const getDelegationFeePostCExportAndPImport = async ({
   } catch (error) {
     Logger.warn('unable to simulate add delegator tx', error)
 
-    const missingAmount = extractNeededAmount(
-      (error as Error).message,
-      getAssetId(avaxXPNetwork)
-    )
+    const missingAmount = extractNeededAmount((error as Error).message, assetId)
 
     if (!missingAmount) {
       // rethrow error if it's not an insufficient funds error
@@ -226,11 +199,9 @@ export const getDelegationFeePostCExportAndPImport = async ({
     const utxoSet = new utils.UtxoSet(simulatedUTXOs)
 
     unsignedTx = await WalletService.simulateAddPermissionlessDelegatorTx({
-      walletId,
-      walletType,
       utxos: utxoSet,
-      accountIndex,
-      avaxXPNetwork,
+      account,
+      isTestnet,
       stakeAmountInNAvax: stakeAmount,
       destinationAddress: pAddress,
       feeState
@@ -243,27 +214,21 @@ export const getDelegationFeePostCExportAndPImport = async ({
 }
 
 export const getImportPFee = async ({
-  walletId,
-  walletType,
-  accountIndex,
-  avaxXPNetwork,
+  account,
+  isTestnet,
   pAddress,
   feeState,
   provider
 }: {
-  walletId: string
-  walletType: WalletType
-  accountIndex: number
-  avaxXPNetwork: Network
+  account: Account
+  isTestnet: boolean
   pAddress: string
   feeState: pvm.FeeState
   provider: Avalanche.JsonRpcProvider
 }): Promise<bigint> => {
   const unsignedTx = await WalletService.createImportPTx({
-    walletId,
-    walletType,
-    accountIndex,
-    avaxXPNetwork,
+    account,
+    isTestnet,
     sourceChain: 'C',
     destinationAddress: pAddress,
     shouldValidateBurnedAmount: true,
@@ -276,29 +241,23 @@ export const getImportPFee = async ({
 }
 
 export const getImportPFeePostCExport = async ({
-  walletId,
-  walletType,
-  accountIndex,
-  avaxXPNetwork,
+  account,
+  isTestnet,
   pAddress,
   feeState,
   provider
 }: {
-  walletId: string
-  walletType: WalletType
-  accountIndex: number
-  avaxXPNetwork: Network
+  account: Account
+  isTestnet: boolean
   pAddress: string
   feeState: pvm.FeeState
   provider: Avalanche.JsonRpcProvider
 }): Promise<bigint> => {
-  const assetId = getAssetId(avaxXPNetwork)
+  const assetId = getAvaxAssetId(isTestnet)
 
   const { pChainUtxo: atomicPChainUTXOs } = await WalletService.getAtomicUTXOs({
-    walletId,
-    walletType,
-    accountIndex,
-    avaxXPNetwork
+    account,
+    isTestnet
   })
   // put the incoming UTXO on top as if the export C already happened
   // using a dummy amount as it doesn't affect fee, only the number of UTXOs matter
@@ -314,11 +273,9 @@ export const getImportPFeePostCExport = async ({
   const utxoSet = new utils.UtxoSet(simulatedAtomicUTXOs)
 
   const unsignedTx = await WalletService.simulateImportPTx({
-    walletId,
-    walletType,
     utxos: utxoSet,
-    accountIndex,
-    avaxXPNetwork,
+    account,
+    isTestnet,
     sourceChain: 'C',
     destinationAddress: pAddress,
     feeState
@@ -330,19 +287,15 @@ export const getImportPFeePostCExport = async ({
 }
 
 export const getExportCFee = async ({
-  walletId,
-  walletType,
   cChainBaseFee,
-  accountIndex,
-  avaxXPNetwork,
+  account,
+  isTestnet,
   pAddress,
   cBaseFeeMultiplier
 }: {
-  walletId: string
-  walletType: WalletType
   cChainBaseFee: TokenUnit
-  accountIndex: number
-  avaxXPNetwork: Network
+  account: Account
+  isTestnet: boolean
   pAddress: string
   cBaseFeeMultiplier: number
 }): Promise<bigint> => {
@@ -353,12 +306,10 @@ export const getExportCFee = async ({
 
   // using a dummy amount as the amount doesn't affect fee
   const unsignedTx = await WalletService.createExportCTx({
-    walletId,
-    walletType,
     amountInNAvax: DUMMY_AMOUNT,
     baseFeeInNAvax: weiToNano(paddedCChainBaseFee.toSubUnit()),
-    accountIndex: accountIndex,
-    avaxXPNetwork,
+    account,
+    isTestnet,
     destinationChain: 'P',
     destinationAddress: pAddress,
     shouldValidateBurnedAmount: true
@@ -370,24 +321,18 @@ export const getExportCFee = async ({
 }
 
 export const getPChainAtomicBalance = async ({
-  walletId,
-  walletType,
-  avaxXPNetwork,
-  accountIndex
+  isTestnet,
+  account
 }: {
-  walletId: string
-  walletType: WalletType
-  avaxXPNetwork: Network
-  accountIndex: number
+  isTestnet: boolean
+  account: Account
 }): Promise<bigint> => {
   const atomicUTXOs = await WalletService.getAtomicUTXOs({
-    walletId,
-    walletType,
-    accountIndex,
-    avaxXPNetwork
+    account,
+    isTestnet
   })
 
-  const assetId = getAssetId(avaxXPNetwork)
+  const assetId = getAvaxAssetId(isTestnet)
 
   const assetBalance = Avalanche.getAssetBalance(
     atomicUTXOs.pChainUtxo,

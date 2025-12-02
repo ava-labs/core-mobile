@@ -13,7 +13,6 @@ import {
   CreateSendPTxParams,
   PubKeyType,
   SignTransactionRequest,
-  Wallet,
   WalletType
 } from 'services/wallet/types'
 import NetworkService from 'services/network/NetworkService'
@@ -38,14 +37,13 @@ import { SpanName } from 'services/sentry/types'
 import { Curve } from 'utils/publicKeys'
 import { profileApi } from 'utils/apiClient/profile/profileApi'
 import { GetAddressesResponse } from 'utils/apiClient/profile/types'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import {
   getAddressDerivationPath,
-  getAssetId,
+  getAvaxAssetId,
   isAvalancheTransactionRequest,
   isBtcTransactionRequest,
-  isSolanaTransactionRequest,
-  MAINNET_AVAX_ASSET_ID,
-  TESTNET_AVAX_ASSET_ID
+  isSolanaTransactionRequest
 } from './utils'
 import WalletFactory from './WalletFactory'
 import { MnemonicWallet } from './MnemonicWallet'
@@ -312,29 +310,16 @@ class WalletService {
    * Get atomic transactions that are in VM memory.
    */
   public async getAtomicUTXOs({
-    walletId,
-    walletType,
-    accountIndex,
-    avaxXPNetwork
+    account,
+    isTestnet
   }: {
-    walletId: string
-    walletType: WalletType
-    accountIndex: number
-    avaxXPNetwork: Network
+    account: Account
+    isTestnet: boolean
   }): Promise<{
     pChainUtxo: utils.UtxoSet
     cChainUtxo: utils.UtxoSet
   }> {
-    const wallet = await WalletFactory.createWallet({
-      walletId,
-      walletType
-    })
-
-    const readOnlySigner = await this.getReadOnlyAvaSigner(
-      wallet,
-      accountIndex,
-      avaxXPNetwork
-    )
+    const readOnlySigner = await this.getReadOnlyAvaSigner(account, isTestnet)
 
     const pChainUtxo = await readOnlySigner.getAtomicUTXOs('P', 'C')
     const cChainUtxo = await readOnlySigner.getAtomicUTXOs('C', 'P')
@@ -349,26 +334,13 @@ class WalletService {
    * Get atomic UTXOs for P-Chain.
    */
   public async getPChainAtomicUTXOs({
-    walletId,
-    walletType,
-    accountIndex,
-    avaxXPNetwork
+    account,
+    isTestnet
   }: {
-    walletId: string
-    walletType: WalletType
-    accountIndex: number
-    avaxXPNetwork: Network
+    account: Account
+    isTestnet: boolean
   }): Promise<utils.UtxoSet> {
-    const wallet = await WalletFactory.createWallet({
-      walletId,
-      walletType
-    })
-
-    const readOnlySigner = await this.getReadOnlyAvaSigner(
-      wallet,
-      accountIndex,
-      avaxXPNetwork
-    )
+    const readOnlySigner = await this.getReadOnlyAvaSigner(account, isTestnet)
 
     return readOnlySigner.getAtomicUTXOs('P', 'C')
   }
@@ -377,54 +349,27 @@ class WalletService {
    * Get UTXOs on P-Chain.
    */
   public async getPChainUTXOs({
-    walletId,
-    walletType,
-    accountIndex,
-    avaxXPNetwork
+    account,
+    isTestnet
   }: {
-    walletId: string
-    walletType: WalletType
-    accountIndex: number
-    avaxXPNetwork: Network
+    account: Account
+    isTestnet: boolean
   }): Promise<utils.UtxoSet> {
-    const wallet = await WalletFactory.createWallet({
-      walletId,
-      walletType
-    })
-
-    const readOnlySigner = await this.getReadOnlyAvaSigner(
-      wallet,
-      accountIndex,
-      avaxXPNetwork
-    )
+    const readOnlySigner = await this.getReadOnlyAvaSigner(account, isTestnet)
 
     return readOnlySigner.getUTXOs('P')
   }
 
   public async createExportCTx({
-    walletId,
-    walletType,
     amountInNAvax,
     baseFeeInNAvax,
-    accountIndex,
-    avaxXPNetwork,
+    account,
+    isTestnet,
     destinationChain,
     destinationAddress,
     shouldValidateBurnedAmount = true
-  }: CreateExportCTxParams & {
-    walletId: string
-    walletType: WalletType
-  }): Promise<UnsignedTx> {
-    const wallet = await WalletFactory.createWallet({
-      walletId,
-      walletType
-    })
-
-    const readOnlySigner = await this.getReadOnlyAvaSigner(
-      wallet,
-      accountIndex,
-      avaxXPNetwork
-    )
+  }: CreateExportCTxParams): Promise<UnsignedTx> {
+    const readOnlySigner = await this.getReadOnlyAvaSigner(account, isTestnet)
 
     const nonce = await readOnlySigner.getNonce()
 
@@ -438,7 +383,7 @@ class WalletService {
 
     shouldValidateBurnedAmount &&
       this.validateAvalancheFee({
-        network: avaxXPNetwork,
+        isTestnet,
         unsignedTx,
         evmBaseFeeInNAvax: baseFeeInNAvax
       })
@@ -447,28 +392,14 @@ class WalletService {
   }
 
   public async createImportPTx({
-    walletId,
-    walletType,
-    accountIndex,
-    avaxXPNetwork,
+    account,
+    isTestnet,
     sourceChain,
     destinationAddress,
     shouldValidateBurnedAmount = true,
     feeState
-  }: CreateImportPTxParams & {
-    walletId: string
-    walletType: WalletType
-  }): Promise<UnsignedTx> {
-    const wallet = await WalletFactory.createWallet({
-      walletId,
-      walletType
-    })
-
-    const readOnlySigner = await this.getReadOnlyAvaSigner(
-      wallet,
-      accountIndex,
-      avaxXPNetwork
-    )
+  }: CreateImportPTxParams): Promise<UnsignedTx> {
+    const readOnlySigner = await this.getReadOnlyAvaSigner(account, isTestnet)
 
     const utxoSet = await readOnlySigner.getAtomicUTXOs('P', sourceChain)
 
@@ -481,7 +412,7 @@ class WalletService {
 
     shouldValidateBurnedAmount &&
       this.validateAvalancheFee({
-        network: avaxXPNetwork,
+        isTestnet,
         unsignedTx
       })
 
@@ -489,29 +420,15 @@ class WalletService {
   }
 
   public async createExportPTx({
-    walletId,
-    walletType,
     amountInNAvax,
-    accountIndex,
-    avaxXPNetwork,
+    account,
+    isTestnet,
     destinationChain,
     destinationAddress,
     shouldValidateBurnedAmount = true,
     feeState
-  }: CreateExportPTxParams & {
-    walletId: string
-    walletType: WalletType
-  }): Promise<UnsignedTx> {
-    const wallet = await WalletFactory.createWallet({
-      walletId,
-      walletType
-    })
-
-    const readOnlySigner = await this.getReadOnlyAvaSigner(
-      wallet,
-      accountIndex,
-      avaxXPNetwork
-    )
+  }: CreateExportPTxParams): Promise<UnsignedTx> {
+    const readOnlySigner = await this.getReadOnlyAvaSigner(account, isTestnet)
 
     const utxoSet = await readOnlySigner.getUTXOs('P')
 
@@ -525,7 +442,7 @@ class WalletService {
 
     shouldValidateBurnedAmount &&
       this.validateAvalancheFee({
-        network: avaxXPNetwork,
+        isTestnet,
         unsignedTx
       })
 
@@ -536,31 +453,18 @@ class WalletService {
    * Create UnsignedTx for sending on P-chain
    */
   public async createSendPTx({
-    walletId,
-    walletType,
     amountInNAvax,
-    accountIndex,
-    avaxXPNetwork,
+    account,
+    isTestnet,
     destinationAddress,
     sourceAddress,
     feeState
-  }: CreateSendPTxParams & {
-    walletId: string
-    walletType: WalletType
-  }): Promise<UnsignedTx> {
+  }: CreateSendPTxParams): Promise<UnsignedTx> {
     if (!destinationAddress) {
       throw new Error('destination address must be set')
     }
-    const wallet = await WalletFactory.createWallet({
-      walletId,
-      walletType
-    })
 
-    const readOnlySigner = await this.getReadOnlyAvaSigner(
-      wallet,
-      accountIndex,
-      avaxXPNetwork
-    )
+    const readOnlySigner = await this.getReadOnlyAvaSigner(account, isTestnet)
 
     // P-chain has a tx size limit of 64KB
     let utxoSet = await readOnlySigner.getUTXOs('P')
@@ -578,7 +482,7 @@ class WalletService {
       chain: 'P',
       toAddress: destinationAddress,
       amountsPerAsset: {
-        [getAssetId(avaxXPNetwork)]: amountInNAvax
+        [getAvaxAssetId(isTestnet)]: amountInNAvax
       },
       options: {
         changeAddresses: [changeAddress]
@@ -591,31 +495,17 @@ class WalletService {
    * Create UnsignedTx for sending on X-chain
    */
   public async createSendXTx({
-    walletId,
-    walletType,
     amountInNAvax,
-    accountIndex,
-    avaxXPNetwork,
+    account,
+    isTestnet,
     destinationAddress,
     sourceAddress
-  }: CreateSendPTxParams & {
-    walletId: string
-    walletType: WalletType
-  }): Promise<UnsignedTx> {
+  }: CreateSendPTxParams): Promise<UnsignedTx> {
     if (!destinationAddress) {
       throw new Error('destination address must be set')
     }
 
-    const wallet = await WalletFactory.createWallet({
-      walletId,
-      walletType
-    })
-
-    const readOnlySigner = await this.getReadOnlyAvaSigner(
-      wallet,
-      accountIndex,
-      avaxXPNetwork
-    )
+    const readOnlySigner = await this.getReadOnlyAvaSigner(account, isTestnet)
 
     // P-chain has a tx size limit of 64KB
     const utxoSet = await readOnlySigner.getUTXOs('X')
@@ -625,9 +515,7 @@ class WalletService {
       chain: 'X',
       toAddress: destinationAddress,
       amountsPerAsset: {
-        [avaxXPNetwork.isTestnet
-          ? TESTNET_AVAX_ASSET_ID
-          : MAINNET_AVAX_ASSET_ID]: amountInNAvax
+        [getAvaxAssetId(isTestnet)]: amountInNAvax
       },
       options: {
         changeAddresses: [changeAddress]
@@ -636,28 +524,14 @@ class WalletService {
   }
 
   public async createImportCTx({
-    walletId,
-    walletType,
-    accountIndex,
+    account,
     baseFeeInNAvax,
-    avaxXPNetwork,
+    isTestnet,
     sourceChain,
     destinationAddress,
     shouldValidateBurnedAmount = true
-  }: CreateImportCTxParams & {
-    walletId: string
-    walletType: WalletType
-  }): Promise<UnsignedTx> {
-    const wallet = await WalletFactory.createWallet({
-      walletId,
-      walletType
-    })
-
-    const readOnlySigner = await this.getReadOnlyAvaSigner(
-      wallet,
-      accountIndex,
-      avaxXPNetwork
-    )
+  }: CreateImportCTxParams): Promise<UnsignedTx> {
+    const readOnlySigner = await this.getReadOnlyAvaSigner(account, isTestnet)
 
     const utxoSet = await readOnlySigner.getAtomicUTXOs('C', sourceChain)
 
@@ -671,7 +545,7 @@ class WalletService {
 
     shouldValidateBurnedAmount &&
       this.validateAvalancheFee({
-        network: avaxXPNetwork,
+        isTestnet,
         unsignedTx,
         evmBaseFeeInNAvax: baseFeeInNAvax
       })
@@ -680,28 +554,22 @@ class WalletService {
   }
 
   public async createAddDelegatorTx({
-    walletId,
-    walletType,
-    accountIndex,
-    avaxXPNetwork,
+    account,
+    isTestnet,
     nodeId,
     stakeAmountInNAvax,
     startDate,
     endDate,
     rewardAddress,
-    isDevMode,
     shouldValidateBurnedAmount = true,
     feeState
-  }: AddDelegatorProps & {
-    walletId: string
-    walletType: WalletType
-  }): Promise<UnsignedTx> {
+  }: AddDelegatorProps): Promise<UnsignedTx> {
     if (!nodeId.startsWith('NodeID-')) {
       throw Error('Invalid node id: ' + nodeId)
     }
 
     const oneAvax = BigInt(1e9)
-    const minStakingAmount = isDevMode ? oneAvax : BigInt(25) * oneAvax
+    const minStakingAmount = isTestnet ? oneAvax : BigInt(25) * oneAvax
     if (stakeAmountInNAvax < minStakingAmount) {
       throw Error('Stake amount less than minimum')
     }
@@ -712,7 +580,7 @@ class WalletService {
     }
 
     const minimalStakeEndDate = getMinimumStakeEndTime(
-      isDevMode,
+      isTestnet,
       new UTCDate(secondsToMilliseconds(startDate))
     )
 
@@ -727,16 +595,7 @@ class WalletService {
       throw Error('Reward address must be from P chain')
     }
 
-    const wallet = await WalletFactory.createWallet({
-      walletId,
-      walletType
-    })
-
-    const readOnlySigner = await this.getReadOnlyAvaSigner(
-      wallet,
-      accountIndex,
-      avaxXPNetwork
-    )
+    const readOnlySigner = await this.getReadOnlyAvaSigner(account, isTestnet)
 
     const utxoSet = await readOnlySigner.getUTXOs('P')
 
@@ -761,7 +620,7 @@ class WalletService {
 
     shouldValidateBurnedAmount &&
       this.validateAvalancheFee({
-        network: avaxXPNetwork,
+        isTestnet,
         unsignedTx
       })
 
@@ -769,35 +628,22 @@ class WalletService {
   }
 
   public async simulateImportPTx({
-    walletId,
-    walletType,
     utxos,
-    accountIndex,
-    avaxXPNetwork,
+    account,
+    isTestnet,
     sourceChain,
     destinationAddress,
     feeState
   }: {
-    walletId: string
-    walletType: WalletType
     utxos: utils.UtxoSet
-    accountIndex: number
-    avaxXPNetwork: Network
+    account: Account
+    isTestnet: boolean
     sourceChain: 'C' | 'X'
     destinationAddress: string
     shouldValidateBurnedAmount?: boolean
     feeState?: pvm.FeeState
   }): Promise<UnsignedTx> {
-    const wallet = await WalletFactory.createWallet({
-      walletId,
-      walletType
-    })
-
-    const readOnlySigner = await this.getReadOnlyAvaSigner(
-      wallet,
-      accountIndex,
-      avaxXPNetwork
-    )
+    const readOnlySigner = await this.getReadOnlyAvaSigner(account, isTestnet)
 
     return readOnlySigner.importP({
       utxoSet: utxos,
@@ -808,34 +654,22 @@ class WalletService {
   }
 
   public async simulateAddPermissionlessDelegatorTx({
-    walletId,
-    walletType,
     utxos,
     stakeAmountInNAvax,
-    accountIndex,
-    avaxXPNetwork,
+    account,
+    isTestnet,
     destinationAddress,
     feeState
   }: {
-    walletId: string
-    walletType: WalletType
     utxos: utils.UtxoSet
     stakeAmountInNAvax: bigint
-    accountIndex: number
-    avaxXPNetwork: Network
+    account: Account
+    isTestnet: boolean
     destinationAddress: string
     shouldValidateBurnedAmount?: boolean
     feeState?: pvm.FeeState
   }): Promise<UnsignedTx> {
-    const wallet = await WalletFactory.createWallet({
-      walletId,
-      walletType
-    })
-    const readOnlySigner = await this.getReadOnlyAvaSigner(
-      wallet,
-      accountIndex,
-      avaxXPNetwork
-    )
+    const readOnlySigner = await this.getReadOnlyAvaSigner(account, isTestnet)
 
     return readOnlySigner.addPermissionlessDelegator({
       weight: stakeAmountInNAvax,
@@ -879,32 +713,29 @@ class WalletService {
   }
 
   private async getReadOnlyAvaSigner(
-    wallet: Wallet,
-    accountIndex: number,
-    network: Network
-  ): Promise<Avalanche.StaticSigner | Avalanche.WalletVoid> {
-    const provXP = await NetworkService.getAvalancheProviderXP(
-      Boolean(network.isTestnet)
+    account: Account,
+    isTestnet: boolean
+  ): Promise<Avalanche.AddressWallet> {
+    const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
+
+    return new Avalanche.AddressWallet(
+      account.addressC,
+      stripAddressPrefix(account.addressCoreEth),
+      [stripAddressPrefix(account.addressPVM)],
+      stripAddressPrefix(account.addressPVM),
+      provXP
     )
-    return wallet.getReadOnlyAvaSigner({ accountIndex, provXP })
   }
 
   private async validateAvalancheFee({
-    network,
+    isTestnet,
     unsignedTx,
     evmBaseFeeInNAvax
   }: {
-    network: Network
+    isTestnet: boolean
     unsignedTx: UnsignedTx
     evmBaseFeeInNAvax?: bigint
   }): Promise<void> {
-    if (
-      network.vmName !== NetworkVMType.AVM &&
-      network.vmName !== NetworkVMType.PVM
-    ) {
-      throw new Error('Wrong network')
-    }
-
     if (evmBaseFeeInNAvax === undefined) {
       throw new Error('Missing evm fee data')
     }
@@ -912,7 +743,7 @@ class WalletService {
     Logger.info('validating burned amount')
 
     const avalancheProvider = await NetworkService.getAvalancheProviderXP(
-      Boolean(network.isTestnet)
+      isTestnet
     )
 
     const { isValid, txFee } = utils.validateBurnedAmount({

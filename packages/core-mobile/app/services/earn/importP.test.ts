@@ -54,8 +54,8 @@ describe('earn/importP', () => {
       await importP({
         walletId: 'test-wallet-id',
         walletType: WalletType.MNEMONIC,
-        activeAccount: {} as Account,
-        isDevMode: false,
+        account: {} as Account,
+        isTestnet: false,
         selectedCurrency: VsCurrencyType.USD
       })
       expect(WalletService.createImportPTx).toHaveBeenCalled()
@@ -65,8 +65,8 @@ describe('earn/importP', () => {
       await importP({
         walletId: 'test-wallet-id',
         walletType: WalletType.MNEMONIC,
-        activeAccount: {} as Account,
-        isDevMode: false,
+        account: {} as Account,
+        isTestnet: false,
         selectedCurrency: VsCurrencyType.USD
       })
       expect(WalletService.sign).toHaveBeenCalled()
@@ -76,8 +76,8 @@ describe('earn/importP', () => {
       await importP({
         walletId: 'test-wallet-id',
         walletType: WalletType.MNEMONIC,
-        activeAccount: {} as Account,
-        isDevMode: false,
+        account: {} as Account,
+        isTestnet: false,
         selectedCurrency: VsCurrencyType.USD
       })
       expect(NetworkService.sendTransaction).toHaveBeenCalled()

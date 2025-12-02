@@ -63,18 +63,16 @@ describe('earn/importC', () => {
       await importC({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        activeAccount: {} as Account,
-        isDevMode: false,
+        account: {} as Account,
+        isTestnet: false,
         cBaseFeeMultiplier: testCBaseFeeMultiplier
       })
       expect(WalletService.createImportCTx).toHaveBeenCalledWith({
-        accountIndex: undefined,
         baseFeeInNAvax: BigInt(0.0005 * 10 ** 9),
-        avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
         sourceChain: 'P',
         destinationAddress: undefined,
-        walletId: 'wallet-1',
-        walletType: 'MNEMONIC'
+        isTestnet: false,
+        account: {} as Account
       })
     })
 
@@ -82,8 +80,8 @@ describe('earn/importC', () => {
       await importC({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        activeAccount: {} as Account,
-        isDevMode: false,
+        account: {} as Account,
+        isTestnet: false,
         cBaseFeeMultiplier: testCBaseFeeMultiplier
       })
       expect(WalletService.sign).toHaveBeenCalled()
@@ -93,8 +91,8 @@ describe('earn/importC', () => {
       await importC({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        activeAccount: {} as Account,
-        isDevMode: false,
+        account: {} as Account,
+        isTestnet: false,
         cBaseFeeMultiplier: testCBaseFeeMultiplier
       })
       expect(NetworkService.sendTransaction).toHaveBeenCalled()

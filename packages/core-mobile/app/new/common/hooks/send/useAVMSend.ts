@@ -8,7 +8,6 @@ import { isTokenWithBalanceAVM } from '@avalabs/avalanche-module'
 import Logger from 'utils/Logger'
 import { useSendContext } from 'new/features/send/context/sendContext'
 import { useSendSelectedToken } from 'new/features/send/store'
-import { useActiveWallet } from '../useActiveWallet'
 import { SendAdapterAVM, SendErrorMessage } from './utils/types'
 import { send as sendAVM } from './utils/avm/send'
 import { validate as validateAVMSend } from './utils/avm/validate'
@@ -20,7 +19,6 @@ const useAVMSend: SendAdapterAVM = ({
   fromAddress
 }) => {
   const { request } = useInAppRequest()
-  const wallet = useActiveWallet()
   const {
     setMaxAmount,
     setError,
@@ -47,8 +45,6 @@ const useAVMSend: SendAdapterAVM = ({
       setIsSending(true)
 
       return await sendAVM({
-        walletId: wallet.id,
-        walletType: wallet.type,
         request,
         fromAddress,
         account,
@@ -64,7 +60,6 @@ const useAVMSend: SendAdapterAVM = ({
     amount,
     network,
     setIsSending,
-    wallet,
     request,
     fromAddress,
     account
