@@ -178,8 +178,8 @@ export class MnemonicWallet implements Wallet {
     this.#mnemonic = mnemonic
   }
 
-  public getRawXpubXP(): string {
-    return Avalanche.getXpubFromMnemonic(this.mnemonic)
+  public getRawXpubXP(accountIndex: number): string {
+    return Avalanche.getXpubFromMnemonic(this.mnemonic, accountIndex)
   }
 
   /** WALLET INTERFACE IMPLEMENTATION **/

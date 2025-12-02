@@ -21,6 +21,11 @@ export enum Curve {
 export const EVM_BASE_DERIVATION_PATH_PREFIX = "m/44'/60'/"
 export const SVM_BASE_DERIVATION_PATH_PREFIX = "m/44'/501'/"
 
+// Deprecated Avalanche public key path prefix
+export const DEPRECATED_AVALANCHE_DERIVATION_PATH_PREFIX = "m/44'/9000'/0'/"
+
+export const AVALANCHE_DERIVATION_PATH_PREFIX = "m/44'/9000'/"
+
 export type AddressPublicKey = {
   curve: Curve
   derivationPath: string
@@ -33,3 +38,14 @@ export type SeedlessPublicKeys = {
 
 export const isEvmPublicKey = (publicKey: AddressPublicKey): boolean =>
   publicKey.derivationPath.startsWith(EVM_BASE_DERIVATION_PATH_PREFIX)
+
+export const getXPAddressIndexFromDerivationPath = (path: string): number => {
+  const unprefixed = path.replace('m/', '')
+  const [, , , , addressIndex] = unprefixed.split('/')
+
+  if (!addressIndex) {
+    throw new Error('Invalid legacy X/P derivation path:' + path)
+  }
+
+  return parseInt(addressIndex)
+}

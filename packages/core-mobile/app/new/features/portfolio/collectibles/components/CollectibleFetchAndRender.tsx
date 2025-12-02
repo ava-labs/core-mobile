@@ -28,6 +28,8 @@ export const CollectibleFetchAndRender = memo(
     const tokenId = token?.collectableTokenId?.toString() || ''
 
     const initialCollectible = useMemo(() => {
+      const chainId = Number(tx.chainId)
+
       return {
         localId,
         type: token?.type as TokenType.ERC721 | TokenType.ERC1155,
@@ -36,14 +38,15 @@ export const CollectibleFetchAndRender = memo(
         status: NftLocalStatus.Unprocessed,
         balance: BigInt(0),
         balanceDisplayValue: '',
-        networkChainId: Number(tx.chainId),
+        networkChainId: chainId,
         description: '',
         logoUri: '',
         logoSmall: '',
         name: '',
         symbol: '',
         tokenUri: '',
-        collectionName: ''
+        collectionName: '',
+        chainId
       }
     }, [localId, token?.type, tx.to, tx.chainId, tokenId])
 
@@ -69,6 +72,7 @@ export const CollectibleFetchAndRender = memo(
                 processedMetadata.animation_url ||
                 processedMetadata.external_url
             )
+            const chainId = Number(tx.chainId)
 
             setCollectible({
               ...result,
@@ -86,7 +90,8 @@ export const CollectibleFetchAndRender = memo(
               logoUri: '',
               logoSmall: '',
               collectionName: '',
-              networkChainId: Number(tx.chainId),
+              networkChainId: chainId,
+              chainId,
               symbol: ''
             })
           }

@@ -23,6 +23,7 @@ class AvalancheGetAddressesInRangeHandler
     const state = getState()
     const activeWallet = selectActiveWallet(state)
     const isDeveloperMode = selectIsDeveloperMode(state)
+    const activeAccount = selectActiveAccount(state)
 
     if (!activeWallet) {
       return {
@@ -31,16 +32,14 @@ class AvalancheGetAddressesInRangeHandler
       }
     }
 
-    if (activeWallet.type === WalletType.PRIVATE_KEY) {
-      const activeAccount = selectActiveAccount(state)
-
-      if (!activeAccount) {
-        return {
-          success: false,
-          error: rpcErrors.internal('No active account')
-        }
+    if (!activeAccount) {
+      return {
+        success: false,
+        error: rpcErrors.internal('No active account')
       }
+    }
 
+    if (activeWallet.type === WalletType.PRIVATE_KEY) {
       return {
         success: true,
         value: {
@@ -69,11 +68,18 @@ class AvalancheGetAddressesInRangeHandler
 
     try {
       const addresses = await getAddressesFromXpubXP({
-        isDeveloperMode: isDeveloperMode,
+        isTestnet: isDeveloperMode,
         walletId: activeWallet.id,
-        walletType: activeWallet.type
+        walletType: activeWallet.type,
+        accountIndex: activeAccount.index
       })
-      return { success: true, value: addresses }
+      return {
+        success: true,
+        value: {
+          external: addresses.externalAddresses.map(address => address.address),
+          internal: addresses.internalAddresses.map(address => address.address)
+        }
+      }
     } catch (e) {
       return {
         success: false,

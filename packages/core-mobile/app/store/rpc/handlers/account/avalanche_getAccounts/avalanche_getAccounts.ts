@@ -3,8 +3,9 @@ import { selectAccounts, selectActiveAccount } from 'store/account/slice'
 import { selectWalletById } from 'store/wallet/slice'
 import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import { rpcErrors } from '@metamask/rpc-errors'
-import { WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
+import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 
 export type AvalancheGetAccountsRpcRequest =
@@ -22,39 +23,43 @@ class AvalancheGetAccountsHandler
     const state = listenerApi.getState()
     const accounts = selectAccounts(state)
     const activeAccount = selectActiveAccount(state)
-
+    const isDeveloperMode = selectIsDeveloperMode(state)
     if (!activeAccount) {
       return {
         success: false,
         error: rpcErrors.internal('no active account')
       }
     }
-
-    // Helper function to get xpubXP for supported wallet types
-    const getXpubXP = async (
-      walletId: string,
-      walletType: WalletType
-    ): Promise<string | undefined> => {
-      try {
-        return await WalletService.getRawXpubXP({ walletId, walletType })
-      } catch (error) {
-        return undefined
+    const wallet = selectWalletById(activeAccount.walletId)(state)
+    if (!wallet) {
+      return {
+        success: false,
+        error: rpcErrors.internal('no active wallet')
       }
     }
 
     // Process accounts and add xpubXP where available
     const accountsArray = await Promise.all(
       Object.values(accounts).map(async account => {
-        const wallet = selectWalletById(account.walletId)(state)
-        const xpubXP = wallet
-          ? await getXpubXP(account.walletId, wallet.type)
-          : undefined
+        const xpubXP = await getXpubXPIfAvailable({
+          walletId: wallet.id,
+          walletType: wallet.type,
+          accountIndex: account.index
+        })
+
+        const xpAddresses = await WalletService.getXPExternalAddresses({
+          account,
+          walletId: wallet.id,
+          walletType: wallet.type,
+          isTestnet: isDeveloperMode
+        })
 
         return {
           ...account,
-          walletType: wallet?.type,
-          walletName: wallet?.name,
+          walletType: wallet.type,
+          walletName: wallet.name,
           xpubXP,
+          xpAddresses,
           active: account.id === activeAccount.id
         }
       })

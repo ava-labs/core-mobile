@@ -89,6 +89,7 @@ export default class KeystoneWallet implements Wallet {
     s: string
     v: number
   }> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const signature: any = ETHSignature.fromCBOR(cbor).getSignature()
     const r = hexlify(new Uint8Array(signature.slice(0, 32)))
     const s = hexlify(new Uint8Array(signature.slice(32, 64)))
@@ -192,11 +193,9 @@ export default class KeystoneWallet implements Wallet {
           {
             masterFingerprint: Buffer.from(this.mfp, 'hex'),
             pubkey: getAddressPublicKeyFromXPub(this.xpub, accountIndex),
-            path: getAddressDerivationPath(
-              accountIndex,
-              DerivationPath.BIP44,
-              'EVM'
-            )
+            path: getAddressDerivationPath(accountIndex, 'EVM', {
+              pathSpec: DerivationPath.BIP44
+            })
           }
         ]
       })
@@ -238,6 +237,7 @@ export default class KeystoneWallet implements Wallet {
     return await signer(requestUR, ['avax-signature'], cbor => {
       const response = AvalancheSignature.fromCBOR(cbor)
       const sig = response.getSignature()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       tx.addSignature(sig as any)
       return Promise.resolve(JSON.stringify(tx.toJSON()))
     })
@@ -332,6 +332,7 @@ export default class KeystoneWallet implements Wallet {
     // This here is BIP44 for the first account (index 0). 2nd account should be M/44'/60'/0'/0/1, etc..
     const keyPath = `${EVM_DERIVATION_PATH}/0/${activeAccountIndex}`
     const ethSignRequest = EthSignRequest.constructETHRequest(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       Buffer.from(message as any),
       dataType,
       keyPath,

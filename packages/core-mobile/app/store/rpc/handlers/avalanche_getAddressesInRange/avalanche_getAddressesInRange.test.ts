@@ -36,8 +36,11 @@ jest.mock('store/account/slice', () => {
 jest
   .spyOn(getAddressesFromXpubXPModule, 'getAddressesFromXpubXP')
   .mockResolvedValue({
-    external: ['fuji1abc', 'fuji1def'],
-    internal: ['fuji1ghi']
+    externalAddresses: [
+      { address: 'fuji1abc', index: 0 },
+      { address: 'fuji1def', index: 1 }
+    ],
+    internalAddresses: [{ address: 'fuji1ghi', index: 0 }]
   })
 
 const createRequest = (): AvalancheGetAddressesInRangeRpcRequest => ({
