@@ -12,6 +12,7 @@ module.exports = {
   ignorePatterns: [
     '!.storybook/*.ts',
     '!.prettierrc.js',
-    '.storybook/storybook.requires.js'
+    '.storybook/storybook.requires.js',
+    'lib/**'
   ]
 }
