@@ -323,7 +323,7 @@ export function signSchnorr(
   con.log('[Crypto] signSchnorr called (msg, sk, aux). args=', {
     msgType: typeof messageHash,
     skType: typeof secretKey,
-    hasAux: auxRand !== undefined,
+    hasAux: auxRand !== undefined
   })
 
   const msgAB = ensure32(
