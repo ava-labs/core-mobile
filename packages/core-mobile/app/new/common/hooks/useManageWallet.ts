@@ -1,29 +1,31 @@
-import { showAlert } from '@avalabs/k2-alpine'
 import { DropdownItem } from 'common/components/DropdownMenu'
 import {
   dismissAlertWithTextInput,
   showAlertWithTextInput
 } from 'common/utils/alertWithTextInput'
-import { showSnackbar } from 'new/common/utils/toast'
 import { useCallback, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { WalletType } from 'services/wallet/types'
-import { addAccount } from 'store/account'
-import { selectAccounts } from 'store/account/slice'
-import { AppThunkDispatch } from 'store/types'
 import {
   selectIsMigratingActiveAccounts,
   selectWallets,
   setWalletName
 } from 'store/wallet/slice'
-import { removeWallet } from 'store/wallet/thunks'
 import { Wallet } from 'store/wallet/types'
+import { showAlert } from '@avalabs/k2-alpine'
+import { removeWallet } from 'store/wallet/thunks'
+import { addAccount } from 'store/account'
+import { selectAccounts } from 'store/account/slice'
+import { AppThunkDispatch } from 'store/types'
+import { WalletType } from 'services/wallet/types'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
+import { showSnackbar } from 'new/common/utils/toast'
 
 export const useManageWallet = (): {
+  handleAddAccount: (wallet: Wallet) => void
   getDropdownItems: (wallet: Wallet) => DropdownItem[]
   handleDropdownSelect: (action: string, wallet: Wallet) => void
+  isAddingAccount: boolean
 } => {
   const [isAddingAccount, setIsAddingAccount] = useState(false)
   const dispatch = useDispatch<AppThunkDispatch>()
@@ -103,12 +105,13 @@ export const useManageWallet = (): {
       if (isAddingAccount) return
 
       try {
-        setIsAddingAccount(true)
-        await dispatch(addAccount(wallet.id)).unwrap()
-        // TODO: figure out how to get the account number and if we should include the wallet ID
         AnalyticsService.capture('AccountSelectorAddAccount', {
           accountNumber: Object.keys(accounts).length + 1
         })
+
+        setIsAddingAccount(true)
+        await dispatch(addAccount(wallet.id)).unwrap()
+
         AnalyticsService.capture('CreatedANewAccountSuccessfully', {
           walletType: wallet.type
         })
@@ -209,6 +212,8 @@ export const useManageWallet = (): {
   )
 
   return {
+    isAddingAccount,
+    handleAddAccount,
     getDropdownItems,
     handleDropdownSelect
   }
