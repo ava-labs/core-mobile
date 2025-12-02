@@ -9,21 +9,21 @@ export type LocalTokenWithBalance = TokenWithBalance & {
 }
 
 export const assetPDisplayNames: Record<string, string> = {
-  lockedStaked: 'Locked Staked',
-  lockedStakeable: 'Locked Stakeable',
-  lockedPlatform: 'Locked Platform',
-  atomicMemoryLocked: 'Atomic Memory Locked',
-  atomicMemoryUnlocked: 'Atomic Memory Unlocked',
-  unlockedUnstaked: 'Unlocked Unstaked',
-  unlockedStaked: 'Unlocked Staked',
-  pendingStaked: 'Pending Staked'
+  lockedStaked: 'Locked staked',
+  lockedStakeable: 'Locked stakeable',
+  lockedPlatform: 'Locked platform',
+  atomicMemoryLocked: 'Atomic memory locked',
+  atomicMemoryUnlocked: 'Atomic memory unlocked',
+  unlockedUnstaked: 'Unlocked unstaked',
+  unlockedStaked: 'Unlocked staked',
+  pendingStaked: 'Pending staked'
 }
 
 export const assetXDisplayNames: Record<string, string> = {
   locked: 'Locked',
   unlocked: 'Unlocked',
-  atomicMemoryLocked: 'Atomic Memory Locked',
-  atomicMemoryUnlocked: 'Atomic Memory Unlocked'
+  atomicMemoryLocked: 'Atomic memory locked',
+  atomicMemoryUnlocked: 'Atomic memory unlocked'
 }
 
 // Assets
