@@ -61,7 +61,19 @@ export function useAccountBalances(
     staleTime,
     queryFn: async () => {
       if (isNotReady) return []
-
+      try {
+        const balances2 = await BalanceService.getBalancesForAccounts2({
+          networks: enabledNetworks,
+          accounts: [account],
+          currency: currency.toLowerCase(),
+          customTokens,
+          onBalanceLoaded: (chainId, partialMap) => {
+            console.log('HELLO 3')
+          }
+        })
+      } catch (error) {
+        console.error(error)
+      }
       const balances = await BalanceService.getBalancesForAccounts({
         networks: enabledNetworks,
         accounts: [account],
