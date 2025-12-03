@@ -1,9 +1,9 @@
 import {
-  WatchlistMarketsResponse,
   SimplePriceResponse,
-  TrendingToken
+  TrendingToken,
+  WatchlistMarketsResponse
 } from 'utils/api/types'
-import { proxyApi } from './clients/proxyApiClient'
+import { proxyApi } from '../clients/proxyApiClient'
 
 /**
  * OpenAPI client interface for watchlist endpoints

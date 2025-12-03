@@ -14,7 +14,7 @@ import {
   Prices
 } from 'store/watchlist/types'
 import { TrendingToken, WatchlistMarketsResponse } from 'utils/api/types'
-import { watchListClient, WatchListClient } from 'utils/api/watchlistClient'
+import { watchListClient, WatchListClient } from 'utils/api/fetches/watchlistFetchClient'
 import Logger from 'utils/Logger'
 
 /**

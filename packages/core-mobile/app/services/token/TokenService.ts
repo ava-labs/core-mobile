@@ -22,7 +22,7 @@ import { coingeckoProxyClient } from 'services/token/coingeckoProxyClient'
 import Logger from 'utils/Logger'
 import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
 import { TrendingToken } from 'utils/api/types'
-import { watchListClient } from 'utils/api/watchlistClient'
+import { watchListClient } from 'utils/api/fetches/watchlistFetchClient'
 import {
   ChartData,
   CoinMarket,

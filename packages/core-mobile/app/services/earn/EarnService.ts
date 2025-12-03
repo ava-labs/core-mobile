@@ -17,7 +17,7 @@ import {
 import { getUnixTime } from 'date-fns'
 import { Seconds } from 'types/siUnits'
 import { PChainTransaction, SortOrder } from '@avalabs/glacier-sdk'
-import { listLatestPrimaryNetworkTransactions } from 'utils/api/glacierNitroFetchClient'
+import { listLatestPrimaryNetworkTransactions } from 'utils/api/clients/glacierClient'
 import { isOnGoing } from 'utils/earn/status'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'

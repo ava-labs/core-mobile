@@ -4,8 +4,8 @@ import queryString from 'query-string'
 import { CORE_HEADERS } from 'utils/apiClient/constants'
 import createClient from 'openapi-fetch'
 import Logger from 'utils/Logger'
-import { appCheckMiddleware } from '../middlewares'
-import { paths } from '../generated/glacier/schema'
+import { appCheckMiddleware } from '../common/middlewares'
+import { paths } from '../generated/tokenAggregator/schema'
 
 if (!Config.TOKEN_AGGREGATOR_URL)
   Logger.warn(

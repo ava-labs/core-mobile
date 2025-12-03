@@ -21,7 +21,7 @@
     "gen:openapi:glacier": "npx openapi-typescript 'https://glacier-api-dev.avax.network/api-json' -o './app/utils/api/generated/glacier/schema.d.ts'",
     "gen:tokenAggregator:openapi": "npx openapi-typescript 'https://core-token-aggregator.avax-test.network/schema.json' -o './app/utils/api/generated/tokenAggregator/schema.d.ts'",
     "gen:openapi:all": "yarn gen:openapi:glacier && yarn gen:tokenAggregator:openapi",
-    "codegen": "yarn gen:openapi:all",
+    "codegen": "yarn gen:openapi:all && yarn gen:profileApi && yarn gen:contracts",
     "appium:ios": "PLATFORM=ios wdio run ./e2e-appium/wdio.conf.ts",
     "appium:android": "PLATFORM=android wdio run ./e2e-appium/wdio.conf.ts",
     "appium": "wdio run ./e2e-appium/wdio.conf.ts"
