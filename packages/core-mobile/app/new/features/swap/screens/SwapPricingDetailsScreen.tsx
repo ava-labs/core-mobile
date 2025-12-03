@@ -83,7 +83,9 @@ export const SwapPricingDetailsScreen = ({
       const isLastItem = index === quotes.quotes.length
       const isSelected =
         (!manuallySelected && index === 0) ||
-        (manuallySelected && quotes.selected === item)
+        (manuallySelected &&
+          isMarkrQuote(quotes.selected.quote) &&
+          (quotes.selected.quote as MarkrQuote).aggregator.id === id)
 
       const usdEquivalent =
         id === 'auto'
