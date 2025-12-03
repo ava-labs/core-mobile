@@ -64,7 +64,7 @@ export const ContactForm = ({
         switch (network.vmName) {
           case NetworkVMType.AVM:
           case NetworkVMType.PVM:
-            return contact.addressXP !== undefined
+            return contact.addressXP
               ? stripAddressPrefix(contact.addressXP)
               : undefined
           case NetworkVMType.BITCOIN:
