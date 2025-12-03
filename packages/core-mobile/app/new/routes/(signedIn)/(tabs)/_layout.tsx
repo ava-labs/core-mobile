@@ -87,7 +87,7 @@ export default function TabLayout(): JSX.Element {
       <BottomTabs.Screen
         name="stake"
         options={{
-          tabBarButtonTestID: 'stake_tab',
+          tabBarButtonTestID: 'earn_tab',
           title: isInAppDefiBlocked ? 'Stake' : 'Earn',
           tabBarIcon: () => stakeIcon,
           freezeOnBlur

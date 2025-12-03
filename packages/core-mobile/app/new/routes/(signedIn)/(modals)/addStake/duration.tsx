@@ -312,7 +312,12 @@ const StakeDurationScreen = (): JSX.Element => {
         sx={{
           gap: 16
         }}>
-        <Button type="primary" size="large" onPress={handlePressNext}>
+        <Button
+          testID="next_btn"
+          accessible={true}
+          type="primary"
+          size="large"
+          onPress={handlePressNext}>
           Next
         </Button>
         <Button type="tertiary" size="large" onPress={handleAdvancedSetup}>

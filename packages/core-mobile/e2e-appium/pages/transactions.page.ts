@@ -67,6 +67,10 @@ class TransactionsPage {
     return selectors.getById(txLoc.amountToSend)
   }
 
+  get amountToStakeInput() {
+    return selectors.getById(txLoc.amountToStake)
+  }
+
   get nextBtn() {
     return selectors.getById(txLoc.nextBtn)
   }
@@ -104,7 +108,7 @@ class TransactionsPage {
   }
 
   get receiveCryptoSubtitle() {
-    return selectors.getByText(txLoc.receiveCryptoSubtitle)
+    return selectors.getBySomeText(txLoc.receiveCryptoSubtitle)
   }
 
   get receiveQrCode() {
@@ -129,6 +133,22 @@ class TransactionsPage {
 
   get currencySelector() {
     return selectors.getById(txLoc.currencySelector)
+  }
+
+  get addStakeCard() {
+    return selectors.getById(txLoc.addStakeCard)
+  }
+
+  get claimCard() {
+    return selectors.getById(txLoc.claimCard)
+  }
+
+  get claimNow() {
+    return selectors.getById(txLoc.claimNow)
+  }
+
+  get reviewStakeTitle() {
+    return selectors.getBySomeText(txLoc.reviewStakeTitle)
   }
 
   async tapSelectTokenTitle() {
@@ -196,6 +216,14 @@ class TransactionsPage {
     }
   }
 
+  async enterStakingAmount(amount: string) {
+    try {
+      await actions.type(this.amountToStakeInput, amount)
+    } catch (e) {
+      await actions.tapNumberPad(amount)
+    }
+  }
+
   async tapNext() {
     await actions.waitFor(this.nextBtn)
     await actions.tap(this.nextBtn)
@@ -227,6 +255,50 @@ class TransactionsPage {
     await this.enterSendAmount(amount)
     await this.tapNext()
     await this.tapApprove()
+  }
+
+  async tapAddStakeCard() {
+    await actions.longPress(this.addStakeCard, this.transactionOnboardingNext)
+  }
+
+  async tapClaimCard() {
+    await actions.longPress(this.claimCard)
+  }
+
+  async tapClaimNow() {
+    await actions.waitFor(this.claimNow, 40000)
+    await actions.tap(this.claimNow)
+  }
+
+  async selectDuration(duration: string) {
+    if (duration !== '1 Day') {
+      await actions.tap(commonElsPage.listItem(txLoc.duration))
+      await actions.tap(selectors.getBySomeText(duration))
+    }
+  }
+
+  async tapConfirmStake() {
+    await actions.tap(selectors.getById(txLoc.confirmStake))
+  }
+
+  async stake(amount = '1', duration = '1 Day') {
+    await this.tapAddStakeCard()
+    await this.dismissTransactionOnboarding()
+    await this.enterStakingAmount(amount)
+    await this.tapNext()
+    await this.selectDuration(duration)
+    await this.tapNext()
+    await this.tapConfirmStake()
+    await actions.waitForNotVisible(this.reviewStakeTitle)
+  }
+
+  async claim() {
+    if (await actions.getVisible(this.claimCard)) {
+      await this.tapClaimCard()
+      await this.tapClaimNow()
+    } else {
+      await actions.isNotVisible(this.claimCard)
+    }
   }
 
   async verifySuccessToast() {

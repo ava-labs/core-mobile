@@ -38,6 +38,7 @@ import BiometricsSDK, { BiometricType } from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
 import { StorageKey } from 'resources/Constants'
+import * as LocalAuthentication from 'expo-local-authentication'
 
 export const PinScreen = ({
   onForgotPin,
@@ -209,15 +210,14 @@ export const PinScreen = ({
     }
   }, [])
 
-  const handleLoginOptions = useCallback(() => {
-    requestAnimationFrame(() => {
-      const accessType = BiometricsSDK.getAccessType()
-      if (accessType === 'BIO') {
-        handlePromptBioLogin()
-      } else {
-        focusPinInput()
-      }
-    })
+  const handleLoginOptions = useCallback(async () => {
+    const accessType = BiometricsSDK.getAccessType()
+    const enrolledBiometrics = await LocalAuthentication.isEnrolledAsync()
+    if (accessType === 'BIO' && enrolledBiometrics) {
+      handlePromptBioLogin()
+    } else {
+      focusPinInput()
+    }
   }, [handlePromptBioLogin, focusPinInput])
 
   const handleBrokenBioState = useCallback(() => {

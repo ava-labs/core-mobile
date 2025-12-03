@@ -21,7 +21,7 @@ import { createInAppRequest, Request } from 'store/rpc/utils/createInAppRequest'
  * const txHash = await request({
  *    method: RpcMethod.ETH_SEND_TRANSACTION,
  *    params: txParams,
- *    chainId: '43114'
+ *    chainId: 'eip155:43114'
  * })
  */
 export const useInAppRequest = (): { request: Request } => {
