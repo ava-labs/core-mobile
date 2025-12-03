@@ -19,6 +19,7 @@ export const ClaimCard = ({
 
   return (
     <BaseCard
+      testID="claim_card"
       onPress={onPress}
       sx={{
         paddingVertical: 20,
