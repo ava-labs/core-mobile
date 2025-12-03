@@ -13,6 +13,7 @@
     "tsc": "yarn workspaces foreach -p run tsc",
     "test": "yarn workspaces foreach -p run test",
     "core": "yarn workspace @avalabs/core-mobile",
+    "crypto": "yarn workspace react-native-nitro-avalabs-crypto",
     "k2": "yarn workspace @avalabs/k2-alpine"
   },
   "devDependencies": {
@@ -52,7 +53,24 @@
     "@scure/btc-signer/@noble/hashes": "1.8.0",
     "lodash@4.17.3": "4.17.21",
     "@ledgerhq/hw-transport": "6.31.0",
-    "jail-monkey@2.8.0": "patch:jail-monkey@npm%3A2.8.0#./.yarn/patches/jail-monkey-npm-2.8.0-77e4d06b40.patch"
+    "jail-monkey@2.8.0": "patch:jail-monkey@npm%3A2.8.0#./.yarn/patches/jail-monkey-npm-2.8.0-77e4d06b40.patch",
+    "@noble/curves@1.9.7": "patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch",
+    "@noble/curves@^1.7.0": "patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch",
+    "@noble/curves@1.3.0": "patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch",
+    "@noble/curves@^1.6.0": "patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch",
+    "@noble/curves@1.2.0": "patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch",
+    "@noble/curves@1.6.0": "patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch",
+    "@noble/curves@1.4.2": "patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch",
+    "@noble/curves@~1.3.0": "patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch",
+    "@noble/curves@^1.4.0": "patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch",
+    "@noble/curves@~1.4.0": "patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch",
+    "@noble/curves@~1.6.0": "patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch",
+    "@noble/curves@1.1.0": "patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch",
+    "@noble/curves@~1.2.0": "patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch",
+    "@noble/curves@~1.1.0": "patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch",
+    "@noble/curves@^1.8.0": "patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch",
+    "@bitcoinerlab/secp256k1@1.2.0": "patch:@bitcoinerlab/secp256k1@npm%3A1.2.0#./.yarn/patches/@bitcoinerlab-secp256k1-npm-1.2.0-1098d4b329.patch",
+    "@bitcoinerlab/secp256k1@^1.0.5": "patch:@bitcoinerlab/secp256k1@npm%3A1.2.0#./.yarn/patches/@bitcoinerlab-secp256k1-npm-1.2.0-1098d4b329.patch"
   },
   "engines": {
     "node": ">=20.18.0",

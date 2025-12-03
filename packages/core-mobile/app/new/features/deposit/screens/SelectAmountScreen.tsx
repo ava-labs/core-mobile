@@ -1,133 +1,56 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import {
-  ActivityIndicator,
-  Button,
-  SendTokenUnitInputWidget,
-  SendTokenUnitInputWidgetHandle,
-  View
-} from '@avalabs/k2-alpine'
-import { ScrollScreen } from 'common/components/ScrollScreen'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import { useSelector } from 'react-redux'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { usePrevious } from 'common/hooks/usePrevious'
+import React, { useCallback } from 'react'
+import { useRouter } from 'expo-router'
 import { TokenType } from '@avalabs/vm-module-types'
-import { useDepositSelectedMarket, useDepositSelectedToken } from '../store'
+import { useDepositSelectedMarket, useDepositSelectedAsset } from '../store'
+import { MarketNames } from '../types'
+import { AaveErc20SelectAmountForm } from '../components/AaveErc20SelectAmountForm'
+import { AaveAvaxSelectAmountForm } from '../components/AaveAvaxSelectAmountForm'
+import { BenqiErc20SelectAmountForm } from '../components/BenqiErc20SelectAmountForm'
+import { BenqiAvaxSelectAmountForm } from '../components/BenqiAvaxSelectAmountForm'
 
 export const SelectAmountScreen = (): JSX.Element => {
-  const [amount, setAmount] = useState<TokenUnit>()
-  const [isSubmitting] = useState(false)
-  const [selectedToken] = useDepositSelectedToken()
-  const prevSelectedToken = usePrevious(selectedToken)
+  const { dismissAll, back } = useRouter()
+  const [selectedAsset] = useDepositSelectedAsset()
   const [selectedMarket] = useDepositSelectedMarket()
-  const tokenUnitInputWidgetRef = useRef<SendTokenUnitInputWidgetHandle>(null)
-  const { getMarketTokenBySymbol } = useWatchlist()
-  const selectedCurrency = useSelector(selectSelectedCurrency)
-  const tokenBalance = useMemo(() => {
-    if (
-      !selectedToken ||
-      (selectedToken.type !== TokenType.NATIVE &&
-        selectedToken.type !== TokenType.ERC20)
-    ) {
-      return undefined
-    }
 
-    return new TokenUnit(
-      selectedToken.balance ?? 0n,
-      selectedToken.decimals,
-      selectedToken.symbol
+  const handleSuccess = useCallback(() => {
+    dismissAll()
+    back()
+  }, [dismissAll, back])
+
+  if (!selectedAsset || !selectedMarket) {
+    return <></>
+  }
+
+  if (selectedMarket.marketName === MarketNames.aave) {
+    return selectedAsset.token.type === TokenType.NATIVE ? (
+      <AaveAvaxSelectAmountForm
+        asset={selectedAsset}
+        market={selectedMarket}
+        onSuccess={handleSuccess}
+      />
+    ) : (
+      <AaveErc20SelectAmountForm
+        asset={selectedAsset}
+        market={selectedMarket}
+        onSuccess={handleSuccess}
+      />
     )
-  }, [selectedToken])
-
-  const formatInCurrency = useCallback(
-    (amt: TokenUnit, symbol: string): string => {
-      const currentPrice = getMarketTokenBySymbol(symbol)?.currentPrice ?? 0
-      return amt.mul(currentPrice).toDisplay() + ' ' + selectedCurrency
-    },
-    [getMarketTokenBySymbol, selectedCurrency]
-  )
-
-  const handleNext = useCallback(() => {
-    if (!selectedMarket) {
-      return
-    }
-    // TODO
-  }, [selectedMarket])
-
-  const canSubmit =
-    !isSubmitting &&
-    amount &&
-    amount.gt(0) &&
-    selectedToken !== undefined &&
-    selectedMarket !== undefined &&
-    tokenBalance &&
-    (amount.lt(tokenBalance) || amount?.eq(tokenBalance))
-
-  const renderFooter = useCallback(() => {
-    return (
-      <Button
-        size="large"
-        type="primary"
-        onPress={handleNext}
-        disabled={!canSubmit}>
-        {isSubmitting ? <ActivityIndicator size="small" /> : 'Next'}
-      </Button>
+  } else if (selectedMarket.marketName === MarketNames.benqi) {
+    return selectedAsset.token.type === TokenType.NATIVE ? (
+      <BenqiAvaxSelectAmountForm
+        asset={selectedAsset}
+        market={selectedMarket}
+        onSuccess={handleSuccess}
+      />
+    ) : (
+      <BenqiErc20SelectAmountForm
+        asset={selectedAsset}
+        market={selectedMarket}
+        onSuccess={handleSuccess}
+      />
     )
-  }, [handleNext, isSubmitting, canSubmit])
+  }
 
-  const validateSendAmount = useCallback(
-    async (amt: TokenUnit) => {
-      if (tokenBalance && amt.gt(tokenBalance)) {
-        throw new Error(
-          'The specified send amount exceeds the available balance'
-        )
-      }
-    },
-    [tokenBalance]
-  )
-
-  useEffect(() => {
-    if (prevSelectedToken !== selectedToken) {
-      setAmount(undefined)
-      tokenUnitInputWidgetRef.current?.setValue('')
-    }
-  }, [prevSelectedToken, selectedToken])
-
-  return (
-    <ScrollScreen
-      title={`How much do you want to deposit?`}
-      titleSx={{ maxWidth: '80%' }}
-      contentContainerStyle={{
-        padding: 16,
-        paddingTop: 0
-      }}
-      renderFooter={renderFooter}>
-      <View sx={{ flex: 1 }}>
-        {tokenBalance && (
-          <SendTokenUnitInputWidget
-            ref={tokenUnitInputWidgetRef}
-            sx={{ marginTop: 12 }}
-            amount={amount}
-            token={{
-              maxDecimals:
-                selectedToken && 'decimals' in selectedToken
-                  ? selectedToken.decimals
-                  : 0,
-              symbol: selectedToken?.symbol ?? ''
-            }}
-            balance={tokenBalance}
-            formatInCurrency={amt =>
-              formatInCurrency(amt, selectedToken?.symbol ?? '')
-            }
-            onChange={setAmount}
-            validateAmount={validateSendAmount}
-            disabled={isSubmitting || selectedToken === undefined}
-            autoFocus
-            presetPercentages={[25, 50]}
-          />
-        )}
-      </View>
-    </ScrollScreen>
-  )
+  return <></>
 }

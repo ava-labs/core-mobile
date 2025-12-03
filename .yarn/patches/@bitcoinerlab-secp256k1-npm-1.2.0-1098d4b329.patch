@@ -1,0 +1,205 @@
+diff --git a/.DS_Store b/.DS_Store
+new file mode 100644
+index 0000000000000000000000000000000000000000..9211d3bfe85cf15dbed0f66b9014a322c5f36ceb
+--- /dev/null
++++ b/.DS_Store
+@@ -0,0 +1 @@
++
+\ No newline at end of file
+diff --git a/dist/index.js b/dist/index.js
+index 4a914633a13067af05838ab582a9dd41b53306ba..68df133248e9a1d067735ad1915f64afd4563057 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -4,6 +4,27 @@ var secp256k1 = require('@noble/curves/secp256k1');
+ var mod = require('@noble/curves/abstract/modular');
+ var utils = require('@noble/curves/abstract/utils');
+ 
++// Prefer native Nitro implementation when available
++let pointAddScalarNative;
++try {
++  const NativeAvalabsCrypto = require('react-native-nitro-avalabs-crypto');
++  pointAddScalarNative = NativeAvalabsCrypto && NativeAvalabsCrypto.pointAddScalar;
++} catch (_) {
++  pointAddScalarNative = undefined;
++}
++
++// Native sign/verify (Nitro) support
++let signNative, verifyNative, signSchnorrNative, verifySchnorrNative;
++try {
++  const NativeAvalabsCrypto = require('react-native-nitro-avalabs-crypto');
++  signNative = NativeAvalabsCrypto && NativeAvalabsCrypto.sign;
++  verifyNative = NativeAvalabsCrypto && NativeAvalabsCrypto.verify;
++  signSchnorrNative = NativeAvalabsCrypto && NativeAvalabsCrypto.signSchnorr;
++  verifySchnorrNative = NativeAvalabsCrypto && NativeAvalabsCrypto.verifySchnorr;
++} catch (_) {
++  signNative = verifyNative = signSchnorrNative = verifySchnorrNative = undefined;
++}
++
+ function _interopNamespaceDefault(e) {
+   var n = Object.create(null);
+   if (e) {
+@@ -176,6 +197,31 @@ function _privateNegate(privateKey) {
+ }
+ 
+ function _pointAddScalar(p, tweak, isCompressed) {
++  // Try native (RN Nitro) fast-path first
++  if (typeof pointAddScalarNative === 'function') {
++    try {
++      const out = pointAddScalarNative(p, tweak, isCompressed);
++      if (out.length === 0) {
++        throw new Error("Tweaked point at infinity");
++      }
++
++      const con = console;
++      con.log('pointAddScalarNative output:', out);
++
++      // Native returns ArrayBuffer or Uint8Array
++      return out instanceof ArrayBuffer ? new Uint8Array(out) : out;
++    } catch (e) { /* fall back to JS path below */ 
++      if (e instanceof Error && e.message === "Tweaked point at infinity") {
++        throw e;
++      }
++      const con = console;
++      con.log('pointAddScalarNative failed, using JS fallback', e);
++    }
++  } else {
++    const con = console;
++      con.log('pointAddScalarNative not available, using JS fallback');
++  }
++  // Fallback to JS implementation
+   const P = fromHex(p);
+   const t = normalizeScalar(tweak);
+   // multiplyAndAddUnsafe(P, scalar, 1) = P + scalar*G
+@@ -361,6 +407,18 @@ function sign(h, d, e) {
+   if (!isExtraData(e)) {
+     throw new Error(THROW_BAD_EXTRA_DATA);
+   }
++
++  // Try native first
++  if (typeof signNative === 'function') {
++    try {
++      const result = signNative(d, h);
++      return result instanceof ArrayBuffer ? new Uint8Array(result) : result;
++    } catch (_) {
++      // fallback
++    }
++  }
++
++  // JS fallback
+   return secp256k1.secp256k1.sign(h, d, { extraEntropy: e }).toCompactRawBytes();
+ }
+ 
+@@ -381,7 +439,7 @@ function signRecoverable(h, d, e) {
+   };
+ }
+ 
+-function signSchnorr(h, d, e) {
++function signSchnorr(h, d, e, forceJs = false) {
+   if (!isPrivate(d)) {
+     throw new Error(THROW_BAD_PRIVATE);
+   }
+@@ -391,6 +449,18 @@ function signSchnorr(h, d, e) {
+   if (!isExtraData(e)) {
+     throw new Error(THROW_BAD_EXTRA_DATA);
+   }
++
++  // Try native first
++  if (typeof signSchnorrNative === 'function' && !forceJs) {
++    try {
++      const result = signSchnorrNative(h, d, e);
++      return result instanceof ArrayBuffer ? new Uint8Array(result) : result;
++    } catch (_) {
++      // fallback to JS implementation
++    }
++  }
++
++  // JS fallback
+   return secp256k1.schnorr.sign(h, d, e);
+ }
+ 
+@@ -428,10 +498,21 @@ function verify(h, Q, signature, strict) {
+   if (!isHash(h)) {
+     throw new Error(THROW_BAD_SCALAR);
+   }
++
++  // Try native verify first
++  if (typeof verifyNative === 'function') {
++    try {
++      return !!verifyNative(Q, h, signature);
++    } catch (_) {
++      // fallback
++    }
++  }
++
++  // JS fallback
+   return secp256k1.secp256k1.verify(signature, h, Q, { lowS: strict });
+ }
+ 
+-function verifySchnorr(h, Q, signature) {
++function verifySchnorr(h, Q, signature, forceJs = false) {
+   if (!isXOnlyPoint(Q)) {
+     throw new Error(THROW_BAD_POINT);
+   }
+@@ -441,6 +522,17 @@ function verifySchnorr(h, Q, signature) {
+   if (!isHash(h)) {
+     throw new Error(THROW_BAD_SCALAR);
+   }
++
++  // Try native verify first
++  if (typeof verifySchnorrNative === 'function' && !forceJs) {
++    try {
++      return !!verifySchnorrNative(Q, h, signature);
++    } catch (_) {
++      // fallback to JS implementation
++    }
++  }
++
++  // JS fallback
+   return secp256k1.schnorr.verify(signature, h, Q);
+ }
+ 
+@@ -465,3 +557,4 @@ exports.verifySchnorr = verifySchnorr;
+ exports.xOnlyPointAddTweak = xOnlyPointAddTweak;
+ exports.xOnlyPointFromPoint = xOnlyPointFromPoint;
+ exports.xOnlyPointFromScalar = xOnlyPointFromScalar;
++
+diff --git a/package.json b/package.json
+index 8966c2604340ecac199be87de4517dd5b2d81a0a..13aea201ba47186003710bc30ecccc1a89118e7e 100644
+--- a/package.json
++++ b/package.json
+@@ -42,5 +42,35 @@
+   },
+   "dependencies": {
+     "@noble/curves": "^1.7.0"
++  },
++  "react-native": {
++    "zlib": "browserify-zlib",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "stream": "stream-browserify",
++    "vm": "vm-browserify"
++  },
++  "browser": {
++    "zlib": "browserify-zlib",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "stream": "stream-browserify",
++    "vm": "vm-browserify"
+   }
+ }

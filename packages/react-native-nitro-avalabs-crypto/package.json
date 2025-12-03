@@ -1,0 +1,74 @@
+{
+  "name": "react-native-nitro-avalabs-crypto",
+  "version": "0.0.1",
+  "description": "react-native-nitro-avalabs-crypto",
+  "main": "lib/index",
+  "module": "lib/index",
+  "types": "lib/index.d.ts",
+  "react-native": "src/index",
+  "source": "src/index",
+  "files": [
+    "src",
+    "react-native.config.js",
+    "lib",
+    "nitrogen",
+    "android/build.gradle",
+    "android/gradle.properties",
+    "android/fix-prefab.gradle",
+    "android/CMakeLists.txt",
+    "android/src",
+    "ios/**/*.h",
+    "ios/**/*.m",
+    "ios/**/*.mm",
+    "ios/**/*.cpp",
+    "ios/**/*.swift",
+    "app.plugin.js",
+    "nitro.json",
+    "*.podspec",
+    "README.md"
+  ],
+  "scripts": {
+    "postinstall": "tsc -p .",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf android/build node_modules/**/android/build lib",
+    "lint": "eslint .",
+    "tsc": "tsc -p .",
+    "specs": "tsc --noEmit false && nitrogen --logLevel=\"debug\"",
+    "setup": "npx nitrogen"
+  },
+  "keywords": [
+    "react-native",
+    "nitro"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrousavy/nitro.git"
+  },
+  "author": "Marc Rousavy <me@mrousavy.com> (https://github.com/mrousavy)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mrousavy/nitro/issues"
+  },
+  "homepage": "https://github.com/mrousavy/nitro#readme",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "devDependencies": {
+    "@react-native/babel-preset": "0.79.5",
+    "@react-native/eslint-config": "0.82.0",
+    "@rushstack/eslint-patch": "1.10.4",
+    "@types/react": "19.0.10",
+    "eslint": "8.50.0",
+    "eslint-plugin-avalabs-mobile": "workspace:*",
+    "nitrogen": "*",
+    "react": "19.0.0",
+    "react-native": "0.79.5",
+    "react-native-nitro-modules": "0.31.10",
+    "typescript": "^5.8.3"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*",
+    "react-native-nitro-modules": "*"
+  }
+}

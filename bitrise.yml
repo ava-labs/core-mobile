@@ -24,6 +24,13 @@ workflows:
     - set-java-version@1:
         inputs:
         - set_java_version: "17"
+    - script:
+        title: Install build dependencies
+        inputs:
+          - content: |
+              #!/usr/bin/env bash
+              set -ex
+              sudo apt-get install -y build-essential autoconf automake libtool tar
     - install-missing-android-tools@3:
         inputs:
         - ndk_version: 27.1.12297006
@@ -215,6 +222,9 @@ workflows:
         - pipeline_intermediate_files: "$BITRISE_DEPLOY_DIR/app-external-e2e-bitrise-signed.apk:BITRISE_APK_PATH\n$BITRISE_DEPLOY_DIR/app-external-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH\t"
   _build-ios:
     steps:
+    - brew-install@1:
+        inputs:
+        - packages: autoconf automake libtool
     - restore-cocoapods-cache@1: {}
     - script@1:
         title: Copy Gemfile to iOS folder

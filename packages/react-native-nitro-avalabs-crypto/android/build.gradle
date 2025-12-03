@@ -1,0 +1,601 @@
+buildscript {
+
+  // Buildscript is evaluated before everything else so we can't use getExtOrDefault
+  def kotlin_version = rootProject.ext.has("kotlinVersion") ? rootProject.ext.get("kotlinVersion") : project.properties["NitroAvalabsCrypto_kotlinVersion"]
+  
+  repositories {
+    google()
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath "com.android.tools.build:gradle:8.7.2"
+    // noinspection DifferentKotlinGradleVersion
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlin_version}"
+  }
+}
+
+def reactNativeArchitectures() {
+  def value = rootProject.getProperties().get("reactNativeArchitectures")
+  def res = value ? value.split(",") : ["armeabi-v7a", "arm64-v8a"]
+  println "[reactNativeArchitectures] Using architectures: ${res}"
+  return res
+}
+
+def isNewArchitectureEnabled() {
+  return rootProject.hasProperty("newArchEnabled") && rootProject.getProperty("newArchEnabled") == "true"
+}
+
+def getExtOrDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties["NitroAvalabsCrypto_" + name]
+}
+
+def getExtOrIntegerDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["NitroAvalabsCrypto_" + name]).toInteger()
+}
+
+apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
+
+if (isNewArchitectureEnabled()) {
+  apply plugin: "com.facebook.react"
+}
+
+apply from: '../nitrogen/generated/android/NitroAvalabsCrypto+autolinking.gradle'
+
+// === secp256k1 Android build wiring (headers + .so per ABI) ===
+ext {
+  SECP_OUTPUTS_INCLUDE_DIR = "$buildDir/outputs/include"
+  SECP_OUTPUTS_ROOT        = "$buildDir/outputs/android" // <abi>/lib/libsecp256k1.so
+}
+
+ext {
+  secpRepoUrl       = 'https://github.com/bitcoin-core/secp256k1.git'
+  secpTag           = 'v0.7.0'
+  secpCommit        = ''
+  workDirBase           = file("$buildDir/secp256k1")
+  installRoot       = file("$buildDir/secp-android")
+  outputsRoot       = file(SECP_OUTPUTS_ROOT)
+  outputsIncludeDir = file(SECP_OUTPUTS_INCLUDE_DIR)
+  enableModules     = (project.findProperty('secpModules')  ?: '')   // e.g., ecdh,recovery,schnorrsig,extrakeys
+  // Use the same API level for all ABIs; default to max(minSdkVersion, 21). Override with -PsecpApi.
+  secpApi           = (project.findProperty('secpApi') ?: Math.max(getExtOrIntegerDefault("minSdkVersion"), 21)).toString()  // Base directory
+}
+
+import org.apache.tools.ant.taskdefs.condition.Os
+
+def isMac() { Os.isFamily(Os.FAMILY_MAC) }
+def isLinux() { Os.isFamily(Os.FAMILY_UNIX) && !Os.isFamily(Os.FAMILY_MAC) }
+def isWindows() { Os.isFamily(Os.FAMILY_WINDOWS) }
+def standardOutput = new ByteArrayOutputStream()
+def errorOutput = new ByteArrayOutputStream()
+
+def findNdkRoot() {
+  // First, check environment variables (works for Bitrise and most CI)
+  def fromEnv = ['ANDROID_NDK_HOME','ANDROID_NDK_ROOT','ANDROID_NDK'].collect { System.getenv(it) }
+      .find { it && file(it).exists() }
+  
+  if (fromEnv) {
+    println "[NDK] Found NDK via environment: ${fromEnv}"
+    return fromEnv
+  }
+
+  // Fallback: try to find in SDK directory
+  def home = System.getenv('HOME') ?: System.getProperty('user.home')
+  def sdkRoot = System.getenv('ANDROID_SDK_ROOT') ?: System.getenv('ANDROID_HOME')
+  
+  // Common SDK locations by platform
+  def sdkPaths = []
+  if (sdkRoot) {
+    sdkPaths << file(sdkRoot)
+  }
+  if (isMac()) {
+    sdkPaths << file("${home}/Library/Android/sdk")
+  } else if (isLinux()) {
+    sdkPaths << file("/opt/android-sdk-linux")  // Common Bitrise location
+    sdkPaths << file("/opt/android-sdk")
+    sdkPaths << file("${home}/Android/Sdk")
+    sdkPaths << file("${home}/android-sdk")
+  } else if (isWindows()) {
+    sdkPaths << file("${home}/AppData/Local/Android/Sdk")
+  }
+
+  // Try ndk-bundle first (legacy)
+  for (sdkPath in sdkPaths) {
+    if (sdkPath.exists()) {
+      def ndkBundle = new File(sdkPath, "ndk-bundle")
+      if (ndkBundle.exists()) {
+        println "[NDK] Found NDK bundle: ${ndkBundle}"
+        return ndkBundle.absolutePath
+      }
+    }
+  }
+
+  // Try versioned NDK directory (newer approach)
+  for (sdkPath in sdkPaths) {
+    if (sdkPath.exists()) {
+      def ndkDir = new File(sdkPath, "ndk")
+      if (ndkDir.exists()) {
+        def versions = ndkDir.listFiles()?.findAll { it.isDirectory() }?.sort { a, b -> 
+          // Sort by version number (descending) to get latest
+          b.name.replaceAll(/[^\d.]/, '') <=> a.name.replaceAll(/[^\d.]/, '')
+        }
+        if (versions && !versions.isEmpty()) {
+          println "[NDK] Found versioned NDK: ${versions.first()}"
+          return versions.first().absolutePath
+        }
+      }
+    }
+  }
+
+  throw new GradleException("""
+    Android NDK not found!
+    For local development:
+    - Install NDK via Android Studio SDK Manager
+    - Or set ANDROID_NDK_HOME environment variable
+    
+    Current search paths tried: ${sdkPaths.collect { it.absolutePath }.join(', ')}
+  """)
+}
+
+def ndkRoot = file(findNdkRoot())
+println "[NDK] Using NDK root: ${ndkRoot.absolutePath}"
+
+// Detect host tag (platform-specific prebuilt toolchain directory)
+def detectHostTag() {
+    def ndkRoot = file(findNdkRoot())
+  def prebuiltDir = file("${ndkRoot}/toolchains/llvm/prebuilt")
+  
+  if (!prebuiltDir.exists()) {
+    throw new GradleException("NDK toolchain not found at ${prebuiltDir}. Your NDK installation may be corrupted.")
+  }
+
+  def candidates = []
+  if (isMac()) {
+    candidates = ['darwin-arm64', 'darwin-x86_64']
+  } else if (isLinux()) {
+    candidates = ['linux-x86_64', 'linux-x86']
+  } else if (isWindows()) {
+    candidates = ['windows-x86_64', 'windows']
+  }
+
+  // Try expected candidates first
+  def found = candidates.find { new File(prebuiltDir, it).exists() }
+  if (found) {
+    println "[NDK] Detected host tag: ${found}"
+    return found
+  }
+
+  // Fallback: find any directory
+  def dirs = prebuiltDir.listFiles()?.findAll { it.isDirectory() }
+  if (dirs && !dirs.isEmpty()) {
+    def fallback = dirs.first().name
+    println "[NDK] Using fallback host tag: ${fallback}"
+    return fallback
+  }
+
+  throw new GradleException("Cannot locate NDK llvm/prebuilt host tag under ${prebuiltDir}. Available: ${prebuiltDir.list()?.join(', ')}")
+}
+
+def hostTag = detectHostTag()
+def toolBin = file("${ndkRoot}/toolchains/llvm/prebuilt/${hostTag}/bin")
+
+if (!toolBin.exists()) {
+  throw new GradleException("NDK toolchain bin directory not found: ${toolBin}")
+}
+
+println "[NDK] Toolchain bin: ${toolBin.absolutePath}"
+
+def abiMatrix = {
+  [
+    'armeabi-v7a': [ host:'arm-linux-androideabi',  target:'armv7a-linux-androideabi', api: secpApi, march: 'armv7-a', mfpu: 'neon' ],
+    'arm64-v8a'  : [ host:'aarch64-linux-android',  target:'aarch64-linux-android',    api: secpApi, march: null, mfpu: null ],
+    'x86'        : [ host:'i686-linux-android',     target:'i686-linux-android',       api: secpApi, march: null, mfpu: null ],
+    'x86_64'     : [ host:'x86_64-linux-android',   target:'x86_64-linux-android',     api: secpApi, march: null, mfpu: null ],
+  ]
+}.call()
+
+def moduleFlagsString = {
+  def map = [
+    ecdh      : '--enable-module-ecdh',
+    recovery  : '--enable-module-recovery',
+    extrakeys : '--enable-module-extrakeys',
+    schnorrsig: '--enable-module-schnorrsig',
+  ]
+  (enableModules ?: '').split(',').collect { it.trim() }.findAll { it }.collect { map[it] ?: '' }.findAll { it }.join(' ')
+}.call()
+
+// Fetch repo at pinned tag or commit (incremental)
+tasks.register('fetchSecp256k1') {
+  inputs.property('repoUrl', secpRepoUrl)
+  inputs.property('tag',     secpTag)
+  inputs.property('commit',  secpCommit)
+  def workDir = workDirBase
+  outputs.dir(workDir)
+
+  doLast {
+    if (!workDir.exists()) {
+      workDir.mkdirs()
+    }
+
+    def ref = (secpTag ?: secpCommit ?: '').trim()
+    if (ref) {
+      def ok = true
+      try {
+        exec { workingDir workDir; commandLine 'git', 'init'; ignoreExitValue true }
+        exec { workingDir workDir; commandLine 'git', 'remote', 'remove', 'origin'; ignoreExitValue true }
+        exec { workingDir workDir; commandLine 'git', 'remote', 'add', 'origin', secpRepoUrl; ignoreExitValue true }
+        exec { workingDir workDir; commandLine 'git', 'fetch', '--tags', '--prune', 'origin' }
+        def co1 = exec { workingDir workDir; commandLine 'git', 'checkout', "refs/tags/${ref}"; ignoreExitValue true }
+        if (co1.exitValue != 0) {
+          def co2 = exec { workingDir workDir; commandLine 'git', 'checkout', ref; ignoreExitValue true }
+          if (co2.exitValue != 0) ok = false
+        }
+      } catch (Exception e) {
+        ok = false
+      }
+
+      if (!ok) {
+        // --- Fallback: download release tarball ---
+        def url = "https://github.com/bitcoin-core/secp256k1/archive/refs/tags/${ref}.tar.gz"
+        def tarFile = file("${buildDir}/secp256k1-${ref}.tar.gz")
+        def refNoV = ref.startsWith('v') ? ref.substring(1) : ref
+        def extractDir = file("${buildDir}/secp256k1-${refNoV}")
+
+        println "[secp] Git checkout failed for '${ref}', falling back to tarball: ${url}"
+        def curlRes = exec { commandLine 'curl', '-fL', '-o', tarFile.absolutePath, url; ignoreExitValue true }
+        if (curlRes.exitValue != 0) {
+          throw new GradleException("Failed to download ${url}. Try setting -PsecpTag to a valid release (e.g., v0.6.0).")
+        }
+        // Ensure clean target
+        if (extractDir.exists()) extractDir.deleteDir()
+        exec { commandLine 'tar', '-xzf', tarFile.absolutePath, '-C', buildDir.absolutePath }
+
+        if (!extractDir.exists()) {
+          throw new GradleException("Expected extracted folder ${extractDir} not found after untar. Tag '${ref}' may be invalid.")
+        }
+        // Move to workDir
+        if (workDir.exists() && workDir.listFiles()?.length) workDir.deleteDir()
+        extractDir.renameTo(workDir)
+        println "[secp] Extracted to ${workDir}"
+      } else {
+        println "[secp] Checked out ${ref} via git"
+      }
+    } else {
+      // No explicit ref: clone/update default branch best-effort
+      if (!new File(workDir, '.git').exists()) {
+        exec { commandLine 'git', 'clone', secpRepoUrl, workDir.absolutePath }
+      } else {
+        exec { workingDir workDir; commandLine 'git', 'pull', '--ff-only', 'origin'; ignoreExitValue true }
+      }
+    }
+  }
+}
+
+// Per-ABI configure/build (incremental)
+
+def abis = ['armeabi-v7a','arm64-v8a']
+
+abis.each { abi ->
+  def meta        = abiMatrix[abi]
+  def ccTrip      = "${meta.target}${meta.api}-clang"
+  // Use LLVM tools for consistency (NDK r25+)
+  def arTool      = 'llvm-ar'
+  def ranlibTool  = 'llvm-ranlib'
+  def stripTool   = 'llvm-strip'
+
+  def workDir     = file("${workDirBase}/${abi}")
+
+  def installDir  = file("${installRoot}/${abi}")
+  def stagedLib   = file("${outputsRoot}/${abi}/lib/libsecp256k1.so")
+  def libDirOut   = stagedLib.parentFile
+  def stampFile   = file("${buildDir}/stamps/secp_${abi}.stamp")
+
+  tasks.register("configureSecp_${abi}") {
+    dependsOn 'fetchSecp256k1'
+
+    inputs.property('host',    meta.host)
+    inputs.property('target',  meta.target)
+    inputs.property('api',     meta.api)
+    inputs.property('commit',  secpCommit)
+    inputs.property('modules', enableModules)
+    inputs.property('ndkRoot', ndkRoot.absolutePath)
+    inputs.property('hostTag', hostTag)
+    inputs.files(fileTree(dir: workDirBase, includes: ['configure.ac','Makefile.am','autogen.sh'])).withPathSensitivity(PathSensitivity.RELATIVE)
+    outputs.file(stampFile)
+
+    onlyIf { !(stampFile.exists() && stagedLib.exists()) }
+
+    doLast {
+
+    // Copy source to ABI-specific directory
+      if (!workDir.exists() || !new File(workDir, 'configure.ac').exists()) {
+        workDir.mkdirs()
+        copy {
+          from workDirBase
+          into workDir
+        }
+      }
+  
+      outputsIncludeDir.mkdirs()
+      installDir.mkdirs()
+      libDirOut.mkdirs()
+      file("${buildDir}/stamps").mkdirs()
+
+      // Run autogen.sh if configure script doesn't exist
+      def configureScript = new File(workDir, 'configure')
+      if (!configureScript.exists()) {
+        println "[secp:${abi}] Running autogen.sh to generate configure script..."
+        exec { 
+          workingDir workDir
+          commandLine 'bash', '-c', './autogen.sh'
+          // Ensure PATH includes standard locations for autotools
+          environment 'PATH', System.getenv('PATH')
+        }
+      } else {
+        println "[secp:${abi}] Configure script already exists, skipping autogen.sh"
+      }
+
+      println "[secp:${abi}] Using API level ${meta.api} (unified)"
+
+      // Platform-specific libtool names
+      def libtoolize = isMac() ? 'glibtoolize' : 'libtoolize'
+      def libtool = isMac() ? 'glibtool' : 'libtool'
+
+      def sysroot = new File(ndkRoot, "toolchains/llvm/prebuilt/${hostTag}/sysroot").absolutePath
+
+      // Build CFLAGS with proper architecture flags
+      def cflags = ["-fPIC", "-O2", "--sysroot=${sysroot}"]
+      def ldflags = []
+      
+      // ARM-specific flags
+      if (abi == 'armeabi-v7a') {
+        cflags += ["-march=${meta.march}", "-mthumb", "-mfpu=${meta.mfpu}", "-mfloat-abi=softfp"]
+        ldflags += ["-march=${meta.march}"]
+      }
+      
+      def cflagsStr = cflags.join(' ')
+      def ldflagsStr = ldflags.join(' ')
+      
+      println "[secp:${abi}] CFLAGS: ${cflagsStr}"
+      println "[secp:${abi}] LDFLAGS: ${ldflagsStr}"
+
+      exec {
+
+        workingDir workDir
+        environment 'CC',       new File(toolBin, ccTrip).absolutePath
+        // Use LLVM binutils with libtool-friendly flags (NDK r25+)
+        environment 'AR',       new File(toolBin, arTool).absolutePath
+        environment 'ARFLAGS',  'crs'
+        environment 'RANLIB',   new File(toolBin, ranlibTool).absolutePath
+        environment 'NM',       new File(toolBin, 'llvm-nm').absolutePath
+        environment 'STRIP',    new File(toolBin, stripTool).absolutePath
+        // Architecture-appropriate CFLAGS
+        environment 'CFLAGS',   cflagsStr
+        environment 'LDFLAGS',  ldflagsStr
+        // Link against Android log for __android_log_print and enable optional configure logging
+        environment 'LIBS',              '-llog'
+         // On macOS, libtool is glibtool/gnulibtool; autogen.sh already glibtoolize's, but keep these for safety
+        environment 'LIBTOOLIZE', libtoolize
+        environment 'LIBTOOL',    libtool
+
+        // Disable PIE for older Android (if needed)
+        environment 'lt_cv_prog_compiler_pic_works', 'yes'
+        environment 'lt_cv_prog_compiler_static_works', 'yes'
+
+        def configureArgs = [
+          './configure',
+          "--host=${meta.host}",
+          '--enable-shared',
+          '--disable-static',
+          '--with-pic',
+          '--disable-benchmark',
+          '--disable-tests',
+          "--prefix=${installDir.absolutePath}",
+          moduleFlagsString
+        ].findAll { it }.join(' ')
+
+        // Don't use login shell
+        commandLine 'bash', '-c', configureArgs
+      }
+  
+      // Capture output for debugging
+      standardOutput = new ByteArrayOutputStream()
+      errorOutput = new ByteArrayOutputStream()
+
+      println "[secp:${abi}] configure output: ${standardOutput.toString()}"
+      if (errorOutput.toString()) {
+        println "[secp:${abi}] configure errors: ${errorOutput.toString()}"
+      }
+
+      stampFile.text = "configured:${abi}:${secpCommit}:${enableModules}:${meta.api}:${hostTag}:${ndkRoot}"
+    }
+  }
+
+  tasks.register("buildSecp_${abi}") {
+    dependsOn "configureSecp_${abi}"
+
+    inputs.file(file("${workDir}/Makefile"))
+    inputs.property('commit',  secpCommit)
+    inputs.property('modules', enableModules)
+    outputs.file(stagedLib)
+
+    onlyIf { !stagedLib.exists() }
+
+    doLast {
+      def jobs = project.findProperty('jobs') ?: Runtime.runtime.availableProcessors()
+      def buildOutput = new ByteArrayOutputStream()
+      def buildError = new ByteArrayOutputStream()
+      
+      // Platform-specific libtool
+      def libtoolize = isMac() ? 'glibtoolize' : 'libtoolize'
+      def libtool = isMac() ? 'glibtool' : 'libtool'
+      
+      exec {
+        workingDir workDir
+        environment 'LIBS', '-llog'
+        environment 'LIBTOOLIZE', libtoolize
+        environment 'LIBTOOL', libtool
+        // Don't use login shell
+        commandLine 'bash', '-c', "make -j${jobs} && make install"
+        standardOutput = buildOutput
+        errorOutput = buildError
+      }
+      
+      // Print output for debugging
+      def outputLines = buildOutput.toString().readLines()
+      if (outputLines.size() > 50) {
+        println "[secp:${abi}] build output (last 50 lines): ${outputLines.takeRight(50).join('\n')}"
+      } else {
+        println "[secp:${abi}] build output: ${buildOutput.toString()}"
+      }
+      if (buildError.toString()) {
+        println "[secp:${abi}] build errors: ${buildError.toString()}"
+      }
+    
+      copy {
+        from file("${installDir}/lib")
+        include 'libsecp256k1.so*'
+        into libDirOut
+      }
+
+      if (!outputsIncludeDir.exists() || outputsIncludeDir.listFiles() == null || outputsIncludeDir.listFiles().length == 0) {
+        copy {
+          from file("${installDir}/include")
+          into outputsIncludeDir
+        }
+      }
+      println "[${abi}] staged -> ${stagedLib}"
+    }
+  }
+}
+
+// Aggregate task
+ tasks.register('buildSecpAllAndroid') {
+   group = 'build'
+   description = 'Build secp256k1 Android .so for all ABIs and stage headers (incremental)'
+   dependsOn abis.collect { "buildSecp_${it}" }
+ }
+
+// Clean helper
+ tasks.register('cleanSecpAndroid') {
+   doLast { delete workDirBase, installRoot, outputsRoot, outputsIncludeDir, file("${buildDir}/stamps") }
+ }
+
+android {
+  namespace "com.margelo.nitro.nitroavalabscrypto"
+
+  compileSdkVersion getExtOrIntegerDefault("compileSdkVersion")
+
+  defaultConfig {
+    minSdkVersion getExtOrIntegerDefault("minSdkVersion")
+    targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
+
+    externalNativeBuild {
+      cmake {
+        cppFlags "-frtti -fexceptions -Wall -fstack-protector-all"
+        arguments "-DANDROID_STL=c++_shared", "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON",
+                  "-DSECP256K1_INCLUDE_DIR=${SECP_OUTPUTS_INCLUDE_DIR}", "-DSECP256K1_ANDROID_ROOT=${SECP_OUTPUTS_ROOT}"
+        abiFilters (*reactNativeArchitectures())
+
+        buildTypes {
+          debug {
+            cppFlags "-O1 -g"
+          }
+          release {
+            cppFlags "-O2"
+          }
+        }
+      }
+    }
+  }
+
+  externalNativeBuild {
+    cmake {
+      path "CMakeLists.txt"
+    }
+  }
+
+  packagingOptions {
+    excludes = [
+            "META-INF",
+            "META-INF/**",
+            "**/libc++_shared.so",
+            "**/libfbjni.so",
+            "**/libjsi.so",
+            "**/libfolly_json.so",
+            "**/libfolly_runtime.so",
+            "**/libglog.so",
+            "**/libhermes.so",
+            "**/libhermes-executor-debug.so",
+            "**/libhermes_executor.so",
+            "**/libreactnative.so",
+            "**/libreactnativejni.so",
+            "**/libturbomodulejsijni.so",
+            "**/libreact_nativemodule_core.so",
+            "**/libjscexecutor.so"
+    ]
+    pickFirst "**/libsecp256k1.so"
+  }
+
+  buildFeatures {
+    buildConfig true
+    prefab true
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled true
+    }
+  }
+
+  lintOptions {
+    disable "GradleCompatible"
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+
+  sourceSets {
+    main {
+      java.srcDirs += [
+        "generated/java",
+        "generated/jni"
+      ]
+    }
+  }
+}
+
+// Ensure native build tasks run after secp outputs are prepared (AGP 8.x safe)
+afterEvaluate {
+  def secpTask = tasks.named('buildSecpAllAndroid')
+
+  tasks.configureEach { t ->
+    def n = t.name
+    if (n.startsWith('externalNativeBuild') ||
+        n.startsWith('configureCMake') ||
+        n.startsWith('buildCMake') ||
+        n.startsWith('generateJsonModel') ||
+        n.startsWith('prefabGenerate')) {
+      t.dependsOn(secpTask)
+      t.doFirst {
+        println "[secp] '${n}' dependsOn buildSecpAllAndroid"
+      }
+    }
+  }
+}
+
+repositories {
+  mavenCentral()
+  google()
+}
+
+def kotlin_version = getExtOrDefault("kotlinVersion")
+
+dependencies {
+  implementation "com.facebook.react:react-android"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+  implementation project(":react-native-nitro-modules")
+}
