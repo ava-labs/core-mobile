@@ -600,7 +600,7 @@ __metadata:
     react-native-modal-datetime-picker: 18.0.0
     react-native-nitro-avalabs-crypto: "workspace:*"
     react-native-nitro-fetch: ^0.1.6
-    react-native-nitro-modules: ^0.31.10
+    react-native-nitro-modules: 0.31.10
     react-native-os: 1.2.6
     react-native-pager-view: 6.7.1
     react-native-passkey: 3.1.0

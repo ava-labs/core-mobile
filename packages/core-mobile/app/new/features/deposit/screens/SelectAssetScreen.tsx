@@ -20,11 +20,12 @@ import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import { selectActiveAccount } from 'store/account'
 import { useSelector } from 'react-redux'
+import { TokenType } from '@avalabs/vm-module-types'
 import errorIcon from '../../../assets/icons/melting_face.png'
 import { DefiAssetDetails } from '../types'
 import { DefiAssetLogo } from '../components/DefiAssetLogo'
 import { findMatchingTokenWithBalance } from '../utils/findMatchingTokenWithBalance'
-import { useDepositSelectedToken } from '../store'
+import { useDepositSelectedAsset } from '../store'
 import { useAvailableMarkets } from '../hooks/useAvailableMarkets'
 import { useDepositableTokens } from '../hooks/useDepositableTokens'
 
@@ -32,26 +33,34 @@ export const SelectAssetScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const activeAccount = useSelector(selectActiveAccount)
   const cChainNetwork = useCChainNetwork()
-  const tokensWithBalance = useTokensWithBalanceForAccount({
+  const cChainTokensWithBalance = useTokensWithBalanceForAccount({
     account: activeAccount,
     chainId: cChainNetwork?.chainId
   })
   const { data: markets, isPending: isLoadingMarkets } = useAvailableMarkets()
-  const depositableTokens = useDepositableTokens(markets, tokensWithBalance)
+  const depositableTokens = useDepositableTokens(
+    markets,
+    cChainTokensWithBalance
+  )
   const {
     theme: { colors }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
   const { navigateToBuy, isBuyable } = useBuy()
   const { navigateToSwap } = useNavigateToSwap()
-  const [, setSelectedToken] = useDepositSelectedToken()
+  const [, setSelectedAsset] = useDepositSelectedAsset()
 
   const handleSelectToken = useCallback(
     (marketAsset: DefiAssetDetails) => {
-      const token = findMatchingTokenWithBalance(marketAsset, tokensWithBalance)
-
+      const token = findMatchingTokenWithBalance(
+        marketAsset,
+        cChainTokensWithBalance
+      )
+      const nativeToken = cChainTokensWithBalance.find(
+        t => t.type === TokenType.NATIVE
+      )
       if (token) {
-        setSelectedToken(token)
+        setSelectedAsset({ token, nativeToken })
 
         navigate({
           // @ts-ignore TODO: make routes typesafe
@@ -75,8 +84,8 @@ export const SelectAssetScreen = (): JSX.Element => {
       navigateToBuy,
       isBuyable,
       navigateToSwap,
-      tokensWithBalance,
-      setSelectedToken
+      cChainTokensWithBalance,
+      setSelectedAsset
     ]
   )
 
@@ -84,7 +93,7 @@ export const SelectAssetScreen = (): JSX.Element => {
     ({ item }: { item: DefiAssetDetails }) => {
       const tokenWithBalance = findMatchingTokenWithBalance(
         item,
-        tokensWithBalance
+        cChainTokensWithBalance
       )
 
       return (
@@ -136,7 +145,7 @@ export const SelectAssetScreen = (): JSX.Element => {
       formatCurrency,
       handleSelectToken,
       cChainNetwork,
-      tokensWithBalance
+      cChainTokensWithBalance
     ]
   )
 

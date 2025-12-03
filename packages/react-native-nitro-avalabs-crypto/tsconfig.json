@@ -9,7 +9,8 @@
     "exclude": [
     "example",
     "node_modules",
-    "dist"
+    "dist",
+    "lib"
   ],
   "compilerOptions": {
     "composite": true,
