@@ -361,6 +361,8 @@ const StakeConfirmScreen = (): JSX.Element => {
           </Text>
         </View>
         <Button
+          testID="confirm_stake"
+          accessible={true}
           type="primary"
           size="large"
           onPress={handleDelegate}

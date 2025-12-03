@@ -24,6 +24,7 @@ export const AnimatedPressable = memo(
       <AnimatedPress
         testID={props.testID}
         disabled={props.disabled}
+        accessible={props.accessible}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchCancel={onTouchCancel}

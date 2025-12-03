@@ -21,6 +21,7 @@ export default {
   myAccounts: 'My Accounts',
   sendTitle: 'Send',
   amountToSend: 'token_amount_input_field',
+  amountToStake: 'token_amount_input_field AVAX  ',
   sendSelectTokenListBtn: 'send_select_token_list_btn',
   usdcToken: 'USDC',
   wethToken: 'WETH',
@@ -93,5 +94,11 @@ export default {
   evmSupportedAddressText: 'evm_supported_address_text',
   countrySelector: 'list_item__Country',
   currencySelector: 'list_item__Currency',
-  selectOtherTokenBtn: 'list_item__Select other token'
+  selectOtherTokenBtn: 'list_item__Select other token',
+  addStakeCard: 'add_card_enabled',
+  claimCard: 'claim_card',
+  duration: 'Duration',
+  confirmStake: 'confirm_stake',
+  reviewStakeTitle: 'Review your stake',
+  claimNow: 'claim_now'
 }

@@ -11,11 +11,8 @@ async function type(element: ChainablePromiseElement, text: string | number) {
 async function tapNumberPad(keyCode: string) {
   for (const char of keyCode.split('')) {
     if (driver.isIOS) {
-      await selectors
-        .getByXpath(
-          `//*[contains(@name, 'UIKeyboardLayoutStar')]//*[@name='${char}']`
-        )
-        .click()
+      const iosPath = `-ios predicate string:label == "${char}" AND type == "XCUIElementTypeKey"`
+      await selectors.getByXpath(iosPath).click()
     } else {
       const num = 7 + parseInt(char, 10)
       await driver.pressKeyCode(num)
@@ -63,6 +60,19 @@ async function isNotVisible(ele: ChainablePromiseElement) {
   console.log(`[${eleSelector}] NOT visible? FALSE ===`, visible)
   assert.equal(visible, false, `${eleSelector} is still visible`)
   return visible
+}
+
+async function waitForNotVisible(
+  ele: ChainablePromiseElement,
+  timeout = 20000
+) {
+  try {
+    await ele.waitForDisplayed({ timeout, reverse: true })
+  } catch (e) {
+    await ele.waitForExist({ timeout, reverse: true })
+  }
+  const eleSelector = await ele.selector
+  console.log(`[${eleSelector}] is not visible as expected`)
 }
 
 async function getVisible(ele: ChainablePromiseElement) {
@@ -308,5 +318,6 @@ export const actions = {
   log,
   getAmount,
   verifyText,
-  tapXY
+  tapXY,
+  waitForNotVisible
 }

@@ -826,8 +826,9 @@ class Settings {
   async verifyTestnetMode() {
     await actions.waitFor(this.testnetSwitchOn)
     await actions.isVisible(this.testnetAvatar)
-    await actions.isNotVisible(this.testnetIsOn)
+    await actions.waitForNotVisible(this.testnetIsOn)
     await common.dismissBottomSheet()
+    await common.pullToRefresh()
     await actions.waitFor(portfolioPage.testnetModeIsOn, 40000)
   }
 
