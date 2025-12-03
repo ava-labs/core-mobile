@@ -1,4 +1,4 @@
-import { BlockchainNamespace, ChainId, Network } from '@avalabs/core-chains-sdk'
+import { BlockchainNamespace, Network } from '@avalabs/core-chains-sdk'
 import { SPAN_STATUS_ERROR } from '@sentry/core'
 import { Account } from 'store/account/types'
 import { getAddressByNetwork } from 'store/account/utils'
@@ -20,162 +20,29 @@ import {
 } from 'utils/network/isAvalancheNetwork'
 import Logger from 'utils/Logger'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { NormalizedBalancesForAccount } from './types'
-import { AVAX_P_ID, AVAX_X_ID } from './const'
-import { getLocalTokenId } from './utils'
 import {
   AvalancheXpGetBalancesRequestItem,
-  AvmGetBalancesResponse,
   BtcGetBalancesRequestItem,
-  BtcGetBalancesResponse,
   EvmGetBalancesRequestItem,
-  EvmGetBalancesResponse,
   GetBalancesRequestBody,
   GetBalancesResponse,
-  PvmGetBalancesResponse,
-  SvmGetBalancesRequestItem,
-  SvmGetBalancesResponse
+  SvmGetBalancesRequestItem
 } from 'utils/apiClient/generated/balanceApi.client'
 import { balanceApi } from 'utils/apiClient/balance/balanceApi'
 import { xpAddressWithoutPrefix } from 'common/utils/xpAddressWIthoutPrefix'
-import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import {
+  AdjustedNormalizedBalancesForAccount,
+  NormalizedBalancesForAccount
+} from './types'
+import { AVAX_P_ID, AVAX_X_ID } from './const'
+import { getLocalTokenId } from './utils/getLocalTokenId'
+import { mapBalanceResponseToLegacy } from './utils/mapBalanceResponseToLegacy'
 
 type AccountId = string
 
 const uniq = <T>(arr: T[]): T[] => Array.from(new Set(arr))
 
 const NEWLINE = '\n'
-
-function convertToNormalizedBalances(
-  response: GetBalancesResponse
-): Omit<NormalizedBalancesForAccount, 'accountId'> | null {
-  if ('error' in response && Object.keys(response).length === 1) {
-    // TODO: Handle error
-    return null
-  }
-
-  if ('error' in response && response.error !== null) {
-    if (!('caip2Id' in response)) {
-      // TODO: Handle error
-      return null
-    }
-
-    const chainId = getChainIdFromCaip2(response.caip2Id)
-
-    if (chainId === undefined) return null
-
-    return {
-      chainId,
-      accountAddress: response.id,
-      dataAccurate: false,
-      error: { error: response.error },
-      tokens: []
-    }
-  }
-
-  const chainId = getChainIdFromCaip2(response.caip2Id)
-
-  if (chainId === undefined) return null
-
-  const address = response.id
-
-  switch (response.networkType) {
-    case 'evm': {
-      const evm = response as EvmGetBalancesResponse
-
-      // const tokens = Object.values(balances)
-      // .filter((t): t is TokenWithBalance => !('error' in t))
-      // .map(token => {
-      //   const localId = isPChain(network.chainId)
-      //     ? AVAX_P_ID
-      //     : isXChain(network.chainId)
-      //     ? AVAX_X_ID
-      //     : getLocalTokenId(token)
-
-      //   return {
-      //     ...token,
-      //     localId,
-      //     networkChainId: network.chainId,
-      //     isDataAccurate: true
-      //   }
-      // })
-
-      return {
-        chainId,
-        accountAddress: address,
-        dataAccurate: true,
-        error: null,
-        tokens: [
-          evm.balances.nativeTokenBalance,
-          ...(evm.balances.erc20TokenBalances ?? [])
-        ]
-      }
-    }
-
-    case 'btc': {
-      const btc = response as BtcGetBalancesResponse
-      return {
-        chainId,
-        accountAddress: address,
-        dataAccurate: true,
-        error: null,
-        tokens: [btc.balances.nativeTokenBalance]
-      }
-    }
-
-    case 'svm': {
-      const svm = response as SvmGetBalancesResponse
-      return {
-        chainId,
-        accountAddress: address,
-        dataAccurate: true,
-        error: null,
-        tokens: [
-          svm.balances.nativeTokenBalance,
-          ...(svm.balances.splTokenBalances ?? [])
-        ]
-      }
-    }
-
-    case 'avm': {
-      const avm = response as AvmGetBalancesResponse
-      const cats = avm.balances.categories
-      return {
-        chainId,
-        accountAddress: address,
-        dataAccurate: true,
-        error: null,
-        tokens: [
-          avm.balances.nativeTokenBalance,
-          ...cats.unlocked,
-          ...cats.locked,
-          ...Object.values(cats.atomicMemoryUnlocked).flat(),
-          ...Object.values(cats.atomicMemoryLocked).flat()
-        ]
-      }
-    }
-
-    case 'pvm': {
-      const pvm = response as PvmGetBalancesResponse
-      const cats = pvm.balances.categories
-      return {
-        chainId,
-        accountAddress: address,
-        dataAccurate: true,
-        error: null,
-        tokens: [
-          pvm.balances.nativeTokenBalance
-          // P-chain categories are strings (amounts), so wrap into your token type
-        ]
-      }
-    }
-
-    default: {
-      // TODO: Handle error
-      return null
-    }
-  }
-}
 
 export class BalanceService {
   /**
@@ -314,12 +181,12 @@ export class BalanceService {
               })
             }
 
-            console.log('network', network.chainName, network.chainId)
-            console.log(
-              'balancesResponse',
-              JSON.stringify(balancesResponse, null, 2)
-            )
-            console.log('--------------------------------')
+            // console.log('network', network.chainName, network.chainId)
+            // console.log(
+            //   'balancesResponse',
+            //   JSON.stringify(balancesResponse, null, 2)
+            // )
+            // console.log('--------------------------------')
             // Process accounts
             for (const address of addresses) {
               const account = addressMap[address]
@@ -331,7 +198,6 @@ export class BalanceService {
                 partial[account.id] = {
                   accountId: account.id,
                   chainId: network.chainId,
-                  accountAddress: address,
                   tokens: [],
                   dataAccurate: false,
                   error: balances.error as Error
@@ -359,7 +225,6 @@ export class BalanceService {
               partial[account.id] = {
                 accountId: account.id,
                 chainId: network.chainId,
-                accountAddress: address,
                 tokens,
                 dataAccurate: true,
                 error: null
@@ -393,12 +258,9 @@ export class BalanceService {
 
             // Mark all accounts errored for this network
             for (const account of accounts) {
-              const address = getAddressByNetwork(account, network)
-
               errorPartial[account.id] = {
                 accountId: account.id,
                 chainId: network.chainId,
-                accountAddress: address,
                 tokens: [],
                 dataAccurate: false,
                 error: err as Error
@@ -422,27 +284,22 @@ export class BalanceService {
     return finalResults
   }
 
-  async getBalancesForAccounts2({
+  // eslint-disable-next-line sonarjs/cognitive-complexity
+  async getBalancesForAccount({
     networks,
-    accounts,
+    account,
     currency,
-    customTokens,
     onBalanceLoaded
   }: {
     networks: Network[]
-    accounts: Account[]
+    account: Account
     currency: string
-    customTokens: Record<string, NetworkContractToken[] | undefined>
-    onBalanceLoaded?: (
-      networkChainId: number,
-      partial: Record<AccountId, NormalizedBalancesForAccount>
-    ) => void
-  }): Promise<Record<AccountId, NormalizedBalancesForAccount[]>> {
+    onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
+  }): Promise<AdjustedNormalizedBalancesForAccount[]> {
+    const accountId = account.id
+
     // Final aggregated result
-    const finalResults: Record<AccountId, NormalizedBalancesForAccount[]> = {}
-    for (const account of accounts) {
-      finalResults[account.id] = []
-    }
+    const finalResults: AdjustedNormalizedBalancesForAccount[] = []
 
     // ---- 1) Namespace buckets -------------------------------------------------
     // We'll accumulate into these and then emit one entry per namespace
@@ -460,13 +317,7 @@ export class BalanceService {
 
     // ---- 2) Fill buckets from networks ----------------------------------------
     for (const network of networks) {
-      // Per-network: map address -> account so you can decode responses later
-      const accountsByAddress: Record<string, Account> = {}
-      const addresses = accounts.map(acc => {
-        const addr = getAddressByNetwork(acc, network)
-        accountsByAddress[addr] = acc
-        return addr
-      })
+      const address = getAddressByNetwork(account, network)
 
       switch (network.vmName) {
         case NetworkVMType.EVM: {
@@ -474,11 +325,11 @@ export class BalanceService {
           if (!evmBucket) {
             evmBucket = {
               namespace: BlockchainNamespace.EIP155,
-              addresses: uniq(addresses),
+              addresses: [address],
               references: [chainRef]
             }
           } else {
-            evmBucket.addresses = uniq([...evmBucket.addresses, ...addresses])
+            evmBucket.addresses = uniq([...evmBucket.addresses, address])
             evmBucket.references = uniq([...evmBucket.references, chainRef])
           }
           break
@@ -492,11 +343,11 @@ export class BalanceService {
           if (!btcBucket) {
             btcBucket = {
               namespace: BlockchainNamespace.BIP122,
-              addresses: uniq(addresses),
+              addresses: [address],
               references: [ref]
             }
           } else {
-            btcBucket.addresses = uniq([...btcBucket.addresses, ...addresses])
+            btcBucket.addresses = uniq([...btcBucket.addresses, address])
             btcBucket.references = uniq([...btcBucket.references, ref])
           }
           break
@@ -504,18 +355,17 @@ export class BalanceService {
 
         case NetworkVMType.SVM: {
           const ref = network.isTestnet
-            ? // TODO use chain id constants
-              'EtWTRABZaYq6iMfeYKouRu166VU2xqa1'
+            ? 'EtWTRABZaYq6iMfeYKouRu166VU2xqa1'
             : '5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'
 
           if (!svmBucket) {
             svmBucket = {
               namespace: BlockchainNamespace.SOLANA,
-              addresses: uniq(addresses),
+              addresses: [address],
               references: [ref]
             }
           } else {
-            svmBucket.addresses = uniq([...svmBucket.addresses, ...addresses])
+            svmBucket.addresses = uniq([...svmBucket.addresses, address])
             svmBucket.references = uniq([...svmBucket.references, ref])
           }
           break
@@ -530,7 +380,7 @@ export class BalanceService {
           avaxXpBucket.references = uniq([...avaxXpBucket.references, ref])
           avaxXpBucket.addresses = uniq([
             ...avaxXpBucket.addresses,
-            ...addresses.map(xpAddressWithoutPrefix)
+            xpAddressWithoutPrefix(address)
           ])
           break
         }
@@ -544,7 +394,7 @@ export class BalanceService {
           avaxXpBucket.references = uniq([...avaxXpBucket.references, ref])
           avaxXpBucket.addresses = uniq([
             ...avaxXpBucket.addresses,
-            ...addresses.map(xpAddressWithoutPrefix)
+            xpAddressWithoutPrefix(address)
           ])
           break
         }
@@ -572,7 +422,7 @@ export class BalanceService {
         references: avaxXpBucket.references,
         addressDetails: [
           {
-            walletId: 'default',
+            id: accountId,
             addresses: avaxXpBucket.addresses
           }
         ],
@@ -586,13 +436,7 @@ export class BalanceService {
       showUntrustedTokens: false
     }
 
-    console.log('requestItems', JSON.stringify(requestItems, null, 2))
-    // const onUpdateWrapper = (update: MarkrQuote[]): void => {
-    //   if (abortSignal.aborted) {
-    //     throw new Error('aborted')
-    //   }
-    //   onUpdate(update)
-    // }
+    // console.log('requestItems', JSON.stringify(requestItems, null, 2))
 
     const response = await balanceApi.getBalances(body)
 
@@ -604,7 +448,7 @@ export class BalanceService {
 
     let buffer = ''
 
-    console.log('📡 Streaming balances…')
+    // console.log('📡 Streaming balances…')
 
     let done = false
 
@@ -632,67 +476,27 @@ export class BalanceService {
         }
 
         try {
-          const response = JSON.parse(jsonLine) as GetBalancesResponse
+          const balance = JSON.parse(jsonLine) as GetBalancesResponse
 
-          const normalized = convertToNormalizedBalances(response)
-          // console.log('response', JSON.stringify(response, null, 2))
-          // console.log('normalized', JSON.stringify(normalized, null, 2))
-          // console.log('--------------------------------')
-          if (!normalized) continue
+          if (!('id' in balance)) continue
 
-          // const account = findAccountByAddress(normalized.accountAddress, accounts)
-          // if (!account) continue
+          if (!accountId) continue
 
-          // Prepare partial result for this single network
-          // const partial: Record<AccountId, NormalizedBalancesForAccount> = {}
+          const normalizedBalance = mapBalanceResponseToLegacy(account, balance)
 
-          // if ('error' in balances) {
-          //   partial[account.id] = {
-          //     accountId: account.id,
-          //     chainId: network.chainId,
-          //     accountAddress: address,
-          //     tokens: [],
-          //     dataAccurate: false,
-          //     error: balances.error as Error
-          //   }
-          //   continue
-          // }
-
-          // const tokens = Object.values(balances)
-          //   .filter((t): t is TokenWithBalance => !('error' in t))
-          //   .map(token => {
-          //     const localId = isPChain(network.chainId)
-          //       ? AVAX_P_ID
-          //       : isXChain(network.chainId)
-          //       ? AVAX_X_ID
-          //       : getLocalTokenId(token)
-
-          //     return {
-          //       ...token,
-          //       localId,
-          //       networkChainId: network.chainId,
-          //       isDataAccurate: true
-          //     }
-          //   })
-
-          // partial[account.id] = {
-          //   accountId: account.id,
-          //   chainId: network.chainId,
-          //   accountAddress: address,
-          //   tokens,
-          //   dataAccurate: true,
-          //   error: null
-          // }
+          if (!normalizedBalance) continue
 
           // Progressive update callback
-          // onBalanceLoaded?.(network.chainId, partial)
+          onBalanceLoaded?.(normalizedBalance)
+
+          finalResults.push(normalizedBalance)
         } catch (err) {
-          console.error('⚠️ Failed to parse line:', jsonLine, err)
+          //console.error('⚠️ Failed to parse line:', jsonLine, err)
         }
       }
     }
 
-    console.log('✅ Stream finished')
+    //console.log('✅ Stream finished')
 
     return finalResults
   }
