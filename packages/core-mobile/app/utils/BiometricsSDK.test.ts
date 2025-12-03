@@ -417,6 +417,20 @@ describe('BiometricsSDK', () => {
       expect(await BiometricsSDK.getBiometryType()).toBe(BiometricType.TOUCH_ID)
 
       mockKeychain.getSupportedBiometryType.mockResolvedValue(
+        BIOMETRY_TYPE.FACE
+      )
+      expect(await BiometricsSDK.getBiometryType()).toBe(
+        BiometricType.BIOMETRICS
+      )
+
+      mockKeychain.getSupportedBiometryType.mockResolvedValue(
+        BIOMETRY_TYPE.FINGERPRINT
+      )
+      expect(await BiometricsSDK.getBiometryType()).toBe(
+        BiometricType.BIOMETRICS
+      )
+
+      mockKeychain.getSupportedBiometryType.mockResolvedValue(
         BIOMETRY_TYPE.IRIS
       )
       expect(await BiometricsSDK.getBiometryType()).toBe(BiometricType.IRIS)
