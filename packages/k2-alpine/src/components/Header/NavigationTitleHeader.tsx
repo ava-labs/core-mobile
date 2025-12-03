@@ -1,6 +1,7 @@
 import React, { memo } from 'react'
 import { Text, View } from '../Primitives'
 import { MaskedText } from '../MaskedText/MaskedText'
+import { SCREEN_WIDTH } from '../../const'
 
 export const NavigationTitleHeader = memo(
   ({
@@ -18,7 +19,8 @@ export const NavigationTitleHeader = memo(
           {
             alignItems: 'center',
             justifyContent: 'center',
-            height: '100%'
+            height: '100%',
+            alignSelf: 'center'
           }
         ]}>
         <Text
@@ -27,7 +29,8 @@ export const NavigationTitleHeader = memo(
             fontSize: 17,
             lineHeight: 20,
             fontFamily: 'Inter-SemiBold',
-            maxWidth: 250
+            textAlign: 'center',
+            maxWidth: SCREEN_WIDTH - 60 * 2
           }}>
           {title}
         </Text>
