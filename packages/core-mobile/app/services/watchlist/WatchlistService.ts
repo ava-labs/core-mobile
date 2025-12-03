@@ -1,9 +1,9 @@
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import TokenService from 'services/token/TokenService'
 import {
-  SimplePriceResponse,
   CoinMarket,
-  SimplePriceInCurrencyResponse
+  SimplePriceInCurrencyResponse,
+  SimplePriceResponse
 } from 'services/token/types'
 import { transformSparklineData } from 'services/token/utils'
 import {
@@ -13,8 +13,11 @@ import {
   PriceData,
   Prices
 } from 'store/watchlist/types'
+import {
+  AggregatedApiClient,
+  aggregatedApiClient
+} from 'utils/api/fetches/aggregatedTokensFetchClient'
 import { TrendingToken, WatchlistMarketsResponse } from 'utils/api/types'
-import { watchListClient, WatchListClient } from 'utils/api/fetches/watchlistFetchClient'
 import Logger from 'utils/Logger'
 
 /**
@@ -25,10 +28,10 @@ import Logger from 'utils/Logger'
  */
 const fetchTopMarkets = async ({
   currency,
-  client = watchListClient
+  client = aggregatedApiClient
 }: {
   currency: string
-  client?: WatchListClient
+  client?: AggregatedApiClient
 }): Promise<WatchlistMarketsResponse> => {
   return client.getV1watchlistmarkets(currency)
 }
@@ -48,9 +51,9 @@ const fetchTopMarkets = async ({
   Pass a custom WatchListClient to the constructor or use the default singleton.
 */
 class WatchlistService {
-  private client: WatchListClient
+  private client: AggregatedApiClient
 
-  constructor(client: WatchListClient = watchListClient) {
+  constructor(client: AggregatedApiClient = aggregatedApiClient) {
     this.client = client
   }
   async getTopTokens(currency: string): Promise<{

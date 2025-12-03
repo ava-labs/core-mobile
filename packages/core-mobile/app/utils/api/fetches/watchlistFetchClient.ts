@@ -1,22 +1,15 @@
 import {
+  AggregatedApiHttpClient as HttpClient,
   SimplePriceResponse,
-  TrendingToken,
-  WatchlistMarketsResponse
+  TrendingToken
 } from 'utils/api/types'
 import { proxyApi } from '../clients/proxyApiClient'
-
-/**
- * OpenAPI client interface for watchlist endpoints
- * This allows any openapi-fetch client with the correct schema to be injected
- */
-export type WatchlistHttpClient = typeof proxyApi
 
 /**
  * High-level client interface for watchlist operations
  * Abstracts away HTTP details and provides typed domain methods
  */
 export type WatchListClient = {
-  getV1watchlistmarkets: (currency: string) => Promise<WatchlistMarketsResponse>
   getPrices: (params?: Record<string, never>) => Promise<SimplePriceResponse>
   getTrendingTokens: (
     params?: Record<string, never>
@@ -38,27 +31,8 @@ export type WatchListClient = {
  * const client = createWatchListClient(mockClient)
  */
 export const createWatchListClient = (
-  httpClient: WatchlistHttpClient
+  httpClient: HttpClient
 ): WatchListClient => {
-  const getV1watchlistmarkets = async (
-    currency: string
-  ): Promise<WatchlistMarketsResponse> => {
-    const { data, error } = await httpClient.GET('/v1/watchlist/markets', {
-      params: {
-        query: {
-          currency,
-          topMarkets: true
-        }
-      }
-    })
-
-    if (error) {
-      throw error
-    }
-
-    return data
-  }
-
   const getPrices = async (
     params?: Record<string, never>
   ): Promise<SimplePriceResponse> => {
@@ -88,7 +62,6 @@ export const createWatchListClient = (
   }
 
   return {
-    getV1watchlistmarkets,
     getPrices,
     getTrendingTokens
   }

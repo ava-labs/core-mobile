@@ -1,29 +1,29 @@
-import { Account, AccountCollection } from 'store/account/types'
-import { importPWithBalanceCheck } from 'services/earn/importP'
+import { info, pvm, UnsignedTx } from '@avalabs/avalanchejs'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { PChainTransaction, SortOrder } from '@avalabs/glacier-sdk'
 import Big from 'big.js'
-import { FujiParams, MainnetParams } from 'utils/NetworkParams'
-import { importC } from 'services/earn/importC'
+import { getUnixTime } from 'date-fns'
+import AccountsService from 'services/account/AccountsService'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { exportP } from 'services/earn/exportP'
-import WalletService from 'services/wallet/WalletService'
-import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
-import NetworkService from 'services/network/NetworkService'
-import { pvm, UnsignedTx, info } from '@avalabs/avalanchejs'
-import Logger from 'utils/Logger'
-import { retry, RetryBackoffPolicy } from 'utils/js/retry'
+import { importC } from 'services/earn/importC'
+import { importPWithBalanceCheck } from 'services/earn/importP'
 import {
   AddDelegatorTransactionProps,
   RecoveryEvents
 } from 'services/earn/types'
-import { getUnixTime } from 'date-fns'
-import { Seconds } from 'types/siUnits'
-import { PChainTransaction, SortOrder } from '@avalabs/glacier-sdk'
-import { listLatestPrimaryNetworkTransactions } from 'utils/api/clients/glacierClient'
-import { isOnGoing } from 'utils/earn/status'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { Avalanche } from '@avalabs/core-wallets-sdk'
+import NetworkService from 'services/network/NetworkService'
+import WalletService from 'services/wallet/WalletService'
+import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
+import { Account, AccountCollection } from 'store/account/types'
 import { AvaxXP } from 'types/AvaxXP'
-import AccountsService from 'services/account/AccountsService'
+import { Seconds } from 'types/siUnits'
+import Logger from 'utils/Logger'
+import { FujiParams, MainnetParams } from 'utils/NetworkParams'
+import { glacierApiClient } from 'utils/api/fetches/glacierFetchClient'
+import { isOnGoing } from 'utils/earn/status'
+import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -308,7 +308,7 @@ class EarnService {
     startTimestamp?: number
     sortOrder?: SortOrder
   }): Promise<PChainTransaction[]> => {
-    return listLatestPrimaryNetworkTransactions({
+    return glacierApiClient.listLatestPrimaryNetworkTransactions({
       isTestnet,
       addresses,
       startTimestamp,
