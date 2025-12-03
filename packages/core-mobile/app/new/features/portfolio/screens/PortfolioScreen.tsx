@@ -2,6 +2,7 @@ import {
   BalanceHeader,
   NavigationTitleHeader,
   SegmentedControl,
+  showAlert,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -14,10 +15,6 @@ import {
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
-import { useAccountPerformanceSummary } from 'features/portfolio/hooks/useAccountPerformanceSummary'
-import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
-import { useBalanceTotalPriceChangeForAccount } from 'features/portfolio/hooks/useBalanceTotalPriceChangeForAccount'
-import { useIsBalanceLoadedForAccount } from 'features/portfolio/hooks/useIsBalanceLoadedForAccount'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
@@ -34,6 +31,10 @@ import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collectibles/hooks/useCollectiblesFilterAndSort'
 import { CollectiblesScreen } from 'features/portfolio/collectibles/screens/CollectiblesScreen'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
+import { useAccountPerformanceSummary } from 'features/portfolio/hooks/useAccountPerformanceSummary'
+import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
+import { useBalanceTotalPriceChangeForAccount } from 'features/portfolio/hooks/useBalanceTotalPriceChangeForAccount'
+import { useIsBalanceLoadedForAccount } from 'features/portfolio/hooks/useIsBalanceLoadedForAccount'
 import { useSendSelectedToken } from 'features/send/store'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
@@ -42,7 +43,8 @@ import {
   InteractionManager,
   LayoutChangeEvent,
   LayoutRectangle,
-  Platform
+  Platform,
+  Pressable
 } from 'react-native'
 import Animated, {
   useAnimatedStyle,
@@ -52,6 +54,7 @@ import { useSafeAreaFrame } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AnalyticsEventName } from 'services/analytics/types'
+import { WalletType } from 'services/wallet/types'
 import { selectActiveAccount } from 'store/account'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import {
@@ -61,10 +64,11 @@ import {
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { selectActiveWallet, selectWallets } from 'store/wallet/slice'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
-import { useIsRefetchingBalancesForAccount } from '../hooks/useIsRefetchingBalancesForAccount'
-import { useIsLoadingBalancesForAccount } from '../hooks/useIsLoadingBalancesForAccount'
 import { useIsAllBalancesInaccurateForAccount } from '../hooks/useIsAllBalancesInaccurateForAccount'
+import { useIsLoadingBalancesForAccount } from '../hooks/useIsLoadingBalancesForAccount'
+import { useIsRefetchingBalancesForAccount } from '../hooks/useIsRefetchingBalancesForAccount'
 
 const SEGMENT_ITEMS = [
   { title: 'Assets' },
@@ -120,6 +124,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const isLoading = isRefetchingBalance || !isBalanceLoaded
   const allBalancesInaccurate =
     useIsAllBalancesInaccurateForAccount(activeAccount)
+  const activeWallet = useSelector(selectActiveWallet)
+  const wallets = useSelector(selectWallets)
+  const walletsCount = Object.keys(wallets).length
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
   const formattedBalance = useMemo(() => {
@@ -255,6 +262,22 @@ const PortfolioHomeScreen = (): JSX.Element => {
     return <HiddenBalanceText variant={'heading2'} sx={{ lineHeight: 38 }} />
   }, [])
 
+  const openWalletsModal = useCallback(() => {
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/(signedIn)/(modals)/wallets'
+    })
+  }, [navigate])
+
+  const handleErrorPress = useCallback(() => {
+    showAlert({
+      title: 'Unable to load balances',
+      description:
+        'This total may be incomplete since Core was unable to load all of the balances across each network.',
+      buttons: [{ text: 'Dismiss' }]
+    })
+  }, [])
+
   const renderHeader = useCallback((): JSX.Element => {
     return (
       <View
@@ -272,31 +295,41 @@ const PortfolioHomeScreen = (): JSX.Element => {
               },
               animatedHeaderStyle
             ]}>
-            <BalanceHeader
-              testID="portfolio"
-              accountName={activeAccount?.name}
-              formattedBalance={formattedBalance}
-              currency={selectedCurrency}
-              priceChange={
-                totalPriceChange !== 0
-                  ? {
-                      formattedPrice: valueChange24h,
-                      status: indicatorStatus,
-                      formattedPercent: percentChange24h
-                    }
-                  : undefined
-              }
-              errorMessage={
-                allBalancesInaccurate
-                  ? 'Unable to load all balances'
-                  : undefined
-              }
-              isLoading={isLoading && balanceTotalInCurrency === 0}
-              isLoadingBalances={isLoadingBalances || isLoading}
-              isPrivacyModeEnabled={isPrivacyModeEnabled}
-              isDeveloperModeEnabled={isDeveloperMode}
-              renderMaskView={renderMaskView}
-            />
+            <Pressable hitSlop={10} onPress={openWalletsModal}>
+              <BalanceHeader
+                testID="portfolio"
+                walletName={walletsCount > 1 ? activeWallet?.name : undefined}
+                walletIcon={
+                  activeWallet?.type === WalletType.LEDGER ||
+                  activeWallet?.type === WalletType.LEDGER_LIVE
+                    ? 'ledger'
+                    : 'wallet'
+                }
+                accountName={activeAccount?.name}
+                formattedBalance={formattedBalance}
+                currency={selectedCurrency}
+                priceChange={
+                  totalPriceChange !== 0
+                    ? {
+                        formattedPrice: valueChange24h,
+                        status: indicatorStatus,
+                        formattedPercent: percentChange24h
+                      }
+                    : undefined
+                }
+                errorMessage={
+                  allBalancesInaccurate
+                    ? 'Unable to load all balances'
+                    : undefined
+                }
+                onErrorPress={handleErrorPress}
+                isLoading={isLoading && balanceTotalInCurrency === 0}
+                isLoadingBalances={isLoadingBalances || isLoading}
+                isPrivacyModeEnabled={isPrivacyModeEnabled}
+                isDeveloperModeEnabled={isDeveloperMode}
+                renderMaskView={renderMaskView}
+              />
+            </Pressable>
           </Animated.View>
         </View>
 
@@ -316,6 +349,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleStickyHeaderLayout,
     handleBalanceHeaderLayout,
     animatedHeaderStyle,
+    openWalletsModal,
+    walletsCount,
+    activeWallet?.name,
+    activeWallet?.type,
     activeAccount?.name,
     formattedBalance,
     selectedCurrency,
@@ -324,6 +361,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     indicatorStatus,
     percentChange24h,
     allBalancesInaccurate,
+    handleErrorPress,
     isLoading,
     balanceTotalInCurrency,
     isLoadingBalances,

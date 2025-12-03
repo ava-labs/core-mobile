@@ -1,4 +1,6 @@
 import { WalletType } from 'services/wallet/types'
+import { Account } from 'store/account'
+import { Wallet } from 'store/wallet/types'
 import { DropdownGroup } from './components/DropdownMenu'
 
 export type DropdownSelection = {
@@ -17,17 +19,14 @@ export type WalletDisplayData = {
   id: string
   name: string
   type: WalletType
-  accounts: Array<{
-    hideSeparator: boolean
-    containerSx: {
-      backgroundColor: string
-      borderRadius: number
-    }
-    title: React.JSX.Element
-    subtitle: React.JSX.Element
-    leftIcon: React.JSX.Element
-    value: React.JSX.Element
-    onPress: () => void
-    accessory: React.JSX.Element
-  }>
+  accounts: Array<AccountDisplayData>
+}
+
+export type AccountDisplayData = {
+  wallet: Wallet
+  account: Account
+  isActive: boolean
+  hideSeparator: boolean
+  onPress: () => void
+  onPressDetails: () => void
 }

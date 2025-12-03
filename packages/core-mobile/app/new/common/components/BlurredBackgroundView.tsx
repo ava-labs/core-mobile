@@ -12,7 +12,8 @@ import Grabber from './Grabber'
 const BlurredBackgroundView = ({
   hasGrabber = false,
   separator,
-  shouldDelayBlurOniOS = false
+  shouldDelayBlurOniOS = false,
+  backgroundColor
 }: {
   hasGrabber?: boolean
   separator?: {
@@ -20,6 +21,7 @@ const BlurredBackgroundView = ({
     position: 'top' | 'bottom'
   }
   shouldDelayBlurOniOS?: boolean
+  backgroundColor?: string
 }): JSX.Element => {
   const animatedBorderStyle = useAnimatedStyle(() => ({
     opacity: separator?.opacity.value
@@ -42,6 +44,7 @@ const BlurredBackgroundView = ({
       )}
       {hasGrabber === false && (
         <BlurViewWithFallback
+          backgroundColor={backgroundColor}
           shouldDelayBlurOniOS={shouldDelayBlurOniOS}
           style={{
             flex: 1

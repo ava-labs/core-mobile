@@ -1,11 +1,11 @@
-import { BalanceHeader, View } from '@avalabs/k2-alpine'
+import { BalanceHeader, showAlert, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { AccountAddresses } from 'features/accountSettings/components/accountAddresses'
 import { AccountButtons } from 'features/accountSettings/components/AccountButtons'
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccountById } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -54,6 +54,15 @@ const AccountScreen = (): JSX.Element => {
     [account?.type, wallet?.type]
   )
 
+  const handleErrorPress = useCallback(() => {
+    showAlert({
+      title: 'Unable to load balances',
+      description:
+        'This total may be incomplete since Core was unable to load all of the balances across each network.',
+      buttons: [{ text: 'Dismiss' }]
+    })
+  }, [])
+
   const handleShowPrivateKey = (): void => {
     if (!account) {
       return
@@ -82,6 +91,7 @@ const AccountScreen = (): JSX.Element => {
         errorMessage={
           allBalancesInaccurate ? 'Unable to load all balances' : undefined
         }
+        onErrorPress={handleErrorPress}
         isLoading={isLoading}
         isPrivacyModeEnabled={isPrivacyModeEnabled}
         isDeveloperModeEnabled={isDeveloperMode}
