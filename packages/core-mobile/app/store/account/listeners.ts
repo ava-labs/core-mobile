@@ -18,6 +18,7 @@ import {
   selectWallets,
   setWalletName
 } from 'store/wallet/slice'
+import { Wallet as StoreWallet } from 'store/wallet/types'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
@@ -285,12 +286,12 @@ const migrateXpAddressesIfNeeded = async (
     Logger.info('Wallet', wallet)
 
     // Check if this wallet has already been migrated
-    if (isWalletXpMigrated(wallet.id)) {
-      Logger.info(
-        `XP address derivation already completed for wallet ${wallet.id}`
-      )
-      continue
-    }
+    // if (isWalletXpMigrated(wallet.id)) {
+    //   Logger.info(
+    //     `XP address derivation already completed for wallet ${wallet.id}`
+    //   )
+    //   continue
+    // }
 
     if (WalletType.PRIVATE_KEY.includes(wallet.type)) {
       Logger.info(
@@ -298,6 +299,15 @@ const migrateXpAddressesIfNeeded = async (
       )
       // Mark as migrated since private key wallets don't need X/P addresses
       markWalletXpMigrated(wallet.id)
+      continue
+    }
+
+    if (wallet.type === WalletType.SEEDLESS) {
+      await migrateSeedlessWalletXpAddresses({
+        listenerApi,
+        wallet,
+        isDeveloperMode
+      })
       continue
     }
 
@@ -409,6 +419,80 @@ const migrateXpAddressesIfNeeded = async (
   } else {
     Logger.info('No XP address updates needed for any accounts')
   }
+}
+
+const migrateSeedlessWalletXpAddresses = async ({
+  listenerApi,
+  wallet,
+  isDeveloperMode
+}: {
+  listenerApi: AppListenerEffectAPI
+  wallet: StoreWallet
+  isDeveloperMode: boolean
+}): Promise<void> => {
+  const state = listenerApi.getState()
+  const accounts = selectAccountsByWalletId(state, wallet.id)
+  if (!accounts.length) {
+    return
+  }
+
+  const accountsToUpdate: AccountCollection = {}
+  for (const account of accounts) {
+    if (account.index === 0) {
+      continue
+    }
+
+    if (account.addressAVM !== undefined || account.addressPVM !== undefined) {
+      accountsToUpdate[account.id] = {
+        ...account,
+        addressAVM: undefined,
+        addressPVM: undefined
+      }
+    }
+  }
+
+  if (Object.keys(accountsToUpdate).length > 0) {
+    listenerApi.dispatch(setAccounts(accountsToUpdate))
+  }
+
+  await deriveMissingSeedlessSessionKeys(wallet.id)
+  await reloadSeedlessWalletAccounts({
+    listenerApi,
+    wallet,
+    isDeveloperMode
+  })
+
+  markWalletXpMigrated(wallet.id)
+}
+
+const reloadSeedlessWalletAccounts = async ({
+  listenerApi,
+  wallet,
+  isDeveloperMode
+}: {
+  listenerApi: AppListenerEffectAPI
+  wallet: StoreWallet
+  isDeveloperMode: boolean
+}): Promise<void> => {
+  const latestState = listenerApi.getState()
+  const accounts = selectAccountsByWalletId(latestState, wallet.id)
+  if (!accounts.length) {
+    return
+  }
+
+  const accountsCollection: AccountCollection = {}
+  for (const account of accounts) {
+    accountsCollection[account.id] = account
+  }
+
+  const reloadedAccounts = await AccountsService.reloadAccounts({
+    accounts: accountsCollection,
+    isTestnet: isDeveloperMode,
+    walletId: wallet.id,
+    walletType: wallet.type
+  })
+
+  listenerApi.dispatch(setAccounts(reloadedAccounts))
 }
 
 export const addAccountListeners = (
