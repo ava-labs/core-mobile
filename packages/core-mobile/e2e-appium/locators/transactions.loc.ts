@@ -21,6 +21,7 @@ export default {
   myAccounts: 'My Accounts',
   sendTitle: 'Send',
   amountToSend: 'token_amount_input_field',
+  amountToStake: 'token_amount_input_field AVAX  ',
   sendSelectTokenListBtn: 'send_select_token_list_btn',
   usdcToken: 'USDC',
   wethToken: 'WETH',
@@ -87,12 +88,17 @@ export default {
   trendingDetailSwapBtn: 'token_detail_swap_btn',
   receiveIcon: 'receive_icon',
   receiveCryptoTitle: 'Receive crypto',
-  receiveCryptoSubtitle:
-    'To receive funds you can choose to share\nyour unique QR code or address below with\nthe sender',
+  receiveCryptoSubtitle: 'To receive funds you can choose to share',
   receiveQrCode: 'receive_token_qr_code',
   selectReceiveNetwork: 'select_receive_network',
   evmSupportedAddressText: 'evm_supported_address_text',
   countrySelector: 'list_item__Country',
   currencySelector: 'list_item__Currency',
-  selectOtherTokenBtn: 'list_item__Select other token'
+  selectOtherTokenBtn: 'list_item__Select other token',
+  addStakeCard: 'add_card_enabled',
+  claimCard: 'claim_card',
+  duration: 'Duration',
+  confirmStake: 'confirm_stake',
+  reviewStakeTitle: 'Review your stake',
+  claimNow: 'claim_now'
 }

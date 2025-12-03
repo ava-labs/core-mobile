@@ -27,8 +27,8 @@ class BottomsTabsPage {
     return selectors.getById(bottomTabsLoc.trackTab)
   }
 
-  get stakeTab() {
-    return selectors.getById(bottomTabsLoc.stakeTab)
+  get earnTab() {
+    return selectors.getById(bottomTabsLoc.earnTab)
   }
 
   get browserTab() {
@@ -55,8 +55,8 @@ class BottomsTabsPage {
     await actions.tap(this.trackTab)
   }
 
-  async tapStakeTab() {
-    await actions.tap(this.stakeTab)
+  async tapEarnTab() {
+    await actions.tap(this.earnTab)
   }
 
   async tapWatchlistTab() {
