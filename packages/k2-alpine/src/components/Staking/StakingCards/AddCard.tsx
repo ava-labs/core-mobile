@@ -16,6 +16,7 @@ export const AddCard = ({
 
   return (
     <BaseCard
+      testID={disabled ? 'add_card_disabled' : 'add_card_enabled'}
       onPress={onPress}
       disabled={disabled}
       sx={{ justifyContent: 'center', alignItems: 'center', width, height }}>

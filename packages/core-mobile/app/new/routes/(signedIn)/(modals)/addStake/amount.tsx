@@ -111,6 +111,8 @@ const StakeAmountScreen = (): JSX.Element => {
   const renderFooter = useCallback(() => {
     return (
       <Button
+        testID={isComputing || !inputValid ? 'next_btn_disabled' : 'next_btn'}
+        accessible={true}
         type="primary"
         size="large"
         disabled={isComputing || !inputValid}
