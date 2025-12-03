@@ -252,13 +252,7 @@ export const ListScreen = <T,>({
     // Android formsheet in native-stack has a default top padding of insets.top
     // so we need to add this to adjust the height of the list
     const extraPadding =
-      Platform.OS === 'android'
-        ? isModal
-          ? insets.top - 24
-          : 32
-        : isModal
-        ? -32
-        : 8
+      Platform.OS === 'android' ? (isModal ? insets.top + 24 : 32) : 6
 
     return [
       props?.contentContainerStyle,
