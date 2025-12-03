@@ -230,6 +230,14 @@ export default function WalletLayout(): JSX.Element {
             options={modalScreensOptions}
           />
           <Stack.Screen name="(modals)/deposit" options={modalScreensOptions} />
+          <Stack.Screen
+            name="(modals)/wallets"
+            options={{
+              ...stackScreensOptions,
+              animation: 'fade_from_bottom',
+              animationDuration: 200
+            }}
+          />
         </Stack>
         <PolyfillCrypto />
         <LastTransactedNetworks />

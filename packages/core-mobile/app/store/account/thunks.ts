@@ -26,19 +26,17 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
   async (walletId, thunkApi) => {
     const state = thunkApi.getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
-    const allAccounts = selectAccounts(state)
 
     const wallet = selectWalletById(walletId)(state)
     if (!wallet) {
       throw new Error('Wallet not found')
     }
 
-    const allAccountsCount = Object.keys(allAccounts).length
     const accountsByWalletId = selectAccountsByWalletId(state, walletId)
 
     const acc = await AccountsService.createNextAccount({
-      name: `Account ${allAccountsCount + 1}`,
-      index: Object.keys(accountsByWalletId).length,
+      name: `Account ${accountsByWalletId.length + 1}`,
+      index: accountsByWalletId.length,
       walletType: wallet.type,
       isTestnet: isDeveloperMode,
       walletId: walletId

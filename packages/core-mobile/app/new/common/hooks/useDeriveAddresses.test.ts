@@ -110,9 +110,8 @@ describe('useDeriveAddresses', () => {
       expect(useSelector).toHaveBeenCalled()
 
       // The hook should have access to the mocked accounts
-      // We can verify this by checking if the temp account name is correct
-      // With 2 existing accounts, the new account should be "Account 3"
-      expect(result.current.tempAccountDetails?.name).toBe('Account 3')
+      // The temp account name is always "Account 1" for private key imports
+      expect(result.current.tempAccountDetails?.name).toBe('Account 1')
     })
   })
 
@@ -149,7 +148,7 @@ describe('useDeriveAddresses', () => {
       expect(result.current.tempAccountDetails).toEqual({
         id: mockUuid,
         index: 0,
-        name: 'Account 3',
+        name: 'Account 1',
         type: CoreAccountType.IMPORTED,
         walletId: CORE_MOBILE_WALLET_ID,
         addressC: mockEvmAddress,
@@ -435,7 +434,7 @@ describe('useDeriveAddresses', () => {
       expect(tempAccount).toMatchObject({
         id: expect.any(String),
         index: 0,
-        name: 'Account 3',
+        name: 'Account 1',
         type: CoreAccountType.IMPORTED,
         walletId: CORE_MOBILE_WALLET_ID,
         addressC: expect.any(String),
