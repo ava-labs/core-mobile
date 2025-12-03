@@ -1,0 +1,209 @@
+diff --git a/.DS_Store b/.DS_Store
+new file mode 100644
+index 0000000000000000000000000000000000000000..3117a90a0d1c52a564b798d5ebe84c3506d72932
+--- /dev/null
++++ b/.DS_Store
+@@ -0,0 +1 @@
++
+\ No newline at end of file
+diff --git a/abstract/weierstrass.js b/abstract/weierstrass.js
+index a7a912fa46128bbc36eeefe67e6ba16855992917..ca5d7be1c7c57a9bd82159196d0397ac4331544f 100644
+--- a/abstract/weierstrass.js
++++ b/abstract/weierstrass.js
+@@ -11,6 +11,29 @@ exports.ecdsa = ecdsa;
+ exports.weierstrassPoints = weierstrassPoints;
+ exports._legacyHelperEquat = _legacyHelperEquat;
+ exports.weierstrass = weierstrass;
++
++const NativeAvalabsCrypto = require("react-native-nitro-avalabs-crypto");
++const getPublicKeyFromNativeLib = NativeAvalabsCrypto.getPublicKey;
++const pointAddScalarNative = NativeAvalabsCrypto.pointAddScalar;
++const signNative = NativeAvalabsCrypto.sign;
++const verifyNative = NativeAvalabsCrypto.verify;
++const signSchnorrNative = NativeAvalabsCrypto.signSchnorr;
++const verifySchnorrNative = NativeAvalabsCrypto.verifySchnorr;
++// Native-backed helpers (forwarders)
++function _pointAddScalar(p, tweak, isCompressed) {
++    return pointAddScalarNative(p, tweak, isCompressed);
++}
++exports._pointAddScalar = _pointAddScalar;
++
++function _signSchnorr(messageHash, secretKey) {
++    return signSchnorrNative(secretKey, messageHash);
++}
++exports._signSchnorr = _signSchnorr;
++
++function _verifySchnorr(publicKey, messageHash, signature) {
++    return verifySchnorrNative(publicKey, messageHash, signature);
++}
++exports._verifySchnorr = _verifySchnorr;
+ /**
+  * Short Weierstrass curve methods. The formula is: y² = x³ + ax + b.
+  *
+@@ -915,7 +938,17 @@ function ecdh(Point, ecdhOpts = {}) {
+      * @returns Public key, full when isCompressed=false; short when isCompressed=true
+      */
+     function getPublicKey(secretKey, isCompressed = true) {
+-        return Point.BASE.multiply(_normFnElement(Fn, secretKey)).toBytes(isCompressed);
++        const con = console;
++        try {
++            const nativeRes = getPublicKeyFromNativeLib(secretKey, isCompressed);
++            return nativeRes;
++        } catch (e) {
++            con.log(`Native lib failed, falling back to JS implementation ${e}`);
++            // fall through to JS implementation below
++        }
++
++        const res =  Point.BASE.multiply(_normFnElement(Fn, secretKey)).toBytes(isCompressed);
++        return res;
+     }
+     function keygen(seed) {
+         const secretKey = randomSecretKey(seed);
+@@ -1232,6 +1265,14 @@ function ecdsa(Point, hash, ecdsaOpts = {}) {
+      * ```
+      */
+     function sign(message, secretKey, opts = {}) {
++        // Prefer native DER-sign, then wrap into Signature instance for compatibility
++        try {
++            const der = signNative(secretKey, message);
++            const bytes = der instanceof ArrayBuffer ? new Uint8Array(der) : der;
++            return Signature.fromBytes(bytes, 'der');
++        } catch (_) {
++            // fall through to JS implementation below
++        }
+         message = (0, utils_ts_1.ensureBytes)('message', message);
+         const { seed, k2sig } = prepSig(message, secretKey, opts); // Steps A, D of RFC6979 3.2.
+         const drbg = (0, utils_ts_1.createHmacDrbg)(hash.outputLen, Fn.BYTES, hmac);
+@@ -1287,6 +1328,12 @@ function ecdsa(Point, hash, ecdsaOpts = {}) {
+      * ```
+      */
+     function verify(signature, message, publicKey, opts = {}) {
++        // Fast-path: native boolean verify if available
++        try {
++            return !!verifyNative(publicKey, message, signature);
++        } catch (_) {
++            // fall through to JS implementation below
++        }
+         const { lowS, prehash, format } = validateSigOpts(opts, defaultSigOpts);
+         publicKey = (0, utils_ts_1.ensureBytes)('publicKey', publicKey);
+         message = validateMsgAndHash((0, utils_ts_1.ensureBytes)('message', message), prehash);
+diff --git a/esm/package.json b/esm/package.json
+index 7f1fc33ddaa81f23f560a391b4828ecae59edd5d..8220a13ecc5a52f8db9612fdc7ef5e2a28824321 100644
+--- a/esm/package.json
++++ b/esm/package.json
+@@ -1,4 +1,34 @@
+ {
+   "type": "module",
+-  "sideEffects": false
++  "sideEffects": false,
++  "react-native": {
++    "zlib": "browserify-zlib",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "stream": "stream-browserify",
++    "vm": "vm-browserify"
++  },
++  "browser": {
++    "zlib": "browserify-zlib",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "stream": "stream-browserify",
++    "vm": "vm-browserify"
++  }
+ }
+diff --git a/package.json b/package.json
+index 852104a522d6a005c05b5411f36c50bfb76b48bc..8d3a2182f7b60506e6301a432173bc895c7302bd 100644
+--- a/package.json
++++ b/package.json
+@@ -291,5 +291,35 @@
+     "schnorr",
+     "fft"
+   ],
+-  "funding": "https://paulmillr.com/funding/"
++  "funding": "https://paulmillr.com/funding/",
++  "react-native": {
++    "zlib": "browserify-zlib",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "stream": "stream-browserify",
++    "vm": "vm-browserify"
++  },
++  "browser": {
++    "zlib": "browserify-zlib",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "stream": "stream-browserify",
++    "vm": "vm-browserify"
++  }
+ }
+diff --git a/src/package.json b/src/package.json
+index 3dbc1ca591c0557e35b6004aeba250e6a70b56e3..08d985c3d4a0bd8e6c4ffd6401312e9e4ab2246d 100644
+--- a/src/package.json
++++ b/src/package.json
+@@ -1,3 +1,33 @@
+ {
+-  "type": "module"
++  "type": "module",
++  "react-native": {
++    "zlib": "browserify-zlib",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "stream": "stream-browserify",
++    "vm": "vm-browserify"
++  },
++  "browser": {
++    "zlib": "browserify-zlib",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "stream": "stream-browserify",
++    "vm": "vm-browserify"
++  }
+ }
