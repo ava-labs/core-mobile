@@ -390,6 +390,10 @@ class CommonElsPage {
     console.log('Dismissed bottom sheet')
   }
 
+  async pullToRefresh(ele = this.filterDropdown) {
+    await actions.dragAndDrop(ele, [0, 1000])
+  }
+
   async visibleDropdown(name: string, isVisible = true) {
     if (isVisible) {
       await actions.waitFor(selectors.getById(`${name}_dropdown_btn`))

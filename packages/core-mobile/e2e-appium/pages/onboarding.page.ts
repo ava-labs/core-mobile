@@ -22,7 +22,7 @@ class OnboardingPage {
   }
 
   get enterRecoveryPhraseTitle() {
-    return selectors.getByText(onboardingLoc.enterRecoveryPhraseTitle)
+    return selectors.getBySomeText(onboardingLoc.enterRecoveryPhraseTitle)
   }
 
   get letsGo() {
@@ -42,11 +42,11 @@ class OnboardingPage {
   }
 
   get enterPinSecondScreenTitle() {
-    return selectors.getByText(onboardingLoc.enterPinSecondScreenTitle)
+    return selectors.getBySomeText(onboardingLoc.enterPinSecondScreenTitle)
   }
 
   get enterPinFirstScreenTitle() {
-    return selectors.getByText(onboardingLoc.enterPinFirstScreenTitle)
+    return selectors.getBySomeText(onboardingLoc.enterPinFirstScreenTitle)
   }
 
   get pinInputField() {
@@ -66,7 +66,7 @@ class OnboardingPage {
   }
 
   get selectAvatarTitle() {
-    return selectors.getByText(onboardingLoc.selectAvatarTitle)
+    return selectors.getBySomeText(onboardingLoc.selectAvatarTitle)
   }
 
   get forgotPin() {

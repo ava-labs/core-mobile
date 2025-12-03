@@ -8,18 +8,21 @@ export const BaseCard = ({
   onPress,
   sx,
   children,
-  disabled
+  disabled,
+  testID
 }: {
   onPress?: () => void
   sx?: SxProp
   children: React.ReactNode
   disabled?: boolean
+  testID?: string
 }): JSX.Element => {
   const { theme } = useTheme()
   const borderColor = theme.isDark ? '#FFFFFF1A' : '#0000001A'
 
   return (
     <AnimatedPressable
+      testID={testID}
       style={{ flex: 1 }}
       onPress={onPress}
       disabled={disabled}>

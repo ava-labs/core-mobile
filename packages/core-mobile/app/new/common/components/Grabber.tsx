@@ -7,6 +7,7 @@ const Grabber = (): JSX.Element => {
   return (
     <View
       testID="grabber"
+      accessible={true}
       style={{
         height: 5,
         width: 50,

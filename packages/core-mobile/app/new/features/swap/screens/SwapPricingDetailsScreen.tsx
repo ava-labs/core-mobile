@@ -14,7 +14,7 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { FlatList } from 'react-native-gesture-handler'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import { useSwapRate } from '../hooks/useSwapRate'
@@ -44,6 +44,8 @@ export const SwapPricingDetailsScreen = ({
   const {
     theme: { colors }
   } = useTheme()
+  const [isAccordionExpanded, setIsAccordionExpanded] = useState(false)
+  const [accordionResetKey, setAccordionResetKey] = useState(0)
 
   const { formatCurrency } = useFormatCurrency()
 
@@ -78,10 +80,12 @@ export const SwapPricingDetailsScreen = ({
       const quote = item.quote as MarkrQuote
 
       const { id, name, logo_url } = quote.aggregator
-      const isLastItem = index === quotes.quotes.length - 1
+      const isLastItem = index === quotes.quotes.length
       const isSelected =
         (!manuallySelected && index === 0) ||
-        (manuallySelected && quotes.selected === item)
+        (manuallySelected &&
+          isMarkrQuote(quotes.selected.quote) &&
+          (quotes.selected.quote as MarkrQuote).aggregator.id === id)
 
       const usdEquivalent =
         id === 'auto'
@@ -95,6 +99,8 @@ export const SwapPricingDetailsScreen = ({
           onPress={() => {
             setManuallySelected(true)
             setQuotes({ ...quotes, selected: item })
+            setAccordionResetKey(prev => prev + 1)
+            setIsAccordionExpanded(false)
           }}>
           <View
             sx={{
@@ -189,12 +195,23 @@ export const SwapPricingDetailsScreen = ({
     toToken
   })
 
-  const data = useMemo(() => {
+  const selectedRateData = useMemo(() => {
+    if (!fromToken || !toToken) {
+      return []
+    }
+
+    return [
+      {
+        title: 'Rate',
+        value: `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${toToken.symbol}`
+      }
+    ]
+  }, [fromToken, toToken, rate])
+
+  const providerData = useMemo(() => {
     const items: GroupListItem[] = []
 
     if (
-      !fromToken ||
-      !toToken ||
       !quotes ||
       quotes.quotes.length === 0 ||
       !quotes.quotes[0] ||
@@ -202,11 +219,6 @@ export const SwapPricingDetailsScreen = ({
     ) {
       return items
     }
-
-    items.push({
-      title: 'Rate',
-      value: `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${toToken.symbol}`
-    })
 
     const bestRate = quotes.quotes[0]
     const selectedRate = quotes.selected
@@ -217,6 +229,7 @@ export const SwapPricingDetailsScreen = ({
         value: !manuallySelected
           ? `Auto • ${selectedRate.quote.aggregator.name}`
           : `${selectedRate.quote.aggregator.name}`,
+        expanded: isAccordionExpanded,
         accordion: (
           <FlatList
             data={[
@@ -259,7 +272,14 @@ export const SwapPricingDetailsScreen = ({
       navigationTitle="Pricing details"
       isModal
       contentContainerStyle={{ padding: 16 }}>
-      <GroupList data={data} separatorMarginRight={16} />
+      <View sx={{ paddingTop: 24, gap: 10 }}>
+        <GroupList data={selectedRateData} separatorMarginRight={16} />
+        <GroupList
+          data={providerData}
+          separatorMarginRight={16}
+          key={`accordion-${accordionResetKey}`}
+        />
+      </View>
     </ScrollScreen>
   )
 }
