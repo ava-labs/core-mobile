@@ -94,40 +94,6 @@ export const CoinMarketSchema = object({
 
 export type CoinMarket = z.infer<typeof CoinMarketSchema>
 
-export const TrendingTokenSchema = z.object({
-  internalId: z.string(),
-  coingeckoId: z.string().optional().nullable(),
-  platforms: z.union([z.record(z.string(), z.string()), z.object({}).strict()]),
-  address: z.string(),
-  decimals: z.number(),
-  liquidity: z.number().optional().nullable(),
-  logoURI: z.string().optional().nullable(),
-  name: z.string(),
-  symbol: z.string(),
-  volume24hUSD: z.number().optional().nullable(),
-  volume24hChangePercent: z.number().optional().nullable(),
-  fdv: z.number().optional().nullable(),
-  marketcap: z.number().optional().nullable(),
-  rank: z.number(),
-  price: z.number(),
-  price24hChangePercent: z.number().optional().nullable(),
-  website: z.string().optional().nullable(),
-  twitter: z.string().optional().nullable(),
-  discord: z.string().optional().nullable(),
-  medium: z.string().optional().nullable(),
-  verified: z.boolean().optional().nullable(),
-  sparkline: z
-    .array(
-      z.object({
-        unixTime: z.number(),
-        value: z.number()
-      })
-    )
-    .optional()
-})
-
-export type TrendingTokenLegacy = z.infer<typeof TrendingTokenSchema>
-
 export type Error = {
   status: {
     error_code: number
