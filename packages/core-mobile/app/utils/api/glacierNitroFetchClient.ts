@@ -12,7 +12,6 @@ import { glacierApi } from './clients/glacierApiClient'
 // RPC urls returned in the token list are always using the production URL
 const knownHosts = ['glacier-api.avax.network', 'proxy-api.avax.network']
 
-
 export const listLatestPrimaryNetworkTransactions = async ({
   isTestnet,
   addresses,

@@ -1,4 +1,4 @@
-import { paths as tokenPaths } from "../generated/tokenAggregator/schema"
+import { paths as tokenPaths } from '../generated/tokenAggregator/schema'
 
 export type WatchlistMarketsResponse =
   tokenPaths['/v1/watchlist/markets']['get']['responses'][200]['content']['application/json']

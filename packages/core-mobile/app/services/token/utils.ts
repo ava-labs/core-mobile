@@ -2,7 +2,7 @@ import { defaultChartData } from 'store/watchlist'
 import { RetryBackoffPolicy, retry } from 'utils/js/retry'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import Logger from 'utils/Logger'
-import { TrendingToken } from 'utils/api/aggregatedTokensNitroFetchClient'
+import { TrendingToken } from 'utils/api/types'
 import {
   ChartData,
   Error,

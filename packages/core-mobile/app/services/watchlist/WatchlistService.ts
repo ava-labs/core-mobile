@@ -14,20 +14,23 @@ import {
   Prices
 } from 'store/watchlist/types'
 import { TrendingToken, WatchlistMarketsResponse } from 'utils/api/types'
-import { getV1watchlistmarkets } from 'utils/api/aggregatedTokensNitroFetchClient'
+import { watchListClient, WatchListClient } from 'utils/api/watchlistClient'
 import Logger from 'utils/Logger'
 
 /**
  * Fetches top markets from the token aggregator API
  * @param currency - The currency to fetch markets for
+ * @param client - Optional WatchListClient instance for dependency injection
  * @returns Promise resolving to WatchlistMarketsResponse
  */
 const fetchTopMarkets = async ({
-  currency
+  currency,
+  client = watchListClient
 }: {
   currency: string
+  client?: WatchListClient
 }): Promise<WatchlistMarketsResponse> => {
-  return getV1watchlistmarkets(currency)
+  return client.getV1watchlistmarkets(currency)
 }
 
 /*
@@ -40,14 +43,23 @@ const fetchTopMarkets = async ({
     - get token Id from network
     - get price and market data from cached
     - get price and market data from network (tokens not in cache)
+
+  This service supports dependency injection for testing.
+  Pass a custom WatchListClient to the constructor or use the default singleton.
 */
 class WatchlistService {
+  private client: WatchListClient
+
+  constructor(client: WatchListClient = watchListClient) {
+    this.client = client
+  }
   async getTopTokens(currency: string): Promise<{
     tokens: Record<string, MarketToken>
     charts: Charts
   }> {
     const topMarkets = await fetchTopMarkets({
-      currency: currency.toLowerCase()
+      currency: currency.toLowerCase(),
+      client: this.client
     })
 
     const tokens: Record<string, MarketToken> = {}
@@ -246,4 +258,8 @@ class WatchlistService {
   }
 }
 
+// Export the class for testing with dependency injection
+export { WatchlistService }
+
+// Export singleton instance as default for production use
 export default new WatchlistService()
