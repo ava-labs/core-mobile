@@ -22,7 +22,7 @@ const useBTCSend: SendAdapterBTC = ({
   nativeToken,
   network
 }) => {
-  const [utxos, setUtxos] = useState<BitcoinInputUTXO[]>([])
+  const [utxos, setUtxos] = useState<BitcoinInputUTXO[] | undefined>()
   const { request } = useInAppRequest()
   const {
     setMaxAmount,
@@ -38,11 +38,10 @@ const useBTCSend: SendAdapterBTC = ({
   useEffect(() => {
     const fetchInputUtxos = async (): Promise<void> => {
       assertNotUndefined(provider)
-      assertNotUndefined(nativeToken)
 
       const inputUtxos = await getBtcInputUtxos(
         provider,
-        nativeToken,
+        fromAddress,
         Number(maxFee)
       )
 
@@ -59,10 +58,10 @@ const useBTCSend: SendAdapterBTC = ({
     return () => {
       clearInterval(intervalId)
     }
-  }, [nativeToken, maxFee, provider])
+  }, [maxFee, provider, fromAddress])
 
   const maxAmountValue = useMemo(() => {
-    if (!addressToSend) {
+    if (!addressToSend || utxos === undefined) {
       return
     }
 
