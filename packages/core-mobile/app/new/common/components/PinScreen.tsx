@@ -218,7 +218,8 @@ export const PinScreen = ({
     } else {
       InteractionManager.runAfterInteractions(() => {
         focusPinInput()
-      })    }
+      })
+    }
   }, [handlePromptBioLogin, focusPinInput])
 
   const handleBrokenBioState = useCallback(() => {
