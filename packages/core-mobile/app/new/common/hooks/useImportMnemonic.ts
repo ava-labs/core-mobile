@@ -1,8 +1,6 @@
 import { useCallback, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useRouter } from 'expo-router'
-import { StackActions } from '@react-navigation/native'
-import { useNavigation } from '@react-navigation/native'
 import { AppThunkDispatch } from 'store/types'
 import { importMnemonicWalletAndAccount } from 'store/wallet/thunks'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -15,9 +13,8 @@ export const useImportMnemonic = (): {
   importWallet: (mnemonic: string) => Promise<void>
 } => {
   const dispatch = useDispatch<AppThunkDispatch>()
-  const { canGoBack } = useRouter()
+  const { canGoBack, dismiss } = useRouter()
   const [isImporting, setIsImporting] = useState(false)
-  const navigation = useNavigation()
 
   const importWallet = useCallback(
     async (mnemonic: string) => {
@@ -40,7 +37,8 @@ export const useImportMnemonic = (): {
         showSnackbar('Wallet imported successfully!')
 
         if (canGoBack()) {
-          navigation.dispatch(StackActions.popTo('manageAccounts'))
+          dismiss()
+          dismiss()
         }
       } catch (error) {
         Logger.error('Failed to import mnemonic wallet', error)
@@ -53,7 +51,7 @@ export const useImportMnemonic = (): {
         setIsImporting(false)
       }
     },
-    [dispatch, canGoBack, navigation]
+    [dispatch, canGoBack, dismiss]
   )
 
   return { isImporting, importWallet }

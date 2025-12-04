@@ -34,7 +34,6 @@ export const DEEPLINK_WHITELIST = [
   'core://accountSettings/securityAndPrivacy',
   'core://accountSettings/connectedSites',
   'core://accountSettings/changePin',
-  'core://accountSettings/manageAccounts',
   'core://accountSettings/manageNetworks',
   'core://accountSettings/addressBook',
   'core://accountSettings/selectAvatar',
