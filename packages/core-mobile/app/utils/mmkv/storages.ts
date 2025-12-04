@@ -9,7 +9,7 @@ export const commonStorageKeys = [
   StorageKey.SECURE_ACCESS_SET,
   StorageKey.LAST_SEEN_UPDATE_APP_VERSION,
   StorageKey.MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS,
-  StorageKey.MIGRATED_XP_ADDRESSES_WALLET_IDS
+  StorageKey.MIGRATED_XP_ADDRESSES_COMPLETED
 ]
 
 export const commonStorage = new MMKV({
