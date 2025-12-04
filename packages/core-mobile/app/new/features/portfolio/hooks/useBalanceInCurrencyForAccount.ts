@@ -1,7 +1,6 @@
 import { useSelector } from 'react-redux'
-import { selectAccountById, selectActiveAccount } from 'store/account'
+import { selectAccountById } from 'store/account'
 import { selectActiveWallet } from 'store/wallet/slice'
-import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
 import { useWalletBalances } from './useWalletBalances'
 import { useBalanceTotalInCurrencyForAccount } from './useBalanceTotalInCurrencyForAccount'
 
@@ -20,15 +19,8 @@ export const useBalanceInCurrencyForAccount = (
   isLoadingBalance: boolean
   balance: number
 } => {
-  const activeAccount = useSelector(selectActiveAccount)
   const activeWallet = useSelector(selectActiveWallet)
   const account = useSelector(selectAccountById(accountId))
-
-  const isActiveAccount =
-    activeAccount && account && activeAccount.id === account.id
-
-  const { data: accountBalance, isLoading: isLoadingAccountBalances } =
-    useAccountBalances(isActiveAccount ? activeAccount : undefined)
 
   const { data: walletBalances } = useWalletBalances(activeWallet)
 
@@ -36,12 +28,10 @@ export const useBalanceInCurrencyForAccount = (
     account,
     // TODO: fix type mismatch after fully migrating to the new backend balance types
     // @ts-ignore
-    sourceData: isActiveAccount ? accountBalance : walletBalances?.[accountId]
+    sourceData: walletBalances[accountId]
   })
 
-  const isFetchingBalance = isActiveAccount
-    ? isLoadingAccountBalances
-    : walletBalances?.[accountId] === undefined
+  const isFetchingBalance = walletBalances?.[accountId] === undefined
 
   return {
     balance: balanceTotalInCurrency,

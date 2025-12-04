@@ -1,6 +1,5 @@
 export enum ReactQueryKeys {
   ACCOUNT_BALANCE = 'accountBalance',
-  WALLET_BALANCE = 'walletBalance',
   XP_ADDRESSES = 'xpAddresses',
 
   // defi
