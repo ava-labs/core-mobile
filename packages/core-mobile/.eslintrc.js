@@ -19,7 +19,8 @@ module.exports = {
     '**/node_modules/**',
     'android/app/build/**',
     'expo-env.d.ts',
-    'ios/DerivedData'
+    'ios/DerivedData',
+    'app/utils/apiClient/generated/**'
   ],
   overrides: [
     {
