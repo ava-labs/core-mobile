@@ -5,8 +5,8 @@ import AppCheckService from 'services/fcm/AppCheckService'
 import {
   createApiClient,
   api as noOpApiClient
-} from './generated/tokenAggregatorApi.client'
-import { CORE_HEADERS } from './constants'
+} from '../generated/tokenAggregatorApi.client'
+import { CORE_HEADERS } from '../constants'
 
 if (!Config.TOKEN_AGGREGATOR_URL)
   Logger.warn('TOKEN_AGGREGATOR_URL ENV is missing')

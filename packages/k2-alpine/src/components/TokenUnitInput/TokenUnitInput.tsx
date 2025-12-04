@@ -159,8 +159,10 @@ export const TokenUnitInput = forwardRef<
         <TouchableWithoutFeedback onPress={handlePress}>
           <View style={{ paddingHorizontal: 16, width: '100%' }}>
             <AutoSizeTextInput
-              ref={textInputRef}
               testID="token_amount_input_field"
+              accessibilityLabel="token_amount_input_field"
+              accessible={true}
+              ref={textInputRef}
               editable={editable}
               placeholder={PLACEHOLDER}
               value={value}

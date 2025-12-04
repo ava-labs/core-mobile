@@ -17,9 +17,10 @@
     "storybook-generate": "sb-rn-get-stories --v6-store",
     "storybook-watch": "sb-rn-watcher",
     "gen:contracts": "typechain --target=ethers-v6 --out-dir app/contracts/openzeppelin ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC721.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC1155.json",
-    "gen:glacierApi": "npx openapi-zod-client 'https://glacier-api-dev.avax.network/api-json' -o './app/utils/network/generated/glacierApi.client.ts'",
-    "gen:tokenAggregatorApi": "npx openapi-zod-client 'https://core-token-aggregator.avax-test.network/schema.json' -o './app/utils/network/generated/tokenAggregatorApi.client.ts'",
-    "codegen": "mkdir -p app/utils/network/generated && yarn gen:contracts && yarn gen:glacierApi && yarn gen:tokenAggregatorApi",
+    "gen:glacierApi": "npx openapi-zod-client 'https://glacier-api-dev.avax.network/api-json' -o './app/utils/apiClient/generated/glacierApi.client.ts'",
+    "gen:tokenAggregatorApi": "npx openapi-zod-client 'https://core-token-aggregator.avax-test.network/schema.json' -o './app/utils/apiClient/generated/tokenAggregatorApi.client.ts'",
+    "gen:profileApi": "npx openapi-zod-client 'https://core-profile-api.avax-test.network/schema.json' -o './app/utils/apiClient/generated/profileApi.client.ts' && node ./app/utils/apiClient/scripts/fixZodIntersections.js ./app/utils/apiClient/generated/profileApi.client.ts",
+    "codegen": "mkdir -p app/utils/apiClient/generated && yarn gen:contracts && yarn gen:glacierApi && yarn gen:tokenAggregatorApi && yarn gen:profileApi",
     "appium:ios": "PLATFORM=ios wdio run ./e2e-appium/wdio.conf.ts",
     "appium:android": "PLATFORM=android wdio run ./e2e-appium/wdio.conf.ts",
     "appium": "wdio run ./e2e-appium/wdio.conf.ts"
@@ -140,6 +141,7 @@
     "expo-blur": "14.1.5",
     "expo-build-properties": "0.14.8",
     "expo-camera": "16.1.11",
+    "expo-clipboard": "8.0.7",
     "expo-constants": "17.1.7",
     "expo-dev-client": "5.2.4",
     "expo-haptics": "14.1.4",
@@ -199,6 +201,8 @@
     "react-native-localize": "3.2.1",
     "react-native-mmkv": "3.2.0",
     "react-native-modal-datetime-picker": "18.0.0",
+    "react-native-nitro-avalabs-crypto": "workspace:*",
+    "react-native-nitro-modules": "0.31.10",
     "react-native-os": "1.2.6",
     "react-native-pager-view": "6.7.1",
     "react-native-passkey": "3.1.0",
@@ -283,6 +287,7 @@
     "@types/lodash.debounce": "4.0.9",
     "@types/lodash.isempty": "4.4.9",
     "@types/lodash.isstring": "4.0.9",
+    "@types/lodash.merge": "4.6.9",
     "@types/mocha": "10.0.10",
     "@types/numeral": "2.0.5",
     "@types/react": "19.0.10",
@@ -369,7 +374,10 @@
       "@wdio/cli>tsx>esbuild": true,
       "appium": true,
       "appium-xcuitest-driver>appium-ios-remotexpc>appium-ios-tuntap": false,
-      "appium>@appium/support>sharp": true
+      "appium>@appium/support>sharp": true,
+      "react-native-nitro-modules": true,
+      "react-native-nitro-avalabs-crypto": true,
+      "react-native-nitro-avalabs-crypto>react-native-nitro-modules": true
     }
   },
   "react-native": {

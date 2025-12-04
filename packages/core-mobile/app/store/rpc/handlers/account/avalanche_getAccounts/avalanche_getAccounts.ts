@@ -33,10 +33,15 @@ class AvalancheGetAccountsHandler
     // Helper function to get xpubXP for supported wallet types
     const getXpubXP = async (
       walletId: string,
-      walletType: WalletType
+      walletType: WalletType,
+      accountIndex: number
     ): Promise<string | undefined> => {
       try {
-        return await WalletService.getRawXpubXP({ walletId, walletType })
+        return await WalletService.getRawXpubXP({
+          walletId,
+          walletType,
+          accountIndex
+        })
       } catch (error) {
         return undefined
       }
@@ -47,7 +52,9 @@ class AvalancheGetAccountsHandler
       Object.values(accounts).map(async account => {
         const wallet = selectWalletById(account.walletId)(state)
         const xpubXP = wallet
-          ? await getXpubXP(account.walletId, wallet.type)
+          ? // TODO pass correct account index after
+            // https://github.com/ava-labs/avalanche-sdks/pull/765/files is merged
+            await getXpubXP(account.walletId, wallet.type, 0)
           : undefined
 
         return {

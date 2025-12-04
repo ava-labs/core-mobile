@@ -4,8 +4,8 @@ import queryString from 'query-string'
 import {
   createApiClient,
   api as noOpApiClient
-} from './generated/glacierApi.client'
-import { CORE_HEADERS } from './constants'
+} from '../generated/glacierApi.client'
+import { CORE_HEADERS } from '../constants'
 
 if (!Config.GLACIER_URL) Logger.warn('GLACIER_URL ENV is missing')
 

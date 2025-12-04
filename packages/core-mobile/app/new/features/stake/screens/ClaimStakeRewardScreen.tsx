@@ -184,6 +184,8 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
           gap: 16
         }}>
         <Button
+          testID={shouldDisableClaimButton ? 'claim_now_disabled' : 'claim_now'}
+          accessible={true}
           type="primary"
           size="large"
           onPress={issueClaimRewards}
