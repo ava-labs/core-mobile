@@ -30,7 +30,6 @@ const WalletCard = ({
   wallet,
   isActive,
   isExpanded,
-  searchText,
   showMoreButton = true,
   style,
   onToggleExpansion
@@ -38,7 +37,6 @@ const WalletCard = ({
   wallet: WalletDisplayData
   isActive: boolean
   isExpanded: boolean
-  searchText: string
   showMoreButton?: boolean
   style?: StyleProp<ViewStyle>
   onToggleExpansion: () => void
@@ -89,23 +87,19 @@ const WalletCard = ({
   )
 
   const renderEmpty = useCallback(() => {
-    if (!searchText) {
-      return (
-        <View
-          sx={{
-            paddingVertical: 20,
-            alignItems: 'center',
-            backgroundColor: colors.$surfaceSecondary
-          }}>
-          <Text sx={{ color: colors.$textSecondary }}>
-            No accounts in this wallet.
-          </Text>
-        </View>
-      )
-    }
-
-    return null
-  }, [colors.$surfaceSecondary, colors.$textSecondary, searchText])
+    return (
+      <View
+        sx={{
+          paddingVertical: 20,
+          alignItems: 'center',
+          backgroundColor: colors.$surfaceSecondary
+        }}>
+        <Text sx={{ color: colors.$textSecondary }}>
+          No accounts in this wallet.
+        </Text>
+      </View>
+    )
+  }, [colors.$surfaceSecondary, colors.$textSecondary])
 
   const [contentHeight, setContentHeight] = useState(HEADER_HEIGHT)
   const onContentLayout = useCallback((event: LayoutChangeEvent) => {

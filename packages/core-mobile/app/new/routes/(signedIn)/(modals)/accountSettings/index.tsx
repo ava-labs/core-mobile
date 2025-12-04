@@ -10,16 +10,19 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { AppUpdateBanner } from 'common/components/AppUpdateBanner'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { Space } from 'common/components/Space'
 import { VisibilityBarButton } from 'common/components/VisibilityBarButton'
+import { useAppUpdateStatus } from 'common/hooks/useAppUpdateStatus'
 import { useAvatar } from 'common/hooks/useAvatar'
+import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { useDeleteWallet } from 'common/hooks/useDeleteWallet'
 import { showSnackbar } from 'common/utils/toast'
-import { Space } from 'common/components/Space'
 import { useRouter } from 'expo-router'
 import { About } from 'features/accountSettings/components/About'
-import { AccountList } from 'features/accountSettings/components/AcccountList'
 import { AppAppearance } from 'features/accountSettings/components/AppAppearance'
+import { Support } from 'features/accountSettings/components/Support'
 import { UserPreferences } from 'features/accountSettings/components/UserPreferences'
 import React, { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -33,10 +36,6 @@ import {
   selectIsPrivacyModeEnabled,
   togglePrivacyMode
 } from 'store/settings/securityPrivacy'
-import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
-import { Support } from 'features/accountSettings/components/Support'
-import { useAppUpdateStatus } from 'common/hooks/useAppUpdateStatus'
-import { AppUpdateBanner } from 'common/components/AppUpdateBanner'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -119,7 +118,7 @@ const AccountSettingsScreen = (): JSX.Element => {
       contentContainerStyle={{
         paddingTop: 16
       }}>
-      <View sx={{ gap: 32, marginTop: 16 }}>
+      <View sx={{ gap: 60, marginTop: 16 }}>
         <View
           sx={{
             alignItems: 'center'
@@ -136,8 +135,6 @@ const AccountSettingsScreen = (): JSX.Element => {
             />
           </TouchableOpacity>
         </View>
-
-        <AccountList />
 
         <View sx={{ gap: 24, paddingHorizontal: 16 }}>
           {renderAppUpdateBanner()}
