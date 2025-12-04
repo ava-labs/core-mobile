@@ -69,8 +69,6 @@ const addBtcFields = (
   unconfirmedBalanceDisplayValue: string | undefined
   unconfirmedBalanceInCurrency: number | undefined
   unconfirmedBalanceCurrencyDisplayValue: string | undefined
-  utxos: []
-  utxosUnconfirmed: []
 } => {
   let unconfirmedBalance: TokenUnit | undefined
 
@@ -95,9 +93,7 @@ const addBtcFields = (
       asNumber: true
     }),
     unconfirmedBalanceCurrencyDisplayValue:
-      unconfirmedBalanceInCurrency?.toDisplay({ fixedDp: 2 }),
-    utxos: [],
-    utxosUnconfirmed: []
+      unconfirmedBalanceInCurrency?.toDisplay({ fixedDp: 2 })
   }
 }
 
