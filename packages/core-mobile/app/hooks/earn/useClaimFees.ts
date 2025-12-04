@@ -7,7 +7,6 @@ import {
   selectCBaseFeeMultiplier
 } from 'store/posthog/slice'
 import NetworkService from 'services/network/NetworkService'
-import WalletService from 'services/wallet/WalletService'
 import Logger from 'utils/Logger'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
@@ -16,12 +15,12 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import { pvm } from '@avalabs/avalanchejs'
 import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
-import { getAssetId, addBufferToCChainBaseFee } from 'services/wallet/utils'
+import { addBufferToCChainBaseFee, getAvaxAssetId } from 'services/wallet/utils'
 import { SendErrorMessage } from 'errors/sendError'
 import { PvmCapableAccount } from 'common/hooks/send/utils/types'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
-import { WalletType } from 'services/wallet/types'
 import { selectActiveAccount } from 'store/account'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { usePChainBalance } from './usePChainBalance'
 import { useGetFeeState } from './useGetFeeState'
 import { extractNeededAmount } from './utils/extractNeededAmount'
@@ -87,12 +86,10 @@ export const useClaimFees = (): {
         cBaseFeeMultiplier
       )
 
-      const unsignedTx = await WalletService.createImportCTx({
-        walletId: activeWallet.id,
-        walletType: activeWallet.type,
-        accountIndex: activeAccount.index,
+      const unsignedTx = await AvalancheWalletService.createImportCTx({
+        account: activeAccount,
         baseFeeInNAvax: weiToNano(instantBaseFee.toSubUnit()),
-        avaxXPNetwork,
+        isTestnet: isDevMode,
         sourceChain: 'P',
         destinationAddress: activeAccount.addressC,
         // we only need to validate burned amount
@@ -104,8 +101,6 @@ export const useClaimFees = (): {
 
       const { txFee: exportPFee, txAmount: exportPAmount } =
         await getExportPFee({
-          walletId: activeWallet.id,
-          walletType: activeWallet.type,
           amountInNAvax: totalClaimable,
           activeAccount,
           avaxXPNetwork,
@@ -165,8 +160,6 @@ export const useClaimFees = (): {
 }
 
 const getExportPFee = async ({
-  walletId,
-  walletType,
   amountInNAvax,
   activeAccount,
   avaxXPNetwork,
@@ -174,8 +167,6 @@ const getExportPFee = async ({
   feeState,
   pFeeAdjustmentThreshold
 }: {
-  walletId: string
-  walletType: WalletType
   amountInNAvax: TokenUnit
   activeAccount: PvmCapableAccount
   avaxXPNetwork: Network
@@ -196,12 +187,10 @@ const getExportPFee = async ({
   let unsignedTxP
 
   try {
-    unsignedTxP = await WalletService.createExportPTx({
-      walletId,
-      walletType,
+    unsignedTxP = await AvalancheWalletService.createExportPTx({
       amountInNAvax: amountInNAvax.toSubUnit(),
-      accountIndex: activeAccount.index,
-      avaxXPNetwork,
+      account: activeAccount,
+      isTestnet: Boolean(avaxXPNetwork.isTestnet),
       destinationAddress: activeAccount.addressPVM,
       destinationChain: 'C',
       feeState
@@ -211,7 +200,7 @@ const getExportPFee = async ({
 
     const missingAmount = extractNeededAmount(
       (error as Error).message,
-      getAssetId(avaxXPNetwork)
+      getAvaxAssetId(Boolean(avaxXPNetwork.isTestnet))
     )
 
     if (!missingAmount) {
@@ -241,12 +230,10 @@ const getExportPFee = async ({
       throw error
     }
 
-    unsignedTxP = await WalletService.createExportPTx({
-      walletId,
-      walletType,
+    unsignedTxP = await AvalancheWalletService.createExportPTx({
       amountInNAvax: amountAvailableToClaim,
-      accountIndex: activeAccount.index,
-      avaxXPNetwork,
+      account: activeAccount,
+      isTestnet: Boolean(avaxXPNetwork.isTestnet),
       destinationAddress: activeAccount.addressPVM,
       destinationChain: 'C',
       feeState

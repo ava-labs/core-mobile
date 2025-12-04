@@ -1,7 +1,7 @@
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import WalletService from 'services/wallet/WalletService'
 import { WalletType } from 'services/wallet/types'
-import { xpAddressWithoutPrefix } from 'new/common/utils/xpAddressWIthoutPrefix'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { GetAddressesResponse } from '../apiClient/profile/types'
 
 function convertResponseToXPAddressList(
@@ -10,11 +10,11 @@ function convertResponseToXPAddressList(
   const addresses: string[] = []
 
   for (const item of response.externalAddresses) {
-    addresses.push(xpAddressWithoutPrefix(item.address))
+    addresses.push(stripAddressPrefix(item.address))
   }
 
   for (const item of response.internalAddresses) {
-    addresses.push(xpAddressWithoutPrefix(item.address))
+    addresses.push(stripAddressPrefix(item.address))
   }
 
   return addresses
