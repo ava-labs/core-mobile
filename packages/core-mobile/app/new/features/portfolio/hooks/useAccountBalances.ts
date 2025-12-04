@@ -15,9 +15,11 @@ import * as store from '../store'
 const staleTime = 20_000
 
 /**
- * Refetch interval in milliseconds
+ * Refetch interval in milliseconds:
+ * - 30 seconds in dev mode
+ * - 5 seconds in prod mode
  */
-const refetchInterval = 5_000
+const refetchInterval = __DEV__ ? 30_000 : 5_000
 
 export const balanceKey = (account: Account | undefined) =>
   [ReactQueryKeys.ACCOUNT_BALANCE, account?.id] as const

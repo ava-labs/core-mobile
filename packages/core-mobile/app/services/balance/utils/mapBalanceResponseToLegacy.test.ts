@@ -266,7 +266,7 @@ describe('mapBalanceResponseToLegacy', () => {
           change24: 0.30704,
           reputation: 'Benign',
           type: 'ERC20',
-          localId: '0x066b2322a30d7c5838035112f3b816b46d639bbc',
+          localId: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
           internalId: 'eip155:43114-0x066b2322a30d7C5838035112F3b816b46D639bBC',
           networkChainId: 43114,
           isDataAccurate: true
@@ -543,6 +543,7 @@ describe('mapBalanceResponseToLegacy', () => {
       balances: {
         nativeTokenBalance: {
           internalId: 'NATIVE-avax',
+          assetId: 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z',
           name: 'Avalanche',
           symbol: 'AVAX',
           type: 'native',
@@ -633,6 +634,7 @@ describe('mapBalanceResponseToLegacy', () => {
       balances: {
         nativeTokenBalance: {
           internalId: 'NATIVE-avax',
+          assetId: 'FvwEAhmxKfeiG8SnEvq42hc6whRyY3EFYAvebMqDNDGCgxN5Z',
           name: 'Avalanche',
           symbol: 'AVAX',
           type: 'native',
@@ -813,7 +815,7 @@ describe('mapBalanceResponseToLegacy', () => {
           change24: 7.96896,
           internalId:
             'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp-jupyiwryjfskupiha7hker8vutaefosybkedznsdvcn',
-          localId: 'jupyiwryjfskupiha7hker8vutaefosybkedznsdvcn',
+          localId: 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',
           networkChainId: 4503599627369476,
           isDataAccurate: true
         },
@@ -834,7 +836,7 @@ describe('mapBalanceResponseToLegacy', () => {
           priceInCurrency: 0.105347,
           internalId:
             'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp-7gcihgdb8fe6knjn2mytkzzcrjqy3t9ghdc8uhymw2hr',
-          localId: '7gcihgdb8fe6knjn2mytkzzcrjqy3t9ghdc8uhymw2hr',
+          localId: '7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr',
           networkChainId: 4503599627369476,
           isDataAccurate: true
         },
@@ -855,7 +857,7 @@ describe('mapBalanceResponseToLegacy', () => {
           reputation: undefined,
           internalId:
             'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp-orcaektdk7lkz57vaayr9qensvepfiu6qemu1kektze',
-          localId: 'orcaektdk7lkz57vaayr9qensvepfiu6qemu1kektze',
+          localId: 'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE',
           networkChainId: 4503599627369476,
           isDataAccurate: true
         }

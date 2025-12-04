@@ -3,17 +3,27 @@ import Logger from 'utils/Logger'
 import AppCheckService from 'services/fcm/AppCheckService'
 import { fetch as expoFetch } from 'expo/fetch'
 import { CORE_HEADERS } from '../constants'
-import { GetBalancesRequestBody } from '../generated/balanceApi.client/types.gen'
+import {
+  GetBalancesRequestBody,
+  GetBalancesResponse
+} from '../generated/balanceApi.client/types.gen'
 
-// if (!Config.BALANCE_URL) Logger.warn('BALANCE_URL ENV is missing')
+if (!Config.BALANCE_URL) Logger.warn('BALANCE_URL ENV is missing')
 
-export const BALANCE_URL = 'https://core-balance-api.avax-test.network'
+export const BALANCE_URL = Config.BALANCE_URL
+
+const NEWLINE = '\n'
+
+const isDev = typeof __DEV__ === 'boolean' && __DEV__
 
 const balanceApi = {
-  getBalances: async (body: GetBalancesRequestBody) => {
+  // eslint-disable-next-line sonarjs/cognitive-complexity
+  getBalancesStream: async function* (
+    body: GetBalancesRequestBody
+  ): AsyncGenerator<GetBalancesResponse> {
     const appCheckToken = await AppCheckService.getToken()
 
-    return expoFetch(`${BALANCE_URL}/v1/balance/get-balances`, {
+    const res = await expoFetch(`${BALANCE_URL}/v1/balance/get-balances`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -22,6 +32,63 @@ const balanceApi = {
       },
       body: JSON.stringify(body)
     })
+
+    if (!res.body) {
+      throw new Error('Stream unavailable (response.body missing)')
+    }
+
+    const reader = res.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+    let done = false
+
+    // do measurement in DEV only
+    let startTime: number | undefined
+    if (isDev) {
+      startTime = Date.now()
+      Logger.info('📡 Streaming balances…')
+    }
+
+    try {
+      while (!done) {
+        const { value, done: readerDone } = await reader.read()
+        done = readerDone
+
+        if (value) {
+          buffer += decoder.decode(value, { stream: true })
+        }
+
+        // Process complete lines
+        let newlineIndex = buffer.indexOf(NEWLINE)
+
+        while (newlineIndex !== -1) {
+          const rawLine = buffer.slice(0, newlineIndex).trim()
+          buffer = buffer.slice(newlineIndex + 1)
+          newlineIndex = buffer.indexOf(NEWLINE)
+
+          if (!rawLine) continue
+
+          // Remove "data: " prefix if present
+          const jsonLine = rawLine.startsWith('data:')
+            ? rawLine.slice(5).trim()
+            : rawLine
+
+          try {
+            const parsed = JSON.parse(jsonLine) as GetBalancesResponse
+            yield parsed
+          } catch {
+            // Ignore malformed lines
+          }
+        }
+      }
+    } finally {
+      reader.releaseLock()
+    }
+
+    if (isDev && startTime) {
+      const totalTime = Date.now() - startTime
+      Logger.info(`✅ Stream finished in ${totalTime}ms`)
+    }
   }
 }
 export { balanceApi }

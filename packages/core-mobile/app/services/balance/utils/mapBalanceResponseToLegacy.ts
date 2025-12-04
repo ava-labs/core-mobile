@@ -234,13 +234,13 @@ const addPvmFields = (
   }
 }
 
-function getLocalTokenId(token: BackendTokenBalance): string {
+export const getLocalTokenId = (token: BackendTokenBalance): string => {
   switch (token.type) {
     case 'native':
       return `NATIVE-${token.symbol}`
     case 'erc20':
     case 'spl':
-      return token.address?.toLowerCase() ?? token.internalId ?? token.symbol
+      return token.address
     default:
       return ''
   }

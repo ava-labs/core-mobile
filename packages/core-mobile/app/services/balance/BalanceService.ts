@@ -1,4 +1,4 @@
-import { BlockchainNamespace, Network } from '@avalabs/core-chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import { SPAN_STATUS_ERROR } from '@sentry/core'
 import { Account } from 'store/account/types'
 import { getAddressByNetwork } from 'store/account/utils'
@@ -20,16 +20,8 @@ import {
 } from 'utils/network/isAvalancheNetwork'
 import Logger from 'utils/Logger'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import {
-  AvalancheXpGetBalancesRequestItem,
-  BtcGetBalancesRequestItem,
-  EvmGetBalancesRequestItem,
-  GetBalancesRequestBody,
-  GetBalancesResponse,
-  SvmGetBalancesRequestItem
-} from 'utils/apiClient/generated/balanceApi.client'
+import { GetBalancesRequestBody } from 'utils/apiClient/generated/balanceApi.client'
 import { balanceApi } from 'utils/apiClient/balance/balanceApi'
-import { xpAddressWithoutPrefix } from 'common/utils/xpAddressWIthoutPrefix'
 import {
   AdjustedNormalizedBalancesForAccount,
   NormalizedBalancesForAccount
@@ -37,12 +29,9 @@ import {
 import { AVAX_P_ID, AVAX_X_ID } from './const'
 import { getLocalTokenId } from './utils/getLocalTokenId'
 import { mapBalanceResponseToLegacy } from './utils/mapBalanceResponseToLegacy'
+import { buildRequestItemsForAccount } from './utils/buildRequestItemsForAccount'
 
 type AccountId = string
-
-const uniq = <T>(arr: T[]): T[] => Array.from(new Set(arr))
-
-const NEWLINE = '\n'
 
 export class BalanceService {
   /**
@@ -284,7 +273,35 @@ export class BalanceService {
     return finalResults
   }
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
+  /**
+   * Fetch balances for a single account across multiple networks using the
+   * Balance Service streaming API.
+   *
+   * @returns an array of AdjustedNormalizedBalancesForAccount objects,
+   *          one entry per network/namespace included in the request.
+   *
+   * @example
+   * [
+   *   {
+   *     accountId: 'some-account-id',
+   *     chainId: 43114,
+   *     accountAddress: '0x123',
+   *     tokens: [
+   *       {
+   *         name: 'Avalanche',
+   *         symbol: 'AVAX',
+   *         type: 'native',
+   *         decimals: 18,
+   *         balance: '1000000000000000000',
+   *         price: 13.5,
+   *         balanceInCurrency: 13.5
+   *       }
+   *     ],
+   *     dataAccurate: true,
+   *     error: null
+   *   }
+   * ]
+   */
   async getBalancesForAccount({
     networks,
     account,
@@ -296,139 +313,10 @@ export class BalanceService {
     currency: string
     onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
   }): Promise<AdjustedNormalizedBalancesForAccount[]> {
-    const accountId = account.id
-
     // Final aggregated result
     const finalResults: AdjustedNormalizedBalancesForAccount[] = []
 
-    // ---- 1) Namespace buckets -------------------------------------------------
-    // We'll accumulate into these and then emit one entry per namespace
-    let evmBucket: EvmGetBalancesRequestItem | undefined
-    let btcBucket: BtcGetBalancesRequestItem | undefined
-    let svmBucket: SvmGetBalancesRequestItem | undefined
-
-    const avaxXpBucket: {
-      references: AvalancheXpGetBalancesRequestItem['references']
-      addresses: string[]
-    } = {
-      references: [],
-      addresses: []
-    }
-
-    // ---- 2) Fill buckets from networks ----------------------------------------
-    for (const network of networks) {
-      const address = getAddressByNetwork(account, network)
-
-      switch (network.vmName) {
-        case NetworkVMType.EVM: {
-          const chainRef = String(network.chainId)
-          if (!evmBucket) {
-            evmBucket = {
-              namespace: BlockchainNamespace.EIP155,
-              addresses: [address],
-              references: [chainRef]
-            }
-          } else {
-            evmBucket.addresses = uniq([...evmBucket.addresses, address])
-            evmBucket.references = uniq([...evmBucket.references, chainRef])
-          }
-          break
-        }
-
-        case NetworkVMType.BITCOIN: {
-          const ref = network.isTestnet
-            ? '000000000933ea01ad0ee984209779ba'
-            : '000000000019d6689c085ae165831e93'
-
-          if (!btcBucket) {
-            btcBucket = {
-              namespace: BlockchainNamespace.BIP122,
-              addresses: [address],
-              references: [ref]
-            }
-          } else {
-            btcBucket.addresses = uniq([...btcBucket.addresses, address])
-            btcBucket.references = uniq([...btcBucket.references, ref])
-          }
-          break
-        }
-
-        case NetworkVMType.SVM: {
-          const ref = network.isTestnet
-            ? 'EtWTRABZaYq6iMfeYKouRu166VU2xqa1'
-            : '5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'
-
-          if (!svmBucket) {
-            svmBucket = {
-              namespace: BlockchainNamespace.SOLANA,
-              addresses: [address],
-              references: [ref]
-            }
-          } else {
-            svmBucket.addresses = uniq([...svmBucket.addresses, address])
-            svmBucket.references = uniq([...svmBucket.references, ref])
-          }
-          break
-        }
-
-        case NetworkVMType.AVM: {
-          // Avalanche X-Chain → AVAX XP bucket
-          const ref = network.isTestnet
-            ? '8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl'
-            : 'imji8papUf2EhV3le337w1vgFauqkJg-'
-
-          avaxXpBucket.references = uniq([...avaxXpBucket.references, ref])
-          avaxXpBucket.addresses = uniq([
-            ...avaxXpBucket.addresses,
-            xpAddressWithoutPrefix(address)
-          ])
-          break
-        }
-
-        case NetworkVMType.PVM: {
-          // Avalanche P-Chain → AVAX XP bucket
-          const ref = network.isTestnet
-            ? 'Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG'
-            : 'Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo'
-
-          avaxXpBucket.references = uniq([...avaxXpBucket.references, ref])
-          avaxXpBucket.addresses = uniq([
-            ...avaxXpBucket.addresses,
-            xpAddressWithoutPrefix(address)
-          ])
-          break
-        }
-
-        default:
-          // ignore unsupported vm types for now
-          break
-      }
-    }
-
-    // ---- 3) Build final requestItems array ------------------------------------
-    const requestItems: GetBalancesRequestBody['data'] = []
-
-    if (evmBucket) requestItems.push(evmBucket)
-    if (btcBucket) requestItems.push(btcBucket)
-    if (svmBucket) requestItems.push(svmBucket)
-
-    // Only add AVAX XP if we actually have addresses + references
-    if (
-      avaxXpBucket.addresses.length > 0 &&
-      avaxXpBucket.references.length > 0
-    ) {
-      requestItems.push({
-        namespace: BlockchainNamespace.AVAX,
-        references: avaxXpBucket.references,
-        addressDetails: [
-          {
-            id: accountId,
-            addresses: avaxXpBucket.addresses
-          }
-        ],
-        filterOutDustUtxos: false
-      })
-    }
+    const requestItems = buildRequestItemsForAccount(networks, account)
 
     const body = {
       data: requestItems,
@@ -436,67 +324,16 @@ export class BalanceService {
       showUntrustedTokens: false
     }
 
-    // console.log('requestItems', JSON.stringify(requestItems, null, 2))
+    for await (const balance of balanceApi.getBalancesStream(body)) {
+      const normalized = mapBalanceResponseToLegacy(account, balance)
+      if (!normalized) continue
 
-    const response = await balanceApi.getBalances(body)
+      // Progressive update callback
+      onBalanceLoaded?.(normalized)
 
-    if (!response.body) {
-      throw new Error('ReadableStream unavailable')
+      // Add to final result
+      finalResults.push(normalized)
     }
-    const reader = response.body.getReader()
-    const decoder = new TextDecoder()
-
-    let buffer = ''
-
-    // console.log('📡 Streaming balances…')
-
-    let done = false
-
-    while (!done) {
-      const result = await reader.read()
-      done = result.done
-
-      if (result.value) {
-        // Append decoded chunk to buffer
-        buffer += decoder.decode(result.value, { stream: true })
-      }
-
-      // Process complete lines
-      let newlineIndex
-      while ((newlineIndex = buffer.indexOf(NEWLINE)) !== -1) {
-        const line = buffer.slice(0, newlineIndex).trim()
-        buffer = buffer.slice(newlineIndex + 1)
-
-        if (!line) continue
-
-        // Remove "data: " prefix
-        let jsonLine = line
-        if (jsonLine.startsWith('data:')) {
-          jsonLine = jsonLine.slice(5).trim()
-        }
-
-        try {
-          const balance = JSON.parse(jsonLine) as GetBalancesResponse
-
-          if (!('id' in balance)) continue
-
-          if (!accountId) continue
-
-          const normalizedBalance = mapBalanceResponseToLegacy(account, balance)
-
-          if (!normalizedBalance) continue
-
-          // Progressive update callback
-          onBalanceLoaded?.(normalizedBalance)
-
-          finalResults.push(normalizedBalance)
-        } catch (err) {
-          //console.error('⚠️ Failed to parse line:', jsonLine, err)
-        }
-      }
-    }
-
-    //console.log('✅ Stream finished')
 
     return finalResults
   }
