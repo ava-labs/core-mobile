@@ -216,8 +216,9 @@ export const PinScreen = ({
     if (accessType === 'BIO' && enrolledBiometrics) {
       handlePromptBioLogin()
     } else {
-      focusPinInput()
-    }
+      InteractionManager.runAfterInteractions(() => {
+        focusPinInput()
+      })    }
   }, [handlePromptBioLogin, focusPinInput])
 
   const handleBrokenBioState = useCallback(() => {
