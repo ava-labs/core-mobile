@@ -54,8 +54,6 @@ describe('mapBalanceResponseToLegacy', () => {
           internalId: 'NATIVE-btc',
           logoUri:
             'https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400',
-          utxos: [],
-          utxosUnconfirmed: [],
           type: 'NATIVE',
           balance: 0n,
           balanceCurrencyDisplayValue: '0.00',
