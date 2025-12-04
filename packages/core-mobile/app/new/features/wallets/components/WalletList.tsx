@@ -1,17 +1,8 @@
-import {
-  ActivityIndicator,
-  Button,
-  Icons,
-  SearchBar,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { Icons, SearchBar, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen, ListScreenProps } from 'common/components/ListScreen'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import WalletCard from 'common/components/WalletCard'
-import { useManageWallet } from 'common/hooks/useManageWallet'
 import { WalletDisplayData } from 'common/types'
 import { useRouter } from 'expo-router'
 import { useRecentAccounts } from 'features/accountSettings/store'
@@ -56,8 +47,6 @@ export const WalletList = ({
   } = useTheme()
   const dispatch = useDispatch()
   const { navigate, dismiss } = useRouter()
-  const { handleAddAccount: handleAddAccountToWallet, isAddingAccount } =
-    useManageWallet()
 
   const [searchText, setSearchText] = useState('')
   const [expandedWallets, setExpandedWallets] = useState<
@@ -364,8 +353,6 @@ export const WalletList = ({
       }
       const isExpanded = expandedWallets[item.id] ?? false
       const isActive = getIsActiveWallet(item.id, activeAccount)
-      const isAddingAccountToActiveWallet =
-        item.accounts.some(i => i?.isActive) && isAddingAccount
 
       if (searchText && item.accounts.length === 0) {
         return null
@@ -377,32 +364,6 @@ export const WalletList = ({
           isActive={isActive}
           isExpanded={isExpanded}
           searchText={searchText}
-          renderBottom={() =>
-            item.type !== WalletType.PRIVATE_KEY ? (
-              <Button
-                size="medium"
-                leftIcon={
-                  isAddingAccountToActiveWallet ? undefined : (
-                    <Icons.Content.Add
-                      color={colors.$textPrimary}
-                      width={24}
-                      height={24}
-                    />
-                  )
-                }
-                type="secondary"
-                disabled={isAddingAccountToActiveWallet}
-                onPress={() => handleAddAccountToWallet(item)}>
-                {isAddingAccountToActiveWallet ? (
-                  <ActivityIndicator size="small" color={colors.$textPrimary} />
-                ) : (
-                  'Add account'
-                )}
-              </Button>
-            ) : (
-              <></>
-            )
-          }
           onToggleExpansion={() => toggleWalletExpansion(item.id)}
           showMoreButton={item.id !== IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID}
           style={[
@@ -417,11 +378,8 @@ export const WalletList = ({
     },
     [
       activeAccount,
-      colors.$textPrimary,
       expandedWallets,
-      isAddingAccount,
       searchText,
-      handleAddAccountToWallet,
       toggleWalletExpansion,
       walletStyle
     ]
