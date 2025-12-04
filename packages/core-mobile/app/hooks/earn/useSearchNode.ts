@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux'
 import Logger from 'utils/Logger'
 import { NodeValidator, NodeValidators } from 'types/earn'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { useMemo } from 'react'
 import { usePeers } from './usePeers'
 
 type useSearchNodeProps = {
@@ -26,37 +27,52 @@ export const useSearchNode = ({
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isEndTimeOverOneYear = isOverOneYear(stakingEndTime)
-  const noMatchError = new Error(
-    `no node matches filter criteria: stakingAmount:  ${stakingAmount.toDisplay()}, stakingEndTime: ${stakingEndTime}, minUpTime: 98%`
+  const noMatchError = useMemo(
+    () =>
+      new Error(
+        `no node matches filter criteria: stakingAmount:  ${stakingAmount.toDisplay()}, stakingEndTime: ${stakingEndTime}, minUpTime: 98%`
+      ),
+    [stakingAmount, stakingEndTime]
   )
-  const noValidatorsError = new Error(`no validators found.`)
+  const noValidatorsError = useMemo(() => new Error(`no validators found.`), [])
 
-  if (validators && validators.length > 0) {
-    const filteredValidators = getFilteredValidators({
-      isDeveloperMode,
-      validators,
-      stakingAmount,
-      stakingEndTime,
-      minUpTime: 98,
-      maxFee: 4,
-      isEndTimeOverOneYear
-    })
+  return useMemo(() => {
+    if (validators && validators.length > 0) {
+      const filteredValidators = getFilteredValidators({
+        isDeveloperMode,
+        validators,
+        stakingAmount,
+        stakingEndTime,
+        minUpTime: 98,
+        maxFee: 4,
+        isEndTimeOverOneYear
+      })
 
-    if (filteredValidators.length === 0) {
-      Logger.info(noMatchError.message)
-      return { validator: undefined, error: noMatchError }
+      if (filteredValidators.length === 0) {
+        Logger.info(noMatchError.message)
+        return { validator: undefined, error: noMatchError }
+      }
+      const sortedValidators = getSimpleSortedValidators(
+        filteredValidators,
+        peers,
+        isEndTimeOverOneYear
+      )
+      const matchedValidator = getRandomValidator(
+        sortedValidators,
+        isEndTimeOverOneYear
+      )
+      return { validator: matchedValidator, error: undefined }
     }
-    const sortedValidators = getSimpleSortedValidators(
-      filteredValidators,
-      peers,
-      isEndTimeOverOneYear
-    )
-    const matchedValidator = getRandomValidator(
-      sortedValidators,
-      isEndTimeOverOneYear
-    )
-    return { validator: matchedValidator, error: undefined }
-  }
-  Logger.info(noValidatorsError.message)
-  return { validator: undefined, error: noValidatorsError }
+    Logger.info(noValidatorsError.message)
+    return { validator: undefined, error: noValidatorsError }
+  }, [
+    validators,
+    isDeveloperMode,
+    stakingAmount,
+    stakingEndTime,
+    isEndTimeOverOneYear,
+    peers,
+    noMatchError,
+    noValidatorsError
+  ])
 }

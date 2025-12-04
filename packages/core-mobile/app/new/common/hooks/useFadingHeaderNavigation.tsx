@@ -1,6 +1,6 @@
 import { View } from '@avalabs/k2-alpine'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   LayoutChangeEvent,
   LayoutRectangle,
@@ -72,9 +72,9 @@ export const useFadingHeaderNavigation = ({
     targetLayoutRef.current = targetLayout
   }, [targetLayout])
 
-  const handleLayout = (event: LayoutChangeEvent): void => {
+  const handleLayout = useCallback((event: LayoutChangeEvent): void => {
     setNavigationHeaderLayout(event.nativeEvent.layout)
-  }
+  }, [])
 
   const handleScroll = (
     event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
@@ -107,7 +107,6 @@ export const useFadingHeaderNavigation = ({
   const headerHeight =
     targetLayout?.height ?? navigationHeaderLayout?.height ?? 0
 
-  // Animated styles for header transformation
   const animatedHeaderStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
       targetHiddenProgress.value,
@@ -126,91 +125,113 @@ export const useFadingHeaderNavigation = ({
     }
   })
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
-  useFocusEffect(() => {
-    const navigationOptions: NativeStackNavigationOptions = {
-      headerBackground: () =>
-        hideHeaderBackground ? (
-          // Use a Pressable to receive gesture events for modal gestures
-          <Pressable style={{ flex: 1 }}>
-            {shouldHeaderHaveGrabber === true ? <Grabber /> : null}
-          </Pressable>
-        ) : (
-          <BlurredBackgroundView
-            backgroundColor={backgroundColor}
-            shouldDelayBlurOniOS={shouldDelayBlurOniOS}
-            hasGrabber={shouldHeaderHaveGrabber}
-            separator={
-              hasSeparator
-                ? {
-                    position: 'bottom',
-                    opacity: targetHiddenProgress
-                  }
-                : undefined
-            }
-          />
-        )
-    }
+  const headerBackgroundComponent = useMemo(() => {
+    return hideHeaderBackground ? (
+      // Use a Pressable to receive gesture events for modal gestures
+      <Pressable style={{ flex: 1 }}>
+        {shouldHeaderHaveGrabber === true ? <Grabber /> : null}
+      </Pressable>
+    ) : (
+      <BlurredBackgroundView
+        backgroundColor={backgroundColor}
+        shouldDelayBlurOniOS={shouldDelayBlurOniOS}
+        hasGrabber={shouldHeaderHaveGrabber}
+        separator={
+          hasSeparator
+            ? {
+                position: 'bottom',
+                opacity: targetHiddenProgress
+              }
+            : undefined
+        }
+      />
+    )
+  }, [
+    hideHeaderBackground,
+    shouldHeaderHaveGrabber,
+    backgroundColor,
+    shouldDelayBlurOniOS,
+    hasSeparator,
+    targetHiddenProgress
+  ])
 
-    if (showNavigationHeaderTitle && header) {
-      navigationOptions.headerTitle = () => (
-        <View
-          style={[
-            {
-              justifyContent: 'center',
-              overflow: 'hidden'
-            },
-            Platform.OS === 'ios'
-              ? {
-                  paddingTop: shouldHeaderHaveGrabber ? 4 : 0,
-                  height: '100%'
-                }
-              : {
-                  // Hardcoded value for Android because 100% doesn't work properly
-                  height: 56
-                }
-          ]}>
-          <View onLayout={handleLayout}>
-            <Animated.View style={[animatedHeaderStyle]}>
-              {header}
-            </Animated.View>
-          </View>
+  const headerBackground = useCallback(() => {
+    return headerBackgroundComponent
+  }, [headerBackgroundComponent])
+
+  // Memoize the header title component to prevent unnecessary re-creation
+  // This helps prevent the "child already has a parent" error on Android
+  const headerTitleComponent = useMemo(() => {
+    return (
+      <View
+        style={[
+          {
+            justifyContent: 'center',
+            overflow: 'hidden'
+          },
+          Platform.OS === 'ios'
+            ? {
+                paddingTop: shouldHeaderHaveGrabber ? 4 : 0,
+                height: '100%'
+              }
+            : {
+                // Hardcoded value for Android because 100% doesn't work properly
+                height: 56
+              }
+        ]}>
+        <View onLayout={handleLayout}>
+          <Animated.View style={[animatedHeaderStyle]}>{header}</Animated.View>
         </View>
-      )
-    }
+      </View>
+    )
+  }, [shouldHeaderHaveGrabber, animatedHeaderStyle, header, handleLayout])
 
-    // If a custom header right component is provided, set it
-    if (renderHeaderRight) {
-      navigationOptions.headerRight = renderHeaderRight
+  // Return a stable function reference that returns the memoized component
+  const headerTitle = useCallback(() => {
+    return headerTitleComponent
+  }, [headerTitleComponent])
 
-      if (hasParent) {
-        navigation.getParent()?.setOptions(navigationOptions)
-
-        // Clean up the header right component when the screen is unmounted
-        return () => {
-          navigation.getParent()?.setOptions({
-            headerRight: undefined
-          })
-        }
-      } else {
-        navigation.setOptions(navigationOptions)
-
-        // Clean up the header right component when the screen is unmounted
-        return () => {
-          navigation.setOptions({
-            headerRight: undefined
-          })
-        }
+  useFocusEffect(
+    useCallback(() => {
+      const navigationOptions: NativeStackNavigationOptions = {
+        headerBackground
       }
-    }
 
-    // Set the navigation options
-    if (hasParent) {
-      navigation.getParent()?.setOptions(navigationOptions)
-    } else {
-      navigation.setOptions(navigationOptions)
-    }
-  })
+      if (showNavigationHeaderTitle && header) {
+        navigationOptions.headerTitle = headerTitle
+      }
+
+      // If a custom right header component is provided, set it in the navigation options
+      if (renderHeaderRight) {
+        navigationOptions.headerRight = renderHeaderRight
+      }
+
+      const targetNavigation = hasParent ? navigation.getParent() : navigation
+
+      // Set the navigation options
+      targetNavigation?.setOptions(navigationOptions)
+
+      // Clean up all header options when the screen is unmounted or loses focus
+      // This prevents the "child already has a parent" error by ensuring
+      // old header views are properly removed before new ones are added
+      return () => {
+        const cleanupOptions: NativeStackNavigationOptions = {
+          headerBackground: undefined,
+          headerTitle: undefined,
+          headerRight: undefined
+        }
+        targetNavigation?.setOptions(cleanupOptions)
+      }
+    }, [
+      headerBackground,
+      headerTitle,
+      showNavigationHeaderTitle,
+      header,
+      renderHeaderRight,
+      hasParent,
+      navigation
+    ])
+  )
 
   return {
     onScroll: handleScroll,

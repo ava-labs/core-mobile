@@ -54,6 +54,7 @@ export function useModalScreensOptions(): {
   return {
     modalScreensOptions: {
       ...modalScreensOptions,
+      freezeOnBlur: true,
       contentStyle: {
         // Android formsheet in native-stack has a default top padding of insets.top
         // by removing the insets.top this we adjust the navigation bar position
@@ -62,6 +63,7 @@ export function useModalScreensOptions(): {
     },
     secondaryModalScreensOptions: {
       ...modalScreensOptions,
+      freezeOnBlur: true,
       contentStyle: {
         // Android formsheet in native-stack has a default top padding of insets.top
         // by removing the insets.top this we adjust the navigation bar position
