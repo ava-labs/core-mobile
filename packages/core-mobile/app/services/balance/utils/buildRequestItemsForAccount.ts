@@ -9,7 +9,7 @@ import {
   GetBalancesRequestBody,
   SvmGetBalancesRequestItem
 } from 'utils/apiClient/generated/balanceApi.client'
-import { xpAddressWithoutPrefix } from 'common/utils/xpAddressWIthoutPrefix'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 
 const uniq = <T>(arr: T[]): T[] => Array.from(new Set(arr))
 
@@ -117,7 +117,7 @@ export const buildRequestItemsForAccount = (
         avaxXpBucket.references = uniq([...avaxXpBucket.references, ref])
         avaxXpBucket.addresses = uniq([
           ...avaxXpBucket.addresses,
-          xpAddressWithoutPrefix(address)
+          stripAddressPrefix(address)
         ])
         break
       }
@@ -130,7 +130,7 @@ export const buildRequestItemsForAccount = (
         avaxXpBucket.references = uniq([...avaxXpBucket.references, ref])
         avaxXpBucket.addresses = uniq([
           ...avaxXpBucket.addresses,
-          xpAddressWithoutPrefix(address)
+          stripAddressPrefix(address)
         ])
         break
       }
