@@ -61,11 +61,15 @@ const StakeConfirmScreen = (): JSX.Element => {
     error,
     data
   } = useNodes(nodeId === undefined)
+
+  // Memoize validators array reference to prevent unnecessary recalculations
+  const validators = useMemo(() => data?.validators, [data?.validators])
+
   const { validator: searchedValidator, error: searchNodeError } =
     useSearchNode({
       stakingAmount: stakeAmount,
       stakingEndTime: stakeEndTimeInMilliseconds,
-      validators: data?.validators
+      validators
     })
   const selectedValidator = useGetValidatorByNodeId(nodeId)
   const validator = useMemo(
