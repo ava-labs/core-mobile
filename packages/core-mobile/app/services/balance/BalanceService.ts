@@ -18,6 +18,7 @@ import {
   isXChain,
   isXPNetwork
 } from 'utils/network/isAvalancheNetwork'
+import { AddressIndex } from '@avalabs/types'
 import Logger from 'utils/Logger'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { GetBalancesRequestBody } from 'utils/apiClient/generated/balanceApi.client'
@@ -102,11 +103,24 @@ export class BalanceService {
           try {
             const module = await ModuleManager.loadModuleByNetwork(network)
 
-            // Map address → account
-            const addressMap = accounts.reduce((acc, account) => {
-              acc[getAddressByNetwork(account, network)] = account
-              return acc
-            }, {} as Record<string, Account>)
+            const addressEntries = accounts.flatMap(account =>
+              getAddressesForAccountAndNetwork(account, network).map(
+                address => ({
+                  address,
+                  account
+                })
+              )
+            )
+
+            const addressMap = addressEntries.reduce(
+              (acc, { address, account }) => {
+                if (address) {
+                  acc[address] = account
+                }
+                return acc
+              },
+              {} as Record<string, Account>
+            )
 
             const addresses = Object.keys(addressMap)
             const customTokensForNetwork =
@@ -208,6 +222,7 @@ export class BalanceService {
               partial[account.id] = {
                 accountId: account.id,
                 chainId: network.chainId,
+                accountAddress: address ?? '',
                 tokens,
                 dataAccurate: true,
                 error: null
@@ -241,9 +256,12 @@ export class BalanceService {
 
             // Mark all accounts errored for this network
             for (const account of accounts) {
+              const accountAddress = getAddressByNetwork(account, network) ?? ''
+
               errorPartial[account.id] = {
                 accountId: account.id,
                 chainId: network.chainId,
+                accountAddress,
                 tokens: [],
                 dataAccurate: false,
                 error: err as Error
@@ -266,71 +284,53 @@ export class BalanceService {
 
     return finalResults
   }
+}
 
-  /**
-   * Fetch balances for a single account across multiple networks using the
-   * Balance Service streaming API.
-   *
-   * @returns an array of AdjustedNormalizedBalancesForAccount objects,
-   *          one entry per network/namespace included in the request.
-   *
-   * @example
-   * [
-   *   {
-   *     accountId: 'some-account-id',
-   *     chainId: 43114,
-   *     accountAddress: '0x123',
-   *     tokens: [
-   *       {
-   *         name: 'Avalanche',
-   *         symbol: 'AVAX',
-   *         type: 'native',
-   *         decimals: 18,
-   *         balance: '1000000000000000000',
-   *         price: 13.5,
-   *         balanceInCurrency: 13.5
-   *       }
-   *     ],
-   *     dataAccurate: true,
-   *     error: null
-   *   }
-   * ]
-   */
-  async getBalancesForAccount({
-    networks,
-    account,
-    currency,
-    onBalanceLoaded
-  }: {
-    networks: Network[]
-    account: Account
-    currency: string
-    onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
-  }): Promise<AdjustedNormalizedBalancesForAccount[]> {
-    // Final aggregated result
-    const finalResults: AdjustedNormalizedBalancesForAccount[] = []
-
-    const requestItems = buildRequestItemsForAccount(networks, account)
-
-    const body = {
-      data: requestItems,
-      currency: currency as GetBalancesRequestBody['currency'],
-      showUntrustedTokens: false
+const getAddressesForAccountAndNetwork = (
+  account: Account,
+  network: Network
+): string[] => {
+  if (isXPNetwork(network)) {
+    const xpAddresses = account.xpAddresses
+    if (xpAddresses && xpAddresses.length > 0) {
+      const formatted = formatXpAddressesForNetwork(xpAddresses, network)
+      if (formatted.length > 0) {
+        return formatted
+      }
     }
-
-    for await (const balance of balanceApi.getBalancesStream(body)) {
-      const normalized = mapBalanceResponseToLegacy(account, balance)
-      if (!normalized) continue
-
-      // Progressive update callback
-      onBalanceLoaded?.(normalized)
-
-      // Add to final result
-      finalResults.push(normalized)
-    }
-
-    return finalResults
   }
+
+  const defaultAddress = getAddressByNetwork(account, network)
+  return defaultAddress ? [defaultAddress] : []
+}
+
+const formatXpAddressesForNetwork = (
+  xpAddresses: AddressIndex[],
+  network: Network
+): string[] => {
+  const prefix =
+    network.vmName === NetworkVMType.AVM
+      ? 'X-'
+      : network.vmName === NetworkVMType.PVM
+      ? 'P-'
+      : undefined
+
+  if (!prefix) {
+    return []
+  }
+
+  const normalized = new Set<string>()
+  xpAddresses.forEach(({ address }) => {
+    if (!address) {
+      return
+    }
+    const prefixed = address.startsWith(prefix)
+      ? address
+      : `${prefix}${address}`
+    normalized.add(prefixed)
+  })
+
+  return [...normalized]
 }
 
 export default new BalanceService()

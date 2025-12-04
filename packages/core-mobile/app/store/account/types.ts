@@ -1,17 +1,26 @@
 import { CorePrimaryAccount, CoreImportedAccount } from '@avalabs/types'
 
+export type XPAddressDictionary = {
+  [address: string]: {
+    space: 'e' | 'i'
+    index: number
+    hasActivity: boolean
+  }
+}
+
 export type PrimaryAccount = Omit<
   CorePrimaryAccount,
   'active' | 'walletType' | 'walletName'
 > & {
   walletId: string
   index: number
-  xpAddresses?: string[]
+  xpAddressDictionary?: XPAddressDictionary
 }
 
 export type ImportedAccount = Omit<CoreImportedAccount, 'active'> & {
   walletId: string
   index: 0
+  xpAddressDictionary?: XPAddressDictionary
 }
 
 export type Account = PrimaryAccount | ImportedAccount

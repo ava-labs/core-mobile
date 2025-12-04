@@ -220,18 +220,12 @@ const markWalletAsMigrated = (walletId: string): void => {
   )
 }
 
-export const isWalletXpMigrated = (walletId: string): boolean => {
-  const migratedXpWalletIds = loadArrayFromStorage(
-    commonStorage,
-    StorageKey.MIGRATED_XP_ADDRESSES_WALLET_IDS
-  )
-  return migratedXpWalletIds.includes(walletId)
+export const hasCompletedXpAddressMigration = (): boolean => {
+  return commonStorage.getBoolean(StorageKey.MIGRATED_XP_ADDRESSES_COMPLETED)
+    ? true
+    : false
 }
 
-export const markWalletXpMigrated = (walletId: string): void => {
-  appendToStoredArray(
-    commonStorage,
-    StorageKey.MIGRATED_XP_ADDRESSES_WALLET_IDS,
-    walletId
-  )
+export const markXpAddressMigrationComplete = (): void => {
+  commonStorage.set(StorageKey.MIGRATED_XP_ADDRESSES_COMPLETED, true)
 }

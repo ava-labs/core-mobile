@@ -48,7 +48,11 @@ describe('getAddressesFromXpubXP', () => {
 
     const result = await getAddressesFromXpubXP(args)
 
-    expect(result).toEqual(['avax1aaa', 'avax1bbb'])
+    expect(result.xpAddresses).toEqual(['avax1aaa', 'avax1bbb'])
+    expect(result.xpAddressDictionary).toMatchObject({
+      avax1aaa: { space: 'e', index: 0, hasActivity: true },
+      avax1bbb: { space: 'e', index: 1, hasActivity: true }
+    })
   })
 
   it('handles internal addresses correctly', async () => {
@@ -61,7 +65,7 @@ describe('getAddressesFromXpubXP', () => {
 
     const result = await getAddressesFromXpubXP(args)
 
-    expect(result).toEqual(['avax1aaa', 'avax1bbb', 'avax1ccc'])
+    expect(result.xpAddresses).toEqual(['avax1aaa', 'avax1bbb', 'avax1ccc'])
   })
 
   it('dedupes even if AVM and PVM have different index values for the same address', async () => {
@@ -74,7 +78,7 @@ describe('getAddressesFromXpubXP', () => {
 
     const result = await getAddressesFromXpubXP(args)
 
-    expect(result).toEqual(['avax1zzz']) // only one
+    expect(result.xpAddresses).toEqual(['avax1zzz']) // only one
   })
 
   it('handles situations where AVM returns empty and PVM has addresses', async () => {
@@ -87,7 +91,7 @@ describe('getAddressesFromXpubXP', () => {
 
     const result = await getAddressesFromXpubXP(args)
 
-    expect(result).toEqual(['avax1bar', 'avax1foo'])
+    expect(result.xpAddresses).toEqual(['avax1bar', 'avax1foo'])
   })
 
   it('removes duplicates even if AVM returns the same address multiple times', async () => {
@@ -100,7 +104,7 @@ describe('getAddressesFromXpubXP', () => {
 
     const result = await getAddressesFromXpubXP(args)
 
-    expect(result).toEqual(['avax1dup'])
+    expect(result.xpAddresses).toEqual(['avax1dup'])
   })
 
   it('sorts lexicographically regardless of input order', async () => {
@@ -113,6 +117,6 @@ describe('getAddressesFromXpubXP', () => {
 
     const result = await getAddressesFromXpubXP(args)
 
-    expect(result).toEqual(['avax1aaa', 'avax1mmm', 'avax1zzz'])
+    expect(result.xpAddresses).toEqual(['avax1aaa', 'avax1mmm', 'avax1zzz'])
   })
 })

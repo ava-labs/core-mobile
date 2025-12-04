@@ -13,6 +13,7 @@ import { AVALANCHE_MAINNET_NETWORK } from 'services/network/consts'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import Logger from 'utils/Logger'
 import { LedgerWallet } from 'services/wallet/LedgerWallet'
+import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 
 class AccountsService {
   /**
@@ -44,6 +45,16 @@ class AccountsService {
         isTestnet
       })
 
+      const { xpAddresses, xpAddressDictionary } = await getAddressesFromXpubXP(
+        {
+          isDeveloperMode: isTestnet,
+          walletId,
+          walletType,
+          accountIndex: account.index,
+          onlyWithActivity: true
+        }
+      )
+
       const title =
         walletType === WalletType.SEEDLESS
           ? await SeedlessService.getAccountName(account.index)
@@ -60,7 +71,9 @@ class AccountsService {
         addressAVM: addresses[NetworkVMType.AVM],
         addressPVM: addresses[NetworkVMType.PVM],
         addressCoreEth: addresses[NetworkVMType.CoreEth],
-        addressSVM: addresses[NetworkVMType.SVM]
+        addressSVM: addresses[NetworkVMType.SVM],
+        xpAddresses,
+        xpAddressDictionary
       } as Account
     }
     return reloadedAccounts
@@ -137,6 +150,14 @@ class AccountsService {
       isTestnet
     })
 
+    const { xpAddresses, xpAddressDictionary } = await getAddressesFromXpubXP({
+      isDeveloperMode: isTestnet,
+      walletId,
+      walletType,
+      accountIndex: index,
+      onlyWithActivity: true
+    })
+
     Logger.info(`Final addresses for account ${index}:`, addresses)
 
     return {
@@ -151,7 +172,8 @@ class AccountsService {
       addressPVM: addresses[NetworkVMType.PVM],
       addressCoreEth: addresses[NetworkVMType.CoreEth],
       addressSVM: addresses[NetworkVMType.SVM],
-      xpAddresses: [] // TODO: add xp addresses
+      xpAddresses,
+      xpAddressDictionary
     }
   }
 
