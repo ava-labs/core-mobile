@@ -61,15 +61,11 @@ export function useAccountBalances(
     queryFn: async () => {
       if (isNotReady) return []
 
-      //console.log('balances new', JSON.stringify(balances, null, 2))
-
       return await BalanceService.getBalancesForAccount({
         networks: enabledNetworks,
         account,
         currency: currency.toLowerCase(),
         onBalanceLoaded: balance => {
-          //console.log('balance', JSON.stringify(balance, null, 2))
-
           queryClient.setQueryData(
             balanceKey(account),
             (prev: AdjustedNormalizedBalancesForAccount[] | undefined) => {

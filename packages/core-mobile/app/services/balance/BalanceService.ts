@@ -170,12 +170,6 @@ export class BalanceService {
               })
             }
 
-            // console.log('network', network.chainName, network.chainId)
-            // console.log(
-            //   'balancesResponse',
-            //   JSON.stringify(balancesResponse, null, 2)
-            // )
-            // console.log('--------------------------------')
             // Process accounts
             for (const address of addresses) {
               const account = addressMap[address]
