@@ -8,7 +8,7 @@ function withPlatformAll(ios: string, android: string) {
 
 function getByText(text: string) {
   return withPlatform(
-    `//*[@name='${text}' and @accessible='true']`,
+    `-ios predicate string:name == "${text}" AND accessible == true`,
     `//*[@text='${text}']`
   )
 }
@@ -23,7 +23,7 @@ function getByIdWithIndex(id: string, index = 0) {
 
 function getByTextWithIndex(text: string, index = 0) {
   const elements = withPlatformAll(
-    `//*[@name='${text}' and @accessible='true']`,
+    `-ios predicate string:name == "${text}" AND accessible == true`,
     `//*[@text='${text}']`
   )
   return elements[index]
@@ -39,7 +39,12 @@ function getById(id: string) {
 function getBySmartText(textOrId: string) {
   return withPlatform(
     // iOS
-    `//*[@name='${textOrId}' or @label='${textOrId}' or @accessibilityIdentifier='${textOrId}' or @name='${textOrId.toUpperCase()}']`,
+    `-ios predicate string:
+      (name == "${textOrId}" 
+       OR name == "${textOrId.toUpperCase()}"
+       OR label == "${textOrId}" 
+       OR value == "${textOrId}"
+      )`,
     // Android
     `//*[@resource-id='${textOrId}' or @content-desc='${textOrId}' or @text='${textOrId}' or @text='${textOrId.toUpperCase()}']`
   )
@@ -51,7 +56,7 @@ function getByXpath(xpath: string) {
 
 function getBySomeText(text: string) {
   return withPlatform(
-    `//*[contains(@name, '${text}') and @accessible='true']`,
+    `-ios predicate string:name CONTAINS "${text}" AND accessible == true`,
     `//*[contains(@text, '${text}')]`
   )
 }

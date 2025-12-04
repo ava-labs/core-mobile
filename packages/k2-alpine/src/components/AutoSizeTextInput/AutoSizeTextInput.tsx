@@ -50,6 +50,8 @@ interface TextInputProps extends _TextInputProps {
   suffixFontSizeMultiplier?: number
   /** Whether the input is valid */
   valid?: boolean
+  /** Test ID */
+  testID?: string
 }
 
 export const AutoSizeTextInput = forwardRef<
@@ -76,6 +78,7 @@ export const AutoSizeTextInput = forwardRef<
       onChangeText,
       editable = true,
       valid = true,
+      testID,
       ...props
     },
     ref
@@ -317,6 +320,7 @@ export const AutoSizeTextInput = forwardRef<
           <AnimatedTextInput
             {...props}
             ref={inputRef}
+            testID={testID}
             style={[{ padding: 0 }, textStyle, props.style]}
             maxLength={maxLength}
             editable={editable}
