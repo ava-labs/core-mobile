@@ -34,6 +34,8 @@ export const useBalanceInCurrencyForAccount = (
 
   const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
     account,
+    // TODO: fix type mismatch after fully migrating to the new backend balance types
+    // @ts-ignore
     sourceData: isActiveAccount ? accountBalance : walletBalances?.[accountId]
   })
 

@@ -35,6 +35,8 @@ export function useTokensWithBalanceForAccount({
 
   const data = sourceData ?? fetchedData
 
+  // TODO: fix type mismatch after fully migrating to the new backend balance types
+  // @ts-ignore
   return useMemo(() => {
     if (!account || !data) return []
 
@@ -62,6 +64,8 @@ export function useTokensWithBalanceForAccount({
       })
 
     // Flatten all tokens into one array
+    // TODO: fix type mismatch after fully migrating to the new backend balance types
+    // @ts-ignore
     return filteredBalances.flatMap(balance => balance.tokens)
   }, [account, data, chainId, networks, isDeveloperMode])
 }

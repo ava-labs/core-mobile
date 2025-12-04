@@ -15,6 +15,7 @@ export type AdjustedLocalTokenWithBalance = Omit<
   'coingeckoId' | 'marketCap' | 'vol24' | 'description'
 > & {
   type: TokenType.NATIVE | TokenType.ERC20 | TokenType.SPL
+  decimals: number
 }
 
 export type AdjustedNormalizedBalancesForAccount = Omit<
