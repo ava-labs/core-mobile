@@ -1,39 +1,45 @@
-import { QueryObserverResult, useQuery } from '@tanstack/react-query'
+import {
+  QueryObserverResult,
+  useQueries,
+  UseQueryResult
+} from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import { selectEnabledNetworks } from 'store/network/slice'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
-import { selectAllCustomTokens } from 'store/customToken'
-import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { Wallet } from 'store/wallet/types'
 import { selectAccountsByWalletId } from 'store/account'
 import { RootState } from 'store/types'
 import BalanceService from 'services/balance/BalanceService'
-import { NormalizedBalancesForAccount } from 'services/balance/types'
+import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
+import { useCallback, useMemo } from 'react'
+import { balanceKey } from './useAccountBalances'
 
-export const balanceKey = (wallet: Wallet | undefined) =>
-  [ReactQueryKeys.WALLET_BALANCE, wallet?.id] as const
+type AccountId = string
 
 /**
  * Stale time in milliseconds
  */
 const staleTime = 30_000
 
-type AccountId = string
-
 /**
- * Fetches balances for all accounts within a wallet across all enabled networks (C-Chain, X-Chain, P-Chain, other EVMs, BTC, SOL, etc.)
+ * Fetches balances for all accounts within the specified wallet across all enabled networks
+ * (C-Chain, X-Chain, P-Chain, EVMs, BTC, SOL, etc.).
  *
- * 🔁 Runs one query for all enabled networks via React Query.
+ * 🔁 Uses one React Query request per account.
  */
-export function useWalletBalances(
+export const useWalletBalances = (
   wallet?: Wallet
-): QueryObserverResult<
-  Record<AccountId, NormalizedBalancesForAccount[]>,
-  Error
-> {
+): {
+  data: Record<AccountId, AdjustedNormalizedBalancesForAccount[]>
+  isLoading: boolean
+  isFetching: boolean
+  refetch: () => Promise<
+    QueryObserverResult<AdjustedNormalizedBalancesForAccount[], Error>[]
+  >
+} => {
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const currency = useSelector(selectSelectedCurrency)
-  const customTokens = useSelector(selectAllCustomTokens)
+
   const accounts = useSelector((state: RootState) =>
     selectAccountsByWalletId(state, wallet?.id ?? '')
   )
@@ -41,22 +47,48 @@ export function useWalletBalances(
   const isNotReady =
     !wallet || accounts.length === 0 || enabledNetworks.length === 0
 
-  const enabled = !isNotReady
+  const queryConfigs = useMemo(() => {
+    return accounts.map(account => ({
+      // eslint-disable-next-line @tanstack/query/exhaustive-deps
+      queryKey: balanceKey(account),
+      enabled: !isNotReady,
+      staleTime,
+      queryFn: () =>
+        BalanceService.getBalancesForAccount({
+          networks: enabledNetworks,
+          account,
+          currency: currency.toLowerCase()
+        })
+    }))
+  }, [accounts, enabledNetworks, currency, isNotReady])
 
-  return useQuery({
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: balanceKey(wallet),
-    enabled,
-    staleTime,
-    queryFn: async () => {
-      if (isNotReady) return {}
+  const combine = useCallback(
+    (
+      results: UseQueryResult<AdjustedNormalizedBalancesForAccount[], Error>[]
+    ) => {
+      return {
+        // create record of account id to balances for that account
+        data: results.reduce((acc, result) => {
+          if (result.isError || !result.data) return acc
 
-      return BalanceService.getBalancesForAccounts({
-        networks: enabledNetworks,
-        accounts,
-        currency: currency.toLowerCase(),
-        customTokens
-      })
-    }
+          const accountId = result.data[0]?.accountId
+
+          if (!accountId) return acc
+
+          acc[accountId] = result.data
+          return acc
+        }, {} as Record<AccountId, AdjustedNormalizedBalancesForAccount[]>),
+        isLoading: results.some(q => q.isLoading),
+        isFetching: results.some(q => q.isFetching),
+        refetch: () => Promise.all(results.map(q => q.refetch()))
+      }
+    },
+    []
+  )
+  const { data, isLoading, isFetching, refetch } = useQueries({
+    queries: queryConfigs,
+    combine
   })
+
+  return { data, isLoading, isFetching, refetch }
 }

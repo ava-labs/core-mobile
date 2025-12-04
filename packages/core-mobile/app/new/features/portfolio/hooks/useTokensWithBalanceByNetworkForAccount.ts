@@ -13,6 +13,8 @@ export function useTokensWithBalanceByNetworkForAccount(
 ): LocalTokenWithBalance[] {
   const { data } = useAccountBalances(account)
 
+  // TODO: fix type mismatch after fully migrating to the new backend balance types
+  // @ts-ignore
   return useMemo(() => {
     if (!account || !chainId) return []
 

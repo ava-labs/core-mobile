@@ -39,7 +39,11 @@ export function useAvailableNativeTokenBalanceForNetworkAndAccount(
 
     // Handle XP-style tokens (PVM/AVM)
     if (
+      // TODO: fix type mismatch after fully migrating to the new backend balance types
+      // @ts-ignore
       isTokenWithBalancePVM(nativeToken) ||
+      // TODO: fix type mismatch after fully migrating to the new backend balance types
+      // @ts-ignore
       isTokenWithBalanceAVM(nativeToken)
     ) {
       return nativeToken.available ?? 0n

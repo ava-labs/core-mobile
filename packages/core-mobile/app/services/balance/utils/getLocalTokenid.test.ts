@@ -1,9 +1,9 @@
 import {
+  type TokenWithBalance,
   NetworkContractToken,
-  TokenType,
-  TokenWithBalance
+  TokenType
 } from '@avalabs/vm-module-types'
-import { getLocalTokenId } from './utils'
+import { getLocalTokenId } from './getLocalTokenId'
 
 describe('getLocalTokenId', () => {
   it('returns the token address if it exists', () => {

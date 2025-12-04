@@ -8,17 +8,20 @@ import {
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { useBalanceTotalInCurrencyForWallet } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForWallet'
+import { useWalletBalances } from 'features/portfolio/hooks/useWalletBalances'
 import React, { useCallback, useMemo } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { useSelector } from 'react-redux'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { Wallet } from 'store/wallet/types'
 
 export const WalletBalance = ({
-  // wallet,
+  wallet,
   balanceSx,
   variant = 'spinner'
 }: {
-  // wallet: Wallet
+  wallet: Wallet
   balanceSx?: SxProp
   variant?: 'spinner' | 'skeleton'
 }): JSX.Element => {
@@ -27,10 +30,8 @@ export const WalletBalance = ({
     theme: { colors, isDark }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
-
-  // TODO: get wallet balance
-  const walletBalance = 74235
-  const isLoadingBalance = false
+  const { isLoading: isLoadingBalance } = useWalletBalances(wallet)
+  const walletBalance = useBalanceTotalInCurrencyForWallet(wallet)
 
   const balance = useMemo(() => {
     return walletBalance > 0

@@ -24,6 +24,8 @@ export function useTokensWithZeroBalanceByNetworksForAccount(
 
       if (networkBalance?.tokens?.length) {
         zeroBalanceTokens.push(
+          // TODO: fix type mismatch after fully migrating to the new backend balance types
+          // @ts-ignore
           ...networkBalance.tokens.filter(t => t.balance === 0n)
         )
       }
