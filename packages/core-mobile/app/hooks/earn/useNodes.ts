@@ -18,6 +18,10 @@ export const useNodes = (
         isDeveloperMode
       )
       return EarnService.getCurrentValidators(provider)
-    }
+    },
+    // Cache validators for 5 minutes to reduce network calls
+    // Note: gcTime is inherited from global config (Infinity), which keeps data in memory
+    // This is intentional to avoid refetching large validator arrays frequently
+    staleTime: 5 * 60 * 1000
   })
 }
