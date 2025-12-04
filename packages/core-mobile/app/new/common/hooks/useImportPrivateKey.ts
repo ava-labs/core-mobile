@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router'
+import { useNavigation, useRouter } from 'expo-router'
 import { showSnackbar } from 'new/common/utils/toast'
 import { useCallback, useState } from 'react'
 import { useDispatch } from 'react-redux'
@@ -17,9 +17,9 @@ export const useImportPrivateKey = (): {
   ) => Promise<void>
 } => {
   const dispatch = useDispatch<AppThunkDispatch>()
-  const { canGoBack, dismiss } = useRouter()
+  const { canGoBack } = useRouter()
   const [isImporting, setIsImporting] = useState(false)
-
+  const navigation = useNavigation()
   const importWallet = useCallback(
     async (accountDetails: ImportedAccount, accountSecret: string) => {
       if (!accountDetails || !accountSecret) {
@@ -42,8 +42,7 @@ export const useImportPrivateKey = (): {
         showSnackbar('Wallet imported successfully!')
 
         if (canGoBack()) {
-          dismiss()
-          dismiss()
+          navigation.getParent()?.goBack()
         }
       } catch (error) {
         Logger.error('Failed to import private key wallet', error)
@@ -56,7 +55,7 @@ export const useImportPrivateKey = (): {
         setIsImporting(false)
       }
     },
-    [dispatch, canGoBack, dismiss]
+    [dispatch, canGoBack, navigation]
   )
 
   return { isImporting, importWallet }

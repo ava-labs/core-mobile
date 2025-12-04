@@ -1,11 +1,11 @@
 import { Button, Text, useTheme } from '@avalabs/k2-alpine'
-import { useRouter } from 'expo-router'
+import { useNavigation } from 'expo-router'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import React from 'react'
 import { View } from 'react-native'
 
 export default function CompleteScreen(): JSX.Element {
-  const { dismiss } = useRouter()
+  const navigation = useNavigation()
   const {
     theme: { colors }
   } = useTheme()
@@ -14,8 +14,7 @@ export default function CompleteScreen(): JSX.Element {
 
   const handleComplete = (): void => {
     resetSetup()
-    dismiss()
-    dismiss()
+    navigation.getParent()?.goBack()
   }
 
   return (
