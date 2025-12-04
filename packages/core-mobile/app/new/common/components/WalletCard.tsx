@@ -259,7 +259,7 @@ const WalletCard = ({
             balanceSx={{
               color: isActive ? colors.$textPrimary : colors.$textSecondary
             }}
-            // wallet={wallet}
+            wallet={wallet}
           />
           {showMoreButton && (
             <DropdownMenu

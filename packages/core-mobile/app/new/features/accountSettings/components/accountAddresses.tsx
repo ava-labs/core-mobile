@@ -15,6 +15,7 @@ import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { NetworkVMType } from '@avalabs/vm-module-types'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 
 export const AccountAddresses = ({
   account
@@ -36,7 +37,7 @@ export const AccountAddresses = ({
         switch (network.vmName) {
           case NetworkVMType.AVM:
           case NetworkVMType.PVM:
-            return account.addressPVM.replace(/^[XP]-/, '')
+            return stripAddressPrefix(account.addressPVM)
           case NetworkVMType.BITCOIN:
             return account.addressBTC
           case NetworkVMType.EVM:

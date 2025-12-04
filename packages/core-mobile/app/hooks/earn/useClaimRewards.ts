@@ -62,8 +62,8 @@ export const useClaimRewards = (
       walletType: activeWallet.type,
       pChainBalance: pClaimableBalance,
       requiredAmount: amountToTransfer,
-      activeAccount,
-      isDevMode: isDeveloperMode,
+      account: activeAccount,
+      isTestnet: isDeveloperMode,
       feeState: defaultFeeState,
       cBaseFeeMultiplier
     })
