@@ -1,6 +1,6 @@
 import * as sdk from '@avalabs/core-coingecko-sdk'
-import { watchListCacheClient } from 'services/watchlist/watchListCacheClient'
 import * as inMemoryCache from 'utils/InMemoryCache'
+import { watchListClient } from 'utils/api/fetches/watchlistFetchClient'
 import TokenService from './TokenService'
 import { coingeckoProxyClient as proxy } from './coingeckoProxyClient'
 import WATCHLIST_PRICE from './__mocks__/watchlistPrice.json'
@@ -102,10 +102,7 @@ describe('getSimplePrice', () => {
 })
 
 describe('getPriceWithMarketDataByCoinId', () => {
-  const watchlistSimplePriceMock = jest.spyOn(
-    watchListCacheClient,
-    'simplePrice'
-  )
+  const watchlistSimplePriceMock = jest.spyOn(watchListClient, 'getPrices')
   watchlistSimplePriceMock.mockImplementationOnce(async () => {
     return WATCHLIST_PRICE
   })
@@ -127,10 +124,7 @@ describe('getPriceWithMarketDataByCoinId', () => {
 })
 
 describe('getPriceWithMarketDataByCoinIds', () => {
-  const watchlistSimplePriceMock = jest.spyOn(
-    watchListCacheClient,
-    'simplePrice'
-  )
+  const watchlistSimplePriceMock = jest.spyOn(watchListClient, 'getPrices')
   watchlistSimplePriceMock.mockImplementationOnce(async () => {
     return WATCHLIST_PRICE
   })
