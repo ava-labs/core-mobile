@@ -650,6 +650,7 @@ describe('mapBalanceResponseToLegacy', () => {
         categories: {
           unlockedStaked: '0',
           unlockedUnstaked: '110964791',
+          unlockedUnstakedMultiSig: '0',
           lockedStaked: '0',
           lockedPlatform: '0',
           lockedStakeable: '0',
