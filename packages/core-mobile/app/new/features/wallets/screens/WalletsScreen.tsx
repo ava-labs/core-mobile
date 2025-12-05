@@ -1,4 +1,5 @@
 import { Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
+import { useHeaderHeight } from '@react-navigation/elements'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
 import NavigationBarButton from 'common/components/NavigationBarButton'
@@ -9,6 +10,7 @@ import { useRecentAccounts } from 'features/accountSettings/store'
 import { useIsUserBalanceInaccurate } from 'features/portfolio/hooks/useIsUserBalanceInaccurate'
 import { useUserBalances } from 'features/portfolio/hooks/useUserBalances'
 import React, { useCallback, useMemo, useState } from 'react'
+import { RefreshControl } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
 import {
@@ -28,6 +30,7 @@ export const WalletsScreen = (): JSX.Element => {
   const {
     theme: { colors, isDark }
   } = useTheme()
+  const headerHeight = useHeaderHeight()
   const dispatch = useDispatch()
   const { navigate, dismiss } = useRouter()
   const { recentAccountIds } = useRecentAccounts()
@@ -323,8 +326,13 @@ export const WalletsScreen = (): JSX.Element => {
       data={walletsDisplayData}
       backgroundColor={isDark ? '#121213' : '#F1F1F4'}
       renderHeader={renderHeader}
-      refreshing={isFetching}
-      onRefresh={refetch}
+      refreshControl={
+        <RefreshControl
+          refreshing={isFetching}
+          onRefresh={refetch}
+          progressViewOffset={headerHeight}
+        />
+      }
       renderHeaderRight={renderHeaderRight}
       renderEmpty={renderEmpty}
       renderItem={renderItem}
