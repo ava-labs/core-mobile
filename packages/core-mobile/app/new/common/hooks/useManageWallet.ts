@@ -1,25 +1,32 @@
+import { showAlert } from '@avalabs/k2-alpine'
+import { CoreAccountType } from '@avalabs/types'
 import { DropdownItem } from 'common/components/DropdownMenu'
 import {
   dismissAlertWithTextInput,
   showAlertWithTextInput
 } from 'common/utils/alertWithTextInput'
+import { IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID } from 'features/wallets/consts'
+import { showSnackbar } from 'new/common/utils/toast'
 import { useCallback, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { WalletType } from 'services/wallet/types'
+import { addAccount } from 'store/account'
+import {
+  removeAccount,
+  selectAccounts,
+  selectActiveAccount,
+  setActiveAccountId
+} from 'store/account/slice'
+import { AppThunkDispatch } from 'store/types'
 import {
   selectIsMigratingActiveAccounts,
   selectWallets,
   setWalletName
 } from 'store/wallet/slice'
-import { Wallet } from 'store/wallet/types'
-import { showAlert } from '@avalabs/k2-alpine'
 import { removeWallet } from 'store/wallet/thunks'
-import { addAccount } from 'store/account'
-import { selectAccounts } from 'store/account/slice'
-import { AppThunkDispatch } from 'store/types'
-import { WalletType } from 'services/wallet/types'
-import AnalyticsService from 'services/analytics/AnalyticsService'
+import { Wallet } from 'store/wallet/types'
 import Logger from 'utils/Logger'
-import { showSnackbar } from 'new/common/utils/toast'
 
 export const useManageWallet = (): {
   handleAddAccount: (wallet: Wallet) => void
@@ -62,6 +69,23 @@ export const useManageWallet = (): {
     [dispatch]
   )
 
+  const activeAccount = useSelector(selectActiveAccount)
+
+  const removeImportedWallet = useCallback((): void => {
+    const accountsToRemove = Object.values(accounts).filter(
+      account => account.type === CoreAccountType.IMPORTED
+    )
+
+    accountsToRemove.forEach(account => {
+      dispatch(removeAccount(account.id))
+    })
+
+    // Set the first account as active if the active account is imported
+    if (activeAccount?.type === CoreAccountType.IMPORTED) {
+      dispatch(setActiveAccountId(Object.keys(accounts)[0] ?? ''))
+    }
+  }, [accounts, activeAccount?.type, dispatch])
+
   const handleRemoveWallet = useCallback(
     (wallet: Wallet): void => {
       const walletCount = Object.keys(wallets).length
@@ -91,13 +115,17 @@ export const useManageWallet = (): {
             text: 'Remove',
             style: 'destructive',
             onPress: () => {
-              dispatch(removeWallet(wallet.id))
+              if (wallet.id === IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID) {
+                removeImportedWallet()
+              } else {
+                dispatch(removeWallet(wallet.id))
+              }
             }
           }
         ]
       })
     },
-    [dispatch, wallets]
+    [dispatch, removeImportedWallet, wallets]
   )
 
   const handleAddAccount = useCallback(
@@ -152,12 +180,14 @@ export const useManageWallet = (): {
 
   const getDropdownItems = useCallback(
     (wallet: Wallet): DropdownItem[] => {
-      const baseItems: DropdownItem[] = [
-        {
+      const baseItems: DropdownItem[] = []
+
+      if (wallet.type !== WalletType.PRIVATE_KEY) {
+        baseItems.push({
           id: 'rename',
           title: 'Rename'
-        }
-      ]
+        })
+      }
 
       if (
         [

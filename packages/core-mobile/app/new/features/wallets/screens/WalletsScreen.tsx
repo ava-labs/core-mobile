@@ -285,10 +285,9 @@ export const WalletsScreen = (): JSX.Element => {
           isActive={isActive}
           isExpanded={isExpanded}
           onToggleExpansion={() => toggleWalletExpansion(item.id)}
-          showMoreButton={item.id !== IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID}
           style={{
             marginHorizontal: 16,
-            marginVertical: 6,
+            marginBottom: 10,
             backgroundColor: colors.$surfacePrimary,
             borderColor: colors.$borderPrimary,
             borderWidth: 1
@@ -319,11 +318,11 @@ export const WalletsScreen = (): JSX.Element => {
     <ListScreen
       title="My wallets"
       subtitle={`An overview of your wallets\nand associated accounts`}
-      data={walletsDisplayData.filter(Boolean) as WalletDisplayData[]}
+      data={walletsDisplayData}
       backgroundColor={isDark ? '#121213' : '#F1F1F4'}
       renderHeader={renderHeader}
-      onRefresh={refetch}
       refreshing={isFetching}
+      onRefresh={refetch}
       renderHeaderRight={renderHeaderRight}
       renderEmpty={renderEmpty}
       renderItem={renderItem}
