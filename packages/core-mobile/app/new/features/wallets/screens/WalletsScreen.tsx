@@ -37,8 +37,10 @@ export const WalletsScreen = (): JSX.Element => {
   const accountCollection = useSelector(selectAccounts)
   const allWallets = useSelector(selectWallets)
   const activeAccount = useSelector(selectActiveAccount)
-  const { isLoading, isFetching, refetch } = useUserBalances()
+  const { isLoading, refetch } = useUserBalances()
   const balanceInaccurate = useIsUserBalanceInaccurate()
+
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const [expandedWallets, setExpandedWallets] = useState<
     Record<string, boolean>
@@ -319,6 +321,12 @@ export const WalletsScreen = (): JSX.Element => {
     )
   }, [])
 
+  const onRefresh = useCallback(() => {
+    setIsRefreshing(true)
+    refetch()
+    setIsRefreshing(false)
+  }, [refetch])
+
   return (
     <ListScreen
       title="My wallets"
@@ -328,8 +336,8 @@ export const WalletsScreen = (): JSX.Element => {
       renderHeader={renderHeader}
       refreshControl={
         <RefreshControl
-          refreshing={isFetching}
-          onRefresh={refetch}
+          refreshing={isRefreshing}
+          onRefresh={onRefresh}
           progressViewOffset={headerHeight}
         />
       }
