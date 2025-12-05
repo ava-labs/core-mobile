@@ -51,6 +51,7 @@ export function useAccountBalances(
   const {
     data,
     isFetching,
+    error,
     refetch: refetchFn
   } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
@@ -97,12 +98,13 @@ export function useAccountBalances(
     // - no data, OR
     // - fewer results than enabled networks
     return (
+      !!error ||
       !account ||
       !data ||
       data.length === 0 ||
       data.length < enabledNetworks.length
     )
-  }, [account, data, enabledNetworks])
+  }, [account, data, enabledNetworks.length, error])
 
   return {
     data: data ?? [],

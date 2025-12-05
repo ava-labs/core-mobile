@@ -23,7 +23,7 @@ const balanceApi = {
   ): AsyncGenerator<GetBalancesResponse> {
     const appCheckToken = await AppCheckService.getToken()
 
-    const res = await expoFetch(`${BALANCE_URL}/v1/balance/get-balances`, {
+    const res = await expoFetch(`${BALANCE_URL}/v1/balance/get-balancesss`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -32,6 +32,40 @@ const balanceApi = {
       },
       body: JSON.stringify(body)
     })
+
+    // Check if the response is successful
+    if (!res.ok) {
+      let errorMessage = `HTTP ${res.status}: ${res.statusText}`
+      try {
+        // Try to read error body if available
+        if (res.body) {
+          const reader = res.body.getReader()
+          const decoder = new TextDecoder()
+          let errorBody = ''
+          let done = false
+          while (!done) {
+            const { value, done: readerDone } = await reader.read()
+            done = readerDone
+            if (value) {
+              errorBody += decoder.decode(value, { stream: true })
+            }
+          }
+          reader.releaseLock()
+          if (errorBody) {
+            try {
+              const errorJson = JSON.parse(errorBody)
+              errorMessage =
+                errorJson.message || errorJson.error || errorMessage
+            } catch {
+              errorMessage = errorBody
+            }
+          }
+        }
+      } catch (err) {
+        Logger.warn('Failed to read error response body', err)
+      }
+      throw new Error(errorMessage)
+    }
 
     if (!res.body) {
       throw new Error('Stream unavailable (response.body missing)')

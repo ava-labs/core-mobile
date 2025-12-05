@@ -27,8 +27,8 @@ export const LoadingContent = ({
 
   const indicatorStyle = useAnimatedStyle(() => {
     return {
-      width: withTiming(isLoading ? 20 : 0, { duration: 300 }),
-      opacity: withTiming(isLoading ? 1 : 0, { duration: 300 })
+      width: withTiming(isLoading && !hideSpinner ? 20 : 0, { duration: 300 }),
+      opacity: withTiming(isLoading && !hideSpinner ? 1 : 0, { duration: 300 })
     }
   })
 
@@ -70,19 +70,19 @@ export const LoadingFadeInOut = ({
   maxOpacity?: number
   children: React.ReactNode
 }): JSX.Element => {
-  const opacity = useSharedValue(minOpacity)
+  const opacity = useSharedValue(maxOpacity)
 
   useEffect(() => {
     if (isLoading) {
       opacity.value = withRepeat(
-        withTiming(maxOpacity, { duration: 800 }),
+        withTiming(minOpacity, { duration: 800 }),
         -1,
         true
       )
     } else {
       opacity.value = withTiming(1, { duration: 500 })
     }
-  }, [isLoading, maxOpacity, opacity])
+  }, [isLoading, maxOpacity, minOpacity, opacity])
 
   const animatedStyle = useAnimatedStyle(() => {
     return {

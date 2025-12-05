@@ -310,7 +310,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const errorMessage = useMemo(() => {
     if (allBalancesInaccurate) {
-      return 'Unable to load all balances'
+      return 'Unable to load balances'
     }
     return undefined
   }, [allBalancesInaccurate])

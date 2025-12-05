@@ -10,13 +10,13 @@ export function useIsUserBalanceInaccurate(): boolean {
   const accountsArray = useMemo(() => Object.keys(data), [data])
 
   return useMemo(() => {
-    if (accountsArray.length === 0) return false
-    if (!data) return false
+    if (accountsArray.length === 0) return true
+    if (!data) return true
 
     // Check if any account has any balance with dataAccurate === false
     return accountsArray.some(account => {
       const accountBalances = data[account]
-      if (!accountBalances || accountBalances.length === 0) return false
+      if (!accountBalances || accountBalances.length === 0) return true
 
       return accountBalances.some(balance => balance.dataAccurate === false)
     })

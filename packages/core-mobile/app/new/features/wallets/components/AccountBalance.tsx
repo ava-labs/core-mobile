@@ -71,6 +71,31 @@ export const AccountBalance = ({
     )
   }, [colors.$textPrimary, isActive])
 
+  const renderError = useCallback(() => {
+    if (isLoadingBalance) return null
+
+    // Balance is 0 and all balances are accurate
+    if (!accountBalance && isBalanceAccurate) return null
+
+    // Balance is inaccurate
+    if (!isBalanceAccurate)
+      return (
+        <Pressable hitSlop={16} onPress={refetch}>
+          <Icons.Alert.Error
+            color={colors.$textDanger}
+            width={14}
+            height={14}
+          />
+        </Pressable>
+      )
+  }, [
+    accountBalance,
+    colors.$textDanger,
+    isBalanceAccurate,
+    isLoadingBalance,
+    refetch
+  ])
+
   if (!hasLoaded && isLoadingBalance) {
     if (variant === 'skeleton') {
       return (
@@ -98,18 +123,9 @@ export const AccountBalance = ({
         flexShrink: 1,
         gap: 6
       }}>
-      {!accountBalance ? null : !isBalanceAccurate ? (
-        <Pressable hitSlop={16} onPress={refetch}>
-          <Icons.Alert.Error
-            color={colors.$textDanger}
-            width={14}
-            height={14}
-          />
-        </Pressable>
-      ) : null}
-
+      {renderError()}
       <LoadingContent
-        hideSpinner
+        hideSpinner={hasLoaded}
         minOpacity={0.2}
         maxOpacity={1}
         isLoading={hasLoaded && isLoadingBalance}>
