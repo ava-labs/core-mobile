@@ -3,6 +3,7 @@ import {
   alpha,
   AnimatedBalance,
   Icons,
+  LoadingContent,
   Pressable,
   useTheme,
   View
@@ -12,7 +13,8 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useBalanceInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
 import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalanceAccurate'
-import React, { useCallback, useMemo } from 'react'
+import { useIsPollingBalancesForAccount } from 'features/portfolio/hooks/useIsPollingBalancesForAccount'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { useSelector } from 'react-redux'
 import { Account } from 'store/account'
@@ -31,11 +33,19 @@ export const AccountBalance = ({
   const {
     theme: { colors, isDark }
   } = useTheme()
-  const { balance: accountBalance, isLoadingBalance } =
-    useBalanceInCurrencyForAccount(account.id)
+  const { formatCurrency } = useFormatCurrency()
+  const { balance: accountBalance } = useBalanceInCurrencyForAccount(account.id)
 
   const isBalanceAccurate = useIsAccountBalanceAccurate(account)
-  const { formatCurrency } = useFormatCurrency()
+  const isLoadingBalance = useIsPollingBalancesForAccount(account)
+
+  const [hasLoaded, setHasLoaded] = useState(false)
+
+  useEffect(() => {
+    if (!isLoadingBalance) {
+      setHasLoaded(true)
+    }
+  }, [isLoadingBalance])
 
   const refetchBalance = useCallback(() => {
     // TODO: implement refetch balance
@@ -65,7 +75,7 @@ export const AccountBalance = ({
     )
   }, [colors.$textPrimary, isActive])
 
-  if (isLoadingBalance) {
+  if (!hasLoaded && isLoadingBalance) {
     if (variant === 'skeleton') {
       return (
         <ContentLoader
@@ -101,20 +111,27 @@ export const AccountBalance = ({
           />
         </Pressable>
       ) : null}
-      <AnimatedBalance
-        variant="body1"
-        balance={balance}
-        shouldMask={isPrivacyModeEnabled}
-        balanceSx={{
-          color: isActive
-            ? colors.$textPrimary
-            : alpha(colors.$textPrimary, 0.6),
-          lineHeight: 16,
-          textAlign: 'right'
-        }}
-        renderMaskView={renderMaskView}
-        shouldAnimate={false}
-      />
+
+      <LoadingContent
+        hideSpinner
+        minOpacity={0.2}
+        maxOpacity={1}
+        isLoading={hasLoaded && isLoadingBalance}>
+        <AnimatedBalance
+          variant="body1"
+          balance={balance}
+          shouldMask={isPrivacyModeEnabled}
+          balanceSx={{
+            color: isActive
+              ? colors.$textPrimary
+              : alpha(colors.$textPrimary, 0.6),
+            lineHeight: 16,
+            textAlign: 'right'
+          }}
+          renderMaskView={renderMaskView}
+          shouldAnimate={false}
+        />
+      </LoadingContent>
     </View>
   )
 }

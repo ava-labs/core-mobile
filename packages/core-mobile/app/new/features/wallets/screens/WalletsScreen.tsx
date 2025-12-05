@@ -6,7 +6,8 @@ import WalletCard from 'common/components/WalletCard'
 import { WalletDisplayData } from 'common/types'
 import { useRouter } from 'expo-router'
 import { useRecentAccounts } from 'features/accountSettings/store'
-import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalanceAccurate'
+import { useIsUserBalanceInaccurate } from 'features/portfolio/hooks/useIsUserBalanceInaccurate'
+import { useUserBalances } from 'features/portfolio/hooks/useUserBalances'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
@@ -29,27 +30,19 @@ export const WalletsScreen = (): JSX.Element => {
   } = useTheme()
   const dispatch = useDispatch()
   const { navigate, dismiss } = useRouter()
+  const { recentAccountIds } = useRecentAccounts()
+  const accountCollection = useSelector(selectAccounts)
+  const allWallets = useSelector(selectWallets)
+  const activeAccount = useSelector(selectActiveAccount)
+  const { isLoading, isFetching, refetch } = useUserBalances()
+  const balanceInaccurate = useIsUserBalanceInaccurate()
 
   const [expandedWallets, setExpandedWallets] = useState<
     Record<string, boolean>
   >({})
 
-  const accountCollection = useSelector(selectAccounts)
-  const allWallets = useSelector(selectWallets)
-  const activeAccount = useSelector(selectActiveAccount)
-
-  // TODO: check if any account on any wallet has balanceAccurate === false
-  // Also check if balance is loading for any account on any wallet isLoadingWalletBalance === false
-  const balanceAccurate = useIsAccountBalanceAccurate(activeAccount)
-  const isLoadingWalletBalance = false
-  // TODO: Implement refresh
-  const isRefreshing = false
-
   const errorMessage =
-    balanceAccurate && !isLoadingWalletBalance
-      ? undefined
-      : 'Unable to load all balances'
-  const { recentAccountIds } = useRecentAccounts()
+    isLoading || !balanceInaccurate ? undefined : 'Unable to load all balances'
 
   const allAccountsArray = useMemo(() => {
     const allAccounts = Object.values(accountCollection).filter(
@@ -208,20 +201,39 @@ export const WalletsScreen = (): JSX.Element => {
     gotoAccountDetails
   ])
 
-  const walletsDisplayData: (WalletDisplayData | null)[] = useMemo(() => {
-    return [...primaryWalletsDisplayData, importedWalletsDisplayData]
-  }, [primaryWalletsDisplayData, importedWalletsDisplayData])
+  const walletsDisplayData = useMemo((): WalletDisplayData[] => {
+    // Filter out null values from primary wallets
+    const validPrimaryWallets = primaryWalletsDisplayData.filter(
+      (wallet): wallet is WalletDisplayData => wallet !== null
+    )
+
+    // Combine all wallets (primary + imported)
+    const combinedWallets: WalletDisplayData[] = importedWalletsDisplayData
+      ? [...validPrimaryWallets, importedWalletsDisplayData]
+      : validPrimaryWallets
+
+    // Find the active wallet (could be primary or imported)
+    const activeWallet = combinedWallets.find(wallet =>
+      getIsActiveWallet(wallet.id, activeAccount)
+    )
+
+    // If active wallet is found, move it to the beginning
+    if (activeWallet) {
+      const otherWallets = combinedWallets.filter(
+        wallet => wallet.id !== activeWallet.id
+      )
+      return [activeWallet, ...otherWallets]
+    }
+
+    // If no active wallet found, return in default order
+    return combinedWallets
+  }, [primaryWalletsDisplayData, importedWalletsDisplayData, activeAccount])
 
   const toggleWalletExpansion = useCallback((walletId: string) => {
     setExpandedWallets(prev => ({
       ...prev,
       [walletId]: !prev[walletId]
     }))
-  }, [])
-
-  const onRefresh = useCallback(() => {
-    // TODO: Implement refresh
-    // dispatch(fetchWallets())
   }, [])
 
   const handleAddAccount = useCallback((): void => {
@@ -238,29 +250,25 @@ export const WalletsScreen = (): JSX.Element => {
   }, [colors.$textPrimary, handleAddAccount])
 
   const renderHeader = useCallback(() => {
-    return (
-      <View
-        style={{
-          gap: 16
-        }}>
-        {errorMessage && (
-          <View
-            sx={{
-              gap: 8,
-              alignItems: 'center',
-              flexDirection: 'row',
-              marginTop: 8
-            }}>
-            <Icons.Alert.ErrorOutline color={colors.$textDanger} />
-            <Text
-              variant="buttonMedium"
-              sx={{ fontFamily: 'Inter-Medium', color: colors.$textDanger }}>
-              {errorMessage}
-            </Text>
-          </View>
-        )}
-      </View>
-    )
+    if (errorMessage) {
+      return (
+        <View
+          sx={{
+            gap: 8,
+            alignItems: 'center',
+            flexDirection: 'row',
+            marginTop: 8
+          }}>
+          <Icons.Alert.ErrorOutline color={colors.$textDanger} />
+          <Text
+            variant="buttonMedium"
+            sx={{ fontFamily: 'Inter-Medium', color: colors.$textDanger }}>
+            {errorMessage}
+          </Text>
+        </View>
+      )
+    }
+    return null
   }, [colors.$textDanger, errorMessage])
 
   const renderItem = useCallback(
@@ -314,8 +322,8 @@ export const WalletsScreen = (): JSX.Element => {
       data={walletsDisplayData.filter(Boolean) as WalletDisplayData[]}
       backgroundColor={isDark ? '#121213' : '#F1F1F4'}
       renderHeader={renderHeader}
-      onRefresh={onRefresh}
-      refreshing={isRefreshing}
+      onRefresh={refetch}
+      refreshing={isFetching}
       renderHeaderRight={renderHeaderRight}
       renderEmpty={renderEmpty}
       renderItem={renderItem}
