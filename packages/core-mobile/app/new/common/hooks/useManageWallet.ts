@@ -1,23 +1,16 @@
 import { showAlert } from '@avalabs/k2-alpine'
-import { CoreAccountType } from '@avalabs/types'
 import { DropdownItem } from 'common/components/DropdownMenu'
 import {
   dismissAlertWithTextInput,
   showAlertWithTextInput
 } from 'common/utils/alertWithTextInput'
-import { IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID } from 'features/wallets/consts'
 import { showSnackbar } from 'new/common/utils/toast'
 import { useCallback, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
 import { addAccount } from 'store/account'
-import {
-  removeAccount,
-  selectAccounts,
-  selectActiveAccount,
-  setActiveAccountId
-} from 'store/account/slice'
+import { selectAccounts } from 'store/account/slice'
 import { AppThunkDispatch } from 'store/types'
 import {
   selectIsMigratingActiveAccounts,
@@ -69,23 +62,6 @@ export const useManageWallet = (): {
     [dispatch]
   )
 
-  const activeAccount = useSelector(selectActiveAccount)
-
-  const removeImportedWallet = useCallback((): void => {
-    const accountsToRemove = Object.values(accounts).filter(
-      account => account.type === CoreAccountType.IMPORTED
-    )
-
-    accountsToRemove.forEach(account => {
-      dispatch(removeAccount(account.id))
-    })
-
-    // Set the first account as active if the active account is imported
-    if (activeAccount?.type === CoreAccountType.IMPORTED) {
-      dispatch(setActiveAccountId(Object.keys(accounts)[0] ?? ''))
-    }
-  }, [accounts, activeAccount?.type, dispatch])
-
   const handleRemoveWallet = useCallback(
     (wallet: Wallet): void => {
       const walletCount = Object.keys(wallets).length
@@ -115,17 +91,13 @@ export const useManageWallet = (): {
             text: 'Remove',
             style: 'destructive',
             onPress: () => {
-              if (wallet.id === IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID) {
-                removeImportedWallet()
-              } else {
-                dispatch(removeWallet(wallet.id))
-              }
+              dispatch(removeWallet(wallet.id))
             }
           }
         ]
       })
     },
-    [dispatch, removeImportedWallet, wallets]
+    [dispatch, wallets]
   )
 
   const handleAddAccount = useCallback(

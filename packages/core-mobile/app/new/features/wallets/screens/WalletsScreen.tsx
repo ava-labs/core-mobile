@@ -285,6 +285,8 @@ export const WalletsScreen = (): JSX.Element => {
           isActive={isActive}
           isExpanded={isExpanded}
           onToggleExpansion={() => toggleWalletExpansion(item.id)}
+          // TODO: remove this once we have a way to remove imported wallets
+          showMoreButton={item.id !== IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID}
           style={{
             marginHorizontal: 16,
             marginBottom: 10,
