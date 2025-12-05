@@ -46,7 +46,6 @@ export class BalanceService {
    *     {
    *       accountId: 'some-account-id',
    *       chainId: 43114,
-   *       accountAddress: '0x123',
    *       tokens: [
    *         {
    *           address: '0x123',
@@ -222,7 +221,6 @@ export class BalanceService {
               partial[account.id] = {
                 accountId: account.id,
                 chainId: network.chainId,
-                accountAddress: address ?? '',
                 tokens,
                 dataAccurate: true,
                 error: null
@@ -256,12 +254,9 @@ export class BalanceService {
 
             // Mark all accounts errored for this network
             for (const account of accounts) {
-              const accountAddress = getAddressByNetwork(account, network) ?? ''
-
               errorPartial[account.id] = {
                 accountId: account.id,
                 chainId: network.chainId,
-                accountAddress,
                 tokens: [],
                 dataAccurate: false,
                 error: err as Error
@@ -281,6 +276,70 @@ export class BalanceService {
 
     // Execute everything in parallel
     await Promise.allSettled(networkPromises)
+
+    return finalResults
+  }
+
+  /**
+   * Fetch balances for a single account across multiple networks using the
+   * Balance Service streaming API.
+   *
+   * @returns an array of AdjustedNormalizedBalancesForAccount objects,
+   *          one entry per network/namespace included in the request.
+   *
+   * @example
+   * [
+   *   {
+   *     accountId: 'some-account-id',
+   *     chainId: 43114,
+   *     tokens: [
+   *       {
+   *         name: 'Avalanche',
+   *         symbol: 'AVAX',
+   *         type: 'native',
+   *         decimals: 18,
+   *         balance: '1000000000000000000',
+   *         price: 13.5,
+   *         balanceInCurrency: 13.5
+   *       }
+   *     ],
+   *     dataAccurate: true,
+   *     error: null
+   *   }
+   * ]
+   */
+  async getBalancesForAccount({
+    networks,
+    account,
+    currency,
+    onBalanceLoaded
+  }: {
+    networks: Network[]
+    account: Account
+    currency: string
+    onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
+  }): Promise<AdjustedNormalizedBalancesForAccount[]> {
+    // Final aggregated result
+    const finalResults: AdjustedNormalizedBalancesForAccount[] = []
+
+    const requestItems = buildRequestItemsForAccount(networks, account)
+
+    const body = {
+      data: requestItems,
+      currency: currency as GetBalancesRequestBody['currency'],
+      showUntrustedTokens: false
+    }
+
+    for await (const balance of balanceApi.getBalancesStream(body)) {
+      const normalized = mapBalanceResponseToLegacy(account, balance)
+      if (!normalized) continue
+
+      // Progressive update callback
+      onBalanceLoaded?.(normalized)
+
+      // Add to final result
+      finalResults.push(normalized)
+    }
 
     return finalResults
   }
