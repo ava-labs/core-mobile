@@ -9,6 +9,7 @@ import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useBalanceTotalInCurrencyForWallet } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForWallet'
+import { useIsPollingBalancesForWallet } from 'features/portfolio/hooks/useIsPollingBalancesForWallet'
 import { useWalletBalances } from 'features/portfolio/hooks/useWalletBalances'
 import React, { useCallback, useMemo } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
@@ -30,7 +31,7 @@ export const WalletBalance = ({
     theme: { colors, isDark }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
-  const { isLoading: isLoadingBalance } = useWalletBalances(wallet)
+  const isLoadingBalance = useIsPollingBalancesForWallet(wallet)
   const walletBalance = useBalanceTotalInCurrencyForWallet(wallet)
 
   const balance = useMemo(() => {
