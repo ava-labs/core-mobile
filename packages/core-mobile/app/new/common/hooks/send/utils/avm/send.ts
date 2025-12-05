@@ -5,19 +5,17 @@ import { Request } from 'store/rpc/utils/createInAppRequest'
 import { getAvalancheCaip2ChainId } from 'utils/caip2ChainIds'
 import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 import { stripChainAddress } from 'store/account/utils'
-import WalletService from 'services/wallet/WalletService'
 import { utils } from '@avalabs/avalanchejs'
 import { SpanName } from 'services/sentry/types'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { SPAN_STATUS_ERROR } from '@sentry/core'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { AvmCapableAccount } from 'common/hooks/send/utils/types'
-import { WalletType } from 'services/wallet/types'
+import { Account } from 'store/account'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
 export const send = async ({
-  walletId,
-  walletType,
   request,
   fromAddress,
   account,
@@ -25,8 +23,6 @@ export const send = async ({
   toAddress,
   amount
 }: {
-  walletId: string
-  walletType: WalletType
   request: Request
   fromAddress: string
   account: AvmCapableAccount
@@ -40,14 +36,12 @@ export const send = async ({
     async span => {
       try {
         const txRequest = await getTransactionRequest({
-          walletId,
-          walletType,
           toAddress,
           amount,
-          network,
+          isTestnet: Boolean(network.isTestnet),
           fromAddress,
           sentrySpanName,
-          accountIndex: account.index
+          account
         })
 
         const [txHash, txError] = await resolve(
@@ -81,34 +75,28 @@ export const send = async ({
 }
 
 const getTransactionRequest = ({
-  walletId,
-  walletType,
-  accountIndex,
+  account,
   toAddress,
   fromAddress,
   amount,
-  network,
+  isTestnet,
   sentrySpanName
 }: {
-  walletId: string
-  walletType: WalletType
-  accountIndex: number
+  account: Account
   amount: bigint
   toAddress: string
   fromAddress: string
-  network: Network
+  isTestnet: boolean
   sentrySpanName?: SpanName
 }): Promise<AvalancheSendTransactionParams> => {
   return SentryWrapper.startSpan(
     { name: sentrySpanName, contextName: 'svc.send.avm.get_trx_request' },
     async () => {
       const destinationAddress = 'X-' + stripChainAddress(toAddress ?? '')
-      const unsignedTx = await WalletService.createSendXTx({
-        walletId,
-        walletType,
-        accountIndex,
+      const unsignedTx = await AvalancheWalletService.createSendXTx({
+        account,
         amountInNAvax: amount,
-        avaxXPNetwork: network,
+        isTestnet,
         destinationAddress: destinationAddress,
         sourceAddress: fromAddress
       })
@@ -126,7 +114,7 @@ const getTransactionRequest = ({
         ...getInternalExternalAddrs({
           utxos: unsignedTx.utxos,
           xpAddressDict: { [fromAddress]: { space: 'e', index: 0 } },
-          isTestnet: network.isTestnet === true
+          isTestnet
         })
       }
     }

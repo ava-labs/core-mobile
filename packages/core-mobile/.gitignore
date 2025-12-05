@@ -102,3 +102,4 @@ expo-env.d.ts
 app/utils/apiClient/generated/glacierApi.client.ts
 app/utils/apiClient/generated/tokenAggregatorApi.client.ts
 app/utils/apiClient/generated/profileApi.client.ts
+app/utils/apiClient/generated/balanceApi.client/

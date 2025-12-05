@@ -7,6 +7,7 @@ import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import NetworkService from 'services/network/NetworkService'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportPParams = {
@@ -14,8 +15,8 @@ export type ExportPParams = {
   walletType: WalletType
   pChainBalance: TokenUnit
   requiredAmount: TokenUnit
-  activeAccount: Account
-  isDevMode: boolean
+  account: Account
+  isTestnet: boolean
   feeState?: pvm.FeeState
 }
 
@@ -24,8 +25,8 @@ export async function exportP({
   walletType,
   pChainBalance,
   requiredAmount,
-  activeAccount,
-  isDevMode,
+  account,
+  isTestnet,
   feeState
 }: ExportPParams): Promise<void> {
   Logger.info('exporting P started')
@@ -33,16 +34,14 @@ export async function exportP({
   if (pChainBalance.lt(requiredAmount)) {
     throw Error('Not enough balance on P chain')
   }
-  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
+  const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isTestnet)
 
-  const unsignedTx = await WalletService.createExportPTx({
-    walletId,
-    walletType,
+  const unsignedTx = await AvalancheWalletService.createExportPTx({
     amountInNAvax: requiredAmount.toSubUnit(),
-    accountIndex: activeAccount.index,
-    avaxXPNetwork,
+    account,
+    isTestnet,
     destinationChain: 'C',
-    destinationAddress: activeAccount.addressCoreEth,
+    destinationAddress: account.addressCoreEth,
     feeState
   })
 
@@ -50,7 +49,7 @@ export async function exportP({
     walletId,
     walletType,
     transaction: { tx: unsignedTx } as AvalancheTransactionRequest,
-    accountIndex: activeAccount.index,
+    accountIndex: account.index,
     network: avaxXPNetwork
   })
   const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
@@ -61,7 +60,7 @@ export async function exportP({
   })
   Logger.trace('txID', txID)
 
-  const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
+  const avaxProvider = await NetworkService.getAvalancheProviderXP(isTestnet)
 
   try {
     await retry({

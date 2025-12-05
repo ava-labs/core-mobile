@@ -1,15 +1,13 @@
+import { useNavigation, useRouter } from 'expo-router'
+import { showSnackbar } from 'new/common/utils/toast'
 import { useCallback, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { useRouter } from 'expo-router'
-import { AppThunkDispatch } from 'store/types'
-import { importPrivateKeyWalletAndAccount } from 'store/wallet/thunks'
-import { ImportedAccount } from 'store/account/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
-import { showSnackbar } from 'new/common/utils/toast'
+import { ImportedAccount } from 'store/account/types'
+import { AppThunkDispatch } from 'store/types'
+import { importPrivateKeyWalletAndAccount } from 'store/wallet/thunks'
 import Logger from 'utils/Logger'
-import { StackActions } from '@react-navigation/native'
-import { useNavigation } from '@react-navigation/native'
 
 export const useImportPrivateKey = (): {
   isImporting: boolean
@@ -22,7 +20,6 @@ export const useImportPrivateKey = (): {
   const { canGoBack } = useRouter()
   const [isImporting, setIsImporting] = useState(false)
   const navigation = useNavigation()
-
   const importWallet = useCallback(
     async (accountDetails: ImportedAccount, accountSecret: string) => {
       if (!accountDetails || !accountSecret) {
@@ -45,8 +42,7 @@ export const useImportPrivateKey = (): {
         showSnackbar('Wallet imported successfully!')
 
         if (canGoBack()) {
-          // clear the stack back to the manage accounts screen
-          navigation.dispatch(StackActions.popTo('manageAccounts'))
+          navigation.getParent()?.goBack()
         }
       } catch (error) {
         Logger.error('Failed to import private key wallet', error)

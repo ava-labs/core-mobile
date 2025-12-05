@@ -5,6 +5,7 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { importC } from 'services/earn/importC'
 import { WalletType } from 'services/wallet/types'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 
 const testCBaseFeeMultiplier = 1
 
@@ -29,10 +30,12 @@ describe('earn/importC', () => {
       return Promise.resolve('mockTxHash')
     })
 
-    jest.mock('services/wallet/WalletService')
-    jest.spyOn(WalletService, 'createImportCTx').mockImplementation(() => {
-      return Promise.resolve({} as UnsignedTx)
-    })
+    jest.mock('services/wallet/AvalancheWalletService')
+    jest
+      .spyOn(AvalancheWalletService, 'createImportCTx')
+      .mockImplementation(() => {
+        return Promise.resolve({} as UnsignedTx)
+      })
     jest.spyOn(WalletService, 'sign').mockImplementation(() => {
       return Promise.resolve(
         JSON.stringify({
@@ -63,18 +66,16 @@ describe('earn/importC', () => {
       await importC({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        activeAccount: {} as Account,
-        isDevMode: false,
+        account: {} as Account,
+        isTestnet: false,
         cBaseFeeMultiplier: testCBaseFeeMultiplier
       })
-      expect(WalletService.createImportCTx).toHaveBeenCalledWith({
-        accountIndex: undefined,
+      expect(AvalancheWalletService.createImportCTx).toHaveBeenCalledWith({
         baseFeeInNAvax: BigInt(0.0005 * 10 ** 9),
-        avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
         sourceChain: 'P',
         destinationAddress: undefined,
-        walletId: 'wallet-1',
-        walletType: 'MNEMONIC'
+        isTestnet: false,
+        account: {} as Account
       })
     })
 
@@ -82,8 +83,8 @@ describe('earn/importC', () => {
       await importC({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        activeAccount: {} as Account,
-        isDevMode: false,
+        account: {} as Account,
+        isTestnet: false,
         cBaseFeeMultiplier: testCBaseFeeMultiplier
       })
       expect(WalletService.sign).toHaveBeenCalled()
@@ -93,8 +94,8 @@ describe('earn/importC', () => {
       await importC({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        activeAccount: {} as Account,
-        isDevMode: false,
+        account: {} as Account,
+        isTestnet: false,
         cBaseFeeMultiplier: testCBaseFeeMultiplier
       })
       expect(NetworkService.sendTransaction).toHaveBeenCalled()

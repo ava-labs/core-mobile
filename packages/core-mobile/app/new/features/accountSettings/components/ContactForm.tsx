@@ -20,6 +20,7 @@ import React, { useCallback, useMemo, useRef } from 'react'
 import { Contact } from 'store/addressBook'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { AddressType } from '../consts'
 import { constructContactByAddressType } from '../utils/constructContactByAddressType'
 import { isValidAddress } from '../utils/isValidAddress'
@@ -63,7 +64,9 @@ export const ContactForm = ({
         switch (network.vmName) {
           case NetworkVMType.AVM:
           case NetworkVMType.PVM:
-            return contact.addressXP?.replace(/^[XP]-/, '')
+            return contact.addressXP
+              ? stripAddressPrefix(contact.addressXP)
+              : undefined
           case NetworkVMType.BITCOIN:
             return contact.addressBTC
           case NetworkVMType.EVM:

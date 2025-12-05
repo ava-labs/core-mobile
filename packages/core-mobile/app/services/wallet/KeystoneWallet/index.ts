@@ -374,31 +374,6 @@ export default class KeystoneWallet implements Wallet {
     )
   }
 
-  private async getAvaSigner(
-    accountIndex: number,
-    provider: Avalanche.JsonRpcProvider
-  ): Promise<Avalanche.WalletVoid> {
-    const evmPub = getAddressPublicKeyFromXPub(this.xpub, accountIndex)
-    const xpPub = Avalanche.getAddressPublicKeyFromXpub(
-      this.xpubXP,
-      accountIndex
-    )
-    return Avalanche.StaticSigner.fromPublicKey(xpPub, evmPub, provider)
-  }
-
-  public async getReadOnlyAvaSigner({
-    accountIndex,
-    provXP
-  }: {
-    accountIndex: number
-    provXP: Avalanche.JsonRpcProvider
-  }): Promise<Avalanche.StaticSigner> {
-    return (await this.getAvaSigner(
-      accountIndex,
-      provXP
-    )) as Avalanche.StaticSigner
-  }
-
   private getPublicKey(path: string): Buffer {
     const accountIndex = this.getAccountIndex(path)
 

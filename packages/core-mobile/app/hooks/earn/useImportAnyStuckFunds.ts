@@ -44,8 +44,8 @@ export const useImportAnyStuckFunds = (
       await EarnService.importAnyStuckFunds({
         walletId: activeWallet.id,
         walletType: activeWallet.type,
-        activeAccount,
-        isDevMode,
+        account: activeAccount,
+        isTestnet: isDevMode,
         selectedCurrency,
         progressEvents: handleRecoveryEvent,
         feeState: defaultFeeState,

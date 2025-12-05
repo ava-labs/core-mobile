@@ -72,12 +72,10 @@ export const useDelegation = (): {
       const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
       const result = await computeDelegationSteps({
-        walletId: activeWallet.id,
-        walletType: activeWallet.type,
         pAddress: activeAccount.addressPVM,
         cAddress: activeAccount.addressC,
         currency: selectedCurrency,
-        accountIndex: activeAccount.index,
+        account: activeAccount,
         avaxXPNetwork: network,
         cChainNetwork,
         provider: avaxProvider,
@@ -93,7 +91,6 @@ export const useDelegation = (): {
       return result
     },
     [
-      activeWallet,
       cChainNetwork,
       activeAccount,
       cChainBaseFee.data,
@@ -158,7 +155,7 @@ export const useDelegation = (): {
               walletType: activeWallet.type,
               activeAccount,
               endDate: delegateEndDate,
-              isDevMode: isDeveloperMode,
+              isTestnet: isDeveloperMode,
               nodeId,
               stakeAmountNanoAvax: step.amount,
               startDate: delegateStartDate,
@@ -173,9 +170,9 @@ export const useDelegation = (): {
             await importP({
               walletId: activeWallet.id,
               walletType: activeWallet.type,
-              activeAccount,
+              account: activeAccount,
               selectedCurrency,
-              isDevMode: isDeveloperMode,
+              isTestnet: isDeveloperMode,
               feeState: defaultFeeState
             })
             break
@@ -190,8 +187,8 @@ export const useDelegation = (): {
               walletType: activeWallet.type,
               cChainBalanceWei: cChainBalance.data?.balance || 0n,
               requiredAmountWei: nanoToWei(step.amount),
-              activeAccount,
-              isDevMode: isDeveloperMode,
+              account: activeAccount,
+              isTestnet: isDeveloperMode,
               cBaseFeeMultiplier
             })
             break

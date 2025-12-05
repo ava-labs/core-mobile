@@ -5,25 +5,24 @@ import { getAvalancheCaip2ChainId } from 'utils/caip2ChainIds'
 import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 import { pvm, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { Network } from '@avalabs/core-chains-sdk'
-import WalletService from 'services/wallet/WalletService'
 import { stripChainAddress } from 'store/account/utils'
 import { SpanName } from 'services/sentry/types'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { SPAN_STATUS_ERROR } from '@sentry/core'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { WalletType } from 'services/wallet/types'
+import { Account } from 'store/account'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
 export const send = async ({
-  walletId,
-  walletType,
   request,
   network,
   fromAddress,
   toAddress,
   amountInNAvax,
   feeState,
-  accountIndex
+  account
 }: {
   walletId: string
   walletType: WalletType
@@ -33,7 +32,7 @@ export const send = async ({
   toAddress: string
   amountInNAvax: bigint
   feeState?: pvm.FeeState
-  accountIndex: number
+  account: Account
 }): Promise<string> => {
   const sentrySpanName = 'send-token'
 
@@ -41,14 +40,13 @@ export const send = async ({
     { name: sentrySpanName, contextName: 'svc.send.send' },
     async span => {
       try {
+        const isTestnet = Boolean(network.isTestnet)
         const destinationAddress = 'P-' + stripChainAddress(toAddress ?? '')
-        const unsignedTx = await WalletService.createSendPTx({
-          walletId,
-          walletType,
-          accountIndex: accountIndex,
+        const unsignedTx = await AvalancheWalletService.createSendPTx({
+          account,
           amountInNAvax,
-          avaxXPNetwork: network,
-          destinationAddress: destinationAddress,
+          isTestnet,
+          destinationAddress,
           sourceAddress: fromAddress,
           feeState
         })
@@ -56,7 +54,7 @@ export const send = async ({
         const txRequest = await getTransactionRequest({
           unsignedTx,
           fromAddress,
-          network,
+          isTestnet,
           sentrySpanName
         })
 
@@ -93,12 +91,12 @@ export const send = async ({
 const getTransactionRequest = ({
   unsignedTx,
   fromAddress,
-  network,
+  isTestnet,
   sentrySpanName
 }: {
   unsignedTx: UnsignedTx
   fromAddress: string
-  network: Network
+  isTestnet: boolean
   sentrySpanName: SpanName
 }): Promise<AvalancheSendTransactionParams> => {
   return SentryWrapper.startSpan(
@@ -117,7 +115,7 @@ const getTransactionRequest = ({
         ...getInternalExternalAddrs({
           utxos: unsignedTx.utxos,
           xpAddressDict: { [fromAddress]: { space: 'e', index: 0 } },
-          isTestnet: network.isTestnet === true
+          isTestnet
         })
       }
     }

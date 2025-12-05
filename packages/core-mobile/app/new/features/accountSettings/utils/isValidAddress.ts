@@ -2,6 +2,7 @@ import { isAddress } from 'ethers'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { isBtcAddress } from 'utils/isBtcAddress'
 import { isAddress as isSolanaAddress } from '@solana/kit'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { AddressType } from '../consts'
 
 export const isValidAddress = ({
@@ -13,7 +14,7 @@ export const isValidAddress = ({
   address: string
   isDeveloperMode: boolean
 }): boolean => {
-  const addressWithoutPrefix = address.replace(/^[PX]-/, '')
+  const addressWithoutPrefix = stripAddressPrefix(address)
 
   if (addressType === undefined) {
     return (

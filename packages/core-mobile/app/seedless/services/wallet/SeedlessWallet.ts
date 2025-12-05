@@ -333,32 +333,6 @@ export default class SeedlessWallet implements Wallet {
     return publicKey.key
   }
 
-  public async getReadOnlyAvaSigner({
-    accountIndex,
-    provXP
-  }: {
-    accountIndex: number
-    provXP: Avalanche.JsonRpcProvider
-  }): Promise<Avalanche.WalletVoid> {
-    const addressPublicKeyEVM = await this.getAddressPublicKey(
-      accountIndex,
-      NetworkVMType.EVM
-    )
-    const addressPublicKeyAVM = await this.getAddressPublicKey(
-      accountIndex,
-      NetworkVMType.AVM
-    )
-
-    const pubKeyBufferC = Buffer.from(addressPublicKeyEVM, 'hex')
-    const pubKeyBufferXP = Buffer.from(addressPublicKeyAVM, 'hex')
-
-    return Avalanche.WalletVoid.fromPublicKey(
-      pubKeyBufferXP,
-      pubKeyBufferC,
-      provXP
-    )
-  }
-
   private signAvalancheMessage = async ({
     accountIndex,
     message,

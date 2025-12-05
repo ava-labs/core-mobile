@@ -1,5 +1,4 @@
 import { Avalanche } from '@avalabs/core-wallets-sdk'
-import { Network } from '@avalabs/core-chains-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { cChainToken } from 'utils/units/knownTokens'
 import { DerivationPathType, NetworkVMType } from '@avalabs/vm-module-types'
@@ -38,8 +37,8 @@ export const isSolanaTransactionRequest = (
   return 'serializedTx' in request
 }
 
-export const getAssetId = (avaxXPNetwork: Network): string => {
-  return avaxXPNetwork.isTestnet ? TESTNET_AVAX_ASSET_ID : MAINNET_AVAX_ASSET_ID
+export const getAvaxAssetId = (isTestnet: boolean): string => {
+  return isTestnet ? TESTNET_AVAX_ASSET_ID : MAINNET_AVAX_ASSET_ID
 }
 
 // we add some buffer to C chain base fee to gain better speed
