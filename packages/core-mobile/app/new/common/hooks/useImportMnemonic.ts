@@ -18,7 +18,7 @@ export const useImportMnemonic = (): {
   const navigation = useNavigation()
 
   const importWallet = useCallback(
-    async (mnemonic: string, name: string) => {
+    async (mnemonic: string, name?: string) => {
       if (!mnemonic) {
         Logger.error('Missing mnemonic for seed wallet import')
         return
