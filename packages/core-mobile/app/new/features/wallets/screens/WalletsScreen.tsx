@@ -13,7 +13,6 @@ import { RefreshControl } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
 import {
-  Account,
   selectAccounts,
   selectActiveAccount,
   setActiveAccount
@@ -48,9 +47,7 @@ export const WalletsScreen = (): JSX.Element => {
     isLoading || !balanceInaccurate ? undefined : 'Unable to load all balances'
 
   const allAccountsArray = useMemo(() => {
-    return Object.values(accountCollection).filter(
-      (account): account is Account => account !== undefined
-    )
+    return Object.values(accountCollection)
   }, [accountCollection])
 
   useMemo(() => {
