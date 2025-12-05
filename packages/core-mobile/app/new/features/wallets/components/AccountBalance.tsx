@@ -11,6 +11,7 @@ import {
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
 import { useBalanceInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
 import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalanceAccurate'
 import { useIsPollingBalancesForAccount } from 'features/portfolio/hooks/useIsPollingBalancesForAccount'
@@ -34,8 +35,8 @@ export const AccountBalance = ({
     theme: { colors, isDark }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
+  const { refetch } = useAccountBalances(account)
   const { balance: accountBalance } = useBalanceInCurrencyForAccount(account.id)
-
   const isBalanceAccurate = useIsAccountBalanceAccurate(account)
   const isLoadingBalance = useIsPollingBalancesForAccount(account)
 
@@ -46,11 +47,6 @@ export const AccountBalance = ({
       setHasLoaded(true)
     }
   }, [isLoadingBalance])
-
-  const refetchBalance = useCallback(() => {
-    // TODO: implement refetch balance
-    // dispatch(refetchBalanceForAccount(account.id))
-  }, [])
 
   const balance = useMemo(() => {
     return accountBalance === 0
@@ -103,7 +99,7 @@ export const AccountBalance = ({
         gap: 6
       }}>
       {!accountBalance ? null : !isBalanceAccurate ? (
-        <Pressable hitSlop={16} onPress={refetchBalance}>
+        <Pressable hitSlop={16} onPress={refetch}>
           <Icons.Alert.Error
             color={colors.$textDanger}
             width={14}

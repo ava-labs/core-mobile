@@ -2,6 +2,7 @@ import {
   ActivityIndicator,
   alpha,
   AnimatedBalance,
+  LoadingContent,
   SxProp,
   useTheme
 } from '@avalabs/k2-alpine'
@@ -10,8 +11,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useBalanceTotalInCurrencyForWallet } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForWallet'
 import { useIsPollingBalancesForWallet } from 'features/portfolio/hooks/useIsPollingBalancesForWallet'
-import { useWalletBalances } from 'features/portfolio/hooks/useWalletBalances'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { useSelector } from 'react-redux'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
@@ -34,6 +34,14 @@ export const WalletBalance = ({
   const isLoadingBalance = useIsPollingBalancesForWallet(wallet)
   const walletBalance = useBalanceTotalInCurrencyForWallet(wallet)
 
+  const [hasLoaded, setHasLoaded] = useState(false)
+
+  useEffect(() => {
+    if (!isLoadingBalance) {
+      setHasLoaded(true)
+    }
+  }, [isLoadingBalance])
+
   const balance = useMemo(() => {
     return walletBalance > 0
       ? formatCurrency({
@@ -55,7 +63,7 @@ export const WalletBalance = ({
     )
   }, [colors.$textPrimary])
 
-  if (isLoadingBalance) {
+  if (!hasLoaded && isLoadingBalance) {
     if (variant === 'skeleton') {
       return (
         <ContentLoader
@@ -73,17 +81,23 @@ export const WalletBalance = ({
   }
 
   return (
-    <AnimatedBalance
-      variant="heading4"
-      balance={balance}
-      shouldMask={isPrivacyModeEnabled}
-      balanceSx={{
-        ...balanceSx,
-        lineHeight: 21,
-        fontSize: 21,
-        textAlign: 'right'
-      }}
-      renderMaskView={renderMaskView}
-    />
+    <LoadingContent
+      hideSpinner={hasLoaded}
+      minOpacity={0.2}
+      maxOpacity={1}
+      isLoading={hasLoaded && isLoadingBalance}>
+      <AnimatedBalance
+        variant="heading4"
+        balance={balance}
+        shouldMask={isPrivacyModeEnabled}
+        balanceSx={{
+          ...balanceSx,
+          lineHeight: 21,
+          fontSize: 21,
+          textAlign: 'right'
+        }}
+        renderMaskView={renderMaskView}
+      />
+    </LoadingContent>
   )
 }
