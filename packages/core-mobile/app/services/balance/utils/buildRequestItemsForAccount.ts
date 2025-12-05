@@ -39,6 +39,7 @@ export const buildRequestItemsForAccount = (
   // eslint-disable-next-line sonarjs/cognitive-complexity
 ): GetBalancesRequestBody['data'] => {
   const accountId = account.id
+  const accountXpAddresses = getAccountXpAddresses(account)
 
   // Namespace buckets
   let evmBucket: EvmGetBalancesRequestItem | undefined
@@ -56,6 +57,9 @@ export const buildRequestItemsForAccount = (
   // --- Fill buckets -----------------------------------------------------------
   for (const network of networks) {
     const address = getAddressByNetwork(account, network)
+    if (!address) {
+      continue
+    }
 
     switch (network.vmName) {
       case NetworkVMType.EVM: {
@@ -117,7 +121,7 @@ export const buildRequestItemsForAccount = (
         avaxXpBucket.references = uniq([...avaxXpBucket.references, ref])
         avaxXpBucket.addresses = uniq([
           ...avaxXpBucket.addresses,
-          stripAddressPrefix(address)
+          ...accountXpAddresses
         ])
         break
       }
@@ -130,7 +134,7 @@ export const buildRequestItemsForAccount = (
         avaxXpBucket.references = uniq([...avaxXpBucket.references, ref])
         avaxXpBucket.addresses = uniq([
           ...avaxXpBucket.addresses,
-          stripAddressPrefix(address)
+          ...accountXpAddresses
         ])
         break
       }
@@ -162,4 +166,19 @@ export const buildRequestItemsForAccount = (
   }
 
   return requestItems
+}
+
+const getAccountXpAddresses = (account: Account): string[] => {
+  const derivedXpAddresses =
+    account.xpAddresses?.map(({ address }) => stripAddressPrefix(address)) ?? []
+
+  if (derivedXpAddresses.length > 0) {
+    return uniq(derivedXpAddresses)
+  }
+
+  const fallback = [account.addressAVM, account.addressPVM]
+    .filter((addr): addr is string => Boolean(addr))
+    .map(stripAddressPrefix)
+
+  return uniq(fallback)
 }
