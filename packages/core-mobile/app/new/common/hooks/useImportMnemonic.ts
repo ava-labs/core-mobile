@@ -10,7 +10,7 @@ import Logger from 'utils/Logger'
 
 export const useImportMnemonic = (): {
   isImporting: boolean
-  importWallet: (mnemonic: string, name: string) => Promise<void>
+  importWallet: (mnemonic: string, name?: string) => Promise<void>
 } => {
   const dispatch = useDispatch<AppThunkDispatch>()
   const { canGoBack } = useRouter()
