@@ -1,27 +1,16 @@
+import { truncateAddress } from '@avalabs/core-utils-sdk'
 import {
-  Button,
-  showAlert,
-  View,
-  Text,
-  useTheme,
-  ActivityIndicator
-} from '@avalabs/k2-alpine'
+  DerivationPath,
+  getWalletFromMnemonic
+} from '@avalabs/core-wallets-sdk'
+import { Button, Text, useTheme, View } from '@avalabs/k2-alpine'
 import * as bip39 from 'bip39'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import React, { useCallback, useState, useEffect } from 'react'
-import RecoveryPhraseInput from 'new/features/onboarding/components/RecoveryPhraseInput'
-import Logger from 'utils/Logger'
-import {
-  getWalletFromMnemonic,
-  DerivationPath
-} from '@avalabs/core-wallets-sdk'
-import { truncateAddress } from '@avalabs/core-utils-sdk'
-import { useRouter } from 'expo-router'
-import { useImportMnemonic } from 'new/common/hooks/useImportMnemonic'
-import { useActiveWallet } from 'common/hooks/useActiveWallet'
-import KeychainMigrator, { MigrationStatus } from 'utils/KeychainMigrator'
-import { MINIMUM_MNEMONIC_WORDS } from 'common/consts'
 import { useCheckIfAccountExists } from 'common/hooks/useCheckIfAccountExists'
+import { useRouter } from 'expo-router'
+import RecoveryPhraseInput from 'new/features/onboarding/components/RecoveryPhraseInput'
+import React, { useCallback, useEffect, useState } from 'react'
+import Logger from 'utils/Logger'
 
 interface DerivedAddressItem {
   address: string
@@ -32,14 +21,12 @@ const ImportSeedWallet = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const router = useRouter()
+  const { navigate } = useRouter()
   const [mnemonic, setMnemonic] = useState('')
   const [derivedAddresses, setDerivedAddresses] = useState<
     DerivedAddressItem[]
   >([])
-  const { isImporting, importWallet } = useImportMnemonic()
-  const [isCheckingMigration, setIsCheckingMigration] = useState(false)
-  const activeWallet = useActiveWallet()
+
   const checkIfAccountExists = useCheckIfAccountExists()
   const [errorMessage, setErrorMessage] = useState<string>()
 
@@ -79,51 +66,17 @@ const ImportSeedWallet = (): React.JSX.Element => {
     }
   }, [mnemonic, checkIfAccountExists])
 
-  const handleImport = useCallback(async () => {
-    const trimmedMnemonic = mnemonic.toLowerCase().trim()
-    const isValid = bip39.validateMnemonic(trimmedMnemonic)
-
-    if (!isValid) {
-      showAlert({
-        title: 'Invalid phrase',
-        description:
-          'The recovery phrase you entered is invalid. Please double check for spelling mistakes or the order of each word.',
-        buttons: [
-          {
-            text: 'Dismiss',
-            style: 'destructive'
-          }
-        ]
-      })
-      return
-    }
-
-    setIsCheckingMigration(true)
-    const migrator = new KeychainMigrator(activeWallet.id)
-    const migrationStatus = await migrator.getMigrationStatus('PIN')
-    setIsCheckingMigration(false)
-
-    if (migrationStatus !== MigrationStatus.NoMigrationNeeded) {
-      router.navigate({
-        // @ts-ignore TODO: make routes typesafe
-        pathname: '/accountSettings/verifyPin',
-        params: {
-          walletSecretToImport: trimmedMnemonic
-        }
-      })
-    } else {
-      await importWallet(trimmedMnemonic)
-    }
-  }, [mnemonic, router, importWallet, activeWallet.id])
+  const onNextPress = useCallback(() => {
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/accountSettings/importSeedWallet/setWalletName',
+      params: {
+        mnemonic
+      }
+    })
+  }, [mnemonic, navigate])
 
   const renderFooter = useCallback(() => {
-    const disabled =
-      !mnemonic ||
-      mnemonic.trim().split(/\s+/).length < MINIMUM_MNEMONIC_WORDS ||
-      isImporting ||
-      isCheckingMigration ||
-      errorMessage !== undefined
-
     return (
       <View
         sx={{
@@ -134,13 +87,13 @@ const ImportSeedWallet = (): React.JSX.Element => {
           testID="import_wallet"
           size="large"
           type="primary"
-          onPress={handleImport}
-          disabled={disabled}>
-          {isImporting ? <ActivityIndicator size="small" /> : 'Import'}
+          onPress={onNextPress}>
+          Next
+          {/* {isImporting ? <ActivityIndicator size="small" /> : 'Import'} */}
         </Button>
       </View>
     )
-  }, [handleImport, mnemonic, isImporting, isCheckingMigration, errorMessage])
+  }, [onNextPress])
 
   return (
     <ScrollScreen

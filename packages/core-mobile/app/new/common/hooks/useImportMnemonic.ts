@@ -10,7 +10,7 @@ import Logger from 'utils/Logger'
 
 export const useImportMnemonic = (): {
   isImporting: boolean
-  importWallet: (mnemonic: string) => Promise<void>
+  importWallet: (mnemonic: string, name: string) => Promise<void>
 } => {
   const dispatch = useDispatch<AppThunkDispatch>()
   const { canGoBack } = useRouter()
@@ -18,7 +18,7 @@ export const useImportMnemonic = (): {
   const navigation = useNavigation()
 
   const importWallet = useCallback(
-    async (mnemonic: string) => {
+    async (mnemonic: string, name: string) => {
       if (!mnemonic) {
         Logger.error('Missing mnemonic for seed wallet import')
         return
@@ -28,7 +28,8 @@ export const useImportMnemonic = (): {
       try {
         await dispatch(
           importMnemonicWalletAndAccount({
-            mnemonic
+            mnemonic,
+            name
           })
         ).unwrap()
 

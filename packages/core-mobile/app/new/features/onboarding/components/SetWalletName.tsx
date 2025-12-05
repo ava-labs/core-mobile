@@ -6,10 +6,16 @@ import React, { useCallback, useState } from 'react'
 
 export const SetWalletName = ({
   name,
+  parentIsLoading,
+  disabled,
   setName,
-  onNext
+  onNext,
+  buttonText = 'Next'
 }: {
   name: string
+  parentIsLoading: boolean
+  disabled: boolean
+  buttonText: string
   setName: (value: string) => void
   onNext: () => void
 }): React.JSX.Element => {
@@ -34,12 +40,21 @@ export const SetWalletName = ({
         size="large"
         type="primary"
         onPress={handleNext}
-        testID={isLoading ? undefined : 'name_wallet_next_btn'}
-        disabled={name.length === 0 || isLoading}>
-        {isLoading ? <ActivityIndicator /> : 'Next'}
+        testID={
+          parentIsLoading || isLoading ? undefined : 'name_wallet_next_btn'
+        }
+        disabled={disabled || name.length === 0 || isLoading}>
+        {parentIsLoading || isLoading ? <ActivityIndicator /> : buttonText}
       </Button>
     )
-  }, [name, handleNext, isLoading])
+  }, [
+    handleNext,
+    isLoading,
+    disabled,
+    name.length,
+    parentIsLoading,
+    buttonText
+  ])
 
   return (
     <ScrollScreen
