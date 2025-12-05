@@ -24,6 +24,7 @@ export const BalanceHeader = ({
   isLoadingBalances,
   isPrivacyModeEnabled = false,
   isDeveloperModeEnabled = false,
+  hideExpand = false,
   renderMaskView,
   testID,
   onErrorPress
@@ -41,6 +42,7 @@ export const BalanceHeader = ({
   isPrivacyModeEnabled?: boolean
   isDeveloperModeEnabled?: boolean
   testID?: string
+  hideExpand?: boolean
   onErrorPress?: () => void
   renderMaskView?: () => React.JSX.Element
 }): React.JSX.Element => {
@@ -209,7 +211,9 @@ export const BalanceHeader = ({
               numberOfLines={1}>
               {accountName}
             </Text>
-            <Icons.Navigation.ExpandAll color={colors.$textSecondary} />
+            {!hideExpand && (
+              <Icons.Navigation.ExpandAll color={colors.$textSecondary} />
+            )}
           </View>
         )}
       </View>
