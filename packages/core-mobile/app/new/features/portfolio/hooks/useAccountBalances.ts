@@ -1,12 +1,12 @@
-import { useCallback, useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import BalanceService from 'services/balance/BalanceService'
-import { useSelector } from 'react-redux'
-import { selectEnabledNetworks } from 'store/network/slice'
-import { Account } from 'store/account/types'
-import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { useCallback, useMemo } from 'react'
+import { useSelector } from 'react-redux'
+import BalanceService from 'services/balance/BalanceService'
 import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
+import { Account } from 'store/account/types'
+import { selectEnabledNetworks } from 'store/network/slice'
+import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import * as store from '../store'
 
 /**
@@ -51,7 +51,6 @@ export function useAccountBalances(
   const {
     data,
     isFetching,
-    error,
     refetch: refetchFn
   } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
@@ -98,13 +97,12 @@ export function useAccountBalances(
     // - no data, OR
     // - fewer results than enabled networks
     return (
-      !!error ||
       !account ||
       !data ||
       data.length === 0 ||
       data.length < enabledNetworks.length
     )
-  }, [account, data, enabledNetworks.length, error])
+  }, [account, data, enabledNetworks.length])
 
   return {
     data: data ?? [],
