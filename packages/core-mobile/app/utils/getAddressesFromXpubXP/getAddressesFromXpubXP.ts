@@ -42,7 +42,7 @@ const convertNetworkAddressesToDictionary = (
   const dictionary: XPAddressDictionary = {} as XPAddressDictionary
 
   response.externalAddresses.forEach((addressItem: ExternalAddress) => {
-    dictionary[xpAddressWithoutPrefix(addressItem.address)] = {
+    dictionary[stripAddressPrefix(addressItem.address)] = {
       space: 'e',
       index: addressItem.index,
       hasActivity: addressItem.hasActivity
@@ -50,7 +50,7 @@ const convertNetworkAddressesToDictionary = (
   })
 
   response.internalAddresses.forEach((addressItem: InternalAddress) => {
-    dictionary[xpAddressWithoutPrefix(addressItem.address)] = {
+    dictionary[stripAddressPrefix(addressItem.address)] = {
       space: 'i',
       index: addressItem.index,
       hasActivity: addressItem.hasActivity
@@ -69,6 +69,7 @@ const mergeProfileResponses = (
     ...convertNetworkAddressesToDictionary(pvmAddresses)
   }
 }
+
 const buildSeedlessXpDictionary = async ({
   accountIndex,
   isTestnet
@@ -106,7 +107,7 @@ const buildSeedlessXpDictionary = async ({
       'X'
     )
 
-    dictionary[xpAddressWithoutPrefix(bech32Address)] = {
+    dictionary[stripAddressPrefix(bech32Address)] = {
       space: derivation.space,
       index: derivation.index,
       hasActivity: false

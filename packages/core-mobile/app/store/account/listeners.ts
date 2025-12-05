@@ -1,5 +1,4 @@
 import AccountsService from 'services/account/AccountsService'
-import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import {
   AddressIndex,
   getAddressesFromXpubXP
@@ -301,15 +300,6 @@ const migrateXpAddressesIfNeeded = async (
       continue
     }
 
-    if (wallet.type === WalletType.SEEDLESS) {
-      await migrateSeedlessWalletXpAddresses({
-        listenerApi,
-        wallet,
-        isDeveloperMode
-      })
-      continue
-    }
-
     const accounts = selectAccountsByWalletId(state, wallet.id)
     const walletErrored = await populateXpAddressesForWallet({
       wallet,
@@ -317,93 +307,19 @@ const migrateXpAddressesIfNeeded = async (
       isDeveloperMode,
       updatedAccounts
     })
+
+    await deriveMissingSeedlessSessionKeys(wallet.id)
+
     if (walletErrored) {
       encounteredError = true
     }
   }
 
-  if (Object.keys(updatedAccounts).length > 0) {
-    listenerApi.dispatch(setAccounts(updatedAccounts))
-    Logger.info('✅ XP address migration updates applied')
-  } else {
-    Logger.info('No XP address updates needed for any accounts')
-  }
+  reloadAccounts(_action, listenerApi)
 
   if (!encounteredError) {
     markXpAddressMigrationComplete()
   }
-}
-
-const migrateSeedlessWalletXpAddresses = async ({
-  listenerApi,
-  wallet,
-  isDeveloperMode
-}: {
-  listenerApi: AppListenerEffectAPI
-  wallet: StoreWallet
-  isDeveloperMode: boolean
-}): Promise<void> => {
-  const state = listenerApi.getState()
-  const accounts = selectAccountsByWalletId(state, wallet.id)
-  if (!accounts.length) {
-    return
-  }
-
-  const accountsToUpdate: AccountCollection = {}
-  for (const account of accounts) {
-    if (account.index === 0) {
-      continue
-    }
-
-    if (account.addressAVM !== undefined || account.addressPVM !== undefined) {
-      accountsToUpdate[account.id] = {
-        ...account,
-        addressAVM: undefined,
-        addressPVM: undefined
-      }
-    }
-  }
-
-  if (Object.keys(accountsToUpdate).length > 0) {
-    listenerApi.dispatch(setAccounts(accountsToUpdate))
-  }
-
-  await deriveMissingSeedlessSessionKeys(wallet.id)
-  await reloadSeedlessWalletAccounts({
-    listenerApi,
-    wallet,
-    isDeveloperMode
-  })
-}
-
-const reloadSeedlessWalletAccounts = async ({
-  listenerApi,
-  wallet,
-  isDeveloperMode
-}: {
-  listenerApi: AppListenerEffectAPI
-  wallet: StoreWallet
-  isDeveloperMode: boolean
-}): Promise<void> => {
-  const latestState = listenerApi.getState()
-  const accounts = selectAccountsByWalletId(latestState, wallet.id)
-  if (!accounts.length) {
-    return
-  }
-
-  const accountsCollection: AccountCollection = {}
-  for (const account of accounts) {
-    accountsCollection[account.id] = account
-  }
-
-  const reloadedAccounts = await AccountsService.reloadAccounts({
-    accounts: accountsCollection,
-    isTestnet: isDeveloperMode,
-    walletId: wallet.id,
-    walletType: wallet.type
-  })
-
-  listenerApi.dispatch(setAccounts(reloadedAccounts))
 }
 
 const populateXpAddressesForWallet = async ({
@@ -420,7 +336,8 @@ const populateXpAddressesForWallet = async ({
   const restrictToFirstIndex = [
     WalletType.KEYSTONE,
     WalletType.LEDGER,
-    WalletType.LEDGER_LIVE
+    WalletType.LEDGER_LIVE,
+    WalletType.SEEDLESS
   ].includes(wallet.type)
 
   let encounteredError = false
@@ -449,15 +366,6 @@ const populateXpAddressesForWallet = async ({
 
     try {
       Logger.info(`Deriving XP addresses for account ${account.index}...`)
-      const addresses = await AccountsService.getAddresses({
-        walletId: wallet.id,
-        walletType: wallet.type,
-        accountIndex: account.index,
-        isTestnet: isDeveloperMode
-      })
-
-      const newAVM = addresses[NetworkVMType.AVM]
-      const newPVM = addresses[NetworkVMType.PVM]
 
       const { xpAddresses, xpAddressDictionary } = await getAddressesFromXpubXP(
         {
@@ -471,8 +379,6 @@ const populateXpAddressesForWallet = async ({
 
       updatedAccounts[account.id] = {
         ...account,
-        addressAVM: newAVM,
-        addressPVM: newPVM,
         xpAddresses: xpAddresses as Account['xpAddresses'],
         xpAddressDictionary:
           xpAddressDictionary as Account['xpAddressDictionary']
