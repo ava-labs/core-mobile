@@ -274,7 +274,7 @@ export const WalletsScreen = (): JSX.Element => {
           showMoreButton={item.id !== IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID}
           style={{
             marginHorizontal: 16,
-            marginBottom: 10,
+            marginVertical: 5,
             backgroundColor: colors.$surfacePrimary,
             borderColor: colors.$borderPrimary,
             borderWidth: 1

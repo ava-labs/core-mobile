@@ -23,7 +23,7 @@ const balanceApi = {
   ): AsyncGenerator<GetBalancesResponse> {
     const appCheckToken = await AppCheckService.getToken()
 
-    const res = await expoFetch(`${BALANCE_URL}/v1/balance/get-balancesss`, {
+    const res = await expoFetch(`${BALANCE_URL}/v1/balance/get-balances`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -11,7 +11,6 @@ export function useIsUserBalanceInaccurate(): boolean {
 
   return useMemo(() => {
     if (accountsArray.length === 0) return true
-    if (!data) return true
 
     // Check if any account has any balance with dataAccurate === false
     return accountsArray.some(account => {
