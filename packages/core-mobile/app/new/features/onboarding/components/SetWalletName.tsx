@@ -13,9 +13,9 @@ export const SetWalletName = ({
   buttonText = 'Next'
 }: {
   name: string
-  parentIsLoading: boolean
-  disabled: boolean
-  buttonText: string
+  disabled?: boolean
+  parentIsLoading?: boolean
+  buttonText?: string
   setName: (value: string) => void
   onNext: () => void
 }): React.JSX.Element => {
