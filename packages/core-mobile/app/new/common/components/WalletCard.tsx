@@ -110,7 +110,7 @@ const WalletCard = ({
   const animatedContentStyle = useAnimatedStyle(() => {
     return {
       minHeight: withTiming(
-        isExpanded ? contentHeight + HEADER_HEIGHT * 2 : HEADER_HEIGHT,
+        isExpanded ? contentHeight + HEADER_HEIGHT : HEADER_HEIGHT,
         ANIMATED.TIMING_CONFIG
       )
     }
@@ -128,6 +128,7 @@ const WalletCard = ({
         style
       ]}>
       <View
+        onLayout={onContentLayout}
         sx={{
           paddingHorizontal: 10,
           gap: 10,
@@ -139,11 +140,15 @@ const WalletCard = ({
         }}>
         <FlatList
           data={wallet.accounts}
-          onLayout={onContentLayout}
           renderItem={renderAccountItem}
           keyExtractor={item => item.account.id}
           ListEmptyComponent={renderEmpty}
           scrollEnabled={false}
+          style={{
+            // Add 1px padding to the top of the list
+            //  to prevent if the first account is active the background color from being visible
+            paddingTop: 1
+          }}
         />
         {wallet.type !== WalletType.PRIVATE_KEY ? (
           <Button
