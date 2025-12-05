@@ -6,7 +6,6 @@ import NavigationBarButton from 'common/components/NavigationBarButton'
 import WalletCard from 'common/components/WalletCard'
 import { WalletDisplayData } from 'common/types'
 import { useRouter } from 'expo-router'
-import { useRecentAccounts } from 'features/accountSettings/store'
 import { useIsUserBalanceInaccurate } from 'features/portfolio/hooks/useIsUserBalanceInaccurate'
 import { useUserBalances } from 'features/portfolio/hooks/useUserBalances'
 import React, { useCallback, useMemo, useState } from 'react'
@@ -33,7 +32,6 @@ export const WalletsScreen = (): JSX.Element => {
   const headerHeight = useHeaderHeight()
   const dispatch = useDispatch()
   const { navigate, dismiss } = useRouter()
-  const { recentAccountIds } = useRecentAccounts()
   const accountCollection = useSelector(selectAccounts)
   const allWallets = useSelector(selectWallets)
   const activeAccount = useSelector(selectActiveAccount)
@@ -50,19 +48,10 @@ export const WalletsScreen = (): JSX.Element => {
     isLoading || !balanceInaccurate ? undefined : 'Unable to load all balances'
 
   const allAccountsArray = useMemo(() => {
-    const allAccounts = Object.values(accountCollection).filter(
+    return Object.values(accountCollection).filter(
       (account): account is Account => account !== undefined
     )
-
-    return allAccounts.sort((a, b) => {
-      const indexA = recentAccountIds.indexOf(a.id)
-      const indexB = recentAccountIds.indexOf(b.id)
-
-      if (indexA !== -1 && indexB !== -1) return indexA - indexB
-
-      return 0
-    })
-  }, [accountCollection, recentAccountIds])
+  }, [accountCollection])
 
   useMemo(() => {
     const initialExpansionState: Record<string, boolean> = {}
@@ -155,14 +144,9 @@ export const WalletsScreen = (): JSX.Element => {
 
   const importedWalletsDisplayData = useMemo(() => {
     // Get all accounts from private key wallets
-    const allPrivateKeyAccounts = importedWallets
-      .flatMap(wallet =>
-        allAccountsArray.filter(account => account.walletId === wallet.id)
-      )
-      .sort(
-        (a, b) =>
-          recentAccountIds.indexOf(a.id) - recentAccountIds.indexOf(b.id)
-      )
+    const allPrivateKeyAccounts = importedWallets.flatMap(wallet =>
+      allAccountsArray.filter(account => account.walletId === wallet.id)
+    )
 
     if (allPrivateKeyAccounts.length === 0) {
       return null
@@ -200,7 +184,6 @@ export const WalletsScreen = (): JSX.Element => {
   }, [
     importedWallets,
     allAccountsArray,
-    recentAccountIds,
     activeAccount?.id,
     handleSetActiveAccount,
     gotoAccountDetails
