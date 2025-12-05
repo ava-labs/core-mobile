@@ -128,7 +128,10 @@ export const AccountBalance = ({
         hideSpinner={hasLoaded}
         minOpacity={0.2}
         maxOpacity={1}
-        isLoading={hasLoaded && isLoadingBalance}>
+        isLoading={
+          (!hasLoaded && isLoadingBalance) ||
+          (hasLoaded && isLoadingBalance && !isBalanceAccurate)
+        }>
         <AnimatedBalance
           variant="body1"
           balance={balance}
