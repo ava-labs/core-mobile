@@ -22,7 +22,8 @@ const mockAccount: CorePrimaryAccount = {
   addressBTC: 'BTCAddress',
   addressC: 'CAddress',
   addressCoreEth: 'CoreEthAddress',
-  addressSVM: 'SVMAddress'
+  addressSVM: 'SVMAddress',
+  xpAddresses: []
 }
 
 describe('getCaip2ChainId', () => {

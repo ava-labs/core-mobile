@@ -1,5 +1,9 @@
 import AccountsService from 'services/account/AccountsService'
 import {
+  AddressIndex,
+  getAddressesFromXpubXP
+} from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
+import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
@@ -17,6 +21,7 @@ import {
   selectWallets,
   setWalletName
 } from 'store/wallet/slice'
+import { Wallet as StoreWallet } from 'store/wallet/types'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
@@ -29,12 +34,14 @@ import {
   selectAccountsByWalletId,
   selectActiveAccount
 } from './slice'
-import { AccountCollection } from './types'
+import { AccountCollection, Account, XPAddressDictionary } from './types'
 import {
   canMigrateActiveAccounts,
   deriveMissingSeedlessSessionKeys,
   migrateRemainingActiveAccounts,
-  shouldMigrateActiveAccounts
+  shouldMigrateActiveAccounts,
+  hasCompletedXpAddressMigration,
+  markXpAddressMigrationComplete
 } from './utils'
 
 const initAccounts = async (
@@ -264,6 +271,130 @@ const handleInitAccountsIfNeeded = async (
   migrateActiveAccountsIfNeeded(_action, listenerApi)
 }
 
+const migrateXpAddressesIfNeeded = async (
+  _action: AnyAction,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  if (hasCompletedXpAddressMigration()) {
+    Logger.info('XP address migration already completed. Skipping.')
+    return
+  }
+
+  const state = listenerApi.getState()
+  Logger.info('Migrating XP addresses if needed')
+
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const wallets = selectWallets(state)
+  const updatedAccounts: AccountCollection = {}
+  let encounteredError = false
+
+  Logger.info('Wallets', wallets)
+
+  for (const wallet of Object.values(wallets)) {
+    Logger.info('Wallet', wallet)
+
+    if (WalletType.PRIVATE_KEY.includes(wallet.type)) {
+      Logger.info(
+        `Skipping XP address derivation for private key wallet of type ${wallet.type}`
+      )
+      continue
+    }
+
+    const accounts = selectAccountsByWalletId(state, wallet.id)
+    const walletErrored = await populateXpAddressesForWallet({
+      wallet,
+      accounts,
+      isDeveloperMode,
+      updatedAccounts
+    })
+
+    await deriveMissingSeedlessSessionKeys(wallet.id)
+
+    if (walletErrored) {
+      encounteredError = true
+    }
+  }
+
+  reloadAccounts(_action, listenerApi)
+
+  if (!encounteredError) {
+    markXpAddressMigrationComplete()
+  }
+}
+
+const populateXpAddressesForWallet = async ({
+  wallet,
+  accounts,
+  isDeveloperMode,
+  updatedAccounts
+}: {
+  wallet: StoreWallet
+  accounts: Account[]
+  isDeveloperMode: boolean
+  updatedAccounts: AccountCollection
+}): Promise<boolean> => {
+  const restrictToFirstIndex = [
+    WalletType.KEYSTONE,
+    WalletType.LEDGER,
+    WalletType.LEDGER_LIVE,
+    WalletType.SEEDLESS
+  ].includes(wallet.type)
+
+  let encounteredError = false
+
+  for (const account of accounts) {
+    Logger.info(
+      `Processing account ${account.index} (${account.id}) for wallet ${wallet.type}`
+    )
+    Logger.info(
+      `Current addresses - AVM: ${account.addressAVM}, PVM: ${account.addressPVM}`
+    )
+
+    if (restrictToFirstIndex && account.index !== 0) {
+      Logger.info(
+        `Skipping hardware wallet account ${account.index} until device connection`
+      )
+      updatedAccounts[account.id] = {
+        ...account,
+        addressAVM: undefined,
+        addressPVM: undefined,
+        xpAddresses: [] as AddressIndex[],
+        xpAddressDictionary: {} as XPAddressDictionary
+      }
+      continue
+    }
+
+    try {
+      Logger.info(`Deriving XP addresses for account ${account.index}...`)
+
+      const { xpAddresses, xpAddressDictionary } = await getAddressesFromXpubXP(
+        {
+          isDeveloperMode,
+          walletId: wallet.id,
+          walletType: wallet.type,
+          accountIndex: account.index,
+          onlyWithActivity: true
+        }
+      )
+
+      updatedAccounts[account.id] = {
+        ...account,
+        xpAddresses: xpAddresses as Account['xpAddresses'],
+        xpAddressDictionary:
+          xpAddressDictionary as Account['xpAddressDictionary']
+      }
+    } catch (error) {
+      Logger.error(
+        `Failed to derive XP addresses for account ${account.index} in wallet ${wallet.id}`,
+        error
+      )
+      encounteredError = true
+    }
+  }
+
+  return encounteredError
+}
+
 export const addAccountListeners = (
   startListening: AppStartListening
 ): void => {
@@ -285,5 +416,10 @@ export const addAccountListeners = (
   startListening({
     actionCreator: onAppUnlocked,
     effect: migrateSolanaAddressesIfNeeded
+  })
+
+  startListening({
+    actionCreator: onAppUnlocked,
+    effect: migrateXpAddressesIfNeeded
   })
 }

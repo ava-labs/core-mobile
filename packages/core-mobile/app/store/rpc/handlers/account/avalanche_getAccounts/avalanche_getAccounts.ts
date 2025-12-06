@@ -34,13 +34,12 @@ class AvalancheGetAccountsHandler
     const getXpubXP = async (
       walletId: string,
       walletType: WalletType,
-      accountIndex: number
     ): Promise<string | undefined> => {
       try {
         return await WalletService.getRawXpubXP({
           walletId,
           walletType,
-          accountIndex
+          accountIndex: activeAccount.index
         })
       } catch (error) {
         return undefined

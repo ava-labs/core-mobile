@@ -109,7 +109,8 @@ describe('validate evm send', () => {
       logoSmall: 'logoSmall',
       logoUri: 'logoUri',
       collectionName: 'collectionName',
-      description: 'description'
+      description: 'description',
+      chainId: 1
     }
 
     beforeEach(() => {
@@ -145,7 +146,8 @@ describe('validate evm send', () => {
       logoSmall: 'logoSmall',
       logoUri: 'logoUri',
       collectionName: 'collectionName',
-      description: 'description'
+      description: 'description',
+      chainId: 1
     }
 
     beforeEach(() => {
