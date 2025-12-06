@@ -21,15 +21,10 @@ import {
   TypedDataV1
 } from '@avalabs/vm-module-types'
 import { SpanName } from 'services/sentry/types'
-import { AVALANCHE_DERIVATION_PATH_PREFIX, Curve } from 'utils/publicKeys'
-import fetchWithAppCheck from 'utils/httpClient'
-import {
-  AVALANCHE_MAINNET_NETWORK,
-  AVALANCHE_TESTNET_NETWORK
-} from 'services/network/consts'
-import ModuleManager from 'vmModule/ModuleManager'
-import { Network as VmNetwork } from '@avalabs/vm-module-types'
-import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
+import { Curve } from 'utils/publicKeys'
+
+import { profileApi } from 'utils/apiClient/profile/profileApi'
+import { GetAddressesResponse } from 'utils/apiClient/profile/types'
 import {
   getAddressDerivationPath,
   isAvalancheTransactionRequest,
