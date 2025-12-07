@@ -1,7 +1,7 @@
-import { Account, AccountCollection } from 'store/account'
+import { Account, AccountCollection, XPAddressDictionary } from 'store/account'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { CoreAccountType } from '@avalabs/types'
+import { AddressIndex, CoreAccountType } from '@avalabs/types'
 import { uuid } from 'utils/uuid'
 import { WalletType } from 'services/wallet/types'
 import { isEvmPublicKey } from 'utils/publicKeys'
@@ -45,15 +45,24 @@ class AccountsService {
         isTestnet
       })
 
-      const { xpAddresses, xpAddressDictionary } = await getAddressesFromXpubXP(
-        {
+      let xpAddresses: AddressIndex[] = []
+      let xpAddressDictionary: XPAddressDictionary = {} as XPAddressDictionary
+
+      try {
+        const result = await getAddressesFromXpubXP({
           isDeveloperMode: isTestnet,
           walletId,
           walletType,
           accountIndex: account.index,
           onlyWithActivity: true
-        }
-      )
+        })
+
+        xpAddresses = result.xpAddresses
+        xpAddressDictionary = result.xpAddressDictionary
+      } catch (error) {
+        Logger.error('Error getting XP addresses', error)
+        continue
+      }
 
       const title =
         walletType === WalletType.SEEDLESS
@@ -150,13 +159,23 @@ class AccountsService {
       isTestnet
     })
 
-    const { xpAddresses, xpAddressDictionary } = await getAddressesFromXpubXP({
-      isDeveloperMode: isTestnet,
-      walletId,
-      walletType,
-      accountIndex: index,
-      onlyWithActivity: true
-    })
+    let xpAddresses: AddressIndex[] = []
+    let xpAddressDictionary: XPAddressDictionary = {} as XPAddressDictionary
+
+    try {
+      const result = await getAddressesFromXpubXP({
+        isDeveloperMode: isTestnet,
+        walletId,
+        walletType,
+        accountIndex: index,
+        onlyWithActivity: true
+      })
+
+      xpAddresses = result.xpAddresses
+      xpAddressDictionary = result.xpAddressDictionary
+    } catch (error) {
+      Logger.error('Error getting XP addresses', error)
+    }
 
     Logger.info(`Final addresses for account ${index}:`, addresses)
 
