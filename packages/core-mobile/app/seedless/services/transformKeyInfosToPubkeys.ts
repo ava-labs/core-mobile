@@ -18,53 +18,60 @@ export const transformKeyInfosToPubKeys = (
 ): AddressPublicKey[] => {
   const requiredKeyTypes: cs.KeyTypeApi[] = [cs.Secp256k1.Evm, cs.Secp256k1.Ava]
   const optionalKeyTypes: cs.KeyTypeApi[] = [cs.Ed25519.Solana]
-  const allowedKeyTypes = [...requiredKeyTypes, ...optionalKeyTypes]
+  // Also include testnet Avalanche addresses
+  const testnetKeyTypes: cs.KeyTypeApi[] = ['SecpAvaTestAddr' as cs.KeyTypeApi]
+  const allowedKeyTypes = [
+    ...requiredKeyTypes,
+    ...optionalKeyTypes,
+    ...testnetKeyTypes
+  ]
 
-  const keys = keyInfos
-    ?.filter(
-      k =>
-        k.enabled &&
-        allowedKeyTypes.includes(k.key_type) &&
-        k.derivation_info?.derivation_path
-    )
-    .reduce((acc, key) => {
-      if (!key.derivation_info) {
-        return acc
-      }
+  const filteredKeys = keyInfos?.filter(
+    k =>
+      k.enabled &&
+      allowedKeyTypes.includes(k.key_type) &&
+      k.derivation_info?.derivation_path
+  )
 
-      const index =
-        key.key_type === cs.Ed25519.Solana
-          ? parseInt(
-              key.derivation_info.derivation_path.split('/').at(-2) as string
-            )
-          : Number(key.derivation_info.derivation_path.split('/').pop())
-      if (index === undefined) {
-        return acc
-      }
-
-      const mnemonicId = key.derivation_info.mnemonic_id
-      acc[mnemonicId] = [...(acc[mnemonicId] ?? [])]
-      const mnemonicBlock = acc[mnemonicId]
-
-      mnemonicBlock[index] = mnemonicBlock[index] ?? createAccountKeySet()
-      const accountKeySet = mnemonicBlock[index]
-
-      switch (key.key_type) {
-        case cs.Secp256k1.Evm:
-          accountKeySet.evm = key
-          break
-        case cs.Secp256k1.Ava:
-          accountKeySet.ava = [...accountKeySet.ava, key]
-          break
-        case cs.Ed25519.Solana:
-          accountKeySet.solana = key
-          break
-        default:
-          break
-      }
-
+  const keys = filteredKeys.reduce((acc, key) => {
+    if (!key.derivation_info) {
       return acc
-    }, {} as Record<string, AccountKeySet[]>)
+    }
+
+    const index =
+      key.key_type === cs.Ed25519.Solana
+        ? parseInt(
+            key.derivation_info.derivation_path.split('/').at(-2) as string
+          )
+        : Number(key.derivation_info.derivation_path.split('/').pop())
+    if (index === undefined) {
+      return acc
+    }
+
+    const mnemonicId = key.derivation_info.mnemonic_id
+    acc[mnemonicId] = [...(acc[mnemonicId] ?? [])]
+    const mnemonicBlock = acc[mnemonicId]
+
+    mnemonicBlock[index] = mnemonicBlock[index] ?? createAccountKeySet()
+    const accountKeySet = mnemonicBlock[index]
+
+    switch (key.key_type) {
+      case cs.Secp256k1.Evm:
+        accountKeySet.evm = key
+        break
+      case cs.Secp256k1.Ava:
+      case 'SecpAvaTestAddr': // Handle testnet Avalanche addresses
+        accountKeySet.ava = [...accountKeySet.ava, key]
+        break
+      case cs.Ed25519.Solana:
+        accountKeySet.solana = key
+        break
+      default:
+        break
+    }
+
+    return acc
+  }, {} as Record<string, AccountKeySet[]>)
 
   if (!keys || Object.keys(keys).length === 0) {
     throw new Error('Accounts not created')

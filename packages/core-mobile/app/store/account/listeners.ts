@@ -366,8 +366,7 @@ const populateXpAddressesForWallet = async ({
   const restrictToFirstIndex = [
     WalletType.KEYSTONE,
     WalletType.LEDGER,
-    WalletType.LEDGER_LIVE,
-    WalletType.SEEDLESS
+    WalletType.LEDGER_LIVE
   ].includes(wallet.type)
 
   for (let i = 0; i < accounts.length; i++) {
@@ -420,11 +419,14 @@ const populateXpAddressesForWallet = async ({
       // Continue with empty addresses to ensure account is still updated
     }
 
-    // For mnemonic wallets, rederive AVM and PVM addresses
+    // For mnemonic and seedless wallets, rederive AVM and PVM addresses
     let newAddressAVM = account.addressAVM
     let newAddressPVM = account.addressPVM
-    
-    if (wallet.type === WalletType.MNEMONIC) {
+
+    if (
+      wallet.type === WalletType.MNEMONIC ||
+      wallet.type === WalletType.SEEDLESS
+    ) {
       try {
         const rederived = await AccountsService.getAddresses({
           walletId: wallet.id,
@@ -432,11 +434,14 @@ const populateXpAddressesForWallet = async ({
           accountIndex: account.index,
           isTestnet: isDeveloperMode
         })
-        
+
         newAddressAVM = rederived[NetworkVMType.AVM]
         newAddressPVM = rederived[NetworkVMType.PVM]
       } catch (error) {
-        Logger.error(`Failed to rederive AVM/PVM addresses for account ${account.index}`, error)
+        Logger.error(
+          `Failed to rederive AVM/PVM addresses for account ${account.index}`,
+          error
+        )
         walletHasErrors = true
         // Continue with existing addresses if rederivation fails
       }
