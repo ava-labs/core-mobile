@@ -20,10 +20,20 @@ type AccountId = string
 const staleTime = 30_000
 
 /**
+ * Refetch interval in milliseconds:
+ * - 30 seconds in dev mode
+ * - 5 seconds in prod mode
+ */
+const refetchInterval = __DEV__ ? 30_000 : 5_000
+
+/**
  * Returns whether all balances for all accounts are inaccurate (dataAccurate === false),
  * along with loading states, data, and refetch function.
  */
-export function useAccountsBalances(accounts: Account[]): {
+export function useAccountsBalances(
+  accounts: Account[],
+  options?: { refetchInterval?: number }
+): {
   data: Record<AccountId, AdjustedNormalizedBalancesForAccount[]>
   isLoading: boolean
   isFetching: boolean
@@ -42,6 +52,7 @@ export function useAccountsBalances(accounts: Account[]): {
       queryKey: balanceKey(account),
       enabled: !isNotReady,
       staleTime,
+      refetchInterval: options?.refetchInterval ?? refetchInterval,
       queryFn: () =>
         BalanceService.getBalancesForAccount({
           networks: enabledNetworks,
@@ -49,7 +60,13 @@ export function useAccountsBalances(accounts: Account[]): {
           currency: currency.toLowerCase()
         })
     }))
-  }, [accounts, enabledNetworks, currency, isNotReady])
+  }, [
+    accounts,
+    isNotReady,
+    options?.refetchInterval,
+    enabledNetworks,
+    currency
+  ])
 
   const combine = useCallback(
     (
