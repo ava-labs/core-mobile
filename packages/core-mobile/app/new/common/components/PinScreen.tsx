@@ -218,12 +218,10 @@ export const PinScreen = ({
     } else {
       InteractionManager.runAfterInteractions(() => {
         if (Platform.OS === 'android') {
+          // On Android, use requestAnimationFrame to ensure UI is fully rendered
+          // and keyboard system is ready before focusing
           requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              setTimeout(() => {
-                focusPinInput()
-              }, 0)
-            })
+            focusPinInput()
           })
         } else {
           focusPinInput()
