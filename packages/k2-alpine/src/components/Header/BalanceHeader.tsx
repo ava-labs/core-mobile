@@ -24,6 +24,7 @@ export const BalanceHeader = ({
   isLoadingBalances,
   isPrivacyModeEnabled = false,
   isDeveloperModeEnabled = false,
+  hideExpand = false,
   renderMaskView,
   testID,
   onErrorPress
@@ -41,6 +42,7 @@ export const BalanceHeader = ({
   isPrivacyModeEnabled?: boolean
   isDeveloperModeEnabled?: boolean
   testID?: string
+  hideExpand?: boolean
   onErrorPress?: () => void
   renderMaskView?: () => React.JSX.Element
 }): React.JSX.Element => {
@@ -194,14 +196,14 @@ export const BalanceHeader = ({
             </Text>
           </View>
         )}
-        <View
-          sx={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            flex: 1,
-            gap: 4
-          }}>
-          {accountName && (
+        {accountName && (
+          <View
+            sx={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              flex: 1,
+              gap: 4
+            }}>
             <Text
               testID={`${testID}__balance_header_account_name`}
               variant="heading2"
@@ -209,11 +211,11 @@ export const BalanceHeader = ({
               numberOfLines={1}>
               {accountName}
             </Text>
-          )}
-          {walletName && (
-            <Icons.Navigation.ExpandAll color={colors.$textSecondary} />
-          )}
-        </View>
+            {!hideExpand && (
+              <Icons.Navigation.ExpandAll color={colors.$textSecondary} />
+            )}
+          </View>
+        )}
       </View>
 
       {renderBalance()}
