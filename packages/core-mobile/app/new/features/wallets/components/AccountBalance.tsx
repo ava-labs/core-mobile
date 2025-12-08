@@ -3,6 +3,7 @@ import {
   alpha,
   AnimatedBalance,
   Icons,
+  LoadingContent,
   Pressable,
   useTheme,
   View
@@ -10,9 +11,10 @@ import {
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
 import { useBalanceInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
-import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalanceAccurate'
-import React, { useCallback, useMemo } from 'react'
+import { useIsAccountsBalanceAccurate } from 'features/portfolio/hooks/useIsAccountsBalancesAccurate'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { useSelector } from 'react-redux'
 import { Account } from 'store/account'
@@ -31,16 +33,18 @@ export const AccountBalance = ({
   const {
     theme: { colors, isDark }
   } = useTheme()
-  const { balance: accountBalance, isLoadingBalance } =
-    useBalanceInCurrencyForAccount(account.id)
-
-  const isBalanceAccurate = useIsAccountBalanceAccurate(account)
   const { formatCurrency } = useFormatCurrency()
+  const { refetch, isFetching } = useAccountBalances(account)
+  const { balance: accountBalance } = useBalanceInCurrencyForAccount(account.id)
+  const isBalanceAccurate = useIsAccountsBalanceAccurate([account])
 
-  const refetchBalance = useCallback(() => {
-    // TODO: implement refetch balance
-    // dispatch(refetchBalanceForAccount(account.id))
-  }, [])
+  const [hasLoaded, setHasLoaded] = useState(false)
+
+  useEffect(() => {
+    if (!isFetching) {
+      setHasLoaded(true)
+    }
+  }, [isFetching])
 
   const balance = useMemo(() => {
     return accountBalance === 0
@@ -65,7 +69,32 @@ export const AccountBalance = ({
     )
   }, [colors.$textPrimary, isActive])
 
-  if (isLoadingBalance) {
+  const renderError = useCallback(() => {
+    if (isFetching) return null
+
+    // // Balance is 0 and all balances are accurate
+    if (!accountBalance && isBalanceAccurate) return null
+
+    // Balance is inaccurate
+    if (!isBalanceAccurate)
+      return (
+        <Pressable hitSlop={16} onPress={refetch}>
+          <Icons.Alert.Error
+            color={colors.$textDanger}
+            width={14}
+            height={14}
+          />
+        </Pressable>
+      )
+  }, [
+    accountBalance,
+    colors.$textDanger,
+    isBalanceAccurate,
+    isFetching,
+    refetch
+  ])
+
+  if (!hasLoaded && isFetching) {
     if (variant === 'skeleton') {
       return (
         <ContentLoader
@@ -92,29 +121,30 @@ export const AccountBalance = ({
         flexShrink: 1,
         gap: 6
       }}>
-      {!accountBalance ? null : !isBalanceAccurate ? (
-        <Pressable hitSlop={16} onPress={refetchBalance}>
-          <Icons.Alert.Error
-            color={colors.$textDanger}
-            width={14}
-            height={14}
-          />
-        </Pressable>
-      ) : null}
-      <AnimatedBalance
-        variant="body1"
-        balance={balance}
-        shouldMask={isPrivacyModeEnabled}
-        balanceSx={{
-          color: isActive
-            ? colors.$textPrimary
-            : alpha(colors.$textPrimary, 0.6),
-          lineHeight: 16,
-          textAlign: 'right'
-        }}
-        renderMaskView={renderMaskView}
-        shouldAnimate={false}
-      />
+      {renderError()}
+      <LoadingContent
+        hideSpinner={isFetching}
+        minOpacity={0.2}
+        maxOpacity={1}
+        isLoading={
+          (!hasLoaded && isFetching) ||
+          (hasLoaded && isFetching && !isBalanceAccurate)
+        }>
+        <AnimatedBalance
+          variant="body1"
+          balance={balance}
+          shouldMask={isPrivacyModeEnabled}
+          balanceSx={{
+            color: isActive
+              ? colors.$textPrimary
+              : alpha(colors.$textPrimary, 0.6),
+            lineHeight: 16,
+            textAlign: 'right'
+          }}
+          renderMaskView={renderMaskView}
+          shouldAnimate={false}
+        />
+      </LoadingContent>
     </View>
   )
 }

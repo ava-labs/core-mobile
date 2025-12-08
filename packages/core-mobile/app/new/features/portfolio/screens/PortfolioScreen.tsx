@@ -278,6 +278,43 @@ const PortfolioHomeScreen = (): JSX.Element => {
     })
   }, [])
 
+  const walletName = useMemo(() => {
+    if (walletsCount > 1) {
+      if (activeWallet?.type === WalletType.PRIVATE_KEY) {
+        return 'Imported'
+      }
+
+      return activeWallet?.name
+    }
+    return undefined
+  }, [activeWallet?.name, activeWallet?.type, walletsCount])
+
+  const walletIcon = useMemo(() => {
+    if (
+      activeWallet?.type === WalletType.LEDGER ||
+      activeWallet?.type === WalletType.LEDGER_LIVE
+    )
+      return 'ledger'
+    return 'wallet'
+  }, [activeWallet?.type])
+
+  const priceChange = useMemo(() => {
+    if (totalPriceChange !== 0)
+      return {
+        formattedPrice: valueChange24h,
+        status: indicatorStatus,
+        formattedPercent: percentChange24h
+      }
+    return undefined
+  }, [totalPriceChange, valueChange24h, indicatorStatus, percentChange24h])
+
+  const errorMessage = useMemo(() => {
+    if (allBalancesInaccurate) {
+      return 'Unable to load balances'
+    }
+    return undefined
+  }, [allBalancesInaccurate])
+
   const renderHeader = useCallback((): JSX.Element => {
     return (
       <View
@@ -298,30 +335,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
             <Pressable hitSlop={10} onPress={openWalletsModal}>
               <BalanceHeader
                 testID="portfolio"
-                walletName={walletsCount > 1 ? activeWallet?.name : undefined}
-                walletIcon={
-                  activeWallet?.type === WalletType.LEDGER ||
-                  activeWallet?.type === WalletType.LEDGER_LIVE
-                    ? 'ledger'
-                    : 'wallet'
-                }
+                walletName={walletName}
+                walletIcon={walletIcon}
                 accountName={activeAccount?.name}
                 formattedBalance={formattedBalance}
                 currency={selectedCurrency}
-                priceChange={
-                  totalPriceChange !== 0
-                    ? {
-                        formattedPrice: valueChange24h,
-                        status: indicatorStatus,
-                        formattedPercent: percentChange24h
-                      }
-                    : undefined
-                }
-                errorMessage={
-                  allBalancesInaccurate
-                    ? 'Unable to load all balances'
-                    : undefined
-                }
+                priceChange={priceChange}
+                errorMessage={errorMessage}
                 onErrorPress={handleErrorPress}
                 isLoading={isLoading && balanceTotalInCurrency === 0}
                 isLoadingBalances={isLoadingBalances || isLoading}
@@ -350,17 +370,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleBalanceHeaderLayout,
     animatedHeaderStyle,
     openWalletsModal,
-    walletsCount,
-    activeWallet?.name,
-    activeWallet?.type,
+    walletName,
+    walletIcon,
     activeAccount?.name,
     formattedBalance,
     selectedCurrency,
-    totalPriceChange,
-    valueChange24h,
-    indicatorStatus,
-    percentChange24h,
-    allBalancesInaccurate,
+    priceChange,
+    errorMessage,
     handleErrorPress,
     isLoading,
     balanceTotalInCurrency,
