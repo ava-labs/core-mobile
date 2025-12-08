@@ -26,6 +26,13 @@ export const transformKeyInfosToPubKeys = (
     ...testnetKeyTypes
   ]
 
+  /**
+   *
+   * Step 1:filter out keys that
+   *  1. are not enabled
+   *  2. are not in the allowed key types (EVM, AVM, Solana)
+   *  3. do not have a derivation path
+   */
   const filteredKeys = keyInfos?.filter(
     k =>
       k.enabled &&
@@ -33,27 +40,63 @@ export const transformKeyInfosToPubKeys = (
       k.derivation_info?.derivation_path
   )
 
+  /**
+   * Step 2: parse the derivation path to get the account index
+   * Solana: get second-to-last segment
+   * EVM/Avalanche: detect derivation spec
+   *   - New spec: m/44'/coin'/account'/0/0 (account index in 3rd position)
+   *   - Old spec: m/44'/coin'/0'/0/addressIndex (addressIndex in last position)
+   *   - If last segment is 0 and account segment is greater than 0, use account index
+   *   - Otherwise, use account 0
+   */
   const keys = filteredKeys.reduce((acc, key) => {
     if (!key.derivation_info) {
       return acc
     }
 
-    const index =
-      key.key_type === cs.Ed25519.Solana
-        ? parseInt(
-            key.derivation_info.derivation_path.split('/').at(-2) as string
-          )
-        : Number(key.derivation_info.derivation_path.split('/').pop())
+    const pathSegments = key.derivation_info.derivation_path.split('/')
+
+    let index: number
+    if (key.key_type === cs.Ed25519.Solana) {
+      // Solana: get second-to-last segment
+      index = parseInt(pathSegments.at(-2) as string)
+    } else if ([cs.Secp256k1.Ava, 'SecpAvaTestAddr'].includes(key.key_type)) {
+      // For Avalanche keys, detect derivation spec
+      const lastSegment = Number(pathSegments.pop())
+      const accountSegment = pathSegments[2]
+        ? Number(pathSegments[2].replace("'", ''))
+        : 0
+
+      // New spec: m/44'/coin'/account'/0/0 (account index in 3rd position)
+      // Old spec: m/44'/coin'/0'/0/addressIndex (addressIndex in last position)
+      if (lastSegment === 0 && accountSegment > 0) {
+        // New derivation spec - use account index
+        index = accountSegment
+      } else {
+        // Old derivation spec - map addressIndex to account 0
+        // All old addresses belong to account 0
+        index = 0
+      }
+    } else {
+      // pop addresses index and return as number
+      index = Number(key.derivation_info.derivation_path.split('/').pop())
+    }
+
     if (index === undefined) {
       return acc
     }
 
+    // Step 3: group the keys by mnemonic id
     const mnemonicId = key.derivation_info.mnemonic_id
     acc[mnemonicId] = [...(acc[mnemonicId] ?? [])]
     const mnemonicBlock = acc[mnemonicId]
 
     mnemonicBlock[index] = mnemonicBlock[index] ?? createAccountKeySet()
     const accountKeySet = mnemonicBlock[index]
+
+    if (!accountKeySet) {
+      return acc
+    }
 
     switch (key.key_type) {
       case cs.Secp256k1.Evm:
@@ -79,7 +122,10 @@ export const transformKeyInfosToPubKeys = (
 
   const allDerivedKeySets = Object.values(keys)
 
-  // We only look for key sets that contain all of the required key types.
+  /**
+   * Step 4: Validate key sets
+   * - only keep mnemonic groups where EVERY account has both EVM and Avalanche keys
+   */
   const validKeySets = allDerivedKeySets.filter(keySet => {
     return keySet
       .filter(key => Boolean(key))
@@ -94,6 +140,13 @@ export const transformKeyInfosToPubKeys = (
   const derivedKeys = validKeySets[0]
   const pubkeys = [] as AddressPublicKey[]
 
+  /**
+   * Step 5: Convert key sets to public keys
+   * - for each key set, create a public key object
+   * - for each Avalanche key, create a public key object
+   * - for each Solana key, create a public key object
+   * - return the public key objects
+   */
   derivedKeys.forEach(key => {
     if (!key || !key.ava.length || !key.evm) {
       return

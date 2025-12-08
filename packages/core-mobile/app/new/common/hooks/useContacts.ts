@@ -7,6 +7,7 @@ import {
   selectContacts,
   selectRecentContacts
 } from 'store/addressBook'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { useAvatar } from './useAvatar'
 
 export const useContacts = (): {
@@ -27,7 +28,9 @@ export const useContacts = (): {
             name: account.name,
             address: account.addressC,
             addressBTC: account.addressBTC,
-            addressXP: account.addressPVM.replace(/^[PX]-/, ''),
+            addressXP: account.addressPVM
+              ? stripAddressPrefix(account.addressPVM)
+              : undefined,
             addressSVM: account.addressSVM,
             avatar: avatar,
             type: 'account'
