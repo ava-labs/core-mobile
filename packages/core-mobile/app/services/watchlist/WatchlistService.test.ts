@@ -1,7 +1,7 @@
 import TokenService from 'services/token/TokenService'
 import { transformSparklineData } from 'services/token/utils'
 import { MarketType } from 'store/watchlist'
-import type { WatchListClient } from 'utils/api/fetches/watchlistFetchClient'
+import type { AggregatedApiClient } from 'utils/api/fetches/aggregatedTokensFetchClient'
 import WATCHLIST_PRICE from '../token/__mocks__/watchlistPrice.json'
 import ADDITIONAL_WATCHLIST_PRICE from '../token/__mocks__/additionalWatchlistPrice.json'
 
@@ -22,17 +22,15 @@ jest.mock('utils/api/clients/aggregatedTokensApiClient', () => ({
 
 import { WatchlistService } from './WatchlistService'
 
-// Create a mock WatchListClient
-const mockWatchListClient: WatchListClient = {
-  getV1watchlistmarkets: jest.fn(),
-  getPrices: jest.fn(),
-  getTrendingTokens: jest.fn()
+const mockAggregatedClient: AggregatedApiClient = {
+  getV1watchlistmarkets: jest.fn()
 }
 
 jest.mock('services/token/utils', () => ({
   transformSparklineData: jest.fn()
 }))
 
+// Mock TokenService as a singleton instance with instance methods
 jest.mock('services/token/TokenService', () => ({
   getTokenSearch: jest.fn(),
   getSimplePrice: jest.fn(),
@@ -43,11 +41,11 @@ jest.mock('services/token/TokenService', () => ({
 describe('getTopMarkets', () => {
   let watchlistService: WatchlistService
   const getV1watchlistmarketsMock =
-    mockWatchListClient.getV1watchlistmarkets as jest.Mock
+    mockAggregatedClient.getV1watchlistmarkets as jest.Mock
 
   beforeEach(() => {
     jest.clearAllMocks()
-    watchlistService = new WatchlistService(mockWatchListClient)
+    watchlistService = new WatchlistService(mockAggregatedClient)
   })
 
   it('should call token aggregator API with correct params', async () => {
@@ -163,7 +161,7 @@ describe('getPrices', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    watchlistService = new WatchlistService(mockWatchListClient)
+    watchlistService = new WatchlistService(mockAggregatedClient)
   })
 
   it('should return all merged price data from cache + simple price API', async () => {
@@ -203,21 +201,24 @@ describe('getPrices', () => {
 
 describe('tokenSearch', () => {
   let watchlistService: WatchlistService
+  const getTokenSearchMock = TokenService.getTokenSearch as jest.Mock
+  const getMarketsMock = TokenService.getMarkets as jest.Mock
+  const getSimplePriceMock = TokenService.getSimplePrice as jest.Mock
 
   beforeEach(() => {
     jest.clearAllMocks()
-    watchlistService = new WatchlistService(mockWatchListClient)
+    watchlistService = new WatchlistService(mockAggregatedClient)
   })
 
   it('should return tokens, prices, and charts for a valid query', async () => {
     // 1. Mock search results
-    ;(TokenService.getTokenSearch as jest.Mock).mockResolvedValue([
+    getTokenSearchMock.mockResolvedValue([
       { id: 'test', symbol: 'TEST', name: 'Test Token' },
       { id: 'test-aave', symbol: 'AAVE', name: 'Aave Test' }
     ])
 
     // 2. Mock markets returned by getMarketsByCoinIds()
-    ;(TokenService.getMarkets as jest.Mock).mockResolvedValue([
+    getMarketsMock.mockResolvedValue([
       {
         id: 'test',
         symbol: 'TEST',
@@ -237,7 +238,7 @@ describe('tokenSearch', () => {
     ])
 
     // 3. Mock prices returned by getSimplePrice()
-    ;(TokenService.getSimplePrice as jest.Mock).mockResolvedValue({
+    getSimplePriceMock.mockResolvedValue({
       test: {
         usd: { price: 100, change24: 1, marketCap: 999, vol24: 200 }
       },
@@ -283,7 +284,7 @@ describe('tokenSearch', () => {
   })
 
   it('should return undefined when search yields no results', async () => {
-    ;(TokenService.getTokenSearch as jest.Mock).mockResolvedValue([])
+    getTokenSearchMock.mockResolvedValue([])
 
     const result = await watchlistService.tokenSearch('unknown', 'usd')
     expect(result).toBeUndefined()

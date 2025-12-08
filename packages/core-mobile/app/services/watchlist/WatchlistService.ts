@@ -28,10 +28,10 @@ import Logger from 'utils/Logger'
  */
 const fetchTopMarkets = async ({
   currency,
-  client = aggregatedApiClient
+  client
 }: {
   currency: string
-  client?: AggregatedApiClient
+  client: AggregatedApiClient
 }): Promise<WatchlistMarketsResponse> => {
   return client.getV1watchlistmarkets(currency)
 }

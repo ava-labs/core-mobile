@@ -51,7 +51,7 @@ export const createGlacierApiClient = (
     const transactions: PChainTransaction[] = []
 
     do {
-      const result = await glacierApi.GET(
+      const result = await httpClient.GET(
         '/v1/networks/{network}/blockchains/{blockchainId}/transactions',
         {
           params: {
