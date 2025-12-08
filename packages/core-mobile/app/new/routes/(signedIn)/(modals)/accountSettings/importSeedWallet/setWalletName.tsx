@@ -7,7 +7,9 @@ import React, { useCallback, useState } from 'react'
 import KeychainMigrator, { MigrationStatus } from 'utils/KeychainMigrator'
 
 export default function SetWalletName(): JSX.Element {
-  const { mnemonic } = useLocalSearchParams<{ mnemonic: string }>()
+  const { normalizedMnemonic } = useLocalSearchParams<{
+    normalizedMnemonic: string
+  }>()
   const [name, setName] = useState<string>('')
   const navigation = useNavigation()
   const router = useRouter()
@@ -17,8 +19,6 @@ export default function SetWalletName(): JSX.Element {
   const [isCheckingMigration, setIsCheckingMigration] = useState(false)
 
   const handleImport = useCallback(async () => {
-    const trimmedMnemonic = mnemonic.toLowerCase().trim()
-
     setIsCheckingMigration(true)
     const migrator = new KeychainMigrator(activeWallet.id)
     const migrationStatus = await migrator.getMigrationStatus('PIN')
@@ -29,14 +29,21 @@ export default function SetWalletName(): JSX.Element {
         // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/verifyPin',
         params: {
-          walletSecretToImport: trimmedMnemonic
+          walletSecretToImport: normalizedMnemonic
         }
       })
     } else {
-      await importWallet(trimmedMnemonic, name)
+      await importWallet(normalizedMnemonic, name)
       navigation.getParent()?.goBack()
     }
-  }, [mnemonic, activeWallet.id, router, importWallet, name, navigation])
+  }, [
+    normalizedMnemonic,
+    activeWallet.id,
+    router,
+    importWallet,
+    name,
+    navigation
+  ])
 
   return (
     <Component
@@ -45,8 +52,9 @@ export default function SetWalletName(): JSX.Element {
       parentIsLoading={isImporting || isCheckingMigration}
       buttonText="Import"
       disabled={
-        !mnemonic ||
-        mnemonic.trim().split(/\s+/).length < MINIMUM_MNEMONIC_WORDS ||
+        !normalizedMnemonic ||
+        normalizedMnemonic.trim().split(/\s+/).length <
+          MINIMUM_MNEMONIC_WORDS ||
         isImporting ||
         isCheckingMigration
       }

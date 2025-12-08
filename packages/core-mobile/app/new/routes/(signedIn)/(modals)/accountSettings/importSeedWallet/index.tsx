@@ -10,7 +10,7 @@ import { MINIMUM_MNEMONIC_WORDS } from 'common/consts'
 import { useCheckIfAccountExists } from 'common/hooks/useCheckIfAccountExists'
 import { useRouter } from 'expo-router'
 import RecoveryPhraseInput from 'new/features/onboarding/components/RecoveryPhraseInput'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Logger from 'utils/Logger'
 
 interface DerivedAddressItem {
@@ -31,16 +31,22 @@ const ImportSeedWallet = (): React.JSX.Element => {
   const checkIfAccountExists = useCheckIfAccountExists()
   const [errorMessage, setErrorMessage] = useState<string>()
 
-  useEffect(() => {
-    const trimmedMnemonic = mnemonic.toLowerCase().trim()
-    const isValid = bip39.validateMnemonic(trimmedMnemonic)
+  const normalizedMnemonic = useMemo(
+    () => mnemonic.toLowerCase().trim(),
+    [mnemonic]
+  )
+  const isValid = useMemo(
+    () => bip39.validateMnemonic(normalizedMnemonic),
+    [normalizedMnemonic]
+  )
 
+  useEffect(() => {
     if (isValid) {
       try {
         const newAddresses: DerivedAddressItem[] = []
         for (let i = 0; i < 3; i++) {
           const wallet = getWalletFromMnemonic(
-            trimmedMnemonic,
+            normalizedMnemonic,
             i,
             DerivationPath.BIP44
           )
@@ -65,12 +71,9 @@ const ImportSeedWallet = (): React.JSX.Element => {
       setErrorMessage(undefined)
       setDerivedAddresses([])
     }
-  }, [mnemonic, checkIfAccountExists])
+  }, [mnemonic, checkIfAccountExists, isValid, normalizedMnemonic])
 
   const onNextPress = useCallback(() => {
-    const trimmedMnemonic = mnemonic.toLowerCase().trim()
-    const isValid = bip39.validateMnemonic(trimmedMnemonic)
-
     if (!isValid) {
       showAlert({
         title: 'Invalid phrase',
@@ -90,10 +93,10 @@ const ImportSeedWallet = (): React.JSX.Element => {
       // @ts-ignore TODO: make routes typesafe
       pathname: '/accountSettings/importSeedWallet/setWalletName',
       params: {
-        mnemonic
+        normalizedMnemonic
       }
     })
-  }, [mnemonic, navigate])
+  }, [isValid, navigate, normalizedMnemonic])
 
   const renderFooter = useCallback(() => {
     return (
@@ -107,6 +110,7 @@ const ImportSeedWallet = (): React.JSX.Element => {
           size="large"
           type="primary"
           disabled={
+            errorMessage !== undefined ||
             mnemonic.trim().split(/\s+/).length < MINIMUM_MNEMONIC_WORDS
           }
           onPress={onNextPress}>
@@ -114,7 +118,7 @@ const ImportSeedWallet = (): React.JSX.Element => {
         </Button>
       </View>
     )
-  }, [mnemonic, onNextPress])
+  }, [errorMessage, mnemonic, onNextPress])
 
   return (
     <ScrollScreen
