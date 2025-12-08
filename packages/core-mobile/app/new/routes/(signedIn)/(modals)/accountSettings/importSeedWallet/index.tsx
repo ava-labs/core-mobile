@@ -3,7 +3,7 @@ import {
   DerivationPath,
   getWalletFromMnemonic
 } from '@avalabs/core-wallets-sdk'
-import { Button, Text, useTheme, View } from '@avalabs/k2-alpine'
+import { Button, showAlert, Text, useTheme, View } from '@avalabs/k2-alpine'
 import * as bip39 from 'bip39'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useCheckIfAccountExists } from 'common/hooks/useCheckIfAccountExists'
@@ -67,6 +67,24 @@ const ImportSeedWallet = (): React.JSX.Element => {
   }, [mnemonic, checkIfAccountExists])
 
   const onNextPress = useCallback(() => {
+    const trimmedMnemonic = mnemonic.toLowerCase().trim()
+    const isValid = bip39.validateMnemonic(trimmedMnemonic)
+
+    if (!isValid) {
+      showAlert({
+        title: 'Invalid phrase',
+        description:
+          'The recovery phrase you entered is invalid. Please double check for spelling mistakes or the order of each word.',
+        buttons: [
+          {
+            text: 'Dismiss',
+            style: 'destructive'
+          }
+        ]
+      })
+      return
+    }
+
     navigate({
       // @ts-ignore TODO: make routes typesafe
       pathname: '/accountSettings/importSeedWallet/setWalletName',
@@ -89,7 +107,6 @@ const ImportSeedWallet = (): React.JSX.Element => {
           type="primary"
           onPress={onNextPress}>
           Next
-          {/* {isImporting ? <ActivityIndicator size="small" /> : 'Import'} */}
         </Button>
       </View>
     )

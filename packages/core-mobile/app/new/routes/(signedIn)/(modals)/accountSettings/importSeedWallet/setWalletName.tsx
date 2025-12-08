@@ -1,5 +1,3 @@
-import { showAlert } from '@avalabs/k2-alpine'
-import * as bip39 from 'bip39'
 import { MINIMUM_MNEMONIC_WORDS } from 'common/consts'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useImportMnemonic } from 'common/hooks/useImportMnemonic'
@@ -20,22 +18,6 @@ export default function SetWalletName(): JSX.Element {
 
   const handleImport = useCallback(async () => {
     const trimmedMnemonic = mnemonic.toLowerCase().trim()
-    const isValid = bip39.validateMnemonic(trimmedMnemonic)
-
-    if (!isValid) {
-      showAlert({
-        title: 'Invalid phrase',
-        description:
-          'The recovery phrase you entered is invalid. Please double check for spelling mistakes or the order of each word.',
-        buttons: [
-          {
-            text: 'Dismiss',
-            style: 'destructive'
-          }
-        ]
-      })
-      return
-    }
 
     setIsCheckingMigration(true)
     const migrator = new KeychainMigrator(activeWallet.id)
