@@ -34,17 +34,17 @@ export const AccountBalance = ({
     theme: { colors, isDark }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
-  const { refetch, isLoading } = useAccountBalances(account)
+  const { refetch, isFetching } = useAccountBalances(account)
   const { balance: accountBalance } = useBalanceInCurrencyForAccount(account.id)
   const isBalanceAccurate = useIsAccountsBalanceAccurate([account])
 
   const [hasLoaded, setHasLoaded] = useState(false)
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isFetching) {
       setHasLoaded(true)
     }
-  }, [isLoading])
+  }, [isFetching])
 
   const balance = useMemo(() => {
     return accountBalance === 0
@@ -70,7 +70,7 @@ export const AccountBalance = ({
   }, [colors.$textPrimary, isActive])
 
   const renderError = useCallback(() => {
-    if (isLoading) return null
+    if (isFetching) return null
 
     // Balance is 0 and all balances are accurate
     if (!accountBalance && isBalanceAccurate) return null
@@ -90,11 +90,11 @@ export const AccountBalance = ({
     accountBalance,
     colors.$textDanger,
     isBalanceAccurate,
-    isLoading,
+    isFetching,
     refetch
   ])
 
-  if (!hasLoaded && isLoading) {
+  if (!hasLoaded && isFetching) {
     if (variant === 'skeleton') {
       return (
         <ContentLoader
@@ -127,8 +127,8 @@ export const AccountBalance = ({
         minOpacity={0.2}
         maxOpacity={1}
         isLoading={
-          (!hasLoaded && isLoading) ||
-          (hasLoaded && isLoading && !isBalanceAccurate)
+          (!hasLoaded && isFetching) ||
+          (hasLoaded && isFetching && !isBalanceAccurate)
         }>
         <AnimatedBalance
           variant="body1"
