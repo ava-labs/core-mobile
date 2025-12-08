@@ -18,6 +18,7 @@ import { HORIZONTAL_ITEM_GAP } from 'features/portfolio/collectibles/consts'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
+import { RefreshControl } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { DeFiSimpleProtocol } from 'services/defi/types'
@@ -220,8 +221,13 @@ export const DeFiScreen = ({
         estimatedItemSize={isGridView ? 183 : 73}
         numColumns={numColumns}
         renderItem={renderItem}
-        refreshing={isRefreshing}
-        onRefresh={pullToRefresh}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={pullToRefresh}
+            progressViewOffset={0}
+          />
+        }
         ListHeaderComponent={header}
         ListEmptyComponent={emptyComponent}
         showsVerticalScrollIndicator={false}

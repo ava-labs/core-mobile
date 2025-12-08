@@ -15,6 +15,7 @@ import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
 import { Platform, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
+import { RefreshControl } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 import {
@@ -306,8 +307,13 @@ export const CollectiblesScreen = ({
         ListHeaderComponent={renderHeader}
         numColumns={columns}
         overrideProps={overrideProps}
-        onRefresh={pullToRefresh}
-        refreshing={isRefreshing}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={pullToRefresh}
+            progressViewOffset={0}
+          />
+        }
         contentContainerStyle={contentContainerStyle}
         estimatedItemSize={220}
         removeClippedSubviews={Platform.OS === 'android'}
