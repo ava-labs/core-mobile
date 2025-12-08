@@ -7,7 +7,7 @@ import WalletCard from 'common/components/WalletCard'
 import { WalletDisplayData } from 'common/types'
 import { useRouter } from 'expo-router'
 import { useAccountsBalances } from 'features/portfolio/hooks/useAccountsBalances'
-import { useIsAccountsBalanceInaccurate } from 'features/portfolio/hooks/useIsAccountsBalancesInaccurate'
+import { useIsAccountsBalanceAccurate } from 'features/portfolio/hooks/useIsAccountsBalancesAccurate'
 import React, { useCallback, useMemo, useState } from 'react'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
@@ -39,7 +39,7 @@ export const WalletsScreen = (): JSX.Element => {
     [accountCollection]
   )
   const { isLoading, refetch } = useAccountsBalances(allAccounts)
-  const isBalanceInaccurate = useIsAccountsBalanceInaccurate(allAccounts)
+  const isBalanceAccurate = useIsAccountsBalanceAccurate(allAccounts)
 
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -48,9 +48,7 @@ export const WalletsScreen = (): JSX.Element => {
   >({})
 
   const errorMessage =
-    isLoading || !isBalanceInaccurate
-      ? undefined
-      : 'Unable to load all balances'
+    isLoading || isBalanceAccurate ? undefined : 'Unable to load all balances'
 
   const allAccountsArray = useMemo(() => {
     return Object.values(accountCollection)
