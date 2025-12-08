@@ -6,6 +6,7 @@ import {
 import { Button, showAlert, Text, useTheme, View } from '@avalabs/k2-alpine'
 import * as bip39 from 'bip39'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { MINIMUM_MNEMONIC_WORDS } from 'common/consts'
 import { useCheckIfAccountExists } from 'common/hooks/useCheckIfAccountExists'
 import { useRouter } from 'expo-router'
 import RecoveryPhraseInput from 'new/features/onboarding/components/RecoveryPhraseInput'
@@ -105,12 +106,15 @@ const ImportSeedWallet = (): React.JSX.Element => {
           testID="import_wallet"
           size="large"
           type="primary"
+          disabled={
+            mnemonic.trim().split(/\s+/).length < MINIMUM_MNEMONIC_WORDS
+          }
           onPress={onNextPress}>
           Next
         </Button>
       </View>
     )
-  }, [onNextPress])
+  }, [mnemonic, onNextPress])
 
   return (
     <ScrollScreen
