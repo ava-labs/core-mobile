@@ -123,7 +123,7 @@ export const AccountBalance = ({
       }}>
       {renderError()}
       <LoadingContent
-        hideSpinner={hasLoaded}
+        hideSpinner={isFetching}
         minOpacity={0.2}
         maxOpacity={1}
         isLoading={
