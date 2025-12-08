@@ -161,6 +161,7 @@ const ImportSeedWallet = (): React.JSX.Element => {
                   }}>
                   <Text
                     sx={{ color: colors.$textPrimary, fontSize: 16 }}
+                    variant="mono"
                     selectable>
                     {truncateAddress(item.address, 10)}
                   </Text>
