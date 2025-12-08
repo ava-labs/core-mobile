@@ -13,8 +13,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
 import { useBalanceInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
-import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalanceAccurate'
-import { useIsPollingBalancesForAccount } from 'features/portfolio/hooks/useIsPollingBalancesForAccount'
+import { useIsAccountsBalanceAccurate } from 'features/portfolio/hooks/useIsAccountsBalancesAccurate'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { useSelector } from 'react-redux'
@@ -35,18 +34,17 @@ export const AccountBalance = ({
     theme: { colors, isDark }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
-  const { refetch } = useAccountBalances(account)
+  const { refetch, isLoading } = useAccountBalances(account)
   const { balance: accountBalance } = useBalanceInCurrencyForAccount(account.id)
-  const isBalanceAccurate = useIsAccountBalanceAccurate(account)
-  const isLoadingBalance = useIsPollingBalancesForAccount(account)
+  const isBalanceAccurate = useIsAccountsBalanceAccurate([account])
 
   const [hasLoaded, setHasLoaded] = useState(false)
 
   useEffect(() => {
-    if (!isLoadingBalance) {
+    if (!isLoading) {
       setHasLoaded(true)
     }
-  }, [isLoadingBalance])
+  }, [isLoading])
 
   const balance = useMemo(() => {
     return accountBalance === 0
@@ -72,7 +70,7 @@ export const AccountBalance = ({
   }, [colors.$textPrimary, isActive])
 
   const renderError = useCallback(() => {
-    if (isLoadingBalance) return null
+    if (isLoading) return null
 
     // Balance is 0 and all balances are accurate
     if (!accountBalance && isBalanceAccurate) return null
@@ -92,11 +90,11 @@ export const AccountBalance = ({
     accountBalance,
     colors.$textDanger,
     isBalanceAccurate,
-    isLoadingBalance,
+    isLoading,
     refetch
   ])
 
-  if (!hasLoaded && isLoadingBalance) {
+  if (!hasLoaded && isLoading) {
     if (variant === 'skeleton') {
       return (
         <ContentLoader
@@ -129,8 +127,8 @@ export const AccountBalance = ({
         minOpacity={0.2}
         maxOpacity={1}
         isLoading={
-          (!hasLoaded && isLoadingBalance) ||
-          (hasLoaded && isLoadingBalance && !isBalanceAccurate)
+          (!hasLoaded && isLoading) ||
+          (hasLoaded && isLoading && !isBalanceAccurate)
         }>
         <AnimatedBalance
           variant="body1"
