@@ -114,30 +114,16 @@ export const buildRequestItemsForAccount = (
         break
       }
 
-      case NetworkVMType.AVM: {
-        const ref = network.isTestnet
-          ? '8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl'
-          : 'imji8papUf2EhV3le337w1vgFauqkJg-'
-
-        const strippedAddress = stripAddressPrefix(address)
-        // Only add non-empty addresses after stripping prefix
-        if (
-          typeof strippedAddress === 'string' &&
-          strippedAddress.trim() !== ''
-        ) {
-          avaxXpBucket.references = uniq([...avaxXpBucket.references, ref])
-          avaxXpBucket.addresses = uniq([
-            ...avaxXpBucket.addresses,
-            strippedAddress
-          ])
-        }
-        break
-      }
-
+      case NetworkVMType.AVM:
       case NetworkVMType.PVM: {
-        const ref = network.isTestnet
-          ? 'Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG'
-          : 'Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo'
+        const ref =
+          network.vmName === NetworkVMType.AVM
+            ? network.isTestnet
+              ? '8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl'
+              : 'imji8papUf2EhV3le337w1vgFauqkJg-'
+            : network.isTestnet
+            ? 'Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG'
+            : 'Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo'
 
         const strippedAddress = stripAddressPrefix(address)
         // Only add non-empty addresses after stripping prefix
