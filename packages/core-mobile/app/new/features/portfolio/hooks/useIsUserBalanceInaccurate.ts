@@ -12,6 +12,7 @@ export function useIsUserBalanceInaccurate(): boolean {
 
     if (allBalances.length === 0) return true
 
+    // Check if any balance has dataAccurate === false
     return allBalances.some(balance => balance.dataAccurate === false)
   }, [data])
 }
