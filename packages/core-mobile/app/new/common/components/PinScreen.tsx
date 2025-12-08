@@ -217,7 +217,17 @@ export const PinScreen = ({
       handlePromptBioLogin()
     } else {
       InteractionManager.runAfterInteractions(() => {
-        focusPinInput()
+        if (Platform.OS === 'android') {
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              setTimeout(() => {
+                focusPinInput()
+              }, 0)
+            })
+          })
+        } else {
+          focusPinInput()
+        }
       })
     }
   }, [handlePromptBioLogin, focusPinInput])
