@@ -1,18 +1,16 @@
+import { useNavigation, useRouter } from 'expo-router'
+import { showSnackbar } from 'new/common/utils/toast'
 import { useCallback, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { useRouter } from 'expo-router'
-import { StackActions } from '@react-navigation/native'
-import { useNavigation } from '@react-navigation/native'
-import { AppThunkDispatch } from 'store/types'
-import { importMnemonicWalletAndAccount } from 'store/wallet/thunks'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
-import { showSnackbar } from 'new/common/utils/toast'
+import { AppThunkDispatch } from 'store/types'
+import { importMnemonicWalletAndAccount } from 'store/wallet/thunks'
 import Logger from 'utils/Logger'
 
 export const useImportMnemonic = (): {
   isImporting: boolean
-  importWallet: (mnemonic: string) => Promise<void>
+  importWallet: (mnemonic: string, name?: string) => Promise<void>
 } => {
   const dispatch = useDispatch<AppThunkDispatch>()
   const { canGoBack } = useRouter()
@@ -20,7 +18,7 @@ export const useImportMnemonic = (): {
   const navigation = useNavigation()
 
   const importWallet = useCallback(
-    async (mnemonic: string) => {
+    async (mnemonic: string, name?: string) => {
       if (!mnemonic) {
         Logger.error('Missing mnemonic for seed wallet import')
         return
@@ -30,7 +28,8 @@ export const useImportMnemonic = (): {
       try {
         await dispatch(
           importMnemonicWalletAndAccount({
-            mnemonic
+            mnemonic,
+            name
           })
         ).unwrap()
 
@@ -40,7 +39,7 @@ export const useImportMnemonic = (): {
         showSnackbar('Wallet imported successfully!')
 
         if (canGoBack()) {
-          navigation.dispatch(StackActions.popTo('manageAccounts'))
+          navigation.getParent()?.goBack()
         }
       } catch (error) {
         Logger.error('Failed to import mnemonic wallet', error)

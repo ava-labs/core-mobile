@@ -30,7 +30,6 @@ const WalletCard = ({
   wallet,
   isActive,
   isExpanded,
-  searchText,
   showMoreButton = true,
   style,
   onToggleExpansion
@@ -38,7 +37,6 @@ const WalletCard = ({
   wallet: WalletDisplayData
   isActive: boolean
   isExpanded: boolean
-  searchText: string
   showMoreButton?: boolean
   style?: StyleProp<ViewStyle>
   onToggleExpansion: () => void
@@ -89,23 +87,19 @@ const WalletCard = ({
   )
 
   const renderEmpty = useCallback(() => {
-    if (!searchText) {
-      return (
-        <View
-          sx={{
-            paddingVertical: 20,
-            alignItems: 'center',
-            backgroundColor: colors.$surfaceSecondary
-          }}>
-          <Text sx={{ color: colors.$textSecondary }}>
-            No accounts in this wallet.
-          </Text>
-        </View>
-      )
-    }
-
-    return null
-  }, [colors.$surfaceSecondary, colors.$textSecondary, searchText])
+    return (
+      <View
+        sx={{
+          paddingVertical: 20,
+          alignItems: 'center',
+          backgroundColor: colors.$surfaceSecondary
+        }}>
+        <Text sx={{ color: colors.$textSecondary }}>
+          No accounts in this wallet.
+        </Text>
+      </View>
+    )
+  }, [colors.$surfaceSecondary, colors.$textSecondary])
 
   const [contentHeight, setContentHeight] = useState(HEADER_HEIGHT)
   const onContentLayout = useCallback((event: LayoutChangeEvent) => {
@@ -116,7 +110,7 @@ const WalletCard = ({
   const animatedContentStyle = useAnimatedStyle(() => {
     return {
       minHeight: withTiming(
-        isExpanded ? contentHeight + HEADER_HEIGHT * 2 : HEADER_HEIGHT,
+        isExpanded ? contentHeight + HEADER_HEIGHT : HEADER_HEIGHT,
         ANIMATED.TIMING_CONFIG
       )
     }
@@ -134,6 +128,7 @@ const WalletCard = ({
         style
       ]}>
       <View
+        onLayout={onContentLayout}
         sx={{
           paddingHorizontal: 10,
           gap: 10,
@@ -145,11 +140,15 @@ const WalletCard = ({
         }}>
         <FlatList
           data={wallet.accounts}
-          onLayout={onContentLayout}
           renderItem={renderAccountItem}
           keyExtractor={item => item.account.id}
           ListEmptyComponent={renderEmpty}
           scrollEnabled={false}
+          style={{
+            // Add 1px padding to the top of the list
+            //  to prevent if the first account is active the background color from being visible
+            paddingTop: 1
+          }}
         />
         {wallet.type !== WalletType.PRIVATE_KEY ? (
           <Button

@@ -57,6 +57,11 @@ export const buildRequestItemsForAccount = (
   for (const network of networks) {
     const address = getAddressByNetwork(account, network)
 
+    // Skip networks where address is null, undefined, or empty/whitespace string
+    if (typeof address !== 'string' || address.trim() === '') {
+      continue
+    }
+
     switch (network.vmName) {
       case NetworkVMType.EVM: {
         const ref = String(network.chainId)
@@ -109,29 +114,29 @@ export const buildRequestItemsForAccount = (
         break
       }
 
-      case NetworkVMType.AVM: {
-        const ref = network.isTestnet
-          ? '8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl'
-          : 'imji8papUf2EhV3le337w1vgFauqkJg-'
-
-        avaxXpBucket.references = uniq([...avaxXpBucket.references, ref])
-        avaxXpBucket.addresses = uniq([
-          ...avaxXpBucket.addresses,
-          stripAddressPrefix(address)
-        ])
-        break
-      }
-
+      case NetworkVMType.AVM:
       case NetworkVMType.PVM: {
-        const ref = network.isTestnet
-          ? 'Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG'
-          : 'Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo'
+        const ref =
+          network.vmName === NetworkVMType.AVM
+            ? network.isTestnet
+              ? '8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl'
+              : 'imji8papUf2EhV3le337w1vgFauqkJg-'
+            : network.isTestnet
+            ? 'Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG'
+            : 'Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo'
 
-        avaxXpBucket.references = uniq([...avaxXpBucket.references, ref])
-        avaxXpBucket.addresses = uniq([
-          ...avaxXpBucket.addresses,
-          stripAddressPrefix(address)
-        ])
+        const strippedAddress = stripAddressPrefix(address)
+        // Only add non-empty addresses after stripping prefix
+        if (
+          typeof strippedAddress === 'string' &&
+          strippedAddress.trim() !== ''
+        ) {
+          avaxXpBucket.references = uniq([...avaxXpBucket.references, ref])
+          avaxXpBucket.addresses = uniq([
+            ...avaxXpBucket.addresses,
+            strippedAddress
+          ])
+        }
         break
       }
 
@@ -143,18 +148,23 @@ export const buildRequestItemsForAccount = (
   // ---- Build final requestItems array ----------------------------------------
   const requestItems: GetBalancesRequestBody['data'] = []
 
+  // Early check already filters invalid addresses, so buckets are safe to add
   if (evmBucket) requestItems.push(evmBucket)
   if (btcBucket) requestItems.push(btcBucket)
   if (svmBucket) requestItems.push(svmBucket)
 
-  if (avaxXpBucket.addresses.length > 0 && avaxXpBucket.references.length > 0) {
+  // Filter out empty addresses from AVAX bucket (stripAddressPrefix can return empty)
+  const validAvaxAddresses = avaxXpBucket.addresses.filter(
+    addr => typeof addr === 'string' && addr.trim() !== ''
+  )
+  if (validAvaxAddresses.length > 0 && avaxXpBucket.references.length > 0) {
     requestItems.push({
       namespace: BlockchainNamespace.AVAX,
       references: avaxXpBucket.references,
       addressDetails: [
         {
           id: accountId,
-          addresses: avaxXpBucket.addresses
+          addresses: validAvaxAddresses
         }
       ],
       filterOutDustUtxos: false
