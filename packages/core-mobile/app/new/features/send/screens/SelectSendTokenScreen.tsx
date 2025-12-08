@@ -1,4 +1,3 @@
-import React, { useMemo, useState } from 'react'
 import {
   Icons,
   SCREEN_WIDTH,
@@ -9,23 +8,20 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
-import { LocalTokenWithBalance } from 'store/balance'
-import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
-import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useSendSelectedToken } from 'features/send/store'
-import { SelectTokenScreen } from 'common/screens/SelectTokenScreen'
-import { useNetworks } from 'hooks/networks/useNetworks'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { useSelector } from 'react-redux'
 import { useContacts } from 'common/hooks/useContacts'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
-import { AddrBookItemType } from 'store/addressBook'
-import {
-  isTokenWithBalanceAVM,
-  isTokenWithBalancePVM
-} from '@avalabs/avalanche-module'
+import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
+import { SelectTokenScreen } from 'common/screens/SelectTokenScreen'
 import { sortTokensWithPrimaryFirst } from 'common/utils/sortTokensWithPrimaryFirst'
+import { useLocalSearchParams, useRouter } from 'expo-router'
+import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
+import { useSendSelectedToken } from 'features/send/store'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import React, { useMemo, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { AddrBookItemType } from 'store/addressBook'
+import { LocalTokenWithBalance } from 'store/balance'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { getNetworks } from '../utils/getNetworks'
 
 export const SelectSendTokenScreen = (): JSX.Element => {
