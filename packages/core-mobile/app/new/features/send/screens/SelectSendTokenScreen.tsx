@@ -97,10 +97,6 @@ export const SelectSendTokenScreen = (): JSX.Element => {
       selectedToken.networkChainId === item.networkChainId
     const isLastItem = index === searchResults.length - 1
 
-    const balance =
-      isTokenWithBalancePVM(item) || isTokenWithBalanceAVM(item)
-        ? item.availableDisplayValue
-        : item.balanceDisplayValue
     return (
       <TouchableOpacity
         onPress={() => handleSelectToken(item)}
@@ -129,7 +125,9 @@ export const SelectSendTokenScreen = (): JSX.Element => {
                 sx={{ width: SCREEN_WIDTH * 0.65 }}>
                 {item.name}
               </Text>
-              <Text variant="subtitle2">{balance + ' ' + item.symbol}</Text>
+              <Text variant="subtitle2">
+                {item.balanceDisplayValue + ' ' + item.symbol}
+              </Text>
             </View>
           </View>
           {isSelected && (
