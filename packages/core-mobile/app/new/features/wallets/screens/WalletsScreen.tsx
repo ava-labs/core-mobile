@@ -34,12 +34,12 @@ export const WalletsScreen = (): JSX.Element => {
   const accountCollection = useSelector(selectAccounts)
   const allWallets = useSelector(selectWallets)
   const activeAccount = useSelector(selectActiveAccount)
-  const { isLoading, refetch } = useAccountsBalances(
-    Object.values(accountCollection)
+  const allAccounts = useMemo(
+    () => Object.values(accountCollection),
+    [accountCollection]
   )
-  const isBalanceInaccurate = useIsAccountsBalanceInaccurate(
-    Object.values(accountCollection)
-  )
+  const { isLoading, refetch } = useAccountsBalances(allAccounts)
+  const isBalanceInaccurate = useIsAccountsBalanceInaccurate(allAccounts)
 
   const [isRefreshing, setIsRefreshing] = useState(false)
 
