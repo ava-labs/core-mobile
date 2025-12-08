@@ -1,4 +1,4 @@
-import { Account } from 'store/account/types'
+import { Account, AccountCollection } from 'store/account/types'
 import { importPWithBalanceCheck } from 'services/earn/importP'
 import Big from 'big.js'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
@@ -29,8 +29,8 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { AvaxXP } from 'types/AvaxXP'
-import AccountsService from 'services/account/AccountsService'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
+import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -235,6 +235,10 @@ class EarnService {
     const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isTestnet)
     const rewardAddress = activeAccount.addressPVM
 
+    if (!rewardAddress) {
+      throw new Error('Account PVM address is not available')
+    }
+
     const unsignedTx = await AvalancheWalletService.createAddDelegatorTx({
       account: activeAccount,
       isTestnet,
@@ -347,7 +351,7 @@ class EarnService {
   }: {
     walletId: string
     walletType: WalletType
-    accounts: Account[]
+    accounts: AccountCollection
     isTestnet: boolean
     startTimestamp?: number
   }): Promise<
@@ -360,47 +364,84 @@ class EarnService {
       }[]
     | undefined
   > => {
+    const accountsArray = Object.values(accounts)
     try {
-      const currentNetworkAddresses = await WalletService.getXPAddresses({
-        accounts,
-        walletId,
-        walletType,
-        isTestnet,
-        networkType: NetworkVMType.PVM,
-        onlyWithActivity: true
-      })
-      const currentNetworkTransactions =
-        currentNetworkAddresses.length > 0
-          ? await getTransformedTransactions(
-              currentNetworkAddresses,
-              isTestnet,
-              startTimestamp
-            )
-          : []
+      // Get ALL PVM addresses for all accounts on current network
+      const currentNetworkAddresses: string[] = []
+      for (const account of accountsArray) {
+        try {
+          const result = await getAddressesFromXpubXP({
+            isDeveloperMode: isTestnet,
+            walletId,
+            walletType,
+            accountIndex: account.index,
+            onlyWithActivity: true
+          })
 
-      const oppositeNetworkAddresses = await WalletService.getXPAddresses({
-        accounts,
-        walletId,
-        walletType,
-        isTestnet: !isTestnet,
-        networkType: NetworkVMType.PVM,
-        onlyWithActivity: true
-      })
-      const oppositeNetworkTransactions =
-        oppositeNetworkAddresses.length > 0
-          ? await getTransformedTransactions(
-              oppositeNetworkAddresses,
-              !isTestnet,
-              startTimestamp
+          // Filter for PVM addresses (space 'e') and add them to the array
+          const pvmAddresses = result.xpAddresses
+            .filter(
+              addr => result.xpAddressDictionary[addr.address]?.space === 'e'
             )
-          : []
+            .map(addr => `P-${addr.address}`)
+
+          currentNetworkAddresses.push(...pvmAddresses)
+        } catch (error) {
+          Logger.error(
+            `Failed to get XP addresses for account ${account.index}`,
+            error
+          )
+        }
+      }
+
+      const currentNetworkTransactions = await getTransformedTransactions(
+        currentNetworkAddresses,
+        isTestnet,
+        startTimestamp
+      )
+
+      // Get ALL PVM addresses for all accounts on opposite network
+      const oppositeNetworkAddresses: string[] = []
+      for (const account of accountsArray) {
+        try {
+          const result = await getAddressesFromXpubXP({
+            isDeveloperMode: !isTestnet,
+            walletId,
+            walletType,
+            accountIndex: account.index,
+            onlyWithActivity: true
+          })
+
+          // Filter for PVM addresses (space 'e') and add them to the array
+          const pvmAddresses = result.xpAddresses
+            .filter(
+              addr => result.xpAddressDictionary[addr.address]?.space === 'e'
+            )
+            .map(addr => `P-${addr.address}`)
+
+          oppositeNetworkAddresses.push(...pvmAddresses)
+        } catch (error) {
+          Logger.error(
+            `Failed to get XP addresses for account ${account.index} on opposite network`,
+            error
+          )
+        }
+      }
+
+      const oppositeNetworkTransactions = await getTransformedTransactions(
+        oppositeNetworkAddresses,
+        !isTestnet,
+        startTimestamp
+      )
 
       const now = new Date()
       return currentNetworkTransactions
         .concat(oppositeNetworkTransactions)
         .flatMap(transaction => {
           // find account that matches the transaction's index
-          const account = accounts.find(acc => acc.index === transaction.index)
+          const account = accountsArray.find(
+            acc => acc.index === transaction.index
+          )
 
           // flat map will remove this
           if (!account) return []

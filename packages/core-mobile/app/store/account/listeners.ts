@@ -287,11 +287,7 @@ const migrateXpAddressesIfNeeded = async (
   const updatedAccounts: AccountCollection = {}
   let encounteredError = false
 
-  Logger.info('Migrating XP addresses if needed')
-
   for (const wallet of Object.values(wallets)) {
-    Logger.info('Wallet', wallet)
-
     if (WalletType.PRIVATE_KEY.includes(wallet.type)) {
       Logger.info(
         `Skipping XP address derivation for private key wallet of type ${wallet.type}`
@@ -317,29 +313,16 @@ const migrateXpAddressesIfNeeded = async (
       encounteredError = true
     }
 
-    try {
-      await deriveMissingSeedlessSessionKeys(wallet.id)
-    } catch (error) {
-      Logger.error(
-        `Failed to derive seedless session keys for wallet ${wallet.id}`,
-        error
-      )
-      // Continue migration even if seedless key derivation fails
-    }
+    await deriveMissingSeedlessSessionKeys(wallet.id)
   }
 
   // Dispatch updated accounts to Redux store
   if (Object.keys(updatedAccounts).length > 0) {
     listenerApi.dispatch(setAccounts(updatedAccounts))
     // Skip reloadAccounts() to preserve our address changes
-  } else {
-    // Only reload if no updates were made
-    try {
-      reloadAccounts(_action, listenerApi)
-    } catch (error) {
-      Logger.error('Failed to reload accounts during XP migration', error)
-    }
   }
+
+  reloadAccounts(_action, listenerApi)
 
   if (!encounteredError) {
     markXpAddressMigrationComplete()

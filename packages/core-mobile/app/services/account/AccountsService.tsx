@@ -142,13 +142,13 @@ class AccountsService {
           isTestnet
         )
 
-        if (evmAddress && btcAddress) {
-          // We can derive EVM and Bitcoin addresses from xpubs
+        // Log if we can derive EVM and Bitcoin addresses from xpubs
+        evmAddress &&
+          btcAddress &&
           Logger.info(`Derived addresses from xpub for account ${index}:`, {
             evm: evmAddress,
             btc: btcAddress
           })
-        }
       }
     }
 

@@ -34,12 +34,13 @@ class AvalancheGetAccountsHandler
     const getXpubXP = async (
       walletId: string,
       walletType: WalletType,
+      accountIndex: number
     ): Promise<string | undefined> => {
       try {
         return await WalletService.getRawXpubXP({
           walletId,
           walletType,
-          accountIndex: activeAccount.index
+          accountIndex
         })
       } catch (error) {
         return undefined
@@ -53,7 +54,7 @@ class AvalancheGetAccountsHandler
         const xpubXP = wallet
           ? // TODO pass correct account index after
             // https://github.com/ava-labs/avalanche-sdks/pull/765/files is merged
-            await getXpubXP(account.walletId, wallet.type, 0)
+            await getXpubXP(account.walletId, wallet.type, account.index)
           : undefined
 
         return {
