@@ -6,7 +6,6 @@ import { Account } from 'store/account'
 import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
 import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import { FundsStuckError } from 'hooks/earn/errors'
-import { assertNotUndefined } from 'utils/assertions'
 import { Network } from '@avalabs/core-chains-sdk'
 import { getPChainBalance } from 'services/balance/getPChainBalance'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
@@ -94,16 +93,16 @@ export async function importP({
 
 const getUnlockedUnstakedAmount = async ({
   network,
-  addressPVM,
+  account,
   selectedCurrency
 }: {
   network: Network
-  addressPVM: string
+  account: Account
   selectedCurrency: string
 }): Promise<bigint | undefined> => {
   try {
     const pChainBalance = await getPChainBalance({
-      pAddress: addressPVM,
+      account,
       currency: selectedCurrency,
       avaxXPNetwork: network
     })
@@ -126,13 +125,11 @@ export async function importPWithBalanceCheck({
   feeState
 }: ImportPParams): Promise<void> {
   //get P balance now then compare it later to check if balance changed after import
-  const addressPVM = account.addressPVM
-  assertNotUndefined(addressPVM)
   const network = NetworkService.getAvalancheNetworkP(isTestnet)
 
   const unlockedUnstakedBeforeImport = await getUnlockedUnstakedAmount({
     network,
-    addressPVM,
+    account,
     selectedCurrency
   })
 
@@ -151,7 +148,7 @@ export async function importPWithBalanceCheck({
     operation: async () =>
       getUnlockedUnstakedAmount({
         network,
-        addressPVM,
+        account,
         selectedCurrency
       }),
     shouldStop: unlockedUnstakedAfterImport => {

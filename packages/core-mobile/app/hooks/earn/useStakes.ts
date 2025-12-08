@@ -20,7 +20,7 @@ export const useStakes = (
   const walletState = useSelector(selectWalletState)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const account = useSelector(selectActiveAccount)
-  const pAddress = account?.addressPVM ?? ''
+  const pAddress = account?.addressPVM ?? '' // TODO: use xpAddresses after xp migration
 
   // we only fetch stakes when the wallet is active
   // otherwise, it will be fetching even when the wallet is locked

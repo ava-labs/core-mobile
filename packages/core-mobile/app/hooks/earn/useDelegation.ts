@@ -74,7 +74,6 @@ export const useDelegation = (): {
       const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
       const result = await computeDelegationSteps({
-        pAddress: activeAccount.addressPVM,
         cAddress: activeAccount.addressC,
         currency: selectedCurrency,
         account: activeAccount,

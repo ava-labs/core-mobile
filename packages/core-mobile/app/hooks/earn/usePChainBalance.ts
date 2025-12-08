@@ -13,23 +13,28 @@ export const usePChainBalance = (): UseQueryResult<
   TokenWithBalancePVM | undefined,
   Error
 > => {
-  const addressPVM = useSelector(selectActiveAccount)?.addressPVM
+  const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const isFocused = useIsFocused()
   return useQuery({
     refetchInterval: refetchIntervals.balance,
-    enabled: isFocused && !!addressPVM,
+    enabled: isFocused && !!activeAccount,
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: ['pChainBalance', isDeveloperMode, addressPVM, selectedCurrency],
+    queryKey: [
+      'pChainBalance',
+      isDeveloperMode,
+      activeAccount?.id,
+      selectedCurrency
+    ],
     queryFn: async () => {
-      if (addressPVM === undefined) {
+      if (activeAccount === undefined) {
         return
       }
 
       return getPChainBalance({
-        pAddress: addressPVM,
+        account: activeAccount,
         currency: selectedCurrency,
         avaxXPNetwork: network
       })

@@ -2,11 +2,11 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import { pvm } from '@avalabs/avalanchejs'
-import { getPChainBalance } from 'services/balance/getPChainBalance'
 import { weiToNano } from 'utils/units/converter'
 import Logger from 'utils/Logger'
 import { getCChainBalance } from 'services/balance/getCChainBalance'
 import { Account } from 'store/account'
+import { getPChainBalance } from 'services/balance/getPChainBalance'
 import { Step, Operation, Case } from './types'
 import {
   getPChainAtomicBalance,
@@ -24,7 +24,6 @@ const INSUFFICIENT_BALANCE_ERROR = new Error(
 )
 
 export const computeDelegationSteps = async ({
-  pAddress,
   stakeAmount,
   currency,
   avaxXPNetwork,
@@ -38,7 +37,6 @@ export const computeDelegationSteps = async ({
   cBaseFeeMultiplier,
   crossChainFeesMultiplier
 }: {
-  pAddress: string
   stakeAmount: bigint
   currency: string
   avaxXPNetwork: Network
@@ -57,7 +55,7 @@ export const computeDelegationSteps = async ({
 
   try {
     const response = await getPChainBalance({
-      pAddress,
+      account,
       currency,
       avaxXPNetwork
     })
@@ -67,7 +65,6 @@ export const computeDelegationSteps = async ({
     throw e
   }
   const isTestnet = Boolean(avaxXPNetwork.isTestnet)
-
   const pChainAtomicBalance = await getPChainAtomicBalance({
     isTestnet,
     account
@@ -87,7 +84,7 @@ export const computeDelegationSteps = async ({
           stakeAmount,
           account,
           isTestnet,
-          pAddress,
+          rewardAddress: account.addressPVM,
           feeState,
           provider,
           pFeeAdjustmentThreshold
@@ -113,7 +110,7 @@ export const computeDelegationSteps = async ({
         const importPFee = await getImportPFee({
           account,
           isTestnet,
-          pAddress,
+          destinationAddress: account.addressPVM,
           feeState,
           provider
         })
@@ -123,7 +120,6 @@ export const computeDelegationSteps = async ({
           stakeAmount,
           account,
           isTestnet,
-          pAddress,
           feeState,
           pChainAtomicBalance,
           importPFee,
@@ -160,14 +156,12 @@ export const computeDelegationSteps = async ({
           cChainBaseFee,
           account,
           isTestnet,
-          pAddress,
           cBaseFeeMultiplier
         })
 
         const importPFee = await getImportPFeePostCExport({
           account,
           isTestnet,
-          pAddress,
           feeState,
           provider
         })
@@ -177,7 +171,6 @@ export const computeDelegationSteps = async ({
           stakeAmount,
           account,
           isTestnet,
-          pAddress,
           feeState,
           provider,
           pChainBalance,

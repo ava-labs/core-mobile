@@ -28,7 +28,7 @@ export const getDelegationFee = async ({
   stakeAmount,
   account,
   isTestnet,
-  pAddress,
+  rewardAddress,
   feeState,
   provider,
   pFeeAdjustmentThreshold
@@ -36,7 +36,7 @@ export const getDelegationFee = async ({
   stakeAmount: bigint
   account: Account
   isTestnet: boolean
-  pAddress: string
+  rewardAddress: string
   feeState: pvm.FeeState
   provider: Avalanche.JsonRpcProvider
   pFeeAdjustmentThreshold: number
@@ -49,14 +49,18 @@ export const getDelegationFee = async ({
     // setting this end date here for this dummy tx is okay. since the end date does not add complexity for this tx, so it doesn't affect the txFee that is returned.
     // get the end date 1 month from now
     endDate: getUnixTime(new Date()) + 60 * 60 * 24 * 30,
-    rewardAddress: pAddress,
+    rewardAddress,
     isTestnet,
     shouldValidateBurnedAmount: true,
     feeState,
     pFeeAdjustmentThreshold
   })
 
-  const tx = await Avalanche.parseAvalancheTx(unsignedTx, provider, pAddress)
+  const tx = await Avalanche.parseAvalancheTx(
+    unsignedTx,
+    provider,
+    rewardAddress
+  )
 
   return tx.txFee
 }
@@ -65,7 +69,6 @@ export const getDelegationFeePostPImport = async ({
   stakeAmount,
   account,
   isTestnet,
-  pAddress,
   feeState,
   pChainAtomicBalance,
   importPFee,
@@ -74,7 +77,6 @@ export const getDelegationFeePostPImport = async ({
   stakeAmount: bigint
   account: Account
   isTestnet: boolean
-  pAddress: string
   feeState: pvm.FeeState
   pChainAtomicBalance: bigint
   importPFee: bigint
@@ -92,7 +94,7 @@ export const getDelegationFeePostPImport = async ({
     getTransferOutputUtxos({
       amt: pChainAtomicBalance - importPFee,
       assetId,
-      address: pAddress
+      addresses: [account.addressPVM] // TODO: use xpAddresses
     }),
     ...pChainUTXOs.getUTXOs()
   ]
@@ -105,11 +107,15 @@ export const getDelegationFeePostPImport = async ({
       account,
       isTestnet,
       stakeAmountInNAvax: stakeAmount,
-      destinationAddress: pAddress,
+      destinationAddress: account.addressPVM,
       feeState
     })
 
-  const tx = await Avalanche.parseAvalancheTx(unsignedTx, provider, pAddress)
+  const tx = await Avalanche.parseAvalancheTx(
+    unsignedTx,
+    provider,
+    account.addressPVM
+  )
 
   return tx.txFee
 }
@@ -118,7 +124,6 @@ export const getDelegationFeePostCExportAndPImport = async ({
   stakeAmount,
   account,
   isTestnet,
-  pAddress,
   feeState,
   provider,
   pChainBalance = 0n,
@@ -127,7 +132,6 @@ export const getDelegationFeePostCExportAndPImport = async ({
   stakeAmount: bigint
   account: Account
   isTestnet: boolean
-  pAddress: string
   feeState: pvm.FeeState
   provider: Avalanche.JsonRpcProvider
   pChainBalance?: bigint
@@ -140,6 +144,8 @@ export const getDelegationFeePostCExportAndPImport = async ({
     isTestnet
   })
 
+  const xpAddresses = [account.addressPVM] // TODO: use xpAddresses after xp migration
+
   // put the incoming UTXO on top as if the export C + import P already happened
   // here we need to do a try catch to grab the missing amount since we don't
   // know the exact transfer amount as it depends on the delegation fee and
@@ -149,7 +155,7 @@ export const getDelegationFeePostCExportAndPImport = async ({
       // we need to get the absolute value of the difference since either the balance or the stake amount can be greater
       amt: bigIntDiff(stakeAmount, pChainBalance),
       assetId,
-      address: pAddress
+      addresses: xpAddresses
     }),
     ...pChainUTXOs.getUTXOs()
   ]
@@ -165,7 +171,7 @@ export const getDelegationFeePostCExportAndPImport = async ({
         account,
         isTestnet,
         stakeAmountInNAvax: stakeAmount,
-        destinationAddress: pAddress,
+        destinationAddress: account.addressPVM,
         feeState
       })
   } catch (error) {
@@ -195,7 +201,7 @@ export const getDelegationFeePostCExportAndPImport = async ({
     simulatedUTXOs[0] = getTransferOutputUtxos({
       amt: bigIntDiff(stakeAmount, pChainBalance) + missingAmount,
       assetId,
-      address: pAddress
+      addresses: xpAddresses
     })
 
     const utxoSet = new utils.UtxoSet(simulatedUTXOs)
@@ -206,12 +212,16 @@ export const getDelegationFeePostCExportAndPImport = async ({
         account,
         isTestnet,
         stakeAmountInNAvax: stakeAmount,
-        destinationAddress: pAddress,
+        destinationAddress: account.addressPVM,
         feeState
       })
   }
 
-  const tx = await Avalanche.parseAvalancheTx(unsignedTx, provider, pAddress)
+  const tx = await Avalanche.parseAvalancheTx(
+    unsignedTx,
+    provider,
+    account.addressPVM
+  )
 
   return tx.txFee
 }
@@ -219,13 +229,13 @@ export const getDelegationFeePostCExportAndPImport = async ({
 export const getImportPFee = async ({
   account,
   isTestnet,
-  pAddress,
+  destinationAddress,
   feeState,
   provider
 }: {
   account: Account
   isTestnet: boolean
-  pAddress: string
+  destinationAddress: string
   feeState: pvm.FeeState
   provider: Avalanche.JsonRpcProvider
 }): Promise<bigint> => {
@@ -233,12 +243,16 @@ export const getImportPFee = async ({
     account,
     isTestnet,
     sourceChain: 'C',
-    destinationAddress: pAddress,
+    destinationAddress,
     shouldValidateBurnedAmount: true,
     feeState
   })
 
-  const tx = await Avalanche.parseAvalancheTx(unsignedTx, provider, pAddress)
+  const tx = await Avalanche.parseAvalancheTx(
+    unsignedTx,
+    provider,
+    destinationAddress
+  )
 
   return tx.txFee
 }
@@ -246,13 +260,11 @@ export const getImportPFee = async ({
 export const getImportPFeePostCExport = async ({
   account,
   isTestnet,
-  pAddress,
   feeState,
   provider
 }: {
   account: Account
   isTestnet: boolean
-  pAddress: string
   feeState: pvm.FeeState
   provider: Avalanche.JsonRpcProvider
 }): Promise<bigint> => {
@@ -269,7 +281,7 @@ export const getImportPFeePostCExport = async ({
     getTransferOutputUtxos({
       amt: DUMMY_AMOUNT,
       assetId,
-      address: pAddress
+      addresses: [account.addressPVM] // TODO: use xpAddresses after xp migration
     }),
     ...atomicPChainUTXOs.getUTXOs()
   ]
@@ -281,11 +293,15 @@ export const getImportPFeePostCExport = async ({
     account,
     isTestnet,
     sourceChain: 'C',
-    destinationAddress: pAddress,
+    destinationAddress: account.addressPVM,
     feeState
   })
 
-  const tx = await Avalanche.parseAvalancheTx(unsignedTx, provider, pAddress)
+  const tx = await Avalanche.parseAvalancheTx(
+    unsignedTx,
+    provider,
+    account.addressPVM
+  )
 
   return tx.txFee
 }
@@ -294,13 +310,11 @@ export const getExportCFee = async ({
   cChainBaseFee,
   account,
   isTestnet,
-  pAddress,
   cBaseFeeMultiplier
 }: {
   cChainBaseFee: TokenUnit
   account: Account
   isTestnet: boolean
-  pAddress: string
   cBaseFeeMultiplier: number
 }): Promise<bigint> => {
   const paddedCChainBaseFee = addBufferToCChainBaseFee(
@@ -315,7 +329,7 @@ export const getExportCFee = async ({
     account,
     isTestnet,
     destinationChain: 'P',
-    destinationAddress: pAddress,
+    destinationAddress: account.addressPVM,
     shouldValidateBurnedAmount: true
   })
 
@@ -349,18 +363,20 @@ export const getPChainAtomicBalance = async ({
 const getTransferOutputUtxos = ({
   amt,
   assetId,
-  address
+  addresses
 }: {
   amt: bigint
   assetId: string
-  address: string
+  addresses: string[]
 }): Utxo<TransferOutput> =>
   new Utxo(
     new avaxSerial.UTXOID(Id.fromString(DUMMY_UTXO_ID), new Int(0)),
     Id.fromString(assetId),
     new TransferOutput(
       new BigIntPr(amt),
-      OutputOwners.fromNative([Address.fromString(address).toBytes()])
+      OutputOwners.fromNative(
+        addresses.map(address => Address.fromString(address).toBytes())
+      )
     )
   )
 
