@@ -26,7 +26,7 @@ import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { selectActiveAccount } from 'store/account'
 import { getMinimumStakeDurationMs } from 'services/earn/utils'
 import { useAvalancheXpProvider } from '../networks/networkProviderHooks'
-import useCChainNetwork from './useCChainNetwork'
+import { usePChainBalance } from './usePChainBalance'
 
 const EMPTY_STEPS: Step[] = []
 
@@ -46,9 +46,9 @@ export const useDelegation = (): {
   const crossChainFeesMultiplier = useSelector(selectCrossChainFeesMultiplier)
   const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
   const { defaultFeeState } = useGetFeeState()
-  const cChainNetwork = useCChainNetwork()
   const avaxProvider = useAvalancheXpProvider(isDeveloperMode)
   const cChainBaseFee = useCChainBaseFee()
+  const pChainBalance = usePChainBalance()
 
   const networkFees = useMemo(
     () =>
@@ -66,25 +66,23 @@ export const useDelegation = (): {
         !activeAccount.addressC ||
         !defaultFeeState ||
         !cChainBaseFee.data ||
-        !avaxProvider ||
-        !cChainNetwork
+        !avaxProvider
       )
         return EMPTY_STEPS
 
       const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
       const result = await computeDelegationSteps({
-        cAddress: activeAccount.addressC,
-        currency: selectedCurrency,
         account: activeAccount,
+        pChainBalance,
+        cChainBalance,
         avaxXPNetwork: network,
-        cChainNetwork,
         provider: avaxProvider,
         pFeeAdjustmentThreshold,
         cBaseFeeMultiplier,
         cChainBaseFee: cChainBaseFee.data,
         feeState: defaultFeeState,
-        stakeAmount: stakeAmount,
+        stakeAmount,
         crossChainFeesMultiplier
       })
 
@@ -92,7 +90,8 @@ export const useDelegation = (): {
       return result
     },
     [
-      cChainNetwork,
+      cChainBalance,
+      pChainBalance,
       activeAccount,
       cChainBaseFee.data,
       defaultFeeState,
@@ -100,7 +99,6 @@ export const useDelegation = (): {
       pFeeAdjustmentThreshold,
       cBaseFeeMultiplier,
       crossChainFeesMultiplier,
-      selectedCurrency,
       avaxProvider
     ]
   )
@@ -186,7 +184,7 @@ export const useDelegation = (): {
             await exportC({
               walletId: activeWallet.id,
               walletType: activeWallet.type,
-              cChainBalanceWei: cChainBalance.data?.balance || 0n,
+              cChainBalanceWei: cChainBalance?.toSubUnit() || 0n,
               requiredAmountWei: nanoToWei(step.amount),
               account: activeAccount,
               isTestnet: isDeveloperMode,
@@ -209,7 +207,7 @@ export const useDelegation = (): {
     [
       activeWallet,
       activeAccount,
-      cChainBalance.data?.balance,
+      cChainBalance,
       defaultFeeState,
       isDeveloperMode,
       pFeeAdjustmentThreshold,

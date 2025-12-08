@@ -4,9 +4,8 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { pvm } from '@avalabs/avalanchejs'
 import { weiToNano } from 'utils/units/converter'
 import Logger from 'utils/Logger'
-import { getCChainBalance } from 'services/balance/getCChainBalance'
 import { Account } from 'store/account'
-import { getPChainBalance } from 'services/balance/getPChainBalance'
+import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
 import { Step, Operation, Case } from './types'
 import {
   getPChainAtomicBalance,
@@ -25,12 +24,11 @@ const INSUFFICIENT_BALANCE_ERROR = new Error(
 
 export const computeDelegationSteps = async ({
   stakeAmount,
-  currency,
+  cChainBalance,
+  pChainBalance,
   avaxXPNetwork,
   account,
   feeState,
-  cAddress,
-  cChainNetwork,
   cChainBaseFee,
   provider,
   pFeeAdjustmentThreshold,
@@ -38,12 +36,11 @@ export const computeDelegationSteps = async ({
   crossChainFeesMultiplier
 }: {
   stakeAmount: bigint
-  currency: string
   avaxXPNetwork: Network
   account: Account
   feeState: pvm.FeeState
-  cAddress: string
-  cChainNetwork: Network
+  pChainBalance: TokenWithBalancePVM | undefined
+  cChainBalance: TokenUnit | undefined
   cChainBaseFee: TokenUnit | undefined
   provider: Avalanche.JsonRpcProvider
   pFeeAdjustmentThreshold: number
@@ -51,19 +48,8 @@ export const computeDelegationSteps = async ({
   crossChainFeesMultiplier: number
   // eslint-disable-next-line sonarjs/cognitive-complexity
 }): Promise<Step[]> => {
-  let pChainBalance: bigint | undefined
-
-  try {
-    const response = await getPChainBalance({
-      account,
-      currency,
-      avaxXPNetwork
-    })
-    pChainBalance = response.balancePerType.unlockedUnstaked || 0n
-  } catch (e) {
-    Logger.error('failed to retrieve P-Chain balance', e)
-    throw e
-  }
+  const availablePChainBalance =
+    pChainBalance?.balancePerType.unlockedUnstaked ?? 0n
   const isTestnet = Boolean(avaxXPNetwork.isTestnet)
   const pChainAtomicBalance = await getPChainAtomicBalance({
     isTestnet,
@@ -75,7 +61,7 @@ export const computeDelegationSteps = async ({
       title: 'Case 1',
       description: 'Have enough P-Chain balance to stake',
       execute: async () => {
-        if (pChainBalance === 0n) {
+        if (availablePChainBalance === 0n) {
           throw new Error('no P-Chain balance')
         }
 
@@ -141,13 +127,7 @@ export const computeDelegationSteps = async ({
       description:
         'Not enough balance on P-Chain to stake. Need to transfer from C-Chain.',
       execute: async () => {
-        const cChainBalance = await getCChainBalance({
-          cChainNetwork,
-          cAddress,
-          currency
-        })
-
-        if (cChainBalance === undefined || cChainBalance.balance <= 0)
+        if (cChainBalance === undefined || cChainBalance.toSubUnit() <= 0)
           throw new Error('no C-Chain balance')
 
         if (cChainBaseFee === undefined) throw new Error('no C-Chain base fee')
@@ -173,7 +153,7 @@ export const computeDelegationSteps = async ({
           isTestnet,
           feeState,
           provider,
-          pChainBalance,
+          pChainBalance: availablePChainBalance,
           pFeeAdjustmentThreshold
         })
 
@@ -190,12 +170,12 @@ export const computeDelegationSteps = async ({
         )
 
         const amountToTransfer =
-          bigIntDiff(stakeAmount, pChainBalance) -
+          bigIntDiff(stakeAmount, availablePChainBalance) -
           pChainAtomicBalance +
           adjustedAllFees
 
         // we need to check if we have enough balance on C-Chain to transfer
-        if (amountToTransfer >= weiToNano(cChainBalance.balance)) {
+        if (amountToTransfer >= weiToNano(cChainBalance.toSubUnit())) {
           Logger.error('Case 2.1, 2.2, 3.1, 3.2 failed: insufficient balance')
           throw INSUFFICIENT_BALANCE_ERROR
         }
