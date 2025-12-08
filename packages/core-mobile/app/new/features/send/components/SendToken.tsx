@@ -22,7 +22,7 @@ import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { usePrevious } from 'common/hooks/usePrevious'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { loadAvatar } from 'common/utils/loadAvatar'
-import { xpAddressWithoutPrefix } from 'common/utils/xpAddressWIthoutPrefix'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { MINIMUM_SATOSHI_SEND_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
@@ -125,7 +125,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
       (isTokenWithBalancePVM(selectedToken) ||
         isTokenWithBalanceAVM(selectedToken))
     ) {
-      return xpAddressWithoutPrefix(addressToSend)
+      return stripAddressPrefix(addressToSend)
     }
     return addressToSend
   }, [addressToSend, selectedToken, toAddress?.recipientType])

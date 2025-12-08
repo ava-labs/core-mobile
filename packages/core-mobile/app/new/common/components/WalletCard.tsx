@@ -1,5 +1,7 @@
 import {
+  ActivityIndicator,
   ANIMATED,
+  Button,
   Icons,
   Text,
   TouchableOpacity,
@@ -28,26 +30,26 @@ const WalletCard = ({
   wallet,
   isActive,
   isExpanded,
-  searchText,
   showMoreButton = true,
   style,
-  renderBottom,
   onToggleExpansion
 }: {
   wallet: WalletDisplayData
   isActive: boolean
   isExpanded: boolean
-  searchText: string
   showMoreButton?: boolean
   style?: StyleProp<ViewStyle>
-  renderBottom?: () => React.JSX.Element
   onToggleExpansion: () => void
 }): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { getDropdownItems, handleDropdownSelect } = useManageWallet()
-
+  const {
+    getDropdownItems,
+    handleDropdownSelect,
+    handleAddAccount: handleAddAccountToWallet,
+    isAddingAccount
+  } = useManageWallet()
   const renderExpansionIcon = useCallback(() => {
     return (
       <Icons.Navigation.ChevronRight
@@ -85,23 +87,19 @@ const WalletCard = ({
   )
 
   const renderEmpty = useCallback(() => {
-    if (!searchText) {
-      return (
-        <View
-          sx={{
-            paddingVertical: 20,
-            alignItems: 'center',
-            backgroundColor: colors.$surfaceSecondary
-          }}>
-          <Text sx={{ color: colors.$textSecondary }}>
-            No accounts in this wallet.
-          </Text>
-        </View>
-      )
-    }
-
-    return null
-  }, [colors.$surfaceSecondary, colors.$textSecondary, searchText])
+    return (
+      <View
+        sx={{
+          paddingVertical: 20,
+          alignItems: 'center',
+          backgroundColor: colors.$surfaceSecondary
+        }}>
+        <Text sx={{ color: colors.$textSecondary }}>
+          No accounts in this wallet.
+        </Text>
+      </View>
+    )
+  }, [colors.$surfaceSecondary, colors.$textSecondary])
 
   const [contentHeight, setContentHeight] = useState(HEADER_HEIGHT)
   const onContentLayout = useCallback((event: LayoutChangeEvent) => {
@@ -147,7 +145,30 @@ const WalletCard = ({
           ListEmptyComponent={renderEmpty}
           scrollEnabled={false}
         />
-        {renderBottom?.()}
+        {wallet.type !== WalletType.PRIVATE_KEY ? (
+          <Button
+            size="medium"
+            leftIcon={
+              isAddingAccount ? undefined : (
+                <Icons.Content.Add
+                  color={colors.$textPrimary}
+                  width={24}
+                  height={24}
+                />
+              )
+            }
+            type="secondary"
+            disabled={isAddingAccount}
+            onPress={() => handleAddAccountToWallet(wallet)}>
+            {isAddingAccount ? (
+              <ActivityIndicator size="small" color={colors.$textPrimary} />
+            ) : (
+              'Add account'
+            )}
+          </Button>
+        ) : (
+          <></>
+        )}
       </View>
 
       <TouchableOpacity
@@ -232,7 +253,7 @@ const WalletCard = ({
             balanceSx={{
               color: isActive ? colors.$textPrimary : colors.$textSecondary
             }}
-            // wallet={wallet}
+            wallet={wallet}
           />
           {showMoreButton && (
             <DropdownMenu

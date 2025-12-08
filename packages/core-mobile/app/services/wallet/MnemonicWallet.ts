@@ -366,19 +366,6 @@ export class MnemonicWallet implements Wallet {
     }
   }
 
-  public async getReadOnlyAvaSigner({
-    accountIndex,
-    provXP
-  }: {
-    accountIndex: number
-    provXP: Avalanche.JsonRpcProvider
-  }): Promise<Avalanche.StaticSigner> {
-    return (await this.getAvaSigner(
-      accountIndex,
-      provXP
-    )) as Avalanche.StaticSigner
-  }
-
   private signAvalancheMessage = async (
     accountIndex: number,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

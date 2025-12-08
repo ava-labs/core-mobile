@@ -24,6 +24,7 @@ import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 import { glacierApiClient } from 'utils/api/fetches/glacierFetchClient'
 import { isOnGoing } from 'utils/earn/status'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -51,8 +52,8 @@ class EarnService {
   async importAnyStuckFunds({
     walletId,
     walletType,
-    activeAccount,
-    isDevMode,
+    account,
+    isTestnet,
     selectedCurrency,
     progressEvents,
     feeState,
@@ -60,26 +61,23 @@ class EarnService {
   }: {
     walletId: string
     walletType: WalletType
-    activeAccount: Account
-    isDevMode: boolean
+    account: Account
+    isTestnet: boolean
     selectedCurrency: string
     progressEvents?: (events: RecoveryEvents) => void
     feeState?: pvm.FeeState
     cBaseFeeMultiplier: number
   }): Promise<void> {
     Logger.trace('Start importAnyStuckFunds')
-    const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
 
     const { pChainUtxo, cChainUtxo } = await retry({
       operation: retryIndex => {
         if (retryIndex !== 0) {
           progressEvents?.(RecoveryEvents.GetAtomicUTXOsFailIng)
         }
-        return WalletService.getAtomicUTXOs({
-          walletId,
-          walletType,
-          accountIndex: activeAccount.index,
-          avaxXPNetwork
+        return AvalancheWalletService.getAtomicUTXOs({
+          account,
+          isTestnet
         })
       },
       shouldStop: result => !!result.pChainUtxo && !!result.cChainUtxo,
@@ -92,8 +90,8 @@ class EarnService {
       await importPWithBalanceCheck({
         walletId,
         walletType,
-        activeAccount,
-        isDevMode,
+        account,
+        isTestnet,
         selectedCurrency,
         feeState
       })
@@ -105,8 +103,8 @@ class EarnService {
       await importC({
         walletId,
         walletType,
-        activeAccount,
-        isDevMode,
+        account,
+        isTestnet,
         cBaseFeeMultiplier
       })
       progressEvents?.(RecoveryEvents.ImportCFinish)
@@ -120,15 +118,15 @@ class EarnService {
    * @param pChainBalance
    * @param requiredAmount
    * @param activeAccount
-   * @param isDevMode
+   * @param isTestnet
    */
   async claimRewards({
     walletId,
     walletType,
     pChainBalance,
     requiredAmount,
-    activeAccount,
-    isDevMode,
+    account,
+    isTestnet,
     feeState,
     cBaseFeeMultiplier
   }: {
@@ -136,8 +134,8 @@ class EarnService {
     walletType: WalletType
     pChainBalance: TokenUnit
     requiredAmount: TokenUnit
-    activeAccount: Account
-    isDevMode: boolean
+    account: Account
+    isTestnet: boolean
     feeState?: pvm.FeeState
     cBaseFeeMultiplier: number
   }): Promise<void> {
@@ -146,15 +144,15 @@ class EarnService {
       walletType,
       pChainBalance,
       requiredAmount,
-      activeAccount,
-      isDevMode,
+      account,
+      isTestnet,
       feeState
     })
     await importC({
       walletId,
       walletType,
-      activeAccount,
-      isDevMode,
+      account,
+      isTestnet,
       cBaseFeeMultiplier
     })
   }
@@ -215,11 +213,11 @@ class EarnService {
     walletId,
     walletType,
     activeAccount,
+    isTestnet,
     nodeId,
     stakeAmountNanoAvax,
     startDate,
     endDate,
-    isDevMode,
     feeState,
     pFeeAdjustmentThreshold
   }: AddDelegatorTransactionProps & {
@@ -228,20 +226,17 @@ class EarnService {
   }): Promise<string> {
     const startDateUnix = getUnixTime(startDate)
     const endDateUnix = getUnixTime(endDate)
-    const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
+    const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isTestnet)
     const rewardAddress = activeAccount.addressPVM
 
-    const unsignedTx = await WalletService.createAddDelegatorTx({
-      walletId,
-      walletType,
-      accountIndex: activeAccount.index,
-      avaxXPNetwork,
+    const unsignedTx = await AvalancheWalletService.createAddDelegatorTx({
+      account: activeAccount,
+      isTestnet,
       rewardAddress,
       nodeId,
       startDate: startDateUnix,
       endDate: endDateUnix,
       stakeAmountInNAvax: stakeAmountNanoAvax,
-      isDevMode,
       feeState,
       pFeeAdjustmentThreshold
     })
@@ -266,7 +261,7 @@ class EarnService {
     })
     Logger.trace('txID', txID)
 
-    const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
+    const avaxProvider = await NetworkService.getAvalancheProviderXP(isTestnet)
 
     try {
       await retry({

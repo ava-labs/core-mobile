@@ -352,12 +352,13 @@ class BiometricsSDK {
     const bioType = await getSupportedBiometryType()
     if (!bioType) return BiometricType.NONE
     switch (bioType) {
-      case Keychain.BIOMETRY_TYPE.FINGERPRINT:
       case Keychain.BIOMETRY_TYPE.TOUCH_ID:
         return BiometricType.TOUCH_ID
       case Keychain.BIOMETRY_TYPE.FACE_ID:
-      case Keychain.BIOMETRY_TYPE.FACE:
         return BiometricType.FACE_ID
+      case Keychain.BIOMETRY_TYPE.FINGERPRINT:
+      case Keychain.BIOMETRY_TYPE.FACE:
+        return BiometricType.BIOMETRICS
       case Keychain.BIOMETRY_TYPE.IRIS:
         return BiometricType.IRIS
       case Keychain.BIOMETRY_TYPE.OPTIC_ID:
@@ -448,6 +449,7 @@ export default new BiometricsSDK()
 export enum BiometricType {
   FACE_ID = 'Face ID',
   TOUCH_ID = 'Touch ID',
+  BIOMETRICS = 'Biometrics',
   IRIS = 'Iris',
   NONE = 'None'
 }

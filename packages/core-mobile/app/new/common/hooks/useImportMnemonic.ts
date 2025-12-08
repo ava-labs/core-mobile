@@ -1,13 +1,11 @@
+import { useNavigation, useRouter } from 'expo-router'
+import { showSnackbar } from 'new/common/utils/toast'
 import { useCallback, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { useRouter } from 'expo-router'
-import { StackActions } from '@react-navigation/native'
-import { useNavigation } from '@react-navigation/native'
-import { AppThunkDispatch } from 'store/types'
-import { importMnemonicWalletAndAccount } from 'store/wallet/thunks'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
-import { showSnackbar } from 'new/common/utils/toast'
+import { AppThunkDispatch } from 'store/types'
+import { importMnemonicWalletAndAccount } from 'store/wallet/thunks'
 import Logger from 'utils/Logger'
 
 export const useImportMnemonic = (): {
@@ -40,7 +38,7 @@ export const useImportMnemonic = (): {
         showSnackbar('Wallet imported successfully!')
 
         if (canGoBack()) {
-          navigation.dispatch(StackActions.popTo('manageAccounts'))
+          navigation.getParent()?.goBack()
         }
       } catch (error) {
         Logger.error('Failed to import mnemonic wallet', error)

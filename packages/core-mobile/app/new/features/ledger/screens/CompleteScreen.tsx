@@ -1,11 +1,11 @@
+import { Button, Text, useTheme } from '@avalabs/k2-alpine'
+import { useNavigation } from 'expo-router'
+import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import React from 'react'
 import { View } from 'react-native'
-import { useRouter } from 'expo-router'
-import { Text, Button, useTheme } from '@avalabs/k2-alpine'
-import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 
 export default function CompleteScreen(): JSX.Element {
-  const { push } = useRouter()
+  const navigation = useNavigation()
   const {
     theme: { colors }
   } = useTheme()
@@ -14,9 +14,7 @@ export default function CompleteScreen(): JSX.Element {
 
   const handleComplete = (): void => {
     resetSetup()
-    // Navigate to account management after successful wallet creation
-    // @ts-ignore TODO: make routes typesafe
-    push('/accountSettings/manageAccounts')
+    navigation.getParent()?.goBack()
   }
 
   return (
