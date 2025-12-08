@@ -29,7 +29,10 @@ export const storeWallet = createAsyncThunk<
   ThunkApi
 >(
   `${reducerName}/storeWallet`,
-  async ({ walletId, walletSecret, type }: StoreWalletParams, thunkApi) => {
+  async (
+    { walletId, walletSecret, type, name }: StoreWalletParams,
+    thunkApi
+  ) => {
     const success = await BiometricsSDK.storeWalletSecret(
       walletId,
       walletSecret
@@ -44,7 +47,7 @@ export const storeWallet = createAsyncThunk<
 
     return {
       id: walletId,
-      name: generateWalletName(walletCount + 1),
+      name: name || generateWalletName(walletCount + 1),
       type
     }
   }
@@ -97,11 +100,11 @@ export const importPrivateKeyWalletAndAccount = createAsyncThunk<
 
 export const importMnemonicWalletAndAccount = createAsyncThunk<
   void,
-  { mnemonic: string },
+  { mnemonic: string; name?: string },
   ThunkApi
 >(
   `${reducerName}/importMnemonicWalletAndAccount`,
-  async ({ mnemonic }, thunkApi) => {
+  async ({ mnemonic, name }, thunkApi) => {
     const dispatch = thunkApi.dispatch
     const state = thunkApi.getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
@@ -111,6 +114,7 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
     await dispatch(
       storeWallet({
         walletId: newWalletId,
+        name,
         walletSecret: mnemonic,
         type: WalletType.MNEMONIC
       })

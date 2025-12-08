@@ -98,7 +98,6 @@ export const WalletsScreen = (): JSX.Element => {
       dispatch(setActiveAccount(accountId))
 
       dismiss()
-      dismiss()
     },
     [activeAccount?.id, dispatch, dismiss]
   )
