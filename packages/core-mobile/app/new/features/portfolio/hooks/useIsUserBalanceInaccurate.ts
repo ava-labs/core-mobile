@@ -7,17 +7,11 @@ import { useUserBalances } from './useUserBalances'
 export function useIsUserBalanceInaccurate(): boolean {
   const { data } = useUserBalances()
 
-  const accountsArray = useMemo(() => Object.keys(data), [data])
-
   return useMemo(() => {
-    if (accountsArray.length === 0) return true
+    const allBalances = Object.values(data).flat()
 
-    // Check if any account has any balance with dataAccurate === false
-    return accountsArray.some(account => {
-      const accountBalances = data[account]
-      if (!accountBalances || accountBalances.length === 0) return true
+    if (allBalances.length === 0) return true
 
-      return accountBalances.some(balance => balance.dataAccurate === false)
-    })
-  }, [accountsArray, data])
+    return allBalances.some(balance => balance.dataAccurate === false)
+  }, [data])
 }
