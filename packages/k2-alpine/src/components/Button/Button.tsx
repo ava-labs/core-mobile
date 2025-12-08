@@ -28,7 +28,7 @@ const isButtonIconType = (value: unknown): value is ButtonIconType => {
   return (BUTTON_ICON_TYPES as readonly string[]).includes(value as string)
 }
 
-interface ButtonProps {
+export interface ButtonProps {
   onPress?: () => void
   disabled?: boolean
   style?: StyleProp<ViewStyle>
