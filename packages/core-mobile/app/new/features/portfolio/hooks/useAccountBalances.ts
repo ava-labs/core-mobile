@@ -5,9 +5,8 @@ import { useSelector } from 'react-redux'
 import { selectEnabledNetworks } from 'store/network/slice'
 import { Account } from 'store/account/types'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
-import { selectAllCustomTokens } from 'store/customToken'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { NormalizedBalancesForAccount } from 'services/balance/types'
+import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
 import * as store from '../store'
 
 /**
@@ -16,10 +15,11 @@ import * as store from '../store'
 const staleTime = 20_000
 
 /**
- * Refetch interval in milliseconds
+ * Refetch interval in milliseconds:
+ * - 30 seconds in dev mode
+ * - 5 seconds in prod mode
  */
-// TODO: adjust to 5 seconds after integrating with the new backend balance service
-const refetchInterval = 10_000
+const refetchInterval = __DEV__ ? 30_000 : 5_000
 
 export const balanceKey = (account: Account | undefined) =>
   [ReactQueryKeys.ACCOUNT_BALANCE, account?.id] as const
@@ -33,7 +33,7 @@ export function useAccountBalances(
   account?: Account,
   options?: { refetchInterval?: number }
 ): {
-  data: NormalizedBalancesForAccount[]
+  data: AdjustedNormalizedBalancesForAccount[]
   isLoading: boolean
   isFetching: boolean
   isRefetching: boolean
@@ -43,7 +43,6 @@ export function useAccountBalances(
   const [isRefetching, setIsRefetching] = store.useIsRefetchingAccountBalances()
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const currency = useSelector(selectSelectedCurrency)
-  const customTokens = useSelector(selectAllCustomTokens)
 
   const isNotReady = !account || enabledNetworks.length === 0
 
@@ -62,27 +61,21 @@ export function useAccountBalances(
     queryFn: async () => {
       if (isNotReady) return []
 
-      const balances = await BalanceService.getBalancesForAccounts({
+      return await BalanceService.getBalancesForAccount({
         networks: enabledNetworks,
-        accounts: [account],
+        account,
         currency: currency.toLowerCase(),
-        customTokens,
-        onBalanceLoaded: (chainId, partialMap) => {
-          const partial = partialMap[account.id]
-          if (!partial) return
-
+        onBalanceLoaded: balance => {
           queryClient.setQueryData(
             balanceKey(account),
-            (prev: NormalizedBalancesForAccount[] | undefined) => {
-              if (!prev) return [partial]
-              const filtered = prev.filter(p => p.chainId !== chainId)
-              return [...filtered, partial]
+            (prev: AdjustedNormalizedBalancesForAccount[] | undefined) => {
+              if (!prev) return [balance]
+              const filtered = prev.filter(p => p.chainId !== balance.chainId)
+              return [...filtered, balance]
             }
           )
         }
       })
-
-      return balances[account.id] ?? []
     }
   })
 

@@ -315,19 +315,6 @@ export class PrivateKeyWallet implements Wallet {
     return signer.signTx(transaction.serializedTx, provider)
   }
 
-  public async getReadOnlyAvaSigner({
-    accountIndex,
-    provXP
-  }: {
-    accountIndex: number
-    provXP: Avalanche.JsonRpcProvider
-  }): Promise<Avalanche.StaticSigner> {
-    return (await this.getAvaSigner(
-      accountIndex,
-      provXP
-    )) as Avalanche.StaticSigner
-  }
-
   public matchesPrivateKey(privateKey: string): boolean {
     return this.privateKey.toLowerCase() === privateKey.toLowerCase()
   }

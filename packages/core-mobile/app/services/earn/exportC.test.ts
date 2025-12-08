@@ -7,6 +7,7 @@ import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import mockNetworks from 'tests/fixtures/networks.json'
 import { Network } from '@avalabs/core-chains-sdk'
 import { WalletType } from 'services/wallet/types'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 
 const testCBaseFeeMultiplier = 1
 
@@ -36,10 +37,12 @@ describe('earn/exportC', () => {
       )
     })
 
-    jest.mock('services/wallet/WalletService')
-    jest.spyOn(WalletService, 'createExportCTx').mockImplementation(() => {
-      return Promise.resolve({} as UnsignedTx)
-    })
+    jest.mock('services/wallet/AvalancheWalletService')
+    jest
+      .spyOn(AvalancheWalletService, 'createExportCTx')
+      .mockImplementation(() => {
+        return Promise.resolve({} as UnsignedTx)
+      })
     jest.spyOn(WalletService, 'sign').mockImplementation(() => {
       return Promise.resolve(
         JSON.stringify({
@@ -67,8 +70,8 @@ describe('earn/exportC', () => {
           walletType: WalletType.MNEMONIC,
           cChainBalanceWei: BigInt(1e18),
           requiredAmountWei: BigInt(10e18),
-          isDevMode: false,
-          activeAccount: {} as Account,
+          isTestnet: false,
+          account: {} as Account,
           cBaseFeeMultiplier: testCBaseFeeMultiplier
         })
       }).rejects.toThrow('Not enough balance on C chain')
@@ -80,8 +83,8 @@ describe('earn/exportC', () => {
         walletType: WalletType.MNEMONIC,
         cChainBalanceWei: BigInt(10e18),
         requiredAmountWei: BigInt(1e18),
-        isDevMode: false,
-        activeAccount: {} as Account,
+        isTestnet: false,
+        account: {} as Account,
         cBaseFeeMultiplier: testCBaseFeeMultiplier
       })
       expect(baseFeeMockFn).toHaveBeenCalled()
@@ -94,19 +97,17 @@ describe('earn/exportC', () => {
           walletType: WalletType.MNEMONIC,
           cChainBalanceWei: BigInt(10e18),
           requiredAmountWei: BigInt(1e18),
-          isDevMode: false,
-          activeAccount: {} as Account,
+          isTestnet: false,
+          account: {} as Account,
           cBaseFeeMultiplier: testCBaseFeeMultiplier
         })
-        expect(WalletService.createExportCTx).toHaveBeenCalledWith({
+        expect(AvalancheWalletService.createExportCTx).toHaveBeenCalledWith({
           amountInNAvax: 1000000000n,
           baseFeeInNAvax: 1n,
-          accountIndex: undefined,
-          avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
           destinationChain: 'P',
           destinationAddress: undefined,
-          walletId: 'wallet-1',
-          walletType: 'MNEMONIC'
+          isTestnet: false,
+          account: {} as Account
         })
       }).not.toThrow()
     })
@@ -118,8 +119,8 @@ describe('earn/exportC', () => {
           walletType: WalletType.MNEMONIC,
           cChainBalanceWei: BigInt(10e18),
           requiredAmountWei: BigInt(1e18),
-          isDevMode: false,
-          activeAccount: {} as Account,
+          isTestnet: false,
+          account: {} as Account,
           cBaseFeeMultiplier: testCBaseFeeMultiplier
         })
         expect(WalletService.sign).toHaveBeenCalled()
@@ -133,8 +134,8 @@ describe('earn/exportC', () => {
           walletType: WalletType.MNEMONIC,
           cChainBalanceWei: BigInt(10e18),
           requiredAmountWei: BigInt(1e18),
-          isDevMode: false,
-          activeAccount: {} as Account,
+          isTestnet: false,
+          account: {} as Account,
           cBaseFeeMultiplier: testCBaseFeeMultiplier
         })
         expect(NetworkService.sendTransaction).toHaveBeenCalled()

@@ -157,7 +157,7 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
   )
 
   const renderHeader = useCallback((): JSX.Element => {
-    return <></>
+    return <View style={{ height: 12 }} />
 
     // TODO: Add after ledger is implemented
     // return (
@@ -185,8 +185,7 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
       <CollapsibleTabs.FlatList
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingBottom: 16,
-          paddingTop: 12
+          paddingBottom: 16
         }}
         data={data}
         ListHeaderComponent={renderHeader}

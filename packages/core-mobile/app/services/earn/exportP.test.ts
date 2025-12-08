@@ -8,6 +8,7 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { exportP } from 'services/earn/exportP'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { WalletType } from 'services/wallet/types'
+import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 
 describe('earn/exportP', () => {
   describe('exportP', () => {
@@ -33,10 +34,12 @@ describe('earn/exportP', () => {
       )
     })
 
-    jest.mock('services/wallet/WalletService')
-    jest.spyOn(WalletService, 'createExportPTx').mockImplementation(() => {
-      return Promise.resolve({} as UnsignedTx)
-    })
+    jest.mock('services/wallet/AvalancheWalletService')
+    jest
+      .spyOn(AvalancheWalletService, 'createExportPTx')
+      .mockImplementation(() => {
+        return Promise.resolve({} as UnsignedTx)
+      })
     jest.spyOn(WalletService, 'sign').mockImplementation(() => {
       return Promise.resolve(
         JSON.stringify({
@@ -64,8 +67,8 @@ describe('earn/exportP', () => {
           walletType: WalletType.MNEMONIC,
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(13 * 10 ** 9, 9, 'AVAX'),
-          isDevMode: false,
-          activeAccount: {} as Account
+          isTestnet: false,
+          account: {} as Account
         })
       }).rejects.toThrow('Not enough balance on P chain')
     })
@@ -77,18 +80,16 @@ describe('earn/exportP', () => {
           walletType: WalletType.MNEMONIC,
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
-          isDevMode: false,
-          activeAccount: {} as Account
+          isTestnet: false,
+          account: {} as Account
         })
-        expect(WalletService.createExportPTx).toHaveBeenCalledWith({
+        expect(AvalancheWalletService.createExportPTx).toHaveBeenCalledWith({
           amountInNAvax: BigInt(10000000000),
-          accountIndex: undefined,
-          avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
+          account: {},
           destinationChain: 'C',
           destinationAddress: undefined,
           feeState: undefined,
-          walletId: 'wallet-1',
-          walletType: 'MNEMONIC'
+          isTestnet: false
         })
       }).not.toThrow()
     })
@@ -100,8 +101,8 @@ describe('earn/exportP', () => {
           walletType: WalletType.MNEMONIC,
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
-          isDevMode: false,
-          activeAccount: {} as Account
+          isTestnet: false,
+          account: {} as Account
         })
         expect(WalletService.sign).toHaveBeenCalled()
       }).not.toThrow()
@@ -114,8 +115,8 @@ describe('earn/exportP', () => {
           walletType: WalletType.MNEMONIC,
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
-          isDevMode: false,
-          activeAccount: {} as Account
+          isTestnet: false,
+          account: {} as Account
         })
         expect(NetworkService.sendTransaction).toHaveBeenCalled()
       }).not.toThrow()
