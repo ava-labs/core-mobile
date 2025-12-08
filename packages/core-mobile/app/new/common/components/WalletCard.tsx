@@ -209,13 +209,14 @@ const WalletCard = ({
               gap: 5,
               flex: 1
             }}>
-            <View sx={{ gap: 2 }}>
+            <View>
               <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                 <Text
                   testID={`manage_accounts_wallet_name__${wallet.name}`}
                   variant="heading4"
                   style={{
-                    lineHeight: 24
+                    // this is needed for emojis to be displayed correctly
+                    lineHeight: 27
                   }}
                   numberOfLines={1}>
                   {wallet.name}

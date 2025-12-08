@@ -142,14 +142,17 @@ export const RecentContacts = ({
                     accessibilityLabel={`recent_contacts__${name}`}
                     variant="buttonMedium"
                     numberOfLines={1}
-                    sx={{ flex: 1 }}>
+                    sx={{
+                      flex: 1,
+                      // this is needed for emojis to be displayed correctly
+                      lineHeight: 20
+                    }}>
                     {name}
                   </Text>
                   {address && (
                     <Text
-                      variant="body2"
+                      variant="mono"
                       sx={{
-                        lineHeight: 16,
                         fontSize: 13,
                         color: '$textSecondary'
                       }}

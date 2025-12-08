@@ -102,15 +102,18 @@ export const ContactList = ({
                   <Text
                     variant="buttonMedium"
                     numberOfLines={1}
-                    sx={{ flex: 1 }}>
+                    sx={{
+                      flex: 1,
+                      // this is needed for emojis to be displayed correctly
+                      lineHeight: 20
+                    }}>
                     {name}
                   </Text>
                   {address && (
                     <Text
                       testID="contact_preview_address"
-                      variant="body2"
+                      variant="mono"
                       sx={{
-                        lineHeight: 16,
                         fontSize: 13,
                         color: '$textSecondary'
                       }}
