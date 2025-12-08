@@ -220,8 +220,10 @@ export const PinScreen = ({
         if (Platform.OS === 'android') {
           // Wait for the current frame to finish rendering
           requestAnimationFrame(() => {
-            // Wait for the next frame, ensuring layout is fully committed
-            requestAnimationFrame(() => focusPinInput())
+            // Wait for pending JS/native tasks to complete
+            setTimeout(() => {
+              focusPinInput()
+            }, 0)
           })
         } else {
           focusPinInput()
