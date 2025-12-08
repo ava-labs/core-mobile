@@ -31,6 +31,7 @@ export const SelectNetworkScreen = ({
 
   const renderItem: ListRenderItem<Network> = ({ item, index }) => {
     const isLastItem = index === networks.length - 1
+    const isFirstItem = index === 0
 
     const isAvalancheCChain = isAvalancheCChainId(item.chainId)
 
@@ -44,6 +45,7 @@ export const SelectNetworkScreen = ({
         onPress={() => handleNetworkSelect(item)}
         sx={{
           flexDirection: 'row',
+          marginTop: isFirstItem ? 20 : 0,
           justifyContent: 'space-between',
           alignItems: 'center',
           paddingLeft: HORIZONTAL_MARGIN,

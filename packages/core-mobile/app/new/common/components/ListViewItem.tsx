@@ -68,7 +68,7 @@ export const ListViewItem = ({
             flex: 1,
             height: 60,
             marginLeft: 12,
-            paddingRight: 16,
+            paddingRight: 12,
             flexDirection: 'row',
             alignItems: 'center',
             borderBottomWidth: 1,
