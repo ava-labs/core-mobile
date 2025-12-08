@@ -72,7 +72,7 @@ export const AccountBalance = ({
   const renderError = useCallback(() => {
     if (isFetching) return null
 
-    // Balance is 0 and all balances are accurate
+    // // Balance is 0 and all balances are accurate
     if (!accountBalance && isBalanceAccurate) return null
 
     // Balance is inaccurate

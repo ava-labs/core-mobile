@@ -9,10 +9,10 @@ export function useIsAccountsBalanceAccurate(accounts: Account[]): boolean {
   const { data } = useAccountsBalances(accounts)
 
   return useMemo(() => {
-    if (accounts.length === 0) return false
     const accountsArray = Object.values(data).flat()
+    if (accountsArray.length === 0) return false
 
     // Check if every balance has dataAccurate → true
     return accountsArray.every(balance => balance.dataAccurate)
-  }, [data, accounts])
+  }, [data])
 }
