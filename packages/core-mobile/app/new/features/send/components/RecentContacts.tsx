@@ -11,17 +11,20 @@ import {
   showAlert,
   useTheme
 } from '@avalabs/k2-alpine'
+import { NetworkVMType } from '@avalabs/vm-module-types'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
+import { WalletIcon } from 'common/components/WalletIcon'
+import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { loadAvatar } from 'common/utils/loadAvatar'
+import { useGlobalSearchParams } from 'expo-router'
 import { isValidAddress } from 'features/accountSettings/utils/isValidAddress'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { selectAccountById } from 'store/account'
 import { Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
-import { useGlobalSearchParams } from 'expo-router'
-import { NetworkVMType } from '@avalabs/vm-module-types'
+import { selectWalletById } from 'store/wallet/slice'
 import EMPTY_ADDRESS_BOOK_ICON from '../../../assets/icons/address_book_empty.png'
 import { getAddressByVmName } from '../utils/getAddressByVmName'
 
@@ -90,98 +93,18 @@ export const RecentContacts = ({
         vmName,
         isDeveloperMode
       })
-      const { name } = item
-      const isLastItem = index === searchResults.length - 1
-
-      const avatar = loadAvatar(item.avatar)
+      const isLast = index === searchResults.length - 1
 
       return (
-        <View>
-          <TouchableOpacity
-            sx={{
-              marginTop: 12,
-              marginHorizontal: 16,
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexDirection: 'row'
-            }}
-            onPress={() => onSelectContact(item)}>
-            <View
-              sx={{
-                flex: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginBottom: 12
-              }}>
-              <View
-                sx={{
-                  width: 40,
-                  height: 40
-                }}>
-                <Avatar
-                  backgroundColor="transparent"
-                  size={40}
-                  source={avatar?.source}
-                  hasLoading={false}
-                />
-              </View>
-              <View
-                sx={{
-                  flexGrow: 1,
-                  marginHorizontal: 12,
-                  flexDirection: 'row'
-                }}>
-                <View
-                  sx={{
-                    justifyItems: 'center',
-                    justifyContent: 'center',
-                    width: '90%'
-                  }}>
-                  <Text
-                    testID={`recent_contacts__${name}`}
-                    accessibilityLabel={`recent_contacts__${name}`}
-                    variant="buttonMedium"
-                    numberOfLines={1}
-                    sx={{ flex: 1 }}>
-                    {name}
-                  </Text>
-                  {address && (
-                    <Text
-                      variant="body2"
-                      sx={{
-                        lineHeight: 16,
-                        fontSize: 13,
-                        color: '$textSecondary'
-                      }}
-                      ellipsizeMode="tail"
-                      numberOfLines={1}>
-                      {truncateAddress(address, TRUNCATE_ADDRESS_LENGTH)}
-                    </Text>
-                  )}
-                </View>
-              </View>
-            </View>
-            <Icons.Navigation.ChevronRight
-              width={20}
-              height={20}
-              color={colors.$textSecondary}
-            />
-          </TouchableOpacity>
-          {!isLastItem && (
-            <View sx={{ marginLeft: 62 }}>
-              <Separator />
-            </View>
-          )}
-        </View>
+        <ContactListItem
+          item={item}
+          address={address ?? ''}
+          isLast={isLast}
+          onSelectContact={onSelectContact}
+        />
       )
     },
-    [
-      vmName,
-      isDeveloperMode,
-      searchResults.length,
-      colors.$textSecondary,
-      onSelectContact
-    ]
+    [vmName, isDeveloperMode, searchResults.length, onSelectContact]
   )
 
   const renderHeader = useCallback(() => {
@@ -248,5 +171,118 @@ export const RecentContacts = ({
       renderItem={item => renderItem(item.item as Contact, item.index)}
       renderEmpty={renderEmpty}
     />
+  )
+}
+
+const ContactListItem = ({
+  item,
+  address,
+  isLast,
+  onSelectContact
+}: {
+  item: Contact
+  address: string
+  isLast: boolean
+  onSelectContact: (contact: Contact) => void
+}): JSX.Element => {
+  const { theme } = useTheme()
+  const avatar = loadAvatar(item.avatar)
+  const account = useSelector(selectAccountById(item.id))
+  const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
+
+  return (
+    <View>
+      <TouchableOpacity
+        sx={{
+          marginTop: 12,
+          marginHorizontal: 16,
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexDirection: 'row'
+        }}
+        onPress={() => onSelectContact(item)}>
+        <View
+          sx={{
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 12
+          }}>
+          <View
+            sx={{
+              width: 40,
+              height: 40
+            }}>
+            <Avatar
+              backgroundColor="transparent"
+              size={40}
+              source={avatar?.source}
+              hasLoading={false}
+            />
+          </View>
+          <View
+            sx={{
+              flexGrow: 1,
+              marginHorizontal: 12,
+              flexDirection: 'row'
+            }}>
+            <View
+              sx={{
+                justifyItems: 'center',
+                justifyContent: 'center',
+                width: '90%'
+              }}>
+              {wallet && (
+                <View
+                  sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                  <WalletIcon
+                    width={16}
+                    height={16}
+                    wallet={wallet}
+                    color={theme.colors.$textSecondary}
+                    isExpanded
+                  />
+                  <Text
+                    variant="buttonSmall"
+                    sx={{
+                      color: '$textSecondary',
+                      lineHeight: 16
+                    }}>
+                    {wallet?.name}
+                  </Text>
+                </View>
+              )}
+
+              <Text
+                testID={`recent_contacts__${item.name}`}
+                accessibilityLabel={`recent_contacts__${item.name}`}
+                variant="buttonMedium"
+                numberOfLines={1}
+                sx={{ flex: 1, lineHeight: 20 }}>
+                {item.name}
+              </Text>
+              {address && (
+                <Text
+                  variant="mono"
+                  sx={{
+                    lineHeight: 16,
+                    fontSize: 13,
+                    color: '$textSecondary'
+                  }}
+                  ellipsizeMode="tail"
+                  numberOfLines={1}>
+                  {truncateAddress(address, TRUNCATE_ADDRESS_LENGTH)}
+                </Text>
+              )}
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+      {!isLast && (
+        <View sx={{ marginLeft: 68 }}>
+          <Separator />
+        </View>
+      )}
+    </View>
   )
 }
