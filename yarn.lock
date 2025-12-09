@@ -721,42 +721,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/core-wallets-sdk@npm:3.1.0-alpha.61":
-  version: 3.1.0-alpha.61
-  resolution: "@avalabs/core-wallets-sdk@npm:3.1.0-alpha.61"
-  dependencies:
-    "@avalabs/avalanchejs": 5.1.0-alpha.2
-    "@avalabs/core-chains-sdk": 3.1.0-alpha.61
-    "@avalabs/core-utils-sdk": 3.1.0-alpha.61
-    "@avalabs/glacier-sdk": 3.1.0-alpha.61
-    "@avalabs/hw-app-avalanche": 1.1.0
-    "@ledgerhq/hw-app-btc": 10.11.0
-    "@ledgerhq/hw-app-eth": 6.45.18
-    "@ledgerhq/hw-app-solana": 7.5.3
-    "@ledgerhq/hw-transport": 6.31.10
-    "@metamask/eth-sig-util": 7.0.2
-    "@noble/curves": 1.6.0
-    "@noble/hashes": 1.7.1
-    "@scure/base": 1.2.4
-    "@solana-program/system": 0.7.0
-    "@solana-program/token": 0.5.1
-    "@solana/kit": 2.1.0
-    bip32: 2.0.6
-    bip32-path: 0.4.2
-    bip39: 3.1.0
-    bitcoinjs-lib: 5.2.0
-    coinselect: 3.1.13
-    create-hash: 1.2.0
-    hdkey: 2.0.1
-    ledger-bitcoin: 0.2.3
-    micro-key-producer: 0.7.5
-    xss: 1.0.14
-  peerDependencies:
-    ethers: ^6.7.1
-  checksum: 7fea71e5c411a438f3234ee831efa9a627e41134fe846b95e23a7b396899d5c55a2827ea47f6af6a61c3924e95e2c2c274538f8fab1d9089be9174478adad730
-  languageName: node
-  linkType: hard
-
 "@avalabs/core-wallets-sdk@npm:3.1.0-alpha.69":
   version: 3.1.0-alpha.69
   resolution: "@avalabs/core-wallets-sdk@npm:3.1.0-alpha.69"
@@ -830,18 +794,6 @@ __metadata:
   version: 3.1.0-alpha.61
   resolution: "@avalabs/glacier-sdk@npm:3.1.0-alpha.61"
   checksum: 27d52059f9328c536d9eba8d5bb6069dd2ded75acb8433cff07101009eb7410d9287ffeb6a248c125183b67211bdd972918147e6fe12397d9e4a53d01fca2ffc
-  languageName: node
-  linkType: hard
-
-"@avalabs/hw-app-avalanche@npm:1.1.0":
-  version: 1.1.0
-  resolution: "@avalabs/hw-app-avalanche@npm:1.1.0"
-  dependencies:
-    "@ledgerhq/hw-app-eth": 6.45.16
-    "@ledgerhq/hw-transport": 6.31.9
-    "@ledgerhq/types-live": 6.82.0
-    bs58: 6.0.0
-  checksum: 5572cc99eff008fa6b625e3695d31879113c3e07e4a89e34cde1f6fa872b434e2512568a5e72f2ae2615bcd06e7490f75b645e3aa8ff73c756afbe12096bccd0
   languageName: node
   linkType: hard
 
@@ -8854,7 +8806,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/cryptoassets-evm-signatures@npm:^13.6.0, @ledgerhq/cryptoassets-evm-signatures@npm:^13.6.2, @ledgerhq/cryptoassets-evm-signatures@npm:^13.6.4":
+"@ledgerhq/cryptoassets-evm-signatures@npm:^13.6.2, @ledgerhq/cryptoassets-evm-signatures@npm:^13.6.4":
   version: 13.6.4
   resolution: "@ledgerhq/cryptoassets-evm-signatures@npm:13.6.4"
   dependencies:
@@ -8897,7 +8849,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/domain-service@npm:^1.2.41, @ledgerhq/domain-service@npm:^1.2.43":
+"@ledgerhq/domain-service@npm:^1.2.43":
   version: 1.2.45
   resolution: "@ledgerhq/domain-service@npm:1.2.45"
   dependencies:
@@ -8926,13 +8878,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/errors@npm:^6.24.0, @ledgerhq/errors@npm:^6.26.0":
-  version: 6.26.0
-  resolution: "@ledgerhq/errors@npm:6.26.0"
-  checksum: 0ccd870d7bbeb5dfc58c767ee173d86e068039c6a86d8c717503575ac5a4425889aabfb8bf5072e91ab834ef4d29cd05c3adb8a4d862d766b465c21ba685a4e7
-  languageName: node
-  linkType: hard
-
 "@ledgerhq/errors@npm:^6.25.0":
   version: 6.25.0
   resolution: "@ledgerhq/errors@npm:6.25.0"
@@ -8940,7 +8885,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/evm-tools@npm:^1.7.4, @ledgerhq/evm-tools@npm:^1.7.6":
+"@ledgerhq/errors@npm:^6.26.0":
+  version: 6.26.0
+  resolution: "@ledgerhq/errors@npm:6.26.0"
+  checksum: 0ccd870d7bbeb5dfc58c767ee173d86e068039c6a86d8c717503575ac5a4425889aabfb8bf5072e91ab834ef4d29cd05c3adb8a4d862d766b465c21ba685a4e7
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/evm-tools@npm:^1.7.6":
   version: 1.7.8
   resolution: "@ledgerhq/evm-tools@npm:1.7.8"
   dependencies:
@@ -8990,28 +8942,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-app-eth@npm:6.45.16":
-  version: 6.45.16
-  resolution: "@ledgerhq/hw-app-eth@npm:6.45.16"
-  dependencies:
-    "@ethersproject/abi": ^5.7.0
-    "@ethersproject/rlp": ^5.7.0
-    "@ethersproject/transactions": ^5.7.0
-    "@ledgerhq/cryptoassets-evm-signatures": ^13.6.0
-    "@ledgerhq/domain-service": ^1.2.41
-    "@ledgerhq/errors": ^6.24.0
-    "@ledgerhq/evm-tools": ^1.7.4
-    "@ledgerhq/hw-transport": ^6.31.9
-    "@ledgerhq/hw-transport-mocker": ^6.29.9
-    "@ledgerhq/logs": ^6.13.0
-    "@ledgerhq/types-live": ^6.82.0
-    axios: 1.7.7
-    bignumber.js: ^9.1.2
-    semver: ^7.3.5
-  checksum: 3f83047765dc0b518a71c6a3a0cb8a9ecab8fc68c41b85a39f20d75f63cba45b1ee9b8126e04d3baa9adf5ca34cf00d6a8c56112a692984b5b99157a650ea83e
-  languageName: node
-  linkType: hard
-
 "@ledgerhq/hw-app-eth@npm:6.45.18":
   version: 6.45.18
   resolution: "@ledgerhq/hw-app-eth@npm:6.45.18"
@@ -9057,7 +8987,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-transport-mocker@npm:^6.29.10, @ledgerhq/hw-transport-mocker@npm:^6.29.9":
+"@ledgerhq/hw-transport-mocker@npm:^6.29.10":
   version: 6.29.12
   resolution: "@ledgerhq/hw-transport-mocker@npm:6.29.12"
   dependencies:
@@ -9129,7 +9059,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/types-live@npm:^6.82.0, @ledgerhq/types-live@npm:^6.84.0, @ledgerhq/types-live@npm:^6.86.0":
+"@ledgerhq/types-live@npm:^6.84.0, @ledgerhq/types-live@npm:^6.86.0":
   version: 6.86.0
   resolution: "@ledgerhq/types-live@npm:6.86.0"
   dependencies:
@@ -17553,17 +17483,6 @@ __metadata:
     form-data: ^4.0.4
     proxy-from-env: ^1.1.0
   checksum: f0331594fe053a4bbff04104edb073973a3aabfad2e56b0aa18de82428aa63f6f0839ca3d837258ec739cb4528014121793b1649a21e5115ffb2bf8237eadca3
-  languageName: node
-  linkType: hard
-
-"axios@npm:1.7.7":
-  version: 1.7.7
-  resolution: "axios@npm:1.7.7"
-  dependencies:
-    follow-redirects: ^1.15.6
-    form-data: ^4.0.0
-    proxy-from-env: ^1.1.0
-  checksum: 882d4fe0ec694a07c7f5c1f68205eb6dc5a62aecdb632cc7a4a3d0985188ce3030e0b277e1a8260ac3f194d314ae342117660a151fabffdc5081ca0b5a8b47fe
   languageName: node
   linkType: hard
 

@@ -1,9 +1,4 @@
-import {
-  Avalanche,
-  BitcoinProvider,
-  JsonRpcBatchInternal,
-  SolanaProvider
-} from '@avalabs/core-wallets-sdk'
+import { SolanaProvider } from '@avalabs/core-wallets-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import { useEffect, useState } from 'react'
 import {
@@ -31,10 +26,15 @@ export function useSVMProvider(network?: Network): SolanaProvider | undefined {
 // this will return an EVM provider (that uses the network.rpcUrl)
 export function useEVMProvider(
   network?: Network
-): JsonRpcBatchInternal | undefined {
-  const [evmProvider, setEVMProvider] = useState<JsonRpcBatchInternal>()
+): Awaited<ReturnType<typeof getEvmProvider>> | undefined {
+  const [evmProvider, setEVMProvider] =
+    useState<Awaited<ReturnType<typeof getEvmProvider>>>()
   useEffect(() => {
-    network && getEvmProvider(network).then(provider => setEVMProvider(provider as unknown as JsonRpcBatchInternal)).catch(Logger.error)
+    if (network) {
+      getEvmProvider(network)
+        .then(provider => setEVMProvider(provider))
+        .catch(Logger.error)
+    }
   }, [network])
 
   return evmProvider
@@ -43,16 +43,20 @@ export function useEVMProvider(
 // this will always return an ethereum provider (infura)
 export function useEthereumProvider(
   isTestnet?: boolean
-): JsonRpcBatchInternal | undefined {
+): Awaited<ReturnType<typeof getEthereumProvider>> | undefined {
   const { networks } = useNetworks()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const _isTestnet = isTestnet ?? isDeveloperMode
 
   const [ethereumProvider, setEthereumProvider] =
-    useState<JsonRpcBatchInternal>()
+    useState<Awaited<ReturnType<typeof getEthereumProvider>>>()
   useEffect(() => {
     getEthereumProvider(networks, _isTestnet)
-      .then(provider => setEthereumProvider(provider as unknown as JsonRpcBatchInternal | undefined))
+      .then(provider => {
+        if (provider) {
+          setEthereumProvider(provider)
+        }
+      })
       .catch(Logger.error)
   }, [networks, _isTestnet])
 
@@ -61,12 +65,15 @@ export function useEthereumProvider(
 
 export function useBitcoinProvider(
   isTestnet?: boolean
-): BitcoinProvider | undefined {
+): Awaited<ReturnType<typeof getBitcoinProvider>> | undefined {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const _isTestnet = isTestnet ?? isDeveloperMode
-  const [bitcoinProvider, setBitcoinProvider] = useState<BitcoinProvider>()
+  const [bitcoinProvider, setBitcoinProvider] =
+    useState<Awaited<ReturnType<typeof getBitcoinProvider>>>()
   useEffect(() => {
-    getBitcoinProvider(_isTestnet).then(provider => setBitcoinProvider(provider as unknown as BitcoinProvider)).catch(Logger.error)
+    getBitcoinProvider(_isTestnet)
+      .then(provider => setBitcoinProvider(provider))
+      .catch(Logger.error)
   }, [_isTestnet])
 
   return bitcoinProvider
@@ -74,15 +81,19 @@ export function useBitcoinProvider(
 
 export function useAvalancheEvmProvider(
   isTestnet?: boolean
-): JsonRpcBatchInternal | undefined {
+): Awaited<ReturnType<typeof getAvalancheEvmProvider>> | undefined {
   const { networks } = useNetworks()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const _isTestnet = isTestnet ?? isDeveloperMode
   const [avalancheProvider, setAvalancheProvider] =
-    useState<JsonRpcBatchInternal>()
+    useState<Awaited<ReturnType<typeof getAvalancheEvmProvider>>>()
   useEffect(() => {
     getAvalancheEvmProvider(networks, _isTestnet)
-      .then(provider => setAvalancheProvider(provider as unknown as JsonRpcBatchInternal | undefined))
+      .then(provider => {
+        if (provider) {
+          setAvalancheProvider(provider)
+        }
+      })
       .catch(Logger.error)
   }, [networks, _isTestnet])
   return avalancheProvider
@@ -90,14 +101,14 @@ export function useAvalancheEvmProvider(
 
 export function useAvalancheXpProvider(
   isTestnet?: boolean
-): Avalanche.JsonRpcProvider | undefined {
+): Awaited<ReturnType<typeof getAvalancheXpProvider>> | undefined {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const _isTestnet = isTestnet ?? isDeveloperMode
   const [avalancheXpProvider, setAvalancheXpProvider] =
-    useState<Avalanche.JsonRpcProvider>()
+    useState<Awaited<ReturnType<typeof getAvalancheXpProvider>>>()
   useEffect(() => {
     getAvalancheXpProvider(!!_isTestnet)
-      .then(provider => setAvalancheXpProvider(provider as unknown as Avalanche.JsonRpcProvider))
+      .then(provider => setAvalancheXpProvider(provider))
       .catch(Logger.error)
   }, [_isTestnet])
   return avalancheXpProvider
