@@ -57,7 +57,7 @@ export const transformKeyInfosToPubKeys = (
 
     let index: number
     if (key.key_type === cs.Ed25519.Solana) {
-      // Solana: get second-to-last segment as the path is missing the address index when we receive it 
+      // Solana: get second-to-last segment as the path is missing the address index when we receive it
       index = parseInt(
         key.derivation_info.derivation_path.split('/').at(-2) as string
       )
