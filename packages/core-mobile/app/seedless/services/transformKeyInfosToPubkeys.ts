@@ -55,21 +55,18 @@ export const transformKeyInfosToPubKeys = (
       return acc
     }
 
-    const { accountIndex, addressIndex } = toSegments(
-      key.derivation_info.derivation_path
-    )
-
     let index: number
     if (key.key_type === cs.Ed25519.Solana) {
-      // Solana: get second-to-last segment
-      // index = parseInt(pathSegments.at(-2) as string)
-      index = accountIndex
+      // Solana: get second-to-last segment as the path is missing the address index when we receive it 
+      index = parseInt(
+        key.derivation_info.derivation_path.split('/').at(-2) as string
+      )
     } else if ([cs.Secp256k1.Ava, 'SecpAvaTestAddr'].includes(key.key_type)) {
       // For Avalanche keys, detect derivation spec
-      // const lastSegment = Number(pathSegments.pop())
-      // const accountSegment = pathSegments[2]
-      //   ? Number(pathSegments[2].replace("'", ''))
-      //   : 0
+
+      const { accountIndex, addressIndex } = toSegments(
+        key.derivation_info.derivation_path
+      )
 
       // New spec: m/44'/coin'/account'/0/0 (account index in 3rd position)
       // Old spec: m/44'/coin'/0'/0/addressIndex (addressIndex in last position)
@@ -82,6 +79,7 @@ export const transformKeyInfosToPubKeys = (
         index = 0
       }
     } else {
+      const { addressIndex } = toSegments(key.derivation_info.derivation_path)
       // pop addresses index and return as number
       index = addressIndex
     }
