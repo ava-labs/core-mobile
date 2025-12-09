@@ -41,6 +41,7 @@
     "bip32": "3.0.1",
     "bip39": "3.1.0",
     "@avalabs/core-wallets-sdk": "3.1.0-alpha.69",
+    "@avalabs/types": "3.1.0-alpha.69",
     "@avalabs/avalanchejs/@noble/hashes": "1.8.0",
     "@avalabs/bridge-unified/@noble/hashes": "1.8.0",
     "@avalabs/core-gasless-sdk/@noble/hashes": "1.8.0",

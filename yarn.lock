@@ -379,11 +379,11 @@ __metadata:
     "@avalabs/core-utils-sdk": 3.1.0-alpha.69
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.69
     "@avalabs/evm-module": 3.0.0
-    "@avalabs/glacier-sdk": 3.1.0-alpha.58
+    "@avalabs/glacier-sdk": 3.1.0-alpha.69
     "@avalabs/k2-alpine": "workspace:*"
     "@avalabs/svm-module": 3.0.0
     "@avalabs/tsconfig-mobile": "workspace:*"
-    "@avalabs/types": 3.1.0-canary.9974863.0
+    "@avalabs/types": 3.1.0-alpha.69
     "@avalabs/vm-module-types": 3.0.0
     "@babel/core": 7.28.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
@@ -783,17 +783,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/glacier-sdk@npm:3.1.0-alpha.58":
-  version: 3.1.0-alpha.58
-  resolution: "@avalabs/glacier-sdk@npm:3.1.0-alpha.58"
-  checksum: 1d0b0b97b73f07cee1c41fd4f4b0692591b82a9f65852cadc15aca0e03f3fef76d77f7beb2e25d4fb82ddb8bbc81c68288c4df47e5c5dc8c6cd2ec9ec0b2e469
-  languageName: node
-  linkType: hard
-
 "@avalabs/glacier-sdk@npm:3.1.0-alpha.61":
   version: 3.1.0-alpha.61
   resolution: "@avalabs/glacier-sdk@npm:3.1.0-alpha.61"
   checksum: 27d52059f9328c536d9eba8d5bb6069dd2ded75acb8433cff07101009eb7410d9287ffeb6a248c125183b67211bdd972918147e6fe12397d9e4a53d01fca2ffc
+  languageName: node
+  linkType: hard
+
+"@avalabs/glacier-sdk@npm:3.1.0-alpha.69":
+  version: 3.1.0-alpha.69
+  resolution: "@avalabs/glacier-sdk@npm:3.1.0-alpha.69"
+  checksum: ac43681c166cdc1e99551cc3eb6a4f14d92cba562050a7177262e00360b1cf59233c39d4a04ac3c2278fb7ceb1e55d26c5ef411ad6a07540f8458177948e4bc6
   languageName: node
   linkType: hard
 
@@ -914,17 +914,10 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/types@npm:3.1.0-alpha.61":
-  version: 3.1.0-alpha.61
-  resolution: "@avalabs/types@npm:3.1.0-alpha.61"
-  checksum: f4ed84c6615d284379ecc45a5f8431cf9be3ac0e43df9f5fd84576343447dc0308f4baed9a9d3592f44599d5667f89910d658793efbe81b2a3586c3db37fefe5
-  languageName: node
-  linkType: hard
-
-"@avalabs/types@npm:3.1.0-canary.9974863.0":
-  version: 3.1.0-canary.9974863.0
-  resolution: "@avalabs/types@npm:3.1.0-canary.9974863.0"
-  checksum: f39c2b20f39d66fc56c0bcc71739b5e72ebb4c89ff99c8a07168f9a187c607aeae7ece20a6bc478bfe5aee7b62c284e97e5934e728063f240d31925c546ccde8
+"@avalabs/types@npm:3.1.0-alpha.69":
+  version: 3.1.0-alpha.69
+  resolution: "@avalabs/types@npm:3.1.0-alpha.69"
+  checksum: 9fd111c017ff7ea44b48106c30b7b5e71d963d69608c872e353e25e20fe92d2e459a071335b64f8822c937a2a7e673d988d60af5beabeec2f6e2a4c68341580b
   languageName: node
   linkType: hard
 
@@ -33572,7 +33565,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 57322e733d20b38881da9514a1ebb03a24a2457ed59683e4f714630c2a0ab29eb9981ad9acb02d7b7b32d7a0f5c02791146fc23c13a39c8254f7d0437844dcb4
+  checksum: 44ee8c8ebc4dc4d3423e9045e1aebac31829eb518824e24f41b2bd10ab1e8343e824e9d912f259bfec7bfa798e96513cc05dbdcdf36087b2a43806f74a3b0fa2
   languageName: node
   linkType: hard
 
