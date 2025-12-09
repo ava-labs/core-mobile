@@ -39,6 +39,7 @@ export const TextInput = forwardRef<TextInputRef, TextInputProps>(
       leftIcon,
       maxLength,
       keyboardType,
+      numberOfLines,
       containerSx,
       textInputSx
     }: TextInputProps,
@@ -89,11 +90,11 @@ export const TextInput = forwardRef<TextInputRef, TextInputProps>(
               autoFocus={autoFocus}
               style={{
                 fontFamily: 'Inter-Regular',
-                height: 44,
                 fontSize: 16,
                 color: colors.$textPrimary,
                 ...textInputSx
               }}
+              numberOfLines={numberOfLines}
               value={value}
               onChangeText={onChangeText}
               placeholder={placeholder}

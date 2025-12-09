@@ -39,19 +39,21 @@ export const SimpleTextInput = ({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        height: 44
+        height: 44,
+        overflow: 'hidden'
       }}>
       <TextInput
         ref={ref}
         containerSx={{
           flex: 1,
           backgroundColor: 'transparent',
-          marginRight: 13
+          marginRight: 13,
+          overflow: 'hidden'
         }}
         autoFocus={autoFocus}
+        numberOfLines={1}
         textInputSx={{
           fontFamily: 'Inter-Regular',
-          height: 44,
           fontSize: 16,
           lineHeight: 20,
           color: colors.$textPrimary
@@ -64,7 +66,17 @@ export const SimpleTextInput = ({
         secureTextEntry={secureTextEntry}
       />
       {value.length !== 0 && (
-        <TouchableOpacity onPress={() => onChangeText('')}>
+        <TouchableOpacity
+          style={{
+            position: 'absolute',
+            right: 0,
+            paddingHorizontal: 10,
+            top: 0,
+            bottom: 0,
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
+          onPress={() => onChangeText('')}>
           <Icons.Action.Clear
             width={16}
             height={16}
