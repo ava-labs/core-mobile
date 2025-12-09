@@ -216,7 +216,22 @@ export const PinScreen = ({
     if (accessType === 'BIO' && enrolledBiometrics) {
       handlePromptBioLogin()
     } else {
-      focusPinInput()
+      InteractionManager.runAfterInteractions(() => {
+        if (Platform.OS === 'android') {
+          // Wait for the current frame to finish rendering
+          requestAnimationFrame(() => {
+            // Wait for the next frame, ensuring layout is fully committed
+            requestAnimationFrame(() => {
+              // Wait for pending JS/native tasks to complete
+              setTimeout(() => {
+                focusPinInput()
+              }, 0)
+            })
+          })
+        } else {
+          focusPinInput()
+        }
+      })
     }
   }, [handlePromptBioLogin, focusPinInput])
 
