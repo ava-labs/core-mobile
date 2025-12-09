@@ -20,7 +20,7 @@ module.exports = {
     'android/app/build/**',
     'expo-env.d.ts',
     'ios/DerivedData',
-    'app/generated/**',
+    'app/utils/api/generated/**',
     'app/utils/apiClient/generated/**'
   ],
   overrides: [
