@@ -47,8 +47,7 @@ export const SimpleTextInput = ({
         containerSx={{
           flex: 1,
           backgroundColor: 'transparent',
-          marginRight: 13,
-          overflow: 'hidden'
+          marginRight: 13
         }}
         autoFocus={autoFocus}
         numberOfLines={1}
