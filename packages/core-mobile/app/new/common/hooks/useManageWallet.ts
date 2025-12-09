@@ -1,4 +1,5 @@
 import { showAlert } from '@avalabs/k2-alpine'
+import { CoreAccountType } from '@avalabs/types'
 import { DropdownItem } from 'common/components/DropdownMenu'
 import {
   dismissAlertWithTextInput,
@@ -10,7 +11,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
 import { addAccount } from 'store/account'
-import { selectAccounts } from 'store/account/slice'
+import { removeAccount, selectAccounts } from 'store/account/slice'
 import { AppThunkDispatch } from 'store/types'
 import {
   selectIsMigratingActiveAccounts,
@@ -32,6 +33,17 @@ export const useManageWallet = (): {
   const wallets = useSelector(selectWallets)
   const accounts = useSelector(selectAccounts)
   const isMigratingActiveAccounts = useSelector(selectIsMigratingActiveAccounts)
+
+  const handleRemoveAllImportedAccounts = useCallback((): void => {
+    const importedAccounts = Object.values(accounts).filter(
+      account => account.type === CoreAccountType.IMPORTED
+    )
+    importedAccounts.forEach(account => {
+      dispatch(removeAccount(account.id))
+      // removeWallet will also set the first account of the first wallet as active
+      dispatch(removeWallet(account.walletId))
+    })
+  }, [dispatch, accounts])
 
   const handleRenameWallet = useCallback(
     (wallet: Wallet): void => {
@@ -176,10 +188,18 @@ export const useManageWallet = (): {
         })
       }
 
-      if (canRemoveWallet(wallet)) {
+      if (canRemoveWallet(wallet) && wallet.type !== WalletType.PRIVATE_KEY) {
         baseItems.push({
           id: 'remove',
           title: 'Remove wallet',
+          destructive: true
+        })
+      }
+
+      if (wallet.type === WalletType.PRIVATE_KEY) {
+        baseItems.push({
+          id: 'remove_all_imported_accounts',
+          title: 'Remove all accounts',
           destructive: true
         })
       }
@@ -201,9 +221,17 @@ export const useManageWallet = (): {
         case 'add_account':
           handleAddAccount(wallet)
           break
+        case 'remove_all_imported_accounts':
+          handleRemoveAllImportedAccounts()
+          break
       }
     },
-    [handleRenameWallet, handleRemoveWallet, handleAddAccount]
+    [
+      handleRenameWallet,
+      handleRemoveWallet,
+      handleAddAccount,
+      handleRemoveAllImportedAccounts
+    ]
   )
 
   const handleDropdownSelect = useCallback(
