@@ -1,10 +1,9 @@
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import TokenService from 'services/token/TokenService'
 import {
-  SimplePriceResponse,
   CoinMarket,
   SimplePriceInCurrencyResponse,
-  TrendingToken
+  SimplePriceResponse
 } from 'services/token/types'
 import { transformSparklineData } from 'services/token/utils'
 import {
@@ -14,21 +13,27 @@ import {
   PriceData,
   Prices
 } from 'store/watchlist/types'
+import {
+  AggregatedApiClient,
+  aggregatedApiClient
+} from 'utils/api/fetches/aggregatedTokensFetchClient'
+import { TrendingToken, WatchlistMarketsResponse } from 'utils/api/types'
 import Logger from 'utils/Logger'
-import { tokenAggregatorApi } from 'utils/apiClient/tokenAggregator/tokenAggregatorApi'
-import { WatchlistMarketsResponse } from 'utils/apiClient/tokenAggregator/types'
 
+/**
+ * Fetches top markets from the token aggregator API
+ * @param currency - The currency to fetch markets for
+ * @param client - Optional WatchListClient instance for dependency injection
+ * @returns Promise resolving to WatchlistMarketsResponse
+ */
 const fetchTopMarkets = async ({
-  currency
+  currency,
+  client
 }: {
   currency: string
+  client: AggregatedApiClient
 }): Promise<WatchlistMarketsResponse> => {
-  return tokenAggregatorApi.getV1watchlistmarkets({
-    queries: {
-      currency: currency,
-      topMarkets: true
-    }
-  })
+  return client.getV1watchlistmarkets(currency)
 }
 
 /*
@@ -41,14 +46,23 @@ const fetchTopMarkets = async ({
     - get token Id from network
     - get price and market data from cached
     - get price and market data from network (tokens not in cache)
+
+  This service supports dependency injection for testing.
+  Pass a custom WatchListClient to the constructor or use the default singleton.
 */
 class WatchlistService {
+  private client: AggregatedApiClient
+
+  constructor(client: AggregatedApiClient = aggregatedApiClient) {
+    this.client = client
+  }
   async getTopTokens(currency: string): Promise<{
     tokens: Record<string, MarketToken>
     charts: Charts
   }> {
     const topMarkets = await fetchTopMarkets({
-      currency: currency.toLowerCase()
+      currency: currency.toLowerCase(),
+      client: this.client
     })
 
     const tokens: Record<string, MarketToken> = {}
@@ -247,4 +261,8 @@ class WatchlistService {
   }
 }
 
+// Export the class for testing with dependency injection
+export { WatchlistService }
+
+// Export singleton instance as default for production use
 export default new WatchlistService()

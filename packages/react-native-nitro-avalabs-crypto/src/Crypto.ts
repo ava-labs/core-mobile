@@ -337,7 +337,7 @@ export function signSchnorr(
     con.log('[Crypto] signSchnorr: using zero-filled auxRand')
     auxAB = new Uint8Array(32).buffer
   } else {
-    auxAB = ensure32('Schnorr auxRand', hexLikeToArrayBuffer(auxRand as any))
+    auxAB = ensure32('Schnorr auxRand', hexLikeToArrayBuffer(auxRand))
     con.log(
       '[Crypto] signSchnorr: auxRand provided, byteLength=',
       (auxAB as ArrayBuffer).byteLength

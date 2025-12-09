@@ -1,21 +1,36 @@
 import TokenService from 'services/token/TokenService'
 import { transformSparklineData } from 'services/token/utils'
-import { tokenAggregatorApi } from 'utils/apiClient/tokenAggregator/tokenAggregatorApi'
 import { MarketType } from 'store/watchlist'
+import type { AggregatedApiClient } from 'utils/api/fetches/aggregatedTokensFetchClient'
 import WATCHLIST_PRICE from '../token/__mocks__/watchlistPrice.json'
 import ADDITIONAL_WATCHLIST_PRICE from '../token/__mocks__/additionalWatchlistPrice.json'
-import WatchlistService from './WatchlistService'
 
-jest.mock('utils/apiClient/tokenAggregator/tokenAggregatorApi', () => ({
-  tokenAggregatorApi: {
-    getV1watchlistmarkets: jest.fn() // <-- Make sure this IS jest.fn()
+// Mock the HTTP clients before importing WatchlistService
+jest.mock('utils/api/clients/proxyApiClient', () => ({
+  proxyApi: {
+    GET: jest.fn(),
+    use: jest.fn()
   }
 }))
+
+jest.mock('utils/api/clients/aggregatedTokensApiClient', () => ({
+  tokenAggregatorApi: {
+    GET: jest.fn(),
+    use: jest.fn()
+  }
+}))
+
+import { WatchlistService } from './WatchlistService'
+
+const mockAggregatedClient: AggregatedApiClient = {
+  getV1watchlistmarkets: jest.fn()
+}
 
 jest.mock('services/token/utils', () => ({
   transformSparklineData: jest.fn()
 }))
 
+// Mock TokenService as a singleton instance with instance methods
 jest.mock('services/token/TokenService', () => ({
   getTokenSearch: jest.fn(),
   getSimplePrice: jest.fn(),
@@ -24,24 +39,25 @@ jest.mock('services/token/TokenService', () => ({
 }))
 
 describe('getTopMarkets', () => {
-  const apiMock = tokenAggregatorApi.getV1watchlistmarkets as jest.Mock
+  let watchlistService: WatchlistService
+  const getV1watchlistmarketsMock =
+    mockAggregatedClient.getV1watchlistmarkets as jest.Mock
 
   beforeEach(() => {
     jest.clearAllMocks()
+    watchlistService = new WatchlistService(mockAggregatedClient)
   })
 
   it('should call token aggregator API with correct params', async () => {
-    apiMock.mockResolvedValue([])
+    getV1watchlistmarketsMock.mockResolvedValue([])
 
-    await WatchlistService.getTopTokens('USD')
+    await watchlistService.getTopTokens('USD')
 
-    expect(apiMock).toHaveBeenCalledWith({
-      queries: { currency: 'usd', topMarkets: true }
-    })
+    expect(getV1watchlistmarketsMock).toHaveBeenCalledWith('usd')
   })
 
   it('should return correctly mapped markets', async () => {
-    apiMock.mockResolvedValue([
+    getV1watchlistmarketsMock.mockResolvedValue([
       {
         internalId: 'avax',
         coingeckoId: 'avalanche-2',
@@ -55,7 +71,7 @@ describe('getTopMarkets', () => {
       }
     ])
 
-    const result = await WatchlistService.getTopTokens('USD')
+    const result = await watchlistService.getTopTokens('USD')
     const m = result.tokens
 
     expect(Object.keys(m)).toEqual(['avax'])
@@ -75,7 +91,7 @@ describe('getTopMarkets', () => {
   })
 
   it('should map sparkline chart data when present', async () => {
-    apiMock.mockResolvedValue([
+    getV1watchlistmarketsMock.mockResolvedValue([
       {
         internalId: 'avax',
         sparkline_in_7d: { price: [1, 2, 3] }
@@ -83,35 +99,35 @@ describe('getTopMarkets', () => {
     ])
     ;(transformSparklineData as jest.Mock).mockReturnValue([10, 20, 30])
 
-    const { charts } = await WatchlistService.getTopTokens('USD')
+    const { charts } = await watchlistService.getTopTokens('USD')
 
     expect(transformSparklineData).toHaveBeenCalledWith([1, 2, 3])
     expect(charts.avax).toEqual([10, 20, 30])
   })
 
   it('should NOT add chart entry when sparkline is missing', async () => {
-    apiMock.mockResolvedValue([
+    getV1watchlistmarketsMock.mockResolvedValue([
       {
         internalId: 'avax',
         sparkline_in_7d: null
       }
     ])
 
-    const { charts } = await WatchlistService.getTopTokens('USD')
+    const { charts } = await watchlistService.getTopTokens('USD')
     expect(charts).toEqual({})
   })
 
   it('should return empty markets and charts when API returns empty array', async () => {
-    apiMock.mockResolvedValue([])
+    getV1watchlistmarketsMock.mockResolvedValue([])
 
-    const result = await WatchlistService.getTopTokens('USD')
+    const result = await watchlistService.getTopTokens('USD')
 
     expect(result.tokens).toEqual({})
     expect(result.charts).toEqual({})
   })
 
   it('should handle missing optional fields gracefully', async () => {
-    apiMock.mockResolvedValue([
+    getV1watchlistmarketsMock.mockResolvedValue([
       {
         internalId: 'test',
         symbol: 'TST',
@@ -120,7 +136,7 @@ describe('getTopMarkets', () => {
       }
     ])
 
-    const { tokens } = await WatchlistService.getTopTokens('USD')
+    const { tokens } = await watchlistService.getTopTokens('USD')
 
     expect(tokens.test).toEqual({
       marketType: MarketType.TOP,
@@ -138,19 +154,21 @@ describe('getTopMarkets', () => {
 })
 
 describe('getPrices', () => {
+  let watchlistService: WatchlistService
   const fetchPriceWithMarketDataMock =
     TokenService.fetchPriceWithMarketData as jest.Mock
   const getSimplePriceMock = TokenService.getSimplePrice as jest.Mock
 
   beforeEach(() => {
     jest.clearAllMocks()
+    watchlistService = new WatchlistService(mockAggregatedClient)
   })
 
   it('should return all merged price data from cache + simple price API', async () => {
     fetchPriceWithMarketDataMock.mockResolvedValue(WATCHLIST_PRICE)
     getSimplePriceMock.mockResolvedValue(ADDITIONAL_WATCHLIST_PRICE)
 
-    const result = await WatchlistService.getPrices(
+    const result = await watchlistService.getPrices(
       [
         'test-aave',
         'test',
@@ -170,7 +188,7 @@ describe('getPrices', () => {
     fetchPriceWithMarketDataMock.mockResolvedValue(WATCHLIST_PRICE)
     getSimplePriceMock.mockResolvedValue(ADDITIONAL_WATCHLIST_PRICE)
 
-    const result = await WatchlistService.getPrices(
+    const result = await watchlistService.getPrices(
       ['test-aave', 'test'],
       'usd'
     )
@@ -182,19 +200,25 @@ describe('getPrices', () => {
 })
 
 describe('tokenSearch', () => {
+  let watchlistService: WatchlistService
+  const getTokenSearchMock = TokenService.getTokenSearch as jest.Mock
+  const getMarketsMock = TokenService.getMarkets as jest.Mock
+  const getSimplePriceMock = TokenService.getSimplePrice as jest.Mock
+
   beforeEach(() => {
     jest.clearAllMocks()
+    watchlistService = new WatchlistService(mockAggregatedClient)
   })
 
   it('should return tokens, prices, and charts for a valid query', async () => {
     // 1. Mock search results
-    ;(TokenService.getTokenSearch as jest.Mock).mockResolvedValue([
+    getTokenSearchMock.mockResolvedValue([
       { id: 'test', symbol: 'TEST', name: 'Test Token' },
       { id: 'test-aave', symbol: 'AAVE', name: 'Aave Test' }
     ])
 
     // 2. Mock markets returned by getMarketsByCoinIds()
-    ;(TokenService.getMarkets as jest.Mock).mockResolvedValue([
+    getMarketsMock.mockResolvedValue([
       {
         id: 'test',
         symbol: 'TEST',
@@ -214,7 +238,7 @@ describe('tokenSearch', () => {
     ])
 
     // 3. Mock prices returned by getSimplePrice()
-    ;(TokenService.getSimplePrice as jest.Mock).mockResolvedValue({
+    getSimplePriceMock.mockResolvedValue({
       test: {
         usd: { price: 100, change24: 1, marketCap: 999, vol24: 200 }
       },
@@ -224,7 +248,7 @@ describe('tokenSearch', () => {
     })
     ;(transformSparklineData as jest.Mock).mockReturnValue([10, 20, 30])
 
-    const result = await WatchlistService.tokenSearch('test', 'usd')
+    const result = await watchlistService.tokenSearch('test', 'usd')
     expect(result).toBeDefined()
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -260,9 +284,9 @@ describe('tokenSearch', () => {
   })
 
   it('should return undefined when search yields no results', async () => {
-    ;(TokenService.getTokenSearch as jest.Mock).mockResolvedValue([])
+    getTokenSearchMock.mockResolvedValue([])
 
-    const result = await WatchlistService.tokenSearch('unknown', 'usd')
+    const result = await watchlistService.tokenSearch('unknown', 'usd')
     expect(result).toBeUndefined()
   })
 })
