@@ -32,11 +32,13 @@ const WalletCard = ({
   isExpanded,
   showMoreButton = true,
   style,
-  onToggleExpansion
+  onToggleExpansion,
+  isRefreshing
 }: {
   wallet: WalletDisplayData
   isActive: boolean
   isExpanded: boolean
+  isRefreshing: boolean
   showMoreButton?: boolean
   style?: StyleProp<ViewStyle>
   onToggleExpansion: () => void
@@ -258,6 +260,7 @@ const WalletCard = ({
             balanceSx={{
               color: isActive ? colors.$textPrimary : colors.$textSecondary
             }}
+            isRefreshing={isRefreshing}
             wallet={wallet}
           />
           {showMoreButton && (
