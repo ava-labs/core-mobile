@@ -115,19 +115,7 @@ export const buildRequestItemsForAccount = (
         break
       }
 
-      case NetworkVMType.AVM: {
-        const ref = network.isTestnet
-          ? '8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl'
-          : 'imji8papUf2EhV3le337w1vgFauqkJg-'
-
-        avaxXpBucket.references = uniq([...avaxXpBucket.references, ref])
-        avaxXpBucket.addresses = uniq([
-          ...avaxXpBucket.addresses,
-          ...accountXpAddresses
-        ])
-        break
-      }
-
+      case NetworkVMType.AVM:
       case NetworkVMType.PVM: {
         const ref =
           network.vmName === NetworkVMType.PVM
