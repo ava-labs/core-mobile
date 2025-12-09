@@ -1,6 +1,7 @@
 import { pvm } from '@avalabs/avalanchejs'
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
+import EarnService from 'services/earn/EarnService'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 
@@ -16,8 +17,7 @@ export const useNodes = (
       const provider = await NetworkService.getAvalancheProviderXP(
         isDeveloperMode
       )
-      // Call the provider method directly to avoid type conflicts
-      return provider.getApiP().getCurrentValidators()
+      return EarnService.getCurrentValidators(provider)
     }
   })
 }

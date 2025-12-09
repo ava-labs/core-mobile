@@ -1,6 +1,7 @@
 import { Account } from 'store/account'
 import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import mockNetworks from 'tests/fixtures/networks.json'
 import { Network } from '@avalabs/core-chains-sdk'
@@ -8,17 +9,22 @@ import { exportP } from 'services/earn/exportP'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { WalletType } from 'services/wallet/types'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
+
 describe('earn/exportP', () => {
   describe('exportP', () => {
     const getTxStatusMockFn = jest.fn().mockReturnValue({
       status: 'Committed'
     })
     jest.mock('services/network/NetworkService')
-    jest.spyOn(NetworkService, 'getAvalancheProviderXP').mockResolvedValue({
-      getApiP: () => ({
-        getTxStatus: getTxStatusMockFn
-      })
-    } as any)
+    jest.spyOn(NetworkService, 'getAvalancheProviderXP').mockResolvedValue(
+      Promise.resolve({
+        getApiP: () => {
+          return {
+            getTxStatus: getTxStatusMockFn
+          }
+        }
+      }) as unknown as Avalanche.JsonRpcProvider
+    )
     jest.spyOn(NetworkService, 'sendTransaction').mockImplementation(() => {
       return Promise.resolve('mockTxHash')
     })

@@ -1,6 +1,7 @@
 import { Account } from 'store/account'
 import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { importP } from 'services/earn/importP'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
@@ -13,11 +14,15 @@ describe('earn/importP', () => {
       status: 'Committed'
     })
     jest.mock('services/network/NetworkService')
-    jest.spyOn(NetworkService, 'getAvalancheProviderXP').mockResolvedValue({
-      getApiP: () => ({
-        getTxStatus: getTxStatusMockFn
-      })
-    } as any)
+    jest.spyOn(NetworkService, 'getAvalancheProviderXP').mockResolvedValue(
+      Promise.resolve({
+        getApiP: () => {
+          return {
+            getTxStatus: getTxStatusMockFn
+          }
+        }
+      }) as unknown as Avalanche.JsonRpcProvider
+    )
     jest.spyOn(NetworkService, 'sendTransaction').mockImplementation(() => {
       return Promise.resolve('mockTxHash')
     })
