@@ -23,7 +23,7 @@ const balanceApi = {
     body: GetBalancesRequestBody
   ): AsyncGenerator<GetBalancesResponse> {
     try {
-      Alert.alert('getBalancesStream')
+      Alert.alert('getBalancesStream', BALANCE_URL)
       const appCheckToken = await AppCheckService.getToken()
 
       Alert.alert('BALANCE_URL', BALANCE_URL)
