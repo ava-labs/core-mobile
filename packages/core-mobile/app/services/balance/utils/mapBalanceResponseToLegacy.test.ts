@@ -726,6 +726,7 @@ describe('mapBalanceResponseToLegacy', () => {
             symbol: 'JUP',
             decimals: 6,
             address: 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',
+            associatedTokenAddress: 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',
             balance: '5062045',
             logoUri:
               'https://images.ctfassets.net/gcj8jwzm6086/4NKff4tEjKZPR1dxpT81CU/ab04e433eac96bc74365b56b667527b1/JUP-logo.png',
@@ -742,6 +743,7 @@ describe('mapBalanceResponseToLegacy', () => {
             symbol: 'POPCAT',
             decimals: 9,
             address: '7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr',
+            associatedTokenAddress: '7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr',
             balance: '9490165425',
             logoUri:
               'https://images.ctfassets.net/gcj8jwzm6086/5IKkI9xMhyXU1YU6nr9246/d5cddb8d365f828a976ef752600507b0/POPCAT-logo.png',
@@ -758,6 +760,7 @@ describe('mapBalanceResponseToLegacy', () => {
             symbol: 'ORCA',
             decimals: 6,
             address: 'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE',
+            associatedTokenAddress: 'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE',
             balance: '899178',
             logoUri:
               'https://images.ctfassets.net/gcj8jwzm6086/3xsLR9NZskV01ADXC6ZCWH/0d0d72eed77f2086afa8c8137a0370c4/ORCA-logo.png',
