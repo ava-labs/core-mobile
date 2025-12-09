@@ -51,31 +51,31 @@ export const createGlacierApiClient = (
     const transactions: PChainTransaction[] = []
 
     do {
-      const result = await httpClient.GET(
+      const { data } = await httpClient.GET(
         '/v1/networks/{network}/blockchains/{blockchainId}/transactions',
         {
           params: {
             path: {
               network: isTestnet ? GlacierNetwork.FUJI : GlacierNetwork.MAINNET,
               blockchainId: BlockchainId.P_CHAIN
+            },
+            query: {
+              addresses: addressesStr,
+              pageSize: 100,
+              sortOrder,
+              pageToken,
+              txTypes: [
+                PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX,
+                PChainTransactionType.ADD_DELEGATOR_TX
+              ],
+              startTimestamp
             }
-          },
-          queries: {
-            addresses: addressesStr,
-            pageSize: 100,
-            sortOrder,
-            pageToken,
-            txTypes: [
-              PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX,
-              PChainTransactionType.ADD_DELEGATOR_TX
-            ],
-            startTimestamp
           }
         }
       )
 
-      pageToken = result?.data?.nextPageToken
-      transactions.push(...(result?.data?.transactions as PChainTransaction[]))
+      pageToken = data?.nextPageToken
+      transactions.push(...(data?.transactions as PChainTransaction[]))
     } while (pageToken)
 
     return transactions
