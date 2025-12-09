@@ -26,7 +26,9 @@ export function getAddressXP(obj: Contact | Account): string | undefined {
   if ('addressPVM' in obj) {
     return obj.addressPVM
       ? stripChainAddress(obj.addressPVM)
-      : stripChainAddress(obj.addressAVM)
+      : obj.addressAVM
+      ? stripChainAddress(obj.addressAVM)
+      : undefined
   }
   throw new Error('Invalid input object')
 }

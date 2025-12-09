@@ -1,28 +1,10 @@
-import testValidators from 'tests/fixtures/pvm/validators.json'
 import { Hour, MainnetParams } from 'utils/NetworkParams'
 import { Seconds } from 'types/siUnits'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { zeroAvaxPChain } from 'utils/units/zeroValues'
-import { Avalanche } from '@avalabs/core-wallets-sdk'
 import EarnService from './EarnService'
 
-const mockProvider = {
-  getApiP: () => {
-    return {
-      getCurrentValidators: jest.fn().mockResolvedValue(testValidators)
-    }
-  }
-}
-
 describe('EarnService', () => {
-  describe('getCurrentValidators', () => {
-    it('should return valid validators', async () => {
-      const validators = await EarnService.getCurrentValidators(
-        mockProvider as unknown as Avalanche.JsonRpcProvider
-      )
-      expect(validators).toEqual(testValidators)
-    })
-  })
   describe('calcReward', () => {
     it('should return zero if current supply is max', () => {
       expect(

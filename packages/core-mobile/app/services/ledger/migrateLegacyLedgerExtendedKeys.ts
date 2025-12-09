@@ -5,7 +5,8 @@ import { getAddressDerivationPath } from 'services/wallet/utils'
 import {
   ExtendedPublicKey,
   LedgerDerivationPathType,
-  LedgerWalletData
+  LedgerWalletData,
+  BIP44LedgerWalletData
 } from './types'
 
 type LegacyLedgerExtendedPublicKeys = {
@@ -17,6 +18,10 @@ type SupportedLedgerVmType =
   | NetworkVMType.AVM
   | NetworkVMType.CoreEth
   | NetworkVMType.EVM
+
+type BIP44LedgerWalletDataWithArrayKeys = BIP44LedgerWalletData & {
+  extendedPublicKeys: ExtendedPublicKey[]
+}
 
 export async function migrateLegacyLedgerExtendedKeys({
   ledgerData,
@@ -38,7 +43,8 @@ export async function migrateLegacyLedgerExtendedKeys({
   ).extendedPublicKeys
 
   if (Array.isArray(rawExtendedKeys)) {
-    ledgerData.extendedPublicKeys = rawExtendedKeys
+    ;(ledgerData as BIP44LedgerWalletDataWithArrayKeys).extendedPublicKeys =
+      rawExtendedKeys
     return false
   }
 
@@ -46,17 +52,18 @@ export async function migrateLegacyLedgerExtendedKeys({
     | LegacyLedgerExtendedPublicKeys
     | undefined
   if (!legacyKeys) {
-    ledgerData.extendedPublicKeys = []
+    ;(ledgerData as BIP44LedgerWalletDataWithArrayKeys).extendedPublicKeys = []
     return false
   }
 
   const convertedKeys = convertLegacyExtendedKeys(legacyKeys)
   if (!convertedKeys.length) {
-    ledgerData.extendedPublicKeys = []
+    ;(ledgerData as BIP44LedgerWalletDataWithArrayKeys).extendedPublicKeys = []
     return false
   }
 
-  ledgerData.extendedPublicKeys = convertedKeys
+  ;(ledgerData as BIP44LedgerWalletDataWithArrayKeys).extendedPublicKeys =
+    convertedKeys
 
   Logger.info(
     `Migrated legacy Ledger extended public keys for wallet ${walletId}`

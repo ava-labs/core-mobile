@@ -1,7 +1,6 @@
 import { info } from '@avalabs/avalanchejs'
 import { UseQueryResult, useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
-import EarnService from 'services/earn/EarnService'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 
@@ -17,7 +16,8 @@ export const usePeers = (): UseQueryResult<
       const provider = await NetworkService.getAvalancheProviderXP(
         isDeveloperMode
       )
-      return EarnService.getPeers(provider)
+      // Call the provider method directly to avoid type conflicts
+      return provider.getInfo().peers()
     },
     select: data => {
       return data.peers.reduce(

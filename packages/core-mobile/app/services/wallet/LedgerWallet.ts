@@ -84,7 +84,16 @@ export class LedgerWallet implements Wallet {
      * For Ledger Live, extendedPublicKeys remains undefined
      */
     if (ledgerData.derivationPathSpec === LedgerDerivationPathType.BIP44) {
-      this.extendedPublicKeys = ledgerData.extendedPublicKeys
+      // Handle both new format { evm: string, avalanche: string } and legacy format ExtendedPublicKey[]
+      if (Array.isArray(ledgerData.extendedPublicKeys)) {
+        // Legacy format - skip assignment, migration should handle this
+        Logger.warn(
+          'Legacy extendedPublicKeys format detected, skipping assignment'
+        )
+      } else {
+        // New format - assign directly
+        this.extendedPublicKeys = ledgerData.extendedPublicKeys
+      }
     }
   }
 

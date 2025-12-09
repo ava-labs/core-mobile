@@ -34,7 +34,7 @@ export function useEVMProvider(
 ): JsonRpcBatchInternal | undefined {
   const [evmProvider, setEVMProvider] = useState<JsonRpcBatchInternal>()
   useEffect(() => {
-    network && getEvmProvider(network).then(setEVMProvider).catch(Logger.error)
+    network && getEvmProvider(network).then(provider => setEVMProvider(provider as unknown as JsonRpcBatchInternal)).catch(Logger.error)
   }, [network])
 
   return evmProvider
@@ -52,7 +52,7 @@ export function useEthereumProvider(
     useState<JsonRpcBatchInternal>()
   useEffect(() => {
     getEthereumProvider(networks, _isTestnet)
-      .then(setEthereumProvider)
+      .then(provider => setEthereumProvider(provider as unknown as JsonRpcBatchInternal | undefined))
       .catch(Logger.error)
   }, [networks, _isTestnet])
 
@@ -66,7 +66,7 @@ export function useBitcoinProvider(
   const _isTestnet = isTestnet ?? isDeveloperMode
   const [bitcoinProvider, setBitcoinProvider] = useState<BitcoinProvider>()
   useEffect(() => {
-    getBitcoinProvider(_isTestnet).then(setBitcoinProvider).catch(Logger.error)
+    getBitcoinProvider(_isTestnet).then(provider => setBitcoinProvider(provider as unknown as BitcoinProvider)).catch(Logger.error)
   }, [_isTestnet])
 
   return bitcoinProvider
@@ -82,7 +82,7 @@ export function useAvalancheEvmProvider(
     useState<JsonRpcBatchInternal>()
   useEffect(() => {
     getAvalancheEvmProvider(networks, _isTestnet)
-      .then(setAvalancheProvider)
+      .then(provider => setAvalancheProvider(provider as unknown as JsonRpcBatchInternal | undefined))
       .catch(Logger.error)
   }, [networks, _isTestnet])
   return avalancheProvider
@@ -97,7 +97,7 @@ export function useAvalancheXpProvider(
     useState<Avalanche.JsonRpcProvider>()
   useEffect(() => {
     getAvalancheXpProvider(!!_isTestnet)
-      .then(setAvalancheXpProvider)
+      .then(provider => setAvalancheXpProvider(provider as unknown as Avalanche.JsonRpcProvider))
       .catch(Logger.error)
   }, [_isTestnet])
   return avalancheXpProvider

@@ -7,7 +7,7 @@ import { exportP } from 'services/earn/exportP'
 import WalletService from 'services/wallet/WalletService'
 import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
 import NetworkService from 'services/network/NetworkService'
-import { pvm, UnsignedTx, info } from '@avalabs/avalanchejs'
+import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import {
@@ -38,16 +38,6 @@ import {
 } from './utils'
 
 class EarnService {
-  /**
-   * Get all available nodes
-   * @param provider
-   */
-  getCurrentValidators = (
-    provider: Avalanche.JsonRpcProvider
-  ): Promise<pvm.GetCurrentValidatorsResponse> => {
-    return provider.getApiP().getCurrentValidators()
-  }
-
   /**
    * Checks if there are any stuck atomic UTXOs and tries to import them.
    * You can pass callback to get events about progress of operation.
@@ -457,18 +447,6 @@ class EarnService {
     } catch (error) {
       Logger.error('getTransformedStakesForAllAccounts failed: ', error)
     }
-  }
-
-  /**
-   * Get a description of peer connections.
-   * @param provider
-   * @param nodeIds
-   */
-  getPeers = (
-    provider: Avalanche.JsonRpcProvider,
-    nodeIds?: string[]
-  ): Promise<info.GetPeersResponse> => {
-    return provider.getInfo().peers(nodeIds)
   }
 }
 

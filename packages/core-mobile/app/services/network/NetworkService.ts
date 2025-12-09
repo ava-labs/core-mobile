@@ -134,7 +134,7 @@ class NetworkService {
    */
   async getAvalancheProviderXP(
     isDeveloperMode: boolean
-  ): Promise<Avalanche.JsonRpcProvider> {
+  ): ReturnType<typeof ModuleManager.avalancheModule.getProvider> {
     const network = this.getAvalancheNetworkP(isDeveloperMode)
     return ModuleManager.avalancheModule.getProvider(mapToVmNetwork(network))
   }
