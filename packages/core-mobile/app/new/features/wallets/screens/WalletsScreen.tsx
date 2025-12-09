@@ -271,6 +271,7 @@ export const WalletsScreen = (): JSX.Element => {
         <WalletCard
           wallet={item}
           isActive={isActive}
+          isRefreshing={isRefreshing}
           isExpanded={isExpanded}
           onToggleExpansion={() => toggleWalletExpansion(item.id)}
           style={{
@@ -288,6 +289,7 @@ export const WalletsScreen = (): JSX.Element => {
       colors.$borderPrimary,
       colors.$surfacePrimary,
       expandedWallets,
+      isRefreshing,
       toggleWalletExpansion
     ]
   )
@@ -302,9 +304,9 @@ export const WalletsScreen = (): JSX.Element => {
     )
   }, [])
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(async () => {
     setIsRefreshing(true)
-    refetch()
+    await refetch()
     setIsRefreshing(false)
   }, [refetch])
 

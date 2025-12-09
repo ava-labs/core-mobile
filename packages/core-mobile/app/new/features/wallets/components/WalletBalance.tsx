@@ -19,10 +19,12 @@ import { Wallet } from 'store/wallet/types'
 
 export const WalletBalance = ({
   wallet,
+  isRefreshing,
   balanceSx,
   variant = 'spinner'
 }: {
   wallet: Wallet
+  isRefreshing: boolean
   balanceSx?: SxProp
   variant?: 'spinner' | 'skeleton'
 }): JSX.Element => {
@@ -37,10 +39,10 @@ export const WalletBalance = ({
   const [hasLoaded, setHasLoaded] = useState(false)
 
   useEffect(() => {
-    if (!isLoadingBalance) {
+    if (!isLoadingBalance && walletBalance !== undefined) {
       setHasLoaded(true)
     }
-  }, [isLoadingBalance])
+  }, [isLoadingBalance, isRefreshing, walletBalance])
 
   const balance = useMemo(() => {
     return walletBalance > 0
@@ -63,7 +65,7 @@ export const WalletBalance = ({
     )
   }, [colors.$textPrimary])
 
-  if (!hasLoaded && isLoadingBalance) {
+  if (!hasLoaded) {
     if (variant === 'skeleton') {
       return (
         <ContentLoader
@@ -82,10 +84,10 @@ export const WalletBalance = ({
 
   return (
     <LoadingContent
-      hideSpinner={hasLoaded}
+      hideSpinner
       minOpacity={0.2}
       maxOpacity={1}
-      isLoading={hasLoaded && isLoadingBalance}>
+      isLoading={isRefreshing}>
       <AnimatedBalance
         variant="heading4"
         balance={balance}
