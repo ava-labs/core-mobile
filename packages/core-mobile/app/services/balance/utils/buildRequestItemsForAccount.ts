@@ -188,9 +188,6 @@ const getAccountXpAddresses = (account: Account): string[] => {
     return uniq(derivedXpAddresses)
   }
 
-  const fallback = [account.addressAVM, account.addressPVM]
-    .filter((addr): addr is string => Boolean(addr))
-    .map(stripAddressPrefix)
-
-  return uniq(fallback)
+  const fallbackAddress = account.addressAVM || account.addressPVM
+  return fallbackAddress ? [stripAddressPrefix(fallbackAddress)] : []
 }

@@ -8,6 +8,7 @@ import { XPAddressDictionary } from 'store/account/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import ModuleManager from 'vmModule/ModuleManager'
 import { AVALANCHE_DERIVATION_PATH_PREFIX, Curve } from 'utils/publicKeys'
+import { toSegments } from 'utils/toSegments'
 import { GetAddressesResponse } from '../apiClient/profile/types'
 
 type GetAddressesFromXpubParams = {
@@ -128,18 +129,14 @@ const parseSeedlessDerivationPath = (
       index: number
     }
   | undefined => {
-  const segments = derivationPath.split('/')
-  if (segments.length < 6) {
-    return undefined
-  }
+  let change: number | undefined
+  let addressIndex: number | undefined
 
-  const changeSegment = segments[segments.length - 2] ?? ''
-  const addressIndexSegment = segments[segments.length - 1] ?? ''
-
-  const change = Number(changeSegment.replace(/'/g, ''))
-  const addressIndex = Number(addressIndexSegment.replace(/'/g, ''))
-
-  if (Number.isNaN(change) || Number.isNaN(addressIndex)) {
+  try {
+    const segments = toSegments(derivationPath)
+    change = segments.change
+    addressIndex = segments.addressIndex
+  } catch (error) {
     return undefined
   }
 

@@ -1,6 +1,7 @@
 import * as cs from '@cubist-labs/cubesigner-sdk'
 import { strip0x } from '@avalabs/core-utils-sdk'
 import { AddressPublicKey, Curve } from 'utils/publicKeys'
+import { toSegments } from 'utils/toSegments'
 
 type AccountKeySet = {
   evm?: cs.KeyInfo
@@ -54,24 +55,27 @@ export const transformKeyInfosToPubKeys = (
       return acc
     }
 
-    const pathSegments = key.derivation_info.derivation_path.split('/')
+    const { accountIndex, addressIndex } = toSegments(
+      key.derivation_info.derivation_path
+    )
 
     let index: number
     if (key.key_type === cs.Ed25519.Solana) {
       // Solana: get second-to-last segment
-      index = parseInt(pathSegments.at(-2) as string)
+      // index = parseInt(pathSegments.at(-2) as string)
+      index = accountIndex
     } else if ([cs.Secp256k1.Ava, 'SecpAvaTestAddr'].includes(key.key_type)) {
       // For Avalanche keys, detect derivation spec
-      const lastSegment = Number(pathSegments.pop())
-      const accountSegment = pathSegments[2]
-        ? Number(pathSegments[2].replace("'", ''))
-        : 0
+      // const lastSegment = Number(pathSegments.pop())
+      // const accountSegment = pathSegments[2]
+      //   ? Number(pathSegments[2].replace("'", ''))
+      //   : 0
 
       // New spec: m/44'/coin'/account'/0/0 (account index in 3rd position)
       // Old spec: m/44'/coin'/0'/0/addressIndex (addressIndex in last position)
-      if (lastSegment === 0 && accountSegment > 0) {
+      if (addressIndex === 0 && accountIndex > 0) {
         // New derivation spec - use account index
-        index = accountSegment
+        index = accountIndex
       } else {
         // Old derivation spec - map addressIndex to account 0
         // All old addresses belong to account 0
@@ -79,7 +83,7 @@ export const transformKeyInfosToPubKeys = (
       }
     } else {
       // pop addresses index and return as number
-      index = Number(key.derivation_info.derivation_path.split('/').pop())
+      index = addressIndex
     }
 
     if (index === undefined) {
