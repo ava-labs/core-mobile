@@ -2,6 +2,7 @@ import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import AppCheckService from 'services/fcm/AppCheckService'
 import { fetch as expoFetch } from 'expo/fetch'
+import { Alert } from 'react-native'
 import { CORE_HEADERS } from '../constants'
 import {
   GetBalancesRequestBody,
@@ -23,6 +24,8 @@ const balanceApi = {
   ): AsyncGenerator<GetBalancesResponse> {
     const appCheckToken = await AppCheckService.getToken()
 
+    Alert.alert('BALANCE_URL', BALANCE_URL)
+
     const res = await expoFetch(`${BALANCE_URL}/v1/balance/get-balances`, {
       method: 'POST',
       headers: {
@@ -36,6 +39,9 @@ const balanceApi = {
     // Check if the response is successful
     if (!res.ok) {
       let errorMessage = `HTTP ${res.status}: ${res.statusText}`
+
+      // eslint-disable-next-line no-console
+      console.error('res', errorMessage)
       try {
         // Try to read error body if available
         if (res.body) {
