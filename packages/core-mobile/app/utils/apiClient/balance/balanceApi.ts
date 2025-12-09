@@ -22,111 +22,116 @@ const balanceApi = {
   getBalancesStream: async function* (
     body: GetBalancesRequestBody
   ): AsyncGenerator<GetBalancesResponse> {
-    const appCheckToken = await AppCheckService.getToken()
-
-    Alert.alert('BALANCE_URL', BALANCE_URL)
-
-    const res = await expoFetch(`${BALANCE_URL}/v1/balance/get-balances`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Firebase-AppCheck': appCheckToken.token,
-        ...CORE_HEADERS
-      },
-      body: JSON.stringify(body)
-    })
-
-    // Check if the response is successful
-    if (!res.ok) {
-      let errorMessage = `HTTP ${res.status}: ${res.statusText}`
-
-      Alert.alert('res', errorMessage)
-      try {
-        // Try to read error body if available
-        if (res.body) {
-          const reader = res.body.getReader()
-          const decoder = new TextDecoder()
-          let errorBody = ''
-          let done = false
-          while (!done) {
-            const { value, done: readerDone } = await reader.read()
-            done = readerDone
-            if (value) {
-              errorBody += decoder.decode(value, { stream: true })
-            }
-          }
-          reader.releaseLock()
-          if (errorBody) {
-            try {
-              const errorJson = JSON.parse(errorBody)
-              errorMessage =
-                errorJson.message || errorJson.error || errorMessage
-            } catch {
-              errorMessage = errorBody
-            }
-          }
-        }
-      } catch (err) {
-        Logger.warn('Failed to read error response body', err)
-      }
-      throw new Error(errorMessage)
-    }
-
-    if (!res.body) {
-      throw new Error('Stream unavailable (response.body missing)')
-    }
-
-    const reader = res.body.getReader()
-    const decoder = new TextDecoder()
-    let buffer = ''
-    let done = false
-
-    // do measurement in DEV only
-    let startTime: number | undefined
-    if (isDev) {
-      startTime = Date.now()
-      Logger.info('📡 Streaming balances…')
-    }
-
     try {
-      while (!done) {
-        const { value, done: readerDone } = await reader.read()
-        done = readerDone
+      Alert.alert('getBalancesStream')
+      const appCheckToken = await AppCheckService.getToken()
 
-        if (value) {
-          buffer += decoder.decode(value, { stream: true })
+      Alert.alert('BALANCE_URL', BALANCE_URL)
+
+      const res = await expoFetch(`${BALANCE_URL}/v1/balance/get-balances`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Firebase-AppCheck': appCheckToken.token,
+          ...CORE_HEADERS
+        },
+        body: JSON.stringify(body)
+      })
+
+      // Check if the response is successful
+      if (!res.ok) {
+        let errorMessage = `HTTP ${res.status}: ${res.statusText}`
+
+        Alert.alert('res', errorMessage)
+        try {
+          // Try to read error body if available
+          if (res.body) {
+            const reader = res.body.getReader()
+            const decoder = new TextDecoder()
+            let errorBody = ''
+            let done = false
+            while (!done) {
+              const { value, done: readerDone } = await reader.read()
+              done = readerDone
+              if (value) {
+                errorBody += decoder.decode(value, { stream: true })
+              }
+            }
+            reader.releaseLock()
+            if (errorBody) {
+              try {
+                const errorJson = JSON.parse(errorBody)
+                errorMessage =
+                  errorJson.message || errorJson.error || errorMessage
+              } catch {
+                errorMessage = errorBody
+              }
+            }
+          }
+        } catch (err) {
+          Logger.warn('Failed to read error response body', err)
         }
+        throw new Error(errorMessage)
+      }
 
-        // Process complete lines
-        let newlineIndex = buffer.indexOf(NEWLINE)
+      if (!res.body) {
+        throw new Error('Stream unavailable (response.body missing)')
+      }
 
-        while (newlineIndex !== -1) {
-          const rawLine = buffer.slice(0, newlineIndex).trim()
-          buffer = buffer.slice(newlineIndex + 1)
-          newlineIndex = buffer.indexOf(NEWLINE)
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let done = false
 
-          if (!rawLine) continue
+      // do measurement in DEV only
+      let startTime: number | undefined
+      if (isDev) {
+        startTime = Date.now()
+        Logger.info('📡 Streaming balances…')
+      }
 
-          // Remove "data: " prefix if present
-          const jsonLine = rawLine.startsWith('data:')
-            ? rawLine.slice(5).trim()
-            : rawLine
+      try {
+        while (!done) {
+          const { value, done: readerDone } = await reader.read()
+          done = readerDone
 
-          try {
-            const parsed = JSON.parse(jsonLine) as GetBalancesResponse
-            yield parsed
-          } catch {
-            // Ignore malformed lines
+          if (value) {
+            buffer += decoder.decode(value, { stream: true })
+          }
+
+          // Process complete lines
+          let newlineIndex = buffer.indexOf(NEWLINE)
+
+          while (newlineIndex !== -1) {
+            const rawLine = buffer.slice(0, newlineIndex).trim()
+            buffer = buffer.slice(newlineIndex + 1)
+            newlineIndex = buffer.indexOf(NEWLINE)
+
+            if (!rawLine) continue
+
+            // Remove "data: " prefix if present
+            const jsonLine = rawLine.startsWith('data:')
+              ? rawLine.slice(5).trim()
+              : rawLine
+
+            try {
+              const parsed = JSON.parse(jsonLine) as GetBalancesResponse
+              yield parsed
+            } catch {
+              // Ignore malformed lines
+            }
           }
         }
+      } finally {
+        reader.releaseLock()
       }
-    } finally {
-      reader.releaseLock()
-    }
 
-    if (isDev && startTime) {
-      const totalTime = Date.now() - startTime
-      Logger.info(`✅ Stream finished in ${totalTime}ms`)
+      if (isDev && startTime) {
+        const totalTime = Date.now() - startTime
+        Logger.info(`✅ Stream finished in ${totalTime}ms`)
+      }
+    } catch (err) {
+      Alert.alert(err as string)
     }
   }
 }
