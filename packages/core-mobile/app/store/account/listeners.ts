@@ -284,49 +284,55 @@ const migrateXpAddressesIfNeeded = async (
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const wallets = selectWallets(state)
-  const updatedAccounts: AccountCollection = {}
-  let encounteredError = false
+  const allUpdatedAccounts: AccountCollection = {}
 
-  for (const wallet of Object.values(wallets)) {
+  // Process all wallets in parallel
+  const walletPromises = Object.values(wallets).map(async wallet => {
     if (WalletType.PRIVATE_KEY.includes(wallet.type)) {
       Logger.info(
         `Skipping XP address derivation for private key wallet of type ${wallet.type}`
       )
-      continue
+      return
     }
 
     const accounts = selectAccountsByWalletId(state, wallet.id)
 
-    try {
-      const walletErrored = await populateXpAddressesForWallet({
+    // Run both operations in parallel for each wallet
+    const [updatedAccounts] = await Promise.all([
+      populateXpAddressesForWallet({
         wallet,
         accounts,
-        isDeveloperMode,
-        updatedAccounts
-      })
+        isDeveloperMode
+      }),
+      deriveMissingSeedlessSessionKeys(wallet.id)
+    ])
 
-      if (walletErrored) {
-        encounteredError = true
-      }
-    } catch (error) {
-      Logger.error(`Critical error processing wallet ${wallet.id}`, error)
-      encounteredError = true
-    }
+    // Merge successful account updates
+    Object.assign(allUpdatedAccounts, updatedAccounts)
+  })
 
-    await deriveMissingSeedlessSessionKeys(wallet.id)
-  }
+  const results = await Promise.allSettled(walletPromises)
 
   // Dispatch updated accounts to Redux store
-  if (Object.keys(updatedAccounts).length > 0) {
-    listenerApi.dispatch(setAccounts(updatedAccounts))
-    // Skip reloadAccounts() to preserve our address changes
+  if (Object.keys(allUpdatedAccounts).length > 0) {
+    listenerApi.dispatch(setAccounts(allUpdatedAccounts))
   }
 
   reloadAccounts(_action, listenerApi)
 
-  if (!encounteredError) {
+  // Check if all promises succeeded
+  const allSucceeded = results.every(result => result.status === 'fulfilled')
+
+  if (allSucceeded) {
     markXpAddressMigrationComplete()
   } else {
+    // Log any failures
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        const wallet = Object.values(wallets)[index]
+        Logger.error(`Error processing wallet ${wallet?.id}`, result.reason)
+      }
+    })
     Logger.warn(
       'XP address migration completed with errors. Will retry on next app unlock.'
     )
@@ -336,15 +342,13 @@ const migrateXpAddressesIfNeeded = async (
 const populateXpAddressesForWallet = async ({
   wallet,
   accounts,
-  isDeveloperMode,
-  updatedAccounts
+  isDeveloperMode
 }: {
   wallet: StoreWallet
   accounts: Account[]
   isDeveloperMode: boolean
-  updatedAccounts: AccountCollection
-}): Promise<boolean> => {
-  let walletHasErrors = false
+}): Promise<AccountCollection> => {
+  const updatedAccounts: AccountCollection = {}
 
   const restrictToFirstIndex = [
     WalletType.KEYSTONE,
@@ -398,7 +402,6 @@ const populateXpAddressesForWallet = async ({
         `Failed to derive XP addresses for account ${account.index} in wallet ${wallet.id}`,
         error
       )
-      walletHasErrors = true
       // Continue with empty addresses to ensure account is still updated
     }
 
@@ -425,8 +428,6 @@ const populateXpAddressesForWallet = async ({
           `Failed to rederive AVM/PVM addresses for account ${account.index}`,
           error
         )
-        walletHasErrors = true
-        // Continue with existing addresses if rederivation fails
       }
     }
 
@@ -440,7 +441,7 @@ const populateXpAddressesForWallet = async ({
     }
   }
 
-  return walletHasErrors
+  return updatedAccounts
 }
 
 export const addAccountListeners = (
