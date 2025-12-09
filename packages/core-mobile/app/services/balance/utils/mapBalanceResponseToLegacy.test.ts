@@ -734,7 +734,8 @@ describe('mapBalanceResponseToLegacy', () => {
             price: 0.248147,
             priceChange24h: 0.01831521,
             priceChangePercentage24h: 7.96896,
-            balanceInCurrency: 1.25613252135
+            balanceInCurrency: 1.25613252135,
+            associatedTokenAddress: ''
           },
           {
             type: 'spl',
@@ -750,7 +751,8 @@ describe('mapBalanceResponseToLegacy', () => {
             price: 0.105347,
             priceChange24h: 0.00922028,
             priceChangePercentage24h: 9.59178,
-            balanceInCurrency: 0.9997609389900001
+            balanceInCurrency: 0.9997609389900001,
+            associatedTokenAddress: ''
           },
           {
             type: 'spl',
@@ -766,7 +768,8 @@ describe('mapBalanceResponseToLegacy', () => {
             price: 1.33,
             priceChange24h: 0.066591,
             priceChangePercentage24h: 5.26146,
-            balanceInCurrency: 1.1959094000000001
+            balanceInCurrency: 1.1959094000000001,
+            associatedTokenAddress: ''
           }
         ],
         totalBalanceInCurrency: 27.99514766034

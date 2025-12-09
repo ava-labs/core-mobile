@@ -72,7 +72,9 @@ describe('applyExchangeRateToTrendingTokens', () => {
         sparkline: [
           { unixTime: 1740498300, value: 10 },
           { unixTime: 1740499200, value: 9.5 }
-        ]
+        ],
+        isNative: false,
+        lastUpdated: ''
       }
     ]
 
@@ -96,7 +98,7 @@ describe('applyExchangeRateToTrendingTokens', () => {
       {
         address: '0x123',
         decimals: 18,
-        liquidity: null,
+        liquidity: -1,
         logoURI: 'https://example.com/logo.png',
         internalId: '0x123',
         coingeckoId: 'test-coingecko-id',
@@ -116,7 +118,9 @@ describe('applyExchangeRateToTrendingTokens', () => {
         discord: '',
         medium: '',
         verified: null,
-        sparkline: undefined
+        sparkline: null,
+        isNative: false,
+        lastUpdated: ''
       }
     ]
 
