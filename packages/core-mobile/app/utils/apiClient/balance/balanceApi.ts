@@ -40,8 +40,7 @@ const balanceApi = {
     if (!res.ok) {
       let errorMessage = `HTTP ${res.status}: ${res.statusText}`
 
-      // eslint-disable-next-line no-console
-      console.error('res', errorMessage)
+      Alert.alert('res', errorMessage)
       try {
         // Try to read error body if available
         if (res.body) {
