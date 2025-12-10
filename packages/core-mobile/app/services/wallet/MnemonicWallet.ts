@@ -41,7 +41,6 @@ import { mnemonicToSeed, mnemonicToSeedSync } from 'bip39'
 import { bip32 } from 'utils/bip32'
 import { hex } from '@scure/base'
 import ModuleManager from 'vmModule/ModuleManager'
-import { getAddressDerivationPath } from './utils'
 
 /**
  * Type guard to assert that a wallet is a MnemonicWallet instance
@@ -119,17 +118,8 @@ export class MnemonicWallet implements Wallet {
   }
 
   private async getAvaSigner(
-    accountIndex: number,
-    provider?: Avalanche.JsonRpcProvider
-  ): Promise<Avalanche.StaticSigner | Avalanche.SimpleSigner> {
-    if (provider) {
-      return Avalanche.StaticSigner.fromMnemonic(
-        this.mnemonic,
-        getAddressDerivationPath({ accountIndex, vmType: NetworkVMType.AVM }),
-        getAddressDerivationPath({ accountIndex, vmType: NetworkVMType.EVM }),
-        provider
-      )
-    }
+    accountIndex: number
+  ): Promise<Avalanche.SimpleSigner> {
     return new Avalanche.SimpleSigner(this.mnemonic, accountIndex)
   }
 
@@ -161,7 +151,7 @@ export class MnemonicWallet implements Wallet {
             `Unable to get signer: wrong provider obtained for network ${network.vmName}`
           )
         }
-        return (await this.getAvaSigner(accountIndex)) as Avalanche.SimpleSigner
+        return await this.getAvaSigner(accountIndex)
       case NetworkVMType.SVM:
         return this.getSvmSigner(accountIndex)
       default:
@@ -370,9 +360,7 @@ export class MnemonicWallet implements Wallet {
     chainAlias: Avalanche.ChainIDAlias
   ): Promise<string> => {
     const message = toUtf8(data)
-    const signer = (await this.getAvaSigner(
-      accountIndex
-    )) as Avalanche.SimpleSigner
+    const signer = await this.getAvaSigner(accountIndex)
     const buffer = await signer.signMessage({
       message,
       chain: chainAlias
