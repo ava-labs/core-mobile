@@ -1,6 +1,6 @@
 import { pvm } from '@avalabs/avalanchejs'
 import { Network } from '@avalabs/core-chains-sdk'
-import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { Avalanche, JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Account } from 'store/account'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
@@ -18,6 +18,10 @@ jest.mock('./utils', () => ({
   getDelegationFeePostCExportAndPImport: jest.fn(),
   getImportPFeePostCExport: jest.fn()
 }))
+
+const avalancheEvmProvider = {
+  getTransactionCount: jest.fn().mockResolvedValue(0)
+} as unknown as JsonRpcBatchInternal
 
 describe('computeDelegationSteps', () => {
   afterEach(() => {
@@ -47,7 +51,8 @@ describe('computeDelegationSteps', () => {
         ...defaultParams,
         pChainBalance: {
           balancePerType: { unlockedUnstaked: 0n }
-        } as TokenWithBalancePVM
+        } as TokenWithBalancePVM,
+        avalancheEvmProvider
       })
     ).rejects.toThrow('Insufficient balance for the stake amount and fees.')
   })
@@ -59,7 +64,8 @@ describe('computeDelegationSteps', () => {
       ...defaultParams,
       pChainBalance: {
         balancePerType: { unlockedUnstaked: 200n }
-      } as TokenWithBalancePVM
+      } as TokenWithBalancePVM,
+      avalancheEvmProvider
     })
 
     expect(steps).toEqual([
@@ -81,7 +87,8 @@ describe('computeDelegationSteps', () => {
       ...defaultParams,
       pChainBalance: {
         balancePerType: { unlockedUnstaked: 50n }
-      } as TokenWithBalancePVM
+      } as TokenWithBalancePVM,
+      avalancheEvmProvider
     })
 
     expect(steps).toEqual([
@@ -111,7 +118,8 @@ describe('computeDelegationSteps', () => {
       cChainBalance: new TokenUnit(200 * 10 ** 9, 9, 'AVAX'),
       pChainBalance: {
         balancePerType: { unlockedUnstaked: 50n }
-      } as TokenWithBalancePVM
+      } as TokenWithBalancePVM,
+      avalancheEvmProvider
     })
 
     expect(steps).toEqual([

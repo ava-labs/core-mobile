@@ -25,7 +25,10 @@ import Logger from 'utils/Logger'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { selectActiveAccount } from 'store/account'
 import { getMinimumStakeDurationMs } from 'services/earn/utils'
-import { useAvalancheXpProvider } from '../networks/networkProviderHooks'
+import {
+  useAvalancheEvmProvider,
+  useAvalancheXpProvider
+} from '../networks/networkProviderHooks'
 import { usePChainBalance } from './usePChainBalance'
 
 const EMPTY_STEPS: Step[] = []
@@ -47,6 +50,7 @@ export const useDelegation = (): {
   const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
   const { defaultFeeState } = useGetFeeState()
   const avaxProvider = useAvalancheXpProvider(isDeveloperMode)
+  const avalancheEvmProvider = useAvalancheEvmProvider(isDeveloperMode)
   const cChainBaseFee = useCChainBaseFee()
   const pChainBalance = usePChainBalance()
 
@@ -66,7 +70,8 @@ export const useDelegation = (): {
         !activeAccount.addressC ||
         !defaultFeeState ||
         !cChainBaseFee.data ||
-        !avaxProvider
+        !avaxProvider ||
+        !avalancheEvmProvider
       )
         return EMPTY_STEPS
 
@@ -83,7 +88,8 @@ export const useDelegation = (): {
         cChainBaseFee: cChainBaseFee.data,
         feeState: defaultFeeState,
         stakeAmount,
-        crossChainFeesMultiplier
+        crossChainFeesMultiplier,
+        avalancheEvmProvider
       })
 
       setSteps(result)
@@ -99,14 +105,15 @@ export const useDelegation = (): {
       pFeeAdjustmentThreshold,
       cBaseFeeMultiplier,
       crossChainFeesMultiplier,
-      avaxProvider
+      avaxProvider,
+      avalancheEvmProvider
     ]
   )
 
   const delegate: Delegate = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-shadow
     async ({ steps, startDate, endDate, nodeId }) => {
-      if (activeAccount === undefined) {
+      if (activeAccount === undefined || !avalancheEvmProvider) {
         throw new Error('No active account')
       }
 
@@ -188,7 +195,8 @@ export const useDelegation = (): {
               requiredAmountWei: nanoToWei(step.amount),
               account: activeAccount,
               isTestnet: isDeveloperMode,
-              cBaseFeeMultiplier
+              cBaseFeeMultiplier,
+              avalancheEvmProvider
             })
             break
 
@@ -212,7 +220,8 @@ export const useDelegation = (): {
       isDeveloperMode,
       pFeeAdjustmentThreshold,
       selectedCurrency,
-      cBaseFeeMultiplier
+      cBaseFeeMultiplier,
+      avalancheEvmProvider
     ]
   )
 

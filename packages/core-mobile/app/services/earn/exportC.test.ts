@@ -2,7 +2,7 @@ import { exportC } from 'services/earn/exportC'
 import { Account } from 'store/account'
 import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
-import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { Avalanche, JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import mockNetworks from 'tests/fixtures/networks.json'
 import { Network } from '@avalabs/core-chains-sdk'
@@ -10,6 +10,10 @@ import { WalletType } from 'services/wallet/types'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 
 const testCBaseFeeMultiplier = 1
+
+const avalancheEvmProvider = {
+  getTransactionCount: jest.fn().mockResolvedValue(0)
+} as unknown as JsonRpcBatchInternal
 
 describe('earn/exportC', () => {
   describe('exportC', () => {
@@ -72,7 +76,8 @@ describe('earn/exportC', () => {
           requiredAmountWei: BigInt(10e18),
           isTestnet: false,
           account: {} as Account,
-          cBaseFeeMultiplier: testCBaseFeeMultiplier
+          cBaseFeeMultiplier: testCBaseFeeMultiplier,
+          avalancheEvmProvider
         })
       }).rejects.toThrow('Not enough balance on C chain')
     })
@@ -85,7 +90,8 @@ describe('earn/exportC', () => {
         requiredAmountWei: BigInt(1e18),
         isTestnet: false,
         account: {} as Account,
-        cBaseFeeMultiplier: testCBaseFeeMultiplier
+        cBaseFeeMultiplier: testCBaseFeeMultiplier,
+        avalancheEvmProvider
       })
       expect(baseFeeMockFn).toHaveBeenCalled()
     })
@@ -99,7 +105,8 @@ describe('earn/exportC', () => {
           requiredAmountWei: BigInt(1e18),
           isTestnet: false,
           account: {} as Account,
-          cBaseFeeMultiplier: testCBaseFeeMultiplier
+          cBaseFeeMultiplier: testCBaseFeeMultiplier,
+          avalancheEvmProvider
         })
         expect(AvalancheWalletService.createExportCTx).toHaveBeenCalledWith({
           amountInNAvax: 1000000000n,
@@ -107,7 +114,8 @@ describe('earn/exportC', () => {
           destinationChain: 'P',
           destinationAddress: undefined,
           isTestnet: false,
-          account: {} as Account
+          account: {} as Account,
+          avalancheEvmProvider
         })
       }).not.toThrow()
     })
@@ -121,7 +129,8 @@ describe('earn/exportC', () => {
           requiredAmountWei: BigInt(1e18),
           isTestnet: false,
           account: {} as Account,
-          cBaseFeeMultiplier: testCBaseFeeMultiplier
+          cBaseFeeMultiplier: testCBaseFeeMultiplier,
+          avalancheEvmProvider
         })
         expect(WalletService.sign).toHaveBeenCalled()
       }).not.toThrow()
@@ -136,7 +145,8 @@ describe('earn/exportC', () => {
           requiredAmountWei: BigInt(1e18),
           isTestnet: false,
           account: {} as Account,
-          cBaseFeeMultiplier: testCBaseFeeMultiplier
+          cBaseFeeMultiplier: testCBaseFeeMultiplier,
+          avalancheEvmProvider
         })
         expect(NetworkService.sendTransaction).toHaveBeenCalled()
       }).not.toThrow()

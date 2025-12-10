@@ -1,4 +1,4 @@
-import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { Avalanche, JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import { pvm } from '@avalabs/avalanchejs'
@@ -33,7 +33,8 @@ export const computeDelegationSteps = async ({
   provider,
   pFeeAdjustmentThreshold,
   cBaseFeeMultiplier,
-  crossChainFeesMultiplier
+  crossChainFeesMultiplier,
+  avalancheEvmProvider
 }: {
   stakeAmount: bigint
   avaxXPNetwork: Network
@@ -43,6 +44,7 @@ export const computeDelegationSteps = async ({
   cChainBalance: TokenUnit | undefined
   cChainBaseFee: TokenUnit | undefined
   provider: Avalanche.JsonRpcProvider
+  avalancheEvmProvider: JsonRpcBatchInternal
   pFeeAdjustmentThreshold: number
   cBaseFeeMultiplier: number
   crossChainFeesMultiplier: number
@@ -136,7 +138,8 @@ export const computeDelegationSteps = async ({
           cChainBaseFee,
           account,
           isTestnet,
-          cBaseFeeMultiplier
+          cBaseFeeMultiplier,
+          avalancheEvmProvider
         })
 
         const importPFee = await getImportPFeePostCExport({
@@ -145,7 +148,6 @@ export const computeDelegationSteps = async ({
           feeState,
           provider
         })
-
         // this will throw if P-Chain balance is not enough
         const delegationFee = await getDelegationFeePostCExportAndPImport({
           stakeAmount,

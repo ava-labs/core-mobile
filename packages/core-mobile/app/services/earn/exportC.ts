@@ -11,6 +11,7 @@ import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import { weiToNano } from 'utils/units/converter'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
+import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportCParams = {
@@ -21,6 +22,7 @@ export type ExportCParams = {
   account: Account
   isTestnet: boolean
   cBaseFeeMultiplier: number
+  avalancheEvmProvider: JsonRpcBatchInternal
 }
 
 export async function exportC({
@@ -30,7 +32,8 @@ export async function exportC({
   requiredAmountWei,
   account,
   isTestnet,
-  cBaseFeeMultiplier
+  cBaseFeeMultiplier,
+  avalancheEvmProvider
 }: ExportCParams): Promise<void> {
   Logger.info(
     `exporting C started with base fee multiplier: ${cBaseFeeMultiplier}`
@@ -60,7 +63,8 @@ export async function exportC({
     account,
     isTestnet,
     destinationChain: 'P',
-    destinationAddress: account.addressPVM
+    destinationAddress: account.addressPVM,
+    avalancheEvmProvider
   })
 
   const signedTxWithFeeJson = await WalletService.sign({

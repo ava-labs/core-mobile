@@ -8,7 +8,7 @@ import {
   TransferOutput,
   Utxo
 } from '@avalabs/avalanchejs'
-import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { Avalanche, JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { pvm, utils } from '@avalabs/avalanchejs'
 import { getUnixTime } from 'date-fns'
@@ -94,7 +94,7 @@ export const getDelegationFeePostPImport = async ({
     getTransferOutputUtxos({
       amt: pChainAtomicBalance - importPFee,
       assetId,
-      addresses: account.xpAddresses.map(address => address.address)
+      addresses: account.xpAddresses.map(address => 'P-' + address.address)
     }),
     ...pChainUTXOs.getUTXOs()
   ]
@@ -144,7 +144,7 @@ export const getDelegationFeePostCExportAndPImport = async ({
     isTestnet
   })
 
-  const xpAddresses = account.xpAddresses.map(address => address.address)
+  const xpAddresses = account.xpAddresses.map(address => 'P-' + address.address)
 
   // put the incoming UTXO on top as if the export C + import P already happened
   // here we need to do a try catch to grab the missing amount since we don't
@@ -275,13 +275,14 @@ export const getImportPFeePostCExport = async ({
       account,
       isTestnet
     })
+
   // put the incoming UTXO on top as if the export C already happened
   // using a dummy amount as it doesn't affect fee, only the number of UTXOs matter
   const simulatedAtomicUTXOs = [
     getTransferOutputUtxos({
       amt: DUMMY_AMOUNT,
       assetId,
-      addresses: account.xpAddresses.map(address => address.address)
+      addresses: account.xpAddresses.map(address => 'P-' + address.address)
     }),
     ...atomicPChainUTXOs.getUTXOs()
   ]
@@ -310,12 +311,14 @@ export const getExportCFee = async ({
   cChainBaseFee,
   account,
   isTestnet,
-  cBaseFeeMultiplier
+  cBaseFeeMultiplier,
+  avalancheEvmProvider
 }: {
   cChainBaseFee: TokenUnit
   account: Account
   isTestnet: boolean
   cBaseFeeMultiplier: number
+  avalancheEvmProvider: JsonRpcBatchInternal
 }): Promise<bigint> => {
   const paddedCChainBaseFee = addBufferToCChainBaseFee(
     cChainBaseFee,
@@ -330,7 +333,8 @@ export const getExportCFee = async ({
     isTestnet,
     destinationChain: 'P',
     destinationAddress: account.addressPVM,
-    shouldValidateBurnedAmount: true
+    shouldValidateBurnedAmount: true,
+    avalancheEvmProvider
   })
 
   const exportCFee = calculateCChainFee(paddedCChainBaseFee, unsignedTx)
