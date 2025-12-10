@@ -1,8 +1,5 @@
 import AccountsService from 'services/account/AccountsService'
-import {
-  AddressIndex,
-  getAddressesFromXpubXP
-} from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
+import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
@@ -28,6 +25,7 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import KeystoneService from 'features/keystone/services/KeystoneService'
 import { pendingSeedlessWalletNameStore } from 'features/onboarding/store'
+import { AddressIndex } from '@avalabs/types'
 import {
   selectAccounts,
   setAccounts,

@@ -94,7 +94,7 @@ export const getDelegationFeePostPImport = async ({
     getTransferOutputUtxos({
       amt: pChainAtomicBalance - importPFee,
       assetId,
-      addresses: [account.addressPVM] // TODO: use xpAddresses
+      addresses: account.xpAddresses.map(address => address.address)
     }),
     ...pChainUTXOs.getUTXOs()
   ]
@@ -144,7 +144,7 @@ export const getDelegationFeePostCExportAndPImport = async ({
     isTestnet
   })
 
-  const xpAddresses = [account.addressPVM] // TODO: use xpAddresses after xp migration
+  const xpAddresses = account.xpAddresses.map(address => address.address)
 
   // put the incoming UTXO on top as if the export C + import P already happened
   // here we need to do a try catch to grab the missing amount since we don't
@@ -281,7 +281,7 @@ export const getImportPFeePostCExport = async ({
     getTransferOutputUtxos({
       amt: DUMMY_AMOUNT,
       assetId,
-      addresses: [account.addressPVM] // TODO: use xpAddresses after xp migration
+      addresses: account.xpAddresses.map(address => address.address)
     }),
     ...atomicPChainUTXOs.getUTXOs()
   ]
