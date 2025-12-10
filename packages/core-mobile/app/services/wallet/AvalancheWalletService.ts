@@ -1,4 +1,4 @@
-import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { Avalanche, JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import NetworkService from 'services/network/NetworkService'
 import { Account } from 'store/account'
@@ -9,6 +9,10 @@ import { getUnixTime, secondsToMilliseconds } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { PChainId } from '@avalabs/glacier-sdk'
 import { UTCDate } from '@date-fns/utc'
+import {
+  AVALANCHE_MAINNET_NETWORK,
+  AVALANCHE_TESTNET_NETWORK
+} from 'services/network/consts'
 import {
   AddDelegatorProps,
   CreateExportCTxParams,
@@ -85,7 +89,20 @@ class AvalancheWalletService {
   }: CreateExportCTxParams): Promise<UnsignedTx> {
     const readOnlySigner = await this.getReadOnlySigner(account, isTestnet)
 
-    const nonce = await readOnlySigner.getNonce()
+    // Get nonce from C-Chain EVM provider
+    const evmAddress = readOnlySigner.getAddressEVM()
+    // Get C-Chain network based on testnet flag
+    const cChainNetwork = isTestnet
+      ? AVALANCHE_TESTNET_NETWORK
+      : AVALANCHE_MAINNET_NETWORK
+
+    const evmProvider = await NetworkService.getProviderForNetwork(
+      cChainNetwork
+    )
+    if (!(evmProvider instanceof JsonRpcBatchInternal)) {
+      throw new Error('Unable to get nonce: wrong provider obtained')
+    }
+    const nonce = await evmProvider.getTransactionCount(evmAddress)
 
     const unsignedTx = readOnlySigner.exportC(
       amountInNAvax,

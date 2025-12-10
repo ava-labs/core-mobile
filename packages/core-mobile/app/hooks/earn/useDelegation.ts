@@ -62,6 +62,8 @@ export const useDelegation = (): {
     async (stakeAmount: bigint) => {
       if (
         !activeAccount ||
+        !activeAccount.addressPVM ||
+        !activeAccount.addressC ||
         !defaultFeeState ||
         !cChainBaseFee.data ||
         !avaxProvider ||

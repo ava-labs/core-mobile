@@ -84,7 +84,16 @@ export class LedgerWallet implements Wallet {
      * For Ledger Live, extendedPublicKeys remains undefined
      */
     if (ledgerData.derivationPathSpec === LedgerDerivationPathType.BIP44) {
-      this.extendedPublicKeys = ledgerData.extendedPublicKeys
+      // Handle both new format { evm: string, avalanche: string } and legacy format ExtendedPublicKey[]
+      if (Array.isArray(ledgerData.extendedPublicKeys)) {
+        // Legacy format - skip assignment, migration should handle this
+        Logger.warn(
+          'Legacy extendedPublicKeys format detected, skipping assignment'
+        )
+      } else {
+        // New format - assign directly
+        this.extendedPublicKeys = ledgerData.extendedPublicKeys
+      }
     }
   }
 
@@ -822,7 +831,7 @@ export class LedgerWallet implements Wallet {
     }
   }
 
-  public async getRawXpubXP(): Promise<string> {
+  public async getRawXpubXP(_accountIndex: number): Promise<string> {
     // TODO: implement this
     throw new Error('getRawXpubXP not implemented yet for LedgerWallet')
   }
