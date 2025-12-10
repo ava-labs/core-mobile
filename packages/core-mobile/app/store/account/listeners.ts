@@ -374,9 +374,7 @@ const populateXpAddressesForWallet = async ({
       updatedAccounts[account.id] = {
         ...account,
         addressAVM: '',
-        addressPVM: '',
-        xpAddresses: [],
-        xpAddressDictionary: {}
+        addressPVM: ''
       }
       continue
     }

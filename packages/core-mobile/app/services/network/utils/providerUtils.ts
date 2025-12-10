@@ -8,6 +8,7 @@ import {
 import { Networks } from 'store/network/types'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import NetworkService from '../NetworkService'
 import { NETWORK_SOLANA, NETWORK_SOLANA_DEVNET } from '../consts'
 
@@ -91,6 +92,6 @@ export function getEthereumNetwork(
 
 export function getAvalancheXpProvider(
   isTestnet: boolean
-): ReturnType<typeof NetworkService.getAvalancheProviderXP> {
+): Promise<Avalanche.JsonRpcProvider | undefined> {
   return NetworkService.getAvalancheProviderXP(isTestnet)
 }

@@ -19,7 +19,7 @@ import {
 import { Network } from '@avalabs/core-chains-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
-import { getBitcoinProvider } from 'services/network/utils/providerUtils'
+import { BitcoinProvider } from '@avalabs/core-wallets-sdk'
 import { lowerCaseKeys } from 'utils/lowerCaseKeys'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
 
@@ -39,7 +39,7 @@ export class UnifiedBridgeService {
     enabledBridgeTypes: BridgeType[]
     evmSigner: EvmSigner
     btcSigner: BtcSigner
-    bitcoinProvider: Awaited<ReturnType<typeof getBitcoinProvider>>
+    bitcoinProvider: BitcoinProvider
     environment: Environment
   }): Promise<void> {
     Logger.info('initializing unified bridge service', {
@@ -273,7 +273,7 @@ export class UnifiedBridgeService {
     enabledBridgeTypes: BridgeType[]
     evmSigner: EvmSigner
     btcSigner: BtcSigner
-    bitcoinFunctions: Awaited<ReturnType<typeof getBitcoinProvider>>
+    bitcoinFunctions: BitcoinProvider
   }): BridgeInitializer[] {
     return enabledBridgeTypes.map(type => {
       switch (type) {

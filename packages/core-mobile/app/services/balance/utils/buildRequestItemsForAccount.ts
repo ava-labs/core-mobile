@@ -120,11 +120,11 @@ export const buildRequestItemsForAccount = (
         const ref =
           network.vmName === NetworkVMType.PVM
             ? network.isTestnet
-              ? '8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl'
-              : 'imji8papUf2EhV3le337w1vgFauqkJg-'
+              ? 'Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG'
+              : 'Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo'
             : network.isTestnet
-            ? 'Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG'
-            : 'Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo'
+            ? '8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl'
+            : 'imji8papUf2EhV3le337w1vgFauqkJg-'
 
         avaxXpBucket.references = uniq([...avaxXpBucket.references, ref])
         avaxXpBucket.addresses = uniq([
