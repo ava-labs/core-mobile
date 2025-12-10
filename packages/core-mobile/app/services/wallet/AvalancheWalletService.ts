@@ -426,7 +426,9 @@ class AvalancheWalletService {
     return new Avalanche.AddressWallet(
       account.addressC,
       stripAddressPrefix(account.addressCoreEth),
-      [stripAddressPrefix(account.addressPVM)], // TODO: pass all xpAddresses of the account after xp addresses migration
+      account.xpAddresses.map(xpAddress =>
+        stripAddressPrefix(xpAddress.address)
+      ),
       stripAddressPrefix(account.addressPVM),
       provXP
     )
