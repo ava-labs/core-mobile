@@ -23,6 +23,7 @@ import {
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { WalletType } from 'services/wallet/types'
 import { DropdownMenu } from './DropdownMenu'
+import { WalletIcon } from './WalletIcon'
 
 const HEADER_HEIGHT = 64
 
@@ -62,19 +63,6 @@ const WalletCard = ({
       />
     )
   }, [colors.$textSecondary, isExpanded])
-
-  const renderWalletIcon = useCallback(() => {
-    if (
-      wallet.type === WalletType.LEDGER ||
-      wallet.type === WalletType.LEDGER_LIVE
-    ) {
-      return <Icons.Custom.Ledger color={colors.$textPrimary} />
-    }
-    if (isExpanded) {
-      return <Icons.Custom.Wallet color={colors.$textPrimary} />
-    }
-    return <Icons.Custom.WalletClosed color={colors.$textPrimary} />
-  }, [colors.$textPrimary, isExpanded, wallet.type])
 
   const renderAccountItem: ListRenderItem<AccountDisplayData> = useCallback(
     ({ item }) => {
@@ -202,7 +190,7 @@ const WalletCard = ({
               paddingLeft: 5
             }}>
             {renderExpansionIcon()}
-            {renderWalletIcon()}
+            <WalletIcon wallet={wallet} isExpanded={isExpanded} />
           </View>
           <View
             style={{
