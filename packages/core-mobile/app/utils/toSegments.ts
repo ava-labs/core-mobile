@@ -23,11 +23,11 @@ export const toSegments = (
     )
   }
 
-  const purpose = validateSegment(1, 'purpose', segments)
-  const coinType = validateSegment(2, 'coinType', segments)
-  const accountIndex = validateSegment(3, 'accountIndex', segments)
-  const change = validateSegment(4, 'change', segments)
-  const addressIndex = validateSegment(5, 'addressIndex', segments)
+  const purpose = validateSegment(1, 'purpose', segments, path)
+  const coinType = validateSegment(2, 'coinType', segments, path)
+  const accountIndex = validateSegment(3, 'accountIndex', segments, path)
+  const change = validateSegment(4, 'change', segments, path)
+  const addressIndex = validateSegment(5, 'addressIndex', segments, path)
 
   return {
     m: 'm',
@@ -42,12 +42,13 @@ export const toSegments = (
 export const validateSegment = (
   index: number,
   name: string,
-  segments: string[]
+  segments: string[],
+  path: string
 ): string => {
   const segment = segments[index]
   if (!segment || !segment.trim() || segment !== segment.trim()) {
     throw new Error(
-      `Segment '${name}' at position ${index} is missing or contains whitespace`
+      `Invalid derivation path: ${path}. Segment '${name}' at position ${index} is missing or contains whitespace`
     )
   }
   return segment
