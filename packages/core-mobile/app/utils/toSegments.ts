@@ -23,22 +23,11 @@ export const toSegments = (
     )
   }
 
-  // Validate and extract segments
-  const validateSegment = (index: number, name: string): string => {
-    const segment = segments[index]
-    if (!segment || !segment.trim() || segment !== segment.trim()) {
-      throw new Error(
-        `Invalid derivation path: ${path}. Segment '${name}' at position ${index} is missing or contains whitespace`
-      )
-    }
-    return segment
-  }
-
-  const purpose = validateSegment(1, 'purpose')
-  const coinType = validateSegment(2, 'coinType')
-  const accountIndex = validateSegment(3, 'accountIndex')
-  const change = validateSegment(4, 'change')
-  const addressIndex = validateSegment(5, 'addressIndex')
+  const purpose = validateSegment(1, 'purpose', segments)
+  const coinType = validateSegment(2, 'coinType', segments)
+  const accountIndex = validateSegment(3, 'accountIndex', segments)
+  const change = validateSegment(4, 'change', segments)
+  const addressIndex = validateSegment(5, 'addressIndex', segments)
 
   return {
     m: 'm',
@@ -48,4 +37,18 @@ export const toSegments = (
     change: Number(change) as 0 | 1,
     addressIndex: Number(addressIndex)
   }
+}
+
+export const validateSegment = (
+  index: number,
+  name: string,
+  segments: string[]
+): string => {
+  const segment = segments[index]
+  if (!segment || !segment.trim() || segment !== segment.trim()) {
+    throw new Error(
+      `Segment '${name}' at position ${index} is missing or contains whitespace`
+    )
+  }
+  return segment
 }
