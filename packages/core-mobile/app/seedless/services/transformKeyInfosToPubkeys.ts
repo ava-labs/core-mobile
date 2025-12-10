@@ -1,7 +1,17 @@
 import * as cs from '@cubist-labs/cubesigner-sdk'
 import { strip0x } from '@avalabs/core-utils-sdk'
 import { AddressPublicKey, Curve } from 'utils/publicKeys'
-import { DEPRECATED_AVALANCHE_DERIVATION_PATH_PREFIX } from 'features/ledger/consts'
+import { toSegments } from 'utils/toSegments'
+
+type AccountKeySet = {
+  evm?: cs.KeyInfo
+  solana?: cs.KeyInfo
+  ava: cs.KeyInfo[]
+}
+
+const createAccountKeySet = (): AccountKeySet => ({
+  ava: []
+})
 
 export const transformKeyInfosToPubKeys = (
   keyInfos: cs.KeyInfo[]
@@ -9,57 +19,104 @@ export const transformKeyInfosToPubKeys = (
 ): AddressPublicKey[] => {
   const requiredKeyTypes: cs.KeyTypeApi[] = [cs.Secp256k1.Evm, cs.Secp256k1.Ava]
   const optionalKeyTypes: cs.KeyTypeApi[] = [cs.Ed25519.Solana]
-  const allowedKeyTypes = [...requiredKeyTypes, ...optionalKeyTypes]
+  // Also include testnet Avalanche addresses
+  const testnetKeyTypes: cs.KeyTypeApi[] = ['SecpAvaTestAddr' as cs.KeyTypeApi]
+  const allowedKeyTypes = [
+    ...requiredKeyTypes,
+    ...optionalKeyTypes,
+    ...testnetKeyTypes
+  ]
 
-  // we are migrating to the new account model with new derivation path spec for Ava and AvaTest: m/44'/${coinIndex}'/${accountIndex}'/0/0
-  // in the backend, we are returning the keys with new spec and existing spec for backward compatibility,
-  // to prepare for this change, we need to filter out the keys with new spec to avoid getting the wrong derivation path
-  const filteredKeyInfos = keyInfos?.filter(k => {
-    if (
-      k.key_type === cs.Secp256k1.Ava ||
-      k.key_type === cs.Secp256k1.AvaTest
-    ) {
-      return k.derivation_info?.derivation_path?.startsWith(
-        DEPRECATED_AVALANCHE_DERIVATION_PATH_PREFIX
-      )
-    }
-    return true
-  })
+  /**
+   *
+   * Step 1:filter out keys that
+   *  1. are not enabled
+   *  2. are not in the allowed key types (EVM, AVM, Solana)
+   *  3. do not have a derivation path
+   */
+  const filteredKeys = keyInfos?.filter(
+    k =>
+      k.enabled &&
+      allowedKeyTypes.includes(k.key_type) &&
+      k.derivation_info?.derivation_path
+  )
 
-  const keys = filteredKeyInfos
-    ?.filter(
-      k =>
-        k.enabled &&
-        allowedKeyTypes.includes(k.key_type) &&
-        k.derivation_info?.derivation_path
-    )
-    .reduce((acc, key) => {
-      if (!key.derivation_info) {
-        return acc
-      }
-
-      const index =
-        key.key_type === cs.Ed25519.Solana
-          ? parseInt(
-              key.derivation_info.derivation_path.split('/').at(-2) as string
-            )
-          : Number(key.derivation_info.derivation_path.split('/').pop())
-      if (index === undefined) {
-        return acc
-      }
-
-      acc[key.derivation_info.mnemonic_id] = [
-        ...(acc[key.derivation_info.mnemonic_id] ?? [])
-      ]
-      const mnemonicBlock = acc[key.derivation_info.mnemonic_id] || []
-
-      mnemonicBlock[index] = {
-        ...acc[key.derivation_info.mnemonic_id]?.[index],
-        [key.key_type]: key
-      }
-
+  /**
+   * Step 2: parse the derivation path to get the account index
+   * Solana: get second-to-last segment
+   * EVM/Avalanche: detect derivation spec
+   *   - New spec: m/44'/coin'/account'/0/0 (account index in 3rd position)
+   *   - Old spec: m/44'/coin'/0'/0/addressIndex (addressIndex in last position)
+   *   - If last segment is 0 and account segment is greater than 0, use account index
+   *   - Otherwise, use account 0
+   */
+  const keys = filteredKeys.reduce((acc, key) => {
+    if (!key.derivation_info) {
       return acc
-    }, {} as Record<string, Record<string, cs.KeyInfo>[]>)
+    }
+
+    let index: number
+    if (key.key_type === cs.Ed25519.Solana) {
+      // Solana: get second-to-last segment as the path is missing the address index when we receive it
+      index = parseInt(
+        key.derivation_info.derivation_path.split('/').at(-2) as string
+      )
+    } else if ([cs.Secp256k1.Ava, 'SecpAvaTestAddr'].includes(key.key_type)) {
+      // For Avalanche keys, detect derivation spec
+
+      const { accountIndex, addressIndex } = toSegments(
+        key.derivation_info.derivation_path
+      )
+
+      // New spec: m/44'/coin'/account'/0/0 (account index in 3rd position)
+      // Old spec: m/44'/coin'/0'/0/addressIndex (addressIndex in last position)
+      if (addressIndex === 0 && accountIndex > 0) {
+        // New derivation spec - use account index
+        index = accountIndex
+      } else {
+        // Old derivation spec - map addressIndex to account 0
+        // All old addresses belong to account 0
+        index = 0
+      }
+    } else {
+      const { addressIndex } = toSegments(key.derivation_info.derivation_path)
+      // pop addresses index and return as number
+      index = addressIndex
+    }
+
+    if (index === undefined) {
+      return acc
+    }
+
+    // Step 3: group the keys by mnemonic id
+    const mnemonicId = key.derivation_info.mnemonic_id
+    acc[mnemonicId] = [...(acc[mnemonicId] ?? [])]
+    const mnemonicBlock = acc[mnemonicId]
+
+    mnemonicBlock[index] = mnemonicBlock[index] ?? createAccountKeySet()
+    const accountKeySet = mnemonicBlock[index]
+
+    if (!accountKeySet) {
+      return acc
+    }
+
+    switch (key.key_type) {
+      case cs.Secp256k1.Evm:
+        accountKeySet.evm = key
+        break
+      case cs.Secp256k1.Ava:
+      case 'SecpAvaTestAddr': // Handle testnet Avalanche addresses
+        accountKeySet.ava = [...accountKeySet.ava, key]
+        break
+      case cs.Ed25519.Solana:
+        accountKeySet.solana = key
+        break
+      default:
+        break
+    }
+
+    return acc
+  }, {} as Record<string, AccountKeySet[]>)
 
   if (!keys || Object.keys(keys).length === 0) {
     throw new Error('Accounts not created')
@@ -67,11 +124,14 @@ export const transformKeyInfosToPubKeys = (
 
   const allDerivedKeySets = Object.values(keys)
 
-  // We only look for key sets that contain all of the required key types.
+  /**
+   * Step 4: Validate key sets
+   * - only keep mnemonic groups where EVERY account has both EVM and Avalanche keys
+   */
   const validKeySets = allDerivedKeySets.filter(keySet => {
     return keySet
       .filter(key => Boolean(key))
-      .every(key => requiredKeyTypes.every(type => key[type]))
+      .every(key => key?.evm && key?.ava.length)
   })
 
   if (!validKeySets[0]) {
@@ -82,36 +142,50 @@ export const transformKeyInfosToPubKeys = (
   const derivedKeys = validKeySets[0]
   const pubkeys = [] as AddressPublicKey[]
 
+  /**
+   * Step 5: Convert key sets to public keys
+   * - for each key set, create a public key object
+   * - for each Avalanche key, create a public key object
+   * - for each Solana key, create a public key object
+   * - return the public key objects
+   */
   derivedKeys.forEach(key => {
-    if (!key || !key[cs.Secp256k1.Ava] || !key[cs.Secp256k1.Evm]) {
+    if (!key || !key.ava.length || !key.evm) {
       return
     }
 
     if (
-      !key[cs.Secp256k1.Evm].derivation_info?.derivation_path ||
-      !key[cs.Secp256k1.Ava].derivation_info?.derivation_path
+      !key.evm.derivation_info?.derivation_path ||
+      key.ava.some(avaKey => !avaKey.derivation_info?.derivation_path)
     ) {
       throw new Error('Derivation path not found')
     }
 
-    pubkeys.push(
-      {
-        curve: Curve.SECP256K1,
-        derivationPath: key[cs.Secp256k1.Evm].derivation_info.derivation_path,
-        key: strip0x(key[cs.Secp256k1.Evm].public_key)
-      },
-      {
-        curve: Curve.SECP256K1,
-        derivationPath: key[cs.Secp256k1.Ava].derivation_info.derivation_path,
-        key: strip0x(key[cs.Secp256k1.Ava].public_key)
-      }
-    )
+    pubkeys.push({
+      curve: Curve.SECP256K1,
+      derivationPath: key.evm.derivation_info.derivation_path,
+      key: strip0x(key.evm.public_key)
+    })
 
-    if (key[cs.Ed25519.Solana]?.derivation_info?.derivation_path) {
+    key.ava.forEach(avaKey => {
+      const derivationPath = avaKey.derivation_info?.derivation_path
+
+      if (!derivationPath) {
+        throw new Error('Derivation path not found')
+      }
+
+      pubkeys.push({
+        curve: Curve.SECP256K1,
+        derivationPath,
+        key: strip0x(avaKey.public_key)
+      })
+    })
+
+    if (key.solana?.derivation_info?.derivation_path) {
       pubkeys.push({
         curve: Curve.ED25519,
-        derivationPath: key[cs.Ed25519.Solana].derivation_info.derivation_path,
-        key: strip0x(key[cs.Ed25519.Solana].public_key)
+        derivationPath: key.solana.derivation_info.derivation_path,
+        key: strip0x(key.solana.public_key)
       })
     }
   })

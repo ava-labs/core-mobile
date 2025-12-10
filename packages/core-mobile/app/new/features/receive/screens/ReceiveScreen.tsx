@@ -43,9 +43,9 @@ export const ReceiveScreen = (): ReactNode => {
       case NetworkVMType.BITCOIN:
         return activeAccount?.addressBTC ?? ''
       case NetworkVMType.AVM:
-        return activeAccount?.addressAVM.split('-')[1] ?? ''
+        return activeAccount?.addressAVM?.split('-')[1] ?? ''
       case NetworkVMType.PVM:
-        return activeAccount?.addressPVM.split('-')[1] ?? ''
+        return activeAccount?.addressPVM?.split('-')[1] ?? ''
       case NetworkVMType.SVM:
         return activeAccount?.addressSVM ?? ''
       case NetworkVMType.EVM:

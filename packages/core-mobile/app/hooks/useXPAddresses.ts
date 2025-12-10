@@ -2,7 +2,10 @@ import { skipToken, useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useSelector } from 'react-redux'
 import { Account } from 'store/account/types'
-import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
+import {
+  getAddressesFromXpubXP,
+  GetAddressesFromXpubResult
+} from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectActiveWallet } from 'store/wallet/slice'
 
@@ -10,7 +13,7 @@ const STALE_TIME = 60000 // 1 minute
 
 export const useXPAddresses = (
   account?: Account
-): UseQueryResult<string[], Error> => {
+): UseQueryResult<GetAddressesFromXpubResult, Error> => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeWallet = useSelector(selectActiveWallet)
 

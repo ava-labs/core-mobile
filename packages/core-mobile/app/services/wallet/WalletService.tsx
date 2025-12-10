@@ -22,6 +22,7 @@ import {
 } from '@avalabs/vm-module-types'
 import { SpanName } from 'services/sentry/types'
 import { Curve } from 'utils/publicKeys'
+
 import { profileApi } from 'utils/apiClient/profile/profileApi'
 import { GetAddressesResponse } from 'utils/apiClient/profile/types'
 import {

@@ -8,13 +8,12 @@ import {
   SimplePriceParams,
   VsCurrencyType
 } from '@avalabs/core-coingecko-sdk'
-import { Contract } from 'ethers'
-import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
+import { Contract, ContractRunner } from 'ethers'
 import ERC20 from '@openzeppelin/contracts/build/contracts/ERC20.json'
 import { getCache, setCache } from 'utils/InMemoryCache'
 import { arrayHash } from 'utils/Utils'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
-import NetworkService from 'services/network/NetworkService'
+import { getEvmProvider } from 'services/network/utils/providerUtils'
 import { MarketToken } from 'store/watchlist/types'
 import xss from 'xss'
 import promiseWithTimeout, { TimeoutError } from 'utils/js/promiseWithTimeout'
@@ -59,13 +58,13 @@ export class TokenService {
       throw new Error('Invalid network')
     }
 
-    const provider = await NetworkService.getProviderForNetwork(network)
+    const provider = await getEvmProvider(network)
 
-    if (!provider || !(provider instanceof JsonRpcBatchInternal)) {
-      throw new Error('No provider')
-    }
-
-    const contract = new Contract(address, ERC20.abi, provider)
+    const contract = new Contract(
+      address,
+      ERC20.abi,
+      provider as ContractRunner
+    )
 
     let contractCalls
     try {

@@ -54,7 +54,7 @@ class AvalancheGetAccountsHandler
         const xpubXP = wallet
           ? // TODO pass correct account index after
             // https://github.com/ava-labs/avalanche-sdks/pull/765/files is merged
-            await getXpubXP(account.walletId, wallet.type, 0)
+            await getXpubXP(account.walletId, wallet.type, account.index)
           : undefined
 
         return {

@@ -1,5 +1,9 @@
 import AccountsService from 'services/account/AccountsService'
 import {
+  AddressIndex,
+  getAddressesFromXpubXP
+} from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
+import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
@@ -7,6 +11,7 @@ import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { AnyAction } from '@reduxjs/toolkit'
 import { onAppUnlocked } from 'store/app/slice'
 import { WalletType } from 'services/wallet/types'
+import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { recentAccountsStore } from 'new/features/accountSettings/store'
@@ -17,6 +22,7 @@ import {
   selectWallets,
   setWalletName
 } from 'store/wallet/slice'
+import { Wallet as StoreWallet } from 'store/wallet/types'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
@@ -29,12 +35,14 @@ import {
   selectAccountsByWalletId,
   selectActiveAccount
 } from './slice'
-import { AccountCollection } from './types'
+import { AccountCollection, Account, XPAddressDictionary } from './types'
 import {
   canMigrateActiveAccounts,
   deriveMissingSeedlessSessionKeys,
   migrateRemainingActiveAccounts,
-  shouldMigrateActiveAccounts
+  shouldMigrateActiveAccounts,
+  hasCompletedXpAddressMigration,
+  markXpAddressMigrationComplete
 } from './utils'
 
 const initAccounts = async (
@@ -264,6 +272,176 @@ const handleInitAccountsIfNeeded = async (
   migrateActiveAccountsIfNeeded(_action, listenerApi)
 }
 
+const migrateXpAddressesIfNeeded = async (
+  _action: AnyAction,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  if (hasCompletedXpAddressMigration()) {
+    Logger.info('XP address migration already completed. Skipping.')
+    return
+  }
+
+  const state = listenerApi.getState()
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const wallets = selectWallets(state)
+  const allUpdatedAccounts: AccountCollection = {}
+
+  // Process all wallets in parallel
+  const walletPromises = Object.values(wallets).map(async wallet => {
+    if (WalletType.PRIVATE_KEY.includes(wallet.type)) {
+      Logger.info(
+        `Skipping XP address derivation for private key wallet of type ${wallet.type}`
+      )
+      return
+    }
+
+    const accounts = selectAccountsByWalletId(state, wallet.id)
+
+    // Run both operations in parallel for each wallet
+    const [updatedAccounts] = await Promise.all([
+      populateXpAddressesForWallet({
+        wallet,
+        accounts,
+        isDeveloperMode
+      }),
+      deriveMissingSeedlessSessionKeys(wallet.id)
+    ])
+
+    // Merge successful account updates
+    Object.assign(allUpdatedAccounts, updatedAccounts)
+  })
+
+  const results = await Promise.allSettled(walletPromises)
+
+  // Dispatch updated accounts to Redux store
+  if (Object.keys(allUpdatedAccounts).length > 0) {
+    listenerApi.dispatch(setAccounts(allUpdatedAccounts))
+  }
+
+  reloadAccounts(_action, listenerApi)
+
+  // Check if all promises succeeded
+  const allSucceeded = results.every(result => result.status === 'fulfilled')
+
+  if (allSucceeded) {
+    markXpAddressMigrationComplete()
+  } else {
+    // Log any failures
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        const wallet = Object.values(wallets)[index]
+        Logger.error(`Error processing wallet ${wallet?.id}`, result.reason)
+      }
+    })
+    Logger.warn(
+      'XP address migration completed with errors. Will retry on next app unlock.'
+    )
+  }
+}
+
+const populateXpAddressesForWallet = async ({
+  wallet,
+  accounts,
+  isDeveloperMode
+}: {
+  wallet: StoreWallet
+  accounts: Account[]
+  isDeveloperMode: boolean
+}): Promise<AccountCollection> => {
+  const updatedAccounts: AccountCollection = {}
+
+  const restrictToFirstIndex = [
+    WalletType.KEYSTONE,
+    WalletType.LEDGER,
+    WalletType.LEDGER_LIVE
+  ].includes(wallet.type)
+
+  for (let i = 0; i < accounts.length; i++) {
+    const account = accounts[i]
+    if (!account) {
+      continue
+    }
+
+    Logger.info(
+      `Processing account ${account.index} (${account.id}) for wallet ${wallet.type}`
+    )
+
+    if (restrictToFirstIndex && account.index !== 0) {
+      Logger.info(
+        `Skipping hardware wallet account ${account.index} until device connection`
+      )
+
+      updatedAccounts[account.id] = {
+        ...account,
+        addressAVM: '',
+        addressPVM: ''
+      }
+      continue
+    }
+
+    let xpAddresses: AddressIndex[] = []
+    let xpAddressDictionary: XPAddressDictionary = {} as XPAddressDictionary
+
+    try {
+      Logger.info(`Deriving XP addresses for account ${account.index}...`)
+
+      const result = await getAddressesFromXpubXP({
+        isDeveloperMode,
+        walletId: wallet.id,
+        walletType: wallet.type,
+        accountIndex: account.index,
+        onlyWithActivity: true
+      })
+
+      xpAddresses = result.xpAddresses
+      xpAddressDictionary = result.xpAddressDictionary
+    } catch (error) {
+      Logger.error(
+        `Failed to derive XP addresses for account ${account.index} in wallet ${wallet.id}`,
+        error
+      )
+      // Continue with empty addresses to ensure account is still updated
+    }
+
+    // For mnemonic and seedless wallets, rederive AVM and PVM addresses
+    let newAddressAVM = account.addressAVM
+    let newAddressPVM = account.addressPVM
+
+    if (
+      wallet.type === WalletType.MNEMONIC ||
+      wallet.type === WalletType.SEEDLESS
+    ) {
+      try {
+        const rederived = await AccountsService.getAddresses({
+          walletId: wallet.id,
+          walletType: wallet.type,
+          accountIndex: account.index,
+          isTestnet: isDeveloperMode
+        })
+
+        newAddressAVM = rederived[NetworkVMType.AVM]
+        newAddressPVM = rederived[NetworkVMType.PVM]
+      } catch (error) {
+        Logger.error(
+          `Failed to rederive AVM/PVM addresses for account ${account.index}`,
+          error
+        )
+      }
+    }
+
+    // Always update the account, even if derivation failed
+    updatedAccounts[account.id] = {
+      ...account,
+      addressAVM: newAddressAVM,
+      addressPVM: newAddressPVM,
+      xpAddresses,
+      xpAddressDictionary
+    }
+  }
+
+  return updatedAccounts
+}
+
 export const addAccountListeners = (
   startListening: AppStartListening
 ): void => {
@@ -285,5 +463,10 @@ export const addAccountListeners = (
   startListening({
     actionCreator: onAppUnlocked,
     effect: migrateSolanaAddressesIfNeeded
+  })
+
+  startListening({
+    actionCreator: onAppUnlocked,
+    effect: migrateXpAddressesIfNeeded
   })
 }

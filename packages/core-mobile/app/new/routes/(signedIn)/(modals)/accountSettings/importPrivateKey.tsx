@@ -19,6 +19,7 @@ import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useCheckIfPrivateKeyWalletExists } from 'common/hooks/useCheckIfPrivateKeyWalletExists'
 import Logger from 'utils/Logger'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 
 const ImportPrivateKeyScreen = (): JSX.Element => {
   const [privateKeyText, setPrivateKeyText] = useState('')
@@ -41,6 +42,8 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
   const checkIfPrivateKeyWalletExists = useCheckIfPrivateKeyWalletExists()
 
   const handleImportPrivateKey = useCallback(() => {
+    dismissKeyboardIfNeeded()
+
     if (checkIfAccountExists(tempAccountDetails?.addressC)) {
       showAlert({
         title: 'Import Duplicate Account?',

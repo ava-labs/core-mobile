@@ -39,6 +39,7 @@ export const buildRequestItemsForAccount = (
   // eslint-disable-next-line sonarjs/cognitive-complexity
 ): GetBalancesRequestBody['data'] => {
   const accountId = account.id
+  const accountXpAddresses = getAccountXpAddresses(account)
 
   // Namespace buckets
   let evmBucket: EvmGetBalancesRequestItem | undefined
@@ -117,26 +118,19 @@ export const buildRequestItemsForAccount = (
       case NetworkVMType.AVM:
       case NetworkVMType.PVM: {
         const ref =
-          network.vmName === NetworkVMType.AVM
+          network.vmName === NetworkVMType.PVM
             ? network.isTestnet
-              ? '8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl'
-              : 'imji8papUf2EhV3le337w1vgFauqkJg-'
+              ? 'Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG'
+              : 'Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo'
             : network.isTestnet
-            ? 'Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG'
-            : 'Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo'
+            ? '8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl'
+            : 'imji8papUf2EhV3le337w1vgFauqkJg-'
 
-        const strippedAddress = stripAddressPrefix(address)
-        // Only add non-empty addresses after stripping prefix
-        if (
-          typeof strippedAddress === 'string' &&
-          strippedAddress.trim() !== ''
-        ) {
-          avaxXpBucket.references = uniq([...avaxXpBucket.references, ref])
-          avaxXpBucket.addresses = uniq([
-            ...avaxXpBucket.addresses,
-            strippedAddress
-          ])
-        }
+        avaxXpBucket.references = uniq([...avaxXpBucket.references, ref])
+        avaxXpBucket.addresses = uniq([
+          ...avaxXpBucket.addresses,
+          ...accountXpAddresses
+        ])
         break
       }
 
@@ -172,4 +166,16 @@ export const buildRequestItemsForAccount = (
   }
 
   return requestItems
+}
+
+const getAccountXpAddresses = (account: Account): string[] => {
+  const derivedXpAddresses =
+    account.xpAddresses?.map(({ address }) => stripAddressPrefix(address)) ?? []
+
+  if (derivedXpAddresses.length > 0) {
+    return uniq(derivedXpAddresses)
+  }
+
+  const fallbackAddress = account.addressAVM || account.addressPVM
+  return fallbackAddress ? [stripAddressPrefix(fallbackAddress)] : []
 }

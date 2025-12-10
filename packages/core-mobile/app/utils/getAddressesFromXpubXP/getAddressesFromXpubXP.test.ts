@@ -28,7 +28,11 @@ const makeResponse = (
 })
 
 describe('getAddressesFromXpubXP', () => {
-  beforeEach(() => jest.clearAllMocks())
+  beforeEach(() => {
+    jest.clearAllMocks()
+    // Mock hasXpub to return true for MNEMONIC wallet type
+    mockWalletService.hasXpub.mockReturnValue(true)
+  })
 
   const args = {
     isDeveloperMode: false,
@@ -48,7 +52,14 @@ describe('getAddressesFromXpubXP', () => {
 
     const result = await getAddressesFromXpubXP(args)
 
-    expect(result).toEqual(['avax1aaa', 'avax1bbb'])
+    expect(result.xpAddresses).toEqual([
+      { address: 'avax1aaa', index: 0 },
+      { address: 'avax1bbb', index: 1 }
+    ])
+    expect(result.xpAddressDictionary).toMatchObject({
+      avax1aaa: { space: 'e', index: 0, hasActivity: true },
+      avax1bbb: { space: 'e', index: 1, hasActivity: true }
+    })
   })
 
   it('handles internal addresses correctly', async () => {
@@ -61,7 +72,11 @@ describe('getAddressesFromXpubXP', () => {
 
     const result = await getAddressesFromXpubXP(args)
 
-    expect(result).toEqual(['avax1aaa', 'avax1bbb', 'avax1ccc'])
+    expect(result.xpAddresses).toEqual([
+      { address: 'avax1aaa', index: 0 },
+      { address: 'avax1bbb', index: 0 },
+      { address: 'avax1ccc', index: 0 }
+    ])
   })
 
   it('dedupes even if AVM and PVM have different index values for the same address', async () => {
@@ -74,7 +89,7 @@ describe('getAddressesFromXpubXP', () => {
 
     const result = await getAddressesFromXpubXP(args)
 
-    expect(result).toEqual(['avax1zzz']) // only one
+    expect(result.xpAddresses).toEqual([{ address: 'avax1zzz', index: 0 }]) // only one
   })
 
   it('handles situations where AVM returns empty and PVM has addresses', async () => {
@@ -87,7 +102,10 @@ describe('getAddressesFromXpubXP', () => {
 
     const result = await getAddressesFromXpubXP(args)
 
-    expect(result).toEqual(['avax1bar', 'avax1foo'])
+    expect(result.xpAddresses).toEqual([
+      { address: 'avax1bar', index: 1 },
+      { address: 'avax1foo', index: 0 }
+    ])
   })
 
   it('removes duplicates even if AVM returns the same address multiple times', async () => {
@@ -100,7 +118,7 @@ describe('getAddressesFromXpubXP', () => {
 
     const result = await getAddressesFromXpubXP(args)
 
-    expect(result).toEqual(['avax1dup'])
+    expect(result.xpAddresses).toEqual([{ address: 'avax1dup', index: 1 }])
   })
 
   it('sorts lexicographically regardless of input order', async () => {
@@ -113,6 +131,10 @@ describe('getAddressesFromXpubXP', () => {
 
     const result = await getAddressesFromXpubXP(args)
 
-    expect(result).toEqual(['avax1aaa', 'avax1mmm', 'avax1zzz'])
+    expect(result.xpAddresses).toEqual([
+      { address: 'avax1aaa', index: 1 },
+      { address: 'avax1mmm', index: 0 },
+      { address: 'avax1zzz', index: 0 }
+    ])
   })
 })
