@@ -24,7 +24,7 @@ import { useSelector } from 'react-redux'
 import { selectAccountById } from 'store/account'
 import { Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectWalletById } from 'store/wallet/slice'
+import { selectWalletById, selectWallets } from 'store/wallet/slice'
 import EMPTY_ADDRESS_BOOK_ICON from '../../../assets/icons/address_book_empty.png'
 import { getAddressByVmName } from '../utils/getAddressByVmName'
 
@@ -189,6 +189,8 @@ const ContactListItem = ({
   const avatar = loadAvatar(item.avatar)
   const account = useSelector(selectAccountById(item.id))
   const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
+  const wallets = useSelector(selectWallets)
+  const walletsCount = Object.keys(wallets).length
 
   return (
     <View>
@@ -232,7 +234,7 @@ const ContactListItem = ({
                 justifyContent: 'center',
                 width: '90%'
               }}>
-              {wallet && (
+              {wallet && walletsCount > 1 && (
                 <View
                   sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                   <WalletIcon
