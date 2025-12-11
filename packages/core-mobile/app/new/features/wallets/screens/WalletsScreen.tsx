@@ -327,6 +327,7 @@ export const WalletsScreen = (): JSX.Element => {
       renderHeaderRight={renderHeaderRight}
       renderEmpty={renderEmpty}
       renderItem={renderItem}
+      shouldShowStickyHeader={false}
     />
   )
 }

@@ -79,6 +79,7 @@ export interface ListScreenProps<T>
   renderHeaderRight?: () => React.ReactNode
   /** Optional function to render content when the list is empty */
   renderEmpty?: () => React.ReactNode
+  shouldShowStickyHeader?: boolean
 }
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
@@ -96,6 +97,7 @@ export const ListScreen = <T,>({
   renderEmpty,
   renderHeader,
   renderHeaderRight,
+  shouldShowStickyHeader = true,
   ...props
 }: ListScreenProps<T>): JSX.Element => {
   const insets = useSafeAreaInsets()
@@ -401,7 +403,7 @@ export const ListScreen = <T,>({
         keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        stickyHeaderIndices={[0]}
+        stickyHeaderIndices={shouldShowStickyHeader ? [0] : undefined}
         maxToRenderPerBatch={15}
         windowSize={12}
         initialNumToRender={15}
