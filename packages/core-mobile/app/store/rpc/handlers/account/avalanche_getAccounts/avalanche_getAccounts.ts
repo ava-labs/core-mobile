@@ -1,5 +1,8 @@
 import { AppListenerEffectAPI } from 'store/types'
-import { selectAccounts, selectActiveAccount } from 'store/account/slice'
+import {
+  selectAccountsByWalletId,
+  selectActiveAccount
+} from 'store/account/slice'
 import { selectWalletById } from 'store/wallet/slice'
 import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import { rpcErrors } from '@metamask/rpc-errors'
@@ -19,7 +22,6 @@ class AvalancheGetAccountsHandler
     listenerApi: AppListenerEffectAPI
   ): HandleResponse => {
     const state = listenerApi.getState()
-    const accounts = selectAccounts(state)
     const activeAccount = selectActiveAccount(state)
 
     if (!activeAccount) {
@@ -28,6 +30,7 @@ class AvalancheGetAccountsHandler
         error: rpcErrors.internal('no active account')
       }
     }
+
     const wallet = selectWalletById(activeAccount.walletId)(state)
     if (!wallet) {
       return {
@@ -36,9 +39,11 @@ class AvalancheGetAccountsHandler
       }
     }
 
+    const accounts = selectAccountsByWalletId(state, activeAccount.walletId)
+
     // Process accounts and add xpubXP where available
     const accountsArray = await Promise.all(
-      Object.values(accounts).map(async account => {
+      accounts.map(async account => {
         const xpubXP = await getXpubXPIfAvailable({
           walletId: wallet.id,
           walletType: wallet.type,
