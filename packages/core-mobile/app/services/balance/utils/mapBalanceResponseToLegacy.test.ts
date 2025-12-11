@@ -607,6 +607,7 @@ describe('mapBalanceResponseToLegacy', () => {
           balanceInCurrency: 1.48,
           available: 108000000n,
           availableInCurrency: 1.48,
+          availableDisplayValue: '0.108',
           utxos: {
             unlocked: [
               {
@@ -692,6 +693,7 @@ describe('mapBalanceResponseToLegacy', () => {
           balanceInCurrency: 1.52,
           change24: 7.04491,
           available: 110964791n,
+          availableDisplayValue: '0.111',
           availableInCurrency: 1.52,
           balancePerType: {
             lockedStaked: 0n,
