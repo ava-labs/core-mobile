@@ -4,13 +4,10 @@ import { useEffect, useState } from 'react'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useGetStuckBalance } from 'hooks/earn/useGetStuckBalance'
-import { selectActiveAccount } from 'store/account/slice'
-import { useSelector } from 'react-redux'
 
 export const useHasEnoughAvaxToStake = (): {
   hasEnoughAvax: boolean | undefined
 } => {
-  const activeAccount = useSelector(selectActiveAccount)
   const { minStakeAmount } = useStakingParams()
   const cChainBalance = useCChainBalance()
   const claimableBalance = useGetClaimableBalance()
@@ -20,11 +17,6 @@ export const useHasEnoughAvaxToStake = (): {
   const [hasEnoughAvax, setHasEnoughAvax] = useState<boolean | undefined>(
     undefined
   )
-
-  // reset hasEnoughAvax when the active account changes to avoid stale state
-  useEffect(() => {
-    setHasEnoughAvax(undefined)
-  }, [activeAccount])
 
   useEffect(() => {
     if (cChainBalance !== undefined && cChainNetworkToken) {
