@@ -123,7 +123,7 @@ class EarnService {
    *
    * @param pChainBalance
    * @param requiredAmount
-   * @param activeAccount
+   * @param account
    * @param isTestnet
    */
   async claimRewards({
@@ -218,7 +218,7 @@ class EarnService {
   async issueAddDelegatorTransaction({
     walletId,
     walletType,
-    activeAccount,
+    account,
     isTestnet,
     nodeId,
     stakeAmountNanoAvax,
@@ -233,10 +233,10 @@ class EarnService {
     const startDateUnix = getUnixTime(startDate)
     const endDateUnix = getUnixTime(endDate)
     const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isTestnet)
-    const rewardAddress = activeAccount.addressPVM
+    const rewardAddress = account.addressPVM
 
     const unsignedTx = await AvalancheWalletService.createAddDelegatorTx({
-      account: activeAccount,
+      account,
       isTestnet,
       rewardAddress,
       nodeId,
@@ -250,8 +250,11 @@ class EarnService {
     const signedTxJson = await WalletService.sign({
       walletId,
       walletType,
-      transaction: { tx: unsignedTx } as AvalancheTransactionRequest,
-      accountIndex: activeAccount.index,
+      transaction: {
+        tx: unsignedTx,
+        externalIndices: account.xpAddresses.map(xpAddress => xpAddress.index)
+      } as AvalancheTransactionRequest,
+      accountIndex: account.index,
       network: avaxXPNetwork
     })
     const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()

@@ -70,7 +70,10 @@ export async function exportC({
   const signedTxWithFeeJson = await WalletService.sign({
     walletId,
     walletType,
-    transaction: { tx: unsignedTxWithFee } as AvalancheTransactionRequest,
+    transaction: {
+      tx: unsignedTxWithFee,
+      externalIndices: account.xpAddresses.map(xpAddress => xpAddress.index)
+    } as AvalancheTransactionRequest,
     accountIndex: account.index,
     network: avaxXPNetwork
   })

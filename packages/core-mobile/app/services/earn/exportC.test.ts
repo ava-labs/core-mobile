@@ -75,7 +75,7 @@ describe('earn/exportC', () => {
           cChainBalanceWei: BigInt(1e18),
           requiredAmountWei: BigInt(10e18),
           isTestnet: false,
-          account: {} as Account,
+          account: { xpAddresses: [] } as unknown as Account,
           cBaseFeeMultiplier: testCBaseFeeMultiplier,
           avalancheEvmProvider
         })
@@ -89,7 +89,7 @@ describe('earn/exportC', () => {
         cChainBalanceWei: BigInt(10e18),
         requiredAmountWei: BigInt(1e18),
         isTestnet: false,
-        account: {} as Account,
+        account: { xpAddresses: [] } as unknown as Account,
         cBaseFeeMultiplier: testCBaseFeeMultiplier,
         avalancheEvmProvider
       })
@@ -104,7 +104,7 @@ describe('earn/exportC', () => {
           cChainBalanceWei: BigInt(10e18),
           requiredAmountWei: BigInt(1e18),
           isTestnet: false,
-          account: {} as Account,
+          account: { xpAddresses: [] } as unknown as Account,
           cBaseFeeMultiplier: testCBaseFeeMultiplier,
           avalancheEvmProvider
         })
@@ -114,7 +114,7 @@ describe('earn/exportC', () => {
           destinationChain: 'P',
           destinationAddress: undefined,
           isTestnet: false,
-          account: {} as Account,
+          account: { xpAddresses: [] } as unknown as Account,
           avalancheEvmProvider
         })
       }).not.toThrow()
@@ -128,7 +128,7 @@ describe('earn/exportC', () => {
           cChainBalanceWei: BigInt(10e18),
           requiredAmountWei: BigInt(1e18),
           isTestnet: false,
-          account: {} as Account,
+          account: { xpAddresses: [] } as unknown as Account,
           cBaseFeeMultiplier: testCBaseFeeMultiplier,
           avalancheEvmProvider
         })
@@ -144,7 +144,7 @@ describe('earn/exportC', () => {
           cChainBalanceWei: BigInt(10e18),
           requiredAmountWei: BigInt(1e18),
           isTestnet: false,
-          account: {} as Account,
+          account: { xpAddresses: [] } as unknown as Account,
           cBaseFeeMultiplier: testCBaseFeeMultiplier,
           avalancheEvmProvider
         })

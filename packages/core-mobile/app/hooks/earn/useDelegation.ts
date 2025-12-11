@@ -159,7 +159,7 @@ export const useDelegation = (): {
             txHash = await EarnService.issueAddDelegatorTransaction({
               walletId: activeWallet.id,
               walletType: activeWallet.type,
-              activeAccount,
+              account: activeAccount,
               endDate: delegateEndDate,
               isTestnet: isDeveloperMode,
               nodeId,
