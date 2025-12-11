@@ -141,7 +141,6 @@ export const computeDelegationSteps = async ({
           cBaseFeeMultiplier,
           avalancheEvmProvider
         })
-
         const importPFee = await getImportPFeePostCExport({
           account,
           isTestnet,
