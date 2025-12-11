@@ -12,6 +12,7 @@ import {
   useTheme
 } from '@avalabs/k2-alpine'
 import { NetworkVMType } from '@avalabs/vm-module-types'
+
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
 import { WalletIcon } from 'common/components/WalletIcon'
@@ -25,6 +26,7 @@ import { selectAccountById } from 'store/account'
 import { Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectWalletById, selectWallets } from 'store/wallet/slice'
+import { WalletType } from 'services/wallet/types'
 import EMPTY_ADDRESS_BOOK_ICON from '../../../assets/icons/address_book_empty.png'
 import { getAddressByVmName } from '../utils/getAddressByVmName'
 
@@ -250,7 +252,9 @@ const ContactListItem = ({
                       color: '$textSecondary',
                       lineHeight: 16
                     }}>
-                    {wallet?.name}
+                    {wallet?.type === WalletType.PRIVATE_KEY
+                      ? 'Imported'
+                      : wallet?.name}
                   </Text>
                 </View>
               )}
