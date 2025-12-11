@@ -253,8 +253,6 @@ class WalletService {
     return wallet.getRawXpubXP(accountIndex)
   }
 
-  // TODO pass correct account index after
-  // https://github.com/ava-labs/avalanche-sdks/pull/765/files is merged
   public async getAddressesFromXpubXP({
     walletId,
     walletType,

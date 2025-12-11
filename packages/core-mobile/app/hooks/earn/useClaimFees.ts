@@ -57,9 +57,9 @@ export const useClaimFees = (): {
   const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
 
   const totalClaimable = useMemo(() => {
-    return pChainBalance?.data?.balancePerType.unlockedUnstaked
+    return pChainBalance?.balancePerType.unlockedUnstaked
       ? new TokenUnit(
-          pChainBalance.data.balancePerType.unlockedUnstaked,
+          pChainBalance.balancePerType.unlockedUnstaked,
           avaxXPNetwork.networkToken.decimals,
           avaxXPNetwork.networkToken.symbol
         )
@@ -67,7 +67,7 @@ export const useClaimFees = (): {
   }, [
     avaxXPNetwork.networkToken.decimals,
     avaxXPNetwork.networkToken.symbol,
-    pChainBalance?.data?.balancePerType.unlockedUnstaked
+    pChainBalance?.balancePerType.unlockedUnstaked
   ])
 
   // eslint-disable-next-line sonarjs/cognitive-complexity

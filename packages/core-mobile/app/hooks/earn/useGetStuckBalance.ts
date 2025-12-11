@@ -7,26 +7,21 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export const useGetStuckBalance = (): TokenUnit | undefined => {
   const pChainBalance = usePChainBalance()
-  const atomicMemoryUnlockedNAvax =
-    pChainBalance.data?.balancePerType.atomicMemoryUnlocked
-  const hasErrors = pChainBalance.error || !pChainBalance.data
-  const dataReady = !pChainBalance.isLoading && !hasErrors
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { networkToken } = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
   return useMemo(() => {
-    if (dataReady && atomicMemoryUnlockedNAvax !== undefined) {
+    if (pChainBalance?.balancePerType.atomicMemoryUnlocked !== undefined) {
       return new TokenUnit(
-        atomicMemoryUnlockedNAvax,
+        pChainBalance?.balancePerType.atomicMemoryUnlocked,
         networkToken.decimals,
         networkToken.symbol
       )
     }
     return undefined
   }, [
-    dataReady,
     networkToken.decimals,
     networkToken.symbol,
-    atomicMemoryUnlockedNAvax
+    pChainBalance?.balancePerType.atomicMemoryUnlocked
   ])
 }

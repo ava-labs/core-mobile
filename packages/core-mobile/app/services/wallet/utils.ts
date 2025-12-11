@@ -64,10 +64,12 @@ export const addBufferToCChainBaseFee = (
 
 export const getAddressDerivationPath = ({
   accountIndex,
+  addressIndex,
   vmType,
   derivationPathType = 'bip44'
 }: {
   accountIndex: number
+  addressIndex?: number
   vmType: Exclude<NetworkVMType, NetworkVMType.PVM | NetworkVMType.HVM>
   derivationPathType?: DerivationPathType
 }): string => {
@@ -77,7 +79,8 @@ export const getAddressDerivationPath = ({
     case NetworkVMType.CoreEth:
       derivationPath = ModuleManager.avalancheModule.buildDerivationPath({
         accountIndex,
-        derivationPathType
+        derivationPathType,
+        addressIndex
       })[vmType]
       break
     case NetworkVMType.EVM:

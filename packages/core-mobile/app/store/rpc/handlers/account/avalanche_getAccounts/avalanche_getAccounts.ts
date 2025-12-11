@@ -3,8 +3,7 @@ import { selectAccounts, selectActiveAccount } from 'store/account/slice'
 import { selectWalletById } from 'store/wallet/slice'
 import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import { rpcErrors } from '@metamask/rpc-errors'
-import { WalletType } from 'services/wallet/types'
-import WalletService from 'services/wallet/WalletService'
+import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 
 export type AvalancheGetAccountsRpcRequest =
@@ -29,33 +28,22 @@ class AvalancheGetAccountsHandler
         error: rpcErrors.internal('no active account')
       }
     }
-
-    // Helper function to get xpubXP for supported wallet types
-    const getXpubXP = async (
-      walletId: string,
-      walletType: WalletType,
-      accountIndex: number
-    ): Promise<string | undefined> => {
-      try {
-        return await WalletService.getRawXpubXP({
-          walletId,
-          walletType,
-          accountIndex
-        })
-      } catch (error) {
-        return undefined
+    const wallet = selectWalletById(activeAccount.walletId)(state)
+    if (!wallet) {
+      return {
+        success: false,
+        error: rpcErrors.internal('no active wallet')
       }
     }
 
     // Process accounts and add xpubXP where available
     const accountsArray = await Promise.all(
       Object.values(accounts).map(async account => {
-        const wallet = selectWalletById(account.walletId)(state)
-        const xpubXP = wallet
-          ? // TODO pass correct account index after
-            // https://github.com/ava-labs/avalanche-sdks/pull/765/files is merged
-            await getXpubXP(account.walletId, wallet.type, account.index)
-          : undefined
+        const xpubXP = await getXpubXPIfAvailable({
+          walletId: wallet.id,
+          walletType: wallet.type,
+          accountIndex: account.index
+        })
 
         return {
           ...account,

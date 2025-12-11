@@ -21,9 +21,6 @@ export enum Curve {
 export const EVM_BASE_DERIVATION_PATH_PREFIX = "m/44'/60'/"
 export const SVM_BASE_DERIVATION_PATH_PREFIX = "m/44'/501'/"
 
-// Deprecated Avalanche public key path prefix
-export const DEPRECATED_AVALANCHE_DERIVATION_PATH_PREFIX = "m/44'/9000'/0'/"
-
 export const AVALANCHE_DERIVATION_PATH_PREFIX = "m/44'/9000'/"
 
 export type AddressPublicKey = {

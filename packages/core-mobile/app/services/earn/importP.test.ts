@@ -57,7 +57,7 @@ describe('earn/importP', () => {
       await importP({
         walletId: 'test-wallet-id',
         walletType: WalletType.MNEMONIC,
-        account: {} as Account,
+        account: { xpAddresses: [] } as unknown as Account,
         isTestnet: false,
         selectedCurrency: VsCurrencyType.USD
       })
@@ -68,7 +68,7 @@ describe('earn/importP', () => {
       await importP({
         walletId: 'test-wallet-id',
         walletType: WalletType.MNEMONIC,
-        account: {} as Account,
+        account: { xpAddresses: [] } as unknown as Account,
         isTestnet: false,
         selectedCurrency: VsCurrencyType.USD
       })
@@ -79,7 +79,7 @@ describe('earn/importP', () => {
       await importP({
         walletId: 'test-wallet-id',
         walletType: WalletType.MNEMONIC,
-        account: {} as Account,
+        account: { xpAddresses: [] } as unknown as Account,
         isTestnet: false,
         selectedCurrency: VsCurrencyType.USD
       })

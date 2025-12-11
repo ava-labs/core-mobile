@@ -2,7 +2,6 @@ import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import useStakingParams from 'hooks/earn/useStakingParams'
 import { useEffect, useState } from 'react'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useGetStuckBalance } from 'hooks/earn/useGetStuckBalance'
 import { selectActiveAccount } from 'store/account/slice'
@@ -28,19 +27,15 @@ export const useHasEnoughAvaxToStake = (): {
   }, [activeAccount])
 
   useEffect(() => {
-    if (cChainBalance.data?.balance !== undefined && cChainNetworkToken) {
-      const availableAvax = new TokenUnit(
-        cChainBalance.data.balance,
-        cChainNetworkToken.decimals,
-        cChainNetworkToken.symbol
-      )
+    if (cChainBalance !== undefined && cChainNetworkToken) {
+      const availableAvax = cChainBalance
         .add(claimableBalance ?? 0)
         .add(stuckBalance ?? 0)
 
       setHasEnoughAvax(availableAvax.gt(minStakeAmount))
     }
   }, [
-    cChainBalance?.data?.balance,
+    cChainBalance,
     minStakeAmount,
     stuckBalance,
     claimableBalance,
