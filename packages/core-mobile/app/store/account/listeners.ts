@@ -284,6 +284,11 @@ const migrateXpAddressesIfNeeded = async (
   const wallets = selectWallets(state)
   const allUpdatedAccounts: AccountCollection = {}
 
+  if (Object.keys(wallets).length === 0) {
+    Logger.info('No wallets found. Skipping XP address migration.')
+    return
+  }
+
   // Process all wallets in parallel
   const walletPromises = Object.values(wallets).map(async wallet => {
     if (WalletType.PRIVATE_KEY.includes(wallet.type)) {
