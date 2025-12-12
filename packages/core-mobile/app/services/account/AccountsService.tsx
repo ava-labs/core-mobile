@@ -61,7 +61,7 @@ class AccountsService {
         xpAddressDictionary = result.xpAddressDictionary
       } catch (error) {
         Logger.error('Error getting XP addresses', error)
-        continue
+        // continues
       }
 
       const title =
