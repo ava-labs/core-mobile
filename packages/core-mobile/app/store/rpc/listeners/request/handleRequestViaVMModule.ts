@@ -160,7 +160,7 @@ const getContext = async ({
       const vm = Avalanche.getVmByChainAlias(params.chainAlias as string)
       const currentAddress = getAddressByVM(vm, activeAccount)
 
-      if (currentAddress && (vm === 'AVM' || vm === 'PVM')) {
+      if (currentAddress && (vm === 'AVM' || vm === 'PVM' || vm === 'EVM')) {
         const xpubXP = await getXpubXPIfAvailable({
           walletId,
           walletType,
