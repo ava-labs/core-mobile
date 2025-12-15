@@ -204,23 +204,33 @@ export const useFadingHeaderNavigation = ({
       // If a custom right header component is provided, set it in the navigation options
       if (renderHeaderRight) {
         navigationOptions.headerRight = renderHeaderRight
+
+        if (hasParent) {
+          navigation.getParent()?.setOptions(navigationOptions)
+
+          // Clean up the header right component when the screen is unmounted
+          return () => {
+            navigation.getParent()?.setOptions({
+              headerRight: undefined
+            })
+          }
+        } else {
+          navigation.setOptions(navigationOptions)
+
+          // Clean up the header right component when the screen is unmounted
+          return () => {
+            navigation.setOptions({
+              headerRight: undefined
+            })
+          }
+        }
       }
 
-      const targetNavigation = hasParent ? navigation.getParent() : navigation
-
       // Set the navigation options
-      targetNavigation?.setOptions(navigationOptions)
-
-      // Clean up all header options when the screen is unmounted or loses focus
-      // This prevents the "child already has a parent" error by ensuring
-      // old header views are properly removed before new ones are added
-      return () => {
-        const cleanupOptions: NativeStackNavigationOptions = {
-          headerBackground: undefined,
-          headerTitle: undefined,
-          headerRight: undefined
-        }
-        targetNavigation?.setOptions(cleanupOptions)
+      if (hasParent) {
+        navigation.getParent()?.setOptions(navigationOptions)
+      } else {
+        navigation.setOptions(navigationOptions)
       }
     }, [
       headerBackground,
