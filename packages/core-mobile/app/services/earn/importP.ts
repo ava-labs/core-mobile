@@ -9,6 +9,7 @@ import { FundsStuckError } from 'hooks/earn/errors'
 import { Network } from '@avalabs/core-chains-sdk'
 import { getPChainBalance } from 'services/balance/getPChainBalance'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
+import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
 import {
   maxBalanceCheckRetries,
   maxTransactionCreationRetries,
@@ -47,7 +48,11 @@ export async function importP({
     walletType,
     transaction: {
       tx: unsignedTx,
-      externalIndices: account.xpAddresses.map(xpAddress => xpAddress.index)
+      ...getInternalExternalAddrs({
+        utxos: unsignedTx.utxos,
+        xpAddressDict: account.xpAddressDictionary,
+        isTestnet
+      })
     } as AvalancheTransactionRequest,
     accountIndex: account.index,
     network: avaxPNetwork

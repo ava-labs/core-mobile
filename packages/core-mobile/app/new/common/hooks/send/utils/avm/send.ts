@@ -5,7 +5,7 @@ import { Request } from 'store/rpc/utils/createInAppRequest'
 import { getAvalancheCaip2ChainId } from 'utils/caip2ChainIds'
 import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
 import { stripChainAddress } from 'store/account/utils'
-import { utils } from '@avalabs/avalanchejs'
+import { UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { SpanName } from 'services/sentry/types'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { SPAN_STATUS_ERROR } from '@sentry/core'
@@ -35,11 +35,19 @@ export const send = async ({
     { name: sentrySpanName, contextName: 'svc.send.send' },
     async span => {
       try {
+        const isTestnet = Boolean(network.isTestnet)
+        const destinationAddress = 'X-' + stripChainAddress(toAddress ?? '')
+        const unsignedTx = await AvalancheWalletService.createSendXTx({
+          account,
+          amountInNAvax: amount,
+          isTestnet,
+          destinationAddress: destinationAddress,
+          sourceAddress: fromAddress
+        })
+
         const txRequest = await getTransactionRequest({
-          toAddress,
-          amount,
-          isTestnet: Boolean(network.isTestnet),
-          fromAddress,
+          unsignedTx,
+          isTestnet,
           sentrySpanName,
           account
         })
@@ -76,31 +84,18 @@ export const send = async ({
 
 const getTransactionRequest = ({
   account,
-  toAddress,
-  fromAddress,
-  amount,
+  unsignedTx,
   isTestnet,
   sentrySpanName
 }: {
   account: Account
-  amount: bigint
-  toAddress: string
-  fromAddress: string
+  unsignedTx: UnsignedTx
   isTestnet: boolean
   sentrySpanName?: SpanName
 }): Promise<AvalancheSendTransactionParams> => {
   return SentryWrapper.startSpan(
     { name: sentrySpanName, contextName: 'svc.send.avm.get_trx_request' },
     async () => {
-      const destinationAddress = 'X-' + stripChainAddress(toAddress ?? '')
-      const unsignedTx = await AvalancheWalletService.createSendXTx({
-        account,
-        amountInNAvax: amount,
-        isTestnet,
-        destinationAddress: destinationAddress,
-        sourceAddress: fromAddress
-      })
-
       const manager = utils.getManagerForVM(unsignedTx.getVM())
       const unsignedTxBytes = unsignedTx.toBytes()
       const [codec] = manager.getCodecFromBuffer(unsignedTxBytes)
@@ -113,10 +108,9 @@ const getTransactionRequest = ({
         ),
         ...getInternalExternalAddrs({
           utxos: unsignedTx.utxos,
-          xpAddressDict: { [fromAddress]: { space: 'e', index: 0 } },
+          xpAddressDict: account.xpAddressDictionary,
           isTestnet
-        }),
-        externalIndices: account.xpAddresses.map(xpAddress => xpAddress.index)
+        })
       }
     }
   )

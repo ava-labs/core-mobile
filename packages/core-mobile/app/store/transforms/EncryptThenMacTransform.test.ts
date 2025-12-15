@@ -131,7 +131,8 @@ const initialState = {
         walletType: WalletType.MNEMONIC,
         id: 'id0',
         walletName: 'Wallet 1',
-        xpAddresses: []
+        xpAddresses: [],
+        xpAddressDictionary: {}
       }
     },
     activeAccountId: '0'

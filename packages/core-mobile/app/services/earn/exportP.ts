@@ -8,6 +8,7 @@ import NetworkService from 'services/network/NetworkService'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
+import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportPParams = {
@@ -50,7 +51,11 @@ export async function exportP({
     walletType,
     transaction: {
       tx: unsignedTx,
-      externalIndices: account.xpAddresses.map(xpAddress => xpAddress.index)
+      ...getInternalExternalAddrs({
+        utxos: unsignedTx.utxos,
+        xpAddressDict: account.xpAddressDictionary,
+        isTestnet
+      })
     } as AvalancheTransactionRequest,
     accountIndex: account.index,
     network: avaxXPNetwork
