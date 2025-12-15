@@ -9,6 +9,7 @@ import { Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SvgProps } from 'react-native-svg'
 import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
 import { selectIsInAppDefiBlocked } from 'store/posthog'
 
 const isIOS = Platform.OS === 'ios'
@@ -36,6 +37,9 @@ const freezeOnBlur = isIOS ? false : true
 
 export default function TabLayout(): JSX.Element {
   const { theme } = useTheme()
+  const activeAccount = useSelector(selectActiveAccount)
+
+  const isMissingPvmAddress = activeAccount?.addressPVM === undefined
 
   const tabBarInactiveTintColor = useMemo(() => {
     return theme.isDark
@@ -84,15 +88,17 @@ export default function TabLayout(): JSX.Element {
           freezeOnBlur
         }}
       />
-      <BottomTabs.Screen
-        name="stake"
-        options={{
-          tabBarButtonTestID: 'earn_tab',
-          title: isInAppDefiBlocked ? 'Stake' : 'Earn',
-          tabBarIcon: () => stakeIcon,
-          freezeOnBlur
-        }}
-      />
+      {isMissingPvmAddress && (
+        <BottomTabs.Screen
+          name="stake"
+          options={{
+            tabBarButtonTestID: 'earn_tab',
+            title: isInAppDefiBlocked ? 'Stake' : 'Earn',
+            tabBarIcon: () => stakeIcon,
+            freezeOnBlur
+          }}
+        />
+      )}
       <BottomTabs.Screen
         name="browser"
         options={{
