@@ -10,6 +10,7 @@ import { MnemonicWallet } from './MnemonicWallet'
 import { LedgerWallet } from './LedgerWallet'
 
 class WalletFactory {
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   async createWallet({
     walletId,
     walletType
@@ -24,6 +25,16 @@ class WalletFactory {
         if (pubKeys.length === 0) {
           // If no public keys are available, refresh them
           // This can happen if the app was updated from a version that stored with a different key
+          const refreshTokenResult =
+            await SeedlessService.session.refreshToken()
+
+          /**
+           * If refreshTokenResult fails and we don't throw, we'd still call
+           * refreshPublicKeys with an invalid/missing session
+           */
+          if (!refreshTokenResult.success) {
+            throw refreshTokenResult.error
+          }
           await SeedlessService.refreshPublicKeys()
           pubKeys = await SeedlessPubKeysStorage.retrieve()
         }

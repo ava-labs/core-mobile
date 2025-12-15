@@ -1,6 +1,7 @@
 import {
   onAppLocked,
   onAppUnlocked,
+  onLogIn,
   onLogOut,
   onRehydrationComplete
 } from 'store/app'
@@ -100,6 +101,10 @@ export const addSeedlessListeners = (
   })
   startListening({
     actionCreator: onRehydrationComplete,
+    effect: initSeedless
+  })
+  startListening({
+    actionCreator: onLogIn,
     effect: initSeedless
   })
   startListening({
