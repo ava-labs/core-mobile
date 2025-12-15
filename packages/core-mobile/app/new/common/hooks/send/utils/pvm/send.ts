@@ -51,7 +51,6 @@ export const send = async ({
           feeState
         })
         const txRequest = await getTransactionRequest({
-          account,
           unsignedTx,
           fromAddress,
           isTestnet,
@@ -89,13 +88,11 @@ export const send = async ({
 }
 
 const getTransactionRequest = ({
-  account,
   unsignedTx,
   fromAddress,
   isTestnet,
   sentrySpanName
 }: {
-  account: Account
   unsignedTx: UnsignedTx
   fromAddress: string
   isTestnet: boolean
@@ -118,8 +115,7 @@ const getTransactionRequest = ({
           utxos: unsignedTx.utxos,
           xpAddressDict: { [fromAddress]: { space: 'e', index: 0 } },
           isTestnet
-        }),
-        externalIndices: account.xpAddresses.map(xpAddress => xpAddress.index)
+        })
       }
     }
   )

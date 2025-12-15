@@ -115,8 +115,7 @@ const getTransactionRequest = ({
           utxos: unsignedTx.utxos,
           xpAddressDict: { [fromAddress]: { space: 'e', index: 0 } },
           isTestnet
-        }),
-        externalIndices: account.xpAddresses.map(xpAddress => xpAddress.index)
+        })
       }
     }
   )
