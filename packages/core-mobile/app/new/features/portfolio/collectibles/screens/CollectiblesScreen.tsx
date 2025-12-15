@@ -311,7 +311,7 @@ export const CollectiblesScreen = ({
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={pullToRefresh}
-            progressViewOffset={0}
+            progressViewOffset={Platform.OS === 'ios' ? 0 : header.height}
           />
         }
         contentContainerStyle={contentContainerStyle}

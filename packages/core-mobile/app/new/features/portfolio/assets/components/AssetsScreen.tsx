@@ -13,7 +13,8 @@ import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLo
 import { useIsPollingBalancesForAccount } from 'features/portfolio/hooks/useIsPollingBalancesForAccount'
 import { useIsRefetchingBalancesForAccount } from 'features/portfolio/hooks/useIsRefetchingBalancesForAccount'
 import React, { FC, memo, useCallback } from 'react'
-import { ViewStyle } from 'react-native'
+import { Platform, ViewStyle } from 'react-native'
+import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import { RefreshControl } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
@@ -47,6 +48,7 @@ const AssetsScreen: FC<Props> = ({
   const { onResetFilter, data, filter, sort, view, refetch, isRefetching } =
     useAssetsFilterAndSort()
   const listType = view.selected as AssetManageView
+  const header = useHeaderMeasurements()
 
   const activeAccount = useSelector(selectActiveAccount)
   const enabledNetworks = useSelector(selectEnabledNetworks)
@@ -241,7 +243,7 @@ const AssetsScreen: FC<Props> = ({
           <RefreshControl
             refreshing={isRefetching}
             onRefresh={refetch}
-            progressViewOffset={0}
+            progressViewOffset={Platform.OS === 'ios' ? 0 : header.height}
           />
         }
         estimatedItemSize={isGridView ? 183 : 73}
