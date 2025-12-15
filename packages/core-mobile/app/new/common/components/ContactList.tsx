@@ -48,7 +48,7 @@ export const ContactList = ({
 
       return (
         <ListViewItem
-          image={avatar?.source}
+          avatar={avatar}
           title={name}
           subtitle={
             address
