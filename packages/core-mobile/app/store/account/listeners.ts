@@ -271,12 +271,6 @@ const handleInitAccountsIfNeeded = async (
   // initAcounts after onboarding might have failed
   // or user might have force quit the app while creating the first account
   if (Object.keys(accounts).length === 0) {
-    const activeWallet = selectActiveWallet(state)
-    Logger.info('[accounts] initAccounts: needed (0 accounts)', {
-      activeWalletId: activeWallet?.id,
-      activeWalletType: activeWallet?.type
-    })
-
     await initAccounts(_action, listenerApi)
     return
   }
