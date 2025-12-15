@@ -62,7 +62,7 @@ export async function importC({
     walletType,
     transaction: {
       tx: unsignedTx,
-      externalIndices: [],
+      externalIndices: account.xpAddresses.map(xpAddress => xpAddress.index),
       internalIndices: []
     } as AvalancheTransactionRequest,
     accountIndex: account.index,

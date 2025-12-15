@@ -13,7 +13,8 @@ import { TextProps } from 'react-native-svg'
 
 export const ListViewItem = ({
   onPress,
-  image,
+  renderTop,
+  avatar,
   title,
   subtitle,
   isLast,
@@ -22,7 +23,8 @@ export const ListViewItem = ({
   subtitleProps
 }: {
   onPress: () => void
-  image?: AvatarType['source']
+  avatar?: AvatarType
+  renderTop?: React.ReactNode
   title: string
   subtitle?: string
   isLast: boolean
@@ -45,7 +47,6 @@ export const ListViewItem = ({
       <View
         sx={{
           flex: 1,
-          height: 58,
           flexDirection: 'row',
           alignItems: 'center',
           paddingLeft: 16
@@ -58,17 +59,16 @@ export const ListViewItem = ({
           <Avatar
             backgroundColor="transparent"
             size={40}
-            // @ts-ignore
-            source={image?.source}
+            source={avatar?.source}
             hasLoading={false}
           />
         </View>
         <View
           sx={{
             flex: 1,
-            height: 60,
             marginLeft: 12,
             paddingRight: 12,
+            paddingVertical: 12,
             flexDirection: 'row',
             alignItems: 'center',
             borderBottomWidth: 1,
@@ -79,6 +79,7 @@ export const ListViewItem = ({
               flex: 1,
               justifyContent: 'center'
             }}>
+            {renderTop}
             <Text
               {...titleProps}
               variant="buttonMedium"

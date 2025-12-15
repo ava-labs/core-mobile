@@ -69,8 +69,8 @@ export const selectAccountByAddress =
       return (
         acc.addressC.toLowerCase() === givenAddress ||
         acc.addressBTC.toLowerCase() === givenAddress ||
-        acc.addressAVM.toLowerCase() === givenAddress ||
-        acc.addressPVM.toLowerCase() === givenAddress ||
+        acc.addressAVM?.toLowerCase() === givenAddress ||
+        acc.addressPVM?.toLowerCase() === givenAddress ||
         acc?.addressSVM?.toLowerCase() === givenAddress
       )
     })

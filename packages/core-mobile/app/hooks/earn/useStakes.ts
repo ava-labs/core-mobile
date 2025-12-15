@@ -20,7 +20,8 @@ export const useStakes = (
   const walletState = useSelector(selectWalletState)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const account = useSelector(selectActiveAccount)
-  const pAddress = account?.addressPVM ?? ''
+  const pAddresses = account?.xpAddresses.map(address => address.address) ?? []
+  const pAddressesSorted = pAddresses.sort().join(',')
 
   // we only fetch stakes when the wallet is active
   // otherwise, it will be fetching even when the wallet is locked
@@ -31,20 +32,21 @@ export const useStakes = (
   // when we toggle developer mode, it will take a brief moment for the address to update
   // in that brief moment, we don't want to fetch the stakes as the address will still be the old one
   // this check is to ensure that the address is of the correct developer mode before fetching the stakes
-  const isAddressValid = isDeveloperMode
-    ? Boolean(pAddress) && pAddress.includes('fuji')
-    : Boolean(pAddress) && !pAddress.includes('fuji')
+  const isAddressesValid = pAddresses.every(address =>
+    isDeveloperMode ? address.includes('fuji') : !address.includes('fuji')
+  )
 
-  const enabled = isWalletActive && isAddressValid
+  const enabled = isWalletActive && isAddressesValid
 
   return useRefreshableQuery({
     refetchInterval: refetchIntervals.stakes,
     enabled,
-    queryKey: ['stakes', isDeveloperMode, pAddress, sortOrder],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    queryKey: ['stakes', isDeveloperMode, pAddressesSorted, sortOrder],
     queryFn: () =>
       EarnService.getAllStakes({
         isTestnet: isDeveloperMode,
-        addresses: [pAddress],
+        addresses: pAddresses,
         sortOrder
       })
   })

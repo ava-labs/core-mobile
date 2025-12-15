@@ -68,16 +68,8 @@ export class PrivateKeyWallet implements Wallet {
   }
 
   private async getAvaSigner(
-    accountIndex: number,
-    provider?: Avalanche.JsonRpcProvider
-  ): Promise<Avalanche.StaticSigner | Avalanche.SimpleSigner> {
-    if (provider) {
-      return new Avalanche.StaticSigner(
-        Buffer.from(this.privateKey, 'hex'),
-        Buffer.from(this.privateKey, 'hex'),
-        provider
-      )
-    }
+    accountIndex: number
+  ): Promise<Avalanche.SimpleSigner> {
     return new Avalanche.SimpleSigner(this.privateKey, accountIndex)
   }
 
@@ -119,7 +111,7 @@ export class PrivateKeyWallet implements Wallet {
             `Unable to get signer: wrong provider obtained for network ${network.vmName}`
           )
         }
-        return (await this.getAvaSigner(accountIndex)) as Avalanche.SimpleSigner
+        return await this.getAvaSigner(accountIndex)
       case NetworkVMType.SVM:
         return this.getSvmSigner()
       default:
@@ -403,9 +395,7 @@ export class PrivateKeyWallet implements Wallet {
     chainAlias: Avalanche.ChainIDAlias
   ): Promise<string> => {
     const message = toUtf8(data)
-    const signer = (await this.getAvaSigner(
-      accountIndex
-    )) as Avalanche.SimpleSigner
+    const signer = await this.getAvaSigner(accountIndex)
     const buffer = await signer.signMessage({
       message,
       chain: chainAlias

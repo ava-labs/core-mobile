@@ -10,17 +10,22 @@ import {
   useTheme
 } from '@avalabs/k2-alpine'
 import { NetworkVMType } from '@avalabs/vm-module-types'
+
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
 import { ListViewItem } from 'common/components/ListViewItem'
+import { WalletIcon } from 'common/components/WalletIcon'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { loadAvatar } from 'common/utils/loadAvatar'
 import { useGlobalSearchParams } from 'expo-router'
 import { isValidAddress } from 'features/accountSettings/utils/isValidAddress'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { WalletType } from 'services/wallet/types'
+import { selectAccountById } from 'store/account'
 import { Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectWalletById, selectWallets } from 'store/wallet/slice'
 import EMPTY_ADDRESS_BOOK_ICON from '../../../assets/icons/address_book_empty.png'
 import { getAddressByVmName } from '../utils/getAddressByVmName'
 
@@ -91,27 +96,12 @@ export const RecentContacts = ({
       })
       const isLast = index === searchResults.length - 1
 
-      const avatar = loadAvatar(item.avatar)
-
       return (
-        <ListViewItem
-          image={avatar?.source}
-          title={item.name}
-          subtitle={
-            address
-              ? truncateAddress(address, TRUNCATE_ADDRESS_LENGTH)
-              : undefined
-          }
-          titleProps={{
-            testID: `recent_contacts__${item.name}`,
-            accessibilityLabel: `recent_contacts__${item.name}`
-          }}
-          subtitleProps={{
-            variant: 'mono'
-          }}
+        <ContactListItem
+          item={item}
+          address={address ?? ''}
           isLast={isLast}
-          onPress={() => onSelectContact(item)}
-          hideArrow
+          onSelectContact={onSelectContact}
         />
       )
     },
@@ -136,7 +126,7 @@ export const RecentContacts = ({
               onPress={onGoToQrCode}
               hitSlop={16}
               sx={{
-                marginRight: 12,
+                paddingHorizontal: 12,
                 justifyContent: 'center',
                 alignItems: 'center'
               }}>
@@ -181,6 +171,69 @@ export const RecentContacts = ({
       keyExtractor={item => `recent-contact-${item.id}`}
       renderItem={item => renderItem(item.item as Contact, item.index)}
       renderEmpty={renderEmpty}
+    />
+  )
+}
+
+const ContactListItem = ({
+  item,
+  address,
+  isLast,
+  onSelectContact
+}: {
+  item: Contact
+  address: string
+  isLast: boolean
+  onSelectContact: (contact: Contact) => void
+}): JSX.Element => {
+  const { theme } = useTheme()
+  const avatar = loadAvatar(item.avatar)
+  const account = useSelector(selectAccountById(item.id))
+  const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
+  const wallets = useSelector(selectWallets)
+  const walletsCount = Object.keys(wallets).length
+
+  return (
+    <ListViewItem
+      avatar={avatar}
+      title={item.name}
+      renderTop={
+        wallet &&
+        walletsCount > 1 && (
+          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+            <WalletIcon
+              width={16}
+              height={16}
+              wallet={wallet}
+              color={theme.colors.$textSecondary}
+              isExpanded
+            />
+            <Text
+              variant="buttonSmall"
+              sx={{
+                color: '$textSecondary',
+                lineHeight: 16
+              }}>
+              {wallet?.type === WalletType.PRIVATE_KEY
+                ? 'Imported'
+                : wallet?.name}
+            </Text>
+          </View>
+        )
+      }
+      subtitle={
+        address ? truncateAddress(address, TRUNCATE_ADDRESS_LENGTH) : undefined
+      }
+      titleProps={{
+        testID: `recent_contacts__${item.name}`,
+        accessibilityLabel: `recent_contacts__${item.name}`
+      }}
+      subtitleProps={{
+        variant: 'mono'
+      }}
+      isLast={isLast}
+      onPress={() => onSelectContact(item)}
+      hideArrow
     />
   )
 }

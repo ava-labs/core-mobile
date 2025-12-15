@@ -194,11 +194,9 @@ export default class KeystoneWallet implements Wallet {
           {
             masterFingerprint: Buffer.from(this.mfp, 'hex'),
             pubkey: getAddressPublicKeyFromXPub(this.xpub, accountIndex),
-            path: getAddressDerivationPath(
-              accountIndex,
-              DerivationPath.BIP44,
-              'EVM'
-            )
+            path: getAddressDerivationPath(accountIndex, 'EVM', {
+              pathSpec: DerivationPath.BIP44
+            })
           }
         ]
       })

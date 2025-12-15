@@ -5,14 +5,10 @@ import {
   Network,
   NetworkVMType
 } from '@avalabs/core-chains-sdk'
-import {
-  Avalanche,
-  BitcoinProvider,
-  JsonRpcBatchInternal
-} from '@avalabs/core-wallets-sdk'
 import { Networks } from 'store/network/types'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
 import NetworkService from '../NetworkService'
 import { NETWORK_SOLANA, NETWORK_SOLANA_DEVNET } from '../consts'
 
@@ -30,7 +26,7 @@ export function getSVMProvider(
 
 export function getBitcoinProvider(
   isTest: boolean | undefined
-): Promise<BitcoinProvider> {
+): ReturnType<typeof ModuleManager.bitcoinModule.getProvider> {
   return ModuleManager.bitcoinModule.getProvider(
     mapToVmNetwork(getBitcoinNetwork(isTest))
   )
@@ -38,7 +34,7 @@ export function getBitcoinProvider(
 
 export async function getEvmProvider(
   network: Network
-): Promise<JsonRpcBatchInternal> {
+): ReturnType<typeof ModuleManager.evmModule.getProvider> {
   if (network.vmName !== NetworkVMType.EVM)
     throw new Error(
       `Cannot get evm provider for network type: ${network.vmName}`
@@ -50,7 +46,7 @@ export async function getEvmProvider(
 export function getAvalancheEvmProvider(
   networks: Networks,
   isTest: boolean | undefined
-): Promise<JsonRpcBatchInternal | undefined> {
+): ReturnType<typeof getEvmProvider> | Promise<undefined> {
   const network = getAvalancheNetwork(networks, isTest)
   if (!network) return Promise.resolve(undefined)
   return getEvmProvider(network)
@@ -59,7 +55,7 @@ export function getAvalancheEvmProvider(
 export function getEthereumProvider(
   networks: Networks,
   isTest: boolean | undefined
-): Promise<JsonRpcBatchInternal | undefined> {
+): ReturnType<typeof getEvmProvider> | Promise<undefined> {
   const network = getEthereumNetwork(networks, isTest)
   if (!network) return Promise.resolve(undefined)
   return getEvmProvider(network)

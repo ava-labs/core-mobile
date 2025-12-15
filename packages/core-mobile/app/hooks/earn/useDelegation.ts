@@ -25,8 +25,11 @@ import Logger from 'utils/Logger'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { selectActiveAccount } from 'store/account'
 import { getMinimumStakeDurationMs } from 'services/earn/utils'
-import { useAvalancheXpProvider } from '../networks/networkProviderHooks'
-import useCChainNetwork from './useCChainNetwork'
+import {
+  useAvalancheEvmProvider,
+  useAvalancheXpProvider
+} from '../networks/networkProviderHooks'
+import { usePChainBalance } from './usePChainBalance'
 
 const EMPTY_STEPS: Step[] = []
 
@@ -46,9 +49,10 @@ export const useDelegation = (): {
   const crossChainFeesMultiplier = useSelector(selectCrossChainFeesMultiplier)
   const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
   const { defaultFeeState } = useGetFeeState()
-  const cChainNetwork = useCChainNetwork()
   const avaxProvider = useAvalancheXpProvider(isDeveloperMode)
+  const avalancheEvmProvider = useAvalancheEvmProvider(isDeveloperMode)
   const cChainBaseFee = useCChainBaseFee()
+  const pChainBalance = usePChainBalance()
 
   const networkFees = useMemo(
     () =>
@@ -62,36 +66,38 @@ export const useDelegation = (): {
     async (stakeAmount: bigint) => {
       if (
         !activeAccount ||
+        !activeAccount.addressPVM ||
+        !activeAccount.addressC ||
         !defaultFeeState ||
         !cChainBaseFee.data ||
         !avaxProvider ||
-        !cChainNetwork
+        !avalancheEvmProvider
       )
         return EMPTY_STEPS
 
       const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
       const result = await computeDelegationSteps({
-        pAddress: activeAccount.addressPVM,
-        cAddress: activeAccount.addressC,
-        currency: selectedCurrency,
         account: activeAccount,
+        pChainBalance,
+        cChainBalance,
         avaxXPNetwork: network,
-        cChainNetwork,
         provider: avaxProvider,
         pFeeAdjustmentThreshold,
         cBaseFeeMultiplier,
         cChainBaseFee: cChainBaseFee.data,
         feeState: defaultFeeState,
-        stakeAmount: stakeAmount,
-        crossChainFeesMultiplier
+        stakeAmount,
+        crossChainFeesMultiplier,
+        avalancheEvmProvider
       })
 
       setSteps(result)
       return result
     },
     [
-      cChainNetwork,
+      cChainBalance,
+      pChainBalance,
       activeAccount,
       cChainBaseFee.data,
       defaultFeeState,
@@ -99,8 +105,8 @@ export const useDelegation = (): {
       pFeeAdjustmentThreshold,
       cBaseFeeMultiplier,
       crossChainFeesMultiplier,
-      selectedCurrency,
-      avaxProvider
+      avaxProvider,
+      avalancheEvmProvider
     ]
   )
 
@@ -109,6 +115,10 @@ export const useDelegation = (): {
     async ({ steps, startDate, endDate, nodeId }) => {
       if (activeAccount === undefined) {
         throw new Error('No active account')
+      }
+
+      if (!avalancheEvmProvider) {
+        throw new Error('No avalanche EVM provider')
       }
 
       if (steps.length === 0) {
@@ -153,7 +163,7 @@ export const useDelegation = (): {
             txHash = await EarnService.issueAddDelegatorTransaction({
               walletId: activeWallet.id,
               walletType: activeWallet.type,
-              activeAccount,
+              account: activeAccount,
               endDate: delegateEndDate,
               isTestnet: isDeveloperMode,
               nodeId,
@@ -185,11 +195,12 @@ export const useDelegation = (): {
             await exportC({
               walletId: activeWallet.id,
               walletType: activeWallet.type,
-              cChainBalanceWei: cChainBalance.data?.balance || 0n,
+              cChainBalanceWei: cChainBalance?.toSubUnit() || 0n,
               requiredAmountWei: nanoToWei(step.amount),
               account: activeAccount,
               isTestnet: isDeveloperMode,
-              cBaseFeeMultiplier
+              cBaseFeeMultiplier,
+              avalancheEvmProvider
             })
             break
 
@@ -208,12 +219,13 @@ export const useDelegation = (): {
     [
       activeWallet,
       activeAccount,
-      cChainBalance.data?.balance,
+      cChainBalance,
       defaultFeeState,
       isDeveloperMode,
       pFeeAdjustmentThreshold,
       selectedCurrency,
-      cBaseFeeMultiplier
+      cBaseFeeMultiplier,
+      avalancheEvmProvider
     ]
   )
 

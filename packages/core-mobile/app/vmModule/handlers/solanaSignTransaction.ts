@@ -7,7 +7,7 @@ import { WalletType } from 'services/wallet/types'
 
 // Payload accepted from ApprovalController
 type SolanaTransactionPayload = {
-  account: string
+  account: string | undefined // AddressSVM can be undefined (user may not have derived a Solana account address)
   message: string
 }
 
@@ -26,6 +26,10 @@ export const solanaSignTransaction = async ({
   network: Network
   resolve: (value: ApprovalResponse) => void
 }): Promise<void> => {
+  if (!transactionData.account) {
+    throw new Error('No account address available')
+  }
+
   try {
     const signedTx = await walletService.sign({
       transaction: {

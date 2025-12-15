@@ -20,6 +20,7 @@ import { reducerName, selectWallets, setActiveWallet } from 'store/wallet/slice'
 import { StoreWalletParams, Wallet } from 'store/wallet/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { uuid } from 'utils/uuid'
+import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP'
 import { _removeWallet, selectActiveWalletId } from './slice'
 import { generateWalletName } from './utils'
 
@@ -111,23 +112,36 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
 
     const newWalletId = uuid()
 
+    const walletType = WalletType.MNEMONIC
     await dispatch(
       storeWallet({
         walletId: newWalletId,
         name,
         walletSecret: mnemonic,
-        type: WalletType.MNEMONIC
+        type: walletType
       })
     ).unwrap()
 
     thunkApi.dispatch(setActiveWallet(newWalletId))
 
+    const accountIndex = 0
     const addresses = await AccountsService.getAddresses({
       walletId: newWalletId,
-      walletType: WalletType.MNEMONIC,
-      accountIndex: 0,
+      walletType,
+      accountIndex,
       isTestnet: isDeveloperMode
     })
+
+    const result = await getAddressesFromXpubXP({
+      isDeveloperMode,
+      walletId: newWalletId,
+      walletType: walletType,
+      accountIndex,
+      onlyWithActivity: true
+    })
+
+    const xpAddresses = result.xpAddresses
+    const xpAddressDictionary = result.xpAddressDictionary
 
     const newAccountId = uuid()
     const newAccount: Account = {
@@ -135,20 +149,22 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
       walletId: newWalletId,
       name: `Account 1`,
       type: CoreAccountType.PRIMARY,
-      index: 0,
+      index: accountIndex,
       addressC: addresses.EVM,
       addressBTC: addresses.BITCOIN,
       addressAVM: addresses.AVM,
       addressPVM: addresses.PVM,
       addressSVM: addresses.SVM,
-      addressCoreEth: addresses.CoreEth
+      addressCoreEth: addresses.CoreEth,
+      xpAddresses,
+      xpAddressDictionary
     }
 
     dispatch(setAccount(newAccount))
     dispatch(setActiveAccount(newAccountId))
 
     AnalyticsService.capture('MnemonicWalletImported', {
-      walletType: WalletType.MNEMONIC
+      walletType
     })
   }
 )

@@ -35,7 +35,8 @@ export const avalancheSignTransaction = async ({
       walletId,
       walletType,
       transaction: {
-        tx: unsignedTx
+        tx: unsignedTx,
+        externalIndices: account.xpAddresses.map(xpAddress => xpAddress.index)
       },
       accountIndex: account.index,
       network

@@ -37,7 +37,9 @@ export const AccountAddresses = ({
         switch (network.vmName) {
           case NetworkVMType.AVM:
           case NetworkVMType.PVM:
-            return stripAddressPrefix(account.addressPVM)
+            return account.addressPVM
+              ? stripAddressPrefix(account.addressPVM)
+              : undefined
           case NetworkVMType.BITCOIN:
             return account.addressBTC
           case NetworkVMType.EVM:

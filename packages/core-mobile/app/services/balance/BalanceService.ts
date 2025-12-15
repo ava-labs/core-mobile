@@ -18,6 +18,7 @@ import {
   isXChain,
   isXPNetwork
 } from 'utils/network/isAvalancheNetwork'
+import { AddressIndex } from '@avalabs/types'
 import Logger from 'utils/Logger'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { GetBalancesRequestBody } from 'utils/apiClient/generated/balanceApi.client'
@@ -45,7 +46,6 @@ export class BalanceService {
    *     {
    *       accountId: 'some-account-id',
    *       chainId: 43114,
-   *       accountAddress: '0x123',
    *       tokens: [
    *         {
    *           address: '0x123',
@@ -102,11 +102,24 @@ export class BalanceService {
           try {
             const module = await ModuleManager.loadModuleByNetwork(network)
 
-            // Map address → account
-            const addressMap = accounts.reduce((acc, account) => {
-              acc[getAddressByNetwork(account, network)] = account
-              return acc
-            }, {} as Record<string, Account>)
+            const addressEntries = accounts.flatMap(account =>
+              getAddressesForAccountAndNetwork(account, network).map(
+                address => ({
+                  address,
+                  account
+                })
+              )
+            )
+
+            const addressMap = addressEntries.reduce(
+              (acc, { address, account }) => {
+                if (address) {
+                  acc[address] = account
+                }
+                return acc
+              },
+              {} as Record<string, Account>
+            )
 
             const addresses = Object.keys(addressMap)
             const customTokensForNetwork =
@@ -279,7 +292,6 @@ export class BalanceService {
    *   {
    *     accountId: 'some-account-id',
    *     chainId: 43114,
-   *     accountAddress: '0x123',
    *     tokens: [
    *       {
    *         name: 'Avalanche',
@@ -331,6 +343,53 @@ export class BalanceService {
 
     return finalResults
   }
+}
+
+const getAddressesForAccountAndNetwork = (
+  account: Account,
+  network: Network
+): string[] => {
+  if (isXPNetwork(network)) {
+    const xpAddresses = account.xpAddresses
+    if (xpAddresses && xpAddresses.length > 0) {
+      const formatted = formatXpAddressesForNetwork(xpAddresses, network)
+      if (formatted.length > 0) {
+        return formatted
+      }
+    }
+  }
+
+  const defaultAddress = getAddressByNetwork(account, network)
+  return defaultAddress ? [defaultAddress] : []
+}
+
+const formatXpAddressesForNetwork = (
+  xpAddresses: AddressIndex[],
+  network: Network
+): string[] => {
+  const prefix =
+    network.vmName === NetworkVMType.AVM
+      ? 'X-'
+      : network.vmName === NetworkVMType.PVM
+      ? 'P-'
+      : undefined
+
+  if (!prefix) {
+    return []
+  }
+
+  const normalized = new Set<string>()
+  xpAddresses.forEach(({ address }) => {
+    if (!address) {
+      return
+    }
+    const prefixed = address.startsWith(prefix)
+      ? address
+      : `${prefix}${address}`
+    normalized.add(prefixed)
+  })
+
+  return [...normalized]
 }
 
 export default new BalanceService()

@@ -14,7 +14,8 @@ export const isValidAddress = ({
   address: string
   isDeveloperMode: boolean
 }): boolean => {
-  const addressWithoutPrefix = stripAddressPrefix(address)
+  const addressWithoutPrefix = address ? stripAddressPrefix(address) : undefined
+  if (!addressWithoutPrefix) return false
 
   if (addressType === undefined) {
     return (

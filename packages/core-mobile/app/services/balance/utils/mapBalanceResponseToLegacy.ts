@@ -102,6 +102,7 @@ const addAvmFields = (
 ): {
   available: bigint
   availableInCurrency: number | undefined
+  availableDisplayValue: string | undefined
   utxos: {
     unlocked: {
       assetId: string
@@ -174,9 +175,16 @@ const addAvmFields = (
         .toDisplay({ fixedDp: 2, asNumber: true })
     : undefined
 
+  const availableDisplayValue = new TokenUnit(
+    available,
+    token.decimals,
+    token.symbol
+  ).toDisplay()
+
   return {
-    available: available,
+    available,
     availableInCurrency,
+    availableDisplayValue,
     utxos,
     balancePerType
   }
@@ -187,6 +195,7 @@ const addPvmFields = (
 ): {
   available: bigint
   availableInCurrency: number | undefined
+  availableDisplayValue: string | undefined
   balancePerType: {
     lockedStaked: bigint
     lockedStakeable: bigint
@@ -223,9 +232,16 @@ const addPvmFields = (
         .toDisplay({ fixedDp: 2, asNumber: true })
     : undefined
 
+  const availableDisplayValue = new TokenUnit(
+    available,
+    token.decimals,
+    token.symbol
+  ).toDisplay()
+
   return {
-    available: available,
+    available,
     availableInCurrency,
+    availableDisplayValue,
     balancePerType
   }
 }

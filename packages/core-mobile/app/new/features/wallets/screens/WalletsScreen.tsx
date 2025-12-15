@@ -271,10 +271,9 @@ export const WalletsScreen = (): JSX.Element => {
         <WalletCard
           wallet={item}
           isActive={isActive}
+          isRefreshing={isRefreshing}
           isExpanded={isExpanded}
           onToggleExpansion={() => toggleWalletExpansion(item.id)}
-          // TODO: remove this once we have a way to remove imported wallets
-          showMoreButton={item.id !== IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID}
           style={{
             marginHorizontal: 16,
             marginVertical: 5,
@@ -290,6 +289,7 @@ export const WalletsScreen = (): JSX.Element => {
       colors.$borderPrimary,
       colors.$surfacePrimary,
       expandedWallets,
+      isRefreshing,
       toggleWalletExpansion
     ]
   )
@@ -304,9 +304,9 @@ export const WalletsScreen = (): JSX.Element => {
     )
   }, [])
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(async () => {
     setIsRefreshing(true)
-    refetch()
+    await refetch()
     setIsRefreshing(false)
   }, [refetch])
 
@@ -327,6 +327,7 @@ export const WalletsScreen = (): JSX.Element => {
       renderHeaderRight={renderHeaderRight}
       renderEmpty={renderEmpty}
       renderItem={renderItem}
+      shouldShowStickyHeader={false}
     />
   )
 }
