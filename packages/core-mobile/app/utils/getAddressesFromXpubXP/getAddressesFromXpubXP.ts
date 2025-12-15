@@ -196,6 +196,7 @@ const toAddressIndexArray = (
       address,
       index: dictionary[address]?.index ?? 0
     }))
+    .sort((a, b) => a.index - b.index)
 }
 
 export const getXpubXPIfAvailable = async ({

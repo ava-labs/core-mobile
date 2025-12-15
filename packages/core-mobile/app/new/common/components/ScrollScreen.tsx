@@ -6,13 +6,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import React, {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState
-} from 'react'
+import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { LayoutRectangle, StyleProp, View, ViewStyle } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import {
@@ -27,6 +21,7 @@ import Animated, {
   useSharedValue
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useFocusEffect } from '@react-navigation/native'
 import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
@@ -222,13 +217,23 @@ export const ScrollScreen = ({
 
   const [showFooter, setShowFooter] = useState(false)
 
-  useEffect(() => {
-    if (renderFooter) {
-      requestAnimationFrame(() => {
-        setShowFooter(true)
-      })
-    }
-  }, [renderFooter])
+  useFocusEffect(
+    useCallback(() => {
+      let frameId: number | undefined
+
+      if (renderFooter) {
+        frameId = requestAnimationFrame(() => {
+          setShowFooter(true)
+        })
+      }
+
+      return () => {
+        if (frameId) {
+          cancelAnimationFrame(frameId)
+        }
+      }
+    }, [renderFooter])
+  )
 
   const renderFooterContent = useCallback(() => {
     if (renderFooter && showFooter) {

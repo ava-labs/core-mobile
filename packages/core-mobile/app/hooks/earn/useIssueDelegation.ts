@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import { useUiSafeMutation } from 'hooks/useUiSafeMutation'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from './errors'
+import { useStakeAmount } from './useStakeAmount'
 
 export const useIssueDelegation = ({
   onSuccess,
@@ -26,7 +27,8 @@ export const useIssueDelegation = ({
   }) => Promise<void>
   isPending: boolean
 } => {
-  const { delegate, compute, steps, stakeAmount } = useDelegationContext()
+  const { delegate, computeSteps, steps } = useDelegationContext()
+  const [stakeAmount] = useStakeAmount()
   const mutationFn = useCallback(
     async ({
       nodeId,
@@ -40,7 +42,7 @@ export const useIssueDelegation = ({
       recomputeSteps?: boolean
     }) => {
       if (recomputeSteps) {
-        const newSteps = await compute(stakeAmount.toSubUnit())
+        const newSteps = await computeSteps(stakeAmount.toSubUnit())
         return delegate({
           steps: newSteps,
           startDate,
@@ -56,7 +58,7 @@ export const useIssueDelegation = ({
         nodeId
       })
     },
-    [compute, delegate, steps, stakeAmount]
+    [computeSteps, delegate, steps, stakeAmount]
   )
 
   const handleError = useCallback(
