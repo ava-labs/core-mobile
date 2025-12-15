@@ -38,7 +38,7 @@ describe('earn/exportP', () => {
     jest
       .spyOn(AvalancheWalletService, 'createExportPTx')
       .mockImplementation(() => {
-        return Promise.resolve({} as UnsignedTx)
+        return Promise.resolve({ utxos: [] } as unknown as UnsignedTx)
       })
     jest.spyOn(WalletService, 'sign').mockImplementation(() => {
       return Promise.resolve(

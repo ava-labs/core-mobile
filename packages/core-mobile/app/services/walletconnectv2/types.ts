@@ -5,8 +5,8 @@ import {
 } from '@walletconnect/types'
 import { PeerMeta } from 'store/rpc/types'
 import { RpcError } from '@avalabs/vm-module-types'
-import { CorePrimaryAccount } from '@avalabs/types'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
+import { Account } from 'store/account'
 
 export const CORE_MOBILE_WALLET_ID = 'c3de833a-9cb0-4274-bb52-86e402ecfcd3'
 
@@ -80,7 +80,7 @@ export interface WalletConnectServiceInterface {
   }: {
     session: SessionTypes.Struct
     chainId: number
-    account: CorePrimaryAccount
+    account: Account
   }): Promise<void>
 
   updateSessionWithTimeout({
@@ -90,7 +90,7 @@ export interface WalletConnectServiceInterface {
   }: {
     session: SessionTypes.Struct
     chainId: number
-    account: CorePrimaryAccount
+    account: Account
   }): Promise<void>
 
   updateSessions({
@@ -98,7 +98,7 @@ export interface WalletConnectServiceInterface {
     account
   }: {
     chainId: number
-    account: CorePrimaryAccount
+    account: Account
   }): Promise<void>
 
   updateSessionWithTimeoutForNonEvm({
@@ -107,7 +107,7 @@ export interface WalletConnectServiceInterface {
     isTestnet
   }: {
     session: SessionTypes.Struct
-    account: CorePrimaryAccount
+    account: Account
     isTestnet?: boolean
   }): Promise<void>
 }
