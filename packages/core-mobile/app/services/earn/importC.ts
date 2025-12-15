@@ -12,7 +12,6 @@ import Logger from 'utils/Logger'
 import { weiToNano } from 'utils/units/converter'
 import { cChainToken } from 'utils/units/knownTokens'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
-import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
 import {
   maxTransactionCreationRetries,
   maxTransactionStatusCheckRetries
@@ -57,17 +56,11 @@ export async function importC({
     sourceChain: 'P',
     destinationAddress: account.addressC
   })
-
   const signedTxJson = await WalletService.sign({
     walletId,
     walletType,
     transaction: {
-      tx: unsignedTx,
-      ...getInternalExternalAddrs({
-        utxos: unsignedTx.utxos,
-        xpAddressDict: account.xpAddressDictionary,
-        isTestnet
-      })
+      tx: unsignedTx
     } as AvalancheTransactionRequest,
     accountIndex: account.index,
     network: avaxXPNetwork
