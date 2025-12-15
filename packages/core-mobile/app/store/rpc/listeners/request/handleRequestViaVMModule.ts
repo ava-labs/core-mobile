@@ -157,36 +157,65 @@ const getContext = async ({
     const context: Record<string, unknown> = {}
 
     if (activeAccount) {
-      const vm = Avalanche.getVmByChainAlias(params.chainAlias as string)
-      const currentAddress = getAddressByVM(vm, activeAccount)
-
-      if (currentAddress && (vm === 'AVM' || vm === 'PVM' || vm === 'EVM')) {
-        const xpubXP = await getXpubXPIfAvailable({
-          walletId,
-          walletType,
-          accountIndex: activeAccount.index
-        })
-
-        const externalXPAddressesResult = await getAddressesFromXpubXP({
-          accountIndex: activeAccount.index,
-          walletId,
-          walletType,
-          isDeveloperMode: isTestnet,
-          onlyWithActivity: true
-        })
-        const account: CurrentAvalancheAccount = {
-          xpAddress: currentAddress,
-          evmAddress: activeAccount.addressC,
-          xpubXP,
-          externalXPAddresses: externalXPAddressesResult.xpAddresses
-        }
-
-        context.account = account
-      }
+      context.account = await getContextAccount({
+        account: activeAccount,
+        walletId,
+        walletType,
+        isTestnet,
+        chainAlias: params.chainAlias as Avalanche.ChainIDAlias
+      })
     }
 
     return context
   }
 
+  return undefined
+}
+
+const getContextAccount = async ({
+  account,
+  walletId,
+  walletType,
+  isTestnet,
+  chainAlias
+}: {
+  account: Account
+  walletId: string
+  walletType: WalletType
+  isTestnet: boolean
+  chainAlias: Avalanche.ChainIDAlias
+}): Promise<CurrentAvalancheAccount | undefined> => {
+  const vm = Avalanche.getVmByChainAlias(chainAlias)
+  const currentAddress = getAddressByVM(vm, account)
+  if (currentAddress && (vm === 'AVM' || vm === 'PVM' || vm === 'EVM')) {
+    const xpubXP = await getXpubXPIfAvailable({
+      walletId,
+      walletType,
+      accountIndex: account.index
+    })
+
+    const externalXPAddressesResult = await getAddressesFromXpubXP({
+      accountIndex: account.index,
+      walletId,
+      walletType,
+      isDeveloperMode: isTestnet,
+      onlyWithActivity: true
+    })
+    const prefix = chainAlias === 'P' ? 'P' : 'X'
+
+    return {
+      xpAddress: currentAddress,
+      evmAddress: account.addressC,
+      xpubXP,
+      externalXPAddresses: externalXPAddressesResult.xpAddresses.map(
+        address => {
+          return {
+            index: address.index,
+            address: `${prefix}-` + address.address
+          }
+        }
+      )
+    }
+  }
   return undefined
 }
