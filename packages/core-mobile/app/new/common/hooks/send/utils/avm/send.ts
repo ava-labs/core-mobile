@@ -113,7 +113,7 @@ const getTransactionRequest = ({
         ),
         ...getInternalExternalAddrs({
           utxos: unsignedTx.utxos,
-          xpAddressDict: { [fromAddress]: { space: 'e', index: 0 } },
+          xpAddressDict: account.xpAddressDictionary,
           isTestnet
         })
       }

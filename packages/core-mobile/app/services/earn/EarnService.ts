@@ -31,6 +31,7 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { AvaxXP } from 'types/AvaxXP'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP'
+import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -252,7 +253,11 @@ class EarnService {
       walletType,
       transaction: {
         tx: unsignedTx,
-        externalIndices: account.xpAddresses.map(xpAddress => xpAddress.index)
+        ...getInternalExternalAddrs({
+          utxos: unsignedTx.utxos,
+          xpAddressDict: account.xpAddressDictionary,
+          isTestnet
+        })
       } as AvalancheTransactionRequest,
       accountIndex: account.index,
       network: avaxXPNetwork

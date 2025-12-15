@@ -14,13 +14,13 @@ export type PrimaryAccount = Omit<
 > & {
   walletId: string
   index: number
-  xpAddressDictionary?: XPAddressDictionary
+  xpAddressDictionary: XPAddressDictionary
 }
 
 export type ImportedAccount = Omit<CoreImportedAccount, 'active'> & {
   walletId: string
   index: 0
-  xpAddressDictionary?: XPAddressDictionary
+  xpAddressDictionary: XPAddressDictionary
 }
 
 export type Account = PrimaryAccount | ImportedAccount
