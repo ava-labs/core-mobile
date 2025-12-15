@@ -71,8 +71,7 @@ export async function exportC({
     walletId,
     walletType,
     transaction: {
-      tx: unsignedTxWithFee,
-      externalIndices: account.xpAddresses.map(xpAddress => xpAddress.index)
+      tx: unsignedTxWithFee
     } as AvalancheTransactionRequest,
     accountIndex: account.index,
     network: avaxXPNetwork
