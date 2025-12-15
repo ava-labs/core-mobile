@@ -69,7 +69,7 @@ export const TokenManagementScreen = (): JSX.Element => {
       <NavigationBarButton
         testID="add_custon_network_btn"
         onPress={addCustomToken}>
-        <Icons.Content.Add color={colors.$textPrimary} />
+        <Icons.Content.Add width={32} height={32} color={colors.$textPrimary} />
       </NavigationBarButton>
     )
   }, [addCustomToken, colors.$textPrimary])
