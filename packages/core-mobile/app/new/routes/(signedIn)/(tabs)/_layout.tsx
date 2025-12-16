@@ -39,10 +39,7 @@ export default function TabLayout(): JSX.Element {
   const { theme } = useTheme()
   const activeAccount = useSelector(selectActiveAccount)
   const isMissingXpAddress =
-    activeAccount?.addressPVM === undefined ||
-    activeAccount?.addressAVM === undefined ||
-    activeAccount?.addressAVM === '' ||
-    activeAccount?.addressPVM === ''
+    !activeAccount?.addressPVM || !activeAccount?.addressAVM
 
   const tabBarInactiveTintColor = useMemo(() => {
     return theme.isDark
