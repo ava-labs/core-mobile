@@ -20,6 +20,7 @@ import { addBufferToCChainBaseFee } from 'services/wallet/utils'
 import Logger from 'utils/Logger'
 import { Account } from 'store/account'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
+import { getPvmAddresses } from 'common/utils/getPvmAddresses'
 
 const DUMMY_AMOUNT = 1000000n
 const DUMMY_UTXO_ID = 'dummy'
@@ -94,7 +95,7 @@ export const getDelegationFeePostPImport = async ({
     getTransferOutputUtxos({
       amt: pChainAtomicBalance - importPFee,
       assetId,
-      addresses: account.xpAddresses.map(address => 'P-' + address.address)
+      addresses: getPvmAddresses(account)
     }),
     ...pChainUTXOs.getUTXOs()
   ]
@@ -144,7 +145,7 @@ export const getDelegationFeePostCExportAndPImport = async ({
     isTestnet
   })
 
-  const xpAddresses = account.xpAddresses.map(address => 'P-' + address.address)
+  const pvmAddresses = getPvmAddresses(account)
 
   // put the incoming UTXO on top as if the export C + import P already happened
   // here we need to do a try catch to grab the missing amount since we don't
@@ -155,7 +156,7 @@ export const getDelegationFeePostCExportAndPImport = async ({
       // we need to get the absolute value of the difference since either the balance or the stake amount can be greater
       amt: bigIntDiff(stakeAmount, pChainBalance),
       assetId,
-      addresses: xpAddresses
+      addresses: pvmAddresses
     }),
     ...pChainUTXOs.getUTXOs()
   ]
@@ -282,7 +283,7 @@ export const getImportPFeePostCExport = async ({
     getTransferOutputUtxos({
       amt: DUMMY_AMOUNT,
       assetId,
-      addresses: account.xpAddresses.map(address => 'P-' + address.address)
+      addresses: getPvmAddresses(account)
     }),
     ...atomicPChainUTXOs.getUTXOs()
   ]
