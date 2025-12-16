@@ -202,7 +202,7 @@ export const getDelegationFeePostCExportAndPImport = async ({
     simulatedUTXOs[0] = getTransferOutputUtxos({
       amt: bigIntDiff(stakeAmount, pChainBalance) + missingAmount,
       assetId,
-      addresses: xpAddresses
+      addresses: pvmAddresses
     })
 
     const utxoSet = new utils.UtxoSet(simulatedUTXOs)
