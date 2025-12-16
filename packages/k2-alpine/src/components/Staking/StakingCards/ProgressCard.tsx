@@ -108,14 +108,13 @@ export const ProgressCard = ({
 
   // update phase when motion is available
   useEffect(() => {
+    if (!motion) return
+
     let animationFrameId: number
 
     const updatePhase = (): void => {
-      if (motion) {
-        phase.value =
-          ((phase.value + 0.1 * phaseConstant) % (2 * Math.PI)) *
-          PHASE_MULTIPLIER
-      }
+      phase.value =
+        ((phase.value + 0.1 * phaseConstant) % (2 * Math.PI)) * PHASE_MULTIPLIER
       animationFrameId = requestAnimationFrame(updatePhase)
     }
 
