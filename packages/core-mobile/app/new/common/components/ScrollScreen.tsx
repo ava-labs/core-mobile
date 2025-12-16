@@ -222,23 +222,6 @@ export const ScrollScreen = ({
 
   const [showFooter, setShowFooter] = useState(false)
 
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     let frameId: number | undefined
-
-  //     if (renderFooter && !showFooter) {
-  //       frameId = requestAnimationFrame(() => {
-  //         setShowFooter(true)
-  //       })
-  //     }
-
-  //     return () => {
-  //       if (frameId) {
-  //         cancelAnimationFrame(frameId)
-  //       }
-  //     }
-  //   }, [renderFooter, showFooter])
-  // )
   useEffect(() => {
     if (renderFooter && !showFooter) {
       setShowFooter(true)
