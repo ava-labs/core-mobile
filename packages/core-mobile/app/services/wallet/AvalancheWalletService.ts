@@ -415,9 +415,9 @@ class AvalancheWalletService {
     return new Avalanche.AddressWallet(
       account.addressC,
       stripAddressPrefix(account.addressCoreEth),
-      account.xpAddresses.map(xpAddress =>
-        stripAddressPrefix(xpAddress.address)
-      ),
+      account.xpAddresses
+        .sort((a, b) => a.index - b.index)
+        .map(xpAddress => stripAddressPrefix(xpAddress.address)),
       stripAddressPrefix(account.addressPVM),
       provXP
     )

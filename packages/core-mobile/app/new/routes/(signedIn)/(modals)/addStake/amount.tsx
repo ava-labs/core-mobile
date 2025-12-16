@@ -15,6 +15,7 @@ import { useRouter } from 'expo-router'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { useGetStuckBalance } from 'hooks/earn/useGetStuckBalance'
+import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import useStakingParams from 'hooks/earn/useStakingParams'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
@@ -29,7 +30,8 @@ const StakeAmountScreen = (): JSX.Element => {
 
   const [isComputing, setIsComputing] = useState<boolean>(false)
   const [error, setError] = useState<Error | null>(null)
-  const { compute, setStakeAmount, stakeAmount } = useDelegationContext()
+  const { computeSteps } = useDelegationContext()
+  const [stakeAmount, setStakeAmount] = useStakeAmount()
   const { minStakeAmount } = useStakingParams()
   const cChainBalance = useCChainBalance()
   const fetchingBalance = cChainBalance === undefined
@@ -60,7 +62,7 @@ const StakeAmountScreen = (): JSX.Element => {
     setIsComputing(true)
 
     try {
-      await compute(stakeAmount.toSubUnit())
+      await computeSteps(stakeAmount.toSubUnit())
 
       AnalyticsService.capture('StakeOpenDurationSelect')
       // @ts-ignore TODO: make routes typesafe
@@ -70,7 +72,7 @@ const StakeAmountScreen = (): JSX.Element => {
     }
 
     setIsComputing(false)
-  }, [stakeAmount, compute, navigate])
+  }, [stakeAmount, computeSteps, navigate])
 
   const formatInCurrency = useCallback(
     (amount: TokenUnit): string => {
