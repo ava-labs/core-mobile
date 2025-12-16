@@ -32,49 +32,55 @@ export const AccountAddresses = ({
   }
 
   const data = useMemo(() => {
-    return networks.map(network => {
-      const address = (() => {
-        switch (network.vmName) {
-          case NetworkVMType.AVM:
-          case NetworkVMType.PVM:
-            return account.addressPVM
-              ? stripAddressPrefix(account.addressPVM)
-              : undefined
-          case NetworkVMType.BITCOIN:
-            return account.addressBTC
-          case NetworkVMType.EVM:
-            return account.addressC
-          case NetworkVMType.SVM:
-            return account.addressSVM
-          default:
-            return undefined
-        }
-      })()
+    return networks
+      .map(network => {
+        const address = (() => {
+          switch (network.vmName) {
+            case NetworkVMType.AVM:
+            case NetworkVMType.PVM:
+              return account.addressPVM
+                ? stripAddressPrefix(account.addressPVM)
+                : undefined
+            case NetworkVMType.BITCOIN:
+              return account.addressBTC
+            case NetworkVMType.EVM:
+              return account.addressC
+            case NetworkVMType.SVM:
+              return account.addressSVM
+            default:
+              return undefined
+          }
+        })()
 
-      return {
-        subtitle: address
-          ? truncateAddress(address, TRUNCATE_ADDRESS_LENGTH)
-          : '',
-        title: network.chainName,
-        leftIcon: (
-          <NetworkLogoWithChain
-            network={network}
-            networkSize={36}
-            outerBorderColor={colors.$surfaceSecondary}
-            showChainLogo={isXPChain(network.chainId)}
-          />
-        ),
-        value: (
-          <CopyButton
-            testID={`copy_btn__${network.chainName}`}
-            onPress={() =>
-              address &&
-              onCopyAddress(address, `${network.chainName} address copied`)
-            }
-          />
-        )
-      }
-    })
+        if (address === undefined) {
+          return undefined
+        }
+
+        return {
+          subtitle: address
+            ? truncateAddress(address, TRUNCATE_ADDRESS_LENGTH)
+            : '',
+          title: network.chainName,
+          leftIcon: (
+            <NetworkLogoWithChain
+              network={network}
+              networkSize={36}
+              outerBorderColor={colors.$surfaceSecondary}
+              showChainLogo={isXPChain(network.chainId)}
+            />
+          ),
+          value: (
+            <CopyButton
+              testID={`copy_btn__${network.chainName}`}
+              onPress={() =>
+                address &&
+                onCopyAddress(address, `${network.chainName} address copied`)
+              }
+            />
+          )
+        }
+      })
+      .filter(item => item !== undefined)
   }, [
     account.addressBTC,
     account.addressC,

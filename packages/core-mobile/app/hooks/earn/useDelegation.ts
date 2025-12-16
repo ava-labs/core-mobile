@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo } from 'react'
+import { useCallback, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -20,7 +20,7 @@ import { nanoToWei } from 'utils/units/converter'
 import { exportC } from 'services/earn/exportC'
 import { importP } from 'services/earn/importP'
 import EarnService from 'services/earn/EarnService'
-import { type Compute, type Delegate } from 'contexts/DelegationContext'
+import { type ComputeSteps, type Delegate } from 'contexts/DelegationContext'
 import Logger from 'utils/Logger'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { selectActiveAccount } from 'store/account'
@@ -34,10 +34,9 @@ import { usePChainBalance } from './usePChainBalance'
 const EMPTY_STEPS: Step[] = []
 
 export const useDelegation = (): {
-  compute: Compute
+  computeSteps: ComputeSteps
   delegate: Delegate
   steps: Step[]
-  networkFees: bigint
 } => {
   const [steps, setSteps] = useState<Step[]>(EMPTY_STEPS)
   const cChainBalance = useCChainBalance()
@@ -54,15 +53,7 @@ export const useDelegation = (): {
   const cChainBaseFee = useCChainBaseFee()
   const pChainBalance = usePChainBalance()
 
-  const networkFees = useMemo(
-    () =>
-      steps.reduce((sum, transaction) => {
-        return sum + transaction.fee
-      }, BigInt(0)),
-    [steps]
-  )
-
-  const compute: Compute = useCallback(
+  const computeSteps: ComputeSteps = useCallback(
     async (stakeAmount: bigint) => {
       if (
         !activeAccount ||
@@ -129,6 +120,8 @@ export const useDelegation = (): {
         'Processing the following steps:',
         JSON.stringify(steps, null, 2)
       )
+
+      setSteps(steps)
 
       let txHash
 
@@ -229,5 +222,5 @@ export const useDelegation = (): {
     ]
   )
 
-  return { compute, delegate, steps, networkFees }
+  return { computeSteps, delegate, steps }
 }
