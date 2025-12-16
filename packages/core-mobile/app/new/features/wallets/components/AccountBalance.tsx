@@ -23,18 +23,22 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 export const AccountBalance = ({
   isActive,
   account,
-  variant = 'spinner'
+  variant = 'spinner',
+  balancesRefetchInterval
 }: {
   isActive: boolean
   account: Account
   variant?: 'spinner' | 'skeleton'
+  balancesRefetchInterval?: number | false
 }): React.JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const {
     theme: { colors, isDark }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
-  const { refetch, isFetching } = useAccountBalances(account)
+  const { refetch, isFetching } = useAccountBalances(account, {
+    refetchInterval: balancesRefetchInterval
+  })
   const { balance: accountBalance } = useBalanceInCurrencyForAccount(account.id)
   const isBalanceAccurate = useIsAccountsBalanceAccurate([account])
 
