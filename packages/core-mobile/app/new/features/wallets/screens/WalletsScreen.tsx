@@ -38,7 +38,9 @@ export const WalletsScreen = (): JSX.Element => {
     () => Object.values(accountCollection),
     [accountCollection]
   )
-  const { isLoading, refetch } = useAccountsBalances(allAccounts)
+  const { isLoading, refetch } = useAccountsBalances(allAccounts, {
+    refetchInterval: false
+  })
   const isBalanceAccurate = useIsAccountsBalanceAccurate(allAccounts)
   const listRef = useRef<ListScreenRef<WalletDisplayData>>(null)
 
@@ -274,6 +276,7 @@ export const WalletsScreen = (): JSX.Element => {
           isActive={isActive}
           isRefreshing={isRefreshing}
           isExpanded={isExpanded}
+          balancesRefetchInterval={false}
           onToggleExpansion={() => toggleWalletExpansion(item.id)}
           style={{
             marginHorizontal: 16,

@@ -15,7 +15,8 @@ type AccountId = string
  * 🔁 Uses one React Query request per account.
  */
 export const useWalletBalances = (
-  wallet?: Wallet
+  wallet?: Wallet,
+  options?: { refetchInterval?: number | false }
 ): {
   data: Record<AccountId, AdjustedNormalizedBalancesForAccount[]>
   isLoading: boolean
@@ -28,5 +29,5 @@ export const useWalletBalances = (
     selectAccountsByWalletId(state, wallet?.id ?? '')
   )
 
-  return useAccountsBalances(accounts ?? [])
+  return useAccountsBalances(accounts ?? [], options)
 }

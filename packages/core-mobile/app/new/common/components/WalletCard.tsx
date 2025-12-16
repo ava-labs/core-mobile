@@ -34,7 +34,8 @@ const WalletCard = ({
   showMoreButton = true,
   style,
   onToggleExpansion,
-  isRefreshing
+  isRefreshing,
+  balancesRefetchInterval
 }: {
   wallet: WalletDisplayData
   isActive: boolean
@@ -43,6 +44,7 @@ const WalletCard = ({
   showMoreButton?: boolean
   style?: StyleProp<ViewStyle>
   onToggleExpansion: () => void
+  balancesRefetchInterval?: number | false
 }): React.JSX.Element => {
   const {
     theme: { colors }
@@ -70,10 +72,11 @@ const WalletCard = ({
         <AccountListItem
           testID={`manage_accounts_list__${item.account.name}`}
           {...item}
+          balancesRefetchInterval={balancesRefetchInterval}
         />
       )
     },
-    []
+    [balancesRefetchInterval]
   )
 
   const renderEmpty = useCallback(() => {
@@ -251,6 +254,7 @@ const WalletCard = ({
             }}
             isRefreshing={isRefreshing}
             wallet={wallet}
+            balancesRefetchInterval={balancesRefetchInterval}
           />
           {showMoreButton && (
             <DropdownMenu

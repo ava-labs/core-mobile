@@ -10,7 +10,7 @@ import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useBalanceTotalInCurrencyForWallet } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForWallet'
-import { useIsPollingBalancesForWallet } from 'features/portfolio/hooks/useIsPollingBalancesForWallet'
+import { useWalletBalances } from 'features/portfolio/hooks/useWalletBalances'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { useSelector } from 'react-redux'
@@ -21,19 +21,24 @@ export const WalletBalance = ({
   wallet,
   isRefreshing,
   balanceSx,
-  variant = 'spinner'
+  variant = 'spinner',
+  balancesRefetchInterval
 }: {
   wallet: Wallet
   isRefreshing: boolean
   balanceSx?: SxProp
   variant?: 'spinner' | 'skeleton'
+  balancesRefetchInterval?: number | false
 }): JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const {
     theme: { colors, isDark }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
-  const isLoadingBalance = useIsPollingBalancesForWallet(wallet)
+  // Ensure wallet-level balance queries don't poll when a screen opts out (e.g. WalletsScreen).
+  const { isFetching: isLoadingBalance } = useWalletBalances(wallet, {
+    refetchInterval: balancesRefetchInterval
+  })
   const walletBalance = useBalanceTotalInCurrencyForWallet(wallet)
 
   const [hasLoaded, setHasLoaded] = useState(false)

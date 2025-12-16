@@ -15,10 +15,10 @@ import { WalletInfo } from 'features/accountSettings/components/WalletInfo'
 import { selectWalletById } from 'store/wallet/slice'
 import { CoreAccountType } from '@avalabs/types'
 import { WalletType } from 'services/wallet/types'
-import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
 import { useIsRefetchingBalancesForAccount } from 'features/portfolio/hooks/useIsRefetchingBalancesForAccount'
 import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
-import { useIsAllBalancesInaccurateForAccount } from 'features/portfolio/hooks/useIsAllBalancesInaccurateForAccount'
+import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
+import { NormalizedBalancesForAccount } from 'services/balance/types'
 
 const AccountScreen = (): JSX.Element => {
   const router = useRouter()
@@ -27,13 +27,29 @@ const AccountScreen = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const account = useSelector(selectAccountById(accountId ?? ''))
   const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
-  const isBalanceLoading = useIsLoadingBalancesForAccount(account)
+  const { data: balances, isFetching: isFetchingBalances } = useAccountBalances(
+    account,
+    {
+      refetchInterval: false
+    }
+  )
   const isRefetchingBalance = useIsRefetchingBalancesForAccount(account)
   const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
-    account
+    account,
+    // Avoid mounting another `useAccountBalances(account)` inside the balance-total pipeline.
+    // TODO: align Normalized vs Adjusted balance types after full migration.
+    // @ts-ignore
+    sourceData: balances as unknown as NormalizedBalancesForAccount[]
   })
-  const isLoading = isBalanceLoading || isRefetchingBalance
-  const allBalancesInaccurate = useIsAllBalancesInaccurateForAccount(account)
+  // Don't show a loading state if we already have cached balance data.
+  // (useAccountBalances().isLoading stays true until *all* enabled networks are present,
+  // which can make the header look like it's "loading" even when data is already shown elsewhere.)
+  const isLoading =
+    (isFetchingBalances && balances.length === 0) || isRefetchingBalance
+  const allBalancesInaccurate = useMemo(() => {
+    if (!account || balances.length === 0) return false
+    return balances.every(balance => balance.dataAccurate === false)
+  }, [account, balances])
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
   const formattedBalance = useMemo(() => {
