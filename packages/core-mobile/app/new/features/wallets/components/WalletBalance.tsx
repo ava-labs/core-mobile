@@ -35,7 +35,6 @@ export const WalletBalance = ({
     theme: { colors, isDark }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
-  // Ensure wallet-level balance queries don't poll when a screen opts out (e.g. WalletsScreen).
   const { isFetching: isLoadingBalance } = useWalletBalances(wallet, {
     refetchInterval: balancesRefetchInterval
   })

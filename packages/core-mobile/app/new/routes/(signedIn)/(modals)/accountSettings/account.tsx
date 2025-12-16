@@ -36,14 +36,8 @@ const AccountScreen = (): JSX.Element => {
   const isRefetchingBalance = useIsRefetchingBalancesForAccount(account)
   const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
     account,
-    // Avoid mounting another `useAccountBalances(account)` inside the balance-total pipeline.
-    // TODO: align Normalized vs Adjusted balance types after full migration.
-    // @ts-ignore
     sourceData: balances as unknown as NormalizedBalancesForAccount[]
   })
-  // Don't show a loading state if we already have cached balance data.
-  // (useAccountBalances().isLoading stays true until *all* enabled networks are present,
-  // which can make the header look like it's "loading" even when data is already shown elsewhere.)
   const isLoading =
     (isFetchingBalances && balances.length === 0) || isRefetchingBalance
   const allBalancesInaccurate = useMemo(() => {
