@@ -1,4 +1,4 @@
-import { Network } from '@avalabs/core-chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import {
@@ -7,6 +7,7 @@ import {
   NETWORK_SOLANA_DEVNET,
   TEST_PRIMARY_NETWORKS
 } from 'services/network/consts'
+import { selectActiveAccount } from 'store/account'
 import { selectIsSolanaSupportBlocked } from 'store/posthog/slice'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 
@@ -19,6 +20,10 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 export function useCombinedPrimaryNetworks(): {
   networks: Network[]
 } {
+  const activeAccount = useSelector(selectActiveAccount)
+  const isMissingXpAddress =
+    activeAccount?.addressPVM === undefined ||
+    activeAccount?.addressAVM === undefined
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
 
@@ -36,5 +41,18 @@ export function useCombinedPrimaryNetworks(): {
       : [...MAIN_PRIMARY_NETWORKS, NETWORK_SOLANA]
   }, [isDeveloperMode, isSolanaSupportBlocked])
 
-  return { networks }
+  // filter out networks that are missing XP addresses
+  const filteredNetworks = useMemo(() => {
+    return networks.filter(network => {
+      if (
+        network.vmName === NetworkVMType.AVM ||
+        network.vmName === NetworkVMType.PVM
+      ) {
+        return !isMissingXpAddress
+      }
+      return true
+    })
+  }, [networks, isMissingXpAddress])
+
+  return { networks: filteredNetworks }
 }

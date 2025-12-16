@@ -84,9 +84,14 @@ export const AccountAddresses = ({
     networks
   ])
 
+  // filter out items with no address
+  const filteredData = useMemo(() => {
+    return data.filter(item => item.subtitle !== '')
+  }, [data])
+
   return (
     <GroupList
-      data={data}
+      data={filteredData}
       titleSx={{
         fontSize: 15,
         lineHeight: 18,

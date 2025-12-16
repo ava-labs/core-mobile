@@ -9,6 +9,7 @@ import { Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SvgProps } from 'react-native-svg'
 import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
 import { selectIsInAppDefiBlocked } from 'store/posthog'
 
 const isIOS = Platform.OS === 'ios'
@@ -36,6 +37,10 @@ const freezeOnBlur = isIOS ? false : true
 
 export default function TabLayout(): JSX.Element {
   const { theme } = useTheme()
+  const activeAccount = useSelector(selectActiveAccount)
+  const isMissingXpAddress =
+    activeAccount?.addressPVM === undefined ||
+    activeAccount?.addressAVM === undefined
 
   const tabBarInactiveTintColor = useMemo(() => {
     return theme.isDark
@@ -84,15 +89,17 @@ export default function TabLayout(): JSX.Element {
           freezeOnBlur
         }}
       />
-      <BottomTabs.Screen
-        name="stake"
-        options={{
-          tabBarButtonTestID: 'earn_tab',
-          title: isInAppDefiBlocked ? 'Stake' : 'Earn',
-          tabBarIcon: () => stakeIcon,
-          freezeOnBlur
-        }}
-      />
+      {!isMissingXpAddress && (
+        <BottomTabs.Screen
+          name="stake"
+          options={{
+            tabBarButtonTestID: 'earn_tab',
+            title: isInAppDefiBlocked ? 'Stake' : 'Earn',
+            tabBarIcon: () => stakeIcon,
+            freezeOnBlur
+          }}
+        />
+      )}
       <BottomTabs.Screen
         name="browser"
         options={{
@@ -120,6 +127,10 @@ const TabBar = ({
   descriptors,
   navigation
 }: BottomTabBarProps): JSX.Element => {
+  const activeAccount = useSelector(selectActiveAccount)
+  const isMissingXpAddress =
+    activeAccount?.addressPVM === undefined ||
+    activeAccount?.addressAVM === undefined
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
 
@@ -150,6 +161,9 @@ const TabBar = ({
             : 'transparent'
       }}>
       {state.routes.map((route, index) => {
+        if (route.name === 'stake' && isMissingXpAddress) {
+          return null
+        }
         const isActive = state.index === index
         const Icon = getIcon(route.name)
         const title = descriptors[route.key]?.options?.title ?? route.name
