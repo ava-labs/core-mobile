@@ -3,7 +3,7 @@ import { useAvatar } from 'common/hooks/useAvatar'
 import { useRouter } from 'expo-router'
 import { useRandomAvatar } from 'features/onboarding/hooks/useRandomAvatar'
 import { useRandomizedAvatars } from 'features/onboarding/hooks/useRandomizedAvatars'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 
 export default function SelectAvatar(): JSX.Element {
   const { navigate } = useRouter()
@@ -11,8 +11,9 @@ export default function SelectAvatar(): JSX.Element {
 
   const randomizedAvatars = useRandomizedAvatars()
   const randomAvatar = useRandomAvatar(randomizedAvatars)
+  const initialAvatar = useRef(randomAvatar)
 
-  const [selectedAvatar, setSelectedAvatar] = useState(randomAvatar)
+  const [selectedAvatar, setSelectedAvatar] = useState(initialAvatar.current)
 
   const onSubmit = useCallback((): void => {
     if (selectedAvatar) {
@@ -32,7 +33,7 @@ export default function SelectAvatar(): JSX.Element {
       title={`Select your\npersonal avatar`}
       description="Add a display avatar for your wallet. You can change it at any time in the app's settings"
       selectedAvatar={selectedAvatar}
-      initialAvatar={randomAvatar}
+      initialAvatar={initialAvatar.current}
       onSubmit={onSubmit}
       buttonText="Next"
       setSelectedAvatar={setSelectedAvatar}
