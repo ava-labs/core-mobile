@@ -4,12 +4,12 @@ import { BottomTabBarProps } from '@bottom-tabs/react-navigation'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { BottomTabs } from 'common/components/BottomTabs'
 import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
+import { useHasXpAddresses } from 'common/hooks/useHasXpAddresses'
 import React, { FC, useMemo } from 'react'
 import { Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SvgProps } from 'react-native-svg'
 import { useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/account'
 import { selectIsInAppDefiBlocked } from 'store/posthog'
 
 const isIOS = Platform.OS === 'ios'
@@ -37,9 +37,7 @@ const freezeOnBlur = isIOS ? false : true
 
 export default function TabLayout(): JSX.Element {
   const { theme } = useTheme()
-  const activeAccount = useSelector(selectActiveAccount)
-  const isMissingXpAddress =
-    !activeAccount?.addressPVM || !activeAccount?.addressAVM
+  const hasXpAddresses = useHasXpAddresses()
 
   const tabBarInactiveTintColor = useMemo(() => {
     return theme.isDark
@@ -88,7 +86,7 @@ export default function TabLayout(): JSX.Element {
           freezeOnBlur
         }}
       />
-      {!isMissingXpAddress && (
+      {hasXpAddresses && (
         <BottomTabs.Screen
           name="stake"
           options={{
@@ -126,12 +124,9 @@ const TabBar = ({
   descriptors,
   navigation
 }: BottomTabBarProps): JSX.Element => {
-  const activeAccount = useSelector(selectActiveAccount)
-  const isMissingXpAddress =
-    !activeAccount?.addressPVM || !activeAccount?.addressAVM
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
-
+  const hasXpAddresses = useHasXpAddresses()
   const backgroundColor = useMemo(() => {
     return theme.isDark
       ? isIOS
@@ -159,7 +154,7 @@ const TabBar = ({
             : 'transparent'
       }}>
       {state.routes.map((route, index) => {
-        if (route.name === 'stake' && isMissingXpAddress) {
+        if (route.name === 'stake' && !hasXpAddresses) {
           return null
         }
         const isActive = state.index === index

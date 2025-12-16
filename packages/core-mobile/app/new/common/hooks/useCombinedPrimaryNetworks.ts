@@ -7,9 +7,9 @@ import {
   NETWORK_SOLANA_DEVNET,
   TEST_PRIMARY_NETWORKS
 } from 'services/network/consts'
-import { selectActiveAccount } from 'store/account'
 import { selectIsSolanaSupportBlocked } from 'store/posthog/slice'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useHasXpAddresses } from './useHasXpAddresses'
 
 /**
  * Hook to get the combined primary networks (networks are merged together with same address)
@@ -20,9 +20,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 export function useCombinedPrimaryNetworks(): {
   networks: Network[]
 } {
-  const activeAccount = useSelector(selectActiveAccount)
-  const isMissingXpAddress = !activeAccount?.addressPVM
-  !activeAccount?.addressAVM
+  const hasXpAddresses = useHasXpAddresses()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
 
@@ -47,11 +45,11 @@ export function useCombinedPrimaryNetworks(): {
         network.vmName === NetworkVMType.AVM ||
         network.vmName === NetworkVMType.PVM
       ) {
-        return !isMissingXpAddress
+        return hasXpAddresses
       }
       return true
     })
-  }, [networks, isMissingXpAddress])
+  }, [networks, hasXpAddresses])
 
   return { networks: filteredNetworks }
 }
