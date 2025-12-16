@@ -23,7 +23,9 @@ export function useCombinedPrimaryNetworks(): {
   const activeAccount = useSelector(selectActiveAccount)
   const isMissingXpAddress =
     activeAccount?.addressPVM === undefined ||
-    activeAccount?.addressAVM === undefined
+    activeAccount?.addressAVM === undefined ||
+    activeAccount?.addressAVM === '' ||
+    activeAccount?.addressPVM === ''
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
 
