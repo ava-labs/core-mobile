@@ -19,7 +19,6 @@ const GLACIER_SCHEMA_URL = isCI
   : 'https://glacier-api-dev.avax.network/api-json'
 
 function run(cmd) {
-  console.log(`\n> ${cmd}`)
   execSync(cmd, {
     stdio: 'inherit',
     cwd: root
@@ -27,7 +26,6 @@ function run(cmd) {
 }
 
 function main() {
-  console.log('Generating API clients for', isCI ? 'CI' : 'development')
   // ensure output dir
   run('mkdir -p app/utils/apiClient/generated')
 
