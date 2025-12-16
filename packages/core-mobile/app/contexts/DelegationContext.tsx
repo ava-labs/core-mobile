@@ -1,17 +1,8 @@
-import React, {
-  createContext,
-  ReactNode,
-  useContext,
-  useMemo,
-  useState,
-  Dispatch
-} from 'react'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
+import React, { createContext, ReactNode, useContext, useMemo } from 'react'
 import { type Step } from 'services/earn/computeDelegationSteps/types'
 import { useDelegation } from 'hooks/earn/useDelegation'
-import { zeroAvaxPChain } from 'utils/units/zeroValues'
 
-export type Compute = (stakeAmount: bigint) => Promise<Step[]>
+export type ComputeSteps = (stakeAmount: bigint) => Promise<Step[]>
 
 type TransactionHash = string
 
@@ -28,15 +19,10 @@ export type Delegate = ({
 }) => Promise<TransactionHash>
 
 interface DelegationContextState {
-  stakeAmount: TokenUnit
   steps: Step[]
-  networkFees: bigint
-  compute: Compute
+  computeSteps: ComputeSteps
   delegate: Delegate
-  setStakeAmount: Dispatch<TokenUnit>
 }
-
-const ZERO_AVAX = zeroAvaxPChain()
 
 export const DelegationContext = createContext<DelegationContextState>(
   {} as DelegationContextState
@@ -47,19 +33,15 @@ export const DelegationContextProvider = ({
 }: {
   children: ReactNode
 }): JSX.Element => {
-  const [stakeAmount, setStakeAmount] = useState<TokenUnit>(ZERO_AVAX)
-  const { steps, networkFees, compute, delegate } = useDelegation()
+  const { steps, computeSteps, delegate } = useDelegation()
 
   const state: DelegationContextState = useMemo(
     () => ({
       steps,
-      compute,
-      delegate,
-      setStakeAmount,
-      stakeAmount,
-      networkFees
+      computeSteps,
+      delegate
     }),
-    [compute, delegate, setStakeAmount, steps, stakeAmount, networkFees]
+    [computeSteps, delegate, steps]
   )
 
   return (

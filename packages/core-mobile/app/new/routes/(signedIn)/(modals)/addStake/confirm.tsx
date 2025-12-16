@@ -31,6 +31,7 @@ import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
 import { useNodes } from 'hooks/earn/useNodes'
 import { useRefreshStakingBalances } from 'hooks/earn/useRefreshStakingBalances'
 import { useSearchNode } from 'hooks/earn/useSearchNode'
+import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import { useNow } from 'hooks/time/useNow'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -46,7 +47,8 @@ const StakeConfirmScreen = (): JSX.Element => {
   const { back, dismissAll, navigate } = useRouter()
   const dispatch = useDispatch()
 
-  const { stakeAmount, networkFees } = useDelegationContext()
+  const [stakeAmount] = useStakeAmount()
+  const { steps } = useDelegationContext()
   const { stakeEndTime, nodeId } = useLocalSearchParams<{
     stakeEndTime: string
     nodeId?: string
@@ -103,15 +105,16 @@ const StakeConfirmScreen = (): JSX.Element => {
   const refreshStakingBalances = useRefreshStakingBalances()
 
   const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
-  const networkFeesInAvax = useMemo(
-    () =>
-      new TokenUnit(
-        networkFees,
-        pNetwork.networkToken.decimals,
-        pNetwork.networkToken.symbol
-      ).toDisplay({ fixedDp: 6 }),
-    [networkFees, pNetwork.networkToken.decimals, pNetwork.networkToken.symbol]
-  )
+  const networkFeesInAvax = useMemo(() => {
+    const networkFees = steps.reduce((sum, transaction) => {
+      return sum + transaction.fee
+    }, BigInt(0))
+    return new TokenUnit(
+      networkFees,
+      pNetwork.networkToken.decimals,
+      pNetwork.networkToken.symbol
+    ).toDisplay({ fixedDp: 6 })
+  }, [steps, pNetwork.networkToken.decimals, pNetwork.networkToken.symbol])
 
   const delegationFee = useMemo(() => {
     if (

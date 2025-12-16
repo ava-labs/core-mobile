@@ -10,7 +10,6 @@ import {
 import { UTCDate } from '@date-fns/utc'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { useDelegationContext } from 'contexts/DelegationContext'
 import { differenceInDays, getUnixTime, millisecondsToSeconds } from 'date-fns'
 import { useRouter } from 'expo-router'
 import {
@@ -23,6 +22,7 @@ import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitVal
 import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedReward'
 import { useStakeEstimatedRewards } from 'features/stake/hooks/useStakeEstimatedRewards'
 import { convertToDurationInSeconds } from 'features/stake/utils'
+import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import { useNow } from 'hooks/time/useNow'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import { useDebounce } from 'hooks/useDebounce'
@@ -46,7 +46,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 const StakeDurationScreen = (): JSX.Element => {
   const { navigate } = useRouter()
 
-  const { stakeAmount } = useDelegationContext()
+  const [stakeAmount] = useStakeAmount()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
   const { formatCurrency } = useFormatCurrency()
