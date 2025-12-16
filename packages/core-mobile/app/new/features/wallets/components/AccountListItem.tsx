@@ -7,11 +7,14 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { useUserBalances } from 'features/portfolio/hooks/useUserBalances'
 import React from 'react'
 import Animated, { Easing, LinearTransition } from 'react-native-reanimated'
 import { Account } from 'store/account'
 import { Wallet } from 'store/wallet/types'
 import { AccountBalance } from './AccountBalance'
+import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
+import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalancesAccurate'
 
 export const AccountListItem = ({
   testID,
@@ -31,6 +34,8 @@ export const AccountListItem = ({
   onPressDetails: () => void
 }): JSX.Element => {
   const { theme } = useTheme()
+  // const balance = useBalanceInCurrencyForAccount(account.id)
+  const balance = useBalanceForAccount(account)
 
   return (
     <Animated.View layout={LinearTransition.easing(Easing.inOut(Easing.ease))}>
@@ -96,9 +101,10 @@ export const AccountListItem = ({
                 paddingRight: 14
               }}>
               <AccountBalance
-                variant="skeleton"
-                account={account}
                 isActive={isActive}
+                balance={balance}
+                variant="skeleton"
+                // refetch={refetchBalances}
               />
               <TouchableOpacity hitSlop={16} onPress={onPressDetails}>
                 <Icons.Alert.AlertCircle
@@ -115,4 +121,23 @@ export const AccountListItem = ({
       {!hideSeparator && <Separator sx={{ marginLeft: 48 }} />}
     </Animated.View>
   )
+}
+
+function useBalanceForAccount(account: Account): {
+  balance: number
+  isLoadingBalance: boolean
+  isBalanceAccurate: boolean
+} {
+  const { data: balances } = useUserBalances()
+  const balance = useBalanceTotalInCurrencyForAccount({
+    account: account,
+    sourceData: balances[account.id]
+  })
+  const isBalanceAccurate = useIsAccountBalanceAccurate(account)
+
+  return {
+    balance,
+    isLoadingBalance: balances?.[account.id] === undefined,
+    isBalanceAccurate
+  }
 }

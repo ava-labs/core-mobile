@@ -34,24 +34,24 @@ export const WalletBalance = ({
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
   const isLoadingBalance = useIsPollingBalancesForWallet(wallet)
-  const walletBalance = useBalanceTotalInCurrencyForWallet(wallet)
+  const balanceTotalInCurrency = useBalanceTotalInCurrencyForWallet(wallet)
 
   const [hasLoaded, setHasLoaded] = useState(false)
 
   useEffect(() => {
-    if (!isLoadingBalance && walletBalance !== undefined) {
+    if (!isLoadingBalance && balanceTotalInCurrency !== undefined) {
       setHasLoaded(true)
     }
-  }, [isLoadingBalance, isRefreshing, walletBalance])
+  }, [isLoadingBalance, isRefreshing, balanceTotalInCurrency])
 
-  const balance = useMemo(() => {
-    return walletBalance > 0
+  const walletBalance = useMemo(() => {
+    return balanceTotalInCurrency > 0
       ? formatCurrency({
-          amount: walletBalance,
-          notation: walletBalance < 100000 ? undefined : 'compact'
+          amount: balanceTotalInCurrency,
+          notation: balanceTotalInCurrency < 100000 ? undefined : 'compact'
         })
       : formatCurrency({ amount: 0 }).replace(/[\d.,]+/g, UNKNOWN_AMOUNT)
-  }, [formatCurrency, walletBalance])
+  }, [formatCurrency, balanceTotalInCurrency])
 
   const renderMaskView = useCallback(() => {
     return (
@@ -90,7 +90,7 @@ export const WalletBalance = ({
       isLoading={isRefreshing}>
       <AnimatedBalance
         variant="heading4"
-        balance={balance}
+        balance={walletBalance}
         shouldMask={isPrivacyModeEnabled}
         balanceSx={{
           ...balanceSx,

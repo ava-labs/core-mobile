@@ -6,8 +6,8 @@ import NavigationBarButton from 'common/components/NavigationBarButton'
 import WalletCard from 'common/components/WalletCard'
 import { WalletDisplayData } from 'common/types'
 import { useRouter } from 'expo-router'
-import { useAccountsBalances } from 'features/portfolio/hooks/useAccountsBalances'
-import { useIsAccountsBalanceAccurate } from 'features/portfolio/hooks/useIsAccountsBalancesAccurate'
+import { useIsUserBalanceAccurate } from 'features/portfolio/hooks/useIsUserBalancesAccurate'
+import { useUserBalances } from 'features/portfolio/hooks/useUserBalances'
 import React, { RefObject, useCallback, useMemo, useRef, useState } from 'react'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
@@ -34,12 +34,8 @@ export const WalletsScreen = (): JSX.Element => {
   const accountCollection = useSelector(selectAccounts)
   const allWallets = useSelector(selectWallets)
   const activeAccount = useSelector(selectActiveAccount)
-  const allAccounts = useMemo(
-    () => Object.values(accountCollection),
-    [accountCollection]
-  )
-  const { isLoading, refetch } = useAccountsBalances(allAccounts)
-  const isBalanceAccurate = useIsAccountsBalanceAccurate(allAccounts)
+  const { isLoading, refetch } = useUserBalances()
+  const isBalanceAccurate = useIsUserBalanceAccurate()
   const listRef = useRef<ListScreenRef<WalletDisplayData>>(null)
 
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -272,6 +268,7 @@ export const WalletsScreen = (): JSX.Element => {
         <WalletCard
           wallet={item}
           isActive={isActive}
+          isFetching={isLoading}
           isRefreshing={isRefreshing}
           isExpanded={isExpanded}
           onToggleExpansion={() => toggleWalletExpansion(item.id)}
@@ -290,6 +287,7 @@ export const WalletsScreen = (): JSX.Element => {
       colors.$borderPrimary,
       colors.$surfacePrimary,
       expandedWallets,
+      isLoading,
       isRefreshing,
       toggleWalletExpansion
     ]

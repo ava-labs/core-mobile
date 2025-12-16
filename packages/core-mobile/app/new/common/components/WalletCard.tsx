@@ -38,6 +38,7 @@ const WalletCard = ({
 }: {
   wallet: WalletDisplayData
   isActive: boolean
+  isFetching: boolean
   isExpanded: boolean
   isRefreshing: boolean
   showMoreButton?: boolean
@@ -47,6 +48,7 @@ const WalletCard = ({
   const {
     theme: { colors }
   } = useTheme()
+
   const {
     getDropdownItems,
     handleDropdownSelect,

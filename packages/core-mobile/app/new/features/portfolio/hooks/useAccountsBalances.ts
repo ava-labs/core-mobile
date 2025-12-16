@@ -1,16 +1,12 @@
-import {
-  QueryObserverResult,
-  useQueries,
-  UseQueryResult
-} from '@tanstack/react-query'
-import { useCallback, useMemo } from 'react'
+import { QueryObserverResult, useQuery } from '@tanstack/react-query'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useSelector } from 'react-redux'
 import BalanceService from 'services/balance/BalanceService'
-import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
+import { NormalizedBalancesForAccount } from 'services/balance/types'
 import { Account } from 'store/account'
+import { selectAllCustomTokens } from 'store/customToken'
 import { selectEnabledNetworks } from 'store/network/slice'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
-import { balanceKey } from './useAccountBalances'
 
 type AccountId = string
 
@@ -23,7 +19,7 @@ const staleTime = 30_000
  * Refetch interval in milliseconds:
  * - 30 seconds
  */
-const refetchInterval = 30_000
+const refetchInterval = 5_000
 
 /**
  * Returns whether all balances for all accounts are inaccurate (dataAccurate === false),
@@ -33,68 +29,39 @@ export function useAccountsBalances(
   accounts: Account[],
   options?: { refetchInterval?: number }
 ): {
-  data: Record<AccountId, AdjustedNormalizedBalancesForAccount[]>
+  data: Record<AccountId, NormalizedBalancesForAccount[]>
   isLoading: boolean
   isFetching: boolean
   refetch: () => Promise<
-    QueryObserverResult<AdjustedNormalizedBalancesForAccount[], Error>[]
+    QueryObserverResult<
+      Record<AccountId, NormalizedBalancesForAccount[]>,
+      Error
+    >
   >
 } {
+  const customTokens = useSelector(selectAllCustomTokens)
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const currency = useSelector(selectSelectedCurrency)
 
   const isNotReady = accounts.length === 0 || enabledNetworks.length === 0
 
-  const queryConfigs = useMemo(() => {
-    return accounts.map(account => ({
-      // eslint-disable-next-line @tanstack/query/exhaustive-deps
-      queryKey: balanceKey(account),
-      enabled: !isNotReady,
-      staleTime,
-      refetchInterval: options?.refetchInterval ?? refetchInterval,
-      queryFn: () =>
-        BalanceService.getBalancesForAccount({
-          networks: enabledNetworks,
-          account,
-          currency: currency.toLowerCase()
-        })
-    }))
-  }, [
-    accounts,
-    isNotReady,
-    options?.refetchInterval,
-    enabledNetworks,
-    currency
-  ])
-
-  const combine = useCallback(
-    (
-      results: UseQueryResult<AdjustedNormalizedBalancesForAccount[], Error>[]
-    ) => {
-      return {
-        // create record of account id to balances for that account
-        data: results.reduce((acc, result) => {
-          if (result.isError || !result.data) return acc
-
-          const accountId = result.data[0]?.accountId
-
-          if (!accountId) return acc
-
-          acc[accountId] = result.data
-          return acc
-        }, {} as Record<AccountId, AdjustedNormalizedBalancesForAccount[]>),
-        isLoading: results.some(q => q.isLoading),
-        isFetching: results.some(q => q.isFetching),
-        refetch: () => Promise.all(results.map(q => q.refetch()))
-      }
-    },
-    []
-  )
-
-  const { data, isLoading, isFetching, refetch } = useQueries({
-    queries: queryConfigs,
-    combine
+  const { data, isLoading, isFetching, refetch } = useQuery({
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    queryKey: [
+      ReactQueryKeys.ACCOUNTS_BALANCES,
+      accounts.map(a => a.id).join(',')
+    ],
+    enabled: !isNotReady,
+    staleTime,
+    refetchInterval: options?.refetchInterval ?? refetchInterval,
+    queryFn: () =>
+      BalanceService.getBalancesForAccounts({
+        networks: enabledNetworks,
+        accounts,
+        currency: currency.toLowerCase(),
+        customTokens
+      })
   })
 
-  return { data, isLoading, isFetching, refetch }
+  return { data: data ?? {}, isLoading, isFetching, refetch }
 }
