@@ -13,7 +13,7 @@
     "tsc": "tsc -p .",
     "lint": "eslint .",
     "clean": "./scripts/clean",
-    "postinstall": "node ${PROJECT_CWD}/scripts/generate-metro-monorepo-config.js; node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os,zlib,path,fs --hack; yarn codegen",
+    "postinstall": "node ${PROJECT_CWD}/scripts/generate-metro-monorepo-config.js; node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os,zlib,path,fs --hack; node scripts/codegen.js",
     "storybook-generate": "sb-rn-get-stories --v6-store",
     "storybook-watch": "sb-rn-watcher",
     "gen:contracts": "typechain --target=ethers-v6 --out-dir app/contracts/openzeppelin ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC721.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC1155.json",
