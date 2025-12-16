@@ -128,8 +128,7 @@ const TabBar = ({
 }: BottomTabBarProps): JSX.Element => {
   const activeAccount = useSelector(selectActiveAccount)
   const isMissingXpAddress =
-    activeAccount?.addressPVM === undefined ||
-    activeAccount?.addressAVM === undefined
+    !activeAccount?.addressPVM || !activeAccount?.addressAVM
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
 
