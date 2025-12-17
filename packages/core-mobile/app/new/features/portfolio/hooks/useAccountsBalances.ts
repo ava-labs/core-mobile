@@ -4,7 +4,7 @@ import {
   useQueryClient
 } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import BalanceService from 'services/balance/BalanceService'
 import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
@@ -25,10 +25,14 @@ const staleTime = 30_000
  */
 const refetchInterval = 5_000
 
-export const balancesKey = (accounts: Account[] | undefined) =>
+export const balancesKey = (params: {
+  currency: string
+  enabledChainIdsKey: string
+}) =>
   [
     ReactQueryKeys.ACCOUNTS_BALANCES,
-    accounts?.map(a => a.id).join(',')
+    params.currency.toLowerCase(),
+    params.enabledChainIdsKey
   ] as const
 
 /**
@@ -53,11 +57,54 @@ export function useAccountsBalances(
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const currency = useSelector(selectSelectedCurrency)
 
+  const enabledChainIdsKey = useMemo(() => {
+    // Stable + order-independent key
+    return enabledNetworks
+      .map(n => n.chainId)
+      .sort((a, b) => a - b)
+      .join(',')
+  }, [enabledNetworks])
+
+  const queryKey = useMemo(
+    () =>
+      balancesKey({
+        currency,
+        enabledChainIdsKey
+      }),
+    [currency, enabledChainIdsKey]
+  )
+
   const isNotReady = accounts.length === 0 || enabledNetworks.length === 0
+
+  // Ensure newly-added accounts have an entry in the cached map without wiping existing balances.
+  React.useEffect(() => {
+    if (isNotReady) return
+    queryClient.setQueryData(
+      queryKey,
+      (
+        prev:
+          | Record<AccountId, AdjustedNormalizedBalancesForAccount[]>
+          | undefined
+      ) => {
+        const previous = prev ?? {}
+        let changed = false
+        const next = { ...previous }
+
+        accounts.forEach(account => {
+          if (next[account.id] === undefined) {
+            next[account.id] = []
+            changed = true
+          }
+        })
+
+        return changed ? next : previous
+      }
+    )
+  }, [accounts, isNotReady, queryClient, queryKey])
 
   const { data, isFetching, refetch } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: balancesKey(accounts),
+    queryKey,
     enabled: !isNotReady,
     staleTime,
     initialData: () =>
@@ -73,7 +120,7 @@ export function useAccountsBalances(
         currency: currency.toLowerCase(),
         onBalanceLoaded: balance => {
           queryClient.setQueryData(
-            balancesKey(accounts),
+            queryKey,
             (
               prev:
                 | Record<AccountId, AdjustedNormalizedBalancesForAccount[]>
@@ -96,15 +143,13 @@ export function useAccountsBalances(
   })
 
   const isLoading = useMemo(() => {
-    // still loading if:
-    // - account missing, OR
-    // - no data, OR
-    // - fewer results than enabled networks
+    // Treat as "initial load" only: once we have *any* balances, don't flip back to loading
+    // when accounts are added (only the new account should be loading).
     return (
       accounts.length === 0 ||
       !data ||
-      Object.values(data).flat().length === 0 ||
-      Object.values(data).flat().length < enabledNetworks.length
+      enabledNetworks.length === 0 ||
+      Object.values(data).flat().length === 0
     )
   }, [accounts, data, enabledNetworks.length])
 

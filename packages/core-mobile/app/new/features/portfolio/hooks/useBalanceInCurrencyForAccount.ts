@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux'
 import { selectAccountById } from 'store/account'
+import { selectEnabledNetworks } from 'store/network/slice'
 import { useAllBalances } from './useAllBalances'
 import { useBalanceTotalInCurrencyForAccount } from './useBalanceTotalInCurrencyForAccount'
 
@@ -19,6 +20,7 @@ export const useBalanceInCurrencyForAccount = (
   balance: number
 } => {
   const account = useSelector(selectAccountById(accountId))
+  const enabledNetworks = useSelector(selectEnabledNetworks)
   const { data: balances, isLoading } = useAllBalances()
   const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
     account,
@@ -27,8 +29,19 @@ export const useBalanceInCurrencyForAccount = (
     sourceData: balances[accountId]
   })
 
+  const isLoadingBalance = (() => {
+    if (!account) return true
+    if (enabledNetworks.length === 0) return true
+    const accountBalances = balances[accountId] ?? []
+    return (
+      isLoading ||
+      accountBalances.length === 0 ||
+      accountBalances.length < enabledNetworks.length
+    )
+  })()
+
   return {
     balance: balanceTotalInCurrency,
-    isLoadingBalance: isLoading
+    isLoadingBalance
   }
 }
