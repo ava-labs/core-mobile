@@ -20,6 +20,7 @@ export const AccountListItem = ({
   account,
   wallet,
   isActive,
+  isRefreshing,
   hideSeparator,
   onPress,
   onPressDetails
@@ -27,6 +28,7 @@ export const AccountListItem = ({
   testID: string
   account: Account
   wallet: Wallet
+  isRefreshing: boolean
   isActive: boolean
   hideSeparator: boolean
   onPress: () => void
@@ -103,6 +105,7 @@ export const AccountListItem = ({
                 isActive={isActive}
                 balance={balance.balance}
                 isLoading={balance.isLoadingBalance}
+                isRefreshing={isRefreshing}
                 hasLoaded={balance.hasBalanceData}
                 isAccurate={isBalanceAccurate}
                 variant="skeleton"

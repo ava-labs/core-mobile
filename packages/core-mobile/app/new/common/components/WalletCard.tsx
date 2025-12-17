@@ -31,14 +31,13 @@ const WalletCard = ({
   wallet,
   isActive,
   isExpanded,
+  isRefreshing,
   showMoreButton = true,
   style,
-  onToggleExpansion,
-  isRefreshing
+  onToggleExpansion
 }: {
   wallet: WalletDisplayData
   isActive: boolean
-  isFetching: boolean
   isExpanded: boolean
   isRefreshing: boolean
   showMoreButton?: boolean
@@ -71,11 +70,12 @@ const WalletCard = ({
       return (
         <AccountListItem
           testID={`manage_accounts_list__${item.account.name}`}
+          isRefreshing={isRefreshing}
           {...item}
         />
       )
     },
-    []
+    [isRefreshing]
   )
 
   const renderEmpty = useCallback(() => {

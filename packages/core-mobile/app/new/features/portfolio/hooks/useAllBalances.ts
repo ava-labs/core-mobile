@@ -15,6 +15,8 @@ export function useAllBalances(options?: {
   data: Record<AccountId, AdjustedNormalizedBalancesForAccount[]>
   isLoading: boolean
   isFetching: boolean
+  isError: boolean
+  error: Error | null
   refetch: () => Promise<
     QueryObserverResult<
       Record<AccountId, AdjustedNormalizedBalancesForAccount[]>,

@@ -21,6 +21,8 @@ export const useWalletBalances = (
   data: Record<AccountId, AdjustedNormalizedBalancesForAccount[]>
   isLoading: boolean
   isFetching: boolean
+  isError: boolean
+  error: Error | null
   refetch: () => Promise<
     QueryObserverResult<
       Record<AccountId, AdjustedNormalizedBalancesForAccount[]>,
@@ -36,6 +38,8 @@ export const useWalletBalances = (
     data: allAccountsBalances,
     isLoading,
     isFetching,
+    isError,
+    error,
     refetch
   } = useAllBalances()
 
@@ -50,6 +54,8 @@ export const useWalletBalances = (
     data: balances,
     isLoading,
     isFetching,
+    isError,
+    error,
     refetch
   }
 }

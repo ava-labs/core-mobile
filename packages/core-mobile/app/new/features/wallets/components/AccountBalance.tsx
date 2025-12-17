@@ -2,7 +2,6 @@ import {
   ActivityIndicator,
   alpha,
   AnimatedBalance,
-  Icons,
   LoadingContent,
   useTheme,
   View
@@ -21,6 +20,7 @@ export const AccountBalance = ({
   isLoading,
   isAccurate,
   hasLoaded,
+  isRefreshing,
   variant = 'spinner'
 }: {
   isActive: boolean
@@ -28,8 +28,8 @@ export const AccountBalance = ({
   isLoading: boolean
   isAccurate: boolean
   hasLoaded?: boolean
+  isRefreshing?: boolean
   variant?: 'spinner' | 'skeleton'
-  balancesRefetchInterval?: number | false
 }): React.JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const {
@@ -60,20 +60,15 @@ export const AccountBalance = ({
     )
   }, [colors.$textPrimary, isActive])
 
-  const renderError = useCallback(() => {
-    if (isLoading) return null
+  const hasError = useMemo(() => {
+    if (isLoading) return false
 
     // // Balance is 0 and all balances are accurate
-    if (!balance && isAccurate) return null
+    if (!balance && isAccurate) return false
 
     // Balance is inaccurate
-    if (!balance && !isAccurate)
-      return (
-        // <Pressable hitSlop={16} onPress={refetch}>
-        <Icons.Alert.Error color={colors.$textDanger} width={14} height={14} />
-        // </Pressable>
-      )
-  }, [balance, colors.$textDanger, isLoading, isAccurate])
+    if (!balance && !isAccurate) return true
+  }, [balance, isLoading, isAccurate])
 
   if (!hasLoaded && isLoading) {
     if (variant === 'skeleton') {
@@ -102,14 +97,16 @@ export const AccountBalance = ({
         flexShrink: 1,
         gap: 6
       }}>
-      {renderError()}
       <LoadingContent
-        hideSpinner={isLoading}
+        hideSpinner={!isAccurate}
         minOpacity={0.2}
         maxOpacity={1}
         isLoading={
-          (!hasLoaded && isLoading) || (hasLoaded && isLoading && !isAccurate)
-        }>
+          (!hasLoaded && isLoading) ||
+          (hasLoaded && isLoading && !isAccurate) ||
+          isRefreshing
+        }
+        hasError={hasError}>
         <AnimatedBalance
           variant="body1"
           balance={accountBalance}

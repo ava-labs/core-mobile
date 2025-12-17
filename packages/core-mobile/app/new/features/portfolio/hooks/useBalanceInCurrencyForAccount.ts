@@ -33,7 +33,7 @@ export const useBalanceInCurrencyForAccount = (
 } => {
   const account = useSelector(selectAccountById(accountId))
   const enabledNetworks = useSelector(selectEnabledNetworks)
-  const { data: balances } = useAllBalances()
+  const { data: balances, isError } = useAllBalances()
 
   const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
     account,
@@ -45,6 +45,7 @@ export const useBalanceInCurrencyForAccount = (
   const isLoadingBalance = (() => {
     if (!account) return true
     if (enabledNetworks.length === 0) return true
+    if (isError) return false
     const accountBalances = balances[accountId] ?? []
     return (
       accountBalances.length === 0 ||

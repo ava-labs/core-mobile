@@ -46,6 +46,8 @@ export function useAccountsBalances(
   data: Record<AccountId, AdjustedNormalizedBalancesForAccount[]>
   isLoading: boolean
   isFetching: boolean
+  isError: boolean
+  error: Error | null
   refetch: () => Promise<
     QueryObserverResult<
       Record<AccountId, AdjustedNormalizedBalancesForAccount[]>,
@@ -102,7 +104,7 @@ export function useAccountsBalances(
     )
   }, [accounts, isNotReady, queryClient, queryKey])
 
-  const { data, isFetching, refetch } = useQuery({
+  const { data, isFetching, isError, error, refetch } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey,
     enabled: !isNotReady,
@@ -139,6 +141,10 @@ export function useAccountsBalances(
   })
 
   const isLoading = useMemo(() => {
+    // If the query failed, don't keep the UI in a "loading" state — let consumers
+    // render an explicit error state (even if we have cached/partial data).
+    if (isError) return false
+
     // Treat as "initial load" only: once we have *any* balances, don't flip back to loading
     // when accounts are added (only the new account should be loading).
     return (
@@ -148,7 +154,14 @@ export function useAccountsBalances(
       Object.values(data).flat().length === 0 ||
       Object.values(data).flat().length < enabledNetworks.length
     )
-  }, [accounts, data, enabledNetworks.length])
+  }, [accounts.length, data, enabledNetworks.length, isError])
 
-  return { data: data ?? {}, isLoading, isFetching, refetch }
+  return {
+    data: data ?? {},
+    isLoading,
+    isFetching,
+    isError,
+    error: (error as Error | null) ?? null,
+    refetch
+  }
 }
