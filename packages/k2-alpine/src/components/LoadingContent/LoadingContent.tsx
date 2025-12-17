@@ -43,7 +43,10 @@ export const LoadingContent = ({
 
   const errorIndicatorStyle = useAnimatedStyle(() => {
     return {
-      opacity: withTiming(hasError ? 1 : 0, {
+      opacity: withTiming(isLoading ? 0 : 1, {
+        duration: 300
+      }),
+      left: withTiming(isLoading ? 28 : -28, {
         duration: 300
       })
     }
@@ -63,23 +66,23 @@ export const LoadingContent = ({
         ]}>
         <ActivityIndicator size="small" color={theme.colors.$textPrimary} />
       </Animated.View>
-      <Animated.View
-        style={[
-          { position: 'absolute', justifyContent: 'center' },
-          errorIndicatorStyle
-        ]}>
-        <Icons.Alert.Error
-          color={theme.colors.$textDanger}
-          width={14}
-          height={14}
-        />
-      </Animated.View>
-
+      {hasError && (
+        <Animated.View
+          style={[
+            { position: 'absolute', justifyContent: 'center' },
+            errorIndicatorStyle
+          ]}>
+          <Icons.Alert.Error
+            color={theme.colors.$textDanger}
+            width={14}
+            height={14}
+          />
+        </Animated.View>
+      )}
       <LoadingFadeInOut
         minOpacity={minOpacity}
         maxOpacity={maxOpacity}
-        isLoading={isLoading ?? false}
-        paddingLeft={hasError ? 0 : undefined}>
+        isLoading={isLoading ?? false}>
         {children}
       </LoadingFadeInOut>
     </View>

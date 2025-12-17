@@ -70,6 +70,14 @@ export const AccountBalance = ({
     if (!balance && !isAccurate) return true
   }, [balance, isLoading, isAccurate])
 
+  const isLoadingContent = useMemo(() => {
+    return (
+      (!hasLoaded && isLoading) ||
+      (hasLoaded && isLoading && !isAccurate) ||
+      (hasError && isRefreshing)
+    )
+  }, [hasLoaded, isLoading, isAccurate, hasError, isRefreshing])
+
   if (!hasLoaded && isLoading) {
     if (variant === 'skeleton') {
       return (
@@ -101,9 +109,7 @@ export const AccountBalance = ({
         hideSpinner={!isAccurate}
         minOpacity={0.2}
         maxOpacity={1}
-        isLoading={
-          (!hasLoaded && isLoading) || (hasLoaded && isLoading && !isAccurate)
-        }
+        isLoading={isLoadingContent}
         hasError={hasError}>
         <AnimatedBalance
           variant="body1"
