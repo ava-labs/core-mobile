@@ -37,7 +37,7 @@ export const balancesKey = (accounts: Account[] | undefined) =>
  */
 export function useAccountsBalances(
   accounts: Account[],
-  options?: { refetchInterval?: number }
+  options?: { refetchInterval?: number | false }
 ): {
   data: Record<AccountId, AdjustedNormalizedBalancesForAccount[]>
   isLoading: boolean

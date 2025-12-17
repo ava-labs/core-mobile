@@ -27,6 +27,7 @@ export const AccountBalance = ({
   isLoading: boolean
   isAccurate: boolean
   variant?: 'spinner' | 'skeleton'
+  balancesRefetchInterval?: number | false
 }): React.JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const {

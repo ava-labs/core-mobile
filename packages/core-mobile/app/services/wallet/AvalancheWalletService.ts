@@ -9,6 +9,7 @@ import { getUnixTime, secondsToMilliseconds } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { PChainId } from '@avalabs/glacier-sdk'
 import { UTCDate } from '@date-fns/utc'
+import { getPvmAddresses } from 'common/utils/getPvmAddresses'
 import {
   AddDelegatorProps,
   CreateExportCTxParams,
@@ -393,9 +394,7 @@ class AvalancheWalletService {
       weight: stakeAmountInNAvax,
       nodeId: 'NodeID-1',
       subnetId: PChainId._11111111111111111111111111111111LPO_YY,
-      fromAddresses: account.xpAddresses.map(
-        xpAddress => 'P-' + xpAddress.address
-      ),
+      fromAddresses: getPvmAddresses(account),
       rewardAddresses: [destinationAddress ?? ''],
       start: BigInt(getUnixTime(new Date())),
       // setting this end date here for this dummy tx is okay. since the end date does not add complexity for this tx, so it doesn't affect the txFee that is returned.
@@ -412,12 +411,17 @@ class AvalancheWalletService {
   ): Promise<Avalanche.AddressWallet> {
     const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
 
+    const xpAddr =
+      account.xpAddresses.length > 0
+        ? [...account.xpAddresses]
+            .sort((a, b) => a.index - b.index)
+            .map(xpAddress => stripAddressPrefix(xpAddress.address))
+        : [stripAddressPrefix(account.addressPVM)]
+
     return new Avalanche.AddressWallet(
       account.addressC,
       stripAddressPrefix(account.addressCoreEth),
-      account.xpAddresses
-        .sort((a, b) => a.index - b.index)
-        .map(xpAddress => stripAddressPrefix(xpAddress.address)),
+      xpAddr,
       stripAddressPrefix(account.addressPVM),
       provXP
     )

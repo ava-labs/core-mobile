@@ -2,7 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { SelectAvatar } from 'common/components/SelectAvatar'
 import { useRandomAvatar } from 'features/onboarding/hooks/useRandomAvatar'
 import { useRandomizedAvatars } from 'features/onboarding/hooks/useRandomizedAvatars'
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { editContact, selectContact } from 'store/addressBook'
 
@@ -15,9 +15,9 @@ const EditContactAvatarScreen = (): JSX.Element => {
 
   const randomizedAvatars = useRandomizedAvatars()
   const randomAvatar = useRandomAvatar(randomizedAvatars)
-  const initialAvatar = contact?.avatar ?? randomAvatar
+  const initialAvatar = useRef(contact?.avatar ?? randomAvatar)
 
-  const [selectedAvatar, setSelectedAvatar] = useState(initialAvatar)
+  const [selectedAvatar, setSelectedAvatar] = useState(initialAvatar.current)
 
   const onSubmit = (): void => {
     if (!contact || !selectedAvatar) {
@@ -36,7 +36,7 @@ const EditContactAvatarScreen = (): JSX.Element => {
     <SelectAvatar
       title={'Select\ncontact avatar'}
       avatars={randomizedAvatars}
-      initialAvatar={initialAvatar}
+      initialAvatar={initialAvatar.current}
       selectedAvatar={selectedAvatar}
       onSubmit={onSubmit}
       setSelectedAvatar={setSelectedAvatar}
