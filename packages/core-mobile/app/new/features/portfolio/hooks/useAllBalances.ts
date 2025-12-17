@@ -1,6 +1,6 @@
 import { QueryObserverResult } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
-import { NormalizedBalancesForAccount } from 'services/balance/types'
+import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
 import { selectAccounts } from 'store/account'
 import { useAccountsBalances } from './useAccountsBalances'
 
@@ -9,13 +9,13 @@ type AccountId = string
  * Returns whether all balances for all accounts are inaccurate (dataAccurate === false),
  * along with loading states, data, and refetch function.
  */
-export function useUserBalances(): {
-  data: Record<AccountId, NormalizedBalancesForAccount[]>
+export function useAllBalances(): {
+  data: Record<AccountId, AdjustedNormalizedBalancesForAccount[]>
   isLoading: boolean
   isFetching: boolean
   refetch: () => Promise<
     QueryObserverResult<
-      Record<AccountId, NormalizedBalancesForAccount[]>,
+      Record<AccountId, AdjustedNormalizedBalancesForAccount[]>,
       Error
     >
   >

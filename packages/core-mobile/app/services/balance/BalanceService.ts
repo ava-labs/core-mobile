@@ -1,36 +1,35 @@
-import { Network } from '@avalabs/core-chains-sdk'
-import { SPAN_STATUS_ERROR } from '@sentry/core'
-import { Account } from 'store/account/types'
-import { getAddressByNetwork } from 'store/account/utils'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
+import { AddressIndex } from '@avalabs/types'
 import {
-  type NetworkContractToken,
-  type TokenWithBalance,
   type Error,
+  type NetworkContractToken,
   TokenType,
+  type TokenWithBalance,
   GetBalancesResponse as VmGetBalancesResponse
 } from '@avalabs/vm-module-types'
-import ModuleManager from 'vmModule/ModuleManager'
-import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { SPAN_STATUS_ERROR } from '@sentry/core'
+import SentryWrapper from 'services/sentry/SentryWrapper'
+import { Account } from 'store/account/types'
+import { getAddressByNetwork } from 'store/account/utils'
+import { balanceApi } from 'utils/apiClient/balance/balanceApi'
+import { GetBalancesRequestBody } from 'utils/apiClient/generated/balanceApi.client'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
-import { NetworkVMType } from '@avalabs/core-chains-sdk'
+import Logger from 'utils/Logger'
 import {
   isPChain,
   isXChain,
   isXPNetwork
 } from 'utils/network/isAvalancheNetwork'
-import { AddressIndex } from '@avalabs/types'
-import Logger from 'utils/Logger'
-import SentryWrapper from 'services/sentry/SentryWrapper'
-import { GetBalancesRequestBody } from 'utils/apiClient/generated/balanceApi.client'
-import { balanceApi } from 'utils/apiClient/balance/balanceApi'
+import ModuleManager from 'vmModule/ModuleManager'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { AVAX_P_ID, AVAX_X_ID } from './const'
 import {
   AdjustedNormalizedBalancesForAccount,
   NormalizedBalancesForAccount
 } from './types'
-import { AVAX_P_ID, AVAX_X_ID } from './const'
+import { buildRequestItemsForAccount } from './utils/buildRequestItemsForAccount'
 import { getLocalTokenId } from './utils/getLocalTokenId'
 import { mapBalanceResponseToLegacy } from './utils/mapBalanceResponseToLegacy'
-import { buildRequestItemsForAccount } from './utils/buildRequestItemsForAccount'
 
 type AccountId = string
 
@@ -62,7 +61,7 @@ export class BalanceService {
    * }
    */
   // eslint-disable-next-line sonarjs/cognitive-complexity
-  async getBalancesForAccounts({
+  async getVMBalancesForAccounts({
     networks,
     accounts,
     currency,
@@ -355,7 +354,7 @@ export class BalanceService {
    * @returns a map of accountId → AdjustedNormalizedBalancesForAccount[]
    */
   // eslint-disable-next-line sonarjs/cognitive-complexity
-  async getBalancesForAccountsV2({
+  async getBalancesForAccounts({
     networks,
     accounts,
     currency,
@@ -375,7 +374,7 @@ export class BalanceService {
       finalResults[account.id] = []
     }
 
-    const requestItems = buildRequestItemsForAccountsV2(networks, accounts)
+    const requestItems = buildRequestItemsForAccounts(networks, accounts)
 
     const body = {
       data: requestItems,
@@ -643,7 +642,7 @@ const mergeAvaxItem = (acc: AvaxEntry[], item: AvaxRequestItem): void => {
  * duplicate namespace buckets (EVM/BTC/SVM) and merges `avax.addressDetails`
  * by `id` while keeping Coreth vs XP reference sets separate.
  */
-const buildRequestItemsForAccountsV2 = (
+const buildRequestItemsForAccounts = (
   networks: Network[],
   accounts: Account[]
 ): GetBalancesRequestBody['data'] => {

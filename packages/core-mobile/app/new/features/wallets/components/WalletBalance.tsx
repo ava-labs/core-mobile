@@ -10,7 +10,7 @@ import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useBalanceTotalInCurrencyForWallet } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForWallet'
-import { useIsPollingBalancesForWallet } from 'features/portfolio/hooks/useIsPollingBalancesForWallet'
+import { useIsPollingAllBalances } from 'features/portfolio/hooks/useIsPollingAllBalances'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { useSelector } from 'react-redux'
@@ -33,16 +33,16 @@ export const WalletBalance = ({
     theme: { colors, isDark }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
-  const isLoadingBalance = useIsPollingBalancesForWallet(wallet)
+  const isFetching = useIsPollingAllBalances()
   const balanceTotalInCurrency = useBalanceTotalInCurrencyForWallet(wallet)
 
   const [hasLoaded, setHasLoaded] = useState(false)
 
   useEffect(() => {
-    if (!isLoadingBalance && balanceTotalInCurrency !== undefined) {
+    if (!isFetching && balanceTotalInCurrency !== undefined) {
       setHasLoaded(true)
     }
-  }, [isLoadingBalance, isRefreshing, balanceTotalInCurrency])
+  }, [isFetching, balanceTotalInCurrency])
 
   const walletBalance = useMemo(() => {
     return balanceTotalInCurrency > 0

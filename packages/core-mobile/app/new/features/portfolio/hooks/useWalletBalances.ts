@@ -1,11 +1,11 @@
 import { QueryObserverResult } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { NormalizedBalancesForAccount } from 'services/balance/types'
+import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
 import { selectAccountsByWalletId } from 'store/account'
 import { RootState } from 'store/types'
 import { Wallet } from 'store/wallet/types'
-import { useUserBalances } from './useUserBalances'
+import { useAllBalances } from './useAllBalances'
 
 type AccountId = string
 
@@ -18,12 +18,12 @@ type AccountId = string
 export const useWalletBalances = (
   wallet?: Wallet
 ): {
-  data: Record<AccountId, NormalizedBalancesForAccount[]>
+  data: Record<AccountId, AdjustedNormalizedBalancesForAccount[]>
   isLoading: boolean
   isFetching: boolean
   refetch: () => Promise<
     QueryObserverResult<
-      Record<AccountId, NormalizedBalancesForAccount[]>,
+      Record<AccountId, AdjustedNormalizedBalancesForAccount[]>,
       Error
     >
   >
@@ -37,13 +37,13 @@ export const useWalletBalances = (
     isLoading,
     isFetching,
     refetch
-  } = useUserBalances()
+  } = useAllBalances()
 
   const balances = useMemo(() => {
     return accounts.reduce((acc, account) => {
       acc[account.id] = allAccountsBalances?.[account.id] ?? []
       return acc
-    }, {} as Record<AccountId, NormalizedBalancesForAccount[]>)
+    }, {} as Record<AccountId, AdjustedNormalizedBalancesForAccount[]>)
   }, [allAccountsBalances, accounts])
 
   return {

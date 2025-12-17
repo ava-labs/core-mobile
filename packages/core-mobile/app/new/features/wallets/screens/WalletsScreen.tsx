@@ -6,8 +6,8 @@ import NavigationBarButton from 'common/components/NavigationBarButton'
 import WalletCard from 'common/components/WalletCard'
 import { WalletDisplayData } from 'common/types'
 import { useRouter } from 'expo-router'
-import { useIsUserBalanceAccurate } from 'features/portfolio/hooks/useIsUserBalancesAccurate'
-import { useUserBalances } from 'features/portfolio/hooks/useUserBalances'
+import { useIsAllBalancesAccurate } from 'features/portfolio/hooks/useIsAllBalancesAccurate'
+import { useAllBalances } from 'features/portfolio/hooks/useAllBalances'
 import React, { RefObject, useCallback, useMemo, useRef, useState } from 'react'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
@@ -34,8 +34,8 @@ export const WalletsScreen = (): JSX.Element => {
   const accountCollection = useSelector(selectAccounts)
   const allWallets = useSelector(selectWallets)
   const activeAccount = useSelector(selectActiveAccount)
-  const { isLoading, refetch } = useUserBalances()
-  const isBalanceAccurate = useIsUserBalanceAccurate()
+  const { isLoading, refetch } = useAllBalances()
+  const isBalanceAccurate = useIsAllBalancesAccurate()
   const listRef = useRef<ListScreenRef<WalletDisplayData>>(null)
 
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -45,7 +45,9 @@ export const WalletsScreen = (): JSX.Element => {
   >({})
 
   const errorMessage =
-    isLoading || isBalanceAccurate ? undefined : 'Unable to load all balances'
+    isLoading || isRefreshing || isBalanceAccurate
+      ? undefined
+      : 'Unable to load all balances'
 
   const allAccountsArray = useMemo(() => {
     return Object.values(accountCollection)

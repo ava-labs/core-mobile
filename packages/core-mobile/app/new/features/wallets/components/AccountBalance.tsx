@@ -18,14 +18,14 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 export const AccountBalance = ({
   isActive,
   balance,
+  isLoading,
+  isAccurate,
   variant = 'spinner'
 }: {
   isActive: boolean
-  balance: {
-    balance: number
-    isLoadingBalance: boolean
-    isBalanceAccurate: boolean
-  }
+  balance: number
+  isLoading: boolean
+  isAccurate: boolean
   variant?: 'spinner' | 'skeleton'
 }): React.JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
@@ -36,17 +36,17 @@ export const AccountBalance = ({
   const [hasLoaded, setHasLoaded] = useState(false)
 
   useEffect(() => {
-    if (!balance.isLoadingBalance) {
+    if (!isLoading) {
       setHasLoaded(true)
     }
-  }, [balance.isLoadingBalance])
+  }, [isLoading])
 
   const accountBalance = useMemo(() => {
-    return balance.balance === 0
+    return balance === 0
       ? formatCurrency({ amount: 0 }).replace(/[\d.,]+/g, UNKNOWN_AMOUNT)
       : formatCurrency({
-          amount: balance.balance,
-          notation: balance.balance < 100000 ? undefined : 'compact'
+          amount: balance,
+          notation: balance < 100000 ? undefined : 'compact'
         })
   }, [balance, formatCurrency])
 
@@ -65,21 +65,21 @@ export const AccountBalance = ({
   }, [colors.$textPrimary, isActive])
 
   const renderError = useCallback(() => {
-    if (balance.isLoadingBalance) return null
+    if (isLoading) return null
 
     // // Balance is 0 and all balances are accurate
-    if (!balance.balance && balance.isBalanceAccurate) return null
+    if (!balance && isAccurate) return null
 
     // Balance is inaccurate
-    if (!balance.balance && !balance.isBalanceAccurate)
+    if (!balance && !isAccurate)
       return (
         // <Pressable hitSlop={16} onPress={refetch}>
         <Icons.Alert.Error color={colors.$textDanger} width={14} height={14} />
         // </Pressable>
       )
-  }, [balance, colors.$textDanger])
+  }, [balance, colors.$textDanger, isLoading, isAccurate])
 
-  if (!hasLoaded && balance.isLoadingBalance) {
+  if (!hasLoaded && isLoading) {
     if (variant === 'skeleton') {
       return (
         <ContentLoader
@@ -108,12 +108,11 @@ export const AccountBalance = ({
       }}>
       {renderError()}
       <LoadingContent
-        hideSpinner={balance.isLoadingBalance}
+        hideSpinner={isLoading}
         minOpacity={0.2}
         maxOpacity={1}
         isLoading={
-          (!hasLoaded && balance.isLoadingBalance) ||
-          (hasLoaded && balance.isLoadingBalance && !balance.isBalanceAccurate)
+          (!hasLoaded && isLoading) || (hasLoaded && isLoading && !isAccurate)
         }>
         <AnimatedBalance
           variant="body1"

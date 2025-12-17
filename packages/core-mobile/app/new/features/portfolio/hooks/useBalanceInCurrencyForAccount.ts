@@ -1,7 +1,6 @@
 import { useSelector } from 'react-redux'
 import { selectAccountById } from 'store/account'
-import { selectActiveWallet } from 'store/wallet/slice'
-import { useWalletBalances } from './useWalletBalances'
+import { useAllBalances } from './useAllBalances'
 import { useBalanceTotalInCurrencyForAccount } from './useBalanceTotalInCurrencyForAccount'
 
 /**
@@ -10,7 +9,7 @@ import { useBalanceTotalInCurrencyForAccount } from './useBalanceTotalInCurrency
  * Behavior:
  * - For the active account, this hook uses data from `useAccountBalances`,
  *   which fetches balance updates more frequently.
- * - For non-active accounts, it falls back to data from `useWalletBalances`,
+ * - For non-active accounts, it falls back to data from `useAllBalances`,
  *   which loads once on mount and reuses cached wallet-level data.
  */
 export const useBalanceInCurrencyForAccount = (
@@ -19,22 +18,17 @@ export const useBalanceInCurrencyForAccount = (
   isLoadingBalance: boolean
   balance: number
 } => {
-  const activeWallet = useSelector(selectActiveWallet)
   const account = useSelector(selectAccountById(accountId))
-
-  const { data: walletBalances } = useWalletBalances(activeWallet)
-
+  const { data: balances, isLoading } = useAllBalances()
   const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
     account,
     // TODO: fix type mismatch after fully migrating to the new backend balance types
     // @ts-ignore
-    sourceData: walletBalances[accountId]
+    sourceData: balances[accountId]
   })
-
-  const isFetchingBalance = walletBalances?.[accountId] === undefined
 
   return {
     balance: balanceTotalInCurrency,
-    isLoadingBalance: isFetchingBalance
+    isLoadingBalance: isLoading
   }
 }
