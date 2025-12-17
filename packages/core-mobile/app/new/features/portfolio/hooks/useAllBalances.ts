@@ -9,7 +9,9 @@ type AccountId = string
  * Returns whether all balances for all accounts are inaccurate (dataAccurate === false),
  * along with loading states, data, and refetch function.
  */
-export function useAllBalances(): {
+export function useAllBalances(options?: {
+  refetchInterval?: number | false
+}): {
   data: Record<AccountId, AdjustedNormalizedBalancesForAccount[]>
   isLoading: boolean
   isFetching: boolean
@@ -22,5 +24,5 @@ export function useAllBalances(): {
 } {
   const allAccounts = useSelector(selectAccounts)
 
-  return useAccountsBalances(Object.values(allAccounts))
+  return useAccountsBalances(Object.values(allAccounts), options)
 }

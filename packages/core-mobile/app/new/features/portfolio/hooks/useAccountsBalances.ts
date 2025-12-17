@@ -149,7 +149,8 @@ export function useAccountsBalances(
       accounts.length === 0 ||
       !data ||
       enabledNetworks.length === 0 ||
-      Object.values(data).flat().length === 0
+      Object.values(data).flat().length === 0 ||
+      Object.values(data).flat().length < enabledNetworks.length
     )
   }, [accounts, data, enabledNetworks.length])
 
