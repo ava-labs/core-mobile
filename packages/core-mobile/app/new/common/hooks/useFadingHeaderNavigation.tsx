@@ -191,7 +191,7 @@ export const useFadingHeaderNavigation = ({
     return headerTitleComponent
   }, [headerTitleComponent])
 
-  // Use refs to store the latest values to avoid re-running useFocusEffect
+  // Use refs to store the latest values - updated via useEffect
   const headerBackgroundRef = useRef(headerBackground)
   const headerTitleRef = useRef(headerTitle)
   const renderHeaderRightRef = useRef(renderHeaderRight)
@@ -208,35 +208,34 @@ export const useFadingHeaderNavigation = ({
     renderHeaderRightRef.current = renderHeaderRight
   }, [renderHeaderRight])
 
+  // Create stable wrapper functions ONCE (outside useFocusEffect)
+  const stableHeaderBackground = useCallback((): React.ReactNode => {
+    return headerBackgroundRef.current()
+  }, [])
+
+  const stableHeaderTitle = useCallback((): React.ReactNode => {
+    return headerTitleRef.current()
+  }, [])
+
+  const stableHeaderRight = useCallback((): React.ReactNode => {
+    return renderHeaderRightRef.current?.()
+  }, [])
+
   // Set navigation options only once on mount
   useFocusEffect(
     useCallback(() => {
       const nav = hasParent ? navigation.getParent() : navigation
 
-      // Create stable wrapper functions that reference the latest values via refs
-      const stableHeaderBackground = (): React.ReactNode => {
-        return headerBackgroundRef.current()
-      }
-
-      const stableHeaderTitle = (): React.ReactNode => {
-        return headerTitleRef.current()
-      }
-
       const navigationOptions: NativeStackNavigationOptions = {
-        headerBackground: stableHeaderBackground
-      }
-
-      if (showNavigationHeaderTitle && header) {
-        navigationOptions.headerTitle = stableHeaderTitle
-      }
-
-      if (renderHeaderRightRef.current) {
-        navigationOptions.headerRight = renderHeaderRightRef.current
+        headerBackground: stableHeaderBackground,
+        headerTitle: showNavigationHeaderTitle ? stableHeaderTitle : undefined,
+        headerRight: renderHeaderRightRef.current
+          ? stableHeaderRight
+          : undefined
       }
 
       nav?.setOptions(navigationOptions)
 
-      // Cleanup on unmount
       return () => {
         nav?.setOptions({
           headerBackground: undefined,
@@ -244,7 +243,15 @@ export const useFadingHeaderNavigation = ({
           headerRight: undefined
         })
       }
-    }, [hasParent, navigation, showNavigationHeaderTitle, header])
+      // Only depend on stable references - runs once on mount/focus
+    }, [
+      hasParent,
+      navigation,
+      stableHeaderBackground,
+      stableHeaderTitle,
+      stableHeaderRight,
+      showNavigationHeaderTitle
+    ])
   )
 
   return {
