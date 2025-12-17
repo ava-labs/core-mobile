@@ -56,8 +56,19 @@ const accountsSlice = createSlice({
 })
 
 // selectors
-export const selectAccounts = (state: RootState): AccountCollection =>
-  state.account.accounts
+export const selectAccounts = (state: RootState): AccountCollection => {
+  // delete xp addresses from the accounts
+  const accounts = state.account.accounts
+  Object.values(accounts).forEach(account => {
+    if (account.index !== 0) {
+      delete account.xpAddresses
+      delete account.xpAddressDictionary
+      delete account.addressPVM
+      delete account.addressAVM
+    }
+  })
+  return accounts
+}
 
 export const selectAccountByAddress =
   (address: string) =>

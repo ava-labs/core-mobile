@@ -2,7 +2,13 @@ import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Icons, Text, TouchableOpacity, useTheme } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
-import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
+import React, {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo
+} from 'react'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -32,39 +38,42 @@ export const ReceiveScreen = (): ReactNode => {
     return networks.find(n => n.vmName === NetworkVMType.EVM)
   }, [networks])
 
+  useLayoutEffect(() => {
+    if (
+      (selectedNetwork?.vmName === NetworkVMType.AVM ||
+        selectedNetwork?.vmName === NetworkVMType.PVM) &&
+      !hasXpAddresses &&
+      evmNetwork
+    ) {
+      setSelectedNetwork(evmNetwork)
+    }
+  }, [selectedNetwork, hasXpAddresses, evmNetwork, setSelectedNetwork])
+
   useFocusEffect(
     useCallback(() => {
       if (vmName && networks.length > 0) {
         const network = networks.find(
           n => n.vmName.toLowerCase() === vmName.toLowerCase()
         )
-        if (
-          (network?.vmName === NetworkVMType.AVM ||
-            network?.vmName === NetworkVMType.PVM) &&
-          !hasXpAddresses &&
-          evmNetwork
-        ) {
-          setSelectedNetwork(evmNetwork)
-          return
-        }
+
         if (network) setSelectedNetwork(network)
       }
-    }, [vmName, networks, hasXpAddresses, evmNetwork, setSelectedNetwork])
+    }, [vmName, networks, setSelectedNetwork])
   )
 
   const address = useMemo(() => {
     switch (selectedNetwork.vmName) {
       case NetworkVMType.BITCOIN:
-        return activeAccount?.addressBTC ?? ''
+        return activeAccount?.addressBTC ?? undefined
       case NetworkVMType.AVM:
-        return activeAccount?.addressAVM?.split('-')[1] ?? ''
+        return activeAccount?.addressAVM?.split('-')[1] ?? undefined
       case NetworkVMType.PVM:
-        return activeAccount?.addressPVM?.split('-')[1] ?? ''
+        return activeAccount?.addressPVM?.split('-')[1] ?? undefined
       case NetworkVMType.SVM:
-        return activeAccount?.addressSVM ?? ''
+        return activeAccount?.addressSVM ?? undefined
       case NetworkVMType.EVM:
       default:
-        return activeAccount?.addressC ?? ''
+        return activeAccount?.addressC ?? undefined
     }
   }, [activeAccount, selectedNetwork])
 
@@ -107,7 +116,7 @@ export const ReceiveScreen = (): ReactNode => {
   }, [])
 
   const renderFooter = useCallback(() => {
-    return <AccountAddresses address={address} />
+    return <AccountAddresses address={address ?? ''} />
   }, [address])
 
   return (
@@ -162,9 +171,11 @@ export const ReceiveScreen = (): ReactNode => {
             />
           </TouchableOpacity>
         </View>
-        <View style={{ paddingVertical: 16 }}>
-          <QRCode address={address} />
-        </View>
+        {address && (
+          <View style={{ paddingVertical: 16 }}>
+            <QRCode address={address} />
+          </View>
+        )}
         {isEvm && (
           <>
             <SupportedReceiveEvmTokens
