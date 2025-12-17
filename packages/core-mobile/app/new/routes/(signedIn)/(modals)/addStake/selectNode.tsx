@@ -94,7 +94,7 @@ const StakeSelectNode = (): JSX.Element => {
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="small" />
         </View>
       )
     }
