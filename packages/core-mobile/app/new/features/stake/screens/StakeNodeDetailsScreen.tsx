@@ -4,6 +4,7 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { copyToClipboard } from 'common/utils/clipboard'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
+import { useNodes } from 'hooks/earn/useNodes'
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { getAvailableDelegationWeight } from 'services/earn/utils'
@@ -23,7 +24,8 @@ export const StakeNodeDetails = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { networkToken: pChainNetworkToken } =
     NetworkService.getAvalancheNetworkP(isDeveloperMode)
-  const validator = useGetValidatorByNodeId(nodeId)
+  const { data } = useNodes()
+  const validator = useGetValidatorByNodeId(data?.validators, nodeId)
   const validatorWeight = useMemo(() => {
     if (!validator) return undefined
 

@@ -59,9 +59,12 @@ const StakeSelectNode = (): JSX.Element => {
     [navigate, stakeEndTime]
   )
 
-  const renderItem = ({ item }: { item: NodeValidator }): JSX.Element => {
-    return <NodeItem node={item} onPress={() => handlePressNode(item)} />
-  }
+  const renderItem = useCallback(
+    ({ item }: { item: NodeValidator }): JSX.Element => {
+      return <NodeItem node={item} onPress={() => handlePressNode(item)} />
+    },
+    [handlePressNode]
+  )
 
   const renderHeader = useCallback(() => {
     return (
