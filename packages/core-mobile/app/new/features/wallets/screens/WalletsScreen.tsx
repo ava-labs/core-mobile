@@ -302,7 +302,6 @@ export const WalletsScreen = (): JSX.Element => {
         <WalletCard
           wallet={item}
           isActive={isActive}
-          isFetching={isLoading}
           isRefreshing={isRefreshing}
           isExpanded={isExpanded}
           onToggleExpansion={() => toggleWalletExpansion(item.id)}
@@ -321,7 +320,6 @@ export const WalletsScreen = (): JSX.Element => {
       colors.$surfacePrimary,
       expandedWallets,
       isActiveWalletId,
-      isLoading,
       isRefreshing,
       toggleWalletExpansion
     ]
