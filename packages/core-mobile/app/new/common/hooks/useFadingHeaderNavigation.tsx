@@ -227,20 +227,35 @@ export const useFadingHeaderNavigation = ({
       const nav = hasParent ? navigation.getParent() : navigation
 
       const navigationOptions: NativeStackNavigationOptions = {
-        headerBackground: stableHeaderBackground,
-        headerTitle: showNavigationHeaderTitle ? stableHeaderTitle : undefined,
-        headerRight: renderHeaderRightRef.current
-          ? stableHeaderRight
-          : undefined
+        headerBackground: stableHeaderBackground
       }
 
+      if (showNavigationHeaderTitle) {
+        navigationOptions.headerTitle = stableHeaderTitle
+      }
+
+      // If a custom right header component is provided, set it in the navigation options
+      if (renderHeaderRightRef.current) {
+        navigationOptions.headerRight = stableHeaderRight
+
+        nav?.setOptions(navigationOptions)
+
+        // Clean up the header right component when the screen is unmounted
+        return () => {
+          nav?.setOptions({
+            headerRight: undefined
+          })
+        }
+      }
+
+      // Set the navigation options
       nav?.setOptions(navigationOptions)
 
+      // Clean up navigation options when the screen is unmounted
       return () => {
         nav?.setOptions({
           headerBackground: undefined,
-          headerTitle: undefined,
-          headerRight: undefined
+          headerTitle: undefined
         })
       }
       // Only depend on stable references - runs once on mount/focus
