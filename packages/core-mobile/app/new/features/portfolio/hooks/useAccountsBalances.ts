@@ -23,7 +23,7 @@ const staleTime = 30_000
  * Refetch interval in milliseconds:
  * - 30 seconds
  */
-const refetchInterval = 5_000
+const refetchInterval = 30_000
 
 export const balancesKey = (params: {
   currency: string
@@ -107,11 +107,7 @@ export function useAccountsBalances(
     queryKey,
     enabled: !isNotReady,
     staleTime,
-    initialData: () =>
-      accounts.reduce((acc, account) => {
-        acc[account.id] = []
-        return acc
-      }, {} as Record<AccountId, AdjustedNormalizedBalancesForAccount[]>),
+    refetchOnMount: 'always',
     refetchInterval: options?.refetchInterval ?? refetchInterval,
     queryFn: () =>
       BalanceService.getBalancesForAccounts({
@@ -154,5 +150,5 @@ export function useAccountsBalances(
     )
   }, [accounts, data, enabledNetworks.length])
 
-  return { data, isLoading, isFetching, refetch }
+  return { data: data ?? {}, isLoading, isFetching, refetch }
 }
