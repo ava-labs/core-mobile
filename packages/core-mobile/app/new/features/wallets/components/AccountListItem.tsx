@@ -103,6 +103,7 @@ export const AccountListItem = ({
                 isActive={isActive}
                 balance={balance.balance}
                 isLoading={balance.isLoadingBalance}
+                hasLoaded={balance.hasBalanceData}
                 isAccurate={isBalanceAccurate}
                 variant="skeleton"
               />

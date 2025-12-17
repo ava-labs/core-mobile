@@ -1,8 +1,19 @@
+import { isDefined } from 'common/utils/isDefined'
+import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { selectAccountById } from 'store/account'
-import { selectEnabledNetworks } from 'store/network/slice'
+import { NormalizedBalancesForAccount } from 'services/balance/types'
+import { Account, selectAccountById } from 'store/account'
+import { LocalTokenWithBalance } from 'store/balance'
+import { isTokenVisible } from 'store/balance/utils'
+import {
+  selectEnabledChainIds,
+  selectEnabledNetworks,
+  selectEnabledNetworksMap
+} from 'store/network/slice'
+import { selectTokenVisibility } from 'store/portfolio'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { useAllBalances } from './useAllBalances'
-import { useBalanceTotalInCurrencyForAccount } from './useBalanceTotalInCurrencyForAccount'
 
 /**
  * Returns the total balance and loading state for a given account.
@@ -17,11 +28,13 @@ export const useBalanceInCurrencyForAccount = (
   accountId: string
 ): {
   isLoadingBalance: boolean
+  hasBalanceData: boolean
   balance: number
 } => {
   const account = useSelector(selectAccountById(accountId))
   const enabledNetworks = useSelector(selectEnabledNetworks)
-  const { data: balances, isLoading } = useAllBalances()
+  const { data: balances } = useAllBalances()
+
   const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
     account,
     // TODO: fix type mismatch after fully migrating to the new backend balance types
@@ -34,14 +47,93 @@ export const useBalanceInCurrencyForAccount = (
     if (enabledNetworks.length === 0) return true
     const accountBalances = balances[accountId] ?? []
     return (
-      isLoading ||
       accountBalances.length === 0 ||
       accountBalances.length < enabledNetworks.length
     )
   })()
 
+  const hasBalanceData = (() => {
+    if (!account) return false
+    const accountBalances = balances[accountId] ?? []
+    return accountBalances.length > 0
+  })()
+
   return {
     balance: balanceTotalInCurrency,
+    hasBalanceData,
     isLoadingBalance
   }
+}
+
+function useBalanceTotalInCurrencyForAccount({
+  account,
+  sourceData
+}: {
+  account?: Account
+  sourceData?: NormalizedBalancesForAccount[]
+}): number {
+  const tokenVisibility = useFocusedSelector(selectTokenVisibility)
+  const enabledChainIds = useFocusedSelector(selectEnabledChainIds)
+  const tokens = useTokensWithBalanceForAccount({ account, sourceData })
+
+  return useMemo(() => {
+    if (!account) return 0
+
+    return tokens
+      .filter(
+        token =>
+          isTokenVisible(tokenVisibility, token) &&
+          enabledChainIds.includes(token.networkChainId)
+      )
+      .reduce((acc, token) => acc + (token.balanceInCurrency ?? 0), 0)
+  }, [tokens, tokenVisibility, enabledChainIds, account])
+}
+
+function useTokensWithBalanceForAccount({
+  account,
+  chainId,
+  sourceData
+}: {
+  account?: Account
+  chainId?: number
+  sourceData?: NormalizedBalancesForAccount[]
+}): LocalTokenWithBalance[] {
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const networks = useSelector(selectEnabledNetworksMap)
+
+  const data = sourceData
+
+  // TODO: fix type mismatch after fully migrating to the new backend balance types
+  // @ts-ignore
+  return useMemo(() => {
+    if (!account || !data) return []
+
+    const balancesForAccount = data.filter(
+      balance => balance.accountId === account.id
+    )
+
+    // If chainId provided → return that specific network’s tokens
+    if (chainId) {
+      return (
+        balancesForAccount.find(balance => balance.chainId === chainId)
+          ?.tokens ?? []
+      )
+    }
+
+    // Otherwise, return all tokens matching dev mode (mainnet/testnet)
+    const filteredBalances = balancesForAccount
+      .filter(isDefined)
+      .filter(balance => {
+        const network = networks[balance.chainId]
+        const isTestnet = network?.isTestnet
+        return (
+          (isDeveloperMode && isTestnet) || (!isDeveloperMode && !isTestnet)
+        )
+      })
+
+    // Flatten all tokens into one array
+    // TODO: fix type mismatch after fully migrating to the new backend balance types
+    // @ts-ignore
+    return filteredBalances.flatMap(balance => balance.tokens)
+  }, [account, data, chainId, networks, isDeveloperMode])
 }

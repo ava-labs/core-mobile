@@ -10,7 +10,7 @@ import {
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { useSelector } from 'react-redux'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
@@ -20,12 +20,14 @@ export const AccountBalance = ({
   balance,
   isLoading,
   isAccurate,
+  hasLoaded,
   variant = 'spinner'
 }: {
   isActive: boolean
   balance: number
   isLoading: boolean
   isAccurate: boolean
+  hasLoaded?: boolean
   variant?: 'spinner' | 'skeleton'
   balancesRefetchInterval?: number | false
 }): React.JSX.Element => {
@@ -34,13 +36,6 @@ export const AccountBalance = ({
     theme: { colors, isDark }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
-  const [hasLoaded, setHasLoaded] = useState(false)
-
-  useEffect(() => {
-    if (!isLoading) {
-      setHasLoaded(true)
-    }
-  }, [isLoading])
 
   const accountBalance = useMemo(() => {
     return balance === 0
