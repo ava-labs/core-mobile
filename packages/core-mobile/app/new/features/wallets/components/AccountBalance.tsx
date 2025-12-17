@@ -102,9 +102,7 @@ export const AccountBalance = ({
         minOpacity={0.2}
         maxOpacity={1}
         isLoading={
-          (!hasLoaded && isLoading) ||
-          (hasLoaded && isLoading && !isAccurate) ||
-          isRefreshing
+          (!hasLoaded && isLoading) || (hasLoaded && isLoading && !isAccurate)
         }
         hasError={hasError}>
         <AnimatedBalance

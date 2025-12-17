@@ -11,7 +11,6 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useAllBalances } from 'features/portfolio/hooks/useAllBalances'
 import { useBalanceTotalInCurrencyForWallet } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForWallet'
-import { useWalletBalances } from 'features/portfolio/hooks/useWalletBalances'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { useSelector } from 'react-redux'
@@ -34,7 +33,7 @@ export const WalletBalance = ({
     theme: { colors, isDark }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
-  const { isLoading } = useWalletBalances()
+  const { isLoading } = useAllBalances()
   const balanceTotalInCurrency = useBalanceTotalInCurrencyForWallet(wallet)
 
   const [hasLoaded, setHasLoaded] = useState(false)
