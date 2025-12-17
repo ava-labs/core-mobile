@@ -23,7 +23,7 @@ const staleTime = 30_000
  * Refetch interval in milliseconds:
  * - 30 seconds
  */
-const refetchInterval = 30_000
+const refetchInterval = 5_000
 
 export const balancesKey = (params: {
   currency: string
