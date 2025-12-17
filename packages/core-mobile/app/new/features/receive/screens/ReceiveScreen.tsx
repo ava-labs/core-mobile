@@ -10,6 +10,7 @@ import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { useCombinedPrimaryNetworks } from 'common/hooks/useCombinedPrimaryNetworks'
+import { useHasXpAddresses } from 'common/hooks/useHasXpAddresses'
 import { AccountAddresses } from '../components/AccountAddresses'
 import { QRCode } from '../components/QRCode'
 import { useReceiveSelectedNetwork } from '../store'
@@ -19,7 +20,7 @@ export const ReceiveScreen = (): ReactNode => {
   const { vmName } = useLocalSearchParams<{ vmName: string }>()
   const { theme } = useTheme()
   const { networks } = useCombinedPrimaryNetworks()
-
+  const hasXpAddresses = useHasXpAddresses()
   const [selectedNetwork, setSelectedNetwork] = useReceiveSelectedNetwork()
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -27,15 +28,28 @@ export const ReceiveScreen = (): ReactNode => {
 
   const isEvm = selectedNetwork.vmName === NetworkVMType.EVM
 
+  const evmNetwork = useMemo(() => {
+    return networks.find(n => n.vmName === NetworkVMType.EVM)
+  }, [networks])
+
   useFocusEffect(
     useCallback(() => {
       if (vmName && networks.length > 0) {
         const network = networks.find(
           n => n.vmName.toLowerCase() === vmName.toLowerCase()
         )
+        if (
+          (network?.vmName === NetworkVMType.AVM ||
+            network?.vmName === NetworkVMType.PVM) &&
+          !hasXpAddresses &&
+          evmNetwork
+        ) {
+          setSelectedNetwork(evmNetwork)
+          return
+        }
         if (network) setSelectedNetwork(network)
       }
-    }, [vmName, networks, setSelectedNetwork])
+    }, [vmName, networks, hasXpAddresses, evmNetwork, setSelectedNetwork])
   )
 
   const address = useMemo(() => {
