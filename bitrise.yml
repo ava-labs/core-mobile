@@ -182,22 +182,8 @@ workflows:
             ./gradlew :app:assembleInternalE2e \
               -x lint \
               -x lintVitalAnalyzeInternalE2e
-
-            echo "=== APK outputs ==="
-            find app/build/outputs/apk -type f -name "*.apk"
-
-            APK_PATH=$(find app/build/outputs/apk \
-              -type f \
-              -name "*.apk" \
-              | grep -E 'internal.*e2e' \
-              | grep -v androidTest \
-              | head -n 1)
-
-            if [ -z "$APK_PATH" ]; then
-              echo "APK not found"
-              exit 1
-            fi
-
+            
+            APK_PATH="$ANDROID_PROJECT_LOCATION/app/build/outputs/apk/internal/e2e/app-internal-e2e-unsigned.apk"
             echo "Resolved APK: $APK_PATH"
             envman add --key BITRISE_APK_PATH --value "$APK_PATH"
     - save-gradle-cache@1: {}
@@ -317,6 +303,7 @@ workflows:
               -destination 'generic/platform=iOS Simulator' \
               -derivedDataPath $BITRISE_DEPLOY_DIR/ \
               ONLY_ACTIVE_ARCH=YES \
+              ARCHS=arm64 \
               EXCLUDED_ARCHS[sdk=iphonesimulator*]=x86_64
             APP_PATH="$BITRISE_DEPLOY_DIR/Build/Products/$IOS_CONFIGURATION-iphonesimulator/$IOS_SCHEME.app"
             echo "Built app at: $APP_PATH"
