@@ -1,6 +1,6 @@
 import { View } from '@avalabs/k2-alpine'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   LayoutChangeEvent,
   LayoutRectangle,
@@ -72,9 +72,9 @@ export const useFadingHeaderNavigation = ({
     targetLayoutRef.current = targetLayout
   }, [targetLayout])
 
-  const handleLayout = (event: LayoutChangeEvent): void => {
+  const handleLayout = useCallback((event: LayoutChangeEvent): void => {
     setNavigationHeaderLayout(event.nativeEvent.layout)
-  }
+  }, [])
 
   const handleScroll = (
     event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
@@ -104,11 +104,9 @@ export const useFadingHeaderNavigation = ({
     }
   }
 
-  const headerHeight =
-    targetLayout?.height ?? navigationHeaderLayout?.height ?? 0
-
-  // Animated styles for header transformation
   const animatedHeaderStyle = useAnimatedStyle(() => {
+    const headerHeight =
+      targetLayout?.height ?? navigationHeaderLayout?.height ?? 0
     const translateY = interpolate(
       targetHiddenProgress.value,
       [0, 0.7],
@@ -126,91 +124,150 @@ export const useFadingHeaderNavigation = ({
     }
   })
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
-  useFocusEffect(() => {
-    const navigationOptions: NativeStackNavigationOptions = {
-      headerBackground: () =>
-        hideHeaderBackground ? (
-          // Use a Pressable to receive gesture events for modal gestures
-          <Pressable style={{ flex: 1 }}>
-            {shouldHeaderHaveGrabber === true ? <Grabber /> : null}
-          </Pressable>
-        ) : (
-          <BlurredBackgroundView
-            backgroundColor={backgroundColor}
-            shouldDelayBlurOniOS={shouldDelayBlurOniOS}
-            hasGrabber={shouldHeaderHaveGrabber}
-            separator={
-              hasSeparator
-                ? {
-                    position: 'bottom',
-                    opacity: targetHiddenProgress
-                  }
-                : undefined
-            }
-          />
-        )
-    }
-
-    if (showNavigationHeaderTitle && header) {
-      navigationOptions.headerTitle = () => (
-        <View
-          style={[
-            {
-              justifyContent: 'center',
-              overflow: 'hidden'
-            },
-            Platform.OS === 'ios'
-              ? {
-                  paddingTop: shouldHeaderHaveGrabber ? 4 : 0,
-                  height: '100%'
-                }
-              : {
-                  // Hardcoded value for Android because 100% doesn't work properly
-                  height: 56
-                }
-          ]}>
-          <View onLayout={handleLayout}>
-            <Animated.View style={[animatedHeaderStyle]}>
-              {header}
-            </Animated.View>
-          </View>
-        </View>
-      )
-    }
-
-    // If a custom header right component is provided, set it
-    if (renderHeaderRight) {
-      navigationOptions.headerRight = renderHeaderRight
-
-      if (hasParent) {
-        navigation.getParent()?.setOptions(navigationOptions)
-
-        // Clean up the header right component when the screen is unmounted
-        return () => {
-          navigation.getParent()?.setOptions({
-            headerRight: undefined
-          })
+  const headerBackgroundComponent = useMemo(() => {
+    return hideHeaderBackground ? (
+      // Use a Pressable to receive gesture events for modal gestures
+      <Pressable style={{ flex: 1 }}>
+        {shouldHeaderHaveGrabber === true ? <Grabber /> : null}
+      </Pressable>
+    ) : (
+      <BlurredBackgroundView
+        backgroundColor={backgroundColor}
+        shouldDelayBlurOniOS={shouldDelayBlurOniOS}
+        hasGrabber={shouldHeaderHaveGrabber}
+        separator={
+          hasSeparator
+            ? {
+                position: 'bottom',
+                opacity: targetHiddenProgress
+              }
+            : undefined
         }
-      } else {
-        navigation.setOptions(navigationOptions)
+      />
+    )
+  }, [
+    hideHeaderBackground,
+    shouldHeaderHaveGrabber,
+    backgroundColor,
+    shouldDelayBlurOniOS,
+    hasSeparator,
+    targetHiddenProgress
+  ])
+
+  const headerBackground = useCallback(() => {
+    return headerBackgroundComponent
+  }, [headerBackgroundComponent])
+
+  // Memoize the header title component to prevent unnecessary re-creation
+  // This helps prevent the "child already has a parent" error on Android
+  const headerTitleComponent = useMemo(() => {
+    return (
+      <View
+        style={[
+          {
+            justifyContent: 'center',
+            overflow: 'hidden'
+          },
+          Platform.OS === 'ios'
+            ? {
+                paddingTop: shouldHeaderHaveGrabber ? 4 : 0,
+                height: '100%'
+              }
+            : {
+                // Hardcoded value for Android because 100% doesn't work properly
+                height: 56
+              }
+        ]}>
+        <View onLayout={handleLayout}>
+          <Animated.View style={[animatedHeaderStyle]}>{header}</Animated.View>
+        </View>
+      </View>
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldHeaderHaveGrabber, header, handleLayout])
+
+  // Return a stable function reference that returns the memoized component
+  const headerTitle = useCallback(() => {
+    return headerTitleComponent
+  }, [headerTitleComponent])
+
+  // Use refs to store the latest values - updated via useEffect
+  const headerBackgroundRef = useRef(headerBackground)
+  const headerTitleRef = useRef(headerTitle)
+  const renderHeaderRightRef = useRef(renderHeaderRight)
+
+  useEffect(() => {
+    headerBackgroundRef.current = headerBackground
+  }, [headerBackground])
+
+  useEffect(() => {
+    headerTitleRef.current = headerTitle
+  }, [headerTitle])
+
+  useEffect(() => {
+    renderHeaderRightRef.current = renderHeaderRight
+  }, [renderHeaderRight])
+
+  // Create stable wrapper functions ONCE (outside useFocusEffect)
+  const stableHeaderBackground = useCallback((): React.ReactNode => {
+    return headerBackgroundRef.current()
+  }, [])
+
+  const stableHeaderTitle = useCallback((): React.ReactNode => {
+    return headerTitleRef.current()
+  }, [])
+
+  const stableHeaderRight = useCallback((): React.ReactNode => {
+    return renderHeaderRightRef.current?.()
+  }, [])
+
+  // Set navigation options only once on mount
+  useFocusEffect(
+    useCallback(() => {
+      const nav = hasParent ? navigation.getParent() : navigation
+
+      const navigationOptions: NativeStackNavigationOptions = {
+        headerBackground: stableHeaderBackground
+      }
+
+      if (showNavigationHeaderTitle) {
+        navigationOptions.headerTitle = stableHeaderTitle
+      }
+
+      // If a custom right header component is provided, set it in the navigation options
+      if (renderHeaderRightRef.current) {
+        navigationOptions.headerRight = stableHeaderRight
+
+        nav?.setOptions(navigationOptions)
 
         // Clean up the header right component when the screen is unmounted
         return () => {
-          navigation.setOptions({
+          nav?.setOptions({
             headerRight: undefined
           })
         }
       }
-    }
 
-    // Set the navigation options
-    if (hasParent) {
-      navigation.getParent()?.setOptions(navigationOptions)
-    } else {
-      navigation.setOptions(navigationOptions)
-    }
-  })
+      // Set the navigation options
+      nav?.setOptions(navigationOptions)
+
+      // Clean up navigation options when the screen is unmounted
+      return () => {
+        nav?.setOptions({
+          headerBackground: undefined,
+          headerTitle: undefined
+        })
+      }
+      // Only depend on stable references - runs once on mount/focus
+    }, [
+      hasParent,
+      navigation,
+      stableHeaderBackground,
+      stableHeaderTitle,
+      stableHeaderRight,
+      showNavigationHeaderTitle
+    ])
+  )
 
   return {
     onScroll: handleScroll,

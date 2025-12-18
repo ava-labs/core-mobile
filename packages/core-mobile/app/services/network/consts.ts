@@ -27,6 +27,7 @@ export enum ChainName {
 
 export const AVALANCHE_MAINNET_NETWORK = {
   chainId: ChainId.AVALANCHE_MAINNET_ID,
+  caip2Id: `eip155:${ChainId.AVALANCHE_MAINNET_ID}`,
   chainName: ChainName.AVALANCHE_C_EVM,
   isTestnet: false,
   logoUri:
@@ -43,6 +44,7 @@ export const AVALANCHE_MAINNET_NETWORK = {
 
 export const AVALANCHE_TESTNET_NETWORK = {
   chainId: ChainId.AVALANCHE_TESTNET_ID,
+  caip2Id: `eip155:${ChainId.AVALANCHE_TESTNET_ID}`,
   chainName: ChainName.AVALANCHE_C_EVM_TESTNET,
   isTestnet: true,
   logoUri:

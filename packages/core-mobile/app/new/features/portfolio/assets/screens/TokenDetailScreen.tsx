@@ -78,11 +78,13 @@ import { AVAX_P_ID } from 'services/balance/const'
 import { selectActiveAccount } from 'store/account/slice'
 import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
 import { useIsBalanceAccurateByNetwork } from 'features/portfolio/hooks/useIsBalanceAccurateByNetwork'
+import { useHasXpAddresses } from 'common/hooks/useHasXpAddresses'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const hasXpAddresses = useHasXpAddresses()
   const { navigate } = useRouter()
   const { getNetwork } = useNetworks()
   const { navigateToSwap } = useNavigateToSwap()
@@ -258,7 +260,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       })
     }
 
-    if (isTokenStakable) {
+    if (isTokenStakable && hasXpAddresses) {
       buttons.push({
         title: ActionButtonTitle.Stake,
         icon: 'stake',

@@ -1,28 +1,28 @@
-import { CorePrimaryAccount, CoreAccountType, WalletType } from '@avalabs/types'
+import { CoreAccountType } from '@avalabs/types'
 import {
   BlockchainNamespace,
   AvalancheCaip2ChainId,
   BitcoinCaip2ChainId
 } from '@avalabs/core-chains-sdk'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
+import { Account } from 'store/account'
 import { getAddressWithCaip2ChainId } from './utils'
 
 // Mock data
-const mockAccount: CorePrimaryAccount = {
-  active: true,
+const mockAccount: Account = {
   name: 'aaaa',
   id: '1',
   index: 0,
   type: CoreAccountType.PRIMARY,
-  walletType: WalletType.Mnemonic,
   walletId: 'walletId',
-  walletName: 'walletName',
   addressAVM: 'AVMAddress',
   addressPVM: 'PVMAddress',
   addressBTC: 'BTCAddress',
   addressC: 'CAddress',
   addressCoreEth: 'CoreEthAddress',
-  addressSVM: 'SVMAddress'
+  addressSVM: 'SVMAddress',
+  xpAddresses: [],
+  xpAddressDictionary: {}
 }
 
 describe('getCaip2ChainId', () => {

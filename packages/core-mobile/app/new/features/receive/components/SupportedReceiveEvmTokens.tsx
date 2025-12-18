@@ -46,7 +46,7 @@ export const SupportedReceiveEvmTokens = ({
               justifyContent: 'center',
               alignItems: 'center',
               zIndex: 1 - index,
-              marginRight: -4,
+              marginRight: -2,
               borderRadius: 1000,
               borderWidth: 1,
               borderColor: alpha(colors.$textPrimary, 0.1),

@@ -12,7 +12,6 @@ import { usePChainBalance } from 'hooks/earn/usePChainBalance'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import NetworkService from 'services/network/NetworkService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import useStakingParams from 'hooks/earn/useStakingParams'
@@ -24,25 +23,13 @@ export const Banner = (): JSX.Element | undefined => {
   const isEmpty = !data || data.length === 0
 
   const pChainBalance = usePChainBalance()
-  const cChainBalance = useCChainBalance()
+  const availableInAvax = useCChainBalance()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const cChainNetwork = useCChainNetwork()
   const { networkToken: pChainNetworkToken } =
     NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
-  const availableInAvax = useMemo(() => {
-    return cChainBalance.data?.balance !== undefined && cChainNetwork
-      ? new TokenUnit(
-          cChainBalance.data.balance,
-          cChainNetwork.networkToken.decimals,
-          cChainNetwork.networkToken.symbol
-        )
-      : undefined
-  }, [cChainBalance.data?.balance, cChainNetwork])
-
   const stakedInAvax = useMemo(() => {
-    const unlockedStakedInNAvax =
-      pChainBalance.data?.balancePerType.unlockedStaked
+    const unlockedStakedInNAvax = pChainBalance?.balancePerType.unlockedStaked
     return unlockedStakedInNAvax !== undefined
       ? new TokenUnit(
           unlockedStakedInNAvax,
@@ -51,61 +38,32 @@ export const Banner = (): JSX.Element | undefined => {
         )
       : undefined
   }, [
-    pChainBalance.data?.balancePerType.unlockedStaked,
+    pChainBalance?.balancePerType.unlockedStaked,
     pChainNetworkToken.decimals,
     pChainNetworkToken.symbol
   ])
 
-  const pendingStakedInAvax = useMemo(() => {
-    const pendingStakedInNAvax =
-      pChainBalance.data?.balancePerType.pendingStaked
-    return pendingStakedInNAvax !== undefined
-      ? new TokenUnit(
-          pendingStakedInNAvax,
-          pChainNetworkToken.decimals,
-          pChainNetworkToken.symbol
-        )
-      : undefined
-  }, [
-    pChainBalance.data?.balancePerType.pendingStaked,
-    pChainNetworkToken.decimals,
-    pChainNetworkToken.symbol
-  ])
-
-  const totalStakedInAvax = useMemo(() => {
-    if (pendingStakedInAvax === undefined) {
-      return stakedInAvax
-    }
-
-    if (stakedInAvax === undefined) {
-      return pendingStakedInAvax
-    }
-
-    return stakedInAvax.add(pendingStakedInAvax)
-  }, [stakedInAvax, pendingStakedInAvax])
-
-  const formattedTotalStaked = totalStakedInAvax?.toDisplay({ fixedDp: 2 })
+  const formattedTotalStaked = stakedInAvax?.toDisplay({ fixedDp: 2 })
   const formattedTotalAvailable = useMemo(
-    () =>
-      totalStakedInAvax?.add(availableInAvax ?? 0)?.toDisplay({ fixedDp: 2 }),
-    [availableInAvax, totalStakedInAvax]
+    () => stakedInAvax?.add(availableInAvax ?? 0)?.toDisplay({ fixedDp: 2 }),
+    [availableInAvax, stakedInAvax]
   )
 
   const percentage = useMemo(() => {
     if (
-      totalStakedInAvax === undefined ||
+      stakedInAvax === undefined ||
       availableInAvax === undefined ||
-      totalStakedInAvax.isZero() ||
+      stakedInAvax.isZero() ||
       availableInAvax.isZero()
     ) {
       return 0
     }
 
-    const totalAvailable = totalStakedInAvax.add(availableInAvax)
-    return totalStakedInAvax
+    const totalAvailable = stakedInAvax.add(availableInAvax)
+    return stakedInAvax
       .div(totalAvailable)
       .toDisplay({ fixedDp: 2, asNumber: true })
-  }, [totalStakedInAvax, availableInAvax])
+  }, [stakedInAvax, availableInAvax])
 
   if (isEmpty) {
     return (

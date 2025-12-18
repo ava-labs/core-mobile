@@ -100,7 +100,7 @@ const scheduleNotificationsForActiveStakes = async (
       await EarnService.getTransformedStakesForAllAccounts({
         walletId: activeWallet.id,
         walletType: activeWallet.type,
-        accounts,
+        accounts: Object.values(accounts),
         isTestnet: isDeveloperMode,
         startTimestamp
       })

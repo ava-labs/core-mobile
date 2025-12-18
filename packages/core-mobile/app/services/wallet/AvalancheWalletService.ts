@@ -9,6 +9,7 @@ import { getUnixTime, secondsToMilliseconds } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { PChainId } from '@avalabs/glacier-sdk'
 import { UTCDate } from '@date-fns/utc'
+import { getPvmAddresses } from 'common/utils/getPvmAddresses'
 import {
   AddDelegatorProps,
   CreateExportCTxParams,
@@ -81,11 +82,15 @@ class AvalancheWalletService {
     isTestnet,
     destinationChain,
     destinationAddress,
-    shouldValidateBurnedAmount = true
+    shouldValidateBurnedAmount = true,
+    avalancheEvmProvider
   }: CreateExportCTxParams): Promise<UnsignedTx> {
     const readOnlySigner = await this.getReadOnlySigner(account, isTestnet)
 
-    const nonce = await readOnlySigner.getNonce()
+    // Get nonce from C-Chain EVM provider
+    const evmAddress = readOnlySigner.getAddressEVM()
+
+    const nonce = await avalancheEvmProvider.getTransactionCount(evmAddress)
 
     const unsignedTx = readOnlySigner.exportC(
       amountInNAvax,
@@ -389,7 +394,7 @@ class AvalancheWalletService {
       weight: stakeAmountInNAvax,
       nodeId: 'NodeID-1',
       subnetId: PChainId._11111111111111111111111111111111LPO_YY,
-      fromAddresses: [destinationAddress ?? ''],
+      fromAddresses: getPvmAddresses(account),
       rewardAddresses: [destinationAddress ?? ''],
       start: BigInt(getUnixTime(new Date())),
       // setting this end date here for this dummy tx is okay. since the end date does not add complexity for this tx, so it doesn't affect the txFee that is returned.
@@ -406,10 +411,17 @@ class AvalancheWalletService {
   ): Promise<Avalanche.AddressWallet> {
     const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
 
+    const xpAddr =
+      account.xpAddresses.length > 0
+        ? [...account.xpAddresses]
+            .sort((a, b) => a.index - b.index)
+            .map(xpAddress => stripAddressPrefix(xpAddress.address))
+        : [stripAddressPrefix(account.addressPVM)]
+
     return new Avalanche.AddressWallet(
       account.addressC,
       stripAddressPrefix(account.addressCoreEth),
-      [stripAddressPrefix(account.addressPVM)], // TODO: pass all xpAddresses of the account after xp addresses migration
+      xpAddr,
       stripAddressPrefix(account.addressPVM),
       provXP
     )

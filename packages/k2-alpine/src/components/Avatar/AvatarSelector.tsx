@@ -95,9 +95,11 @@ export const AvatarSelector = ({
       horizontal
       showsHorizontalScrollIndicator={false}
       renderItem={renderItem}
-      windowSize={avatars.length}
+      windowSize={7}
       contentOffset={contentOffset}
-      initialNumToRender={avatars.length}
+      initialNumToRender={12}
+      maxToRenderPerBatch={12}
+      updateCellsBatchingPeriod={50}
       keyExtractor={item => item.id}
       contentContainerStyle={{
         paddingHorizontal: gap - configuration.spacing * 2

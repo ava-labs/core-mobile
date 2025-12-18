@@ -1,14 +1,14 @@
 import { Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { ErrorState } from 'common/components/ErrorState'
-import { ListScreen } from 'common/components/ListScreen'
+import { ListScreen, ListScreenRef } from 'common/components/ListScreen'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import WalletCard from 'common/components/WalletCard'
 import { WalletDisplayData } from 'common/types'
 import { useRouter } from 'expo-router'
 import { useAccountsBalances } from 'features/portfolio/hooks/useAccountsBalances'
 import { useIsAccountsBalanceAccurate } from 'features/portfolio/hooks/useIsAccountsBalancesAccurate'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { RefObject, useCallback, useMemo, useRef, useState } from 'react'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
@@ -38,8 +38,11 @@ export const WalletsScreen = (): JSX.Element => {
     () => Object.values(accountCollection),
     [accountCollection]
   )
-  const { isLoading, refetch } = useAccountsBalances(allAccounts)
+  const { isLoading, refetch } = useAccountsBalances(allAccounts, {
+    refetchInterval: false
+  })
   const isBalanceAccurate = useIsAccountsBalanceAccurate(allAccounts)
+  const listRef = useRef<ListScreenRef<WalletDisplayData>>(null)
 
   const [isRefreshing, setIsRefreshing] = useState(false)
 
@@ -271,10 +274,10 @@ export const WalletsScreen = (): JSX.Element => {
         <WalletCard
           wallet={item}
           isActive={isActive}
+          isRefreshing={isRefreshing}
           isExpanded={isExpanded}
+          balancesRefetchInterval={false}
           onToggleExpansion={() => toggleWalletExpansion(item.id)}
-          // TODO: remove this once we have a way to remove imported wallets
-          showMoreButton={item.id !== IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID}
           style={{
             marginHorizontal: 16,
             marginVertical: 5,
@@ -290,6 +293,7 @@ export const WalletsScreen = (): JSX.Element => {
       colors.$borderPrimary,
       colors.$surfacePrimary,
       expandedWallets,
+      isRefreshing,
       toggleWalletExpansion
     ]
   )
@@ -304,14 +308,16 @@ export const WalletsScreen = (): JSX.Element => {
     )
   }, [])
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(async () => {
     setIsRefreshing(true)
-    refetch()
+    await refetch()
     setIsRefreshing(false)
+    listRef.current?.scrollViewRef?.current?.scrollToOffset({ offset: 0 })
   }, [refetch])
 
   return (
     <ListScreen
+      flatListRef={listRef as RefObject<ListScreenRef<WalletDisplayData>>}
       title="My wallets"
       subtitle={`An overview of your wallets\nand associated accounts`}
       data={walletsDisplayData}
@@ -324,9 +330,11 @@ export const WalletsScreen = (): JSX.Element => {
           progressViewOffset={headerHeight}
         />
       }
+      progressViewOffset={headerHeight}
       renderHeaderRight={renderHeaderRight}
       renderEmpty={renderEmpty}
       renderItem={renderItem}
+      shouldShowStickyHeader={false}
     />
   )
 }

@@ -9,13 +9,13 @@ import { UTCDate } from '@date-fns/utc'
 import { DropdownMenu } from 'common/components/DropdownMenu'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
-import { useDelegationContext } from 'contexts/DelegationContext'
 import { secondsToMilliseconds } from 'date-fns'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { NodeItem } from 'features/stake/components/NodeItem'
 import { useNodeSort } from 'features/stake/hooks/useNodeSort'
 import { useAdvancedSearchNodes } from 'hooks/earn/useAdvancedSearchNodes'
 import { useNodes } from 'hooks/earn/useNodes'
+import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import React, { useCallback, useMemo, useState } from 'react'
 import { AdvancedSortFilter, NodeValidator } from 'types/earn'
 
@@ -24,7 +24,7 @@ const errorIcon = require('../../../../assets/icons/melting_face.png')
 const StakeSelectNode = (): JSX.Element => {
   const { navigate } = useRouter()
 
-  const { stakeAmount } = useDelegationContext()
+  const [stakeAmount] = useStakeAmount()
   const [searchText, setSearchText] = useState('')
   const { stakeEndTime, minUptime, maxDelegationFee } = useLocalSearchParams<{
     stakeEndTime: string
@@ -59,9 +59,12 @@ const StakeSelectNode = (): JSX.Element => {
     [navigate, stakeEndTime]
   )
 
-  const renderItem = ({ item }: { item: NodeValidator }): JSX.Element => {
-    return <NodeItem node={item} onPress={() => handlePressNode(item)} />
-  }
+  const renderItem = useCallback(
+    ({ item }: { item: NodeValidator }): JSX.Element => {
+      return <NodeItem node={item} onPress={() => handlePressNode(item)} />
+    },
+    [handlePressNode]
+  )
 
   const renderHeader = useCallback(() => {
     return (
@@ -91,7 +94,7 @@ const StakeSelectNode = (): JSX.Element => {
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="small" />
         </View>
       )
     }

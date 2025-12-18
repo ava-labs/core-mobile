@@ -18,6 +18,12 @@ export class ActivityService {
   }: GetActivitiesForAccountParams): Promise<ActivityResponse> {
     const address = getAddressByNetwork(account, network)
 
+    if (!address) {
+      throw new Error(
+        `No address found for account on network ${network.vmName}`
+      )
+    }
+
     // Populate network with tokens for SVM networks if needed
     const networkWithTokens = await this.enrichNetworkWithTokens(network)
 

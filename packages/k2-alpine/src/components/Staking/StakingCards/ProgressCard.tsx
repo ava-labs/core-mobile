@@ -48,15 +48,17 @@ export const ProgressCard = ({
 
     const numberOfPoints = 20
     const step = waveWidth / (numberOfPoints - 1)
-    let d = `M 0 ${height} L 0 ${baseHeight}`
+    const points: string[] = [`M 0 ${height} L 0 ${baseHeight}`]
+
     for (let i = 0; i < numberOfPoints; i++) {
       const x = i * step
       const y = baseHeight + A * Math.sin((x / waveWidth) * 2 * Math.PI + φ)
-      d += ` L ${x} ${y}`
+      points.push(`L ${x} ${y}`)
     }
-    d += ` L ${waveWidth} ${height} Z`
 
-    return { d }
+    points.push(`L ${waveWidth} ${height} Z`)
+
+    return { d: points.join(' ') }
   })
 
   useAnimatedReaction(
@@ -107,14 +109,19 @@ export const ProgressCard = ({
   }, [motion])
 
   // update phase when motion is available
+  // throttled to ~30fps to reduce memory pressure from SVG path string generation
   useEffect(() => {
+    if (!motion) return
     let animationFrameId: number
+    let lastFrameTime = 0
 
-    const updatePhase = (): void => {
-      if (motion) {
+    const updatePhase = (currentTime: number): void => {
+      // Only update if enough time has passed since last frame
+      if (motion && currentTime - lastFrameTime >= FRAME_INTERVAL) {
         phase.value =
           ((phase.value + 0.1 * phaseConstant) % (2 * Math.PI)) *
           PHASE_MULTIPLIER
+        lastFrameTime = currentTime
       }
       animationFrameId = requestAnimationFrame(updatePhase)
     }
@@ -181,3 +188,4 @@ const ACCELERATION_MAGNITUDE_THRESHOLD = Platform.OS === 'ios' ? 10.5 : 2
 const AMPLITUDE_MULTIPLIER = Platform.OS === 'ios' ? 1 : 2
 const ROTATION_DIFF_THRESHOLD = 0.1
 const ROTATION_VALUE_THRESHOLD = 1
+const FRAME_INTERVAL = 33 // ~30fps (1000ms / 30 = 33.33ms)

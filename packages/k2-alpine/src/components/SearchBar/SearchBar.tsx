@@ -156,13 +156,12 @@ export const SearchBar: FC<Props> = ({
             autoCapitalize="none"
             ref={textInputRef}
             style={{
-              flex: 1,
               height: '100%',
-              lineHeight: HEIGHT / 2.25,
               color: colors.$textPrimary,
               paddingLeft: 36,
               paddingVertical: 0
             }}
+            numberOfLines={1}
             placeholder={placeholder}
             placeholderTextColor={colors.$textSecondary}
             value={_searchText}

@@ -12,7 +12,20 @@ const testAccount = {
   addressBTC: 'bc1qmm9qawklnfau5hhrkt33kqumggxwy7s9raxuxk',
   addressSVM: '9gQmZ7fTTgv5hVScrr9QqT6SpBs7i4cKLDdj4tuae3sW',
   addressAVM: 'X-avax1aahxdv3wqxd42rxdalvp2knxs244r06wrxmvlf',
-  addressPVM: 'P-avax1aahxdv3wqxd42rxdalvp2knxs244r06wrxmvlf'
+  addressPVM: 'P-avax1aahxdv3wqxd42rxdalvp2knxs244r06wrxmvlf',
+  xpAddresses: [
+    {
+      address: 'X-avax1aahxdv3wqxd42rxdalvp2knxs244r06wrxmvlf',
+      index: 0
+    }
+  ],
+  xpAddressDictionary: {
+    'X-avax1aahxdv3wqxd42rxdalvp2knxs244r06wrxmvlf': {
+      space: 'e' as const,
+      index: 0,
+      hasActivity: true
+    }
+  }
 }
 
 describe('mapBalanceResponseToLegacy', () => {
@@ -594,6 +607,7 @@ describe('mapBalanceResponseToLegacy', () => {
           balanceInCurrency: 1.48,
           available: 108000000n,
           availableInCurrency: 1.48,
+          availableDisplayValue: '0.108',
           utxos: {
             unlocked: [
               {
@@ -679,6 +693,7 @@ describe('mapBalanceResponseToLegacy', () => {
           balanceInCurrency: 1.52,
           change24: 7.04491,
           available: 110964791n,
+          availableDisplayValue: '0.111',
           availableInCurrency: 1.52,
           balancePerType: {
             lockedStaked: 0n,
@@ -726,6 +741,8 @@ describe('mapBalanceResponseToLegacy', () => {
             symbol: 'JUP',
             decimals: 6,
             address: 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',
+            associatedTokenAddress:
+              'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN',
             balance: '5062045',
             logoUri:
               'https://images.ctfassets.net/gcj8jwzm6086/4NKff4tEjKZPR1dxpT81CU/ab04e433eac96bc74365b56b667527b1/JUP-logo.png',
@@ -734,8 +751,7 @@ describe('mapBalanceResponseToLegacy', () => {
             price: 0.248147,
             priceChange24h: 0.01831521,
             priceChangePercentage24h: 7.96896,
-            balanceInCurrency: 1.25613252135,
-            associatedTokenAddress: ''
+            balanceInCurrency: 1.25613252135
           },
           {
             type: 'spl',
@@ -743,6 +759,8 @@ describe('mapBalanceResponseToLegacy', () => {
             symbol: 'POPCAT',
             decimals: 9,
             address: '7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr',
+            associatedTokenAddress:
+              '7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr',
             balance: '9490165425',
             logoUri:
               'https://images.ctfassets.net/gcj8jwzm6086/5IKkI9xMhyXU1YU6nr9246/d5cddb8d365f828a976ef752600507b0/POPCAT-logo.png',
@@ -751,8 +769,7 @@ describe('mapBalanceResponseToLegacy', () => {
             price: 0.105347,
             priceChange24h: 0.00922028,
             priceChangePercentage24h: 9.59178,
-            balanceInCurrency: 0.9997609389900001,
-            associatedTokenAddress: ''
+            balanceInCurrency: 0.9997609389900001
           },
           {
             type: 'spl',
@@ -760,6 +777,8 @@ describe('mapBalanceResponseToLegacy', () => {
             symbol: 'ORCA',
             decimals: 6,
             address: 'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE',
+            associatedTokenAddress:
+              'orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE',
             balance: '899178',
             logoUri:
               'https://images.ctfassets.net/gcj8jwzm6086/3xsLR9NZskV01ADXC6ZCWH/0d0d72eed77f2086afa8c8137a0370c4/ORCA-logo.png',
@@ -768,8 +787,7 @@ describe('mapBalanceResponseToLegacy', () => {
             price: 1.33,
             priceChange24h: 0.066591,
             priceChangePercentage24h: 5.26146,
-            balanceInCurrency: 1.1959094000000001,
-            associatedTokenAddress: ''
+            balanceInCurrency: 1.1959094000000001
           }
         ],
         totalBalanceInCurrency: 27.99514766034

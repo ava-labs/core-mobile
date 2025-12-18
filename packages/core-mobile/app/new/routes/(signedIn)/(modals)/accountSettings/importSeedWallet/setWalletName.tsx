@@ -1,6 +1,7 @@
 import { MINIMUM_MNEMONIC_WORDS } from 'common/consts'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useImportMnemonic } from 'common/hooks/useImportMnemonic'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router'
 import { SetWalletName as Component } from 'features/onboarding/components/SetWalletName'
 import React, { useCallback, useState } from 'react'
@@ -19,6 +20,8 @@ export default function SetWalletName(): JSX.Element {
   const [isCheckingMigration, setIsCheckingMigration] = useState(false)
 
   const handleImport = useCallback(async () => {
+    dismissKeyboardIfNeeded()
+
     setIsCheckingMigration(true)
     const migrator = new KeychainMigrator(activeWallet.id)
     const migrationStatus = await migrator.getMigrationStatus('PIN')

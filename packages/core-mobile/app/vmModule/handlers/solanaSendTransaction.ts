@@ -20,6 +20,10 @@ export const solanaSendTransaction = async ({
   walletType: WalletType
   resolve: (value: ApprovalResponse) => void
 }): Promise<void> => {
+  if (!account.addressSVM) {
+    throw new Error('No SVM address available')
+  }
+
   try {
     const signedTx = await walletService.sign({
       transaction: {

@@ -38,7 +38,7 @@ describe('earn/exportP', () => {
     jest
       .spyOn(AvalancheWalletService, 'createExportPTx')
       .mockImplementation(() => {
-        return Promise.resolve({} as UnsignedTx)
+        return Promise.resolve({ utxos: [] } as unknown as UnsignedTx)
       })
     jest.spyOn(WalletService, 'sign').mockImplementation(() => {
       return Promise.resolve(
@@ -68,7 +68,7 @@ describe('earn/exportP', () => {
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(13 * 10 ** 9, 9, 'AVAX'),
           isTestnet: false,
-          account: {} as Account
+          account: { xpAddresses: [] } as unknown as Account
         })
       }).rejects.toThrow('Not enough balance on P chain')
     })
@@ -81,11 +81,11 @@ describe('earn/exportP', () => {
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
           isTestnet: false,
-          account: {} as Account
+          account: { xpAddresses: [] } as unknown as Account
         })
         expect(AvalancheWalletService.createExportPTx).toHaveBeenCalledWith({
           amountInNAvax: BigInt(10000000000),
-          account: {},
+          account: { xpAddresses: [] } as unknown as Account,
           destinationChain: 'C',
           destinationAddress: undefined,
           feeState: undefined,
@@ -102,7 +102,7 @@ describe('earn/exportP', () => {
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
           isTestnet: false,
-          account: {} as Account
+          account: { xpAddresses: [] } as unknown as Account
         })
         expect(WalletService.sign).toHaveBeenCalled()
       }).not.toThrow()
@@ -116,7 +116,7 @@ describe('earn/exportP', () => {
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
           isTestnet: false,
-          account: {} as Account
+          account: { xpAddresses: [] } as unknown as Account
         })
         expect(NetworkService.sendTransaction).toHaveBeenCalled()
       }).not.toThrow()

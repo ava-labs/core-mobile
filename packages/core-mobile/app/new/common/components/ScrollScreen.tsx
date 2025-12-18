@@ -209,8 +209,8 @@ export const ScrollScreen = ({
         />
       )
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    animatedHeaderStyle,
     headerRef,
     headerHeight,
     headerStyle,
@@ -223,12 +223,10 @@ export const ScrollScreen = ({
   const [showFooter, setShowFooter] = useState(false)
 
   useEffect(() => {
-    if (renderFooter) {
-      requestAnimationFrame(() => {
-        setShowFooter(true)
-      })
+    if (renderFooter && !showFooter) {
+      setShowFooter(true)
     }
-  }, [renderFooter])
+  }, [renderFooter, showFooter])
 
   const renderFooterContent = useCallback(() => {
     if (renderFooter && showFooter) {
@@ -310,7 +308,8 @@ export const ScrollScreen = ({
         </Animated.View>
       </View>
     )
-  }, [headerHeight, animatedBorderStyle])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [headerHeight])
 
   // 90% of our screens reuse this component but only some need keyboard avoiding
   // If you have an input on the screen, you need to enable this prop

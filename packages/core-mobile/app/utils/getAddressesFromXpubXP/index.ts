@@ -1,0 +1,1 @@
+export { getAddressesFromXpubXP } from './getAddressesFromXpubXP'

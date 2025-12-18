@@ -20,7 +20,8 @@ export const AccountListItem = ({
   isActive,
   hideSeparator,
   onPress,
-  onPressDetails
+  onPressDetails,
+  balancesRefetchInterval
 }: {
   testID: string
   account: Account
@@ -29,6 +30,7 @@ export const AccountListItem = ({
   hideSeparator: boolean
   onPress: () => void
   onPressDetails: () => void
+  balancesRefetchInterval?: number | false
 }): JSX.Element => {
   const { theme } = useTheme()
 
@@ -99,6 +101,7 @@ export const AccountListItem = ({
                 variant="skeleton"
                 account={account}
                 isActive={isActive}
+                balancesRefetchInterval={balancesRefetchInterval}
               />
               <TouchableOpacity hitSlop={16} onPress={onPressDetails}>
                 <Icons.Alert.AlertCircle

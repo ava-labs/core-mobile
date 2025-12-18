@@ -21,10 +21,9 @@ const staleTime = 30_000
 
 /**
  * Refetch interval in milliseconds:
- * - 30 seconds in dev mode
- * - 5 seconds in prod mode
+ * - 30 seconds
  */
-const refetchInterval = __DEV__ ? 30_000 : 5_000
+const refetchInterval = 30_000
 
 /**
  * Returns whether all balances for all accounts are inaccurate (dataAccurate === false),
@@ -32,7 +31,7 @@ const refetchInterval = __DEV__ ? 30_000 : 5_000
  */
 export function useAccountsBalances(
   accounts: Account[],
-  options?: { refetchInterval?: number }
+  options?: { refetchInterval?: number | false }
 ): {
   data: Record<AccountId, AdjustedNormalizedBalancesForAccount[]>
   isLoading: boolean
