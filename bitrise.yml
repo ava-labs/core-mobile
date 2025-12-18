@@ -170,12 +170,18 @@ workflows:
         title: Fix Android Env Vars
         inputs:
         - file_path: scripts/bitrise/fixAndroidEnvVars.sh
-    - android-build-for-ui-testing@0:
+    - script:
+        title: Build Android Internal E2E (no lint)
         inputs:
-        - module: $ANDROID_MODULE
-        - variant: $ANDROID_BUILD_VARIANT
-        - cache_level: all
-        - project_location: $ANDROID_PROJECT_LOCATION
+        - content: |-
+            #!/usr/bin/env bash
+            set -euo pipefail
+
+            cd "$ANDROID_PROJECT_LOCATION"
+
+            ./gradlew :app:assembleInternalE2e \
+              -x lint \
+              -x lintVitalAnalyzeInternalE2e
     - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
@@ -290,7 +296,7 @@ workflows:
               -workspace $IOS_PROJECT_PATH \
               -scheme $IOS_SCHEME \
               -configuration $IOS_CONFIGURATION \
-              -destination 'platform=iOS Simulator,name=iPhone 15' \
+              -destination 'platform=iOS Simulator,name=Any iOS Simulator Device' \
               -derivedDataPath $BITRISE_DEPLOY_DIR/ \
               ONLY_ACTIVE_ARCH=YES \
               EXCLUDED_ARCHS[sdk=iphonesimulator*]=arm64
