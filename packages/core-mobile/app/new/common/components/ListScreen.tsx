@@ -381,26 +381,22 @@ export const ListScreen = <T,>({
         </Animated.View>
       </Animated.View>
     )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    animatedHeaderContainerStyle,
     renderHeader,
     headerHeight,
-    animatedHeaderBlurStyle,
     backgroundColor,
     handleContentHeaderLayout,
     title,
     handleTitleLayout,
-    animatedTitleStyle,
     subtitle,
     handleSubtitleLayout,
-    animatedSubtitleStyle,
-    handleRenderHeaderLayout,
-    animatedBorderStyle
+    handleRenderHeaderLayout
   ])
 
   const ListEmptyComponent = useMemo(() => {
     if (renderEmpty) {
-      return <>{renderEmpty()}</>
+      return <View style={{ flex: 1 }}>{renderEmpty()}</View>
     }
     return (
       <ErrorState

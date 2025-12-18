@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import {
   getAdvancedSortedValidators,
@@ -52,41 +53,55 @@ export const useAdvancedSearchNodes = ({
   const { data: peers } = usePeers()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isEndTimeOverOneYear = isOverOneYear(stakingEndTime)
-  const noMatchError = new Error(
-    `no node matches filter criteria: stakingAmount:  ${stakingAmount}, stakingEndTime: ${stakingEndTime}, minUpTime: ${minUpTime}`
-  )
-  const noValidatorsError = new Error(`no validators found.`)
 
-  if (validators && validators.length > 0) {
-    const filteredValidators = getFilteredValidators({
-      isDeveloperMode,
-      validators,
-      stakingAmount,
-      stakingEndTime,
-      minUpTime,
-      maxFee,
-      searchText,
-      isEndTimeOverOneYear
-    })
-    if (filteredValidators.length === 0) {
-      Logger.info(noMatchError.message)
-      return { validators: [], error: noMatchError }
-    }
-
-    // show only the top 5 validators with longest staking end time
-    let matchedValidators = filteredValidators
-    if (isEndTimeOverOneYear) {
-      const sorted = getSortedValidatorsByEndTime(filteredValidators)
-      matchedValidators = sorted.slice(0, 5)
-    }
-
-    const sortedValidators = getAdvancedSortedValidators(
-      matchedValidators,
-      sortFilter ?? AdvancedSortFilter.UpTimeHighToLow,
-      peers
+  return useMemo(() => {
+    const noMatchError = new Error(
+      `no node matches filter criteria: stakingAmount:  ${stakingAmount}, stakingEndTime: ${stakingEndTime}, minUpTime: ${minUpTime}`
     )
-    return { validators: sortedValidators ?? [], error: undefined }
-  }
-  Logger.info(noValidatorsError.message)
-  return { validators: [], error: noValidatorsError }
+    const noValidatorsError = new Error(`no validators found.`)
+
+    if (validators && validators.length > 0) {
+      const filteredValidators = getFilteredValidators({
+        isDeveloperMode,
+        validators,
+        stakingAmount,
+        stakingEndTime,
+        minUpTime,
+        maxFee,
+        searchText,
+        isEndTimeOverOneYear
+      })
+      if (filteredValidators.length === 0) {
+        Logger.info(noMatchError.message)
+        return { validators: [] as never[], error: noMatchError }
+      }
+
+      // show only the top 5 validators with longest staking end time
+      let matchedValidators = filteredValidators
+      if (isEndTimeOverOneYear) {
+        const sorted = getSortedValidatorsByEndTime(filteredValidators)
+        matchedValidators = sorted.slice(0, 5)
+      }
+
+      const sortedValidators = getAdvancedSortedValidators(
+        matchedValidators,
+        sortFilter ?? AdvancedSortFilter.UpTimeHighToLow,
+        peers
+      )
+      return { validators: sortedValidators ?? [], error: undefined }
+    }
+    Logger.info(noValidatorsError.message)
+    return { validators: [] as never[], error: noValidatorsError }
+  }, [
+    validators,
+    stakingAmount,
+    stakingEndTime,
+    minUpTime,
+    maxFee,
+    searchText,
+    sortFilter,
+    isDeveloperMode,
+    isEndTimeOverOneYear,
+    peers
+  ])
 }
