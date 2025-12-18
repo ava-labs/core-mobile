@@ -31,11 +31,15 @@ export const transformKeyInfosToPubKeys = (
   ]
 
   /**
-   *
-   * Step 1:filter out keys that
+   * Step 1: Filter out keys that
    *  1. are not enabled
    *  2. are not in the allowed key types (EVM, AVM, Solana)
    *  3. do not have a derivation path
+   *
+   * NOTE: We handle both old and new derivation path specs simultaneously:
+   * - Old spec: m/44'/coin'/0'/0/addressIndex (all AVA keys map to account 0)
+   * - New spec: m/44'/coin'/account'/0/0 (AVA keys use account index)
+   * No filtering is done here - both specs are processed together
    */
   const filteredKeys = keyInfos?.filter(
     k =>
@@ -128,21 +132,29 @@ export const transformKeyInfosToPubKeys = (
   const allDerivedKeySets = Object.values(keys)
 
   /**
-   * Step 4: Validate key sets
-   * - only keep mnemonic groups where EVERY account has both EVM and Avalanche keys
+   * Step 4: Validate key sets and filter to accounts with EVM keys
+   * - Handle both old and new derivation path specs simultaneously:
+   *   * Old spec AVA keys all map to account 0, so only account 0 will have AVA keys
+   *   * New spec AVA keys map to their account index
+   * - Return accounts that have EVM keys (with or without AVA keys)
+   * - This allows accounts without AVA keys to be included so deriveMissingKeys can add them
+   * - Accounts with both EVM and AVA keys are fully functional
+   * - Accounts with only EVM keys will get AVA keys when deriveMissingKeys is called
    */
-  const validKeySets = allDerivedKeySets.filter(keySet => {
-    return keySet
-      .filter(key => Boolean(key))
-      .every(key => key?.evm && key?.ava.length)
+  const validKeySets = allDerivedKeySets.map(keySet => {
+    // Filter to accounts that have EVM keys (with or without AVA keys)
+    return keySet.filter(key => Boolean(key) && key?.evm)
   })
 
-  if (!validKeySets[0]) {
+  // Find the first keySet that has at least one account with EVM keys
+  const validKeySet = validKeySets.find(keySet => keySet.length > 0)
+
+  if (!validKeySet || validKeySet.length === 0) {
     throw new Error('Accounts keys missing')
   }
 
-  // If there are multiple valid sets, we choose the first one.
-  const derivedKeys = validKeySets[0]
+  // Use accounts that have EVM keys (they may or may not have AVA keys yet)
+  const derivedKeys = validKeySet
   const pubkeys = [] as AddressPublicKey[]
 
   /**
@@ -153,14 +165,12 @@ export const transformKeyInfosToPubKeys = (
    * - return the public key objects
    */
   derivedKeys.forEach(key => {
-    if (!key || !key.ava.length || !key.evm) {
+    if (!key || !key.evm) {
       return
     }
 
-    if (
-      !key.evm.derivation_info?.derivation_path ||
-      key.ava.some(avaKey => !avaKey.derivation_info?.derivation_path)
-    ) {
+    // Always include EVM key
+    if (!key.evm.derivation_info?.derivation_path) {
       throw new Error('Derivation path not found')
     }
 
@@ -170,6 +180,17 @@ export const transformKeyInfosToPubKeys = (
       key: strip0x(key.evm.public_key)
     })
 
+    // Only include AVA keys if they exist (may be empty if deriveMissingKeys hasn't been called yet)
+    if (!key.ava.length) {
+      return
+    }
+
+    // Validate AVA keys have derivation paths
+    if (key.ava.some(avaKey => !avaKey.derivation_info?.derivation_path)) {
+      throw new Error('Derivation path not found')
+    }
+
+    // Include AVA keys
     key.ava.forEach(avaKey => {
       const derivationPath = avaKey.derivation_info?.derivation_path
 
