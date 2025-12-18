@@ -26,6 +26,9 @@ const BlurredBackgroundView = ({
   const animatedBorderStyle = useAnimatedStyle(() => ({
     opacity: separator?.opacity.value
   }))
+  const blurViewStyle = useAnimatedStyle(() => ({
+    opacity: Platform.OS === 'ios' ? separator?.opacity.value : 1
+  }))
   const insets = useSafeAreaInsets()
 
   return (
@@ -43,13 +46,15 @@ const BlurredBackgroundView = ({
         </Animated.View>
       )}
       {hasGrabber === false && (
-        <BlurViewWithFallback
-          backgroundColor={backgroundColor}
-          shouldDelayBlurOniOS={shouldDelayBlurOniOS}
-          style={{
-            flex: 1
-          }}
-        />
+        <Animated.View style={[blurViewStyle, { flex: 1 }]}>
+          <BlurViewWithFallback
+            backgroundColor={backgroundColor}
+            shouldDelayBlurOniOS={shouldDelayBlurOniOS}
+            style={{
+              flex: 1
+            }}
+          />
+        </Animated.View>
       )}
       {hasGrabber === true && <Grabber />}
       {separator?.position === 'bottom' && (
