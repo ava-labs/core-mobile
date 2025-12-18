@@ -171,6 +171,9 @@ const initAccounts = async (
       startIndex: numberOfAccounts
     })
   }
+
+  // migrate XP addresses if needed
+  migrateXpAddressesIfNeeded(_action, listenerApi)
 }
 
 // reload addresses
@@ -276,14 +279,17 @@ const handleInitAccountsIfNeeded = async (
   }
 
   // if there are accounts, we need to migrate them
-  migrateActiveAccountsIfNeeded(_action, listenerApi)
+  await migrateActiveAccountsIfNeeded(_action, listenerApi)
+
+  // migrate XP addresses if needed
+  migrateXpAddressesIfNeeded(_action, listenerApi)
 }
 
 const migrateXpAddressesIfNeeded = async (
   _action: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  if (hasCompletedXpAddressMigration()) {
+  if (hasCompletedXpAddressMigration) {
     Logger.info('XP address migration already completed. Skipping.')
     return
   }
@@ -362,7 +368,7 @@ const populateXpAddressesForWallet = async ({
 }): Promise<AccountCollection> => {
   const updatedAccounts: AccountCollection = {}
 
-  const restrictToFirstIndex = [
+  const isHardwareWallet = [
     WalletType.KEYSTONE,
     WalletType.LEDGER,
     WalletType.LEDGER_LIVE
@@ -378,7 +384,7 @@ const populateXpAddressesForWallet = async ({
       `Processing account ${account.index} (${account.id}) for wallet ${wallet.type}`
     )
 
-    if (restrictToFirstIndex && account.index !== 0) {
+    if (isHardwareWallet && account.index !== 0) {
       Logger.info(
         `Skipping hardware wallet account ${account.index} until device connection`
       )
@@ -475,10 +481,5 @@ export const addAccountListeners = (
   startListening({
     actionCreator: onAppUnlocked,
     effect: migrateSolanaAddressesIfNeeded
-  })
-
-  startListening({
-    actionCreator: onAppUnlocked,
-    effect: migrateXpAddressesIfNeeded
   })
 }
