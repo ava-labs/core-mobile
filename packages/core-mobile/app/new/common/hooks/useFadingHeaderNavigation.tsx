@@ -104,10 +104,9 @@ export const useFadingHeaderNavigation = ({
     }
   }
 
-  const headerHeight =
-    targetLayout?.height ?? navigationHeaderLayout?.height ?? 0
-
   const animatedHeaderStyle = useAnimatedStyle(() => {
+    const headerHeight =
+      targetLayout?.height ?? navigationHeaderLayout?.height ?? 0
     const translateY = interpolate(
       targetHiddenProgress.value,
       [0, 0.7],
@@ -184,62 +183,89 @@ export const useFadingHeaderNavigation = ({
         </View>
       </View>
     )
-  }, [shouldHeaderHaveGrabber, animatedHeaderStyle, header, handleLayout])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldHeaderHaveGrabber, header, handleLayout])
 
   // Return a stable function reference that returns the memoized component
   const headerTitle = useCallback(() => {
     return headerTitleComponent
   }, [headerTitleComponent])
 
+  // Use refs to store the latest values - updated via useEffect
+  const headerBackgroundRef = useRef(headerBackground)
+  const headerTitleRef = useRef(headerTitle)
+  const renderHeaderRightRef = useRef(renderHeaderRight)
+
+  useEffect(() => {
+    headerBackgroundRef.current = headerBackground
+  }, [headerBackground])
+
+  useEffect(() => {
+    headerTitleRef.current = headerTitle
+  }, [headerTitle])
+
+  useEffect(() => {
+    renderHeaderRightRef.current = renderHeaderRight
+  }, [renderHeaderRight])
+
+  // Create stable wrapper functions ONCE (outside useFocusEffect)
+  const stableHeaderBackground = useCallback((): React.ReactNode => {
+    return headerBackgroundRef.current()
+  }, [])
+
+  const stableHeaderTitle = useCallback((): React.ReactNode => {
+    return headerTitleRef.current()
+  }, [])
+
+  const stableHeaderRight = useCallback((): React.ReactNode => {
+    return renderHeaderRightRef.current?.()
+  }, [])
+
+  // Set navigation options only once on mount
   useFocusEffect(
     useCallback(() => {
+      const nav = hasParent ? navigation.getParent() : navigation
+
       const navigationOptions: NativeStackNavigationOptions = {
-        headerBackground
+        headerBackground: stableHeaderBackground
       }
 
-      if (showNavigationHeaderTitle && header) {
-        navigationOptions.headerTitle = headerTitle
+      if (showNavigationHeaderTitle) {
+        navigationOptions.headerTitle = stableHeaderTitle
       }
 
       // If a custom right header component is provided, set it in the navigation options
-      if (renderHeaderRight) {
-        navigationOptions.headerRight = renderHeaderRight
+      if (renderHeaderRightRef.current) {
+        navigationOptions.headerRight = stableHeaderRight
 
-        if (hasParent) {
-          navigation.getParent()?.setOptions(navigationOptions)
+        nav?.setOptions(navigationOptions)
 
-          // Clean up the header right component when the screen is unmounted
-          return () => {
-            navigation.getParent()?.setOptions({
-              headerRight: undefined
-            })
-          }
-        } else {
-          navigation.setOptions(navigationOptions)
-
-          // Clean up the header right component when the screen is unmounted
-          return () => {
-            navigation.setOptions({
-              headerRight: undefined
-            })
-          }
+        // Clean up the header right component when the screen is unmounted
+        return () => {
+          nav?.setOptions({
+            headerRight: undefined
+          })
         }
       }
 
       // Set the navigation options
-      if (hasParent) {
-        navigation.getParent()?.setOptions(navigationOptions)
-      } else {
-        navigation.setOptions(navigationOptions)
+      nav?.setOptions(navigationOptions)
+
+      // Clean up navigation options when the screen is unmounted
+      return () => {
+        nav?.setOptions({
+          headerBackground: undefined,
+          headerTitle: undefined
+        })
       }
+      // Only depend on stable references - runs once on mount/focus
     }, [
-      headerBackground,
-      headerTitle,
-      showNavigationHeaderTitle,
-      header,
-      renderHeaderRight,
       hasParent,
-      navigation
+      navigation,
+      stableHeaderBackground,
+      stableHeaderTitle,
+      stableHeaderRight,
+      showNavigationHeaderTitle
     ])
   )
 
