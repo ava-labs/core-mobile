@@ -17,8 +17,11 @@ export const transformKeyInfosToPubKeys = (
   keyInfos: cs.KeyInfo[]
   // eslint-disable-next-line sonarjs/cognitive-complexity
 ): AddressPublicKey[] => {
-  const requiredKeyTypes: cs.KeyTypeApi[] = [cs.Secp256k1.Evm, cs.Secp256k1.Ava]
-  const optionalKeyTypes: cs.KeyTypeApi[] = [cs.Ed25519.Solana]
+  const requiredKeyTypes: cs.KeyTypeApi[] = [cs.Secp256k1.Evm]
+  const optionalKeyTypes: cs.KeyTypeApi[] = [
+    cs.Ed25519.Solana,
+    cs.Secp256k1.Ava
+  ]
   // Also include testnet Avalanche addresses
   const testnetKeyTypes: cs.KeyTypeApi[] = ['SecpAvaTestAddr' as cs.KeyTypeApi]
   const allowedKeyTypes = [
