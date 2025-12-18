@@ -1,4 +1,4 @@
-import { Account, AccountCollection } from 'store/account/types'
+import { Account } from 'store/account/types'
 import { importPWithBalanceCheck } from 'services/earn/importP'
 import Big from 'big.js'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
@@ -29,8 +29,9 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { AvaxXP } from 'types/AvaxXP'
-import AccountsService from 'services/account/AccountsService'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
+import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP'
+import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -123,7 +124,7 @@ class EarnService {
    *
    * @param pChainBalance
    * @param requiredAmount
-   * @param activeAccount
+   * @param account
    * @param isTestnet
    */
   async claimRewards({
@@ -218,7 +219,7 @@ class EarnService {
   async issueAddDelegatorTransaction({
     walletId,
     walletType,
-    activeAccount,
+    account,
     isTestnet,
     nodeId,
     stakeAmountNanoAvax,
@@ -233,10 +234,10 @@ class EarnService {
     const startDateUnix = getUnixTime(startDate)
     const endDateUnix = getUnixTime(endDate)
     const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isTestnet)
-    const rewardAddress = activeAccount.addressPVM
+    const rewardAddress = account.addressPVM
 
     const unsignedTx = await AvalancheWalletService.createAddDelegatorTx({
-      account: activeAccount,
+      account,
       isTestnet,
       rewardAddress,
       nodeId,
@@ -250,8 +251,15 @@ class EarnService {
     const signedTxJson = await WalletService.sign({
       walletId,
       walletType,
-      transaction: { tx: unsignedTx } as AvalancheTransactionRequest,
-      accountIndex: activeAccount.index,
+      transaction: {
+        tx: unsignedTx,
+        ...getInternalExternalAddrs({
+          utxos: unsignedTx.utxos,
+          xpAddressDict: account.xpAddressDictionary,
+          isTestnet
+        })
+      } as AvalancheTransactionRequest,
+      accountIndex: account.index,
       network: avaxXPNetwork
     })
     const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
@@ -347,7 +355,7 @@ class EarnService {
   }: {
     walletId: string
     walletType: WalletType
-    accounts: AccountCollection
+    accounts: Account[]
     isTestnet: boolean
     startTimestamp?: number
   }): Promise<
@@ -360,30 +368,45 @@ class EarnService {
       }[]
     | undefined
   > => {
-    const accountsArray = Object.values(accounts)
-
     try {
-      const currentNetworkAddresses = accountsArray
-        .map(account => account.addressPVM)
-        .filter((address): address is string => address !== undefined)
-      const currentNetworkTransactions = await getTransformedTransactions(
-        currentNetworkAddresses,
-        isTestnet,
-        startTimestamp
-      )
-
-      const oppositeNetworkAddresses = (
-        await Promise.all(
-          accountsArray.map(account =>
-            AccountsService.getAddresses({
-              walletId,
-              walletType,
-              accountIndex: account.index,
-              isTestnet
-            })
-          )
+      const currentNetworkAddressResults = await Promise.all(
+        accounts.map(account =>
+          getAddressesFromXpubXP({
+            isDeveloperMode: isTestnet,
+            walletId,
+            walletType,
+            accountIndex: account.index,
+            onlyWithActivity: true
+          })
         )
-      ).map(address => address.PVM)
+      )
+      const currentNetworkAddresses = currentNetworkAddressResults
+        .flatMap(address => address.xpAddresses)
+        .map(address => address.address)
+
+      const currentNetworkTransactions =
+        currentNetworkAddresses.length > 0
+          ? await getTransformedTransactions(
+              currentNetworkAddresses,
+              isTestnet,
+              startTimestamp
+            )
+          : []
+
+      const oppositeNetworkAddressResults = await Promise.all(
+        accounts.map(account =>
+          getAddressesFromXpubXP({
+            isDeveloperMode: !isTestnet,
+            walletId,
+            walletType,
+            accountIndex: account.index,
+            onlyWithActivity: true
+          })
+        )
+      )
+      const oppositeNetworkAddresses = oppositeNetworkAddressResults
+        .flatMap(address => address.xpAddresses)
+        .map(address => address.address)
       const oppositeNetworkTransactions = await getTransformedTransactions(
         oppositeNetworkAddresses,
         !isTestnet,
@@ -395,9 +418,7 @@ class EarnService {
         .concat(oppositeNetworkTransactions)
         .flatMap(transaction => {
           // find account that matches the transaction's index
-          const account = accountsArray.find(
-            acc => acc.index === transaction.index
-          )
+          const account = accounts.find(acc => acc.index === transaction.index)
 
           // flat map will remove this
           if (!account) return []

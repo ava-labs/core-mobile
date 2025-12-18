@@ -23,6 +23,7 @@ import {
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { WalletType } from 'services/wallet/types'
 import { DropdownMenu } from './DropdownMenu'
+import { WalletIcon } from './WalletIcon'
 
 const HEADER_HEIGHT = 64
 
@@ -32,14 +33,18 @@ const WalletCard = ({
   isExpanded,
   showMoreButton = true,
   style,
-  onToggleExpansion
+  onToggleExpansion,
+  isRefreshing,
+  balancesRefetchInterval
 }: {
   wallet: WalletDisplayData
   isActive: boolean
   isExpanded: boolean
+  isRefreshing: boolean
   showMoreButton?: boolean
   style?: StyleProp<ViewStyle>
   onToggleExpansion: () => void
+  balancesRefetchInterval?: number | false
 }): React.JSX.Element => {
   const {
     theme: { colors }
@@ -61,29 +66,17 @@ const WalletCard = ({
     )
   }, [colors.$textSecondary, isExpanded])
 
-  const renderWalletIcon = useCallback(() => {
-    if (
-      wallet.type === WalletType.LEDGER ||
-      wallet.type === WalletType.LEDGER_LIVE
-    ) {
-      return <Icons.Custom.Ledger color={colors.$textPrimary} />
-    }
-    if (isExpanded) {
-      return <Icons.Custom.Wallet color={colors.$textPrimary} />
-    }
-    return <Icons.Custom.WalletClosed color={colors.$textPrimary} />
-  }, [colors.$textPrimary, isExpanded, wallet.type])
-
   const renderAccountItem: ListRenderItem<AccountDisplayData> = useCallback(
     ({ item }) => {
       return (
         <AccountListItem
           testID={`manage_accounts_list__${item.account.name}`}
           {...item}
+          balancesRefetchInterval={balancesRefetchInterval}
         />
       )
     },
-    []
+    [balancesRefetchInterval]
   )
 
   const renderEmpty = useCallback(() => {
@@ -110,7 +103,7 @@ const WalletCard = ({
   const animatedContentStyle = useAnimatedStyle(() => {
     return {
       minHeight: withTiming(
-        isExpanded ? contentHeight + HEADER_HEIGHT * 2 : HEADER_HEIGHT,
+        isExpanded ? contentHeight + HEADER_HEIGHT : HEADER_HEIGHT,
         ANIMATED.TIMING_CONFIG
       )
     }
@@ -128,6 +121,7 @@ const WalletCard = ({
         style
       ]}>
       <View
+        onLayout={onContentLayout}
         sx={{
           paddingHorizontal: 10,
           gap: 10,
@@ -139,11 +133,15 @@ const WalletCard = ({
         }}>
         <FlatList
           data={wallet.accounts}
-          onLayout={onContentLayout}
           renderItem={renderAccountItem}
           keyExtractor={item => item.account.id}
           ListEmptyComponent={renderEmpty}
           scrollEnabled={false}
+          style={{
+            // Add 1px padding to the top of the list
+            //  to prevent if the first account is active the background color from being visible
+            paddingTop: 1
+          }}
         />
         {wallet.type !== WalletType.PRIVATE_KEY ? (
           <Button
@@ -195,7 +193,7 @@ const WalletCard = ({
               paddingLeft: 5
             }}>
             {renderExpansionIcon()}
-            {renderWalletIcon()}
+            <WalletIcon wallet={wallet} isExpanded={isExpanded} />
           </View>
           <View
             style={{
@@ -204,13 +202,14 @@ const WalletCard = ({
               gap: 5,
               flex: 1
             }}>
-            <View sx={{ gap: 2 }}>
+            <View>
               <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                 <Text
                   testID={`manage_accounts_wallet_name__${wallet.name}`}
                   variant="heading4"
                   style={{
-                    lineHeight: 24
+                    // this is needed for emojis to be displayed correctly
+                    lineHeight: 27
                   }}
                   numberOfLines={1}>
                   {wallet.name}
@@ -253,7 +252,9 @@ const WalletCard = ({
             balanceSx={{
               color: isActive ? colors.$textPrimary : colors.$textSecondary
             }}
+            isRefreshing={isRefreshing}
             wallet={wallet}
+            balancesRefetchInterval={balancesRefetchInterval}
           />
           {showMoreButton && (
             <DropdownMenu

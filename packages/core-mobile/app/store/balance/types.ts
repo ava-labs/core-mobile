@@ -15,8 +15,7 @@ export const assetPDisplayNames: Record<string, string> = {
   atomicMemoryLocked: 'Atomic memory locked',
   atomicMemoryUnlocked: 'Atomic memory unlocked',
   unlockedUnstaked: 'Unlocked unstaked',
-  unlockedStaked: 'Unlocked staked',
-  pendingStaked: 'Pending staked'
+  unlockedStaked: 'Unlocked staked'
 }
 
 export const assetXDisplayNames: Record<string, string> = {

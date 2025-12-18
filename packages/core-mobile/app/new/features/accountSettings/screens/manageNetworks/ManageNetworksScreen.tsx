@@ -285,7 +285,11 @@ export const ManageNetworksScreen = (): JSX.Element => {
       <NavigationBarButton
         testID="add_network_btn"
         onPress={goToAddCustomNetwork}>
-        <Icons.Content.Add color={theme.colors.$textPrimary} />
+        <Icons.Content.Add
+          width={32}
+          height={32}
+          color={theme.colors.$textPrimary}
+        />
       </NavigationBarButton>
     )
   }, [goToAddCustomNetwork, theme.colors.$textPrimary])

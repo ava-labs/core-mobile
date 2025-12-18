@@ -13,6 +13,7 @@ import { walletGetEthereumChainHandler } from './chain/wallet_getEthereumChain/w
 import { avalancheRenameAccountHandler } from './account/avalanche_renameAccount/avalanche_renameAccount'
 import { walletGetNetworkStateHandler } from './wallet_getNetworkState/wallet_getNetworkState'
 import { avalancheAddAccountHandler } from './account/avalanche_addAccount/avalanche_addAccount'
+import { walletSwitchEthereumChainHandler } from './chain/wallet_switchEthereumChain/wallet_switchEthereumChain'
 
 const handlerMap = [
   avalancheSelectAccountHandler,
@@ -24,6 +25,7 @@ const handlerMap = [
   wcSessionRequestHandler,
   walletAddEthereumChainHandler,
   walletGetEthereumChainHandler,
+  walletSwitchEthereumChainHandler,
   avalancheGetAccountPubKeyHandler,
   avalancheSetDeveloperModeHandler,
   avalancheRenameAccountHandler,

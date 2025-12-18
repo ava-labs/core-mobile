@@ -56,14 +56,11 @@ export async function importC({
     sourceChain: 'P',
     destinationAddress: account.addressC
   })
-
   const signedTxJson = await WalletService.sign({
     walletId,
     walletType,
     transaction: {
-      tx: unsignedTx,
-      externalIndices: [],
-      internalIndices: []
+      tx: unsignedTx
     } as AvalancheTransactionRequest,
     accountIndex: account.index,
     network: avaxXPNetwork

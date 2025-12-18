@@ -57,9 +57,9 @@ export const useClaimFees = (): {
   const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
 
   const totalClaimable = useMemo(() => {
-    return pChainBalance?.data?.balancePerType.unlockedUnstaked
+    return pChainBalance?.balancePerType.unlockedUnstaked
       ? new TokenUnit(
-          pChainBalance.data.balancePerType.unlockedUnstaked,
+          pChainBalance.balancePerType.unlockedUnstaked,
           avaxXPNetwork.networkToken.decimals,
           avaxXPNetwork.networkToken.symbol
         )
@@ -67,9 +67,10 @@ export const useClaimFees = (): {
   }, [
     avaxXPNetwork.networkToken.decimals,
     avaxXPNetwork.networkToken.symbol,
-    pChainBalance?.data?.balancePerType.unlockedUnstaked
+    pChainBalance?.balancePerType.unlockedUnstaked
   ])
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   useEffect(() => {
     const calculateFees = async (): Promise<void> => {
       if (xpProvider === undefined) return
@@ -80,6 +81,7 @@ export const useClaimFees = (): {
       if (!baseFee) throw new Error('No base fee available')
 
       if (!activeAccount) throw new Error('No active account')
+      if (!activeAccount.addressPVM) throw new Error('No PVM address available')
 
       const instantBaseFee = addBufferToCChainBaseFee(
         baseFee,
@@ -102,7 +104,7 @@ export const useClaimFees = (): {
       const { txFee: exportPFee, txAmount: exportPAmount } =
         await getExportPFee({
           amountInNAvax: totalClaimable,
-          activeAccount,
+          activeAccount: activeAccount as PvmCapableAccount, // safe to cast as we have validated the account above
           avaxXPNetwork,
           provider: xpProvider,
           feeState,

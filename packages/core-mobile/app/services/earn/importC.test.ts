@@ -34,7 +34,7 @@ describe('earn/importC', () => {
     jest
       .spyOn(AvalancheWalletService, 'createImportCTx')
       .mockImplementation(() => {
-        return Promise.resolve({} as UnsignedTx)
+        return Promise.resolve({ utxos: [] } as unknown as UnsignedTx)
       })
     jest.spyOn(WalletService, 'sign').mockImplementation(() => {
       return Promise.resolve(
@@ -66,7 +66,7 @@ describe('earn/importC', () => {
       await importC({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        account: {} as Account,
+        account: { xpAddresses: [] } as unknown as Account,
         isTestnet: false,
         cBaseFeeMultiplier: testCBaseFeeMultiplier
       })
@@ -75,7 +75,7 @@ describe('earn/importC', () => {
         sourceChain: 'P',
         destinationAddress: undefined,
         isTestnet: false,
-        account: {} as Account
+        account: { xpAddresses: [] } as unknown as Account
       })
     })
 
@@ -83,7 +83,7 @@ describe('earn/importC', () => {
       await importC({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        account: {} as Account,
+        account: { xpAddresses: [] } as unknown as Account,
         isTestnet: false,
         cBaseFeeMultiplier: testCBaseFeeMultiplier
       })
@@ -94,7 +94,7 @@ describe('earn/importC', () => {
       await importC({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        account: {} as Account,
+        account: { xpAddresses: [] } as unknown as Account,
         isTestnet: false,
         cBaseFeeMultiplier: testCBaseFeeMultiplier
       })

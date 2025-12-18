@@ -1,7 +1,7 @@
-import { Account, AccountCollection } from 'store/account'
+import { Account, AccountCollection, XPAddressDictionary } from 'store/account'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { CoreAccountType } from '@avalabs/types'
+import { AddressIndex, CoreAccountType } from '@avalabs/types'
 import { uuid } from 'utils/uuid'
 import { WalletType } from 'services/wallet/types'
 import { isEvmPublicKey } from 'utils/publicKeys'
@@ -13,6 +13,7 @@ import { AVALANCHE_MAINNET_NETWORK } from 'services/network/consts'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import Logger from 'utils/Logger'
 import { LedgerWallet } from 'services/wallet/LedgerWallet'
+import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 
 class AccountsService {
   /**
@@ -44,6 +45,24 @@ class AccountsService {
         isTestnet
       })
 
+      let xpAddresses: AddressIndex[] = []
+      let xpAddressDictionary: XPAddressDictionary = {} as XPAddressDictionary
+
+      try {
+        const result = await getAddressesFromXpubXP({
+          isDeveloperMode: isTestnet,
+          walletId,
+          walletType,
+          accountIndex: account.index,
+          onlyWithActivity: true
+        })
+
+        xpAddresses = result.xpAddresses
+        xpAddressDictionary = result.xpAddressDictionary
+      } catch (error) {
+        Logger.error('Error getting XP addresses', error)
+      }
+
       const title =
         walletType === WalletType.SEEDLESS
           ? await SeedlessService.getAccountName(account.index)
@@ -60,7 +79,9 @@ class AccountsService {
         addressAVM: addresses[NetworkVMType.AVM],
         addressPVM: addresses[NetworkVMType.PVM],
         addressCoreEth: addresses[NetworkVMType.CoreEth],
-        addressSVM: addresses[NetworkVMType.SVM]
+        addressSVM: addresses[NetworkVMType.SVM],
+        xpAddresses,
+        xpAddressDictionary
       } as Account
     }
     return reloadedAccounts
@@ -120,13 +141,13 @@ class AccountsService {
           isTestnet
         )
 
-        if (evmAddress && btcAddress) {
-          // We can derive EVM and Bitcoin addresses from xpubs
+        // Log if we can derive EVM and Bitcoin addresses from xpubs
+        evmAddress &&
+          btcAddress &&
           Logger.info(`Derived addresses from xpub for account ${index}:`, {
             evm: evmAddress,
             btc: btcAddress
           })
-        }
       }
     }
 
@@ -136,6 +157,24 @@ class AccountsService {
       accountIndex: index,
       isTestnet
     })
+
+    let xpAddresses: AddressIndex[] = []
+    let xpAddressDictionary: XPAddressDictionary = {} as XPAddressDictionary
+
+    try {
+      const result = await getAddressesFromXpubXP({
+        isDeveloperMode: isTestnet,
+        walletId,
+        walletType,
+        accountIndex: index,
+        onlyWithActivity: true
+      })
+
+      xpAddresses = result.xpAddresses
+      xpAddressDictionary = result.xpAddressDictionary
+    } catch (error) {
+      Logger.error('Error getting XP addresses', error)
+    }
 
     Logger.info(`Final addresses for account ${index}:`, addresses)
 
@@ -150,7 +189,9 @@ class AccountsService {
       addressAVM: addresses[NetworkVMType.AVM],
       addressPVM: addresses[NetworkVMType.PVM],
       addressCoreEth: addresses[NetworkVMType.CoreEth],
-      addressSVM: addresses[NetworkVMType.SVM]
+      addressSVM: addresses[NetworkVMType.SVM],
+      xpAddresses,
+      xpAddressDictionary
     }
   }
 

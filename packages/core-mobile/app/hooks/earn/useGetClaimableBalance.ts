@@ -7,26 +7,21 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export const useGetClaimableBalance = (): TokenUnit | undefined => {
   const pChainBalance = usePChainBalance()
-  const unlockedUnstakedNAvax =
-    pChainBalance.data?.balancePerType.unlockedUnstaked
-  const hasErrors = pChainBalance.error || !pChainBalance.data
-  const dataReady = !pChainBalance.isLoading && !hasErrors
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { networkToken } = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
   return useMemo(() => {
-    if (dataReady && unlockedUnstakedNAvax !== undefined) {
+    if (pChainBalance?.balancePerType.unlockedUnstaked !== undefined) {
       return new TokenUnit(
-        unlockedUnstakedNAvax,
+        pChainBalance.balancePerType.unlockedUnstaked,
         networkToken.decimals,
         networkToken.symbol
       )
     }
     return undefined
   }, [
-    dataReady,
     networkToken.decimals,
     networkToken.symbol,
-    unlockedUnstakedNAvax
+    pChainBalance?.balancePerType.unlockedUnstaked
   ])
 }

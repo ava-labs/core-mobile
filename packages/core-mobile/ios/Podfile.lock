@@ -539,7 +539,6 @@ PODS:
     - DoubleConversion
     - glog
     - hermes-engine
-    - NitroModules
     - RCT-Folly (= 2024.11.18.00)
     - RCTRequired
     - RCTTypeSafety
@@ -4052,13 +4051,13 @@ SPEC CHECKSUMS:
   lottie-react-native: 8bc11e10576d1a3f77f4e0ae5b70503c5c890a09
   MultiplatformBleAdapter: b1fddd0d499b96b607e00f0faa8e60648343dc1d
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
-  NitroAvalabsCrypto: 1e5e1dbdc072022443c355b70d6d598841bf8557
+  NitroAvalabsCrypto: 4237a0bbd4ec1061195135beb93a965f1bee18d4
   NitroModules: 0af9a8516f3d8f101976d60e1f34e2a22f401600
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   OpenTelemetrySwiftApi: aaee576ed961e0c348af78df58b61300e95bd104
   PLCrashReporter: db59ef96fa3d25f3650040d02ec2798cffee75f2
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  RCT-Folly: 36fe2295e44b10d831836cc0d1daec5f8abcf809
+  RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
   RCTDeprecation: 5f638f65935e273753b1f31a365db6a8d6dc53b5
   RCTRequired: 8b46a520ea9071e2bc47d474aa9ca31b4a935bd8
   RCTTypeSafety: cc4740278c2a52cbf740592b0a0a40df1587c9ab

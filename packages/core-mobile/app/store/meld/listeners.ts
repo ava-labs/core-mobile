@@ -5,18 +5,14 @@ import NetworkService from 'services/network/NetworkService'
 import { selectEnabledNetworksMap, selectNetwork } from 'store/network'
 import Logger from 'utils/Logger'
 import {
+  Module,
   NetworkTokenWithBalance,
   NetworkVMType,
   TokenWithBalance,
   TokenWithBalanceSVM
 } from '@avalabs/vm-module-types'
 import { send as sendEVM } from 'common/hooks/send/utils/evm/send'
-import {
-  Avalanche,
-  BitcoinProvider,
-  JsonRpcBatchInternal,
-  SolanaProvider
-} from '@avalabs/core-wallets-sdk'
+import { JsonRpcBatchInternal, SolanaProvider } from '@avalabs/core-wallets-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { send as sendSVM } from 'common/hooks/send/utils/svm/send'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -41,7 +37,6 @@ import {
   selectIsEnableMeldSandboxBlocked,
   setFeatureFlags
 } from 'store/posthog/slice'
-import { HyperSDKClient } from 'hypersdk-client'
 import { isAnyOf } from '@reduxjs/toolkit'
 import { onAppUnlocked } from 'store/app'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
@@ -193,12 +188,7 @@ const handleSend = async ({
   destinationWalletAddress: string
   amountTokenUnit: TokenUnit
   chainId: number
-  provider:
-    | JsonRpcBatchInternal
-    | BitcoinProvider
-    | Avalanche.JsonRpcProvider
-    | HyperSDKClient
-    | SolanaProvider
+  provider: Awaited<ReturnType<Module['getProvider']>>
   token: TokenWithBalance
   network: Network
   isDeveloperMode: boolean
@@ -207,11 +197,14 @@ const handleSend = async ({
 
   switch (vmName) {
     case NetworkVMType.EVM: {
+      if (!(provider instanceof JsonRpcBatchInternal)) {
+        throw new Error('Invalid provider type for EVM transaction')
+      }
       txHash = await sendEVM({
         request,
         fromAddress: activeAccount.addressC,
         chainId,
-        provider: provider as JsonRpcBatchInternal,
+        provider,
         token: token as NetworkTokenWithBalance,
         toAddress: destinationWalletAddress,
         amount: amountTokenUnit.toSubUnit(),
@@ -222,6 +215,9 @@ const handleSend = async ({
       break
     }
     case NetworkVMType.SVM: {
+      if (!activeAccount.addressSVM) {
+        throw new Error('SVM address not available for account')
+      }
       txHash = await sendSVM({
         request,
         fromAddress: activeAccount.addressSVM,

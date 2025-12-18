@@ -1,27 +1,19 @@
 import { truncateAddress } from '@avalabs/core-utils-sdk'
-import {
-  Avatar,
-  Icons,
-  SearchBar,
-  Separator,
-  Text,
-  TouchableOpacity,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { SearchBar, View } from '@avalabs/k2-alpine'
+import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { loadAvatar } from 'common/utils/loadAvatar'
 import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
 import React, { useCallback, useMemo, useState } from 'react'
 import { Contact } from 'store/addressBook'
-import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { ListScreen } from './ListScreen'
+import { ListViewItem } from './ListViewItem'
 
 export const ContactList = ({
   contacts,
   title,
   ListHeader,
-  onPress,
   ListEmptyComponent,
+  onPress,
   renderHeaderRight
 }: {
   contacts: Contact[]
@@ -31,9 +23,6 @@ export const ContactList = ({
   ListEmptyComponent?: React.JSX.Element
   renderHeaderRight?: () => React.JSX.Element
 }): React.JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
   const [searchText, setSearchText] = useState('')
 
   const searchResults = useMemo(() => {
@@ -58,85 +47,27 @@ export const ContactList = ({
       const avatar = loadAvatar(item.avatar)
 
       return (
-        <View>
-          <TouchableOpacity
-            sx={{
-              marginTop: 12,
-              marginHorizontal: 16,
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexDirection: 'row'
-            }}
-            onPress={() => onPress(item)}>
-            <View
-              sx={{
-                flex: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginBottom: 12
-              }}>
-              <View
-                sx={{
-                  width: 40,
-                  height: 40
-                }}>
-                <Avatar
-                  backgroundColor="transparent"
-                  size={40}
-                  source={avatar?.source}
-                  hasLoading={false}
-                />
-              </View>
-              <View
-                sx={{
-                  flexGrow: 1,
-                  marginHorizontal: 12,
-                  flexDirection: 'row'
-                }}>
-                <View
-                  sx={{
-                    justifyItems: 'center',
-                    justifyContent: 'center',
-                    width: '90%'
-                  }}>
-                  <Text
-                    variant="buttonMedium"
-                    numberOfLines={1}
-                    sx={{ flex: 1 }}>
-                    {name}
-                  </Text>
-                  {address && (
-                    <Text
-                      testID="contact_preview_address"
-                      variant="body2"
-                      sx={{
-                        lineHeight: 16,
-                        fontSize: 13,
-                        color: '$textSecondary'
-                      }}
-                      ellipsizeMode="tail"
-                      numberOfLines={1}>
-                      {truncateAddress(address, TRUNCATE_ADDRESS_LENGTH)}
-                    </Text>
-                  )}
-                </View>
-              </View>
-            </View>
-            <Icons.Navigation.ChevronRight
-              width={20}
-              height={20}
-              color={colors.$textSecondary}
-            />
-          </TouchableOpacity>
-          {!isLastItem && (
-            <View sx={{ marginLeft: 62 }}>
-              <Separator />
-            </View>
-          )}
-        </View>
+        <ListViewItem
+          avatar={avatar}
+          title={name}
+          subtitle={
+            address
+              ? truncateAddress(address, TRUNCATE_ADDRESS_LENGTH)
+              : undefined
+          }
+          titleProps={{
+            testID: `contact_preview_address`,
+            accessibilityLabel: `contact_preview_address`
+          }}
+          subtitleProps={{
+            variant: 'mono'
+          }}
+          isLast={isLastItem}
+          onPress={() => onPress(item)}
+        />
       )
     },
-    [colors.$textSecondary, onPress, searchResults.length]
+    [onPress, searchResults.length]
   )
 
   const renderHeader = useCallback(() => {
