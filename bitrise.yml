@@ -296,7 +296,7 @@ workflows:
               -workspace $IOS_PROJECT_PATH \
               -scheme $IOS_SCHEME \
               -configuration $IOS_CONFIGURATION \
-              -destination 'platform=iOS Simulator,name=Any iOS Simulator Device' \
+              -destination 'generic/platform=iOS Simulator' \
               -derivedDataPath $BITRISE_DEPLOY_DIR/ \
               ONLY_ACTIVE_ARCH=YES \
               EXCLUDED_ARCHS[sdk=iphonesimulator*]=arm64
