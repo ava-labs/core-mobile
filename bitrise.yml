@@ -182,6 +182,16 @@ workflows:
             ./gradlew :app:assembleInternalE2e \
               -x lint \
               -x lintVitalAnalyzeInternalE2e
+
+            APK_PATH="$ANDROID_PROJECT_LOCATION/app/build/outputs/apk/internalE2e/release/app-internalE2e-release.apk"
+
+            if [ ! -f "$APK_PATH" ]; then
+              echo "APK not found at $APK_PATH"
+              exit 1
+            fi
+
+            echo "Found APK at $APK_PATH"
+            envman add --key BITRISE_APK_PATH --value "$APK_PATH"
     - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
