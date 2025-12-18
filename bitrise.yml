@@ -183,14 +183,22 @@ workflows:
               -x lint \
               -x lintVitalAnalyzeInternalE2e
 
-            APK_PATH="$ANDROID_PROJECT_LOCATION/app/build/outputs/apk/internalE2e/release/app-internalE2e-release.apk"
+            echo "=== APK outputs ==="
+            find app/build/outputs/apk -type f -name "*.apk"
 
-            if [ ! -f "$APK_PATH" ]; then
-              echo "APK not found at $APK_PATH"
+            APK_PATH=$(find app/build/outputs/apk \
+              -type f \
+              -name "*.apk" \
+              | grep -E 'internal.*e2e' \
+              | grep -v androidTest \
+              | head -n 1)
+
+            if [ -z "$APK_PATH" ]; then
+              echo "APK not found"
               exit 1
             fi
 
-            echo "Found APK at $APK_PATH"
+            echo "Resolved APK: $APK_PATH"
             envman add --key BITRISE_APK_PATH --value "$APK_PATH"
     - save-gradle-cache@1: {}
     - sign-apk@1:
