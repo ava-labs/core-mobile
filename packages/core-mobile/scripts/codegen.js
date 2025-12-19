@@ -36,19 +36,7 @@ function main() {
       './node_modules/@openzeppelin/contracts/build/contracts/ERC721.json ' +
       './node_modules/@openzeppelin/contracts/build/contracts/ERC1155.json'
   )
-
-  // glacier API
-  run(
-    `npx openapi-zod-client '${GLACIER_SCHEMA_URL}' ` +
-      "-o './app/utils/apiClient/generated/glacierApi.client.ts'"
-  )
-
-  // token aggregator API
-  run(
-    `npx openapi-zod-client '${TOKEN_AGGREGATOR_SCHEMA_URL}' ` +
-      "-o './app/utils/apiClient/generated/tokenAggregatorApi.client.ts'"
-  )
-
+  
   // profile API (+ patch script)
   run(
     `npx openapi-zod-client '${PROFILE_SCHEMA_URL}' ` +
@@ -61,6 +49,12 @@ function main() {
 
   // balance API
   run('npx @hey-api/openapi-ts -f balance-api.config.js')
+
+  // Glacier API
+  run(`npx openapi-typescript ${GLACIER_SCHEMA_URL} -o ./app/utils/api/generated/glacier/schema.d.ts`)
+
+  // Token Aggregator API
+  run(`npx openapi-typescript ${TOKEN_AGGREGATOR_SCHEMA_URL} -o ./app/utils/api/generated/tokenAggregator/schema.d.ts`)
 }
 
 main()
