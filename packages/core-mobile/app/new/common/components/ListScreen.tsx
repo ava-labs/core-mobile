@@ -146,8 +146,13 @@ export const ListScreen = <T,>({
       header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
       targetLayout,
       shouldHeaderHaveGrabber: isModal,
-      hideHeaderBackground: true,
-      hasSeparator: renderHeader ? false : true,
+      hideHeaderBackground: shouldShowStickyHeader,
+      hasSeparator: shouldShowStickyHeader
+        ? renderHeader
+          ? false
+          : true
+        : true,
+      hasBackgroundAnimation: !shouldShowStickyHeader,
       backgroundColor,
       hasParent,
       showNavigationHeaderTitle,
@@ -226,7 +231,7 @@ export const ListScreen = <T,>({
     return {
       transform: [
         {
-          translateY
+          translateY: shouldShowStickyHeader ? translateY : 0
         }
       ]
     }
@@ -258,14 +263,18 @@ export const ListScreen = <T,>({
     // if we have a background color, we need to animate the opacity of the blur view
     // so that it blends with the background color after scrolling
     return {
-      opacity: backgroundColor ? targetHiddenProgress.value : 1
+      opacity: !shouldShowStickyHeader
+        ? 0
+        : backgroundColor
+        ? targetHiddenProgress.value
+        : 1
     }
   })
 
   const animatedBorderStyle = useAnimatedStyle(() => {
     const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
     return {
-      opacity
+      opacity: shouldShowStickyHeader ? opacity : 0
     }
   })
 
@@ -290,20 +299,24 @@ export const ListScreen = <T,>({
       {
         paddingBottom,
         minHeight:
-          frame.height + contentHeaderHeight + extraPadding - renderHeaderHeight
+          frame.height +
+          contentHeaderHeight +
+          extraPadding -
+          (shouldShowStickyHeader ? renderHeaderHeight : 0)
       }
     ] as StyleProp<ViewStyle>[]
   }, [
-    contentHeaderHeight,
-    data.length,
-    frame.height,
+    keyboard.isVisible,
+    keyboard.height,
     insets.bottom,
     insets.top,
     isModal,
-    keyboard.height,
-    keyboard.isVisible,
-    renderHeaderHeight,
-    props?.contentContainerStyle
+    props?.contentContainerStyle,
+    data.length,
+    frame.height,
+    contentHeaderHeight,
+    shouldShowStickyHeader,
+    renderHeaderHeight
   ])
 
   const ListHeaderComponent = useMemo(() => {
