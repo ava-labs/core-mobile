@@ -152,6 +152,7 @@ export const ListScreen = <T,>({
           ? false
           : true
         : true,
+      hasBackgroundAnimation: !shouldShowStickyHeader,
       backgroundColor,
       hasParent,
       showNavigationHeaderTitle,
