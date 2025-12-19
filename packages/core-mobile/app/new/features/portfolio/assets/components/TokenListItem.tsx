@@ -31,8 +31,7 @@ TokenListItemProps): React.JSX.Element => {
 
   const marketToken = useMarketToken({
     // Only resolve market token when token.change24 is missing
-    token: token.change24 === undefined ? token : undefined,
-    errorContext: 'TokenListItem'
+    token: token.change24 === undefined ? token : undefined
   })
   const percentChange =
     token.change24 ?? marketToken?.priceChangePercentage24h ?? undefined
