@@ -54,6 +54,7 @@ describe('mapBalanceResponseToLegacy', () => {
         },
         totalBalanceInCurrency: 0
       },
+      currency: 'usd',
       error: null
     })
 
@@ -196,6 +197,7 @@ describe('mapBalanceResponseToLegacy', () => {
         ],
         totalBalanceInCurrency: 60.99956975244499
       },
+      currency: 'usd',
       error: null
     })
 
@@ -356,6 +358,7 @@ describe('mapBalanceResponseToLegacy', () => {
         erc20TokenBalances: [],
         totalBalanceInCurrency: 2.5952306
       },
+      currency: 'usd',
       error: null
     })
 
@@ -411,6 +414,7 @@ describe('mapBalanceResponseToLegacy', () => {
         erc20TokenBalances: [],
         totalBalanceInCurrency: 0
       },
+      currency: 'usd',
       error: null
     })
 
@@ -466,6 +470,7 @@ describe('mapBalanceResponseToLegacy', () => {
         erc20TokenBalances: [],
         totalBalanceInCurrency: 0
       },
+      currency: 'usd',
       error: null
     })
 
@@ -521,6 +526,7 @@ describe('mapBalanceResponseToLegacy', () => {
         erc20TokenBalances: [],
         totalBalanceInCurrency: 0
       },
+      currency: 'usd',
       error: null
     })
 
@@ -591,6 +597,7 @@ describe('mapBalanceResponseToLegacy', () => {
         },
         totalBalanceInCurrency: 1.48284
       },
+      currency: 'usd',
       error: null
     })
 
@@ -679,6 +686,7 @@ describe('mapBalanceResponseToLegacy', () => {
         },
         totalBalanceInCurrency: 1.5234808000000002
       },
+      currency: 'usd',
       error: null
     })
 
@@ -801,6 +809,7 @@ describe('mapBalanceResponseToLegacy', () => {
         ],
         totalBalanceInCurrency: 27.99514766034
       },
+      currency: 'usd',
       error: null
     })
 
