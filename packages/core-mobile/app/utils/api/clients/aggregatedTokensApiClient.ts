@@ -14,7 +14,7 @@ if (!Config.TOKEN_AGGREGATOR_URL)
 
 export const tokenAggregatorApi = createClient<paths>({
   baseUrl: Config.TOKEN_AGGREGATOR_URL,
-  fetch: r => nitroFetch(r),
+  fetch: nitroFetch,
   headers: CORE_HEADERS,
   querySerializer: params =>
     queryString.stringify(params, { arrayFormat: 'comma' })

@@ -1,7 +1,17 @@
 import { SimplePriceResponse, TrendingToken } from 'utils/api/types'
 import Config from 'react-native-config'
-import { nitroGET } from '../clients/nitroFetchClient'
-import { WatchListClient } from './watchlistFetchClient'
+import { nitroGET } from '../common/nitroFetchClient'
+
+/**
+ * High-level client interface for watchlist operations
+ * Abstracts away HTTP details and provides typed domain methods
+ */
+export type WatchListClient = {
+  getPrices: (params?: Record<string, never>) => Promise<SimplePriceResponse>
+  getTrendingTokens: (
+    params?: Record<string, never>
+  ) => Promise<TrendingToken[]>
+}
 
 export const createNitroWatchListClient = (
   baseUrl: string

@@ -1,7 +1,6 @@
 import TokenService from 'services/token/TokenService'
 import { transformSparklineData } from 'services/token/utils'
 import { MarketType } from 'store/watchlist'
-import type { AggregatedApiClient } from 'utils/api/fetches/aggregatedTokensFetchClient'
 import WATCHLIST_PRICE from '../token/__mocks__/watchlistPrice.json'
 import ADDITIONAL_WATCHLIST_PRICE from '../token/__mocks__/additionalWatchlistPrice.json'
 
@@ -22,9 +21,6 @@ jest.mock('utils/api/clients/aggregatedTokensApiClient', () => ({
 
 import { WatchlistService } from './WatchlistService'
 
-const mockAggregatedClient: AggregatedApiClient = {
-  getV1watchlistmarkets: jest.fn()
-}
 
 jest.mock('services/token/utils', () => ({
   transformSparklineData: jest.fn()

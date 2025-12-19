@@ -13,27 +13,34 @@ import {
   PriceData,
   Prices
 } from 'store/watchlist/types'
-import {
-  AggregatedApiClient,
-  aggregatedApiClient
-} from 'utils/api/fetches/aggregatedTokensFetchClient'
+import { tokenAggregatorApi } from 'utils/api/clients/aggregatedTokensApiClient'
 import { TrendingToken, WatchlistMarketsResponse } from 'utils/api/types'
 import Logger from 'utils/Logger'
 
 /**
  * Fetches top markets from the token aggregator API
  * @param currency - The currency to fetch markets for
- * @param client - Optional WatchListClient instance for dependency injection
  * @returns Promise resolving to WatchlistMarketsResponse
  */
 const fetchTopMarkets = async ({
   currency,
-  client
 }: {
   currency: string
-  client: AggregatedApiClient
 }): Promise<WatchlistMarketsResponse> => {
-  return client.getV1watchlistmarkets(currency)
+    const { data, error } = await tokenAggregatorApi.GET('/v1/watchlist/markets', {
+      params: {
+        query: {
+          currency,
+          topMarkets: true
+        }
+      }
+    })
+
+    if (error) {
+      throw error
+    }
+
+    return data
 }
 
 /*
@@ -51,18 +58,13 @@ const fetchTopMarkets = async ({
   Pass a custom WatchListClient to the constructor or use the default singleton.
 */
 class WatchlistService {
-  private client: AggregatedApiClient
 
-  constructor(client: AggregatedApiClient = aggregatedApiClient) {
-    this.client = client
-  }
   async getTopTokens(currency: string): Promise<{
     tokens: Record<string, MarketToken>
     charts: Charts
   }> {
     const topMarkets = await fetchTopMarkets({
       currency: currency.toLowerCase(),
-      client: this.client
     })
 
     const tokens: Record<string, MarketToken> = {}

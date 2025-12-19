@@ -13,7 +13,6 @@ import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
 import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
 import { AvaxXP } from 'types/AvaxXP'
-import { glacierApiClient } from 'utils/api/fetches/glacierFetchClient'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP'
 import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
@@ -22,7 +21,7 @@ import { info, pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { SortOrder, PChainTransaction } from '@avalabs/glacier-sdk'
+import { SortOrder, PChainTransaction, BlockchainId, PChainTransactionType, Network as GlacierNetwork } from '@avalabs/glacier-sdk'
 import { Seconds } from 'types/siUnits'
 import { isOnGoing } from 'utils/earn/status'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
@@ -31,6 +30,7 @@ import {
   maxGetAtomicUTXOsRetries,
   maxTransactionStatusCheckRetries
 } from './utils'
+import { glacierApi } from 'utils/api/clients/glacierApiClient'
 
 class EarnService {
   /**
@@ -311,12 +311,39 @@ class EarnService {
     startTimestamp?: number
     sortOrder?: SortOrder
   }): Promise<PChainTransaction[]> => {
-    return glacierApiClient.listLatestPrimaryNetworkTransactions({
-      isTestnet,
-      addresses,
-      startTimestamp,
-      sortOrder
-    })
+    const addressesStr = addresses.join(',')
+    let pageToken: string | undefined
+    const transactions: PChainTransaction[] = []
+
+    do {
+      const { data } = await glacierApi.GET(
+        '/v1/networks/{network}/blockchains/{blockchainId}/transactions',
+        {
+          params: {
+            path: {
+              network: isTestnet ? GlacierNetwork.FUJI : GlacierNetwork.MAINNET,
+              blockchainId: BlockchainId.P_CHAIN
+            },
+            query: {
+              addresses: addressesStr,
+              pageSize: 100,
+              sortOrder,
+              pageToken,
+              txTypes: [
+                PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX,
+                PChainTransactionType.ADD_DELEGATOR_TX
+              ],
+              startTimestamp
+            }
+          }
+        }
+      )
+
+      pageToken = data?.nextPageToken
+      transactions.push(...(data?.transactions as PChainTransaction[]))
+    } while (pageToken)
+
+    return transactions
   }
 
   getTransformedStakesForAllAccounts = async ({

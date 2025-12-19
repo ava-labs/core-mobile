@@ -14,7 +14,7 @@ if (!Config.GLACIER_URL)
 
 export const glacierApi = createClient<paths>({
   baseUrl: Config.GLACIER_URL,
-  fetch: r => nitroFetch(r),
+  fetch: nitroFetch,
   headers: CORE_HEADERS,
   querySerializer: params =>
     queryString.stringify(params, { arrayFormat: 'comma' })
