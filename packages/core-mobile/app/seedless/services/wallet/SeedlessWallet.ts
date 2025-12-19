@@ -159,67 +159,15 @@ export default class SeedlessWallet implements Wallet {
   }
 
   public async deriveMissingKeys(): Promise<void> {
-    console.log('[SeedlessWallet.deriveMissingKeys] Starting')
-    try {
-      console.log('[SeedlessWallet.deriveMissingKeys] Getting identity proof')
-      const identityProof = await this.#client.apiClient.identityProve()
-      console.log(
-        '[SeedlessWallet.deriveMissingKeys] Got identity proof',
-        JSON.stringify(
-          {
-            hasIdentityProof: !!identityProof
-          },
-          null,
-          2
-        )
-      )
+    const identityProof = await this.#client.apiClient.identityProve()
+    const mnemonicId = await this.getMnemonicId()
 
-      console.log('[SeedlessWallet.deriveMissingKeys] Getting mnemonic ID')
-      const mnemonicId = await this.getMnemonicId()
-      console.log(
-        '[SeedlessWallet.deriveMissingKeys] Got identity proof and mnemonic ID',
-        JSON.stringify(
-          {
-            mnemonicId
-          },
-          null,
-          2
-        )
-      )
+    await CoreSeedlessAPIService.deriveMissingKeys({
+      identityProof,
+      mnemonicId
+    })
 
-      console.log(
-        '[SeedlessWallet.deriveMissingKeys] Calling CoreSeedlessAPIService.deriveMissingKeys'
-      )
-      await CoreSeedlessAPIService.deriveMissingKeys({
-        identityProof,
-        mnemonicId
-      })
-      console.log(
-        '[SeedlessWallet.deriveMissingKeys] deriveMissingKeys API call completed successfully'
-      )
-
-      console.log(
-        '[SeedlessWallet.deriveMissingKeys] Calling refreshPublicKeys after deriving keys'
-      )
-      await SeedlessService.refreshPublicKeys()
-      console.log(
-        '[SeedlessWallet.deriveMissingKeys] refreshPublicKeys completed successfully'
-      )
-      console.log('[SeedlessWallet.deriveMissingKeys] Completed successfully')
-    } catch (error) {
-      console.log(
-        '[SeedlessWallet.deriveMissingKeys] Failed',
-        JSON.stringify(
-          {
-            error: error instanceof Error ? error.message : String(error),
-            stack: error instanceof Error ? error.stack : undefined
-          },
-          null,
-          2
-        )
-      )
-      throw error
-    }
+    await SeedlessService.refreshPublicKeys()
   }
 
   /** WALLET INTERFACE IMPLEMENTATION **/

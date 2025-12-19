@@ -71,7 +71,6 @@ export function getAddressByNetwork(
 export const deriveMissingSeedlessSessionKeys = async (
   walletId: string
 ): Promise<void> => {
-  Logger.info('[deriveMissingSeedlessSessionKeys] Starting', { walletId })
   const wallet = await WalletFactory.createWallet({
     walletId,
     walletType: WalletType.SEEDLESS
@@ -81,24 +80,14 @@ export const deriveMissingSeedlessSessionKeys = async (
       transactionSnackbar.pending({ message: 'Updating accounts...' })
 
       // prompt Core Seedless API to derive missing keys
-      Logger.info(
-        '[deriveMissingSeedlessSessionKeys] Calling wallet.deriveMissingKeys()'
-      )
       await wallet.deriveMissingKeys()
-      Logger.info(
-        '[deriveMissingSeedlessSessionKeys] deriveMissingKeys completed successfully'
-      )
 
       transactionSnackbar.success({ message: 'Accounts updated' })
     } catch (error) {
-      Logger.error(
-        '[deriveMissingSeedlessSessionKeys] Failed to derive missing keys',
-        error
-      )
+      Logger.error('Failed to derive missing keys', error)
       transactionSnackbar.error({
         error: 'Failed to update accounts'
       })
-      throw error
     }
   }
 }

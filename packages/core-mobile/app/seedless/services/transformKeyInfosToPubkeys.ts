@@ -17,20 +17,6 @@ export const transformKeyInfosToPubKeys = (
   keyInfos: cs.KeyInfo[]
   // eslint-disable-next-line sonarjs/cognitive-complexity
 ): AddressPublicKey[] => {
-  console.log(
-    '[transformKeyInfosToPubKeys] Starting',
-    JSON.stringify(
-      {
-        totalKeyInfos: keyInfos?.length || 0,
-        keyTypes: keyInfos?.map(k => k.key_type)
-      },
-      null,
-      2
-    )
-  )
-
-  console.log('keyInfos', JSON.stringify(keyInfos, null, 2))
-
   const requiredKeyTypes: cs.KeyTypeApi[] = [cs.Secp256k1.Evm]
   const optionalKeyTypes: cs.KeyTypeApi[] = [
     cs.Ed25519.Solana,
@@ -60,21 +46,6 @@ export const transformKeyInfosToPubKeys = (
       k.enabled &&
       allowedKeyTypes.includes(k.key_type) &&
       k.derivation_info?.derivation_path
-  )
-
-  console.log(
-    '[transformKeyInfosToPubKeys] After filtering',
-    JSON.stringify(
-      {
-        filteredKeysCount: filteredKeys?.length || 0,
-        filteredKeyTypes: filteredKeys?.map(k => k.key_type),
-        filteredDerivationPaths: filteredKeys?.map(
-          k => k.derivation_info?.derivation_path
-        )
-      },
-      null,
-      2
-    )
   )
 
   /**
@@ -154,47 +125,7 @@ export const transformKeyInfosToPubKeys = (
     return acc
   }, {} as Record<string, AccountKeySet[]>)
 
-  console.log(
-    '[transformKeyInfosToPubKeys] After reduce',
-    JSON.stringify(
-      {
-        mnemonicIds: Object.keys(keys),
-        accountsPerMnemonic: Object.entries(keys).map(
-          ([mnemonicId, accounts]) => ({
-            mnemonicId,
-            accountCount: accounts.filter(Boolean).length,
-            accounts: accounts
-              .map((acc, idx) =>
-                acc
-                  ? {
-                      index: idx,
-                      hasEVM: !!acc.evm,
-                      hasAVA: acc.ava.length > 0,
-                      avaCount: acc.ava.length,
-                      hasSolana: !!acc.solana
-                    }
-                  : null
-              )
-              .filter(Boolean)
-          })
-        )
-      },
-      null,
-      2
-    )
-  )
-
   if (!keys || Object.keys(keys).length === 0) {
-    console.log(
-      '[transformKeyInfosToPubKeys] Reduce returned empty object',
-      JSON.stringify(
-        {
-          filteredKeysCount: filteredKeys?.length || 0
-        },
-        null,
-        2
-      )
-    )
     throw new Error('Accounts not created')
   }
 
@@ -218,51 +149,7 @@ export const transformKeyInfosToPubKeys = (
   // Find the first keySet that has at least one account with EVM keys
   const validKeySet = validKeySets.find(keySet => keySet.length > 0)
 
-  console.log(
-    '[transformKeyInfosToPubKeys] After validation',
-    JSON.stringify(
-      {
-        validKeySetsCount: validKeySets.filter(ks => ks.length > 0).length,
-        validKeySetLength: validKeySet?.length || 0,
-        validAccounts: validKeySet?.map((acc, idx) => ({
-          index: idx,
-          hasEVM: !!acc.evm,
-          hasAVA: acc.ava.length > 0,
-          evmPath: acc.evm?.derivation_info?.derivation_path,
-          avaPaths: acc.ava.map(a => a.derivation_info?.derivation_path)
-        }))
-      },
-      null,
-      2
-    )
-  )
-
   if (!validKeySet || validKeySet.length === 0) {
-    console.log(
-      '[transformKeyInfosToPubKeys] No valid key set found',
-      JSON.stringify(
-        {
-          allDerivedKeySetsCount: allDerivedKeySets.length,
-          validKeySetsDetails: validKeySets.map((ks, idx) => ({
-            keySetIndex: idx,
-            length: ks.length,
-            accounts: ks
-              .map((acc, accIdx) =>
-                acc
-                  ? {
-                      accountIndex: accIdx,
-                      hasEVM: !!acc.evm,
-                      hasAVA: acc.ava.length > 0
-                    }
-                  : null
-              )
-              .filter(Boolean)
-          }))
-        },
-        null,
-        2
-      )
-    )
     throw new Error('Accounts keys missing')
   }
 
@@ -327,26 +214,9 @@ export const transformKeyInfosToPubKeys = (
     }
   })
 
-  console.log(
-    '[transformKeyInfosToPubKeys] Final pubkeys',
-    JSON.stringify(
-      {
-        pubkeysCount: pubkeys.length,
-        pubkeys: pubkeys.map(pk => ({
-          derivationPath: pk.derivationPath,
-          curve: pk.curve
-        }))
-      },
-      null,
-      2
-    )
-  )
-
   if (!pubkeys?.length) {
-    console.log('[transformKeyInfosToPubKeys] No pubkeys generated')
     throw new Error('Address not found')
   }
 
-  console.log('[transformKeyInfosToPubKeys] Completed successfully')
   return pubkeys
 }

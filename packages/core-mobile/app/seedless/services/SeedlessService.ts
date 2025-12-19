@@ -31,43 +31,13 @@ class SeedlessService {
   }
 
   async refreshPublicKeys(): Promise<void> {
-    console.log('[SeedlessService.refreshPublicKeys] Starting')
     this.invalidateSessionKeysCache()
 
     const allKeys = await this.getSessionKeysList()
-    console.log(
-      '[SeedlessService.refreshPublicKeys] Retrieved keys from session',
-      JSON.stringify(
-        {
-          totalKeys: allKeys.length,
-          keyTypes: allKeys.map(k => k.key_type),
-          enabledKeys: allKeys.filter(k => k.enabled).length,
-          keysWithDerivationPath: allKeys.filter(
-            k => k.derivation_info?.derivation_path
-          ).length
-        },
-        null,
-        2
-      )
-    )
 
-    console.log(
-      '[SeedlessService.refreshPublicKeys] Calling transformKeyInfosToPubKeys'
-    )
     const pubKeys = transformKeyInfosToPubKeys(allKeys)
-    console.log(
-      '[SeedlessService.refreshPublicKeys] transformKeyInfosToPubKeys completed',
-      JSON.stringify(
-        {
-          pubKeysCount: pubKeys.length
-        },
-        null,
-        2
-      )
-    )
-    console.log('saving public keys')
+    Logger.info('saving public keys')
     await SeedlessPubKeysStorage.save(pubKeys)
-    console.log('[SeedlessService.refreshPublicKeys] Completed successfully')
   }
 
   /**
