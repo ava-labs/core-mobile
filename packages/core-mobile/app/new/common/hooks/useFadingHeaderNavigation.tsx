@@ -23,8 +23,8 @@ import Animated, {
  */
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
-import { Pressable } from 'react-native-gesture-handler'
 import Grabber from 'common/components/Grabber'
+import { Pressable } from 'react-native-gesture-handler'
 
 export const useFadingHeaderNavigation = ({
   header,
@@ -36,7 +36,8 @@ export const useFadingHeaderNavigation = ({
   shouldDelayBlurOniOS = false,
   hasParent = false,
   renderHeaderRight,
-  showNavigationHeaderTitle = true
+  showNavigationHeaderTitle = true,
+  hasBackgroundAnimation = false
 }: {
   header?: React.ReactNode
   targetLayout?: LayoutRectangle
@@ -48,6 +49,7 @@ export const useFadingHeaderNavigation = ({
   renderHeaderRight?: () => React.ReactNode
   showNavigationHeaderTitle?: boolean
   backgroundColor?: string
+  hasBackgroundAnimation?: boolean
 }): {
   onScroll: (
     event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
@@ -135,6 +137,7 @@ export const useFadingHeaderNavigation = ({
         backgroundColor={backgroundColor}
         shouldDelayBlurOniOS={shouldDelayBlurOniOS}
         hasGrabber={shouldHeaderHaveGrabber}
+        hasAnimation={hasBackgroundAnimation}
         separator={
           hasSeparator
             ? {
@@ -150,6 +153,7 @@ export const useFadingHeaderNavigation = ({
     shouldHeaderHaveGrabber,
     backgroundColor,
     shouldDelayBlurOniOS,
+    hasBackgroundAnimation,
     hasSeparator,
     targetHiddenProgress
   ])

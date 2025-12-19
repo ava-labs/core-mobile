@@ -13,7 +13,8 @@ const BlurredBackgroundView = ({
   hasGrabber = false,
   separator,
   shouldDelayBlurOniOS = false,
-  backgroundColor
+  backgroundColor,
+  hasAnimation = false
 }: {
   hasGrabber?: boolean
   separator?: {
@@ -22,9 +23,14 @@ const BlurredBackgroundView = ({
   }
   shouldDelayBlurOniOS?: boolean
   backgroundColor?: string
+  hasAnimation?: boolean
 }): JSX.Element => {
   const animatedBorderStyle = useAnimatedStyle(() => ({
     opacity: separator?.opacity.value
+  }))
+  const blurViewStyle = useAnimatedStyle(() => ({
+    opacity:
+      Platform.OS === 'ios' && hasAnimation ? separator?.opacity.value : 1
   }))
   const insets = useSafeAreaInsets()
 
@@ -43,13 +49,15 @@ const BlurredBackgroundView = ({
         </Animated.View>
       )}
       {hasGrabber === false && (
-        <BlurViewWithFallback
-          backgroundColor={backgroundColor}
-          shouldDelayBlurOniOS={shouldDelayBlurOniOS}
-          style={{
-            flex: 1
-          }}
-        />
+        <Animated.View style={[blurViewStyle, { flex: 1 }]}>
+          <BlurViewWithFallback
+            backgroundColor={backgroundColor}
+            shouldDelayBlurOniOS={shouldDelayBlurOniOS}
+            style={{
+              flex: 1
+            }}
+          />
+        </Animated.View>
       )}
       {hasGrabber === true && <Grabber />}
       {separator?.position === 'bottom' && (
