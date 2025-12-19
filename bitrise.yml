@@ -198,8 +198,8 @@ workflows:
         - private_key_password: $ANDROID_KEY_PASSWORD
     - deploy-to-bitrise-io@2:
         inputs:
-        - files_to_deploy: |-
-            $BITRISE_APK_PATH
+        - pipeline_intermediate_files: |-
+            $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
     - share-pipeline-variable@1:
         inputs:
         - variables: |-
