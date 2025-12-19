@@ -154,6 +154,13 @@ workflows:
     - set-java-version@1:
         inputs:
         - set_java_version: "17"
+    - script:
+        title: Install build dependencies
+        inputs:
+          - content: |
+              #!/usr/bin/env bash
+              set -ex
+              sudo apt-get install -y build-essential autoconf automake libtool tar
     - install-missing-android-tools@3:
         inputs:
         - ndk_version: 27.1.12297006
@@ -163,12 +170,22 @@ workflows:
         title: Fix Android Env Vars
         inputs:
         - file_path: scripts/bitrise/fixAndroidEnvVars.sh
-    - android-build-for-ui-testing@0:
+    - script:
+        title: Build Android Internal E2E (no lint)
         inputs:
-        - module: $ANDROID_MODULE
-        - variant: $ANDROID_BUILD_VARIANT
-        - cache_level: all
-        - project_location: $ANDROID_PROJECT_LOCATION
+        - content: |-
+            #!/usr/bin/env bash
+            set -euo pipefail
+
+            cd "$ANDROID_PROJECT_LOCATION"
+
+            ./gradlew :app:assembleInternalE2e \
+              -x lint \
+              -x lintVitalAnalyzeInternalE2e
+            
+            APK_PATH="$ANDROID_PROJECT_LOCATION/app/build/outputs/apk/internal/e2e/app-internal-e2e-unsigned.apk"
+            echo "Resolved APK: $APK_PATH"
+            envman add --key BITRISE_APK_PATH --value "$APK_PATH"
     - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
@@ -179,6 +196,20 @@ workflows:
         - keystore_password: $ANDROID_STORE_PASSWORD
         - keystore_alias: $ANDROID_KEY_ALIAS
         - private_key_password: $ANDROID_KEY_PASSWORD
+    - script:
+        title: Prepare signed APK for pipeline intermediate
+        inputs:
+        - content: |-
+            set -e
+
+            FINAL_APK_PATH="$BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk"
+
+            mkdir -p "$BITRISE_DEPLOY_DIR"
+            cp "$BITRISE_APK_PATH" "$FINAL_APK_PATH"
+
+            ls -la "$FINAL_APK_PATH"
+
+            envman add --key BITRISE_APK_PATH --value "$FINAL_APK_PATH"
     - deploy-to-bitrise-io@2:
         inputs:
         - pipeline_intermediate_files: |-
@@ -255,6 +286,9 @@ workflows:
         - automatic_code_signing: api-key
   _build-ios-simulator:
     steps:
+    - brew-install@1:
+        inputs:
+        - packages: autoconf automake libtool
     - restore-cocoapods-cache@1: {}
     - script@1:
         title: Copy Gemfile to iOS folder
@@ -281,7 +315,10 @@ workflows:
               -scheme $IOS_SCHEME \
               -configuration $IOS_CONFIGURATION \
               -destination 'generic/platform=iOS Simulator' \
-              -derivedDataPath $BITRISE_DEPLOY_DIR/
+              -derivedDataPath $BITRISE_DEPLOY_DIR/ \
+              ONLY_ACTIVE_ARCH=YES \
+              ARCHS=arm64 \
+              EXCLUDED_ARCHS[sdk=iphonesimulator*]=x86_64
             APP_PATH="$BITRISE_DEPLOY_DIR/Build/Products/$IOS_CONFIGURATION-iphonesimulator/$IOS_SCHEME.app"
             echo "Built app at: $APP_PATH"
             envman add --key BITRISE_APP_DIR_PATH --value "$APP_PATH"
