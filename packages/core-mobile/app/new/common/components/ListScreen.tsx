@@ -7,7 +7,14 @@ import {
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, {
+  RefObject,
+  useCallback,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import {
   FlatListProps,
   LayoutChangeEvent,
@@ -79,6 +86,14 @@ export interface ListScreenProps<T>
   renderHeaderRight?: () => React.ReactNode
   /** Optional function to render content when the list is empty */
   renderEmpty?: () => React.ReactNode
+  /** Whether to show the sticky header */
+  shouldShowStickyHeader?: boolean
+  /** Optional ref to the flat list */
+  flatListRef?: RefObject<ListScreenRef<T>>
+}
+
+export type ListScreenRef<T> = {
+  scrollViewRef?: RefObject<FlatList<T>>
 }
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
@@ -96,6 +111,8 @@ export const ListScreen = <T,>({
   renderEmpty,
   renderHeader,
   renderHeaderRight,
+  shouldShowStickyHeader = true,
+  flatListRef,
   ...props
 }: ListScreenProps<T>): JSX.Element => {
   const insets = useSafeAreaInsets()
@@ -116,13 +133,25 @@ export const ListScreen = <T,>({
   const [contentHeaderHeight, setContentHeaderHeight] = useState<number>(0)
   const [renderHeaderHeight, setRenderHeaderHeight] = useState<number>(0)
 
+  useImperativeHandle(
+    flatListRef,
+    () => ({
+      scrollViewRef: scrollViewRef as RefObject<FlatList<T>>
+    }),
+    [scrollViewRef]
+  )
+
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
       header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
       targetLayout,
       shouldHeaderHaveGrabber: isModal,
-      hideHeaderBackground: true,
-      hasSeparator: renderHeader ? false : true,
+      hideHeaderBackground: shouldShowStickyHeader,
+      hasSeparator: shouldShowStickyHeader
+        ? renderHeader
+          ? false
+          : true
+        : true,
       backgroundColor,
       hasParent,
       showNavigationHeaderTitle,
@@ -201,7 +230,7 @@ export const ListScreen = <T,>({
     return {
       transform: [
         {
-          translateY
+          translateY: shouldShowStickyHeader ? translateY : 0
         }
       ]
     }
@@ -215,7 +244,7 @@ export const ListScreen = <T,>({
         0,
         titleHeight.value + subtitleHeight.value
       ],
-      [0.95, 1, 0.95]
+      [Platform.OS === 'ios' ? 0.98 : 1, 1, 0.95]
     )
     return {
       opacity: 1 - targetHiddenProgress.value,
@@ -233,14 +262,18 @@ export const ListScreen = <T,>({
     // if we have a background color, we need to animate the opacity of the blur view
     // so that it blends with the background color after scrolling
     return {
-      opacity: backgroundColor ? targetHiddenProgress.value : 1
+      opacity: !shouldShowStickyHeader
+        ? 0
+        : backgroundColor
+        ? targetHiddenProgress.value
+        : 1
     }
   })
 
   const animatedBorderStyle = useAnimatedStyle(() => {
     const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
     return {
-      opacity
+      opacity: shouldShowStickyHeader ? opacity : 0
     }
   })
 
@@ -265,20 +298,24 @@ export const ListScreen = <T,>({
       {
         paddingBottom,
         minHeight:
-          frame.height + contentHeaderHeight + extraPadding - renderHeaderHeight
+          frame.height +
+          contentHeaderHeight +
+          extraPadding -
+          (shouldShowStickyHeader ? renderHeaderHeight : 0)
       }
     ] as StyleProp<ViewStyle>[]
   }, [
-    contentHeaderHeight,
-    data.length,
-    frame.height,
+    keyboard.isVisible,
+    keyboard.height,
     insets.bottom,
     insets.top,
     isModal,
-    keyboard.height,
-    keyboard.isVisible,
-    renderHeaderHeight,
-    props?.contentContainerStyle
+    props?.contentContainerStyle,
+    data.length,
+    frame.height,
+    contentHeaderHeight,
+    shouldShowStickyHeader,
+    renderHeaderHeight
   ])
 
   const ListHeaderComponent = useMemo(() => {
@@ -356,26 +393,22 @@ export const ListScreen = <T,>({
         </Animated.View>
       </Animated.View>
     )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    animatedHeaderContainerStyle,
     renderHeader,
     headerHeight,
-    animatedHeaderBlurStyle,
     backgroundColor,
     handleContentHeaderLayout,
     title,
     handleTitleLayout,
-    animatedTitleStyle,
     subtitle,
     handleSubtitleLayout,
-    animatedSubtitleStyle,
-    handleRenderHeaderLayout,
-    animatedBorderStyle
+    handleRenderHeaderLayout
   ])
 
   const ListEmptyComponent = useMemo(() => {
     if (renderEmpty) {
-      return <>{renderEmpty()}</>
+      return <View style={{ flex: 1 }}>{renderEmpty()}</View>
     }
     return (
       <ErrorState
@@ -401,7 +434,7 @@ export const ListScreen = <T,>({
         keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        stickyHeaderIndices={[0]}
+        stickyHeaderIndices={shouldShowStickyHeader ? [0] : undefined}
         maxToRenderPerBatch={15}
         windowSize={12}
         initialNumToRender={15}

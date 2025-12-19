@@ -7,7 +7,7 @@ jest.mock('store/account/slice', () => {
   const actual = jest.requireActual('store/account/slice')
   return {
     ...actual,
-    selectAccounts: () => mockAccounts,
+    selectAccountsByWalletId: () => Object.values(mockAccounts),
     selectActiveAccount: () => mockAccounts['0']
   }
 })
@@ -132,6 +132,7 @@ describe('avalanche_getAccounts handler', () => {
 
       expect(result.success).toBe(true)
       if (result.success) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const accounts = result.value as any[]
         expect(accounts).toHaveLength(2)
         expect(accounts[0].xpubXP).toBeUndefined()

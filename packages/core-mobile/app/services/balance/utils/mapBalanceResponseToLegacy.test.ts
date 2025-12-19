@@ -53,6 +53,7 @@ describe('mapBalanceResponseToLegacy', () => {
         },
         totalBalanceInCurrency: 0
       },
+      currency: 'usd',
       error: null
     })
 
@@ -194,6 +195,7 @@ describe('mapBalanceResponseToLegacy', () => {
         ],
         totalBalanceInCurrency: 60.99956975244499
       },
+      currency: 'usd',
       error: null
     })
 
@@ -353,6 +355,7 @@ describe('mapBalanceResponseToLegacy', () => {
         erc20TokenBalances: [],
         totalBalanceInCurrency: 2.5952306
       },
+      currency: 'usd',
       error: null
     })
 
@@ -407,6 +410,7 @@ describe('mapBalanceResponseToLegacy', () => {
         erc20TokenBalances: [],
         totalBalanceInCurrency: 0
       },
+      currency: 'usd',
       error: null
     })
 
@@ -461,6 +465,7 @@ describe('mapBalanceResponseToLegacy', () => {
         erc20TokenBalances: [],
         totalBalanceInCurrency: 0
       },
+      currency: 'usd',
       error: null
     })
 
@@ -515,6 +520,7 @@ describe('mapBalanceResponseToLegacy', () => {
         erc20TokenBalances: [],
         totalBalanceInCurrency: 0
       },
+      currency: 'usd',
       error: null
     })
 
@@ -584,6 +590,7 @@ describe('mapBalanceResponseToLegacy', () => {
         },
         totalBalanceInCurrency: 1.48284
       },
+      currency: 'usd',
       error: null
     })
 
@@ -607,6 +614,7 @@ describe('mapBalanceResponseToLegacy', () => {
           balanceInCurrency: 1.48,
           available: 108000000n,
           availableInCurrency: 1.48,
+          availableDisplayValue: '0.108',
           utxos: {
             unlocked: [
               {
@@ -670,6 +678,7 @@ describe('mapBalanceResponseToLegacy', () => {
         },
         totalBalanceInCurrency: 1.5234808000000002
       },
+      currency: 'usd',
       error: null
     })
 
@@ -692,6 +701,7 @@ describe('mapBalanceResponseToLegacy', () => {
           balanceInCurrency: 1.52,
           change24: 7.04491,
           available: 110964791n,
+          availableDisplayValue: '0.111',
           availableInCurrency: 1.52,
           balancePerType: {
             lockedStaked: 0n,
@@ -790,6 +800,7 @@ describe('mapBalanceResponseToLegacy', () => {
         ],
         totalBalanceInCurrency: 27.99514766034
       },
+      currency: 'usd',
       error: null
     })
 

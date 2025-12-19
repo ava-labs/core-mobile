@@ -1,10 +1,8 @@
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import {
-  Avatar,
   Icons,
   Image,
   SearchBar,
-  Separator,
   Text,
   TouchableOpacity,
   View,
@@ -12,8 +10,10 @@ import {
   useTheme
 } from '@avalabs/k2-alpine'
 import { NetworkVMType } from '@avalabs/vm-module-types'
+
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
+import { ListViewItem } from 'common/components/ListViewItem'
 import { WalletIcon } from 'common/components/WalletIcon'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { loadAvatar } from 'common/utils/loadAvatar'
@@ -21,6 +21,7 @@ import { useGlobalSearchParams } from 'expo-router'
 import { isValidAddress } from 'features/accountSettings/utils/isValidAddress'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { WalletType } from 'services/wallet/types'
 import { selectAccountById } from 'store/account'
 import { Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -193,98 +194,46 @@ const ContactListItem = ({
   const walletsCount = Object.keys(wallets).length
 
   return (
-    <View>
-      <TouchableOpacity
-        sx={{
-          marginTop: 12,
-          marginHorizontal: 16,
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexDirection: 'row'
-        }}
-        onPress={() => onSelectContact(item)}>
-        <View
-          sx={{
-            flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginBottom: 12
-          }}>
-          <View
-            sx={{
-              width: 40,
-              height: 40
-            }}>
-            <Avatar
-              backgroundColor="transparent"
-              size={40}
-              source={avatar?.source}
-              hasLoading={false}
+    <ListViewItem
+      avatar={avatar}
+      title={item.name}
+      renderTop={
+        wallet &&
+        walletsCount > 1 && (
+          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+            <WalletIcon
+              width={16}
+              height={16}
+              wallet={wallet}
+              color={theme.colors.$textSecondary}
+              isExpanded
             />
-          </View>
-          <View
-            sx={{
-              flexGrow: 1,
-              marginHorizontal: 12,
-              flexDirection: 'row'
-            }}>
-            <View
+            <Text
+              variant="buttonSmall"
               sx={{
-                justifyItems: 'center',
-                justifyContent: 'center',
-                width: '90%'
+                color: '$textSecondary',
+                lineHeight: 16
               }}>
-              {wallet && walletsCount > 1 && (
-                <View
-                  sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                  <WalletIcon
-                    width={16}
-                    height={16}
-                    wallet={wallet}
-                    color={theme.colors.$textSecondary}
-                    isExpanded
-                  />
-                  <Text
-                    variant="buttonSmall"
-                    sx={{
-                      color: '$textSecondary',
-                      lineHeight: 16
-                    }}>
-                    {wallet?.name}
-                  </Text>
-                </View>
-              )}
-
-              <Text
-                testID={`recent_contacts__${item.name}`}
-                accessibilityLabel={`recent_contacts__${item.name}`}
-                variant="buttonMedium"
-                numberOfLines={1}
-                sx={{ flex: 1, lineHeight: 20 }}>
-                {item.name}
-              </Text>
-              {address && (
-                <Text
-                  variant="mono"
-                  sx={{
-                    lineHeight: 16,
-                    fontSize: 13,
-                    color: '$textSecondary'
-                  }}
-                  ellipsizeMode="tail"
-                  numberOfLines={1}>
-                  {truncateAddress(address, TRUNCATE_ADDRESS_LENGTH)}
-                </Text>
-              )}
-            </View>
+              {wallet?.type === WalletType.PRIVATE_KEY
+                ? 'Imported'
+                : wallet?.name}
+            </Text>
           </View>
-        </View>
-      </TouchableOpacity>
-      {!isLast && (
-        <View sx={{ marginLeft: 68 }}>
-          <Separator />
-        </View>
-      )}
-    </View>
+        )
+      }
+      subtitle={
+        address ? truncateAddress(address, TRUNCATE_ADDRESS_LENGTH) : undefined
+      }
+      titleProps={{
+        testID: `recent_contacts__${item.name}`,
+        accessibilityLabel: `recent_contacts__${item.name}`
+      }}
+      subtitleProps={{
+        variant: 'mono'
+      }}
+      isLast={isLast}
+      onPress={() => onSelectContact(item)}
+      hideArrow
+    />
   )
 }

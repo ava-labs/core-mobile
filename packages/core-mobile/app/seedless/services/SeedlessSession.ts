@@ -283,15 +283,19 @@ class SeedlessSession {
 
     if (!this.signerClientPromise) {
       this.signerClientPromise = (async () => {
-        const client = await CubeSignerClient.create(this.sessionManager)
+        try {
+          const client = await CubeSignerClient.create(this.sessionManager)
 
-        if (this.onSessionExpired) {
-          client.addEventListener('session-expired', this.onSessionExpired)
+          if (this.onSessionExpired) {
+            client.addEventListener('session-expired', this.onSessionExpired)
+          }
+
+          this.signerClient = client
+          return client
+        } finally {
+          // Always reset the promise lock (success or failure) so later calls can retry.
+          this.signerClientPromise = null
         }
-
-        this.signerClient = client
-        this.signerClientPromise = null // Reset the promise lock
-        return client
       })()
     }
 

@@ -89,6 +89,7 @@ export type CreateExportCTxParams = CommonAvalancheTxParamsBase & {
    */
   baseFeeInNAvax: bigint
   destinationChain: 'P' | 'X'
+  avalancheEvmProvider: JsonRpcBatchInternal
 }
 
 export type CreateImportPTxParams = CommonAvalancheTxParamsBase & {

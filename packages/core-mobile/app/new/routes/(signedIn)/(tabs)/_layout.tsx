@@ -4,6 +4,7 @@ import { BottomTabBarProps } from '@bottom-tabs/react-navigation'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { BottomTabs } from 'common/components/BottomTabs'
 import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
+import { useHasXpAddresses } from 'common/hooks/useHasXpAddresses'
 import React, { FC, useMemo } from 'react'
 import { Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -36,6 +37,7 @@ const freezeOnBlur = isIOS ? false : true
 
 export default function TabLayout(): JSX.Element {
   const { theme } = useTheme()
+  const hasXpAddresses = useHasXpAddresses()
 
   const tabBarInactiveTintColor = useMemo(() => {
     return theme.isDark
@@ -84,15 +86,17 @@ export default function TabLayout(): JSX.Element {
           freezeOnBlur
         }}
       />
-      <BottomTabs.Screen
-        name="stake"
-        options={{
-          tabBarButtonTestID: 'earn_tab',
-          title: isInAppDefiBlocked ? 'Stake' : 'Earn',
-          tabBarIcon: () => stakeIcon,
-          freezeOnBlur
-        }}
-      />
+      {hasXpAddresses && (
+        <BottomTabs.Screen
+          name="stake"
+          options={{
+            tabBarButtonTestID: 'earn_tab',
+            title: isInAppDefiBlocked ? 'Stake' : 'Earn',
+            tabBarIcon: () => stakeIcon,
+            freezeOnBlur
+          }}
+        />
+      )}
       <BottomTabs.Screen
         name="browser"
         options={{
@@ -122,7 +126,7 @@ const TabBar = ({
 }: BottomTabBarProps): JSX.Element => {
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
-
+  const hasXpAddresses = useHasXpAddresses()
   const backgroundColor = useMemo(() => {
     return theme.isDark
       ? isIOS
@@ -150,6 +154,9 @@ const TabBar = ({
             : 'transparent'
       }}>
       {state.routes.map((route, index) => {
+        if (route.name === 'stake' && !hasXpAddresses) {
+          return null
+        }
         const isActive = state.index === index
         const Icon = getIcon(route.name)
         const title = descriptors[route.key]?.options?.title ?? route.name

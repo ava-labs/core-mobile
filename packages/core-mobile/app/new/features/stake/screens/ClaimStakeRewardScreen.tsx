@@ -31,7 +31,7 @@ import { useRefreshStakingBalances } from 'hooks/earn/useRefreshStakingBalances'
 export const ClaimStakeRewardScreen = (): JSX.Element => {
   const { navigate, back } = useRouter()
   const { formatTokenInCurrency } = useFormatCurrency()
-  const { data } = usePChainBalance()
+  const pChainBalance = usePChainBalance()
   const ref = useRef<TokenUnitInputHandle>(null)
   const [claimableAmountInAvax, setClaimableAmountInAvax] =
     useState<TokenUnit>()
@@ -97,9 +97,9 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
     // and we don't want to show the updated balance while the tx is still pending (spinner is being displayed)
     // as that might confuse the user
     // thus, we only update the balance if the tx is not pending
-    if (data?.balancePerType.unlockedUnstaked) {
+    if (pChainBalance?.balancePerType.unlockedUnstaked) {
       const unlockedInUnit = new TokenUnit(
-        data.balancePerType.unlockedUnstaked,
+        pChainBalance.balancePerType.unlockedUnstaked,
         pNetwork.networkToken.decimals,
         pNetwork.networkToken.symbol
       )
@@ -107,7 +107,7 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
       setClaimableAmountInAvax(unlockedInUnit)
     }
   }, [
-    data?.balancePerType.unlockedUnstaked,
+    pChainBalance?.balancePerType.unlockedUnstaked,
     pNetwork.networkToken,
     isClaimRewardsPending
   ])
@@ -168,14 +168,17 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
   }, [claimableAmountInAvax])
 
   useEffect(() => {
-    if (data && data.balancePerType.unlockedUnstaked === undefined) {
+    if (
+      pChainBalance &&
+      pChainBalance.balancePerType.unlockedUnstaked === undefined
+    ) {
       showAlert({
         title: 'No claimable balance',
         description: 'You have no balance available for claiming.',
         buttons: [{ text: 'Go back', onPress: back }]
       })
     }
-  }, [data, back])
+  }, [pChainBalance, back])
 
   const renderFooter = useCallback(() => {
     return (

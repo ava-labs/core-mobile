@@ -14,7 +14,12 @@ import { getAddressByVM } from 'store/account/utils'
 import { Account, selectActiveAccount } from 'store/account'
 import { selectActiveWallet } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
-import WalletService from 'services/wallet/WalletService'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import {
+  getAddressesFromXpubXP,
+  getXpubXPIfAvailable
+} from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
+import { CurrentAvalancheAccount } from '@avalabs/avalanche-module'
 import { AgnosticRpcProvider, Request } from '../../types'
 
 export const handleRequestViaVMModule = async ({
@@ -67,8 +72,10 @@ export const handleRequestViaVMModule = async ({
   }
 
   const { getState } = listenerApi
-  const activeAccount = selectActiveAccount(getState())
-  const activeWallet = selectActiveWallet(getState())
+  const state = getState()
+  const activeAccount = selectActiveAccount(state)
+  const activeWallet = selectActiveWallet(state)
+  const isTestnet = selectIsDeveloperMode(state)
 
   if (!activeWallet || !activeAccount) {
     Logger.error('Active wallet or account not found')
@@ -102,7 +109,8 @@ export const handleRequestViaVMModule = async ({
           params,
           activeAccount,
           walletId: activeWallet.id,
-          walletType: activeWallet.type
+          walletType: activeWallet.type,
+          isTestnet
         }))
     },
     mapToVmNetwork(network)
@@ -128,14 +136,16 @@ const getContext = async ({
   params,
   activeAccount,
   walletId,
-  walletType
+  walletType,
+  isTestnet
 }: {
   method: VmModuleRpcMethod
   params: unknown
   activeAccount: Account | undefined
   walletId: string
   walletType: WalletType
-}): Promise<Record<string, string> | undefined> => {
+  isTestnet: boolean
+}): Promise<Record<string, unknown> | undefined> => {
   if (
     method === VmModuleRpcMethod.AVALANCHE_SEND_TRANSACTION ||
     method === VmModuleRpcMethod.AVALANCHE_SIGN_TRANSACTION
@@ -144,29 +154,68 @@ const getContext = async ({
       return undefined
     }
 
-    const vm = Avalanche.getVmByChainAlias(params.chainAlias as string)
-    const currentAddress = getAddressByVM(vm, activeAccount)
+    const context: Record<string, unknown> = {}
 
-    if (!currentAddress) {
-      return undefined
-    }
-
-    const context: Record<string, string> = { currentAddress }
-
-    if (walletType === WalletType.MNEMONIC && activeAccount) {
-      const xpubXP = await WalletService.getRawXpubXP({
+    if (activeAccount) {
+      context.account = await getContextAccount({
+        account: activeAccount,
         walletId,
         walletType,
-        accountIndex: activeAccount.index
+        isTestnet,
+        chainAlias: params.chainAlias as Avalanche.ChainIDAlias
       })
-
-      if (xpubXP) {
-        context.xpubXP = xpubXP
-      }
     }
 
     return context
   }
 
+  return undefined
+}
+
+const getContextAccount = async ({
+  account,
+  walletId,
+  walletType,
+  isTestnet,
+  chainAlias
+}: {
+  account: Account
+  walletId: string
+  walletType: WalletType
+  isTestnet: boolean
+  chainAlias: Avalanche.ChainIDAlias
+}): Promise<CurrentAvalancheAccount | undefined> => {
+  const vm = Avalanche.getVmByChainAlias(chainAlias)
+  const currentAddress = getAddressByVM(vm, account)
+  if (currentAddress && (vm === 'AVM' || vm === 'PVM' || vm === 'EVM')) {
+    const xpubXP = await getXpubXPIfAvailable({
+      walletId,
+      walletType,
+      accountIndex: account.index
+    })
+
+    const externalXPAddressesResult = await getAddressesFromXpubXP({
+      accountIndex: account.index,
+      walletId,
+      walletType,
+      isDeveloperMode: isTestnet,
+      onlyWithActivity: true
+    })
+    const prefix = chainAlias === 'P' ? 'P' : 'X'
+
+    return {
+      xpAddress: currentAddress,
+      evmAddress: account.addressC,
+      xpubXP,
+      externalXPAddresses: externalXPAddressesResult.xpAddresses.map(
+        address => {
+          return {
+            index: address.index,
+            address: `${prefix}-` + address.address
+          }
+        }
+      )
+    }
+  }
   return undefined
 }

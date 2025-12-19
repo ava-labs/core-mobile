@@ -9,6 +9,7 @@ import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKey
 import ModuleManager from 'vmModule/ModuleManager'
 import { AVALANCHE_DERIVATION_PATH_PREFIX, Curve } from 'utils/publicKeys'
 import { toSegments } from 'utils/toSegments'
+import { AddressIndex } from '@avalabs/types'
 import { GetAddressesResponse } from '../apiClient/profile/types'
 
 type GetAddressesFromXpubParams = {
@@ -17,11 +18,6 @@ type GetAddressesFromXpubParams = {
   walletType: WalletType
   accountIndex: number
   onlyWithActivity: boolean
-}
-
-export interface AddressIndex {
-  address: string
-  index: number
 }
 
 export type GetAddressesFromXpubResult = {
@@ -200,4 +196,28 @@ const toAddressIndexArray = (
       address,
       index: dictionary[address]?.index ?? 0
     }))
+}
+
+export const getXpubXPIfAvailable = async ({
+  walletId,
+  walletType,
+  accountIndex
+}: {
+  walletId: string
+  walletType: WalletType
+  accountIndex: number
+}): Promise<string | undefined> => {
+  let xpubXP
+
+  try {
+    xpubXP = await WalletService.getRawXpubXP({
+      walletId,
+      walletType,
+      accountIndex
+    })
+  } catch (error) {
+    xpubXP = undefined
+  }
+
+  return xpubXP
 }

@@ -31,8 +31,9 @@ import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
 import { useNodes } from 'hooks/earn/useNodes'
 import { useRefreshStakingBalances } from 'hooks/earn/useRefreshStakingBalances'
 import { useSearchNode } from 'hooks/earn/useSearchNode'
+import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import { useNow } from 'hooks/time/useNow'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import NetworkService from 'services/network/NetworkService'
@@ -46,7 +47,8 @@ const StakeConfirmScreen = (): JSX.Element => {
   const { back, dismissAll, navigate } = useRouter()
   const dispatch = useDispatch()
 
-  const { stakeAmount, networkFees } = useDelegationContext()
+  const [stakeAmount] = useStakeAmount()
+  const { steps } = useDelegationContext()
   const { stakeEndTime, nodeId } = useLocalSearchParams<{
     stakeEndTime: string
     nodeId?: string
@@ -61,13 +63,17 @@ const StakeConfirmScreen = (): JSX.Element => {
     error,
     data
   } = useNodes(nodeId === undefined)
+
+  // Memoize validators array reference to prevent unnecessary recalculations
+  const validators = useMemo(() => data?.validators, [data?.validators])
+
   const { validator: searchedValidator, error: searchNodeError } =
     useSearchNode({
       stakingAmount: stakeAmount,
       stakingEndTime: stakeEndTimeInMilliseconds,
-      validators: data?.validators
+      validators
     })
-  const selectedValidator = useGetValidatorByNodeId(nodeId)
+  const selectedValidator = useGetValidatorByNodeId(validators, nodeId)
   const validator = useMemo(
     // Use the validator selected by the user from the advanced flow, if available.
     () => selectedValidator ?? searchedValidator,
@@ -99,15 +105,16 @@ const StakeConfirmScreen = (): JSX.Element => {
   const refreshStakingBalances = useRefreshStakingBalances()
 
   const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
-  const networkFeesInAvax = useMemo(
-    () =>
-      new TokenUnit(
-        networkFees,
-        pNetwork.networkToken.decimals,
-        pNetwork.networkToken.symbol
-      ).toDisplay({ fixedDp: 6 }),
-    [networkFees, pNetwork.networkToken.decimals, pNetwork.networkToken.symbol]
-  )
+  const networkFeesInAvax = useMemo(() => {
+    const networkFees = steps.reduce((sum, transaction) => {
+      return sum + transaction.fee
+    }, BigInt(0))
+    return new TokenUnit(
+      networkFees,
+      pNetwork.networkToken.decimals,
+      pNetwork.networkToken.symbol
+    ).toDisplay({ fixedDp: 6 })
+  }, [steps, pNetwork.networkToken.decimals, pNetwork.networkToken.symbol])
 
   const delegationFee = useMemo(() => {
     if (
@@ -262,6 +269,65 @@ const StakeConfirmScreen = (): JSX.Element => {
     transactionSnackbar.error({ error: e.message })
   }, [])
 
+  // Use refs to break circular dependency between onFundsStuck and handleDelegate
+  const issueDelegationRef = useRef<
+    | {
+        (params: {
+          nodeId: string
+          startDate: Date
+          endDate: Date
+          recomputeSteps?: boolean
+        }): Promise<void>
+      }
+    | undefined
+  >(undefined)
+  const validatorRef = useRef(validator)
+  const minStartTimeRef = useRef(minStartTime)
+  const validatedStakingEndTimeRef = useRef(validatedStakingEndTime)
+
+  useEffect(() => {
+    validatorRef.current = validator
+    minStartTimeRef.current = minStartTime
+    validatedStakingEndTimeRef.current = validatedStakingEndTime
+  }, [validator, minStartTime, validatedStakingEndTime])
+
+  const onFundsStuck = useCallback(
+    (_error: Error): void => {
+      showAlert({
+        title: 'Funds stuck',
+        description:
+          'Your stake failed due to network issues. Would you like to keep trying to stake your funds?',
+        buttons: [
+          {
+            text: 'Cancel stake',
+            onPress: () => {
+              handleDismiss()
+            }
+          },
+          {
+            text: 'Try again',
+            onPress: () => {
+              const currentValidator = validatorRef.current
+              const currentMinStartTime = minStartTimeRef.current
+              const currentValidatedStakingEndTime =
+                validatedStakingEndTimeRef.current
+              if (!currentValidator || !issueDelegationRef.current) return
+
+              AnalyticsService.capture('StakeIssueDelegation')
+              issueDelegationRef.current({
+                nodeId: currentValidator.nodeID,
+                startDate: currentMinStartTime,
+                endDate: currentValidatedStakingEndTime,
+                recomputeSteps: true
+              })
+            }
+          }
+        ]
+      })
+    },
+    [handleDismiss]
+  )
+
   const { issueDelegation, isPending: isIssueDelegationPending } =
     useIssueDelegation({
       onSuccess: onDelegationSuccess,
@@ -269,27 +335,9 @@ const StakeConfirmScreen = (): JSX.Element => {
       onFundsStuck
     })
 
-  function onFundsStuck(): void {
-    showAlert({
-      title: 'Funds stuck',
-      description:
-        'Your stake failed due to network issues. Would you like to keep trying to stake your funds?',
-      buttons: [
-        {
-          text: 'Cancel stake',
-          onPress: () => {
-            handleDismiss()
-          }
-        },
-        {
-          text: 'Try again',
-          onPress: () => {
-            handleDelegate(true)
-          }
-        }
-      ]
-    })
-  }
+  useEffect(() => {
+    issueDelegationRef.current = issueDelegation
+  }, [issueDelegation])
 
   const handleDelegate = useCallback(
     (recomputeSteps = false): void => {

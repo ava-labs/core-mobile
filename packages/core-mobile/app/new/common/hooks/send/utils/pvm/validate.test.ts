@@ -27,8 +27,7 @@ const mockNativeTokenWithBalance: TokenWithBalancePVM = {
     atomicMemoryLocked: 0n,
     atomicMemoryUnlocked: 0n,
     unlockedUnstaked: 0n,
-    unlockedStaked: 0n,
-    pendingStaked: 0n
+    unlockedStaked: 0n
   }
 }
 

@@ -1,13 +1,14 @@
 import { NodeValidator } from 'types/earn'
-import { useNodes } from './useNodes'
+import { useMemo } from 'react'
 
 export function useGetValidatorByNodeId(
+  validators: NodeValidator[] | undefined,
   nodeId: string | undefined
 ): NodeValidator | undefined {
-  const { data } = useNodes()
-
-  if (data?.validators && nodeId) {
-    return data.validators.find(v => v.nodeID === nodeId)
-  }
-  return undefined
+  return useMemo(() => {
+    if (validators && nodeId) {
+      return validators.find(v => v.nodeID === nodeId)
+    }
+    return undefined
+  }, [validators, nodeId])
 }

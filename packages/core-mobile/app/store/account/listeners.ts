@@ -1,8 +1,5 @@
 import AccountsService from 'services/account/AccountsService'
-import {
-  AddressIndex,
-  getAddressesFromXpubXP
-} from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
+import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
@@ -28,6 +25,7 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import KeystoneService from 'features/keystone/services/KeystoneService'
 import { pendingSeedlessWalletNameStore } from 'features/onboarding/store'
+import { AddressIndex } from '@avalabs/types'
 import {
   selectAccounts,
   setAccounts,
@@ -67,6 +65,15 @@ const initAccounts = async (
 
   if (activeWallet.type === WalletType.SEEDLESS) {
     try {
+      const refreshTokenResult = await SeedlessService.session.refreshToken()
+
+      /**
+       * If refreshTokenResult fails and we don't throw, we'd still call
+       * refreshPublicKeys with an invalid/missing session
+       */
+      if (!refreshTokenResult.success) {
+        throw refreshTokenResult.error
+      }
       await SeedlessService.refreshPublicKeys()
     } catch (error) {
       Logger.error(
@@ -285,6 +292,11 @@ const migrateXpAddressesIfNeeded = async (
   const isDeveloperMode = selectIsDeveloperMode(state)
   const wallets = selectWallets(state)
   const allUpdatedAccounts: AccountCollection = {}
+
+  if (Object.keys(wallets).length === 0) {
+    Logger.info('No wallets found. Skipping XP address migration.')
+    return
+  }
 
   // Process all wallets in parallel
   const walletPromises = Object.values(wallets).map(async wallet => {

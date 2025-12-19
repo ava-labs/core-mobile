@@ -16,8 +16,10 @@ import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useRouter } from 'expo-router'
 import { HORIZONTAL_ITEM_GAP } from 'features/portfolio/collectibles/consts'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
-import React, { useCallback, useEffect, useMemo } from 'react'
-import { ViewStyle } from 'react-native'
+import React, { useCallback, useEffect } from 'react'
+import { Platform, ViewStyle } from 'react-native'
+import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
+import { RefreshControl } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { DeFiSimpleProtocol } from 'services/defi/types'
@@ -50,6 +52,7 @@ export const DeFiScreen = ({
     chainList
   } = useDeFiProtocols()
   const listType = view.selected as DeFiViewOption
+  const header = useHeaderMeasurements()
 
   const getAmount = useExchangedAmount()
 
@@ -92,7 +95,7 @@ export const DeFiScreen = ({
     openUrl({ url: 'https://core.app/discover/', title: 'Core Web' })
   }, [openUrl])
 
-  const emptyComponent = useMemo(() => {
+  const renderEmpty = useCallback(() => {
     if (isLoading) {
       return (
         <CollapsibleTabs.ContentWrapper>
@@ -161,7 +164,7 @@ export const DeFiScreen = ({
     ]
   )
 
-  const header = useMemo(() => {
+  const renderHeader = useCallback(() => {
     if (data.length === 0) return
 
     return (
@@ -220,10 +223,15 @@ export const DeFiScreen = ({
         estimatedItemSize={isGridView ? 183 : 73}
         numColumns={numColumns}
         renderItem={renderItem}
-        refreshing={isRefreshing}
-        onRefresh={pullToRefresh}
-        ListHeaderComponent={header}
-        ListEmptyComponent={emptyComponent}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={pullToRefresh}
+            progressViewOffset={Platform.OS === 'ios' ? 0 : header.height}
+          />
+        }
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={renderEmpty}
         showsVerticalScrollIndicator={false}
       />
     </Animated.View>

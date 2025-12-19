@@ -89,19 +89,14 @@ const SeedlessExportReadyScreen = (): JSX.Element => {
 
   const renderHeaderRight = useCallback(() => {
     return (
-      <NavigationBarButton>
+      <NavigationBarButton onPress={toggleRecoveryPhrase}>
         {hideMnemonic ? (
           <Icons.Action.VisibilityOff
             color={colors.$textSecondary}
-            onPress={toggleRecoveryPhrase}
             hitSlop={16}
           />
         ) : (
-          <Icons.Action.VisibilityOn
-            color={colors.$textPrimary}
-            onPress={toggleRecoveryPhrase}
-            hitSlop={16}
-          />
+          <Icons.Action.VisibilityOn color={colors.$textPrimary} hitSlop={16} />
         )}
       </NavigationBarButton>
     )

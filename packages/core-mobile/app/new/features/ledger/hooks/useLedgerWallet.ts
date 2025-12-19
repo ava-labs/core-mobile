@@ -573,7 +573,8 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           addressPVM: addresses.PVM,
           addressSVM: addresses.SVM,
           addressCoreEth: addresses.CoreEth,
-          xpAddresses: [] // TODO: add xp addresses
+          xpAddresses: [], // TODO: add xp addresses,
+          xpAddressDictionary: {}
         }
 
         dispatch(setAccount(newAccount))

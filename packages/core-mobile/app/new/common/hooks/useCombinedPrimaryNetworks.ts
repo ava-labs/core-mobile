@@ -1,4 +1,4 @@
-import { Network } from '@avalabs/core-chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import {
@@ -9,6 +9,7 @@ import {
 } from 'services/network/consts'
 import { selectIsSolanaSupportBlocked } from 'store/posthog/slice'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useHasXpAddresses } from './useHasXpAddresses'
 
 /**
  * Hook to get the combined primary networks (networks are merged together with same address)
@@ -19,6 +20,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 export function useCombinedPrimaryNetworks(): {
   networks: Network[]
 } {
+  const hasXpAddresses = useHasXpAddresses()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
 
@@ -36,5 +38,18 @@ export function useCombinedPrimaryNetworks(): {
       : [...MAIN_PRIMARY_NETWORKS, NETWORK_SOLANA]
   }, [isDeveloperMode, isSolanaSupportBlocked])
 
-  return { networks }
+  // filter out networks that are missing XP addresses
+  const filteredNetworks = useMemo(() => {
+    return networks.filter(network => {
+      if (
+        network.vmName === NetworkVMType.AVM ||
+        network.vmName === NetworkVMType.PVM
+      ) {
+        return hasXpAddresses
+      }
+      return true
+    })
+  }, [networks, hasXpAddresses])
+
+  return { networks: filteredNetworks }
 }

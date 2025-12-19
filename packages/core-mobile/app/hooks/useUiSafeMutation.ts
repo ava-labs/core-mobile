@@ -1,12 +1,17 @@
 import { MutationFunction, useMutation } from '@tanstack/react-query'
-import { useCallback } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 /**
  * A wrapper around React Query's `useMutation` that ensures
- * `onSuccess` and `onError` callbacks run inside a `requestAnimationFrame`.
+ * `onSuccess` and `onError` callbacks run inside a `setTimeout`.
  *
- * This prevents timing issues where heavy UI updates (toast, navigation, etc.)
- * might be ignored if they are triggered directly inside React Query callbacks.
+ * Why `setTimeout`?
+ * 1. Crash Prevention: Unlike `requestAnimationFrame`, it decouples execution from the render loop,
+ * preventing memory/CPU spikes when multiple screens are stacked in the background.
+ * 2. Execution Guarantee: Unlike `InteractionManager`, it ensures callbacks run even if
+ * there are ongoing animations or stuck interactions.
+ * 3. Timing Safety: Pushes UI updates to the next event loop tick, avoiding conflicts
+ * with navigation transitions or component mounting.
  *
  * Usage:
  * const { safeMutate, isPending } = useUiSafeMutation({
@@ -29,31 +34,43 @@ export const useUiSafeMutation = <TData, TVariables = void>({
   safeMutate: (variables: TVariables) => Promise<void>
   isPending: boolean
 } => {
-  const { mutateAsync, isPending } = useMutation({
-    mutationFn: mutationFn
-  })
+  const { mutateAsync, isPending } = useMutation({ mutationFn })
+
+  const isMountedRef = useRef(true)
+  const timerRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+      }
+    }
+  }, [])
 
   const safeMutate = useCallback(
     async (variables: TVariables): Promise<void> => {
       try {
         const data = await mutateAsync(variables)
 
-        requestAnimationFrame(() => {
-          onSuccess(data)
-        })
+        timerRef.current = setTimeout(() => {
+          if (isMountedRef.current) {
+            onSuccess(data)
+          }
+        }, 1)
       } catch (e) {
         if (e instanceof Error) {
-          requestAnimationFrame(() => {
-            onError(e)
-          })
+          timerRef.current = setTimeout(() => {
+            if (isMountedRef.current) {
+              onError(e)
+            }
+          }, 1)
         }
       }
     },
     [mutateAsync, onSuccess, onError]
   )
 
-  return {
-    safeMutate,
-    isPending
-  }
+  return { safeMutate, isPending }
 }
