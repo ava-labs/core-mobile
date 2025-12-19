@@ -1,8 +1,8 @@
 import { IdentityProof } from '@cubist-labs/cubesigner-sdk'
 import Config from 'react-native-config'
-import Logger from 'utils/Logger'
 import { CoreSeedlessAPIServiceNoop } from 'seedless/services/CoreSeedlessAPIServiceNoop'
 import { CoreSeedlessApiInterface } from 'seedless/services/types'
+import Logger from 'utils/Logger'
 
 if (!Config.SEEDLESS_URL) {
   Logger.warn('SEEDLESS_URL is missing in env file. Seedless is disabled.')
@@ -95,7 +95,34 @@ class CoreSeedlessAPIService implements CoreSeedlessApiInterface {
     identityProof: IdentityProof
     mnemonicId: string
   }): Promise<void> {
+    console.log(
+      '[CoreSeedlessAPIService.deriveMissingKeys] Starting',
+      JSON.stringify(
+        {
+          mnemonicId,
+          url: Config.SEEDLESS_URL + '/v1/deriveMissingKeys'
+        },
+        null,
+        2
+      )
+    )
     try {
+      const requestBody = {
+        identityProof,
+        mnemonicId
+      }
+      console.log(
+        '[CoreSeedlessAPIService.deriveMissingKeys] Making API call',
+        JSON.stringify(
+          {
+            mnemonicId,
+            hasIdentityProof: !!identityProof
+          },
+          null,
+          2
+        )
+      )
+
       const response = await fetch(
         Config.SEEDLESS_URL + '/v1/deriveMissingKeys',
         {
@@ -104,18 +131,59 @@ class CoreSeedlessAPIService implements CoreSeedlessApiInterface {
             Authorization: this.seedlessApiKey,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            identityProof,
-            mnemonicId
-          })
+          body: JSON.stringify(requestBody)
         }
       )
 
+      console.log(
+        '[CoreSeedlessAPIService.deriveMissingKeys] API response received',
+        JSON.stringify(
+          {
+            status: response.status,
+            statusText: response.statusText,
+            ok: response.ok
+          },
+          null,
+          2
+        )
+      )
+
       if (!response.ok) {
-        throw new Error(`HTTP request failed: ${response.status}`)
+        const errorText = await response
+          .text()
+          .catch(() => 'Unable to read error response')
+        console.log(
+          '[CoreSeedlessAPIService.deriveMissingKeys] API call failed',
+          JSON.stringify(
+            {
+              status: response.status,
+              statusText: response.statusText,
+              errorText
+            },
+            null,
+            2
+          )
+        )
+        throw new Error(
+          `HTTP request failed: ${response.status} - ${errorText}`
+        )
       }
+
+      console.log(
+        '[CoreSeedlessAPIService.deriveMissingKeys] API call completed successfully'
+      )
     } catch (error) {
-      Logger.error('Failed to fetch /v1/deriveMissingKeys', error)
+      console.log(
+        '[CoreSeedlessAPIService.deriveMissingKeys] Exception occurred',
+        JSON.stringify(
+          {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined
+          },
+          null,
+          2
+        )
+      )
       throw error
     }
   }
