@@ -9375,12 +9375,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@noble/curves@patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch::locator=mobile-monorepo%40workspace%3A.":
+"@noble/curves@patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch::version=1.9.7&hash=9b53f1&locator=mobile-monorepo%40workspace%3A.":
   version: 1.9.7
   resolution: "@noble/curves@patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch::version=1.9.7&hash=9b53f1&locator=mobile-monorepo%40workspace%3A."
   dependencies:
     "@noble/hashes": 1.8.0
   checksum: f2934f924a64903713b98c4abb3efc0f97e71d4a2f69b50d30412bcee4be30cd2d2b7b0004d78321e43297de4e88ad7e73e6e574c8e40abcb5d7a5875fd6f25c
+  languageName: node
+  linkType: hard
+
+"@noble/curves@patch:@noble/curves@patch%3A@noble/curves@npm%253A1.9.7%23./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch%3A%3Aversion=1.9.7&hash=9b53f1&locator=mobile-monorepo%2540workspace%253A.#./.yarn/patches/@noble-curves-patch-8bddd6a892.patch::locator=mobile-monorepo%40workspace%3A.":
+  version: 1.9.7
+  resolution: "@noble/curves@patch:@noble/curves@patch%3A@noble/curves@npm%253A1.9.7%23./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch%3A%3Aversion=1.9.7&hash=9b53f1&locator=mobile-monorepo%2540workspace%253A.#./.yarn/patches/@noble-curves-patch-8bddd6a892.patch::version=1.9.7&hash=91a401&locator=mobile-monorepo%40workspace%3A."
+  dependencies:
+    "@noble/hashes": 1.8.0
+  checksum: d041bc1a1b994ed7e1649a92f7263d9eab7a76c8116e4cac03c6aa1d71e63cef9473cd10b6cb3e694f7c5c9b4f7f46bf779599ef3e902bf68a4563b02954bcf3
   languageName: node
   linkType: hard
 
@@ -33565,7 +33574,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 44ee8c8ebc4dc4d3423e9045e1aebac31829eb518824e24f41b2bd10ab1e8343e824e9d912f259bfec7bfa798e96513cc05dbdcdf36087b2a43806f74a3b0fa2
+  checksum: 92b1d7e77f26519681b361c1fccb0c1ddd885f0e0e930046fe9a430eaf62358e86e84065eba18313d8c50d41597c4caae7ea6042cde0293556e8fc1184b9ca8e
   languageName: node
   linkType: hard
 
