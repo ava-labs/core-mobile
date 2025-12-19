@@ -21,16 +21,22 @@ import { info, pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { SortOrder, PChainTransaction, BlockchainId, PChainTransactionType, Network as GlacierNetwork } from '@avalabs/glacier-sdk'
+import {
+  SortOrder,
+  PChainTransaction,
+  BlockchainId,
+  PChainTransactionType,
+  Network as GlacierNetwork
+} from '@avalabs/glacier-sdk'
 import { Seconds } from 'types/siUnits'
 import { isOnGoing } from 'utils/earn/status'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
+import { glacierApi } from 'utils/api/clients/glacierApiClient'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
   maxTransactionStatusCheckRetries
 } from './utils'
-import { glacierApi } from 'utils/api/clients/glacierApiClient'
 
 class EarnService {
   /**

@@ -23,24 +23,27 @@ import Logger from 'utils/Logger'
  * @returns Promise resolving to WatchlistMarketsResponse
  */
 const fetchTopMarkets = async ({
-  currency,
+  currency
 }: {
   currency: string
 }): Promise<WatchlistMarketsResponse> => {
-    const { data, error } = await tokenAggregatorApi.GET('/v1/watchlist/markets', {
+  const { data, error } = await tokenAggregatorApi.GET(
+    '/v1/watchlist/markets',
+    {
       params: {
         query: {
           currency,
           topMarkets: true
         }
       }
-    })
-
-    if (error) {
-      throw error
     }
+  )
 
-    return data
+  if (error) {
+    throw error
+  }
+
+  return data
 }
 
 /*
@@ -58,13 +61,12 @@ const fetchTopMarkets = async ({
   Pass a custom WatchListClient to the constructor or use the default singleton.
 */
 class WatchlistService {
-
   async getTopTokens(currency: string): Promise<{
     tokens: Record<string, MarketToken>
     charts: Charts
   }> {
     const topMarkets = await fetchTopMarkets({
-      currency: currency.toLowerCase(),
+      currency: currency.toLowerCase()
     })
 
     const tokens: Record<string, MarketToken> = {}
