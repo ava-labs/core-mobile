@@ -43,9 +43,14 @@ export const BrowserInputMenu = ({
   const activeTab = useSelector(selectActiveTab)
 
   const navigationsActions: DropdownItem[] = useMemo(() => {
+    // Back should be enabled even on the first page, so it can take the user to Discover overlay.
+    // Disable only if we're already on the Discover page.
     const isBackDisabled = activeTab?.activeHistoryIndex === -1
+    const historyLength = activeTab?.historyIds?.length ?? 0
     const isForwardDisabled =
-      activeTab?.activeHistoryIndex === (activeTab?.historyIds?.length ?? 0) - 1
+      activeTab?.activeHistoryIndex === -1
+        ? historyLength === 0
+        : activeTab?.activeHistoryIndex === historyLength - 1
     const isRefreshDisabled = activeTab?.activeHistoryIndex === -1
 
     return [

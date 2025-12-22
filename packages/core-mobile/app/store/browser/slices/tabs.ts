@@ -78,15 +78,41 @@ const tabSlice = createSlice({
         id: historyId,
         lastVisited,
         ...historyPayload,
-        url: trimmedUrl
+        // Keep the real URL as provided by the WebView to avoid redirect loops,
+        // but use a trimmed version for hashing.
+        url: historyPayload.url
       } as History
       const activeTabId = state.activeTabId
       if (activeTabId === undefined) return
       const tab = tabAdapterSelectors.selectById(state, activeTabId)
       if (tab === undefined) return
 
-      //if same as current, skip; useful for multiple loads of same page (by refresh, js, etc..)
-      if (tab.historyIds[tab.activeHistoryIndex] === historyId) return
+      // If same as current, don't append, but do update metadata.
+      if (tab.historyIds[tab.activeHistoryIndex] === historyId) {
+        tabAdapter.updateOne(state, {
+          id: activeTabId,
+          changes: {
+            lastVisited,
+            activeHistory: history
+          }
+        })
+        return
+      }
+
+      // If this URL already exists in this tab's history stack, just move the active index.
+      // This keeps Redux aligned with WebView back/forward navigation.
+      const existingIndex = tab.historyIds.indexOf(historyId)
+      if (existingIndex !== -1) {
+        tabAdapter.updateOne(state, {
+          id: activeTabId,
+          changes: {
+            lastVisited,
+            activeHistoryIndex: existingIndex,
+            activeHistory: history
+          }
+        })
+        return
+      }
 
       const newHistory = [
         ...tab.historyIds.slice(0, tab.activeHistoryIndex + 1),
@@ -209,19 +235,6 @@ export const selectTab =
   (state: RootState): Tab | undefined =>
     tabAdapterSelectors.selectById(state.browser.tabs, tabId)
 
-export const selectCanGoBack = (state: RootState): boolean => {
-  const activeTab = selectActiveTab(state)
-  return !!activeTab && activeTab.activeHistoryIndex >= 0
-}
-
-export const selectCanGoForward = (state: RootState): boolean => {
-  const activeTab = selectActiveTab(state)
-  return (
-    !!activeTab &&
-    activeTab.activeHistoryIndex < activeTab.historyIds.length - 1
-  )
-}
-
 export const selectActiveTab = (state: RootState): Tab | undefined => {
   if (state.browser.tabs.activeTabId === undefined) return
   return tabAdapter
@@ -240,6 +253,7 @@ export const selectActiveHistory = (state: RootState): History | undefined => {
 // actions
 export const goForward = createAction(`${reducerName}/goForward`)
 export const goBackward = createAction(`${reducerName}/goBackward`)
+export const goToDiscoverPage = createAction(`${reducerName}/goToDiscoverPage`)
 
 export const {
   addTab,
