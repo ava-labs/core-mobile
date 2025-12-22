@@ -151,7 +151,7 @@ const TransactionHistory: FC<Props> = ({
   }, [data, pendingBridgeTxs, token?.symbol])
 
   const renderEmptyComponent = useCallback(() => {
-    if (isLoading || isRefreshing) {
+    if (isLoading) {
       return <LoadingState />
     }
 
@@ -200,7 +200,6 @@ const TransactionHistory: FC<Props> = ({
     handleExplorerLink,
     isError,
     isLoading,
-    isRefreshing,
     isSolanaNetwork,
     network?.explorerUrl,
     refresh
