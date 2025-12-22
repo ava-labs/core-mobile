@@ -86,8 +86,8 @@ export const deriveMissingSeedlessSessionKeys = async (
     } catch (error) {
       Logger.error('Failed to derive missing keys', error)
       transactionSnackbar.error({
-        error: 'Failed to update accounts',
-        message:
+        message: 'Failed to update accounts',
+        error:
           error instanceof Error
             ? error.message
             : typeof error === 'string'
