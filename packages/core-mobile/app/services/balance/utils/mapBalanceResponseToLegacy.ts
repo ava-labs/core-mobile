@@ -278,19 +278,16 @@ export const mapBalanceResponseToLegacy = (
       return null
     }
 
-    // const chainId = getChainIdFromCaip2(response.caip2Id)
-    // if (chainId === undefined) return null
+    const chainId = getChainIdFromCaip2(response.caip2Id)
+    if (chainId === undefined) return null
 
-    // return {
-    //   accountId: account.id,
-    //   chainId,
-    //   accountAddress: '', // unknown
-    //   dataAccurate: false,
-    //   error: { error: response.error },
-    //   tokens: []
-    // }
-
-    return null
+    return {
+      accountId: account.id,
+      chainId,
+      tokens: [],
+      dataAccurate: false,
+      error: { error: response.error }
+    }
   }
 
   // STEP 1 — normalize chainId + determine correct address
