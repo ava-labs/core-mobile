@@ -178,7 +178,7 @@ const AssetsScreen: FC<Props> = ({
 
   const renderEmpty = useCallback(() => {
     return (
-      <CollapsibleTabs.ContentWrapper>
+      <CollapsibleTabs.ContentWrapper extraOffset={100}>
         {renderEmptyComponent()}
       </CollapsibleTabs.ContentWrapper>
     )

@@ -152,8 +152,7 @@ export const CollectiblesScreen = ({
       return (
         <ErrorState
           title="No collectibles found"
-          description="
-              Try changing the filter settings or reset the filter to see all assets."
+          description="Try changing the filter settings or reset the filter to see all assets."
           button={{
             title: 'Reset filter',
             onPress: onResetFilter
@@ -191,7 +190,7 @@ export const CollectiblesScreen = ({
 
   const renderEmpty = useMemo(() => {
     return (
-      <CollapsibleTabs.ContentWrapper>
+      <CollapsibleTabs.ContentWrapper extraOffset={100}>
         {emptyComponent}
       </CollapsibleTabs.ContentWrapper>
     )

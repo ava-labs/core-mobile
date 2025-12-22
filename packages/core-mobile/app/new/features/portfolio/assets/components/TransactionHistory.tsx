@@ -17,7 +17,6 @@ import {
   isSupportedNftChainId
 } from 'features/activity/utils'
 import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
-import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { FC, useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
@@ -153,13 +152,12 @@ const TransactionHistory: FC<Props> = ({
 
   const renderEmptyComponent = useCallback(() => {
     if (isLoading || isRefreshing) {
-      return <LoadingState sx={{ height: portfolioTabContentHeight }} />
+      return <LoadingState />
     }
 
     if (isError) {
       return (
         <ErrorState
-          sx={{ height: portfolioTabContentHeight }}
           description="Please hit refresh or try again later"
           button={{
             title: 'Refresh',
@@ -172,7 +170,6 @@ const TransactionHistory: FC<Props> = ({
     if (isSolanaNetwork) {
       return (
         <ErrorState
-          sx={{ height: portfolioTabContentHeight }}
           icon={
             <Image source={viewInExplorerIcon} sx={{ width: 42, height: 42 }} />
           }
@@ -193,7 +190,6 @@ const TransactionHistory: FC<Props> = ({
 
     return (
       <ErrorState
-        sx={{ height: portfolioTabContentHeight }}
         icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
         title="No recent transactions"
         description="Interact with this token onchain and see your activity here"
@@ -212,7 +208,7 @@ const TransactionHistory: FC<Props> = ({
 
   const renderEmpty = useCallback(() => {
     return (
-      <CollapsibleTabs.ContentWrapper>
+      <CollapsibleTabs.ContentWrapper extraOffset={28}>
         {renderEmptyComponent()}
       </CollapsibleTabs.ContentWrapper>
     )

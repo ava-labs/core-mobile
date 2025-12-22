@@ -97,41 +97,31 @@ export const DeFiScreen = ({
 
   const renderEmpty = useCallback(() => {
     if (isLoading) {
-      return (
-        <CollapsibleTabs.ContentWrapper>
-          <LoadingState />
-        </CollapsibleTabs.ContentWrapper>
-      )
+      return <LoadingState />
     }
 
     if (error || (isPaused && !isSuccess)) {
       return (
-        <CollapsibleTabs.ContentWrapper>
-          <ErrorState
-            description="Please hit refresh or try again later"
-            button={{
-              title: 'Refresh',
-              onPress: refetch
-            }}
-          />
-        </CollapsibleTabs.ContentWrapper>
+        <ErrorState
+          description="Please hit refresh or try again later"
+          button={{
+            title: 'Refresh',
+            onPress: refetch
+          }}
+        />
       )
     }
 
     return (
-      <CollapsibleTabs.ContentWrapper>
-        <Placeholder
-          icon={
-            <Image source={placeholderIcon} sx={{ width: 42, height: 42 }} />
-          }
-          title="No positions yet"
-          description="Discover a wide variety of apps, blockchains, wallets and explorers, built on the Avalanche ecosystem"
-          button={{
-            title: 'Explore DeFi',
-            onPress: handleExplore
-          }}
-        />
-      </CollapsibleTabs.ContentWrapper>
+      <Placeholder
+        icon={<Image source={placeholderIcon} sx={{ width: 42, height: 42 }} />}
+        title="No positions yet"
+        description="Discover a wide variety of apps, blockchains, wallets and explorers, built on the Avalanche ecosystem"
+        button={{
+          title: 'Explore DeFi',
+          onPress: handleExplore
+        }}
+      />
     )
   }, [isLoading, error, isPaused, isSuccess, handleExplore, refetch])
 
@@ -206,6 +196,14 @@ export const DeFiScreen = ({
     }
   }
 
+  const renderEmptyComponent = useCallback(() => {
+    return (
+      <CollapsibleTabs.ContentWrapper extraOffset={100}>
+        {renderEmpty()}
+      </CollapsibleTabs.ContentWrapper>
+    )
+  }, [renderEmpty])
+
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(0)}
@@ -231,7 +229,7 @@ export const DeFiScreen = ({
           />
         }
         ListHeaderComponent={renderHeader}
-        ListEmptyComponent={renderEmpty}
+        ListEmptyComponent={renderEmptyComponent}
         showsVerticalScrollIndicator={false}
       />
     </Animated.View>

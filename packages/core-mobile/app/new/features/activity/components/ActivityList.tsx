@@ -15,6 +15,7 @@ import { TokenActivityListItem } from 'features/portfolio/assets/components/Toke
 import { XpActivityListItem } from 'features/portfolio/assets/components/XpActivityListItem'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback } from 'react'
+import { RefreshControl } from 'react-native-gesture-handler'
 import { ActivityListItem } from '../utils'
 
 export const ActivityList = ({
@@ -101,6 +102,13 @@ export const ActivityList = ({
       data={data}
       extraData={{ prices }}
       renderItem={renderItem}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefreshing}
+          onRefresh={refresh}
+          progressViewOffset={0}
+        />
+      }
       ListHeaderComponent={renderHeader}
       ListEmptyComponent={renderEmpty}
       showsVerticalScrollIndicator={false}

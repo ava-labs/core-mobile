@@ -7,7 +7,10 @@ import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import {
   NavigationTitleHeader,
+  PriceChangeIndicator,
+  PriceChangeStatus,
   SegmentedControl,
+  Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -50,6 +53,7 @@ import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLo
 import { useSendSelectedToken } from 'features/send/store'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
+import { isEffectivelyZero } from 'features/track/utils/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
@@ -70,6 +74,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AVAX_P_ID } from 'services/balance/const'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { selectActiveAccount } from 'store/account/slice'
+import { LocalTokenWithBalance } from 'store/balance/types'
 import {
   selectIsBridgeBlocked,
   selectIsBridgeBtcBlocked,
@@ -99,6 +104,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const [tokenHeaderLayout, setTokenHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
+  const [titleLayout, setTitleLayout] = useState<LayoutRectangle | undefined>()
   const [segmentedControlLayout, setSegmentedControlLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -141,6 +147,10 @@ export const TokenDetailScreen = (): React.JSX.Element => {
 
   const handleHeaderLayout = useCallback((event: LayoutChangeEvent): void => {
     setTokenHeaderLayout(event.nativeEvent.layout)
+  }, [])
+
+  const handleTitleLayout = useCallback((event: LayoutChangeEvent): void => {
+    setTitleLayout(event.nativeEvent.layout)
   }, [])
 
   const handleSegmentedControlLayout = useCallback(
@@ -321,7 +331,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header: header,
-    targetLayout: tokenHeaderLayout
+    targetLayout: titleLayout
   })
   const selectedSegmentIndex = useSharedValue(0)
 
@@ -399,9 +409,10 @@ export const TokenDetailScreen = (): React.JSX.Element => {
         style={{
           backgroundColor: colors.$surfacePrimary,
           paddingTop: Platform.OS === 'ios' ? 12 : 0
-        }}>
+        }}
+        onLayout={handleHeaderLayout}>
         <View
-          onLayout={handleHeaderLayout}
+          onLayout={handleTitleLayout}
           style={{
             paddingHorizontal: 16
           }}>
@@ -428,22 +439,26 @@ export const TokenDetailScreen = (): React.JSX.Element => {
           buttons={actionButtons}
           contentContainerStyle={{
             padding: 16,
-            paddingBottom: 10
+            paddingBottom: 20
           }}
         />
+        <View style={{ paddingHorizontal: 16, paddingBottom: 12 }}>
+          <PriceBox token={token} />
+        </View>
       </View>
     )
   }, [
-    animatedHeaderStyle,
+    token,
     colors.$surfacePrimary,
-    formattedBalance,
     handleHeaderLayout,
+    handleTitleLayout,
+    animatedHeaderStyle,
+    formattedBalance,
+    selectedCurrency,
     isBalanceAccurate,
     isBalanceLoading,
-    selectedCurrency,
-    token,
-    actionButtons,
-    isPrivacyModeEnabled
+    isPrivacyModeEnabled,
+    actionButtons
   ])
 
   const tabHeight = useMemo(() => {
@@ -539,3 +554,76 @@ const SEGMENT_ITEMS = [
   { title: TokenDetailTab.Assets },
   { title: TokenDetailTab.Activity }
 ]
+
+const PriceBox = ({ token }: { token: LocalTokenWithBalance }): JSX.Element => {
+  const { theme } = useTheme()
+  const { formatCurrency } = useFormatCurrency()
+
+  const formattedPriceChange = useMemo(() => {
+    const priceChange = token.change24 ?? 0
+    const priceChangeInCurrency =
+      (priceChange * (token.priceInCurrency ?? 0)) / 100
+    const absPriceChange = Math.abs(priceChangeInCurrency)
+
+    // for effectively zero price changes, return undefined
+    // this is to avoid displaying "0.00" in the price change column
+    if (isEffectivelyZero(absPriceChange)) {
+      return undefined
+    }
+
+    return formatCurrency({
+      amount: absPriceChange
+    })
+  }, [formatCurrency, token.change24, token.priceInCurrency])
+
+  const formattedPercent = useMemo(
+    () =>
+      token.change24
+        ? Math.abs(token.change24)?.toFixed(2).toString() + '%'
+        : undefined,
+    [token.change24]
+  )
+
+  const status = token.change24
+    ? token.change24 > 0
+      ? PriceChangeStatus.Up
+      : token.change24 < 0
+      ? PriceChangeStatus.Down
+      : PriceChangeStatus.Neutral
+    : PriceChangeStatus.Neutral
+
+  // const isFavorite = useSelector(selectIsWatchlistFavorite(token.id))
+  // const chartData = charts[token.id] ?? defaultChartData
+
+  const priceInCurrency = useMemo(() => {
+    return formatCurrency({
+      amount: token.priceInCurrency ?? 0
+    })
+  }, [formatCurrency, token.priceInCurrency])
+
+  return (
+    <View
+      style={{
+        backgroundColor: theme.colors.$surfaceSecondary,
+        width: '100%',
+        paddingHorizontal: 16,
+        height: 90,
+        justifyContent: 'center',
+        borderRadius: 16
+      }}>
+      <Text variant="heading4" sx={{ color: theme.colors.$textPrimary }}>
+        {priceInCurrency}
+      </Text>
+      <PriceChangeIndicator
+        formattedPrice={formattedPriceChange}
+        status={status}
+        formattedPercent={formattedPercent}
+        textVariant="buttonMedium"
+        animated={true}
+      />
+      <Text variant="subtitle2" sx={{ color: theme.colors.$textPrimary }}>
+        Current {token.symbol} price
+      </Text>
+    </View>
+  )
+}
