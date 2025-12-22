@@ -81,7 +81,6 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
-import { TokenPriceCard } from '../components/TokenPriceCard'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -434,13 +433,13 @@ export const TokenDetailScreen = (): React.JSX.Element => {
         <ActionButtons
           buttons={actionButtons}
           contentContainerStyle={{
-            padding: 16,
-            paddingBottom: 20
+            padding: 16
           }}
         />
-        <View style={{ paddingHorizontal: 16, paddingBottom: 12 }}>
+        {/* TODO: add after design is finalized */}
+        {/* <View style={{ paddingHorizontal: 16, paddingBottom: 12 }}>
           <TokenPriceCard token={token} />
-        </View>
+        </View> */}
       </View>
     )
   }, [
