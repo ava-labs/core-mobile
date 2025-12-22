@@ -108,6 +108,7 @@ export const migrateRemainingActiveAccounts = async ({
   walletId: string
   walletType: WalletType.SEEDLESS | WalletType.MNEMONIC | WalletType.KEYSTONE
   startIndex: number
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 }): Promise<void> => {
   const { getState, dispatch } = listenerApi
   dispatch(setIsMigratingActiveAccounts(true))
@@ -169,7 +170,13 @@ export const migrateRemainingActiveAccounts = async ({
   } catch (error) {
     Logger.error('Failed to fetch remaining active accounts', error)
     transactionSnackbar.error({
-      error: 'Failed to add accounts'
+      message: 'Failed to add accounts',
+      error:
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+          ? error
+          : undefined
     })
   } finally {
     dispatch(setIsMigratingActiveAccounts(false))
