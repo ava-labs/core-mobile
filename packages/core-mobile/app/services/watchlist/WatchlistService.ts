@@ -19,6 +19,20 @@ import {
 } from 'utils/api/fetches/aggregatedTokensFetchClient'
 import { TrendingToken, WatchlistMarketsResponse } from 'utils/api/types'
 import Logger from 'utils/Logger'
+import { getV1WatchlistMarkets } from 'utils/api/generated/tokenAggregator2/sdk.gen'
+import { client } from 'utils/api/generated/tokenAggregator2/client.gen'
+import AppCheckService from 'services/fcm/AppCheckService'
+import { fetch as nitroFetch } from 'react-native-nitro-fetch'
+
+client.interceptors.request.use(async request => {
+  const appCheckToken = await AppCheckService.getToken()
+  request.headers.set('X-Firebase-AppCheck', appCheckToken.token)
+  return request
+})
+
+client.setConfig({
+  fetch: nitroFetch
+})
 
 /**
  * Fetches top markets from the token aggregator API
@@ -33,7 +47,19 @@ const fetchTopMarkets = async ({
   currency: string
   client: AggregatedApiClient
 }): Promise<WatchlistMarketsResponse> => {
-  return client.getV1watchlistmarkets(currency)
+  const { data, error } = await getV1WatchlistMarkets({
+    query: {
+      currency,
+      topMarkets: true
+    }
+  })
+
+  if (error) {
+    throw error
+  }
+
+  return data
+  // return client.getV1watchlistmarkets(currency)
 }
 
 /*

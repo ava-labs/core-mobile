@@ -22,6 +22,7 @@
     "gen:openapi-zod:balanceApi": "npx @hey-api/openapi-ts -i 'https://core-balance-api.avax-test.network/schema.json' -o './app/utils/apiClient/generated/balanceApi.client'",
     "gen:openapi:glacier": "npx openapi-typescript 'https://glacier-api-dev.avax.network/api-json' -o './app/utils/api/generated/glacier/schema.d.ts'",
     "gen:openapi:tokenAggregator": "npx openapi-typescript 'https://core-token-aggregator.avax-test.network/schema.json' -o './app/utils/api/generated/tokenAggregator/schema.d.ts'",
+    "gen:openapi:tokenAggregator2": "npx @hey-api/openapi-ts -i 'https://core-token-aggregator.avax-test.network/schema.json' -o './app/utils/api/generated/tokenAggregator2'",
     "gen:openapi:all": "yarn gen:openapi:glacier && yarn gen:openapi:tokenAggregator",
     "codegen": "yarn gen:openapi:all && yarn codegen-old",
     "appium:ios": "PLATFORM=ios wdio run ./e2e-appium/wdio.conf.ts",
