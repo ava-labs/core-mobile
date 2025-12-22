@@ -101,6 +101,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       canGoBack: false,
       canGoForward: false
     })
+    const lastSyncedUrlRef = useRef<string>('')
     const backAttemptUrlRef = useRef<string | null>(null)
     const backAttemptTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
       null
@@ -357,8 +358,6 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     const onNavigationStateChange = (navState: WebViewNavigation): void => {
       if (disabled) return
 
-      const prevUrl = lastNavStateRef.current.url
-
       // Update last nav-state *before* any filtering, so we can detect "no-op back" attempts.
       lastNavStateRef.current = {
         url: navState.url ?? '',
@@ -369,7 +368,12 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       const nextUrl = navState.url
       if (!nextUrl?.length || nextUrl.startsWith('about:')) return
 
-      if (prevUrl !== nextUrl) {
+      // Sync once per URL. WebView (especially with swipe / SPAs / redirects) can emit multiple
+      // navigation state changes for the same URL; gating by `loading === false` can miss updates
+      // because the URL often changes while loading=true and then settles without another URL change.
+      if (lastSyncedUrlRef.current !== nextUrl) {
+        lastSyncedUrlRef.current = nextUrl
+
         // Keep Redux history aligned with the actual WebView navigation stack
         dispatch(
           addHistoryForActiveTab({
