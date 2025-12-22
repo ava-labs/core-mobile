@@ -10,14 +10,6 @@ const PROFILE_SCHEMA_URL = isCI
   ? 'https://core-profile-api.avax.network/schema.json'
   : 'https://core-profile-api.avax-test.network/schema.json'
 
-const TOKEN_AGGREGATOR_SCHEMA_URL = isCI
-  ? 'https://core-token-aggregator.avax.network/schema.json'
-  : 'https://core-token-aggregator.avax-test.network/schema.json'
-
-const GLACIER_SCHEMA_URL = isCI
-  ? 'https://glacier-api.avax.network/api-json'
-  : 'https://glacier-api-dev.avax.network/api-json'
-
 function run(cmd) {
   execSync(cmd, {
     stdio: 'inherit',
@@ -36,7 +28,6 @@ function main() {
       './node_modules/@openzeppelin/contracts/build/contracts/ERC721.json ' +
       './node_modules/@openzeppelin/contracts/build/contracts/ERC1155.json'
   )
-
   // profile API (+ patch script)
   run(
     `npx openapi-zod-client '${PROFILE_SCHEMA_URL}' ` +
@@ -51,14 +42,10 @@ function main() {
   run('npx @hey-api/openapi-ts -f balance-api.config.js')
 
   // Glacier API
-  run(
-    `npx openapi-typescript ${GLACIER_SCHEMA_URL} -o ./app/utils/api/generated/glacier/schema.d.ts`
-  )
+  run('npx @hey-api/openapi-ts -f glacier-api.config.js')
 
   // Token Aggregator API
-  run(
-    `npx openapi-typescript ${TOKEN_AGGREGATOR_SCHEMA_URL} -o ./app/utils/api/generated/tokenAggregator/schema.d.ts`
-  )
+  run('npx @hey-api/openapi-ts -f aggregator-api.config.js')
 }
 
 main()

@@ -16,6 +16,7 @@ import {
 import { tokenAggregatorApi } from 'utils/api/clients/aggregatedTokensApiClient'
 import { TrendingToken, WatchlistMarketsResponse } from 'utils/api/types'
 import Logger from 'utils/Logger'
+import { getV1WatchlistMarkets } from 'utils/api/generated/tokenAggregator/aggregatorApi.client/sdk.gen'
 
 /**
  * Fetches top markets from the token aggregator API
@@ -27,23 +28,18 @@ const fetchTopMarkets = async ({
 }: {
   currency: string
 }): Promise<WatchlistMarketsResponse> => {
-  const { data, error } = await tokenAggregatorApi.GET(
-    '/v1/watchlist/markets',
-    {
-      params: {
-        query: {
-          currency,
-          topMarkets: true
-        }
-      }
+  const { data, error } = await getV1WatchlistMarkets({
+    client: tokenAggregatorApi,
+    query: {
+      currency,
+      topMarkets: true
     }
-  )
-
+  })
   if (error) {
     throw error
   }
 
-  return data
+  return data ?? []
 }
 
 /*
