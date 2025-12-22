@@ -573,7 +573,7 @@ __metadata:
     moment: 2.30.1
     msw: 1.3.2
     node-fetch: 3.3.2
-    openapi-fetch: ^0.15.0
+    openapi-fetch: 0.15.0
     openapi-typescript: 7.10.1
     patch-package: 8.0.0
     path-browserify: 1.0.1
@@ -617,7 +617,7 @@ __metadata:
     react-native-mmkv: 3.2.0
     react-native-modal-datetime-picker: 18.0.0
     react-native-nitro-avalabs-crypto: "workspace:*"
-    react-native-nitro-fetch: ^0.1.6
+    react-native-nitro-fetch: 0.1.6
     react-native-nitro-modules: 0.31.10
     react-native-os: 1.2.6
     react-native-pager-view: 6.7.1
@@ -31048,21 +31048,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"openapi-fetch@npm:0.15.0":
+  version: 0.15.0
+  resolution: "openapi-fetch@npm:0.15.0"
+  dependencies:
+    openapi-typescript-helpers: ^0.0.15
+  checksum: 054263a5fdad08933be8b5da280321ddaa03506bcace78704b5ba04327f90c74f892e7ffa4effaf20095fd1e6cbbd5d4b75f3c52807938eb49086a4a0d1e8173
+  languageName: node
+  linkType: hard
+
 "openapi-fetch@npm:0.8.2":
   version: 0.8.2
   resolution: "openapi-fetch@npm:0.8.2"
   dependencies:
     openapi-typescript-helpers: ^0.0.5
   checksum: 05541a2559f51c86e3fdd5369596002fdf3230b481241211ea79965900b5a0428cb34b8062ea24cd7e4a974feec6e54287f4d64c194e93b68925024d7f488463
-  languageName: node
-  linkType: hard
-
-"openapi-fetch@npm:^0.15.0":
-  version: 0.15.0
-  resolution: "openapi-fetch@npm:0.15.0"
-  dependencies:
-    openapi-typescript-helpers: ^0.0.15
-  checksum: 054263a5fdad08933be8b5da280321ddaa03506bcace78704b5ba04327f90c74f892e7ffa4effaf20095fd1e6cbbd5d4b75f3c52807938eb49086a4a0d1e8173
   languageName: node
   linkType: hard
 
@@ -33282,7 +33282,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"react-native-nitro-fetch@npm:^0.1.6":
+"react-native-nitro-fetch@npm:0.1.6":
   version: 0.1.6
   resolution: "react-native-nitro-fetch@npm:0.1.6"
   peerDependencies:
