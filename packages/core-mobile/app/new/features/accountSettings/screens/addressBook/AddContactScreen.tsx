@@ -89,6 +89,7 @@ export const AddContactScreen = (): React.JSX.Element => {
   return (
     <ScrollScreen
       isModal
+      hasParent
       renderFooter={renderFooter}
       shouldAvoidKeyboard
       disableStickyFooter

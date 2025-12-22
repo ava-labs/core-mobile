@@ -4,19 +4,23 @@ import {
 } from '@react-native-firebase/app-check'
 import Logger from 'utils/Logger'
 import Config from 'react-native-config'
+import { isDebugOrInternalBuild } from 'utils/Utils'
 
 class AppCheckService {
   init = (): void => {
+    const shouldUseDebugProvider =
+      isDebugOrInternalBuild() || process.env.E2E === 'true'
+
     const rnfbProvider = firebase
       .appCheck()
       .newReactNativeFirebaseAppCheckProvider()
     rnfbProvider.configure({
       android: {
-        provider: __DEV__ ? 'debug' : 'playIntegrity',
+        provider: shouldUseDebugProvider ? 'debug' : 'playIntegrity',
         debugToken: Config.APPCHECK_DEBUG_TOKEN
       },
       apple: {
-        provider: __DEV__ ? 'debug' : 'appAttest',
+        provider: shouldUseDebugProvider ? 'debug' : 'appAttest',
         debugToken: Config.APPCHECK_DEBUG_TOKEN
       }
     })
