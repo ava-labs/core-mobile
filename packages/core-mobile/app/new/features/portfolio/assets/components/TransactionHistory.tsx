@@ -2,6 +2,8 @@ import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { Image, SPRING_LINEAR_TRANSITION } from '@avalabs/k2-alpine'
 import { TransactionType } from '@avalabs/vm-module-types'
+import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
+import { DropdownGroup } from 'common/components/DropdownMenu'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
@@ -18,17 +20,16 @@ import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridge
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { FC, useCallback, useMemo } from 'react'
-import { StyleSheet } from 'react-native'
+import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
+import { useSelector } from 'react-redux'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
+import { selectActiveAccount } from 'store/account/slice'
 import { LocalTokenWithBalance } from 'store/balance'
 import { Transaction, useGetRecentTransactions } from 'store/transaction'
-import { DropdownGroup } from 'common/components/DropdownMenu'
 import { isPChain } from 'utils/network/isAvalancheNetwork'
 import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
-import { useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/account/slice'
 import {
   TOKEN_DETAIL_FILTERS,
   TokenDetailFilter,
@@ -40,6 +41,7 @@ const errorIcon = require('../../../../assets/icons/unamused_emoji.png')
 
 interface Props {
   token?: LocalTokenWithBalance
+  containerStyle: ViewStyle
   handleExplorerLink: (
     explorerLink: string,
     hash?: string,
@@ -51,7 +53,8 @@ interface Props {
 const TransactionHistory: FC<Props> = ({
   token,
   handleExplorerLink,
-  handlePendingBridge
+  handlePendingBridge,
+  containerStyle
 }): React.JSX.Element => {
   const { getNetwork } = useNetworks()
   const account = useSelector(selectActiveAccount)
@@ -148,7 +151,7 @@ const TransactionHistory: FC<Props> = ({
     return buildGroupedData(todayTxs, monthGroups, filteredPendingBridgeTxs)
   }, [data, pendingBridgeTxs, token?.symbol])
 
-  const renderEmpty = useCallback(() => {
+  const renderEmptyComponent = useCallback(() => {
     if (isLoading || isRefreshing) {
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
     }
@@ -207,11 +210,31 @@ const TransactionHistory: FC<Props> = ({
     refresh
   ])
 
+  const renderEmpty = useCallback(() => {
+    return (
+      <CollapsibleTabs.ContentWrapper>
+        {renderEmptyComponent()}
+      </CollapsibleTabs.ContentWrapper>
+    )
+  }, [renderEmptyComponent])
+
   const renderHeader = useCallback(() => {
     return (
-      <DropdownSelections filter={filter} sort={sort} sx={styles.dropdown} />
+      <DropdownSelections
+        filter={filter}
+        sort={sort}
+        sx={{ paddingHorizontal: 16, paddingTop: 10 }}
+      />
     )
   }, [filter, sort])
+
+  const overrideProps = {
+    contentContainerStyle: {
+      overflow: 'visible',
+      paddingBottom: 16,
+      ...containerStyle
+    }
+  }
 
   return (
     <Animated.View
@@ -225,12 +248,7 @@ const TransactionHistory: FC<Props> = ({
         xpToken={token}
         handlePendingBridge={handlePendingBridge}
         handleExplorerLink={handleExplorerLink}
-        overrideProps={{
-          contentContainerStyle: {
-            overflow: 'visible',
-            paddingBottom: 16
-          }
-        }}
+        overrideProps={overrideProps}
         renderHeader={renderHeader}
         renderEmpty={renderEmpty}
         isRefreshing={isRefreshing}
@@ -239,10 +257,6 @@ const TransactionHistory: FC<Props> = ({
     </Animated.View>
   )
 }
-
-const styles = StyleSheet.create({
-  dropdown: { paddingHorizontal: 16, marginTop: 4, marginBottom: 16 }
-})
 
 export default TransactionHistory
 

@@ -127,7 +127,7 @@ const SectionHeader = ({
     <View
       sx={{
         paddingHorizontal: 16,
-        paddingTop: isFirstItem ? 12 : 36,
+        paddingTop: isFirstItem ? 16 : 36,
         paddingBottom: 4,
         backgroundColor: theme.colors.$surfacePrimary
       }}>
