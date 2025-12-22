@@ -6,6 +6,8 @@ import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import {
+  LoadingContent,
+  MiniChart,
   NavigationTitleHeader,
   PriceChangeIndicator,
   PriceChangeStatus,
@@ -56,6 +58,7 @@ import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { isEffectivelyZero } from 'features/track/utils/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
@@ -558,6 +561,11 @@ const SEGMENT_ITEMS = [
 const PriceBox = ({ token }: { token: LocalTokenWithBalance }): JSX.Element => {
   const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
+  const { getWatchlistChart, isLoadingTrendingTokens } = useWatchlist()
+
+  const chartData = useMemo(() => {
+    return getWatchlistChart(token.internalId ?? '')
+  }, [getWatchlistChart, token.internalId])
 
   const formattedPriceChange = useMemo(() => {
     const priceChange = token.change24 ?? 0
@@ -592,9 +600,6 @@ const PriceBox = ({ token }: { token: LocalTokenWithBalance }): JSX.Element => {
       : PriceChangeStatus.Neutral
     : PriceChangeStatus.Neutral
 
-  // const isFavorite = useSelector(selectIsWatchlistFavorite(token.id))
-  // const chartData = charts[token.id] ?? defaultChartData
-
   const priceInCurrency = useMemo(() => {
     return formatCurrency({
       amount: token.priceInCurrency ?? 0
@@ -608,22 +613,50 @@ const PriceBox = ({ token }: { token: LocalTokenWithBalance }): JSX.Element => {
         width: '100%',
         paddingHorizontal: 16,
         height: 90,
-        justifyContent: 'center',
-        borderRadius: 16
+        borderRadius: 16,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center'
       }}>
-      <Text variant="heading4" sx={{ color: theme.colors.$textPrimary }}>
-        {priceInCurrency}
-      </Text>
-      <PriceChangeIndicator
-        formattedPrice={formattedPriceChange}
-        status={status}
-        formattedPercent={formattedPercent}
-        textVariant="buttonMedium"
-        animated={true}
-      />
-      <Text variant="subtitle2" sx={{ color: theme.colors.$textPrimary }}>
-        Current {token.symbol} price
-      </Text>
+      <View>
+        <Text variant="heading4" sx={{ color: theme.colors.$textPrimary }}>
+          {priceInCurrency}
+        </Text>
+        <PriceChangeIndicator
+          formattedPrice={formattedPriceChange}
+          status={status}
+          formattedPercent={formattedPercent}
+          textVariant="buttonMedium"
+          animated={true}
+        />
+        <Text variant="subtitle2" sx={{ color: theme.colors.$textSecondary }}>
+          Current {token.symbol} price
+        </Text>
+      </View>
+      <View
+        sx={{
+          position: 'absolute',
+          right: 30
+        }}>
+        <LoadingContent isLoading={isLoadingTrendingTokens}>
+          {chartData?.dataPoints.length ? (
+            <MiniChart
+              style={{
+                width: 90,
+                height: 40
+              }}
+              data={chartData.dataPoints}
+              negative={chartData.ranges.diffValue < 0}
+            />
+          ) : (
+            <Text
+              variant="subtitle2"
+              sx={{ color: theme.colors.$textSecondary }}>
+              Unable to load chart
+            </Text>
+          )}
+        </LoadingContent>
+      </View>
     </View>
   )
 }
