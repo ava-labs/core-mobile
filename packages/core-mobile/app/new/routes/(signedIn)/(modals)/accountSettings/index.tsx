@@ -16,8 +16,8 @@ import { Space } from 'common/components/Space'
 import { VisibilityBarButton } from 'common/components/VisibilityBarButton'
 import { useAppUpdateStatus } from 'common/hooks/useAppUpdateStatus'
 import { useAvatar } from 'common/hooks/useAvatar'
-import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { useDeleteWallet } from 'common/hooks/useDeleteWallet'
+import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { showSnackbar } from 'common/utils/toast'
 import { useRouter } from 'expo-router'
 import { About } from 'features/accountSettings/components/About'
@@ -46,10 +46,10 @@ const AccountSettingsScreen = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const contacts = useSelector(selectContacts)
-  const { navigate, back } = useRouter()
-  const { openUrl } = useCoreBrowser()
+  const { navigate } = useRouter()
   const { avatar } = useAvatar()
   const appUpdateStatus = useAppUpdateStatus()
+  const { openUrl } = useInAppBrowser()
 
   const renderHeaderRight = useCallback(() => {
     return (
@@ -96,11 +96,10 @@ const AccountSettingsScreen = (): JSX.Element => {
   }
 
   const handlePressAboutItem = useCallback(
-    ({ url, title }: { url: string; title: string }) => {
-      back()
-      openUrl({ url, title })
+    ({ url }: { url: string }) => {
+      openUrl(url)
     },
-    [openUrl, back]
+    [openUrl]
   )
 
   const renderAppUpdateBanner = useCallback(() => {
@@ -112,7 +111,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   return (
     <ScrollScreen
       isModal
-      navigationTitle="Account settings"
+      navigationTitle="Settings and Accounts"
       renderHeaderRight={renderHeaderRight}
       testID="settings_scroll_view"
       contentContainerStyle={{
