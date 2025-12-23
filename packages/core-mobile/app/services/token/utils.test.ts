@@ -72,7 +72,9 @@ describe('applyExchangeRateToTrendingTokens', () => {
         sparkline: [
           { unixTime: 1740498300, value: 10 },
           { unixTime: 1740499200, value: 9.5 }
-        ]
+        ],
+        isNative: false,
+        lastUpdated: ''
       }
     ]
 
@@ -96,7 +98,7 @@ describe('applyExchangeRateToTrendingTokens', () => {
       {
         address: '0x123',
         decimals: 18,
-        liquidity: null,
+        liquidity: 0,
         logoURI: 'https://example.com/logo.png',
         internalId: '0x123',
         coingeckoId: 'test-coingecko-id',
@@ -116,7 +118,9 @@ describe('applyExchangeRateToTrendingTokens', () => {
         discord: '',
         medium: '',
         verified: null,
-        sparkline: undefined
+        sparkline: null,
+        isNative: false,
+        lastUpdated: ''
       }
     ]
 
@@ -126,11 +130,11 @@ describe('applyExchangeRateToTrendingTokens', () => {
       exchangeRate
     )
 
-    expect(converted[0]?.liquidity).toBe(null)
+    expect(converted[0]?.liquidity).toBe(0)
     expect(converted[0]?.volume24hUSD).toBe(null)
     expect(converted[0]?.marketcap).toBeNull()
     expect(converted[0]?.fdv).toBeUndefined()
-    expect(converted[0]?.sparkline).toBeUndefined()
+    expect(converted[0]?.sparkline).toBeNull()
     expect(converted[0]?.price).toBe(8.5)
   })
 

@@ -132,4 +132,55 @@ describe('tab history', () => {
       id: 'history_1'
     })
   })
+
+  it('should dedupe history by trimmed URL (trailing slash) without appending new entries', () => {
+    jest.useFakeTimers().setSystemTime(new Date('2023-10-26'))
+    const state1 = reducer(initialState, addTab())
+
+    // We hash based on trimTrailingSlash(url). If trimming breaks, this will return a different id.
+    createHash.mockImplementation(input => {
+      return input === 'https://www.google.com'
+        ? 'history_google'
+        : 'unexpected'
+    })
+
+    // First add with trailing slash
+    const state2 = reducer(
+      state1,
+      addHistoryForActiveTab({
+        title: 'Google',
+        url: 'https://www.google.com/'
+      })
+    )
+
+    const tabId = state2.tabs.activeTabId
+    expect(createHash).toHaveBeenCalledWith('https://www.google.com')
+    expect(state2.tabs.entities[tabId]?.historyIds).toEqual(['history_google'])
+    expect(state2.tabs.entities[tabId]?.activeHistoryIndex).toBe(0)
+    // We store the real URL (not the trimmed one) to avoid redirect/canonicalization loops.
+    expect(state2.tabs.entities[tabId]?.activeHistory?.url).toBe(
+      'https://www.google.com/'
+    )
+    expect(state2.globalHistory.entities.history_google?.url).toBe(
+      'https://www.google.com/'
+    )
+
+    // Add again without trailing slash. Should not append a new history id.
+    const state3 = reducer(
+      state2,
+      addHistoryForActiveTab({
+        title: 'Google (no slash)',
+        url: 'https://www.google.com'
+      })
+    )
+
+    expect(state3.tabs.entities[tabId]?.historyIds).toEqual(['history_google'])
+    expect(state3.tabs.entities[tabId]?.activeHistoryIndex).toBe(0)
+    expect(state3.tabs.entities[tabId]?.activeHistory?.url).toBe(
+      'https://www.google.com'
+    )
+    expect(state3.globalHistory.entities.history_google?.url).toBe(
+      'https://www.google.com'
+    )
+  })
 })

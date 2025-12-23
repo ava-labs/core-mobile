@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ChannelId } from 'services/notifications/channels'
 import TokenService from 'services/token/TokenService'
-import { Ranges, TrendingToken } from 'services/token/types'
+import { Ranges } from 'services/token/types'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import {
   MarketToken,
@@ -18,6 +18,7 @@ import {
   toggleWatchListFavorite
 } from 'store/watchlist'
 import { getSocialHandle } from 'utils/getSocialHandle/getSocialHandle'
+import { TrendingToken } from 'utils/api/types'
 import { usePrevious } from './usePrevious'
 
 const isTrendingToken = (token: MarketToken | undefined): boolean =>
@@ -174,7 +175,7 @@ export const useTokenDetails = ({
           contractAddress: trendingTokenData.address,
           urlHostname: trendingTokenData.website ?? undefined,
           has24hChartDataOnly: true,
-          currentPrice: trendingTokenData.price
+          currentPrice: trendingTokenData.price ?? undefined
         })
     }
 
@@ -201,7 +202,7 @@ export const useTokenDetails = ({
         urlHostname: data?.links?.homepage?.[0],
         has24hChartDataOnly: false,
         description: data.description?.en ?? undefined,
-        currentPrice: price?.priceInCurrency
+        currentPrice: price?.priceInCurrency ?? undefined
       })
     }
 
@@ -259,7 +260,7 @@ export const useTokenDetails = ({
     ranges,
     chartDays,
     changeChartDays,
-    priceInCurrency: price?.priceInCurrency,
+    priceInCurrency: price?.priceInCurrency ?? undefined,
     token,
     noData: chartData?.length === 0 && !tokenInfo
   }

@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { createHash } from 'utils/createHash'
 import { RootState } from 'store/types'
 import { getUnixTime } from 'date-fns'
+import { trimTrailingSlash } from 'utils/string/trimTrailingSlash'
 import {
   History,
   HistoryId,
@@ -47,11 +48,13 @@ const globalHistorySlice = createSlice({
     builder.addCase(
       addHistoryForActiveTab,
       (state: HistoryState, { payload: history }) => {
-        const historyId = createHash(history.url)
+        const trimmedUrl = trimTrailingSlash(history.url)
+        const historyId = createHash(trimmedUrl)
         historyAdapter.upsertOne(state, {
           id: historyId,
           lastVisited: getUnixTime(new Date()),
-          ...history
+          ...history,
+          url: history.url
         })
         // limit max histories
         if (state.ids.length > MAXIMUM_HISTORIES) {
