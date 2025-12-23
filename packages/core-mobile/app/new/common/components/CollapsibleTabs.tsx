@@ -156,9 +156,9 @@ const ContentWrapper = ({
           : {
               height:
                 frame.height -
-                header.height -
                 headerHeight -
                 insets.bottom -
+                tabBarHeight -
                 extraOffset
             },
         {

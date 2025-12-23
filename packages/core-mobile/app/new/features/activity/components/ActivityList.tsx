@@ -15,6 +15,9 @@ import { TokenActivityListItem } from 'features/portfolio/assets/components/Toke
 import { XpActivityListItem } from 'features/portfolio/assets/components/XpActivityListItem'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback } from 'react'
+import { Platform } from 'react-native'
+import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
+import { RefreshControl } from 'react-native-gesture-handler'
 import { ActivityListItem } from '../utils'
 
 export const ActivityList = ({
@@ -94,6 +97,8 @@ export const ActivityList = ({
 
   const keyExtractor = useCallback((item: ActivityListItem) => item.id, [])
 
+  const header = useHeaderMeasurements()
+
   return (
     <CollapsibleTabs.FlashList
       key={xpToken?.symbol}
@@ -101,6 +106,13 @@ export const ActivityList = ({
       data={data}
       extraData={{ prices }}
       renderItem={renderItem}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefreshing}
+          onRefresh={refresh}
+          progressViewOffset={Platform.OS === 'ios' ? 0 : header.height}
+        />
+      }
       ListHeaderComponent={renderHeader}
       ListEmptyComponent={renderEmpty}
       showsVerticalScrollIndicator={false}
@@ -127,7 +139,7 @@ const SectionHeader = ({
     <View
       sx={{
         paddingHorizontal: 16,
-        paddingTop: isFirstItem ? 12 : 36,
+        paddingTop: isFirstItem ? 16 : 36,
         paddingBottom: 4,
         backgroundColor: theme.colors.$surfacePrimary
       }}>
