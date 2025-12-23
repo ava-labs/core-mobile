@@ -216,7 +216,47 @@ export const useFadingHeaderNavigation = ({
     return renderHeaderRightRef.current?.()
   }, [])
 
-  // Set navigation options only once on mount
+  /**
+   * Keep `headerRight` in sync while the screen is focused.
+   *
+   * React Navigation won't re-render the header just because the implementation
+   * of `renderHeaderRight` changed; it needs `setOptions`. We keep a stable
+   * function reference (to avoid Android "child already has a parent" issues)
+   * and update options whenever the caller passes a new `renderHeaderRight`.
+   *
+   * Important: if `renderHeaderRight` is NOT provided, we do not touch
+   * `headerRight` at all (so static screen options like `homeScreenOptions`
+   * remain intact).
+   *
+   * Also: no blur cleanup here, since clearing on blur can race and clobber
+   * the next focused screen's header options (especially when using `getParent()`).
+   */
+  useFocusEffect(
+    useCallback(() => {
+      const nav = hasParent ? navigation.getParent() : navigation
+      /**
+       * `headerRight` handling rules:
+       * - If this screen targets a parent navigator (`hasParent`), we "own" the
+       *   parent's `headerRight` while focused, so we either set it (when provided)
+       *   or clear it (when not provided).
+       * - If this screen does NOT target a parent, we only set `headerRight`
+       *   when explicitly provided, to avoid clobbering static options
+       *   (e.g. Portfolio `homeScreenOptions`).
+       */
+      if (hasParent) {
+        nav?.setOptions({
+          headerRight: renderHeaderRight ? stableHeaderRight : undefined
+        })
+        return
+      }
+
+      if (renderHeaderRight) {
+        nav?.setOptions({ headerRight: stableHeaderRight })
+      }
+    }, [hasParent, navigation, renderHeaderRight, stableHeaderRight])
+  )
+
+  // Set navigation options on focus
   useFocusEffect(
     useCallback(() => {
       const nav = hasParent ? navigation.getParent() : navigation
@@ -227,20 +267,6 @@ export const useFadingHeaderNavigation = ({
 
       if (showNavigationHeaderTitle) {
         navigationOptions.headerTitle = stableHeaderTitle
-      }
-
-      // If a custom right header component is provided, set it in the navigation options
-      if (renderHeaderRightRef.current) {
-        navigationOptions.headerRight = stableHeaderRight
-
-        nav?.setOptions(navigationOptions)
-
-        // Clean up the header right component when the screen is unmounted
-        return () => {
-          nav?.setOptions({
-            headerRight: undefined
-          })
-        }
       }
 
       // Set the navigation options
@@ -259,7 +285,6 @@ export const useFadingHeaderNavigation = ({
       navigation,
       stableHeaderBackground,
       stableHeaderTitle,
-      stableHeaderRight,
       showNavigationHeaderTitle
     ])
   )
