@@ -4,6 +4,7 @@ import { History } from 'store/browser/types'
 import {
   goBackward,
   goForward,
+  goToDiscoverPage,
   selectActiveTab,
   updateActiveHistoryForTab
 } from './slices/tabs'
@@ -87,6 +88,23 @@ export const addBrowserListener = (startListening: AppStartListening): void => {
   startListening({
     matcher: isAnyOf(goBackward, goForward),
     effect: updateActiveHistory
+  })
+
+  startListening({
+    actionCreator: goToDiscoverPage,
+    effect: async (_, listenerApi) => {
+      const state = listenerApi.getState()
+      const activeTab = selectActiveTab(state)
+      if (!activeTab) return
+
+      listenerApi.dispatch(
+        updateActiveHistoryForTab({
+          id: activeTab.id,
+          activeHistoryIndex: -1,
+          activeHistory: undefined
+        })
+      )
+    }
   })
 
   startListening({

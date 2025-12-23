@@ -43,6 +43,15 @@ function useBrowserContextValue(): BrowserContextType {
   const showRecentSearches = useSharedValue(false)
 
   useEffect(() => {
+    // Keep the input in sync with the active tab's url when navigation changes
+    // Don't overwrite user typing while the input is focused.
+    if (inputRef.current?.isFocused()) return
+
+    const nextUrl = activeTab?.activeHistory?.url ?? ''
+    setUrlEntry(nextUrl)
+  }, [activeTab?.activeHistory?.url, activeTab?.activeHistoryIndex])
+
+  useEffect(() => {
     if (urlEntry.length > 0) {
       if (!showRecentSearches.value) {
         showRecentSearches.value = true
