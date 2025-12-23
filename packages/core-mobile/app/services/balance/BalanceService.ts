@@ -1,36 +1,35 @@
-import { Network } from '@avalabs/core-chains-sdk'
-import { SPAN_STATUS_ERROR } from '@sentry/core'
-import { Account } from 'store/account/types'
-import { getAddressByNetwork } from 'store/account/utils'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
+import { AddressIndex } from '@avalabs/types'
 import {
-  type NetworkContractToken,
-  type TokenWithBalance,
   type Error,
+  type NetworkContractToken,
   TokenType,
+  type TokenWithBalance,
   GetBalancesResponse as VmGetBalancesResponse
 } from '@avalabs/vm-module-types'
-import ModuleManager from 'vmModule/ModuleManager'
-import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { SPAN_STATUS_ERROR } from '@sentry/core'
+import SentryWrapper from 'services/sentry/SentryWrapper'
+import { Account } from 'store/account/types'
+import { getAddressByNetwork } from 'store/account/utils'
+import { balanceApi } from 'utils/apiClient/balance/balanceApi'
+import { GetBalancesRequestBody } from 'utils/apiClient/generated/balanceApi.client'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
-import { NetworkVMType } from '@avalabs/core-chains-sdk'
+import Logger from 'utils/Logger'
 import {
   isPChain,
   isXChain,
   isXPNetwork
 } from 'utils/network/isAvalancheNetwork'
-import { AddressIndex } from '@avalabs/types'
-import Logger from 'utils/Logger'
-import SentryWrapper from 'services/sentry/SentryWrapper'
-import { GetBalancesRequestBody } from 'utils/apiClient/generated/balanceApi.client'
-import { balanceApi } from 'utils/apiClient/balance/balanceApi'
+import ModuleManager from 'vmModule/ModuleManager'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { AVAX_P_ID, AVAX_X_ID } from './const'
 import {
   AdjustedNormalizedBalancesForAccount,
   NormalizedBalancesForAccount
 } from './types'
-import { AVAX_P_ID, AVAX_X_ID } from './const'
+import { buildRequestItemsForAccount } from './utils/buildRequestItemsForAccount'
 import { getLocalTokenId } from './utils/getLocalTokenId'
 import { mapBalanceResponseToLegacy } from './utils/mapBalanceResponseToLegacy'
-import { buildRequestItemsForAccount } from './utils/buildRequestItemsForAccount'
 
 type AccountId = string
 
@@ -62,7 +61,7 @@ export class BalanceService {
    * }
    */
   // eslint-disable-next-line sonarjs/cognitive-complexity
-  async getBalancesForAccounts({
+  async getVMBalancesForAccounts({
     networks,
     accounts,
     currency,
@@ -327,7 +326,7 @@ export class BalanceService {
     const body = {
       data: requestItems,
       currency: currency as GetBalancesRequestBody['currency'],
-      showUntrustedTokens: false
+      showUntrustedTokens: true
     }
 
     for await (const balance of balanceApi.getBalancesStream(body)) {
@@ -339,6 +338,90 @@ export class BalanceService {
 
       // Add to final result
       finalResults.push(normalized)
+    }
+
+    return finalResults
+  }
+
+  /**
+   * Fetch balances for multiple accounts across multiple networks using the
+   * Balance Service streaming API.
+   *
+   * Each streamed response is mapped back to an Account using:
+   * - `response.id` (preferred: account.id)
+   * - `response.id` as an address lookup (EVM/BTC/SVM commonly use address as id)
+   *
+   * @returns a map of accountId → AdjustedNormalizedBalancesForAccount[]
+   */
+  // eslint-disable-next-line sonarjs/cognitive-complexity
+  async getBalancesForAccounts({
+    networks,
+    accounts,
+    currency,
+    onBalanceLoaded
+  }: {
+    networks: Network[]
+    accounts: Account[]
+    currency: string
+    onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
+  }): Promise<Record<AccountId, AdjustedNormalizedBalancesForAccount[]>> {
+    const finalResults: Record<
+      AccountId,
+      AdjustedNormalizedBalancesForAccount[]
+    > = {}
+
+    for (const account of accounts) {
+      finalResults[account.id] = []
+    }
+
+    const requestItems = buildRequestItemsForAccounts(networks, accounts)
+
+    const body = {
+      data: requestItems,
+      currency: currency as GetBalancesRequestBody['currency'],
+      showUntrustedTokens: true
+    }
+
+    const accountById = accounts.reduce((acc, a) => {
+      acc[a.id] = a
+      return acc
+    }, {} as Record<string, Account>)
+
+    const accountByAddress = accounts.reduce((acc, account) => {
+      const addresses = networks.flatMap(network =>
+        getAddressesForAccountAndNetwork(account, network)
+      )
+      for (const address of addresses) {
+        if (address) acc[address] = account
+      }
+      return acc
+    }, {} as Record<string, Account>)
+
+    for await (const balance of balanceApi.getBalancesStream(body)) {
+      const id = 'id' in balance ? balance.id : undefined
+      const account =
+        (id ? accountById[id] : undefined) ??
+        (id ? accountByAddress[id] : undefined) ??
+        (accounts.length === 1 ? accounts[0] : undefined)
+
+      if (!account) {
+        Logger.warn(
+          '[BalanceService][getBalancesForAccountsV2] Could not map streamed balance to an account',
+          {
+            id,
+            caip2Id: 'caip2Id' in balance ? balance.caip2Id : undefined,
+            networkType:
+              'networkType' in balance ? balance.networkType : undefined
+          }
+        )
+        continue
+      }
+
+      const normalized = mapBalanceResponseToLegacy(account, balance)
+      if (!normalized) continue
+
+      onBalanceLoaded?.(normalized)
+      finalResults[account.id]?.push(normalized)
     }
 
     return finalResults
@@ -393,3 +476,189 @@ const formatXpAddressesForNetwork = (
 }
 
 export default new BalanceService()
+
+const uniq = <T>(arr: ReadonlyArray<T>): T[] => Array.from(new Set(arr))
+
+type BalanceRequestItem = GetBalancesRequestBody['data'][number]
+
+type NonAvaxRequestItem = Exclude<BalanceRequestItem, { namespace: 'avax' }>
+type AvaxRequestItem = Extract<BalanceRequestItem, { namespace: 'avax' }>
+
+type CorethAvaxItem = Extract<
+  AvaxRequestItem,
+  {
+    references: Array<
+      '8aDU0Kqh-5d23op-B-r-4YbQFRbsgF9a' | 'YRLfeDBJpfEqUWe2FYR1OpXsnDDZeKWd'
+    >
+  }
+>
+type XpAvaxItem = Exclude<AvaxRequestItem, CorethAvaxItem>
+
+const CORETH_REFS = new Set([
+  '8aDU0Kqh-5d23op-B-r-4YbQFRbsgF9a',
+  'YRLfeDBJpfEqUWe2FYR1OpXsnDDZeKWd'
+])
+
+const isCorethRef = (ref: AvaxRequestItem['references'][number]): boolean =>
+  CORETH_REFS.has(ref)
+
+const isCorethAvaxItem = (item: AvaxRequestItem): item is CorethAvaxItem =>
+  item.references.every(isCorethRef)
+
+const getAvaxBucketKey = (item: AvaxRequestItem): string => {
+  const kind = isCorethAvaxItem(item) ? 'coreth' : 'xp'
+  const refs = uniq(item.references).slice().sort().join('|')
+  return `${kind}:${refs}`
+}
+
+const mergeNonAvaxItem = (
+  acc: NonAvaxRequestItem[],
+  item: NonAvaxRequestItem
+): void => {
+  const existing = acc.find(i => i.namespace === item.namespace)
+  if (!existing) {
+    // Keep literal reference types intact by narrowing on the discriminant.
+    if (item.namespace === 'bip122') {
+      acc.push({
+        ...item,
+        addresses: uniq(item.addresses),
+        references: uniq(item.references)
+      })
+      return
+    }
+    if (item.namespace === 'solana') {
+      acc.push({
+        ...item,
+        addresses: uniq(item.addresses),
+        references: uniq(item.references)
+      })
+      return
+    }
+    acc.push({
+      ...item,
+      addresses: uniq(item.addresses),
+      references: uniq(item.references)
+    })
+    return
+  }
+
+  existing.addresses = uniq([...existing.addresses, ...item.addresses])
+  existing.references = uniq([...existing.references, ...item.references])
+}
+
+type AvaxEntry =
+  | { key: string; kind: 'coreth'; item: CorethAvaxItem }
+  | { key: string; kind: 'xp'; item: XpAvaxItem }
+
+const mergeAddressDetails = (
+  existing: { addressDetails?: Array<{ id: string; addresses: string[] }> },
+  incoming: { addressDetails?: Array<{ id: string; addresses: string[] }> }
+): void => {
+  const existingDetails = existing.addressDetails ?? []
+  const incomingDetails = incoming.addressDetails ?? []
+
+  for (const next of incomingDetails) {
+    const found = existingDetails.find(d => d.id === next.id)
+    if (!found) {
+      existingDetails.push({ ...next, addresses: uniq(next.addresses) })
+    } else {
+      found.addresses = uniq([...found.addresses, ...next.addresses])
+    }
+  }
+
+  existing.addressDetails = existingDetails
+}
+
+const mergeAvaxItem = (acc: AvaxEntry[], item: AvaxRequestItem): void => {
+  const key = getAvaxBucketKey(item)
+
+  if (isCorethAvaxItem(item)) {
+    const existing = acc.find(e => e.key === key && e.kind === 'coreth') as
+      | AvaxEntry
+      | undefined
+
+    if (!existing || existing.kind !== 'coreth') {
+      acc.push({
+        key,
+        kind: 'coreth',
+        item: {
+          ...item,
+          references: uniq(item.references),
+          addressDetails: item.addressDetails?.map(d => ({
+            ...d,
+            addresses: uniq(d.addresses)
+          }))
+        }
+      })
+      return
+    }
+
+    existing.item.references = uniq([
+      ...existing.item.references,
+      ...item.references
+    ])
+    mergeAddressDetails(existing.item, item)
+    if (existing.item.filterOutDustUtxos === false) return
+    if (item.filterOutDustUtxos === false) {
+      existing.item.filterOutDustUtxos = false
+    }
+    return
+  }
+
+  const xpItem = item as XpAvaxItem
+  const existing = acc.find(e => e.key === key && e.kind === 'xp') as
+    | AvaxEntry
+    | undefined
+
+  if (!existing || existing.kind !== 'xp') {
+    acc.push({
+      key,
+      kind: 'xp',
+      item: {
+        ...xpItem,
+        references: uniq(xpItem.references),
+        addressDetails: xpItem.addressDetails?.map(d => ({
+          ...d,
+          addresses: uniq(d.addresses)
+        }))
+      }
+    })
+    return
+  }
+
+  existing.item.references = uniq([
+    ...existing.item.references,
+    ...xpItem.references
+  ])
+  mergeAddressDetails(existing.item, xpItem)
+  if (existing.item.filterOutDustUtxos === false) return
+  if (xpItem.filterOutDustUtxos === false) {
+    existing.item.filterOutDustUtxos = false
+  }
+}
+
+/**
+ * Builds and merges request items for multiple accounts. This avoids sending
+ * duplicate namespace buckets (EVM/BTC/SVM) and merges `avax.addressDetails`
+ * by `id` while keeping Coreth vs XP reference sets separate.
+ */
+const buildRequestItemsForAccounts = (
+  networks: Network[],
+  accounts: Account[]
+): GetBalancesRequestBody['data'] => {
+  const nonAvax: NonAvaxRequestItem[] = []
+  const avax: AvaxEntry[] = []
+
+  for (const account of accounts) {
+    const items = buildRequestItemsForAccount(networks, account)
+    for (const item of items) {
+      if (item.namespace === 'avax') {
+        mergeAvaxItem(avax, item)
+      } else {
+        mergeNonAvaxItem(nonAvax, item)
+      }
+    }
+  }
+
+  return [...nonAvax, ...avax.map(e => e.item)]
+}
