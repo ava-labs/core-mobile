@@ -1,7 +1,7 @@
 import TokenService from 'services/token/TokenService'
 import { transformSparklineData } from 'services/token/utils'
 import { MarketType } from 'store/watchlist'
-import { tokenAggregatorApi } from 'utils/api/clients/aggregatedTokensApiClient'
+import { getV1WatchlistMarkets } from 'utils/api/generated/tokenAggregator/aggregatorApi.client/sdk.gen'
 import WATCHLIST_PRICE from '../token/__mocks__/watchlistPrice.json'
 import ADDITIONAL_WATCHLIST_PRICE from '../token/__mocks__/additionalWatchlistPrice.json'
 import WatchlistService from './WatchlistService'
@@ -17,33 +17,35 @@ jest.mock('services/token/TokenService', () => ({
   fetchPriceWithMarketData: jest.fn()
 }))
 
-jest.mock('utils/api/clients/aggregatedTokensApiClient', () => ({
-  tokenAggregatorApi: {
-    GET: jest.fn()
-  }
-}))
+// Mock the generated SDK function
+jest.mock(
+  'utils/api/generated/tokenAggregator/aggregatorApi.client/sdk.gen',
+  () => ({
+    getV1WatchlistMarkets: jest.fn()
+  })
+)
 
 describe('getTopMarkets', () => {
-  const apiMock = tokenAggregatorApi.GET as jest.Mock
+  const getV1WatchlistMarketsMock = getV1WatchlistMarkets as jest.Mock
 
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
   it('should call token aggregator API with correct params', async () => {
-    apiMock.mockResolvedValue({ data: [] })
+    getV1WatchlistMarketsMock.mockResolvedValue({ data: [] })
 
     await WatchlistService.getTopTokens('USD')
 
-    expect(apiMock).toHaveBeenCalledWith('/v1/watchlist/markets', {
-      params: {
+    expect(getV1WatchlistMarketsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
         query: { currency: 'usd', topMarkets: true }
-      }
-    })
+      })
+    )
   })
 
   it('should return correctly mapped markets', async () => {
-    apiMock.mockResolvedValue({
+    getV1WatchlistMarketsMock.mockResolvedValue({
       data: [
         {
           internalId: 'avax',
@@ -79,7 +81,7 @@ describe('getTopMarkets', () => {
   })
 
   it('should map sparkline chart data when present', async () => {
-    apiMock.mockResolvedValue({
+    getV1WatchlistMarketsMock.mockResolvedValue({
       data: [
         {
           internalId: 'avax',
@@ -96,7 +98,7 @@ describe('getTopMarkets', () => {
   })
 
   it('should NOT add chart entry when sparkline is missing', async () => {
-    apiMock.mockResolvedValue({
+    getV1WatchlistMarketsMock.mockResolvedValue({
       data: [
         {
           internalId: 'avax',
@@ -110,7 +112,7 @@ describe('getTopMarkets', () => {
   })
 
   it('should return empty markets and charts when API returns empty array', async () => {
-    apiMock.mockResolvedValue({ data: [] })
+    getV1WatchlistMarketsMock.mockResolvedValue({ data: [] })
 
     const result = await WatchlistService.getTopTokens('USD')
 
@@ -119,7 +121,7 @@ describe('getTopMarkets', () => {
   })
 
   it('should handle missing optional fields gracefully', async () => {
-    apiMock.mockResolvedValue({
+    getV1WatchlistMarketsMock.mockResolvedValue({
       data: [
         {
           internalId: 'test',
