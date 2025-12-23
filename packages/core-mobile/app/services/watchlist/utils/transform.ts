@@ -1,4 +1,4 @@
-import { TrendingToken } from 'services/token/types'
+import { TrendingToken } from 'utils/api/types'
 import { Charts, MarketToken, MarketType, Prices } from 'store/watchlist/types'
 import { transformMartketChartRawPrices } from 'services/token/utils'
 
@@ -31,11 +31,11 @@ export const transformTrendingTokens = (
       marketType: MarketType.TRENDING,
       id,
       coingeckoId: token.coingeckoId,
-      platforms: token.platforms,
+      platforms: token.platforms ?? {},
       symbol: token.symbol,
       name: token.name,
       logoUri: token.logoURI ?? undefined,
-      currentPrice: token.price,
+      currentPrice: token.price ?? undefined,
       priceChangePercentage24h:
         charts[id]?.ranges.percentChange ??
         token.price24hChangePercent ??
@@ -44,7 +44,7 @@ export const transformTrendingTokens = (
     }
 
     prices[id] = {
-      priceInCurrency: token.price,
+      priceInCurrency: token.price ?? 0,
       change24: priceChange24h,
       marketCap: token.marketcap ?? 0,
       vol24: token.volume24hUSD ?? 0
