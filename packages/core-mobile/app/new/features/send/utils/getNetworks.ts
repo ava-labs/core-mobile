@@ -87,7 +87,15 @@ export const getNetworks = ({
       })
   }
 
-  if ('addressXP' in address) {
+  if (
+    'addressXP' in address &&
+    address.addressXP &&
+    isValidAddress({
+      address: address.addressXP,
+      addressType: AddressType.XP,
+      isDeveloperMode
+    })
+  ) {
     networks.push(isDeveloperMode ? NETWORK_P_TEST : NETWORK_P)
     networks.push(isDeveloperMode ? NETWORK_X_TEST : NETWORK_X)
   }
