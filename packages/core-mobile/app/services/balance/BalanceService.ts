@@ -327,7 +327,7 @@ export class BalanceService {
     const body = {
       data: requestItems,
       currency: currency as GetBalancesRequestBody['currency'],
-      showUntrustedTokens: false
+      showUntrustedTokens: true
     }
 
     for await (const balance of balanceApi.getBalancesStream(body)) {
