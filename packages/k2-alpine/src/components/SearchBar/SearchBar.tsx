@@ -1,4 +1,3 @@
-import { BlurView } from 'expo-blur'
 import debounce from 'lodash.debounce'
 import React, { FC, useCallback, useEffect, useRef, useState } from 'react'
 import { TextInput, TextInputProps, ViewStyle } from 'react-native'
@@ -163,6 +162,7 @@ export const SearchBar: FC<Props> = ({
             ref={textInputRef}
             style={{
               height: '100%',
+              lineHeight: 16,
               flex: 1,
               color: colors.$textPrimary,
               paddingLeft: 36,
