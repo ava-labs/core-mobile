@@ -1,7 +1,13 @@
-import { alpha, Icons, Pressable, Text, useTheme } from '@avalabs/k2-alpine'
+import {
+  alpha,
+  BlurViewWithFallback,
+  Icons,
+  Pressable,
+  Text,
+  useTheme
+} from '@avalabs/k2-alpine'
 import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
 import { BottomTabBarProps } from '@bottom-tabs/react-navigation'
-import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { BottomTabs } from 'common/components/BottomTabs'
 import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import { useHasXpAddresses } from 'common/hooks/useHasXpAddresses'

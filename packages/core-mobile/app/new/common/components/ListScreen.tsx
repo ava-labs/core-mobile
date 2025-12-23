@@ -42,7 +42,7 @@ import {
   useSafeAreaFrame,
   useSafeAreaInsets
 } from 'react-native-safe-area-context'
-import { BlurViewWithFallback } from './BlurViewWithFallback'
+import { BlurViewWithFallback } from '@avalabs/k2-alpine/src/components/BlurViewWithFallback/BlurViewWithFallback'
 import { ErrorState } from './ErrorState'
 
 // Use this component when you need to display a list of items in a screen.
