@@ -31,7 +31,8 @@ import {
 import { Seconds } from 'types/siUnits'
 import { isOnGoing } from 'utils/earn/status'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
-import { glacierApi } from 'utils/api/clients/glacierApiClient'
+import { glacierApiClient } from 'utils/api/clients/glacierApiClient'
+import { listLatestPrimaryNetworkTransactions } from 'utils/api/generated/glacier/glacierApi.client'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -322,28 +323,24 @@ class EarnService {
     const transactions: PChainTransaction[] = []
 
     do {
-      const { data } = await glacierApi.GET(
-        '/v1/networks/{network}/blockchains/{blockchainId}/transactions',
-        {
-          params: {
-            path: {
-              network: isTestnet ? GlacierNetwork.FUJI : GlacierNetwork.MAINNET,
-              blockchainId: BlockchainId.P_CHAIN
-            },
-            query: {
-              addresses: addressesStr,
-              pageSize: 100,
-              sortOrder,
-              pageToken,
-              txTypes: [
-                PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX,
-                PChainTransactionType.ADD_DELEGATOR_TX
-              ],
-              startTimestamp
-            }
-          }
+      const { data } = await listLatestPrimaryNetworkTransactions({
+        client: glacierApiClient,
+        path: {
+          network: isTestnet ? GlacierNetwork.FUJI : GlacierNetwork.MAINNET,
+          blockchainId: BlockchainId.P_CHAIN
+        },
+        query: {
+          addresses: addressesStr,
+          pageSize: 100,
+          sortOrder,
+          pageToken,
+          txTypes: [
+            PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX,
+            PChainTransactionType.ADD_DELEGATOR_TX
+          ],
+          startTimestamp
         }
-      )
+      })
 
       pageToken = data?.nextPageToken
       transactions.push(...(data?.transactions as PChainTransaction[]))
