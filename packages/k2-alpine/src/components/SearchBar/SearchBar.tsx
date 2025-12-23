@@ -6,6 +6,7 @@ import { useTheme } from '../../hooks'
 import { Icons } from '../../theme/tokens/Icons'
 import { Text, TouchableOpacity, View } from '../Primitives'
 import { alpha } from '../../utils'
+import { BlurViewWithFallback } from '../BlurViewWithFallback/BlurViewWithFallback'
 
 interface Props extends Omit<TextInputProps, 'value' | 'onChangeText'> {
   onTextChanged: (value: string) => void
@@ -124,15 +125,15 @@ export const SearchBar: FC<Props> = ({
 
   return (
     <View style={[{ flexDirection: 'row' }, containerStyle]}>
-      <BlurView
+      <BlurViewWithFallback
+        backgroundColor={
+          isDark ? alpha(colors.$white, 0.15) : alpha(colors.$textPrimary, 0.06)
+        }
         style={{
           height: HEIGHT,
           borderRadius: 1000,
           flex: 1,
           flexDirection: 'row',
-          backgroundColor: isDark
-            ? alpha(colors.$white, 0.15)
-            : alpha(colors.$textPrimary, 0.06),
           overflow: 'hidden'
         }}>
         <View
@@ -184,7 +185,7 @@ export const SearchBar: FC<Props> = ({
           />
         </View>
         {renderRightComponent()}
-      </BlurView>
+      </BlurViewWithFallback>
       {isFocused && useCancel && (
         <Text
           variant="body1"
