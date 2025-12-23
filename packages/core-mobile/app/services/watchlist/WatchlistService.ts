@@ -28,16 +28,13 @@ const fetchTopMarkets = async ({
 }: {
   currency: string
 }): Promise<WatchlistMarketsResponse> => {
-  const { data, error } = await getV1WatchlistMarkets({
+  const { data } = await getV1WatchlistMarkets({
     client: tokenAggregatorApi,
     query: {
       currency,
       topMarkets: true
     }
   })
-  if (error) {
-    throw error
-  }
 
   return data ?? []
 }
@@ -52,9 +49,6 @@ const fetchTopMarkets = async ({
     - get token Id from network
     - get price and market data from cached
     - get price and market data from network (tokens not in cache)
-
-  This service supports dependency injection for testing.
-  Pass a custom WatchListClient to the constructor or use the default singleton.
 */
 class WatchlistService {
   async getTopTokens(currency: string): Promise<{
@@ -261,8 +255,4 @@ class WatchlistService {
   }
 }
 
-// Export the class for testing with dependency injection
-export { WatchlistService }
-
-// Export singleton instance as default for production use
 export default new WatchlistService()
