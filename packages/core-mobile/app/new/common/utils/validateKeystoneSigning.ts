@@ -26,20 +26,41 @@ export const validateKeystoneSigning = async ({
         })
 
   const utxos = utxoSet.getUTXOs()
-  const primaryUtxo = utxos.find(utxo =>
-    utxo
-      .getOutputOwners()
-      .addrs.find(
-        addr =>
-          addr.toString().toLowerCase() ===
-          stripAddressPrefix(address).toLowerCase()
-      )
-  )
 
-  const otherUtxos = utxos.filter(utxo => utxo.utxoId !== primaryUtxo?.utxoId)
-
-  return otherUtxos.some(
+  // sort the utxos by amount in descending order for address index 0
+  const primaryUtxos = utxos
+    .filter(utxo =>
+      utxo
+        .getOutputOwners()
+        .addrs.find(
+          addr =>
+            addr.toString().toLowerCase() ===
+            stripAddressPrefix(address).toLowerCase()
+        )
+    )
     // @ts-ignore: TODO: use correct type
-    utxo => utxo.output.amt > primaryUtxo?.output.amt
+    .sort((a, b) => b.output?.amt - a.output?.amt)
+
+  // sort the utxos by amount in descending order for address index 1 and above
+  const otherUtxos = utxos
+    .filter(utxo =>
+      utxo
+        .getOutputOwners()
+        .addrs.find(
+          addr =>
+            addr.toString().toLowerCase() !==
+            stripAddressPrefix(address).toLowerCase()
+        )
+    )
+    // @ts-ignore: TODO: use correct type
+    .sort((a, b) => b.output?.amt - a.output?.amt)
+
+  // return true if the largest primary utxo is less than the largest other utxo
+  // show alert if true for keystone wallet
+  return (
+    primaryUtxos.length > 0 &&
+    otherUtxos.length > 0 &&
+    // @ts-ignore: TODO: use correct type
+    primaryUtxos[0]?.output?.amt < otherUtxos[0]?.output?.amt
   )
 }
