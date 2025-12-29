@@ -132,6 +132,7 @@ const addAvmFields = (
     atomicMemoryUnlocked: bigint
     atomicMemoryLocked: bigint
   }
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
   const categories = token.categories
 
@@ -150,21 +151,48 @@ const addAvmFields = (
     ]
   }
 
+  let unlocked = 0n
+  let locked = 0n
+  let atomicMemoryUnlocked = 0n
+  let atomicMemoryLocked = 0n
+
+  categories.unlocked.forEach(asset => {
+    if (isAvaxAssetId(asset.assetId)) {
+      unlocked += BigInt(asset.balance)
+    }
+  })
+
+  categories.locked.forEach(asset => {
+    if (isAvaxAssetId(asset.assetId)) {
+      locked += BigInt(asset.balance)
+    }
+  })
+
+  if (categories.atomicMemoryUnlocked) {
+    Object.values(categories.atomicMemoryUnlocked).forEach(assets => {
+      assets.forEach(asset => {
+        if (isAvaxAssetId(asset.assetId)) {
+          atomicMemoryUnlocked += BigInt(asset.balance)
+        }
+      })
+    })
+  }
+
+  if (token.categories.atomicMemoryLocked) {
+    Object.values(token.categories.atomicMemoryLocked).forEach(assets => {
+      assets.forEach(asset => {
+        if (isAvaxAssetId(asset.assetId)) {
+          atomicMemoryLocked += BigInt(asset.balance)
+        }
+      })
+    })
+  }
+
   const balancePerType = {
-    unlocked: categories.unlocked
-      .filter(asset => isAvaxAssetId(asset.assetId))
-      .reduce((acc, current) => acc + BigInt(current.balance), 0n),
-    locked: categories.locked
-      .filter(asset => isAvaxAssetId(asset.assetId))
-      .reduce((acc, current) => acc + BigInt(current.balance), 0n),
-    atomicMemoryUnlocked: Object.values(categories.atomicMemoryUnlocked)
-      .flat()
-      .filter(asset => isAvaxAssetId(asset.assetId))
-      .reduce((acc, current) => acc + BigInt(current.balance), 0n),
-    atomicMemoryLocked: Object.values(token.categories.atomicMemoryLocked ?? {})
-      .flat()
-      .filter(asset => isAvaxAssetId(asset.assetId))
-      .reduce((acc, current) => acc + BigInt(current.balance), 0n)
+    unlocked,
+    locked,
+    atomicMemoryUnlocked,
+    atomicMemoryLocked
   }
 
   const available = balancePerType.unlocked

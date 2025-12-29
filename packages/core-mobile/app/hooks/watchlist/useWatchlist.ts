@@ -110,27 +110,57 @@ export const useWatchlist = (): UseWatchListReturnType => {
     favoriteIds
   ])
 
-  const allTokens = useMemo(() => {
-    const seen = new Set<string>()
-    const tokens: MarketToken[] = []
+  const { allTokens, tokensById, tokensByPlatform, tokensBySymbol } =
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    useMemo(() => {
+      const seen = new Set<string>()
+      const tokens: MarketToken[] = []
+      const byId = new Map<string, MarketToken>()
+      const byPlatform = new Map<string, MarketToken>()
+      const bySymbol = new Map<string, MarketToken>()
 
-    const addUnique = (tokenList?: Record<string, MarketToken>): void => {
-      if (!tokenList) return
+      const addUnique = (tokenList?: Record<string, MarketToken>): void => {
+        if (!tokenList) return
 
-      // deduplicate tokens with same internal id
-      for (const token of Object.values(tokenList)) {
-        if (token.id && !seen.has(token.id)) {
-          seen.add(token.id)
-          tokens.push(token)
+        // deduplicate tokens with same internal id
+        for (const token of Object.values(tokenList)) {
+          if (token.id && !seen.has(token.id)) {
+            seen.add(token.id)
+            tokens.push(token)
+            byId.set(token.id, token)
+
+            // Populate platform map
+            if (token.platforms) {
+              for (const [chainId, address] of Object.entries(
+                token.platforms
+              )) {
+                if (address) {
+                  byPlatform.set(`${chainId}:${address.toLowerCase()}`, token)
+                }
+              }
+            }
+
+            // Populate symbol map (last one wins if duplicates, which matches find behavior generally)
+            // Ideally we might want prioritized symbol matching but standard map set is fine for now
+            // as we use it as a fallback.
+            const symbolKey = token.symbol.toLowerCase().trim()
+            if (!bySymbol.has(symbolKey)) {
+              bySymbol.set(symbolKey, token)
+            }
+          }
         }
       }
-    }
 
-    addUnique(transformedTrendingTokens?.tokens)
-    addUnique(topTokensResponse?.tokens)
+      addUnique(transformedTrendingTokens?.tokens)
+      addUnique(topTokensResponse?.tokens)
 
-    return tokens
-  }, [topTokensResponse?.tokens, transformedTrendingTokens?.tokens])
+      return {
+        allTokens: tokens,
+        tokensById: byId,
+        tokensByPlatform: byPlatform,
+        tokensBySymbol: bySymbol
+      }
+    }, [topTokensResponse?.tokens, transformedTrendingTokens?.tokens])
 
   const topTokens = useMemo(() => {
     return allTokens.filter(token => token.marketType === MarketType.TOP)
@@ -171,51 +201,40 @@ export const useWatchlist = (): UseWatchListReturnType => {
   const getMarketTokenBySymbol = useCallback(
     (symbol: string): MarketToken | undefined => {
       const targetSymbol = symbol.toLowerCase().trim()
-
-      return allTokens.find(
-        marketToken => marketToken.symbol.toLowerCase().trim() === targetSymbol
-      )
+      return tokensBySymbol.get(targetSymbol)
     },
-    [allTokens]
+    [tokensBySymbol]
   )
 
   const getMarketTokenById = useCallback(
-    (id: string): MarketToken | undefined =>
-      allTokens.find(token => token.id === id),
-    [allTokens]
+    (id: string): MarketToken | undefined => tokensById.get(id),
+    [tokensById]
   )
 
   const resolveMarketToken = useCallback(
     (token: LocalTokenWithBalance): MarketToken | undefined => {
-      const caip2ChainId = getCaip2ChainIdForToken({
-        type: token.type,
-        chainId: token.networkChainId
-      })
-      const contractTokenAddress = isNetworkContractToken(token)
-        ? token.address.toLowerCase()
-        : undefined
+      // 1. Try match by internal ID
+      if (token.internalId) {
+        const match = tokensById.get(token.internalId)
+        if (match) return match
+      }
+
+      // 2. Try match by contract address (platform)
+      if (isNetworkContractToken(token)) {
+        const caip2ChainId = getCaip2ChainIdForToken({
+          type: token.type,
+          chainId: token.networkChainId
+        })
+        const address = token.address.toLowerCase()
+        const match = tokensByPlatform.get(`${caip2ChainId}:${address}`)
+        if (match) return match
+      }
+
+      // 3. Fallback to symbol match
       const targetSymbol = token.symbol.toLowerCase().trim()
-
-      return allTokens.find(marketToken => {
-        // First try to match by internal id
-        if (token.internalId === marketToken.id) {
-          return true
-        }
-
-        // Next try to match by contract address if possible
-        if (
-          contractTokenAddress &&
-          marketToken.platforms?.[caip2ChainId]?.toLowerCase() ===
-            contractTokenAddress
-        ) {
-          return true
-        }
-
-        // Finally, fallback to matching by symbol (not ideal, but better than nothing)
-        return marketToken.symbol.toLowerCase().trim() === targetSymbol
-      })
+      return tokensBySymbol.get(targetSymbol)
     },
-    [allTokens]
+    [tokensById, tokensByPlatform, tokensBySymbol]
   )
 
   return {
