@@ -110,11 +110,11 @@ const usePVMSend: SendAdapterPVM = ({
       // TODO: remove this once we update keystone SDK updated and have keystone signing working
       if (shouldShowKeystoneSigningAlert) {
         Alert.alert(
-          'Signing error, please go to core web to use UTXO selector to send transaction.',
-          'Click the button below to view the UTXO selector user guide.',
+          'Having trouble signing with Keystone?',
+          'It looks like this transaction cannot be signed in the app. To complete it, please visit core.app and send the funds directly from your Keystone wallet. You can use the article below to learn how to send from Avalanche P‑Chain or X‑Chain by manually selecting UTXOs',
           [
             {
-              text: 'View user guide',
+              text: 'View article',
               onPress: () => openUrl(DOCS_KEYSTONE_SIGNING_ERROR_URL)
             },
             {
