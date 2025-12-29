@@ -1,37 +1,38 @@
 import { Account } from 'store/account/types'
 import { importPWithBalanceCheck } from 'services/earn/importP'
 import Big from 'big.js'
-import { FujiParams, MainnetParams } from 'utils/NetworkParams'
-import { importC } from 'services/earn/importC'
+import { getUnixTime } from 'date-fns'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { exportP } from 'services/earn/exportP'
-import WalletService from 'services/wallet/WalletService'
-import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
-import NetworkService from 'services/network/NetworkService'
-import { pvm, UnsignedTx, info } from '@avalabs/avalanchejs'
-import Logger from 'utils/Logger'
-import { retry, RetryBackoffPolicy } from 'utils/js/retry'
+import { importC } from 'services/earn/importC'
 import {
   AddDelegatorTransactionProps,
   RecoveryEvents
 } from 'services/earn/types'
-import { getUnixTime } from 'date-fns'
-import { Seconds } from 'types/siUnits'
-import {
-  BlockchainId,
-  Network as GlacierNetwork,
-  PChainTransaction,
-  PChainTransactionType,
-  SortOrder
-} from '@avalabs/glacier-sdk'
-import { isOnGoing } from 'utils/earn/status'
-import { glacierApi } from 'utils/apiClient/glacier/glacierApi'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { Avalanche } from '@avalabs/core-wallets-sdk'
+import NetworkService from 'services/network/NetworkService'
+import WalletService from 'services/wallet/WalletService'
+import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
 import { AvaxXP } from 'types/AvaxXP'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP'
 import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
+import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { info, pvm, UnsignedTx } from '@avalabs/avalanchejs'
+import { retry, RetryBackoffPolicy } from 'utils/js/retry'
+import Logger from 'utils/Logger'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import {
+  SortOrder,
+  PChainTransaction,
+  BlockchainId,
+  PChainTransactionType,
+  Network as GlacierNetwork
+} from '@avalabs/glacier-sdk'
+import { Seconds } from 'types/siUnits'
+import { isOnGoing } from 'utils/earn/status'
+import { FujiParams, MainnetParams } from 'utils/NetworkParams'
+import { glacierApiClient } from 'utils/api/clients/glacierApiClient'
+import { listLatestPrimaryNetworkTransactions } from 'utils/api/generated/glacier/glacierApi.client'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -322,12 +323,13 @@ class EarnService {
     const transactions: PChainTransaction[] = []
 
     do {
-      const response = await glacierApi.listLatestPrimaryNetworkTransactions({
-        params: {
+      const { data } = await listLatestPrimaryNetworkTransactions({
+        client: glacierApiClient,
+        path: {
           network: isTestnet ? GlacierNetwork.FUJI : GlacierNetwork.MAINNET,
           blockchainId: BlockchainId.P_CHAIN
         },
-        queries: {
+        query: {
           addresses: addressesStr,
           pageSize: 100,
           sortOrder,
@@ -339,8 +341,9 @@ class EarnService {
           startTimestamp
         }
       })
-      pageToken = response.nextPageToken
-      transactions.push(...(response.transactions as PChainTransaction[]))
+
+      pageToken = data?.nextPageToken
+      transactions.push(...(data?.transactions as PChainTransaction[]))
     } while (pageToken)
 
     return transactions

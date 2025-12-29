@@ -615,6 +615,7 @@ __metadata:
     react-native-mmkv: 3.2.0
     react-native-modal-datetime-picker: 18.0.0
     react-native-nitro-avalabs-crypto: "workspace:*"
+    react-native-nitro-fetch: 0.1.6
     react-native-nitro-modules: 0.31.10
     react-native-os: 1.2.6
     react-native-pager-view: 6.7.1
@@ -33190,6 +33191,21 @@ __metadata:
     react-native-nitro-modules: "*"
   languageName: unknown
   linkType: soft
+
+"react-native-nitro-fetch@npm:0.1.6":
+  version: 0.1.6
+  resolution: "react-native-nitro-fetch@npm:0.1.6"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+    react-native-nitro-modules: ^0.29.2
+    react-native-worklets-core: ^1.6.0
+  peerDependenciesMeta:
+    react-native-worklets-core:
+      optional: true
+  checksum: a46cce48b7b20af075aad995fed5b0c915d7bc7ec97d4f03212ac5ae808731f23d6265a36d5e23e9ccdb1525dfd3fb558d08ecad57dc0d87be069c005a67b5c7
+  languageName: node
+  linkType: hard
 
 "react-native-nitro-modules@npm:0.31.10, react-native-nitro-modules@npm:^0.31.10":
   version: 0.31.10
