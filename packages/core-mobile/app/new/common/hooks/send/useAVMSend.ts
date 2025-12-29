@@ -8,6 +8,12 @@ import { isTokenWithBalanceAVM } from '@avalabs/avalanche-module'
 import Logger from 'utils/Logger'
 import { useSendContext } from 'new/features/send/context/sendContext'
 import { useSendSelectedToken } from 'new/features/send/store'
+import { Alert } from 'react-native'
+import { validateKeystoneSigning } from 'common/utils/validateKeystoneSigning'
+import { DOCS_KEYSTONE_SIGNING_ERROR_URL } from 'resources/Constants'
+import { WalletType } from 'services/wallet/types'
+import useInAppBrowser from '../useInAppBrowser'
+import { useActiveWallet } from '../useActiveWallet'
 import { SendAdapterAVM, SendErrorMessage } from './utils/types'
 import { send as sendAVM } from './utils/avm/send'
 import { validate as validateAVMSend } from './utils/avm/validate'
@@ -18,6 +24,8 @@ const useAVMSend: SendAdapterAVM = ({
   account,
   fromAddress
 }) => {
+  const { openUrl } = useInAppBrowser()
+  const wallet = useActiveWallet()
   const { request } = useInAppRequest()
   const {
     setMaxAmount,
@@ -44,6 +52,33 @@ const useAVMSend: SendAdapterAVM = ({
 
       setIsSending(true)
 
+      const shouldShowKeystoneSigningAlert =
+        wallet.type === WalletType.KEYSTONE &&
+        (await validateKeystoneSigning({
+          chainAlias: 'X',
+          account,
+          isTestnet: !!network.isTestnet
+        }))
+
+      // TODO: remove this once we update keystone SDK updated and have keystone signing working
+      if (shouldShowKeystoneSigningAlert) {
+        Alert.alert(
+          'Signing error, please go to core web to use UTXO selector to send transaction.',
+          'Click the button below to view the UTXO selector user guide.',
+          [
+            {
+              text: 'View user guide',
+              onPress: () => openUrl(DOCS_KEYSTONE_SIGNING_ERROR_URL)
+            },
+            {
+              text: 'Dismiss',
+              style: 'cancel'
+            }
+          ]
+        )
+        return Promise.reject('Keystone signing error')
+      }
+
       return await sendAVM({
         request,
         fromAddress,
@@ -60,9 +95,11 @@ const useAVMSend: SendAdapterAVM = ({
     amount,
     network,
     setIsSending,
+    wallet.type,
+    account,
     request,
     fromAddress,
-    account
+    openUrl
   ])
 
   const handleError = useCallback(

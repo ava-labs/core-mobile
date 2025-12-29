@@ -14,9 +14,14 @@ import { useSendSelectedToken } from 'new/features/send/store'
 import { assertNotUndefined } from 'utils/assertions'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
+import { validateKeystoneSigning } from 'common/utils/validateKeystoneSigning'
+import { WalletType } from 'services/wallet/types'
+import { Alert } from 'react-native'
+import { DOCS_KEYSTONE_SIGNING_ERROR_URL } from 'resources/Constants'
+import useInAppBrowser from '../useInAppBrowser'
+import { validate as validatePVMSend } from './utils/pvm/validate'
 import { SendAdapterPVM, SendErrorMessage } from './utils/types'
 import { send as sendPVM } from './utils/pvm/send'
-import { validate as validatePVMSend } from './utils/pvm/validate'
 
 const usePVMSend: SendAdapterPVM = ({
   network,
@@ -25,6 +30,7 @@ const usePVMSend: SendAdapterPVM = ({
   fromAddress
   // eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
+  const { openUrl } = useInAppBrowser()
   const { request } = useInAppRequest()
   const {
     setMaxAmount,
@@ -92,6 +98,33 @@ const usePVMSend: SendAdapterPVM = ({
 
     try {
       setIsSending(true)
+
+      const shouldShowKeystoneSigningAlert =
+        wallet.type === WalletType.KEYSTONE &&
+        (await validateKeystoneSigning({
+          chainAlias: 'P',
+          account,
+          isTestnet: !!network.isTestnet
+        }))
+
+      // TODO: remove this once we update keystone SDK updated and have keystone signing working
+      if (shouldShowKeystoneSigningAlert) {
+        Alert.alert(
+          'Signing error, please go to core web to use UTXO selector to send transaction.',
+          'Click the button below to view the UTXO selector user guide.',
+          [
+            {
+              text: 'View user guide',
+              onPress: () => openUrl(DOCS_KEYSTONE_SIGNING_ERROR_URL)
+            },
+            {
+              text: 'Dismiss',
+              style: 'cancel'
+            }
+          ]
+        )
+        return Promise.reject('Keystone signing error')
+      }
       return await sendPVM({
         walletId: wallet.id,
         walletType: wallet.type,
@@ -110,14 +143,16 @@ const usePVMSend: SendAdapterPVM = ({
     addressToSend,
     selectedToken,
     amount,
-    setIsSending,
-    request,
     network,
-    fromAddress,
+    setIsSending,
+    wallet.type,
+    wallet.id,
     account,
+    request,
+    fromAddress,
     getFeeState,
     gasPrice,
-    wallet
+    openUrl
   ])
 
   const handleError = useCallback(

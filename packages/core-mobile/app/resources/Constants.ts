@@ -28,6 +28,9 @@ export const HELP_URL = 'https://support.core.app/en/'
 export const DOCS_STAKING_URL =
   'https://support.core.app/en/articles/7950590-core-mobile-how-do-i-use-stake'
 
+export const DOCS_KEYSTONE_SIGNING_ERROR_URL =
+  'https://support.core.app/en/articles/13251923-keystone-why-can-t-i-send-avax-on-the-x-or-p-chain'
+
 export const DOCS_BRIDGE_FAQS_URL =
   'https://support.avax.network/en/articles/6092559-avalanche-bridge-faq'
 

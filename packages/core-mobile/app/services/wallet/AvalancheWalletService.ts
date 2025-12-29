@@ -75,6 +75,21 @@ class AvalancheWalletService {
     return readOnlySigner.getUTXOs('P')
   }
 
+  /**
+   * Get UTXOs on X-Chain.
+   */
+  public async getXChainUTXOs({
+    account,
+    isTestnet
+  }: {
+    account: Account
+    isTestnet: boolean
+  }): Promise<utils.UtxoSet> {
+    const readOnlySigner = await this.getReadOnlySigner(account, isTestnet)
+
+    return readOnlySigner.getUTXOs('X')
+  }
+
   public async createExportCTx({
     amountInNAvax,
     baseFeeInNAvax,
