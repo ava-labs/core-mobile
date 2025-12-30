@@ -18,7 +18,6 @@ import { WalletType } from 'services/wallet/types'
 import { useIsRefetchingBalancesForAccount } from 'features/portfolio/hooks/useIsRefetchingBalancesForAccount'
 import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
 import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
-import { NormalizedBalancesForAccount } from 'services/balance/types'
 
 const AccountScreen = (): JSX.Element => {
   const router = useRouter()
@@ -36,7 +35,7 @@ const AccountScreen = (): JSX.Element => {
   const isRefetchingBalance = useIsRefetchingBalancesForAccount(account)
   const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
     account,
-    sourceData: balances as unknown as NormalizedBalancesForAccount[]
+    sourceData: balances
   })
   const isLoading =
     (isFetchingBalances && balances.length === 0) || isRefetchingBalance
