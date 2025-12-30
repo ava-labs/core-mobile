@@ -104,7 +104,8 @@ const usePVMSend: SendAdapterPVM = ({
         (await validateKeystoneSigning({
           chainAlias: 'P',
           account,
-          isTestnet: !!network.isTestnet
+          isTestnet: !!network.isTestnet,
+          amount
         }))
 
       // TODO: remove this once we update keystone SDK updated and have keystone signing working

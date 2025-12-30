@@ -1,5 +1,6 @@
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { Account } from 'store/account'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { stripAddressPrefix } from './stripAddressPrefix'
 
 // TODO: remove this once we update keystone SDK updated and have keystone signing working
@@ -7,11 +8,13 @@ import { stripAddressPrefix } from './stripAddressPrefix'
 export const validateKeystoneSigning = async ({
   chainAlias,
   account,
-  isTestnet
+  isTestnet,
+  amount
 }: {
   chainAlias: 'P' | 'X'
   account: Account
   isTestnet: boolean
+  amount: TokenUnit
 }): Promise<boolean> => {
   const address = chainAlias === 'P' ? account.addressPVM : account.addressAVM
   const utxoSet =
@@ -55,12 +58,19 @@ export const validateKeystoneSigning = async ({
     // @ts-ignore: TODO: use correct type
     .sort((a, b) => b.output?.amt - a.output?.amt)
 
+  // @ts-ignore: TODO: use correct type
+  const primaryUtxoAmount = primaryUtxos[0]?.output?.amt
+  // @ts-ignore: TODO: use correct type
+  const otherUtxoAmount = otherUtxos[0]?.output?.amt
+
   // return true if the largest primary utxo is less than the largest other utxo
   // show alert if true for keystone wallet
   return (
     primaryUtxos.length > 0 &&
     otherUtxos.length > 0 &&
-    // @ts-ignore: TODO: use correct type
-    primaryUtxos[0]?.output?.amt < otherUtxos[0]?.output?.amt
+    primaryUtxoAmount &&
+    otherUtxoAmount &&
+    Number(primaryUtxoAmount) < Number(otherUtxoAmount) &&
+    Number(primaryUtxoAmount) < Number(amount.toSubUnit())
   )
 }
