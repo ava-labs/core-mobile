@@ -18,7 +18,6 @@ import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { useBuy } from 'features/meld/hooks/useBuy'
 import { useWithdraw } from 'features/meld/hooks/useWithdraw'
@@ -132,7 +131,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const formattedBalance = useMemo(() => {
     // CP-10570: Balances should never show $0.00
     return allBalancesInaccurate || balanceTotalInCurrency === 0
-      ? UNKNOWN_AMOUNT
+      ? formatCurrency({
+          amount: 0,
+          withoutCurrencySuffix: true
+        }).replace('0.00', '-')
       : formatCurrency({
           amount: balanceTotalInCurrency,
           withoutCurrencySuffix: true

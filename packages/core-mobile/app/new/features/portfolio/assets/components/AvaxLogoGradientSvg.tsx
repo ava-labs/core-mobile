@@ -26,7 +26,7 @@ export const AvaxLogoGradientSvg = ({
   const rotateValue = useSharedValue(0)
 
   const width = isScreenLargerThan6_2Inches ? 360 : 319
-  const height = isScreenLargerThan6_2Inches ? 381 : 281
+  const height = isScreenLargerThan6_2Inches ? 240 : 281
   const gradientColor1 = isDark ? '#78787C' : '#EBEBEC'
   const gradientColor2 = isDark ? '#47474C' : '#B8B8BA'
   const fill = isDark
@@ -68,7 +68,11 @@ export const AvaxLogoGradientSvg = ({
 
   const renderSvg = useCallback(() => {
     return (
-      <Svg width="100%" height="100%" viewBox="0 0 319 281" fill="none">
+      <Svg
+        width="100%"
+        height="100%"
+        viewBox={`0 0 ${width} ${height}`}
+        fill="none">
         <Defs>
           <LinearGradient
             id={fill}
@@ -88,7 +92,15 @@ export const AvaxLogoGradientSvg = ({
         />
       </Svg>
     )
-  }, [fill, gradientColor1, gradientColor2, gradientTransform, shouldAnimate])
+  }, [
+    fill,
+    gradientColor1,
+    gradientColor2,
+    gradientTransform,
+    height,
+    shouldAnimate,
+    width
+  ])
 
   return shouldAnimate ? (
     <AnimatedView style={[{ width, height }, animatedStyle]}>

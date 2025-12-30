@@ -197,7 +197,7 @@ const ContactListItem = ({
     <ListViewItem
       avatar={avatar}
       title={item.name}
-      renderTop={
+      renderTop={() =>
         wallet &&
         walletsCount > 1 && (
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
@@ -233,7 +233,7 @@ const ContactListItem = ({
       }}
       isLast={isLast}
       onPress={() => onSelectContact(item)}
-      hideArrow
+      showArrow
     />
   )
 }

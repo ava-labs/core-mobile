@@ -128,22 +128,30 @@ const AssetsScreen: FC<Props> = ({
   const renderEmptyComponent = useCallback(() => {
     // Only show loading state during initial load, not background polling
     if (isInitialLoading) {
-      return <LoadingState />
+      return (
+        <CollapsibleTabs.ContentWrapper>
+          <LoadingState />
+        </CollapsibleTabs.ContentWrapper>
+      )
     }
 
     if (isBalanceLoaded && (isAllBalancesError || isAllBalancesInaccurate)) {
       return (
-        <ErrorState
-          description="Please hit refresh or try again later"
-          button={{
-            title: 'Refresh',
-            onPress: refetch
-          }}
-        />
+        <CollapsibleTabs.ContentWrapper>
+          <ErrorState
+            description="Please hit refresh or try again later"
+            button={{
+              title: 'Refresh',
+              onPress: refetch
+            }}
+          />
+        </CollapsibleTabs.ContentWrapper>
       )
     }
 
     if (filter.selected === AssetNetworkFilter.AllNetworks && hasNoAssets) {
+      // Special case where we cannot use CollapsibleTabs.ContentWrapper
+      // height needs to be calculated separately
       return <EmptyState goToBuy={goToBuy} />
     }
 
@@ -153,14 +161,16 @@ const AssetsScreen: FC<Props> = ({
       data.length === 0
     ) {
       return (
-        <ErrorState
-          title="No assets found"
-          description="Try changing the filter settings or reset the filter to see all assets."
-          button={{
-            title: 'Reset filter',
-            onPress: onResetFilter
-          }}
-        />
+        <CollapsibleTabs.ContentWrapper>
+          <ErrorState
+            title="No assets found"
+            description="Try changing the filter settings or reset the filter to see all assets."
+            button={{
+              title: 'Reset filter',
+              onPress: onResetFilter
+            }}
+          />
+        </CollapsibleTabs.ContentWrapper>
       )
     }
   }, [
@@ -177,11 +187,7 @@ const AssetsScreen: FC<Props> = ({
   ])
 
   const renderEmpty = useCallback(() => {
-    return (
-      <CollapsibleTabs.ContentWrapper>
-        {renderEmptyComponent()}
-      </CollapsibleTabs.ContentWrapper>
-    )
+    return renderEmptyComponent()
   }, [renderEmptyComponent])
 
   const renderHeader = useCallback(() => {
