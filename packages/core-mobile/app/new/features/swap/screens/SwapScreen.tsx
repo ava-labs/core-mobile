@@ -91,9 +91,7 @@ export const SwapScreen = (): JSX.Element => {
     isFetchingQuote,
     setDestination,
     slippage,
-    setSlippage,
     autoSlippage,
-    setAutoSlippage,
     setAmount,
     error: swapError,
     swapStatus
