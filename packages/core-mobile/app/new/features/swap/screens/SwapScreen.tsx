@@ -52,7 +52,6 @@ import {
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
 import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio/hooks/useTokensWithZeroBalanceByNetworksForAccount'
 import { selectActiveAccount } from 'store/account'
-import { SlippageInput } from '../components.tsx/SlippageInput'
 import {
   JUPITER_PARTNER_FEE_BPS,
   MARKR_PARTNER_FEE_BPS,
@@ -93,6 +92,8 @@ export const SwapScreen = (): JSX.Element => {
     setDestination,
     slippage,
     setSlippage,
+    autoSlippage,
+    setAutoSlippage,
     setAmount,
     error: swapError,
     swapStatus
@@ -371,6 +372,11 @@ export const SwapScreen = (): JSX.Element => {
     navigate({ pathname: '/swapPricingDetails' })
   }, [navigate])
 
+  const handleSelectSlippageDetails = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
+    navigate({ pathname: '/swapSlippageDetails' })
+  }, [navigate])
+
   const formatInCurrency = useCallback(
     (
       token: TokenWithBalance | undefined,
@@ -529,15 +535,11 @@ export const SwapScreen = (): JSX.Element => {
       errorMessage ===
         ParaswapError[ParaswapErrorCode.ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT]
     ) {
+      const displayValue = autoSlippage ? `Auto • ${slippage}%` : `${slippage}%`
       items.push({
-        title: 'Slippage tolerance',
-        accessory: (
-          <SlippageInput
-            slippage={slippage}
-            setSlippage={setSlippage}
-            disabled={swapInProcess}
-          />
-        )
+        title: 'Slippage',
+        value: displayValue,
+        onPress: swapInProcess ? undefined : handleSelectSlippageDetails
       })
     }
 
@@ -550,9 +552,10 @@ export const SwapScreen = (): JSX.Element => {
     errorMessage,
     showFeesAndSlippage,
     slippage,
-    setSlippage,
+    autoSlippage,
     swapInProcess,
-    handleSelectPricingDetails
+    handleSelectPricingDetails,
+    handleSelectSlippageDetails
   ])
 
   useEffect(() => {

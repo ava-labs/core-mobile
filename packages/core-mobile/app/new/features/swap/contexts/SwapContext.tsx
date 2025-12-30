@@ -32,7 +32,8 @@ import { selectMarkrSwapMaxRetries } from 'store/posthog'
 import {
   NormalizedSwapQuoteResult,
   NormalizedSwapQuote,
-  SwapProviders
+  SwapProviders,
+  isMarkrQuote
 } from '../types'
 import { useEvmSwap } from '../hooks/useEvmSwap'
 import { getTokenAddress } from '../utils/getTokenAddress'
@@ -47,6 +48,7 @@ import { isEvmSwapQuote, isSvmSwapQuote } from '../types'
 import { useSolanaSwap } from '../hooks/useSolanaSwap'
 
 const DEFAULT_DEBOUNCE_MILLISECONDS = 300
+const DEFAULT_SLIPPAGE = 0.2
 
 // success here just means the transaction was sent, not that it was successful/confirmed
 type SwapStatus = 'Idle' | 'Swapping' | 'Success' | 'Fail'
@@ -64,6 +66,8 @@ interface SwapContextState {
   ): void
   slippage: number
   setSlippage: Dispatch<number>
+  autoSlippage: boolean
+  setAutoSlippage: Dispatch<boolean>
   destination: SwapSide
   setDestination: Dispatch<SwapSide>
   swapStatus: SwapStatus
@@ -83,7 +87,8 @@ export const SwapContextProvider = ({
   const activeAccount = useSelector(selectActiveAccount)
   const [fromToken, setFromToken] = useSwapSelectedFromToken()
   const [toToken, setToToken] = useSwapSelectedToToken()
-  const [slippage, setSlippage] = useState<number>(0.2)
+  const [slippage, setSlippage] = useState<number>(DEFAULT_SLIPPAGE)
+  const [autoSlippage, setAutoSlippage] = useState<boolean>(true)
   const [destination, setDestination] = useState<SwapSide>(SwapSide.SELL)
   const [swapStatus, setSwapStatus] = useState<SwapStatus>('Idle')
   const [amount, setAmount] = useState<bigint>()
@@ -102,6 +107,28 @@ export const SwapContextProvider = ({
     setAmount,
     DEFAULT_DEBOUNCE_MILLISECONDS
   )
+
+  // Get token addresses for dependency tracking
+  const fromTokenAddress = fromToken ? getTokenAddress(fromToken) : undefined
+  const toTokenAddress = toToken ? getTokenAddress(toToken) : undefined
+
+  // Reset slippage to default when either token changes
+  useEffect(() => {
+    setSlippage(DEFAULT_SLIPPAGE)
+    setAutoSlippage(true)
+  }, [fromTokenAddress, toTokenAddress])
+
+  // Auto-update slippage when auto mode is enabled and we have a recommendedSlippage
+  useEffect(() => {
+    if (autoSlippage && quotes?.selected?.quote) {
+      const quote = quotes.selected.quote
+      if (isMarkrQuote(quote) && quote.recommendedSlippage) {
+        // Convert bps to percentage: 200 bps → 2%
+        const recommendedPercentage = quote.recommendedSlippage / 100
+        setSlippage(recommendedPercentage)
+      }
+    }
+  }, [autoSlippage, quotes])
 
   const getQuote = useCallback(async () => {
     const isValidFromToken = fromToken && 'decimals' in fromToken
@@ -397,6 +424,8 @@ export const SwapContextProvider = ({
     setToToken,
     slippage,
     setSlippage,
+    autoSlippage,
+    setAutoSlippage,
     destination,
     setDestination,
     swap,
