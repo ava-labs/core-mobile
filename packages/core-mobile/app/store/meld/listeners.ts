@@ -8,7 +8,6 @@ import {
   Module,
   NetworkTokenWithBalance,
   NetworkVMType,
-  TokenWithBalance,
   TokenWithBalanceSVM
 } from '@avalabs/vm-module-types'
 import { send as sendEVM } from 'common/hooks/send/utils/evm/send'
@@ -41,6 +40,7 @@ import { isAnyOf } from '@reduxjs/toolkit'
 import { onAppUnlocked } from 'store/app'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import { getTokensWithBalanceForAccountFromCache } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
+import { AdjustedLocalTokenWithBalance } from 'services/balance/types'
 import { offrampSend } from './slice'
 
 const handleOfframpSend = async (
@@ -189,7 +189,7 @@ const handleSend = async ({
   amountTokenUnit: TokenUnit
   chainId: number
   provider: Awaited<ReturnType<Module['getProvider']>>
-  token: TokenWithBalance
+  token: AdjustedLocalTokenWithBalance
   network: Network
   isDeveloperMode: boolean
 }): Promise<string | undefined> => {
@@ -205,7 +205,7 @@ const handleSend = async ({
         fromAddress: activeAccount.addressC,
         chainId,
         provider,
-        token: token as NetworkTokenWithBalance,
+        token: token as unknown as NetworkTokenWithBalance,
         toAddress: destinationWalletAddress,
         amount: amountTokenUnit.toSubUnit(),
         context: {
@@ -223,7 +223,7 @@ const handleSend = async ({
         fromAddress: activeAccount.addressSVM,
         chainId,
         provider: provider as SolanaProvider,
-        token: token as TokenWithBalanceSVM,
+        token: token as unknown as TokenWithBalanceSVM,
         toAddress: destinationWalletAddress,
         amount: amountTokenUnit.toSubUnit(),
         account: activeAccount,
@@ -263,11 +263,16 @@ const getChainId = (
   return meldChainId ? Number(meldChainId) : undefined
 }
 
-const getDecimals = (token: TokenWithBalance, network: Network): number => {
+const getDecimals = (
+  token: AdjustedLocalTokenWithBalance,
+  network: Network
+): number => {
   return token.type === TokenType.NATIVE ||
     token.type === TokenType.ERC20 ||
     token.type === TokenType.SPL
-    ? token.decimals
+    ? 'decimals' in token && typeof token.decimals === 'number'
+      ? token.decimals
+      : 0
     : network.networkToken.decimals
 }
 
