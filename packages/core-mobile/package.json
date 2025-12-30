@@ -18,7 +18,9 @@
     "storybook-watch": "sb-rn-watcher",
     "appium:ios": "PLATFORM=ios wdio run ./e2e-appium/wdio.conf.ts",
     "appium:android": "PLATFORM=android wdio run ./e2e-appium/wdio.conf.ts",
-    "appium": "wdio run ./e2e-appium/wdio.conf.ts"
+    "appium": "wdio run ./e2e-appium/wdio.conf.ts",
+    "devicefarm:package": "./scripts/devicefarm/package-tests.sh",
+    "devicefarm:run": "./scripts/devicefarm/run-devicefarm.sh"
   },
   "dependencies": {
     "@avalabs/avalanche-module": "3.0.0",
