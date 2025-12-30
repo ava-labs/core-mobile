@@ -4,9 +4,9 @@ import { Account } from 'store/account'
 import { selectEnabledChainIds, selectEnabledNetworksMap } from 'store/network'
 import { selectTokenVisibility } from 'store/portfolio'
 import { isTokenVisible } from 'store/balance/utils'
-import { useAccountBalances } from './useAccountBalances'
 import { isDefined } from 'new/common/utils/isDefined'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useAccountBalances } from './useAccountBalances'
 
 export type AccountBalanceSummary = {
   isAllBalancesInaccurate: boolean
@@ -21,12 +21,7 @@ export type AccountBalanceSummary = {
 export function useAccountBalanceSummary(
   account?: Account
 ): AccountBalanceSummary {
-  const {
-    data,
-    isLoading,
-    isRefetching,
-
-  } = useAccountBalances(account)
+  const { data, isLoading, isRefetching } = useAccountBalances(account)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const enabledChainIds = useSelector(selectEnabledChainIds)
   const networks = useSelector(selectEnabledNetworksMap)

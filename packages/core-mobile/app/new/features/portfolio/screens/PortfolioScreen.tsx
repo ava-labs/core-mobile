@@ -1,5 +1,4 @@
 import {
-  BalanceHeader,
   NavigationTitleHeader,
   SegmentedControl,
   showAlert,
@@ -30,6 +29,7 @@ import AssetsScreen from 'features/portfolio/assets/components/AssetsScreen'
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collectibles/hooks/useCollectiblesFilterAndSort'
 import { CollectiblesScreen } from 'features/portfolio/collectibles/screens/CollectiblesScreen'
+import { BalanceHeaderSection } from 'features/portfolio/components/BalanceHeaderSection'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
 import { useAccountPerformanceSummary } from 'features/portfolio/hooks/useAccountPerformanceSummary'
 import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
@@ -43,10 +43,9 @@ import {
   InteractionManager,
   LayoutChangeEvent,
   LayoutRectangle,
-  Platform,
-  Pressable
+  Platform
 } from 'react-native'
-import Animated, {
+import {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
@@ -322,36 +321,25 @@ const PortfolioHomeScreen = (): JSX.Element => {
           backgroundColor: theme.colors.$surfacePrimary
         }}
         onLayout={handleStickyHeaderLayout}>
-        <View onLayout={handleBalanceHeaderLayout}>
-          <Animated.View
-            style={[
-              {
-                backgroundColor: theme.colors.$surfacePrimary,
-                marginTop: 16,
-                paddingHorizontal: 16
-              },
-              animatedHeaderStyle
-            ]}>
-            <Pressable hitSlop={10} onPress={openWalletsModal}>
-              <BalanceHeader
-                testID="portfolio"
-                walletName={walletName}
-                walletIcon={walletIcon}
-                accountName={activeAccount?.name}
-                formattedBalance={formattedBalance}
-                currency={selectedCurrency}
-                priceChange={priceChange}
-                errorMessage={errorMessage}
-                onErrorPress={handleErrorPress}
-                isLoading={isLoading && balanceTotalInCurrency === 0}
-                isLoadingBalances={isLoadingBalances || isLoading}
-                isPrivacyModeEnabled={isPrivacyModeEnabled}
-                isDeveloperModeEnabled={isDeveloperMode}
-                renderMaskView={renderMaskView}
-              />
-            </Pressable>
-          </Animated.View>
-        </View>
+        <BalanceHeaderSection
+          onLayout={handleBalanceHeaderLayout}
+          animatedHeaderStyle={animatedHeaderStyle}
+          onPress={openWalletsModal}
+          walletName={walletName}
+          walletIcon={walletIcon}
+          accountName={activeAccount?.name}
+          formattedBalance={formattedBalance}
+          selectedCurrency={selectedCurrency}
+          priceChange={priceChange}
+          errorMessage={errorMessage}
+          onErrorPress={handleErrorPress}
+          isLoading={isLoading && balanceTotalInCurrency === 0}
+          isLoadingBalances={isLoadingBalances || isLoading}
+          isPrivacyModeEnabled={isPrivacyModeEnabled}
+          isDeveloperMode={isDeveloperMode}
+          renderMaskView={renderMaskView}
+          backgroundColor={theme.colors.$surfacePrimary}
+        />
 
         {filteredTokenList.length > 0 && (
           <ActionButtons

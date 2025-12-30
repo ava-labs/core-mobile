@@ -214,12 +214,36 @@ class WalletService {
     derivationPath?: string
     curve: Curve
   }): Promise<string> {
+    // Check cache first
+    if (derivationPath) {
+      const cached = WalletFactory.cache.getPublicKey(
+        walletId,
+        derivationPath,
+        curve
+      )
+      if (cached) {
+        return cached
+      }
+    }
+
     const wallet = await WalletFactory.createWallet({
       walletId,
       walletType
     })
 
-    return await wallet.getPublicKeyFor({ derivationPath, curve })
+    const publicKey = await wallet.getPublicKeyFor({ derivationPath, curve })
+
+    // Cache the result
+    if (derivationPath) {
+      WalletFactory.cache.setPublicKey(
+        walletId,
+        derivationPath,
+        curve,
+        publicKey
+      )
+    }
+
+    return publicKey
   }
 
   public async getRawXpubXP({
@@ -233,6 +257,12 @@ class WalletService {
   }): Promise<string> {
     if (!this.hasXpub(walletType)) {
       throw new Error('Unable to get raw xpub XP: unsupported wallet type')
+    }
+
+    // Check cache first
+    const cached = WalletFactory.cache.getXpub(walletId, accountIndex)
+    if (cached) {
+      return cached
     }
 
     const wallet = await WalletFactory.createWallet({
@@ -250,7 +280,12 @@ class WalletService {
       )
     }
 
-    return wallet.getRawXpubXP(accountIndex)
+    const xpub = await wallet.getRawXpubXP(accountIndex)
+
+    // Cache the result
+    WalletFactory.cache.setXpub(walletId, accountIndex, xpub)
+
+    return xpub
   }
 
   public async getAddressesFromXpubXP({
