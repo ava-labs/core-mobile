@@ -45,10 +45,7 @@ import {
   LayoutRectangle,
   Platform
 } from 'react-native'
-import {
-  useAnimatedStyle,
-  useSharedValue
-} from 'react-native-reanimated'
+import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated'
 import { useSafeAreaFrame } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
