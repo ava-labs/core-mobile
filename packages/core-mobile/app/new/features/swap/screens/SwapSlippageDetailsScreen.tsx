@@ -83,7 +83,7 @@ export const SwapSlippageDetailsScreen = ({
   const handleCustomClick = useCallback(() => {
     showAlertWithTextInput({
       title: 'Define custom slippage',
-      description: 'Slippage must be less than or equal to 100%',
+      description: 'Allowed range: 0.1% - 50%',
       inputs: [
         {
           key: CUSTOM_SLIPPAGE_INPUT_KEY,

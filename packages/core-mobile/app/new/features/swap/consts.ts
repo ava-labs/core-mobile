@@ -90,6 +90,6 @@ export const MIN_SLIPPAGE_PERCENT = 0.1
 
 /**
  * Maximum allowed slippage percentage for swaps.
- * @example 100 -> 100%
+ * @example 50 -> 50%
  */
-export const MAX_SLIPPAGE_PERCENT = 100
+export const MAX_SLIPPAGE_PERCENT = 50
