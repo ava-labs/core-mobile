@@ -6,7 +6,7 @@ import { ApprovalResponse, Hex } from '@avalabs/vm-module-types'
 import { EVM, EVMUnsignedTx, UnsignedTx } from '@avalabs/avalanchejs'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { WalletType } from 'services/wallet/types'
-import { Alert, Linking } from 'react-native'
+import { Linking } from 'react-native'
 import { DOCS_KEYSTONE_SIGNING_ERROR_URL } from 'resources/Constants'
 import { showAlert } from '@avalabs/k2-alpine'
 
