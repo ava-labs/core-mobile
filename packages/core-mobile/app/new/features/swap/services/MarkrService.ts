@@ -43,6 +43,7 @@ export type MarkrQuote = {
   tokenOutDecimals: number
   amountOut: string
   done?: boolean
+  recommendedSlippage?: number
 }
 
 const ORCHESTRATOR_URL = 'https://proxy-api.avax.network/proxy/markr'
