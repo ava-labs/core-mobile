@@ -31,10 +31,9 @@ import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collect
 import { CollectiblesScreen } from 'features/portfolio/collectibles/screens/CollectiblesScreen'
 import { BalanceHeaderSection } from 'features/portfolio/components/BalanceHeaderSection'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
+import { useAccountBalanceSummary } from 'features/portfolio/hooks/useAccountBalanceSummary'
 import { useAccountPerformanceSummary } from 'features/portfolio/hooks/useAccountPerformanceSummary'
-import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
 import { useBalanceTotalPriceChangeForAccount } from 'features/portfolio/hooks/useBalanceTotalPriceChangeForAccount'
-import { useIsBalanceLoadedForAccount } from 'features/portfolio/hooks/useIsBalanceLoadedForAccount'
 import { useSendSelectedToken } from 'features/send/store'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
@@ -62,9 +61,6 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { selectActiveWallet, selectWallets } from 'store/wallet/slice'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
-import { useIsAllBalancesInaccurateForAccount } from '../hooks/useIsAllBalancesInaccurateForAccount'
-import { useIsLoadingBalancesForAccount } from '../hooks/useIsLoadingBalancesForAccount'
-import { useIsRefetchingBalancesForAccount } from '../hooks/useIsRefetchingBalancesForAccount'
 
 const SEGMENT_ITEMS = [
   { title: 'Assets' },
@@ -108,18 +104,19 @@ const PortfolioHomeScreen = (): JSX.Element => {
   })
   const selectedSegmentIndex = useSharedValue(0)
   const activeAccount = useFocusedSelector(selectActiveAccount)
-  const isRefetchingBalance = useIsRefetchingBalancesForAccount(activeAccount)
   const isDeveloperMode = useFocusedSelector(selectIsDeveloperMode)
-  const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
-    account: activeAccount
-  })
+
+  const {
+    totalBalanceInCurrency: balanceTotalInCurrency,
+    isBalanceLoaded,
+    isLoading: isLoadingBalances,
+    isRefetching: isRefetchingBalance,
+    isAllBalancesInaccurate: allBalancesInaccurate
+  } = useAccountBalanceSummary(activeAccount)
+
   const totalPriceChange = useBalanceTotalPriceChangeForAccount(activeAccount)
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
-  const isBalanceLoaded = useIsBalanceLoadedForAccount(activeAccount)
-  const isLoadingBalances = useIsLoadingBalancesForAccount(activeAccount)
   const isLoading = isRefetchingBalance || !isBalanceLoaded
-  const allBalancesInaccurate =
-    useIsAllBalancesInaccurateForAccount(activeAccount)
   const activeWallet = useSelector(selectActiveWallet)
   const wallets = useSelector(selectWallets)
   const walletsCount = Object.keys(wallets).length

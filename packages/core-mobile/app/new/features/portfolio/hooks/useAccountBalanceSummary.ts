@@ -19,9 +19,12 @@ export type AccountBalanceSummary = {
 }
 
 export function useAccountBalanceSummary(
-  account?: Account
+  account?: Account,
+  options?: {
+    refetchInterval?: number | false
+  }
 ): AccountBalanceSummary {
-  const { data, isLoading, isRefetching } = useAccountBalances(account)
+  const { data, isLoading, isRefetching } = useAccountBalances(account, options)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const enabledChainIds = useSelector(selectEnabledChainIds)
   const networks = useSelector(selectEnabledNetworksMap)
@@ -77,7 +80,7 @@ export function useAccountBalanceSummary(
       isBalanceLoaded,
       isAllBalancesError,
       isLoading,
-      isPolling: false, // Deprecated/Unused in new architecture usually, keeping for API compat
+      isPolling: false,
       isRefetching,
       totalBalanceInCurrency
     }
