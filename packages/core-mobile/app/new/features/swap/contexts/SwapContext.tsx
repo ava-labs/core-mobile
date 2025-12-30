@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState
 } from 'react'
 import { JsonRpcError } from '@metamask/rpc-errors'
@@ -73,6 +74,7 @@ interface SwapContextState {
   swapStatus: SwapStatus
   setAmount: Dispatch<bigint | undefined>
   error: string
+  resetToAutoMode: () => void
 }
 
 export const SwapContext = createContext<SwapContextState>(
@@ -118,17 +120,45 @@ export const SwapContextProvider = ({
     setAutoSlippage(true)
   }, [fromTokenAddress, toTokenAddress])
 
-  // Auto-update slippage when auto mode is enabled and we have a recommendedSlippage
+  // Function to reset slippage state to auto mode
+  const resetToAutoMode = useCallback(() => {
+    setSlippage(DEFAULT_SLIPPAGE)
+    setAutoSlippage(true)
+  }, [])
+
+  // Extract recommendedSlippage value to use as dependency
+  const recommendedSlippage = useMemo(() => {
+    const quote = quotes?.selected?.quote
+    if (quote && isMarkrQuote(quote)) {
+      return quote.recommendedSlippage
+    }
+    return undefined
+  }, [quotes])
+
+  // Auto-update slippage when auto mode is enabled
   useEffect(() => {
-    if (autoSlippage && quotes?.selected?.quote) {
-      const quote = quotes.selected.quote
-      if (isMarkrQuote(quote) && quote.recommendedSlippage) {
-        // Convert bps to percentage: 200 bps → 2%
-        const recommendedPercentage = quote.recommendedSlippage / 100
+    if (!autoSlippage) return
+
+    // Don't do anything if quotes are undefined (during fetching)
+    if (!quotes) return
+
+    // Try to use recommendedSlippage from quote
+    if (recommendedSlippage) {
+      // Convert bps to percentage: 200 bps → 2%
+      const recommendedPercentage = recommendedSlippage / 100
+      // Only use if valid (greater than 0) AND different from current
+      if (recommendedPercentage > 0 && slippage !== recommendedPercentage) {
         setSlippage(recommendedPercentage)
       }
+      return
     }
-  }, [autoSlippage, quotes])
+
+    // Fallback to default when auto is enabled but no valid recommendedSlippage
+    // Only update if different from current value and we have quotes
+    if (quotes && slippage !== DEFAULT_SLIPPAGE) {
+      setSlippage(DEFAULT_SLIPPAGE)
+    }
+  }, [autoSlippage, recommendedSlippage, slippage, quotes])
 
   const getQuote = useCallback(async () => {
     const isValidFromToken = fromToken && 'decimals' in fromToken
@@ -433,7 +463,8 @@ export const SwapContextProvider = ({
     setAmount: debouncedSetAmount,
     error,
     quotes,
-    isFetchingQuote
+    isFetchingQuote,
+    resetToAutoMode
   }
 
   return <SwapContext.Provider value={state}>{children}</SwapContext.Provider>

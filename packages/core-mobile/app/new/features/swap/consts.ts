@@ -81,3 +81,15 @@ export const WAVAX_ADDRESS = '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7'
 export const WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 
 export const WRAPPABLE_TOKENS = [WAVAX_ADDRESS, WETH_ADDRESS]
+
+/**
+ * Minimum allowed slippage percentage for swaps.
+ * @example 0.1 -> 0.1%
+ */
+export const MIN_SLIPPAGE_PERCENT = 0.1
+
+/**
+ * Maximum allowed slippage percentage for swaps.
+ * @example 100 -> 100%
+ */
+export const MAX_SLIPPAGE_PERCENT = 100
