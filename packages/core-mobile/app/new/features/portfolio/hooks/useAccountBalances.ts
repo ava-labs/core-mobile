@@ -53,6 +53,7 @@ export function useAccountBalances(
   const {
     data,
     isFetching,
+    isError,
     refetch: refetchFn
   } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
@@ -94,6 +95,8 @@ export function useAccountBalances(
   }, [isNotReady, account?.id, setIsRefetching, refetchFn])
 
   const isLoading = useMemo(() => {
+    if (isError) return false
+
     // still loading if:
     // - account missing, OR
     // - no data, OR
@@ -104,7 +107,7 @@ export function useAccountBalances(
       data.length === 0 ||
       data.length < enabledNetworks.length
     )
-  }, [account, data, enabledNetworks.length])
+  }, [account, data, enabledNetworks.length, isError])
 
   return {
     data: data ?? [],
