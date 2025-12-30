@@ -6,6 +6,11 @@ import { ApprovalResponse, Hex } from '@avalabs/vm-module-types'
 import { EVM, EVMUnsignedTx, UnsignedTx } from '@avalabs/avalanchejs'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { WalletType } from 'services/wallet/types'
+import { Alert, Linking } from 'react-native'
+import { DOCS_KEYSTONE_SIGNING_ERROR_URL } from 'resources/Constants'
+
+export const KEYSTONE_SIGNING_ERROR_MESSAGE =
+  'Failed to sign avalanche transaction'
 
 export const avalancheSendTransaction = async ({
   walletId,
@@ -70,6 +75,37 @@ export const avalancheSendTransaction = async ({
         : UnsignedTx.fromJSON(signedTransactionJson)
 
     if (!signedTransaction.hasAllSignatures()) {
+      if (walletType === WalletType.KEYSTONE) {
+        Alert.alert(
+          'Having trouble signing with Keystone?',
+          'It looks like this transaction cannot be signed in the app. To complete it, please visit core.app and send the funds directly from your Keystone wallet. You can use the article below to learn how to send from Avalanche P‑Chain or X‑Chain by manually selecting UTXOs',
+          [
+            {
+              text: 'View article',
+              onPress: async () => {
+                await Linking.openURL(DOCS_KEYSTONE_SIGNING_ERROR_URL)
+                resolve({
+                  error: rpcErrors.internal({
+                    message: KEYSTONE_SIGNING_ERROR_MESSAGE
+                  })
+                })
+              }
+            },
+            {
+              text: 'Dismiss',
+              style: 'cancel',
+              onPress: () => {
+                resolve({
+                  error: rpcErrors.internal({
+                    message: KEYSTONE_SIGNING_ERROR_MESSAGE
+                  })
+                })
+              }
+            }
+          ]
+        )
+        return
+      }
       throw new Error('Signing error, missing signatures.')
     }
 
