@@ -71,6 +71,6 @@ export const validateKeystoneSigning = async ({
     primaryUtxoAmount &&
     otherUtxoAmount &&
     Number(primaryUtxoAmount) < Number(otherUtxoAmount) &&
-    Number(primaryUtxoAmount) < Number(amount.toSubUnit())
+    Number(primaryUtxoAmount) > Number(amount.toSubUnit())
   )
 }

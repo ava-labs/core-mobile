@@ -1968,33 +1968,6 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-bottom-tabs (0.10.1):
-    - DoubleConversion
-    - glog
-    - hermes-engine
-    - RCT-Folly (= 2024.11.18.00)
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - SDWebImage (>= 5.19.1)
-    - SDWebImageSVGCoder (>= 1.7.0)
-    - SwiftUIIntrospect (~> 1.0)
-    - Yoga
   - react-native-branch (6.8.0):
     - BranchSDK (= 3.12.2)
     - React-Core
@@ -2022,10 +1995,6 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-config (1.5.3):
-    - react-native-config/App (= 1.5.3)
-  - react-native-config/App (1.5.3):
-    - React-Core
   - react-native-get-random-values (1.11.0):
     - React-Core
   - react-native-in-app-updates (0.2.2):
@@ -2206,30 +2175,6 @@ PODS:
     - Yoga
   - react-native-netinfo (11.4.1):
     - React-Core
-  - react-native-pager-view (6.7.1):
-    - DoubleConversion
-    - glog
-    - hermes-engine
-    - RCT-Folly (= 2024.11.18.00)
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - Yoga
   - react-native-passkey (3.1.0):
     - RCT-Folly
     - RCTRequired
@@ -2888,30 +2833,6 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNCAsyncStorage (2.1.2):
-    - DoubleConversion
-    - glog
-    - hermes-engine
-    - RCT-Folly (= 2024.11.18.00)
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - Yoga
   - RNCClipboard (1.15.0):
     - DoubleConversion
     - glog
@@ -3465,7 +3386,6 @@ PODS:
     - SDWebImage/Core (~> 5.6)
   - Sentry/HybridSDK (8.57.0)
   - SocketRocket (0.7.1)
-  - SwiftUIIntrospect (1.3.0)
   - Yoga (0.0.0)
   - ZXingObjC/Core (3.6.9)
   - ZXingObjC/OneD (3.6.9):
@@ -3553,10 +3473,8 @@ DEPENDENCIES:
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - react-native-aes (from `../node_modules/react-native-aes-crypto`)
   - react-native-ble-plx (from `../node_modules/react-native-ble-plx`)
-  - react-native-bottom-tabs (from `../node_modules/react-native-bottom-tabs`)
   - react-native-branch (from `../node_modules/react-native-branch`)
   - "react-native-compat (from `../node_modules/@walletconnect/react-native-compat`)"
-  - react-native-config (from `../node_modules/react-native-config`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - react-native-in-app-updates (from `../node_modules/react-native-in-app-updates`)
   - react-native-ios-context-menu (from `../node_modules/react-native-ios-context-menu`)
@@ -3565,7 +3483,6 @@ DEPENDENCIES:
   - "react-native-menu (from `../node_modules/@react-native-menu/menu`)"
   - react-native-mmkv (from `../node_modules/react-native-mmkv`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
-  - react-native-pager-view (from `../node_modules/react-native-pager-view`)
   - react-native-passkey (from `../node_modules/react-native-passkey`)
   - react-native-performance (from `../node_modules/react-native-performance`)
   - react-native-quick-base64 (from `../node_modules/react-native-quick-base64`)
@@ -3612,7 +3529,6 @@ DEPENDENCIES:
   - "RNAppleAuthentication (from `../node_modules/@invertase/react-native-apple-authentication`)"
   - RNArgon2 (from `../node_modules/react-native-argon2`)
   - RNBootSplash (from `../node_modules/react-native-bootsplash`)
-  - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
@@ -3684,7 +3600,6 @@ SPEC REPOS:
     - SDWebImageSVGCoder
     - Sentry
     - SocketRocket
-    - SwiftUIIntrospect
     - ZXingObjC
 
 EXTERNAL SOURCES:
@@ -3837,14 +3752,10 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-aes-crypto"
   react-native-ble-plx:
     :path: "../node_modules/react-native-ble-plx"
-  react-native-bottom-tabs:
-    :path: "../node_modules/react-native-bottom-tabs"
   react-native-branch:
     :path: "../node_modules/react-native-branch"
   react-native-compat:
     :path: "../node_modules/@walletconnect/react-native-compat"
-  react-native-config:
-    :path: "../node_modules/react-native-config"
   react-native-get-random-values:
     :path: "../node_modules/react-native-get-random-values"
   react-native-in-app-updates:
@@ -3861,8 +3772,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-mmkv"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
-  react-native-pager-view:
-    :path: "../node_modules/react-native-pager-view"
   react-native-passkey:
     :path: "../node_modules/react-native-passkey"
   react-native-performance:
@@ -3955,8 +3864,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-argon2"
   RNBootSplash:
     :path: "../node_modules/react-native-bootsplash"
-  RNCAsyncStorage:
-    :path: "../node_modules/@react-native-async-storage/async-storage"
   RNCClipboard:
     :path: "../node_modules/@react-native-clipboard/clipboard"
   RNCMaskedView:
@@ -4122,10 +4029,8 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: bda561d2648e1e52bd9e5a87f8889836bdbde2e2
   react-native-aes: e2868d9f7203f573a2c1d797d95f4e88a54fa8cd
   react-native-ble-plx: f2c13ceb441f17266d3dc6a56e603e2ae820a574
-  react-native-bottom-tabs: 05d040c837f04e57e6973d553db5e69c8e279113
   react-native-branch: 0229b46e762bc16ab5289e5eac167738b94c089b
   react-native-compat: 4594cac40c688f5ac4984e93f8c8e31496f4e614
-  react-native-config: ea75335a7cca1d3326de1da384227e580a7c082e
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-in-app-updates: e655bab46849c5563b954f681c40ce46df0f3cbe
   react-native-ios-context-menu: 58804cdc253f80878284abe55ac5a050d4cde96a
@@ -4134,7 +4039,6 @@ SPEC CHECKSUMS:
   react-native-menu: be9bce4eb201a4d13734744763d36d56e6df8b4a
   react-native-mmkv: d3cc73d2554fafa20dc5b86386359034d1faf8ff
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
-  react-native-pager-view: f238ed7fb53458bd03366944a33686f067c83e9a
   react-native-passkey: 3aac247c18127443ef4a002b59d8e12dc7e99f2e
   react-native-performance: 4194ce7222056671d8f0ce10e96a8fead7278550
   react-native-quick-base64: 651d972291fd5d9902869636a1b3c46820324490
@@ -4181,7 +4085,6 @@ SPEC CHECKSUMS:
   RNAppleAuthentication: 8d313d93fe2238d6b7ff0a39c67ebcf298d96653
   RNArgon2: 708e188b7a4d4ec8baf62463927c47abef453a94
   RNBootSplash: 295996a51f49baf0dff9f65e49b32ff93fbc7357
-  RNCAsyncStorage: 39c42c1e478e1f5166d1db52b5055e090e85ad66
   RNCClipboard: b80e7bdccb8d432ab1c40189920e7af3116e074c
   RNCMaskedView: ae521efb1c6c2b183ae0f8479487db03c826184c
   RNDateTimePicker: a4ad049fdd568755003c479beac3bdea742ac4d0
@@ -4212,7 +4115,6 @@ SPEC CHECKSUMS:
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
   Sentry: e1b49e5f49367ff211b25c431a60e2bd83b792aa
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
-  SwiftUIIntrospect: fee9aa07293ee280373a591e1824e8ddc869ba5d
   Yoga: adb397651e1c00672c12e9495babca70777e411e
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
