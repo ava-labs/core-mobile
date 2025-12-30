@@ -74,7 +74,6 @@ interface SwapContextState {
   swapStatus: SwapStatus
   setAmount: Dispatch<bigint | undefined>
   error: string
-  resetToAutoMode: () => void
 }
 
 export const SwapContext = createContext<SwapContextState>(
@@ -120,12 +119,6 @@ export const SwapContextProvider = ({
     setAutoSlippage(true)
   }, [fromTokenAddress, toTokenAddress])
 
-  // Function to reset slippage state to auto mode
-  const resetToAutoMode = useCallback(() => {
-    setSlippage(DEFAULT_SLIPPAGE)
-    setAutoSlippage(true)
-  }, [])
-
   // Extract recommendedSlippage value to use as dependency
   const recommendedSlippage = useMemo(() => {
     const quote = quotes?.selected?.quote
@@ -154,8 +147,7 @@ export const SwapContextProvider = ({
     }
 
     // Fallback to default when auto is enabled but no valid recommendedSlippage
-    // Only update if different from current value and we have quotes
-    if (quotes && slippage !== DEFAULT_SLIPPAGE) {
+    if (slippage !== DEFAULT_SLIPPAGE) {
       setSlippage(DEFAULT_SLIPPAGE)
     }
   }, [autoSlippage, recommendedSlippage, slippage, quotes])
@@ -463,8 +455,7 @@ export const SwapContextProvider = ({
     setAmount: debouncedSetAmount,
     error,
     quotes,
-    isFetchingQuote,
-    resetToAutoMode
+    isFetchingQuote
   }
 
   return <SwapContext.Provider value={state}>{children}</SwapContext.Provider>
