@@ -34,6 +34,7 @@ describe('mapBalanceResponseToLegacy', () => {
       caip2Id: 'bip122:000000000019d6689c085ae165831e93',
       networkType: 'btc',
       id: 'bc1qmm9qawklnfau5hhrkt33kqumggxwy7s9raxuxk',
+      currency: 'usd',
       balances: {
         nativeTokenBalance: {
           internalId: 'NATIVE-btc',
@@ -93,6 +94,7 @@ describe('mapBalanceResponseToLegacy', () => {
       caip2Id: 'eip155:43114',
       networkType: 'evm',
       id: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
+      currency: 'usd',
       balances: {
         nativeTokenBalance: {
           name: 'Avalanche',
@@ -335,6 +337,7 @@ describe('mapBalanceResponseToLegacy', () => {
       caip2Id: 'eip155:1',
       networkType: 'evm',
       id: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
+      currency: 'usd',
       balances: {
         nativeTokenBalance: {
           name: 'ETH',
@@ -389,6 +392,7 @@ describe('mapBalanceResponseToLegacy', () => {
       caip2Id: 'eip155:10',
       networkType: 'evm',
       id: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
+      currency: 'usd',
       balances: {
         nativeTokenBalance: {
           name: 'ETH',
@@ -443,6 +447,7 @@ describe('mapBalanceResponseToLegacy', () => {
       caip2Id: 'eip155:8453',
       networkType: 'evm',
       id: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
+      currency: 'usd',
       balances: {
         nativeTokenBalance: {
           name: 'ETH',
@@ -497,6 +502,7 @@ describe('mapBalanceResponseToLegacy', () => {
       caip2Id: 'eip155:42161',
       networkType: 'evm',
       id: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
+      currency: 'usd',
       balances: {
         nativeTokenBalance: {
           name: 'ETH',
@@ -551,6 +557,7 @@ describe('mapBalanceResponseToLegacy', () => {
       caip2Id: 'avax:imji8papUf2EhV3le337w1vgFauqkJg-',
       networkType: 'avm',
       id: 'default',
+      currency: 'usd',
       balances: {
         nativeTokenBalance: {
           internalId: 'NATIVE-avax',
@@ -643,6 +650,7 @@ describe('mapBalanceResponseToLegacy', () => {
       caip2Id: 'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo',
       networkType: 'pvm',
       id: 'default',
+      currency: 'usd',
       balances: {
         nativeTokenBalance: {
           internalId: 'NATIVE-avax',
@@ -719,6 +727,7 @@ describe('mapBalanceResponseToLegacy', () => {
       caip2Id: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
       networkType: 'svm',
       id: '9gQmZ7fTTgv5hVScrr9QqT6SpBs7i4cKLDdj4tuae3sW',
+      currency: 'usd',
       balances: {
         nativeTokenBalance: {
           internalId: 'NATIVE-sol',

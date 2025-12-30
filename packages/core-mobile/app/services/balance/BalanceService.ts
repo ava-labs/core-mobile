@@ -23,10 +23,7 @@ import Logger from 'utils/Logger'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { GetBalancesRequestBody } from 'utils/apiClient/generated/balanceApi.client'
 import { balanceApi } from 'utils/apiClient/balance/balanceApi'
-import {
-  AdjustedNormalizedBalancesForAccount,
-  NormalizedBalancesForAccount
-} from './types'
+import { AdjustedNormalizedBalancesForAccount } from './types'
 import { AVAX_P_ID, AVAX_X_ID } from './const'
 import { getLocalTokenId } from './utils/getLocalTokenId'
 import { mapBalanceResponseToLegacy } from './utils/mapBalanceResponseToLegacy'
@@ -39,7 +36,7 @@ export class BalanceService {
    * Fetch balances for multiple accounts across multiple networks.
    * Uses Promise.allSettled so each network resolves independently.
    *
-   * @returns a map of accountId → NormalizedBalancesForAccount[]
+   * @returns a map of accountId → AdjustedNormalizedBalancesForAccount[]
    * @example
    * {
    *   'some-account-id': [
@@ -75,11 +72,14 @@ export class BalanceService {
     customTokens: Record<string, NetworkContractToken[] | undefined>
     onBalanceLoaded?: (
       networkChainId: number,
-      partial: Record<AccountId, NormalizedBalancesForAccount>
+      partial: Record<AccountId, AdjustedNormalizedBalancesForAccount>
     ) => void
-  }): Promise<Record<AccountId, NormalizedBalancesForAccount[]>> {
+  }): Promise<Record<AccountId, AdjustedNormalizedBalancesForAccount[]>> {
     // Final aggregated result
-    const finalResults: Record<AccountId, NormalizedBalancesForAccount[]> = {}
+    const finalResults: Record<
+      AccountId,
+      AdjustedNormalizedBalancesForAccount[]
+    > = {}
     for (const account of accounts) {
       finalResults[account.id] = []
     }
@@ -97,7 +97,10 @@ export class BalanceService {
         },
         async span => {
           // Prepare partial result for this single network
-          const partial: Record<AccountId, NormalizedBalancesForAccount> = {}
+          const partial: Record<
+            AccountId,
+            AdjustedNormalizedBalancesForAccount
+          > = {}
 
           try {
             const module = await ModuleManager.loadModuleByNetwork(network)
@@ -249,7 +252,7 @@ export class BalanceService {
             // Create error partial for this network
             const errorPartial: Record<
               AccountId,
-              NormalizedBalancesForAccount
+              AdjustedNormalizedBalancesForAccount
             > = {}
 
             // Mark all accounts errored for this network
@@ -320,7 +323,7 @@ export class BalanceService {
     onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
   }): Promise<AdjustedNormalizedBalancesForAccount[]> {
     // Final aggregated result
-    const finalResults: AdjustedNormalizedBalancesForAccount[] = []
+    const finalResults = new Map<number, AdjustedNormalizedBalancesForAccount>()
 
     const requestItems = buildRequestItemsForAccount(networks, account)
 
@@ -330,18 +333,81 @@ export class BalanceService {
       showUntrustedTokens: false
     }
 
-    for await (const balance of balanceApi.getBalancesStream(body)) {
-      const normalized = mapBalanceResponseToLegacy(account, balance)
-      if (!normalized) continue
+    let balanceApiThrew = false
+    const failedChainIds = new Set<number>()
 
-      // Progressive update callback
-      onBalanceLoaded?.(normalized)
+    try {
+      for await (const balance of balanceApi.getBalancesStream(body)) {
+        const normalized = mapBalanceResponseToLegacy(account, balance)
+        if (!normalized) continue
 
-      // Add to final result
-      finalResults.push(normalized)
+        if (normalized.error) {
+          // Mark chain as failed
+          failedChainIds.add(normalized.chainId)
+        } else {
+          // Progressive update callback for successful balance
+          onBalanceLoaded?.(normalized)
+        }
+
+        // Add to final result
+        finalResults.set(normalized.chainId, normalized)
+      }
+    } catch (err) {
+      // Balance API down / request failed / stream broken
+      balanceApiThrew = true
     }
 
-    return finalResults
+    // If the balance API threw, we want to retry for all networks.
+    // Otherwise, we only retry failed networks.
+    const networksToRetry = balanceApiThrew
+      ? networks
+      : networks.filter(n => failedChainIds.has(n.chainId))
+
+    // Retry with vm modules
+    if (networksToRetry.length > 0) {
+      Logger.info(
+        `[BalanceService][getBalancesForAccount] retrying with vm modules for networks: ${networksToRetry
+          .map(n => n.chainId)
+          .join(', ')}`
+      )
+      const vmResults = await this.getBalancesForAccountViaVmModules({
+        networks: networksToRetry,
+        account,
+        currency,
+        onBalanceLoaded
+      })
+
+      vmResults.forEach(balance => finalResults.set(balance.chainId, balance))
+    }
+
+    return Array.from(finalResults.values())
+  }
+
+  private async getBalancesForAccountViaVmModules({
+    networks,
+    account,
+    currency,
+    onBalanceLoaded
+  }: {
+    networks: Network[]
+    account: Account
+    currency: string
+    onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
+  }): Promise<AdjustedNormalizedBalancesForAccount[]> {
+    if (networks.length === 0) return []
+
+    const res = await this.getBalancesForAccounts({
+      networks,
+      accounts: [account],
+      currency,
+      customTokens: {},
+      onBalanceLoaded: (_chainId, partial) => {
+        const b = partial[account.id]
+        if (b) onBalanceLoaded?.(b)
+      }
+    })
+
+    return res[account.id] ?? []
   }
 }
 
