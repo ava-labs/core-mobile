@@ -1,4 +1,5 @@
 import * as LocalAuthentication from 'expo-local-authentication'
+import { AuthenticationType } from 'expo-local-authentication'
 import { StorageKey } from 'resources/Constants'
 import { commonStorage } from 'utils/mmkv'
 import { decrypt, encrypt } from 'utils/EncryptionHelper'
@@ -343,26 +344,50 @@ class BiometricsSDK {
   }
 
   async canUseBiometry(): Promise<boolean> {
-    return getSupportedBiometryType().then(value => {
-      return value !== null
-    })
+    try {
+      const hasHardware = await LocalAuthentication.hasHardwareAsync()
+      if (!hasHardware) return false
+      return await LocalAuthentication.isEnrolledAsync()
+    } catch (e) {
+      Logger.error('Failed to check biometric availability', e)
+      return false
+    }
   }
 
   async getBiometryType(): Promise<BiometricType> {
-    const bioType = await getSupportedBiometryType()
-    if (!bioType) return BiometricType.NONE
-    switch (bioType) {
-      case Keychain.BIOMETRY_TYPE.TOUCH_ID:
-        return BiometricType.TOUCH_ID
-      case Keychain.BIOMETRY_TYPE.FACE_ID:
-        return BiometricType.FACE_ID
-      case Keychain.BIOMETRY_TYPE.FINGERPRINT:
-      case Keychain.BIOMETRY_TYPE.FACE:
-        return BiometricType.BIOMETRICS
-      case Keychain.BIOMETRY_TYPE.IRIS:
-        return BiometricType.IRIS
-      case Keychain.BIOMETRY_TYPE.OPTIC_ID:
-        throw new Error('BiometricType.OPTIC_ID is not supported')
+    try {
+      // Prefer Keychain mapping first (legacy behavior / more specific types).
+      // On iOS lockout this can temporarily report null -> then we fall back to Expo below.
+      const bioType = await getSupportedBiometryType()
+      if (bioType) {
+        switch (bioType) {
+          case Keychain.BIOMETRY_TYPE.TOUCH_ID:
+            return BiometricType.TOUCH_ID
+          case Keychain.BIOMETRY_TYPE.FACE_ID:
+            return BiometricType.FACE_ID
+          case Keychain.BIOMETRY_TYPE.FINGERPRINT:
+          case Keychain.BIOMETRY_TYPE.FACE:
+            return BiometricType.BIOMETRICS
+          case Keychain.BIOMETRY_TYPE.IRIS:
+            return BiometricType.IRIS
+          case Keychain.BIOMETRY_TYPE.OPTIC_ID:
+            throw new Error('BiometricType.OPTIC_ID is not supported')
+        }
+      }
+
+      // Fallback: Expo types (helps during iOS biometry lockout).
+      const types =
+        await LocalAuthentication.supportedAuthenticationTypesAsync()
+      if (types.includes(AuthenticationType.FACIAL_RECOGNITION))
+        return iOS ? BiometricType.FACE_ID : BiometricType.BIOMETRICS
+      if (types.includes(AuthenticationType.FINGERPRINT))
+        return iOS ? BiometricType.TOUCH_ID : BiometricType.BIOMETRICS
+      if (types.includes(AuthenticationType.IRIS)) return BiometricType.IRIS
+
+      return BiometricType.NONE
+    } catch (e) {
+      Logger.error('Failed to get biometric type', e)
+      return BiometricType.NONE
     }
   }
 
