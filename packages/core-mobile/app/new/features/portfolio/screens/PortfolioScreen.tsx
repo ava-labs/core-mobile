@@ -59,7 +59,7 @@ import {
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { selectActiveWallet, selectWallets } from 'store/wallet/slice'
+import { selectActiveWallet, selectWalletsCount } from 'store/wallet/slice'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 
 const SEGMENT_ITEMS = [
@@ -118,8 +118,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const isLoading = isRefetchingBalance || !isBalanceLoaded
   const activeWallet = useSelector(selectActiveWallet)
-  const wallets = useSelector(selectWallets)
-  const walletsCount = Object.keys(wallets).length
+  const walletsCount = useSelector(selectWalletsCount)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
   const formattedBalance = useMemo(() => {

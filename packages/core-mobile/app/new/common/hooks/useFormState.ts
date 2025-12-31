@@ -1,7 +1,5 @@
-import { useCallback } from 'react'
-import { useMemo } from 'react'
-import { useRef } from 'react'
-import { useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
+import isEqual from 'react-fast-compare'
 
 export function useFormState<T>(initialState: T): {
   formState: T
@@ -15,7 +13,7 @@ export function useFormState<T>(initialState: T): {
   const initialStateRef = useRef<T>(initialState)
 
   const isInitialStateDifferent = useMemo(() => {
-    return JSON.stringify(formState) !== JSON.stringify(initialState)
+    return !isEqual(formState, initialState)
   }, [formState, initialState])
 
   const handleUpdate = useCallback(
