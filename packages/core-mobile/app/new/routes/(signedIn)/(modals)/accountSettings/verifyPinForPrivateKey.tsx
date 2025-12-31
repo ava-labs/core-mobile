@@ -42,7 +42,7 @@ const VerifyPinForPrivateKeyScreen = (): JSX.Element => {
       return
     }
     const walletSecret = walletSecretResult.value
-    Logger.info('walletSecret', walletSecret)
+
     if (wallet.type === WalletType.PRIVATE_KEY) {
       replace({
         // @ts-ignore TODO: make routes typesafe
