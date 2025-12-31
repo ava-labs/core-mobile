@@ -79,5 +79,3 @@ export const BalanceHeaderSection = memo(
     )
   }
 )
-
-BalanceHeaderSection.displayName = 'BalanceHeaderSection'
