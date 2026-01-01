@@ -1,6 +1,7 @@
 import { Button, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
+import { useAppReviewPromptOnSuccessfulTransaction } from 'features/appReview/hooks/useAppReviewPromptOnSuccessfulTransaction'
 import React, { useCallback } from 'react'
 
 export const TransactionSuccessfulScreen = (): React.JSX.Element => {
@@ -9,6 +10,7 @@ export const TransactionSuccessfulScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const promptForReview = useAppReviewPromptOnSuccessfulTransaction()
 
   const renderFooter = (): React.ReactNode => {
     return (
@@ -24,7 +26,8 @@ export const TransactionSuccessfulScreen = (): React.JSX.Element => {
   useFocusEffect(
     useCallback(() => {
       confetti.restart()
-    }, [])
+      promptForReview()
+    }, [promptForReview])
   )
 
   return (
