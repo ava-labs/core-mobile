@@ -189,6 +189,12 @@ const reloadAccounts = async (
       accountsCollection[account.id] = account
     }
 
+    // Skip wallets with no accounts (e.g., during onboarding before accounts are created)
+    // This prevents accidentally clearing accounts if reloadAccounts is called before accounts are initialized
+    if (Object.keys(accountsCollection).length === 0) {
+      continue
+    }
+
     const reloadedAccounts = await AccountsService.reloadAccounts({
       accounts: accountsCollection,
       isTestnet: isDeveloperMode,
@@ -289,6 +295,17 @@ const migrateXpAddressesIfNeeded = async (
   }
 
   const state = listenerApi.getState()
+  const allAccounts = selectAccounts(state)
+
+  // Skip migration during onboarding when no accounts exist yet
+  // Accounts will be created fresh with XP addresses if needed
+  if (Object.keys(allAccounts).length === 0) {
+    Logger.info(
+      'No accounts found. Skipping XP address migration (likely during onboarding).'
+    )
+    return
+  }
+
   const isDeveloperMode = selectIsDeveloperMode(state)
   const wallets = selectWallets(state)
   const allUpdatedAccounts: AccountCollection = {}
