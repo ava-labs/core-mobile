@@ -1,4 +1,5 @@
 import {
+  BlurViewWithFallback,
   NavigationTitleHeader,
   Separator,
   SxProp,
@@ -27,7 +28,6 @@ import Animated, {
   useSharedValue
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
 

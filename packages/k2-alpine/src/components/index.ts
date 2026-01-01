@@ -62,3 +62,4 @@ export type {
 } from './TokenAmountInput/TokenAmountInput'
 export * from './AutoSizeTextInput/AutoSizeTextInput'
 export * from './LoadingContent/LoadingContent'
+export * from './BlurViewWithFallback/BlurViewWithFallback'

@@ -1,5 +1,6 @@
 import {
   alpha,
+  BlurViewWithFallback,
   Icons,
   Pressable,
   SCREEN_WIDTH,
@@ -7,7 +8,6 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { Image } from 'expo-image'
 import React, { memo, ReactNode } from 'react'
 import ContentLoader, { Circle, Rect } from 'react-content-loader/native'

@@ -1,12 +1,12 @@
 import {
   alpha,
   ANIMATED,
+  BlurViewWithFallback,
   Icons,
   Pressable,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import { LinearGradient } from 'expo-linear-gradient'

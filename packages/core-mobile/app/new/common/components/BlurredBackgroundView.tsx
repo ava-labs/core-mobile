@@ -1,4 +1,4 @@
-import { Separator, View } from '@avalabs/k2-alpine'
+import { BlurViewWithFallback, Separator, View } from '@avalabs/k2-alpine'
 import React from 'react'
 import { Platform } from 'react-native'
 import Animated, {
@@ -6,7 +6,6 @@ import Animated, {
   useAnimatedStyle
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { BlurViewWithFallback } from './BlurViewWithFallback'
 import Grabber from './Grabber'
 
 const BlurredBackgroundView = ({

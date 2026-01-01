@@ -2,13 +2,13 @@ import {
   alpha,
   ANIMATED,
   AnimatedPressable,
+  BlurViewWithFallback,
   Icons,
   Text,
   usePreventParentPress,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { Image } from 'expo-image'
 import { useFocusEffect } from 'expo-router'
 import React, { useEffect, useMemo, useState } from 'react'
