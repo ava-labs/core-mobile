@@ -1,5 +1,4 @@
 import { showAlert } from '@avalabs/k2-alpine'
-import { CoreAccountType } from '@avalabs/types'
 import { DropdownItem } from 'common/components/DropdownMenu'
 import {
   dismissAlertWithTextInput,
@@ -10,12 +9,13 @@ import { useCallback, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
-import { addAccount } from 'store/account'
-import { removeAccount, selectAccounts } from 'store/account/slice'
+import { addAccount, selectAccounts } from 'store/account'
+import { removeAccount, selectImportedAccounts } from 'store/account/slice'
 import { AppThunkDispatch } from 'store/types'
 import {
   selectIsMigratingActiveAccounts,
-  selectWallets,
+  selectRemovableWallets,
+  selectWalletsCount,
   setWalletName
 } from 'store/wallet/slice'
 import { removeWallet } from 'store/wallet/thunks'
@@ -30,20 +30,19 @@ export const useManageWallet = (): {
 } => {
   const [isAddingAccount, setIsAddingAccount] = useState(false)
   const dispatch = useDispatch<AppThunkDispatch>()
-  const wallets = useSelector(selectWallets)
+  const walletsCount = useSelector(selectWalletsCount)
+  const importedAccounts = useSelector(selectImportedAccounts)
+  const removableWallets = useSelector(selectRemovableWallets)
   const accounts = useSelector(selectAccounts)
   const isMigratingActiveAccounts = useSelector(selectIsMigratingActiveAccounts)
 
   const handleRemoveAllImportedAccounts = useCallback((): void => {
-    const importedAccounts = Object.values(accounts).filter(
-      account => account.type === CoreAccountType.IMPORTED
-    )
     importedAccounts.forEach(account => {
       dispatch(removeAccount(account.id))
       // removeWallet will also set the first account of the first wallet as active
       dispatch(removeWallet(account.walletId))
     })
-  }, [dispatch, accounts])
+  }, [dispatch, importedAccounts])
 
   const handleRenameWallet = useCallback(
     (wallet: Wallet): void => {
@@ -76,9 +75,7 @@ export const useManageWallet = (): {
 
   const handleRemoveWallet = useCallback(
     (wallet: Wallet): void => {
-      const walletCount = Object.keys(wallets).length
-
-      if (walletCount <= 1) {
+      if (walletsCount <= 1) {
         showAlert({
           title: 'Cannot remove wallet',
           description:
@@ -109,7 +106,7 @@ export const useManageWallet = (): {
         ]
       })
     },
-    [dispatch, wallets]
+    [dispatch, walletsCount]
   )
 
   const handleAddAccount = useCallback(
@@ -145,21 +142,14 @@ export const useManageWallet = (): {
       if (wallet.type === WalletType.SEEDLESS) return false
 
       // 2. Mnemonic wallets can be removed if there are multiple mnemonic/seedless/keystone wallets
-      const walletCount = Object.values(wallets).filter(
-        w =>
-          w.type === WalletType.MNEMONIC ||
-          w.type === WalletType.SEEDLESS ||
-          w.type === WalletType.KEYSTONE
-      ).length
-
       const isLastRemovableMnemonic =
-        walletCount === 1 &&
+        removableWallets.length === 1 &&
         (wallet.type === WalletType.MNEMONIC ||
           wallet.type === WalletType.KEYSTONE)
 
       return !isLastRemovableMnemonic
     },
-    [wallets]
+    [removableWallets]
   )
 
   const getDropdownItems = useCallback(

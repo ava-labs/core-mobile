@@ -17,7 +17,7 @@ export const useGetPrices = ({
 
   return useQuery({
     enabled,
-    queryKey: [ReactQueryKeys.WATCHLIST_PRICES, currency, coingeckoIds],
+    queryKey: [ReactQueryKeys.WATCHLIST_PRICES, currency],
     queryFn: async () => {
       const prices = await runAfterInteractions(async () => {
         return WatchlistService.getPrices(coingeckoIds, currency)

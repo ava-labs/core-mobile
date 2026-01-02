@@ -8,8 +8,15 @@ import KeystoneWallet from 'services/wallet/KeystoneWallet'
 import { Wallet, WalletType } from './types'
 import { MnemonicWallet } from './MnemonicWallet'
 import { LedgerWallet } from './LedgerWallet'
+import { WalletDerivedDataCache } from './WalletDerivedDataCache'
 
 class WalletFactory {
+  private derivedDataCache = new WalletDerivedDataCache()
+
+  get cache(): WalletDerivedDataCache {
+    return this.derivedDataCache
+  }
+
   // eslint-disable-next-line sonarjs/cognitive-complexity
   async createWallet({
     walletId,

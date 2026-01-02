@@ -5,13 +5,7 @@ import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { Space } from 'common/components/Space'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
-import { useIsAllBalancesErrorForAccount } from 'features/portfolio/hooks/useIsAllBalancesErrorForAccount'
-import { useIsAllBalancesInaccurateForAccount } from 'features/portfolio/hooks/useIsAllBalancesInaccurateForAccount'
-import { useIsBalanceLoadedForAccount } from 'features/portfolio/hooks/useIsBalanceLoadedForAccount'
-import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
-import { useIsPollingBalancesForAccount } from 'features/portfolio/hooks/useIsPollingBalancesForAccount'
-import { useIsRefetchingBalancesForAccount } from 'features/portfolio/hooks/useIsRefetchingBalancesForAccount'
+import { useAccountBalanceSummary } from 'features/portfolio/hooks/useAccountBalanceSummary'
 import React, { FC, memo, useCallback } from 'react'
 import { Platform, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
@@ -39,6 +33,9 @@ interface Props {
   onScrollResync: () => void
 }
 
+const keyExtractor = (item: LocalTokenWithBalance): string =>
+  `${item.networkChainId}-${item.localId}`
+
 const AssetsScreen: FC<Props> = ({
   containerStyle,
   goToTokenDetail,
@@ -54,16 +51,16 @@ const AssetsScreen: FC<Props> = ({
   const activeAccount = useSelector(selectActiveAccount)
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const isAllBalancesInaccurate =
-    useIsAllBalancesInaccurateForAccount(activeAccount)
-  const isBalanceLoaded = useIsBalanceLoadedForAccount(activeAccount)
-  const isAllBalancesError = useIsAllBalancesErrorForAccount(activeAccount)
-  const isBalanceLoading = useIsLoadingBalancesForAccount(activeAccount)
-  const isBalancePolling = useIsPollingBalancesForAccount(activeAccount)
-  const isRefetchingBalance = useIsRefetchingBalancesForAccount(activeAccount)
-  const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
-    account: activeAccount
-  })
+
+  const {
+    isAllBalancesInaccurate,
+    isBalanceLoaded,
+    isAllBalancesError,
+    isLoading: isBalanceLoading,
+    isPolling: isBalancePolling,
+    isRefetching: isRefetchingBalance,
+    totalBalanceInCurrency: balanceTotalInCurrency
+  } = useAccountBalanceSummary(activeAccount)
 
   const handleManageList = useCallback(
     (value: string): void => {
@@ -99,24 +96,24 @@ const AssetsScreen: FC<Props> = ({
 
       const style = isGridView
         ? {
-            marginLeft: isLeftColumn ? 8 : 0,
-            marginRight: isLeftColumn ? 0 : 8,
-            justifyContent: 'center',
-            flex: 1,
-            alignItems: 'center'
-          }
+          marginLeft: isLeftColumn ? 8 : 0,
+          marginRight: isLeftColumn ? 0 : 8,
+          justifyContent: 'center',
+          flex: 1,
+          alignItems: 'center'
+        }
         : {
-            paddingHorizontal: 16,
-            justifyContent: 'center',
-            alignItems: 'stretch'
-          }
+          paddingHorizontal: 16,
+          justifyContent: 'center',
+          alignItems: 'stretch'
+        }
 
       return (
         <View sx={style}>
           <TokenListItem
             token={item}
             index={index}
-            onPress={() => goToTokenDetail(item)}
+            onPress={goToTokenDetail}
             isGridView={isGridView}
           />
         </View>
@@ -236,9 +233,7 @@ const AssetsScreen: FC<Props> = ({
       <CollapsibleTabs.FlashList
         key={`assets-list-${listType}`}
         data={data}
-        keyExtractor={(item, index) =>
-          `${index}-${item.networkChainId}-${item.localId}`
-        }
+        keyExtractor={keyExtractor}
         testID="portfolio_token_list"
         extraData={{ isGridView }}
         overrideProps={overrideProps}
