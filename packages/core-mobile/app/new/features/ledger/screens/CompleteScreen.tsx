@@ -3,14 +3,10 @@ import { useNavigation } from 'expo-router'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import React from 'react'
 import { View } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
 import { CommonActions } from '@react-navigation/native'
-import { Text, Button, useTheme, Icons } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 
 export default function CompleteScreen(): JSX.Element {
-  const navigation = useNavigation()
   const navigation = useNavigation()
   const {
     theme: { colors }
