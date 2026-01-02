@@ -1,37 +1,25 @@
-import { CoreAccountType } from '@avalabs/types'
-import AppSolana from '@ledgerhq/hw-app-solana'
-import Transport from '@ledgerhq/hw-transport'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
-import bs58 from 'bs58'
 import { showSnackbar } from 'new/common/utils/toast'
 import { useCallback, useEffect, useState } from 'react'
-import { Alert, PermissionsAndroid, Platform } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { Alert } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
+import AccountsService from 'services/account/AccountsService'
 import LedgerService from 'services/ledger/LedgerService'
 import {
-  LedgerAppType,
   LedgerDerivationPathType,
-  LedgerDevice,
-  LedgerKeys,
   LedgerTransportState,
-  SetupProgress,
   WalletCreationOptions
 } from 'services/ledger/types'
-import { ChainName } from 'services/network/consts'
 import { WalletType } from 'services/wallet/types'
-import { setAccount, setActiveAccount } from 'store/account'
-import { Account } from 'store/account/types'
-import { AppThunkDispatch } from 'store/types'
+import { setAccount, setActiveAccountId } from 'store/account'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import { AppThunkDispatch, RootState } from 'store/types'
 import { setActiveWallet } from 'store/wallet/slice'
 import { storeWallet } from 'store/wallet/thunks'
 import Logger from 'utils/Logger'
 import { Curve } from 'utils/publicKeys'
 import { uuid } from 'utils/uuid'
-import {
-  DERIVATION_PATHS,
-  LEDGER_TIMEOUTS,
-  SOLANA_DERIVATION_PATH
-} from '../consts'
+import { DERIVATION_PATHS } from '../consts'
 
 export interface UseLedgerWalletReturn {
   // Connection state
@@ -52,6 +40,9 @@ export interface UseLedgerWalletReturn {
 
 export function useLedgerWallet(): UseLedgerWalletReturn {
   const dispatch = useDispatch<AppThunkDispatch>()
+  const isDeveloperMode = useSelector((state: RootState) =>
+    selectIsDeveloperMode(state)
+  )
   const [transportState, setTransportState] = useState<LedgerTransportState>({
     available: false,
     powered: false
@@ -212,19 +203,15 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         ).unwrap()
 
         dispatch(setActiveWallet(newWalletId))
-        console.log(`✅ WALLET CREATION - Wallet stored and activated:`, {
-          walletId: newWalletId.slice(0, 8) + '...',
-          walletType:
-            derivationPathType === LedgerDerivationPathType.BIP44
-              ? 'LEDGER'
-              : 'LEDGER_LIVE'
-        })
+        const walletType =
+          derivationPathType === LedgerDerivationPathType.BIP44
+            ? WalletType.LEDGER
+            : WalletType.LEDGER_LIVE
 
-        // Use AccountsService to properly create the account with correct addresses
-        console.log(
-          `🏗️ WALLET CREATION - Starting AccountsService.createNextAccount...`
-        )
-        console.log(`📋 Wallet details:`, {
+        const newAccount = await AccountsService.createNextAccount({
+          index: 0,
+          walletType,
+          isTestnet: isDeveloperMode,
           walletId: newWalletId,
           name: `Account 1`,
           type: CoreAccountType.PRIMARY,
@@ -241,7 +228,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         }
 
         dispatch(setAccount(newAccount))
-        dispatch(setActiveAccount(newAccount.id))
+        dispatch(setActiveAccountId(newAccount.id))
 
         Logger.info('Ledger wallet created successfully:', newWalletId)
         showSnackbar('Ledger wallet created successfully!')
@@ -253,7 +240,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         setIsLoading(false)
       }
     },
-    [avalancheKeys, solanaKeys, bitcoinAddress, dispatch]
+    [dispatch, isDeveloperMode]
   )
 
   return {
