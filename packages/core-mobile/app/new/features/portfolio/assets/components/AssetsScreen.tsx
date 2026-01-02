@@ -20,6 +20,7 @@ import {
   LocalTokenWithBalance
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { EmptyState } from './EmptyState'
 import { TokenListItem } from './TokenListItem'
@@ -49,6 +50,7 @@ const AssetsScreen: FC<Props> = ({
 
   const activeAccount = useSelector(selectActiveAccount)
   const enabledNetworks = useSelector(selectEnabledNetworks)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const {
     isAllBalancesInaccurate,
@@ -83,7 +85,10 @@ const AssetsScreen: FC<Props> = ({
   const isInitialLoading = isLoadingBalance && !isBalanceLoaded
 
   const hasNoAssets =
-    isBalanceLoaded && balanceTotalInCurrency === 0 && !isInitialLoading
+    isBalanceLoaded &&
+    balanceTotalInCurrency === 0 &&
+    !isInitialLoading &&
+    !isDeveloperMode
 
   const renderItem = useCallback(
     (item: LocalTokenWithBalance, index: number): JSX.Element => {
@@ -91,17 +96,17 @@ const AssetsScreen: FC<Props> = ({
 
       const style = isGridView
         ? {
-            marginLeft: isLeftColumn ? 8 : 0,
-            marginRight: isLeftColumn ? 0 : 8,
-            justifyContent: 'center',
-            flex: 1,
-            alignItems: 'center'
-          }
+          marginLeft: isLeftColumn ? 8 : 0,
+          marginRight: isLeftColumn ? 0 : 8,
+          justifyContent: 'center',
+          flex: 1,
+          alignItems: 'center'
+        }
         : {
-            paddingHorizontal: 16,
-            justifyContent: 'center',
-            alignItems: 'stretch'
-          }
+          paddingHorizontal: 16,
+          justifyContent: 'center',
+          alignItems: 'stretch'
+        }
 
       return (
         <View sx={style}>

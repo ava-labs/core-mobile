@@ -4,6 +4,9 @@ module.exports = {
   clearMocks: true,
   moduleNameMapper: {
     '^react-native$': '<rootDir>/node_modules/react-native',
+    'react-native-safe-area-context':
+      '<rootDir>/node_modules/react-native-safe-area-context',
+    'react-native-svg': '<rootDir>/node_modules/react-native-svg',
     '^@solana/(.+)$': '<rootDir>/node_modules/@solana/$1/dist/index.node.cjs'
   },
   testPathIgnorePatterns: [
@@ -26,6 +29,11 @@ module.exports = {
         'fetch-blob',
         '@react-native',
         'react-native',
+        'd3',
+        'd3-.*',
+        'internmap',
+        'delaunator',
+        'robust-predicates',
         'data-uri-to-buffer',
         'formdata-polyfill',
         '@notifee/react-native',
