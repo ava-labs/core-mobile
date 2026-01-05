@@ -111,7 +111,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   return (
     <ScrollScreen
       isModal
-      navigationTitle="Settings and Accounts"
+      navigationTitle="Settings"
       renderHeaderRight={renderHeaderRight}
       testID="settings_scroll_view"
       contentContainerStyle={{
