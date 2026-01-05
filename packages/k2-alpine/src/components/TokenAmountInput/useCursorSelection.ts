@@ -1,4 +1,4 @@
-import { noop } from '@avalabs/core-utils-sdk/dist'
+import { noop } from '@avalabs/core-utils-sdk'
 import { useState, useCallback } from 'react'
 import {
   NativeSyntheticEvent,

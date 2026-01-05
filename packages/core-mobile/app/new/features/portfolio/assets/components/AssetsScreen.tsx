@@ -26,6 +26,7 @@ import {
   LocalTokenWithBalance
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { EmptyState } from './EmptyState'
 import { TokenListItem } from './TokenListItem'
@@ -52,7 +53,7 @@ const AssetsScreen: FC<Props> = ({
 
   const activeAccount = useSelector(selectActiveAccount)
   const enabledNetworks = useSelector(selectEnabledNetworks)
-
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isAllBalancesInaccurate =
     useIsAllBalancesInaccurateForAccount(activeAccount)
   const isBalanceLoaded = useIsBalanceLoadedForAccount(activeAccount)
@@ -87,7 +88,10 @@ const AssetsScreen: FC<Props> = ({
   const isInitialLoading = isLoadingBalance && !isBalanceLoaded
 
   const hasNoAssets =
-    isBalanceLoaded && balanceTotalInCurrency === 0 && !isInitialLoading
+    isBalanceLoaded &&
+    balanceTotalInCurrency === 0 &&
+    !isInitialLoading &&
+    !isDeveloperMode
 
   const renderItem = useCallback(
     (item: LocalTokenWithBalance, index: number): JSX.Element => {

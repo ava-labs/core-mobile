@@ -4,7 +4,7 @@ import { isTokenVisible } from 'store/balance/utils'
 import { selectTokenVisibility } from 'store/portfolio'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { Account } from 'store/account'
-import { NormalizedBalancesForAccount } from 'services/balance/types'
+import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
 import { useTokensWithBalanceForAccount } from './useTokensWithBalanceForAccount'
 
 /**
@@ -18,7 +18,7 @@ export function useBalanceTotalInCurrencyForAccount({
   sourceData
 }: {
   account?: Account
-  sourceData?: NormalizedBalancesForAccount[]
+  sourceData?: AdjustedNormalizedBalancesForAccount[]
 }): number {
   const tokenVisibility = useFocusedSelector(selectTokenVisibility)
   const enabledChainIds = useFocusedSelector(selectEnabledChainIds)

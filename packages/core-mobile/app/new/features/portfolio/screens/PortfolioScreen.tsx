@@ -182,6 +182,17 @@ const PortfolioHomeScreen = (): JSX.Element => {
         title={activeAccount?.name ?? ''}
         subtitle={formattedBalance}
         shouldMaskSubtitle={isPrivacyModeEnabled}
+        renderMaskedSubtitle={
+          isPrivacyModeEnabled
+            ? () => (
+                <HiddenBalanceText
+                  variant="caption"
+                  isCurrency={true}
+                  sx={{ color: '$textSecondary' }}
+                />
+              )
+            : undefined
+        }
       />
     ),
     [activeAccount?.name, formattedBalance, isPrivacyModeEnabled]
