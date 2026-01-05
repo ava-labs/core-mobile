@@ -201,3 +201,19 @@ tasks.named('build') {
 }
 
 apply plugin: 'com.google.gms.google-services'
+
+// Workaround: when New Architecture is enabled, Gradle's externalNativeBuild *clean* tasks
+// can re-run CMake and fail if autolinked libraries' generated codegen JNI folders were
+// deleted by a previous clean. Disabling those clean tasks prevents "clean" from failing.
+// We still explicitly delete the app's CMake/Ninja intermediates via cleanCxx.
+tasks.register("cleanCxx", Delete) {
+    delete file("$projectDir/.cxx")
+}
+
+tasks.matching { it.name == "clean" }.configureEach {
+    dependsOn("cleanCxx")
+}
+
+tasks.matching { it.name.startsWith("externalNativeBuildClean") }.configureEach {
+    enabled = false
+}
