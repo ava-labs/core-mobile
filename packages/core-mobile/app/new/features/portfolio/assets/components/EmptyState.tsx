@@ -11,7 +11,7 @@ import React, {
 import { Platform, View, ViewStyle } from 'react-native'
 
 import { useHeaderHeight } from '@react-navigation/elements'
-import AVALANCHE_ANIMATION from 'assets/lotties/avalanche.json'
+import AVALANCHE_ANIMATION from 'assets/lotties/ava-logo-rotating.json'
 import LottieView from 'lottie-react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import {
