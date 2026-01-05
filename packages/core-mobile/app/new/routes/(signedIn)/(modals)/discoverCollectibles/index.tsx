@@ -181,7 +181,6 @@ export default function DiscoverCollectiblesScreen(): JSX.Element {
       }}
       showsVerticalScrollIndicator={false}
       renderItem={renderItem}
-      estimatedItemSize={TAB_WIDTH * 1.2}
       keyExtractor={item => item.id}
       ListHeaderComponent={renderHeader}
     />

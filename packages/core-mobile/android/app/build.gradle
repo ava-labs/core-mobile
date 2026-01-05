@@ -65,6 +65,11 @@ react {
     autolinkLibrariesWithApp()
 }
 
+/**
+ * Set this to true in release builds to optimize the app using [R8](https://developer.android.com/topic/performance/app-optimization/enable-app-optimization).
+ */
+def enableMinifyInReleaseBuilds = (findProperty('android.enableMinifyInReleaseBuilds') ?: false).toBoolean()
+
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
 
@@ -100,6 +105,8 @@ android {
         versionName rootProject.ext.appVersionName
         versionCode rootProject.ext.appBuildNumber
 
+        buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
+
         testBuildType System.getProperty('testBuildType', 'e2e')  // To control the test apk build type
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
@@ -119,6 +126,7 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            minifyEnabled enableMinifyInReleaseBuilds
             // necessary for old versions of Android to run on dev mode
             testCoverageEnabled true
             dexOptions {

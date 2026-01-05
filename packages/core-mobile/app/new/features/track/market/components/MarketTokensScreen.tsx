@@ -106,7 +106,6 @@ const MarketTokensScreen = ({
       showsVerticalScrollIndicator={false}
       extraData={{ isGridView }}
       keyExtractor={item => item.id}
-      estimatedItemSize={isGridView ? 200 : 120}
     />
   )
 }

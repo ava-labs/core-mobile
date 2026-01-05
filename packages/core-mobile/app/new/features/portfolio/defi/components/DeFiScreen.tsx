@@ -220,7 +220,6 @@ export const DeFiScreen = ({
         keyExtractor={item => item.id}
         overrideProps={overrideProps}
         contentContainerStyle={contentContainerStyle}
-        estimatedItemSize={isGridView ? 183 : 73}
         numColumns={numColumns}
         renderItem={renderItem}
         refreshControl={

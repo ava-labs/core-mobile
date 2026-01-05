@@ -250,7 +250,6 @@ const AssetsScreen: FC<Props> = ({
             progressViewOffset={Platform.OS === 'ios' ? 0 : header.height}
           />
         }
-        estimatedItemSize={isGridView ? 183 : 73}
         renderItem={item => renderItem(item.item, item.index)}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}

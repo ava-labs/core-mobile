@@ -54,44 +54,6 @@
 		C7062D69B313585A64C52506 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743FA70F1387A05E00866EBF /* ExpoModulesProvider.swift */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		815E55142C92071A000F8E0F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 815E550E2C92071A000F8E0F;
-			remoteInfo = NotificationServiceExtensionInternal;
-		};
-		815E551F2C921A9F000F8E0F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 815E550E2C92071A000F8E0F;
-			remoteInfo = NotificationServiceExtensionInternal;
-		};
-		8E3793732CA2788500D3A9B4 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 815E55442C94A396000F8E0F;
-			remoteInfo = NotificationServiceExtension;
-		};
-		8E3793762CA2790500D3A9B4 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 815E55442C94A396000F8E0F;
-			remoteInfo = NotificationServiceExtension;
-		};
-		8E37937A2CA2790C00D3A9B4 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 815E550E2C92071A000F8E0F;
-			remoteInfo = NotificationServiceExtensionInternal;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXCopyFilesBuildPhase section */
 		815E551A2C92071A000F8E0F /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -127,7 +89,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* AvaxWalletTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AvaxWalletTests.m; sourceTree = "<group>"; };
 		0B36FA4F2CD3DD170030C8B9 /* core_receive.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = core_receive.wav; sourceTree = "<group>"; };
 		0B73DE0A2C80D72900DED1DF /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -214,17 +175,8 @@
 			isa = PBXGroup;
 			children = (
 				00E356F21AD99517003FC87E /* AvaxWalletTests.m */,
-				00E356F01AD99517003FC87E /* Supporting Files */,
 			);
 			path = AvaxWalletTests;
-			sourceTree = "<group>";
-		};
-		00E356F01AD99517003FC87E /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				00E356F11AD99517003FC87E /* Info.plist */,
-			);
-			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
 		0B36FA502CD3DD170030C8B9 /* Sounds */ = {
@@ -405,8 +357,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				8E3793742CA2788500D3A9B4 /* PBXTargetDependency */,
-				8E3793772CA2790500D3A9B4 /* PBXTargetDependency */,
 			);
 			name = AvaxWallet;
 			productName = AvaxWallet;
@@ -468,9 +418,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				815E55152C92071A000F8E0F /* PBXTargetDependency */,
-				815E55202C921A9F000F8E0F /* PBXTargetDependency */,
-				8E37937B2CA2790C00D3A9B4 /* PBXTargetDependency */,
 			);
 			name = AvaxWalletInternal;
 			productName = AvaxWallet;
@@ -586,6 +533,7 @@
 			);
 			inputPaths = (
 				"$(SRCROOT)/.xcode.env",
+				"$(SRCROOT)/.xcode.env.local",
 			);
 			name = "Bundle React Native code and images";
 			outputPaths = (
@@ -695,11 +643,16 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/.xcode.env",
+				"$(SRCROOT)/.xcode.env.local",
+				"$(SRCROOT)/AvaxWallet/AvaxWallet.entitlements",
+				"$(SRCROOT)/Pods/Target Support Files/Pods-common-AvaxWalletInternal/expo-configure-project.sh",
 			);
 			name = "[Expo] Configure project";
 			outputFileListPaths = (
 			);
 			outputPaths = (
+				"$(SRCROOT)/Pods/Target Support Files/Pods-common-AvaxWalletInternal/ExpoModulesProvider.swift",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -730,6 +683,8 @@
 			files = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/.xcode.env",
+				"$(SRCROOT)/.xcode.env.local",
 			);
 			name = "Bundle React Native code and images";
 			outputPaths = (
@@ -835,11 +790,16 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/.xcode.env",
+				"$(SRCROOT)/.xcode.env.local",
+				"$(SRCROOT)/AvaxWallet/AvaxWallet.entitlements",
+				"$(SRCROOT)/Pods/Target Support Files/Pods-common-AvaxWallet/expo-configure-project.sh",
 			);
 			name = "[Expo] Configure project";
 			outputFileListPaths = (
 			);
 			outputPaths = (
+				"$(SRCROOT)/Pods/Target Support Files/Pods-common-AvaxWallet/ExpoModulesProvider.swift",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -904,34 +864,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		815E55152C92071A000F8E0F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 815E550E2C92071A000F8E0F /* NotificationServiceExtensionInternal */;
-			targetProxy = 815E55142C92071A000F8E0F /* PBXContainerItemProxy */;
-		};
-		815E55202C921A9F000F8E0F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 815E550E2C92071A000F8E0F /* NotificationServiceExtensionInternal */;
-			targetProxy = 815E551F2C921A9F000F8E0F /* PBXContainerItemProxy */;
-		};
-		8E3793742CA2788500D3A9B4 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 815E55442C94A396000F8E0F /* NotificationServiceExtension */;
-			targetProxy = 8E3793732CA2788500D3A9B4 /* PBXContainerItemProxy */;
-		};
-		8E3793772CA2790500D3A9B4 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 815E55442C94A396000F8E0F /* NotificationServiceExtension */;
-			targetProxy = 8E3793762CA2790500D3A9B4 /* PBXContainerItemProxy */;
-		};
-		8E37937B2CA2790C00D3A9B4 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 815E550E2C92071A000F8E0F /* NotificationServiceExtensionInternal */;
-			targetProxy = 8E37937A2CA2790C00D3A9B4 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {

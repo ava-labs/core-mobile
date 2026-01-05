@@ -27,8 +27,8 @@
     "plist": "3.0.5",
     "ansi-regex": "4.1.1",
     "ansi-styles": "3.2.1",
-    "@types/react": "19.0.10",
-    "@types/react-dom": "19.0.4",
+    "@types/react": "19.1.10",
+    "@types/react-dom": "19.1.7",
     "rxjs": "7.8.1",
     "eslint": "8.50.0",
     "eslint-config-prettier": "8.10.0",
@@ -72,7 +72,10 @@
     "@noble/curves@~1.1.0": "patch:@noble/curves@patch%3A@noble/curves@npm%253A1.9.7%23./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch%3A%3Aversion=1.9.7&hash=9b53f1&locator=mobile-monorepo%2540workspace%253A.#./.yarn/patches/@noble-curves-patch-8bddd6a892.patch",
     "@noble/curves@^1.8.0": "patch:@noble/curves@patch%3A@noble/curves@npm%253A1.9.7%23./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch%3A%3Aversion=1.9.7&hash=9b53f1&locator=mobile-monorepo%2540workspace%253A.#./.yarn/patches/@noble-curves-patch-8bddd6a892.patch",
     "@bitcoinerlab/secp256k1@1.2.0": "patch:@bitcoinerlab/secp256k1@npm%3A1.2.0#./.yarn/patches/@bitcoinerlab-secp256k1-npm-1.2.0-1098d4b329.patch",
-    "@bitcoinerlab/secp256k1@^1.0.5": "patch:@bitcoinerlab/secp256k1@npm%3A1.2.0#./.yarn/patches/@bitcoinerlab-secp256k1-npm-1.2.0-1098d4b329.patch"
+    "@bitcoinerlab/secp256k1@^1.0.5": "patch:@bitcoinerlab/secp256k1@npm%3A1.2.0#./.yarn/patches/@bitcoinerlab-secp256k1-npm-1.2.0-1098d4b329.patch",
+    "react-native-is-edge-to-edge": "1.2.1",
+    "react-native-reanimated": "4.1.1",
+    "react-native-worklets": "0.5.1"
   },
   "engines": {
     "node": ">=20.18.0",

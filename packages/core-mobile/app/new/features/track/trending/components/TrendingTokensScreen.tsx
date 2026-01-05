@@ -16,7 +16,6 @@ import { useBalanceTotalForAccount } from 'features/portfolio/hooks/useBalanceTo
 import { TrendingTokenListItem } from './TrendingTokenListItem'
 
 const numColumns = 1
-const estimatedItemSize = 120
 
 const TrendingTokensScreen = ({
   data,
@@ -111,7 +110,6 @@ const TrendingTokensScreen = ({
       showsVerticalScrollIndicator={false}
       key={'list'}
       keyExtractor={item => item.id}
-      estimatedItemSize={estimatedItemSize}
     />
   )
 }

@@ -9,7 +9,6 @@ import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { FlashListProps, ListRenderItem } from '@shopify/flash-list'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { isXpTransaction } from 'common/utils/isXpTransactions'
-import { ACTIVITY_LIST_ITEM_HEIGHT } from 'features/portfolio/assets/components/ActivityListItem'
 import { PendingBridgeTransactionItem } from 'features/portfolio/assets/components/PendingBridgeTransactionItem'
 import { TokenActivityListItem } from 'features/portfolio/assets/components/TokenActivityListItem'
 import { XpActivityListItem } from 'features/portfolio/assets/components/XpActivityListItem'
@@ -105,7 +104,6 @@ export const ActivityList = ({
       ListEmptyComponent={renderEmpty}
       showsVerticalScrollIndicator={false}
       keyExtractor={keyExtractor}
-      estimatedItemSize={ACTIVITY_LIST_ITEM_HEIGHT}
       refreshing={isRefreshing}
       onRefresh={refresh}
     />
