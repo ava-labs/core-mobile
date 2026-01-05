@@ -3,7 +3,7 @@ import { TokenVisibility } from 'store/portfolio/types'
 import { isTokenVisible } from 'store/balance/utils'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { Network } from '@avalabs/core-chains-sdk'
-import { NormalizedBalancesForAccount } from 'services/balance/types'
+import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
 import { balanceKey } from 'features/portfolio/hooks/useAccountBalances'
 
 /**
@@ -27,7 +27,7 @@ export function getTokensByNetworkFromCache({
   }
 
   const cachedData = queryClient.getQueryData(balanceKey(account)) as
-    | NormalizedBalancesForAccount[]
+    | AdjustedNormalizedBalancesForAccount[]
     | undefined
 
   const balances = cachedData?.find(
@@ -39,7 +39,11 @@ export function getTokensByNetworkFromCache({
   const disabled: string[] = []
 
   tokens.forEach(token => {
-    if ('address' in token && token.address) {
+    if (
+      'address' in token &&
+      typeof token.address === 'string' &&
+      token.address
+    ) {
       if (isTokenVisible(tokenVisibility, token)) {
         enabled.push(token.address)
       } else {

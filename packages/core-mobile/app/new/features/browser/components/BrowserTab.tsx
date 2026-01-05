@@ -22,20 +22,20 @@ import React, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import RNWebView, {
   WebViewMessageEvent,
+  WebViewNavigation,
   WebViewNavigationEvent
 } from 'react-native-webview'
 import { WebViewErrorEvent } from 'react-native-webview/lib/WebViewTypes'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
-import { AddHistoryPayload } from 'store/browser'
 import {
   addHistoryForActiveTab,
   goBackward,
-  goForward as goForwardInPage,
+  goForward as goForwardAction,
+  goToDiscoverPage,
   selectActiveTab,
-  selectCanGoBack,
-  selectCanGoForward,
+  selectTab,
   updateActiveHistoryForTab
 } from 'store/browser/slices/tabs'
 import Logger from 'utils/Logger'
@@ -61,7 +61,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     const { theme } = useTheme()
     const insets = useSafeAreaInsets()
 
-    const { onProgress, progress, setUrlEntry } = useBrowserContext()
+    const { onProgress, progress, setUrlEntry, inputRef } = useBrowserContext()
     const { setPendingDeepLink } = useDeeplink()
     const clipboard = useClipboardWatcher()
     const {
@@ -81,15 +81,31 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       injectCustomWindowOpen +
       injectCustomPrompt
 
-    const canGoBack = useSelector(selectCanGoBack)
-    const canGoForward = useSelector(selectCanGoForward)
     const activeTab = useSelector(selectActiveTab)
-    const activeHistory = activeTab?.activeHistory
+    const tab = useSelector(selectTab(tabId))
+    const activeHistory = tab?.activeHistory
     const activeHistoryUrl = activeHistory?.url ?? ''
     const disabled = activeTab?.id !== tabId
 
-    const [urlToLoad, setUrlToLoad] = useState(activeHistoryUrl)
+    const [urlToLoad, setUrlToLoad] = useState(
+      activeHistoryUrl.length > 0 ? activeHistoryUrl : ''
+    )
     const [error, setError] = useState<unknown | undefined>(undefined)
+
+    const lastNavStateRef = useRef<{
+      url: string
+      canGoBack: boolean
+      canGoForward: boolean
+    }>({
+      url: '',
+      canGoBack: false,
+      canGoForward: false
+    })
+    const lastSyncedUrlRef = useRef<string>('')
+    const backAttemptUrlRef = useRef<string | null>(null)
+    const backAttemptTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+      null
+    )
 
     const [favicon, setFavicon] = useState<string | undefined>(undefined)
     const [description, setDescription] = useState('')
@@ -102,21 +118,21 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       pageStyles?.backgroundColor || theme.colors.$surfacePrimary
 
     useEffect(() => {
-      try {
-        const activeHistoryURL = activeHistory?.url
-          ? new URL(activeHistory.url)
-          : undefined
-        const urlToLoadURL =
-          urlToLoad.length > 0 ? new URL(urlToLoad) : undefined
-
-        if (
-          activeHistory?.url &&
-          activeHistoryURL?.origin !== urlToLoadURL?.origin
-        ) {
-          setUrlToLoad(activeHistory.url)
+      // Only update the URL to load when the navigation was initiated externally
+      // For swipe/back/forward inside the WebView, we let WebView navigate and
+      // only *sync Redux* from navigation events to avoid reload loops.
+      const next = activeHistory?.url ?? ''
+      if (!next.length) {
+        lastNavStateRef.current = {
+          url: '',
+          canGoBack: false,
+          canGoForward: false
         }
-      } catch (e) {
-        setError(e)
+      }
+
+      // Always keep `urlToLoad` in sync with redux. Skip only when already equal.
+      if (next !== urlToLoad) {
+        setUrlToLoad(next)
       }
     }, [activeHistory?.url, urlToLoad])
 
@@ -134,16 +150,64 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       webViewRef.current?.reload()
     }
 
+    const goToDiscover = useCallback((): void => {
+      if (!tab?.id) return
+
+      dispatch(goToDiscoverPage())
+
+      // Keep local/UI state consistent immediately.
+      lastNavStateRef.current = {
+        url: '',
+        canGoBack: false,
+        canGoForward: false
+      }
+      backAttemptUrlRef.current = null
+      if (backAttemptTimerRef.current) {
+        clearTimeout(backAttemptTimerRef.current)
+        backAttemptTimerRef.current = null
+      }
+      setUrlToLoad('')
+      // urlEntry is synced from redux in BrowserContext when activeHistory becomes undefined
+    }, [dispatch, tab?.id])
+
     const goBack = (): void => {
-      if (!canGoBack) return
       AnalyticsService.capture('BrowserBackTapped').catch(Logger.error)
+      if (lastNavStateRef.current.canGoBack) {
+        // Some sites report canGoBack but effectively "no-op" on back.
+        // We attempt WebView back first, but if no navigation happens shortly after, fall back to Discover page.
+        const urlAtAttempt = lastNavStateRef.current.url
+        backAttemptUrlRef.current = urlAtAttempt
+        if (backAttemptTimerRef.current) {
+          clearTimeout(backAttemptTimerRef.current)
+        }
+
+        webViewRef.current?.goBack()
+
+        backAttemptTimerRef.current = setTimeout(() => {
+          // If the URL didn't change after the attempt, treat it as a no-op and display Discover page.
+          if (lastNavStateRef.current.url === urlAtAttempt) {
+            goToDiscover()
+          }
+        }, 1000)
+        return
+      }
+
+      // When WebView can't go back, fallback to our Redux history stack.
+      if (!tab?.id) return
+
       dispatch(goBackward())
     }
 
     const goForward = (): void => {
-      if (!canGoForward) return
       AnalyticsService.capture('BrowserForwardTapped').catch(Logger.error)
-      dispatch(goForwardInPage())
+      if (lastNavStateRef.current.canGoForward) {
+        webViewRef.current?.goForward()
+        return
+      }
+
+      // WebView can't go forward, fallback to our Redux history stack.
+      if (!tab?.id) return
+      dispatch(goForwardAction())
     }
 
     useImperativeHandle(ref, () => ({
@@ -278,7 +342,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
 
     const onLoad = (event: WebViewNavigationEvent): void => {
       if (
-        event.nativeEvent.url.startsWith('about:blank') ||
+        event.nativeEvent.url.startsWith('about:') ||
         event.nativeEvent.loading
       )
         return
@@ -287,19 +351,62 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         setError(undefined)
       }
 
-      const includeDescriptionAndFavicon =
-        description !== '' && favicon !== undefined
-      const history: AddHistoryPayload = includeDescriptionAndFavicon
-        ? {
-            title: event.nativeEvent.title,
-            url: event.nativeEvent.url,
-            description,
-            favicon
-          }
-        : { title: event.nativeEvent.title, url: event.nativeEvent.url }
-      dispatch(addHistoryForActiveTab(history))
-      setUrlEntry(event.nativeEvent.url)
+      // `onNavigationStateChange` is the single source of truth for history sync.
+      // Avoid double-dispatching history updates (can cause unnecessary rerenders/loops).
     }
+
+    const onNavigationStateChange = (navState: WebViewNavigation): void => {
+      if (disabled) return
+
+      // Update last nav-state *before* any filtering, so we can detect "no-op back" attempts.
+      lastNavStateRef.current = {
+        url: navState.url ?? '',
+        canGoBack: navState.canGoBack,
+        canGoForward: navState.canGoForward
+      }
+
+      const nextUrl = navState.url
+      if (!nextUrl?.length || nextUrl.startsWith('about:')) return
+
+      // Sync once per URL. WebView (especially with swipe / SPAs / redirects) can emit multiple
+      // navigation state changes for the same URL; gating by `loading === false` can miss updates
+      // because the URL often changes while loading=true and then settles without another URL change.
+      if (lastSyncedUrlRef.current !== nextUrl) {
+        lastSyncedUrlRef.current = nextUrl
+
+        // Keep Redux history aligned with the actual WebView navigation stack
+        dispatch(
+          addHistoryForActiveTab({
+            title: navState.title ?? nextUrl,
+            url: nextUrl
+          })
+        )
+
+        // Only update the input value if the user isn't actively typing.
+        if (!inputRef?.current?.isFocused()) {
+          setUrlEntry(nextUrl)
+        }
+      }
+
+      // Cancel pending "no-op back" fallback only when the URL actually changes.
+      const attemptUrl = backAttemptUrlRef.current
+      if (attemptUrl && attemptUrl !== nextUrl) {
+        backAttemptUrlRef.current = null
+        if (backAttemptTimerRef.current) {
+          clearTimeout(backAttemptTimerRef.current)
+          backAttemptTimerRef.current = null
+        }
+      }
+    }
+
+    useEffect(() => {
+      return () => {
+        if (backAttemptTimerRef.current) {
+          clearTimeout(backAttemptTimerRef.current)
+          backAttemptTimerRef.current = null
+        }
+      }
+    }, [])
 
     const onError = (event: WebViewErrorEvent): void => {
       progress.value = 0
@@ -346,6 +453,13 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
               }
             }}
           />
+        ) : !urlToLoad?.length ? (
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: theme.colors.$surfacePrimary
+            }}
+          />
         ) : (
           <WebView
             key={tabId}
@@ -354,6 +468,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             injectedJavaScript={injectedJavascript}
             url={urlToLoad}
             onLoad={onLoad}
+            onNavigationStateChange={onNavigationStateChange}
             onMessage={onMessageHandler}
             onShouldStartLoadWithRequest={() => !disabled}
             nestedScrollEnabled

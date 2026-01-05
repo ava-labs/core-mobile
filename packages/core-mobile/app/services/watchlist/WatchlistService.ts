@@ -1,10 +1,9 @@
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import TokenService from 'services/token/TokenService'
 import {
-  SimplePriceResponse,
   CoinMarket,
   SimplePriceInCurrencyResponse,
-  TrendingToken
+  SimplePriceResponse
 } from 'services/token/types'
 import { transformSparklineData } from 'services/token/utils'
 import {
@@ -14,21 +13,30 @@ import {
   PriceData,
   Prices
 } from 'store/watchlist/types'
+import { tokenAggregatorApi } from 'utils/api/clients/aggregatedTokensApiClient'
+import { TrendingToken, WatchlistMarketsResponse } from 'utils/api/types'
 import Logger from 'utils/Logger'
-import { tokenAggregatorApi } from 'utils/apiClient/tokenAggregator/tokenAggregatorApi'
-import { WatchlistMarketsResponse } from 'utils/apiClient/tokenAggregator/types'
+import { getV1WatchlistMarkets } from 'utils/api/generated/tokenAggregator/aggregatorApi.client/sdk.gen'
 
+/**
+ * Fetches top markets from the token aggregator API
+ * @param currency - The currency to fetch markets for
+ * @returns Promise resolving to WatchlistMarketsResponse
+ */
 const fetchTopMarkets = async ({
   currency
 }: {
   currency: string
 }): Promise<WatchlistMarketsResponse> => {
-  return tokenAggregatorApi.getV1watchlistmarkets({
-    queries: {
-      currency: currency,
+  const { data } = await getV1WatchlistMarkets({
+    client: tokenAggregatorApi,
+    query: {
+      currency,
       topMarkets: true
     }
   })
+
+  return data ?? []
 }
 
 /*

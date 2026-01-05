@@ -3,9 +3,9 @@ import { UseQueryResult, useQuery } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useExchangeRates } from 'hooks/defi/useExchangeRates'
 import { useSelector } from 'react-redux'
-import { TrendingToken } from 'services/token/types'
 import WatchlistService from 'services/watchlist/WatchlistService'
 import { selectSelectedCurrency } from 'store/settings/currency'
+import { TrendingToken } from 'utils/api/types'
 import { runAfterInteractions } from 'utils/runAfterInteractions'
 
 export const useGetTrendingTokens = <TData = TrendingToken[]>(
