@@ -37,6 +37,7 @@ interface LedgerSetupContextValue {
     options: WalletCreationOptions & {
       avalancheKeys?: { evm: string; avalanche: string; pvm: string }
       solanaKeys?: Array<{ key: string; derivationPath: string; curve: string }>
+      bitcoinAddress?: string
     }
   ) => Promise<string>
 

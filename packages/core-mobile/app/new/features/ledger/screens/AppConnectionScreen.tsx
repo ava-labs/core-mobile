@@ -53,7 +53,8 @@ export default function AppConnectionScreen(): JSX.Element {
             deviceName: connectedDeviceName,
             derivationPathType: selectedDerivationPath,
             avalancheKeys: keys.avalancheKeys,
-            solanaKeys: keys.solanaKeys
+            solanaKeys: keys.solanaKeys,
+            bitcoinAddress: keys.bitcoinAddress
           })
 
           Logger.info(
