@@ -3,7 +3,6 @@ import { showSnackbar } from 'new/common/utils/toast'
 import { useCallback, useEffect, useState } from 'react'
 import { Alert } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
-import AccountsService from 'services/account/AccountsService'
 import LedgerService from 'services/ledger/LedgerService'
 import {
   LedgerDerivationPathType,
@@ -11,7 +10,7 @@ import {
   WalletCreationOptions
 } from 'services/ledger/types'
 import { WalletType } from 'services/wallet/types'
-import { setAccount, setActiveAccountId } from 'store/account'
+import { PrimaryAccount, setAccount, setActiveAccountId } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { AppThunkDispatch, RootState } from 'store/types'
 import { setActiveWallet } from 'store/wallet/slice'
@@ -19,6 +18,7 @@ import { storeWallet } from 'store/wallet/thunks'
 import Logger from 'utils/Logger'
 import { Curve } from 'utils/publicKeys'
 import { uuid } from 'utils/uuid'
+import { CoreAccountType } from '@avalabs/types'
 import { DERIVATION_PATHS } from '../consts'
 
 export interface UseLedgerWalletReturn {
@@ -106,10 +106,12 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       derivationPathType = LedgerDerivationPathType.BIP44,
       individualKeys = [],
       avalancheKeys,
-      solanaKeys = []
+      solanaKeys = [],
+      bitcoinAddress
     }: WalletCreationOptions & {
       avalancheKeys?: { evm: string; avalanche: string; pvm: string }
       solanaKeys?: Array<{ key: string; derivationPath: string; curve: string }>
+      bitcoinAddress?: string
     }) => {
       try {
         setIsLoading(true)
@@ -203,21 +205,40 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         ).unwrap()
 
         dispatch(setActiveWallet(newWalletId))
-        const walletType =
-          derivationPathType === LedgerDerivationPathType.BIP44
-            ? WalletType.LEDGER
-            : WalletType.LEDGER_LIVE
+        // const walletType =
+        //   derivationPathType === LedgerDerivationPathType.BIP44
+        //     ? WalletType.LEDGER
+        //     : WalletType.LEDGER_LIVE
 
-        const newAccount = await AccountsService.createNextAccount({
-          index: 0,
-          walletType,
-          isTestnet: isDeveloperMode,
+        // For the first account (index 0), use the addresses we retrieved during setup
+        // This avoids the complex derivation logic that returns empty addresses
+        const newAccountId = uuid()
+        const newAccount: PrimaryAccount = {
+          id: newAccountId,
           walletId: newWalletId,
-          name: 'Account 1'
+          name: 'Account 1',
+          type: CoreAccountType.PRIMARY,
+          index: 0,
+          addressC: formattedAvalancheKeys.evm,
+          addressBTC: bitcoinAddress || '',
+          addressAVM: formattedAvalancheKeys.avalanche,
+          addressPVM: formattedAvalancheKeys.pvm,
+          addressSVM: solanaKeys[0]?.key || '',
+          addressCoreEth: '',
+          xpAddresses: [],
+          xpAddressDictionary: {}
+        }
+
+        Logger.info('Created account with addresses:', {
+          addressC: newAccount.addressC,
+          addressBTC: newAccount.addressBTC,
+          addressAVM: newAccount.addressAVM,
+          addressPVM: newAccount.addressPVM,
+          addressSVM: newAccount.addressSVM
         })
 
         dispatch(setAccount(newAccount))
-        dispatch(setActiveAccountId(newAccount.id))
+        dispatch(setActiveAccountId(newAccountId))
 
         Logger.info('Ledger wallet created successfully:', newWalletId)
         showSnackbar('Ledger wallet created successfully!')

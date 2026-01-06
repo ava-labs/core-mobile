@@ -1,4 +1,4 @@
-import { Button, Text, useTheme } from '@avalabs/k2-alpine'
+import { Button, Icons, Text, useTheme } from '@avalabs/k2-alpine'
 import { useNavigation } from 'expo-router'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import React from 'react'
