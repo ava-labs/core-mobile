@@ -110,15 +110,12 @@ export const getAaveDepositedBalance = async ({
     balance: balanceOf,
     balanceValue: {
       value: balanceValue,
-      valueString: formatAmount(
-        balanceValue,
-        underlyingTokenDecimals
-      ).toString(),
+      valueString: balanceValue.toString(),
       currencyCode: CurrencyCode.USD
     },
     price: {
       value: priceInUsd,
-      valueString: formatAmount(priceInUsd, underlyingTokenDecimals).toString(),
+      valueString: priceInUsd.toString(),
       currencyCode: CurrencyCode.USD
     }
   }

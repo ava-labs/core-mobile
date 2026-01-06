@@ -4,18 +4,20 @@ import { Logo } from 'common/components/Logo'
 import { DefiMarket, MarketNames } from '../types'
 
 export const DefiMarketLogo = ({
-  item
+  item,
+  width = 36,
+  networkLogoWidth = 18
 }: {
   item: DefiMarket
+  width?: number
+  networkLogoWidth?: number
 }): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const borderColor = colors.$surfaceSecondary
 
-  const width = 36
   const networkLogoInset = -4
-  const networkLogoSize = 18
   const borderWidth = 2
 
   return (
@@ -35,9 +37,9 @@ export const DefiMarketLogo = ({
       />
       <View
         style={{
-          width: networkLogoSize,
-          height: networkLogoSize,
-          borderRadius: networkLogoSize / 2,
+          width: networkLogoWidth,
+          height: networkLogoWidth,
+          borderRadius: networkLogoWidth / 2,
           position: 'absolute',
           bottom: networkLogoInset,
           right: networkLogoInset,
@@ -46,7 +48,7 @@ export const DefiMarketLogo = ({
         }}>
         <Logo
           logoUri={item.network.logoUri}
-          size={networkLogoSize - borderWidth * 2}
+          size={networkLogoWidth - borderWidth * 2}
           testID={`network_logo__${item.network.chainName}`}
         />
       </View>

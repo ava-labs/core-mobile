@@ -6,17 +6,18 @@ import { DefiAssetDetails } from '../types'
 
 export const DefiAssetLogo = ({
   asset,
-  network
+  network,
+  width = 36
 }: {
   asset: DefiAssetDetails
-  network: Network | undefined
+  network?: Network | undefined
+  width?: number
 }): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const borderColor = colors.$surfaceSecondary
 
-  const width = 36
   const networkLogoInset = -4
   const networkLogoSize = 18
 

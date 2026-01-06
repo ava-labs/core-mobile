@@ -1,9 +1,6 @@
-import { PChainTransaction } from '@avalabs/glacier-sdk'
 import {
   AddCard,
-  CompletedCard,
   GRID_GAP,
-  ProgressCard,
   SCREEN_WIDTH,
   SPRING_LINEAR_TRANSITION,
   Text,
@@ -22,18 +19,18 @@ import {
 } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
-import NetworkService from 'services/network/NetworkService'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
-import { isCompleted, isOnGoing } from 'utils/earn/status'
 import { useDeposits } from 'hooks/earn/useDeposits'
 import { useRouter } from 'expo-router'
 import { Placeholder } from 'common/components/Placeholder'
-import { getActiveStakeProgress, getStakeTitle } from '../../stake/utils'
+import { LoadingState } from 'common/components/LoadingState'
 import CoreAppIconLight from '../../../assets/icons/core-app-icon-light.svg'
 import CoreAppIconDark from '../../../assets/icons/core-app-icon-dark.svg'
+import { DefiMarket } from '../types'
+import { DepositCard } from '../components/DepositCard'
 
 const DepositTabScreen = ({
   onScroll,
@@ -49,71 +46,53 @@ const DepositTabScreen = ({
   isActive: boolean
 }): JSX.Element => {
   const { navigate } = useRouter()
-  const { data: _data, isRefreshing, pullToRefresh: onRefresh } = useDeposits()
-  const stakes = useMemo(() => _data ?? [], [_data])
+  const { deposits, isLoading } = useDeposits()
   const { theme } = useTheme()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const { networkToken: pChainNetworkToken } =
-    NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const scrollOffsetRef = useRef({ x: 0, y: 0 })
   const dispatch = useDispatch()
 
-  const data: StakeCardType[] = useMemo(() => {
-    return [StaticCard.Add, ...stakes]
-  }, [stakes])
+  const data: DepositCardType[] = useMemo(() => {
+    return isLoading ? [] : [StaticCard.Add, ...deposits]
+  }, [deposits, isLoading])
 
   const handleAddDeposit = useCallback(() => {
     // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/deposit' })
   }, [navigate])
 
-  const handlePressDeposit = useCallback(() => {
-    // @ts-ignore TODO: make routes typesafe
-    navigate({ pathname: '/depositDetail', params: { txHash } })
-  }, [navigate])
+  const handlePressDeposit = useCallback(
+    (item: DefiMarket) => {
+      navigate({
+        // @ts-ignore TODO: make routes typesafe
+        pathname: '/depositDetail',
+        params: { marketId: item.uniqueMarketId }
+      })
+    },
+    [navigate]
+  )
+
+  const handleWithdrawDeposit = useCallback((_: DefiMarket) => {
+    // TODO: Implement withdraw
+  }, [])
 
   const renderItem = useCallback(
     ({
       item,
       index
-    }: ListRenderItemInfo<StakeCardType>): JSX.Element | null => {
+    }: ListRenderItemInfo<DepositCardType>): JSX.Element | null => {
       let content = null
       if (item === StaticCard.Add) {
         content = <AddCard width={CARD_WIDTH} onPress={handleAddDeposit} />
       } else {
-        const now = new Date()
-
-        if (isCompleted(item, now)) {
-          const title = getStakeTitle({
-            stake: item,
-            pChainNetworkToken,
-            isActive: false
-          })
-
-          content = (
-            <CompletedCard
-              onPress={() => handlePressDeposit()}
-              title={title}
-              width={CARD_WIDTH}
-            />
-          )
-        } else if (isOnGoing(item, now)) {
-          const title = getStakeTitle({
-            stake: item,
-            pChainNetworkToken,
-            isActive: true
-          })
-
-          content = (
-            <ProgressCard
-              title={title}
-              progress={getActiveStakeProgress(item, now)}
-              width={CARD_WIDTH}
-              motion={undefined}
-              onPress={() => handlePressDeposit()}
-            />
-          )
-        }
+        content = (
+          <DepositCard
+            market={item}
+            width={CARD_WIDTH}
+            onPress={() => handlePressDeposit(item)}
+            onWithdrawPress={() => handleWithdrawDeposit(item)}
+          />
+        )
       }
 
       if (content) {
@@ -133,7 +112,7 @@ const DepositTabScreen = ({
 
       return null
     },
-    [handleAddDeposit, handlePressDeposit, pChainNetworkToken]
+    [handleAddDeposit, handlePressDeposit, handleWithdrawDeposit]
   )
 
   const overrideProps = {
@@ -225,9 +204,10 @@ const DepositTabScreen = ({
       keyExtractor={(_, index) => index.toString()}
       removeClippedSubviews={true}
       extraData={{ isDark: theme.isDark }} // force re-render when theme changes
-      onRefresh={onRefresh}
-      refreshing={isRefreshing}
+      // onRefresh={onRefresh}
+      // refreshing={isRefreshing}
       ListHeaderComponent={renderHeader}
+      ListEmptyComponent={<LoadingState sx={{ height: 500 }} />}
     />
   )
 }
@@ -235,7 +215,7 @@ const DepositTabScreen = ({
 enum StaticCard {
   Add = 'Add'
 }
-type StakeCardType = StaticCard | PChainTransaction
+type DepositCardType = StaticCard | DefiMarket
 const CARD_WIDTH = Math.floor((SCREEN_WIDTH - 16 * 2 - GRID_GAP) / 2)
 
 export default DepositTabScreen
