@@ -15,7 +15,8 @@ import Logger from 'utils/Logger'
 import bs58 from 'bs58'
 import { Platform, PermissionsAndroid, Alert } from 'react-native'
 import {
-  LEDGER_TIMEOUTS
+  LEDGER_TIMEOUTS,
+  getSolanaDerivationPath
 } from 'new/features/ledger/consts'
 import { assertNotNull } from 'utils/assertions'
 import {
@@ -58,7 +59,6 @@ class LedgerService {
   async connect(deviceId: string): Promise<void> {
     try {
       Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
-      console.log('🔗 Connecting to device:', deviceId)
 
       // Use a longer timeout for connection
       this.transport = await TransportBLE.open(
@@ -66,32 +66,27 @@ class LedgerService {
         LEDGER_TIMEOUTS.CONNECTION_TIMEOUT
       )
       Logger.info('BLE transport connected successfully')
-      console.log('✅ BLE transport connected, checking connection status...')
-      console.log('🔌 Transport isConnected:', this.#transport?.isConnected)
 
       this.currentAppType = LedgerAppType.UNKNOWN
 
       // Start passive app detection
       Logger.info('Starting app polling...')
-      console.log('🚀 Starting app polling...')
       this.startAppPolling()
       Logger.info('App polling started')
-      console.log('✅ App polling started successfully')
 
       // Test immediate app info call and update currentAppType
-      console.log('🧪 Testing immediate app info call...')
       try {
         const testAppInfo = await this.getCurrentAppInfo()
-        console.log('✅ Immediate app info test successful:', testAppInfo)
         // Update currentAppType immediately so waitForApp doesn't have to wait
-        const detectedAppType = this.mapAppNameToType(testAppInfo.applicationName)
-        console.log(`🎯 Immediately detected app type: ${detectedAppType}`)
+        const detectedAppType = this.mapAppNameToType(
+          testAppInfo.applicationName
+        )
+        Logger.info(`Immediately detected app type: ${detectedAppType}`)
         this.currentAppType = detectedAppType
       } catch (testError) {
-        console.log('❌ Immediate app info test failed:', testError.message)
+        Logger.info('Immediate app info test failed, will rely on polling')
       }
     } catch (error) {
-      console.log('❌ Connection failed:', error.message)
       Logger.error('Failed to connect to Ledger', error)
       throw new Error(
         `Failed to connect to Ledger: ${
@@ -155,7 +150,7 @@ class LedgerService {
           permission => permission === 'granted'
         )
       } catch (err) {
-        console.log('❌ Error requesting Bluetooth permissions:', err)
+        Logger.error('Error requesting Bluetooth permissions:', err)
         return false
       }
     }
@@ -164,7 +159,7 @@ class LedgerService {
 
   // Handle scan errors (matching original implementation)
   private handleScanError(error: Error): void {
-    console.log('❌ Scan error:', error.message)
+    Logger.error('Scan error:', error)
     this.stopDeviceScanning()
 
     if (
@@ -197,7 +192,6 @@ class LedgerService {
     }
 
     // Request permissions first
-    console.log('🔐 Requesting Bluetooth permissions...')
     const hasPermissions = await this.requestBluetoothPermissions()
     if (!hasPermissions) {
       Alert.alert(
@@ -206,10 +200,8 @@ class LedgerService {
       )
       return
     }
-    console.log('✅ Bluetooth permissions granted')
 
     Logger.info('Starting device scanning...')
-    console.log('🔍 Starting device scanning...')
     this.isScanning = true
     this.currentDevices = []
 
@@ -219,7 +211,6 @@ class LedgerService {
           type: string
           descriptor: { id: string; name?: string; rssi?: number }
         }) => {
-          console.log('📡 BLE event:', event.type, event.descriptor)
           if (event.type === 'add') {
             const device: LedgerDevice = {
               id: event.descriptor.id,
@@ -227,15 +218,15 @@ class LedgerService {
               rssi: event.descriptor.rssi
             }
 
-            console.log('📱 Found device:', device)
+            Logger.info('Found Ledger device:', {
+              id: device.id,
+              name: device.name
+            })
 
             // Update device list (matching original logic)
             const exists = this.currentDevices.find(d => d.id === device.id)
             if (!exists) {
               this.currentDevices = [...this.currentDevices, device]
-              console.log('➕ Added new device to list')
-            } else {
-              console.log('🔄 Device already exists, updating...')
             }
 
             // Notify all listeners
@@ -243,23 +234,20 @@ class LedgerService {
           }
         },
         error: (error: Error) => {
-          console.log('❌ TransportBLE.listen error:', error.message)
           this.handleScanError(error)
         },
 
         complete: () => {
-          console.log('✅ TransportBLE.listen completed')
+          Logger.info('Device scanning completed')
         }
       })
 
-      console.log('⏰ Setting scan timeout...')
       // Auto-stop scanning after timeout (matching original)
       setTimeout(() => {
-        console.log('⏰ Scan timeout reached, stopping...')
+        Logger.info('Scan timeout reached, stopping...')
         this.stopDeviceScanning()
       }, LEDGER_TIMEOUTS.SCAN_TIMEOUT)
     } catch (error) {
-      console.log('❌ Failed to start scanning:', error)
       Logger.error('Failed to start device scanning:', error)
       this.isScanning = false
       this.handleScanError(error as Error)
@@ -322,12 +310,9 @@ class LedgerService {
   // Get current app info from device
   private async getCurrentAppInfo(): Promise<AppInfo> {
     try {
-      console.log('📡 Calling getLedgerAppInfo...')
-      const appInfo = await getLedgerAppInfo(this.transport as Transport)
-      console.log('📋 Raw app info from SDK:', JSON.stringify(appInfo, null, 2))
-      return appInfo
+      return await getLedgerAppInfo(this.transport as Transport)
     } catch (error) {
-      console.log('❌ Error getting app info from SDK:', error.message)
+      Logger.error('Error getting app info from SDK:', error)
       throw error
     }
   }
@@ -335,26 +320,20 @@ class LedgerService {
   // Map app name to our enum
   private mapAppNameToType(appName: string): LedgerAppType {
     const lowerAppName = appName.toLowerCase()
-    console.log(`🔍 Mapping app name: "${appName}" -> "${lowerAppName}"`)
 
     switch (lowerAppName) {
       case 'avalanche':
       case 'avax':
       case 'avalanche wallet':
-        console.log('✅ Matched Avalanche app')
         return LedgerAppType.AVALANCHE
       case 'solana':
       case 'sol':
-        console.log('✅ Matched Solana app')
         return LedgerAppType.SOLANA
       case 'ethereum':
       case 'eth':
-        console.log('✅ Matched Ethereum app')
         return LedgerAppType.ETHEREUM
       default:
-        console.log(
-          `❓ Unknown app name: "${appName}" (lowercase: "${lowerAppName}")`
-        )
+        Logger.info(`Unknown app name detected: "${appName}"`)
         return LedgerAppType.UNKNOWN
     }
   }
@@ -362,6 +341,28 @@ class LedgerService {
   // Get current app type (passive detection)
   getCurrentAppType(): LedgerAppType {
     return this.currentAppType
+  }
+
+  checkApp = async (appType: LedgerAppType): Promise<boolean> => {
+    try {
+      const appInfo = await this.getCurrentAppInfo()
+      const detectedAppType = this.mapAppNameToType(appInfo.applicationName)
+
+      if (detectedAppType !== this.currentAppType) {
+        Logger.info(
+          `App changed from ${this.currentAppType} to ${detectedAppType}`
+        )
+        this.currentAppType = detectedAppType
+      }
+
+      if (this.currentAppType === appType) {
+        Logger.info(`${appType} app is ready`)
+        return true
+      }
+    } catch (error) {
+      Logger.info('Error checking app, will continue polling')
+    }
+    return false
   }
 
   // Wait for specific app to be open (Promise-based, works with polling)
@@ -372,78 +373,60 @@ class LedgerService {
     return new Promise((resolve, reject) => {
       const startTime = Date.now()
       Logger.info(`Waiting for ${appType} app (timeout: ${timeoutMs}ms)...`)
-      console.log(`⏳ Waiting for ${appType} app...`)
 
       // Check if app is already available
       if (this.currentAppType === appType) {
-        console.log(`✅ ${appType} app already available`)
         Logger.info(`${appType} app is ready`)
         resolve()
         return
       }
 
-      // Do an immediate check first
-      const doCheck = async () => {
-        const elapsed = Date.now() - startTime
-        console.log(
-          `⏳ Checking for ${appType} app (${elapsed}ms elapsed, current: ${this.currentAppType})`
-        )
+      let checkInterval: ReturnType<typeof setInterval> | null = null
 
-        try {
-          console.log(`🔍 Actively checking app info for ${appType}...`)
-          // Actively check the app instead of relying on cached currentAppType
-          const appInfo = await this.getCurrentAppInfo()
-          console.log(`📋 Got app info: ${appInfo.applicationName}`)
-          const detectedAppType = this.mapAppNameToType(appInfo.applicationName)
-          console.log(`🎯 Detected app type: ${detectedAppType}`)
-          
-          // Update currentAppType
-          if (detectedAppType !== this.currentAppType) {
-            console.log(`🔄 App changed from ${this.currentAppType} to ${detectedAppType}`)
-            this.currentAppType = detectedAppType
-          }
-
-          if (this.currentAppType === appType) {
-            console.log(`✅ ${appType} app detected!`)
-            Logger.info(`${appType} app is ready`)
-            clearInterval(checkInterval)
-            resolve()
-            return true // Found it
-          } else {
-            console.log(`⏸️  Still waiting... current: ${this.currentAppType}, waiting for: ${appType}`)
-          }
-        } catch (error) {
-          console.log(`❌ Error checking app: ${error.message}`)
-          console.log(`📊 Error details:`, error)
-          // Continue checking, don't fail on single error
+      const cleanup = (): void => {
+        if (checkInterval) {
+          clearInterval(checkInterval)
+          checkInterval = null
         }
-        return false // Not found yet
       }
 
       // Do immediate check
-      doCheck().then(found => {
-        if (found) return
-      })
+      this.checkApp(appType)
+        .then(appFound => {
+          if (appFound) {
+            cleanup()
+            resolve()
+            return
+          }
 
-      // Set up interval to actively check app type (don't rely on background polling)
-      const checkInterval = setInterval(async () => {
-        const found = await doCheck()
-        if (found) return
+          // Set up polling interval
+          checkInterval = setInterval(async () => {
+            const elapsed = Date.now() - startTime
+            if (elapsed >= timeoutMs) {
+              cleanup()
+              Logger.error(
+                `Timeout waiting for ${appType} app after ${timeoutMs}ms`
+              )
+              reject(
+                new Error(
+                  `Timeout waiting for ${appType} app. Please open the ${appType} app on your Ledger device.`
+                )
+              )
+              return
+            }
 
-        if (elapsed >= timeoutMs) {
-          console.log(`⏰ Timeout waiting for ${appType} app`)
-          Logger.error(
-            `Timeout waiting for ${appType} app after ${timeoutMs}ms`
-          )
-          clearInterval(checkInterval)
-          reject(
-            new Error(
-              `Timeout waiting for ${appType} app. Please open the ${appType} app on your Ledger device.`
-            )
-          )
-          return
-        }
-      }, LEDGER_TIMEOUTS.APP_CHECK_DELAY)
+            const isFound = await this.checkApp(appType)
+            if (isFound) {
+              cleanup()
+              resolve()
+            }
+          }, LEDGER_TIMEOUTS.APP_CHECK_DELAY)
+        })
+        .catch(error => {
+          cleanup()
+          Logger.error('Error checking app:', error)
+          reject(error)
+        })
     })
   }
 
@@ -957,28 +940,23 @@ class LedgerService {
    */
   async testAppDetection(): Promise<void> {
     try {
-      console.log('🧪 Manual app detection test starting...')
-      console.log('🔌 Transport connected:', this.#transport?.isConnected)
+      Logger.info('Manual app detection test starting...')
+      Logger.info('Transport connected:', this.#transport?.isConnected)
 
       if (!this.#transport || !this.#transport.isConnected) {
-        console.log('❌ No transport connection')
+        Logger.info('No transport connection')
         return
       }
 
-      console.log('📡 Calling getLedgerAppInfo manually...')
       const appInfo = await getLedgerAppInfo(this.transport as Transport)
-      console.log(
-        '📋 Manual app info result:',
-        JSON.stringify(appInfo, null, 2)
-      )
+      Logger.info('Manual app info result:', appInfo)
 
       const mappedType = this.mapAppNameToType(appInfo.applicationName)
-      console.log('🎯 Mapped app type:', mappedType)
+      Logger.info('Mapped app type:', mappedType)
 
-      console.log('🔄 Current stored app type:', this.currentAppType)
+      Logger.info('Current stored app type:', this.currentAppType)
     } catch (error) {
-      console.log('❌ Manual app detection test failed:', error.message)
-      console.log('📊 Error details:', error)
+      Logger.error('Manual app detection test failed:', error)
     }
   }
 
