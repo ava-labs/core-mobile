@@ -328,7 +328,7 @@ PODS:
     - ExpoModulesCore
   - ExpoFileSystem (19.0.21):
     - ExpoModulesCore
-  - ExpoFont (13.3.2):
+  - ExpoFont (14.0.10):
     - ExpoModulesCore
   - ExpoHaptics (15.0.8):
     - ExpoModulesCore
@@ -383,7 +383,7 @@ PODS:
     - Yoga
   - ExpoSMS (14.0.8):
     - ExpoModulesCore
-  - ExpoSplashScreen (0.30.10):
+  - ExpoSplashScreen (31.0.13):
     - ExpoModulesCore
   - ExpoVideo (3.0.15):
     - ExpoModulesCore
@@ -631,7 +631,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - NitroModules (0.31.10):
+  - NitroModules (0.32.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -4056,7 +4056,7 @@ PODS:
     - Yoga
   - RNSensors (7.3.6):
     - React-Core
-  - RNSentry (7.2.0):
+  - RNSentry (7.8.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -4083,7 +4083,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - Sentry/HybridSDK (= 8.56.1)
+    - Sentry/HybridSDK (= 8.57.3)
     - SocketRocket
     - Yoga
   - RNShare (12.0.9):
@@ -4299,7 +4299,7 @@ PODS:
   - SDWebImageWebPCoder (0.14.6):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.17)
-  - Sentry/HybridSDK (8.56.1)
+  - Sentry/HybridSDK (8.57.3)
   - SocketRocket (0.7.1)
   - SwiftUIIntrospect (1.3.0)
   - Yoga (0.0.0)
@@ -4887,7 +4887,7 @@ SPEC CHECKSUMS:
   ExpoCamera: 6a326deb45ba840749652e4c15198317aa78497e
   ExpoClipboard: b36b287d8356887844bb08ed5c84b5979bb4dd1e
   ExpoFileSystem: 858a44267a3e6e9057e0888ad7c7cfbf55d52063
-  ExpoFont: cf508bc2e6b70871e05386d71cab927c8524cc8e
+  ExpoFont: 35ac6191ed86bbf56b3ebd2d9154eda9fad5b509
   ExpoHaptics: d3a6375d8dcc3a1083d003bc2298ff654fafb536
   ExpoHead: 9719a74953454fac328e90f34eea55ebbb3bbbf9
   ExpoImage: 686f972bff29525733aa13357f6691dc90aa03d8
@@ -4898,7 +4898,7 @@ SPEC CHECKSUMS:
   ExpoLocalization: d9168d5300a5b03e5e78b986124d11fb6ec3ebbd
   ExpoModulesCore: d86dab8a6c8f1184f9b0b0503ace93919882aa15
   ExpoSMS: 34f6c0d30e6f87c53fd3ab137bb862b61a58d44e
-  ExpoSplashScreen: 0ad5acac1b5d2953c6e00d4319f16d616f70d4dd
+  ExpoSplashScreen: bc3cffefca2716e5f22350ca109badd7e50ec14d
   ExpoVideo: d7d767743b54a4a301eda6460fcdf953d6163512
   EXUpdatesInterface: 5adf50cb41e079c861da6d9b4b954c3db9a50734
   fast_float: b32c788ed9c6a8c584d114d0047beda9664e7cc6
@@ -4931,7 +4931,7 @@ SPEC CHECKSUMS:
   NitroAvalabsCrypto: 35be5670efab6b8866ae433c7e3cd49b2988e5d5
   NitroFetch: 660adfb47f84b28db664f97b50e5dc28506ab6c1
   NitroMmkv: ce1df9b9f0e06dfbde2455d863047e0411fceb6e
-  NitroModules: 5bc319d441f4983894ea66b1d392c519536e6d23
+  NitroModules: f964d2f3f5b392d0c0303737085cc30e375dc43f
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   OpenTelemetrySwiftApi: aaee576ed961e0c348af78df58b61300e95bd104
   PLCrashReporter: db59ef96fa3d25f3650040d02ec2798cffee75f2
@@ -5049,7 +5049,7 @@ SPEC CHECKSUMS:
   RNReanimated: 5da5ce2b651742812e39d2282431617c3882edf1
   RNScreens: 0bbf16c074ae6bb1058a7bf2d1ae017f4306797c
   RNSensors: 111159597ac51505df10413c61b28bcd28e88983
-  RNSentry: bca90d41b7e8423262c5fcfccfb12328a3aa6701
+  RNSentry: fdb39d5f294e492aa2f08ad80e510310dc223772
   RNShare: 1dba46787d6e5543e05655efaefa0e4bb98380d9
   RNSound: 180aa1cfad34009ad7472c78d0340100ff948058
   RNSVG: 6f39605a4c4d200b11435c35bd077553c6b5963a
@@ -5058,7 +5058,7 @@ SPEC CHECKSUMS:
   SDWebImageAVIFCoder: afe194a084e851f70228e4be35ef651df0fc5c57
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
-  Sentry: b3ec44d01708fce73f99b544beb57e890eca4406
+  Sentry: c643eb180df401dd8c734c5036ddd9dd9218daa6
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SwiftUIIntrospect: fee9aa07293ee280373a591e1824e8ddc869ba5d
   Yoga: 728df40394d49f3f471688747cf558158b3a3bd1
