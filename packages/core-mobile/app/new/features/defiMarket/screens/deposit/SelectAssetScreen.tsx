@@ -59,7 +59,7 @@ export const SelectAssetScreen = (): JSX.Element => {
       const nativeToken = cChainTokensWithBalance.find(
         t => t.type === TokenType.NATIVE
       )
-      if (token) {
+      if (token && token.balance > 0n) {
         setSelectedAsset({ token, nativeToken })
 
         navigate({
