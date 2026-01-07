@@ -19,14 +19,11 @@
     "appium:ios": "PLATFORM=ios wdio run ./e2e-appium/wdio.conf.ts",
     "appium:android": "PLATFORM=android wdio run ./e2e-appium/wdio.conf.ts",
     "appium": "wdio run ./e2e-appium/wdio.conf.ts",
-<<<<<<< HEAD
     "devicefarm:package": "./scripts/devicefarm/package-tests.sh",
-    "devicefarm:run": "./scripts/devicefarm/run-devicefarm.sh"
-=======
+    "devicefarm:run": "./scripts/devicefarm/run-devicefarm.sh",
     "appium:smoke": "wdio run ./e2e-appium/wdio.conf.ts --mochaOpts.grep='\\[(s|S)moke\\]'",
     "appium:smokeIos": "PLATFORM=ios wdio run ./e2e-appium/wdio.conf.ts --mochaOpts.grep='\\[(s|S)moke\\]'",
     "appium:smokeAndroid": "PLATFORM=android wdio run ./e2e-appium/wdio.conf.ts --mochaOpts.grep='\\[(s|S)moke\\]'"
->>>>>>> main
   },
   "dependencies": {
     "@avalabs/avalanche-module": "3.0.0",
