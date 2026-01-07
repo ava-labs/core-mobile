@@ -36,7 +36,9 @@ export function useWallet(): UseWallet {
    * Navigates to the unlocked wallet screen
    */
   const unlock = useCallback(async (): Promise<void> => {
+    console.log('[useWallet.unlock] About to dispatch onAppUnlocked')
     dispatch(onAppUnlocked())
+    console.log('[useWallet.unlock] Dispatched onAppUnlocked')
   }, [dispatch])
 
   const login = useCallback(

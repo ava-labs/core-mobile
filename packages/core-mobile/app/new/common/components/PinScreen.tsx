@@ -80,24 +80,34 @@ export const PinScreen = ({
   }
 
   const handleLoginSuccess = useCallback(() => {
+    console.log('[PinScreen.handleLoginSuccess] Starting...')
     handleStartLoading()
     pinInputRef.current?.blur()
     isProcessing.value = true
 
     // JS thread is blocked, so we need to wait for the animation to finish for updating the UI after the keyboard is closed
     setTimeout(async () => {
+      console.log('[PinScreen.handleLoginSuccess] In setTimeout callback, isInitialLogin:', isInitialLogin, 'walletId:', walletId)
       try {
-        if (isInitialLogin) {
-          if (!walletId) {
-            throw new Error('Wallet ID is not set')
-          }
-          const result = await BiometricsSDK.loadWalletSecret(walletId) //for now we only support one wallet, multiple wallets will be supported in the upcoming PR
+        if (isInitialLogin && walletId) {
+          console.log('[PinScreen.handleLoginSuccess] Is initial login, loading wallet secret for walletId:', walletId)
+          console.log('[PinScreen.handleLoginSuccess] Calling BiometricsSDK.loadWalletSecret...')
+          const result = await BiometricsSDK.loadWalletSecret(walletId)
+          console.log('[PinScreen.handleLoginSuccess] loadWalletSecret result:', { success: result.success, hasError: !!result.error })
           if (!result.success) {
-            throw result.error
+            console.log('[PinScreen.handleLoginSuccess] Failed to load wallet secret, error:', result.error)
+            // Don't throw - continue with unlock anyway
+            // The wallet might not need to load the secret (e.g., Ledger wallets)
+            Logger.warn('Failed to load wallet secret, continuing with unlock:', result.error)
+          } else {
+            console.log('[PinScreen.handleLoginSuccess] Wallet secret loaded successfully')
           }
         }
+        console.log('[PinScreen.handleLoginSuccess] About to call unlock()')
         await unlock()
+        console.log('[PinScreen.handleLoginSuccess] unlock() completed')
       } catch (error) {
+        console.log('[PinScreen.handleLoginSuccess] Caught error:', error)
         Logger.error('Failed to login:', error)
       }
     }, 0)
