@@ -1,13 +1,12 @@
 import { Button, Icons, Text, useTheme } from '@avalabs/k2-alpine'
-import { useNavigation } from 'expo-router'
+import { useRouter } from 'expo-router'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import React from 'react'
 import { View } from 'react-native'
-import { CommonActions } from '@react-navigation/native'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 
 export default function CompleteScreen(): JSX.Element {
-  const navigation = useNavigation()
+  const router = useRouter()
   const {
     theme: { colors }
   } = useTheme()
@@ -16,16 +15,13 @@ export default function CompleteScreen(): JSX.Element {
 
   const handleComplete = (): void => {
     resetSetup()
-    // Reset the accountSettings stack to have index as first screen and manageAccounts as second (active)
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 1, // manageAccounts will be the active screen
-        routes: [
-          { name: 'index' }, // accountSettings index screen (first in stack)
-          { name: 'manageAccounts' } // manageAccounts screen (second in stack, active)
-        ]
-      })
-    )
+    // Go back through the entire ledger + importWallet flow
+    // complete -> appConnection -> deviceConnection -> pathSelection -> importWallet -> wallets
+    router.canGoBack() && router.back()
+    router.canGoBack() && router.back()
+    router.canGoBack() && router.back()
+    router.canGoBack() && router.back()
+    router.canGoBack() && router.back()
   }
 
   return (

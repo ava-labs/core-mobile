@@ -178,10 +178,13 @@ const reloadAccounts = async (
   _action: unknown,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
+  console.log('[reloadAccounts] Starting...')
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const wallets = selectWallets(state)
+  console.log('[reloadAccounts] Wallet count:', Object.keys(wallets).length)
   for (const wallet of Object.values(wallets)) {
+    console.log('[reloadAccounts] Processing wallet:', wallet.type, wallet.id)
     const accounts = selectAccountsByWalletId(state, wallet.id)
     //convert accounts to AccountCollection
     const accountsCollection: AccountCollection = {}
@@ -189,14 +192,18 @@ const reloadAccounts = async (
       accountsCollection[account.id] = account
     }
 
+    console.log('[reloadAccounts] Calling AccountsService.reloadAccounts for wallet:', wallet.type)
     const reloadedAccounts = await AccountsService.reloadAccounts({
       accounts: accountsCollection,
       isTestnet: isDeveloperMode,
       walletId: wallet.id,
       walletType: wallet.type
     })
+    console.log('[reloadAccounts] Got reloaded accounts, dispatching...')
     listenerApi.dispatch(setAccounts(reloadedAccounts))
+    console.log('[reloadAccounts] Dispatched for wallet:', wallet.type)
   }
+  console.log('[reloadAccounts] Complete')
 }
 
 const handleActiveAccountIndexChange = (
@@ -244,46 +251,63 @@ const migrateSolanaAddressesIfNeeded = async (
   _action: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
+  console.log('[migrateSolanaAddressesIfNeeded] Starting...')
   const { getState } = listenerApi
   const state = getState()
   const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
   const accounts = selectAccounts(state)
   const entries = Object.values(accounts)
+  console.log('[migrateSolanaAddressesIfNeeded] Checking:', {
+    isSolanaSupportBlocked,
+    accountCount: entries.length,
+    accountsWithoutSVM: entries.filter(acc => !acc.addressSVM).length
+  })
   // Only migrate Solana addresses if Solana support is enabled
   if (!isSolanaSupportBlocked && entries.some(account => !account.addressSVM)) {
+    console.log('[migrateSolanaAddressesIfNeeded] Migration needed')
     const seedlessWallet = selectSeedlessWallet(state)
     if (seedlessWallet) {
       await deriveMissingSeedlessSessionKeys(seedlessWallet.id)
     }
     // reload only when there are accounts without Solana addresses
     reloadAccounts(_action, listenerApi)
+  } else {
+    console.log('[migrateSolanaAddressesIfNeeded] No migration needed')
   }
+  console.log('[migrateSolanaAddressesIfNeeded] Complete')
 }
 
 const handleInitAccountsIfNeeded = async (
   _action: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
+  console.log('[handleInitAccountsIfNeeded] Starting...')
   const state = listenerApi.getState()
   const accounts = selectAccounts(state)
+  console.log('[handleInitAccountsIfNeeded] Account count:', Object.keys(accounts).length)
 
   // if there are no accounts, we need to initialize them
   // initAcounts after onboarding might have failed
   // or user might have force quit the app while creating the first account
   if (Object.keys(accounts).length === 0) {
+    console.log('[handleInitAccountsIfNeeded] Initializing accounts...')
     await initAccounts(_action, listenerApi)
     return
   }
 
   // if there are accounts, we need to migrate them
+  console.log('[handleInitAccountsIfNeeded] Migrating active accounts...')
   migrateActiveAccountsIfNeeded(_action, listenerApi)
+  console.log('[handleInitAccountsIfNeeded] Complete')
 }
 
 const migrateXpAddressesIfNeeded = async (
   _action: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
+  console.log('[migrateXpAddressesIfNeeded] Starting...')
   if (hasCompletedXpAddressMigration()) {
+    console.log('[migrateXpAddressesIfNeeded] Already completed. Skipping.')
     Logger.info('XP address migration already completed. Skipping.')
     return
   }
@@ -293,14 +317,16 @@ const migrateXpAddressesIfNeeded = async (
   const wallets = selectWallets(state)
   const allUpdatedAccounts: AccountCollection = {}
 
+  console.log('[migrateXpAddressesIfNeeded] Wallet count:', Object.keys(wallets).length)
   if (Object.keys(wallets).length === 0) {
+    console.log('[migrateXpAddressesIfNeeded] No wallets found.')
     Logger.info('No wallets found. Skipping XP address migration.')
     return
   }
 
   // Process all wallets in parallel
   const walletPromises = Object.values(wallets).map(async wallet => {
-    if (WalletType.PRIVATE_KEY.includes(wallet.type)) {
+    if (wallet.type === WalletType.PRIVATE_KEY) {
       Logger.info(
         `Skipping XP address derivation for private key wallet of type ${wallet.type}`
       )
@@ -394,25 +420,32 @@ const populateXpAddressesForWallet = async ({
     let xpAddresses: AddressIndex[] = []
     let xpAddressDictionary: XPAddressDictionary = {} as XPAddressDictionary
 
-    try {
-      Logger.info(`Deriving XP addresses for account ${account.index}...`)
+    // Skip XP address derivation for Ledger wallets - they don't support it
+    if (!restrictToFirstIndex) {
+      try {
+        Logger.info(`Deriving XP addresses for account ${account.index}...`)
 
-      const result = await getAddressesFromXpubXP({
-        isDeveloperMode,
-        walletId: wallet.id,
-        walletType: wallet.type,
-        accountIndex: account.index,
-        onlyWithActivity: true
-      })
+        const result = await getAddressesFromXpubXP({
+          isDeveloperMode,
+          walletId: wallet.id,
+          walletType: wallet.type,
+          accountIndex: account.index,
+          onlyWithActivity: true
+        })
 
-      xpAddresses = result.xpAddresses
-      xpAddressDictionary = result.xpAddressDictionary
-    } catch (error) {
-      Logger.error(
-        `Failed to derive XP addresses for account ${account.index} in wallet ${wallet.id}`,
-        error
-      )
-      // Continue with empty addresses to ensure account is still updated
+        xpAddresses = result.xpAddresses
+        xpAddressDictionary = result.xpAddressDictionary
+      } catch (error) {
+        Logger.error(
+          `Failed to derive XP addresses for account ${account.index} in wallet ${wallet.id}`,
+          error
+        )
+        // Continue with empty addresses to ensure account is still updated
+      }
+    } else {
+      // For hardware wallets (Ledger, Keystone), preserve existing XP addresses
+      xpAddresses = account.xpAddresses || []
+      xpAddressDictionary = account.xpAddressDictionary || ({} as XPAddressDictionary)
     }
 
     // For mnemonic and seedless wallets, rederive AVM and PVM addresses
@@ -446,6 +479,7 @@ const populateXpAddressesForWallet = async ({
       ...account,
       addressAVM: newAddressAVM,
       addressPVM: newAddressPVM,
+      addressSVM: account?.addressSVM,
       xpAddresses,
       xpAddressDictionary
     }

@@ -35,32 +35,67 @@ class AccountsService {
     walletId: string
     walletType: WalletType
   }): Promise<AccountCollection> {
+    console.log('[AccountsService.reloadAccounts] Starting for wallet type:', walletType)
     const reloadedAccounts: AccountCollection = {}
 
+    // For Ledger wallets, preserve existing addresses instead of re-deriving
+    const isLedgerWallet =
+      walletType === WalletType.LEDGER || walletType === WalletType.LEDGER_LIVE
+    console.log('[AccountsService.reloadAccounts] isLedgerWallet:', isLedgerWallet)
+
     for (const [key, account] of Object.entries(accounts)) {
-      const addresses = await this.getAddresses({
-        walletId,
-        walletType,
-        accountIndex: account.index,
-        isTestnet
-      })
+      console.log('[AccountsService.reloadAccounts] Processing account:', account.index)
+      let addresses: Record<NetworkVMType, string>
+
+      if (isLedgerWallet) {
+        // For Ledger wallets, preserve existing addresses
+        // since they were retrieved from the device during wallet creation
+        addresses = {
+          [NetworkVMType.BITCOIN]: account.addressBTC,
+          [NetworkVMType.EVM]: account.addressC,
+          [NetworkVMType.AVM]: account.addressAVM,
+          [NetworkVMType.PVM]: account.addressPVM,
+          [NetworkVMType.CoreEth]: account.addressCoreEth || '',
+          [NetworkVMType.SVM]: account.addressSVM ?? '',
+          [NetworkVMType.HVM]: ''
+        } as Record<NetworkVMType, string>
+      } else {
+        // For other wallet types or additional accounts, derive addresses
+        addresses = await this.getAddresses({
+          walletId,
+          walletType,
+          accountIndex: account.index,
+          isTestnet
+        })
+      }
 
       let xpAddresses: AddressIndex[] = []
       let xpAddressDictionary: XPAddressDictionary = {} as XPAddressDictionary
 
-      try {
-        const result = await getAddressesFromXpubXP({
-          isDeveloperMode: isTestnet,
-          walletId,
-          walletType,
-          accountIndex: account.index,
-          onlyWithActivity: true
-        })
+      // Only derive XP addresses for non-Ledger wallets
+      if (!isLedgerWallet) {
+        console.log('[AccountsService.reloadAccounts] Deriving XP addresses for account:', account.index)
+        try {
+          const result = await getAddressesFromXpubXP({
+            isDeveloperMode: isTestnet,
+            walletId,
+            walletType,
+            accountIndex: account.index,
+            onlyWithActivity: true
+          })
 
-        xpAddresses = result.xpAddresses
-        xpAddressDictionary = result.xpAddressDictionary
-      } catch (error) {
-        Logger.error('Error getting XP addresses', error)
+          xpAddresses = result.xpAddresses
+          xpAddressDictionary = result.xpAddressDictionary
+          console.log('[AccountsService.reloadAccounts] XP addresses derived successfully')
+        } catch (error) {
+          console.log('[AccountsService.reloadAccounts] Error getting XP addresses:', error)
+          Logger.error('Error getting XP addresses', error)
+        }
+      } else {
+        console.log('[AccountsService.reloadAccounts] Preserving XP addresses for Ledger account')
+        // For Ledger wallets, preserve existing XP addresses
+        xpAddresses = account.xpAddresses || []
+        xpAddressDictionary = account.xpAddressDictionary || ({} as XPAddressDictionary)
       }
 
       const title =
@@ -83,7 +118,10 @@ class AccountsService {
         xpAddresses,
         xpAddressDictionary
       } as Account
+      console.log('[AccountsService.reloadAccounts] Account processed:', account.index)
     }
+
+    console.log('[AccountsService.reloadAccounts] Complete, returning accounts')
     return reloadedAccounts
   }
 
