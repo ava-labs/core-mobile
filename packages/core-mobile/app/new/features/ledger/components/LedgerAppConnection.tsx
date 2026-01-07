@@ -61,9 +61,15 @@ interface LocalKeyState {
     curve: string
   }>
   avalancheKeys: {
-    evm: string
-    avalanche: string
-    pvm: string
+    addresses: {
+      evm: string
+      avalanche: string
+      pvm: string
+    }
+    xpubs: {
+      evm: string
+      avalanche: string
+    }
   } | null
   bitcoinAddress: string
   xpAddress: string
@@ -74,7 +80,6 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   onCancel,
   deviceName,
   selectedDerivationPath: _selectedDerivationPath,
-  isCreatingWallet = false,
   connectedDeviceId,
   connectedDeviceName,
   onStepChange
@@ -176,11 +181,11 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     const addresses = []
 
     // C-Chain/EVM address (derived from avalanche keys)
-    if (keys.avalancheKeys?.evm) {
+    if (keys.avalancheKeys?.addresses.evm) {
       addresses.push({
         title: AVALANCHE_MAINNET_NETWORK.chainName,
         subtitle: truncateAddress(
-          keys.avalancheKeys.evm,
+          keys.avalancheKeys.addresses.evm,
           TRUNCATE_ADDRESS_LENGTH
         ),
         value: (
