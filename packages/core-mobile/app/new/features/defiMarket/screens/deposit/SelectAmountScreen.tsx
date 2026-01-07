@@ -1,7 +1,8 @@
-import React, { useCallback } from 'react'
-import { useRouter } from 'expo-router'
+import React, { useCallback, useMemo } from 'react'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { TokenType } from '@avalabs/vm-module-types'
-import { useDepositSelectedMarket, useDepositSelectedAsset } from '../../store'
+import { useAvailableMarkets } from 'features/defiMarket/hooks/useAvailableMarkets'
+import { useDepositSelectedAsset } from '../../store'
 import { MarketNames } from '../../types'
 import { AaveErc20SelectAmountForm } from '../../components/deposit/AaveErc20SelectAmountForm'
 import { AaveAvaxSelectAmountForm } from '../../components/deposit/AaveAvaxSelectAmountForm'
@@ -10,8 +11,12 @@ import { BenqiAvaxSelectAmountForm } from '../../components/deposit/BenqiAvaxSel
 
 export const SelectAmountScreen = (): JSX.Element => {
   const { dismissAll, back } = useRouter()
+  const { marketId } = useLocalSearchParams<{ marketId: string }>()
+  const { data: markets } = useAvailableMarkets()
+  const selectedMarket = useMemo(() => {
+    return markets?.find(market => market.uniqueMarketId === marketId)
+  }, [markets, marketId])
   const [selectedAsset] = useDepositSelectedAsset()
-  const [selectedMarket] = useDepositSelectedMarket()
 
   const handleSuccess = useCallback(() => {
     dismissAll()

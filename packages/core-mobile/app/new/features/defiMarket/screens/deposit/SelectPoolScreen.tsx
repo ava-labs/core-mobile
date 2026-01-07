@@ -16,7 +16,6 @@ import { Address } from 'viem'
 import errorIcon from '../../../../assets/icons/melting_face.png'
 import { DefiMarket } from '../../types'
 import { DefiMarketLogo } from '../../components/DefiMarketLogo'
-import { useDepositSelectedMarket } from '../../store'
 import { useAvailableMarkets } from '../../hooks/useAvailableMarkets'
 
 export const SelectPoolScreen = (): JSX.Element => {
@@ -29,7 +28,6 @@ export const SelectPoolScreen = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const { data: markets, isPending: isLoadingMarkets } = useAvailableMarkets()
-  const [, setSelectedMarket] = useDepositSelectedMarket()
   const filteredAvailableMarkets = useMemo(() => {
     return markets.filter(market => {
       if (contractAddress) {
@@ -47,14 +45,13 @@ export const SelectPoolScreen = (): JSX.Element => {
 
   const handleSelectPool = useCallback(
     (market: DefiMarket) => {
-      setSelectedMarket(market)
       navigate({
         // @ts-ignore TODO: make routes typesafe
         pathname: '/deposit/selectAmount',
-        params: {}
+        params: { marketId: market.uniqueMarketId }
       })
     },
-    [navigate, setSelectedMarket]
+    [navigate]
   )
 
   const renderItem = useCallback(
