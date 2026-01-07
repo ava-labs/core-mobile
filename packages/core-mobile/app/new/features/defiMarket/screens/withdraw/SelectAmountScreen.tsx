@@ -2,9 +2,9 @@ import React, { useCallback, useMemo } from 'react'
 import { useRouter } from 'expo-router'
 import { useLocalSearchParams } from 'expo-router'
 import { useDeposits } from 'hooks/earn/useDeposits'
-import { MarketNames } from '../types'
-import { WithdrawBenqiSelectAmountForm } from '../components/WithdrawBenqiSelectAmountForm'
-import { WithdrawAaveSelectAmountForm } from '../components/WithdrawAaveSelectAmountForm'
+import { MarketNames } from '../../types'
+import { WithdrawBenqiSelectAmountForm } from '../../components/withdraw/BenqiSelectAmountForm'
+import { WithdrawAaveSelectAmountForm } from '../../components/withdraw/AaveSelectAmountForm'
 
 export const SelectAmountScreen = (): JSX.Element => {
   const { marketId } = useLocalSearchParams<{ marketId: string }>()

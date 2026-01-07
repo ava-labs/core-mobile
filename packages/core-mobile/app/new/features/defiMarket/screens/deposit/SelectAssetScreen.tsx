@@ -21,15 +21,15 @@ import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useToke
 import { selectActiveAccount } from 'store/account'
 import { useSelector } from 'react-redux'
 import { TokenType } from '@avalabs/vm-module-types'
-import errorIcon from '../../../assets/icons/melting_face.png'
-import { DefiAssetDetails } from '../types'
-import { DefiAssetLogo } from '../components/DefiAssetLogo'
-import { findMatchingTokenWithBalance } from '../utils/findMatchingTokenWithBalance'
-import { useDepositSelectedAsset } from '../store'
-import { useAvailableMarkets } from '../hooks/useAvailableMarkets'
-import { useDepositableTokens } from '../hooks/useDepositableTokens'
+import errorIcon from '../../../../assets/icons/melting_face.png'
+import { DefiAssetDetails } from '../../types'
+import { DefiAssetLogo } from '../../components/DefiAssetLogo'
+import { findMatchingTokenWithBalance } from '../../utils/findMatchingTokenWithBalance'
+import { useDepositSelectedAsset } from '../../store'
+import { useAvailableMarkets } from '../../hooks/useAvailableMarkets'
+import { useDepositableTokens } from '../../hooks/useDepositableTokens'
 
-export const DepositSelectAssetScreen = (): JSX.Element => {
+export const SelectAssetScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const activeAccount = useSelector(selectActiveAccount)
   const cChainNetwork = useCChainNetwork()

@@ -1,5 +1,5 @@
-import { useAvailableMarkets } from 'features/deposit/hooks/useAvailableMarkets'
-import { DefiMarket } from 'features/deposit/types'
+import { useAvailableMarkets } from 'features/defiMarket/hooks/useAvailableMarkets'
+import { DefiMarket } from 'features/defiMarket/types'
 import { useMemo } from 'react'
 
 export const useDeposits = (): {

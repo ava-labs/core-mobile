@@ -1,12 +1,12 @@
 import React, { useCallback, useMemo } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { DefiMarket, DepositAsset } from '../types'
-import { DEPOSIT_ETH_GAS_AMOUNT } from '../consts'
-import { useMaxDepositAmount } from '../hooks/useMaxDepositAmount'
-import { useAaveDepositAvax } from '../hooks/aave/useAaveDepositAvax'
-import { SelectAmountFormBase } from './SelectAmountFormBase'
+import { DefiMarket, DepositAsset } from '../../types'
+import { DEPOSIT_ETH_GAS_AMOUNT } from '../../consts'
+import { useMaxDepositAmount } from '../../hooks/useMaxDepositAmount'
+import { useAaveDepositAvax } from '../../hooks/aave/useAaveDepositAvax'
+import { SelectAmountFormBase } from '../SelectAmountFormBase'
 
-export const DepositAaveAvaxSelectAmountForm = ({
+export const AaveAvaxSelectAmountForm = ({
   asset,
   market,
   onSuccess

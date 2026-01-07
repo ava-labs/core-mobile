@@ -1,10 +1,10 @@
 import React, { useCallback, useMemo } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { DefiMarket } from '../types'
-import { useAaveWithdraw } from '../hooks/aave/useAaveWithdraw'
-import { SelectAmountFormBase } from './SelectAmountFormBase'
+import { DefiMarket } from '../../types'
+import { useBenqiWithdraw } from '../../hooks/benqi/useBenqiWithdraw'
+import { SelectAmountFormBase } from '../SelectAmountFormBase'
 
-export const WithdrawAaveSelectAmountForm = ({
+export const WithdrawBenqiSelectAmountForm = ({
   market,
   onSuccess
 }: {
@@ -19,7 +19,7 @@ export const WithdrawAaveSelectAmountForm = ({
     )
   }, [market])
 
-  const { withdraw } = useAaveWithdraw({ market })
+  const { withdraw } = useBenqiWithdraw({ market })
 
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {

@@ -1,3 +1,3 @@
-import { DepositDetailScreen } from 'features/deposit/screens/DepositDetailScreen'
+import { DepositDetailScreen } from 'features/defiMarket/screens/DepositDetailScreen'
 
 export default DepositDetailScreen

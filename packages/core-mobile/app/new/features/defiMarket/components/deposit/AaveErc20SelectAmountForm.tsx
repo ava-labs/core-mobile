@@ -6,13 +6,17 @@ import { Address } from 'viem'
 import { hasEnoughAllowance } from 'features/swap/utils/evm/ensureAllowance'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { TokenType } from '@avalabs/vm-module-types'
-import { DefiMarket, DepositAsset } from '../types'
-import { APPROVE_GAS_AMOUNT, MINT_GAS_AMOUNT } from '../consts'
-import { useGasCost } from '../hooks/useGasCost'
-import { useBenqiDepositErc20 } from '../hooks/benqi/useBenqiDepositErc20'
-import { SelectAmountFormBase } from './SelectAmountFormBase'
+import { DefiMarket, DepositAsset } from '../../types'
+import { useAaveDepositErc20 } from '../../hooks/aave/useAaveDepositErc20'
+import {
+  AAVE_POOL_C_CHAIN_ADDRESS,
+  APPROVE_GAS_AMOUNT,
+  MINT_GAS_AMOUNT
+} from '../../consts'
+import { useGasCost } from '../../hooks/useGasCost'
+import { SelectAmountFormBase } from '../SelectAmountFormBase'
 
-export const DepositBenqiErc20SelectAmountForm = ({
+export const AaveErc20SelectAmountForm = ({
   asset,
   market,
   onSuccess
@@ -37,7 +41,7 @@ export const DepositBenqiErc20SelectAmountForm = ({
   const { gasCost: approveGasCost } = useGasCost({
     gasAmount: APPROVE_GAS_AMOUNT
   })
-  const { benqiDepositErc20 } = useBenqiDepositErc20({
+  const { aaveDepositErc20 } = useAaveDepositErc20({
     asset,
     market
   })
@@ -68,7 +72,7 @@ export const DepositBenqiErc20SelectAmountForm = ({
         tokenAddress: asset.token.address as Address,
         provider: provider,
         userAddress: address as Address,
-        spenderAddress: market.asset.mintTokenAddress,
+        spenderAddress: AAVE_POOL_C_CHAIN_ADDRESS,
         requiredAmount: amt.toSubUnit()
       })
 
@@ -89,8 +93,7 @@ export const DepositBenqiErc20SelectAmountForm = ({
       asset.nativeToken,
       asset.token,
       provider,
-      address,
-      market.asset.mintTokenAddress
+      address
     ]
   )
 
@@ -100,7 +103,7 @@ export const DepositBenqiErc20SelectAmountForm = ({
       tokenBalance={tokenBalance}
       maxAmount={tokenBalance}
       validateAmount={validateAmount}
-      submit={benqiDepositErc20}
+      submit={aaveDepositErc20}
       onSuccess={onSuccess}
     />
   )

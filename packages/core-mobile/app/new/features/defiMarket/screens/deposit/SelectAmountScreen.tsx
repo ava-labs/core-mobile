@@ -1,14 +1,14 @@
 import React, { useCallback } from 'react'
 import { useRouter } from 'expo-router'
 import { TokenType } from '@avalabs/vm-module-types'
-import { useDepositSelectedMarket, useDepositSelectedAsset } from '../store'
-import { MarketNames } from '../types'
-import { DepositAaveErc20SelectAmountForm } from '../components/DepositAaveErc20SelectAmountForm'
-import { DepositAaveAvaxSelectAmountForm } from '../components/DepositAaveAvaxSelectAmountForm'
-import { DepositBenqiErc20SelectAmountForm } from '../components/DepositBenqiErc20SelectAmountForm'
-import { DepositBenqiAvaxSelectAmountForm } from '../components/DepositBenqiAvaxSelectAmountForm'
+import { useDepositSelectedMarket, useDepositSelectedAsset } from '../../store'
+import { MarketNames } from '../../types'
+import { AaveErc20SelectAmountForm } from '../../components/deposit/AaveErc20SelectAmountForm'
+import { AaveAvaxSelectAmountForm } from '../../components/deposit/AaveAvaxSelectAmountForm'
+import { BenqiErc20SelectAmountForm } from '../../components/deposit/BenqiErc20SelectAmountForm'
+import { BenqiAvaxSelectAmountForm } from '../../components/deposit/BenqiAvaxSelectAmountForm'
 
-export const DepositSelectAmountScreen = (): JSX.Element => {
+export const SelectAmountScreen = (): JSX.Element => {
   const { dismissAll, back } = useRouter()
   const [selectedAsset] = useDepositSelectedAsset()
   const [selectedMarket] = useDepositSelectedMarket()
@@ -24,13 +24,13 @@ export const DepositSelectAmountScreen = (): JSX.Element => {
 
   if (selectedMarket.marketName === MarketNames.aave) {
     return selectedAsset.token.type === TokenType.NATIVE ? (
-      <DepositAaveAvaxSelectAmountForm
+      <AaveAvaxSelectAmountForm
         asset={selectedAsset}
         market={selectedMarket}
         onSuccess={handleSuccess}
       />
     ) : (
-      <DepositAaveErc20SelectAmountForm
+      <AaveErc20SelectAmountForm
         asset={selectedAsset}
         market={selectedMarket}
         onSuccess={handleSuccess}
@@ -38,13 +38,13 @@ export const DepositSelectAmountScreen = (): JSX.Element => {
     )
   } else if (selectedMarket.marketName === MarketNames.benqi) {
     return selectedAsset.token.type === TokenType.NATIVE ? (
-      <DepositBenqiAvaxSelectAmountForm
+      <BenqiAvaxSelectAmountForm
         asset={selectedAsset}
         market={selectedMarket}
         onSuccess={handleSuccess}
       />
     ) : (
-      <DepositBenqiErc20SelectAmountForm
+      <BenqiErc20SelectAmountForm
         asset={selectedAsset}
         market={selectedMarket}
         onSuccess={handleSuccess}

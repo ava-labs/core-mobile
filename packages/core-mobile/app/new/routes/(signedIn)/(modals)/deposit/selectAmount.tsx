@@ -1,3 +1,3 @@
-import { DepositSelectAmountScreen } from 'features/deposit/screens/DepositSelectAmountScreen'
+import { SelectAmountScreen } from 'features/defiMarket/screens/deposit/SelectAmountScreen'
 
-export { DepositSelectAmountScreen as default }
+export { SelectAmountScreen as default }

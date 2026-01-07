@@ -13,13 +13,13 @@ import { ErrorState } from 'common/components/ErrorState'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { Address } from 'viem'
-import errorIcon from '../../../assets/icons/melting_face.png'
-import { DefiMarket } from '../types'
-import { DefiMarketLogo } from '../components/DefiMarketLogo'
-import { useDepositSelectedMarket } from '../store'
-import { useAvailableMarkets } from '../hooks/useAvailableMarkets'
+import errorIcon from '../../../../assets/icons/melting_face.png'
+import { DefiMarket } from '../../types'
+import { DefiMarketLogo } from '../../components/DefiMarketLogo'
+import { useDepositSelectedMarket } from '../../store'
+import { useAvailableMarkets } from '../../hooks/useAvailableMarkets'
 
-export const DepositSelectPoolScreen = (): JSX.Element => {
+export const SelectPoolScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { contractAddress, symbol } = useLocalSearchParams<{
     contractAddress?: Address
