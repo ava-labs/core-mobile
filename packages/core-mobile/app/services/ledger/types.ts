@@ -93,9 +93,15 @@ export interface LedgerKeys {
     curve: Curve
   }>
   avalancheKeys: {
-    evm: string
-    avalanche: string
-    pvm: string
+    addresses: {
+      evm: string
+      avalanche: string
+      pvm: string
+    }
+    xpubs: {
+      evm: string
+      avalanche: string
+    }
   } | null
 }
 
