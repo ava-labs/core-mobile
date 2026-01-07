@@ -88,6 +88,7 @@ const AssetsScreen: FC<Props> = ({
   const isInitialLoading = isLoadingBalance && !isBalanceLoaded
 
   const hasNoAssets =
+    data.length === 0 &&
     isBalanceLoaded &&
     balanceTotalInCurrency === 0 &&
     !isInitialLoading &&
