@@ -13,7 +13,7 @@ import {
 import { networks } from 'bitcoinjs-lib'
 import Logger from 'utils/Logger'
 import bs58 from 'bs58'
-import { Platform, PermissionsAndroid, Alert } from 'react-native'
+import { Platform, PermissionsAndroid, Alert, Linking } from 'react-native'
 import {
   LEDGER_TIMEOUTS,
   getSolanaDerivationPath
@@ -174,7 +174,7 @@ class LedgerService {
           {
             text: 'Open Settings',
             onPress: () => {
-              // Handle settings navigation if needed
+              Linking.openSettings()
             }
           }
         ]

@@ -2,17 +2,17 @@ import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import { showSnackbar } from 'new/common/utils/toast'
 import { useCallback, useEffect, useState } from 'react'
 import { Alert } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import LedgerService from 'services/ledger/LedgerService'
 import {
   LedgerDerivationPathType,
   LedgerTransportState,
+  SolanaKeys,
   WalletCreationOptions
 } from 'services/ledger/types'
 import { WalletType } from 'services/wallet/types'
 import { PrimaryAccount, setAccount, setActiveAccountId } from 'store/account'
-import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
-import { AppThunkDispatch, RootState } from 'store/types'
+import { AppThunkDispatch } from 'store/types'
 import { setActiveWallet } from 'store/wallet/slice'
 import { storeWallet } from 'store/wallet/thunks'
 import Logger from 'utils/Logger'
@@ -43,16 +43,13 @@ export interface UseLedgerWalletReturn {
           avalanche: string
         }
       }
-      solanaKeys?: Array<{ key: string; derivationPath: string; curve: string }>
+      solanaKeys?: SolanaKeys
     }
   ) => Promise<string>
 }
 
 export function useLedgerWallet(): UseLedgerWalletReturn {
   const dispatch = useDispatch<AppThunkDispatch>()
-  const isDeveloperMode = useSelector((state: RootState) =>
-    selectIsDeveloperMode(state)
-  )
   const [transportState, setTransportState] = useState<LedgerTransportState>({
     available: false,
     powered: false
@@ -130,7 +127,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           avalanche: string
         }
       }
-      solanaKeys?: Array<{ key: string; derivationPath: string; curve: string }>
+      solanaKeys?: SolanaKeys
       bitcoinAddress?: string
     }) => {
       try {

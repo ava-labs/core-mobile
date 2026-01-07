@@ -18,6 +18,110 @@ import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 
 class AccountsService {
   /**
+   * Gets addresses for an account, either preserving existing ones for Ledger or deriving new ones.
+   */
+  private async getAccountAddresses({
+    account,
+    isLedgerWallet,
+    walletId,
+    walletType,
+    isTestnet
+  }: {
+    account: Account
+    isLedgerWallet: boolean
+    walletId: string
+    walletType: WalletType
+    isTestnet: boolean
+  }): Promise<Record<NetworkVMType, string>> {
+    if (isLedgerWallet) {
+      // For Ledger wallets, preserve existing addresses
+      // since they were retrieved from the device during wallet creation
+      return {
+        [NetworkVMType.BITCOIN]: account.addressBTC,
+        [NetworkVMType.EVM]: account.addressC,
+        [NetworkVMType.AVM]: account.addressAVM,
+        [NetworkVMType.PVM]: account.addressPVM,
+        [NetworkVMType.CoreEth]: account.addressCoreEth || '',
+        [NetworkVMType.SVM]: account.addressSVM ?? ''
+      } as Record<NetworkVMType, string>
+    }
+
+    // For other wallet types, derive addresses
+    return this.getAddresses({
+      walletId,
+      walletType,
+      accountIndex: account.index,
+      isTestnet
+    })
+  }
+
+  /**
+   * Gets XP addresses for an account, either preserving existing ones for Ledger or deriving new ones.
+   */
+  private async getAccountXPAddresses({
+    account,
+    isLedgerWallet,
+    walletId,
+    walletType,
+    isTestnet
+  }: {
+    account: Account
+    isLedgerWallet: boolean
+    walletId: string
+    walletType: WalletType
+    isTestnet: boolean
+  }): Promise<{
+    xpAddresses: AddressIndex[]
+    xpAddressDictionary: XPAddressDictionary
+  }> {
+    if (isLedgerWallet) {
+      // For Ledger wallets, preserve existing XP addresses
+      return {
+        xpAddresses: account.xpAddresses || [],
+        xpAddressDictionary:
+          account.xpAddressDictionary || ({} as XPAddressDictionary)
+      }
+    }
+
+    // For non-Ledger wallets, derive XP addresses
+    try {
+      const result = await getAddressesFromXpubXP({
+        isDeveloperMode: isTestnet,
+        walletId,
+        walletType,
+        accountIndex: account.index,
+        onlyWithActivity: true
+      })
+
+      return {
+        xpAddresses: result.xpAddresses,
+        xpAddressDictionary: result.xpAddressDictionary
+      }
+    } catch (error) {
+      Logger.error('Error getting XP addresses', error)
+      return {
+        xpAddresses: [],
+        xpAddressDictionary: {} as XPAddressDictionary
+      }
+    }
+  }
+
+  /**
+   * Gets the account name/title.
+   */
+  private async getAccountTitle(
+    walletType: WalletType,
+    account: Account
+  ): Promise<string> {
+    if (walletType === WalletType.SEEDLESS) {
+      return (
+        (await SeedlessService.getAccountName(account.index)) ?? account.name
+      )
+    }
+    return account.name
+  }
+
+  /**
    * Reloads the accounts for the given network.
    * @param accounts The accounts to reload.
    * @param network The network to reload the accounts for.
@@ -36,36 +140,25 @@ class AccountsService {
     walletId: string
     walletType: WalletType
   }): Promise<AccountCollection> {
-    console.log('[AccountsService.reloadAccounts] Starting for wallet type:', walletType)
     const reloadedAccounts: AccountCollection = {}
-
-    // For Ledger wallets, preserve existing addresses instead of re-deriving
     const isLedgerWallet =
       walletType === WalletType.LEDGER || walletType === WalletType.LEDGER_LIVE
-    console.log('[AccountsService.reloadAccounts] isLedgerWallet:', isLedgerWallet)
 
     for (const [key, account] of Object.entries(accounts)) {
-      console.log('[AccountsService.reloadAccounts] Processing account:', account.index)
-      let addresses: Record<NetworkVMType, string>
+      const addresses = await this.getAccountAddresses({
+        account,
+        isLedgerWallet,
+        walletId,
+        walletType,
+        isTestnet
+      })
 
-      if (isLedgerWallet) {
-        // For Ledger wallets, preserve existing addresses
-        // since they were retrieved from the device during wallet creation
-        addresses = {
-          [NetworkVMType.BITCOIN]: account.addressBTC,
-          [NetworkVMType.EVM]: account.addressC,
-          [NetworkVMType.AVM]: account.addressAVM,
-          [NetworkVMType.PVM]: account.addressPVM,
-          [NetworkVMType.CoreEth]: account.addressCoreEth || '',
-          [NetworkVMType.SVM]: account.addressSVM ?? '',
-          [NetworkVMType.HVM]: ''
-        } as Record<NetworkVMType, string>
-      } else {
-        // For other wallet types or additional accounts, derive addresses
-        addresses = await this.getAddresses({
+      const { xpAddresses, xpAddressDictionary } =
+        await this.getAccountXPAddresses({
+          account,
+          isLedgerWallet,
           walletId,
           walletType,
-          accountIndex: account.index,
           isTestnet
         })
       }
@@ -103,7 +196,7 @@ class AccountsService {
 
       reloadedAccounts[key] = {
         id: account.id,
-        name: title ?? account.name,
+        name: title,
         type: account.type,
         walletId: account.walletId,
         index: account.index,
@@ -117,10 +210,8 @@ class AccountsService {
         xpAddressDictionary,
         hasMigratedXpAddresses
       } as Account
-      console.log('[AccountsService.reloadAccounts] Account processed:', account.index)
     }
 
-    console.log('[AccountsService.reloadAccounts] Complete, returning accounts')
     return reloadedAccounts
   }
 
