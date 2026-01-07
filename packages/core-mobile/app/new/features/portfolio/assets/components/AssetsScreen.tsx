@@ -189,7 +189,7 @@ const AssetsScreen: FC<Props> = ({
   }, [renderEmptyComponent])
 
   const renderHeader = useCallback(() => {
-    if (hasNoAssets || isInitialLoading) {
+    if (isInitialLoading) {
       return
     }
 
@@ -200,13 +200,13 @@ const AssetsScreen: FC<Props> = ({
         }}>
         <DropdownSelections
           sx={{ marginBottom: 16 }}
-          filter={filter}
-          sort={sort}
+          filter={hasNoAssets ? undefined : filter}
+          sort={hasNoAssets ? undefined : sort}
           view={{ ...view, onSelected: handleManageList }}
         />
       </View>
     )
-  }, [hasNoAssets, isInitialLoading, filter, sort, view, handleManageList])
+  }, [isInitialLoading, hasNoAssets, filter, sort, view, handleManageList])
 
   const overrideProps = {
     contentContainerStyle: {
