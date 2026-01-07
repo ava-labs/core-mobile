@@ -63,7 +63,6 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
   const [isCreatingWallet, setIsCreatingWallet] = useState<boolean>(false)
   const [hasStartedSetup, setHasStartedSetup] = useState<boolean>(false)
 
-  // Use the existing ledger wallet hook
   const {
     isConnecting,
     transportState,
