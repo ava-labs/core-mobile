@@ -9,7 +9,8 @@ import React, {
 import {
   LedgerDerivationPathType,
   WalletCreationOptions,
-  LedgerTransportState
+  LedgerTransportState,
+  SolanaKeys
 } from 'services/ledger/types'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useLedgerWalletMap } from '../store'
@@ -46,7 +47,7 @@ interface LedgerSetupContextValue {
           avalanche: string
         }
       }
-      solanaKeys?: Array<{ key: string; derivationPath: string; curve: string }>
+      solanaKeys?: SolanaKeys
       bitcoinAddress?: string
     }
   ) => Promise<string>

@@ -183,3 +183,13 @@ export interface LedgerLiveWalletData extends BaseLedgerWalletData {
 
 // Union type for all possible Ledger wallet data
 export type LedgerWalletData = BIP44LedgerWalletData | LedgerLiveWalletData
+
+// ============================================================================
+// SOLANA KEYS TYPES
+// ============================================================================
+
+export type SolanaKeys = Array<{
+  key: string
+  derivationPath: string
+  curve: string
+}>
