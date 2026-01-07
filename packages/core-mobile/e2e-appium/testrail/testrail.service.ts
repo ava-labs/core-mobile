@@ -13,10 +13,11 @@ const authConfig = {
 const testrail = axios.create(authConfig)
 
 // 1. api call to create testrun
-export async function getTestRun(platform: string) {
+export async function getTestRun(platform: string, isSmoke: boolean) {
   // iOS: today
   const today = new Date().toISOString().split('T')[0]
-  const title = `${platform} Test Run: ${today}`
+  const runName = isSmoke ? '[SMOKE]' : '[REGRESSION]'
+  const title = `${runName} ${platform} Test Run: ${today}`
 
   try {
     // testRun exists, return it

@@ -4,7 +4,7 @@ import commonLoc from '../../../locators/commonEls.loc'
 import portfolioPage from '../../../pages/portfolio.page'
 import warmup from '../../../helpers/warmup'
 
-describe('Send transaction', () => {
+describe('[Smoke] Send transaction', () => {
   it('should send NFT on C-Chain', async () => {
     await warmup()
     await portfolioPage.tapCollectiblesTab()
