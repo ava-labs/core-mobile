@@ -10,7 +10,7 @@ import {
   WalletCreationOptions
 } from 'services/ledger/types'
 import { WalletType } from 'services/wallet/types'
-import { PrimaryAccount, setAccount, setActiveAccountId } from 'store/account'
+import { PrimaryAccount, selectAccounts, setAccount, setActiveAccountId } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { AppThunkDispatch, RootState } from 'store/types'
 import { setActiveWallet } from 'store/wallet/slice'
@@ -176,7 +176,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         await dispatch(
           storeWallet({
             walletId: newWalletId,
-            walletName: `Ledger ${deviceName}`,
+            name: `Ledger ${deviceName}`,
             walletSecret: JSON.stringify({
               deviceId,
               deviceName,
