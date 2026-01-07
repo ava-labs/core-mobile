@@ -22,4 +22,10 @@ yarn -v
 npx appium -v || true
 npx appium driver list || true
 
-yarn appium:ios
+if [[ "$SMOKE_SUITE" == "true" ]]; then
+  echo "Running iOS SMOKE tests"
+  yarn appium:smokeIos
+else
+  echo "Running iOS FULL tests"
+  yarn appium:ios
+fi
