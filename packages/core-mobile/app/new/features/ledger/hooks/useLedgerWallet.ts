@@ -10,7 +10,7 @@ import {
   WalletCreationOptions
 } from 'services/ledger/types'
 import { WalletType } from 'services/wallet/types'
-import { PrimaryAccount, selectAccounts, setAccount, setActiveAccountId } from 'store/account'
+import { PrimaryAccount, setAccount, setActiveAccountId } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { AppThunkDispatch, RootState } from 'store/types'
 import { setActiveWallet } from 'store/wallet/slice'
@@ -32,7 +32,17 @@ export interface UseLedgerWalletReturn {
   disconnectDevice: () => Promise<void>
   createLedgerWallet: (
     options: WalletCreationOptions & {
-      avalancheKeys?: { evm: string; avalanche: string; pvm: string }
+      avalancheKeys?: {
+        addresses: {
+          evm: string
+          avalanche: string
+          pvm: string
+        }
+        xpubs: {
+          evm: string
+          avalanche: string
+        }
+      }
       solanaKeys?: Array<{ key: string; derivationPath: string; curve: string }>
     }
   ) => Promise<string>
@@ -109,7 +119,17 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       solanaKeys = [],
       bitcoinAddress
     }: WalletCreationOptions & {
-      avalancheKeys?: { evm: string; avalanche: string; pvm: string }
+      avalancheKeys?: {
+        addresses: {
+          evm: string
+          avalanche: string
+          pvm: string
+        }
+        xpubs: {
+          evm: string
+          avalanche: string
+        }
+      }
       solanaKeys?: Array<{ key: string; derivationPath: string; curve: string }>
       bitcoinAddress?: string
     }) => {
@@ -127,13 +147,16 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 
         const newWalletId = uuid()
 
-        // Fix key formatting - remove double 0x prefixes that cause VM module errors
-        const formattedAvalancheKeys = {
-          evm: avalancheKeys.evm?.startsWith('0x0x')
-            ? avalancheKeys.evm.slice(2) // Remove first 0x to fix double prefix
-            : avalancheKeys.evm,
-          avalanche: avalancheKeys.avalanche,
-          pvm: avalancheKeys.pvm || avalancheKeys.avalanche
+        // Use addresses for display and xpubs for wallet functionality
+        const { addresses, xpubs } = avalancheKeys
+
+        // Fix address formatting - remove double 0x prefixes that cause VM module errors
+        const formattedAddresses = {
+          evm: addresses.evm?.startsWith('0x0x')
+            ? addresses.evm.slice(2) // Remove first 0x to fix double prefix
+            : addresses.evm,
+          avalanche: addresses.avalanche,
+          pvm: addresses.pvm || addresses.avalanche
         }
 
         // Also fix the public keys array to ensure no double prefixes in storage
@@ -144,19 +167,19 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 
         // Create the public keys array for BIP44
         const publicKeysToStore = [
-          // Use formatted keys for BIP44
+          // Use formatted addresses for BIP44
           {
-            key: formattedAvalancheKeys.evm, // Use formatted key
+            key: formattedAddresses.evm, // Use formatted address
             derivationPath: DERIVATION_PATHS.BIP44.EVM,
             curve: Curve.SECP256K1
           },
           {
-            key: formattedAvalancheKeys.avalanche,
+            key: formattedAddresses.avalanche,
             derivationPath: DERIVATION_PATHS.BIP44.AVALANCHE,
             curve: Curve.SECP256K1
           },
           {
-            key: formattedAvalancheKeys.pvm,
+            key: formattedAddresses.pvm,
             derivationPath: DERIVATION_PATHS.BIP44.PVM,
             curve: Curve.SECP256K1
           },
@@ -185,8 +208,8 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
               derivationPathSpec: derivationPathType,
               ...(derivationPathType === LedgerDerivationPathType.BIP44 && {
                 extendedPublicKeys: {
-                  evm: formattedAvalancheKeys.evm, // Use formatted key
-                  avalanche: formattedAvalancheKeys.avalanche
+                  evm: xpubs.evm, // Store base58 xpub for derivation
+                  avalanche: xpubs.avalanche // Store base58 xpub for derivation
                 }
               }),
               publicKeys:
@@ -194,7 +217,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
                 individualKeys.length > 0
                   ? formattedPublicKeys // Use formatted individual keys for Ledger Live
                   : publicKeysToStore, // Use the public keys we just created
-              avalancheKeys: formattedAvalancheKeys, // Use formatted keys
+              avalancheKeys: formattedAddresses, // Use formatted addresses for display
               solanaKeys
             }),
             type:
@@ -219,13 +242,13 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           name: `Account 1`,
           type: CoreAccountType.PRIMARY,
           index: 0,
-          addressC: addresses.EVM,
-          addressBTC: addresses.BITCOIN,
-          addressAVM: addresses.AVM,
-          addressPVM: addresses.PVM,
-          addressSVM: addresses.SVM,
-          addressCoreEth: addresses.CoreEth,
-          xpAddresses: [], // TODO: add xp addresses,
+          addressC: formattedAddresses.evm,
+          addressBTC: bitcoinAddress || '',
+          addressAVM: formattedAddresses.avalanche,
+          addressPVM: formattedAddresses.pvm,
+          addressSVM: solanaKeys[0]?.key || '',
+          addressCoreEth: '',
+          xpAddresses: [],
           xpAddressDictionary: {},
           hasMigratedXpAddresses: true // TODO: true when xpAddresses are successfully fetched
         }
@@ -243,7 +266,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         setIsLoading(false)
       }
     },
-    [dispatch, isDeveloperMode]
+    [dispatch]
   )
 
   return {
