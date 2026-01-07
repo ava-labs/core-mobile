@@ -177,13 +177,10 @@ const reloadAccounts = async (
   _action: unknown,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  console.log('[reloadAccounts] Starting...')
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const wallets = selectWallets(state)
-  console.log('[reloadAccounts] Wallet count:', Object.keys(wallets).length)
   for (const wallet of Object.values(wallets)) {
-    console.log('[reloadAccounts] Processing wallet:', wallet.type, wallet.id)
     const accounts = selectAccountsByWalletId(state, wallet.id)
     //convert accounts to AccountCollection
     const accountsCollection: AccountCollection = {}
@@ -191,18 +188,14 @@ const reloadAccounts = async (
       accountsCollection[account.id] = account
     }
 
-    console.log('[reloadAccounts] Calling AccountsService.reloadAccounts for wallet:', wallet.type)
     const reloadedAccounts = await AccountsService.reloadAccounts({
       accounts: accountsCollection,
       isTestnet: isDeveloperMode,
       walletId: wallet.id,
       walletType: wallet.type
     })
-    console.log('[reloadAccounts] Got reloaded accounts, dispatching...')
     listenerApi.dispatch(setAccounts(reloadedAccounts))
-    console.log('[reloadAccounts] Dispatched for wallet:', wallet.type)
   }
-  console.log('[reloadAccounts] Complete')
 }
 
 const handleActiveAccountIndexChange = (
@@ -250,54 +243,40 @@ const migrateSolanaAddressesIfNeeded = async (
   _action: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  console.log('[migrateSolanaAddressesIfNeeded] Starting...')
   const { getState } = listenerApi
   const state = getState()
   const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
   const accounts = selectAccounts(state)
   const entries = Object.values(accounts)
-  console.log('[migrateSolanaAddressesIfNeeded] Checking:', {
-    isSolanaSupportBlocked,
-    accountCount: entries.length,
-    accountsWithoutSVM: entries.filter(acc => !acc.addressSVM).length
-  })
+
   // Only migrate Solana addresses if Solana support is enabled
   if (!isSolanaSupportBlocked && entries.some(account => !account.addressSVM)) {
-    console.log('[migrateSolanaAddressesIfNeeded] Migration needed')
     const seedlessWallet = selectSeedlessWallet(state)
     if (seedlessWallet) {
       await deriveMissingSeedlessSessionKeys(seedlessWallet.id)
     }
     // reload only when there are accounts without Solana addresses
     reloadAccounts(_action, listenerApi)
-  } else {
-    console.log('[migrateSolanaAddressesIfNeeded] No migration needed')
   }
-  console.log('[migrateSolanaAddressesIfNeeded] Complete')
 }
 
 const handleInitAccountsIfNeeded = async (
   _action: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  console.log('[handleInitAccountsIfNeeded] Starting...')
   const state = listenerApi.getState()
   const accounts = selectAccounts(state)
-  console.log('[handleInitAccountsIfNeeded] Account count:', Object.keys(accounts).length)
 
   // if there are no accounts, we need to initialize them
   // initAcounts after onboarding might have failed
   // or user might have force quit the app while creating the first account
   if (Object.keys(accounts).length === 0) {
-    console.log('[handleInitAccountsIfNeeded] Initializing accounts...')
     await initAccounts(_action, listenerApi)
     return
   }
 
   // if there are accounts, we need to migrate them
-  console.log('[handleInitAccountsIfNeeded] Migrating active accounts...')
   migrateActiveAccountsIfNeeded(_action, listenerApi)
-  console.log('[handleInitAccountsIfNeeded] Complete')
 }
 
 const migrateXpAddressesIfNeeded = async (
@@ -317,9 +296,7 @@ const migrateXpAddressesIfNeeded = async (
   const wallets = selectWallets(state)
   const allUpdatedAccounts: AccountCollection = {}
 
-  console.log('[migrateXpAddressesIfNeeded] Wallet count:', Object.keys(wallets).length)
   if (Object.keys(wallets).length === 0) {
-    console.log('[migrateXpAddressesIfNeeded] No wallets found.')
     Logger.info('No wallets found. Skipping XP address migration.')
     return
   }
@@ -485,7 +462,6 @@ const populateXpAddressesForWallet = async ({
       ...account,
       addressAVM: newAddressAVM,
       addressPVM: newAddressPVM,
-      addressSVM: account?.addressSVM,
       xpAddresses,
       xpAddressDictionary,
       hasMigratedXpAddresses
