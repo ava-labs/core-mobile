@@ -15,7 +15,7 @@ const goHeadless = isBitrise ? true : false
 const goRetry = isBitrise ? 1 : 0
 const iosLocalPath = process.env.E2E_LOCAL_PATH
   ? '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
-  : './ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
+  : './ios/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
 const androidLocalPath = process.env.E2E_LOCAL_PATH
   ? '/Users/eunji.song/Downloads/app-internal-e2e-bitrise-signed.apk'
   : './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
@@ -133,16 +133,7 @@ export const config: WebdriverIO.Config = {
   before: async () => {
     const platform = driver.isAndroid ? 'Android' : 'iOS'
     runId = await getTestRun(platform)
-    console.log(`------------Starting test run on AWS Device Farm------------`)
-    console.log(`Platform: ${platform}`)
-    console.log(`Device: ${deviceName}`)
-    console.log(`OS Version: ${platformVersion}`)
-    if (deviceUdid) {
-      console.log(`Device UDID: ${deviceUdid}`)
-    }
-    if (chromedriverExecutableDir) {
-      console.log(`ChromeDriver Dir: ${chromedriverExecutableDir}`)
-    }
+    console.log(`------------Starting test run------------`)
   },
 
   // hoook beforeTest: make or get testSection before test

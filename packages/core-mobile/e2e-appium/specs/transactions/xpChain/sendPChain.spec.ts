@@ -5,7 +5,7 @@ import commonPage from '../../../pages/commonEls.page'
 import commonLoc from '../../../locators/commonEls.loc'
 import portfolioPage from '../../../pages/portfolio.page'
 
-describe('Send transaction', () => {
+describe('[Smoke] Send transaction', () => {
   it('should send AVAX on P-Chain', async () => {
     // login & create account
     await warmup()

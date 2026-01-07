@@ -3,7 +3,7 @@ import txPage from '../../../pages/transactions.page'
 import txLoc from '../../../locators/transactions.loc'
 
 describe('Send transaction', () => {
-  it('should send SOL on Solana', async () => {
+  it('[Smoke] should send SOL on Solana', async () => {
     // login & create account
     await warmup()
     // Send
