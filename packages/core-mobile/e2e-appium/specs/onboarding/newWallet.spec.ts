@@ -2,7 +2,7 @@ import { actions } from '../../helpers/actions'
 import commonElsPage from '../../pages/commonEls.page'
 import onboardingPage from '../../pages/onboarding.page'
 
-describe('Onboarding', () => {
+describe('[Smoke] Onboarding', () => {
   it('Onboard a new wallet', async () => {
     // exit metro
     await onboardingPage.exitMetro()
