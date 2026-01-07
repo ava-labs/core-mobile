@@ -1,4 +1,4 @@
-import { skipToken, useQuery } from '@tanstack/react-query'
+import { QueryObserverResult, skipToken, useQuery } from '@tanstack/react-query'
 import { readContract } from 'viem/actions'
 import { DefiMarket, MarketNames } from 'features/deposit/types'
 import { useSelector } from 'react-redux'
@@ -28,18 +28,13 @@ export const useBenqiAvailableMarkets = ({
   isLoading: boolean
   isPending: boolean
   isFetching: boolean
+  refetch: () => Promise<QueryObserverResult<DefiMarket[], Error>>
 } => {
   const activeAccount = useSelector(selectActiveAccount)
   const addressEVM = activeAccount?.addressC
   const getCChainToken = useGetCChainToken()
 
-  const {
-    data: enrichedMarkets,
-    isLoading: isLoadingEnrichedMarkets,
-    isPending: isPendingEnrichedMarkets,
-    isFetching: isFetchingEnrichedMarkets,
-    error: errorEnrichedMarkets
-  } = useQuery({
+  const { data, isLoading, isPending, isFetching, error, refetch } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [
       ReactQueryKeys.BENQI_AVAILABLE_MARKETS,
@@ -147,10 +142,11 @@ export const useBenqiAvailableMarkets = ({
   })
 
   return {
-    data: enrichedMarkets,
-    error: errorEnrichedMarkets ?? null,
-    isLoading: isLoadingEnrichedMarkets,
-    isPending: isPendingEnrichedMarkets,
-    isFetching: isFetchingEnrichedMarkets
+    data,
+    error,
+    isLoading,
+    isPending,
+    isFetching,
+    refetch
   }
 }

@@ -12,6 +12,9 @@ import { AAVE_AVALANCHE3_POOL_PROXY_ABI } from 'features/deposit/abis/aaveAvalan
 import { ensureAllowance } from 'features/swap/utils/evm/ensureAllowance'
 import { TransactionParams } from '@avalabs/evm-module'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
+import { RequestContext } from 'store/rpc'
+import { queryClient } from 'contexts/ReactQueryProvider'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
 
 export const useAaveDepositErc20 = ({
   asset,
@@ -86,7 +89,14 @@ export const useAaveDepositErc20 = ({
             })
           }
         ],
-        chainId
+        chainId,
+        context: {
+          [RequestContext.CALLBACK_TRANSACTION_CONFIRMED]: () => {
+            queryClient.invalidateQueries({
+              queryKey: [ReactQueryKeys.AAVE_AVAILABLE_MARKETS]
+            })
+          }
+        }
       })
     },
     [request, market, address, asset.token, provider]

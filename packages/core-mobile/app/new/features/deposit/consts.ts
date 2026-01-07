@@ -78,3 +78,5 @@ export const AAVE_V3_GQL_API_URL = 'https://api.v3.aave.com/graphql'
 
 // Aave Chan Initiative Merit API
 export const AAVE_CHAN_MERIT_API_URL = 'https://apps.aavechan.com/api/merit'
+
+export const MAX_UINT256 = 2n ** 256n - 1n

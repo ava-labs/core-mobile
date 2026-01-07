@@ -1,14 +1,13 @@
 import {
   Button,
   Card,
-  Image,
   ScrollView,
   Separator,
   Text,
   View
 } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
-import { useLocalSearchParams } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useDeposits } from 'hooks/earn/useDeposits'
 import React, { useCallback, useMemo } from 'react'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
@@ -16,10 +15,13 @@ import { DeFiRowItem } from 'features/portfolio/defi/components/DeFiRowItem'
 import { BalanceText } from 'common/components/BalanceText'
 import { useExchangedAmount } from 'common/hooks/useExchangedAmount'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { DefiMarketAssetLogo } from '../components/DefiMarketAssetLogo'
+import { DefiAssetLogo } from '../components/DefiAssetLogo'
 
 export function DepositDetailScreen(): JSX.Element {
   const { marketId } = useLocalSearchParams<{ marketId: string }>()
+  const { navigate } = useRouter()
   const { deposits } = useDeposits()
   const deposit = useMemo(() => {
     return deposits.find(item => item.uniqueMarketId === marketId)
@@ -35,6 +37,16 @@ export function DepositDetailScreen(): JSX.Element {
       'compact'
     )
   }, [deposit, getAmount])
+
+  const handleWithdraw = useCallback(() => {
+    if (!deposit) return
+
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/withdraw/selectAmount',
+      params: { marketId: deposit.uniqueMarketId }
+    })
+  }, [navigate, deposit])
 
   const renderHeader = useCallback(() => {
     if (!deposit) return null
@@ -62,11 +74,62 @@ export function DepositDetailScreen(): JSX.Element {
     )
   }, [amountInCurrency, deposit])
 
+  const renderBanner = useCallback(() => {
+    if (!deposit) return null
+
+    const data = [
+      {
+        value: `${deposit.supplyApyPercent.toFixed(2)}%`,
+        label: 'Current APY'
+      },
+      {
+        value: deposit.historicalApyPercent
+          ? `${deposit.historicalApyPercent.toFixed(2)}%`
+          : '--',
+        label: '30-day APY'
+      },
+      {
+        value: deposit.totalDeposits
+          ? formatNumber(deposit.totalDeposits.toNumber())
+          : '--',
+        label: 'Deposits'
+      }
+    ]
+
+    return (
+      <View
+        sx={{
+          marginTop: 25,
+          padding: 16,
+          backgroundColor: '$surfaceSecondary',
+          borderRadius: 18
+        }}>
+        <View
+          sx={{
+            maxWidth: 280,
+            flexDirection: 'row',
+            gap: 12
+          }}>
+          {data.map(item => (
+            <View sx={{ flex: 1 }}>
+              <Text variant="heading5" sx={{ color: '$textPrimary' }}>
+                {item.value}
+              </Text>
+              <Text variant="caption" sx={{ color: '$textSecondary' }}>
+                {item.label}
+              </Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    )
+  }, [deposit])
+
   const renderContent = useCallback(() => {
     if (!deposit) return <LoadingState sx={{ flex: 1 }} />
 
     return (
-      <View sx={{ marginTop: 46 }}>
+      <View sx={{ marginTop: 21 }}>
         <Text variant="heading3" sx={{ marginBottom: 10 }}>
           Lending
         </Text>
@@ -87,10 +150,7 @@ export function DepositDetailScreen(): JSX.Element {
                 alignItems: 'center',
                 gap: 12
               }}>
-              <Image
-                source={{ uri: deposit.asset.iconUrl }}
-                style={{ width: IMAGE_SIZE, height: IMAGE_SIZE }}
-              />
+              <DefiAssetLogo asset={deposit.asset} width={IMAGE_SIZE} />
               <Text
                 variant="body1"
                 numberOfLines={1}
@@ -108,10 +168,6 @@ export function DepositDetailScreen(): JSX.Element {
     )
   }, [amountInCurrency, deposit])
 
-  const handleWithdraw = useCallback(() => {
-    // TODO: Implement withdraw
-  }, [])
-
   const renderFooter = useCallback(() => {
     if (!deposit) return null
 
@@ -128,6 +184,7 @@ export function DepositDetailScreen(): JSX.Element {
     <BlurredBarsContentLayout>
       <ScrollView contentContainerSx={{ padding: 16 }}>
         {renderHeader()}
+        {renderBanner()}
         {renderContent()}
       </ScrollView>
       {renderFooter()}

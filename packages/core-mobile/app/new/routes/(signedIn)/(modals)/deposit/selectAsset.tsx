@@ -1,3 +1,3 @@
-import { SelectAssetScreen } from 'features/deposit/screens/SelectAssetScreen'
+import { DepositSelectAssetScreen } from 'features/deposit/screens/DepositSelectAssetScreen'
 
-export { SelectAssetScreen as default }
+export { DepositSelectAssetScreen as default }

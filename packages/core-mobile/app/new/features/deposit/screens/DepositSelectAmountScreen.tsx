@@ -3,12 +3,12 @@ import { useRouter } from 'expo-router'
 import { TokenType } from '@avalabs/vm-module-types'
 import { useDepositSelectedMarket, useDepositSelectedAsset } from '../store'
 import { MarketNames } from '../types'
-import { AaveErc20SelectAmountForm } from '../components/AaveErc20SelectAmountForm'
-import { AaveAvaxSelectAmountForm } from '../components/AaveAvaxSelectAmountForm'
-import { BenqiErc20SelectAmountForm } from '../components/BenqiErc20SelectAmountForm'
-import { BenqiAvaxSelectAmountForm } from '../components/BenqiAvaxSelectAmountForm'
+import { DepositAaveErc20SelectAmountForm } from '../components/DepositAaveErc20SelectAmountForm'
+import { DepositAaveAvaxSelectAmountForm } from '../components/DepositAaveAvaxSelectAmountForm'
+import { DepositBenqiErc20SelectAmountForm } from '../components/DepositBenqiErc20SelectAmountForm'
+import { DepositBenqiAvaxSelectAmountForm } from '../components/DepositBenqiAvaxSelectAmountForm'
 
-export const SelectAmountScreen = (): JSX.Element => {
+export const DepositSelectAmountScreen = (): JSX.Element => {
   const { dismissAll, back } = useRouter()
   const [selectedAsset] = useDepositSelectedAsset()
   const [selectedMarket] = useDepositSelectedMarket()
@@ -24,13 +24,13 @@ export const SelectAmountScreen = (): JSX.Element => {
 
   if (selectedMarket.marketName === MarketNames.aave) {
     return selectedAsset.token.type === TokenType.NATIVE ? (
-      <AaveAvaxSelectAmountForm
+      <DepositAaveAvaxSelectAmountForm
         asset={selectedAsset}
         market={selectedMarket}
         onSuccess={handleSuccess}
       />
     ) : (
-      <AaveErc20SelectAmountForm
+      <DepositAaveErc20SelectAmountForm
         asset={selectedAsset}
         market={selectedMarket}
         onSuccess={handleSuccess}
@@ -38,13 +38,13 @@ export const SelectAmountScreen = (): JSX.Element => {
     )
   } else if (selectedMarket.marketName === MarketNames.benqi) {
     return selectedAsset.token.type === TokenType.NATIVE ? (
-      <BenqiAvaxSelectAmountForm
+      <DepositBenqiAvaxSelectAmountForm
         asset={selectedAsset}
         market={selectedMarket}
         onSuccess={handleSuccess}
       />
     ) : (
-      <BenqiErc20SelectAmountForm
+      <DepositBenqiErc20SelectAmountForm
         asset={selectedAsset}
         market={selectedMarket}
         onSuccess={handleSuccess}

@@ -6,7 +6,7 @@ import { useMaxDepositAmount } from '../hooks/useMaxDepositAmount'
 import { useAaveDepositAvax } from '../hooks/aave/useAaveDepositAvax'
 import { SelectAmountFormBase } from './SelectAmountFormBase'
 
-export const AaveAvaxSelectAmountForm = ({
+export const DepositAaveAvaxSelectAmountForm = ({
   asset,
   market,
   onSuccess
@@ -46,7 +46,7 @@ export const AaveAvaxSelectAmountForm = ({
 
   return (
     <SelectAmountFormBase
-      asset={asset}
+      token={asset.token}
       tokenBalance={tokenBalance}
       maxAmount={maxAmount}
       validateAmount={validateAmount}

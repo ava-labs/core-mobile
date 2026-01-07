@@ -8,7 +8,10 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
+import {
+  getListItemEnteringAnimation,
+  getListItemExitingAnimation
+} from 'common/utils/animations'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import {
   LayoutChangeEvent,
@@ -46,7 +49,7 @@ const DepositTabScreen = ({
   isActive: boolean
 }): JSX.Element => {
   const { navigate } = useRouter()
-  const { deposits, isLoading } = useDeposits()
+  const { deposits, isLoading, refresh, isRefreshing } = useDeposits()
   const { theme } = useTheme()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const scrollOffsetRef = useRef({ x: 0, y: 0 })
@@ -72,9 +75,16 @@ const DepositTabScreen = ({
     [navigate]
   )
 
-  const handleWithdrawDeposit = useCallback((_: DefiMarket) => {
-    // TODO: Implement withdraw
-  }, [])
+  const handleWithdrawDeposit = useCallback(
+    (deposit: DefiMarket) => {
+      navigate({
+        // @ts-ignore TODO: make routes typesafe
+        pathname: '/withdraw/selectAmount',
+        params: { marketId: deposit.uniqueMarketId }
+      })
+    },
+    [navigate]
+  )
 
   const renderItem = useCallback(
     ({
@@ -98,12 +108,14 @@ const DepositTabScreen = ({
       if (content) {
         return (
           <Animated.View
+            key={item === StaticCard.Add ? 'add-deposit' : item.uniqueMarketId}
             style={{
               marginBottom: 14,
               marginRight: index % 2 === 0 ? 6 : 16,
               marginLeft: index % 2 !== 0 ? 6 : 16
             }}
             entering={getListItemEnteringAnimation(index)}
+            exiting={getListItemExitingAnimation(index)}
             layout={SPRING_LINEAR_TRANSITION}>
             {content}
           </Animated.View>
@@ -204,8 +216,8 @@ const DepositTabScreen = ({
       keyExtractor={(_, index) => index.toString()}
       removeClippedSubviews={true}
       extraData={{ isDark: theme.isDark }} // force re-render when theme changes
-      // onRefresh={onRefresh}
-      // refreshing={isRefreshing}
+      onRefresh={refresh}
+      refreshing={isRefreshing}
       ListHeaderComponent={renderHeader}
       ListEmptyComponent={<LoadingState sx={{ height: 500 }} />}
     />

@@ -1,4 +1,4 @@
-import { skipToken, useQuery } from '@tanstack/react-query'
+import { QueryObserverResult, skipToken, useQuery } from '@tanstack/react-query'
 import { erc20Abi, Address, PublicClient } from 'viem'
 import { readContract } from 'viem/actions'
 import { useSelector } from 'react-redux'
@@ -41,19 +41,14 @@ export const useAaveAvailableMarkets = ({
   isLoading: boolean
   isPending: boolean
   isFetching: boolean
+  refetch: () => Promise<QueryObserverResult<DefiMarket[], Error>>
 } => {
   const activeAccount = useSelector(selectActiveAccount)
   const addressEVM = activeAccount?.addressC
   const { data: meritAprs, isPending: isPendingMeritAprs } = useMeritAprs()
   const getCChainToken = useGetCChainToken()
 
-  const {
-    data: enrichedMarkets,
-    isLoading: isLoadingEnrichedMarkets,
-    isPending: isPendingEnrichedMarkets,
-    isFetching: isFetchingEnrichedMarkets,
-    error: errorEnrichedMarkets
-  } = useQuery({
+  const { data, isLoading, isPending, isFetching, refetch, error } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [ReactQueryKeys.AAVE_AVAILABLE_MARKETS, networkClient?.chain?.id],
     queryFn:
@@ -194,10 +189,11 @@ export const useAaveAvailableMarkets = ({
   })
 
   return {
-    data: enrichedMarkets,
-    error: errorEnrichedMarkets,
-    isLoading: isLoadingEnrichedMarkets,
-    isPending: isPendingEnrichedMarkets,
-    isFetching: isFetchingEnrichedMarkets
+    data,
+    error,
+    isLoading,
+    isPending,
+    isFetching,
+    refetch
   }
 }

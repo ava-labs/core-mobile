@@ -11,6 +11,9 @@ import { ensureAllowance } from 'features/swap/utils/evm/ensureAllowance'
 import { TransactionParams } from '@avalabs/evm-module'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { BENQI_Q_TOKEN } from 'features/deposit/abis/benqiQToken'
+import { RequestContext } from 'store/rpc'
+import { queryClient } from 'contexts/ReactQueryProvider'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
 
 export const useBenqiDepositErc20 = ({
   asset,
@@ -85,7 +88,14 @@ export const useBenqiDepositErc20 = ({
             })
           }
         ],
-        chainId
+        chainId,
+        context: {
+          [RequestContext.CALLBACK_TRANSACTION_CONFIRMED]: () => {
+            queryClient.invalidateQueries({
+              queryKey: [ReactQueryKeys.BENQI_AVAILABLE_MARKETS]
+            })
+          }
+        }
       })
     },
     [request, market, address, asset.token, provider]

@@ -10,17 +10,21 @@ import { TokenUnit } from '@avalabs/core-utils-sdk/dist'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import { DepositAsset } from '../types'
 
 export const SelectAmountFormBase = ({
-  asset,
+  title = 'How much do you want to deposit?',
+  token,
   tokenBalance,
   maxAmount,
   validateAmount,
   submit,
   onSuccess
 }: {
-  asset: DepositAsset
+  title?: string
+  token: {
+    decimals: number
+    symbol: string
+  }
   tokenBalance: TokenUnit
   maxAmount: TokenUnit | undefined
   validateAmount: (amount: TokenUnit) => Promise<void>
@@ -76,7 +80,7 @@ export const SelectAmountFormBase = ({
 
   return (
     <ScrollScreen
-      title={`How much do you want to deposit?`}
+      title={title}
       titleSx={{ maxWidth: '80%' }}
       contentContainerStyle={{
         padding: 16,
@@ -88,11 +92,11 @@ export const SelectAmountFormBase = ({
           sx={{ marginTop: 12 }}
           amount={amount}
           token={{
-            maxDecimals: asset.token.decimals,
-            symbol: asset.token.symbol
+            maxDecimals: token.decimals,
+            symbol: token.symbol
           }}
           balance={tokenBalance}
-          formatInCurrency={amt => formatInCurrency(amt, asset.token.symbol)}
+          formatInCurrency={amt => formatInCurrency(amt, token.symbol)}
           onChange={setAmount}
           validateAmount={validateAmount}
           disabled={isSubmitting}

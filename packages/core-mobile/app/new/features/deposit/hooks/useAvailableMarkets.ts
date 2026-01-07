@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { createPublicClient, http } from 'viem'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { getViemChain } from 'utils/getViemChain/getViemChain'
@@ -12,6 +12,8 @@ export const useAvailableMarkets = (): {
   isLoading: boolean
   isPending: boolean
   isFetching: boolean
+  isRefreshing: boolean
+  refresh: () => void
 } => {
   const cChainNetwork = useCChainNetwork()
   const networkClient = useMemo(() => {
@@ -23,13 +25,15 @@ export const useAvailableMarkets = (): {
 
     return createPublicClient({ chain: cChain, transport: http() })
   }, [cChainNetwork])
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const {
     data: aaveMarkets,
     isLoading: isLoadingAaveMarkets,
     error: errorAaveMarkets,
     isPending: isPendingAaveMarkets,
-    isFetching: isFetchingAave
+    isFetching: isFetchingAave,
+    refetch: refetchAave
   } = useAaveAvailableMarkets({
     network: cChainNetwork,
     networkClient
@@ -39,7 +43,8 @@ export const useAvailableMarkets = (): {
     isLoading: isLoadingBenqiMarkets,
     error: errorBenqiMarkets,
     isPending: isPendingBenqiMarkets,
-    isFetching: isFetchingBenqi
+    isFetching: isFetchingBenqi,
+    refetch: refetchBenqi
   } = useBenqiAvailableMarkets({
     network: cChainNetwork,
     networkClient
@@ -52,11 +57,20 @@ export const useAvailableMarkets = (): {
     return mergedSafely.sort((a, b) => b.supplyApyPercent - a.supplyApyPercent)
   }, [aaveMarkets, benqiMarkets])
 
+  const refresh = useCallback(async () => {
+    setIsRefreshing(true)
+    await refetchAave()
+    await refetchBenqi()
+    setIsRefreshing(false)
+  }, [refetchAave, refetchBenqi])
+
   return {
     data: safeMarkets,
     error: errorAaveMarkets || errorBenqiMarkets,
     isLoading: isLoadingAaveMarkets || isLoadingBenqiMarkets,
     isPending: isPendingAaveMarkets || isPendingBenqiMarkets,
-    isFetching: isFetchingAave || isFetchingBenqi
+    isFetching: isFetchingAave || isFetchingBenqi,
+    isRefreshing,
+    refresh
   }
 }

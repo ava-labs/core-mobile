@@ -12,6 +12,9 @@ import { RpcMethod } from '@avalabs/vm-module-types'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
+import { RequestContext } from 'store/rpc'
+import { queryClient } from 'contexts/ReactQueryProvider'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
 
 export const useAaveDepositAvax = ({
   market
@@ -44,7 +47,14 @@ export const useAaveDepositAvax = ({
             })
           }
         ],
-        chainId: getEvmCaip2ChainId(market.network.chainId)
+        chainId: getEvmCaip2ChainId(market.network.chainId),
+        context: {
+          [RequestContext.CALLBACK_TRANSACTION_CONFIRMED]: () => {
+            queryClient.invalidateQueries({
+              queryKey: [ReactQueryKeys.AAVE_AVAILABLE_MARKETS]
+            })
+          }
+        }
       })
     },
     [request, market, address]

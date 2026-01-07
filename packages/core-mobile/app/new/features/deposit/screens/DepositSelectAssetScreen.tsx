@@ -29,7 +29,7 @@ import { useDepositSelectedAsset } from '../store'
 import { useAvailableMarkets } from '../hooks/useAvailableMarkets'
 import { useDepositableTokens } from '../hooks/useDepositableTokens'
 
-export const SelectAssetScreen = (): JSX.Element => {
+export const DepositSelectAssetScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const activeAccount = useSelector(selectActiveAccount)
   const cChainNetwork = useCChainNetwork()

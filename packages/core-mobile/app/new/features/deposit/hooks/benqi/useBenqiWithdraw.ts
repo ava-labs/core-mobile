@@ -7,27 +7,33 @@ import { RpcMethod } from '@avalabs/vm-module-types'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import { BENQI_QI_AVAX } from 'features/deposit/abis/benqiQiAvax'
+import { BENQI_Q_TOKEN } from 'features/deposit/abis/benqiQToken'
+import { MAX_UINT256 } from 'features/deposit/consts'
 import { RequestContext } from 'store/rpc'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 
-export const useBenqiDepositAvax = ({
+export const useBenqiWithdraw = ({
   market
 }: {
   market: DefiMarket
 }): {
-  benqiDepositAvax: (params: { amount: TokenUnit }) => Promise<string>
+  withdraw: (params: { amount: TokenUnit }) => Promise<string>
 } => {
   const { request } = useInAppRequest()
   const activeAccount = useSelector(selectActiveAccount)
   const address = activeAccount?.addressC
 
-  const benqiDepositAvax = useCallback(
+  const withdraw = useCallback(
     async ({ amount }: { amount: TokenUnit }) => {
       if (!address) {
         throw new Error('No address found')
       }
+
+      const isMax = amount.toSubUnit() === market.asset.mintTokenBalance.balance
+      // If they've selected the max amount at time of load, pass MAX_UINT256 to avoid dust remaining.
+      // See: redeemFresh https://github.com/Benqi-fi/BENQI-Smart-Contracts/blob/master/lending/QiToken.sol#L632
+      const withdrawAmount = isMax ? MAX_UINT256 : amount.toSubUnit()
 
       return await request({
         method: RpcMethod.ETH_SEND_TRANSACTION,
@@ -35,11 +41,10 @@ export const useBenqiDepositAvax = ({
           {
             from: address,
             to: market.asset.mintTokenAddress,
-            value: `0x${amount.toSubUnit().toString(16)}`, // hex string
             data: encodeFunctionData({
-              abi: BENQI_QI_AVAX,
-              functionName: 'mint',
-              args: []
+              abi: BENQI_Q_TOKEN,
+              functionName: 'redeemUnderlying',
+              args: [withdrawAmount]
             })
           }
         ],
@@ -57,6 +62,6 @@ export const useBenqiDepositAvax = ({
   )
 
   return {
-    benqiDepositAvax
+    withdraw
   }
 }

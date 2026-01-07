@@ -6,7 +6,7 @@ import { useMaxDepositAmount } from '../hooks/useMaxDepositAmount'
 import { useBenqiDepositAvax } from '../hooks/benqi/useBenqiDepositAvax'
 import { SelectAmountFormBase } from './SelectAmountFormBase'
 
-export const BenqiAvaxSelectAmountForm = ({
+export const DepositBenqiAvaxSelectAmountForm = ({
   asset,
   market,
   onSuccess
@@ -46,7 +46,7 @@ export const BenqiAvaxSelectAmountForm = ({
 
   return (
     <SelectAmountFormBase
-      asset={asset}
+      token={asset.token}
       tokenBalance={tokenBalance}
       maxAmount={maxAmount}
       validateAmount={validateAmount}

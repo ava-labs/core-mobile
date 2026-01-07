@@ -16,7 +16,7 @@ import {
 import { useGasCost } from '../hooks/useGasCost'
 import { SelectAmountFormBase } from './SelectAmountFormBase'
 
-export const AaveErc20SelectAmountForm = ({
+export const DepositAaveErc20SelectAmountForm = ({
   asset,
   market,
   onSuccess
@@ -99,7 +99,7 @@ export const AaveErc20SelectAmountForm = ({
 
   return (
     <SelectAmountFormBase
-      asset={asset}
+      token={asset.token}
       tokenBalance={tokenBalance}
       maxAmount={tokenBalance}
       validateAmount={validateAmount}

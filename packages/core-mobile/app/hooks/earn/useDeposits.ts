@@ -5,8 +5,10 @@ import { useMemo } from 'react'
 export const useDeposits = (): {
   deposits: DefiMarket[]
   isLoading: boolean
+  refresh: () => void
+  isRefreshing: boolean
 } => {
-  const { data, isLoading } = useAvailableMarkets()
+  const { data, isLoading, refresh, isRefreshing } = useAvailableMarkets()
 
   const deposits = useMemo(() => {
     return (
@@ -16,5 +18,5 @@ export const useDeposits = (): {
     )
   }, [data])
 
-  return { deposits, isLoading }
+  return { deposits, isLoading, refresh, isRefreshing }
 }

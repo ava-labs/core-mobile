@@ -12,7 +12,7 @@ import { useGasCost } from '../hooks/useGasCost'
 import { useBenqiDepositErc20 } from '../hooks/benqi/useBenqiDepositErc20'
 import { SelectAmountFormBase } from './SelectAmountFormBase'
 
-export const BenqiErc20SelectAmountForm = ({
+export const DepositBenqiErc20SelectAmountForm = ({
   asset,
   market,
   onSuccess
@@ -96,7 +96,7 @@ export const BenqiErc20SelectAmountForm = ({
 
   return (
     <SelectAmountFormBase
-      asset={asset}
+      token={asset.token}
       tokenBalance={tokenBalance}
       maxAmount={tokenBalance}
       validateAmount={validateAmount}

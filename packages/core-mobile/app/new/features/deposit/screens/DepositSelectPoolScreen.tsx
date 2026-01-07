@@ -19,7 +19,7 @@ import { DefiMarketLogo } from '../components/DefiMarketLogo'
 import { useDepositSelectedMarket } from '../store'
 import { useAvailableMarkets } from '../hooks/useAvailableMarkets'
 
-export const SelectPoolScreen = (): JSX.Element => {
+export const DepositSelectPoolScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { contractAddress, symbol } = useLocalSearchParams<{
     contractAddress?: Address
