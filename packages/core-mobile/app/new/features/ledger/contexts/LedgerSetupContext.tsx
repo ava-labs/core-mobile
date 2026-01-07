@@ -34,7 +34,17 @@ interface LedgerSetupContextValue {
   disconnectDevice: () => Promise<void>
   createLedgerWallet: (
     options: WalletCreationOptions & {
-      avalancheKeys?: { evm: string; avalanche: string; pvm: string }
+      avalancheKeys?: {
+        addresses: {
+          evm: string
+          avalanche: string
+          pvm: string
+        }
+        xpubs: {
+          evm: string
+          avalanche: string
+        }
+      }
       solanaKeys?: Array<{ key: string; derivationPath: string; curve: string }>
       bitcoinAddress?: string
     }

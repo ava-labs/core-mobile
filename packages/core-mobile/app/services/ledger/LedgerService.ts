@@ -1007,16 +1007,22 @@ class LedgerService {
 
   /**
    * Get Avalanche keys from the connected Ledger device
-   * @returns Avalanche keys for EVM, Avalanche, and PVM chains
+   * @returns Avalanche keys (addresses for display, xpubs for wallet creation)
    */
   async getAvalancheKeys(): Promise<{
-    evm: string
-    avalanche: string
-    pvm: string
+    addresses: {
+      evm: string
+      avalanche: string
+      pvm: string
+    }
+    xpubs: {
+      evm: string
+      avalanche: string
+    }
   }> {
     Logger.info('Getting Avalanche keys')
 
-    // Mirror the EXACT original logic from useLedgerWallet
+    // Get addresses for display
     const addresses = await this.getAllAddresses(0, 1)
 
     const evmAddress =
@@ -1029,11 +1035,35 @@ class LedgerService {
       addresses.find(addr => addr.network === ChainName.AVALANCHE_P)?.address ||
       ''
 
-    // Return addresses exactly like the original
+    // Get extended public keys and convert to base58 xpub format
+    const extendedKeys = await this.getExtendedPublicKeys()
+
+    const { bip32 } = await import('utils/bip32')
+
+    const evmXpub = bip32
+      .fromPublicKey(
+        Buffer.from(extendedKeys.evm.key, 'hex'),
+        Buffer.from(extendedKeys.evm.chainCode, 'hex')
+      )
+      .toBase58()
+
+    const avalancheXpub = bip32
+      .fromPublicKey(
+        Buffer.from(extendedKeys.avalanche.key, 'hex'),
+        Buffer.from(extendedKeys.avalanche.chainCode, 'hex')
+      )
+      .toBase58()
+
     return {
-      evm: evmAddress,
-      avalanche: xChainAddress,
-      pvm: pvmAddress
+      addresses: {
+        evm: evmAddress,
+        avalanche: xChainAddress,
+        pvm: pvmAddress
+      },
+      xpubs: {
+        evm: evmXpub,
+        avalanche: avalancheXpub
+      }
     }
   }
 

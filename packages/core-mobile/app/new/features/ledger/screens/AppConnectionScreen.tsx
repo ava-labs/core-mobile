@@ -25,7 +25,17 @@ export default function AppConnectionScreen(): JSX.Element {
   const handleComplete = useCallback(
     async (keys: {
       solanaKeys: Array<{ key: string; derivationPath: string; curve: string }>
-      avalancheKeys: { evm: string; avalanche: string; pvm: string } | null
+      avalancheKeys: {
+        addresses: {
+          evm: string
+          avalanche: string
+          pvm: string
+        }
+        xpubs: {
+          evm: string
+          avalanche: string
+        }
+      } | null
       bitcoinAddress: string
       xpAddress: string
     }) => {
