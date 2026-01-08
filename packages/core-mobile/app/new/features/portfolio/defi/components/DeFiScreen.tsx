@@ -53,6 +53,7 @@ export const DeFiScreen = ({
   } = useDeFiProtocols()
   const listType = view.selected as DeFiViewOption
   const header = useHeaderMeasurements()
+  const collapsibleHeaderHeight = header?.height ?? 0
 
   const getAmount = useExchangedAmount()
 
@@ -202,7 +203,7 @@ export const DeFiScreen = ({
     contentContainerStyle: {
       flexGrow: 1,
       ...contentContainerStyle,
-      ...containerStyle
+      ...(containerStyle ?? {})
     }
   }
 
@@ -226,7 +227,9 @@ export const DeFiScreen = ({
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={pullToRefresh}
-            progressViewOffset={Platform.OS === 'ios' ? 0 : header.height}
+            progressViewOffset={
+              Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight
+            }
           />
         }
         ListHeaderComponent={renderHeader}

@@ -122,14 +122,15 @@ const ContentWrapper = ({
   const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
   const header = useHeaderMeasurements()
+  const collapsibleHeaderHeight = header?.height ?? 0
   const headerHeight = useHeaderHeight()
   const tabBarHeight = useBottomTabBarHeight()
 
   const animatedStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
       scrollY.value,
-      [0, header.height],
-      [-header.height / 2, 0],
+      [0, collapsibleHeaderHeight],
+      [-collapsibleHeaderHeight / 2, 0],
       Extrapolation.CLAMP
     )
     return {
@@ -156,7 +157,7 @@ const ContentWrapper = ({
           : {
               height:
                 frame.height -
-                header.height -
+                collapsibleHeaderHeight -
                 headerHeight -
                 insets.bottom -
                 extraOffset

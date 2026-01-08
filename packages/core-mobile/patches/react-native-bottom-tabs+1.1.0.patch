@@ -1,18 +1,18 @@
 diff --git a/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/RCTTabView.kt b/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/RCTTabView.kt
-index 1e1040e..817b5e6 100644
+index 23cd875..7cfb407 100644
 --- a/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/RCTTabView.kt
 +++ b/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/RCTTabView.kt
-@@ -259,9 +259,6 @@ class ReactBottomNavigationView(context: Context) : LinearLayout(context) {
+@@ -269,9 +269,6 @@ class ReactBottomNavigationView(context: Context) : LinearLayout(context) {
              onTabLongPressed(menuItem)
              true
            }
 -          view.setOnClickListener {
 -            onTabSelected(menuItem)
 -          }
-          
+ 
            item.testID?.let { testId ->
              view.findViewById<View>(com.google.android.material.R.id.navigation_bar_item_content_container)
-@@ -276,6 +273,11 @@ class ReactBottomNavigationView(context: Context) : LinearLayout(context) {
+@@ -286,6 +283,17 @@ class ReactBottomNavigationView(context: Context) : LinearLayout(context) {
      post {
        updateTextAppearance()
        updateTintColors()
@@ -21,19 +21,25 @@ index 1e1040e..817b5e6 100644
 +        onTabSelected(item)
 +        true
 +      }
++
++      // Re-selecting the currently active tab does not trigger OnItemSelectedListener,
++      // but it should still notify JS (e.g. scroll-to-top behavior), matching iOS.
++      bottomNavigation.setOnItemReselectedListener { item ->
++        onTabSelected(item)
++      }
      }
    }
  
 diff --git a/node_modules/react-native-bottom-tabs/ios/TabItemEventModifier.swift b/node_modules/react-native-bottom-tabs/ios/TabItemEventModifier.swift
-index d298ad3..6536be4 100644
+index 42eb1e6..7e612a1 100644
 --- a/node_modules/react-native-bottom-tabs/ios/TabItemEventModifier.swift
 +++ b/node_modules/react-native-bottom-tabs/ios/TabItemEventModifier.swift
-@@ -20,7 +20,7 @@ private final class TabBarDelegate: NSObject, UITabBarControllerDelegate {
-     if let index = tabBarController.viewControllers?.firstIndex(of: viewController) {
-       onClick?(index)
-     }
--    return false
-+    return true
-   }
- }
+@@ -24,7 +24,7 @@ private final class TabBarDelegate: NSObject, UITabBarControllerDelegate {
+         _ = onClick?(index)
+       }
  
+-      return false
++      return true
+     }
+ 
+     // Unfortunately, due to iOS 26 new tab switching animations, controlling state from JavaScript is causing significant delays when switching tabs.

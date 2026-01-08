@@ -245,11 +245,12 @@ export const CollectiblesScreen = ({
     contentContainerStyle: {
       flexGrow: 1,
       ...contentContainerStyle,
-      ...containerStyle
+      ...(containerStyle ?? {})
     }
   }
 
   const header = useHeaderMeasurements()
+  const collapsibleHeaderHeight = header?.height ?? 0
 
   if (
     Platform.OS === 'android' &&
@@ -263,7 +264,7 @@ export const CollectiblesScreen = ({
           flexDirection: 'row',
           gap: HORIZONTAL_MARGIN,
           paddingHorizontal: HORIZONTAL_MARGIN,
-          paddingTop: header.height + HORIZONTAL_MARGIN / 2
+          paddingTop: collapsibleHeaderHeight + HORIZONTAL_MARGIN / 2
         }}>
         <AnimatedPressable
           onPress={goToDiscoverCollectibles}
@@ -311,7 +312,9 @@ export const CollectiblesScreen = ({
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={pullToRefresh}
-            progressViewOffset={Platform.OS === 'ios' ? 0 : header.height}
+            progressViewOffset={
+              Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight
+            }
           />
         }
         contentContainerStyle={contentContainerStyle}

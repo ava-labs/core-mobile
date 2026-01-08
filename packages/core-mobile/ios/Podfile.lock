@@ -16,24 +16,24 @@ PODS:
     - DGSwiftUtilities (~> 0.11)
   - ContextMenuAuxiliaryPreview (0.5.2):
     - DGSwiftUtilities (~> 0.29)
-  - DatadogCore (2.24.1):
-    - DatadogInternal (= 2.24.1)
-  - DatadogCrashReporting (2.24.1):
-    - DatadogInternal (= 2.24.1)
+  - DatadogCore (2.30.2):
+    - DatadogInternal (= 2.30.2)
+  - DatadogCrashReporting (2.30.2):
+    - DatadogInternal (= 2.30.2)
     - PLCrashReporter (~> 1.12.0)
-  - DatadogInternal (2.24.1)
-  - DatadogLogs (2.24.1):
-    - DatadogInternal (= 2.24.1)
-  - DatadogRUM (2.24.1):
-    - DatadogInternal (= 2.24.1)
-  - DatadogSDKReactNative (2.6.4):
+  - DatadogInternal (2.30.2)
+  - DatadogLogs (2.30.2):
+    - DatadogInternal (= 2.30.2)
+  - DatadogRUM (2.30.2):
+    - DatadogInternal (= 2.30.2)
+  - DatadogSDKReactNative (2.14.0):
     - boost
-    - DatadogCore (~> 2.24.0)
-    - DatadogCrashReporting (~> 2.24.0)
-    - DatadogLogs (~> 2.24.0)
-    - DatadogRUM (~> 2.24.0)
-    - DatadogTrace (~> 2.24.0)
-    - DatadogWebViewTracking (~> 2.24.0)
+    - DatadogCore (= 2.30.2)
+    - DatadogCrashReporting (= 2.30.2)
+    - DatadogLogs (= 2.30.2)
+    - DatadogRUM (= 2.30.2)
+    - DatadogTrace (= 2.30.2)
+    - DatadogWebViewTracking (= 2.30.2)
     - DoubleConversion
     - fast_float
     - fmt
@@ -60,11 +60,11 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - DatadogTrace (2.24.1):
-    - DatadogInternal (= 2.24.1)
+  - DatadogTrace (2.30.2):
+    - DatadogInternal (= 2.30.2)
     - OpenTelemetrySwiftApi (= 1.13.1)
-  - DatadogWebViewTracking (2.24.1):
-    - DatadogInternal (= 2.24.1)
+  - DatadogWebViewTracking (2.30.2):
+    - DatadogInternal (= 2.30.2)
   - DGSwiftUtilities (0.47.0)
   - DoubleConversion (1.1.6)
   - EXApplication (7.0.8):
@@ -600,7 +600,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - NitroMmkv (4.1.0):
+  - NitroMmkv (4.1.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -631,7 +631,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - NitroModules (0.32.0):
+  - NitroModules (0.32.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -2435,7 +2435,37 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-bottom-tabs (0.10.1):
+  - react-native-bottom-tabs (1.1.0):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - react-native-bottom-tabs/common (= 1.1.0)
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - SwiftUIIntrospect (~> 1.0)
+    - Yoga
+  - react-native-bottom-tabs/common (1.1.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2461,8 +2491,6 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - SDWebImage (>= 5.19.1)
-    - SDWebImageSVGCoder (>= 1.7.0)
     - SocketRocket
     - SwiftUIIntrospect (~> 1.0)
     - Yoga
@@ -3651,7 +3679,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNCClipboard (1.15.0):
+  - RNCClipboard (1.16.3):
     - boost
     - DoubleConversion
     - fast_float
@@ -3903,7 +3931,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNReanimated (4.1.1):
+  - RNReanimated (4.2.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -3930,11 +3958,11 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNReanimated/reanimated (= 4.1.1)
+    - RNReanimated/reanimated (= 4.2.1)
     - RNWorklets
     - SocketRocket
     - Yoga
-  - RNReanimated/reanimated (4.1.1):
+  - RNReanimated/reanimated (4.2.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -3961,11 +3989,11 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNReanimated/reanimated/apple (= 4.1.1)
+    - RNReanimated/reanimated/apple (= 4.2.1)
     - RNWorklets
     - SocketRocket
     - Yoga
-  - RNReanimated/reanimated/apple (4.1.1):
+  - RNReanimated/reanimated/apple (4.2.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -4056,7 +4084,7 @@ PODS:
     - Yoga
   - RNSensors (7.3.6):
     - React-Core
-  - RNSentry (7.8.0):
+  - RNSentry (7.2.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -4083,7 +4111,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - Sentry/HybridSDK (= 8.57.3)
+    - Sentry/HybridSDK (= 8.56.1)
     - SocketRocket
     - Yoga
   - RNShare (12.0.9):
@@ -4199,7 +4227,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNWorklets (0.5.1):
+  - RNWorklets (0.7.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -4226,10 +4254,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNWorklets/worklets (= 0.5.1)
+    - RNWorklets/worklets (= 0.7.1)
     - SocketRocket
     - Yoga
-  - RNWorklets/worklets (0.5.1):
+  - RNWorklets/worklets (0.7.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -4256,10 +4284,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNWorklets/worklets/apple (= 0.5.1)
+    - RNWorklets/worklets/apple (= 0.7.1)
     - SocketRocket
     - Yoga
-  - RNWorklets/worklets/apple (0.5.1):
+  - RNWorklets/worklets/apple (0.7.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -4299,7 +4327,7 @@ PODS:
   - SDWebImageWebPCoder (0.14.6):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.17)
-  - Sentry/HybridSDK (8.57.3)
+  - Sentry/HybridSDK (8.56.1)
   - SocketRocket (0.7.1)
   - SwiftUIIntrospect (1.3.0)
   - Yoga (0.0.0)
@@ -4862,14 +4890,14 @@ SPEC CHECKSUMS:
   CatCrypto: a477899b6be4954e75be4897e732da098cc0a5a8
   ComputableLayout: c50faffac4ed9f8f05b0ce5e6f3a60df1f6042c8
   ContextMenuAuxiliaryPreview: 20be0be795b783b68f8792732eed4bed9f202c1c
-  DatadogCore: 60c460662aff13e4030902fa43c5933c0774cdb2
-  DatadogCrashReporting: d9daa7d8a2577dc35d2e4247d6bd927b39cb5d39
-  DatadogInternal: a514ba01c9eb99dbe1ddd4452e218706bb0ddc2b
-  DatadogLogs: 9352c58e4ab4a88f0ed7c20f27dc8d24442acc5e
-  DatadogRUM: ab979c800d3fb7d7b2ff364a11d137b6a4be6831
-  DatadogSDKReactNative: a1aaedad366b81ff0a3eefff88392bbf13e3a128
-  DatadogTrace: 23df8545911d219d4c15446a4c6c04862ff76175
-  DatadogWebViewTracking: e88b8057eb5ff06a68baf232ae37637b8bb7518b
+  DatadogCore: 8e50ad6cb68343f701707f7eeca16e0acb52ed8c
+  DatadogCrashReporting: 34763d4276d4fce286c7e8729cfcd2ac04dca43b
+  DatadogInternal: bd8672d506a7e67936ed5f7ca612169e49029b44
+  DatadogLogs: d683aa9e0c9339f5ae679ead70bbdbe41cdc32f6
+  DatadogRUM: 8b794aa458e6323ea9b1cef3f820fd3d092cbe27
+  DatadogSDKReactNative: 5bdb3a5cfe09444f89713653a93db36a9e9efc5d
+  DatadogTrace: 3ba194791267efa09634234749111cac95abd3e5
+  DatadogWebViewTracking: 8287d5ad06e992de5e46dd72a17e05c7513344be
   DGSwiftUtilities: 567f8d5ee618f0b7afb185b17aa45ff356315a0f
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EXApplication: 1e98d4b1dccdf30627f92917f4b2c5a53c330e5f
@@ -4930,8 +4958,8 @@ SPEC CHECKSUMS:
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   NitroAvalabsCrypto: 35be5670efab6b8866ae433c7e3cd49b2988e5d5
   NitroFetch: 660adfb47f84b28db664f97b50e5dc28506ab6c1
-  NitroMmkv: ce1df9b9f0e06dfbde2455d863047e0411fceb6e
-  NitroModules: f964d2f3f5b392d0c0303737085cc30e375dc43f
+  NitroMmkv: 8ed7ef6f41b91785fc580c975f68d6d675214767
+  NitroModules: bbd7f9f8913dc8af187349463e4368a1144d6e31
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   OpenTelemetrySwiftApi: aaee576ed961e0c348af78df58b61300e95bd104
   PLCrashReporter: db59ef96fa3d25f3650040d02ec2798cffee75f2
@@ -4971,7 +4999,7 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: 6c4ee39a36958c39c97b074d28f360246a335e84
   react-native-aes: e2868d9f7203f573a2c1d797d95f4e88a54fa8cd
   react-native-ble-plx: e9494861c0f5d1dbc6d8185f9f125404e2f907c1
-  react-native-bottom-tabs: 4372134ad6d6162f8550bfa37d119d7853b8d7a3
+  react-native-bottom-tabs: e33312fc663d163f0be73d3474dfb448ba38dad8
   react-native-branch: 0229b46e762bc16ab5289e5eac167738b94c089b
   react-native-compat: 9f39fcbbdc850ffa4bc8cc63f18eb6c4c885fadf
   react-native-config: ea75335a7cca1d3326de1da384227e580a7c082e
@@ -5029,7 +5057,7 @@ SPEC CHECKSUMS:
   RNArgon2: 708e188b7a4d4ec8baf62463927c47abef453a94
   RNBootSplash: 98a34471966945e8dacd1da8f0c2f87cbc2e2df7
   RNCAsyncStorage: 29f0230e1a25f36c20b05f65e2eb8958d6526e82
-  RNCClipboard: 8beccb3b900a64f800273a9341eacea50d527765
+  RNCClipboard: 4b58c780f63676367640f23c8e114e9bd0cf86ac
   RNCMaskedView: 5ef8c95cbab95334a32763b72896a7b7d07e6299
   RNDateTimePicker: cda4c045beca864cebb3209ef9cc4094f974864c
   RNDeviceInfo: 36d7f232bfe7c9b5c494cb7793230424ed32c388
@@ -5046,19 +5074,19 @@ SPEC CHECKSUMS:
   RNNotifee: 5e3b271e8ea7456a36eec994085543c9adca9168
   RNOS: d07e5090b5060c6f2b83116d740a32cfdb33afe3
   RNPermissions: 984fe432b6d13d6e6fe40aceee81d28aa7f1207b
-  RNReanimated: 5da5ce2b651742812e39d2282431617c3882edf1
+  RNReanimated: fabac5a7aee92d454d7aef06335a7bef955d5603
   RNScreens: 0bbf16c074ae6bb1058a7bf2d1ae017f4306797c
   RNSensors: 111159597ac51505df10413c61b28bcd28e88983
-  RNSentry: fdb39d5f294e492aa2f08ad80e510310dc223772
+  RNSentry: bca90d41b7e8423262c5fcfccfb12328a3aa6701
   RNShare: 1dba46787d6e5543e05655efaefa0e4bb98380d9
   RNSound: 180aa1cfad34009ad7472c78d0340100ff948058
   RNSVG: 6f39605a4c4d200b11435c35bd077553c6b5963a
-  RNWorklets: ad0606bee2a8103c14adb412149789c60b72bfb2
+  RNWorklets: 416ef974c176d76634e34c0aeda83f6b67084a88
   SDWebImage: e9c98383c7572d713c1a0d7dd2783b10599b9838
   SDWebImageAVIFCoder: afe194a084e851f70228e4be35ef651df0fc5c57
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
-  Sentry: c643eb180df401dd8c734c5036ddd9dd9218daa6
+  Sentry: b3ec44d01708fce73f99b544beb57e890eca4406
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SwiftUIIntrospect: fee9aa07293ee280373a591e1824e8ddc869ba5d
   Yoga: 728df40394d49f3f471688747cf558158b3a3bd1

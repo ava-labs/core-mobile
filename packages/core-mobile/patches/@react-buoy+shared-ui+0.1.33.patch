@@ -1,14 +1,160 @@
-diff --git a/node_modules/@react-buoy/shared-ui/package.json b/node_modules/@react-buoy/shared-ui/package.json
-index 5f21a4a..4082f6f 100644
---- a/node_modules/@react-buoy/shared-ui/package.json
-+++ b/node_modules/@react-buoy/shared-ui/package.json
-@@ -5,6 +5,9 @@
-   "main": "lib/commonjs/index.js",
-   "module": "lib/module/index.js",
-   "types": "lib/typescript/module/index.d.ts",
+diff --git a/node_modules/@react-buoy/shared-ui/lib/commonjs/package.json b/node_modules/@react-buoy/shared-ui/lib/commonjs/package.json
+index 729ac4d..58f4b75 100644
+--- a/node_modules/@react-buoy/shared-ui/lib/commonjs/package.json
++++ b/node_modules/@react-buoy/shared-ui/lib/commonjs/package.json
+@@ -1 +1,34 @@
+-{"type":"commonjs"}
++{
++  "type": "commonjs",
 +  "react-native": {
-+    "./dataViewer": "./lib/commonjs/dataViewer/index.js"
++    "zlib": "browserify-zlib",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "stream": "stream-browserify",
++    "vm": "vm-browserify",
++    "./dataViewer": "./dataViewer/index.js"
 +  },
-   "exports": {
-     ".": {
-       "source": "./src/index.ts",
++  "browser": {
++    "zlib": "browserify-zlib",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "stream": "stream-browserify",
++    "vm": "vm-browserify"
++  }
++}
+diff --git a/node_modules/@react-buoy/shared-ui/lib/module/package.json b/node_modules/@react-buoy/shared-ui/lib/module/package.json
+index 089153b..f7d722a 100644
+--- a/node_modules/@react-buoy/shared-ui/lib/module/package.json
++++ b/node_modules/@react-buoy/shared-ui/lib/module/package.json
+@@ -1 +1,34 @@
+-{"type":"module"}
++{
++  "type": "module",
++  "react-native": {
++    "zlib": "browserify-zlib",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "stream": "stream-browserify",
++    "vm": "vm-browserify"
++  },
++  "browser": {
++    "zlib": "browserify-zlib",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "stream": "stream-browserify",
++    "vm": "vm-browserify",
++    "./dataViewer": "./dataViewer/index.js"
++  }
++}
+diff --git a/node_modules/@react-buoy/shared-ui/lib/typescript/commonjs/package.json b/node_modules/@react-buoy/shared-ui/lib/typescript/commonjs/package.json
+index 729ac4d..259eaa7 100644
+--- a/node_modules/@react-buoy/shared-ui/lib/typescript/commonjs/package.json
++++ b/node_modules/@react-buoy/shared-ui/lib/typescript/commonjs/package.json
+@@ -1 +1,33 @@
+-{"type":"commonjs"}
++{
++  "type": "commonjs",
++  "react-native": {
++    "zlib": "browserify-zlib",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "stream": "stream-browserify",
++    "vm": "vm-browserify"
++  },
++  "browser": {
++    "zlib": "browserify-zlib",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "stream": "stream-browserify",
++    "vm": "vm-browserify"
++  }
++}
+diff --git a/node_modules/@react-buoy/shared-ui/lib/typescript/module/package.json b/node_modules/@react-buoy/shared-ui/lib/typescript/module/package.json
+index 089153b..61acfe7 100644
+--- a/node_modules/@react-buoy/shared-ui/lib/typescript/module/package.json
++++ b/node_modules/@react-buoy/shared-ui/lib/typescript/module/package.json
+@@ -1 +1,35 @@
+-{"type":"module"}
++{
++  "type": "module",
++  "react-native": {
++    "zlib": "browserify-zlib",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "stream": "stream-browserify",
++    "vm": "vm-browserify",
++    "./dataViewer": "./dataViewer/index.d.ts"
++  },
++  "browser": {
++    "zlib": "browserify-zlib",
++    "http": "@tradle/react-native-http",
++    "https": "https-browserify",
++    "os": "react-native-os",
++    "path": "path-browserify",
++    "fs": "react-native-level-fs",
++    "_stream_transform": "readable-stream/transform",
++    "_stream_readable": "readable-stream/readable",
++    "_stream_writable": "readable-stream/writable",
++    "_stream_duplex": "readable-stream/duplex",
++    "_stream_passthrough": "readable-stream/passthrough",
++    "stream": "stream-browserify",
++    "vm": "vm-browserify",
++    "./dataViewer": "./dataViewer/index.d.ts"
++  }
++}

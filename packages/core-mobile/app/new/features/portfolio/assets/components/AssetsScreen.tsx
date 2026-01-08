@@ -50,6 +50,7 @@ const AssetsScreen: FC<Props> = ({
     useAssetsFilterAndSort()
   const listType = view.selected as AssetManageView
   const header = useHeaderMeasurements()
+  const collapsibleHeaderHeight = header?.height ?? 0
 
   const activeAccount = useSelector(selectActiveAccount)
   const enabledNetworks = useSelector(selectEnabledNetworks)
@@ -210,7 +211,7 @@ const AssetsScreen: FC<Props> = ({
 
   const overrideProps = {
     contentContainerStyle: {
-      ...containerStyle
+      ...(containerStyle ?? {})
     }
   }
 
@@ -247,7 +248,9 @@ const AssetsScreen: FC<Props> = ({
           <RefreshControl
             refreshing={isRefetching}
             onRefresh={refetch}
-            progressViewOffset={Platform.OS === 'ios' ? 0 : header.height}
+            progressViewOffset={
+              Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight
+            }
           />
         }
         renderItem={item => renderItem(item.item, item.index)}

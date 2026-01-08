@@ -49,6 +49,7 @@ export const ActivityScreen = ({
   containerStyle: ViewStyle
 }): JSX.Element => {
   const header = useHeaderMeasurements()
+  const collapsibleHeaderHeight = header?.height ?? 0
   const {
     data,
     filter,
@@ -76,7 +77,7 @@ export const ActivityScreen = ({
         {
           translateY: withTiming(
             isSearchBarFocused
-              ? -header.height + (Platform.OS === 'ios' ? 40 : 32)
+              ? -collapsibleHeaderHeight + (Platform.OS === 'ios' ? 40 : 32)
               : 0,
             {
               ...ANIMATED.TIMING_CONFIG

@@ -37,13 +37,7 @@ export const modalScreensOptions: NativeStackNavigationOptions = {
   sheetAllowedDetents: [Platform.OS === 'android' ? 0.93 : 0.99],
   headerLeft: () => <BackBarButton />,
   gestureEnabled: true,
-  headerTransparent: true,
-  ...(Platform.OS === 'ios' && {
-    // iOS will display empty content without this
-    contentStyle: {
-      height: '100%'
-    }
-  })
+  headerTransparent: true
 }
 
 export function useModalScreensOptions(): {
