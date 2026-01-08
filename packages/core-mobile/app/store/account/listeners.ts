@@ -461,8 +461,8 @@ const populateXpAddressesForWallet = async ({
     // Always update the account, even if derivation failed
     updatedAccounts[account.id] = {
       ...account,
-      addressAVM: newAddressAVM,
-      addressPVM: newAddressPVM,
+      addressAVM,
+      addressPVM,
       xpAddresses,
       xpAddressDictionary,
       hasMigratedXpAddresses
