@@ -126,9 +126,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
     return allBalancesInaccurate || balanceTotalInCurrency === 0
       ? UNKNOWN_AMOUNT
       : formatCurrency({
-          amount: balanceTotalInCurrency,
-          withoutCurrencySuffix: true
-        })
+        amount: balanceTotalInCurrency,
+        withoutCurrencySuffix: true
+      })
   }, [allBalancesInaccurate, balanceTotalInCurrency, formatCurrency])
 
   const { percentChange24h, valueChange24h, indicatorStatus } =
@@ -175,12 +175,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
         renderMaskedSubtitle={
           isPrivacyModeEnabled
             ? () => (
-                <HiddenBalanceText
-                  variant="caption"
-                  isCurrency={true}
-                  sx={{ color: '$textSecondary' }}
-                />
-              )
+              <HiddenBalanceText
+                variant="caption"
+                isCurrency={true}
+                sx={{ color: '$textSecondary' }}
+              />
+            )
             : undefined
         }
       />
@@ -350,7 +350,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
             buttons={actionButtons}
             contentContainerStyle={{
               padding: 16,
-              paddingBottom: 10
+              paddingBottom: 20
             }}
           />
         )}
@@ -475,7 +475,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const contentContainerStyle = useMemo(() => {
     return {
       paddingBottom: (segmentedControlLayout?.height ?? 0) + 32,
-      paddingTop: 10,
       minHeight: tabHeight
     }
   }, [segmentedControlLayout?.height, tabHeight])

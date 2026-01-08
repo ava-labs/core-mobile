@@ -20,7 +20,6 @@ import {
   LocalTokenWithBalance
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { EmptyState } from './EmptyState'
 import { TokenListItem } from './TokenListItem'
@@ -50,16 +49,13 @@ const AssetsScreen: FC<Props> = ({
 
   const activeAccount = useSelector(selectActiveAccount)
   const enabledNetworks = useSelector(selectEnabledNetworks)
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
-
   const {
     isAllBalancesInaccurate,
     isBalanceLoaded,
     isAllBalancesError,
     isLoading: isBalanceLoading,
     isPolling: isBalancePolling,
-    isRefetching: isRefetchingBalance,
-    totalBalanceInCurrency: balanceTotalInCurrency
+    isRefetching: isRefetchingBalance
   } = useAccountBalanceSummary(activeAccount)
 
   const handleManageList = useCallback(
@@ -84,11 +80,7 @@ const AssetsScreen: FC<Props> = ({
   // Only show loading state for initial load
   const isInitialLoading = isLoadingBalance && !isBalanceLoaded
 
-  const hasNoAssets =
-    isBalanceLoaded &&
-    balanceTotalInCurrency === 0 &&
-    !isInitialLoading &&
-    !isDeveloperMode
+  const hasNoAssets = data.length === 0 && isBalanceLoaded && !isInitialLoading
 
   const renderItem = useCallback(
     (item: LocalTokenWithBalance, index: number): JSX.Element => {
@@ -186,24 +178,25 @@ const AssetsScreen: FC<Props> = ({
   }, [renderEmptyComponent])
 
   const renderHeader = useCallback(() => {
-    if (hasNoAssets || isInitialLoading) {
+    if (isInitialLoading) {
       return
     }
 
     return (
       <View
         style={{
-          paddingHorizontal: 16
+          paddingHorizontal: 16,
+          zIndex: 1000
         }}>
         <DropdownSelections
-          sx={{ marginBottom: 16 }}
-          filter={filter}
-          sort={sort}
+          sx={{ marginBottom: hasNoAssets ? 0 : 16 }}
+          filter={hasNoAssets ? undefined : filter}
+          sort={hasNoAssets ? undefined : sort}
           view={{ ...view, onSelected: handleManageList }}
         />
       </View>
     )
-  }, [hasNoAssets, isInitialLoading, filter, sort, view, handleManageList])
+  }, [isInitialLoading, hasNoAssets, filter, sort, view, handleManageList])
 
   const overrideProps = {
     contentContainerStyle: {
