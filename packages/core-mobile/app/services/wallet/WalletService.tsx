@@ -258,15 +258,17 @@ class WalletService {
     curve: Curve
   }): Promise<string> {
     // Check cache first
-    if (derivationPath) {
-      const cached = WalletFactory.cache.getPublicKey(
-        walletId,
-        derivationPath,
-        curve
-      )
-      if (cached) {
-        return cached
-      }
+    // If derivation path is not provided, we use a default key
+    // This supports wallets that don't use derivation paths (e.g. PrivateKeyWallet)
+    const cacheKey = derivationPath ?? 'ROOT'
+
+    const cached = WalletFactory.cache.getPublicKey(
+      walletId,
+      cacheKey,
+      curve
+    )
+    if (cached) {
+      return cached
     }
 
     const wallet = await WalletFactory.createWallet({
@@ -277,14 +279,12 @@ class WalletService {
     const publicKey = await wallet.getPublicKeyFor({ derivationPath, curve })
 
     // Cache the result
-    if (derivationPath) {
-      WalletFactory.cache.setPublicKey(
-        walletId,
-        derivationPath,
-        curve,
-        publicKey
-      )
-    }
+    WalletFactory.cache.setPublicKey(
+      walletId,
+      cacheKey,
+      curve,
+      publicKey
+    )
 
     return publicKey
   }
