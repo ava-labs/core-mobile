@@ -309,15 +309,15 @@ const migrateXpAddressesIfNeeded = async (
 
     const accounts = selectAccountsByWalletId(state, wallet.id)
 
-    // Run both operations in parallel for each wallet
-    const [updatedAccounts] = await Promise.all([
-      populateXpAddressesForWallet({
-        wallet,
-        accounts,
-        isDeveloperMode
-      }),
-      deriveMissingSeedlessSessionKeys(wallet.id)
-    ])
+    const updatedAccounts = await populateXpAddressesForWallet({
+      wallet,
+      accounts,
+      isDeveloperMode
+    })
+
+    if (wallet.type === WalletType.SEEDLESS) {
+      await deriveMissingSeedlessSessionKeys(wallet.id)
+    }
 
     // Merge successful account updates
     Object.assign(allUpdatedAccounts, updatedAccounts)
