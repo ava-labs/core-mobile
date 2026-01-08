@@ -307,17 +307,16 @@ const migrateXpAddressesIfNeeded = async (
       return
     }
 
-    const accounts = selectAccountsByWalletId(state, wallet.id)
+    if (wallet.type === WalletType.SEEDLESS) {
+      await deriveMissingSeedlessSessionKeys(wallet.id)
+    }
 
+    const accounts = selectAccountsByWalletId(state, wallet.id)
     const updatedAccounts = await populateXpAddressesForWallet({
       wallet,
       accounts,
       isDeveloperMode
     })
-
-    if (wallet.type === WalletType.SEEDLESS) {
-      await deriveMissingSeedlessSessionKeys(wallet.id)
-    }
 
     // Merge successful account updates
     Object.assign(allUpdatedAccounts, updatedAccounts)
