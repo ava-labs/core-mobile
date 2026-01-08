@@ -27,7 +27,6 @@ import { RpcMethod } from '@avalabs/vm-module-types'
 import { Network } from '@avalabs/core-chains-sdk'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { selectNetworks } from 'store/network/slice'
-import { RequestContext } from 'store/rpc/types'
 import {
   removePendingTransfer,
   selectPendingTransfers,
@@ -78,11 +77,7 @@ const trackPendingTransfers = (listenerApi: AppListenerEffectAPI): void => {
 
 export const createEvmSigner = (request: Request): EvmSigner => {
   return {
-    sign: async (
-      { data, from, to, value, chainId },
-      _,
-      { currentSignature, requiredSignatures }
-    ) => {
+    sign: async ({ data, from, to, value, chainId }, _) => {
       if (typeof to !== 'string') throw new Error('invalid to field')
       const txParams: [TransactionParams] = [
         {
@@ -96,7 +91,7 @@ export const createEvmSigner = (request: Request): EvmSigner => {
       return request({
         method: RpcMethod.ETH_SEND_TRANSACTION,
         params: txParams,
-        chainId: getEvmCaip2ChainId(Number(chainId)),
+        chainId: getEvmCaip2ChainId(Number(chainId))
       }) as Promise<Hex>
     }
   }
@@ -129,11 +124,11 @@ export const initUnifiedBridgeService = async (
   const evmSigner = createEvmSigner(request)
 
   const btcSigner: BtcSigner = {
-    sign: async (txData, _, { requiredSignatures, currentSignature }) => {
+    sign: async (txData, _) => {
       return request({
         method: RpcMethod.BITCOIN_SIGN_TRANSACTION,
         params: txData,
-        chainId: getBitcoinCaip2ChainId(!isTest),
+        chainId: getBitcoinCaip2ChainId(!isTest)
       })
     }
   }
