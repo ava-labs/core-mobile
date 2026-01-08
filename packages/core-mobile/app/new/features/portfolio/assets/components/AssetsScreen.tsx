@@ -186,10 +186,11 @@ const AssetsScreen: FC<Props> = ({
     return (
       <View
         style={{
-          paddingHorizontal: 16
+          paddingHorizontal: 16,
+          zIndex: 1000
         }}>
         <DropdownSelections
-          sx={{ marginBottom: hasNoAssets ? 8 : 16 }}
+          sx={{ marginBottom: hasNoAssets ? 0 : 16 }}
           filter={hasNoAssets ? undefined : filter}
           sort={hasNoAssets ? undefined : sort}
           view={{ ...view, onSelected: handleManageList }}
