@@ -18,10 +18,14 @@ export type PrimaryAccount = Omit<
   xpAddresses: CorePrimaryAccount['xpAddresses'] | undefined
 }
 
-export type ImportedAccount = Omit<CoreImportedAccount, 'active'> & {
+export type ImportedAccount = Omit<
+  CoreImportedAccount,
+  'active' | 'xpAddresses'
+> & {
   walletId: string
   index: 0
   xpAddressDictionary: XPAddressDictionary
+  xpAddresses: CoreImportedAccount['xpAddresses'] | undefined
 }
 
 export type Account = PrimaryAccount | ImportedAccount
