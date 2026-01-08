@@ -10,11 +10,12 @@ export type XPAddressDictionary = {
 
 export type PrimaryAccount = Omit<
   CorePrimaryAccount,
-  'active' | 'walletType' | 'walletName'
+  'active' | 'walletType' | 'walletName' | 'xpAddresses'
 > & {
   walletId: string
   index: number
   xpAddressDictionary: XPAddressDictionary
+  xpAddresses: CorePrimaryAccount['xpAddresses'] | undefined
 }
 
 export type ImportedAccount = Omit<CoreImportedAccount, 'active'> & {
