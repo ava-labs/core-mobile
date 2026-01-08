@@ -67,7 +67,7 @@ export const CollectiblesProvider = ({
   const query = useNfts(isEnabled)
 
   const collectibles: NftItem[] = useMemo(() => {
-    if (!query.data) return []
+    if (!query?.data) return []
     return (
       query.data?.map(nft => {
         return {
