@@ -15,13 +15,17 @@ export default function CompleteScreen(): JSX.Element {
 
   const handleComplete = (): void => {
     resetSetup()
-    // Go back through the entire ledger + importWallet flow
+    // Try dismissTo if available, fallback to multiple back() calls
     // complete -> appConnection -> deviceConnection -> pathSelection -> importWallet -> wallets
-    router.canGoBack() && router.back()
-    router.canGoBack() && router.back()
-    router.canGoBack() && router.back()
-    router.canGoBack() && router.back()
-    router.canGoBack() && router.back()
+    if ('dismissTo' in router && typeof router.dismissTo === 'function') {
+      // @ts-ignore - dismissTo exists but types may not be updated
+      router.dismissTo('/(modals)/accountSettings')
+    } else {
+      // Fallback to proven approach
+      Array.from({ length: 5 }).forEach(() => {
+        router.canGoBack() && router.back()
+      })
+    }
   }
 
   return (

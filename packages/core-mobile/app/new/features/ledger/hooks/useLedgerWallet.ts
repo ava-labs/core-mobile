@@ -152,7 +152,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           evm: addresses.evm?.startsWith('0x0x')
             ? addresses.evm.slice(2) // Remove first 0x to fix double prefix
             : addresses.evm,
-          avalanche: addresses.avalanche,
+          avm: addresses.avalanche,
           pvm: addresses.pvm || addresses.avalanche
         }
 
@@ -171,7 +171,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
             curve: Curve.SECP256K1
           },
           {
-            key: formattedAddresses.avalanche,
+            key: formattedAddresses.avm,
             derivationPath: DERIVATION_PATHS.BIP44.AVALANCHE,
             curve: Curve.SECP256K1
           },
@@ -225,10 +225,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         ).unwrap()
 
         dispatch(setActiveWallet(newWalletId))
-        // const walletType =
-        //   derivationPathType === LedgerDerivationPathType.BIP44
-        //     ? WalletType.LEDGER
-        //     : WalletType.LEDGER_LIVE
 
         // For the first account (index 0), use the addresses we retrieved during setup
         // This avoids the complex derivation logic that returns empty addresses
@@ -241,7 +237,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           index: 0,
           addressC: formattedAddresses.evm,
           addressBTC: bitcoinAddress || '',
-          addressAVM: formattedAddresses.avalanche,
+          addressAVM: formattedAddresses.avm,
           addressPVM: formattedAddresses.pvm,
           addressSVM: solanaKeys[0]?.key || '',
           addressCoreEth: '',
