@@ -32,8 +32,8 @@ interface Props {
   onScrollResync: () => void
 }
 
-const keyExtractor = (item: LocalTokenWithBalance): string =>
-  `${item.networkChainId}-${item.localId}`
+const keyExtractor = (item: LocalTokenWithBalance, index: number): string =>
+  `${index}-${item.networkChainId}-${item.localId}`
 
 const AssetsScreen: FC<Props> = ({
   containerStyle,
