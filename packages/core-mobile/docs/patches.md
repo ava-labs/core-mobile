@@ -114,4 +114,4 @@ You can wrap a toast container with a custom wrapper.
 
 ### @react-buoy+shared-ui+0.1.33.patch
 
-This patch fixed the "unable to resolve @react-buoy/shared-ui/dataViewer" issue. Please refer to https://github.com/LovesWorking/react-native-buoy/issues/46 for more info.
+This patch fixes the "unable to resolve @react-buoy/shared-ui/dataViewer" issue when Metro has `unstable_enablePackageExports: false` by mapping `./dataViewer` in `react-native`/`browser` to `./lib/commonjs/dataViewer/index.js`. Please refer to https://github.com/LovesWorking/react-native-buoy/issues/46 for more info.
