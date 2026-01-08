@@ -27,6 +27,8 @@ import { selectIsSeedlessSigningBlocked } from 'store/posthog/slice'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import Logger from 'utils/Logger'
 import { Eip1559Fees } from 'utils/Utils'
+import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
+import { RequestContext } from 'store/rpc'
 import { Account } from '../../components/Account'
 import BalanceChange from '../../components/BalanceChange/BalanceChange'
 import { Details } from '../../components/Details'
@@ -148,6 +150,15 @@ const ApprovalScreen = ({
         overrideData: hashedCustomSpend
       })
       router.canGoBack() && router.back()
+
+      const confettiDisabled =
+        request.context?.[RequestContext.CONFETTI_DISABLED]
+      // only show confetti for in-app requests
+      if (isInAppRequest(request) && !confettiDisabled) {
+        setTimeout(() => {
+          confetti.restart()
+        }, 100)
+      }
     } catch (error: unknown) {
       Logger.error('Error approving transaction', error)
     } finally {
@@ -166,7 +177,8 @@ const ApprovalScreen = ({
     maxFeePerGas,
     maxPriorityFeePerGas,
     gasLimit,
-    hashedCustomSpend
+    hashedCustomSpend,
+    request
   ])
 
   const validateEthSendTransaction = useCallback(() => {

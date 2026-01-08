@@ -97,11 +97,6 @@ export const createEvmSigner = (request: Request): EvmSigner => {
         method: RpcMethod.ETH_SEND_TRANSACTION,
         params: txParams,
         chainId: getEvmCaip2ChainId(Number(chainId)),
-        context: {
-          // we only want to show confetti for the final approval
-          [RequestContext.CONFETTI_DISABLED]:
-            requiredSignatures > currentSignature
-        }
       }) as Promise<Hex>
     }
   }
@@ -139,11 +134,6 @@ export const initUnifiedBridgeService = async (
         method: RpcMethod.BITCOIN_SIGN_TRANSACTION,
         params: txData,
         chainId: getBitcoinCaip2ChainId(!isTest),
-        context: {
-          // we only want to show confetti for the final approval
-          [RequestContext.CONFETTI_DISABLED]:
-            requiredSignatures > currentSignature
-        }
       })
     }
   }

@@ -13,7 +13,6 @@ import { btcSignTransaction } from 'vmModule/handlers/btcSignTransaction'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
-import { RequestContext } from 'store/rpc/types'
 import { NavigationPresentationMode } from 'new/common/types'
 import { solanaSendTransaction } from 'vmModule/handlers/solanaSendTransaction'
 import { Account } from 'store/account'
@@ -56,15 +55,6 @@ class ApprovalController implements VmModuleApprovalController {
     request: RpcRequest
   }): void {
     transactionSnackbar.success({ explorerLink, toastId: request.requestId })
-
-    const confettiDisabled = request.context?.[RequestContext.CONFETTI_DISABLED]
-
-    // only show confetti for in-app requests
-    if (isInAppRequest(request) && !confettiDisabled) {
-      setTimeout(() => {
-        confetti.restart()
-      }, 100)
-    }
   }
 
   onTransactionReverted(): void {
