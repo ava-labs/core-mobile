@@ -26,7 +26,7 @@ const androidPath = isBitrise
   ? process.env.BITRISE_APK_PATH
   : path.resolve(androidLocalPath)
 const platformToRun = process.env.PLATFORM
-const isSmoke = process.env.SMOKE_SUITE === 'true'
+const isSmoke = process.env.IS_SMOKE === 'true'
 
 const allCaps = [
   {

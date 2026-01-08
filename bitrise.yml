@@ -946,9 +946,14 @@ workflows:
         is_expand: false
   appium-smoke-setup:
     envs:
-    - SMOKE_SUITE: "true"
+    - IS_SMOKE: "true"
       opts:
         is_expand: false
+    steps:
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            IS_SMOKE=$IS_SMOKE
   appium-ios-setup:
     before_run:
     - _install-and-set-env
