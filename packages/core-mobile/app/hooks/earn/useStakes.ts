@@ -20,7 +20,7 @@ export const useStakes = (
   const walletState = useSelector(selectWalletState)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const account = useSelector(selectActiveAccount)
-  const pAddresses = account?.xpAddresses.map(address => address.address) ?? []
+  const pAddresses = account?.xpAddresses?.map(address => address.address) ?? []
   const pAddressesSorted = pAddresses.sort().join(',')
 
   // we only fetch stakes when the wallet is active
