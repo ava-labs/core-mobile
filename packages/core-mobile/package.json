@@ -327,7 +327,7 @@
     "reactotron-react-native": "5.1.18",
     "reactotron-react-native-mmkv": "0.2.9",
     "reactotron-redux": "3.2.0",
-    "testrail-api": "^1.3.6",
+    "testrail-api": "1.3.6",
     "ts-jest": "29.4.1",
     "ts-node": "10.9.2",
     "typechain": "8.3.2",

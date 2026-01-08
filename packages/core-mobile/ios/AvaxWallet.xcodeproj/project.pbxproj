@@ -540,7 +540,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT \\\"/bin/sh ../node_modules/@sentry/react-native/scripts/sentry-xcode.sh $REACT_NATIVE_XCODE\\\"\"\n";
+			shellScript = "set -e\n\n# Load React Native's Xcode env (NODE_BINARY) in a way that works with /bin/sh.\n# (react-native's with-environment.sh only executes $1, so passing a whole command string breaks.)\nENV_PATH=\"${PODS_ROOT}/../.xcode.env\"\nif [ -f \"$ENV_PATH\" ]; then\n  . \"$ENV_PATH\"\nfi\nLOCAL_ENV_PATH=\"${ENV_PATH}.local\"\nif [ -f \"$LOCAL_ENV_PATH\" ]; then\n  . \"$LOCAL_ENV_PATH\"\nfi\n\nNODE_BINARY=\"${NODE_BINARY:-$(command -v node || echo '')}\"\nexport NODE_BINARY\n\nif [ -z \"$NODE_BINARY\" ]; then\n  echo \"error: NODE_BINARY is not set. Create ios/.xcode.env with: export NODE_BINARY=\\$(command -v node)\" >&2\n  exit 1\nfi\n\necho \"Node found at: ${NODE_BINARY}\"\n\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\nSENTRY_XCODE=\"../node_modules/@sentry/react-native/scripts/sentry-xcode.sh\"\n\nif [ -f \"$SENTRY_XCODE\" ]; then\n  /bin/sh \"$SENTRY_XCODE\" \"$REACT_NATIVE_XCODE\"\nelse\n  /bin/sh \"$REACT_NATIVE_XCODE\"\nfi\n";
 		};
 		18510B9DCFC9AB10EE6340EA /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -691,7 +691,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT \\\"/bin/sh ../node_modules/@sentry/react-native/scripts/sentry-xcode.sh $REACT_NATIVE_XCODE\\\"\"\n";
+			shellScript = "set -e\n\n# Load React Native's Xcode env (NODE_BINARY) in a way that works with /bin/sh.\n# (react-native's with-environment.sh only executes $1, so passing a whole command string breaks.)\nENV_PATH=\"${PODS_ROOT}/../.xcode.env\"\nif [ -f \"$ENV_PATH\" ]; then\n  . \"$ENV_PATH\"\nfi\nLOCAL_ENV_PATH=\"${ENV_PATH}.local\"\nif [ -f \"$LOCAL_ENV_PATH\" ]; then\n  . \"$LOCAL_ENV_PATH\"\nfi\n\nNODE_BINARY=\"${NODE_BINARY:-$(command -v node || echo '')}\"\nexport NODE_BINARY\n\nif [ -z \"$NODE_BINARY\" ]; then\n  echo \"error: NODE_BINARY is not set. Create ios/.xcode.env with: export NODE_BINARY=\\$(command -v node)\" >&2\n  exit 1\nfi\n\necho \"Node found at: ${NODE_BINARY}\"\n\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\nSENTRY_XCODE=\"../node_modules/@sentry/react-native/scripts/sentry-xcode.sh\"\n\nif [ -f \"$SENTRY_XCODE\" ]; then\n  /bin/sh \"$SENTRY_XCODE\" \"$REACT_NATIVE_XCODE\"\nelse\n  /bin/sh \"$REACT_NATIVE_XCODE\"\nfi\n";
 		};
 		8E858A6828B3F10F00236EF2 /* Upload Debug Symbols to Sentry */ = {
 			isa = PBXShellScriptBuildPhase;
