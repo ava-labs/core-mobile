@@ -22,6 +22,9 @@ import WalletService from 'services/wallet/WalletService'
 import { Curve } from 'utils/publicKeys'
 import { solanaSignMessage } from 'vmModule/handlers/solanaSignMessage'
 import { solanaSignTransaction } from 'vmModule/handlers/solanaSignTransaction'
+import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
+import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
 import { ethSendTransaction } from '../handlers/ethSendTransaction'
 import { signMessage } from '../handlers/signMessage'
@@ -44,8 +47,37 @@ class ApprovalController implements VmModuleApprovalController {
     })
   }
 
-  onTransactionPending({ request }: { request: RpcRequest }): void {
-    transactionSnackbar.pending({ toastId: request.requestId })
+  onTransactionPending({
+    txHash,
+    request,
+    explorerLink
+  }: {
+    txHash: string
+    request: RpcRequest
+    explorerLink?: string
+  }): void {
+    const numericChainId = getChainIdFromCaip2(request.chainId)
+
+    if (
+      numericChainId &&
+      isAvalancheChainId(numericChainId) &&
+      isInAppRequest(request)
+    ) {
+      const confettiDisabled =
+        request.context?.[RequestContext.CONFETTI_DISABLED]
+
+      transactionSnackbar.success({
+        explorerLink
+      })
+
+      if (!confettiDisabled) {
+        setTimeout(() => {
+          confetti.restart()
+        }, 100)
+      }
+    } else {
+      transactionSnackbar.pending({ toastId: request.requestId })
+    }
   }
 
   onTransactionConfirmed({
@@ -55,6 +87,12 @@ class ApprovalController implements VmModuleApprovalController {
     explorerLink: string
     request: RpcRequest
   }): void {
+    const numericChainId = getChainIdFromCaip2(request.chainId)
+
+    if (numericChainId && isAvalancheChainId(numericChainId)) {
+      return // do not show success toast for avalanche transactions as we've already shown it in onTransactionPending
+    }
+
     transactionSnackbar.success({ explorerLink, toastId: request.requestId })
 
     const confettiDisabled = request.context?.[RequestContext.CONFETTI_DISABLED]
