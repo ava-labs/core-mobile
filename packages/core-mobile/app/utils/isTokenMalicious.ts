@@ -1,12 +1,9 @@
-import {
-  TokenType,
-  TokenWithBalance,
-  NetworkContractToken
-} from '@avalabs/vm-module-types'
+import { TokenType } from '@avalabs/vm-module-types'
 import { Erc20TokenBalance } from '@avalabs/glacier-sdk'
+import { AdjustedLocalTokenWithBalance } from 'services/balance/types'
 
 export const isTokenMalicious = (
-  token: TokenWithBalance | NetworkContractToken
+  token: AdjustedLocalTokenWithBalance
 ): boolean => {
   if (
     !('type' in token) ||

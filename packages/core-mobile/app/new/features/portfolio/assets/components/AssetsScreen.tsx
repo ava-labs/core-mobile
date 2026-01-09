@@ -5,7 +5,6 @@ import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { Space } from 'common/components/Space'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
 import { useIsAllBalancesErrorForAccount } from 'features/portfolio/hooks/useIsAllBalancesErrorForAccount'
 import { useIsAllBalancesInaccurateForAccount } from 'features/portfolio/hooks/useIsAllBalancesInaccurateForAccount'
 import { useIsBalanceLoadedForAccount } from 'features/portfolio/hooks/useIsBalanceLoadedForAccount'
@@ -52,7 +51,6 @@ const AssetsScreen: FC<Props> = ({
 
   const activeAccount = useSelector(selectActiveAccount)
   const enabledNetworks = useSelector(selectEnabledNetworks)
-
   const isAllBalancesInaccurate =
     useIsAllBalancesInaccurateForAccount(activeAccount)
   const isBalanceLoaded = useIsBalanceLoadedForAccount(activeAccount)
@@ -60,9 +58,6 @@ const AssetsScreen: FC<Props> = ({
   const isBalanceLoading = useIsLoadingBalancesForAccount(activeAccount)
   const isBalancePolling = useIsPollingBalancesForAccount(activeAccount)
   const isRefetchingBalance = useIsRefetchingBalancesForAccount(activeAccount)
-  const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
-    account: activeAccount
-  })
 
   const handleManageList = useCallback(
     (value: string): void => {
@@ -86,8 +81,7 @@ const AssetsScreen: FC<Props> = ({
   // Only show loading state for initial load
   const isInitialLoading = isLoadingBalance && !isBalanceLoaded
 
-  const hasNoAssets =
-    isBalanceLoaded && balanceTotalInCurrency === 0 && !isInitialLoading
+  const hasNoAssets = data.length === 0 && isBalanceLoaded && !isInitialLoading
 
   const renderItem = useCallback(
     (item: LocalTokenWithBalance, index: number): JSX.Element => {
@@ -185,24 +179,25 @@ const AssetsScreen: FC<Props> = ({
   }, [renderEmptyComponent])
 
   const renderHeader = useCallback(() => {
-    if (hasNoAssets || isInitialLoading) {
+    if (isInitialLoading) {
       return
     }
 
     return (
       <View
         style={{
-          paddingHorizontal: 16
+          paddingHorizontal: 16,
+          zIndex: 1000
         }}>
         <DropdownSelections
-          sx={{ marginBottom: 16 }}
-          filter={filter}
-          sort={sort}
+          sx={{ marginBottom: hasNoAssets ? 0 : 16 }}
+          filter={hasNoAssets ? undefined : filter}
+          sort={hasNoAssets ? undefined : sort}
           view={{ ...view, onSelected: handleManageList }}
         />
       </View>
     )
-  }, [hasNoAssets, isInitialLoading, filter, sort, view, handleManageList])
+  }, [isInitialLoading, hasNoAssets, filter, sort, view, handleManageList])
 
   const overrideProps = {
     contentContainerStyle: {

@@ -6,7 +6,10 @@ import { Account } from 'store/account/types'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import { isDefined } from 'new/common/utils/isDefined'
 import { queryClient } from 'contexts/ReactQueryProvider'
-import { NormalizedBalancesForAccount } from 'services/balance/types'
+import {
+  AdjustedLocalTokenWithBalance,
+  AdjustedNormalizedBalancesForAccount
+} from 'services/balance/types'
 import { Networks } from 'store/network'
 import { balanceKey, useAccountBalances } from './useAccountBalances'
 
@@ -25,7 +28,7 @@ export function useTokensWithBalanceForAccount({
 }: {
   account?: Account
   chainId?: number
-  sourceData?: NormalizedBalancesForAccount[]
+  sourceData?: AdjustedNormalizedBalancesForAccount[]
 }): LocalTokenWithBalance[] {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const networks = useSelector(selectEnabledNetworksMap)
@@ -81,12 +84,12 @@ export function getTokensWithBalanceForAccountFromCache({
   account?: Account
   networks: Networks
   isDeveloperMode: boolean
-}): LocalTokenWithBalance[] {
+}): AdjustedLocalTokenWithBalance[] {
   if (!account) return []
 
   const results = (
     queryClient.getQueryData(balanceKey(account)) as
-      | NormalizedBalancesForAccount[]
+      | AdjustedNormalizedBalancesForAccount[]
       | undefined
   )?.filter(balance => balance.accountId === account.id)
 
