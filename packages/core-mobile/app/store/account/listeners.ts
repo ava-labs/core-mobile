@@ -322,7 +322,7 @@ const migrateXpAddressesIfNeeded = async (
     Object.assign(allUpdatedAccounts, updatedAccounts)
   })
 
-  const results = await Promise.allSettled(walletPromises)
+  await Promise.allSettled(walletPromises)
 
   // Dispatch updated accounts to Redux store
   if (Object.keys(allUpdatedAccounts).length > 0) {
@@ -338,15 +338,19 @@ const migrateXpAddressesIfNeeded = async (
   ) {
     markXpAddressMigrationComplete()
   } else {
-    // Log any failures
-    results.forEach((result, index) => {
-      if (result.status === 'rejected') {
-        const wallet = Object.values(wallets)[index]
-        Logger.error(`Error processing wallet ${wallet?.id}`, result.reason)
-      }
+    // Log accounts that failed to migrate
+    const failedAccounts = Object.values(allUpdatedAccounts).filter(
+      account => !account.hasMigratedXpAddresses
+    )
+
+    failedAccounts.forEach(account => {
+      Logger.error(
+        `XP address migration failed for account index=${account.index}, walletId=${account.walletId}`
+      )
     })
-    Logger.warn(
-      'XP address migration completed with errors. Will retry on next app unlock.'
+
+    Logger.error(
+      `XP address migration incomplete. ${failedAccounts.length} account(s) failed to migrate. Will retry on next app unlock.`
     )
   }
 }
