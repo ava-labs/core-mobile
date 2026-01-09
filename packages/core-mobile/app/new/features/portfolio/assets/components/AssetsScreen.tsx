@@ -20,6 +20,7 @@ import {
   LocalTokenWithBalance
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
+import { usePortfolioView } from 'features/portfolio/store'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { EmptyState } from './EmptyState'
 import { TokenListItem } from './TokenListItem'
@@ -42,6 +43,7 @@ const AssetsScreen: FC<Props> = ({
   goToBuy,
   onScrollResync
 }): JSX.Element => {
+  const { setSelectedView } = usePortfolioView()
   const { onResetFilter, data, filter, sort, view, refetch, isRefetching } =
     useAssetsFilterAndSort()
   const listType = view.selected as AssetManageView
@@ -67,8 +69,9 @@ const AssetsScreen: FC<Props> = ({
       }
       onScrollResync()
       view.onSelected(value)
+      setSelectedView(value)
     },
-    [goToTokenManagement, view, onScrollResync]
+    [onScrollResync, view, goToTokenManagement, setSelectedView]
   )
 
   const isLoadingBalance =

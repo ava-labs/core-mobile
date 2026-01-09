@@ -23,8 +23,9 @@ import { RefreshControl } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { DeFiSimpleProtocol } from 'services/defi/types'
+import { BasicViewOption } from 'common/types'
+import { usePortfolioView } from 'features/portfolio/store'
 import { useDeFiProtocols } from '../hooks/useDeFiProtocols'
-import { DeFiViewOption } from '../types'
 import { DeFiListItem } from './DeFiListItem'
 
 const placeholderIcon = require('../../../../assets/icons/bar_chart_emoji.png')
@@ -36,6 +37,7 @@ export const DeFiScreen = ({
   containerStyle: ViewStyle
   onScrollResync: () => void
 }): JSX.Element => {
+  const { setSelectedView } = usePortfolioView()
   const { navigate } = useRouter()
   const { openUrl } = useCoreBrowser()
   const {
@@ -51,12 +53,12 @@ export const DeFiScreen = ({
     refetch,
     chainList
   } = useDeFiProtocols()
-  const listType = view.selected as DeFiViewOption
+  const listType = view.selected as BasicViewOption
   const header = useHeaderMeasurements()
 
   const getAmount = useExchangedAmount()
 
-  const isGridView = view.selected === DeFiViewOption.GridView
+  const isGridView = view.selected === BasicViewOption.Grid
   const numColumns = isGridView ? 2 : 1
 
   useEffect(() => {
@@ -181,12 +183,13 @@ export const DeFiScreen = ({
             onSelected: (value: string) => {
               onScrollResync()
               view.onSelected(value)
+              setSelectedView(value)
             }
           }}
         />
       </View>
     )
-  }, [data.length, isGridView, onScrollResync, sort, view])
+  }, [data.length, isGridView, onScrollResync, setSelectedView, sort, view])
 
   const contentContainerStyle = {
     paddingHorizontal: !isGridView

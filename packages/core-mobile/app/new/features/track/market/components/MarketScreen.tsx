@@ -8,7 +8,9 @@ import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist'
-import { MarketView, useTrackSortAndView } from '../hooks/useTrackSortAndView'
+import { BasicViewOption } from 'common/types'
+import { usePortfolioView } from 'features/portfolio/store'
+import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
 
 const MarketScreen = ({
@@ -20,6 +22,7 @@ const MarketScreen = ({
   containerStyle: ViewStyle
   onScrollResync: () => void
 }): JSX.Element => {
+  const { setSelectedView } = usePortfolioView()
   const {
     topTokens,
     prices,
@@ -29,7 +32,7 @@ const MarketScreen = ({
     refetchTopTokens
   } = useWatchlist()
   const { data, sort, view } = useTrackSortAndView(topTokens, prices)
-  const listType = view.selected as MarketView
+  const listType = view.selected as BasicViewOption
 
   const emptyComponent = useMemo(() => {
     if (isRefetchingTopTokens) {
@@ -83,6 +86,7 @@ const MarketScreen = ({
           onSelected: (value: string) => {
             onScrollResync()
             view.onSelected(value)
+            setSelectedView(value)
           }
         }}
         goToMarketDetail={goToMarketDetail}

@@ -5,13 +5,9 @@ import { useDeFiChainList } from 'hooks/defi/useDeFiChainList'
 import { useDeFiProtocolList } from 'hooks/defi/useDeFiProtocolList'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { DropdownSelection } from 'common/types'
-import {
-  DEFI_SORT_OPTIONS,
-  DEFI_VIEW_OPTIONS,
-  DeFiSortOption,
-  DeFiViewOption
-} from '../types'
+import { BasicViewOption, DropdownSelection, ViewOption } from 'common/types'
+import { usePortfolioView } from 'features/portfolio/store'
+import { DEFI_SORT_OPTIONS, DEFI_VIEW_OPTIONS, DeFiSortOption } from '../types'
 
 export const useDeFiProtocols = (): {
   data: DeFiSimpleProtocol[]
@@ -26,6 +22,14 @@ export const useDeFiProtocols = (): {
   error: unknown
   chainList: Record<string, DeFiChain> | undefined
 } => {
+  const { selectedView, setSelectedView } = usePortfolioView()
+
+  const selectedViewOption = useMemo(() => {
+    return selectedView === undefined || selectedView === ViewOption.List
+      ? BasicViewOption.List
+      : BasicViewOption.Grid
+  }, [selectedView])
+
   const { data: chainList } = useDeFiChainList()
   const {
     data,
@@ -42,9 +46,6 @@ export const useDeFiProtocols = (): {
 
   const [selectedSort, setSelectedSort] = useState<DeFiSortOption>(
     DeFiSortOption.NameAtoZ
-  )
-  const [selectedView, setSelectedView] = useState<DeFiViewOption>(
-    DeFiViewOption.GridView
   )
 
   const filteredProtocols = useMemo(() => {
@@ -94,11 +95,11 @@ export const useDeFiProtocols = (): {
         key: DEFI_VIEW_OPTIONS.key,
         items: DEFI_VIEW_OPTIONS.items.map(i => ({
           ...i,
-          selected: i.id === selectedView
+          selected: i.id === selectedViewOption
         }))
       }
     ],
-    [selectedView]
+    [selectedViewOption]
   )
 
   return {
@@ -113,10 +114,8 @@ export const useDeFiProtocols = (): {
     view: {
       title: 'View',
       data: viewData,
-      selected: selectedView,
-      onSelected: (value: string) => {
-        setSelectedView(value as DeFiViewOption)
-      }
+      selected: selectedViewOption,
+      onSelected: setSelectedView
     },
     data: filteredProtocols,
     isSuccess,

@@ -1,8 +1,13 @@
 import { useMemo, useState } from 'react'
 import { defaultPrice, MarketToken, Prices } from 'store/watchlist'
 import { compareTokenPriceChangePercentage24h } from 'features/track/utils/utils'
-import { DropdownSelection } from 'new/common/types'
+import {
+  BasicViewOption,
+  DropdownSelection,
+  ViewOption
+} from 'new/common/types'
 import { DropdownGroup } from 'common/components/DropdownMenu'
+import { usePortfolioView } from 'features/portfolio/store'
 
 export const useTrackSortAndView = (
   tokens: MarketToken[],
@@ -12,10 +17,16 @@ export const useTrackSortAndView = (
   sort: DropdownSelection
   view: DropdownSelection
 } => {
+  const { selectedView, setSelectedView } = usePortfolioView()
   const [selectedSort, setSelectedSort] = useState<MarketSort>(
     MarketSort.MarketCap
   )
-  const [selectedView, setSelectedView] = useState<MarketView>(MarketView.List)
+
+  const selectedViewOption = useMemo(() => {
+    return selectedView === undefined || selectedView === ViewOption.List
+      ? BasicViewOption.List
+      : BasicViewOption.Grid
+  }, [selectedView])
 
   const sortedTokens = useMemo(() => {
     if (Object.keys(prices).length === 0) return tokens
@@ -50,9 +61,9 @@ export const useTrackSortAndView = (
   const viewData = useMemo(() => {
     return MARKET_VIEWS.map(s => ({
       ...s,
-      items: s.items.map(i => ({ ...i, selected: i.id === selectedView }))
+      items: s.items.map(i => ({ ...i, selected: i.id === selectedViewOption }))
     }))
-  }, [selectedView])
+  }, [selectedViewOption])
 
   return {
     sort: {
@@ -66,10 +77,8 @@ export const useTrackSortAndView = (
     view: {
       title: 'View',
       data: viewData,
-      selected: selectedView,
-      onSelected: (value: string) => {
-        setSelectedView(value as MarketView)
-      }
+      selected: selectedViewOption,
+      onSelected: setSelectedView
     },
     data: sortedTokens
   }
@@ -81,11 +90,6 @@ enum MarketSort {
   Volume = 'Volume',
   TopGainers = 'Top gainers',
   TopLosers = 'Top losers'
-}
-
-export enum MarketView {
-  Grid = 'Grid view',
-  List = 'List view'
 }
 
 const MARKET_SORTS: DropdownGroup[] = [
@@ -105,8 +109,8 @@ const MARKET_VIEWS: DropdownGroup[] = [
   {
     key: 'market-views',
     items: [
-      { id: MarketView.Grid, title: MarketView.Grid },
-      { id: MarketView.List, title: MarketView.List }
+      { id: BasicViewOption.Grid, title: BasicViewOption.Grid },
+      { id: BasicViewOption.List, title: BasicViewOption.List }
     ]
   }
 ]

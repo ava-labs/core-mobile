@@ -9,13 +9,14 @@ import {
 } from 'store/balance'
 import { sortUndefined } from 'common/utils/sortUndefined'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { DropdownSelection } from 'common/types'
+import { DropdownSelection, ViewOption } from 'common/types'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useSelector } from 'react-redux'
 import { selectEnabledNetworks } from 'store/network'
 import { usePrevious } from 'common/hooks/usePrevious'
 import { ActivityNetworkFilter } from 'features/activity/hooks/useActivityFilterAndSearch'
 import { isEqual } from 'lodash'
+import { usePortfolioView } from 'features/portfolio/store'
 
 export const useAssetsFilterAndSort = (): {
   onResetFilter: () => void
@@ -27,6 +28,14 @@ export const useAssetsFilterAndSort = (): {
   isRefetching: boolean
   isLoading: boolean
 } => {
+  const { selectedView, setSelectedView } = usePortfolioView()
+
+  const selectedViewOption = useMemo(() => {
+    return selectedView === undefined || selectedView === ViewOption.List
+      ? AssetManageView.List
+      : AssetManageView.Grid
+  }, [selectedView])
+
   const erc20ContractTokens = useErc20ContractTokens()
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const { filteredTokenList, refetch, isRefetching, isLoading } =
@@ -64,9 +73,6 @@ export const useAssetsFilterAndSort = (): {
   )
   const [selectedSort, setSelectedSort] = useState<AssetBalanceSort>(
     AssetBalanceSort.HighToLow
-  )
-  const [selectedView, setSelectedView] = useState<AssetManageView>(
-    AssetManageView.List
   )
 
   const filterOption = useMemo(() => {
@@ -145,11 +151,11 @@ export const useAssetsFilterAndSort = (): {
         items: s.items.map(i => ({
           id: i.id,
           title: i.id,
-          selected: i.id === selectedView
+          selected: i.id === selectedViewOption
         }))
       }
     })
-  }, [selectedView])
+  }, [selectedViewOption])
 
   const filter = useMemo(
     () => ({
@@ -176,10 +182,10 @@ export const useAssetsFilterAndSort = (): {
     () => ({
       title: 'View',
       data: viewData,
-      selected: selectedView,
-      onSelected: (value: string) => setSelectedView(value as AssetManageView)
+      selected: selectedViewOption,
+      onSelected: setSelectedView
     }),
-    [viewData, selectedView]
+    [viewData, selectedViewOption, setSelectedView]
   )
 
   const onResetFilter = useCallback((): void => {

@@ -1,11 +1,8 @@
+import { BasicViewOption } from 'common/types'
+
 export enum DeFiSortOption {
   NameAtoZ = 'Name A to Z',
   NameZtoA = 'Name Z to A'
-}
-
-export enum DeFiViewOption {
-  GridView = 'Grid view',
-  ListView = 'List view'
 }
 
 export const DEFI_SORT_OPTIONS = {
@@ -19,7 +16,7 @@ export const DEFI_SORT_OPTIONS = {
 export const DEFI_VIEW_OPTIONS = {
   key: 'defi-view-options',
   items: [
-    { id: DeFiViewOption.GridView, title: DeFiViewOption.GridView },
-    { id: DeFiViewOption.ListView, title: DeFiViewOption.ListView }
+    { id: BasicViewOption.Grid, title: BasicViewOption.Grid },
+    { id: BasicViewOption.List, title: BasicViewOption.List }
   ]
 }
