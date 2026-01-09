@@ -5,8 +5,8 @@ import { useDeFiChainList } from 'hooks/defi/useDeFiChainList'
 import { useDeFiProtocolList } from 'hooks/defi/useDeFiProtocolList'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { BasicViewOption, DropdownSelection, ViewOption } from 'common/types'
-import { usePortfolioView } from 'features/portfolio/store'
+import { DropdownSelection, ViewOption } from 'common/types'
+import { useDeFiView } from 'features/portfolio/store'
 import { DEFI_SORT_OPTIONS, DEFI_VIEW_OPTIONS, DeFiSortOption } from '../types'
 
 export const useDeFiProtocols = (): {
@@ -22,12 +22,10 @@ export const useDeFiProtocols = (): {
   error: unknown
   chainList: Record<string, DeFiChain> | undefined
 } => {
-  const { selectedView, setSelectedView } = usePortfolioView()
+  const { selectedView, setSelectedView } = useDeFiView()
 
   const selectedViewOption = useMemo(() => {
-    return selectedView === undefined || selectedView === ViewOption.List
-      ? BasicViewOption.List
-      : BasicViewOption.Grid
+    return selectedView ?? ViewOption.List
   }, [selectedView])
 
   const { data: chainList } = useDeFiChainList()

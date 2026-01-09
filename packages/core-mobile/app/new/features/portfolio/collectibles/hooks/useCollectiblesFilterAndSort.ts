@@ -1,4 +1,4 @@
-import { DropdownSelection } from 'common/types'
+import { CollectibleViewOption, DropdownSelection } from 'common/types'
 import { useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
@@ -23,7 +23,7 @@ import {
   toggleCollectibleUnprocessableVisibility
 } from 'store/portfolio'
 import { sortNftsByDateUpdated } from 'services/nft/utils'
-import { usePortfolioView } from 'features/portfolio/store'
+import { useCollectiblesView } from 'features/portfolio/store'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { getCollectibleName } from '../consts'
 
@@ -48,7 +48,12 @@ export const useCollectiblesFilterAndSort = (
   onResetFilter: () => void
   onShowHidden: () => void
 } => {
-  const { selectedView, setSelectedView } = usePortfolioView()
+  const { selectedView, setSelectedView } = useCollectiblesView()
+
+  const selectedViewOption = useMemo(() => {
+    return selectedView ?? CollectibleViewOption.List
+  }, [selectedView])
+
   const { collectibles } = useCollectiblesContext()
   const collectiblesVisibility = useSelector(selectCollectibleVisibility)
   const [selectedNetworkFilter, setSelectedNetworkFilter] =
@@ -98,11 +103,11 @@ export const useCollectiblesFilterAndSort = (
         items: s.items.map(i => ({
           id: i.id,
           title: i.id,
-          selected: i.id === selectedView
+          selected: i.id === selectedViewOption
         }))
       }
     })
-  }, [selectedView])
+  }, [selectedViewOption])
 
   const filter = useMemo(
     () => ({
@@ -141,10 +146,10 @@ export const useCollectiblesFilterAndSort = (
     () => ({
       title: 'View',
       data: viewData,
-      selected: selectedView,
+      selected: selectedViewOption,
       onSelected: setSelectedView
     }),
-    [viewData, selectedView, setSelectedView]
+    [viewData, selectedViewOption, setSelectedView]
   )
 
   const isUnprocessableHidden = useSelector(

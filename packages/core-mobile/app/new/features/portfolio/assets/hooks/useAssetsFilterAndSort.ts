@@ -3,7 +3,6 @@ import {
   ASSET_BALANCE_SORTS,
   ASSET_MANAGE_VIEWS,
   AssetBalanceSort,
-  AssetManageView,
   AssetNetworkFilter,
   LocalTokenWithBalance
 } from 'store/balance'
@@ -31,9 +30,7 @@ export const useAssetsFilterAndSort = (): {
   const { selectedView, setSelectedView } = usePortfolioView()
 
   const selectedViewOption = useMemo(() => {
-    return selectedView === undefined || selectedView === ViewOption.List
-      ? AssetManageView.List
-      : AssetManageView.Grid
+    return selectedView ?? ViewOption.List
   }, [selectedView])
 
   const erc20ContractTokens = useErc20ContractTokens()

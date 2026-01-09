@@ -1,13 +1,9 @@
 import { useMemo, useState } from 'react'
 import { defaultPrice, MarketToken, Prices } from 'store/watchlist'
 import { compareTokenPriceChangePercentage24h } from 'features/track/utils/utils'
-import {
-  BasicViewOption,
-  DropdownSelection,
-  ViewOption
-} from 'new/common/types'
+import { DropdownSelection, ViewOption } from 'new/common/types'
 import { DropdownGroup } from 'common/components/DropdownMenu'
-import { usePortfolioView } from 'features/portfolio/store'
+import { useTrackView } from 'features/portfolio/store'
 
 export const useTrackSortAndView = (
   tokens: MarketToken[],
@@ -17,16 +13,15 @@ export const useTrackSortAndView = (
   sort: DropdownSelection
   view: DropdownSelection
 } => {
-  const { selectedView, setSelectedView } = usePortfolioView()
+  const { selectedView, setSelectedView } = useTrackView()
+
+  const selectedViewOption = useMemo(() => {
+    return selectedView ?? ViewOption.List
+  }, [selectedView])
+
   const [selectedSort, setSelectedSort] = useState<MarketSort>(
     MarketSort.MarketCap
   )
-
-  const selectedViewOption = useMemo(() => {
-    return selectedView === undefined || selectedView === ViewOption.List
-      ? BasicViewOption.List
-      : BasicViewOption.Grid
-  }, [selectedView])
 
   const sortedTokens = useMemo(() => {
     if (Object.keys(prices).length === 0) return tokens
@@ -109,8 +104,8 @@ const MARKET_VIEWS: DropdownGroup[] = [
   {
     key: 'market-views',
     items: [
-      { id: BasicViewOption.Grid, title: BasicViewOption.Grid },
-      { id: BasicViewOption.List, title: BasicViewOption.List }
+      { id: ViewOption.Grid, title: ViewOption.Grid },
+      { id: ViewOption.List, title: ViewOption.List }
     ]
   }
 ]

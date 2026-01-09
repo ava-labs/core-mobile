@@ -23,8 +23,8 @@ import { RefreshControl } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { DeFiSimpleProtocol } from 'services/defi/types'
-import { BasicViewOption } from 'common/types'
-import { usePortfolioView } from 'features/portfolio/store'
+import { ViewOption } from 'common/types'
+import { useDeFiView } from 'features/portfolio/store'
 import { useDeFiProtocols } from '../hooks/useDeFiProtocols'
 import { DeFiListItem } from './DeFiListItem'
 
@@ -37,7 +37,7 @@ export const DeFiScreen = ({
   containerStyle: ViewStyle
   onScrollResync: () => void
 }): JSX.Element => {
-  const { setSelectedView } = usePortfolioView()
+  const { setSelectedView } = useDeFiView()
   const { navigate } = useRouter()
   const { openUrl } = useCoreBrowser()
   const {
@@ -53,12 +53,12 @@ export const DeFiScreen = ({
     refetch,
     chainList
   } = useDeFiProtocols()
-  const listType = view.selected as BasicViewOption
+  const listType = view.selected
   const header = useHeaderMeasurements()
 
   const getAmount = useExchangedAmount()
 
-  const isGridView = view.selected === BasicViewOption.Grid
+  const isGridView = view.selected === ViewOption.Grid
   const numColumns = isGridView ? 2 : 1
 
   useEffect(() => {

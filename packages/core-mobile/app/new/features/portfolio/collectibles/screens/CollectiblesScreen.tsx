@@ -19,14 +19,13 @@ import { RefreshControl } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 import {
-  AssetManageView,
   AssetNetworkFilter,
+  CollectibleView,
   CollectibleSort,
-  CollectibleTypeFilter,
-  CollectibleView
+  CollectibleTypeFilter
 } from 'store/balance'
-import { usePortfolioView } from 'features/portfolio/store'
-import { ViewOption } from 'common/types'
+import { useCollectiblesView } from 'features/portfolio/store'
+import { CollectibleViewOption } from 'common/types'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { CardContainer } from '../components/CardContainer'
 import { CollectibleItem } from '../components/CollectibleItem'
@@ -67,7 +66,7 @@ export const CollectiblesScreen = ({
     collectibles
   } = useCollectiblesContext()
 
-  const { setSelectedView } = usePortfolioView()
+  const { setSelectedView } = useCollectiblesView()
   const {
     filter,
     view,
@@ -89,7 +88,7 @@ export const CollectiblesScreen = ({
     }
   }, [isEnabled, isLoading, onScrollResync])
 
-  const listType = view.selected as CollectibleView
+  const listType = view.selected
   const columns =
     listType === CollectibleView.CompactGrid
       ? 3
@@ -99,12 +98,12 @@ export const CollectiblesScreen = ({
 
   const handleManageList = useCallback(
     (value: string): void => {
-      if (value === AssetManageView.ManageList) {
+      if (value === CollectibleView.ManageList) {
         goToCollectibleManagement()
         return
       }
       onScrollResync()
-      setSelectedView(value as ViewOption)
+      setSelectedView(value as CollectibleViewOption)
       view.onSelected(value)
     },
     [onScrollResync, setSelectedView, view, goToCollectibleManagement]

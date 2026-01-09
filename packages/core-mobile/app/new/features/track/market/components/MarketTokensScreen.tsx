@@ -2,7 +2,7 @@ import { Separator, View } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { Space } from 'common/components/Space'
-import { BasicViewOption, DropdownSelection } from 'common/types'
+import { ViewOption, DropdownSelection } from 'common/types'
 import React, { useCallback, useMemo } from 'react'
 import { StyleSheet, ViewStyle } from 'react-native'
 import { Charts, MarketToken, MarketType } from 'store/watchlist'
@@ -27,7 +27,7 @@ const MarketTokensScreen = ({
   containerStyle: ViewStyle
   key?: React.Key | null
 }): JSX.Element => {
-  const isGridView = view.selected === BasicViewOption.Grid
+  const isGridView = view.selected === ViewOption.Grid
   const numColumns = isGridView ? 2 : 1
 
   const dataLength = data.length

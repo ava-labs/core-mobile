@@ -1,6 +1,6 @@
 import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { DropdownGroup } from 'common/components/DropdownMenu'
-import { BasicViewOption, ViewOption } from 'common/types'
+import { CollectibleViewOption, ViewOption } from 'common/types'
 
 export type LocalTokenWithBalance = TokenWithBalance & {
   localId: string
@@ -42,8 +42,8 @@ export enum AssetBalanceSort {
 }
 
 export enum AssetManageView {
-  Grid = BasicViewOption.Grid,
-  List = BasicViewOption.List,
+  Grid = ViewOption.Grid,
+  List = ViewOption.List,
   ManageList = 'Manage list'
 }
 
@@ -107,9 +107,9 @@ export enum CollectibleSort {
 }
 
 export enum CollectibleView {
-  LargeGrid = ViewOption.LargeGrid,
-  CompactGrid = ViewOption.CompactGrid,
-  ListView = BasicViewOption.List,
+  LargeGrid = CollectibleViewOption.LargeGrid,
+  CompactGrid = CollectibleViewOption.CompactGrid,
+  ListView = CollectibleViewOption.List,
   ManageList = 'Manage list'
 }
 

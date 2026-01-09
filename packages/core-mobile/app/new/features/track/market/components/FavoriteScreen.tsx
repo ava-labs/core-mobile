@@ -8,8 +8,7 @@ import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist'
-import { BasicViewOption } from 'common/types'
-import { usePortfolioView } from 'features/portfolio/store'
+import { useTrackView } from 'features/portfolio/store'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
 
@@ -24,11 +23,11 @@ const FavoriteScreen = ({
   containerStyle: ViewStyle
   onScrollResync: () => void
 }): JSX.Element => {
-  const { setSelectedView } = usePortfolioView()
+  const { setSelectedView } = useTrackView()
   const { favorites, prices, charts, isLoadingFavorites } = useWatchlist()
 
   const { data, sort, view } = useTrackSortAndView(favorites, prices)
-  const listType = view.selected as BasicViewOption
+  const listType = view.selected
 
   const emptyComponent = useMemo(() => {
     if (isLoadingFavorites) {
