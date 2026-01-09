@@ -1,4 +1,4 @@
-import { BasicViewOption, ViewOption } from 'common/types'
+import { ViewOption } from 'common/types'
 import { createZustandStore } from 'common/utils/createZustandStore'
 import { ZustandStorageKeys } from 'resources/Constants'
 import { zustandMMKVStorage } from 'utils/mmkv/storages'
