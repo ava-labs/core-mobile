@@ -23,7 +23,6 @@ import { Curve } from 'utils/publicKeys'
 import { solanaSignMessage } from 'vmModule/handlers/solanaSignMessage'
 import { solanaSignTransaction } from 'vmModule/handlers/solanaSignTransaction'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
-import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
 import { ethSendTransaction } from '../handlers/ethSendTransaction'
@@ -48,7 +47,7 @@ class ApprovalController implements VmModuleApprovalController {
   }
 
   onTransactionPending({
-    txHash,
+    txHash: _txHash,
     request,
     explorerLink
   }: {
