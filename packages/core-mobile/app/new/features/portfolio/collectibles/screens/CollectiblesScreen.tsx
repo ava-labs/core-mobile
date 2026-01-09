@@ -88,7 +88,7 @@ export const CollectiblesScreen = ({
     }
   }, [isEnabled, isLoading, onScrollResync])
 
-  const listType = view.selected
+  const listType = view.selected as CollectibleView
   const columns =
     listType === CollectibleView.CompactGrid
       ? 3
