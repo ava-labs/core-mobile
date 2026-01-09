@@ -256,7 +256,7 @@ export const SwapSlippageDetailsScreen = ({
                         <Text
                           sx={{
                             color: isSelected
-                              ? colors.$white
+                              ? inversedColors.$textPrimary
                               : colors.$textPrimary,
                             fontSize: 15,
                             fontWeight: '500',
