@@ -373,6 +373,9 @@ const populateXpAddressesForWallet = async ({
       continue
     }
 
+    // append existing account to updatedAccounts by account.id
+    updatedAccounts[account.id] = account
+
     Logger.info(
       `Processing account ${account.index} (${account.id}) for wallet ${wallet.type}`
     )
