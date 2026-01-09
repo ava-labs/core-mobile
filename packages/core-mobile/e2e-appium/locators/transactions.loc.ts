@@ -20,7 +20,7 @@ export default {
   sendingAmount: '0.0001',
   myAccounts: 'My Accounts',
   sendTitle: 'Send',
-  amountToSend: 'token_amount_input_field',
+  amountToSend: 'token_amount_input_field  ',
   amountToStake: 'token_amount_input_field AVAX  ',
   sendSelectTokenListBtn: 'send_select_token_list_btn',
   usdcToken: 'USDC',

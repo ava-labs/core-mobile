@@ -328,7 +328,7 @@ class PortfolioPage {
     await actions.tap(selectors.getById(portfolio.activeNetwork + network))
   }
 
-  async tapToken(token = 'avax') {
+  async tapToken(token = 'Avalanche') {
     await actions.tap(
       selectors.getById(`${portfolio.portfolioTokenItem}${token}`)
     )

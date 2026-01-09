@@ -205,12 +205,17 @@ class TransactionsPage {
       await actions.tap(selectors.getById(`network_selector__${network}`))
     }
     await actions.type(this.searchBar, tokenName)
-    await actions.tap(selectors.getById(`token_selector__${tokenName}`))
+    try {
+      await actions.tap(selectors.getById(`token_selector__${tokenName}`))
+    } catch (e) {
+      await actions.typeSlowly(this.searchBar, tokenName)
+      await actions.tap(selectors.getById(`token_selector__${tokenName}`))
+    }
   }
 
   async enterSendAmount(amount: string) {
     try {
-      await actions.type(this.amountToSendInput, amount)
+      await actions.typeSlowly(this.amountToSendInput, amount)
     } catch (e) {
       await actions.tapNumberPad(amount)
     }
@@ -352,7 +357,7 @@ class TransactionsPage {
     // Go to swap form
     await this.tapSwap()
     await this.dismissTransactionOnboarding()
-
+    await this.enterAmountAndAdjust(amount)
     // select tokens
     if (from === 'USDC' && to === 'AVAX') {
       await this.tapSwapVerticalIcon()
@@ -371,8 +376,6 @@ class TransactionsPage {
       console.log(`swapping ${from} to ${to}...`)
     }
 
-    // Enter input
-    await this.enterAmountAndAdjust(amount)
     await this.tapNext()
 
     // If `from` is not AVAX, we need to approve the spend limit

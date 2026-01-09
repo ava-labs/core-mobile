@@ -8,6 +8,19 @@ async function type(element: ChainablePromiseElement, text: string | number) {
   await element.addValue(text)
 }
 
+async function typeSlowly(
+  element: ChainablePromiseElement,
+  text: string | number
+) {
+  await waitFor(element)
+  await element.clearValue()
+  const textString = text.toString()
+  for (const char of textString) {
+    await delay(1)
+    await element.addValue(char)
+  }
+}
+
 async function tapNumberPad(keyCode: string) {
   for (const char of keyCode.split('')) {
     if (driver.isIOS) {
@@ -294,6 +307,7 @@ async function tapXY(x: number, y: number) {
 
 export const actions = {
   type,
+  typeSlowly,
   pasteText,
   tapNumberPad,
   verifyElementText,
