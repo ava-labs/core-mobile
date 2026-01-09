@@ -12,7 +12,7 @@ export const useRefreshStakingBalances = (
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
   const pAddresses =
-    activeAccount?.xpAddresses.map(address => address.address) ?? []
+    activeAccount?.xpAddresses?.map(address => address.address) ?? []
   const pAddressesSorted = pAddresses.sort().join(',')
 
   return useCallback(
