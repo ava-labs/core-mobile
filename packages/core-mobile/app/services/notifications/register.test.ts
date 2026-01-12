@@ -3,8 +3,13 @@ import Config from 'react-native-config'
 import { Platform } from 'react-native'
 import { commonStorage } from 'utils/mmkv'
 import { StorageKey } from 'resources/Constants'
+import { appCheckPostJson } from 'utils/api/common/appCheckFetch'
 
-global.fetch = jest.fn()
+jest.mock('utils/api/common/appCheckFetch', () => ({
+  appCheckPostJson: jest.fn()
+}))
+
+const mockAppCheckPostJson = appCheckPostJson as jest.Mock
 
 describe('registerDevice', () => {
   const deviceToken =
@@ -18,30 +23,24 @@ describe('registerDevice', () => {
   it('should call fetch with the correct options and handle a successful response', async () => {
     const mockResponse = {
       ok: true,
+      status: 200,
       json: jest.fn().mockResolvedValue({
         deviceArn:
           'arn:aws:sns:us-east-1:975050371175:endpoint/GCM/notification_sender/30516cb9-c9da-3455-8940-8a0470910005'
       })
     }
-    global.fetch = jest.fn(() => Promise.resolve(mockResponse)) as jest.Mock
+    mockAppCheckPostJson.mockResolvedValue(mockResponse)
 
     const result = await registerDeviceToNotificationSender(deviceToken)
 
-    // Check if fetch was called with correct URL and options
-    expect(fetch).toHaveBeenCalledWith(
+    // Check if appCheckPostJson was called with correct URL and body
+    expect(mockAppCheckPostJson).toHaveBeenCalledWith(
       Config.NOTIFICATION_SENDER_API_URL + '/v1/push/register',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Firebase-AppCheck': 'appCheckToken'
-        },
-        body: JSON.stringify({
-          deviceToken: deviceToken,
-          appType: 'CORE_MOBILE_APP',
-          osType: Platform.OS === 'ios' ? 'IOS' : 'ANDROID'
-        })
-      }
+      JSON.stringify({
+        deviceToken: deviceToken,
+        appType: 'CORE_MOBILE_APP',
+        osType: Platform.OS === 'ios' ? 'IOS' : 'ANDROID'
+      })
     )
 
     // Check if the response was handled correctly
@@ -58,12 +57,13 @@ describe('registerDevice', () => {
 
     const mockResponse = {
       ok: true,
+      status: 200,
       json: jest.fn().mockResolvedValue({
         deviceArn:
           'arn:aws:sns:us-east-1:975050371175:endpoint/GCM/notification_sender/30516cb9-c9da-3455-8940-8a0470910005'
       })
     }
-    global.fetch = jest.fn(() => Promise.resolve(mockResponse)) as jest.Mock
+    mockAppCheckPostJson.mockResolvedValue(mockResponse)
 
     await registerDeviceToNotificationSender(deviceToken)
 
@@ -75,7 +75,7 @@ describe('registerDevice', () => {
 
   it('should throw an error if the fetch request fails', async () => {
     const mockError = new Error('Network error')
-    global.fetch = jest.fn(() => Promise.reject(mockError)) as jest.Mock
+    mockAppCheckPostJson.mockRejectedValue(mockError)
 
     await expect(
       registerDeviceToNotificationSender(deviceToken)
@@ -88,7 +88,7 @@ describe('registerDevice', () => {
       status: 404,
       statusText: 'not found'
     }
-    global.fetch = jest.fn(() => Promise.resolve(mockResponse)) as jest.Mock
+    mockAppCheckPostJson.mockResolvedValue(mockResponse)
 
     await expect(
       registerDeviceToNotificationSender(deviceToken)
