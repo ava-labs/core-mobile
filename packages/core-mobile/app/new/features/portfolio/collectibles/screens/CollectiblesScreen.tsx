@@ -25,7 +25,6 @@ import {
   CollectibleTypeFilter
 } from 'store/balance'
 import { useCollectiblesView } from 'features/portfolio/store'
-import { CollectibleViewOption } from 'common/types'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { CardContainer } from '../components/CardContainer'
 import { CollectibleItem } from '../components/CollectibleItem'
@@ -66,7 +65,6 @@ export const CollectiblesScreen = ({
     collectibles
   } = useCollectiblesContext()
 
-  const { setSelectedView } = useCollectiblesView()
   const {
     filter,
     view,
@@ -103,10 +101,9 @@ export const CollectiblesScreen = ({
         return
       }
       onScrollResync()
-      setSelectedView(value as CollectibleViewOption)
       view.onSelected(value)
     },
-    [onScrollResync, setSelectedView, view, goToCollectibleManagement]
+    [onScrollResync, view, goToCollectibleManagement]
   )
 
   const renderItem: ListRenderItem<NftItem> = useCallback(

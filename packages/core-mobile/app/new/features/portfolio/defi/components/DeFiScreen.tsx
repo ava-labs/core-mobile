@@ -24,7 +24,6 @@ import Animated from 'react-native-reanimated'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { DeFiSimpleProtocol } from 'services/defi/types'
 import { ViewOption } from 'common/types'
-import { useDeFiView } from 'features/portfolio/store'
 import { useDeFiProtocols } from '../hooks/useDeFiProtocols'
 import { DeFiListItem } from './DeFiListItem'
 
@@ -37,7 +36,6 @@ export const DeFiScreen = ({
   containerStyle: ViewStyle
   onScrollResync: () => void
 }): JSX.Element => {
-  const { setSelectedView } = useDeFiView()
   const { navigate } = useRouter()
   const { openUrl } = useCoreBrowser()
   const {
@@ -183,13 +181,12 @@ export const DeFiScreen = ({
             onSelected: (value: string) => {
               onScrollResync()
               view.onSelected(value)
-              setSelectedView(value)
             }
           }}
         />
       </View>
     )
-  }, [data.length, isGridView, onScrollResync, setSelectedView, sort, view])
+  }, [data.length, isGridView, onScrollResync, sort, view])
 
   const contentContainerStyle = {
     paddingHorizontal: !isGridView

@@ -21,7 +21,6 @@ const MarketScreen = ({
   containerStyle: ViewStyle
   onScrollResync: () => void
 }): JSX.Element => {
-  const { setSelectedView } = useTrackView()
   const {
     topTokens,
     prices,
@@ -85,7 +84,6 @@ const MarketScreen = ({
           onSelected: (value: string) => {
             onScrollResync()
             view.onSelected(value)
-            setSelectedView(value)
           }
         }}
         goToMarketDetail={goToMarketDetail}
