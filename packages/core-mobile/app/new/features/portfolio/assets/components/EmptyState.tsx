@@ -11,7 +11,8 @@ import React, {
 import { Platform, View, ViewStyle } from 'react-native'
 
 import { useHeaderHeight } from '@react-navigation/elements'
-import AVALANCHE_ANIMATION from 'assets/lotties/ava-logo-rotating.json'
+import AVALANCHE_ANIMATION_LIGHT from 'assets/lotties/ava-logo-rotating.json'
+import AVALANCHE_ANIMATION_DARK from 'assets/lotties/ava-logo-rotating-dark.json'
 import LottieView from 'lottie-react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import {
@@ -25,7 +26,7 @@ export const EmptyState = ({
   goToBuy: () => void
 }): JSX.Element => {
   const {
-    theme: { colors }
+    theme: { colors, isDark }
   } = useTheme()
   const router = useRouter()
   const insets = useSafeAreaInsets()
@@ -87,24 +88,22 @@ export const EmptyState = ({
     }
 
     const aspectRatio = 240 / 210
-    const scale = 1.2
+    const scale = 1.3
     const height = availableHeight * scale
     const width = height * aspectRatio
-    const top = -46 * scale
-    const left = -35 * scale
 
     return (
       <View
         style={{
           position: 'absolute',
           zIndex: 1,
-          top,
-          left,
+          bottom: 16,
+          left: -75 * scale,
           width,
           height
         }}>
         <LottieView
-          source={AVALANCHE_ANIMATION}
+          source={isDark ? AVALANCHE_ANIMATION_DARK : AVALANCHE_ANIMATION_LIGHT}
           autoPlay
           loop
           style={{
@@ -114,11 +113,12 @@ export const EmptyState = ({
         />
       </View>
     )
-  }, [availableHeight])
+  }, [availableHeight, isDark])
 
   const containerStyle: ViewStyle = useMemo(() => {
     if (Platform.OS === 'android') {
       return {
+        flex: 1,
         minHeight:
           frame.height -
           header.height -
@@ -161,13 +161,13 @@ export const EmptyState = ({
             paddingVertical: 16
           }
         ]}>
-        {renderAnimation()}
         <View
           ref={animationContainerRef}
           style={{
             flex: 1
-          }}
-        />
+          }}>
+          {renderAnimation()}
+        </View>
         <View
           style={{
             zIndex: 100,
@@ -176,7 +176,7 @@ export const EmptyState = ({
           }}>
           <Text
             variant="heading3"
-            sx={{ color: '$textPrimary', marginLeft: 16, width: '65%' }}>
+            sx={{ color: '$textPrimary', marginLeft: 16, width: '90%' }}>
             Get started by adding crypto to your wallet
           </Text>
           <GroupList

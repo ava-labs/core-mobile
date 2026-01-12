@@ -26,7 +26,7 @@ export const BalanceLoader = ({
       foregroundColor={foregroundColor}>
       <Rect x="0" y="0" rx="12" ry="12" width={width} height="36" />
       {!hideSubtitle && (
-        <Rect x="0" y="40" rx="9" ry="9" width="93" height="18" />
+        <Rect x="0" y="40" rx="12" ry="12" width="93" height="18" />
       )}
     </ContentLoader>
   )
