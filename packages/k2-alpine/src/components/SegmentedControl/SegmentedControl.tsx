@@ -1,9 +1,8 @@
 import { SxProp } from 'dripsy'
 import { BlurView } from 'expo-blur'
 import throttle from 'lodash/throttle'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo } from 'react'
 import {
-  InteractionManager,
   LayoutChangeEvent,
   Pressable,
   StyleSheet,
@@ -38,7 +37,6 @@ export const SegmentedControl = ({
   style?: ViewStyle
   type?: 'default' | 'thin'
 }): JSX.Element | null => {
-  const [isReady, setIsReady] = useState(true)
   const { theme } = useTheme()
 
   // IMPORTANT: Do NOT reference `items` inside any Reanimated worklet (e.g. `useDerivedValue`,
@@ -49,13 +47,6 @@ export const SegmentedControl = ({
 
   const viewWidth = useSharedValue(0)
   const textWidths = useSharedValue(Array(itemsCount).fill(0))
-
-  useEffect(() => {
-    const task = InteractionManager.runAfterInteractions(() => {
-      setIsReady(true)
-    })
-    return () => task.cancel()
-  }, [])
 
   const textRatios = useDerivedValue(() => {
     if (!dynamicItemWidth) return Array(itemsCount).fill(1 / itemsCount)
@@ -120,10 +111,6 @@ export const SegmentedControl = ({
     },
     [textWidths]
   )
-
-  if (!isReady) {
-    return null
-  }
 
   return (
     // NOTE: `style` may be an animated style when used by consumers. If we pass an
