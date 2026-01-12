@@ -660,7 +660,7 @@ __metadata:
     rxjs: 7.8.1
     semver: 7.5.4
     stream-browserify: 3.0.0
-    testrail-api: ^1.3.6
+    testrail-api: 1.3.6
     text-encoding: 0.7.0
     ts-jest: 29.4.1
     ts-node: 10.9.2
@@ -37436,7 +37436,7 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"testrail-api@npm:^1.3.6":
+"testrail-api@npm:1.3.6":
   version: 1.3.6
   resolution: "testrail-api@npm:1.3.6"
   dependencies:

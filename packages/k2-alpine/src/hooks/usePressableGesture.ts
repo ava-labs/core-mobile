@@ -4,12 +4,12 @@ import { GestureResponderEvent, ViewStyle } from 'react-native'
 import { GestureTouchEvent } from 'react-native-gesture-handler'
 import {
   AnimatedStyle,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
   withTiming
 } from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 import { ANIMATED } from '../utils'
 
 const SCROLL_THRESHOLD = 2 // pixels
@@ -136,7 +136,7 @@ export function usePressableGesture(
     opacity.value = withTiming(1, ANIMATED.TIMING_CONFIG)
     scale.value = withSpring(1, ANIMATED.SPRING_CONFIG, () => {
       if (callback) {
-        runOnJS(throttledCallback)(event)
+        scheduleOnRN(throttledCallback, event)
       }
     })
   }

@@ -14,13 +14,13 @@ import React, { ReactNode } from 'react'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import { KeyboardStickyView } from 'react-native-keyboard-controller'
 import Animated, {
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
   withTiming
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { scheduleOnRN } from 'react-native-worklets'
 import { useBrowserContext } from '../BrowserContext'
 import { BROWSER_CONTROLS_HEIGHT, HORIZONTAL_MARGIN } from '../consts'
 import { BrowserInput } from './BrowserInput'
@@ -52,9 +52,9 @@ export const BrowserControls = (): ReactNode => {
     })
     .onEnd(() => {
       if (gestureProgress.value > 0.3) {
-        runOnJS(onCollapse)()
+        scheduleOnRN(onCollapse)
         gestureProgress.value = withTiming(1, ANIMATED.TIMING_CONFIG, () => {
-          runOnJS(onResetGestureProgress)()
+          scheduleOnRN(onResetGestureProgress)
         })
       } else {
         gestureProgress.value = withTiming(0, ANIMATED.TIMING_CONFIG)

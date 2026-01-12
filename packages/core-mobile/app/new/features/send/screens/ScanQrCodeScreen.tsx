@@ -1,12 +1,12 @@
 import { showAlert, Text, View } from '@avalabs/k2-alpine'
+import { NetworkVMType } from '@avalabs/vm-module-types'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
-import React, { useCallback } from 'react'
 import { isValidAddressByVmName } from 'features/accountSettings/utils/isValidAddressByVmName'
+import React, { useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { NetworkVMType } from '@avalabs/vm-module-types'
 import { useSendContext } from '../context/sendContext'
 
 export const ScanQrCodeScreen = (): JSX.Element => {

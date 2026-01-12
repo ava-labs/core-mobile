@@ -6,7 +6,6 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import {
@@ -69,6 +68,7 @@ import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { useIsAllBalancesInaccurateForAccount } from '../hooks/useIsAllBalancesInaccurateForAccount'
 import { useIsLoadingBalancesForAccount } from '../hooks/useIsLoadingBalancesForAccount'
 import { useIsRefetchingBalancesForAccount } from '../hooks/useIsRefetchingBalancesForAccount'
+import { useHeaderHeight } from '@react-navigation/elements'
 
 const SEGMENT_ITEMS = [
   { title: 'Assets' },

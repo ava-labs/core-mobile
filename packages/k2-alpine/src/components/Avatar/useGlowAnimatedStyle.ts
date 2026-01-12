@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { ImageStyle } from 'react-native'
 import {
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
   withSequence,
   withTiming
 } from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 import { easeOutQuart } from '../../utils'
 
 export const useGlowAnimatedStyle = (
@@ -34,7 +34,7 @@ export const useGlowAnimatedStyle = (
     )
 
     const timeout = setTimeout(() => {
-      runOnJS(setIsAnimating)(false)
+      scheduleOnRN(setIsAnimating, false)
     }, delay + ROTATE_DURATION)
 
     return () => clearTimeout(timeout)

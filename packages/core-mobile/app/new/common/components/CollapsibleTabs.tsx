@@ -14,7 +14,6 @@ import {
 import Animated, {
   Extrapolation,
   interpolate,
-  runOnJS,
   useAnimatedReaction,
   useAnimatedStyle,
   withTiming
@@ -23,6 +22,7 @@ import {
   useSafeAreaFrame,
   useSafeAreaInsets
 } from 'react-native-safe-area-context'
+import { scheduleOnRN } from 'react-native-worklets'
 
 export type OnTabChange = OnTabChangeCallback<string>
 
@@ -97,7 +97,7 @@ const CollapsibleTabWrapper = ({
     () => scrollY.value,
     (curr, prev) => {
       if (curr !== prev && onScrollY) {
-        runOnJS(onScrollY)(scrollY.value)
+        scheduleOnRN(onScrollY, scrollY.value)
       }
     }
   )

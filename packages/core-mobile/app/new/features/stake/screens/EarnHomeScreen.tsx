@@ -8,6 +8,7 @@ import { useHeaderHeight } from '@react-navigation/elements'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import DepositTabScreen from 'features/deposit/screens/DepositTabScreen'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   LayoutChangeEvent,
@@ -22,19 +23,18 @@ import PagerView, {
 } from 'react-native-pager-view'
 import Animated, {
   AnimatedStyle,
-  runOnJS,
   useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
 import { useSafeAreaFrame } from 'react-native-safe-area-context'
+import { scheduleOnRN } from 'react-native-worklets'
 import { useSelector } from 'react-redux'
 import {
   selectIsInAppDefiBlocked,
   selectIsInAppDefiNewBlocked
 } from 'store/posthog'
-import DepositTabScreen from 'features/deposit/screens/DepositTabScreen'
 import StakeTabScreen from './StakeTabScreen'
 
 export const EarnHomeScreen = (): JSX.Element => {
@@ -59,7 +59,7 @@ export const EarnHomeScreen = (): JSX.Element => {
     () => selectedSegmentIndex.value,
     (currentValue, previousValue) => {
       if (currentValue !== previousValue && Number.isInteger(currentValue)) {
-        runOnJS(setSelectedIndex)(currentValue)
+        scheduleOnRN(setSelectedIndex, currentValue)
       }
     }
   )

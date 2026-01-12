@@ -12,7 +12,7 @@
         <item name="android:datePickerDialogTheme">@style/MyDatePickerDialogTheme</item>
         <item name="bottomNavigationStyle">@style/CustomBottomNavigationStyle</item>
 
-        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
 
         <!-- default tint color for dialog button text -->
         <item name="android:colorPrimary">@color/dialogTextColor</item>

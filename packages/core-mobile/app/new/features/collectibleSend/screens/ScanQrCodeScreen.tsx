@@ -5,19 +5,19 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useCallback, useMemo, useState } from 'react'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useNavigation } from '@react-navigation/native'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
 import { useCollectibleSend } from 'common/hooks/send/useCollectibleSend'
+import { isAddress } from 'ethers'
 import { useRouter } from 'expo-router'
 import { useNativeTokenWithBalanceByNetwork } from 'features/send/hooks/useNativeTokenWithBalanceByNetwork'
 import { useSendSelectedToken } from 'features/send/store'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import { isAddress } from 'ethers'
 import { useSendTransactionCallbacks } from '../hooks/useSendTransactionCallbacks'
 
 export const ScanQrCodeScreen = (): JSX.Element => {

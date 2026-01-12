@@ -27,11 +27,8 @@ import { useNow } from 'hooks/time/useNow'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import { useDebounce } from 'hooks/useDebounce'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import {
-  runOnJS,
-  useAnimatedReaction,
-  useSharedValue
-} from 'react-native-reanimated'
+import { useAnimatedReaction, useSharedValue } from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 import { useSelector } from 'react-redux'
 import {
   DURATION_OPTIONS_WITH_DAYS_FUJI,
@@ -78,7 +75,7 @@ const StakeDurationScreen = (): JSX.Element => {
     () => animatedChartIndex.value,
     (current, previous) => {
       if (current !== previous) {
-        runOnJS(setSelectedChartIndex)(current)
+        scheduleOnRN(setSelectedChartIndex, current)
       }
     }
   )

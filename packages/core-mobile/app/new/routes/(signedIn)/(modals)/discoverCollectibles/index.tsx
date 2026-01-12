@@ -1,12 +1,10 @@
 import {
   AnimatedPressable,
   Button,
-  SCREEN_WIDTH,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import { FlashList, ListRenderItem } from '@shopify/flash-list'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
@@ -17,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { addHistoryForActiveTab, addTab, selectActiveTab } from 'store/browser'
 
+import { useHeaderHeight } from '@react-navigation/elements'
 import JoepegsLogo from '../../../../assets/joepegs.svg'
 import OpenseaLogo from '../../../../assets/opensea.svg'
 import PopularRibbon from '../../../../assets/popular-ribbon.svg'
@@ -59,8 +58,8 @@ const DISCOVER_COLLECTIBLES: CollectibleApp[] = [
   }
 ]
 
-const NUMBER_OF_COLUMNS = 2
-const TAB_WIDTH = (SCREEN_WIDTH - HORIZONTAL_MARGIN) / NUMBER_OF_COLUMNS
+// const NUMBER_OF_COLUMNS = 2
+// const TAB_WIDTH = (SCREEN_WIDTH - HORIZONTAL_MARGIN) / NUMBER_OF_COLUMNS
 
 export default function DiscoverCollectiblesScreen(): JSX.Element {
   const { navigate, back } = useRouter()
