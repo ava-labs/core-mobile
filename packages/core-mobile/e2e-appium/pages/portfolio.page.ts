@@ -138,7 +138,7 @@ class PortfolioPage {
   }
 
   get testnetModeIsOn() {
-    return selectors.getByText(portfolio.testnetModeIsOn)
+    return selectors.getBySomeText(portfolio.testnetModeIsOn)
   }
 
   get sendButton() {
@@ -329,6 +329,7 @@ class PortfolioPage {
   }
 
   async tapToken(token = 'Avalanche') {
+    // It taps on the name of the token on the portfolio asset (ex - Avalanche, Bitcoin, Wrapped Ether...)
     await actions.tap(
       selectors.getById(`${portfolio.portfolioTokenItem}${token}`)
     )

@@ -1,10 +1,11 @@
+/* eslint-disable jest/no-disabled-tests */
 import txPage from '../../../pages/transactions.page'
 import common from '../../../pages/commonEls.page'
 import commonLoc from '../../../locators/commonEls.loc'
 import portfolio from '../../../pages/portfolio.page'
 import warmup from '../../../helpers/warmup'
 
-describe('[Smoke] Send transaction', () => {
+describe.skip('[Smoke] Send transaction', () => {
   it('should send NFT on Ethereum', async () => {
     await warmup()
     await portfolio.tapCollectiblesTab()

@@ -17,7 +17,7 @@ export default {
   coqInu: 'COQ',
   wrappedEthToken: 'WETH',
   btcToken: 'BTC',
-  sendingAmount: '0.0001',
+  sendingAmount: '0.00001',
   myAccounts: 'My Accounts',
   sendTitle: 'Send',
   amountToSend: 'token_amount_input_field  ',
@@ -70,7 +70,8 @@ export default {
   cancel: 'Cancel',
   approvePopupTitle: 'Do you approve this transaction?',
   approvePopupSpendTitle: 'Do you approve this spend limit?',
-  insufficientBalance: 'Insufficient balance',
+  insufficientSendBalance:
+    'The specified send amount exceeds the available balance',
   filterDropdown: 'filter_dropdown_btn',
   networkFilterDropdown: 'network_dropdown_btn',
   transactionFail: 'Transaction failed',
