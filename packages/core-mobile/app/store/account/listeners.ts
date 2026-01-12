@@ -26,6 +26,7 @@ import Logger from 'utils/Logger'
 import KeystoneService from 'features/keystone/services/KeystoneService'
 import { pendingSeedlessWalletNameStore } from 'features/onboarding/store'
 import { AddressIndex } from '@avalabs/types'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import {
   selectAccounts,
   setAccounts,
@@ -38,9 +39,7 @@ import {
   canMigrateActiveAccounts,
   deriveMissingSeedlessSessionKeys,
   migrateRemainingActiveAccounts,
-  shouldMigrateActiveAccounts,
-  hasCompletedXpAddressMigration,
-  markXpAddressMigrationComplete
+  shouldMigrateActiveAccounts
 } from './utils'
 
 const initAccounts = async (
@@ -283,15 +282,18 @@ const migrateXpAddressesIfNeeded = async (
   _action: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  if (hasCompletedXpAddressMigration()) {
+  const state = listenerApi.getState()
+  const allAccounts = selectAccounts(state)
+  if (
+    Object.values(allAccounts).every(account => account.hasMigratedXpAddresses)
+  ) {
     Logger.info('XP address migration already completed. Skipping.')
     return
   }
 
-  const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const wallets = selectWallets(state)
-  const allUpdatedAccounts: MigratedAccountCollection = {}
+  const allUpdatedAccounts: AccountCollection = {}
 
   if (Object.keys(wallets).length === 0) {
     Logger.info('No wallets found. Skipping XP address migration.')
@@ -314,7 +316,9 @@ const migrateXpAddressesIfNeeded = async (
     const accounts = selectAccountsByWalletId(state, wallet.id)
     const updatedAccounts = await populateXpAddressesForWallet({
       wallet,
-      accounts,
+      accounts: accounts.filter(
+        account => account.hasMigratedXpAddresses === false
+      ),
       isDeveloperMode
     })
 
@@ -332,12 +336,10 @@ const migrateXpAddressesIfNeeded = async (
   reloadAccounts(_action, listenerApi)
 
   if (
-    Object.values(allUpdatedAccounts).every(
-      account => account.hasMigratedXpAddresses
+    Object.values(allUpdatedAccounts).some(
+      account => account.hasMigratedXpAddresses === false
     )
   ) {
-    markXpAddressMigrationComplete()
-  } else {
     // Log accounts that failed to migrate
     const failedAccounts = Object.values(allUpdatedAccounts).filter(
       account => !account.hasMigratedXpAddresses
@@ -363,8 +365,9 @@ const populateXpAddressesForWallet = async ({
   wallet: StoreWallet
   accounts: Account[]
   isDeveloperMode: boolean
-}): Promise<MigratedAccountCollection> => {
-  const updatedAccounts: MigratedAccountCollection = {}
+  // eslint-disable-next-line sonarjs/cognitive-complexity
+}): Promise<AccountCollection> => {
+  const updatedAccounts: AccountCollection = {}
 
   const restrictToFirstIndex = [
     WalletType.KEYSTONE,
@@ -377,9 +380,6 @@ const populateXpAddressesForWallet = async ({
     if (!account) {
       continue
     }
-
-    // append existing account to updatedAccounts by account.id
-    updatedAccounts[account.id] = { ...account, hasMigratedXpAddresses: false }
 
     Logger.info(
       `Processing account ${account.index} (${account.id}) for wallet ${wallet.type}`
@@ -399,7 +399,9 @@ const populateXpAddressesForWallet = async ({
       continue
     }
 
-    let xpAddresses: AddressIndex[] = []
+    let xpAddresses: AddressIndex[] = [
+      { address: stripAddressPrefix(account.addressAVM), index: 0 }
+    ]
     let xpAddressDictionary: XPAddressDictionary = {} as XPAddressDictionary
     let hasMigratedXpAddresses = false
 
@@ -414,7 +416,8 @@ const populateXpAddressesForWallet = async ({
         onlyWithActivity: true
       })
 
-      xpAddresses = result.xpAddresses
+      xpAddresses =
+        result.xpAddresses.length > 0 ? result.xpAddresses : xpAddresses
       xpAddressDictionary = result.xpAddressDictionary
       hasMigratedXpAddresses = true
     } catch (error) {
@@ -492,10 +495,4 @@ export const addAccountListeners = (
     actionCreator: onAppUnlocked,
     effect: migrateXpAddressesIfNeeded
   })
-}
-
-export type MigratedAccountCollection = {
-  [id: string]: Account & {
-    hasMigratedXpAddresses: boolean
-  }
 }
