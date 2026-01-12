@@ -20,7 +20,7 @@ import { Discover } from 'features/browser/components/Discover'
 import { BROWSER_CONTROLS_HEIGHT } from 'features/browser/consts'
 import { isValidHttpsUrl } from 'features/browser/utils'
 import React, { useCallback, useEffect, useMemo } from 'react'
-import { Platform } from 'react-native'
+import { BackHandler, Platform } from 'react-native'
 import {
   AndroidSoftInputModes,
   KeyboardController
@@ -122,6 +122,31 @@ const Browser = (): React.ReactNode => {
       KeyboardController.setDefaultMode()
     }
   })
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS !== 'android') return
+
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        () => {
+          // If we are already on the Discover page, allow Android to handle back
+          // (e.g. leave the Browser tab / go to previous screen).
+          if (showEmptyTab) return false
+
+          const tabId = activeTab?.id
+          const ref = tabId ? browserRefs.current[tabId]?.current : undefined
+          if (!ref) return false
+
+          // Use the browser tab's goBack method to navigate back.
+          ref.goBack()
+          return true
+        }
+      )
+
+      return () => subscription.remove()
+    }, [activeTab?.id, browserRefs, showEmptyTab])
+  )
 
   const backgroundColor = useMemo(() => {
     return theme.isDark

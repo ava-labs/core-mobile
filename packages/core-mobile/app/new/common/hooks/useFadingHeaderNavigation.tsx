@@ -289,6 +289,23 @@ export const useFadingHeaderNavigation = ({
     ])
   )
 
+  // Update navigation header title whenever header content changes
+  // This ensures the header updates when account changes, even if screen stays focused
+  useEffect(() => {
+    const nav = hasParent ? navigation.getParent() : navigation
+    if (showNavigationHeaderTitle) {
+      nav?.setOptions({
+        headerTitle: stableHeaderTitle
+      })
+    }
+  }, [
+    hasParent,
+    navigation,
+    header,
+    showNavigationHeaderTitle,
+    stableHeaderTitle
+  ])
+
   return {
     onScroll: handleScroll,
     scrollEventThrottle: 16,
