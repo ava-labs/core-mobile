@@ -15,7 +15,7 @@ const goHeadless = isBitrise ? true : false
 const goRetry = isBitrise ? 1 : 0
 const iosLocalPath = process.env.E2E_LOCAL_PATH
   ? '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
-  : './ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
+  : './ios/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
 const androidLocalPath = process.env.E2E_LOCAL_PATH
   ? '/Users/eunji.song/Downloads/app-internal-e2e-bitrise-signed.apk'
   : './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
@@ -26,6 +26,7 @@ const androidPath = isBitrise
   ? process.env.BITRISE_APK_PATH
   : path.resolve(androidLocalPath)
 const platformToRun = process.env.PLATFORM
+const isSmoke = process.env.SMOKE_SUITE === 'true'
 
 const allCaps = [
   {
@@ -101,7 +102,7 @@ export const config: WebdriverIO.Config = {
   // hoook before: make or get testRun before test
   before: async () => {
     const platform = driver.isAndroid ? 'Android' : 'iOS'
-    runId = await getTestRun(platform)
+    runId = await getTestRun(platform, isSmoke)
     console.log(`------------Starting test run------------`)
   },
 

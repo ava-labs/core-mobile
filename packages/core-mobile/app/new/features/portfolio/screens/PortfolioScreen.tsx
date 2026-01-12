@@ -345,7 +345,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
               },
               animatedHeaderStyle
             ]}>
-            <Pressable hitSlop={10} onPress={openWalletsModal}>
+            <Pressable
+              onPress={openWalletsModal}
+              style={{
+                marginBottom: filteredTokenList.length === 0 ? 8 : 0
+              }}>
               <BalanceHeader
                 testID="portfolio"
                 walletName={walletName}
@@ -371,7 +375,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
             buttons={actionButtons}
             contentContainerStyle={{
               padding: 16,
-              paddingBottom: 10
+              paddingBottom: 20
             }}
           />
         )}
@@ -496,7 +500,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const contentContainerStyle = useMemo(() => {
     return {
       paddingBottom: (segmentedControlLayout?.height ?? 0) + 32,
-      paddingTop: 10,
       minHeight: tabHeight
     }
   }, [segmentedControlLayout?.height, tabHeight])

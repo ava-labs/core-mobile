@@ -27,6 +27,8 @@ export default function SwapLayout(): JSX.Element {
           name="swap"
           options={shouldHideOnboarding ? modalFirstScreenOptions : undefined}
         />
+        <Stack.Screen name="pricingDetails" />
+        <Stack.Screen name="slippageDetails" />
       </Stack>
     </SwapContextProvider>
   )
