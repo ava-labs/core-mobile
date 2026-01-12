@@ -1,4 +1,4 @@
-import { CollectibleViewOption, DropdownSelection } from 'common/types'
+import { DropdownSelection } from 'common/types'
 import { useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
@@ -50,10 +50,6 @@ export const useCollectiblesFilterAndSort = (
 } => {
   const { selectedView, setSelectedView } = useCollectiblesView()
 
-  const selectedViewOption = useMemo(() => {
-    return selectedView ?? CollectibleViewOption.List
-  }, [selectedView])
-
   const { collectibles } = useCollectiblesContext()
   const collectiblesVisibility = useSelector(selectCollectibleVisibility)
   const [selectedNetworkFilter, setSelectedNetworkFilter] =
@@ -103,11 +99,11 @@ export const useCollectiblesFilterAndSort = (
         items: s.items.map(i => ({
           id: i.id,
           title: i.id,
-          selected: i.id === selectedViewOption
+          selected: i.id === selectedView
         }))
       }
     })
-  }, [selectedViewOption])
+  }, [selectedView])
 
   const filter = useMemo(
     () => ({
@@ -146,10 +142,10 @@ export const useCollectiblesFilterAndSort = (
     () => ({
       title: 'View',
       data: viewData,
-      selected: selectedViewOption,
+      selected: selectedView,
       onSelected: setSelectedView
     }),
-    [viewData, selectedViewOption, setSelectedView]
+    [viewData, selectedView, setSelectedView]
   )
 
   const isUnprocessableHidden = useSelector(

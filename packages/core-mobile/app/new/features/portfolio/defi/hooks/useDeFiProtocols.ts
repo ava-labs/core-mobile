@@ -5,7 +5,7 @@ import { useDeFiChainList } from 'hooks/defi/useDeFiChainList'
 import { useDeFiProtocolList } from 'hooks/defi/useDeFiProtocolList'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { DropdownSelection, ViewOption } from 'common/types'
+import { DropdownSelection } from 'common/types'
 import { useDeFiView } from 'features/portfolio/store'
 import { DEFI_SORT_OPTIONS, DEFI_VIEW_OPTIONS, DeFiSortOption } from '../types'
 
@@ -23,10 +23,6 @@ export const useDeFiProtocols = (): {
   chainList: Record<string, DeFiChain> | undefined
 } => {
   const { selectedView, setSelectedView } = useDeFiView()
-
-  const selectedViewOption = useMemo(() => {
-    return selectedView ?? ViewOption.List
-  }, [selectedView])
 
   const { data: chainList } = useDeFiChainList()
   const {
@@ -93,11 +89,11 @@ export const useDeFiProtocols = (): {
         key: DEFI_VIEW_OPTIONS.key,
         items: DEFI_VIEW_OPTIONS.items.map(i => ({
           ...i,
-          selected: i.id === selectedViewOption
+          selected: i.id === selectedView
         }))
       }
     ],
-    [selectedViewOption]
+    [selectedView]
   )
 
   return {
@@ -112,7 +108,7 @@ export const useDeFiProtocols = (): {
     view: {
       title: 'View',
       data: viewData,
-      selected: selectedViewOption,
+      selected: selectedView,
       onSelected: setSelectedView
     },
     data: filteredProtocols,

@@ -15,10 +15,6 @@ export const useTrackSortAndView = (
 } => {
   const { selectedView, setSelectedView } = useTrackView()
 
-  const selectedViewOption = useMemo(() => {
-    return selectedView ?? ViewOption.List
-  }, [selectedView])
-
   const [selectedSort, setSelectedSort] = useState<MarketSort>(
     MarketSort.MarketCap
   )
@@ -56,9 +52,9 @@ export const useTrackSortAndView = (
   const viewData = useMemo(() => {
     return MARKET_VIEWS.map(s => ({
       ...s,
-      items: s.items.map(i => ({ ...i, selected: i.id === selectedViewOption }))
+      items: s.items.map(i => ({ ...i, selected: i.id === selectedView }))
     }))
-  }, [selectedViewOption])
+  }, [selectedView])
 
   return {
     sort: {
@@ -72,7 +68,7 @@ export const useTrackSortAndView = (
     view: {
       title: 'View',
       data: viewData,
-      selected: selectedViewOption,
+      selected: selectedView,
       onSelected: setSelectedView
     },
     data: sortedTokens

@@ -8,7 +8,7 @@ import {
 } from 'store/balance'
 import { sortUndefined } from 'common/utils/sortUndefined'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { DropdownSelection, ViewOption } from 'common/types'
+import { DropdownSelection } from 'common/types'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useSelector } from 'react-redux'
 import { selectEnabledNetworks } from 'store/network'
@@ -28,10 +28,6 @@ export const useAssetsFilterAndSort = (): {
   isLoading: boolean
 } => {
   const { selectedView, setSelectedView } = usePortfolioView()
-
-  const selectedViewOption = useMemo(() => {
-    return selectedView ?? ViewOption.List
-  }, [selectedView])
 
   const erc20ContractTokens = useErc20ContractTokens()
   const enabledNetworks = useSelector(selectEnabledNetworks)
@@ -148,11 +144,11 @@ export const useAssetsFilterAndSort = (): {
         items: s.items.map(i => ({
           id: i.id,
           title: i.id,
-          selected: i.id === selectedViewOption
+          selected: i.id === selectedView
         }))
       }
     })
-  }, [selectedViewOption])
+  }, [selectedView])
 
   const filter = useMemo(
     () => ({
@@ -179,10 +175,10 @@ export const useAssetsFilterAndSort = (): {
     () => ({
       title: 'View',
       data: viewData,
-      selected: selectedViewOption,
+      selected: selectedView,
       onSelected: setSelectedView
     }),
-    [viewData, selectedViewOption, setSelectedView]
+    [viewData, selectedView, setSelectedView]
   )
 
   const onResetFilter = useCallback((): void => {
