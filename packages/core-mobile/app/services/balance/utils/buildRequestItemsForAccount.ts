@@ -14,30 +14,48 @@ import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 const uniq = <T>(arr: T[]): T[] => Array.from(new Set(arr))
 
 /**
- * Builds the `data` array for a balance request by grouping all networks for a
- * single account into the correct namespace buckets (EVM, BTC, SVM, AVAX).
+ * Maximum number of EVM references allowed per request item
+ */
+const MAX_EVM_REFERENCES = 20
+
+/**
+ * Maximum number of namespaces allowed per request batch
+ */
+const MAX_NAMESPACES_PER_BATCH = 5
+
+/**
+ * Builds one or more `data` arrays for balance requests by grouping all networks
+ * for a single account into the correct namespace buckets (EVM, BTC, SVM, AVAX).
  *
  * Multiple networks of the same VM type are collapsed into one request item,
  * collecting all unique addresses and chain references needed by the Balance API.
  *
+ * If EVM references exceed the limit (20), they are split into multiple request items.
+ * If the total number of namespaces exceeds the limit (5), requests are split.
+ *
+ * @returns An array of request batches. Each batch is a complete `data` array
+ *          that can be sent as a separate request.
+ *
  * Example:
  *   Networks: C-Chain (43114), ETH (1), BTC, X-Chain, P-Chain
- *   Output request items:
+ *   Output request batches:
  *     [
- *       { namespace: 'eip155', addresses: [...], references: ['43114','1'] },
- *       { namespace: 'bip122', addresses: [...], references: ['00000000...'] },
- *       {
- *         namespace: 'avax',
- *         references: ['imji8pap...', 'Rr9hnPVP...'],
- *         addressDetails: [{ id: '<accountId>', addresses: [...] }]
- *       }
+ *       [
+ *         { namespace: 'eip155', addresses: [...], references: ['43114','1'] },
+ *         { namespace: 'bip122', addresses: [...], references: ['00000000...'] },
+ *         {
+ *           namespace: 'avax',
+ *           references: ['imji8pap...', 'Rr9hnPVP...'],
+ *           addressDetails: [{ id: '<accountId>', addresses: [...] }]
+ *         }
+ *       ]
  *     ]
  */
 export const buildRequestItemsForAccount = (
   networks: Network[],
   account: Account
   // eslint-disable-next-line sonarjs/cognitive-complexity
-): GetBalancesRequestBody['data'] => {
+): GetBalancesRequestBody['data'][] => {
   const accountId = account.id
   const accountXpAddresses = getAccountXpAddresses(account)
 
@@ -139,33 +157,67 @@ export const buildRequestItemsForAccount = (
     }
   }
 
-  // ---- Build final requestItems array ----------------------------------------
-  const requestItems: GetBalancesRequestBody['data'] = []
+  // ---- Split EVM bucket if it exceeds reference limit ------------------------
+  const evmBatches: EvmGetBalancesRequestItem[] = []
+  if (evmBucket) {
+    const { references, addresses } = evmBucket
+    if (references.length > MAX_EVM_REFERENCES) {
+      // Split references into chunks of MAX_EVM_REFERENCES
+      for (let i = 0; i < references.length; i += MAX_EVM_REFERENCES) {
+        const chunk = references.slice(i, i + MAX_EVM_REFERENCES)
+        evmBatches.push({
+          namespace: BlockchainNamespace.EIP155,
+          addresses: [...addresses], // All addresses are included in each chunk
+          references: chunk
+        })
+      }
+    } else {
+      evmBatches.push(evmBucket)
+    }
+  }
 
-  // Early check already filters invalid addresses, so buckets are safe to add
-  if (evmBucket) requestItems.push(evmBucket)
-  if (btcBucket) requestItems.push(btcBucket)
-  if (svmBucket) requestItems.push(svmBucket)
-
+  // ---- Build request batches --------------------------------------------------
   // Filter out empty addresses from AVAX bucket (stripAddressPrefix can return empty)
   const validAvaxAddresses = avaxXpBucket.addresses.filter(
     addr => typeof addr === 'string' && addr.trim() !== ''
   )
-  if (validAvaxAddresses.length > 0 && avaxXpBucket.references.length > 0) {
-    requestItems.push({
-      namespace: BlockchainNamespace.AVAX,
-      references: avaxXpBucket.references,
-      addressDetails: [
-        {
-          id: accountId,
-          addresses: validAvaxAddresses
+  const avaxItem: AvalancheXpGetBalancesRequestItem | undefined =
+    validAvaxAddresses.length > 0 && avaxXpBucket.references.length > 0
+      ? {
+          namespace: BlockchainNamespace.AVAX,
+          references: avaxXpBucket.references,
+          addressDetails: [
+            {
+              id: accountId,
+              addresses: validAvaxAddresses
+            }
+          ],
+          filterOutDustUtxos: false
         }
-      ],
-      filterOutDustUtxos: false
-    })
+      : undefined
+
+  // Strategy: Combine all items (EVM batches + non-EVM namespaces) into a flat list,
+  // then pack them into batches respecting the namespace limit (5 per batch)
+  const allItems: GetBalancesRequestBody['data'] = [
+    ...(btcBucket ? [btcBucket] : []),
+    ...(svmBucket ? [svmBucket] : []),
+    ...(avaxItem ? [avaxItem] : []),
+    ...evmBatches
+  ]
+
+  // Pack items into batches of max 5
+  const finalBatches: GetBalancesRequestBody['data'][] = []
+  for (let i = 0; i < allItems.length; i += MAX_NAMESPACES_PER_BATCH) {
+    const chunk = allItems.slice(i, i + MAX_NAMESPACES_PER_BATCH)
+    finalBatches.push(chunk)
   }
 
-  return requestItems
+  // If no batches were created (shouldn't happen, but handle edge case)
+  if (finalBatches.length === 0) {
+    finalBatches.push([])
+  }
+
+  return finalBatches
 }
 
 const getAccountXpAddresses = (account: Account): string[] => {
