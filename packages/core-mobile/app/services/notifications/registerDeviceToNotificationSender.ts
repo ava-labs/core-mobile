@@ -1,6 +1,6 @@
 import Logger from 'utils/Logger'
 import Config from 'react-native-config'
-import fetchWithAppCheck from 'utils/httpClient'
+import { appCheckPostJson } from 'utils/api/common/appCheckFetch'
 import { Platform } from 'react-native'
 import { commonStorage } from 'utils/mmkv'
 import { StorageKey } from 'resources/Constants'
@@ -11,7 +11,7 @@ export async function registerDeviceToNotificationSender(
   const storedDeviceArn = commonStorage.getString(
     StorageKey.NOTIFICATIONS_OPTIMIZATION
   )
-  const response = await fetchWithAppCheck(
+  const response = await appCheckPostJson(
     Config.NOTIFICATION_SENDER_API_URL + '/v1/push/register',
     JSON.stringify({
       deviceToken: fcmToken,
