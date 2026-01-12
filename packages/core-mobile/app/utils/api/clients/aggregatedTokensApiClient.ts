@@ -1,10 +1,9 @@
-import { fetch as nitroFetch } from 'react-native-nitro-fetch'
 import Config from 'react-native-config'
 import queryString from 'query-string'
 import { CORE_HEADERS } from 'utils/apiClient/constants'
 import Logger from 'utils/Logger'
-import { appCheckMiddleware } from '../common/middlewares'
 import { createClient } from '../generated/tokenAggregator/aggregatorApi.client/client/client.gen'
+import { appCheckFetch } from '../common/appCheckFetch'
 
 if (!Config.TOKEN_AGGREGATOR_URL)
   Logger.warn(
@@ -15,11 +14,9 @@ const tokenAggregatorApi = createClient({
   baseUrl: Config.TOKEN_AGGREGATOR_URL,
   headers: CORE_HEADERS,
   throwOnError: true,
-  fetch: nitroFetch as typeof fetch,
+  fetch: appCheckFetch as typeof fetch,
   querySerializer: params =>
     queryString.stringify(params, { arrayFormat: 'comma' })
 })
-
-tokenAggregatorApi.interceptors.request.use(appCheckMiddleware)
 
 export { tokenAggregatorApi }

@@ -1,18 +1,18 @@
-import AppCheckService from 'services/fcm/AppCheckService'
+import { appCheckFetch } from './api/common/appCheckFetch'
 
+/**
+ * Convenience wrapper for POST requests with App Check token.
+ * Uses appCheckFetch internally which includes retry logic for invalid tokens.
+ */
 export default async function fetchWithAppCheck(
   url: string,
   bodyJson: string
 ): Promise<Response> {
-  const appCheckToken = await AppCheckService.getToken()
-  const options: RequestInit = {
+  return appCheckFetch(url, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'X-Firebase-AppCheck': appCheckToken.token
+      'Content-Type': 'application/json'
     },
     body: bodyJson
-  }
-
-  return fetch(url, options)
+  })
 }
