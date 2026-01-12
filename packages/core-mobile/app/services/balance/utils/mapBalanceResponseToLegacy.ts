@@ -1,3 +1,4 @@
+import { isNil } from 'lodash'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Account } from 'store/account'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
@@ -44,6 +45,15 @@ type BackendTokenBalance =
   | SvmTokenBalance
   | AvmTokenBalance
   | PvmTokenBalance
+
+const isTokenEnabled = (
+  tokenBalance: Erc20TokenBalance | SvmTokenBalance
+): boolean => {
+  return (
+    isNil(tokenBalance.scanResult) ||
+    ['Benign', 'Warning'].includes(tokenBalance.scanResult)
+  )
+}
 
 // helper function to map asset to utxos object
 const assetToUtxos = (
@@ -301,7 +311,7 @@ export const mapBalanceResponseToLegacy = (
       const evm = response as EvmGetBalancesResponse
       tokens = [
         evm.balances.nativeTokenBalance,
-        ...(evm.balances.erc20TokenBalances ?? [])
+        ...(evm.balances.erc20TokenBalances ?? []).filter(isTokenEnabled)
       ]
       break
     }
@@ -316,7 +326,7 @@ export const mapBalanceResponseToLegacy = (
       const svm = response as SvmGetBalancesResponse
       tokens = [
         svm.balances.nativeTokenBalance,
-        ...(svm.balances.splTokenBalances ?? [])
+        ...(svm.balances.splTokenBalances ?? []).filter(isTokenEnabled)
       ]
       break
     }
