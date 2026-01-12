@@ -79,9 +79,13 @@ export const EmptyState = ({
         }
       )
     }
-  }, [])
+  })
 
   const renderAnimation = useCallback(() => {
+    if (availableHeight === 0) {
+      return null
+    }
+
     const aspectRatio = 240 / 210
     const scale = 1.2
     const height = availableHeight * scale
@@ -113,25 +117,37 @@ export const EmptyState = ({
   }, [availableHeight])
 
   const containerStyle: ViewStyle = useMemo(() => {
-    if (Platform.OS === 'android')
+    if (Platform.OS === 'android') {
       return {
-        height:
+        minHeight:
           frame.height -
           header.height -
           headerHeight -
           insets.bottom -
-          tabBarHeight,
+          insets.top -
+          tabBarHeight -
+          12,
+        paddingTop: 14,
         paddingHorizontal: 16,
         paddingBottom: insets.bottom
       }
+    }
 
     return {
-      height: '100%',
+      minHeight: '100%',
       paddingHorizontal: 16,
       paddingBottom: insets.bottom + 32,
+      paddingTop: 14,
       maxHeight: 450 + insets.bottom + 32
     }
-  }, [frame.height, header.height, headerHeight, insets.bottom, tabBarHeight])
+  }, [
+    frame.height,
+    header.height,
+    headerHeight,
+    insets.bottom,
+    insets.top,
+    tabBarHeight
+  ])
 
   return (
     <View style={containerStyle}>
@@ -141,7 +157,8 @@ export const EmptyState = ({
             overflow: 'hidden',
             borderRadius: 12,
             flex: 1,
-            backgroundColor: colors.$surfaceSecondary
+            backgroundColor: colors.$surfaceSecondary,
+            paddingVertical: 16
           }
         ]}>
         {renderAnimation()}
@@ -155,7 +172,6 @@ export const EmptyState = ({
           style={{
             zIndex: 100,
             justifyContent: 'flex-end',
-            marginBottom: 16,
             gap: 8
           }}>
           <Text
@@ -170,7 +186,7 @@ export const EmptyState = ({
               fontSize: 16
             }}
             subtitleSx={{
-              marginRight: 54,
+              maxWidth: 190,
               fontSize: 12,
               lineHeight: 15,
               fontFamily: 'Inter-Regular'
