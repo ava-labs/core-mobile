@@ -68,6 +68,7 @@ import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { useIsAllBalancesInaccurateForAccount } from '../hooks/useIsAllBalancesInaccurateForAccount'
 import { useIsLoadingBalancesForAccount } from '../hooks/useIsLoadingBalancesForAccount'
 import { useIsRefetchingBalancesForAccount } from '../hooks/useIsRefetchingBalancesForAccount'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 
 const SEGMENT_ITEMS = [
   { title: 'Assets' },
@@ -134,7 +135,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
       ? formatCurrency({
           amount: 0,
           withoutCurrencySuffix: true
-        }).replace('0.00', '-')
+        }).replace('0.00', UNKNOWN_AMOUNT)
       : formatCurrency({
           amount: balanceTotalInCurrency,
           withoutCurrencySuffix: true
