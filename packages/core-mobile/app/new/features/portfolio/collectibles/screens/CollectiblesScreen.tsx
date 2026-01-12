@@ -24,7 +24,6 @@ import {
   CollectibleSort,
   CollectibleTypeFilter
 } from 'store/balance'
-import { useCollectiblesView } from 'features/portfolio/store'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { CardContainer } from '../components/CardContainer'
 import { CollectibleItem } from '../components/CollectibleItem'
