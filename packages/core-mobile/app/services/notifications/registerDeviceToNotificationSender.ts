@@ -4,10 +4,29 @@ import { appCheckPostJson } from 'utils/api/common/appCheckFetch'
 import { Platform } from 'react-native'
 import { commonStorage } from 'utils/mmkv'
 import { StorageKey } from 'resources/Constants'
+import FCMService from 'services/fcm/FCMService'
 
-export async function registerDeviceToNotificationSender(
-  fcmToken: string
-): Promise<string> {
+// Singleton promise to prevent multiple concurrent calls
+let pendingRegistration: Promise<string> | null = null
+
+/**
+ * Wrapper that deduplicates concurrent calls to registerDeviceToNotificationSender.
+ * If a registration is already in progress, returns the same promise.
+ */
+export async function registerAndGetDeviceArn(): Promise<string> {
+  if (pendingRegistration) {
+    return pendingRegistration
+  }
+
+  pendingRegistration = registerDeviceToNotificationSender().finally(() => {
+    pendingRegistration = null
+  })
+
+  return pendingRegistration
+}
+
+export async function registerDeviceToNotificationSender(): Promise<string> {
+  const fcmToken = await FCMService.getFCMToken()
   const storedDeviceArn = commonStorage.getString(
     StorageKey.NOTIFICATIONS_OPTIMIZATION
   )
