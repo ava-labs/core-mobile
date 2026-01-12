@@ -1,7 +1,7 @@
 import { isDefined } from 'common/utils/isDefined'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { NormalizedBalancesForAccount } from 'services/balance/types'
+import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
 import { Account, selectAccountById } from 'store/account'
 import { LocalTokenWithBalance } from 'store/balance'
 import { isTokenVisible } from 'store/balance/utils'
@@ -71,7 +71,7 @@ function useBalanceTotalInCurrencyForAccount({
   sourceData
 }: {
   account?: Account
-  sourceData?: NormalizedBalancesForAccount[]
+  sourceData?: AdjustedNormalizedBalancesForAccount[]
 }): number {
   const tokenVisibility = useFocusedSelector(selectTokenVisibility)
   const enabledChainIds = useFocusedSelector(selectEnabledChainIds)
@@ -97,7 +97,7 @@ function useTokensWithBalanceForAccount({
 }: {
   account?: Account
   chainId?: number
-  sourceData?: NormalizedBalancesForAccount[]
+  sourceData?: AdjustedNormalizedBalancesForAccount[]
 }): LocalTokenWithBalance[] {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const networks = useSelector(selectEnabledNetworksMap)
