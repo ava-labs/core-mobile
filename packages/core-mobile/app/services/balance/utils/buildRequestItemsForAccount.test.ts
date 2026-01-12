@@ -41,6 +41,7 @@ const createMockAccount = (overrides?: Partial<Account>): Account => ({
   walletId: 'test-wallet-id',
   index: 0,
   type: CoreAccountType.PRIMARY as CoreAccountType.PRIMARY,
+  hasMigratedXpAddresses: true,
   addressC: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
   addressCoreEth: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
   addressBTC: 'bc1qmm9qawklnfau5hhrkt33kqumggxwy7s9raxuxk',
