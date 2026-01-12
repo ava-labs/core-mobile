@@ -1,6 +1,6 @@
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import TokenService from 'services/token/TokenService'
-import { CoinMarket } from 'services/token/types'
+import { CoinMarket, SimplePriceResponse } from 'services/token/types'
 import { transformSparklineData } from 'services/token/utils'
 import { Charts, MarketToken, MarketType, Prices } from 'store/watchlist/types'
 import Logger from 'utils/Logger'
