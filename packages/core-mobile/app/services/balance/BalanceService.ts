@@ -325,37 +325,16 @@ export class BalanceService {
     // Final aggregated result
     const finalResults = new Map<number, AdjustedNormalizedBalancesForAccount>()
 
-    const requestItems = buildRequestItemsForAccount(networks, account)
+    const requestBatches = buildRequestItemsForAccount(networks, account)
 
-    const body = {
-      data: requestItems,
-      currency: currency as GetBalancesRequestBody['currency'],
-      showUntrustedTokens: false
-    }
-
-    let balanceApiThrew = false
-    const failedChainIds = new Set<number>()
-
-    try {
-      for await (const balance of balanceApi.getBalancesStream(body)) {
-        const normalized = mapBalanceResponseToLegacy(account, balance)
-        if (!normalized) continue
-
-        if (normalized.error) {
-          // Mark chain as failed
-          failedChainIds.add(normalized.chainId)
-        } else {
-          // Progressive update callback for successful balance
-          onBalanceLoaded?.(normalized)
-        }
-
-        // Add to final result
-        finalResults.set(normalized.chainId, normalized)
-      }
-    } catch (err) {
-      // Balance API down / request failed / stream broken
-      balanceApiThrew = true
-    }
+    const { balanceApiThrew, failedChainIds } =
+      await this.processBalanceBatches({
+        requestBatches,
+        account,
+        currency,
+        finalResults,
+        onBalanceLoaded
+      })
 
     // If the balance API threw, we want to retry for all networks.
     // Otherwise, we only retry failed networks.
@@ -381,6 +360,63 @@ export class BalanceService {
     }
 
     return Array.from(finalResults.values())
+  }
+
+  private async processBalanceBatches({
+    requestBatches,
+    account,
+    currency,
+    finalResults,
+    onBalanceLoaded
+  }: {
+    requestBatches: GetBalancesRequestBody['data'][]
+    account: Account
+    currency: string
+    finalResults: Map<number, AdjustedNormalizedBalancesForAccount>
+    onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
+  }): Promise<{ balanceApiThrew: boolean; failedChainIds: Set<number> }> {
+    let balanceApiThrew = false
+    const failedChainIds = new Set<number>()
+
+    // Process each batch sequentially to avoid overwhelming the API
+    for (const requestItems of requestBatches) {
+      // Skip empty batches
+      if (requestItems.length === 0) continue
+
+      const body = {
+        data: requestItems,
+        currency: currency as GetBalancesRequestBody['currency'],
+        showUntrustedTokens: true
+      }
+
+      try {
+        for await (const balance of balanceApi.getBalancesStream(body)) {
+          const normalized = mapBalanceResponseToLegacy(account, balance)
+          if (!normalized) continue
+
+          if (normalized.error) {
+            // Mark chain as failed
+            failedChainIds.add(normalized.chainId)
+          } else {
+            // Progressive update callback for successful balance
+            onBalanceLoaded?.(normalized)
+          }
+
+          // Add to final result (or update if already exists)
+          finalResults.set(normalized.chainId, normalized)
+        }
+      } catch (err) {
+        // Balance API down / request failed / stream broken for this batch
+        balanceApiThrew = true
+        Logger.warn(
+          `[BalanceService][getBalancesForAccount] batch request failed`,
+          err
+        )
+        // Continue with next batch
+      }
+    }
+
+    return { balanceApiThrew, failedChainIds }
   }
 
   private async getBalancesForAccountViaVmModules({
