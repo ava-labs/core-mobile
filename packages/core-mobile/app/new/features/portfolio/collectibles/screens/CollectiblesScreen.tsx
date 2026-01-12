@@ -292,13 +292,14 @@ export const CollectiblesScreen = ({
       style={{
         flex: 1
       }}>
-      <CollapsibleTabs.MasonryList
+      <CollapsibleTabs.FlashList
         data={filteredAndSorted}
         extraData={{
           view,
           sort,
           filter
         }}
+        masonry
         key={`collectibles-list-${listType}`}
         keyExtractor={(item: NftItem) =>
           `collectibles-list-${item.localId}-${item.address}`
@@ -318,7 +319,6 @@ export const CollectiblesScreen = ({
           />
         }
         contentContainerStyle={contentContainerStyle}
-        estimatedItemSize={220}
         removeClippedSubviews={Platform.OS === 'android'}
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled

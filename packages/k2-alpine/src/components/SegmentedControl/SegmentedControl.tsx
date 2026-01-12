@@ -41,8 +41,14 @@ export const SegmentedControl = ({
   const [isReady, setIsReady] = useState(true)
   const { theme } = useTheme()
 
+  // IMPORTANT: Do NOT reference `items` inside any Reanimated worklet (e.g. `useDerivedValue`,
+  // `useAnimatedStyle`). If `items` contains React elements (like badges), Reanimated may try
+  // to serialize the whole array to the UI thread and can throw at render time.
+  // Only capture primitive values that the worklet needs.
+  const itemsCount = items.length
+
   const viewWidth = useSharedValue(0)
-  const textWidths = useSharedValue(Array(items.length).fill(0))
+  const textWidths = useSharedValue(Array(itemsCount).fill(0))
 
   useEffect(() => {
     const task = InteractionManager.runAfterInteractions(() => {
@@ -52,12 +58,12 @@ export const SegmentedControl = ({
   }, [])
 
   const textRatios = useDerivedValue(() => {
-    if (!dynamicItemWidth) return Array(items.length).fill(1 / items.length)
+    if (!dynamicItemWidth) return Array(itemsCount).fill(1 / itemsCount)
     const sum = textWidths.value.reduce((a: number, b: number) => a + b, 0)
     return sum === 0
-      ? Array(items.length).fill(0)
+      ? Array(itemsCount).fill(0)
       : textWidths.value.map((w: number) => w / sum)
-  }, [dynamicItemWidth, items.length])
+  }, [dynamicItemWidth, itemsCount])
 
   const translationAnimation = useDerivedValue(() => {
     if (viewWidth.value === 0) return 0
@@ -120,7 +126,11 @@ export const SegmentedControl = ({
   }
 
   return (
-    <View style={style}>
+    // NOTE: `style` may be an animated style when used by consumers. If we pass an
+    // animated style to a non-animated component, Reanimated will throw at render time.
+    // Using `Animated.View` here makes `SegmentedControl` safe for both animated and
+    // non-animated styles.
+    <Animated.View style={style}>
       <BlurView
         intensity={30}
         style={{
@@ -128,7 +138,7 @@ export const SegmentedControl = ({
           overflow: 'hidden',
           backgroundColor: theme.isDark ? '#C5C5C840' : '#28282820'
         }}>
-        <View style={styles.container} onLayout={handleLayout}>
+        <Animated.View style={styles.container} onLayout={handleLayout}>
           <Animated.View
             style={[
               styles.indicator,
@@ -141,7 +151,7 @@ export const SegmentedControl = ({
               <Segment
                 sx={{ paddingVertical: type === 'thin' ? 8 : 12 }}
                 key={index}
-                ratio={dynamicItemWidth ? textRatios : 1 / items.length}
+                ratio={dynamicItemWidth ? textRatios : 1 / itemsCount}
                 text={item.title}
                 index={index}
                 selectedIndex={selectedSegmentIndex}
@@ -153,9 +163,9 @@ export const SegmentedControl = ({
               />
             )
           })}
-        </View>
+        </Animated.View>
       </BlurView>
-    </View>
+    </Animated.View>
   )
 }
 
