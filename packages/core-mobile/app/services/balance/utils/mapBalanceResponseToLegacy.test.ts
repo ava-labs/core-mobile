@@ -25,7 +25,8 @@ const testAccount = {
       index: 0,
       hasActivity: true
     }
-  }
+  },
+  hasMigratedXpAddresses: true
 }
 
 describe('mapBalanceResponseToLegacy', () => {
