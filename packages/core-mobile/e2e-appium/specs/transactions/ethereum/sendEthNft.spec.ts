@@ -5,7 +5,7 @@ import portfolio from '../../../pages/portfolio.page'
 import warmup from '../../../helpers/warmup'
 
 describe('Send transaction', () => {
-  it('should send NFT on Ethereum', async () => {
+  it('[Smoke] should send NFT on Ethereum', async () => {
     await warmup()
     await portfolio.tapCollectiblesTab()
     await common.filter(commonLoc.ethereum)

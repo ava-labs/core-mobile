@@ -412,7 +412,7 @@ class AvalancheWalletService {
     const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
 
     const xpAddr =
-      account.xpAddresses.length > 0
+      account.xpAddresses && account.xpAddresses.length > 0
         ? [...account.xpAddresses]
             .sort((a, b) => a.index - b.index)
             .map(xpAddress => stripAddressPrefix(xpAddress.address))

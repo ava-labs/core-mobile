@@ -3,7 +3,7 @@ import txPage from '../../../pages/transactions.page'
 import txLoc from '../../../locators/transactions.loc'
 
 describe('Swap on Solana', () => {
-  it('Should swap SOL to SPL', async () => {
+  it('[Smoke] Should swap SOL to SPL', async () => {
     await warmup()
     await txPage.swap('SOL', 'USDC', '0.00001', txLoc.solana)
     await txPage.verifySuccessToast()
