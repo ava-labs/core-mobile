@@ -606,8 +606,8 @@ __metadata:
     react-native-graph: 1.1.0
     react-native-in-app-updates: 0.2.2
     react-native-inappbrowser-reborn: 3.7.0
-    react-native-ios-context-menu: 3.1.0
-    react-native-ios-utilities: 5.1.2
+    react-native-ios-context-menu: 3.2.0
+    react-native-ios-utilities: 5.2.0
     react-native-keyboard-controller: 1.18.5
     react-native-keychain: 10.0.0
     react-native-level-fs: 3.0.1
@@ -33568,26 +33568,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-ios-context-menu@npm:3.1.0":
-  version: 3.1.0
-  resolution: "react-native-ios-context-menu@npm:3.1.0"
+"react-native-ios-context-menu@npm:3.2.0":
+  version: 3.2.0
+  resolution: "react-native-ios-context-menu@npm:3.2.0"
   dependencies:
     "@dominicstop/ts-event-emitter": ^1.1.0
   peerDependencies:
     react: "*"
     react-native: "*"
     react-native-ios-utilities: "*"
-  checksum: a515807d3338f219baf9c29c4671ea9a7f7f1b60ee20af319018b31051c1524348bfb140541c56ec0c9bcc3de2a14579cb1d95b97c72fc1a82c4c5d7649b7f9d
+  checksum: 7dc333a5fd8e5050ae836db943b338f365e9e26e666069f3ae38d55859fb94345f0e16b1bf3f3f77fac4c7ea3a394a5560e1a104a844f170ff5985b01f24165c
   languageName: node
   linkType: hard
 
-"react-native-ios-utilities@npm:5.1.2":
-  version: 5.1.2
-  resolution: "react-native-ios-utilities@npm:5.1.2"
+"react-native-ios-utilities@npm:5.2.0":
+  version: 5.2.0
+  resolution: "react-native-ios-utilities@npm:5.2.0"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: ac94a4e171e3136f49815b3c3bbd5545292a774a87867edf8465cd289dfc78766350024fda0ce5ade91702f726fec69879b5119df0713f8a665e696fa3bc9d00
+  checksum: 0107a335e63f7961acfc212b4dfe8868183dfaa25f06de40e102ed739fa47850ae663590d2a727a0ace38e14df555bbfe6bcdc1ddcf58ffd754369eec83e28ba
   languageName: node
   linkType: hard
 

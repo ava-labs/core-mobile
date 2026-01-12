@@ -37,7 +37,13 @@ export const modalScreensOptions: NativeStackNavigationOptions = {
   sheetAllowedDetents: [Platform.OS === 'android' ? 0.93 : 0.99],
   headerLeft: () => <BackBarButton />,
   gestureEnabled: true,
-  headerTransparent: true
+  headerTransparent: true,
+  ...(Platform.OS === 'ios' && {
+    // iOS will display empty content without this
+    contentStyle: {
+      height: '100%'
+    }
+  })
 }
 
 export function useModalScreensOptions(): {
@@ -52,7 +58,8 @@ export function useModalScreensOptions(): {
       contentStyle: {
         // Android formsheet in native-stack has a default top padding of insets.top
         // by removing the insets.top this we adjust the navigation bar position
-        marginTop: Platform.OS === 'android' ? -insets.top + 8 : 0
+        marginTop: Platform.OS === 'android' ? -insets.top + 8 : 0,
+        height: Platform.OS === 'ios' ? '100%' : undefined
       }
     },
     secondaryModalScreensOptions: {
@@ -61,7 +68,8 @@ export function useModalScreensOptions(): {
       contentStyle: {
         // Android formsheet in native-stack has a default top padding of insets.top
         // by removing the insets.top this we adjust the navigation bar position
-        marginTop: Platform.OS === 'android' ? -insets.top + 8 : 0
+        marginTop: Platform.OS === 'android' ? -insets.top + 8 : 0,
+        height: Platform.OS === 'ios' ? '100%' : undefined
       },
       sheetAllowedDetents: [Platform.OS === 'android' ? 0.92 : 0.99]
     }
