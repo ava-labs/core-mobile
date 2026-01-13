@@ -27,7 +27,6 @@ import { selectIsSeedlessSigningBlocked } from 'store/posthog/slice'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { RequestContext } from 'store/rpc/types'
 import Logger from 'utils/Logger'
-import SentryService from 'services/sentry/SentryService'
 import { Eip1559Fees } from 'utils/Utils'
 import { Account } from '../../components/Account'
 import BalanceChange from '../../components/BalanceChange/BalanceChange'
@@ -157,7 +156,6 @@ const ApprovalScreen = ({
       })
       router.canGoBack() && router.back()
     } catch (error: unknown) {
-      SentryService.captureException('Approval handleApprove failed', error)
       Logger.error('Error approving transaction', error)
     } finally {
       setSubmitting(false)
