@@ -20,6 +20,23 @@ export type SessionProposalParams = {
   scanResponse?: SiteScanResponse
 }
 
+export type OnApproveParams = {
+  walletId: string
+  walletType: WalletType
+  network: Network
+  account: Account
+  maxFeePerGas?: bigint
+  maxPriorityFeePerGas?: bigint
+  gasLimit?: number
+  overrideData?: string
+}
+
+export type LedgerReviewTransactionParams = {
+  network: Network
+  onApprove: () => Promise<void>
+  onReject: (message?: string) => void
+}
+
 export type ApprovalParams = {
   request: RpcRequest
   displayData: DisplayData
@@ -33,16 +50,7 @@ export type ApprovalParams = {
     maxPriorityFeePerGas,
     gasLimit,
     overrideData
-  }: {
-    walletId: string
-    walletType: WalletType
-    network: Network
-    account: Account
-    maxFeePerGas?: bigint
-    maxPriorityFeePerGas?: bigint
-    gasLimit?: number
-    overrideData?: string
-  }) => Promise<void>
+  }: OnApproveParams) => Promise<void>
   onReject: (message?: string) => void
 }
 

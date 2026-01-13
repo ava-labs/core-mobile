@@ -5,7 +5,8 @@ import {
   EditContactParams,
   AddEthereumChainParams,
   KeystoneSignerParams,
-  KeystoneTroubleshootingParams
+  KeystoneTroubleshootingParams,
+  LedgerReviewTransactionParams
 } from './types'
 
 // a simple in-memory cache (no reactivity or persistence support)
@@ -21,6 +22,9 @@ export const walletConnectCache = {
   keystoneSignerParams: createCache<KeystoneSignerParams>('keystone signer'),
   keystoneTroubleshootingParams: createCache<KeystoneTroubleshootingParams>(
     'keystone troubleshooting'
+  ),
+  ledgerReviewTransactionParams: createCache<LedgerReviewTransactionParams>(
+    'ledger review transaction'
   )
 }
 
