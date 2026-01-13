@@ -94,6 +94,9 @@ export const useBenqiDepositErc20 = ({
             queryClient.invalidateQueries({
               queryKey: [ReactQueryKeys.BENQI_AVAILABLE_MARKETS]
             })
+            queryClient.invalidateQueries({
+              queryKey: [ReactQueryKeys.BENQI_ACCOUNT_SNAPSHOT]
+            })
           }
         }
       })

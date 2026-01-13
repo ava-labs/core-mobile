@@ -47,5 +47,6 @@ export enum ReactQueryKeys {
 
   // deposit
   AAVE_AVAILABLE_MARKETS = 'aaveAvailableMarkets',
-  BENQI_AVAILABLE_MARKETS = 'benqiAvailableMarkets'
+  BENQI_AVAILABLE_MARKETS = 'benqiAvailableMarkets',
+  BENQI_ACCOUNT_SNAPSHOT = 'benqiAccountSnapshot'
 }

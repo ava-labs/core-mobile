@@ -108,7 +108,6 @@ const DepositTabScreen = ({
       if (content) {
         return (
           <Animated.View
-            key={item === StaticCard.Add ? 'add-deposit' : item.uniqueMarketId}
             style={{
               marginBottom: 14,
               marginRight: index % 2 === 0 ? 6 : 16,
@@ -213,7 +212,9 @@ const DepositTabScreen = ({
       numColumns={2}
       renderItem={renderItem}
       showsVerticalScrollIndicator={false}
-      keyExtractor={(_, index) => index.toString()}
+      keyExtractor={item =>
+        item === StaticCard.Add ? 'add-deposit' : item.uniqueMarketId
+      }
       removeClippedSubviews={true}
       extraData={{ isDark: theme.isDark }} // force re-render when theme changes
       onRefresh={refresh}

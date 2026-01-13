@@ -36,24 +36,15 @@ export const MERKL_DISTRIBUTOR_ADDRESS =
 export const A_TOKEN_DECIMALS = 8
 export const WRAPPED_AVAX_DECIMALS = 18
 
-export const BENQI_COMPTROLLER_C_CHAIN_ADDRESS =
-  '0x486af39519b4dc9a7fccd318217352830e8ad9b4' as const
 export const BENQI_PRICE_ORACLE_C_CHAIN_ADDRESS =
   '0x316ae55ec59e0beb2121c0e41d4bdef8bf66b32b' as const
 export const BENQI_QAVAX_C_CHAIN_ADDRESS =
   '0x5C0401e81Bc07Ca70fAD469b451682c0d747Ef1c' as const
 export const BENQI_QI_C_CHAIN_ADDRESS =
   '0x35Bd6aedA81a7E5FC7A7832490e71F757b0cD9Ce' as const
+export const BENQI_LENS_C_CHAIN_ADDRESS =
+  '0x15f30De066D21e4828D78A497d31c665a6162D2D' as const
 export const BENQI_QI_TOKEN_DECIMALS = 8
-
-/**
- * Benqi's method calls often take a parameter that specifies which token type we're querying information for.
- * QI: 0
- * AVAX: 1
- * See: https://snowtrace.io/address/0xd8E426C61b0FBBda06e9F603263ABea09d717dBD/contract/43114/code
- * */
-export const BENQI_TOKEN_TYPE_QI = 0
-export const BENQI_TOKEN_TYPE_AVAX = 1
 
 // Gas costs for minting with some buffer
 // https://snowtrace.io/tx/0x6d76d6232ccbe4d9450d6d3ce913cefb5257be6ee62b6385d2b371da0d3122fe?chainid=43114

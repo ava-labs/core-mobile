@@ -1,20 +1,28 @@
 import { QueryObserverResult, skipToken, useQuery } from '@tanstack/react-query'
-import { readContract } from 'viem/actions'
+import { useCallback } from 'react'
+import { multicall } from 'viem/actions'
 import { DefiMarket, MarketNames } from 'features/defiMarket/types'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import { Address, PublicClient } from 'viem'
-import { BENQI_COMPTROLLER } from 'features/defiMarket/abis/benqiComptroller'
-import { BENQI_COMPTROLLER_C_CHAIN_ADDRESS } from 'features/defiMarket/consts'
+import { Address, PublicClient, zeroAddress } from 'viem'
 import Logger from 'utils/Logger'
 import { getBenqiDepositedBalance } from 'features/defiMarket/utils/getBenqiDepositedBalance'
-import { getBenqiSupplyApyPercent } from 'features/defiMarket/utils/getBenqiLiveApy'
-import { getBenqiUnderlyingTokenDetails } from 'features/defiMarket/utils/getBenqiUnderlyingTokenDetails'
-import { getBenqiUnderlyingTotalSupply } from 'features/defiMarket/utils/getBenqiUnderlyingTotalSupply'
+import { getBenqiSupplyApyPercent } from 'features/defiMarket/utils/getBenqiSupplyApyPercent'
 import { getUniqueMarketId } from 'features/defiMarket/utils/getUniqueMarketId'
 import { Network } from '@avalabs/core-chains-sdk'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { BENQI_LENS_ABI } from 'features/defiMarket/abis/benqiLens'
+import { BENQI_PRICE_ORACLE } from 'features/defiMarket/abis/benqiPriceOracle'
+import {
+  BENQI_LENS_C_CHAIN_ADDRESS,
+  BENQI_PRICE_ORACLE_C_CHAIN_ADDRESS,
+  BENQI_QAVAX_C_CHAIN_ADDRESS,
+  BENQI_QI_C_CHAIN_ADDRESS
+} from 'features/defiMarket/consts'
+import { formatAmount } from 'features/defiMarket/utils/formatInterest'
+import { bigIntToBig } from 'features/defiMarket/utils/bigInt'
 import { useGetCChainToken } from '../useGetCChainToken'
+import { useBenqiAccountSnapshot } from './useBenqiAccountSnapshot'
 
 export const useBenqiAvailableMarkets = ({
   network,
@@ -29,122 +37,185 @@ export const useBenqiAvailableMarkets = ({
   isPending: boolean
   isFetching: boolean
   refetch: () => Promise<QueryObserverResult<DefiMarket[], Error>>
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
   const activeAccount = useSelector(selectActiveAccount)
-  const addressEVM = activeAccount?.addressC
+  const addressEVM = activeAccount?.addressC as Address | undefined
   const getCChainToken = useGetCChainToken()
+  const {
+    data: accountSnapshot,
+    isLoading: isLoadingAccountSnapshot,
+    refetch: refetchAccountSnapshot
+  } = useBenqiAccountSnapshot({ networkClient })
 
-  const { data, isLoading, isPending, isFetching, error, refetch } = useQuery({
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+  const shouldFetch =
+    networkClient && network && !isLoadingAccountSnapshot && addressEVM
+
+  const {
+    data,
+    isLoading,
+    isPending,
+    isFetching,
+    error,
+    refetch: refetchMarkets
+  } = useQuery({
     queryKey: [
       ReactQueryKeys.BENQI_AVAILABLE_MARKETS,
       networkClient?.chain?.id
     ],
-    queryFn:
-      networkClient && network
-        ? async () => {
-            const qTokenAddresses = (await readContract(networkClient, {
-              address: BENQI_COMPTROLLER_C_CHAIN_ADDRESS,
-              abi: BENQI_COMPTROLLER,
-              functionName: 'getAllMarkets',
-              args: []
-            })) as Address[]
+    queryFn: shouldFetch
+      ? async () => {
+          try {
+            // Fetch all market metadata and prices in a single multicall
+            const [marketsRaw, qiPriceRaw, avaxPriceRaw] = await multicall(
+              networkClient,
+              {
+                contracts: [
+                  {
+                    address: BENQI_LENS_C_CHAIN_ADDRESS,
+                    functionName: 'getMarketMetadataForAllMarkets',
+                    abi: BENQI_LENS_ABI,
+                    args: []
+                  },
+                  // QI price: getUnderlyingPrice(QI token address), scaled by 1e18 (WAD)
+                  {
+                    address: BENQI_PRICE_ORACLE_C_CHAIN_ADDRESS,
+                    abi: BENQI_PRICE_ORACLE,
+                    functionName: 'getUnderlyingPrice',
+                    args: [BENQI_QI_C_CHAIN_ADDRESS]
+                  },
+                  // AVAX price: getUnderlyingPrice(qAVAX address), scaled by 1e18 (WAD)
+                  {
+                    address: BENQI_PRICE_ORACLE_C_CHAIN_ADDRESS,
+                    abi: BENQI_PRICE_ORACLE,
+                    functionName: 'getUnderlyingPrice',
+                    args: [BENQI_QAVAX_C_CHAIN_ADDRESS]
+                  }
+                ]
+              }
+            )
 
-            const results = await Promise.allSettled(
-              qTokenAddresses.map(async qTokenAddress => {
+            const markets = marketsRaw.result ?? []
+            const qiPrice = qiPriceRaw.result ?? 0n
+            const avaxPrice = avaxPriceRaw.result ?? 0n
+
+            return markets
+              .map(rawBenqiMarket => {
                 try {
-                  const isPaused = await readContract(networkClient, {
-                    address: BENQI_COMPTROLLER_C_CHAIN_ADDRESS,
-                    abi: BENQI_COMPTROLLER,
-                    functionName: 'mintGuardianPaused',
-                    args: [qTokenAddress]
-                  })
+                  const {
+                    mintPaused: isPaused,
+                    underlying,
+                    totalUnderlyingSupply,
+                    qiSupplyRewardSpeed,
+                    avaxSupplyRewardSpeed,
+                    price,
+                    supplyRate,
+                    market: qTokenAddress
+                  } = rawBenqiMarket
 
                   // We don't currently show paused markets
                   if (isPaused) {
                     return undefined
                   }
 
-                  const {
-                    underlyingTokenAddress,
-                    underlyingTokenName,
-                    underlyingTokenDecimals,
-                    underlyingTokenSymbol
-                  } = await getBenqiUnderlyingTokenDetails({
-                    cChainClient: networkClient,
-                    qTokenAddress
-                  })
+                  const underlyingTokenDecimals = Number(underlying.decimals)
+                  const formattedUnderlyingTotalSupply = formatAmount(
+                    bigIntToBig(totalUnderlyingSupply),
+                    underlyingTokenDecimals
+                  )
+                  const formattedUnderlyingPrice = formatAmount(
+                    bigIntToBig(price),
+                    36 - underlyingTokenDecimals
+                  )
 
-                  const underlyingTotalSupply =
-                    await getBenqiUnderlyingTotalSupply({
-                      cChainClient: networkClient,
-                      qTokenAddress,
-                      underlyingTokenDecimals
-                    })
-
-                  const supplyApyPercent = await getBenqiSupplyApyPercent({
-                    qTokenAddress,
-                    underlyingTokenDecimals,
-                    underlyingTotalSupply,
-                    cChainClient: networkClient
+                  const supplyApyPercent = getBenqiSupplyApyPercent({
+                    qiSupplyRewardSpeed,
+                    avaxSupplyRewardSpeed,
+                    avaxPrice,
+                    qiPrice,
+                    formattedUnderlyingTotalSupply,
+                    formattedUnderlyingPrice,
+                    supplyRate
                   })
 
                   const token = getCChainToken(
-                    underlyingTokenSymbol,
-                    underlyingTokenAddress
+                    underlying.symbol,
+                    underlying.token
                   )
 
-                  const marketData = {
+                  // Get balance from account snapshot if available
+                  const maybeSnapshot =
+                    accountSnapshot?.accountMarketSnapshots.find(
+                      snapshot => snapshot.market === qTokenAddress
+                    )
+                  const snapshotBalance = maybeSnapshot
+                    ? maybeSnapshot.supplyBalance
+                    : 0n
+
+                  // Zero address means native token (AVAX), not an ERC20 contract
+                  const contractAddress =
+                    underlying.token === zeroAddress
+                      ? undefined
+                      : underlying.token
+
+                  const marketData: Omit<DefiMarket, 'uniqueMarketId'> = {
                     marketName: MarketNames.benqi,
                     network,
                     asset: {
-                      mintTokenAddress: qTokenAddress,
-                      assetName: underlyingTokenName,
+                      mintTokenAddress: qTokenAddress as Address,
+                      assetName: underlying.name,
                       decimals: underlyingTokenDecimals,
                       iconUrl: token?.logoUri,
-                      symbol: underlyingTokenSymbol,
-                      contractAddress: underlyingTokenAddress,
-                      mintTokenBalance: await getBenqiDepositedBalance({
-                        cChainClient: networkClient,
+                      symbol: underlying.symbol,
+                      contractAddress,
+                      mintTokenBalance: getBenqiDepositedBalance({
+                        balanceOfUnderlying: snapshotBalance,
                         underlyingTokenDecimals,
-                        walletAddress: addressEVM as Address,
-                        qTokenAddress
+                        formattedUnderlyingPrice
                       })
                     },
-                    type: 'lending' as const,
+                    type: 'lending',
                     supplyApyPercent,
                     historicalApyPercent: undefined,
-                    totalDeposits: underlyingTotalSupply,
+                    totalDeposits: formattedUnderlyingTotalSupply,
                     // There currently are no supply caps on Benqi markets we support.
                     supplyCapReached: false
                   }
 
-                  return {
+                  const market: DefiMarket = {
                     ...marketData,
                     uniqueMarketId: getUniqueMarketId(marketData)
                   }
+
+                  return market
                 } catch (err) {
-                  Logger.error('Error fetching/enriching Benqi market', {
-                    qTokenAddress,
+                  Logger.error('Error enriching Benqi market', {
+                    qTokenAddress: rawBenqiMarket.market,
                     err
                   })
                   return undefined
                 }
               })
-            )
-
-            return results
-              .filter(promise => promise.status === 'fulfilled')
-              .map(promise => promise.value)
-              .filter(market => !!market)
+              .filter((market): market is DefiMarket => market !== undefined)
+          } catch (err) {
+            Logger.error('Error fetching Benqi markets from Lens contract', {
+              err
+            })
+            throw err
           }
-        : skipToken
+        }
+      : skipToken
   })
+
+  const refetch = useCallback(async () => {
+    await refetchAccountSnapshot()
+    return refetchMarkets()
+  }, [refetchAccountSnapshot, refetchMarkets])
 
   return {
     data,
     error,
-    isLoading,
+    isLoading: isLoading || isLoadingAccountSnapshot,
     isPending,
     isFetching,
     refetch
