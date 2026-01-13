@@ -1,7 +1,6 @@
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
-import AppCheckService from 'services/fcm/AppCheckService'
-import { fetch as expoFetch } from 'expo/fetch'
+import { appCheckStreamingFetch } from 'utils/api/common/appCheckFetch'
 import { CORE_HEADERS } from '../constants'
 import {
   GetBalancesRequestBody,
@@ -21,17 +20,17 @@ const balanceApi = {
   getBalancesStream: async function* (
     body: GetBalancesRequestBody
   ): AsyncGenerator<GetBalancesResponse> {
-    const appCheckToken = await AppCheckService.getToken()
-
-    const res = await expoFetch(`${BALANCE_URL}/v1/balance/get-balances`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Firebase-AppCheck': appCheckToken.token,
-        ...CORE_HEADERS
-      },
-      body: JSON.stringify(body)
-    })
+    const res = await appCheckStreamingFetch(
+      `${BALANCE_URL}/v1/balance/get-balances`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...CORE_HEADERS
+        },
+        body: JSON.stringify(body)
+      }
+    )
 
     // Check if the response is successful
     if (!res.ok) {

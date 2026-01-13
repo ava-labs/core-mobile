@@ -6,8 +6,6 @@ import Logger from 'utils/Logger'
 import { AnyAction, isAnyOf, PayloadAction } from '@reduxjs/toolkit'
 import { manageForegroundNotificationSubscription } from 'store/notifications/listeners/manageForegroundNotificationSubscription'
 import { unsubscribeBalanceChangeNotifications } from 'store/notifications/listeners/unsubscribeBalanceChangeNotifications'
-import { setFeatureFlags } from 'store/posthog/slice'
-import { FeatureFlags, FeatureGates } from 'services/posthog/types'
 import type { Action } from 'redux'
 import { ChannelId, NewsChannelId } from 'services/notifications/channels'
 import { handleProcessNotificationData } from 'store/notifications/listeners/handleProcessNotificationData'
@@ -96,7 +94,6 @@ export const addNotificationsListeners = (
       setAccount,
       onFcmTokenChange,
       turnOnAllNotifications,
-      onNotificationsEnabled,
       onNotificationsTurnedOnForBalanceChange
     ),
     effect: async (_, listenerApi) => {
@@ -113,7 +110,6 @@ export const addNotificationsListeners = (
       onRehydrationComplete,
       onFcmTokenChange,
       turnOnAllNotifications,
-      onNotificationsEnabled,
       onNotificationsTurnedOnForNews
     ),
     effect: async (_, listenerApi) => {
@@ -150,7 +146,7 @@ export const addNotificationsListeners = (
   })
 
   startListening({
-    matcher: isAnyOf(onLogOut, onNotificationsDisabled),
+    matcher: isAnyOf(onLogOut),
     effect: async () => {
       await unsubscribeAllNotifications().catch(reason => {
         Logger.error(`[listeners.ts][unsubscribeAllNotifications]${reason}`)
@@ -203,7 +199,6 @@ export const addNotificationsListeners = (
       onRehydrationComplete,
       onFcmTokenChange,
       turnOnAllNotifications,
-      onNotificationsEnabled,
       onNotificationsTurnedOnForFavTokenPriceAlerts
     ),
     effect: setPriceAlertNotifications
@@ -311,26 +306,5 @@ const onNotificationsTurnedOffForFavTokenPriceAlerts = {
     }
 
     return action.payload.channelId === ChannelId.FAV_TOKEN_PRICE_ALERTS
-  }
-}
-
-const onNotificationsEnabled = {
-  match: (action: Action<unknown>): action is PayloadAction<FeatureFlags> => {
-    if (setFeatureFlags.match(action)) {
-      const setFeatureFlagsAction = action
-      return !!setFeatureFlagsAction.payload[FeatureGates.ALL_NOTIFICATIONS]
-    }
-
-    return false
-  }
-}
-const onNotificationsDisabled = {
-  match: (action: Action<unknown>): action is PayloadAction<FeatureFlags> => {
-    if (setFeatureFlags.match(action)) {
-      const setFeatureFlagsAction = action
-      return !setFeatureFlagsAction.payload[FeatureGates.ALL_NOTIFICATIONS]
-    }
-
-    return false
   }
 }
