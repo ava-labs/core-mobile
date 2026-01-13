@@ -1021,7 +1021,7 @@ workflows:
         - tag: google_apis
         - abi: x86_64
         - profile: pixel_7_pro
-        - custom_command_flags: -no-snapshot -noaudio
+        - custom_command_flags: -no-snapshot -noaudio -no-window
         - ram_size: 4096
         - heap_size: 576
     - wait-for-android-emulator@1: {}

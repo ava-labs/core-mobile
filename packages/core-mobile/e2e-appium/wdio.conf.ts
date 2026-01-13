@@ -32,7 +32,7 @@ const allCaps = [
   {
     platformName: 'Android',
     'appium:deviceName': 'emulator-5554',
-    'appium:platformVersion': '14.0',
+    'appium:platformVersion': '13.0',
     'appium:automationName': 'UiAutomator2',
     'appium:app': androidPath,
     'appium:appWaitActivity': '*',
