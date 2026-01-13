@@ -100,8 +100,7 @@ class NetworkService {
         } else if (typeof signedTx === 'string') {
           if (provider instanceof JsonRpcBatchInternal) {
             const isAvalancheCChain =
-              network.chainId === ChainId.AVALANCHE_MAINNET_ID ||
-              network.chainId === ChainId.AVALANCHE_TESTNET_ID
+              network.chainId === ChainId.AVALANCHE_MAINNET_ID
 
             const tx = isAvalancheCChain
               ? await this.broadcastWithRetry({
@@ -109,7 +108,7 @@ class NetworkService {
                   signedTx
                 })
               : await provider.broadcastTransaction(signedTx)
-              
+
             handleWaitToPost?.(tx)
             txID = tx.hash
           } else if (provider instanceof BitcoinProvider) {
