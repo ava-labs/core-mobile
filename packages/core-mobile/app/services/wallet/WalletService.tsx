@@ -173,11 +173,6 @@ class WalletService {
     walletType: WalletType,
     accountIndex: number
   ): Promise<PubKeyType> {
-    const wallet = await WalletFactory.createWallet({
-      walletId,
-      walletType
-    })
-
     const derivationPathEVM = getAddressDerivationPath({
       accountIndex,
       vmType: NetworkVMType.EVM
@@ -187,15 +182,63 @@ class WalletService {
       vmType: NetworkVMType.AVM
     })
 
-    const evmPublicKey = await wallet.getPublicKeyFor({
-      derivationPath: derivationPathEVM,
-      curve: Curve.SECP256K1
+    // Check cache first for both keys
+    const cachedEvmKey = WalletFactory.cache.getPublicKey(
+      walletId,
+      derivationPathEVM,
+      Curve.SECP256K1
+    )
+    const cachedXpKey = WalletFactory.cache.getPublicKey(
+      walletId,
+      derivationPathAVM,
+      Curve.SECP256K1
+    )
+
+    // If both are cached, return immediately
+    if (cachedEvmKey && cachedXpKey) {
+      return {
+        evm: cachedEvmKey,
+        xp: cachedXpKey
+      }
+    }
+
+    // Otherwise, create wallet and derive missing keys
+    const wallet = await WalletFactory.createWallet({
+      walletId,
+      walletType
     })
 
-    const xpPublicKey = await wallet.getPublicKeyFor({
-      derivationPath: derivationPathAVM,
-      curve: Curve.SECP256K1
-    })
+    const evmPublicKey =
+      cachedEvmKey ||
+      (await wallet.getPublicKeyFor({
+        derivationPath: derivationPathEVM,
+        curve: Curve.SECP256K1
+      }))
+
+    const xpPublicKey =
+      cachedXpKey ||
+      (await wallet.getPublicKeyFor({
+        derivationPath: derivationPathAVM,
+        curve: Curve.SECP256K1
+      }))
+
+    // Cache any newly derived keys
+    if (!cachedEvmKey) {
+      WalletFactory.cache.setPublicKey(
+        walletId,
+        derivationPathEVM,
+        Curve.SECP256K1,
+        evmPublicKey
+      )
+    }
+    if (!cachedXpKey) {
+      WalletFactory.cache.setPublicKey(
+        walletId,
+        derivationPathAVM,
+        Curve.SECP256K1,
+        xpPublicKey
+      )
+    }
 
     return {
       evm: evmPublicKey,
@@ -214,12 +257,27 @@ class WalletService {
     derivationPath?: string
     curve: Curve
   }): Promise<string> {
+    // Check cache first
+    // If derivation path is not provided, we use a default key
+    // This supports wallets that don't use derivation paths (e.g. PrivateKeyWallet)
+    const cacheKey = derivationPath ?? 'ROOT'
+
+    const cached = WalletFactory.cache.getPublicKey(walletId, cacheKey, curve)
+    if (cached) {
+      return cached
+    }
+
     const wallet = await WalletFactory.createWallet({
       walletId,
       walletType
     })
 
-    return await wallet.getPublicKeyFor({ derivationPath, curve })
+    const publicKey = await wallet.getPublicKeyFor({ derivationPath, curve })
+
+    // Cache the result
+    WalletFactory.cache.setPublicKey(walletId, cacheKey, curve, publicKey)
+
+    return publicKey
   }
 
   public async getRawXpubXP({
@@ -233,6 +291,12 @@ class WalletService {
   }): Promise<string> {
     if (!this.hasXpub(walletType)) {
       throw new Error('Unable to get raw xpub XP: unsupported wallet type')
+    }
+
+    // Check cache first
+    const cached = WalletFactory.cache.getXpub(walletId, accountIndex)
+    if (cached) {
+      return cached
     }
 
     const wallet = await WalletFactory.createWallet({
@@ -250,7 +314,12 @@ class WalletService {
       )
     }
 
-    return wallet.getRawXpubXP(accountIndex)
+    const xpub = await wallet.getRawXpubXP(accountIndex)
+
+    // Cache the result
+    WalletFactory.cache.setXpub(walletId, accountIndex, xpub)
+
+    return xpub
   }
 
   public async getAddressesFromXpubXP({
