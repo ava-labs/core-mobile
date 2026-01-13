@@ -123,6 +123,8 @@ export class LedgerService {
         return LedgerAppType.SOLANA
       case 'ethereum':
         return LedgerAppType.ETHEREUM
+      case 'bitcoin':
+        return LedgerAppType.BITCOIN
       default:
         return LedgerAppType.UNKNOWN
     }

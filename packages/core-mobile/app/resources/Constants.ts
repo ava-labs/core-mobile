@@ -19,7 +19,8 @@ export enum ZustandStorageKeys {
   DEFI_VIEW = 'defiView',
   MARKET_VIEW = 'marketView',
   FAVORITES_VIEW = 'favoritesView',
-  TRACK_SEARCH_VIEW = 'trackSearchView'
+  TRACK_SEARCH_VIEW = 'trackSearchView',
+  LEDGER_WALLET_MAP = 'ledgerWalletMap'
 }
 
 export const CORE_UNIVERSAL_LINK_HOSTS = ['core.app', 'test.core.app']

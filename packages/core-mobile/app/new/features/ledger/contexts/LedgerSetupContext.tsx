@@ -17,6 +17,7 @@ import {
   useLedgerWallet,
   UseLedgerWalletReturn
 } from '../hooks/useLedgerWallet'
+import { useLedgerWalletMap } from '../store'
 
 interface LedgerSetupContextValue {
   // State values
@@ -80,10 +81,25 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
     disconnectDevice,
     getSolanaKeys,
     getAvalancheKeys,
-    createLedgerWallet,
+    createLedgerWallet: _createLedgerWallet,
     setupProgress,
     keys
   } = useLedgerWallet()
+
+  const { setLedgerWalletMap } = useLedgerWalletMap()
+
+  const createLedgerWallet = useCallback(
+    async (options: WalletCreationOptions) => {
+      const walletId = await _createLedgerWallet(options)
+      setLedgerWalletMap(
+        walletId,
+        options.deviceId,
+        options.deviceName || 'Ledger Device'
+      )
+      return walletId
+    },
+    [_createLedgerWallet, setLedgerWalletMap]
+  )
 
   const handleSetConnectedDevice = useCallback(
     (deviceId: string, deviceName: string) => {
