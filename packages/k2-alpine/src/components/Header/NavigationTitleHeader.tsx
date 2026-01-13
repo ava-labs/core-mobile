@@ -7,11 +7,13 @@ export const NavigationTitleHeader = memo(
   ({
     title,
     subtitle,
-    shouldMaskSubtitle = false
+    shouldMaskSubtitle = false,
+    renderMaskedSubtitle
   }: {
     title: string
     subtitle?: string
     shouldMaskSubtitle?: boolean
+    renderMaskedSubtitle?: () => React.ReactNode
   }): JSX.Element => {
     return (
       <View
@@ -34,15 +36,18 @@ export const NavigationTitleHeader = memo(
           }}>
           {title}
         </Text>
-        {subtitle && (
-          <MaskedText
-            numberOfLines={1}
-            variant="caption"
-            sx={{ color: '$textSecondary' }}
-            shouldMask={shouldMaskSubtitle}>
-            {subtitle}
-          </MaskedText>
-        )}
+        {subtitle &&
+          (shouldMaskSubtitle && renderMaskedSubtitle ? (
+            renderMaskedSubtitle()
+          ) : (
+            <MaskedText
+              numberOfLines={1}
+              variant="caption"
+              sx={{ color: '$textSecondary' }}
+              shouldMask={shouldMaskSubtitle}>
+              {subtitle}
+            </MaskedText>
+          ))}
       </View>
     )
   },

@@ -49,10 +49,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import {
-  useSafeAreaFrame,
-  useSafeAreaInsets
-} from 'react-native-safe-area-context'
+import { useSafeAreaFrame } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AnalyticsEventName } from 'services/analytics/types'
@@ -183,6 +180,17 @@ const PortfolioHomeScreen = (): JSX.Element => {
         title={activeAccount?.name ?? ''}
         subtitle={formattedBalance}
         shouldMaskSubtitle={isPrivacyModeEnabled}
+        renderMaskedSubtitle={
+          isPrivacyModeEnabled
+            ? () => (
+                <HiddenBalanceText
+                  variant="caption"
+                  isCurrency={true}
+                  sx={{ color: '$textSecondary' }}
+                />
+              )
+            : undefined
+        }
       />
     ),
     [activeAccount?.name, formattedBalance, isPrivacyModeEnabled]
@@ -335,7 +343,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
               },
               animatedHeaderStyle
             ]}>
-            <Pressable hitSlop={10} onPress={openWalletsModal}>
+            <Pressable
+              onPress={openWalletsModal}
+              style={{
+                marginBottom: filteredTokenList.length === 0 ? 8 : 0
+              }}>
               <BalanceHeader
                 testID="portfolio"
                 walletName={walletName}
@@ -361,7 +373,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
             buttons={actionButtons}
             contentContainerStyle={{
               padding: 16,
-              paddingBottom: 10
+              paddingBottom: 20
             }}
           />
         )}
@@ -486,7 +498,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const contentContainerStyle = useMemo(() => {
     return {
       paddingBottom: (segmentedControlLayout?.height ?? 0) + 32,
-      paddingTop: 10,
       minHeight: tabHeight
     }
   }, [segmentedControlLayout?.height, tabHeight])

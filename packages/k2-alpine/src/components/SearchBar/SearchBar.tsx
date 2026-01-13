@@ -157,6 +157,8 @@ export const SearchBar: FC<Props> = ({
             ref={textInputRef}
             style={{
               height: '100%',
+              lineHeight: 16,
+              flex: 1,
               color: colors.$textPrimary,
               paddingLeft: 36,
               paddingVertical: 0

@@ -944,6 +944,11 @@ workflows:
     - IS_EXTERNAL_BUILD: "true"
       opts:
         is_expand: false
+  appium-smoke-setup:
+    envs:
+    - SMOKE_SUITE: "true"
+      opts:
+        is_expand: false
   appium-ios-setup:
     before_run:
     - _install-and-set-env

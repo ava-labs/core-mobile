@@ -541,7 +541,32 @@ PODS:
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
   - NitroAvalabsCrypto (0.0.1):
-    - boost
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - NitroModules
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-callinvoker
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
+  - NitroFetch (0.1.6):
     - DoubleConversion
     - fast_float
     - fmt
@@ -2497,8 +2522,7 @@ PODS:
   - react-native-branch (6.8.0):
     - BranchSDK (= 3.12.2)
     - React-Core
-  - react-native-compat (2.11.0):
-    - boost
+  - react-native-compat (2.23.0):
     - DoubleConversion
     - fast_float
     - fmt
@@ -5006,7 +5030,7 @@ SPEC CHECKSUMS:
   react-native-ble-plx: e9494861c0f5d1dbc6d8185f9f125404e2f907c1
   react-native-bottom-tabs: e33312fc663d163f0be73d3474dfb448ba38dad8
   react-native-branch: 0229b46e762bc16ab5289e5eac167738b94c089b
-  react-native-compat: 9f39fcbbdc850ffa4bc8cc63f18eb6c4c885fadf
+  react-native-compat: 2d4f00e2a80258c0cec6e7df3180bcfe3404bd6f
   react-native-config: ea75335a7cca1d3326de1da384227e580a7c082e
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-in-app-updates: 1fd82e3a5d2e859245f756852649ee8560566703
