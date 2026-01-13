@@ -8,6 +8,7 @@ echo "Setting animation scale to 0..."
 adb shell settings put global window_animation_scale 0
 adb shell settings put global transition_animation_scale 0
 adb shell settings put global animator_duration_scale 0
+adb shell pm grant com.avaxwallet.internal android.permission.POST_NOTIFICATIONS
 
 
 which node
