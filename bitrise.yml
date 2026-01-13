@@ -1014,14 +1014,14 @@ workflows:
     steps:
     - avd-manager@1.2:
         inputs:
-        - api_level: "34"
+        - api_level: "33"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
         - create_command_flags: --sdcard 2048M --device "pixel_7_pro"
         - tag: google_apis
         - abi: x86_64
         - profile: pixel_7_pro
-        - custom_command_flags: -no-snapshot -noaudio -no-window
+        - custom_command_flags: -no-snapshot -noaudio
         - ram_size: 4096
         - heap_size: 576
     - wait-for-android-emulator@1: {}
