@@ -8,7 +8,7 @@ import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist'
-import { MarketView, useTrackSortAndView } from '../hooks/useTrackSortAndView'
+import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
 
 const errorIcon = require('../../../../assets/icons/star_struck_emoji.png')
@@ -25,7 +25,7 @@ const FavoriteScreen = ({
   const { favorites, prices, charts, isLoadingFavorites } = useWatchlist()
 
   const { data, sort, view } = useTrackSortAndView(favorites, prices)
-  const listType = view.selected as MarketView
+  const listType = view.selected
 
   const emptyComponent = useMemo(() => {
     if (isLoadingFavorites) {

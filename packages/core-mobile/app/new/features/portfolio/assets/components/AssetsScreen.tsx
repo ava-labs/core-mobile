@@ -20,6 +20,7 @@ import {
   LocalTokenWithBalance
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
+import { ViewOption } from 'common/types'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { EmptyState } from './EmptyState'
 import { TokenListItem } from './TokenListItem'
@@ -44,7 +45,7 @@ const AssetsScreen: FC<Props> = ({
 }): JSX.Element => {
   const { onResetFilter, data, filter, sort, view, refetch, isRefetching } =
     useAssetsFilterAndSort()
-  const listType = view.selected as AssetManageView
+  const listType = view.selected
   const header = useHeaderMeasurements()
 
   const activeAccount = useSelector(selectActiveAccount)
@@ -68,13 +69,13 @@ const AssetsScreen: FC<Props> = ({
       onScrollResync()
       view.onSelected(value)
     },
-    [goToTokenManagement, view, onScrollResync]
+    [onScrollResync, view, goToTokenManagement]
   )
 
   const isLoadingBalance =
     isRefetchingBalance || isBalanceLoading || isBalancePolling
 
-  const isGridView = view.selected === AssetManageView.Grid
+  const isGridView = view.selected === ViewOption.Grid
   const numColumns = isGridView ? 2 : 1
 
   // Only show loading state for initial load
