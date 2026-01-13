@@ -3,7 +3,6 @@ import {
   BitcoinProvider,
   JsonRpcBatchInternal
 } from '@avalabs/core-wallets-sdk'
-import { InvalidInputRpcError } from 'viem'
 import {
   BITCOIN_NETWORK,
   BITCOIN_TEST_NETWORK,
@@ -26,7 +25,6 @@ import { SpanName } from 'services/sentry/types'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { ChainInfo } from '@avalabs/glacier-sdk'
 import GlacierService from 'services/glacier/GlacierService'
-import delay from 'utils/js/delay'
 import { NETWORK_P, NETWORK_P_TEST, NETWORK_X, NETWORK_X_TEST } from './consts'
 
 if (!Config.PROXY_URL)
@@ -99,16 +97,7 @@ class NetworkService {
           txID = (await provider.issueTx(signedTx)).txID
         } else if (typeof signedTx === 'string') {
           if (provider instanceof JsonRpcBatchInternal) {
-            const isAvalancheCChain =
-              network.chainId === ChainId.AVALANCHE_MAINNET_ID
-
-            const tx = isAvalancheCChain
-              ? await this.broadcastWithRetry({
-                  provider,
-                  signedTx
-                })
-              : await provider.broadcastTransaction(signedTx)
-
+            const tx = await provider.broadcastTransaction(signedTx)
             handleWaitToPost?.(tx)
             txID = tx.hash
           } else if (provider instanceof BitcoinProvider) {
@@ -148,35 +137,6 @@ class NetworkService {
   ): Promise<Avalanche.JsonRpcProvider> {
     const network = this.getAvalancheNetworkP(isDeveloperMode)
     return ModuleManager.avalancheModule.getProvider(mapToVmNetwork(network))
-  }
-
-  private async broadcastWithRetry({
-    provider,
-    signedTx,
-    maxRetries = 3
-  }: {
-    provider: JsonRpcBatchInternal
-    signedTx: string
-    maxRetries?: number
-  }): Promise<TransactionResponse> {
-    let attempt = 0
-    let lastError: unknown
-
-    while (attempt < maxRetries) {
-      try {
-        return await provider.broadcastTransaction(signedTx)
-      } catch (error) {
-        lastError = error
-        if (!(error instanceof InvalidInputRpcError)) {
-          throw error
-        }
-        attempt++
-        if (attempt >= maxRetries) break
-        await delay(1000)
-      }
-    }
-
-    throw lastError ?? new Error('Failed to broadcast transaction')
   }
 
   private async fetchNetworks({

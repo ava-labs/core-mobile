@@ -1,5 +1,6 @@
 import { Separator, showAlert, Text, View } from '@avalabs/k2-alpine'
 import { RpcMethod } from '@avalabs/vm-module-types'
+import { TransactionRequest } from 'ethers'
 import { NetworkTokenSymbols } from 'common/components/TokenIcon'
 import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
 import { validateFee } from 'common/hooks/send/utils/evm/validate'
@@ -134,6 +135,16 @@ const ApprovalScreen = ({
         setSubmitting(false)
         return
       }
+
+      // if the tx is eth_sendTransaction, mark the downstream eth_sendTransaction so VM module can enable retry if gasless is enabled
+      if (signingData.type === RpcMethod.ETH_SEND_TRANSACTION) {
+        type RetryableTxRequest = TransactionRequest & { shouldRetry?: boolean }
+        const txData = signingData.data as RetryableTxRequest
+        signingData.data = {
+          ...txData,
+          shouldRetry: gaslessEnabled
+        } as RetryableTxRequest
+      }
     }
 
     try {
@@ -159,6 +170,7 @@ const ApprovalScreen = ({
     gaslessEnabled,
     handleGaslessTx,
     account,
+    signingData,
     onApprove,
     activeWallet.id,
     activeWallet.type,
