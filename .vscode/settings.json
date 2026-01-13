@@ -4,5 +4,6 @@
       "mode": "auto"
     }
   ],
-  "typescript.tsdk": "./packages/core-mobile/node_modules/typescript/lib"
+  "typescript.tsdk": "./packages/core-mobile/node_modules/typescript/lib",
+  "java.compile.nullAnalysis.mode": "automatic"
 }

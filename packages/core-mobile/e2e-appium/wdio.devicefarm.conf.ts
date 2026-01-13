@@ -9,24 +9,6 @@ import {
 
 let runId: number | undefined
 const sectionCache: Record<string, number> = {}
-<<<<<<< Updated upstream
-const isBitrise = process.env.CI === 'true'
-const goHeadless = isBitrise ? true : false
-const goRetry = isBitrise ? 1 : 0
-const iosLocalPath = process.env.E2E_LOCAL_PATH
-  ? '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
-  : './ios/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
-const androidLocalPath = process.env.E2E_LOCAL_PATH
-  ? '/Users/eunji.song/Downloads/app-internal-e2e-bitrise-signed.apk'
-  : './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
-const iosPath = isBitrise
-  ? process.env.BITRISE_APP_DIR_PATH
-  : path.resolve(iosLocalPath)
-const androidPath = isBitrise
-  ? process.env.BITRISE_APK_PATH
-  : path.resolve(androidLocalPath)
-const platformToRun = process.env.PLATFORM
-=======
 
 // AWS Device Farm provides these environment variables
 const isDeviceFarm = !!process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL
@@ -39,7 +21,6 @@ const deviceName = process.env.DEVICEFARM_DEVICE_NAME || 'device'
 const platformVersion = process.env.DEVICEFARM_DEVICE_OS_VERSION || '14.0'
 const deviceUdid = process.env.DEVICEFARM_DEVICE_UDID || ''
 const chromedriverExecutableDir = process.env.DEVICEFARM_CHROMEDRIVER_EXECUTABLE_DIR || ''
->>>>>>> Stashed changes
 
 const allCaps = [
   {
@@ -50,7 +31,9 @@ const allCaps = [
     'appium:app': appPath,
     // Include Device Farm specific capabilities if available
     ...(deviceUdid ? { 'appium:udid': deviceUdid } : {}),
-    ...(chromedriverExecutableDir ? { 'appium:chromedriverExecutableDir': chromedriverExecutableDir } : {}),
+    ...(chromedriverExecutableDir
+      ? { 'appium:chromedriverExecutableDir': chromedriverExecutableDir }
+      : {}),
     'appium:appWaitActivity': '*',
     'appium:autoGrantPermissions': true,
     'appium:newCommandTimeout': 120,
@@ -118,7 +101,7 @@ export const config: WebdriverIO.Config = {
   logLevel: 'info', // More verbose for Device Farm debugging
   bail: 0,
   waitforTimeout: 20000,
-  specFileRetries: goRetry,
+  specFileRetries: 0,
   connectionRetryTimeout: 120000,
   connectionRetryCount: 2,
   framework: 'mocha',
@@ -133,7 +116,16 @@ export const config: WebdriverIO.Config = {
   before: async () => {
     const platform = driver.isAndroid ? 'Android' : 'iOS'
     runId = await getTestRun(platform)
-    console.log(`------------Starting test run------------`)
+    console.log(`------------Starting test run on AWS Device Farm------------`)
+    console.log(`Platform: ${platform}`)
+    console.log(`Device: ${deviceName}`)
+    console.log(`OS Version: ${platformVersion}`)
+    if (deviceUdid) {
+      console.log(`Device UDID: ${deviceUdid}`)
+    }
+    if (chromedriverExecutableDir) {
+      console.log(`ChromeDriver Dir: ${chromedriverExecutableDir}`)
+    }
   },
 
   // hoook beforeTest: make or get testSection before test
