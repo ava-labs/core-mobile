@@ -627,7 +627,7 @@ __metadata:
     "@zodios/core": 10.9.6
     appium: 3.1.2
     appium-doctor: 1.16.2
-    appium-uiautomator2-driver: 6.7.8
+    appium-uiautomator2-driver: 6.7.9
     appium-xcuitest-driver: 10.14.7
     assert: 2.1.0
     axios: 1.12.2
@@ -16813,7 +16813,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"appium-android-driver@npm:^12.4.0":
+"appium-android-driver@npm:^12.6.3":
   version: 12.6.3
   resolution: "appium-android-driver@npm:12.6.3"
   dependencies:
@@ -17013,12 +17013,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"appium-uiautomator2-driver@npm:6.7.8":
-  version: 6.7.8
-  resolution: "appium-uiautomator2-driver@npm:6.7.8"
+"appium-uiautomator2-driver@npm:6.7.9":
+  version: 6.7.9
+  resolution: "appium-uiautomator2-driver@npm:6.7.9"
   dependencies:
     appium-adb: ^14.0.0
-    appium-android-driver: ^12.4.0
+    appium-android-driver: ^12.6.3
     appium-uiautomator2-server: ^9.8.0
     asyncbox: ^4.0.1
     axios: ^1.12.2
@@ -17030,7 +17030,7 @@ __metadata:
     teen_process: ^4.0.4
   peerDependencies:
     appium: ^3.0.0-rc.2
-  checksum: 8faebc3e9be087063bf7f1a137ebe0a652459c27c7a54577dd1ca629fb41d7cdcbf7dcaa129773e7f2cbf04127032613f168ce755a6eb43edd6774f7d1eba545
+  checksum: 805a8bda1e277892d478c63553cc06c855cfbdd9024004c59f2b3674b1cd72d8d2395b835841070d338d1c5594f317f5c40818db1f68804d3637385eef1c248a
   languageName: node
   linkType: hard
 

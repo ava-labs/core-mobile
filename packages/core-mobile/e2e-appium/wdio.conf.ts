@@ -32,22 +32,16 @@ const allCaps = [
   {
     platformName: 'Android',
     'appium:deviceName': 'emulator-5554',
-    'appium:platformVersion': '13.0',
+    'appium:platformVersion': '14.0',
     'appium:automationName': 'UiAutomator2',
     'appium:app': androidPath,
-    'appium:appWaitActivity': '*',
+    // 'appium:appWaitActivity': '*',
     'appium:autoGrantPermissions': true,
     'appium:newCommandTimeout': 120,
     'appium:adbExecTimeout': 60000,
-    'appium:uiautomator2ServerLaunchTimeout': 60000,
-    'appium:uiautomator2ServerInstallTimeout': 60000,
-    'appium:noSign': true,
-    'appium:disableWindowAnimation': true,
-    'appium:fullReset': true,
-    'appium:enforceAppInstall': true,
     'appium:uiautomator2ServerReadTimeout': 60000,
-    'appium:skipDeviceInitialization': false,
-    'appium:skipLogcatCapture': false
+    'appium:uiautomator2ServerLaunchTimeout': 60000,
+    'appium:uiautomator2ServerInstallTimeout': 60000
   },
   {
     platformName: 'iOS',

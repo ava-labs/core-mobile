@@ -1014,7 +1014,7 @@ workflows:
     steps:
     - avd-manager@1.2:
         inputs:
-        - api_level: "33"
+        - api_level: "34"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
         - create_command_flags: --sdcard 2048M --device "pixel_7_pro"
