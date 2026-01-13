@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { CoreAccountType } from '@avalabs/types'
 import { mapBalanceResponseToLegacy } from './mapBalanceResponseToLegacy'
 
@@ -25,7 +27,8 @@ const testAccount = {
       index: 0,
       hasActivity: true
     }
-  }
+  },
+  hasMigratedXpAddresses: true
 }
 
 describe('mapBalanceResponseToLegacy', () => {
@@ -893,6 +896,286 @@ describe('mapBalanceResponseToLegacy', () => {
       ],
       dataAccurate: true,
       error: null
+    })
+  })
+
+  describe('isTokenEnabled filtering', () => {
+    it('should filter out ERC20 tokens with malicious scan results', () => {
+      const result = mapBalanceResponseToLegacy(testAccount, {
+        caip2Id: 'eip155:43114',
+        networkType: 'evm',
+        id: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
+        currency: 'usd',
+        balances: {
+          nativeTokenBalance: {
+            name: 'Avalanche',
+            symbol: 'AVAX',
+            type: 'native',
+            decimals: 18,
+            balance: '1000000000000000000',
+            internalId: 'NATIVE-avax',
+            price: 13.73,
+            priceChange24h: 0.903369,
+            priceChangePercentage24h: 7.04491,
+            balanceInCurrency: 13.73,
+            logoUri: 'https://example.com/avax.png'
+          },
+          erc20TokenBalances: [
+            {
+              name: 'Safe Token',
+              symbol: 'SAFE',
+              type: 'erc20',
+              decimals: 18,
+              balance: '1000000000000000000',
+              address: '0xSafeToken',
+              internalId: 'eip155:43114-0xSafeToken',
+              price: 1.0,
+              priceChange24h: 0,
+              priceChangePercentage24h: 0,
+              balanceInCurrency: 1.0,
+              logoUri: 'https://example.com/safe.png',
+              scanResult: 'Benign'
+            },
+            {
+              name: 'Warning Token',
+              symbol: 'WARN',
+              type: 'erc20',
+              decimals: 18,
+              balance: '1000000000000000000',
+              address: '0xWarningToken',
+              internalId: 'eip155:43114-0xWarningToken',
+              price: 1.0,
+              priceChange24h: 0,
+              priceChangePercentage24h: 0,
+              balanceInCurrency: 1.0,
+              logoUri: 'https://example.com/warn.png',
+              scanResult: 'Warning'
+            },
+            {
+              name: 'Malicious Token',
+              symbol: 'MAL',
+              type: 'erc20',
+              decimals: 18,
+              balance: '1000000000000000000',
+              address: '0xMaliciousToken',
+              internalId: 'eip155:43114-0xMaliciousToken',
+              price: 1.0,
+              priceChange24h: 0,
+              priceChangePercentage24h: 0,
+              balanceInCurrency: 1.0,
+              logoUri: 'https://example.com/mal.png',
+              scanResult: 'Malicious'
+            },
+            {
+              name: 'Spam Token',
+              symbol: 'SPAM',
+              type: 'erc20',
+              decimals: 18,
+              balance: '1000000000000000000',
+              address: '0xSpamToken',
+              internalId: 'eip155:43114-0xSpamToken',
+              price: 1.0,
+              priceChange24h: 0,
+              priceChangePercentage24h: 0,
+              balanceInCurrency: 1.0,
+              logoUri: 'https://example.com/spam.png',
+              scanResult: 'Spam'
+            }
+          ],
+          totalBalanceInCurrency: 15.73
+        },
+        error: null
+      })
+
+      expect(result).not.toBeNull()
+      expect(result!.tokens.length).toBe(3) // Native + 2 safe tokens (Benign and Warning)
+
+      const tokenAddresses = result!.tokens
+        .filter(t => t.type === 'ERC20')
+        .map(t => (t as any).address)
+
+      expect(tokenAddresses).toContain('0xSafeToken')
+      expect(tokenAddresses).toContain('0xWarningToken')
+      expect(tokenAddresses).not.toContain('0xMaliciousToken')
+      expect(tokenAddresses).not.toContain('0xSpamToken')
+    })
+
+    it('should include ERC20 tokens with null or undefined scan results', () => {
+      const result = mapBalanceResponseToLegacy(testAccount, {
+        caip2Id: 'eip155:43114',
+        networkType: 'evm',
+        id: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
+        currency: 'usd',
+        balances: {
+          nativeTokenBalance: {
+            name: 'Avalanche',
+            symbol: 'AVAX',
+            type: 'native',
+            decimals: 18,
+            balance: '1000000000000000000',
+            internalId: 'NATIVE-avax',
+            price: 13.73,
+            priceChange24h: 0.903369,
+            priceChangePercentage24h: 7.04491,
+            balanceInCurrency: 13.73,
+            logoUri: 'https://example.com/avax.png'
+          },
+          erc20TokenBalances: [
+            {
+              name: 'No Scan Result Token',
+              symbol: 'NOSCAN',
+              type: 'erc20',
+              decimals: 18,
+              balance: '1000000000000000000',
+              address: '0xNoScanToken',
+              internalId: 'eip155:43114-0xNoScanToken',
+              price: 1.0,
+              priceChange24h: 0,
+              priceChangePercentage24h: 0,
+              balanceInCurrency: 1.0,
+              logoUri: 'https://example.com/noscan.png'
+              // scanResult is undefined
+            }
+          ],
+          totalBalanceInCurrency: 14.73
+        },
+        error: null
+      })
+
+      expect(result).not.toBeNull()
+      expect(result!.tokens.length).toBe(2) // Native + 1 ERC20 token
+
+      const tokenAddresses = result!.tokens
+        .filter(t => t.type === 'ERC20')
+        .map(t => (t as any).address)
+
+      expect(tokenAddresses).toContain('0xNoScanToken')
+    })
+
+    it('should filter out SPL tokens with malicious scan results', () => {
+      const result = mapBalanceResponseToLegacy(testAccount, {
+        caip2Id: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+        networkType: 'svm',
+        id: '9gQmZ7fTTgv5hVScrr9QqT6SpBs7i4cKLDdj4tuae3sW',
+        currency: 'usd',
+        balances: {
+          nativeTokenBalance: {
+            internalId: 'NATIVE-sol',
+            name: 'Solana',
+            symbol: 'SOL',
+            type: 'native',
+            decimals: 9,
+            balance: '175462704',
+            price: 139.88,
+            priceChange24h: 12.83,
+            priceChangePercentage24h: 10.09823,
+            balanceInCurrency: 24.5433448,
+            logoUri: 'https://example.com/sol.png'
+          },
+          splTokenBalances: [
+            {
+              type: 'spl',
+              name: 'Safe SPL Token',
+              symbol: 'SAFE',
+              decimals: 6,
+              address: 'SafeSPLToken',
+              associatedTokenAddress: 'SafeSPLToken',
+              balance: '1000000',
+              logoUri: 'https://example.com/safe.png',
+              internalId:
+                'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp-safespltoken',
+              price: 1.0,
+              priceChange24h: 0,
+              priceChangePercentage24h: 0,
+              balanceInCurrency: 1.0,
+              scanResult: 'Benign'
+            },
+            {
+              type: 'spl',
+              name: 'Malicious SPL Token',
+              symbol: 'MAL',
+              decimals: 6,
+              address: 'MaliciousSPLToken',
+              associatedTokenAddress: 'MaliciousSPLToken',
+              balance: '1000000',
+              logoUri: 'https://example.com/mal.png',
+              internalId:
+                'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp-maliciousspltoken',
+              price: 1.0,
+              priceChange24h: 0,
+              priceChangePercentage24h: 0,
+              balanceInCurrency: 1.0,
+              scanResult: 'Malicious'
+            }
+          ],
+          totalBalanceInCurrency: 25.5433448
+        },
+        error: null
+      })
+
+      expect(result).not.toBeNull()
+      expect(result!.tokens.length).toBe(2) // Native + 1 safe SPL token
+
+      const tokenAddresses = result!.tokens
+        .filter(t => t.type === 'SPL')
+        .map(t => (t as any).address)
+
+      expect(tokenAddresses).toContain('SafeSPLToken')
+      expect(tokenAddresses).not.toContain('MaliciousSPLToken')
+    })
+
+    it('should include SPL tokens with null or undefined scan results', () => {
+      const result = mapBalanceResponseToLegacy(testAccount, {
+        caip2Id: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+        networkType: 'svm',
+        id: '9gQmZ7fTTgv5hVScrr9QqT6SpBs7i4cKLDdj4tuae3sW',
+        currency: 'usd',
+        balances: {
+          nativeTokenBalance: {
+            internalId: 'NATIVE-sol',
+            name: 'Solana',
+            symbol: 'SOL',
+            type: 'native',
+            decimals: 9,
+            balance: '175462704',
+            price: 139.88,
+            priceChange24h: 12.83,
+            priceChangePercentage24h: 10.09823,
+            balanceInCurrency: 24.5433448,
+            logoUri: 'https://example.com/sol.png'
+          },
+          splTokenBalances: [
+            {
+              type: 'spl',
+              name: 'No Scan Result SPL',
+              symbol: 'NOSCAN',
+              decimals: 6,
+              address: 'NoScanSPLToken',
+              associatedTokenAddress: 'NoScanSPLToken',
+              balance: '1000000',
+              logoUri: 'https://example.com/noscan.png',
+              internalId:
+                'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp-noscanspltoken',
+              price: 1.0,
+              priceChange24h: 0,
+              priceChangePercentage24h: 0,
+              balanceInCurrency: 1.0
+              // scanResult is undefined
+            }
+          ],
+          totalBalanceInCurrency: 25.5433448
+        },
+        error: null
+      })
+
+      expect(result).not.toBeNull()
+      expect(result!.tokens.length).toBe(2) // Native + 1 SPL token
+
+      const tokenAddresses = result!.tokens
+        .filter(t => t.type === 'SPL')
+        .map(t => (t as any).address)
+
+      expect(tokenAddresses).toContain('NoScanSPLToken')
     })
   })
 })

@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit'
 import { RootState } from 'store/types'
 import { WalletType } from 'services/wallet/types'
+import { CoreAccountType } from '@avalabs/types'
 import {
   Account,
   AccountsState,
@@ -109,6 +110,23 @@ export const selectAccountByIndex =
     )
     return primaryAccount || accounts[0]
   }
+
+// Memoized selectors to avoid repeated Object.values operations
+export const selectAccountsArray = createSelector(
+  [selectAccounts],
+  (accounts): Account[] => Object.values(accounts)
+)
+
+export const selectImportedAccounts = createSelector(
+  [selectAccountsArray],
+  (accounts): Account[] =>
+    accounts.filter(account => account.type === CoreAccountType.IMPORTED)
+)
+
+export const selectAccountsCount = createSelector(
+  [selectAccounts],
+  (accounts): number => Object.keys(accounts).length
+)
 
 // actions
 export const {
