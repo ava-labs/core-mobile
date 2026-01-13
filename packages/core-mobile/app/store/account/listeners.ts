@@ -26,6 +26,7 @@ import Logger from 'utils/Logger'
 import KeystoneService from 'features/keystone/services/KeystoneService'
 import { pendingSeedlessWalletNameStore } from 'features/onboarding/store'
 import { AddressIndex } from '@avalabs/types'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import {
   selectAccounts,
   setAccounts,
@@ -38,9 +39,7 @@ import {
   canMigrateActiveAccounts,
   deriveMissingSeedlessSessionKeys,
   migrateRemainingActiveAccounts,
-  shouldMigrateActiveAccounts,
-  hasCompletedXpAddressMigration,
-  markXpAddressMigrationComplete
+  shouldMigrateActiveAccounts
 } from './utils'
 
 const initAccounts = async (
@@ -283,12 +282,15 @@ const migrateXpAddressesIfNeeded = async (
   _action: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  if (hasCompletedXpAddressMigration()) {
+  const state = listenerApi.getState()
+  const allAccounts = selectAccounts(state)
+  if (
+    Object.values(allAccounts).every(account => account.hasMigratedXpAddresses)
+  ) {
     Logger.info('XP address migration already completed. Skipping.')
     return
   }
 
-  const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const wallets = selectWallets(state)
   const allUpdatedAccounts: AccountCollection = {}
@@ -314,7 +316,9 @@ const migrateXpAddressesIfNeeded = async (
     const accounts = selectAccountsByWalletId(state, wallet.id)
     const updatedAccounts = await populateXpAddressesForWallet({
       wallet,
-      accounts,
+      accounts: accounts.filter(
+        account => account.hasMigratedXpAddresses === false
+      ),
       isDeveloperMode
     })
 
@@ -322,7 +326,7 @@ const migrateXpAddressesIfNeeded = async (
     Object.assign(allUpdatedAccounts, updatedAccounts)
   })
 
-  const results = await Promise.allSettled(walletPromises)
+  await Promise.allSettled(walletPromises)
 
   // Dispatch updated accounts to Redux store
   if (Object.keys(allUpdatedAccounts).length > 0) {
@@ -331,21 +335,24 @@ const migrateXpAddressesIfNeeded = async (
 
   reloadAccounts(_action, listenerApi)
 
-  // Check if all promises succeeded
-  const allSucceeded = results.every(result => result.status === 'fulfilled')
+  if (
+    Object.values(allUpdatedAccounts).some(
+      account => account.hasMigratedXpAddresses === false
+    )
+  ) {
+    // Log accounts that failed to migrate
+    const failedAccounts = Object.values(allUpdatedAccounts).filter(
+      account => !account.hasMigratedXpAddresses
+    )
 
-  if (allSucceeded) {
-    markXpAddressMigrationComplete()
-  } else {
-    // Log any failures
-    results.forEach((result, index) => {
-      if (result.status === 'rejected') {
-        const wallet = Object.values(wallets)[index]
-        Logger.error(`Error processing wallet ${wallet?.id}`, result.reason)
-      }
+    failedAccounts.forEach(account => {
+      Logger.error(
+        `XP address migration failed for account index=${account.index}, walletId=${account.walletId}`
+      )
     })
-    Logger.warn(
-      'XP address migration completed with errors. Will retry on next app unlock.'
+
+    Logger.error(
+      `XP address migration incomplete. ${failedAccounts.length} account(s) failed to migrate. Will retry on next app unlock.`
     )
   }
 }
@@ -358,6 +365,7 @@ const populateXpAddressesForWallet = async ({
   wallet: StoreWallet
   accounts: Account[]
   isDeveloperMode: boolean
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 }): Promise<AccountCollection> => {
   const updatedAccounts: AccountCollection = {}
 
@@ -385,13 +393,17 @@ const populateXpAddressesForWallet = async ({
       updatedAccounts[account.id] = {
         ...account,
         addressAVM: '',
-        addressPVM: ''
+        addressPVM: '',
+        hasMigratedXpAddresses: true
       }
       continue
     }
 
-    let xpAddresses: AddressIndex[] = []
+    let xpAddresses: AddressIndex[] = [
+      { address: stripAddressPrefix(account.addressAVM), index: 0 }
+    ]
     let xpAddressDictionary: XPAddressDictionary = {} as XPAddressDictionary
+    let hasMigratedXpAddresses = false
 
     try {
       Logger.info(`Deriving XP addresses for account ${account.index}...`)
@@ -404,8 +416,10 @@ const populateXpAddressesForWallet = async ({
         onlyWithActivity: true
       })
 
-      xpAddresses = result.xpAddresses
+      xpAddresses =
+        result.xpAddresses.length > 0 ? result.xpAddresses : xpAddresses
       xpAddressDictionary = result.xpAddressDictionary
+      hasMigratedXpAddresses = true
     } catch (error) {
       Logger.error(
         `Failed to derive XP addresses for account ${account.index} in wallet ${wallet.id}`,
@@ -446,7 +460,8 @@ const populateXpAddressesForWallet = async ({
       addressAVM: newAddressAVM,
       addressPVM: newAddressPVM,
       xpAddresses,
-      xpAddressDictionary
+      xpAddressDictionary,
+      hasMigratedXpAddresses
     }
   }
 

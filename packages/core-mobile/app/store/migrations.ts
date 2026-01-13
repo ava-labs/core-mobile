@@ -431,7 +431,8 @@ export const migrations = {
           walletId: activeWalletId,
           index,
           xpAddresses: [],
-          xpAddressDictionary: {}
+          xpAddressDictionary: {},
+          hasMigratedXpAddresses: false
         }
 
         newAccountsCollection[newAccount.id] = newAccount

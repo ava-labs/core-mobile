@@ -4,6 +4,7 @@ import {
   Separator,
   Text,
   Toggle,
+  useInversedTheme,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -36,8 +37,11 @@ export const SwapSlippageDetailsScreen = ({
   provider
 }: SwapSlippageDetailsScreenProps): JSX.Element => {
   const {
-    theme: { colors }
+    theme: { colors, isDark }
   } = useTheme()
+  const {
+    theme: { colors: inversedColors }
+  } = useInversedTheme({ isDark })
   const router = useRouter()
 
   const [localSlippage, setLocalSlippage] = useState(slippage)
@@ -252,7 +256,7 @@ export const SwapSlippageDetailsScreen = ({
                         <Text
                           sx={{
                             color: isSelected
-                              ? colors.$white
+                              ? inversedColors.$textPrimary
                               : colors.$textPrimary,
                             fontSize: 15,
                             fontWeight: '500',
@@ -284,7 +288,7 @@ export const SwapSlippageDetailsScreen = ({
                         }}>
                         <Text
                           sx={{
-                            color: colors.$white,
+                            color: inversedColors.$textPrimary,
                             fontSize: 11,
                             fontWeight: '400',
                             lineHeight: 14,
@@ -294,7 +298,7 @@ export const SwapSlippageDetailsScreen = ({
                         </Text>
                         <Text
                           sx={{
-                            color: colors.$white,
+                            color: inversedColors.$textPrimary,
                             fontSize: 15,
                             fontWeight: '500',
                             lineHeight: 20,
