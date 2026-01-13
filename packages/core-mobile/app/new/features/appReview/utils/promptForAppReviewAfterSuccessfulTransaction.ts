@@ -12,6 +12,16 @@ export function promptForAppReviewAfterSuccessfulTransaction(): void {
   const stateAfterTxRecorded = appReviewStore.getState()
   if (!stateAfterTxRecorded.pendingPrompt) return
 
+  // If the prompt has already been shown, request the review immediately.
+  // We don't know if the user has already reviewed, so we skip showing our custom prompt again.
+  // On Android, if the user has already reviewed, the in-app review won't be shown again.
+  // On iOS, the OS controls when the review prompt appears and may delay it.
+  if (stateAfterTxRecorded.promptShownCount > 0) {
+    void requestInAppReview()
+    return
+  }
+
+  // Otherwise, show the prompt and mark it as shown
   stateAfterTxRecorded.markPromptShown()
   showAlert({
     title: 'Do you like using Core?',
@@ -23,7 +33,7 @@ export function promptForAppReviewAfterSuccessfulTransaction(): void {
       {
         text: 'Yes',
         onPress: () => {
-          void requestInAppReview()
+          void requestInAppReview({ fallbackToStore: true })
         }
       }
     ]

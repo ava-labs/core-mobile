@@ -24,16 +24,17 @@ export interface AppReviewState {
 function canPromptNow(state: AppReviewState, nowMs: number) {
   if (state.declineCount >= 2) return false
   if (state.pendingPrompt) return false
-  if (state.lastPromptAtMs !== undefined) {
-    if (nowMs - state.lastPromptAtMs < APP_REVIEW_CONFIG.cooldownMs)
-      return false
-  }
+  if (
+    state.lastPromptAtMs !== undefined &&
+    nowMs - state.lastPromptAtMs < APP_REVIEW_CONFIG.cooldownMs
+  )
+    return false
   return true
 }
 
 export const appReviewStore = create<AppReviewState>()(
   persist(
-    (set, get) => ({
+    (set, _get) => ({
       successfulTxCount: 0,
 
       pendingPrompt: false,
