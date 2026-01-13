@@ -19,11 +19,10 @@ import { RefreshControl } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 import {
-  AssetManageView,
   AssetNetworkFilter,
+  CollectibleView,
   CollectibleSort,
-  CollectibleTypeFilter,
-  CollectibleView
+  CollectibleTypeFilter
 } from 'store/balance'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { CardContainer } from '../components/CardContainer'
@@ -96,14 +95,14 @@ export const CollectiblesScreen = ({
 
   const handleManageList = useCallback(
     (value: string): void => {
-      if (value === AssetManageView.ManageList) {
+      if (value === CollectibleView.ManageList) {
         goToCollectibleManagement()
         return
       }
       onScrollResync()
       view.onSelected(value)
     },
-    [goToCollectibleManagement, view, onScrollResync]
+    [onScrollResync, view, goToCollectibleManagement]
   )
 
   const renderItem: ListRenderItem<NftItem> = useCallback(

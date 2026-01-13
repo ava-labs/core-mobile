@@ -8,7 +8,7 @@ import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist'
-import { MarketView, useTrackSortAndView } from '../hooks/useTrackSortAndView'
+import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
 
 const MarketScreen = ({
@@ -29,7 +29,7 @@ const MarketScreen = ({
     refetchTopTokens
   } = useWatchlist()
   const { data, sort, view } = useTrackSortAndView(topTokens, prices)
-  const listType = view.selected as MarketView
+  const listType = view.selected
 
   const emptyComponent = useMemo(() => {
     if (isRefetchingTopTokens) {

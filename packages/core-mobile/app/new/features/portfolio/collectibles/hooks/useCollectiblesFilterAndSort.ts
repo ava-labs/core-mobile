@@ -13,8 +13,7 @@ import {
   COLLECTIBLE_VIEWS,
   CollectibleSort,
   CollectibleStatus,
-  CollectibleTypeFilter,
-  CollectibleView
+  CollectibleTypeFilter
 } from 'store/balance'
 import { NftContentType } from 'store/nft'
 import { isCollectibleVisible } from 'store/nft/utils'
@@ -24,6 +23,7 @@ import {
   toggleCollectibleUnprocessableVisibility
 } from 'store/portfolio'
 import { sortNftsByDateUpdated } from 'services/nft/utils'
+import { useCollectiblesView } from 'features/portfolio/store'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { getCollectibleName } from '../consts'
 
@@ -48,6 +48,8 @@ export const useCollectiblesFilterAndSort = (
   onResetFilter: () => void
   onShowHidden: () => void
 } => {
+  const { selectedView, setSelectedView } = useCollectiblesView()
+
   const { collectibles } = useCollectiblesContext()
   const collectiblesVisibility = useSelector(selectCollectibleVisibility)
   const [selectedNetworkFilter, setSelectedNetworkFilter] =
@@ -61,10 +63,6 @@ export const useCollectiblesFilterAndSort = (
 
   const [selectedSort, setSelectedSort] = useState<CollectibleSort>(
     initial?.sort ?? CollectibleSort.NameAToZ
-  )
-
-  const [selectedView, setSelectedView] = useState<CollectibleView>(
-    CollectibleView.LargeGrid
   )
 
   const filterData = useMemo(() => {
@@ -145,11 +143,9 @@ export const useCollectiblesFilterAndSort = (
       title: 'View',
       data: viewData,
       selected: selectedView,
-      onSelected: (value: string) => {
-        setSelectedView(value as CollectibleView)
-      }
+      onSelected: setSelectedView
     }),
-    [viewData, selectedView]
+    [viewData, selectedView, setSelectedView]
   )
 
   const isUnprocessableHidden = useSelector(

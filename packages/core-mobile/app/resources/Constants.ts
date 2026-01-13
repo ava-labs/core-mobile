@@ -13,7 +13,11 @@ export enum StorageKey {
 
 export enum ZustandStorageKeys {
   RECENT_ACCOUNTS = 'recentAccounts',
-  ACTIVITY = 'activity'
+  ACTIVITY = 'activity',
+  PORTFOLIO_VIEW = 'portfolioView',
+  COLLECTIBLES_VIEW = 'collectiblesView',
+  DEFI_VIEW = 'defiView',
+  TRACK_VIEW = 'trackView'
 }
 
 export const CORE_UNIVERSAL_LINK_HOSTS = ['core.app', 'test.core.app']
