@@ -49,7 +49,10 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import { useSafeAreaFrame } from 'react-native-safe-area-context'
+import {
+  useSafeAreaFrame,
+  useSafeAreaInsets
+} from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AnalyticsEventName } from 'services/analytics/types'
@@ -68,7 +71,7 @@ import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { useIsAllBalancesInaccurateForAccount } from '../hooks/useIsAllBalancesInaccurateForAccount'
 import { useIsLoadingBalancesForAccount } from '../hooks/useIsLoadingBalancesForAccount'
 import { useIsRefetchingBalancesForAccount } from '../hooks/useIsRefetchingBalancesForAccount'
-import { useHeaderHeight } from '@react-navigation/elements'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 
 const SEGMENT_ITEMS = [
   { title: 'Assets' },
@@ -84,7 +87,7 @@ const SEGMENT_EVENT_MAP: Record<number, AnalyticsEventName> = {
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
   const isBridgeBlocked = useSelector(selectIsBridgeBlocked)
 
@@ -464,12 +467,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
   const handleScrollResync = useCallback(() => {
-    tabViewRef.current?.scrollResync()
+    // tabViewRef.current?.scrollResync()
   }, [])
 
   useFocusEffect(
     useCallback(() => {
-      tabViewRef.current?.scrollResync()
+      // tabViewRef.current?.scrollResync()
     }, [])
   )
 

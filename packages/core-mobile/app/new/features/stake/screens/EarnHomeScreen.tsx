@@ -4,9 +4,9 @@ import {
   Text,
   View
 } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import DepositTabScreen from 'features/deposit/screens/DepositTabScreen'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
@@ -39,7 +39,7 @@ import StakeTabScreen from './StakeTabScreen'
 
 export const EarnHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const pagerRef = useRef<PagerView>(null)
   const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
   const isInAppDefiNewBlocked = useSelector(selectIsInAppDefiNewBlocked)

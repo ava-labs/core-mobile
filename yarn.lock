@@ -412,7 +412,7 @@ __metadata:
     "@formatjs/intl-locale": 4.2.11
     "@formatjs/intl-numberformat": 8.15.4
     "@formatjs/intl-pluralrules": 5.4.4
-    "@gorhom/bottom-sheet": 5.0.3
+    "@gorhom/bottom-sheet": 5.1.8
     "@hookform/resolvers": 3.9.0
     "@invertase/react-native-apple-authentication": 2.4.0
     "@keystonehq/animated-qr": 0.10.0
@@ -458,9 +458,9 @@ __metadata:
     "@react-native/metro-config": 0.81.5
     "@react-native/typescript-config": 0.81.5
     "@react-navigation/bottom-tabs": 7.9.0
-    "@react-navigation/elements": 2.6.3
-    "@react-navigation/native": ^7.1.8
-    "@react-navigation/native-stack": ^7.3.16
+    "@react-navigation/elements": 2.9.4
+    "@react-navigation/native": 7.1.26
+    "@react-navigation/native-stack": 7.9.0
     "@reduxjs/toolkit": 1.8.1
     "@reown/walletkit": 1.0.0
     "@rushstack/eslint-patch": 1.10.4
@@ -596,7 +596,7 @@ __metadata:
     react-native-check-version: 1.4.0
     react-native-circular-progress: 1.4.0
     react-native-collapsible: 1.6.2
-    react-native-collapsible-tab-view: 8.0.0
+    react-native-collapsible-tab-view: 9.0.0-rc.0
     react-native-config: 1.5.3
     react-native-device-info: 15.0.1
     react-native-fast-confetti: 1.1.1
@@ -6886,9 +6886,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@gorhom/bottom-sheet@npm:5.0.3":
-  version: 5.0.3
-  resolution: "@gorhom/bottom-sheet@npm:5.0.3"
+"@gorhom/bottom-sheet@npm:5.1.8":
+  version: 5.1.8
+  resolution: "@gorhom/bottom-sheet@npm:5.1.8"
   dependencies:
     "@gorhom/portal": 1.0.14
     invariant: ^2.2.4
@@ -6898,13 +6898,13 @@ __metadata:
     react: "*"
     react-native: "*"
     react-native-gesture-handler: ">=2.16.1"
-    react-native-reanimated: ">=3.10.1"
+    react-native-reanimated: "*"
   peerDependenciesMeta:
     "@types/react":
       optional: true
     "@types/react-native":
       optional: true
-  checksum: af82ca012cdcb4476a0e4d932c24e22aeb13ce80f929152fe07624ed71ce121e831d1b6478e0fec4c18787a9b7f345e40ac761e24ee104c41fb1c1924cb3cae9
+  checksum: de450ace52d8a4fac9faed0a900ae455f90289114e06c96c8378ba192102a8795a29f614245b450c4e2a29dbe2b93c2ccaaa39cb6a14561f200ea4dd2e372621
   languageName: node
   linkType: hard
 
@@ -12300,23 +12300,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/elements@npm:2.6.3":
-  version: 2.6.3
-  resolution: "@react-navigation/elements@npm:2.6.3"
+"@react-navigation/elements@npm:2.9.4":
+  version: 2.9.4
+  resolution: "@react-navigation/elements@npm:2.9.4"
   dependencies:
     color: ^4.2.3
     use-latest-callback: ^0.2.4
     use-sync-external-store: ^1.5.0
   peerDependencies:
     "@react-native-masked-view/masked-view": ">= 0.2.0"
-    "@react-navigation/native": ^7.1.17
+    "@react-navigation/native": ^7.1.27
     react: ">= 18.2.0"
     react-native: "*"
     react-native-safe-area-context: ">= 4.0.0"
   peerDependenciesMeta:
     "@react-native-masked-view/masked-view":
       optional: true
-  checksum: e676f1dfed37eca5275d982e2a060ba224ae5c495b6204c6753b34d90b32227093a945ce11ed82c16001dadbcade49474047188c6df9533c61f88dd5dd038c3f
+  checksum: 68dd258322bc2743b1987b48b0855542023b32b379a70f350b5eabcf380b0fef888e2b18bd8886a68e7a35c9f6d256f1691154572bc20114d0a522ee817cc2bd
   languageName: node
   linkType: hard
 
@@ -12340,7 +12340,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/native-stack@npm:^7.3.16":
+"@react-navigation/native-stack@npm:7.9.0, @react-navigation/native-stack@npm:^7.3.16":
   version: 7.9.0
   resolution: "@react-navigation/native-stack@npm:7.9.0"
   dependencies:
@@ -12358,7 +12358,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/native@npm:^7.1.8":
+"@react-navigation/native@npm:7.1.26, @react-navigation/native@npm:^7.1.8":
   version: 7.1.26
   resolution: "@react-navigation/native@npm:7.1.26"
   dependencies:
@@ -33422,21 +33422,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-collapsible-tab-view@npm:8.0.0":
-  version: 8.0.0
-  resolution: "react-native-collapsible-tab-view@npm:8.0.0"
+"react-native-collapsible-tab-view@npm:9.0.0-rc.0":
+  version: 9.0.0-rc.0
+  resolution: "react-native-collapsible-tab-view@npm:9.0.0-rc.0"
   dependencies:
     use-deep-compare: ^1.1.0
   peerDependencies:
-    "@shopify/flash-list": ">=1.0.0"
+    "@shopify/flash-list": ">=2.0.0"
     react: "*"
     react-native: "*"
     react-native-pager-view: "*"
-    react-native-reanimated: ">=3.8.1"
+    react-native-reanimated: ">=4.1.0"
+    react-native-worklets: ">=0.5.1"
   peerDependenciesMeta:
     "@shopify/flash-list":
       optional: true
-  checksum: eae6b8bc3efcb16ec7334e4e8888f34deb416019699db1e026c485867b77753869d66221ea753c708a9103821fe5246165c21955d2cd31a3c2b2b9c41ff0d4ee
+  checksum: 627ccde335dcc7b060ddac8becdbabdf8c38d3d67e88043f3dd04dc83f22a9cbb182a8fb54eb078fbb1de21ba0d6abf2ec2c0555c0c49705a7da30f7c578373f
   languageName: node
   linkType: hard
 

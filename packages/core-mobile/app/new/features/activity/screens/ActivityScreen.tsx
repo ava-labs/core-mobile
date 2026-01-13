@@ -15,6 +15,7 @@ import { DropdownSelections } from 'common/components/DropdownSelections'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { DropdownSelection } from 'common/types'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
 import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useCallback, useMemo } from 'react'
@@ -24,7 +25,6 @@ import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account/slice'
 import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
-import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
 import { ActivityList } from '../components/ActivityList'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
 
@@ -195,7 +195,8 @@ export const ActivityScreen = ({
         handleExplorerLink={handleExplorerLink}
         overrideProps={{
           contentContainerStyle: {
-            ...containerStyle
+            ...containerStyle,
+            paddingTop: Platform.OS === 'android' ? header?.height : 0
           }
         }}
         renderHeader={renderHeader}

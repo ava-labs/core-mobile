@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { addHistoryForActiveTab, addTab, selectActiveTab } from 'store/browser'
 
-import { useHeaderHeight } from '@react-navigation/elements'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import JoepegsLogo from '../../../../assets/joepegs.svg'
 import OpenseaLogo from '../../../../assets/opensea.svg'
 import PopularRibbon from '../../../../assets/popular-ribbon.svg'
@@ -65,7 +65,7 @@ export default function DiscoverCollectiblesScreen(): JSX.Element {
   const { navigate, back } = useRouter()
   const { theme } = useTheme()
   const insets = useSafeAreaInsets()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const dispatch = useDispatch()
   const activeTab = useSelector(selectActiveTab)
 

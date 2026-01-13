@@ -203,7 +203,8 @@ export const DeFiScreen = ({
     contentContainerStyle: {
       flexGrow: 1,
       ...contentContainerStyle,
-      ...(containerStyle ?? {})
+      ...containerStyle,
+      paddingTop: Platform.OS === 'android' ? header?.height : 0
     }
   }
 

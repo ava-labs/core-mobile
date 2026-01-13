@@ -3,16 +3,17 @@ import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
 import { useIsSwappable } from 'common/hooks/useIsSwapable'
 import { useBuy } from 'features/meld/hooks/useBuy'
+import { useBalanceTotalForAccount } from 'features/portfolio/hooks/useBalanceTotalForAccount'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
 import React, { useCallback } from 'react'
-import { StyleSheet, ViewStyle } from 'react-native'
+import { Platform, StyleSheet, ViewStyle } from 'react-native'
+import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
 import { selectIsSwapBlocked } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectActiveAccount } from 'store/account'
 import { MarketToken, MarketType } from 'store/watchlist'
-import { useBalanceTotalForAccount } from 'features/portfolio/hooks/useBalanceTotalForAccount'
 import { TrendingTokenListItem } from './TrendingTokenListItem'
 
 const numColumns = 1
@@ -28,6 +29,7 @@ const TrendingTokensScreen = ({
   emptyComponent: React.JSX.Element
   containerStyle: ViewStyle
 }): JSX.Element => {
+  const header = useHeaderMeasurements()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { navigateToSwap } = useNavigateToSwap()
   const activeAccount = useSelector(selectActiveAccount)
@@ -93,7 +95,8 @@ const TrendingTokensScreen = ({
 
   const overrideProps = {
     contentContainerStyle: {
-      ...containerStyle
+      ...containerStyle,
+      paddingTop: Platform.OS === 'android' ? header?.height : 0
     }
   }
 

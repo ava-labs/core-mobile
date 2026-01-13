@@ -5,9 +5,9 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import { useNavigation } from '@react-navigation/native'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useCollectibleSend } from 'common/hooks/send/useCollectibleSend'
 import { isAddress } from 'ethers'
 import { useRouter } from 'expo-router'
@@ -24,7 +24,7 @@ export const ScanQrCodeScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const { getNetwork } = useNetworks()
   const { canGoBack, back } = useRouter()
   const { getState } = useNavigation()

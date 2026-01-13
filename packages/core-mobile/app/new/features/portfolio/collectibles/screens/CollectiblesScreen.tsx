@@ -53,6 +53,7 @@ export const CollectiblesScreen = ({
   const {
     theme: { colors }
   } = useTheme()
+  const header = useHeaderMeasurements()
   const {
     isLoading,
     isEnabled,
@@ -245,11 +246,11 @@ export const CollectiblesScreen = ({
     contentContainerStyle: {
       flexGrow: 1,
       ...contentContainerStyle,
-      ...(containerStyle ?? {})
+      ...containerStyle,
+      paddingTop: Platform.OS === 'android' ? header?.height : 0
     }
   }
 
-  const header = useHeaderMeasurements()
   const collapsibleHeaderHeight = header?.height ?? 0
 
   if (

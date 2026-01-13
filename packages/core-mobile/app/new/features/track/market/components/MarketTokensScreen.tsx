@@ -4,7 +4,8 @@ import { DropdownSelections } from 'common/components/DropdownSelections'
 import { Space } from 'common/components/Space'
 import { DropdownSelection } from 'common/types'
 import React, { useCallback, useMemo } from 'react'
-import { StyleSheet, ViewStyle } from 'react-native'
+import { Platform, StyleSheet, ViewStyle } from 'react-native'
+import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import { Charts, MarketToken, MarketType } from 'store/watchlist'
 import { MarketView } from '../hooks/useTrackSortAndView'
 import { MarketListItem } from './MarketListItem'
@@ -26,6 +27,7 @@ const MarketTokensScreen = ({
   renderEmpty: () => React.JSX.Element
   containerStyle: ViewStyle
 }): JSX.Element => {
+  const header = useHeaderMeasurements()
   const isGridView = view.selected === MarketView.Grid
   const numColumns = isGridView ? 2 : 1
 
@@ -87,7 +89,8 @@ const MarketTokensScreen = ({
 
   const overrideProps = {
     contentContainerStyle: {
-      ...containerStyle
+      ...containerStyle,
+      paddingTop: Platform.OS === 'android' ? header?.height : 0
     }
   }
 

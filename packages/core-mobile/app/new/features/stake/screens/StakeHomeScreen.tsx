@@ -6,7 +6,6 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import { useIsFocused } from '@react-navigation/native'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
@@ -16,6 +15,7 @@ import {
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { LoadingState } from 'common/components/LoadingState'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useRouter } from 'expo-router'
 import { ActiveStakesScreen } from 'features/stake/components/ActiveStakesScreen'
@@ -41,7 +41,7 @@ import { useSafeAreaFrame } from 'react-native-safe-area-context'
 export const StakeHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const frame = useSafeAreaFrame()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const { data, isLoading } = useStakes()
   const { theme } = useTheme()
   const tabViewRef = useRef<CollapsibleTabsRef>(null)

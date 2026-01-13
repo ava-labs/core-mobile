@@ -1,7 +1,7 @@
 import { showAlert, Text, View } from '@avalabs/k2-alpine'
 import { NetworkVMType } from '@avalabs/vm-module-types'
-import { useHeaderHeight } from '@react-navigation/elements'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
 import { isValidAddressByVmName } from 'features/accountSettings/utils/isValidAddressByVmName'
 import React, { useCallback } from 'react'
@@ -10,7 +10,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSendContext } from '../context/sendContext'
 
 export const ScanQrCodeScreen = (): JSX.Element => {
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const { replace } = useRouter()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { resetAmount, setToAddress } = useSendContext()

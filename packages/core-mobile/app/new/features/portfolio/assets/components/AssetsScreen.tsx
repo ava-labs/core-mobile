@@ -211,7 +211,8 @@ const AssetsScreen: FC<Props> = ({
 
   const overrideProps = {
     contentContainerStyle: {
-      ...(containerStyle ?? {})
+      ...containerStyle,
+      paddingTop: Platform.OS === 'android' ? header?.height : 0
     }
   }
 
@@ -230,6 +231,7 @@ const AssetsScreen: FC<Props> = ({
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(10)}
+      collapsable={false}
       layout={SPRING_LINEAR_TRANSITION}
       style={{
         flex: 1

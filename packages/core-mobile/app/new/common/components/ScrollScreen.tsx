@@ -4,15 +4,9 @@ import {
   SxProp,
   Text
 } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import React, {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState
-} from 'react'
+import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { LayoutRectangle, StyleProp, View, ViewStyle } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import {
@@ -21,7 +15,6 @@ import {
   KeyboardStickyView
 } from 'react-native-keyboard-controller'
 import Animated, {
-  FadeIn,
   interpolate,
   useAnimatedStyle,
   useSharedValue
@@ -108,7 +101,7 @@ export const ScrollScreen = ({
   ...props
 }: ScrollScreenProps): JSX.Element => {
   const insets = useSafeAreaInsets()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -220,16 +213,8 @@ export const ScrollScreen = ({
     titleSx
   ])
 
-  const [showFooter, setShowFooter] = useState(false)
-
-  useEffect(() => {
-    if (renderFooter && !showFooter) {
-      setShowFooter(true)
-    }
-  }, [renderFooter, showFooter])
-
   const renderFooterContent = useCallback(() => {
-    if (renderFooter && showFooter) {
+    if (renderFooter) {
       const footer = renderFooter()
       if (footer) {
         if (shouldAvoidKeyboard) {
@@ -241,7 +226,6 @@ export const ScrollScreen = ({
               }}>
               <LinearGradientBottomWrapper>
                 <Animated.View
-                  entering={FadeIn.delay(150)}
                   style={{
                     paddingHorizontal: 16,
                     paddingBottom: insets.bottom + 16
@@ -255,7 +239,6 @@ export const ScrollScreen = ({
           return (
             <LinearGradientBottomWrapper>
               <Animated.View
-                entering={FadeIn.delay(150)}
                 style={{
                   paddingHorizontal: 16,
                   paddingBottom: insets.bottom + 16
@@ -269,13 +252,7 @@ export const ScrollScreen = ({
     }
 
     return null
-  }, [
-    renderFooter,
-    showFooter,
-    shouldAvoidKeyboard,
-    disableStickyFooter,
-    insets.bottom
-  ])
+  }, [renderFooter, shouldAvoidKeyboard, disableStickyFooter, insets.bottom])
 
   const renderHeaderBackground = useCallback(() => {
     return (

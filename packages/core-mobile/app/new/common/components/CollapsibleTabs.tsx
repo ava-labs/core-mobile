@@ -1,6 +1,6 @@
 import { ANIMATED, View } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import React, { forwardRef, useMemo } from 'react'
 import { Platform, StyleSheet } from 'react-native'
 import {
@@ -123,7 +123,7 @@ const ContentWrapper = ({
   const frame = useSafeAreaFrame()
   const header = useHeaderMeasurements()
   const collapsibleHeaderHeight = header?.height ?? 0
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const tabBarHeight = useBottomTabBarHeight()
 
   const animatedStyle = useAnimatedStyle(() => {

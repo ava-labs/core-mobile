@@ -1,6 +1,6 @@
 import { Text, View } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { AddressType } from 'features/accountSettings/consts'
 import React, { useCallback } from 'react'
@@ -8,7 +8,7 @@ import React, { useCallback } from 'react'
 const ScanQrCodeScreen = (): React.JSX.Element => {
   const { addressType } = useLocalSearchParams<{ addressType: AddressType }>()
   const { dismiss, setParams } = useRouter()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const handleOnSuccess = useCallback(
     (address: string): void => {
       dismiss()
