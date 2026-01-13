@@ -22,6 +22,7 @@ import WalletService from 'services/wallet/WalletService'
 import { Curve } from 'utils/publicKeys'
 import { solanaSignMessage } from 'vmModule/handlers/solanaSignMessage'
 import { solanaSignTransaction } from 'vmModule/handlers/solanaSignTransaction'
+import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
 import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
 import { ethSendTransaction } from '../handlers/ethSendTransaction'
 import { signMessage } from '../handlers/signMessage'
@@ -64,6 +65,11 @@ class ApprovalController implements VmModuleApprovalController {
       setTimeout(() => {
         confetti.restart()
       }, 100)
+
+      // Run the app-review prompt flow after confetti finishes (confetti hides after ~3s)
+      setTimeout(() => {
+        promptForAppReviewAfterSuccessfulTransaction()
+      }, 3200)
     }
   }
 
