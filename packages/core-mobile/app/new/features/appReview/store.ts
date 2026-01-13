@@ -14,7 +14,7 @@ export interface AppReviewState {
   promptShownCount: number
   lastPromptAtMs?: number
 
-  declineCount: number
+  declined: boolean
 
   recordSuccessfulTransaction: () => void
   markPromptShown: () => void
@@ -23,7 +23,7 @@ export interface AppReviewState {
 
 function canPromptNow(state: AppReviewState, nowMs: number) {
   return (
-    state.declineCount < 2 &&
+    !state.declined &&
     !state.pendingPrompt &&
     (state.lastPromptAtMs === undefined ||
       nowMs - state.lastPromptAtMs >= APP_REVIEW_CONFIG.cooldownMs)
@@ -40,7 +40,7 @@ export const appReviewStore = create<AppReviewState>()(
       promptShownCount: 0,
       lastPromptAtMs: undefined,
 
-      declineCount: 0,
+      declined: false,
 
       recordSuccessfulTransaction: () => {
         const nowMs = Date.now()
@@ -74,22 +74,9 @@ export const appReviewStore = create<AppReviewState>()(
 
       decline: () => {
         set(state => {
-          const nextDeclineCount = state.declineCount + 1
-
-          // 1st "No" => snooze (re-prompt after cooldown, on next successful tx)
-          if (nextDeclineCount < 2) {
-            return {
-              ...state,
-              declineCount: nextDeclineCount,
-              pendingPrompt: false
-            }
-          }
-
-          // 2nd "No" => never prompt again
           return {
             ...state,
-            declineCount: nextDeclineCount,
-            pendingPrompt: false
+            declined: true
           }
         })
       }
