@@ -59,19 +59,6 @@ describe('getTopMarkets', () => {
       ]
     })
 
-    apiMock.mockResolvedValue([
-      {
-        internalId: 'avax',
-        coingeckoId: 'avalanche-2',
-        platforms: { 43114: '0x123' },
-        symbol: 'AVAX',
-        name: 'Avalanche',
-        meta: { logoUri: 'avax.png' },
-        current_price: 35,
-        price_change_24h: 1.2,
-        price_change_percentage_24h: -3.4
-      }
-    ])
     const result = await WatchlistService.getTopTokens('USD')
     const m = result.tokens
 
@@ -132,16 +119,18 @@ describe('getTopMarkets', () => {
   })
 
   it('should return correctly mapped prices', async () => {
-    apiMock.mockResolvedValue([
-      {
-        internalId: 'avax',
-        current_price: 35,
-        price_change_24h: 1.2,
-        price_change_percentage_24h: -3.4,
-        market_cap: 2000000000,
-        total_volume: 1000000000
-      }
-    ])
+    getV1WatchlistMarketsMock.mockResolvedValue({
+      data: [
+        {
+          internalId: 'avax',
+          current_price: 35,
+          price_change_24h: 1.2,
+          price_change_percentage_24h: -3.4,
+          market_cap: 2000000000,
+          total_volume: 1000000000
+        }
+      ]
+    })
 
     const result = await WatchlistService.getTopTokens('USD')
 
