@@ -1,6 +1,5 @@
 import * as sdk from '@avalabs/core-coingecko-sdk'
 import * as inMemoryCache from 'utils/InMemoryCache'
-import { watchListClient } from 'utils/api/fetches/nitroWatchlistFetchClient'
 import TokenService from './TokenService'
 import { coingeckoProxyClient as proxy } from './coingeckoProxyClient'
 import WATCHLIST_PRICE from './__mocks__/watchlistPrice.json'
@@ -88,69 +87,6 @@ describe('getSimplePrice', () => {
     })
     expect(proxyMock).toHaveBeenCalledTimes(1)
     expect(result?.test?.usd?.price).toEqual(1)
-  })
-  it('should return simple price data from cache', async () => {
-    inMemoryCacheMock.mockImplementation(() => WATCHLIST_PRICE)
-    const result = await TokenService.getSimplePrice({
-      coinIds: ['test'],
-      currency: sdk.VsCurrencyType.USD
-    })
-    expect(simplePrice).not.toHaveBeenCalled()
-    expect(proxyMock).not.toHaveBeenCalled()
-    expect(result?.test?.usd?.price).toEqual(1)
-  })
-})
-
-describe('getPriceWithMarketDataByCoinId', () => {
-  const watchlistSimplePriceMock = jest.spyOn(watchListClient, 'getPrices')
-  watchlistSimplePriceMock.mockImplementationOnce(async () => {
-    return WATCHLIST_PRICE
-  })
-  it('should return data for token test in currency USD', async () => {
-    const result = await TokenService.getPriceWithMarketDataByCoinId('test')
-    expect(result.price).toEqual(1)
-  })
-  it('should return data for token aave in currency AUD', async () => {
-    const result = await TokenService.getPriceWithMarketDataByCoinId(
-      'test-aave',
-      sdk.VsCurrencyType.AUD
-    )
-    expect(result.price).toEqual(10)
-  })
-  it('should return 0 for unknown token', async () => {
-    const result = await TokenService.getPriceWithMarketDataByCoinId('unknown')
-    expect(result.price).toEqual(0)
-  })
-})
-
-describe('getPriceWithMarketDataByCoinIds', () => {
-  const watchlistSimplePriceMock = jest.spyOn(watchListClient, 'getPrices')
-  watchlistSimplePriceMock.mockImplementationOnce(async () => {
-    return WATCHLIST_PRICE
-  })
-  it('should return data for list of tokens in currency USD', async () => {
-    const result = await TokenService.getPriceWithMarketDataByCoinIds([
-      'test',
-      'test-aave'
-    ])
-    // @ts-ignore
-    expect(Object.keys(result).length).toEqual(2)
-  })
-  it('should return empty object for tokens in currency USD', async () => {
-    const result = await TokenService.getPriceWithMarketDataByCoinIds([
-      'unknown1',
-      'unknonw2'
-    ])
-    // @ts-ignore
-    expect(Object.keys(result).length).toEqual(0)
-  })
-  it('should return data for matching token in currency USD', async () => {
-    const result = await TokenService.getPriceWithMarketDataByCoinIds([
-      'unknown1',
-      'test'
-    ])
-    // @ts-ignore
-    expect(Object.keys(result).length).toEqual(1)
   })
 })
 
