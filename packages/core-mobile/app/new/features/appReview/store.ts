@@ -15,17 +15,14 @@ export interface AppReviewState {
   lastPromptAtMs?: number
 
   declineCount: number
-  optedOut: boolean
-  completed: boolean
 
   recordSuccessfulTransaction: () => void
   markPromptShown: () => void
   decline: () => void
-  markCompleted: () => void
 }
 
 function canPromptNow(state: AppReviewState, nowMs: number) {
-  if (state.optedOut || state.completed) return false
+  if (state.declineCount >= 2) return false
   if (state.pendingPrompt) return false
   if (state.lastPromptAtMs !== undefined) {
     if (nowMs - state.lastPromptAtMs < APP_REVIEW_CONFIG.cooldownMs)
@@ -45,8 +42,6 @@ export const appReviewStore = create<AppReviewState>()(
       lastPromptAtMs: undefined,
 
       declineCount: 0,
-      optedOut: false,
-      completed: false,
 
       recordSuccessfulTransaction: () => {
         const nowMs = Date.now()
@@ -54,14 +49,8 @@ export const appReviewStore = create<AppReviewState>()(
           const nextCount = state.successfulTxCount + 1
           const next: Partial<AppReviewState> = { successfulTxCount: nextCount }
 
-          const eligibleAfterDeclineCooldown =
-            state.declineCount === 1 &&
-            state.lastPromptAtMs !== undefined &&
-            nowMs - state.lastPromptAtMs >= APP_REVIEW_CONFIG.cooldownMs
-
           if (
-            (nextCount >= APP_REVIEW_CONFIG.minSuccessfulTxForPrompt ||
-              eligibleAfterDeclineCooldown) &&
+            nextCount >= APP_REVIEW_CONFIG.minSuccessfulTxForPrompt &&
             canPromptNow(state, nowMs)
           ) {
             next.pendingPrompt = true
@@ -101,18 +90,9 @@ export const appReviewStore = create<AppReviewState>()(
           return {
             ...state,
             declineCount: nextDeclineCount,
-            optedOut: true,
             pendingPrompt: false
           }
         })
-      },
-
-      markCompleted: () => {
-        set(state => ({
-          ...state,
-          completed: true,
-          pendingPrompt: false
-        }))
       }
     }),
     {

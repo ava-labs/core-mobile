@@ -19,6 +19,7 @@ import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { OnApproveParams } from 'services/walletconnectv2/walletConnectCache/types'
 import { WalletType } from 'services/wallet/types'
 import { showLedgerReviewTransaction } from 'features/ledger/utils'
+import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { handleLedgerError } from './utils'
@@ -94,6 +95,11 @@ class ApprovalController implements VmModuleApprovalController {
       setTimeout(() => {
         confetti.restart()
       }, 100)
+
+      // Run the app-review prompt flow after confetti finishes (confetti hides after ~3s)
+      setTimeout(() => {
+        promptForAppReviewAfterSuccessfulTransaction()
+      }, 3200)
     }
   }
 
