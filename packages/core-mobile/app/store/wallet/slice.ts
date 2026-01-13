@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSelector } from 'reselect'
 import { RootState } from 'store/types'
 import { Wallet, WalletsState } from 'store/wallet/types'
 import { WalletType } from 'services/wallet/types'
@@ -79,6 +80,34 @@ export const selectWalletById =
 
 export const selectIsMigratingActiveAccounts = (state: RootState): boolean =>
   state.wallet.isMigratingActiveAccounts
+
+// Memoized selectors to avoid repeated Object.values/keys operations
+export const selectWalletsArray = createSelector(
+  [selectWallets],
+  (wallets): Wallet[] => Object.values(wallets)
+)
+
+export const selectWalletsCount = createSelector(
+  [selectWallets],
+  (wallets): number => Object.keys(wallets).length
+)
+
+export const selectPrivateKeyWallets = createSelector(
+  [selectWalletsArray],
+  (wallets): Wallet[] =>
+    wallets.filter(wallet => wallet.type === WalletType.PRIVATE_KEY)
+)
+
+export const selectRemovableWallets = createSelector(
+  [selectWalletsArray],
+  (wallets): Wallet[] =>
+    wallets.filter(
+      w =>
+        w.type === WalletType.MNEMONIC ||
+        w.type === WalletType.SEEDLESS ||
+        w.type === WalletType.KEYSTONE
+    )
+)
 
 // actions
 export const {

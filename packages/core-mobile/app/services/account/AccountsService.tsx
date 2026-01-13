@@ -14,6 +14,7 @@ import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import Logger from 'utils/Logger'
 import { LedgerWallet } from 'services/wallet/LedgerWallet'
 import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 
 class AccountsService {
   /**
@@ -45,8 +46,11 @@ class AccountsService {
         isTestnet
       })
 
-      let xpAddresses: AddressIndex[] = []
+      let xpAddresses: AddressIndex[] = [
+        { address: stripAddressPrefix(account.addressAVM), index: 0 }
+      ]
       let xpAddressDictionary: XPAddressDictionary = {} as XPAddressDictionary
+      let hasMigratedXpAddresses = false
 
       try {
         const result = await getAddressesFromXpubXP({
@@ -57,8 +61,10 @@ class AccountsService {
           onlyWithActivity: true
         })
 
-        xpAddresses = result.xpAddresses
+        xpAddresses =
+          result.xpAddresses.length > 0 ? result.xpAddresses : xpAddresses
         xpAddressDictionary = result.xpAddressDictionary
+        hasMigratedXpAddresses = true
       } catch (error) {
         Logger.error('Error getting XP addresses', error)
       }
@@ -81,7 +87,8 @@ class AccountsService {
         addressCoreEth: addresses[NetworkVMType.CoreEth],
         addressSVM: addresses[NetworkVMType.SVM],
         xpAddresses,
-        xpAddressDictionary
+        xpAddressDictionary,
+        hasMigratedXpAddresses
       } as Account
     }
     return reloadedAccounts
@@ -158,9 +165,11 @@ class AccountsService {
       isTestnet
     })
 
-    let xpAddresses: AddressIndex[] = []
+    let xpAddresses: AddressIndex[] = [
+      { address: stripAddressPrefix(addresses[NetworkVMType.AVM]), index: 0 }
+    ]
     let xpAddressDictionary: XPAddressDictionary = {} as XPAddressDictionary
-
+    let hasMigratedXpAddresses = false
     try {
       const result = await getAddressesFromXpubXP({
         isDeveloperMode: isTestnet,
@@ -170,8 +179,10 @@ class AccountsService {
         onlyWithActivity: true
       })
 
-      xpAddresses = result.xpAddresses
+      xpAddresses =
+        result.xpAddresses.length > 0 ? result.xpAddresses : xpAddresses
       xpAddressDictionary = result.xpAddressDictionary
+      hasMigratedXpAddresses = true
     } catch (error) {
       Logger.error('Error getting XP addresses', error)
     }
@@ -191,7 +202,8 @@ class AccountsService {
       addressCoreEth: addresses[NetworkVMType.CoreEth],
       addressSVM: addresses[NetworkVMType.SVM],
       xpAddresses,
-      xpAddressDictionary
+      xpAddressDictionary,
+      hasMigratedXpAddresses
     }
   }
 
