@@ -132,7 +132,8 @@ const initialState = {
         id: 'id0',
         walletName: 'Wallet 1',
         xpAddresses: [],
-        xpAddressDictionary: {}
+        xpAddressDictionary: {},
+        hasMigratedXpAddresses: false
       }
     },
     activeAccountId: '0'

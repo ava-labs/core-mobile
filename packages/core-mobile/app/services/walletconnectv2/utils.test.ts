@@ -22,7 +22,8 @@ const mockAccount: Account = {
   addressCoreEth: 'CoreEthAddress',
   addressSVM: 'SVMAddress',
   xpAddresses: [],
-  xpAddressDictionary: {}
+  xpAddressDictionary: {},
+  hasMigratedXpAddresses: true
 }
 
 describe('getCaip2ChainId', () => {

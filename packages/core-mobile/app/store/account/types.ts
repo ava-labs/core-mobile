@@ -16,6 +16,7 @@ export type PrimaryAccount = Omit<
   index: number
   xpAddressDictionary: XPAddressDictionary
   xpAddresses: CorePrimaryAccount['xpAddresses'] | undefined
+  hasMigratedXpAddresses: boolean
 }
 
 export type ImportedAccount = Omit<
@@ -26,6 +27,7 @@ export type ImportedAccount = Omit<
   index: 0
   xpAddressDictionary: XPAddressDictionary
   xpAddresses: CoreImportedAccount['xpAddresses'] | undefined
+  hasMigratedXpAddresses: boolean
 }
 
 export type Account = PrimaryAccount | ImportedAccount
