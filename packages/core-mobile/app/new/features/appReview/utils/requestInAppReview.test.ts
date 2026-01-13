@@ -53,4 +53,3 @@ describe('requestInAppReview', () => {
     expect(goToStoreReview).not.toHaveBeenCalled()
   })
 })
-
