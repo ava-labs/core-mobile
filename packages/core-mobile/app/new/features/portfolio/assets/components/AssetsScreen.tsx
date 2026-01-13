@@ -88,17 +88,17 @@ const AssetsScreen: FC<Props> = ({
 
       const style = isGridView
         ? {
-          marginLeft: isLeftColumn ? 8 : 0,
-          marginRight: isLeftColumn ? 0 : 8,
-          justifyContent: 'center',
-          flex: 1,
-          alignItems: 'center'
-        }
+            marginLeft: isLeftColumn ? 8 : 0,
+            marginRight: isLeftColumn ? 0 : 8,
+            justifyContent: 'center',
+            flex: 1,
+            alignItems: 'center'
+          }
         : {
-          paddingHorizontal: 16,
-          justifyContent: 'center',
-          alignItems: 'stretch'
-        }
+            paddingHorizontal: 16,
+            justifyContent: 'center',
+            alignItems: 'stretch'
+          }
 
       return (
         <View sx={style}>

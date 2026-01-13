@@ -21,7 +21,7 @@ export const TokenListItem = memo(
     isGridView,
     onPress
   }: // eslint-disable-next-line sonarjs/cognitive-complexity
-    TokenListItemProps): React.JSX.Element => {
+  TokenListItemProps): React.JSX.Element => {
     const { formatCurrency } = useFormatCurrency()
     const { balanceInCurrency } = token
     const formattedBalance = balanceInCurrency
@@ -50,8 +50,8 @@ export const TokenListItem = memo(
         ? priceChange > 0
           ? PriceChangeStatus.Up
           : priceChange < 0
-            ? PriceChangeStatus.Down
-            : PriceChangeStatus.Neutral
+          ? PriceChangeStatus.Down
+          : PriceChangeStatus.Neutral
         : undefined
 
     const isPressDisabledRef = useRef(false)

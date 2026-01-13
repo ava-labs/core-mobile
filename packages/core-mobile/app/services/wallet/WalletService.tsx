@@ -262,11 +262,7 @@ class WalletService {
     // This supports wallets that don't use derivation paths (e.g. PrivateKeyWallet)
     const cacheKey = derivationPath ?? 'ROOT'
 
-    const cached = WalletFactory.cache.getPublicKey(
-      walletId,
-      cacheKey,
-      curve
-    )
+    const cached = WalletFactory.cache.getPublicKey(walletId, cacheKey, curve)
     if (cached) {
       return cached
     }
@@ -279,12 +275,7 @@ class WalletService {
     const publicKey = await wallet.getPublicKeyFor({ derivationPath, curve })
 
     // Cache the result
-    WalletFactory.cache.setPublicKey(
-      walletId,
-      cacheKey,
-      curve,
-      publicKey
-    )
+    WalletFactory.cache.setPublicKey(walletId, cacheKey, curve, publicKey)
 
     return publicKey
   }

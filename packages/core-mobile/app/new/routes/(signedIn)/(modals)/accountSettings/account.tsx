@@ -41,9 +41,9 @@ const AccountScreen = (): JSX.Element => {
     return allBalancesInaccurate || balanceTotalInCurrency === 0
       ? UNKNOWN_AMOUNT
       : formatCurrency({
-        amount: balanceTotalInCurrency,
-        withoutCurrencySuffix: true
-      })
+          amount: balanceTotalInCurrency,
+          withoutCurrencySuffix: true
+        })
   }, [allBalancesInaccurate, balanceTotalInCurrency, formatCurrency])
 
   const isPrivateKeyAvailable = useMemo(
