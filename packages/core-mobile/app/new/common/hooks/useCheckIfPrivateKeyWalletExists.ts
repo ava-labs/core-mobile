@@ -1,21 +1,13 @@
 import { PrivateKeyWallet } from 'services/wallet/PrivateKeyWallet'
-import { WalletType } from 'services/wallet/types'
 import WalletFactory from 'services/wallet/WalletFactory'
-import { selectWallets } from 'store/wallet/slice'
-import { useCallback, useMemo } from 'react'
+import { selectPrivateKeyWallets } from 'store/wallet/slice'
+import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
 
 export const useCheckIfPrivateKeyWalletExists = (): ((
   privateKey: string
 ) => Promise<boolean>) => {
-  const wallets = useSelector(selectWallets)
-  const privateKeyWallets = useMemo(
-    () =>
-      Object.values(wallets).filter(
-        wallet => wallet.type === WalletType.PRIVATE_KEY
-      ),
-    [wallets]
-  )
+  const privateKeyWallets = useSelector(selectPrivateKeyWallets)
 
   return useCallback(
     async (privateKey: string): Promise<boolean> => {
