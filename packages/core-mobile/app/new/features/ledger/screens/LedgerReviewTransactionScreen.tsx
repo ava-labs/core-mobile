@@ -13,7 +13,7 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIconWithText'
 import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
-import { NetworkVMType } from '@avalabs/core-chains-sdk'
+import { ChainId, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { LedgerAppType } from 'services/ledger/types'
 import { useSelector } from 'react-redux'
 import { selectActiveWalletId } from 'store/wallet/slice'
@@ -36,13 +36,15 @@ const LedgerReviewTransactionScreen = ({
   } = useTheme()
 
   const ledgerAppName =
-    network.vmName === NetworkVMType.EVM
+    network.chainId === ChainId.AVALANCHE_MAINNET_ID ||
+    network.chainId === ChainId.AVALANCHE_TESTNET_ID ||
+    network.vmName === NetworkVMType.AVM ||
+    network.vmName === NetworkVMType.PVM
+      ? LedgerAppType.AVALANCHE
+      : network.vmName === NetworkVMType.EVM
       ? LedgerAppType.ETHEREUM
       : network.vmName === NetworkVMType.BITCOIN
-      ? 'Bitcoin'
-      : network.vmName === NetworkVMType.AVM ||
-        network.vmName === NetworkVMType.PVM
-      ? LedgerAppType.AVALANCHE
+      ? LedgerAppType.BITCOIN
       : network.vmName === NetworkVMType.SVM
       ? LedgerAppType.SOLANA
       : LedgerAppType.UNKNOWN
