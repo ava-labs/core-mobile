@@ -47,9 +47,6 @@ export const useBenqiDepositAvax = ({
         context: {
           [RequestContext.CALLBACK_TRANSACTION_CONFIRMED]: () => {
             queryClient.invalidateQueries({
-              queryKey: [ReactQueryKeys.BENQI_AVAILABLE_MARKETS]
-            })
-            queryClient.invalidateQueries({
               queryKey: [ReactQueryKeys.BENQI_ACCOUNT_SNAPSHOT]
             })
           }

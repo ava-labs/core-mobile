@@ -1,16 +1,14 @@
 import { QueryObserverResult, skipToken, useQuery } from '@tanstack/react-query'
 import { useCallback } from 'react'
 import { multicall } from 'viem/actions'
-import { DefiMarket, MarketNames } from 'features/defiMarket/types'
-import { useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/account'
 import { Address, PublicClient, zeroAddress } from 'viem'
+import { Network } from '@avalabs/core-chains-sdk'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import Logger from 'utils/Logger'
+import { DefiMarket, MarketNames } from 'features/defiMarket/types'
 import { getBenqiDepositedBalance } from 'features/defiMarket/utils/getBenqiDepositedBalance'
 import { getBenqiSupplyApyPercent } from 'features/defiMarket/utils/getBenqiSupplyApyPercent'
 import { getUniqueMarketId } from 'features/defiMarket/utils/getUniqueMarketId'
-import { Network } from '@avalabs/core-chains-sdk'
-import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { BENQI_LENS_ABI } from 'features/defiMarket/abis/benqiLens'
 import { BENQI_PRICE_ORACLE } from 'features/defiMarket/abis/benqiPriceOracle'
 import {
@@ -39,8 +37,6 @@ export const useBenqiAvailableMarkets = ({
   refetch: () => Promise<QueryObserverResult<DefiMarket[], Error>>
   // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
-  const activeAccount = useSelector(selectActiveAccount)
-  const addressEVM = activeAccount?.addressC as Address | undefined
   const getCChainToken = useGetCChainToken()
   const {
     data: accountSnapshot,
@@ -48,8 +44,13 @@ export const useBenqiAvailableMarkets = ({
     refetch: refetchAccountSnapshot
   } = useBenqiAccountSnapshot({ networkClient })
 
-  const shouldFetch =
-    networkClient && network && !isLoadingAccountSnapshot && addressEVM
+  const shouldFetch = networkClient && network && !isLoadingAccountSnapshot
+
+  // Extract primitive key from accountSnapshot for queryKey
+  // Sum of all supplyBalances changes when any balance changes
+  const snapshotKey = accountSnapshot?.accountMarketSnapshots
+    .reduce((sum, s) => sum + s.supplyBalance, 0n)
+    .toString()
 
   const {
     data,
@@ -61,7 +62,8 @@ export const useBenqiAvailableMarkets = ({
   } = useQuery({
     queryKey: [
       ReactQueryKeys.BENQI_AVAILABLE_MARKETS,
-      networkClient?.chain?.id
+      networkClient?.chain?.id,
+      snapshotKey
     ],
     queryFn: shouldFetch
       ? async () => {
