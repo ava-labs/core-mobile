@@ -232,9 +232,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/avalanche-module@npm:0.0.0-boyer-retry-logic-to-vm-module-20260113191638":
-  version: 0.0.0-boyer-retry-logic-to-vm-module-20260113191638
-  resolution: "@avalabs/avalanche-module@npm:0.0.0-boyer-retry-logic-to-vm-module-20260113191638"
+"@avalabs/avalanche-module@npm:3.1.2":
+  version: 3.1.2
+  resolution: "@avalabs/avalanche-module@npm:3.1.2"
   dependencies:
     "@avalabs/avalanchejs": 5.1.0-alpha.2
     "@avalabs/core-chains-sdk": 3.1.0-alpha.72
@@ -244,12 +244,12 @@ __metadata:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.72
     "@avalabs/glacier-sdk": 3.1.0-alpha.72
     "@avalabs/types": 3.1.0-alpha.72
-    "@avalabs/vm-module-types": 0.0.0-boyer-retry-logic-to-vm-module-20260113191638
+    "@avalabs/vm-module-types": 3.1.2
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: f7e8115681f21d7d06bb341930c42a02063c20fd58654a967a8b7e15bb29622813c78d3795592d4cfa669193db94b64e82ae41ade32e462846c728bc58bac59b
+  checksum: c4b37fa6a93a397a737071495b21d35d06d004b54db23cda88d5d548c9a5c1d1a0466a82f1a62410a23ce773a380a0518e089e6ba6e1e71879eb9eddcc260dda
   languageName: node
   linkType: hard
 
@@ -266,20 +266,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/bitcoin-module@npm:0.0.0-boyer-retry-logic-to-vm-module-20260113191638":
-  version: 0.0.0-boyer-retry-logic-to-vm-module-20260113191638
-  resolution: "@avalabs/bitcoin-module@npm:0.0.0-boyer-retry-logic-to-vm-module-20260113191638"
+"@avalabs/bitcoin-module@npm:3.1.2":
+  version: 3.1.2
+  resolution: "@avalabs/bitcoin-module@npm:3.1.2"
   dependencies:
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.72
     "@avalabs/core-utils-sdk": 3.1.0-alpha.72
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.72
-    "@avalabs/vm-module-types": 0.0.0-boyer-retry-logic-to-vm-module-20260113191638
+    "@avalabs/vm-module-types": 3.1.2
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
     bitcoinjs-lib: 5.2.0
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: 6372fd73778014a4d6d4e8970390468efcabe1d3514c540e22d7691328254107dee3831dd8336cd5e80c68802c54107fe1e1d022d63277d37854211bef09dcc7
+  checksum: edfcbae2fc5cae006566a28d2b626e8a77e7ee8bcbecb6918d5f178af09aa89627a3638a0b906c24106b589330bbf0489d815b66638e4364f64acd07d07312c2
   languageName: node
   linkType: hard
 
@@ -384,9 +384,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/core-mobile@workspace:packages/core-mobile"
   dependencies:
-    "@avalabs/avalanche-module": 0.0.0-boyer-retry-logic-to-vm-module-20260113191638
+    "@avalabs/avalanche-module": 3.1.2
     "@avalabs/avalanchejs": 5.1.0-alpha.2
-    "@avalabs/bitcoin-module": 0.0.0-boyer-retry-logic-to-vm-module-20260113191638
+    "@avalabs/bitcoin-module": 3.1.2
     "@avalabs/bridge-unified": 4.3.0
     "@avalabs/core-bridge-sdk": 3.1.0-alpha.69
     "@avalabs/core-chains-sdk": 3.1.0-alpha.69
@@ -394,13 +394,13 @@ __metadata:
     "@avalabs/core-gasless-sdk": 3.1.0-alpha.69
     "@avalabs/core-utils-sdk": 3.1.0-alpha.69
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.69
-    "@avalabs/evm-module": 0.0.0-boyer-retry-logic-to-vm-module-20260113191638
+    "@avalabs/evm-module": 3.1.2
     "@avalabs/glacier-sdk": 3.1.0-alpha.69
     "@avalabs/k2-alpine": "workspace:*"
-    "@avalabs/svm-module": 0.0.0-boyer-retry-logic-to-vm-module-20260113191638
+    "@avalabs/svm-module": 3.1.2
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": 3.1.0-alpha.71
-    "@avalabs/vm-module-types": 0.0.0-boyer-retry-logic-to-vm-module-20260113191638
+    "@avalabs/vm-module-types": 3.1.2
     "@babel/core": 7.28.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
     "@babel/plugin-syntax-object-rest-spread": 7.8.3
@@ -789,9 +789,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/evm-module@npm:0.0.0-boyer-retry-logic-to-vm-module-20260113191638":
-  version: 0.0.0-boyer-retry-logic-to-vm-module-20260113191638
-  resolution: "@avalabs/evm-module@npm:0.0.0-boyer-retry-logic-to-vm-module-20260113191638"
+"@avalabs/evm-module@npm:3.1.2":
+  version: 3.1.2
+  resolution: "@avalabs/evm-module@npm:3.1.2"
   dependencies:
     "@avalabs/core-chains-sdk": 3.1.0-alpha.72
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.72
@@ -800,7 +800,7 @@ __metadata:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.72
     "@avalabs/glacier-sdk": 3.1.0-alpha.72
     "@avalabs/types": 3.1.0-alpha.72
-    "@avalabs/vm-module-types": 0.0.0-boyer-retry-logic-to-vm-module-20260113191638
+    "@avalabs/vm-module-types": 3.1.2
     "@blockaid/client": 0.48.0
     "@metamask/rpc-errors": 6.3.0
     "@openzeppelin/contracts": 4.9.6
@@ -810,7 +810,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: 6.13.5
-  checksum: 145bab960de560b431d6f61f64ba586484c0a297a5fd1b61a8e77c1c02a40857115d0b3b45f8e37ab10d227d58607129341eda17cfd2678c551a0656d9f7b786
+  checksum: 6a7437d4c6b0c4f8cb62ec3d084e7bae4cf1669b2661ffc7dac22940fee01acc05e60491d7528ef270afa25214ab045a5523d629e81235d76fc247f2202105e4
   languageName: node
   linkType: hard
 
@@ -923,15 +923,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/svm-module@npm:0.0.0-boyer-retry-logic-to-vm-module-20260113191638":
-  version: 0.0.0-boyer-retry-logic-to-vm-module-20260113191638
-  resolution: "@avalabs/svm-module@npm:0.0.0-boyer-retry-logic-to-vm-module-20260113191638"
+"@avalabs/svm-module@npm:3.1.2":
+  version: 3.1.2
+  resolution: "@avalabs/svm-module@npm:3.1.2"
   dependencies:
     "@avalabs/core-chains-sdk": 3.1.0-alpha.72
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.72
     "@avalabs/core-utils-sdk": 3.1.0-alpha.72
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.72
-    "@avalabs/vm-module-types": 0.0.0-boyer-retry-logic-to-vm-module-20260113191638
+    "@avalabs/vm-module-types": 3.1.2
     "@blockaid/client": 0.48.0
     "@metamask/rpc-errors": 6.3.0
     "@scure/base": 1.2.4
@@ -942,7 +942,7 @@ __metadata:
     "@wallet-standard/base": 1.1.0
     "@wallet-standard/features": 1.1.0
     zod: 3.23.8
-  checksum: 85264ad6ae3d25fe0d7cfd4b3d7f9fda6562fbbc48b99941a696d3af7495808c805b4b1177ea5d0a40ec454e21fb926c0ef02b37fec173ab8d1b95f0590a3599
+  checksum: 32a421aab09a34f726657c94375721613e04feb2655b06c88594bb0fa9b78655d8a094729d3ff43375a9c4ac23ec523d5f1880fe303f22a59b4ad97c6e90a4dd
   languageName: node
   linkType: hard
 
@@ -959,9 +959,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/vm-module-types@npm:0.0.0-boyer-retry-logic-to-vm-module-20260113191638":
-  version: 0.0.0-boyer-retry-logic-to-vm-module-20260113191638
-  resolution: "@avalabs/vm-module-types@npm:0.0.0-boyer-retry-logic-to-vm-module-20260113191638"
+"@avalabs/vm-module-types@npm:3.1.2":
+  version: 3.1.2
+  resolution: "@avalabs/vm-module-types@npm:3.1.2"
   dependencies:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.72
     "@avalabs/glacier-sdk": 3.1.0-alpha.72
@@ -972,7 +972,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: 6.13.5
-  checksum: 3d9b3f973e44de1711a5cc2c87d8762def3f75a4eba573c58e547dd325f837f1050f9b888e94e52f135866e725ace96f84463c519603feed8afb1e1893021a40
+  checksum: 611992af56d3c11fdbf9b1459314538d08af911b8d874c97f1c991b20f2267383092927bc5ad18bfd4ff85d5a231b62cf7b4b312740ab5efa4e8bf0ff94813ff
   languageName: node
   linkType: hard
 

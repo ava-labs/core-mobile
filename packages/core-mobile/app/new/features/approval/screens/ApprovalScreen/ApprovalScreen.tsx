@@ -1,6 +1,5 @@
 import { Separator, showAlert, Text, View } from '@avalabs/k2-alpine'
 import { RpcMethod } from '@avalabs/vm-module-types'
-import { TransactionRequest } from 'ethers'
 import { NetworkTokenSymbols } from 'common/components/TokenIcon'
 import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
 import { validateFee } from 'common/hooks/send/utils/evm/validate'
@@ -26,7 +25,9 @@ import {
 } from 'store/account/slice'
 import { selectIsSeedlessSigningBlocked } from 'store/posthog/slice'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import { RequestContext } from 'store/rpc/types'
 import Logger from 'utils/Logger'
+import SentryService from 'services/sentry/SentryService'
 import { Eip1559Fees } from 'utils/Utils'
 import { Account } from '../../components/Account'
 import BalanceChange from '../../components/BalanceChange/BalanceChange'
@@ -136,14 +137,10 @@ const ApprovalScreen = ({
         return
       }
 
-      // if the tx is eth_sendTransaction, mark the downstream eth_sendTransaction so VM module can enable retry if gasless is enabled
-      if (signingData.type === RpcMethod.ETH_SEND_TRANSACTION) {
-        type RetryableTxRequest = TransactionRequest & { shouldRetry?: boolean }
-        const txData = signingData.data as RetryableTxRequest
-        signingData.data = {
-          ...txData,
-          shouldRetry: gaslessEnabled
-        } as RetryableTxRequest
+      // flag VM-module retry via request context instead of mutating tx data
+      request.context = {
+        ...request.context,
+        [RequestContext.SHOULD_RETRY]: gaslessEnabled
       }
     }
 
@@ -160,6 +157,7 @@ const ApprovalScreen = ({
       })
       router.canGoBack() && router.back()
     } catch (error: unknown) {
+      SentryService.captureException('Approval handleApprove failed', error)
       Logger.error('Error approving transaction', error)
     } finally {
       setSubmitting(false)
@@ -170,7 +168,7 @@ const ApprovalScreen = ({
     gaslessEnabled,
     handleGaslessTx,
     account,
-    signingData,
+    request,
     onApprove,
     activeWallet.id,
     activeWallet.type,
