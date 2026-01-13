@@ -41,7 +41,9 @@ export const DepositCard = ({
           )}
         </Text>
       </View>
-      <View onTouchStart={e => e.stopPropagation()}>
+      <View
+        onTouchStart={e => e.stopPropagation()}
+        onTouchEnd={e => e.stopPropagation()}>
         <Button type="secondary" size="small" onPress={onWithdrawPress}>
           Withdraw
         </Button>
