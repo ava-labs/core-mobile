@@ -1,12 +1,10 @@
+import { createCache } from 'utils/createCache'
 import {
   ApprovalParams,
   SetDeveloperModeParams,
   SessionProposalParams,
   EditContactParams,
-  AddEthereumChainParams,
-  KeystoneSignerParams,
-  KeystoneTroubleshootingParams,
-  LedgerReviewTransactionParams
+  AddEthereumChainParams
 } from './types'
 
 // a simple in-memory cache (no reactivity or persistence support)
@@ -18,33 +16,5 @@ export const walletConnectCache = {
     createCache<SetDeveloperModeParams>('set developer mode'),
   editContactParams: createCache<EditContactParams>('edit contact'),
   addEthereumChainParams:
-    createCache<AddEthereumChainParams>('add ethereum chain'),
-  keystoneSignerParams: createCache<KeystoneSignerParams>('keystone signer'),
-  keystoneTroubleshootingParams: createCache<KeystoneTroubleshootingParams>(
-    'keystone troubleshooting'
-  ),
-  ledgerReviewTransactionParams: createCache<LedgerReviewTransactionParams>(
-    'ledger review transaction'
-  )
-}
-
-function createCache<T>(key: string): {
-  set: (data: T) => void
-  get: () => T
-} {
-  let value: T | null = null
-
-  return {
-    set: (data: T) => {
-      value = data
-    },
-    get: (): T => {
-      if (!value) {
-        throw new Error(`No ${key} params found`)
-      }
-      const data = value
-      value = null // auto-clear after retrieval
-      return data
-    }
-  }
+    createCache<AddEthereumChainParams>('add ethereum chain')
 }

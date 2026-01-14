@@ -11,13 +11,13 @@ import {
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIconWithText'
-import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
 import { useSelector } from 'react-redux'
 import { selectActiveWalletId } from 'store/wallet/slice'
 import LedgerService from 'services/ledger/LedgerService'
-import { LedgerReviewTransactionParams } from '../../../../services/walletconnectv2/walletConnectCache/types'
+import { LedgerReviewTransactionParams } from '../services/ledgerParamsCache'
 import { useLedgerWalletMap } from '../store'
 import { getLedgerAppName } from '../utils'
+import { withLedgerParamsCache } from '../services/withLedgerParamsCache'
 
 const LedgerReviewTransactionScreen = ({
   params: { network, onApprove, onReject }
@@ -257,6 +257,6 @@ const LedgerReviewTransactionScreen = ({
   )
 }
 
-export default withWalletConnectCache('ledgerReviewTransactionParams')(
+export default withLedgerParamsCache('ledgerReviewTransactionParams')(
   LedgerReviewTransactionScreen
 )
