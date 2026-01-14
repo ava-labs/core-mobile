@@ -35,7 +35,7 @@ const allCaps = [
     'appium:platformVersion': '14.0',
     'appium:automationName': 'UiAutomator2',
     'appium:app': androidPath,
-    // 'appium:appWaitActivity': '*',
+    'appium:appWaitActivity': '*',
     'appium:autoGrantPermissions': true,
     'appium:newCommandTimeout': 120,
     'appium:adbExecTimeout': 60000,
