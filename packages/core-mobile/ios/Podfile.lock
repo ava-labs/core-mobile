@@ -541,32 +541,7 @@ PODS:
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
   - NitroAvalabsCrypto (0.0.1):
-    - DoubleConversion
-    - glog
-    - hermes-engine
-    - NitroModules
-    - RCT-Folly (= 2024.11.18.00)
-    - RCTRequired
-    - RCTTypeSafety
-    - React-callinvoker
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - Yoga
-  - NitroFetch (0.1.6):
+    - boost
     - DoubleConversion
     - fast_float
     - fmt
@@ -2523,6 +2498,7 @@ PODS:
     - BranchSDK (= 3.12.2)
     - React-Core
   - react-native-compat (2.23.0):
+    - boost
     - DoubleConversion
     - fast_float
     - fmt
@@ -2651,7 +2627,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-keyboard-controller (1.20.5):
+  - react-native-keyboard-controller (1.18.5):
     - boost
     - DoubleConversion
     - fast_float
@@ -2669,7 +2645,7 @@ PODS:
     - React-graphics
     - React-ImageManager
     - React-jsi
-    - react-native-keyboard-controller/common (= 1.20.5)
+    - react-native-keyboard-controller/common (= 1.18.5)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-renderercss
@@ -2680,7 +2656,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-keyboard-controller/common (1.20.5):
+  - react-native-keyboard-controller/common (1.18.5):
     - boost
     - DoubleConversion
     - fast_float
@@ -4113,7 +4089,7 @@ PODS:
     - Yoga
   - RNSensors (7.3.6):
     - React-Core
-  - RNSentry (7.2.0):
+  - RNSentry (7.4.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -4140,7 +4116,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - Sentry/HybridSDK (= 8.56.1)
+    - Sentry/HybridSDK (= 8.57.0)
     - SocketRocket
     - Yoga
   - RNShare (12.0.9):
@@ -4356,7 +4332,7 @@ PODS:
   - SDWebImageWebPCoder (0.14.6):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.17)
-  - Sentry/HybridSDK (8.56.1)
+  - Sentry/HybridSDK (8.57.0)
   - SocketRocket (0.7.1)
   - SwiftUIIntrospect (1.3.0)
   - Yoga (0.0.0)
@@ -5030,13 +5006,13 @@ SPEC CHECKSUMS:
   react-native-ble-plx: e9494861c0f5d1dbc6d8185f9f125404e2f907c1
   react-native-bottom-tabs: e33312fc663d163f0be73d3474dfb448ba38dad8
   react-native-branch: 0229b46e762bc16ab5289e5eac167738b94c089b
-  react-native-compat: 2d4f00e2a80258c0cec6e7df3180bcfe3404bd6f
+  react-native-compat: baac2e018250ad367b9461e90362c3dcaec14eac
   react-native-config: ea75335a7cca1d3326de1da384227e580a7c082e
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-in-app-updates: 1fd82e3a5d2e859245f756852649ee8560566703
   react-native-ios-context-menu: afeb0ca80a48e6d13a5d712928ca3b2fdbef037e
   react-native-ios-utilities: d9ed1f5ea011650e9c7e9cb7c82272c1f0363e44
-  react-native-keyboard-controller: c004ccc306d8c205342867f24e6d26a28e985e61
+  react-native-keyboard-controller: 8bd5f5572b6d5d402a2f77987a17492f869e5d62
   react-native-menu: 8d2c831a735c9e6528c28b26ca14e57591d87e14
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-pager-view: a0516effb17ca5120ac2113bfd21b91130ad5748
@@ -5106,7 +5082,7 @@ SPEC CHECKSUMS:
   RNReanimated: fabac5a7aee92d454d7aef06335a7bef955d5603
   RNScreens: 0bbf16c074ae6bb1058a7bf2d1ae017f4306797c
   RNSensors: 111159597ac51505df10413c61b28bcd28e88983
-  RNSentry: bca90d41b7e8423262c5fcfccfb12328a3aa6701
+  RNSentry: 3ffb79c1393af4800c85bc96bc880c20316fc67a
   RNShare: 1dba46787d6e5543e05655efaefa0e4bb98380d9
   RNSound: 180aa1cfad34009ad7472c78d0340100ff948058
   RNSVG: 6f39605a4c4d200b11435c35bd077553c6b5963a
@@ -5115,7 +5091,7 @@ SPEC CHECKSUMS:
   SDWebImageAVIFCoder: afe194a084e851f70228e4be35ef651df0fc5c57
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
-  Sentry: b3ec44d01708fce73f99b544beb57e890eca4406
+  Sentry: e1b49e5f49367ff211b25c431a60e2bd83b792aa
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SwiftUIIntrospect: fee9aa07293ee280373a591e1824e8ddc869ba5d
   Yoga: 728df40394d49f3f471688747cf558158b3a3bd1

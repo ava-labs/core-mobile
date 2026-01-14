@@ -404,6 +404,15 @@ __metadata:
     "@bitcoinerlab/secp256k1": 1.2.0
     "@blockaid/client": 0.48.0
     "@bottom-tabs/react-navigation": 1.1.0
+    "@buoy-gg/core": ^2.1.1
+    "@buoy-gg/debug-borders": ^2.1.1
+    "@buoy-gg/env": ^2.1.1
+    "@buoy-gg/events": ^2.1.1
+    "@buoy-gg/highlight-updates": ^2.1.1
+    "@buoy-gg/network": ^2.1.1
+    "@buoy-gg/react-query": ^2.1.1
+    "@buoy-gg/route-events": ^2.1.1
+    "@buoy-gg/storage": ^2.1.1
     "@coinbase/cbpay-js": 2.2.1
     "@config-plugins/detox": 11.0.0
     "@contentful/rich-text-react-renderer": 16.0.2
@@ -438,14 +447,6 @@ __metadata:
     "@openzeppelin/contracts": 5.0.2
     "@paraswap/sdk": 7.2.3
     "@playwright/test": 1.48.0
-    "@react-buoy/core": 0.1.33
-    "@react-buoy/debug-borders": 0.1.33
-    "@react-buoy/env": 0.1.33
-    "@react-buoy/network": 0.1.33
-    "@react-buoy/react-query": 0.1.33
-    "@react-buoy/route-events": 0.1.33
-    "@react-buoy/shared-ui": 0.1.33
-    "@react-buoy/storage": 0.1.33
     "@react-native-async-storage/async-storage": 2.2.0
     "@react-native-clipboard/clipboard": 1.16.3
     "@react-native-community/cli": 20.0.0
@@ -4670,6 +4671,218 @@ __metadata:
   version: 1.10.1
   resolution: "@bufbuild/protobuf@npm:1.10.1"
   checksum: 403838ad278d504e33e72ec0f64ce1bac9f5025ee6396253382e821a1fe0c371a58ffe45a0e8f23306205b6890c5f83e85828168a35dae118915cd4c3d091177
+  languageName: node
+  linkType: hard
+
+"@buoy-gg/core@npm:2.1.1, @buoy-gg/core@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@buoy-gg/core@npm:2.1.1"
+  dependencies:
+    "@buoy-gg/floating-tools-core": 2.1.1
+    "@buoy-gg/floating-tools-react": 2.1.1
+    "@buoy-gg/license": 2.1.1
+    "@buoy-gg/shared-ui": 2.1.1
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 363548ef1cd46c53bbf187680d7fd1bc05eab09c4f486a996babd41fe4392939a450c9db446e2dff60ef936ec970223f1b4a399324a8ba43350646ee696d0e4b
+  languageName: node
+  linkType: hard
+
+"@buoy-gg/debug-borders@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@buoy-gg/debug-borders@npm:2.1.1"
+  dependencies:
+    "@buoy-gg/core": 2.1.1
+    "@buoy-gg/shared-ui": 2.1.1
+  peerDependencies:
+    "@buoy-gg/license": "*"
+    react: "*"
+    react-native: "*"
+  peerDependenciesMeta:
+    "@buoy-gg/license":
+      optional: true
+  checksum: 21243eb6a4de515808f4a0ee7d974ef2db2ebaf87f24d7adbc6a0b319bcb9e9ca95fad39c121e339b6238b5e189b6e709cdd7f3ffec6d0f8a6b3e426e8af3dfa
+  languageName: node
+  linkType: hard
+
+"@buoy-gg/env@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@buoy-gg/env@npm:2.1.1"
+  dependencies:
+    "@buoy-gg/floating-tools-core": 2.1.1
+    "@buoy-gg/shared-ui": 2.1.1
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 3e8b577da8aa96a24e17d2cd558bc15819341e09133142c0ce1e713658849bbff10baa326616c913ecaeebfe35d980fcfbf2634212780f22d909a5713e9f58fe
+  languageName: node
+  linkType: hard
+
+"@buoy-gg/events@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@buoy-gg/events@npm:2.1.1"
+  dependencies:
+    "@buoy-gg/floating-tools-core": 2.1.1
+    "@buoy-gg/shared-ui": 2.1.1
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  peerDependenciesMeta:
+    "@buoy-gg/network":
+      optional: true
+    "@buoy-gg/react-query":
+      optional: true
+    "@buoy-gg/redux":
+      optional: true
+    "@buoy-gg/route-events":
+      optional: true
+    "@buoy-gg/storage":
+      optional: true
+    "@tanstack/react-query":
+      optional: true
+  checksum: 401b4093b49b3acbbaf8c58071ed9584bba66477623e00a94bc62a344d790879b058f52883240195ec9ac5acb61f0a2ec71ee2bb3980c896a3958b7f5368d5ee
+  languageName: node
+  linkType: hard
+
+"@buoy-gg/floating-tools-core@npm:2.1.1":
+  version: 2.1.1
+  resolution: "@buoy-gg/floating-tools-core@npm:2.1.1"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  peerDependenciesMeta:
+    react-native:
+      optional: true
+  checksum: d0e3e81596bb435c5db490e44629d68c9449816fe365c7a2eb7cb6d4d308a0768eed38fd11a65c8211f85a251ba252cfe915b7e3c8bb652a5b9ac66e352e192d
+  languageName: node
+  linkType: hard
+
+"@buoy-gg/floating-tools-react@npm:2.1.1":
+  version: 2.1.1
+  resolution: "@buoy-gg/floating-tools-react@npm:2.1.1"
+  dependencies:
+    "@buoy-gg/floating-tools-core": 2.1.1
+  peerDependencies:
+    react: ">=17.0.0"
+  checksum: 80549d7b52ee653d7c4169525f4fa2a2733ccc7bc25c7ca96134a64cdaa3c855aff91fe10f751d43b0c484b30f1012a25ebc3952f8414cdf1073f484dee47b32
+  languageName: node
+  linkType: hard
+
+"@buoy-gg/highlight-updates@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@buoy-gg/highlight-updates@npm:2.1.1"
+  dependencies:
+    "@buoy-gg/floating-tools-core": 2.1.1
+    "@buoy-gg/shared-ui": 2.1.1
+  peerDependencies:
+    "@buoy-gg/core": 2.1.1
+    "@buoy-gg/license": "*"
+    react: "*"
+    react-native: "*"
+  peerDependenciesMeta:
+    "@buoy-gg/core":
+      optional: true
+  checksum: 7931524c7e372faea29250d6de4a962e408aac75eb35e5599cddacf59ba4e10d211a55f56c5bf3595f0e601f8889e584354d7fb97919c29416019296ae87834f
+  languageName: node
+  linkType: hard
+
+"@buoy-gg/license@npm:2.1.1":
+  version: 2.1.1
+  resolution: "@buoy-gg/license@npm:2.1.1"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: d8339d9c2b197e03cf81534ec97473ca25cd550a68bf5b168e6d822a728419edbeb745458490eb16aac0509e6d81831307d831600edf8b37f0b4e2c2a60b6dad
+  languageName: node
+  linkType: hard
+
+"@buoy-gg/network@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@buoy-gg/network@npm:2.1.1"
+  dependencies:
+    "@buoy-gg/shared-ui": 2.1.1
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 4991f7c7403dc52ff544de178ae18fe861ffdf10acdfc489c7302fa67442e2f923c487f123014125abffa9fae4103da2a655fde4946378adf70a60fd7b5e17e5
+  languageName: node
+  linkType: hard
+
+"@buoy-gg/react-query@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@buoy-gg/react-query@npm:2.1.1"
+  dependencies:
+    "@buoy-gg/floating-tools-core": 2.1.1
+    "@buoy-gg/shared-ui": 2.1.1
+  peerDependencies:
+    "@tanstack/react-query": ">=5.0.0"
+    react: "*"
+    react-native: "*"
+  checksum: 1ac858cf700dd07f4bbe41e3eaffc9f51b544244640e95c9d8951ce944ac430338a31a4e6614f394e2410ef36b2de0ac932c9235b01106e50bca8684bb14be80
+  languageName: node
+  linkType: hard
+
+"@buoy-gg/route-events@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@buoy-gg/route-events@npm:2.1.1"
+  dependencies:
+    "@buoy-gg/floating-tools-core": 2.1.1
+    "@buoy-gg/shared-ui": 2.1.1
+  peerDependencies:
+    "@buoy-gg/license": "*"
+    "@react-native-async-storage/async-storage": "*"
+    "@react-navigation/native": "*"
+    expo-router: "*"
+    react: "*"
+    react-native: "*"
+  peerDependenciesMeta:
+    "@buoy-gg/license":
+      optional: true
+  checksum: 88ffdac9d69cab9f9af97ef53537a820249238afc9ec372dc1bd8fc645d7b825082338ebe823044a0117c6ab88e99db5931af6f2d7e679347ea25f5feb0eda32
+  languageName: node
+  linkType: hard
+
+"@buoy-gg/shared-ui@npm:2.1.1":
+  version: 2.1.1
+  resolution: "@buoy-gg/shared-ui@npm:2.1.1"
+  dependencies:
+    "@buoy-gg/floating-tools-core": 2.1.1
+  peerDependencies:
+    "@buoy-gg/license": "*"
+    "@react-native-clipboard/clipboard": "*"
+    expo-clipboard: "*"
+    expo-file-system: "*"
+    react: "*"
+    react-native: "*"
+    react-native-safe-area-context: "*"
+  peerDependenciesMeta:
+    "@buoy-gg/license":
+      optional: true
+    "@react-native-clipboard/clipboard":
+      optional: true
+    expo-clipboard:
+      optional: true
+    expo-file-system:
+      optional: true
+    react-native-safe-area-context:
+      optional: true
+  checksum: 538e5de4554a1d76199a18ff95fa047cc0b22a5ae89476caf12b865bf3a3fd15461d06838b5e1e641064a269fda6d4b73d904252a0ecff0feae13eab90d19025
+  languageName: node
+  linkType: hard
+
+"@buoy-gg/storage@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "@buoy-gg/storage@npm:2.1.1"
+  dependencies:
+    "@buoy-gg/floating-tools-core": 2.1.1
+    "@buoy-gg/shared-ui": 2.1.1
+  peerDependencies:
+    "@buoy-gg/license": "*"
+    "@react-native-async-storage/async-storage": ">=1.0.0"
+    react: "*"
+    react-native: "*"
+  checksum: 7640d45a1d1b174ee64778dd18363d6d7156778752aebbc8be75498b1c9f3b4359bb5c1da5cf8cf9419129d60dac8d2978f4d5ca265594791b1f60fd72a57c7f
   languageName: node
   linkType: hard
 
@@ -11541,106 +11754,6 @@ __metadata:
   version: 1.1.0
   resolution: "@radix-ui/rect@npm:1.1.0"
   checksum: 1ad93efbc9fc3b878bae5e8bb26ffa1005235d8b5b9fca8339eb5dbcf7bf53abc9ccd2a8ce128557820168c8600521e48e0ea4dda96aa5f116381f66f46aeda3
-  languageName: node
-  linkType: hard
-
-"@react-buoy/core@npm:0.1.33":
-  version: 0.1.33
-  resolution: "@react-buoy/core@npm:0.1.33"
-  dependencies:
-    "@react-buoy/shared-ui": 0.1.33
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 2dae8e0a5c0f39ed6d3d8c3514a99182b9b6960f8496468a7d2f4e9964ee1032e65350c1f4faf985ff94ef9a3ef9bf01142024b48a12ba584df01df7828f86be
-  languageName: node
-  linkType: hard
-
-"@react-buoy/debug-borders@npm:0.1.33":
-  version: 0.1.33
-  resolution: "@react-buoy/debug-borders@npm:0.1.33"
-  dependencies:
-    "@react-buoy/shared-ui": 0.1.33
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: f6db2f0b463d24218b36beae2888a77e046f3d176b2ab690cbd21437d549875d8b1f434e8f91d1b3a4315a4ac04559b92ceb2d66fa499e1d5869cf75cc5b39fb
-  languageName: node
-  linkType: hard
-
-"@react-buoy/env@npm:0.1.33":
-  version: 0.1.33
-  resolution: "@react-buoy/env@npm:0.1.33"
-  dependencies:
-    "@react-buoy/shared-ui": 0.1.33
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 33b7a21c31e687249a21077ffc8734b489fae1d49f0b326ab3041bd2d92c757d2da14ee7f2071de657a5fdb6417472815a6fb9185ede712464974dd5e457204d
-  languageName: node
-  linkType: hard
-
-"@react-buoy/network@npm:0.1.33":
-  version: 0.1.33
-  resolution: "@react-buoy/network@npm:0.1.33"
-  dependencies:
-    "@react-buoy/react-query": 0.1.33
-    "@react-buoy/shared-ui": 0.1.33
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 0c0b4700c1da3d7fad88c6f5edf5a97bab9025fc93d5c46939766c3229c161113da159489ef43a0a818df7284dbe6310f12d2eb86dc3d9ef3c661e993b649af0
-  languageName: node
-  linkType: hard
-
-"@react-buoy/react-query@npm:0.1.33":
-  version: 0.1.33
-  resolution: "@react-buoy/react-query@npm:0.1.33"
-  dependencies:
-    "@react-buoy/shared-ui": 0.1.33
-  peerDependencies:
-    "@tanstack/react-query": ">=5.0.0"
-    react: "*"
-    react-native: "*"
-  checksum: 93e860c400a23d44a2ba11fdd75f03dbca9c57bfa5681383aeee78aaa182ba3d1b75fb1a5a241870b5073a5f34195e138add283cffd76d3724fa9ca762aa2082
-  languageName: node
-  linkType: hard
-
-"@react-buoy/route-events@npm:0.1.33":
-  version: 0.1.33
-  resolution: "@react-buoy/route-events@npm:0.1.33"
-  dependencies:
-    "@react-buoy/shared-ui": 0.1.33
-  peerDependencies:
-    "@react-native-async-storage/async-storage": "*"
-    "@react-navigation/native": "*"
-    expo-router: "*"
-    react: "*"
-    react-native: "*"
-  checksum: f67bb54fe1507043c0ae88919a2495304b20db4838cf836169c2c7189905ac4845f37afbae97aa5a6dfd9b70c04d8c7c6fd6c6bf18c92f8ec9882de1192c47c7
-  languageName: node
-  linkType: hard
-
-"@react-buoy/shared-ui@npm:0.1.33":
-  version: 0.1.33
-  resolution: "@react-buoy/shared-ui@npm:0.1.33"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: a0fb42a8fb942930f166b5712e6785dbe0535d0fb4a04cb0e6abacd727ecf55e32f20a70c7cba3216f2ad8016ee6b5ff6359744c23fdc4aeccc460cfff91f34b
-  languageName: node
-  linkType: hard
-
-"@react-buoy/storage@npm:0.1.33":
-  version: 0.1.33
-  resolution: "@react-buoy/storage@npm:0.1.33"
-  dependencies:
-    "@react-buoy/shared-ui": 0.1.33
-  peerDependencies:
-    "@react-native-async-storage/async-storage": ">=1.0.0"
-    react: "*"
-    react-native: "*"
-  checksum: 09c2ac673f8a34cc369c35c56593b79793c6c5bb4c51b25b8a0de320c2a1787fb55098e8d97e2de515ab3348760b6e8a319e3b2360fb28565c1cf4996eafcbc7
   languageName: node
   linkType: hard
 
