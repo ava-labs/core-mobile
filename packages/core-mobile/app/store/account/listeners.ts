@@ -491,8 +491,8 @@ export const addAccountListeners = (
     effect: migrateSolanaAddressesIfNeeded
   })
 
-  // startListening({
-  //   actionCreator: onAppUnlocked,
-  //   effect: migrateXpAddressesIfNeeded
-  // })
+  startListening({
+    actionCreator: onAppUnlocked,
+    effect: migrateXpAddressesIfNeeded
+  })
 }
