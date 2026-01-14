@@ -1,5 +1,5 @@
 import { selectAccounts } from 'store/account'
-import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
+import { registerAndGetDeviceArn } from 'services/notifications/registerDeviceToNotificationSender'
 import FCMService from 'services/fcm/FCMService'
 import NotificationsService from 'services/notifications/NotificationsService'
 import Logger from 'utils/Logger'
@@ -23,7 +23,7 @@ jest.mock('store/account', () => ({
 }))
 
 jest.mock('services/notifications/registerDeviceToNotificationSender', () => ({
-  registerDeviceToNotificationSender: jest.fn()
+  registerAndGetDeviceArn: jest.fn()
 }))
 
 jest.mock('services/fcm/FCMService', () => ({
@@ -87,7 +87,7 @@ describe('subscribeNewsNotifications', () => {
     await subscribeNewsNotifications(listenerApi)
 
     expect(FCMService.getFCMToken).not.toHaveBeenCalled()
-    expect(registerDeviceToNotificationSender).not.toHaveBeenCalled()
+    expect(registerAndGetDeviceArn).not.toHaveBeenCalled()
     expect(subscribeForNews).not.toHaveBeenCalled()
   })
 
@@ -99,9 +99,7 @@ describe('subscribeNewsNotifications', () => {
       account1: { addressC: 'address1' }
     })
     ;(FCMService.getFCMToken as jest.Mock).mockResolvedValue('fcmToken')
-    ;(registerDeviceToNotificationSender as jest.Mock).mockResolvedValue(
-      'deviceArn'
-    )
+    ;(registerAndGetDeviceArn as jest.Mock).mockResolvedValue('deviceArn')
     ;(
       NotificationsService.getBlockedNewsNotifications as jest.Mock
     ).mockResolvedValue({
@@ -137,9 +135,7 @@ describe('subscribeNewsNotifications', () => {
       account1: { addressC: 'address1' }
     })
     ;(FCMService.getFCMToken as jest.Mock).mockResolvedValue('fcmToken')
-    ;(registerDeviceToNotificationSender as jest.Mock).mockResolvedValue(
-      'deviceArn'
-    )
+    ;(registerAndGetDeviceArn as jest.Mock).mockResolvedValue('deviceArn')
     ;(
       NotificationsService.getBlockedNewsNotifications as jest.Mock
     ).mockResolvedValue(new Set())
@@ -172,9 +168,7 @@ describe('subscribeNewsNotifications', () => {
       account1: { addressC: 'address1' }
     })
     ;(FCMService.getFCMToken as jest.Mock).mockResolvedValue('fcmToken')
-    ;(registerDeviceToNotificationSender as jest.Mock).mockResolvedValue(
-      'deviceArn'
-    )
+    ;(registerAndGetDeviceArn as jest.Mock).mockResolvedValue('deviceArn')
     ;(
       NotificationsService.getBlockedNewsNotifications as jest.Mock
     ).mockResolvedValue(new Set())
@@ -202,7 +196,7 @@ describe('subscribeNewsNotifications', () => {
       account1: { addressC: 'address1' }
     })
     ;(FCMService.getFCMToken as jest.Mock).mockResolvedValue('fcmToken')
-    ;(registerDeviceToNotificationSender as jest.Mock).mockRejectedValue(
+    ;(registerAndGetDeviceArn as jest.Mock).mockRejectedValue(
       new Error('Device registration error')
     )
 

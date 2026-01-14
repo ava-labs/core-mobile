@@ -1,5 +1,5 @@
 import { selectAccounts } from 'store/account'
-import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
+import { registerAndGetDeviceArn } from 'services/notifications/registerDeviceToNotificationSender'
 import FCMService from 'services/fcm/FCMService'
 import { unSubscribeForBalanceChange } from 'services/notifications/balanceChange/unsubscribeForBalanceChange'
 import { subscribeForBalanceChange } from 'services/notifications/balanceChange/subscribeForBalanceChange'
@@ -20,7 +20,7 @@ jest.mock('store/account', () => ({
 }))
 
 jest.mock('services/notifications/registerDeviceToNotificationSender', () => ({
-  registerDeviceToNotificationSender: jest.fn()
+  registerAndGetDeviceArn: jest.fn()
 }))
 
 jest.mock('services/fcm/FCMService', () => ({
@@ -67,7 +67,7 @@ describe('subscribeBalanceChangeNotifications', () => {
     await subscribeBalanceChangeNotifications(listenerApi)
 
     expect(FCMService.getFCMToken).not.toHaveBeenCalled()
-    expect(registerDeviceToNotificationSender).not.toHaveBeenCalled()
+    expect(registerAndGetDeviceArn).not.toHaveBeenCalled()
     expect(subscribeForBalanceChange).not.toHaveBeenCalled()
   })
 
@@ -77,7 +77,7 @@ describe('subscribeBalanceChangeNotifications', () => {
     await subscribeBalanceChangeNotifications(listenerApi)
 
     expect(FCMService.getFCMToken).not.toHaveBeenCalled()
-    expect(registerDeviceToNotificationSender).not.toHaveBeenCalled()
+    expect(registerAndGetDeviceArn).not.toHaveBeenCalled()
     expect(subscribeForBalanceChange).not.toHaveBeenCalled()
   })
 
@@ -86,9 +86,7 @@ describe('subscribeBalanceChangeNotifications', () => {
       account1: { addressC: 'address1' }
     })
     ;(FCMService.getFCMToken as jest.Mock).mockResolvedValue('fcmToken')
-    ;(registerDeviceToNotificationSender as jest.Mock).mockResolvedValue(
-      'deviceArn'
-    )
+    ;(registerAndGetDeviceArn as jest.Mock).mockResolvedValue('deviceArn')
     ;(
       NotificationsService.getBlockedNotifications as jest.Mock
     ).mockResolvedValue(new Set([ChannelId.BALANCE_CHANGES]))
@@ -106,9 +104,7 @@ describe('subscribeBalanceChangeNotifications', () => {
       account1: { addressC: 'address1' }
     })
     ;(FCMService.getFCMToken as jest.Mock).mockResolvedValue('fcmToken')
-    ;(registerDeviceToNotificationSender as jest.Mock).mockResolvedValue(
-      'deviceArn'
-    )
+    ;(registerAndGetDeviceArn as jest.Mock).mockResolvedValue('deviceArn')
     ;(
       NotificationsService.getBlockedNotifications as jest.Mock
     ).mockResolvedValue(new Set())
@@ -133,9 +129,7 @@ describe('subscribeBalanceChangeNotifications', () => {
       account1: { addressC: 'address1' }
     })
     ;(FCMService.getFCMToken as jest.Mock).mockResolvedValue('fcmToken')
-    ;(registerDeviceToNotificationSender as jest.Mock).mockResolvedValue(
-      'deviceArn'
-    )
+    ;(registerAndGetDeviceArn as jest.Mock).mockResolvedValue('deviceArn')
     ;(
       NotificationsService.getBlockedNotifications as jest.Mock
     ).mockResolvedValue(new Set())
@@ -157,7 +151,7 @@ describe('subscribeBalanceChangeNotifications', () => {
       account1: { addressC: 'address1' }
     })
     ;(FCMService.getFCMToken as jest.Mock).mockResolvedValue('fcmToken')
-    ;(registerDeviceToNotificationSender as jest.Mock).mockRejectedValue(
+    ;(registerAndGetDeviceArn as jest.Mock).mockRejectedValue(
       new Error('Device registration error')
     )
 

@@ -16,10 +16,7 @@ export const useWatchlistListener = (): void => {
         matcher: isAnyOf(toggleDeveloperMode, fetchWatchlist),
         effect: async () => {
           await queryClient.invalidateQueries({
-            queryKey: [
-              ReactQueryKeys.WATCHLIST_TOP_TOKENS,
-              ReactQueryKeys.WATCHLIST_PRICES
-            ]
+            queryKey: [ReactQueryKeys.WATCHLIST_TOP_TOKENS]
           })
         }
       })
