@@ -1,7 +1,7 @@
-import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { router } from 'expo-router'
 import { ChainId, Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { LedgerAppType } from 'services/ledger/types'
+import { ledgerParamsCache } from '../services/ledgerParamsCache'
 
 export const showLedgerReviewTransaction = ({
   network,
@@ -12,7 +12,7 @@ export const showLedgerReviewTransaction = ({
   onApprove: () => Promise<void>
   onReject: (message?: string) => void
 }): void => {
-  walletConnectCache.ledgerReviewTransactionParams.set({
+  ledgerParamsCache.ledgerReviewTransactionParams.set({
     network,
     onApprove,
     onReject
