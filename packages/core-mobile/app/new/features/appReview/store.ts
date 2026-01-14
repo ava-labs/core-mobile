@@ -21,7 +21,7 @@ export interface AppReviewState {
   decline: () => void
 }
 
-function canPromptNow(state: AppReviewState, nowMs: number) {
+function canPromptNow(state: AppReviewState, nowMs: number): boolean {
   return (
     !state.declined &&
     !state.pendingPrompt &&

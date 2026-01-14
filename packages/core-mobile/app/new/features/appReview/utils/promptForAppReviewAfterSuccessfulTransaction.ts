@@ -1,6 +1,7 @@
 import { showAlert } from '@avalabs/k2-alpine'
 import { appReviewStore } from 'features/appReview/store'
 import { requestInAppReview } from 'features/appReview/utils/requestInAppReview'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 /**
  * Records a successful transaction and, if eligible, prompts the user for an app review.
@@ -18,6 +19,7 @@ export function promptForAppReviewAfterSuccessfulTransaction(): void {
   // On iOS, the OS controls when the review prompt appears and may delay it.
   if (stateAfterTxRecorded.promptShownCount > 0) {
     void requestInAppReview()
+    AnalyticsService.capture('StoreReviewRequested')
     return
   }
 
@@ -28,14 +30,20 @@ export function promptForAppReviewAfterSuccessfulTransaction(): void {
     buttons: [
       {
         text: 'Nope',
-        onPress: () => appReviewStore.getState().decline()
+        onPress: () => {
+          appReviewStore.getState().decline()
+          AnalyticsService.capture('FeedbackCheckNoPressed')
+        }
       },
       {
         text: 'Yes',
         onPress: () => {
           void requestInAppReview({ fallbackToStore: true })
+          AnalyticsService.capture('FeedbackCheckYesPressed')
+          AnalyticsService.capture('StoreReviewRequested')
         }
       }
     ]
   })
+  AnalyticsService.capture('FeedbackCheckPromptShown')
 }
