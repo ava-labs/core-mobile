@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator } from 'react-native'
-import { useRouter } from 'expo-router'
 import {
   Text,
   Button,
@@ -13,13 +12,12 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIconWithText'
 import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
-import { ChainId, NetworkVMType } from '@avalabs/core-chains-sdk'
-import { LedgerAppType } from 'services/ledger/types'
 import { useSelector } from 'react-redux'
 import { selectActiveWalletId } from 'store/wallet/slice'
 import LedgerService from 'services/ledger/LedgerService'
 import { LedgerReviewTransactionParams } from '../../../../services/walletconnectv2/walletConnectCache/types'
 import { useLedgerWalletMap } from '../store'
+import { getLedgerAppName } from '../utils'
 
 const LedgerReviewTransactionScreen = ({
   params: { network, onApprove, onReject }
@@ -29,25 +27,12 @@ const LedgerReviewTransactionScreen = ({
   const walletId = useSelector(selectActiveWalletId)
   const { ledgerWalletMap } = useLedgerWalletMap()
   const [isConnected, setIsConnected] = useState(false)
-
-  const { back } = useRouter()
+  const [isCancelEnabled, setIsCancelEnabled] = useState(false)
   const {
     theme: { colors }
   } = useTheme()
 
-  const ledgerAppName =
-    network.chainId === ChainId.AVALANCHE_MAINNET_ID ||
-    network.chainId === ChainId.AVALANCHE_TESTNET_ID ||
-    network.vmName === NetworkVMType.AVM ||
-    network.vmName === NetworkVMType.PVM
-      ? LedgerAppType.AVALANCHE
-      : network.vmName === NetworkVMType.EVM
-      ? LedgerAppType.ETHEREUM
-      : network.vmName === NetworkVMType.BITCOIN
-      ? LedgerAppType.BITCOIN
-      : network.vmName === NetworkVMType.SVM
-      ? LedgerAppType.SOLANA
-      : LedgerAppType.UNKNOWN
+  const ledgerAppName = useMemo(() => getLedgerAppName(network), [network])
 
   const { devices, isScanning, isCreatingWallet, isConnecting } =
     useLedgerSetupContext()
@@ -92,10 +77,13 @@ const LedgerReviewTransactionScreen = ({
     isConnected
   ])
 
-  const handleCancel = useCallback(() => {
-    onReject()
-    back()
-  }, [onReject, back])
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsCancelEnabled(true)
+    }, 3000)
+
+    return () => clearTimeout(timer)
+  }, [])
 
   const renderFooter = useCallback(() => {
     return (
@@ -112,12 +100,22 @@ const LedgerReviewTransactionScreen = ({
           </View>
         )}
 
-        <Button type="secondary" size="large" onPress={handleCancel}>
+        <Button
+          type="secondary"
+          size="large"
+          onPress={onReject}
+          disabled={!isCancelEnabled}>
           Cancel
         </Button>
       </View>
     )
-  }, [isScanning, devices.length, colors.$textPrimary, handleCancel])
+  }, [
+    isScanning,
+    devices.length,
+    colors.$textPrimary,
+    onReject,
+    isCancelEnabled
+  ])
 
   const renderDeviceItem = useCallback(() => {
     if (deviceForWallet) {
