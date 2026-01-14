@@ -28,6 +28,7 @@ import { ethSendTransaction } from '../handlers/ethSendTransaction'
 import { signMessage } from '../handlers/signMessage'
 import { btcSendTransaction } from '../handlers/btcSendTransaction'
 import { avalancheSendTransaction } from '../handlers/avalancheSendTransaction'
+import { CONFETTI_DURATION_MS } from 'common/consts'
 
 class ApprovalController implements VmModuleApprovalController {
   async requestPublicKey({
@@ -69,7 +70,7 @@ class ApprovalController implements VmModuleApprovalController {
       // Run the app-review prompt flow after confetti finishes (confetti hides after ~3s)
       setTimeout(() => {
         promptForAppReviewAfterSuccessfulTransaction()
-      }, 3200)
+      }, CONFETTI_DURATION_MS + 200)
     }
   }
 

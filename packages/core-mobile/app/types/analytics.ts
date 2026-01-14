@@ -228,4 +228,10 @@ export type AnalyticsEvents = {
     channelId: string
     tokenId?: string
   }
+
+  // App Review
+  FeedbackCheckPromptShown: undefined
+  FeedbackCheckNoPressed: undefined
+  FeedbackCheckYesPressed: undefined
+  StoreReviewRequested: undefined
 }

@@ -13,6 +13,7 @@ import {
   PIConfettiMethods
 } from 'react-native-fast-confetti'
 import { FullWindowOverlay } from 'react-native-screens'
+import { CONFETTI_DURATION_MS } from 'common/consts'
 
 export const Confetti = forwardRef<ConfettiMethods>((_, ref) => {
   const confettiRef = useRef<PIConfettiMethods>(null)
@@ -29,7 +30,7 @@ export const Confetti = forwardRef<ConfettiMethods>((_, ref) => {
       confettiRef.current?.restart()
       setTimeout(() => {
         setShowConfetti(false)
-      }, 3000)
+      }, CONFETTI_DURATION_MS)
     }
   }, [showConfetti])
 
@@ -51,7 +52,7 @@ export const Confetti = forwardRef<ConfettiMethods>((_, ref) => {
         ref={confettiRef}
         fadeOutOnEnd={true}
         blastDuration={150}
-        fallDuration={3000}
+        fallDuration={CONFETTI_DURATION_MS}
         flakeSize={{ width: 6, height: 12 }}
         colors={['#098F69', '#1FC626', '#42C49F']}
       />
