@@ -10,7 +10,7 @@ export const DefiAssetLogo = ({
   width = 36
 }: {
   asset: DefiAssetDetails
-  network?: Network | undefined
+  network?: Network
   width?: number
 }): React.JSX.Element => {
   const {
