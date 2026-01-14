@@ -14,12 +14,11 @@ export const handleLedgerError = ({
   onRetry: () => void
   onCancel: () => void
 }): void => {
-  // @ts-ignore TODO: fix this
+  // @ts-ignore
   const message = (error.data?.cause?.message || '').toLowerCase()
 
   const ledgerAppName = getLedgerAppName(network)
 
-  console.log('------> message', message)
   let title = 'Transaction failed'
   let description = 'An error occurred while signing the transaction.'
 
