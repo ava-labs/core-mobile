@@ -1,9 +1,9 @@
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { router } from 'expo-router'
-import { Network } from '@avalabs/core-chains-sdk'
-import { showAlert } from '@avalabs/k2-alpine'
+import { ChainId, Network, NetworkVMType } from '@avalabs/core-chains-sdk'
+import { LedgerAppType } from 'services/ledger/types'
 
-export const showLedgerReviewTransaction = async ({
+export const showLedgerReviewTransaction = ({
   network,
   onApprove,
   onReject
@@ -11,29 +11,29 @@ export const showLedgerReviewTransaction = async ({
   network: Network
   onApprove: () => Promise<void>
   onReject: (message?: string) => void
-}): Promise<string> => {
-  return new Promise<string>((resolve, reject) => {
-    walletConnectCache.ledgerReviewTransactionParams.set({
-      network,
-      onApprove: () =>
-        onApprove()
-          .then(() => resolve(''))
-          .catch(error => {
-            showAlert({
-              title: 'Error',
-              description: error.message,
-              buttons: [{ text: 'OK', onPress: () => reject(error) }]
-            })
-            reject(error)
-          }),
-      onReject: (message?: string) => {
-        onReject(message)
-        reject(message)
-      }
-    })
-    setTimeout(() => {
-      // @ts-ignore TODO: make routes typesafe
-      router.navigate('/ledgerReviewTransaction')
-    }, 100)
+}): void => {
+  walletConnectCache.ledgerReviewTransactionParams.set({
+    network,
+    onApprove,
+    onReject
   })
+  setTimeout(() => {
+    // @ts-ignore TODO: make routes typesafe
+    router.navigate('/ledgerReviewTransaction')
+  }, 100)
+}
+
+export const getLedgerAppName = (network: Network): LedgerAppType => {
+  return network.chainId === ChainId.AVALANCHE_MAINNET_ID ||
+    network.chainId === ChainId.AVALANCHE_TESTNET_ID ||
+    network.vmName === NetworkVMType.AVM ||
+    network.vmName === NetworkVMType.PVM
+    ? LedgerAppType.AVALANCHE
+    : network.vmName === NetworkVMType.EVM
+    ? LedgerAppType.ETHEREUM
+    : network.vmName === NetworkVMType.BITCOIN
+    ? LedgerAppType.BITCOIN
+    : network.vmName === NetworkVMType.SVM
+    ? LedgerAppType.SOLANA
+    : LedgerAppType.UNKNOWN
 }

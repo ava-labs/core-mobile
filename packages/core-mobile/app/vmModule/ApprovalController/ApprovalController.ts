@@ -1,4 +1,5 @@
 import { router } from 'expo-router'
+import LedgerService from 'services/ledger/LedgerService'
 import {
   ApprovalController as VmModuleApprovalController,
   ApprovalParams,
@@ -20,6 +21,7 @@ import { WalletType } from 'services/wallet/types'
 import { showLedgerReviewTransaction } from 'features/ledger/utils'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
+import { handleLedgerError } from './utils'
 
 class ApprovalController implements VmModuleApprovalController {
   async requestPublicKey({
@@ -105,6 +107,15 @@ class ApprovalController implements VmModuleApprovalController {
     transactionSnackbar.error({ error: 'Transaction reverted' })
   }
 
+  handleLedgerOnReject = async ({
+    resolve
+  }: {
+    resolve: (value: ApprovalResponse | PromiseLike<ApprovalResponse>) => void
+  }): Promise<void> => {
+    await LedgerService.disconnect()
+    onReject({ resolve })
+  }
+
   async requestApproval({
     request,
     displayData,
@@ -120,10 +131,38 @@ class ApprovalController implements VmModuleApprovalController {
             params.walletType === WalletType.LEDGER ||
             params.walletType === WalletType.LEDGER_LIVE
           ) {
+            const resolveWithRetry = (
+              value: ApprovalResponse | PromiseLike<ApprovalResponse>
+            ): void => {
+              if ('error' in value) {
+                handleLedgerError({
+                  error: value.error,
+                  network: params.network,
+                  onRetry: () =>
+                    onApprove({
+                      ...params,
+                      signingData,
+                      resolve: resolveWithRetry
+                    }),
+                  onCancel: () => this.handleLedgerOnReject({ resolve })
+                })
+              } else {
+                resolve(value)
+              }
+            }
+
             showLedgerReviewTransaction({
               network: params.network,
-              onApprove: () => onApprove({ ...params, resolve, signingData }),
-              onReject: (message?: string) => onReject({ resolve, message })
+              onApprove: () =>
+                onApprove({
+                  ...params,
+                  signingData,
+                  resolve: resolveWithRetry
+                }),
+              onReject: () => {
+                this.handleLedgerOnReject({ resolve })
+                if (router.canGoBack()) router.back()
+              }
             })
           } else {
             return onApprove({ ...params, resolve, signingData })
