@@ -1015,8 +1015,10 @@ workflows:
     - avd-manager@2.0.2:
         inputs:
         - api_level: "34"
+        - emulator_id: emulator-5554
         - emulator_channel: "0"
         - tag: google_apis
+        - abi: x86_64
         - profile: pixel_7_pro
     - wait-for-android-emulator@1.0.9: {}
     - script-runner@0:
