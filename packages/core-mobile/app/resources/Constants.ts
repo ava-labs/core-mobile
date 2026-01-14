@@ -18,7 +18,8 @@ export enum ZustandStorageKeys {
   COLLECTIBLES_VIEW = 'collectiblesView',
   DEFI_VIEW = 'defiView',
   MARKET_VIEW = 'marketView',
-  FAVORITES_VIEW = 'favoritesView'
+  FAVORITES_VIEW = 'favoritesView',
+  TRACK_SEARCH_VIEW = 'trackSearchView'
 }
 
 export const CORE_UNIVERSAL_LINK_HOSTS = ['core.app', 'test.core.app']

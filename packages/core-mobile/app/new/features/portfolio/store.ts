@@ -143,3 +143,29 @@ export const favoritesViewStore = create<FavoritesViewState>()(
 export const useFavoritesView = (): FavoritesViewState => {
   return favoritesViewStore()
 }
+
+// Track search view store
+interface TrackSearchViewState {
+  selectedView: ViewOption
+  setSelectedView: (value: string) => void
+}
+
+export const trackSearchViewStore = create<TrackSearchViewState>()(
+  persist(
+    set => ({
+      selectedView: ViewOption.List,
+      setSelectedView: (view: string) =>
+        set({
+          selectedView: view as ViewOption
+        })
+    }),
+    {
+      name: ZustandStorageKeys.TRACK_SEARCH_VIEW,
+      storage: zustandMMKVStorage
+    }
+  )
+)
+
+export const useTrackSearchView = (): TrackSearchViewState => {
+  return trackSearchViewStore()
+}
