@@ -305,6 +305,13 @@ async function tapXY(x: number, y: number) {
   ])
 }
 
+async function printScreen() {
+  const screenshot = await driver.getPageSource()
+  console.log('Printing page source...')
+  console.log(screenshot)
+  console.log('...done')
+}
+
 export const actions = {
   type,
   typeSlowly,
@@ -333,5 +340,6 @@ export const actions = {
   getAmount,
   verifyText,
   tapXY,
-  waitForNotVisible
+  waitForNotVisible,
+  printScreen
 }
