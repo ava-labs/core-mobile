@@ -558,36 +558,15 @@ export const SwapScreen = (): JSX.Element => {
 
   useEffect(() => {
     if (swapStatus === 'Success') {
-      // // Recursively go back if the current or any route in the stack is onboarding, ledgerReviewTransaction, or swap
-      // const state = getState?.()
-      // const matchNames = ['onboarding', 'ledgerReviewTransaction', 'swap']
-      // // Helper to check if any route in the stack matches
-      // const hasMatch = function (
-      //   navState: { routes?: { name: string }[] } | undefined
-      // ): boolean {
-      //   console.log('Navigation state on swap success:', navState?.routes)
-
-      //   return (
-      //     navState?.routes?.some(route => matchNames.includes(route.name)) ??
-      //     false
-      //   )
-      // }
-
-      // // Recursively go back until no match or can't go back
-      // let navState = state
-      // while (canGoBack() && navState && hasMatch(navState)) {
-      //   console.log('Going back from swap success screen')
-      //   back()
-      //   navState = getState?.()
-      // }
-      const state = getState?.()
-      console.log('nav 1:', state?.routes)
       back()
-      const newState = getState?.()
-      console.log('nav 2:', newState?.routes)
-      back()
-      const finalState = getState?.()
-      console.log('nav 3:', finalState?.routes)
+      const state = getState()
+      if (state?.routes.some(route => route.name === 'swap')) {
+        canGoBack() && back()
+      }
+      const newState = getState()
+      if (newState?.routes.some(route => route.name === 'onboarding')) {
+        canGoBack() && back()
+      }
     }
   }, [back, canGoBack, getState, swapStatus])
 
