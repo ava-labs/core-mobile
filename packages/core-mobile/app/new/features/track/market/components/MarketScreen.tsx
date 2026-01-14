@@ -8,6 +8,7 @@ import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist'
+import { useMarketView } from 'features/portfolio/store'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
 
@@ -28,7 +29,13 @@ const MarketScreen = ({
     isLoadingTopTokens,
     refetchTopTokens
   } = useWatchlist()
-  const { data, sort, view } = useTrackSortAndView(topTokens, prices)
+  const { selectedView, setSelectedView } = useMarketView()
+  const { data, sort, view } = useTrackSortAndView({
+    tokens: topTokens,
+    prices,
+    selectedView,
+    setSelectedView
+  })
   const listType = view.selected
 
   const emptyComponent = useMemo(() => {

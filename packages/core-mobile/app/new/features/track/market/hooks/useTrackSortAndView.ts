@@ -3,18 +3,22 @@ import { defaultPrice, MarketToken, Prices } from 'store/watchlist'
 import { compareTokenPriceChangePercentage24h } from 'features/track/utils/utils'
 import { DropdownSelection, ViewOption } from 'new/common/types'
 import { DropdownGroup } from 'common/components/DropdownMenu'
-import { useTrackView } from 'features/portfolio/store'
 
-export const useTrackSortAndView = (
-  tokens: MarketToken[],
+export const useTrackSortAndView = ({
+  tokens,
+  prices,
+  selectedView,
+  setSelectedView
+}: {
+  tokens: MarketToken[]
   prices: Prices
-): {
+  selectedView: ViewOption
+  setSelectedView: (view: ViewOption) => void
+}): {
   data: MarketToken[]
   sort: DropdownSelection
   view: DropdownSelection
 } => {
-  const { selectedView, setSelectedView } = useTrackView()
-
   const [selectedSort, setSelectedSort] = useState<MarketSort>(
     MarketSort.MarketCap
   )

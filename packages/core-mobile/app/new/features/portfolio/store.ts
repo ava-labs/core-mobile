@@ -49,7 +49,7 @@ interface CollectiblesViewState {
 export const collectiblesViewStore = create<CollectiblesViewState>()(
   persist(
     set => ({
-      selectedView: CollectibleViewOption.List,
+      selectedView: CollectibleViewOption.LargeGrid,
       setSelectedView: (view: string) =>
         set({
           selectedView: view as CollectibleViewOption
@@ -75,7 +75,7 @@ interface DeFiViewState {
 export const defiViewStore = create<DeFiViewState>()(
   persist(
     set => ({
-      selectedView: ViewOption.List,
+      selectedView: ViewOption.Grid,
       setSelectedView: (view: string) =>
         set({
           selectedView: view as ViewOption
@@ -92,13 +92,13 @@ export const useDeFiView = (): DeFiViewState => {
   return defiViewStore()
 }
 
-// Track view store
-interface TrackViewState {
+// Market view store
+interface MarketViewState {
   selectedView: ViewOption
   setSelectedView: (value: string) => void
 }
 
-export const trackViewStore = create<TrackViewState>()(
+export const marketViewStore = create<MarketViewState>()(
   persist(
     set => ({
       selectedView: ViewOption.List,
@@ -108,12 +108,38 @@ export const trackViewStore = create<TrackViewState>()(
         })
     }),
     {
-      name: ZustandStorageKeys.TRACK_VIEW,
+      name: ZustandStorageKeys.MARKET_VIEW,
       storage: zustandMMKVStorage
     }
   )
 )
 
-export const useTrackView = (): TrackViewState => {
-  return trackViewStore()
+export const useMarketView = (): MarketViewState => {
+  return marketViewStore()
+}
+
+// Favorites view store
+interface FavoritesViewState {
+  selectedView: ViewOption
+  setSelectedView: (value: string) => void
+}
+
+export const favoritesViewStore = create<FavoritesViewState>()(
+  persist(
+    set => ({
+      selectedView: ViewOption.List,
+      setSelectedView: (view: string) =>
+        set({
+          selectedView: view as ViewOption
+        })
+    }),
+    {
+      name: ZustandStorageKeys.FAVORITES_VIEW,
+      storage: zustandMMKVStorage
+    }
+  )
+)
+
+export const useFavoritesView = (): FavoritesViewState => {
+  return favoritesViewStore()
 }
