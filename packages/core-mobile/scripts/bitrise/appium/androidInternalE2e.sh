@@ -4,12 +4,16 @@ set -ex
 echo "Built app at: $BITRISE_APK_PATH"
 ls -la "$BITRISE_APK_PATH" || true
 
+echo "Installing APK..."
+adb install -r -d "$BITRISE_APK_PATH"
+
 echo "Setting animation scale to 0..."
 adb shell settings put global window_animation_scale 0
 adb shell settings put global transition_animation_scale 0
 adb shell settings put global animator_duration_scale 0
-adb shell pm grant com.avaxwallet.internal android.permission.POST_NOTIFICATIONS
 
+echo "Granting notification permission..."
+adb shell pm grant com.avaxwallet.internal android.permission.POST_NOTIFICATIONS || true
 
 which node
 node -v
