@@ -69,12 +69,12 @@ PODS:
   - DoubleConversion (1.1.6)
   - EXApplication (7.0.8):
     - ExpoModulesCore
-  - EXConstants (18.0.12):
+  - EXConstants (18.0.13):
     - ExpoModulesCore
   - EXJSONUtils (0.15.0)
   - EXManifests (1.0.10):
     - ExpoModulesCore
-  - Expo (54.0.30):
+  - Expo (54.0.31):
     - boost
     - DoubleConversion
     - ExpoModulesCore
@@ -2627,7 +2627,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-keyboard-controller (1.18.5):
+  - react-native-keyboard-controller (1.20.5):
     - boost
     - DoubleConversion
     - fast_float
@@ -2645,7 +2645,7 @@ PODS:
     - React-graphics
     - React-ImageManager
     - React-jsi
-    - react-native-keyboard-controller/common (= 1.18.5)
+    - react-native-keyboard-controller/common (= 1.20.5)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-renderercss
@@ -2656,7 +2656,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-keyboard-controller/common (1.18.5):
+  - react-native-keyboard-controller/common (1.20.5):
     - boost
     - DoubleConversion
     - fast_float
@@ -4089,7 +4089,7 @@ PODS:
     - Yoga
   - RNSensors (7.3.6):
     - React-Core
-  - RNSentry (7.4.0):
+  - RNSentry (7.2.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -4116,7 +4116,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - Sentry/HybridSDK (= 8.57.0)
+    - Sentry/HybridSDK (= 8.56.1)
     - SocketRocket
     - Yoga
   - RNShare (12.0.9):
@@ -4332,7 +4332,7 @@ PODS:
   - SDWebImageWebPCoder (0.14.6):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.17)
-  - Sentry/HybridSDK (8.57.0)
+  - Sentry/HybridSDK (8.56.1)
   - SocketRocket (0.7.1)
   - SwiftUIIntrospect (1.3.0)
   - Yoga (0.0.0)
@@ -4906,10 +4906,10 @@ SPEC CHECKSUMS:
   DGSwiftUtilities: 567f8d5ee618f0b7afb185b17aa45ff356315a0f
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EXApplication: 1e98d4b1dccdf30627f92917f4b2c5a53c330e5f
-  EXConstants: 805f35b1b295c542ca6acce836f21a1f9ee104d5
+  EXConstants: fce59a631a06c4151602843667f7cfe35f81e271
   EXJSONUtils: 1d3e4590438c3ee593684186007028a14b3686cd
   EXManifests: a8d97683e5c7a3b026ffbd58559c64dc655b747b
-  Expo: 71b7dc5959ebd49ca7eba6b634be56634fcddd2f
+  Expo: 2a9695d3068f95b2262faa81295e1975949a482d
   expo-dev-client: 425ee077d6754a98cfe3a2e2410d29b440b24c9d
   expo-dev-launcher: 897463f0d51c026d98da605fce95fb7ec096d252
   expo-dev-menu: eb3063f6fa7c008cfcc485ff9758da5763723646
@@ -5012,7 +5012,7 @@ SPEC CHECKSUMS:
   react-native-in-app-updates: 1fd82e3a5d2e859245f756852649ee8560566703
   react-native-ios-context-menu: afeb0ca80a48e6d13a5d712928ca3b2fdbef037e
   react-native-ios-utilities: d9ed1f5ea011650e9c7e9cb7c82272c1f0363e44
-  react-native-keyboard-controller: 8bd5f5572b6d5d402a2f77987a17492f869e5d62
+  react-native-keyboard-controller: c004ccc306d8c205342867f24e6d26a28e985e61
   react-native-menu: 8d2c831a735c9e6528c28b26ca14e57591d87e14
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-pager-view: a0516effb17ca5120ac2113bfd21b91130ad5748
@@ -5082,7 +5082,7 @@ SPEC CHECKSUMS:
   RNReanimated: fabac5a7aee92d454d7aef06335a7bef955d5603
   RNScreens: 0bbf16c074ae6bb1058a7bf2d1ae017f4306797c
   RNSensors: 111159597ac51505df10413c61b28bcd28e88983
-  RNSentry: 3ffb79c1393af4800c85bc96bc880c20316fc67a
+  RNSentry: bca90d41b7e8423262c5fcfccfb12328a3aa6701
   RNShare: 1dba46787d6e5543e05655efaefa0e4bb98380d9
   RNSound: 180aa1cfad34009ad7472c78d0340100ff948058
   RNSVG: 6f39605a4c4d200b11435c35bd077553c6b5963a
@@ -5091,7 +5091,7 @@ SPEC CHECKSUMS:
   SDWebImageAVIFCoder: afe194a084e851f70228e4be35ef651df0fc5c57
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
   SDWebImageWebPCoder: e38c0a70396191361d60c092933e22c20d5b1380
-  Sentry: e1b49e5f49367ff211b25c431a60e2bd83b792aa
+  Sentry: b3ec44d01708fce73f99b544beb57e890eca4406
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SwiftUIIntrospect: fee9aa07293ee280373a591e1824e8ddc869ba5d
   Yoga: 728df40394d49f3f471688747cf558158b3a3bd1

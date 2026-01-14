@@ -25,8 +25,7 @@ module.exports = {
     'babel-plugin-react-compiler',
     'inline-dotenv',
     '@babel/plugin-transform-class-static-block',
-    '@babel/plugin-transform-export-namespace-from',
-    'react-native-worklets/plugin'
+    '@babel/plugin-transform-export-namespace-from'
   ],
   overrides: [
     {
