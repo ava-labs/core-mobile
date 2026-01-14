@@ -33,6 +33,26 @@ if (CORE_PROFILE_URL) {
     config.headers['X-Firebase-AppCheck'] = appCheckToken.token
     return config
   })
+
+  profileApi.axios.interceptors.response.use(
+    response => response,
+    async error => {
+      const originalRequest = error.config
+      if (
+        (error.response?.status === 401 || error.response?.status === 403) &&
+        !originalRequest._retry
+      ) {
+        originalRequest._retry = true
+        Logger.warn(
+          'AppCheck token rejected (profileApi), retrying with fresh token'
+        )
+        const { token } = await AppCheckService.getToken(true)
+        originalRequest.headers['X-Firebase-AppCheck'] = token
+        return profileApi.axios(originalRequest)
+      }
+      return Promise.reject(error)
+    }
+  )
 } else {
   profileApi = noOpApiClient
 }

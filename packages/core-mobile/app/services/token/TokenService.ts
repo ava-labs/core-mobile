@@ -27,7 +27,6 @@ import {
   CoinMarket,
   Error as CoingeckoError,
   GetMarketsParams,
-  PriceWithMarketData,
   SimplePriceResponse,
   CoinsSearchResponse,
   ContractMarketChartResponse,
@@ -122,53 +121,6 @@ export class TokenService {
   }
 
   /**
-   * Get token price with market data for a coin
-   * @param coinId the coin id ie avalanche-2 for avax
-   * @param currency the currency to be used
-   * @returns the token price with market data
-   */
-  async getPriceWithMarketDataByCoinId(
-    coinId: string,
-    currency: VsCurrencyType = VsCurrencyType.USD
-  ): Promise<PriceWithMarketData> {
-    const allPriceData = await this.fetchPriceWithMarketData()
-    const data = allPriceData?.[coinId]?.[currency]
-    return {
-      price: data?.price ?? 0,
-      change24: data?.change24 ?? 0,
-      marketCap: data?.marketCap ?? 0,
-      vol24: data?.vol24 ?? 0
-    }
-  }
-
-  /**
-   * Get token price with market data for a list of coins
-   * @param coinIds the coin ids
-   * @param currency the currency to be used
-   * @returns a list of token price with market data
-   */
-  async getPriceWithMarketDataByCoinIds(
-    coinIds: string[],
-    currency: VsCurrencyType = VsCurrencyType.USD
-  ): Promise<SimplePriceResponse | undefined> {
-    const allPriceData = await this.fetchPriceWithMarketData()
-    return coinIds.reduce((acc, coinId) => {
-      const priceData = allPriceData?.[coinId]?.[currency]
-      if (priceData) {
-        acc[coinId] = {
-          [currency]: {
-            price: priceData?.price,
-            change24: priceData?.change24,
-            marketCap: priceData?.marketCap,
-            vol24: priceData?.vol24
-          }
-        }
-      }
-      return acc
-    }, {} as SimplePriceResponse)
-  }
-
-  /**
    * Get chart data for a coin
    * @param coingeckoId the coin id
    * @param days data up to number of days ago
@@ -254,27 +206,6 @@ export class TokenService {
   }
 
   /**
-   * Get token price with market data from cached watchlist
-   * @returns token price with market data
-   */
-  async fetchPriceWithMarketData(): Promise<SimplePriceResponse | undefined> {
-    try {
-      let data: SimplePriceResponse | undefined
-      const cacheId = `fetchPriceWithMarketData`
-
-      data = getCache(cacheId)
-
-      if (data === undefined) {
-        data = await watchListClient.getPrices()
-        setCache(cacheId, data)
-      }
-      return data
-    } catch (e) {
-      return Promise.resolve(undefined)
-    }
-  }
-
-  /**
    * Get markets first on coingecko (free tier) directly,
    * if we get 429 error, retry it on coingecko proxy (paid service)
    * @returns markets data
@@ -324,35 +255,28 @@ export class TokenService {
    */
   async getSimplePrice({
     coinIds = [],
-    currency = VsCurrencyType.USD
+    currency = VsCurrencyType.USD,
+    includeMarketData = false
   }: {
     coinIds: string[]
     currency: VsCurrencyType
+    includeMarketData?: boolean
   }): Promise<SimplePriceResponse | undefined> {
     let data: SimplePriceResponse | undefined
 
-    const key = coinIds ? `${arrayHash(coinIds)}-${currency}` : `${currency}`
-
-    const cacheId = `getSimplePrice-${key}`
-
-    data = getCache(cacheId)
-
-    if (data === undefined) {
-      try {
-        data = await coingeckoRetry<SimplePriceResponse>(useCoingeckoProxy =>
-          this.simplePrice({
-            coinIds,
-            currencies: [currency],
-            marketCap: true,
-            vol24: true,
-            change24: true,
-            useCoingeckoProxy
-          })
-        )
-      } catch {
-        data = undefined
-      }
-      setCache(cacheId, data)
+    try {
+      data = await coingeckoRetry<SimplePriceResponse>(useCoingeckoProxy =>
+        this.simplePrice({
+          coinIds,
+          currencies: [currency],
+          marketCap: includeMarketData,
+          vol24: includeMarketData,
+          change24: includeMarketData,
+          useCoingeckoProxy
+        })
+      )
+    } catch {
+      data = undefined
     }
 
     return data

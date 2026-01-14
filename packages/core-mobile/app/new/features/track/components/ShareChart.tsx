@@ -9,13 +9,11 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useIsFocused } from '@react-navigation/native'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useTokenDetails } from 'common/hooks/useTokenDetails'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import SparklineChart from 'features/track/components/SparklineChart'
-import { useGetPrices } from 'hooks/watchlist/useGetPrices'
 import React, { useMemo } from 'react'
 import { MarketType } from 'store/watchlist'
 import { formatLargeCurrency } from 'utils/Utils'
@@ -30,27 +28,14 @@ export const ShareChart = ({
 }): JSX.Element => {
   const { theme } = useTheme()
   const { theme: inversedTheme } = useInversedTheme({ isDark: theme.isDark })
-  const { chartData, ranges, coingeckoId, tokenInfo, token } = useTokenDetails({
+  const { chartData, ranges, tokenInfo, token } = useTokenDetails({
     tokenId,
     marketType
   })
-  const isFocused = useIsFocused()
-
-  const { data: prices } = useGetPrices({
-    coingeckoIds: [coingeckoId],
-    enabled:
-      isFocused &&
-      tokenInfo?.currentPrice === undefined &&
-      coingeckoId.length > 0
-  })
 
   const currentPrice = useMemo(() => {
-    return (
-      tokenInfo?.currentPrice ??
-      prices?.[coingeckoId]?.priceInCurrency ??
-      token?.currentPrice
-    )
-  }, [tokenInfo?.currentPrice, prices, coingeckoId, token?.currentPrice])
+    return tokenInfo?.currentPrice ?? token?.currentPrice
+  }, [tokenInfo?.currentPrice, token?.currentPrice])
 
   const range = useMemo(() => {
     return {

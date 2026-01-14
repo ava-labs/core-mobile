@@ -218,7 +218,11 @@ export const SelectAmount = ({
             fontWeight: 500,
             color: colors.$textPrimary
           }}>
-          Balance: {token?.tokenWithBalance.balanceCurrencyDisplayValue ?? 0}{' '}
+          Balance:{' '}
+          {formatCurrency({
+            amount:
+              Number(token?.tokenWithBalance.balanceCurrencyDisplayValue) ?? 0
+          })}{' '}
           {selectedCurrency}
         </Text>
       </View>
@@ -229,7 +233,8 @@ export const SelectAmount = ({
     errorMessage,
     createSessionWidgetErrorMessage,
     token?.tokenWithBalance.balanceCurrencyDisplayValue,
-    selectedCurrency
+    selectedCurrency,
+    formatCurrency
   ])
 
   const renderPayWith = useCallback(() => {

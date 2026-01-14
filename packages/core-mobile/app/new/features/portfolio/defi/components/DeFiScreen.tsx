@@ -23,8 +23,8 @@ import { RefreshControl } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { DeFiSimpleProtocol } from 'services/defi/types'
+import { ViewOption } from 'common/types'
 import { useDeFiProtocols } from '../hooks/useDeFiProtocols'
-import { DeFiViewOption } from '../types'
 import { DeFiListItem } from './DeFiListItem'
 
 const placeholderIcon = require('../../../../assets/icons/bar_chart_emoji.png')
@@ -51,12 +51,12 @@ export const DeFiScreen = ({
     refetch,
     chainList
   } = useDeFiProtocols()
-  const listType = view.selected as DeFiViewOption
+  const listType = view.selected
   const header = useHeaderMeasurements()
 
   const getAmount = useExchangedAmount()
 
-  const isGridView = view.selected === DeFiViewOption.GridView
+  const isGridView = view.selected === ViewOption.Grid
   const numColumns = isGridView ? 2 : 1
 
   useEffect(() => {
