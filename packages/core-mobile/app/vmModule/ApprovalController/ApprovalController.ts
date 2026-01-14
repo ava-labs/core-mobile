@@ -23,12 +23,12 @@ import { Curve } from 'utils/publicKeys'
 import { solanaSignMessage } from 'vmModule/handlers/solanaSignMessage'
 import { solanaSignTransaction } from 'vmModule/handlers/solanaSignTransaction'
 import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
+import { CONFETTI_DURATION_MS } from 'common/consts'
 import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
 import { ethSendTransaction } from '../handlers/ethSendTransaction'
 import { signMessage } from '../handlers/signMessage'
 import { btcSendTransaction } from '../handlers/btcSendTransaction'
 import { avalancheSendTransaction } from '../handlers/avalancheSendTransaction'
-import { CONFETTI_DURATION_MS } from 'common/consts'
 
 class ApprovalController implements VmModuleApprovalController {
   async requestPublicKey({
