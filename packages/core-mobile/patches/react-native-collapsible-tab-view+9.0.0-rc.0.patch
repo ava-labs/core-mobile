@@ -11,10 +11,10 @@ index 38df065..104337b 100644
  export type CollapsibleRef<T extends TabName = TabName> = RefHandler<T> | undefined;
  export type TabBarProps<T extends TabName = TabName> = {
 diff --git a/node_modules/react-native-collapsible-tab-view/src/Container.tsx b/node_modules/react-native-collapsible-tab-view/src/Container.tsx
-index bf9729a..2724a99 100644
+index 9ec4cfe..4a97bec 100644
 --- a/node_modules/react-native-collapsible-tab-view/src/Container.tsx
 +++ b/node_modules/react-native-collapsible-tab-view/src/Container.tsx
-@@ -229,7 +229,9 @@ export const Container = React.memo(
+@@ -227,7 +227,9 @@ export const Container = React.memo(
        const toggleSyncScrollFrame = (toggle: boolean) =>
          syncScrollFrame.setActive(toggle)
        const syncScrollFrame = useFrameCallback(({ timeSinceFirstFrame }) => {
@@ -23,9 +23,9 @@ index bf9729a..2724a99 100644
 +          syncCurrentTabScrollPosition()
 +        }
          if (timeSinceFirstFrame > 1500) {
-           runOnJS(toggleSyncScrollFrame)(false)
+           scheduleOnRN(toggleSyncScrollFrame, false)
          }
-@@ -344,9 +346,12 @@ export const Container = React.memo(
+@@ -343,9 +345,12 @@ export const Container = React.memo(
            getCurrentIndex: () => {
              return index.value
            },
