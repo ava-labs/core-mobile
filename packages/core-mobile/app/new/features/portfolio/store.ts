@@ -49,7 +49,7 @@ interface CollectiblesViewState {
 export const collectiblesViewStore = create<CollectiblesViewState>()(
   persist(
     set => ({
-      selectedView: CollectibleViewOption.List,
+      selectedView: CollectibleViewOption.LargeGrid,
       setSelectedView: (view: string) =>
         set({
           selectedView: view as CollectibleViewOption
@@ -75,7 +75,7 @@ interface DeFiViewState {
 export const defiViewStore = create<DeFiViewState>()(
   persist(
     set => ({
-      selectedView: ViewOption.List,
+      selectedView: ViewOption.Grid,
       setSelectedView: (view: string) =>
         set({
           selectedView: view as ViewOption
@@ -90,30 +90,4 @@ export const defiViewStore = create<DeFiViewState>()(
 
 export const useDeFiView = (): DeFiViewState => {
   return defiViewStore()
-}
-
-// Track view store
-interface TrackViewState {
-  selectedView: ViewOption
-  setSelectedView: (value: string) => void
-}
-
-export const trackViewStore = create<TrackViewState>()(
-  persist(
-    set => ({
-      selectedView: ViewOption.List,
-      setSelectedView: (view: string) =>
-        set({
-          selectedView: view as ViewOption
-        })
-    }),
-    {
-      name: ZustandStorageKeys.TRACK_VIEW,
-      storage: zustandMMKVStorage
-    }
-  )
-)
-
-export const useTrackView = (): TrackViewState => {
-  return trackViewStore()
 }
