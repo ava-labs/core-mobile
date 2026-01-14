@@ -96,6 +96,7 @@ const AccountScreen = (): JSX.Element => {
         isPrivacyModeEnabled={isPrivacyModeEnabled}
         isDeveloperModeEnabled={isDeveloperMode}
         hideExpand
+        hideSubtitle
       />
     )
   }

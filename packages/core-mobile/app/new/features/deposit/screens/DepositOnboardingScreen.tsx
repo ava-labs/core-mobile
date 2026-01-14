@@ -26,7 +26,7 @@ export const DepositOnboardingScreen = (): JSX.Element => {
     )
     return (
       <GroupList
-        titleSx={{ fontFamily: 'Inter-regular', fontSize: 15 }}
+        titleSx={{ fontFamily: 'Inter-Regular', fontSize: 15 }}
         data={[
           {
             title: `Earn up to ${highestApyMarket}% APY`,
