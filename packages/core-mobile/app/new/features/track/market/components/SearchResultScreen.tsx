@@ -9,7 +9,7 @@ import { ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist/types'
-import { useTrackSearchView } from 'features/portfolio/store'
+import { useTrackSearchView } from 'features/track/store'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
 

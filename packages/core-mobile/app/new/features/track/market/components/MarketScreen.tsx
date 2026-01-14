@@ -8,7 +8,7 @@ import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist'
-import { useMarketView } from 'features/portfolio/store'
+import { useMarketView } from 'features/track/store'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
 

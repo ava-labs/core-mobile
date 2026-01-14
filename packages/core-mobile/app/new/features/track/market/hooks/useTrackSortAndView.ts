@@ -13,7 +13,7 @@ export const useTrackSortAndView = ({
   tokens: MarketToken[]
   prices: Prices
   selectedView: ViewOption
-  setSelectedView: (view: ViewOption) => void
+  setSelectedView: (view: string) => void
 }): {
   data: MarketToken[]
   sort: DropdownSelection
