@@ -1,20 +1,22 @@
-import { PChainTransaction } from '@avalabs/glacier-sdk'
-import { UseQueryResult } from '@tanstack/react-query'
-import { useRefreshableQuery } from 'hooks/query/useRefreshableQuery'
-import { useSelector } from 'react-redux'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useAvailableMarkets } from 'features/defiMarket/hooks/useAvailableMarkets'
+import { DefiMarket } from 'features/defiMarket/types'
+import { useMemo } from 'react'
 
-type UseDepositsReturnType = UseQueryResult<PChainTransaction[], unknown> & {
-  pullToRefresh: () => void
-  readonly isRefreshing: boolean
-}
+export const useDeposits = (): {
+  deposits: DefiMarket[]
+  isLoading: boolean
+  refresh: () => void
+  isRefreshing: boolean
+} => {
+  const { data, isLoading, refresh, isRefreshing } = useAvailableMarkets()
 
-export const useDeposits = (): UseDepositsReturnType => {
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const deposits = useMemo(() => {
+    return (
+      data?.filter(
+        market => market.asset.mintTokenBalance.balance > BigInt(0)
+      ) ?? []
+    )
+  }, [data])
 
-  // todo
-  return useRefreshableQuery({
-    queryKey: ['deposits', isDeveloperMode],
-    queryFn: () => []
-  })
+  return { deposits, isLoading, refresh, isRefreshing }
 }
