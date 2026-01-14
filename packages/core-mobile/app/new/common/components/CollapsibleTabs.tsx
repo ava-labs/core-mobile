@@ -129,7 +129,7 @@ const ContentWrapper = ({
     const translateY = interpolate(
       scrollY.value,
       [0, header.height],
-      [-header.height / 2, 0],
+      [-(header.height - tabBarHeight - insets.bottom), 0],
       Extrapolation.CLAMP
     )
     return {
@@ -151,7 +151,7 @@ const ContentWrapper = ({
           ? {
               // iOS works with 100%, but android needs specific height
               height: '100%',
-              paddingBottom: tabBarHeight
+              paddingBottom: header.height - tabBarHeight + insets.bottom
             }
           : {
               height:
