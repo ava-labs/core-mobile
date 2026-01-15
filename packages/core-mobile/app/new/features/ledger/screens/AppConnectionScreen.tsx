@@ -1,6 +1,6 @@
-import React, { useCallback, useState, useEffect } from 'react'
+import React, { useCallback, useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'expo-router'
-import { Alert } from 'react-native'
+import { Alert, Platform, View } from 'react-native'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { ProgressDots } from 'common/components/ProgressDots'
 import { LedgerAppConnection } from 'new/features/ledger/components/LedgerAppConnection'
@@ -127,13 +127,25 @@ export default function AppConnectionScreen(): JSX.Element {
     }
   }, [isCreatingWallet])
 
-  const renderHeaderCenterComponent = useCallback(() => {
-    return <ProgressDots totalSteps={3} currentStep={currentStep} />
+  const headerCenterOverlay = useMemo(() => {
+    const paddingTop = Platform.OS === 'ios' ? 15 : 50
+
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          paddingTop
+        }}>
+        <ProgressDots totalSteps={3} currentStep={currentStep} />
+      </View>
+    )
   }, [currentStep])
 
   return (
     <ScrollScreen
-      renderHeaderCenterComponent={renderHeaderCenterComponent}
+      headerCenterOverlay={headerCenterOverlay}
       showNavigationHeaderTitle={false}
       hasParent={true}
       isModal={true}
