@@ -407,18 +407,16 @@ const populateXpAddressesForWallet = async ({
     let xpAddressDictionary: XPAddressDictionary = {} as XPAddressDictionary
     let hasMigratedXpAddresses = false
 
-    // Skip XP address derivation for Ledger wallets - they don't support it
-    if (!restrictToFirstIndex) {
-      try {
-        Logger.info(`Deriving XP addresses for account ${account.index}...`)
+    try {
+      Logger.info(`Deriving XP addresses for account ${account.index}...`)
 
-        const result = await getAddressesFromXpubXP({
-          isDeveloperMode,
-          walletId: wallet.id,
-          walletType: wallet.type,
-          accountIndex: account.index,
-          onlyWithActivity: true
-        })
+      const result = await getAddressesFromXpubXP({
+        isDeveloperMode,
+        walletId: wallet.id,
+        walletType: wallet.type,
+        accountIndex: account.index,
+        onlyWithActivity: true
+      })
 
       xpAddresses =
         result.xpAddresses.length > 0 ? result.xpAddresses : xpAddresses
@@ -429,7 +427,6 @@ const populateXpAddressesForWallet = async ({
         `Failed to derive XP addresses for account ${account.index} in wallet ${wallet.id}`,
         error
       )
-      // Continue with empty addresses to ensure account is still updated
     }
 
     // For mnemonic and seedless wallets, rederive AVM and PVM addresses
@@ -461,8 +458,8 @@ const populateXpAddressesForWallet = async ({
     // Always update the account, even if derivation failed
     updatedAccounts[account.id] = {
       ...account,
-      addressAVM,
-      addressPVM,
+      addressAVM: newAddressAVM,
+      addressPVM: newAddressPVM,
       xpAddresses,
       xpAddressDictionary,
       hasMigratedXpAddresses

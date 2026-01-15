@@ -153,16 +153,6 @@ class AccountsService {
         isTestnet
       })
 
-      const { xpAddresses, xpAddressDictionary } =
-        await this.getAccountXPAddresses({
-          account,
-          isLedgerWallet,
-          walletId,
-          walletType,
-          isTestnet
-        })
-      }
-
       let xpAddresses: AddressIndex[] = [
         { address: stripAddressPrefix(account.addressAVM), index: 0 }
       ]
@@ -170,16 +160,15 @@ class AccountsService {
       let hasMigratedXpAddresses = false
 
       // Only derive XP addresses for non-Ledger wallets
-      if (!isLedgerWallet) {
-        console.log('[AccountsService.reloadAccounts] Deriving XP addresses for account:', account.index)
-        try {
-          const result = await getAddressesFromXpubXP({
-            isDeveloperMode: isTestnet,
-            walletId,
-            walletType,
-            accountIndex: account.index,
-            onlyWithActivity: true
-          })
+
+      try {
+        const result = await getAddressesFromXpubXP({
+          isDeveloperMode: isTestnet,
+          walletId,
+          walletType,
+          accountIndex: account.index,
+          onlyWithActivity: true
+        })
 
         xpAddresses =
           result.xpAddresses.length > 0 ? result.xpAddresses : xpAddresses
