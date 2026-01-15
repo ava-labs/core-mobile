@@ -43,7 +43,6 @@ import { findPublicKey } from 'utils/publicKeys'
 import { base64 } from '@scure/base'
 import { hex } from '@scure/base'
 import { getAddressDerivationPath } from 'services/wallet/utils'
-import Logger from 'utils/Logger'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import SeedlessService from '../SeedlessService'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
@@ -264,26 +263,55 @@ export default class SeedlessWallet implements Wallet {
 
   public async signAvalancheTransaction({
     accountIndex,
-    transaction
+    transaction,
+    network
   }: {
     accountIndex: number
     transaction: AvalancheTransactionRequest
+    network: Network
   }): Promise<string> {
     const isEvmTx = transaction.tx.getVM() === EVM
 
-    const vmType = isEvmTx ? NetworkVMType.EVM : NetworkVMType.AVM
+    if (isEvmTx) {
+      /**
+       * C-chain (EVM) transactions are account-based:
+       * - single signer
+       * - no indices involved
+       */
+      const addressPublicKey = await this.getAddressPublicKey({
+        accountIndex,
+        vmType: NetworkVMType.EVM
+      })
 
-    const externalIndices = transaction.externalIndices ?? [0]
-    for (const externalIndex of externalIndices) {
-      try {
+      const key = await this.getSigningKeyByTypeAndKey(
+        cs.Secp256k1.Evm,
+        addressPublicKey
+      )
+
+      const response = await this.#client.apiClient.signBlob(key.key_id, {
+        message_base64: Buffer.from(sha256(transaction.tx.toBytes())).toString(
+          'base64'
+        )
+      })
+
+      transaction.tx.addSignature(utils.hexToBuffer(response.data().signature))
+    } else {
+      /**
+       * X/P-chain transactions are UTXO-based:
+       * - each utxo has an explicit owner address
+       * - we must sign each UTXO owner (identified by externalIndices)
+       */
+      const externalIndices = transaction.externalIndices ?? []
+
+      for (const externalIndex of externalIndices) {
         const addressPublicKey = await this.getAddressPublicKey({
           accountIndex,
           addressIndex: externalIndex,
-          vmType
+          vmType: NetworkVMType.AVM
         })
 
         const key = await this.getSigningKeyByTypeAndKey(
-          isEvmTx ? cs.Secp256k1.Evm : cs.Secp256k1.Ava,
+          network.isTestnet ? cs.Secp256k1.AvaTest : cs.Secp256k1.Ava,
           addressPublicKey
         )
 
@@ -295,11 +323,6 @@ export default class SeedlessWallet implements Wallet {
 
         transaction.tx.addSignature(
           utils.hexToBuffer(response.data().signature)
-        )
-      } catch (error) {
-        Logger.error(
-          `[SeedlessWallet] No signing key found for external index ${externalIndex}`,
-          error
         )
       }
     }

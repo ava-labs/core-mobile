@@ -60,10 +60,10 @@
     "@types/react": "19.0.10",
     "eslint": "8.50.0",
     "eslint-plugin-avalabs-mobile": "workspace:*",
-    "nitrogen": "*",
+    "nitrogen": "0.32.0",
     "react": "19.0.0",
     "react-native": "0.79.5",
-    "react-native-nitro-modules": "0.31.10",
+    "react-native-nitro-modules": "0.32.2",
     "typescript": "^5.8.3"
   },
   "peerDependencies": {

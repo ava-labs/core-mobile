@@ -15,10 +15,7 @@ import { WalletInfo } from 'features/accountSettings/components/WalletInfo'
 import { selectWalletById } from 'store/wallet/slice'
 import { CoreAccountType } from '@avalabs/types'
 import { WalletType } from 'services/wallet/types'
-import { useIsRefetchingBalancesForAccount } from 'features/portfolio/hooks/useIsRefetchingBalancesForAccount'
-import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
-import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
-import { NormalizedBalancesForAccount } from 'services/balance/types'
+import { useAccountBalanceSummary } from 'features/portfolio/hooks/useAccountBalanceSummary'
 
 const AccountScreen = (): JSX.Element => {
   const router = useRouter()
@@ -27,23 +24,16 @@ const AccountScreen = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const account = useSelector(selectAccountById(accountId ?? ''))
   const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
-  const { data: balances, isFetching: isFetchingBalances } = useAccountBalances(
-    account,
-    {
-      refetchInterval: false
-    }
-  )
-  const isRefetchingBalance = useIsRefetchingBalancesForAccount(account)
-  const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
-    account,
-    sourceData: balances as unknown as NormalizedBalancesForAccount[]
-  })
-  const isLoading =
-    (isFetchingBalances && balances.length === 0) || isRefetchingBalance
-  const allBalancesInaccurate = useMemo(() => {
-    if (!account || balances.length === 0) return false
-    return balances.every(balance => balance.dataAccurate === false)
-  }, [account, balances])
+
+  const {
+    totalBalanceInCurrency: balanceTotalInCurrency,
+    isBalanceLoaded,
+    isLoading: isLoadingBalances,
+    isRefetching: isRefetchingBalance,
+    isAllBalancesInaccurate: allBalancesInaccurate
+  } = useAccountBalanceSummary(account, { refetchInterval: false })
+
+  const isLoading = isLoadingBalances || isRefetchingBalance || !isBalanceLoaded
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
   const formattedBalance = useMemo(() => {
@@ -106,6 +96,7 @@ const AccountScreen = (): JSX.Element => {
         isPrivacyModeEnabled={isPrivacyModeEnabled}
         isDeveloperModeEnabled={isDeveloperMode}
         hideExpand
+        hideSubtitle
       />
     )
   }

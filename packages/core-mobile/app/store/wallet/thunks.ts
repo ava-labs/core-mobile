@@ -1,4 +1,4 @@
-import { CoreAccountType } from '@avalabs/types'
+import { AddressIndex, CoreAccountType } from '@avalabs/types'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import AccountsService from 'services/account/AccountsService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -7,7 +7,8 @@ import {
   Account,
   ImportedAccount,
   setAccount,
-  setActiveAccount
+  setActiveAccount,
+  XPAddressDictionary
 } from 'store/account'
 import {
   removeAccount,
@@ -21,6 +22,9 @@ import { StoreWalletParams, Wallet } from 'store/wallet/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { uuid } from 'utils/uuid'
 import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP'
+import Logger from 'utils/Logger'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
+import { NetworkVMType } from '@avalabs/vm-module-types'
 import { _removeWallet, selectActiveWalletId } from './slice'
 import { generateWalletName } from './utils'
 
@@ -132,16 +136,27 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
       isTestnet: isDeveloperMode
     })
 
-    const result = await getAddressesFromXpubXP({
-      isDeveloperMode,
-      walletId: newWalletId,
-      walletType: walletType,
-      accountIndex,
-      onlyWithActivity: true
-    })
+    let xpAddresses: AddressIndex[] = [
+      { address: stripAddressPrefix(addresses[NetworkVMType.AVM]), index: 0 }
+    ]
+    let xpAddressDictionary: XPAddressDictionary = {}
+    let hasMigratedXpAddresses = false
+    try {
+      const result = await getAddressesFromXpubXP({
+        isDeveloperMode,
+        walletId: newWalletId,
+        walletType: walletType,
+        accountIndex,
+        onlyWithActivity: true
+      })
 
-    const xpAddresses = result.xpAddresses
-    const xpAddressDictionary = result.xpAddressDictionary
+      xpAddresses =
+        result.xpAddresses.length > 0 ? result.xpAddresses : xpAddresses
+      xpAddressDictionary = result.xpAddressDictionary
+      hasMigratedXpAddresses = true
+    } catch (error) {
+      Logger.error('Error getting XP addresses', error)
+    }
 
     const newAccountId = uuid()
     const newAccount: Account = {
@@ -157,7 +172,8 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
       addressSVM: addresses.SVM,
       addressCoreEth: addresses.CoreEth,
       xpAddresses,
-      xpAddressDictionary
+      xpAddressDictionary,
+      hasMigratedXpAddresses
     }
 
     dispatch(setAccount(newAccount))

@@ -16,7 +16,6 @@ const RecoveryPhraseVerifyPinScreen = (): JSX.Element => {
         throw result.error
       }
       const walletSecret = result.value
-      Logger.info('walletSecret', walletSecret)
 
       replace({
         // @ts-ignore TODO: make routes typesafe

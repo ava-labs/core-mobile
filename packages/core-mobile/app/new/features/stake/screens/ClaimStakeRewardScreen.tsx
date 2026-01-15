@@ -20,13 +20,13 @@ import { useRouter } from 'expo-router'
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
 import { useClaimRewards } from 'hooks/earn/useClaimRewards'
 import { usePChainBalance } from 'hooks/earn/usePChainBalance'
-import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useRefreshStakingBalances } from 'hooks/earn/useRefreshStakingBalances'
+import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 
 export const ClaimStakeRewardScreen = (): JSX.Element => {
   const { navigate, back } = useRouter()
@@ -37,7 +37,7 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
     useState<TokenUnit>()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
-  const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
+  const avaxPrice = useAvaxPrice()
   const refreshStakingBalances = useRefreshStakingBalances()
   const onClaimSuccess = (): void => {
     refreshStakingBalances({ shouldRefreshStakes: false })

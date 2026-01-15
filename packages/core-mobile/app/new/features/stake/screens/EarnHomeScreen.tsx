@@ -34,7 +34,7 @@ import {
   selectIsInAppDefiBlocked,
   selectIsInAppDefiNewBlocked
 } from 'store/posthog'
-import DepositTabScreen from 'features/deposit/screens/DepositTabScreen'
+import DepositTabScreen from 'features/defiMarket/screens/DepositTabScreen'
 import StakeTabScreen from './StakeTabScreen'
 
 export const EarnHomeScreen = (): JSX.Element => {

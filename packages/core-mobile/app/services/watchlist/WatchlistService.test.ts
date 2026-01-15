@@ -2,8 +2,6 @@ import TokenService from 'services/token/TokenService'
 import { transformSparklineData } from 'services/token/utils'
 import { MarketType } from 'store/watchlist'
 import { getV1WatchlistMarkets } from 'utils/api/generated/tokenAggregator/aggregatorApi.client/sdk.gen'
-import WATCHLIST_PRICE from '../token/__mocks__/watchlistPrice.json'
-import ADDITIONAL_WATCHLIST_PRICE from '../token/__mocks__/additionalWatchlistPrice.json'
 import WatchlistService from './WatchlistService'
 
 jest.mock('services/token/utils', () => ({
@@ -120,6 +118,30 @@ describe('getTopMarkets', () => {
     expect(result.charts).toEqual({})
   })
 
+  it('should return correctly mapped prices', async () => {
+    getV1WatchlistMarketsMock.mockResolvedValue({
+      data: [
+        {
+          internalId: 'avax',
+          current_price: 35,
+          price_change_24h: 1.2,
+          price_change_percentage_24h: -3.4,
+          market_cap: 2000000000,
+          total_volume: 1000000000
+        }
+      ]
+    })
+
+    const result = await WatchlistService.getTopTokens('USD')
+
+    expect(result.prices.avax).toEqual({
+      priceInCurrency: 35,
+      change24: 1.2,
+      marketCap: 2000000000,
+      vol24: 1000000000
+    })
+  })
+
   it('should handle missing optional fields gracefully', async () => {
     getV1WatchlistMarketsMock.mockResolvedValue({
       data: [
@@ -146,50 +168,6 @@ describe('getTopMarkets', () => {
       priceChange24h: undefined,
       priceChangePercentage24h: undefined
     })
-  })
-})
-
-describe('getPrices', () => {
-  const fetchPriceWithMarketDataMock =
-    TokenService.fetchPriceWithMarketData as jest.Mock
-  const getSimplePriceMock = TokenService.getSimplePrice as jest.Mock
-
-  beforeEach(() => {
-    jest.clearAllMocks()
-  })
-
-  it('should return all merged price data from cache + simple price API', async () => {
-    fetchPriceWithMarketDataMock.mockResolvedValue(WATCHLIST_PRICE)
-    getSimplePriceMock.mockResolvedValue(ADDITIONAL_WATCHLIST_PRICE)
-
-    const result = await WatchlistService.getPrices(
-      [
-        'test-aave',
-        'test',
-        'additional-watchlist-price-1',
-        'additional-watchlist-price-2',
-        'additional-watchlist-price-3'
-      ],
-      'usd'
-    )
-
-    expect(fetchPriceWithMarketDataMock).toHaveBeenCalledTimes(1)
-    expect(getSimplePriceMock).toHaveBeenCalledTimes(1)
-    expect(Object.keys(result)).toHaveLength(5)
-  })
-
-  it('should return only cached price data when all IDs exist in cache', async () => {
-    fetchPriceWithMarketDataMock.mockResolvedValue(WATCHLIST_PRICE)
-    getSimplePriceMock.mockResolvedValue(ADDITIONAL_WATCHLIST_PRICE)
-
-    const result = await WatchlistService.getPrices(
-      ['test-aave', 'test'],
-      'usd'
-    )
-
-    expect(fetchPriceWithMarketDataMock).toHaveBeenCalledTimes(1)
-    expect(getSimplePriceMock).not.toHaveBeenCalled()
-    expect(Object.keys(result)).toHaveLength(2)
   })
 })
 

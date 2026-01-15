@@ -1,3 +1,4 @@
+import { isNil } from 'lodash'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Account } from 'store/account'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
@@ -44,6 +45,15 @@ type BackendTokenBalance =
   | SvmTokenBalance
   | AvmTokenBalance
   | PvmTokenBalance
+
+const isTokenEnabled = (
+  tokenBalance: Erc20TokenBalance | SvmTokenBalance
+): boolean => {
+  return (
+    isNil(tokenBalance.scanResult) ||
+    ['Benign', 'Warning'].includes(tokenBalance.scanResult)
+  )
+}
 
 // helper function to map asset to utxos object
 const assetToUtxos = (
@@ -301,7 +311,7 @@ export const mapBalanceResponseToLegacy = (
       const evm = response as EvmGetBalancesResponse
       tokens = [
         evm.balances.nativeTokenBalance,
-        ...(evm.balances.erc20TokenBalances ?? [])
+        ...(evm.balances.erc20TokenBalances ?? []).filter(isTokenEnabled)
       ]
       break
     }
@@ -316,7 +326,7 @@ export const mapBalanceResponseToLegacy = (
       const svm = response as SvmGetBalancesResponse
       tokens = [
         svm.balances.nativeTokenBalance,
-        ...(svm.balances.splTokenBalances ?? [])
+        ...(svm.balances.splTokenBalances ?? []).filter(isTokenEnabled)
       ]
       break
     }
@@ -366,12 +376,28 @@ export const mapBalanceResponseToLegacy = (
 
       if (tokenType === null) return null
 
-      const balanceInCurrency =
-        token.price !== undefined
-          ? new TokenUnit(token.balance, token.decimals, token.symbol).mul(
-              token.price
-            )
-          : undefined
+      let balanceInCurrency: number | undefined
+      let balanceCurrencyDisplayValue: string | undefined
+
+      if (
+        token.balanceInCurrency !== undefined &&
+        token.balanceInCurrency !== 0
+      ) {
+        // use provided value for balance in currency
+        balanceInCurrency = token.balanceInCurrency
+        balanceCurrencyDisplayValue = token.balanceInCurrency.toString()
+      } else if (token.price !== undefined) {
+        // fallback to manual calculation using price and balance
+        const calculated = new TokenUnit(
+          token.balance,
+          token.decimals,
+          token.symbol
+        ).mul(token.price)
+        balanceInCurrency = calculated.toDisplay({
+          asNumber: true
+        })
+        balanceCurrencyDisplayValue = calculated.toDisplay()
+      }
 
       return {
         // ------------- Identifiers -------------
@@ -393,13 +419,8 @@ export const mapBalanceResponseToLegacy = (
           token.decimals,
           token.symbol
         ).toDisplay(),
-        balanceInCurrency: balanceInCurrency?.toDisplay({
-          fixedDp: 2,
-          asNumber: true
-        }),
-        balanceCurrencyDisplayValue: balanceInCurrency?.toDisplay({
-          fixedDp: 2
-        }),
+        balanceInCurrency,
+        balanceCurrencyDisplayValue,
 
         // ------------- Price info -------------
         priceInCurrency: token.price,

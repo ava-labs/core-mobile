@@ -4,6 +4,8 @@ import { TextInput, TextInputProps, ViewStyle } from 'react-native'
 import { useTheme } from '../../hooks'
 import { Icons } from '../../theme/tokens/Icons'
 import { Text, TouchableOpacity, View } from '../Primitives'
+import { alpha } from '../../utils'
+import { BlurViewWithFallback } from '../BlurViewWithFallback/BlurViewWithFallback'
 
 interface Props extends Omit<TextInputProps, 'value' | 'onChangeText'> {
   onTextChanged: (value: string) => void
@@ -54,7 +56,7 @@ export const SearchBar: FC<Props> = ({
 }) => {
   const textInputRef = useRef<TextInput>(null)
   const {
-    theme: { colors }
+    theme: { colors, isDark }
   } = useTheme()
   const [isFocused, setIsFocused] = useState(false)
   const [_searchText, _setSearchText] = useState(searchText)
@@ -122,13 +124,16 @@ export const SearchBar: FC<Props> = ({
 
   return (
     <View style={[{ flexDirection: 'row' }, containerStyle]}>
-      <View
+      <BlurViewWithFallback
+        backgroundColor={
+          isDark ? alpha(colors.$white, 0.15) : alpha(colors.$textPrimary, 0.06)
+        }
         style={{
           height: HEIGHT,
           borderRadius: 1000,
           flex: 1,
-          backgroundColor: colors.$surfaceSecondary,
-          flexDirection: 'row'
+          flexDirection: 'row',
+          overflow: 'hidden'
         }}>
         <View
           sx={{
@@ -157,6 +162,8 @@ export const SearchBar: FC<Props> = ({
             ref={textInputRef}
             style={{
               height: '100%',
+              lineHeight: 16,
+              flex: 1,
               color: colors.$textPrimary,
               paddingLeft: 36,
               paddingVertical: 0
@@ -178,7 +185,7 @@ export const SearchBar: FC<Props> = ({
           />
         </View>
         {renderRightComponent()}
-      </View>
+      </BlurViewWithFallback>
       {isFocused && useCancel && (
         <Text
           variant="body1"

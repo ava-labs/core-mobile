@@ -4,6 +4,7 @@ import {
   SPRING_LINEAR_TRANSITION,
   Text
 } from '@avalabs/k2-alpine'
+import { BlurViewWithFallback } from '@avalabs/k2-alpine/src/components/BlurViewWithFallback/BlurViewWithFallback'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
@@ -42,7 +43,6 @@ import {
   useSafeAreaFrame,
   useSafeAreaInsets
 } from 'react-native-safe-area-context'
-import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { ErrorState } from './ErrorState'
 
 // Use this component when you need to display a list of items in a screen.
@@ -283,16 +283,13 @@ export const ListScreen = <T,>({
       ? keyboard.height + 16
       : insets.bottom + 16
 
-    // Android formsheet in native-stack has a default top padding of insets.top
-    // so we need to add this to adjust the height of the list
     const extraPadding =
-      Platform.OS === 'android' ? (isModal ? insets.top + 24 : 32) : 6
+      Platform.OS === 'android' ? (isModal ? insets.top - 24 : 8) : 16
 
     return [
       props?.contentContainerStyle,
       data.length === 0
         ? {
-            justifyContent: 'center',
             flex: 1
           }
         : {},

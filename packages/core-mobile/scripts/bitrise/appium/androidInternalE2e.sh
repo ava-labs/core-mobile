@@ -17,4 +17,10 @@ npx appium -v || true
 npx appium driver list || true
 
 
-yarn appium:android
+if [[ "$SMOKE_SUITE" == "true" ]]; then
+  echo "Running ANDROID SMOKE tests"
+  yarn appium:smokeAndroid
+else
+  echo "Running ANDROID FULL tests"
+  yarn appium:android
+fi

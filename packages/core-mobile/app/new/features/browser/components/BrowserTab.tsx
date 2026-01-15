@@ -2,7 +2,11 @@ import { showAlert, useTheme, View } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
-import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
+import {
+  DeepLink,
+  DeepLinkOrigin,
+  PROTOCOLS
+} from 'contexts/DeeplinkContext/types'
 import { Image } from 'expo-image'
 import {
   GetDescriptionAndFavicon,
@@ -408,10 +412,63 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       }
     }, [])
 
+    const isDeepLinkUrl = (url: string): boolean => {
+      const lower = url.toLowerCase()
+      return (
+        lower.startsWith(`${PROTOCOLS.CORE}://`) ||
+        lower.startsWith(`${PROTOCOLS.WC}:`)
+      )
+    }
+
     const onError = (event: WebViewErrorEvent): void => {
+      // Fallback: unknown schemes can sometimes reach `onError` without triggering
+      // `onShouldStartLoadWithRequest` (depending on redirect/navigation type).
+      const failedUrl = event.nativeEvent.url ?? ''
+      const description = event.nativeEvent.description ?? ''
+
+      if (
+        description.includes('ERR_UNKNOWN_URL_SCHEME') &&
+        isDeepLinkUrl(failedUrl)
+      ) {
+        setPendingDeepLink({
+          url: failedUrl,
+          origin: DeepLinkOrigin.ORIGIN_IN_APP_BROWSER
+        } as DeepLink)
+        // Try to recover the tab UI by returning to the previous/discover page instead of showing an error screen.
+        if (lastNavStateRef.current.canGoBack) {
+          webViewRef.current?.goBack()
+        } else {
+          goToDiscover()
+        }
+        return
+      }
+
       progress.value = 0
       setError(event.nativeEvent)
     }
+
+    const onShouldStartLoadWithRequest = useCallback(
+      (request: WebViewNavigation): boolean => {
+        if (disabled) return false
+
+        const nextUrl = request.url ?? ''
+        if (!nextUrl.length) return true
+
+        // WebView cannot load custom schemes (e.g. `core://`, `wc:`) and will throw
+        // `net::ERR_UNKNOWN_URL_SCHEME`. Intercept these navigations and route through the
+        // existing Deeplink flow.
+        if (isDeepLinkUrl(nextUrl)) {
+          setPendingDeepLink({
+            url: nextUrl,
+            origin: DeepLinkOrigin.ORIGIN_IN_APP_BROWSER
+          } as DeepLink)
+          return false
+        }
+
+        return true
+      },
+      [disabled, setPendingDeepLink]
+    )
 
     const renderLoading = (): JSX.Element => {
       return (
@@ -470,7 +527,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             onLoad={onLoad}
             onNavigationStateChange={onNavigationStateChange}
             onMessage={onMessageHandler}
-            onShouldStartLoadWithRequest={() => !disabled}
+            onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
             nestedScrollEnabled
             pullToRefreshEnabled
             allowsBackForwardNavigationGestures

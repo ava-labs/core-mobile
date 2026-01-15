@@ -167,21 +167,12 @@ export const useFadingHeaderNavigation = ({
   const headerTitleComponent = useMemo(() => {
     return (
       <View
-        style={[
-          {
-            justifyContent: 'center',
-            overflow: 'hidden'
-          },
-          Platform.OS === 'ios'
-            ? {
-                paddingTop: shouldHeaderHaveGrabber ? 4 : 0,
-                height: '100%'
-              }
-            : {
-                // Hardcoded value for Android because 100% doesn't work properly
-                height: 56
-              }
-        ]}>
+        style={{
+          justifyContent: 'center',
+          overflow: 'hidden',
+          // Hardcoded value for Android because 100% doesn't work properly
+          height: Platform.OS === 'ios' ? '100%' : 56
+        }}>
         <View onLayout={handleLayout}>
           <Animated.View style={[animatedHeaderStyle]}>{header}</Animated.View>
         </View>
@@ -297,6 +288,23 @@ export const useFadingHeaderNavigation = ({
       showNavigationHeaderTitle
     ])
   )
+
+  // Update navigation header title whenever header content changes
+  // This ensures the header updates when account changes, even if screen stays focused
+  useEffect(() => {
+    const nav = hasParent ? navigation.getParent() : navigation
+    if (showNavigationHeaderTitle) {
+      nav?.setOptions({
+        headerTitle: stableHeaderTitle
+      })
+    }
+  }, [
+    hasParent,
+    navigation,
+    header,
+    showNavigationHeaderTitle,
+    stableHeaderTitle
+  ])
 
   return {
     onScroll: handleScroll,

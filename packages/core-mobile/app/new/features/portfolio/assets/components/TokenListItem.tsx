@@ -1,6 +1,6 @@
 import { PriceChangeStatus } from '@avalabs/k2-alpine'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
-import React, { useRef, useCallback } from 'react'
+import React, { useRef, useCallback, memo } from 'react'
 import { LocalTokenWithBalance } from 'store/balance'
 import { useTokenNameForDisplay } from 'common/hooks/useTokenNameForDisplay'
 import { useMarketToken } from 'common/hooks/useMarketToken'
@@ -11,84 +11,86 @@ interface TokenListItemProps {
   token: LocalTokenWithBalance
   index: number
   isGridView?: boolean
-  onPress: () => void
+  onPress: (token: LocalTokenWithBalance) => void
 }
 
-export const TokenListItem = ({
-  token,
-  index,
-  isGridView,
-  onPress
-}: // eslint-disable-next-line sonarjs/cognitive-complexity
-TokenListItemProps): React.JSX.Element => {
-  const { formatCurrency } = useFormatCurrency()
-  const { balanceInCurrency } = token
-  const formattedBalance = balanceInCurrency
-    ? formatCurrency({ amount: balanceInCurrency })
-    : undefined
-
-  const tokenNameForDisplay = useTokenNameForDisplay({ token }) ?? token.name
-
-  const marketToken = useMarketToken({
-    // Only resolve market token when token.change24 is missing
-    token: token.change24 === undefined ? token : undefined
-  })
-  const percentChange =
-    token.change24 ?? marketToken?.priceChangePercentage24h ?? undefined
-  const priceChange =
-    percentChange !== undefined && balanceInCurrency !== undefined
-      ? (balanceInCurrency * percentChange) / 100
-      : undefined
-  const formattedPrice =
-    priceChange !== undefined
-      ? formatCurrency({ amount: Math.abs(priceChange) })
+export const TokenListItem = memo(
+  ({
+    token,
+    index,
+    isGridView,
+    onPress
+  }: // eslint-disable-next-line sonarjs/cognitive-complexity
+  TokenListItemProps): React.JSX.Element => {
+    const { formatCurrency } = useFormatCurrency()
+    const { balanceInCurrency } = token
+    const formattedBalance = balanceInCurrency
+      ? formatCurrency({ amount: balanceInCurrency })
       : undefined
 
-  const status =
-    priceChange !== undefined
-      ? priceChange > 0
-        ? PriceChangeStatus.Up
-        : priceChange < 0
-        ? PriceChangeStatus.Down
-        : PriceChangeStatus.Neutral
-      : undefined
+    const tokenNameForDisplay = useTokenNameForDisplay({ token }) ?? token.name
 
-  const isPressDisabledRef = useRef(false)
+    const marketToken = useMarketToken({
+      // Only resolve market token when token.change24 is missing
+      token: token.change24 === undefined ? token : undefined
+    })
+    const percentChange =
+      token.change24 ?? marketToken?.priceChangePercentage24h ?? undefined
+    const priceChange =
+      percentChange !== undefined && balanceInCurrency !== undefined
+        ? (balanceInCurrency * percentChange) / 100
+        : undefined
+    const formattedPrice =
+      priceChange !== undefined
+        ? formatCurrency({ amount: Math.abs(priceChange) })
+        : undefined
 
-  const handlePress = useCallback(() => {
-    // Prevent multiple presses
-    if (isPressDisabledRef.current) return
+    const status =
+      priceChange !== undefined
+        ? priceChange > 0
+          ? PriceChangeStatus.Up
+          : priceChange < 0
+          ? PriceChangeStatus.Down
+          : PriceChangeStatus.Neutral
+        : undefined
 
-    // Disable further presses
-    isPressDisabledRef.current = true
+    const isPressDisabledRef = useRef(false)
 
-    onPress()
+    const handlePress = useCallback(() => {
+      // Prevent multiple presses
+      if (isPressDisabledRef.current) return
 
-    // Re-enable after 300ms
-    setTimeout(() => {
-      isPressDisabledRef.current = false
-    }, 300)
-  }, [onPress])
+      // Disable further presses
+      isPressDisabledRef.current = true
 
-  return isGridView ? (
-    <TokenGridView
-      token={token}
-      tokenNameForDisplay={tokenNameForDisplay}
-      index={index}
-      onPress={handlePress}
-      priceChangeStatus={status}
-      formattedBalance={formattedBalance}
-      formattedPrice={formattedPrice}
-    />
-  ) : (
-    <TokenListView
-      token={token}
-      tokenNameForDisplay={tokenNameForDisplay}
-      index={index}
-      onPress={handlePress}
-      priceChangeStatus={status}
-      formattedBalance={formattedBalance}
-      formattedPrice={formattedPrice}
-    />
-  )
-}
+      onPress(token)
+
+      // Re-enable after 300ms
+      setTimeout(() => {
+        isPressDisabledRef.current = false
+      }, 300)
+    }, [onPress, token])
+
+    return isGridView ? (
+      <TokenGridView
+        token={token}
+        tokenNameForDisplay={tokenNameForDisplay}
+        index={index}
+        onPress={handlePress}
+        priceChangeStatus={status}
+        formattedBalance={formattedBalance}
+        formattedPrice={formattedPrice}
+      />
+    ) : (
+      <TokenListView
+        token={token}
+        tokenNameForDisplay={tokenNameForDisplay}
+        index={index}
+        onPress={handlePress}
+        priceChangeStatus={status}
+        formattedBalance={formattedBalance}
+        formattedPrice={formattedPrice}
+      />
+    )
+  }
+)

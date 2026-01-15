@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react'
-import { GroupList, GroupListItem } from '@avalabs/k2-alpine'
+import { GroupList, GroupListItem, Icons, useTheme } from '@avalabs/k2-alpine'
 import {
   BUG_REPORT_URL,
   FEATURE_REQUEST_URL,
@@ -11,28 +11,26 @@ import { copyToClipboard } from 'common/utils/clipboard'
 export const Support = ({
   onPressItem
 }: {
-  onPressItem: ({ url, title }: { url: string; title: string }) => void
+  onPressItem: ({ url }: { url: string }) => void
 }): React.JSX.Element => {
+  const { theme } = useTheme()
   const userUniqueID = useUserUniqueID()
 
   const openHelpCenter = useCallback(() => {
     onPressItem({
-      url: HELP_URL,
-      title: 'Help center'
+      url: HELP_URL
     })
   }, [onPressItem])
 
   const openBugReport = useCallback(() => {
     onPressItem({
-      url: BUG_REPORT_URL,
-      title: 'Bug report'
+      url: BUG_REPORT_URL
     })
   }, [onPressItem])
 
   const openFeatureRequest = useCallback(() => {
     onPressItem({
-      url: FEATURE_REQUEST_URL,
-      title: 'Feature request'
+      url: FEATURE_REQUEST_URL
     })
   }, [onPressItem])
 
@@ -44,15 +42,36 @@ export const Support = ({
     const items: GroupListItem[] = [
       {
         title: 'Send feedback',
-        onPress: openFeatureRequest
+        onPress: openFeatureRequest,
+        accessory: (
+          <Icons.Custom.Outbound
+            width={24}
+            height={24}
+            color={theme.colors.$textPrimary}
+          />
+        )
       },
       {
         title: 'Report a bug',
-        onPress: openBugReport
+        onPress: openBugReport,
+        accessory: (
+          <Icons.Custom.Outbound
+            width={24}
+            height={24}
+            color={theme.colors.$textPrimary}
+          />
+        )
       },
       {
         title: 'Help center',
-        onPress: openHelpCenter
+        onPress: openHelpCenter,
+        accessory: (
+          <Icons.Custom.Outbound
+            width={24}
+            height={24}
+            color={theme.colors.$textPrimary}
+          />
+        )
       },
       {
         title: 'Unique user ID',
@@ -64,11 +83,12 @@ export const Support = ({
 
     return items
   }, [
-    openBugReport,
     openFeatureRequest,
+    theme.colors.$textPrimary,
+    openBugReport,
     openHelpCenter,
-    handlePressUniqueUserId,
-    userUniqueID
+    userUniqueID,
+    handlePressUniqueUserId
   ])
 
   return (
@@ -76,6 +96,7 @@ export const Support = ({
       data={data}
       titleSx={{ fontSize: 16, lineHeight: 22, fontFamily: 'Inter-Regular' }}
       textContainerSx={{ marginRight: 32 }}
+      valueSx={{ fontFamily: 'DejaVuSansMono', fontSize: 16 }}
       separatorMarginRight={16}
     />
   )

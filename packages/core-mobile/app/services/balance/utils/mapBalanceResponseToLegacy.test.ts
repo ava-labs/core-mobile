@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { CoreAccountType } from '@avalabs/types'
 import { mapBalanceResponseToLegacy } from './mapBalanceResponseToLegacy'
 
@@ -25,7 +27,8 @@ const testAccount = {
       index: 0,
       hasActivity: true
     }
-  }
+  },
+  hasMigratedXpAddresses: true
 }
 
 describe('mapBalanceResponseToLegacy', () => {
@@ -34,6 +37,7 @@ describe('mapBalanceResponseToLegacy', () => {
       caip2Id: 'bip122:000000000019d6689c085ae165831e93',
       networkType: 'btc',
       id: 'bc1qmm9qawklnfau5hhrkt33kqumggxwy7s9raxuxk',
+      currency: 'usd',
       balances: {
         nativeTokenBalance: {
           internalId: 'NATIVE-btc',
@@ -53,7 +57,6 @@ describe('mapBalanceResponseToLegacy', () => {
         },
         totalBalanceInCurrency: 0
       },
-      currency: 'usd',
       error: null
     })
 
@@ -70,7 +73,7 @@ describe('mapBalanceResponseToLegacy', () => {
             'https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png?1696501400',
           type: 'NATIVE',
           balance: 0n,
-          balanceCurrencyDisplayValue: '0.00',
+          balanceCurrencyDisplayValue: '0',
           balanceDisplayValue: '0',
           balanceInCurrency: 0,
           priceInCurrency: 91998,
@@ -94,6 +97,7 @@ describe('mapBalanceResponseToLegacy', () => {
       caip2Id: 'eip155:43114',
       networkType: 'evm',
       id: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
+      currency: 'usd',
       balances: {
         nativeTokenBalance: {
           name: 'Avalanche',
@@ -195,7 +199,6 @@ describe('mapBalanceResponseToLegacy', () => {
         ],
         totalBalanceInCurrency: 60.99956975244499
       },
-      currency: 'usd',
       error: null
     })
 
@@ -212,8 +215,8 @@ describe('mapBalanceResponseToLegacy', () => {
             'https://images.ctfassets.net/gcj8jwzm6086/5VHupNKwnDYJvqMENeV7iJ/3e4b8ff10b69bfa31e70080a4b142cd0/avalanche-avax-logo.svg',
           balance: 866647209533863689n,
           balanceDisplayValue: '0.8666',
-          balanceInCurrency: 11.89,
-          balanceCurrencyDisplayValue: '11.89',
+          balanceInCurrency: 11.79,
+          balanceCurrencyDisplayValue: '11.79',
           priceInCurrency: 13.73,
           internalId: 'NATIVE-avax',
           change24: 7.04491,
@@ -231,8 +234,8 @@ describe('mapBalanceResponseToLegacy', () => {
           logoUri:
             'https://coin-images.coingecko.com/coins/images/863/large/0x.png?1696501996',
           balance: 660552832539n,
-          balanceInCurrency: 0,
-          balanceCurrencyDisplayValue: '0.00',
+          balanceInCurrency: expect.any(Number),
+          balanceCurrencyDisplayValue: expect.any(String),
           balanceDisplayValue: '0.00000066',
           priceInCurrency: 0.153014,
           change24: 4.3248,
@@ -252,8 +255,8 @@ describe('mapBalanceResponseToLegacy', () => {
             'https://coin-images.coingecko.com/coins/images/32847/large/usdc_%281%29.png?1699619355',
           change24: 0.00448,
           balance: 50813n,
-          balanceInCurrency: 0.05,
-          balanceCurrencyDisplayValue: '0.05',
+          balanceInCurrency: 0.050802632550000004,
+          balanceCurrencyDisplayValue: '0.050802632550000004',
           balanceDisplayValue: '0.0508',
           priceInCurrency: 0.999855,
           reputation: 'Benign',
@@ -272,9 +275,9 @@ describe('mapBalanceResponseToLegacy', () => {
           logoUri:
             'https://assets.coingecko.com/coins/images/32915/small/wavax.png?1699824961',
           balance: 100445221656736446n,
-          balanceCurrencyDisplayValue: '1.36',
+          balanceCurrencyDisplayValue: '1.3651155',
           balanceDisplayValue: '0.1004',
-          balanceInCurrency: 1.36,
+          balanceInCurrency: 1.3651155,
           priceInCurrency: 13.59,
           change24: 0.30704,
           reputation: 'Benign',
@@ -294,8 +297,8 @@ describe('mapBalanceResponseToLegacy', () => {
             'https://images.ctfassets.net/gcj8jwzm6086/28svJFwz3VVA451Hd2S8q2/5051e2f7261b9c14ba75486f679ab90f/usdc.png',
           balance: 45339784n,
           change24: 0.00722,
-          balanceInCurrency: 45.33,
-          balanceCurrencyDisplayValue: '45.33',
+          balanceInCurrency: 45.33746767122,
+          balanceCurrencyDisplayValue: '45.33746767122',
           balanceDisplayValue: '45.3398',
           priceInCurrency: 0.999949,
           reputation: 'Benign',
@@ -314,9 +317,9 @@ describe('mapBalanceResponseToLegacy', () => {
           logoUri:
             'https://images.ctfassets.net/gcj8jwzm6086/3DftNW5gEz59nc11jwiFiX/7e86ead1a43ee037a011e0050fa57cbb/v6h9FFO5_400x400.jpg',
           balance: 186491496199324741498n,
-          balanceCurrencyDisplayValue: '2.34',
+          balanceCurrencyDisplayValue: '2.347079448675',
           balanceDisplayValue: '186.4915',
-          balanceInCurrency: 2.34,
+          balanceInCurrency: 2.347079448675,
           change24: 7.74918,
           priceInCurrency: 0.01258545,
           internalId: 'eip155:43114-0xffff003a6bad9b743d658048742935fffe2b6ed7',
@@ -337,6 +340,7 @@ describe('mapBalanceResponseToLegacy', () => {
       caip2Id: 'eip155:1',
       networkType: 'evm',
       id: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
+      currency: 'usd',
       balances: {
         nativeTokenBalance: {
           name: 'ETH',
@@ -355,7 +359,6 @@ describe('mapBalanceResponseToLegacy', () => {
         erc20TokenBalances: [],
         totalBalanceInCurrency: 2.5952306
       },
-      currency: 'usd',
       error: null
     })
 
@@ -371,9 +374,9 @@ describe('mapBalanceResponseToLegacy', () => {
           logoUri:
             'https://images.ctfassets.net/gcj8jwzm6086/65a97cd3-67e3-424a-b278-0744bd6f2dd6/9e925614abed5080ecc2e177e4c35229/43114-0xf20d962a6c8f70c731bd838a3a388D7d48fA6e15.png',
           balance: 862116340310243n,
-          balanceCurrencyDisplayValue: '2.60',
+          balanceCurrencyDisplayValue: '2.5952306',
           balanceDisplayValue: '0.0009',
-          balanceInCurrency: 2.6,
+          balanceInCurrency: 2.5952306,
           priceInCurrency: 3017.71,
           change24: 7.77269,
           localId: 'NATIVE-ETH',
@@ -392,6 +395,7 @@ describe('mapBalanceResponseToLegacy', () => {
       caip2Id: 'eip155:10',
       networkType: 'evm',
       id: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
+      currency: 'usd',
       balances: {
         nativeTokenBalance: {
           name: 'ETH',
@@ -410,7 +414,6 @@ describe('mapBalanceResponseToLegacy', () => {
         erc20TokenBalances: [],
         totalBalanceInCurrency: 0
       },
-      currency: 'usd',
       error: null
     })
 
@@ -427,7 +430,7 @@ describe('mapBalanceResponseToLegacy', () => {
             'https://images.ctfassets.net/gcj8jwzm6086/65a97cd3-67e3-424a-b278-0744bd6f2dd6/9e925614abed5080ecc2e177e4c35229/43114-0xf20d962a6c8f70c731bd838a3a388D7d48fA6e15.png',
           balance: 0n,
           balanceInCurrency: 0,
-          balanceCurrencyDisplayValue: '0.00',
+          balanceCurrencyDisplayValue: '0',
           balanceDisplayValue: '0',
           priceInCurrency: 3017.71,
           change24: 7.77269,
@@ -447,6 +450,7 @@ describe('mapBalanceResponseToLegacy', () => {
       caip2Id: 'eip155:8453',
       networkType: 'evm',
       id: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
+      currency: 'usd',
       balances: {
         nativeTokenBalance: {
           name: 'ETH',
@@ -465,7 +469,6 @@ describe('mapBalanceResponseToLegacy', () => {
         erc20TokenBalances: [],
         totalBalanceInCurrency: 0
       },
-      currency: 'usd',
       error: null
     })
 
@@ -482,7 +485,7 @@ describe('mapBalanceResponseToLegacy', () => {
             'https://images.ctfassets.net/gcj8jwzm6086/65a97cd3-67e3-424a-b278-0744bd6f2dd6/9e925614abed5080ecc2e177e4c35229/43114-0xf20d962a6c8f70c731bd838a3a388D7d48fA6e15.png',
           balance: 0n,
           balanceInCurrency: 0,
-          balanceCurrencyDisplayValue: '0.00',
+          balanceCurrencyDisplayValue: '0',
           balanceDisplayValue: '0',
           priceInCurrency: 3017.71,
           change24: 7.77269,
@@ -502,6 +505,7 @@ describe('mapBalanceResponseToLegacy', () => {
       caip2Id: 'eip155:42161',
       networkType: 'evm',
       id: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
+      currency: 'usd',
       balances: {
         nativeTokenBalance: {
           name: 'ETH',
@@ -520,7 +524,6 @@ describe('mapBalanceResponseToLegacy', () => {
         erc20TokenBalances: [],
         totalBalanceInCurrency: 0
       },
-      currency: 'usd',
       error: null
     })
 
@@ -537,7 +540,7 @@ describe('mapBalanceResponseToLegacy', () => {
           logoUri:
             'https://images.ctfassets.net/gcj8jwzm6086/65a97cd3-67e3-424a-b278-0744bd6f2dd6/9e925614abed5080ecc2e177e4c35229/43114-0xf20d962a6c8f70c731bd838a3a388D7d48fA6e15.png',
           balance: 0n,
-          balanceCurrencyDisplayValue: '0.00',
+          balanceCurrencyDisplayValue: '0',
           balanceDisplayValue: '0',
           balanceInCurrency: 0,
           change24: 7.77269,
@@ -557,6 +560,7 @@ describe('mapBalanceResponseToLegacy', () => {
       caip2Id: 'avax:imji8papUf2EhV3le337w1vgFauqkJg-',
       networkType: 'avm',
       id: 'default',
+      currency: 'usd',
       balances: {
         nativeTokenBalance: {
           internalId: 'NATIVE-avax',
@@ -590,7 +594,6 @@ describe('mapBalanceResponseToLegacy', () => {
         },
         totalBalanceInCurrency: 1.48284
       },
-      currency: 'usd',
       error: null
     })
 
@@ -609,9 +612,9 @@ describe('mapBalanceResponseToLegacy', () => {
           priceInCurrency: 13.73,
           change24: 7.04491,
           balance: 108000000n,
-          balanceCurrencyDisplayValue: '1.48',
+          balanceCurrencyDisplayValue: '1.48284',
           balanceDisplayValue: '0.108',
-          balanceInCurrency: 1.48,
+          balanceInCurrency: 1.48284,
           available: 108000000n,
           availableInCurrency: 1.48,
           availableDisplayValue: '0.108',
@@ -650,6 +653,7 @@ describe('mapBalanceResponseToLegacy', () => {
       caip2Id: 'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo',
       networkType: 'pvm',
       id: 'default',
+      currency: 'usd',
       balances: {
         nativeTokenBalance: {
           internalId: 'NATIVE-avax',
@@ -678,7 +682,6 @@ describe('mapBalanceResponseToLegacy', () => {
         },
         totalBalanceInCurrency: 1.5234808000000002
       },
-      currency: 'usd',
       error: null
     })
 
@@ -696,9 +699,9 @@ describe('mapBalanceResponseToLegacy', () => {
           type: 'NATIVE',
           priceInCurrency: 13.73,
           balance: 110964791n,
-          balanceCurrencyDisplayValue: '1.52',
+          balanceCurrencyDisplayValue: '1.5234808000000002',
           balanceDisplayValue: '0.111',
-          balanceInCurrency: 1.52,
+          balanceInCurrency: 1.5234808000000002,
           change24: 7.04491,
           available: 110964791n,
           availableDisplayValue: '0.111',
@@ -727,6 +730,7 @@ describe('mapBalanceResponseToLegacy', () => {
       caip2Id: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
       networkType: 'svm',
       id: '9gQmZ7fTTgv5hVScrr9QqT6SpBs7i4cKLDdj4tuae3sW',
+      currency: 'usd',
       balances: {
         nativeTokenBalance: {
           internalId: 'NATIVE-sol',
@@ -800,7 +804,6 @@ describe('mapBalanceResponseToLegacy', () => {
         ],
         totalBalanceInCurrency: 27.99514766034
       },
-      currency: 'usd',
       error: null
     })
 
@@ -814,9 +817,9 @@ describe('mapBalanceResponseToLegacy', () => {
           symbol: 'SOL',
           decimals: 9,
           balance: 175462704n,
-          balanceCurrencyDisplayValue: '24.54',
+          balanceCurrencyDisplayValue: '24.5433448',
           balanceDisplayValue: '0.1755',
-          balanceInCurrency: 24.54,
+          balanceInCurrency: 24.5433448,
           change24: 10.09823,
           logoUri:
             'https://images.ctfassets.net/gcj8jwzm6086/afe3dc3b-beb4-45bd-b949-f3bd9368a9b2/a5dd96847132d1db820f757a90550f50/1-0xD31a59c85aE9D8edEFeC411D448f90841571b89c.png',
@@ -834,8 +837,8 @@ describe('mapBalanceResponseToLegacy', () => {
           decimals: 6,
           balance: 5062045n,
           balanceDisplayValue: '5.062',
-          balanceInCurrency: 1.25,
-          balanceCurrencyDisplayValue: '1.25',
+          balanceInCurrency: 1.25613252135,
+          balanceCurrencyDisplayValue: '1.25613252135',
           logoUri:
             'https://images.ctfassets.net/gcj8jwzm6086/4NKff4tEjKZPR1dxpT81CU/ab04e433eac96bc74365b56b667527b1/JUP-logo.png',
           reputation: undefined,
@@ -855,9 +858,9 @@ describe('mapBalanceResponseToLegacy', () => {
           symbol: 'POPCAT',
           decimals: 9,
           balance: 9490165425n,
-          balanceCurrencyDisplayValue: '0.99',
+          balanceCurrencyDisplayValue: '0.9997609389900001',
           balanceDisplayValue: '9.4902',
-          balanceInCurrency: 0.99,
+          balanceInCurrency: 0.9997609389900001,
           change24: 9.59178,
           logoUri:
             'https://images.ctfassets.net/gcj8jwzm6086/5IKkI9xMhyXU1YU6nr9246/d5cddb8d365f828a976ef752600507b0/POPCAT-logo.png',
@@ -876,9 +879,9 @@ describe('mapBalanceResponseToLegacy', () => {
           symbol: 'ORCA',
           decimals: 6,
           balance: 899178n,
-          balanceCurrencyDisplayValue: '1.19',
+          balanceCurrencyDisplayValue: '1.1959094000000001',
           balanceDisplayValue: '0.8992',
-          balanceInCurrency: 1.19,
+          balanceInCurrency: 1.1959094000000001,
           change24: 5.26146,
           logoUri:
             'https://images.ctfassets.net/gcj8jwzm6086/3xsLR9NZskV01ADXC6ZCWH/0d0d72eed77f2086afa8c8137a0370c4/ORCA-logo.png',
@@ -893,6 +896,286 @@ describe('mapBalanceResponseToLegacy', () => {
       ],
       dataAccurate: true,
       error: null
+    })
+  })
+
+  describe('isTokenEnabled filtering', () => {
+    it('should filter out ERC20 tokens with malicious scan results', () => {
+      const result = mapBalanceResponseToLegacy(testAccount, {
+        caip2Id: 'eip155:43114',
+        networkType: 'evm',
+        id: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
+        currency: 'usd',
+        balances: {
+          nativeTokenBalance: {
+            name: 'Avalanche',
+            symbol: 'AVAX',
+            type: 'native',
+            decimals: 18,
+            balance: '1000000000000000000',
+            internalId: 'NATIVE-avax',
+            price: 13.73,
+            priceChange24h: 0.903369,
+            priceChangePercentage24h: 7.04491,
+            balanceInCurrency: 13.73,
+            logoUri: 'https://example.com/avax.png'
+          },
+          erc20TokenBalances: [
+            {
+              name: 'Safe Token',
+              symbol: 'SAFE',
+              type: 'erc20',
+              decimals: 18,
+              balance: '1000000000000000000',
+              address: '0xSafeToken',
+              internalId: 'eip155:43114-0xSafeToken',
+              price: 1.0,
+              priceChange24h: 0,
+              priceChangePercentage24h: 0,
+              balanceInCurrency: 1.0,
+              logoUri: 'https://example.com/safe.png',
+              scanResult: 'Benign'
+            },
+            {
+              name: 'Warning Token',
+              symbol: 'WARN',
+              type: 'erc20',
+              decimals: 18,
+              balance: '1000000000000000000',
+              address: '0xWarningToken',
+              internalId: 'eip155:43114-0xWarningToken',
+              price: 1.0,
+              priceChange24h: 0,
+              priceChangePercentage24h: 0,
+              balanceInCurrency: 1.0,
+              logoUri: 'https://example.com/warn.png',
+              scanResult: 'Warning'
+            },
+            {
+              name: 'Malicious Token',
+              symbol: 'MAL',
+              type: 'erc20',
+              decimals: 18,
+              balance: '1000000000000000000',
+              address: '0xMaliciousToken',
+              internalId: 'eip155:43114-0xMaliciousToken',
+              price: 1.0,
+              priceChange24h: 0,
+              priceChangePercentage24h: 0,
+              balanceInCurrency: 1.0,
+              logoUri: 'https://example.com/mal.png',
+              scanResult: 'Malicious'
+            },
+            {
+              name: 'Spam Token',
+              symbol: 'SPAM',
+              type: 'erc20',
+              decimals: 18,
+              balance: '1000000000000000000',
+              address: '0xSpamToken',
+              internalId: 'eip155:43114-0xSpamToken',
+              price: 1.0,
+              priceChange24h: 0,
+              priceChangePercentage24h: 0,
+              balanceInCurrency: 1.0,
+              logoUri: 'https://example.com/spam.png',
+              scanResult: 'Spam'
+            }
+          ],
+          totalBalanceInCurrency: 15.73
+        },
+        error: null
+      })
+
+      expect(result).not.toBeNull()
+      expect(result!.tokens.length).toBe(3) // Native + 2 safe tokens (Benign and Warning)
+
+      const tokenAddresses = result!.tokens
+        .filter(t => t.type === 'ERC20')
+        .map(t => (t as any).address)
+
+      expect(tokenAddresses).toContain('0xSafeToken')
+      expect(tokenAddresses).toContain('0xWarningToken')
+      expect(tokenAddresses).not.toContain('0xMaliciousToken')
+      expect(tokenAddresses).not.toContain('0xSpamToken')
+    })
+
+    it('should include ERC20 tokens with null or undefined scan results', () => {
+      const result = mapBalanceResponseToLegacy(testAccount, {
+        caip2Id: 'eip155:43114',
+        networkType: 'evm',
+        id: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
+        currency: 'usd',
+        balances: {
+          nativeTokenBalance: {
+            name: 'Avalanche',
+            symbol: 'AVAX',
+            type: 'native',
+            decimals: 18,
+            balance: '1000000000000000000',
+            internalId: 'NATIVE-avax',
+            price: 13.73,
+            priceChange24h: 0.903369,
+            priceChangePercentage24h: 7.04491,
+            balanceInCurrency: 13.73,
+            logoUri: 'https://example.com/avax.png'
+          },
+          erc20TokenBalances: [
+            {
+              name: 'No Scan Result Token',
+              symbol: 'NOSCAN',
+              type: 'erc20',
+              decimals: 18,
+              balance: '1000000000000000000',
+              address: '0xNoScanToken',
+              internalId: 'eip155:43114-0xNoScanToken',
+              price: 1.0,
+              priceChange24h: 0,
+              priceChangePercentage24h: 0,
+              balanceInCurrency: 1.0,
+              logoUri: 'https://example.com/noscan.png'
+              // scanResult is undefined
+            }
+          ],
+          totalBalanceInCurrency: 14.73
+        },
+        error: null
+      })
+
+      expect(result).not.toBeNull()
+      expect(result!.tokens.length).toBe(2) // Native + 1 ERC20 token
+
+      const tokenAddresses = result!.tokens
+        .filter(t => t.type === 'ERC20')
+        .map(t => (t as any).address)
+
+      expect(tokenAddresses).toContain('0xNoScanToken')
+    })
+
+    it('should filter out SPL tokens with malicious scan results', () => {
+      const result = mapBalanceResponseToLegacy(testAccount, {
+        caip2Id: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+        networkType: 'svm',
+        id: '9gQmZ7fTTgv5hVScrr9QqT6SpBs7i4cKLDdj4tuae3sW',
+        currency: 'usd',
+        balances: {
+          nativeTokenBalance: {
+            internalId: 'NATIVE-sol',
+            name: 'Solana',
+            symbol: 'SOL',
+            type: 'native',
+            decimals: 9,
+            balance: '175462704',
+            price: 139.88,
+            priceChange24h: 12.83,
+            priceChangePercentage24h: 10.09823,
+            balanceInCurrency: 24.5433448,
+            logoUri: 'https://example.com/sol.png'
+          },
+          splTokenBalances: [
+            {
+              type: 'spl',
+              name: 'Safe SPL Token',
+              symbol: 'SAFE',
+              decimals: 6,
+              address: 'SafeSPLToken',
+              associatedTokenAddress: 'SafeSPLToken',
+              balance: '1000000',
+              logoUri: 'https://example.com/safe.png',
+              internalId:
+                'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp-safespltoken',
+              price: 1.0,
+              priceChange24h: 0,
+              priceChangePercentage24h: 0,
+              balanceInCurrency: 1.0,
+              scanResult: 'Benign'
+            },
+            {
+              type: 'spl',
+              name: 'Malicious SPL Token',
+              symbol: 'MAL',
+              decimals: 6,
+              address: 'MaliciousSPLToken',
+              associatedTokenAddress: 'MaliciousSPLToken',
+              balance: '1000000',
+              logoUri: 'https://example.com/mal.png',
+              internalId:
+                'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp-maliciousspltoken',
+              price: 1.0,
+              priceChange24h: 0,
+              priceChangePercentage24h: 0,
+              balanceInCurrency: 1.0,
+              scanResult: 'Malicious'
+            }
+          ],
+          totalBalanceInCurrency: 25.5433448
+        },
+        error: null
+      })
+
+      expect(result).not.toBeNull()
+      expect(result!.tokens.length).toBe(2) // Native + 1 safe SPL token
+
+      const tokenAddresses = result!.tokens
+        .filter(t => t.type === 'SPL')
+        .map(t => (t as any).address)
+
+      expect(tokenAddresses).toContain('SafeSPLToken')
+      expect(tokenAddresses).not.toContain('MaliciousSPLToken')
+    })
+
+    it('should include SPL tokens with null or undefined scan results', () => {
+      const result = mapBalanceResponseToLegacy(testAccount, {
+        caip2Id: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+        networkType: 'svm',
+        id: '9gQmZ7fTTgv5hVScrr9QqT6SpBs7i4cKLDdj4tuae3sW',
+        currency: 'usd',
+        balances: {
+          nativeTokenBalance: {
+            internalId: 'NATIVE-sol',
+            name: 'Solana',
+            symbol: 'SOL',
+            type: 'native',
+            decimals: 9,
+            balance: '175462704',
+            price: 139.88,
+            priceChange24h: 12.83,
+            priceChangePercentage24h: 10.09823,
+            balanceInCurrency: 24.5433448,
+            logoUri: 'https://example.com/sol.png'
+          },
+          splTokenBalances: [
+            {
+              type: 'spl',
+              name: 'No Scan Result SPL',
+              symbol: 'NOSCAN',
+              decimals: 6,
+              address: 'NoScanSPLToken',
+              associatedTokenAddress: 'NoScanSPLToken',
+              balance: '1000000',
+              logoUri: 'https://example.com/noscan.png',
+              internalId:
+                'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp-noscanspltoken',
+              price: 1.0,
+              priceChange24h: 0,
+              priceChangePercentage24h: 0,
+              balanceInCurrency: 1.0
+              // scanResult is undefined
+            }
+          ],
+          totalBalanceInCurrency: 25.5433448
+        },
+        error: null
+      })
+
+      expect(result).not.toBeNull()
+      expect(result!.tokens.length).toBe(2) // Native + 1 SPL token
+
+      const tokenAddresses = result!.tokens
+        .filter(t => t.type === 'SPL')
+        .map(t => (t as any).address)
+
+      expect(tokenAddresses).toContain('NoScanSPLToken')
     })
   })
 })
