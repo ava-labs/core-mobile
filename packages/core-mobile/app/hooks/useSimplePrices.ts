@@ -4,17 +4,21 @@ import { Prices } from 'features/bridge/hooks/useBridge'
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 
+const REFETCH_INTERVAL = 10000 // 10 seconds
+
 export const useSimplePrices = (
-  coinIds: string[],
+  coingeckoIds: string[],
   currency: VsCurrencyType
 ): UseQueryResult<Prices | undefined, Error> => {
   return useQuery({
-    enabled: coinIds.length > 0,
-    queryKey: [ReactQueryKeys.SIMPLE_PRICES, coinIds, currency],
+    enabled: coingeckoIds.length > 0,
+    refetchInterval: REFETCH_INTERVAL,
+    queryKey: [ReactQueryKeys.SIMPLE_PRICES, coingeckoIds, currency],
     queryFn: async () =>
       TokenService.getSimplePrice({
-        coinIds,
-        currency: currency.toLowerCase() as VsCurrencyType
+        coinIds: coingeckoIds,
+        currency: currency.toLowerCase() as VsCurrencyType,
+        includeMarketData: false
       }),
     select: data => {
       if (data === undefined) {

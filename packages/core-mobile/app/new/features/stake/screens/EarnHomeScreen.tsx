@@ -8,7 +8,6 @@ import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout
 import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import DepositTabScreen from 'features/deposit/screens/DepositTabScreen'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   LayoutChangeEvent,
@@ -35,6 +34,7 @@ import {
   selectIsInAppDefiBlocked,
   selectIsInAppDefiNewBlocked
 } from 'store/posthog'
+import DepositTabScreen from 'features/defiMarket/screens/DepositTabScreen'
 import StakeTabScreen from './StakeTabScreen'
 
 export const EarnHomeScreen = (): JSX.Element => {

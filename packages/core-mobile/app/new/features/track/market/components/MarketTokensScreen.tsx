@@ -2,12 +2,11 @@ import { Separator, View } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { Space } from 'common/components/Space'
-import { DropdownSelection } from 'common/types'
+import { ViewOption, DropdownSelection } from 'common/types'
 import React, { useCallback, useMemo } from 'react'
 import { Platform, StyleSheet, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import { Charts, MarketToken, MarketType } from 'store/watchlist'
-import { MarketView } from '../hooks/useTrackSortAndView'
 import { MarketListItem } from './MarketListItem'
 
 const MarketTokensScreen = ({
@@ -28,7 +27,7 @@ const MarketTokensScreen = ({
   containerStyle: ViewStyle
 }): JSX.Element => {
   const header = useHeaderMeasurements()
-  const isGridView = view.selected === MarketView.Grid
+  const isGridView = view.selected === ViewOption.Grid
   const numColumns = isGridView ? 2 : 1
 
   const dataLength = data.length

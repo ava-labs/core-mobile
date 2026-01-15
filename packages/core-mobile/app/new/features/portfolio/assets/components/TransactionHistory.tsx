@@ -2,6 +2,7 @@ import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { Image, SPRING_LINEAR_TRANSITION } from '@avalabs/k2-alpine'
 import { TransactionType } from '@avalabs/vm-module-types'
+import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownGroup } from 'common/components/DropdownMenu'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { ErrorState } from 'common/components/ErrorState'
@@ -16,10 +17,9 @@ import {
   isSupportedNftChainId
 } from 'features/activity/utils'
 import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
-import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { FC, useCallback, useMemo } from 'react'
-import { Platform, StyleSheet } from 'react-native'
+import { Platform, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
@@ -41,6 +41,7 @@ const errorIcon = require('../../../../assets/icons/unamused_emoji.png')
 
 interface Props {
   token?: LocalTokenWithBalance
+  containerStyle: ViewStyle
   handleExplorerLink: (
     explorerLink: string,
     hash?: string,
@@ -52,7 +53,8 @@ interface Props {
 const TransactionHistory: FC<Props> = ({
   token,
   handleExplorerLink,
-  handlePendingBridge
+  handlePendingBridge,
+  containerStyle
 }): React.JSX.Element => {
   const header = useHeaderMeasurements()
   const { getNetwork } = useNetworks()
@@ -150,15 +152,14 @@ const TransactionHistory: FC<Props> = ({
     return buildGroupedData(todayTxs, monthGroups, filteredPendingBridgeTxs)
   }, [data, pendingBridgeTxs, token?.symbol])
 
-  const renderEmpty = useCallback(() => {
-    if (isLoading || isRefreshing) {
-      return <LoadingState sx={{ height: portfolioTabContentHeight }} />
+  const renderEmptyComponent = useCallback(() => {
+    if (isLoading) {
+      return <LoadingState />
     }
 
     if (isError) {
       return (
         <ErrorState
-          sx={{ height: portfolioTabContentHeight }}
           description="Please hit refresh or try again later"
           button={{
             title: 'Refresh',
@@ -171,7 +172,6 @@ const TransactionHistory: FC<Props> = ({
     if (isSolanaNetwork) {
       return (
         <ErrorState
-          sx={{ height: portfolioTabContentHeight }}
           icon={
             <Image source={viewInExplorerIcon} sx={{ width: 42, height: 42 }} />
           }
@@ -192,7 +192,6 @@ const TransactionHistory: FC<Props> = ({
 
     return (
       <ErrorState
-        sx={{ height: portfolioTabContentHeight }}
         icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
         title="No recent transactions"
         description="Interact with this token onchain and see your activity here"
@@ -203,17 +202,37 @@ const TransactionHistory: FC<Props> = ({
     handleExplorerLink,
     isError,
     isLoading,
-    isRefreshing,
     isSolanaNetwork,
     network?.explorerUrl,
     refresh
   ])
 
+  const renderEmpty = useCallback(() => {
+    return (
+      <CollapsibleTabs.ContentWrapper extraOffset={28}>
+        {renderEmptyComponent()}
+      </CollapsibleTabs.ContentWrapper>
+    )
+  }, [renderEmptyComponent])
+
   const renderHeader = useCallback(() => {
     return (
-      <DropdownSelections filter={filter} sort={sort} sx={styles.dropdown} />
+      <DropdownSelections
+        filter={filter}
+        sort={sort}
+        sx={{ paddingHorizontal: 16, paddingTop: 10 }}
+      />
     )
   }, [filter, sort])
+
+  const overrideProps = {
+    contentContainerStyle: {
+      overflow: 'visible',
+      paddingBottom: 16,
+      paddingTop: Platform.OS === 'android' ? header.height : 0,
+      ...containerStyle
+    }
+  }
 
   return (
     <Animated.View
@@ -227,13 +246,7 @@ const TransactionHistory: FC<Props> = ({
         xpToken={token}
         handlePendingBridge={handlePendingBridge}
         handleExplorerLink={handleExplorerLink}
-        overrideProps={{
-          contentContainerStyle: {
-            overflow: 'visible',
-            paddingBottom: 16,
-            paddingTop: Platform.OS === 'android' ? header.height : 0
-          }
-        }}
+        overrideProps={overrideProps}
         renderHeader={renderHeader}
         renderEmpty={renderEmpty}
         isRefreshing={isRefreshing}
@@ -242,10 +255,6 @@ const TransactionHistory: FC<Props> = ({
     </Animated.View>
   )
 }
-
-const styles = StyleSheet.create({
-  dropdown: { paddingHorizontal: 16, marginTop: 4, marginBottom: 16 }
-})
 
 export default TransactionHistory
 

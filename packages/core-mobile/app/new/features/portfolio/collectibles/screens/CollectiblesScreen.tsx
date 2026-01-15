@@ -19,11 +19,10 @@ import { RefreshControl } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 import {
-  AssetManageView,
   AssetNetworkFilter,
+  CollectibleView,
   CollectibleSort,
-  CollectibleTypeFilter,
-  CollectibleView
+  CollectibleTypeFilter
 } from 'store/balance'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { CardContainer } from '../components/CardContainer'
@@ -97,14 +96,14 @@ export const CollectiblesScreen = ({
 
   const handleManageList = useCallback(
     (value: string): void => {
-      if (value === AssetManageView.ManageList) {
+      if (value === CollectibleView.ManageList) {
         goToCollectibleManagement()
         return
       }
       onScrollResync()
       view.onSelected(value)
     },
-    [goToCollectibleManagement, view, onScrollResync]
+    [onScrollResync, view, goToCollectibleManagement]
   )
 
   const renderItem: ListRenderItem<NftItem> = useCallback(
@@ -153,8 +152,7 @@ export const CollectiblesScreen = ({
       return (
         <ErrorState
           title="No collectibles found"
-          description="
-              Try changing the filter settings or reset the filter to see all assets."
+          description="Try changing the filter settings or reset the filter to see all assets."
           button={{
             title: 'Reset filter',
             onPress: onResetFilter
@@ -192,7 +190,7 @@ export const CollectiblesScreen = ({
 
   const renderEmpty = useMemo(() => {
     return (
-      <CollapsibleTabs.ContentWrapper>
+      <CollapsibleTabs.ContentWrapper extraOffset={100}>
         {emptyComponent}
       </CollapsibleTabs.ContentWrapper>
     )

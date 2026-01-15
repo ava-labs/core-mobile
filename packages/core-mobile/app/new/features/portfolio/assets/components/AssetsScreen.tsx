@@ -20,6 +20,7 @@ import {
   LocalTokenWithBalance
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
+import { ViewOption } from 'common/types'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { EmptyState } from './EmptyState'
 import { TokenListItem } from './TokenListItem'
@@ -44,7 +45,7 @@ const AssetsScreen: FC<Props> = ({
 }): JSX.Element => {
   const { onResetFilter, data, filter, sort, view, refetch, isRefetching } =
     useAssetsFilterAndSort()
-  const listType = view.selected as AssetManageView
+  const listType = view.selected
   const header = useHeaderMeasurements()
   const collapsibleHeaderHeight = header?.height ?? 0
 
@@ -69,13 +70,13 @@ const AssetsScreen: FC<Props> = ({
       onScrollResync()
       view.onSelected(value)
     },
-    [goToTokenManagement, view, onScrollResync]
+    [onScrollResync, view, goToTokenManagement]
   )
 
   const isLoadingBalance =
     isRefetchingBalance || isBalanceLoading || isBalancePolling
 
-  const isGridView = view.selected === AssetManageView.Grid
+  const isGridView = view.selected === ViewOption.Grid
   const numColumns = isGridView ? 2 : 1
 
   // Only show loading state for initial load
@@ -122,22 +123,30 @@ const AssetsScreen: FC<Props> = ({
   const renderEmptyComponent = useCallback(() => {
     // Only show loading state during initial load, not background polling
     if (isInitialLoading) {
-      return <LoadingState />
+      return (
+        <CollapsibleTabs.ContentWrapper>
+          <LoadingState />
+        </CollapsibleTabs.ContentWrapper>
+      )
     }
 
     if (isBalanceLoaded && (isAllBalancesError || isAllBalancesInaccurate)) {
       return (
-        <ErrorState
-          description="Please hit refresh or try again later"
-          button={{
-            title: 'Refresh',
-            onPress: refetch
-          }}
-        />
+        <CollapsibleTabs.ContentWrapper>
+          <ErrorState
+            description="Please hit refresh or try again later"
+            button={{
+              title: 'Refresh',
+              onPress: refetch
+            }}
+          />
+        </CollapsibleTabs.ContentWrapper>
       )
     }
 
     if (filter.selected === AssetNetworkFilter.AllNetworks && hasNoAssets) {
+      // Special case where we cannot use CollapsibleTabs.ContentWrapper
+      // height needs to be calculated separately
       return <EmptyState goToBuy={goToBuy} />
     }
 
@@ -147,14 +156,16 @@ const AssetsScreen: FC<Props> = ({
       data.length === 0
     ) {
       return (
-        <ErrorState
-          title="No assets found"
-          description="Try changing the filter settings or reset the filter to see all assets."
-          button={{
-            title: 'Reset filter',
-            onPress: onResetFilter
-          }}
-        />
+        <CollapsibleTabs.ContentWrapper>
+          <ErrorState
+            title="No assets found"
+            description="Try changing the filter settings or reset the filter to see all assets."
+            button={{
+              title: 'Reset filter',
+              onPress: onResetFilter
+            }}
+          />
+        </CollapsibleTabs.ContentWrapper>
       )
     }
   }, [
@@ -171,11 +182,7 @@ const AssetsScreen: FC<Props> = ({
   ])
 
   const renderEmpty = useCallback(() => {
-    return (
-      <CollapsibleTabs.ContentWrapper>
-        {renderEmptyComponent()}
-      </CollapsibleTabs.ContentWrapper>
-    )
+    return renderEmptyComponent()
   }, [renderEmptyComponent])
 
   const renderHeader = useCallback(() => {

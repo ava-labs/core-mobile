@@ -1,6 +1,6 @@
 import Logger from 'utils/Logger'
 import Config from 'react-native-config'
-import fetchWithAppCheck from 'utils/httpClient'
+import { appCheckPostJson } from 'utils/api/common/appCheckFetch'
 import { NewsChannelId } from '../channels'
 import { channelIdToNewsEventMap } from './events'
 
@@ -23,7 +23,7 @@ export async function subscribeForNews({
       return channelIdToNewsEventMap[channelId]
     })
     .filter(item => item !== undefined)
-  const response = await fetchWithAppCheck(
+  const response = await appCheckPostJson(
     Config.NOTIFICATION_SENDER_API_URL + '/v1/push/news/subscribe',
     JSON.stringify({
       deviceArn,

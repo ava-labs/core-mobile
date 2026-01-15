@@ -122,15 +122,14 @@ const ContentWrapper = ({
   const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
   const header = useHeaderMeasurements()
-  const collapsibleHeaderHeight = header?.height ?? 0
   const headerHeight = useEffectiveHeaderHeight()
   const tabBarHeight = useBottomTabBarHeight()
 
   const animatedStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
       scrollY.value,
-      [0, collapsibleHeaderHeight],
-      [-collapsibleHeaderHeight / 2, 0],
+      [0, header.height],
+      [-(header.height - tabBarHeight - insets.bottom), 0],
       Extrapolation.CLAMP
     )
     return {
@@ -152,14 +151,15 @@ const ContentWrapper = ({
           ? {
               // iOS works with 100%, but android needs specific height
               height: '100%',
-              paddingBottom: tabBarHeight
+              paddingBottom: header.height - tabBarHeight + insets.bottom
             }
           : {
               height:
                 frame.height -
-                collapsibleHeaderHeight -
+                header.height -
                 headerHeight -
                 insets.bottom -
+                tabBarHeight -
                 extraOffset
             },
         {

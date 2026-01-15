@@ -23,7 +23,7 @@ export const AppUpdateBanner = (): JSX.Element => {
         paddingVertical: 15,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 16
+        gap: 20
       }}>
       <View
         sx={{
@@ -53,9 +53,18 @@ export const AppUpdateBanner = (): JSX.Element => {
         </View>
         <View sx={{ flexShrink: 1, flexWrap: 'wrap' }}>
           <View>
-            <Text variant="buttonSmall">A newer version is available!</Text>
-            <Text variant="caption" sx={{ color: '$textSecondary' }}>
-              Update the app for the best and safest experience
+            <Text
+              sx={{
+                fontFamily: 'Inter-Medium',
+                fontSize: 13,
+                lineHeight: 15
+              }}>
+              A newer version is available!
+            </Text>
+            <Text
+              variant="caption"
+              sx={{ color: '$textSecondary', fontSize: 13, lineHeight: 15 }}>
+              Update now for the best crypto experience
             </Text>
           </View>
         </View>

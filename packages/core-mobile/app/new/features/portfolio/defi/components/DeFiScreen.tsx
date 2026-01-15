@@ -23,8 +23,8 @@ import { RefreshControl } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { DeFiSimpleProtocol } from 'services/defi/types'
+import { ViewOption } from 'common/types'
 import { useDeFiProtocols } from '../hooks/useDeFiProtocols'
-import { DeFiViewOption } from '../types'
 import { DeFiListItem } from './DeFiListItem'
 
 const placeholderIcon = require('../../../../assets/icons/bar_chart_emoji.png')
@@ -51,13 +51,13 @@ export const DeFiScreen = ({
     refetch,
     chainList
   } = useDeFiProtocols()
-  const listType = view.selected as DeFiViewOption
+  const listType = view.selected
   const header = useHeaderMeasurements()
   const collapsibleHeaderHeight = header?.height ?? 0
 
   const getAmount = useExchangedAmount()
 
-  const isGridView = view.selected === DeFiViewOption.GridView
+  const isGridView = view.selected === ViewOption.Grid
   const numColumns = isGridView ? 2 : 1
 
   useEffect(() => {
@@ -98,41 +98,31 @@ export const DeFiScreen = ({
 
   const renderEmpty = useCallback(() => {
     if (isLoading) {
-      return (
-        <CollapsibleTabs.ContentWrapper>
-          <LoadingState />
-        </CollapsibleTabs.ContentWrapper>
-      )
+      return <LoadingState />
     }
 
     if (error || (isPaused && !isSuccess)) {
       return (
-        <CollapsibleTabs.ContentWrapper>
-          <ErrorState
-            description="Please hit refresh or try again later"
-            button={{
-              title: 'Refresh',
-              onPress: refetch
-            }}
-          />
-        </CollapsibleTabs.ContentWrapper>
+        <ErrorState
+          description="Please hit refresh or try again later"
+          button={{
+            title: 'Refresh',
+            onPress: refetch
+          }}
+        />
       )
     }
 
     return (
-      <CollapsibleTabs.ContentWrapper>
-        <Placeholder
-          icon={
-            <Image source={placeholderIcon} sx={{ width: 42, height: 42 }} />
-          }
-          title="No positions yet"
-          description="Discover a wide variety of apps, blockchains, wallets and explorers, built on the Avalanche ecosystem"
-          button={{
-            title: 'Explore DeFi',
-            onPress: handleExplore
-          }}
-        />
-      </CollapsibleTabs.ContentWrapper>
+      <Placeholder
+        icon={<Image source={placeholderIcon} sx={{ width: 42, height: 42 }} />}
+        title="No positions yet"
+        description="Discover a wide variety of apps, blockchains, wallets and explorers, built on the Avalanche ecosystem"
+        button={{
+          title: 'Explore DeFi',
+          onPress: handleExplore
+        }}
+      />
     )
   }, [isLoading, error, isPaused, isSuccess, handleExplore, refetch])
 
@@ -208,6 +198,14 @@ export const DeFiScreen = ({
     }
   }
 
+  const renderEmptyComponent = useCallback(() => {
+    return (
+      <CollapsibleTabs.ContentWrapper extraOffset={100}>
+        {renderEmpty()}
+      </CollapsibleTabs.ContentWrapper>
+    )
+  }, [renderEmpty])
+
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(0)}
@@ -234,7 +232,7 @@ export const DeFiScreen = ({
           />
         }
         ListHeaderComponent={renderHeader}
-        ListEmptyComponent={renderEmpty}
+        ListEmptyComponent={renderEmptyComponent}
         showsVerticalScrollIndicator={false}
       />
     </Animated.View>

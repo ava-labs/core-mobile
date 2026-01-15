@@ -6,7 +6,6 @@ import {
   showAlertWithTextInput
 } from 'common/utils/alertWithTextInput'
 import { GAS_LIMIT_FOR_X_CHAIN } from 'consts/fees'
-import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -18,6 +17,7 @@ import { isAvmNetwork } from 'utils/network/isAvalancheNetwork'
 import { sanitizeDecimalInput } from 'utils/units/sanitize'
 import { calculateGasAndFees, Eip1559Fees, GasAndFees } from 'utils/Utils'
 import { normalizeNumericTextInput } from '@avalabs/k2-alpine/src/utils/tokenUnitInput'
+import { useSimplePrices } from 'hooks/useSimplePrices'
 import {
   DEFAULT_NETWORK_TOKEN_DECIMALS,
   DEFAULT_NETWORK_TOKEN_SYMBOL
@@ -70,10 +70,12 @@ export const useNetworkFeeSelector = ({
   const feeDecimals = networkFee?.displayDecimals
   const isBaseUnitRate = feeDecimals === undefined
 
-  const { nativeTokenPrice } = useNativeTokenPriceForNetwork(
-    network,
+  const { data } = useSimplePrices(
+    [network?.pricingProviders?.coingecko.nativeTokenId ?? ''],
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
+  const nativeTokenPrice =
+    data?.[network?.pricingProviders?.coingecko.nativeTokenId ?? ''] ?? 0
 
   const isAvalancheCChain = network
     ? isAvalancheCChainId(network.chainId)
