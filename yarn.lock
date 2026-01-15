@@ -623,7 +623,7 @@ __metadata:
     react-native-modal-datetime-picker: 18.0.0
     react-native-nitro-avalabs-crypto: "workspace:*"
     react-native-nitro-fetch: 0.1.6
-    react-native-nitro-modules: 0.32.0
+    react-native-nitro-modules: 0.32.2
     react-native-os: 1.2.6
     react-native-pager-view: 6.7.1
     react-native-passkey: 3.1.0
@@ -30033,18 +30033,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nitrogen@npm:*":
-  version: 0.31.10
-  resolution: "nitrogen@npm:0.31.10"
+"nitrogen@npm:0.32.0":
+  version: 0.32.0
+  resolution: "nitrogen@npm:0.32.0"
   dependencies:
     chalk: ^5.3.0
-    react-native-nitro-modules: ^0.31.10
+    react-native-nitro-modules: ^0.32.0
     ts-morph: ^27.0.0
     yargs: ^18.0.0
     zod: ^4.0.5
   bin:
     nitrogen: lib/index.js
-  checksum: 6bba165b334172d6ea060affefc14aded38294cd9ef23f58a3aff9fc89f41d7b62e6ae9897bec5d8ce181bb9656d387c67f2649b91ad133041db0aa04826ff71
+  checksum: b34f82b988ae4b8a39ea02dffb007330461df20d1935a0646618ab95eac4ba81b8ebb4099a4746df587aca56f3c3ee8ca21076519fd536765d7c9e687e464132
   languageName: node
   linkType: hard
 
@@ -33080,10 +33080,10 @@ __metadata:
     "@types/react": 19.0.10
     eslint: 8.50.0
     eslint-plugin-avalabs-mobile: "workspace:*"
-    nitrogen: "*"
+    nitrogen: 0.32.0
     react: 19.0.0
     react-native: 0.79.5
-    react-native-nitro-modules: 0.32.0
+    react-native-nitro-modules: 0.32.2
     typescript: ^5.8.3
   peerDependencies:
     react: "*"
@@ -33107,23 +33107,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-nitro-modules@npm:0.32.0":
-  version: 0.32.0
-  resolution: "react-native-nitro-modules@npm:0.32.0"
+"react-native-nitro-modules@npm:0.32.2, react-native-nitro-modules@npm:^0.32.0":
+  version: 0.32.2
+  resolution: "react-native-nitro-modules@npm:0.32.2"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: cad3e8fa3aba6a052e9be54a1dda5080eeba320c8f1ccbed663a4de21f4c6b5df6d3732ba703fdb341a81beca8ee7a51fe17da666c07bee67d97347d0bf11887
-  languageName: node
-  linkType: hard
-
-"react-native-nitro-modules@npm:^0.31.10":
-  version: 0.31.10
-  resolution: "react-native-nitro-modules@npm:0.31.10"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 1c8d2f12ff29b6733c784c5fd0dedcbec4ceec9f82eb49f49e7734f31b9367346938010dcacf69bf695a352e36fec5aa23fd57b8091f6acd78c3d9a61e14ea7f
+  checksum: 19cf02168699bbeaa3bc45bf0af1eaa6877a5fde3b22adc759516d3a3103c77754d3e13a8fe6e16782d34d019fe61f4240a6abc5a483a23a93c998853416cc70
   languageName: node
   linkType: hard
 
