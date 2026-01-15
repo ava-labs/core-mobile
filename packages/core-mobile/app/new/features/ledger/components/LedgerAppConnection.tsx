@@ -2,7 +2,11 @@ import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { View, Alert, ActivityIndicator } from 'react-native'
 import { Text, Button, useTheme, Icons, GroupList } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
-import { LedgerDerivationPathType, PublicKeyInfo } from 'services/ledger/types'
+import {
+  AvalancheKey,
+  LedgerDerivationPathType,
+  PublicKeyInfo
+} from 'services/ledger/types'
 import { showSnackbar } from 'common/utils/toast'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
@@ -56,17 +60,7 @@ interface LedgerAppConnectionProps {
 
 interface LocalKeyState {
   solanaKeys: PublicKeyInfo[]
-  avalancheKeys: {
-    addresses: {
-      evm: string
-      avalanche: string
-      pvm: string
-    }
-    xpubs: {
-      evm: string
-      avalanche: string
-    }
-  } | null
+  avalancheKeys?: AvalancheKey
   bitcoinAddress: string
   xpAddress: string
 }
@@ -91,7 +85,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   // Local key state - managed only in this component
   const [keys, setKeys] = useState<LocalKeyState>({
     solanaKeys: [],
-    avalancheKeys: null,
+    avalancheKeys: undefined,
     bitcoinAddress: '',
     xpAddress: ''
   })

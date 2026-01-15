@@ -87,19 +87,21 @@ export enum LedgerDerivationPathType {
 // LEDGER KEYS MANAGEMENT
 // ============================================================================
 
+export interface AvalancheKey {
+  addresses: {
+    evm: string
+    avm: string
+    pvm: string
+  }
+  xpubs: {
+    evm: string
+    avalanche: string
+  }
+}
+
 export interface LedgerKeys {
   solanaKeys: PublicKeyInfo[]
-  avalancheKeys: {
-    addresses: {
-      evm: string
-      avalanche: string
-      pvm: string
-    }
-    xpubs: {
-      evm: string
-      avalanche: string
-    }
-  } | null
+  avalancheKeys?: AvalancheKey
 }
 
 // ============================================================================

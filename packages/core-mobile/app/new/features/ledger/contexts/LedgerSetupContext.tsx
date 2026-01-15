@@ -10,7 +10,8 @@ import {
   LedgerDerivationPathType,
   WalletCreationOptions,
   LedgerTransportState,
-  PublicKeyInfo
+  PublicKeyInfo,
+  AvalancheKey
 } from 'services/ledger/types'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 
@@ -35,17 +36,7 @@ interface LedgerSetupContextValue {
   disconnectDevice: () => Promise<void>
   createLedgerWallet: (
     options: WalletCreationOptions & {
-      avalancheKeys?: {
-        addresses: {
-          evm: string
-          avalanche: string
-          pvm: string
-        }
-        xpubs: {
-          evm: string
-          avalanche: string
-        }
-      }
+      avalancheKeys?: AvalancheKey
       solanaKeys?: PublicKeyInfo[]
       bitcoinAddress?: string
     }

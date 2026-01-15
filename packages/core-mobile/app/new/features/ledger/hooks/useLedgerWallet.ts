@@ -5,6 +5,7 @@ import { Alert } from 'react-native'
 import { useDispatch } from 'react-redux'
 import LedgerService from 'services/ledger/LedgerService'
 import {
+  AvalancheKey,
   LedgerDerivationPathType,
   LedgerTransportState,
   PublicKeyInfo,
@@ -32,17 +33,7 @@ export interface UseLedgerWalletReturn {
   disconnectDevice: () => Promise<void>
   createLedgerWallet: (
     options: WalletCreationOptions & {
-      avalancheKeys?: {
-        addresses: {
-          evm: string
-          avalanche: string
-          pvm: string
-        }
-        xpubs: {
-          evm: string
-          avalanche: string
-        }
-      }
+      avalancheKeys?: AvalancheKey
       solanaKeys?: PublicKeyInfo
     }
   ) => Promise<string>
