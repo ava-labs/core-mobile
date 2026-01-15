@@ -13,6 +13,10 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   }
 
   const handleBiometricPrompt = useCallback(async () => {
+    // Use authenticateAsync() so iOS shows passcode fallback during Face ID lockout
+    const authenticated = await BiometricsSDK.authenticateAsync()
+    if (!authenticated) return false
+    // After successful biometric auth, load the encryption key
     return BiometricsSDK.loadEncryptionKeyWithBiometry()
   }, [])
 
