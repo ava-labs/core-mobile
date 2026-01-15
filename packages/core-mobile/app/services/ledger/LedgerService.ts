@@ -19,6 +19,7 @@ import {
   getSolanaDerivationPath
 } from 'new/features/ledger/consts'
 import { assertNotNull } from 'utils/assertions'
+import { Curve } from 'utils/publicKeys'
 import {
   AddressInfo,
   ExtendedPublicKey,
@@ -636,7 +637,7 @@ class LedgerService {
         publicKeys.push({
           key: publicKey.toString('hex'),
           derivationPath,
-          curve: 'ed25519'
+          curve: Curve.ED25519
         })
       }
 
@@ -670,7 +671,7 @@ class LedgerService {
         {
           key: publicKey.toString('hex'),
           derivationPath: getSolanaDerivationPath(startIndex),
-          curve: 'ed25519'
+          curve: Curve.ED25519
         }
       ]
 
@@ -745,7 +746,7 @@ class LedgerService {
         publicKeys.push({
           key: evmResponse.publicKey.toString('hex'),
           derivationPath: evmPath,
-          curve: 'secp256k1'
+          curve: Curve.SECP256K1
         })
 
         // AVM public key
@@ -761,7 +762,7 @@ class LedgerService {
         publicKeys.push({
           key: avmResponse.publicKey.toString('hex'),
           derivationPath: avmPath,
-          curve: 'secp256k1'
+          curve: Curve.SECP256K1
         })
 
         // Bitcoin public key
@@ -777,7 +778,7 @@ class LedgerService {
         publicKeys.push({
           key: btcResponse.publicKey.toString('hex'),
           derivationPath: btcPath,
-          curve: 'secp256k1'
+          curve: Curve.SECP256K1
         })
       }
     } catch (error) {
@@ -968,13 +969,7 @@ class LedgerService {
    * Get Solana keys from the connected Ledger device
    * @returns Array of Solana keys with derivation paths
    */
-  async getSolanaKeys(): Promise<
-    Array<{
-      key: string
-      derivationPath: string
-      curve: string
-    }>
-  > {
+  async getSolanaKeys(): Promise<PublicKeyInfo[]> {
     Logger.info('Getting Solana keys with passive app detection')
     await this.waitForApp(LedgerAppType.SOLANA)
 
@@ -1000,7 +995,7 @@ class LedgerService {
       {
         key: solanaAddress,
         derivationPath,
-        curve: 'ED25519'
+        curve: Curve.ED25519
       }
     ]
   }
@@ -1012,7 +1007,7 @@ class LedgerService {
   async getAvalancheKeys(): Promise<{
     addresses: {
       evm: string
-      avalanche: string
+      avm: string
       pvm: string
     }
     xpubs: {
@@ -1057,7 +1052,7 @@ class LedgerService {
     return {
       addresses: {
         evm: evmAddress,
-        avalanche: xChainAddress,
+        avm: xChainAddress,
         pvm: pvmAddress
       },
       xpubs: {
