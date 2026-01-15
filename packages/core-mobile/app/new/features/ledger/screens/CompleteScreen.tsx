@@ -21,7 +21,8 @@ export default function CompleteScreen(): JSX.Element {
     // complete -> appConnection -> deviceConnection -> pathSelection -> importWallet -> wallets
     router.dismissAll()
     router.canGoBack() && router.back()
-    const state = navigation.getState()
+
+    const state = navigation.getParent()?.getState()
     if (state?.routes.some(route => route.name === 'importWallet')) {
       router.canGoBack() && router.back()
     }
