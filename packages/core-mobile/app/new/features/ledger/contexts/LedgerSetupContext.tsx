@@ -10,7 +10,7 @@ import {
   LedgerDerivationPathType,
   WalletCreationOptions,
   LedgerTransportState,
-  SolanaKeys
+  PublicKeyInfo
 } from 'services/ledger/types'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 
@@ -46,7 +46,7 @@ interface LedgerSetupContextValue {
           avalanche: string
         }
       }
-      solanaKeys?: SolanaKeys
+      solanaKeys?: PublicKeyInfo[]
       bitcoinAddress?: string
     }
   ) => Promise<string>

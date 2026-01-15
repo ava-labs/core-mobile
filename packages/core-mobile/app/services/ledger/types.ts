@@ -1,6 +1,7 @@
 import { Curve } from 'utils/publicKeys'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import { BtcWalletPolicyDetails } from '@avalabs/vm-module-types'
 
 // ============================================================================
 // LEDGER APP TYPES
@@ -57,7 +58,7 @@ export interface LedgerTransportState {
 export interface PublicKeyInfo {
   key: string
   derivationPath: string
-  curve: 'secp256k1' | 'ed25519'
+  curve: Curve
 }
 
 export interface ExtendedPublicKey {
@@ -87,11 +88,7 @@ export enum LedgerDerivationPathType {
 // ============================================================================
 
 export interface LedgerKeys {
-  solanaKeys: Array<{
-    key: string
-    derivationPath: string
-    curve: Curve
-  }>
+  solanaKeys: PublicKeyInfo[]
   avalancheKeys: {
     addresses: {
       evm: string
@@ -121,11 +118,7 @@ export interface WalletCreationOptions {
   deviceName?: string
   derivationPathType?: LedgerDerivationPathType
   accountCount?: number
-  individualKeys?: Array<{
-    key: string
-    derivationPath: string
-    curve: Curve
-  }>
+  individualKeys?: PublicKeyInfo[]
 }
 
 // ============================================================================
@@ -137,17 +130,11 @@ interface BaseLedgerWalletData {
   deviceId: string
   vmType: NetworkVMType
   transport?: TransportBLE // Optional for backward compatibility
-  publicKeys: Array<{
-    key: string
-    derivationPath: string
-    curve: Curve
-    btcWalletPolicy?: {
-      hmacHex: string
-      xpub: string
-      masterFingerprint: string
-      name: string
+  publicKeys: Array<
+    PublicKeyInfo & {
+      btcWalletPolicy?: BtcWalletPolicyDetails
     }
-  }>
+  >
 }
 
 // BIP44 specific wallet data
@@ -173,13 +160,3 @@ export interface LedgerLiveWalletData extends BaseLedgerWalletData {
 
 // Union type for all possible Ledger wallet data
 export type LedgerWalletData = BIP44LedgerWalletData | LedgerLiveWalletData
-
-// ============================================================================
-// SOLANA KEYS TYPES
-// ============================================================================
-
-export type SolanaKeys = Array<{
-  key: string
-  derivationPath: string
-  curve: string
-}>

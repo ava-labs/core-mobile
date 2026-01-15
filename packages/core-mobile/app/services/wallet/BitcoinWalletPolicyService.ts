@@ -3,14 +3,9 @@ import Logger from 'utils/Logger'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Curve } from 'utils/publicKeys'
+import { BtcWalletPolicyDetails } from '@avalabs/vm-module-types'
+import { PublicKeyInfo } from 'services/ledger/types'
 import { getAddressDerivationPath } from './utils'
-
-export interface BtcWalletPolicyDetails {
-  hmacHex: string
-  xpub: string
-  masterFingerprint: string
-  name: string
-}
 
 export interface WalletPolicyDetails {
   hmac: Buffer
@@ -51,12 +46,11 @@ export class BitcoinWalletPolicyService {
    * Find Bitcoin wallet policy details in public keys array
    */
   static findBtcWalletPolicyInPublicKeys(
-    publicKeys: Array<{
-      key: string
-      derivationPath: string
-      curve: Curve.SECP256K1 | Curve.ED25519
-      btcWalletPolicy?: BtcWalletPolicyDetails
-    }>
+    publicKeys: Array<
+      PublicKeyInfo & {
+        btcWalletPolicy?: BtcWalletPolicyDetails
+      }
+    >
   ): BtcWalletPolicyDetails | null {
     for (const pubKey of publicKeys) {
       if (pubKey.btcWalletPolicy) {
@@ -70,17 +64,21 @@ export class BitcoinWalletPolicyService {
    * Store Bitcoin wallet policy details in the wallet's public key data
    * Assumes the hook/LedgerService has already fetched the policy details from the device
    */
-  static async storeBtcWalletPolicy(
-    walletId: string,
-    publicKeys: Array<{
-      key: string
-      derivationPath: string
-      curve: Curve.SECP256K1 | Curve.ED25519
-      btcWalletPolicy?: BtcWalletPolicyDetails
-    }>,
-    policyDetails: BtcWalletPolicyDetails,
+  static async storeBtcWalletPolicy({
+    walletId,
+    publicKeys,
+    policyDetails,
+    accountIndex
+  }: {
+    walletId: string
+    publicKeys: Array<
+      PublicKeyInfo & {
+        btcWalletPolicy?: BtcWalletPolicyDetails
+      }
+    >
+    policyDetails: BtcWalletPolicyDetails
     accountIndex: number
-  ): Promise<boolean> {
+  }): Promise<boolean> {
     try {
       Logger.info('Storing Bitcoin wallet policy details in wallet data')
 
@@ -140,12 +138,11 @@ export class BitcoinWalletPolicyService {
    * Check if Bitcoin wallet policy registration is needed
    */
   static needsBtcWalletPolicyRegistration(
-    publicKeys: Array<{
-      key: string
-      derivationPath: string
-      curve: Curve.SECP256K1 | Curve.ED25519
-      btcWalletPolicy?: BtcWalletPolicyDetails
-    }>
+    publicKeys: Array<
+      PublicKeyInfo & {
+        btcWalletPolicy?: BtcWalletPolicyDetails
+      }
+    >
   ): boolean {
     return !publicKeys.some(pk => pk.btcWalletPolicy)
   }
@@ -154,12 +151,11 @@ export class BitcoinWalletPolicyService {
    * Get the Bitcoin public key that should have the wallet policy
    */
   static getBitcoinPublicKey(
-    publicKeys: Array<{
-      key: string
-      derivationPath: string
-      curve: Curve.SECP256K1 | Curve.ED25519
-      btcWalletPolicy?: BtcWalletPolicyDetails
-    }>,
+    publicKeys: Array<
+      PublicKeyInfo & {
+        btcWalletPolicy?: BtcWalletPolicyDetails
+      }
+    >,
     accountIndex: number
   ): {
     key: string

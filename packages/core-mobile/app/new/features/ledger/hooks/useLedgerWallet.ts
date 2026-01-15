@@ -7,7 +7,7 @@ import LedgerService from 'services/ledger/LedgerService'
 import {
   LedgerDerivationPathType,
   LedgerTransportState,
-  SolanaKeys,
+  PublicKeyInfo,
   WalletCreationOptions
 } from 'services/ledger/types'
 import { WalletType } from 'services/wallet/types'
@@ -43,7 +43,7 @@ export interface UseLedgerWalletReturn {
           avalanche: string
         }
       }
-      solanaKeys?: SolanaKeys
+      solanaKeys?: PublicKeyInfo
     }
   ) => Promise<string>
 }
@@ -127,7 +127,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           avalanche: string
         }
       }
-      solanaKeys?: SolanaKeys
+      solanaKeys?: PublicKeyInfo[]
       bitcoinAddress?: string
     }) => {
       try {
@@ -153,7 +153,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
             ? addresses.evm.slice(2) // Remove first 0x to fix double prefix
             : addresses.evm,
           avm: addresses.avalanche,
-          pvm: addresses.pvm || addresses.avalanche
+          pvm: addresses.pvm
         }
 
         // Also fix the public keys array to ensure no double prefixes in storage
