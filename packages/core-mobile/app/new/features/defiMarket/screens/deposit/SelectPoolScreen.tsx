@@ -145,6 +145,7 @@ export const SelectPoolScreen = (): JSX.Element => {
   return (
     <ListScreen
       title={`Choose a pool to\nstart earning`}
+      isModal
       data={isLoadingMarkets ? [] : filteredAvailableMarkets}
       renderItem={renderItem}
       renderEmpty={renderEmpty}
