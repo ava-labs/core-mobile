@@ -47,6 +47,7 @@ const AssetsScreen: FC<Props> = ({
     useAssetsFilterAndSort()
   const listType = view.selected
   const header = useHeaderMeasurements()
+  const collapsibleHeaderHeight = header?.height ?? 0
 
   const activeAccount = useSelector(selectActiveAccount)
   const enabledNetworks = useSelector(selectEnabledNetworks)
@@ -207,7 +208,8 @@ const AssetsScreen: FC<Props> = ({
 
   const overrideProps = {
     contentContainerStyle: {
-      ...containerStyle
+      ...containerStyle,
+      paddingTop: Platform.OS === 'android' ? header?.height : 0
     }
   }
 
@@ -242,10 +244,11 @@ const AssetsScreen: FC<Props> = ({
           <RefreshControl
             refreshing={isRefetching}
             onRefresh={refetch}
-            progressViewOffset={Platform.OS === 'ios' ? 0 : header.height}
+            progressViewOffset={
+              Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight
+            }
           />
         }
-        estimatedItemSize={isGridView ? 183 : 73}
         renderItem={item => renderItem(item.item, item.index)}
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}

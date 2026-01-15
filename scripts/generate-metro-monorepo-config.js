@@ -107,12 +107,34 @@ function generateRnCliConfig(
 
   const fileBody = `
   const path = require('path');
-  const blacklist = require('metro-config/src/defaults/exclusionList');
+
+  // Metro 0.83+ uses package "exports", so importing internal paths like
+  // \`metro-config/src/defaults/exclusionList\` throws \`ERR_PACKAGE_PATH_NOT_EXPORTED\`.
+  // Inline Metro's exclusionList implementation to keep this generated config stable.
+  const escapeRegExp = pattern => {
+    if (pattern instanceof RegExp) {
+      return pattern.source.replace(/\\/|\\\\\\//g, '\\\\' + path.sep)
+    } else if (typeof pattern === 'string') {
+      const escaped = pattern.replace(/[\\-\\[\\]\\{\\}\\(\\)\\*\\+\\?\\.\\\\\\^\\$\\|]/g, '\\\\$&')
+      return escaped.replaceAll('/', '\\\\' + path.sep)
+    }
+    throw new Error(
+      \`Expected exclusionList to be called with RegExp or string, got: \${typeof pattern}\`
+    )
+  }
+
+  const exclusionList = additionalExclusions => {
+    const base = [/\\/__tests__\\/.*/]
+    return new RegExp(
+      '(' + (additionalExclusions || []).concat(base).map(escapeRegExp).join('|') + ')$'
+    )
+  }
 
   module.exports = {
       resolver: {
-        // blacklist conflicting dependencies (react native for ex) from other packages in the workspace
-        blacklistRE: blacklist([
+        // block conflicting dependencies (react native for ex) from other packages in the workspace
+        // (Metro calls this \`blockList\`; older configs used \`blacklistRE\`)
+        blockList: exclusionList([
 ${blacklistRE}
         ]),
         // load conflicting dependencies from current package only

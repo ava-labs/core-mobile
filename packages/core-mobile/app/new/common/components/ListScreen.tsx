@@ -5,7 +5,7 @@ import {
   Text
 } from '@avalabs/k2-alpine'
 import { BlurViewWithFallback } from '@avalabs/k2-alpine/src/components/BlurViewWithFallback/BlurViewWithFallback'
-import { useHeaderHeight } from '@react-navigation/elements'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, {
@@ -116,7 +116,7 @@ export const ListScreen = <T,>({
   ...props
 }: ListScreenProps<T>): JSX.Element => {
   const insets = useSafeAreaInsets()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const keyboard = useKeyboardState()
   const frame = useSafeAreaFrame()
 
@@ -284,7 +284,7 @@ export const ListScreen = <T,>({
       : insets.bottom + 16
 
     const extraPadding =
-      Platform.OS === 'android' ? (isModal ? insets.top - 24 : 8) : 16
+      Platform.OS === 'android' ? (isModal ? insets.top : 8) : 16
 
     return [
       props?.contentContainerStyle,

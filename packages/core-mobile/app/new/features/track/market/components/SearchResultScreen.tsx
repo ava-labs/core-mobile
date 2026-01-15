@@ -66,14 +66,18 @@ const SearchResultScreen = ({
   })
 
   const header = useHeaderMeasurements()
+  const collapsibleHeaderHeight = header?.height ?? 0
 
   const keyboardAvoidingStyle = useAnimatedStyle(() => {
     return {
       transform: [
         {
-          translateY: withTiming(isSearchBarFocused ? -header.height + 40 : 0, {
-            ...ANIMATED.TIMING_CONFIG
-          })
+          translateY: withTiming(
+            isSearchBarFocused ? -collapsibleHeaderHeight + 40 : 0,
+            {
+              ...ANIMATED.TIMING_CONFIG
+            }
+          )
         }
       ]
     }
@@ -112,13 +116,13 @@ const SearchResultScreen = ({
 
   const renderEmpty = useCallback(() => {
     return (
-      <CollapsibleTabs.ContentWrapper>
+      <CollapsibleTabs.ContentWrapper extraOffset={header.height}>
         <Animated.View style={keyboardAvoidingStyle}>
           {emptyComponent}
         </Animated.View>
       </CollapsibleTabs.ContentWrapper>
     )
-  }, [emptyComponent, keyboardAvoidingStyle])
+  }, [emptyComponent, header.height, keyboardAvoidingStyle])
 
   return (
     <MarketTokensScreen

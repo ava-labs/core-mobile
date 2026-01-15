@@ -53,6 +53,7 @@ export const DeFiScreen = ({
   } = useDeFiProtocols()
   const listType = view.selected
   const header = useHeaderMeasurements()
+  const collapsibleHeaderHeight = header?.height ?? 0
 
   const getAmount = useExchangedAmount()
 
@@ -192,7 +193,8 @@ export const DeFiScreen = ({
     contentContainerStyle: {
       flexGrow: 1,
       ...contentContainerStyle,
-      ...containerStyle
+      ...containerStyle,
+      paddingTop: Platform.OS === 'android' ? header?.height : 0
     }
   }
 
@@ -218,14 +220,15 @@ export const DeFiScreen = ({
         keyExtractor={item => item.id}
         overrideProps={overrideProps}
         contentContainerStyle={contentContainerStyle}
-        estimatedItemSize={isGridView ? 183 : 73}
         numColumns={numColumns}
         renderItem={renderItem}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={pullToRefresh}
-            progressViewOffset={Platform.OS === 'ios' ? 0 : header.height}
+            progressViewOffset={
+              Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight
+            }
           />
         }
         ListHeaderComponent={renderHeader}

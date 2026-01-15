@@ -5,7 +5,6 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import {
@@ -14,6 +13,7 @@ import {
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
@@ -76,7 +76,7 @@ const SEGMENT_EVENT_MAP: Record<number, AnalyticsEventName> = {
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
   const isBridgeBlocked = useSelector(selectIsBridgeBlocked)
 

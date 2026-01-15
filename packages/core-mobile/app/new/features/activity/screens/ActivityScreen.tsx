@@ -15,6 +15,7 @@ import { DropdownSelections } from 'common/components/DropdownSelections'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { DropdownSelection } from 'common/types'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
 import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useCallback, useMemo } from 'react'
@@ -24,7 +25,6 @@ import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account/slice'
 import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
-import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
 import { ActivityList } from '../components/ActivityList'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
 
@@ -49,6 +49,7 @@ export const ActivityScreen = ({
   containerStyle: ViewStyle
 }): JSX.Element => {
   const header = useHeaderMeasurements()
+  const collapsibleHeaderHeight = header?.height ?? 0
   const {
     data,
     filter,
@@ -76,7 +77,7 @@ export const ActivityScreen = ({
         {
           translateY: withTiming(
             isSearchBarFocused
-              ? -header.height + (Platform.OS === 'ios' ? 40 : 32)
+              ? -collapsibleHeaderHeight + (Platform.OS === 'ios' ? 40 : 32)
               : 0,
             {
               ...ANIMATED.TIMING_CONFIG
@@ -180,6 +181,15 @@ export const ActivityScreen = ({
     return isLoadingXpToken ? [] : data
   }, [data, isLoadingXpToken])
 
+  const overrideProps = useMemo(() => {
+    return {
+      contentContainerStyle: {
+        ...containerStyle,
+        paddingTop: Platform.OS === 'android' ? header?.height : 0
+      }
+    }
+  }, [containerStyle, header?.height])
+
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(5)}
@@ -192,11 +202,7 @@ export const ActivityScreen = ({
         xpToken={xpToken}
         handlePendingBridge={handlePendingBridge}
         handleExplorerLink={handleExplorerLink}
-        overrideProps={{
-          contentContainerStyle: {
-            ...containerStyle
-          }
-        }}
+        overrideProps={overrideProps}
         renderHeader={renderHeader}
         renderEmpty={renderEmpty}
         isRefreshing={isRefreshing}

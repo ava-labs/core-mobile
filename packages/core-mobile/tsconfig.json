@@ -26,7 +26,7 @@
     "../k2-alpine/src/theme.d.ts",
     "../k2-alpine/src/components/Video/Video.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-, "../k2-alpine/src/components/BlurViewWithFallback/BlurViewWithFallback.tsx"  ],
+    "expo-env.d.ts", 
+    "../k2-alpine/src/components/BlurViewWithFallback/BlurViewWithFallback.tsx"  ],
   "exclude": ["node_modules", "./e2e-appium", "./e2e/artifacts/*", "./ios/DerivedData"]
 }

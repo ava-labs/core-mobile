@@ -1,6 +1,6 @@
 import { ANIMATED, View } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import React, { forwardRef, useMemo } from 'react'
 import { Platform, StyleSheet } from 'react-native'
 import {
@@ -14,7 +14,6 @@ import {
 import Animated, {
   Extrapolation,
   interpolate,
-  runOnJS,
   useAnimatedReaction,
   useAnimatedStyle,
   withTiming
@@ -23,6 +22,7 @@ import {
   useSafeAreaFrame,
   useSafeAreaInsets
 } from 'react-native-safe-area-context'
+import { scheduleOnRN } from 'react-native-worklets'
 
 export type OnTabChange = OnTabChangeCallback<string>
 
@@ -97,7 +97,7 @@ const CollapsibleTabWrapper = ({
     () => scrollY.value,
     (curr, prev) => {
       if (curr !== prev && onScrollY) {
-        runOnJS(onScrollY)(scrollY.value)
+        scheduleOnRN(onScrollY, scrollY.value)
       }
     }
   )
@@ -122,7 +122,7 @@ const ContentWrapper = ({
   const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
   const header = useHeaderMeasurements()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const tabBarHeight = useBottomTabBarHeight()
 
   const animatedStyle = useAnimatedStyle(() => {
@@ -156,6 +156,7 @@ const ContentWrapper = ({
           : {
               height:
                 frame.height -
+                header.height -
                 headerHeight -
                 insets.bottom -
                 tabBarHeight -
@@ -176,7 +177,6 @@ export const CollapsibleTabs = {
   ContentWrapper: ContentWrapper,
   Tab: Tabs.Tab,
   FlatList: Tabs.FlatList,
-  MasonryList: Tabs.MasonryFlashList,
   ScrollView: Tabs.ScrollView,
   FlashList: Tabs.FlashList
 }

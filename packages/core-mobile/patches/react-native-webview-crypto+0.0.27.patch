@@ -1,20 +1,17 @@
 diff --git a/node_modules/react-native-webview-crypto/index.js b/node_modules/react-native-webview-crypto/index.js
-index ec96971..b52ea51 100644
+index 6dde294..862d7e4 100644
 --- a/node_modules/react-native-webview-crypto/index.js
 +++ b/node_modules/react-native-webview-crypto/index.js
-@@ -5,14 +5,12 @@ const { MainWorker, webViewWorkerString } = require("webview-crypto");
- 
+@@ -6,12 +6,11 @@ const { MainWorker, webViewWorkerString } = require("webview-crypto");
  const styles = StyleSheet.create({
    hide: {
--    display: "none",
--    position: "absolute",
+     position: "absolute",
 -
 -    width: 0,
 -    height: 0,
 -
 -    flexGrow: 0,
 -    flexShrink: 1
-+    position: 'absolute',
 +    top: -1000,
 +    left: -1000,
 +    width: 1,

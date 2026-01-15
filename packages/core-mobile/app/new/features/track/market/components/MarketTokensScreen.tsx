@@ -4,7 +4,8 @@ import { DropdownSelections } from 'common/components/DropdownSelections'
 import { Space } from 'common/components/Space'
 import { ViewOption, DropdownSelection } from 'common/types'
 import React, { useCallback, useMemo } from 'react'
-import { StyleSheet, ViewStyle } from 'react-native'
+import { Platform, StyleSheet, ViewStyle } from 'react-native'
+import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import { Charts, MarketToken, MarketType } from 'store/watchlist'
 import { MarketListItem } from './MarketListItem'
 
@@ -15,8 +16,7 @@ const MarketTokensScreen = ({
   view,
   goToMarketDetail,
   renderEmpty,
-  containerStyle,
-  key
+  containerStyle
 }: {
   data: MarketToken[]
   charts: Charts
@@ -25,8 +25,8 @@ const MarketTokensScreen = ({
   goToMarketDetail: (tokenId: string, marketType: MarketType) => void
   renderEmpty: () => React.JSX.Element
   containerStyle: ViewStyle
-  key?: React.Key | null
 }): JSX.Element => {
+  const header = useHeaderMeasurements()
   const isGridView = view.selected === ViewOption.Grid
   const numColumns = isGridView ? 2 : 1
 
@@ -88,13 +88,13 @@ const MarketTokensScreen = ({
 
   const overrideProps = {
     contentContainerStyle: {
-      ...containerStyle
+      ...containerStyle,
+      paddingTop: Platform.OS === 'android' ? header?.height : 0
     }
   }
 
   return (
     <CollapsibleTabs.FlashList
-      key={key}
       overrideProps={overrideProps}
       data={data}
       numColumns={numColumns}
@@ -105,7 +105,6 @@ const MarketTokensScreen = ({
       showsVerticalScrollIndicator={false}
       extraData={{ isGridView }}
       keyExtractor={item => item.id}
-      estimatedItemSize={isGridView ? 200 : 120}
     />
   )
 }

@@ -257,7 +257,6 @@ const TabsScreen = (): JSX.Element => {
         showsVerticalScrollIndicator={false}
         renderItem={renderItem}
         ListHeaderComponent={renderHeader}
-        estimatedItemSize={TAB_WIDTH * 1.2}
         numColumns={NUMBER_OF_COLUMNS}
         keyExtractor={item => item.id}
       />

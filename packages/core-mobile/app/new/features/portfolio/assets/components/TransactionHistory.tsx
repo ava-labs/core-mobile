@@ -19,7 +19,8 @@ import {
 import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { FC, useCallback, useMemo } from 'react'
-import { ViewStyle } from 'react-native'
+import { Platform, ViewStyle } from 'react-native'
+import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
@@ -55,6 +56,7 @@ const TransactionHistory: FC<Props> = ({
   handlePendingBridge,
   containerStyle
 }): React.JSX.Element => {
+  const header = useHeaderMeasurements()
   const { getNetwork } = useNetworks()
   const account = useSelector(selectActiveAccount)
 
@@ -227,6 +229,7 @@ const TransactionHistory: FC<Props> = ({
     contentContainerStyle: {
       overflow: 'visible',
       paddingBottom: 16,
+      paddingTop: Platform.OS === 'android' ? header.height : 0,
       ...containerStyle
     }
   }

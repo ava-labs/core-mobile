@@ -52,6 +52,7 @@ export const CollectiblesScreen = ({
   const {
     theme: { colors }
   } = useTheme()
+  const header = useHeaderMeasurements()
   const {
     isLoading,
     isEnabled,
@@ -229,6 +230,7 @@ export const CollectiblesScreen = ({
   ])
 
   const contentContainerStyle = {
+    backgroundColor: 'blue',
     paddingHorizontal:
       listType === CollectibleView.ListView
         ? 0
@@ -241,13 +243,14 @@ export const CollectiblesScreen = ({
   // overrideProps and contentContainerStyle need to be both used with the same stylings for item width calculations
   const overrideProps = {
     contentContainerStyle: {
-      flexGrow: 1,
+      flex: 1,
       ...contentContainerStyle,
-      ...containerStyle
+      ...containerStyle,
+      paddingTop: Platform.OS === 'android' ? header?.height : 0
     }
   }
 
-  const header = useHeaderMeasurements()
+  const collapsibleHeaderHeight = header?.height ?? 0
 
   if (
     Platform.OS === 'android' &&
@@ -261,7 +264,7 @@ export const CollectiblesScreen = ({
           flexDirection: 'row',
           gap: HORIZONTAL_MARGIN,
           paddingHorizontal: HORIZONTAL_MARGIN,
-          paddingTop: header.height + HORIZONTAL_MARGIN / 2
+          paddingTop: collapsibleHeaderHeight + HORIZONTAL_MARGIN / 2
         }}>
         <AnimatedPressable
           onPress={goToDiscoverCollectibles}
@@ -289,13 +292,14 @@ export const CollectiblesScreen = ({
       style={{
         flex: 1
       }}>
-      <CollapsibleTabs.MasonryList
+      <CollapsibleTabs.FlashList
         data={filteredAndSorted}
         extraData={{
           view,
           sort,
           filter
         }}
+        masonry
         key={`collectibles-list-${listType}`}
         keyExtractor={(item: NftItem) =>
           `collectibles-list-${item.localId}-${item.address}`
@@ -309,11 +313,12 @@ export const CollectiblesScreen = ({
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={pullToRefresh}
-            progressViewOffset={Platform.OS === 'ios' ? 0 : header.height}
+            progressViewOffset={
+              Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight
+            }
           />
         }
         contentContainerStyle={contentContainerStyle}
-        estimatedItemSize={220}
         removeClippedSubviews={Platform.OS === 'android'}
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled
