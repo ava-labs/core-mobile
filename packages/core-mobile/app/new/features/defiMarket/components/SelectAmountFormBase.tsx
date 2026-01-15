@@ -82,6 +82,7 @@ export const SelectAmountFormBase = ({
     <ScrollScreen
       title={title}
       titleSx={{ maxWidth: '80%' }}
+      isModal
       contentContainerStyle={{
         padding: 16,
         paddingTop: 0

@@ -166,6 +166,7 @@ export const SelectAssetScreen = (): JSX.Element => {
   return (
     <ListScreen
       title="Select an asset to deposit"
+      isModal
       data={depositableTokens}
       renderItem={renderItem}
       renderEmpty={renderEmpty}
