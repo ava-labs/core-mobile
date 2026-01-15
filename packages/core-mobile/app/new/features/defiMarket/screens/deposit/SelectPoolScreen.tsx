@@ -89,7 +89,10 @@ export const SelectPoolScreen = (): JSX.Element => {
               alignItems: 'center',
               gap: 12
             }}>
-            <DefiMarketLogo item={item} />
+            <DefiMarketLogo
+              marketName={item.marketName}
+              networkLogoUri={item.network.logoUri}
+            />
             <View
               sx={{
                 marginLeft: 15,

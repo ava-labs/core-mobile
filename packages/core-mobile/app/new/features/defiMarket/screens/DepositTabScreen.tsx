@@ -36,6 +36,9 @@ import CoreAppIconDark from '../../../assets/icons/core-app-icon-dark.svg'
 import { DefiMarket } from '../types'
 import { DepositCard } from '../components/DepositCard'
 import { useDepositsFilterAndSort } from '../hooks/useDepositsFilterAndSort'
+import { useAvailableRewards } from '../hooks/useAvailableRewards'
+import { useClaimRewards } from '../hooks/useClaimRewards'
+import { RewardsBanner } from '../components/RewardsBanner'
 
 const DepositTabScreen = ({
   onScroll,
@@ -62,6 +65,9 @@ const DepositTabScreen = ({
     filter,
     sort
   } = useDepositsFilterAndSort({ deposits })
+
+  const { data: availableRewards } = useAvailableRewards()
+  const { claimAllRewards, isLoading: isClaimingRewards } = useClaimRewards()
 
   const data: DepositCardType[] = useMemo(() => {
     return isLoading ? [] : [StaticCard.Add, ...filteredDeposits]
@@ -149,9 +155,9 @@ const DepositTabScreen = ({
           onLayout={onHeaderLayout}
           style={[
             {
-              paddingHorizontal: 16,
+              paddingHorizontal: 14,
               marginTop: 6,
-              marginBottom: 16,
+              marginBottom: 10,
               backgroundColor: theme.colors.$surfacePrimary,
               gap: 7
             },
@@ -163,6 +169,13 @@ const DepositTabScreen = ({
             anytime.
           </Text>
         </Animated.View>
+        {availableRewards.hasRewardsToClaim && (
+          <RewardsBanner
+            availableRewards={availableRewards}
+            onClaimPress={claimAllRewards}
+            isClaiming={isClaimingRewards}
+          />
+        )}
         <DropdownSelections
           filter={filter}
           sort={sort}
@@ -175,7 +188,10 @@ const DepositTabScreen = ({
     onHeaderLayout,
     animatedHeaderStyle,
     filter,
-    sort
+    sort,
+    availableRewards,
+    claimAllRewards,
+    isClaimingRewards
   ])
 
   useEffect(() => {
