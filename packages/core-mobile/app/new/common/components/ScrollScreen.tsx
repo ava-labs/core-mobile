@@ -15,13 +15,7 @@ import React, {
   useRef,
   useState
 } from 'react'
-import {
-  LayoutRectangle,
-  StyleProp,
-  View,
-  ViewStyle,
-  Platform
-} from 'react-native'
+import { LayoutRectangle, StyleProp, View, ViewStyle } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import {
   KeyboardAwareScrollView,
@@ -89,8 +83,8 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   headerStyle?: StyleProp<ViewStyle>
   /** Whether this screen should hide the header background  */
   hideHeaderBackground?: boolean
-  /** Custom component to render centered in the header area, vertically level with back arrow */
-  renderHeaderCenterComponent?: () => React.ReactNode
+  /** Overlay component rendered absolutely positioned at the top of the screen over the header area */
+  headerCenterOverlay?: React.ReactNode
   /** TestID for the screen */
   testID?: string
 }
@@ -112,7 +106,7 @@ export const ScrollScreen = ({
   disableStickyFooter,
   showNavigationHeaderTitle = true,
   hideHeaderBackground,
-  renderHeaderCenterComponent,
+  headerCenterOverlay,
   headerStyle,
   testID,
   renderHeader,
@@ -333,20 +327,9 @@ export const ScrollScreen = ({
   }, [headerHeight])
 
   const renderHeaderCenterOverlay = useCallback(() => {
-    if (!renderHeaderCenterComponent) {
+    if (!headerCenterOverlay) {
       return null
     }
-
-    // try insetsbottom + 16 for android
-    // be sure to check 3 button bottom and manual test on android with native buttons on the bottom of the screen
-    const paddingValue =
-      Platform.OS === 'ios'
-        ? isModal
-          ? 15 // iOS modal - positive padding to move dots down
-          : 10 // iOS regular - positive padding
-        : isModal
-        ? 50 // Android modal
-        : 45 // Android regular
 
     return (
       <View
@@ -356,15 +339,12 @@ export const ScrollScreen = ({
           top: 0,
           left: 0,
           right: 0,
-          height: headerHeight,
-          justifyContent: 'center',
-          alignItems: 'center',
-          paddingTop: paddingValue
+          height: headerHeight
         }}>
-        {renderHeaderCenterComponent()}
+        {headerCenterOverlay}
       </View>
     )
-  }, [renderHeaderCenterComponent, headerHeight, isModal])
+  }, [headerCenterOverlay, headerHeight])
 
   // 90% of our screens reuse this component but only some need keyboard avoiding
   // If you have an input on the screen, you need to enable this prop
