@@ -30,10 +30,12 @@ import { useDeposits } from 'hooks/earn/useDeposits'
 import { useRouter } from 'expo-router'
 import { Placeholder } from 'common/components/Placeholder'
 import { LoadingState } from 'common/components/LoadingState'
+import { DropdownSelections } from 'common/components/DropdownSelections'
 import CoreAppIconLight from '../../../assets/icons/core-app-icon-light.svg'
 import CoreAppIconDark from '../../../assets/icons/core-app-icon-dark.svg'
 import { DefiMarket } from '../types'
 import { DepositCard } from '../components/DepositCard'
+import { useDepositsFilterAndSort } from '../hooks/useDepositsFilterAndSort'
 
 const DepositTabScreen = ({
   onScroll,
@@ -55,9 +57,15 @@ const DepositTabScreen = ({
   const scrollOffsetRef = useRef({ x: 0, y: 0 })
   const dispatch = useDispatch()
 
+  const {
+    data: filteredDeposits,
+    filter,
+    sort
+  } = useDepositsFilterAndSort({ deposits })
+
   const data: DepositCardType[] = useMemo(() => {
-    return isLoading ? [] : [StaticCard.Add, ...deposits]
-  }, [deposits, isLoading])
+    return isLoading ? [] : [StaticCard.Add, ...filteredDeposits]
+  }, [filteredDeposits, isLoading])
 
   const handleAddDeposit = useCallback(() => {
     // @ts-ignore TODO: make routes typesafe
@@ -155,9 +163,20 @@ const DepositTabScreen = ({
             anytime.
           </Text>
         </Animated.View>
+        <DropdownSelections
+          filter={filter}
+          sort={sort}
+          sx={{ paddingHorizontal: 16, marginTop: 4 }}
+        />
       </View>
     )
-  }, [theme.colors.$surfacePrimary, onHeaderLayout, animatedHeaderStyle])
+  }, [
+    theme.colors.$surfacePrimary,
+    onHeaderLayout,
+    animatedHeaderStyle,
+    filter,
+    sort
+  ])
 
   useEffect(() => {
     if (scrollOffsetRef.current && isActive) {
