@@ -32,6 +32,7 @@ export class LedgerService {
   private currentAppType: LedgerAppType = LedgerAppType.UNKNOWN
   private appPollingInterval: number | null = null
   private appPollingEnabled = false
+  private isDisconnected = false
 
   // Transport getter/setter with automatic error handling
   private get transport(): TransportBLE {
@@ -50,6 +51,7 @@ export class LedgerService {
   async connect(deviceId: string): Promise<void> {
     try {
       Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
+      this.isDisconnected = false // Reset disconnect flag on new connection
       // Use a longer timeout for connection
       this.transport = await TransportBLE.open(
         deviceId,
@@ -123,6 +125,8 @@ export class LedgerService {
         return LedgerAppType.SOLANA
       case 'ethereum':
         return LedgerAppType.ETHEREUM
+      case 'bitcoin':
+        return LedgerAppType.BITCOIN
       default:
         return LedgerAppType.UNKNOWN
     }
@@ -142,6 +146,12 @@ export class LedgerService {
     Logger.info(`Waiting for ${appType} app (timeout: ${timeoutMs}ms)...`)
 
     while (Date.now() - startTime < timeoutMs) {
+      // Check if disconnect was called - abort waiting
+      if (this.isDisconnected) {
+        Logger.info('Aborting waitForApp due to disconnect')
+        throw new Error('Ledger operation cancelled')
+      }
+
       Logger.info(
         `Current app type: ${this.currentAppType}, waiting for: ${appType}`
       )
@@ -640,6 +650,7 @@ export class LedgerService {
 
   // Disconnect from Ledger device
   async disconnect(): Promise<void> {
+    this.isDisconnected = true // Signal pending operations to abort
     if (this.#transport) {
       await this.#transport.close()
       this.#transport = null

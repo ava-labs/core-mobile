@@ -10,6 +10,7 @@ export enum LedgerAppType {
   AVALANCHE = 'Avalanche',
   SOLANA = 'Solana',
   ETHEREUM = 'Ethereum',
+  BITCOIN = 'Bitcoin',
   UNKNOWN = 'Unknown'
 }
 

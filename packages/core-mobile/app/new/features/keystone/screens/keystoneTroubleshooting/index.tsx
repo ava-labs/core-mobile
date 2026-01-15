@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect } from 'react'
-import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
-import { KeystoneTroubleshootingParams } from 'services/walletconnectv2/walletConnectCache/types'
+import { KeystoneTroubleshootingParams } from 'features/keystone/services/keystoneParamsCache'
 import { useNavigation, Link } from 'expo-router'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { BackHandler } from 'react-native'
 import { View, Text, SCREEN_WIDTH, Button } from '@avalabs/k2-alpine'
 import { Space } from 'common/components/Space'
 import { Steps } from 'features/onboarding/components/KeystoneTroubleshooting'
+import { withKeystoneParamsCache } from 'features/keystone/services/withKeystoneParamsCache'
 
 const KeystoneTroubleshootingScreen = ({
   params
@@ -122,6 +122,6 @@ const KeystoneTroubleshootingScreen = ({
   )
 }
 
-export default withWalletConnectCache('keystoneTroubleshootingParams')(
+export default withKeystoneParamsCache('keystoneTroubleshootingParams')(
   KeystoneTroubleshootingScreen
 )

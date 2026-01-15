@@ -1,7 +1,6 @@
 import { Button, Text, useTheme, View } from '@avalabs/k2-alpine'
 import React, { FC, useCallback, useEffect, useState } from 'react'
-import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
-import { KeystoneSignerParams } from 'services/walletconnectv2/walletConnectCache/types'
+import { KeystoneSignerParams } from 'features/keystone/services/keystoneParamsCache'
 import { useNavigation } from 'expo-router'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { UREncoder } from '@ngraveio/bc-ur'
@@ -13,6 +12,7 @@ import KeystoneLogoLight from 'assets/icons/keystone_logo_light.svg'
 import KeystoneLogoDark from 'assets/icons/keystone_logo_dark.svg'
 import { useSelector } from 'react-redux'
 import { selectIsKeystoneBlocked } from 'store/posthog'
+import { withKeystoneParamsCache } from 'features/keystone/services/withKeystoneParamsCache'
 
 enum KeystoneSignerStep {
   QR,
@@ -194,6 +194,6 @@ const QRScanner: FC<Omit<KeystoneSignerParams, 'request' | 'onReject'>> = ({
   )
 }
 
-export default withWalletConnectCache('keystoneSignerParams')(
+export default withKeystoneParamsCache('keystoneSignerParams')(
   KeystoneSignerScreen
 )

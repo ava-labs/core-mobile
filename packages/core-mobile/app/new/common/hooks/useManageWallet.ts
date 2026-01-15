@@ -4,6 +4,7 @@ import {
   dismissAlertWithTextInput,
   showAlertWithTextInput
 } from 'common/utils/alertWithTextInput'
+import { useLedgerWalletMap } from 'features/ledger/store'
 import { showSnackbar } from 'new/common/utils/toast'
 import { useCallback, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -28,6 +29,7 @@ export const useManageWallet = (): {
   handleDropdownSelect: (action: string, wallet: Wallet) => void
   isAddingAccount: boolean
 } => {
+  const { removeLedgerWallet } = useLedgerWalletMap()
   const [isAddingAccount, setIsAddingAccount] = useState(false)
   const dispatch = useDispatch<AppThunkDispatch>()
   const walletsCount = useSelector(selectWalletsCount)
@@ -101,12 +103,19 @@ export const useManageWallet = (): {
             style: 'destructive',
             onPress: () => {
               dispatch(removeWallet(wallet.id))
+
+              if (
+                wallet.type === WalletType.LEDGER ||
+                wallet.type === WalletType.LEDGER_LIVE
+              ) {
+                removeLedgerWallet(wallet.id)
+              }
             }
           }
         ]
       })
     },
-    [dispatch, walletsCount]
+    [dispatch, walletsCount, removeLedgerWallet]
   )
 
   const handleAddAccount = useCallback(
