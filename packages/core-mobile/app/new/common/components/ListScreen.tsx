@@ -284,7 +284,7 @@ export const ListScreen = <T,>({
       : insets.bottom + 16
 
     const extraPadding =
-      Platform.OS === 'android' ? (isModal ? insets.top - 24 : 8) : 16
+      Platform.OS === 'android' ? (isModal ? insets.top : 8) : 16
 
     return [
       props?.contentContainerStyle,

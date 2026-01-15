@@ -6,8 +6,8 @@ import {
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
-import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import DepositTabScreen from 'features/defiMarket/screens/DepositTabScreen'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   LayoutChangeEvent,
@@ -27,19 +27,21 @@ import Animated, {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import { useSafeAreaFrame } from 'react-native-safe-area-context'
+import {
+  useSafeAreaFrame,
+  useSafeAreaInsets
+} from 'react-native-safe-area-context'
 import { scheduleOnRN } from 'react-native-worklets'
 import { useSelector } from 'react-redux'
 import {
   selectIsInAppDefiBlocked,
   selectIsInAppDefiNewBlocked
 } from 'store/posthog'
-import DepositTabScreen from 'features/defiMarket/screens/DepositTabScreen'
 import StakeTabScreen from './StakeTabScreen'
 
 export const EarnHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
-  const headerHeight = useEffectiveHeaderHeight()
+  const insets = useSafeAreaInsets()
   const pagerRef = useRef<PagerView>(null)
   const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
   const isInAppDefiNewBlocked = useSelector(selectIsInAppDefiNewBlocked)
@@ -135,8 +137,8 @@ export const EarnHomeScreen = (): JSX.Element => {
   )
 
   const tabHeight = useMemo(() => {
-    return frame.height - headerHeight
-  }, [frame.height, headerHeight])
+    return frame.height + (Platform.OS === 'android' ? insets.bottom : 0)
+  }, [frame.height, insets.bottom])
 
   const contentContainerStyle = useMemo(() => {
     return {

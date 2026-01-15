@@ -116,13 +116,13 @@ const SearchResultScreen = ({
 
   const renderEmpty = useCallback(() => {
     return (
-      <CollapsibleTabs.ContentWrapper>
+      <CollapsibleTabs.ContentWrapper extraOffset={header.height}>
         <Animated.View style={keyboardAvoidingStyle}>
           {emptyComponent}
         </Animated.View>
       </CollapsibleTabs.ContentWrapper>
     )
-  }, [emptyComponent, keyboardAvoidingStyle])
+  }, [emptyComponent, header.height, keyboardAvoidingStyle])
 
   return (
     <MarketTokensScreen

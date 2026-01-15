@@ -1,5 +1,5 @@
 import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
-import { FloatingDevTools } from 'common/containers/FloatingDevTools'
+// import { FloatingDevTools } from 'common/containers/FloatingDevTools'
 import NavigationThemeProvider from 'common/contexts/NavigationThemeProvider'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
 import { GlobalAlertWithTextInput } from 'common/utils/alertWithTextInput'
@@ -67,7 +67,7 @@ export default function Root(): JSX.Element | null {
               </RecoveryMethodProvider>
             </DeeplinkContextProvider>
           </NavigationThemeProvider>
-          {__DEV__ && <FloatingDevTools />}
+          {/* {__DEV__ && <FloatingDevTools />} */}
           <GlobalToast />
           <GlobalAlertWithTextInput />
         </K2AlpineThemeProvider>

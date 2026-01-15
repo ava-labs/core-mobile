@@ -116,7 +116,7 @@ const TrackHomeScreen = (): JSX.Element => {
   })
 
   const handleScrollResync = useCallback(() => {
-    // tabViewRef.current?.scrollResync()
+    tabViewRef.current?.scrollResync()
   }, [])
 
   const onSearchTextChanged = useCallback(

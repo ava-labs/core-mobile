@@ -459,12 +459,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
   const handleScrollResync = useCallback(() => {
-    // tabViewRef.current?.scrollResync()
+    tabViewRef.current?.scrollResync()
   }, [])
 
   useFocusEffect(
     useCallback(() => {
-      // tabViewRef.current?.scrollResync()
+      tabViewRef.current?.scrollResync()
     }, [])
   )
 

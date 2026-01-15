@@ -230,6 +230,7 @@ export const CollectiblesScreen = ({
   ])
 
   const contentContainerStyle = {
+    backgroundColor: 'blue',
     paddingHorizontal:
       listType === CollectibleView.ListView
         ? 0
@@ -242,7 +243,7 @@ export const CollectiblesScreen = ({
   // overrideProps and contentContainerStyle need to be both used with the same stylings for item width calculations
   const overrideProps = {
     contentContainerStyle: {
-      flexGrow: 1,
+      flex: 1,
       ...contentContainerStyle,
       ...containerStyle,
       paddingTop: Platform.OS === 'android' ? header?.height : 0

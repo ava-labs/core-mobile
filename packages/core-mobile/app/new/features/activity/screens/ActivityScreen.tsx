@@ -181,6 +181,15 @@ export const ActivityScreen = ({
     return isLoadingXpToken ? [] : data
   }, [data, isLoadingXpToken])
 
+  const overrideProps = useMemo(() => {
+    return {
+      contentContainerStyle: {
+        ...containerStyle,
+        paddingTop: Platform.OS === 'android' ? header?.height : 0
+      }
+    }
+  }, [containerStyle, header?.height])
+
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(5)}
@@ -193,12 +202,7 @@ export const ActivityScreen = ({
         xpToken={xpToken}
         handlePendingBridge={handlePendingBridge}
         handleExplorerLink={handleExplorerLink}
-        overrideProps={{
-          contentContainerStyle: {
-            ...containerStyle,
-            paddingTop: Platform.OS === 'android' ? header?.height : 0
-          }
-        }}
+        overrideProps={overrideProps}
         renderHeader={renderHeader}
         renderEmpty={renderEmpty}
         isRefreshing={isRefreshing}
