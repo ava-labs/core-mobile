@@ -3516,7 +3516,6 @@ DEPENDENCIES:
   - lottie-react-native (from `../node_modules/lottie-react-native`)
   - NitroAvalabsCrypto (from `../node_modules/react-native-nitro-avalabs-crypto`)
   - NitroFetch (from `../node_modules/react-native-nitro-fetch`)
-  - NitroFetch (from `../node_modules/react-native-nitro-fetch`)
   - NitroModules (from `../node_modules/react-native-nitro-modules`)
   - OpenSSL-Universal (= 1.1.1100)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
