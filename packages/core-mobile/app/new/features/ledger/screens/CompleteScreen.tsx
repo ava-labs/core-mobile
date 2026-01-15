@@ -4,8 +4,10 @@ import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupC
 import React from 'react'
 import { View } from 'react-native'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useNavigation } from '@react-navigation/native'
 
 export default function CompleteScreen(): JSX.Element {
+  const navigation = useNavigation()
   const router = useRouter()
   const {
     theme: { colors }
@@ -15,11 +17,14 @@ export default function CompleteScreen(): JSX.Element {
 
   const handleComplete = (): void => {
     resetSetup()
-    // Try dismissTo if available, fallback to multiple back() calls
+    // dismiss ledger app connection modals
     // complete -> appConnection -> deviceConnection -> pathSelection -> importWallet -> wallets
-    Array.from({ length: 5 }).forEach(() => {
+    router.dismissAll()
+    router.canGoBack() && router.back()
+    const state = navigation.getState()
+    if (state?.routes.some(route => route.name === 'importWallet')) {
       router.canGoBack() && router.back()
-    })
+    }
   }
 
   return (
