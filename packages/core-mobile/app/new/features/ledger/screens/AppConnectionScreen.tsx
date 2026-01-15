@@ -7,6 +7,7 @@ import { LedgerAppConnection } from 'new/features/ledger/components/LedgerAppCon
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import Logger from 'utils/Logger'
 import LedgerService from 'services/ledger/LedgerService'
+import { PublicKeyInfo } from 'services/ledger/types'
 
 export default function AppConnectionScreen(): JSX.Element {
   const { push, back } = useRouter()
@@ -24,7 +25,7 @@ export default function AppConnectionScreen(): JSX.Element {
 
   const handleComplete = useCallback(
     async (keys: {
-      solanaKeys: Array<{ key: string; derivationPath: string; curve: string }>
+      solanaKeys: PublicKeyInfo[]
       avalancheKeys: {
         addresses: {
           evm: string
