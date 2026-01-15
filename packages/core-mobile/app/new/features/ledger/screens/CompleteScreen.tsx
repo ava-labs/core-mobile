@@ -17,15 +17,9 @@ export default function CompleteScreen(): JSX.Element {
     resetSetup()
     // Try dismissTo if available, fallback to multiple back() calls
     // complete -> appConnection -> deviceConnection -> pathSelection -> importWallet -> wallets
-    if ('dismissTo' in router && typeof router.dismissTo === 'function') {
-      // @ts-ignore - dismissTo exists but types may not be updated
-      router.dismissTo('/(modals)/accountSettings')
-    } else {
-      // Fallback to proven approach
-      Array.from({ length: 5 }).forEach(() => {
-        router.canGoBack() && router.back()
-      })
-    }
+    Array.from({ length: 5 }).forEach(() => {
+      router.canGoBack() && router.back()
+    })
   }
 
   return (

@@ -19,12 +19,13 @@ interface ProgressDotsProps {
 interface DotProps {
   isActive: boolean
   dotSize: number
-  colors: {
-    $textPrimary: string
-  }
 }
 
-const AnimatedDot: React.FC<DotProps> = ({ isActive, dotSize, colors }) => {
+const AnimatedDot: React.FC<DotProps> = ({ isActive, dotSize }) => {
+  const {
+    theme: { colors }
+  } = useTheme()
+
   const animatedStyle = useAnimatedStyle(() => {
     return {
       width: withTiming(isActive ? dotSize * 2 : dotSize, {
@@ -57,10 +58,6 @@ export const ProgressDots: React.FC<ProgressDotsProps> = ({
   gap = 6,
   testID
 }) => {
-  const {
-    theme: { colors }
-  } = useTheme()
-
   return (
     <View
       testID={testID}
@@ -76,7 +73,6 @@ export const ProgressDots: React.FC<ProgressDotsProps> = ({
           key={index}
           isActive={index === currentStep}
           dotSize={dotSize}
-          colors={colors}
         />
       ))}
     </View>
