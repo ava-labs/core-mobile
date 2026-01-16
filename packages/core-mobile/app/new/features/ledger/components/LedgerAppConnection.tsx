@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { View, Alert, ActivityIndicator } from 'react-native'
 import { Text, Button, useTheme, Icons, GroupList } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
@@ -17,6 +17,8 @@ import { ChainName } from 'services/network/consts'
 import LedgerService from 'services/ledger/LedgerService'
 import Logger from 'utils/Logger'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
+import { selectIsSolanaSupportBlocked } from 'store/posthog'
+import { useSelector } from 'react-redux'
 import { LedgerDeviceList } from './LedgerDeviceList'
 import { AnimatedIconWithText } from './AnimatedIconWithText'
 
@@ -69,16 +71,26 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   const {
     theme: { colors }
   } = useTheme()
+  const [skipSolana, setSkipSolana] = useState(false)
+  const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
 
   const hasAllKeys = useMemo(() => {
     return (
       !!keys.avalancheKeys &&
       keys.bitcoinAddress !== '' &&
       keys.xpAddress !== '' &&
-      keys.solanaKeys &&
-      keys.solanaKeys.length > 0
+      (isSolanaSupportBlocked ||
+        skipSolana ||
+        (keys.solanaKeys && keys.solanaKeys.length > 0))
     )
-  }, [keys])
+  }, [
+    isSolanaSupportBlocked,
+    keys.avalancheKeys,
+    keys.bitcoinAddress,
+    keys.solanaKeys,
+    keys.xpAddress,
+    skipSolana
+  ])
 
   const handleConnectAvalanche = useCallback(async () => {
     try {
@@ -100,7 +112,11 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
       // Show success toast notification
       showSnackbar('Avalanche app connected')
       // if get avalanche keys succeeds move forward to solana connect
-      setCurrentStep(AppConnectionStep.SOLANA_CONNECT)
+      setCurrentStep(
+        isSolanaSupportBlocked
+          ? AppConnectionStep.COMPLETE
+          : AppConnectionStep.SOLANA_CONNECT
+      )
     } catch (err) {
       Logger.error('Failed to connect to Avalanche app', err)
       setCurrentStep(AppConnectionStep.AVALANCHE_CONNECT)
@@ -110,7 +126,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
         [{ text: 'OK' }]
       )
     }
-  }, [setCurrentStep, setKeys])
+  }, [isSolanaSupportBlocked, setCurrentStep, setKeys])
 
   const handleConnectSolana = useCallback(async () => {
     try {
@@ -143,6 +159,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
 
   const handleSkipSolana = useCallback(() => {
     // Skip Solana and proceed to complete step
+    setSkipSolana(true)
     setCurrentStep(AppConnectionStep.COMPLETE)
   }, [setCurrentStep])
 
@@ -234,7 +251,11 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     }
 
     // Solana address
-    if (keys.solanaKeys.length > 0 && keys.solanaKeys[0]?.key) {
+    if (
+      keys.solanaKeys &&
+      keys.solanaKeys.length > 0 &&
+      keys.solanaKeys[0]?.key
+    ) {
       // The key is already a Solana address (Base58 encoded) from LedgerService
       const solanaAddress = keys.solanaKeys[0].key
 
