@@ -166,26 +166,13 @@ workflows:
         - ndk_version: 27.1.12297006
         - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
     - restore-gradle-cache@1: {}
-    - script-runner@0:
-        title: Fix Android Env Vars
+    - android-build@1:
         inputs:
-        - file_path: scripts/bitrise/fixAndroidEnvVars.sh
-    - script:
-        title: Build Android Internal E2E (no lint)
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -euo pipefail
-
-            cd "$ANDROID_PROJECT_LOCATION"
-
-            ./gradlew :app:assembleInternalE2e \
-              -x lint \
-              -x lintVitalAnalyzeInternalE2e
-            
-            APK_PATH="$ANDROID_PROJECT_LOCATION/app/build/outputs/apk/internal/e2e/app-internal-e2e-unsigned.apk"
-            echo "Resolved APK: $APK_PATH"
-            envman add --key BITRISE_APK_PATH --value "$APK_PATH"
+        - project_location: $ANDROID_PROJECT_LOCATION
+        - module: $ANDROID_MODULE
+        - build_type: apk
+        - cache_level: all
+        - variant: $ANDROID_BUILD_VARIANT
     - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
@@ -196,20 +183,20 @@ workflows:
         - keystore_password: $ANDROID_STORE_PASSWORD
         - keystore_alias: $ANDROID_KEY_ALIAS
         - private_key_password: $ANDROID_KEY_PASSWORD
-    - script:
-        title: Prepare signed APK for pipeline intermediate
-        inputs:
-        - content: |-
-            set -e
+    # - script:
+    #     title: Prepare signed APK for pipeline intermediate
+    #     inputs:
+    #     - content: |-
+    #         set -e
 
-            FINAL_APK_PATH="$BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk"
+    #         FINAL_APK_PATH="$BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk"
 
-            mkdir -p "$BITRISE_DEPLOY_DIR"
-            cp "$BITRISE_APK_PATH" "$FINAL_APK_PATH"
+    #         mkdir -p "$BITRISE_DEPLOY_DIR"
+    #         cp "$BITRISE_APK_PATH" "$FINAL_APK_PATH"
 
-            ls -la "$FINAL_APK_PATH"
+    #         ls -la "$FINAL_APK_PATH"
 
-            envman add --key BITRISE_APK_PATH --value "$FINAL_APK_PATH"
+    #         envman add --key BITRISE_APK_PATH --value "$FINAL_APK_PATH"
     - deploy-to-bitrise-io@2:
         inputs:
         - pipeline_intermediate_files: |-
@@ -1012,6 +999,10 @@ workflows:
       opts:
         is_expand: false
     steps:
+    - deploy-to-bitrise-io@2:
+        inputs:
+        - pipeline_intermediate_files: |-
+            $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
     - avd-manager@2.0.2:
         inputs:
         - api_level: "34"
