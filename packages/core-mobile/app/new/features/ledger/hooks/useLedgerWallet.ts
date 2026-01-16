@@ -5,10 +5,9 @@ import { Alert } from 'react-native'
 import { useDispatch } from 'react-redux'
 import LedgerService from 'services/ledger/LedgerService'
 import {
-  AvalancheKey,
   LedgerDerivationPathType,
+  LedgerKeys,
   LedgerTransportState,
-  PublicKeyInfo,
   WalletCreationOptions
 } from 'services/ledger/types'
 import { WalletType } from 'services/wallet/types'
@@ -32,11 +31,7 @@ export interface UseLedgerWalletReturn {
   connectToDevice: (deviceId: string) => Promise<void>
   disconnectDevice: () => Promise<void>
   createLedgerWallet: (
-    options: WalletCreationOptions & {
-      avalancheKeys?: AvalancheKey
-      solanaKeys?: PublicKeyInfo[]
-      bitcoinAddress?: string
-    }
+    options: WalletCreationOptions & LedgerKeys
   ) => Promise<string>
 }
 
@@ -107,11 +102,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       avalancheKeys,
       solanaKeys = [],
       bitcoinAddress
-    }: WalletCreationOptions & {
-      avalancheKeys?: AvalancheKey
-      solanaKeys?: PublicKeyInfo[]
-      bitcoinAddress?: string
-    }) => {
+    }: WalletCreationOptions & LedgerKeys) => {
       try {
         setIsLoading(true)
 

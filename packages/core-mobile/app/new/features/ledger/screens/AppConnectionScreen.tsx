@@ -5,14 +5,14 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { ProgressDots } from 'common/components/ProgressDots'
 import {
   AppConnectionStep,
-  LedgerAppConnection,
-  LocalKeyState
+  LedgerAppConnection
 } from 'new/features/ledger/components/LedgerAppConnection'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import Logger from 'utils/Logger'
 import LedgerService from 'services/ledger/LedgerService'
 import { Button } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
+import { LedgerKeys } from 'services/ledger/types'
 
 export default function AppConnectionScreen(): JSX.Element {
   const { push, back } = useRouter()
@@ -20,7 +20,7 @@ export default function AppConnectionScreen(): JSX.Element {
   const headerHeight = useHeaderHeight()
 
   // Local key state - managed only in this component
-  const [keys, setKeys] = useState<LocalKeyState>({
+  const [keys, setKeys] = useState<LedgerKeys>({
     solanaKeys: [],
     avalancheKeys: undefined,
     bitcoinAddress: '',
@@ -45,7 +45,7 @@ export default function AppConnectionScreen(): JSX.Element {
       hasConnectedDeviceId: !!connectedDeviceId,
       hasSelectedDerivationPath: !!selectedDerivationPath,
       isCreatingWallet,
-      solanaKeysCount: keys.solanaKeys.length
+      solanaKeysCount: keys.solanaKeys?.length ?? 0
     })
 
     // If wallet hasn't been created yet, create it now
@@ -177,8 +177,8 @@ export default function AppConnectionScreen(): JSX.Element {
   const handleCompleteWallet = useCallback(() => {
     Logger.info('User clicked complete wallet button', {
       hasAvalancheKeys: !!keys.avalancheKeys,
-      hasSolanaKeys: keys.solanaKeys.length > 0,
-      solanaKeysCount: keys.solanaKeys.length
+      hasSolanaKeys: keys.solanaKeys && keys.solanaKeys.length > 0,
+      solanaKeysCount: keys.solanaKeys?.length ?? 0
     })
     handleComplete()
   }, [keys, handleComplete])
