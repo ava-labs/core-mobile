@@ -1,4 +1,6 @@
+import { fetch as expoFetch } from 'expo/fetch'
 import Config from 'react-native-config'
+import AppCheckService from 'services/fcm/AppCheckService'
 import Logger from 'utils/Logger'
 import { appCheckStreamingFetch } from 'utils/api/common/appCheckFetch'
 import { CORE_HEADERS } from '../constants'
@@ -17,9 +19,7 @@ const NEWLINE = '\n'
 const isDev = typeof __DEV__ === 'boolean' && __DEV__
 
 const SUPPORTED_CHAINS_TTL_MS = 5 * 60 * 1000
-let supportedChainsCache:
-  | { fetchedAt: number; caip2Ids: string[] }
-  | undefined
+let supportedChainsCache: { fetchedAt: number; caip2Ids: string[] } | undefined
 let supportedChainsInFlight: Promise<string[] | undefined> | undefined
 
 const balanceApi = {
