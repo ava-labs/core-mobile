@@ -1,6 +1,5 @@
 import {
   NavigationTitleHeader,
-  SegmentedControl,
   showAlert,
   useTheme,
   View
@@ -13,6 +12,7 @@ import {
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
+import { SegmentedControl } from 'common/components/SegmentedControl'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
@@ -464,8 +464,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   useFocusEffect(
     useCallback(() => {
-      tabViewRef.current?.scrollResync()
-    }, [])
+      handleScrollResync()
+    }, [handleScrollResync])
   )
 
   const tabHeight = useMemo(() => {

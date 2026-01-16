@@ -1,11 +1,7 @@
-import {
-  NavigationTitleHeader,
-  SegmentedControl,
-  Text,
-  View
-} from '@avalabs/k2-alpine'
+import { NavigationTitleHeader, Text, View } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
+import { SegmentedControl } from 'common/components/SegmentedControl'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import DepositTabScreen from 'features/defiMarket/screens/DepositTabScreen'
 import React, { useCallback, useMemo, useRef, useState } from 'react'

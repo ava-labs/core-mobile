@@ -1,6 +1,5 @@
 import {
   NavigationTitleHeader,
-  SegmentedControl,
   Text,
   useMotion,
   useTheme,
@@ -15,6 +14,7 @@ import {
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { LoadingState } from 'common/components/LoadingState'
+import { SegmentedControl } from 'common/components/SegmentedControl'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useRouter } from 'expo-router'

@@ -3,7 +3,6 @@ import {
   GroupList,
   GroupListItem,
   Icons,
-  SegmentedControl,
   showAlert,
   SPRING_LINEAR_TRANSITION,
   Text,
@@ -22,6 +21,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { SegmentedControl } from 'common/components/SegmentedControl'
 import { ShareBarButton } from 'common/components/ShareBarButton'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
@@ -44,10 +44,10 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist'
+import { useDebouncedCallback } from 'use-debounce'
 import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
 import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
 import { formatLargeCurrency } from 'utils/Utils'
-import { useDebouncedCallback } from 'use-debounce'
 import { useTrackTokenActions } from '../hooks/useTrackTokenActions'
 
 const MAX_VALUE_WIDTH = '80%'
