@@ -2,8 +2,8 @@ import warmup from '../../../helpers/warmup'
 import txPage from '../../../pages/transactions.page'
 import txLoc from '../../../locators/transactions.loc'
 
-describe('Send transaction', () => {
-  it('[Smoke] should send SOL on Solana', async () => {
+describe('[Smoke] Send transaction', () => {
+  it('should send SOL on Solana', async () => {
     // login & create account
     await warmup()
     // Send

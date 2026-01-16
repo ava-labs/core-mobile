@@ -264,6 +264,10 @@ class CommonElsPage {
     return selectors.getByText(commonEls.hkd)
   }
 
+  get successfullyAdded() {
+    return selectors.getBySomeText(commonEls.successfullyAdded)
+  }
+
   listItem(name: string) {
     return selectors.getById(`list_item__${name}`)
   }
@@ -460,12 +464,14 @@ class CommonElsPage {
     await actions.tap(this.approveButton)
   }
 
-  async selectDropdownItem(item: string) {
-    const xpath = driver.isIOS
-      ? `//XCUIElementTypeCell//*[contains(@name, "${item}")]`
-      : `//android.widget.ListView//*[contains(@text, "${item}")]`
-    const ele = selectors.getByXpath(xpath)
-    await actions.click(ele)
+  async selectDropdownItem(item: string, dropdown = this.filterDropdown) {
+    const ele = selectors.getBySomeText(item)
+    if (await actions.getVisible(ele)) {
+      await actions.click(ele)
+    } else {
+      await actions.click(dropdown)
+      await actions.tap(ele)
+    }
   }
 
   async tapDelete() {

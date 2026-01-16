@@ -5,6 +5,7 @@ export default async function warmup(
   mnemonic = process.env.E2E_MNEMONIC as string
 ) {
   await onboardingPage.exitMetro()
+  await actions.printScreen()
   await onboardingPage.tapAccessExistingWallet()
   await onboardingPage.tapTypeInRecoveryPhase()
   await onboardingPage.tapAgreeAndContinue()
