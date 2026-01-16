@@ -11,7 +11,10 @@ import { SPAN_STATUS_ERROR } from '@sentry/core'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Account } from 'store/account/types'
 import { getAddressByNetwork } from 'store/account/utils'
-import { balanceApi } from 'utils/apiClient/balance/balanceApi'
+import {
+  balanceApi,
+  getSupportedChainsCached
+} from 'utils/apiClient/balance/balanceApi'
 import { GetBalancesRequestBody } from 'utils/apiClient/generated/balanceApi.client'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import Logger from 'utils/Logger'
@@ -32,6 +35,37 @@ import { buildRequestItemsForAccounts } from './utils/buildRequestItemsForAccoun
 type AccountId = string
 
 export class BalanceService {
+  private async filterNetworksBySupportedEvm(
+    networks: Network[]
+  ): Promise<{ networks: Network[]; filteredOutChainIds: number[] }> {
+    const supported = await getSupportedChainsCached()
+    if (!supported || supported.length === 0) {
+      return { networks, filteredOutChainIds: [] }
+    }
+
+    const supportedEvmIds = new Set<number>()
+    supported.forEach(caip2Id => {
+      if (!caip2Id.startsWith('eip155:')) return
+      const chainId = Number(caip2Id.split(':')[1])
+      if (Number.isFinite(chainId)) {
+        supportedEvmIds.add(chainId)
+      }
+    })
+
+    if (supportedEvmIds.size === 0) {
+      return { networks, filteredOutChainIds: [] }
+    }
+
+    const filteredOutChainIds: number[] = []
+    const filteredNetworks = networks.filter(network => {
+      if (network.vmName !== NetworkVMType.EVM) return true
+      if (supportedEvmIds.has(network.chainId)) return true
+      filteredOutChainIds.push(network.chainId)
+      return false
+    })
+
+    return { networks: filteredNetworks, filteredOutChainIds }
+  }
   /**
    * Fetch balances for multiple accounts across multiple networks.
    * Uses Promise.allSettled so each network resolves independently.
@@ -325,7 +359,12 @@ export class BalanceService {
     // Final aggregated result
     const finalResults = new Map<number, AdjustedNormalizedBalancesForAccount>()
 
-    const requestBatches = buildRequestItemsForAccount(networks, account)
+    const { networks: supportedNetworks, filteredOutChainIds } =
+      await this.filterNetworksBySupportedEvm(networks)
+    const requestBatches = buildRequestItemsForAccount(
+      supportedNetworks,
+      account
+    )
 
     const { balanceApiThrew, failedChainIds } =
       await this.processBalanceBatches({
@@ -335,6 +374,8 @@ export class BalanceService {
         finalResults,
         onBalanceLoaded
       })
+
+    filteredOutChainIds.forEach(chainId => failedChainIds.add(chainId))
 
     // If the balance API threw, we want to retry for all networks.
     // Otherwise, we only retry failed networks.
@@ -473,7 +514,12 @@ export class BalanceService {
       finalResults[account.id] = []
     }
 
-    const requestBatches = buildRequestItemsForAccounts(networks, accounts)
+    const { networks: supportedNetworks } =
+      await this.filterNetworksBySupportedEvm(networks)
+    const requestBatches = buildRequestItemsForAccounts(
+      supportedNetworks,
+      accounts
+    )
 
     const accountById = accounts.reduce((acc, a) => {
       acc[a.id] = a
@@ -481,7 +527,7 @@ export class BalanceService {
     }, {} as Record<string, Account>)
 
     const accountByAddress = accounts.reduce((acc, account) => {
-      const addresses = networks.flatMap(network =>
+      const addresses = supportedNetworks.flatMap(network =>
         getAddressesForAccountAndNetwork(account, network)
       )
       for (const address of addresses) {
