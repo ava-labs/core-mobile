@@ -13,11 +13,14 @@ import LedgerService from 'services/ledger/LedgerService'
 import { Button } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { LedgerKeys } from 'services/ledger/types'
+import { selectIsSolanaSupportBlocked } from 'store/posthog'
+import { useSelector } from 'react-redux'
 
 export default function AppConnectionScreen(): JSX.Element {
   const { push, back } = useRouter()
   const [isCreatingWallet, setIsCreatingWallet] = useState(false)
   const headerHeight = useHeaderHeight()
+  const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
 
   // Local key state - managed only in this component
   const [keys, setKeys] = useState<LedgerKeys>({
@@ -118,6 +121,21 @@ export default function AppConnectionScreen(): JSX.Element {
   }, [disconnectDevice, resetSetup, back])
 
   const progressDotsCurrentStep = useMemo(() => {
+    if (isSolanaSupportBlocked) {
+      // If Solana support is blocked, skip Solana step in progress dots
+      switch (currentAppConnectionStep) {
+        case AppConnectionStep.AVALANCHE_CONNECT:
+        case AppConnectionStep.AVALANCHE_LOADING:
+          return 0
+
+        case AppConnectionStep.COMPLETE:
+          return 1
+
+        default:
+          return 0
+      }
+    }
+
     switch (currentAppConnectionStep) {
       case AppConnectionStep.AVALANCHE_CONNECT:
       case AppConnectionStep.AVALANCHE_LOADING:
@@ -133,7 +151,7 @@ export default function AppConnectionScreen(): JSX.Element {
       default:
         return 0
     }
-  }, [currentAppConnectionStep])
+  }, [currentAppConnectionStep, isSolanaSupportBlocked])
 
   // Cleanup: Stop polling when component unmounts (unless wallet creation is in progress)
   useEffect(() => {
@@ -167,11 +185,14 @@ export default function AppConnectionScreen(): JSX.Element {
             alignItems: 'center',
             paddingTop
           }}>
-          <ProgressDots totalSteps={3} currentStep={progressDotsCurrentStep} />
+          <ProgressDots
+            totalSteps={isSolanaSupportBlocked ? 2 : 3}
+            currentStep={progressDotsCurrentStep}
+          />
         </View>
       </View>
     )
-  }, [headerHeight, progressDotsCurrentStep])
+  }, [headerHeight, isSolanaSupportBlocked, progressDotsCurrentStep])
 
   // Handler for completing wallet creation
   const handleCompleteWallet = useCallback(() => {

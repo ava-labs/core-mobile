@@ -52,7 +52,7 @@ export const AccountAddresses = ({
           }
         })()
 
-        if (address === undefined) {
+        if (address === undefined || address.length === 0) {
           return undefined
         }
 
