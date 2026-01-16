@@ -37,7 +37,9 @@ const allCaps = [
     'appium:app': androidPath,
     // 'appium:appWaitActivity': '*',
     'appium:disableWindowAnimation': true,
-    'appium:autoGrantPermissions': true
+    'appium:autoGrantPermissions': true,
+    'appium:appWaitActivity': 'com.avaxwallet.MainActivity',
+    'appium:appActivity': 'com.avaxwallet.MainActivity'
   },
   {
     platformName: 'iOS',
