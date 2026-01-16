@@ -34,7 +34,7 @@ export interface UseLedgerWalletReturn {
   createLedgerWallet: (
     options: WalletCreationOptions & {
       avalancheKeys?: AvalancheKey
-      solanaKeys?: PublicKeyInfo
+      solanaKeys?: PublicKeyInfo[]
     }
   ) => Promise<string>
 }
@@ -107,17 +107,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       solanaKeys = [],
       bitcoinAddress
     }: WalletCreationOptions & {
-      avalancheKeys?: {
-        addresses: {
-          evm: string
-          avalanche: string
-          pvm: string
-        }
-        xpubs: {
-          evm: string
-          avalanche: string
-        }
-      }
+      avalancheKeys?: AvalancheKey
       solanaKeys?: PublicKeyInfo[]
       bitcoinAddress?: string
     }) => {
@@ -143,7 +133,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           evm: addresses.evm?.startsWith('0x0x')
             ? addresses.evm.slice(2) // Remove first 0x to fix double prefix
             : addresses.evm,
-          avm: addresses.avalanche,
+          avm: addresses.avm,
           pvm: addresses.pvm
         }
 
