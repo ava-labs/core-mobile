@@ -110,8 +110,10 @@ export interface AvalancheKey {
 }
 
 export interface LedgerKeys {
-  solanaKeys: PublicKeyInfo[]
+  solanaKeys?: PublicKeyInfo[]
   avalancheKeys?: AvalancheKey
+  bitcoinAddress?: string
+  xpAddress?: string
 }
 
 // ============================================================================

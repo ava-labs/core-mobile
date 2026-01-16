@@ -10,8 +10,7 @@ import {
   LedgerDerivationPathType,
   WalletCreationOptions,
   LedgerTransportState,
-  PublicKeyInfo,
-  AvalancheKey
+  LedgerKeys
 } from 'services/ledger/types'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useLedgerWalletMap } from '../store'
@@ -36,11 +35,7 @@ interface LedgerSetupContextValue {
   connectToDevice: (deviceId: string) => Promise<void>
   disconnectDevice: () => Promise<void>
   createLedgerWallet: (
-    options: WalletCreationOptions & {
-      avalancheKeys?: AvalancheKey
-      solanaKeys?: PublicKeyInfo[]
-      bitcoinAddress?: string
-    }
+    options: WalletCreationOptions & LedgerKeys
   ) => Promise<string>
 
   // Helper methods
