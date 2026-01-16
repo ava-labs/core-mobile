@@ -102,12 +102,6 @@ class ApprovalController implements VmModuleApprovalController {
         confetti.restart()
       }, 100)
     }
-
-    const callback =
-      request.context?.[RequestContext.CALLBACK_TRANSACTION_CONFIRMED]
-    if (callback && typeof callback === 'function') {
-      callback()
-    }
   }
 
   onTransactionReverted(): void {
