@@ -288,14 +288,15 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     return buttons
   }, [
     handleSend,
-    isMeldOfframpBlocked,
     isSwapDisabled,
     token,
     isBuyable,
     isTokenStakable,
+    hasXpAddresses,
     isBridgeDisabled,
     isTokenBridgeable,
     isWithdrawable,
+    isMeldOfframpBlocked,
     navigateToSwap,
     navigateToBuy,
     canAddStake,
