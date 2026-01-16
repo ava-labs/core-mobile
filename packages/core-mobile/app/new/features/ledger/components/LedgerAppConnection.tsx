@@ -2,11 +2,7 @@ import React, { useCallback, useMemo } from 'react'
 import { View, Alert, ActivityIndicator } from 'react-native'
 import { Text, Button, useTheme, Icons, GroupList } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
-import {
-  AvalancheKey,
-  LedgerDerivationPathType,
-  PublicKeyInfo
-} from 'services/ledger/types'
+import { LedgerDerivationPathType, LedgerKeys } from 'services/ledger/types'
 import { showSnackbar } from 'common/utils/toast'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
@@ -54,17 +50,10 @@ interface LedgerAppConnectionProps {
   isCreatingWallet?: boolean
   connectedDeviceId?: string | null
   connectedDeviceName?: string
-  setKeys: React.Dispatch<React.SetStateAction<LocalKeyState>>
-  keys: LocalKeyState
+  setKeys: React.Dispatch<React.SetStateAction<LedgerKeys>>
+  keys: LedgerKeys
   setAppConnectionStep: React.Dispatch<React.SetStateAction<AppConnectionStep>>
   appConnectionStep: AppConnectionStep
-}
-
-export interface LocalKeyState {
-  solanaKeys: PublicKeyInfo[]
-  avalancheKeys?: AvalancheKey
-  bitcoinAddress: string
-  xpAddress: string
 }
 
 export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
@@ -86,6 +75,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
       !!keys.avalancheKeys &&
       keys.bitcoinAddress !== '' &&
       keys.xpAddress !== '' &&
+      keys.solanaKeys &&
       keys.solanaKeys.length > 0
     )
   }, [keys])
