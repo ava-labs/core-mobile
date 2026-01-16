@@ -1,7 +1,6 @@
 import { AppListenerEffectAPI } from 'store/types'
 import { selectAccounts } from 'store/account'
-import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
-import FCMService from 'services/fcm/FCMService'
+import { registerAndGetDeviceArn } from 'services/notifications/registerDeviceToNotificationSender'
 import Logger from 'utils/Logger'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { NewsChannelId } from 'services/notifications/channels'
@@ -32,8 +31,7 @@ export async function subscribeNewsNotifications(
     return
   }
 
-  const fcmToken = await FCMService.getFCMToken()
-  const deviceArn = await registerDeviceToNotificationSender(fcmToken)
+  const deviceArn = await registerAndGetDeviceArn()
 
   //check if only news notifications are denied
   const blockedNewsNotifications =

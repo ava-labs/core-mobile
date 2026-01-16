@@ -12,6 +12,7 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { differenceInDays, getUnixTime, millisecondsToSeconds } from 'date-fns'
 import { useRouter } from 'expo-router'
+import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import {
   DurationOptions,
   getCustomDurationIndex,
@@ -24,7 +25,6 @@ import { useStakeEstimatedRewards } from 'features/stake/hooks/useStakeEstimated
 import { convertToDurationInSeconds } from 'features/stake/utils'
 import { useStakeAmount } from 'hooks/earn/useStakeAmount'
 import { useNow } from 'hooks/time/useNow'
-import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import { useDebounce } from 'hooks/useDebounce'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
@@ -48,7 +48,7 @@ const StakeDurationScreen = (): JSX.Element => {
 
   const [stakeAmount] = useStakeAmount()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
+  const avaxPrice = useAvaxPrice()
   const { formatCurrency } = useFormatCurrency()
   const now = useNow()
   const rewardChartRef = useRef<StakeRewardChartHandle>(null)

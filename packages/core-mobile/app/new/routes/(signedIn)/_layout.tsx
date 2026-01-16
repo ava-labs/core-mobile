@@ -227,6 +227,14 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen name="(modals)/deposit" options={modalScreensOptions} />
           <Stack.Screen
+            name="(modals)/depositDetail"
+            options={stackScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/withdraw"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
             name="(modals)/wallets"
             options={{
               ...stackScreensOptions,

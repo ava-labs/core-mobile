@@ -1,6 +1,12 @@
-import { alpha, ANIMATED, showAlert, useTheme, View } from '@avalabs/k2-alpine'
+import {
+  alpha,
+  ANIMATED,
+  BlurViewWithFallback,
+  showAlert,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
 import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
-import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
 import { useBrowserContext } from 'features/browser/BrowserContext'

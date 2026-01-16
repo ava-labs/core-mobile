@@ -25,6 +25,7 @@ export const BalanceHeader = ({
   isPrivacyModeEnabled = false,
   isDeveloperModeEnabled = false,
   hideExpand = false,
+  hideSubtitle = false,
   renderMaskView,
   testID,
   onErrorPress
@@ -43,6 +44,7 @@ export const BalanceHeader = ({
   isDeveloperModeEnabled?: boolean
   testID?: string
   hideExpand?: boolean
+  hideSubtitle?: boolean
   onErrorPress?: () => void
   renderMaskView?: () => React.JSX.Element
 }): React.JSX.Element => {
@@ -109,7 +111,7 @@ export const BalanceHeader = ({
 
   const renderBalance = useCallback((): React.JSX.Element => {
     if (isLoading) {
-      return <BalanceLoader />
+      return <BalanceLoader hideSubtitle={hideSubtitle} />
     }
 
     return (
@@ -133,17 +135,21 @@ export const BalanceHeader = ({
           />
         </LoadingContent>
 
-        <View
-          style={{
-            alignSelf: 'flex-start'
-          }}>
-          {renderPriceChangeIndicator()}
-        </View>
+        {!hideSubtitle && (
+          <View
+            style={{
+              alignSelf: 'flex-start',
+              minHeight: 22
+            }}>
+            {renderPriceChangeIndicator()}
+          </View>
+        )}
       </View>
     )
   }, [
     currency,
     formattedBalance,
+    hideSubtitle,
     isLoading,
     isLoadingBalances,
     isPrivacyModeEnabled,

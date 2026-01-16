@@ -1,13 +1,13 @@
 import Logger from 'utils/Logger'
 import Config from 'react-native-config'
-import fetchWithAppCheck from 'utils/httpClient'
+import { appCheckPostJson } from 'utils/api/common/appCheckFetch'
 
 export async function unSubscribeForBalanceChange({
   deviceArn
 }: {
   deviceArn: string
 }): Promise<{ message: 'ok' }> {
-  const response = await fetchWithAppCheck(
+  const response = await appCheckPostJson(
     Config.NOTIFICATION_SENDER_API_URL + '/v1/push/balance-changes/unsubscribe',
     JSON.stringify({
       deviceArn

@@ -16,7 +16,6 @@ export enum ReactQueryKeys {
   NETWORK_CONTRACT_TOKENS = 'networkContractTokens',
   WATCHLIST_TOP_TOKENS = 'watchlistTopTokens',
   WATCHLIST_TRENDING_TOKENS = 'watchlistTrendingTokens',
-  WATCHLIST_PRICES = 'watchlistPrices',
   WATCHLIST_TOKEN_SEARCH = 'watchlistTokenSearch',
   LAST_TRANSACTED_ERC20_NETWORKS = 'lastTransactedErc20Networks',
 
@@ -48,5 +47,6 @@ export enum ReactQueryKeys {
 
   // deposit
   AAVE_AVAILABLE_MARKETS = 'aaveAvailableMarkets',
-  BENQI_AVAILABLE_MARKETS = 'benqiAvailableMarkets'
+  BENQI_AVAILABLE_MARKETS = 'benqiAvailableMarkets',
+  BENQI_ACCOUNT_SNAPSHOT = 'benqiAccountSnapshot'
 }

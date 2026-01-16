@@ -3,7 +3,6 @@ import {
   ASSET_BALANCE_SORTS,
   ASSET_MANAGE_VIEWS,
   AssetBalanceSort,
-  AssetManageView,
   AssetNetworkFilter,
   LocalTokenWithBalance
 } from 'store/balance'
@@ -16,6 +15,7 @@ import { selectEnabledNetworks } from 'store/network'
 import { usePrevious } from 'common/hooks/usePrevious'
 import { ActivityNetworkFilter } from 'features/activity/hooks/useActivityFilterAndSearch'
 import { isEqual } from 'lodash'
+import { usePortfolioView } from 'features/portfolio/store'
 
 export const useAssetsFilterAndSort = (): {
   onResetFilter: () => void
@@ -27,6 +27,8 @@ export const useAssetsFilterAndSort = (): {
   isRefetching: boolean
   isLoading: boolean
 } => {
+  const { selectedView, setSelectedView } = usePortfolioView()
+
   const erc20ContractTokens = useErc20ContractTokens()
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const { filteredTokenList, refetch, isRefetching, isLoading } =
@@ -64,9 +66,6 @@ export const useAssetsFilterAndSort = (): {
   )
   const [selectedSort, setSelectedSort] = useState<AssetBalanceSort>(
     AssetBalanceSort.HighToLow
-  )
-  const [selectedView, setSelectedView] = useState<AssetManageView>(
-    AssetManageView.List
   )
 
   const filterOption = useMemo(() => {
@@ -177,9 +176,9 @@ export const useAssetsFilterAndSort = (): {
       title: 'View',
       data: viewData,
       selected: selectedView,
-      onSelected: (value: string) => setSelectedView(value as AssetManageView)
+      onSelected: setSelectedView
     }),
-    [viewData, selectedView]
+    [viewData, selectedView, setSelectedView]
   )
 
   const onResetFilter = useCallback((): void => {

@@ -1,3 +1,3 @@
-import { DepositOnboardingScreen } from 'features/deposit/screens/DepositOnboardingScreen'
+import { OnboardingScreen } from 'features/defiMarket/screens/deposit/OnboardingScreen'
 
-export { DepositOnboardingScreen as default }
+export { OnboardingScreen as default }

@@ -62,7 +62,7 @@ export const TransactionOnboarding = ({
         {footerAccessory}
         <GroupList
           data={groupListData}
-          titleSx={{ fontFamily: 'Inter-regular', fontSize: 15 }}
+          titleSx={{ fontFamily: 'Inter-Regular', fontSize: 15 }}
           textContainerSx={{
             paddingVertical: 4
           }}

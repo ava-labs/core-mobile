@@ -58,7 +58,8 @@ class GaslessService {
     signingData,
     addressFrom,
     provider,
-    maxFeePerGas
+    maxFeePerGas,
+    waitForConfirmation = false
   }: FundTxParams): Promise<FundResult> => {
     const sdk = await this.getSdk()
     if (!sdk) {
@@ -94,11 +95,12 @@ class GaslessService {
       from: addressFrom
     })
 
-    if (result.txHash) {
+    if (result.txHash && waitForConfirmation) {
       const isConfirmed = await this.waitForConfirmation(
         result.txHash,
         provider
       )
+
       if (!isConfirmed) {
         return {
           error: {

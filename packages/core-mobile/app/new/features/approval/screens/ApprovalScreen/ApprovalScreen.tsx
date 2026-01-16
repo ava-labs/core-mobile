@@ -25,6 +25,7 @@ import {
 } from 'store/account/slice'
 import { selectIsSeedlessSigningBlocked } from 'store/posthog/slice'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import { RequestContext } from 'store/rpc/types'
 import Logger from 'utils/Logger'
 import { Eip1559Fees } from 'utils/Utils'
 import { Account } from '../../components/Account'
@@ -134,6 +135,12 @@ const ApprovalScreen = ({
         setSubmitting(false)
         return
       }
+
+      // flag VM-module retry via request context instead of mutating tx data
+      request.context = {
+        ...request.context,
+        [RequestContext.SHOULD_RETRY]: gaslessEnabled
+      }
     }
 
     try {
@@ -159,6 +166,7 @@ const ApprovalScreen = ({
     gaslessEnabled,
     handleGaslessTx,
     account,
+    request,
     onApprove,
     activeWallet.id,
     activeWallet.type,

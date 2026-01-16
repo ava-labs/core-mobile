@@ -30,3 +30,14 @@ export type AccountDisplayData = {
   onPress: () => void
   onPressDetails: () => void
 }
+
+export enum ViewOption {
+  Grid = 'Grid view',
+  List = 'List view'
+}
+
+export enum CollectibleViewOption {
+  LargeGrid = 'Large grid',
+  CompactGrid = 'Compact grid',
+  List = 'List view'
+}
