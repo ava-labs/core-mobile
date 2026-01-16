@@ -7,10 +7,18 @@ import NavigationBarButton from 'common/components/NavigationBarButton'
 import WalletCard from 'common/components/WalletCard'
 import { WalletDisplayData } from 'common/types'
 import { useRouter } from 'expo-router'
-import { useIsAllBalancesAccurate } from 'features/portfolio/hooks/useIsAllBalancesAccurate'
 import { useAllBalances } from 'features/portfolio/hooks/useAllBalances'
-import React, { RefObject, useCallback, useMemo, useRef, useState } from 'react'
+import { useIsAllBalancesAccurate } from 'features/portfolio/hooks/useIsAllBalancesAccurate'
+import React, {
+  RefObject,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import { RefreshControl } from 'react-native-gesture-handler'
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
 import {
@@ -23,6 +31,7 @@ import {
   IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID,
   IMPORTED_ACCOUNTS_VIRTUAL_WALLET_NAME
 } from '../consts'
+import { ContentReveal } from 'common/components/ContentReveal'
 
 export const WalletsScreen = (): JSX.Element => {
   const {
@@ -269,8 +278,8 @@ export const WalletsScreen = (): JSX.Element => {
   }, [colors.$textPrimary, handleAddAccount])
 
   const renderHeader = useCallback(() => {
-    if (errorMessage) {
-      return (
+    return (
+      <ContentReveal isVisible={!!errorMessage}>
         <View
           sx={{
             gap: 8,
@@ -285,9 +294,8 @@ export const WalletsScreen = (): JSX.Element => {
             {errorMessage}
           </Text>
         </View>
-      )
-    }
-    return null
+      </ContentReveal>
+    )
   }, [colors.$textDanger, errorMessage])
 
   const renderItem = useCallback(
