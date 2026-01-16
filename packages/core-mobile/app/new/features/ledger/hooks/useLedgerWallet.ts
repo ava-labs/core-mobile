@@ -35,6 +35,7 @@ export interface UseLedgerWalletReturn {
     options: WalletCreationOptions & {
       avalancheKeys?: AvalancheKey
       solanaKeys?: PublicKeyInfo[]
+      bitcoinAddress?: string
     }
   ) => Promise<string>
 }
