@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { View, Alert, ActivityIndicator } from 'react-native'
 import { Text, Button, useTheme, Icons, GroupList } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
@@ -20,10 +20,11 @@ import { BITCOIN_NETWORK, AVALANCHE_XP_NETWORK } from '@avalabs/core-chains-sdk'
 import { ChainName } from 'services/network/consts'
 import LedgerService from 'services/ledger/LedgerService'
 import Logger from 'utils/Logger'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { LedgerDeviceList } from './LedgerDeviceList'
 import { AnimatedIconWithText } from './AnimatedIconWithText'
 
-enum AppConnectionStep {
+export enum AppConnectionStep {
   AVALANCHE_CONNECT = 'avalanche-connect',
   AVALANCHE_LOADING = 'avalanche-loading',
   SOLANA_CONNECT = 'solana-connect',
@@ -48,17 +49,18 @@ interface StepConfig {
 }
 
 interface LedgerAppConnectionProps {
-  onComplete: (keys: LocalKeyState) => void
-  onCancel: () => void
   deviceName: string
   selectedDerivationPath: LedgerDerivationPathType | null
   isCreatingWallet?: boolean
   connectedDeviceId?: string | null
   connectedDeviceName?: string
-  onStepChange?: (step: number) => void
+  setKeys: React.Dispatch<React.SetStateAction<LocalKeyState>>
+  keys: LocalKeyState
+  setAppConnectionStep: React.Dispatch<React.SetStateAction<AppConnectionStep>>
+  appConnectionStep: AppConnectionStep
 }
 
-interface LocalKeyState {
+export interface LocalKeyState {
   solanaKeys: PublicKeyInfo[]
   avalancheKeys?: AvalancheKey
   bitcoinAddress: string
@@ -66,39 +68,27 @@ interface LocalKeyState {
 }
 
 export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
-  onComplete,
-  onCancel,
   deviceName,
   selectedDerivationPath: _selectedDerivationPath,
   connectedDeviceId,
   connectedDeviceName,
-  onStepChange
+  setKeys,
+  keys,
+  setAppConnectionStep: setCurrentStep,
+  appConnectionStep: currentStep
 }) => {
   const {
     theme: { colors }
   } = useTheme()
 
-  const [currentStep, setCurrentStep] = useState<AppConnectionStep>(
-    AppConnectionStep.AVALANCHE_CONNECT
-  )
-
-  // Local key state - managed only in this component
-  const [keys, setKeys] = useState<LocalKeyState>({
-    solanaKeys: [],
-    avalancheKeys: undefined,
-    bitcoinAddress: '',
-    xpAddress: ''
-  })
-
-  // Handler for completing wallet creation
-  const handleCompleteWallet = useCallback(() => {
-    Logger.info('User clicked complete wallet button', {
-      hasAvalancheKeys: !!keys.avalancheKeys,
-      hasSolanaKeys: keys.solanaKeys.length > 0,
-      solanaKeysCount: keys.solanaKeys.length
-    })
-    onComplete(keys)
-  }, [keys, onComplete])
+  const hasAllKeys = useMemo(() => {
+    return (
+      !!keys.avalancheKeys &&
+      keys.bitcoinAddress !== '' &&
+      keys.xpAddress !== '' &&
+      keys.solanaKeys.length > 0
+    )
+  }, [keys])
 
   const handleConnectAvalanche = useCallback(async () => {
     try {
@@ -130,7 +120,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
         [{ text: 'OK' }]
       )
     }
-  }, [])
+  }, [setCurrentStep, setKeys])
 
   const handleConnectSolana = useCallback(async () => {
     try {
@@ -159,12 +149,12 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
         [{ text: 'OK' }]
       )
     }
-  }, [])
+  }, [setCurrentStep, setKeys])
 
   const handleSkipSolana = useCallback(() => {
     // Skip Solana and proceed to complete step
     setCurrentStep(AppConnectionStep.COMPLETE)
-  }, [])
+  }, [setCurrentStep])
 
   // Generate address list data for the complete step
   const addressListData = useMemo(() => {
@@ -205,7 +195,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
       addresses.push({
         title: xpNetwork.chainName,
         subtitle: truncateAddress(
-          keys.xpAddress.replace(/^[XP]-/, ''),
+          stripAddressPrefix(keys.xpAddress),
           TRUNCATE_ADDRESS_LENGTH
         ),
         value: (
@@ -282,11 +272,27 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     // Always add the "Storing wallet data" row at the end
     addresses.push({
       title: 'Storing wallet data',
-      value: <LoadingState sx={{ width: 16, height: 16 }} />
+      value: hasAllKeys ? (
+        <Icons.Navigation.Check
+          color={colors.$textSuccess}
+          width={24}
+          height={24}
+        />
+      ) : (
+        <LoadingState sx={{ width: 16, height: 16 }} />
+      )
     })
 
     return addresses
-  }, [keys, colors])
+  }, [
+    keys.avalancheKeys?.addresses.evm,
+    keys.xpAddress,
+    keys.bitcoinAddress,
+    keys.solanaKeys,
+    hasAllKeys,
+    colors.$textSuccess,
+    colors.$surfaceSecondary
+  ])
 
   // Step configurations
   const getStepConfig = (step: AppConnectionStep): StepConfig | null => {
@@ -402,17 +408,6 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           <View style={{ flex: 1 }}>
             <GroupList data={addressListData} itemHeight={40} />
           </View>
-
-          <View style={{ paddingBottom: 8, paddingTop: 12 }}>
-            <Button type="primary" size="large" onPress={handleCompleteWallet}>
-              Complete Setup
-            </Button>
-            <View style={{ marginTop: 12 }}>
-              <Button type="tertiary" size="large" onPress={onCancel}>
-                Cancel setup
-              </Button>
-            </View>
-          </View>
         </View>
       )
     }
@@ -437,7 +432,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           </View>
 
           <View>
-            <View style={{ paddingHorizontal: 16, paddingBottom: 32 }}>
+            <View style={{ paddingHorizontal: 16 }}>
               <View
                 style={{
                   height: 48,
@@ -491,13 +486,12 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
         </View>
 
         <View>
-          <View style={{ paddingHorizontal: 16, paddingBottom: 32 }}>
+          <View style={{ paddingHorizontal: 16 }}>
             {config.primaryButton && (
               <Button
                 type="primary"
                 size="large"
-                onPress={config.primaryButton.onPress}
-                style={{ marginBottom: 16 }}>
+                onPress={config.primaryButton.onPress}>
                 {config.primaryButton.text}
               </Button>
             )}
@@ -506,6 +500,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
               <Button
                 type="tertiary"
                 size="large"
+                style={{ marginTop: 16 }}
                 onPress={config.secondaryButton.onPress}>
                 {config.secondaryButton.text}
               </Button>
@@ -515,29 +510,6 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
       </View>
     )
   }
-
-  const progressDotsCurrentStep = useMemo(() => {
-    switch (currentStep) {
-      case AppConnectionStep.AVALANCHE_CONNECT:
-      case AppConnectionStep.AVALANCHE_LOADING:
-        return 0
-
-      case AppConnectionStep.SOLANA_CONNECT:
-      case AppConnectionStep.SOLANA_LOADING:
-        return 1
-
-      case AppConnectionStep.COMPLETE:
-        return 2
-
-      default:
-        return 0
-    }
-  }, [currentStep])
-
-  // Notify parent of step changes
-  useEffect(() => {
-    onStepChange?.(progressDotsCurrentStep)
-  }, [progressDotsCurrentStep, onStepChange])
 
   // Create device object for display
   const connectedDevice = connectedDeviceId
