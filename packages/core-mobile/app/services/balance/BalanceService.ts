@@ -1,3 +1,4 @@
+
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { AddressIndex } from '@avalabs/types'
 import {
@@ -472,6 +473,14 @@ export class BalanceService {
       finalResults[account.id] = []
     }
 
+    const requestItems = buildRequestItemsForAccounts(networks, accounts)
+
+    const body = {
+      data: requestItems,
+      currency: currency as GetBalancesRequestBody['currency'],
+      showUntrustedTokens: true
+    }
+
     const accountById = accounts.reduce((acc, a) => {
       acc[a.id] = a
       return acc
@@ -487,41 +496,31 @@ export class BalanceService {
       return acc
     }, {} as Record<string, Account>)
 
-    const requestBatches = buildRequestItemsForAccounts(networks, accounts)
+    for await (const balance of balanceApi.getBalancesStream(body)) {
+      const id = 'id' in balance ? balance.id : undefined
+      const account =
+        (id ? accountById[id] : undefined) ??
+        (id ? accountByAddress[id] : undefined) ??
+        (accounts.length === 1 ? accounts[0] : undefined)
 
-    for (const requestItems of requestBatches) {
-      const body = {
-        data: requestItems,
-        currency: currency as GetBalancesRequestBody['currency'],
-        showUntrustedTokens: true
+      if (!account) {
+        Logger.warn(
+          '[BalanceService][getBalancesForAccountsV2] Could not map streamed balance to an account',
+          {
+            id,
+            caip2Id: 'caip2Id' in balance ? balance.caip2Id : undefined,
+            networkType:
+              'networkType' in balance ? balance.networkType : undefined
+          }
+        )
+        continue
       }
 
-      for await (const balance of balanceApi.getBalancesStream(body)) {
-        const id = 'id' in balance ? balance.id : undefined
-        const account =
-          (id ? accountById[id] : undefined) ??
-          (id ? accountByAddress[id] : undefined) ??
-          (accounts.length === 1 ? accounts[0] : undefined)
+      const normalized = mapBalanceResponseToLegacy(account, balance)
+      if (!normalized) continue
 
-        if (!account) {
-          Logger.warn(
-            '[BalanceService][getBalancesForAccountsV2] Could not map streamed balance to an account',
-            {
-              id,
-              caip2Id: 'caip2Id' in balance ? balance.caip2Id : undefined,
-              networkType:
-                'networkType' in balance ? balance.networkType : undefined
-            }
-          )
-          continue
-        }
-
-        const normalized = mapBalanceResponseToLegacy(account, balance)
-        if (!normalized) continue
-
-        onBalanceLoaded?.(normalized)
-        finalResults[account.id]?.push(normalized)
-      }
+      onBalanceLoaded?.(normalized)
+      finalResults[account.id]?.push(normalized)
     }
 
     return finalResults
@@ -583,13 +582,6 @@ type BalanceRequestItem = GetBalancesRequestBody['data'][number]
 
 type NonAvaxRequestItem = Exclude<BalanceRequestItem, { namespace: 'avax' }>
 type AvaxRequestItem = Extract<BalanceRequestItem, { namespace: 'avax' }>
-type EvmRequestItem = Extract<BalanceRequestItem, { namespace: 'eip155' }>
-
-/**
- * Keep in sync with `buildRequestItemsForAccount` constraints.
- */
-const MAX_EVM_REFERENCES = 20
-const MAX_NAMESPACES_PER_BATCH = 5
 
 type CorethAvaxItem = Extract<
   AvaxRequestItem,
@@ -744,61 +736,6 @@ const mergeAvaxItem = (acc: AvaxEntry[], item: AvaxRequestItem): void => {
   }
 }
 
-type BuildAccountsMergeState = {
-  nonEvmNonAvax: NonAvaxRequestItem[]
-  avax: AvaxEntry[]
-  evm?: EvmRequestItem
-}
-
-const mergeEvmItem = (
-  state: Pick<BuildAccountsMergeState, 'evm'>,
-  item: EvmRequestItem
-): void => {
-  if (!state.evm) {
-    state.evm = {
-      ...item,
-      addresses: uniq(item.addresses),
-      references: uniq(item.references)
-    }
-    return
-  }
-
-  state.evm.addresses = uniq([...state.evm.addresses, ...item.addresses])
-  state.evm.references = uniq([...state.evm.references, ...item.references])
-}
-
-const splitEvmReferences = (evm?: EvmRequestItem): EvmRequestItem[] => {
-  if (!evm) return []
-
-  const addresses = uniq(evm.addresses)
-  const references = uniq(evm.references)
-
-  if (references.length <= MAX_EVM_REFERENCES) {
-    return [{ ...evm, addresses, references }]
-  }
-
-  const items: EvmRequestItem[] = []
-  for (let i = 0; i < references.length; i += MAX_EVM_REFERENCES) {
-    const chunk = references.slice(i, i + MAX_EVM_REFERENCES)
-    items.push({
-      namespace: 'eip155',
-      addresses,
-      references: chunk
-    })
-  }
-  return items
-}
-
-const packIntoBatches = (
-  items: GetBalancesRequestBody['data']
-): GetBalancesRequestBody['data'][] => {
-  const batches: GetBalancesRequestBody['data'][] = []
-  for (let i = 0; i < items.length; i += MAX_NAMESPACES_PER_BATCH) {
-    batches.push(items.slice(i, i + MAX_NAMESPACES_PER_BATCH))
-  }
-  return batches.length === 0 ? [[]] : batches
-}
-
 /**
  * Builds and merges request items for multiple accounts. This avoids sending
  * duplicate namespace buckets (EVM/BTC/SVM) and merges `avax.addressDetails`
@@ -807,32 +744,20 @@ const packIntoBatches = (
 const buildRequestItemsForAccounts = (
   networks: Network[],
   accounts: Account[]
-): GetBalancesRequestBody['data'][] => {
-  const state: BuildAccountsMergeState = {
-    nonEvmNonAvax: [],
-    avax: []
-  }
+): GetBalancesRequestBody['data'] => {
+  const nonAvax: NonAvaxRequestItem[] = []
+  const avax: AvaxEntry[] = []
 
   for (const account of accounts) {
-    const batches = buildRequestItemsForAccount(networks, account)
-    for (const batch of batches) {
-      for (const item of batch) {
-        if (item.namespace === 'avax') {
-          mergeAvaxItem(state.avax, item)
-        } else if (item.namespace === 'eip155') {
-          mergeEvmItem(state, item)
-        } else {
-          mergeNonAvaxItem(state.nonEvmNonAvax, item as NonAvaxRequestItem)
-        }
+    const items = buildRequestItemsForAccount(networks, account)
+    for (const item of items) {
+      if (item.namespace === 'avax') {
+        mergeAvaxItem(avax, item)
+      } else {
+        mergeNonAvaxItem(nonAvax, item)
       }
     }
   }
 
-  const merged: GetBalancesRequestBody['data'] = [
-    ...state.nonEvmNonAvax,
-    ...splitEvmReferences(state.evm),
-    ...state.avax.map(e => e.item)
-  ]
-
-  return packIntoBatches(merged)
+  return [...nonAvax, ...avax.map(e => e.item)]
 }
