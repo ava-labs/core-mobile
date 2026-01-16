@@ -1020,6 +1020,8 @@ workflows:
         - tag: google_apis
         - abi: x86_64
         - profile: pixel_7_pro
+        - ram_size: 4096
+        - heap_size: 1024
     - wait-for-android-emulator@1.0.9: {}
     - script-runner@0:
         title: Appium Android testing

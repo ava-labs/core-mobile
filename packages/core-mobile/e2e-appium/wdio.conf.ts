@@ -37,8 +37,7 @@ const allCaps = [
     'appium:app': androidPath,
     // 'appium:appWaitActivity': '*',
     'appium:disableWindowAnimation': true,
-    'appium:autoGrantPermissions': true,
-    'appium:appWaitForLaunch': false
+    'appium:autoGrantPermissions': true
   },
   {
     platformName: 'iOS',
