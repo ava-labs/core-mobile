@@ -187,7 +187,7 @@ Metro config (`metro.config.js`) uses `react-native-svg-transformer`:
 
 Located in `patches/`:
 - `@expo+config+8.5.6.patch`: Expo config patches
-- `react-native-reanimated+3.17.5.patch`: Reanimated patches
+- `react-native-reanimated+3.18.0.patch`: Reanimated patches
 
 Applied automatically via `patch-package` in postinstall.
 
