@@ -1,8 +1,14 @@
-import { Button, Text, View } from '@avalabs/k2-alpine'
-import React from 'react'
-import { useExchangedAmount } from 'common/hooks/useExchangedAmount'
+import { ActivityIndicator, Button, Text, View } from '@avalabs/k2-alpine'
+import React, { useMemo } from 'react'
+import { useExchangeRates } from 'common/hooks/useExchangeRates'
+import { useSelector } from 'react-redux'
+import { selectSelectedCurrency } from 'store/settings/currency'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { formatCurrency as rawFormatCurrency } from 'utils/FormatCurrency'
 import { AvailableRewardsData } from '../hooks/useAvailableRewards'
 import { DefiMarketLogo } from './DefiMarketLogo'
+
+const MINIMUM_DISPLAY_AMOUNT = 0.001
 
 type RewardsBannerProps = {
   availableRewards: AvailableRewardsData
@@ -15,8 +21,29 @@ export const RewardsBanner = ({
   onClaimPress,
   isClaiming
 }: RewardsBannerProps): JSX.Element => {
-  const getAmount = useExchangedAmount()
+  const selectedCurrency = useSelector(selectSelectedCurrency)
+  const { data } = useExchangeRates()
+  const { formatCurrency } = useFormatCurrency()
+  const exchangeRate = data?.usd?.[selectedCurrency.toLowerCase()]
   const { totalRewardsFiat, rewards } = availableRewards
+
+  const formattedTotalRewardsFiat = useMemo(() => {
+    if (exchangeRate !== undefined) {
+      const amountInCurrency = totalRewardsFiat.toNumber() * exchangeRate
+      if (amountInCurrency < MINIMUM_DISPLAY_AMOUNT) {
+        return `Less than ${formatCurrency({ amount: MINIMUM_DISPLAY_AMOUNT })}`
+      }
+
+      return formatCurrency({
+        amount: amountInCurrency
+      })
+    }
+    return rawFormatCurrency({
+      amount: totalRewardsFiat.toNumber(),
+      currency: 'USD',
+      boostSmallNumberPrecision: false
+    })
+  }, [totalRewardsFiat, exchangeRate, formatCurrency])
 
   return (
     <View
@@ -34,7 +61,7 @@ export const RewardsBanner = ({
       <View sx={{ gap: 2 }}>
         <Text
           sx={{ fontFamily: 'Inter-SemiBold', fontSize: 21, lineHeight: 24 }}>
-          {getAmount(totalRewardsFiat.toNumber(), undefined, 'token', true)}
+          {formattedTotalRewardsFiat}
         </Text>
         <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -69,7 +96,7 @@ export const RewardsBanner = ({
         size="small"
         onPress={onClaimPress}
         disabled={isClaiming}>
-        {isClaiming ? 'Claiming...' : 'Claim rewards'}
+        {isClaiming ? <ActivityIndicator size="small" /> : 'Claim rewards'}
       </Button>
     </View>
   )

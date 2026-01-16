@@ -6,45 +6,27 @@ import { NotationTypes } from 'consts/FormatNumberTypes'
 import { useExchangeRates } from './useExchangeRates'
 import { useFormatCurrency } from './useFormatCurrency'
 
-type FormatType = 'currency' | 'token'
-
 export const useExchangedAmount = (): ((
   amount: number,
-  notation?: NotationTypes,
-  formatType?: FormatType,
-  showLessThanThreshold?: boolean
+  notation?: NotationTypes
 ) => string) => {
-  const { formatCurrency, formatTokenInCurrency } = useFormatCurrency()
+  const { formatCurrency } = useFormatCurrency()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { data } = useExchangeRates()
   const exchangeRate = data?.usd?.[selectedCurrency.toLowerCase()]
 
   return useCallback(
-    (
-      amount: number,
-      notation?: NotationTypes,
-      formatType: FormatType = 'currency',
-      showLessThanThreshold = false
-      // eslint-disable-next-line max-params
-    ) => {
-      const boostSmallNumberPrecision = formatType === 'token'
-      const formatter =
-        formatType === 'token' ? formatTokenInCurrency : formatCurrency
-
+    (amount: number, notation?: NotationTypes) => {
       // if the exchange rate is not available, we show the value in USD
       return exchangeRate
-        ? formatter({
-            amount: amount * exchangeRate,
-            notation,
-            showLessThanThreshold
-          })
+        ? formatCurrency({ amount: amount * exchangeRate, notation })
         : rawFormatCurrency({
             amount,
             currency: 'USD',
-            boostSmallNumberPrecision,
+            boostSmallNumberPrecision: false,
             notation
           })
     },
-    [formatCurrency, formatTokenInCurrency, exchangeRate]
+    [formatCurrency, exchangeRate]
   )
 }
