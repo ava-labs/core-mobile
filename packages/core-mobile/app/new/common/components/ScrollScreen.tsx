@@ -11,7 +11,6 @@ import React, {
   useCallback,
   useEffect,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState
 } from 'react'
@@ -67,8 +66,6 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   disableStickyFooter?: boolean
   /** Title to be displayed in the navigation header */
   navigationTitle?: string
-  /** Custom component to render in the navigation header title area (replaces navigationTitle) */
-  renderNavigationHeader?: () => React.ReactNode
   /** Custom header component to be rendered */
   renderHeader?: () => React.ReactNode
   /** Custom footer component to be rendered at the bottom of the screen */
@@ -101,7 +98,6 @@ export const ScrollScreen = ({
   hasParent,
   isModal,
   navigationTitle,
-  renderNavigationHeader,
   shouldAvoidKeyboard,
   disableStickyFooter,
   showNavigationHeaderTitle = true,
@@ -125,16 +121,9 @@ export const ScrollScreen = ({
   const footerHeight = useSharedValue<number>(0)
   const footerRef = useRef<View>(null)
 
-  const navigationHeader = useMemo(() => {
-    if (renderNavigationHeader) {
-      return renderNavigationHeader()
-    }
-    return <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />
-  }, [renderNavigationHeader, navigationTitle, title])
-
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
-      header: navigationHeader,
+      header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
       targetLayout: headerLayout,
       shouldHeaderHaveGrabber: isModal,
       hasParent,
@@ -326,26 +315,6 @@ export const ScrollScreen = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [headerHeight])
 
-  const renderHeaderCenterOverlay = useCallback(() => {
-    if (!headerCenterOverlay) {
-      return null
-    }
-
-    return (
-      <View
-        pointerEvents="none"
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: headerHeight
-        }}>
-        {headerCenterOverlay}
-      </View>
-    )
-  }, [headerCenterOverlay, headerHeight])
-
   // 90% of our screens reuse this component but only some need keyboard avoiding
   // If you have an input on the screen, you need to enable this prop
   if (shouldAvoidKeyboard) {
@@ -379,7 +348,7 @@ export const ScrollScreen = ({
 
         {renderFooterContent()}
         {renderHeaderBackground()}
-        {renderHeaderCenterOverlay()}
+        {headerCenterOverlay}
       </View>
     )
   }
@@ -409,7 +378,7 @@ export const ScrollScreen = ({
 
       {renderFooterContent()}
       {renderHeaderBackground()}
-      {renderHeaderCenterOverlay()}
+      {headerCenterOverlay}
     </View>
   )
 }

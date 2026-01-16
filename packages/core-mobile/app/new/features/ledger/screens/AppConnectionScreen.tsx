@@ -12,10 +12,12 @@ import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupC
 import Logger from 'utils/Logger'
 import LedgerService from 'services/ledger/LedgerService'
 import { Button } from '@avalabs/k2-alpine'
+import { useHeaderHeight } from '@react-navigation/elements'
 
 export default function AppConnectionScreen(): JSX.Element {
   const { push, back } = useRouter()
   const [isCreatingWallet, setIsCreatingWallet] = useState(false)
+  const headerHeight = useHeaderHeight()
 
   // Local key state - managed only in this component
   const [keys, setKeys] = useState<LocalKeyState>({
@@ -150,16 +152,26 @@ export default function AppConnectionScreen(): JSX.Element {
 
     return (
       <View
+        pointerEvents="none"
         style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          paddingTop
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: headerHeight
         }}>
-        <ProgressDots totalSteps={3} currentStep={progressDotsCurrentStep} />
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingTop
+          }}>
+          <ProgressDots totalSteps={3} currentStep={progressDotsCurrentStep} />
+        </View>
       </View>
     )
-  }, [progressDotsCurrentStep])
+  }, [headerHeight, progressDotsCurrentStep])
 
   // Handler for completing wallet creation
   const handleCompleteWallet = useCallback(() => {
