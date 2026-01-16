@@ -62,9 +62,8 @@ export const passcodeSetOptions: SetOptions = {
 
 export const bioGetOptions: GetOptions = {
   service: ENCRYPTION_KEY_SERVICE_BIO,
-  accessControl: iOS
-    ? Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE
-    : Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
+  accessControl:
+    Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE,
   authenticationPrompt: COMMON_BIO_PROMPT
 }
 
