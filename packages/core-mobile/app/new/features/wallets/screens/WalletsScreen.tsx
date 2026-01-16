@@ -1,6 +1,7 @@
 import { Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { CoreAccountType } from '@avalabs/types'
 import { useHeaderHeight } from '@react-navigation/elements'
+import { ContentReveal } from 'common/components/ContentReveal'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen, ListScreenRef } from 'common/components/ListScreen'
 import NavigationBarButton from 'common/components/NavigationBarButton'
@@ -9,16 +10,8 @@ import { WalletDisplayData } from 'common/types'
 import { useRouter } from 'expo-router'
 import { useAllBalances } from 'features/portfolio/hooks/useAllBalances'
 import { useIsAllBalancesAccurate } from 'features/portfolio/hooks/useIsAllBalancesAccurate'
-import React, {
-  RefObject,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
+import React, { RefObject, useCallback, useMemo, useRef, useState } from 'react'
 import { RefreshControl } from 'react-native-gesture-handler'
-import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
 import {
@@ -31,7 +24,6 @@ import {
   IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID,
   IMPORTED_ACCOUNTS_VIRTUAL_WALLET_NAME
 } from '../consts'
-import { ContentReveal } from 'common/components/ContentReveal'
 
 export const WalletsScreen = (): JSX.Element => {
   const {
