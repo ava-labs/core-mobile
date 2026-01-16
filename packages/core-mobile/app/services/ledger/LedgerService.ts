@@ -27,7 +27,8 @@ import {
   LedgerAppType,
   LedgerReturnCode,
   AppInfo,
-  LedgerDevice
+  LedgerDevice,
+  AvalancheKey
 } from './types'
 
 class LedgerService {
@@ -1004,17 +1005,7 @@ class LedgerService {
    * Get Avalanche keys from the connected Ledger device
    * @returns Avalanche keys (addresses for display, xpubs for wallet creation)
    */
-  async getAvalancheKeys(): Promise<{
-    addresses: {
-      evm: string
-      avm: string
-      pvm: string
-    }
-    xpubs: {
-      evm: string
-      avalanche: string
-    }
-  }> {
+  async getAvalancheKeys(): Promise<AvalancheKey> {
     Logger.info('Getting Avalanche keys')
 
     // Get addresses for display
