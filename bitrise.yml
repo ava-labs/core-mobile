@@ -999,10 +999,6 @@ workflows:
       opts:
         is_expand: false
     steps:
-    - deploy-to-bitrise-io@2:
-        inputs:
-        - pipeline_intermediate_files: |-
-            $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
     - avd-manager@2.0.2:
         inputs:
         - api_level: "34"
