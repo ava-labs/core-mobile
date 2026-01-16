@@ -90,4 +90,31 @@ export class RetryBackoffPolicy {
       return msToDelay
     }
   }
+
+  /**
+   * linearThenExponential backoff:
+   * - First `linearCount` retries: linear increase by `linearStepMs`
+   * - After that: increment grows exponentially based on `linearStepMs`
+   *   Example (linearCount=4, linearStepMs=1000):
+   *     1s, 2s, 3s, 4s, 6s, 10s, 18s, 34s...
+   */
+  static linearThenExponential(
+    linearCount: number,
+    linearStepMs: number
+  ): RetryBackoffPolicyInterface {
+    return (retryIndex: number): number => {
+      if (retryIndex < linearCount) {
+        // Linear phase: (i+1) * step
+        return (retryIndex + 1) * linearStepMs
+      }
+      // Exponential-increment phase (closed form):
+      // n = number of exponential increments applied
+      // base = linearCount * step
+      // increment sum = 2*step * (2^n - 1)
+      const n = retryIndex - linearCount + 1
+      const base = linearCount * linearStepMs
+      const incSum = 2 * linearStepMs * (Math.pow(2, n) - 1)
+      return base + incSum
+    }
+  }
 }
