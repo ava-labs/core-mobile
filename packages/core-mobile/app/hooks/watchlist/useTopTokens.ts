@@ -4,10 +4,13 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useSelector } from 'react-redux'
 import WatchlistService from 'services/watchlist/WatchlistService'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { TokensAndCharts } from 'store/watchlist'
+import { Charts, MarketToken, Prices } from 'store/watchlist'
 import { runAfterInteractions } from 'utils/runAfterInteractions'
 
-export const useTopTokens = (): UseQueryResult<TokensAndCharts, Error> => {
+export const useTopTokens = (): UseQueryResult<
+  { tokens: Record<string, MarketToken>; charts: Charts; prices: Prices },
+  Error
+> => {
   const currency = useSelector(selectSelectedCurrency)
   const isFocused = useIsFocused()
 

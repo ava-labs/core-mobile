@@ -170,5 +170,11 @@ export enum RequestContext {
 
   // used to determine if the recipient/to address is a contract
   // If we set an address for this key, the approval screen will show “To” instead of “Contract” along with the address.
-  NON_CONTRACT_RECIPIENT_ADDRESS = 'nonContractRecipient'
+  NON_CONTRACT_RECIPIENT_ADDRESS = 'nonContractRecipient',
+
+  // used to signal VM-module retry for gasless C-chain sends
+  SHOULD_RETRY = 'shouldRetry',
+
+  // used to call a callback function when a transaction is confirmed
+  CALLBACK_TRANSACTION_CONFIRMED = 'onTransactionConfirmed'
 }

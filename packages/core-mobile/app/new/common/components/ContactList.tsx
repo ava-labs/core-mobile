@@ -64,6 +64,7 @@ export const ContactList = ({
           }}
           isLast={isLastItem}
           onPress={() => onPress(item)}
+          showArrow
         />
       )
     },

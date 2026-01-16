@@ -2,8 +2,7 @@ import Logger from 'utils/Logger'
 import { AnyAction } from '@reduxjs/toolkit'
 import { AppListenerEffectAPI } from 'store/types'
 import { selectWatchlistFavoriteIds } from 'store/watchlist'
-import FCMService from 'services/fcm/FCMService'
-import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
+import { registerAndGetDeviceArn } from 'services/notifications/registerDeviceToNotificationSender'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { selectNotificationSubscription } from 'store/notifications'
 import { ChannelId } from 'services/notifications/channels'
@@ -32,8 +31,7 @@ export const setPriceAlertNotifications = async (
 
   try {
     // Get deviceArn following the same pattern as other notification services
-    const fcmToken = await FCMService.getFCMToken()
-    const deviceArn = await registerDeviceToNotificationSender(fcmToken)
+    const deviceArn = await registerAndGetDeviceArn()
 
     //check if only FAV_TOKEN_PRICE_ALERTS notifications are denied
     const blockedNotifications =

@@ -1,8 +1,7 @@
 import { AppListenerEffectAPI } from 'store/types'
 import { selectAccounts } from 'store/account'
-import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
+import { registerAndGetDeviceArn } from 'services/notifications/registerDeviceToNotificationSender'
 import { ChainId } from '@avalabs/core-chains-sdk'
-import FCMService from 'services/fcm/FCMService'
 import { unSubscribeForBalanceChange } from 'services/notifications/balanceChange/unsubscribeForBalanceChange'
 import { subscribeForBalanceChange } from 'services/notifications/balanceChange/subscribeForBalanceChange'
 import Logger from 'utils/Logger'
@@ -34,8 +33,7 @@ export async function subscribeBalanceChangeNotifications(
     return
   }
 
-  const fcmToken = await FCMService.getFCMToken()
-  const deviceArn = await registerDeviceToNotificationSender(fcmToken)
+  const deviceArn = await registerAndGetDeviceArn()
 
   //check if only BALANCE_CHANGES notifications are denied
   const blockedNotifications =

@@ -1,6 +1,6 @@
 import { TokenSubscriptionPayload } from 'services/notifications/priceAlert/types'
 import Logger from 'utils/Logger'
-import fetchWithAppCheck from 'utils/httpClient'
+import { appCheckPostJson } from 'utils/api/common/appCheckFetch'
 import Config from 'react-native-config'
 
 export async function setPriceAlertSubscriptions(
@@ -12,7 +12,7 @@ export async function setPriceAlertSubscriptions(
   )
 
   try {
-    const response = await fetchWithAppCheck(
+    const response = await appCheckPostJson(
       Config.NOTIFICATION_SENDER_API_URL +
         '/v1/push/price-alerts/custom/subscribe',
       JSON.stringify(payload)

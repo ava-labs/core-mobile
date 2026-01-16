@@ -6,12 +6,8 @@ import { useDeFiProtocolList } from 'hooks/defi/useDeFiProtocolList'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { DropdownSelection } from 'common/types'
-import {
-  DEFI_SORT_OPTIONS,
-  DEFI_VIEW_OPTIONS,
-  DeFiSortOption,
-  DeFiViewOption
-} from '../types'
+import { useDeFiView } from 'features/portfolio/store'
+import { DEFI_SORT_OPTIONS, DEFI_VIEW_OPTIONS, DeFiSortOption } from '../types'
 
 export const useDeFiProtocols = (): {
   data: DeFiSimpleProtocol[]
@@ -26,6 +22,8 @@ export const useDeFiProtocols = (): {
   error: unknown
   chainList: Record<string, DeFiChain> | undefined
 } => {
+  const { selectedView, setSelectedView } = useDeFiView()
+
   const { data: chainList } = useDeFiChainList()
   const {
     data,
@@ -42,9 +40,6 @@ export const useDeFiProtocols = (): {
 
   const [selectedSort, setSelectedSort] = useState<DeFiSortOption>(
     DeFiSortOption.NameAtoZ
-  )
-  const [selectedView, setSelectedView] = useState<DeFiViewOption>(
-    DeFiViewOption.GridView
   )
 
   const filteredProtocols = useMemo(() => {
@@ -114,9 +109,7 @@ export const useDeFiProtocols = (): {
       title: 'View',
       data: viewData,
       selected: selectedView,
-      onSelected: (value: string) => {
-        setSelectedView(value as DeFiViewOption)
-      }
+      onSelected: setSelectedView
     },
     data: filteredProtocols,
     isSuccess,

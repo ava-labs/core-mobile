@@ -376,12 +376,28 @@ export const mapBalanceResponseToLegacy = (
 
       if (tokenType === null) return null
 
-      const balanceInCurrency =
-        token.price !== undefined
-          ? new TokenUnit(token.balance, token.decimals, token.symbol).mul(
-              token.price
-            )
-          : undefined
+      let balanceInCurrency: number | undefined
+      let balanceCurrencyDisplayValue: string | undefined
+
+      if (
+        token.balanceInCurrency !== undefined &&
+        token.balanceInCurrency !== 0
+      ) {
+        // use provided value for balance in currency
+        balanceInCurrency = token.balanceInCurrency
+        balanceCurrencyDisplayValue = token.balanceInCurrency.toString()
+      } else if (token.price !== undefined) {
+        // fallback to manual calculation using price and balance
+        const calculated = new TokenUnit(
+          token.balance,
+          token.decimals,
+          token.symbol
+        ).mul(token.price)
+        balanceInCurrency = calculated.toDisplay({
+          asNumber: true
+        })
+        balanceCurrencyDisplayValue = calculated.toDisplay()
+      }
 
       return {
         // ------------- Identifiers -------------
@@ -403,13 +419,8 @@ export const mapBalanceResponseToLegacy = (
           token.decimals,
           token.symbol
         ).toDisplay(),
-        balanceInCurrency: balanceInCurrency?.toDisplay({
-          fixedDp: 2,
-          asNumber: true
-        }),
-        balanceCurrencyDisplayValue: balanceInCurrency?.toDisplay({
-          fixedDp: 2
-        }),
+        balanceInCurrency,
+        balanceCurrencyDisplayValue,
 
         // ------------- Price info -------------
         priceInCurrency: token.price,
