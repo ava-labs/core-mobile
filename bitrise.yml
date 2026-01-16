@@ -1001,12 +1001,12 @@ workflows:
     steps:
     - avd-manager@2.0.2:
         inputs:
-        - api_level: "34"
+        - api_level: "35"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
         - tag: google_apis
-        - abi: x86_64
-        - profile: pixel_7_pro
+        - abi: x86
+        - profile: pixel_7
         - ram_size: 4096
         - heap_size: 1024
     - wait-for-android-emulator@1.0.9: {}
