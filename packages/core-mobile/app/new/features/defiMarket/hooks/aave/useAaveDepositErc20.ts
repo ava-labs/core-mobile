@@ -12,7 +12,6 @@ import { AAVE_AVALANCHE3_POOL_PROXY_ABI } from 'features/defiMarket/abis/aaveAva
 import { ensureAllowance } from 'features/swap/utils/evm/ensureAllowance'
 import { TransactionParams } from '@avalabs/evm-module'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
-import { RequestContext } from 'store/rpc'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 
@@ -76,7 +75,7 @@ export const useAaveDepositErc20 = ({
         }
       }
 
-      return await request({
+      const txHash = await request({
         method: RpcMethod.ETH_SEND_TRANSACTION,
         params: [
           {
@@ -89,15 +88,24 @@ export const useAaveDepositErc20 = ({
             })
           }
         ],
-        chainId,
-        context: {
-          [RequestContext.CALLBACK_TRANSACTION_CONFIRMED]: () => {
+        chainId
+      })
+
+      // Invalidate cache in background after transaction is confirmed
+      provider
+        .waitForTransaction(txHash)
+        .then(receipt => {
+          if (receipt && receipt.status === 1) {
             queryClient.invalidateQueries({
               queryKey: [ReactQueryKeys.AAVE_AVAILABLE_MARKETS]
             })
           }
-        }
-      })
+        })
+        .catch(() => {
+          // Silently ignore - cache will be stale but not critical
+        })
+
+      return txHash
     },
     [request, market, address, asset.token, provider]
   )

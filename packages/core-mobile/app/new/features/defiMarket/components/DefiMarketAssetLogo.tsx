@@ -24,7 +24,8 @@ export const DefiMarketAssetLogo = ({
           borderColor: '$surfaceSecondary'
         }}>
         <DefiMarketLogo
-          item={market}
+          marketName={market.marketName}
+          networkLogoUri={market.network.logoUri}
           width={logoWidth}
           networkLogoWidth={networkLogoWidth}
         />

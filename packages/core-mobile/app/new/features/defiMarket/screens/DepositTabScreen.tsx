@@ -30,10 +30,15 @@ import { useDeposits } from 'hooks/earn/useDeposits'
 import { useRouter } from 'expo-router'
 import { Placeholder } from 'common/components/Placeholder'
 import { LoadingState } from 'common/components/LoadingState'
+import { DropdownSelections } from 'common/components/DropdownSelections'
 import CoreAppIconLight from '../../../assets/icons/core-app-icon-light.svg'
 import CoreAppIconDark from '../../../assets/icons/core-app-icon-dark.svg'
 import { DefiMarket } from '../types'
 import { DepositCard } from '../components/DepositCard'
+import { useDepositsFilterAndSort } from '../hooks/useDepositsFilterAndSort'
+import { useAvailableRewards } from '../hooks/useAvailableRewards'
+import { useClaimRewards } from '../hooks/useClaimRewards'
+import { RewardsBanner } from '../components/RewardsBanner'
 
 const DepositTabScreen = ({
   onScroll,
@@ -55,9 +60,18 @@ const DepositTabScreen = ({
   const scrollOffsetRef = useRef({ x: 0, y: 0 })
   const dispatch = useDispatch()
 
+  const {
+    data: filteredDeposits,
+    filter,
+    sort
+  } = useDepositsFilterAndSort({ deposits })
+
+  const { data: availableRewards } = useAvailableRewards()
+  const { claimAllRewards, isLoading: isClaimingRewards } = useClaimRewards()
+
   const data: DepositCardType[] = useMemo(() => {
-    return isLoading ? [] : [StaticCard.Add, ...deposits]
-  }, [deposits, isLoading])
+    return isLoading ? [] : [StaticCard.Add, ...filteredDeposits]
+  }, [filteredDeposits, isLoading])
 
   const handleAddDeposit = useCallback(() => {
     // @ts-ignore TODO: make routes typesafe
@@ -141,9 +155,9 @@ const DepositTabScreen = ({
           onLayout={onHeaderLayout}
           style={[
             {
-              paddingHorizontal: 16,
+              paddingHorizontal: 14,
               marginTop: 6,
-              marginBottom: 16,
+              marginBottom: 10,
               backgroundColor: theme.colors.$surfacePrimary,
               gap: 7
             },
@@ -155,9 +169,30 @@ const DepositTabScreen = ({
             anytime.
           </Text>
         </Animated.View>
+        {availableRewards.hasRewardsToClaim && (
+          <RewardsBanner
+            availableRewards={availableRewards}
+            onClaimPress={claimAllRewards}
+            isClaiming={isClaimingRewards}
+          />
+        )}
+        <DropdownSelections
+          filter={filter}
+          sort={sort}
+          sx={{ paddingHorizontal: 16, marginTop: 4 }}
+        />
       </View>
     )
-  }, [theme.colors.$surfacePrimary, onHeaderLayout, animatedHeaderStyle])
+  }, [
+    theme.colors.$surfacePrimary,
+    onHeaderLayout,
+    animatedHeaderStyle,
+    filter,
+    sort,
+    availableRewards,
+    claimAllRewards,
+    isClaimingRewards
+  ])
 
   useEffect(() => {
     if (scrollOffsetRef.current && isActive) {

@@ -1,7 +1,7 @@
 import { useIsFocused } from '@react-navigation/native'
 import { UseQueryResult, useQuery } from '@tanstack/react-query'
+import { useExchangeRates } from 'common/hooks/useExchangeRates'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { useExchangeRates } from 'hooks/defi/useExchangeRates'
 import { useSelector } from 'react-redux'
 import WatchlistService from 'services/watchlist/WatchlistService'
 import { selectSelectedCurrency } from 'store/settings/currency'

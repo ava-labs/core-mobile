@@ -11,7 +11,6 @@ import { ensureAllowance } from 'features/swap/utils/evm/ensureAllowance'
 import { TransactionParams } from '@avalabs/evm-module'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { BENQI_Q_TOKEN } from 'features/defiMarket/abis/benqiQToken'
-import { RequestContext } from 'store/rpc'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 
@@ -75,7 +74,7 @@ export const useBenqiDepositErc20 = ({
         }
       }
 
-      return await request({
+      const txHash = await request({
         method: RpcMethod.ETH_SEND_TRANSACTION,
         params: [
           {
@@ -88,15 +87,24 @@ export const useBenqiDepositErc20 = ({
             })
           }
         ],
-        chainId,
-        context: {
-          [RequestContext.CALLBACK_TRANSACTION_CONFIRMED]: () => {
+        chainId
+      })
+
+      // Invalidate cache in background after transaction is confirmed
+      provider
+        .waitForTransaction(txHash)
+        .then(receipt => {
+          if (receipt && receipt.status === 1) {
             queryClient.invalidateQueries({
               queryKey: [ReactQueryKeys.BENQI_ACCOUNT_SNAPSHOT]
             })
           }
-        }
-      })
+        })
+        .catch(() => {
+          // Silently ignore - cache will be stale but not critical
+        })
+
+      return txHash
     },
     [request, market, address, asset.token, provider]
   )

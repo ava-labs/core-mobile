@@ -89,7 +89,10 @@ export const SelectPoolScreen = (): JSX.Element => {
               alignItems: 'center',
               gap: 12
             }}>
-            <DefiMarketLogo item={item} />
+            <DefiMarketLogo
+              marketName={item.marketName}
+              networkLogoUri={item.network.logoUri}
+            />
             <View
               sx={{
                 marginLeft: 15,
@@ -145,6 +148,7 @@ export const SelectPoolScreen = (): JSX.Element => {
   return (
     <ListScreen
       title={`Choose a pool to\nstart earning`}
+      isModal
       data={isLoadingMarkets ? [] : filteredAvailableMarkets}
       renderItem={renderItem}
       renderEmpty={renderEmpty}

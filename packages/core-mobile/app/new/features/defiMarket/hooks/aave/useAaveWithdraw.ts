@@ -13,9 +13,9 @@ import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { AAVE_AVALANCHE3_POOL_PROXY_ABI } from 'features/defiMarket/abis/aaveAvalanche3PoolProxy'
-import { RequestContext } from 'store/rpc'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 
 export const useAaveWithdraw = ({
   market
@@ -27,11 +27,16 @@ export const useAaveWithdraw = ({
   const { request } = useInAppRequest()
   const activeAccount = useSelector(selectActiveAccount)
   const address = activeAccount?.addressC
+  const provider = useAvalancheEvmProvider()
 
   const withdraw = useCallback(
     async ({ amount }: { amount: TokenUnit }) => {
       if (!address) {
         throw new Error('No address found')
+      }
+
+      if (!provider) {
+        throw new Error('No provider found')
       }
 
       const assetAddress =
@@ -41,7 +46,7 @@ export const useAaveWithdraw = ({
       // See: IPool.sol#withdraw method – https://snowtrace.io/address/0x1C984121713329114d1D97f5B4Aae9D4D5BfA0eB/contract/43114/code
       const withdrawAmount = isMax ? MAX_UINT256 : amount.toSubUnit()
 
-      return await request({
+      const txHash = await request({
         method: RpcMethod.ETH_SEND_TRANSACTION,
         params: [
           {
@@ -54,17 +59,26 @@ export const useAaveWithdraw = ({
             })
           }
         ],
-        chainId: getEvmCaip2ChainId(market.network.chainId),
-        context: {
-          [RequestContext.CALLBACK_TRANSACTION_CONFIRMED]: () => {
+        chainId: getEvmCaip2ChainId(market.network.chainId)
+      })
+
+      // Invalidate cache in background after transaction is confirmed
+      provider
+        .waitForTransaction(txHash)
+        .then(receipt => {
+          if (receipt && receipt.status === 1) {
             queryClient.invalidateQueries({
               queryKey: [ReactQueryKeys.AAVE_AVAILABLE_MARKETS]
             })
           }
-        }
-      })
+        })
+        .catch(() => {
+          // Silently ignore - cache will be stale but not critical
+        })
+
+      return txHash
     },
-    [request, market, address]
+    [request, market, address, provider]
   )
 
   return {
