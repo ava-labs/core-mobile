@@ -7,6 +7,8 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { useBalanceInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
+import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalancesAccurate'
 import React from 'react'
 import Animated, { Easing, LinearTransition } from 'react-native-reanimated'
 import { Account } from 'store/account'
@@ -18,21 +20,23 @@ export const AccountListItem = ({
   account,
   wallet,
   isActive,
+  isRefreshing,
   hideSeparator,
   onPress,
-  onPressDetails,
-  balancesRefetchInterval
+  onPressDetails
 }: {
   testID: string
   account: Account
   wallet: Wallet
+  isRefreshing: boolean
   isActive: boolean
   hideSeparator: boolean
   onPress: () => void
   onPressDetails: () => void
-  balancesRefetchInterval?: number | false
 }): JSX.Element => {
   const { theme } = useTheme()
+  const balance = useBalanceInCurrencyForAccount(account.id)
+  const isBalanceAccurate = useIsAccountBalanceAccurate(account)
 
   return (
     <Animated.View layout={LinearTransition.easing(Easing.inOut(Easing.ease))}>
@@ -98,10 +102,13 @@ export const AccountListItem = ({
                 paddingRight: 14
               }}>
               <AccountBalance
-                variant="skeleton"
-                account={account}
                 isActive={isActive}
-                balancesRefetchInterval={balancesRefetchInterval}
+                balance={balance.balance}
+                isLoading={balance.isLoadingBalance}
+                isRefreshing={isRefreshing}
+                hasLoaded={balance.hasBalanceData}
+                isAccurate={isBalanceAccurate}
+                variant="skeleton"
               />
               <TouchableOpacity hitSlop={16} onPress={onPressDetails}>
                 <Icons.Alert.AlertCircle
@@ -115,7 +122,7 @@ export const AccountListItem = ({
           </View>
         </View>
       </TouchableOpacity>
-      {!hideSeparator && <Separator sx={{ marginLeft: 48 }} />}
+      {!hideSeparator && <Separator sx={{ marginLeft: 46 }} />}
     </Animated.View>
   )
 }

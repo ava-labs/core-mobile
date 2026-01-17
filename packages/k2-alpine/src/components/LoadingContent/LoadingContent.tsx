@@ -6,20 +6,25 @@ import Animated, {
   withRepeat,
   withTiming
 } from 'react-native-reanimated'
+
 import { useTheme } from '../../hooks'
+import { Icons } from '../../theme/tokens/Icons'
 
 interface LoadingContentProps {
   isLoading?: boolean
   children: React.ReactNode
   hideSpinner?: boolean
+  hasError?: boolean
   minOpacity?: number
   maxOpacity?: number
+  renderError?: () => React.ReactNode
 }
 
 export const LoadingContent = ({
   isLoading,
   children,
   hideSpinner = false,
+  hasError = false,
   minOpacity = 0.3,
   maxOpacity = 0.5
 }: LoadingContentProps): JSX.Element => {
@@ -27,8 +32,23 @@ export const LoadingContent = ({
 
   const indicatorStyle = useAnimatedStyle(() => {
     return {
-      width: withTiming(isLoading && !hideSpinner ? 20 : 0, { duration: 300 }),
-      opacity: withTiming(isLoading && !hideSpinner ? 1 : 0, { duration: 300 })
+      width: withTiming(isLoading && !hideSpinner ? 20 : 0, {
+        duration: 300
+      }),
+      opacity: withTiming(isLoading && !hideSpinner ? 1 : 0, {
+        duration: 300
+      })
+    }
+  })
+
+  const errorIndicatorStyle = useAnimatedStyle(() => {
+    return {
+      opacity: withTiming(isLoading ? 0 : 1, {
+        duration: 300
+      }),
+      left: withTiming(isLoading ? 28 : -28, {
+        duration: 300
+      })
     }
   })
 
@@ -39,16 +59,26 @@ export const LoadingContent = ({
         flexDirection: 'row',
         alignItems: 'center'
       }}>
-      {!hideSpinner && (
+      <Animated.View
+        style={[
+          { position: 'absolute', left: 0, justifyContent: 'center' },
+          indicatorStyle
+        ]}>
+        <ActivityIndicator size="small" color={theme.colors.$textPrimary} />
+      </Animated.View>
+      {hasError && (
         <Animated.View
           style={[
-            { position: 'absolute', left: 0, justifyContent: 'center' },
-            indicatorStyle
+            { position: 'absolute', justifyContent: 'center' },
+            errorIndicatorStyle
           ]}>
-          <ActivityIndicator size="small" color={theme.colors.$textPrimary} />
+          <Icons.Alert.Error
+            color={theme.colors.$textDanger}
+            width={14}
+            height={14}
+          />
         </Animated.View>
       )}
-
       <LoadingFadeInOut
         minOpacity={minOpacity}
         maxOpacity={maxOpacity}
@@ -63,11 +93,13 @@ export const LoadingFadeInOut = ({
   isLoading,
   minOpacity = 0.3,
   maxOpacity = 0.5,
+  paddingLeft = 28,
   children
 }: {
   isLoading: boolean
   minOpacity?: number
   maxOpacity?: number
+  paddingLeft?: number
   children: React.ReactNode
 }): JSX.Element => {
   const opacity = useSharedValue(maxOpacity)
@@ -87,7 +119,9 @@ export const LoadingFadeInOut = ({
   const animatedStyle = useAnimatedStyle(() => {
     return {
       opacity: opacity.value,
-      paddingLeft: withTiming(isLoading ? 28 : 0, { duration: 300 })
+      paddingLeft: withTiming(isLoading ? paddingLeft : 0, {
+        duration: 300
+      })
     }
   })
 

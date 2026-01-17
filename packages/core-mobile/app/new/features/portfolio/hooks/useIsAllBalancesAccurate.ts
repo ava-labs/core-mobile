@@ -1,12 +1,11 @@
 import { useMemo } from 'react'
-import { Account } from 'store/account'
-import { useAccountsBalances } from './useAccountsBalances'
+import { useAllBalances } from './useAllBalances'
 
 /**
  * Returns true if balance for every account is accurate (dataAccurate === true).
  */
-export function useIsAccountsBalanceAccurate(accounts: Account[]): boolean {
-  const { data } = useAccountsBalances(accounts)
+export function useIsAllBalancesAccurate(): boolean {
+  const { data } = useAllBalances()
 
   return useMemo(() => {
     const accountsArray = Object.values(data).flat()
