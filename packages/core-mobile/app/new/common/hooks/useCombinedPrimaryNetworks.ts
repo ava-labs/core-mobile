@@ -9,6 +9,7 @@ import {
 } from 'services/network/consts'
 import { selectIsSolanaSupportBlocked } from 'store/posthog/slice'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectActiveAccount } from 'store/account'
 import { useHasXpAddresses } from './useHasXpAddresses'
 
 /**
@@ -23,20 +24,25 @@ export function useCombinedPrimaryNetworks(): {
   const hasXpAddresses = useHasXpAddresses()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
+  const account = useSelector(selectActiveAccount)
 
   const networks = useMemo(() => {
     // Test networks
     if (isDeveloperMode) {
-      return isSolanaSupportBlocked
+      return isSolanaSupportBlocked ||
+        account?.addressSVM === undefined ||
+        account?.addressSVM.length === 0
         ? (TEST_PRIMARY_NETWORKS as Network[])
         : [...TEST_PRIMARY_NETWORKS, NETWORK_SOLANA_DEVNET]
     }
 
     // Main networks
-    return isSolanaSupportBlocked
+    return isSolanaSupportBlocked ||
+      account?.addressSVM === undefined ||
+      account?.addressSVM.length === 0
       ? (MAIN_PRIMARY_NETWORKS as Network[])
       : [...MAIN_PRIMARY_NETWORKS, NETWORK_SOLANA]
-  }, [isDeveloperMode, isSolanaSupportBlocked])
+  }, [account?.addressSVM, isDeveloperMode, isSolanaSupportBlocked])
 
   // filter out networks that are missing XP addresses
   const filteredNetworks = useMemo(() => {

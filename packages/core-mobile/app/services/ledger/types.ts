@@ -1,6 +1,7 @@
 import { Curve } from 'utils/publicKeys'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import { BtcWalletPolicyDetails } from '@avalabs/vm-module-types'
 
 // ============================================================================
 // LEDGER APP TYPES
@@ -57,7 +58,7 @@ export interface LedgerTransportState {
 export interface PublicKeyInfo {
   key: string
   derivationPath: string
-  curve: 'secp256k1' | 'ed25519'
+  curve: Curve
 }
 
 export interface ExtendedPublicKey {
@@ -86,17 +87,23 @@ export enum LedgerDerivationPathType {
 // LEDGER KEYS MANAGEMENT
 // ============================================================================
 
-export interface LedgerKeys {
-  solanaKeys: Array<{
-    key: string
-    derivationPath: string
-    curve: Curve
-  }>
-  avalancheKeys: {
+export interface AvalancheKey {
+  addresses: {
+    evm: string
+    avm: string
+    pvm: string
+  }
+  xpubs: {
     evm: string
     avalanche: string
-    pvm: string
-  } | null
+  }
+}
+
+export interface LedgerKeys {
+  solanaKeys?: PublicKeyInfo[]
+  avalancheKeys?: AvalancheKey
+  bitcoinAddress?: string
+  xpAddress?: string
 }
 
 // ============================================================================
@@ -115,11 +122,7 @@ export interface WalletCreationOptions {
   deviceName?: string
   derivationPathType?: LedgerDerivationPathType
   accountCount?: number
-  individualKeys?: Array<{
-    key: string
-    derivationPath: string
-    curve: Curve
-  }>
+  individualKeys?: PublicKeyInfo[]
 }
 
 // ============================================================================
@@ -131,17 +134,11 @@ interface BaseLedgerWalletData {
   deviceId: string
   vmType: NetworkVMType
   transport?: TransportBLE // Optional for backward compatibility
-  publicKeys: Array<{
-    key: string
-    derivationPath: string
-    curve: Curve
-    btcWalletPolicy?: {
-      hmacHex: string
-      xpub: string
-      masterFingerprint: string
-      name: string
+  publicKeys: Array<
+    PublicKeyInfo & {
+      btcWalletPolicy?: BtcWalletPolicyDetails
     }
-  }>
+  >
 }
 
 // BIP44 specific wallet data

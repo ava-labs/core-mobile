@@ -1,10 +1,13 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { Button, SearchBar, View } from '@avalabs/k2-alpine'
+import { NetworkVMType } from '@avalabs/vm-module-types'
 import { ListRenderItem } from '@shopify/flash-list'
 import { ListScreen } from 'common/components/ListScreen'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { FlatList } from 'react-native'
+import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
 
 export const SelectTokenScreen = <T extends object>({
   tokens,
@@ -25,6 +28,7 @@ export const SelectTokenScreen = <T extends object>({
   networks?: Network[]
   networkChainId?: number
 }): JSX.Element => {
+  const account = useSelector(selectActiveAccount)
   const [selectedNetworkFilter, setSelectedNetworkFilter] =
     useState<NetworkFilter>(ALL_NETWORKS)
   const filteredTokens = useMemo(
@@ -62,8 +66,18 @@ export const SelectTokenScreen = <T extends object>({
     [selectedNetworkFilter]
   )
 
+  // remove solana network from the list if account has no SVM address
+  const filteredNetworks = useMemo(() => {
+    const accountHasSvmAddress =
+      account?.addressSVM !== undefined && account?.addressSVM.length > 0
+    if (accountHasSvmAddress) {
+      return networks
+    }
+    return networks.filter(network => network.vmName !== NetworkVMType.SVM)
+  }, [account?.addressSVM, networks])
+
   const renderNetworkSelector = useCallback(() => {
-    if (networks.length === 0) {
+    if (filteredNetworks.length === 0) {
       return
     }
 
@@ -73,11 +87,11 @@ export const SelectTokenScreen = <T extends object>({
         contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
         horizontal
         showsHorizontalScrollIndicator={false}
-        data={[ALL_NETWORKS, ...networks]}
+        data={[ALL_NETWORKS, ...filteredNetworks]}
         renderItem={renderNetwork}
       />
     )
-  }, [networks, renderNetwork])
+  }, [filteredNetworks, renderNetwork])
 
   const renderHeader = useCallback(() => {
     return (
@@ -90,12 +104,12 @@ export const SelectTokenScreen = <T extends object>({
 
   useEffect(() => {
     if (networkChainId) {
-      const network = networks.find(n => n.chainId === networkChainId)
+      const network = filteredNetworks.find(n => n.chainId === networkChainId)
       if (network) {
         setSelectedNetworkFilter(network)
       }
     }
-  }, [networkChainId, networks])
+  }, [networkChainId, filteredNetworks])
 
   useEffect(() => {
     setTimeout(() => {
