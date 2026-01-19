@@ -35,7 +35,7 @@ workflows:
         inputs:
         - ndk_version: 27.1.12297006
         - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
-    # - restore-gradle-cache@1: {}
+    - restore-gradle-cache@1: {}
     - android-build@1:
         inputs:
         - project_location: $ANDROID_PROJECT_LOCATION
@@ -43,7 +43,7 @@ workflows:
         - build_type: aab
         - cache_level: all
         - variant: $ANDROID_BUILD_VARIANT
-    # - save-gradle-cache@1: {}
+    - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_AAB_PATH
@@ -165,7 +165,7 @@ workflows:
         inputs:
         - ndk_version: 27.1.12297006
         - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
-    # - restore-gradle-cache@1: {}
+    - restore-gradle-cache@1: {}
     - script-runner@0:
         title: Fix Android Env Vars
         inputs:
@@ -186,7 +186,7 @@ workflows:
             APK_PATH="$ANDROID_PROJECT_LOCATION/app/build/outputs/apk/internal/e2e/app-internal-e2e-unsigned.apk"
             echo "Resolved APK: $APK_PATH"
             envman add --key BITRISE_APK_PATH --value "$APK_PATH"
-    # - save-gradle-cache@1: {}
+    - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_APK_PATH
@@ -256,7 +256,7 @@ workflows:
     - brew-install@1:
         inputs:
         - packages: autoconf automake libtool
-    # - restore-cocoapods-cache@1: {}
+    - restore-cocoapods-cache@1: {}
     - script@1:
         title: Copy Gemfile to iOS folder
         inputs:
@@ -273,8 +273,8 @@ workflows:
     - cocoapods-install@2:
         inputs:
         - verbose: "true"
-        - source_root_path: $BITRISE_SOURCE_DIR/ios
-    # - save-cocoapods-cache@1: {}
+        - source_root_path: $BITRISE_SOURCE_DIR/packages/core-mobile/ios
+    - save-cocoapods-cache@1: {}
     - xcode-archive@5.8.0:
         inputs:
         - project_path: $IOS_PROJECT_PATH
@@ -289,7 +289,7 @@ workflows:
     - brew-install@1:
         inputs:
         - packages: autoconf automake libtool
-    # - restore-cocoapods-cache@1: {}
+    - restore-cocoapods-cache@1: {}
     - script@1:
         title: Copy Gemfile to iOS folder
         inputs:
@@ -301,8 +301,8 @@ workflows:
     - cocoapods-install@2:
         inputs:
         - verbose: "true"
-        - source_root_path: $BITRISE_SOURCE_DIR/ios
-    # - save-cocoapods-cache@1: {}
+        - source_root_path: $BITRISE_SOURCE_DIR/packages/core-mobile/ios
+    - save-cocoapods-cache@1: {}
     - script@1:
         title: Build iOS Simulator
         inputs:
