@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useFocusEffect } from 'expo-router'
 import Config from 'react-native-config'
 import { ScrollScreen } from './ScrollScreen'
+import Animated, { FadeIn } from 'react-native-reanimated'
 
 export const SelectAvatar = memo(
   ({
@@ -127,7 +128,8 @@ export const SelectAvatar = memo(
             flex: 1
           }}>
           {avatar?.source && (
-            <View
+            <Animated.View
+              entering={FadeIn.delay(200)}
               style={{
                 flex: 1,
                 justifyContent: 'center',
@@ -139,7 +141,7 @@ export const SelectAvatar = memo(
                 size={isScreenSmall ? 100 : 'large'}
                 testID="selected_avatar"
               />
-            </View>
+            </Animated.View>
           )}
           {
             // TODO: Remove this once we have a proper way to handle avatar selection on appium tests.

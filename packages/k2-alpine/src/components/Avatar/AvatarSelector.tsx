@@ -1,5 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react'
-import { ImageSourcePropType, ListRenderItem, Platform } from 'react-native'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  Animated,
+  ImageSourcePropType,
+  ListRenderItem,
+  Platform
+} from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
 import { SvgProps } from 'react-native-svg'
 import { isScreenSmall } from '../../utils'
@@ -22,6 +27,8 @@ export const AvatarSelector = ({
 
   const flatListRef = useRef<FlatList>(null)
   const hasScrolledToSelected = useRef(false)
+  const [isReady, setIsReady] = useState(!selectedId)
+  const fadeAnim = useRef(new Animated.Value(isReady ? 1 : 0)).current
 
   const handleSelect = useCallback(
     (index: number): void => {
@@ -91,7 +98,12 @@ export const AvatarSelector = ({
 
   // Scroll to selected avatar after initial render
   useEffect(() => {
-    if (selectedId && !hasScrolledToSelected.current && flatListRef.current) {
+    if (!selectedId) {
+      setIsReady(true)
+      return
+    }
+
+    if (!hasScrolledToSelected.current && flatListRef.current) {
       const selectedIndex = avatars.findIndex(
         avatar => avatar.id === selectedId
       )
@@ -100,14 +112,30 @@ export const AvatarSelector = ({
         setTimeout(() => {
           flatListRef.current?.scrollToIndex({
             index: selectedIndex,
-            animated: true,
+            animated: false,
             viewPosition: 0.5
           })
           hasScrolledToSelected.current = true
+          setIsReady(true)
         }, 100)
+      } else {
+        setIsReady(true)
       }
     }
   }, [selectedId, avatars])
+
+  useEffect(() => {
+    if (!isReady) {
+      fadeAnim.setValue(0)
+      return
+    }
+
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true
+    }).start()
+  }, [fadeAnim, isReady])
 
   const handleScrollToIndexFailed = useCallback(
     (info: { index: number; averageItemLength: number }) => {
@@ -115,7 +143,7 @@ export const AvatarSelector = ({
       setTimeout(() => {
         flatListRef.current?.scrollToIndex({
           index: info.index,
-          animated: true,
+          animated: false,
           viewPosition: 0.5
         })
       }, 100)
@@ -124,26 +152,28 @@ export const AvatarSelector = ({
   )
 
   return (
-    <FlatList
-      ref={flatListRef}
-      data={avatars}
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      renderItem={renderItem}
-      windowSize={7}
-      contentOffset={contentOffset}
-      initialNumToRender={12}
-      maxToRenderPerBatch={12}
-      updateCellsBatchingPeriod={50}
-      keyExtractor={item => item.id}
-      onScrollToIndexFailed={handleScrollToIndexFailed}
-      contentContainerStyle={{
-        paddingHorizontal: gap - configuration.spacing * 2
-      }}
-      style={{
-        height: avatarWidth * 2
-      }}
-    />
+    <Animated.View style={{ opacity: fadeAnim }}>
+      <FlatList
+        ref={flatListRef}
+        data={avatars}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        renderItem={renderItem}
+        windowSize={7}
+        contentOffset={contentOffset}
+        initialNumToRender={12}
+        maxToRenderPerBatch={12}
+        updateCellsBatchingPeriod={50}
+        keyExtractor={item => item.id}
+        onScrollToIndexFailed={handleScrollToIndexFailed}
+        contentContainerStyle={{
+          paddingHorizontal: gap - configuration.spacing * 2
+        }}
+        style={{
+          height: avatarWidth * 2
+        }}
+      />
+    </Animated.View>
   )
 }
 
