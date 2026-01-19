@@ -540,6 +540,7 @@ PODS:
     - glog
     - hermes-engine
     - NitroModules
+    - OpenSSL-Universal (= 1.1.1100)
     - RCT-Folly (= 2024.11.18.00)
     - RCTRequired
     - RCTTypeSafety
@@ -1998,7 +1999,7 @@ PODS:
   - react-native-branch (6.8.0):
     - BranchSDK (= 3.12.2)
     - React-Core
-  - react-native-compat (2.23.0):
+  - react-native-compat (2.11.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -4081,7 +4082,7 @@ SPEC CHECKSUMS:
   lottie-react-native: 8bc11e10576d1a3f77f4e0ae5b70503c5c890a09
   MultiplatformBleAdapter: b1fddd0d499b96b607e00f0faa8e60648343dc1d
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
-  NitroAvalabsCrypto: 1e5e1dbdc072022443c355b70d6d598841bf8557
+  NitroAvalabsCrypto: 52ffa9d3e5fb4d2928024773dd444b06a930c6b7
   NitroFetch: 23ea318ee7382714fc4d32a4777583dba391833a
   NitroModules: 6a2c62dd870fa31c50daa55b63f59adecc68a8eb
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
@@ -4124,7 +4125,7 @@ SPEC CHECKSUMS:
   react-native-ble-plx: f2c13ceb441f17266d3dc6a56e603e2ae820a574
   react-native-bottom-tabs: 05d040c837f04e57e6973d553db5e69c8e279113
   react-native-branch: 0229b46e762bc16ab5289e5eac167738b94c089b
-  react-native-compat: 2d4f00e2a80258c0cec6e7df3180bcfe3404bd6f
+  react-native-compat: 4594cac40c688f5ac4984e93f8c8e31496f4e614
   react-native-config: ea75335a7cca1d3326de1da384227e580a7c082e
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-in-app-updates: e655bab46849c5563b954f681c40ce46df0f3cbe

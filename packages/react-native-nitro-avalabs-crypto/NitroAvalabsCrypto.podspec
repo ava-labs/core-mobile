@@ -24,6 +24,7 @@ Pod::Spec.new do |s|
 
   s.dependency 'React-jsi'
   s.dependency 'React-callinvoker'
+  s.dependency 'OpenSSL-Universal', '1.1.1100'
 
   load 'nitrogen/generated/ios/NitroAvalabsCrypto+autolinking.rb'
   add_nitrogen_files(s)
@@ -63,7 +64,7 @@ Pod::Spec.new do |s|
   s.user_target_xcconfig = {
       'LIBRARY_SEARCH_PATHS[sdk=iphoneos*]' => '$(inherited) "$(PODS_ROOT)/../../node_modules/react-native-nitro-avalabs-crypto/ios/secp-build/iphoneos-arm64/lib"',
     'LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]' => '$(inherited) "$(PODS_ROOT)/../../node_modules/react-native-nitro-avalabs-crypto/ios/secp-build/iphonesimulator-arm64/lib"',
-    'OTHER_LDFLAGS' => '$(inherited) -lsecp256k1'
+    'OTHER_LDFLAGS' => '$(inherited) -lsecp256k1 -lcrypto -lssl'
 }
 
   install_modules_dependencies(s)

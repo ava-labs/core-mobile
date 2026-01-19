@@ -58,6 +58,9 @@ public:
     const BufferOrString& messageHash,
     const BufferOrString& signature) override;
 
+  std::shared_ptr<ArrayBuffer> getExtendedPublicKey(
+    const BufferOrString& secretKey) override;
+
 
 protected:
   // If your nitrogen requires it, you can override loadHybridMethods(),

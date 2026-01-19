@@ -66,4 +66,12 @@ export interface Crypto extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
     messageHash: HexLike,
     signature: HexLike
   ): boolean
+
+  /**
+   * Ed25519 extended public key derivation.
+   * Returns concatenated buffer: head (32 bytes) + prefix (32 bytes) + scalar (32 bytes) + pointBytes (32 bytes) = 128 bytes total.
+   * @param secretKey Hex string or ArrayBuffer (32 bytes)
+   * @returns ArrayBuffer containing all extended public key components (128 bytes)
+   */
+  getExtendedPublicKey(secretKey: HexLike): ArrayBuffer
 }

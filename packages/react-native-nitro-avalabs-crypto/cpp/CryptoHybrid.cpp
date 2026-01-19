@@ -3,6 +3,10 @@
 #include <algorithm>
 #include <cctype>
 #include <stdexcept>
+#ifndef OPENSSL_NOT_AVAILABLE
+#include <openssl/evp.h>
+#include <openssl/sha.h>
+#endif
 #ifdef __ANDROID__
 #include <android/log.h>
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, "CryptoHybrid", __VA_ARGS__)
@@ -312,5 +316,100 @@ bool CryptoHybrid::verifySchnorr(
 
   return secp256k1_schnorrsig_verify(ctx(), sig.data(), msg32.data(), 32, &xpk) == 1;
 }
+/* ------------------------- Ed25519 Extended Public Key ------------------------- */
+/* Implements Ed25519 extended public key derivation as per @noble/curves.
+ * Uses OpenSSL (same as react-native-quick-crypto) for Ed25519 operations.
+ *
+ * Algorithm (RFC 8032 / SLIP-10):
+ * 1. Hash 32-byte secret key with SHA-512 to get 64 bytes
+ * 2. First 32 bytes = head (scalar before clamping)
+ * 3. Last 32 bytes = prefix (chain code for key derivation)
+ * 4. Clamp head: head[0] &= 0xf8; head[31] &= 0x7f; head[31] |= 0x40;
+ * 5. Compute public point = scalar * G (Ed25519 base point)
+ * 6. Return all components as 128-byte buffer for JS to extract
+ */
+
+ std::shared_ptr<ArrayBuffer>
+ CryptoHybrid::getExtendedPublicKey(const BufferOrString &secretKey) {
+ #ifdef OPENSSL_NOT_AVAILABLE
+   throw std::runtime_error("Ed25519 getExtendedPublicKey requires OpenSSL, but "
+                            "it was not found during build. "
+                            "Please ensure react-native-quick-crypto is "
+                            "properly installed and OpenSSL is available.");
+ #else
+   // Input validation
+   auto sk32 = require32(secretKey, "secretKey");
+ 
+   // Step 1: Hash secret key with SHA-512 to get 64 bytes
+   std::array<uint8_t, 64> hash64{};
+   EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
+   if (!mdctx) {
+     throw std::runtime_error("Ed25519: EVP_MD_CTX_new failed");
+   }
+ 
+   if (EVP_DigestInit_ex(mdctx, EVP_sha512(), nullptr) != 1) {
+     EVP_MD_CTX_free(mdctx);
+     throw std::runtime_error("Ed25519: EVP_DigestInit_ex failed");
+   }
+ 
+   if (EVP_DigestUpdate(mdctx, sk32.data(), 32) != 1) {
+     EVP_MD_CTX_free(mdctx);
+     throw std::runtime_error("Ed25519: EVP_DigestUpdate failed");
+   }
+ 
+   unsigned int hashLen = 64;
+   if (EVP_DigestFinal_ex(mdctx, hash64.data(), &hashLen) != 1 ||
+       hashLen != 64) {
+     EVP_MD_CTX_free(mdctx);
+     throw std::runtime_error("Ed25519: SHA-512 failed");
+   }
+   EVP_MD_CTX_free(mdctx);
+ 
+   // Step 2: Extract head (first 32 bytes) and prefix (last 32 bytes)
+   std::array<uint8_t, 32> head{};
+   std::array<uint8_t, 32> prefix{};
+   std::copy(hash64.begin(), hash64.begin() + 32, head.begin());
+   std::copy(hash64.begin() + 32, hash64.end(), prefix.begin());
+ 
+   // Step 3: Clamp the scalar (RFC 8032 section 5.1.5)
+   // This ensures: scalar ∈ [2^254, 2^255) and is a multiple of 8
+   std::array<uint8_t, 32> scalar = head;
+   scalar[0] &= 0xf8;  // Clear bottom 3 bits (cofactor = 8)
+   scalar[31] &= 0x7f; // Clear top bit (ensure < 2^255)
+   scalar[31] |= 0x40; // Set second-highest bit (ensure >= 2^254)
+ 
+   // Step 4: Derive Ed25519 public key from clamped scalar
+   // OpenSSL's EVP_PKEY_ED25519 expects the clamped scalar as "private key"
+   EVP_PKEY *pkey = EVP_PKEY_new_raw_private_key(EVP_PKEY_ED25519, nullptr,
+                                                 scalar.data(), 32);
+ 
+   if (!pkey) {
+     throw std::runtime_error("Ed25519: EVP_PKEY_new_raw_private_key failed");
+   }
+ 
+   // Extract the public key (32 bytes)
+   std::array<uint8_t, 32> pointBytes{};
+   size_t pubkeyLen = 32;
+   int result = EVP_PKEY_get_raw_public_key(pkey, pointBytes.data(), &pubkeyLen);
+   EVP_PKEY_free(pkey);
+ 
+   if (result != 1 || pubkeyLen != 32) {
+     throw std::runtime_error("Ed25519: EVP_PKEY_get_raw_public_key failed");
+   }
+ 
+   // Step 5: Pack all components into 128-byte buffer
+   // Layout: head(32) || prefix(32) || scalar(32) || pointBytes(32)
+   // JavaScript will extract pointBytes using .slice(96, 128)
+   std::vector<uint8_t> buffer(128);
+   std::copy(head.begin(), head.end(), buffer.begin());          // 0-31: head
+   std::copy(prefix.begin(), prefix.end(), buffer.begin() + 32); // 32-63: prefix
+   std::copy(scalar.begin(), scalar.end(),
+             buffer.begin() + 64); // 64-95: scalar (clamped)
+   std::copy(pointBytes.begin(), pointBytes.end(),
+             buffer.begin() + 96); // 96-127: pointBytes
+ 
+   return toAB(buffer);
+ #endif // OPENSSL_NOT_AVAILABLE
+ }
 
 } // namespace margelo::nitro::nitroavalabscrypto

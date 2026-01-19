@@ -48,6 +48,37 @@ include_directories("${SECP256K1_INCLUDE_DIR}")
 
 find_library(LOG_LIB log)
 
+# Find OpenSSL libraries (used for Ed25519 getExtendedPublicKey)
+# OpenSSL is provided by react-native-quick-crypto, but may not be findable via find_library
+# Try prefab first, then find_library, but make it optional
+set(OPENSSL_FOUND FALSE)
+set(CRYPTO_LIB "")
+set(SSL_LIB "")
+
+# Try prefab (if react-native-quick-crypto provides it)
+find_package(OpenSSL QUIET)
+if(OpenSSL_FOUND)
+    message(STATUS "Found OpenSSL via prefab")
+    set(CRYPTO_LIB OpenSSL::crypto)
+    set(SSL_LIB OpenSSL::ssl)
+    set(OPENSSL_FOUND TRUE)
+else()
+    # Fallback to find_library
+    find_library(CRYPTO_LIB crypto)
+    find_library(SSL_LIB ssl)
+    if(CRYPTO_LIB AND SSL_LIB)
+        message(STATUS "Found OpenSSL via find_library")
+        set(OPENSSL_FOUND TRUE)
+    else()
+        message(WARNING "OpenSSL libraries not found. Ed25519 getExtendedPublicKey will throw at runtime.")
+        message(WARNING "  CRYPTO_LIB: ${CRYPTO_LIB}")
+        message(WARNING "  SSL_LIB: ${SSL_LIB}")
+        # Set to empty strings to avoid CMake errors
+        set(CRYPTO_LIB "")
+        set(SSL_LIB "")
+    endif()
+endif()
+
 # Link all libraries together
 target_link_libraries(
     ${PACKAGE_NAME}
@@ -55,3 +86,22 @@ target_link_libraries(
     ${SECP256K1_LIB}
     android
 )
+
+# Conditionally link OpenSSL if found
+if(OPENSSL_FOUND AND CRYPTO_LIB AND SSL_LIB)
+    target_link_libraries(${PACKAGE_NAME} ${CRYPTO_LIB} ${SSL_LIB})
+    # Add OpenSSL include directories if using prefab
+    if(TARGET OpenSSL::crypto)
+        # Using prefab - includes are handled automatically
+        message(STATUS "OpenSSL linked successfully via prefab")
+    else()
+        # Using find_library - may need to add include paths manually
+        # Try to find OpenSSL headers (they might be in system paths)
+        message(STATUS "OpenSSL linked successfully via find_library")
+    endif()
+else()
+    message(WARNING "OpenSSL not linked - getExtendedPublicKey will fail at runtime")
+    message(WARNING "  The JavaScript patch will use react-native-quick-crypto as fallback.")
+    # Add a compile-time define so the code knows OpenSSL is not available
+    target_compile_definitions(${PACKAGE_NAME} PRIVATE OPENSSL_NOT_AVAILABLE)
+endif()
