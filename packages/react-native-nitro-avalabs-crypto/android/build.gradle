@@ -597,8 +597,10 @@ repositories {
 def kotlin_version = getExtOrDefault("kotlinVersion")
 
 dependencies {
-  // Avoid packaging react-android into this library AAR; app already provides it.
-  compileOnly "com.facebook.react:react-android"
+  implementation "com.facebook.react:react-android"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  implementation project(":react-native-nitro-modules")
+  implementation(project(":react-native-nitro-modules")) {
+    // Prevent duplicate React runtime classes at app minify time.
+    exclude group: "com.facebook.react", module: "react-android"
+  }
 }
