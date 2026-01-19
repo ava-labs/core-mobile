@@ -1038,6 +1038,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.avaxwallet.internal.NotificationServiceExtensionInternal;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Bitrise iOS app-store - (org.avalabs.avaxwallet.internal.NotificationServiceExtensionInternal)";
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
