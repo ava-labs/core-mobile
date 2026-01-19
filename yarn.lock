@@ -33858,7 +33858,7 @@ __metadata:
     nitrogen: 0.32.0
     react: 19.1.0
     react-native: 0.81.5
-    react-native-nitro-modules: 0.32.1
+    react-native-nitro-modules: 0.32.2
     typescript: ^5.8.3
   peerDependencies:
     react: "*"
@@ -33879,16 +33879,6 @@ __metadata:
     react-native-worklets-core:
       optional: true
   checksum: a46cce48b7b20af075aad995fed5b0c915d7bc7ec97d4f03212ac5ae808731f23d6265a36d5e23e9ccdb1525dfd3fb558d08ecad57dc0d87be069c005a67b5c7
-  languageName: node
-  linkType: hard
-
-"react-native-nitro-modules@npm:0.32.1":
-  version: 0.32.1
-  resolution: "react-native-nitro-modules@npm:0.32.1"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 766a54fff577d9800457bf018753b07af18f76084be996e3cf58049029f9724cb8bb02ecce688a12f1e1cab0dad729de3ee2b15e4c9f54c26fc2c1c6597060f6
   languageName: node
   linkType: hard
 
