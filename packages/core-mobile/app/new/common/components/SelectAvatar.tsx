@@ -13,8 +13,8 @@ import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useFocusEffect } from 'expo-router'
 import Config from 'react-native-config'
-import { ScrollScreen } from './ScrollScreen'
 import Animated, { FadeIn } from 'react-native-reanimated'
+import { ScrollScreen } from './ScrollScreen'
 
 export const SelectAvatar = memo(
   ({
