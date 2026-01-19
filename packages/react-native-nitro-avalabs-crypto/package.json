@@ -60,7 +60,7 @@
     "@types/react": "19.1.10",
     "eslint": "8.50.0",
     "eslint-plugin-avalabs-mobile": "workspace:*",
-    "nitrogen": "*",
+    "nitrogen": "0.32.0",
     "react": "19.1.0",
     "react-native": "0.81.5",
     "react-native-nitro-modules": "0.32.1",

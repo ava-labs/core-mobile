@@ -8,6 +8,7 @@ import {
   Text,
   TouchableOpacity,
   useTheme,
+  SegmentedControl,
   View
 } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
@@ -21,7 +22,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { SegmentedControl } from 'common/components/SegmentedControl'
 import { ShareBarButton } from 'common/components/ShareBarButton'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'

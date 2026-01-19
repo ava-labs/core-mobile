@@ -3,7 +3,8 @@ import {
   Text,
   useMotion,
   useTheme,
-  View
+  View,
+  SegmentedControl
 } from '@avalabs/k2-alpine'
 import { useIsFocused } from '@react-navigation/native'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
@@ -14,7 +15,6 @@ import {
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { LoadingState } from 'common/components/LoadingState'
-import { SegmentedControl } from 'common/components/SegmentedControl'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useRouter } from 'expo-router'

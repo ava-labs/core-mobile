@@ -5,7 +5,12 @@ import {
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { ChainId } from '@avalabs/core-chains-sdk'
-import { NavigationTitleHeader, useTheme, View } from '@avalabs/k2-alpine'
+import {
+  NavigationTitleHeader,
+  useTheme,
+  View,
+  SegmentedControl
+} from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
@@ -14,7 +19,6 @@ import {
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
-import { SegmentedControl } from 'common/components/SegmentedControl'
 import { TokenHeader } from 'common/components/TokenHeader'
 import {
   AVAX_TOKEN_ID,
