@@ -256,7 +256,7 @@ workflows:
     - brew-install@1:
         inputs:
         - packages: autoconf automake libtool
-    - restore-cocoapods-cache@1: {}
+    # - restore-cocoapods-cache@1: {}
     - script@1:
         title: Copy Gemfile to iOS folder
         inputs:
@@ -273,7 +273,7 @@ workflows:
     - cocoapods-install@2:
         inputs:
         - verbose: "true"
-        - source_root_path: $BITRISE_SOURCE_DIR/packages/core-mobile/ios
+        - source_root_path: $BITRISE_SOURCE_DIR/ios
     - save-cocoapods-cache@1: {}
     - xcode-archive@5.8.0:
         inputs:
@@ -289,7 +289,7 @@ workflows:
     - brew-install@1:
         inputs:
         - packages: autoconf automake libtool
-    - restore-cocoapods-cache@1: {}
+    # - restore-cocoapods-cache@1: {}
     - script@1:
         title: Copy Gemfile to iOS folder
         inputs:
@@ -301,7 +301,7 @@ workflows:
     - cocoapods-install@2:
         inputs:
         - verbose: "true"
-        - source_root_path: $BITRISE_SOURCE_DIR/packages/core-mobile/ios
+        - source_root_path: $BITRISE_SOURCE_DIR/ios
     - save-cocoapods-cache@1: {}
     - script@1:
         title: Build iOS Simulator
