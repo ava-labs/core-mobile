@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { ImageSourcePropType, ListRenderItem, Platform } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
 import { SvgProps } from 'react-native-svg'
@@ -21,6 +21,7 @@ export const AvatarSelector = ({
     : configuration.avatarWidth.large
 
   const flatListRef = useRef<FlatList>(null)
+  const hasScrolledToSelected = useRef(false)
 
   const handleSelect = useCallback(
     (index: number): void => {
@@ -88,6 +89,40 @@ export const AvatarSelector = ({
     }
   }, [avatarWidth, avatars.length, gap])
 
+  // Scroll to selected avatar after initial render
+  useEffect(() => {
+    if (selectedId && !hasScrolledToSelected.current && flatListRef.current) {
+      const selectedIndex = avatars.findIndex(
+        avatar => avatar.id === selectedId
+      )
+      if (selectedIndex >= 0) {
+        // Small delay to ensure FlatList is fully mounted and items are rendered
+        setTimeout(() => {
+          flatListRef.current?.scrollToIndex({
+            index: selectedIndex,
+            animated: true,
+            viewPosition: 0.5
+          })
+          hasScrolledToSelected.current = true
+        }, 100)
+      }
+    }
+  }, [selectedId, avatars])
+
+  const handleScrollToIndexFailed = useCallback(
+    (info: { index: number; averageItemLength: number }) => {
+      // If scroll to index fails, wait and try again
+      setTimeout(() => {
+        flatListRef.current?.scrollToIndex({
+          index: info.index,
+          animated: true,
+          viewPosition: 0.5
+        })
+      }, 100)
+    },
+    []
+  )
+
   return (
     <FlatList
       ref={flatListRef}
@@ -101,6 +136,7 @@ export const AvatarSelector = ({
       maxToRenderPerBatch={12}
       updateCellsBatchingPeriod={50}
       keyExtractor={item => item.id}
+      onScrollToIndexFailed={handleScrollToIndexFailed}
       contentContainerStyle={{
         paddingHorizontal: gap - configuration.spacing * 2
       }}
