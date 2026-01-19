@@ -19,7 +19,7 @@ index ca506901d86a1d3662227d5ee4ab9ada885c2f45..38f2412bac8c7bf6076921fe32c24b1d
      function getPublicKey(secretKey) {
 +        const con = console;
 +        try {
-+            const nativeRes = getExtendedPublicKeyFromNativeLib(secretKey);
++            const nativeRes = getExtendedPublicKeyFromNativeLib(secretKey).pointBytes;
 +            return nativeRes;
 +        } catch (e) {
 +            con.log(`Native lib failed, falling back to JS implementation ${e}`);

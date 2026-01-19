@@ -385,34 +385,21 @@ export function getExtendedPublicKey(
   point: { toRawBytes: () => Uint8Array }
   pointBytes: Uint8Array
 } {
+  con.log('[Crypto] getExtendedPublicKey called')
   // Convert input to ArrayBuffer (only TS-side work)
   const skAB = hexLikeToArrayBuffer(secretKey)
 
-  // All computation happens in C++ - returns 128-byte buffer:
-  // head (32) + prefix (32) + scalar (32) + pointBytes (32)
-  const resultBuf = NativeCrypto.getExtendedPublicKey(skAB)
+  // All computation and object construction happens in C++
+  // C++ returns ExtendedPublicKey object with { head, prefix, scalar (string), pointBytes }
+  const result = NativeCrypto.getExtendedPublicKey(skAB)
+  con.log('[Crypto] getExtendedPublicKey result', result.pointBytes)
 
-  // Parse result buffer (minimal TS work)
-  const result = new Uint8Array(resultBuf)
-  const head = result.subarray(0, 32)
-  const prefix = result.subarray(32, 64)
-  const scalarBytes = result.subarray(64, 96)
-  const pointBytes = result.subarray(96, 128)
-
-  // Convert scalar bytes to bigint (little-endian, as per Ed25519)
-  // Note: The scalar bytes are the clamped head, but we need to convert to bigint
-  // for compatibility with @noble/curves API. This is the only computation left in TS.
-  let scalar = 0n
-  for (let i = 0; i < 32; i++) {
-    scalar |= BigInt(scalarBytes[i] ?? 0) << (8n * BigInt(i))
-  }
-
-  // Construct return object (point wrapper must be created in JS)
+  // Convert ArrayBuffers to Uint8Arrays, scalar string to bigint, and add point wrapper
   return {
-    head: new Uint8Array(head),
-    prefix: new Uint8Array(prefix),
-    scalar,
-    point: { toRawBytes: () => new Uint8Array(pointBytes) },
-    pointBytes: new Uint8Array(pointBytes)
+    head: new Uint8Array(result.head),
+    prefix: new Uint8Array(result.prefix),
+    scalar: BigInt(result.scalar),
+    point: { toRawBytes: () => new Uint8Array(result.pointBytes) },
+    pointBytes: new Uint8Array(result.pointBytes)
   }
 }

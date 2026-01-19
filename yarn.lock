@@ -9400,10 +9400,10 @@ __metadata:
 
 "@noble/curves@patch:@noble/curves@patch%3A@noble/curves@npm%253A1.9.7%23./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch%3A%3Aversion=1.9.7&hash=9b53f1&locator=mobile-monorepo%2540workspace%253A.#./.yarn/patches/@noble-curves-patch-8bddd6a892.patch::locator=mobile-monorepo%40workspace%3A.":
   version: 1.9.7
-  resolution: "@noble/curves@patch:@noble/curves@patch%3A@noble/curves@npm%253A1.9.7%23./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch%3A%3Aversion=1.9.7&hash=9b53f1&locator=mobile-monorepo%2540workspace%253A.#./.yarn/patches/@noble-curves-patch-8bddd6a892.patch::version=1.9.7&hash=aca6ac&locator=mobile-monorepo%40workspace%3A."
+  resolution: "@noble/curves@patch:@noble/curves@patch%3A@noble/curves@npm%253A1.9.7%23./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch%3A%3Aversion=1.9.7&hash=9b53f1&locator=mobile-monorepo%2540workspace%253A.#./.yarn/patches/@noble-curves-patch-8bddd6a892.patch::version=1.9.7&hash=533236&locator=mobile-monorepo%40workspace%3A."
   dependencies:
     "@noble/hashes": 1.8.0
-  checksum: 2ef61f4a5765788476968947aa2357b39737cd3459c6a781f4dd49975b66894accdd75eccba16cc813cfb0d23739afb410d74b4a2e82765e94eebae9f0a1f0b4
+  checksum: 06037f6183d5fe30c3346e002685f5018495297fd65e5232bf48f9849afb209f53d7250e7eeb2c29f8757de6d7269a6fdaae05baf47ece83452ced59143a2015
   languageName: node
   linkType: hard
 

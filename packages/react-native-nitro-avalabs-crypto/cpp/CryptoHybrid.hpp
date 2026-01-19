@@ -58,7 +58,7 @@ public:
     const BufferOrString& messageHash,
     const BufferOrString& signature) override;
 
-  std::shared_ptr<ArrayBuffer> getExtendedPublicKey(
+  ExtendedPublicKey getExtendedPublicKey(
     const BufferOrString& secretKey) override;
 
 
