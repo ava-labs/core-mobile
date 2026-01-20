@@ -1,0 +1,24 @@
+diff --git a/node_modules/@walletconnect/react-native-compat/index.js b/node_modules/@walletconnect/react-native-compat/index.js
+index 9ae7d20..6a7a34e 100644
+--- a/node_modules/@walletconnect/react-native-compat/index.js
++++ b/node_modules/@walletconnect/react-native-compat/index.js
+@@ -4,15 +4,15 @@ import { getApplicationModule } from "./module";
+ import "fast-text-encoding";
+ 
+ // Polyfill crypto.getRandomvalues
+ import "react-native-get-random-values";
+ 
+ // Polyfill URL()
+-import "react-native-url-polyfill/auto";
++// import "react-native-url-polyfill/auto";
+ 
+ // Polyfill Buffer
+-if (typeof Buffer === "undefined") {
+-  global.Buffer = require("buffer").Buffer;
+-}
++// if (typeof Buffer === "undefined") {
++//   global.Buffer = require("buffer").Buffer;
++// }
+ 
+ if (typeof global?.Linking === "undefined") {
+   try {
