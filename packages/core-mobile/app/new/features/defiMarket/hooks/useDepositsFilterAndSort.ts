@@ -48,8 +48,8 @@ export const useDepositsFilterAndSort = ({
     (items: DefiMarket[]) => {
       const direction = selectedSort === DepositSortOrder.HighToLow ? -1 : 1
       return [...items].sort((a, b) => {
-        const balanceA = a.asset.mintTokenBalance.balance
-        const balanceB = b.asset.mintTokenBalance.balance
+        const balanceA = a.asset.mintTokenBalance.balanceValue.value
+        const balanceB = b.asset.mintTokenBalance.balanceValue.value
         if (balanceA === balanceB) return 0
         return balanceA > balanceB ? direction : -direction
       })

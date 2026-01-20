@@ -4,6 +4,7 @@ import { selectActiveAccount } from 'store/account'
 import Big from 'big.js'
 import { Address } from 'viem'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { ChainId } from '@avalabs/core-chains-sdk'
 import { MERKL_API_URL, MERKL_STALE_TIME_MS } from '../../consts'
 import { bigIntToBig } from '../../utils/bigInt'
 import { formatAmount } from '../../utils/formatInterest'
@@ -55,9 +56,6 @@ export type MerklRewards = {
   total: MerklRewardAmount
 }
 
-// C-Chain mainnet chainId
-const C_CHAIN_ID = 43114
-
 export const useMerklUserRewards = (): {
   data:
     | {
@@ -77,7 +75,7 @@ export const useMerklUserRewards = (): {
     queryFn: addressEVM
       ? async () => {
           const response = await fetch(
-            `${MERKL_API_URL}/users/${addressEVM}/rewards?chainId=${C_CHAIN_ID}&claimableOnly=true`
+            `${MERKL_API_URL}/users/${addressEVM}/rewards?chainId=${ChainId.AVALANCHE_MAINNET_ID}&claimableOnly=true`
           )
 
           if (!response.ok) {

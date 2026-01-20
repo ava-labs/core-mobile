@@ -58,8 +58,9 @@ export const RewardsBanner = ({
         alignItems: 'center',
         borderRadius: 16
       }}>
-      <View sx={{ gap: 2 }}>
+      <View sx={{ flex: 1, gap: 2, marginRight: 12 }}>
         <Text
+          numberOfLines={1}
           sx={{ fontFamily: 'Inter-SemiBold', fontSize: 21, lineHeight: 24 }}>
           {formattedTotalRewardsFiat}
         </Text>
@@ -76,19 +77,16 @@ export const RewardsBanner = ({
               </View>
             ))}
           </View>
-          {rewards.slice(0, 1).map(reward => (
-            <Text
-              key={`${reward.provider}-${reward.token}`}
-              variant="body2"
-              sx={{ color: '$textSecondary' }}>
-              {reward.amount.toFixed(7)} {reward.token}
-            </Text>
-          ))}
-          {rewards.length > 1 && (
-            <Text variant="body2" sx={{ color: '$textSecondary' }}>
-              +{rewards.length - 1} more
-            </Text>
-          )}
+          <Text
+            variant="body2"
+            numberOfLines={1}
+            sx={{ flex: 1, color: '$textSecondary' }}>
+            {rewards
+              .slice(0, 1)
+              .map(reward => `${reward.amount.toFixed(7)} ${reward.token}`)
+              .join('')}
+            {rewards.length > 1 && ` +${rewards.length - 1} more`}
+          </Text>
         </View>
       </View>
       <Button
