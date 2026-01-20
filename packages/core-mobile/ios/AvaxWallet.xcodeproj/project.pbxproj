@@ -1057,7 +1057,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
-				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.avaxwallet.internal.NotificationServiceExtensionInternal;
+				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.avaxwallet.internal.NotificationServiceExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
@@ -1101,10 +1101,10 @@
 				MARKETING_VERSION = 0.0.0;
 				MTL_FAST_MATH = YES;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
-				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.avaxwallet.internal.NotificationServiceExtensionInternal;
+				PRODUCT_BUNDLE_IDENTIFIER = org.avalabs.avaxwallet.internal.NotificationServiceExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Bitrise iOS app-store - (org.avalabs.avaxwallet.internal.NotificationServiceExtensionInternal)";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Bitrise iOS app-store - (org.avalabs.avaxwallet.internal.NotificationServiceExtension)";
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
