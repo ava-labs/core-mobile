@@ -20,6 +20,13 @@ app:
       is_expand: false
 workflows:
   _build-android:
+    envs:
+    - SENTRY_DISABLE_AUTO_UPLOAD: "true"
+      opts:
+        is_expand: false
+    - SENTRY_DISABLE_NATIVE_DEBUG_UPLOAD: "true"
+      opts:
+        is_expand: false
     steps:
     - set-java-version@1:
         inputs:
@@ -71,6 +78,12 @@ workflows:
       opts:
         is_expand: false
     - IS_EXTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+    - SENTRY_DISABLE_AUTO_UPLOAD: "true"
+      opts:
+        is_expand: false
+    - SENTRY_DISABLE_NATIVE_DEBUG_UPLOAD: "true"
       opts:
         is_expand: false
     steps:
@@ -148,6 +161,12 @@ workflows:
       opts:
         is_expand: false
     - IS_INTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+    - SENTRY_DISABLE_AUTO_UPLOAD: "true"
+      opts:
+        is_expand: false
+    - SENTRY_DISABLE_NATIVE_DEBUG_UPLOAD: "true"
       opts:
         is_expand: false
     steps:
@@ -276,7 +295,7 @@ workflows:
         - source_root_path: $BITRISE_SOURCE_DIR/ios
     - save-cocoapods-cache@1: {}
     - certificate-and-profile-installer@1: {}
-    - xcode-archive@5.8.0:
+    - xcode-archive@5.9.4:
         inputs:
         - project_path: $IOS_PROJECT_PATH
         - scheme: $IOS_SCHEME
