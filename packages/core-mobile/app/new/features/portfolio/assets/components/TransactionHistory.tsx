@@ -209,7 +209,7 @@ const TransactionHistory: FC<Props> = ({
 
   const renderEmpty = useCallback(() => {
     return (
-      <CollapsibleTabs.ContentWrapper extraOffset={28}>
+      <CollapsibleTabs.ContentWrapper>
         {renderEmptyComponent()}
       </CollapsibleTabs.ContentWrapper>
     )

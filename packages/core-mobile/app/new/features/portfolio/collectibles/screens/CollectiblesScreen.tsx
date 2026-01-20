@@ -190,7 +190,7 @@ export const CollectiblesScreen = ({
 
   const renderEmpty = useMemo(() => {
     return (
-      <CollapsibleTabs.ContentWrapper extraOffset={100}>
+      <CollapsibleTabs.ContentWrapper>
         {emptyComponent}
       </CollapsibleTabs.ContentWrapper>
     )

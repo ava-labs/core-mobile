@@ -1,14 +1,15 @@
 import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
-// import { FloatingDevTools } from 'common/containers/FloatingDevTools'
+import { FloatingDevTools } from 'common/containers/FloatingDevTools'
 import NavigationThemeProvider from 'common/contexts/NavigationThemeProvider'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
 import { GlobalAlertWithTextInput } from 'common/utils/alertWithTextInput'
 import { GlobalToast } from 'common/utils/toast'
 import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
+import { setStatusBarStyle } from 'expo-status-bar'
 import { RecoveryMethodProvider } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { PrivacyScreen } from 'features/privacyScreen/components/PrivacyScreen'
 import React, { useEffect } from 'react'
-import { Appearance as RnAppearance, StatusBar } from 'react-native'
+import { Appearance as RnAppearance } from 'react-native'
 import Bootsplash from 'react-native-bootsplash'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
@@ -34,9 +35,7 @@ export default function Root(): JSX.Element | null {
       ({ colorScheme: updatedColorSchemes }) => {
         if (selectedAppearance === Appearance.System && !isDeveloperMode) {
           dispatch(setSelectedColorScheme(updatedColorSchemes ?? 'light'))
-          StatusBar.setBarStyle(
-            updatedColorSchemes === 'dark' ? 'light-content' : 'dark-content'
-          )
+          setStatusBarStyle(updatedColorSchemes === 'dark' ? 'light' : 'dark')
         }
       }
     )
@@ -44,9 +43,7 @@ export default function Root(): JSX.Element | null {
   }, [dispatch, isDeveloperMode, selectedAppearance])
 
   useEffect(() => {
-    StatusBar.setBarStyle(
-      colorScheme === 'dark' ? 'light-content' : 'dark-content'
-    )
+    setStatusBarStyle(colorScheme === 'dark' ? 'light' : 'dark')
   }, [colorScheme])
 
   useLoadFonts()
@@ -67,7 +64,7 @@ export default function Root(): JSX.Element | null {
               </RecoveryMethodProvider>
             </DeeplinkContextProvider>
           </NavigationThemeProvider>
-          {/* {__DEV__ && <FloatingDevTools />} */}
+          {__DEV__ && <FloatingDevTools />}
           <GlobalToast />
           <GlobalAlertWithTextInput />
         </K2AlpineThemeProvider>

@@ -572,6 +572,7 @@ __metadata:
     expo-localization: 17.0.8
     expo-router: 6.0.21
     expo-sms: 14.0.8
+    expo-status-bar: ^3.0.9
     expo-video: 3.0.15
     fast-equals: 5.2.2
     https-browserify: 1.0.0
@@ -24093,6 +24094,18 @@ __metadata:
   peerDependencies:
     expo: "*"
   checksum: 8d3a352766224be728af798354030b4f71c405ad751a48beaa434857036a21430f832267ff332b11476028a574e17bc4e0b7acf0a7344e69210edc7e2b51e304
+  languageName: node
+  linkType: hard
+
+"expo-status-bar@npm:^3.0.9":
+  version: 3.0.9
+  resolution: "expo-status-bar@npm:3.0.9"
+  dependencies:
+    react-native-is-edge-to-edge: ^1.2.1
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 35a780c4e0d5d9ec4c056320f02d92b27e91b1f89f970d90a6c938838a84f40917c7cf1230057eb235e1eab6a16de2711eaf5be09a169044ed8b306e9f0824bc
   languageName: node
   linkType: hard
 

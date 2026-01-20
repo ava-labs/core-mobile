@@ -168,7 +168,7 @@ export const ActivityScreen = ({
 
   const renderEmpty = useCallback(() => {
     return (
-      <CollapsibleTabs.ContentWrapper extraOffset={100}>
+      <CollapsibleTabs.ContentWrapper>
         <Animated.View
           style={[keyboardAvoidingStyle, { justifyContent: 'center' }]}>
           {emptyComponent}

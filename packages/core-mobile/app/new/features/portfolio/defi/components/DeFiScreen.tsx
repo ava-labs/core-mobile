@@ -200,7 +200,7 @@ export const DeFiScreen = ({
 
   const renderEmptyComponent = useCallback(() => {
     return (
-      <CollapsibleTabs.ContentWrapper extraOffset={100}>
+      <CollapsibleTabs.ContentWrapper>
         {renderEmpty()}
       </CollapsibleTabs.ContentWrapper>
     )

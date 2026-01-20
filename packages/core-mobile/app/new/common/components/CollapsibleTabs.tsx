@@ -129,7 +129,7 @@ const ContentWrapper = ({
     const translateY = interpolate(
       scrollY.value,
       [0, header.height],
-      [-(header.height - tabBarHeight - insets.bottom), 0],
+      [-48, tabBarHeight],
       Extrapolation.CLAMP
     )
     return {
