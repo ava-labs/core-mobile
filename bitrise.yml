@@ -304,7 +304,6 @@ workflows:
         - distribution_method: $XCODE_EXPORT
         - upload_bitcode: "no"
         - automatic_code_signing: api-key
-        - xcodebuild_options: "-allowProvisioningUpdates"
   _build-ios-simulator:
     steps:
     - brew-install@1:
