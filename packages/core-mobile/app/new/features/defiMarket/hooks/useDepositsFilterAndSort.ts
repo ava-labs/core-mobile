@@ -50,8 +50,8 @@ export const useDepositsFilterAndSort = ({
       return [...items].sort((a, b) => {
         const balanceA = a.asset.mintTokenBalance.balanceValue.value
         const balanceB = b.asset.mintTokenBalance.balanceValue.value
-        if (balanceA === balanceB) return 0
-        return balanceA > balanceB ? direction : -direction
+        if (balanceA.eq(balanceB)) return 0
+        return balanceA.gt(balanceB) ? direction : -direction
       })
     },
     [selectedSort]
