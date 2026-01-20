@@ -13,6 +13,7 @@ import { commonStorage } from 'utils/mmkv'
 import { StorageKey } from 'resources/Constants'
 import { decrypt, encrypt } from 'utils/EncryptionHelper'
 import Logger from 'utils/Logger'
+import * as LocalAuthentication from 'expo-local-authentication'
 
 // Mock dependencies
 jest.mock('react-native-keychain', () => ({
@@ -64,12 +65,21 @@ jest.mock('utils/Logger', () => ({
   error: jest.fn()
 }))
 
+jest.mock('expo-local-authentication', () => ({
+  hasHardwareAsync: jest.fn(),
+  isEnrolledAsync: jest.fn(),
+  supportedAuthenticationTypesAsync: jest.fn()
+}))
+
 // Cast mocks for type safety
 const mockKeychain = Keychain as jest.Mocked<typeof Keychain>
 const mockCommonStorage = commonStorage as jest.Mocked<typeof commonStorage>
 const mockEncrypt = encrypt as jest.Mock
 const mockDecrypt = decrypt as jest.Mock
 const mockLogger = Logger as jest.Mocked<typeof Logger>
+const mockLocalAuth = LocalAuthentication as jest.Mocked<
+  typeof LocalAuthentication
+>
 
 enum STORAGE_TYPE {
   AES_CBC = 'KeystoreAESCBC',
@@ -394,18 +404,19 @@ describe('BiometricsSDK', () => {
     })
 
     it('should check if biometry can be used', async () => {
-      mockKeychain.getSupportedBiometryType.mockResolvedValue(
-        BIOMETRY_TYPE.FACE_ID
-      )
+      mockLocalAuth.hasHardwareAsync.mockResolvedValue(true)
+      mockLocalAuth.isEnrolledAsync.mockResolvedValue(true)
       const result = await BiometricsSDK.canUseBiometry()
       expect(result).toBe(true)
 
-      mockKeychain.getSupportedBiometryType.mockResolvedValue(null)
+      mockLocalAuth.hasHardwareAsync.mockResolvedValue(true)
+      mockLocalAuth.isEnrolledAsync.mockResolvedValue(false)
       const secondResult = await BiometricsSDK.canUseBiometry()
       expect(secondResult).toBe(false)
     })
 
     it('should get biometry type', async () => {
+      mockLocalAuth.supportedAuthenticationTypesAsync.mockResolvedValue([])
       mockKeychain.getSupportedBiometryType.mockResolvedValue(
         BIOMETRY_TYPE.FACE_ID
       )
@@ -436,6 +447,7 @@ describe('BiometricsSDK', () => {
       expect(await BiometricsSDK.getBiometryType()).toBe(BiometricType.IRIS)
 
       mockKeychain.getSupportedBiometryType.mockResolvedValue(null)
+      mockLocalAuth.supportedAuthenticationTypesAsync.mockResolvedValue([])
       expect(await BiometricsSDK.getBiometryType()).toBe(BiometricType.NONE)
     })
 
