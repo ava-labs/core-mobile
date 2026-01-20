@@ -6,8 +6,6 @@
 	<string>NotificationServiceExtensionInternal</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
-	<key>CFBundleIdentifier</key>
-	<string>org.avalabs.avaxwallet.internal.NotificationServiceExtensionInternal</string>
 	<key>CFBundleName</key>
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundleVersion</key>
