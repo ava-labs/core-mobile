@@ -58,7 +58,7 @@ export const LoadingContent = ({
 
   const onErrorPress = useCallback(() => {
     showAlert({
-      title: 'Unable to load the account balance',
+      title: 'Unable to load balance',
       description: errorMessage,
       buttons: [{ text: 'Close' }]
     })
