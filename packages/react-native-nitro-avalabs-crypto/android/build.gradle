@@ -600,4 +600,7 @@ dependencies {
   implementation "com.facebook.react:react-android"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   implementation project(":react-native-nitro-modules")
+  // OpenSSL is optional - if react-native-quick-crypto provides it, we'll use it
+  // Otherwise, the JS fallback will be used
+  // implementation 'com.android.ndk.thirdparty:openssl:1.1.1q-beta-1'
 }
