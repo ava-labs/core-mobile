@@ -294,14 +294,6 @@ workflows:
         - verbose: "true"
         - source_root_path: $BITRISE_SOURCE_DIR/ios
     - save-cocoapods-cache@1: {}
-    - manage-ios-code-signing@1:
-        inputs:
-        - distribution_type: $XCODE_EXPORT
-        - app_identifier: |-
-            org.avalabs.avaxwallet.internal
-            org.avalabs.avaxwallet.internal.NotificationServiceExtension
-            org.avalabs.corewallet
-            org.avalabs.corewallet.NotificationServiceExtension
     - xcode-archive@5.9.4:
         inputs:
         - project_path: $IOS_PROJECT_PATH
