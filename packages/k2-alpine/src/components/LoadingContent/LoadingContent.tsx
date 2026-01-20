@@ -1,5 +1,5 @@
 import { ActivityIndicator, View } from 'dripsy'
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -7,8 +7,10 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 
+import { Pressable } from 'react-native'
 import { useTheme } from '../../hooks'
 import { Icons } from '../../theme/tokens/Icons'
+import { showAlert } from '../Alert/Alert'
 
 interface LoadingContentProps {
   isLoading?: boolean
@@ -17,6 +19,7 @@ interface LoadingContentProps {
   hasError?: boolean
   minOpacity?: number
   maxOpacity?: number
+  errorMessage?: string
   renderError?: () => React.ReactNode
 }
 
@@ -26,7 +29,8 @@ export const LoadingContent = ({
   hideSpinner = false,
   hasError = false,
   minOpacity = 0.3,
-  maxOpacity = 0.5
+  maxOpacity = 0.5,
+  errorMessage
 }: LoadingContentProps): JSX.Element => {
   const { theme } = useTheme()
 
@@ -52,6 +56,14 @@ export const LoadingContent = ({
     }
   })
 
+  const onErrorPress = useCallback(() => {
+    showAlert({
+      title: 'Unable to load the account balance',
+      description: errorMessage,
+      buttons: [{ text: 'Close' }]
+    })
+  }, [errorMessage])
+
   return (
     <View
       style={{
@@ -69,14 +81,16 @@ export const LoadingContent = ({
       {hasError && (
         <Animated.View
           style={[
-            { position: 'absolute', justifyContent: 'center' },
+            { justifyContent: 'center', position: 'absolute' },
             errorIndicatorStyle
           ]}>
-          <Icons.Alert.Error
-            color={theme.colors.$textDanger}
-            width={14}
-            height={14}
-          />
+          <Pressable onPress={onErrorPress}>
+            <Icons.Alert.Error
+              color={theme.colors.$textDanger}
+              width={14}
+              height={14}
+            />
+          </Pressable>
         </Animated.View>
       )}
       <LoadingFadeInOut

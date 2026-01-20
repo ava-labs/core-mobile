@@ -54,6 +54,7 @@ const WalletCard = ({
     handleAddAccount: handleAddAccountToWallet,
     isAddingAccount
   } = useManageWallet()
+
   const renderExpansionIcon = useCallback(() => {
     return (
       <Icons.Navigation.ChevronRight

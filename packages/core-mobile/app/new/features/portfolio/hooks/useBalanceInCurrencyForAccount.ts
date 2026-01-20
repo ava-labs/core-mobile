@@ -14,7 +14,6 @@ import { selectTokenVisibility } from 'store/portfolio'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { useAllBalances } from './useAllBalances'
-
 /**
  * Returns the total balance and loading state for a given account.
  *
@@ -30,6 +29,8 @@ export const useBalanceInCurrencyForAccount = (
   isLoadingBalance: boolean
   hasBalanceData: boolean
   balance: number
+  dataAccurate: boolean
+  error: string | null
 } => {
   const account = useSelector(selectAccountById(accountId))
   const enabledNetworks = useSelector(selectEnabledNetworks)
@@ -59,8 +60,22 @@ export const useBalanceInCurrencyForAccount = (
     return accountBalances.length > 0
   })()
 
+  const dataAccurate = (() => {
+    if (!account) return false
+    const accountBalances = balances[accountId] ?? []
+    return accountBalances.every(balance => balance.dataAccurate)
+  })()
+
+  const error = (() => {
+    if (!account) return null
+    const accountBalances = balances[accountId] ?? []
+    return accountBalances.find(balance => balance.error)?.error?.error ?? null
+  })()
+
   return {
     balance: balanceTotalInCurrency,
+    dataAccurate,
+    error,
     hasBalanceData,
     isLoadingBalance
   }

@@ -48,10 +48,10 @@ export const WalletsScreen = (): JSX.Element => {
     Record<string, boolean>
   >({})
 
-  const errorMessage =
-    isLoading || isRefreshing || isBalanceAccurate
-      ? undefined
-      : 'Unable to load all balances'
+  const errorMessage = useMemo(() => {
+    if (!isLoading && !isBalanceAccurate) return 'Unable to load all balances'
+    return null
+  }, [isLoading, isBalanceAccurate])
 
   const allAccountsArray = useMemo(() => {
     return Object.values(accountCollection)

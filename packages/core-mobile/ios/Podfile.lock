@@ -1998,7 +1998,7 @@ PODS:
   - react-native-branch (6.8.0):
     - BranchSDK (= 3.12.2)
     - React-Core
-  - react-native-compat (2.23.0):
+  - react-native-compat (2.11.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -4124,7 +4124,7 @@ SPEC CHECKSUMS:
   react-native-ble-plx: f2c13ceb441f17266d3dc6a56e603e2ae820a574
   react-native-bottom-tabs: 05d040c837f04e57e6973d553db5e69c8e279113
   react-native-branch: 0229b46e762bc16ab5289e5eac167738b94c089b
-  react-native-compat: 2d4f00e2a80258c0cec6e7df3180bcfe3404bd6f
+  react-native-compat: 4594cac40c688f5ac4984e93f8c8e31496f4e614
   react-native-config: ea75335a7cca1d3326de1da384227e580a7c082e
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-in-app-updates: e655bab46849c5563b954f681c40ce46df0f3cbe

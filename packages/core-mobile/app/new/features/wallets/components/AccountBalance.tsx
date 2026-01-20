@@ -21,6 +21,7 @@ export const AccountBalance = ({
   isAccurate,
   hasLoaded,
   isRefreshing,
+  errorMessage,
   variant = 'spinner'
 }: {
   isActive: boolean
@@ -29,6 +30,7 @@ export const AccountBalance = ({
   isAccurate: boolean
   hasLoaded?: boolean
   isRefreshing?: boolean
+  errorMessage: string
   variant?: 'spinner' | 'skeleton'
 }): React.JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
@@ -42,7 +44,8 @@ export const AccountBalance = ({
       ? formatCurrency({ amount: 0 }).replace(/[\d.,]+/g, UNKNOWN_AMOUNT)
       : formatCurrency({
           amount: balance,
-          notation: balance < 100000 ? undefined : 'compact'
+          notation: balance < 100000 ? undefined : 'compact',
+          showLessThanThreshold: true
         })
   }, [balance, formatCurrency])
 
@@ -61,6 +64,7 @@ export const AccountBalance = ({
   }, [colors.$textPrimary, isActive])
 
   const hasError = useMemo(() => {
+    if (errorMessage) return true
     if (isLoading) return false
 
     // // Balance is 0 and all balances are accurate
@@ -68,7 +72,7 @@ export const AccountBalance = ({
 
     // Balance is inaccurate
     if (!balance && !isAccurate) return true
-  }, [balance, isLoading, isAccurate])
+  }, [errorMessage, isLoading, balance, isAccurate])
 
   const isLoadingContent = useMemo(() => {
     return (
@@ -110,7 +114,8 @@ export const AccountBalance = ({
         minOpacity={0.2}
         maxOpacity={1}
         isLoading={isLoadingContent}
-        hasError={hasError}>
+        hasError={hasError}
+        errorMessage={errorMessage}>
         <AnimatedBalance
           variant="body1"
           balance={accountBalance}

@@ -8,7 +8,6 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useBalanceInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
-import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalancesAccurate'
 import React from 'react'
 import Animated, { Easing, LinearTransition } from 'react-native-reanimated'
 import { Account } from 'store/account'
@@ -36,7 +35,6 @@ export const AccountListItem = ({
 }): JSX.Element => {
   const { theme } = useTheme()
   const balance = useBalanceInCurrencyForAccount(account.id)
-  const isBalanceAccurate = useIsAccountBalanceAccurate(account)
 
   return (
     <Animated.View layout={LinearTransition.easing(Easing.inOut(Easing.ease))}>
@@ -104,10 +102,11 @@ export const AccountListItem = ({
               <AccountBalance
                 isActive={isActive}
                 balance={balance.balance}
+                errorMessage={balance.error ?? ''}
                 isLoading={balance.isLoadingBalance}
                 isRefreshing={isRefreshing}
                 hasLoaded={balance.hasBalanceData}
-                isAccurate={isBalanceAccurate}
+                isAccurate={balance.dataAccurate}
                 variant="skeleton"
               />
               <TouchableOpacity hitSlop={16} onPress={onPressDetails}>
