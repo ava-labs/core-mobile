@@ -54,6 +54,44 @@
 		C7062D69B313585A64C52506 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743FA70F1387A05E00866EBF /* ExpoModulesProvider.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		815E55142C92071A000F8E0F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 815E550E2C92071A000F8E0F;
+			remoteInfo = NotificationServiceExtensionInternal;
+		};
+		815E551F2C921A9F000F8E0F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 815E550E2C92071A000F8E0F;
+			remoteInfo = NotificationServiceExtensionInternal;
+		};
+		8E3793732CA2788500D3A9B4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 815E55442C94A396000F8E0F;
+			remoteInfo = NotificationServiceExtension;
+		};
+		8E3793762CA2790500D3A9B4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 815E55442C94A396000F8E0F;
+			remoteInfo = NotificationServiceExtension;
+		};
+		8E37937A2CA2790C00D3A9B4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 815E550E2C92071A000F8E0F;
+			remoteInfo = NotificationServiceExtensionInternal;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		815E551A2C92071A000F8E0F /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -864,6 +902,34 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		815E55152C92071A000F8E0F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 815E550E2C92071A000F8E0F /* NotificationServiceExtensionInternal */;
+			targetProxy = 815E55142C92071A000F8E0F /* PBXContainerItemProxy */;
+		};
+		815E55202C921A9F000F8E0F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 815E550E2C92071A000F8E0F /* NotificationServiceExtensionInternal */;
+			targetProxy = 815E551F2C921A9F000F8E0F /* PBXContainerItemProxy */;
+		};
+		8E3793742CA2788500D3A9B4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 815E55442C94A396000F8E0F /* NotificationServiceExtension */;
+			targetProxy = 8E3793732CA2788500D3A9B4 /* PBXContainerItemProxy */;
+		};
+		8E3793772CA2790500D3A9B4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 815E55442C94A396000F8E0F /* NotificationServiceExtension */;
+			targetProxy = 8E3793762CA2790500D3A9B4 /* PBXContainerItemProxy */;
+		};
+		8E37937B2CA2790C00D3A9B4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 815E550E2C92071A000F8E0F /* NotificationServiceExtensionInternal */;
+			targetProxy = 8E37937A2CA2790C00D3A9B4 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
