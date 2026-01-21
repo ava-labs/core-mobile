@@ -10,7 +10,8 @@ import {
   LedgerDerivationPathType,
   WalletCreationOptions,
   LedgerTransportState,
-  LedgerKeys
+  LedgerKeys,
+  LedgerDevice
 } from 'services/ledger/types'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useLedgerWalletMap } from '../store'
@@ -30,6 +31,8 @@ interface LedgerSetupContextValue {
   setHasStartedSetup: (started: boolean) => void
 
   // Ledger wallet hook values
+  devices: LedgerDevice[]
+  isScanning: boolean
   isConnecting: boolean
   transportState: LedgerTransportState
   connectToDevice: (deviceId: string) => Promise<void>
@@ -62,7 +65,9 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
   const [hasStartedSetup, setHasStartedSetup] = useState<boolean>(false)
 
   const {
+    devices,
     isConnecting,
+    isScanning,
     transportState,
     connectToDevice,
     disconnectDevice,
@@ -102,12 +107,14 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
 
   const contextValue: LedgerSetupContextValue = useMemo(
     () => ({
+      devices,
       selectedDerivationPath,
       connectedDeviceId,
       connectedDeviceName,
       isCreatingWallet,
       hasStartedSetup,
       isConnecting,
+      isScanning,
       transportState,
       connectToDevice,
       disconnectDevice,
@@ -119,12 +126,14 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
       resetSetup
     }),
     [
+      devices,
       selectedDerivationPath,
       connectedDeviceId,
       connectedDeviceName,
       isCreatingWallet,
       hasStartedSetup,
       isConnecting,
+      isScanning,
       transportState,
       connectToDevice,
       disconnectDevice,
