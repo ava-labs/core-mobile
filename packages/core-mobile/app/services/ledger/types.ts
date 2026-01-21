@@ -43,7 +43,7 @@ export const LEDGER_ERROR_CODES = {
 } as const
 
 export type LedgerReturnCodeType =
-  typeof LedgerReturnCode[keyof typeof LedgerReturnCode]
+  (typeof LedgerReturnCode)[keyof typeof LedgerReturnCode]
 
 // ============================================================================
 // LEDGER DEVICE TYPES
@@ -64,6 +64,10 @@ export interface LedgerTransportState {
 // ============================================================================
 // CRYPTOGRAPHIC KEY TYPES
 // ============================================================================
+
+export interface PublicKey extends PublicKeyInfo {
+  btcWalletPolicy?: BtcWalletPolicyDetails
+}
 
 export interface PublicKeyInfo {
   key: string
@@ -144,11 +148,7 @@ interface BaseLedgerWalletData {
   deviceId: string
   vmType: NetworkVMType
   transport?: TransportBLE // Optional for backward compatibility
-  publicKeys: Array<
-    PublicKeyInfo & {
-      btcWalletPolicy?: BtcWalletPolicyDetails
-    }
-  >
+  publicKeys: PublicKey[]
 }
 
 // BIP44 specific wallet data

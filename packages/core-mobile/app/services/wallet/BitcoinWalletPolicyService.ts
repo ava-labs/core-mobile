@@ -4,7 +4,7 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Curve } from 'utils/publicKeys'
 import { BtcWalletPolicyDetails } from '@avalabs/vm-module-types'
-import { PublicKeyInfo } from 'services/ledger/types'
+import { PublicKey } from 'services/ledger/types'
 import { getAddressDerivationPath } from './utils'
 
 export interface WalletPolicyDetails {
@@ -46,11 +46,7 @@ export class BitcoinWalletPolicyService {
    * Find Bitcoin wallet policy details in public keys array
    */
   static findBtcWalletPolicyInPublicKeys(
-    publicKeys: Array<
-      PublicKeyInfo & {
-        btcWalletPolicy?: BtcWalletPolicyDetails
-      }
-    >
+    publicKeys: PublicKey[]
   ): BtcWalletPolicyDetails | null {
     for (const pubKey of publicKeys) {
       if (pubKey.btcWalletPolicy) {
@@ -71,11 +67,7 @@ export class BitcoinWalletPolicyService {
     accountIndex
   }: {
     walletId: string
-    publicKeys: Array<
-      PublicKeyInfo & {
-        btcWalletPolicy?: BtcWalletPolicyDetails
-      }
-    >
+    publicKeys: PublicKey[]
     policyDetails: BtcWalletPolicyDetails
     accountIndex: number
   }): Promise<boolean> {
@@ -137,13 +129,7 @@ export class BitcoinWalletPolicyService {
   /**
    * Check if Bitcoin wallet policy registration is needed
    */
-  static needsBtcWalletPolicyRegistration(
-    publicKeys: Array<
-      PublicKeyInfo & {
-        btcWalletPolicy?: BtcWalletPolicyDetails
-      }
-    >
-  ): boolean {
+  static needsBtcWalletPolicyRegistration(publicKeys: PublicKey[]): boolean {
     return !publicKeys.some(pk => pk.btcWalletPolicy)
   }
 
@@ -151,11 +137,7 @@ export class BitcoinWalletPolicyService {
    * Get the Bitcoin public key that should have the wallet policy
    */
   static getBitcoinPublicKey(
-    publicKeys: Array<
-      PublicKeyInfo & {
-        btcWalletPolicy?: BtcWalletPolicyDetails
-      }
-    >,
+    publicKeys: PublicKey[],
     accountIndex: number
   ): {
     key: string

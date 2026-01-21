@@ -16,8 +16,7 @@ import {
   RpcMethod,
   TypedDataV1,
   TypedData,
-  MessageTypes,
-  BtcWalletPolicyDetails
+  MessageTypes
 } from '@avalabs/vm-module-types'
 import AppAvax from '@avalabs/hw-app-avalanche'
 import AppSolana from '@ledgerhq/hw-app-solana'
@@ -33,7 +32,7 @@ import {
   LedgerAppType,
   LedgerDerivationPathType,
   LedgerWalletData,
-  PublicKeyInfo
+  PublicKey
 } from 'services/ledger/types'
 import {
   LEDGER_TIMEOUTS,
@@ -58,11 +57,7 @@ export class LedgerWallet implements Wallet {
   private derivationPath: string
   private derivationPathSpec: LedgerDerivationPathType
   private extendedPublicKeys?: { evm: string; avalanche: string }
-  private publicKeys: Array<
-    PublicKeyInfo & {
-      btcWalletPolicy?: BtcWalletPolicyDetails
-    }
-  >
+  private publicKeys: PublicKey[]
   private evmSigner?: LedgerSigner
   private avalancheSigner?:
     | Avalanche.SimpleLedgerSigner
