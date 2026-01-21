@@ -560,7 +560,11 @@ export const SwapScreen = (): JSX.Element => {
     if (swapStatus === 'Success') {
       back()
       const state = getState()
-      if (state?.routes.some(route => route.name === 'onboarding')) {
+      if (state?.routes.some(route => route.name === 'swap')) {
+        canGoBack() && back()
+      }
+      const newState = getState()
+      if (newState?.routes.some(route => route.name === 'onboarding')) {
         canGoBack() && back()
       }
     }

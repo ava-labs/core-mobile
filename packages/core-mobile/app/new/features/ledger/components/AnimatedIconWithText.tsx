@@ -11,8 +11,12 @@ interface AnimatedIconWithTextProps {
   icon: React.ReactNode
   /** The main title text */
   title: string
+  /** The style for the title text */
+  titleStyle?: React.ComponentProps<typeof Text>['style']
   /** The subtitle/description text */
   subtitle: string
+  /** The style for the subtitle text */
+  subtitleStyle?: React.ComponentProps<typeof Text>['style']
   /** Whether to show the animation behind the icon */
   showAnimation?: boolean
   /** Custom animation source (defaults to connect-waves.json) - Lottie animation JSON
@@ -31,7 +35,9 @@ interface AnimatedIconWithTextProps {
 export const AnimatedIconWithText: React.FC<AnimatedIconWithTextProps> = ({
   icon,
   title,
+  titleStyle,
   subtitle,
+  subtitleStyle,
   showAnimation = false,
   animationSource = connectWavesAnimation,
   animationSize = { width: 220, height: 220 },
@@ -103,19 +109,25 @@ export const AnimatedIconWithText: React.FC<AnimatedIconWithTextProps> = ({
         }}>
         <Text
           variant="heading6"
-          style={{
-            textAlign: 'center',
-            marginBottom: 4
-          }}>
+          style={[
+            {
+              textAlign: 'center',
+              marginBottom: 4
+            },
+            titleStyle
+          ]}>
           {title}
         </Text>
         <Text
           variant="body1"
-          style={{
-            textAlign: 'center',
-            color: colors.$textSecondary,
-            maxWidth: 280
-          }}>
+          style={[
+            {
+              textAlign: 'center',
+              color: colors.$textSecondary,
+              maxWidth: 280
+            },
+            subtitleStyle
+          ]}>
           {subtitle}
         </Text>
       </View>
