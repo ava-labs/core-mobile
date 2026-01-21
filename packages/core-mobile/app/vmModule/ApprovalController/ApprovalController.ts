@@ -20,10 +20,10 @@ import { OnApproveParams } from 'services/walletconnectv2/walletConnectCache/typ
 import { WalletType } from 'services/wallet/types'
 import { showLedgerReviewTransaction } from 'features/ledger/utils'
 import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
+import { CONFETTI_DURATION_MS } from 'common/consts'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { handleLedgerError } from './utils'
-import { CONFETTI_DURATION_MS } from 'common/consts'
 
 class ApprovalController implements VmModuleApprovalController {
   async requestPublicKey({
