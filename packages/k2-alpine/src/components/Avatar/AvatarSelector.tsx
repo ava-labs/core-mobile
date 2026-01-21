@@ -10,10 +10,10 @@ import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { FlatList } from 'react-native-gesture-handler'
 import { SvgProps } from 'react-native-svg'
 import { ANIMATED, isScreenSmall } from '../../utils'
+import { SCREEN_WIDTH } from '../../const'
 import { AnimatedPressable } from '../Animated/AnimatedPressable'
 import { View } from '../Primitives'
 import { Avatar } from './Avatar'
-import { SCREEN_WIDTH } from '../../const'
 
 export const AvatarSelector = ({
   avatars,
