@@ -159,8 +159,6 @@ class AccountsService {
       let xpAddressDictionary: XPAddressDictionary = {} as XPAddressDictionary
       let hasMigratedXpAddresses = false
 
-      // Only derive XP addresses for non-Ledger wallets
-
       try {
         const result = await getAddressesFromXpubXP({
           isDeveloperMode: isTestnet,
