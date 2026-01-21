@@ -1,6 +1,6 @@
+import { appReviewStore } from 'features/appReview/store'
 import { promptForAppReviewAfterSuccessfulTransaction } from './promptForAppReviewAfterSuccessfulTransaction'
 import { requestInAppReview } from './requestInAppReview'
-import { appReviewStore } from 'features/appReview/store'
 
 jest.mock('./requestInAppReview', () => ({
   requestInAppReview: jest.fn(() => Promise.resolve())
