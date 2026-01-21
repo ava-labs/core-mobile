@@ -255,6 +255,8 @@ export const ScrollScreen = ({
   }, [renderFooter, shouldAvoidKeyboard, disableStickyFooter, insets.bottom])
 
   const renderHeaderBackground = useCallback(() => {
+    if (hideHeaderBackground) return null
+
     return (
       <View
         pointerEvents="none"
@@ -286,7 +288,7 @@ export const ScrollScreen = ({
       </View>
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [headerHeight])
+  }, [headerHeight, hideHeaderBackground])
 
   // 90% of our screens reuse this component but only some need keyboard avoiding
   // If you have an input on the screen, you need to enable this prop
