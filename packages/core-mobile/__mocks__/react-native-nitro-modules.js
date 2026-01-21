@@ -22,4 +22,3 @@ module.exports = {
   HybridView: jest.fn(),
   getHostComponent: jest.fn()
 }
-
