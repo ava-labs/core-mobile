@@ -7,7 +7,6 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   CollapsibleTabs,
@@ -15,7 +14,6 @@ import {
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
-import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { getSourceChainId } from 'common/utils/bridgeUtils'
@@ -47,7 +45,6 @@ const ActivityHomeScreen = (): JSX.Element => {
   const tabBarHeight = useBottomTabBarHeight()
   const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
-  const headerHeight = useEffectiveHeaderHeight()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [searchText, setSearchText] = useState('')
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
@@ -303,21 +300,6 @@ const ActivityHomeScreen = (): JSX.Element => {
         tabs={tabs}
         minHeaderHeight={searchBarLayout?.height ?? 0}
       />
-
-      {Platform.OS === 'android' && (
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: headerHeight
-          }}>
-          <BlurredBackgroundView
-            separator={{ opacity: targetHiddenProgress, position: 'bottom' }}
-          />
-        </View>
-      )}
     </BlurredBarsContentLayout>
   )
 }

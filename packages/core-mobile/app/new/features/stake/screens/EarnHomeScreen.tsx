@@ -103,8 +103,7 @@ export const EarnHomeScreen = (): JSX.Element => {
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header: header,
-    targetLayout: headerLayout,
-    hasSeparator: false
+    targetLayout: headerLayout
   })
 
   const animatedHeaderStyle = useAnimatedStyle(() => ({

@@ -6,7 +6,6 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import {
@@ -14,7 +13,6 @@ import {
   CollapsibleTabsRef,
   OnTabChange
 } from 'common/components/CollapsibleTabs'
-import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useFocusEffect, useRouter } from 'expo-router'
@@ -49,7 +47,6 @@ const TrackHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
-  const headerHeight = useEffectiveHeaderHeight()
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const [searchText, setSearchText] = useState('')
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
@@ -387,21 +384,6 @@ const TrackHomeScreen = (): JSX.Element => {
               }}
             />
           </BottomTabWrapper>
-        </View>
-      )}
-
-      {Platform.OS === 'android' && (
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: headerHeight
-          }}>
-          <BlurredBackgroundView
-            separator={{ opacity: targetHiddenProgress, position: 'bottom' }}
-          />
         </View>
       )}
     </BlurredBarsContentLayout>
