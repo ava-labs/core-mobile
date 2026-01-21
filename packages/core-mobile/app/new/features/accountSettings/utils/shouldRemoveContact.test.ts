@@ -1,7 +1,7 @@
 import { Contact } from 'store/addressBook'
-import { shouldRemoveContact } from './shouldRemoveContact'
 import { AVATARS } from 'store/settings/avatar'
 import { AvatarType } from '@avalabs/k2-alpine'
+import { shouldRemoveContact } from './shouldRemoveContact'
 
 describe('shouldRemoveContact', () => {
   describe('when contact has no addresses', () => {
