@@ -173,8 +173,5 @@ export enum RequestContext {
   NON_CONTRACT_RECIPIENT_ADDRESS = 'nonContractRecipient',
 
   // used to signal VM-module retry for gasless C-chain sends
-  SHOULD_RETRY = 'shouldRetry',
-
-  // used to call a callback function when a transaction is confirmed
-  CALLBACK_TRANSACTION_CONFIRMED = 'onTransactionConfirmed'
+  SHOULD_RETRY = 'shouldRetry'
 }

@@ -44,7 +44,13 @@ export const BENQI_QI_C_CHAIN_ADDRESS =
   '0x35Bd6aedA81a7E5FC7A7832490e71F757b0cD9Ce' as const
 export const BENQI_LENS_C_CHAIN_ADDRESS =
   '0x15f30De066D21e4828D78A497d31c665a6162D2D' as const
+export const BENQI_COMPTROLLER_C_CHAIN_ADDRESS =
+  '0x486Af39519B4Dc9a7fCcd318217352830E8AD9b4' as const
 export const BENQI_QI_TOKEN_DECIMALS = 8
+
+// Benqi reward types for claimReward function
+export const BENQI_TOKEN_TYPE_QI = 0
+export const BENQI_TOKEN_TYPE_AVAX = 1
 
 // Gas costs for minting with some buffer
 // https://snowtrace.io/tx/0x6d76d6232ccbe4d9450d6d3ce913cefb5257be6ee62b6385d2b371da0d3122fe?chainid=43114
@@ -69,5 +75,9 @@ export const AAVE_V3_GQL_API_URL = 'https://api.v3.aave.com/graphql'
 
 // Aave Chan Initiative Merit API
 export const AAVE_CHAN_MERIT_API_URL = 'https://apps.aavechan.com/api/merit'
+
+// Merkl API for Aave rewards
+export const MERKL_API_URL = 'https://api.merkl.xyz/v4'
+export const MERKL_STALE_TIME_MS = 5 * 60 * 1000 // 5 minutes
 
 export const MAX_UINT256 = 2n ** 256n - 1n

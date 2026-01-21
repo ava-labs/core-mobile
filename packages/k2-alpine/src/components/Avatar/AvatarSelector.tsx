@@ -1,8 +1,16 @@
-import React, { useCallback, useMemo, useRef } from 'react'
-import { ImageSourcePropType, ListRenderItem, Platform } from 'react-native'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  ImageSourcePropType,
+  ListRenderItem,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Platform
+} from 'react-native'
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { FlatList } from 'react-native-gesture-handler'
 import { SvgProps } from 'react-native-svg'
-import { isScreenSmall } from '../../utils'
+import { ANIMATED, isScreenSmall } from '../../utils'
+import { SCREEN_WIDTH } from '../../const'
 import { AnimatedPressable } from '../Animated/AnimatedPressable'
 import { View } from '../Primitives'
 import { Avatar } from './Avatar'
@@ -21,6 +29,9 @@ export const AvatarSelector = ({
     : configuration.avatarWidth.large
 
   const flatListRef = useRef<FlatList>(null)
+  const hasScrolledToSelected = useRef(false)
+  const targetOffsetRef = useRef<number | null>(null)
+  const [isReady, setIsReady] = useState(false)
 
   const handleSelect = useCallback(
     (index: number): void => {
@@ -35,6 +46,19 @@ export const AvatarSelector = ({
   const gap = useMemo(
     () => avatarWidth / 2 - configuration.spacing / 2,
     [avatarWidth]
+  )
+
+  // Each item's effective width (accounting for negative margins)
+  const itemWidth = useMemo(() => avatarWidth - gap, [avatarWidth, gap])
+
+  // Provide exact layout info so scrollToOffset works reliably
+  const getItemLayout = useCallback(
+    (_data: unknown, index: number) => ({
+      length: itemWidth,
+      offset: itemWidth * index,
+      index
+    }),
+    [itemWidth]
   )
 
   const renderItem: ListRenderItem<{
@@ -88,26 +112,104 @@ export const AvatarSelector = ({
     }
   }, [avatarWidth, avatars.length, gap])
 
+  // Calculate the target offset to center the selected avatar
+  const calculateTargetOffset = useCallback(
+    (selectedIndex: number) => {
+      const screenWidth = SCREEN_WIDTH
+      const contentPadding = gap - configuration.spacing * 2
+      // Position of the center of the selected item in content coordinates
+      const itemCenter =
+        contentPadding + selectedIndex * itemWidth + itemWidth / 2
+      // Offset needed to center that item on screen
+      return Math.max(0, itemCenter - screenWidth / 2)
+    },
+    [gap, itemWidth]
+  )
+
+  // Handle scroll events to detect when we've reached the target
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      if (targetOffsetRef.current === null || hasScrolledToSelected.current) {
+        return
+      }
+
+      const currentOffset = event.nativeEvent.contentOffset.x
+      // Check if we're close enough to the target (within 2px)
+      if (Math.abs(currentOffset - targetOffsetRef.current) <= 2) {
+        hasScrolledToSelected.current = true
+        targetOffsetRef.current = null
+        setIsReady(true)
+      }
+    },
+    []
+  )
+
+  // Scroll to selected avatar after initial render
+  useEffect(() => {
+    if (!selectedId) {
+      setIsReady(true)
+      return
+    }
+
+    if (!hasScrolledToSelected.current && flatListRef.current) {
+      const selectedIndex = avatars.findIndex(
+        avatar => avatar.id === selectedId
+      )
+      if (selectedIndex >= 0) {
+        const targetOffset = calculateTargetOffset(selectedIndex)
+        targetOffsetRef.current = targetOffset
+
+        // Small delay to ensure FlatList is fully mounted
+        setTimeout(() => {
+          flatListRef.current?.scrollToOffset({
+            offset: targetOffset,
+            animated: false
+          })
+
+          // Fallback: if onScroll doesn't fire (already at position), reveal after delay
+          setTimeout(() => {
+            if (!hasScrolledToSelected.current) {
+              hasScrolledToSelected.current = true
+              targetOffsetRef.current = null
+              setIsReady(true)
+            }
+          }, 100)
+        }, 50)
+      } else {
+        setIsReady(true)
+      }
+    }
+  }, [selectedId, avatars, calculateTargetOffset])
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: withTiming(isReady ? 1 : 0, ANIMATED.TIMING_CONFIG)
+  }))
+
   return (
-    <FlatList
-      ref={flatListRef}
-      data={avatars}
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      renderItem={renderItem}
-      windowSize={7}
-      contentOffset={contentOffset}
-      initialNumToRender={12}
-      maxToRenderPerBatch={12}
-      updateCellsBatchingPeriod={50}
-      keyExtractor={item => item.id}
-      contentContainerStyle={{
-        paddingHorizontal: gap - configuration.spacing * 2
-      }}
-      style={{
-        height: avatarWidth * 2
-      }}
-    />
+    <Animated.View style={animatedStyle}>
+      <FlatList
+        ref={flatListRef}
+        data={avatars}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        renderItem={renderItem}
+        getItemLayout={getItemLayout}
+        windowSize={7}
+        contentOffset={contentOffset}
+        initialNumToRender={12}
+        maxToRenderPerBatch={12}
+        updateCellsBatchingPeriod={50}
+        keyExtractor={item => item.id}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        contentContainerStyle={{
+          paddingHorizontal: gap - configuration.spacing * 2
+        }}
+        style={{
+          height: avatarWidth * 2
+        }}
+      />
+    </Animated.View>
   )
 }
 
