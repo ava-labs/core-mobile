@@ -1,23 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  Dimensions,
   ImageSourcePropType,
   ListRenderItem,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform
 } from 'react-native'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming
-} from 'react-native-reanimated'
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { FlatList } from 'react-native-gesture-handler'
 import { SvgProps } from 'react-native-svg'
 import { ANIMATED, isScreenSmall } from '../../utils'
 import { AnimatedPressable } from '../Animated/AnimatedPressable'
 import { View } from '../Primitives'
 import { Avatar } from './Avatar'
+import { SCREEN_WIDTH } from '../../const'
 
 export const AvatarSelector = ({
   avatars,
@@ -35,8 +31,7 @@ export const AvatarSelector = ({
   const flatListRef = useRef<FlatList>(null)
   const hasScrolledToSelected = useRef(false)
   const targetOffsetRef = useRef<number | null>(null)
-  const [isReady, setIsReady] = useState(!selectedId)
-  const opacity = useSharedValue(isReady ? 1 : 0)
+  const [isReady, setIsReady] = useState(false)
 
   const handleSelect = useCallback(
     (index: number): void => {
@@ -120,7 +115,7 @@ export const AvatarSelector = ({
   // Calculate the target offset to center the selected avatar
   const calculateTargetOffset = useCallback(
     (selectedIndex: number) => {
-      const screenWidth = Dimensions.get('window').width
+      const screenWidth = SCREEN_WIDTH
       const contentPadding = gap - configuration.spacing * 2
       // Position of the center of the selected item in content coordinates
       const itemCenter =
@@ -186,15 +181,8 @@ export const AvatarSelector = ({
     }
   }, [selectedId, avatars, calculateTargetOffset])
 
-  // Animate fade when ready
-  useEffect(() => {
-    if (isReady) {
-      opacity.value = withTiming(1, ANIMATED.TIMING_CONFIG)
-    }
-  }, [isReady, opacity])
-
   const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value
+    opacity: withTiming(isReady ? 1 : 0, ANIMATED.TIMING_CONFIG)
   }))
 
   return (
