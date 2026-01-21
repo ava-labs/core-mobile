@@ -48,7 +48,7 @@ jest.mock('utils/mmkv', () => ({
   commonStorage: {
     getString: jest.fn(),
     set: jest.fn(),
-    delete: jest.fn()
+    remove: jest.fn()
   }
 }))
 
