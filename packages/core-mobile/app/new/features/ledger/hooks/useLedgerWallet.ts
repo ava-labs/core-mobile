@@ -6,7 +6,6 @@ import { useDispatch } from 'react-redux'
 import LedgerService from 'services/ledger/LedgerService'
 import {
   LedgerDerivationPathType,
-  LedgerDevice,
   LedgerKeys,
   LedgerTransportState,
   WalletCreationOptions
@@ -23,10 +22,8 @@ import { CoreAccountType } from '@avalabs/types'
 import { DERIVATION_PATHS } from '../consts'
 
 export interface UseLedgerWalletReturn {
-  devices: LedgerDevice[]
   // Connection state
   isConnecting: boolean
-  isScanning: boolean
   isLoading: boolean
   transportState: LedgerTransportState
 
