@@ -58,7 +58,7 @@ export default function DeviceConnectionScreen(): JSX.Element {
     subtitle: (
       <Text
         variant="caption"
-        sx={{ fontSize: 12, paddingTop: 4, color: colors.$textSecondary }}>
+        sx={{ fontSize: 13, paddingTop: 4, color: colors.$textSecondary }}>
         Found over Bluetooth
       </Text>
     ),
@@ -142,6 +142,7 @@ export default function DeviceConnectionScreen(): JSX.Element {
           }
           title="Looking for devices..."
           subtitle="Make sure your Ledger device is unlocked and the Avalanche app is open"
+          subtitleStyle={{ fontSize: 12 }}
           showAnimation={true}
         />
       )}
@@ -157,6 +158,7 @@ export default function DeviceConnectionScreen(): JSX.Element {
           }
           title="Get your Ledger ready"
           subtitle="Make sure your Ledger device is unlocked and ready to connect"
+          subtitleStyle={{ fontSize: 12 }}
           showAnimation={false}
         />
       )}
