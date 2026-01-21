@@ -189,7 +189,7 @@ class OnboardingPage {
 
   async tapZero(pin = '000000') {
     if (driver.isIOS) {
-      await actions.type(this.pinInputField, pin)
+      await actions.typeSlowly(this.pinInputField, pin)
     } else {
       await actions.tapNumberPad(pin)
     }
@@ -209,10 +209,12 @@ class OnboardingPage {
     await actions.dragAndDrop(element, [0, 500])
   }
 
-async verifyLoggedIn(hasModal = false) {
+async verifyLoggedIn() {
     await actions.waitFor(commonElsPage.accountOne, 40000)
-    if (hasModal) {
-      await this.dismissUpdateAppModal()
+    try {
+      await actions.waitFor(commonElsPage.successfullyAdded)
+    } catch (e) {
+      console.log('Accounts updated modal is not found...')
     }
     console.log('Verified you are logged in')
   }
