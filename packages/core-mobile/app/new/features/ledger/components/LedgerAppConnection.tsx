@@ -403,21 +403,17 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     : []
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, paddingHorizontal: 16 }}>
       {/* Show connected device */}
       {connectedDevice.length > 0 && (
-        <View style={{ padding: 16 }}>
-          <LedgerDeviceList
-            devices={connectedDevice}
-            subtitleText="Connected via Bluetooth"
-            testID="connected_device_list"
-          />
-        </View>
+        <LedgerDeviceList
+          devices={connectedDevice}
+          subtitleText="Connected via Bluetooth"
+          testID="connected_device_list"
+        />
       )}
 
-      <View style={{ flex: 1, paddingHorizontal: 16 }}>
-        {renderStepContent()}
-      </View>
+      {renderStepContent()}
     </View>
   )
 }

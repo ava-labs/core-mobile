@@ -354,6 +354,7 @@ export default function AppConnectionScreen(): JSX.Element {
       showNavigationHeaderTitle={false}
       hasParent={true}
       isModal={true}
+      style={{ paddingTop: 8 }}
       renderFooter={renderFooter}
       contentContainerStyle={{
         flex:
