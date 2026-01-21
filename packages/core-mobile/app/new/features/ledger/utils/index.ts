@@ -17,6 +17,8 @@ export const showLedgerReviewTransaction = ({
     onApprove,
     onReject
   })
+
+  // add a slight delay to ensure navigation to the ledger review screen works reliably
   setTimeout(() => {
     // @ts-ignore TODO: make routes typesafe
     router.navigate('/ledgerReviewTransaction')
