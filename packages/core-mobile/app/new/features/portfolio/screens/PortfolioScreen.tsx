@@ -1,10 +1,11 @@
 import {
   NavigationTitleHeader,
+  SegmentedControl,
   showAlert,
   useTheme,
-  View,
-  SegmentedControl
+  View
 } from '@avalabs/k2-alpine'
+import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import {
@@ -565,6 +566,21 @@ const PortfolioHomeScreen = (): JSX.Element => {
         onLayout={handleSegmentedControlLayout}>
         <BottomTabWrapper>{renderSegmentedControl()}</BottomTabWrapper>
       </View>
+
+      {Platform.OS === 'android' && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: headerHeight
+          }}>
+          <BlurredBackgroundView
+            separator={{ opacity: targetHiddenProgress, position: 'bottom' }}
+          />
+        </View>
+      )}
     </BlurredBarsContentLayout>
   )
 }

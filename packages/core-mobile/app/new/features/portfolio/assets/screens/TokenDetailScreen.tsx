@@ -7,11 +7,11 @@ import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import {
   NavigationTitleHeader,
+  SegmentedControl,
   useTheme,
-  View,
-  SegmentedControl
+  View
 } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
+import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   CollapsibleTabs,
@@ -26,6 +26,7 @@ import {
   USDC_AVALANCHE_C_TOKEN_ID,
   USDC_SOLANA_TOKEN_ID
 } from 'common/consts/swap'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
@@ -92,7 +93,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const { navigateToSwap } = useNavigateToSwap()
   const { addStake, canAddStake } = useAddStake()
   const frame = useWindowDimensions()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const insets = useSafeAreaInsets()
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const [_, setSelectedToken] = useSendSelectedToken()
@@ -534,6 +535,20 @@ export const TokenDetailScreen = (): React.JSX.Element => {
           }}
           onLayout={handleSegmentedControlLayout}>
           {renderSegmentedControl()}
+        </View>
+      )}
+      {Platform.OS === 'android' && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: headerHeight
+          }}>
+          <BlurredBackgroundView
+            separator={{ opacity: targetHiddenProgress, position: 'bottom' }}
+          />
         </View>
       )}
     </BlurredBarsContentLayout>
