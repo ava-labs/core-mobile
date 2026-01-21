@@ -70,8 +70,8 @@ const LedgerReviewTransactionScreen = ({
   }, [deviceForWallet, onApprove, isConnected])
 
   useEffect(() => {
-    if (isConnected) {
-      isCancelEnabled === false && setIsCancelEnabled(true)
+    if (isConnected && isCancelEnabled === false) {
+      setIsCancelEnabled(true)
     }
   }, [isCancelEnabled, isConnected])
 

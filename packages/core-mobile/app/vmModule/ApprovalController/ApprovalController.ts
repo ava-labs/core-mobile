@@ -142,6 +142,7 @@ class ApprovalController implements VmModuleApprovalController {
                 })
               } else {
                 resolve(value)
+                router.canGoBack() && router.back()
               }
             }
 
