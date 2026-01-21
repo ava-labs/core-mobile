@@ -87,7 +87,7 @@ const LedgerReviewTransactionScreen = ({
 
   const renderFooter = useCallback(() => {
     return (
-      <View style={{ padding: 16, gap: 12 }}>
+      <View style={{ gap: 12 }}>
         {isScanning && devices.length === 0 && (
           <View
             style={{
@@ -173,7 +173,7 @@ const LedgerReviewTransactionScreen = ({
               <Text
                 variant="caption"
                 sx={{
-                  fontSize: 12,
+                  fontSize: 13,
                   paddingTop: 4,
                   color: colors.$textSecondary
                 }}>
@@ -250,6 +250,7 @@ const LedgerReviewTransactionScreen = ({
         }
         title={title}
         subtitle={subtitle}
+        subtitleStyle={{ fontSize: 12 }}
         showAnimation={true}
       />
       {renderDeviceItem()}
