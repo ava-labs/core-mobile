@@ -388,18 +388,27 @@ export function getExtendedPublicKey(
   con.log('[Crypto] getExtendedPublicKey called')
   // Convert input to ArrayBuffer (only TS-side work)
   const skAB = hexLikeToArrayBuffer(secretKey)
-
+  con.log('[Crypto] getExtendedPublicKey skAB', skAB)
   // All computation and object construction happens in C++
   // C++ returns ExtendedPublicKey object with { head, prefix, scalar (string), pointBytes }
   const result = NativeCrypto.getExtendedPublicKey(skAB)
-  con.log('[Crypto] getExtendedPublicKey result', result.pointBytes)
+  const pointBytes = new Uint8Array(result.pointBytes)
+  const prefix = new Uint8Array(result.prefix)
+  const head = new Uint8Array(result.head)
+  const scalar = BigInt(result.scalar)
+
+  con.log('[Crypto] getExtendedPublicKey result', result)
+  con.log('[Crypto] getExtendedPublicKey result -> pointBytes', pointBytes)
+  con.log('[Crypto] getExtendedPublicKey result -> prefix', prefix)
+  con.log('[Crypto] getExtendedPublicKey result -> head', head)
+  con.log('[Crypto] getExtendedPublicKey result -> scalar', scalar)
 
   // Convert ArrayBuffers to Uint8Arrays, scalar string to bigint, and add point wrapper
   return {
-    head: new Uint8Array(result.head),
-    prefix: new Uint8Array(result.prefix),
-    scalar: BigInt(result.scalar),
-    point: { toRawBytes: () => new Uint8Array(result.pointBytes) },
-    pointBytes: new Uint8Array(result.pointBytes)
+    head: head,
+    prefix: prefix,
+    scalar: scalar,
+    point: { toRawBytes: () => pointBytes },
+    pointBytes: pointBytes
   }
 }
