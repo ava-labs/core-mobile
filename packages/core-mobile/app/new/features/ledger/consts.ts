@@ -21,12 +21,11 @@ export const DERIVATION_PATHS = {
   // Extended public key paths (without final /0/0)
   EXTENDED: {
     EVM: "m/44'/60'/0'",
-    AVALANCHE: "m/44'/9000'/0'"
+    AVALANCHE: "m/44'/9000'/0'",
+    BITCOIN: "m/44'/0'/0'",
+    SOLANA: "m/44'/501'/0'"
   }
 } as const
-
-// Solana derivation path prefix for generating indexed paths
-export const SOLANA_DERIVATION_PATH_PREFIX = "44'/501'/0'/0"
 
 /**
  * Generate a Solana derivation path for a specific account index
