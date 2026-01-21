@@ -230,8 +230,5 @@ export type AnalyticsEvents = {
   }
 
   // App Review
-  FeedbackCheckPromptShown: undefined
-  FeedbackCheckNoPressed: undefined
-  FeedbackCheckYesPressed: undefined
-  StoreReviewRequested: undefined
+  InAppReviewRequested: undefined
 }

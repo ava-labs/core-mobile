@@ -83,6 +83,11 @@ class ApprovalController implements VmModuleApprovalController {
   }): void {
     const numericChainId = getChainIdFromCaip2(request.chainId)
 
+    // Run the app-review prompt flow after confetti finishes
+    setTimeout(() => {
+      promptForAppReviewAfterSuccessfulTransaction()
+    }, CONFETTI_DURATION_MS + 200)
+
     if (numericChainId && isAvalancheChainId(numericChainId)) {
       return // do not show success toast for avalanche transactions as we've already shown it in onTransactionPending
     }
@@ -96,11 +101,6 @@ class ApprovalController implements VmModuleApprovalController {
       setTimeout(() => {
         confetti.restart()
       }, 100)
-
-      // Run the app-review prompt flow after confetti finishes (confetti hides after ~3s)
-      setTimeout(() => {
-        promptForAppReviewAfterSuccessfulTransaction()
-      }, CONFETTI_DURATION_MS + 200)
     }
   }
 

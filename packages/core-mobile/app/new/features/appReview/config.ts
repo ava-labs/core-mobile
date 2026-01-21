@@ -11,7 +11,7 @@ const PROD_DEFAULTS: AppReviewConfig = {
 const DEV_DEFAULTS: AppReviewConfig = {
   // Make it easy to test in dev:
   minSuccessfulTxForPrompt: 1,
-  cooldownMs: 60 * 1000 // 1 minute
+  cooldownMs: 120 * 1000 // 2 minutes
 }
 
 export function getAppReviewConfig(): AppReviewConfig {

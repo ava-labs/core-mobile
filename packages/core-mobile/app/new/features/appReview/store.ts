@@ -8,22 +8,17 @@ const APP_REVIEW_CONFIG = getAppReviewConfig()
 
 export interface AppReviewState {
   successfulTxCount: number
-
   pendingPrompt: boolean
-
-  promptShownCount: number
   lastPromptAtMs?: number
-
-  declined: boolean
-
   recordSuccessfulTransaction: () => void
-  markPromptShown: () => void
-  decline: () => void
+  markReviewRequested: () => void
 }
 
+/**
+ * Checks if the user can be prompted for a review based on the current state and the cooldown period.
+ */
 function canPromptNow(state: AppReviewState, nowMs: number): boolean {
   return (
-    !state.declined &&
     !state.pendingPrompt &&
     (state.lastPromptAtMs === undefined ||
       nowMs - state.lastPromptAtMs >= APP_REVIEW_CONFIG.cooldownMs)
@@ -34,14 +29,13 @@ export const appReviewStore = create<AppReviewState>()(
   persist(
     (set, _get) => ({
       successfulTxCount: 0,
-
       pendingPrompt: false,
-
-      promptShownCount: 0,
       lastPromptAtMs: undefined,
 
-      declined: false,
-
+      /**
+       * Records a successful transaction and updates the state accordingly.
+       * If the user has not reached the threshold for prompting, the pendingPrompt state is not updated.
+       */
       recordSuccessfulTransaction: () => {
         const nowMs = Date.now()
         set(state => {
@@ -59,24 +53,17 @@ export const appReviewStore = create<AppReviewState>()(
         })
       },
 
-      markPromptShown: () => {
+      /**
+       * Marks the review as requested and updates the state accordingly.
+       */
+      markReviewRequested: () => {
         const nowMs = Date.now()
         set(state => {
           if (!state.pendingPrompt) return state
           return {
             ...state,
             pendingPrompt: false,
-            promptShownCount: state.promptShownCount + 1,
             lastPromptAtMs: nowMs
-          }
-        })
-      },
-
-      decline: () => {
-        set(state => {
-          return {
-            ...state,
-            declined: true
           }
         })
       }

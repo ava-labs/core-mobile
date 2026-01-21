@@ -14,9 +14,7 @@ describe('appReviewStore', () => {
     appReviewStore.setState({
       successfulTxCount: 0,
       pendingPrompt: false,
-      promptShownCount: 0,
-      lastPromptAtMs: undefined,
-      declined: false
+      lastPromptAtMs: undefined
     })
   })
 
@@ -25,9 +23,7 @@ describe('appReviewStore', () => {
       const state = appReviewStore.getState()
       expect(state.successfulTxCount).toBe(0)
       expect(state.pendingPrompt).toBe(false)
-      expect(state.promptShownCount).toBe(0)
       expect(state.lastPromptAtMs).toBeUndefined()
-      expect(state.declined).toBe(false)
     })
   })
 
@@ -53,17 +49,6 @@ describe('appReviewStore', () => {
 
       // Record one less than threshold
       for (let i = 0; i < config.minSuccessfulTxForPrompt - 1; i++) {
-        appReviewStore.getState().recordSuccessfulTransaction()
-      }
-
-      expect(appReviewStore.getState().pendingPrompt).toBe(false)
-    })
-
-    it('should not set pendingPrompt if declined', () => {
-      appReviewStore.setState({ declined: true })
-
-      const config = getAppReviewConfig()
-      for (let i = 0; i < config.minSuccessfulTxForPrompt; i++) {
         appReviewStore.getState().recordSuccessfulTransaction()
       }
 
@@ -111,54 +96,6 @@ describe('appReviewStore', () => {
       }
 
       expect(appReviewStore.getState().pendingPrompt).toBe(true)
-    })
-  })
-
-  describe('markPromptShown', () => {
-    it('should update state when prompt is pending', () => {
-      const now = Date.now()
-      appReviewStore.setState({ pendingPrompt: true })
-
-      appReviewStore.getState().markPromptShown()
-
-      const state = appReviewStore.getState()
-      expect(state.pendingPrompt).toBe(false)
-      expect(state.promptShownCount).toBe(1)
-      expect(state.lastPromptAtMs).toBeGreaterThanOrEqual(now)
-    })
-
-    it('should not update state when prompt is not pending', () => {
-      const initialState = appReviewStore.getState()
-      appReviewStore.setState({ pendingPrompt: false })
-
-      appReviewStore.getState().markPromptShown()
-
-      const state = appReviewStore.getState()
-      expect(state.promptShownCount).toBe(initialState.promptShownCount)
-      expect(state.lastPromptAtMs).toBe(initialState.lastPromptAtMs)
-    })
-
-    it('should increment promptShownCount on each call', () => {
-      appReviewStore.setState({ pendingPrompt: true })
-      appReviewStore.getState().markPromptShown()
-
-      appReviewStore.setState({ pendingPrompt: true })
-      appReviewStore.getState().markPromptShown()
-
-      expect(appReviewStore.getState().promptShownCount).toBe(2)
-    })
-  })
-
-  describe('decline', () => {
-    it('should set declined to true', () => {
-      appReviewStore.getState().decline()
-      expect(appReviewStore.getState().declined).toBe(true)
-    })
-
-    it('should set declined to true even if called multiple times', () => {
-      appReviewStore.getState().decline()
-      appReviewStore.getState().decline()
-      expect(appReviewStore.getState().declined).toBe(true)
     })
   })
 })
