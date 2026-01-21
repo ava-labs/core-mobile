@@ -386,7 +386,8 @@ class BiometricsSDK {
         return iOS ? BiometricType.FACE_ID : BiometricType.BIOMETRICS
       if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT))
         return iOS ? BiometricType.TOUCH_ID : BiometricType.BIOMETRICS
-      if (types.includes(LocalAuthentication.AuthenticationType.IRIS)) return BiometricType.IRIS
+      if (types.includes(LocalAuthentication.AuthenticationType.IRIS))
+        return BiometricType.IRIS
 
       return BiometricType.NONE
     } catch (e) {
