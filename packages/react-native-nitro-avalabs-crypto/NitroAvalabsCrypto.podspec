@@ -53,7 +53,8 @@ Pod::Spec.new do |s|
     'CLANG_CXX_LANGUAGE_STANDARD'     => 'c++20',
     'SWIFT_OBJC_INTEROP_MODE'         => 'objcxx',
     'DEFINES_MODULE'                  => 'YES',
-    'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES'
+    'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES',
+    'OTHER_LDFLAGS' => '$(inherited) -framework OpenSSL'
   }
 
   # Tell Xcode where the public headers live
@@ -64,7 +65,7 @@ Pod::Spec.new do |s|
   s.user_target_xcconfig = {
       'LIBRARY_SEARCH_PATHS[sdk=iphoneos*]' => '$(inherited) "$(PODS_ROOT)/../../node_modules/react-native-nitro-avalabs-crypto/ios/secp-build/iphoneos-arm64/lib"',
     'LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]' => '$(inherited) "$(PODS_ROOT)/../../node_modules/react-native-nitro-avalabs-crypto/ios/secp-build/iphonesimulator-arm64/lib"',
-    'OTHER_LDFLAGS' => '$(inherited) -lsecp256k1 -lcrypto -lssl'
+    'OTHER_LDFLAGS' => '$(inherited) -lsecp256k1'
 }
 
   install_modules_dependencies(s)
