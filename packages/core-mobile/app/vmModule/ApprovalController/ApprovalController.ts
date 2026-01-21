@@ -66,7 +66,7 @@ class ApprovalController implements VmModuleApprovalController {
         request.context?.[RequestContext.CONFETTI_DISABLED]
 
       transactionSnackbar.success({
-        explorerLink
+        message: 'Transaction sent'
       })
 
       if (!confettiDisabled) {
