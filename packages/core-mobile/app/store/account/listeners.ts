@@ -316,8 +316,9 @@ const migrateXpAddressesIfNeeded = async (
     const accounts = selectAccountsByWalletId(state, wallet.id)
     const updatedAccounts = await populateXpAddressesForWallet({
       wallet,
+      // Use !== true to also catch undefined (accounts migrated in 1.0.18 without this field)
       accounts: accounts.filter(
-        account => account.hasMigratedXpAddresses === false
+        account => account.hasMigratedXpAddresses !== true
       ),
       isDeveloperMode
     })
@@ -337,7 +338,7 @@ const migrateXpAddressesIfNeeded = async (
 
   if (
     Object.values(allUpdatedAccounts).some(
-      account => account.hasMigratedXpAddresses === false
+      account => account.hasMigratedXpAddresses !== true
     )
   ) {
     // Log accounts that failed to migrate
