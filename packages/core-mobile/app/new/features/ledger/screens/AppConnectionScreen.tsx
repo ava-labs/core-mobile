@@ -10,11 +10,12 @@ import {
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import Logger from 'utils/Logger'
 import LedgerService from 'services/ledger/LedgerService'
-import { Button } from '@avalabs/k2-alpine'
+import { Button, ButtonType } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { LedgerKeys } from 'services/ledger/types'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { useSelector } from 'react-redux'
+import { showSnackbar } from 'common/utils/toast'
 
 export default function AppConnectionScreen(): JSX.Element {
   const { push, back } = useRouter()
@@ -32,6 +33,7 @@ export default function AppConnectionScreen(): JSX.Element {
 
   const [currentAppConnectionStep, setAppConnectionStep] =
     useState<AppConnectionStep>(AppConnectionStep.AVALANCHE_CONNECT)
+  const [skipSolana, setSkipSolana] = useState(false)
 
   const {
     connectedDeviceId,
@@ -204,23 +206,147 @@ export default function AppConnectionScreen(): JSX.Element {
     handleComplete()
   }, [keys, handleComplete])
 
-  const renderFooter = useCallback(() => {
-    if (currentAppConnectionStep !== AppConnectionStep.COMPLETE) {
-      return null
+  const handleConnectAvalanche = useCallback(async () => {
+    try {
+      setAppConnectionStep(AppConnectionStep.AVALANCHE_LOADING)
+
+      // Get keys from service
+      const avalancheKeys = await LedgerService.getAvalancheKeys()
+      const { bitcoinAddress, xpAddress } =
+        await LedgerService.getBitcoinAndXPAddresses()
+
+      // Update local state
+      setKeys(prev => ({
+        ...prev,
+        avalancheKeys,
+        bitcoinAddress,
+        xpAddress
+      }))
+
+      // Show success toast notification
+      showSnackbar('Avalanche app connected')
+      // if get avalanche keys succeeds move forward to solana connect
+      setAppConnectionStep(
+        isSolanaSupportBlocked
+          ? AppConnectionStep.COMPLETE
+          : AppConnectionStep.SOLANA_CONNECT
+      )
+    } catch (err) {
+      Logger.error('Failed to connect to Avalanche app', err)
+      setAppConnectionStep(AppConnectionStep.AVALANCHE_CONNECT)
+      Alert.alert(
+        'Connection Failed',
+        'Failed to connect to Avalanche app. Please make sure the Avalanche app is open on your Ledger.',
+        [{ text: 'OK' }]
+      )
     }
+  }, [isSolanaSupportBlocked, setAppConnectionStep, setKeys])
+
+  const handleConnectSolana = useCallback(async () => {
+    try {
+      setAppConnectionStep(AppConnectionStep.SOLANA_LOADING)
+
+      // Get keys from service
+      const solanaKeys = await LedgerService.getSolanaKeys()
+
+      // Update local state
+      setKeys(prev => ({
+        ...prev,
+        solanaKeys
+      }))
+
+      // Show success toast notification
+      showSnackbar('Solana app connected')
+
+      // Skip success step and go directly to complete
+      setAppConnectionStep(AppConnectionStep.COMPLETE)
+    } catch (err) {
+      Logger.error('Failed to connect to Solana app', err)
+      setAppConnectionStep(AppConnectionStep.SOLANA_CONNECT)
+      Alert.alert(
+        'Connection Failed',
+        'Failed to connect to Solana app. Please make sure the Solana app is installed and open on your Ledger.',
+        [{ text: 'OK' }]
+      )
+    }
+  }, [setAppConnectionStep, setKeys])
+
+  const handleSkipSolana = useCallback(() => {
+    // Skip Solana and proceed to complete step
+    setSkipSolana(true)
+    setAppConnectionStep(AppConnectionStep.COMPLETE)
+  }, [setAppConnectionStep])
+
+  const renderFooter = useCallback(() => {
+    let primary: { text: string; onPress?: () => void; disable?: boolean } = {
+      text: 'Continue'
+    }
+    let secondary:
+      | { text: string; onPress?: () => void; type?: ButtonType }
+      | undefined
+
+    switch (currentAppConnectionStep) {
+      case AppConnectionStep.AVALANCHE_CONNECT:
+      case AppConnectionStep.AVALANCHE_LOADING:
+        primary = {
+          text: 'Continue',
+          onPress: handleConnectAvalanche,
+          disable:
+            currentAppConnectionStep === AppConnectionStep.AVALANCHE_LOADING
+        }
+        break
+      case AppConnectionStep.SOLANA_CONNECT:
+      case AppConnectionStep.SOLANA_LOADING:
+        primary = {
+          text: 'Continue',
+          onPress: handleConnectSolana,
+          disable: currentAppConnectionStep === AppConnectionStep.SOLANA_LOADING
+        }
+        secondary = {
+          text: 'Skip Solana',
+          onPress: handleSkipSolana,
+          type: 'secondary'
+        }
+        break
+      case AppConnectionStep.COMPLETE:
+        primary = {
+          text: 'Complete setup',
+          onPress: handleCompleteWallet
+        }
+        secondary = {
+          text: 'Cancel setup',
+          onPress: handleCancel
+        }
+        break
+    }
+
     return (
-      <View style={{ paddingBottom: 8, paddingTop: 12 }}>
-        <Button type="primary" size="large" onPress={handleCompleteWallet}>
-          Complete Setup
+      <View style={{ gap: 12 }}>
+        <Button
+          type="primary"
+          size="large"
+          onPress={primary?.onPress}
+          disabled={primary?.disable}>
+          {primary?.text}
         </Button>
-        <View style={{ marginTop: 12 }}>
-          <Button type="tertiary" size="large" onPress={handleCancel}>
-            Cancel setup
+        {secondary && (
+          <Button
+            type={secondary?.type ?? 'tertiary'}
+            size="large"
+            onPress={secondary?.onPress}>
+            {secondary?.text}
           </Button>
-        </View>
+        )}
       </View>
     )
-  }, [currentAppConnectionStep, handleCancel, handleCompleteWallet])
+  }, [
+    currentAppConnectionStep,
+    handleCancel,
+    handleCompleteWallet,
+    handleConnectAvalanche,
+    handleConnectSolana,
+    handleSkipSolana
+  ])
 
   return (
     <ScrollScreen
@@ -241,10 +367,9 @@ export default function AppConnectionScreen(): JSX.Element {
         isCreatingWallet={isCreatingWallet}
         connectedDeviceId={connectedDeviceId}
         connectedDeviceName={connectedDeviceName}
-        setKeys={setKeys}
         keys={keys}
-        setAppConnectionStep={setAppConnectionStep}
         appConnectionStep={currentAppConnectionStep}
+        skipSolana={skipSolana}
       />
     </ScrollScreen>
   )

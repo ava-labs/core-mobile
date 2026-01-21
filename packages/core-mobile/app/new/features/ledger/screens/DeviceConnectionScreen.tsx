@@ -156,7 +156,7 @@ export default function DeviceConnectionScreen(): JSX.Element {
 
   const renderFooter = useCallback(() => {
     return (
-      <View style={{ padding: 16, gap: 12 }}>
+      <View style={{ gap: 12 }}>
         {!isScanning && devices.length === 0 && (
           <Button type="primary" size="large" onPress={scanForDevices}>
             Scan for Device
@@ -171,7 +171,7 @@ export default function DeviceConnectionScreen(): JSX.Element {
               alignItems: 'center',
               borderRadius: 12
             }}>
-            <ActivityIndicator size="small" color={colors.$textPrimary} />
+            <ActivityIndicator size="large" color={colors.$textPrimary} />
           </View>
         )}
 
@@ -193,7 +193,7 @@ export default function DeviceConnectionScreen(): JSX.Element {
       title={`Connect \nYour Ledger`}
       isModal
       renderFooter={renderFooter}
-      contentContainerStyle={{ padding: 16, flex: 1 }}>
+      contentContainerStyle={{ flex: 1 }}>
       <View style={{ flex: 1, padding: 16 }}>
         <View
           style={{

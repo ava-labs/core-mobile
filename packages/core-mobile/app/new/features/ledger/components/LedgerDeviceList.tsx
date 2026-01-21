@@ -46,7 +46,7 @@ export const LedgerDeviceList: React.FC<LedgerDeviceListProps> = ({
         subtitle: (
           <Text
             variant="caption"
-            sx={{ fontSize: 12, paddingTop: 4, color: colors.$textSecondary }}>
+            sx={{ fontSize: 13, paddingTop: 4, color: colors.$textSecondary }}>
             {subtitleText}
           </Text>
         ),

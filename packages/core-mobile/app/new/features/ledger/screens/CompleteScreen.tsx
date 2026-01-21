@@ -28,10 +28,19 @@ export default function CompleteScreen(): JSX.Element {
     }
   }
 
+  const renderFooter = (): JSX.Element => {
+    return (
+      <Button type="primary" size="large" onPress={handleComplete}>
+        Done
+      </Button>
+    )
+  }
+
   return (
     <ScrollScreen
       hasParent={true}
       isModal={true}
+      renderFooter={renderFooter}
       scrollEnabled={false}
       contentContainerStyle={{ flex: 1 }}>
       <View
@@ -60,19 +69,13 @@ export default function CompleteScreen(): JSX.Element {
           variant="body1"
           style={{
             textAlign: 'center',
-            color: colors.$textSecondary,
+            color: colors.$textPrimary,
             lineHeight: 20,
             marginBottom: 80
           }}>
           You can now start buying, swapping, sending, receiving crypto and
           collectibles via the app with your Ledger wallet
         </Text>
-      </View>
-
-      <View style={{ paddingHorizontal: 24, paddingBottom: 32 }}>
-        <Button type="primary" size="large" onPress={handleComplete}>
-          Done
-        </Button>
       </View>
     </ScrollScreen>
   )

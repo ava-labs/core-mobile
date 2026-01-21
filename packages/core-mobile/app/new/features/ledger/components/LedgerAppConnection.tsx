@@ -1,9 +1,8 @@
-import React, { useCallback, useMemo, useState } from 'react'
-import { View, Alert, ActivityIndicator } from 'react-native'
-import { Text, Button, useTheme, Icons, GroupList } from '@avalabs/k2-alpine'
+import React, { useMemo } from 'react'
+import { View, ActivityIndicator } from 'react-native'
+import { Text, useTheme, Icons, GroupList } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
 import { LedgerDerivationPathType, LedgerKeys } from 'services/ledger/types'
-import { showSnackbar } from 'common/utils/toast'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
@@ -14,8 +13,6 @@ import {
 } from 'services/network/consts'
 import { BITCOIN_NETWORK, AVALANCHE_XP_NETWORK } from '@avalabs/core-chains-sdk'
 import { ChainName } from 'services/network/consts'
-import LedgerService from 'services/ledger/LedgerService'
-import Logger from 'utils/Logger'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { useSelector } from 'react-redux'
@@ -34,14 +31,6 @@ interface StepConfig {
   icon: React.ReactNode
   title: string
   subtitle: string
-  primaryButton?: {
-    text: string
-    onPress: () => void
-  }
-  secondaryButton?: {
-    text: string
-    onPress: () => void
-  }
   showAnimation?: boolean
   isLoading?: boolean
 }
@@ -52,10 +41,9 @@ interface LedgerAppConnectionProps {
   isCreatingWallet?: boolean
   connectedDeviceId?: string | null
   connectedDeviceName?: string
-  setKeys: React.Dispatch<React.SetStateAction<LedgerKeys>>
   keys: LedgerKeys
-  setAppConnectionStep: React.Dispatch<React.SetStateAction<AppConnectionStep>>
   appConnectionStep: AppConnectionStep
+  skipSolana?: boolean
 }
 
 export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
@@ -63,15 +51,13 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   selectedDerivationPath: _selectedDerivationPath,
   connectedDeviceId,
   connectedDeviceName,
-  setKeys,
   keys,
-  setAppConnectionStep: setCurrentStep,
-  appConnectionStep: currentStep
+  appConnectionStep: currentStep,
+  skipSolana
 }) => {
   const {
     theme: { colors }
   } = useTheme()
-  const [skipSolana, setSkipSolana] = useState(false)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
 
   const hasAllKeys = useMemo(() => {
@@ -91,77 +77,6 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     keys.xpAddress,
     skipSolana
   ])
-
-  const handleConnectAvalanche = useCallback(async () => {
-    try {
-      setCurrentStep(AppConnectionStep.AVALANCHE_LOADING)
-
-      // Get keys from service
-      const avalancheKeys = await LedgerService.getAvalancheKeys()
-      const { bitcoinAddress, xpAddress } =
-        await LedgerService.getBitcoinAndXPAddresses()
-
-      // Update local state
-      setKeys(prev => ({
-        ...prev,
-        avalancheKeys,
-        bitcoinAddress,
-        xpAddress
-      }))
-
-      // Show success toast notification
-      showSnackbar('Avalanche app connected')
-      // if get avalanche keys succeeds move forward to solana connect
-      setCurrentStep(
-        isSolanaSupportBlocked
-          ? AppConnectionStep.COMPLETE
-          : AppConnectionStep.SOLANA_CONNECT
-      )
-    } catch (err) {
-      Logger.error('Failed to connect to Avalanche app', err)
-      setCurrentStep(AppConnectionStep.AVALANCHE_CONNECT)
-      Alert.alert(
-        'Connection Failed',
-        'Failed to connect to Avalanche app. Please make sure the Avalanche app is open on your Ledger.',
-        [{ text: 'OK' }]
-      )
-    }
-  }, [isSolanaSupportBlocked, setCurrentStep, setKeys])
-
-  const handleConnectSolana = useCallback(async () => {
-    try {
-      setCurrentStep(AppConnectionStep.SOLANA_LOADING)
-
-      // Get keys from service
-      const solanaKeys = await LedgerService.getSolanaKeys()
-
-      // Update local state
-      setKeys(prev => ({
-        ...prev,
-        solanaKeys
-      }))
-
-      // Show success toast notification
-      showSnackbar('Solana app connected')
-
-      // Skip success step and go directly to complete
-      setCurrentStep(AppConnectionStep.COMPLETE)
-    } catch (err) {
-      Logger.error('Failed to connect to Solana app', err)
-      setCurrentStep(AppConnectionStep.SOLANA_CONNECT)
-      Alert.alert(
-        'Connection Failed',
-        'Failed to connect to Solana app. Please make sure the Solana app is installed and open on your Ledger.',
-        [{ text: 'OK' }]
-      )
-    }
-  }, [setCurrentStep, setKeys])
-
-  const handleSkipSolana = useCallback(() => {
-    // Skip Solana and proceed to complete step
-    setSkipSolana(true)
-    setCurrentStep(AppConnectionStep.COMPLETE)
-  }, [setCurrentStep])
 
   // Generate address list data for the complete step
   const addressListData = useMemo(() => {
@@ -319,10 +234,6 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           ),
           title: 'Connect to Avalanche App',
           subtitle: `Open the Avalanche app on your ${deviceName}, then press Continue when ready.`,
-          primaryButton: {
-            text: 'Continue',
-            onPress: handleConnectAvalanche
-          },
           showAnimation: false
         }
 
@@ -352,14 +263,6 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           ),
           title: 'Connect to Solana App',
           subtitle: `Close the Avalanche app and open the Solana app on your ${deviceName}, then press Continue when ready.`,
-          primaryButton: {
-            text: 'Continue',
-            onPress: handleConnectSolana
-          },
-          secondaryButton: {
-            text: 'Skip Solana',
-            onPress: handleSkipSolana
-          },
           showAnimation: false
         }
 
@@ -387,13 +290,13 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     // Handle COMPLETE step separately as it has unique layout
     if (currentStep === AppConnectionStep.COMPLETE) {
       return (
-        <View style={{ flex: 1, paddingHorizontal: 16 }}>
+        <View style={{ flex: 1 }}>
           {/* Header with refresh icon and title */}
           <View style={{ alignItems: 'center', paddingVertical: 24 }}>
-            <Icons.Notification.Sync
+            <Icons.Notification.SyncV2
               color={colors.$textPrimary}
-              width={75}
-              height={75}
+              width={41}
+              height={41}
             />
 
             <View
@@ -404,15 +307,17 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
                 {`Your Ledger wallet \nis being set up`}
               </Text>
 
-              <Text
-                variant="body1"
-                style={{
-                  textAlign: 'center',
-                  color: colors.$textSecondary,
-                  lineHeight: 20
-                }}>
-                {`Review your addresses below and press \n Complete Setup to finish wallet creation.`}
-              </Text>
+              <View style={{ paddingHorizontal: 16 }}>
+                <Text
+                  variant="body1"
+                  style={{
+                    textAlign: 'center',
+                    color: colors.$textPrimary,
+                    lineHeight: 20
+                  }}>
+                  {`The BIP44 setup is in progress and should take about 15 seconds. Keep your device connected during setup.`}
+                </Text>
+              </View>
             </View>
           </View>
 
@@ -438,6 +343,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
               icon={config.icon}
               title={config.title}
               subtitle={config.subtitle}
+              subtitleStyle={{ fontSize: 12 }}
               showAnimation={config.showAnimation ?? false}
             />
           </View>
@@ -452,17 +358,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
                   borderRadius: 12,
                   marginBottom: 16
                 }}>
-                <ActivityIndicator size="small" color={colors.$textPrimary} />
+                <ActivityIndicator size="large" color={colors.$textPrimary} />
               </View>
-
-              {config.secondaryButton && (
-                <Button
-                  type="tertiary"
-                  size="large"
-                  onPress={config.secondaryButton.onPress}>
-                  {config.secondaryButton.text}
-                </Button>
-              )}
             </View>
           </View>
         </View>
@@ -489,33 +386,11 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
               style={{
                 textAlign: 'center',
                 color: colors.$textSecondary,
-                maxWidth: 280
+                maxWidth: 280,
+                fontSize: 12
               }}>
               {config.subtitle}
             </Text>
-          </View>
-        </View>
-
-        <View>
-          <View style={{ paddingHorizontal: 16 }}>
-            {config.primaryButton && (
-              <Button
-                type="primary"
-                size="large"
-                onPress={config.primaryButton.onPress}>
-                {config.primaryButton.text}
-              </Button>
-            )}
-
-            {config.secondaryButton && (
-              <Button
-                type="tertiary"
-                size="large"
-                style={{ marginTop: 16 }}
-                onPress={config.secondaryButton.onPress}>
-                {config.secondaryButton.text}
-              </Button>
-            )}
           </View>
         </View>
       </View>
@@ -531,7 +406,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     <View style={{ flex: 1 }}>
       {/* Show connected device */}
       {connectedDevice.length > 0 && (
-        <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+        <View style={{ padding: 16 }}>
           <LedgerDeviceList
             devices={connectedDevice}
             subtitleText="Connected via Bluetooth"

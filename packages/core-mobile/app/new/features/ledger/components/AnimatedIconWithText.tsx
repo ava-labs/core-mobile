@@ -2,6 +2,7 @@ import React from 'react'
 import { View } from 'react-native'
 import LottieView from 'lottie-react-native'
 import { Text, useTheme } from '@avalabs/k2-alpine'
+import { Space } from 'common/components/Space'
 
 // Import animation at the top level
 const connectWavesAnimation = require('assets/lotties/connect-waves.json')
@@ -92,6 +93,7 @@ export const AnimatedIconWithText: React.FC<AnimatedIconWithTextProps> = ({
         )}
         {icon}
       </View>
+      <Space y={34} />
       <Text
         variant="heading6"
         style={[
