@@ -1,3 +1,17 @@
+diff --git a/node_modules/react-native-reanimated/lib/typescript/hook/useAnimatedSensor.d.ts b/node_modules/react-native-reanimated/lib/typescript/hook/useAnimatedSensor.d.ts
+index eada3eb..954c97f 100644
+--- a/node_modules/react-native-reanimated/lib/typescript/hook/useAnimatedSensor.d.ts
++++ b/node_modules/react-native-reanimated/lib/typescript/hook/useAnimatedSensor.d.ts
+@@ -11,6 +11,6 @@ import { SensorType } from '../commonTypes';
+  *   and a function to unregister the sensor
+  * @see https://docs.swmansion.com/react-native-reanimated/docs/device/useAnimatedSensor
+  */
+-export declare function useAnimatedSensor(sensorType: SensorType.ROTATION, userConfig?: Partial<SensorConfig>): AnimatedSensor<ValueRotation>;
+-export declare function useAnimatedSensor(sensorType: Exclude<SensorType, SensorType.ROTATION>, userConfig?: Partial<SensorConfig>): AnimatedSensor<Value3D>;
++export declare function useAnimatedSensor(sensorType: SensorType.ROTATION, isActive?: boolean, userConfig?: Partial<SensorConfig>): AnimatedSensor<ValueRotation>;
++export declare function useAnimatedSensor(sensorType: Exclude<SensorType, SensorType.ROTATION>, isActive?: boolean, userConfig?: Partial<SensorConfig>): AnimatedSensor<Value3D>;
+ //# sourceMappingURL=useAnimatedSensor.d.ts.map
+\ No newline at end of file
 diff --git a/node_modules/react-native-reanimated/src/hook/useAnimatedSensor.ts b/node_modules/react-native-reanimated/src/hook/useAnimatedSensor.ts
 index 6256687..2d6e16e 100644
 --- a/node_modules/react-native-reanimated/src/hook/useAnimatedSensor.ts
