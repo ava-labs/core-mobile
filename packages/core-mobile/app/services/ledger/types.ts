@@ -32,6 +32,15 @@ export const LedgerReturnCode = {
   COMMAND_NOT_ALLOWED: 0x6986
 } as const
 
+export const LEDGER_ERROR_CODES = {
+  WRONG_APP: '0x6a80',
+  REJECTED: '0x6985',
+  REJECTED_ALT: '0x6986',
+  NOT_READY: '0x6a86',
+  DEVICE_LOCKED: '0x5515',
+  UPDATE_REQUIRED: '0x6e00'
+} as const
+
 export type LedgerReturnCodeType =
   typeof LedgerReturnCode[keyof typeof LedgerReturnCode]
 

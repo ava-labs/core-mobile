@@ -34,8 +34,7 @@ const LedgerReviewTransactionScreen = ({
 
   const ledgerAppName = useMemo(() => getLedgerAppName(network), [network])
 
-  const { devices, isScanning, isCreatingWallet, isConnecting } =
-    useLedgerSetupContext()
+  const { devices, isScanning, isConnecting } = useLedgerSetupContext()
 
   const deviceForWallet = useMemo(() => {
     if (!walletId) return undefined
@@ -68,15 +67,16 @@ const LedgerReviewTransactionScreen = ({
     if (deviceForWallet && isConnected) {
       onApprove()
     }
-  }, [
-    deviceForWallet,
-    onApprove,
-    isConnecting,
-    isScanning,
-    isCreatingWallet,
-    isConnected
-  ])
+  }, [deviceForWallet, onApprove, isConnected])
 
+  useEffect(() => {
+    if (isConnected) {
+      isCancelEnabled === false && setIsCancelEnabled(true)
+    }
+  }, [isCancelEnabled, isConnected])
+
+  // Enable cancel button after 3 seconds to prevent ledger triggers transaction signing prompt
+  // after user cancels, since it takes a few seconds for ledger to prompt the transaction signing
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsCancelEnabled(true)
