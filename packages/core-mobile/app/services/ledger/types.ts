@@ -43,7 +43,7 @@ export const LEDGER_ERROR_CODES = {
 } as const
 
 export type LedgerReturnCodeType =
-  (typeof LedgerReturnCode)[keyof typeof LedgerReturnCode]
+  typeof LedgerReturnCode[keyof typeof LedgerReturnCode]
 
 // ============================================================================
 // LEDGER DEVICE TYPES
