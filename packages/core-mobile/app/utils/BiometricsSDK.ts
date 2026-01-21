@@ -1,10 +1,6 @@
 import * as LocalAuthentication from 'expo-local-authentication'
-import { AuthenticationType } from 'expo-local-authentication'
-import { StorageKey } from 'resources/Constants'
-import { commonStorage } from 'utils/mmkv'
-import { decrypt, encrypt } from 'utils/EncryptionHelper'
+import { Platform } from 'react-native'
 import Aes from 'react-native-aes-crypto'
-import { Result } from 'types/result'
 import Keychain, {
   BaseOptions,
   GetOptions,
@@ -12,7 +8,10 @@ import Keychain, {
   hasGenericPassword,
   SetOptions
 } from 'react-native-keychain'
-import { Platform } from 'react-native'
+import { StorageKey } from 'resources/Constants'
+import { Result } from 'types/result'
+import { decrypt, encrypt } from 'utils/EncryptionHelper'
+import { commonStorage } from 'utils/mmkv'
 import Logger from './Logger'
 import { assertNotNull } from './assertions'
 
@@ -314,7 +313,7 @@ class BiometricsSDK {
         e
       )
     }
-    commonStorage.delete(StorageKey.SECURE_ACCESS_SET)
+    commonStorage.remove(StorageKey.SECURE_ACCESS_SET)
   }
 
   async clearAllData(): Promise<void> {
@@ -338,7 +337,7 @@ class BiometricsSDK {
           await Keychain.resetGenericPassword({ service })
         }
       }
-      commonStorage.delete(StorageKey.SECURE_ACCESS_SET)
+      commonStorage.remove(StorageKey.SECURE_ACCESS_SET)
     } catch (e) {
       Logger.error('Failed to clear all keychain data', e)
     }
@@ -379,11 +378,15 @@ class BiometricsSDK {
       // Fallback: Expo types (helps during iOS biometry lockout).
       const types =
         await LocalAuthentication.supportedAuthenticationTypesAsync()
-      if (types.includes(AuthenticationType.FACIAL_RECOGNITION))
+      if (
+        types.includes(
+          LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION
+        )
+      )
         return iOS ? BiometricType.FACE_ID : BiometricType.BIOMETRICS
-      if (types.includes(AuthenticationType.FINGERPRINT))
+      if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT))
         return iOS ? BiometricType.TOUCH_ID : BiometricType.BIOMETRICS
-      if (types.includes(AuthenticationType.IRIS)) return BiometricType.IRIS
+      if (types.includes(LocalAuthentication.AuthenticationType.IRIS)) return BiometricType.IRIS
 
       return BiometricType.NONE
     } catch (e) {

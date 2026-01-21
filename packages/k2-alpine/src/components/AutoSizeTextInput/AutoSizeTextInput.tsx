@@ -8,12 +8,12 @@ import React, {
 } from 'react'
 import {
   TextInputProps as _TextInputProps,
+  BlurEvent,
+  FocusEvent,
   LayoutChangeEvent,
-  NativeSyntheticEvent,
   Platform,
   Pressable,
   TextInput,
-  TextInputFocusEventData,
   TextStyle
 } from 'react-native'
 import Animated, {
@@ -284,7 +284,7 @@ export const AutoSizeTextInput = forwardRef<
     ])
 
     const onBlurTextInput = useCallback(
-      (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+      (e: BlurEvent) => {
         isFocused.value = false
         props.onBlur?.(e)
       },
@@ -292,7 +292,7 @@ export const AutoSizeTextInput = forwardRef<
     )
 
     const onFocusTextInput = useCallback(
-      (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+      (e: FocusEvent) => {
         isFocused.value = true
         props.onFocus?.(e)
       },

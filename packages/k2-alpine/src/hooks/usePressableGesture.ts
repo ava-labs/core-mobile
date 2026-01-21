@@ -156,7 +156,7 @@ export function usePressableGesture(
     opacity.value = withTiming(1, ANIMATED.TIMING_CONFIG)
     scale.value = withSpring(1, ANIMATED.SPRING_CONFIG, () => {
       if (callback) {
-        scheduleOnRN(invokeThrottledCallback, event)
+        scheduleOnRN(invokeThrottledCallback)
       }
     })
   }

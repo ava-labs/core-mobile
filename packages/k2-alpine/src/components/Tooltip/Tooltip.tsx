@@ -1,14 +1,15 @@
 import React from 'react'
-import { AlertButton, AlertOptions, Insets } from 'react-native'
+import { AlertOptions, Insets } from 'react-native'
 import { useTheme } from '../../hooks'
 import { Icons } from '../../theme/tokens/Icons'
 import { showAlert } from '../Alert/Alert'
 import { TouchableOpacity } from '../Primitives'
+import { AlertButton } from '../Alert/types'
 
 interface TooltipProps {
   title: string
   description: string
-  button?: Omit<AlertButton, 'style'> & { style?: 'default' | 'destructive' }
+  button?: AlertButton<string | undefined>
   options?: AlertOptions
   size?: number
   hitSlop?: Insets

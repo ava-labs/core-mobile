@@ -85,6 +85,9 @@ we patched the tab selection handlers to allow native tab bars (iOS UITabBarCont
 https://github.com/callstackincubator/react-native-bottom-tabs/issues/383
 https://github.com/callstackincubator/react-native-bottom-tabs/pull/408
 
+Updated 1.1.0
+we patched this to work with xcode 16.3 builds => Remove after we're building with xcode 26 on CI (est. March 2026)
+
 ### react-native-toast-notifications+3.4.0.patch
 
 We patched this to fix /native-stack toast displaying on top of all screens.
