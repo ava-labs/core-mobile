@@ -55,35 +55,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		815E55142C92071A000F8E0F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 815E550E2C92071A000F8E0F;
-			remoteInfo = NotificationServiceExtensionInternal;
-		};
-		815E551F2C921A9F000F8E0F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 815E550E2C92071A000F8E0F;
-			remoteInfo = NotificationServiceExtensionInternal;
-		};
-		8E3793732CA2788500D3A9B4 /* PBXContainerItemProxy */ = {
+		5050CC4C2F212EA20075A090 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 815E55442C94A396000F8E0F;
 			remoteInfo = NotificationServiceExtension;
 		};
-		8E3793762CA2790500D3A9B4 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 815E55442C94A396000F8E0F;
-			remoteInfo = NotificationServiceExtension;
-		};
-		8E37937A2CA2790C00D3A9B4 /* PBXContainerItemProxy */ = {
+		5050CC4E2F212EAC0075A090 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
 			proxyType = 1;
@@ -395,6 +374,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				5050CC4D2F212EA20075A090 /* PBXTargetDependency */,
 			);
 			name = AvaxWallet;
 			productName = AvaxWallet;
@@ -456,6 +436,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				5050CC4F2F212EAC0075A090 /* PBXTargetDependency */,
 			);
 			name = AvaxWalletInternal;
 			productName = AvaxWallet;
@@ -904,30 +885,15 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		815E55152C92071A000F8E0F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 815E550E2C92071A000F8E0F /* NotificationServiceExtensionInternal */;
-			targetProxy = 815E55142C92071A000F8E0F /* PBXContainerItemProxy */;
-		};
-		815E55202C921A9F000F8E0F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 815E550E2C92071A000F8E0F /* NotificationServiceExtensionInternal */;
-			targetProxy = 815E551F2C921A9F000F8E0F /* PBXContainerItemProxy */;
-		};
-		8E3793742CA2788500D3A9B4 /* PBXTargetDependency */ = {
+		5050CC4D2F212EA20075A090 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 815E55442C94A396000F8E0F /* NotificationServiceExtension */;
-			targetProxy = 8E3793732CA2788500D3A9B4 /* PBXContainerItemProxy */;
+			targetProxy = 5050CC4C2F212EA20075A090 /* PBXContainerItemProxy */;
 		};
-		8E3793772CA2790500D3A9B4 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 815E55442C94A396000F8E0F /* NotificationServiceExtension */;
-			targetProxy = 8E3793762CA2790500D3A9B4 /* PBXContainerItemProxy */;
-		};
-		8E37937B2CA2790C00D3A9B4 /* PBXTargetDependency */ = {
+		5050CC4F2F212EAC0075A090 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 815E550E2C92071A000F8E0F /* NotificationServiceExtensionInternal */;
-			targetProxy = 8E37937A2CA2790C00D3A9B4 /* PBXContainerItemProxy */;
+			targetProxy = 5050CC4E2F212EAC0075A090 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
