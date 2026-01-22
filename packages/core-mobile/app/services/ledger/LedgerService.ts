@@ -28,7 +28,8 @@ import {
   LedgerReturnCode,
   AppInfo,
   LedgerDevice,
-  AvalancheKey
+  AvalancheKey,
+  LEDGER_ERROR_CODES
 } from './types'
 
 class LedgerService {
@@ -379,13 +380,6 @@ class LedgerService {
       const startTime = Date.now()
       Logger.info(`Waiting for ${appType} app (timeout: ${timeoutMs}ms)...`)
 
-      // Check if disconnect was called - abort waiting
-      if (this.isDisconnected) {
-        Logger.info('Aborting waitForApp due to disconnect')
-        reject(new Error('Ledger operation cancelled'))
-        return
-      }
-
       // Check if app is already available
       if (this.currentAppType === appType) {
         Logger.info(`${appType} app is ready`)
@@ -425,6 +419,13 @@ class LedgerService {
                 )
               )
               return
+            }
+
+            // Check if disconnect was called - abort waiting
+            if (this.isDisconnected) {
+              cleanup()
+              Logger.info('Aborting waitForApp due to disconnect')
+              reject(new Error(LEDGER_ERROR_CODES.USER_CANCELLED))
             }
 
             const isFound = await this.checkApp(appType)
