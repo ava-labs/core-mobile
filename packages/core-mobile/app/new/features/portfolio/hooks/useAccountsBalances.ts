@@ -7,12 +7,10 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import BalanceService from 'services/balance/BalanceService'
-import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
+import { AdjustedNormalizedBalancesForAccounts } from 'services/balance/types'
 import { Account } from 'store/account'
 import { selectEnabledNetworks } from 'store/network/slice'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
-
-type AccountId = string
 
 /**
  * Stale time in milliseconds
@@ -21,9 +19,10 @@ const staleTime = 30_000
 
 /**
  * Refetch interval in milliseconds:
- * - 30 seconds
+ * - 30 seconds in dev mode
+ * - 5 seconds in prod mode
  */
-const refetchInterval = 5_000
+const refetchInterval = __DEV__ ? 30_000 : 5_000
 
 export const balancesKey = (params: {
   currency: string
@@ -43,16 +42,13 @@ export function useAccountsBalances(
   accounts: Account[],
   options?: { refetchInterval?: number | false }
 ): {
-  data: Record<AccountId, AdjustedNormalizedBalancesForAccount[]>
+  data: AdjustedNormalizedBalancesForAccounts
   isLoading: boolean
   isFetching: boolean
   isError: boolean
   error: Error | null
   refetch: () => Promise<
-    QueryObserverResult<
-      Record<AccountId, AdjustedNormalizedBalancesForAccount[]>,
-      Error
-    >
+    QueryObserverResult<AdjustedNormalizedBalancesForAccounts, Error>
   >
 } {
   const queryClient = useQueryClient()
@@ -83,11 +79,7 @@ export function useAccountsBalances(
     if (isNotReady) return
     queryClient.setQueryData(
       queryKey,
-      (
-        prev:
-          | Record<AccountId, AdjustedNormalizedBalancesForAccount[]>
-          | undefined
-      ) => {
+      (prev: AdjustedNormalizedBalancesForAccounts | undefined) => {
         const previous = prev ?? {}
         let changed = false
         const next = { ...previous }
@@ -119,11 +111,7 @@ export function useAccountsBalances(
         onBalanceLoaded: balance => {
           queryClient.setQueryData(
             queryKey,
-            (
-              prev:
-                | Record<AccountId, AdjustedNormalizedBalancesForAccount[]>
-                | undefined
-            ) => {
+            (prev: AdjustedNormalizedBalancesForAccounts | undefined) => {
               const previous = prev ?? {}
               const prevForAccount = previous[balance.accountId] ?? []
               const filtered = prevForAccount.filter(

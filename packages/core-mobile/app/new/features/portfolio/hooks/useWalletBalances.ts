@@ -1,13 +1,11 @@
 import { QueryObserverResult } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
+import { AdjustedNormalizedBalancesForAccounts } from 'services/balance/types'
 import { selectAccountsByWalletId } from 'store/account'
 import { RootState } from 'store/types'
 import { Wallet } from 'store/wallet/types'
 import { useAllBalances } from './useAllBalances'
-
-type AccountId = string
 
 /**
  * Fetches balances for all accounts within the specified wallet across all enabled networks
@@ -18,16 +16,13 @@ type AccountId = string
 export const useWalletBalances = (
   wallet?: Wallet
 ): {
-  data: Record<AccountId, AdjustedNormalizedBalancesForAccount[]>
+  data: AdjustedNormalizedBalancesForAccounts
   isLoading: boolean
   isFetching: boolean
   isError: boolean
   error: Error | null
   refetch: () => Promise<
-    QueryObserverResult<
-      Record<AccountId, AdjustedNormalizedBalancesForAccount[]>,
-      Error
-    >
+    QueryObserverResult<AdjustedNormalizedBalancesForAccounts, Error>
   >
 } => {
   const accounts = useSelector((state: RootState) =>
@@ -47,7 +42,7 @@ export const useWalletBalances = (
     return accounts.reduce((acc, account) => {
       acc[account.id] = allAccountsBalances?.[account.id] ?? []
       return acc
-    }, {} as Record<AccountId, AdjustedNormalizedBalancesForAccount[]>)
+    }, {} as AdjustedNormalizedBalancesForAccounts)
   }, [allAccountsBalances, accounts])
 
   return {

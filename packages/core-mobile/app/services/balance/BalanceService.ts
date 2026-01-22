@@ -26,13 +26,15 @@ import {
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { AVAX_P_ID, AVAX_X_ID } from './const'
-import { AdjustedNormalizedBalancesForAccount } from './types'
+import {
+  AdjustedNormalizedBalancesForAccount,
+  AdjustedNormalizedBalancesForAccounts,
+  PartialAdjustedNormalizedBalancesForAccount
+} from './types'
 import { buildRequestItemsForAccount } from './utils/buildRequestItemsForAccount'
 import { getLocalTokenId } from './utils/getLocalTokenId'
 import { mapBalanceResponseToLegacy } from './utils/mapBalanceResponseToLegacy'
 import { buildRequestItemsForAccounts } from './utils/buildRequestItemsForAccounts'
-
-type AccountId = string
 
 export class BalanceService {
   private async filterNetworksBySupportedEvm(
@@ -106,14 +108,11 @@ export class BalanceService {
     customTokens: Record<string, NetworkContractToken[] | undefined>
     onBalanceLoaded?: (
       networkChainId: number,
-      partial: Record<AccountId, AdjustedNormalizedBalancesForAccount>
+      partial: PartialAdjustedNormalizedBalancesForAccount
     ) => void
-  }): Promise<Record<AccountId, AdjustedNormalizedBalancesForAccount[]>> {
+  }): Promise<AdjustedNormalizedBalancesForAccounts> {
     // Final aggregated result
-    const finalResults: Record<
-      AccountId,
-      AdjustedNormalizedBalancesForAccount[]
-    > = {}
+    const finalResults: AdjustedNormalizedBalancesForAccounts = {}
     for (const account of accounts) {
       finalResults[account.id] = []
     }
@@ -131,10 +130,7 @@ export class BalanceService {
         },
         async span => {
           // Prepare partial result for this single network
-          const partial: Record<
-            AccountId,
-            AdjustedNormalizedBalancesForAccount
-          > = {}
+          const partial: PartialAdjustedNormalizedBalancesForAccount = {}
 
           try {
             const module = await ModuleManager.loadModuleByNetwork(network)
@@ -284,10 +280,7 @@ export class BalanceService {
             )
 
             // Create error partial for this network
-            const errorPartial: Record<
-              AccountId,
-              AdjustedNormalizedBalancesForAccount
-            > = {}
+            const errorPartial: PartialAdjustedNormalizedBalancesForAccount = {}
 
             // Mark all accounts errored for this network
             for (const account of accounts) {
@@ -504,11 +497,8 @@ export class BalanceService {
     accounts: Account[]
     currency: string
     onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
-  }): Promise<Record<AccountId, AdjustedNormalizedBalancesForAccount[]>> {
-    const finalResults: Record<
-      AccountId,
-      AdjustedNormalizedBalancesForAccount[]
-    > = {}
+  }): Promise<AdjustedNormalizedBalancesForAccounts> {
+    const finalResults: AdjustedNormalizedBalancesForAccounts = {}
 
     for (const account of accounts) {
       finalResults[account.id] = []

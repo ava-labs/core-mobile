@@ -38,8 +38,6 @@ export const useBalanceInCurrencyForAccount = (
 
   const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
     account,
-    // TODO: fix type mismatch after fully migrating to the new backend balance types
-    // @ts-ignore
     sourceData: balances[accountId]
   })
 
@@ -148,8 +146,6 @@ function useTokensWithBalanceForAccount({
       })
 
     // Flatten all tokens into one array
-    // TODO: fix type mismatch after fully migrating to the new backend balance types
-    // @ts-ignore
     return filteredBalances.flatMap(balance => balance.tokens)
   }, [account, data, chainId, networks, isDeveloperMode])
 }
