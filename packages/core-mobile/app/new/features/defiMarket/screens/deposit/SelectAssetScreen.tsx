@@ -13,7 +13,6 @@ import { ErrorState } from 'common/components/ErrorState'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
-import { useBuy } from 'features/meld/hooks/useBuy'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
@@ -46,7 +45,6 @@ export const SelectAssetScreen = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
-  const { navigateToBuy, isBuyable } = useBuy()
   const { navigateToSwap } = useNavigateToSwap()
   const [, setSelectedAsset] = useDepositSelectedAsset()
 
@@ -70,23 +68,11 @@ export const SelectAssetScreen = (): JSX.Element => {
             symbol: marketAsset.symbol
           }
         })
-      } else if (isBuyable(undefined, marketAsset.contractAddress)) {
-        navigateToBuy({
-          showAvaxWarning: true,
-          address: marketAsset.contractAddress
-        })
       } else {
         navigateToSwap(AVAX_TOKEN_ID, marketAsset.contractAddress)
       }
     },
-    [
-      navigate,
-      navigateToBuy,
-      isBuyable,
-      navigateToSwap,
-      cChainTokensWithBalance,
-      setSelectedAsset
-    ]
+    [navigate, navigateToSwap, cChainTokensWithBalance, setSelectedAsset]
   )
 
   const renderItem = useCallback(
