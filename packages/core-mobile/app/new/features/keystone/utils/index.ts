@@ -1,12 +1,14 @@
 import { router } from 'expo-router'
-import { KeystoneTroubleshootingParams } from 'services/walletconnectv2/walletConnectCache/types'
-import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
-import { KeystoneSignerParams } from 'services/walletconnectv2/walletConnectCache/types'
+import {
+  keystoneParamsCache,
+  KeystoneSignerParams,
+  KeystoneTroubleshootingParams
+} from '../services/keystoneParamsCache'
 
 export const showKeystoneTroubleshooting = (
   params: KeystoneTroubleshootingParams
 ): void => {
-  walletConnectCache.keystoneTroubleshootingParams.set(params)
+  keystoneParamsCache.keystoneTroubleshootingParams.set(params)
 
   router.navigate({
     // @ts-ignore
@@ -15,7 +17,7 @@ export const showKeystoneTroubleshooting = (
 }
 
 export const requestKeystoneSigner = (params: KeystoneSignerParams): void => {
-  walletConnectCache.keystoneSignerParams.set(params)
+  keystoneParamsCache.keystoneSignerParams.set(params)
 
   router.navigate({
     // @ts-ignore

@@ -10,6 +10,7 @@ export enum LedgerAppType {
   AVALANCHE = 'Avalanche',
   SOLANA = 'Solana',
   ETHEREUM = 'Ethereum',
+  BITCOIN = 'Bitcoin',
   UNKNOWN = 'Unknown'
 }
 
@@ -29,6 +30,15 @@ export const LedgerReturnCode = {
   DEVICE_LOCKED: 0x5515,
   INVALID_PARAMETER: 0x6b00,
   COMMAND_NOT_ALLOWED: 0x6986
+} as const
+
+export const LEDGER_ERROR_CODES = {
+  WRONG_APP: '0x6a80',
+  REJECTED: '0x6985',
+  REJECTED_ALT: '0x6986',
+  NOT_READY: '0x6a86',
+  DEVICE_LOCKED: '0x5515',
+  UPDATE_REQUIRED: '0x6e00'
 } as const
 
 export type LedgerReturnCodeType =
