@@ -348,12 +348,12 @@ __metadata:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.72
     "@avalabs/glacier-sdk": 3.1.0-alpha.72
     "@avalabs/types": 3.1.0-alpha.72
-    "@avalabs/vm-module-types": 3.1.2
+    "@avalabs/vm-module-types": 0.0.0-boyer-retry-logic-evm-bump-up--20260122180122
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: c4b37fa6a93a397a737071495b21d35d06d004b54db23cda88d5d548c9a5c1d1a0466a82f1a62410a23ce773a380a0518e089e6ba6e1e71879eb9eddcc260dda
+  checksum: 15ea4a890968e220e2c2825602a176a9f2f7abb9f533577ded0e5a83077526c9226daa34f358ad6e9dd5b6b76975d8ce699b2026105b06bfa582ce9496fcef0b
   languageName: node
   linkType: hard
 
@@ -370,20 +370,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/bitcoin-module@npm:3.1.2":
-  version: 3.1.2
-  resolution: "@avalabs/bitcoin-module@npm:3.1.2"
+"@avalabs/bitcoin-module@npm:0.0.0-boyer-retry-logic-evm-bump-up--20260122180122":
+  version: 0.0.0-boyer-retry-logic-evm-bump-up--20260122180122
+  resolution: "@avalabs/bitcoin-module@npm:0.0.0-boyer-retry-logic-evm-bump-up--20260122180122"
   dependencies:
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.72
     "@avalabs/core-utils-sdk": 3.1.0-alpha.72
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.72
-    "@avalabs/vm-module-types": 3.1.2
+    "@avalabs/vm-module-types": 0.0.0-boyer-retry-logic-evm-bump-up--20260122180122
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
     bitcoinjs-lib: 5.2.0
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: edfcbae2fc5cae006566a28d2b626e8a77e7ee8bcbecb6918d5f178af09aa89627a3638a0b906c24106b589330bbf0489d815b66638e4364f64acd07d07312c2
+  checksum: c525b3732f9e1d7a86da31d6f5b64ae07fe6a2104de3159b34c97f154e388e9f9b22c78fc2d9aa8921fe38ecf3cbb96ef5928dc752c0f24be7d134bf826d4978
   languageName: node
   linkType: hard
 
@@ -488,9 +488,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/core-mobile@workspace:packages/core-mobile"
   dependencies:
-    "@avalabs/avalanche-module": 3.1.2
+    "@avalabs/avalanche-module": 0.0.0-boyer-retry-logic-evm-bump-up--20260122180122
     "@avalabs/avalanchejs": 5.1.0-alpha.2
-    "@avalabs/bitcoin-module": 3.1.2
+    "@avalabs/bitcoin-module": 0.0.0-boyer-retry-logic-evm-bump-up--20260122180122
     "@avalabs/bridge-unified": 4.3.0
     "@avalabs/core-bridge-sdk": 3.1.0-alpha.69
     "@avalabs/core-chains-sdk": 3.1.0-alpha.69
@@ -498,13 +498,13 @@ __metadata:
     "@avalabs/core-gasless-sdk": 3.1.0-alpha.69
     "@avalabs/core-utils-sdk": 3.1.0-alpha.69
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.69
-    "@avalabs/evm-module": 3.1.2
+    "@avalabs/evm-module": 0.0.0-boyer-retry-logic-evm-bump-up--20260122180122
     "@avalabs/glacier-sdk": 3.1.0-alpha.69
     "@avalabs/k2-alpine": "workspace:*"
-    "@avalabs/svm-module": 3.1.2
+    "@avalabs/svm-module": 0.0.0-boyer-retry-logic-evm-bump-up--20260122180122
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": 3.1.0-alpha.71
-    "@avalabs/vm-module-types": 3.1.2
+    "@avalabs/vm-module-types": 0.0.0-boyer-retry-logic-evm-bump-up--20260122180122
     "@babel/core": 7.28.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
     "@babel/plugin-syntax-object-rest-spread": 7.8.3
@@ -894,9 +894,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/evm-module@npm:3.1.2":
-  version: 3.1.2
-  resolution: "@avalabs/evm-module@npm:3.1.2"
+"@avalabs/evm-module@npm:0.0.0-boyer-retry-logic-evm-bump-up--20260122180122":
+  version: 0.0.0-boyer-retry-logic-evm-bump-up--20260122180122
+  resolution: "@avalabs/evm-module@npm:0.0.0-boyer-retry-logic-evm-bump-up--20260122180122"
   dependencies:
     "@avalabs/core-chains-sdk": 3.1.0-alpha.72
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.72
@@ -905,7 +905,7 @@ __metadata:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.72
     "@avalabs/glacier-sdk": 3.1.0-alpha.72
     "@avalabs/types": 3.1.0-alpha.72
-    "@avalabs/vm-module-types": 3.1.2
+    "@avalabs/vm-module-types": 0.0.0-boyer-retry-logic-evm-bump-up--20260122180122
     "@blockaid/client": 0.48.0
     "@metamask/rpc-errors": 6.3.0
     "@openzeppelin/contracts": 4.9.6
@@ -915,7 +915,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: 6.13.5
-  checksum: 6a7437d4c6b0c4f8cb62ec3d084e7bae4cf1669b2661ffc7dac22940fee01acc05e60491d7528ef270afa25214ab045a5523d629e81235d76fc247f2202105e4
+  checksum: 54696f32cc35843e84b67353a20f7bdf31d92f4cf71da10472c6811914577108b286a7f3b440e9cb7e1585b9a6d00f1b9e03a02266b474c5d4cb2ca156ea1dce
   languageName: node
   linkType: hard
 
@@ -1028,15 +1028,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/svm-module@npm:3.1.2":
-  version: 3.1.2
-  resolution: "@avalabs/svm-module@npm:3.1.2"
+"@avalabs/svm-module@npm:0.0.0-boyer-retry-logic-evm-bump-up--20260122180122":
+  version: 0.0.0-boyer-retry-logic-evm-bump-up--20260122180122
+  resolution: "@avalabs/svm-module@npm:0.0.0-boyer-retry-logic-evm-bump-up--20260122180122"
   dependencies:
     "@avalabs/core-chains-sdk": 3.1.0-alpha.72
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.72
     "@avalabs/core-utils-sdk": 3.1.0-alpha.72
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.72
-    "@avalabs/vm-module-types": 3.1.2
+    "@avalabs/vm-module-types": 0.0.0-boyer-retry-logic-evm-bump-up--20260122180122
     "@blockaid/client": 0.48.0
     "@metamask/rpc-errors": 6.3.0
     "@scure/base": 1.2.4
@@ -1047,7 +1047,7 @@ __metadata:
     "@wallet-standard/base": 1.1.0
     "@wallet-standard/features": 1.1.0
     zod: 3.23.8
-  checksum: 32a421aab09a34f726657c94375721613e04feb2655b06c88594bb0fa9b78655d8a094729d3ff43375a9c4ac23ec523d5f1880fe303f22a59b4ad97c6e90a4dd
+  checksum: 3dd0769a1d4e778b1140ad6f83658b9fabdc8fb489b071186703f7bb848aeb3c947785797314601853dbef6210c72199c346ecd59c63e3e66234a7ba3dd7745c
   languageName: node
   linkType: hard
 
@@ -1064,9 +1064,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/vm-module-types@npm:3.1.2":
-  version: 3.1.2
-  resolution: "@avalabs/vm-module-types@npm:3.1.2"
+"@avalabs/vm-module-types@npm:0.0.0-boyer-retry-logic-evm-bump-up--20260122180122":
+  version: 0.0.0-boyer-retry-logic-evm-bump-up--20260122180122
+  resolution: "@avalabs/vm-module-types@npm:0.0.0-boyer-retry-logic-evm-bump-up--20260122180122"
   dependencies:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.72
     "@avalabs/glacier-sdk": 3.1.0-alpha.72
@@ -1077,7 +1077,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: 6.13.5
-  checksum: 611992af56d3c11fdbf9b1459314538d08af911b8d874c97f1c991b20f2267383092927bc5ad18bfd4ff85d5a231b62cf7b4b312740ab5efa4e8bf0ff94813ff
+  checksum: 7c59d782d326e2c8593681aaa22ee1c1129617d37d94d365be423d532fb7fbb9665ff376581cee46d15346c06c79467ead04eb9f57c80445a2e5370dbac35238
   languageName: node
   linkType: hard
 
