@@ -45,7 +45,7 @@ class ApprovalController implements VmModuleApprovalController {
   onTransactionPending({
     txHash: _txHash,
     request,
-    explorerLink
+    explorerLink: _explorerLink
   }: {
     txHash: string
     request: RpcRequest
@@ -62,7 +62,7 @@ class ApprovalController implements VmModuleApprovalController {
         request.context?.[RequestContext.CONFETTI_DISABLED]
 
       transactionSnackbar.success({
-        explorerLink
+        message: 'Transaction sent'
       })
 
       if (!confettiDisabled) {
