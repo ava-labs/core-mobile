@@ -321,7 +321,7 @@ class TransactionsPage {
 
   async verifySuccessToast() {
     console.log('verifySuccessToast')
-    // await actions.waitFor(this.transactionsuccess, timeout)
+    await actions.waitForNotVisible(commonElsPage.grabber)
   }
 
   async tapSelectToken() {
