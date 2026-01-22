@@ -139,12 +139,18 @@ export default function DeviceConnectionScreen(): JSX.Element {
         // @ts-ignore TODO: make routes typesafe
         push('/accountSettings/ledger/appConnection')
       } catch (error) {
-        setDevices([])
-        resetSetup()
         Alert.alert(
           'Connection failed',
           'Failed to connect to Ledger device. Please try again.',
-          [{ text: 'OK' }]
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                setDevices([])
+                resetSetup()
+              }
+            }
+          ]
         )
       }
     },
