@@ -4,7 +4,6 @@ import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import { configureEncryptedStore } from 'store'
 import Aes from 'react-native-aes-crypto'
-import Logger from 'utils/Logger'
 
 type EncryptionKey = string | null
 const SERVICE_KEY = 'sec-store-provider'
@@ -14,13 +13,7 @@ const MAC_KEY = 'sec-store-provider-mac'
  * Set up the encrypted redux store.
  */
 export const EncryptedStoreProvider: FC<PropsWithChildren> = ({ children }) => {
-  const { encryptedStore, error } = useEncryptedStore()
-
-  if (error) {
-    Logger.error('EncryptedStoreProvider failed to initialize', error)
-    // Re-throw to let error boundary handle it
-    throw error
-  }
+  const encryptedStore = useEncryptedStore()
 
   if (!encryptedStore) return null
 
@@ -37,36 +30,23 @@ export const EncryptedStoreProvider: FC<PropsWithChildren> = ({ children }) => {
  * Memoize the store.
  * @private
  */
-const useEncryptedStore = (): {
-  encryptedStore: ReturnType<typeof configureEncryptedStore> | null
-  error: Error | null
-} => {
+const useEncryptedStore = (): ReturnType<
+  typeof configureEncryptedStore
+> | null => {
   const [encryptedStore, setEncryptedStore] = useState<ReturnType<
     typeof configureEncryptedStore
   > | null>(null)
-  const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
     ;(async () => {
-      try {
-        Logger.info('EncryptedStoreProvider: Getting encryption keys...')
-        const encryptionKey = await getEncryptionKey()
-        const macKey = await getMacKey()
-        if (!encryptionKey || !macKey) {
-          throw new Error(
-            'EncryptedStoreProvider: Failed to get encryption keys'
-          )
-        }
-        Logger.info('EncryptedStoreProvider: Configuring encrypted store...')
-        setEncryptedStore(configureEncryptedStore(encryptionKey, macKey))
-      } catch (e) {
-        Logger.error('EncryptedStoreProvider: Error initializing store', e)
-        setError(e instanceof Error ? e : new Error(String(e)))
-      }
+      const encryptionKey = await getEncryptionKey()
+      const macKey = await getMacKey()
+      if (!encryptionKey || !macKey) return
+      setEncryptedStore(configureEncryptedStore(encryptionKey, macKey))
     })()
   }, []) // only once!
 
-  return { encryptedStore, error }
+  return encryptedStore
 }
 
 /**
