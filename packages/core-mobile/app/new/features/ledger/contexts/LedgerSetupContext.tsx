@@ -10,8 +10,7 @@ import {
   LedgerDerivationPathType,
   WalletCreationOptions,
   LedgerTransportState,
-  LedgerKeys,
-  LedgerDevice
+  LedgerKeys
 } from 'services/ledger/types'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useLedgerWalletMap } from '../store'
