@@ -1005,7 +1005,7 @@ workflows:
         - emulator_id: emulator-5554
         - emulator_channel: "0"
         - tag: google_apis
-        - abi: arm64-v8a
+        - abi: x86_64
         - profile: pixel_7_pro
         - ram_size: 4096
         - heap_size: 1024
