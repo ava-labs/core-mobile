@@ -311,11 +311,12 @@ class TransactionsPage {
   }
 
   async claim() {
-    if (await actions.getVisible(this.claimCard)) {
+    const isClaimCardVisible = await actions.getVisible(this.claimCard)
+    if (isClaimCardVisible) {
       await this.tapClaimCard()
       await this.tapClaimNow()
     } else {
-      await actions.isNotVisible(this.claimCard)
+      console.log('Claim card is not visible')
     }
   }
 
