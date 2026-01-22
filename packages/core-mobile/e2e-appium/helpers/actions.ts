@@ -305,7 +305,6 @@ async function typeSlowly(
   }
 }
 
-
 export const actions = {
   type,
   typeSlowly,
