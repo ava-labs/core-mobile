@@ -139,6 +139,8 @@ export default function DeviceConnectionScreen(): JSX.Element {
         // @ts-ignore TODO: make routes typesafe
         push('/accountSettings/ledger/appConnection')
       } catch (error) {
+        setDevices([])
+        resetSetup()
         Alert.alert(
           'Connection failed',
           'Failed to connect to Ledger device. Please try again.',
@@ -146,7 +148,7 @@ export default function DeviceConnectionScreen(): JSX.Element {
         )
       }
     },
-    [connectToDevice, setConnectedDevice, push]
+    [connectToDevice, setConnectedDevice, push, resetSetup]
   )
 
   const handleCancel = useCallback(() => {
