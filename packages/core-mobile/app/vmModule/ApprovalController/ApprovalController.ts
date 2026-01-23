@@ -19,6 +19,8 @@ import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { OnApproveParams } from 'services/walletconnectv2/walletConnectCache/types'
 import { WalletType } from 'services/wallet/types'
 import { showLedgerReviewTransaction } from 'features/ledger/utils'
+import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
+import { CONFETTI_DURATION_MS } from 'common/consts'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { handleLedgerError } from './utils'
@@ -80,6 +82,11 @@ class ApprovalController implements VmModuleApprovalController {
     request: RpcRequest
   }): void {
     const numericChainId = getChainIdFromCaip2(request.chainId)
+
+    // Run the app-review prompt flow after confetti finishes
+    setTimeout(() => {
+      promptForAppReviewAfterSuccessfulTransaction()
+    }, CONFETTI_DURATION_MS + 200)
 
     if (numericChainId && isAvalancheChainId(numericChainId)) {
       return // do not show success toast for avalanche transactions as we've already shown it in onTransactionPending
