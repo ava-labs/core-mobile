@@ -8,6 +8,7 @@ import { AppUpdateService } from 'services/AppUpdateService/AppUpdateService'
 import NotificationsService from 'services/notifications/NotificationsService'
 import {
   selectIsEnableNotificationPromptBlocked,
+  selectIsNestEggEligible,
   selectIsSolanaLaunchModalBlocked,
   selectIsSolanaSupportBlocked
 } from 'store/posthog'
@@ -17,6 +18,11 @@ import {
   setViewOnce,
   ViewOnceKey
 } from 'store/viewOnce'
+import {
+  selectHasSeenNestEggCampaign,
+  selectHasQualifiedForNestEgg,
+  selectHasAcknowledgedNestEggQualification
+} from 'store/nestEgg'
 import Config from 'react-native-config'
 import { turnOnAllNotifications } from '../slice'
 
@@ -27,6 +33,7 @@ export const handleAfterLoginFlows = async (
   await promptAppUpdateScreenIfNeeded()
   await promptEnableNotificationsIfNeeded(listenerApi)
   await promptSolanaLaunchModalIfNeeded(listenerApi)
+  await promptNestEggCampaignModalIfNeeded(listenerApi)
 }
 
 const promptAppUpdateScreenIfNeeded = async (): Promise<void> => {
@@ -145,6 +152,52 @@ const promptSolanaLaunchModalIfNeeded = async (
 
     await navigateWithPromise({
       pathname: '/(signedIn)/(modals)/solanaLaunch'
+    })
+  }
+}
+
+/**
+ * Show Nest Egg campaign modal for eligible users who haven't seen it yet
+ * Eligibility: seedless wallet + campaign feature flag enabled + hasn't qualified yet
+ */
+const promptNestEggCampaignModalIfNeeded = async (
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const { getState } = listenerApi
+  const state = getState()
+
+  // Check if user is eligible (seedless wallet + feature flag enabled)
+  const isNestEggEligible = selectIsNestEggEligible(state)
+  // Check if user has already seen the campaign modal
+  const hasSeenCampaign = selectHasSeenNestEggCampaign(state)
+  // Check if user has already qualified (completed a swap)
+  const hasQualified = selectHasQualifiedForNestEgg(state)
+  // Check if user has acknowledged qualification
+  const hasAcknowledged = selectHasAcknowledgedNestEggQualification(state)
+
+  // First, check if user qualified but hasn't acknowledged yet
+  // This handles the case where user qualified, app closed, and now opening again
+  if (hasQualified && !hasAcknowledged) {
+    await waitForInteractions()
+
+    await navigateWithPromise({
+      pathname: '/(signedIn)/(modals)/nestEggSuccess'
+    })
+    return
+  }
+
+  // Only show campaign modal if:
+  // - User is eligible (seedless + campaign active)
+  // - User hasn't seen the campaign modal yet
+  // - User hasn't already qualified
+  const shouldShowNestEggModal =
+    isNestEggEligible && !hasSeenCampaign && !hasQualified
+
+  if (shouldShowNestEggModal) {
+    await waitForInteractions()
+
+    await navigateWithPromise({
+      pathname: '/(signedIn)/(modals)/nestEggCampaign'
     })
   }
 }

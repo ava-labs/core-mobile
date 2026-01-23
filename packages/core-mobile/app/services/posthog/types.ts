@@ -40,7 +40,8 @@ export enum FeatureGates {
   ENABLE_MELD_SANDBOX = 'enable-meld-sandbox',
   LEDGER_SUPPORT = 'ledger-support',
   IN_APP_DEFI = 'in-app-defi',
-  IN_APP_DEFI_IS_NEW = 'in-app-defi-is-new'
+  IN_APP_DEFI_IS_NEW = 'in-app-defi-is-new',
+  NEST_EGG_CAMPAIGN = 'nest-egg-campaign'
 }
 
 export enum FeatureVars {

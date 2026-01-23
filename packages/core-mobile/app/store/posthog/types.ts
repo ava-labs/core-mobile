@@ -45,7 +45,8 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.SOLANA_LAUNCH_MODAL]: false,
   [FeatureGates.LEDGER_SUPPORT]: true,
   [FeatureGates.IN_APP_DEFI]: false,
-  [FeatureGates.IN_APP_DEFI_IS_NEW]: true
+  [FeatureGates.IN_APP_DEFI_IS_NEW]: true,
+  [FeatureGates.NEST_EGG_CAMPAIGN]: false // Nest Egg giveaway campaign - disabled by default
 }
 
 export const initialState = {

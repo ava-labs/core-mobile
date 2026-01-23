@@ -421,6 +421,32 @@ export const selectIsInAppDefiNewBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsNestEggCampaignBlocked = (state: RootState): boolean => {
+  return false
+  // TODO: Create feature flag for Nest Egg campaign
+  // const { featureFlags } = state.posthog
+  //
+  // return (
+  //   !featureFlags[FeatureGates.NEST_EGG_CAMPAIGN] ||
+  //   !featureFlags[FeatureGates.EVERYTHING]
+  // )
+}
+
+// Returns true if the Nest Egg campaign is active AND the wallet is seedless
+export const selectIsNestEggEligible = (state: RootState): boolean => {
+  return true
+  // TODO: Create feature flag for Nest Egg campaign
+  // const { featureFlags } = state.posthog
+  // const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
+  //
+  // Must be seedless wallet and campaign must be active
+  // return (
+  //   isSeedlessWallet &&
+  //   featureFlags[FeatureGates.NEST_EGG_CAMPAIGN] === true &&
+  //   featureFlags[FeatureGates.EVERYTHING] === true
+  // )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions

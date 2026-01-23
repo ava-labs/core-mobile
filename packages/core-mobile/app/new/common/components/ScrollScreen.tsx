@@ -362,7 +362,7 @@ export const ScrollScreen = ({
         contentContainerStyle={[
           props?.contentContainerStyle,
           {
-            paddingBottom: insets.bottom + 32,
+            paddingBottom: 32,
             paddingTop: headerHeight
           }
         ]}
