@@ -31,7 +31,8 @@ import LedgerService from 'services/ledger/LedgerService'
 import {
   LedgerAppType,
   LedgerDerivationPathType,
-  LedgerWalletData
+  LedgerWalletData,
+  PublicKey
 } from 'services/ledger/types'
 import {
   LEDGER_TIMEOUTS,
@@ -56,17 +57,7 @@ export class LedgerWallet implements Wallet {
   private derivationPath: string
   private derivationPathSpec: LedgerDerivationPathType
   private extendedPublicKeys?: { evm: string; avalanche: string }
-  private publicKeys: Array<{
-    key: string
-    derivationPath: string
-    curve: Curve
-    btcWalletPolicy?: {
-      hmacHex: string
-      xpub: string
-      masterFingerprint: string
-      name: string
-    }
-  }>
+  private publicKeys: PublicKey[]
   private evmSigner?: LedgerSigner
   private avalancheSigner?:
     | Avalanche.SimpleLedgerSigner

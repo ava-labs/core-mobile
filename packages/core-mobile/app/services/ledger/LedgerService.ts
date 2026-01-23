@@ -13,25 +13,38 @@ import {
 import { networks } from 'bitcoinjs-lib'
 import Logger from 'utils/Logger'
 import bs58 from 'bs58'
+import { Platform, PermissionsAndroid, Alert, Linking } from 'react-native'
 import {
   LEDGER_TIMEOUTS,
   getSolanaDerivationPath
 } from 'new/features/ledger/consts'
 import { assertNotNull } from 'utils/assertions'
+import { Curve } from 'utils/publicKeys'
 import {
   AddressInfo,
   ExtendedPublicKey,
   PublicKeyInfo,
   LedgerAppType,
   LedgerReturnCode,
-  AppInfo
+  AppInfo,
+  LedgerDevice,
+  AvalancheKey,
+  LEDGER_ERROR_CODES
 } from './types'
 
-export class LedgerService {
+class LedgerService {
   #transport: TransportBLE | null = null
   private currentAppType: LedgerAppType = LedgerAppType.UNKNOWN
   private appPollingInterval: number | null = null
   private appPollingEnabled = false
+  private isDisconnected = false
+
+  // Device scanning state
+  private scanSubscription: { unsubscribe: () => void } | null = null
+  private scanInterval: ReturnType<typeof setInterval> | null = null
+  private deviceListeners: Set<(devices: LedgerDevice[]) => void> = new Set()
+  private currentDevices: LedgerDevice[] = []
+  private isScanning = false
 
   // Transport getter/setter with automatic error handling
   private get transport(): TransportBLE {
@@ -50,18 +63,33 @@ export class LedgerService {
   async connect(deviceId: string): Promise<void> {
     try {
       Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
+      this.isDisconnected = false // Reset disconnect flag on new connection
       // Use a longer timeout for connection
       this.transport = await TransportBLE.open(
         deviceId,
         LEDGER_TIMEOUTS.CONNECTION_TIMEOUT
       )
       Logger.info('BLE transport connected successfully')
+
       this.currentAppType = LedgerAppType.UNKNOWN
 
       // Start passive app detection
       Logger.info('Starting app polling...')
       this.startAppPolling()
       Logger.info('App polling started')
+
+      // Test immediate app info call and update currentAppType
+      try {
+        const testAppInfo = await this.getCurrentAppInfo()
+        // Update currentAppType immediately so waitForApp doesn't have to wait
+        const detectedAppType = this.mapAppNameToType(
+          testAppInfo.applicationName
+        )
+        Logger.info(`Immediately detected app type: ${detectedAppType}`)
+        this.currentAppType = detectedAppType
+      } catch (testError) {
+        Logger.info('Immediate app info test failed, will rely on polling')
+      }
     } catch (error) {
       Logger.error('Failed to connect to Ledger', error)
       throw new Error(
@@ -74,7 +102,9 @@ export class LedgerService {
 
   // Start passive app detection polling
   private startAppPolling(): void {
-    if (this.appPollingEnabled) return
+    if (this.appPollingEnabled) {
+      return
+    }
 
     this.appPollingEnabled = true
     this.appPollingInterval = setInterval(async () => {
@@ -97,11 +127,11 @@ export class LedgerService {
         Logger.error('Error polling app info', error)
         // Don't stop polling on error, just log it
       }
-    }, LEDGER_TIMEOUTS.APP_POLLING_INTERVAL) // Poll every 2 seconds like the extension
+    }, LEDGER_TIMEOUTS.APP_POLLING_INTERVAL)
   }
 
   // Stop passive app detection polling
-  private stopAppPolling(): void {
+  stopAppPolling(): void {
     if (this.appPollingInterval) {
       clearInterval(this.appPollingInterval)
       this.appPollingInterval = null
@@ -109,21 +139,207 @@ export class LedgerService {
     this.appPollingEnabled = false
   }
 
+  // Request Bluetooth permissions (matching original implementation)
+  private async requestBluetoothPermissions(): Promise<boolean> {
+    if (Platform.OS === 'android') {
+      try {
+        const permissions = [
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+        ].filter(Boolean)
+
+        const granted = await PermissionsAndroid.requestMultiple(permissions)
+        return Object.values(granted).every(
+          permission => permission === 'granted'
+        )
+      } catch (err) {
+        Logger.error('Error requesting Bluetooth permissions:', err)
+        return false
+      }
+    }
+    return true
+  }
+
+  // Handle scan errors (matching original implementation)
+  private handleScanError(error: Error): void {
+    Logger.error('Scan error:', error)
+    this.stopDeviceScanning()
+
+    if (
+      error.message?.includes('not authorized') ||
+      error.message?.includes('Origin: 101')
+    ) {
+      Alert.alert(
+        'Bluetooth Permission Required',
+        'Please enable Bluetooth permissions in your device settings to scan for Ledger devices.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Open Settings',
+            onPress: () => {
+              Linking.openSettings()
+            }
+          }
+        ]
+      )
+    } else {
+      Alert.alert('Scan Error', `Failed to scan for devices: ${error.message}`)
+    }
+  }
+
+  // Device scanning methods (matching original implementation)
+  async startDeviceScanning(): Promise<void> {
+    if (this.isScanning) {
+      Logger.info('Device scanning already in progress')
+      return
+    }
+
+    // Request permissions first
+    const hasPermissions = await this.requestBluetoothPermissions()
+    if (!hasPermissions) {
+      Alert.alert(
+        'Permission Required',
+        'Bluetooth permissions are required to scan for Ledger devices.'
+      )
+      return
+    }
+
+    Logger.info('Starting device scanning...')
+    this.isScanning = true
+    this.currentDevices = []
+
+    try {
+      this.scanSubscription = TransportBLE.listen({
+        next: (event: {
+          type: string
+          descriptor: { id: string; name?: string; rssi?: number }
+        }) => {
+          if (event.type === 'add') {
+            const device: LedgerDevice = {
+              id: event.descriptor.id,
+              name: event.descriptor.name || 'Unknown Device',
+              rssi: event.descriptor.rssi
+            }
+
+            Logger.info('Found Ledger device:', {
+              id: device.id,
+              name: device.name
+            })
+
+            // Update device list (matching original logic)
+            const exists = this.currentDevices.find(d => d.id === device.id)
+            if (!exists) {
+              this.currentDevices = [...this.currentDevices, device]
+            }
+
+            // Notify all listeners
+            this.notifyDeviceListeners()
+          }
+        },
+        error: (error: Error) => {
+          this.handleScanError(error)
+        },
+
+        complete: () => {
+          Logger.info('Device scanning completed')
+        }
+      })
+
+      // Auto-stop scanning after timeout (matching original)
+      setTimeout(() => {
+        Logger.info('Scan timeout reached, stopping...')
+        this.stopDeviceScanning()
+      }, LEDGER_TIMEOUTS.SCAN_TIMEOUT)
+    } catch (error) {
+      Logger.error('Failed to start device scanning:', error)
+      this.isScanning = false
+      this.handleScanError(error as Error)
+    }
+  }
+
+  stopDeviceScanning(): void {
+    if (!this.isScanning) return
+
+    Logger.info('Stopping device scanning...')
+
+    if (this.scanSubscription) {
+      this.scanSubscription.unsubscribe()
+      this.scanSubscription = null
+    }
+
+    if (this.scanInterval) {
+      clearInterval(this.scanInterval)
+      this.scanInterval = null
+    }
+
+    this.isScanning = false
+  }
+
+  addDeviceListener(callback: (devices: LedgerDevice[]) => void): void {
+    this.deviceListeners.add(callback)
+    // Immediately notify with current devices
+    callback(this.currentDevices)
+  }
+
+  removeDeviceListener(callback: (devices: LedgerDevice[]) => void): void {
+    this.deviceListeners.delete(callback)
+  }
+
+  private notifyDeviceListeners(): void {
+    this.deviceListeners.forEach(callback => {
+      try {
+        callback([...this.currentDevices])
+      } catch (error) {
+        Logger.error('Error in device listener callback:', error)
+      }
+    })
+  }
+
+  getIsScanning(): boolean {
+    return this.isScanning
+  }
+
+  getCurrentDevices(): LedgerDevice[] {
+    return [...this.currentDevices]
+  }
+
+  removeDevice(deviceId: string): void {
+    this.currentDevices = this.currentDevices.filter(
+      device => device.id !== deviceId
+    )
+    this.notifyDeviceListeners()
+  }
+
   // Get current app info from device
   private async getCurrentAppInfo(): Promise<AppInfo> {
-    return await getLedgerAppInfo(this.transport as Transport)
+    try {
+      return await getLedgerAppInfo(this.transport as Transport)
+    } catch (error) {
+      Logger.error('Error getting app info from SDK:', error)
+      throw error
+    }
   }
 
   // Map app name to our enum
   private mapAppNameToType(appName: string): LedgerAppType {
-    switch (appName.toLowerCase()) {
+    const lowerAppName = appName.toLowerCase()
+
+    switch (lowerAppName) {
       case 'avalanche':
+      case 'avax':
+      case 'avalanche wallet':
         return LedgerAppType.AVALANCHE
       case 'solana':
+      case 'sol':
         return LedgerAppType.SOLANA
       case 'ethereum':
+      case 'eth':
         return LedgerAppType.ETHEREUM
+      case 'bitcoin':
+        return LedgerAppType.BITCOIN
       default:
+        Logger.info(`Unknown app name detected: "${appName}"`)
         return LedgerAppType.UNKNOWN
     }
   }
@@ -133,34 +349,98 @@ export class LedgerService {
     return this.currentAppType
   }
 
-  // Wait for specific app to be open (passive approach)
+  checkApp = async (appType: LedgerAppType): Promise<boolean> => {
+    try {
+      const appInfo = await this.getCurrentAppInfo()
+      const detectedAppType = this.mapAppNameToType(appInfo.applicationName)
+
+      if (detectedAppType !== this.currentAppType) {
+        Logger.info(
+          `App changed from ${this.currentAppType} to ${detectedAppType}`
+        )
+        this.currentAppType = detectedAppType
+      }
+
+      if (this.currentAppType === appType) {
+        Logger.info(`${appType} app is ready`)
+        return true
+      }
+    } catch (error) {
+      Logger.info('Error checking app, will continue polling')
+    }
+    return false
+  }
+
+  // Wait for specific app to be open (Promise-based, works with polling)
   async waitForApp(
     appType: LedgerAppType,
     timeoutMs = LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT
   ): Promise<void> {
-    const startTime = Date.now()
-    Logger.info(`Waiting for ${appType} app (timeout: ${timeoutMs}ms)...`)
+    return new Promise((resolve, reject) => {
+      const startTime = Date.now()
+      Logger.info(`Waiting for ${appType} app (timeout: ${timeoutMs}ms)...`)
 
-    while (Date.now() - startTime < timeoutMs) {
-      Logger.info(
-        `Current app type: ${this.currentAppType}, waiting for: ${appType}`
-      )
-
+      // Check if app is already available
       if (this.currentAppType === appType) {
         Logger.info(`${appType} app is ready`)
+        resolve()
         return
       }
 
-      // Wait before next check
-      await new Promise(resolve =>
-        setTimeout(resolve, LEDGER_TIMEOUTS.APP_CHECK_DELAY)
-      )
-    }
+      let checkInterval: ReturnType<typeof setInterval> | null = null
 
-    Logger.error(`Timeout waiting for ${appType} app after ${timeoutMs}ms`)
-    throw new Error(
-      `Timeout waiting for ${appType} app. Please open the ${appType} app on your Ledger device.`
-    )
+      const cleanup = (): void => {
+        if (checkInterval) {
+          clearInterval(checkInterval)
+          checkInterval = null
+        }
+      }
+
+      // Do immediate check
+      this.checkApp(appType)
+        .then(appFound => {
+          if (appFound) {
+            cleanup()
+            resolve()
+            return
+          }
+
+          // Set up polling interval
+          checkInterval = setInterval(async () => {
+            const elapsed = Date.now() - startTime
+            if (elapsed >= timeoutMs) {
+              cleanup()
+              Logger.error(
+                `Timeout waiting for ${appType} app after ${timeoutMs}ms`
+              )
+              reject(
+                new Error(
+                  `Timeout waiting for ${appType} app. Please open the ${appType} app on your Ledger device.`
+                )
+              )
+              return
+            }
+
+            // Check if disconnect was called - abort waiting
+            if (this.isDisconnected) {
+              cleanup()
+              Logger.info('Aborting waitForApp due to disconnect')
+              reject(new Error(LEDGER_ERROR_CODES.USER_CANCELLED))
+            }
+
+            const isFound = await this.checkApp(appType)
+            if (isFound) {
+              cleanup()
+              resolve()
+            }
+          }, LEDGER_TIMEOUTS.APP_CHECK_DELAY)
+        })
+        .catch(error => {
+          cleanup()
+          Logger.error('Error checking app:', error)
+          reject(error)
+        })
+    })
   }
 
   // Check if specific app is currently open
@@ -369,7 +649,7 @@ export class LedgerService {
         publicKeys.push({
           key: publicKey.toString('hex'),
           derivationPath,
-          curve: 'ed25519'
+          curve: Curve.ED25519
         })
       }
 
@@ -403,7 +683,7 @@ export class LedgerService {
         {
           key: publicKey.toString('hex'),
           derivationPath: getSolanaDerivationPath(startIndex),
-          curve: 'ed25519'
+          curve: Curve.ED25519
         }
       ]
 
@@ -478,7 +758,7 @@ export class LedgerService {
         publicKeys.push({
           key: evmResponse.publicKey.toString('hex'),
           derivationPath: evmPath,
-          curve: 'secp256k1'
+          curve: Curve.SECP256K1
         })
 
         // AVM public key
@@ -494,7 +774,7 @@ export class LedgerService {
         publicKeys.push({
           key: avmResponse.publicKey.toString('hex'),
           derivationPath: avmPath,
-          curve: 'secp256k1'
+          curve: Curve.SECP256K1
         })
 
         // Bitcoin public key
@@ -510,7 +790,7 @@ export class LedgerService {
         publicKeys.push({
           key: btcResponse.publicKey.toString('hex'),
           derivationPath: btcPath,
-          curve: 'secp256k1'
+          curve: Curve.SECP256K1
         })
       }
     } catch (error) {
@@ -640,6 +920,7 @@ export class LedgerService {
 
   // Disconnect from Ledger device
   async disconnect(): Promise<void> {
+    this.isDisconnected = true // Signal pending operations to abort
     if (this.#transport) {
       await this.#transport.close()
       this.#transport = null
@@ -662,6 +943,121 @@ export class LedgerService {
   // Get the current transport (for compatibility with existing code)
   async getTransport(): Promise<TransportBLE> {
     return this.transport
+  }
+
+  // ============================================================================
+  // KEY RETRIEVAL METHODS
+  // ============================================================================
+
+  /**
+   * Get Solana keys from the connected Ledger device
+   * @returns Array of Solana keys with derivation paths
+   */
+  async getSolanaKeys(): Promise<PublicKeyInfo[]> {
+    Logger.info('Getting Solana keys with passive app detection')
+    await this.waitForApp(LedgerAppType.SOLANA)
+
+    // Get address directly from Solana app
+    const transport = await this.getTransport()
+    const solanaApp = new AppSolana(transport as Transport)
+
+    // Use the SDK's derivation path function (same as other chains)
+    const derivationPath = getAddressDerivationPath({
+      accountIndex: 0,
+      vmType: NetworkVMType.SVM
+    })
+    // Remove 'm/' prefix if present (Ledger expects path without prefix)
+    const ledgerDerivationPath = derivationPath.replace(/^m\//, '')
+    const result = await solanaApp.getAddress(ledgerDerivationPath, false)
+
+    // Convert the Buffer to base58 format (Solana address format) - EXACT original logic
+    const solanaAddress = bs58.encode(new Uint8Array(result.address))
+
+    Logger.info('Successfully got Solana address', solanaAddress)
+
+    return [
+      {
+        key: solanaAddress,
+        derivationPath,
+        curve: Curve.ED25519
+      }
+    ]
+  }
+
+  /**
+   * Get Avalanche keys from the connected Ledger device
+   * @returns Avalanche keys (addresses for display, xpubs for wallet creation)
+   */
+  async getAvalancheKeys(): Promise<AvalancheKey> {
+    Logger.info('Getting Avalanche keys')
+
+    // Get addresses for display
+    const addresses = await this.getAllAddresses(0, 1)
+
+    const evmAddress =
+      addresses.find(addr => addr.network === ChainName.AVALANCHE_C_EVM)
+        ?.address || ''
+    const xChainAddress =
+      addresses.find(addr => addr.network === ChainName.AVALANCHE_X)?.address ||
+      ''
+    const pvmAddress =
+      addresses.find(addr => addr.network === ChainName.AVALANCHE_P)?.address ||
+      ''
+
+    // Get extended public keys and convert to base58 xpub format
+    const extendedKeys = await this.getExtendedPublicKeys()
+
+    const { bip32 } = await import('utils/bip32')
+
+    const evmXpub = bip32
+      .fromPublicKey(
+        Buffer.from(extendedKeys.evm.key, 'hex'),
+        Buffer.from(extendedKeys.evm.chainCode, 'hex')
+      )
+      .toBase58()
+
+    const avalancheXpub = bip32
+      .fromPublicKey(
+        Buffer.from(extendedKeys.avalanche.key, 'hex'),
+        Buffer.from(extendedKeys.avalanche.chainCode, 'hex')
+      )
+      .toBase58()
+
+    return {
+      addresses: {
+        evm: evmAddress,
+        avm: xChainAddress,
+        pvm: pvmAddress
+      },
+      xpubs: {
+        evm: evmXpub,
+        avalanche: avalancheXpub
+      }
+    }
+  }
+
+  /**
+   * Get Bitcoin and XP addresses from Avalanche keys
+   * @param avalancheKeys The avalanche keys to derive addresses from
+   * @returns Bitcoin and XP addresses
+   */
+  async getBitcoinAndXPAddresses(): Promise<{
+    bitcoinAddress: string
+    xpAddress: string
+  }> {
+    const addresses = await this.getAllAddresses(0, 1)
+
+    // Get addresses for display
+    const xChainAddress =
+      addresses.find(addr => addr.network === ChainName.AVALANCHE_X)?.address ||
+      ''
+    const btcAddress =
+      addresses.find(addr => addr.network === ChainName.BITCOIN)?.address || ''
+
+    return {
+      bitcoinAddress: btcAddress,
+      xpAddress: xChainAddress
+    }
   }
 }
 

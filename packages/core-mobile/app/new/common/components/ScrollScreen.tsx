@@ -73,6 +73,8 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   headerStyle?: StyleProp<ViewStyle>
   /** Whether this screen should hide the header background  */
   hideHeaderBackground?: boolean
+  /** Overlay component rendered absolutely positioned at the top of the screen over the header area */
+  headerCenterOverlay?: React.ReactNode
   /** TestID for the screen */
   testID?: string
 }
@@ -93,6 +95,7 @@ export const ScrollScreen = ({
   disableStickyFooter,
   showNavigationHeaderTitle = true,
   hideHeaderBackground,
+  headerCenterOverlay,
   headerStyle,
   testID,
   renderHeader,
@@ -166,7 +169,8 @@ export const ScrollScreen = ({
             style={[
               headerStyle,
               {
-                gap: 8
+                gap: 8,
+                paddingHorizontal: 16
               }
             ]}>
             {title ? (
@@ -323,6 +327,7 @@ export const ScrollScreen = ({
 
         {renderFooterContent()}
         {renderHeaderBackground()}
+        {headerCenterOverlay}
       </View>
     )
   }
@@ -352,6 +357,7 @@ export const ScrollScreen = ({
 
       {renderFooterContent()}
       {renderHeaderBackground()}
+      {headerCenterOverlay}
     </View>
   )
 }
