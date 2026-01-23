@@ -67,7 +67,7 @@
     "@lavamoat/preinstall-always-fail": "2.1.0",
     "@ledgerhq/hw-app-eth": "6.24.1",
     "@ledgerhq/hw-app-solana": "6.24.1",
-    "@ledgerhq/react-native-hw-transport-ble": "6.35.3",
+    "@ledgerhq/react-native-hw-transport-ble": "6.37.0",
     "@metamask/eth-sig-util": "7.0.3",
     "@metamask/rpc-errors": "6.3.0",
     "@ngraveio/bc-ur": "1.1.13",
