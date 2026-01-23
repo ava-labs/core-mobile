@@ -228,4 +228,7 @@ export type AnalyticsEvents = {
     channelId: string
     tokenId?: string
   }
+
+  // App Review
+  InAppReviewRequested: undefined
 }

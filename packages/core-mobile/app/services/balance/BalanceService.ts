@@ -32,9 +32,9 @@ import {
   PartialAdjustedNormalizedBalancesForAccount
 } from './types'
 import { buildRequestItemsForAccount } from './utils/buildRequestItemsForAccount'
+import { buildRequestItemsForAccounts } from './utils/buildRequestItemsForAccounts'
 import { getLocalTokenId } from './utils/getLocalTokenId'
 import { mapBalanceResponseToLegacy } from './utils/mapBalanceResponseToLegacy'
-import { buildRequestItemsForAccounts } from './utils/buildRequestItemsForAccounts'
 
 export class BalanceService {
   private async filterNetworksBySupportedEvm(

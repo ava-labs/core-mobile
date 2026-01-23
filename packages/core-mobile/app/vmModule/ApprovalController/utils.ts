@@ -41,6 +41,9 @@ export const handleLedgerError = ({
   } else if (message.includes(LEDGER_ERROR_CODES.UPDATE_REQUIRED)) {
     title = 'Update required'
     description = `Update the ${ledgerAppName} app on your Ledger device to continue`
+  } else if (message.includes(LEDGER_ERROR_CODES.USER_CANCELLED)) {
+    // User cancelled, no need to show alert
+    return
   } else {
     description = message
   }

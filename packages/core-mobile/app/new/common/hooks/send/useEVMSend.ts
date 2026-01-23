@@ -63,7 +63,8 @@ const useEVMSend: SendAdapterEVM = ({
         toAddress: addressToSend,
         amount: amount?.toSubUnit(),
         context: {
-          [RequestContext.NON_CONTRACT_RECIPIENT_ADDRESS]: addressToSend
+          [RequestContext.NON_CONTRACT_RECIPIENT_ADDRESS]: addressToSend,
+          [RequestContext.SHOULD_RETRY]: !isGaslessBlocked
         }
       })
     } finally {
@@ -77,7 +78,8 @@ const useEVMSend: SendAdapterEVM = ({
     provider,
     setIsSending,
     request,
-    amount
+    amount,
+    isGaslessBlocked
   ])
 
   const handleError = useCallback(

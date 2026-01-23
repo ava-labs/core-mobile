@@ -1,6 +1,8 @@
 import { Button, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { CONFETTI_DURATION_MS } from 'common/consts'
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
+import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
 import React, { useCallback } from 'react'
 
 export const TransactionSuccessfulScreen = (): React.JSX.Element => {
@@ -24,6 +26,11 @@ export const TransactionSuccessfulScreen = (): React.JSX.Element => {
   useFocusEffect(
     useCallback(() => {
       confetti.restart()
+
+      // Run the app-review prompt flow after confetti finishes
+      setTimeout(() => {
+        promptForAppReviewAfterSuccessfulTransaction()
+      }, CONFETTI_DURATION_MS + 200)
     }, [])
   )
 
