@@ -120,7 +120,10 @@ export const SelectAssetScreen = (): JSX.Element => {
               type="secondary"
               size="small"
               onPress={() => handleSelectToken(item)}>
-              {tokenWithBalance?.balanceInCurrency ? 'Deposit' : 'Buy'}
+              {tokenWithBalance?.balance !== undefined &&
+              tokenWithBalance.balance > 0n
+                ? 'Deposit'
+                : 'Buy'}
             </Button>
           </View>
         </TouchableOpacity>
