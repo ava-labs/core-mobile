@@ -44,8 +44,37 @@ class ApprovalController implements VmModuleApprovalController {
     })
   }
 
-  onTransactionPending({ request }: { request: RpcRequest }): void {
-    transactionSnackbar.pending({ toastId: request.requestId })
+  onTransactionPending({
+    txHash: _txHash,
+    request,
+    explorerLink: _explorerLink
+  }: {
+    txHash: string
+    request: RpcRequest
+    explorerLink?: string
+  }): void {
+    const numericChainId = getChainIdFromCaip2(request.chainId)
+
+    if (
+      numericChainId &&
+      isAvalancheChainId(numericChainId) &&
+      isInAppRequest(request)
+    ) {
+      const confettiDisabled =
+        request.context?.[RequestContext.CONFETTI_DISABLED]
+
+      transactionSnackbar.success({
+        message: 'Transaction sent'
+      })
+
+      if (!confettiDisabled) {
+        setTimeout(() => {
+          confetti.restart()
+        }, 100)
+      }
+    } else {
+      transactionSnackbar.pending({ toastId: request.requestId })
+    }
   }
 
   onTransactionConfirmed({

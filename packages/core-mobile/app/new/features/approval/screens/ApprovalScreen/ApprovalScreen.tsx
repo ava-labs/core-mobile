@@ -177,6 +177,13 @@ const ApprovalScreen = ({
       signingData.type !== RpcMethod.ETH_SEND_TRANSACTION
     )
       return
+
+    // Skip validation if gasless is enabled and available
+    if (gaslessEnabled && shouldShowGaslessSwitch) {
+      setAmountError(undefined)
+      return
+    }
+
     const ethSendTx = signingData.data
 
     try {
@@ -199,7 +206,15 @@ const ApprovalScreen = ({
         setAmountError(SendErrorMessage.UNKNOWN_ERROR)
       }
     }
-  }, [signingData, network, maxFeePerGas, nativeToken, gasLimit])
+  }, [
+    signingData,
+    network?.networkToken,
+    nativeToken,
+    gaslessEnabled,
+    shouldShowGaslessSwitch,
+    gasLimit,
+    maxFeePerGas
+  ])
 
   const handleFeesChange = useCallback((fees: Eip1559Fees) => {
     setGasLimit(fees.gasLimit)
