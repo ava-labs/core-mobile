@@ -21,6 +21,7 @@ import { WalletType } from 'services/wallet/types'
 import { showLedgerReviewTransaction } from 'features/ledger/utils'
 import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
 import { CONFETTI_DURATION_MS } from 'common/consts'
+import { currentRouteStore } from 'new/routes/store'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { handleLedgerError } from './utils'
@@ -117,6 +118,17 @@ class ApprovalController implements VmModuleApprovalController {
     onReject({ resolve })
   }
 
+  handleGoBackIfNeeded = (): void => {
+    const currentRoute = currentRouteStore.getState().currentRoute
+    if (
+      (currentRoute?.endsWith('ledgerReviewTransaction') ||
+        currentRoute?.endsWith('approval')) &&
+      router.canGoBack()
+    ) {
+      router.back()
+    }
+  }
+
   async requestApproval({
     request,
     displayData,
@@ -145,11 +157,14 @@ class ApprovalController implements VmModuleApprovalController {
                       signingData,
                       resolve: resolveWithRetry
                     }),
-                  onCancel: () => this.handleLedgerOnReject({ resolve })
+                  onCancel: () => {
+                    this.handleGoBackIfNeeded()
+                    this.handleLedgerOnReject({ resolve })
+                  }
                 })
               } else {
                 resolve(value)
-                router.canGoBack() && router.back()
+                this.handleGoBackIfNeeded()
               }
             }
 
@@ -163,7 +178,7 @@ class ApprovalController implements VmModuleApprovalController {
                 }),
               onReject: () => {
                 this.handleLedgerOnReject({ resolve })
-                if (router.canGoBack()) router.back()
+                this.handleGoBackIfNeeded()
               }
             })
           } else {

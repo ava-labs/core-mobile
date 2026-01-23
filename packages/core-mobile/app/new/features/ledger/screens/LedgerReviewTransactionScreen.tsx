@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { ActivityIndicator } from 'react-native'
 import {
   Text,
   Button,
@@ -34,7 +33,7 @@ const LedgerReviewTransactionScreen = ({
 
   const ledgerAppName = useMemo(() => getLedgerAppName(network), [network])
 
-  const { devices, isScanning, isConnecting } = useLedgerSetupContext()
+  const { isConnecting } = useLedgerSetupContext()
 
   const deviceForWallet = useMemo(() => {
     if (!walletId) return undefined
@@ -87,35 +86,15 @@ const LedgerReviewTransactionScreen = ({
 
   const renderFooter = useCallback(() => {
     return (
-      <View style={{ gap: 12 }}>
-        {isScanning && devices.length === 0 && (
-          <View
-            style={{
-              height: 48,
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderRadius: 12
-            }}>
-            <ActivityIndicator size="small" color={colors.$textPrimary} />
-          </View>
-        )}
-
-        <Button
-          type="secondary"
-          size="large"
-          onPress={onReject}
-          disabled={!isCancelEnabled}>
-          Cancel
-        </Button>
-      </View>
+      <Button
+        type="secondary"
+        size="large"
+        onPress={onReject}
+        disabled={!isCancelEnabled}>
+        Cancel
+      </Button>
     )
-  }, [
-    isScanning,
-    devices.length,
-    colors.$textPrimary,
-    onReject,
-    isCancelEnabled
-  ])
+  }, [onReject, isCancelEnabled])
 
   const renderDeviceItem = useCallback(() => {
     if (deviceForWallet) {
@@ -217,8 +196,8 @@ const LedgerReviewTransactionScreen = ({
     if (deviceForWallet) {
       return `Please review the transaction on your ${deviceForWallet.deviceName}`
     }
-    return isScanning ? 'Looking for devices...' : 'Get your Ledger ready'
-  }, [deviceForWallet, isScanning])
+    return 'Get your Ledger ready'
+  }, [deviceForWallet])
 
   const subtitle = useMemo(() => {
     if (deviceForWallet) {
@@ -231,29 +210,35 @@ const LedgerReviewTransactionScreen = ({
     <ScrollScreen
       isModal
       renderFooter={renderFooter}
-      contentContainerStyle={{ padding: 16, flex: 1 }}>
-      <AnimatedIconWithText
-        icon={
-          deviceForWallet ? (
-            <Icons.Custom.Bluetooth
-              color={colors.$textPrimary}
-              width={44}
-              height={44}
-            />
-          ) : (
-            <Icons.Custom.Ledger
-              color={colors.$textPrimary}
-              width={44}
-              height={44}
-            />
-          )
-        }
-        title={title}
-        subtitle={subtitle}
-        subtitleStyle={{ fontSize: 12 }}
-        showAnimation={true}
-      />
-      {renderDeviceItem()}
+      contentContainerStyle={{
+        padding: 16,
+        flex: 1,
+        flexDirection: 'column'
+      }}>
+      <View style={{ flex: 1, justifyContent: 'center' }}>
+        <AnimatedIconWithText
+          icon={
+            deviceForWallet ? (
+              <Icons.Custom.Bluetooth
+                color={colors.$textPrimary}
+                width={44}
+                height={44}
+              />
+            ) : (
+              <Icons.Custom.Ledger
+                color={colors.$textPrimary}
+                width={44}
+                height={44}
+              />
+            )
+          }
+          title={title}
+          subtitle={subtitle}
+          subtitleStyle={{ fontSize: 12 }}
+          showAnimation={true}
+        />
+      </View>
+      <View style={{ alignItems: 'flex-end' }}>{renderDeviceItem()}</View>
     </ScrollScreen>
   )
 }

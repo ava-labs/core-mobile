@@ -1,6 +1,7 @@
 import { Curve } from 'utils/publicKeys'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import { BtcWalletPolicyDetails } from '@avalabs/vm-module-types'
 
 // ============================================================================
 // LEDGER APP TYPES
@@ -38,7 +39,8 @@ export const LEDGER_ERROR_CODES = {
   REJECTED_ALT: '0x6986',
   NOT_READY: '0x6a86',
   DEVICE_LOCKED: '0x5515',
-  UPDATE_REQUIRED: '0x6e00'
+  UPDATE_REQUIRED: '0x6e00',
+  USER_CANCELLED: 'USER_CANCELLED'
 } as const
 
 export type LedgerReturnCodeType =
@@ -64,10 +66,14 @@ export interface LedgerTransportState {
 // CRYPTOGRAPHIC KEY TYPES
 // ============================================================================
 
+export interface PublicKey extends PublicKeyInfo {
+  btcWalletPolicy?: BtcWalletPolicyDetails
+}
+
 export interface PublicKeyInfo {
   key: string
   derivationPath: string
-  curve: 'secp256k1' | 'ed25519'
+  curve: Curve
 }
 
 export interface ExtendedPublicKey {
@@ -96,17 +102,23 @@ export enum LedgerDerivationPathType {
 // LEDGER KEYS MANAGEMENT
 // ============================================================================
 
-export interface LedgerKeys {
-  solanaKeys: Array<{
-    key: string
-    derivationPath: string
-    curve: Curve
-  }>
-  avalancheKeys: {
+export interface AvalancheKey {
+  addresses: {
+    evm: string
+    avm: string
+    pvm: string
+  }
+  xpubs: {
     evm: string
     avalanche: string
-    pvm: string
-  } | null
+  }
+}
+
+export interface LedgerKeys {
+  solanaKeys?: PublicKeyInfo[]
+  avalancheKeys?: AvalancheKey
+  bitcoinAddress?: string
+  xpAddress?: string
 }
 
 // ============================================================================
@@ -125,11 +137,7 @@ export interface WalletCreationOptions {
   deviceName?: string
   derivationPathType?: LedgerDerivationPathType
   accountCount?: number
-  individualKeys?: Array<{
-    key: string
-    derivationPath: string
-    curve: Curve
-  }>
+  individualKeys?: PublicKeyInfo[]
 }
 
 // ============================================================================
@@ -141,17 +149,7 @@ interface BaseLedgerWalletData {
   deviceId: string
   vmType: NetworkVMType
   transport?: TransportBLE // Optional for backward compatibility
-  publicKeys: Array<{
-    key: string
-    derivationPath: string
-    curve: Curve
-    btcWalletPolicy?: {
-      hmacHex: string
-      xpub: string
-      masterFingerprint: string
-      name: string
-    }
-  }>
+  publicKeys: PublicKey[]
 }
 
 // BIP44 specific wallet data

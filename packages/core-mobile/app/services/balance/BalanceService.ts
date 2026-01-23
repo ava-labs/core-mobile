@@ -1,4 +1,5 @@
 import { Network } from '@avalabs/core-chains-sdk'
+
 import { SPAN_STATUS_ERROR } from '@sentry/core'
 import { Account } from 'store/account/types'
 import { getAddressByNetwork } from 'store/account/utils'
