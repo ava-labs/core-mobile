@@ -395,7 +395,6 @@ export const ListScreen = <T,>({
   }, [
     renderHeader,
     headerHeight,
-    isModal,
     backgroundColor,
     handleContentHeaderLayout,
     title,
