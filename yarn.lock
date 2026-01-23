@@ -674,6 +674,7 @@ __metadata:
     expo-localization: 16.1.6
     expo-router: 5.1.4
     expo-sms: 13.1.4
+    expo-store-review: ~8.1.5
     expo-video: 2.2.2
     fast-equals: 5.2.2
     https-browserify: 1.0.0
@@ -23921,6 +23922,16 @@ __metadata:
   peerDependencies:
     expo: "*"
   checksum: 4031fc8c6ec289932a5fc26899bf91f0f8bbd590d4d45cd19d9d8b20fc70c9ee49f324674827d81be1f07ffa9ac1690daf29b0b3ddc6c77a4ef59a2fefde1d61
+  languageName: node
+  linkType: hard
+
+"expo-store-review@npm:~8.1.5":
+  version: 8.1.5
+  resolution: "expo-store-review@npm:8.1.5"
+  peerDependencies:
+    expo: "*"
+    react-native: "*"
+  checksum: 8c53edc8c9116e7a5f38592fc446b26f0d15a9a59a3106e9bdc8cc7af9ad2f0e0ba1cff579ebda6152ff3752b07e0b4165ec2ce2a0771dd3fd311b90a7fd25e7
   languageName: node
   linkType: hard
 
