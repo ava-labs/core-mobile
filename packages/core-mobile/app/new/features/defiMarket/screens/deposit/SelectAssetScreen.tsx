@@ -13,6 +13,7 @@ import { ErrorState } from 'common/components/ErrorState'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
+import { useNavigation } from '@react-navigation/native'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
@@ -30,6 +31,7 @@ import { useDepositableTokens } from '../../hooks/useDepositableTokens'
 
 export const SelectAssetScreen = (): JSX.Element => {
   const { navigate } = useRouter()
+  const navigation = useNavigation()
   const activeAccount = useSelector(selectActiveAccount)
   const cChainNetwork = useCChainNetwork()
   const cChainTokensWithBalance = useTokensWithBalanceForAccount({
@@ -69,10 +71,18 @@ export const SelectAssetScreen = (): JSX.Element => {
           }
         })
       } else {
+        // Dismiss entire deposit modal and navigate to swap
+        navigation.getParent()?.goBack()
         navigateToSwap(AVAX_TOKEN_ID, marketAsset.contractAddress)
       }
     },
-    [navigate, navigateToSwap, cChainTokensWithBalance, setSelectedAsset]
+    [
+      navigate,
+      navigation,
+      navigateToSwap,
+      cChainTokensWithBalance,
+      setSelectedAsset
+    ]
   )
 
   const renderItem = useCallback(
