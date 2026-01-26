@@ -46,7 +46,7 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.LEDGER_SUPPORT]: true,
   [FeatureGates.IN_APP_DEFI]: false,
   [FeatureGates.IN_APP_DEFI_IS_NEW]: true,
-  [FeatureGates.NEST_EGG_CAMPAIGN]: false // Nest Egg giveaway campaign - disabled by default
+  [FeatureGates.NEST_EGG_CAMPAIGN]: false
 }
 
 export const initialState = {

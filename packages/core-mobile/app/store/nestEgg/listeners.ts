@@ -2,6 +2,7 @@ import { createAction } from '@reduxjs/toolkit'
 import { navigateWithPromise } from 'common/utils/navigateWithPromise'
 import { waitForInteractions } from 'common/utils/waitForInteractions'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import {
   selectHasQualifiedForNestEgg,
   selectHasAcknowledgedNestEggQualification,
@@ -47,6 +48,11 @@ const handleSwapForNestEgg = async (
 
   const { txHash, fromAmountUsd, chainId, fromTokenSymbol, toTokenSymbol } =
     action.payload
+
+  // Only C-Chain swaps qualify for Nest Egg
+  if (!isAvalancheCChainId(chainId)) {
+    return
+  }
 
   // Check minimum swap amount ($10 USD)
   if (fromAmountUsd < MINIMUM_SWAP_AMOUNT_USD) {
