@@ -24,13 +24,21 @@ import {
   onRequestApproved,
   onRequestRejected
 } from '../slice'
-import { Request, RpcMethod, RpcProvider } from '../types'
+import { Request, RequestContext, RpcMethod, RpcProvider } from '../types'
 import handlerMap from '../handlers'
 import { DEFERRED_RESULT } from '../handlers/types'
 import { addRpcListeners } from './index'
 
 // mocks
 const mockListenerApi = expect.any(Object)
+
+jest.mock('store/posthog/slice', () => {
+  const actual = jest.requireActual('store/posthog/slice')
+  return {
+    ...actual,
+    selectIsInAppReviewBlocked: () => false
+  }
+})
 
 const mockActiveAccount = mockAccounts[0]
 jest.mock('store/account/slice', () => {
@@ -564,7 +572,9 @@ describe('rpc - listeners', () => {
             },
             method: testRequest.method,
             params: testRequest.data.params.request.params,
-            context: undefined
+            context: {
+              [RequestContext.IN_APP_REVIEW]: true
+            }
           }
 
           expect(mockOnRpcRequest).toHaveBeenCalledWith(
