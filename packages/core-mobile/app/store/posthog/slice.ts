@@ -429,6 +429,14 @@ export const selectIsInAppReviewBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsGaslessInstantBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.GASLESS_INSTANT] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions

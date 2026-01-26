@@ -41,7 +41,8 @@ export enum FeatureGates {
   LEDGER_SUPPORT = 'ledger-support',
   IN_APP_DEFI = 'in-app-defi',
   IN_APP_DEFI_IS_NEW = 'in-app-defi-is-new',
-  IN_APP_REVIEW = 'in-app-review'
+  IN_APP_REVIEW = 'in-app-review',
+  GASLESS_INSTANT = 'gasless-instant'
 }
 
 export enum FeatureVars {
