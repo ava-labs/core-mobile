@@ -321,7 +321,7 @@ export const ListScreen = <T,>({
       <Animated.View style={[animatedHeaderContainerStyle]}>
         <View
           style={{
-            paddingTop: renderHeader ? headerHeight + 16 : headerHeight,
+            paddingTop: headerHeight + 16,
             paddingBottom: renderHeader ? 12 : 0
           }}>
           <Animated.View
