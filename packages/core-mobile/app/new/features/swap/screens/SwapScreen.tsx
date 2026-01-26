@@ -69,7 +69,7 @@ import {
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { navigate, back, canGoBack } = useRouter()
-  const { getState } = useNavigation()
+  const navigation = useNavigation()
   const params = useGlobalSearchParams<{
     initialTokenIdFrom?: string
     initialTokenIdTo?: string
@@ -558,17 +558,9 @@ export const SwapScreen = (): JSX.Element => {
 
   useEffect(() => {
     if (swapStatus === 'Success') {
-      back()
-      const state = getState()
-      if (state?.routes.some(route => route.name === 'swap')) {
-        canGoBack() && back()
-      }
-      const newState = getState()
-      if (newState?.routes.some(route => route.name === 'onboarding')) {
-        canGoBack() && back()
-      }
+      navigation.getParent()?.goBack()
     }
-  }, [back, canGoBack, getState, swapStatus])
+  }, [back, canGoBack, navigation, swapStatus])
 
   useEffect(validateInputs, [validateInputs])
   useEffect(applyQuote, [applyQuote])
