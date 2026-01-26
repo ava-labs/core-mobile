@@ -1,4 +1,7 @@
 export interface NestEggState {
+  // Whether this is a new seedless user who just completed onboarding
+  // This flag is set during seedless onboarding and cleared after showing the campaign modal
+  isNewSeedlessUser: boolean
   // Whether the user has seen the campaign announcement modal
   hasSeenCampaign: boolean
   // Whether the user has qualified for the giveaway by completing a swap

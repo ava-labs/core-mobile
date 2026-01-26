@@ -73,7 +73,7 @@ const handleSwapForNestEgg = async (
   // Show success modal
   await waitForInteractions()
   await navigateWithPromise({
-    pathname: '/(signedIn)/(modals)/nestEggSuccess'
+    pathname: '/(signedIn)/(modals)/nestEggCampaign/success'
   })
 }
 

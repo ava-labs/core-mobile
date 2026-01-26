@@ -3,6 +3,7 @@ import { RootState } from 'store/types'
 import { NestEggState } from './types'
 
 export const initialState: NestEggState = {
+  isNewSeedlessUser: false,
   hasSeenCampaign: false,
   hasQualified: false,
   qualifiedAt: null,
@@ -14,8 +15,15 @@ const nestEggSlice = createSlice({
   name: 'nestEgg',
   initialState,
   reducers: {
+    setIsNewSeedlessUser: (state, action: PayloadAction<boolean>) => {
+      state.isNewSeedlessUser = action.payload
+    },
     setHasSeenCampaign: (state, action: PayloadAction<boolean>) => {
       state.hasSeenCampaign = action.payload
+      // Clear the new user flag once they've seen the campaign
+      if (action.payload) {
+        state.isNewSeedlessUser = false
+      }
     },
     setQualified: (
       state,
@@ -36,6 +44,9 @@ const nestEggSlice = createSlice({
 })
 
 // Selectors
+export const selectIsNewSeedlessUser = (state: RootState): boolean =>
+  state.nestEgg.isNewSeedlessUser
+
 export const selectHasSeenNestEggCampaign = (state: RootState): boolean =>
   state.nestEgg.hasSeenCampaign
 
@@ -54,11 +65,15 @@ export const selectHasAcknowledgedNestEggQualification = (
 ): boolean => state.nestEgg.hasAcknowledgedQualification
 
 // Check if user is eligible to see the campaign modal
-// (hasn't seen it before, hasn't already qualified)
+// (is a new seedless user, hasn't seen it before, hasn't already qualified)
 export const selectIsEligibleForNestEggCampaignModal = (
   state: RootState
 ): boolean => {
-  return !state.nestEgg.hasSeenCampaign && !state.nestEgg.hasQualified
+  return (
+    state.nestEgg.isNewSeedlessUser &&
+    !state.nestEgg.hasSeenCampaign &&
+    !state.nestEgg.hasQualified
+  )
 }
 
 // Check if user should see success modal
@@ -73,6 +88,7 @@ export const selectShouldShowNestEggSuccessModal = (
 
 // Actions
 export const {
+  setIsNewSeedlessUser,
   setHasSeenCampaign,
   setQualified,
   setHasAcknowledgedQualification,

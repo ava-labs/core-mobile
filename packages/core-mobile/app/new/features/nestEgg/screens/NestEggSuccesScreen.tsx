@@ -6,6 +6,7 @@ import { useDispatch } from 'react-redux'
 import { setHasAcknowledgedQualification } from 'store/nestEgg'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { withNavigationEvents } from 'common/utils/navigateWithPromise'
+import { TermsAndConditionsCaption } from '../components/TermsAndConditionsCaption'
 
 function NestEggSuccessScreen(): JSX.Element {
   const { theme } = useTheme()
@@ -73,17 +74,7 @@ function NestEggSuccessScreen(): JSX.Element {
           </Text>
         </View>
       </View>
-      <Text
-        variant="caption"
-        sx={{
-          color: theme.colors.$textSecondary,
-          fontFamily: 'Inter-Medium',
-          paddingRight: 48
-        }}>
-        *Swapping does not guarantee qualification. Tokens are distributed at
-        2pm ET weekly on Mondays. Subject to availability and the Core terms and
-        conditions.
-      </Text>
+      <TermsAndConditionsCaption />
     </ScrollScreen>
   )
 }

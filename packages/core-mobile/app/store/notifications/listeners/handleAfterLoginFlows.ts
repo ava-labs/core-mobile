@@ -8,7 +8,6 @@ import { AppUpdateService } from 'services/AppUpdateService/AppUpdateService'
 import NotificationsService from 'services/notifications/NotificationsService'
 import {
   selectIsEnableNotificationPromptBlocked,
-  selectIsNestEggEligible,
   selectIsSolanaLaunchModalBlocked,
   selectIsSolanaSupportBlocked
 } from 'store/posthog'
@@ -19,9 +18,9 @@ import {
   ViewOnceKey
 } from 'store/viewOnce'
 import {
-  selectHasSeenNestEggCampaign,
   selectHasQualifiedForNestEgg,
-  selectHasAcknowledgedNestEggQualification
+  selectHasAcknowledgedNestEggQualification,
+  selectIsEligibleForNestEggCampaignModal
 } from 'store/nestEgg'
 import Config from 'react-native-config'
 import { turnOnAllNotifications } from '../slice'
@@ -157,8 +156,8 @@ const promptSolanaLaunchModalIfNeeded = async (
 }
 
 /**
- * Show Nest Egg campaign modal for eligible users who haven't seen it yet
- * Eligibility: seedless wallet + campaign feature flag enabled + hasn't qualified yet
+ * Show Nest Egg campaign modal for NEW seedless users who just completed onboarding
+ * Eligibility: new seedless user + hasn't seen campaign + hasn't qualified yet
  */
 const promptNestEggCampaignModalIfNeeded = async (
   listenerApi: AppListenerEffectAPI
@@ -166,10 +165,6 @@ const promptNestEggCampaignModalIfNeeded = async (
   const { getState } = listenerApi
   const state = getState()
 
-  // Check if user is eligible (seedless wallet + feature flag enabled)
-  const isNestEggEligible = selectIsNestEggEligible(state)
-  // Check if user has already seen the campaign modal
-  const hasSeenCampaign = selectHasSeenNestEggCampaign(state)
   // Check if user has already qualified (completed a swap)
   const hasQualified = selectHasQualifiedForNestEgg(state)
   // Check if user has acknowledged qualification
@@ -181,19 +176,17 @@ const promptNestEggCampaignModalIfNeeded = async (
     await waitForInteractions()
 
     await navigateWithPromise({
-      pathname: '/(signedIn)/(modals)/nestEggSuccess'
+      pathname: '/(signedIn)/(modals)/nestEggCampaign/success'
     })
     return
   }
 
-  // Only show campaign modal if:
-  // - User is eligible (seedless + campaign active)
-  // - User hasn't seen the campaign modal yet
-  // - User hasn't already qualified
-  const shouldShowNestEggModal =
-    isNestEggEligible && !hasSeenCampaign && !hasQualified
+  // Check if user is eligible for campaign modal
+  // This checks: isNewSeedlessUser + !hasSeenCampaign + !hasQualified
+  const isEligibleForCampaignModal =
+    selectIsEligibleForNestEggCampaignModal(state)
 
-  if (shouldShowNestEggModal) {
+  if (isEligibleForCampaignModal) {
     await waitForInteractions()
 
     await navigateWithPromise({

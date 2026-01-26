@@ -234,7 +234,7 @@ export default function WalletLayout(): JSX.Element {
               options={modalScreensOptions}
             />
             <Stack.Screen
-              name="(modals)/nestEggSuccess"
+              name="(modals)/nestEggCampaign/success"
               options={modalScreensOptions}
             />
             <Stack.Screen

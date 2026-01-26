@@ -1,9 +1,11 @@
 export {
   nestEggReducer,
+  setIsNewSeedlessUser,
   setHasSeenCampaign,
   setQualified,
   setHasAcknowledgedQualification,
   resetNestEggState,
+  selectIsNewSeedlessUser,
   selectHasSeenNestEggCampaign,
   selectHasQualifiedForNestEgg,
   selectNestEggQualifiedAt,

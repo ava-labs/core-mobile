@@ -9,6 +9,7 @@ export default function NestEggCampaignLayout(): JSX.Element {
   return (
     <Stack screenOptions={modalStackNavigatorScreenOptions}>
       <Stack.Screen name="index" options={modalFirstScreenOptions} />
+      <Stack.Screen name="success" options={modalFirstScreenOptions} />
     </Stack>
   )
 }
