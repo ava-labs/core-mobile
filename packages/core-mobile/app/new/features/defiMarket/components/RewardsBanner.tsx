@@ -28,18 +28,22 @@ export const RewardsBanner = ({
   const { totalRewardsFiat, rewards } = availableRewards
 
   const formattedTotalRewardsFiat = useMemo(() => {
-    if (exchangeRate !== undefined) {
-      const amountInCurrency = totalRewardsFiat.toNumber() * exchangeRate
-      if (amountInCurrency < MINIMUM_DISPLAY_AMOUNT) {
-        return `Less than ${formatCurrency({ amount: MINIMUM_DISPLAY_AMOUNT })}`
-      }
+    const baseAmount = totalRewardsFiat.toNumber()
+    const hasExchangeRate = exchangeRate !== undefined
+    const amountInCurrency = hasExchangeRate
+      ? baseAmount * exchangeRate
+      : baseAmount
 
-      return formatCurrency({
-        amount: amountInCurrency
-      })
+    if (amountInCurrency < MINIMUM_DISPLAY_AMOUNT) {
+      return `Less than ${formatCurrency({ amount: MINIMUM_DISPLAY_AMOUNT })}`
     }
+
+    if (hasExchangeRate) {
+      return formatCurrency({ amount: amountInCurrency })
+    }
+
     return rawFormatCurrency({
-      amount: totalRewardsFiat.toNumber(),
+      amount: amountInCurrency,
       currency: 'USD',
       boostSmallNumberPrecision: false
     })

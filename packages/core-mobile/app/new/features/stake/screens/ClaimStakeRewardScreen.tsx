@@ -28,9 +28,11 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useRefreshStakingBalances } from 'hooks/earn/useRefreshStakingBalances'
 import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import { CONFETTI_DURATION_MS } from 'common/consts'
+import { selectIsInAppReviewBlocked } from 'store/posthog/slice'
 import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
 
 export const ClaimStakeRewardScreen = (): JSX.Element => {
+  const isInAppReviewBlocked = useSelector(selectIsInAppReviewBlocked)
   const { navigate, back } = useRouter()
   const { formatTokenInCurrency } = useFormatCurrency()
   const pChainBalance = usePChainBalance()
@@ -53,10 +55,12 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
       confetti.restart()
     }, 100)
 
-    // Run the app-review prompt flow after confetti finishes
-    setTimeout(() => {
-      promptForAppReviewAfterSuccessfulTransaction()
-    }, CONFETTI_DURATION_MS + 200)
+    if (!isInAppReviewBlocked) {
+      // Run the app-review prompt flow after confetti finishes
+      setTimeout(() => {
+        promptForAppReviewAfterSuccessfulTransaction()
+      }, CONFETTI_DURATION_MS + 200)
+    }
   }
 
   const onClaimError = (error: Error): void => {

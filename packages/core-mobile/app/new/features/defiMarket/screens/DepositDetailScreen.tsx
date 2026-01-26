@@ -106,12 +106,11 @@ export function DepositDetailScreen(): JSX.Element {
         }}>
         <View
           sx={{
-            maxWidth: 280,
             flexDirection: 'row',
             gap: 12
           }}>
           {data.map((item, index) => (
-            <View key={index} sx={{ flex: 1 }}>
+            <View key={index} sx={{ flex: index === 2 ? 0.8 : 0.5 }}>
               <Text variant="heading5" sx={{ color: '$textPrimary' }}>
                 {item.value}
               </Text>
