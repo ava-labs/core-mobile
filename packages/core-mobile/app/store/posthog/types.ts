@@ -46,7 +46,8 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.LEDGER_SUPPORT]: true,
   [FeatureGates.IN_APP_DEFI]: false,
   [FeatureGates.IN_APP_DEFI_IS_NEW]: true,
-  [FeatureGates.NEST_EGG_CAMPAIGN]: false
+  [FeatureGates.NEST_EGG_CAMPAIGN]: false,
+  [FeatureGates.NEST_EGG_NEW_SEEDLESS_ONLY]: false // Restrict to new seedless users only
 }
 
 export const initialState = {

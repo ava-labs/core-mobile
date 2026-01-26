@@ -64,9 +64,10 @@ export const selectHasAcknowledgedNestEggQualification = (
   state: RootState
 ): boolean => state.nestEgg.hasAcknowledgedQualification
 
-// Check if user is eligible to see the campaign modal
+// Check if NEW seedless user is eligible to see the campaign modal
+// Used when NEST_EGG_NEW_SEEDLESS_ONLY flag is enabled
 // (is a new seedless user, hasn't seen it before, hasn't already qualified)
-export const selectIsEligibleForNestEggCampaignModal = (
+export const selectIsNewSeedlessUserEligibleForNestEggModal = (
   state: RootState
 ): boolean => {
   return (
@@ -74,6 +75,15 @@ export const selectIsEligibleForNestEggCampaignModal = (
     !state.nestEgg.hasSeenCampaign &&
     !state.nestEgg.hasQualified
   )
+}
+
+// Check if ANY user is eligible to see the campaign modal
+// Used when NEST_EGG_NEW_SEEDLESS_ONLY flag is NOT enabled (default mode)
+// (hasn't seen it before, hasn't already qualified)
+export const selectIsUserEligibleForNestEggModal = (
+  state: RootState
+): boolean => {
+  return !state.nestEgg.hasSeenCampaign && !state.nestEgg.hasQualified
 }
 
 // Check if user should see success modal

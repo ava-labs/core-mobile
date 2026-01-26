@@ -11,7 +11,8 @@ export {
   selectNestEggQualifiedAt,
   selectNestEggQualifyingTxHash,
   selectHasAcknowledgedNestEggQualification,
-  selectIsEligibleForNestEggCampaignModal,
+  selectIsNewSeedlessUserEligibleForNestEggModal,
+  selectIsUserEligibleForNestEggModal,
   selectShouldShowNestEggSuccessModal
 } from './slice'
 

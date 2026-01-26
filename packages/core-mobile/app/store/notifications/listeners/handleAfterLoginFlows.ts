@@ -3,11 +3,20 @@ import { AuthorizationStatus } from '@notifee/react-native'
 import { AnyAction } from '@reduxjs/toolkit'
 import { navigateWithPromise } from 'common/utils/navigateWithPromise'
 import { waitForInteractions } from 'common/utils/waitForInteractions'
+import Config from 'react-native-config'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AppUpdateService } from 'services/AppUpdateService/AppUpdateService'
 import NotificationsService from 'services/notifications/NotificationsService'
 import {
+  selectHasAcknowledgedNestEggQualification,
+  selectHasQualifiedForNestEgg,
+  selectIsUserEligibleForNestEggModal
+} from 'store/nestEgg'
+import { selectIsNewSeedlessUserEligibleForNestEggModal } from 'store/nestEgg/slice'
+import {
   selectIsEnableNotificationPromptBlocked,
+  selectIsNestEggCampaignBlocked,
+  selectIsNestEggNewSeedlessOnly,
   selectIsSolanaLaunchModalBlocked,
   selectIsSolanaSupportBlocked
 } from 'store/posthog'
@@ -17,12 +26,6 @@ import {
   setViewOnce,
   ViewOnceKey
 } from 'store/viewOnce'
-import {
-  selectHasQualifiedForNestEgg,
-  selectHasAcknowledgedNestEggQualification,
-  selectIsEligibleForNestEggCampaignModal
-} from 'store/nestEgg'
-import Config from 'react-native-config'
 import { turnOnAllNotifications } from '../slice'
 
 export const handleAfterLoginFlows = async (
@@ -156,14 +159,21 @@ const promptSolanaLaunchModalIfNeeded = async (
 }
 
 /**
- * Show Nest Egg campaign modal for NEW seedless users who just completed onboarding
- * Eligibility: new seedless user + hasn't seen campaign + hasn't qualified yet
+ * Show Nest Egg campaign modal
+ * Default: All users can see the modal
+ * With NEST_EGG_NEW_SEEDLESS_ONLY flag: Only new seedless users can see the modal
  */
 const promptNestEggCampaignModalIfNeeded = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { getState } = listenerApi
   const state = getState()
+
+  // Check if campaign is blocked by feature flag
+  const isCampaignBlocked = selectIsNestEggCampaignBlocked(state)
+  if (isCampaignBlocked) {
+    return
+  }
 
   // Check if user has already qualified (completed a swap)
   const hasQualified = selectHasQualifiedForNestEgg(state)
@@ -181,16 +191,33 @@ const promptNestEggCampaignModalIfNeeded = async (
     return
   }
 
-  // Check if user is eligible for campaign modal
-  // This checks: isNewSeedlessUser + !hasSeenCampaign + !hasQualified
-  const isEligibleForCampaignModal =
-    selectIsEligibleForNestEggCampaignModal(state)
+  // Check if restricted to new seedless users only
+  const isNewSeedlessOnly = selectIsNestEggNewSeedlessOnly(state)
 
-  if (isEligibleForCampaignModal) {
-    await waitForInteractions()
+  if (isNewSeedlessOnly) {
+    // Restricted mode: only NEW seedless users see the modal
+    // This checks: isNewSeedlessUser + !hasSeenCampaign + !hasQualified
+    const isNewUserEligible =
+      selectIsNewSeedlessUserEligibleForNestEggModal(state)
 
-    await navigateWithPromise({
-      pathname: '/(signedIn)/(modals)/nestEggCampaign'
-    })
+    if (isNewUserEligible) {
+      await waitForInteractions()
+
+      await navigateWithPromise({
+        pathname: '/(signedIn)/(modals)/nestEggCampaign'
+      })
+    }
+  } else {
+    // Default mode: ALL users can see the modal
+    // This checks: !hasSeenCampaign + !hasQualified
+    const isUserEligible = selectIsUserEligibleForNestEggModal(state)
+
+    if (isUserEligible) {
+      await waitForInteractions()
+
+      await navigateWithPromise({
+        pathname: '/(signedIn)/(modals)/nestEggCampaign'
+      })
+    }
   }
 }
