@@ -83,6 +83,7 @@ export const selectIsNewSeedlessUserEligibleForNestEggModal = (
 export const selectIsUserEligibleForNestEggModal = (
   state: RootState
 ): boolean => {
+  return true
   return !state.nestEgg.hasSeenCampaign && !state.nestEgg.hasQualified
 }
 

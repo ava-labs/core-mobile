@@ -1,19 +1,16 @@
-import React, { useCallback } from 'react'
 import { Text, useTheme } from '@avalabs/k2-alpine'
-import { Pressable } from 'react-native'
 import { TERMS_OF_USE_URL } from 'common/consts/urls'
-import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
-import { useRouter } from 'expo-router'
+import useInAppBrowser from 'common/hooks/useInAppBrowser'
+import React, { useCallback } from 'react'
+import { Pressable } from 'react-native'
 
 export const TermsAndConditionsCaption = (): JSX.Element => {
-  const { openUrl } = useCoreBrowser()
-  const router = useRouter()
+  const { openUrl } = useInAppBrowser()
   const { theme } = useTheme()
 
   const handleTermsAndConditionsPress = useCallback(() => {
-    router.canDismiss() && router.dismissAll()
-    openUrl({ url: TERMS_OF_USE_URL, title: 'Terms and Conditions' })
-  }, [openUrl, router])
+    openUrl(TERMS_OF_USE_URL)
+  }, [openUrl])
 
   return (
     <Text

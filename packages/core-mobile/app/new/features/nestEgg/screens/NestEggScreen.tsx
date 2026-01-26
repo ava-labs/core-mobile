@@ -3,11 +3,15 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { withNavigationEvents } from 'common/utils/navigateWithPromise'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useEffect } from 'react'
+import LottieView from 'lottie-react-native'
+import React, { useCallback, useEffect, useRef } from 'react'
 import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { setHasSeenCampaign } from 'store/nestEgg'
 import { NEST_EGG_CAMPAIGN_URL } from 'store/nestEgg/types'
+
+import NEST_EGG_DARK from 'assets/lotties/icon-hero-nest-egg-dark.json'
+import NEST_EGG from 'assets/lotties/icon-hero-nest-egg.json'
 import { TermsAndConditionsCaption } from '../components/TermsAndConditionsCaption'
 
 function NestEggScreen(): JSX.Element {
@@ -15,6 +19,7 @@ function NestEggScreen(): JSX.Element {
   const dispatch = useDispatch()
   const router = useRouter()
   const { openUrl } = useCoreBrowser()
+  const lottieRef = useRef<LottieView>(null)
 
   const handleDismiss = useCallback(() => {
     router.canDismiss() && router.dismissAll()
@@ -39,6 +44,13 @@ function NestEggScreen(): JSX.Element {
     )
   }, [handleDismiss, handleLearnMore])
 
+  const containerStyle = {
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.$borderPrimary,
+    height: 48,
+    justifyContent: 'center'
+  }
+
   useEffect(() => {
     AnalyticsService.capture('NestEggCampaignModalViewed')
     return () => {
@@ -46,12 +58,11 @@ function NestEggScreen(): JSX.Element {
     }
   }, [dispatch])
 
-  const containerStyle = {
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.$borderPrimary,
-    height: 48,
-    justifyContent: 'center'
-  }
+  useEffect(() => {
+    setTimeout(() => {
+      lottieRef.current?.play()
+    }, 250)
+  }, [])
 
   return (
     <ScrollScreen
@@ -66,13 +77,17 @@ function NestEggScreen(): JSX.Element {
       <View
         style={{
           alignItems: 'center',
-          marginTop: 50
+          marginTop: 24
         }}>
-        {/* TODO: add lottie animation */}
-        <Icons.Custom.Airdrop
-          width={80}
-          height={80}
-          color={theme.colors.$textPrimary}
+        <LottieView
+          source={theme.isDark ? NEST_EGG_DARK : NEST_EGG}
+          ref={lottieRef}
+          autoPlay
+          loop={false}
+          style={{
+            width: 120 * 1.3,
+            height: 96 * 1.3
+          }}
         />
 
         <View
