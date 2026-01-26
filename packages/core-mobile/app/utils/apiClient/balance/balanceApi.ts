@@ -1,13 +1,10 @@
-import { fetch as expoFetch } from 'expo/fetch'
 import Config from 'react-native-config'
-import AppCheckService from 'services/fcm/AppCheckService'
 import Logger from 'utils/Logger'
 import { appCheckStreamingFetch } from 'utils/api/common/appCheckFetch'
 import { CORE_HEADERS } from '../constants'
 import {
   GetBalancesRequestBody,
-  GetBalancesResponse,
-  GetSupportedChainsResponse
+  GetBalancesResponse
 } from '../generated/balanceApi.client/types.gen'
 
 if (!Config.BALANCE_URL) Logger.warn('BALANCE_URL ENV is missing')
@@ -17,10 +14,6 @@ export const BALANCE_URL = Config.BALANCE_URL
 const NEWLINE = '\n'
 
 const isDev = typeof __DEV__ === 'boolean' && __DEV__
-
-const SUPPORTED_CHAINS_TTL_MS = 5 * 60 * 1000
-let supportedChainsCache: { fetchedAt: number; caip2Ids: string[] } | undefined
-let supportedChainsInFlight: Promise<string[] | undefined> | undefined
 
 const balanceApi = {
   // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -132,67 +125,4 @@ const balanceApi = {
   }
 }
 
-const fetchSupportedChains = async (): Promise<string[] | undefined> => {
-  try {
-    const appCheckToken = await AppCheckService.getToken()
-    const res = await expoFetch(
-      `${BALANCE_URL}/v1/balance/get-supported-chains`,
-      {
-        method: 'GET',
-        headers: {
-          'X-Firebase-AppCheck': appCheckToken.token,
-          ...CORE_HEADERS
-        }
-      }
-    )
-
-    if (!res.ok) {
-      Logger.warn(
-        `[balanceApi][getSupportedChains] HTTP ${res.status}: ${res.statusText}`
-      )
-      return undefined
-    }
-
-    const payload = (await res.json()) as GetSupportedChainsResponse
-    if (!payload?.caip2Ids || !Array.isArray(payload.caip2Ids)) {
-      Logger.warn('[balanceApi][getSupportedChains] invalid response payload')
-      return undefined
-    }
-
-    return payload.caip2Ids
-  } catch (err) {
-    Logger.warn('[balanceApi][getSupportedChains] request failed', err)
-    return undefined
-  }
-}
-
-const getSupportedChainsCached = async (): Promise<string[] | undefined> => {
-  const now = Date.now()
-  if (supportedChainsCache) {
-    const age = now - supportedChainsCache.fetchedAt
-    if (age < SUPPORTED_CHAINS_TTL_MS) {
-      return supportedChainsCache.caip2Ids
-    }
-  }
-
-  if (supportedChainsInFlight) {
-    return supportedChainsInFlight
-  }
-
-  supportedChainsInFlight = (async () => {
-    const caip2Ids = await fetchSupportedChains()
-    if (caip2Ids && caip2Ids.length > 0) {
-      supportedChainsCache = { fetchedAt: Date.now(), caip2Ids }
-      return caip2Ids
-    }
-    return supportedChainsCache?.caip2Ids
-  })()
-
-  try {
-    return await supportedChainsInFlight
-  } finally {
-    supportedChainsInFlight = undefined
-  }
-}
-
-export { balanceApi, getSupportedChainsCached }
+export { balanceApi }

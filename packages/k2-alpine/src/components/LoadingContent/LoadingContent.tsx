@@ -11,6 +11,7 @@ import { Pressable } from 'react-native'
 import { useTheme } from '../../hooks'
 import { Icons } from '../../theme/tokens/Icons'
 import { showAlert } from '../Alert/Alert'
+import { ShowAlertConfig } from '../Alert/types'
 
 interface LoadingContentProps {
   isLoading?: boolean
@@ -19,7 +20,7 @@ interface LoadingContentProps {
   hasError?: boolean
   minOpacity?: number
   maxOpacity?: number
-  errorMessage?: string
+  alertOptions?: ShowAlertConfig
   renderError?: () => React.ReactNode
 }
 
@@ -30,7 +31,7 @@ export const LoadingContent = ({
   hasError = false,
   minOpacity = 0.3,
   maxOpacity = 0.5,
-  errorMessage
+  alertOptions
 }: LoadingContentProps): JSX.Element => {
   const { theme } = useTheme()
 
@@ -57,12 +58,10 @@ export const LoadingContent = ({
   })
 
   const onErrorPress = useCallback(() => {
-    showAlert({
-      title: 'Unable to load balance',
-      description: errorMessage,
-      buttons: [{ text: 'Close' }]
-    })
-  }, [errorMessage])
+    if (alertOptions) {
+      showAlert(alertOptions)
+    }
+  }, [alertOptions])
 
   return (
     <View

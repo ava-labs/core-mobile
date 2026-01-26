@@ -11,10 +11,8 @@ import { SPAN_STATUS_ERROR } from '@sentry/core'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Account } from 'store/account/types'
 import { getAddressByNetwork } from 'store/account/utils'
-import {
-  balanceApi,
-  getSupportedChainsCached
-} from 'utils/apiClient/balance/balanceApi'
+import { balanceApi } from 'utils/apiClient/balance/balanceApi'
+import { getSupportedChainsFromCache } from 'hooks/balance/useSupportedChains'
 import { GetBalancesRequestBody } from 'utils/apiClient/generated/balanceApi.client'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import Logger from 'utils/Logger'
@@ -31,7 +29,6 @@ import {
   AdjustedNormalizedBalancesForAccounts,
   PartialAdjustedNormalizedBalancesForAccount
 } from './types'
-import { buildRequestItemsForAccount } from './utils/buildRequestItemsForAccount'
 import { buildRequestItemsForAccounts } from './utils/buildRequestItemsForAccounts'
 import { getLocalTokenId } from './utils/getLocalTokenId'
 import { mapBalanceResponseToLegacy } from './utils/mapBalanceResponseToLegacy'
@@ -40,7 +37,7 @@ export class BalanceService {
   private async filterNetworksBySupportedEvm(
     networks: Network[]
   ): Promise<{ networks: Network[]; filteredOutChainIds: number[] }> {
-    const supported = await getSupportedChainsCached()
+    const supported = await getSupportedChainsFromCache()
     if (!supported || supported.length === 0) {
       return { networks, filteredOutChainIds: [] }
     }
@@ -275,7 +272,7 @@ export class BalanceService {
             })
 
             Logger.error(
-              `[BalanceService][getBalancesForAccounts] failed for network ${network.chainId}`,
+              `[BalanceService][getVMBalancesForAccounts] failed for network ${network.chainId}`,
               err
             )
 
@@ -354,10 +351,9 @@ export class BalanceService {
 
     const { networks: supportedNetworks, filteredOutChainIds } =
       await this.filterNetworksBySupportedEvm(networks)
-    const requestBatches = buildRequestItemsForAccount(
-      supportedNetworks,
+    const requestBatches = buildRequestItemsForAccounts(supportedNetworks, [
       account
-    )
+    ])
 
     const { balanceApiThrew, failedChainIds } =
       await this.processBalanceBatches({
@@ -545,7 +541,7 @@ export class BalanceService {
 
           if (!account) {
             Logger.warn(
-              '[BalanceService][getBalancesForAccountsV2] Could not map streamed balance to an account',
+              '[BalanceService][getBalancesForAccounts] Could not map streamed balance to an account',
               {
                 id,
                 caip2Id: 'caip2Id' in balance ? balance.caip2Id : undefined,
@@ -564,7 +560,7 @@ export class BalanceService {
         }
       } catch (err) {
         Logger.warn(
-          '[BalanceService][getBalancesForAccountsV2] batch request failed',
+          '[BalanceService][getBalancesForAccounts] batch request failed',
           err
         )
         continue

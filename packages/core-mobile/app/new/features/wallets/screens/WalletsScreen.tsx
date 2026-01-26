@@ -88,7 +88,7 @@ export const WalletsScreen = (): JSX.Element => {
           next[id] = isActiveWalletId(id)
           return
         }
-        if (Object.prototype.hasOwnProperty.call(prev, id)) {
+        if (Object.hasOwn(prev, id)) {
           next[id] = Boolean(prev[id])
           return
         }

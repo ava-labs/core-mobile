@@ -115,7 +115,11 @@ export const AccountBalance = ({
         maxOpacity={1}
         isLoading={isLoadingContent}
         hasError={hasError}
-        errorMessage={errorMessage}>
+        alertOptions={{
+          title: 'Unable to load balance',
+          description: errorMessage,
+          buttons: [{ text: 'Close' }]
+        }}>
         <AnimatedBalance
           variant="body1"
           balance={accountBalance}
