@@ -1,4 +1,4 @@
-import { Button, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
+import { Button, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { withNavigationEvents } from 'common/utils/navigateWithPromise'

@@ -77,13 +77,13 @@ export const selectIsNewSeedlessUserEligibleForNestEggModal = (
   )
 }
 
-// Check if ANY user is eligible to see the campaign modal
+// Check if seedless user is eligible to see the campaign modal
 // Used when NEST_EGG_NEW_SEEDLESS_ONLY flag is NOT enabled (default mode)
+// Note: Seedless wallet check is done in the caller (handleAfterLoginFlows)
 // (hasn't seen it before, hasn't already qualified)
 export const selectIsUserEligibleForNestEggModal = (
   state: RootState
 ): boolean => {
-  return true
   return !state.nestEgg.hasSeenCampaign && !state.nestEgg.hasQualified
 }
 

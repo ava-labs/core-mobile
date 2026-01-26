@@ -421,49 +421,57 @@ export const selectIsInAppDefiNewBlocked = (state: RootState): boolean => {
   )
 }
 
+// Returns true if Nest Egg is completely blocked (neither flag is enabled)
 export const selectIsNestEggCampaignBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
+
+  if (featureFlags[FeatureGates.EVERYTHING] !== true) {
+    return true
+  }
+
+  // Blocked only if BOTH flags are off
   return (
-    !featureFlags[FeatureGates.NEST_EGG_CAMPAIGN] ||
-    !featureFlags[FeatureGates.EVERYTHING]
+    featureFlags[FeatureGates.NEST_EGG_CAMPAIGN] !== true &&
+    featureFlags[FeatureGates.NEST_EGG_NEW_SEEDLESS_ONLY] !== true
   )
 }
 
 // Returns true if Nest Egg is restricted to new seedless users only
+// This flag works independently - when ON, only new seedless users are eligible
 export const selectIsNestEggNewSeedlessOnly = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
 
   return (
     featureFlags[FeatureGates.NEST_EGG_NEW_SEEDLESS_ONLY] === true &&
+    featureFlags[FeatureGates.EVERYTHING] === true
+  )
+}
+
+// Returns true if Nest Egg campaign is active for all seedless users
+export const selectIsNestEggCampaignActive = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+
+  return (
     featureFlags[FeatureGates.NEST_EGG_CAMPAIGN] === true &&
     featureFlags[FeatureGates.EVERYTHING] === true
   )
 }
 
 // Returns true if user is eligible to qualify for Nest Egg via swap
-// Default: all wallet types eligible
-// With NEW_SEEDLESS_ONLY flag: only new seedless wallets eligible
+// Seedless wallets only - works with either flag enabled
 export const selectIsNestEggEligible = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
-  const isNewSeedlessOnly =
-    featureFlags[FeatureGates.NEST_EGG_NEW_SEEDLESS_ONLY] === true
 
-  // Campaign must be active
-  if (
-    featureFlags[FeatureGates.NEST_EGG_CAMPAIGN] !== true ||
-    featureFlags[FeatureGates.EVERYTHING] !== true
-  ) {
+  if (!isSeedlessWallet || featureFlags[FeatureGates.EVERYTHING] !== true) {
     return false
   }
 
-  // If restricted to new seedless only, check wallet type
-  if (isNewSeedlessOnly) {
-    return isSeedlessWallet
-  }
-
-  // Default: all wallet types eligible
-  return true
+  // Either flag enables eligibility for seedless wallets
+  return (
+    featureFlags[FeatureGates.NEST_EGG_CAMPAIGN] === true ||
+    featureFlags[FeatureGates.NEST_EGG_NEW_SEEDLESS_ONLY] === true
+  )
 }
 
 // actions

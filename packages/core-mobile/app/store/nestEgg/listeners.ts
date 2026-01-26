@@ -12,13 +12,6 @@ import { selectIsNestEggEligible } from 'store/posthog'
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { MINIMUM_SWAP_AMOUNT_USD } from './types'
 
-// Check if the current time is within the eligible window (Monday-Friday)
-const isWithinEligibleTimeWindow = (): boolean => {
-  const now = new Date()
-  const dayOfWeek = now.getUTCDay()
-  return dayOfWeek >= 1 && dayOfWeek <= 5
-}
-
 // Action dispatched when a swap completes successfully
 // This should be dispatched from SwapContext after a successful swap
 export const swapCompleted = createAction<{
@@ -58,11 +51,6 @@ const handleSwapForNestEgg = async (
 
   // Only C-Chain swaps qualify for Nest Egg
   if (!isAvalancheCChainId(chainId)) {
-    return
-  }
-
-  // Only qualify during eligible time window (Monday-Friday)
-  if (!isWithinEligibleTimeWindow()) {
     return
   }
 

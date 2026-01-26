@@ -16,6 +16,7 @@ import { selectIsNewSeedlessUserEligibleForNestEggModal } from 'store/nestEgg/sl
 import {
   selectIsEnableNotificationPromptBlocked,
   selectIsNestEggCampaignBlocked,
+  selectIsNestEggEligible,
   selectIsNestEggNewSeedlessOnly,
   selectIsSolanaLaunchModalBlocked,
   selectIsSolanaSupportBlocked
@@ -160,8 +161,11 @@ const promptSolanaLaunchModalIfNeeded = async (
 
 /**
  * Show Nest Egg campaign modal
- * Default: All users can see the modal
- * With NEST_EGG_NEW_SEEDLESS_ONLY flag: Only new seedless users can see the modal
+ * Only applies to seedless wallets (not mnemonic or keystone)
+ *
+ * Flag behavior (independent flags):
+ * - nest-egg-campaign ON: All seedless users see the modal
+ * - nest-egg-new-seedless-only ON: Only new seedless users see the modal
  */
 const promptNestEggCampaignModalIfNeeded = async (
   listenerApi: AppListenerEffectAPI
@@ -169,9 +173,15 @@ const promptNestEggCampaignModalIfNeeded = async (
   const { getState } = listenerApi
   const state = getState()
 
-  // Check if campaign is blocked by feature flag
+  // Check if campaign is blocked (neither flag is enabled)
   const isCampaignBlocked = selectIsNestEggCampaignBlocked(state)
   if (isCampaignBlocked) {
+    return
+  }
+
+  // Only seedless wallets are eligible for the campaign
+  const isEligible = selectIsNestEggEligible(state)
+  if (!isEligible) {
     return
   }
 
@@ -191,12 +201,11 @@ const promptNestEggCampaignModalIfNeeded = async (
     return
   }
 
-  // Check if restricted to new seedless users only
+  // Check which flag is enabled (they work independently)
   const isNewSeedlessOnly = selectIsNestEggNewSeedlessOnly(state)
 
   if (isNewSeedlessOnly) {
-    // Restricted mode: only NEW seedless users see the modal
-    // This checks: isNewSeedlessUser + !hasSeenCampaign + !hasQualified
+    // nest-egg-new-seedless-only is ON: only NEW seedless users see the modal
     const isNewUserEligible =
       selectIsNewSeedlessUserEligibleForNestEggModal(state)
 
@@ -208,8 +217,7 @@ const promptNestEggCampaignModalIfNeeded = async (
       })
     }
   } else {
-    // Default mode: ALL users can see the modal
-    // This checks: !hasSeenCampaign + !hasQualified
+    // nest-egg-campaign is ON: ALL seedless users can see the modal
     const isUserEligible = selectIsUserEligibleForNestEggModal(state)
 
     if (isUserEligible) {

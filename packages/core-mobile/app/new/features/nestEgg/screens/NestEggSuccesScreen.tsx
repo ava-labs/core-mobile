@@ -1,11 +1,14 @@
-import { Button, Text, useTheme, View, Icons } from '@avalabs/k2-alpine'
+import { Button, Text, useTheme, View } from '@avalabs/k2-alpine'
+import NEST_EGG_SUCCESS_DARK from 'assets/lotties/icon-hero-nest-egg-dark.json'
+import NEST_EGG_SUCCESS from 'assets/lotties/icon-hero-nest-egg.json'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { useRouter, useFocusEffect } from 'expo-router'
-import React, { useCallback } from 'react'
-import { useDispatch } from 'react-redux'
-import { setHasAcknowledgedQualification } from 'store/nestEgg'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import { withNavigationEvents } from 'common/utils/navigateWithPromise'
+import { useFocusEffect, useRouter } from 'expo-router'
+import LottieView from 'lottie-react-native'
+import React, { useCallback, useEffect, useRef } from 'react'
+import { useDispatch } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { setHasAcknowledgedQualification } from 'store/nestEgg'
 import { TermsAndConditionsCaption } from '../components/TermsAndConditionsCaption'
 
 function NestEggSuccessScreen(): JSX.Element {
@@ -34,6 +37,14 @@ function NestEggSuccessScreen(): JSX.Element {
     }, [])
   )
 
+  const lottieRef = useRef<LottieView>(null)
+
+  useEffect(() => {
+    setTimeout(() => {
+      lottieRef.current?.play()
+    }, 250)
+  }, [])
+
   return (
     <ScrollScreen
       renderFooter={renderFooter}
@@ -47,13 +58,17 @@ function NestEggSuccessScreen(): JSX.Element {
       <View
         style={{
           alignItems: 'center',
-          marginTop: 50
+          marginTop: 24
         }}>
-        {/* TODO: add lottie animation */}
-        <Icons.Custom.Airdrop
-          width={80}
-          height={80}
-          color={theme.colors.$textPrimary}
+        <LottieView
+          source={theme.isDark ? NEST_EGG_SUCCESS_DARK : NEST_EGG_SUCCESS}
+          ref={lottieRef}
+          autoPlay
+          loop={false}
+          style={{
+            width: 120 * 1.3,
+            height: 96 * 1.3
+          }}
         />
 
         <View
