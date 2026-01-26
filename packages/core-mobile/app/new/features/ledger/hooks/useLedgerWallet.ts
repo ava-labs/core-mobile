@@ -2,7 +2,8 @@ import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import { showSnackbar } from 'new/common/utils/toast'
 import { useCallback, useEffect, useState } from 'react'
 import { Alert } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectIsLedgerSupportBlocked } from 'store/posthog'
 import LedgerService from 'services/ledger/LedgerService'
 import {
   LedgerDerivationPathType,
@@ -37,6 +38,7 @@ export interface UseLedgerWalletReturn {
 
 export function useLedgerWallet(): UseLedgerWalletReturn {
   const dispatch = useDispatch<AppThunkDispatch>()
+  const isLedgerBlocked = useSelector(selectIsLedgerSupportBlocked)
   const [transportState, setTransportState] = useState<LedgerTransportState>({
     available: false,
     powered: false
@@ -44,8 +46,12 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
   const [isConnecting, setIsConnecting] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  // Monitor BLE transport state
+  // Monitor BLE transport state (skip if Ledger support is blocked to avoid requesting Bluetooth permissions)
   useEffect(() => {
+    if (isLedgerBlocked) {
+      return
+    }
+
     const subscription = TransportBLE.observeState({
       next: (event: { available: boolean }) => {
         setTransportState({
@@ -66,7 +72,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
     return () => {
       subscription.unsubscribe()
     }
-  }, [])
+  }, [isLedgerBlocked])
 
   // Connect to device
   const connectToDevice = useCallback(async (deviceId: string) => {
