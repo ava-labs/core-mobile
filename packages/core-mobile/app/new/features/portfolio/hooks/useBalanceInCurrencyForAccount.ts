@@ -18,10 +18,8 @@ import { useAllBalances } from './useAllBalances'
  * Returns the total balance and loading state for a given account.
  *
  * Behavior:
- * - For the active account, this hook uses data from `useAccountBalances`,
- *   which fetches balance updates more frequently.
- * - For non-active accounts, it falls back to data from `useAllBalances`,
- *   which loads once on mount and reuses cached wallet-level data.
+ * - Uses data from `useAllBalances`, which loads once on mount
+ *   and reuses cached wallet-level data for all accounts.
  */
 export const useBalanceInCurrencyForAccount = (
   accountId: string
