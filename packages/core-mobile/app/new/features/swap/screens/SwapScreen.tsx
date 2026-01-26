@@ -68,7 +68,7 @@ import {
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const { navigate } = useRouter()
+  const { navigate, dismissAll } = useRouter()
   const navigation = useNavigation()
   const params = useGlobalSearchParams<{
     initialTokenIdFrom?: string
@@ -558,9 +558,13 @@ export const SwapScreen = (): JSX.Element => {
 
   useEffect(() => {
     if (swapStatus === 'Success') {
-      navigation.getParent()?.goBack()
+      if (navigation.getParent()?.canGoBack()) {
+        navigation.getParent()?.goBack()
+      } else {
+        dismissAll()
+      }
     }
-  }, [navigation, swapStatus])
+  }, [navigation, dismissAll, swapStatus])
 
   useEffect(validateInputs, [validateInputs])
   useEffect(applyQuote, [applyQuote])
