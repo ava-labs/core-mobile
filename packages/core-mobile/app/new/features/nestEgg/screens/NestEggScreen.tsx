@@ -9,10 +9,10 @@ import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { setHasSeenCampaign } from 'store/nestEgg'
 import { NEST_EGG_CAMPAIGN_URL } from 'store/nestEgg/types'
-
-import NEST_EGG_DARK from 'assets/lotties/icon-hero-nest-egg-dark.json'
-import NEST_EGG from 'assets/lotties/icon-hero-nest-egg.json'
 import { TermsAndConditionsCaption } from '../components/TermsAndConditionsCaption'
+
+const NEST_EGG_DARK = require('assets/lotties/icon-hero-nest-egg-dark.json')
+const NEST_EGG = require('assets/lotties/icon-hero-nest-egg.json')
 
 function NestEggScreen(): JSX.Element {
   const { theme } = useTheme()

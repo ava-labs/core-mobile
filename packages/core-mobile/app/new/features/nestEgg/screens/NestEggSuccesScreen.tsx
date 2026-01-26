@@ -1,6 +1,4 @@
 import { Button, Text, useTheme, View } from '@avalabs/k2-alpine'
-import NEST_EGG_SUCCESS_DARK from 'assets/lotties/icon-hero-nest-egg-dark.json'
-import NEST_EGG_SUCCESS from 'assets/lotties/icon-hero-nest-egg.json'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { withNavigationEvents } from 'common/utils/navigateWithPromise'
 import { useFocusEffect, useRouter } from 'expo-router'
@@ -10,6 +8,9 @@ import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { setHasAcknowledgedQualification } from 'store/nestEgg'
 import { TermsAndConditionsCaption } from '../components/TermsAndConditionsCaption'
+
+const NEST_EGG_SUCCESS = require('assets/lotties/icon-hero-nest-egg.json')
+const NEST_EGG_SUCCESS_DARK = require('assets/lotties/icon-hero-nest-egg-dark.json')
 
 function NestEggSuccessScreen(): JSX.Element {
   const { theme } = useTheme()
