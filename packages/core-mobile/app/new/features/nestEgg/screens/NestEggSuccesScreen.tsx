@@ -49,6 +49,7 @@ function NestEggSuccessScreen(): JSX.Element {
           alignItems: 'center',
           marginTop: 50
         }}>
+        {/* TODO: add lottie animation */}
         <Icons.Custom.Airdrop
           width={80}
           height={80}
@@ -60,7 +61,7 @@ function NestEggSuccessScreen(): JSX.Element {
             gap: 12,
             marginTop: 24,
             alignItems: 'center',
-            maxWidth: 320
+            maxWidth: 300
           }}>
           <Text
             variant="heading3"
