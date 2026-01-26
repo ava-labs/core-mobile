@@ -421,6 +421,14 @@ export const selectIsInAppDefiNewBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsInAppReviewBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.IN_APP_REVIEW] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions

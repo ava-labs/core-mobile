@@ -40,12 +40,13 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.SOLANA_SUPPORT]: true,
   [FeatureGates.SWAP_SOLANA]: true,
   [FeatureGates.SWAP_FEES_JUPITER]: true,
-  [FeatureGates.IN_APP_UPDATE_ANDROID]: false,
+  [FeatureGates.IN_APP_UPDATE_ANDROID]: true,
   [FeatureGates.ENABLE_MELD_SANDBOX]: false,
   [FeatureGates.SOLANA_LAUNCH_MODAL]: false,
   [FeatureGates.LEDGER_SUPPORT]: true,
   [FeatureGates.IN_APP_DEFI]: false,
-  [FeatureGates.IN_APP_DEFI_IS_NEW]: true
+  [FeatureGates.IN_APP_DEFI_IS_NEW]: true,
+  [FeatureGates.IN_APP_REVIEW]: true
 }
 
 export const initialState = {

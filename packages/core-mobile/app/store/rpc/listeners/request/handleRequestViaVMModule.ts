@@ -15,12 +15,13 @@ import { Account, selectActiveAccount } from 'store/account'
 import { selectActiveWallet } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectIsInAppReviewBlocked } from 'store/posthog/slice'
 import {
   getAddressesFromXpubXP,
   getXpubXPIfAvailable
 } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 import { CurrentAvalancheAccount } from '@avalabs/avalanche-module'
-import { AgnosticRpcProvider, Request } from '../../types'
+import { AgnosticRpcProvider, Request, RequestContext } from '../../types'
 
 export const handleRequestViaVMModule = async ({
   module,
@@ -59,6 +60,9 @@ export const handleRequestViaVMModule = async ({
   }
 
   const network = selectNetwork(chainId)(listenerApi.getState())
+  const isInAppReviewBlocked = selectIsInAppReviewBlocked(
+    listenerApi.getState()
+  )
 
   if (!network) {
     Logger.error(`Network ${chainId} not found`)
@@ -90,6 +94,24 @@ export const handleRequestViaVMModule = async ({
   const params = request.data.params.request.params
   const method = request.method as unknown as VmModuleRpcMethod
 
+  let context =
+    request.context ??
+    (await getContext({
+      method,
+      params,
+      activeAccount,
+      walletId: activeWallet.id,
+      walletType: activeWallet.type,
+      isTestnet
+    }))
+
+  if (!isInAppReviewBlocked) {
+    context = {
+      ...context,
+      [RequestContext.IN_APP_REVIEW]: true
+    }
+  }
+
   const response = await module.onRpcRequest(
     {
       requestId: String(request.data.id),
@@ -102,16 +124,7 @@ export const handleRequestViaVMModule = async ({
       },
       method,
       params,
-      context:
-        request.context ??
-        (await getContext({
-          method,
-          params,
-          activeAccount,
-          walletId: activeWallet.id,
-          walletType: activeWallet.type,
-          isTestnet
-        }))
+      context
     },
     mapToVmNetwork(network)
   )
