@@ -8,10 +8,10 @@ import React, { useCallback, useEffect, useRef } from 'react'
 import { InteractionManager } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { selectActiveAccount } from 'store/account'
 import { setHasSeenCampaign } from 'store/nestEgg'
 import { NEST_EGG_CAMPAIGN_URL } from 'store/nestEgg/types'
 import { TermsAndConditionsCaption } from '../components/TermsAndConditionsCaption'
-import { selectActiveAccount } from 'store/account'
 
 const NEST_EGG_DARK = require('assets/lotties/icon-hero-nest-egg-dark.json')
 const NEST_EGG = require('assets/lotties/icon-hero-nest-egg.json')
@@ -56,7 +56,7 @@ function NestEggScreen(): JSX.Element {
 
   useEffect(() => {
     AnalyticsService.capture('NestEggCampaignModalViewed', {
-      address: currentAccount?.addressC
+      addressC: currentAccount?.addressC ?? ''
     })
     return () => {
       dispatch(setHasSeenCampaign(true))

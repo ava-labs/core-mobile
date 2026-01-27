@@ -5,8 +5,9 @@ import { useFocusEffect, useRouter } from 'expo-router'
 import LottieView from 'lottie-react-native'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { InteractionManager } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { selectActiveAccount } from 'store/account'
 import { setHasAcknowledgedQualification } from 'store/nestEgg'
 import { TermsAndConditionsCaption } from '../components/TermsAndConditionsCaption'
 
@@ -17,6 +18,7 @@ function NestEggSuccessScreen(): JSX.Element {
   const { theme } = useTheme()
   const dispatch = useDispatch()
   const router = useRouter()
+  const currentAccount = useSelector(selectActiveAccount)
 
   const handleGotIt = useCallback(() => {
     dispatch(setHasAcknowledgedQualification(true))
@@ -34,7 +36,9 @@ function NestEggSuccessScreen(): JSX.Element {
   // Trigger confetti animation when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      AnalyticsService.capture('NestEggSuccessModalViewed')
+      AnalyticsService.capture('NestEggSuccessModalViewed', {
+        addressC: currentAccount?.addressC ?? ''
+      })
     }, [])
   )
 

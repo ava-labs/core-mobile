@@ -3,6 +3,7 @@ import { navigateWithPromise } from 'common/utils/navigateWithPromise'
 import { waitForInteractions } from 'common/utils/waitForInteractions'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+import { selectActiveAccount } from 'store/account'
 import {
   selectHasAcknowledgedNestEggQualification,
   selectHasQualifiedForNestEgg,
@@ -33,7 +34,7 @@ const handleSwapForNestEgg = async (
 ): Promise<void> => {
   const { getState, dispatch } = listenerApi
   const state = getState()
-
+  const currentAccount = selectActiveAccount(state)
   // Check eligibility
   const isEligible = selectIsNestEggEligible(state)
   if (!isEligible) {
@@ -64,6 +65,7 @@ const handleSwapForNestEgg = async (
   dispatch(setQualified({ txHash, timestamp }))
 
   AnalyticsService.captureWithEncryption('NestEggQualified', {
+    addressC: currentAccount?.addressC ?? '',
     txHash,
     chainId,
     fromTokenSymbol,
