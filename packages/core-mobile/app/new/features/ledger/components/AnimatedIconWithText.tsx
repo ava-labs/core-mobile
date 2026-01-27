@@ -2,6 +2,7 @@ import React from 'react'
 import { View } from 'react-native'
 import LottieView from 'lottie-react-native'
 import { Text, useTheme } from '@avalabs/k2-alpine'
+import { Space } from 'common/components/Space'
 
 // Import animation at the top level
 const connectWavesAnimation = require('assets/lotties/connect-waves.json')
@@ -58,20 +59,14 @@ export const AnimatedIconWithText: React.FC<AnimatedIconWithTextProps> = ({
     left: -(animationRadius - iconRadius)
   }
 
-  // Calculate consistent text position regardless of animation state
-  const baseTopPosition = 160 // Base centering position
-  const textOverlapPosition = baseTopPosition + iconContainerHeight + 16 // Keep text close to icon for both states
-
   return (
     <View
       style={{
-        flex: 1,
         alignItems: 'center',
-        paddingHorizontal: 32
+        paddingHorizontal: 16
       }}>
       <View
         style={{
-          marginTop: baseTopPosition,
           alignItems: 'center',
           justifyContent: 'center'
         }}>
@@ -98,39 +93,30 @@ export const AnimatedIconWithText: React.FC<AnimatedIconWithTextProps> = ({
         )}
         {icon}
       </View>
-      <View
-        style={{
-          position: 'absolute',
-          top: textOverlapPosition,
-          left: 0,
-          right: 0,
-          alignItems: 'center',
-          paddingHorizontal: 32
-        }}>
-        <Text
-          variant="heading6"
-          style={[
-            {
-              textAlign: 'center',
-              marginBottom: 4
-            },
-            titleStyle
-          ]}>
-          {title}
-        </Text>
-        <Text
-          variant="body1"
-          style={[
-            {
-              textAlign: 'center',
-              color: colors.$textSecondary,
-              maxWidth: 280
-            },
-            subtitleStyle
-          ]}>
-          {subtitle}
-        </Text>
-      </View>
+      <Space y={34} />
+      <Text
+        variant="heading6"
+        style={[
+          {
+            textAlign: 'center',
+            marginBottom: 4
+          },
+          titleStyle
+        ]}>
+        {title}
+      </Text>
+      <Text
+        variant="body1"
+        style={[
+          {
+            textAlign: 'center',
+            color: colors.$textSecondary,
+            maxWidth: 280
+          },
+          subtitleStyle
+        ]}>
+        {subtitle}
+      </Text>
     </View>
   )
 }

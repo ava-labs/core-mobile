@@ -19,6 +19,9 @@ import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { OnApproveParams } from 'services/walletconnectv2/walletConnectCache/types'
 import { WalletType } from 'services/wallet/types'
 import { showLedgerReviewTransaction } from 'features/ledger/utils'
+import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
+import { CONFETTI_DURATION_MS } from 'common/consts'
+import { currentRouteStore } from 'new/routes/store'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { handleLedgerError } from './utils'
@@ -42,7 +45,7 @@ class ApprovalController implements VmModuleApprovalController {
   onTransactionPending({
     txHash: _txHash,
     request,
-    explorerLink
+    explorerLink: _explorerLink
   }: {
     txHash: string
     request: RpcRequest
@@ -59,7 +62,7 @@ class ApprovalController implements VmModuleApprovalController {
         request.context?.[RequestContext.CONFETTI_DISABLED]
 
       transactionSnackbar.success({
-        explorerLink
+        message: 'Transaction sent'
       })
 
       if (!confettiDisabled) {
@@ -79,6 +82,15 @@ class ApprovalController implements VmModuleApprovalController {
     explorerLink: string
     request: RpcRequest
   }): void {
+    const inAppReview = request.context?.[RequestContext.IN_APP_REVIEW]
+
+    if (inAppReview) {
+      // Run the app-review prompt flow after confetti finishes
+      setTimeout(() => {
+        promptForAppReviewAfterSuccessfulTransaction()
+      }, CONFETTI_DURATION_MS + 200)
+    }
+
     const numericChainId = getChainIdFromCaip2(request.chainId)
 
     if (numericChainId && isAvalancheChainId(numericChainId)) {
@@ -110,6 +122,17 @@ class ApprovalController implements VmModuleApprovalController {
     onReject({ resolve })
   }
 
+  handleGoBackIfNeeded = (): void => {
+    const currentRoute = currentRouteStore.getState().currentRoute
+    if (
+      (currentRoute?.endsWith('ledgerReviewTransaction') ||
+        currentRoute?.endsWith('approval')) &&
+      router.canGoBack()
+    ) {
+      router.back()
+    }
+  }
+
   async requestApproval({
     request,
     displayData,
@@ -138,11 +161,14 @@ class ApprovalController implements VmModuleApprovalController {
                       signingData,
                       resolve: resolveWithRetry
                     }),
-                  onCancel: () => this.handleLedgerOnReject({ resolve })
+                  onCancel: () => {
+                    this.handleGoBackIfNeeded()
+                    this.handleLedgerOnReject({ resolve })
+                  }
                 })
               } else {
                 resolve(value)
-                router.canGoBack() && router.back()
+                this.handleGoBackIfNeeded()
               }
             }
 
@@ -156,7 +182,7 @@ class ApprovalController implements VmModuleApprovalController {
                 }),
               onReject: () => {
                 this.handleLedgerOnReject({ resolve })
-                if (router.canGoBack()) router.back()
+                this.handleGoBackIfNeeded()
               }
             })
           } else {

@@ -422,6 +422,22 @@ export const selectIsInAppDefiNewBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsInAppReviewBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.IN_APP_REVIEW] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsGaslessInstantBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.GASLESS_INSTANT] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // Returns true if Nest Egg is completely blocked (neither flag is enabled)
 export const selectIsNestEggCampaignBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog

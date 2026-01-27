@@ -10,43 +10,51 @@ export const useDepositableTokens = (
   return useMemo(() => {
     const uniqueAssets = new Map<string, DefiAssetDetails>()
 
-    markets.forEach(market => {
-      const asset = market.asset
-      // Use contractAddress if available, otherwise use lowercase symbol
-      const key = asset.contractAddress ?? asset.symbol.toLowerCase()
+    markets
+      .filter(market => market.supplyCapReached === false)
+      .forEach(market => {
+        const asset = market.asset
+        const key = asset.contractAddress ?? asset.symbol.toLowerCase()
 
-      // Only add if not already in map (keeps first occurrence)
-      if (!uniqueAssets.has(key)) {
-        uniqueAssets.set(key, asset)
-      }
-    })
+        if (!uniqueAssets.has(key)) {
+          uniqueAssets.set(key, asset)
+        }
+      })
 
-    return Array.from(uniqueAssets.values()).sort((a, b) => {
-      if (a.symbol.toLowerCase() === 'avax') return -1
-      if (b.symbol.toLowerCase() === 'avax') return 1
-
-      const tokenWithBalanceA = findMatchingTokenWithBalance(
-        a,
-        tokensWithBalance
-      )
-      const tokenWithBalanceB = findMatchingTokenWithBalance(
-        b,
-        tokensWithBalance
-      )
-
-      if (
-        tokenWithBalanceA?.balanceInCurrency &&
-        tokenWithBalanceB?.balanceInCurrency
-      ) {
-        return (
-          tokenWithBalanceB.balanceInCurrency -
-          tokenWithBalanceA.balanceInCurrency
-        )
-      }
-      if (tokenWithBalanceA?.balanceInCurrency) return -1
-      if (tokenWithBalanceB?.balanceInCurrency) return 1
-
-      return a.symbol.toLowerCase().localeCompare(b.symbol.toLowerCase())
-    })
+    return Array.from(uniqueAssets.values()).sort((a, b) =>
+      sortByPriority(a, b, tokensWithBalance)
+    )
   }, [markets, tokensWithBalance])
+}
+
+const sortByPriority = (
+  a: DefiAssetDetails,
+  b: DefiAssetDetails,
+  tokensWithBalance: LocalTokenWithBalance[]
+): number => {
+  // AVAX always comes first
+  if (a.symbol.toLowerCase() === 'avax') return -1
+  if (b.symbol.toLowerCase() === 'avax') return 1
+
+  const tokenA = findMatchingTokenWithBalance(a, tokensWithBalance)
+  const tokenB = findMatchingTokenWithBalance(b, tokensWithBalance)
+
+  // Sort by fiat balance (descending)
+  if (tokenA?.balanceInCurrency && tokenB?.balanceInCurrency) {
+    return tokenB.balanceInCurrency - tokenA.balanceInCurrency
+  }
+  if (tokenA?.balanceInCurrency) return -1
+  if (tokenB?.balanceInCurrency) return 1
+
+  // Sort by token balance (descending)
+  if (tokenA?.balance !== undefined && tokenB?.balance !== undefined) {
+    if (tokenB.balance > tokenA.balance) return 1
+    if (tokenB.balance < tokenA.balance) return -1
+    return 0
+  }
+  if (tokenA?.balance !== undefined) return -1
+  if (tokenB?.balance !== undefined) return 1
+
+  // Sort alphabetically
+  return a.symbol.toLowerCase().localeCompare(b.symbol.toLowerCase())
 }

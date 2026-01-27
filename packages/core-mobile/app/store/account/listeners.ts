@@ -248,6 +248,7 @@ const migrateSolanaAddressesIfNeeded = async (
   const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
   const accounts = selectAccounts(state)
   const entries = Object.values(accounts)
+
   // Only migrate Solana addresses if Solana support is enabled
   if (!isSolanaSupportBlocked && entries.some(account => !account.addressSVM)) {
     const seedlessWallet = selectSeedlessWallet(state)
@@ -302,7 +303,7 @@ const migrateXpAddressesIfNeeded = async (
 
   // Process all wallets in parallel
   const walletPromises = Object.values(wallets).map(async wallet => {
-    if (WalletType.PRIVATE_KEY.includes(wallet.type)) {
+    if (wallet.type === WalletType.PRIVATE_KEY) {
       Logger.info(
         `Skipping XP address derivation for private key wallet of type ${wallet.type}`
       )
@@ -426,7 +427,6 @@ const populateXpAddressesForWallet = async ({
         `Failed to derive XP addresses for account ${account.index} in wallet ${wallet.id}`,
         error
       )
-      // Continue with empty addresses to ensure account is still updated
     }
 
     // For mnemonic and seedless wallets, rederive AVM and PVM addresses

@@ -229,6 +229,9 @@ export type AnalyticsEvents = {
     tokenId?: string
   }
 
+  // App Review
+  InAppReviewRequested: undefined
+
   // NEST EGG CAMPAIGN
   NestEggCampaignModalViewed: undefined
   NestEggCampaignLearnMoreClicked: undefined

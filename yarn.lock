@@ -336,9 +336,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/avalanche-module@npm:3.1.2":
-  version: 3.1.2
-  resolution: "@avalabs/avalanche-module@npm:3.1.2"
+"@avalabs/avalanche-module@npm:3.1.3":
+  version: 3.1.3
+  resolution: "@avalabs/avalanche-module@npm:3.1.3"
   dependencies:
     "@avalabs/avalanchejs": 5.1.0-alpha.2
     "@avalabs/core-chains-sdk": 3.1.0-alpha.72
@@ -348,12 +348,12 @@ __metadata:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.72
     "@avalabs/glacier-sdk": 3.1.0-alpha.72
     "@avalabs/types": 3.1.0-alpha.72
-    "@avalabs/vm-module-types": 3.1.2
+    "@avalabs/vm-module-types": 3.1.3
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: c4b37fa6a93a397a737071495b21d35d06d004b54db23cda88d5d548c9a5c1d1a0466a82f1a62410a23ce773a380a0518e089e6ba6e1e71879eb9eddcc260dda
+  checksum: a44f35cd293d3d341d5309e933a368c95517392da7322b01d96eae2638bce89ea4f3aacc01d427690db295903c019717cd19692ddd163e70ba8b93441f89a440
   languageName: node
   linkType: hard
 
@@ -370,20 +370,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/bitcoin-module@npm:3.1.2":
-  version: 3.1.2
-  resolution: "@avalabs/bitcoin-module@npm:3.1.2"
+"@avalabs/bitcoin-module@npm:3.1.3":
+  version: 3.1.3
+  resolution: "@avalabs/bitcoin-module@npm:3.1.3"
   dependencies:
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.72
     "@avalabs/core-utils-sdk": 3.1.0-alpha.72
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.72
-    "@avalabs/vm-module-types": 3.1.2
+    "@avalabs/vm-module-types": 3.1.3
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
     bitcoinjs-lib: 5.2.0
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: edfcbae2fc5cae006566a28d2b626e8a77e7ee8bcbecb6918d5f178af09aa89627a3638a0b906c24106b589330bbf0489d815b66638e4364f64acd07d07312c2
+  checksum: 3bc40ecb438153146ede2ac6dc9347b6ea20bb5c0fcd99a3573790f8e361f01c79e18b6445262a92eeabbb38e0087e5fa787fe5d2013d4870464f39c28acf49c
   languageName: node
   linkType: hard
 
@@ -488,9 +488,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/core-mobile@workspace:packages/core-mobile"
   dependencies:
-    "@avalabs/avalanche-module": 3.1.2
+    "@avalabs/avalanche-module": 3.1.3
     "@avalabs/avalanchejs": 5.1.0-alpha.2
-    "@avalabs/bitcoin-module": 3.1.2
+    "@avalabs/bitcoin-module": 3.1.3
     "@avalabs/bridge-unified": 4.3.0
     "@avalabs/core-bridge-sdk": 3.1.0-alpha.69
     "@avalabs/core-chains-sdk": 3.1.0-alpha.69
@@ -498,13 +498,13 @@ __metadata:
     "@avalabs/core-gasless-sdk": 3.1.0-alpha.69
     "@avalabs/core-utils-sdk": 3.1.0-alpha.69
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.69
-    "@avalabs/evm-module": 3.1.2
+    "@avalabs/evm-module": 3.1.3
     "@avalabs/glacier-sdk": 3.1.0-alpha.69
     "@avalabs/k2-alpine": "workspace:*"
-    "@avalabs/svm-module": 3.1.2
+    "@avalabs/svm-module": 3.1.3
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": 3.1.0-alpha.71
-    "@avalabs/vm-module-types": 3.1.2
+    "@avalabs/vm-module-types": 3.1.3
     "@babel/core": 7.28.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
     "@babel/plugin-syntax-object-rest-spread": 7.8.3
@@ -541,7 +541,7 @@ __metadata:
     "@lavamoat/preinstall-always-fail": 2.1.0
     "@ledgerhq/hw-app-eth": 6.24.1
     "@ledgerhq/hw-app-solana": 6.24.1
-    "@ledgerhq/react-native-hw-transport-ble": 6.35.3
+    "@ledgerhq/react-native-hw-transport-ble": 6.37.0
     "@metamask/eth-sig-util": 7.0.3
     "@metamask/rpc-errors": 6.3.0
     "@ngraveio/bc-ur": 1.1.13
@@ -674,6 +674,7 @@ __metadata:
     expo-localization: 16.1.6
     expo-router: 5.1.4
     expo-sms: 13.1.4
+    expo-store-review: ~8.1.5
     expo-video: 2.2.2
     fast-equals: 5.2.2
     https-browserify: 1.0.0
@@ -893,9 +894,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/evm-module@npm:3.1.2":
-  version: 3.1.2
-  resolution: "@avalabs/evm-module@npm:3.1.2"
+"@avalabs/evm-module@npm:3.1.3":
+  version: 3.1.3
+  resolution: "@avalabs/evm-module@npm:3.1.3"
   dependencies:
     "@avalabs/core-chains-sdk": 3.1.0-alpha.72
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.72
@@ -904,7 +905,7 @@ __metadata:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.72
     "@avalabs/glacier-sdk": 3.1.0-alpha.72
     "@avalabs/types": 3.1.0-alpha.72
-    "@avalabs/vm-module-types": 3.1.2
+    "@avalabs/vm-module-types": 3.1.3
     "@blockaid/client": 0.48.0
     "@metamask/rpc-errors": 6.3.0
     "@openzeppelin/contracts": 4.9.6
@@ -914,7 +915,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: 6.13.5
-  checksum: 6a7437d4c6b0c4f8cb62ec3d084e7bae4cf1669b2661ffc7dac22940fee01acc05e60491d7528ef270afa25214ab045a5523d629e81235d76fc247f2202105e4
+  checksum: b8ddfe376a21f3def024e3b9476b139d5ae1048108df570bd3077b5a5680a64abc7dc1ba38da22de9a1af742c456097e4951cd3a28e945d057ad2cec8faa92c4
   languageName: node
   linkType: hard
 
@@ -1027,15 +1028,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/svm-module@npm:3.1.2":
-  version: 3.1.2
-  resolution: "@avalabs/svm-module@npm:3.1.2"
+"@avalabs/svm-module@npm:3.1.3":
+  version: 3.1.3
+  resolution: "@avalabs/svm-module@npm:3.1.3"
   dependencies:
     "@avalabs/core-chains-sdk": 3.1.0-alpha.72
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.72
     "@avalabs/core-utils-sdk": 3.1.0-alpha.72
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.72
-    "@avalabs/vm-module-types": 3.1.2
+    "@avalabs/vm-module-types": 3.1.3
     "@blockaid/client": 0.48.0
     "@metamask/rpc-errors": 6.3.0
     "@scure/base": 1.2.4
@@ -1046,7 +1047,7 @@ __metadata:
     "@wallet-standard/base": 1.1.0
     "@wallet-standard/features": 1.1.0
     zod: 3.23.8
-  checksum: 32a421aab09a34f726657c94375721613e04feb2655b06c88594bb0fa9b78655d8a094729d3ff43375a9c4ac23ec523d5f1880fe303f22a59b4ad97c6e90a4dd
+  checksum: 807ee9f3c97ac194293f693e0f9a2e09d845653f241692a684f7b013b25632259f27a83692c7ffb4624f70d13a75274da61b088b1106471b09bb02cf3f10d398
   languageName: node
   linkType: hard
 
@@ -1063,9 +1064,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/vm-module-types@npm:3.1.2":
-  version: 3.1.2
-  resolution: "@avalabs/vm-module-types@npm:3.1.2"
+"@avalabs/vm-module-types@npm:3.1.3":
+  version: 3.1.3
+  resolution: "@avalabs/vm-module-types@npm:3.1.3"
   dependencies:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.72
     "@avalabs/glacier-sdk": 3.1.0-alpha.72
@@ -1076,7 +1077,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: 6.13.5
-  checksum: 611992af56d3c11fdbf9b1459314538d08af911b8d874c97f1c991b20f2267383092927bc5ad18bfd4ff85d5a231b62cf7b4b312740ab5efa4e8bf0ff94813ff
+  checksum: 119884fc463fabe019277b5c20c1f6931ee65f9cb5b345754527bdf14ada4dd875f679659f26afe757ea65a4d48ef44c455b6a521ee45ba868f775ef85ee1955
   languageName: node
   linkType: hard
 
@@ -9183,15 +9184,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/devices@npm:8.5.1":
-  version: 8.5.1
-  resolution: "@ledgerhq/devices@npm:8.5.1"
+"@ledgerhq/devices@npm:8.10.0":
+  version: 8.10.0
+  resolution: "@ledgerhq/devices@npm:8.10.0"
   dependencies:
-    "@ledgerhq/errors": ^6.25.0
-    "@ledgerhq/logs": ^6.13.0
-    rxjs: ^7.8.1
-    semver: ^7.3.5
-  checksum: ce066b5f4bf7ebab0e40bf5e96a87d61137d3d497548f6061ed81975a91a19873cf5056d924ce5454b6c4a967df000834ae8358cc2b4c6b8f8aa6470cb8d3a5c
+    "@ledgerhq/errors": ^6.29.0
+    "@ledgerhq/logs": ^6.14.0
+    rxjs: 7.8.2
+    semver: 7.7.3
+  checksum: 10e5b7213f913281446f44ff40afe971518513fff70265017229223eb9693e018229b30fc925fcf11ab6fdd2f4a222c95a8f29ed068ceca9b0ed0d5d53b14842
   languageName: node
   linkType: hard
 
@@ -9247,6 +9248,13 @@ __metadata:
   version: 6.26.0
   resolution: "@ledgerhq/errors@npm:6.26.0"
   checksum: 0ccd870d7bbeb5dfc58c767ee173d86e068039c6a86d8c717503575ac5a4425889aabfb8bf5072e91ab834ef4d29cd05c3adb8a4d862d766b465c21ba685a4e7
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/errors@npm:^6.29.0":
+  version: 6.29.0
+  resolution: "@ledgerhq/errors@npm:6.29.0"
+  checksum: 423231fd475712eefa1a26e2b48534d6e96d360fe9600050955d5463935cd9ddabe826de395b3bfcbe38e0d03e283f1651fd815961d6230580a2248378a162f5
   languageName: node
   linkType: hard
 
@@ -9392,18 +9400,25 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/react-native-hw-transport-ble@npm:6.35.3":
-  version: 6.35.3
-  resolution: "@ledgerhq/react-native-hw-transport-ble@npm:6.35.3"
+"@ledgerhq/logs@npm:^6.14.0":
+  version: 6.14.0
+  resolution: "@ledgerhq/logs@npm:6.14.0"
+  checksum: 3ba0d28e93e8b1ab355ad95711fd00f2245b3f07204c5de6a0e7570887e9ec847bfaf51a3213e9952ba8a2a4db81084d7864067b9517a1afa0f3a4d869193471
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/react-native-hw-transport-ble@npm:6.37.0":
+  version: 6.37.0
+  resolution: "@ledgerhq/react-native-hw-transport-ble@npm:6.37.0"
   dependencies:
-    "@ledgerhq/devices": 8.5.1
-    "@ledgerhq/errors": ^6.25.0
-    "@ledgerhq/hw-transport": ^6.31.10
-    "@ledgerhq/logs": ^6.13.0
+    "@ledgerhq/devices": 8.10.0
+    "@ledgerhq/errors": ^6.29.0
+    "@ledgerhq/hw-transport": 6.32.0
+    "@ledgerhq/logs": ^6.14.0
     react-native-ble-plx: 3.4.0
-    rxjs: ^7.8.1
+    rxjs: 7.8.2
     uuid: ^9.0.1
-  checksum: b66f98b936e8fda09ba0590479efbc7564cfb148816ff45d5e994d6a411118f4fcc55dce71768c97520b3a0226e09112c7f120dd98fa15967fcc5078e5810197
+  checksum: 962946b10d010ca917752ef4094fda9381b238e043bdb24f1c1d379bb2b78ad40e8195b45f6250d5baf76e6e9fc81f904b8f74e8edd5b83ea51c1c0938af1ed9
   languageName: node
   linkType: hard
 
@@ -23910,6 +23925,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-store-review@npm:~8.1.5":
+  version: 8.1.5
+  resolution: "expo-store-review@npm:8.1.5"
+  peerDependencies:
+    expo: "*"
+    react-native: "*"
+  checksum: 8c53edc8c9116e7a5f38592fc446b26f0d15a9a59a3106e9bdc8cc7af9ad2f0e0ba1cff579ebda6152ff3752b07e0b4165ec2ce2a0771dd3fd311b90a7fd25e7
+  languageName: node
+  linkType: hard
+
 "expo-updates-interface@npm:~1.1.0":
   version: 1.1.0
   resolution: "expo-updates-interface@npm:1.1.0"
@@ -34217,7 +34242,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 3e4689674406deb2ad9efa9f529597341b4ab33e379b7c7cd72aff8d5e37862fda1a37aba984951a67cc3938969be138bc3c4469e4963dd170b172148339e056
+  checksum: d6ceb75e1d0f5755370d6d91f67902bd2b8a23a3ca43cb853d2964b43798f30477e8ab0223ea8b620534fbdf5f56d39550f40d24bec2d2398c323ccfe8a5a556
   languageName: node
   linkType: hard
 

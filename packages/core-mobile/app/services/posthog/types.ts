@@ -41,6 +41,8 @@ export enum FeatureGates {
   LEDGER_SUPPORT = 'ledger-support',
   IN_APP_DEFI = 'in-app-defi',
   IN_APP_DEFI_IS_NEW = 'in-app-defi-is-new',
+  IN_APP_REVIEW = 'in-app-review',
+  GASLESS_INSTANT = 'gasless-instant',
   NEST_EGG_CAMPAIGN = 'nest-egg-campaign',
   NEST_EGG_NEW_SEEDLESS_ONLY = 'nest-egg-new-seedless-only'
 }

@@ -9,6 +9,7 @@ import { WalletState } from 'store/app/types'
 import { useSelector } from 'react-redux'
 import { selectIsReady, selectWalletState } from 'store/app/slice'
 import { PinScreenOverlay } from 'common/components/PinScreenOverlay'
+import { currentRouteStore } from './store'
 
 export function RootNavigator(): JSX.Element {
   const walletState = useSelector(selectWalletState)
@@ -28,6 +29,15 @@ export function RootNavigator(): JSX.Element {
   return (
     <>
       <Stack
+        // @ts-ignore: to set the current route name globally
+        screenListeners={({ navigation }) => {
+          const state =
+            navigation.getState().routes[navigation.getState().index]?.state
+          if (!state || state.index === undefined) return
+          const currentRoute = state?.routes[state.index]?.name
+          if (!currentRoute) return
+          currentRouteStore.getState().setCurrentRoute(currentRoute)
+        }}
         screenOptions={{
           ...stackNavigatorScreenOptions,
           headerShown: false
