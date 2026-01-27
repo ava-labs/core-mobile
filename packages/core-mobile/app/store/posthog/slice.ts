@@ -475,7 +475,7 @@ export const selectIsNestEggCampaignActive = (state: RootState): boolean => {
 }
 
 // Returns true if user is eligible to qualify for Nest Egg via swap
-// Seedless wallets only - works with either flag enabled
+// Seedless wallets only
 // User must have opted into "Unlock airdrops" during onboarding
 export const selectIsNestEggEligible = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
@@ -491,11 +491,22 @@ export const selectIsNestEggEligible = (state: RootState): boolean => {
     return false
   }
 
-  // Either flag enables eligibility for seedless wallets
-  return (
-    featureFlags[FeatureGates.NEST_EGG_CAMPAIGN] === true ||
-    featureFlags[FeatureGates.NEST_EGG_NEW_SEEDLESS_ONLY] === true
-  )
+  // If nest-egg-campaign is ON, ALL seedless users are eligible
+  if (featureFlags[FeatureGates.NEST_EGG_CAMPAIGN] === true) {
+    return true
+  }
+
+  // If nest-egg-new-seedless-only is ON, only NEW seedless users are eligible
+  // A user is considered "new" if:
+  // - isNewSeedlessUser is true (still in onboarding flow), OR
+  // - hasSeenCampaign is true (was shown the modal as a new user)
+  if (featureFlags[FeatureGates.NEST_EGG_NEW_SEEDLESS_ONLY] === true) {
+    const isNewUser = state.nestEgg.isNewSeedlessUser
+    const hasSeenCampaign = state.nestEgg.hasSeenCampaign
+    return isNewUser || hasSeenCampaign
+  }
+
+  return false
 }
 
 // actions

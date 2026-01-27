@@ -1,5 +1,6 @@
 import { FeatureGates } from 'services/posthog/types'
 import { WalletType } from 'services/wallet/types'
+import { initialState as nestEggInitialState } from 'store/nestEgg/slice'
 import { RootState } from 'store/types'
 import {
   selectIsNestEggCampaignBlocked,
@@ -13,8 +14,13 @@ const createMockRootState = (overrides: {
   walletType?: WalletType
   featureFlags?: Partial<typeof DefaultFeatureFlagConfig>
   coreAnalytics?: boolean | undefined | null
+  nestEggState?: Partial<typeof nestEggInitialState>
 }): RootState => {
-  const { walletType = WalletType.SEEDLESS, featureFlags = {} } = overrides
+  const {
+    walletType = WalletType.SEEDLESS,
+    featureFlags = {},
+    nestEggState = {}
+  } = overrides
 
   // Handle coreAnalytics separately to allow explicit undefined
   const coreAnalytics =
@@ -34,6 +40,10 @@ const createMockRootState = (overrides: {
       securityPrivacy: {
         coreAnalytics
       }
+    },
+    nestEgg: {
+      ...nestEggInitialState,
+      ...nestEggState
     }
   } as RootState
 }
@@ -255,19 +265,6 @@ describe('Nest Egg PostHog selectors', () => {
         expect(selectIsNestEggEligible(state)).toBe(true)
       })
 
-      it('should return true when only NEST_EGG_NEW_SEEDLESS_ONLY is ON', () => {
-        const state = createMockRootState({
-          walletType: WalletType.SEEDLESS,
-          coreAnalytics: true,
-          featureFlags: {
-            [FeatureGates.EVERYTHING]: true,
-            [FeatureGates.NEST_EGG_CAMPAIGN]: false,
-            [FeatureGates.NEST_EGG_NEW_SEEDLESS_ONLY]: true
-          }
-        })
-        expect(selectIsNestEggEligible(state)).toBe(true)
-      })
-
       it('should return true when both Nest Egg flags are ON', () => {
         const state = createMockRootState({
           walletType: WalletType.SEEDLESS,
@@ -276,6 +273,59 @@ describe('Nest Egg PostHog selectors', () => {
             [FeatureGates.EVERYTHING]: true,
             [FeatureGates.NEST_EGG_CAMPAIGN]: true,
             [FeatureGates.NEST_EGG_NEW_SEEDLESS_ONLY]: true
+          }
+        })
+        expect(selectIsNestEggEligible(state)).toBe(true)
+      })
+    })
+
+    describe('nest-egg-new-seedless-only mode', () => {
+      it('should return FALSE for existing seedless user (not new, has not seen campaign)', () => {
+        const state = createMockRootState({
+          walletType: WalletType.SEEDLESS,
+          coreAnalytics: true,
+          featureFlags: {
+            [FeatureGates.EVERYTHING]: true,
+            [FeatureGates.NEST_EGG_CAMPAIGN]: false,
+            [FeatureGates.NEST_EGG_NEW_SEEDLESS_ONLY]: true
+          },
+          nestEggState: {
+            isNewSeedlessUser: false,
+            hasSeenCampaign: false
+          }
+        })
+        expect(selectIsNestEggEligible(state)).toBe(false)
+      })
+
+      it('should return TRUE for new seedless user (isNewSeedlessUser: true)', () => {
+        const state = createMockRootState({
+          walletType: WalletType.SEEDLESS,
+          coreAnalytics: true,
+          featureFlags: {
+            [FeatureGates.EVERYTHING]: true,
+            [FeatureGates.NEST_EGG_CAMPAIGN]: false,
+            [FeatureGates.NEST_EGG_NEW_SEEDLESS_ONLY]: true
+          },
+          nestEggState: {
+            isNewSeedlessUser: true,
+            hasSeenCampaign: false
+          }
+        })
+        expect(selectIsNestEggEligible(state)).toBe(true)
+      })
+
+      it('should return TRUE for user who has seen the campaign modal', () => {
+        const state = createMockRootState({
+          walletType: WalletType.SEEDLESS,
+          coreAnalytics: true,
+          featureFlags: {
+            [FeatureGates.EVERYTHING]: true,
+            [FeatureGates.NEST_EGG_CAMPAIGN]: false,
+            [FeatureGates.NEST_EGG_NEW_SEEDLESS_ONLY]: true
+          },
+          nestEggState: {
+            isNewSeedlessUser: false,
+            hasSeenCampaign: true
           }
         })
         expect(selectIsNestEggEligible(state)).toBe(true)
