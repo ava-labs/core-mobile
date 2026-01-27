@@ -12,7 +12,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { TokenWithBalance } from '@avalabs/vm-module-types'
+import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
 import { SwapSide } from '@paraswap/sdk'
 import { useNavigation } from '@react-navigation/native'
 import Big from 'big.js'
@@ -35,6 +35,8 @@ import { useGlobalSearchParams, useRouter } from 'expo-router'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { useSVMProvider } from 'hooks/networks/networkProviderHooks'
+import { useCChainGasCost } from 'common/hooks/useCChainGasCost'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Animated, {
@@ -55,7 +57,9 @@ import { selectActiveAccount } from 'store/account'
 import {
   JUPITER_PARTNER_FEE_BPS,
   MARKR_PARTNER_FEE_BPS,
-  PARASWAP_PARTNER_FEE_BPS
+  PARASWAP_PARTNER_FEE_BPS,
+  MARKR_DEFAULT_GAS_LIMIT,
+  SOL_MINT
 } from '../consts'
 import { useSwapContext } from '../contexts/SwapContext'
 import { useSwapRate } from '../hooks/useSwapRate'
@@ -65,6 +69,9 @@ import {
   isParaswapQuote,
   SwapProviders
 } from '../types'
+import { useSolanaGasCost } from '../hooks/useSolanaGasCost'
+import { useSolanaTokenAta } from '../hooks/useSolanaTokenAta'
+import { getMaxSwapAmount } from '../utils/getMaxSwapAmount'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -111,6 +118,62 @@ export const SwapScreen = (): JSX.Element => {
   )
 
   const { getNetwork } = useNetworks()
+
+  // Determine if current swap is on EVM or Solana
+  const isEvmSwap = fromToken?.networkChainId === cChainNetwork?.chainId
+  const isSolanaSwap = fromToken?.networkChainId === solanaNetwork?.chainId
+
+  // Get Solana provider for ATA checks
+  const solanaProvider = useSVMProvider(solanaNetwork)
+
+  // Wrapped SOL token object for ATA check
+  const wrappedSolToken = useMemo(
+    () =>
+      isSolanaSwap
+        ? ({
+            type: TokenType.SPL,
+            address: SOL_MINT
+          } as LocalTokenWithBalance)
+        : undefined,
+    [isSolanaSwap]
+  )
+
+  // Check if user has Wrapped SOL ATA
+  const { data: wrappedSolAta } = useSolanaTokenAta({
+    addressSVM: activeAccount?.addressSVM,
+    token: wrappedSolToken,
+    provider: solanaProvider
+  })
+
+  // Check if user has destination token ATA
+  const { data: toTokenAta } = useSolanaTokenAta({
+    addressSVM: activeAccount?.addressSVM,
+    token: isSolanaSwap ? toToken : undefined,
+    provider: solanaProvider
+  })
+
+  // Calculate gas cost for C-Chain swaps
+  // Use Markr's higher gas limit as conservative estimate since provider isn't known yet
+  const { gasCost: cChainGasCost } = useCChainGasCost({
+    gasAmount: MARKR_DEFAULT_GAS_LIMIT
+  })
+
+  // Calculate Solana gas cost (includes ATA fees and 1% buffer)
+  const { gasCost: solanaGasCost } = useSolanaGasCost({
+    fromToken: isSolanaSwap ? fromToken : undefined,
+    toToken: isSolanaSwap ? toToken : undefined,
+    wrappedSolAtaExists: wrappedSolAta?.exists,
+    toTokenAtaExists: toTokenAta?.exists
+  })
+
+  // Select appropriate gas cost based on network
+  const estimatedGasCost = isEvmSwap ? cChainGasCost : solanaGasCost
+
+  // Calculate maximum amount considering gas fees for native tokens
+  const fromTokenMaximum = useMemo(
+    () => getMaxSwapAmount({ fromToken, gasCost: estimatedGasCost }),
+    [fromToken, estimatedGasCost]
+  )
 
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
   const swapButtonBackgroundColor = useMemo(
@@ -245,8 +308,8 @@ export const SwapScreen = (): JSX.Element => {
   const calculateMax = useCallback(() => {
     if (!fromToken) return
 
-    setMaxFromValue(fromToken?.balance)
-  }, [fromToken])
+    setMaxFromValue(fromTokenMaximum)
+  }, [fromToken, fromTokenMaximum])
 
   const handleToggleTokens = useCallback(() => {
     if (
@@ -433,7 +496,7 @@ export const SwapScreen = (): JSX.Element => {
           }}
           onBlur={() => setIsInputFocused(false)}
           onSelectToken={handleSelectFromToken}
-          maximum={fromToken?.balance}
+          maximum={fromTokenMaximum}
           valid={!localError}
         />
       </View>
@@ -445,6 +508,7 @@ export const SwapScreen = (): JSX.Element => {
     handleSelectFromToken,
     getNetwork,
     fromToken,
+    fromTokenMaximum,
     localError,
     fromTokenValue,
     swapInProcess

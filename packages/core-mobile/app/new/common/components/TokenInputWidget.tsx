@@ -23,7 +23,6 @@ import Animated, {
   FadeOut,
   LinearTransition
 } from 'react-native-reanimated'
-import { roundTokenDecimals } from 'common/utils/roundTokenDecimals'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
 export const TokenInputWidget = ({
@@ -85,10 +84,6 @@ export const TokenInputWidget = ({
       value = button.value
     } else {
       value = BigInt(Math.floor(Number(balance ?? 0n) * button.percent))
-    }
-
-    if (token?.decimals !== undefined) {
-      value = roundTokenDecimals(value, token.decimals)
     }
 
     onAmountChange?.(value)
