@@ -1,0 +1,4 @@
+import LedgerStakingProgressScreen from 'new/features/ledger/screens/LedgerStakingProgressScreen'
+
+export default LedgerStakingProgressScreen
+
