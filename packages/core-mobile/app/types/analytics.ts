@@ -234,9 +234,7 @@ export type AnalyticsEvents = {
 
   // NEST EGG CAMPAIGN
   NestEggCampaignModalViewed: undefined
-  NestEggCampaignLearnMoreClicked: undefined
   NestEggSuccessModalViewed: undefined
-  NestEggQualificationAcknowledged: undefined
   NestEggQualified: {
     txHash: string
     chainId: number
@@ -244,9 +242,5 @@ export type AnalyticsEvents = {
     toTokenSymbol: string
     fromAmountUsd: number
     timestamp: number
-  }
-  NestEggSwapBelowMinimum: {
-    fromAmountUsd: number
-    minimumRequired: number
   }
 }

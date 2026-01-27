@@ -20,7 +20,6 @@ function NestEggSuccessScreen(): JSX.Element {
 
   const handleGotIt = useCallback(() => {
     dispatch(setHasAcknowledgedQualification(true))
-    AnalyticsService.capture('NestEggQualificationAcknowledged')
     router.canDismiss() && router.dismissAll()
   }, [dispatch, router])
 

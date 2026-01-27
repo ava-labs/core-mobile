@@ -27,7 +27,6 @@ function NestEggScreen(): JSX.Element {
   }, [router])
 
   const handleLearnMore = useCallback(() => {
-    AnalyticsService.capture('NestEggCampaignLearnMoreClicked')
     handleDismiss()
     openUrl({ url: NEST_EGG_CAMPAIGN_URL, title: 'Nest Egg Campaign' })
   }, [handleDismiss, openUrl])
