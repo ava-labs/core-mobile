@@ -10,7 +10,8 @@ import {
   LedgerDerivationPathType,
   WalletCreationOptions,
   LedgerTransportState,
-  LedgerKeys
+  LedgerKeys,
+  WalletUpdateOptions
 } from 'services/ledger/types'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useLedgerWalletMap } from '../store'
@@ -37,7 +38,7 @@ interface LedgerSetupContextValue {
   createLedgerWallet: (
     options: WalletCreationOptions & LedgerKeys
   ) => Promise<string>
-
+  updateSolanaForLedgerWallet: (options: WalletUpdateOptions) => Promise<void>
   // Helper methods
   resetSetup: () => void
 }
@@ -66,7 +67,8 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
     transportState,
     connectToDevice,
     disconnectDevice,
-    createLedgerWallet: _createLedgerWallet
+    createLedgerWallet: _createLedgerWallet,
+    updateSolanaForLedgerWallet
   } = useLedgerWallet()
 
   const { setLedgerWalletMap } = useLedgerWalletMap()
@@ -112,6 +114,7 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
       connectToDevice,
       disconnectDevice,
       createLedgerWallet,
+      updateSolanaForLedgerWallet,
       setSelectedDerivationPath,
       setConnectedDevice: handleSetConnectedDevice,
       setIsCreatingWallet,
@@ -129,6 +132,7 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
       connectToDevice,
       disconnectDevice,
       createLedgerWallet,
+      updateSolanaForLedgerWallet,
       handleSetConnectedDevice,
       resetSetup
     ]

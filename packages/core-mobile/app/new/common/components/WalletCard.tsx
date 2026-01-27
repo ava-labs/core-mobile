@@ -12,7 +12,7 @@ import { useManageWallet } from 'common/hooks/useManageWallet'
 import { AccountDisplayData, WalletDisplayData } from 'common/types'
 import { AccountListItem } from 'features/wallets/components/AccountListItem'
 import { WalletBalance } from 'features/wallets/components/WalletBalance'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   FlatList,
   LayoutChangeEvent,
@@ -22,6 +22,11 @@ import {
 } from 'react-native'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { WalletType } from 'services/wallet/types'
+import LedgerService from 'services/ledger/LedgerService'
+import { LedgerAppType } from 'services/ledger/types'
+import { useLedgerWalletMap } from 'features/ledger/store'
+import { selectActiveWalletId } from 'store/wallet/slice'
+import { useSelector } from 'react-redux'
 import { DropdownMenu } from './DropdownMenu'
 import { WalletIcon } from './WalletIcon'
 
@@ -65,6 +70,24 @@ const WalletCard = ({
       />
     )
   }, [colors.$textSecondary, isExpanded])
+
+  const [isAvalancheAppOpen, setIsAvalancheAppOpen] = useState(false)
+
+  useEffect(() => {
+    async function checkApp(): Promise<void> {
+      if (isLedger) {
+        setIsAvalancheAppOpen(false)
+        try {
+          LedgerService.ensureConnection(deviceForWallet?.deviceId || '')
+          await LedgerService.waitForApp(LedgerAppType.AVALANCHE)
+          setIsAvalancheAppOpen(true)
+        } catch (error) {
+          setIsAvalancheAppOpen(false)
+        }
+      }
+    }
+    checkApp()
+  }, [deviceForWallet?.deviceId, isLedger])
 
   const renderAccountItem: ListRenderItem<AccountDisplayData> = useCallback(
     ({ item }) => {
@@ -156,7 +179,7 @@ const WalletCard = ({
               )
             }
             type="secondary"
-            disabled={isAddingAccount}
+            disabled={isAddingAccount || (isLedger && !isAvalancheAppOpen)}
             onPress={() => handleAddAccountToWallet(wallet)}>
             {isAddingAccount ? (
               <ActivityIndicator size="small" color={colors.$textPrimary} />

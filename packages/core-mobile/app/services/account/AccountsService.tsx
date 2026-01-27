@@ -12,9 +12,9 @@ import ModuleManager from 'vmModule/ModuleManager'
 import { AVALANCHE_MAINNET_NETWORK } from 'services/network/consts'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import Logger from 'utils/Logger'
-import { LedgerWallet } from 'services/wallet/LedgerWallet'
 import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
+import { LedgerWallet } from 'services/wallet/LedgerWallet'
 
 class AccountsService {
   /**
@@ -235,35 +235,20 @@ class AccountsService {
         // prompt Core Seedless API to derive new keys
         await wallet.addAccount(index)
       }
-    } else if (walletType === WalletType.LEDGER) {
+    } else if (
+      walletType === WalletType.LEDGER ||
+      walletType === WalletType.LEDGER_LIVE
+    ) {
       // For BIP44 Ledger wallets, try to derive addresses from extended public keys
       // This avoids the need to connect to the device for new accounts
       const wallet = await WalletFactory.createWallet({
         walletId,
         walletType
       })
-
-      if (wallet instanceof LedgerWallet && wallet.isBIP44()) {
-        // Try to derive addresses from extended public keys
-        const evmAddress = wallet.deriveAddressFromXpub(
-          index,
-          NetworkVMType.EVM,
-          isTestnet
-        )
-        const btcAddress = wallet.deriveAddressFromXpub(
-          index,
-          NetworkVMType.BITCOIN,
-          isTestnet
-        )
-
-        // Log if we can derive EVM and Bitcoin addresses from xpubs
-        evmAddress &&
-          btcAddress &&
-          Logger.info(`Derived addresses from xpub for account ${index}:`, {
-            evm: evmAddress,
-            btc: btcAddress
-          })
+      if (!(wallet instanceof LedgerWallet)) {
+        throw new Error('Expected LedgerWallet instance')
       }
+      return wallet.addAccount({ index, isTestnet, walletId, name })
     }
 
     const addresses = await this.getAddresses({

@@ -31,6 +31,9 @@ import {
   AvalancheKey,
   LEDGER_ERROR_CODES
 } from './types'
+import { BlockchainId } from 'utils/caip2ChainIds'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
+import { address } from '@solana/kit'
 
 class LedgerService {
   #transport: TransportBLE | null = null
@@ -803,7 +806,8 @@ class LedgerService {
   // Get all addresses from Avalanche app (EVM, AVM, Bitcoin)
   async getAllAddresses(
     startIndex: number,
-    count: number
+    count: number,
+    isTestnet: boolean
   ): Promise<AddressInfo[]> {
     // Connect to Avalanche app
     await this.waitForApp(LedgerAppType.AVALANCHE)
@@ -812,6 +816,7 @@ class LedgerService {
     const avalancheApp = new AppAvalanche(this.transport as Transport)
 
     const addresses: AddressInfo[] = []
+    const networkHrp = isTestnet ? 'fuji' : 'avax'
 
     try {
       // Derive addresses for each chain
@@ -832,38 +837,35 @@ class LedgerService {
           network: ChainName.AVALANCHE_C_EVM
         })
 
-        // AVM addresses (Avalanche X-Chain) - get from device
-        const xChainPath = getAddressDerivationPath({
+        // xp addresses - get from device
+        const avalancheChainPath = getAddressDerivationPath({
           accountIndex: i,
           vmType: NetworkVMType.AVM
         })
-        const xChainAddressResponse = await avalancheApp.getAddressAndPubKey(
-          xChainPath,
-          false,
-          'avax' // hrp for mainnet
+        const avalancheChainAddressResponse =
+          await avalancheApp.getAddressAndPubKey(
+            avalancheChainPath,
+            false,
+            isTestnet ? 'fuji' : 'avax' // hrp for mainnet or testnet,
+          )
+
+        const addressWithoutPrefix = stripAddressPrefix(
+          avalancheChainAddressResponse.address
         )
+
+        const xChainAddress = `X-${addressWithoutPrefix}`
         addresses.push({
           id: `avalanche-x-${i}`,
-          address: xChainAddressResponse.address,
-          derivationPath: xChainPath,
+          address: xChainAddress,
+          derivationPath: avalancheChainPath,
           network: ChainName.AVALANCHE_X
         })
+        const pChainAddress = `P-${addressWithoutPrefix}`
 
-        // AVM addresses (Avalanche P-Chain) - get from device with P-Chain ID
-        const pChainPath = getAddressDerivationPath({
-          accountIndex: i,
-          vmType: NetworkVMType.AVM
-        })
-        const pChainAddressResponse = await avalancheApp.getAddressAndPubKey(
-          pChainPath,
-          false,
-          'avax', // hrp for mainnet
-          '2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM' // P-Chain ID
-        )
         addresses.push({
           id: `avalanche-p-${i}`,
-          address: pChainAddressResponse.address,
-          derivationPath: pChainPath,
+          address: pChainAddress,
+          derivationPath: avalancheChainPath,
           network: ChainName.AVALANCHE_P
         })
 
@@ -875,12 +877,13 @@ class LedgerService {
         const btcPublicKeyResponse = await avalancheApp.getAddressAndPubKey(
           btcPath,
           false,
-          'avax' // hrp for mainnet
+          networkHrp // hrp for mainnet or testnet
         )
         const btcAddress = getBtcAddressFromPubKey(
           Buffer.from(btcPublicKeyResponse.publicKey.toString('hex'), 'hex'),
-          networks.bitcoin // mainnet
+          isTestnet ? networks.testnet : networks.bitcoin // mainnet or testnet
         )
+
         addresses.push({
           id: `bitcoin-${i}`,
           address: btcAddress,
@@ -898,13 +901,18 @@ class LedgerService {
   // Get all addresses including Solana (requires app switching)
   async getAllAddressesWithSolana(
     startIndex: number,
-    count: number
+    count: number,
+    isTestnet: boolean
   ): Promise<AddressInfo[]> {
     const addresses: AddressInfo[] = []
 
     try {
       // Get Avalanche addresses first
-      const avalancheAddresses = await this.getAllAddresses(startIndex, count)
+      const avalancheAddresses = await this.getAllAddresses(
+        startIndex,
+        count,
+        isTestnet
+      )
       addresses.push(...avalancheAddresses)
 
       // Get Solana addresses
@@ -988,11 +996,11 @@ class LedgerService {
    * Get Avalanche keys from the connected Ledger device
    * @returns Avalanche keys (addresses for display, xpubs for wallet creation)
    */
-  async getAvalancheKeys(): Promise<AvalancheKey> {
+  async getAvalancheKeys(isTestnet: boolean): Promise<AvalancheKey> {
     Logger.info('Getting Avalanche keys')
 
     // Get addresses for display
-    const addresses = await this.getAllAddresses(0, 1)
+    const addresses = await this.getAllAddresses(0, 1, isTestnet)
 
     const evmAddress =
       addresses.find(addr => addr.network === ChainName.AVALANCHE_C_EVM)
@@ -1041,11 +1049,11 @@ class LedgerService {
    * @param avalancheKeys The avalanche keys to derive addresses from
    * @returns Bitcoin and XP addresses
    */
-  async getBitcoinAndXPAddresses(): Promise<{
+  async getBitcoinAndXPAddresses(isTestnet: boolean): Promise<{
     bitcoinAddress: string
     xpAddress: string
   }> {
-    const addresses = await this.getAllAddresses(0, 1)
+    const addresses = await this.getAllAddresses(0, 1, isTestnet)
 
     // Get addresses for display
     const xChainAddress =

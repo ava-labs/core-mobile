@@ -9,7 +9,8 @@ import {
   LedgerDerivationPathType,
   LedgerKeys,
   LedgerTransportState,
-  WalletCreationOptions
+  WalletCreationOptions,
+  WalletUpdateOptions
 } from 'services/ledger/types'
 import { WalletType } from 'services/wallet/types'
 import { PrimaryAccount, setAccount, setActiveAccountId } from 'store/account'
@@ -20,7 +21,9 @@ import Logger from 'utils/Logger'
 import { Curve } from 'utils/publicKeys'
 import { uuid } from 'utils/uuid'
 import { CoreAccountType } from '@avalabs/types'
+import BiometricsSDK from 'utils/BiometricsSDK'
 import { DERIVATION_PATHS } from '../consts'
+import { LedgerWalletSecretSchema } from '../utils'
 
 export interface UseLedgerWalletReturn {
   // Connection state
@@ -34,6 +37,7 @@ export interface UseLedgerWalletReturn {
   createLedgerWallet: (
     options: WalletCreationOptions & LedgerKeys
   ) => Promise<string>
+  updateSolanaForLedgerWallet: (options: WalletUpdateOptions) => Promise<void>
 }
 
 export function useLedgerWallet(): UseLedgerWalletReturn {
@@ -241,12 +245,97 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
     [dispatch]
   )
 
+  const updateSolanaForLedgerWallet = useCallback(
+    async ({
+      deviceId,
+      walletId,
+      walletName,
+      walletType,
+      account,
+      solanaKeys = []
+    }: WalletUpdateOptions) => {
+      try {
+        setIsLoading(true)
+
+        if (solanaKeys.length === 0 || !solanaKeys[0]?.key) {
+          throw new Error('Missing Solana keys for wallet update')
+        }
+
+        const walletSecretResult = await BiometricsSDK.loadWalletSecret(
+          walletId
+        )
+
+        if (
+          walletSecretResult.success === false ||
+          walletSecretResult.value === undefined
+        ) {
+          throw new Error('Failed to load existing wallet secret for update')
+        }
+
+        const parsedWalletSecret = LedgerWalletSecretSchema.parse(
+          JSON.parse(walletSecretResult.value)
+        )
+
+        if (deviceId !== parsedWalletSecret.deviceId) {
+          throw new Error(
+            'Device ID mismatch between connected wallet and stored wallet'
+          )
+        }
+
+        // Create the public keys array for BIP44
+        const publicKeysToStore = [
+          // Use formatted addresses for BIP44
+          ...parsedWalletSecret.publicKeys,
+          // Only include Solana key if it exists
+          {
+            key: solanaKeys[0].key, // Solana addresses don't use 0x prefix
+            derivationPath: solanaKeys[0].derivationPath, // Use the same path from getSolanaKeys
+            curve: Curve.ED25519
+          }
+        ]
+
+        // Store the Ledger wallet with the specified derivation path type
+        await dispatch(
+          storeWallet({
+            walletId,
+            name: walletName,
+            type: walletType,
+            walletSecret: JSON.stringify({
+              ...parsedWalletSecret,
+              publicKeys: publicKeysToStore,
+              solanaKeys
+            })
+          })
+        ).unwrap()
+
+        // For the first account (index 0), use the addresses we retrieved during setup
+        // This avoids the complex derivation logic that returns empty addresses
+        const updatedAccount: PrimaryAccount = {
+          ...account,
+          addressSVM: solanaKeys[0]?.key
+        }
+
+        dispatch(setAccount(updatedAccount))
+
+        Logger.info('Solana address derived successfully')
+        showSnackbar('Solana address derived successfully!')
+      } catch (error) {
+        Logger.error('Failed to derive Solana address:', error)
+        throw error
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [dispatch]
+  )
+
   return {
     isConnecting,
     transportState,
     connectToDevice,
     disconnectDevice,
     isLoading,
-    createLedgerWallet
+    createLedgerWallet,
+    updateSolanaForLedgerWallet
   }
 }

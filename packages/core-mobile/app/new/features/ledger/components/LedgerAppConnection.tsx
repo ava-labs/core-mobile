@@ -41,7 +41,7 @@ interface LedgerAppConnectionProps {
   isCreatingWallet?: boolean
   connectedDeviceId?: string | null
   connectedDeviceName?: string
-  keys: LedgerKeys
+  keys?: LedgerKeys
   appConnectionStep: AppConnectionStep
   skipSolana?: boolean
 }
@@ -62,19 +62,19 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
 
   const hasAllKeys = useMemo(() => {
     return (
-      !!keys.avalancheKeys &&
-      keys.bitcoinAddress !== '' &&
-      keys.xpAddress !== '' &&
+      !!keys?.avalancheKeys &&
+      keys?.bitcoinAddress !== '' &&
+      keys?.xpAddress !== '' &&
       (isSolanaSupportBlocked ||
         skipSolana ||
-        (keys.solanaKeys && keys.solanaKeys.length > 0))
+        (keys?.solanaKeys && keys.solanaKeys.length > 0))
     )
   }, [
     isSolanaSupportBlocked,
-    keys.avalancheKeys,
-    keys.bitcoinAddress,
-    keys.solanaKeys,
-    keys.xpAddress,
+    keys?.avalancheKeys,
+    keys?.bitcoinAddress,
+    keys?.solanaKeys,
+    keys?.xpAddress,
     skipSolana
   ])
 
@@ -83,7 +83,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     const addresses = []
 
     // C-Chain/EVM address (derived from avalanche keys)
-    if (keys.avalancheKeys?.addresses.evm) {
+    if (keys?.avalancheKeys?.addresses.evm) {
       addresses.push({
         title: AVALANCHE_MAINNET_NETWORK.chainName,
         subtitle: truncateAddress(
@@ -109,7 +109,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     }
 
     // X/P Chain address
-    if (keys.xpAddress) {
+    if (keys?.xpAddress) {
       const xpNetwork = {
         ...AVALANCHE_XP_NETWORK,
         chainName: ChainName.AVALANCHE_XP
@@ -139,7 +139,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     }
 
     // Bitcoin address
-    if (keys.bitcoinAddress) {
+    if (keys?.bitcoinAddress) {
       const bitcoinNetwork = {
         ...BITCOIN_NETWORK,
         chainName: ChainName.BITCOIN
@@ -167,9 +167,9 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
 
     // Solana address
     if (
-      keys.solanaKeys &&
-      keys.solanaKeys.length > 0 &&
-      keys.solanaKeys[0]?.key
+      keys?.solanaKeys &&
+      keys?.solanaKeys.length > 0 &&
+      keys?.solanaKeys[0]?.key
     ) {
       // The key is already a Solana address (Base58 encoded) from LedgerService
       const solanaAddress = keys.solanaKeys[0].key
@@ -211,10 +211,10 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
 
     return addresses
   }, [
-    keys.avalancheKeys?.addresses.evm,
-    keys.xpAddress,
-    keys.bitcoinAddress,
-    keys.solanaKeys,
+    keys?.avalancheKeys?.addresses.evm,
+    keys?.xpAddress,
+    keys?.bitcoinAddress,
+    keys?.solanaKeys,
     hasAllKeys,
     colors.$textSuccess,
     colors.$surfaceSecondary
