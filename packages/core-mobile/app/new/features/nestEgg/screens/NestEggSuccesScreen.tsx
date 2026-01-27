@@ -43,7 +43,9 @@ function NestEggSuccessScreen(): JSX.Element {
 
   useEffect(() => {
     InteractionManager.runAfterInteractions(() => {
-      lottieRef.current?.play()
+      setTimeout(() => {
+        lottieRef.current?.play()
+      }, 250)
     })
   }, [])
 
