@@ -132,7 +132,8 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
             ? addresses.evm.slice(2) // Remove first 0x to fix double prefix
             : addresses.evm,
           avm: addresses.avm,
-          pvm: addresses.pvm
+          pvm: addresses.pvm,
+          coreEth: addresses.coreEth // C-chain bech32 format (C-avax1... or C-fuji1...)
         }
 
         // Also fix the public keys array to ensure no double prefixes in storage
@@ -193,7 +194,12 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
                 individualKeys.length > 0
                   ? formattedPublicKeys // Use formatted individual keys for Ledger Live
                   : publicKeysToStore, // Use the public keys we just created
-              avalancheKeys: formattedAddresses, // Use formatted addresses for display
+              avalancheKeys: {
+                evm: formattedAddresses.evm,
+                avm: formattedAddresses.avm,
+                pvm: formattedAddresses.pvm,
+                coreEth: formattedAddresses.coreEth
+              }, // Use formatted addresses for display
               solanaKeys
             }),
             type:
@@ -219,7 +225,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           addressAVM: formattedAddresses.avm,
           addressPVM: formattedAddresses.pvm,
           addressSVM: solanaKeys[0]?.key || '',
-          addressCoreEth: '',
+          addressCoreEth: formattedAddresses.coreEth, // C-chain bech32 (C-avax1...), NOT hex
           xpAddresses: [],
           xpAddressDictionary: {},
           hasMigratedXpAddresses: true // TODO: true when xpAddresses are successfully fetched

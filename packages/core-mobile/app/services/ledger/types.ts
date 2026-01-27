@@ -107,6 +107,7 @@ export interface AvalancheKey {
     evm: string
     avm: string
     pvm: string
+    coreEth: string // C-chain bech32 format (C-avax1... or C-fuji1...)
   }
   xpubs: {
     evm: string

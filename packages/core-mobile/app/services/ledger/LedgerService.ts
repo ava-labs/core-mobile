@@ -1004,6 +1004,11 @@ class LedgerService {
       addresses.find(addr => addr.network === ChainName.AVALANCHE_P)?.address ||
       ''
 
+    // Derive C-chain bech32 address from X-chain address
+    // X, P, and C chain bech32 addresses share the same underlying public key bytes,
+    // only the chain prefix differs (X-, P-, C-)
+    const coreEthAddress = xChainAddress.replace(/^X-/, 'C-')
+
     // Get extended public keys and convert to base58 xpub format
     const extendedKeys = await this.getExtendedPublicKeys()
 
@@ -1027,7 +1032,8 @@ class LedgerService {
       addresses: {
         evm: evmAddress,
         avm: xChainAddress,
-        pvm: pvmAddress
+        pvm: pvmAddress,
+        coreEth: coreEthAddress
       },
       xpubs: {
         evm: evmXpub,
