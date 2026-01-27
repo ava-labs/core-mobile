@@ -1,13 +1,15 @@
 import { Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
+import { CoreAccountType } from '@avalabs/types'
 import { useHeaderHeight } from '@react-navigation/elements'
+import { ContentReveal } from 'common/components/ContentReveal'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen, ListScreenRef } from 'common/components/ListScreen'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import WalletCard from 'common/components/WalletCard'
 import { WalletDisplayData } from 'common/types'
 import { useRouter } from 'expo-router'
-import { useAccountsBalances } from 'features/portfolio/hooks/useAccountsBalances'
-import { useIsAccountsBalanceAccurate } from 'features/portfolio/hooks/useIsAccountsBalancesAccurate'
+import { useAllBalances } from 'features/portfolio/hooks/useAllBalances'
+import { useIsAllBalancesAccurate } from 'features/portfolio/hooks/useIsAllBalancesAccurate'
 import React, { RefObject, useCallback, useMemo, useRef, useState } from 'react'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
@@ -22,7 +24,6 @@ import {
   IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID,
   IMPORTED_ACCOUNTS_VIRTUAL_WALLET_NAME
 } from '../consts'
-import { getIsActiveWallet } from '../utils'
 
 export const WalletsScreen = (): JSX.Element => {
   const {
@@ -34,14 +35,11 @@ export const WalletsScreen = (): JSX.Element => {
   const accountCollection = useSelector(selectAccounts)
   const allWallets = useSelector(selectWallets)
   const activeAccount = useSelector(selectActiveAccount)
-  const allAccounts = useMemo(
-    () => Object.values(accountCollection),
-    [accountCollection]
-  )
-  const { isLoading, refetch } = useAccountsBalances(allAccounts, {
-    refetchInterval: false
-  })
-  const isBalanceAccurate = useIsAccountsBalanceAccurate(allAccounts)
+  const activeAccountId = activeAccount?.id
+  const activeAccountWalletId = activeAccount?.walletId
+  const activeAccountType = activeAccount?.type
+  const { isLoading, refetch } = useAllBalances()
+  const isBalanceAccurate = useIsAllBalancesAccurate()
   const listRef = useRef<ListScreenRef<WalletDisplayData>>(null)
 
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -50,25 +48,56 @@ export const WalletsScreen = (): JSX.Element => {
     Record<string, boolean>
   >({})
 
-  const errorMessage =
-    isLoading || isBalanceAccurate ? undefined : 'Unable to load all balances'
+  const errorMessage = useMemo(() => {
+    if (!isLoading && !isBalanceAccurate) return 'Unable to load all balances'
+    return null
+  }, [isLoading, isBalanceAccurate])
 
   const allAccountsArray = useMemo(() => {
     return Object.values(accountCollection)
   }, [accountCollection])
 
-  useMemo(() => {
-    const initialExpansionState: Record<string, boolean> = {}
+  const isActiveWalletId = useCallback(
+    (id: string): boolean => {
+      if (!activeAccountWalletId || !activeAccountType) {
+        return false
+      }
+      return (
+        id === activeAccountWalletId ||
+        (id === IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID &&
+          activeAccountType === CoreAccountType.IMPORTED)
+      )
+    },
+    [activeAccountType, activeAccountWalletId]
+  )
+
+  // Keep wallet expansion state stable across account changes.
+  // Only initialize missing wallet IDs and (on first mount) expand the active wallet by default.
+  React.useEffect(() => {
     const walletIds = [
       ...Object.keys(allWallets),
       IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID
     ]
-    // Expand only the active wallet by default
-    walletIds.forEach(id => {
-      initialExpansionState[id] = getIsActiveWallet(id, activeAccount)
+
+    setExpandedWallets(prev => {
+      const isFirstInit = Object.keys(prev).length === 0
+      const next: Record<string, boolean> = {}
+
+      walletIds.forEach(id => {
+        if (isFirstInit) {
+          next[id] = isActiveWalletId(id)
+          return
+        }
+        if (Object.hasOwn(prev, id)) {
+          next[id] = Boolean(prev[id])
+          return
+        }
+        next[id] = isActiveWalletId(id)
+      })
+
+      return next
     })
-    setExpandedWallets(initialExpansionState)
-  }, [allWallets, activeAccount])
+  }, [allWallets, isActiveWalletId])
 
   const gotoAccountDetails = useCallback(
     (accountId: string): void => {
@@ -115,11 +144,11 @@ export const WalletsScreen = (): JSX.Element => {
       }
 
       const accountDataForWallet = accountsForWallet.map((account, index) => {
-        const isActive = account.id === activeAccount?.id
+        const isActive = account.id === activeAccountId
         const nextAccount = accountsForWallet[index + 1]
         const hideSeparator =
           isActive ||
-          nextAccount?.id === activeAccount?.id ||
+          nextAccount?.id === activeAccountId ||
           index === accountsForWallet.length - 1
 
         return {
@@ -140,7 +169,7 @@ export const WalletsScreen = (): JSX.Element => {
   }, [
     primaryWallets,
     allAccountsArray,
-    activeAccount?.id,
+    activeAccountId,
     handleSetActiveAccount,
     gotoAccountDetails
   ])
@@ -159,11 +188,11 @@ export const WalletsScreen = (): JSX.Element => {
     // Only add the virtual wallet if there are matching accounts (respects search)
     const privateKeyAccountData = allPrivateKeyAccounts.map(
       (account, index) => {
-        const isActive = account.id === activeAccount?.id
+        const isActive = account.id === activeAccountId
         const nextAccount = allPrivateKeyAccounts[index + 1]
         const hideSeparator =
           isActive ||
-          nextAccount?.id === activeAccount?.id ||
+          nextAccount?.id === activeAccountId ||
           index === allPrivateKeyAccounts.length - 1
 
         return {
@@ -187,7 +216,7 @@ export const WalletsScreen = (): JSX.Element => {
   }, [
     importedWallets,
     allAccountsArray,
-    activeAccount?.id,
+    activeAccountId,
     handleSetActiveAccount,
     gotoAccountDetails
   ])
@@ -205,7 +234,7 @@ export const WalletsScreen = (): JSX.Element => {
 
     // Find the active wallet (could be primary or imported)
     const activeWallet = combinedWallets.find(wallet =>
-      getIsActiveWallet(wallet.id, activeAccount)
+      isActiveWalletId(wallet.id)
     )
 
     // If active wallet is found, move it to the beginning
@@ -218,7 +247,7 @@ export const WalletsScreen = (): JSX.Element => {
 
     // If no active wallet found, return in default order
     return combinedWallets
-  }, [primaryWalletsDisplayData, importedWalletsDisplayData, activeAccount])
+  }, [primaryWalletsDisplayData, importedWalletsDisplayData, isActiveWalletId])
 
   const toggleWalletExpansion = useCallback((walletId: string) => {
     setExpandedWallets(prev => ({
@@ -241,8 +270,8 @@ export const WalletsScreen = (): JSX.Element => {
   }, [colors.$textPrimary, handleAddAccount])
 
   const renderHeader = useCallback(() => {
-    if (errorMessage) {
-      return (
+    return (
+      <ContentReveal isVisible={!!errorMessage}>
         <View
           sx={{
             gap: 8,
@@ -257,9 +286,8 @@ export const WalletsScreen = (): JSX.Element => {
             {errorMessage}
           </Text>
         </View>
-      )
-    }
-    return null
+      </ContentReveal>
+    )
   }, [colors.$textDanger, errorMessage])
 
   const renderItem = useCallback(
@@ -268,7 +296,7 @@ export const WalletsScreen = (): JSX.Element => {
         return null
       }
       const isExpanded = expandedWallets[item.id] ?? false
-      const isActive = getIsActiveWallet(item.id, activeAccount)
+      const isActive = isActiveWalletId(item.id)
 
       return (
         <WalletCard
@@ -276,7 +304,6 @@ export const WalletsScreen = (): JSX.Element => {
           isActive={isActive}
           isRefreshing={isRefreshing}
           isExpanded={isExpanded}
-          balancesRefetchInterval={false}
           onToggleExpansion={() => toggleWalletExpansion(item.id)}
           style={{
             marginHorizontal: 16,
@@ -289,10 +316,10 @@ export const WalletsScreen = (): JSX.Element => {
       )
     },
     [
-      activeAccount,
       colors.$borderPrimary,
       colors.$surfacePrimary,
       expandedWallets,
+      isActiveWalletId,
       isRefreshing,
       toggleWalletExpansion
     ]

@@ -13,3 +13,13 @@ export type AdjustedNormalizedBalancesForAccount = {
   dataAccurate: boolean
   error: Error | null
 }
+
+export type AdjustedNormalizedBalancesForAccounts = Record<
+  string,
+  AdjustedNormalizedBalancesForAccount[]
+>
+
+export type PartialAdjustedNormalizedBalancesForAccount = Record<
+  string,
+  AdjustedNormalizedBalancesForAccount
+>
