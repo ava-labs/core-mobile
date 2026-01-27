@@ -95,7 +95,8 @@ function NestEggScreen(): JSX.Element {
           style={{
             gap: 12,
             alignItems: 'center',
-            maxWidth: 300
+            maxWidth: 300,
+            marginTop: 12
           }}>
           <Text
             variant="heading3"

@@ -176,8 +176,7 @@ export const ScrollScreen = ({
             style={[
               headerStyle,
               {
-                gap: 8,
-                paddingHorizontal: 16
+                gap: 8
               }
             ]}>
             {title ? (
