@@ -5,6 +5,7 @@ import { withNavigationEvents } from 'common/utils/navigateWithPromise'
 import { useRouter } from 'expo-router'
 import LottieView from 'lottie-react-native'
 import React, { useCallback, useEffect, useRef } from 'react'
+import { InteractionManager } from 'react-native'
 import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { setHasSeenCampaign } from 'store/nestEgg'
@@ -59,9 +60,9 @@ function NestEggScreen(): JSX.Element {
   }, [dispatch])
 
   useEffect(() => {
-    setTimeout(() => {
+    InteractionManager.runAfterInteractions(() => {
       lottieRef.current?.play()
-    }, 250)
+    })
   }, [])
 
   return (
@@ -93,7 +94,6 @@ function NestEggScreen(): JSX.Element {
         <View
           style={{
             gap: 12,
-            marginTop: 24,
             alignItems: 'center',
             maxWidth: 300
           }}>

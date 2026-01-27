@@ -4,13 +4,14 @@ import { withNavigationEvents } from 'common/utils/navigateWithPromise'
 import { useFocusEffect, useRouter } from 'expo-router'
 import LottieView from 'lottie-react-native'
 import React, { useCallback, useEffect, useRef } from 'react'
+import { InteractionManager } from 'react-native'
 import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { setHasAcknowledgedQualification } from 'store/nestEgg'
 import { TermsAndConditionsCaption } from '../components/TermsAndConditionsCaption'
 
-const NEST_EGG_SUCCESS = require('assets/lotties/icon-hero-nest-egg.json')
-const NEST_EGG_SUCCESS_DARK = require('assets/lotties/icon-hero-nest-egg-dark.json')
+const NEST_EGG_SUCCESS = require('assets/lotties/icon-hero-swap.json')
+const NEST_EGG_SUCCESS_DARK = require('assets/lotties/icon-hero-swap-dark.json')
 
 function NestEggSuccessScreen(): JSX.Element {
   const { theme } = useTheme()
@@ -41,9 +42,9 @@ function NestEggSuccessScreen(): JSX.Element {
   const lottieRef = useRef<LottieView>(null)
 
   useEffect(() => {
-    setTimeout(() => {
+    InteractionManager.runAfterInteractions(() => {
       lottieRef.current?.play()
-    }, 250)
+    })
   }, [])
 
   return (
@@ -75,7 +76,6 @@ function NestEggSuccessScreen(): JSX.Element {
         <View
           style={{
             gap: 12,
-            marginTop: 24,
             alignItems: 'center',
             maxWidth: 300
           }}>

@@ -4,6 +4,7 @@ import { FeatureGates, FeatureFlags, FeatureVars } from 'services/posthog/types'
 import { WalletType } from 'services/wallet/types'
 import { uuid } from 'utils/uuid'
 import { selectActiveWallet } from 'store/wallet/slice'
+import { selectCoreAnalyticsConsent } from 'store/settings/securityPrivacy'
 import { initialState } from './types'
 
 const reducerName = 'posthog'
@@ -459,11 +460,18 @@ export const selectIsNestEggCampaignActive = (state: RootState): boolean => {
 
 // Returns true if user is eligible to qualify for Nest Egg via swap
 // Seedless wallets only - works with either flag enabled
+// User must have opted into "Unlock airdrops" during onboarding
 export const selectIsNestEggEligible = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
+  const hasOptedIntoAirdrops = selectCoreAnalyticsConsent(state) === true
 
-  if (!isSeedlessWallet || featureFlags[FeatureGates.EVERYTHING] !== true) {
+  // Must be seedless wallet AND have opted into airdrops
+  if (
+    !isSeedlessWallet ||
+    !hasOptedIntoAirdrops ||
+    featureFlags[FeatureGates.EVERYTHING] !== true
+  ) {
     return false
   }
 
