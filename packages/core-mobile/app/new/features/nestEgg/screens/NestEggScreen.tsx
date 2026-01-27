@@ -6,11 +6,12 @@ import { useRouter } from 'expo-router'
 import LottieView from 'lottie-react-native'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { InteractionManager } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { setHasSeenCampaign } from 'store/nestEgg'
 import { NEST_EGG_CAMPAIGN_URL } from 'store/nestEgg/types'
 import { TermsAndConditionsCaption } from '../components/TermsAndConditionsCaption'
+import { selectActiveAccount } from 'store/account'
 
 const NEST_EGG_DARK = require('assets/lotties/icon-hero-nest-egg-dark.json')
 const NEST_EGG = require('assets/lotties/icon-hero-nest-egg.json')
@@ -51,12 +52,16 @@ function NestEggScreen(): JSX.Element {
     justifyContent: 'center'
   }
 
+  const currentAccount = useSelector(selectActiveAccount)
+
   useEffect(() => {
-    AnalyticsService.capture('NestEggCampaignModalViewed')
+    AnalyticsService.capture('NestEggCampaignModalViewed', {
+      address: currentAccount?.addressC
+    })
     return () => {
       dispatch(setHasSeenCampaign(true))
     }
-  }, [dispatch])
+  }, [currentAccount?.addressC, dispatch])
 
   useEffect(() => {
     InteractionManager.runAfterInteractions(() => {

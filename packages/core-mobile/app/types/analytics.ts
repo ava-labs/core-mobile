@@ -233,9 +233,10 @@ export type AnalyticsEvents = {
   InAppReviewRequested: undefined
 
   // NEST EGG CAMPAIGN
-  NestEggCampaignModalViewed: undefined
-  NestEggSuccessModalViewed: undefined
+  NestEggCampaignModalViewed: { addressC: string }
+  NestEggSuccessModalViewed: { addressC: string }
   NestEggQualified: {
+    addressC: string
     txHash: string
     chainId: number
     fromTokenSymbol: string
