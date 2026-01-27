@@ -860,9 +860,12 @@ class LedgerService {
           'avax', // hrp for mainnet
           '2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM' // P-Chain ID
         )
+        // Ledger app returns X- prefix regardless of chain ID, so we transform to P-
+        // X, P, and C chain bech32 addresses share the same underlying public key bytes
+        const pChainAddress = pChainAddressResponse.address.replace(/^X-/, 'P-')
         addresses.push({
           id: `avalanche-p-${i}`,
-          address: pChainAddressResponse.address,
+          address: pChainAddress,
           derivationPath: pChainPath,
           network: ChainName.AVALANCHE_P
         })
