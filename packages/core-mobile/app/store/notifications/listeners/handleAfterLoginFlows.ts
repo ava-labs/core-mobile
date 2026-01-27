@@ -220,8 +220,6 @@ const promptNestEggCampaignModalIfNeeded = async (
     // nest-egg-campaign is ON: ALL seedless users can see the modal
     const isUserEligible = selectIsUserEligibleForNestEggModal(state)
 
-    console.warn('isUserEligible', isUserEligible)
-
     if (isUserEligible) {
       await waitForInteractions()
 
