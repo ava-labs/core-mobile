@@ -17,4 +17,4 @@ export interface NestEggState {
 export const MINIMUM_SWAP_AMOUNT_USD = 10
 
 // Campaign landing page URL
-export const NEST_EGG_CAMPAIGN_URL = 'https://core.app/nest-egg'
+export const NEST_EGG_CAMPAIGN_URL = 'https://core.app/discover/bonus'
