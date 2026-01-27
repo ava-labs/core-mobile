@@ -136,63 +136,69 @@ export class LedgerWallet implements Wallet {
     return this.evmSigner
   }
 
+  private createBIP44Signer(
+    accountIndex: number,
+    avalancheProvider: Avalanche.JsonRpcProvider
+  ): Avalanche.SimpleLedgerSigner {
+    const extPublicKey = this.getExtendedPublicKeyFor(NetworkVMType.AVM)
+    if (!extPublicKey) {
+      throw new Error('Missing extended public key for AVM')
+    }
+
+    return new Avalanche.SimpleLedgerSigner(
+      accountIndex,
+      avalancheProvider,
+      extPublicKey.key
+    )
+  }
+
+  private async createLedgerLiveSigner(
+    accountIndex: number,
+    avalancheProvider: Avalanche.JsonRpcProvider
+  ): Promise<Avalanche.LedgerSigner> {
+    const pubkeyEVM = await this.getPublicKeyFor({
+      derivationPath: this.getDerivationPath(accountIndex, NetworkVMType.EVM),
+      curve: Curve.SECP256K1
+    })
+    const pubkeyAVM = await this.getPublicKeyFor({
+      derivationPath: this.getDerivationPath(accountIndex, NetworkVMType.AVM),
+      curve: Curve.SECP256K1
+    })
+
+    if (!pubkeyEVM || !pubkeyAVM) {
+      throw new Error('Missing public keys for LedgerLive mode')
+    }
+
+    return new Avalanche.LedgerSigner(
+      Buffer.from(pubkeyAVM, 'hex'),
+      this.getDerivationPath(accountIndex, NetworkVMType.AVM),
+      Buffer.from(pubkeyEVM, 'hex'),
+      this.getDerivationPath(accountIndex, NetworkVMType.EVM),
+      avalancheProvider
+    )
+  }
+
   private async getAvalancheProvider(
-    accountIndex?: number
+    accountIndex?: number,
+    avalancheProvider?: Avalanche.JsonRpcProvider
   ): Promise<Avalanche.SimpleLedgerSigner | Avalanche.LedgerSigner> {
-    // Use provided accountIndex or fallback to parsing from stored derivationPath
     const targetAccountIndex =
       accountIndex ?? parseInt(this.derivationPath.split('/').pop() || '0')
 
     if (!this.avalancheSigner || accountIndex !== undefined) {
-      Logger.info('avalancheLedgerSigner', now())
-
-      const transport = await this.getTransport()
-
-      if (this.derivationPathSpec === LedgerDerivationPathType.BIP44) {
-        // BIP44 mode - use extended public keys
-        const extPublicKey = this.getExtendedPublicKeyFor(NetworkVMType.AVM)
-        if (!extPublicKey) {
-          throw new Error('Missing extended public key for AVM')
-        }
-
-        this.avalancheSigner = new Avalanche.SimpleLedgerSigner(
-          targetAccountIndex,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          transport as any, // TransportBLE is runtime compatible with wallets SDK expectations
-          extPublicKey.key
-        )
-      } else {
-        // LedgerLive mode - use individual public keys
-        const pubkeyEVM = await this.getPublicKeyFor({
-          derivationPath: this.getDerivationPath(
-            targetAccountIndex,
-            NetworkVMType.EVM
-          ),
-          curve: Curve.SECP256K1
-        })
-        const pubkeyAVM = await this.getPublicKeyFor({
-          derivationPath: this.getDerivationPath(
-            targetAccountIndex,
-            NetworkVMType.AVM
-          ),
-          curve: Curve.SECP256K1
-        })
-
-        if (!pubkeyEVM || !pubkeyAVM) {
-          throw new Error('Missing public keys for LedgerLive mode')
-        }
-
-        this.avalancheSigner = new Avalanche.LedgerSigner(
-          Buffer.from(pubkeyAVM, 'hex'),
-          this.getDerivationPath(targetAccountIndex, NetworkVMType.AVM),
-          Buffer.from(pubkeyEVM, 'hex'),
-          this.getDerivationPath(targetAccountIndex, NetworkVMType.EVM),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          transport as any // TransportBLE is runtime compatible with wallets SDK expectations
+      if (!avalancheProvider) {
+        throw new Error(
+          'Avalanche provider is required for creating Ledger signer'
         )
       }
 
-      Logger.info('avalancheLedgerSigner end', now())
+      this.avalancheSigner =
+        this.derivationPathSpec === LedgerDerivationPathType.BIP44
+          ? this.createBIP44Signer(targetAccountIndex, avalancheProvider)
+          : await this.createLedgerLiveSigner(
+              targetAccountIndex,
+              avalancheProvider
+            )
     }
     return this.avalancheSigner
   }
@@ -457,7 +463,7 @@ export class LedgerWallet implements Wallet {
   }
 
   public async signAvalancheTransaction({
-    accountIndex: _accountIndex,
+    accountIndex,
     transaction,
     network: _network,
     provider: _provider
@@ -467,25 +473,112 @@ export class LedgerWallet implements Wallet {
     network: Network
     provider: Avalanche.JsonRpcProvider
   }): Promise<string> {
-    const signer = await this.getAvalancheProvider(_accountIndex)
+    Logger.info('signAvalancheTransaction called')
 
-    if (
-      !(
-        signer instanceof Avalanche.SimpleLedgerSigner ||
-        signer instanceof Avalanche.LedgerSigner
+    // First ensure we're connected to the device
+    Logger.info('Ensuring connection to Ledger device...')
+    try {
+      await LedgerService.ensureConnection(this.deviceId)
+      Logger.info('Successfully connected to Ledger device')
+    } catch (error) {
+      Logger.error('Failed to connect to Ledger device:', error)
+      throw new Error(
+        'Please make sure your Ledger device is nearby, unlocked, and Bluetooth is enabled.'
       )
-    ) {
-      throw new Error('Unable to sign avalanche transaction: invalid signer')
     }
 
-    const txToSign = {
-      tx: transaction.tx,
-      externalIndices: transaction.externalIndices,
-      internalIndices: transaction.internalIndices
+    // Now ensure Avalanche app is ready
+    Logger.info('Ensuring Avalanche app is ready...')
+    try {
+      await LedgerService.waitForApp(
+        LedgerAppType.AVALANCHE,
+        LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT
+      )
+      Logger.info('Avalanche app is ready')
+    } catch (error) {
+      Logger.error('Failed to detect Avalanche app:', error)
+      throw new Error(
+        'Please open the Avalanche app on your Ledger device and try again.'
+      )
     }
 
-    const sig = await signer.signTx(txToSign)
-    return JSON.stringify(sig.toJSON())
+    // Get transport and create Avalanche app instance directly
+    // (bypassing SDK's ZondaxProvider which has module resolution issues in React Native)
+    const transport = await this.getTransport()
+    Logger.info('Got transport, isConnected:', transport?.isConnected)
+
+    const avaxApp = new AppAvax(transport as Transport)
+    Logger.info('Created Avalanche app instance')
+
+    // Get chain alias from transaction VM
+    const vmName = transaction.tx.getVM()
+    const chainAlias = vmName === 'EVM' ? 'C' : 'X' // X for both X-chain and P-chain
+    Logger.info(`Chain alias: ${chainAlias}, VM: ${vmName}`)
+
+    // Build the account path based on chain
+    // For X/P chain: m/44'/9000'/{accountIndex}'
+    // For C chain (EVM): m/44'/60'/0'
+    const accountPath =
+      chainAlias === 'C' ? `m/44'/60'/0'` : `m/44'/9000'/${accountIndex}'`
+    Logger.info('Account path:', accountPath)
+
+    // Build signing paths from external indices
+    // For C-chain: use 0/{accountIndex} as the signing path
+    // For X/P-chain: use external indices (default to 0/0 if empty or undefined)
+    const externalIndices = transaction.externalIndices ?? []
+    const hasIndices = externalIndices.length > 0
+    const signingPaths =
+      chainAlias === 'C'
+        ? [`0/${accountIndex}`]
+        : (hasIndices ? externalIndices : [0]).map(i => `0/${i}`)
+    Logger.info('Signing paths:', signingPaths)
+
+    // Build change paths from internal indices
+    const changePaths = (transaction.internalIndices ?? []).map(i => `1/${i}`)
+    Logger.info('Change paths:', changePaths)
+
+    // Serialize the transaction
+    const txBuffer = Buffer.from(transaction.tx.toBytes())
+    Logger.info('Transaction buffer size:', txBuffer.length)
+
+    Logger.info('Calling avaxApp.sign...')
+    try {
+      // Sign directly with the Ledger device
+      const signResult = await avaxApp.sign(
+        accountPath,
+        signingPaths,
+        txBuffer,
+        changePaths.length > 0 ? changePaths : undefined
+      )
+      Logger.info('avaxApp.sign completed')
+      Logger.info(`Sign result keys: ${Object.keys(signResult).join(', ')}`)
+      Logger.info(
+        `Signatures map size: ${signResult.signatures?.size ?? 'undefined'}`
+      )
+
+      // Add signatures to the transaction
+      const signatures = signResult.signatures || new Map()
+      let sigCount = 0
+      signatures.forEach((signature, key) => {
+        Logger.info(
+          `Adding signature for path ${key}, length: ${signature?.length}`
+        )
+        transaction.tx.addSignature(signature)
+        sigCount++
+      })
+
+      Logger.info(`Added ${sigCount} signatures to transaction`)
+      Logger.info('signAvalancheTransaction completed successfully')
+      return JSON.stringify(transaction.tx.toJSON())
+    } catch (signError) {
+      Logger.error('avaxApp.sign failed with error:', signError)
+      if (signError instanceof Error) {
+        throw new Error(
+          `Avalanche transaction signing failed: ${signError.message}`
+        )
+      }
+      throw signError
+    }
   }
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
