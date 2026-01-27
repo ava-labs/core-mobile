@@ -41,6 +41,7 @@ import { WalletType } from 'services/wallet/types'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveWallet } from 'store/wallet/slice'
 import { showLedgerReviewTransaction } from 'features/ledger/utils'
+import { ledgerStakingProgressCache } from 'features/ledger/services/ledgerStakingProgressCache'
 import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { truncateNodeId } from 'utils/Utils'
@@ -336,6 +337,28 @@ const StakeConfirmScreen = (): JSX.Element => {
                 showLedgerReviewTransaction({
                   network: pNetwork,
                   onApprove: async () => {
+                    // Re-initialize progress cache for retry
+                    ledgerStakingProgressCache.params.set({
+                      totalSteps: steps.length,
+                      onComplete: () => {
+                        // Progress screen will auto-dismiss on completion
+                      },
+                      onCancel: () => {
+                        // User cancelled from progress screen
+                      }
+                    })
+
+                    ledgerStakingProgressCache.state.set({
+                      currentStep: 0,
+                      currentOperation: null
+                    })
+
+                    // Navigate to progress screen
+                    setTimeout(() => {
+                      // @ts-ignore TODO: make routes typesafe
+                      navigate('/ledgerStakingProgress')
+                    }, 100)
+
                     performRetry()
                   },
                   onReject: () => {
@@ -350,7 +373,7 @@ const StakeConfirmScreen = (): JSX.Element => {
         ]
       })
     },
-    [activeWallet?.type, handleDismiss, pNetwork]
+    [activeWallet?.type, handleDismiss, navigate, pNetwork, steps.length]
   )
 
   const { issueDelegation, isPending: isIssueDelegationPending } =
@@ -388,6 +411,30 @@ const StakeConfirmScreen = (): JSX.Element => {
         showLedgerReviewTransaction({
           network: pNetwork,
           onApprove: async () => {
+            // Initialize progress cache and show progress screen
+            ledgerStakingProgressCache.params.set({
+              totalSteps: steps.length,
+              onComplete: () => {
+                // Progress screen will auto-dismiss on completion
+              },
+              onCancel: () => {
+                // User cancelled from progress screen
+              }
+            })
+
+            // Initialize progress state
+            ledgerStakingProgressCache.state.set({
+              currentStep: 0,
+              currentOperation: null
+            })
+
+            // Navigate to progress screen
+            setTimeout(() => {
+              // @ts-ignore TODO: make routes typesafe
+              navigate('/ledgerStakingProgress')
+            }, 100)
+
+            // Start the delegation process
             performDelegation()
           },
           onReject: () => {
@@ -402,7 +449,9 @@ const StakeConfirmScreen = (): JSX.Element => {
       issueDelegation,
       isLedgerWallet,
       minStartTime,
+      navigate,
       pNetwork,
+      steps.length,
       validatedStakingEndTime,
       validator
     ]
