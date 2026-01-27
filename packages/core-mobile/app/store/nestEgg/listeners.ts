@@ -4,8 +4,8 @@ import { waitForInteractions } from 'common/utils/waitForInteractions'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import {
-  selectHasQualifiedForNestEgg,
   selectHasAcknowledgedNestEggQualification,
+  selectHasQualifiedForNestEgg,
   setQualified
 } from 'store/nestEgg'
 import { selectIsNestEggEligible } from 'store/posthog'
@@ -56,10 +56,6 @@ const handleSwapForNestEgg = async (
 
   // Check minimum swap amount ($10 USD)
   if (fromAmountUsd < MINIMUM_SWAP_AMOUNT_USD) {
-    AnalyticsService.capture('NestEggSwapBelowMinimum', {
-      fromAmountUsd,
-      minimumRequired: MINIMUM_SWAP_AMOUNT_USD
-    })
     return
   }
 
