@@ -48,6 +48,11 @@ const WalletCard = ({
     theme: { colors }
   } = useTheme()
 
+  console.log(
+    '------> Rendering WalletCard for wallet:',
+    wallet.accounts.map(a => a.account.name)
+  )
+
   const {
     getDropdownItems,
     handleDropdownSelect,
