@@ -2,7 +2,7 @@ import { TokenType } from '@avalabs/vm-module-types'
 import { LocalTokenWithBalance } from 'store/balance'
 import { useMemo } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { useCChainGasCost } from 'common/hooks/useCChainGasCost'
+import { useGasCost } from './useGasCost'
 
 type UseMaxDepositAmountParams = {
   token:
@@ -17,7 +17,7 @@ export const useMaxDepositAmount = ({
 }: UseMaxDepositAmountParams): {
   maxAmount: TokenUnit | undefined
 } => {
-  const { gasCost } = useCChainGasCost({ gasAmount })
+  const { gasCost } = useGasCost({ gasAmount })
 
   const maxAmount = useMemo(() => {
     if (!token) return undefined

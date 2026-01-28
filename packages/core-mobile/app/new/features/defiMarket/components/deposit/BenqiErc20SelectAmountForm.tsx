@@ -6,9 +6,9 @@ import { Address } from 'viem'
 import { hasEnoughAllowance } from 'features/swap/utils/evm/ensureAllowance'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { TokenType } from '@avalabs/vm-module-types'
-import { useCChainGasCost } from 'common/hooks/useCChainGasCost'
 import { DefiMarket, DepositAsset } from '../../types'
 import { APPROVE_GAS_AMOUNT, MINT_GAS_AMOUNT } from '../../consts'
+import { useGasCost } from '../../hooks/useGasCost'
 import { useBenqiDepositErc20 } from '../../hooks/benqi/useBenqiDepositErc20'
 import { SelectAmountFormBase } from '../SelectAmountFormBase'
 
@@ -31,10 +31,10 @@ export const BenqiErc20SelectAmountForm = ({
   }, [asset.token])
   const activeAccount = useSelector(selectActiveAccount)
   const address = activeAccount?.addressC
-  const { gasCost: mintGasCost } = useCChainGasCost({
+  const { gasCost: mintGasCost } = useGasCost({
     gasAmount: MINT_GAS_AMOUNT
   })
-  const { gasCost: approveGasCost } = useCChainGasCost({
+  const { gasCost: approveGasCost } = useGasCost({
     gasAmount: APPROVE_GAS_AMOUNT
   })
   const { benqiDepositErc20 } = useBenqiDepositErc20({
