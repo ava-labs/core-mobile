@@ -176,14 +176,9 @@ class AccountsService {
         Logger.error('Error getting XP addresses', error)
       }
 
-      const title =
-        walletType === WalletType.SEEDLESS
-          ? await SeedlessService.getAccountName(account.index)
-          : account.name
-
       reloadedAccounts[key] = {
         id: account.id,
-        name: title,
+        name: account.name,
         type: account.type,
         walletId: account.walletId,
         index: account.index,
