@@ -22,10 +22,10 @@ import { useSelector } from 'react-redux'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { useRouter } from 'expo-router'
 import { LedgerAppType } from 'services/ledger/types'
-import { LedgerConnectionCaption } from './LedgerConnectionCaption'
 import LedgerService from 'services/ledger/LedgerService'
 import { useLedgerWallet } from 'features/ledger/hooks/useLedgerWallet'
 import { useLedgerWalletMap } from 'features/ledger/store'
+import { LedgerConnectionCaption } from './LedgerConnectionCaption'
 
 export const AccountAddresses = ({
   account
@@ -203,7 +203,7 @@ const SolanaEnableButton = (): React.JSX.Element => {
         setIsSolanaAppOpen(false)
         try {
           LedgerService.ensureConnection(deviceForWallet?.deviceId || '')
-          await LedgerService.waitForApp(LedgerAppType.SOLANA, 5 * 60 * 1000) // timeout set to 5 minutes
+          await LedgerService.waitForApp(LedgerAppType.SOLANA)
           setIsSolanaAppOpen(true)
         } catch (error) {
           setIsSolanaAppOpen(false)

@@ -21,7 +21,7 @@ import { useHasXpAddresses } from './useHasXpAddresses'
 export function useCombinedPrimaryNetworks({
   hideEmptySolana = true
 }: {
-  hideEmptySolana: boolean
+  hideEmptySolana?: boolean
 }): {
   networks: Network[]
 } {

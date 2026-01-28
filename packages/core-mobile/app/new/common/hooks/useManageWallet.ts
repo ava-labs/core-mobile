@@ -76,7 +76,7 @@ export const useManageWallet = (
         setIsAvalancheAppOpen(false)
         try {
           LedgerService.ensureConnection(deviceForWallet?.deviceId || '')
-          await LedgerService.waitForApp(LedgerAppType.AVALANCHE, 5 * 60 * 1000) // timeout set to 5 minutes
+          await LedgerService.waitForApp(LedgerAppType.AVALANCHE) // timeout set to 30 seconds
           setIsAvalancheAppOpen(true)
         } catch (error) {
           setIsAvalancheAppOpen(false)

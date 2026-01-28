@@ -74,11 +74,7 @@ export default function SolanaConnectionScreen(): JSX.Element {
       // Get keys from service
       const solanaKeys = await LedgerService.getSolanaKeys(accounts.length)
 
-      if (
-        solanaKeys.length === 0 ||
-        deviceForWallet?.deviceId === undefined ||
-        isUpdatingWallet
-      ) {
+      if (solanaKeys.length === 0 || deviceForWallet?.deviceId === undefined) {
         Logger.info('Missing required data for Solana wallet update', {
           solanaKeysCount: solanaKeys.length,
           hasConnectedDeviceId: !!deviceForWallet?.deviceId,
