@@ -103,7 +103,6 @@ export const SwapScreen = (): JSX.Element => {
     error: swapError,
     swapStatus
   } = useSwapContext()
-  const [maxFromValue, setMaxFromValue] = useState<bigint | undefined>()
   const [fromTokenValue, setFromTokenValue] = useState<bigint>()
   const [toTokenValue, setToTokenValue] = useState<bigint>()
   const [localError, setLocalError] = useState<string>('')
@@ -119,8 +118,8 @@ export const SwapScreen = (): JSX.Element => {
 
   const { getNetwork } = useNetworks()
 
-  // Determine if current swap is on EVM or Solana
-  const isEvmSwap = fromToken?.networkChainId === cChainNetwork?.chainId
+  // Determine if current swap is on CChain or Solana
+  const isCChainSwap = fromToken?.networkChainId === cChainNetwork?.chainId
   const isSolanaSwap = fromToken?.networkChainId === solanaNetwork?.chainId
 
   // Get Solana provider for ATA checks
@@ -154,8 +153,10 @@ export const SwapScreen = (): JSX.Element => {
 
   // Calculate gas cost for C-Chain swaps
   // Use Markr's higher gas limit as conservative estimate since provider isn't known yet
+  // Disable periodic refetch to prevent gas cost changes from triggering validation errors
   const { gasCost: cChainGasCost } = useCChainGasCost({
-    gasAmount: MARKR_DEFAULT_GAS_LIMIT
+    gasAmount: MARKR_DEFAULT_GAS_LIMIT,
+    refetchInterval: false
   })
 
   // Calculate Solana gas cost (includes ATA fees and 1% buffer)
@@ -167,7 +168,7 @@ export const SwapScreen = (): JSX.Element => {
   })
 
   // Select appropriate gas cost based on network
-  const estimatedGasCost = isEvmSwap ? cChainGasCost : solanaGasCost
+  const estimatedGasCost = isCChainSwap ? cChainGasCost : solanaGasCost
 
   // Calculate maximum amount considering gas fees for native tokens
   const fromTokenMaximum = useMemo(
@@ -256,15 +257,34 @@ export const SwapScreen = (): JSX.Element => {
     if (fromTokenValue && fromTokenValue === 0n) {
       setLocalError('Please enter an amount')
     } else if (
-      maxFromValue !== undefined &&
+      fromToken?.balance !== undefined &&
       fromTokenValue !== undefined &&
-      fromTokenValue > maxFromValue
+      fromTokenValue > fromToken.balance
     ) {
       setLocalError('Amount exceeds available balance')
+    } else if (
+      // Check if native token swap can cover gas fees
+      fromToken &&
+      fromToken.type === TokenType.NATIVE &&
+      'decimals' in fromToken &&
+      fromToken.balance !== undefined &&
+      fromTokenValue !== undefined &&
+      estimatedGasCost !== undefined &&
+      fromTokenValue + estimatedGasCost > fromToken.balance
+    ) {
+      const decimals = (fromToken as { decimals: number }).decimals
+      const gasFeeFormatted = new TokenUnit(
+        estimatedGasCost,
+        decimals,
+        fromToken.symbol
+      ).toString()
+      setLocalError(
+        `Remaining ${fromToken.symbol} cannot cover gas fees: ${gasFeeFormatted} ${fromToken.symbol}`
+      )
     } else {
       setLocalError('')
     }
-  }, [fromTokenValue, maxFromValue])
+  }, [fromTokenValue, fromToken, estimatedGasCost])
 
   const applyFeeDeduction = useCallback(
     (amount: string, direction: SwapSide): bigint => {
@@ -305,12 +325,6 @@ export const SwapScreen = (): JSX.Element => {
     }
   }, [selectedQuote, selectedProvider, fromTokenValue, applyFeeDeduction])
 
-  const calculateMax = useCallback(() => {
-    if (!fromToken) return
-
-    setMaxFromValue(fromTokenMaximum)
-  }, [fromToken, fromTokenMaximum])
-
   const handleToggleTokens = useCallback(() => {
     if (
       tokensWithZeroBalance.some(
@@ -329,7 +343,6 @@ export const SwapScreen = (): JSX.Element => {
     setFromTokenValue(toTokenValue)
     setToTokenValue(undefined)
     toTokenValue && setAmount(toTokenValue)
-    setMaxFromValue(undefined)
   }, [
     fromToken,
     toToken,
@@ -632,7 +645,6 @@ export const SwapScreen = (): JSX.Element => {
 
   useEffect(validateInputs, [validateInputs])
   useEffect(applyQuote, [applyQuote])
-  useEffect(calculateMax, [calculateMax])
 
   const initialized = useRef(false)
   useEffect(setInitialTokensFx, [setInitialTokensFx])

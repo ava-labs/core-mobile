@@ -6,7 +6,7 @@ import NetworkFeeService from 'services/networkFee/NetworkFeeService'
 import Logger from 'utils/Logger'
 import { NetworkFees } from '@avalabs/vm-module-types'
 
-const REFETCH_INTERVAL = 30000 // 30 seconds
+const DEFAULT_REFETCH_INTERVAL = 30000 // 30 seconds
 
 const getQueryKey = (
   network: Network | undefined
@@ -32,7 +32,8 @@ export const prefetchNetworkFee = (network: Network | undefined): void => {
 }
 
 export const useNetworkFee = (
-  network: Network | undefined
+  network: Network | undefined,
+  options?: { refetchInterval?: number | false }
 ): UseQueryResult<NetworkFees | undefined> => {
   return useQuery({
     enabled: network !== undefined,
@@ -44,6 +45,6 @@ export const useNetworkFee = (
 
       return getQueryFn(network)()
     },
-    refetchInterval: REFETCH_INTERVAL
+    refetchInterval: options?.refetchInterval ?? DEFAULT_REFETCH_INTERVAL
   })
 }
