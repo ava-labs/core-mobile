@@ -221,7 +221,7 @@ export const TokenInputWidget = ({
                   onPress={token === undefined ? onSelectToken : undefined}>
                   <View
                     sx={{
-                      alignItems: 'flex-end',
+                      alignItems: 'stretch',
                       justifyContent: 'center',
                       flex: 1,
                       minHeight: 50

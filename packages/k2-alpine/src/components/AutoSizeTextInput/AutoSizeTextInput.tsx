@@ -325,7 +325,12 @@ export const AutoSizeTextInput = forwardRef<
             width: '100%',
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent:
+              textAlign === 'right'
+                ? 'flex-end'
+                : textAlign === 'left'
+                ? 'flex-start'
+                : 'center',
             gap: GAP_WIDTH
           }}>
           {renderPrefix()}
