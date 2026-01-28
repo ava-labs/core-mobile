@@ -19,13 +19,14 @@ export default async function warmup(
 }
 
 export async function restartAndUnlock() {
+  const appId = 'org.avalabs.corewallet'
   try {
-    await driver.terminateApp('org.avalabs.corewallet')
-    await driver.activateApp('org.avalabs.corewallet')
+    await driver.terminateApp(appId)
+    await driver.activateApp(appId)
     await onboardingPage.exitMetroAfterLogin()
   } catch (error) {
-    await driver.terminateApp('org.avalabs.corewallet.internal')
-    await driver.activateApp('org.avalabs.corewallet.internal')
+    await driver.terminateApp(appId + '.internal')
+    await driver.activateApp(appId + '.internal')
   }
   await onboardingPage.tapKeypadUpButton()
   await onboardingPage.tapZero()
