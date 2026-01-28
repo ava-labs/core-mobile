@@ -50,10 +50,6 @@ https://github.com/WalletConnect/walletconnect-utils/issues/171
 added isActive prop for useAnimatedSensor
 
 ### react-native-collapsible-tab-view+9.0.0-rc.patch
-
-perf improvement
-https://github.com/PedroBern/react-native-collapsible-tab-view/pull/461
-
 exposed toggleSyncScrollFrame using scrollResync ref for manually recomputing layout
 
 updated module to support react-native-reanimated 4 and react-native 0.81+

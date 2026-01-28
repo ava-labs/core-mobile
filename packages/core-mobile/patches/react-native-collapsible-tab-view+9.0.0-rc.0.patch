@@ -14,17 +14,6 @@ diff --git a/node_modules/react-native-collapsible-tab-view/src/Container.tsx b/
 index 9ec4cfe..4a97bec 100644
 --- a/node_modules/react-native-collapsible-tab-view/src/Container.tsx
 +++ b/node_modules/react-native-collapsible-tab-view/src/Container.tsx
-@@ -227,7 +227,9 @@ export const Container = React.memo(
-       const toggleSyncScrollFrame = (toggle: boolean) =>
-         syncScrollFrame.setActive(toggle)
-       const syncScrollFrame = useFrameCallback(({ timeSinceFirstFrame }) => {
--        syncCurrentTabScrollPosition()
-+        if (timeSinceFirstFrame % 100 === 0) {
-+          syncCurrentTabScrollPosition()
-+        }
-         if (timeSinceFirstFrame > 1500) {
-           scheduleOnRN(toggleSyncScrollFrame, false)
-         }
 @@ -343,9 +345,12 @@ export const Container = React.memo(
            getCurrentIndex: () => {
              return index.value
