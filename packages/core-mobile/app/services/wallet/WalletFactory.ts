@@ -83,6 +83,7 @@ class WalletFactory {
         }
 
         const ledgerData = JSON.parse(walletSecret.value)
+
         return new LedgerWallet(ledgerData)
       }
       default:

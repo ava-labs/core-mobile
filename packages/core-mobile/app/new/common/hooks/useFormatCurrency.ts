@@ -21,13 +21,15 @@ export function useFormatCurrency(): {
     ({
       amount,
       notation,
-      withoutCurrencySuffix = false
+      withoutCurrencySuffix = false,
+      showLessThanThreshold = false
     }: FormatCurrencyProps) => {
       const formattedText = _formatCurrency({
         amount,
         currency: selectedCurrency,
         boostSmallNumberPrecision: false,
-        notation
+        notation,
+        showLessThanThreshold
       })
 
       if (withoutCurrencySuffix && formattedText.endsWith(selectedCurrency)) {

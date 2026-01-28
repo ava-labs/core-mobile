@@ -134,7 +134,8 @@ export const SelectServiceProvider = ({
       const tokenAmountFixed = Math.trunc(tokenAmount * 1_000_000) / 1_000_000 // truncate to 6 decimal places
 
       const tokenUnitToDisplay =
-        network?.networkToken.decimals && token?.tokenWithBalance.symbol
+        network?.networkToken.decimals !== undefined &&
+        token?.tokenWithBalance.symbol
           ? new TokenUnit(
               tokenAmountFixed * 10 ** network.networkToken.decimals,
               network.networkToken.decimals,

@@ -173,5 +173,8 @@ export enum RequestContext {
   NON_CONTRACT_RECIPIENT_ADDRESS = 'nonContractRecipient',
 
   // used to signal VM-module retry for gasless C-chain sends
-  SHOULD_RETRY = 'shouldRetry'
+  SHOULD_RETRY = 'shouldRetry',
+
+  // used to signal that the in-app review logic should be triggered
+  IN_APP_REVIEW = 'inAppReview'
 }
