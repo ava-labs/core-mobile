@@ -59,6 +59,16 @@ const createTestStore = (
       }),
       settings: () => ({
         securityPrivacy: { coreAnalytics }
+      }),
+      account: () => ({
+        accounts: {
+          'test-account': {
+            index: 0,
+            name: 'Test Account',
+            addressC: '0xTestAddress'
+          }
+        },
+        activeAccountId: 'test-account'
       })
     },
     preloadedState: {
@@ -80,7 +90,11 @@ describe('nestEgg listeners', () => {
 
   describe('swapCompleted action', () => {
     it('should qualify user for C-Chain swap >= $10', async () => {
-      const store = createTestStore()
+      const store = createTestStore({
+        nestEggState: {
+          hasSeenCampaign: true // User has seen the campaign modal
+        }
+      })
 
       store.dispatch(
         swapCompleted({
@@ -103,7 +117,11 @@ describe('nestEgg listeners', () => {
     })
 
     it('should NOT qualify user for swap below $10', async () => {
-      const store = createTestStore()
+      const store = createTestStore({
+        nestEggState: {
+          hasSeenCampaign: true
+        }
+      })
 
       store.dispatch(
         swapCompleted({
@@ -123,7 +141,11 @@ describe('nestEgg listeners', () => {
     })
 
     it('should NOT qualify user for non-C-Chain swap', async () => {
-      const store = createTestStore()
+      const store = createTestStore({
+        nestEggState: {
+          hasSeenCampaign: true
+        }
+      })
 
       store.dispatch(
         swapCompleted({
@@ -240,7 +262,11 @@ describe('nestEgg listeners', () => {
     })
 
     it('should qualify exactly at $10 threshold', async () => {
-      const store = createTestStore()
+      const store = createTestStore({
+        nestEggState: {
+          hasSeenCampaign: true // User has seen the campaign modal
+        }
+      })
 
       store.dispatch(
         swapCompleted({
