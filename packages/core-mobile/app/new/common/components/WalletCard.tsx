@@ -54,8 +54,10 @@ const WalletCard = ({
     getDropdownItems,
     handleDropdownSelect,
     handleAddAccount: handleAddAccountToWallet,
-    isAddingAccount
-  } = useManageWallet()
+    isAddingAccount,
+    isLedger,
+    isAvalancheAppOpen
+  } = useManageWallet(wallet)
 
   const renderExpansionIcon = useCallback(() => {
     return (
