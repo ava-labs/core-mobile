@@ -56,8 +56,8 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
         isTestnet: !isDeveloperMode,
         walletId
       })
-      const mainnetAccount = isDeveloperMode ? acc : ledgerAccount
-      const testnetAccount = isDeveloperMode ? ledgerAccount : acc
+      const testnetAccount = isDeveloperMode ? acc : ledgerAccount
+      const mainnetAccount = isDeveloperMode ? ledgerAccount : acc
 
       thunkApi.dispatch(
         setLedgerAddresses({

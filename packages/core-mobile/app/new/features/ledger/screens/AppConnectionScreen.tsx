@@ -74,6 +74,7 @@ export default function AppConnectionScreen(): JSX.Element {
     }
   }, [isDeveloperMode])
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   const handleComplete = useCallback(async () => {
     Logger.info('handleComplete called', {
       hasAvalancheKeys: !!keys.avalancheKeys,
@@ -103,35 +104,37 @@ export default function AppConnectionScreen(): JSX.Element {
           bitcoinAddress: keys.bitcoinAddress
         })
 
-        const oppositeKeys = await getOppositeKeys()
+        setTimeout(async () => {
+          const oppositeKeys = await getOppositeKeys()
 
-        const mainnet = isDeveloperMode
-          ? oppositeKeys
-          : {
-              addressBTC: keys.bitcoinAddress ?? '',
-              addressAVM: keys.avalancheKeys.addresses.avm,
-              addressPVM: keys.avalancheKeys.addresses.pvm
-            }
+          const mainnet = isDeveloperMode
+            ? oppositeKeys
+            : {
+                addressBTC: keys.bitcoinAddress ?? '',
+                addressAVM: keys.avalancheKeys?.addresses.avm || '',
+                addressPVM: keys.avalancheKeys?.addresses.pvm || ''
+              }
 
-        const testnet = isDeveloperMode
-          ? {
-              addressBTC: keys.bitcoinAddress ?? '',
-              addressAVM: keys.avalancheKeys.addresses.avm,
-              addressPVM: keys.avalancheKeys.addresses.pvm
-            }
-          : oppositeKeys
+          const testnet = isDeveloperMode
+            ? {
+                addressBTC: keys.bitcoinAddress ?? '',
+                addressAVM: keys.avalancheKeys?.addresses.avm || '',
+                addressPVM: keys.avalancheKeys?.addresses.pvm || ''
+              }
+            : oppositeKeys
 
-        dispatch(
-          setLedgerAddresses({
-            [accountId]: {
-              mainnet,
-              testnet,
-              walletId,
-              index: 0,
-              id: accountId
-            }
-          })
-        )
+          dispatch(
+            setLedgerAddresses({
+              [accountId]: {
+                mainnet,
+                testnet,
+                walletId,
+                index: 0,
+                id: accountId
+              }
+            })
+          )
+        }, 500)
 
         Logger.info(
           'Wallet created successfully, navigating to complete screen'

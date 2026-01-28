@@ -74,14 +74,16 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
   const { setLedgerWalletMap } = useLedgerWalletMap()
 
   const createLedgerWallet = useCallback(
-    async (options: WalletCreationOptions) => {
-      const walletId = await _createLedgerWallet(options)
+    async (
+      options: WalletCreationOptions
+    ): Promise<{ walletId: string; accountId: string }> => {
+      const { walletId, accountId } = await _createLedgerWallet(options)
       setLedgerWalletMap(
         walletId,
         options.deviceId,
         options.deviceName || 'Ledger Device'
       )
-      return walletId
+      return { walletId, accountId }
     },
     [_createLedgerWallet, setLedgerWalletMap]
   )
