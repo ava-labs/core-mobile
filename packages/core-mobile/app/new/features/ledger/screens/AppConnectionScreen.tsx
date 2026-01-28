@@ -104,6 +104,8 @@ export default function AppConnectionScreen(): JSX.Element {
           bitcoinAddress: keys.bitcoinAddress
         })
 
+        // TODO: implement await/retry logic for any ledger APDU commands
+        // that could fail due to transport race conditions
         setTimeout(async () => {
           const oppositeKeys = await getOppositeKeys()
 
