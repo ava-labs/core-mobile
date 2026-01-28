@@ -202,9 +202,9 @@ export const AutoSizeTextInput = forwardRef<
         const newWidth = e.nativeEvent.layout.width
         const widthDiff = Math.abs(newWidth - prevContainerWidthRef.current)
 
-        // Only recalculate if width changed significantly
-        // This prevents feedback loop from minor layout changes
-        if (widthDiff >= MIN_WIDTH_CHANGE_FOR_RECALC) {
+        // Ignore minor width changes caused by font size adjustments
+        // Only respond to significant layout changes (e.g., focus/blur, screen rotation)
+        if (widthDiff >= LAYOUT_CHANGE_THRESHOLD) {
           prevContainerWidthRef.current = newWidth
           setContainerWidth(newWidth)
 
@@ -384,6 +384,6 @@ export const AutoSizeTextInput = forwardRef<
 
 const GAP_WIDTH = 4
 
-// Minimum width change to trigger font size recalculation
-// Prevents feedback loop from minor layout changes due to font size adjustments
-const MIN_WIDTH_CHANGE_FOR_RECALC = 10
+// Threshold to distinguish real layout changes (focus/blur, rotation) from
+// minor fluctuations caused by font size adjustments
+const LAYOUT_CHANGE_THRESHOLD = 10
