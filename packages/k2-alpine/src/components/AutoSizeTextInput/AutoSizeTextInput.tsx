@@ -2,6 +2,7 @@ import { SxProp } from 'dripsy'
 import React, {
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useRef,
   useState
@@ -89,6 +90,7 @@ export const AutoSizeTextInput = forwardRef<
     const [containerWidth, setContainerWidth] = useState(0)
     const [leftWidth, setLeftWidth] = useState(0)
     const [rightWidth, setRightWidth] = useState(0)
+    const [lastTextWidth, setLastTextWidth] = useState(0)
 
     const isFocused = useSharedValue(false)
 
@@ -97,7 +99,6 @@ export const AutoSizeTextInput = forwardRef<
       initialFontSize * suffixFontSizeMultiplier
     )
     const inputRef = useRef<TextInput>(null)
-    const lastTextRef = useRef<string>('')
 
     useImperativeHandle(ref, () => ({
       focus: () => inputRef.current?.focus(),
@@ -160,9 +161,12 @@ export const AutoSizeTextInput = forwardRef<
 
         if (availableWidth <= 0) return
 
+        // textWidth is measured at initialFontSize, so calculate new font size based on initialFontSize
         const ratio = availableWidth / textWidth
-        let newFontSize = Math.round(animatedFontSize.value * ratio)
-        let newSuffixFontSize = Math.round(animatedSuffixFontSize.value * ratio)
+        let newFontSize = Math.round(initialFontSize * ratio)
+        let newSuffixFontSize = Math.round(
+          initialFontSize * suffixFontSizeMultiplier * ratio
+        )
         newFontSize = Math.max(10, Math.min(initialFontSize, newFontSize))
         newSuffixFontSize = Math.max(
           10,
@@ -210,20 +214,22 @@ export const AutoSizeTextInput = forwardRef<
       (e: LayoutChangeEvent): void => {
         if (!containerWidth) return
 
-        const currentText = props.value || ''
-        if (lastTextRef.current === currentText) {
-          return
-        }
-
-        lastTextRef.current = currentText
         const textWidth = e.nativeEvent.layout.width
 
         if (textWidth > 0) {
+          setLastTextWidth(textWidth)
           calculateAndUpdateFontSize(textWidth)
         }
       },
-      [containerWidth, props.value, calculateAndUpdateFontSize]
+      [containerWidth, calculateAndUpdateFontSize]
     )
+
+    // Recalculate font size when containerWidth changes (e.g., after blur)
+    useEffect(() => {
+      if (containerWidth > 0 && lastTextWidth > 0) {
+        calculateAndUpdateFontSize(lastTextWidth)
+      }
+    }, [containerWidth, lastTextWidth, calculateAndUpdateFontSize])
 
     const focusTextInput = useCallback(() => {
       inputRef.current?.focus()
@@ -337,27 +343,30 @@ export const AutoSizeTextInput = forwardRef<
           {renderSuffix()}
         </View>
 
-        {/* Hidden TextInput for capturing layout width */}
+        {/* Hidden TextInput for capturing layout width at initial font size */}
         <View
           style={{
             position: 'absolute',
             zIndex: 10
           }}>
           <Animated.Text
+            // Key forces re-mount when text changes, ensuring onLayout fires
+            key={props.value || ' '}
             pointerEvents="none"
             numberOfLines={1}
             onLayout={handleTextLayout}
-            style={[
-              {
-                flexShrink: 0,
-                flexWrap: 'nowrap',
-                fontFamily: 'Aeonik-Medium',
-                position: 'absolute',
-                textAlign,
-                opacity: 0
-              },
-              textStyle
-            ]}>
+            style={{
+              flexShrink: 0,
+              flexWrap: 'nowrap',
+              fontFamily: 'Aeonik-Medium',
+              position: 'absolute',
+              textAlign,
+              opacity: 0,
+              // Use fixed initialFontSize for accurate width measurement
+              // This prevents feedback loop where smaller font → smaller width → even smaller font
+              fontSize: initialFontSize,
+              lineHeight: initialFontSize * 1.1
+            }}>
             {props.value || ' '}
           </Animated.Text>
         </View>
