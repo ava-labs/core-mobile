@@ -11,15 +11,10 @@ import Logger from 'utils/Logger'
 import LedgerService from 'services/ledger/LedgerService'
 import { Button } from '@avalabs/k2-alpine'
 import { useSelector } from 'react-redux'
-import {
-  PrimaryAccount,
-  selectAccountsByWalletId,
-  selectActiveAccount
-} from 'store/account'
+import { PrimaryAccount, selectActiveAccount } from 'store/account'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { LedgerDerivationPathType } from 'services/ledger/types'
 import { WalletType } from 'services/wallet/types'
-import { RootState } from 'store/types'
 import { useLedgerWalletMap } from '../store'
 
 export default function SolanaConnectionScreen(): JSX.Element {
@@ -27,9 +22,6 @@ export default function SolanaConnectionScreen(): JSX.Element {
   const [isUpdatingWallet, setIsUpdatingWallet] = useState(false)
   const account = useSelector(selectActiveAccount)
   const wallet = useActiveWallet()
-  const accounts = useSelector((state: RootState) =>
-    selectAccountsByWalletId(state, account?.walletId ?? '')
-  )
   const { ledgerWalletMap } = useLedgerWalletMap()
   const [currentAppConnectionStep, setAppConnectionStep] = useState<
     AppConnectionStep.SOLANA_CONNECT | AppConnectionStep.SOLANA_LOADING
@@ -62,6 +54,9 @@ export default function SolanaConnectionScreen(): JSX.Element {
 
   const handleConnectSolana = useCallback(async () => {
     try {
+      if (account === undefined) {
+        throw new Error('No active account found')
+      }
       setIsUpdatingWallet(true)
       setAppConnectionStep(AppConnectionStep.SOLANA_LOADING)
 
@@ -72,7 +67,7 @@ export default function SolanaConnectionScreen(): JSX.Element {
       }
 
       // Get keys from service
-      const solanaKeys = await LedgerService.getSolanaKeys(accounts.length)
+      const solanaKeys = await LedgerService.getSolanaKeys(account.index)
 
       if (solanaKeys.length === 0 || deviceForWallet?.deviceId === undefined) {
         Logger.info('Missing required data for Solana wallet update', {
@@ -106,13 +101,12 @@ export default function SolanaConnectionScreen(): JSX.Element {
     }
   }, [
     account,
-    accounts.length,
     back,
     canGoBack,
     connectToDevice,
     connectedDeviceId,
-    deviceForWallet.deviceId,
-    deviceForWallet.deviceName,
+    deviceForWallet?.deviceId,
+    deviceForWallet?.deviceName,
     isUpdatingWallet,
     setConnectedDevice,
     updateSolanaForLedgerWallet,
