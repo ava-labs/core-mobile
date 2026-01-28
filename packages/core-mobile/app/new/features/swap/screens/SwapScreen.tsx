@@ -36,7 +36,6 @@ import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useSVMProvider } from 'hooks/networks/networkProviderHooks'
-import { useCChainGasCost } from 'common/hooks/useCChainGasCost'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Animated, {
@@ -56,12 +55,15 @@ import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio
 import { selectActiveAccount } from 'store/account'
 import {
   JUPITER_PARTNER_FEE_BPS,
+  MARKR_DEFAULT_GAS_LIMIT,
   MARKR_PARTNER_FEE_BPS,
   PARASWAP_PARTNER_FEE_BPS,
-  MARKR_DEFAULT_GAS_LIMIT,
   SOL_MINT
 } from '../consts'
 import { useSwapContext } from '../contexts/SwapContext'
+import { useCChainGasCost } from '../hooks/useCChainGasCost'
+import { useSolanaGasCost } from '../hooks/useSolanaGasCost'
+import { useSolanaTokenAta } from '../hooks/useSolanaTokenAta'
 import { useSwapRate } from '../hooks/useSwapRate'
 import {
   isJupiterQuote,
@@ -69,8 +71,6 @@ import {
   isParaswapQuote,
   SwapProviders
 } from '../types'
-import { useSolanaGasCost } from '../hooks/useSolanaGasCost'
-import { useSolanaTokenAta } from '../hooks/useSolanaTokenAta'
 import { getMaxSwapAmount } from '../utils/getMaxSwapAmount'
 
 export const SwapScreen = (): JSX.Element => {
@@ -118,7 +118,7 @@ export const SwapScreen = (): JSX.Element => {
 
   const { getNetwork } = useNetworks()
 
-  // Determine if current swap is on CChain or Solana
+  // Determine if current swap is on C-Chain or Solana
   const isCChainSwap = fromToken?.networkChainId === cChainNetwork?.chainId
   const isSolanaSwap = fromToken?.networkChainId === solanaNetwork?.chainId
 
@@ -151,15 +151,12 @@ export const SwapScreen = (): JSX.Element => {
     provider: solanaProvider
   })
 
-  // Calculate gas cost for C-Chain swaps
-  // Use Markr's higher gas limit as conservative estimate since provider isn't known yet
-  // Disable periodic refetch to prevent gas cost changes from triggering validation errors
+  // C-Chain gas cost (use Markr's higher gas limit as conservative estimate)
   const { gasCost: cChainGasCost } = useCChainGasCost({
-    gasAmount: MARKR_DEFAULT_GAS_LIMIT,
-    refetchInterval: false
+    gasLimit: MARKR_DEFAULT_GAS_LIMIT
   })
 
-  // Calculate Solana gas cost (includes ATA fees and 1% buffer)
+  // Solana gas cost
   const { gasCost: solanaGasCost } = useSolanaGasCost({
     fromToken: isSolanaSwap ? fromToken : undefined,
     toToken: isSolanaSwap ? toToken : undefined,
@@ -168,7 +165,11 @@ export const SwapScreen = (): JSX.Element => {
   })
 
   // Select appropriate gas cost based on network
-  const estimatedGasCost = isCChainSwap ? cChainGasCost : solanaGasCost
+  const estimatedGasCost = isCChainSwap
+    ? cChainGasCost
+    : isSolanaSwap
+    ? solanaGasCost
+    : undefined
 
   // Calculate maximum amount considering gas fees for native tokens
   const fromTokenMaximum = useMemo(

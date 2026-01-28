@@ -1,9 +1,8 @@
 import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
-import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
+import { bigintToBig } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
-  alpha,
   Button,
   Icons,
   SxProp,
@@ -15,8 +14,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Platform } from 'react-native'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Animated, {
   Easing,
   FadeIn,
@@ -63,7 +61,6 @@ export const TokenInputWidget = ({
   isLoadingAmount?: boolean
   autoFocus?: boolean
   valid?: boolean
-  // eslint-disable-next-line sonarjs/cognitive-complexity
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -144,18 +141,6 @@ export const TokenInputWidget = ({
     ])
   }, [maximum])
 
-  const nonEditableInputValue = useMemo(() => {
-    if (token?.decimals !== undefined && amount) {
-      const unit = new TokenUnit(amount, token.decimals, token?.symbol)
-      if (unit.lt(1)) {
-        return unit.toDisplay()
-      }
-      return unit.toDisplay({ asNumber: true })
-    }
-
-    return '0.00'
-  }, [amount, token?.decimals, token?.symbol])
-
   return (
     <View sx={sx}>
       <Animated.View
@@ -227,53 +212,25 @@ export const TokenInputWidget = ({
                       minHeight: 50
                     }}
                     pointerEvents={token === undefined ? 'none' : 'auto'}>
-                    {editable ? (
-                      <TokenAmountInput
-                        ref={tokenAmountInputRef}
-                        testID="token_amount_input_field"
-                        accessibilityLabel="token_amount_input_field"
-                        accessible={true}
-                        autoFocus={autoFocus}
-                        editable={editable}
-                        denomination={token?.decimals ?? 0}
-                        textAlign="right"
-                        valid={valid}
-                        value={amount}
-                        onChange={handleAmountChange}
-                        onFocus={handleFocus}
-                        onBlur={handleBlur}
-                        placeholder="0.00"
-                        style={{
-                          marginBottom: 8
-                        }}
-                      />
-                    ) : (
-                      <View
-                        style={{
-                          width: '100%',
-                          marginBottom: Platform.OS === 'ios' ? 12 : 0
-                        }}>
-                        <Text
-                          adjustsFontSizeToFit
-                          numberOfLines={1}
-                          style={{
-                            fontFamily: 'Aeonik-Medium',
-                            fontSize: 42,
-                            lineHeight: 42,
-                            width: '100%',
-                            textAlign: 'right',
-                            color: !amount
-                              ? alpha(colors.$textSecondary, 0.2)
-                              : !valid
-                              ? colors.$textDanger
-                              : editable
-                              ? colors.$textPrimary
-                              : colors.$textSecondary
-                          }}>
-                          {nonEditableInputValue}
-                        </Text>
-                      </View>
-                    )}
+                    <TokenAmountInput
+                      ref={tokenAmountInputRef}
+                      testID="token_amount_input_field"
+                      accessibilityLabel="token_amount_input_field"
+                      accessible={true}
+                      autoFocus={autoFocus}
+                      editable={editable}
+                      denomination={token?.decimals ?? 0}
+                      textAlign="right"
+                      valid={valid}
+                      value={amount}
+                      onChange={handleAmountChange}
+                      onFocus={handleFocus}
+                      onBlur={handleBlur}
+                      placeholder="0.00"
+                      style={{
+                        marginBottom: 8
+                      }}
+                    />
                   </View>
                 </TouchableOpacity>
               </View>
