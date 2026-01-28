@@ -27,7 +27,7 @@ const androidPath = isBitrise
   : path.resolve(androidLocalPath)
 const platformToRun = process.env.PLATFORM
 const isSmoke = process.env.IS_SMOKE === 'true'
-
+const isPerformance = process.env.IS_PERFORMANCE === 'true'
 const allCaps = [
   {
     platformName: 'Android',
@@ -94,7 +94,7 @@ export const config: WebdriverIO.Config = {
   // hoook before: make or get testRun before test
   before: async () => {
     const platform = driver.isAndroid ? 'Android' : 'iOS'
-    runId = await getTestRun(platform, isSmoke)
+    runId = await getTestRun(platform, isSmoke, isPerformance)
     console.log(`------------Starting test run------------`)
   },
 
