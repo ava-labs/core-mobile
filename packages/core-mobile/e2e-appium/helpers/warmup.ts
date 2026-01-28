@@ -1,5 +1,4 @@
 import onboardingPage from '../pages/onboarding.page'
-import { actions } from './actions'
 
 export default async function warmup(
   mnemonic = process.env.E2E_MNEMONIC as string
@@ -19,6 +18,15 @@ export default async function warmup(
   await onboardingPage.verifyLoggedIn()
 }
 
-export async function unlockLoggedIn(pin = '000000') {
-  await actions.tapNumberPad(pin)
+export async function restartAndUnlock() {
+  try {
+    await driver.terminateApp('org.avalabs.corewallet')
+    await driver.activateApp('org.avalabs.corewallet')
+    await onboardingPage.exitMetroAfterLogin()
+  } catch (error) {
+    await driver.terminateApp('org.avalabs.corewallet.internal')
+    await driver.activateApp('org.avalabs.corewallet.internal')
+  }
+  await onboardingPage.tapKeypadUpButton()
+  await onboardingPage.tapZero()
 }

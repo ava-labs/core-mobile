@@ -2,6 +2,7 @@ import assert from 'assert'
 import { actions } from '../helpers/actions'
 import { selectors } from '../helpers/selectors'
 import commonEls from '../locators/commonEls.loc'
+import portfolioPage from './portfolio.page'
 
 class CommonElsPage {
   get retryBtn() {
@@ -268,6 +269,22 @@ class CommonElsPage {
     return selectors.getBySomeText(commonEls.successfullyAdded)
   }
 
+  get loadingSpinnerVisible() {
+    return selectors.getById(commonEls.loadingSpinnerVisible)
+  }
+
+  get loadingSpinnerHidden() {
+    return selectors.getById(commonEls.loadingSpinnerHidden)
+  }
+
+  get inProgress() {
+    return selectors.getByText(commonEls.inProgress)
+  }
+
+  get keypadUpButton() {
+    return selectors.getById(commonEls.keypadUpButton)
+  }
+
   listItem(name: string) {
     return selectors.getById(`list_item__${name}`)
   }
@@ -497,6 +514,11 @@ class CommonElsPage {
   async tapCopy() {
     await actions.tap(this.copy)
     await actions.waitForDisplayed(this.copied)
+  }
+
+  async switchAccount(account = commonEls.secondAccount) {
+    await actions.tap(portfolioPage.portfolioAccountName)
+    await actions.tap(selectors.getById(`manage_accounts_list__${account}`))
   }
 }
 

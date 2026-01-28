@@ -116,6 +116,9 @@ export const BalanceHeader = ({
 
     return (
       <View
+        accessible={true}
+        testID="portfolio__balance_header"
+        accessibilityLabel={`${formattedBalance} ${currency}`}
         style={{
           flexDirection: 'column',
           gap: 5
