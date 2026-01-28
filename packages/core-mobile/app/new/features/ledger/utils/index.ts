@@ -1,21 +1,27 @@
 import { router } from 'expo-router'
 import { ChainId, Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { LedgerAppType } from 'services/ledger/types'
-import { ledgerParamsCache } from '../services/ledgerParamsCache'
+import {
+  ledgerParamsCache,
+  StakingProgressParams
+} from '../services/ledgerParamsCache'
 
 export const showLedgerReviewTransaction = ({
   network,
   onApprove,
-  onReject
+  onReject,
+  stakingProgress
 }: {
   network: Network
   onApprove: () => Promise<void>
   onReject: (message?: string) => void
+  stakingProgress?: StakingProgressParams
 }): void => {
   ledgerParamsCache.ledgerReviewTransactionParams.set({
     network,
     onApprove,
-    onReject
+    onReject,
+    stakingProgress
   })
 
   // add a slight delay to ensure navigation to the ledger review screen works reliably

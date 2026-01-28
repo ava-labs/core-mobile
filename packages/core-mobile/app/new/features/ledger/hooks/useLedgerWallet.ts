@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Alert } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectIsLedgerSupportBlocked } from 'store/posthog'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import LedgerService from 'services/ledger/LedgerService'
 import {
   LedgerDerivationPathType,
@@ -19,7 +20,9 @@ import { storeWallet } from 'store/wallet/thunks'
 import Logger from 'utils/Logger'
 import { Curve } from 'utils/publicKeys'
 import { uuid } from 'utils/uuid'
-import { CoreAccountType } from '@avalabs/types'
+import { AddressIndex, CoreAccountType } from '@avalabs/types'
+import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
+import { XPAddressDictionary } from 'store/account/types'
 import { DERIVATION_PATHS } from '../consts'
 
 export interface UseLedgerWalletReturn {
@@ -39,6 +42,7 @@ export interface UseLedgerWalletReturn {
 export function useLedgerWallet(): UseLedgerWalletReturn {
   const dispatch = useDispatch<AppThunkDispatch>()
   const isLedgerBlocked = useSelector(selectIsLedgerSupportBlocked)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [transportState, setTransportState] = useState<LedgerTransportState>({
     available: false,
     powered: false
@@ -211,6 +215,31 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 
         dispatch(setActiveWallet(newWalletId))
 
+        // Fetch XP addresses from profile service using the extended public key
+        let xpAddresses: AddressIndex[] = []
+        let xpAddressDictionary: XPAddressDictionary = {}
+        let hasMigratedXpAddresses = false
+
+        try {
+          const result = await getAddressesFromXpubXP({
+            isDeveloperMode,
+            walletId: newWalletId,
+            walletType: WalletType.LEDGER,
+            accountIndex: 0,
+            onlyWithActivity: true
+          })
+
+          xpAddresses = result.xpAddresses
+          xpAddressDictionary = result.xpAddressDictionary
+          hasMigratedXpAddresses = true
+        } catch (error) {
+          // Fall back to using just the primary address
+          xpAddresses = [
+            { address: formattedAddresses.avm.replace(/^X-/, ''), index: 0 }
+          ]
+          hasMigratedXpAddresses = false
+        }
+
         // For the first account (index 0), use the addresses we retrieved during setup
         // This avoids the complex derivation logic that returns empty addresses
         const newAccountId = uuid()
@@ -226,9 +255,9 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           addressPVM: formattedAddresses.pvm,
           addressSVM: solanaKeys[0]?.key || '',
           addressCoreEth: formattedAddresses.coreEth, // C-chain bech32 (C-avax1...), NOT hex
-          xpAddresses: [],
-          xpAddressDictionary: {},
-          hasMigratedXpAddresses: true // TODO: true when xpAddresses are successfully fetched
+          xpAddresses,
+          xpAddressDictionary,
+          hasMigratedXpAddresses
         }
 
         dispatch(setAccount(newAccount))
@@ -244,7 +273,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         setIsLoading(false)
       }
     },
-    [dispatch]
+    [dispatch, isDeveloperMode]
   )
 
   return {
