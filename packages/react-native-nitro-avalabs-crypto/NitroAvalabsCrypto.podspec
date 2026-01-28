@@ -24,7 +24,6 @@ Pod::Spec.new do |s|
 
   s.dependency 'React-jsi'
   s.dependency 'React-callinvoker'
-  s.dependency 'OpenSSL-Universal', '1.1.1100'
 
   load 'nitrogen/generated/ios/NitroAvalabsCrypto+autolinking.rb'
   add_nitrogen_files(s)

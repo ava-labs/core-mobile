@@ -602,6 +602,6 @@ dependencies {
   implementation "com.facebook.react:react-android"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
   implementation project(":react-native-nitro-modules")
-  // OpenSSL 3.3.2 - must match react-native-quick-crypto version
-  implementation 'io.github.ronickg:openssl:3.3.2'
+  // OpenSSL 3.6.0-1 - must match react-native-quick-crypto's version
+  implementation 'io.github.ronickg:openssl:3.6.0-1'
 }

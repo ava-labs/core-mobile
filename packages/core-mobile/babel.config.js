@@ -18,7 +18,10 @@ module.exports = {
         alias: {
           tests: './tests',
           features: './app/new/features',
-          common: './app/new/common'
+          common: './app/new/common',
+          crypto: 'react-native-quick-crypto',
+          stream: 'readable-stream',
+          buffer: '@craftzdog/react-native-buffer'
         }
       }
     ],
