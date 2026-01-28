@@ -75,16 +75,8 @@ class SeedlessService {
     try {
       const keys = await this.getSessionKeysList(Secp256k1.Ava)
       const metadata = this.getKeyInfo(keys, accountIndex)?.metadata
-
-      console.log(
-        '------> getAccountName:metadata',
-        this.getAccountNameInMetadata(metadata),
-        'for accountIndex:',
-        accountIndex
-      )
       return this.getAccountNameInMetadata(metadata)
     } catch (error) {
-      console.log('------> Failed to get name for the account index', error)
       Logger.warn('Failed to get name for the account index', error)
     }
   }
