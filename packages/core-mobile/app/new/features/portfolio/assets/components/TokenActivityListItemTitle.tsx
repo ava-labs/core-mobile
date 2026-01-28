@@ -15,6 +15,7 @@ import { selectActiveAccount } from 'store/account'
 import { getAddressByNetwork } from 'store/account/utils'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import Logger from 'utils/Logger'
+import { isTxSentFromAccount } from 'features/portfolio/utils'
 import { TokenActivityTransaction } from './TokenActivityListItem'
 
 export const TokenActivityListItemTitle = ({
@@ -30,6 +31,10 @@ export const TokenActivityListItemTitle = ({
   const activeAccount = useSelector(selectActiveAccount)
   const textVariant = 'buttonMedium'
   const { getNetwork } = useNetworks()
+
+  const isFromAccount = useMemo(() => {
+    return isTxSentFromAccount(tx.from, activeAccount)
+  }, [activeAccount, tx.from])
 
   const renderAmount = useCallback(
     (amount?: string): ReactNode => {
@@ -181,12 +186,12 @@ export const TokenActivityListItemTitle = ({
       default: {
         if (isCollectibleTransaction(tx)) {
           if (tx.tokens[0]?.type === TokenType.ERC1155) {
-            return [`NFT ${tx.isSender ? 'sent' : 'received'}`]
+            return [`NFT ${tx.isSender || isFromAccount ? 'sent' : 'received'}`]
           }
 
           return [
             `${tx.tokens[0]?.name} (${tx?.tokens[0]?.symbol}) ${
-              tx.isSender ? 'sent' : 'received'
+              tx.isSender || isFromAccount ? 'sent' : 'received'
             }`
           ]
         }
@@ -202,7 +207,7 @@ export const TokenActivityListItemTitle = ({
                 renderAmount(a1),
                 ' ',
                 s1,
-                tx.isSender ? ' sent' : ' received'
+                tx.isSender || isFromAccount ? ' sent' : ' received'
               ]
             }
 
@@ -215,7 +220,7 @@ export const TokenActivityListItemTitle = ({
                 renderAmount(a1),
                 ' ',
                 s1,
-                tx.isSender ? ' sent' : ' received'
+                tx.isSender || isFromAccount ? ' sent' : ' received'
               ]
             }
 
@@ -231,7 +236,7 @@ export const TokenActivityListItemTitle = ({
               renderAmount(a1),
               ' ',
               s1,
-              tx.isSender ? ' sent' : ' received'
+              tx.isSender || isFromAccount ? ' sent' : ' received'
             ]
           }
 
@@ -246,7 +251,8 @@ export const TokenActivityListItemTitle = ({
     getSwapTitle,
     renderAmount,
     sourceBlockchain,
-    targetBlockchain
+    targetBlockchain,
+    isFromAccount
   ])
 
   return (
