@@ -1066,6 +1066,52 @@ class LedgerService {
       xpAddress: xChainAddress
     }
   }
+
+  // Helper to build the “open app” APDU for a given app name
+  buildOpenAppApdu(appName: string): Buffer {
+    const cla = 0xe0
+    const ins = 0xd8
+    const p1 = 0x00
+    const p2 = 0x00
+
+    const nameBytes = Buffer.from(appName, 'ascii')
+    const lc = nameBytes.length // Lc = length of data
+
+    const apdu = Buffer.alloc(5 + lc)
+    apdu[0] = cla
+    apdu[1] = ins
+    apdu[2] = p1
+    apdu[3] = p2
+    apdu[4] = lc
+
+    nameBytes.copy(apdu as unknown as Uint8Array, 5)
+    return apdu
+  }
+
+  async openApp(app: LedgerAppType): Promise<void> {
+    try {
+      const apdu = this.buildOpenAppApdu(app)
+      const response = await this.transport.exchange(apdu)
+
+      //    Last 2 bytes are the status word (SW1, SW2), the rest is data.
+      const sw1 = response[response.length - 2]
+      const sw2 = response[response.length - 1]
+
+      // @ts-ignore
+      // eslint-disable-next-line no-bitwise
+      const statusCode = (sw1 << 8) | sw2
+
+      if (statusCode !== LedgerReturnCode.SUCCESS) {
+        const swHex = statusCode.toString(16).padStart(4, '0')
+        throw new Error(`Unexpected status word: 0x${swHex}`)
+      }
+
+      // Optional: use response.slice(0, -2) to read any data part.
+    } catch (error) {
+      Logger.error(`Failed to open ${app} app:`, error)
+      throw error
+    }
+  }
 }
 
 export default new LedgerService()
