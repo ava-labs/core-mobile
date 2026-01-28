@@ -3,7 +3,10 @@ import Transport from '@ledgerhq/hw-transport'
 import AppAvalanche from '@avalabs/hw-app-avalanche'
 import AppSolana from '@ledgerhq/hw-app-solana'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
-import { getAddressDerivationPath } from 'services/wallet/utils'
+import {
+  getAddressDerivationPath,
+  handleLedgerError
+} from 'services/wallet/utils'
 import { ChainName } from 'services/network/consts'
 import {
   getBtcAddressFromPubKey,
@@ -88,8 +91,9 @@ class LedgerService {
         )
         Logger.info(`Immediately detected app type: ${detectedAppType}`)
         this.currentAppType = detectedAppType
-      } catch (testError) {
+      } catch (error) {
         Logger.info('Immediate app info test failed, will rely on polling')
+        throw error
       }
     } catch (error) {
       Logger.error('Failed to connect to Ledger', error)
@@ -367,6 +371,9 @@ class LedgerService {
         return true
       }
     } catch (error) {
+      if (error instanceof Error) {
+        handleLedgerError(error)
+      }
       Logger.info('Error checking app, will continue polling')
     }
     return false

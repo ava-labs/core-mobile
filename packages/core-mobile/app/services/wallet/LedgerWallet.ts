@@ -52,7 +52,7 @@ import {
   BtcTransactionRequest,
   SolanaTransactionRequest
 } from './types'
-import { getAddressDerivationPath } from './utils'
+import { getAddressDerivationPath, handleLedgerError } from './utils'
 
 // Types are now imported from services/ledger/types
 
@@ -513,9 +513,10 @@ export class LedgerWallet implements Wallet {
       Logger.info('Successfully connected to Ledger device')
     } catch (error) {
       Logger.error('Failed to connect to Ledger device:', error)
-      throw new Error(
-        'Please make sure your Ledger device is nearby, unlocked, and Bluetooth is enabled.'
-      )
+      if (error instanceof Error) {
+        handleLedgerError(error)
+      }
+      throw error
     }
 
     // Now ensure Avalanche app is ready
@@ -528,9 +529,10 @@ export class LedgerWallet implements Wallet {
       Logger.info('Avalanche app is ready')
     } catch (error) {
       Logger.error('Failed to detect Avalanche app:', error)
-      throw new Error(
-        'Please open the Avalanche app on your Ledger device and try again.'
-      )
+      if (error instanceof Error) {
+        handleLedgerError(error)
+      }
+      throw error
     }
 
     // Get transport
@@ -621,6 +623,10 @@ export class LedgerWallet implements Wallet {
         Logger.info('Got signature from Ledger')
       } catch (error) {
         Logger.error('Failed to get signature from device:', error)
+
+        if (error instanceof Error) {
+          handleLedgerError(error)
+        }
         throw error
       }
 
@@ -641,17 +647,7 @@ export class LedgerWallet implements Wallet {
 
       // Provide more specific error messages
       if (error instanceof Error) {
-        if (error.message.includes('6a80')) {
-          throw new Error(
-            'Wrong app open. Please open the Avalanche app on your Ledger device.'
-          )
-        } else if (error.message.includes('6985')) {
-          throw new Error('Transaction rejected by user on Ledger device.')
-        } else if (error.message.includes('6a86')) {
-          throw new Error(
-            'Avalanche app not ready. Please ensure the Avalanche app is open and ready.'
-          )
-        }
+        handleLedgerError(error)
       }
 
       throw error
@@ -682,9 +678,10 @@ export class LedgerWallet implements Wallet {
       Logger.info('Successfully connected to Ledger device')
     } catch (error) {
       Logger.error('Failed to connect to Ledger device:', error)
-      throw new Error(
-        'Please make sure your Ledger device is nearby, unlocked, and Bluetooth is enabled.'
-      )
+      if (error instanceof Error) {
+        handleLedgerError(error)
+      }
+      throw error
     }
 
     // Now ensure Solana app is ready
@@ -697,9 +694,10 @@ export class LedgerWallet implements Wallet {
       Logger.info('Solana app is ready')
     } catch (error) {
       Logger.error('Failed to detect Solana app:', error)
-      throw new Error(
-        'Please open the Solana app on your Ledger device and try again.'
-      )
+      if (error instanceof Error) {
+        handleLedgerError(error)
+      }
+      throw error
     }
 
     // Get transport
@@ -764,17 +762,7 @@ export class LedgerWallet implements Wallet {
 
       // Provide more specific error messages
       if (error instanceof Error) {
-        if (error.message.includes('6a80')) {
-          throw new Error(
-            'Wrong app open. Please open the Solana app on your Ledger device.'
-          )
-        } else if (error.message.includes('6985')) {
-          throw new Error('Transaction rejected by user on Ledger device.')
-        } else if (error.message.includes('6a86')) {
-          throw new Error(
-            'Solana app not ready. Please ensure the Solana app is open and ready.'
-          )
-        }
+        handleLedgerError(error)
       }
 
       throw error

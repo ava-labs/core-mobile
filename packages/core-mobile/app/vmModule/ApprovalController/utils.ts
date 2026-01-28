@@ -4,7 +4,7 @@ import { RpcError } from '@avalabs/vm-module-types'
 import { getLedgerAppName } from 'features/ledger/utils'
 import { LEDGER_ERROR_CODES } from 'services/ledger/types'
 
-export const handleLedgerError = ({
+export const handleLedgerErrorAndShowAlert = ({
   error,
   network,
   onRetry,
