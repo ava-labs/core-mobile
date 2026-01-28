@@ -37,10 +37,6 @@ const baseConfig = {
     assetExts: assetExts.filter(ext => ext !== 'svg'),
     sourceExts: [...sourceExts, 'svg', 'cjs', 'mjs'],
     resolveRequest: (context, moduleName, platform) => {
-      if (moduleName === 'ws') {
-        // Ensure ws resolves to the browser entry that uses global WebSocket in RN.
-        return context.resolveRequest(context, 'ws/browser', platform)
-      }
       if (moduleName.startsWith('@ledgerhq/cryptoassets-evm-signatures')) {
         return context.resolveRequest(
           context,
