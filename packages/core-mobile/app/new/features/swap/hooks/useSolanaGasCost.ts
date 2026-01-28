@@ -1,11 +1,7 @@
 import { useMemo } from 'react'
 import { TokenType } from '@avalabs/vm-module-types'
 import { LocalTokenWithBalance } from 'store/balance'
-import {
-  SOL_BASE_TX_FEE_PER_SIG,
-  SOL_BASE_RENT_FEE,
-  SOL_FEE_BUFFER_PERCENT
-} from '../consts'
+import { SOL_BASE_TX_FEE_PER_SIG, SOL_BASE_RENT_FEE } from '../consts'
 
 type UseSolanaGasCostParams = {
   fromToken: LocalTokenWithBalance | undefined
@@ -62,10 +58,8 @@ export const useSolanaGasCost = ({
       }
     }
 
-    // Add 1% fee buffer (calculated from balance)
-    const feeBuffer = BigInt(
-      Math.floor(Number(fromToken.balance) * SOL_FEE_BUFFER_PERCENT)
-    )
+    // Add 1% fee buffer (calculated from balance using bigint arithmetic)
+    const feeBuffer = fromToken.balance / 100n
     totalCost += feeBuffer
 
     return totalCost

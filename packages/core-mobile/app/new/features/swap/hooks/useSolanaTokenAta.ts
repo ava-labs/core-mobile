@@ -7,6 +7,7 @@ import {
 } from '@solana-program/token'
 import { address } from '@solana/kit'
 import { LocalTokenWithBalance } from 'store/balance'
+import Logger from 'utils/Logger'
 
 type UseSolanaTokenAtaParams = {
   addressSVM: string | undefined
@@ -47,18 +48,23 @@ export const useSolanaTokenAta = ({
         return { exists: false }
       }
 
-      const [ataAddress] = await findAssociatedTokenPda({
-        mint: address(mintAddress),
-        owner: address(addressSVM),
-        tokenProgram: TOKEN_PROGRAM_ADDRESS
-      })
+      try {
+        const [ataAddress] = await findAssociatedTokenPda({
+          mint: address(mintAddress),
+          owner: address(addressSVM),
+          tokenProgram: TOKEN_PROGRAM_ADDRESS
+        })
 
-      const accountInfo = await provider
-        .getAccountInfo(ataAddress, { encoding: 'base64' })
-        .send()
+        const accountInfo = await provider
+          .getAccountInfo(ataAddress, { encoding: 'base64' })
+          .send()
 
-      return {
-        exists: Boolean(accountInfo.value)
+        return {
+          exists: Boolean(accountInfo.value)
+        }
+      } catch (error) {
+        Logger.error('Failed to check ATA existence', error)
+        return { exists: false }
       }
     },
     enabled: Boolean(mintAddress && addressSVM && provider)
