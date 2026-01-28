@@ -44,6 +44,9 @@ export const handleLedgerErrorAndShowAlert = ({
   } else if (message.includes(LEDGER_ERROR_CODES.USER_CANCELLED)) {
     // User cancelled, no need to show alert
     return
+  } else if (message.includes(LEDGER_ERROR_CODES.TRANSPORT_RACE_CONDITION)) {
+    description =
+      'Ledger is processing another request. Please try again later.'
   } else {
     description = message
   }
