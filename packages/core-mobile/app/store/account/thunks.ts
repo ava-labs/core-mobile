@@ -18,7 +18,8 @@ import {
   setAccount,
   setActiveAccountId,
   removeAccount,
-  selectActiveAccount
+  selectActiveAccount,
+  setLedgerAddresses
 } from './slice'
 
 export const addAccount = createAsyncThunk<void, string, ThunkApi>(
@@ -33,17 +34,51 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
     }
 
     const accountsByWalletId = selectAccountsByWalletId(state, walletId)
-
     const acc = await AccountsService.createNextAccount({
       name: `Account ${accountsByWalletId.length + 1}`,
       index: accountsByWalletId.length,
       walletType: wallet.type,
       isTestnet: isDeveloperMode,
-      walletId: walletId
+      walletId
     })
 
     thunkApi.dispatch(setAccount(acc))
     thunkApi.dispatch(setActiveAccountId(acc.id))
+
+    if (
+      wallet.type === WalletType.LEDGER ||
+      wallet.type === WalletType.LEDGER_LIVE
+    ) {
+      const ledgerAccount = await AccountsService.createNextAccount({
+        name: `Account ${accountsByWalletId.length + 1}`,
+        index: accountsByWalletId.length,
+        walletType: wallet.type,
+        isTestnet: !isDeveloperMode,
+        walletId
+      })
+      const mainnetAccount = isDeveloperMode ? acc : ledgerAccount
+      const testnetAccount = isDeveloperMode ? ledgerAccount : acc
+
+      thunkApi.dispatch(
+        setLedgerAddresses({
+          [acc.id]: {
+            mainnet: {
+              addressBTC: mainnetAccount.addressBTC,
+              addressAVM: mainnetAccount.addressAVM,
+              addressPVM: mainnetAccount.addressPVM
+            },
+            testnet: {
+              addressBTC: testnetAccount.addressBTC,
+              addressAVM: testnetAccount.addressAVM,
+              addressPVM: testnetAccount.addressPVM
+            },
+            walletId: wallet.id,
+            index: accountsByWalletId.length,
+            id: acc.id
+          }
+        })
+      )
+    }
 
     if (isDeveloperMode === false) {
       const allAccountsByWalletId = [...Object.values(accountsByWalletId), acc]

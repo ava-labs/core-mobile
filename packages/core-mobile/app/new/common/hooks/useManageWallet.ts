@@ -4,11 +4,14 @@ import {
   dismissAlertWithTextInput,
   showAlertWithTextInput
 } from 'common/utils/alertWithTextInput'
+import { useLedgerWallet } from 'features/ledger/hooks/useLedgerWallet'
 import { useLedgerWalletMap } from 'features/ledger/store'
 import { showSnackbar } from 'new/common/utils/toast'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import LedgerService from 'services/ledger/LedgerService'
+import { LedgerAppType } from 'services/ledger/types'
 import { WalletType } from 'services/wallet/types'
 import { addAccount, selectAccounts } from 'store/account'
 import { removeAccount, selectImportedAccounts } from 'store/account/slice'
@@ -23,11 +26,15 @@ import { removeWallet } from 'store/wallet/thunks'
 import { Wallet } from 'store/wallet/types'
 import Logger from 'utils/Logger'
 
-export const useManageWallet = (): {
+export const useManageWallet = (
+  wallet: Wallet
+): {
   handleAddAccount: (wallet: Wallet) => void
   getDropdownItems: (wallet: Wallet) => DropdownItem[]
   handleDropdownSelect: (action: string, wallet: Wallet) => void
   isAddingAccount: boolean
+  isAvalancheAppOpen: boolean
+  isLedger: boolean
 } => {
   const { removeLedgerWallet } = useLedgerWalletMap()
   const [isAddingAccount, setIsAddingAccount] = useState(false)
@@ -38,6 +45,21 @@ export const useManageWallet = (): {
   const accounts = useSelector(selectAccounts)
   const isMigratingActiveAccounts = useSelector(selectIsMigratingActiveAccounts)
 
+  const { ledgerWalletMap } = useLedgerWalletMap()
+  const { transportState } = useLedgerWallet()
+
+  const isLedger = useMemo(() => {
+    return (
+      wallet.type === WalletType.LEDGER_LIVE ||
+      wallet.type === WalletType.LEDGER
+    )
+  }, [wallet.type])
+
+  const deviceForWallet = useMemo(() => {
+    if (!wallet.id) return undefined
+    return ledgerWalletMap[wallet.id]
+  }, [ledgerWalletMap, wallet.id])
+
   const handleRemoveAllImportedAccounts = useCallback((): void => {
     importedAccounts.forEach(account => {
       dispatch(removeAccount(account.id))
@@ -45,6 +67,26 @@ export const useManageWallet = (): {
       dispatch(removeWallet(account.walletId))
     })
   }, [dispatch, importedAccounts])
+
+  const [isAvalancheAppOpen, setIsAvalancheAppOpen] = useState(false)
+
+  useEffect(() => {
+    async function checkApp(): Promise<void> {
+      if (isLedger && transportState.available) {
+        setIsAvalancheAppOpen(false)
+        try {
+          LedgerService.ensureConnection(deviceForWallet?.deviceId || '')
+          await LedgerService.waitForApp(LedgerAppType.AVALANCHE, 5 * 60 * 1000) // timeout set to 5 minutes
+          setIsAvalancheAppOpen(true)
+        } catch (error) {
+          setIsAvalancheAppOpen(false)
+        }
+      } else {
+        setIsAvalancheAppOpen(false)
+      }
+    }
+    checkApp()
+  }, [deviceForWallet?.deviceId, isLedger, transportState.available])
 
   const handleRenameWallet = useCallback(
     (wallet: Wallet): void => {
@@ -176,9 +218,9 @@ export const useManageWallet = (): {
         [
           WalletType.MNEMONIC,
           WalletType.SEEDLESS,
-          WalletType.LEDGER,
           WalletType.KEYSTONE
-        ].includes(wallet.type)
+        ].includes(wallet.type) ||
+        (isAvalancheAppOpen && isLedger)
       ) {
         baseItems.push({
           id: 'add_account',
@@ -205,7 +247,7 @@ export const useManageWallet = (): {
 
       return baseItems
     },
-    [canRemoveWallet, isMigratingActiveAccounts]
+    [canRemoveWallet, isAvalancheAppOpen, isLedger, isMigratingActiveAccounts]
   )
 
   const handleWalletMenuAction = useCallback(
@@ -244,6 +286,8 @@ export const useManageWallet = (): {
     isAddingAccount,
     handleAddAccount,
     getDropdownItems,
-    handleDropdownSelect
+    handleDropdownSelect,
+    isAvalancheAppOpen,
+    isLedger
   }
 }

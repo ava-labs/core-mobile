@@ -37,7 +37,7 @@ interface LedgerSetupContextValue {
   disconnectDevice: () => Promise<void>
   createLedgerWallet: (
     options: WalletCreationOptions & LedgerKeys
-  ) => Promise<string>
+  ) => Promise<{ walletId: string; accountId: string }>
   updateSolanaForLedgerWallet: (options: WalletUpdateOptions) => Promise<void>
   // Helper methods
   resetSetup: () => void

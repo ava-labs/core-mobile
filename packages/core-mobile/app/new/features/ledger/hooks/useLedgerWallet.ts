@@ -36,7 +36,7 @@ export interface UseLedgerWalletReturn {
   disconnectDevice: () => Promise<void>
   createLedgerWallet: (
     options: WalletCreationOptions & LedgerKeys
-  ) => Promise<string>
+  ) => Promise<{ walletId: string; accountId: string }>
   updateSolanaForLedgerWallet: (options: WalletUpdateOptions) => Promise<void>
 }
 
@@ -234,7 +234,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 
         Logger.info('Ledger wallet created successfully:', newWalletId)
         showSnackbar('Ledger wallet created successfully!')
-        return newWalletId
+        return { walletId: newWalletId, accountId: newAccountId }
       } catch (error) {
         Logger.error('Failed to create Ledger wallet:', error)
         throw error

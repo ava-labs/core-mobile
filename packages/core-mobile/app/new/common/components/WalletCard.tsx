@@ -12,7 +12,7 @@ import { useManageWallet } from 'common/hooks/useManageWallet'
 import { AccountDisplayData, WalletDisplayData } from 'common/types'
 import { AccountListItem } from 'features/wallets/components/AccountListItem'
 import { WalletBalance } from 'features/wallets/components/WalletBalance'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
   FlatList,
   LayoutChangeEvent,
@@ -22,11 +22,8 @@ import {
 } from 'react-native'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { WalletType } from 'services/wallet/types'
-import LedgerService from 'services/ledger/LedgerService'
 import { LedgerAppType } from 'services/ledger/types'
-import { useLedgerWalletMap } from 'features/ledger/store'
-import { selectActiveWalletId } from 'store/wallet/slice'
-import { useSelector } from 'react-redux'
+import { LedgerConnectionCaption } from 'features/accountSettings/components/LedgerConnectionCaption'
 import { DropdownMenu } from './DropdownMenu'
 import { WalletIcon } from './WalletIcon'
 
@@ -70,24 +67,6 @@ const WalletCard = ({
       />
     )
   }, [colors.$textSecondary, isExpanded])
-
-  const [isAvalancheAppOpen, setIsAvalancheAppOpen] = useState(false)
-
-  useEffect(() => {
-    async function checkApp(): Promise<void> {
-      if (isLedger) {
-        setIsAvalancheAppOpen(false)
-        try {
-          LedgerService.ensureConnection(deviceForWallet?.deviceId || '')
-          await LedgerService.waitForApp(LedgerAppType.AVALANCHE)
-          setIsAvalancheAppOpen(true)
-        } catch (error) {
-          setIsAvalancheAppOpen(false)
-        }
-      }
-    }
-    checkApp()
-  }, [deviceForWallet?.deviceId, isLedger])
 
   const renderAccountItem: ListRenderItem<AccountDisplayData> = useCallback(
     ({ item }) => {
@@ -167,26 +146,33 @@ const WalletCard = ({
           }}
         />
         {wallet.type !== WalletType.PRIVATE_KEY ? (
-          <Button
-            size="medium"
-            leftIcon={
-              isAddingAccount ? undefined : (
-                <Icons.Content.Add
-                  color={colors.$textPrimary}
-                  width={24}
-                  height={24}
-                />
-              )
-            }
-            type="secondary"
-            disabled={isAddingAccount || (isLedger && !isAvalancheAppOpen)}
-            onPress={() => handleAddAccountToWallet(wallet)}>
-            {isAddingAccount ? (
-              <ActivityIndicator size="small" color={colors.$textPrimary} />
-            ) : (
-              'Add account'
+          <View sx={{ gap: 16 }}>
+            {((isLedger && isAvalancheAppOpen) || !isLedger) && (
+              <Button
+                size="medium"
+                leftIcon={
+                  isAddingAccount ? undefined : (
+                    <Icons.Content.Add
+                      color={colors.$textPrimary}
+                      width={24}
+                      height={24}
+                    />
+                  )
+                }
+                type="secondary"
+                disabled={isAddingAccount}
+                onPress={() => handleAddAccountToWallet(wallet)}>
+                {isAddingAccount ? (
+                  <ActivityIndicator size="small" color={colors.$textPrimary} />
+                ) : (
+                  'Add account'
+                )}
+              </Button>
             )}
-          </Button>
+            {isLedger && !isAvalancheAppOpen && (
+              <LedgerConnectionCaption appType={LedgerAppType.AVALANCHE} />
+            )}
+          </View>
         ) : (
           <></>
         )}

@@ -21,6 +21,8 @@ import { WalletType } from 'services/wallet/types'
 import { useSelector } from 'react-redux'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { useRouter } from 'expo-router'
+import { LedgerAppType } from 'services/ledger/types'
+import { LedgerConnectionCaption } from './LedgerConnectionCaption'
 
 export const AccountAddresses = ({
   account
@@ -138,7 +140,7 @@ export const AccountAddresses = ({
         }}
       />
       {isMissingSolanaAddress && !isSolanaSupportBlocked && (
-        <LedgerSolanaConnectionCaption />
+        <LedgerConnectionCaption appType={LedgerAppType.SOLANA} />
       )}
     </View>
   )
@@ -206,18 +208,5 @@ const SolanaEnableButton = (): React.JSX.Element => {
         </Text>
       </TouchableOpacity>
     </View>
-  )
-}
-
-const LedgerSolanaConnectionCaption = (): React.JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
-  return (
-    <Text variant="caption" sx={{ color: colors.$textSecondary }}>
-      {
-        'Connect your Ledger device and open the Solana app to add an account. Make sure you connect the device that you used to create this wallet.'
-      }
-    </Text>
   )
 }

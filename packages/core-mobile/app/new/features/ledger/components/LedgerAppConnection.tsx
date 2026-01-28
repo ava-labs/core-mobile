@@ -44,6 +44,7 @@ interface LedgerAppConnectionProps {
   keys?: LedgerKeys
   appConnectionStep: AppConnectionStep
   skipSolana?: boolean
+  onlySolana?: boolean
 }
 
 export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
@@ -53,7 +54,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   connectedDeviceName,
   keys,
   appConnectionStep: currentStep,
-  skipSolana
+  skipSolana,
+  onlySolana = false
 }) => {
   const {
     theme: { colors }
@@ -262,7 +264,9 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
             />
           ),
           title: 'Connect to Solana App',
-          subtitle: `Close the Avalanche app and open the Solana app on your ${deviceName}, then press Continue when ready.`,
+          subtitle: onlySolana
+            ? `Open the Solana app on your ${deviceName}, then press Continue when ready.`
+            : `Close the Avalanche app and open the Solana app on your ${deviceName}, then press Continue when ready.`,
           showAnimation: false
         }
 

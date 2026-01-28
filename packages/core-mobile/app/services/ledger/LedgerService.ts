@@ -377,7 +377,7 @@ class LedgerService {
   // Wait for specific app to be open (Promise-based, works with polling)
   async waitForApp(
     appType: LedgerAppType,
-    timeoutMs = LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT
+    timeoutMs: number = LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const startTime = Date.now()
@@ -477,7 +477,7 @@ class LedgerService {
   }
 
   // Get extended public keys for BIP44 derivation
-  async getExtendedPublicKeys(): Promise<{
+  async getExtendedPublicKeys(accountIndex: number): Promise<{
     evm: ExtendedPublicKey
     avalanche: ExtendedPublicKey
   }> {
@@ -497,7 +497,7 @@ class LedgerService {
       // Get EVM extended public key (m/44'/60'/0')
       Logger.info('Getting EVM extended public key...')
       const evmPath = getAddressDerivationPath({
-        accountIndex: 0,
+        accountIndex,
         vmType: NetworkVMType.EVM
       }).replace('/0/0', '')
       Logger.info('EVM derivation path:', evmPath)
@@ -527,7 +527,7 @@ class LedgerService {
       // Get Avalanche extended public key (m/44'/9000'/0')
       Logger.info('Getting Avalanche extended public key...')
       const avalanchePath = getAddressDerivationPath({
-        accountIndex: 0,
+        accountIndex,
         vmType: NetworkVMType.AVM
       }).replace('/0/0', '')
       Logger.info('Avalanche derivation path:', avalanchePath)
@@ -560,7 +560,7 @@ class LedgerService {
       return {
         evm: {
           path: getAddressDerivationPath({
-            accountIndex: 0,
+            accountIndex,
             vmType: NetworkVMType.EVM
           }).replace('/0/0', ''),
           key: evmXpubResponse.publicKey.toString('hex'),
@@ -568,7 +568,7 @@ class LedgerService {
         },
         avalanche: {
           path: getAddressDerivationPath({
-            accountIndex: 0,
+            accountIndex,
             vmType: NetworkVMType.AVM
           }).replace('/0/0', ''),
           key: avalancheXpubResponse.publicKey.toString('hex'),
@@ -961,7 +961,7 @@ class LedgerService {
    * Get Solana keys from the connected Ledger device
    * @returns Array of Solana keys with derivation paths
    */
-  async getSolanaKeys(): Promise<PublicKeyInfo[]> {
+  async getSolanaKeys(accountIndex: number): Promise<PublicKeyInfo[]> {
     Logger.info('Getting Solana keys with passive app detection')
     await this.waitForApp(LedgerAppType.SOLANA)
 
@@ -971,7 +971,7 @@ class LedgerService {
 
     // Use the SDK's derivation path function (same as other chains)
     const derivationPath = getAddressDerivationPath({
-      accountIndex: 0,
+      accountIndex,
       vmType: NetworkVMType.SVM
     })
     // Remove 'm/' prefix if present (Ledger expects path without prefix)
@@ -996,16 +996,19 @@ class LedgerService {
    * Get Avalanche keys from the connected Ledger device
    * @returns Avalanche keys (addresses for display, xpubs for wallet creation)
    */
-  async getAvalancheKeys(isTestnet: boolean): Promise<AvalancheKey> {
+  async getAvalancheKeys(
+    accountIndex: number,
+    isTestnet: boolean
+  ): Promise<AvalancheKey> {
     Logger.info('Getting Avalanche keys')
 
     // Get addresses for display
-    const addresses = await this.getAllAddresses(0, 1, isTestnet)
+    const addresses = await this.getAllAddresses(accountIndex, 1, isTestnet)
 
     const evmAddress =
       addresses.find(addr => addr.network === ChainName.AVALANCHE_C_EVM)
         ?.address || ''
-    const xChainAddress =
+    const avmAddress =
       addresses.find(addr => addr.network === ChainName.AVALANCHE_X)?.address ||
       ''
     const pvmAddress =
@@ -1013,7 +1016,7 @@ class LedgerService {
       ''
 
     // Get extended public keys and convert to base58 xpub format
-    const extendedKeys = await this.getExtendedPublicKeys()
+    const extendedKeys = await this.getExtendedPublicKeys(accountIndex)
 
     const { bip32 } = await import('utils/bip32')
 
@@ -1034,7 +1037,7 @@ class LedgerService {
     return {
       addresses: {
         evm: evmAddress,
-        avm: xChainAddress,
+        avm: avmAddress,
         pvm: pvmAddress
       },
       xpubs: {
@@ -1049,11 +1052,14 @@ class LedgerService {
    * @param avalancheKeys The avalanche keys to derive addresses from
    * @returns Bitcoin and XP addresses
    */
-  async getBitcoinAndXPAddresses(isTestnet: boolean): Promise<{
+  async getBitcoinAndXPAddresses(
+    accountIndex: number,
+    isTestnet: boolean
+  ): Promise<{
     bitcoinAddress: string
     xpAddress: string
   }> {
-    const addresses = await this.getAllAddresses(0, 1, isTestnet)
+    const addresses = await this.getAllAddresses(accountIndex, 1, isTestnet)
 
     // Get addresses for display
     const xChainAddress =

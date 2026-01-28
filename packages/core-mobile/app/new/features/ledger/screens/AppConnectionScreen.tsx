@@ -14,9 +14,10 @@ import { Button, ButtonType } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { LedgerKeys } from 'services/ledger/types'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { showSnackbar } from 'common/utils/toast'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { setLedgerAddresses } from 'store/account'
 
 export default function AppConnectionScreen(): JSX.Element {
   const { push, back } = useRouter()
@@ -24,6 +25,7 @@ export default function AppConnectionScreen(): JSX.Element {
   const headerHeight = useHeaderHeight()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
+  const dispatch = useDispatch()
 
   // Local key state - managed only in this component
   const [keys, setKeys] = useState<LedgerKeys>({
@@ -46,6 +48,32 @@ export default function AppConnectionScreen(): JSX.Element {
     createLedgerWallet
   } = useLedgerSetupContext()
 
+  const getOppositeKeys = useCallback(async () => {
+    try {
+      const avalancheKeys = await LedgerService.getAvalancheKeys(
+        0,
+        !isDeveloperMode
+      )
+      const { bitcoinAddress } = await LedgerService.getBitcoinAndXPAddresses(
+        0,
+        !isDeveloperMode
+      )
+
+      return {
+        addressBTC: bitcoinAddress,
+        addressAVM: avalancheKeys.addresses.avm,
+        addressPVM: avalancheKeys.addresses.pvm
+      }
+    } catch (err) {
+      Logger.error('Failed to get opposite keys', err)
+      return {
+        addressBTC: '',
+        addressAVM: '',
+        addressPVM: ''
+      }
+    }
+  }, [isDeveloperMode])
+
   const handleComplete = useCallback(async () => {
     Logger.info('handleComplete called', {
       hasAvalancheKeys: !!keys.avalancheKeys,
@@ -66,7 +94,7 @@ export default function AppConnectionScreen(): JSX.Element {
       setIsCreatingWallet(true)
 
       try {
-        await createLedgerWallet({
+        const { walletId, accountId } = await createLedgerWallet({
           deviceId: connectedDeviceId,
           deviceName: connectedDeviceName,
           derivationPathType: selectedDerivationPath,
@@ -74,6 +102,36 @@ export default function AppConnectionScreen(): JSX.Element {
           solanaKeys: keys.solanaKeys,
           bitcoinAddress: keys.bitcoinAddress
         })
+
+        const oppositeKeys = await getOppositeKeys()
+
+        const mainnet = isDeveloperMode
+          ? oppositeKeys
+          : {
+              addressBTC: keys.bitcoinAddress ?? '',
+              addressAVM: keys.avalancheKeys.addresses.avm,
+              addressPVM: keys.avalancheKeys.addresses.pvm
+            }
+
+        const testnet = isDeveloperMode
+          ? {
+              addressBTC: keys.bitcoinAddress ?? '',
+              addressAVM: keys.avalancheKeys.addresses.avm,
+              addressPVM: keys.avalancheKeys.addresses.pvm
+            }
+          : oppositeKeys
+
+        dispatch(
+          setLedgerAddresses({
+            [accountId]: {
+              mainnet,
+              testnet,
+              walletId,
+              index: 0,
+              id: accountId
+            }
+          })
+        )
 
         Logger.info(
           'Wallet created successfully, navigating to complete screen'
@@ -115,6 +173,9 @@ export default function AppConnectionScreen(): JSX.Element {
     isCreatingWallet,
     createLedgerWallet,
     connectedDeviceName,
+    getOppositeKeys,
+    isDeveloperMode,
+    dispatch,
     push
   ])
 
@@ -214,10 +275,11 @@ export default function AppConnectionScreen(): JSX.Element {
 
       // Get keys from service
       const avalancheKeys = await LedgerService.getAvalancheKeys(
+        0,
         isDeveloperMode
       )
       const { bitcoinAddress, xpAddress } =
-        await LedgerService.getBitcoinAndXPAddresses(isDeveloperMode)
+        await LedgerService.getBitcoinAndXPAddresses(0, isDeveloperMode)
 
       // Update local state
       setKeys(prev => ({
@@ -251,7 +313,7 @@ export default function AppConnectionScreen(): JSX.Element {
       setAppConnectionStep(AppConnectionStep.SOLANA_LOADING)
 
       // Get keys from service
-      const solanaKeys = await LedgerService.getSolanaKeys()
+      const solanaKeys = await LedgerService.getSolanaKeys(0)
 
       // Update local state
       setKeys(prev => ({
@@ -273,7 +335,7 @@ export default function AppConnectionScreen(): JSX.Element {
         [{ text: 'OK' }]
       )
     }
-  }, [setAppConnectionStep, setKeys])
+  }, [])
 
   const handleSkipSolana = useCallback(() => {
     // Skip Solana and proceed to complete step

@@ -32,9 +32,16 @@ import {
   setAccounts,
   setActiveAccountId,
   selectAccountsByWalletId,
-  selectActiveAccount
+  selectActiveAccount,
+  setLedgerAddresses,
+  selectLedgerAddressesByWalletId
 } from './slice'
-import { AccountCollection, Account, XPAddressDictionary } from './types'
+import {
+  AccountCollection,
+  Account,
+  XPAddressDictionary,
+  LedgerAddressesCollection
+} from './types'
 import {
   canMigrateActiveAccounts,
   deriveMissingSeedlessSessionKeys,
@@ -118,6 +125,40 @@ const initAccounts = async (
     listenerApi.dispatch(setActiveAccountId(firstAccountId))
   }
 
+  if (
+    activeWallet.type === WalletType.LEDGER ||
+    activeWallet.type === WalletType.LEDGER_LIVE
+  ) {
+    const ledgerAccount = await AccountsService.createNextAccount({
+      index: 0,
+      walletType: activeWallet.type,
+      isTestnet: !isDeveloperMode,
+      walletId: activeWallet.id,
+      name
+    })
+    const mainnetAccount = isDeveloperMode ? acc : ledgerAccount
+    const testnetAccount = isDeveloperMode ? ledgerAccount : acc
+    listenerApi.dispatch(
+      setLedgerAddresses({
+        [acc.id]: {
+          mainnet: {
+            addressBTC: mainnetAccount.addressBTC,
+            addressAVM: mainnetAccount.addressAVM,
+            addressPVM: mainnetAccount.addressPVM
+          },
+          testnet: {
+            addressBTC: testnetAccount.addressBTC,
+            addressAVM: testnetAccount.addressAVM,
+            addressPVM: testnetAccount.addressPVM
+          },
+          walletId: activeWallet.id,
+          index: 0,
+          id: acc.id
+        }
+      })
+    )
+  }
+
   const accountValues = Object.values(accounts)
   if (activeWallet.type === WalletType.SEEDLESS) {
     // setting wallet name
@@ -182,14 +223,21 @@ const reloadAccounts = async (
   const wallets = selectWallets(state)
   for (const wallet of Object.values(wallets)) {
     const accounts = selectAccountsByWalletId(state, wallet.id)
+    const ledgerAddresses = selectLedgerAddressesByWalletId(state, wallet.id)
     //convert accounts to AccountCollection
     const accountsCollection: AccountCollection = {}
     for (const account of accounts) {
       accountsCollection[account.id] = account
     }
 
+    const ledgerAddressesCollection: LedgerAddressesCollection = {}
+    for (const addresses of ledgerAddresses) {
+      ledgerAddressesCollection[addresses.id] = addresses
+    }
+
     const reloadedAccounts = await AccountsService.reloadAccounts({
       accounts: accountsCollection,
+      ledgerAddressesCollection,
       isTestnet: isDeveloperMode,
       walletId: wallet.id,
       walletType: wallet.type
