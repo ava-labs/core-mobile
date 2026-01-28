@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { SigningData } from '@avalabs/vm-module-types'
 import { useSelector } from 'react-redux'
-import { selectIsGaslessBlocked } from 'store/posthog'
+import {
+  selectIsGaslessBlocked,
+  selectIsGaslessInstantBlocked
+} from 'store/posthog'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import GaslessService from 'services/gasless/GaslessService'
@@ -36,6 +39,7 @@ export const useGasless = ({
   const [isGaslessEligible, setIsGaslessEligible] = useState(false)
   const [gaslessEnabled, setGaslessEnabled] = useState(false)
   const isGaslessBlocked = useSelector(selectIsGaslessBlocked)
+  const isGaslessInstantBlocked = useSelector(selectIsGaslessInstantBlocked)
   const [gaslessError, setGaslessError] = useState<string | null>(null)
 
   const shouldShowGaslessSwitch = useMemo(() => {
@@ -91,7 +95,8 @@ export const useGasless = ({
           signingData,
           addressFrom,
           maxFeePerGas,
-          provider
+          provider,
+          waitForConfirmation: isGaslessInstantBlocked
         })
       )
 

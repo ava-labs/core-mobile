@@ -150,8 +150,8 @@ export const TokenInputWidget = ({
   }, [maximum])
 
   const nonEditableInputValue = useMemo(() => {
-    if (token?.decimals && amount) {
-      const unit = new TokenUnit(amount, token?.decimals, token?.symbol)
+    if (token?.decimals !== undefined && amount) {
+      const unit = new TokenUnit(amount, token.decimals, token?.symbol)
       if (unit.lt(1)) {
         return unit.toDisplay()
       }

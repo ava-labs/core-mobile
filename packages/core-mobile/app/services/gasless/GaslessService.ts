@@ -59,7 +59,7 @@ class GaslessService {
     addressFrom,
     provider,
     maxFeePerGas,
-    waitForConfirmation = false
+    waitForConfirmation
   }: FundTxParams): Promise<FundResult> => {
     const sdk = await this.getSdk()
     if (!sdk) {

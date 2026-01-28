@@ -82,12 +82,16 @@ class ApprovalController implements VmModuleApprovalController {
     explorerLink: string
     request: RpcRequest
   }): void {
-    const numericChainId = getChainIdFromCaip2(request.chainId)
+    const inAppReview = request.context?.[RequestContext.IN_APP_REVIEW]
 
-    // Run the app-review prompt flow after confetti finishes
-    setTimeout(() => {
-      promptForAppReviewAfterSuccessfulTransaction()
-    }, CONFETTI_DURATION_MS + 200)
+    if (inAppReview) {
+      // Run the app-review prompt flow after confetti finishes
+      setTimeout(() => {
+        promptForAppReviewAfterSuccessfulTransaction()
+      }, CONFETTI_DURATION_MS + 200)
+    }
+
+    const numericChainId = getChainIdFromCaip2(request.chainId)
 
     if (numericChainId && isAvalancheChainId(numericChainId)) {
       return // do not show success toast for avalanche transactions as we've already shown it in onTransactionPending

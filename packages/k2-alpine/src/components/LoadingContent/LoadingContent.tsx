@@ -1,36 +1,67 @@
 import { ActivityIndicator, View } from 'dripsy'
-import React, { useEffect } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
   withTiming
 } from 'react-native-reanimated'
+
+import { Pressable } from 'react-native'
 import { useTheme } from '../../hooks'
+import { Icons } from '../../theme/tokens/Icons'
+import { showAlert } from '../Alert/Alert'
+import { ShowAlertConfig } from '../Alert/types'
 
 interface LoadingContentProps {
   isLoading?: boolean
   children: React.ReactNode
   hideSpinner?: boolean
+  hasError?: boolean
   minOpacity?: number
   maxOpacity?: number
+  alertOptions?: ShowAlertConfig
+  renderError?: () => React.ReactNode
 }
 
 export const LoadingContent = ({
   isLoading,
   children,
   hideSpinner = false,
+  hasError = false,
   minOpacity = 0.3,
-  maxOpacity = 0.5
+  maxOpacity = 0.5,
+  alertOptions
 }: LoadingContentProps): JSX.Element => {
   const { theme } = useTheme()
 
   const indicatorStyle = useAnimatedStyle(() => {
     return {
-      width: withTiming(isLoading && !hideSpinner ? 20 : 0, { duration: 300 }),
-      opacity: withTiming(isLoading && !hideSpinner ? 1 : 0, { duration: 300 })
+      width: withTiming(isLoading && !hideSpinner ? 20 : 0, {
+        duration: 300
+      }),
+      opacity: withTiming(isLoading && !hideSpinner ? 1 : 0, {
+        duration: 300
+      })
     }
   })
+
+  const errorIndicatorStyle = useAnimatedStyle(() => {
+    return {
+      opacity: withTiming(isLoading ? 0 : 1, {
+        duration: 300
+      }),
+      left: withTiming(isLoading ? 28 : -28, {
+        duration: 300
+      })
+    }
+  })
+
+  const onErrorPress = useCallback(() => {
+    if (alertOptions) {
+      showAlert(alertOptions)
+    }
+  }, [alertOptions])
 
   return (
     <View
@@ -40,16 +71,28 @@ export const LoadingContent = ({
         flexDirection: 'row',
         alignItems: 'center'
       }}>
-      {!hideSpinner && (
+      <Animated.View
+        style={[
+          { position: 'absolute', left: 0, justifyContent: 'center' },
+          indicatorStyle
+        ]}>
+        <ActivityIndicator size="small" color={theme.colors.$textPrimary} />
+      </Animated.View>
+      {hasError && (
         <Animated.View
           style={[
-            { position: 'absolute', left: 0, justifyContent: 'center' },
-            indicatorStyle
+            { justifyContent: 'center', position: 'absolute' },
+            errorIndicatorStyle
           ]}>
-          <ActivityIndicator size="small" color={theme.colors.$textPrimary} />
+          <Pressable onPress={onErrorPress}>
+            <Icons.Alert.Error
+              color={theme.colors.$textDanger}
+              width={14}
+              height={14}
+            />
+          </Pressable>
         </Animated.View>
       )}
-
       <LoadingFadeInOut
         minOpacity={minOpacity}
         maxOpacity={maxOpacity}
@@ -64,11 +107,13 @@ export const LoadingFadeInOut = ({
   isLoading,
   minOpacity = 0.3,
   maxOpacity = 0.5,
+  paddingLeft = 28,
   children
 }: {
   isLoading: boolean
   minOpacity?: number
   maxOpacity?: number
+  paddingLeft?: number
   children: React.ReactNode
 }): JSX.Element => {
   const opacity = useSharedValue(maxOpacity)
@@ -88,7 +133,9 @@ export const LoadingFadeInOut = ({
   const animatedStyle = useAnimatedStyle(() => {
     return {
       opacity: opacity.value,
-      paddingLeft: withTiming(isLoading ? 28 : 0, { duration: 300 })
+      paddingLeft: withTiming(isLoading ? paddingLeft : 0, {
+        duration: 300
+      })
     }
   })
 
