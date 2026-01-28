@@ -2,7 +2,6 @@ import { SxProp } from 'dripsy'
 import React, {
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useRef,
   useState
@@ -90,7 +89,8 @@ export const AutoSizeTextInput = forwardRef<
     const [containerWidth, setContainerWidth] = useState(0)
     const [leftWidth, setLeftWidth] = useState(0)
     const [rightWidth, setRightWidth] = useState(0)
-    const [lastTextWidth, setLastTextWidth] = useState(0)
+    const lastTextWidthRef = useRef(0)
+    const prevContainerWidthRef = useRef(0)
 
     const isFocused = useSharedValue(false)
 
@@ -144,7 +144,7 @@ export const AutoSizeTextInput = forwardRef<
     })
 
     const calculateAndUpdateFontSize = useCallback(
-      (textWidth: number): void => {
+      (textWidth: number, currentContainerWidth: number): void => {
         // Calculate gaps: gap appears between elements that exist
         const hasLeft = !!(renderLeft || prefix)
         const hasRight = !!(renderRight || suffix)
@@ -153,7 +153,7 @@ export const AutoSizeTextInput = forwardRef<
 
         // Calculate available width for text input
         const availableWidth =
-          containerWidth -
+          currentContainerWidth -
           leftWidth -
           rightWidth -
           totalGapWidth -
@@ -188,7 +188,6 @@ export const AutoSizeTextInput = forwardRef<
         rightWidth,
         animatedFontSize,
         animatedSuffixFontSize,
-        containerWidth,
         prefix,
         suffix,
         initialFontSize,
@@ -198,9 +197,24 @@ export const AutoSizeTextInput = forwardRef<
       ]
     )
 
-    const handleLayout = useCallback((e: LayoutChangeEvent): void => {
-      setContainerWidth(e.nativeEvent.layout.width)
-    }, [])
+    const handleLayout = useCallback(
+      (e: LayoutChangeEvent): void => {
+        const newWidth = e.nativeEvent.layout.width
+        const widthDiff = Math.abs(newWidth - prevContainerWidthRef.current)
+
+        // Only recalculate if width changed significantly
+        // This prevents feedback loop from minor layout changes
+        if (widthDiff >= MIN_WIDTH_CHANGE_FOR_RECALC) {
+          prevContainerWidthRef.current = newWidth
+          setContainerWidth(newWidth)
+
+          if (lastTextWidthRef.current > 0) {
+            calculateAndUpdateFontSize(lastTextWidthRef.current, newWidth)
+          }
+        }
+      },
+      [calculateAndUpdateFontSize]
+    )
 
     const handleLeftLayout = useCallback((e: LayoutChangeEvent): void => {
       setLeftWidth(e.nativeEvent.layout.width)
@@ -217,19 +231,12 @@ export const AutoSizeTextInput = forwardRef<
         const textWidth = e.nativeEvent.layout.width
 
         if (textWidth > 0) {
-          setLastTextWidth(textWidth)
-          calculateAndUpdateFontSize(textWidth)
+          lastTextWidthRef.current = textWidth
+          calculateAndUpdateFontSize(textWidth, containerWidth)
         }
       },
       [containerWidth, calculateAndUpdateFontSize]
     )
-
-    // Recalculate font size when containerWidth changes (e.g., after blur)
-    useEffect(() => {
-      if (containerWidth > 0 && lastTextWidth > 0) {
-        calculateAndUpdateFontSize(lastTextWidth)
-      }
-    }, [containerWidth, lastTextWidth, calculateAndUpdateFontSize])
 
     const focusTextInput = useCallback(() => {
       inputRef.current?.focus()
@@ -376,3 +383,7 @@ export const AutoSizeTextInput = forwardRef<
 )
 
 const GAP_WIDTH = 4
+
+// Minimum width change to trigger font size recalculation
+// Prevents feedback loop from minor layout changes due to font size adjustments
+const MIN_WIDTH_CHANGE_FOR_RECALC = 10
