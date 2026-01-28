@@ -36,10 +36,10 @@ function NestEggSuccessScreen(): JSX.Element {
   // Trigger confetti animation when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      AnalyticsService.capture('NestEggSuccessModalViewed', {
+      AnalyticsService.captureWithEncryption('NestEggSuccessModalViewed', {
         addressC: currentAccount?.addressC ?? ''
       })
-    }, [])
+    }, [currentAccount?.addressC])
   )
 
   const lottieRef = useRef<LottieView>(null)

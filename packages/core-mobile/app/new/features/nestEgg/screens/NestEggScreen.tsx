@@ -55,7 +55,7 @@ function NestEggScreen(): JSX.Element {
   const currentAccount = useSelector(selectActiveAccount)
 
   useEffect(() => {
-    AnalyticsService.capture('NestEggCampaignModalViewed', {
+    AnalyticsService.captureWithEncryption('NestEggCampaignModalViewed', {
       addressC: currentAccount?.addressC ?? ''
     })
     return () => {
