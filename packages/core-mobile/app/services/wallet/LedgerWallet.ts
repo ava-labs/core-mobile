@@ -522,6 +522,9 @@ export class LedgerWallet implements Wallet {
     // Now ensure Avalanche app is ready
     Logger.info('Ensuring Avalanche app is ready...')
     try {
+      // send a command to open the Avalanche app
+      await LedgerService.openApp(LedgerAppType.AVALANCHE)
+
       await LedgerService.waitForApp(
         LedgerAppType.AVALANCHE,
         LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT
