@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react'
-import { useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Alert } from 'react-native'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import {
@@ -10,17 +10,18 @@ import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupC
 import Logger from 'utils/Logger'
 import LedgerService from 'services/ledger/LedgerService'
 import { Button } from '@avalabs/k2-alpine'
-import { useSelector } from 'react-redux'
-import { PrimaryAccount, selectActiveAccount } from 'store/account'
+import { PrimaryAccount, selectAccountById } from 'store/account'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { LedgerDerivationPathType } from 'services/ledger/types'
 import { WalletType } from 'services/wallet/types'
+import { useSelector } from 'react-redux'
 import { useLedgerWalletMap } from '../store'
 
 export default function SolanaConnectionScreen(): JSX.Element {
+  const { accountId } = useLocalSearchParams<{ accountId: string }>()
+  const account = useSelector(selectAccountById(accountId))
   const { back, canGoBack } = useRouter()
   const [isUpdatingWallet, setIsUpdatingWallet] = useState(false)
-  const account = useSelector(selectActiveAccount)
   const wallet = useActiveWallet()
   const { ledgerWalletMap } = useLedgerWalletMap()
   const [currentAppConnectionStep, setAppConnectionStep] = useState<
@@ -54,8 +55,8 @@ export default function SolanaConnectionScreen(): JSX.Element {
 
   const handleConnectSolana = useCallback(async () => {
     try {
-      if (account === undefined) {
-        throw new Error('No active account found')
+      if (!account) {
+        throw new Error('Account not found')
       }
       setIsUpdatingWallet(true)
       setAppConnectionStep(AppConnectionStep.SOLANA_LOADING)

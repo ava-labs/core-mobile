@@ -7,7 +7,7 @@ import {
   View,
   SCREEN_WIDTH
 } from '@avalabs/k2-alpine'
-import { Account, selectActiveAccount } from 'store/account'
+import { Account } from 'store/account'
 import { copyToClipboard } from 'common/utils/clipboard'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { useCombinedPrimaryNetworks } from 'common/hooks/useCombinedPrimaryNetworks'
@@ -36,13 +36,11 @@ export const AccountAddresses = ({
     theme: { colors }
   } = useTheme()
   const activeWallet = useActiveWallet()
-  const activeAccount = useSelector(selectActiveAccount)
   const { networks } = useCombinedPrimaryNetworks({ hideEmptySolana: false })
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
 
   const isMissingSolanaAddress =
-    activeAccount?.addressSVM === undefined ||
-    activeAccount?.addressSVM.length === 0
+    account?.addressSVM === undefined || account?.addressSVM.length === 0
 
   const isLedger = useMemo(() => {
     return (
@@ -99,7 +97,7 @@ export const AccountAddresses = ({
             network.vmName === NetworkVMType.SVM &&
             (address === undefined || address === '') &&
             !isSolanaSupportBlocked ? (
-              <SolanaEnableButton />
+              <SolanaEnableButton accountId={account.id} />
             ) : (
               <CopyButton
                 testID={`copy_btn__${network.chainName}`}
@@ -113,14 +111,15 @@ export const AccountAddresses = ({
       })
       .filter(item => item !== undefined)
   }, [
+    networks,
+    isSolanaSupportBlocked,
+    colors.$surfaceSecondary,
+    isLedger,
+    account.index,
+    account.addressPVM,
     account.addressBTC,
     account.addressC,
-    account.addressPVM,
     account.addressSVM,
-    isLedger,
-    colors.$surfaceSecondary,
-    isSolanaSupportBlocked,
-    networks,
     onCopyAddress
   ])
 
@@ -181,7 +180,11 @@ const CopyButton = ({
   )
 }
 
-const SolanaEnableButton = (): React.JSX.Element => {
+const SolanaEnableButton = ({
+  accountId
+}: {
+  accountId: string
+}): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
@@ -217,8 +220,8 @@ const SolanaEnableButton = (): React.JSX.Element => {
 
   const handleOnPress = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
-    navigate('/solanaConnection')
-  }, [navigate])
+    navigate({ pathname: '/solanaConnection', params: { accountId } })
+  }, [navigate, accountId])
 
   return (
     <View style={{ marginLeft: 16 }}>
