@@ -16,7 +16,8 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { selectWalletState } from 'store/app'
 import { WalletState } from 'store/app/types'
-import PolyfillCrypto from 'react-native-webview-crypto'
+
+const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
 
 export const unstable_settings = {
   initialRouteName: '(tabs)' // Ensure tabs are rendered first

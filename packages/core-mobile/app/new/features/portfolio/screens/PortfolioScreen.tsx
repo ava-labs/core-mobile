@@ -567,6 +567,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
         <BottomTabWrapper>{renderSegmentedControl()}</BottomTabWrapper>
       </View>
 
+      {/* 
+        This is a workaround to display the header background + separator on Android.
+        Android returns a header height of 0, so we need to display the background + separator manually.
+      */}
       {Platform.OS === 'android' && (
         <View
           style={{
