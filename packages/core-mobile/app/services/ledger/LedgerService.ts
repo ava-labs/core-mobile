@@ -20,6 +20,7 @@ import {
 } from 'new/features/ledger/consts'
 import { assertNotNull } from 'utils/assertions'
 import { Curve } from 'utils/publicKeys'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import {
   AddressInfo,
   ExtendedPublicKey,
@@ -31,9 +32,6 @@ import {
   AvalancheKey,
   LEDGER_ERROR_CODES
 } from './types'
-import { BlockchainId } from 'utils/caip2ChainIds'
-import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
-import { address } from '@solana/kit'
 
 class LedgerService {
   #transport: TransportBLE | null = null
