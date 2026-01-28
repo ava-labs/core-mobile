@@ -40,7 +40,8 @@ export const LEDGER_ERROR_CODES = {
   NOT_READY: '0x6a86',
   DEVICE_LOCKED: '0x5515',
   UPDATE_REQUIRED: '0x6e00',
-  USER_CANCELLED: 'USER_CANCELLED'
+  USER_CANCELLED: 'user_cancelled',
+  DISCONNECTED_DEVICE: 'disconnecteddevice'
 } as const
 
 export type LedgerReturnCodeType =
