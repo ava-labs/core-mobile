@@ -32,11 +32,24 @@ const baseConfig = {
       stream: require.resolve('./node_modules/stream-browserify'),
       '@noble/hashes': require.resolve('./node_modules/@noble/hashes')
     },
+    // Prevents VM modules from bundling their own copy of @avalabs/core-wallets-sdk
+    // which breaks instanceof checks for provider types
+    unstable_enablePackageExports: false,
     // sbmodern is needed for storybook
     resolverMainFields: ['sbmodern', 'react-native', 'browser', 'main'],
     assetExts: assetExts.filter(ext => ext !== 'svg'),
     sourceExts: [...sourceExts, 'svg', 'cjs', 'mjs'],
     resolveRequest: (context, moduleName, platform) => {
+      // Handle @buoy-gg subpath exports manually since unstable_enablePackageExports is false
+      const buoyMatch = moduleName.match(/^(@buoy-gg\/[^/]+)\/(.+)$/)
+      if (buoyMatch) {
+        const [, pkg, subpath] = buoyMatch
+        return context.resolveRequest(
+          context,
+          `${pkg}/lib/module/${subpath}/index.js`,
+          platform
+        )
+      }
       if (moduleName.startsWith('@ledgerhq/cryptoassets-evm-signatures')) {
         return context.resolveRequest(
           context,
