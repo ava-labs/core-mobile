@@ -115,7 +115,7 @@ export const AccountAddresses = ({
     isSolanaSupportBlocked,
     colors.$surfaceSecondary,
     isLedger,
-    account.index,
+    account.id,
     account.addressPVM,
     account.addressBTC,
     account.addressC,
