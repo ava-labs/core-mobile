@@ -1,6 +1,6 @@
 import { View, Button, useTheme, Logos, SafeAreaView } from '@avalabs/k2-alpine'
 import React, { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import {
   selectIsSeedlessOnboardingAppleBlocked,
   selectIsSeedlessOnboardingBlocked,
@@ -16,11 +16,9 @@ import { showSnackbar } from 'common/utils/toast'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { useLogoModal } from 'common/hooks/useLogoModal'
 import { useSeedlessRegister } from 'features/onboarding/hooks/useSeedlessRegister'
-import { setIsNewSeedlessUser } from 'store/nestEgg'
 
 export default function Signup(): JSX.Element {
   const { theme } = useTheme()
-  const dispatch = useDispatch()
   const { showLogoModal, hideLogoModal } = useLogoModal()
   const { setOidcAuth, setMfaMethods, resetSeedlessAuth } =
     useRecoveryMethodContext()
@@ -50,9 +48,6 @@ export default function Signup(): JSX.Element {
     oidcToken: string
     mfaId: string
   }): void => {
-    // This is a NEW seedless user (no existing account found)
-    // Set flag for Nest Egg campaign eligibility
-    dispatch(setIsNewSeedlessUser(true))
     setOidcAuth(oidcAuth)
     // @ts-ignore TODO: make routes typesafe
     router.navigate('/onboarding/seedless/termsAndConditions')
