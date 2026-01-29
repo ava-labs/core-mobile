@@ -169,7 +169,10 @@ export const handleLedgerError = (error: Error): void => {
     throw new Error(
       'Ledger device disconnected. Please ensure your Ledger device is nearby and Bluetooth is enabled.'
     )
-  } else if (message.includes(LEDGER_ERROR_CODES.TRANSPORT_RACE_CONDITION)) {
+  } else if (
+    message.includes(LEDGER_ERROR_CODES.TRANSPORT_RACE_CONDITION) ||
+    message.includes(LEDGER_ERROR_CODES.TRANSPORT_RACE_CONDITION_ALT)
+  ) {
     throw new Error(
       'Ledger is processing another request. Please try again later.'
     )
