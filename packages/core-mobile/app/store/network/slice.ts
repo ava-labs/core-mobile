@@ -15,7 +15,6 @@ import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { selectActiveAccount } from 'store/account'
 import { RootState } from '../types'
 import { ChainID, Networks, NetworkState } from './types'
-import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
 
 export const defaultNetwork = BITCOIN_NETWORK
 
