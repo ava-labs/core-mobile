@@ -168,11 +168,11 @@ export const SwapScreen = (): JSX.Element => {
   })
 
   // Select appropriate gas cost based on network
-  const estimatedGasCost = isCChainSwap
-    ? cChainGasCost
-    : isSolanaSwap
-    ? solanaGasCost
-    : undefined
+  const estimatedGasCost = useMemo(() => {
+    if (isCChainSwap) return cChainGasCost
+    if (isSolanaSwap) return solanaGasCost
+    return undefined
+  }, [isCChainSwap, isSolanaSwap, cChainGasCost, solanaGasCost])
 
   // Calculate maximum amount considering gas fees for native tokens
   const fromTokenMaximum = useMemo(

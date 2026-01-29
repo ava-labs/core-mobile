@@ -162,6 +162,8 @@ export const AutoSizeTextInput = forwardRef<
 
         if (availableWidth <= 0) return
 
+        // On iOS, the calculated font size doesn't fully fill the container width.
+        // This 1.1x correction factor increases the font size to better utilize the available space.
         const correctionFactor = Platform.OS === 'ios' ? 1.1 : 1
         const ratio = (availableWidth / textWidth) * correctionFactor
         let newFontSize = Math.round(animatedFontSize.value * ratio)
