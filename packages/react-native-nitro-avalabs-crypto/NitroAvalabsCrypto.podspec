@@ -24,6 +24,7 @@ Pod::Spec.new do |s|
 
   s.dependency 'React-jsi'
   s.dependency 'React-callinvoker'
+  s.dependency 'QuickCrypto'
 
   load 'nitrogen/generated/ios/NitroAvalabsCrypto+autolinking.rb'
   add_nitrogen_files(s)
@@ -47,6 +48,7 @@ Pod::Spec.new do |s|
   # Keep your C++/Swift flags (they are harmless)
   s.pod_target_xcconfig = {
     'HEADER_SEARCH_PATHS' => '$(inherited) $(PODS_TARGET_SRCROOT)/ios/secp-out/include "$(PODS_ROOT)/../node_modules/react-native-quick-crypto/OpenSSL.xcframework/ios-arm64/OpenSSL.framework/Headers" "$(PODS_ROOT)/../node_modules/react-native-quick-crypto/OpenSSL.xcframework/ios-arm64_x86_64-simulator/OpenSSL.framework/Headers"',
+    'FRAMEWORK_SEARCH_PATHS' => '$(inherited) "$(PODS_ROOT)/../node_modules/react-native-quick-crypto"',
     'CLANG_CXX_LIBRARY'               => 'libc++',
     'OTHER_CPLUSPLUSFLAGS'            => '$(inherited) -std=gnu++20',
     'CLANG_CXX_LANGUAGE_STANDARD'     => 'c++20',
