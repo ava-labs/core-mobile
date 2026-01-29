@@ -1093,7 +1093,7 @@ class LedgerService {
       const apdu = this.buildOpenAppApdu(app)
       const response = await this.transport.exchange(apdu)
 
-      //    Last 2 bytes are the status word (SW1, SW2), the rest is data.
+      // Last 2 bytes are the status word (SW1, SW2), the rest is data.
       const sw1 = response[response.length - 2]
       const sw2 = response[response.length - 1]
 
