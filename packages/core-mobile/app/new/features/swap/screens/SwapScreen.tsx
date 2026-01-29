@@ -51,6 +51,7 @@ import {
   selectIsSwapFeesJupiterBlocked
 } from 'store/posthog'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
+import { useCChainGasCost } from 'common/hooks/useCChainGasCost'
 import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio/hooks/useTokensWithZeroBalanceByNetworksForAccount'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -61,7 +62,6 @@ import {
   SOL_MINT
 } from '../consts'
 import { useSwapContext } from '../contexts/SwapContext'
-import { useCChainGasCost } from '../hooks/useCChainGasCost'
 import { useSolanaGasCost } from '../hooks/useSolanaGasCost'
 import { useSolanaTokenAta } from '../hooks/useSolanaTokenAta'
 import { useSwapRate } from '../hooks/useSwapRate'
@@ -152,8 +152,11 @@ export const SwapScreen = (): JSX.Element => {
   })
 
   // C-Chain gas cost (use Markr's higher gas limit as conservative estimate)
+  // Use isolated query key and disable refetch to prevent gas updates from affecting validation
   const { gasCost: cChainGasCost } = useCChainGasCost({
-    gasLimit: MARKR_DEFAULT_GAS_LIMIT
+    gasAmount: MARKR_DEFAULT_GAS_LIMIT,
+    keyPrefix: 'swap',
+    refetchInterval: false
   })
 
   // Solana gas cost
