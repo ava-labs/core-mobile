@@ -10,8 +10,8 @@ import { useCallback, useMemo, useState } from 'react'
 import { Transaction } from 'store/transaction'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import { fixUnknownTxType } from '../components/TokenActivityListItem'
 import { isTxSentFromAccount } from 'features/portfolio/utils'
+import { fixUnknownTxType } from '../components/TokenActivityListItem'
 
 export const useTokenDetailFilterAndSort = ({
   transactions,
