@@ -63,10 +63,14 @@ const LedgerReviewTransactionScreen = ({
   }, [deviceForWallet, handleReconnect])
 
   useEffect(() => {
-    if (deviceForWallet && isConnected) {
-      onApprove()
+    const handleApproveTransaction = async (): Promise<void> => {
+      if (deviceForWallet && isConnected) {
+        await LedgerService.openApp(ledgerAppName)
+        onApprove()
+      }
     }
-  }, [deviceForWallet, onApprove, isConnected])
+    handleApproveTransaction()
+  }, [deviceForWallet, onApprove, isConnected, ledgerAppName])
 
   useEffect(() => {
     if (isConnected && isCancelEnabled === false) {

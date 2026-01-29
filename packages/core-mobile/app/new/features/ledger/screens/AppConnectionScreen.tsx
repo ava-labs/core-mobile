@@ -12,7 +12,7 @@ import Logger from 'utils/Logger'
 import LedgerService from 'services/ledger/LedgerService'
 import { Button, ButtonType } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
-import { LedgerKeys } from 'services/ledger/types'
+import { LedgerAppType, LedgerKeys } from 'services/ledger/types'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { useSelector } from 'react-redux'
 import { showSnackbar } from 'common/utils/toast'
@@ -210,6 +210,8 @@ export default function AppConnectionScreen(): JSX.Element {
     try {
       setAppConnectionStep(AppConnectionStep.AVALANCHE_LOADING)
 
+      // Open Avalanche app before getting keys
+      await LedgerService.openApp(LedgerAppType.AVALANCHE)
       // Get keys from service
       const avalancheKeys = await LedgerService.getAvalancheKeys()
       const { bitcoinAddress, xpAddress } =
@@ -246,6 +248,8 @@ export default function AppConnectionScreen(): JSX.Element {
     try {
       setAppConnectionStep(AppConnectionStep.SOLANA_LOADING)
 
+      // Open Solana app before getting keys
+      await LedgerService.openApp(LedgerAppType.SOLANA)
       // Get keys from service
       const solanaKeys = await LedgerService.getSolanaKeys()
 
