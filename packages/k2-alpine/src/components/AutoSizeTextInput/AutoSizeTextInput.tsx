@@ -162,7 +162,8 @@ export const AutoSizeTextInput = forwardRef<
 
         if (availableWidth <= 0) return
 
-        const ratio = availableWidth / textWidth
+        const correctionFactor = Platform.OS === 'ios' ? 1.1 : 1
+        const ratio = (availableWidth / textWidth) * correctionFactor
         let newFontSize = Math.round(animatedFontSize.value * ratio)
         let newSuffixFontSize = Math.round(animatedSuffixFontSize.value * ratio)
         newFontSize = Math.max(10, Math.min(initialFontSize, newFontSize))
