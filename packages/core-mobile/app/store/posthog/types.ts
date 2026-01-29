@@ -47,7 +47,9 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.IN_APP_DEFI]: false,
   [FeatureGates.IN_APP_DEFI_IS_NEW]: true,
   [FeatureGates.IN_APP_REVIEW]: true,
-  [FeatureGates.GASLESS_INSTANT]: true
+  [FeatureGates.GASLESS_INSTANT]: true,
+  [FeatureGates.NEST_EGG_CAMPAIGN]: false,
+  [FeatureGates.NEST_EGG_NEW_SEEDLESS_ONLY]: false
 }
 
 export const initialState = {
