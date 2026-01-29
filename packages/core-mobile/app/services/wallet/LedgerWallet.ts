@@ -514,7 +514,7 @@ export class LedgerWallet implements Wallet {
     } catch (error) {
       Logger.error('Failed to connect to Ledger device:', error)
       if (error instanceof Error) {
-        handleLedgerError(error)
+        handleLedgerError({ error, network: _network })
       }
       throw error
     }
@@ -530,7 +530,7 @@ export class LedgerWallet implements Wallet {
     } catch (error) {
       Logger.error('Failed to detect Avalanche app:', error)
       if (error instanceof Error) {
-        handleLedgerError(error)
+        handleLedgerError({ error, network: _network })
       }
       throw error
     }
@@ -625,7 +625,7 @@ export class LedgerWallet implements Wallet {
         Logger.error('Failed to get signature from device:', error)
 
         if (error instanceof Error) {
-          handleLedgerError(error)
+          handleLedgerError({ error, network: _network })
         }
         throw error
       }
@@ -647,7 +647,7 @@ export class LedgerWallet implements Wallet {
 
       // Provide more specific error messages
       if (error instanceof Error) {
-        handleLedgerError(error)
+        handleLedgerError({ error, network: _network })
       }
 
       throw error
@@ -679,7 +679,7 @@ export class LedgerWallet implements Wallet {
     } catch (error) {
       Logger.error('Failed to connect to Ledger device:', error)
       if (error instanceof Error) {
-        handleLedgerError(error)
+        handleLedgerError({ error, network: _network })
       }
       throw error
     }
@@ -695,7 +695,7 @@ export class LedgerWallet implements Wallet {
     } catch (error) {
       Logger.error('Failed to detect Solana app:', error)
       if (error instanceof Error) {
-        handleLedgerError(error)
+        handleLedgerError({ error, network: _network })
       }
       throw error
     }
@@ -762,7 +762,7 @@ export class LedgerWallet implements Wallet {
 
       // Provide more specific error messages
       if (error instanceof Error) {
-        handleLedgerError(error)
+        handleLedgerError({ error, network: _network })
       }
 
       throw error

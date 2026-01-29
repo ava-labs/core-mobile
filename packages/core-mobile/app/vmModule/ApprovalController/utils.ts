@@ -33,7 +33,10 @@ export const handleLedgerErrorAndShowAlert = ({
   ) {
     title = 'Transaction rejected'
     description = 'Transaction rejected by user on Ledger device.'
-  } else if (lowercasedMessage.includes(LEDGER_ERROR_CODES.NOT_READY)) {
+  } else if (
+    lowercasedMessage.includes(LEDGER_ERROR_CODES.NOT_READY) ||
+    lowercasedMessage.includes(LEDGER_ERROR_CODES.COMMUNICATION_ERROR)
+  ) {
     title = 'App not ready'
     description = `Please ensure the ${ledgerAppName} app is open and ready`
   } else if (lowercasedMessage.includes(LEDGER_ERROR_CODES.DEVICE_LOCKED)) {

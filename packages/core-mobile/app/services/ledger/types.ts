@@ -37,6 +37,7 @@ export const LedgerReturnCode = {
 
 export const LEDGER_ERROR_CODES = {
   WRONG_APP: '0x6a80',
+  COMMUNICATION_ERROR: '0x6511',
   REJECTED: '0x6985',
   REJECTED_ALT: '0x6986',
   NOT_READY: '0x6a86',

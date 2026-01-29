@@ -8,7 +8,10 @@ import { sortUndefined } from 'common/utils/sortUndefined'
 import { isCollectibleTransaction } from 'features/activity/utils'
 import { useCallback, useMemo, useState } from 'react'
 import { Transaction } from 'store/transaction'
+import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
 import { fixUnknownTxType } from '../components/TokenActivityListItem'
+import { isTxSentFromAccount } from 'features/portfolio/utils'
 
 export const useTokenDetailFilterAndSort = ({
   transactions,
@@ -22,6 +25,7 @@ export const useTokenDetailFilterAndSort = ({
   sort: DropdownSelection
   resetFilter: () => void
 } => {
+  const account = useSelector(selectActiveAccount)
   const [selectedFilter, setSelectedFilter] = useState<TokenDetailFilter>(
     TokenDetailFilter.All
   )
@@ -39,6 +43,7 @@ export const useTokenDetailFilterAndSort = ({
       return []
     }
     return transactions.filter(tx => {
+      const isFromAccount = isTxSentFromAccount(tx.from, account)
       switch (selectedFilter) {
         case TokenDetailFilter.Imported:
           return tx.txType === PChainTransactionType.IMPORT_TX
@@ -57,7 +62,7 @@ export const useTokenDetailFilterAndSort = ({
           if (isCollectibleTransaction(tx)) {
             return !tx.isSender
           }
-          return fixUnknownTxType(tx) === TransactionType.RECEIVE
+          return fixUnknownTxType(tx, isFromAccount) === TransactionType.RECEIVE
         case TokenDetailFilter.Sent:
           if (tx.txType === PChainTransactionType.BASE_TX) {
             return tx.isOutgoing
@@ -65,13 +70,13 @@ export const useTokenDetailFilterAndSort = ({
           if (isCollectibleTransaction(tx)) {
             return tx.isSender
           }
-          return fixUnknownTxType(tx) === TransactionType.SEND
+          return fixUnknownTxType(tx, isFromAccount) === TransactionType.SEND
         case TokenDetailFilter.Bridge:
           return tx.txType === TransactionType.BRIDGE
         case TokenDetailFilter.Swap:
           return (
             tx.txType === TransactionType.SWAP ||
-            fixUnknownTxType(tx) === TransactionType.SWAP
+            fixUnknownTxType(tx, isFromAccount) === TransactionType.SWAP
           )
 
         default:

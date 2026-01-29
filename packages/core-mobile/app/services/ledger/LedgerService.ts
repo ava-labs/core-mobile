@@ -372,7 +372,7 @@ class LedgerService {
       }
     } catch (error) {
       if (error instanceof Error) {
-        handleLedgerError(error)
+        handleLedgerError({ error, appType })
       }
       Logger.info('Error checking app, will continue polling')
     }
