@@ -176,8 +176,7 @@ export const ScrollScreen = ({
             style={[
               headerStyle,
               {
-                gap: 8,
-                paddingHorizontal: 16
+                gap: 8
               }
             ]}>
             {title ? (
@@ -367,7 +366,7 @@ export const ScrollScreen = ({
         contentContainerStyle={[
           props?.contentContainerStyle,
           {
-            paddingBottom: insets.bottom + 32,
+            paddingBottom: 32,
             paddingTop: headerHeight
           }
         ]}
