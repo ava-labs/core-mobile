@@ -1,5 +1,5 @@
 import { throttle } from 'lodash'
-import { useCallback, useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { GestureResponderEvent, ViewStyle } from 'react-native'
 import { GestureTouchEvent } from 'react-native-gesture-handler'
 import {
@@ -35,11 +35,6 @@ export function usePressableGesture(
 } {
   const opacity = useSharedValue(1)
   const scale = useSharedValue(1)
-  const callbackRef = useRef(callback)
-  callbackRef.current = callback
-  const latestEventRef = useRef<
-    GestureResponderEvent | GestureTouchEvent | null
-  >(null)
   const isScrolling = useRef(false)
   const touchStartPosition = useRef({
     x: 0,
@@ -53,32 +48,16 @@ export function usePressableGesture(
     }
   })
 
-  const throttledCallbackRef = useRef(
-    throttle(
-      () => {
-        const cb = callbackRef.current
-        const event = latestEventRef.current
-        if (!cb || !event) return
-        cb(event as unknown as GestureResponderEvent)
-      },
-      1000,
-      {
-        leading: true,
-        trailing: false
-      }
-    )
-  )
-
-  useEffect(() => {
-    const throttled = throttledCallbackRef.current
-    return () => {
-      throttled.cancel()
+  const throttledCallback = throttle(
+    event => {
+      callback?.(event)
+    },
+    1000,
+    {
+      leading: true,
+      trailing: false
     }
-  }, [])
-
-  const invokeThrottledCallback = useCallback((): void => {
-    throttledCallbackRef.current()
-  }, [])
+  )
 
   const startAnimation = (): void => {
     'worklet'
@@ -147,16 +126,17 @@ export function usePressableGesture(
       resetAnimation()
       return
     }
-    latestEventRef.current = event
-    endAnimation()
+    endAnimation(event)
   }
 
-  const endAnimation = (): void => {
+  const endAnimation = (
+    event: GestureResponderEvent | GestureTouchEvent
+  ): void => {
     'worklet'
     opacity.value = withTiming(1, ANIMATED.TIMING_CONFIG)
     scale.value = withSpring(1, ANIMATED.SPRING_CONFIG, () => {
       if (callback) {
-        scheduleOnRN(invokeThrottledCallback)
+        scheduleOnRN(throttledCallback, event)
       }
     })
   }
