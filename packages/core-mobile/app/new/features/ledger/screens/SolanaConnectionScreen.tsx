@@ -79,14 +79,18 @@ export default function SolanaConnectionScreen(): JSX.Element {
         throw new Error('Missing required data for Solana wallet update')
       }
 
-      await updateSolanaForLedgerWallet({
-        deviceId: deviceForWallet.deviceId,
-        walletId: wallet?.id ?? '',
-        walletName: '',
-        walletType: wallet.type,
-        account: account as PrimaryAccount,
-        solanaKeys
-      })
+      if (wallet?.id && wallet?.name) {
+        await updateSolanaForLedgerWallet({
+          deviceId: deviceForWallet.deviceId,
+          walletId: wallet.id,
+          walletName: wallet.name,
+          walletType: wallet.type,
+          account: account as PrimaryAccount,
+          solanaKeys
+        })
+      } else {
+        Logger.info('Wallet ID or name is missing for Solana wallet update')
+      }
 
       canGoBack() && back()
     } catch (err) {
@@ -111,7 +115,8 @@ export default function SolanaConnectionScreen(): JSX.Element {
     isUpdatingWallet,
     setConnectedDevice,
     updateSolanaForLedgerWallet,
-    wallet?.id,
+    wallet.id,
+    wallet.name,
     wallet.type
   ])
 
