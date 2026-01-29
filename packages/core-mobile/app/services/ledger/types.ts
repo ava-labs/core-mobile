@@ -42,7 +42,9 @@ export const LEDGER_ERROR_CODES = {
   UPDATE_REQUIRED: '0x6e00',
   USER_CANCELLED: 'user_cancelled',
   DISCONNECTED_DEVICE: 'disconnecteddevice',
-  TRANSPORT_RACE_CONDITION: 'transportracecondition'
+  TRANSPORT_RACE_CONDITION: 'transportracecondition',
+  TRANSPORT_RACE_CONDITION_ALT:
+    'an action was already pending on the ledger device'
 } as const
 
 export type LedgerReturnCodeType =
