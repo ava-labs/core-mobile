@@ -12,8 +12,10 @@ import {
 import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
+import { selectActiveAccount } from 'store/account'
 import { RootState } from '../types'
 import { ChainID, Networks, NetworkState } from './types'
+import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
 
 export const defaultNetwork = BITCOIN_NETWORK
 
@@ -208,12 +210,27 @@ export const selectNetworks = (state: RootState): Networks => {
 }
 
 export const selectEnabledNetworks = createSelector(
-  [selectEnabledChainIds, selectIsDeveloperMode, selectNetworks],
-  (enabledChainIds, isDeveloperMode, networks) => {
+  [
+    selectEnabledChainIds,
+    selectIsDeveloperMode,
+    selectNetworks,
+    selectActiveAccount
+  ],
+  // eslint-disable-next-line max-params
+  (enabledChainIds, isDeveloperMode, networks, activeAccount) => {
     return enabledChainIds.reduce((acc, chainId) => {
       const network = networks[chainId]
       if (network && network.isTestnet === isDeveloperMode) {
-        acc.push(network)
+        if (network.vmName === 'SVM') {
+          if (
+            activeAccount?.addressSVM !== undefined &&
+            activeAccount.addressSVM.length > 0
+          ) {
+            acc.push(network)
+          }
+        } else {
+          acc.push(network)
+        }
       }
       return acc
     }, [] as Network[])
@@ -221,12 +238,26 @@ export const selectEnabledNetworks = createSelector(
 )
 
 export const selectEnabledNetworksMap = createSelector(
-  [selectEnabledChainIds, selectIsDeveloperMode, selectNetworks],
-  (enabledChainIds, isDeveloperMode, networks) => {
+  [
+    selectEnabledChainIds,
+    selectIsDeveloperMode,
+    selectNetworks,
+    selectActiveAccount
+  ],
+  (enabledChainIds, isDeveloperMode, networks, activeAccount) => {
     return enabledChainIds.reduce<Networks>((acc, chainId) => {
       const network = networks[chainId]
       if (network && network.isTestnet === isDeveloperMode) {
-        acc[chainId] = network
+        if (network.vmName === 'SVM') {
+          if (
+            activeAccount?.addressSVM !== undefined &&
+            activeAccount.addressSVM.length > 0
+          ) {
+            acc[chainId] = network
+          }
+        } else {
+          acc[chainId] = network
+        }
       }
       return acc
     }, {})
@@ -237,10 +268,20 @@ export const selectEnabledNetworksByTestnet =
   (isTestnet: boolean) => (state: RootState) => {
     const networks = selectNetworks(state)
     const enabledChainIds = selectEnabledChainIds(state)
+    const activeAccount = selectActiveAccount(state)
     return enabledChainIds.reduce((acc, chainId) => {
       const network = networks[chainId]
       if (network && network.isTestnet === isTestnet) {
-        acc.push(network)
+        if (network.vmName === 'SVM') {
+          if (
+            activeAccount?.addressSVM !== undefined &&
+            activeAccount.addressSVM.length > 0
+          ) {
+            acc[chainId] = network
+          }
+        } else {
+          acc[chainId] = network
+        }
       }
       return acc
     }, [] as Network[])
