@@ -206,7 +206,7 @@ export const TokenInputWidget = ({
                   onPress={token === undefined ? onSelectToken : undefined}>
                   <View
                     sx={{
-                      alignItems: 'stretch',
+                      alignItems: 'flex-end',
                       justifyContent: 'center',
                       flex: 1,
                       minHeight: 50
@@ -228,7 +228,8 @@ export const TokenInputWidget = ({
                       onBlur={handleBlur}
                       placeholder="0.00"
                       style={{
-                        marginBottom: 8
+                        marginBottom: 8,
+                        width: '100%'
                       }}
                     />
                   </View>
