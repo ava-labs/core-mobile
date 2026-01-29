@@ -37,6 +37,7 @@ import { useAccountPerformanceSummary } from 'features/portfolio/hooks/useAccoun
 import { useBalanceTotalPriceChangeForAccount } from 'features/portfolio/hooks/useBalanceTotalPriceChangeForAccount'
 import { useSendSelectedToken } from 'features/send/store'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
+import { useNavigateToSwap as useNavigateToSwapV2 } from 'features/swapV2/hooks/useNavigateToSwap'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
@@ -103,6 +104,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { navigate, push } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
+  const { navigateToSwap: navigateToSwapV2 } = useNavigateToSwapV2()
 
   const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
     LayoutRectangle | undefined
@@ -244,6 +246,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
         icon: 'swap',
         onPress: () => navigateToSwap()
       })
+      buttons.push({
+        title: ActionButtonTitle.SwapV2,
+        icon: 'swap',
+        onPress: () => navigateToSwapV2()
+      })
     }
     buttons.push({
       title: ActionButtonTitle.Buy,
@@ -278,6 +285,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleReceive,
     handleBridge,
     navigateToSwap,
+    navigateToSwapV2,
     isMeldOfframpBlocked,
     isBridgeBlocked
   ])
