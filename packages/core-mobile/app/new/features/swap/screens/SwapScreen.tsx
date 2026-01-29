@@ -211,6 +211,7 @@ export const SwapScreen = (): JSX.Element => {
     !swapError &&
     !!fromToken &&
     !!toToken &&
+    !!fromTokenValue &&
     !!selectedQuote &&
     !!selectedProvider
 
@@ -657,16 +658,20 @@ export const SwapScreen = (): JSX.Element => {
   const prevToRef = useRef(toToken)
 
   useEffect(() => {
+    // Reset amount when fromToken changes
+    if (prevFromRef.current !== fromToken) {
+      setAmount(undefined)
+      setToTokenValue(undefined)
+      setFromTokenValue(undefined)
+    }
+
+    // Handle case where both tokens are the same
     if (fromToken && toToken && fromToken.localId === toToken.localId) {
       if (prevFromRef.current !== fromToken) {
         setToToken(undefined)
       } else if (prevToRef.current !== toToken) {
         setFromToken(undefined)
       }
-
-      setAmount(undefined)
-      setToTokenValue(undefined)
-      setFromTokenValue(undefined)
     }
 
     prevFromRef.current = fromToken
