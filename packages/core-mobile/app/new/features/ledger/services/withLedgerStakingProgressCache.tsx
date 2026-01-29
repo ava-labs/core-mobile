@@ -29,4 +29,3 @@ export function withLedgerStakingProgressCache<
     return <WrappedComponent {...(props as P)} params={params} />
   }
 }
-

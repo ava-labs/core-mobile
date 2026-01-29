@@ -16,6 +16,8 @@ import { ProgressDots } from 'common/components/ProgressDots'
 import { useSelector } from 'react-redux'
 import { selectActiveWalletId } from 'store/wallet/slice'
 import LedgerService from 'services/ledger/LedgerService'
+import { LedgerAppType } from 'services/ledger/types'
+import Logger from 'utils/Logger'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { Operation } from 'services/earn/computeDelegationSteps/types'
 import { LedgerReviewTransactionParams } from '../services/ledgerParamsCache'
@@ -64,6 +66,7 @@ const LedgerReviewTransactionScreen = ({
   const walletId = useSelector(selectActiveWalletId)
   const { ledgerWalletMap } = useLedgerWalletMap()
   const [isConnected, setIsConnected] = useState(false)
+  const [isAvalancheAppOpen, setIsAvalancheAppOpen] = useState(false)
   const [isCancelEnabled, setIsCancelEnabled] = useState(false)
   const [phase, setPhase] = useState<Phase>('connection')
   const [currentStep, setCurrentStep] = useState(0)
@@ -106,9 +109,48 @@ const LedgerReviewTransactionScreen = ({
     handleReconnect(deviceForWallet.deviceId)
   }, [deviceForWallet, handleReconnect])
 
-  // Handle connection established - either transition to progress phase or call onApprove directly
+  // Poll for device connection and app status while in connection phase
   useEffect(() => {
-    if (deviceForWallet && isConnected && phase === 'connection') {
+    if (phase !== 'connection') return
+
+    const checkDeviceReady = async (): Promise<void> => {
+      try {
+        // Check if device is connected
+        const connected = LedgerService.isConnected()
+        setIsConnected(connected)
+
+        if (connected) {
+          // Check if Avalanche app is open
+          const appType = LedgerService.getCurrentAppType()
+          const isAvaxApp = appType === LedgerAppType.AVALANCHE
+          setIsAvalancheAppOpen(isAvaxApp)
+        } else {
+          setIsAvalancheAppOpen(false)
+        }
+      } catch (error) {
+        Logger.error('Error checking device status', error)
+        setIsConnected(false)
+        setIsAvalancheAppOpen(false)
+      }
+    }
+
+    // Initial check
+    checkDeviceReady()
+
+    // Poll every 500ms
+    const pollInterval = setInterval(checkDeviceReady, 500)
+
+    return () => clearInterval(pollInterval)
+  }, [phase])
+
+  // Handle connection established - require BOTH connection AND Avalanche app open
+  useEffect(() => {
+    if (
+      deviceForWallet &&
+      isConnected &&
+      isAvalancheAppOpen &&
+      phase === 'connection'
+    ) {
       if (stakingProgress) {
         // Initialize progress state for staking
         ledgerStakingProgressCache.state.set({
@@ -124,7 +166,14 @@ const LedgerReviewTransactionScreen = ({
         onApprove()
       }
     }
-  }, [deviceForWallet, isConnected, phase, stakingProgress, onApprove])
+  }, [
+    deviceForWallet,
+    isConnected,
+    isAvalancheAppOpen,
+    phase,
+    stakingProgress,
+    onApprove
+  ])
 
   // Poll for progress state updates when in progress phase
   useEffect(() => {
@@ -296,10 +345,16 @@ const LedgerReviewTransactionScreen = ({
 
   const connectionSubtitle = useMemo(() => {
     if (deviceForWallet) {
+      if (isConnected && !isAvalancheAppOpen) {
+        return `Please open the ${ledgerAppName} app on your Ledger device to continue`
+      }
+      if (!isConnected) {
+        return `Connect your ${deviceForWallet.deviceName} and open the ${ledgerAppName} app`
+      }
       return `Open the ${ledgerAppName} app on your Ledger device in order to continue with this transaction`
     }
     return 'Make sure your Ledger device is unlocked and the Avalanche app is open'
-  }, [deviceForWallet, ledgerAppName])
+  }, [deviceForWallet, ledgerAppName, isConnected, isAvalancheAppOpen])
 
   const stepConfig = useMemo(
     () => getStepConfig(currentOperation),

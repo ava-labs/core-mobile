@@ -17,4 +17,3 @@ export const ledgerStakingProgressCache = {
   params: createCache<LedgerStakingProgressParams>('ledger staking progress'),
   state: createCache<StakingProgressState>('ledger staking progress state')
 }
-
