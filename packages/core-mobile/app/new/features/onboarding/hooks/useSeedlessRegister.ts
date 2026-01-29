@@ -17,6 +17,7 @@ import Logger from 'utils/Logger'
 import PasskeyService from 'services/passkey/PasskeyService'
 import { showSnackbar } from 'new/common/utils/toast'
 import { useLogoModal } from 'common/hooks/useLogoModal'
+import { useRecoveryMethodContext } from '../contexts/RecoveryMethodProvider'
 import { MfaType } from '../types/types'
 
 type RegisterProps = {
@@ -56,6 +57,7 @@ type ReturnType = {
 
 export const useSeedlessRegister = (): ReturnType => {
   const { showLogoModal, hideLogoModal } = useLogoModal()
+  const { setIsNewSeedlessUser } = useRecoveryMethodContext()
   const [isRegistering, setIsRegistering] = useState(false)
 
   const isSeedlessMfaAuthenticatorBlocked = useSelector(
@@ -107,6 +109,9 @@ export const useSeedlessRegister = (): ReturnType => {
               oidcProvider: oidcProvider
             })
           } else {
+            // Explicitly set false for ALREADY_REGISTERED users without MFA
+            // (defensive: don't rely on resetSeedlessAuth being called)
+            setIsNewSeedlessUser(false)
             onRegisterMfaMethods({ oidcToken, mfaId })
             AnalyticsService.capture('SeedlessSignUp', {
               oidcProvider: oidcProvider
@@ -119,6 +124,8 @@ export const useSeedlessRegister = (): ReturnType => {
           })
         }
       } else if (result === SeedlessUserRegistrationResult.APPROVED) {
+        // Newly registered user - IS a new user (eligible for Nest Egg campaign)
+        setIsNewSeedlessUser(true)
         if (isMfaRequired && mfaId) {
           onRegisterMfaMethods({ oidcToken, mfaId })
           AnalyticsService.capture('SeedlessSignUp', {

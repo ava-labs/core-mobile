@@ -4,6 +4,7 @@ import { FeatureGates, FeatureFlags, FeatureVars } from 'services/posthog/types'
 import { WalletType } from 'services/wallet/types'
 import { uuid } from 'utils/uuid'
 import { selectActiveWallet } from 'store/wallet/slice'
+import { selectCoreAnalyticsConsent } from 'store/settings/securityPrivacy'
 import { initialState } from './types'
 
 const reducerName = 'posthog'
@@ -435,6 +436,77 @@ export const selectIsGaslessInstantBlocked = (state: RootState): boolean => {
     !featureFlags[FeatureGates.GASLESS_INSTANT] ||
     !featureFlags[FeatureGates.EVERYTHING]
   )
+}
+
+// Returns true if Nest Egg is completely blocked (neither flag is enabled)
+export const selectIsNestEggCampaignBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+
+  if (featureFlags[FeatureGates.EVERYTHING] !== true) {
+    return true
+  }
+
+  // Blocked only if BOTH flags are off
+  return (
+    featureFlags[FeatureGates.NEST_EGG_CAMPAIGN] !== true &&
+    featureFlags[FeatureGates.NEST_EGG_NEW_SEEDLESS_ONLY] !== true
+  )
+}
+
+// Returns true if Nest Egg is restricted to new seedless users only
+// This flag works independently - when ON, only new seedless users are eligible
+export const selectIsNestEggNewSeedlessOnly = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+
+  return (
+    featureFlags[FeatureGates.NEST_EGG_NEW_SEEDLESS_ONLY] === true &&
+    featureFlags[FeatureGates.EVERYTHING] === true
+  )
+}
+
+// Returns true if Nest Egg campaign is active for all seedless users
+export const selectIsNestEggCampaignActive = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+
+  return (
+    featureFlags[FeatureGates.NEST_EGG_CAMPAIGN] === true &&
+    featureFlags[FeatureGates.EVERYTHING] === true
+  )
+}
+
+// Returns true if user is eligible to qualify for Nest Egg via swap
+// Seedless wallets only
+// User must have opted into "Unlock airdrops" during onboarding
+export const selectIsNestEggEligible = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
+  const hasOptedIntoAirdrops = selectCoreAnalyticsConsent(state) === true
+
+  // Must be seedless wallet AND have opted into airdrops
+  if (
+    !isSeedlessWallet ||
+    !hasOptedIntoAirdrops ||
+    featureFlags[FeatureGates.EVERYTHING] !== true
+  ) {
+    return false
+  }
+
+  // If nest-egg-campaign is ON, ALL seedless users are eligible
+  if (featureFlags[FeatureGates.NEST_EGG_CAMPAIGN] === true) {
+    return true
+  }
+
+  // If nest-egg-new-seedless-only is ON, only NEW seedless users are eligible
+  // A user is considered "new" if:
+  // - isNewSeedlessUser is true (still in onboarding flow), OR
+  // - hasSeenCampaign is true (was shown the modal as a new user)
+  if (featureFlags[FeatureGates.NEST_EGG_NEW_SEEDLESS_ONLY] === true) {
+    const isNewUser = state.nestEgg.isNewSeedlessUser
+    const hasSeenCampaign = state.nestEgg.hasSeenCampaign
+    return isNewUser || hasSeenCampaign
+  }
+
+  return false
 }
 
 // actions
