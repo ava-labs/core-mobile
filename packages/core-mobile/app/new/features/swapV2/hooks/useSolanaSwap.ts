@@ -1,18 +1,12 @@
-import { useCallback, useRef } from 'react'
-import { useSelector } from 'react-redux'
-import { selectIsSwapFeesJupiterBlocked } from 'store/posthog'
-import { useInAppRequest } from 'hooks/useInAppRequest'
-import { RpcMethod } from '@avalabs/vm-module-types'
-import { getSolanaCaip2ChainId } from 'utils/caip2ChainIds'
+import { useCallback } from 'react'
 import {
   GetSvmQuoteParams,
   NormalizedSwapQuoteResult,
-  SvmTransactionParams,
-  SwapParams
+  SwapParams,
+  SwapProviders,
+  JupiterQuote
 } from '../types'
-import { JUPITER_PARTNER_FEE_BPS } from '../consts'
-import { JupiterQuote } from '../utils/svm/schemas'
-import { JupiterProvider } from '../providers/JupiterProvider'
+import { MOCK_QUOTE } from '../mockData'
 
 export const useSolanaSwap = (): {
   getQuote: (
@@ -20,82 +14,27 @@ export const useSolanaSwap = (): {
   ) => Promise<NormalizedSwapQuoteResult | undefined>
   swap: (params: SwapParams<JupiterQuote>) => Promise<string>
 } => {
-  const isSwapFeesJupiterBlocked = useSelector(selectIsSwapFeesJupiterBlocked)
-  const abortControllerRef = useRef<AbortController | null>(null)
-  const { request } = useInAppRequest()
+  const getQuote = useCallback(async (params: GetSvmQuoteParams) => {
+    // eslint-disable-next-line no-console
+    console.log('useSolanaSwap.getQuote stub called', params)
 
-  const getQuote = useCallback(
-    async (
-      params: GetSvmQuoteParams
-    ): Promise<NormalizedSwapQuoteResult | undefined> => {
-      // abort previous request
-      abortControllerRef.current?.abort()
-      // create new AbortController
-      const controller = new AbortController()
-      abortControllerRef.current = controller
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 300))
 
-      try {
-        const platformFeeBps = isSwapFeesJupiterBlocked
-          ? undefined
-          : JUPITER_PARTNER_FEE_BPS
-        return await JupiterProvider.getQuote(
-          { ...params, platformFeeBps },
-          controller.signal
-        )
-      } catch (error) {
-        if (error instanceof Error) {
-          if (error.message === 'Aborted') {
-            return undefined
-          }
+    // Return mock quote with Jupiter provider
+    return {
+      ...MOCK_QUOTE,
+      provider: SwapProviders.JUPITER
+    }
+  }, [])
 
-          throw new Error(error.message)
-        }
-      } finally {
-        // clean up controller
-        if (abortControllerRef.current === controller) {
-          abortControllerRef.current = null
-        }
-      }
-    },
-    [isSwapFeesJupiterBlocked]
-  )
+  const swap = useCallback(async (params: SwapParams<JupiterQuote>) => {
+    // eslint-disable-next-line no-console
+    console.log('useSolanaSwap.swap stub called', params)
 
-  const swap = useCallback(
-    async ({
-      account,
-      network,
-      quote,
-      fromTokenAddress,
-      toTokenAddress,
-      slippage
-    }: SwapParams<JupiterQuote>) => {
-      const signAndSend = (
-        txParams: SvmTransactionParams[],
-        context?: Record<string, unknown>
-      ): Promise<string> =>
-        request({
-          method: RpcMethod.SOLANA_SIGN_AND_SEND_TRANSACTION,
-          params: txParams,
-          chainId: getSolanaCaip2ChainId(network.chainId),
-          context
-        })
+    // Return mock Solana transaction signature
+    return '5J7X...' // Mock signature
+  }, [])
 
-      return JupiterProvider.swap({
-        network,
-        userAddress: account.addressSVM,
-        srcTokenAddress: fromTokenAddress,
-        destTokenAddress: toTokenAddress,
-        quote,
-        slippage,
-        signAndSend,
-        isSwapFeesEnabled: !isSwapFeesJupiterBlocked
-      })
-    },
-    [request, isSwapFeesJupiterBlocked]
-  )
-
-  return {
-    getQuote,
-    swap
-  }
+  return { getQuote, swap }
 }

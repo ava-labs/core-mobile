@@ -1,8 +1,6 @@
 import { useMemo } from 'react'
 import { LocalTokenWithBalance } from 'store/balance'
-import { isEvmSwapQuote, isSvmSwapQuote, SwapQuote } from '../types'
-import { calculateRate as calculateEvmRate } from '../utils/evm/calculateRate'
-import { calculateRate as calculateSvmRate } from '../utils/svm/calculateRate'
+import { SwapQuote } from '../types'
 
 export const useSwapRate = ({
   quote,
@@ -14,12 +12,9 @@ export const useSwapRate = ({
   toToken: LocalTokenWithBalance | undefined
 }): number => {
   return useMemo(() => {
-    if (quote) {
-      if (isEvmSwapQuote(quote)) {
-        return calculateEvmRate(quote)
-      } else if (isSvmSwapQuote(quote) && fromToken && toToken) {
-        return calculateSvmRate({ quote: quote, fromToken, toToken })
-      }
+    // Return placeholder rate for UI display
+    if (fromToken && toToken && quote) {
+      return 1.234 // Mock exchange rate
     }
     return 0
   }, [quote, fromToken, toToken])

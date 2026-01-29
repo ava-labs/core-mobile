@@ -5,8 +5,29 @@ import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { TransactionParams } from '@avalabs/evm-module'
 import type WAVAX_ABI from '../../../contracts/ABI_WAVAX.json'
 import type WETH_ABI from '../../../contracts/ABI_WETH.json'
-import { MarkrQuote } from './services/MarkrService'
-import { JupiterQuote } from './utils/svm/schemas'
+
+// Stub types for removed services
+export type MarkrQuote = {
+  uuid: string
+  aggregator: {
+    id: string
+    name: string
+    logo_url: string
+  }
+  amountIn: string
+  amountOut: string
+  tokenIn: string
+  tokenOut: string
+  recommendedSlippage: number
+}
+
+export type JupiterQuote = {
+  inputMint: string
+  outputMint: string
+  inAmount: string
+  outAmount: string
+  [key: string]: unknown
+}
 
 export enum EvmSwapOperation {
   WRAP = 'WRAP',
