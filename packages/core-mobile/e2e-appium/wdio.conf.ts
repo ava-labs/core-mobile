@@ -27,8 +27,8 @@ const androidPath = isBitrise
   : path.resolve(androidLocalPath)
 const platformToRun = process.env.PLATFORM
 const isSmoke = process.env.IS_SMOKE === 'true'
-const isPerformance = true
-// const isPerformance = process.env.IS_PERFORMANCE === 'true'
+const isPerformance = process.env.IS_PERFORMANCE === 'true'
+
 const allCaps = [
   {
     platformName: 'Android',
