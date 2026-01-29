@@ -1113,15 +1113,20 @@ class LedgerService {
       // eslint-disable-next-line no-bitwise
       const statusCode = (sw1 << 8) | sw2
 
-      if (statusCode !== LedgerReturnCode.SUCCESS) {
+      if (statusCode === LedgerReturnCode.SUCCESS) {
+        Logger.info(
+          `Successfully opened ${app} app on Ledger device using APDU`
+        )
+      } else {
         const swHex = statusCode.toString(16).padStart(4, '0')
-        throw new Error(`Unexpected status word: 0x${swHex}`)
+        Logger.info(`Unexpected status word: 0x${swHex}`)
       }
 
       // Optional: use response.slice(0, -2) to read any data part.
     } catch (error) {
-      Logger.error(`Failed to open ${app} app:`, error)
-      throw error
+      // Do not throw error, just log it, we can't reliably force-switch apps on a Ledger
+      // from one third‑party app to another, so this is just a best-effort attempt.
+      Logger.info(`Failed to open ${app} app:`, error)
     }
   }
 }
