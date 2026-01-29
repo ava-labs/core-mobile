@@ -389,6 +389,6 @@ export const AutoSizeTextInput = forwardRef<
 
 const GAP_WIDTH = 4
 
-// Threshold to distinguish real layout changes (focus/blur, rotation) from
+// Threshold (in pixels) to distinguish real layout changes (focus/blur, rotation) from
 // minor fluctuations caused by font size adjustments
 const LAYOUT_CHANGE_THRESHOLD = 10
