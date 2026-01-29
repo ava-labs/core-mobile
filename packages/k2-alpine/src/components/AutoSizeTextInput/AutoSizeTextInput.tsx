@@ -205,7 +205,6 @@ export const AutoSizeTextInput = forwardRef<
         const widthDiff = Math.abs(newWidth - prevContainerWidthRef.current)
 
         // Ignore minor width changes caused by font size adjustments
-        // Only respond to significant layout changes (e.g., focus/blur, screen rotation)
         if (widthDiff >= LAYOUT_CHANGE_THRESHOLD) {
           prevContainerWidthRef.current = newWidth
           setContainerWidth(newWidth)
