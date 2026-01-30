@@ -183,7 +183,7 @@ describe('EarnService', () => {
       expect(mockGetAllStakes).toHaveBeenCalledWith(
         expect.objectContaining({
           isTestnet: false,
-          addresses: ['P-avax123']
+          addresses: ['avax123']
         })
       )
       expect(result).toHaveLength(1)
@@ -234,7 +234,7 @@ describe('EarnService', () => {
         }
         // Current network succeeds
         return Promise.resolve({
-          xpAddresses: [{ address: 'P-avax123', index: 0 }]
+          xpAddresses: [{ address: 'avax123', index: 0 }]
         })
       })
 
@@ -263,7 +263,7 @@ describe('EarnService', () => {
       expect(mockGetAllStakes).toHaveBeenCalledWith(
         expect.objectContaining({
           isTestnet: false,
-          addresses: ['P-avax123']
+          addresses: ['avax123']
         })
       )
 
@@ -281,7 +281,7 @@ describe('EarnService', () => {
       mockGetAddressesFromXpubXP.mockImplementation(({ accountIndex }) => {
         if (accountIndex === 0) {
           return Promise.resolve({
-            xpAddresses: [{ address: 'P-avax123', index: 0 }]
+            xpAddresses: [{ address: 'avax123', index: 0 }]
           })
         } else {
           // Account 2 throws error
@@ -313,7 +313,7 @@ describe('EarnService', () => {
       expect(mockGetAllStakes).toHaveBeenCalledWith(
         expect.objectContaining({
           isTestnet: false,
-          addresses: expect.arrayContaining(['P-avax123', 'P-avax789'])
+          addresses: expect.arrayContaining(['avax123', 'avax789'])
         })
       )
 
@@ -322,7 +322,7 @@ describe('EarnService', () => {
 
     it('should return undefined when entire operation fails', async () => {
       mockGetAddressesFromXpubXP.mockResolvedValue({
-        xpAddresses: [{ address: 'P-avax123', index: 0 }]
+        xpAddresses: [{ address: 'avax123', index: 0 }]
       })
 
       mockGetAllStakes.mockRejectedValue(new Error('API failure'))
