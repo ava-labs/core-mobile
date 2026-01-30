@@ -279,6 +279,16 @@ workflows:
         - packages: autoconf automake libtool
     - restore-cocoapods-cache@1: {}
     - script@1:
+        title: Clean DerivedData and Module Cache
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            echo "Cleaning DerivedData and Module Cache to prevent stale module issues..."
+            rm -rf ~/Library/Developer/Xcode/DerivedData/*
+            rm -rf ~/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/*
+            echo "DerivedData cleaned"
+    - script@1:
         title: Copy Gemfile to iOS folder
         inputs:
         - content: |-
@@ -326,6 +336,16 @@ workflows:
         inputs:
         - packages: autoconf automake libtool
     - restore-cocoapods-cache@1: {}
+    - script@1:
+        title: Clean DerivedData and Module Cache
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            echo "Cleaning DerivedData and Module Cache to prevent stale module issues..."
+            rm -rf ~/Library/Developer/Xcode/DerivedData/*
+            rm -rf ~/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/*
+            echo "DerivedData cleaned"
     - script@1:
         title: Copy Gemfile to iOS folder
         inputs:
