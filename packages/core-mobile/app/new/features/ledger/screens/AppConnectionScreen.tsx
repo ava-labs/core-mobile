@@ -14,6 +14,7 @@ import { Button, ButtonType } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { LedgerKeys } from 'services/ledger/types'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
 import { showSnackbar } from 'common/utils/toast'
 
@@ -22,6 +23,7 @@ export default function AppConnectionScreen(): JSX.Element {
   const [isCreatingWallet, setIsCreatingWallet] = useState(false)
   const headerHeight = useHeaderHeight()
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   // Local key state - managed only in this component
   const [keys, setKeys] = useState<LedgerKeys>({
@@ -210,10 +212,12 @@ export default function AppConnectionScreen(): JSX.Element {
     try {
       setAppConnectionStep(AppConnectionStep.AVALANCHE_LOADING)
 
-      // Get keys from service
-      const avalancheKeys = await LedgerService.getAvalancheKeys()
+      // Get keys from service - pass isDeveloperMode to use correct HRP (fuji vs avax)
+      const avalancheKeys = await LedgerService.getAvalancheKeys(
+        isDeveloperMode
+      )
       const { bitcoinAddress, xpAddress } =
-        await LedgerService.getBitcoinAndXPAddresses()
+        await LedgerService.getBitcoinAndXPAddresses(isDeveloperMode)
 
       // Update local state
       setKeys(prev => ({
@@ -240,7 +244,7 @@ export default function AppConnectionScreen(): JSX.Element {
         [{ text: 'OK' }]
       )
     }
-  }, [isSolanaSupportBlocked, setAppConnectionStep, setKeys])
+  }, [isDeveloperMode, isSolanaSupportBlocked, setAppConnectionStep, setKeys])
 
   const handleConnectSolana = useCallback(async () => {
     try {

@@ -233,9 +233,11 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           xpAddressDictionary = result.xpAddressDictionary
           hasMigratedXpAddresses = true
         } catch (error) {
-          // Fall back to using just the primary address
+          // Fall back to using primary addresses (both AVM and PVM needed for staking)
+          // Remove chain prefixes (X- and P-) as xpAddresses stores raw addresses
           xpAddresses = [
-            { address: formattedAddresses.avm.replace(/^X-/, ''), index: 0 }
+            { address: formattedAddresses.avm.replace(/^X-/, ''), index: 0 },
+            { address: formattedAddresses.pvm.replace(/^P-/, ''), index: 0 }
           ]
           hasMigratedXpAddresses = false
         }

@@ -916,8 +916,16 @@ export class LedgerWallet implements Wallet {
   }
 
   public async getRawXpubXP(_accountIndex: number): Promise<string> {
-    // TODO: implement this
-    throw new Error('getRawXpubXP not implemented yet for LedgerWallet')
+    // For Ledger BIP44 wallets, we have the extended public key stored
+    if (this.isBIP44() && this.extendedPublicKeys?.avalanche) {
+      return this.extendedPublicKeys.avalanche
+    }
+
+    // For Ledger Live wallets or if no xpub is available, we cannot derive
+    // addresses from xpub - the caller should handle this gracefully
+    throw new Error(
+      'getRawXpubXP not available for this Ledger wallet configuration'
+    )
   }
 
   // Private helper methods for message signing
