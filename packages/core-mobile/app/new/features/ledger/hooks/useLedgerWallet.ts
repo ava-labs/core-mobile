@@ -243,7 +243,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           ]
           xpAddressDictionary = {
             [strippedAVM]: { space: 'e', index: 0, hasActivity: false },
-            [strippedPVM]: { space: 'e', index: 0, hasActivity: false }
+            [strippedPVM]: { space: 'i', index: 0, hasActivity: false }
           }
           hasMigratedXpAddresses = false
         }
