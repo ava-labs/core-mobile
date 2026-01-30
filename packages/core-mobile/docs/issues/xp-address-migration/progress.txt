@@ -1,0 +1,116 @@
+================================================================================
+                    XP ADDRESS MIGRATION ISSUE - PROGRESS TRACKER
+================================================================================
+
+Issue: Users missing addressAVM, addressPVM, and xpAddresses after migrations
+Branch: boyer/ledger-staking-issues
+Created: 2026-01-30
+
+================================================================================
+                                    STATUS
+================================================================================
+
+[ ] Phase 1: Debugging & Logging
+    [ ] Add logging to ModuleManager.deriveAddresses for rejected promises
+    [ ] Add logging to populateXpAddressesForWallet
+    [ ] Add logging to getAddressesFromXpubXP for empty results
+    [ ] Create accountStateModifier.ts debug utility
+    [ ] Add dev menu options for injecting broken states
+
+[ ] Phase 2: Migration Fix (Existing Users)
+    [ ] Create migration 26 in migrations.ts
+    [ ] Update version constant from 25 to 26
+    [ ] Modify populateXpAddressesForWallet to only mark complete when addresses exist
+
+[ ] Phase 3: Prevention (Future Users)
+    [ ] Add validation in ModuleManager.deriveAddresses
+    [ ] Add validation in AccountsService.createNextAccount
+
+[ ] Phase 4: Testing
+    [ ] Manual test: Inject "Empty XP Addresses" -> lock/unlock -> verify recovery
+    [ ] Manual test: Inject "Failed Migration" -> lock/unlock -> verify recovery
+    [ ] Manual test: Fresh account creation -> verify addresses populated
+    [ ] Unit tests for migration 26
+    [ ] Unit tests for validation logic
+
+================================================================================
+                                FILES TO MODIFY
+================================================================================
+
+app/vmModule/ModuleManager.ts
+  - Add error logging for rejected module promises (deriveAddresses function)
+  - Add warning for missing AVM/PVM addresses
+
+app/store/account/listeners.ts
+  - Modify populateXpAddressesForWallet: only set hasMigratedXpAddresses=true when addresses exist
+  - Add detailed logging before/after rederivation
+
+app/store/migrations.ts
+  - Add migration 26 to detect and reset affected accounts
+  - Update version constant
+
+app/services/account/AccountsService.tsx
+  - Add validation logging in createNextAccount for empty addresses
+
+app/utils/getAddressesFromXpubXP/getAddressesFromXpubXP.ts
+  - Add logging when returning EMPTY_RESULT
+
+app/utils/debug/accountStateModifier.ts (NEW)
+  - Create debug utility for injecting broken account states
+
+app/new/features/developer/... (location TBD)
+  - Add dev menu options for state injection
+
+================================================================================
+                                  SESSION LOG
+================================================================================
+
+2026-01-30:
+  - Initial investigation complete
+  - Root causes identified:
+    1. Promise.allSettled in ModuleManager silently ignores Avalanche module failures
+    2. Empty addressAVM cascades to empty xpAddresses
+    3. Migration 22 marks hasMigratedXpAddresses=true even when addresses empty
+    4. Seedless wallets can have missing Avalanche pub keys
+  - Plan document created
+  - PRD document created
+
+================================================================================
+                              KEY FINDINGS
+================================================================================
+
+1. ModuleManager.deriveAddresses (line 119-148):
+   - Uses Promise.allSettled which swallows errors
+   - emptyAddresses() returns '' for all address types
+   - If AvalancheModule.deriveAddress fails, AVM/PVM stay empty
+
+2. AccountsService.createNextAccount (line 271-273):
+   - Initializes xpAddresses with: { address: stripAddressPrefix(addresses[AVM]), index: 0 }
+   - If AVM is '', xpAddresses gets { address: '', index: 0 }
+
+3. Migration 22 (line 396-457):
+   - Sets hasMigratedXpAddresses: false
+   - Preserves existing addressAVM/addressPVM (which could be undefined or empty)
+
+4. populateXpAddressesForWallet (line 362-470):
+   - Sets hasMigratedXpAddresses = true even if rederivation failed
+   - Should only mark complete when addresses are non-empty
+
+5. Seedless-specific (getAddressesFromXpubXP line 70-118):
+   - Returns EMPTY_RESULT if no Avalanche pub keys found
+   - Silent failure - no logging
+
+================================================================================
+                                NEXT STEPS
+================================================================================
+
+1. Start with Phase 1 logging to understand current failure frequency
+2. Build dev menu debug tools
+3. Test injection scenarios manually
+4. Implement migration 26
+5. Add validation to prevent future occurrences
+6. Write unit tests
+7. QA testing
+8. Release
+
+================================================================================
