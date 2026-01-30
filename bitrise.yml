@@ -71,7 +71,6 @@ workflows:
     - restore-cocoapods-cache@1: {}
     - script@1:
         title: Clean DerivedData and Module Cache
-        run_if: '{{enveq "FORCE_CLEAN_DERIVED_DATA" "true"}}'
         inputs:
         - content: |-
             #!/usr/bin/env bash
