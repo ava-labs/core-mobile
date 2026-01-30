@@ -79,9 +79,9 @@ describe('account/utils', () => {
       expect(isAddressMissing('X-avax1234567890')).toBe(false)
     })
 
-    it('returns false for whitespace-only string', () => {
-      // whitespace is still a non-empty string
-      expect(isAddressMissing('   ')).toBe(false)
+    it('returns true for whitespace-only string', () => {
+      // whitespace-only is not a valid address, so it's considered missing
+      expect(isAddressMissing('   ')).toBe(true)
     })
   })
 
