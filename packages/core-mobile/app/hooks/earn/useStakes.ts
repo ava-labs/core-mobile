@@ -1,5 +1,6 @@
 import { PChainTransaction, SortOrder } from '@avalabs/glacier-sdk'
 import { UseQueryResult } from '@tanstack/react-query'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { refetchIntervals } from 'consts/earn'
 import { useRefreshableQuery } from 'hooks/query/useRefreshableQuery'
 import { useSelector } from 'react-redux'
@@ -20,7 +21,13 @@ export const useStakes = (
   const walletState = useSelector(selectWalletState)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const account = useSelector(selectActiveAccount)
-  const pAddresses = account?.xpAddresses?.map(address => address.address) ?? []
+  // make pAddresses fallback to addressPVM if xpAddresses is empty/undefined
+  const xpAddresses =
+    account?.xpAddresses?.map(address => address.address) ?? []
+  const pAddresses =
+    xpAddresses.length > 0
+      ? xpAddresses
+      : [stripAddressPrefix(account?.addressPVM ?? '')]
   const pAddressesSorted = pAddresses.sort().join(',')
 
   // we only fetch stakes when the wallet is active
@@ -32,8 +39,10 @@ export const useStakes = (
   // when we toggle developer mode, it will take a brief moment for the address to update
   // in that brief moment, we don't want to fetch the stakes as the address will still be the old one
   // this check is to ensure that the address is of the correct developer mode before fetching the stakes
-  const isAddressesValid = pAddresses.every(address =>
-    isDeveloperMode ? address.includes('fuji') : !address.includes('fuji')
+  const isAddressesValid = pAddresses.every(
+    address =>
+      address.trim() !== '' &&
+      (isDeveloperMode ? address.includes('fuji') : !address.includes('fuji'))
   )
 
   const enabled = isWalletActive && isAddressesValid
