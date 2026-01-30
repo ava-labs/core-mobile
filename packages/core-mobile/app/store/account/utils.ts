@@ -235,7 +235,7 @@ const markWalletAsMigrated = (walletId: string): void => {
 
 // Helper to check if address is missing
 export const isAddressMissing = (address: string | undefined | null): boolean =>
-  !address || address === ''
+  !address || address.trim() === ''
 
 // Group accounts by wallet ID
 export const groupAccountsByWallet = (
