@@ -275,7 +275,8 @@ export class UnifiedBridgeService {
     btcSigner: BtcSigner
     bitcoinFunctions: BitcoinProvider
   }): BridgeInitializer[] {
-    // @ts-expect-error: TODO: add other bridge initializers when project fusion is ready
+    // @ts-expect-error
+    // TODO: add other bridge initializers when project fusion is ready
     return enabledBridgeTypes.map(type => {
       switch (type) {
         case BridgeType.CCTP:
@@ -283,11 +284,16 @@ export class UnifiedBridgeService {
         case BridgeType.AVALANCHE_EVM:
           return {
             type,
+            signer: evmSigner
+          }
+        case BridgeType.AVALANCHE_AVA_BTC:
+          return {
+            type,
             signer: evmSigner,
             bitcoinFunctions
           }
+
         case BridgeType.AVALANCHE_BTC_AVA:
-        case BridgeType.AVALANCHE_AVA_BTC:
           return {
             type,
             signer: btcSigner,
