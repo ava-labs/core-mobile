@@ -33,6 +33,7 @@ import { isOnGoing } from 'utils/earn/status'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 import { glacierApiClient } from 'utils/api/clients/glacierApiClient'
 import { listLatestPrimaryNetworkTransactions } from 'utils/api/generated/glacier/glacierApi.client'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -373,19 +374,33 @@ class EarnService {
   > => {
     try {
       const currentNetworkAddressResults = await Promise.all(
-        accounts.map(account =>
-          getAddressesFromXpubXP({
-            isDeveloperMode: isTestnet,
-            walletId,
-            walletType,
-            accountIndex: account.index,
-            onlyWithActivity: true
-          })
-        )
+        accounts.map(async account => {
+          try {
+            const result = await getAddressesFromXpubXP({
+              isDeveloperMode: isTestnet,
+              walletId,
+              walletType,
+              accountIndex: account.index,
+              onlyWithActivity: true
+            })
+            // Fallback to addressPVM if xpAddresses is empty
+            if (result.xpAddresses.length === 0 && account.addressPVM) {
+              return [stripAddressPrefix(account.addressPVM)]
+            }
+            return result.xpAddresses.map(addr => addr.address)
+          } catch (error) {
+            Logger.error(
+              'getAddressesFromXpubXP failed for current network:',
+              error
+            )
+            // Fallback to addressPVM on error
+            return account.addressPVM
+              ? [stripAddressPrefix(account.addressPVM)]
+              : []
+          }
+        })
       )
-      const currentNetworkAddresses = currentNetworkAddressResults
-        .flatMap(address => address.xpAddresses)
-        .map(address => address.address)
+      const currentNetworkAddresses = currentNetworkAddressResults.flat()
 
       const currentNetworkTransactions =
         currentNetworkAddresses.length > 0
@@ -397,24 +412,36 @@ class EarnService {
           : []
 
       const oppositeNetworkAddressResults = await Promise.all(
-        accounts.map(account =>
-          getAddressesFromXpubXP({
-            isDeveloperMode: !isTestnet,
-            walletId,
-            walletType,
-            accountIndex: account.index,
-            onlyWithActivity: true
-          })
-        )
+        accounts.map(async account => {
+          try {
+            const result = await getAddressesFromXpubXP({
+              isDeveloperMode: !isTestnet,
+              walletId,
+              walletType,
+              accountIndex: account.index,
+              onlyWithActivity: true
+            })
+
+            return result.xpAddresses.map(addr => addr.address)
+          } catch (error) {
+            Logger.error(
+              `getAddressesFromXpubXP failed for opposite network - isTestnet: ${isTestnet}:`,
+              error
+            )
+            // Fallback to empty array on error
+            return []
+          }
+        })
       )
-      const oppositeNetworkAddresses = oppositeNetworkAddressResults
-        .flatMap(address => address.xpAddresses)
-        .map(address => address.address)
-      const oppositeNetworkTransactions = await getTransformedTransactions(
-        oppositeNetworkAddresses,
-        !isTestnet,
-        startTimestamp
-      )
+      const oppositeNetworkAddresses = oppositeNetworkAddressResults.flat()
+      const oppositeNetworkTransactions =
+        oppositeNetworkAddresses.length > 0
+          ? await getTransformedTransactions(
+              oppositeNetworkAddresses,
+              !isTestnet,
+              startTimestamp
+            )
+          : []
 
       const now = new Date()
       return currentNetworkTransactions
