@@ -514,14 +514,9 @@ const populateXpAddressesForWallet = async ({
         // update it to include both rederived AVM and PVM addresses
         if (!hasMigratedXpAddresses) {
           const strippedNewAVM = stripAddressPrefix(newAddressAVM)
-          const strippedNewPVM = stripAddressPrefix(newAddressPVM)
-          xpAddresses = [
-            { address: strippedNewAVM, index: 0 },
-            { address: strippedNewPVM, index: 0 }
-          ]
+          xpAddresses = [{ address: strippedNewAVM, index: 0 }]
           xpAddressDictionary = {
-            [strippedNewAVM]: { space: 'e', index: 0, hasActivity: false },
-            [strippedNewPVM]: { space: 'e', index: 0, hasActivity: false }
+            [strippedNewAVM]: { space: 'e', index: 0, hasActivity: false }
           }
         }
       } catch (error) {
