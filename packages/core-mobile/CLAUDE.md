@@ -210,6 +210,90 @@ Key slices and their responsibilities:
 - iOS build may fail if `.xcode.env.local` has invalid node binary path
 - Run `yarn podInstall` after updates (handles bundle install automatically)
 
+## React Native Performance Index
+
+Compressed patterns with actionable detail. Apply these when writing/reviewing React Native code.
+
+### Lists | CRITICAL
+```
+FlashList|import {FlashList} from '@shopify/flash-list'|required props: data, renderItem, estimatedItemSize|use getItemType={(item)=>item.type} for mixed types|keyExtractor for stable keys
+ScrollView.map()|never use for >20 items|causes multi-second freeze, FPS drops to ~3|replace with FlashList
+FlatList|acceptable for 20-100 items|add removeClippedSubviews={true} maxToRenderPerBatch={10} windowSize={5}|FlashList preferred
+estimatedItemSize|calculate average height of items|required for FlashList recycling performance
+```
+
+### Bundle Size | CRITICAL
+```
+barrel-imports|NEVER import {X} from './components'|ALWAYS import X from './components/X'|barrels load ALL exports even if you use one
+tree-shaking|.env: EXPO_UNSTABLE_TREE_SHAKING=1 EXPO_UNSTABLE_METRO_OPTIMIZE_GRAPH=1|metro.config.js: config.transformer.getTransformOptions=async()=>({transform:{experimentalImportSupport:true}})
+platform-shake|import {Platform} from 'react-native' directly|NOT import * as RN|enables dead code removal per platform
+date-fns|import format from 'date-fns/format'|NOT import {format} from 'date-fns'
+analyze|EXPO_UNSTABLE_ATLAS=true npx expo export --platform ios && npx expo-atlas
+```
+
+### Re-renders | CRITICAL
+```
+react-compiler|app.json: {"expo":{"experiments":{"reactCompiler":true}}}|Expo 52+|auto-memoizes components, removes need for memo/useCallback/useMemo
+zustand-selector|const filter = useStore(s=>s.filter)|only re-renders when filter changes|NOT const {filter,todos} = useContext() which re-renders on any change
+jotai-atoms|const [val,setVal] = useAtom(myAtom)|each atom independent|useAtomValue for read-only, useSetAtom for write-only (no re-render)
+profile|press 'j' in Metro terminal|Components tab → highlight updates on render|Profiler tab → flamegraph
+```
+
+### Animations | HIGH
+```
+reanimated|useSharedValue(0) not useState|useAnimatedStyle(()=>({opacity:val.value}))|runs on UI thread, smooth during JS work
+reanimated|withTiming(1,{duration:500})|withSpring(1,{damping:10})|assign to sharedValue.value
+animated-view|must use <Animated.View style={animatedStyle}>|regular View won't animate
+never|import {Animated} from 'react-native'|blocks on JS thread|always use react-native-reanimated
+defer-js|InteractionManager.runAfterInteractions(()=>heavyWork())|runs after animations complete|return task.cancel() in cleanup
+reanimated4|scheduleOnUI/scheduleOnRN from react-native-worklets|replaces runOnUI/runOnJS in Reanimated 4+
+```
+
+### TextInput | HIGH
+```
+uncontrolled|<TextInput defaultValue={text} onChangeText={setText}/>|native owns state, no flicker
+controlled|<TextInput value={text}/>|causes round-trip lag on legacy arch|only use for input masking
+clear|inputRef.current?.clear()|useRef for programmatic control
+```
+
+### TTI / Startup | HIGH
+```
+android-mmap|android/app/build.gradle: android{androidResources{noCompress+=["bundle"]}}|enables Hermes mmap|+8% install size, -16% TTI|default in RN 0.79+
+measure|npm install react-native-performance|useEffect(()=>performance.mark('screenInteractive'),[])
+cold-only|only measure cold starts|filter out warm/hot/prewarmed (iOS ActivePrewarm env)|target: TTI<2s, JS bundle<500ms
+```
+
+### Native Modules | HIGH
+```
+threading|sync methods block JS thread, keep <16ms|async methods run on native modules thread (mqt_v_native)
+ios-background|DispatchQueue.global().async{resolve(self.compute())}|moves work off JS thread
+android-background|moduleScope.launch{promise?.resolve(compute())}|use CoroutineScope(Dispatchers.Default+SupervisorJob())
+android-cleanup|override fun invalidate(){super.invalidate();moduleScope.cancel()}|prevents memory leak on Metro reload
+```
+
+### Memory Leaks | MEDIUM
+```
+useEffect-cleanup|useEffect(()=>{const sub=EventEmitter.addListener('x',fn);return()=>sub.remove()},[])
+timer-cleanup|useEffect(()=>{const t=setInterval(fn,1000);return()=>clearInterval(t)},[])
+closure-capture|const len=largeArray.length;return()=>len|extract primitives|NOT return()=>largeArray.length which captures entire array
+```
+
+### Quick Commands
+```bash
+# Profile re-renders
+# press 'j' in Metro terminal
+
+# Analyze bundle
+EXPO_UNSTABLE_ATLAS=true npx expo export --platform ios && npx expo-atlas
+
+# Check React Compiler compatibility
+npx react-compiler-healthcheck@latest
+
+# Find barrel files in codebase
+grep -r "export \* from" app/
+grep -r "export { .* } from" app/
+```
+
 ## Common Workflows
 
 **Adding a new feature:**
