@@ -237,7 +237,7 @@ export const PinScreen = ({
 
   const handleBrokenBioState = useCallback(() => {
     InteractionManager.runAfterInteractions(() => {
-      let accessType = BiometricsSDK.getAccessType()
+      const accessType = BiometricsSDK.getAccessType()
 
       /*
        * Fix inconsistent state: if accessType is 'BIO' but biometrics are disabled or not available
@@ -250,9 +250,8 @@ export const PinScreen = ({
       const isBrokenBioState =
         accessType === 'BIO' && (!useBiometrics || !isBiometricAvailable)
 
-      if (isBrokenBioState) {
+      if (isBrokenBioState || accessType === undefined) {
         commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
-        accessType = BiometricsSDK.getAccessType()
       }
     })
   }, [useBiometrics, isBiometricAvailable])
