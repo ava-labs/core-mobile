@@ -1,5 +1,6 @@
 import { PChainTransaction, SortOrder } from '@avalabs/glacier-sdk'
 import { UseQueryResult } from '@tanstack/react-query'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { refetchIntervals } from 'consts/earn'
 import { useRefreshableQuery } from 'hooks/query/useRefreshableQuery'
 import { useSelector } from 'react-redux'
@@ -24,7 +25,9 @@ export const useStakes = (
   const xpAddresses =
     account?.xpAddresses?.map(address => address.address) ?? []
   const pAddresses =
-    xpAddresses.length > 0 ? xpAddresses : [account?.addressPVM ?? '']
+    xpAddresses.length > 0
+      ? xpAddresses
+      : [stripAddressPrefix(account?.addressPVM ?? '')]
   const pAddressesSorted = pAddresses.sort().join(',')
 
   // we only fetch stakes when the wallet is active

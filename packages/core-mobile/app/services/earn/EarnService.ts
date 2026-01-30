@@ -33,6 +33,7 @@ import { isOnGoing } from 'utils/earn/status'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 import { glacierApiClient } from 'utils/api/clients/glacierApiClient'
 import { listLatestPrimaryNetworkTransactions } from 'utils/api/generated/glacier/glacierApi.client'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -384,7 +385,7 @@ class EarnService {
             })
             // Fallback to addressPVM if xpAddresses is empty
             if (result.xpAddresses.length === 0 && account.addressPVM) {
-              return [account.addressPVM]
+              return [stripAddressPrefix(account.addressPVM)]
             }
             return result.xpAddresses.map(addr => addr.address)
           } catch (error) {
@@ -393,7 +394,9 @@ class EarnService {
               error
             )
             // Fallback to addressPVM on error
-            return account.addressPVM ? [account.addressPVM] : []
+            return account.addressPVM
+              ? [stripAddressPrefix(account.addressPVM)]
+              : []
           }
         })
       )
