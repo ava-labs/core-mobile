@@ -84,7 +84,7 @@ abstract_target 'common' do
   pod 'RNFS', :path => '../node_modules/react-native-fs'
   
   # specify OpenSSL version explicitly due to https://github.com/margelo/react-native-quick-crypto/issues/189
-  pod "OpenSSL-Universal", "1.1.1100"
+  pod "OpenSSL-Universal", "3.3.2000"
   pod 'GoogleUtilities', :modular_headers => true;
   pod 'FirebaseCore', :modular_headers => true
   pod 'react-native-branch', path: '../node_modules/react-native-branch'

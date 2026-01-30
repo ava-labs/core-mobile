@@ -366,3 +366,49 @@ export function verifySchnorr(
     throw new TypeError('Schnorr signature must be 64 bytes')
   return NativeCrypto.verifySchnorr(pkAB, msgAB, sigAB)
 }
+
+/**
+ * Edwards curve extended public key derivation (Ed25519).
+ * Implements the same logic as @noble/curves getExtendedPublicKey.
+ * Returns { head, prefix, scalar, point, pointBytes }
+ *
+ * Most computation is done in C++ native code. This function only handles:
+ * - Input conversion (hex string to ArrayBuffer)
+ * - Result parsing and object construction
+ */
+export function getExtendedPublicKey(
+  secretKey: string | ArrayBuffer | Uint8Array
+): {
+  head: Uint8Array
+  prefix: Uint8Array
+  scalar: bigint
+  point: { toRawBytes: () => Uint8Array }
+  pointBytes: Uint8Array
+} {
+  con.log('[Crypto] getExtendedPublicKey called')
+  // Convert input to ArrayBuffer (only TS-side work)
+  const skAB = hexLikeToArrayBuffer(secretKey)
+  con.log('[Crypto] getExtendedPublicKey skAB', skAB)
+  // All computation and object construction happens in C++
+  // C++ returns ExtendedPublicKey object with { head, prefix, scalar (string), pointBytes }
+  const result = NativeCrypto.getExtendedPublicKey(skAB)
+  const pointBytes = new Uint8Array(result.pointBytes)
+  const prefix = new Uint8Array(result.prefix)
+  const head = new Uint8Array(result.head)
+  const scalar = BigInt(result.scalar)
+
+  con.log('[Crypto] getExtendedPublicKey result', result)
+  con.log('[Crypto] getExtendedPublicKey result -> pointBytes', pointBytes)
+  con.log('[Crypto] getExtendedPublicKey result -> prefix', prefix)
+  con.log('[Crypto] getExtendedPublicKey result -> head', head)
+  con.log('[Crypto] getExtendedPublicKey result -> scalar', scalar)
+
+  // Convert ArrayBuffers to Uint8Arrays, scalar string to bigint, and add point wrapper
+  return {
+    head: head,
+    prefix: prefix,
+    scalar: scalar,
+    point: { toRawBytes: () => pointBytes },
+    pointBytes: pointBytes
+  }
+}

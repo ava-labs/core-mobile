@@ -24,6 +24,7 @@ Pod::Spec.new do |s|
 
   s.dependency 'React-jsi'
   s.dependency 'React-callinvoker'
+  s.dependency 'OpenSSL-Universal', '3.3.2000'
 
   load 'nitrogen/generated/ios/NitroAvalabsCrypto+autolinking.rb'
   add_nitrogen_files(s)
@@ -52,7 +53,8 @@ Pod::Spec.new do |s|
     'CLANG_CXX_LANGUAGE_STANDARD'     => 'c++20',
     'SWIFT_OBJC_INTEROP_MODE'         => 'objcxx',
     'DEFINES_MODULE'                  => 'YES',
-    'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES'
+    'CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES' => 'YES',
+    'OTHER_LDFLAGS' => '$(inherited) -framework OpenSSL'
   }
 
   # Tell Xcode where the public headers live
