@@ -21,6 +21,26 @@ else
 fi
 STAMP_FILE="${OUT_DIR}/.last_target"
 
+# ------------------- Check for prebuilt -------------------
+PREBUILT_DIR="${IOS_DIR}/prebuilt"
+PREBUILT_XC="${PREBUILT_DIR}/secp256k1.xcframework"
+PREBUILT_VERSION="${PREBUILT_DIR}/VERSION"
+
+if [[ -d "${PREBUILT_XC}" ]]; then
+  if [[ -f "${PREBUILT_VERSION}" ]] && grep -q "^${SECP_TAG}$" "${PREBUILT_VERSION}"; then
+    echo "[secp] Using prebuilt XCFramework for ${SECP_TAG}"
+    mkdir -p "${OUT_DIR}"
+    rm -rf "${XC_OUT}"
+    cp -R "${PREBUILT_XC}" "${XC_OUT}"
+    rm -rf "${OUT_DIR}/include"
+    cp -R "${PREBUILT_DIR}/include" "${OUT_DIR}/include"
+    echo "${BUILD_TARGET}" > "${STAMP_FILE}"
+    exit 0
+  else
+    echo "[secp] Prebuilt found but version mismatch, building from source"
+  fi
+fi
+
 # ------------------- Homebrew tools -------------------
 BREW_PREFIX="$((/usr/bin/env brew --prefix) 2>/dev/null || true)"
 if [[ -n "$BREW_PREFIX" && -d "$BREW_PREFIX" ]]; then

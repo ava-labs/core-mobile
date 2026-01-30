@@ -88,3 +88,6 @@ nitrogen/
 ios/secp256k1-src
 ios/secp-build
 ios/secp-out
+
+# Keep prebuilt XCFramework for CI optimization
+!ios/prebuilt/

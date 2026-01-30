@@ -226,7 +226,22 @@ workflows:
         - pipeline_intermediate_files: "$BITRISE_DEPLOY_DIR/app-external-e2e-bitrise-signed.apk:BITRISE_APK_PATH\n$BITRISE_DEPLOY_DIR/app-external-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH\t"
   _build-ios:
     steps:
+    - script@1:
+        title: Check for prebuilt secp256k1
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            PREBUILT="packages/react-native-nitro-avalabs-crypto/ios/prebuilt/secp256k1.xcframework"
+            if [[ -d "$PREBUILT" ]]; then
+              echo "Prebuilt secp256k1 found, skipping autotools"
+              envman add --key SKIP_AUTOTOOLS --value "true"
+            else
+              echo "No prebuilt found, will install autotools"
+              envman add --key SKIP_AUTOTOOLS --value "false"
+            fi
     - brew-install@1:
+        run_if: '{{enveq "SKIP_AUTOTOOLS" "false"}}'
         inputs:
         - packages: autoconf automake libtool
     - restore-cocoapods-cache@1: {}
@@ -259,7 +274,22 @@ workflows:
         - automatic_code_signing: api-key
   _build-ios-simulator:
     steps:
+    - script@1:
+        title: Check for prebuilt secp256k1
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            PREBUILT="packages/react-native-nitro-avalabs-crypto/ios/prebuilt/secp256k1.xcframework"
+            if [[ -d "$PREBUILT" ]]; then
+              echo "Prebuilt secp256k1 found, skipping autotools"
+              envman add --key SKIP_AUTOTOOLS --value "true"
+            else
+              echo "No prebuilt found, will install autotools"
+              envman add --key SKIP_AUTOTOOLS --value "false"
+            fi
     - brew-install@1:
+        run_if: '{{enveq "SKIP_AUTOTOOLS" "false"}}'
         inputs:
         - packages: autoconf automake libtool
     - restore-cocoapods-cache@1: {}
