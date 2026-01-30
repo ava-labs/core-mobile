@@ -60,11 +60,5 @@ Pod::Spec.new do |s|
    'HEADER_SEARCH_PATHS' => '$(inherited) $(PODS_TARGET_SRCROOT)/ios/secp-out/include',
   }
 
-  s.user_target_xcconfig = {
-      'LIBRARY_SEARCH_PATHS[sdk=iphoneos*]' => '$(inherited) "$(PODS_ROOT)/../../node_modules/react-native-nitro-avalabs-crypto/ios/secp-build/iphoneos-arm64/lib"',
-    'LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]' => '$(inherited) "$(PODS_ROOT)/../../node_modules/react-native-nitro-avalabs-crypto/ios/secp-build/iphonesimulator-arm64/lib"',
-    'OTHER_LDFLAGS' => '$(inherited) -lsecp256k1'
-}
-
   install_modules_dependencies(s)
 end
