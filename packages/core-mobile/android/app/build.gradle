@@ -105,6 +105,21 @@ android {
 
         // required for react native config to work properly across different build variants
         resValue "string", "build_config_package", "com.avaxwallet"
+
+        // CI ABI optimization: only build required architectures for faster builds
+        ndk {
+            if (System.getenv("CI") == "true") {
+                def isE2eBuild = System.getenv("E2E") == "true"
+                if (isE2eBuild) {
+                    // E2E needs x86_64 for emulator testing
+                    abiFilters "arm64-v8a", "x86_64"
+                } else {
+                    // Production releases only need arm64 (modern devices)
+                    abiFilters "arm64-v8a"
+                }
+            }
+            // Local builds use default (all ABIs) for maximum compatibility
+        }
     }
 
     signingConfigs {

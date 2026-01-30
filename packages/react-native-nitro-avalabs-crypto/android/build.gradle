@@ -60,6 +60,18 @@ ext {
   enableModules     = (project.findProperty('secpModules')  ?: '')   // e.g., ecdh,recovery,schnorrsig,extrakeys
   // Use the same API level for all ABIs; default to max(minSdkVersion, 21). Override with -PsecpApi.
   secpApi           = (project.findProperty('secpApi') ?: Math.max(getExtOrIntegerDefault("minSdkVersion"), 21)).toString()  // Base directory
+
+  // Prebuilt support - check if prebuilt directory exists with all required .so files
+  // Can be overridden with -PforceSecpBuild=true to regenerate prebuilts
+  prebuiltDir       = file("${projectDir}/prebuilt")
+  prebuiltVersionFile = file("${projectDir}/prebuilt/VERSION")
+  forceSecpBuild    = project.findProperty('forceSecpBuild')?.toBoolean() ?: false
+  usePrebuilt       = !forceSecpBuild &&
+                      prebuiltDir.exists() &&
+                      new File(prebuiltDir, "arm64-v8a/libsecp256k1.so").exists() &&
+                      new File(prebuiltDir, "armeabi-v7a/libsecp256k1.so").exists() &&
+                      prebuiltVersionFile.exists() &&
+                      prebuiltVersionFile.text.trim() == secpTag
 }
 
 import org.apache.tools.ant.taskdefs.condition.Os
@@ -304,7 +316,7 @@ abis.each { abi ->
     inputs.files(fileTree(dir: workDirBase, includes: ['configure.ac','Makefile.am','autogen.sh'])).withPathSensitivity(PathSensitivity.RELATIVE)
     outputs.file(stampFile)
 
-    onlyIf { !(stampFile.exists() && stagedLib.exists()) }
+    onlyIf { !usePrebuilt && !(stampFile.exists() && stagedLib.exists()) }
 
     doLast {
 
@@ -420,7 +432,7 @@ abis.each { abi ->
     inputs.property('modules', enableModules)
     outputs.file(stagedLib)
 
-    onlyIf { !stagedLib.exists() }
+    onlyIf { !usePrebuilt && !stagedLib.exists() }
 
     doLast {
       def jobs = project.findProperty('jobs') ?: Runtime.runtime.availableProcessors()
@@ -470,12 +482,62 @@ abis.each { abi ->
   }
 }
 
+// Task to copy prebuilt libraries when available
+tasks.register('copyPrebuiltSecp') {
+  group = 'build'
+  description = 'Copy prebuilt secp256k1 libraries instead of building from source'
+
+  onlyIf { usePrebuilt }
+
+  doLast {
+    println "[secp] Using prebuilt libraries from ${prebuiltDir}"
+
+    abis.each { abi ->
+      def prebuiltLib = file("${prebuiltDir}/${abi}/libsecp256k1.so")
+      def targetDir = file("${outputsRoot}/${abi}/lib")
+
+      if (prebuiltLib.exists()) {
+        targetDir.mkdirs()
+        copy {
+          from prebuiltLib
+          into targetDir
+        }
+        println "[secp:${abi}] Using prebuilt library"
+      } else {
+        println "[secp:${abi}] WARNING: Prebuilt library not found at ${prebuiltLib}"
+      }
+    }
+
+    // Copy headers if they exist
+    def prebuiltHeaders = file("${prebuiltDir}/include")
+    if (prebuiltHeaders.exists()) {
+      outputsIncludeDir.mkdirs()
+      copy {
+        from prebuiltHeaders
+        into outputsIncludeDir
+      }
+      println "[secp] Copied headers from prebuilt"
+    }
+  }
+}
+
 // Aggregate task
- tasks.register('buildSecpAllAndroid') {
-   group = 'build'
-   description = 'Build secp256k1 Android .so for all ABIs and stage headers (incremental)'
-   dependsOn abis.collect { "buildSecp_${it}" }
- }
+tasks.register('buildSecpAllAndroid') {
+  group = 'build'
+  description = 'Build secp256k1 Android .so for all ABIs and stage headers (incremental)'
+
+  if (usePrebuilt) {
+    dependsOn 'copyPrebuiltSecp'
+    doFirst {
+      println "[secp] Using prebuilt libraries for ${secpTag}"
+    }
+  } else {
+    dependsOn abis.collect { "buildSecp_${it}" }
+    doFirst {
+      println "[secp] Building from source for ${secpTag}"
+    }
+  }
+}
 
 // Clean helper
  tasks.register('cleanSecpAndroid') {

@@ -91,3 +91,9 @@ ios/secp-out
 
 # Keep prebuilt XCFramework for CI optimization
 !ios/prebuilt/
+
+# Android secp256k1 build artifacts (generated during build)
+android/build/
+
+# Keep prebuilt Android libraries for CI optimization
+!android/prebuilt/

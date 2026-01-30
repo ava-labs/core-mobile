@@ -24,8 +24,23 @@ workflows:
     - set-java-version@1:
         inputs:
         - set_java_version: "17"
+    - script@1:
+        title: Check for prebuilt secp256k1 (Android)
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            PREBUILT="packages/react-native-nitro-avalabs-crypto/android/prebuilt/arm64-v8a/libsecp256k1.so"
+            if [[ -f "$PREBUILT" ]]; then
+              echo "Prebuilt secp256k1 found, skipping autotools"
+              envman add --key SKIP_ANDROID_AUTOTOOLS --value "true"
+            else
+              echo "No prebuilt found, will install autotools"
+              envman add --key SKIP_ANDROID_AUTOTOOLS --value "false"
+            fi
     - script:
         title: Install build dependencies
+        run_if: '{{enveq "SKIP_ANDROID_AUTOTOOLS" "false"}}'
         inputs:
           - content: |
               #!/usr/bin/env bash
@@ -150,12 +165,30 @@ workflows:
     - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
     steps:
     - set-java-version@1:
         inputs:
         - set_java_version: "17"
+    - script@1:
+        title: Check for prebuilt secp256k1 (Android)
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            PREBUILT="packages/react-native-nitro-avalabs-crypto/android/prebuilt/arm64-v8a/libsecp256k1.so"
+            if [[ -f "$PREBUILT" ]]; then
+              echo "Prebuilt secp256k1 found, skipping autotools"
+              envman add --key SKIP_ANDROID_AUTOTOOLS --value "true"
+            else
+              echo "No prebuilt found, will install autotools"
+              envman add --key SKIP_ANDROID_AUTOTOOLS --value "false"
+            fi
     - script:
         title: Install build dependencies
+        run_if: '{{enveq "SKIP_ANDROID_AUTOTOOLS" "false"}}'
         inputs:
           - content: |
               #!/usr/bin/env bash
