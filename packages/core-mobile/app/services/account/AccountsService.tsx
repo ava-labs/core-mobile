@@ -153,10 +153,11 @@ class AccountsService {
         isTestnet
       })
 
-      let xpAddresses: AddressIndex[] = [
-        { address: stripAddressPrefix(account.addressAVM), index: 0 }
-      ]
-      let xpAddressDictionary: XPAddressDictionary = {} as XPAddressDictionary
+      const strippedAVM = stripAddressPrefix(account.addressAVM)
+      let xpAddresses: AddressIndex[] = [{ address: strippedAVM, index: 0 }]
+      let xpAddressDictionary: XPAddressDictionary = {
+        [strippedAVM]: { space: 'e', index: 0, hasActivity: false }
+      }
       let hasMigratedXpAddresses = false
 
       try {

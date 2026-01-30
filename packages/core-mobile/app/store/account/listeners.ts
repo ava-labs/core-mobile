@@ -462,10 +462,11 @@ const populateXpAddressesForWallet = async ({
       continue
     }
 
-    let xpAddresses: AddressIndex[] = [
-      { address: stripAddressPrefix(account.addressAVM), index: 0 }
-    ]
-    let xpAddressDictionary: XPAddressDictionary = {} as XPAddressDictionary
+    const strippedAVM = stripAddressPrefix(account.addressAVM)
+    let xpAddresses: AddressIndex[] = [{ address: strippedAVM, index: 0 }]
+    let xpAddressDictionary: XPAddressDictionary = {
+      [strippedAVM]: { space: 'e', index: 0, hasActivity: false }
+    }
     let hasMigratedXpAddresses = false
 
     try {
@@ -508,6 +509,21 @@ const populateXpAddressesForWallet = async ({
 
         newAddressAVM = rederived[NetworkVMType.AVM]
         newAddressPVM = rederived[NetworkVMType.PVM]
+
+        // If xpAddresses is still using fallback (only has initial AVM address),
+        // update it to include both rederived AVM and PVM addresses
+        if (!hasMigratedXpAddresses) {
+          const strippedNewAVM = stripAddressPrefix(newAddressAVM)
+          const strippedNewPVM = stripAddressPrefix(newAddressPVM)
+          xpAddresses = [
+            { address: strippedNewAVM, index: 0 },
+            { address: strippedNewPVM, index: 0 }
+          ]
+          xpAddressDictionary = {
+            [strippedNewAVM]: { space: 'e', index: 0, hasActivity: false },
+            [strippedNewPVM]: { space: 'e', index: 0, hasActivity: false }
+          }
+        }
       } catch (error) {
         Logger.error(
           `Failed to rederive AVM/PVM addresses for account ${account.index}`,
