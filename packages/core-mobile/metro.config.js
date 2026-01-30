@@ -32,13 +32,28 @@ const baseConfig = {
       stream: require.resolve('./node_modules/stream-browserify'),
       '@noble/hashes': require.resolve('./node_modules/@noble/hashes')
     },
-    // Enable package exports to support modern npm packages like @lombard.finance/sdk
-    unstable_enablePackageExports: true,
     // sbmodern is needed for storybook
     resolverMainFields: ['sbmodern', 'react-native', 'browser', 'main'],
     assetExts: assetExts.filter(ext => ext !== 'svg'),
     sourceExts: [...sourceExts, 'svg', 'cjs', 'mjs'],
+    unstable_conditionNames: ['require', 'import'],
+    unstable_conditionsByPlatform: {
+      android: ['require', 'react-native'],
+      ios: ['require', 'react-native']
+    },
+    // TODO: should this be a temporary fix?
+    unstable_enablePackageExports: false,
     resolveRequest: (context, moduleName, platform) => {
+      // Enable package exports only for @lombard.finance/sdk
+      if (moduleName.startsWith('@lombard.finance/sdk')) {
+        const newContext = {
+          ...context,
+          unstable_enablePackageExports: true,
+          unstable_conditionNames: ['require', 'import'],
+          preferNativePlatform: true
+        }
+        return context.resolveRequest(newContext, moduleName, platform)
+      }
       if (moduleName.startsWith('@ledgerhq/cryptoassets-evm-signatures')) {
         return context.resolveRequest(
           context,
