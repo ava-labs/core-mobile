@@ -38,7 +38,10 @@ import { AccountCollection, Account, XPAddressDictionary } from './types'
 import {
   canMigrateActiveAccounts,
   deriveMissingSeedlessSessionKeys,
+  groupAccountsByWallet,
+  isAddressMissing,
   migrateRemainingActiveAccounts,
+  processWalletAccountsForRepopulation,
   shouldMigrateActiveAccounts
 } from './utils'
 
@@ -288,7 +291,7 @@ const migrateXpAddressesIfNeeded = async (
   if (
     Object.values(allAccounts).every(account => account.hasMigratedXpAddresses)
   ) {
-    Logger.info('XP address migration already completed. Skipping.')
+    repopulateMissingXpAddressesIfNeeded(_action, listenerApi)
     return
   }
 
@@ -355,6 +358,64 @@ const migrateXpAddressesIfNeeded = async (
 
     Logger.error(
       `XP address migration incomplete. ${failedAccounts.length} account(s) failed to migrate. Will retry on next app unlock.`
+    )
+  }
+
+  repopulateMissingXpAddressesIfNeeded(_action, listenerApi)
+}
+
+const repopulateMissingXpAddressesIfNeeded = async (
+  _action: AnyAction,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const state = listenerApi.getState()
+  const allAccounts = selectAccounts(state)
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const wallets = selectWallets(state)
+
+  // Find accounts with missing AVM or PVM addresses
+  const accountsWithMissingAddresses = Object.values(allAccounts).filter(
+    account =>
+      isAddressMissing(account.addressAVM) ||
+      isAddressMissing(account.addressPVM)
+  )
+
+  if (accountsWithMissingAddresses.length === 0) {
+    Logger.info('No accounts with missing XP addresses. Skipping repopulation.')
+    return
+  }
+
+  Logger.info(
+    `Found ${accountsWithMissingAddresses.length} account(s) with missing XP addresses. Repopulating...`
+  )
+
+  const updatedAccounts: AccountCollection = {}
+  const accountsByWallet = groupAccountsByWallet(accountsWithMissingAddresses)
+
+  // Process each wallet's accounts
+  for (const [walletId, accounts] of accountsByWallet) {
+    const wallet = wallets[walletId]
+    if (!wallet) {
+      Logger.warn(`Wallet ${walletId} not found. Skipping accounts.`)
+      continue
+    }
+
+    const walletUpdatedAccounts = await processWalletAccountsForRepopulation({
+      wallet,
+      accounts,
+      isDeveloperMode
+    })
+
+    Object.assign(updatedAccounts, walletUpdatedAccounts)
+  }
+
+  // Dispatch updates to Redux
+  if (Object.keys(updatedAccounts).length > 0) {
+    listenerApi.dispatch(setAccounts(updatedAccounts))
+    Logger.info(
+      `Successfully repopulated XP addresses for ${
+        Object.keys(updatedAccounts).length
+      } account(s)`
     )
   }
 }
