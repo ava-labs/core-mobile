@@ -31,8 +31,6 @@ import {
 } from 'react-native-safe-area-context'
 import { ActivityScreen } from './ActivityScreen'
 
-// Note: handleExplorerLink and handlePendingBridge are now defined inside ActivityScreen
-
 const ActivityHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const tabBarHeight = useBottomTabBarHeight()

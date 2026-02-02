@@ -1,8 +1,1 @@
-import React from 'react'
-import { NewEarnHomeScreen } from 'features/defiMarket/screens/NewEarnHomeScreen'
-
-const EarnScreen = (): JSX.Element => {
-  return <NewEarnHomeScreen />
-}
-
-export default EarnScreen
+export { NewEarnHomeScreen as default } from 'features/defiMarket/screens/NewEarnHomeScreen'

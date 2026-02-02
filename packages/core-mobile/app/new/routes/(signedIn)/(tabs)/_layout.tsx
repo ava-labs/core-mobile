@@ -1,6 +1,7 @@
 import {
   alpha,
   BlurViewWithFallback,
+  Icons,
   Pressable,
   Text,
   useTheme
@@ -10,9 +11,10 @@ import { BottomTabBarProps } from '@bottom-tabs/react-navigation'
 import { BottomTabs } from 'common/components/BottomTabs'
 import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import { useHasXpAddresses } from 'common/hooks/useHasXpAddresses'
-import React, { useMemo } from 'react'
-import { Image, ImageSourcePropType, Platform, StyleSheet } from 'react-native'
+import React, { FC, useMemo } from 'react'
+import { Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SvgProps } from 'react-native-svg'
 import { useSelector } from 'react-redux'
 import {
   selectIsInAppDefiBlocked,
@@ -26,7 +28,7 @@ const trackIcon = require('../../../assets/icons/tabs/search-custom.png')
 const stakeIcon = require('../../../assets/icons/tabs/psychiatry.png')
 const browserIcon = require('../../../assets/icons/tabs/compass.png')
 const activityIcon = require('../../../assets/icons/tabs/activity.png')
-const earnIcon = require('../../../assets/icons/tabs/whatshot.png')
+const earnPngIcon = require('../../../assets/icons/tabs/whatshot.png')
 
 const tabLabelStyle = {
   fontSize: 10,
@@ -63,13 +65,9 @@ export default function TabLayout(): JSX.Element {
   const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
   const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
 
-  // When borrow feature is enabled, show separate Stake and Earn tabs
-  // When borrow feature is disabled, use existing behavior (Stake or Earn based on DeFi flag)
-  const stakeTabTitle = isInAppDefiBorrowBlocked
-    ? isInAppDefiBlocked
-      ? 'Stake'
-      : 'Earn'
-    : 'Stake'
+  // Show 'Earn' title only when: borrow disabled + DeFi enabled (existing behavior)
+  const stakeTabTitle =
+    isInAppDefiBorrowBlocked && !isInAppDefiBlocked ? 'Earn' : 'Stake'
 
   return (
     <BottomTabs
@@ -119,7 +117,7 @@ export default function TabLayout(): JSX.Element {
         options={{
           tabBarButtonTestID: 'earn_tab',
           title: 'Earn',
-          tabBarIcon: () => earnIcon,
+          tabBarIcon: () => earnPngIcon,
           freezeOnBlur,
           // Hide when borrow feature is disabled
           tabBarItemHidden: isInAppDefiBorrowBlocked
@@ -197,10 +195,8 @@ const TabBar = ({
           return null
         }
         const isActive = state.index === index
+        const Icon = getIcon(route.name)
         const title = options?.title ?? route.name
-        const icon = options?.tabBarIcon?.({
-          focused: isActive
-        }) as ImageSourcePropType | undefined
 
         return (
           <Pressable
@@ -229,16 +225,7 @@ const TabBar = ({
               height: TAB_BAR_HEIGHT,
               gap: 4
             }}>
-            {icon && (
-              <Image
-                source={icon}
-                style={{
-                  width: 24,
-                  height: 24,
-                  tintColor: theme.colors.$textPrimary
-                }}
-              />
-            )}
+            <Icon color={theme.colors.$textPrimary} />
             <Text
               testID={`${title}_tab`}
               style={{
@@ -252,4 +239,23 @@ const TabBar = ({
       })}
     </BlurViewWithFallback>
   )
+}
+
+function getIcon(name: string): FC<SvgProps> {
+  switch (name) {
+    case 'portfolio':
+      return Icons.Navigation.Layers
+    case 'track':
+      return Icons.Navigation.Track
+    case 'stake':
+      return Icons.Navigation.Stake
+    case 'earn':
+      return Icons.Navigation.Earn
+    case 'browser':
+      return Icons.Navigation.Browser
+    case 'activity':
+      return Icons.Navigation.History
+    default:
+      return Icons.Navigation.Layers
+  }
 }

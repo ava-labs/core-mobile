@@ -77,6 +77,7 @@ import IconLayers from '../../assets/icons/layers.svg'
 import IconStake from '../../assets/icons/stake.svg'
 import IconBrowser from '../../assets/icons/browser.svg'
 import IconTrack from '../../assets/icons/track.svg'
+import IconEarn from '../../assets/icons/earn.svg'
 import IconWallet from '../../assets/icons/wallet.svg'
 import IconWalletClosed from '../../assets/icons/wallet_closed.svg'
 import IconSwapVertical from '../../assets/icons/swap_vertical.svg'
@@ -252,6 +253,7 @@ export const Icons = {
     Refresh: IconRefresh,
     Layers: IconLayers,
     Stake: IconStake,
+    Earn: IconEarn,
     Browser: IconBrowser,
     Track: IconTrack
   },
