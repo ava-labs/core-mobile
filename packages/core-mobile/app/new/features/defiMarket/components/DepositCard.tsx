@@ -14,6 +14,8 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { DefiMarket } from '../types'
 import { DefiMarketAssetLogo } from './DefiMarketAssetLogo'
 
+const BALANCE_MASK_WIDTH = 60
+
 export const DepositCard = ({
   market,
   width = DEFAULT_CARD_WIDTH,
@@ -43,7 +45,7 @@ export const DepositCard = ({
           variant="body2"
           sx={{ color: '$textSecondary' }}
           shouldMask={isPrivacyModeEnabled}
-          maskWidth={60}>
+          maskWidth={BALANCE_MASK_WIDTH}>
           {getAmount(
             market.asset.mintTokenBalance.balanceValue.value.toNumber()
           )}

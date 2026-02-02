@@ -72,13 +72,15 @@ export function DepositDetailScreen(): JSX.Element {
             {deposit.asset.symbol} on {deposit.marketName}
           </Text>
           {isPrivacyModeEnabled ? (
-            <HiddenBalanceText variant="heading2" />
+            <>
+              <HiddenBalanceText variant="heading2" />
+              <PrivacyModeAlert />
+            </>
           ) : (
             <Text variant="heading2" sx={{ color: '$textPrimary' }}>
               {amountInCurrency}
             </Text>
           )}
-          {isPrivacyModeEnabled && <PrivacyModeAlert />}
         </View>
       </View>
     )

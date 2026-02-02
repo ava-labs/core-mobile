@@ -17,6 +17,7 @@ import { AvailableRewardsData } from '../hooks/useAvailableRewards'
 import { DefiMarketLogo } from './DefiMarketLogo'
 
 const MINIMUM_DISPLAY_AMOUNT = 0.001
+const REWARDS_DETAIL_MASK_WIDTH = 100
 
 type RewardsBannerProps = {
   availableRewards: AvailableRewardsData
@@ -101,7 +102,7 @@ export const RewardsBanner = ({
             numberOfLines={1}
             sx={{ flex: 1, color: '$textSecondary' }}
             shouldMask={isPrivacyModeEnabled}
-            maskWidth={100}>
+            maskWidth={REWARDS_DETAIL_MASK_WIDTH}>
             {rewards
               .slice(0, 1)
               .map(reward => `${reward.amount.toFixed(7)} ${reward.token}`)
