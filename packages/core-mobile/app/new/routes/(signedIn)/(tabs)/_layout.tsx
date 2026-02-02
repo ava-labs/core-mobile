@@ -116,17 +116,17 @@ export default function TabLayout(): JSX.Element {
           }}
         />
       )}
-      {!isInAppDefiBorrowBlocked && (
-        <BottomTabs.Screen
-          name="earn"
-          options={{
-            tabBarButtonTestID: 'earn_tab',
-            title: 'Earn',
-            tabBarIcon: () => earnIcon,
-            freezeOnBlur
-          }}
-        />
-      )}
+      <BottomTabs.Screen
+        name="earn"
+        options={{
+          tabBarButtonTestID: 'earn_tab',
+          title: 'Earn',
+          tabBarIcon: () => earnIcon,
+          freezeOnBlur,
+          // Hide when borrow feature is disabled
+          tabBarItemHidden: isInAppDefiBorrowBlocked
+        }}
+      />
       <BottomTabs.Screen
         name="browser"
         options={{
@@ -136,17 +136,17 @@ export default function TabLayout(): JSX.Element {
           freezeOnBlur
         }}
       />
-      {isInAppDefiBorrowBlocked && (
-        <BottomTabs.Screen
-          name="activity"
-          options={{
-            tabBarButtonTestID: 'activity_tab',
-            title: 'Activity',
-            tabBarIcon: () => activityIcon,
-            freezeOnBlur
-          }}
-        />
-      )}
+      <BottomTabs.Screen
+        name="activity"
+        options={{
+          tabBarButtonTestID: 'activity_tab',
+          title: 'Activity',
+          tabBarIcon: () => activityIcon,
+          freezeOnBlur,
+          // Hide when borrow feature is enabled (Activity moves to Portfolio sub-tab)
+          tabBarItemHidden: !isInAppDefiBorrowBlocked
+        }}
+      />
     </BottomTabs>
   )
 }
@@ -159,7 +159,6 @@ const TabBar = ({
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
   const hasXpAddresses = useHasXpAddresses()
-  const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
   const backgroundColor = useMemo(() => {
     return theme.isDark
       ? isIOS
@@ -186,23 +185,22 @@ const TabBar = ({
               : '#F1F1F2'
             : 'transparent'
       }}>
-      {/* eslint-disable-next-line sonarjs/cognitive-complexity */}
       {state.routes.map((route, index) => {
-        if (route.name === 'stake' && !hasXpAddresses) {
+        const options = descriptors[route.key]?.options
+        // Check tabBarItemHidden option
+        if (options?.tabBarItemHidden) {
           return null
         }
+        // Hide stake/earn tabs when user doesn't have XP addresses
         if (
-          route.name === 'earn' &&
-          (!hasXpAddresses || isInAppDefiBorrowBlocked)
+          (route.name === 'stake' || route.name === 'earn') &&
+          !hasXpAddresses
         ) {
-          return null
-        }
-        if (route.name === 'activity' && !isInAppDefiBorrowBlocked) {
           return null
         }
         const isActive = state.index === index
         const Icon = getIcon(route.name)
-        const title = descriptors[route.key]?.options?.title ?? route.name
+        const title = options?.title ?? route.name
         const isEarnTab = route.name === 'earn'
 
         return (
