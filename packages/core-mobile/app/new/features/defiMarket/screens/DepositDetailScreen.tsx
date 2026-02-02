@@ -1,6 +1,7 @@
 import {
   Button,
   Card,
+  PrivacyModeAlert,
   ScrollView,
   Separator,
   Text,
@@ -10,12 +11,15 @@ import { LoadingState } from 'common/components/LoadingState'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useDeposits } from 'hooks/earn/useDeposits'
 import React, { useCallback, useMemo } from 'react'
+import { useSelector } from 'react-redux'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { DeFiRowItem } from 'features/portfolio/defi/components/DeFiRowItem'
 import { BalanceText } from 'common/components/BalanceText'
+import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useExchangedAmount } from 'common/hooks/useExchangedAmount'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { formatNumber } from 'utils/formatNumber/formatNumber'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { DefiMarketAssetLogo } from '../components/DefiMarketAssetLogo'
 import { DefiAssetLogo } from '../components/DefiAssetLogo'
 
@@ -23,6 +27,7 @@ export function DepositDetailScreen(): JSX.Element {
   const { marketId } = useLocalSearchParams<{ marketId: string }>()
   const { navigate } = useRouter()
   const { deposits } = useDeposits()
+  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const deposit = useMemo(() => {
     return deposits.find(item => item.uniqueMarketId === marketId)
   }, [deposits, marketId])
@@ -66,13 +71,20 @@ export function DepositDetailScreen(): JSX.Element {
           <Text variant="heading2" sx={{ color: '$textSecondary' }}>
             {deposit.asset.symbol} on {deposit.marketName}
           </Text>
-          <Text variant="heading2" sx={{ color: '$textPrimary' }}>
-            {amountInCurrency}
-          </Text>
+          {isPrivacyModeEnabled ? (
+            <>
+              <HiddenBalanceText variant="heading2" />
+              <PrivacyModeAlert />
+            </>
+          ) : (
+            <Text variant="heading2" sx={{ color: '$textPrimary' }}>
+              {amountInCurrency}
+            </Text>
+          )}
         </View>
       </View>
     )
-  }, [amountInCurrency, deposit])
+  }, [amountInCurrency, deposit, isPrivacyModeEnabled])
 
   const renderBanner = useCallback(() => {
     if (!deposit) return null
@@ -158,14 +170,21 @@ export function DepositDetailScreen(): JSX.Element {
                 {deposit.asset.symbol}
               </Text>
             </View>
-            <BalanceText variant="body1" sx={{ color: '$textSecondary' }}>
-              {amountInCurrency}
-            </BalanceText>
+            {isPrivacyModeEnabled ? (
+              <HiddenBalanceText
+                variant="body1"
+                sx={{ color: '$textSecondary' }}
+              />
+            ) : (
+              <BalanceText variant="body1" sx={{ color: '$textSecondary' }}>
+                {amountInCurrency}
+              </BalanceText>
+            )}
           </DeFiRowItem>
         </Card>
       </View>
     )
-  }, [amountInCurrency, deposit])
+  }, [amountInCurrency, deposit, isPrivacyModeEnabled])
 
   const renderFooter = useCallback(() => {
     if (!deposit) return null
