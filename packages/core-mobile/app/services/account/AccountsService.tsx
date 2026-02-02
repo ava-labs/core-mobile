@@ -176,10 +176,16 @@ class AccountsService {
         isTestnet
       })
 
+      const strippedAVM = stripAddressPrefix(account.addressAVM)
+      const strippedPVM = stripAddressPrefix(account.addressPVM)
+      const strippedAvalancheAddress = strippedAVM || strippedPVM
+
       let xpAddresses: AddressIndex[] = [
-        { address: stripAddressPrefix(account.addressAVM), index: 0 }
+        { address: strippedAvalancheAddress, index: 0 }
       ]
-      let xpAddressDictionary: XPAddressDictionary = {} as XPAddressDictionary
+      let xpAddressDictionary: XPAddressDictionary = {
+        [strippedAvalancheAddress]: { space: 'e', index: 0, hasActivity: false }
+      }
       let hasMigratedXpAddresses = false
 
       try {
