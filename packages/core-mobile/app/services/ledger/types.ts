@@ -2,6 +2,8 @@ import { Curve } from 'utils/publicKeys'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import { BtcWalletPolicyDetails } from '@avalabs/vm-module-types'
+import { PrimaryAccount } from 'store/account'
+import { WalletType } from 'services/wallet/types'
 
 // ============================================================================
 // LEDGER APP TYPES
@@ -135,9 +137,18 @@ export interface SetupProgress {
 export interface WalletCreationOptions {
   deviceId: string
   deviceName?: string
-  derivationPathType?: LedgerDerivationPathType
+  derivationPathType: LedgerDerivationPathType
   accountCount?: number
   individualKeys?: PublicKeyInfo[]
+}
+
+export interface WalletUpdateOptions {
+  deviceId: string
+  walletId: string
+  walletName: string
+  walletType: WalletType
+  account: PrimaryAccount
+  solanaKeys: PublicKeyInfo[]
 }
 
 // ============================================================================

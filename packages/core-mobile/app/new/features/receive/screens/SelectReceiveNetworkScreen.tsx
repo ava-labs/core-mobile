@@ -4,7 +4,7 @@ import { useCombinedPrimaryNetworks } from 'common/hooks/useCombinedPrimaryNetwo
 import { useReceiveSelectedNetwork } from '../store'
 
 export const SelectReceiveNetworkScreen = (): JSX.Element => {
-  const { networks } = useCombinedPrimaryNetworks()
+  const { networks } = useCombinedPrimaryNetworks({ hideEmptySolana: true })
   const [selectedNetwork, setSelectedNetwork] = useReceiveSelectedNetwork()
 
   return (

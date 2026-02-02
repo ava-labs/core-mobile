@@ -517,7 +517,7 @@ export class BalanceService {
         getAddressesForAccountAndNetwork(account, network)
       )
       for (const address of addresses) {
-        if (address) acc[address] = account
+        if (address && address.length > 0) acc[address] = account
       }
       return acc
     }, {} as Record<string, Account>)
