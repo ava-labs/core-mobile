@@ -22,6 +22,8 @@ import {
 } from 'react-native'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { WalletType } from 'services/wallet/types'
+import { LedgerAppType } from 'services/ledger/types'
+import { LedgerConnectionCaption } from 'features/accountSettings/components/LedgerConnectionCaption'
 import { DropdownMenu } from './DropdownMenu'
 import { WalletIcon } from './WalletIcon'
 
@@ -52,8 +54,10 @@ const WalletCard = ({
     getDropdownItems,
     handleDropdownSelect,
     handleAddAccount: handleAddAccountToWallet,
-    isAddingAccount
-  } = useManageWallet()
+    isAddingAccount,
+    isLedger,
+    isAvalancheAppOpen
+  } = useManageWallet(wallet)
 
   const renderExpansionIcon = useCallback(() => {
     return (
@@ -144,26 +148,33 @@ const WalletCard = ({
           }}
         />
         {wallet.type !== WalletType.PRIVATE_KEY ? (
-          <Button
-            size="medium"
-            leftIcon={
-              isAddingAccount ? undefined : (
-                <Icons.Content.Add
-                  color={colors.$textPrimary}
-                  width={24}
-                  height={24}
-                />
-              )
-            }
-            type="secondary"
-            disabled={isAddingAccount}
-            onPress={() => handleAddAccountToWallet(wallet)}>
-            {isAddingAccount ? (
-              <ActivityIndicator size="small" color={colors.$textPrimary} />
-            ) : (
-              'Add account'
+          <View sx={{ gap: 16 }}>
+            {((isLedger && isAvalancheAppOpen) || !isLedger) && (
+              <Button
+                size="medium"
+                leftIcon={
+                  isAddingAccount ? undefined : (
+                    <Icons.Content.Add
+                      color={colors.$textPrimary}
+                      width={24}
+                      height={24}
+                    />
+                  )
+                }
+                type="secondary"
+                disabled={isAddingAccount}
+                onPress={() => handleAddAccountToWallet(wallet)}>
+                {isAddingAccount ? (
+                  <ActivityIndicator size="small" color={colors.$textPrimary} />
+                ) : (
+                  'Add account'
+                )}
+              </Button>
             )}
-          </Button>
+            {isLedger && !isAvalancheAppOpen && (
+              <LedgerConnectionCaption appType={LedgerAppType.AVALANCHE} />
+            )}
+          </View>
         ) : (
           <></>
         )}
