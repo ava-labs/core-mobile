@@ -1,19 +1,15 @@
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import { Network } from '@avalabs/core-chains-sdk'
 import {
   ANIMATED,
-  Chip,
   Image,
   SPRING_LINEAR_TRANSITION,
-  useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
-import { DropdownMenu } from 'common/components/DropdownMenu'
 import { DropdownSelections } from 'common/components/DropdownSelections'
-import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
-import { DropdownSelection } from 'common/types'
+import useInAppBrowser from 'common/hooks/useInAppBrowser'
+import { getSourceChainId } from 'common/utils/bridgeUtils'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
@@ -22,32 +18,32 @@ import { Platform, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
+import { useRouter } from 'expo-router'
 import { selectActiveAccount } from 'store/account/slice'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
+import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ActivityList } from '../components/ActivityList'
+import { NetworkFilterDropdown } from '../components/NetworkFilterDropdown'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
 
 const errorIcon = require('../../../assets/icons/unamused_emoji.png')
 const viewInExplorerIcon = require('../../../assets/icons/flashlight.png')
 
 export const ActivityScreen = ({
-  isSearchBarFocused,
-  searchText,
-  containerStyle,
-  handleExplorerLink,
-  handlePendingBridge
+  isSearchBarFocused = false,
+  searchText = '',
+  containerStyle
 }: {
-  isSearchBarFocused: boolean
-  searchText: string
-  handleExplorerLink: (
-    explorerLink: string,
-    hash?: string,
-    hashType?: 'account' | 'tx'
-  ) => void
-  handlePendingBridge: (transaction: BridgeTransaction | BridgeTransfer) => void
+  isSearchBarFocused?: boolean
+  searchText?: string
   containerStyle: ViewStyle
 }): JSX.Element => {
+  const { navigate } = useRouter()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const { openUrl } = useInAppBrowser()
   const header = useHeaderMeasurements()
   const {
     data,
@@ -63,6 +59,33 @@ export const ActivityScreen = ({
   } = useActivityFilterAndSearch({ searchText })
   const account = useSelector(selectActiveAccount)
   const isLoadingBalances = useIsLoadingBalancesForAccount(account)
+
+  const handlePendingBridge = useCallback(
+    (pendingBridge: BridgeTransaction | BridgeTransfer): void => {
+      navigate({
+        // @ts-ignore TODO: make routes typesafe
+        pathname: '/bridgeStatus',
+        params: {
+          txHash: pendingBridge.sourceTxHash,
+          chainId: getSourceChainId(pendingBridge, isDeveloperMode)
+        }
+      })
+    },
+    [navigate, isDeveloperMode]
+  )
+
+  const handleExplorerLink = useCallback(
+    (
+      explorerLink: string,
+      hash?: string,
+      hashType?: 'account' | 'tx'
+    ): void => {
+      AnalyticsService.capture('ExplorerLinkClicked')
+      const url = getExplorerAddressByNetwork(explorerLink, hash, hashType)
+      openUrl(url)
+    },
+    [openUrl]
+  )
 
   const isSolanaNetwork = network && isSolanaChainId(network.chainId)
 
@@ -203,53 +226,5 @@ export const ActivityScreen = ({
         refresh={refresh}
       />
     </Animated.View>
-  )
-}
-
-const NetworkFilterDropdown = ({
-  network,
-  title,
-  data,
-  onSelected
-}: {
-  network: Network
-  title: DropdownSelection['title']
-  data: DropdownSelection['data']
-  onSelected: DropdownSelection['onSelected']
-}): JSX.Element => {
-  const { theme } = useTheme()
-
-  const renderLeftIcon = useCallback(() => {
-    if (!network) return <></>
-
-    return (
-      <NetworkLogoWithChain
-        network={network}
-        networkSize={18}
-        outerBorderColor={theme.colors.$surfaceSecondary}
-        showChainLogo={false}
-      />
-    )
-  }, [network, theme.colors.$surfaceSecondary])
-
-  return (
-    <DropdownMenu
-      groups={data}
-      onPressAction={(event: { nativeEvent: { event: string } }) =>
-        onSelected(event.nativeEvent.event)
-      }>
-      <Chip
-        renderLeft={renderLeftIcon}
-        style={{
-          paddingLeft: 6,
-          paddingRight: 10,
-          gap: 4
-        }}
-        size="large"
-        hitSlop={8}
-        testID="network_dropdown_btn">
-        {title}
-      </Chip>
-    </DropdownMenu>
   )
 }

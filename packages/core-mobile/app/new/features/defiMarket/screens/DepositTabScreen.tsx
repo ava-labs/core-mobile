@@ -22,19 +22,12 @@ import {
   ViewStyle
 } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { useDispatch, useSelector } from 'react-redux'
-import {
-  selectIsDeveloperMode,
-  toggleDeveloperMode
-} from 'store/settings/advanced'
+import { useSelector } from 'react-redux'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useDeposits } from 'hooks/earn/useDeposits'
 import { useRouter } from 'expo-router'
-import { Placeholder } from 'common/components/Placeholder'
 import { LoadingState } from 'common/components/LoadingState'
 import { DropdownSelections } from 'common/components/DropdownSelections'
-import CoreAppIconLight from '../../../assets/icons/core-app-icon-light.svg'
-import CoreAppIconDark from '../../../assets/icons/core-app-icon-dark.svg'
 import { DefiMarket } from '../types'
 import { DepositCard } from '../components/DepositCard'
 import { useDepositsFilterAndSort } from '../hooks/useDepositsFilterAndSort'
@@ -58,10 +51,8 @@ const DepositTabScreen = ({
   const { navigate } = useRouter()
   const { deposits, isLoading, refresh, isRefreshing } = useDeposits()
   const { theme } = useTheme()
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const scrollOffsetRef = useRef({ x: 0, y: 0 })
-  const dispatch = useDispatch()
 
   const {
     data: filteredDeposits,
@@ -216,37 +207,6 @@ const DepositTabScreen = ({
     },
     [onScroll]
   )
-
-  if (isDeveloperMode) {
-    return (
-      <Placeholder
-        sx={{ flex: 1, paddingBottom: 50 }}
-        icon={
-          <View style={{ marginBottom: 0 }}>
-            {theme.isDark ? <CoreAppIconLight /> : <CoreAppIconDark />}
-            <View
-              style={{
-                position: 'absolute',
-                bottom: -15,
-                right: -14
-              }}>
-              <Text variant="heading6" sx={{ fontSize: 36, lineHeight: 44 }}>
-                ⚠️
-              </Text>
-            </View>
-          </View>
-        }
-        title={`Deposit is only\navailable on mainnet`}
-        description="Earn yield by depositing crypto into lending protocols and withdraw anytime."
-        button={{
-          title: 'Turn off testnet',
-          onPress: () => {
-            dispatch(toggleDeveloperMode())
-          }
-        }}
-      />
-    )
-  }
 
   return (
     <FlashList

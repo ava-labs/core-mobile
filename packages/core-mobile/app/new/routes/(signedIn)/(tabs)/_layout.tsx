@@ -12,11 +12,14 @@ import { BottomTabs } from 'common/components/BottomTabs'
 import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import { useHasXpAddresses } from 'common/hooks/useHasXpAddresses'
 import React, { FC, useMemo } from 'react'
-import { Platform, StyleSheet } from 'react-native'
+import { Image, Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SvgProps } from 'react-native-svg'
 import { useSelector } from 'react-redux'
-import { selectIsInAppDefiBlocked } from 'store/posthog'
+import {
+  selectIsInAppDefiBlocked,
+  selectIsInAppDefiBorrowBlocked
+} from 'store/posthog'
 
 const isIOS = Platform.OS === 'ios'
 
@@ -25,6 +28,7 @@ const trackIcon = require('../../../assets/icons/tabs/search-custom.png')
 const stakeIcon = require('../../../assets/icons/tabs/psychiatry.png')
 const browserIcon = require('../../../assets/icons/tabs/compass.png')
 const activityIcon = require('../../../assets/icons/tabs/activity.png')
+const earnIcon = require('../../../assets/icons/tabs/whatshot.png')
 
 const tabLabelStyle = {
   fontSize: 10,
@@ -59,6 +63,15 @@ export default function TabLayout(): JSX.Element {
     }
   }, [theme.colors.$white, theme.isDark])
   const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
+  const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
+
+  // When borrow feature is enabled, show separate Stake and Earn tabs
+  // When borrow feature is disabled, use existing behavior (Stake or Earn based on DeFi flag)
+  const stakeTabTitle = isInAppDefiBorrowBlocked
+    ? isInAppDefiBlocked
+      ? 'Stake'
+      : 'Earn'
+    : 'Stake'
 
   return (
     <BottomTabs
@@ -96,9 +109,20 @@ export default function TabLayout(): JSX.Element {
         <BottomTabs.Screen
           name="stake"
           options={{
-            tabBarButtonTestID: 'earn_tab',
-            title: isInAppDefiBlocked ? 'Stake' : 'Earn',
+            tabBarButtonTestID: 'stake_tab',
+            title: stakeTabTitle,
             tabBarIcon: () => stakeIcon,
+            freezeOnBlur
+          }}
+        />
+      )}
+      {!isInAppDefiBorrowBlocked && (
+        <BottomTabs.Screen
+          name="earn"
+          options={{
+            tabBarButtonTestID: 'earn_tab',
+            title: 'Earn',
+            tabBarIcon: () => earnIcon,
             freezeOnBlur
           }}
         />
@@ -112,15 +136,17 @@ export default function TabLayout(): JSX.Element {
           freezeOnBlur
         }}
       />
-      <BottomTabs.Screen
-        name="activity"
-        options={{
-          tabBarButtonTestID: 'activity_tab',
-          title: 'Activity',
-          tabBarIcon: () => activityIcon,
-          freezeOnBlur
-        }}
-      />
+      {isInAppDefiBorrowBlocked && (
+        <BottomTabs.Screen
+          name="activity"
+          options={{
+            tabBarButtonTestID: 'activity_tab',
+            title: 'Activity',
+            tabBarIcon: () => activityIcon,
+            freezeOnBlur
+          }}
+        />
+      )}
     </BottomTabs>
   )
 }
@@ -133,6 +159,7 @@ const TabBar = ({
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
   const hasXpAddresses = useHasXpAddresses()
+  const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
   const backgroundColor = useMemo(() => {
     return theme.isDark
       ? isIOS
@@ -159,13 +186,24 @@ const TabBar = ({
               : '#F1F1F2'
             : 'transparent'
       }}>
+      {/* eslint-disable-next-line sonarjs/cognitive-complexity */}
       {state.routes.map((route, index) => {
         if (route.name === 'stake' && !hasXpAddresses) {
+          return null
+        }
+        if (
+          route.name === 'earn' &&
+          (!hasXpAddresses || isInAppDefiBorrowBlocked)
+        ) {
+          return null
+        }
+        if (route.name === 'activity' && !isInAppDefiBorrowBlocked) {
           return null
         }
         const isActive = state.index === index
         const Icon = getIcon(route.name)
         const title = descriptors[route.key]?.options?.title ?? route.name
+        const isEarnTab = route.name === 'earn'
 
         return (
           <Pressable
@@ -194,7 +232,18 @@ const TabBar = ({
               height: TAB_BAR_HEIGHT,
               gap: 4
             }}>
-            <Icon color={theme.colors.$textPrimary} />
+            {isEarnTab ? (
+              <Image
+                source={earnIcon}
+                style={{
+                  width: 24,
+                  height: 24,
+                  tintColor: theme.colors.$textPrimary
+                }}
+              />
+            ) : (
+              <Icon color={theme.colors.$textPrimary} />
+            )}
             <Text
               testID={`${title}_tab`}
               style={{
@@ -217,6 +266,8 @@ function getIcon(name: string): FC<SvgProps> {
     case 'track':
       return Icons.Navigation.Track
     case 'stake':
+      return Icons.Navigation.Stake
+    case 'earn':
       return Icons.Navigation.Stake
     case 'browser':
       return Icons.Navigation.Browser
