@@ -88,7 +88,7 @@ export function getTokensWithBalanceForAccountFromCache({
   if (!account) return []
 
   const results = (
-    queryClient.getQueryData(balanceKey(account)) as
+    queryClient.getQueryData(balanceKey(account, Object.values(networks))) as
       | AdjustedNormalizedBalancesForAccount[]
       | undefined
   )?.filter(balance => balance.accountId === account.id)

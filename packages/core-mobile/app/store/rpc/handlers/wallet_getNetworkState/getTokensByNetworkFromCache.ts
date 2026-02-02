@@ -26,9 +26,9 @@ export function getTokensByNetworkFromCache({
     return { enabledTokens: [], disabledTokens: [] }
   }
 
-  const cachedData = queryClient.getQueryData(balanceKey(account)) as
-    | AdjustedNormalizedBalancesForAccount[]
-    | undefined
+  const cachedData = queryClient.getQueryData(
+    balanceKey(account, [network])
+  ) as AdjustedNormalizedBalancesForAccount[] | undefined
 
   const balances = cachedData?.find(
     balance => balance.chainId === network.chainId

@@ -39,8 +39,10 @@ export const AccountAddresses = ({
   const { networks } = useCombinedPrimaryNetworks({ hideEmptySolana: false })
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
 
-  const isMissingSolanaAddress =
-    account?.addressSVM === undefined || account?.addressSVM.length === 0
+  const isMissingSolanaAddress = useMemo(
+    () => account?.addressSVM === undefined || account?.addressSVM.length === 0,
+    [account?.addressSVM]
+  )
 
   const isLedger = useMemo(() => {
     return (

@@ -3,6 +3,7 @@ import { balanceKey } from 'features/portfolio/hooks/useAccountBalances'
 import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
+import { selectEnabledNetworks } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export const useRefreshStakingBalances = (
@@ -14,6 +15,7 @@ export const useRefreshStakingBalances = (
   const pAddresses =
     activeAccount?.xpAddresses?.map(address => address.address) ?? []
   const pAddressesSorted = pAddresses.sort().join(',')
+  const enabledNetworks = useSelector(selectEnabledNetworks)
 
   return useCallback(
     ({ shouldRefreshStakes }: { shouldRefreshStakes: boolean }) => {
@@ -24,10 +26,17 @@ export const useRefreshStakingBalances = (
           })
         }
         queryClient.invalidateQueries({
-          queryKey: balanceKey(activeAccount)
+          queryKey: balanceKey(activeAccount, Object.values(enabledNetworks))
         })
       }, timeout)
     },
-    [queryClient, timeout, activeAccount, isDeveloperMode, pAddressesSorted]
+    [
+      queryClient,
+      timeout,
+      activeAccount,
+      isDeveloperMode,
+      pAddressesSorted,
+      enabledNetworks
+    ]
   )
 }
