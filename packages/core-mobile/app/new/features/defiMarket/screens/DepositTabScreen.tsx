@@ -1,6 +1,7 @@
 import {
   AddCard,
   GRID_GAP,
+  PrivacyModeAlert,
   SCREEN_WIDTH,
   SPRING_LINEAR_TRANSITION,
   Text,
@@ -26,6 +27,7 @@ import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useDeposits } from 'hooks/earn/useDeposits'
 import { useRouter } from 'expo-router'
 import { Placeholder } from 'common/components/Placeholder'
@@ -57,6 +59,7 @@ const DepositTabScreen = ({
   const { deposits, isLoading, refresh, isRefreshing } = useDeposits()
   const { theme } = useTheme()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const scrollOffsetRef = useRef({ x: 0, y: 0 })
   const dispatch = useDispatch()
 
@@ -169,6 +172,11 @@ const DepositTabScreen = ({
             anytime.
           </Text>
         </Animated.View>
+        {isPrivacyModeEnabled && (
+          <View sx={{ paddingHorizontal: 16, marginBottom: 8 }}>
+            <PrivacyModeAlert />
+          </View>
+        )}
         {availableRewards.hasRewardsToClaim && (
           <RewardsBanner
             availableRewards={availableRewards}
@@ -191,7 +199,8 @@ const DepositTabScreen = ({
     sort,
     availableRewards,
     claimAllRewards,
-    isClaimingRewards
+    isClaimingRewards,
+    isPrivacyModeEnabled
   ])
 
   useEffect(() => {
