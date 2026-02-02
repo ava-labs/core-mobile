@@ -123,16 +123,32 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const { formatCurrency } = useFormatCurrency()
   const formattedBalance = useMemo(() => {
     // CP-10570: Balances should never show $0.00
-    return allBalancesInaccurate || balanceTotalInCurrency === 0
-      ? formatCurrency({
-          amount: 0,
-          withoutCurrencySuffix: true
-        }).replace('0.00', UNKNOWN_AMOUNT)
-      : formatCurrency({
-          amount: balanceTotalInCurrency,
-          withoutCurrencySuffix: true
-        })
-  }, [allBalancesInaccurate, balanceTotalInCurrency, formatCurrency])
+    // Show $- when in testnet mode or when loading the balances fails (allBalancesInaccurate)
+    if (isDeveloperMode || allBalancesInaccurate) {
+      return formatCurrency({
+        amount: 0,
+        withoutCurrencySuffix: true
+      }).replace('0.00', UNKNOWN_AMOUNT)
+    }
+
+    // Show $0 for empty accounts on mainnet
+    if (balanceTotalInCurrency === 0) {
+      return formatCurrency({
+        amount: 0,
+        withoutCurrencySuffix: true
+      }).replace('0.00', '0')
+    }
+
+    return formatCurrency({
+      amount: balanceTotalInCurrency,
+      withoutCurrencySuffix: true
+    })
+  }, [
+    isDeveloperMode,
+    allBalancesInaccurate,
+    balanceTotalInCurrency,
+    formatCurrency
+  ])
 
   const { percentChange24h, valueChange24h, indicatorStatus } =
     useAccountPerformanceSummary(activeAccount)

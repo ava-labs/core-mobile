@@ -14,6 +14,7 @@ import { useIsLoadingBalancesForWallet } from 'features/portfolio/hooks/useIsLoa
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { Wallet } from 'store/wallet/types'
 
@@ -29,6 +30,7 @@ export const WalletBalance = ({
   variant?: 'spinner' | 'skeleton'
 }): JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const {
     theme: { colors, isDark }
   } = useTheme()
@@ -45,13 +47,22 @@ export const WalletBalance = ({
   }, [isLoading, balanceTotalInCurrency])
 
   const walletBalance = useMemo(() => {
-    return balanceTotalInCurrency > 0
-      ? formatCurrency({
-          amount: balanceTotalInCurrency,
-          notation: balanceTotalInCurrency < 100000 ? undefined : 'compact'
-        })
-      : formatCurrency({ amount: 0 }).replace(/[\d.,]+/g, UNKNOWN_AMOUNT)
-  }, [formatCurrency, balanceTotalInCurrency])
+    // Show $- when in testnet mode
+    if (isDeveloperMode) {
+      return formatCurrency({ amount: 0 }).replace(/[\d.,]+/g, UNKNOWN_AMOUNT)
+    }
+
+    // Show $0 for empty wallets on mainnet
+    if (balanceTotalInCurrency === 0) {
+      return formatCurrency({ amount: 0 }).replace('0.00', '0')
+    }
+
+    // Show actual balance for wallets with funds
+    return formatCurrency({
+      amount: balanceTotalInCurrency,
+      notation: balanceTotalInCurrency < 100000 ? undefined : 'compact'
+    })
+  }, [formatCurrency, balanceTotalInCurrency, isDeveloperMode])
 
   const renderMaskView = useCallback(() => {
     return (
