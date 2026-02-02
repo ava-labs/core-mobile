@@ -8,7 +8,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { formatBalanceDisplay } from 'features/wallets/utils/formatBalanceDisplay'
 import React, { useCallback, useMemo } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { useSelector } from 'react-redux'
@@ -42,20 +42,10 @@ export const AccountBalance = ({
   const { formatCurrency } = useFormatCurrency()
 
   const accountBalance = useMemo(() => {
-    // Show $- when in testnet mode
-    if (isDeveloperMode) {
-      return formatCurrency({ amount: 0 }).replace(/[\d.,]+/g, UNKNOWN_AMOUNT)
-    }
-
-    // Show $0 for empty accounts on mainnet
-    if (balance === 0) {
-      return formatCurrency({ amount: 0 }).replace('0.00', '0')
-    }
-
-    return formatCurrency({
-      amount: balance,
-      notation: balance < 100000 ? undefined : 'compact',
-      showLessThanThreshold: true
+    return formatBalanceDisplay({
+      balance,
+      isDeveloperMode,
+      formatCurrency
     })
   }, [balance, formatCurrency, isDeveloperMode])
 
