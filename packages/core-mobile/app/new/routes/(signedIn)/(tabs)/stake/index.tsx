@@ -1,6 +1,7 @@
 import React from 'react'
 import { EarnHomeScreen } from 'features/stake/screens/EarnHomeScreen'
-import { StakeOnlyHomeScreen } from 'features/stake/screens/StakeOnlyHomeScreen'
+import { NewStakeHomeScreen } from 'features/stake/screens/NewStakeHomeScreen'
+import { StakeHomeScreen } from 'features/stake/screens/StakeHomeScreen'
 import { useSelector } from 'react-redux'
 import {
   selectIsInAppDefiBlocked,
@@ -11,13 +12,18 @@ const HomeScreen = (): JSX.Element => {
   const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
   const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
 
-  // When borrow feature is enabled, this tab shows only Stake (pure staking)
-  // When borrow feature is disabled, use existing behavior (Stake or Earn based on DeFi flag)
+  // Borrow feature enabled: show new stake-only screen
   if (!isInAppDefiBorrowBlocked) {
-    return <StakeOnlyHomeScreen />
+    return <NewStakeHomeScreen />
   }
 
-  return isInAppDefiBlocked ? <StakeOnlyHomeScreen /> : <EarnHomeScreen />
+  // Borrow feature disabled + DeFi enabled: show original earn screen (Stake + Deposit)
+  if (!isInAppDefiBlocked) {
+    return <EarnHomeScreen />
+  }
+
+  // Borrow feature disabled + DeFi blocked: show original tab-based stake screen
+  return <StakeHomeScreen />
 }
 
 export default HomeScreen

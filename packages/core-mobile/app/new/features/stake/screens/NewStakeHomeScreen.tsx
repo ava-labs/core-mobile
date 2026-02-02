@@ -14,7 +14,7 @@ import {
 } from '../components/StakeCardList'
 import { Banner } from '../components/Banner'
 
-export const StakeOnlyHomeScreen = (): JSX.Element => {
+export const NewStakeHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
   const headerHeight = useHeaderHeight()
   const tabBarHeight = useBottomTabBarHeight()
