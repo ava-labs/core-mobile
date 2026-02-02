@@ -1,7 +1,6 @@
 import {
   alpha,
   BlurViewWithFallback,
-  Icons,
   Pressable,
   Text,
   useTheme
@@ -11,10 +10,9 @@ import { BottomTabBarProps } from '@bottom-tabs/react-navigation'
 import { BottomTabs } from 'common/components/BottomTabs'
 import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import { useHasXpAddresses } from 'common/hooks/useHasXpAddresses'
-import React, { FC, useMemo } from 'react'
-import { Image, Platform, StyleSheet } from 'react-native'
+import React, { useMemo } from 'react'
+import { Image, ImageSourcePropType, Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { SvgProps } from 'react-native-svg'
 import { useSelector } from 'react-redux'
 import {
   selectIsInAppDefiBlocked,
@@ -199,9 +197,10 @@ const TabBar = ({
           return null
         }
         const isActive = state.index === index
-        const Icon = getIcon(route.name)
         const title = options?.title ?? route.name
-        const isEarnTab = route.name === 'earn'
+        const icon = options?.tabBarIcon?.({
+          focused: isActive
+        }) as ImageSourcePropType | undefined
 
         return (
           <Pressable
@@ -230,17 +229,15 @@ const TabBar = ({
               height: TAB_BAR_HEIGHT,
               gap: 4
             }}>
-            {isEarnTab ? (
+            {icon && (
               <Image
-                source={earnIcon}
+                source={icon}
                 style={{
                   width: 24,
                   height: 24,
                   tintColor: theme.colors.$textPrimary
                 }}
               />
-            ) : (
-              <Icon color={theme.colors.$textPrimary} />
             )}
             <Text
               testID={`${title}_tab`}
@@ -255,23 +252,4 @@ const TabBar = ({
       })}
     </BlurViewWithFallback>
   )
-}
-
-function getIcon(name: string): FC<SvgProps> {
-  switch (name) {
-    case 'portfolio':
-      return Icons.Navigation.Layers
-    case 'track':
-      return Icons.Navigation.Track
-    case 'stake':
-      return Icons.Navigation.Stake
-    case 'earn':
-      return Icons.Navigation.Stake
-    case 'browser':
-      return Icons.Navigation.Browser
-    case 'activity':
-      return Icons.Navigation.History
-    default:
-      return Icons.Navigation.Layers
-  }
 }
