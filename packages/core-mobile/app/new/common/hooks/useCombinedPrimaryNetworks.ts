@@ -18,7 +18,11 @@ import { useHasXpAddresses } from './useHasXpAddresses'
  * for example, C-Chain and EVM are merged togther, and X-Chain and P-Chain are merged together.
  * @returns {Object} An array containing the combined primary networks.
  */
-export function useCombinedPrimaryNetworks(): {
+export function useCombinedPrimaryNetworks({
+  hideEmptySolana = true
+}: {
+  hideEmptySolana?: boolean
+}): {
   networks: Network[]
 } {
   const hasXpAddresses = useHasXpAddresses()
@@ -26,23 +30,23 @@ export function useCombinedPrimaryNetworks(): {
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
   const account = useSelector(selectActiveAccount)
 
+  const hideSolana = hideEmptySolana
+    ? account?.addressSVM === undefined || account?.addressSVM.length === 0
+    : false
+
   const networks = useMemo(() => {
     // Test networks
     if (isDeveloperMode) {
-      return isSolanaSupportBlocked ||
-        account?.addressSVM === undefined ||
-        account?.addressSVM.length === 0
+      return isSolanaSupportBlocked || hideSolana
         ? (TEST_PRIMARY_NETWORKS as Network[])
         : [...TEST_PRIMARY_NETWORKS, NETWORK_SOLANA_DEVNET]
     }
 
     // Main networks
-    return isSolanaSupportBlocked ||
-      account?.addressSVM === undefined ||
-      account?.addressSVM.length === 0
+    return isSolanaSupportBlocked || hideSolana
       ? (MAIN_PRIMARY_NETWORKS as Network[])
       : [...MAIN_PRIMARY_NETWORKS, NETWORK_SOLANA]
-  }, [account?.addressSVM, isDeveloperMode, isSolanaSupportBlocked])
+  }, [hideSolana, isDeveloperMode, isSolanaSupportBlocked])
 
   // filter out networks that are missing XP addresses
   const filteredNetworks = useMemo(() => {

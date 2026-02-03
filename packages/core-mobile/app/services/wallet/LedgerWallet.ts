@@ -41,6 +41,10 @@ import {
 import { bip32 } from 'utils/bip32'
 import Logger from 'utils/Logger'
 import { Curve } from 'utils/publicKeys'
+import { Account } from 'store/account'
+import { uuid } from 'utils/uuid'
+import { CoreAccountType } from '@avalabs/types'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { BitcoinWalletPolicyService } from './BitcoinWalletPolicyService'
 import {
   Wallet,
@@ -823,8 +827,7 @@ export class LedgerWallet implements Wallet {
   }
 
   public async getRawXpubXP(_accountIndex: number): Promise<string> {
-    // TODO: implement this
-    throw new Error('getRawXpubXP not implemented yet for LedgerWallet')
+    return this.extendedPublicKeys?.avalanche ?? ''
   }
 
   // Private helper methods for message signing
@@ -879,6 +882,51 @@ export class LedgerWallet implements Wallet {
       return await signer.signMessage(dataToSign)
     } else {
       throw new Error('This function is not supported on your wallet')
+    }
+  }
+
+  public async addAccount({
+    index,
+    isTestnet,
+    walletId,
+    name
+  }: {
+    index: number
+    isTestnet: boolean
+    walletId: string
+    name: string
+  }): Promise<Account> {
+    const addresses = await LedgerService.getAllAddresses(index, 1, isTestnet)
+    const addressC = addresses.find(addr => addr.id.includes('evm'))?.address
+    const addressAVM = addresses.find(addr =>
+      addr.id.includes('avalanche-x')
+    )?.address
+    const addressPVM = addresses.find(addr =>
+      addr.id.includes('avalanche-p')
+    )?.address
+    const addressBTC = addresses.find(addr =>
+      addr.id.includes('bitcoin')
+    )?.address
+
+    if (!addressC || !addressAVM || !addressPVM || !addressBTC) {
+      throw new Error('Failed to derive all addresses from Ledger')
+    }
+
+    return {
+      index,
+      id: uuid(),
+      walletId,
+      name,
+      type: CoreAccountType.PRIMARY,
+      addressBTC,
+      addressC,
+      addressAVM,
+      addressPVM,
+      addressCoreEth: '',
+      addressSVM: '',
+      xpAddresses: [{ address: stripAddressPrefix(addressAVM), index }],
+      xpAddressDictionary: {},
+      hasMigratedXpAddresses: true
     }
   }
 }

@@ -446,7 +446,8 @@ export const migrations = {
 
     const newAccountsState: AccountsState = {
       accounts: newAccountsCollection,
-      activeAccountId: newActiveAccountId
+      activeAccountId: newActiveAccountId,
+      ledgerAddresses: {}
     }
 
     Logger.info('newAccountsState', newAccountsState)
