@@ -76,6 +76,7 @@ export const RecoveryMethodProvider = ({
     setTotpChallenge(undefined)
     setOidcAuth(undefined)
     setMfaMethods(undefined)
+    setIsNewSeedlessUser(false)
   }
 
   const state: RecoveryMethodContextState = {
