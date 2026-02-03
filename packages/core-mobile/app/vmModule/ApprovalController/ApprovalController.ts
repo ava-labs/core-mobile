@@ -93,8 +93,12 @@ class ApprovalController implements VmModuleApprovalController {
 
     const numericChainId = getChainIdFromCaip2(request.chainId)
 
-    if (numericChainId && isAvalancheChainId(numericChainId)) {
-      return // do not show success toast for avalanche transactions as we've already shown it in onTransactionPending
+    if (
+      numericChainId &&
+      isAvalancheChainId(numericChainId) &&
+      isInAppRequest(request)
+    ) {
+      return // do not show success toast for in-app avalanche transactions as we've already shown it in onTransactionPending
     }
 
     transactionSnackbar.success({ explorerLink, toastId: request.requestId })
