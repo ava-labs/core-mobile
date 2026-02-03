@@ -32,13 +32,18 @@ const baseConfig = {
       stream: require.resolve('./node_modules/stream-browserify'),
       '@noble/hashes': require.resolve('./node_modules/@noble/hashes')
     },
-    // Prevents VM modules from bundling their own copy of @avalabs/core-wallets-sdk
-    // which breaks instanceof checks for provider types
-    unstable_enablePackageExports: false,
     // sbmodern is needed for storybook
     resolverMainFields: ['sbmodern', 'react-native', 'browser', 'main'],
     assetExts: assetExts.filter(ext => ext !== 'svg'),
     sourceExts: [...sourceExts, 'svg', 'cjs', 'mjs'],
+    // Prevents VM modules from bundling their own copy of @avalabs/core-wallets-sdk
+    // which breaks instanceof checks for provider types
+    unstable_enablePackageExports: false,
+    unstable_conditionNames: ['require', 'import'],
+    unstable_conditionsByPlatform: {
+      android: ['require', 'react-native'],
+      ios: ['require', 'react-native']
+    },
     resolveRequest: (context, moduleName, platform) => {
       // Handle @buoy-gg subpath exports manually since unstable_enablePackageExports is false
       const buoyMatch = moduleName.match(/^(@buoy-gg\/[^/]+)\/(.+)$/)
@@ -49,6 +54,16 @@ const baseConfig = {
           `${pkg}/lib/module/${subpath}/index.js`,
           platform
         )
+      }
+      // Enable package exports only for @lombard.finance/sdk
+      if (moduleName.startsWith('@lombard.finance/sdk')) {
+        const newContext = {
+          ...context,
+          unstable_enablePackageExports: true,
+          unstable_conditionNames: ['require', 'import'],
+          preferNativePlatform: true
+        }
+        return context.resolveRequest(newContext, moduleName, platform)
       }
       if (moduleName.startsWith('@ledgerhq/cryptoassets-evm-signatures')) {
         return context.resolveRequest(

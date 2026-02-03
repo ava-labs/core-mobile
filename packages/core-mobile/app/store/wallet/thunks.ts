@@ -136,10 +136,17 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
       isTestnet: isDeveloperMode
     })
 
+    const strippedAVM = stripAddressPrefix(addresses[NetworkVMType.AVM])
+    const strippedPVM = stripAddressPrefix(addresses[NetworkVMType.PVM])
+
+    const strippedAvalancheAddress = strippedAVM || strippedPVM
     let xpAddresses: AddressIndex[] = [
-      { address: stripAddressPrefix(addresses[NetworkVMType.AVM]), index: 0 }
+      { address: strippedAvalancheAddress, index: 0 }
     ]
-    let xpAddressDictionary: XPAddressDictionary = {}
+    let xpAddressDictionary: XPAddressDictionary = {
+      [strippedAvalancheAddress]: { space: 'e', index: 0, hasActivity: false }
+    }
+
     let hasMigratedXpAddresses = false
     try {
       const result = await getAddressesFromXpubXP({

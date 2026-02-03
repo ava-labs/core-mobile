@@ -234,10 +234,6 @@ export default function WalletLayout(): JSX.Element {
               options={modalScreensOptions}
             />
             <Stack.Screen
-              name="(modals)/nestEggCampaign/success"
-              options={modalScreensOptions}
-            />
-            <Stack.Screen
               name="(modals)/appUpdate"
               options={modalScreensOptions}
             />
@@ -263,6 +259,10 @@ export default function WalletLayout(): JSX.Element {
             />
             <Stack.Screen
               name="(modals)/ledgerReviewTransaction"
+              options={secondaryModalScreensOptions}
+            />
+            <Stack.Screen
+              name="(modals)/solanaConnection"
               options={secondaryModalScreensOptions}
             />
           </Stack>

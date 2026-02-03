@@ -32,13 +32,23 @@ import {
   setAccounts,
   setActiveAccountId,
   selectAccountsByWalletId,
-  selectActiveAccount
+  selectActiveAccount,
+  setLedgerAddresses,
+  selectLedgerAddressesByWalletId
 } from './slice'
-import { AccountCollection, Account, XPAddressDictionary } from './types'
+import {
+  AccountCollection,
+  Account,
+  XPAddressDictionary,
+  LedgerAddressesCollection
+} from './types'
 import {
   canMigrateActiveAccounts,
   deriveMissingSeedlessSessionKeys,
+  groupAccountsByWallet,
+  isAddressMissing,
   migrateRemainingActiveAccounts,
+  processWalletAccountsForRepopulation,
   shouldMigrateActiveAccounts
 } from './utils'
 
@@ -118,6 +128,40 @@ const initAccounts = async (
     listenerApi.dispatch(setActiveAccountId(firstAccountId))
   }
 
+  if (
+    activeWallet.type === WalletType.LEDGER ||
+    activeWallet.type === WalletType.LEDGER_LIVE
+  ) {
+    const ledgerAccount = await AccountsService.createNextAccount({
+      index: 0,
+      walletType: activeWallet.type,
+      isTestnet: !isDeveloperMode,
+      walletId: activeWallet.id,
+      name
+    })
+    const mainnetAccount = isDeveloperMode ? acc : ledgerAccount
+    const testnetAccount = isDeveloperMode ? ledgerAccount : acc
+    listenerApi.dispatch(
+      setLedgerAddresses({
+        [acc.id]: {
+          mainnet: {
+            addressBTC: mainnetAccount.addressBTC,
+            addressAVM: mainnetAccount.addressAVM,
+            addressPVM: mainnetAccount.addressPVM
+          },
+          testnet: {
+            addressBTC: testnetAccount.addressBTC,
+            addressAVM: testnetAccount.addressAVM,
+            addressPVM: testnetAccount.addressPVM
+          },
+          walletId: activeWallet.id,
+          index: 0,
+          id: acc.id
+        }
+      })
+    )
+  }
+
   const accountValues = Object.values(accounts)
   if (activeWallet.type === WalletType.SEEDLESS) {
     // setting wallet name
@@ -182,14 +226,21 @@ const reloadAccounts = async (
   const wallets = selectWallets(state)
   for (const wallet of Object.values(wallets)) {
     const accounts = selectAccountsByWalletId(state, wallet.id)
+    const ledgerAddresses = selectLedgerAddressesByWalletId(state, wallet.id)
     //convert accounts to AccountCollection
     const accountsCollection: AccountCollection = {}
     for (const account of accounts) {
       accountsCollection[account.id] = account
     }
 
+    const ledgerAddressesCollection: LedgerAddressesCollection = {}
+    for (const addresses of ledgerAddresses) {
+      ledgerAddressesCollection[addresses.id] = addresses
+    }
+
     const reloadedAccounts = await AccountsService.reloadAccounts({
       accounts: accountsCollection,
+      ledgerAddressesCollection,
       isTestnet: isDeveloperMode,
       walletId: wallet.id,
       walletType: wallet.type
@@ -288,7 +339,7 @@ const migrateXpAddressesIfNeeded = async (
   if (
     Object.values(allAccounts).every(account => account.hasMigratedXpAddresses)
   ) {
-    Logger.info('XP address migration already completed. Skipping.')
+    repopulateMissingXpAddressesIfNeeded(_action, listenerApi)
     return
   }
 
@@ -357,6 +408,64 @@ const migrateXpAddressesIfNeeded = async (
       `XP address migration incomplete. ${failedAccounts.length} account(s) failed to migrate. Will retry on next app unlock.`
     )
   }
+
+  repopulateMissingXpAddressesIfNeeded(_action, listenerApi)
+}
+
+const repopulateMissingXpAddressesIfNeeded = async (
+  _action: AnyAction,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const state = listenerApi.getState()
+  const allAccounts = selectAccounts(state)
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const wallets = selectWallets(state)
+
+  // Find accounts with missing AVM or PVM addresses
+  const accountsWithMissingAddresses = Object.values(allAccounts).filter(
+    account =>
+      isAddressMissing(account.addressAVM) ||
+      isAddressMissing(account.addressPVM)
+  )
+
+  if (accountsWithMissingAddresses.length === 0) {
+    Logger.info('No accounts with missing XP addresses. Skipping repopulation.')
+    return
+  }
+
+  Logger.info(
+    `Found ${accountsWithMissingAddresses.length} account(s) with missing XP addresses. Repopulating...`
+  )
+
+  const updatedAccounts: AccountCollection = {}
+  const accountsByWallet = groupAccountsByWallet(accountsWithMissingAddresses)
+
+  // Process each wallet's accounts
+  for (const [walletId, accounts] of accountsByWallet) {
+    const wallet = wallets[walletId]
+    if (!wallet) {
+      Logger.warn(`Wallet ${walletId} not found. Skipping accounts.`)
+      continue
+    }
+
+    const walletUpdatedAccounts = await processWalletAccountsForRepopulation({
+      wallet,
+      accounts,
+      isDeveloperMode
+    })
+
+    Object.assign(updatedAccounts, walletUpdatedAccounts)
+  }
+
+  // Dispatch updates to Redux
+  if (Object.keys(updatedAccounts).length > 0) {
+    listenerApi.dispatch(setAccounts(updatedAccounts))
+    Logger.info(
+      `Successfully repopulated XP addresses for ${
+        Object.keys(updatedAccounts).length
+      } account(s)`
+    )
+  }
 }
 
 const populateXpAddressesForWallet = async ({
@@ -401,10 +510,16 @@ const populateXpAddressesForWallet = async ({
       continue
     }
 
+    const strippedAVM = stripAddressPrefix(account.addressAVM)
+    const strippedPVM = stripAddressPrefix(account.addressPVM)
+    const strippedAvalancheAddress = strippedAVM || strippedPVM
+
     let xpAddresses: AddressIndex[] = [
-      { address: stripAddressPrefix(account.addressAVM), index: 0 }
+      { address: strippedAvalancheAddress, index: 0 }
     ]
-    let xpAddressDictionary: XPAddressDictionary = {} as XPAddressDictionary
+    let xpAddressDictionary: XPAddressDictionary = {
+      [strippedAvalancheAddress]: { space: 'e', index: 0, hasActivity: false }
+    }
     let hasMigratedXpAddresses = false
 
     try {
@@ -447,6 +562,16 @@ const populateXpAddressesForWallet = async ({
 
         newAddressAVM = rederived[NetworkVMType.AVM]
         newAddressPVM = rederived[NetworkVMType.PVM]
+
+        // If xpAddresses is still using fallback (only has initial AVM address),
+        // update it to include both rederived AVM and PVM addresses
+        if (!hasMigratedXpAddresses) {
+          const strippedNewAVM = stripAddressPrefix(newAddressAVM)
+          xpAddresses = [{ address: strippedNewAVM, index: 0 }]
+          xpAddressDictionary = {
+            [strippedNewAVM]: { space: 'e', index: 0, hasActivity: false }
+          }
+        }
       } catch (error) {
         Logger.error(
           `Failed to rederive AVM/PVM addresses for account ${account.index}`,

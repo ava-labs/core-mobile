@@ -89,6 +89,8 @@ export const AutoSizeTextInput = forwardRef<
     const [containerWidth, setContainerWidth] = useState(0)
     const [leftWidth, setLeftWidth] = useState(0)
     const [rightWidth, setRightWidth] = useState(0)
+    const lastTextWidthRef = useRef(0)
+    const prevContainerWidthRef = useRef(0)
 
     const isFocused = useSharedValue(false)
 
@@ -160,7 +162,10 @@ export const AutoSizeTextInput = forwardRef<
 
         if (availableWidth <= 0) return
 
-        const ratio = availableWidth / textWidth
+        // On iOS, the calculated font size doesn't fully fill the container width.
+        // This 1.1x correction factor increases the font size to better utilize the available space.
+        const correctionFactor = Platform.OS === 'ios' ? 1.1 : 1
+        const ratio = (availableWidth / textWidth) * correctionFactor
         let newFontSize = Math.round(animatedFontSize.value * ratio)
         let newSuffixFontSize = Math.round(animatedSuffixFontSize.value * ratio)
         newFontSize = Math.max(10, Math.min(initialFontSize, newFontSize))
@@ -194,9 +199,23 @@ export const AutoSizeTextInput = forwardRef<
       ]
     )
 
-    const handleLayout = useCallback((e: LayoutChangeEvent): void => {
-      setContainerWidth(e.nativeEvent.layout.width)
-    }, [])
+    const handleLayout = useCallback(
+      (e: LayoutChangeEvent): void => {
+        const newWidth = e.nativeEvent.layout.width
+        const widthDiff = Math.abs(newWidth - prevContainerWidthRef.current)
+
+        // Ignore minor width changes caused by font size adjustments
+        if (widthDiff >= LAYOUT_CHANGE_THRESHOLD) {
+          prevContainerWidthRef.current = newWidth
+          setContainerWidth(newWidth)
+
+          if (lastTextWidthRef.current > 0) {
+            calculateAndUpdateFontSize(lastTextWidthRef.current)
+          }
+        }
+      },
+      [calculateAndUpdateFontSize]
+    )
 
     const handleLeftLayout = useCallback((e: LayoutChangeEvent): void => {
       setLeftWidth(e.nativeEvent.layout.width)
@@ -219,6 +238,7 @@ export const AutoSizeTextInput = forwardRef<
         const textWidth = e.nativeEvent.layout.width
 
         if (textWidth > 0) {
+          lastTextWidthRef.current = textWidth
           calculateAndUpdateFontSize(textWidth)
         }
       },
@@ -367,3 +387,7 @@ export const AutoSizeTextInput = forwardRef<
 )
 
 const GAP_WIDTH = 4
+
+// Threshold (in pixels) to distinguish real layout changes (focus/blur, rotation) from
+// minor fluctuations caused by font size adjustments
+const LAYOUT_CHANGE_THRESHOLD = 10
