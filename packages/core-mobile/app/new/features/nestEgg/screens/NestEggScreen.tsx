@@ -48,7 +48,7 @@ function NestEggScreen(): JSX.Element {
   const containerStyle = {
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.$borderPrimary,
-    height: 48,
+    paddingVertical: 13,
     justifyContent: 'center'
   }
 
