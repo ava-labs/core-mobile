@@ -1,10 +1,6 @@
 format_version: "11"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 project_type: react-native
-meta:
-  bitrise.io:
-    stack: osx-xcode-16.2.x
-    machine_type_id: g2-m1.8core
 app:
   envs:
   - WORKDIR: .
