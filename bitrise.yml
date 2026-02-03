@@ -262,7 +262,7 @@ workflows:
     - brew-install@1:
         inputs:
         - packages: autoconf automake libtool
-    - restore-cocoapods-cache@1: {}/
+    # - restore-cocoapods-cache@1: {}
     - script@1:
         title: Copy Gemfile to iOS folder
         inputs:
