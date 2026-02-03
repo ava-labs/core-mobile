@@ -462,11 +462,19 @@ export class BalanceService {
   }): Promise<AdjustedNormalizedBalancesForAccount[]> {
     if (networks.length === 0) return []
 
-    const res = await this.getBalancesForAccounts({
+    const res = await this.getVMBalancesForAccounts({
       networks,
       accounts: [account],
       currency,
-      onBalanceLoaded
+      customTokens: {},
+      onBalanceLoaded: onBalanceLoaded
+        ? (_chainId, partial) => {
+            const balance = partial[account.id]
+            if (balance) {
+              onBalanceLoaded(balance)
+            }
+          }
+        : undefined
     })
 
     return res[account.id] ?? []
