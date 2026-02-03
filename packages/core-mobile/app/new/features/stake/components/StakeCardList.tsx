@@ -44,7 +44,7 @@ export interface StakeCardListHeaderProps {
 }
 
 export interface StakeCardListProps {
-  onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void
+  onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent> | number) => void
   containerStyle?: StyleProp<ViewStyle>
   isActive?: boolean
   renderHeader: (props: StakeCardListHeaderProps) => JSX.Element
@@ -232,13 +232,8 @@ export const StakeCardList = ({
 
   useEffect(() => {
     if (scrollOffsetRef.current && isActive && onScroll) {
-      // This is a workaround to sync scroll position when tab becomes active
-      // We need to cast to any because onScroll expects NativeSyntheticEvent but we're passing a number
-      ;(
-        onScroll as (
-          event: NativeSyntheticEvent<NativeScrollEvent> | number
-        ) => void
-      )(scrollOffsetRef.current.y)
+      // Sync scroll position when tab becomes active
+      onScroll(scrollOffsetRef.current.y)
     }
   }, [isActive, onScroll])
 
