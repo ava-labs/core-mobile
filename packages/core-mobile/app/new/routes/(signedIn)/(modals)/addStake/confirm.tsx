@@ -41,9 +41,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import NetworkService from 'services/network/NetworkService'
 import { WalletType } from 'services/wallet/types'
+import { WalletType } from 'services/wallet/types'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveWallet } from 'store/wallet/slice'
-import { executeLedgerStakingOperation } from 'features/ledger/utils'
+import { showLedgerReviewTransaction } from 'features/ledger/utils'
 import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { truncateNodeId } from 'utils/Utils'
@@ -402,6 +403,10 @@ const StakeConfirmScreen = (): JSX.Element => {
   useEffect(() => {
     issueDelegationRef.current = issueDelegation
   }, [issueDelegation])
+
+  const isLedgerWallet =
+    activeWallet?.type === WalletType.LEDGER ||
+    activeWallet?.type === WalletType.LEDGER_LIVE
 
   const handleDelegate = useCallback(
     (recomputeSteps = false): void => {

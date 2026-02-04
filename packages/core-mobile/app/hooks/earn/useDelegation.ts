@@ -137,6 +137,12 @@ export const useDelegation = (): {
       }
 
       for (const step of steps) {
+        // Update progress state before processing each step
+        ledgerStakingProgressCache.state.set({
+          currentStep: stepIndex,
+          currentOperation: step.operation
+        })
+
         switch (step.operation) {
           case Operation.DELEGATE: {
             Logger.info(

@@ -659,6 +659,7 @@ export class LedgerWallet implements Wallet {
 
   public async signAvalancheTransaction({
     accountIndex,
+    accountIndex,
     transaction,
     network: _network,
     provider: _provider
