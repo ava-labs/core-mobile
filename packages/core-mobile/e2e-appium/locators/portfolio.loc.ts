@@ -8,7 +8,8 @@ export default {
   receiveButton: 'action_button__Receive',
   sort: 'sort_dropdown_btn',
   view: 'view_dropdown_btn',
-  // OLD BELOW:
+  portfolioBalanceHeader: 'portfolio__balance_header',
+  portfolioAccountName: 'portfolio__balance_header_account_name',
   activityTab: 'Activity',
   addToWatchlist: 'add_svg',
   addAssetsButton: 'Add Assets',
