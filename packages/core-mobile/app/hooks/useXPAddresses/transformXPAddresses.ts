@@ -1,6 +1,5 @@
 import { Account, XPAddressDictionary } from 'store/account/types'
-import { stripAddressPrefix } from 'new/common/utils/stripAddressPrefix'
-
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 /**
  * Transforms raw XP address data with fallback to account's addressPVM
  */

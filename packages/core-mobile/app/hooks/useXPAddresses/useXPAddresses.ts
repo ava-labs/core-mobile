@@ -13,6 +13,29 @@ import { transformXPAddresses } from './transformXPAddresses'
 
 const STALE_TIME = 60 * 1000 // 1 minute
 
+const getQueryKey = ({
+  walletId,
+  walletType,
+  accountIndex,
+  accountId,
+  isDeveloperMode
+}: {
+  walletId: string
+  walletType: WalletType | string
+  accountIndex: number
+  accountId: string
+  isDeveloperMode: boolean
+}): readonly [string, string, WalletType | string, number, string, boolean] => {
+  return [
+    ReactQueryKeys.XP_ADDRESSES,
+    walletId,
+    walletType,
+    accountIndex,
+    accountId,
+    isDeveloperMode
+  ]
+}
+
 export const useXPAddresses = (
   account?: Account
 ): {
@@ -23,25 +46,30 @@ export const useXPAddresses = (
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
 
+  const walletId = wallet?.id ?? ''
+  const walletType = wallet?.type ?? ''
+  const accountIndex = account?.index ?? 0
+  const accountId = account?.id ?? ''
+
   const shouldDisable = !wallet || !account
 
   const queryResult = useQuery({
     staleTime: STALE_TIME,
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [
-      ReactQueryKeys.XP_ADDRESSES,
-      wallet?.id,
-      account?.id,
+    queryKey: getQueryKey({
+      walletId,
+      walletType,
+      accountIndex,
+      accountId,
       isDeveloperMode
-    ],
+    }),
     queryFn: shouldDisable
       ? skipToken
       : () => {
           return getAddressesFromXpubXP({
             isDeveloperMode,
-            walletId: wallet.id,
-            walletType: wallet.type,
-            accountIndex: account.index,
+            walletId,
+            walletType: walletType as WalletType,
+            accountIndex,
             onlyWithActivity: true
           })
         }
@@ -74,13 +102,13 @@ export async function getCachedXPAddresses({
 }> {
   try {
     const result = await queryClient.fetchQuery({
-      // eslint-disable-next-line @tanstack/query/exhaustive-deps
-      queryKey: [
-        ReactQueryKeys.XP_ADDRESSES,
+      queryKey: getQueryKey({
         walletId,
-        account.id,
+        walletType,
+        accountIndex: account.index,
+        accountId: account.id,
         isDeveloperMode
-      ],
+      }),
       queryFn: () =>
         getAddressesFromXpubXP({
           isDeveloperMode,
