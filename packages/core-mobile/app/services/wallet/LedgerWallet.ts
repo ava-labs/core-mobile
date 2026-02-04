@@ -314,8 +314,19 @@ export class LedgerWallet implements Wallet {
       )
     }
 
+    // TEMP DEBUG: Log available xpubs
+    console.log(
+      `[getExtendedPublicKeyFor] accountIndex=${accountIndex}, vmType=${vmType}`
+    )
+    console.log(
+      `[getExtendedPublicKeyFor] extendedPublicKeys:`,
+      this.extendedPublicKeys
+        ? Object.keys(this.extendedPublicKeys).map(k => `account ${k}`)
+        : 'undefined'
+    )
+
     if (!this.extendedPublicKeys) {
-      Logger.error(`No extendedPublicKeys available`)
+      Logger.error(`[getExtendedPublicKeyFor] No extendedPublicKeys available`)
       return null
     }
 
