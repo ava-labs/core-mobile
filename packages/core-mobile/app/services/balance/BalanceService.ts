@@ -438,7 +438,7 @@ export class BalanceService {
       } catch (err) {
         // Balance API down / request failed / stream broken for this batch
         balanceApiThrew = true
-        Logger.warn(
+        Logger.error(
           `[BalanceService][getBalancesForAccount] batch request failed`,
           err
         )
@@ -508,7 +508,7 @@ export class BalanceService {
       finalResults[account.id] = []
     }
 
-    const { networks: supportedNetworks } =
+    const { networks: supportedNetworks, filteredOutChainIds } =
       await this.filterNetworksBySupportedEvm(networks)
     const requestBatches = buildRequestItemsForAccounts(
       supportedNetworks,
@@ -530,6 +530,9 @@ export class BalanceService {
       return acc
     }, {} as Record<string, Account>)
 
+    let balanceApiThrew = false
+    const failedChainIds = new Set<number>()
+
     for (const requestItems of requestBatches) {
       if (requestItems.length === 0) continue
 
@@ -548,7 +551,7 @@ export class BalanceService {
             (accounts.length === 1 ? accounts[0] : undefined)
 
           if (!account) {
-            Logger.warn(
+            Logger.error(
               '[BalanceService][getBalancesForAccounts] Could not map streamed balance to an account',
               {
                 id,
@@ -563,15 +566,76 @@ export class BalanceService {
           const normalized = mapBalanceResponseToLegacy(account, balance)
           if (!normalized) continue
 
-          onBalanceLoaded?.(normalized)
+          if (normalized.error) {
+            // Mark chain as failed for retry
+            failedChainIds.add(normalized.chainId)
+          } else {
+            // Progressive update callback for successful balance
+            onBalanceLoaded?.(normalized)
+          }
+
           finalResults[account.id]?.push(normalized)
         }
       } catch (err) {
-        Logger.warn(
+        balanceApiThrew = true
+        Logger.error(
           '[BalanceService][getBalancesForAccounts] batch request failed',
           err
         )
         continue
+      }
+    }
+
+    // Add filtered out chain IDs to failed chains for retry
+    filteredOutChainIds.forEach(chainId => failedChainIds.add(chainId))
+
+    // If the balance API threw, we want to retry for all networks.
+    // Otherwise, we only retry failed networks.
+    const networksToRetry = balanceApiThrew
+      ? networks
+      : networks.filter(n => failedChainIds.has(n.chainId))
+
+    // Retry with vm modules
+    if (networksToRetry.length > 0) {
+      Logger.info(
+        `[BalanceService][getBalancesForAccounts] retrying with vm modules for networks: ${networksToRetry
+          .map(n => n.chainId)
+          .join(', ')}`
+      )
+
+      const vmResults = await this.getVMBalancesForAccounts({
+        networks: networksToRetry,
+        accounts,
+        currency,
+        customTokens: {},
+        onBalanceLoaded: (_chainId, partial) => {
+          for (const accountId of Object.keys(partial)) {
+            const balance = partial[accountId]
+            if (balance) {
+              onBalanceLoaded?.(balance)
+            }
+          }
+        }
+      })
+
+      // Merge VM results into final results
+      for (const accountId of Object.keys(vmResults)) {
+        const vmBalances = vmResults[accountId] ?? []
+        const existingBalances = finalResults[accountId] ?? []
+
+        // Replace failed balances with VM results
+        for (const vmBalance of vmBalances) {
+          const existingIndex = existingBalances.findIndex(
+            b => b.chainId === vmBalance.chainId
+          )
+          if (existingIndex >= 0) {
+            existingBalances[existingIndex] = vmBalance
+          } else {
+            existingBalances.push(vmBalance)
+          }
+        }
+
+        finalResults[accountId] = existingBalances
       }
     }
 
