@@ -63,17 +63,60 @@ class LedgerService {
     this.#transport = transport
   }
 
+  // Wrap transport's exchange method to automatically handle busy state
+  private wrapTransportExchange(): void {
+    if (!this.#transport) return
+
+    const originalExchange = this.#transport.exchange.bind(this.#transport)
+
+    // Replace exchange method with wrapped version
+    this.#transport.exchange = async (apdu: Buffer): Promise<Buffer> => {
+      // If transport is busy, wait before sending next command
+      if (this.#transport?.exchangeBusyPromise) {
+        await new Promise(res => setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY))
+      }
+
+      try {
+        return await originalExchange(apdu)
+      } catch (error) {
+        // If error is still due to busy transport, reconnect
+        if (
+          error instanceof Error &&
+          (error.message
+            .toLowerCase()
+            .includes(LEDGER_ERROR_CODES.TRANSPORT_RACE_CONDITION_ALT) ||
+            error.message
+              .toLowerCase()
+              .includes(LEDGER_ERROR_CODES.TRANSPORT_RACE_CONDITION))
+        ) {
+          // wait for the transport and retry
+          await new Promise(res =>
+            setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY)
+          )
+          return await originalExchange(apdu)
+        }
+        // Other errors should be thrown immediately
+        throw error
+      }
+    }
+  }
+
   // Connect to Ledger device (transport only, no apps)
   async connect(deviceId: string): Promise<void> {
     try {
       Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
       this.isDisconnected = false // Reset disconnect flag on new connection
       // Use a longer timeout for connection
+      await TransportBLE.disconnectDevice(deviceId)
+
       this.transport = await TransportBLE.open(
         deviceId,
         LEDGER_TIMEOUTS.CONNECTION_TIMEOUT
       )
       Logger.info('BLE transport connected successfully')
+
+      // Wrap the transport's exchange method to automatically handle busy state
+      this.wrapTransportExchange()
 
       this.currentAppType = LedgerAppType.UNKNOWN
 
