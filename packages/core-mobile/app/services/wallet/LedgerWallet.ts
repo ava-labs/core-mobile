@@ -78,20 +78,6 @@ export class LedgerWallet implements Wallet {
     // For Ledger Live, extendedPublicKeys remains undefined
     if (ledgerData.derivationPathSpec === LedgerDerivationPathType.BIP44) {
       this.extendedPublicKeys = ledgerData.extendedPublicKeys
-
-      // TEMP DEBUG: Log xpubs loaded from wallet secret
-      console.log(
-        `[LedgerWallet.constructor] BIP44 wallet loaded with extendedPublicKeys:`,
-        this.extendedPublicKeys
-          ? Object.entries(this.extendedPublicKeys).map(
-              ([k, v]) =>
-                `account ${k}: evm=${v.evm?.slice(
-                  0,
-                  15
-                )}... avalanche=${v.avalanche?.slice(0, 15)}...`
-            )
-          : 'undefined'
-      )
     }
   }
 
@@ -313,43 +299,19 @@ export class LedgerWallet implements Wallet {
       )
     }
 
-    // TEMP DEBUG: Log available xpubs
-    console.log(
-      `[getExtendedPublicKeyFor] accountIndex=${accountIndex}, vmType=${vmType}`
-    )
-    console.log(
-      `[getExtendedPublicKeyFor] extendedPublicKeys:`,
-      this.extendedPublicKeys
-        ? Object.keys(this.extendedPublicKeys).map(k => `account ${k}`)
-        : 'undefined'
-    )
-
     if (!this.extendedPublicKeys) {
-      console.log(`[getExtendedPublicKeyFor] No extendedPublicKeys available`)
+      Logger.error(`No extendedPublicKeys available`)
       return null
     }
 
     // Get keys for the specific account index
     const keys = this.extendedPublicKeys[accountIndex]
+
     if (!keys) {
-      // Fall back to account 0 for backward compatibility with older wallets
-      // that may only have account 0's xpub stored
-      const fallbackKeys = this.extendedPublicKeys[0]
-      if (!fallbackKeys) {
-        console.log(`[getExtendedPublicKeyFor] No fallback keys for account 0`)
-        return null
-      }
-      console.log(`[getExtendedPublicKeyFor] Falling back to account 0 xpub`)
-      Logger.warn(
-        `No xpub found for account ${accountIndex}, falling back to account 0`
-      )
-      return this.getKeyForVmType(fallbackKeys, vmType)
+      Logger.error(`No xpub found for account ${accountIndex}`)
+      throw new Error(`No xpub found for account ${accountIndex}`)
     }
 
-    console.log(
-      `[getExtendedPublicKeyFor] Found xpub for account ${accountIndex}:`,
-      keys.avalanche?.slice(0, 20) + '...'
-    )
     return this.getKeyForVmType(keys, vmType)
   }
 
@@ -979,12 +941,6 @@ export class LedgerWallet implements Wallet {
         )
         .toBase58()
     }
-
-    // TEMP DEBUG: Log xpub being returned from addAccount
-    console.log(`[LedgerWallet.addAccount] account ${index} xpub:`, {
-      evm: xpub.evm.slice(0, 20) + '...',
-      avalanche: xpub.avalanche.slice(0, 20) + '...'
-    })
 
     return {
       account: {
