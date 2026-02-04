@@ -27,6 +27,7 @@ import {
 
 export const addAccount = createAsyncThunk<void, string, ThunkApi>(
   `${reducerName}/addAccount`,
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   async (walletId, thunkApi) => {
     const state = thunkApi.getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
@@ -99,6 +100,7 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
         isTestnet: !isDeveloperMode,
         walletId
       })
+
       const ledgerAccount = ledgerResult.account
       const testnetAccount = isDeveloperMode ? acc : ledgerAccount
       const mainnetAccount = isDeveloperMode ? ledgerAccount : acc

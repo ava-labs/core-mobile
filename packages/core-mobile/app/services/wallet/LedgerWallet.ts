@@ -928,7 +928,10 @@ export class LedgerWallet implements Wallet {
     const evmAddressBytes = new Uint8Array(
       Buffer.from(addressC.replace(/^0x/, ''), 'hex')
     )
-    const addressCoreEth = `C-${avalancheUtils.formatBech32(hrp, evmAddressBytes)}`
+    const addressCoreEth = `C-${avalancheUtils.formatBech32(
+      hrp,
+      evmAddressBytes
+    )}`
 
     // Get extended public keys for this account (device is already connected)
     const extendedKeys = await LedgerService.getExtendedPublicKeys(index)
