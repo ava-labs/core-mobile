@@ -2,22 +2,16 @@ import React, { useCallback } from 'react'
 import { TransactionOnboarding } from 'common/components/TransactionOnboarding'
 import { GroupList, Icons, useTheme } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
-import { LoadingState } from 'common/components/LoadingState'
-import { useAvailableMarkets } from '../../hooks/useAvailableMarkets'
 
 export const OnboardingScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { theme } = useTheme()
 
   const handlePressNext = useCallback(() => {
+    // TODO: Navigate to borrow select asset flow
     // @ts-ignore TODO: make routes typesafe
-    navigate('/deposit/selectAsset')
+    navigate('/borrow/selectAsset')
   }, [navigate])
-
-  const { data: markets, isPending: isLoadingMarkets } = useAvailableMarkets()
-  const highestApyMarket = markets
-    ?.sort((a, b) => b.supplyApyPercent - a.supplyApyPercent)[0]
-    ?.supplyApyPercent?.toFixed(2)
 
   const renderFooterAccessory = useCallback(() => {
     const accessory = (
@@ -28,35 +22,27 @@ export const OnboardingScreen = (): JSX.Element => {
         titleSx={{ fontFamily: 'Inter-Regular', fontSize: 15 }}
         data={[
           {
-            title: `Earn up to ${highestApyMarket}% APY`,
+            title: 'Get liquidity from your deposits',
             accessory
           },
           {
-            title: 'Deposit easily and native within Core',
+            title: 'Monitor loan health on demand',
             accessory
           },
           {
-            title: 'Assets only deposited in trusted pools',
-            accessory
-          },
-          {
-            title: 'Withdraw anytime',
+            title: 'Repay loans at anytime',
             accessory
           }
         ]}
       />
     )
-  }, [theme, highestApyMarket])
-
-  if (isLoadingMarkets) {
-    return <LoadingState sx={{ flex: 1 }} />
-  }
+  }, [theme])
 
   return (
     <TransactionOnboarding
-      icon={{ component: Icons.Custom.Psychiatry, size: 60 }}
-      title={`Deposit your crypto to earn yield`}
-      subtitle={`Easily earn yield by depositing crypto into lending protocols and withdraw anytime.`}
+      icon={{ component: Icons.Custom.MoneyBag, size: 60 }}
+      title="Borrow tokens to access liquidity"
+      subtitle="Take a loan against your deposits and repay anytime"
       onPressNext={handlePressNext}
       footerAccessory={renderFooterAccessory()}
       scrollEnabled={true}
