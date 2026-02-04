@@ -8,12 +8,13 @@ import {
 } from '@avalabs/k2-alpine'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useBalanceTotalInCurrencyForWallet } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForWallet'
 import { useIsLoadingBalancesForWallet } from 'features/portfolio/hooks/useIsLoadingBalancesForWallet'
+import { formatBalanceDisplay } from 'features/wallets/utils/formatBalanceDisplay'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { Wallet } from 'store/wallet/types'
 
@@ -29,6 +30,7 @@ export const WalletBalance = ({
   variant?: 'spinner' | 'skeleton'
 }): JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const {
     theme: { colors, isDark }
   } = useTheme()
@@ -45,13 +47,12 @@ export const WalletBalance = ({
   }, [isLoading, balanceTotalInCurrency])
 
   const walletBalance = useMemo(() => {
-    return balanceTotalInCurrency > 0
-      ? formatCurrency({
-          amount: balanceTotalInCurrency,
-          notation: balanceTotalInCurrency < 100000 ? undefined : 'compact'
-        })
-      : formatCurrency({ amount: 0 }).replace(/[\d.,]+/g, UNKNOWN_AMOUNT)
-  }, [formatCurrency, balanceTotalInCurrency])
+    return formatBalanceDisplay({
+      balance: balanceTotalInCurrency,
+      isDeveloperMode,
+      formatCurrency
+    })
+  }, [formatCurrency, balanceTotalInCurrency, isDeveloperMode])
 
   const renderMaskView = useCallback(() => {
     return (

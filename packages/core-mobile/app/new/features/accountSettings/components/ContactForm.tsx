@@ -39,7 +39,7 @@ export const ContactForm = ({
   onUpdate: (contact: Contact) => void
   onSelectAvatar: () => void
 }): React.JSX.Element => {
-  const { networks } = useCombinedPrimaryNetworks()
+  const { networks } = useCombinedPrimaryNetworks({ hideEmptySolana: true })
 
   const avatar = useMemo(() => {
     return loadAvatar(contact.avatar)

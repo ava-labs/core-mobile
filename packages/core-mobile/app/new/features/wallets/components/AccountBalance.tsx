@@ -8,10 +8,11 @@ import {
 } from '@avalabs/k2-alpine'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { formatBalanceDisplay } from 'features/wallets/utils/formatBalanceDisplay'
 import React, { useCallback, useMemo } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 
 export const AccountBalance = ({
@@ -34,20 +35,19 @@ export const AccountBalance = ({
   variant?: 'spinner' | 'skeleton'
 }): React.JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const {
     theme: { colors, isDark }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
 
   const accountBalance = useMemo(() => {
-    return balance === 0
-      ? formatCurrency({ amount: 0 }).replace(/[\d.,]+/g, UNKNOWN_AMOUNT)
-      : formatCurrency({
-          amount: balance,
-          notation: balance < 100000 ? undefined : 'compact',
-          showLessThanThreshold: true
-        })
-  }, [balance, formatCurrency])
+    return formatBalanceDisplay({
+      balance,
+      isDeveloperMode,
+      formatCurrency
+    })
+  }, [balance, formatCurrency, isDeveloperMode])
 
   const renderMaskView = useCallback(() => {
     return (

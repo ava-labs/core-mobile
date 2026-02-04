@@ -1,4 +1,9 @@
-import { Account, AccountCollection, XPAddressDictionary } from 'store/account'
+import {
+  Account,
+  AccountCollection,
+  LedgerAddressesCollection,
+  XPAddressDictionary
+} from 'store/account'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { AddressIndex, CoreAccountType } from '@avalabs/types'
@@ -12,9 +17,9 @@ import ModuleManager from 'vmModule/ModuleManager'
 import { AVALANCHE_MAINNET_NETWORK } from 'services/network/consts'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import Logger from 'utils/Logger'
-import { LedgerWallet } from 'services/wallet/LedgerWallet'
 import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
+import { LedgerWallet } from 'services/wallet/LedgerWallet'
 
 class AccountsService {
   /**
@@ -22,25 +27,40 @@ class AccountsService {
    */
   private async getAccountAddresses({
     account,
+    ledgerAddressesCollection = {},
     isLedgerWallet,
     walletId,
     walletType,
     isTestnet
   }: {
     account: Account
+    ledgerAddressesCollection?: LedgerAddressesCollection
     isLedgerWallet: boolean
     walletId: string
     walletType: WalletType
     isTestnet: boolean
   }): Promise<Record<NetworkVMType, string>> {
     if (isLedgerWallet) {
+      const ledgerAddresses = ledgerAddressesCollection[account.id]
+
+      const addressBTC = isTestnet
+        ? ledgerAddresses?.testnet.addressBTC
+        : ledgerAddresses?.mainnet.addressBTC
+
+      const addressAVM = isTestnet
+        ? ledgerAddresses?.testnet.addressAVM
+        : ledgerAddresses?.mainnet.addressAVM
+
+      const addressPVM = isTestnet
+        ? ledgerAddresses?.testnet.addressPVM
+        : ledgerAddresses?.mainnet.addressPVM
       // For Ledger wallets, preserve existing addresses
       // since they were retrieved from the device during wallet creation
       return {
-        [NetworkVMType.BITCOIN]: account.addressBTC,
+        [NetworkVMType.BITCOIN]: addressBTC || account.addressBTC,
         [NetworkVMType.EVM]: account.addressC,
-        [NetworkVMType.AVM]: account.addressAVM,
-        [NetworkVMType.PVM]: account.addressPVM,
+        [NetworkVMType.AVM]: addressAVM || account.addressAVM,
+        [NetworkVMType.PVM]: addressPVM || account.addressPVM,
         [NetworkVMType.CoreEth]: account.addressCoreEth || '',
         [NetworkVMType.SVM]: account.addressSVM ?? ''
       } as Record<NetworkVMType, string>
@@ -131,11 +151,13 @@ class AccountsService {
    */
   async reloadAccounts({
     accounts,
+    ledgerAddressesCollection = {},
     isTestnet,
     walletId,
     walletType
   }: {
     accounts: AccountCollection
+    ledgerAddressesCollection?: LedgerAddressesCollection
     isTestnet: boolean
     walletId: string
     walletType: WalletType
@@ -147,6 +169,7 @@ class AccountsService {
     for (const [key, account] of Object.entries(accounts)) {
       const addresses = await this.getAccountAddresses({
         account,
+        ledgerAddressesCollection,
         isLedgerWallet,
         walletId,
         walletType,
@@ -236,35 +259,20 @@ class AccountsService {
         // prompt Core Seedless API to derive new keys
         await wallet.addAccount(index)
       }
-    } else if (walletType === WalletType.LEDGER) {
+    } else if (
+      walletType === WalletType.LEDGER ||
+      walletType === WalletType.LEDGER_LIVE
+    ) {
       // For BIP44 Ledger wallets, try to derive addresses from extended public keys
       // This avoids the need to connect to the device for new accounts
       const wallet = await WalletFactory.createWallet({
         walletId,
         walletType
       })
-
-      if (wallet instanceof LedgerWallet && wallet.isBIP44()) {
-        // Try to derive addresses from extended public keys
-        const evmAddress = wallet.deriveAddressFromXpub(
-          index,
-          NetworkVMType.EVM,
-          isTestnet
-        )
-        const btcAddress = wallet.deriveAddressFromXpub(
-          index,
-          NetworkVMType.BITCOIN,
-          isTestnet
-        )
-
-        // Log if we can derive EVM and Bitcoin addresses from xpubs
-        evmAddress &&
-          btcAddress &&
-          Logger.info(`Derived addresses from xpub for account ${index}:`, {
-            evm: evmAddress,
-            btc: btcAddress
-          })
+      if (!(wallet instanceof LedgerWallet)) {
+        throw new Error('Expected LedgerWallet instance')
       }
+      return wallet.addAccount({ index, isTestnet, walletId, name })
     }
 
     const addresses = await this.getAddresses({
