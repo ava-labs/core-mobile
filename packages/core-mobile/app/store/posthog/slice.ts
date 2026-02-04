@@ -422,6 +422,14 @@ export const selectIsInAppDefiNewBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsInAppDefiBorrowBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.IN_APP_DEFI_BORROW] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 export const selectIsInAppReviewBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (

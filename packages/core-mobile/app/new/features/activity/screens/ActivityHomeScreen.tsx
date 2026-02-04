@@ -1,5 +1,3 @@
-import { BridgeTransfer } from '@avalabs/bridge-unified'
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import {
   NavigationTitleHeader,
   SearchBar,
@@ -15,9 +13,7 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import useInAppBrowser from 'common/hooks/useInAppBrowser'
-import { getSourceChainId } from 'common/utils/bridgeUtils'
-import { useFocusEffect, useRouter } from 'expo-router'
+import { useFocusEffect } from 'expo-router'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { LayoutChangeEvent, LayoutRectangle, Platform } from 'react-native'
 import {
@@ -33,20 +29,14 @@ import {
   useSafeAreaFrame,
   useSafeAreaInsets
 } from 'react-native-safe-area-context'
-import { useSelector } from 'react-redux'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
-import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { ActivityScreen } from './ActivityScreen'
 
 const ActivityHomeScreen = (): JSX.Element => {
-  const { navigate } = useRouter()
   const { theme } = useTheme()
   const tabBarHeight = useBottomTabBarHeight()
   const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
 
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [searchText, setSearchText] = useState('')
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
@@ -142,35 +132,6 @@ const ActivityHomeScreen = (): JSX.Element => {
     [selectedSegmentIndex]
   )
 
-  const handlePendingBridge = useCallback(
-    (pendingBridge: BridgeTransaction | BridgeTransfer): void => {
-      navigate({
-        // @ts-ignore TODO: make routes typesafe
-        pathname: '/bridgeStatus',
-        params: {
-          txHash: pendingBridge.sourceTxHash,
-          chainId: getSourceChainId(pendingBridge, isDeveloperMode)
-        }
-      })
-    },
-    [navigate, isDeveloperMode]
-  )
-
-  const { openUrl } = useInAppBrowser()
-
-  const handleExplorerLink = useCallback(
-    (
-      explorerLink: string,
-      hash?: string,
-      hashType?: 'account' | 'tx'
-    ): void => {
-      AnalyticsService.capture('ExplorerLinkClicked')
-      const url = getExplorerAddressByNetwork(explorerLink, hash, hashType)
-      openUrl(url)
-    },
-    [openUrl]
-  )
-
   useFocusEffect(
     useCallback(() => {
       handleScrollResync()
@@ -262,20 +223,12 @@ const ActivityHomeScreen = (): JSX.Element => {
           <ActivityScreen
             isSearchBarFocused={isSearchBarFocused}
             searchText={searchText}
-            handleExplorerLink={handleExplorerLink}
-            handlePendingBridge={handlePendingBridge}
             containerStyle={contentContainerStyle}
           />
         )
       }
     ]
-  }, [
-    contentContainerStyle,
-    handleExplorerLink,
-    handlePendingBridge,
-    searchText,
-    isSearchBarFocused
-  ])
+  }, [contentContainerStyle, searchText, isSearchBarFocused])
 
   useFocusEffect(() => {
     if (!KeyboardController.isVisible()) {
