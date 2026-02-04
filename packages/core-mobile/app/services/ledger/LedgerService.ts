@@ -1093,6 +1093,8 @@ class LedgerService {
         avm: avmAddress,
         pvm: pvmAddress,
         coreEth: coreEthAddress
+        pvm: pvmAddress,
+        coreEth: coreEthAddress
       },
       xpubs: {
         evm: evmXpub,

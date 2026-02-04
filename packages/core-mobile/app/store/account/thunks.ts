@@ -9,8 +9,11 @@ import {
   setActiveWallet
 } from 'store/wallet/slice'
 import { storeWallet } from 'store/wallet/thunks'
+import { storeWallet } from 'store/wallet/thunks'
 import { WalletType } from 'services/wallet/types'
 import { removeWallet } from 'store/wallet/thunks'
+import BiometricsSDK from 'utils/BiometricsSDK'
+import Logger from 'utils/Logger'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import {
@@ -48,6 +51,7 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
       walletId
     })
 
+    const acc = result.account
     const acc = result.account
     thunkApi.dispatch(setAccount(acc))
     thunkApi.dispatch(setActiveAccountId(acc.id))
@@ -96,7 +100,6 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
         isTestnet: !isDeveloperMode,
         walletId
       })
-
       const ledgerAccount = ledgerResult.account
       const testnetAccount = isDeveloperMode ? acc : ledgerAccount
       const mainnetAccount = isDeveloperMode ? ledgerAccount : acc
