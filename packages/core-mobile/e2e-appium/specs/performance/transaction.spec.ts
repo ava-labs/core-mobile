@@ -9,19 +9,8 @@ describe('[Performance] Transaction', () => {
     await warmup()
   })
 
-  it('Send performance without gasless', async () => {
+  it('Send performance on C-Chain', async () => {
     const start = await txPage.send(txLoc.avaxToken, txLoc.sendingAmount)
-    await actions.isNotVisible(commonElsPage.grabber)
-    await actions.assertPerformance(start)
-  })
-
-  it('Send performance with gasless', async () => {
-    const start = await txPage.send(
-      txLoc.avaxToken,
-      txLoc.sendingAmount,
-      txLoc.accountTwo,
-      true
-    )
     await actions.isNotVisible(commonElsPage.grabber)
     await actions.assertPerformance(start)
   })
