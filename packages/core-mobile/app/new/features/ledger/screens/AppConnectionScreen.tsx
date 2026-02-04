@@ -62,14 +62,16 @@ export default function AppConnectionScreen(): JSX.Element {
       return {
         addressBTC: bitcoinAddress,
         addressAVM: avalancheKeys.addresses.avm,
-        addressPVM: avalancheKeys.addresses.pvm
+        addressPVM: avalancheKeys.addresses.pvm,
+        addressCoreEth: avalancheKeys.addresses.coreEth
       }
     } catch (err) {
       Logger.error('Failed to get opposite keys', err)
       return {
         addressBTC: '',
         addressAVM: '',
-        addressPVM: ''
+        addressPVM: '',
+        addressCoreEth: ''
       }
     }
   }, [isDeveloperMode])
@@ -114,14 +116,16 @@ export default function AppConnectionScreen(): JSX.Element {
             : {
                 addressBTC: keys.bitcoinAddress ?? '',
                 addressAVM: keys.avalancheKeys?.addresses.avm || '',
-                addressPVM: keys.avalancheKeys?.addresses.pvm || ''
+                addressPVM: keys.avalancheKeys?.addresses.pvm || '',
+                addressCoreEth: keys.avalancheKeys?.addresses.coreEth || ''
               }
 
           const testnet = isDeveloperMode
             ? {
                 addressBTC: keys.bitcoinAddress ?? '',
                 addressAVM: keys.avalancheKeys?.addresses.avm || '',
-                addressPVM: keys.avalancheKeys?.addresses.pvm || ''
+                addressPVM: keys.avalancheKeys?.addresses.pvm || '',
+                addressCoreEth: keys.avalancheKeys?.addresses.coreEth || ''
               }
             : oppositeKeys
 

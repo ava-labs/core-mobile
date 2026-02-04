@@ -51,6 +51,10 @@ class AccountsService {
       const addressPVM = isTestnet
         ? ledgerAddresses?.testnet.addressPVM
         : ledgerAddresses?.mainnet.addressPVM
+
+      const addressCoreEth = isTestnet
+        ? ledgerAddresses?.testnet.addressCoreEth
+        : ledgerAddresses?.mainnet.addressCoreEth
       // For Ledger wallets, preserve existing addresses
       // since they were retrieved from the device during wallet creation
       return {
@@ -58,7 +62,7 @@ class AccountsService {
         [NetworkVMType.EVM]: account.addressC,
         [NetworkVMType.AVM]: addressAVM || account.addressAVM,
         [NetworkVMType.PVM]: addressPVM || account.addressPVM,
-        [NetworkVMType.CoreEth]: account.addressCoreEth || '',
+        [NetworkVMType.CoreEth]: addressCoreEth || account.addressCoreEth || '',
         [NetworkVMType.SVM]: account.addressSVM ?? ''
       } as Record<NetworkVMType, string>
     }

@@ -23,6 +23,7 @@ import AppSolana from '@ledgerhq/hw-app-solana'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Transport from '@ledgerhq/hw-transport'
 import { networks } from 'bitcoinjs-lib'
+import { utils as avalancheUtils, networkIDs } from '@avalabs/avalanchejs'
 import bs58 from 'bs58'
 import { TransactionRequest } from 'ethers'
 import { now } from 'moment'
@@ -921,9 +922,13 @@ export class LedgerWallet implements Wallet {
       throw new Error('Failed to derive all addresses from Ledger')
     }
 
-    // Derive addressCoreEth from addressAVM (same public key, different prefix)
-    // X-avax1abc... -> C-avax1abc...
-    const addressCoreEth = addressAVM.replace(/^X-/, 'C-')
+    // Derive C-chain bech32 address from EVM address
+    // CoreEth is the EVM address (hex) encoded in bech32 format with C- prefix
+    const hrp = isTestnet ? networkIDs.FujiHRP : networkIDs.MainnetHRP
+    const evmAddressBytes = new Uint8Array(
+      Buffer.from(addressC.replace(/^0x/, ''), 'hex')
+    )
+    const addressCoreEth = `C-${avalancheUtils.formatBech32(hrp, evmAddressBytes)}`
 
     // Get extended public keys for this account (device is already connected)
     const extendedKeys = await LedgerService.getExtendedPublicKeys(index)
