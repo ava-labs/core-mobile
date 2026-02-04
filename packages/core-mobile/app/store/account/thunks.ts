@@ -66,6 +66,9 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
         const secretResult = await BiometricsSDK.loadWalletSecret(walletId)
         if (secretResult.success && secretResult.value) {
           const parsedSecret = JSON.parse(secretResult.value)
+        const secretResult = await BiometricsSDK.loadWalletSecret(walletId)
+        if (secretResult.success && secretResult.value) {
+          const parsedSecret = JSON.parse(secretResult.value)
 
           // Add the new account's xpub to the per-account format
           const extendedPublicKeys = {
@@ -73,6 +76,19 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
             [existingAccountsCount]: result.xpub
           }
 
+          await thunkApi
+            .dispatch(
+              storeWallet({
+                walletId,
+                name: wallet.name,
+                type: wallet.type,
+                walletSecret: JSON.stringify({
+                  ...parsedSecret,
+                  extendedPublicKeys
+                })
+              })
+            )
+            .unwrap()
           await thunkApi
             .dispatch(
               storeWallet({
