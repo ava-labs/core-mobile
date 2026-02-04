@@ -1071,7 +1071,10 @@ class LedgerService {
     const evmAddressBytes = new Uint8Array(
       Buffer.from(evmAddress.replace(/^0x/, ''), 'hex')
     )
-    const coreEthAddress = `C-${avalancheUtils.formatBech32(hrp, evmAddressBytes)}`
+    const coreEthAddress = `C-${avalancheUtils.formatBech32(
+      hrp,
+      evmAddressBytes
+    )}`
 
     // Get extended public keys and convert to base58 xpub format
     const extendedKeys = await this.getExtendedPublicKeys(accountIndex)
