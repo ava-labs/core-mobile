@@ -192,6 +192,11 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
   }
 )
 
+// Wait duration to ensure Redux persist has flushed state to storage.
+// This must be greater than STORAGE_WRITE_THROTTLE (200ms) in store/index.ts
+// to prevent race conditions between state persistence and keychain operations.
+const PERSIST_FLUSH_DELAY_MS = 250
+
 export const removeWallet = createAsyncThunk<void, string, ThunkApi>(
   'wallet/removeWallet',
   async (walletId, thunkApi) => {
@@ -204,12 +209,12 @@ export const removeWallet = createAsyncThunk<void, string, ThunkApi>(
       selectWallets(stateBefore)
     ).indexOf(activeWalletIdBefore)
 
+    // Step 1: Update all Redux state first (before any keychain operations)
     const accountsToRemove = selectAccountsByWalletId(stateBefore, walletId)
     accountsToRemove.forEach(account => {
       thunkApi.dispatch(removeAccount(account.id))
     })
     thunkApi.dispatch(_removeWallet(walletId))
-    await BiometricsSDK.removeWalletSecret(walletId)
 
     // If we removed the active wallet, set the first account of the new active wallet as active
     if (activeWalletIdBefore === walletId) {
@@ -231,5 +236,17 @@ export const removeWallet = createAsyncThunk<void, string, ThunkApi>(
         thunkApi.dispatch(setActiveAccountId(accountsForWallet[0].id))
       }
     }
+
+    // Step 2: Wait for Redux persist to flush the state to storage.
+    // This prevents a race condition where:
+    // - The keychain secret is deleted immediately
+    // - But Redux state hasn't been persisted yet (due to 200ms throttle)
+    // - If the user kills the app before persist completes, the old state
+    //   (with the deleted wallet as active) would be restored on next launch
+    // - The PIN screen would then fail to load the deleted wallet's secret
+    await new Promise(resolve => setTimeout(resolve, PERSIST_FLUSH_DELAY_MS))
+
+    // Step 3: Safe to remove the keychain secret
+    await BiometricsSDK.removeWalletSecret(walletId)
   }
 )
