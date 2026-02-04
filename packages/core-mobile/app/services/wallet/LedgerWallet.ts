@@ -309,7 +309,6 @@ export class LedgerWallet implements Wallet {
     const keys = this.extendedPublicKeys[accountIndex]
 
     if (!keys) {
-      Logger.error(`No xpub found for account ${accountIndex}`)
       throw new Error(`No xpub found for account ${accountIndex}`)
     }
 

@@ -58,38 +58,33 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
       // Store the xpub for this account in wallet secret
 
       if (result.xpub) {
-        try {
-          const secretResult = await BiometricsSDK.loadWalletSecret(walletId)
-          if (secretResult.success && secretResult.value) {
-            const parsedSecret = JSON.parse(secretResult.value)
+        const secretResult = await BiometricsSDK.loadWalletSecret(walletId)
+        if (secretResult.success && secretResult.value) {
+          const parsedSecret = JSON.parse(secretResult.value)
 
-            // Add the new account's xpub to the per-account format
-            const extendedPublicKeys = {
-              ...parsedSecret.extendedPublicKeys,
-              [accountIndex]: result.xpub
-            }
-
-            await thunkApi
-              .dispatch(
-                storeWallet({
-                  walletId,
-                  name: wallet.name,
-                  type: wallet.type,
-                  walletSecret: JSON.stringify({
-                    ...parsedSecret,
-                    extendedPublicKeys
-                  })
-                })
-              )
-              .unwrap()
-
-            Logger.info(
-              `Stored xpub for account ${accountIndex} in wallet secret`
-            )
+          // Add the new account's xpub to the per-account format
+          const extendedPublicKeys = {
+            ...parsedSecret.extendedPublicKeys,
+            [accountIndex]: result.xpub
           }
-        } catch (error) {
-          Logger.error('Failed to store xpub in wallet secret:', error)
-          // Don't throw - account was created successfully, xpub storage is non-critical
+
+          await thunkApi
+            .dispatch(
+              storeWallet({
+                walletId,
+                name: wallet.name,
+                type: wallet.type,
+                walletSecret: JSON.stringify({
+                  ...parsedSecret,
+                  extendedPublicKeys
+                })
+              })
+            )
+            .unwrap()
+
+          Logger.info(
+            `Stored xpub for account ${accountIndex} in wallet secret`
+          )
         }
       }
 
