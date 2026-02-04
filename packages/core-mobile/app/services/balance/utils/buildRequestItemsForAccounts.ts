@@ -9,9 +9,6 @@ import {
   GetBalancesRequestBody,
   SvmGetBalancesRequestItem
 } from 'utils/apiClient/generated/balanceApi.client'
-import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
-
-const uniq = <T>(arr: T[]): T[] => Array.from(new Set(arr))
 
 /**
  * Maximum number of EVM references allowed per request item
@@ -53,7 +50,8 @@ const MAX_ADDRESS_DETAILS_PER_ITEM = 50
  */
 export const buildRequestItemsForAccounts = (
   networks: Network[],
-  accounts: Account[]
+  accounts: Account[],
+  xpAddressesByAccountId: Map<string, string[]>
   // eslint-disable-next-line sonarjs/cognitive-complexity
 ): GetBalancesRequestBody['data'][] => {
   const evmReferences = new Set<string>()
@@ -131,10 +129,8 @@ export const buildRequestItemsForAccounts = (
     []
   if (avaxReferences.size > 0) {
     for (const account of accounts) {
-      const xpAddresses = getAccountXpAddresses(account).filter(
-        addr => typeof addr === 'string' && addr.trim() !== ''
-      )
-      if (xpAddresses.length === 0) continue
+      const xpAddresses = xpAddressesByAccountId?.get(account.id)
+      if (!xpAddresses || xpAddresses.length === 0) continue
 
       const addressChunks = chunkArray(xpAddresses, MAX_ADDRESSES_PER_ITEM)
       for (const chunk of addressChunks) {
@@ -238,18 +234,6 @@ export const buildRequestItemsForAccounts = (
   }
 
   return finalBatches
-}
-
-const getAccountXpAddresses = (account: Account): string[] => {
-  const derivedXpAddresses =
-    account.xpAddresses?.map(({ address }) => stripAddressPrefix(address)) ?? []
-
-  if (derivedXpAddresses.length > 0) {
-    return uniq(derivedXpAddresses)
-  }
-
-  const fallbackAddress = account.addressAVM || account.addressPVM
-  return fallbackAddress ? [stripAddressPrefix(fallbackAddress)] : []
 }
 
 const chunkArray = <T>(arr: T[], size: number): T[][] => {

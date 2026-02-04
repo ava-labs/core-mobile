@@ -40,35 +40,12 @@ const createMockAccount = (overrides?: Partial<Account>): Account => ({
   walletId: 'test-wallet-id',
   index: 0,
   type: CoreAccountType.PRIMARY as CoreAccountType.PRIMARY,
-  hasMigratedXpAddresses: true,
   addressC: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
   addressCoreEth: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
   addressBTC: 'bc1qmm9qawklnfau5hhrkt33kqumggxwy7s9raxuxk',
   addressSVM: '9gQmZ7fTTgv5hVScrr9QqT6SpBs7i4cKLDdj4tuae3sW',
   addressAVM: 'X-avax1aahxdv3wqxd42rxdalvp2knxs244r06wrxmvlf',
   addressPVM: 'P-avax1putwtyrvk7vx8zeffmnja8djxku5nnc87au7rj',
-  xpAddresses: [
-    {
-      address: 'X-avax1aahxdv3wqxd42rxdalvp2knxs244r06wrxmvlf',
-      index: 0
-    },
-    {
-      address: 'P-avax1putwtyrvk7vx8zeffmnja8djxku5nnc87au7rj',
-      index: 0
-    }
-  ],
-  xpAddressDictionary: {
-    'X-avax1aahxdv3wqxd42rxdalvp2knxs244r06wrxmvlf': {
-      space: 'e' as const,
-      index: 0,
-      hasActivity: true
-    },
-    'P-avax1putwtyrvk7vx8zeffmnja8djxku5nnc87au7rj': {
-      space: 'e' as const,
-      index: 0,
-      hasActivity: true
-    }
-  },
   ...overrides
 })
 
@@ -84,8 +61,7 @@ describe('buildRequestItemsForAccounts', () => {
         addressC: createEvmAddress(i),
         addressCoreEth: createEvmAddress(i),
         addressBTC: undefined,
-        addressSVM: undefined,
-        xpAddresses: []
+        addressSVM: undefined
       })
     )
 
@@ -112,8 +88,7 @@ describe('buildRequestItemsForAccounts', () => {
         addressC: undefined,
         addressCoreEth: undefined,
         addressBTC: `bc1qtest${i.toString().padStart(10, '0')}`,
-        addressSVM: undefined,
-        xpAddresses: []
+        addressSVM: undefined
       })
     )
 
@@ -140,8 +115,7 @@ describe('buildRequestItemsForAccounts', () => {
         addressC: undefined,
         addressCoreEth: undefined,
         addressBTC: undefined,
-        addressSVM: `So1anaTest${i.toString().padStart(10, '0')}`,
-        xpAddresses: []
+        addressSVM: `So1anaTest${i.toString().padStart(10, '0')}`
       })
     )
 
@@ -168,13 +142,7 @@ describe('buildRequestItemsForAccounts', () => {
         addressC: undefined,
         addressCoreEth: undefined,
         addressBTC: undefined,
-        addressSVM: undefined,
-        xpAddresses: [
-          {
-            address: `X-avax1test${i}`,
-            index: 0
-          }
-        ]
+        addressSVM: undefined
       })
     )
 
@@ -242,8 +210,7 @@ describe('buildRequestItemsForAccounts', () => {
         addressBTC: undefined,
         addressSVM: undefined,
         addressAVM: undefined,
-        addressPVM: undefined,
-        xpAddresses: []
+        addressPVM: undefined
       })
     ]
 
@@ -263,8 +230,7 @@ describe('buildRequestItemsForAccounts', () => {
         addressC: createEvmAddress(i),
         addressCoreEth: createEvmAddress(i),
         addressBTC: undefined,
-        addressSVM: undefined,
-        xpAddresses: []
+        addressSVM: undefined
       })
     )
 
@@ -293,8 +259,7 @@ describe('buildRequestItemsForAccounts', () => {
         addressC: createEvmAddress(i),
         addressCoreEth: createEvmAddress(i),
         addressBTC: undefined,
-        addressSVM: undefined,
-        xpAddresses: []
+        addressSVM: undefined
       })
     )
 

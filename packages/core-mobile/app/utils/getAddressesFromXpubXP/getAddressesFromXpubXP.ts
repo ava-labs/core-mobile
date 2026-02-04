@@ -191,7 +191,16 @@ const toAddressIndexArray = (
   dictionary: XPAddressDictionary
 ): AddressIndex[] => {
   return Object.keys(dictionary)
-    .sort()
+    .sort((a, b) => {
+      const indexA = dictionary[a]?.index ?? 0
+      const indexB = dictionary[b]?.index ?? 0
+      // Sort by index first
+      if (indexA !== indexB) {
+        return indexA - indexB
+      }
+      // If same index, sort lexicographically
+      return a.localeCompare(b)
+    })
     .map(address => ({
       address,
       index: dictionary[address]?.index ?? 0

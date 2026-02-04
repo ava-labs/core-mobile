@@ -237,21 +237,7 @@ const markWalletAsMigrated = (walletId: string): void => {
 export const isAddressMissing = (address: string | undefined | null): boolean =>
   !address || address.trim() === ''
 
-// Group accounts by wallet ID
-export const groupAccountsByWallet = (
-  accounts: Account[]
-): Map<string, Account[]> => {
-  const accountsByWallet = new Map<string, Account[]>()
-  for (const account of accounts) {
-    const existing = accountsByWallet.get(account.walletId) || []
-    existing.push(account)
-    accountsByWallet.set(account.walletId, existing)
-  }
-  return accountsByWallet
-}
-
-// Check if wallet type can rederive XP addresses
-export const canRederiveXpAddresses = (walletType: WalletType): boolean =>
+export const isMemonicOrSeedlessWallet = (walletType: WalletType): boolean =>
   walletType === WalletType.MNEMONIC || walletType === WalletType.SEEDLESS
 
 // Check if wallet is a hardware wallet
@@ -260,8 +246,8 @@ export const isHardwareWalletType = (walletType: WalletType): boolean =>
     walletType
   )
 
-// Rederive XP addresses for a single account
-export const rederiveXpAddressesForAccount = async ({
+// Rederive AVM and PVM addresses for a single account
+export const rederiveAvmPvmAddressesForAccount = async ({
   account,
   wallet,
   isDeveloperMode
@@ -272,7 +258,7 @@ export const rederiveXpAddressesForAccount = async ({
 }): Promise<Account | null> => {
   try {
     Logger.info(
-      `Rederiving XP addresses for account ${account.index} (${account.id})`
+      `Rederiving AVM/PVM addresses for account ${account.index} (${account.id})`
     )
 
     const addresses = await AccountsService.getAddresses({
@@ -287,7 +273,7 @@ export const rederiveXpAddressesForAccount = async ({
 
     if (newAddressAVM || newAddressPVM) {
       Logger.info(
-        `Repopulated XP addresses for account ${account.index}: AVM=${newAddressAVM}, PVM=${newAddressPVM}`
+        `Repopulated AVM/PVM addresses for account ${account.index}: AVM=${newAddressAVM}, PVM=${newAddressPVM}`
       )
       return {
         ...account,
@@ -297,15 +283,15 @@ export const rederiveXpAddressesForAccount = async ({
     }
   } catch (error) {
     Logger.error(
-      `Failed to rederive XP addresses for account ${account.index}`,
+      `Failed to rederive AVM/PVM addresses for account ${account.index}`,
       error
     )
   }
   return null
 }
 
-// Check if account can have XP addresses rederived
-export const canRederiveAccountXpAddresses = (
+// Check if account can have AVM/PVM addresses rederived
+export const canRederiveAccountAddresses = (
   account: Account,
   wallet: Wallet
 ): boolean => {
@@ -318,7 +304,7 @@ export const canRederiveAccountXpAddresses = (
   }
 
   // Only MNEMONIC and SEEDLESS can rederive addresses
-  if (!canRederiveXpAddresses(wallet.type)) {
+  if (!isMemonicOrSeedlessWallet(wallet.type)) {
     Logger.info(
       `Skipping account ${account.index} for wallet type ${wallet.type}`
     )
@@ -326,48 +312,4 @@ export const canRederiveAccountXpAddresses = (
   }
 
   return true
-}
-
-// Process accounts for a single wallet and return updated accounts
-export const processWalletAccountsForRepopulation = async ({
-  wallet,
-  accounts,
-  isDeveloperMode
-}: {
-  wallet: Wallet
-  accounts: Account[]
-  isDeveloperMode: boolean
-}): Promise<Record<string, Account>> => {
-  const updatedAccounts: Record<string, Account> = {}
-
-  // Skip private key wallets - they don't support AVM/PVM
-  if (wallet.type === WalletType.PRIVATE_KEY) {
-    Logger.info(
-      `Skipping private key wallet ${wallet.id} - AVM/PVM not supported`
-    )
-    return updatedAccounts
-  }
-
-  // For seedless wallets, ensure session keys are derived
-  if (wallet.type === WalletType.SEEDLESS) {
-    await deriveMissingSeedlessSessionKeys(wallet.id)
-  }
-
-  for (const account of accounts) {
-    if (!canRederiveAccountXpAddresses(account, wallet)) {
-      continue
-    }
-
-    const updatedAccount = await rederiveXpAddressesForAccount({
-      account,
-      wallet,
-      isDeveloperMode
-    })
-
-    if (updatedAccount) {
-      updatedAccounts[account.id] = updatedAccount
-    }
-  }
-
-  return updatedAccounts
 }

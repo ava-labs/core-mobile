@@ -1,12 +1,11 @@
 import {
   Account,
   AccountCollection,
-  LedgerAddressesCollection,
-  XPAddressDictionary
+  LedgerAddressesCollection
 } from 'store/account'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { AddressIndex, CoreAccountType } from '@avalabs/types'
+import { CoreAccountType } from '@avalabs/types'
 import { uuid } from 'utils/uuid'
 import { WalletType } from 'services/wallet/types'
 import { isEvmPublicKey } from 'utils/publicKeys'
@@ -17,8 +16,6 @@ import ModuleManager from 'vmModule/ModuleManager'
 import { AVALANCHE_MAINNET_NETWORK } from 'services/network/consts'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import Logger from 'utils/Logger'
-import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
-import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { LedgerWallet } from 'services/wallet/LedgerWallet'
 
 class AccountsService {
@@ -76,72 +73,6 @@ class AccountsService {
   }
 
   /**
-   * Gets XP addresses for an account, either preserving existing ones for Ledger or deriving new ones.
-   */
-  // private async getAccountXPAddresses({
-  //   account,
-  //   isLedgerWallet,
-  //   walletId,
-  //   walletType,
-  //   isTestnet
-  // }: {
-  //   account: Account
-  //   isLedgerWallet: boolean
-  //   walletId: string
-  //   walletType: WalletType
-  //   isTestnet: boolean
-  // }): Promise<{
-  //   xpAddresses: AddressIndex[]
-  //   xpAddressDictionary: XPAddressDictionary
-  // }> {
-  //   if (isLedgerWallet) {
-  //     // For Ledger wallets, preserve existing XP addresses
-  //     return {
-  //       xpAddresses: account.xpAddresses || [],
-  //       xpAddressDictionary:
-  //         account.xpAddressDictionary || ({} as XPAddressDictionary)
-  //     }
-  //   }
-
-  //   // For non-Ledger wallets, derive XP addresses
-  //   try {
-  //     const result = await getAddressesFromXpubXP({
-  //       isDeveloperMode: isTestnet,
-  //       walletId,
-  //       walletType,
-  //       accountIndex: account.index,
-  //       onlyWithActivity: true
-  //     })
-
-  //     return {
-  //       xpAddresses: result.xpAddresses,
-  //       xpAddressDictionary: result.xpAddressDictionary
-  //     }
-  //   } catch (error) {
-  //     Logger.error('Error getting XP addresses', error)
-  //     return {
-  //       xpAddresses: [],
-  //       xpAddressDictionary: {} as XPAddressDictionary
-  //     }
-  //   }
-  // }
-
-  /**
-   * Gets the account name/title.
-   */
-  // private async getAccountTitle(
-  //   walletType: WalletType,
-  //   account: Account
-  // ): Promise<string> {
-  //   if (walletType === WalletType.SEEDLESS) {
-  //     return (
-  //       (await SeedlessService.getAccountName(account.index)) ?? account.name
-  //     )
-  //   }
-  //   return account.name
-  // }
-
-  /**
    * Reloads the accounts for the given network.
    * @param accounts The accounts to reload.
    * @param network The network to reload the accounts for.
@@ -176,35 +107,6 @@ class AccountsService {
         isTestnet
       })
 
-      const strippedAVM = stripAddressPrefix(account.addressAVM)
-      const strippedPVM = stripAddressPrefix(account.addressPVM)
-      const strippedAvalancheAddress = strippedAVM || strippedPVM
-
-      let xpAddresses: AddressIndex[] = [
-        { address: strippedAvalancheAddress, index: 0 }
-      ]
-      let xpAddressDictionary: XPAddressDictionary = {
-        [strippedAvalancheAddress]: { space: 'e', index: 0, hasActivity: false }
-      }
-      let hasMigratedXpAddresses = false
-
-      try {
-        const result = await getAddressesFromXpubXP({
-          isDeveloperMode: isTestnet,
-          walletId,
-          walletType,
-          accountIndex: account.index,
-          onlyWithActivity: true
-        })
-
-        xpAddresses =
-          result.xpAddresses.length > 0 ? result.xpAddresses : xpAddresses
-        xpAddressDictionary = result.xpAddressDictionary
-        hasMigratedXpAddresses = true
-      } catch (error) {
-        Logger.error('Error getting XP addresses', error)
-      }
-
       reloadedAccounts[key] = {
         id: account.id,
         name: account.name,
@@ -216,10 +118,7 @@ class AccountsService {
         addressAVM: addresses[NetworkVMType.AVM],
         addressPVM: addresses[NetworkVMType.PVM],
         addressCoreEth: addresses[NetworkVMType.CoreEth],
-        addressSVM: addresses[NetworkVMType.SVM],
-        xpAddresses,
-        xpAddressDictionary,
-        hasMigratedXpAddresses
+        addressSVM: addresses[NetworkVMType.SVM]
       } as Account
     }
 
@@ -282,28 +181,6 @@ class AccountsService {
       isTestnet
     })
 
-    let xpAddresses: AddressIndex[] = [
-      { address: stripAddressPrefix(addresses[NetworkVMType.AVM]), index: 0 }
-    ]
-    let xpAddressDictionary: XPAddressDictionary = {} as XPAddressDictionary
-    let hasMigratedXpAddresses = false
-    try {
-      const result = await getAddressesFromXpubXP({
-        isDeveloperMode: isTestnet,
-        walletId,
-        walletType,
-        accountIndex: index,
-        onlyWithActivity: true
-      })
-
-      xpAddresses =
-        result.xpAddresses.length > 0 ? result.xpAddresses : xpAddresses
-      xpAddressDictionary = result.xpAddressDictionary
-      hasMigratedXpAddresses = true
-    } catch (error) {
-      Logger.error('Error getting XP addresses', error)
-    }
-
     Logger.info(`Final addresses for account ${index}:`, addresses)
 
     return {
@@ -317,10 +194,7 @@ class AccountsService {
       addressAVM: addresses[NetworkVMType.AVM],
       addressPVM: addresses[NetworkVMType.PVM],
       addressCoreEth: addresses[NetworkVMType.CoreEth],
-      addressSVM: addresses[NetworkVMType.SVM],
-      xpAddresses,
-      xpAddressDictionary,
-      hasMigratedXpAddresses
+      addressSVM: addresses[NetworkVMType.SVM]
     }
   }
 

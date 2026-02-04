@@ -1,5 +1,4 @@
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
-import { AddressIndex } from '@avalabs/types'
 import {
   type Error,
   type NetworkContractToken,
@@ -97,7 +96,8 @@ export class BalanceService {
     accounts,
     currency,
     customTokens,
-    onBalanceLoaded
+    onBalanceLoaded,
+    xpAddressesByAccountId
   }: {
     networks: Network[]
     accounts: Account[]
@@ -107,6 +107,7 @@ export class BalanceService {
       networkChainId: number,
       partial: PartialAdjustedNormalizedBalancesForAccount
     ) => void
+    xpAddressesByAccountId: Map<string, string[]>
   }): Promise<AdjustedNormalizedBalancesForAccounts> {
     // Final aggregated result
     const finalResults: AdjustedNormalizedBalancesForAccounts = {}
@@ -133,12 +134,14 @@ export class BalanceService {
             const module = await ModuleManager.loadModuleByNetwork(network)
 
             const addressEntries = accounts.flatMap(account =>
-              getAddressesForAccountAndNetwork(account, network).map(
-                address => ({
-                  address,
-                  account
-                })
-              )
+              getAddressesForAccountAndNetwork({
+                account,
+                network,
+                xpAddresses: xpAddressesByAccountId.get(account.id) ?? []
+              }).map(address => ({
+                address,
+                account
+              }))
             )
 
             const addressMap = addressEntries.reduce(
@@ -339,21 +342,26 @@ export class BalanceService {
     networks,
     account,
     currency,
-    onBalanceLoaded
+    onBalanceLoaded,
+    xpAddresses
   }: {
     networks: Network[]
     account: Account
     currency: string
     onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
+    xpAddresses: string[]
   }): Promise<AdjustedNormalizedBalancesForAccount[]> {
     // Final aggregated result
     const finalResults = new Map<number, AdjustedNormalizedBalancesForAccount>()
 
     const { networks: supportedNetworks, filteredOutChainIds } =
       await this.filterNetworksBySupportedEvm(networks)
-    const requestBatches = buildRequestItemsForAccounts(supportedNetworks, [
-      account
-    ])
+
+    const requestBatches = buildRequestItemsForAccounts(
+      supportedNetworks,
+      [account],
+      new Map([[account.id, xpAddresses]])
+    )
 
     const { balanceApiThrew, failedChainIds } =
       await this.processBalanceBatches({
@@ -383,7 +391,8 @@ export class BalanceService {
         networks: networksToRetry,
         account,
         currency,
-        onBalanceLoaded
+        onBalanceLoaded,
+        xpAddresses
       })
 
       vmResults.forEach(balance => finalResults.set(balance.chainId, balance))
@@ -453,12 +462,14 @@ export class BalanceService {
     networks,
     account,
     currency,
-    onBalanceLoaded
+    onBalanceLoaded,
+    xpAddresses
   }: {
     networks: Network[]
     account: Account
     currency: string
     onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
+    xpAddresses: string[]
   }): Promise<AdjustedNormalizedBalancesForAccount[]> {
     if (networks.length === 0) return []
 
@@ -474,7 +485,8 @@ export class BalanceService {
               onBalanceLoaded(balance)
             }
           }
-        : undefined
+        : undefined,
+      xpAddressesByAccountId: new Map([[account.id, xpAddresses]])
     })
 
     return res[account.id] ?? []
@@ -495,12 +507,14 @@ export class BalanceService {
     networks,
     accounts,
     currency,
-    onBalanceLoaded
+    onBalanceLoaded,
+    xpAddressesByAccountId
   }: {
     networks: Network[]
     accounts: Account[]
     currency: string
     onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
+    xpAddressesByAccountId: Map<string, string[]>
   }): Promise<AdjustedNormalizedBalancesForAccounts> {
     const finalResults: AdjustedNormalizedBalancesForAccounts = {}
 
@@ -512,7 +526,8 @@ export class BalanceService {
       await this.filterNetworksBySupportedEvm(networks)
     const requestBatches = buildRequestItemsForAccounts(
       supportedNetworks,
-      accounts
+      accounts,
+      xpAddressesByAccountId
     )
 
     const accountById = accounts.reduce((acc, a) => {
@@ -521,8 +536,14 @@ export class BalanceService {
     }, {} as Record<string, Account>)
 
     const accountByAddress = accounts.reduce((acc, account) => {
+      const xpAddresses = xpAddressesByAccountId.get(account.id) ?? []
+
       const addresses = supportedNetworks.flatMap(network =>
-        getAddressesForAccountAndNetwork(account, network)
+        getAddressesForAccountAndNetwork({
+          account,
+          network,
+          xpAddresses
+        })
       )
       for (const address of addresses) {
         if (address && address.length > 0) acc[address] = account
@@ -615,7 +636,8 @@ export class BalanceService {
               onBalanceLoaded?.(balance)
             }
           }
-        }
+        },
+        xpAddressesByAccountId
       })
 
       // Merge VM results into final results
@@ -643,17 +665,19 @@ export class BalanceService {
   }
 }
 
-const getAddressesForAccountAndNetwork = (
-  account: Account,
+const getAddressesForAccountAndNetwork = ({
+  account,
+  network,
+  xpAddresses
+}: {
+  account: Account
   network: Network
-): string[] => {
-  if (isXPNetwork(network)) {
-    const xpAddresses = account.xpAddresses
-    if (xpAddresses && xpAddresses.length > 0) {
-      const formatted = formatXpAddressesForNetwork(xpAddresses, network)
-      if (formatted.length > 0) {
-        return formatted
-      }
+  xpAddresses: string[]
+}): string[] => {
+  if (isXPNetwork(network) && xpAddresses.length > 0) {
+    const formatted = formatXpAddressesForNetwork(xpAddresses, network)
+    if (formatted.length > 0) {
+      return formatted
     }
   }
 
@@ -662,7 +686,7 @@ const getAddressesForAccountAndNetwork = (
 }
 
 const formatXpAddressesForNetwork = (
-  xpAddresses: AddressIndex[],
+  xpAddresses: string[],
   network: Network
 ): string[] => {
   const prefix =
@@ -677,7 +701,7 @@ const formatXpAddressesForNetwork = (
   }
 
   const normalized = new Set<string>()
-  xpAddresses.forEach(({ address }) => {
+  xpAddresses.forEach(address => {
     if (!address) {
       return
     }

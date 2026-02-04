@@ -223,10 +223,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           addressAVM: formattedAddresses.avm,
           addressPVM: formattedAddresses.pvm,
           addressSVM: solanaKeys[0]?.key || '',
-          addressCoreEth: '',
-          xpAddresses: [],
-          xpAddressDictionary: {},
-          hasMigratedXpAddresses: true // TODO: true when xpAddresses are successfully fetched
+          addressCoreEth: ''
         }
 
         dispatch(setAccount(newAccount))
