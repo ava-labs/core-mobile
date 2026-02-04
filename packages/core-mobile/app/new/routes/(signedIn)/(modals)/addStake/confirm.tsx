@@ -37,7 +37,10 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import NetworkService from 'services/network/NetworkService'
+import { WalletType } from 'services/wallet/types'
 import { selectActiveAccount } from 'store/account'
+import { selectActiveWallet } from 'store/wallet/slice'
+import { showLedgerReviewTransaction } from 'features/ledger/utils'
 import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { truncateNodeId } from 'utils/Utils'
@@ -81,6 +84,7 @@ const StakeConfirmScreen = (): JSX.Element => {
   )
 
   const activeAccount = useSelector(selectActiveAccount)
+  const activeWallet = useSelector(selectActiveWallet)
 
   const validatorEndTimeUnix = useMemo(() => {
     if (validator?.endTime) {
@@ -264,10 +268,49 @@ const StakeConfirmScreen = (): JSX.Element => {
     ]
   )
 
-  const onDelegationError = useCallback((e: Error): void => {
-    AnalyticsService.capture('StakeDelegationFail')
-    transactionSnackbar.error({ error: e.message })
-  }, [])
+  const onDelegationError = useCallback(
+    (e: Error): void => {
+      AnalyticsService.capture('StakeDelegationFail')
+
+      // Close any open modals (including Ledger progress modal)
+      dismissAll()
+
+      // Check for insufficient funds error
+      const isInsufficientFunds =
+        e.message.toLowerCase().includes('insufficient') ||
+        e.message.toLowerCase().includes('not enough')
+
+      if (isInsufficientFunds) {
+        showAlert({
+          title: 'Insufficient Funds',
+          description:
+            'You do not have enough AVAX to complete this stake. Please add more funds and try again.',
+          buttons: [
+            {
+              text: 'OK',
+              onPress: () => {
+                back()
+              }
+            }
+          ]
+        })
+      } else {
+        showAlert({
+          title: 'Stake Failed',
+          description: e.message,
+          buttons: [
+            {
+              text: 'OK',
+              onPress: () => {
+                back()
+              }
+            }
+          ]
+        })
+      }
+    },
+    [dismissAll, back]
+  )
 
   // Use refs to break circular dependency between onFundsStuck and handleDelegate
   const issueDelegationRef = useRef<
@@ -293,6 +336,26 @@ const StakeConfirmScreen = (): JSX.Element => {
 
   const onFundsStuck = useCallback(
     (_error: Error): void => {
+      const isLedger =
+        activeWallet?.type === WalletType.LEDGER ||
+        activeWallet?.type === WalletType.LEDGER_LIVE
+
+      const performRetry = (): void => {
+        const currentValidator = validatorRef.current
+        const currentMinStartTime = minStartTimeRef.current
+        const currentValidatedStakingEndTime =
+          validatedStakingEndTimeRef.current
+        if (!currentValidator || !issueDelegationRef.current) return
+
+        AnalyticsService.capture('StakeIssueDelegation')
+        issueDelegationRef.current({
+          nodeId: currentValidator.nodeID,
+          startDate: currentMinStartTime,
+          endDate: currentValidatedStakingEndTime,
+          recomputeSteps: true
+        })
+      }
+
       showAlert({
         title: 'Funds stuck',
         description:
@@ -307,25 +370,37 @@ const StakeConfirmScreen = (): JSX.Element => {
           {
             text: 'Try again',
             onPress: () => {
-              const currentValidator = validatorRef.current
-              const currentMinStartTime = minStartTimeRef.current
-              const currentValidatedStakingEndTime =
-                validatedStakingEndTimeRef.current
-              if (!currentValidator || !issueDelegationRef.current) return
-
-              AnalyticsService.capture('StakeIssueDelegation')
-              issueDelegationRef.current({
-                nodeId: currentValidator.nodeID,
-                startDate: currentMinStartTime,
-                endDate: currentValidatedStakingEndTime,
-                recomputeSteps: true
-              })
+              // For Ledger wallets, re-establish connection before retrying
+              if (isLedger) {
+                showLedgerReviewTransaction({
+                  network: pNetwork,
+                  onApprove: async () => {
+                    // Start the retry delegation process
+                    performRetry()
+                  },
+                  onReject: () => {
+                    // User cancelled Ledger connection
+                  },
+                  // Use unified modal with staking progress tracking
+                  stakingProgress: {
+                    totalSteps: steps.length,
+                    onComplete: () => {
+                      // Progress will auto-complete when all steps are done
+                    },
+                    onCancel: () => {
+                      // User cancelled from progress screen
+                    }
+                  }
+                })
+              } else {
+                performRetry()
+              }
             }
           }
         ]
       })
     },
-    [handleDismiss]
+    [activeWallet?.type, handleDismiss, pNetwork, steps.length]
   )
 
   const { issueDelegation, isPending: isIssueDelegationPending } =
@@ -339,20 +414,60 @@ const StakeConfirmScreen = (): JSX.Element => {
     issueDelegationRef.current = issueDelegation
   }, [issueDelegation])
 
+  const isLedgerWallet =
+    activeWallet?.type === WalletType.LEDGER ||
+    activeWallet?.type === WalletType.LEDGER_LIVE
+
   const handleDelegate = useCallback(
     (recomputeSteps = false): void => {
       if (!validator) return
 
       AnalyticsService.capture('StakeIssueDelegation')
 
-      issueDelegation({
-        nodeId: validator.nodeID,
-        startDate: minStartTime,
-        endDate: validatedStakingEndTime,
-        recomputeSteps
-      })
+      const performDelegation = (): void => {
+        issueDelegation({
+          nodeId: validator.nodeID,
+          startDate: minStartTime,
+          endDate: validatedStakingEndTime,
+          recomputeSteps
+        })
+      }
+
+      // For Ledger wallets, show the unified review transaction modal with progress tracking
+      if (isLedgerWallet) {
+        showLedgerReviewTransaction({
+          network: pNetwork,
+          onApprove: async () => {
+            // Start the delegation process
+            performDelegation()
+          },
+          onReject: () => {
+            // User cancelled Ledger connection
+          },
+          // Use unified modal with staking progress tracking
+          stakingProgress: {
+            totalSteps: steps.length,
+            onComplete: () => {
+              // Progress will auto-complete when all steps are done
+            },
+            onCancel: () => {
+              // User cancelled from progress screen
+            }
+          }
+        })
+      } else {
+        performDelegation()
+      }
     },
-    [issueDelegation, minStartTime, validatedStakingEndTime, validator]
+    [
+      issueDelegation,
+      isLedgerWallet,
+      minStartTime,
+      pNetwork,
+      steps.length,
+      validatedStakingEndTime,
+      validator
+    ]
   )
 
   usePreventScreenRemoval(isIssueDelegationPending)
