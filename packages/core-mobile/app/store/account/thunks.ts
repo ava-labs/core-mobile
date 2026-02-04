@@ -8,8 +8,11 @@ import {
   selectWalletById,
   setActiveWallet
 } from 'store/wallet/slice'
+import { storeWallet } from 'store/wallet/thunks'
 import { WalletType } from 'services/wallet/types'
 import { removeWallet } from 'store/wallet/thunks'
+import BiometricsSDK from 'utils/BiometricsSDK'
+import Logger from 'utils/Logger'
 import {
   reducerName,
   selectAccountById,
@@ -34,14 +37,16 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
     }
 
     const accountsByWalletId = selectAccountsByWalletId(state, walletId)
-    const acc = await AccountsService.createNextAccount({
-      name: `Account ${accountsByWalletId.length + 1}`,
-      index: accountsByWalletId.length,
+    const accountIndex = accountsByWalletId.length
+    const result = await AccountsService.createNextAccount({
+      name: `Account ${accountIndex + 1}`,
+      index: accountIndex,
       walletType: wallet.type,
       isTestnet: isDeveloperMode,
       walletId
     })
 
+    const acc = result.account
     thunkApi.dispatch(setAccount(acc))
     thunkApi.dispatch(setActiveAccountId(acc.id))
 
@@ -49,13 +54,52 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
       wallet.type === WalletType.LEDGER ||
       wallet.type === WalletType.LEDGER_LIVE
     ) {
-      const ledgerAccount = await AccountsService.createNextAccount({
-        name: `Account ${accountsByWalletId.length + 1}`,
-        index: accountsByWalletId.length,
+      // Store the xpub for this account in wallet secret
+
+      if (result.xpub) {
+        try {
+          const secretResult = await BiometricsSDK.loadWalletSecret(walletId)
+          if (secretResult.success && secretResult.value) {
+            const parsedSecret = JSON.parse(secretResult.value)
+
+            // Add the new account's xpub to the per-account format
+            const extendedPublicKeys = {
+              ...parsedSecret.extendedPublicKeys,
+              [accountIndex]: result.xpub
+            }
+
+            await thunkApi
+              .dispatch(
+                storeWallet({
+                  walletId,
+                  name: wallet.name,
+                  type: wallet.type,
+                  walletSecret: JSON.stringify({
+                    ...parsedSecret,
+                    extendedPublicKeys
+                  })
+                })
+              )
+              .unwrap()
+
+            Logger.info(
+              `Stored xpub for account ${accountIndex} in wallet secret`
+            )
+          }
+        } catch (error) {
+          Logger.error('Failed to store xpub in wallet secret:', error)
+          // Don't throw - account was created successfully, xpub storage is non-critical
+        }
+      }
+
+      const ledgerResult = await AccountsService.createNextAccount({
+        name: `Account ${accountIndex + 1}`,
+        index: accountIndex,
         walletType: wallet.type,
         isTestnet: !isDeveloperMode,
         walletId
       })
+      const ledgerAccount = ledgerResult.account
       const testnetAccount = isDeveloperMode ? acc : ledgerAccount
       const mainnetAccount = isDeveloperMode ? ledgerAccount : acc
 
@@ -73,7 +117,7 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
               addressPVM: testnetAccount.addressPVM
             },
             walletId: wallet.id,
-            index: accountsByWalletId.length,
+            index: accountIndex,
             id: acc.id
           }
         })
