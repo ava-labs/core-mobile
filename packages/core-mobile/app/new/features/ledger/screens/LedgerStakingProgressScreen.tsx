@@ -20,6 +20,7 @@ interface StepConfig {
 
 const getStepConfig = (operation: Operation | null): StepConfig => {
   switch (operation) {
+    // Staking operations (C → P direction)
     case Operation.EXPORT_C:
       return {
         title: 'Export from C-Chain',
@@ -35,10 +36,21 @@ const getStepConfig = (operation: Operation | null): StepConfig => {
         title: 'Delegate Stake',
         subtitle: 'Sign the delegation transaction on your Ledger device'
       }
+    // Claim operations (P → C direction)
+    case Operation.EXPORT_P:
+      return {
+        title: 'Export from P-Chain',
+        subtitle: 'Sign the export transaction on your Ledger device'
+      }
+    case Operation.IMPORT_C:
+      return {
+        title: 'Import to C-Chain',
+        subtitle: 'Sign the import transaction on your Ledger device'
+      }
     default:
       return {
         title: 'Preparing transaction...',
-        subtitle: 'Please wait while we prepare your staking transaction'
+        subtitle: 'Please wait while we prepare your transaction'
       }
   }
 }
