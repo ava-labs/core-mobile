@@ -135,8 +135,9 @@ class LedgerService {
         Logger.info(`Immediately detected app type: ${detectedAppType}`)
         this.currentAppType = detectedAppType
       } catch (error) {
-        Logger.info('Immediate app info test failed, will rely on polling')
-        throw error
+        Logger.info(
+          'Immediate get current app info failed, will rely on polling'
+        )
       }
     } catch (error) {
       Logger.error('Failed to connect to Ledger', error)

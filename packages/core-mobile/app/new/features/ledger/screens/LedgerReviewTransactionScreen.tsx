@@ -71,7 +71,7 @@ const LedgerReviewTransactionScreen = ({
         try {
           approvalTriggeredRef.current = true
           await LedgerService.openApp(ledgerAppName)
-          onApprove()
+          await onApprove()
         } finally {
           approvalTriggeredRef.current = false
         }
