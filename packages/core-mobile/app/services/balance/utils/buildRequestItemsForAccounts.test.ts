@@ -65,7 +65,15 @@ describe('buildRequestItemsForAccounts', () => {
       })
     )
 
-    const batches = buildRequestItemsForAccounts(networks, accounts)
+    const xpAddressesByAccountId = new Map(
+      accounts.map(acc => [acc.id, [`avax1${acc.id}`, `avax2${acc.id}`]])
+    )
+
+    const batches = buildRequestItemsForAccounts(
+      networks,
+      accounts,
+      xpAddressesByAccountId
+    )
     const evmItems = batches
       .flatMap(batch => batch)
       .filter(item => item.namespace === BlockchainNamespace.EIP155) as any[]
@@ -92,7 +100,15 @@ describe('buildRequestItemsForAccounts', () => {
       })
     )
 
-    const batches = buildRequestItemsForAccounts(networks, accounts)
+    const xpAddressesByAccountId = new Map(
+      accounts.map(acc => [acc.id, [`avax1${acc.id}`]])
+    )
+
+    const batches = buildRequestItemsForAccounts(
+      networks,
+      accounts,
+      xpAddressesByAccountId
+    )
     const btcItems = batches
       .flatMap(batch => batch)
       .filter(item => item.namespace === BlockchainNamespace.BIP122) as any[]
@@ -119,7 +135,15 @@ describe('buildRequestItemsForAccounts', () => {
       })
     )
 
-    const batches = buildRequestItemsForAccounts(networks, accounts)
+    const xpAddressesByAccountId = new Map(
+      accounts.map(acc => [acc.id, [`avax1${acc.id}`]])
+    )
+
+    const batches = buildRequestItemsForAccounts(
+      networks,
+      accounts,
+      xpAddressesByAccountId
+    )
     const svmItems = batches
       .flatMap(batch => batch)
       .filter(item => item.namespace === BlockchainNamespace.SOLANA) as any[]
@@ -146,7 +170,16 @@ describe('buildRequestItemsForAccounts', () => {
       })
     )
 
-    const batches = buildRequestItemsForAccounts(networks, accounts)
+    // Create xpAddresses map with one address per account
+    const xpAddressesByAccountId = new Map(
+      accounts.map(acc => [acc.id, [`avax1${acc.id}`]])
+    )
+
+    const batches = buildRequestItemsForAccounts(
+      networks,
+      accounts,
+      xpAddressesByAccountId
+    )
     const avaxItems = batches
       .flatMap(batch => batch)
       .filter(item => item.namespace === BlockchainNamespace.AVAX) as any[]
@@ -165,14 +198,16 @@ describe('buildRequestItemsForAccounts', () => {
 
   it('splits XP addresses for a single account into max-50 chunks', () => {
     const networks = [createMockNetwork(1, NetworkVMType.AVM)]
-    const xpAddresses = Array.from({ length: 120 }, (_, i) => ({
-      address: `X-avax1test${i}`,
-      index: i
-    }))
-    const accounts = [createMockAccount({ xpAddresses })]
-    const [account] = accounts
+    const xpAddresses = Array.from({ length: 120 }, (_, i) => `avax1test${i}`)
+    const account = createMockAccount()
+    const accounts = [account]
 
-    const batches = buildRequestItemsForAccounts(networks, accounts)
+    const xpAddressesByAccountId = new Map([[account.id, xpAddresses]])
+    const batches = buildRequestItemsForAccounts(
+      networks,
+      accounts,
+      xpAddressesByAccountId
+    )
     const avaxItems = batches
       .flatMap(batch => batch)
       .filter(item => item.namespace === BlockchainNamespace.AVAX) as any[]
@@ -203,18 +238,24 @@ describe('buildRequestItemsForAccounts', () => {
       createMockNetwork(1, NetworkVMType.SVM),
       createMockNetwork(1, NetworkVMType.AVM)
     ]
-    const accounts = [
-      createMockAccount({
-        addressC: '',
-        addressCoreEth: '',
-        addressBTC: undefined,
-        addressSVM: undefined,
-        addressAVM: undefined,
-        addressPVM: undefined
-      })
-    ]
+    const account = createMockAccount({
+      addressC: '',
+      addressCoreEth: '',
+      addressBTC: undefined,
+      addressSVM: undefined,
+      addressAVM: undefined,
+      addressPVM: undefined
+    })
+    const accounts = [account]
 
-    const batches = buildRequestItemsForAccounts(networks, accounts)
+    // Even with xpAddresses, if account has no valid addresses, nothing should be emitted
+    const xpAddressesByAccountId = new Map([[account.id, []]])
+
+    const batches = buildRequestItemsForAccounts(
+      networks,
+      accounts,
+      xpAddressesByAccountId
+    )
     const allItems = batches.flatMap(batch => batch)
 
     expect(allItems).toHaveLength(0)
@@ -234,7 +275,15 @@ describe('buildRequestItemsForAccounts', () => {
       })
     )
 
-    const batches = buildRequestItemsForAccounts(networks, accounts)
+    const xpAddressesByAccountId = new Map(
+      accounts.map(acc => [acc.id, [`avax1${acc.id}`]])
+    )
+
+    const batches = buildRequestItemsForAccounts(
+      networks,
+      accounts,
+      xpAddressesByAccountId
+    )
     const evmItems = batches
       .flatMap(batch => batch)
       .filter(item => item.namespace === BlockchainNamespace.EIP155) as any[]
@@ -263,7 +312,15 @@ describe('buildRequestItemsForAccounts', () => {
       })
     )
 
-    const batches = buildRequestItemsForAccounts(networks, accounts)
+    const xpAddressesByAccountId = new Map(
+      accounts.map(acc => [acc.id, [`avax1${acc.id}`]])
+    )
+
+    const batches = buildRequestItemsForAccounts(
+      networks,
+      accounts,
+      xpAddressesByAccountId
+    )
     const allItems = batches.flatMap(batch => batch)
 
     expect(allItems).toHaveLength(6)

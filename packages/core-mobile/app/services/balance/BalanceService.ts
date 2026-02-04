@@ -33,37 +33,6 @@ import { getLocalTokenId } from './utils/getLocalTokenId'
 import { mapBalanceResponseToLegacy } from './utils/mapBalanceResponseToLegacy'
 
 export class BalanceService {
-  private async filterNetworksBySupportedEvm(
-    networks: Network[]
-  ): Promise<{ networks: Network[]; filteredOutChainIds: number[] }> {
-    const supported = await getSupportedChainsFromCache()
-    if (!supported || supported.length === 0) {
-      return { networks, filteredOutChainIds: [] }
-    }
-
-    const supportedEvmIds = new Set<number>()
-    supported.forEach(caip2Id => {
-      if (!caip2Id.startsWith('eip155:')) return
-      const chainId = Number(caip2Id.split(':')[1])
-      if (Number.isFinite(chainId)) {
-        supportedEvmIds.add(chainId)
-      }
-    })
-
-    if (supportedEvmIds.size === 0) {
-      return { networks, filteredOutChainIds: [] }
-    }
-
-    const filteredOutChainIds: number[] = []
-    const filteredNetworks = networks.filter(network => {
-      if (network.vmName !== NetworkVMType.EVM) return true
-      if (supportedEvmIds.has(network.chainId)) return true
-      filteredOutChainIds.push(network.chainId)
-      return false
-    })
-
-    return { networks: filteredNetworks, filteredOutChainIds }
-  }
   /**
    * Fetch balances for multiple accounts across multiple networks.
    * Uses Promise.allSettled so each network resolves independently.
@@ -401,97 +370,6 @@ export class BalanceService {
     return Array.from(finalResults.values())
   }
 
-  private async processBalanceBatches({
-    requestBatches,
-    account,
-    currency,
-    finalResults,
-    onBalanceLoaded
-  }: {
-    requestBatches: GetBalancesRequestBody['data'][]
-    account: Account
-    currency: string
-    finalResults: Map<number, AdjustedNormalizedBalancesForAccount>
-    onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
-  }): Promise<{ balanceApiThrew: boolean; failedChainIds: Set<number> }> {
-    let balanceApiThrew = false
-    const failedChainIds = new Set<number>()
-
-    // Process each batch sequentially to avoid overwhelming the API
-    for (const requestItems of requestBatches) {
-      // Skip empty batches
-      if (requestItems.length === 0) continue
-
-      const body = {
-        data: requestItems,
-        currency: currency as GetBalancesRequestBody['currency'],
-        showUntrustedTokens: true
-      }
-
-      try {
-        for await (const balance of balanceApi.getBalancesStream(body)) {
-          const normalized = mapBalanceResponseToLegacy(account, balance)
-          if (!normalized) continue
-
-          if (normalized.error) {
-            // Mark chain as failed
-            failedChainIds.add(normalized.chainId)
-          } else {
-            // Progressive update callback for successful balance
-            onBalanceLoaded?.(normalized)
-          }
-
-          // Add to final result (or update if already exists)
-          finalResults.set(normalized.chainId, normalized)
-        }
-      } catch (err) {
-        // Balance API down / request failed / stream broken for this batch
-        balanceApiThrew = true
-        Logger.error(
-          `[BalanceService][getBalancesForAccount] batch request failed`,
-          err
-        )
-        // Continue with next batch
-      }
-    }
-
-    return { balanceApiThrew, failedChainIds }
-  }
-
-  private async getBalancesForAccountViaVmModules({
-    networks,
-    account,
-    currency,
-    onBalanceLoaded,
-    xpAddresses
-  }: {
-    networks: Network[]
-    account: Account
-    currency: string
-    onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
-    xpAddresses: string[]
-  }): Promise<AdjustedNormalizedBalancesForAccount[]> {
-    if (networks.length === 0) return []
-
-    const res = await this.getVMBalancesForAccounts({
-      networks,
-      accounts: [account],
-      currency,
-      customTokens: {},
-      onBalanceLoaded: onBalanceLoaded
-        ? (_chainId, partial) => {
-            const balance = partial[account.id]
-            if (balance) {
-              onBalanceLoaded(balance)
-            }
-          }
-        : undefined,
-      xpAddressesByAccountId: new Map([[account.id, xpAddresses]])
-    })
-
-    return res[account.id] ?? []
-  }
-
   /**
    * Fetch balances for multiple accounts across multiple networks using the
    * Balance Service streaming API.
@@ -662,6 +540,134 @@ export class BalanceService {
     }
 
     return finalResults
+  }
+
+  private async processBalanceBatches({
+    requestBatches,
+    account,
+    currency,
+    finalResults,
+    onBalanceLoaded
+  }: {
+    requestBatches: GetBalancesRequestBody['data'][]
+    account: Account
+    currency: string
+    finalResults: Map<number, AdjustedNormalizedBalancesForAccount>
+    onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
+  }): Promise<{ balanceApiThrew: boolean; failedChainIds: Set<number> }> {
+    let balanceApiThrew = false
+    const failedChainIds = new Set<number>()
+
+    // Process each batch sequentially to avoid overwhelming the API
+    for (const requestItems of requestBatches) {
+      // Skip empty batches
+      if (requestItems.length === 0) continue
+
+      const body = {
+        data: requestItems,
+        currency: currency as GetBalancesRequestBody['currency'],
+        showUntrustedTokens: true
+      }
+
+      try {
+        for await (const balance of balanceApi.getBalancesStream(body)) {
+          const normalized = mapBalanceResponseToLegacy(account, balance)
+          if (!normalized) continue
+
+          if (normalized.error) {
+            // Mark chain as failed
+            failedChainIds.add(normalized.chainId)
+          } else {
+            // Progressive update callback for successful balance
+            onBalanceLoaded?.(normalized)
+          }
+
+          // Add to final result (or update if already exists)
+          finalResults.set(normalized.chainId, normalized)
+        }
+      } catch (err) {
+        // Balance API down / request failed / stream broken for this batch
+        balanceApiThrew = true
+        Logger.error(
+          `[BalanceService][getBalancesForAccount] batch request failed`,
+          err
+        )
+        // Continue with next batch
+      }
+    }
+
+    return { balanceApiThrew, failedChainIds }
+  }
+
+  private async getBalancesForAccountViaVmModules({
+    networks,
+    account,
+    currency,
+    onBalanceLoaded,
+    xpAddresses
+  }: {
+    networks: Network[]
+    account: Account
+    currency: string
+    onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
+    xpAddresses: string[]
+  }): Promise<AdjustedNormalizedBalancesForAccount[]> {
+    if (networks.length === 0) return []
+
+    const res = await this.getVMBalancesForAccounts({
+      networks,
+      accounts: [account],
+      currency,
+      customTokens: {},
+      onBalanceLoaded: onBalanceLoaded
+        ? (_chainId, partial) => {
+            const balance = partial[account.id]
+            if (balance) {
+              onBalanceLoaded(balance)
+            }
+          }
+        : undefined,
+      xpAddressesByAccountId: new Map([[account.id, xpAddresses]])
+    })
+
+    return res[account.id] ?? []
+  }
+
+  private async filterNetworksBySupportedEvm(
+    networks: Network[]
+  ): Promise<{ networks: Network[]; filteredOutChainIds: number[] }> {
+    const supported = await getSupportedChainsFromCache()
+    if (!supported || supported.length === 0) {
+      return { networks, filteredOutChainIds: [] }
+    }
+
+    const supportedEvmIds = new Set<number>()
+    supported.forEach(caip2Id => {
+      if (!caip2Id.startsWith('eip155:')) return
+      const chainId = Number(caip2Id.split(':')[1])
+      if (Number.isFinite(chainId)) {
+        supportedEvmIds.add(chainId)
+      }
+    })
+
+    if (supportedEvmIds.size === 0) {
+      return { networks, filteredOutChainIds: [] }
+    }
+
+    const filteredOutChainIds: number[] = []
+    const filteredNetworks: Network[] = []
+
+    for (const network of networks) {
+      if (network.vmName !== NetworkVMType.EVM) {
+        filteredNetworks.push(network)
+      } else if (supportedEvmIds.has(network.chainId)) {
+        filteredNetworks.push(network)
+      } else {
+        filteredOutChainIds.push(network.chainId)
+      }
+    }
+
+    return { networks: filteredNetworks, filteredOutChainIds }
   }
 }
 

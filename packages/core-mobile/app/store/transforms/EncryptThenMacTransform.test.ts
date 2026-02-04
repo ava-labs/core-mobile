@@ -131,10 +131,7 @@ const initialState = {
         walletId: 'walletId0',
         walletType: WalletType.MNEMONIC,
         id: 'id0',
-        walletName: 'Wallet 1',
-        xpAddresses: [],
-        xpAddressDictionary: {},
-        hasMigratedXpAddresses: false
+        walletName: 'Wallet 1'
       }
     },
     activeAccountId: '0'
