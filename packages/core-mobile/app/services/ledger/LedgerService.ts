@@ -1143,6 +1143,8 @@ class LedgerService {
     return apdu
   }
 
+  // Attempt to open a specific app on the Ledger device
+  // Best-effort, does not guarantee success
   async openApp(app: LedgerAppType): Promise<void> {
     try {
       const apdu = this.buildOpenAppApdu(app)

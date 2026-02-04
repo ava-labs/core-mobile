@@ -26,6 +26,7 @@ export const showLedgerReviewTransaction = ({
   }, 100)
 }
 
+// if network is undefined, return UNKNOWN
 export const getLedgerAppName = (network?: Network): LedgerAppType => {
   return network?.chainId === ChainId.AVALANCHE_MAINNET_ID ||
     network?.chainId === ChainId.AVALANCHE_TESTNET_ID ||
