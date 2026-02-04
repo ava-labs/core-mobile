@@ -188,8 +188,12 @@ const clearData = async (
   } catch (e) {
     Logger.error('failed to clear common storage', e)
   }
-  // clear React Query cache including persisted data (XP addresses, networks, etc.)
-  queryClient.clear()
+  try {
+    // clear React Query cache including persisted data (XP addresses, networks, etc.)
+    queryClient.clear()
+  } catch (e) {
+    Logger.error('failed to clear React Query cache', e)
+  }
 }
 
 export const addAppListeners = (startListening: AppStartListening): void => {
