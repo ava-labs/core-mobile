@@ -38,6 +38,8 @@ import {
   maxGetAtomicUTXOsRetries,
   maxTransactionStatusCheckRetries
 } from './utils'
+import { ledgerStakingProgressCache } from 'new/features/ledger/services/ledgerStakingProgressCache'
+import { Operation } from './computeDelegationSteps/types'
 
 class EarnService {
   /**
@@ -159,6 +161,12 @@ class EarnService {
     xpAddresses: string[]
     xpAddressDictionary: XPAddressDictionary
   }): Promise<void> {
+    // Update progress state: Step 0 - EXPORT_P
+    ledgerStakingProgressCache.state.set({
+      currentStep: 0,
+      currentOperation: Operation.EXPORT_P
+    })
+
     await exportP({
       walletId,
       walletType,
@@ -170,6 +178,13 @@ class EarnService {
       xpAddresses,
       xpAddressDictionary
     })
+
+    // Update progress state: Step 1 - IMPORT_C
+    ledgerStakingProgressCache.state.set({
+      currentStep: 1,
+      currentOperation: Operation.IMPORT_C
+    })
+
     await importC({
       walletId,
       walletType,
@@ -177,6 +192,12 @@ class EarnService {
       isTestnet,
       cBaseFeeMultiplier,
       xpAddresses
+    })
+
+    // Update progress state: Completed (step 2 of 2)
+    ledgerStakingProgressCache.state.set({
+      currentStep: 2,
+      currentOperation: null
     })
   }
 
