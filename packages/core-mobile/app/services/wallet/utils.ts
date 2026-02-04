@@ -7,6 +7,9 @@ import { BigNumberish, TransactionRequest } from 'ethers'
 import { BigIntLike, BytesLike, AddressLike } from '@ethereumjs/util'
 import isString from 'lodash.isstring'
 import { LegacyTxData } from '@ethereumjs/tx'
+import { LEDGER_ERROR_CODES, LedgerAppType } from 'services/ledger/types'
+import { Network } from '@avalabs/core-chains-sdk'
+import { getLedgerAppName } from 'features/ledger/utils'
 import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
@@ -135,5 +138,58 @@ export function convertTxData(txData: TransactionRequest): LegacyTxData {
     value: makeBigIntLike(txData.value),
     data: txData.data as BytesLike,
     type: makeBigIntLike(txData.type)
+  }
+}
+
+export const handleLedgerError = ({
+  error,
+  appType,
+  network
+}: {
+  error: Error
+  appType?: LedgerAppType
+  network?: Network
+}): void => {
+  const ledgerAppName = appType ?? getLedgerAppName(network)
+
+  const message = error.message.toLowerCase()
+  if (message.includes(LEDGER_ERROR_CODES.WRONG_APP)) {
+    throw new Error(
+      `Wrong app open. Please open the ${ledgerAppName} app on your Ledger device.`
+    )
+  } else if (
+    message.includes(LEDGER_ERROR_CODES.REJECTED) ||
+    message.includes(LEDGER_ERROR_CODES.REJECTED_ALT)
+  ) {
+    throw new Error('Transaction rejected by user on Ledger device.')
+  } else if (
+    message.includes(LEDGER_ERROR_CODES.NOT_READY) ||
+    message.includes(LEDGER_ERROR_CODES.COMMUNICATION_ERROR)
+  ) {
+    throw new Error(
+      `${ledgerAppName} app not ready. Please ensure the ${ledgerAppName} app is open and ready.`
+    )
+  } else if (message.includes(LEDGER_ERROR_CODES.DEVICE_LOCKED)) {
+    throw new Error(
+      'Your Ledger device is locked. Please unlock it to continue.'
+    )
+  } else if (message.includes(LEDGER_ERROR_CODES.UPDATE_REQUIRED)) {
+    throw new Error(
+      `Update required. Please update the ${ledgerAppName} app on your Ledger device to continue.`
+    )
+  } else if (message.includes(LEDGER_ERROR_CODES.USER_CANCELLED)) {
+    // User cancelled, no need to show alert
+    return
+  } else if (message.includes(LEDGER_ERROR_CODES.DISCONNECTED_DEVICE)) {
+    throw new Error(
+      'Ledger device disconnected. Please ensure your Ledger device is nearby and Bluetooth is enabled.'
+    )
+  } else if (
+    message.includes(LEDGER_ERROR_CODES.TRANSPORT_RACE_CONDITION) ||
+    message.includes(LEDGER_ERROR_CODES.TRANSPORT_RACE_CONDITION_ALT)
+  ) {
+    throw new Error(
+      'Ledger is processing another request. Please try again later.'
+    )
   }
 }
