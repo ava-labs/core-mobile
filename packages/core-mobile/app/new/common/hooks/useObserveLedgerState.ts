@@ -17,7 +17,7 @@ export const useObserveLedgerState = (
   const { transportState } = useLedgerWallet()
   const { ledgerWalletMap } = useLedgerWalletMap()
   const wallet = useSelector(selectWalletById(walletId))
-  const [isAvalancheAppOpened, setIsAvalancheAppOpened] = useState(false)
+  const [isAppOpened, setIsAppOpened] = useState(false)
 
   const deviceForWallet = useMemo(() => {
     return ledgerWalletMap[walletId]
@@ -34,17 +34,17 @@ export const useObserveLedgerState = (
 
   useEffect(() => {
     if (isConnected === false) {
-      setIsAvalancheAppOpened(false)
+      setIsAppOpened(false)
       return
     }
 
     const intervalId = setInterval(() => {
       LedgerService.checkApp(appType)
         .then(isOpened => {
-          setIsAvalancheAppOpened(isOpened)
+          setIsAppOpened(isOpened)
         })
         .catch(() => {
-          setIsAvalancheAppOpened(false)
+          setIsAppOpened(false)
         })
     }, 2000)
 
@@ -68,5 +68,5 @@ export const useObserveLedgerState = (
     checkAppIsOpened()
   }, [deviceForWallet?.deviceId, isLedger, transportState.available])
 
-  return { isAppOpened: isAvalancheAppOpened, isLedger }
+  return { isAppOpened, isLedger }
 }
