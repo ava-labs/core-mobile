@@ -12,6 +12,18 @@ export const supplyApyHistorySchema = z.object({
   })
 })
 
+export const borrowApyHistorySchema = z.object({
+  data: z.object({
+    borrowAPYHistory: z.array(
+      z.object({
+        avgRate: z.object({
+          formatted: z.string()
+        })
+      })
+    )
+  })
+})
+
 export const aaveMeritAprSchema = z.object({
   currentAPR: z.object({
     actionsAPR: z.object({

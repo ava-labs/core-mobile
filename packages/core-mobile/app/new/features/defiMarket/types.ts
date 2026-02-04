@@ -43,6 +43,12 @@ export type DefiMarket = {
   readonly supplyApyPercent: number
   // Based on 30-day historical - this data may not be available.
   readonly historicalApyPercent: number | undefined
+  // Borrow APY for this market
+  readonly borrowApyPercent: number
+  // Historical borrow APY (30-day average) - this data may not be available.
+  readonly historicalBorrowApyPercent: number | undefined
+  // Whether borrowing is enabled for this market
+  readonly borrowingEnabled: boolean
   readonly supplyCapReached: boolean
   // Total deposits for this market globally - not based on current wallet.
   readonly totalDeposits: Big | undefined
