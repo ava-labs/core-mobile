@@ -7,6 +7,7 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import Logger from 'utils/Logger'
 import { DefiMarket, MarketNames } from 'features/defiMarket/types'
 import { getBenqiDepositedBalance } from 'features/defiMarket/utils/getBenqiDepositedBalance'
+import { getBenqiBorrowApyPercent } from 'features/defiMarket/utils/getBenqiBorrowApyPercent'
 import { getBenqiSupplyApyPercent } from 'features/defiMarket/utils/getBenqiSupplyApyPercent'
 import { getUniqueMarketId } from 'features/defiMarket/utils/getUniqueMarketId'
 import { BENQI_LENS_ABI } from 'features/defiMarket/abis/benqiLens'
@@ -106,12 +107,17 @@ export const useBenqiAvailableMarkets = ({
                 try {
                   const {
                     mintPaused: isPaused,
+                    borrowPaused,
                     underlying,
                     totalUnderlyingSupply,
+                    totalBorrows,
                     qiSupplyRewardSpeed,
                     avaxSupplyRewardSpeed,
+                    qiBorrowRewardSpeed,
+                    avaxBorrowRewardSpeed,
                     price,
                     supplyRate,
+                    borrowRate,
                     market: qTokenAddress,
                     collateralFactor
                   } = rawBenqiMarket
@@ -139,6 +145,21 @@ export const useBenqiAvailableMarkets = ({
                     formattedUnderlyingTotalSupply,
                     formattedUnderlyingPrice,
                     supplyRate
+                  })
+
+                  const formattedTotalBorrows = formatAmount(
+                    bigIntToBig(totalBorrows),
+                    underlyingTokenDecimals
+                  )
+
+                  const borrowApyPercent = getBenqiBorrowApyPercent({
+                    qiBorrowRewardSpeed,
+                    avaxBorrowRewardSpeed,
+                    avaxPrice,
+                    qiPrice,
+                    formattedTotalBorrows,
+                    formattedUnderlyingPrice,
+                    borrowRate
                   })
 
                   const token = getCChainToken(
@@ -180,6 +201,9 @@ export const useBenqiAvailableMarkets = ({
                     type: 'lending',
                     supplyApyPercent,
                     historicalApyPercent: undefined,
+                    borrowApyPercent,
+                    historicalBorrowApyPercent: undefined,
+                    borrowingEnabled: !borrowPaused,
                     totalDeposits: formattedUnderlyingTotalSupply,
                     // There currently are no supply caps on Benqi markets we support.
                     supplyCapReached: false,
