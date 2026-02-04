@@ -112,7 +112,8 @@ export const useBenqiAvailableMarkets = ({
                     avaxSupplyRewardSpeed,
                     price,
                     supplyRate,
-                    market: qTokenAddress
+                    market: qTokenAddress,
+                    collateralFactor
                   } = rawBenqiMarket
 
                   // We don't currently show paused markets
@@ -181,7 +182,9 @@ export const useBenqiAvailableMarkets = ({
                     historicalApyPercent: undefined,
                     totalDeposits: formattedUnderlyingTotalSupply,
                     // There currently are no supply caps on Benqi markets we support.
-                    supplyCapReached: false
+                    supplyCapReached: false,
+                    // collateralFactor > 0 means the asset can be used as collateral
+                    canBeUsedAsCollateral: collateralFactor > 0n
                   }
 
                   const market: DefiMarket = {

@@ -148,6 +148,14 @@ export const useAaveAvailableMarkets = ({
                   market.underlyingAsset
                 )
 
+                // Fetch deposited balance and collateral status
+                const depositedBalanceResult = await getAaveDepositedBalance({
+                  cChainClient: networkClient,
+                  walletAddress: addressEVM as Address,
+                  underlyingTokenDecimals: decimals,
+                  underlyingAssetAddress: market.underlyingAsset
+                })
+
                 // Construct market data with all enriched information
                 const marketData = {
                   marketName: MarketNames.aave,
@@ -165,15 +173,11 @@ export const useAaveAvailableMarkets = ({
                     iconUrl: token?.logoUri,
                     symbol: market.symbol,
                     contractAddress: market.underlyingAsset,
-                    mintTokenBalance: await getAaveDepositedBalance({
-                      cChainClient: networkClient,
-                      walletAddress: addressEVM as Address,
-                      underlyingTokenDecimals: decimals,
-                      underlyingAssetAddress: market.underlyingAsset
-                    })
+                    mintTokenBalance: depositedBalanceResult
                   },
                   supplyApyPercent: supplyApyPercent + guaranteedMeritApr, // Base APY + Merit rewards
-                  historicalApyPercent
+                  historicalApyPercent,
+                  canBeUsedAsCollateral: market.usageAsCollateralEnabled
                 }
 
                 return {

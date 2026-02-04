@@ -47,6 +47,8 @@ export type DefiMarket = {
   // Total deposits for this market globally - not based on current wallet.
   readonly totalDeposits: Big | undefined
   readonly uniqueMarketId: string
+  // Reserve-level setting: whether this asset CAN be used as collateral
+  readonly canBeUsedAsCollateral: boolean
 }
 
 export type AaveReserveData = {

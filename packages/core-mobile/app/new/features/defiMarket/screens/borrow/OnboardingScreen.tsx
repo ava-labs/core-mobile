@@ -8,9 +8,8 @@ export const OnboardingScreen = (): JSX.Element => {
   const { theme } = useTheme()
 
   const handlePressNext = useCallback(() => {
-    // TODO: Navigate to borrow select asset flow
     // @ts-ignore TODO: make routes typesafe
-    navigate('/borrow/selectAsset')
+    navigate('/borrow/selectCollateral')
   }, [navigate])
 
   const renderFooterAccessory = useCallback(() => {
