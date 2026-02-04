@@ -34,6 +34,7 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
 import { useDisableLockAppStore } from 'features/accountSettings/store'
+import { queryClient } from 'contexts/ReactQueryProvider'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -187,6 +188,8 @@ const clearData = async (
   } catch (e) {
     Logger.error('failed to clear common storage', e)
   }
+  // clear React Query cache including persisted data (XP addresses, networks, etc.)
+  queryClient.clear()
 }
 
 export const addAppListeners = (startListening: AppStartListening): void => {
