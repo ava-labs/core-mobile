@@ -25,6 +25,7 @@ import Logger from 'utils/Logger'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { selectActiveAccount } from 'store/account'
 import { getMinimumStakeDurationMs } from 'services/earn/utils'
+import { ledgerStakingProgressCache } from 'new/features/ledger/services/ledgerStakingProgressCache'
 import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import {
   useAvalancheEvmProvider,
@@ -128,8 +129,15 @@ export const useDelegation = (): {
       setSteps(steps)
 
       let txHash
+      let stepIndex = 0
 
       for (const step of steps) {
+        // Update progress state before processing each step
+        ledgerStakingProgressCache.state.set({
+          currentStep: stepIndex,
+          currentOperation: step.operation
+        })
+
         switch (step.operation) {
           case Operation.DELEGATE: {
             Logger.info(
@@ -209,6 +217,8 @@ export const useDelegation = (): {
           default:
             throw new Error(`unknown step: ${step}`)
         }
+
+        stepIndex++
       }
 
       if (!txHash) {

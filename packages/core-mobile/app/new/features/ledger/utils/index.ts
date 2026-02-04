@@ -7,16 +7,19 @@ import { ledgerParamsCache } from '../services/ledgerParamsCache'
 export const showLedgerReviewTransaction = ({
   network,
   onApprove,
-  onReject
+  onReject,
+  stakingProgress
 }: {
   network: Network
   onApprove: () => Promise<void>
   onReject: (message?: string) => void
+  stakingProgress?: StakingProgressParams
 }): void => {
   ledgerParamsCache.ledgerReviewTransactionParams.set({
     network,
     onApprove,
-    onReject
+    onReject,
+    stakingProgress
   })
 
   // add a slight delay to ensure navigation to the ledger review screen works reliably
@@ -26,18 +29,17 @@ export const showLedgerReviewTransaction = ({
   }, 100)
 }
 
-// if network is undefined, return UNKNOWN
-export const getLedgerAppName = (network?: Network): LedgerAppType => {
-  return network?.chainId === ChainId.AVALANCHE_MAINNET_ID ||
-    network?.chainId === ChainId.AVALANCHE_TESTNET_ID ||
-    network?.vmName === NetworkVMType.AVM ||
-    network?.vmName === NetworkVMType.PVM
+export const getLedgerAppName = (network: Network): LedgerAppType => {
+  return network.chainId === ChainId.AVALANCHE_MAINNET_ID ||
+    network.chainId === ChainId.AVALANCHE_TESTNET_ID ||
+    network.vmName === NetworkVMType.AVM ||
+    network.vmName === NetworkVMType.PVM
     ? LedgerAppType.AVALANCHE
-    : network?.vmName === NetworkVMType.EVM
+    : network.vmName === NetworkVMType.EVM
     ? LedgerAppType.ETHEREUM
-    : network?.vmName === NetworkVMType.BITCOIN
+    : network.vmName === NetworkVMType.BITCOIN
     ? LedgerAppType.BITCOIN
-    : network?.vmName === NetworkVMType.SVM
+    : network.vmName === NetworkVMType.SVM
     ? LedgerAppType.SOLANA
     : LedgerAppType.UNKNOWN
 }
