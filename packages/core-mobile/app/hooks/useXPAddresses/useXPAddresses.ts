@@ -102,6 +102,7 @@ export async function getCachedXPAddresses({
 }> {
   try {
     const result = await queryClient.fetchQuery({
+      staleTime: STALE_TIME,
       queryKey: getQueryKey({
         walletId,
         walletType,
