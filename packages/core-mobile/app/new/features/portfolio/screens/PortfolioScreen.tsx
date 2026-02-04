@@ -17,8 +17,8 @@ import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useFocusEffect, useRouter } from 'expo-router'
+import { formatBalanceDisplay } from 'features/wallets/utils/formatBalanceDisplay'
 import { useBuy } from 'features/meld/hooks/useBuy'
 import { useWithdraw } from 'features/meld/hooks/useWithdraw'
 import {
@@ -122,17 +122,19 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
   const formattedBalance = useMemo(() => {
-    // CP-10570: Balances should never show $0.00
-    return allBalancesInaccurate || balanceTotalInCurrency === 0
-      ? formatCurrency({
-          amount: 0,
-          withoutCurrencySuffix: true
-        }).replace('0.00', UNKNOWN_AMOUNT)
-      : formatCurrency({
-          amount: balanceTotalInCurrency,
-          withoutCurrencySuffix: true
-        })
-  }, [allBalancesInaccurate, balanceTotalInCurrency, formatCurrency])
+    return formatBalanceDisplay({
+      balance: balanceTotalInCurrency,
+      isDeveloperMode,
+      formatCurrency,
+      hasError: allBalancesInaccurate,
+      withoutCurrencySuffix: true
+    })
+  }, [
+    isDeveloperMode,
+    allBalancesInaccurate,
+    balanceTotalInCurrency,
+    formatCurrency
+  ])
 
   const { percentChange24h, valueChange24h, indicatorStatus } =
     useAccountPerformanceSummary(activeAccount)

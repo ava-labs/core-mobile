@@ -1,14 +1,23 @@
-import { ActivityIndicator, Button, Text, View } from '@avalabs/k2-alpine'
+import {
+  ActivityIndicator,
+  Button,
+  MaskedText,
+  Text,
+  View
+} from '@avalabs/k2-alpine'
 import React, { useMemo } from 'react'
 import { useExchangeRates } from 'common/hooks/useExchangeRates'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { formatCurrency as rawFormatCurrency } from 'utils/FormatCurrency'
+import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { AvailableRewardsData } from '../hooks/useAvailableRewards'
 import { DefiMarketLogo } from './DefiMarketLogo'
 
 const MINIMUM_DISPLAY_AMOUNT = 0.001
+const REWARDS_DETAIL_MASK_WIDTH = 100
 
 type RewardsBannerProps = {
   availableRewards: AvailableRewardsData
@@ -21,6 +30,7 @@ export const RewardsBanner = ({
   onClaimPress,
   isClaiming
 }: RewardsBannerProps): JSX.Element => {
+  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { data } = useExchangeRates()
   const { formatCurrency } = useFormatCurrency()
@@ -63,11 +73,17 @@ export const RewardsBanner = ({
         borderRadius: 16
       }}>
       <View sx={{ flex: 1, gap: 2, marginRight: 12 }}>
-        <Text
-          numberOfLines={1}
-          sx={{ fontFamily: 'Inter-SemiBold', fontSize: 21, lineHeight: 24 }}>
-          {formattedTotalRewardsFiat}
-        </Text>
+        {isPrivacyModeEnabled ? (
+          <HiddenBalanceText
+            sx={{ fontFamily: 'Inter-SemiBold', fontSize: 21, lineHeight: 24 }}
+          />
+        ) : (
+          <Text
+            numberOfLines={1}
+            sx={{ fontFamily: 'Inter-SemiBold', fontSize: 21, lineHeight: 24 }}>
+            {formattedTotalRewardsFiat}
+          </Text>
+        )}
         <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
             {rewards.map((reward, index) => (
@@ -81,16 +97,18 @@ export const RewardsBanner = ({
               </View>
             ))}
           </View>
-          <Text
+          <MaskedText
             variant="body2"
             numberOfLines={1}
-            sx={{ flex: 1, color: '$textSecondary' }}>
+            sx={{ flex: 1, color: '$textSecondary' }}
+            shouldMask={isPrivacyModeEnabled}
+            maskWidth={REWARDS_DETAIL_MASK_WIDTH}>
             {rewards
               .slice(0, 1)
               .map(reward => `${reward.amount.toFixed(7)} ${reward.token}`)
               .join('')}
             {rewards.length > 1 && ` +${rewards.length - 1} more`}
-          </Text>
+          </MaskedText>
         </View>
       </View>
       <Button
