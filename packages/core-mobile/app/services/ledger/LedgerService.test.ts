@@ -10,6 +10,7 @@ describe('LedgerService', () => {
       isConnected: boolean
       close: jest.Mock
     }
+    let originalTransportGetter: PropertyDescriptor | undefined
 
     beforeEach(() => {
       // Create mock transport
@@ -25,16 +26,30 @@ describe('LedgerService', () => {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       jest.spyOn(Logger, 'error').mockImplementation(() => {})
 
-      // Set the transport on the service (using private field)
-      // @ts-expect-error - accessing private field for testing
-      LedgerService['#transport'] = mockTransport
+      // Save the original transport getter
+      originalTransportGetter = Object.getOwnPropertyDescriptor(
+        Object.getPrototypeOf(LedgerService),
+        'transport'
+      )
+
+      // Override the transport getter to return our mock
+      Object.defineProperty(LedgerService, 'transport', {
+        get: () => mockTransport,
+        configurable: true
+      })
     })
 
     afterEach(() => {
       jest.clearAllMocks()
-      // Clean up transport
-      // @ts-expect-error - accessing private field for testing
-      LedgerService['#transport'] = null
+
+      // Restore the original transport getter
+      if (originalTransportGetter) {
+        Object.defineProperty(
+          Object.getPrototypeOf(LedgerService),
+          'transport',
+          originalTransportGetter
+        )
+      }
     })
 
     it('should successfully open the app when device returns success status code', async () => {
