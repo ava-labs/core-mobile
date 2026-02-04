@@ -95,13 +95,15 @@ const initAccounts = async (
     accountIndex: 0
   })
 
-  const acc = await AccountsService.createNextAccount({
+  const result = await AccountsService.createNextAccount({
     index: 0,
     walletType: activeWallet.type,
     isTestnet: isDeveloperMode,
     walletId: activeWallet.id,
     name
   })
+
+  const acc = result.account
 
   if (
     activeWallet.type === WalletType.MNEMONIC ||
@@ -122,13 +124,14 @@ const initAccounts = async (
     activeWallet.type === WalletType.LEDGER ||
     activeWallet.type === WalletType.LEDGER_LIVE
   ) {
-    const ledgerAccount = await AccountsService.createNextAccount({
+    const ledgerResult = await AccountsService.createNextAccount({
       index: 0,
       walletType: activeWallet.type,
       isTestnet: !isDeveloperMode,
       walletId: activeWallet.id,
       name
     })
+    const ledgerAccount = ledgerResult.account
     const mainnetAccount = isDeveloperMode ? acc : ledgerAccount
     const testnetAccount = isDeveloperMode ? ledgerAccount : acc
     listenerApi.dispatch(

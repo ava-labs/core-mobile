@@ -114,6 +114,7 @@ export interface AvalancheKey {
     evm: string
     avm: string
     pvm: string
+    coreEth: string // C-chain bech32 format (C-avax1... or C-fuji1...)
   }
   xpubs: {
     evm: string
@@ -168,17 +169,20 @@ interface BaseLedgerWalletData {
   publicKeys: PublicKey[]
 }
 
+// Per-account extended public keys format
+export interface PerAccountExtendedPublicKeys {
+  [accountIndex: number]: {
+    evm: string
+    avalanche: string
+  }
+}
+
 // BIP44 specific wallet data
 export interface BIP44LedgerWalletData extends BaseLedgerWalletData {
   derivationPathSpec: LedgerDerivationPathType.BIP44
   derivationPath: string
-  // Extended keys required for BIP44 - supports both legacy (string) and new (ExtendedPublicKey) formats
-  extendedPublicKeys:
-    | {
-        evm: string
-        avalanche: string
-      }
-    | ExtendedPublicKey[]
+  // Extended keys required for BIP44 - stored per account
+  extendedPublicKeys: PerAccountExtendedPublicKeys
 }
 
 // Ledger Live specific wallet data

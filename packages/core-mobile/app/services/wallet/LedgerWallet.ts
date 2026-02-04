@@ -32,7 +32,8 @@ import {
   LedgerAppType,
   LedgerDerivationPathType,
   LedgerWalletData,
-  PublicKey
+  PublicKey,
+  PerAccountExtendedPublicKeys
 } from 'services/ledger/types'
 import {
   LEDGER_TIMEOUTS,
@@ -59,7 +60,7 @@ export class LedgerWallet implements Wallet {
   private deviceId: string
   private derivationPath: string
   private derivationPathSpec: LedgerDerivationPathType
-  private extendedPublicKeys?: { evm: string; avalanche: string }
+  private extendedPublicKeys?: PerAccountExtendedPublicKeys
   private publicKeys: PublicKey[]
   private evmSigner?: LedgerSigner
   private avalancheSigner?:
@@ -73,21 +74,24 @@ export class LedgerWallet implements Wallet {
     this.derivationPathSpec = ledgerData.derivationPathSpec
     this.publicKeys = ledgerData.publicKeys
 
-    /**
-     * Handle extended keys based on derivation path type
-     * For Ledger Live, extendedPublicKeys remains undefined
-     */
+    // For BIP44 wallets, store extended public keys (per-account format)
+    // For Ledger Live, extendedPublicKeys remains undefined
     if (ledgerData.derivationPathSpec === LedgerDerivationPathType.BIP44) {
-      // Handle both new format { evm: string, avalanche: string } and legacy format ExtendedPublicKey[]
-      if (Array.isArray(ledgerData.extendedPublicKeys)) {
-        // Legacy format - skip assignment, migration should handle this
-        Logger.warn(
-          'Legacy extendedPublicKeys format detected, skipping assignment'
-        )
-      } else {
-        // New format - assign directly
-        this.extendedPublicKeys = ledgerData.extendedPublicKeys
-      }
+      this.extendedPublicKeys = ledgerData.extendedPublicKeys
+
+      // TEMP DEBUG: Log xpubs loaded from wallet secret
+      console.log(
+        `[LedgerWallet.constructor] BIP44 wallet loaded with extendedPublicKeys:`,
+        this.extendedPublicKeys
+          ? Object.entries(this.extendedPublicKeys).map(
+              ([k, v]) =>
+                `account ${k}: evm=${v.evm?.slice(
+                  0,
+                  15
+                )}... avalanche=${v.avalanche?.slice(0, 15)}...`
+            )
+          : 'undefined'
+      )
     }
   }
 
@@ -152,10 +156,15 @@ export class LedgerWallet implements Wallet {
       const transport = await this.getTransport()
 
       if (this.derivationPathSpec === LedgerDerivationPathType.BIP44) {
-        // BIP44 mode - use extended public keys
-        const extPublicKey = this.getExtendedPublicKeyFor(NetworkVMType.AVM)
+        // BIP44 mode - use extended public keys for the specific account
+        const extPublicKey = this.getExtendedPublicKeyFor(
+          NetworkVMType.AVM,
+          targetAccountIndex
+        )
         if (!extPublicKey) {
-          throw new Error('Missing extended public key for AVM')
+          throw new Error(
+            `Missing extended public key for AVM account ${targetAccountIndex}`
+          )
         }
 
         this.avalancheSigner = new Avalanche.SimpleLedgerSigner(
@@ -291,11 +300,12 @@ export class LedgerWallet implements Wallet {
   }
 
   /**
-   * Get extended public key for BIP44 wallets
+   * Get extended public key for BIP44 wallets for a specific account index
    * Throws error for Ledger Live wallets
    */
   private getExtendedPublicKeyFor(
-    vmType: NetworkVMType
+    vmType: NetworkVMType,
+    accountIndex = 0
   ): { key: string } | null {
     if (this.isLedgerLive()) {
       throw new Error(
@@ -303,19 +313,55 @@ export class LedgerWallet implements Wallet {
       )
     }
 
+    // TEMP DEBUG: Log available xpubs
+    console.log(
+      `[getExtendedPublicKeyFor] accountIndex=${accountIndex}, vmType=${vmType}`
+    )
+    console.log(
+      `[getExtendedPublicKeyFor] extendedPublicKeys:`,
+      this.extendedPublicKeys
+        ? Object.keys(this.extendedPublicKeys).map(k => `account ${k}`)
+        : 'undefined'
+    )
+
     if (!this.extendedPublicKeys) {
+      console.log(`[getExtendedPublicKeyFor] No extendedPublicKeys available`)
       return null
     }
 
+    // Get keys for the specific account index
+    const keys = this.extendedPublicKeys[accountIndex]
+    if (!keys) {
+      // Fall back to account 0 for backward compatibility with older wallets
+      // that may only have account 0's xpub stored
+      const fallbackKeys = this.extendedPublicKeys[0]
+      if (!fallbackKeys) {
+        console.log(`[getExtendedPublicKeyFor] No fallback keys for account 0`)
+        return null
+      }
+      console.log(`[getExtendedPublicKeyFor] Falling back to account 0 xpub`)
+      Logger.warn(
+        `No xpub found for account ${accountIndex}, falling back to account 0`
+      )
+      return this.getKeyForVmType(fallbackKeys, vmType)
+    }
+
+    console.log(
+      `[getExtendedPublicKeyFor] Found xpub for account ${accountIndex}:`,
+      keys.avalanche?.slice(0, 20) + '...'
+    )
+    return this.getKeyForVmType(keys, vmType)
+  }
+
+  private getKeyForVmType(
+    keys: { evm: string; avalanche: string },
+    vmType: NetworkVMType
+  ): { key: string } | null {
     switch (vmType) {
       case NetworkVMType.EVM:
-        return this.extendedPublicKeys.evm
-          ? { key: this.extendedPublicKeys.evm }
-          : null
+        return keys.evm ? { key: keys.evm } : null
       case NetworkVMType.AVM:
-        return this.extendedPublicKeys.avalanche
-          ? { key: this.extendedPublicKeys.avalanche }
-          : null
+        return keys.avalanche ? { key: keys.avalanche } : null
       default:
         return null
     }
@@ -324,6 +370,7 @@ export class LedgerWallet implements Wallet {
   /**
    * Derive address from extended public key for BIP44 wallets
    * This allows creating new accounts without connecting to the device
+   * Note: Requires the xpub for the specific account to be stored
    */
   public deriveAddressFromXpub(
     accountIndex: number,
@@ -336,7 +383,8 @@ export class LedgerWallet implements Wallet {
       )
     }
 
-    const extendedKey = this.getExtendedPublicKeyFor(vmType)
+    // Get the xpub for the specific account (BIP44 uses hardened account derivation)
+    const extendedKey = this.getExtendedPublicKeyFor(vmType, accountIndex)
     if (!extendedKey) {
       return null
     }
@@ -346,9 +394,9 @@ export class LedgerWallet implements Wallet {
       const hdNode = bip32.fromBase58(extendedKey.key)
 
       // For BIP44, we derive: m/44'/coin_type'/account'/change/address_index
-      // The extended key is already at m/44'/coin_type'/0' level
-      // So we need to derive: change/address_index (0/accountIndex for BIP44)
-      const childNode = hdNode.derive(0).derive(accountIndex)
+      // The extended key is at m/44'/coin_type'/account' level for this account
+      // So we derive: change/address_index (0/0 for the first address)
+      const childNode = hdNode.derive(0).derive(0)
 
       if (!childNode.publicKey) {
         throw new Error('Failed to derive public key')
@@ -813,8 +861,17 @@ export class LedgerWallet implements Wallet {
     }
   }
 
-  public async getRawXpubXP(_accountIndex: number): Promise<string> {
-    return this.extendedPublicKeys?.avalanche ?? ''
+  public async getRawXpubXP(accountIndex: number): Promise<string> {
+    if (!this.isBIP44() || !this.extendedPublicKeys) {
+      throw new Error('getRawXpubXP not available for this wallet type')
+    }
+
+    const accountKeys = this.extendedPublicKeys[accountIndex]
+    if (accountKeys?.avalanche) {
+      return accountKeys.avalanche
+    }
+
+    throw new Error(`No xpub stored for account index ${accountIndex}`)
   }
 
   // Private helper methods for message signing
@@ -882,7 +939,10 @@ export class LedgerWallet implements Wallet {
     isTestnet: boolean
     walletId: string
     name: string
-  }): Promise<Account> {
+  }): Promise<{
+    account: Account
+    xpub: { evm: string; avalanche: string }
+  }> {
     const addresses = await LedgerService.getAllAddresses(index, 1, isTestnet)
     const addressC = addresses.find(addr => addr.id.includes('evm'))?.address
     const addressAVM = addresses.find(addr =>
@@ -899,18 +959,51 @@ export class LedgerWallet implements Wallet {
       throw new Error('Failed to derive all addresses from Ledger')
     }
 
+    // Derive addressCoreEth from addressAVM (same public key, different prefix)
+    // X-avax1abc... -> C-avax1abc...
+    const addressCoreEth = addressAVM.replace(/^X-/, 'C-')
+
+    // Get extended public keys for this account (device is already connected)
+    const extendedKeys = await LedgerService.getExtendedPublicKeys(index)
+    const xpub = {
+      evm: bip32
+        .fromPublicKey(
+          Buffer.from(extendedKeys.evm.key, 'hex'),
+          Buffer.from(extendedKeys.evm.chainCode, 'hex')
+        )
+        .toBase58(),
+      avalanche: bip32
+        .fromPublicKey(
+          Buffer.from(extendedKeys.avalanche.key, 'hex'),
+          Buffer.from(extendedKeys.avalanche.chainCode, 'hex')
+        )
+        .toBase58()
+    }
+
+    // TEMP DEBUG: Log xpub being returned from addAccount
+    console.log(`[LedgerWallet.addAccount] account ${index} xpub:`, {
+      evm: xpub.evm.slice(0, 20) + '...',
+      avalanche: xpub.avalanche.slice(0, 20) + '...'
+    })
+
     return {
-      index,
-      id: uuid(),
-      walletId,
-      name,
-      type: CoreAccountType.PRIMARY,
-      addressBTC,
-      addressC,
-      addressAVM,
-      addressPVM,
-      addressCoreEth: '',
-      addressSVM: ''
+      account: {
+        index,
+        id: uuid(),
+        walletId,
+        name,
+        type: CoreAccountType.PRIMARY,
+        addressBTC,
+        addressC,
+        addressAVM,
+        addressPVM,
+        addressCoreEth,
+        addressSVM: '',
+        xpAddresses: [{ address: stripAddressPrefix(addressAVM), index }],
+        xpAddressDictionary: {},
+        hasMigratedXpAddresses: true
+      },
+      xpub
     }
   }
 }
