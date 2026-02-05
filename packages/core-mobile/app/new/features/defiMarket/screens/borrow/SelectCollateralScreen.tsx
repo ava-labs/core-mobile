@@ -45,18 +45,30 @@ export const SelectCollateralScreen = (): JSX.Element => {
   const network = useCChainNetwork()
   const provider = useAvalancheEvmProvider()
 
-  // Initialize hooks for both protocols
+  // Track which items are currently being toggled (transaction in progress)
+  const [togglingState, setTogglingState] = useState<TogglingState>({})
+
+  // Callback when transaction is settled (confirmed or failed)
+  const handleTransactionSettled = useCallback((requestId?: string) => {
+    if (requestId) {
+      setTogglingState(prev => ({
+        ...prev,
+        [requestId]: false
+      }))
+    }
+  }, [])
+
+  // Initialize hooks for both protocols with shared onSettled callback
   const { setCollateral: setAaveCollateral } = useAaveSetCollateral({
     network,
-    provider
+    provider,
+    onSettled: handleTransactionSettled
   })
   const { setCollateral: setBenqiCollateral } = useBenqiSetCollateral({
     network,
-    provider
+    provider,
+    onSettled: handleTransactionSettled
   })
-
-  // Track which items are currently being toggled (transaction in progress)
-  const [togglingState, setTogglingState] = useState<TogglingState>({})
 
   // Filter deposits by selected protocol and only show assets that can be used as collateral
   const filteredDeposits = useMemo(() => {
@@ -68,10 +80,12 @@ export const SelectCollateralScreen = (): JSX.Element => {
 
   const handleToggleCollateral = useCallback(
     async (deposit: DefiMarket, newValue: boolean) => {
+      const requestId = deposit.uniqueMarketId
+
       // Mark this item as toggling
       setTogglingState(prev => ({
         ...prev,
-        [deposit.uniqueMarketId]: true
+        [requestId]: true
       }))
 
       try {
@@ -81,23 +95,25 @@ export const SelectCollateralScreen = (): JSX.Element => {
             deposit.asset.contractAddress ?? AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS
           await setAaveCollateral({
             assetAddress: assetAddress as Address,
-            useAsCollateral: newValue
+            useAsCollateral: newValue,
+            requestId
           })
         } else if (deposit.marketName === MarketNames.benqi) {
           // For Benqi, use qToken address (mintTokenAddress)
           await setBenqiCollateral({
             qTokenAddress: deposit.asset.mintTokenAddress,
-            useAsCollateral: newValue
+            useAsCollateral: newValue,
+            requestId
           })
         }
         // The cache will be invalidated by the hook, which will cause a refetch
+        // Loading state will be cleared by onSettled callback after transaction is confirmed
       } catch (error) {
         Logger.error('Failed to set collateral', error)
-      } finally {
-        // Mark toggling as complete
+        // Clear toggling state on error (transaction submission failed)
         setTogglingState(prev => ({
           ...prev,
-          [deposit.uniqueMarketId]: false
+          [requestId]: false
         }))
       }
     },

@@ -11,15 +11,16 @@ import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 type UseEVMSendTransactionProps = {
   network: Network | undefined
   provider: JsonRpcBatchInternal | undefined
-  onSuccess?: () => void
-  onError?: (error: unknown) => void
-  onSettled?: () => void // Called when transaction completes (success or failure)
+  onSuccess?: (requestId?: string) => void
+  onError?: (error: unknown, requestId?: string) => void
+  onSettled?: (requestId?: string) => void // Called when transaction completes (success or failure)
 }
 
 type EVMSendTransactionParams = {
   contractAddress: Address
   encodedData: Hex
   value?: Hex // Optional value for native token transfers (e.g., AVAX)
+  requestId?: string // Optional identifier to track which request completed in callbacks
 }
 
 /**
@@ -56,7 +57,8 @@ export const useEVMSendTransaction = ({
     async ({
       contractAddress,
       encodedData,
-      value
+      value,
+      requestId
     }: // eslint-disable-next-line sonarjs/cognitive-complexity
     EVMSendTransactionParams) => {
       if (!provider) {
@@ -95,20 +97,20 @@ export const useEVMSendTransaction = ({
           if (!isMountedRef.current) return
 
           if (receipt && receipt.status === 1) {
-            onSuccess?.()
+            onSuccess?.(requestId)
           } else if (receipt && receipt.status === 0) {
-            onError?.(new Error('Transaction reverted'))
+            onError?.(new Error('Transaction reverted'), requestId)
           } else {
-            onError?.(new Error('Transaction failed'))
+            onError?.(new Error('Transaction failed'), requestId)
           }
         })
         .catch(error => {
           if (!isMountedRef.current) return
-          onError?.(error)
+          onError?.(error, requestId)
         })
         .finally(() => {
           if (!isMountedRef.current) return
-          onSettled?.()
+          onSettled?.(requestId)
         })
 
       return txHash

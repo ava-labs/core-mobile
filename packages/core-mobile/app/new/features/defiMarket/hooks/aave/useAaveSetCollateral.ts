@@ -10,14 +10,17 @@ import { useEVMSendTransaction } from 'common/hooks/useEVMSendTransaction'
 
 export const useAaveSetCollateral = ({
   network,
-  provider
+  provider,
+  onSettled
 }: {
   network: Network | undefined
   provider: JsonRpcBatchInternal | undefined
+  onSettled?: (requestId?: string) => void
 }): {
   setCollateral: (params: {
     assetAddress: Address
     useAsCollateral: boolean
+    requestId?: string
   }) => Promise<string>
 } => {
   const { sendTransaction } = useEVMSendTransaction({
@@ -27,16 +30,19 @@ export const useAaveSetCollateral = ({
       queryClient.invalidateQueries({
         queryKey: [ReactQueryKeys.AAVE_AVAILABLE_MARKETS]
       })
-    }
+    },
+    onSettled
   })
 
   const setCollateral = useCallback(
     async ({
       assetAddress,
-      useAsCollateral
+      useAsCollateral,
+      requestId
     }: {
       assetAddress: Address
       useAsCollateral: boolean
+      requestId?: string
     }) => {
       const encodedData = encodeFunctionData({
         abi: AAVE_AVALANCHE3_POOL_PROXY_ABI,
@@ -46,7 +52,8 @@ export const useAaveSetCollateral = ({
 
       return sendTransaction({
         contractAddress: AAVE_POOL_C_CHAIN_ADDRESS,
-        encodedData
+        encodedData,
+        requestId
       })
     },
     [sendTransaction]
