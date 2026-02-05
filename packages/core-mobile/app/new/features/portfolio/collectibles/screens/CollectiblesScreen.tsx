@@ -20,9 +20,9 @@ import Animated from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 import {
   AssetNetworkFilter,
-  CollectibleView,
   CollectibleSort,
-  CollectibleTypeFilter
+  CollectibleTypeFilter,
+  CollectibleView
 } from 'store/balance'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { CardContainer } from '../components/CardContainer'
@@ -48,6 +48,7 @@ export const CollectiblesScreen = ({
   goToDiscoverCollectibles: () => void
   onScrollResync: () => void
   containerStyle: ViewStyle
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 }): ReactNode => {
   const {
     theme: { colors }
@@ -227,10 +228,6 @@ export const CollectiblesScreen = ({
     onShowHidden
   ])
 
-  const renderEmpty = useMemo(() => {
-    return emptyComponent
-  }, [emptyComponent])
-
   const renderHeader = useMemo((): JSX.Element | null => {
     if (collectibles.length === 0 && (!isEnabled || isLoading)) return null
     if (collectibles.length === 0) return null
@@ -314,7 +311,7 @@ export const CollectiblesScreen = ({
           showsVerticalScrollIndicator={false}
           nestedScrollEnabled>
           {renderHeader}
-          {renderEmpty}
+          {emptyComponent}
         </CollapsibleTabs.ScrollView>
       ) : (
         <CollapsibleTabs.FlashList

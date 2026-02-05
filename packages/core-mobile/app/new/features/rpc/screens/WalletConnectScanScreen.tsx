@@ -184,7 +184,7 @@ export const WalletConnectScanScreen = (): React.JSX.Element => {
         <LinearGradientBottomWrapper enabled={keyboard?.isVisible}>
           <View
             style={{
-              padding: 16,
+              padding: 16
             }}>
             {renderFooter()}
           </View>
