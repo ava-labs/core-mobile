@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Button,
   GroupList,
   Text,
@@ -20,7 +21,8 @@ export const TransactionOnboarding = ({
   viewOnceKey,
   onPressNext,
   footerAccessory,
-  scrollEnabled
+  scrollEnabled,
+  isLoading
 }: {
   icon: {
     component: React.FC<SvgProps>
@@ -33,6 +35,7 @@ export const TransactionOnboarding = ({
   onPressNext: () => void
   footerAccessory?: JSX.Element
   scrollEnabled?: boolean
+  isLoading?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
   const dispatch = useDispatch()
@@ -74,9 +77,10 @@ export const TransactionOnboarding = ({
         <Button
           type="primary"
           size="large"
+          disabled={isLoading}
           onPress={handlePressNext}
-          testID="transaction_onboarding__next">
-          {buttonTitle ?? "Let's go!"}
+          testID={isLoading ? undefined : 'transaction_onboarding__next'}>
+          {isLoading ? <ActivityIndicator /> : buttonTitle ?? "Let's go!"}
         </Button>
       </View>
     )
@@ -85,7 +89,8 @@ export const TransactionOnboarding = ({
     handlePressNext,
     buttonTitle,
     footerAccessory,
-    viewOnceKey
+    viewOnceKey,
+    isLoading
   ])
 
   return (

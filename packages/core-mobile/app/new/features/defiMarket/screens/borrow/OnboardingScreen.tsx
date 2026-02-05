@@ -10,7 +10,7 @@ export const OnboardingScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const navigation = useNavigation()
   const { theme } = useTheme()
-  const { deposits } = useDeposits()
+  const { deposits, isLoading } = useDeposits()
   const { selectedProtocol } = useBorrowProtocol()
 
   // Filter deposits by selected protocol
@@ -64,6 +64,7 @@ export const OnboardingScreen = (): JSX.Element => {
       onPressNext={handlePressNext}
       footerAccessory={renderFooterAccessory()}
       scrollEnabled={true}
+      isLoading={isLoading}
     />
   )
 }

@@ -19,22 +19,21 @@ import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
 import { useDeposits } from 'hooks/earn/useDeposits'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import Logger from 'utils/Logger'
 import { DefiMarket, MarketNames } from '../../types'
 import { DefiMarketAssetLogo } from '../../components/DefiMarketAssetLogo'
 import { useBorrowProtocol } from '../../hooks/useBorrowProtocol'
 import { useAaveSetCollateral } from '../../hooks/aave/useAaveSetCollateral'
 import { useBenqiSetCollateral } from '../../hooks/benqi/useBenqiSetCollateral'
-import { AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS } from '../../consts'
+import {
+  AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS,
+  PROTOCOL_DISPLAY_NAMES
+} from '../../consts'
 import errorIcon from '../../../../assets/icons/melting_face.png'
 
 // Track which items are currently being toggled (transaction in progress)
 type TogglingState = Record<string, boolean>
-
-const PROTOCOL_DISPLAY_NAMES: Record<string, string> = {
-  [MarketNames.aave]: 'AAVE',
-  [MarketNames.benqi]: 'Benqi'
-}
 
 export const SelectCollateralScreen = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -44,13 +43,16 @@ export const SelectCollateralScreen = (): JSX.Element => {
   const { selectedProtocol } = useBorrowProtocol()
   const { deposits, isLoading, refresh, isRefreshing } = useDeposits()
   const network = useCChainNetwork()
+  const provider = useAvalancheEvmProvider()
 
   // Initialize hooks for both protocols
   const { setCollateral: setAaveCollateral } = useAaveSetCollateral({
-    network
+    network,
+    provider
   })
   const { setCollateral: setBenqiCollateral } = useBenqiSetCollateral({
-    network
+    network,
+    provider
   })
 
   // Track which items are currently being toggled (transaction in progress)

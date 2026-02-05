@@ -4,11 +4,7 @@ import { TouchableOpacity } from 'react-native-gesture-handler'
 import { DropdownGroup, DropdownMenu } from 'common/components/DropdownMenu'
 import { MarketName, MarketNames } from '../types'
 import { useBorrowProtocol } from '../hooks/useBorrowProtocol'
-
-const PROTOCOL_DISPLAY_NAMES: Record<MarketName, string> = {
-  [MarketNames.aave]: 'Aave',
-  [MarketNames.benqi]: 'Benqi'
-}
+import { PROTOCOL_DISPLAY_NAMES } from '../consts'
 
 const PROTOCOL_LOGOS: Record<MarketName, number> = {
   [MarketNames.aave]: require('../../../assets/icons/aave.png'),
