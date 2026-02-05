@@ -81,31 +81,36 @@ export const SelectAssetScreen = (): JSX.Element => {
               network={item.network}
               width={36}
             />
-            <View sx={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-              <View sx={{ flex: 1 }}>
-                <Text
-                  variant="body2"
-                  sx={{ color: theme.colors.$textPrimary, fontWeight: 500 }}>
-                  {formatApyPercent(item.borrowApyPercent)}
-                </Text>
-                <Text
-                  variant="subtitle2"
-                  sx={{ color: theme.colors.$textSecondary, fontWeight: 500 }}>
-                  APY
-                </Text>
-              </View>
-              <View sx={{ flex: 1 }}>
-                <Text
-                  variant="body2"
-                  sx={{ color: theme.colors.$textPrimary, fontWeight: 500 }}>
-                  {formatApyPercent(item.historicalBorrowApyPercent)}
-                </Text>
-                <Text
-                  variant="subtitle2"
-                  sx={{ color: theme.colors.$textSecondary, fontWeight: 500 }}>
-                  30-day APY
-                </Text>
-              </View>
+            <View sx={{ flex: 1 }}>
+              <Text
+                variant="body2"
+                sx={{ color: theme.colors.$textPrimary, fontWeight: 500 }}>
+                {item.asset.symbol}
+              </Text>
+            </View>
+            <View sx={{ flex: 0.9 }}>
+              <Text
+                variant="body2"
+                sx={{ color: theme.colors.$textPrimary, fontWeight: 500 }}>
+                {formatApyPercent(item.borrowApyPercent)}
+              </Text>
+              <Text
+                variant="subtitle2"
+                sx={{ color: theme.colors.$textSecondary, fontWeight: 500 }}>
+                APY
+              </Text>
+            </View>
+            <View sx={{ flex: 1 }}>
+              <Text
+                variant="body2"
+                sx={{ color: theme.colors.$textPrimary, fontWeight: 500 }}>
+                {formatApyPercent(item.historicalBorrowApyPercent)}
+              </Text>
+              <Text
+                variant="subtitle2"
+                sx={{ color: theme.colors.$textSecondary, fontWeight: 500 }}>
+                30-day APY
+              </Text>
             </View>
             <Icons.Navigation.ChevronRight
               color={theme.colors.$textSecondary}
