@@ -1,4 +1,5 @@
 import { SPRING_LINEAR_TRANSITION, View } from '@avalabs/k2-alpine'
+import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { ErrorState } from 'common/components/ErrorState'
@@ -7,9 +8,7 @@ import { Space } from 'common/components/Space'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useAccountBalanceSummary } from 'features/portfolio/hooks/useAccountBalanceSummary'
 import React, { FC, memo, useCallback } from 'react'
-import { Platform, ViewStyle } from 'react-native'
-import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
-import { RefreshControl } from 'react-native-gesture-handler'
+import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -33,9 +32,6 @@ interface Props {
   onScrollResync: () => void
 }
 
-const keyExtractor = (item: LocalTokenWithBalance, index: number): string =>
-  `${index}-${item.networkChainId}-${item.localId}`
-
 const AssetsScreen: FC<Props> = ({
   containerStyle,
   goToTokenDetail,
@@ -46,8 +42,6 @@ const AssetsScreen: FC<Props> = ({
   const { onResetFilter, data, filter, sort, view, refetch, isRefetching } =
     useAssetsFilterAndSort()
   const listType = view.selected
-  const header = useHeaderMeasurements()
-  const collapsibleHeaderHeight = header?.height ?? 0
 
   const activeAccount = useSelector(selectActiveAccount)
   const enabledNetworks = useSelector(selectEnabledNetworks)
@@ -85,7 +79,13 @@ const AssetsScreen: FC<Props> = ({
   const hasNoAssets = data.length === 0 && isBalanceLoaded && !isInitialLoading
 
   const renderItem = useCallback(
-    (item: LocalTokenWithBalance, index: number): JSX.Element => {
+    ({
+      item,
+      index
+    }: {
+      item: LocalTokenWithBalance
+      index: number
+    }): JSX.Element => {
       const isLeftColumn = index % numColumns === 0
 
       const style = isGridView
@@ -187,7 +187,7 @@ const AssetsScreen: FC<Props> = ({
 
   const renderHeader = useCallback(() => {
     if (isInitialLoading) {
-      return
+      return null
     }
 
     return (
@@ -206,12 +206,11 @@ const AssetsScreen: FC<Props> = ({
     )
   }, [isInitialLoading, hasNoAssets, filter, sort, view, handleManageList])
 
-  const overrideProps = {
-    contentContainerStyle: {
-      ...containerStyle,
-      paddingTop: Platform.OS === 'android' ? header?.height : 0
-    }
-  }
+  const keyExtractor = useCallback(
+    (item: LocalTokenWithBalance, index: number): string =>
+      `${index}-${item.networkChainId}-${item.localId}`,
+    []
+  )
 
   if (!isBalanceLoaded || enabledNetworks.length === 0) {
     return (
@@ -225,10 +224,6 @@ const AssetsScreen: FC<Props> = ({
     )
   }
 
-  // When data is empty, use ScrollView to ensure scroll events propagate to the collapsible header
-  // FlashList's ListEmptyComponent doesn't properly propagate scroll events in newer versions
-  const shouldUseScrollView = data.length === 0
-
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(10)}
@@ -236,50 +231,21 @@ const AssetsScreen: FC<Props> = ({
       style={{
         flex: 1
       }}>
-      {shouldUseScrollView ? (
-        <CollapsibleTabs.ScrollView
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefetching}
-              onRefresh={refetch}
-              progressViewOffset={
-                Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight
-              }
-            />
-          }
-          contentContainerStyle={{
-            flexGrow: 1,
-            ...containerStyle,
-            paddingTop: Platform.OS === 'android' ? header?.height : 0
-          }}
-          showsVerticalScrollIndicator={false}>
-          {renderHeader()}
-          {renderEmpty()}
-        </CollapsibleTabs.ScrollView>
-      ) : (
-        <CollapsibleTabs.FlashList
-          key={`assets-list-${listType}`}
-          data={data}
-          keyExtractor={keyExtractor}
-          testID="portfolio_token_list"
-          extraData={{ isGridView }}
-          overrideProps={overrideProps}
-          numColumns={numColumns}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefetching}
-              onRefresh={refetch}
-              progressViewOffset={
-                Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight
-              }
-            />
-          }
-          renderItem={item => renderItem(item.item, item.index)}
-          ListHeaderComponent={renderHeader}
-          ItemSeparatorComponent={renderSeparator}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
+      <CollapsibleTabList
+        data={data}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        containerStyle={containerStyle}
+        renderEmpty={renderEmpty}
+        renderHeader={renderHeader}
+        renderSeparator={renderSeparator}
+        isRefreshing={isRefetching}
+        onRefresh={refetch}
+        numColumns={numColumns}
+        extraData={{ isGridView }}
+        listKey={`assets-list-${listType}`}
+        testID="portfolio_token_list"
+      />
     </Animated.View>
   )
 }

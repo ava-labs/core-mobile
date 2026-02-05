@@ -1,5 +1,4 @@
 import { Separator } from '@avalabs/k2-alpine'
-import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
 import { useIsSwappable } from 'common/hooks/useIsSwapable'
 import { useBuy } from 'features/meld/hooks/useBuy'
@@ -7,16 +6,14 @@ import { useBalanceTotalForAccount } from 'features/portfolio/hooks/useBalanceTo
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
 import React, { useCallback } from 'react'
-import { Platform, StyleSheet, ViewStyle } from 'react-native'
-import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
+import { StyleSheet, ViewStyle } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { selectIsSwapBlocked } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { MarketToken, MarketType } from 'store/watchlist'
+import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import { TrendingTokenListItem } from './TrendingTokenListItem'
-
-const numColumns = 1
 
 const TrendingTokensScreen = ({
   data,
@@ -29,7 +26,6 @@ const TrendingTokensScreen = ({
   emptyComponent: React.JSX.Element
   containerStyle: ViewStyle
 }): JSX.Element => {
-  const header = useHeaderMeasurements()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { navigateToSwap } = useNavigateToSwap()
   const activeAccount = useSelector(selectActiveAccount)
@@ -93,56 +89,27 @@ const TrendingTokensScreen = ({
     return <Separator sx={{ marginLeft: 68 }} />
   }, [])
 
-  const overrideProps = {
-    contentContainerStyle: {
-      ...containerStyle,
-      paddingTop: Platform.OS === 'android' ? header?.height : 0
-    }
-  }
+  const renderEmpty = useCallback(() => emptyComponent, [emptyComponent])
 
-  // When data is empty, use ScrollView to ensure scroll events propagate to the collapsible header
-  // FlashList's ListEmptyComponent doesn't properly propagate scroll events in newer versions
-  const shouldUseScrollView = data.length === 0
-
-  if (shouldUseScrollView) {
-    return (
-      <CollapsibleTabs.ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          ...containerStyle,
-          paddingTop: Platform.OS === 'android' ? header?.height : 0
-        }}
-        showsVerticalScrollIndicator={false}>
-        {emptyComponent}
-      </CollapsibleTabs.ScrollView>
-    )
-  }
+  const keyExtractor = useCallback((item: MarketToken) => item.id, [])
 
   return (
-    <CollapsibleTabs.FlashList
-      overrideProps={overrideProps}
-      contentContainerStyle={styles.container}
+    <CollapsibleTabList
       data={data}
-      extraData={isDeveloperMode}
-      numColumns={numColumns}
       renderItem={renderItem}
-      ItemSeparatorComponent={renderSeparator}
-      showsVerticalScrollIndicator={false}
-      key={'list'}
-      keyExtractor={item => item.id}
+      keyExtractor={keyExtractor}
+      containerStyle={containerStyle}
+      renderEmpty={renderEmpty}
+      renderSeparator={renderSeparator}
+      extraData={isDeveloperMode}
+      listKey="list"
+      contentContainerStyle={styles.container}
     />
   )
 }
 
 const styles = StyleSheet.create({
-  container: { paddingBottom: 16 },
-  dropdownContainer: { paddingHorizontal: 16 },
-  dropdown: { marginTop: 14, marginBottom: 16 },
-  headerContainer: {
-    marginTop: 8,
-    marginBottom: 16,
-    marginHorizontal: 16
-  }
+  container: { paddingBottom: 16 }
 })
 
 export default TrendingTokensScreen

@@ -7,6 +7,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
+import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { ErrorState } from 'common/components/ErrorState'
@@ -14,8 +15,6 @@ import { LoadingState } from 'common/components/LoadingState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
 import { Platform, ViewStyle } from 'react-native'
-import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
-import { RefreshControl } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 import {
@@ -48,12 +47,10 @@ export const CollectiblesScreen = ({
   goToDiscoverCollectibles: () => void
   onScrollResync: () => void
   containerStyle: ViewStyle
-  // eslint-disable-next-line sonarjs/cognitive-complexity
 }): ReactNode => {
   const {
     theme: { colors }
   } = useTheme()
-  const header = useHeaderMeasurements()
   const {
     isLoading,
     isEnabled,
@@ -133,8 +130,6 @@ export const CollectiblesScreen = ({
     Array.isArray(filter.selected) &&
     (filter.selected[0] !== AssetNetworkFilter.AllNetworks ||
       filter.selected[1] !== CollectibleTypeFilter.AllContents)
-
-  const collapsibleHeaderHeight = header?.height ?? 0
 
   const renderNoCollectibles = useCallback(() => {
     return (
@@ -228,7 +223,9 @@ export const CollectiblesScreen = ({
     onShowHidden
   ])
 
-  const renderHeader = useMemo((): JSX.Element | null => {
+  const renderEmpty = useCallback(() => emptyComponent, [emptyComponent])
+
+  const renderHeader = useCallback((): JSX.Element | null => {
     if (collectibles.length === 0 && (!isEnabled || isLoading)) return null
     if (collectibles.length === 0) return null
 
@@ -261,29 +258,22 @@ export const CollectiblesScreen = ({
     handleManageList
   ])
 
-  const contentContainerStyle = {
-    paddingHorizontal:
-      listType === CollectibleView.ListView
-        ? 0
-        : filteredAndSorted?.length
-        ? HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP / 2
-        : 0
-  }
+  const contentContainerStyle = useMemo(
+    () => ({
+      paddingHorizontal:
+        listType === CollectibleView.ListView
+          ? 0
+          : filteredAndSorted?.length
+          ? HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP / 2
+          : 0
+    }),
+    [listType, filteredAndSorted?.length]
+  )
 
-  // Fix for making the list scrollable if there are just a few collectibles
-  // overrideProps and contentContainerStyle need to be both used with the same stylings for item width calculations
-  const overrideProps = {
-    contentContainerStyle: {
-      flexGrow: 1,
-      ...contentContainerStyle,
-      ...containerStyle,
-      paddingTop: Platform.OS === 'android' ? header?.height : 0
-    }
-  }
-
-  // When data is empty, use ScrollView to ensure scroll events propagate to the collapsible header
-  // FlashList's ListEmptyComponent doesn't properly propagate scroll events in newer versions
-  const shouldUseScrollView = filteredAndSorted.length === 0
+  const keyExtractor = useCallback(
+    (item: NftItem) => `collectibles-list-${item.localId}-${item.address}`,
+    []
+  )
 
   return (
     <Animated.View
@@ -292,59 +282,23 @@ export const CollectiblesScreen = ({
       style={{
         flex: 1
       }}>
-      {shouldUseScrollView ? (
-        <CollapsibleTabs.ScrollView
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={pullToRefresh}
-              progressViewOffset={
-                Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight
-              }
-            />
-          }
-          contentContainerStyle={{
-            flexGrow: 1,
-            ...containerStyle,
-            paddingTop: Platform.OS === 'android' ? header?.height : 0
-          }}
-          showsVerticalScrollIndicator={false}
-          nestedScrollEnabled>
-          {renderHeader}
-          {emptyComponent}
-        </CollapsibleTabs.ScrollView>
-      ) : (
-        <CollapsibleTabs.FlashList
-          data={filteredAndSorted}
-          extraData={{
-            view,
-            sort,
-            filter
-          }}
-          masonry
-          key={`collectibles-list-${listType}`}
-          keyExtractor={(item: NftItem) =>
-            `collectibles-list-${item.localId}-${item.address}`
-          }
-          renderItem={renderItem}
-          ListHeaderComponent={renderHeader}
-          numColumns={columns}
-          overrideProps={overrideProps}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={pullToRefresh}
-              progressViewOffset={
-                Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight
-              }
-            />
-          }
-          contentContainerStyle={contentContainerStyle}
-          removeClippedSubviews={Platform.OS === 'android'}
-          showsVerticalScrollIndicator={false}
-          nestedScrollEnabled
-        />
-      )}
+      <CollapsibleTabList
+        data={filteredAndSorted}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        containerStyle={containerStyle}
+        contentContainerStyle={contentContainerStyle}
+        renderEmpty={renderEmpty}
+        renderHeader={renderHeader}
+        isRefreshing={isRefreshing}
+        onRefresh={pullToRefresh}
+        numColumns={columns}
+        extraData={{ view, sort, filter }}
+        listKey={`collectibles-list-${listType}`}
+        masonry
+        nestedScrollEnabled
+        removeClippedSubviews={Platform.OS === 'android'}
+      />
     </Animated.View>
   )
 }

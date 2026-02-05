@@ -1,12 +1,11 @@
 import { Separator, View } from '@avalabs/k2-alpine'
-import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { Space } from 'common/components/Space'
 import { ViewOption, DropdownSelection } from 'common/types'
 import React, { useCallback, useMemo } from 'react'
-import { Platform, StyleSheet, ViewStyle } from 'react-native'
-import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
+import { StyleSheet, ViewStyle } from 'react-native'
 import { Charts, MarketToken, MarketType } from 'store/watchlist'
+import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import { MarketListItem } from './MarketListItem'
 
 const MarketTokensScreen = ({
@@ -26,14 +25,13 @@ const MarketTokensScreen = ({
   renderEmpty: () => React.JSX.Element
   containerStyle: ViewStyle
 }): JSX.Element => {
-  const header = useHeaderMeasurements()
   const isGridView = view.selected === ViewOption.Grid
   const numColumns = isGridView ? 2 : 1
 
   const dataLength = data.length
 
-  const dropdowns = useMemo(() => {
-    if (dataLength === 0) return
+  const renderHeader = useCallback(() => {
+    if (dataLength === 0) return null
 
     return (
       <View sx={styles.dropdownContainer}>
@@ -86,42 +84,19 @@ const MarketTokensScreen = ({
     return isGridView ? <Space y={12} /> : <Separator sx={{ marginLeft: 68 }} />
   }, [isGridView])
 
-  const overrideProps = {
-    contentContainerStyle: {
-      ...containerStyle,
-      paddingTop: Platform.OS === 'android' ? header?.height : 0
-    }
-  }
-
-  // When data is empty, use ScrollView to ensure scroll events propagate to the collapsible header
-  // FlashList's ListEmptyComponent doesn't properly propagate scroll events in newer versions
-  const shouldUseScrollView = data.length === 0
-
-  if (shouldUseScrollView) {
-    return (
-      <CollapsibleTabs.ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          ...containerStyle,
-          paddingTop: Platform.OS === 'android' ? header?.height : 0
-        }}
-        showsVerticalScrollIndicator={false}>
-        {renderEmpty()}
-      </CollapsibleTabs.ScrollView>
-    )
-  }
+  const keyExtractor = useCallback((item: MarketToken) => item.id, [])
 
   return (
-    <CollapsibleTabs.FlashList
-      overrideProps={overrideProps}
+    <CollapsibleTabList
       data={data}
-      numColumns={numColumns}
       renderItem={renderItem}
-      ListHeaderComponent={dropdowns}
-      ItemSeparatorComponent={renderSeparator}
-      showsVerticalScrollIndicator={false}
+      keyExtractor={keyExtractor}
+      containerStyle={containerStyle}
+      renderEmpty={renderEmpty}
+      renderHeader={renderHeader}
+      renderSeparator={renderSeparator}
+      numColumns={numColumns}
       extraData={{ isGridView }}
-      keyExtractor={item => item.id}
     />
   )
 }
