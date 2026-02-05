@@ -51,7 +51,8 @@ import {
   Wallet,
   AvalancheTransactionRequest,
   BtcTransactionRequest,
-  SolanaTransactionRequest
+  SolanaTransactionRequest,
+  SignatureRSV
 } from './types'
 import { getAddressDerivationPath, handleLedgerError } from './utils'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
@@ -569,65 +570,20 @@ export class LedgerWallet implements Wallet {
       Logger.info('Full serialized transaction:', serializedTx)
       Logger.info('Unsigned transaction (without type prefix):', unsignedTx)
 
-      let signature: { r: string; s: string; v: string | number }
+      let signature: SignatureRSV
 
       if (isAvalanche) {
-        // Use Avalanche app for Avalanche C-Chain
-        const avaxApp = new AppAvax(transport as Transport)
-        Logger.info('Created Avalanche app instance')
-
-        // Verify we can get the correct address
-        Logger.info('Getting address from Ledger')
-        const addressResult = await avaxApp.getETHAddress(derivationPath)
-        Logger.info('Got address from Ledger:', addressResult.address)
-
-        // Get the resolution for proper display
-        const resolution = {
-          externalPlugin: [],
-          erc20Tokens: ['0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E'], // USDC.e
-          nfts: [],
-          plugin: [],
-          domains: []
-        }
-
-        // Sign with Avalanche app
-        Logger.info('Signing transaction with Avalanche app')
-        const result = await avaxApp.signEVMTransaction(
+        signature = await this.getCChainSignature({
+          transport,
           derivationPath,
-          unsignedTx,
-          resolution
-        )
-
-        if (!result) {
-          throw new Error('signEVMTransaction returned undefined')
-        }
-
-        signature = result
-        Logger.info('Got signature from Avalanche app:', signature)
+          unsignedTx
+        })
       } else {
-        // Use Ethereum app for other EVM chains
-        const ethApp = new Eth(transport as Transport)
-        Logger.info('Created Ethereum app instance')
-
-        // Verify we can get the correct address
-        Logger.info('Getting address from Ledger')
-        const addressResult = await ethApp.getAddress(derivationPath)
-        Logger.info('Got address from Ledger:', addressResult.address)
-
-        // Sign with Ethereum app
-        Logger.info('Signing transaction with Ethereum app')
-        const result = await ethApp.signTransaction(derivationPath, unsignedTx)
-
-        if (!result) {
-          throw new Error('signTransaction returned undefined')
-        }
-
-        signature = {
-          r: result.r,
-          s: result.s,
-          v: result.v
-        }
-        Logger.info('Got signature from Ethereum app:', signature)
+        signature = await this.getEvmSignature({
+          transport,
+          derivationPath,
+          unsignedTx
+        })
       }
 
       // Create the signed transaction
@@ -918,5 +874,83 @@ export class LedgerWallet implements Wallet {
       xpAddressDictionary: {},
       hasMigratedXpAddresses: true
     }
+  }
+
+  private getCChainSignature = async ({
+    transport,
+    derivationPath,
+    unsignedTx
+  }: {
+    transport: TransportBLE
+    derivationPath: string
+    unsignedTx: string
+  }): Promise<SignatureRSV> => {
+    // Use Avalanche app for Avalanche C-Chain
+    const avaxApp = new AppAvax(transport as Transport)
+    Logger.info('Created Avalanche app instance')
+
+    // Verify we can get the correct address
+    Logger.info('Getting address from Ledger')
+    const addressResult = await avaxApp.getETHAddress(derivationPath)
+    Logger.info('Got address from Ledger:', addressResult.address)
+
+    // Get the resolution for proper display
+    const resolution = {
+      externalPlugin: [],
+      erc20Tokens: ['0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E'], // USDC.e
+      nfts: [],
+      plugin: [],
+      domains: []
+    }
+
+    // Sign with Avalanche app
+    Logger.info('Signing transaction with Avalanche app')
+    const signature = await avaxApp.signEVMTransaction(
+      derivationPath,
+      unsignedTx,
+      resolution
+    )
+
+    if (!signature) {
+      throw new Error('signEVMTransaction returned undefined')
+    }
+
+    Logger.info('Got signature from Avalanche app:', signature)
+    return signature
+  }
+
+  private getEvmSignature = async ({
+    transport,
+    derivationPath,
+    unsignedTx
+  }: {
+    transport: TransportBLE
+    derivationPath: string
+    unsignedTx: string
+  }): Promise<SignatureRSV> => {
+    // Use Ethereum app for other EVM chains
+    const ethApp = new Eth(transport as Transport)
+    Logger.info('Created Ethereum app instance')
+
+    // Verify we can get the correct address
+    Logger.info('Getting address from Ledger')
+    const addressResult = await ethApp.getAddress(derivationPath)
+    Logger.info('Got address from Ledger:', addressResult.address)
+
+    // Sign with Ethereum app
+    Logger.info('Signing transaction with Ethereum app')
+    const result = await ethApp.signTransaction(derivationPath, unsignedTx)
+
+    if (!result) {
+      throw new Error('signTransaction returned undefined')
+    }
+
+    const signature = {
+      r: result.r,
+      s: result.s,
+      v: result.v
+    }
+    Logger.info('Got signature from Ethereum app:', signature)
+    return signature
   }
 }

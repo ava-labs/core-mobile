@@ -241,3 +241,9 @@ export interface Wallet {
     provider: SolanaProvider
   }): Promise<string>
 }
+
+export type SignatureRSV = {
+  r: string
+  s: string
+  v: string | number
+}
