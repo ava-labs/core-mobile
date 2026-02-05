@@ -8,7 +8,13 @@ import {
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
-import { LayoutRectangle, StyleProp, View, ViewStyle } from 'react-native'
+import {
+  LayoutRectangle,
+  Platform,
+  StyleProp,
+  View,
+  ViewStyle
+} from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import {
   KeyboardAwareScrollView,
@@ -21,6 +27,7 @@ import Animated, {
   useSharedValue
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Grabber from './Grabber'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
 
@@ -257,6 +264,21 @@ export const ScrollScreen = ({
     return null
   }, [renderFooter, shouldAvoidKeyboard, disableStickyFooter, insets.bottom])
 
+  const renderGrabber = useCallback(() => {
+    return (
+      <View
+        style={{
+          position: 'absolute',
+          top: Platform.OS === 'android' ? insets.top : 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000
+        }}>
+        <Grabber />
+      </View>
+    )
+  }, [insets.top])
+
   const renderHeaderBackground = useCallback(() => {
     if (hideHeaderBackground) return null
 
@@ -327,6 +349,7 @@ export const ScrollScreen = ({
         {renderFooterContent()}
         {renderHeaderBackground()}
         {headerCenterOverlay}
+        {renderGrabber()}
       </View>
     )
   }
@@ -357,6 +380,7 @@ export const ScrollScreen = ({
       {renderFooterContent()}
       {renderHeaderBackground()}
       {headerCenterOverlay}
+      {renderGrabber()}
     </View>
   )
 }

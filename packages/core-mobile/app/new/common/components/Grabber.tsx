@@ -1,6 +1,6 @@
 import { alpha, useTheme } from '@avalabs/k2-alpine'
 import React from 'react'
-import { View } from 'react-native'
+import { Platform, View } from 'react-native'
 
 const Grabber = (): JSX.Element => {
   const { theme } = useTheme()
@@ -17,7 +17,7 @@ const Grabber = (): JSX.Element => {
           : alpha(theme.colors.$borderPrimary, 0.1),
         position: 'absolute',
         alignSelf: 'center',
-        top: 9
+        top: Platform.OS === 'android' ? 0 : 9
       }}
     />
   )

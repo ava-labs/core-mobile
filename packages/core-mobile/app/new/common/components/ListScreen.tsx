@@ -45,6 +45,7 @@ import {
   useSafeAreaInsets
 } from 'react-native-safe-area-context'
 import { ErrorState } from './ErrorState'
+import Grabber from './Grabber'
 
 // Use this component when you need to display a list of items in a screen.
 // It handles all the logic for the header and footer, including keyboard interactions and gestures.
@@ -418,6 +419,21 @@ export const ListScreen = <T,>({
     )
   }, [renderEmpty])
 
+  const renderGrabber = useCallback(() => {
+    return (
+      <View
+        style={{
+          position: 'absolute',
+          top: Platform.OS === 'android' ? insets.top : 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000
+        }}>
+        <Grabber />
+      </View>
+    )
+  }, [insets.top])
+
   return (
     <Animated.View
       style={[{ flex: 1 }]}
@@ -450,6 +466,7 @@ export const ListScreen = <T,>({
         ListHeaderComponent={ListHeaderComponent}
         ListEmptyComponent={ListEmptyComponent}
       />
+      {renderGrabber()}
     </Animated.View>
   )
 }

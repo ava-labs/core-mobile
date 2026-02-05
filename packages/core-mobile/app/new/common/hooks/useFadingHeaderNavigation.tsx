@@ -126,17 +126,21 @@ export const useFadingHeaderNavigation = ({
     }
   })
 
+  // On Android, grabber is rendered as overlay in ScrollScreen instead of in the navigation header
+  // because Android's navigation header options are unreliable and get reset during modal presentation
+  const shouldShowGrabberInHeader =
+    shouldHeaderHaveGrabber && Platform.OS !== 'android'
+
   const headerBackgroundComponent = useMemo(() => {
     return hideHeaderBackground ? (
       // Use a Pressable to receive gesture events for modal gestures
       <Pressable style={{ flex: 1 }}>
-        {shouldHeaderHaveGrabber === true ? <Grabber /> : null}
+        {shouldShowGrabberInHeader === true ? <Grabber /> : null}
       </Pressable>
     ) : (
       <BlurredBackgroundView
         backgroundColor={backgroundColor}
         shouldDelayBlurOniOS={shouldDelayBlurOniOS}
-        hasGrabber={shouldHeaderHaveGrabber}
         hasAnimation={hasBackgroundAnimation}
         separator={
           hasSeparator
@@ -150,7 +154,7 @@ export const useFadingHeaderNavigation = ({
     )
   }, [
     hideHeaderBackground,
-    shouldHeaderHaveGrabber,
+    shouldShowGrabberInHeader,
     backgroundColor,
     shouldDelayBlurOniOS,
     hasBackgroundAnimation,

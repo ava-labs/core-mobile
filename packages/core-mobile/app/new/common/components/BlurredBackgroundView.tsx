@@ -6,16 +6,13 @@ import Animated, {
   useAnimatedStyle
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Grabber from './Grabber'
 
 const BlurredBackgroundView = ({
-  hasGrabber = false,
   separator,
   shouldDelayBlurOniOS = false,
   backgroundColor,
   hasAnimation = false
 }: {
-  hasGrabber?: boolean
   separator?: {
     opacity: SharedValue<number>
     position: 'top' | 'bottom'
@@ -35,30 +32,27 @@ const BlurredBackgroundView = ({
 
   return (
     <View
-      pointerEvents={hasGrabber ? 'auto' : 'none'}
+      pointerEvents="none"
       style={{
         flex: 1,
         // Android formsheet in native-stack has a default top padding of insets.top
         // so we need to add this to adjust the grabber position
-        marginTop: hasGrabber && Platform.OS === 'android' ? insets.top - 8 : 0
+        marginTop: Platform.OS === 'android' ? insets.top - 8 : 0
       }}>
       {separator?.position === 'top' && (
         <Animated.View style={animatedBorderStyle}>
           <Separator />
         </Animated.View>
       )}
-      {hasGrabber === false && (
-        <Animated.View style={[blurViewStyle, { flex: 1 }]}>
-          <BlurViewWithFallback
-            backgroundColor={backgroundColor}
-            shouldDelayBlurOniOS={shouldDelayBlurOniOS}
-            style={{
-              flex: 1
-            }}
-          />
-        </Animated.View>
-      )}
-      {hasGrabber === true && <Grabber />}
+      <Animated.View style={[blurViewStyle, { flex: 1 }]}>
+        <BlurViewWithFallback
+          backgroundColor={backgroundColor}
+          shouldDelayBlurOniOS={shouldDelayBlurOniOS}
+          style={{
+            flex: 1
+          }}
+        />
+      </Animated.View>
       {separator?.position === 'bottom' && (
         <Animated.View style={animatedBorderStyle}>
           <Separator />
