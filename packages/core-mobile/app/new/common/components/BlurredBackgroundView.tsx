@@ -5,7 +5,6 @@ import Animated, {
   SharedValue,
   useAnimatedStyle
 } from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const BlurredBackgroundView = ({
   separator,
@@ -28,16 +27,12 @@ const BlurredBackgroundView = ({
     opacity:
       Platform.OS === 'ios' && hasAnimation ? separator?.opacity.value : 1
   }))
-  const insets = useSafeAreaInsets()
 
   return (
     <View
       pointerEvents="none"
       style={{
-        flex: 1,
-        // Android formsheet in native-stack has a default top padding of insets.top
-        // so we need to add this to adjust the grabber position
-        marginTop: Platform.OS === 'android' ? insets.top - 8 : 0
+        flex: 1
       }}>
       {separator?.position === 'top' && (
         <Animated.View style={animatedBorderStyle}>

@@ -420,19 +420,20 @@ export const ListScreen = <T,>({
   }, [renderEmpty])
 
   const renderGrabber = useCallback(() => {
-    return (
-      <View
-        style={{
-          position: 'absolute',
-          top: Platform.OS === 'android' ? insets.top : 0,
-          left: 0,
-          right: 0,
-          zIndex: 1000
-        }}>
-        <Grabber />
-      </View>
-    )
-  }, [insets.top])
+    if (isModal)
+      return (
+        <View
+          style={{
+            position: 'absolute',
+            top: Platform.OS === 'android' ? insets.top : 0,
+            left: 0,
+            right: 0,
+            zIndex: 1000
+          }}>
+          <Grabber />
+        </View>
+      )
+  }, [insets.top, isModal])
 
   return (
     <Animated.View
