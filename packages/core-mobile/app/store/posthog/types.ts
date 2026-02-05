@@ -46,6 +46,7 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.LEDGER_SUPPORT]: true,
   [FeatureGates.IN_APP_DEFI]: false,
   [FeatureGates.IN_APP_DEFI_IS_NEW]: true,
+  [FeatureGates.IN_APP_DEFI_BORROW]: false,
   [FeatureGates.IN_APP_REVIEW]: true,
   [FeatureGates.GASLESS_INSTANT]: true,
   [FeatureGates.NEST_EGG_CAMPAIGN]: false,

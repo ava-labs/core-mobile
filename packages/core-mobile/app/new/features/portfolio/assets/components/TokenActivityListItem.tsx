@@ -9,6 +9,9 @@ import { CollectibleFetchAndRender } from 'features/portfolio/collectibles/compo
 import React, { FC, useMemo } from 'react'
 import { ActivityTransactionType, Transaction } from 'store/transaction'
 import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
+import { selectActiveAccount } from 'store/account'
+import { useSelector } from 'react-redux'
+import { isTxSentFromAccount } from 'features/portfolio/utils'
 import ActivityListItem from './ActivityListItem'
 import { TokenActivityListItemTitle } from './TokenActivityListItemTitle'
 import { TransactionTypeIcon } from './TransactionTypeIcon'
@@ -22,9 +25,14 @@ export const TokenActivityListItem: FC<Props> = ({
     theme: { colors }
   } = useTheme()
   const { formatTokenInCurrency } = useFormatCurrency()
+  const account = useSelector(selectActiveAccount)
   const currentPrice = useMarketTokenBySymbol({
     symbol: tx.tokens[0]?.symbol
   })?.currentPrice
+
+  const isFromAccount = useMemo(() => {
+    return isTxSentFromAccount(tx.from, account)
+  }, [account, tx.from])
 
   const status = useMemo(() => {
     switch (tx.txType) {
@@ -52,12 +60,14 @@ export const TokenActivityListItem: FC<Props> = ({
           return PriceChangeStatus.Neutral
         }
         if (tx.isContractCall) {
-          return tx.isSender ? PriceChangeStatus.Down : PriceChangeStatus.Up
+          return tx.isSender || isFromAccount
+            ? PriceChangeStatus.Down
+            : PriceChangeStatus.Up
         }
         return PriceChangeStatus.Neutral
       }
     }
-  }, [tx])
+  }, [isFromAccount, tx])
 
   const subtitle = useMemo(() => {
     if (isCollectibleTransaction(tx)) {
@@ -95,7 +105,7 @@ export const TokenActivityListItem: FC<Props> = ({
       )
     }
 
-    const txType = fixUnknownTxType(tx)
+    const txType = fixUnknownTxType(tx, !!isFromAccount)
 
     return (
       <View
@@ -115,7 +125,7 @@ export const TokenActivityListItem: FC<Props> = ({
         />
       </View>
     )
-  }, [tx, colors.$borderPrimary])
+  }, [tx, isFromAccount, colors.$borderPrimary])
 
   return (
     <ActivityListItem
@@ -133,7 +143,10 @@ export const TokenActivityListItem: FC<Props> = ({
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-export function fixUnknownTxType(tx: Transaction): ActivityTransactionType {
+export function fixUnknownTxType(
+  tx: Transaction,
+  isFromAccount: boolean
+): ActivityTransactionType {
   if (tx?.txType === TransactionType.UNKNOWN) {
     // if the tx has 3 tokens, it means we funded the gas
     if (tx.tokens.length > 2) {
@@ -142,13 +155,17 @@ export function fixUnknownTxType(tx: Transaction): ActivityTransactionType {
         tx.tokens[0]?.symbol === tx.tokens[1]?.symbol &&
         tx.tokens[1]?.symbol === tx.tokens[2]?.symbol
       ) {
-        return tx.isSender ? TransactionType.SEND : TransactionType.RECEIVE
+        return tx.isSender || isFromAccount
+          ? TransactionType.SEND
+          : TransactionType.RECEIVE
       }
       return TransactionType.SWAP
     }
     if (tx.tokens.length > 1) {
       if (tx.tokens[0]?.symbol === tx.tokens[1]?.symbol) {
-        return tx.isSender ? TransactionType.SEND : TransactionType.RECEIVE
+        return tx.isSender || isFromAccount
+          ? TransactionType.SEND
+          : TransactionType.RECEIVE
       }
       return TransactionType.SWAP
     }
@@ -156,7 +173,9 @@ export function fixUnknownTxType(tx: Transaction): ActivityTransactionType {
       if (isPotentiallySwap(tx)) {
         return TransactionType.SWAP
       }
-      return tx.isSender ? TransactionType.SEND : TransactionType.RECEIVE
+      return tx.isSender || isFromAccount
+        ? TransactionType.SEND
+        : TransactionType.RECEIVE
     }
   }
   return tx.txType as ActivityTransactionType

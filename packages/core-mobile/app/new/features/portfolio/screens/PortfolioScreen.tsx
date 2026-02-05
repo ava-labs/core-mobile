@@ -18,8 +18,8 @@ import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useFocusEffect, useRouter } from 'expo-router'
+import { formatBalanceDisplay } from 'features/wallets/utils/formatBalanceDisplay'
 import { useBuy } from 'features/meld/hooks/useBuy'
 import { useWithdraw } from 'features/meld/hooks/useWithdraw'
 import {
@@ -32,6 +32,7 @@ import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collect
 import { CollectiblesScreen } from 'features/portfolio/collectibles/screens/CollectiblesScreen'
 import { BalanceHeaderSection } from 'features/portfolio/components/BalanceHeaderSection'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
+import { ActivityScreen } from 'features/activity/screens/ActivityScreen'
 import { useAccountBalanceSummary } from 'features/portfolio/hooks/useAccountBalanceSummary'
 import { useAccountPerformanceSummary } from 'features/portfolio/hooks/useAccountPerformanceSummary'
 import { useBalanceTotalPriceChangeForAccount } from 'features/portfolio/hooks/useBalanceTotalPriceChangeForAccount'
@@ -55,7 +56,8 @@ import { selectActiveAccount } from 'store/account'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import {
   selectIsBridgeBlocked,
-  selectIsMeldOfframpBlocked
+  selectIsMeldOfframpBlocked,
+  selectIsInAppDefiBorrowBlocked
 } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
@@ -63,16 +65,24 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { selectActiveWallet, selectWalletsCount } from 'store/wallet/slice'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 
-const SEGMENT_ITEMS = [
+const SEGMENT_ITEMS_DEFAULT = [
   { title: 'Assets' },
   { title: 'Collectibles' },
   { title: 'DeFi' }
 ]
 
+const SEGMENT_ITEMS_WITH_ACTIVITY = [
+  { title: 'Assets' },
+  { title: 'Collectibles' },
+  { title: 'DeFi' },
+  { title: 'Activity' }
+]
+
 const SEGMENT_EVENT_MAP: Record<number, AnalyticsEventName> = {
   0: 'PortfolioAssetsClicked',
   1: 'PortfolioCollectiblesClicked',
-  2: 'PortfolioDeFiClicked'
+  2: 'PortfolioDeFiClicked',
+  3: 'PortfolioActivityClicked'
 }
 
 const PortfolioHomeScreen = (): JSX.Element => {
@@ -80,6 +90,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const headerHeight = useEffectiveHeaderHeight()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
   const isBridgeBlocked = useSelector(selectIsBridgeBlocked)
+  const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
+
+  // When borrow feature is enabled, Activity moves to Portfolio sub-tab
+  const segmentItems = isInAppDefiBorrowBlocked
+    ? SEGMENT_ITEMS_DEFAULT
+    : SEGMENT_ITEMS_WITH_ACTIVITY
 
   const { navigateToBuy } = useBuy()
   const { navigateToWithdraw } = useWithdraw()
@@ -123,17 +139,19 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
   const formattedBalance = useMemo(() => {
-    // CP-10570: Balances should never show $0.00
-    return allBalancesInaccurate || balanceTotalInCurrency === 0
-      ? formatCurrency({
-          amount: 0,
-          withoutCurrencySuffix: true
-        }).replace('0.00', UNKNOWN_AMOUNT)
-      : formatCurrency({
-          amount: balanceTotalInCurrency,
-          withoutCurrencySuffix: true
-        })
-  }, [allBalancesInaccurate, balanceTotalInCurrency, formatCurrency])
+    return formatBalanceDisplay({
+      balance: balanceTotalInCurrency,
+      isDeveloperMode,
+      formatCurrency,
+      hasError: allBalancesInaccurate,
+      withoutCurrencySuffix: true
+    })
+  }, [
+    isDeveloperMode,
+    allBalancesInaccurate,
+    balanceTotalInCurrency,
+    formatCurrency
+  ])
 
   const { percentChange24h, valueChange24h, indicatorStatus } =
     useAccountPerformanceSummary(activeAccount)
@@ -484,7 +502,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }, [segmentedControlLayout?.height, tabHeight])
 
   const tabs = useMemo(() => {
-    return [
+    const baseTabs = [
       {
         tabName: 'Assets',
         component: (
@@ -519,6 +537,16 @@ const PortfolioHomeScreen = (): JSX.Element => {
         )
       }
     ]
+
+    // When borrow feature is enabled, add Activity as a sub-tab
+    if (!isInAppDefiBorrowBlocked) {
+      baseTabs.push({
+        tabName: 'Activity',
+        component: <ActivityScreen containerStyle={contentContainerStyle} />
+      })
+    }
+
+    return baseTabs
   }, [
     handleGoToTokenDetail,
     handleGoToTokenManagement,
@@ -527,14 +555,15 @@ const PortfolioHomeScreen = (): JSX.Element => {
     contentContainerStyle,
     handleGoToCollectibleDetail,
     handleGoToCollectibleManagement,
-    handleGoToDiscoverCollectibles
+    handleGoToDiscoverCollectibles,
+    isInAppDefiBorrowBlocked
   ])
 
   const renderSegmentedControl = useCallback((): JSX.Element => {
     return (
       <SegmentedControl
         dynamicItemWidth={false}
-        items={SEGMENT_ITEMS}
+        items={segmentItems}
         selectedSegmentIndex={selectedSegmentIndex}
         onSelectSegment={handleSelectSegment}
         style={{
@@ -543,7 +572,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
         }}
       />
     )
-  }, [handleSelectSegment, selectedSegmentIndex])
+  }, [handleSelectSegment, selectedSegmentIndex, segmentItems])
 
   return (
     <BlurredBarsContentLayout>

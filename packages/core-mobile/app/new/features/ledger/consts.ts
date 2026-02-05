@@ -42,5 +42,6 @@ export const LEDGER_TIMEOUTS = {
   CONNECTION_TIMEOUT: 30000, // 30 seconds
   APP_WAIT_TIMEOUT: 30000, // 30 seconds for waiting for app
   APP_POLLING_INTERVAL: 2000, // 2 seconds between app checks
-  APP_CHECK_DELAY: 1000 // 1 second delay between app detection attempts
+  APP_CHECK_DELAY: 1000, // 1 second delay between app detection attempts
+  REQUEST_DELAY: 3000 // 3s delay between APDU commands
 } as const

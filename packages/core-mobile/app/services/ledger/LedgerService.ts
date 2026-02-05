@@ -3,7 +3,10 @@ import Transport from '@ledgerhq/hw-transport'
 import AppAvalanche from '@avalabs/hw-app-avalanche'
 import AppSolana from '@ledgerhq/hw-app-solana'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
-import { getAddressDerivationPath } from 'services/wallet/utils'
+import {
+  getAddressDerivationPath,
+  handleLedgerError
+} from 'services/wallet/utils'
 import { ChainName } from 'services/network/consts'
 import {
   getBtcAddressFromPubKey,
@@ -60,17 +63,60 @@ class LedgerService {
     this.#transport = transport
   }
 
+  // Wrap transport's exchange method to automatically handle busy state
+  private wrapTransportExchange(): void {
+    if (!this.#transport) return
+
+    const originalExchange = this.#transport.exchange.bind(this.#transport)
+
+    // Replace exchange method with wrapped version
+    this.#transport.exchange = async (apdu: Buffer): Promise<Buffer> => {
+      // If transport is busy, wait before sending next command
+      if (this.#transport?.exchangeBusyPromise) {
+        await new Promise(res => setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY))
+      }
+
+      try {
+        return await originalExchange(apdu)
+      } catch (error) {
+        // If error is still due to busy transport, reconnect
+        if (
+          error instanceof Error &&
+          (error.message
+            .toLowerCase()
+            .includes(LEDGER_ERROR_CODES.TRANSPORT_RACE_CONDITION_ALT) ||
+            error.message
+              .toLowerCase()
+              .includes(LEDGER_ERROR_CODES.TRANSPORT_RACE_CONDITION))
+        ) {
+          // wait for the transport and retry
+          await new Promise(res =>
+            setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY)
+          )
+          return await originalExchange(apdu)
+        }
+        // Other errors should be thrown immediately
+        throw error
+      }
+    }
+  }
+
   // Connect to Ledger device (transport only, no apps)
   async connect(deviceId: string): Promise<void> {
     try {
       Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
       this.isDisconnected = false // Reset disconnect flag on new connection
       // Use a longer timeout for connection
+      await TransportBLE.disconnectDevice(deviceId)
+
       this.transport = await TransportBLE.open(
         deviceId,
         LEDGER_TIMEOUTS.CONNECTION_TIMEOUT
       )
       Logger.info('BLE transport connected successfully')
+
+      // Wrap the transport's exchange method to automatically handle busy state
+      this.wrapTransportExchange()
 
       this.currentAppType = LedgerAppType.UNKNOWN
 
@@ -88,8 +134,10 @@ class LedgerService {
         )
         Logger.info(`Immediately detected app type: ${detectedAppType}`)
         this.currentAppType = detectedAppType
-      } catch (testError) {
-        Logger.info('Immediate app info test failed, will rely on polling')
+      } catch (error) {
+        Logger.info(
+          'Immediate get current app info failed, will rely on polling'
+        )
       }
     } catch (error) {
       Logger.error('Failed to connect to Ledger', error)
@@ -367,6 +415,9 @@ class LedgerService {
         return true
       }
     } catch (error) {
+      if (error instanceof Error) {
+        handleLedgerError({ error, appType })
+      }
       Logger.info('Error checking app, will continue polling')
     }
     return false
@@ -1069,6 +1120,59 @@ class LedgerService {
     return {
       bitcoinAddress: btcAddress,
       xpAddress: xChainAddress
+    }
+  }
+
+  // Helper to build the “open app” APDU for a given app name
+  buildOpenAppApdu(appName: string): Buffer {
+    const cla = 0xe0
+    const ins = 0xd8
+    const p1 = 0x00
+    const p2 = 0x00
+
+    const nameBytes = Buffer.from(appName, 'ascii')
+    const lc = nameBytes.length // Lc = length of data
+
+    const apdu = Buffer.alloc(5 + lc)
+    apdu[0] = cla
+    apdu[1] = ins
+    apdu[2] = p1
+    apdu[3] = p2
+    apdu[4] = lc
+
+    nameBytes.copy(apdu as unknown as Uint8Array, 5)
+    return apdu
+  }
+
+  // Attempt to open a specific app on the Ledger device
+  // Best-effort, does not guarantee success
+  async openApp(app: LedgerAppType): Promise<void> {
+    try {
+      const apdu = this.buildOpenAppApdu(app)
+      const response = await this.transport.exchange(apdu)
+
+      // Last 2 bytes are the status word (SW1, SW2), the rest is data.
+      const sw1 = response[response.length - 2]
+      const sw2 = response[response.length - 1]
+
+      // @ts-ignore
+      // eslint-disable-next-line no-bitwise
+      const statusCode = (sw1 << 8) | sw2
+
+      if (statusCode === LedgerReturnCode.SUCCESS) {
+        Logger.info(
+          `Successfully opened ${app} app on Ledger device using APDU`
+        )
+      } else {
+        const swHex = statusCode.toString(16).padStart(4, '0')
+        Logger.info(`Unexpected status word: 0x${swHex}`)
+      }
+
+      // Optional: use response.slice(0, -2) to read any data part.
+    } catch (error) {
+      // Do not throw error, just log it, we can't reliably force-switch apps on a Ledger
+      // from one third‑party app to another, so this is just a best-effort attempt.
+      Logger.info(`Failed to open ${app} app:`, error)
     }
   }
 }

@@ -24,7 +24,7 @@ import { CONFETTI_DURATION_MS } from 'common/consts'
 import { currentRouteStore } from 'new/routes/store'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
-import { handleLedgerError } from './utils'
+import { handleLedgerErrorAndShowAlert } from './utils'
 
 class ApprovalController implements VmModuleApprovalController {
   async requestPublicKey({
@@ -93,8 +93,12 @@ class ApprovalController implements VmModuleApprovalController {
 
     const numericChainId = getChainIdFromCaip2(request.chainId)
 
-    if (numericChainId && isAvalancheChainId(numericChainId)) {
-      return // do not show success toast for avalanche transactions as we've already shown it in onTransactionPending
+    if (
+      numericChainId &&
+      isAvalancheChainId(numericChainId) &&
+      isInAppRequest(request)
+    ) {
+      return // do not show success toast for in-app avalanche transactions as we've already shown it in onTransactionPending
     }
 
     transactionSnackbar.success({ explorerLink, toastId: request.requestId })
@@ -152,7 +156,7 @@ class ApprovalController implements VmModuleApprovalController {
               value: ApprovalResponse | PromiseLike<ApprovalResponse>
             ): void => {
               if ('error' in value) {
-                handleLedgerError({
+                handleLedgerErrorAndShowAlert({
                   error: value.error,
                   network: params.network,
                   onRetry: () =>

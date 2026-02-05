@@ -70,6 +70,7 @@ export const NetworkFeeSelectorWithGasless = ({
           <Space x={4} />
         </View>
         <Toggle
+          testID={gaslessEnabled ? 'gasless_on' : 'gasless_off'}
           value={gaslessEnabled}
           onValueChange={() => setGaslessEnabled(prevState => !prevState)}
         />
