@@ -33,13 +33,15 @@ export const SelectAssetScreen = (): JSX.Element => {
     isRefreshing
   } = useAvailableMarkets()
 
-  // Filter markets by selected protocol and borrowing enabled
+  // Filter markets by selected protocol and borrowing enabled, sorted by borrow APY (lowest first)
   const borrowableMarkets = useMemo(() => {
     if (!markets) return []
-    return markets.filter(
-      market =>
-        market.marketName === selectedProtocol && market.borrowingEnabled
-    )
+    return markets
+      .filter(
+        market =>
+          market.marketName === selectedProtocol && market.borrowingEnabled
+      )
+      .sort((a, b) => (a.borrowApyPercent ?? 0) - (b.borrowApyPercent ?? 0))
   }, [markets, selectedProtocol])
 
   const handleSelectAsset = useCallback(
