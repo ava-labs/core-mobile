@@ -55,6 +55,9 @@ export type DefiMarket = {
   readonly uniqueMarketId: string
   // Reserve-level setting: whether this asset CAN be used as collateral
   readonly canBeUsedAsCollateral: boolean
+  // User-level setting: whether the user has enabled this asset as collateral
+  // Only available for AAVE markets (for now)
+  readonly usageAsCollateralEnabledOnUser: boolean | undefined
 }
 
 export type AaveReserveData = {
