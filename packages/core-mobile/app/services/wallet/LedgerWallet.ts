@@ -698,22 +698,18 @@ export class LedgerWallet implements Wallet {
     // Get transport and create Avalanche app instance directly
     // (bypassing SDK's ZondaxProvider which has module resolution issues in React Native)
     const transport = await this.getTransport()
-    Logger.info('Got transport, isConnected:', transport?.isConnected)
 
     const avaxApp = new AppAvax(transport as Transport)
-    Logger.info('Created Avalanche app instance')
 
     // Get chain alias from transaction VM
     const vmName = transaction.tx.getVM()
     const chainAlias = vmName === 'EVM' ? 'C' : 'X' // X for both X-chain and P-chain
-    Logger.info(`Chain alias: ${chainAlias}, VM: ${vmName}`)
 
     // Build the account path based on chain
     // For X/P chain: m/44'/9000'/{accountIndex}'
     // For C chain (EVM): m/44'/60'/0'
     const accountPath =
       chainAlias === 'C' ? `m/44'/60'/0'` : `m/44'/9000'/${accountIndex}'`
-    Logger.info('Account path:', accountPath)
 
     // Build signing paths from external indices
     // For C-chain: use 0/{accountIndex} as the signing path
@@ -724,15 +720,12 @@ export class LedgerWallet implements Wallet {
       chainAlias === 'C'
         ? [`0/${accountIndex}`]
         : (hasIndices ? externalIndices : [0]).map(i => `0/${i}`)
-    Logger.info('Signing paths:', signingPaths)
 
     // Build change paths from internal indices
     const changePaths = (transaction.internalIndices ?? []).map(i => `1/${i}`)
-    Logger.info('Change paths:', changePaths)
 
     // Serialize the transaction
     const txBuffer = Buffer.from(transaction.tx.toBytes())
-    Logger.info('Transaction buffer size:', txBuffer.length)
 
     Logger.info('Calling avaxApp.sign...')
     try {
@@ -744,23 +737,13 @@ export class LedgerWallet implements Wallet {
         changePaths.length > 0 ? changePaths : undefined
       )
       Logger.info('avaxApp.sign completed')
-      Logger.info(`Sign result keys: ${Object.keys(signResult).join(', ')}`)
-      Logger.info(
-        `Signatures map size: ${signResult.signatures?.size ?? 'undefined'}`
-      )
 
       // Add signatures to the transaction
       const signatures = signResult.signatures || new Map()
-      let sigCount = 0
-      signatures.forEach((signature, key) => {
-        Logger.info(
-          `Adding signature for path ${key}, length: ${signature?.length}`
-        )
+      signatures.forEach(signature => {
         transaction.tx.addSignature(signature)
-        sigCount++
       })
 
-      Logger.info(`Added ${sigCount} signatures to transaction`)
       Logger.info('signAvalancheTransaction completed successfully')
       return JSON.stringify(transaction.tx.toJSON())
     } catch (signError) {
