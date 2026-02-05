@@ -23,6 +23,7 @@ import AppSolana from '@ledgerhq/hw-app-solana'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Transport from '@ledgerhq/hw-transport'
 import { networks } from 'bitcoinjs-lib'
+import { utils as avalancheUtils, networkIDs } from '@avalabs/avalanchejs'
 import bs58 from 'bs58'
 import { TransactionRequest } from 'ethers'
 import { now } from 'moment'
@@ -32,7 +33,8 @@ import {
   LedgerAppType,
   LedgerDerivationPathType,
   LedgerWalletData,
-  PublicKey
+  PublicKey,
+  PerAccountExtendedPublicKeys
 } from 'services/ledger/types'
 import {
   LEDGER_TIMEOUTS,
@@ -59,7 +61,7 @@ export class LedgerWallet implements Wallet {
   private deviceId: string
   private derivationPath: string
   private derivationPathSpec: LedgerDerivationPathType
-  private extendedPublicKeys?: { evm: string; avalanche: string }
+  private extendedPublicKeys?: PerAccountExtendedPublicKeys
   private publicKeys: PublicKey[]
   private evmSigner?: LedgerSigner
   private avalancheSigner?:
@@ -73,21 +75,10 @@ export class LedgerWallet implements Wallet {
     this.derivationPathSpec = ledgerData.derivationPathSpec
     this.publicKeys = ledgerData.publicKeys
 
-    /**
-     * Handle extended keys based on derivation path type
-     * For Ledger Live, extendedPublicKeys remains undefined
-     */
+    // For BIP44 wallets, store extended public keys (per-account format)
+    // For Ledger Live, extendedPublicKeys remains undefined
     if (ledgerData.derivationPathSpec === LedgerDerivationPathType.BIP44) {
-      // Handle both new format { evm: string, avalanche: string } and legacy format ExtendedPublicKey[]
-      if (Array.isArray(ledgerData.extendedPublicKeys)) {
-        // Legacy format - skip assignment, migration should handle this
-        Logger.warn(
-          'Legacy extendedPublicKeys format detected, skipping assignment'
-        )
-      } else {
-        // New format - assign directly
-        this.extendedPublicKeys = ledgerData.extendedPublicKeys
-      }
+      this.extendedPublicKeys = ledgerData.extendedPublicKeys
     }
   }
 
@@ -152,10 +143,15 @@ export class LedgerWallet implements Wallet {
       const transport = await this.getTransport()
 
       if (this.derivationPathSpec === LedgerDerivationPathType.BIP44) {
-        // BIP44 mode - use extended public keys
-        const extPublicKey = this.getExtendedPublicKeyFor(NetworkVMType.AVM)
+        // BIP44 mode - use extended public keys for the specific account
+        const extPublicKey = this.getExtendedPublicKeyFor(
+          NetworkVMType.AVM,
+          targetAccountIndex
+        )
         if (!extPublicKey) {
-          throw new Error('Missing extended public key for AVM')
+          throw new Error(
+            `Missing extended public key for AVM account ${targetAccountIndex}`
+          )
         }
 
         this.avalancheSigner = new Avalanche.SimpleLedgerSigner(
@@ -291,11 +287,16 @@ export class LedgerWallet implements Wallet {
   }
 
   /**
-   * Get extended public key for BIP44 wallets
+   * Get extended public key for BIP44 wallets for a specific account index
    * Throws error for Ledger Live wallets
    */
   private getExtendedPublicKeyFor(
-    vmType: NetworkVMType
+    vmType:
+      | NetworkVMType.EVM
+      | NetworkVMType.AVM
+      | NetworkVMType.PVM
+      | NetworkVMType.BITCOIN,
+    accountIndex = 0
   ): { key: string } | null {
     if (this.isLedgerLive()) {
       throw new Error(
@@ -304,18 +305,30 @@ export class LedgerWallet implements Wallet {
     }
 
     if (!this.extendedPublicKeys) {
+      Logger.error(`No extendedPublicKeys available`)
       return null
     }
 
+    // Get keys for the specific account index
+    const keys = this.extendedPublicKeys[accountIndex]
+
+    if (!keys) {
+      throw new Error(`No xpub found for account ${accountIndex}`)
+    }
+
+    return this.getKeyForVmType(keys, vmType)
+  }
+
+  // TODO: Get Btc xpub
+  private getKeyForVmType(
+    keys: { evm: string; avalanche: string },
+    vmType: NetworkVMType
+  ): { key: string } | null {
     switch (vmType) {
       case NetworkVMType.EVM:
-        return this.extendedPublicKeys.evm
-          ? { key: this.extendedPublicKeys.evm }
-          : null
+        return keys.evm ? { key: keys.evm } : null
       case NetworkVMType.AVM:
-        return this.extendedPublicKeys.avalanche
-          ? { key: this.extendedPublicKeys.avalanche }
-          : null
+        return keys.avalanche ? { key: keys.avalanche } : null
       default:
         return null
     }
@@ -324,10 +337,15 @@ export class LedgerWallet implements Wallet {
   /**
    * Derive address from extended public key for BIP44 wallets
    * This allows creating new accounts without connecting to the device
+   * Note: Requires the xpub for the specific account to be stored
    */
   public deriveAddressFromXpub(
     accountIndex: number,
-    vmType: NetworkVMType,
+    vmType:
+      | NetworkVMType.EVM
+      | NetworkVMType.AVM
+      | NetworkVMType.PVM
+      | NetworkVMType.BITCOIN,
     isTestnet = false
   ): string | null {
     if (this.isLedgerLive()) {
@@ -336,7 +354,8 @@ export class LedgerWallet implements Wallet {
       )
     }
 
-    const extendedKey = this.getExtendedPublicKeyFor(vmType)
+    // Get the xpub for the specific account (BIP44 uses hardened account derivation)
+    const extendedKey = this.getExtendedPublicKeyFor(vmType, accountIndex)
     if (!extendedKey) {
       return null
     }
@@ -346,9 +365,9 @@ export class LedgerWallet implements Wallet {
       const hdNode = bip32.fromBase58(extendedKey.key)
 
       // For BIP44, we derive: m/44'/coin_type'/account'/change/address_index
-      // The extended key is already at m/44'/coin_type'/0' level
-      // So we need to derive: change/address_index (0/accountIndex for BIP44)
-      const childNode = hdNode.derive(0).derive(accountIndex)
+      // The extended key is at m/44'/coin_type'/account' level for this account
+      // So we derive: change/address_index (0/0 for the first address)
+      const childNode = hdNode.derive(0).derive(0)
 
       if (!childNode.publicKey) {
         throw new Error('Failed to derive public key')
@@ -813,8 +832,17 @@ export class LedgerWallet implements Wallet {
     }
   }
 
-  public async getRawXpubXP(_accountIndex: number): Promise<string> {
-    return this.extendedPublicKeys?.avalanche ?? ''
+  public async getRawXpubXP(accountIndex: number): Promise<string> {
+    if (!this.isBIP44() || !this.extendedPublicKeys) {
+      throw new Error('getRawXpubXP not available for this wallet type')
+    }
+
+    const accountKeys = this.extendedPublicKeys[accountIndex]
+    if (accountKeys?.avalanche) {
+      return accountKeys.avalanche
+    }
+
+    throw new Error(`No xpub stored for account index ${accountIndex}`)
   }
 
   // Private helper methods for message signing
@@ -882,7 +910,10 @@ export class LedgerWallet implements Wallet {
     isTestnet: boolean
     walletId: string
     name: string
-  }): Promise<Account> {
+  }): Promise<{
+    account: Account
+    xpub: { evm: string; avalanche: string }
+  }> {
     const addresses = await LedgerService.getAllAddresses(index, 1, isTestnet)
     const addressC = addresses.find(addr => addr.id.includes('evm'))?.address
     const addressAVM = addresses.find(addr =>
@@ -899,18 +930,49 @@ export class LedgerWallet implements Wallet {
       throw new Error('Failed to derive all addresses from Ledger')
     }
 
+    // Derive C-chain bech32 address from EVM address
+    // CoreEth is the EVM address (hex) encoded in bech32 format with C- prefix
+    const hrp = isTestnet ? networkIDs.FujiHRP : networkIDs.MainnetHRP
+    const evmAddressBytes = new Uint8Array(
+      Buffer.from(addressC.replace(/^0x/, ''), 'hex')
+    )
+    const addressCoreEth = `C-${avalancheUtils.formatBech32(
+      hrp,
+      evmAddressBytes
+    )}`
+
+    // Get extended public keys for this account (device is already connected)
+    const extendedKeys = await LedgerService.getExtendedPublicKeys(index)
+    const xpub = {
+      evm: bip32
+        .fromPublicKey(
+          Buffer.from(extendedKeys.evm.key, 'hex'),
+          Buffer.from(extendedKeys.evm.chainCode, 'hex')
+        )
+        .toBase58(),
+      avalanche: bip32
+        .fromPublicKey(
+          Buffer.from(extendedKeys.avalanche.key, 'hex'),
+          Buffer.from(extendedKeys.avalanche.chainCode, 'hex')
+        )
+        .toBase58()
+    }
+
     return {
-      index,
-      id: uuid(),
-      walletId,
-      name,
-      type: CoreAccountType.PRIMARY,
-      addressBTC,
-      addressC,
-      addressAVM,
-      addressPVM,
-      addressCoreEth: '',
-      addressSVM: ''
+      account: {
+        index,
+        id: uuid(),
+        walletId,
+        name,
+        type: CoreAccountType.PRIMARY,
+        addressBTC,
+        addressC,
+        addressAVM,
+        addressPVM,
+        addressCoreEth,
+        addressSVM: ''
+      },
+      xpub
     }
   }
 }
