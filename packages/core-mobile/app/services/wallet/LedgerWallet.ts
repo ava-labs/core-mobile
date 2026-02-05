@@ -96,14 +96,13 @@ export class LedgerWallet implements Wallet {
     return LedgerService.ensureConnection(this.deviceId)
   }
 
-  private async getEvmSigner(
-    provider?: JsonRpcBatchInternal,
-    accountIndex?: number
-  ): Promise<LedgerSigner> {
-    // Use provided accountIndex or fallback to parsing from stored derivationPath
-    const targetAccountIndex =
-      accountIndex ?? parseInt(this.derivationPath.split('/').pop() || '0')
-
+  private async getEvmSigner({
+    provider,
+    accountIndex
+  }: {
+    provider?: JsonRpcBatchInternal
+    accountIndex: number
+  }): Promise<LedgerSigner> {
     if (!this.evmSigner || accountIndex !== undefined) {
       Logger.info('evmLedgerSigner', now())
 
@@ -112,8 +111,7 @@ export class LedgerWallet implements Wallet {
         transport: this.getTransport(),
         derivationPath: this.derivationPath,
         derivationPathSpec: this.derivationPathSpec,
-        accountIndex,
-        targetAccountIndex
+        accountIndex
       })
 
       try {
@@ -122,7 +120,7 @@ export class LedgerWallet implements Wallet {
         // Create LedgerSigner with the correct signature from SDK:
         // constructor(accountIndex, transport, derivationSpec, provider?)
         this.evmSigner = new LedgerSigner(
-          targetAccountIndex,
+          accountIndex,
           transport as Transport,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this.derivationPathSpec || 'BIP44') as any,
@@ -140,12 +138,8 @@ export class LedgerWallet implements Wallet {
   }
 
   private async getAvalancheProvider(
-    accountIndex?: number
+    accountIndex: number
   ): Promise<Avalanche.SimpleLedgerSigner | Avalanche.LedgerSigner> {
-    // Use provided accountIndex or fallback to parsing from stored derivationPath
-    const targetAccountIndex =
-      accountIndex ?? parseInt(this.derivationPath.split('/').pop() || '0')
-
     if (!this.avalancheSigner || accountIndex !== undefined) {
       Logger.info('avalancheLedgerSigner', now())
 
@@ -159,7 +153,7 @@ export class LedgerWallet implements Wallet {
         }
 
         this.avalancheSigner = new Avalanche.SimpleLedgerSigner(
-          targetAccountIndex,
+          accountIndex,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           transport as any, // TransportBLE is runtime compatible with wallets SDK expectations
           extPublicKey.key
@@ -168,14 +162,14 @@ export class LedgerWallet implements Wallet {
         // LedgerLive mode - use individual public keys
         const pubkeyEVM = await this.getPublicKeyFor({
           derivationPath: this.getDerivationPath(
-            targetAccountIndex,
+            accountIndex,
             NetworkVMType.EVM
           ),
           curve: Curve.SECP256K1
         })
         const pubkeyAVM = await this.getPublicKeyFor({
           derivationPath: this.getDerivationPath(
-            targetAccountIndex,
+            accountIndex,
             NetworkVMType.AVM
           ),
           curve: Curve.SECP256K1
@@ -187,9 +181,9 @@ export class LedgerWallet implements Wallet {
 
         this.avalancheSigner = new Avalanche.LedgerSigner(
           Buffer.from(pubkeyAVM, 'hex'),
-          this.getDerivationPath(targetAccountIndex, NetworkVMType.AVM),
+          this.getDerivationPath(accountIndex, NetworkVMType.AVM),
           Buffer.from(pubkeyEVM, 'hex'),
-          this.getDerivationPath(targetAccountIndex, NetworkVMType.EVM),
+          this.getDerivationPath(accountIndex, NetworkVMType.EVM),
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           transport as any // TransportBLE is runtime compatible with wallets SDK expectations
         )
@@ -853,7 +847,7 @@ export class LedgerWallet implements Wallet {
     provider: JsonRpcBatchInternal,
     rpcMethod: RpcMethod
   ): Promise<string> {
-    const signer = await this.getEvmSigner(provider, accountIndex)
+    const signer = await this.getEvmSigner({ provider, accountIndex })
 
     if (
       rpcMethod === RpcMethod.SIGN_TYPED_DATA ||
