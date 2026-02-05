@@ -47,6 +47,7 @@ import { Curve } from 'utils/publicKeys'
 import { Account } from 'store/account'
 import { uuid } from 'utils/uuid'
 import { CoreAccountType } from '@avalabs/types'
+import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { BitcoinWalletPolicyService } from './BitcoinWalletPolicyService'
 import {
   Wallet,
@@ -56,7 +57,6 @@ import {
   SignatureRSV
 } from './types'
 import { getAddressDerivationPath, handleLedgerError } from './utils'
-import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 
 export class LedgerWallet implements Wallet {
   private deviceId: string
