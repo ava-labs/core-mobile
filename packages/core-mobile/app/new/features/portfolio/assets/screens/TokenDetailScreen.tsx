@@ -52,7 +52,7 @@ import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
   LayoutChangeEvent,
@@ -87,7 +87,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     theme: { colors }
   } = useTheme()
   const hasXpAddresses = useHasXpAddresses()
-  const { navigate, canGoBack, back } = useRouter()
+  const { navigate } = useRouter()
   const { getNetwork } = useNetworks()
   const { navigateToSwap } = useNavigateToSwap()
   const { addStake, canAddStake } = useAddStake()
@@ -115,26 +115,42 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const { filteredTokenList } = useSearchableTokenList({
     tokens: erc20ContractTokens
   })
+  // Get list including zero balance tokens as fallback
+  const { filteredTokenList: filteredTokenListWithZeroBalance } =
+    useSearchableTokenList({
+      tokens: erc20ContractTokens,
+      hideZeroBalance: false
+    })
   const { formatCurrency } = useFormatCurrency()
 
+  // Track if we've ever seen the token to handle zero balance after sending max
+  const hasSeenTokenRef = useRef(false)
+
   const token = useMemo(() => {
-    return filteredTokenList.find(
+    // First try to find token with balance
+    const tokenWithBalance = filteredTokenList.find(
       tk => tk.localId === localId && tk.networkChainId === Number(chainId)
     )
-  }, [chainId, filteredTokenList, localId])
 
-  // Track if we've ever seen the token to avoid navigating back on initial load
-  const hasSeenToken = useRef(false)
-  if (token !== undefined) {
-    hasSeenToken.current = true
-  }
-
-  // Navigate back when token is no longer available (e.g., after sending max balance)
-  useEffect(() => {
-    if (token === undefined && localId && chainId && hasSeenToken.current) {
-      canGoBack() && back()
+    if (tokenWithBalance) {
+      return tokenWithBalance
     }
-  }, [token, localId, chainId, canGoBack, back])
+
+    // If we've seen the token before, fall back to zero balance list
+    // This handles the case where user sent max balance
+    if (hasSeenTokenRef.current) {
+      return filteredTokenListWithZeroBalance.find(
+        tk => tk.localId === localId && tk.networkChainId === Number(chainId)
+      )
+    }
+
+    return undefined
+  }, [chainId, filteredTokenList, filteredTokenListWithZeroBalance, localId])
+
+  // Update ref after token is resolved
+  if (token !== undefined) {
+    hasSeenTokenRef.current = true
+  }
 
   const isXpToken =
     token && (isTokenWithBalanceAVM(token) || isTokenWithBalancePVM(token))
