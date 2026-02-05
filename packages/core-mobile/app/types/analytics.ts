@@ -94,6 +94,7 @@ export type AnalyticsEvents = {
   PortfolioAssetsClicked: undefined
   PortfolioCollectiblesClicked: undefined
   PortfolioDeFiClicked: undefined
+  PortfolioActivityClicked: undefined
   PortfolioTokenSelected: { name: string; symbol: string; chainId: number }
   PrivacyPolicyClicked: undefined
   ReceivePageVisited: undefined

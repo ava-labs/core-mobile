@@ -8,17 +8,20 @@ import BalanceService from './BalanceService'
 export const getPChainBalance = async ({
   account,
   currency,
-  avaxXPNetwork
+  avaxXPNetwork,
+  xpAddresses
 }: {
   account: Account
   currency: string
   avaxXPNetwork: Network
+  xpAddresses: string[]
 }): Promise<TokenWithBalancePVM> => {
   try {
     const balances = await BalanceService.getBalancesForAccount({
       networks: [avaxXPNetwork],
       account,
-      currency
+      currency,
+      xpAddresses
     })
 
     const pChainBalance = balances

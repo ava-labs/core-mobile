@@ -10,6 +10,7 @@ import { SendErrorMessage } from 'errors/sendError'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useCallback } from 'react'
 import { useUiSafeMutation } from 'hooks/useUiSafeMutation'
+import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { useClaimFees } from './useClaimFees'
 import { useGetFeeState } from './useGetFeeState'
 
@@ -35,6 +36,7 @@ export const useClaimRewards = (
   const { defaultFeeState } = useGetFeeState()
   const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
   const activeWallet = useActiveWallet()
+  const { xpAddresses, xpAddressDictionary } = useXPAddresses(activeAccount)
 
   const {
     totalFees,
@@ -42,6 +44,7 @@ export const useClaimRewards = (
     amountToTransfer,
     feeCalculationError
   } = useClaimFees()
+
   const mutationFn = useCallback(async () => {
     if (!activeAccount) {
       throw Error('No active account')
@@ -65,7 +68,9 @@ export const useClaimRewards = (
       account: activeAccount,
       isTestnet: isDeveloperMode,
       feeState: defaultFeeState,
-      cBaseFeeMultiplier
+      cBaseFeeMultiplier,
+      xpAddresses,
+      xpAddressDictionary
     })
   }, [
     activeAccount,
@@ -75,7 +80,9 @@ export const useClaimRewards = (
     defaultFeeState,
     isDeveloperMode,
     pClaimableBalance,
-    totalFees
+    totalFees,
+    xpAddresses,
+    xpAddressDictionary
   ])
 
   const handleError = useCallback(

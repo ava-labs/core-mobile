@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useState, useEffect } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import {
   GroupList,
   useTheme,
@@ -22,9 +22,6 @@ import { useSelector } from 'react-redux'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { useRouter } from 'expo-router'
 import { LedgerAppType } from 'services/ledger/types'
-import LedgerService from 'services/ledger/LedgerService'
-import { useLedgerWallet } from 'features/ledger/hooks/useLedgerWallet'
-import { useLedgerWalletMap } from 'features/ledger/store'
 import { LedgerConnectionCaption } from './LedgerConnectionCaption'
 
 export const AccountAddresses = ({
@@ -191,34 +188,6 @@ const SolanaEnableButton = ({
     theme: { colors }
   } = useTheme()
   const { navigate } = useRouter()
-  const wallet = useActiveWallet()
-  const { ledgerWalletMap } = useLedgerWalletMap()
-  const { transportState } = useLedgerWallet()
-
-  const deviceForWallet = useMemo(() => {
-    if (!wallet.id) return undefined
-    return ledgerWalletMap[wallet.id]
-  }, [ledgerWalletMap, wallet.id])
-
-  const [isSolanaAppOpen, setIsSolanaAppOpen] = useState(false)
-
-  useEffect(() => {
-    async function checkApp(): Promise<void> {
-      if (transportState.available) {
-        setIsSolanaAppOpen(false)
-        try {
-          LedgerService.ensureConnection(deviceForWallet?.deviceId || '')
-          await LedgerService.waitForApp(LedgerAppType.SOLANA)
-          setIsSolanaAppOpen(true)
-        } catch (error) {
-          setIsSolanaAppOpen(false)
-        }
-      } else {
-        setIsSolanaAppOpen(false)
-      }
-    }
-    checkApp()
-  }, [deviceForWallet?.deviceId, transportState.available])
 
   const handleOnPress = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
@@ -228,10 +197,8 @@ const SolanaEnableButton = ({
   return (
     <View style={{ marginLeft: 16 }}>
       <TouchableOpacity
-        disabled={!isSolanaAppOpen}
         onPress={handleOnPress}
         style={{
-          opacity: isSolanaAppOpen ? 1 : 0.5,
           backgroundColor: colors.$borderPrimary,
           paddingHorizontal: 12,
           paddingVertical: 5,

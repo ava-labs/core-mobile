@@ -70,6 +70,7 @@ export default {
   cancel: 'Cancel',
   approvePopupTitle: 'Do you approve this transaction?',
   approvePopupSpendTitle: 'Do you approve this spend limit?',
+  gaslessToggle: 'gasless_',
   insufficientSendBalance:
     'The specified send amount exceeds the available balance',
   filterDropdown: 'filter_dropdown_btn',

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Text,
   Button,
@@ -23,6 +23,7 @@ const LedgerReviewTransactionScreen = ({
 }: {
   params: LedgerReviewTransactionParams
 }): JSX.Element => {
+  const approvalTriggeredRef = useRef(false)
   const walletId = useSelector(selectActiveWalletId)
   const { ledgerWalletMap } = useLedgerWalletMap()
   const [isConnected, setIsConnected] = useState(false)
@@ -63,10 +64,21 @@ const LedgerReviewTransactionScreen = ({
   }, [deviceForWallet, handleReconnect])
 
   useEffect(() => {
-    if (deviceForWallet && isConnected) {
-      onApprove()
+    if (approvalTriggeredRef.current) return
+
+    const handleApproveTransaction = async (): Promise<void> => {
+      if (deviceForWallet && isConnected) {
+        try {
+          approvalTriggeredRef.current = true
+          await LedgerService.openApp(ledgerAppName)
+          await onApprove()
+        } finally {
+          approvalTriggeredRef.current = false
+        }
+      }
     }
-  }, [deviceForWallet, onApprove, isConnected])
+    handleApproveTransaction()
+  }, [deviceForWallet, onApprove, isConnected, ledgerAppName])
 
   useEffect(() => {
     if (isConnected && isCancelEnabled === false) {

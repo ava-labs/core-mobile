@@ -12,7 +12,7 @@ import Logger from 'utils/Logger'
 import LedgerService from 'services/ledger/LedgerService'
 import { Button, ButtonType } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
-import { LedgerKeys } from 'services/ledger/types'
+import { LedgerAppType, LedgerKeys } from 'services/ledger/types'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { useDispatch, useSelector } from 'react-redux'
 import { showSnackbar } from 'common/utils/toast'
@@ -62,14 +62,16 @@ export default function AppConnectionScreen(): JSX.Element {
       return {
         addressBTC: bitcoinAddress,
         addressAVM: avalancheKeys.addresses.avm,
-        addressPVM: avalancheKeys.addresses.pvm
+        addressPVM: avalancheKeys.addresses.pvm,
+        addressCoreEth: avalancheKeys.addresses.coreEth
       }
     } catch (err) {
       Logger.error('Failed to get opposite keys', err)
       return {
         addressBTC: '',
         addressAVM: '',
-        addressPVM: ''
+        addressPVM: '',
+        addressCoreEth: ''
       }
     }
   }, [isDeveloperMode])
@@ -114,14 +116,16 @@ export default function AppConnectionScreen(): JSX.Element {
             : {
                 addressBTC: keys.bitcoinAddress ?? '',
                 addressAVM: keys.avalancheKeys?.addresses.avm || '',
-                addressPVM: keys.avalancheKeys?.addresses.pvm || ''
+                addressPVM: keys.avalancheKeys?.addresses.pvm || '',
+                addressCoreEth: keys.avalancheKeys?.addresses.coreEth || ''
               }
 
           const testnet = isDeveloperMode
             ? {
                 addressBTC: keys.bitcoinAddress ?? '',
                 addressAVM: keys.avalancheKeys?.addresses.avm || '',
-                addressPVM: keys.avalancheKeys?.addresses.pvm || ''
+                addressPVM: keys.avalancheKeys?.addresses.pvm || '',
+                addressCoreEth: keys.avalancheKeys?.addresses.coreEth || ''
               }
             : oppositeKeys
 
@@ -278,6 +282,8 @@ export default function AppConnectionScreen(): JSX.Element {
     try {
       setAppConnectionStep(AppConnectionStep.AVALANCHE_LOADING)
 
+      // Open Avalanche app before getting keys
+      await LedgerService.openApp(LedgerAppType.AVALANCHE)
       // Get keys from service
       const avalancheKeys = await LedgerService.getAvalancheKeys(
         0,
@@ -317,6 +323,8 @@ export default function AppConnectionScreen(): JSX.Element {
     try {
       setAppConnectionStep(AppConnectionStep.SOLANA_LOADING)
 
+      // Open Solana app before getting keys
+      await LedgerService.openApp(LedgerAppType.SOLANA)
       // Get keys from service
       const solanaKeys = await LedgerService.getSolanaKeys(0)
 

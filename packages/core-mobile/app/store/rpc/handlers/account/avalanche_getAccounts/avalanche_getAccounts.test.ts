@@ -35,6 +35,20 @@ jest.mock('utils/Logger', () => ({
   warn: jest.fn()
 }))
 
+jest.mock('store/settings/advanced', () => ({
+  selectIsDeveloperMode: () => false
+}))
+
+jest.mock('hooks/useXPAddresses/useXPAddresses', () => ({
+  getCachedXPAddresses: jest.fn().mockResolvedValue({
+    xpAddresses: ['avax1test1', 'avax1test2'],
+    xpAddressDictionary: {
+      avax1test1: { space: 'e', index: 0, hasActivity: true },
+      avax1test2: { space: 'e', index: 1, hasActivity: true }
+    }
+  })
+}))
+
 const mockDispatch = jest.fn()
 const mockListenerApi = {
   getState: jest.fn(),
@@ -89,7 +103,11 @@ describe('avalanche_getAccounts handler', () => {
             walletType: 'MNEMONIC',
             walletName: 'Test Wallet',
             xpubXP:
-              'xpub6D4BDPcP2GT577Vvch3R8wDkScZWzQzMMUm3PWbmWvVJrZwQY4VUNgqFJPMM3No2dFDFGTsxxpG5uJh7n7epu4trkrX7x7DogT5Uv6fcLW5'
+              'xpub6D4BDPcP2GT577Vvch3R8wDkScZWzQzMMUm3PWbmWvVJrZwQY4VUNgqFJPMM3No2dFDFGTsxxpG5uJh7n7epu4trkrX7x7DogT5Uv6fcLW5',
+            xpAddresses: [
+              { address: 'avax1test1', index: 0 },
+              { address: 'avax1test2', index: 1 }
+            ]
           },
           {
             id: '1',
@@ -107,7 +125,11 @@ describe('avalanche_getAccounts handler', () => {
             walletType: 'MNEMONIC',
             walletName: 'Test Wallet',
             xpubXP:
-              'xpub6D4BDPcP2GT577Vvch3R8wDkScZWzQzMMUm3PWbmWvVJrZwQY4VUNgqFJPMM3No2dFDFGTsxxpG5uJh7n7epu4trkrX7x7DogT5Uv6fcLW5'
+              'xpub6D4BDPcP2GT577Vvch3R8wDkScZWzQzMMUm3PWbmWvVJrZwQY4VUNgqFJPMM3No2dFDFGTsxxpG5uJh7n7epu4trkrX7x7DogT5Uv6fcLW5',
+            xpAddresses: [
+              { address: 'avax1test1', index: 0 },
+              { address: 'avax1test2', index: 1 }
+            ]
           }
         ]
       })
@@ -138,6 +160,10 @@ describe('avalanche_getAccounts handler', () => {
         expect(accounts[0].xpubXP).toBeUndefined()
         expect(accounts[0].walletType).toBe('LEDGER')
         expect(accounts[0].walletName).toBe('Ledger Wallet')
+        expect(accounts[0].xpAddresses).toEqual([
+          { address: 'avax1test1', index: 0 },
+          { address: 'avax1test2', index: 1 }
+        ])
       }
     })
   })

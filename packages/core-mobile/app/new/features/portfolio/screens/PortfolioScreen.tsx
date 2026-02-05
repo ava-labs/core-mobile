@@ -31,6 +31,7 @@ import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collect
 import { CollectiblesScreen } from 'features/portfolio/collectibles/screens/CollectiblesScreen'
 import { BalanceHeaderSection } from 'features/portfolio/components/BalanceHeaderSection'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
+import { ActivityScreen } from 'features/activity/screens/ActivityScreen'
 import { useAccountBalanceSummary } from 'features/portfolio/hooks/useAccountBalanceSummary'
 import { useAccountPerformanceSummary } from 'features/portfolio/hooks/useAccountPerformanceSummary'
 import { useBalanceTotalPriceChangeForAccount } from 'features/portfolio/hooks/useBalanceTotalPriceChangeForAccount'
@@ -54,7 +55,8 @@ import { selectActiveAccount } from 'store/account'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import {
   selectIsBridgeBlocked,
-  selectIsMeldOfframpBlocked
+  selectIsMeldOfframpBlocked,
+  selectIsInAppDefiBorrowBlocked
 } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
@@ -62,16 +64,24 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { selectActiveWallet, selectWalletsCount } from 'store/wallet/slice'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 
-const SEGMENT_ITEMS = [
+const SEGMENT_ITEMS_DEFAULT = [
   { title: 'Assets' },
   { title: 'Collectibles' },
   { title: 'DeFi' }
 ]
 
+const SEGMENT_ITEMS_WITH_ACTIVITY = [
+  { title: 'Assets' },
+  { title: 'Collectibles' },
+  { title: 'DeFi' },
+  { title: 'Activity' }
+]
+
 const SEGMENT_EVENT_MAP: Record<number, AnalyticsEventName> = {
   0: 'PortfolioAssetsClicked',
   1: 'PortfolioCollectiblesClicked',
-  2: 'PortfolioDeFiClicked'
+  2: 'PortfolioDeFiClicked',
+  3: 'PortfolioActivityClicked'
 }
 
 const PortfolioHomeScreen = (): JSX.Element => {
@@ -79,6 +89,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const headerHeight = useHeaderHeight()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
   const isBridgeBlocked = useSelector(selectIsBridgeBlocked)
+  const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
+
+  // When borrow feature is enabled, Activity moves to Portfolio sub-tab
+  const segmentItems = isInAppDefiBorrowBlocked
+    ? SEGMENT_ITEMS_DEFAULT
+    : SEGMENT_ITEMS_WITH_ACTIVITY
 
   const { navigateToBuy } = useBuy()
   const { navigateToWithdraw } = useWithdraw()
@@ -485,7 +501,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }, [segmentedControlLayout?.height, tabHeight])
 
   const tabs = useMemo(() => {
-    return [
+    const baseTabs = [
       {
         tabName: 'Assets',
         component: (
@@ -520,6 +536,16 @@ const PortfolioHomeScreen = (): JSX.Element => {
         )
       }
     ]
+
+    // When borrow feature is enabled, add Activity as a sub-tab
+    if (!isInAppDefiBorrowBlocked) {
+      baseTabs.push({
+        tabName: 'Activity',
+        component: <ActivityScreen containerStyle={contentContainerStyle} />
+      })
+    }
+
+    return baseTabs
   }, [
     handleGoToTokenDetail,
     handleGoToTokenManagement,
@@ -528,14 +554,15 @@ const PortfolioHomeScreen = (): JSX.Element => {
     contentContainerStyle,
     handleGoToCollectibleDetail,
     handleGoToCollectibleManagement,
-    handleGoToDiscoverCollectibles
+    handleGoToDiscoverCollectibles,
+    isInAppDefiBorrowBlocked
   ])
 
   const renderSegmentedControl = useCallback((): JSX.Element => {
     return (
       <SegmentedControl
         dynamicItemWidth={false}
-        items={SEGMENT_ITEMS}
+        items={segmentItems}
         selectedSegmentIndex={selectedSegmentIndex}
         onSelectSegment={handleSelectSegment}
         style={{
@@ -544,7 +571,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
         }}
       />
     )
-  }, [handleSelectSegment, selectedSegmentIndex])
+  }, [handleSelectSegment, selectedSegmentIndex, segmentItems])
 
   return (
     <BlurredBarsContentLayout>

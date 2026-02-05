@@ -2,7 +2,7 @@ import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
-import { Account } from 'store/account'
+import { Account, XPAddressDictionary } from 'store/account'
 import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
 import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import { FundsStuckError } from 'hooks/earn/errors'
@@ -23,6 +23,8 @@ export type ImportPParams = {
   isTestnet: boolean
   selectedCurrency: string
   feeState?: pvm.FeeState
+  xpAddresses: string[]
+  xpAddressDictionary: XPAddressDictionary
 }
 
 export async function importP({
@@ -30,7 +32,9 @@ export async function importP({
   walletType,
   account,
   isTestnet,
-  feeState
+  feeState,
+  xpAddresses,
+  xpAddressDictionary
 }: ImportPParams): Promise<void> {
   Logger.info('importing P started')
 
@@ -40,7 +44,8 @@ export async function importP({
     isTestnet,
     sourceChain: 'C',
     destinationAddress: account.addressPVM,
-    feeState
+    feeState,
+    xpAddresses
   })
 
   const signedTxJson = await WalletService.sign({
@@ -50,7 +55,7 @@ export async function importP({
       tx: unsignedTx,
       ...getInternalExternalAddrs({
         utxos: unsignedTx.utxos,
-        xpAddressDict: account.xpAddressDictionary,
+        xpAddressDict: xpAddressDictionary,
         isTestnet
       })
     } as AvalancheTransactionRequest,
@@ -102,17 +107,20 @@ export async function importP({
 const getUnlockedUnstakedAmount = async ({
   network,
   account,
-  selectedCurrency
+  selectedCurrency,
+  xpAddresses
 }: {
   network: Network
   account: Account
   selectedCurrency: string
+  xpAddresses: string[]
 }): Promise<bigint | undefined> => {
   try {
     const pChainBalance = await getPChainBalance({
       account,
       currency: selectedCurrency,
-      avaxXPNetwork: network
+      avaxXPNetwork: network,
+      xpAddresses
     })
 
     return pChainBalance.balancePerType.unlockedUnstaked
@@ -130,7 +138,9 @@ export async function importPWithBalanceCheck({
   account,
   isTestnet,
   selectedCurrency,
-  feeState
+  feeState,
+  xpAddresses,
+  xpAddressDictionary
 }: ImportPParams): Promise<void> {
   //get P balance now then compare it later to check if balance changed after import
   const network = NetworkService.getAvalancheNetworkP(isTestnet)
@@ -138,7 +148,8 @@ export async function importPWithBalanceCheck({
   const unlockedUnstakedBeforeImport = await getUnlockedUnstakedAmount({
     network,
     account,
-    selectedCurrency
+    selectedCurrency,
+    xpAddresses
   })
 
   Logger.trace('balanceBeforeImport', unlockedUnstakedBeforeImport)
@@ -149,7 +160,9 @@ export async function importPWithBalanceCheck({
     account,
     isTestnet,
     selectedCurrency,
-    feeState
+    feeState,
+    xpAddresses,
+    xpAddressDictionary
   })
 
   await retry({
@@ -157,7 +170,8 @@ export async function importPWithBalanceCheck({
       getUnlockedUnstakedAmount({
         network,
         account,
-        selectedCurrency
+        selectedCurrency,
+        xpAddresses
       }),
     shouldStop: unlockedUnstakedAfterImport => {
       return unlockedUnstakedAfterImport !== unlockedUnstakedBeforeImport

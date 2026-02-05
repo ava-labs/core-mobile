@@ -23,6 +23,7 @@ export type ImportCParams = {
   account: Account
   isTestnet: boolean
   cBaseFeeMultiplier: number
+  xpAddresses: string[]
 }
 
 export async function importC({
@@ -30,7 +31,8 @@ export async function importC({
   walletType,
   account,
   isTestnet,
-  cBaseFeeMultiplier
+  cBaseFeeMultiplier,
+  xpAddresses
 }: ImportCParams): Promise<void> {
   Logger.info(
     `importing C started with base fee multiplier: ${cBaseFeeMultiplier}`
@@ -54,7 +56,8 @@ export async function importC({
     baseFeeInNAvax: weiToNano(instantBaseFee.toSubUnit()),
     isTestnet,
     sourceChain: 'P',
-    destinationAddress: account.addressC
+    destinationAddress: account.addressC,
+    xpAddresses
   })
   const signedTxJson = await WalletService.sign({
     walletId,

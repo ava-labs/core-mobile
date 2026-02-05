@@ -24,6 +24,7 @@ import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { WalletType } from 'services/wallet/types'
 import { LedgerAppType } from 'services/ledger/types'
 import { LedgerConnectionCaption } from 'features/accountSettings/components/LedgerConnectionCaption'
+import { useObserveLedgerState } from 'common/hooks/useObserveLedgerState'
 import { DropdownMenu } from './DropdownMenu'
 import { WalletIcon } from './WalletIcon'
 
@@ -54,10 +55,13 @@ const WalletCard = ({
     getDropdownItems,
     handleDropdownSelect,
     handleAddAccount: handleAddAccountToWallet,
-    isAddingAccount,
-    isLedger,
-    isAvalancheAppOpen
-  } = useManageWallet(wallet)
+    isAddingAccount
+  } = useManageWallet()
+
+  const { isAppOpened, isLedger } = useObserveLedgerState(
+    wallet.id,
+    LedgerAppType.AVALANCHE
+  )
 
   const renderExpansionIcon = useCallback(() => {
     return (
@@ -147,9 +151,10 @@ const WalletCard = ({
             paddingTop: 1
           }}
         />
+
         {wallet.type !== WalletType.PRIVATE_KEY ? (
           <View sx={{ gap: 16 }}>
-            {((isLedger && isAvalancheAppOpen) || !isLedger) && (
+            {((isLedger && isAppOpened) || !isLedger) && (
               <Button
                 size="medium"
                 leftIcon={
@@ -171,7 +176,7 @@ const WalletCard = ({
                 )}
               </Button>
             )}
-            {isLedger && !isAvalancheAppOpen && (
+            {isLedger && !isAppOpened && (
               <LedgerConnectionCaption appType={LedgerAppType.AVALANCHE} />
             )}
           </View>
@@ -271,7 +276,7 @@ const WalletCard = ({
               groups={[
                 {
                   key: 'wallet-actions',
-                  items: getDropdownItems(wallet)
+                  items: getDropdownItems(wallet, isLedger && isAppOpened)
                 }
               ]}
               onPressAction={(event: { nativeEvent: { event: string } }) =>
