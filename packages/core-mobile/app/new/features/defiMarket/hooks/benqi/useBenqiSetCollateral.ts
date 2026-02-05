@@ -10,14 +10,17 @@ import { useEVMSendTransaction } from 'common/hooks/useEVMSendTransaction'
 
 export const useBenqiSetCollateral = ({
   network,
-  provider
+  provider,
+  onSettled
 }: {
   network: Network | undefined
   provider: JsonRpcBatchInternal | undefined
+  onSettled?: (requestId?: string) => void
 }): {
   setCollateral: (params: {
     qTokenAddress: Address
     useAsCollateral: boolean
+    requestId?: string
   }) => Promise<string>
 } => {
   const { sendTransaction } = useEVMSendTransaction({
@@ -27,16 +30,19 @@ export const useBenqiSetCollateral = ({
       queryClient.invalidateQueries({
         queryKey: [ReactQueryKeys.BENQI_AVAILABLE_MARKETS]
       })
-    }
+    },
+    onSettled
   })
 
   const setCollateral = useCallback(
     async ({
       qTokenAddress,
-      useAsCollateral
+      useAsCollateral,
+      requestId
     }: {
       qTokenAddress: Address
       useAsCollateral: boolean
+      requestId?: string
     }) => {
       // Benqi uses enterMarkets to enable collateral and exitMarket to disable
       const encodedData = useAsCollateral
@@ -53,7 +59,8 @@ export const useBenqiSetCollateral = ({
 
       return sendTransaction({
         contractAddress: BENQI_COMPTROLLER_C_CHAIN_ADDRESS,
-        encodedData
+        encodedData,
+        requestId
       })
     },
     [sendTransaction]
