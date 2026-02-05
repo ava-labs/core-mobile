@@ -132,7 +132,7 @@ export class LedgerWallet implements Wallet {
   private async getAvalancheProvider(
     accountIndex: number
   ): Promise<Avalanche.SimpleLedgerSigner | Avalanche.LedgerSigner> {
-    if (!this.avalancheSigner || accountIndex !== undefined) {
+    if (!this.avalancheSigner) {
       Logger.info('avalancheLedgerSigner', now())
 
       const transport = await this.getTransport()
@@ -141,11 +141,11 @@ export class LedgerWallet implements Wallet {
         // BIP44 mode - use extended public keys for the specific account
         const extPublicKey = this.getExtendedPublicKeyFor(
           NetworkVMType.AVM,
-          targetAccountIndex
+          accountIndex
         )
         if (!extPublicKey) {
           throw new Error(
-            `Missing extended public key for AVM account ${targetAccountIndex}`
+            `Missing extended public key for AVM account ${accountIndex}`
           )
         }
 
