@@ -195,10 +195,7 @@ export const DeFiScreen = ({
     [isGridView, data.length]
   )
 
-  const keyExtractor = useCallback(
-    (item: DeFiSimpleProtocol) => item.id,
-    []
-  )
+  const keyExtractor = useCallback((item: DeFiSimpleProtocol) => item.id, [])
 
   return (
     <Animated.View
