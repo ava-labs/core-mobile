@@ -11,16 +11,12 @@ import { useRouter } from 'expo-router'
 import { ListScreen } from 'common/components/ListScreen'
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
-import { DefiMarket, MarketNames } from '../../types'
+import { DefiMarket } from '../../types'
 import { DefiAssetLogo } from '../../components/DefiAssetLogo'
 import { useBorrowProtocol } from '../../hooks/useBorrowProtocol'
 import { useAvailableMarkets } from '../../hooks/useAvailableMarkets'
+import { PROTOCOL_DISPLAY_NAMES } from '../../consts'
 import errorIcon from '../../../../assets/icons/melting_face.png'
-
-const PROTOCOL_DISPLAY_NAMES: Record<string, string> = {
-  [MarketNames.aave]: 'AAVE',
-  [MarketNames.benqi]: 'Benqi'
-}
 
 export const SelectAssetScreen = (): JSX.Element => {
   const { navigate } = useRouter()
