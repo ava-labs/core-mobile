@@ -291,7 +291,11 @@ export class LedgerWallet implements Wallet {
    * Throws error for Ledger Live wallets
    */
   private getExtendedPublicKeyFor(
-    vmType: NetworkVMType,
+    vmType:
+      | NetworkVMType.EVM
+      | NetworkVMType.AVM
+      | NetworkVMType.PVM
+      | NetworkVMType.BITCOIN,
     accountIndex = 0
   ): { key: string } | null {
     if (this.isLedgerLive()) {
@@ -315,6 +319,7 @@ export class LedgerWallet implements Wallet {
     return this.getKeyForVmType(keys, vmType)
   }
 
+  // TODO: Get Btc xpub
   private getKeyForVmType(
     keys: { evm: string; avalanche: string },
     vmType: NetworkVMType
@@ -336,7 +341,11 @@ export class LedgerWallet implements Wallet {
    */
   public deriveAddressFromXpub(
     accountIndex: number,
-    vmType: NetworkVMType,
+    vmType:
+      | NetworkVMType.EVM
+      | NetworkVMType.AVM
+      | NetworkVMType.PVM
+      | NetworkVMType.BITCOIN,
     isTestnet = false
   ): string | null {
     if (this.isLedgerLive()) {
