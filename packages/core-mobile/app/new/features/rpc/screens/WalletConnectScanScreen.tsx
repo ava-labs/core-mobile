@@ -22,6 +22,9 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient'
 import ScreenHeader from 'common/components/ScreenHeader'
+import Grabber from 'common/components/Grabber'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
+import { Platform } from 'react-native'
 
 const SCANNER_WIDTH = SCREEN_WIDTH - 32
 
@@ -155,6 +158,8 @@ export const WalletConnectScanScreen = (): React.JSX.Element => {
     )
   }, [handleOnChangeText, blackLinearGradientColors, theme.colors.$white])
 
+  const headerHeight = useEffectiveHeaderHeight()
+
   return (
     <View style={{ flex: 1 }}>
       <ScrollView
@@ -164,13 +169,10 @@ export const WalletConnectScanScreen = (): React.JSX.Element => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           flex: 1,
-          marginTop: 30,
+          paddingTop: headerHeight,
           marginBottom: insets.bottom + 12
         }}>
-        <ScreenHeader
-          title={'Connect'}
-          titleSx={{ marginLeft: 16, marginTop: 24 }}
-        />
+        <ScreenHeader title={'Connect'} titleSx={{ marginLeft: 16 }} />
         {renderScanner()}
       </ScrollView>
       <KeyboardStickyView
@@ -183,12 +185,21 @@ export const WalletConnectScanScreen = (): React.JSX.Element => {
           <View
             style={{
               padding: 16,
-              paddingTop: 0
             }}>
             {renderFooter()}
           </View>
         </LinearGradientBottomWrapper>
       </KeyboardStickyView>
+      <View
+        style={{
+          position: 'absolute',
+          top: Platform.OS === 'android' ? insets.top : 9,
+          left: 0,
+          right: 0,
+          zIndex: 1000
+        }}>
+        <Grabber />
+      </View>
     </View>
   )
 }
