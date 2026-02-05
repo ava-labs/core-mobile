@@ -13,7 +13,7 @@ import { scheduleOnRN } from 'react-native-worklets'
 import { ANIMATED } from '../utils'
 
 const SCROLL_THRESHOLD = 2 // pixels
-const THROTTLE_MS = 300 // reduced from 1000ms for better responsiveness
+const THROTTLE_MS = 1000
 
 /**
  * Use this hook to handle pressable gestures.
