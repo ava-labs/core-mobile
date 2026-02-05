@@ -927,6 +927,16 @@ workflows:
         inputs:
         - variables: |-
             IS_SMOKE=$IS_SMOKE
+  appium-performance-setup:
+    envs:
+    - IS_PERFORMANCE: "true"
+      opts:
+        is_expand: false
+    steps:
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            IS_PERFORMANCE=$IS_PERFORMANCE
   appium-ios-setup:
     before_run:
     - _install-and-set-env
