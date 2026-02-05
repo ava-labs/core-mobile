@@ -20,7 +20,7 @@ import {
 } from '@avalabs/vm-module-types'
 import AppAvax from '@avalabs/hw-app-avalanche'
 import AppSolana from '@ledgerhq/hw-app-solana'
-import Eth from '@ledgerhq/hw-app-eth'
+import Eth, { ledgerService } from '@ledgerhq/hw-app-eth'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Transport from '@ledgerhq/hw-transport'
 import { networks } from 'bitcoinjs-lib'
@@ -542,6 +542,7 @@ export class LedgerWallet implements Wallet {
     // Ensure the correct app is ready
     Logger.info(`Ensuring ${appName} app is ready...`)
     try {
+      await LedgerService.openApp(appName)
       await LedgerService.waitForApp(appName, LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT)
       Logger.info(`${appName} app is ready`)
     } catch (error) {
