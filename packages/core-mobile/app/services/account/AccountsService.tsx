@@ -51,6 +51,10 @@ class AccountsService {
       const addressPVM = isTestnet
         ? ledgerAddresses?.testnet.addressPVM
         : ledgerAddresses?.mainnet.addressPVM
+
+      const addressCoreEth = isTestnet
+        ? ledgerAddresses?.testnet.addressCoreEth
+        : ledgerAddresses?.mainnet.addressCoreEth
       // For Ledger wallets, preserve existing addresses
       // since they were retrieved from the device during wallet creation
       return {
@@ -58,7 +62,7 @@ class AccountsService {
         [NetworkVMType.EVM]: account.addressC,
         [NetworkVMType.AVM]: addressAVM || account.addressAVM,
         [NetworkVMType.PVM]: addressPVM || account.addressPVM,
-        [NetworkVMType.CoreEth]: account.addressCoreEth || '',
+        [NetworkVMType.CoreEth]: addressCoreEth || account.addressCoreEth || '',
         [NetworkVMType.SVM]: account.addressSVM ?? ''
       } as Record<NetworkVMType, string>
     }
@@ -137,7 +141,10 @@ class AccountsService {
     isTestnet: boolean
     walletId: string
     name: string
-  }): Promise<Account> {
+  }): Promise<{
+    account: Account
+    xpub?: { evm: string; avalanche: string }
+  }> {
     if (walletType === WalletType.UNSET) throw new Error('invalid wallet type')
 
     if (walletType === WalletType.SEEDLESS) {
@@ -162,8 +169,8 @@ class AccountsService {
       walletType === WalletType.LEDGER ||
       walletType === WalletType.LEDGER_LIVE
     ) {
-      // For BIP44 Ledger wallets, try to derive addresses from extended public keys
-      // This avoids the need to connect to the device for new accounts
+      // For BIP44 Ledger wallets, get addresses and xpub from device
+      // Device is already connected at this point
       const wallet = await WalletFactory.createWallet({
         walletId,
         walletType
@@ -171,6 +178,7 @@ class AccountsService {
       if (!(wallet instanceof LedgerWallet)) {
         throw new Error('Expected LedgerWallet instance')
       }
+      // Returns both account and xpub data
       return wallet.addAccount({ index, isTestnet, walletId, name })
     }
 
@@ -184,17 +192,19 @@ class AccountsService {
     Logger.info(`Final addresses for account ${index}:`, addresses)
 
     return {
-      index,
-      id: uuid(),
-      walletId,
-      name,
-      type: CoreAccountType.PRIMARY,
-      addressBTC: addresses[NetworkVMType.BITCOIN],
-      addressC: addresses[NetworkVMType.EVM],
-      addressAVM: addresses[NetworkVMType.AVM],
-      addressPVM: addresses[NetworkVMType.PVM],
-      addressCoreEth: addresses[NetworkVMType.CoreEth],
-      addressSVM: addresses[NetworkVMType.SVM]
+      account: {
+        index,
+        id: uuid(),
+        walletId,
+        name,
+        type: CoreAccountType.PRIMARY,
+        addressBTC: addresses[NetworkVMType.BITCOIN],
+        addressC: addresses[NetworkVMType.EVM],
+        addressAVM: addresses[NetworkVMType.AVM],
+        addressPVM: addresses[NetworkVMType.PVM],
+        addressCoreEth: addresses[NetworkVMType.CoreEth],
+        addressSVM: addresses[NetworkVMType.SVM]
+      }
     }
   }
 
@@ -264,14 +274,14 @@ class AccountsService {
         walletType,
         accountIndex: i
       })
-      const acc = await this.createNextAccount({
+      const result = await this.createNextAccount({
         index: i,
         walletType,
         isTestnet: false,
         walletId,
         name
       })
-      accounts[acc.id] = acc
+      accounts[result.account.id] = result.account
     }
 
     return accounts

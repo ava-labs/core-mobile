@@ -14,6 +14,7 @@ import {
   getLedgerAppInfo
 } from '@avalabs/core-wallets-sdk'
 import { networks } from 'bitcoinjs-lib'
+import { utils as avalancheUtils, networkIDs } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
 import bs58 from 'bs58'
 import { Platform, PermissionsAndroid, Alert, Linking } from 'react-native'
@@ -1064,6 +1065,17 @@ class LedgerService {
       addresses.find(addr => addr.network === ChainName.AVALANCHE_P)?.address ||
       ''
 
+    // Derive C-chain bech32 address from EVM address
+    // CoreEth is the EVM address (hex) encoded in bech32 format with C- prefix
+    const hrp = isTestnet ? networkIDs.FujiHRP : networkIDs.MainnetHRP
+    const evmAddressBytes = new Uint8Array(
+      Buffer.from(evmAddress.replace(/^0x/, ''), 'hex')
+    )
+    const coreEthAddress = `C-${avalancheUtils.formatBech32(
+      hrp,
+      evmAddressBytes
+    )}`
+
     // Get extended public keys and convert to base58 xpub format
     const extendedKeys = await this.getExtendedPublicKeys(accountIndex)
 
@@ -1087,7 +1099,8 @@ class LedgerService {
       addresses: {
         evm: evmAddress,
         avm: avmAddress,
-        pvm: pvmAddress
+        pvm: pvmAddress,
+        coreEth: coreEthAddress
       },
       xpubs: {
         evm: evmXpub,

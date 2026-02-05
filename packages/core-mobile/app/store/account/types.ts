@@ -36,11 +36,13 @@ export type LedgerAddresses = {
     addressBTC: string
     addressAVM: string
     addressPVM: string
+    addressCoreEth: string
   }
   testnet: {
     addressBTC: string
     addressAVM: string
     addressPVM: string
+    addressCoreEth: string
   }
 }
 
