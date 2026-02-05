@@ -76,12 +76,6 @@ export function usePressableGesture(
     scale.value = withSpring(1, ANIMATED.SPRING_CONFIG)
   }
 
-  const resetAnimation = (): void => {
-    'worklet'
-    opacity.value = withTiming(1, ANIMATED.TIMING_CONFIG)
-    scale.value = withSpring(1, ANIMATED.SPRING_CONFIG)
-  }
-
   const onTouchStart = (
     event: GestureResponderEvent | GestureTouchEvent
   ): void => {
@@ -105,8 +99,7 @@ export function usePressableGesture(
 
     isScrolling.current = false
 
-    // Use runOnUI to properly schedule worklet on UI thread
-    scheduleOnRN(startAnimation)
+    startAnimation()
   }
 
   const onTouchMove = (
@@ -128,20 +121,20 @@ export function usePressableGesture(
     }
     if (moveY > SCROLL_THRESHOLD || moveX > SCROLL_THRESHOLD) {
       isScrolling.current = true
-      scheduleOnRN(resetAnimation)
+      scheduleOnRN(endAnimation)
     }
   }
 
   const onTouchCancel = (): void => {
     isScrolling.current = false
-    scheduleOnRN(resetAnimation)
+    scheduleOnRN(endAnimation)
   }
 
   const onTouchEnd = (
     event: GestureResponderEvent | GestureTouchEvent
   ): void => {
     if (isScrolling.current) {
-      scheduleOnRN(resetAnimation)
+      scheduleOnRN(endAnimation)
       return
     }
 
