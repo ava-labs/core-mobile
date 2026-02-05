@@ -20,7 +20,7 @@ import {
 } from '@avalabs/vm-module-types'
 import AppAvax from '@avalabs/hw-app-avalanche'
 import AppSolana from '@ledgerhq/hw-app-solana'
-import Eth, { ledgerService } from '@ledgerhq/hw-app-eth'
+import Eth from '@ledgerhq/hw-app-eth'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Transport from '@ledgerhq/hw-transport'
 import { networks } from 'bitcoinjs-lib'
