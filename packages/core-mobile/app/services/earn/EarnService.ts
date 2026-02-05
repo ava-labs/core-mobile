@@ -1,4 +1,4 @@
-import { Account } from 'store/account/types'
+import { Account, XPAddressDictionary } from 'store/account/types'
 import { importPWithBalanceCheck } from 'services/earn/importP'
 import Big from 'big.js'
 import { getUnixTime } from 'date-fns'
@@ -14,7 +14,7 @@ import WalletService from 'services/wallet/WalletService'
 import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
 import { AvaxXP } from 'types/AvaxXP'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
-import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP'
+import { getCachedXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { info, pvm, UnsignedTx } from '@avalabs/avalanchejs'
@@ -33,7 +33,6 @@ import { isOnGoing } from 'utils/earn/status'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 import { glacierApiClient } from 'utils/api/clients/glacierApiClient'
 import { listLatestPrimaryNetworkTransactions } from 'utils/api/generated/glacier/glacierApi.client'
-import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -66,7 +65,9 @@ class EarnService {
     selectedCurrency,
     progressEvents,
     feeState,
-    cBaseFeeMultiplier
+    cBaseFeeMultiplier,
+    xpAddresses,
+    xpAddressDictionary
   }: {
     walletId: string
     walletType: WalletType
@@ -76,6 +77,8 @@ class EarnService {
     progressEvents?: (events: RecoveryEvents) => void
     feeState?: pvm.FeeState
     cBaseFeeMultiplier: number
+    xpAddresses: string[]
+    xpAddressDictionary: XPAddressDictionary
   }): Promise<void> {
     Logger.trace('Start importAnyStuckFunds')
 
@@ -86,7 +89,8 @@ class EarnService {
         }
         return AvalancheWalletService.getAtomicUTXOs({
           account,
-          isTestnet
+          isTestnet,
+          xpAddresses
         })
       },
       shouldStop: result => !!result.pChainUtxo && !!result.cChainUtxo,
@@ -102,7 +106,9 @@ class EarnService {
         account,
         isTestnet,
         selectedCurrency,
-        feeState
+        feeState,
+        xpAddresses,
+        xpAddressDictionary
       })
       progressEvents?.(RecoveryEvents.ImportPFinish)
     }
@@ -114,7 +120,8 @@ class EarnService {
         walletType,
         account,
         isTestnet,
-        cBaseFeeMultiplier
+        cBaseFeeMultiplier,
+        xpAddresses
       })
       progressEvents?.(RecoveryEvents.ImportCFinish)
     }
@@ -137,7 +144,9 @@ class EarnService {
     account,
     isTestnet,
     feeState,
-    cBaseFeeMultiplier
+    cBaseFeeMultiplier,
+    xpAddresses,
+    xpAddressDictionary
   }: {
     walletId: string
     walletType: WalletType
@@ -147,6 +156,8 @@ class EarnService {
     isTestnet: boolean
     feeState?: pvm.FeeState
     cBaseFeeMultiplier: number
+    xpAddresses: string[]
+    xpAddressDictionary: XPAddressDictionary
   }): Promise<void> {
     await exportP({
       walletId,
@@ -155,14 +166,17 @@ class EarnService {
       requiredAmount,
       account,
       isTestnet,
-      feeState
+      feeState,
+      xpAddresses,
+      xpAddressDictionary
     })
     await importC({
       walletId,
       walletType,
       account,
       isTestnet,
-      cBaseFeeMultiplier
+      cBaseFeeMultiplier,
+      xpAddresses
     })
   }
 
@@ -228,10 +242,14 @@ class EarnService {
     startDate,
     endDate,
     feeState,
-    pFeeAdjustmentThreshold
+    pFeeAdjustmentThreshold,
+    xpAddressDictionary,
+    xpAddresses
   }: AddDelegatorTransactionProps & {
     walletId: string
     walletType: WalletType
+    xpAddressDictionary: XPAddressDictionary
+    xpAddresses: string[]
   }): Promise<string> {
     const startDateUnix = getUnixTime(startDate)
     const endDateUnix = getUnixTime(endDate)
@@ -247,7 +265,8 @@ class EarnService {
       endDate: endDateUnix,
       stakeAmountInNAvax: stakeAmountNanoAvax,
       feeState,
-      pFeeAdjustmentThreshold
+      pFeeAdjustmentThreshold,
+      xpAddresses
     })
 
     const signedTxJson = await WalletService.sign({
@@ -257,7 +276,7 @@ class EarnService {
         tx: unsignedTx,
         ...getInternalExternalAddrs({
           utxos: unsignedTx.utxos,
-          xpAddressDict: account.xpAddressDictionary,
+          xpAddressDict: xpAddressDictionary,
           isTestnet
         })
       } as AvalancheTransactionRequest,
@@ -375,29 +394,14 @@ class EarnService {
     try {
       const currentNetworkAddressResults = await Promise.all(
         accounts.map(async account => {
-          try {
-            const result = await getAddressesFromXpubXP({
-              isDeveloperMode: isTestnet,
-              walletId,
-              walletType,
-              accountIndex: account.index,
-              onlyWithActivity: true
-            })
-            // Fallback to addressPVM if xpAddresses is empty
-            if (result.xpAddresses.length === 0 && account.addressPVM) {
-              return [stripAddressPrefix(account.addressPVM)]
-            }
-            return result.xpAddresses.map(addr => addr.address)
-          } catch (error) {
-            Logger.error(
-              'getAddressesFromXpubXP failed for current network:',
-              error
-            )
-            // Fallback to addressPVM on error
-            return account.addressPVM
-              ? [stripAddressPrefix(account.addressPVM)]
-              : []
-          }
+          const result = await getCachedXPAddresses({
+            isDeveloperMode: isTestnet,
+            walletId,
+            walletType,
+            account
+          })
+
+          return result.xpAddresses
         })
       )
       const currentNetworkAddresses = currentNetworkAddressResults.flat()
@@ -413,24 +417,14 @@ class EarnService {
 
       const oppositeNetworkAddressResults = await Promise.all(
         accounts.map(async account => {
-          try {
-            const result = await getAddressesFromXpubXP({
-              isDeveloperMode: !isTestnet,
-              walletId,
-              walletType,
-              accountIndex: account.index,
-              onlyWithActivity: true
-            })
+          const result = await getCachedXPAddresses({
+            isDeveloperMode: !isTestnet,
+            walletId,
+            walletType,
+            account
+          })
 
-            return result.xpAddresses.map(addr => addr.address)
-          } catch (error) {
-            Logger.error(
-              `getAddressesFromXpubXP failed for opposite network - isTestnet: ${isTestnet}:`,
-              error
-            )
-            // Fallback to empty array on error
-            return []
-          }
+          return result.xpAddresses
         })
       )
       const oppositeNetworkAddresses = oppositeNetworkAddressResults.flat()

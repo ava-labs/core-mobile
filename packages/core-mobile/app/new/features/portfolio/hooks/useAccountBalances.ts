@@ -8,6 +8,7 @@ import { Account } from 'store/account/types'
 import { selectEnabledNetworks } from 'store/network/slice'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { Network } from '@avalabs/core-chains-sdk'
+import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import * as store from '../store'
 
 /**
@@ -53,6 +54,7 @@ export function useAccountBalances(
   const [isRefetching, setIsRefetching] = store.useIsRefetchingAccountBalances()
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const currency = useSelector(selectSelectedCurrency)
+  const { xpAddresses } = useXPAddresses(account)
 
   const isNotReady = !account || enabledNetworks.length === 0
 
@@ -76,6 +78,7 @@ export function useAccountBalances(
         networks: enabledNetworks,
         account,
         currency: currency.toLowerCase(),
+        xpAddresses,
         onBalanceLoaded: balance => {
           queryClient.setQueryData(
             balanceKey(account, enabledNetworks),

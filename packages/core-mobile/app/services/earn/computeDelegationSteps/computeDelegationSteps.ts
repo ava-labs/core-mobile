@@ -34,7 +34,8 @@ export const computeDelegationSteps = async ({
   pFeeAdjustmentThreshold,
   cBaseFeeMultiplier,
   crossChainFeesMultiplier,
-  avalancheEvmProvider
+  avalancheEvmProvider,
+  xpAddresses
 }: {
   stakeAmount: bigint
   avaxXPNetwork: Network
@@ -48,6 +49,7 @@ export const computeDelegationSteps = async ({
   pFeeAdjustmentThreshold: number
   cBaseFeeMultiplier: number
   crossChainFeesMultiplier: number
+  xpAddresses: string[]
   // eslint-disable-next-line sonarjs/cognitive-complexity
 }): Promise<Step[]> => {
   const availablePChainBalance =
@@ -55,7 +57,8 @@ export const computeDelegationSteps = async ({
   const isTestnet = Boolean(avaxXPNetwork.isTestnet)
   const pChainAtomicBalance = await getPChainAtomicBalance({
     isTestnet,
-    account
+    account,
+    xpAddresses
   })
 
   const cases: Case[] = [
@@ -75,7 +78,8 @@ export const computeDelegationSteps = async ({
           rewardAddress: account.addressPVM,
           feeState,
           provider,
-          pFeeAdjustmentThreshold
+          pFeeAdjustmentThreshold,
+          xpAddresses
         })
 
         return [
@@ -100,7 +104,8 @@ export const computeDelegationSteps = async ({
           isTestnet,
           destinationAddress: account.addressPVM,
           feeState,
-          provider
+          provider,
+          xpAddresses
         })
 
         // this will throw if P-Chain balance is not enough
@@ -111,7 +116,8 @@ export const computeDelegationSteps = async ({
           feeState,
           pChainAtomicBalance,
           importPFee,
-          provider
+          provider,
+          xpAddresses
         })
 
         return [
@@ -139,13 +145,15 @@ export const computeDelegationSteps = async ({
           account,
           isTestnet,
           cBaseFeeMultiplier,
-          avalancheEvmProvider
+          avalancheEvmProvider,
+          xpAddresses
         })
         const importPFee = await getImportPFeePostCExport({
           account,
           isTestnet,
           feeState,
-          provider
+          provider,
+          xpAddresses
         })
         // this will throw if P-Chain balance is not enough
         const delegationFee = await getDelegationFeePostCExportAndPImport({
@@ -155,7 +163,8 @@ export const computeDelegationSteps = async ({
           feeState,
           provider,
           pChainBalance: availablePChainBalance,
-          pFeeAdjustmentThreshold
+          pFeeAdjustmentThreshold,
+          xpAddresses
         })
 
         Logger.info(

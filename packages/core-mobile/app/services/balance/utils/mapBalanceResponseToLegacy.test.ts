@@ -14,21 +14,7 @@ const testAccount = {
   addressBTC: 'bc1qmm9qawklnfau5hhrkt33kqumggxwy7s9raxuxk',
   addressSVM: '9gQmZ7fTTgv5hVScrr9QqT6SpBs7i4cKLDdj4tuae3sW',
   addressAVM: 'X-avax1aahxdv3wqxd42rxdalvp2knxs244r06wrxmvlf',
-  addressPVM: 'P-avax1aahxdv3wqxd42rxdalvp2knxs244r06wrxmvlf',
-  xpAddresses: [
-    {
-      address: 'X-avax1aahxdv3wqxd42rxdalvp2knxs244r06wrxmvlf',
-      index: 0
-    }
-  ],
-  xpAddressDictionary: {
-    'X-avax1aahxdv3wqxd42rxdalvp2knxs244r06wrxmvlf': {
-      space: 'e' as const,
-      index: 0,
-      hasActivity: true
-    }
-  },
-  hasMigratedXpAddresses: true
+  addressPVM: 'P-avax1aahxdv3wqxd42rxdalvp2knxs244r06wrxmvlf'
 }
 
 describe('mapBalanceResponseToLegacy', () => {

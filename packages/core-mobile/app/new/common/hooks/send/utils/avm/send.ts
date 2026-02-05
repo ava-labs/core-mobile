@@ -11,7 +11,7 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { SPAN_STATUS_ERROR } from '@sentry/core'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { AvmCapableAccount } from 'common/hooks/send/utils/types'
-import { Account } from 'store/account'
+import { XPAddressDictionary } from 'store/account'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
@@ -21,7 +21,9 @@ export const send = async ({
   account,
   network,
   toAddress,
-  amount
+  amount,
+  xpAddresses,
+  xpAddressDictionary
 }: {
   request: Request
   fromAddress: string
@@ -29,6 +31,8 @@ export const send = async ({
   network: Network
   toAddress: string
   amount: bigint
+  xpAddresses: string[]
+  xpAddressDictionary: XPAddressDictionary
 }): Promise<string> => {
   const sentrySpanName = 'send-token'
   return SentryWrapper.startSpan(
@@ -42,14 +46,15 @@ export const send = async ({
           amountInNAvax: amount,
           isTestnet,
           destinationAddress: destinationAddress,
-          sourceAddress: fromAddress
+          sourceAddress: fromAddress,
+          xpAddresses
         })
 
         const txRequest = await getTransactionRequest({
           unsignedTx,
           isTestnet,
           sentrySpanName,
-          account
+          xpAddressDictionary
         })
 
         const [txHash, txError] = await resolve(
@@ -83,15 +88,15 @@ export const send = async ({
 }
 
 const getTransactionRequest = ({
-  account,
   unsignedTx,
   isTestnet,
-  sentrySpanName
+  sentrySpanName,
+  xpAddressDictionary
 }: {
-  account: Account
   unsignedTx: UnsignedTx
   isTestnet: boolean
   sentrySpanName?: SpanName
+  xpAddressDictionary: XPAddressDictionary
 }): Promise<AvalancheSendTransactionParams> => {
   return SentryWrapper.startSpan(
     { name: sentrySpanName, contextName: 'svc.send.avm.get_trx_request' },
@@ -108,7 +113,7 @@ const getTransactionRequest = ({
         ),
         ...getInternalExternalAddrs({
           utxos: unsignedTx.utxos,
-          xpAddressDict: account.xpAddressDictionary,
+          xpAddressDict: xpAddressDictionary,
           isTestnet
         })
       }

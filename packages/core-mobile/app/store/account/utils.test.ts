@@ -7,12 +7,10 @@ import { CoreAccountType } from '@avalabs/types'
 import { Account } from './types'
 import {
   isAddressMissing,
-  groupAccountsByWallet,
-  canRederiveXpAddresses,
   isHardwareWalletType,
-  canRederiveAccountXpAddresses,
-  rederiveXpAddressesForAccount,
-  processWalletAccountsForRepopulation
+  isMemonicOrSeedlessWallet,
+  canRederiveAccountAddresses,
+  rederiveAvmPvmAddressesForAccount
 } from './utils'
 
 // Mock dependencies
@@ -43,9 +41,6 @@ const createMockAccount = (overrides: Partial<Account> = {}): Account => ({
   addressPVM: 'P-avax1234567890',
   addressCoreEth: '0x1234567890abcdef',
   addressSVM: 'solana1234567890',
-  xpAddresses: [],
-  xpAddressDictionary: {},
-  hasMigratedXpAddresses: true,
   ...overrides
 })
 
@@ -85,65 +80,29 @@ describe('account/utils', () => {
     })
   })
 
-  describe('groupAccountsByWallet', () => {
-    it('returns empty map for empty array', () => {
-      const result = groupAccountsByWallet([])
-      expect(result.size).toBe(0)
-    })
-
-    it('groups single account correctly', () => {
-      const account = createMockAccount({ walletId: 'wallet-1' })
-      const result = groupAccountsByWallet([account])
-
-      expect(result.size).toBe(1)
-      expect(result.get('wallet-1')).toEqual([account])
-    })
-
-    it('groups multiple accounts by wallet', () => {
-      const account1 = createMockAccount({
-        id: 'account-1',
-        walletId: 'wallet-1'
-      })
-      const account2 = createMockAccount({
-        id: 'account-2',
-        walletId: 'wallet-1'
-      })
-      const account3 = createMockAccount({
-        id: 'account-3',
-        walletId: 'wallet-2'
-      })
-
-      const result = groupAccountsByWallet([account1, account2, account3])
-
-      expect(result.size).toBe(2)
-      expect(result.get('wallet-1')).toEqual([account1, account2])
-      expect(result.get('wallet-2')).toEqual([account3])
-    })
-  })
-
-  describe('canRederiveXpAddresses', () => {
+  describe('isMemonicOrSeedlessWallet', () => {
     it('returns true for MNEMONIC wallet type', () => {
-      expect(canRederiveXpAddresses(WalletType.MNEMONIC)).toBe(true)
+      expect(isMemonicOrSeedlessWallet(WalletType.MNEMONIC)).toBe(true)
     })
 
     it('returns true for SEEDLESS wallet type', () => {
-      expect(canRederiveXpAddresses(WalletType.SEEDLESS)).toBe(true)
+      expect(isMemonicOrSeedlessWallet(WalletType.SEEDLESS)).toBe(true)
     })
 
     it('returns false for PRIVATE_KEY wallet type', () => {
-      expect(canRederiveXpAddresses(WalletType.PRIVATE_KEY)).toBe(false)
+      expect(isMemonicOrSeedlessWallet(WalletType.PRIVATE_KEY)).toBe(false)
     })
 
     it('returns false for LEDGER wallet type', () => {
-      expect(canRederiveXpAddresses(WalletType.LEDGER)).toBe(false)
+      expect(isMemonicOrSeedlessWallet(WalletType.LEDGER)).toBe(false)
     })
 
     it('returns false for LEDGER_LIVE wallet type', () => {
-      expect(canRederiveXpAddresses(WalletType.LEDGER_LIVE)).toBe(false)
+      expect(isMemonicOrSeedlessWallet(WalletType.LEDGER_LIVE)).toBe(false)
     })
 
     it('returns false for KEYSTONE wallet type', () => {
-      expect(canRederiveXpAddresses(WalletType.KEYSTONE)).toBe(false)
+      expect(isMemonicOrSeedlessWallet(WalletType.KEYSTONE)).toBe(false)
     })
   })
 
@@ -179,8 +138,8 @@ describe('account/utils', () => {
       const account0 = createMockAccount({ index: 0 })
       const account1 = createMockAccount({ index: 1 })
 
-      expect(canRederiveAccountXpAddresses(account0, wallet)).toBe(true)
-      expect(canRederiveAccountXpAddresses(account1, wallet)).toBe(true)
+      expect(canRederiveAccountAddresses(account0, wallet)).toBe(true)
+      expect(canRederiveAccountAddresses(account1, wallet)).toBe(true)
     })
 
     it('returns true for SEEDLESS wallet at any index', () => {
@@ -188,8 +147,8 @@ describe('account/utils', () => {
       const account0 = createMockAccount({ index: 0 })
       const account5 = createMockAccount({ index: 5 })
 
-      expect(canRederiveAccountXpAddresses(account0, wallet)).toBe(true)
-      expect(canRederiveAccountXpAddresses(account5, wallet)).toBe(true)
+      expect(canRederiveAccountAddresses(account0, wallet)).toBe(true)
+      expect(canRederiveAccountAddresses(account5, wallet)).toBe(true)
     })
 
     it('returns false for hardware wallet at index > 0', () => {
@@ -197,10 +156,8 @@ describe('account/utils', () => {
       const ledgerWallet = createMockWallet({ type: WalletType.LEDGER })
       const account1 = createMockAccount({ index: 1 })
 
-      expect(canRederiveAccountXpAddresses(account1, keystoneWallet)).toBe(
-        false
-      )
-      expect(canRederiveAccountXpAddresses(account1, ledgerWallet)).toBe(false)
+      expect(canRederiveAccountAddresses(account1, keystoneWallet)).toBe(false)
+      expect(canRederiveAccountAddresses(account1, ledgerWallet)).toBe(false)
       expect(Logger.info).toHaveBeenCalledWith(
         expect.stringContaining('requires device connection')
       )
@@ -210,14 +167,14 @@ describe('account/utils', () => {
       const wallet = createMockWallet({ type: WalletType.PRIVATE_KEY })
       const account = createMockAccount({ index: 0 })
 
-      expect(canRederiveAccountXpAddresses(account, wallet)).toBe(false)
+      expect(canRederiveAccountAddresses(account, wallet)).toBe(false)
       expect(Logger.info).toHaveBeenCalledWith(
         expect.stringContaining('Skipping account')
       )
     })
   })
 
-  describe('rederiveXpAddressesForAccount', () => {
+  describe('rederiveAvmPvmAddressesForAccount', () => {
     it('returns updated account with new addresses on success', async () => {
       const wallet = createMockWallet({ type: WalletType.MNEMONIC })
       const account = createMockAccount({
@@ -230,7 +187,7 @@ describe('account/utils', () => {
         [NetworkVMType.PVM]: 'P-avax-new-address'
       })
 
-      const result = await rederiveXpAddressesForAccount({
+      const result = await rederiveAvmPvmAddressesForAccount({
         account,
         wallet,
         isDeveloperMode: false
@@ -261,7 +218,7 @@ describe('account/utils', () => {
         [NetworkVMType.PVM]: 'P-avax-new-address'
       })
 
-      const result = await rederiveXpAddressesForAccount({
+      const result = await rederiveAvmPvmAddressesForAccount({
         account,
         wallet,
         isDeveloperMode: false
@@ -286,7 +243,7 @@ describe('account/utils', () => {
         [NetworkVMType.PVM]: undefined
       })
 
-      const result = await rederiveXpAddressesForAccount({
+      const result = await rederiveAvmPvmAddressesForAccount({
         account,
         wallet,
         isDeveloperMode: false
@@ -304,7 +261,7 @@ describe('account/utils', () => {
 
       mockGetAddresses.mockRejectedValue(new Error('Network error'))
 
-      const result = await rederiveXpAddressesForAccount({
+      const result = await rederiveAvmPvmAddressesForAccount({
         account,
         wallet,
         isDeveloperMode: false
@@ -312,7 +269,7 @@ describe('account/utils', () => {
 
       expect(result).toBeNull()
       expect(Logger.error).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to rederive XP addresses'),
+        expect.stringContaining('Failed to rederive AVM/PVM addresses'),
         expect.any(Error)
       )
     })
@@ -326,7 +283,7 @@ describe('account/utils', () => {
         [NetworkVMType.PVM]: 'P-avax-new'
       })
 
-      await rederiveXpAddressesForAccount({
+      await rederiveAvmPvmAddressesForAccount({
         account,
         wallet,
         isDeveloperMode: true
@@ -335,134 +292,6 @@ describe('account/utils', () => {
       expect(mockGetAddresses).toHaveBeenCalledWith(
         expect.objectContaining({ isTestnet: true })
       )
-    })
-  })
-
-  describe('processWalletAccountsForRepopulation', () => {
-    it('returns empty object for PRIVATE_KEY wallet', async () => {
-      const wallet = createMockWallet({ type: WalletType.PRIVATE_KEY })
-      const accounts = [createMockAccount()]
-
-      const result = await processWalletAccountsForRepopulation({
-        wallet,
-        accounts,
-        isDeveloperMode: false
-      })
-
-      expect(result).toEqual({})
-      expect(Logger.info).toHaveBeenCalledWith(
-        expect.stringContaining('AVM/PVM not supported')
-      )
-    })
-
-    it('processes MNEMONIC wallet accounts', async () => {
-      const wallet = createMockWallet({ type: WalletType.MNEMONIC })
-      const account = createMockAccount({
-        id: 'account-1',
-        addressAVM: '',
-        addressPVM: ''
-      })
-
-      mockGetAddresses.mockResolvedValue({
-        [NetworkVMType.AVM]: 'X-avax-new',
-        [NetworkVMType.PVM]: 'P-avax-new'
-      })
-
-      const result = await processWalletAccountsForRepopulation({
-        wallet,
-        accounts: [account],
-        isDeveloperMode: false
-      })
-
-      expect(result).toHaveProperty('account-1')
-      expect(result['account-1']?.addressAVM).toBe('X-avax-new')
-      expect(result['account-1']?.addressPVM).toBe('P-avax-new')
-    })
-
-    it('skips accounts that cannot be rederived', async () => {
-      const wallet = createMockWallet({ type: WalletType.LEDGER })
-      const account0 = createMockAccount({ id: 'account-0', index: 0 })
-      const account1 = createMockAccount({ id: 'account-1', index: 1 })
-
-      // Only account 0 should be processed for hardware wallets
-      // But since LEDGER can't rederive (canRederiveXpAddresses returns false),
-      // even account 0 should be skipped
-      const result = await processWalletAccountsForRepopulation({
-        wallet,
-        accounts: [account0, account1],
-        isDeveloperMode: false
-      })
-
-      expect(result).toEqual({})
-    })
-
-    it('handles multiple accounts from same wallet', async () => {
-      const wallet = createMockWallet({ type: WalletType.MNEMONIC })
-      const account1 = createMockAccount({
-        id: 'account-1',
-        index: 0,
-        addressAVM: '',
-        addressPVM: ''
-      })
-      const account2 = createMockAccount({
-        id: 'account-2',
-        index: 1,
-        addressAVM: '',
-        addressPVM: ''
-      })
-
-      mockGetAddresses
-        .mockResolvedValueOnce({
-          [NetworkVMType.AVM]: 'X-avax-1',
-          [NetworkVMType.PVM]: 'P-avax-1'
-        })
-        .mockResolvedValueOnce({
-          [NetworkVMType.AVM]: 'X-avax-2',
-          [NetworkVMType.PVM]: 'P-avax-2'
-        })
-
-      const result = await processWalletAccountsForRepopulation({
-        wallet,
-        accounts: [account1, account2],
-        isDeveloperMode: false
-      })
-
-      expect(Object.keys(result)).toHaveLength(2)
-      expect(result['account-1']?.addressAVM).toBe('X-avax-1')
-      expect(result['account-2']?.addressAVM).toBe('X-avax-2')
-    })
-
-    it('continues processing when one account fails', async () => {
-      const wallet = createMockWallet({ type: WalletType.MNEMONIC })
-      const account1 = createMockAccount({
-        id: 'account-1',
-        index: 0,
-        addressAVM: '',
-        addressPVM: ''
-      })
-      const account2 = createMockAccount({
-        id: 'account-2',
-        index: 1,
-        addressAVM: '',
-        addressPVM: ''
-      })
-
-      mockGetAddresses
-        .mockRejectedValueOnce(new Error('Failed'))
-        .mockResolvedValueOnce({
-          [NetworkVMType.AVM]: 'X-avax-2',
-          [NetworkVMType.PVM]: 'P-avax-2'
-        })
-
-      const result = await processWalletAccountsForRepopulation({
-        wallet,
-        accounts: [account1, account2],
-        isDeveloperMode: false
-      })
-
-      // First account fails, second succeeds
-      expect(Object.keys(result)).toHaveLength(1)
-      expect(result['account-2']?.addressAVM).toBe('X-avax-2')
     })
   })
 })

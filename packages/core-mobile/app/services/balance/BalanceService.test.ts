@@ -36,7 +36,11 @@ jest.mock('./utils/mapBalanceResponseToLegacy', () => ({
 
 // Mock buildRequestItemsForAccounts to return simple batches
 jest.mock('./utils/buildRequestItemsForAccounts', () => ({
-  buildRequestItemsForAccounts: (networks: any[], _accounts: any[]) => {
+  buildRequestItemsForAccounts: (
+    networks: any[],
+    _accounts: any[],
+    _xpAddressesByAccountId: Map<string, string[]>
+  ) => {
     // Return one batch with all networks
     return [
       networks.map((n: any) => ({
@@ -98,21 +102,7 @@ const testAccount: Account = {
   addressBTC: 'bc1qmm9qawklnfau5hhrkt33kqumggxwy7s9raxuxk',
   addressSVM: '9gQmZ7fTTgv5hVScrr9QqT6SpBs7i4cKLDdj4tuae3sW',
   addressAVM: 'X-avax1aahxdv3wqxd42rxdalvp2knxs244r06wrxmvlf',
-  addressPVM: 'P-avax1aahxdv3wqxd42rxdalvp2knxs244r06wrxmvlf',
-  xpAddresses: [
-    {
-      address: 'X-avax1aahxdv3wqxd42rxdalvp2knxs244r06wrxmvlf',
-      index: 0
-    }
-  ],
-  xpAddressDictionary: {
-    'X-avax1aahxdv3wqxd42rxdalvp2knxs244r06wrxmvlf': {
-      space: 'e' as const,
-      index: 0,
-      hasActivity: true
-    }
-  },
-  hasMigratedXpAddresses: true
+  addressPVM: 'P-avax1aahxdv3wqxd42rxdalvp2knxs244r06wrxmvlf'
 }
 
 const testAccount2: Account = {
@@ -126,21 +116,7 @@ const testAccount2: Account = {
   addressBTC: 'bc1q2nd4ccnt3stch7guvvrkajcgd5lw9yksk7e5s4',
   addressSVM: '7hUdUTkJLwdcmt3pm6rC3WCiLxNXNYiRp3m34sT9Cqct',
   addressAVM: 'X-avax1bbhxdv3wqxd42rxdalvp2knxs244r06wrxmvlg',
-  addressPVM: 'P-avax1bbhxdv3wqxd42rxdalvp2knxs244r06wrxmvlg',
-  xpAddresses: [
-    {
-      address: 'X-avax1bbhxdv3wqxd42rxdalvp2knxs244r06wrxmvlg',
-      index: 0
-    }
-  ],
-  xpAddressDictionary: {
-    'X-avax1bbhxdv3wqxd42rxdalvp2knxs244r06wrxmvlg': {
-      space: 'e' as const,
-      index: 0,
-      hasActivity: true
-    }
-  },
-  hasMigratedXpAddresses: true
+  addressPVM: 'P-avax1bbhxdv3wqxd42rxdalvp2knxs244r06wrxmvlg'
 }
 
 const cChainNetwork = {
@@ -208,7 +184,8 @@ describe('BalanceService', () => {
         networks: [cChainNetwork as any],
         account: testAccount,
         currency: 'usd',
-        onBalanceLoaded
+        onBalanceLoaded,
+        xpAddresses: ['avax1test1', 'avax1test2']
       })
 
       expect(result).toHaveLength(1)
@@ -242,7 +219,8 @@ describe('BalanceService', () => {
       const result = await balanceService.getBalancesForAccount({
         networks: [cChainNetwork as any],
         account: testAccount,
-        currency: 'usd'
+        currency: 'usd',
+        xpAddresses: ['avax1test1', 'avax1test2']
       })
 
       expect(mockLoadModuleByNetwork).toHaveBeenCalledWith(cChainNetwork)
@@ -303,7 +281,8 @@ describe('BalanceService', () => {
       const result = await balanceService.getBalancesForAccount({
         networks: [cChainNetwork as any, ethereumNetwork as any],
         account: testAccount,
-        currency: 'usd'
+        currency: 'usd',
+        xpAddresses: ['avax1test1', 'avax1test2']
       })
 
       // Should have called VM module only for Ethereum (failed chain)
@@ -355,7 +334,8 @@ describe('BalanceService', () => {
       await balanceService.getBalancesForAccount({
         networks: [cChainNetwork as any, ethereumNetwork as any],
         account: testAccount,
-        currency: 'usd'
+        currency: 'usd',
+        xpAddresses: ['avax1test1', 'avax1test2']
       })
 
       // Ethereum should be retried via VM modules since it was filtered out
@@ -404,7 +384,11 @@ describe('BalanceService', () => {
         networks: [cChainNetwork as any],
         accounts: [testAccount, testAccount2],
         currency: 'usd',
-        onBalanceLoaded
+        onBalanceLoaded,
+        xpAddressesByAccountId: new Map([
+          [testAccount.id, ['avax1test1', 'avax1test2']],
+          [testAccount2.id, ['avax2test1', 'avax2test2']]
+        ])
       })
 
       expect(result[testAccount.id]).toHaveLength(1)
@@ -447,7 +431,11 @@ describe('BalanceService', () => {
       const result = await balanceService.getBalancesForAccounts({
         networks: [cChainNetwork as any],
         accounts: [testAccount, testAccount2],
-        currency: 'usd'
+        currency: 'usd',
+        xpAddressesByAccountId: new Map([
+          [testAccount.id, ['avax1test1', 'avax1test2']],
+          [testAccount2.id, ['avax2test1', 'avax2test2']]
+        ])
       })
 
       expect(mockLoadModuleByNetwork).toHaveBeenCalledWith(cChainNetwork)
@@ -503,7 +491,10 @@ describe('BalanceService', () => {
       await balanceService.getBalancesForAccounts({
         networks: [cChainNetwork as any, ethereumNetwork as any],
         accounts: [testAccount],
-        currency: 'usd'
+        currency: 'usd',
+        xpAddressesByAccountId: new Map([
+          [testAccount.id, ['avax1test1', 'avax1test2']]
+        ])
       })
 
       // Should have called VM module only for Ethereum (failed chain)
@@ -546,7 +537,10 @@ describe('BalanceService', () => {
       const result = await balanceService.getBalancesForAccounts({
         networks: [ethereumNetwork as any],
         accounts: [testAccount],
-        currency: 'usd'
+        currency: 'usd',
+        xpAddressesByAccountId: new Map([
+          [testAccount.id, ['avax1test1', 'avax1test2']]
+        ])
       })
 
       // The failed balance should be replaced with VM result
@@ -582,7 +576,10 @@ describe('BalanceService', () => {
         networks: [cChainNetwork as any],
         accounts: [testAccount],
         currency: 'usd',
-        onBalanceLoaded
+        onBalanceLoaded,
+        xpAddressesByAccountId: new Map([
+          [testAccount.id, ['avax1test1', 'avax1test2']]
+        ])
       })
 
       // onBalanceLoaded should be called for the VM fallback result
@@ -614,7 +611,10 @@ describe('BalanceService', () => {
         accounts: [testAccount],
         currency: 'usd',
         customTokens: {},
-        onBalanceLoaded
+        onBalanceLoaded,
+        xpAddressesByAccountId: new Map([
+          [testAccount.id, ['avax1test1', 'avax1test2']]
+        ])
       })
 
       expect(mockLoadModuleByNetwork).toHaveBeenCalledWith(cChainNetwork)
@@ -633,7 +633,10 @@ describe('BalanceService', () => {
         accounts: [testAccount],
         currency: 'usd',
         customTokens: {},
-        onBalanceLoaded
+        onBalanceLoaded,
+        xpAddressesByAccountId: new Map([
+          [testAccount.id, ['avax1test1', 'avax1test2']]
+        ])
       })
 
       // Should return error entry for the failed network
@@ -663,7 +666,10 @@ describe('BalanceService', () => {
         networks: [cChainNetwork as any, ethereumNetwork as any],
         accounts: [testAccount],
         currency: 'usd',
-        customTokens: {}
+        customTokens: {},
+        xpAddressesByAccountId: new Map([
+          [testAccount.id, ['avax1test1', 'avax1test2']]
+        ])
       })
 
       expect(mockLoadModuleByNetwork).toHaveBeenCalledTimes(2)
@@ -676,7 +682,8 @@ describe('BalanceService', () => {
       const result = await balanceService.getBalancesForAccount({
         networks: [],
         account: testAccount,
-        currency: 'usd'
+        currency: 'usd',
+        xpAddresses: ['avax1test1', 'avax1test2']
       })
 
       expect(result).toEqual([])
@@ -688,7 +695,11 @@ describe('BalanceService', () => {
       const result = await balanceService.getBalancesForAccounts({
         networks: [cChainNetwork as any],
         accounts: [],
-        currency: 'usd'
+        currency: 'usd',
+        xpAddressesByAccountId: new Map([
+          [testAccount.id, ['avax1test1', 'avax1test2']],
+          [testAccount2.id, ['avax2test1', 'avax2test2']]
+        ])
       })
 
       expect(result).toEqual({})
@@ -714,7 +725,8 @@ describe('BalanceService', () => {
         networks: [cChainNetwork as any],
         account: testAccount,
         currency: 'usd',
-        onBalanceLoaded
+        onBalanceLoaded,
+        xpAddresses: ['avax1test1', 'avax1test2']
       })
 
       // No results because mapBalanceResponseToLegacy returned null
@@ -748,7 +760,8 @@ describe('BalanceService', () => {
       const result = await balanceService.getBalancesForAccount({
         networks: [cChainNetwork as any],
         account: testAccount,
-        currency: 'usd'
+        currency: 'usd',
+        xpAddresses: ['avax1test1', 'avax1test2']
       })
 
       expect(result).toHaveLength(1)
@@ -767,7 +780,8 @@ describe('BalanceService', () => {
       const result = await balanceService.getBalancesForAccount({
         networks: [cChainNetwork as any],
         account: testAccount,
-        currency: 'usd'
+        currency: 'usd',
+        xpAddresses: ['avax1test1', 'avax1test2']
       })
 
       // Should return error result from VM fallback
@@ -801,7 +815,8 @@ describe('BalanceService', () => {
       const result = await balanceService.getBalancesForAccount({
         networks: [cChainNetwork as any],
         account: testAccount,
-        currency: 'usd'
+        currency: 'usd',
+        xpAddresses: ['avax1test1', 'avax1test2']
       })
 
       expect(result).toHaveLength(1)
@@ -851,7 +866,8 @@ describe('BalanceService', () => {
         networks: [cChainNetwork as any],
         account: testAccount,
         currency: 'usd',
-        onBalanceLoaded
+        onBalanceLoaded,
+        xpAddresses: ['avax1test1', 'avax1test2']
       })
 
       // onBalanceLoaded should NOT be called for the initial failed balance
@@ -904,7 +920,8 @@ describe('BalanceService', () => {
       await balanceService.getBalancesForAccount({
         networks: [cChainNetwork as any, ethereumNetwork as any],
         account: testAccount,
-        currency: 'usd'
+        currency: 'usd',
+        xpAddresses: ['avax1test1', 'avax1test2']
       })
 
       // Ethereum should be retried via VM since it was filtered
@@ -951,7 +968,8 @@ describe('BalanceService', () => {
       const result = await balanceService.getBalancesForAccount({
         networks: [cChainNetwork as any, btcNetwork as any],
         account: testAccount,
-        currency: 'usd'
+        currency: 'usd',
+        xpAddresses: ['avax1test1', 'avax1test2']
       })
 
       // BTC is not EVM, so it should not be filtered out

@@ -25,6 +25,7 @@ import Logger from 'utils/Logger'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { selectActiveAccount } from 'store/account'
 import { getMinimumStakeDurationMs } from 'services/earn/utils'
+import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import {
   useAvalancheEvmProvider,
   useAvalancheXpProvider
@@ -48,6 +49,7 @@ export const useDelegation = (): {
   const crossChainFeesMultiplier = useSelector(selectCrossChainFeesMultiplier)
   const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
   const { defaultFeeState } = useGetFeeState()
+  const { xpAddresses, xpAddressDictionary } = useXPAddresses(activeAccount)
   const avaxProvider = useAvalancheXpProvider(isDeveloperMode)
   const avalancheEvmProvider = useAvalancheEvmProvider(isDeveloperMode)
   const cChainBaseFee = useCChainBaseFee()
@@ -80,7 +82,8 @@ export const useDelegation = (): {
         feeState: defaultFeeState,
         stakeAmount,
         crossChainFeesMultiplier,
-        avalancheEvmProvider
+        avalancheEvmProvider,
+        xpAddresses
       })
 
       setSteps(result)
@@ -97,7 +100,8 @@ export const useDelegation = (): {
       cBaseFeeMultiplier,
       crossChainFeesMultiplier,
       avaxProvider,
-      avalancheEvmProvider
+      avalancheEvmProvider,
+      xpAddresses
     ]
   )
 
@@ -163,7 +167,9 @@ export const useDelegation = (): {
               stakeAmountNanoAvax: step.amount,
               startDate: delegateStartDate,
               feeState: defaultFeeState,
-              pFeeAdjustmentThreshold
+              pFeeAdjustmentThreshold,
+              xpAddresses,
+              xpAddressDictionary
             })
             break
           }
@@ -176,7 +182,9 @@ export const useDelegation = (): {
               account: activeAccount,
               selectedCurrency,
               isTestnet: isDeveloperMode,
-              feeState: defaultFeeState
+              feeState: defaultFeeState,
+              xpAddresses,
+              xpAddressDictionary
             })
             break
 
@@ -193,7 +201,8 @@ export const useDelegation = (): {
               account: activeAccount,
               isTestnet: isDeveloperMode,
               cBaseFeeMultiplier,
-              avalancheEvmProvider
+              avalancheEvmProvider,
+              xpAddresses
             })
             break
 
@@ -218,7 +227,9 @@ export const useDelegation = (): {
       pFeeAdjustmentThreshold,
       selectedCurrency,
       cBaseFeeMultiplier,
-      avalancheEvmProvider
+      avalancheEvmProvider,
+      xpAddresses,
+      xpAddressDictionary
     ]
   )
 

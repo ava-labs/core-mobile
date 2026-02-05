@@ -9,17 +9,26 @@ import { Account } from 'store/account/types'
 import { zeroAvaxPChain } from 'utils/units/zeroValues'
 import EarnService from './EarnService'
 
-const mockGetAddressesFromXpubXP = jest.fn()
-
-jest.mock('utils/getAddressesFromXpubXP', () => ({
-  getAddressesFromXpubXP: mockGetAddressesFromXpubXP
+jest.mock('hooks/useXPAddresses/useXPAddresses', () => ({
+  getCachedXPAddresses: jest.fn()
 }))
+
+jest.mock('./utils', () => {
+  const actual = jest.requireActual('./utils')
+  return {
+    ...actual,
+    getTransformedTransactions: jest.fn()
+  }
+})
 
 jest.mock('utils/runAfterInteractions', () => ({
   runAfterInteractions: jest.fn((callback: () => Promise<unknown>) =>
     callback()
   )
 }))
+
+const { getCachedXPAddresses } = require('hooks/useXPAddresses/useXPAddresses')
+const { getTransformedTransactions } = require('./utils')
 
 const mockProvider = {
   getApiP: () => {
@@ -40,10 +49,7 @@ const mockAccount: Account = {
   addressAVM: 'X-avax123',
   addressPVM: 'P-avax123',
   addressCoreEth: '0x456',
-  addressSVM: 'svm123',
-  xpAddressDictionary: {},
-  xpAddresses: undefined,
-  hasMigratedXpAddresses: false
+  addressSVM: 'svm123'
 }
 
 const mockAccount2: Account = {
@@ -57,10 +63,7 @@ const mockAccount2: Account = {
   addressAVM: 'X-avax789',
   addressPVM: 'P-avax789',
   addressCoreEth: '0xabc',
-  addressSVM: 'svm789',
-  xpAddressDictionary: {},
-  xpAddresses: undefined,
-  hasMigratedXpAddresses: false
+  addressSVM: 'svm789'
 }
 
 describe('EarnService', () => {
@@ -101,6 +104,7 @@ describe('EarnService', () => {
     })
   })
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   describe('getTransformedStakesForAllAccounts', () => {
     let mockGetAllStakes: jest.SpyInstance
 
@@ -113,28 +117,40 @@ describe('EarnService', () => {
       mockGetAllStakes.mockRestore()
     })
 
-    it('should return transformed stakes when getAddressesFromXpubXP returns addresses', async () => {
+    it('should return transformed stakes when getCachedXPAddresses returns addresses', async () => {
       // Mock for both current network (isTestnet=false) and opposite network (isTestnet=true)
-      mockGetAddressesFromXpubXP.mockResolvedValue({
-        xpAddresses: [
-          { address: 'P-avax123', index: 0 },
-          { address: 'P-avax456', index: 1 }
-        ]
-      })
-
-      // Mock getAllStakes to return a stake
-      mockGetAllStakes.mockResolvedValue([
-        {
-          txHash: 'tx123',
-          endTimestamp: 1234567890,
-          emittedUtxos: [
-            {
-              staked: true,
-              addresses: ['avax123']
-            }
-          ]
+      getCachedXPAddresses.mockImplementation(
+        ({ isDeveloperMode }: { isDeveloperMode: boolean }) => {
+          return Promise.resolve({
+            xpAddresses:
+              isDeveloperMode === false ? ['avax123', 'avax456'] : [],
+            xpAddressDictionary:
+              isDeveloperMode === false
+                ? {
+                    avax123: { space: 'e', index: 0, hasActivity: true },
+                    avax456: { space: 'i', index: 1, hasActivity: true }
+                  }
+                : {}
+          })
         }
-      ])
+      )
+
+      // Mock getTransformedTransactions to return transactions
+      getTransformedTransactions.mockImplementation(
+        (addresses: string[], isTestnet: boolean) => {
+          if (addresses.length > 0) {
+            return Promise.resolve([
+              {
+                txHash: 'tx123',
+                endTimestamp: 1234567890,
+                index: 0,
+                isDeveloperMode: isTestnet
+              }
+            ])
+          }
+          return Promise.resolve([])
+        }
+      )
 
       const result = await EarnService.getTransformedStakesForAllAccounts({
         walletId: 'wallet-1',
@@ -152,10 +168,13 @@ describe('EarnService', () => {
       })
     })
 
-    it('should fallback to addressPVM when getAddressesFromXpubXP returns empty for current network', async () => {
+    it('should return empty when getCachedXPAddresses returns empty', async () => {
       // Return empty for both networks
-      mockGetAddressesFromXpubXP.mockResolvedValue({
-        xpAddresses: []
+      getCachedXPAddresses.mockImplementation(() => {
+        return Promise.resolve({
+          xpAddresses: [],
+          xpAddressDictionary: {}
+        })
       })
 
       // Mock getAllStakes to return a stake
@@ -179,40 +198,46 @@ describe('EarnService', () => {
         isTestnet: false
       })
 
-      // Verify getAllStakes was called with fallback addressPVM
-      expect(mockGetAllStakes).toHaveBeenCalledWith(
-        expect.objectContaining({
-          isTestnet: false,
-          addresses: ['avax123']
-        })
-      )
-      expect(result).toHaveLength(1)
+      // When xpAddresses is empty, getAllStakes is not called
+      expect(mockGetAllStakes).not.toHaveBeenCalled()
+      expect(result).toHaveLength(0)
     })
 
-    it('should handle getAddressesFromXpubXP throwing error for current network', async () => {
-      mockGetAddressesFromXpubXP.mockImplementation(({ isDeveloperMode }) => {
-        if (isDeveloperMode === false) {
-          // Current network throws
-          throw new Error('Network error')
-        }
-        // Opposite network succeeds
-        return Promise.resolve({
-          xpAddresses: [{ address: 'P-fuji789', index: 0 }]
-        })
-      })
-
-      mockGetAllStakes.mockResolvedValue([
-        {
-          txHash: 'tx-stake',
-          endTimestamp: 1111111111,
-          emittedUtxos: [
-            {
-              staked: true,
-              addresses: ['avax123']
+    it('should handle getCachedXPAddresses returning empty for current network', async () => {
+      getCachedXPAddresses.mockImplementation(
+        ({ isDeveloperMode }: { isDeveloperMode: boolean }) => {
+          if (isDeveloperMode === false) {
+            // Current network returns empty (simulating error case)
+            return Promise.resolve({
+              xpAddresses: [],
+              xpAddressDictionary: {}
+            })
+          }
+          // Opposite network succeeds
+          return Promise.resolve({
+            xpAddresses: ['fuji789'],
+            xpAddressDictionary: {
+              fuji789: { space: 'e', index: 0, hasActivity: true }
             }
-          ]
+          })
         }
-      ])
+      )
+
+      getTransformedTransactions.mockImplementation(
+        (addresses: string[], isTestnet: boolean) => {
+          if (addresses.length > 0 && isTestnet === true) {
+            return Promise.resolve([
+              {
+                txHash: 'tx-stake',
+                endTimestamp: 1111111111,
+                index: 0,
+                isDeveloperMode: true
+              }
+            ])
+          }
+          return Promise.resolve([])
+        }
+      )
 
       const result = await EarnService.getTransformedStakesForAllAccounts({
         walletId: 'wallet-1',
@@ -221,36 +246,51 @@ describe('EarnService', () => {
         isTestnet: false
       })
 
-      // Should return stakes despite error - falls back to addressPVM
+      // Should return stakes from opposite network despite current network returning empty
       expect(result).toBeDefined()
       expect(Array.isArray(result)).toBe(true)
+      expect(result).toHaveLength(1)
+      expect(result?.[0]).toMatchObject({
+        txHash: 'tx-stake',
+        isDeveloperMode: true
+      })
     })
 
-    it('should return stakes when getAddressesFromXpubXP throws for opposite network', async () => {
-      mockGetAddressesFromXpubXP.mockImplementation(({ isDeveloperMode }) => {
-        if (isDeveloperMode === true) {
-          // Opposite network throws
-          throw new Error('Network error')
-        }
-        // Current network succeeds
-        return Promise.resolve({
-          xpAddresses: [{ address: 'avax123', index: 0 }]
-        })
-      })
-
-      // Only mock current network since opposite returns empty addresses and won't call getAllStakes
-      mockGetAllStakes.mockResolvedValue([
-        {
-          txHash: 'tx-current',
-          endTimestamp: 2222222222,
-          emittedUtxos: [
-            {
-              staked: true,
-              addresses: ['avax123']
+    it('should return stakes when getCachedXPAddresses returns empty for opposite network', async () => {
+      getCachedXPAddresses.mockImplementation(
+        ({ isDeveloperMode }: { isDeveloperMode: boolean }) => {
+          if (isDeveloperMode === true) {
+            // Opposite network returns empty
+            return Promise.resolve({
+              xpAddresses: [],
+              xpAddressDictionary: {}
+            })
+          }
+          // Current network succeeds
+          return Promise.resolve({
+            xpAddresses: ['avax123'],
+            xpAddressDictionary: {
+              avax123: { space: 'e', index: 0, hasActivity: true }
             }
-          ]
+          })
         }
-      ])
+      )
+
+      getTransformedTransactions.mockImplementation(
+        (addresses: string[], isTestnet: boolean) => {
+          if (addresses.length > 0 && isTestnet === false) {
+            return Promise.resolve([
+              {
+                txHash: 'tx-current',
+                endTimestamp: 2222222222,
+                index: 0,
+                isDeveloperMode: false
+              }
+            ])
+          }
+          return Promise.resolve([])
+        }
+      )
 
       const result = await EarnService.getTransformedStakesForAllAccounts({
         walletId: 'wallet-1',
@@ -258,18 +298,6 @@ describe('EarnService', () => {
         accounts: [mockAccount],
         isTestnet: false
       })
-
-      // Should get addresses from current network
-      expect(mockGetAllStakes).toHaveBeenCalledWith(
-        expect.objectContaining({
-          isTestnet: false,
-          addresses: ['avax123']
-        })
-      )
-
-      // Opposite network has empty addresses so getAllStakes is not called for it
-      // getAllStakes should only be called once (for current network)
-      expect(mockGetAllStakes).toHaveBeenCalledTimes(1)
 
       expect(result).toHaveLength(1)
       expect(result?.[0]).toMatchObject({
@@ -278,29 +306,46 @@ describe('EarnService', () => {
     })
 
     it('should handle multiple accounts with mixed results', async () => {
-      mockGetAddressesFromXpubXP.mockImplementation(({ accountIndex }) => {
-        if (accountIndex === 0) {
-          return Promise.resolve({
-            xpAddresses: [{ address: 'avax123', index: 0 }]
-          })
-        } else {
-          // Account 2 throws error
-          throw new Error('Account 2 error')
+      getCachedXPAddresses.mockImplementation(
+        ({
+          account,
+          isDeveloperMode
+        }: {
+          account: Account
+          isDeveloperMode: boolean
+        }) => {
+          if (account.index === 0 && isDeveloperMode === false) {
+            return Promise.resolve({
+              xpAddresses: ['avax123'],
+              xpAddressDictionary: {
+                avax123: { space: 'e', index: 0, hasActivity: true }
+              }
+            })
+          } else {
+            // Account 2 or opposite network returns empty
+            return Promise.resolve({
+              xpAddresses: [],
+              xpAddressDictionary: {}
+            })
+          }
         }
-      })
+      )
 
-      mockGetAllStakes.mockResolvedValue([
-        {
-          txHash: 'tx-multi',
-          endTimestamp: 3333333333,
-          emittedUtxos: [
-            {
-              staked: true,
-              addresses: ['avax123']
-            }
-          ]
+      getTransformedTransactions.mockImplementation(
+        (addresses: string[], isTestnet: boolean) => {
+          if (addresses.length > 0 && isTestnet === false) {
+            return Promise.resolve([
+              {
+                txHash: 'tx-multi',
+                endTimestamp: 3333333333,
+                index: 0,
+                isDeveloperMode: false
+              }
+            ])
+          }
+          return Promise.resolve([])
         }
-      ])
+      )
 
       const result = await EarnService.getTransformedStakesForAllAccounts({
         walletId: 'wallet-1',
@@ -309,23 +354,30 @@ describe('EarnService', () => {
         isTestnet: false
       })
 
-      // Should have called with addresses from account 1 and fallback for account 2
-      expect(mockGetAllStakes).toHaveBeenCalledWith(
-        expect.objectContaining({
-          isTestnet: false,
-          addresses: expect.arrayContaining(['avax123', 'avax789'])
-        })
-      )
-
       expect(result).toBeDefined()
+      expect(result).toHaveLength(1)
+      expect(result?.[0]).toMatchObject({
+        txHash: 'tx-multi',
+        accountId: 'account-1'
+      })
     })
 
     it('should return undefined when entire operation fails', async () => {
-      mockGetAddressesFromXpubXP.mockResolvedValue({
-        xpAddresses: [{ address: 'avax123', index: 0 }]
-      })
+      getCachedXPAddresses.mockImplementation(
+        ({ isDeveloperMode }: { isDeveloperMode: boolean }) => {
+          return Promise.resolve({
+            xpAddresses: isDeveloperMode === false ? ['avax123'] : [],
+            xpAddressDictionary:
+              isDeveloperMode === false
+                ? {
+                    avax123: { space: 'e', index: 0, hasActivity: true }
+                  }
+                : {}
+          })
+        }
+      )
 
-      mockGetAllStakes.mockRejectedValue(new Error('API failure'))
+      getTransformedTransactions.mockRejectedValue(new Error('API failure'))
 
       const result = await EarnService.getTransformedStakesForAllAccounts({
         walletId: 'wallet-1',
@@ -337,15 +389,18 @@ describe('EarnService', () => {
       expect(result).toBeUndefined()
     })
 
-    it('should handle account without addressPVM when getAddressesFromXpubXP returns empty', async () => {
+    it('should handle account when getCachedXPAddresses returns empty', async () => {
       const accountWithoutPVM = {
         ...mockAccount,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         addressPVM: undefined as any
       } as Account
 
-      mockGetAddressesFromXpubXP.mockResolvedValue({
-        xpAddresses: []
+      getCachedXPAddresses.mockImplementation(() => {
+        return Promise.resolve({
+          xpAddresses: [],
+          xpAddressDictionary: {}
+        })
       })
 
       // Mock not needed - getAllStakes won't be called when addresses are empty
