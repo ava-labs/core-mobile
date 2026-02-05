@@ -16,10 +16,8 @@ import { selectActiveWallet } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsInAppReviewBlocked } from 'store/posthog/slice'
-import {
-  getAddressesFromXpubXP,
-  getXpubXPIfAvailable
-} from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
+import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
+import { getCachedXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { CurrentAvalancheAccount } from '@avalabs/avalanche-module'
 import { AgnosticRpcProvider, Request, RequestContext } from '../../types'
 
@@ -207,12 +205,11 @@ const getContextAccount = async ({
       accountIndex: account.index
     })
 
-    const externalXPAddressesResult = await getAddressesFromXpubXP({
-      accountIndex: account.index,
+    const externalXPAddressesResult = await getCachedXPAddresses({
+      account,
       walletId,
       walletType,
-      isDeveloperMode: isTestnet,
-      onlyWithActivity: true
+      isDeveloperMode: isTestnet
     })
     const prefix = chainAlias === 'P' ? 'P' : 'X'
 
@@ -220,14 +217,12 @@ const getContextAccount = async ({
       xpAddress: currentAddress,
       evmAddress: account.addressC,
       xpubXP,
-      externalXPAddresses: externalXPAddressesResult.xpAddresses.map(
-        address => {
-          return {
-            index: address.index,
-            address: `${prefix}-` + address.address
-          }
-        }
-      )
+      externalXPAddresses: Object.entries(
+        externalXPAddressesResult.xpAddressDictionary
+      ).map(([address, info]) => ({
+        index: info.index,
+        address: `${prefix}-${address}`
+      }))
     }
   }
   return undefined

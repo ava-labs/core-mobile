@@ -11,7 +11,7 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { SPAN_STATUS_ERROR } from '@sentry/core'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { WalletType } from 'services/wallet/types'
-import { Account } from 'store/account'
+import { Account, XPAddressDictionary } from 'store/account'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
@@ -22,7 +22,9 @@ export const send = async ({
   toAddress,
   amountInNAvax,
   feeState,
-  account
+  account,
+  xpAddresses,
+  xpAddressDictionary
 }: {
   walletId: string
   walletType: WalletType
@@ -33,6 +35,8 @@ export const send = async ({
   amountInNAvax: bigint
   feeState?: pvm.FeeState
   account: Account
+  xpAddresses: string[]
+  xpAddressDictionary: XPAddressDictionary
 }): Promise<string> => {
   const sentrySpanName = 'send-token'
 
@@ -48,13 +52,14 @@ export const send = async ({
           isTestnet,
           destinationAddress,
           sourceAddress: fromAddress,
-          feeState
+          feeState,
+          xpAddresses
         })
         const txRequest = await getTransactionRequest({
-          account,
           unsignedTx,
           isTestnet,
-          sentrySpanName
+          sentrySpanName,
+          xpAddressDictionary
         })
 
         const [txHash, txError] = await resolve(
@@ -88,15 +93,15 @@ export const send = async ({
 }
 
 const getTransactionRequest = ({
-  account,
   unsignedTx,
   isTestnet,
-  sentrySpanName
+  sentrySpanName,
+  xpAddressDictionary
 }: {
-  account: Account
   unsignedTx: UnsignedTx
   isTestnet: boolean
   sentrySpanName: SpanName
+  xpAddressDictionary: XPAddressDictionary
 }): Promise<AvalancheSendTransactionParams> => {
   return SentryWrapper.startSpan(
     { name: sentrySpanName, contextName: 'svc.send.pvm.get_trx_request' },
@@ -113,7 +118,7 @@ const getTransactionRequest = ({
         ),
         ...getInternalExternalAddrs({
           utxos: unsignedTx.utxos,
-          xpAddressDict: account.xpAddressDictionary,
+          xpAddressDict: xpAddressDictionary,
           isTestnet
         })
       }

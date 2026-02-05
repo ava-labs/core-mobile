@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(yarn test:*)",
+      "Bash(yarn tsc:*)",
+      "Bash(yarn lint:*)",
+      "Bash(yarn core test:*)",
+      "Bash(yarn core tsc:*)",
+      "Bash(yarn core lint:*)"
+    ]
+  }
+}

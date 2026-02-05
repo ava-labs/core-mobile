@@ -44,7 +44,6 @@ import { Curve } from 'utils/publicKeys'
 import { Account } from 'store/account'
 import { uuid } from 'utils/uuid'
 import { CoreAccountType } from '@avalabs/types'
-import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { BitcoinWalletPolicyService } from './BitcoinWalletPolicyService'
 import {
   Wallet,
@@ -911,10 +910,7 @@ export class LedgerWallet implements Wallet {
       addressAVM,
       addressPVM,
       addressCoreEth: '',
-      addressSVM: '',
-      xpAddresses: [{ address: stripAddressPrefix(addressAVM), index }],
-      xpAddressDictionary: {},
-      hasMigratedXpAddresses: true
+      addressSVM: ''
     }
   }
 }
