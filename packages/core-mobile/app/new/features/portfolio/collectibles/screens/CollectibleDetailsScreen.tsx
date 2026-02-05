@@ -364,7 +364,6 @@ export const CollectibleDetailsScreen = ({
               </Animated.View>
             </Animated.View>
           </Animated.View>
-
           <Animated.View
             style={[
               {

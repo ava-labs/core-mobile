@@ -5,14 +5,12 @@
         <!-- Customize your theme here. -->
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
-        <item name="android:navigationBarColor">#000000</item>
-        <item name="android:statusBarColor">#000000</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
 
          <!--style for react-native-community/datetimepicker -->
         <item name="android:datePickerDialogTheme">@style/MyDatePickerDialogTheme</item>
         <item name="bottomNavigationStyle">@style/CustomBottomNavigationStyle</item>
-
-        <item name="android:enforceNavigationBarContrast">false</item>
 
         <!-- default tint color for dialog button text -->
         <item name="android:colorPrimary">@color/dialogTextColor</item>
@@ -53,7 +51,7 @@
     </style>
 
     <!-- BootTheme should inherit from Theme.BootSplash or Theme.BootSplash.EdgeToEdge -->
-    <style name="BootTheme" parent="Theme.BootSplash">
+    <style name="BootTheme" parent="Theme.BootSplash.EdgeToEdge">
         <item name="bootSplashBackground">@color/bootsplash_background</item>
         <item name="bootSplashLogo">@drawable/bootsplash_logo</item>
         <item name="postBootSplashTheme">@style/AppTheme</item>
