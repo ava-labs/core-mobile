@@ -458,7 +458,7 @@ class AvalancheWalletService {
       weight: stakeAmountInNAvax,
       nodeId: 'NodeID-1',
       subnetId: PChainId._11111111111111111111111111111111LPO_YY,
-      fromAddresses: getPvmAddresses(xpAddresses),
+      fromAddresses: xpAddresses.map(addr => `P-${addr}`),
       rewardAddresses: [destinationAddress ?? ''],
       start: BigInt(getUnixTime(new Date())),
       // setting this end date here for this dummy tx is okay. since the end date does not add complexity for this tx, so it doesn't affect the txFee that is returned.
