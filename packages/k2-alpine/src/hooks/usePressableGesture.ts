@@ -1,5 +1,5 @@
 import { throttle } from 'lodash'
-import { useRef } from 'react'
+import { useCallback, useRef } from 'react'
 import { GestureResponderEvent, ViewStyle } from 'react-native'
 import { GestureTouchEvent } from 'react-native-gesture-handler'
 import {
@@ -13,6 +13,7 @@ import { scheduleOnRN } from 'react-native-worklets'
 import { ANIMATED } from '../utils'
 
 const SCROLL_THRESHOLD = 2 // pixels
+const THROTTLE_MS = 300 // reduced from 1000ms for better responsiveness
 
 /**
  * Use this hook to handle pressable gestures.
@@ -48,21 +49,37 @@ export function usePressableGesture(
     }
   })
 
-  const throttledCallback = throttle(
-    event => {
-      callback?.(event)
-    },
-    1000,
-    {
-      leading: true,
-      trailing: false
-    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const throttledCallback = useCallback(
+    throttle(
+      (event: GestureResponderEvent | GestureTouchEvent) => {
+        callback?.(event as GestureResponderEvent)
+      },
+      THROTTLE_MS,
+      {
+        leading: true,
+        trailing: false
+      }
+    ),
+    [callback]
   )
 
   const startAnimation = (): void => {
     'worklet'
     opacity.value = withTiming(0.5, ANIMATED.TIMING_CONFIG)
     scale.value = withSpring(ANIMATED.SCALE, ANIMATED.SPRING_CONFIG)
+  }
+
+  const endAnimation = (): void => {
+    'worklet'
+    opacity.value = withTiming(1, ANIMATED.TIMING_CONFIG)
+    scale.value = withSpring(1, ANIMATED.SPRING_CONFIG)
+  }
+
+  const resetAnimation = (): void => {
+    'worklet'
+    opacity.value = withTiming(1, ANIMATED.TIMING_CONFIG)
+    scale.value = withSpring(1, ANIMATED.SPRING_CONFIG)
   }
 
   const onTouchStart = (
@@ -88,7 +105,8 @@ export function usePressableGesture(
 
     isScrolling.current = false
 
-    startAnimation()
+    // Use runOnUI to properly schedule worklet on UI thread
+    scheduleOnRN(startAnimation)
   }
 
   const onTouchMove = (
@@ -110,41 +128,30 @@ export function usePressableGesture(
     }
     if (moveY > SCROLL_THRESHOLD || moveX > SCROLL_THRESHOLD) {
       isScrolling.current = true
-      resetAnimation()
+      scheduleOnRN(resetAnimation)
     }
   }
 
   const onTouchCancel = (): void => {
     isScrolling.current = false
-    resetAnimation()
+    scheduleOnRN(resetAnimation)
   }
 
   const onTouchEnd = (
     event: GestureResponderEvent | GestureTouchEvent
   ): void => {
     if (isScrolling.current) {
-      resetAnimation()
+      scheduleOnRN(resetAnimation)
       return
     }
-    endAnimation(event)
-  }
 
-  const endAnimation = (
-    event: GestureResponderEvent | GestureTouchEvent
-  ): void => {
-    'worklet'
-    opacity.value = withTiming(1, ANIMATED.TIMING_CONFIG)
-    scale.value = withSpring(1, ANIMATED.SPRING_CONFIG, () => {
-      if (callback) {
-        scheduleOnRN(throttledCallback, event)
-      }
-    })
-  }
+    // Fire callback immediately on JS thread - don't wait for animation
+    if (callback) {
+      throttledCallback(event)
+    }
 
-  const resetAnimation = (): void => {
-    'worklet'
-    opacity.value = withTiming(1, ANIMATED.TIMING_CONFIG)
-    scale.value = withSpring(1, ANIMATED.SPRING_CONFIG)
+    // Run animation on UI thread
+    scheduleOnRN(endAnimation)
   }
 
   return {
