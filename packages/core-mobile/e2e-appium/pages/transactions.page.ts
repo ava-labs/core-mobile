@@ -156,7 +156,7 @@ class TransactionsPage {
   }
 
   async typeSearchBar(text: string) {
-    await actions.type(this.searchBar, text)
+    await actions.typeSlowly(this.searchBar, text)
   }
 
   async dismissTransactionOnboarding() {
@@ -225,10 +225,6 @@ class TransactionsPage {
     return selectors.getByText(txLoc.insufficientSendBalance)
   }
 
-  gaslessToggle(gasless = 'on') {
-    return selectors.getById(txLoc.gaslessToggle + gasless)
-  }
-
   async enterStakingAmount(amount: string) {
     try {
       await actions.type(this.amountToStakeInput, amount)
@@ -254,8 +250,7 @@ class TransactionsPage {
   async send(
     token: string | undefined,
     amount: string,
-    account = txLoc.accountTwo,
-    gasless = false
+    account = txLoc.accountTwo
   ) {
     await this.tapSend()
     await this.dismissTransactionOnboarding()
@@ -272,16 +267,8 @@ class TransactionsPage {
       await commonElsPage.dismissBottomSheet()
     } else {
       await this.tapNext()
-      if (gasless) {
-        await this.tapGaslessToggle()
-      }
       await this.tapApprove()
     }
-    return performance.now()
-  }
-
-  async tapGaslessToggle(value = 'on') {
-    await actions.longPress(this.gaslessToggle(value))
   }
 
   async checkInsufficientBalance() {
