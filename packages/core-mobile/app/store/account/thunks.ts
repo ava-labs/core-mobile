@@ -66,7 +66,7 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
           // Add the new account's xpub to the per-account format
           const extendedPublicKeys = {
             ...parsedSecret.extendedPublicKeys,
-            [accountIndex]: result.xpub
+            [existingAccountsCount]: result.xpub
           }
 
           await thunkApi
@@ -84,14 +84,14 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
             .unwrap()
 
           Logger.info(
-            `Stored xpub for account ${accountIndex} in wallet secret`
+            `Stored xpub for account ${existingAccountsCount} in wallet secret`
           )
         }
       }
 
       const ledgerResult = await AccountsService.createNextAccount({
-        name: `Account ${accountIndex + 1}`,
-        index: accountIndex,
+        name: `Account ${existingAccountsCount + 1}`,
+        index: existingAccountsCount,
         walletType: wallet.type,
         isTestnet: !isDeveloperMode,
         walletId
@@ -117,7 +117,7 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
               addressCoreEth: testnetAccount.addressCoreEth ?? ''
             },
             walletId: wallet.id,
-            index: accountIndex,
+            index: existingAccountsCount,
             id: acc.id
           }
         })
