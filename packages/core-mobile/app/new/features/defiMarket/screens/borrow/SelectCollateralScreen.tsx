@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
+  ActivityIndicator,
   Button,
   Image,
   Separator,
@@ -11,18 +12,24 @@ import {
 } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import { useNavigation } from '@react-navigation/native'
+import { Address } from 'viem'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { ListScreen } from 'common/components/ListScreen'
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
 import { useDeposits } from 'hooks/earn/useDeposits'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import Logger from 'utils/Logger'
 import { DefiMarket, MarketNames } from '../../types'
 import { DefiMarketAssetLogo } from '../../components/DefiMarketAssetLogo'
 import { useBorrowProtocol } from '../../hooks/useBorrowProtocol'
+import { useAaveSetCollateral } from '../../hooks/aave/useAaveSetCollateral'
+import { useBenqiSetCollateral } from '../../hooks/benqi/useBenqiSetCollateral'
+import { AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS } from '../../consts'
 import errorIcon from '../../../../assets/icons/melting_face.png'
 
-// Local selection state for which deposits to use as collateral
-type CollateralSelection = Record<string, boolean>
+// Track which items are currently being toggled (transaction in progress)
+type TogglingState = Record<string, boolean>
 
 const PROTOCOL_DISPLAY_NAMES: Record<string, string> = {
   [MarketNames.aave]: 'AAVE',
@@ -36,6 +43,18 @@ export const SelectCollateralScreen = (): JSX.Element => {
   const { formatCurrency } = useFormatCurrency()
   const { selectedProtocol } = useBorrowProtocol()
   const { deposits, isLoading, refresh, isRefreshing } = useDeposits()
+  const network = useCChainNetwork()
+
+  // Initialize hooks for both protocols
+  const { setCollateral: setAaveCollateral } = useAaveSetCollateral({
+    network
+  })
+  const { setCollateral: setBenqiCollateral } = useBenqiSetCollateral({
+    network
+  })
+
+  // Track which items are currently being toggled (transaction in progress)
+  const [togglingState, setTogglingState] = useState<TogglingState>({})
 
   // Filter deposits by selected protocol and only show assets that can be used as collateral
   const filteredDeposits = useMemo(() => {
@@ -45,35 +64,42 @@ export const SelectCollateralScreen = (): JSX.Element => {
     )
   }, [deposits, selectedProtocol])
 
-  // Local state to track which deposits user wants to use as collateral
-  // This is NOT an on-chain setting, just a filter for the next screen
-  const [collateralSelection, setCollateralSelection] =
-    useState<CollateralSelection>({})
-
-  // Initialize: select all deposits by default
-  useEffect(() => {
-    if (filteredDeposits.length > 0) {
-      setCollateralSelection(prev => {
-        const newState = { ...prev }
-        filteredDeposits.forEach(deposit => {
-          // Only set if not already set (preserve user's changes)
-          if (newState[deposit.uniqueMarketId] === undefined) {
-            newState[deposit.uniqueMarketId] = true
-          }
-        })
-        return newState
-      })
-    }
-  }, [filteredDeposits])
-
   const handleToggleCollateral = useCallback(
-    (uniqueMarketId: string, value: boolean) => {
-      setCollateralSelection(prev => ({
+    async (deposit: DefiMarket, newValue: boolean) => {
+      // Mark this item as toggling
+      setTogglingState(prev => ({
         ...prev,
-        [uniqueMarketId]: value
+        [deposit.uniqueMarketId]: true
       }))
+
+      try {
+        if (deposit.marketName === MarketNames.aave) {
+          // Use WAVAX address for AVAX (native token has no contract address)
+          const assetAddress =
+            deposit.asset.contractAddress ?? AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS
+          await setAaveCollateral({
+            assetAddress: assetAddress as Address,
+            useAsCollateral: newValue
+          })
+        } else if (deposit.marketName === MarketNames.benqi) {
+          // For Benqi, use qToken address (mintTokenAddress)
+          await setBenqiCollateral({
+            qTokenAddress: deposit.asset.mintTokenAddress,
+            useAsCollateral: newValue
+          })
+        }
+        // The cache will be invalidated by the hook, which will cause a refetch
+      } catch (error) {
+        Logger.error('Failed to set collateral', error)
+      } finally {
+        // Mark toggling as complete
+        setTogglingState(prev => ({
+          ...prev,
+          [deposit.uniqueMarketId]: false
+        }))
+      }
     },
-    []
+    [setAaveCollateral, setBenqiCollateral]
   )
 
   const handlePressNext = useCallback(() => {
@@ -98,22 +124,25 @@ export const SelectCollateralScreen = (): JSX.Element => {
   }, [navigation, navigate])
 
   const hasSelectedCollateral = useMemo(() => {
-    // Check if any deposit is selected
+    // Check if any deposit has collateral enabled on-chain
     return filteredDeposits.some(
-      deposit => collateralSelection[deposit.uniqueMarketId] ?? true
+      deposit => deposit.usageAsCollateralEnabledOnUser === true
     )
-  }, [filteredDeposits, collateralSelection])
+  }, [filteredDeposits])
 
   const renderItem = useCallback(
     ({ item }: { item: DefiMarket }) => {
-      const isSelected = collateralSelection[item.uniqueMarketId] ?? true
+      // Use on-chain collateral status
+      const isEnabled = item.usageAsCollateralEnabledOnUser ?? false
+      const isToggling = togglingState[item.uniqueMarketId] ?? false
       const balanceValue = item.asset.mintTokenBalance.balanceValue.value
+      // Both AAVE and Benqi support on-chain toggle
+      const canToggle = !isToggling
 
       return (
         <TouchableOpacity
-          onPress={() =>
-            handleToggleCollateral(item.uniqueMarketId, !isSelected)
-          }>
+          disabled={!canToggle}
+          onPress={() => handleToggleCollateral(item, !isEnabled)}>
           <View
             sx={{
               marginHorizontal: 16,
@@ -164,18 +193,21 @@ export const SelectCollateralScreen = (): JSX.Element => {
                 sx={{ color: theme.colors.$textPrimary, fontWeight: 400 }}>
                 Can be used as collateral
               </Text>
-              <Toggle
-                value={isSelected}
-                onValueChange={value =>
-                  handleToggleCollateral(item.uniqueMarketId, value)
-                }
-              />
+              {isToggling ? (
+                <ActivityIndicator size="small" />
+              ) : (
+                <Toggle
+                  value={isEnabled}
+                  disabled={!canToggle}
+                  onValueChange={value => handleToggleCollateral(item, value)}
+                />
+              )}
             </View>
           </View>
         </TouchableOpacity>
       )
     },
-    [collateralSelection, theme.colors, formatCurrency, handleToggleCollateral]
+    [togglingState, theme.colors, formatCurrency, handleToggleCollateral]
   )
 
   const renderEmpty = useCallback(() => {

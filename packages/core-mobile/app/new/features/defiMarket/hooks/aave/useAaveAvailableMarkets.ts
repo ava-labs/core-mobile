@@ -1,6 +1,6 @@
 import { QueryObserverResult, skipToken, useQuery } from '@tanstack/react-query'
 import { erc20Abi, Address, PublicClient } from 'viem'
-import { readContract } from 'viem/actions'
+import { multicall, readContract } from 'viem/actions'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { Network } from '@avalabs/core-chains-sdk'
@@ -29,6 +29,8 @@ import { getMeritAprBonus } from '../../utils/getMeritAprBonus'
 import { useGetCChainToken } from '../useGetCChainToken'
 import { useMeritAprs } from './useMeritAprs'
 
+type UserReserveCollateralMap = Map<string, boolean>
+
 export const useAaveAvailableMarkets = ({
   network,
   networkClient
@@ -54,13 +56,41 @@ export const useAaveAvailableMarkets = ({
     queryFn:
       networkClient && network && !isPendingMeritAprs
         ? async () => {
-            // Fetch all available reserve data from Aave V3 pool
-            const [marketsData] = await readContract(networkClient, {
-              address: AAVE_UI_POOL_DATA_PROVIDER_C_CHAIN_ADDRESS,
-              abi: AAVE_POOL_DATA_PROVIDER,
-              functionName: 'getReservesData',
-              args: [AAVE_POOL_ADDRESSES_PROVIDER_C_CHAIN_ADDRESS]
-            })
+            // Fetch reserves data and user reserves data in parallel
+            const [reservesDataResult, userReservesResult] = await multicall(
+              networkClient,
+              {
+                contracts: [
+                  {
+                    address: AAVE_UI_POOL_DATA_PROVIDER_C_CHAIN_ADDRESS,
+                    abi: AAVE_POOL_DATA_PROVIDER,
+                    functionName: 'getReservesData',
+                    args: [AAVE_POOL_ADDRESSES_PROVIDER_C_CHAIN_ADDRESS]
+                  },
+                  {
+                    address: AAVE_UI_POOL_DATA_PROVIDER_C_CHAIN_ADDRESS,
+                    abi: AAVE_POOL_DATA_PROVIDER,
+                    functionName: 'getUserReservesData',
+                    args: [
+                      AAVE_POOL_ADDRESSES_PROVIDER_C_CHAIN_ADDRESS,
+                      (addressEVM as Address) ?? '0x0'
+                    ]
+                  }
+                ]
+              }
+            )
+
+            const marketsData = reservesDataResult.result?.[0] ?? []
+
+            // Build a map of user's collateral settings
+            const userCollateralMap: UserReserveCollateralMap = new Map()
+            const userReserves = userReservesResult.result?.[0] ?? []
+            for (const reserve of userReserves) {
+              userCollateralMap.set(
+                reserve.underlyingAsset.toLowerCase(),
+                reserve.usageAsCollateralEnabledOnUser
+              )
+            }
 
             // Filter out inactive, paused, or frozen markets
             const filteredMarkets = getAaveFilteredMarketData(marketsData)
@@ -105,12 +135,17 @@ export const useAaveAvailableMarkets = ({
                   market.underlyingAsset
                 )
 
-                const depositedBalanceResult = await getAaveDepositedBalance({
+                const depositedBalance = await getAaveDepositedBalance({
                   cChainClient: networkClient,
                   walletAddress: addressEVM as Address,
                   underlyingTokenDecimals: decimals,
                   underlyingAssetAddress: market.underlyingAsset
                 })
+
+                // Get user's collateral setting from the map
+                const usageAsCollateralEnabledOnUser = userCollateralMap.get(
+                  market.underlyingAsset.toLowerCase()
+                )
 
                 const marketData = {
                   marketName: MarketNames.aave,
@@ -128,14 +163,15 @@ export const useAaveAvailableMarkets = ({
                     iconUrl: token?.logoUri,
                     symbol: market.symbol,
                     contractAddress: market.underlyingAsset,
-                    mintTokenBalance: depositedBalanceResult
+                    mintTokenBalance: depositedBalance
                   },
                   supplyApyPercent: supplyApyPercent + meritAprBonus,
                   historicalApyPercent,
                   borrowApyPercent,
                   historicalBorrowApyPercent,
                   borrowingEnabled: market.borrowingEnabled,
-                  canBeUsedAsCollateral: market.usageAsCollateralEnabled
+                  canBeUsedAsCollateral: market.usageAsCollateralEnabled,
+                  usageAsCollateralEnabledOnUser
                 }
 
                 return {
