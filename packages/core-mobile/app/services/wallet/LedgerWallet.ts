@@ -970,10 +970,7 @@ export class LedgerWallet implements Wallet {
         addressAVM,
         addressPVM,
         addressCoreEth,
-        addressSVM: '',
-        xpAddresses: [{ address: stripAddressPrefix(addressAVM), index }],
-        xpAddressDictionary: {},
-        hasMigratedXpAddresses: true
+        addressSVM: ''
       },
       xpub
     }
