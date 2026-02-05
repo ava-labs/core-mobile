@@ -31,7 +31,6 @@ import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigatio
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useHasXpAddresses } from 'common/hooks/useHasXpAddresses'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { getSourceChainId } from 'common/utils/bridgeUtils'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams, useRouter } from 'expo-router'
@@ -47,6 +46,7 @@ import TransactionHistory from 'features/portfolio/assets/components/Transaction
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { useIsBalanceAccurateByNetwork } from 'features/portfolio/hooks/useIsBalanceAccurateByNetwork'
 import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
+import { useTokenWithFallback } from 'features/portfolio/assets/hooks/useTokenWithFallback'
 import { useSendSelectedToken } from 'features/send/store'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
@@ -112,45 +112,13 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
 
   const erc20ContractTokens = useErc20ContractTokens()
-  const { filteredTokenList } = useSearchableTokenList({
-    tokens: erc20ContractTokens
-  })
-  // Get list including zero balance tokens as fallback
-  const { filteredTokenList: filteredTokenListWithZeroBalance } =
-    useSearchableTokenList({
-      tokens: erc20ContractTokens,
-      hideZeroBalance: false
-    })
   const { formatCurrency } = useFormatCurrency()
 
-  // Track if we've ever seen the token to handle zero balance after sending max
-  const hasSeenTokenRef = useRef(false)
-
-  const token = useMemo(() => {
-    // First try to find token with balance
-    const tokenWithBalance = filteredTokenList.find(
-      tk => tk.localId === localId && tk.networkChainId === Number(chainId)
-    )
-
-    if (tokenWithBalance) {
-      return tokenWithBalance
-    }
-
-    // If we've seen the token before, fall back to zero balance list
-    // This handles the case where user sent max balance
-    if (hasSeenTokenRef.current) {
-      return filteredTokenListWithZeroBalance.find(
-        tk => tk.localId === localId && tk.networkChainId === Number(chainId)
-      )
-    }
-
-    return undefined
-  }, [chainId, filteredTokenList, filteredTokenListWithZeroBalance, localId])
-
-  // Update ref after token is resolved
-  if (token !== undefined) {
-    hasSeenTokenRef.current = true
-  }
+  const { token } = useTokenWithFallback({
+    tokens: erc20ContractTokens,
+    localId,
+    chainId
+  })
 
   const isXpToken =
     token && (isTokenWithBalanceAVM(token) || isTokenWithBalancePVM(token))
