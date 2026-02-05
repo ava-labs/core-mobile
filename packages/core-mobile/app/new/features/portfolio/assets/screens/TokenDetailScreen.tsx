@@ -52,7 +52,7 @@ import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
   LayoutChangeEvent,
@@ -87,7 +87,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     theme: { colors }
   } = useTheme()
   const hasXpAddresses = useHasXpAddresses()
-  const { navigate } = useRouter()
+  const { navigate, canGoBack, back } = useRouter()
   const { getNetwork } = useNetworks()
   const { navigateToSwap } = useNavigateToSwap()
   const { addStake, canAddStake } = useAddStake()
@@ -122,6 +122,19 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       tk => tk.localId === localId && tk.networkChainId === Number(chainId)
     )
   }, [chainId, filteredTokenList, localId])
+
+  // Track if we've ever seen the token to avoid navigating back on initial load
+  const hasSeenToken = useRef(false)
+  if (token !== undefined) {
+    hasSeenToken.current = true
+  }
+
+  // Navigate back when token is no longer available (e.g., after sending max balance)
+  useEffect(() => {
+    if (token === undefined && localId && chainId && hasSeenToken.current) {
+      canGoBack() && back()
+    }
+  }, [token, localId, chainId, canGoBack, back])
 
   const isXpToken =
     token && (isTokenWithBalanceAVM(token) || isTokenWithBalancePVM(token))
