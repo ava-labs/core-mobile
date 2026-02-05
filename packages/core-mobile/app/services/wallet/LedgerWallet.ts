@@ -545,7 +545,7 @@ export class LedgerWallet implements Wallet {
       await LedgerService.waitForApp(appName, LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT)
       Logger.info(`${appName} app is ready`)
     } catch (error) {
-      Logger.error('Failed to detect Avalanche app:', error)
+      Logger.error(`Failed to detect ${appName} app:`, error)
       if (error instanceof Error) {
         handleLedgerError({ error, network: _network })
       }
@@ -955,7 +955,7 @@ export class LedgerWallet implements Wallet {
     // Get the resolution for proper display
     const resolution = {
       externalPlugin: [],
-      erc20Tokens: ['0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E'], // USDC.e
+      erc20Tokens: [],
       nfts: [],
       plugin: [],
       domains: []
