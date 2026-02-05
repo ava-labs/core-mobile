@@ -335,18 +335,22 @@ namespace margelo::nitro::nitroavalabscrypto {
     }
 
 /* ------------------------- Ed25519 Extended Public Key ------------------------- */
-/* Implements Ed25519 extended public key derivation matching @noble/curves.
+/* Implements Ed25519 extended public key derivation using HYBRID approach.
  * 
- * @noble/curves getExtendedPublicKey returns:
+ * HYBRID ARCHITECTURE for web wallet compatibility:
+ * - C++ (this function): SHA-512 hash + clamp head bytes (fast native operations)
+ * - TypeScript wrapper: Modular reduction + point derivation using @noble/curves
+ * 
+ * This ensures the point derivation matches the web wallet exactly while still
+ * getting native performance for the expensive SHA-512 hashing.
+ * 
+ * Returns:
  * {
- *   head: Uint8Array,      // UNCLAMPED first 32 bytes from SHA-512
- *   prefix: Uint8Array,    // Last 32 bytes from SHA-512 (chain code)
- *   scalar: bigint,        // UNCLAMPED head as bigint (little-endian)
- *   pointBytes: Uint8Array // 32-byte Ed25519 public key
+ *   head: Uint8Array,      // CLAMPED first 32 bytes from SHA-512
+ *   prefix: Uint8Array,    // Last 32 bytes from SHA-512
+ *   scalar: string,        // Hex string of clamped head (TypeScript applies modulo)
+ *   pointBytes: Uint8Array // Empty (filled by TypeScript using @noble/curves)
  * }
- *
- * CRITICAL: head and scalar both use UNCLAMPED bytes.
- * Clamping is ONLY for deriving the public key internally.
  */
 
     ExtendedPublicKey
@@ -386,54 +390,32 @@ namespace margelo::nitro::nitroavalabscrypto {
         }
         EVP_MD_CTX_free(mdctx);
 
-        // Step 2: Extract head (UNCLAMPED) and prefix from SHA-512 hash
-        std::array<uint8_t, 32> head{};    // UNCLAMPED - this is what we return
+        // Step 2: Extract head and prefix from SHA-512 hash
+        std::array<uint8_t, 32> headUnclamped{};
         std::array<uint8_t, 32> prefix{};
-        std::copy(hash64.begin(), hash64.begin() + 32, head.begin());
+        std::copy(hash64.begin(), hash64.begin() + 32, headUnclamped.begin());
         std::copy(hash64.begin() + 32, hash64.end(), prefix.begin());
 
-        // Step 3: Create CLAMPED copy for key derivation ONLY (RFC 8032 section 5.1.5)
-        // IMPORTANT: We clamp a COPY, not the original head
-        std::array<uint8_t, 32> clampedScalar = head;  // Make a copy to clamp
-        clampedScalar[0] &= 0xf8;   // Clear bottom 3 bits (ensure multiple of 8)
-        clampedScalar[31] &= 0x7f;  // Clear top bit (ensure < 2^255)
-        clampedScalar[31] |= 0x40;  // Set second-highest bit (ensure >= 2^254)
+        // Step 3: Clamp the head (RFC 8032 section 5.1.5)
+        // This matches @noble/curves adjustScalarBytes(hashed.slice(0, len))
+        std::array<uint8_t, 32> head = headUnclamped;  // This will be the clamped version
+        head[0] &= 0xf8;   // Clear bottom 3 bits (ensure multiple of 8)
+        head[31] &= 0x7f;  // Clear top bit (ensure < 2^255)
+        head[31] |= 0x40;  // Set second-highest bit (ensure >= 2^254)
 
-        // Step 4: Derive Ed25519 public key from CLAMPED scalar
-        EVP_PKEY *pkey = EVP_PKEY_new_raw_private_key(
-                EVP_PKEY_ED25519,
-                nullptr,
-                clampedScalar.data(),  // Use CLAMPED copy for key derivation
-                32
-        );
-
-        if (!pkey) {
-            throw std::runtime_error("Ed25519: EVP_PKEY_new_raw_private_key failed");
-        }
-
-        std::array<uint8_t, 32> pointBytes{};
-
-        // Extract Ed25519 public key using EVP_PKEY_get_raw_public_key (OpenSSL 1.1.1+)
-        // This is the standard function for Ed25519/X25519 raw keys
-        size_t pubkeyLen = 32;
-        int result = EVP_PKEY_get_raw_public_key(pkey, pointBytes.data(), &pubkeyLen);
-
-        EVP_PKEY_free(pkey);
-
-        if (result != 1 || pubkeyLen != 32) {
-            throw std::runtime_error("Ed25519: EVP_PKEY_get_raw_public_key failed. Result: " +
-                                     std::to_string(result) + ", Length: " +
-                                     std::to_string(pubkeyLen));
-        }
-
-        // Step 5: Convert UNCLAMPED head to hex string (little-endian → big-endian)
-        // Ed25519 uses little-endian, so we reverse bytes for standard hex representation
+        // Step 4: Convert CLAMPED head to scalar hex string for TypeScript
+        // TypeScript will:
+        // 1. Apply modular reduction: scalar % ED25519_ORDER
+        // 2. Derive point using @noble/curves: point = BASE.multiply(scalar)
+        // This hybrid approach ensures web wallet compatibility
         std::array<uint8_t, 32> headBE{};
         std::reverse_copy(head.begin(), head.end(), headBE.begin());
         std::string scalarStr = "0x" + toHex(headBE.data(), 32);
-
-        // Step 6: Construct and return ExtendedPublicKey
-        // CRITICAL: head is UNCLAMPED, scalar is UNCLAMPED (as decimal string)
+        
+        // Step 5: Return empty pointBytes - point derivation happens in TypeScript
+        // C++ only does the expensive SHA-512 hash and clamping
+        std::array<uint8_t, 32> pointBytes{};  // Empty, filled by TypeScript
+        
         auto headAB = toAB(std::vector<uint8_t>(head.begin(), head.end()));
         auto prefixAB = toAB(std::vector<uint8_t>(prefix.begin(), prefix.end()));
         auto pointBytesAB = toAB(std::vector<uint8_t>(pointBytes.begin(), pointBytes.end()));

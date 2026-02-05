@@ -392,18 +392,42 @@ export function getExtendedPublicKey(
   // All computation and object construction happens in C++
   // C++ returns ExtendedPublicKey object with { head, prefix, scalar (string), pointBytes }
   const result = NativeCrypto.getExtendedPublicKey(skAB)
-  const pointBytes = new Uint8Array(result.pointBytes)
   const prefix = new Uint8Array(result.prefix)
   const head = new Uint8Array(result.head)
-  const scalar = BigInt(result.scalar)
+
+  // Apply modular reduction to match @noble/curves Fn.create() behavior
+  // Ed25519 curve order (n)
+  const ED25519_ORDER = BigInt(
+    '0x1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ed'
+  )
+  const scalarRaw = BigInt(result.scalar)
+  const scalar = scalarRaw % ED25519_ORDER
 
   con.log('[Crypto] getExtendedPublicKey result', result)
-  con.log('[Crypto] getExtendedPublicKey result -> pointBytes', pointBytes)
   con.log('[Crypto] getExtendedPublicKey result -> prefix', prefix)
   con.log('[Crypto] getExtendedPublicKey result -> head', head)
-  con.log('[Crypto] getExtendedPublicKey result -> scalar', scalar)
+  con.log(
+    '[Crypto] getExtendedPublicKey result -> scalar (before mod):',
+    scalarRaw.toString(16).padStart(64, '0')
+  )
+  con.log(
+    '[Crypto] getExtendedPublicKey result -> scalar (after mod):',
+    scalar.toString(16).padStart(64, '0')
+  )
 
-  // Convert ArrayBuffers to Uint8Arrays, scalar string to bigint, and add point wrapper
+  // HYBRID APPROACH for web wallet compatibility:
+  // - C++ does: SHA-512 hash + clamp (fast native operations)
+  // - TypeScript does: modulo reduction + point derivation using @noble/curves
+  // This ensures the point derivation matches the web wallet exactly
+  const { ed25519 } = require('@noble/curves/ed25519')
+  const point = ed25519.ExtendedPoint.BASE.multiply(scalar)
+  const pointBytes = point.toRawBytes()
+
+  con.log(
+    '[Crypto] getExtendedPublicKey result -> pointBytes (from @noble/curves):',
+    Buffer.from(pointBytes).toString('hex')
+  )
+
   return {
     head: head,
     prefix: prefix,
