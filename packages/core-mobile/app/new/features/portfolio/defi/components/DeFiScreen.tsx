@@ -206,6 +206,10 @@ export const DeFiScreen = ({
     )
   }, [renderEmpty])
 
+  // When data is empty, use ScrollView to ensure scroll events propagate to the collapsible header
+  // FlashList's ListEmptyComponent doesn't properly propagate scroll events in newer versions
+  const shouldUseScrollView = data.length === 0
+
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(0)}
@@ -213,28 +217,48 @@ export const DeFiScreen = ({
       style={{
         flex: 1
       }}>
-      <CollapsibleTabs.FlashList
-        key={`assets-list-${listType}`}
-        data={data}
-        extraData={{ isGridView }}
-        keyExtractor={item => item.id}
-        overrideProps={overrideProps}
-        contentContainerStyle={contentContainerStyle}
-        numColumns={numColumns}
-        renderItem={renderItem}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={pullToRefresh}
-            progressViewOffset={
-              Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight
-            }
-          />
-        }
-        ListHeaderComponent={renderHeader}
-        ListEmptyComponent={renderEmptyComponent}
-        showsVerticalScrollIndicator={false}
-      />
+      {shouldUseScrollView ? (
+        <CollapsibleTabs.ScrollView
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={pullToRefresh}
+              progressViewOffset={
+                Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight
+              }
+            />
+          }
+          contentContainerStyle={{
+            flexGrow: 1,
+            ...containerStyle,
+            paddingTop: Platform.OS === 'android' ? header?.height : 0
+          }}
+          showsVerticalScrollIndicator={false}>
+          {renderEmptyComponent()}
+        </CollapsibleTabs.ScrollView>
+      ) : (
+        <CollapsibleTabs.FlashList
+          key={`assets-list-${listType}`}
+          data={data}
+          extraData={{ isGridView }}
+          keyExtractor={item => item.id}
+          overrideProps={overrideProps}
+          contentContainerStyle={contentContainerStyle}
+          numColumns={numColumns}
+          renderItem={renderItem}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={pullToRefresh}
+              progressViewOffset={
+                Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight
+              }
+            />
+          }
+          ListHeaderComponent={renderHeader}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </Animated.View>
   )
 }

@@ -225,6 +225,10 @@ const AssetsScreen: FC<Props> = ({
     )
   }
 
+  // When data is empty, use ScrollView to ensure scroll events propagate to the collapsible header
+  // FlashList's ListEmptyComponent doesn't properly propagate scroll events in newer versions
+  const shouldUseScrollView = data.length === 0
+
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(10)}
@@ -232,29 +236,50 @@ const AssetsScreen: FC<Props> = ({
       style={{
         flex: 1
       }}>
-      <CollapsibleTabs.FlashList
-        key={`assets-list-${listType}`}
-        data={data}
-        keyExtractor={keyExtractor}
-        testID="portfolio_token_list"
-        extraData={{ isGridView }}
-        overrideProps={overrideProps}
-        numColumns={numColumns}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={refetch}
-            progressViewOffset={
-              Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight
-            }
-          />
-        }
-        renderItem={item => renderItem(item.item, item.index)}
-        ListHeaderComponent={renderHeader}
-        ListEmptyComponent={renderEmpty}
-        ItemSeparatorComponent={renderSeparator}
-        showsVerticalScrollIndicator={false}
-      />
+      {shouldUseScrollView ? (
+        <CollapsibleTabs.ScrollView
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={refetch}
+              progressViewOffset={
+                Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight
+              }
+            />
+          }
+          contentContainerStyle={{
+            flexGrow: 1,
+            ...containerStyle,
+            paddingTop: Platform.OS === 'android' ? header?.height : 0
+          }}
+          showsVerticalScrollIndicator={false}>
+          {renderHeader()}
+          {renderEmpty()}
+        </CollapsibleTabs.ScrollView>
+      ) : (
+        <CollapsibleTabs.FlashList
+          key={`assets-list-${listType}`}
+          data={data}
+          keyExtractor={keyExtractor}
+          testID="portfolio_token_list"
+          extraData={{ isGridView }}
+          overrideProps={overrideProps}
+          numColumns={numColumns}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={refetch}
+              progressViewOffset={
+                Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight
+              }
+            />
+          }
+          renderItem={item => renderItem(item.item, item.index)}
+          ListHeaderComponent={renderHeader}
+          ItemSeparatorComponent={renderSeparator}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </Animated.View>
   )
 }

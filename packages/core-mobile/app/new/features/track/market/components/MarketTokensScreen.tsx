@@ -93,6 +93,24 @@ const MarketTokensScreen = ({
     }
   }
 
+  // When data is empty, use ScrollView to ensure scroll events propagate to the collapsible header
+  // FlashList's ListEmptyComponent doesn't properly propagate scroll events in newer versions
+  const shouldUseScrollView = data.length === 0
+
+  if (shouldUseScrollView) {
+    return (
+      <CollapsibleTabs.ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          ...containerStyle,
+          paddingTop: Platform.OS === 'android' ? header?.height : 0
+        }}
+        showsVerticalScrollIndicator={false}>
+        {renderEmpty()}
+      </CollapsibleTabs.ScrollView>
+    )
+  }
+
   return (
     <CollapsibleTabs.FlashList
       overrideProps={overrideProps}
@@ -100,7 +118,6 @@ const MarketTokensScreen = ({
       numColumns={numColumns}
       renderItem={renderItem}
       ListHeaderComponent={dropdowns}
-      ListEmptyComponent={renderEmpty}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
       extraData={{ isGridView }}

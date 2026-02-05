@@ -98,6 +98,31 @@ export const ActivityList = ({
 
   const header = useHeaderMeasurements()
 
+  // When data is empty, use ScrollView to ensure scroll events propagate to the collapsible header
+  // FlashList's ListEmptyComponent doesn't properly propagate scroll events in newer versions
+  const shouldUseScrollView = data.length === 0
+
+  if (shouldUseScrollView) {
+    return (
+      <CollapsibleTabs.ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={refresh}
+            progressViewOffset={Platform.OS === 'ios' ? 0 : header.height}
+          />
+        }
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingTop: Platform.OS === 'android' ? header?.height : 0
+        }}
+        showsVerticalScrollIndicator={false}>
+        {renderHeader()}
+        {renderEmpty()}
+      </CollapsibleTabs.ScrollView>
+    )
+  }
+
   return (
     <CollapsibleTabs.FlashList
       key={xpToken?.symbol}
@@ -113,7 +138,6 @@ export const ActivityList = ({
         />
       }
       ListHeaderComponent={renderHeader}
-      ListEmptyComponent={renderEmpty}
       showsVerticalScrollIndicator={false}
       keyExtractor={keyExtractor}
       refreshing={isRefreshing}

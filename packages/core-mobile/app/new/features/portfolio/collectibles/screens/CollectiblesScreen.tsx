@@ -133,48 +133,86 @@ export const CollectiblesScreen = ({
     (filter.selected[0] !== AssetNetworkFilter.AllNetworks ||
       filter.selected[1] !== CollectibleTypeFilter.AllContents)
 
+  const collapsibleHeaderHeight = header?.height ?? 0
+
+  const renderNoCollectibles = useCallback(() => {
+    return (
+      <View
+        sx={{
+          flexDirection: 'row',
+          paddingHorizontal: HORIZONTAL_MARGIN,
+          paddingTop: 8
+        }}>
+        <AnimatedPressable onPress={goToDiscoverCollectibles}>
+          <CardContainer
+            style={{
+              height: 220,
+              width: (SCREEN_WIDTH - HORIZONTAL_MARGIN * 3) / 2
+            }}>
+            <Icons.Content.Add
+              color={colors.$textPrimary}
+              width={40}
+              height={40}
+            />
+          </CardContainer>
+        </AnimatedPressable>
+      </View>
+    )
+  }, [colors.$textPrimary, goToDiscoverCollectibles])
+
   const emptyComponent = useMemo((): JSX.Element | undefined => {
-    if (isLoading || !isEnabled) return <LoadingState />
+    if (isLoading || !isEnabled)
+      return (
+        <CollapsibleTabs.ContentWrapper>
+          <LoadingState />
+        </CollapsibleTabs.ContentWrapper>
+      )
 
     if (error || !isSuccess) {
       return (
-        <ErrorState
-          description="Please hit refresh or try again later"
-          button={{
-            title: 'Refresh',
-            onPress: refetch
-          }}
-        />
+        <CollapsibleTabs.ContentWrapper>
+          <ErrorState
+            description="Please hit refresh or try again later"
+            button={{
+              title: 'Refresh',
+              onPress: refetch
+            }}
+          />
+        </CollapsibleTabs.ContentWrapper>
       )
     }
 
     if (filteredAndSorted.length === 0 && hasFilters) {
       return (
-        <ErrorState
-          title="No collectibles found"
-          description="Try changing the filter settings or reset the filter to see all assets."
-          button={{
-            title: 'Reset filter',
-            onPress: onResetFilter
-          }}
-        />
+        <CollapsibleTabs.ContentWrapper>
+          <ErrorState
+            title="No collectibles found"
+            description="Try changing the filter settings or reset the filter to see all assets."
+            button={{
+              title: 'Reset filter',
+              onPress: onResetFilter
+            }}
+          />
+        </CollapsibleTabs.ContentWrapper>
       )
     }
 
     if (filteredAndSorted.length === 0 && isEveryCollectibleHidden) {
       return (
-        <ErrorState
-          title="All collectibles hidden"
-          description="You have hidden all your collectibles"
-          button={{
-            title: 'Show hidden',
-            onPress: onShowHidden
-          }}
-        />
+        <CollapsibleTabs.ContentWrapper animate={false}>
+          <ErrorState
+            title="All collectibles hidden"
+            description="You have hidden all your collectibles"
+            button={{
+              title: 'Show hidden',
+              onPress: onShowHidden
+            }}
+          />
+        </CollapsibleTabs.ContentWrapper>
       )
     }
 
-    return <ErrorState title="No collectibles found" description="" />
+    return renderNoCollectibles()
   }, [
     isLoading,
     isEnabled,
@@ -183,17 +221,14 @@ export const CollectiblesScreen = ({
     filteredAndSorted.length,
     hasFilters,
     isEveryCollectibleHidden,
+    renderNoCollectibles,
     refetch,
     onResetFilter,
     onShowHidden
   ])
 
   const renderEmpty = useMemo(() => {
-    return (
-      <CollapsibleTabs.ContentWrapper>
-        {emptyComponent}
-      </CollapsibleTabs.ContentWrapper>
-    )
+    return emptyComponent
   }, [emptyComponent])
 
   const renderHeader = useMemo((): JSX.Element | null => {
@@ -249,40 +284,9 @@ export const CollectiblesScreen = ({
     }
   }
 
-  const collapsibleHeaderHeight = header?.height ?? 0
-
-  if (
-    Platform.OS === 'android' &&
-    collectibles.length === 0 &&
-    !isLoading &&
-    isEnabled
-  ) {
-    return (
-      <View
-        sx={{
-          flexDirection: 'row',
-          gap: HORIZONTAL_MARGIN,
-          paddingHorizontal: HORIZONTAL_MARGIN,
-          paddingTop: collapsibleHeaderHeight + HORIZONTAL_MARGIN / 2
-        }}>
-        <AnimatedPressable
-          onPress={goToDiscoverCollectibles}
-          entering={getListItemEnteringAnimation(0)}>
-          <CardContainer
-            style={{
-              height: 220,
-              width: (SCREEN_WIDTH - HORIZONTAL_MARGIN * 3) / 2
-            }}>
-            <Icons.Content.Add
-              color={colors.$textPrimary}
-              width={40}
-              height={40}
-            />
-          </CardContainer>
-        </AnimatedPressable>
-      </View>
-    )
-  }
+  // When data is empty, use ScrollView to ensure scroll events propagate to the collapsible header
+  // FlashList's ListEmptyComponent doesn't properly propagate scroll events in newer versions
+  const shouldUseScrollView = filteredAndSorted.length === 0
 
   return (
     <Animated.View
@@ -291,37 +295,59 @@ export const CollectiblesScreen = ({
       style={{
         flex: 1
       }}>
-      <CollapsibleTabs.FlashList
-        data={filteredAndSorted}
-        extraData={{
-          view,
-          sort,
-          filter
-        }}
-        masonry
-        key={`collectibles-list-${listType}`}
-        keyExtractor={(item: NftItem) =>
-          `collectibles-list-${item.localId}-${item.address}`
-        }
-        renderItem={renderItem}
-        ListEmptyComponent={renderEmpty}
-        ListHeaderComponent={renderHeader}
-        numColumns={columns}
-        overrideProps={overrideProps}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={pullToRefresh}
-            progressViewOffset={
-              Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight
-            }
-          />
-        }
-        contentContainerStyle={contentContainerStyle}
-        removeClippedSubviews={Platform.OS === 'android'}
-        showsVerticalScrollIndicator={false}
-        nestedScrollEnabled
-      />
+      {shouldUseScrollView ? (
+        <CollapsibleTabs.ScrollView
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={pullToRefresh}
+              progressViewOffset={
+                Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight
+              }
+            />
+          }
+          contentContainerStyle={{
+            flexGrow: 1,
+            ...containerStyle,
+            paddingTop: Platform.OS === 'android' ? header?.height : 0
+          }}
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled>
+          {renderHeader}
+          {renderEmpty}
+        </CollapsibleTabs.ScrollView>
+      ) : (
+        <CollapsibleTabs.FlashList
+          data={filteredAndSorted}
+          extraData={{
+            view,
+            sort,
+            filter
+          }}
+          masonry
+          key={`collectibles-list-${listType}`}
+          keyExtractor={(item: NftItem) =>
+            `collectibles-list-${item.localId}-${item.address}`
+          }
+          renderItem={renderItem}
+          ListHeaderComponent={renderHeader}
+          numColumns={columns}
+          overrideProps={overrideProps}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={pullToRefresh}
+              progressViewOffset={
+                Platform.OS === 'ios' ? 0 : collapsibleHeaderHeight
+              }
+            />
+          }
+          contentContainerStyle={contentContainerStyle}
+          removeClippedSubviews={Platform.OS === 'android'}
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled
+        />
+      )}
     </Animated.View>
   )
 }

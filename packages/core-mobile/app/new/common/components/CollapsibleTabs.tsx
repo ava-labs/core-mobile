@@ -107,6 +107,7 @@ const CollapsibleTabWrapper = ({
 
 const ContentWrapper = ({
   children,
+  animate = true,
   extraOffset = 0
 }: {
   children: React.ReactNode
@@ -117,6 +118,11 @@ const ContentWrapper = ({
    * @default 0
    */
   extraOffset?: number
+  /**
+   * Whether to animate the content translation.
+   * @default true
+   */
+  animate?: boolean
 }): JSX.Element => {
   const scrollY = useCurrentTabScrollY()
   const insets = useSafeAreaInsets()
@@ -126,12 +132,14 @@ const ContentWrapper = ({
   const tabBarHeight = useBottomTabBarHeight()
 
   const animatedStyle = useAnimatedStyle(() => {
-    const translateY = interpolate(
-      scrollY.value,
-      [0, header.height],
-      [-48, tabBarHeight],
-      Extrapolation.CLAMP
-    )
+    const translateY = animate
+      ? interpolate(
+          scrollY.value,
+          [0, header.height],
+          [-48, tabBarHeight],
+          Extrapolation.CLAMP
+        )
+      : 0
     return {
       transform: [
         {
