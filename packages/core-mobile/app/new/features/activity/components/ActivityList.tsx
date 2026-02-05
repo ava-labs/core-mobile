@@ -6,7 +6,7 @@ import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { Text, useTheme, View } from '@avalabs/k2-alpine'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
-import { ListRenderItem } from '@shopify/flash-list'
+import { FlashListProps, ListRenderItem } from '@shopify/flash-list'
 import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import { isXpTransaction } from 'common/utils/isXpTransactions'
 import { PendingBridgeTransactionItem } from 'features/portfolio/assets/components/PendingBridgeTransactionItem'
@@ -22,6 +22,7 @@ export const ActivityList = ({
   xpToken,
   containerStyle,
   isRefreshing,
+  overrideProps,
   refresh,
   handlePendingBridge,
   handleExplorerLink,
@@ -32,6 +33,7 @@ export const ActivityList = ({
   containerStyle?: ViewStyle
   xpToken: TokenWithBalance | undefined
   isRefreshing: boolean
+  overrideProps?: FlashListProps<ActivityListItem>['overrideProps']
   handlePendingBridge: (transaction: BridgeTransaction | BridgeTransfer) => void
   handleExplorerLink: (explorerLink: string) => void
   refresh: () => void
@@ -107,6 +109,7 @@ export const ActivityList = ({
       onRefresh={refresh}
       extraData={{ prices }}
       listKey={xpToken?.symbol}
+      overrideProps={overrideProps}
     />
   )
 }

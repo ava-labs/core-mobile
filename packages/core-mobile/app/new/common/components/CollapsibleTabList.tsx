@@ -74,6 +74,10 @@ type CollapsibleTabListProps<T> = {
    * Whether to remove clipped subviews (Android optimization)
    */
   removeClippedSubviews?: boolean
+  /**
+   * Override props for the FlashList
+   */
+  overrideProps?: FlashListProps<T>['overrideProps']
 }
 
 /**
@@ -98,6 +102,7 @@ export function CollapsibleTabList<T>({
   masonry,
   listKey,
   testID,
+  overrideProps,
   contentContainerStyle: additionalContentStyle,
   nestedScrollEnabled,
   removeClippedSubviews
@@ -131,11 +136,12 @@ export function CollapsibleTabList<T>({
     [additionalContentStyle, containerStyle, collapsibleHeaderHeight]
   )
 
-  const overrideProps = useMemo(
+  const finalOverrideProps = useMemo(
     () => ({
+      ...overrideProps,
       contentContainerStyle: baseContentContainerStyle
     }),
-    [baseContentContainerStyle]
+    [baseContentContainerStyle, overrideProps]
   )
 
   if (shouldUseScrollView) {
@@ -161,7 +167,7 @@ export function CollapsibleTabList<T>({
       renderItem={renderItem}
       numColumns={numColumns}
       masonry={masonry}
-      overrideProps={overrideProps}
+      overrideProps={finalOverrideProps}
       contentContainerStyle={additionalContentStyle}
       refreshControl={refreshControl}
       ListHeaderComponent={renderHeader}
