@@ -1,16 +1,35 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { TransactionOnboarding } from 'common/components/TransactionOnboarding'
 import { GroupList, Icons, useTheme } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
+import { useNavigation } from '@react-navigation/native'
+import { useDeposits } from 'hooks/earn/useDeposits'
+import { useBorrowProtocol } from '../../hooks/useBorrowProtocol'
 
 export const OnboardingScreen = (): JSX.Element => {
   const { navigate } = useRouter()
+  const navigation = useNavigation()
   const { theme } = useTheme()
+  const { deposits } = useDeposits()
+  const { selectedProtocol } = useBorrowProtocol()
+
+  // Filter deposits by selected protocol
+  const protocolDeposits = useMemo(() => {
+    return deposits.filter(deposit => deposit.marketName === selectedProtocol)
+  }, [deposits, selectedProtocol])
 
   const handlePressNext = useCallback(() => {
-    // @ts-ignore TODO: make routes typesafe
-    navigate('/borrow/selectCollateral')
-  }, [navigate])
+    if (protocolDeposits.length === 0) {
+      // No deposits for selected protocol - dismiss borrow modal and navigate to deposit flow
+      navigation.getParent()?.goBack()
+      // @ts-ignore TODO: make routes typesafe
+      navigate('/deposit/onboarding')
+    } else {
+      // Has deposits - proceed to collateral selection
+      // @ts-ignore TODO: make routes typesafe
+      navigate('/borrow/selectCollateral')
+    }
+  }, [navigate, navigation, protocolDeposits.length])
 
   const renderFooterAccessory = useCallback(() => {
     const accessory = (
