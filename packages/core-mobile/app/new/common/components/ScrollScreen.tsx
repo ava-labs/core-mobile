@@ -270,7 +270,7 @@ export const ScrollScreen = ({
         <View
           style={{
             position: 'absolute',
-            top: Platform.OS === 'android' ? insets.top : 0,
+            top: Platform.OS === 'android' ? insets.top - 2 : 9,
             left: 0,
             right: 0,
             zIndex: 1000
