@@ -136,7 +136,7 @@ class OnboardingPage {
     if (process.env.E2E !== 'true') {
       try {
         const dismissBtn = selectors.getByText("AvaxWallet")
-        await actions.dragAndDrop(dismissBtn, [0, 200])
+        await actions.dragAndDrop(dismissBtn, [0, 1500])
       } catch (e) {
         console.log('Metro dev menu is not found...')
       }
@@ -211,11 +211,6 @@ class OnboardingPage {
 
 async verifyLoggedIn() {
     await actions.waitFor(commonElsPage.accountOne, 40000)
-    try {
-      await actions.waitFor(commonElsPage.successfullyAdded)
-    } catch (e) {
-      console.log('Accounts updated modal is not found...')
-    }
     console.log('Verified you are logged in')
   }
 
@@ -261,6 +256,13 @@ async verifyLoggedIn() {
       } else {
         await actions.click(selectors.getById(`${questionId}_${words[targetIndex + 1]}`))
       }
+    }
+  }
+  
+  async tapKeypadUpButton() {
+    const upKeypad = await actions.getVisible(commonElsPage.keypadUpButton)
+    if (upKeypad) {
+      await actions.tap(commonElsPage.keypadUpButton)
     }
   }
 }

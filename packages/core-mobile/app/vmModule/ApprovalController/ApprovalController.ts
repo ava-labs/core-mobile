@@ -24,7 +24,7 @@ import { CONFETTI_DURATION_MS } from 'common/consts'
 import { currentRouteStore } from 'new/routes/store'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
-import { handleLedgerError } from './utils'
+import { handleLedgerErrorAndShowAlert } from './utils'
 
 class ApprovalController implements VmModuleApprovalController {
   async requestPublicKey({
@@ -156,7 +156,7 @@ class ApprovalController implements VmModuleApprovalController {
               value: ApprovalResponse | PromiseLike<ApprovalResponse>
             ): void => {
               if ('error' in value) {
-                handleLedgerError({
+                handleLedgerErrorAndShowAlert({
                   error: value.error,
                   network: params.network,
                   onRetry: () =>
