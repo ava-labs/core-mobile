@@ -25,7 +25,6 @@ import { SpanName } from 'services/sentry/types'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { ChainInfo } from '@avalabs/glacier-sdk'
 import GlacierService from 'services/glacier/GlacierService'
-import { createSolanaRpc, devnet, mainnet } from '@solana/kit'
 import { NETWORK_P, NETWORK_P_TEST, NETWORK_X, NETWORK_X_TEST } from './consts'
 
 if (!Config.PROXY_URL)
@@ -269,20 +268,6 @@ class NetworkService {
         multicall: chainInfo.utilityAddresses?.multicall ?? ''
       }
     }
-  }
-
-  getSolanaProvider = (
-    network: Network
-  ): ReturnType<typeof createSolanaRpc> => {
-    if (network.vmName !== NetworkVMType.SVM) {
-      throw new Error('Network is not a Solana network')
-    }
-
-    const rpcUrl = network.isTestnet
-      ? 'https://api.devnet.solana.com' // NowNodes does not support Solana Devnet
-      : `${Config.PROXY_URL}/proxy/nownodes/sol`
-
-    return createSolanaRpc(network.isTestnet ? devnet(rpcUrl) : mainnet(rpcUrl))
   }
 }
 

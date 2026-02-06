@@ -4,8 +4,9 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { TokenType, TokenWithBalanceSVM } from '@avalabs/vm-module-types'
 import { Account } from 'store/account'
 import { Address, createSolanaRpc, address as toAddress } from '@solana/kit'
-import NetworkService from 'services/network/NetworkService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import ModuleManager from 'vmModule/ModuleManager'
 import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
 import { SendToken } from './SendToken'
@@ -62,7 +63,9 @@ export const SendSVM = ({
         return
       }
 
-      const provider = NetworkService.getSolanaProvider(network)
+      const provider = await ModuleManager.solanaModule.getProvider(
+        mapToVmNetwork(network)
+      )
 
       if (!recipient?.addressSVM) {
         setMinimumSendAmount(undefined)
