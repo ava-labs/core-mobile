@@ -185,7 +185,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
               deviceId,
               deviceName,
               derivationPath: DERIVATION_PATHS.BIP44.EVM,
-              vmType: 'EVM',
               derivationPathSpec: derivationPathType,
               ...(derivationPathType === LedgerDerivationPathType.BIP44 && {
                 // Store in per-account format: { [accountIndex]: { evm, avalanche } }
