@@ -15,7 +15,10 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { copyToClipboard } from 'common/utils/clipboard'
 import { transactionSnackbar } from 'common/utils/toast'
-import { useDelegationContext } from 'contexts/DelegationContext'
+import {
+  useDelegationContext,
+  OnDelegationProgress
+} from 'contexts/DelegationContext'
 import {
   differenceInDays,
   format,
@@ -320,6 +323,7 @@ const StakeConfirmScreen = (): JSX.Element => {
           startDate: Date
           endDate: Date
           recomputeSteps?: boolean
+          onProgress?: OnDelegationProgress
         }): Promise<void>
       }
     | undefined
@@ -340,7 +344,7 @@ const StakeConfirmScreen = (): JSX.Element => {
         activeWallet?.type === WalletType.LEDGER ||
         activeWallet?.type === WalletType.LEDGER_LIVE
 
-      const performRetry = (): void => {
+      const performRetry = (onProgress?: OnDelegationProgress): void => {
         const currentValidator = validatorRef.current
         const currentMinStartTime = minStartTimeRef.current
         const currentValidatedStakingEndTime =
@@ -352,7 +356,8 @@ const StakeConfirmScreen = (): JSX.Element => {
           nodeId: currentValidator.nodeID,
           startDate: currentMinStartTime,
           endDate: currentValidatedStakingEndTime,
-          recomputeSteps: true
+          recomputeSteps: true,
+          onProgress
         })
       }
 
@@ -374,9 +379,9 @@ const StakeConfirmScreen = (): JSX.Element => {
               if (isLedger) {
                 showLedgerReviewTransaction({
                   network: pNetwork,
-                  onApprove: async () => {
+                  onApprove: async onProgress => {
                     // Start the retry delegation process
-                    performRetry()
+                    performRetry(onProgress)
                   },
                   onReject: () => {
                     // User cancelled Ledger connection
@@ -424,12 +429,13 @@ const StakeConfirmScreen = (): JSX.Element => {
 
       AnalyticsService.capture('StakeIssueDelegation')
 
-      const performDelegation = (): void => {
+      const performDelegation = (onProgress?: OnDelegationProgress): void => {
         issueDelegation({
           nodeId: validator.nodeID,
           startDate: minStartTime,
           endDate: validatedStakingEndTime,
-          recomputeSteps
+          recomputeSteps,
+          onProgress
         })
       }
 
@@ -437,9 +443,9 @@ const StakeConfirmScreen = (): JSX.Element => {
       if (isLedgerWallet) {
         showLedgerReviewTransaction({
           network: pNetwork,
-          onApprove: async () => {
+          onApprove: async onProgress => {
             // Start the delegation process
-            performDelegation()
+            performDelegation(onProgress)
           },
           onReject: () => {
             // User cancelled Ledger connection

@@ -1,4 +1,6 @@
+import { Network } from '@avalabs/core-chains-sdk'
 import { ZustandStorageKeys } from 'resources/Constants'
+import { OnDelegationProgress } from 'contexts/DelegationContext'
 import { zustandMMKVStorage } from 'utils/mmkv/storages'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
@@ -14,6 +16,27 @@ interface LedgerWalletMapState {
   ) => void
   removeLedgerWallet: (walletId: walletId) => void
   resetLedgerWalletMap: () => void
+}
+
+// Types for ledger review transaction params
+export type StakingProgressParams = {
+  totalSteps: number
+  onComplete: () => void
+  onCancel: () => void
+}
+
+export type LedgerReviewTransactionParams = {
+  network: Network
+  onApprove: (onProgress?: OnDelegationProgress) => Promise<void>
+  onReject: (message?: string) => void
+  stakingProgress?: StakingProgressParams
+}
+
+interface LedgerParamsState {
+  reviewTransactionParams: LedgerReviewTransactionParams | null
+  setReviewTransactionParams: (
+    params: LedgerReviewTransactionParams | null
+  ) => void
 }
 
 export const ledgerWalletMapStore = create<LedgerWalletMapState>()(
@@ -49,4 +72,14 @@ export const ledgerWalletMapStore = create<LedgerWalletMapState>()(
 
 export const useLedgerWalletMap = (): LedgerWalletMapState => {
   return ledgerWalletMapStore()
+}
+
+// Ephemeral store for ledger params (no persistence needed)
+export const ledgerParamsStore = create<LedgerParamsState>(set => ({
+  reviewTransactionParams: null,
+  setReviewTransactionParams: params => set({ reviewTransactionParams: params })
+}))
+
+export const useLedgerParams = (): LedgerParamsState => {
+  return ledgerParamsStore()
 }

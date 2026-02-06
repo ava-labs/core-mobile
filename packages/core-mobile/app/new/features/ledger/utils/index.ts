@@ -1,11 +1,9 @@
 import { router } from 'expo-router'
 import { ChainId, Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { LedgerAppType, LedgerDerivationPathType } from 'services/ledger/types'
+import { OnDelegationProgress } from 'contexts/DelegationContext'
 import { z } from 'zod'
-import {
-  ledgerParamsCache,
-  StakingProgressParams
-} from '../services/ledgerParamsCache'
+import { ledgerParamsStore, StakingProgressParams } from '../store'
 
 export const showLedgerReviewTransaction = ({
   network,
@@ -14,11 +12,11 @@ export const showLedgerReviewTransaction = ({
   stakingProgress
 }: {
   network: Network
-  onApprove: () => Promise<void>
+  onApprove: (onProgress?: OnDelegationProgress) => Promise<void>
   onReject: (message?: string) => void
   stakingProgress?: StakingProgressParams
 }): void => {
-  ledgerParamsCache.ledgerReviewTransactionParams.set({
+  ledgerParamsStore.getState().setReviewTransactionParams({
     network,
     onApprove,
     onReject,
