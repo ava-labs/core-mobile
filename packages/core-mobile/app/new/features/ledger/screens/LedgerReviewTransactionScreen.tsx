@@ -165,7 +165,10 @@ const LedgerReviewTransactionScreen = (): JSX.Element | null => {
     ) {
       if (stakingProgress) {
         // Create progress callback that updates local state
-        const onProgress = (step: number, operation: Operation | null): void => {
+        const onProgress = (
+          step: number,
+          operation: Operation | null
+        ): void => {
           setCurrentStep(step)
           setCurrentOperation(operation)
 
@@ -214,7 +217,7 @@ const LedgerReviewTransactionScreen = (): JSX.Element | null => {
     if (phase === 'progress' && stakingProgress) {
       stakingProgress.onCancel()
     }
-    onReject()
+    onReject?.()
   }, [phase, stakingProgress, onReject])
 
   const renderFooter = useCallback(() => {
