@@ -280,7 +280,7 @@ class NetworkService {
 
     const rpcUrl = network.isTestnet
       ? 'https://api.devnet.solana.com' // NowNodes does not support Solana Devnet
-      : `${process.env.PROXY_URL}/proxy/nownodes/sol`
+      : `${Config.PROXY_URL}/proxy/nownodes/sol`
 
     return createSolanaRpc(network.isTestnet ? devnet(rpcUrl) : mainnet(rpcUrl))
   }

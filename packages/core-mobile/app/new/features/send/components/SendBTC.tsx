@@ -48,7 +48,7 @@ export const SendBTC = ({
     }
   }
 
-  const minimumSentAmount = useMemo((): TokenUnit => {
+  const minimumSendAmount = useMemo((): TokenUnit => {
     return new TokenUnit(
       MINIMUM_SATOSHI_SEND_AMOUNT,
       nativeToken.decimals,
@@ -56,5 +56,5 @@ export const SendBTC = ({
     )
   }, [nativeToken.decimals, nativeToken.symbol])
 
-  return <SendToken onSend={handleSend} minimumSendAmount={minimumSentAmount} />
+  return <SendToken onSend={handleSend} minimumSendAmount={minimumSendAmount} />
 }
