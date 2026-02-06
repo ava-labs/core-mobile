@@ -10,8 +10,9 @@ import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
 import { SendToken } from './SendToken'
 
-const RENT_EXEMPT_CACHE = new Map<bigint, bigint>()
-const ACCOUNT_SPACE_CACHE = new Map<Address, bigint>()
+// Network-aware caches keyed by RPC URL to handle different clusters
+const RENT_EXEMPT_CACHE = new Map<string, bigint>()
+const ACCOUNT_SPACE_CACHE = new Map<string, bigint>()
 
 export const SendSVM = ({
   nativeToken,
@@ -52,30 +53,50 @@ export const SendSVM = ({
   }
 
   useEffect(() => {
+    let cancelled = false
+
     const fetchMinimumSendAmount = async (): Promise<void> => {
+      // Clear minimum when not applicable
       if (selectedToken?.type !== TokenType.NATIVE) {
+        setMinimumSendAmount(undefined)
         return
       }
 
       const provider = NetworkService.getSolanaProvider(network)
 
       if (!recipient?.addressSVM) {
+        setMinimumSendAmount(undefined)
         return
       }
 
+      const rpcUrl = network.rpcUrl
+
       const accountSpace = await getAccountOccupiedSpace(
         toAddress(recipient.addressSVM),
-        provider
+        provider,
+        rpcUrl
       )
 
-      if (accountSpace !== 0n) return
+      // Clear minimum if account exists
+      if (accountSpace !== 0n) {
+        if (!cancelled) setMinimumSendAmount(undefined)
+        return
+      }
 
-      const minimum = await getRentExemptMinimum(0n, provider)
-      setMinimumSendAmount(
-        new TokenUnit(minimum, nativeToken.decimals, nativeToken.symbol)
-      )
+      const minimum = await getRentExemptMinimum(accountSpace, provider, rpcUrl)
+
+      if (!cancelled) {
+        setMinimumSendAmount(
+          new TokenUnit(minimum, nativeToken.decimals, nativeToken.symbol)
+        )
+      }
     }
+
     fetchMinimumSendAmount()
+
+    return () => {
+      cancelled = true
+    }
   }, [network, recipient?.addressSVM, nativeToken, selectedToken?.type])
 
   return <SendToken onSend={handleSend} minimumSendAmount={minimumSendAmount} />
@@ -83,19 +104,19 @@ export const SendSVM = ({
 
 const getAccountOccupiedSpace = async (
   address: Address,
-  provider: ReturnType<typeof createSolanaRpc>
+  provider: ReturnType<typeof createSolanaRpc>,
+  rpcUrl: string
 ): Promise<bigint> => {
-  if (ACCOUNT_SPACE_CACHE.has(address)) {
-    const cachedSpace = ACCOUNT_SPACE_CACHE.get(address)
-    if (cachedSpace !== undefined) {
-      return cachedSpace
-    }
+  const cacheKey = `${rpcUrl}:${address}`
+  const cached = ACCOUNT_SPACE_CACHE.get(cacheKey)
+  if (cached !== undefined) {
+    return cached
   }
 
   try {
     const accountInfo = await provider.getAccountInfo(address).send()
     const space = accountInfo.value?.space ?? 0n
-    ACCOUNT_SPACE_CACHE.set(address, space)
+    ACCOUNT_SPACE_CACHE.set(cacheKey, space)
 
     return space
   } catch (e) {
@@ -107,21 +128,21 @@ const getAccountOccupiedSpace = async (
 
 const getRentExemptMinimum = async (
   space: bigint,
-  provider: ReturnType<typeof createSolanaRpc>
+  provider: ReturnType<typeof createSolanaRpc>,
+  rpcUrl: string
 ): Promise<bigint> => {
-  if (RENT_EXEMPT_CACHE.has(space)) {
-    const cachedRentExempt = RENT_EXEMPT_CACHE.get(space)
-    if (cachedRentExempt !== undefined) {
-      return cachedRentExempt
-    }
+  const cacheKey = `${rpcUrl}:${space}`
+  const cached = RENT_EXEMPT_CACHE.get(cacheKey)
+  if (cached !== undefined) {
+    return cached
   }
 
   try {
     const rentExemptMinimum = await provider
-      .getMinimumBalanceForRentExemption(0n)
+      .getMinimumBalanceForRentExemption(space)
       .send()
 
-    RENT_EXEMPT_CACHE.set(0n, rentExemptMinimum)
+    RENT_EXEMPT_CACHE.set(cacheKey, rentExemptMinimum)
 
     return rentExemptMinimum
   } catch (e) {
