@@ -40,6 +40,8 @@ export const getLedgerAppName = (network?: Network): LedgerAppType => {
     ? LedgerAppType.ETHEREUM
     : network?.vmName === NetworkVMType.BITCOIN
     ? LedgerAppType.BITCOIN
+    : network?.vmName === NetworkVMType.SVM
+    ? LedgerAppType.SOLANA
     : LedgerAppType.UNKNOWN
 }
 
