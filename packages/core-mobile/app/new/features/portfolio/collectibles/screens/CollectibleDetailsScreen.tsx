@@ -1,5 +1,5 @@
 import { ANIMATED, Icons, useTheme, View } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useNavigation } from '@react-navigation/native'
 import { ErrorState } from 'common/components/ErrorState'
 import NavigationBarButton from 'common/components/NavigationBarButton'
@@ -58,7 +58,7 @@ export const CollectibleDetailsScreen = ({
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const insets = useSafeAreaInsets()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const frame = useSafeAreaFrame()
 
   const { filteredAndSorted, isHiddenVisible } =
@@ -315,8 +315,8 @@ export const CollectibleDetailsScreen = ({
             ]}>
             <Animated.View
               style={[
-                heroStyle,
                 bounceStyle,
+                heroStyle,
                 {
                   position: 'absolute',
                   top: 0,
@@ -364,7 +364,6 @@ export const CollectibleDetailsScreen = ({
               </Animated.View>
             </Animated.View>
           </Animated.View>
-
           <Animated.View
             style={[
               {

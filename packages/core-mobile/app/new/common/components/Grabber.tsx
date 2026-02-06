@@ -17,7 +17,7 @@ const Grabber = (): JSX.Element => {
           : alpha(theme.colors.$borderPrimary, 0.1),
         position: 'absolute',
         alignSelf: 'center',
-        top: 9
+        top: 0
       }}
     />
   )

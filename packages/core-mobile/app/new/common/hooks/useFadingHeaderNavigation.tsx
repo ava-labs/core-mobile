@@ -23,7 +23,6 @@ import Animated, {
  */
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
-import Grabber from 'common/components/Grabber'
 import { Pressable } from 'react-native-gesture-handler'
 
 export const useFadingHeaderNavigation = ({
@@ -129,28 +128,24 @@ export const useFadingHeaderNavigation = ({
   const headerBackgroundComponent = useMemo(() => {
     return hideHeaderBackground ? (
       // Use a Pressable to receive gesture events for modal gestures
-      <Pressable style={{ flex: 1 }}>
-        {shouldHeaderHaveGrabber === true ? <Grabber /> : null}
-      </Pressable>
+      <Pressable style={{ flex: 1 }} />
     ) : (
       <BlurredBackgroundView
         backgroundColor={backgroundColor}
         shouldDelayBlurOniOS={shouldDelayBlurOniOS}
-        hasGrabber={shouldHeaderHaveGrabber}
         hasAnimation={hasBackgroundAnimation}
         separator={
           hasSeparator
             ? {
-                position: 'bottom',
-                opacity: targetHiddenProgress
-              }
+              position: 'bottom',
+              opacity: targetHiddenProgress
+            }
             : undefined
         }
       />
     )
   }, [
     hideHeaderBackground,
-    shouldHeaderHaveGrabber,
     backgroundColor,
     shouldDelayBlurOniOS,
     hasBackgroundAnimation,

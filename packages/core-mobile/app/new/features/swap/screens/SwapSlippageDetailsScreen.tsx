@@ -132,11 +132,24 @@ export const SwapSlippageDetailsScreen = ({
     router.back()
   }, [router])
 
+  const renderFooter = useCallback(() => {
+    return (
+      <Button
+        type="primary"
+        size="large"
+        onPress={handleDone}
+        style={{ width: '100%' }}>
+        Done
+      </Button>
+    )
+  }, [handleDone])
+
   return (
     <ScrollScreen
       title="Slippage details"
       navigationTitle="Slippage details"
       isModal
+      renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16, flex: 1 }}>
       <View sx={{ paddingTop: 24, gap: 16, flex: 1 }}>
         {/* Unified Card */}
@@ -324,17 +337,6 @@ export const SwapSlippageDetailsScreen = ({
               </View>
             </>
           )}
-        </View>
-
-        {/* Done Button */}
-        <View sx={{ flex: 1, justifyContent: 'flex-end' }}>
-          <Button
-            type="primary"
-            size="large"
-            onPress={handleDone}
-            style={{ width: '100%' }}>
-            Done
-          </Button>
         </View>
       </View>
     </ScrollScreen>

@@ -22,7 +22,7 @@ describe('registerDeviceToNotificationSender', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    commonStorage.delete(StorageKey.NOTIFICATIONS_OPTIMIZATION)
+    commonStorage.remove(StorageKey.NOTIFICATIONS_OPTIMIZATION)
     mockGetFCMToken.mockResolvedValue(deviceToken)
   })
 

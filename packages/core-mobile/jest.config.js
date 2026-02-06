@@ -7,7 +7,11 @@ module.exports = {
     'react-native-safe-area-context':
       '<rootDir>/node_modules/react-native-safe-area-context',
     'react-native-svg': '<rootDir>/node_modules/react-native-svg',
-    '^@solana/(.+)$': '<rootDir>/node_modules/@solana/$1/dist/index.node.cjs'
+    '^@solana/(.+)$': '<rootDir>/node_modules/@solana/$1/dist/index.node.cjs',
+    '^react-native-reanimated$':
+      '<rootDir>/node_modules/react-native-reanimated/mock.js',
+    '^react-native-worklets$':
+      '<rootDir>/node_modules/react-native-worklets/src/mock.ts'
   },
   testPathIgnorePatterns: [
     '<rootDir>/e2e/tests/playwright/',

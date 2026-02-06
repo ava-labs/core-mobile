@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-native-in-app-updates/android/src/main/java/com/inappupdates/InAppUpdatesModule.kt b/node_modules/react-native-in-app-updates/android/src/main/java/com/inappupdates/InAppUpdatesModule.kt
+index 7c7b444..2a8d587 100644
+--- a/node_modules/react-native-in-app-updates/android/src/main/java/com/inappupdates/InAppUpdatesModule.kt
++++ b/node_modules/react-native-in-app-updates/android/src/main/java/com/inappupdates/InAppUpdatesModule.kt
+@@ -27,7 +27,7 @@ class InAppUpdatesModule(reactContext: ReactApplicationContext) :
+ 
+     @ReactMethod
+     fun checkForUpdate(updateType: String, promise: Promise) {
+-        val activity = currentActivity ?: return promise.reject("NO_ACTIVITY", "No current activity")
++        val activity = reactApplicationContext.currentActivity?: return promise.reject("NO_ACTIVITY", "No current activity")
+         
+         appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
+             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {

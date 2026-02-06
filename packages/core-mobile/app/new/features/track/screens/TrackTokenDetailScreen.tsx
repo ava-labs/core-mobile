@@ -3,12 +3,12 @@ import {
   GroupList,
   GroupListItem,
   Icons,
-  SegmentedControl,
   showAlert,
   SPRING_LINEAR_TRANSITION,
   Text,
   TouchableOpacity,
   useTheme,
+  SegmentedControl,
   View
 } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
@@ -44,10 +44,10 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist'
+import { useDebouncedCallback } from 'use-debounce'
 import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
 import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
 import { formatLargeCurrency } from 'utils/Utils'
-import { useDebouncedCallback } from 'use-debounce'
 import { useTrackTokenActions } from '../hooks/useTrackTokenActions'
 
 const MAX_VALUE_WIDTH = '80%'

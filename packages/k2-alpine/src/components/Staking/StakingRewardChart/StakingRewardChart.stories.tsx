@@ -1,13 +1,10 @@
 import React, { useRef, useState } from 'react'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import {
-  runOnJS,
-  useAnimatedReaction,
-  useSharedValue
-} from 'react-native-reanimated'
-import { ScrollView, Text, View } from '../../Primitives'
+import { useAnimatedReaction, useSharedValue } from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 import { Button, useTheme } from '../../..'
 import { stakeRewardsData } from '../../../fixtures/stakeRewards'
+import { ScrollView, Text, View } from '../../Primitives'
 import { StakeRewardChart, StakeRewardChartHandle } from '.'
 
 export default {
@@ -56,7 +53,7 @@ const StakeRewardChartStory = (): JSX.Element => {
     () => selectedIndex.value,
     (current, previous) => {
       if (current !== previous) {
-        runOnJS(setSelectedIndexState)(current)
+        scheduleOnRN(setSelectedIndexState, current)
       }
     }
   )

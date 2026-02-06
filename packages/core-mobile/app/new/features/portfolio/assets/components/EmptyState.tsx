@@ -10,9 +10,9 @@ import React, {
 } from 'react'
 import { Platform, View, ViewStyle } from 'react-native'
 
-import { useHeaderHeight } from '@react-navigation/elements'
-import AVALANCHE_ANIMATION_LIGHT from 'assets/lotties/ava-logo-rotating.json'
 import AVALANCHE_ANIMATION_DARK from 'assets/lotties/ava-logo-rotating-dark.json'
+import AVALANCHE_ANIMATION_LIGHT from 'assets/lotties/ava-logo-rotating.json'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import LottieView from 'lottie-react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import {
@@ -32,7 +32,7 @@ export const EmptyState = ({
   const insets = useSafeAreaInsets()
   const tabBarHeight = useBottomTabBarHeight()
   const header = useHeaderMeasurements()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const frame = useSafeAreaFrame()
 
   const animationContainerRef = useRef<View>(null)
