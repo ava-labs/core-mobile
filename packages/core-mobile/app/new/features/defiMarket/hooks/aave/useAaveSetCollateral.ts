@@ -6,7 +6,7 @@ import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { AAVE_AVALANCHE3_POOL_PROXY_ABI } from 'features/defiMarket/abis/aaveAvalanche3PoolProxy'
 import { AAVE_POOL_C_CHAIN_ADDRESS } from 'features/defiMarket/consts'
-import { useEVMSendTransaction } from 'common/hooks/useEVMSendTransaction'
+import { useETHSendTransaction } from 'common/hooks/useETHSendTransaction'
 
 export const useAaveSetCollateral = ({
   network,
@@ -23,7 +23,7 @@ export const useAaveSetCollateral = ({
     requestId?: string
   }) => Promise<string>
 } => {
-  const { sendTransaction } = useEVMSendTransaction({
+  const { sendTransaction } = useETHSendTransaction({
     network,
     provider,
     onSuccess: () => {

@@ -6,7 +6,7 @@ import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { BENQI_COMPTROLLER_C_CHAIN_ADDRESS } from 'features/defiMarket/consts'
 import { BENQI_COMPTROLLER_ABI } from 'features/defiMarket/abis/benqiComptroller'
-import { useEVMSendTransaction } from 'common/hooks/useEVMSendTransaction'
+import { useETHSendTransaction } from 'common/hooks/useETHSendTransaction'
 
 export const useBenqiSetCollateral = ({
   network,
@@ -23,7 +23,7 @@ export const useBenqiSetCollateral = ({
     requestId?: string
   }) => Promise<string>
 } => {
-  const { sendTransaction } = useEVMSendTransaction({
+  const { sendTransaction } = useETHSendTransaction({
     network,
     provider,
     onSuccess: () => {
