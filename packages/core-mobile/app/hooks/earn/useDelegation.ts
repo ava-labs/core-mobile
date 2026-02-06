@@ -25,7 +25,6 @@ import Logger from 'utils/Logger'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { selectActiveAccount } from 'store/account'
 import { getMinimumStakeDurationMs } from 'services/earn/utils'
-import { ledgerParamsCache } from 'new/features/ledger/services/ledgerParamsCache'
 import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import {
   useAvalancheEvmProvider,
@@ -108,7 +107,7 @@ export const useDelegation = (): {
 
   const delegate: Delegate = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-shadow
-    async ({ steps, startDate, endDate, nodeId }) => {
+    async ({ steps, startDate, endDate, nodeId, onProgress }) => {
       if (activeAccount === undefined) {
         throw new Error('No active account')
       }
@@ -127,17 +126,6 @@ export const useDelegation = (): {
       )
 
       setSteps(steps)
-
-      // Get progress callback once before the loop (cache auto-clears after get)
-      let onProgress:
-        | ((step: number, operation: Operation | null) => void)
-        | undefined
-      try {
-        const params = ledgerParamsCache.ledgerReviewTransactionParams.get()
-        onProgress = params.stakingProgress?.onProgress
-      } catch {
-        // No ledger params cache available, skip progress callback
-      }
 
       let txHash
       let stepIndex = 0
@@ -228,6 +216,9 @@ export const useDelegation = (): {
 
         stepIndex++
       }
+
+      // Signal completion - stepIndex now equals steps.length
+      onProgress?.(stepIndex, null)
 
       if (!txHash) {
         throw new Error('No transaction hash found')
