@@ -111,6 +111,10 @@ const StakeConfirmScreen = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const refreshStakingBalances = useRefreshStakingBalances()
 
+  const isLedger =
+    activeWallet?.type === WalletType.LEDGER ||
+    activeWallet?.type === WalletType.LEDGER_LIVE
+
   const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const networkFeesInAvax = useMemo(() => {
     const networkFees = steps.reduce((sum, transaction) => {
@@ -340,10 +344,6 @@ const StakeConfirmScreen = (): JSX.Element => {
 
   const onFundsStuck = useCallback(
     (_error: Error): void => {
-      const isLedger =
-        activeWallet?.type === WalletType.LEDGER ||
-        activeWallet?.type === WalletType.LEDGER_LIVE
-
       const performRetry = (onProgress?: OnDelegationProgress): void => {
         const currentValidator = validatorRef.current
         const currentMinStartTime = minStartTimeRef.current
@@ -405,7 +405,7 @@ const StakeConfirmScreen = (): JSX.Element => {
         ]
       })
     },
-    [activeWallet?.type, handleDismiss, pNetwork, steps.length]
+    [handleDismiss, isLedger, pNetwork, steps.length]
   )
 
   const { issueDelegation, isPending: isIssueDelegationPending } =
@@ -418,10 +418,6 @@ const StakeConfirmScreen = (): JSX.Element => {
   useEffect(() => {
     issueDelegationRef.current = issueDelegation
   }, [issueDelegation])
-
-  const isLedgerWallet =
-    activeWallet?.type === WalletType.LEDGER ||
-    activeWallet?.type === WalletType.LEDGER_LIVE
 
   const handleDelegate = useCallback(
     (recomputeSteps = false): void => {
@@ -440,7 +436,7 @@ const StakeConfirmScreen = (): JSX.Element => {
       }
 
       // For Ledger wallets, show the unified review transaction modal with progress tracking
-      if (isLedgerWallet) {
+      if (isLedger) {
         showLedgerReviewTransaction({
           network: pNetwork,
           onApprove: async onProgress => {
@@ -466,13 +462,13 @@ const StakeConfirmScreen = (): JSX.Element => {
       }
     },
     [
+      validator,
+      isLedger,
       issueDelegation,
-      isLedgerWallet,
       minStartTime,
-      pNetwork,
-      steps.length,
       validatedStakingEndTime,
-      validator
+      pNetwork,
+      steps.length
     ]
   )
 
