@@ -129,7 +129,9 @@ export const useDelegation = (): {
       setSteps(steps)
 
       // Get progress callback once before the loop (cache auto-clears after get)
-      let onProgress: ((step: number, operation: Operation | null) => void) | undefined
+      let onProgress:
+        | ((step: number, operation: Operation | null) => void)
+        | undefined
       try {
         const params = ledgerParamsCache.ledgerReviewTransactionParams.get()
         onProgress = params.stakingProgress?.onProgress
