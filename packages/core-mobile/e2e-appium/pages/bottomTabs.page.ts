@@ -31,6 +31,10 @@ class BottomsTabsPage {
     return selectors.getById(bottomTabsLoc.earnTab)
   }
 
+  get stakeTab() {
+    return selectors.getById(bottomTabsLoc.stakeTab)
+  }
+
   get browserTab() {
     return selectors.getById(bottomTabsLoc.browserTab)
   }
@@ -44,23 +48,23 @@ class BottomsTabsPage {
   }
 
   async tapActivityTab() {
-    await actions.tap(this.activityTab)
+    await actions.longPress(this.activityTab)
   }
 
   async tapPortfolioTab() {
-    await actions.tap(this.portfolioTab)
+    await actions.longPress(this.portfolioTab)
   }
 
   async tapTrackTab() {
-    await actions.tap(this.trackTab)
+    await actions.longPress(this.trackTab)
   }
 
   async tapEarnTab() {
-    await actions.tap(this.earnTab)
+    await actions.longPress(this.earnTab)
   }
 
-  async tapWatchlistTab() {
-    await actions.tap(this.watchlistTab)
+  async tapStakeTab() {
+    await actions.longPress(this.stakeTab)
   }
 }
 

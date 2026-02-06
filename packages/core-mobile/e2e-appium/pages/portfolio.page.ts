@@ -138,7 +138,7 @@ class PortfolioPage {
   }
 
   get testnetModeIsOn() {
-    return selectors.getBySomeText(portfolio.testnetModeIsOn)
+    return selectors.getByText(portfolio.testnetModeIsOn)
   }
 
   get sendButton() {
@@ -682,12 +682,14 @@ class PortfolioPage {
   }
 
   async verifyAssetsList(token = 'Avalanche') {
+    const start = performance.now()
     await actions.waitFor(commonElsPage.loadingSpinnerHidden)
     await actions.isNotVisible(commonElsPage.inProgress)
     await actions.isVisible(this.portfolioTokenList)
     await actions.isVisible(
       selectors.getById(`${portfolio.portfolioTokenItem}${token}`)
     )
+    return start
   }
 }
 

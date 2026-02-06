@@ -1,11 +1,12 @@
 export default {
   watchlistIcon: 'watchlistSVG',
-  activityTab: 'Activity_tab',
   watchlistTab: 'navutils_normal_tab_button__watchlist',
   plusButton: 'add_svg',
-  portfolioTab: 'Portfolio_tab',
-  trackTab: 'Track_tab',
-  earnTab: 'Earn_tab',
-  browserTab: 'Browser_tab',
+  portfolioTab: 'portfolio_tab',
+  trackTab: 'track_tab',
+  earnTab: 'earn_tab',
+  stakeTab: 'stake_tab',
+  browserTab: 'browser_tab',
+  activityTab: 'activity_tab',
   tabBar: 'Tab Bar'
 }

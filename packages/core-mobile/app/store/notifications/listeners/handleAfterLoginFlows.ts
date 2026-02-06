@@ -50,7 +50,7 @@ const promptAppUpdateScreenIfNeeded = async (): Promise<void> => {
   const shouldShowAppUpdateScreen =
     hasBeenViewedAppUpdateScreen === false &&
     appUpdateStatus.needsUpdate === true &&
-    !Config.E2E_MNEMONIC // TODO: android automation can't handle the app update modal properly on bitrise, so we need to hide it for now
+    !Config.TEST_MNEMONIC // TODO: android automation can't handle the app update modal properly on bitrise, so we need to hide it for now
   if (shouldShowAppUpdateScreen) {
     await waitForInteractions()
 

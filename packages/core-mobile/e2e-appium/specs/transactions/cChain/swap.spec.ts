@@ -4,7 +4,7 @@ import txPage from '../../../pages/transactions.page'
 describe('Swap on C-Chain', () => {
   it('[Smoke] Should swap AVAX to ERC20', async () => {
     await warmup()
-    await txPage.swap('AVAX', 'USDC', '0.00001')
+    await txPage.swap('AVAX', 'USDC', '0.001')
     await txPage.verifySuccessToast()
   })
 
