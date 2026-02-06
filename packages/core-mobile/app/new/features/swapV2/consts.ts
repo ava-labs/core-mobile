@@ -1,4 +1,4 @@
-import { BuildTxParams } from './services/ParaswapService'
+import { BuildTxParams } from "features/swap/services/ParaswapService"
 
 /**
  * The address where ParaSwap will send collected partner fees.
