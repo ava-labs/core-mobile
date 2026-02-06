@@ -8,8 +8,11 @@ import {
   selectWalletById,
   setActiveWallet
 } from 'store/wallet/slice'
+import { storeWallet } from 'store/wallet/thunks'
 import { WalletType } from 'services/wallet/types'
 import { removeWallet } from 'store/wallet/thunks'
+import BiometricsSDK from 'utils/BiometricsSDK'
+import Logger from 'utils/Logger'
 import {
   reducerName,
   selectAccountById,
@@ -18,11 +21,13 @@ import {
   setAccount,
   setActiveAccountId,
   removeAccount,
-  selectActiveAccount
+  selectActiveAccount,
+  setLedgerAddresses
 } from './slice'
 
 export const addAccount = createAsyncThunk<void, string, ThunkApi>(
   `${reducerName}/addAccount`,
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   async (walletId, thunkApi) => {
     const state = thunkApi.getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
@@ -33,17 +38,91 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
     }
 
     const accountsByWalletId = selectAccountsByWalletId(state, walletId)
+    const existingAccountsCount = accountsByWalletId.length
 
-    const acc = await AccountsService.createNextAccount({
-      name: `Account ${accountsByWalletId.length + 1}`,
-      index: accountsByWalletId.length,
+    const result = await AccountsService.createNextAccount({
+      name: `Account ${existingAccountsCount + 1}`,
+      index: existingAccountsCount,
       walletType: wallet.type,
       isTestnet: isDeveloperMode,
-      walletId: walletId
+      walletId
     })
 
+    const acc = result.account
     thunkApi.dispatch(setAccount(acc))
     thunkApi.dispatch(setActiveAccountId(acc.id))
+
+    if (
+      wallet.type === WalletType.LEDGER ||
+      wallet.type === WalletType.LEDGER_LIVE
+    ) {
+      // Store the xpub for this account in wallet secret
+
+      if (result.xpub) {
+        const secretResult = await BiometricsSDK.loadWalletSecret(walletId)
+        if (secretResult.success && secretResult.value) {
+          const parsedSecret = JSON.parse(secretResult.value)
+
+          // Add the new account's xpub to the per-account format
+          const extendedPublicKeys = {
+            ...parsedSecret.extendedPublicKeys,
+            [existingAccountsCount]: result.xpub
+          }
+
+          await thunkApi
+            .dispatch(
+              storeWallet({
+                walletId,
+                name: wallet.name,
+                type: wallet.type,
+                walletSecret: JSON.stringify({
+                  ...parsedSecret,
+                  extendedPublicKeys
+                })
+              })
+            )
+            .unwrap()
+
+          Logger.info(
+            `Stored xpub for account ${existingAccountsCount} in wallet secret`
+          )
+        }
+      }
+
+      const ledgerResult = await AccountsService.createNextAccount({
+        name: `Account ${existingAccountsCount + 1}`,
+        index: existingAccountsCount,
+        walletType: wallet.type,
+        isTestnet: !isDeveloperMode,
+        walletId
+      })
+
+      const ledgerAccount = ledgerResult.account
+      const testnetAccount = isDeveloperMode ? acc : ledgerAccount
+      const mainnetAccount = isDeveloperMode ? ledgerAccount : acc
+
+      thunkApi.dispatch(
+        setLedgerAddresses({
+          [acc.id]: {
+            mainnet: {
+              addressBTC: mainnetAccount.addressBTC,
+              addressAVM: mainnetAccount.addressAVM,
+              addressPVM: mainnetAccount.addressPVM,
+              addressCoreEth: mainnetAccount.addressCoreEth ?? ''
+            },
+            testnet: {
+              addressBTC: testnetAccount.addressBTC,
+              addressAVM: testnetAccount.addressAVM,
+              addressPVM: testnetAccount.addressPVM,
+              addressCoreEth: testnetAccount.addressCoreEth ?? ''
+            },
+            walletId: wallet.id,
+            index: existingAccountsCount,
+            id: acc.id
+          }
+        })
+      )
+    }
 
     if (isDeveloperMode === false) {
       const allAccountsByWalletId = [...Object.values(accountsByWalletId), acc]

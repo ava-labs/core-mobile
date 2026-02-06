@@ -60,7 +60,24 @@ export const PARTNER_FEE_PARAMS = {
 /**
  * The address Jupiter uses for Solana native tokens.
  */
-export const SOL_MINT = 'So11111111111111111111111111111111111111112';
+export const SOL_MINT = 'So11111111111111111111111111111111111111112'
+
+/**
+ * Solana base transaction fee per signature in lamports (0.000005 SOL)
+ */
+export const SOL_BASE_TX_FEE_PER_SIG = 5_000n
+
+/**
+ * Solana rent-exempt fee for an ATA (Associated Token Account) in lamports (~0.002 SOL)
+ * This is required when creating a new token account
+ */
+export const SOL_BASE_RENT_FEE = 2_039_280n
+
+/**
+ * Fee buffer percentage for Jupiter swaps (1% of balance)
+ * Fees can vary based on the number of routes used and complexity of the swap
+ */
+export const SOL_FEE_BUFFER_PERCENT = 0.01
 
 /**
  * The address where Jupiter will send collected partner fees.
@@ -76,6 +93,19 @@ export const JUPITER_PARTNER_ADDRESS =
  */
 export const JUPITER_PARTNER_FEE_BPS = 85 as const satisfies number;
 
+
+/**
+ * Estimated gas limit for Paraswap swap transactions.
+ * Based on core-web's DEFAULT_GAS_AMOUNT.
+ */
+export const PARASWAP_DEFAULT_GAS_LIMIT = 300_000
+
+/**
+ * Estimated gas limit for Markr swap transactions.
+ * Based on core-web's MARKR_DEFAULT_GAS_AMOUNT.
+ * Markr requires higher gas limit due to more complex routing.
+ */
+export const MARKR_DEFAULT_GAS_LIMIT = 750_000
 
 export const WAVAX_ADDRESS = '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7'
 export const WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'

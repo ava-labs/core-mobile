@@ -11,6 +11,9 @@ import { AdjustedNormalizedBalancesForAccounts } from 'services/balance/types'
 import { Account } from 'store/account'
 import { selectEnabledNetworks } from 'store/network/slice'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
+import { selectActiveWallet } from 'store/wallet/slice'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { getCachedXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 
 /**
  * Stale time in milliseconds
@@ -54,6 +57,8 @@ export function useAccountsBalances(
   const queryClient = useQueryClient()
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const currency = useSelector(selectSelectedCurrency)
+  const activeWallet = useSelector(selectActiveWallet)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const enabledChainIdsKey = useMemo(() => {
     // Stable + order-independent key
@@ -103,11 +108,29 @@ export function useAccountsBalances(
     staleTime,
     refetchOnMount: 'always',
     refetchInterval: options?.refetchInterval ?? refetchInterval,
-    queryFn: () =>
-      BalanceService.getBalancesForAccounts({
+    queryFn: async () => {
+      // Build xpAddresses map for all accounts
+      const xpAddressesByAccountId = new Map<string, string[]>()
+
+      if (activeWallet) {
+        await Promise.all(
+          accounts.map(async account => {
+            const { xpAddresses } = await getCachedXPAddresses({
+              walletId: activeWallet.id,
+              walletType: activeWallet.type,
+              account,
+              isDeveloperMode
+            })
+            xpAddressesByAccountId.set(account.id, xpAddresses)
+          })
+        )
+      }
+
+      return BalanceService.getBalancesForAccounts({
         networks: enabledNetworks,
         accounts,
         currency: currency.toLowerCase(),
+        xpAddressesByAccountId,
         onBalanceLoaded: balance => {
           queryClient.setQueryData(
             queryKey,
@@ -126,6 +149,7 @@ export function useAccountsBalances(
           )
         }
       })
+    }
   })
 
   const isLoading = useMemo(() => {

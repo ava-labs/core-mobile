@@ -27,6 +27,15 @@ const androidPath = isBitrise
   : path.resolve(androidLocalPath)
 const platformToRun = process.env.PLATFORM
 const isSmoke = process.env.IS_SMOKE === 'true'
+const isPerformance = process.env.IS_PERFORMANCE === 'true'
+
+// Determine which specs to run based on test type
+const getSpecs = () => {
+  if (isPerformance) {
+    return ['./specs/performance/**/*.ts']
+  }
+  return ['./specs/**/*.ts']
+}
 
 const allCaps = [
   {
@@ -35,11 +44,9 @@ const allCaps = [
     'appium:platformVersion': '15.0',
     'appium:automationName': 'UiAutomator2',
     'appium:app': androidPath,
-    // 'appium:appWaitActivity': '*',
+    'appium:appWaitActivity': '*',
     'appium:disableWindowAnimation': true,
-    'appium:autoGrantPermissions': true,
-    'appium:appWaitActivity': 'com.avaxwallet.MainActivity',
-    'appium:appActivity': 'com.avaxwallet.MainActivity'
+    'appium:autoGrantPermissions': true
   },
   {
     platformName: 'iOS',
@@ -69,7 +76,7 @@ const caps = platformToRun
 export const config: WebdriverIO.Config = {
   runner: 'local',
   tsConfigPath: './tsconfig.json',
-  specs: ['./specs/**/*.ts'],
+  specs: getSpecs(),
   exclude: [
     // 'path/to/excluded/files'
     './specs/login.e2e.ts'
@@ -94,7 +101,7 @@ export const config: WebdriverIO.Config = {
   // hoook before: make or get testRun before test
   before: async () => {
     const platform = driver.isAndroid ? 'Android' : 'iOS'
-    runId = await getTestRun(platform, isSmoke)
+    runId = await getTestRun(platform, isSmoke, isPerformance)
     console.log(`------------Starting test run------------`)
   },
 

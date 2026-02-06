@@ -16,6 +16,13 @@ import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { NetworkVMType } from '@avalabs/vm-module-types'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
+import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import { WalletType } from 'services/wallet/types'
+import { useSelector } from 'react-redux'
+import { selectIsSolanaSupportBlocked } from 'store/posthog'
+import { useRouter } from 'expo-router'
+import { LedgerAppType } from 'services/ledger/types'
+import { LedgerConnectionCaption } from './LedgerConnectionCaption'
 
 export const AccountAddresses = ({
   account
@@ -25,12 +32,27 @@ export const AccountAddresses = ({
   const {
     theme: { colors }
   } = useTheme()
-  const { networks } = useCombinedPrimaryNetworks()
+  const activeWallet = useActiveWallet()
+  const { networks } = useCombinedPrimaryNetworks({ hideEmptySolana: false })
+  const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
+
+  const isMissingSolanaAddress = useMemo(
+    () => account?.addressSVM === undefined || account?.addressSVM.length === 0,
+    [account?.addressSVM]
+  )
+
+  const isLedger = useMemo(() => {
+    return (
+      activeWallet.type === WalletType.LEDGER_LIVE ||
+      activeWallet.type === WalletType.LEDGER
+    )
+  }, [activeWallet.type])
 
   const onCopyAddress = useCallback((value: string, message: string): void => {
     copyToClipboard(value, message)
   }, [])
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   const data = useMemo(() => {
     return networks
       .map(network => {
@@ -52,7 +74,7 @@ export const AccountAddresses = ({
           }
         })()
 
-        if (address === undefined || address.length === 0) {
+        if (network.vmName === NetworkVMType.SVM && isSolanaSupportBlocked) {
           return undefined
         }
 
@@ -69,45 +91,59 @@ export const AccountAddresses = ({
               showChainLogo={isXPChain(network.chainId)}
             />
           ),
-          value: (
-            <CopyButton
-              testID={`copy_btn__${network.chainName}`}
-              onPress={() =>
-                address &&
-                onCopyAddress(address, `${network.chainName} address copied`)
-              }
-            />
-          )
+          value:
+            isLedger &&
+            network.vmName === NetworkVMType.SVM &&
+            (address === undefined || address === '') &&
+            !isSolanaSupportBlocked ? (
+              <SolanaEnableButton accountId={account.id} />
+            ) : (
+              <CopyButton
+                testID={`copy_btn__${network.chainName}`}
+                onPress={() =>
+                  address &&
+                  onCopyAddress(address, `${network.chainName} address copied`)
+                }
+              />
+            )
         }
       })
       .filter(item => item !== undefined)
   }, [
+    networks,
+    isSolanaSupportBlocked,
+    colors.$surfaceSecondary,
+    isLedger,
+    account.id,
+    account.addressPVM,
     account.addressBTC,
     account.addressC,
-    account.addressPVM,
     account.addressSVM,
-    colors.$surfaceSecondary,
-    networks,
     onCopyAddress
   ])
 
   return (
-    <GroupList
-      data={data}
-      titleSx={{
-        fontSize: 15,
-        lineHeight: 18,
-        fontFamily: 'Inter-Medium'
-      }}
-      subtitleSx={{ fontSize: 13, lineHeight: 18 }}
-      textContainerSx={{
-        width: SCREEN_WIDTH * 0.4
-      }}
-      valueSx={{
-        fontSize: 16,
-        lineHeight: 22
-      }}
-    />
+    <View sx={{ gap: 12 }}>
+      <GroupList
+        data={data}
+        titleSx={{
+          fontSize: 15,
+          lineHeight: 18,
+          fontFamily: 'Inter-Medium'
+        }}
+        subtitleSx={{ fontSize: 13, lineHeight: 18 }}
+        textContainerSx={{
+          width: SCREEN_WIDTH * 0.4
+        }}
+        valueSx={{
+          fontSize: 16,
+          lineHeight: 22
+        }}
+      />
+      {isMissingSolanaAddress && !isSolanaSupportBlocked && (
+        <LedgerConnectionCaption appType={LedgerAppType.SOLANA} />
+      )}
+    </View>
   )
 }
 
@@ -137,6 +173,43 @@ const CopyButton = ({
           sx={{ fontSize: 14 }}
           numberOfLines={1}>
           Copy
+        </Text>
+      </TouchableOpacity>
+    </View>
+  )
+}
+
+const SolanaEnableButton = ({
+  accountId
+}: {
+  accountId: string
+}): React.JSX.Element => {
+  const {
+    theme: { colors }
+  } = useTheme()
+  const { navigate } = useRouter()
+
+  const handleOnPress = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
+    navigate({ pathname: '/solanaConnection', params: { accountId } })
+  }, [navigate, accountId])
+
+  return (
+    <View style={{ marginLeft: 16 }}>
+      <TouchableOpacity
+        onPress={handleOnPress}
+        style={{
+          backgroundColor: colors.$borderPrimary,
+          paddingHorizontal: 12,
+          paddingVertical: 5,
+          borderRadius: 17
+        }}>
+        <Text
+          testID={'copy_btn__solana'}
+          variant="buttonMedium"
+          sx={{ fontSize: 14 }}
+          numberOfLines={1}>
+          Enable
         </Text>
       </TouchableOpacity>
     </View>

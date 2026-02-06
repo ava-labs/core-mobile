@@ -3,7 +3,10 @@ import Transport from '@ledgerhq/hw-transport'
 import AppAvalanche from '@avalabs/hw-app-avalanche'
 import AppSolana from '@ledgerhq/hw-app-solana'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
-import { getAddressDerivationPath } from 'services/wallet/utils'
+import {
+  getAddressDerivationPath,
+  handleLedgerError
+} from 'services/wallet/utils'
 import { ChainName } from 'services/network/consts'
 import {
   getBtcAddressFromPubKey,
@@ -11,6 +14,7 @@ import {
   getLedgerAppInfo
 } from '@avalabs/core-wallets-sdk'
 import { networks } from 'bitcoinjs-lib'
+import { utils as avalancheUtils, networkIDs } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
 import bs58 from 'bs58'
 import { Platform, PermissionsAndroid, Alert, Linking } from 'react-native'
@@ -20,6 +24,7 @@ import {
 } from 'new/features/ledger/consts'
 import { assertNotNull } from 'utils/assertions'
 import { Curve } from 'utils/publicKeys'
+import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import {
   AddressInfo,
   ExtendedPublicKey,
@@ -59,17 +64,60 @@ class LedgerService {
     this.#transport = transport
   }
 
+  // Wrap transport's exchange method to automatically handle busy state
+  private wrapTransportExchange(): void {
+    if (!this.#transport) return
+
+    const originalExchange = this.#transport.exchange.bind(this.#transport)
+
+    // Replace exchange method with wrapped version
+    this.#transport.exchange = async (apdu: Buffer): Promise<Buffer> => {
+      // If transport is busy, wait before sending next command
+      if (this.#transport?.exchangeBusyPromise) {
+        await new Promise(res => setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY))
+      }
+
+      try {
+        return await originalExchange(apdu)
+      } catch (error) {
+        // If error is still due to busy transport, reconnect
+        if (
+          error instanceof Error &&
+          (error.message
+            .toLowerCase()
+            .includes(LEDGER_ERROR_CODES.TRANSPORT_RACE_CONDITION_ALT) ||
+            error.message
+              .toLowerCase()
+              .includes(LEDGER_ERROR_CODES.TRANSPORT_RACE_CONDITION))
+        ) {
+          // wait for the transport and retry
+          await new Promise(res =>
+            setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY)
+          )
+          return await originalExchange(apdu)
+        }
+        // Other errors should be thrown immediately
+        throw error
+      }
+    }
+  }
+
   // Connect to Ledger device (transport only, no apps)
   async connect(deviceId: string): Promise<void> {
     try {
       Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
       this.isDisconnected = false // Reset disconnect flag on new connection
       // Use a longer timeout for connection
+      await TransportBLE.disconnectDevice(deviceId)
+
       this.transport = await TransportBLE.open(
         deviceId,
         LEDGER_TIMEOUTS.CONNECTION_TIMEOUT
       )
       Logger.info('BLE transport connected successfully')
+
+      // Wrap the transport's exchange method to automatically handle busy state
+      this.wrapTransportExchange()
 
       this.currentAppType = LedgerAppType.UNKNOWN
 
@@ -87,8 +135,10 @@ class LedgerService {
         )
         Logger.info(`Immediately detected app type: ${detectedAppType}`)
         this.currentAppType = detectedAppType
-      } catch (testError) {
-        Logger.info('Immediate app info test failed, will rely on polling')
+      } catch (error) {
+        Logger.info(
+          'Immediate get current app info failed, will rely on polling'
+        )
       }
     } catch (error) {
       Logger.error('Failed to connect to Ledger', error)
@@ -366,6 +416,9 @@ class LedgerService {
         return true
       }
     } catch (error) {
+      if (error instanceof Error) {
+        handleLedgerError({ error, appType })
+      }
       Logger.info('Error checking app, will continue polling')
     }
     return false
@@ -374,7 +427,7 @@ class LedgerService {
   // Wait for specific app to be open (Promise-based, works with polling)
   async waitForApp(
     appType: LedgerAppType,
-    timeoutMs = LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT
+    timeoutMs: number = LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const startTime = Date.now()
@@ -474,7 +527,7 @@ class LedgerService {
   }
 
   // Get extended public keys for BIP44 derivation
-  async getExtendedPublicKeys(): Promise<{
+  async getExtendedPublicKeys(accountIndex: number): Promise<{
     evm: ExtendedPublicKey
     avalanche: ExtendedPublicKey
   }> {
@@ -494,7 +547,7 @@ class LedgerService {
       // Get EVM extended public key (m/44'/60'/0')
       Logger.info('Getting EVM extended public key...')
       const evmPath = getAddressDerivationPath({
-        accountIndex: 0,
+        accountIndex,
         vmType: NetworkVMType.EVM
       }).replace('/0/0', '')
       Logger.info('EVM derivation path:', evmPath)
@@ -524,7 +577,7 @@ class LedgerService {
       // Get Avalanche extended public key (m/44'/9000'/0')
       Logger.info('Getting Avalanche extended public key...')
       const avalanchePath = getAddressDerivationPath({
-        accountIndex: 0,
+        accountIndex,
         vmType: NetworkVMType.AVM
       }).replace('/0/0', '')
       Logger.info('Avalanche derivation path:', avalanchePath)
@@ -557,7 +610,7 @@ class LedgerService {
       return {
         evm: {
           path: getAddressDerivationPath({
-            accountIndex: 0,
+            accountIndex,
             vmType: NetworkVMType.EVM
           }).replace('/0/0', ''),
           key: evmXpubResponse.publicKey.toString('hex'),
@@ -565,7 +618,7 @@ class LedgerService {
         },
         avalanche: {
           path: getAddressDerivationPath({
-            accountIndex: 0,
+            accountIndex,
             vmType: NetworkVMType.AVM
           }).replace('/0/0', ''),
           key: avalancheXpubResponse.publicKey.toString('hex'),
@@ -803,7 +856,8 @@ class LedgerService {
   // Get all addresses from Avalanche app (EVM, AVM, Bitcoin)
   async getAllAddresses(
     startIndex: number,
-    count: number
+    count: number,
+    isTestnet: boolean
   ): Promise<AddressInfo[]> {
     // Connect to Avalanche app
     await this.waitForApp(LedgerAppType.AVALANCHE)
@@ -812,6 +866,7 @@ class LedgerService {
     const avalancheApp = new AppAvalanche(this.transport as Transport)
 
     const addresses: AddressInfo[] = []
+    const networkHrp = isTestnet ? 'fuji' : 'avax'
 
     try {
       // Derive addresses for each chain
@@ -832,38 +887,35 @@ class LedgerService {
           network: ChainName.AVALANCHE_C_EVM
         })
 
-        // AVM addresses (Avalanche X-Chain) - get from device
-        const xChainPath = getAddressDerivationPath({
+        // xp addresses - get from device
+        const avalancheChainPath = getAddressDerivationPath({
           accountIndex: i,
           vmType: NetworkVMType.AVM
         })
-        const xChainAddressResponse = await avalancheApp.getAddressAndPubKey(
-          xChainPath,
-          false,
-          'avax' // hrp for mainnet
+        const avalancheChainAddressResponse =
+          await avalancheApp.getAddressAndPubKey(
+            avalancheChainPath,
+            false,
+            isTestnet ? 'fuji' : 'avax' // hrp for mainnet or testnet,
+          )
+
+        const addressWithoutPrefix = stripAddressPrefix(
+          avalancheChainAddressResponse.address
         )
+
+        const xChainAddress = `X-${addressWithoutPrefix}`
         addresses.push({
           id: `avalanche-x-${i}`,
-          address: xChainAddressResponse.address,
-          derivationPath: xChainPath,
+          address: xChainAddress,
+          derivationPath: avalancheChainPath,
           network: ChainName.AVALANCHE_X
         })
+        const pChainAddress = `P-${addressWithoutPrefix}`
 
-        // AVM addresses (Avalanche P-Chain) - get from device with P-Chain ID
-        const pChainPath = getAddressDerivationPath({
-          accountIndex: i,
-          vmType: NetworkVMType.AVM
-        })
-        const pChainAddressResponse = await avalancheApp.getAddressAndPubKey(
-          pChainPath,
-          false,
-          'avax', // hrp for mainnet
-          '2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM' // P-Chain ID
-        )
         addresses.push({
           id: `avalanche-p-${i}`,
-          address: pChainAddressResponse.address,
-          derivationPath: pChainPath,
+          address: pChainAddress,
+          derivationPath: avalancheChainPath,
           network: ChainName.AVALANCHE_P
         })
 
@@ -875,12 +927,13 @@ class LedgerService {
         const btcPublicKeyResponse = await avalancheApp.getAddressAndPubKey(
           btcPath,
           false,
-          'avax' // hrp for mainnet
+          networkHrp // hrp for mainnet or testnet
         )
         const btcAddress = getBtcAddressFromPubKey(
           Buffer.from(btcPublicKeyResponse.publicKey.toString('hex'), 'hex'),
-          networks.bitcoin // mainnet
+          isTestnet ? networks.testnet : networks.bitcoin // mainnet or testnet
         )
+
         addresses.push({
           id: `bitcoin-${i}`,
           address: btcAddress,
@@ -898,13 +951,18 @@ class LedgerService {
   // Get all addresses including Solana (requires app switching)
   async getAllAddressesWithSolana(
     startIndex: number,
-    count: number
+    count: number,
+    isTestnet: boolean
   ): Promise<AddressInfo[]> {
     const addresses: AddressInfo[] = []
 
     try {
       // Get Avalanche addresses first
-      const avalancheAddresses = await this.getAllAddresses(startIndex, count)
+      const avalancheAddresses = await this.getAllAddresses(
+        startIndex,
+        count,
+        isTestnet
+      )
       addresses.push(...avalancheAddresses)
 
       // Get Solana addresses
@@ -953,7 +1011,7 @@ class LedgerService {
    * Get Solana keys from the connected Ledger device
    * @returns Array of Solana keys with derivation paths
    */
-  async getSolanaKeys(): Promise<PublicKeyInfo[]> {
+  async getSolanaKeys(accountIndex: number): Promise<PublicKeyInfo[]> {
     Logger.info('Getting Solana keys with passive app detection')
     await this.waitForApp(LedgerAppType.SOLANA)
 
@@ -963,7 +1021,7 @@ class LedgerService {
 
     // Use the SDK's derivation path function (same as other chains)
     const derivationPath = getAddressDerivationPath({
-      accountIndex: 0,
+      accountIndex,
       vmType: NetworkVMType.SVM
     })
     // Remove 'm/' prefix if present (Ledger expects path without prefix)
@@ -988,24 +1046,38 @@ class LedgerService {
    * Get Avalanche keys from the connected Ledger device
    * @returns Avalanche keys (addresses for display, xpubs for wallet creation)
    */
-  async getAvalancheKeys(): Promise<AvalancheKey> {
+  async getAvalancheKeys(
+    accountIndex: number,
+    isTestnet: boolean
+  ): Promise<AvalancheKey> {
     Logger.info('Getting Avalanche keys')
 
     // Get addresses for display
-    const addresses = await this.getAllAddresses(0, 1)
+    const addresses = await this.getAllAddresses(accountIndex, 1, isTestnet)
 
     const evmAddress =
       addresses.find(addr => addr.network === ChainName.AVALANCHE_C_EVM)
         ?.address || ''
-    const xChainAddress =
+    const avmAddress =
       addresses.find(addr => addr.network === ChainName.AVALANCHE_X)?.address ||
       ''
     const pvmAddress =
       addresses.find(addr => addr.network === ChainName.AVALANCHE_P)?.address ||
       ''
 
+    // Derive C-chain bech32 address from EVM address
+    // CoreEth is the EVM address (hex) encoded in bech32 format with C- prefix
+    const hrp = isTestnet ? networkIDs.FujiHRP : networkIDs.MainnetHRP
+    const evmAddressBytes = new Uint8Array(
+      Buffer.from(evmAddress.replace(/^0x/, ''), 'hex')
+    )
+    const coreEthAddress = `C-${avalancheUtils.formatBech32(
+      hrp,
+      evmAddressBytes
+    )}`
+
     // Get extended public keys and convert to base58 xpub format
-    const extendedKeys = await this.getExtendedPublicKeys()
+    const extendedKeys = await this.getExtendedPublicKeys(accountIndex)
 
     const { bip32 } = await import('utils/bip32')
 
@@ -1026,8 +1098,9 @@ class LedgerService {
     return {
       addresses: {
         evm: evmAddress,
-        avm: xChainAddress,
-        pvm: pvmAddress
+        avm: avmAddress,
+        pvm: pvmAddress,
+        coreEth: coreEthAddress
       },
       xpubs: {
         evm: evmXpub,
@@ -1041,11 +1114,14 @@ class LedgerService {
    * @param avalancheKeys The avalanche keys to derive addresses from
    * @returns Bitcoin and XP addresses
    */
-  async getBitcoinAndXPAddresses(): Promise<{
+  async getBitcoinAndXPAddresses(
+    accountIndex: number,
+    isTestnet: boolean
+  ): Promise<{
     bitcoinAddress: string
     xpAddress: string
   }> {
-    const addresses = await this.getAllAddresses(0, 1)
+    const addresses = await this.getAllAddresses(accountIndex, 1, isTestnet)
 
     // Get addresses for display
     const xChainAddress =
@@ -1057,6 +1133,59 @@ class LedgerService {
     return {
       bitcoinAddress: btcAddress,
       xpAddress: xChainAddress
+    }
+  }
+
+  // Helper to build the “open app” APDU for a given app name
+  buildOpenAppApdu(appName: string): Buffer {
+    const cla = 0xe0
+    const ins = 0xd8
+    const p1 = 0x00
+    const p2 = 0x00
+
+    const nameBytes = Buffer.from(appName, 'ascii')
+    const lc = nameBytes.length // Lc = length of data
+
+    const apdu = Buffer.alloc(5 + lc)
+    apdu[0] = cla
+    apdu[1] = ins
+    apdu[2] = p1
+    apdu[3] = p2
+    apdu[4] = lc
+
+    nameBytes.copy(apdu as unknown as Uint8Array, 5)
+    return apdu
+  }
+
+  // Attempt to open a specific app on the Ledger device
+  // Best-effort, does not guarantee success
+  async openApp(app: LedgerAppType): Promise<void> {
+    try {
+      const apdu = this.buildOpenAppApdu(app)
+      const response = await this.transport.exchange(apdu)
+
+      // Last 2 bytes are the status word (SW1, SW2), the rest is data.
+      const sw1 = response[response.length - 2]
+      const sw2 = response[response.length - 1]
+
+      // @ts-ignore
+      // eslint-disable-next-line no-bitwise
+      const statusCode = (sw1 << 8) | sw2
+
+      if (statusCode === LedgerReturnCode.SUCCESS) {
+        Logger.info(
+          `Successfully opened ${app} app on Ledger device using APDU`
+        )
+      } else {
+        const swHex = statusCode.toString(16).padStart(4, '0')
+        Logger.info(`Unexpected status word: 0x${swHex}`)
+      }
+
+      // Optional: use response.slice(0, -2) to read any data part.
+    } catch (error) {
+      // Do not throw error, just log it, we can't reliably force-switch apps on a Ledger
+      // from one third‑party app to another, so this is just a best-effort attempt.
+      Logger.info(`Failed to open ${app} app:`, error)
     }
   }
 }

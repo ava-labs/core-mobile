@@ -7,6 +7,8 @@ import { selectWalletById } from 'store/wallet/slice'
 import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
+import { getCachedXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 
 export type AvalancheGetAccountsRpcRequest =
@@ -23,6 +25,7 @@ class AvalancheGetAccountsHandler
   ): HandleResponse => {
     const state = listenerApi.getState()
     const activeAccount = selectActiveAccount(state)
+    const isDeveloperMode = selectIsDeveloperMode(state)
 
     if (!activeAccount) {
       return {
@@ -32,6 +35,7 @@ class AvalancheGetAccountsHandler
     }
 
     const wallet = selectWalletById(activeAccount.walletId)(state)
+
     if (!wallet) {
       return {
         success: false,
@@ -41,7 +45,7 @@ class AvalancheGetAccountsHandler
 
     const accounts = selectAccountsByWalletId(state, activeAccount.walletId)
 
-    // Process accounts and add xpubXP where available
+    // Process accounts and add xpubXP and xpAddresses where available
     const accountsArray = await Promise.all(
       accounts.map(async account => {
         const xpubXP = await getXpubXPIfAvailable({
@@ -50,11 +54,25 @@ class AvalancheGetAccountsHandler
           accountIndex: account.index
         })
 
+        const { xpAddresses: addresses, xpAddressDictionary } =
+          await getCachedXPAddresses({
+            walletId: wallet.id,
+            walletType: wallet.type,
+            account,
+            isDeveloperMode
+          })
+
+        const xpAddresses = addresses.map(address => ({
+          address,
+          index: xpAddressDictionary[address]?.index ?? 0
+        }))
+
         return {
           ...account,
           walletType: wallet?.type,
           walletName: wallet?.name,
           xpubXP,
+          xpAddresses,
           active: account.id === activeAccount.id
         }
       })

@@ -156,7 +156,7 @@ class TransactionsPage {
   }
 
   async typeSearchBar(text: string) {
-    await actions.type(this.searchBar, text)
+    await actions.typeSlowly(this.searchBar, text)
   }
 
   async dismissTransactionOnboarding() {

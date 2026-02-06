@@ -12,6 +12,12 @@ import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 
 describe('earn/exportP', () => {
   describe('exportP', () => {
+    const testXpAddresses = ['avax123', 'avax456']
+    const testXpAddressDictionary = {
+      avax123: { space: 'e' as const, index: 0, hasActivity: true },
+      avax456: { space: 'i' as const, index: 1, hasActivity: true }
+    }
+
     const getTxStatusMockFn = jest.fn().mockReturnValue({
       status: 'Committed'
     })
@@ -68,7 +74,9 @@ describe('earn/exportP', () => {
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(13 * 10 ** 9, 9, 'AVAX'),
           isTestnet: false,
-          account: { xpAddresses: [] } as unknown as Account
+          account: {} as Account,
+          xpAddresses: testXpAddresses,
+          xpAddressDictionary: testXpAddressDictionary
         })
       }).rejects.toThrow('Not enough balance on P chain')
     })
@@ -81,15 +89,18 @@ describe('earn/exportP', () => {
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
           isTestnet: false,
-          account: { xpAddresses: [] } as unknown as Account
+          account: {} as Account,
+          xpAddresses: testXpAddresses,
+          xpAddressDictionary: testXpAddressDictionary
         })
         expect(AvalancheWalletService.createExportPTx).toHaveBeenCalledWith({
           amountInNAvax: BigInt(10000000000),
-          account: { xpAddresses: [] } as unknown as Account,
+          account: {} as Account,
           destinationChain: 'C',
           destinationAddress: undefined,
           feeState: undefined,
-          isTestnet: false
+          isTestnet: false,
+          xpAddresses: testXpAddresses
         })
       }).not.toThrow()
     })
@@ -102,7 +113,9 @@ describe('earn/exportP', () => {
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
           isTestnet: false,
-          account: { xpAddresses: [] } as unknown as Account
+          account: {} as Account,
+          xpAddresses: testXpAddresses,
+          xpAddressDictionary: testXpAddressDictionary
         })
         expect(WalletService.sign).toHaveBeenCalled()
       }).not.toThrow()
@@ -116,7 +129,9 @@ describe('earn/exportP', () => {
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
           isTestnet: false,
-          account: { xpAddresses: [] } as unknown as Account
+          account: {} as Account,
+          xpAddresses: testXpAddresses,
+          xpAddressDictionary: testXpAddressDictionary
         })
         expect(NetworkService.sendTransaction).toHaveBeenCalled()
       }).not.toThrow()

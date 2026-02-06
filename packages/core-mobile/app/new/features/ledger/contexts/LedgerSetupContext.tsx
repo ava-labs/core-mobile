@@ -10,7 +10,8 @@ import {
   LedgerDerivationPathType,
   WalletCreationOptions,
   LedgerTransportState,
-  LedgerKeys
+  LedgerKeys,
+  WalletUpdateOptions
 } from 'services/ledger/types'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useLedgerWalletMap } from '../store'
@@ -36,8 +37,8 @@ interface LedgerSetupContextValue {
   disconnectDevice: () => Promise<void>
   createLedgerWallet: (
     options: WalletCreationOptions & LedgerKeys
-  ) => Promise<string>
-
+  ) => Promise<{ walletId: string; accountId: string }>
+  updateSolanaForLedgerWallet: (options: WalletUpdateOptions) => Promise<void>
   // Helper methods
   resetSetup: () => void
 }
@@ -66,20 +67,23 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
     transportState,
     connectToDevice,
     disconnectDevice,
-    createLedgerWallet: _createLedgerWallet
+    createLedgerWallet: _createLedgerWallet,
+    updateSolanaForLedgerWallet
   } = useLedgerWallet()
 
   const { setLedgerWalletMap } = useLedgerWalletMap()
 
   const createLedgerWallet = useCallback(
-    async (options: WalletCreationOptions) => {
-      const walletId = await _createLedgerWallet(options)
+    async (
+      options: WalletCreationOptions
+    ): Promise<{ walletId: string; accountId: string }> => {
+      const { walletId, accountId } = await _createLedgerWallet(options)
       setLedgerWalletMap(
         walletId,
         options.deviceId,
         options.deviceName || 'Ledger Device'
       )
-      return walletId
+      return { walletId, accountId }
     },
     [_createLedgerWallet, setLedgerWalletMap]
   )
@@ -112,6 +116,7 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
       connectToDevice,
       disconnectDevice,
       createLedgerWallet,
+      updateSolanaForLedgerWallet,
       setSelectedDerivationPath,
       setConnectedDevice: handleSetConnectedDevice,
       setIsCreatingWallet,
@@ -129,6 +134,7 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
       connectToDevice,
       disconnectDevice,
       createLedgerWallet,
+      updateSolanaForLedgerWallet,
       handleSetConnectedDevice,
       resetSetup
     ]

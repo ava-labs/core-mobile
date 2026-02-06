@@ -94,6 +94,7 @@ export type AnalyticsEvents = {
   PortfolioAssetsClicked: undefined
   PortfolioCollectiblesClicked: undefined
   PortfolioDeFiClicked: undefined
+  PortfolioActivityClicked: undefined
   PortfolioTokenSelected: { name: string; symbol: string; chainId: number }
   PrivacyPolicyClicked: undefined
   ReceivePageVisited: undefined
@@ -231,4 +232,17 @@ export type AnalyticsEvents = {
 
   // App Review
   InAppReviewRequested: undefined
+
+  // NEST EGG CAMPAIGN
+  NestEggCampaignModalViewed: { addressC: string }
+  NestEggSuccessModalViewed: { addressC: string }
+  NestEggQualified: {
+    addressC: string
+    txHash: string
+    chainId: number
+    fromTokenSymbol: string
+    toTokenSymbol: string
+    fromAmountUsd: number
+    timestamp: number
+  }
 }

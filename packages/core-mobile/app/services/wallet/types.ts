@@ -69,6 +69,7 @@ export type AddDelegatorProps = {
   shouldValidateBurnedAmount?: boolean
   feeState?: pvm.FeeState
   pFeeAdjustmentThreshold: number
+  xpAddresses: string[]
 }
 
 export interface CommonAvalancheTxParamsBase {
@@ -77,6 +78,7 @@ export interface CommonAvalancheTxParamsBase {
   destinationAddress: string | undefined
   shouldValidateBurnedAmount?: boolean
   feeState?: pvm.FeeState
+  xpAddresses: string[]
 }
 
 export type CreateExportCTxParams = CommonAvalancheTxParamsBase & {

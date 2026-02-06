@@ -25,7 +25,7 @@ import Logger from 'utils/Logger'
 
 export const useManageWallet = (): {
   handleAddAccount: (wallet: Wallet) => void
-  getDropdownItems: (wallet: Wallet) => DropdownItem[]
+  getDropdownItems: (wallet: Wallet, canAddAccount?: boolean) => DropdownItem[]
   handleDropdownSelect: (action: string, wallet: Wallet) => void
   isAddingAccount: boolean
 } => {
@@ -162,7 +162,7 @@ export const useManageWallet = (): {
   )
 
   const getDropdownItems = useCallback(
-    (wallet: Wallet): DropdownItem[] => {
+    (wallet: Wallet, canAddAccount?: boolean): DropdownItem[] => {
       const baseItems: DropdownItem[] = []
 
       if (wallet.type !== WalletType.PRIVATE_KEY) {
@@ -176,9 +176,9 @@ export const useManageWallet = (): {
         [
           WalletType.MNEMONIC,
           WalletType.SEEDLESS,
-          WalletType.LEDGER,
           WalletType.KEYSTONE
-        ].includes(wallet.type)
+        ].includes(wallet.type) ||
+        canAddAccount
       ) {
         baseItems.push({
           id: 'add_account',

@@ -7,6 +7,8 @@ import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
 import { Account } from 'store/account/types'
 import { selectEnabledNetworks } from 'store/network/slice'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
+import { Network } from '@avalabs/core-chains-sdk'
+import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import * as store from '../store'
 
 /**
@@ -21,8 +23,15 @@ const staleTime = 20_000
  */
 const refetchInterval = __DEV__ ? 30_000 : 5_000
 
-export const balanceKey = (account: Account | undefined) =>
-  [ReactQueryKeys.ACCOUNT_BALANCE, account?.id] as const
+export const balanceKey = (account: Account | undefined, network?: Network[]) =>
+  [
+    ReactQueryKeys.ACCOUNT_BALANCE,
+    account?.id,
+    network
+      ?.map(n => n.chainId)
+      .sort()
+      .join(',')
+  ] as const
 
 /**
  * Fetches balances for the specified account across all enabled networks (C-Chain, X-Chain, P-Chain, other EVMs, BTC, SOL, etc.)
@@ -45,6 +54,7 @@ export function useAccountBalances(
   const [isRefetching, setIsRefetching] = store.useIsRefetchingAccountBalances()
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const currency = useSelector(selectSelectedCurrency)
+  const { xpAddresses } = useXPAddresses(account)
 
   const isNotReady = !account || enabledNetworks.length === 0
 
@@ -57,7 +67,7 @@ export function useAccountBalances(
     refetch: refetchFn
   } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: balanceKey(account),
+    queryKey: balanceKey(account, enabledNetworks),
     enabled,
     refetchInterval: options?.refetchInterval ?? refetchInterval,
     staleTime,
@@ -68,9 +78,10 @@ export function useAccountBalances(
         networks: enabledNetworks,
         account,
         currency: currency.toLowerCase(),
+        xpAddresses,
         onBalanceLoaded: balance => {
           queryClient.setQueryData(
-            balanceKey(account),
+            balanceKey(account, enabledNetworks),
             (prev: AdjustedNormalizedBalancesForAccount[] | undefined) => {
               if (!prev) return [balance]
               const filtered = prev.filter(p => p.chainId !== balance.chainId)

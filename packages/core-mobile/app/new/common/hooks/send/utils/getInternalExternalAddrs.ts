@@ -1,8 +1,5 @@
 import { networkIDs, utils, Utxo } from '@avalabs/avalanchejs'
-
-type SearchSpace = 'i' | 'e'
-type XPAddressData = { index: number; space: SearchSpace }
-type XPAddressDictionary = Record<string, XPAddressData>
+import { XPAddressDictionary } from 'store/account'
 
 const getHrp = (isTestnet: boolean): string =>
   isTestnet ? networkIDs.FujiHRP : networkIDs.MainnetHRP

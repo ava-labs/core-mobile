@@ -12,16 +12,20 @@ import Logger from 'utils/Logger'
 import LedgerService from 'services/ledger/LedgerService'
 import { Button, ButtonType } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
-import { LedgerKeys } from 'services/ledger/types'
+import { LedgerAppType, LedgerKeys } from 'services/ledger/types'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { showSnackbar } from 'common/utils/toast'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { setLedgerAddresses } from 'store/account'
 
 export default function AppConnectionScreen(): JSX.Element {
   const { push, back } = useRouter()
   const [isCreatingWallet, setIsCreatingWallet] = useState(false)
   const headerHeight = useHeaderHeight()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
+  const dispatch = useDispatch()
 
   // Local key state - managed only in this component
   const [keys, setKeys] = useState<LedgerKeys>({
@@ -44,6 +48,35 @@ export default function AppConnectionScreen(): JSX.Element {
     createLedgerWallet
   } = useLedgerSetupContext()
 
+  const getOppositeKeys = useCallback(async () => {
+    try {
+      const avalancheKeys = await LedgerService.getAvalancheKeys(
+        0,
+        !isDeveloperMode
+      )
+      const { bitcoinAddress } = await LedgerService.getBitcoinAndXPAddresses(
+        0,
+        !isDeveloperMode
+      )
+
+      return {
+        addressBTC: bitcoinAddress,
+        addressAVM: avalancheKeys.addresses.avm,
+        addressPVM: avalancheKeys.addresses.pvm,
+        addressCoreEth: avalancheKeys.addresses.coreEth
+      }
+    } catch (err) {
+      Logger.error('Failed to get opposite keys', err)
+      return {
+        addressBTC: '',
+        addressAVM: '',
+        addressPVM: '',
+        addressCoreEth: ''
+      }
+    }
+  }, [isDeveloperMode])
+
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   const handleComplete = useCallback(async () => {
     Logger.info('handleComplete called', {
       hasAvalancheKeys: !!keys.avalancheKeys,
@@ -64,7 +97,7 @@ export default function AppConnectionScreen(): JSX.Element {
       setIsCreatingWallet(true)
 
       try {
-        await createLedgerWallet({
+        const { walletId, accountId } = await createLedgerWallet({
           deviceId: connectedDeviceId,
           deviceName: connectedDeviceName,
           derivationPathType: selectedDerivationPath,
@@ -72,6 +105,42 @@ export default function AppConnectionScreen(): JSX.Element {
           solanaKeys: keys.solanaKeys,
           bitcoinAddress: keys.bitcoinAddress
         })
+
+        // TODO: implement await/retry logic for any ledger APDU commands
+        // that could fail due to transport race conditions
+        setTimeout(async () => {
+          const oppositeKeys = await getOppositeKeys()
+
+          const mainnet = isDeveloperMode
+            ? oppositeKeys
+            : {
+                addressBTC: keys.bitcoinAddress ?? '',
+                addressAVM: keys.avalancheKeys?.addresses.avm || '',
+                addressPVM: keys.avalancheKeys?.addresses.pvm || '',
+                addressCoreEth: keys.avalancheKeys?.addresses.coreEth || ''
+              }
+
+          const testnet = isDeveloperMode
+            ? {
+                addressBTC: keys.bitcoinAddress ?? '',
+                addressAVM: keys.avalancheKeys?.addresses.avm || '',
+                addressPVM: keys.avalancheKeys?.addresses.pvm || '',
+                addressCoreEth: keys.avalancheKeys?.addresses.coreEth || ''
+              }
+            : oppositeKeys
+
+          dispatch(
+            setLedgerAddresses({
+              [accountId]: {
+                mainnet,
+                testnet,
+                walletId,
+                index: 0,
+                id: accountId
+              }
+            })
+          )
+        }, 500)
 
         Logger.info(
           'Wallet created successfully, navigating to complete screen'
@@ -113,6 +182,9 @@ export default function AppConnectionScreen(): JSX.Element {
     isCreatingWallet,
     createLedgerWallet,
     connectedDeviceName,
+    getOppositeKeys,
+    isDeveloperMode,
+    dispatch,
     push
   ])
 
@@ -210,10 +282,15 @@ export default function AppConnectionScreen(): JSX.Element {
     try {
       setAppConnectionStep(AppConnectionStep.AVALANCHE_LOADING)
 
+      // Open Avalanche app before getting keys
+      await LedgerService.openApp(LedgerAppType.AVALANCHE)
       // Get keys from service
-      const avalancheKeys = await LedgerService.getAvalancheKeys()
+      const avalancheKeys = await LedgerService.getAvalancheKeys(
+        0,
+        isDeveloperMode
+      )
       const { bitcoinAddress, xpAddress } =
-        await LedgerService.getBitcoinAndXPAddresses()
+        await LedgerService.getBitcoinAndXPAddresses(0, isDeveloperMode)
 
       // Update local state
       setKeys(prev => ({
@@ -240,14 +317,16 @@ export default function AppConnectionScreen(): JSX.Element {
         [{ text: 'OK' }]
       )
     }
-  }, [isSolanaSupportBlocked, setAppConnectionStep, setKeys])
+  }, [isDeveloperMode, isSolanaSupportBlocked])
 
   const handleConnectSolana = useCallback(async () => {
     try {
       setAppConnectionStep(AppConnectionStep.SOLANA_LOADING)
 
+      // Open Solana app before getting keys
+      await LedgerService.openApp(LedgerAppType.SOLANA)
       // Get keys from service
-      const solanaKeys = await LedgerService.getSolanaKeys()
+      const solanaKeys = await LedgerService.getSolanaKeys(0)
 
       // Update local state
       setKeys(prev => ({
@@ -269,7 +348,7 @@ export default function AppConnectionScreen(): JSX.Element {
         [{ text: 'OK' }]
       )
     }
-  }, [setAppConnectionStep, setKeys])
+  }, [])
 
   const handleSkipSolana = useCallback(() => {
     // Skip Solana and proceed to complete step

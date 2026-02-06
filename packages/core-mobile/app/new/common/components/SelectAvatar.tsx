@@ -9,9 +9,8 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { loadAvatar } from 'common/utils/loadAvatar'
-import React, { memo, useCallback, useMemo, useState } from 'react'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useFocusEffect } from 'expo-router'
+import React, { memo, useCallback, useMemo, useState } from 'react'
 import Config from 'react-native-config'
 import Animated, { FadeIn } from 'react-native-reanimated'
 import { ScrollScreen } from './ScrollScreen'
@@ -38,7 +37,6 @@ export const SelectAvatar = memo(
     isModal?: boolean
     buttonText?: string
   }): React.JSX.Element => {
-    const insets = useSafeAreaInsets()
     const {
       theme: { colors }
     } = useTheme()
@@ -149,7 +147,6 @@ export const SelectAvatar = memo(
             !Config.E2E_MNEMONIC && (
               <View
                 style={{
-                  marginBottom: -insets.bottom,
                   paddingBottom: 16
                 }}>
                 <AvatarSelector

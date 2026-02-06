@@ -1,4 +1,4 @@
-import { Account } from 'store/account/types'
+import { Account, XPAddressDictionary } from 'store/account/types'
 import { importPWithBalanceCheck } from 'services/earn/importP'
 import Big from 'big.js'
 import { getUnixTime } from 'date-fns'
@@ -14,7 +14,7 @@ import WalletService from 'services/wallet/WalletService'
 import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
 import { AvaxXP } from 'types/AvaxXP'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
-import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP'
+import { getCachedXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { info, pvm, UnsignedTx } from '@avalabs/avalanchejs'
@@ -65,7 +65,9 @@ class EarnService {
     selectedCurrency,
     progressEvents,
     feeState,
-    cBaseFeeMultiplier
+    cBaseFeeMultiplier,
+    xpAddresses,
+    xpAddressDictionary
   }: {
     walletId: string
     walletType: WalletType
@@ -75,6 +77,8 @@ class EarnService {
     progressEvents?: (events: RecoveryEvents) => void
     feeState?: pvm.FeeState
     cBaseFeeMultiplier: number
+    xpAddresses: string[]
+    xpAddressDictionary: XPAddressDictionary
   }): Promise<void> {
     Logger.trace('Start importAnyStuckFunds')
 
@@ -85,7 +89,8 @@ class EarnService {
         }
         return AvalancheWalletService.getAtomicUTXOs({
           account,
-          isTestnet
+          isTestnet,
+          xpAddresses
         })
       },
       shouldStop: result => !!result.pChainUtxo && !!result.cChainUtxo,
@@ -101,7 +106,9 @@ class EarnService {
         account,
         isTestnet,
         selectedCurrency,
-        feeState
+        feeState,
+        xpAddresses,
+        xpAddressDictionary
       })
       progressEvents?.(RecoveryEvents.ImportPFinish)
     }
@@ -113,7 +120,8 @@ class EarnService {
         walletType,
         account,
         isTestnet,
-        cBaseFeeMultiplier
+        cBaseFeeMultiplier,
+        xpAddresses
       })
       progressEvents?.(RecoveryEvents.ImportCFinish)
     }
@@ -136,7 +144,9 @@ class EarnService {
     account,
     isTestnet,
     feeState,
-    cBaseFeeMultiplier
+    cBaseFeeMultiplier,
+    xpAddresses,
+    xpAddressDictionary
   }: {
     walletId: string
     walletType: WalletType
@@ -146,6 +156,8 @@ class EarnService {
     isTestnet: boolean
     feeState?: pvm.FeeState
     cBaseFeeMultiplier: number
+    xpAddresses: string[]
+    xpAddressDictionary: XPAddressDictionary
   }): Promise<void> {
     await exportP({
       walletId,
@@ -154,14 +166,17 @@ class EarnService {
       requiredAmount,
       account,
       isTestnet,
-      feeState
+      feeState,
+      xpAddresses,
+      xpAddressDictionary
     })
     await importC({
       walletId,
       walletType,
       account,
       isTestnet,
-      cBaseFeeMultiplier
+      cBaseFeeMultiplier,
+      xpAddresses
     })
   }
 
@@ -227,10 +242,14 @@ class EarnService {
     startDate,
     endDate,
     feeState,
-    pFeeAdjustmentThreshold
+    pFeeAdjustmentThreshold,
+    xpAddressDictionary,
+    xpAddresses
   }: AddDelegatorTransactionProps & {
     walletId: string
     walletType: WalletType
+    xpAddressDictionary: XPAddressDictionary
+    xpAddresses: string[]
   }): Promise<string> {
     const startDateUnix = getUnixTime(startDate)
     const endDateUnix = getUnixTime(endDate)
@@ -246,7 +265,8 @@ class EarnService {
       endDate: endDateUnix,
       stakeAmountInNAvax: stakeAmountNanoAvax,
       feeState,
-      pFeeAdjustmentThreshold
+      pFeeAdjustmentThreshold,
+      xpAddresses
     })
 
     const signedTxJson = await WalletService.sign({
@@ -256,7 +276,7 @@ class EarnService {
         tx: unsignedTx,
         ...getInternalExternalAddrs({
           utxos: unsignedTx.utxos,
-          xpAddressDict: account.xpAddressDictionary,
+          xpAddressDict: xpAddressDictionary,
           isTestnet
         })
       } as AvalancheTransactionRequest,
@@ -373,19 +393,18 @@ class EarnService {
   > => {
     try {
       const currentNetworkAddressResults = await Promise.all(
-        accounts.map(account =>
-          getAddressesFromXpubXP({
+        accounts.map(async account => {
+          const result = await getCachedXPAddresses({
             isDeveloperMode: isTestnet,
             walletId,
             walletType,
-            accountIndex: account.index,
-            onlyWithActivity: true
+            account
           })
-        )
+
+          return result.xpAddresses
+        })
       )
-      const currentNetworkAddresses = currentNetworkAddressResults
-        .flatMap(address => address.xpAddresses)
-        .map(address => address.address)
+      const currentNetworkAddresses = currentNetworkAddressResults.flat()
 
       const currentNetworkTransactions =
         currentNetworkAddresses.length > 0
@@ -397,24 +416,26 @@ class EarnService {
           : []
 
       const oppositeNetworkAddressResults = await Promise.all(
-        accounts.map(account =>
-          getAddressesFromXpubXP({
+        accounts.map(async account => {
+          const result = await getCachedXPAddresses({
             isDeveloperMode: !isTestnet,
             walletId,
             walletType,
-            accountIndex: account.index,
-            onlyWithActivity: true
+            account
           })
-        )
+
+          return result.xpAddresses
+        })
       )
-      const oppositeNetworkAddresses = oppositeNetworkAddressResults
-        .flatMap(address => address.xpAddresses)
-        .map(address => address.address)
-      const oppositeNetworkTransactions = await getTransformedTransactions(
-        oppositeNetworkAddresses,
-        !isTestnet,
-        startTimestamp
-      )
+      const oppositeNetworkAddresses = oppositeNetworkAddressResults.flat()
+      const oppositeNetworkTransactions =
+        oppositeNetworkAddresses.length > 0
+          ? await getTransformedTransactions(
+              oppositeNetworkAddresses,
+              !isTestnet,
+              startTimestamp
+            )
+          : []
 
       const now = new Date()
       return currentNetworkTransactions
