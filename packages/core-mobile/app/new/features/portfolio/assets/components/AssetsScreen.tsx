@@ -122,7 +122,7 @@ const AssetsScreen: FC<Props> = ({
 
   const renderEmptyComponent = useCallback(() => {
     // Only show loading state during initial load, not background polling
-    if (isInitialLoading) {
+    if (isInitialLoading || !isBalanceLoaded || enabledNetworks.length === 0) {
       return (
         <CollapsibleTabs.ContentWrapper>
           <LoadingState />
@@ -168,18 +168,7 @@ const AssetsScreen: FC<Props> = ({
         </CollapsibleTabs.ContentWrapper>
       )
     }
-  }, [
-    isInitialLoading,
-    isBalanceLoaded,
-    isAllBalancesError,
-    isAllBalancesInaccurate,
-    filter.selected,
-    hasNoAssets,
-    data.length,
-    refetch,
-    goToBuy,
-    onResetFilter
-  ])
+  }, [isInitialLoading, isBalanceLoaded, enabledNetworks.length, isAllBalancesError, isAllBalancesInaccurate, filter.selected, hasNoAssets, data.length, containerStyle.minHeight, refetch, goToBuy, onResetFilter])
 
   const renderEmpty = useCallback(() => {
     return renderEmptyComponent()
@@ -211,18 +200,6 @@ const AssetsScreen: FC<Props> = ({
       `${index}-${item.networkChainId}-${item.localId}`,
     []
   )
-
-  if (!isBalanceLoaded || enabledNetworks.length === 0) {
-    return (
-      <LoadingState
-        sx={{
-          minHeight: containerStyle.minHeight,
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}
-      />
-    )
-  }
 
   return (
     <Animated.View
