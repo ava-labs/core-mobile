@@ -8,7 +8,7 @@ import { selectActiveAccount } from 'store/account'
 import { Network } from '@avalabs/core-chains-sdk'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 
-type UseEVMSendTransactionProps = {
+type UseETHSendTransactionProps = {
   network: Network | undefined
   provider: JsonRpcBatchInternal | undefined
   onSuccess?: (requestId?: string) => void
@@ -16,7 +16,7 @@ type UseEVMSendTransactionProps = {
   onSettled?: (requestId?: string) => void // Called when transaction completes (success or failure)
 }
 
-type EVMSendTransactionParams = {
+type ETHSendTransactionParams = {
   contractAddress: Address
   encodedData: Hex
   value?: Hex // Optional value for native token transfers (e.g., AVAX)
@@ -30,14 +30,14 @@ type EVMSendTransactionParams = {
  * Transaction confirmation is awaited in the background, and callbacks are invoked
  * only if the component is still mounted when confirmation arrives.
  */
-export const useEVMSendTransaction = ({
+export const useETHSendTransaction = ({
   network,
   provider,
   onSuccess,
   onError,
   onSettled
-}: UseEVMSendTransactionProps): {
-  sendTransaction: (params: EVMSendTransactionParams) => Promise<string>
+}: UseETHSendTransactionProps): {
+  sendTransaction: (params: ETHSendTransactionParams) => Promise<string>
 } => {
   const { request } = useInAppRequest()
   const activeAccount = useSelector(selectActiveAccount)
@@ -60,7 +60,7 @@ export const useEVMSendTransaction = ({
       value,
       requestId
     }: // eslint-disable-next-line sonarjs/cognitive-complexity
-    EVMSendTransactionParams) => {
+    ETHSendTransactionParams) => {
       if (!provider) {
         throw new Error('No provider found')
       }
