@@ -1,6 +1,7 @@
 export enum ActionButtonTitle {
   Send = 'Send',
   Swap = 'Swap',
+  SwapV2 = 'Fusion',
   Buy = 'Buy',
   Stake = 'Stake',
   Bridge = 'Bridge',
