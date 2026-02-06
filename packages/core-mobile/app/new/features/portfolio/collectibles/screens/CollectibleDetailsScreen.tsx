@@ -315,8 +315,8 @@ export const CollectibleDetailsScreen = ({
             ]}>
             <Animated.View
               style={[
-                heroStyle,
                 bounceStyle,
+                heroStyle,
                 {
                   position: 'absolute',
                   top: 0,
