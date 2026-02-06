@@ -12,7 +12,10 @@ import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
 import { SendToken } from './SendToken'
 
-// Network-aware caches keyed by RPC URL to handle different clusters
+// Network-aware caches keyed by RPC URL (or chainId fallback) to handle different clusters
+// Note: "account doesn't exist" (exists=false) is cached for the session. If the recipient
+// account gets created later in the same session, the cache will still report it as missing
+// until cleared. This is acceptable for send UX but may cause brief UX staleness.
 const RENT_EXEMPT_CACHE = new Map<string, bigint>()
 const ACCOUNT_EXISTS_CACHE = new Map<
   string,
@@ -111,10 +114,16 @@ const calculateMinimumForNewAccount = async (
     mapToVmNetwork(network)
   )
 
+  // Use rpcUrl if available, otherwise fallback to chainId for cache key
+  const rpcKey =
+    network.rpcUrl || network.rpcUrl.length > 0
+      ? network.rpcUrl
+      : `chain:${network.chainId}`
+
   const accountInfo = await checkAccountExists(
     toAddress(recipientAddress),
     provider,
-    network.rpcUrl
+    rpcKey
   )
 
   // Return undefined if account already exists (even with 0 space)
@@ -123,7 +132,7 @@ const calculateMinimumForNewAccount = async (
   }
 
   // Account doesn't exist - calculate rent-exempt minimum for 0 space (basic SOL account)
-  return getRentExemptMinimum(0n, provider, network.rpcUrl)
+  return getRentExemptMinimum(0n, provider, rpcKey)
 }
 
 const checkAccountExists = async (
