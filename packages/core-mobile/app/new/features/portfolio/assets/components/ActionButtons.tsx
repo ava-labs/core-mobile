@@ -4,6 +4,7 @@ import {
   SquareButtonIconType
 } from '@avalabs/k2-alpine'
 import { getItemEnteringAnimation } from 'common/utils/animations'
+import { globalThrottledOnPress } from 'common/utils/globalThrottledOnPress'
 import React from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
@@ -18,6 +19,8 @@ export const ActionButtons = ({
   contentContainerStyle?: StyleProp<ViewStyle>
 }): JSX.Element => {
   const renderActionItem = (item: ActionButton, index: number): JSX.Element => {
+    const handleOnPress = (): void => globalThrottledOnPress(item.onPress)
+
     return (
       <Animated.View
         entering={getItemEnteringAnimation(index)}
@@ -27,7 +30,7 @@ export const ActionButtons = ({
           key={index}
           title={item.title}
           icon={item.icon}
-          onPress={item.onPress}
+          onPress={handleOnPress}
           disabled={item.disabled}
         />
       </Animated.View>
