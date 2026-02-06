@@ -67,7 +67,6 @@ import { getAddressDerivationPath, handleLedgerError } from './utils'
 
 export class LedgerWallet implements Wallet {
   private deviceId: string
-  private derivationPath: string
   private derivationPathSpec: LedgerDerivationPathType
   private extendedPublicKeys?: PerAccountExtendedPublicKeys
   private publicKeys: PublicKey[]
@@ -76,11 +75,10 @@ export class LedgerWallet implements Wallet {
     | Avalanche.SimpleLedgerSigner
     | Avalanche.LedgerSigner
   private bitcoinWallet?: BitcoinLedgerWallet
-  private walletId?: string
+  private walletId: string
 
   constructor(ledgerData: LedgerWalletData & { walletId: string }) {
     this.deviceId = ledgerData.deviceId
-    this.derivationPath = ledgerData.derivationPath
     this.derivationPathSpec = ledgerData.derivationPathSpec
     this.publicKeys = ledgerData.publicKeys
     this.walletId = ledgerData.walletId
@@ -110,7 +108,6 @@ export class LedgerWallet implements Wallet {
       Logger.info('getEvmSigner', {
         provider,
         transport: this.getTransport(),
-        derivationPath: this.derivationPath,
         derivationPathSpec: this.derivationPathSpec,
         accountIndex
       })
