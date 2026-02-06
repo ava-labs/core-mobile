@@ -1,21 +1,28 @@
 import React, { createContext, ReactNode, useContext, useMemo } from 'react'
-import { type Step } from 'services/earn/computeDelegationSteps/types'
+import { type Step, Operation } from 'services/earn/computeDelegationSteps/types'
 import { useDelegation } from 'hooks/earn/useDelegation'
 
 export type ComputeSteps = (stakeAmount: bigint) => Promise<Step[]>
 
 type TransactionHash = string
 
+export type OnDelegationProgress = (
+  step: number,
+  operation: Operation | null
+) => void
+
 export type Delegate = ({
   steps,
   startDate,
   endDate,
-  nodeId
+  nodeId,
+  onProgress
 }: {
   steps: Step[]
   startDate: Date
   endDate: Date
   nodeId: string
+  onProgress?: OnDelegationProgress
 }) => Promise<TransactionHash>
 
 interface DelegationContextState {

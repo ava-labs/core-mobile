@@ -20,13 +20,8 @@ import { LedgerAppType } from 'services/ledger/types'
 import Logger from 'utils/Logger'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { Operation } from 'services/earn/computeDelegationSteps/types'
-import {
-  LedgerReviewTransactionParams,
-  ledgerParamsCache
-} from '../services/ledgerParamsCache'
-import { useLedgerWalletMap } from '../store'
+import { useLedgerWalletMap, useLedgerParams } from '../store'
 import { getLedgerAppName } from '../utils'
-import { withLedgerParamsCache } from '../services/withLedgerParamsCache'
 
 type Phase = 'connection' | 'progress'
 
@@ -70,13 +65,17 @@ const getStepConfig = (operation: Operation | null): StepConfig => {
   }
 }
 
-const LedgerReviewTransactionScreen = ({
-  params: { network, onApprove, onReject, stakingProgress }
-}: {
-  params: LedgerReviewTransactionParams
-}): JSX.Element => {
+const LedgerReviewTransactionScreen = (): JSX.Element | null => {
   const walletId = useSelector(selectActiveWalletId)
   const { ledgerWalletMap } = useLedgerWalletMap()
+  const { reviewTransactionParams } = useLedgerParams()
+
+  // Extract params from store
+  const network = reviewTransactionParams?.network
+  const onApprove = reviewTransactionParams?.onApprove
+  const onReject = reviewTransactionParams?.onReject
+  const stakingProgress = reviewTransactionParams?.stakingProgress
+
   const [isConnected, setIsConnected] = useState(false)
   const [isAvalancheAppOpen, setIsAvalancheAppOpen] = useState(false)
   const [isCancelEnabled, setIsCancelEnabled] = useState(false)
@@ -161,33 +160,26 @@ const LedgerReviewTransactionScreen = ({
       deviceForWallet &&
       isConnected &&
       isAvalancheAppOpen &&
-      phase === 'connection'
+      phase === 'connection' &&
+      onApprove
     ) {
       if (stakingProgress) {
-        // Set up progress callback before starting the transaction
-        ledgerParamsCache.ledgerReviewTransactionParams.set({
-          network,
-          onApprove,
-          onReject,
-          stakingProgress: {
-            ...stakingProgress,
-            onProgress: (step: number, operation: Operation | null) => {
-              setCurrentStep(step)
-              setCurrentOperation(operation)
+        // Create progress callback that updates local state
+        const onProgress = (step: number, operation: Operation | null): void => {
+          setCurrentStep(step)
+          setCurrentOperation(operation)
 
-              // Auto-complete when all steps are done
-              if (step >= stakingProgress.totalSteps) {
-                setTimeout(() => {
-                  stakingProgress.onComplete()
-                }, 500) // Brief delay to show final state
-              }
-            }
+          // Auto-complete when all steps are done
+          if (step >= stakingProgress.totalSteps) {
+            setTimeout(() => {
+              stakingProgress.onComplete()
+            }, 500) // Brief delay to show final state
           }
-        })
+        }
         // Transition to progress phase
         setPhase('progress')
-        // Start the transaction process
-        onApprove()
+        // Start the transaction process with progress callback
+        onApprove(onProgress)
       } else {
         // No staking progress tracking, just approve and let the caller handle navigation
         onApprove()
@@ -199,9 +191,7 @@ const LedgerReviewTransactionScreen = ({
     isAvalancheAppOpen,
     phase,
     stakingProgress,
-    onApprove,
-    network,
-    onReject
+    onApprove
   ])
 
   useEffect(() => {
@@ -463,6 +453,11 @@ const LedgerReviewTransactionScreen = ({
     renderDeviceItem
   ])
 
+  // Return null if params not available (placed after all hooks to comply with rules of hooks)
+  if (!reviewTransactionParams || !onApprove || !onReject) {
+    return null
+  }
+
   return (
     <ScrollScreen
       isModal
@@ -478,6 +473,4 @@ const LedgerReviewTransactionScreen = ({
   )
 }
 
-export default withLedgerParamsCache('ledgerReviewTransactionParams')(
-  LedgerReviewTransactionScreen
-)
+export default LedgerReviewTransactionScreen
