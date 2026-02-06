@@ -201,8 +201,8 @@ export default function DeviceConnectionScreen(): JSX.Element {
       title={`Connect \nYour Ledger`}
       isModal
       renderFooter={renderFooter}
-      contentContainerStyle={{ flex: 1 }}>
-      <View style={{ flex: 1, padding: 16 }}>
+      contentContainerStyle={{ flex: 1, marginHorizontal: 16 }}>
+      <View style={{ flex: 1 }}>
         <View
           style={{
             position: 'absolute',
