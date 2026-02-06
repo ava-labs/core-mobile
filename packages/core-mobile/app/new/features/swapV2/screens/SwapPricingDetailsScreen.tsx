@@ -17,8 +17,8 @@ import { UNKNOWN_AMOUNT } from 'consts/amount'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { FlatList } from 'react-native-gesture-handler'
 import { LocalTokenWithBalance } from 'store/balance/types'
+import { MarkrQuote } from 'features/swap/services/MarkrService'
 import { useSwapRate } from '../hooks/useSwapRate'
-import { MarkrQuote } from '../services/MarkrService'
 import {
   isJupiterQuote,
   isMarkrQuote,
@@ -245,7 +245,9 @@ export const SwapPricingDetailsScreen = ({
             keyExtractor={(item): string =>
               ((item as NormalizedSwapQuote).quote as MarkrQuote).aggregator.id
             }
-            renderItem={item => renderItem(item.item, item.index)}
+            renderItem={item =>
+              renderItem(item.item as NormalizedSwapQuote, item.index)
+            }
             scrollEnabled={false}
           />
         )

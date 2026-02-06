@@ -3,8 +3,12 @@ import { Account } from 'store/account/types'
 import { Network } from '@avalabs/core-chains-sdk'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { TransactionParams } from '@avalabs/evm-module'
+import { TokensResponse } from 'utils/api/generated/tokenAggregator/aggregatorApi.client'
 import type WAVAX_ABI from '../../../contracts/ABI_WAVAX.json'
 import type WETH_ABI from '../../../contracts/ABI_WETH.json'
+
+// Token Aggregator API types
+export type ApiToken = TokensResponse['data'][number]
 
 // Stub types for removed services
 export type MarkrQuote = {
