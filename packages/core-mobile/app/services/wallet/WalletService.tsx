@@ -42,6 +42,7 @@ class WalletService {
     walletType,
     transaction,
     accountIndex,
+    accountName,
     network,
     sentrySpanName = 'sign-transaction'
   }: {
@@ -49,6 +50,7 @@ class WalletService {
     walletType: WalletType
     transaction: SignTransactionRequest
     accountIndex: number
+    accountName?: string
     network: Network
     sentrySpanName?: SpanName
   }): Promise<string> {
@@ -68,6 +70,7 @@ class WalletService {
             )
 
           return wallet.signBtcTransaction({
+            accountName, // show this account name for btc signing on ledger
             accountIndex,
             transaction,
             network,

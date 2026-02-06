@@ -23,7 +23,8 @@ export class BitcoinWalletPolicyService {
    * Parse wallet policy details from public key data for Bitcoin signing
    */
   static parseWalletPolicyDetailsFromPublicKey(
-    btcWalletPolicy: BtcWalletPolicyDetails
+    btcWalletPolicy: BtcWalletPolicyDetails,
+    accountIndex = 0
   ): WalletPolicyDetails {
     if (!btcWalletPolicy) {
       throw new Error(
@@ -34,7 +35,7 @@ export class BitcoinWalletPolicyService {
     const hmac = Buffer.from(btcWalletPolicy.hmacHex, 'hex')
     const policy = createWalletPolicy(
       btcWalletPolicy.masterFingerprint,
-      0, // accountIndex - using 0 as default, can be made configurable
+      accountIndex,
       btcWalletPolicy.xpub,
       btcWalletPolicy.name
     )
@@ -47,13 +48,13 @@ export class BitcoinWalletPolicyService {
    */
   static findBtcWalletPolicyInPublicKeys(
     publicKeys: PublicKey[]
-  ): BtcWalletPolicyDetails | null {
+  ): BtcWalletPolicyDetails | undefined {
     for (const pubKey of publicKeys) {
       if (pubKey.btcWalletPolicy) {
         return pubKey.btcWalletPolicy
       }
     }
-    return null
+    return undefined
   }
 
   /**
@@ -75,14 +76,14 @@ export class BitcoinWalletPolicyService {
       Logger.info('Storing Bitcoin wallet policy details in wallet data')
 
       // Generate the Bitcoin derivation path for the given account index
-      const bitcoinPath = getAddressDerivationPath({
+      const evmPath = getAddressDerivationPath({
         accountIndex,
-        vmType: NetworkVMType.BITCOIN
+        vmType: NetworkVMType.EVM
       })
 
       // Find the Bitcoin public key and add policy details
       const updatedPublicKeys = publicKeys.map(pk => {
-        if (pk.curve === Curve.SECP256K1 && pk.derivationPath === bitcoinPath) {
+        if (pk.curve === Curve.SECP256K1 && pk.derivationPath === evmPath) {
           return {
             ...pk,
             btcWalletPolicy: policyDetails
@@ -134,27 +135,27 @@ export class BitcoinWalletPolicyService {
   }
 
   /**
-   * Get the Bitcoin public key that should have the wallet policy
+   * Get the EVM public key that should have the wallet policy
    */
-  static getBitcoinPublicKey(
+  static getEvmPublicKey(
     publicKeys: PublicKey[],
     accountIndex: number
-  ): {
-    key: string
-    derivationPath: string
-    curve: Curve.SECP256K1 | Curve.ED25519
-  } | null {
-    // Generate the Bitcoin derivation path for the given account index
-    const bitcoinPath = getAddressDerivationPath({
+  ):
+    | {
+        key: string
+        derivationPath: string
+        curve: Curve
+      }
+    | undefined {
+    // Generate the EVM derivation path for the given account index
+    const evmPath = getAddressDerivationPath({
       accountIndex,
-      vmType: NetworkVMType.BITCOIN
+      vmType: NetworkVMType.EVM
     })
 
-    // Find the Bitcoin public key using the generated path
-    return (
-      publicKeys.find(
-        pk => pk.curve === Curve.SECP256K1 && pk.derivationPath === bitcoinPath
-      ) || null
+    // Find the EVM public key using the generated path
+    return publicKeys.find(
+      pk => pk.curve === Curve.SECP256K1 && pk.derivationPath === evmPath
     )
   }
 }

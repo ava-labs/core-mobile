@@ -191,5 +191,9 @@ export const handleLedgerError = ({
     throw new Error(
       'Ledger is processing another request. Please try again later.'
     )
+  } else if (message.includes(LEDGER_ERROR_CODES.BLIND_SIGNATURE)) {
+    throw new Error(
+      `This transaction cannot be clear-signed. Please enable blind signing in the Ledger ${ledgerAppName} app settings and try again.`
+    )
   }
 }

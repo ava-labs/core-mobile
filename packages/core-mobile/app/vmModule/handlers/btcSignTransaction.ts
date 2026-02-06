@@ -30,6 +30,7 @@ export const btcSignTransaction = async ({
       walletType,
       transaction,
       accountIndex: account.index,
+      accountName: account.name,
       network
     })
 
