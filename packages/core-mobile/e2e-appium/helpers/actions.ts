@@ -321,6 +321,17 @@ async function assertPerformance(start: number, expectedTime = 10000) {
   )
 }
 
+async function isNativeAlertPresent(): Promise<boolean> {
+  try {
+    await driver.getAlertText()
+    console.log('Native alert is present')
+    return true
+  } catch (e) {
+    console.log('No native alert present')
+    return false
+  }
+}
+
 export const actions = {
   type,
   typeSlowly,
@@ -350,5 +361,6 @@ export const actions = {
   verifyText,
   tapXY,
   waitForNotVisible,
-  assertPerformance
+  assertPerformance,
+  isNativeAlertPresent
 }

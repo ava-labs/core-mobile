@@ -188,7 +188,7 @@ class Settings {
   }
 
   get showRecoveryPhrase() {
-    return selectors.getByText(settings.showRecoveryPhrase)
+    return common.listItem(settings.showRecoveryPhrase)
   }
 
   get showRecoveryPhraseTitle() {
