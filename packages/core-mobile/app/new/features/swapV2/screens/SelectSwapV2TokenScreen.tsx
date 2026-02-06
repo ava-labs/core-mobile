@@ -20,7 +20,7 @@ import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
 import { useSelector } from 'react-redux'
 import { selectIsSolanaSwapBlocked } from 'store/posthog'
-import { Network } from '@avalabs/core-chains-sdk'
+import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { ErrorState } from 'common/components/ErrorState'
 import { useSwapV2Tokens } from '../hooks/useSwapV2Tokens'
@@ -118,7 +118,7 @@ export const SelectSwapV2TokenScreen = ({
             }
             onPress={() => setSelectedNetwork(network)}
             style={{ flexShrink: 0 }}>
-            {network.chainName === 'Avalanche C-Chain'
+            {network.chainId === ChainId.AVALANCHE_MAINNET_ID
               ? 'Avalanche (C-Chain)'
               : network.chainName}
           </Button>
