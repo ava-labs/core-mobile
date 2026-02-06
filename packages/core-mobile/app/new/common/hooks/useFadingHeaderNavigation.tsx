@@ -23,7 +23,6 @@ import Animated, {
  */
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
-import Grabber from 'common/components/Grabber'
 import { Pressable } from 'react-native-gesture-handler'
 
 export const useFadingHeaderNavigation = ({
@@ -126,17 +125,10 @@ export const useFadingHeaderNavigation = ({
     }
   })
 
-  // On Android, grabber is rendered as overlay in ScrollScreen instead of in the navigation header
-  // because Android's navigation header options are unreliable and get reset during modal presentation
-  const shouldShowGrabberInHeader =
-    shouldHeaderHaveGrabber && Platform.OS !== 'android'
-
   const headerBackgroundComponent = useMemo(() => {
     return hideHeaderBackground ? (
       // Use a Pressable to receive gesture events for modal gestures
-      <Pressable style={{ flex: 1 }}>
-        {shouldShowGrabberInHeader === true ? <Grabber /> : null}
-      </Pressable>
+      <Pressable style={{ flex: 1 }} />
     ) : (
       <BlurredBackgroundView
         backgroundColor={backgroundColor}
@@ -145,16 +137,15 @@ export const useFadingHeaderNavigation = ({
         separator={
           hasSeparator
             ? {
-                position: 'bottom',
-                opacity: targetHiddenProgress
-              }
+              position: 'bottom',
+              opacity: targetHiddenProgress
+            }
             : undefined
         }
       />
     )
   }, [
     hideHeaderBackground,
-    shouldShowGrabberInHeader,
     backgroundColor,
     shouldDelayBlurOniOS,
     hasBackgroundAnimation,
