@@ -102,7 +102,7 @@ export class LedgerWallet implements Wallet {
     provider?: JsonRpcBatchInternal
     accountIndex: number
   }): Promise<LedgerSigner> {
-    if (!this.evmSigner || accountIndex !== undefined) {
+    if (!this.evmSigner) {
       Logger.info('evmLedgerSigner', now())
 
       Logger.info('getEvmSigner', {
@@ -138,7 +138,7 @@ export class LedgerWallet implements Wallet {
   private async getAvalancheProvider(
     accountIndex: number
   ): Promise<Avalanche.SimpleLedgerSigner | Avalanche.LedgerSigner> {
-    if (!this.avalancheSigner || accountIndex !== undefined) {
+    if (!this.avalancheSigner) {
       const transport = await this.getTransport()
 
       if (this.derivationPathSpec === LedgerDerivationPathType.BIP44) {
@@ -195,10 +195,9 @@ export class LedgerWallet implements Wallet {
 
   private async getBitcoinSigner(
     accountIndex = 0,
-    bitcoinProvider: BitcoinProviderAbstract
+    bitcoinProvider: BitcoinProviderAbstract,
+    network: Network
   ): Promise<BitcoinLedgerWallet> {
-    if (this.bitcoinWallet) return this.bitcoinWallet
-
     try {
       const evmPubKey = BitcoinWalletPolicyService.getEvmPublicKey(
         this.publicKeys,
@@ -234,7 +233,10 @@ export class LedgerWallet implements Wallet {
       // The xpub was registered from path m/44'/60'/accountIndex'
       // We need to derive the address public key at path 0/0 from that xpub
       // Parse the xpub to get the HD node
-      const hdNode = bip32.fromBase58(btcPolicy.xpub)
+      const hdNode = bip32.fromBase58(
+        btcPolicy.xpub,
+        network.isTestnet ? networks.testnet : networks.bitcoin
+      )
 
       // Derive the Bitcoin address public key: m/44'/60'/accountIndex'/0/0
       // Since xpub is already at account level, we derive 0/0
@@ -257,7 +259,9 @@ export class LedgerWallet implements Wallet {
       return this.bitcoinWallet
     } catch (error) {
       Logger.error('Failed to create BitcoinLedgerWallet:', error)
-      throw new Error(`Failed to create BitcoinLedgerWallet: ${error}`)
+      const errorMessage =
+        error instanceof Error ? error.message : String(error)
+      throw new Error(`Failed to create BitcoinLedgerWallet: ${errorMessage}`)
     }
   }
 
@@ -568,7 +572,7 @@ export class LedgerWallet implements Wallet {
     network,
     provider: _provider
   }: {
-    accountName: string
+    accountName?: string
     accountIndex: number
     transaction: BtcTransactionRequest
     network: Network
@@ -593,7 +597,7 @@ export class LedgerWallet implements Wallet {
 
       // Register the wallet policy with the Ledger device
       await this.registerBitcoinWalletPolicy({
-        accountName,
+        accountName: accountName || `Account ${accountIndex}`,
         accountIndex,
         walletId: this.walletId
       })
@@ -611,7 +615,11 @@ export class LedgerWallet implements Wallet {
       this.bitcoinWallet = undefined
     }
     const bitcoinProvider = await getBitcoinProvider(network.isTestnet)
-    const signer = await this.getBitcoinSigner(accountIndex, bitcoinProvider)
+    const signer = await this.getBitcoinSigner(
+      accountIndex,
+      bitcoinProvider,
+      network
+    )
 
     if (!(signer instanceof BitcoinLedgerWallet)) {
       throw new Error('Unable to sign btc transaction: invalid signer')
@@ -631,12 +639,14 @@ export class LedgerWallet implements Wallet {
     //get unique hashes
     const txHashSet = new Set<string>(tx.inputs.map(i => i.txHash))
 
-    // Get the tx hex for each input tx
+    // Get the tx hex for each input tx in parallel
     const txHexDict: Record<string, string> = {}
-    for (const hash of txHashSet) {
-      const hex = await provider.getTxHex(hash)
-      txHexDict[hash] = hex
-    }
+    await Promise.all(
+      Array.from(txHashSet, async hash => {
+        const hex = await provider.getTxHex(hash)
+        txHexDict[hash] = hex
+      })
+    )
 
     return {
       ...tx,
