@@ -47,7 +47,8 @@ export const LEDGER_ERROR_CODES = {
   DISCONNECTED_DEVICE: 'disconnecteddevice',
   TRANSPORT_RACE_CONDITION: 'transportracecondition',
   TRANSPORT_RACE_CONDITION_ALT:
-    'an action was already pending on the ledger device'
+    'an action was already pending on the ledger device',
+  BLIND_SIGNATURE: 'blind'
 } as const
 
 export type LedgerReturnCodeType =
