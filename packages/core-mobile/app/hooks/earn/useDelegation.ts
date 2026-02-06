@@ -25,7 +25,7 @@ import Logger from 'utils/Logger'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { selectActiveAccount } from 'store/account'
 import { getMinimumStakeDurationMs } from 'services/earn/utils'
-import { ledgerStakingProgressCache } from 'new/features/ledger/services/ledgerStakingProgressCache'
+import { ledgerParamsCache } from 'new/features/ledger/services/ledgerParamsCache'
 import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import {
   useAvalancheEvmProvider,
@@ -128,15 +128,21 @@ export const useDelegation = (): {
 
       setSteps(steps)
 
+      // Get progress callback once before the loop (cache auto-clears after get)
+      let onProgress: ((step: number, operation: Operation | null) => void) | undefined
+      try {
+        const params = ledgerParamsCache.ledgerReviewTransactionParams.get()
+        onProgress = params.stakingProgress?.onProgress
+      } catch {
+        // No ledger params cache available, skip progress callback
+      }
+
       let txHash
       let stepIndex = 0
 
       for (const step of steps) {
-        // Update progress state before processing each step
-        ledgerStakingProgressCache.state.set({
-          currentStep: stepIndex,
-          currentOperation: step.operation
-        })
+        // Notify progress via callback if available
+        onProgress?.(stepIndex, step.operation)
 
         switch (step.operation) {
           case Operation.DELEGATE: {

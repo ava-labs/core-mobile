@@ -23,8 +23,10 @@ import { Operation } from 'services/earn/computeDelegationSteps/types'
 import { BackHandler } from 'react-native'
 import { useNavigation } from 'expo-router'
 import { TRANSACTION_CANCELLED_BY_USER } from 'vmModule/ApprovalController/utils'
-import { LedgerReviewTransactionParams } from '../services/ledgerParamsCache'
-import { ledgerStakingProgressCache } from '../services/ledgerStakingProgressCache'
+import {
+  LedgerReviewTransactionParams,
+  ledgerParamsCache
+} from '../services/ledgerParamsCache'
 import { useLedgerWalletMap } from '../store'
 import { getLedgerAppName } from '../utils'
 import { withLedgerParamsCache } from '../services/withLedgerParamsCache'
@@ -168,10 +170,25 @@ const LedgerReviewTransactionScreen = ({
       phase === 'connection'
     ) {
       if (stakingProgress) {
-        // Initialize progress state for staking
-        ledgerStakingProgressCache.state.set({
-          currentStep: 0,
-          currentOperation: null
+        // Set up progress callback before starting the transaction
+        ledgerParamsCache.ledgerReviewTransactionParams.set({
+          network,
+          onApprove,
+          onReject,
+          stakingProgress: {
+            ...stakingProgress,
+            onProgress: (step: number, operation: Operation | null) => {
+              setCurrentStep(step)
+              setCurrentOperation(operation)
+
+              // Auto-complete when all steps are done
+              if (step >= stakingProgress.totalSteps) {
+                setTimeout(() => {
+                  stakingProgress.onComplete()
+                }, 500) // Brief delay to show final state
+              }
+            }
+          }
         })
         // Transition to progress phase
         setPhase('progress')
@@ -188,37 +205,10 @@ const LedgerReviewTransactionScreen = ({
     isAvalancheAppOpen,
     phase,
     stakingProgress,
-    onApprove
+    onApprove,
+    network,
+    onReject
   ])
-
-  // Poll for progress state updates when in progress phase
-  useEffect(() => {
-    if (phase !== 'progress' || !stakingProgress) return
-
-    const pollInterval = setInterval(() => {
-      try {
-        const state = ledgerStakingProgressCache.state.get()
-        if (state) {
-          setCurrentStep(state.currentStep)
-          setCurrentOperation(state.currentOperation)
-
-          // Auto-complete when all steps are done
-          if (state.currentStep >= stakingProgress.totalSteps) {
-            setTimeout(() => {
-              stakingProgress.onComplete()
-            }, 500) // Brief delay to show final state
-          }
-
-          // Re-set the state so it's available for next poll
-          ledgerStakingProgressCache.state.set(state)
-        }
-      } catch (error) {
-        // State not available yet, will retry on next poll
-      }
-    }, 200) // Poll every 200ms
-
-    return () => clearInterval(pollInterval)
-  }, [phase, stakingProgress])
 
   useEffect(() => {
     if (isConnected && isCancelEnabled === false) {
