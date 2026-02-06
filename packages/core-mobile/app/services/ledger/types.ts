@@ -165,7 +165,6 @@ export interface WalletUpdateOptions {
 // Base interface for common wallet data
 interface BaseLedgerWalletData {
   deviceId: string
-  vmType: NetworkVMType
   transport?: TransportBLE // Optional for backward compatibility
   publicKeys: PublicKey[]
 }

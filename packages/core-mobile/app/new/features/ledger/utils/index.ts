@@ -46,7 +46,6 @@ export const LedgerWalletSecretSchema = z.object({
   deviceId: z.string(),
   deviceName: z.string(),
   derivationPath: z.string(),
-  vmType: z.string(),
   derivationPathSpec: z.nativeEnum(LedgerDerivationPathType),
   extendedPublicKeys: z
     .object({
