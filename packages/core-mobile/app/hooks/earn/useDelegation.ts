@@ -107,7 +107,7 @@ export const useDelegation = (): {
 
   const delegate: Delegate = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-shadow
-    async ({ steps, startDate, endDate, nodeId }) => {
+    async ({ steps, startDate, endDate, nodeId, onProgress }) => {
       if (activeAccount === undefined) {
         throw new Error('No active account')
       }
@@ -128,8 +128,12 @@ export const useDelegation = (): {
       setSteps(steps)
 
       let txHash
+      let stepIndex = 0
 
       for (const step of steps) {
+        // Notify progress via callback if available
+        onProgress?.(stepIndex, step.operation)
+
         switch (step.operation) {
           case Operation.DELEGATE: {
             Logger.info(
@@ -209,7 +213,12 @@ export const useDelegation = (): {
           default:
             throw new Error(`unknown step: ${step}`)
         }
+
+        stepIndex++
       }
+
+      // Signal completion - stepIndex now equals steps.length
+      onProgress?.(stepIndex, null)
 
       if (!txHash) {
         throw new Error('No transaction hash found')

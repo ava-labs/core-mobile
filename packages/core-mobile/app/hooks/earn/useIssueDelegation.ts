@@ -1,4 +1,7 @@
-import { useDelegationContext } from 'contexts/DelegationContext'
+import {
+  useDelegationContext,
+  OnDelegationProgress
+} from 'contexts/DelegationContext'
 import { useCallback } from 'react'
 import { useUiSafeMutation } from 'hooks/useUiSafeMutation'
 import Logger from 'utils/Logger'
@@ -18,12 +21,14 @@ export const useIssueDelegation = ({
     nodeId,
     startDate,
     endDate,
-    recomputeSteps
+    recomputeSteps,
+    onProgress
   }: {
     nodeId: string
     startDate: Date
     endDate: Date
     recomputeSteps?: boolean
+    onProgress?: OnDelegationProgress
   }) => Promise<void>
   isPending: boolean
 } => {
@@ -34,12 +39,14 @@ export const useIssueDelegation = ({
       nodeId,
       startDate,
       endDate,
-      recomputeSteps = false
+      recomputeSteps = false,
+      onProgress
     }: {
       nodeId: string
       startDate: Date
       endDate: Date
       recomputeSteps?: boolean
+      onProgress?: OnDelegationProgress
     }) => {
       if (recomputeSteps) {
         const newSteps = await computeSteps(stakeAmount.toSubUnit())
@@ -47,7 +54,8 @@ export const useIssueDelegation = ({
           steps: newSteps,
           startDate,
           endDate,
-          nodeId
+          nodeId,
+          onProgress
         })
       }
 
@@ -55,7 +63,8 @@ export const useIssueDelegation = ({
         steps,
         startDate,
         endDate,
-        nodeId
+        nodeId,
+        onProgress
       })
     },
     [computeSteps, delegate, steps, stakeAmount]
