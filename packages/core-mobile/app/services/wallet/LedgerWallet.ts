@@ -465,9 +465,11 @@ export class LedgerWallet implements Wallet {
    * This must be done once before signing Bitcoin transactions
    */
   private async registerBitcoinWalletPolicy({
+    accountName,
     accountIndex,
     walletId
   }: {
+    accountName: string
     accountIndex: number
     walletId: string
   }): Promise<void> {
@@ -511,7 +513,7 @@ export class LedgerWallet implements Wallet {
       const template = new DefaultWalletPolicy(`wpkh(@0/**)`, keyInfo)
 
       // Note: We use WalletPolicy (not DefaultWalletPolicy) because we need a named policy for registration
-      const policyName = `Core`
+      const policyName = `Core - ${accountName}`
       const walletPolicy = new WalletPolicy(
         policyName,
         'wpkh(@0/**)', // Native SegWit descriptor template
@@ -560,11 +562,13 @@ export class LedgerWallet implements Wallet {
   }
 
   public async signBtcTransaction({
+    accountName,
     accountIndex,
     transaction,
     network,
     provider: _provider
   }: {
+    accountName: string
     accountIndex: number
     transaction: BtcTransactionRequest
     network: Network
@@ -589,6 +593,7 @@ export class LedgerWallet implements Wallet {
 
       // Register the wallet policy with the Ledger device
       await this.registerBitcoinWalletPolicy({
+        accountName,
         accountIndex,
         walletId: this.walletId
       })

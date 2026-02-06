@@ -59,6 +59,7 @@ export const btcSendTransaction = async ({
       walletType,
       transaction,
       accountIndex: account.index,
+      accountName: account.name,
       network
     })
 
