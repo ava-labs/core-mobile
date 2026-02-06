@@ -175,7 +175,10 @@ const LedgerReviewTransactionScreen = ({
     ) {
       if (stakingProgress) {
         // Create progress callback that updates local state
-        const onProgress = (step: number, operation: Operation | null): void => {
+        const onProgress = (
+          step: number,
+          operation: Operation | null
+        ): void => {
           setCurrentStep(step)
           setCurrentOperation(operation)
 
@@ -224,7 +227,7 @@ const LedgerReviewTransactionScreen = ({
     if (phase === 'progress' && stakingProgress) {
       stakingProgress.onCancel()
     }
-    onReject()
+    onReject?.()
   }, [phase, stakingProgress, onReject])
 
   // Handle Android hardware back button

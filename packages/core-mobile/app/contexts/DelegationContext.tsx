@@ -1,5 +1,8 @@
 import React, { createContext, ReactNode, useContext, useMemo } from 'react'
-import { type Step, Operation } from 'services/earn/computeDelegationSteps/types'
+import {
+  type Step,
+  Operation
+} from 'services/earn/computeDelegationSteps/types'
 import { useDelegation } from 'hooks/earn/useDelegation'
 
 export type ComputeSteps = (stakeAmount: bigint) => Promise<Step[]>
