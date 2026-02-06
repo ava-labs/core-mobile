@@ -1,8 +1,10 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { createCache } from 'utils/createCache'
+import { Operation } from 'services/earn/computeDelegationSteps/types'
 
 export type StakingProgressParams = {
   totalSteps: number
+  onProgress?: (step: number, operation: Operation | null) => void
   onComplete: () => void
   onCancel: () => void
 }
