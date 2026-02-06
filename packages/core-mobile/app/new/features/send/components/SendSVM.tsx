@@ -14,7 +14,10 @@ import { SendToken } from './SendToken'
 
 // Network-aware caches keyed by RPC URL to handle different clusters
 const RENT_EXEMPT_CACHE = new Map<string, bigint>()
-const ACCOUNT_SPACE_CACHE = new Map<string, bigint>()
+const ACCOUNT_EXISTS_CACHE = new Map<
+  string,
+  { exists: boolean; space: bigint }
+>()
 
 export const SendSVM = ({
   nativeToken,
@@ -108,37 +111,41 @@ const calculateMinimumForNewAccount = async (
     mapToVmNetwork(network)
   )
 
-  const accountSpace = await getAccountOccupiedSpace(
+  const accountInfo = await checkAccountExists(
     toAddress(recipientAddress),
     provider,
     network.rpcUrl
   )
 
-  // Return undefined if account already exists
-  if (accountSpace !== 0n) {
+  // Return undefined if account already exists (even with 0 space)
+  if (accountInfo.exists) {
     return undefined
   }
 
-  return getRentExemptMinimum(accountSpace, provider, network.rpcUrl)
+  // Account doesn't exist - calculate rent-exempt minimum for 0 space (basic SOL account)
+  return getRentExemptMinimum(0n, provider, network.rpcUrl)
 }
 
-const getAccountOccupiedSpace = async (
+const checkAccountExists = async (
   address: Address,
   provider: SolanaProvider,
   rpcUrl: string
-): Promise<bigint> => {
+): Promise<{ exists: boolean; space: bigint }> => {
   const cacheKey = `${rpcUrl}:${address}`
-  const cached = ACCOUNT_SPACE_CACHE.get(cacheKey)
+  const cached = ACCOUNT_EXISTS_CACHE.get(cacheKey)
   if (cached !== undefined) {
     return cached
   }
 
   try {
     const accountInfo = await provider.getAccountInfo(address).send()
+    // Account exists if value is not null (even if space is 0)
+    const exists = accountInfo.value !== null
     const space = accountInfo.value?.space ?? 0n
-    ACCOUNT_SPACE_CACHE.set(cacheKey, space)
+    const result = { exists, space }
+    ACCOUNT_EXISTS_CACHE.set(cacheKey, result)
 
-    return space
+    return result
   } catch (e) {
     throw new Error(
       `Failed to fetch account info for ${address.toString()}: ${e}`
