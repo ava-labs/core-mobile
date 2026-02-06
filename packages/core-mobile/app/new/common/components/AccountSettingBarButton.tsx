@@ -1,5 +1,6 @@
 import { Avatar, TouchableOpacity, View } from '@avalabs/k2-alpine'
 import { useAvatar } from 'common/hooks/useAvatar'
+import { globalThrottledOnPress } from 'common/utils/globalThrottledOnPress'
 import { useRouter } from 'expo-router'
 import React, { forwardRef } from 'react'
 import { View as RNView } from 'react-native'
@@ -13,8 +14,10 @@ export const AccountSettingBarButton = forwardRef<RNView>(
     const { navigate } = useRouter()
 
     const handlePress = (): void => {
-      // @ts-ignore
-      navigate('/accountSettings/')
+      globalThrottledOnPress(() => {
+        // @ts-ignore
+        navigate('/accountSettings/')
+      })
     }
 
     return (
