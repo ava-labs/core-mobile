@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react'
 import { TransactionOnboarding } from 'common/components/TransactionOnboarding'
 import { GroupList, Icons, useTheme } from '@avalabs/k2-alpine'
-import { ViewOnceKey } from 'store/viewOnce'
 import { useRouter } from 'expo-router'
 import { LoadingState } from 'common/components/LoadingState'
 import { useAvailableMarkets } from '../../hooks/useAvailableMarkets'
@@ -55,10 +54,9 @@ export const OnboardingScreen = (): JSX.Element => {
 
   return (
     <TransactionOnboarding
-      icon={{ component: Icons.Custom.Psychiatry, size: 75 }}
+      icon={{ component: Icons.Custom.Psychiatry, size: 60 }}
       title={`Deposit your crypto to earn yield`}
       subtitle={`Easily earn yield by depositing crypto into lending protocols and withdraw anytime.`}
-      viewOnceKey={ViewOnceKey.DEPOSIT_ONBOARDING}
       onPressNext={handlePressNext}
       footerAccessory={renderFooterAccessory()}
       scrollEnabled={true}

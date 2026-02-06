@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux'
 import { useExchangedAmount } from 'common/hooks/useExchangedAmount'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { DefiMarket } from '../types'
+import { PROTOCOL_DISPLAY_NAMES } from '../consts'
 import { DefiMarketAssetLogo } from './DefiMarketAssetLogo'
 
 const BALANCE_MASK_WIDTH = 60
@@ -39,7 +40,7 @@ export const DepositCard = ({
       <View
         sx={{ marginTop: 10, marginBottom: 20, gap: 2, alignItems: 'center' }}>
         <Text variant="buttonMedium" sx={{ color: '$textPrimary' }}>
-          {market.asset.symbol} on {market.marketName}
+          {market.asset.symbol} on {PROTOCOL_DISPLAY_NAMES[market.marketName]}
         </Text>
         <MaskedText
           variant="body2"

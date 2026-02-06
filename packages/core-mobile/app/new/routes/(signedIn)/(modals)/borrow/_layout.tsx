@@ -5,7 +5,7 @@ import {
 } from 'common/consts/screenOptions'
 import React from 'react'
 
-export default function DepositLayout(): JSX.Element {
+export default function BorrowLayout(): JSX.Element {
   return (
     <Stack
       screenOptions={{
@@ -13,9 +13,8 @@ export default function DepositLayout(): JSX.Element {
       }}
       initialRouteName="onboarding">
       <Stack.Screen name="onboarding" options={modalFirstScreenOptions} />
+      <Stack.Screen name="selectCollateral" />
       <Stack.Screen name="selectAsset" />
-      <Stack.Screen name="selectPool" />
-      <Stack.Screen name="selectAmount" />
     </Stack>
   )
 }

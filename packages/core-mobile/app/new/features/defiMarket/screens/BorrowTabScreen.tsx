@@ -22,6 +22,7 @@ import {
 } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useRouter } from 'expo-router'
+import { BorrowProtocolSelector } from '../components/BorrowProtocolSelector'
 
 interface BorrowTabScreenProps {
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent> | number) => void
@@ -108,7 +109,7 @@ const BorrowTabScreen = ({
             },
             animatedHeaderStyle
           ]}>
-          <Text variant="heading2">Borrow</Text>
+          <BorrowProtocolSelector />
           <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
             Take a loan against your deposits and repay anytime.
           </Text>

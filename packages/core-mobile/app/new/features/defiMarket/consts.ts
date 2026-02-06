@@ -1,3 +1,11 @@
+import { MarketName, MarketNames } from './types'
+
+// Display names for protocol markets
+export const PROTOCOL_DISPLAY_NAMES: Record<MarketName, string> = {
+  [MarketNames.aave]: 'Aave',
+  [MarketNames.benqi]: 'Benqi'
+}
+
 // RAY (ray of precision) is used to format values stored throughout DeFi contracts such as interest rates
 export const RAY = 27
 // Scale for BENQI supply rates
