@@ -238,7 +238,7 @@ export class LedgerWallet implements Wallet {
 
       // Derive the Bitcoin address public key: m/44'/60'/accountIndex'/0/0
       // Since xpub is already at account level, we derive 0/0
-      const addressNode = hdNode.derive(accountIndex).derive(0)
+      const addressNode = hdNode.derive(0).derive(0)
 
       if (!addressNode.publicKey) {
         throw new Error('Failed to derive Bitcoin address public key')
