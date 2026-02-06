@@ -184,7 +184,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
             walletSecret: JSON.stringify({
               deviceId,
               deviceName,
-              derivationPath: DERIVATION_PATHS.BIP44.EVM,
               derivationPathSpec: derivationPathType,
               ...(derivationPathType === LedgerDerivationPathType.BIP44 && {
                 // Store in per-account format: { [accountIndex]: { evm, avalanche } }
