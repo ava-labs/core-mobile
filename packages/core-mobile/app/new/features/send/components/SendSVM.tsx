@@ -3,10 +3,11 @@ import useSVMSend from 'common/hooks/send/useSVMSend'
 import { Network } from '@avalabs/core-chains-sdk'
 import { TokenType, TokenWithBalanceSVM } from '@avalabs/vm-module-types'
 import { Account } from 'store/account'
-import { Address, createSolanaRpc, address as toAddress } from '@solana/kit'
+import { Address, address as toAddress } from '@solana/kit'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import ModuleManager from 'vmModule/ModuleManager'
+import { SolanaProvider } from '@avalabs/core-wallets-sdk'
 import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
 import { SendToken } from './SendToken'
@@ -57,41 +58,35 @@ export const SendSVM = ({
     let cancelled = false
 
     const fetchMinimumSendAmount = async (): Promise<void> => {
-      // Clear minimum when not applicable
-      if (selectedToken?.type !== TokenType.NATIVE) {
-        setMinimumSendAmount(undefined)
-        return
-      }
+      try {
+        // Clear minimum when not applicable
+        if (selectedToken?.type !== TokenType.NATIVE) {
+          setMinimumSendAmount(undefined)
+          return
+        }
 
-      const provider = await ModuleManager.solanaModule.getProvider(
-        mapToVmNetwork(network)
-      )
+        if (!recipient?.addressSVM) {
+          setMinimumSendAmount(undefined)
+          return
+        }
 
-      if (!recipient?.addressSVM) {
-        setMinimumSendAmount(undefined)
-        return
-      }
-
-      const rpcUrl = network.rpcUrl
-
-      const accountSpace = await getAccountOccupiedSpace(
-        toAddress(recipient.addressSVM),
-        provider,
-        rpcUrl
-      )
-
-      // Clear minimum if account exists
-      if (accountSpace !== 0n) {
-        if (!cancelled) setMinimumSendAmount(undefined)
-        return
-      }
-
-      const minimum = await getRentExemptMinimum(accountSpace, provider, rpcUrl)
-
-      if (!cancelled) {
-        setMinimumSendAmount(
-          new TokenUnit(minimum, nativeToken.decimals, nativeToken.symbol)
+        const minimum = await calculateMinimumForNewAccount(
+          recipient.addressSVM,
+          network
         )
+
+        if (!cancelled) {
+          setMinimumSendAmount(
+            minimum
+              ? new TokenUnit(minimum, nativeToken.decimals, nativeToken.symbol)
+              : undefined
+          )
+        }
+      } catch (error) {
+        // Clear minimum on error to prevent stuck state
+        if (!cancelled) {
+          setMinimumSendAmount(undefined)
+        }
       }
     }
 
@@ -105,9 +100,31 @@ export const SendSVM = ({
   return <SendToken onSend={handleSend} minimumSendAmount={minimumSendAmount} />
 }
 
+const calculateMinimumForNewAccount = async (
+  recipientAddress: string,
+  network: Network
+): Promise<bigint | undefined> => {
+  const provider = await ModuleManager.solanaModule.getProvider(
+    mapToVmNetwork(network)
+  )
+
+  const accountSpace = await getAccountOccupiedSpace(
+    toAddress(recipientAddress),
+    provider,
+    network.rpcUrl
+  )
+
+  // Return undefined if account already exists
+  if (accountSpace !== 0n) {
+    return undefined
+  }
+
+  return getRentExemptMinimum(accountSpace, provider, network.rpcUrl)
+}
+
 const getAccountOccupiedSpace = async (
   address: Address,
-  provider: ReturnType<typeof createSolanaRpc>,
+  provider: SolanaProvider,
   rpcUrl: string
 ): Promise<bigint> => {
   const cacheKey = `${rpcUrl}:${address}`
@@ -131,7 +148,7 @@ const getAccountOccupiedSpace = async (
 
 const getRentExemptMinimum = async (
   space: bigint,
-  provider: ReturnType<typeof createSolanaRpc>,
+  provider: SolanaProvider,
   rpcUrl: string
 ): Promise<bigint> => {
   const cacheKey = `${rpcUrl}:${space}`
