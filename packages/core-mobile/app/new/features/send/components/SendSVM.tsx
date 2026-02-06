@@ -57,41 +57,52 @@ export const SendSVM = ({
     let cancelled = false
 
     const fetchMinimumSendAmount = async (): Promise<void> => {
-      // Clear minimum when not applicable
-      if (selectedToken?.type !== TokenType.NATIVE) {
-        setMinimumSendAmount(undefined)
-        return
-      }
+      try {
+        // Clear minimum when not applicable
+        if (selectedToken?.type !== TokenType.NATIVE) {
+          setMinimumSendAmount(undefined)
+          return
+        }
 
-      const provider = await ModuleManager.solanaModule.getProvider(
-        mapToVmNetwork(network)
-      )
-
-      if (!recipient?.addressSVM) {
-        setMinimumSendAmount(undefined)
-        return
-      }
-
-      const rpcUrl = network.rpcUrl
-
-      const accountSpace = await getAccountOccupiedSpace(
-        toAddress(recipient.addressSVM),
-        provider,
-        rpcUrl
-      )
-
-      // Clear minimum if account exists
-      if (accountSpace !== 0n) {
-        if (!cancelled) setMinimumSendAmount(undefined)
-        return
-      }
-
-      const minimum = await getRentExemptMinimum(accountSpace, provider, rpcUrl)
-
-      if (!cancelled) {
-        setMinimumSendAmount(
-          new TokenUnit(minimum, nativeToken.decimals, nativeToken.symbol)
+        const provider = await ModuleManager.solanaModule.getProvider(
+          mapToVmNetwork(network)
         )
+
+        if (!recipient?.addressSVM) {
+          setMinimumSendAmount(undefined)
+          return
+        }
+
+        const rpcUrl = network.rpcUrl
+
+        const accountSpace = await getAccountOccupiedSpace(
+          toAddress(recipient.addressSVM),
+          provider,
+          rpcUrl
+        )
+
+        // Clear minimum if account exists
+        if (accountSpace !== 0n) {
+          if (!cancelled) setMinimumSendAmount(undefined)
+          return
+        }
+
+        const minimum = await getRentExemptMinimum(
+          accountSpace,
+          provider,
+          rpcUrl
+        )
+
+        if (!cancelled) {
+          setMinimumSendAmount(
+            new TokenUnit(minimum, nativeToken.decimals, nativeToken.symbol)
+          )
+        }
+      } catch (error) {
+        // Clear minimum send amount on error to avoid relying on potentially invalid data
+        if (!cancelled) {
+          setMinimumSendAmount(undefined)
+        }
       }
     }
 
