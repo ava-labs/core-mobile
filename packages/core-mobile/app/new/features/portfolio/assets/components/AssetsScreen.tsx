@@ -168,7 +168,19 @@ const AssetsScreen: FC<Props> = ({
         </CollapsibleTabs.ContentWrapper>
       )
     }
-  }, [isInitialLoading, isBalanceLoaded, enabledNetworks.length, isAllBalancesError, isAllBalancesInaccurate, filter.selected, hasNoAssets, data.length, containerStyle.minHeight, refetch, goToBuy, onResetFilter])
+  }, [
+    isInitialLoading,
+    isBalanceLoaded,
+    enabledNetworks.length,
+    isAllBalancesError,
+    isAllBalancesInaccurate,
+    filter.selected,
+    hasNoAssets,
+    data.length,
+    refetch,
+    goToBuy,
+    onResetFilter
+  ])
 
   const renderEmpty = useCallback(() => {
     return renderEmptyComponent()
