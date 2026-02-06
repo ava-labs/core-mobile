@@ -57,7 +57,8 @@ import { LocalTokenWithBalance } from 'store/balance/types'
 import {
   selectIsBridgeBlocked,
   selectIsMeldOfframpBlocked,
-  selectIsInAppDefiBorrowBlocked
+  selectIsInAppDefiBorrowBlocked,
+  selectIsFusionEnabled
 } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
@@ -91,6 +92,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
   const isBridgeBlocked = useSelector(selectIsBridgeBlocked)
   const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
+  const isFusionEnabled = useSelector(selectIsFusionEnabled)
 
   // When borrow feature is enabled, Activity moves to Portfolio sub-tab
   const segmentItems = isInAppDefiBorrowBlocked
@@ -246,6 +248,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
         icon: 'swap',
         onPress: () => navigateToSwap()
       })
+    }
+    if (isFusionEnabled) {
       buttons.push({
         title: ActionButtonTitle.SwapV2,
         icon: 'swap',
@@ -287,7 +291,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigateToSwap,
     navigateToSwapV2,
     isMeldOfframpBlocked,
-    isBridgeBlocked
+    isBridgeBlocked,
+    isFusionEnabled
   ])
 
   const renderMaskView = useCallback((): JSX.Element => {

@@ -45,7 +45,8 @@ export enum FeatureGates {
   IN_APP_REVIEW = 'in-app-review',
   GASLESS_INSTANT = 'gasless-instant',
   NEST_EGG_CAMPAIGN = 'nest-egg-campaign',
-  NEST_EGG_NEW_SEEDLESS_ONLY = 'nest-egg-new-seedless-only'
+  NEST_EGG_NEW_SEEDLESS_ONLY = 'nest-egg-new-seedless-only',
+  FUSION = 'fusion'
 }
 
 export enum FeatureVars {
