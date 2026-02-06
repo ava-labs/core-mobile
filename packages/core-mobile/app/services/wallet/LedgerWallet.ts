@@ -668,6 +668,8 @@ export class LedgerWallet implements Wallet {
   }): Promise<string> {
     Logger.info('signAvalancheTransaction called')
 
+    await LedgerService.openApp(LedgerAppType.AVALANCHE)
+
     // First ensure we're connected to the device
     Logger.info('Ensuring connection to Ledger device...')
     try {
