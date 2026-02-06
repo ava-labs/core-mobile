@@ -160,7 +160,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           },
           {
             key: formattedAddresses.pvm,
-            derivationPath: DERIVATION_PATHS.BIP44.PVM,
+            derivationPath: DERIVATION_PATHS.BIP44.AVALANCHE,
             curve: Curve.SECP256K1
           },
           // Only include Solana key if it exists
