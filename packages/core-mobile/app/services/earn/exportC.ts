@@ -23,6 +23,7 @@ export type ExportCParams = {
   isTestnet: boolean
   cBaseFeeMultiplier: number
   avalancheEvmProvider: JsonRpcBatchInternal
+  xpAddresses: string[]
 }
 
 export async function exportC({
@@ -33,7 +34,8 @@ export async function exportC({
   account,
   isTestnet,
   cBaseFeeMultiplier,
-  avalancheEvmProvider
+  avalancheEvmProvider,
+  xpAddresses
 }: ExportCParams): Promise<void> {
   Logger.info(
     `exporting C started with base fee multiplier: ${cBaseFeeMultiplier}`
@@ -64,7 +66,8 @@ export async function exportC({
     isTestnet,
     destinationChain: 'P',
     destinationAddress: account.addressPVM,
-    avalancheEvmProvider
+    avalancheEvmProvider,
+    xpAddresses
   })
 
   const signedTxWithFeeJson = await WalletService.sign({

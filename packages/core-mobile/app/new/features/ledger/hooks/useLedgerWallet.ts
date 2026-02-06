@@ -176,6 +176,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         ]
 
         // Store the Ledger wallet with the specified derivation path type
+        // For BIP44, store xpub in per-account format for future account additions
         await dispatch(
           storeWallet({
             walletId: newWalletId,
@@ -187,9 +188,13 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
               vmType: 'EVM',
               derivationPathSpec: derivationPathType,
               ...(derivationPathType === LedgerDerivationPathType.BIP44 && {
+                // Store in per-account format: { [accountIndex]: { evm, avalanche } }
+                // This supports storing xpubs for additional accounts later
                 extendedPublicKeys: {
-                  evm: xpubs.evm, // Store base58 xpub for derivation
-                  avalanche: xpubs.avalanche // Store base58 xpub for derivation
+                  0: {
+                    evm: xpubs.evm, // Store base58 xpub for derivation
+                    avalanche: xpubs.avalanche // Store base58 xpub for derivation
+                  }
                 }
               }),
               publicKeys:
@@ -223,10 +228,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           addressAVM: formattedAddresses.avm,
           addressPVM: formattedAddresses.pvm,
           addressSVM: solanaKeys[0]?.key || '',
-          addressCoreEth: '',
-          xpAddresses: [],
-          xpAddressDictionary: {},
-          hasMigratedXpAddresses: true // TODO: true when xpAddresses are successfully fetched
+          addressCoreEth: ''
         }
 
         dispatch(setAccount(newAccount))

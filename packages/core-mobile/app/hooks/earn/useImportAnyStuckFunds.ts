@@ -8,6 +8,7 @@ import { selectCBaseFeeMultiplier } from 'store/posthog/slice'
 import { assertNotUndefined } from 'utils/assertions'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { useGetFeeState } from './useGetFeeState'
 
 const REFETCH_INTERVAL = 3 * 60 * 1000 // 3 minutes
@@ -26,18 +27,25 @@ export const useImportAnyStuckFunds = (
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
   const { defaultFeeState } = useGetFeeState()
+  const { xpAddresses, xpAddressDictionary } = useXPAddresses(activeAccount)
 
   return useQuery({
     // no need to retry failed request as we are already doing interval fetching
     retry: false,
     enabled,
     refetchInterval: REFETCH_INTERVAL,
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [
       'ImportAnyStuckFunds',
       activeAccount,
       isDevMode,
-      defaultFeeState
+      defaultFeeState,
+      xpAddresses,
+      xpAddressDictionary,
+      cBaseFeeMultiplier,
+      activeWallet.id,
+      activeWallet.type,
+      selectedCurrency,
+      handleRecoveryEvent
     ],
     queryFn: async () => {
       assertNotUndefined(activeAccount)
@@ -49,7 +57,9 @@ export const useImportAnyStuckFunds = (
         selectedCurrency,
         progressEvents: handleRecoveryEvent,
         feeState: defaultFeeState,
-        cBaseFeeMultiplier
+        cBaseFeeMultiplier,
+        xpAddresses,
+        xpAddressDictionary
       })
       return true
     }

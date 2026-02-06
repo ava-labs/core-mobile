@@ -58,7 +58,10 @@ const persistOptions = {
 
       return (
         query.queryKey.includes(ReactQueryKeys.NETWORKS) ||
-        query.queryKey.includes(ReactQueryKeys.LAST_TRANSACTED_ERC20_NETWORKS)
+        query.queryKey.includes(
+          ReactQueryKeys.LAST_TRANSACTED_ERC20_NETWORKS
+        ) ||
+        query.queryKey.includes(ReactQueryKeys.XP_ADDRESSES)
       )
     }
   }

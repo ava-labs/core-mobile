@@ -1,12 +1,11 @@
 import {
   Account,
   AccountCollection,
-  LedgerAddressesCollection,
-  XPAddressDictionary
+  LedgerAddressesCollection
 } from 'store/account'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { AddressIndex, CoreAccountType } from '@avalabs/types'
+import { CoreAccountType } from '@avalabs/types'
 import { uuid } from 'utils/uuid'
 import { WalletType } from 'services/wallet/types'
 import { isEvmPublicKey } from 'utils/publicKeys'
@@ -17,8 +16,6 @@ import ModuleManager from 'vmModule/ModuleManager'
 import { AVALANCHE_MAINNET_NETWORK } from 'services/network/consts'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import Logger from 'utils/Logger'
-import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
-import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { LedgerWallet } from 'services/wallet/LedgerWallet'
 
 class AccountsService {
@@ -54,6 +51,10 @@ class AccountsService {
       const addressPVM = isTestnet
         ? ledgerAddresses?.testnet.addressPVM
         : ledgerAddresses?.mainnet.addressPVM
+
+      const addressCoreEth = isTestnet
+        ? ledgerAddresses?.testnet.addressCoreEth
+        : ledgerAddresses?.mainnet.addressCoreEth
       // For Ledger wallets, preserve existing addresses
       // since they were retrieved from the device during wallet creation
       return {
@@ -61,7 +62,7 @@ class AccountsService {
         [NetworkVMType.EVM]: account.addressC,
         [NetworkVMType.AVM]: addressAVM || account.addressAVM,
         [NetworkVMType.PVM]: addressPVM || account.addressPVM,
-        [NetworkVMType.CoreEth]: account.addressCoreEth || '',
+        [NetworkVMType.CoreEth]: addressCoreEth || account.addressCoreEth || '',
         [NetworkVMType.SVM]: account.addressSVM ?? ''
       } as Record<NetworkVMType, string>
     }
@@ -74,72 +75,6 @@ class AccountsService {
       isTestnet
     })
   }
-
-  /**
-   * Gets XP addresses for an account, either preserving existing ones for Ledger or deriving new ones.
-   */
-  // private async getAccountXPAddresses({
-  //   account,
-  //   isLedgerWallet,
-  //   walletId,
-  //   walletType,
-  //   isTestnet
-  // }: {
-  //   account: Account
-  //   isLedgerWallet: boolean
-  //   walletId: string
-  //   walletType: WalletType
-  //   isTestnet: boolean
-  // }): Promise<{
-  //   xpAddresses: AddressIndex[]
-  //   xpAddressDictionary: XPAddressDictionary
-  // }> {
-  //   if (isLedgerWallet) {
-  //     // For Ledger wallets, preserve existing XP addresses
-  //     return {
-  //       xpAddresses: account.xpAddresses || [],
-  //       xpAddressDictionary:
-  //         account.xpAddressDictionary || ({} as XPAddressDictionary)
-  //     }
-  //   }
-
-  //   // For non-Ledger wallets, derive XP addresses
-  //   try {
-  //     const result = await getAddressesFromXpubXP({
-  //       isDeveloperMode: isTestnet,
-  //       walletId,
-  //       walletType,
-  //       accountIndex: account.index,
-  //       onlyWithActivity: true
-  //     })
-
-  //     return {
-  //       xpAddresses: result.xpAddresses,
-  //       xpAddressDictionary: result.xpAddressDictionary
-  //     }
-  //   } catch (error) {
-  //     Logger.error('Error getting XP addresses', error)
-  //     return {
-  //       xpAddresses: [],
-  //       xpAddressDictionary: {} as XPAddressDictionary
-  //     }
-  //   }
-  // }
-
-  /**
-   * Gets the account name/title.
-   */
-  // private async getAccountTitle(
-  //   walletType: WalletType,
-  //   account: Account
-  // ): Promise<string> {
-  //   if (walletType === WalletType.SEEDLESS) {
-  //     return (
-  //       (await SeedlessService.getAccountName(account.index)) ?? account.name
-  //     )
-  //   }
-  //   return account.name
-  // }
 
   /**
    * Reloads the accounts for the given network.
@@ -176,35 +111,6 @@ class AccountsService {
         isTestnet
       })
 
-      const strippedAVM = stripAddressPrefix(account.addressAVM)
-      const strippedPVM = stripAddressPrefix(account.addressPVM)
-      const strippedAvalancheAddress = strippedAVM || strippedPVM
-
-      let xpAddresses: AddressIndex[] = [
-        { address: strippedAvalancheAddress, index: 0 }
-      ]
-      let xpAddressDictionary: XPAddressDictionary = {
-        [strippedAvalancheAddress]: { space: 'e', index: 0, hasActivity: false }
-      }
-      let hasMigratedXpAddresses = false
-
-      try {
-        const result = await getAddressesFromXpubXP({
-          isDeveloperMode: isTestnet,
-          walletId,
-          walletType,
-          accountIndex: account.index,
-          onlyWithActivity: true
-        })
-
-        xpAddresses =
-          result.xpAddresses.length > 0 ? result.xpAddresses : xpAddresses
-        xpAddressDictionary = result.xpAddressDictionary
-        hasMigratedXpAddresses = true
-      } catch (error) {
-        Logger.error('Error getting XP addresses', error)
-      }
-
       reloadedAccounts[key] = {
         id: account.id,
         name: account.name,
@@ -216,10 +122,7 @@ class AccountsService {
         addressAVM: addresses[NetworkVMType.AVM],
         addressPVM: addresses[NetworkVMType.PVM],
         addressCoreEth: addresses[NetworkVMType.CoreEth],
-        addressSVM: addresses[NetworkVMType.SVM],
-        xpAddresses,
-        xpAddressDictionary,
-        hasMigratedXpAddresses
+        addressSVM: addresses[NetworkVMType.SVM]
       } as Account
     }
 
@@ -238,7 +141,10 @@ class AccountsService {
     isTestnet: boolean
     walletId: string
     name: string
-  }): Promise<Account> {
+  }): Promise<{
+    account: Account
+    xpub?: { evm: string; avalanche: string }
+  }> {
     if (walletType === WalletType.UNSET) throw new Error('invalid wallet type')
 
     if (walletType === WalletType.SEEDLESS) {
@@ -263,8 +169,8 @@ class AccountsService {
       walletType === WalletType.LEDGER ||
       walletType === WalletType.LEDGER_LIVE
     ) {
-      // For BIP44 Ledger wallets, try to derive addresses from extended public keys
-      // This avoids the need to connect to the device for new accounts
+      // For BIP44 Ledger wallets, get addresses and xpub from device
+      // Device is already connected at this point
       const wallet = await WalletFactory.createWallet({
         walletId,
         walletType
@@ -272,6 +178,7 @@ class AccountsService {
       if (!(wallet instanceof LedgerWallet)) {
         throw new Error('Expected LedgerWallet instance')
       }
+      // Returns both account and xpub data
       return wallet.addAccount({ index, isTestnet, walletId, name })
     }
 
@@ -282,45 +189,22 @@ class AccountsService {
       isTestnet
     })
 
-    let xpAddresses: AddressIndex[] = [
-      { address: stripAddressPrefix(addresses[NetworkVMType.AVM]), index: 0 }
-    ]
-    let xpAddressDictionary: XPAddressDictionary = {} as XPAddressDictionary
-    let hasMigratedXpAddresses = false
-    try {
-      const result = await getAddressesFromXpubXP({
-        isDeveloperMode: isTestnet,
-        walletId,
-        walletType,
-        accountIndex: index,
-        onlyWithActivity: true
-      })
-
-      xpAddresses =
-        result.xpAddresses.length > 0 ? result.xpAddresses : xpAddresses
-      xpAddressDictionary = result.xpAddressDictionary
-      hasMigratedXpAddresses = true
-    } catch (error) {
-      Logger.error('Error getting XP addresses', error)
-    }
-
     Logger.info(`Final addresses for account ${index}:`, addresses)
 
     return {
-      index,
-      id: uuid(),
-      walletId,
-      name,
-      type: CoreAccountType.PRIMARY,
-      addressBTC: addresses[NetworkVMType.BITCOIN],
-      addressC: addresses[NetworkVMType.EVM],
-      addressAVM: addresses[NetworkVMType.AVM],
-      addressPVM: addresses[NetworkVMType.PVM],
-      addressCoreEth: addresses[NetworkVMType.CoreEth],
-      addressSVM: addresses[NetworkVMType.SVM],
-      xpAddresses,
-      xpAddressDictionary,
-      hasMigratedXpAddresses
+      account: {
+        index,
+        id: uuid(),
+        walletId,
+        name,
+        type: CoreAccountType.PRIMARY,
+        addressBTC: addresses[NetworkVMType.BITCOIN],
+        addressC: addresses[NetworkVMType.EVM],
+        addressAVM: addresses[NetworkVMType.AVM],
+        addressPVM: addresses[NetworkVMType.PVM],
+        addressCoreEth: addresses[NetworkVMType.CoreEth],
+        addressSVM: addresses[NetworkVMType.SVM]
+      }
     }
   }
 
@@ -390,14 +274,14 @@ class AccountsService {
         walletType,
         accountIndex: i
       })
-      const acc = await this.createNextAccount({
+      const result = await this.createNextAccount({
         index: i,
         walletType,
         isTestnet: false,
         walletId,
         name
       })
-      accounts[acc.id] = acc
+      accounts[result.account.id] = result.account
     }
 
     return accounts

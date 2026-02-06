@@ -103,8 +103,8 @@ describe('getAddressesFromXpubXP', () => {
     const result = await getAddressesFromXpubXP(args)
 
     expect(result.xpAddresses).toEqual([
-      { address: 'avax1bar', index: 1 },
-      { address: 'avax1foo', index: 0 }
+      { address: 'avax1foo', index: 0 },
+      { address: 'avax1bar', index: 1 }
     ])
   })
 
@@ -121,7 +121,7 @@ describe('getAddressesFromXpubXP', () => {
     expect(result.xpAddresses).toEqual([{ address: 'avax1dup', index: 1 }])
   })
 
-  it('sorts lexicographically regardless of input order', async () => {
+  it('sorts by index, then lexicographically for same index', async () => {
     const avm = makeResponse('AVM', ['X-avax1zzz', 'X-avax1aaa'], [])
     const pvm = makeResponse('PVM', ['P-avax1mmm'], [])
 
@@ -132,9 +132,9 @@ describe('getAddressesFromXpubXP', () => {
     const result = await getAddressesFromXpubXP(args)
 
     expect(result.xpAddresses).toEqual([
-      { address: 'avax1aaa', index: 1 },
       { address: 'avax1mmm', index: 0 },
-      { address: 'avax1zzz', index: 0 }
+      { address: 'avax1zzz', index: 0 },
+      { address: 'avax1aaa', index: 1 }
     ])
   })
 })

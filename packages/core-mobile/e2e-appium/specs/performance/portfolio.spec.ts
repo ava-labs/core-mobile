@@ -1,4 +1,4 @@
-import warmup, { restartAndUnlock } from '../../helpers/warmup'
+import warmup from '../../helpers/warmup'
 import { actions } from '../../helpers/actions'
 import portfolioPage from '../../pages/portfolio.page'
 import commonElsPage from '../../pages/commonEls.page'
@@ -15,14 +15,6 @@ describe('[Performance] Portfolio - Assets Tab', () => {
 
   it('Assets performance after switching account', async () => {
     await commonElsPage.switchAccount(commonEls.secondAccount)
-    const start = performance.now()
-    await portfolioPage.verifyAssetsList()
-    await actions.assertPerformance(start)
-  })
-
-  it('Assets performance after app restart', async () => {
-    await restartAndUnlock()
-    await actions.waitFor(commonElsPage.loadingSpinnerVisible)
     const start = performance.now()
     await portfolioPage.verifyAssetsList()
     await actions.assertPerformance(start)

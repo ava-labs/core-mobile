@@ -14,6 +14,7 @@ import { useSendSelectedToken } from 'new/features/send/store'
 import { assertNotUndefined } from 'utils/assertions'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
+import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { SendAdapterPVM, SendErrorMessage } from './utils/types'
 import { send as sendPVM } from './utils/pvm/send'
 import { validate as validatePVMSend } from './utils/pvm/validate'
@@ -40,6 +41,7 @@ const usePVMSend: SendAdapterPVM = ({
   const [selectedToken] = useSendSelectedToken()
   const provider = useAvalancheXpProvider()
   const wallet = useActiveWallet()
+  const { xpAddresses, xpAddressDictionary } = useXPAddresses(account)
 
   const createSendPTx = useCallback(
     async (amountInNAvax: bigint, price?: bigint): Promise<UnsignedTx> => {
@@ -52,10 +54,11 @@ const usePVMSend: SendAdapterPVM = ({
         isTestnet: Boolean(network.isTestnet),
         destinationAddress,
         sourceAddress: fromAddress,
-        feeState: getFeeState(price)
+        feeState: getFeeState(price),
+        xpAddresses
       })
     },
-    [addressToSend, account, network, fromAddress, getFeeState]
+    [addressToSend, account, network, fromAddress, getFeeState, xpAddresses]
   )
 
   useEffect(() => {
@@ -101,7 +104,9 @@ const usePVMSend: SendAdapterPVM = ({
         account,
         amountInNAvax: amount.toSubUnit(),
         toAddress: addressToSend,
-        feeState: getFeeState(gasPrice)
+        feeState: getFeeState(gasPrice),
+        xpAddresses,
+        xpAddressDictionary
       })
     } finally {
       setIsSending(false)
@@ -117,7 +122,9 @@ const usePVMSend: SendAdapterPVM = ({
     account,
     getFeeState,
     gasPrice,
-    wallet
+    wallet,
+    xpAddresses,
+    xpAddressDictionary
   ])
 
   const handleError = useCallback(

@@ -1,5 +1,4 @@
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
-import { AddressIndex } from '@avalabs/types'
 import {
   type Error,
   type NetworkContractToken,
@@ -34,37 +33,6 @@ import { getLocalTokenId } from './utils/getLocalTokenId'
 import { mapBalanceResponseToLegacy } from './utils/mapBalanceResponseToLegacy'
 
 export class BalanceService {
-  private async filterNetworksBySupportedEvm(
-    networks: Network[]
-  ): Promise<{ networks: Network[]; filteredOutChainIds: number[] }> {
-    const supported = await getSupportedChainsFromCache()
-    if (!supported || supported.length === 0) {
-      return { networks, filteredOutChainIds: [] }
-    }
-
-    const supportedEvmIds = new Set<number>()
-    supported.forEach(caip2Id => {
-      if (!caip2Id.startsWith('eip155:')) return
-      const chainId = Number(caip2Id.split(':')[1])
-      if (Number.isFinite(chainId)) {
-        supportedEvmIds.add(chainId)
-      }
-    })
-
-    if (supportedEvmIds.size === 0) {
-      return { networks, filteredOutChainIds: [] }
-    }
-
-    const filteredOutChainIds: number[] = []
-    const filteredNetworks = networks.filter(network => {
-      if (network.vmName !== NetworkVMType.EVM) return true
-      if (supportedEvmIds.has(network.chainId)) return true
-      filteredOutChainIds.push(network.chainId)
-      return false
-    })
-
-    return { networks: filteredNetworks, filteredOutChainIds }
-  }
   /**
    * Fetch balances for multiple accounts across multiple networks.
    * Uses Promise.allSettled so each network resolves independently.
@@ -97,7 +65,8 @@ export class BalanceService {
     accounts,
     currency,
     customTokens,
-    onBalanceLoaded
+    onBalanceLoaded,
+    xpAddressesByAccountId
   }: {
     networks: Network[]
     accounts: Account[]
@@ -107,6 +76,7 @@ export class BalanceService {
       networkChainId: number,
       partial: PartialAdjustedNormalizedBalancesForAccount
     ) => void
+    xpAddressesByAccountId: Map<string, string[]>
   }): Promise<AdjustedNormalizedBalancesForAccounts> {
     // Final aggregated result
     const finalResults: AdjustedNormalizedBalancesForAccounts = {}
@@ -133,12 +103,14 @@ export class BalanceService {
             const module = await ModuleManager.loadModuleByNetwork(network)
 
             const addressEntries = accounts.flatMap(account =>
-              getAddressesForAccountAndNetwork(account, network).map(
-                address => ({
-                  address,
-                  account
-                })
-              )
+              getAddressesForAccountAndNetwork({
+                account,
+                network,
+                xpAddresses: xpAddressesByAccountId.get(account.id) ?? []
+              }).map(address => ({
+                address,
+                account
+              }))
             )
 
             const addressMap = addressEntries.reduce(
@@ -339,21 +311,26 @@ export class BalanceService {
     networks,
     account,
     currency,
-    onBalanceLoaded
+    onBalanceLoaded,
+    xpAddresses
   }: {
     networks: Network[]
     account: Account
     currency: string
     onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
+    xpAddresses: string[]
   }): Promise<AdjustedNormalizedBalancesForAccount[]> {
     // Final aggregated result
     const finalResults = new Map<number, AdjustedNormalizedBalancesForAccount>()
 
     const { networks: supportedNetworks, filteredOutChainIds } =
       await this.filterNetworksBySupportedEvm(networks)
-    const requestBatches = buildRequestItemsForAccounts(supportedNetworks, [
-      account
-    ])
+
+    const requestBatches = buildRequestItemsForAccounts(
+      supportedNetworks,
+      [account],
+      new Map([[account.id, xpAddresses]])
+    )
 
     const { balanceApiThrew, failedChainIds } =
       await this.processBalanceBatches({
@@ -383,101 +360,14 @@ export class BalanceService {
         networks: networksToRetry,
         account,
         currency,
-        onBalanceLoaded
+        onBalanceLoaded,
+        xpAddresses
       })
 
       vmResults.forEach(balance => finalResults.set(balance.chainId, balance))
     }
 
     return Array.from(finalResults.values())
-  }
-
-  private async processBalanceBatches({
-    requestBatches,
-    account,
-    currency,
-    finalResults,
-    onBalanceLoaded
-  }: {
-    requestBatches: GetBalancesRequestBody['data'][]
-    account: Account
-    currency: string
-    finalResults: Map<number, AdjustedNormalizedBalancesForAccount>
-    onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
-  }): Promise<{ balanceApiThrew: boolean; failedChainIds: Set<number> }> {
-    let balanceApiThrew = false
-    const failedChainIds = new Set<number>()
-
-    // Process each batch sequentially to avoid overwhelming the API
-    for (const requestItems of requestBatches) {
-      // Skip empty batches
-      if (requestItems.length === 0) continue
-
-      const body = {
-        data: requestItems,
-        currency: currency as GetBalancesRequestBody['currency'],
-        showUntrustedTokens: true
-      }
-
-      try {
-        for await (const balance of balanceApi.getBalancesStream(body)) {
-          const normalized = mapBalanceResponseToLegacy(account, balance)
-          if (!normalized) continue
-
-          if (normalized.error) {
-            // Mark chain as failed
-            failedChainIds.add(normalized.chainId)
-          } else {
-            // Progressive update callback for successful balance
-            onBalanceLoaded?.(normalized)
-          }
-
-          // Add to final result (or update if already exists)
-          finalResults.set(normalized.chainId, normalized)
-        }
-      } catch (err) {
-        // Balance API down / request failed / stream broken for this batch
-        balanceApiThrew = true
-        Logger.error(
-          `[BalanceService][getBalancesForAccount] batch request failed`,
-          err
-        )
-        // Continue with next batch
-      }
-    }
-
-    return { balanceApiThrew, failedChainIds }
-  }
-
-  private async getBalancesForAccountViaVmModules({
-    networks,
-    account,
-    currency,
-    onBalanceLoaded
-  }: {
-    networks: Network[]
-    account: Account
-    currency: string
-    onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
-  }): Promise<AdjustedNormalizedBalancesForAccount[]> {
-    if (networks.length === 0) return []
-
-    const res = await this.getVMBalancesForAccounts({
-      networks,
-      accounts: [account],
-      currency,
-      customTokens: {},
-      onBalanceLoaded: onBalanceLoaded
-        ? (_chainId, partial) => {
-            const balance = partial[account.id]
-            if (balance) {
-              onBalanceLoaded(balance)
-            }
-          }
-        : undefined
-    })
-
-    return res[account.id] ?? []
   }
 
   /**
@@ -495,12 +385,14 @@ export class BalanceService {
     networks,
     accounts,
     currency,
-    onBalanceLoaded
+    onBalanceLoaded,
+    xpAddressesByAccountId
   }: {
     networks: Network[]
     accounts: Account[]
     currency: string
     onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
+    xpAddressesByAccountId: Map<string, string[]>
   }): Promise<AdjustedNormalizedBalancesForAccounts> {
     const finalResults: AdjustedNormalizedBalancesForAccounts = {}
 
@@ -512,7 +404,8 @@ export class BalanceService {
       await this.filterNetworksBySupportedEvm(networks)
     const requestBatches = buildRequestItemsForAccounts(
       supportedNetworks,
-      accounts
+      accounts,
+      xpAddressesByAccountId
     )
 
     const accountById = accounts.reduce((acc, a) => {
@@ -521,8 +414,14 @@ export class BalanceService {
     }, {} as Record<string, Account>)
 
     const accountByAddress = accounts.reduce((acc, account) => {
+      const xpAddresses = xpAddressesByAccountId.get(account.id) ?? []
+
       const addresses = supportedNetworks.flatMap(network =>
-        getAddressesForAccountAndNetwork(account, network)
+        getAddressesForAccountAndNetwork({
+          account,
+          network,
+          xpAddresses
+        })
       )
       for (const address of addresses) {
         if (address && address.length > 0) acc[address] = account
@@ -615,7 +514,8 @@ export class BalanceService {
               onBalanceLoaded?.(balance)
             }
           }
-        }
+        },
+        xpAddressesByAccountId
       })
 
       // Merge VM results into final results
@@ -641,19 +541,149 @@ export class BalanceService {
 
     return finalResults
   }
+
+  private async processBalanceBatches({
+    requestBatches,
+    account,
+    currency,
+    finalResults,
+    onBalanceLoaded
+  }: {
+    requestBatches: GetBalancesRequestBody['data'][]
+    account: Account
+    currency: string
+    finalResults: Map<number, AdjustedNormalizedBalancesForAccount>
+    onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
+  }): Promise<{ balanceApiThrew: boolean; failedChainIds: Set<number> }> {
+    let balanceApiThrew = false
+    const failedChainIds = new Set<number>()
+
+    // Process each batch sequentially to avoid overwhelming the API
+    for (const requestItems of requestBatches) {
+      // Skip empty batches
+      if (requestItems.length === 0) continue
+
+      const body = {
+        data: requestItems,
+        currency: currency as GetBalancesRequestBody['currency'],
+        showUntrustedTokens: true
+      }
+
+      try {
+        for await (const balance of balanceApi.getBalancesStream(body)) {
+          const normalized = mapBalanceResponseToLegacy(account, balance)
+          if (!normalized) continue
+
+          if (normalized.error) {
+            // Mark chain as failed
+            failedChainIds.add(normalized.chainId)
+          } else {
+            // Progressive update callback for successful balance
+            onBalanceLoaded?.(normalized)
+          }
+
+          // Add to final result (or update if already exists)
+          finalResults.set(normalized.chainId, normalized)
+        }
+      } catch (err) {
+        // Balance API down / request failed / stream broken for this batch
+        balanceApiThrew = true
+        Logger.error(
+          `[BalanceService][getBalancesForAccount] batch request failed`,
+          err
+        )
+        // Continue with next batch
+      }
+    }
+
+    return { balanceApiThrew, failedChainIds }
+  }
+
+  private async getBalancesForAccountViaVmModules({
+    networks,
+    account,
+    currency,
+    onBalanceLoaded,
+    xpAddresses
+  }: {
+    networks: Network[]
+    account: Account
+    currency: string
+    onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
+    xpAddresses: string[]
+  }): Promise<AdjustedNormalizedBalancesForAccount[]> {
+    if (networks.length === 0) return []
+
+    const res = await this.getVMBalancesForAccounts({
+      networks,
+      accounts: [account],
+      currency,
+      customTokens: {},
+      onBalanceLoaded: onBalanceLoaded
+        ? (_chainId, partial) => {
+            const balance = partial[account.id]
+            if (balance) {
+              onBalanceLoaded(balance)
+            }
+          }
+        : undefined,
+      xpAddressesByAccountId: new Map([[account.id, xpAddresses]])
+    })
+
+    return res[account.id] ?? []
+  }
+
+  private async filterNetworksBySupportedEvm(
+    networks: Network[]
+  ): Promise<{ networks: Network[]; filteredOutChainIds: number[] }> {
+    const supported = await getSupportedChainsFromCache()
+    if (!supported || supported.length === 0) {
+      return { networks, filteredOutChainIds: [] }
+    }
+
+    const supportedEvmIds = new Set<number>()
+    supported.forEach(caip2Id => {
+      if (!caip2Id.startsWith('eip155:')) return
+      const chainId = Number(caip2Id.split(':')[1])
+      if (Number.isFinite(chainId)) {
+        supportedEvmIds.add(chainId)
+      }
+    })
+
+    if (supportedEvmIds.size === 0) {
+      return { networks, filteredOutChainIds: [] }
+    }
+
+    const filteredOutChainIds: number[] = []
+    const filteredNetworks: Network[] = []
+
+    for (const network of networks) {
+      if (network.vmName !== NetworkVMType.EVM) {
+        filteredNetworks.push(network)
+      } else if (supportedEvmIds.has(network.chainId)) {
+        filteredNetworks.push(network)
+      } else {
+        filteredOutChainIds.push(network.chainId)
+      }
+    }
+
+    return { networks: filteredNetworks, filteredOutChainIds }
+  }
 }
 
-const getAddressesForAccountAndNetwork = (
-  account: Account,
+const getAddressesForAccountAndNetwork = ({
+  account,
+  network,
+  xpAddresses
+}: {
+  account: Account
   network: Network
-): string[] => {
-  if (isXPNetwork(network)) {
-    const xpAddresses = account.xpAddresses
-    if (xpAddresses && xpAddresses.length > 0) {
-      const formatted = formatXpAddressesForNetwork(xpAddresses, network)
-      if (formatted.length > 0) {
-        return formatted
-      }
+  xpAddresses: string[]
+}): string[] => {
+  if (isXPNetwork(network) && xpAddresses.length > 0) {
+    const formatted = formatXpAddressesForNetwork(xpAddresses, network)
+    if (formatted.length > 0) {
+      return formatted
     }
   }
 
@@ -662,7 +692,7 @@ const getAddressesForAccountAndNetwork = (
 }
 
 const formatXpAddressesForNetwork = (
-  xpAddresses: AddressIndex[],
+  xpAddresses: string[],
   network: Network
 ): string[] => {
   const prefix =
@@ -677,7 +707,7 @@ const formatXpAddressesForNetwork = (
   }
 
   const normalized = new Set<string>()
-  xpAddresses.forEach(({ address }) => {
+  xpAddresses.forEach(address => {
     if (!address) {
       return
     }

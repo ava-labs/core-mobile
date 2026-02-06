@@ -8,6 +8,7 @@ import { isTokenWithBalanceAVM } from '@avalabs/avalanche-module'
 import Logger from 'utils/Logger'
 import { useSendContext } from 'new/features/send/context/sendContext'
 import { useSendSelectedToken } from 'new/features/send/store'
+import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { SendAdapterAVM, SendErrorMessage } from './utils/types'
 import { send as sendAVM } from './utils/avm/send'
 import { validate as validateAVMSend } from './utils/avm/validate'
@@ -28,6 +29,7 @@ const useAVMSend: SendAdapterAVM = ({
     canValidate
   } = useSendContext()
   const [selectedToken] = useSendSelectedToken()
+  const { xpAddresses, xpAddressDictionary } = useXPAddresses(account)
 
   const tokenProps = useMemo(() => {
     if (!selectedToken || !isTokenWithBalanceAVM(selectedToken)) {
@@ -50,7 +52,9 @@ const useAVMSend: SendAdapterAVM = ({
         account,
         network,
         toAddress: addressToSend,
-        amount: amount.toSubUnit()
+        amount: amount.toSubUnit(),
+        xpAddresses,
+        xpAddressDictionary
       })
     } finally {
       setIsSending(false)
@@ -62,7 +66,9 @@ const useAVMSend: SendAdapterAVM = ({
     setIsSending,
     request,
     fromAddress,
-    account
+    account,
+    xpAddresses,
+    xpAddressDictionary
   ])
 
   const handleError = useCallback(

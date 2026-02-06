@@ -61,6 +61,12 @@ jest.mock('expo-router', () => ({
   }
 }))
 
+jest.mock('contexts/ReactQueryProvider', () => ({
+  queryClient: {
+    clear: jest.fn()
+  }
+}))
+
 // store utils
 const listenerMiddlewareInstance = createListenerMiddleware({
   onError: jest.fn(noop)
