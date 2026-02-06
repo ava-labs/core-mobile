@@ -19,3 +19,11 @@ export const globalThrottledOnPress = (
   lastPressTime = now
   onPress?.()
 }
+
+/**
+ * Resets the throttle state. Only use this for testing purposes.
+ * @internal
+ */
+export const resetGlobalThrottle = (): void => {
+  lastPressTime = 0
+}
