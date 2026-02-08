@@ -137,9 +137,9 @@ export const useFadingHeaderNavigation = ({
         separator={
           hasSeparator
             ? {
-              position: 'bottom',
-              opacity: targetHiddenProgress
-            }
+                position: 'bottom',
+                opacity: targetHiddenProgress
+              }
             : undefined
         }
       />
