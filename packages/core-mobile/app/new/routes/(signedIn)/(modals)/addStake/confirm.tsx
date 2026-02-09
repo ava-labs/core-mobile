@@ -43,7 +43,7 @@ import NetworkService from 'services/network/NetworkService'
 import { WalletType } from 'services/wallet/types'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveWallet } from 'store/wallet/slice'
-import { showLedgerReviewTransaction } from 'features/ledger/utils'
+import { executeLedgerStakingOperation } from 'features/ledger/utils'
 import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { truncateNodeId } from 'utils/Utils'
@@ -375,27 +375,11 @@ const StakeConfirmScreen = (): JSX.Element => {
           {
             text: 'Try again',
             onPress: () => {
-              // For Ledger wallets, re-establish connection before retrying
               if (isLedger) {
-                showLedgerReviewTransaction({
+                executeLedgerStakingOperation({
                   network: pNetwork,
-                  onApprove: async onProgress => {
-                    // Start the retry delegation process
-                    performRetry(onProgress)
-                  },
-                  onReject: () => {
-                    // User cancelled Ledger connection
-                  },
-                  // Use unified modal with staking progress tracking
-                  stakingProgress: {
-                    totalSteps: steps.length,
-                    onComplete: () => {
-                      // Progress will auto-complete when all steps are done
-                    },
-                    onCancel: () => {
-                      // User cancelled from progress screen
-                    }
-                  }
+                  totalSteps: steps.length,
+                  action: performRetry
                 })
               } else {
                 performRetry()
@@ -435,27 +419,11 @@ const StakeConfirmScreen = (): JSX.Element => {
         })
       }
 
-      // For Ledger wallets, show the unified review transaction modal with progress tracking
       if (isLedger) {
-        showLedgerReviewTransaction({
+        executeLedgerStakingOperation({
           network: pNetwork,
-          onApprove: async onProgress => {
-            // Start the delegation process
-            performDelegation(onProgress)
-          },
-          onReject: () => {
-            // User cancelled Ledger connection
-          },
-          // Use unified modal with staking progress tracking
-          stakingProgress: {
-            totalSteps: steps.length,
-            onComplete: () => {
-              // Progress will auto-complete when all steps are done
-            },
-            onCancel: () => {
-              // User cancelled from progress screen
-            }
-          }
+          totalSteps: steps.length,
+          action: performDelegation
         })
       } else {
         performDelegation()
