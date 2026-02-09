@@ -43,7 +43,6 @@ export const WithdrawAaveSelectAmountForm = ({
         txHash,
         address: activeAccount?.addressC ?? ''
       })
-      AnalyticsService.capture('EarnWithdrawSuccess')
       onSuccess()
     },
     [market.asset.symbol, market.marketName, activeAccount?.addressC, onSuccess]

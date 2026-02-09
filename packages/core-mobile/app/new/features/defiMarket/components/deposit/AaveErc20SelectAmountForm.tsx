@@ -107,7 +107,6 @@ export const AaveErc20SelectAmountForm = ({
         txHash,
         address: address ?? ''
       })
-      AnalyticsService.capture('EarnDepositSuccess')
       onSuccess()
     },
     [asset.token.symbol, market.marketName, address, onSuccess]

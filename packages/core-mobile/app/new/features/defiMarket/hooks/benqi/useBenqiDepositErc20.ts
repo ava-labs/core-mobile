@@ -5,6 +5,8 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { RpcMethod, TokenType } from '@avalabs/vm-module-types'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
+import { RequestContext } from 'store/rpc/types'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { ensureAllowance } from 'features/swap/utils/evm/ensureAllowance'
@@ -87,7 +89,13 @@ export const useBenqiDepositErc20 = ({
             })
           }
         ],
-        chainId
+        chainId,
+        context: {
+          [RequestContext.ON_CONFIRMED]: () =>
+            AnalyticsService.capture('EarnDepositSuccess'),
+          [RequestContext.ON_REVERTED]: () =>
+            AnalyticsService.capture('EarnDepositFailure')
+        }
       })
 
       // Invalidate cache in background after transaction is confirmed

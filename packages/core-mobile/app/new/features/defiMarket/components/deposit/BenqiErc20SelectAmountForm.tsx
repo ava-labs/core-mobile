@@ -104,7 +104,6 @@ export const BenqiErc20SelectAmountForm = ({
         txHash,
         address: address ?? ''
       })
-      AnalyticsService.capture('EarnDepositSuccess')
       onSuccess()
     },
     [asset.token.symbol, market.marketName, address, onSuccess]

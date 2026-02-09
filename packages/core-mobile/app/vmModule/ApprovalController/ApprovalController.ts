@@ -82,6 +82,11 @@ class ApprovalController implements VmModuleApprovalController {
     explorerLink: string
     request: RpcRequest
   }): void {
+    const onConfirmed = request.context?.[RequestContext.ON_CONFIRMED]
+    if (typeof onConfirmed === 'function') {
+      onConfirmed()
+    }
+
     const inAppReview = request.context?.[RequestContext.IN_APP_REVIEW]
 
     if (inAppReview) {
@@ -113,7 +118,17 @@ class ApprovalController implements VmModuleApprovalController {
     }
   }
 
-  onTransactionReverted(): void {
+  onTransactionReverted({
+    txHash: _txHash,
+    request
+  }: {
+    txHash: string
+    request: RpcRequest
+  }): void {
+    const onReverted = request.context?.[RequestContext.ON_REVERTED]
+    if (typeof onReverted === 'function') {
+      onReverted()
+    }
     transactionSnackbar.error({ error: 'Transaction reverted' })
   }
 

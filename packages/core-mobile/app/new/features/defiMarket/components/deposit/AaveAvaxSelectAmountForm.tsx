@@ -57,7 +57,6 @@ export const AaveAvaxSelectAmountForm = ({
         txHash,
         address: activeAccount?.addressC ?? ''
       })
-      AnalyticsService.capture('EarnDepositSuccess')
       onSuccess()
     },
     [asset.token.symbol, market.marketName, activeAccount?.addressC, onSuccess]
