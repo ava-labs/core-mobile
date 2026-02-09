@@ -11,6 +11,8 @@ const testCBaseFeeMultiplier = 1
 
 describe('earn/importC', () => {
   describe('importC', () => {
+    const testXpAddresses = ['avax123', 'avax456']
+
     const baseFeeMockFn = jest.fn().mockReturnValue(BigInt(250000e9))
     const getAtomicTxStatusMockFn = jest.fn().mockReturnValue({
       status: 'Accepted'
@@ -66,16 +68,18 @@ describe('earn/importC', () => {
       await importC({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        account: { xpAddresses: [] } as unknown as Account,
+        account: {} as Account,
         isTestnet: false,
-        cBaseFeeMultiplier: testCBaseFeeMultiplier
+        cBaseFeeMultiplier: testCBaseFeeMultiplier,
+        xpAddresses: testXpAddresses
       })
       expect(AvalancheWalletService.createImportCTx).toHaveBeenCalledWith({
         baseFeeInNAvax: BigInt(0.0005 * 10 ** 9),
         sourceChain: 'P',
         destinationAddress: undefined,
         isTestnet: false,
-        account: { xpAddresses: [] } as unknown as Account
+        account: {} as Account,
+        xpAddresses: testXpAddresses
       })
     })
 
@@ -83,9 +87,10 @@ describe('earn/importC', () => {
       await importC({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        account: { xpAddresses: [] } as unknown as Account,
+        account: {} as Account,
         isTestnet: false,
-        cBaseFeeMultiplier: testCBaseFeeMultiplier
+        cBaseFeeMultiplier: testCBaseFeeMultiplier,
+        xpAddresses: testXpAddresses
       })
       expect(WalletService.sign).toHaveBeenCalled()
     })
@@ -94,9 +99,10 @@ describe('earn/importC', () => {
       await importC({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
-        account: { xpAddresses: [] } as unknown as Account,
+        account: {} as Account,
         isTestnet: false,
-        cBaseFeeMultiplier: testCBaseFeeMultiplier
+        cBaseFeeMultiplier: testCBaseFeeMultiplier,
+        xpAddresses: testXpAddresses
       })
       expect(NetworkService.sendTransaction).toHaveBeenCalled()
     })

@@ -292,8 +292,38 @@ async function tapXY(x: number, y: number) {
   ])
 }
 
+async function typeSlowly(
+  element: ChainablePromiseElement,
+  text: string | number
+) {
+  await waitFor(element)
+  await element.clearValue()
+  const textString = text.toString()
+  for (const char of textString) {
+    await delay(1)
+    await element.addValue(char)
+  }
+}
+
+async function assertPerformance(start: number, expectedTime = 10000) {
+  const end = performance.now()
+  const totalTime = end - start
+  const passed = totalTime <= expectedTime
+  console.log(
+    `${passed ? 'PASSED' : 'FAILED'} | ${totalTime.toFixed(
+      0
+    )}ms (limit: ${expectedTime}ms)`
+  )
+  assert.equal(
+    passed,
+    true,
+    `Performed within ${expectedTime}ms: ${totalTime.toFixed(0)}ms`
+  )
+}
+
 export const actions = {
   type,
+  typeSlowly,
   pasteText,
   tapNumberPad,
   verifyElementText,
@@ -319,5 +349,6 @@ export const actions = {
   getAmount,
   verifyText,
   tapXY,
-  waitForNotVisible
+  waitForNotVisible,
+  assertPerformance
 }

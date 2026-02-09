@@ -1,8 +1,7 @@
-import { alpha, useTheme } from '@avalabs/k2-alpine'
+import { alpha, BlurViewWithFallback, useTheme } from '@avalabs/k2-alpine'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { useMemo } from 'react'
 import { View, StyleSheet, Platform } from 'react-native'
-import { BlurViewWithFallback } from './BlurViewWithFallback'
 
 const start = { x: 0.5, y: 0 }
 const end = { x: 0.5, y: 0.5 }
@@ -49,7 +48,7 @@ const styles = StyleSheet.create({
   },
   gradient: {
     position: 'absolute',
-    top: -44,
+    top: -34,
     left: 0,
     right: 0,
     height: 60

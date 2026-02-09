@@ -1,5 +1,7 @@
 export enum ReactQueryKeys {
   ACCOUNT_BALANCE = 'accountBalance',
+  ACCOUNTS_BALANCES = 'accountsBalances',
+  BALANCE_SUPPORTED_CHAINS = 'balanceSupportedChains',
   XP_ADDRESSES = 'xpAddresses',
 
   // defi
@@ -16,7 +18,6 @@ export enum ReactQueryKeys {
   NETWORK_CONTRACT_TOKENS = 'networkContractTokens',
   WATCHLIST_TOP_TOKENS = 'watchlistTopTokens',
   WATCHLIST_TRENDING_TOKENS = 'watchlistTrendingTokens',
-  WATCHLIST_PRICES = 'watchlistPrices',
   WATCHLIST_TOKEN_SEARCH = 'watchlistTokenSearch',
   LAST_TRANSACTED_ERC20_NETWORKS = 'lastTransactedErc20Networks',
 
@@ -48,5 +49,10 @@ export enum ReactQueryKeys {
 
   // deposit
   AAVE_AVAILABLE_MARKETS = 'aaveAvailableMarkets',
-  BENQI_AVAILABLE_MARKETS = 'benqiAvailableMarkets'
+  BENQI_AVAILABLE_MARKETS = 'benqiAvailableMarkets',
+  BENQI_ACCOUNT_SNAPSHOT = 'benqiAccountSnapshot',
+
+  // rewards
+  MERKL_USER_REWARDS = 'merklUserRewards',
+  BENQI_REWARDS = 'benqiRewards'
 }

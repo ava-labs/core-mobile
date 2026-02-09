@@ -28,8 +28,9 @@ import { combinedReducer as browser } from './browser'
 import { snapshotsReducer as snapshots } from './snapshots/slice'
 import { reduxStorage } from './reduxStorage'
 import { walletsReducer as wallet } from './wallet/slice'
+import { nestEggReducer as nestEgg } from './nestEgg/slice'
 
-const VERSION = 25
+const VERSION = 26
 const STORAGE_WRITE_THROTTLE = 200
 
 // list of reducers that don't need to be persisted
@@ -52,6 +53,7 @@ const combinedReducer = combineReducers({
   viewOnce,
   browser,
   snapshots,
+  nestEgg,
 
   // user preferences
   settings,

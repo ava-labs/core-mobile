@@ -1,7 +1,13 @@
-import { alpha, Icons, Pressable, Text, useTheme } from '@avalabs/k2-alpine'
+import {
+  alpha,
+  BlurViewWithFallback,
+  Icons,
+  Pressable,
+  Text,
+  useTheme
+} from '@avalabs/k2-alpine'
 import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
 import { BottomTabBarProps } from '@bottom-tabs/react-navigation'
-import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { BottomTabs } from 'common/components/BottomTabs'
 import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import { useHasXpAddresses } from 'common/hooks/useHasXpAddresses'
@@ -10,7 +16,10 @@ import { Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SvgProps } from 'react-native-svg'
 import { useSelector } from 'react-redux'
-import { selectIsInAppDefiBlocked } from 'store/posthog'
+import {
+  selectIsInAppDefiBlocked,
+  selectIsInAppDefiBorrowBlocked
+} from 'store/posthog'
 
 const isIOS = Platform.OS === 'ios'
 
@@ -19,6 +28,7 @@ const trackIcon = require('../../../assets/icons/tabs/search-custom.png')
 const stakeIcon = require('../../../assets/icons/tabs/psychiatry.png')
 const browserIcon = require('../../../assets/icons/tabs/compass.png')
 const activityIcon = require('../../../assets/icons/tabs/activity.png')
+const earnPngIcon = require('../../../assets/icons/tabs/whatshot.png')
 
 const tabLabelStyle = {
   fontSize: 10,
@@ -53,6 +63,11 @@ export default function TabLayout(): JSX.Element {
     }
   }, [theme.colors.$white, theme.isDark])
   const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
+  const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
+
+  // Show 'Earn' title only when: borrow disabled + DeFi enabled (existing behavior)
+  const stakeTabTitle =
+    isInAppDefiBorrowBlocked && !isInAppDefiBlocked ? 'Earn' : 'Stake'
 
   return (
     <BottomTabs
@@ -90,13 +105,24 @@ export default function TabLayout(): JSX.Element {
         <BottomTabs.Screen
           name="stake"
           options={{
-            tabBarButtonTestID: 'earn_tab',
-            title: isInAppDefiBlocked ? 'Stake' : 'Earn',
+            tabBarButtonTestID: 'stake_tab',
+            title: stakeTabTitle,
             tabBarIcon: () => stakeIcon,
             freezeOnBlur
           }}
         />
       )}
+      <BottomTabs.Screen
+        name="earn"
+        options={{
+          tabBarButtonTestID: 'earn_tab',
+          title: 'Earn',
+          tabBarIcon: () => earnPngIcon,
+          freezeOnBlur,
+          // Hide when borrow feature is disabled
+          tabBarItemHidden: isInAppDefiBorrowBlocked
+        }}
+      />
       <BottomTabs.Screen
         name="browser"
         options={{
@@ -112,7 +138,9 @@ export default function TabLayout(): JSX.Element {
           tabBarButtonTestID: 'activity_tab',
           title: 'Activity',
           tabBarIcon: () => activityIcon,
-          freezeOnBlur
+          freezeOnBlur,
+          // Hide when borrow feature is enabled (Activity moves to Portfolio sub-tab)
+          tabBarItemHidden: !isInAppDefiBorrowBlocked
         }}
       />
     </BottomTabs>
@@ -154,12 +182,21 @@ const TabBar = ({
             : 'transparent'
       }}>
       {state.routes.map((route, index) => {
-        if (route.name === 'stake' && !hasXpAddresses) {
+        const options = descriptors[route.key]?.options
+        // Check tabBarItemHidden option
+        if (options?.tabBarItemHidden) {
+          return null
+        }
+        // Hide stake/earn tabs when user doesn't have XP addresses
+        if (
+          (route.name === 'stake' || route.name === 'earn') &&
+          !hasXpAddresses
+        ) {
           return null
         }
         const isActive = state.index === index
         const Icon = getIcon(route.name)
-        const title = descriptors[route.key]?.options?.title ?? route.name
+        const title = options?.title ?? route.name
 
         return (
           <Pressable
@@ -212,6 +249,8 @@ function getIcon(name: string): FC<SvgProps> {
       return Icons.Navigation.Track
     case 'stake':
       return Icons.Navigation.Stake
+    case 'earn':
+      return Icons.Navigation.Earn
     case 'browser':
       return Icons.Navigation.Browser
     case 'activity':

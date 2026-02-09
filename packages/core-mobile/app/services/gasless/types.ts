@@ -6,4 +6,5 @@ export interface FundTxParams {
   addressFrom: string
   provider: JsonRpcBatchInternal
   maxFeePerGas?: bigint
+  waitForConfirmation: boolean
 }

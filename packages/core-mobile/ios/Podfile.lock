@@ -397,6 +397,8 @@ PODS:
     - Yoga
   - ExpoSMS (13.1.4):
     - ExpoModulesCore
+  - ExpoStoreReview (8.1.5):
+    - ExpoModulesCore
   - ExpoVideo (2.2.2):
     - ExpoModulesCore
   - EXUpdatesInterface (1.1.0):
@@ -587,7 +589,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - NitroModules (0.31.10):
+  - NitroModules (0.32.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1998,7 +2000,7 @@ PODS:
   - react-native-branch (6.8.0):
     - BranchSDK (= 3.12.2)
     - React-Core
-  - react-native-compat (2.23.0):
+  - react-native-compat (2.11.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -3503,6 +3505,7 @@ DEPENDENCIES:
   - ExpoLocalization (from `../node_modules/expo-localization/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
   - ExpoSMS (from `../node_modules/expo-sms/ios`)
+  - ExpoStoreReview (from `../node_modules/expo-store-review/ios`)
   - ExpoVideo (from `../node_modules/expo-video/ios`)
   - EXUpdatesInterface (from `../node_modules/expo-updates-interface/ios`)
   - fast_float (from `../node_modules/react-native/third-party-podspecs/fast_float.podspec`)
@@ -3746,6 +3749,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-modules-core"
   ExpoSMS:
     :path: "../node_modules/expo-sms/ios"
+  ExpoStoreReview:
+    :path: "../node_modules/expo-store-review/ios"
   ExpoVideo:
     :path: "../node_modules/expo-video/ios"
   EXUpdatesInterface:
@@ -4054,6 +4059,7 @@ SPEC CHECKSUMS:
   ExpoLocalization: 999a1ff61a7f5917d65c2bd9234883009019ca9f
   ExpoModulesCore: 00a1b5c73248465bd0b93f59f8538c4573dac579
   ExpoSMS: 770f0b60a777f5d3f65fd7fc369ff62ff97e09a9
+  ExpoStoreReview: f70e5929ba4a594078dd3285d5151427167f48fa
   ExpoVideo: ada534976cfd4a6bf082cc61aa1b17920a251e32
   EXUpdatesInterface: 7ff005b7af94ee63fa452ea7bb95d7a8ff40277a
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
@@ -4083,7 +4089,7 @@ SPEC CHECKSUMS:
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   NitroAvalabsCrypto: 1e5e1dbdc072022443c355b70d6d598841bf8557
   NitroFetch: 23ea318ee7382714fc4d32a4777583dba391833a
-  NitroModules: 0af9a8516f3d8f101976d60e1f34e2a22f401600
+  NitroModules: 6a2c62dd870fa31c50daa55b63f59adecc68a8eb
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   OpenTelemetrySwiftApi: aaee576ed961e0c348af78df58b61300e95bd104
   PLCrashReporter: db59ef96fa3d25f3650040d02ec2798cffee75f2
@@ -4124,7 +4130,7 @@ SPEC CHECKSUMS:
   react-native-ble-plx: f2c13ceb441f17266d3dc6a56e603e2ae820a574
   react-native-bottom-tabs: 05d040c837f04e57e6973d553db5e69c8e279113
   react-native-branch: 0229b46e762bc16ab5289e5eac167738b94c089b
-  react-native-compat: 2d4f00e2a80258c0cec6e7df3180bcfe3404bd6f
+  react-native-compat: 4594cac40c688f5ac4984e93f8c8e31496f4e614
   react-native-config: ea75335a7cca1d3326de1da384227e580a7c082e
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-in-app-updates: e655bab46849c5563b954f681c40ce46df0f3cbe

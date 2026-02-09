@@ -26,6 +26,7 @@ const androidPath = isBitrise
   ? process.env.BITRISE_APK_PATH
   : path.resolve(androidLocalPath)
 const platformToRun = process.env.PLATFORM
+<<<<<<< HEAD
 =======
 
 // AWS Device Farm provides these environment variables
@@ -40,30 +41,37 @@ const platformVersion = process.env.DEVICEFARM_DEVICE_OS_VERSION || '14.0'
 const deviceUdid = process.env.DEVICEFARM_DEVICE_UDID || ''
 const chromedriverExecutableDir = process.env.DEVICEFARM_CHROMEDRIVER_EXECUTABLE_DIR || ''
 >>>>>>> Stashed changes
+=======
+const isSmoke = process.env.IS_SMOKE === 'true'
+const isPerformance = process.env.IS_PERFORMANCE === 'true'
+
+// Determine which specs to run based on test type
+const getSpecs = () => {
+  if (isPerformance) {
+    return ['./specs/performance/**/*.ts']
+  }
+  return ['./specs/**/*.ts']
+}
+>>>>>>> main
 
 const allCaps = [
   {
     platformName: 'Android',
+<<<<<<< HEAD
     'appium:deviceName': deviceName,
     'appium:platformVersion': platformVersion,
+=======
+    'appium:deviceName': 'emulator-5554',
+    'appium:platformVersion': '15.0',
+>>>>>>> main
     'appium:automationName': 'UiAutomator2',
     'appium:app': appPath,
     // Include Device Farm specific capabilities if available
     ...(deviceUdid ? { 'appium:udid': deviceUdid } : {}),
     ...(chromedriverExecutableDir ? { 'appium:chromedriverExecutableDir': chromedriverExecutableDir } : {}),
     'appium:appWaitActivity': '*',
-    'appium:autoGrantPermissions': true,
-    'appium:newCommandTimeout': 120,
-    'appium:adbExecTimeout': 60000,
-    'appium:uiautomator2ServerLaunchTimeout': 60000,
-    'appium:uiautomator2ServerInstallTimeout': 60000,
-    'appium:noSign': true,
     'appium:disableWindowAnimation': true,
-    'appium:fullReset': true,
-    'appium:enforceAppInstall': true,
-    'appium:uiautomator2ServerReadTimeout': 60000,
-    'appium:skipDeviceInitialization': false,
-    'appium:skipLogcatCapture': false
+    'appium:autoGrantPermissions': true
   },
   {
     platformName: 'iOS',
@@ -92,7 +100,7 @@ const caps = platformToRun
 export const config: WebdriverIO.Config = {
   runner: 'local',
   tsConfigPath: './tsconfig.json',
-  specs: ['./specs/**/*.ts'],
+  specs: getSpecs(),
   exclude: [
     // 'path/to/excluded/files'
     './specs/login.e2e.ts'
@@ -132,7 +140,11 @@ export const config: WebdriverIO.Config = {
   // hoook before: make or get testRun before test
   before: async () => {
     const platform = driver.isAndroid ? 'Android' : 'iOS'
+<<<<<<< HEAD
     runId = await getTestRun(platform)
+=======
+    runId = await getTestRun(platform, isSmoke, isPerformance)
+>>>>>>> main
     console.log(`------------Starting test run------------`)
   },
 

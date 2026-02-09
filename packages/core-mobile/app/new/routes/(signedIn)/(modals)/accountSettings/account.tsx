@@ -1,10 +1,11 @@
 import { BalanceHeader, showAlert, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { AccountAddresses } from 'features/accountSettings/components/accountAddresses'
 import { AccountButtons } from 'features/accountSettings/components/AccountButtons'
+import { useAccountBalanceSummary } from 'features/portfolio/hooks/useAccountBalanceSummary'
+import { formatBalanceDisplay } from 'features/wallets/utils/formatBalanceDisplay'
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccountById } from 'store/account'
@@ -15,9 +16,6 @@ import { WalletInfo } from 'features/accountSettings/components/WalletInfo'
 import { selectWalletById } from 'store/wallet/slice'
 import { CoreAccountType } from '@avalabs/types'
 import { WalletType } from 'services/wallet/types'
-import { useIsRefetchingBalancesForAccount } from 'features/portfolio/hooks/useIsRefetchingBalancesForAccount'
-import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
-import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
 
 const AccountScreen = (): JSX.Element => {
   const router = useRouter()
@@ -26,34 +24,32 @@ const AccountScreen = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const account = useSelector(selectAccountById(accountId ?? ''))
   const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
-  const { data: balances, isFetching: isFetchingBalances } = useAccountBalances(
-    account,
-    {
-      refetchInterval: false
-    }
-  )
-  const isRefetchingBalance = useIsRefetchingBalancesForAccount(account)
-  const balanceTotalInCurrency = useBalanceTotalInCurrencyForAccount({
-    account,
-    sourceData: balances
-  })
-  const isLoading =
-    (isFetchingBalances && balances.length === 0) || isRefetchingBalance
-  const allBalancesInaccurate = useMemo(() => {
-    if (!account || balances.length === 0) return false
-    return balances.every(balance => balance.dataAccurate === false)
-  }, [account, balances])
+
+  const {
+    totalBalanceInCurrency: balanceTotalInCurrency,
+    isBalanceLoaded,
+    isLoading: isLoadingBalances,
+    isRefetching: isRefetchingBalance,
+    isAllBalancesInaccurate: allBalancesInaccurate
+  } = useAccountBalanceSummary(account, { refetchInterval: false })
+
+  const isLoading = isLoadingBalances || isRefetchingBalance || !isBalanceLoaded
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
   const formattedBalance = useMemo(() => {
-    // CP-10570: Balances should never show $0.00
-    return allBalancesInaccurate || balanceTotalInCurrency === 0
-      ? UNKNOWN_AMOUNT
-      : formatCurrency({
-          amount: balanceTotalInCurrency,
-          withoutCurrencySuffix: true
-        })
-  }, [allBalancesInaccurate, balanceTotalInCurrency, formatCurrency])
+    return formatBalanceDisplay({
+      balance: balanceTotalInCurrency,
+      isDeveloperMode,
+      formatCurrency,
+      hasError: allBalancesInaccurate,
+      withoutCurrencySuffix: true
+    })
+  }, [
+    isDeveloperMode,
+    allBalancesInaccurate,
+    balanceTotalInCurrency,
+    formatCurrency
+  ])
 
   const isPrivateKeyAvailable = useMemo(
     () =>
@@ -105,6 +101,7 @@ const AccountScreen = (): JSX.Element => {
         isPrivacyModeEnabled={isPrivacyModeEnabled}
         isDeveloperModeEnabled={isDeveloperMode}
         hideExpand
+        hideSubtitle
       />
     )
   }

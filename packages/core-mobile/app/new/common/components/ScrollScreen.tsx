@@ -1,4 +1,5 @@
 import {
+  BlurViewWithFallback,
   NavigationTitleHeader,
   Separator,
   SxProp,
@@ -27,7 +28,6 @@ import Animated, {
   useSharedValue
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
 
@@ -80,6 +80,8 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   headerStyle?: StyleProp<ViewStyle>
   /** Whether this screen should hide the header background  */
   hideHeaderBackground?: boolean
+  /** Overlay component rendered absolutely positioned at the top of the screen over the header area */
+  headerCenterOverlay?: React.ReactNode
   /** TestID for the screen */
   testID?: string
 }
@@ -100,6 +102,7 @@ export const ScrollScreen = ({
   disableStickyFooter,
   showNavigationHeaderTitle = true,
   hideHeaderBackground,
+  headerCenterOverlay,
   headerStyle,
   testID,
   renderHeader,
@@ -344,6 +347,7 @@ export const ScrollScreen = ({
 
         {renderFooterContent()}
         {renderHeaderBackground()}
+        {headerCenterOverlay}
       </View>
     )
   }
@@ -362,7 +366,7 @@ export const ScrollScreen = ({
         contentContainerStyle={[
           props?.contentContainerStyle,
           {
-            paddingBottom: insets.bottom + 32,
+            paddingBottom: 32,
             paddingTop: headerHeight
           }
         ]}
@@ -373,6 +377,7 @@ export const ScrollScreen = ({
 
       {renderFooterContent()}
       {renderHeaderBackground()}
+      {headerCenterOverlay}
     </View>
   )
 }

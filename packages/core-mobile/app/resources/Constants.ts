@@ -9,12 +9,20 @@ export enum StorageKey {
   USER_UNIQUE_ID = 'USER_UNIQUE_ID',
   LAST_SEEN_UPDATE_APP_VERSION = 'LAST_SEEN_UPDATE_APP_VERSION',
   MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS = 'MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS',
-  MIGRATED_XP_ADDRESSES_COMPLETED = 'MIGRATED_XP_ADDRESSES_COMPLETED'
+  BORROW_PROTOCOL = 'borrowProtocol'
 }
 
 export enum ZustandStorageKeys {
   RECENT_ACCOUNTS = 'recentAccounts',
-  ACTIVITY = 'activity'
+  ACTIVITY = 'activity',
+  PORTFOLIO_VIEW = 'portfolioView',
+  COLLECTIBLES_VIEW = 'collectiblesView',
+  DEFI_VIEW = 'defiView',
+  MARKET_VIEW = 'marketView',
+  FAVORITES_VIEW = 'favoritesView',
+  TRACK_SEARCH_VIEW = 'trackSearchView',
+  LEDGER_WALLET_MAP = 'ledgerWalletMap',
+  APP_REVIEW = 'appReview'
 }
 
 export const CORE_UNIVERSAL_LINK_HOSTS = ['core.app', 'test.core.app']

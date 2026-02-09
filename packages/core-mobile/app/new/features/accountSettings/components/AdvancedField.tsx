@@ -35,6 +35,7 @@ export interface AdvancedFieldProps {
   optional?: boolean
   type?: 'address' | 'text' | 'url' | 'number'
   onUpdate: (id: string, value?: string) => void
+  onDelete?: () => void
 }
 
 export type AdvancedFieldRef = {
@@ -52,7 +53,8 @@ export const AdvancedField = forwardRef<AdvancedFieldRef, AdvancedFieldProps>(
       placeholder,
       type,
       optional,
-      onUpdate
+      onUpdate,
+      onDelete
     }: AdvancedFieldProps,
     ref
     // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -70,8 +72,15 @@ export const AdvancedField = forwardRef<AdvancedFieldRef, AdvancedFieldProps>(
     }))
 
     const handleDelete = useCallback(() => {
+      // If custom onDelete is provided (e.g., for last address deletion),
+      // use it instead of showing the default delete alert
+      if (onDelete) {
+        onDelete()
+        return
+      }
+
       showAlert({
-        title: 'Do you want to delete this network?',
+        title: `Do you want to delete this ${type}?`,
         description: 'This action can’t be undone',
         buttons: [
           {
@@ -87,7 +96,7 @@ export const AdvancedField = forwardRef<AdvancedFieldRef, AdvancedFieldProps>(
           }
         ]
       })
-    }, [id, onUpdate])
+    }, [id, onUpdate, onDelete])
 
     const onEdit = useCallback(() => {
       setIsEditing(true)

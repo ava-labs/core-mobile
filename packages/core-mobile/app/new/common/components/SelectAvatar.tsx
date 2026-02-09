@@ -9,10 +9,10 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { loadAvatar } from 'common/utils/loadAvatar'
-import React, { memo, useCallback, useMemo, useState } from 'react'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useFocusEffect } from 'expo-router'
+import React, { memo, useCallback, useMemo, useState } from 'react'
 import Config from 'react-native-config'
+import Animated, { FadeIn } from 'react-native-reanimated'
 import { ScrollScreen } from './ScrollScreen'
 
 export const SelectAvatar = memo(
@@ -37,7 +37,6 @@ export const SelectAvatar = memo(
     isModal?: boolean
     buttonText?: string
   }): React.JSX.Element => {
-    const insets = useSafeAreaInsets()
     const {
       theme: { colors }
     } = useTheme()
@@ -127,7 +126,8 @@ export const SelectAvatar = memo(
             flex: 1
           }}>
           {avatar?.source && (
-            <View
+            <Animated.View
+              entering={FadeIn.delay(200)}
               style={{
                 flex: 1,
                 justifyContent: 'center',
@@ -139,7 +139,7 @@ export const SelectAvatar = memo(
                 size={isScreenSmall ? 100 : 'large'}
                 testID="selected_avatar"
               />
-            </View>
+            </Animated.View>
           )}
           {
             // TODO: Remove this once we have a proper way to handle avatar selection on appium tests.
@@ -147,7 +147,6 @@ export const SelectAvatar = memo(
             !Config.E2E_MNEMONIC && (
               <View
                 style={{
-                  marginBottom: -insets.bottom,
                   paddingBottom: 16
                 }}>
                 <AvatarSelector

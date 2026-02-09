@@ -136,7 +136,7 @@ class OnboardingPage {
     if (process.env.E2E !== 'true') {
       try {
         const dismissBtn = selectors.getByText("AvaxWallet")
-        await actions.dragAndDrop(dismissBtn, [0, 200])
+        await actions.dragAndDrop(dismissBtn, [0, 1500])
       } catch (e) {
         console.log('Metro dev menu is not found...')
       }
@@ -189,7 +189,7 @@ class OnboardingPage {
 
   async tapZero(pin = '000000') {
     if (driver.isIOS) {
-      await actions.type(this.pinInputField, pin)
+      await actions.typeSlowly(this.pinInputField, pin)
     } else {
       await actions.tapNumberPad(pin)
     }
@@ -209,11 +209,8 @@ class OnboardingPage {
     await actions.dragAndDrop(element, [0, 500])
   }
 
-async verifyLoggedIn(hasModal = false) {
+async verifyLoggedIn() {
     await actions.waitFor(commonElsPage.accountOne, 40000)
-    if (hasModal) {
-      await this.dismissUpdateAppModal()
-    }
     console.log('Verified you are logged in')
   }
 
@@ -259,6 +256,13 @@ async verifyLoggedIn(hasModal = false) {
       } else {
         await actions.click(selectors.getById(`${questionId}_${words[targetIndex + 1]}`))
       }
+    }
+  }
+  
+  async tapKeypadUpButton() {
+    const upKeypad = await actions.getVisible(commonElsPage.keypadUpButton)
+    if (upKeypad) {
+      await actions.tap(commonElsPage.keypadUpButton)
     }
   }
 }

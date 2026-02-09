@@ -5,12 +5,7 @@ import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { Space } from 'common/components/Space'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { useIsAllBalancesErrorForAccount } from 'features/portfolio/hooks/useIsAllBalancesErrorForAccount'
-import { useIsAllBalancesInaccurateForAccount } from 'features/portfolio/hooks/useIsAllBalancesInaccurateForAccount'
-import { useIsBalanceLoadedForAccount } from 'features/portfolio/hooks/useIsBalanceLoadedForAccount'
-import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
-import { useIsPollingBalancesForAccount } from 'features/portfolio/hooks/useIsPollingBalancesForAccount'
-import { useIsRefetchingBalancesForAccount } from 'features/portfolio/hooks/useIsRefetchingBalancesForAccount'
+import { useAccountBalanceSummary } from 'features/portfolio/hooks/useAccountBalanceSummary'
 import React, { FC, memo, useCallback } from 'react'
 import { Platform, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
@@ -25,6 +20,7 @@ import {
   LocalTokenWithBalance
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
+import { ViewOption } from 'common/types'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { EmptyState } from './EmptyState'
 import { TokenListItem } from './TokenListItem'
@@ -37,6 +33,9 @@ interface Props {
   onScrollResync: () => void
 }
 
+const keyExtractor = (item: LocalTokenWithBalance, index: number): string =>
+  `${index}-${item.networkChainId}-${item.localId}`
+
 const AssetsScreen: FC<Props> = ({
   containerStyle,
   goToTokenDetail,
@@ -46,18 +45,19 @@ const AssetsScreen: FC<Props> = ({
 }): JSX.Element => {
   const { onResetFilter, data, filter, sort, view, refetch, isRefetching } =
     useAssetsFilterAndSort()
-  const listType = view.selected as AssetManageView
+  const listType = view.selected
   const header = useHeaderMeasurements()
 
   const activeAccount = useSelector(selectActiveAccount)
   const enabledNetworks = useSelector(selectEnabledNetworks)
-  const isAllBalancesInaccurate =
-    useIsAllBalancesInaccurateForAccount(activeAccount)
-  const isBalanceLoaded = useIsBalanceLoadedForAccount(activeAccount)
-  const isAllBalancesError = useIsAllBalancesErrorForAccount(activeAccount)
-  const isBalanceLoading = useIsLoadingBalancesForAccount(activeAccount)
-  const isBalancePolling = useIsPollingBalancesForAccount(activeAccount)
-  const isRefetchingBalance = useIsRefetchingBalancesForAccount(activeAccount)
+  const {
+    isAllBalancesInaccurate,
+    isBalanceLoaded,
+    isAllBalancesError,
+    isLoading: isBalanceLoading,
+    isPolling: isBalancePolling,
+    isRefetching: isRefetchingBalance
+  } = useAccountBalanceSummary(activeAccount)
 
   const handleManageList = useCallback(
     (value: string): void => {
@@ -69,13 +69,13 @@ const AssetsScreen: FC<Props> = ({
       onScrollResync()
       view.onSelected(value)
     },
-    [goToTokenManagement, view, onScrollResync]
+    [onScrollResync, view, goToTokenManagement]
   )
 
   const isLoadingBalance =
     isRefetchingBalance || isBalanceLoading || isBalancePolling
 
-  const isGridView = view.selected === AssetManageView.Grid
+  const isGridView = view.selected === ViewOption.Grid
   const numColumns = isGridView ? 2 : 1
 
   // Only show loading state for initial load
@@ -106,7 +106,7 @@ const AssetsScreen: FC<Props> = ({
           <TokenListItem
             token={item}
             index={index}
-            onPress={() => goToTokenDetail(item)}
+            onPress={goToTokenDetail}
             isGridView={isGridView}
           />
         </View>
@@ -122,22 +122,30 @@ const AssetsScreen: FC<Props> = ({
   const renderEmptyComponent = useCallback(() => {
     // Only show loading state during initial load, not background polling
     if (isInitialLoading) {
-      return <LoadingState />
+      return (
+        <CollapsibleTabs.ContentWrapper>
+          <LoadingState />
+        </CollapsibleTabs.ContentWrapper>
+      )
     }
 
     if (isBalanceLoaded && (isAllBalancesError || isAllBalancesInaccurate)) {
       return (
-        <ErrorState
-          description="Please hit refresh or try again later"
-          button={{
-            title: 'Refresh',
-            onPress: refetch
-          }}
-        />
+        <CollapsibleTabs.ContentWrapper>
+          <ErrorState
+            description="Please hit refresh or try again later"
+            button={{
+              title: 'Refresh',
+              onPress: refetch
+            }}
+          />
+        </CollapsibleTabs.ContentWrapper>
       )
     }
 
     if (filter.selected === AssetNetworkFilter.AllNetworks && hasNoAssets) {
+      // Special case where we cannot use CollapsibleTabs.ContentWrapper
+      // height needs to be calculated separately
       return <EmptyState goToBuy={goToBuy} />
     }
 
@@ -147,14 +155,16 @@ const AssetsScreen: FC<Props> = ({
       data.length === 0
     ) {
       return (
-        <ErrorState
-          title="No assets found"
-          description="Try changing the filter settings or reset the filter to see all assets."
-          button={{
-            title: 'Reset filter',
-            onPress: onResetFilter
-          }}
-        />
+        <CollapsibleTabs.ContentWrapper>
+          <ErrorState
+            title="No assets found"
+            description="Try changing the filter settings or reset the filter to see all assets."
+            button={{
+              title: 'Reset filter',
+              onPress: onResetFilter
+            }}
+          />
+        </CollapsibleTabs.ContentWrapper>
       )
     }
   }, [
@@ -171,11 +181,7 @@ const AssetsScreen: FC<Props> = ({
   ])
 
   const renderEmpty = useCallback(() => {
-    return (
-      <CollapsibleTabs.ContentWrapper>
-        {renderEmptyComponent()}
-      </CollapsibleTabs.ContentWrapper>
-    )
+    return renderEmptyComponent()
   }, [renderEmptyComponent])
 
   const renderHeader = useCallback(() => {
@@ -227,9 +233,7 @@ const AssetsScreen: FC<Props> = ({
       <CollapsibleTabs.FlashList
         key={`assets-list-${listType}`}
         data={data}
-        keyExtractor={(item, index) =>
-          `${index}-${item.networkChainId}-${item.localId}`
-        }
+        keyExtractor={keyExtractor}
         testID="portfolio_token_list"
         extraData={{ isGridView }}
         overrideProps={overrideProps}

@@ -45,6 +45,7 @@ import IconSignature from '../../assets/icons/signature.svg'
 import IconArrowDownHandleBar from '../../assets/icons/arrow_down_handlebar.svg'
 import IconSignPost from '../../assets/icons/signpost.svg'
 import IconSync from '../../assets/icons/sync.svg'
+import IconSyncV2 from '../../assets/icons/sync_v2.svg'
 import IconVisibilityOff from '../../assets/icons/visibility_off.svg'
 import IconVisibilityOn from '../../assets/icons/visibility_on.svg'
 import IconVolumeOff from '../../assets/icons/volume_off.svg'
@@ -76,6 +77,7 @@ import IconLayers from '../../assets/icons/layers.svg'
 import IconStake from '../../assets/icons/stake.svg'
 import IconBrowser from '../../assets/icons/browser.svg'
 import IconTrack from '../../assets/icons/track.svg'
+import IconEarn from '../../assets/icons/earn.svg'
 import IconWallet from '../../assets/icons/wallet.svg'
 import IconWalletClosed from '../../assets/icons/wallet_closed.svg'
 import IconSwapVertical from '../../assets/icons/swap_vertical.svg'
@@ -99,6 +101,9 @@ import IconDownload from '../../assets/icons/download.svg'
 import IconEncrypted from '../../assets/icons/shield.svg'
 import IconSwapProviderAuto from '../../assets/icons/swap_auto.svg'
 import IconLedger from '../../assets/icons/ledger_logo.svg'
+import AvalancheLogo from '../../assets/icons/avalanche_logo.svg'
+import SolanaLogo from '../../assets/icons/solana_logo.svg'
+
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
 import IconTxTypeAdvanceTime from '../../assets/icons/advance-time.svg'
@@ -114,6 +119,7 @@ import IconTxTypeUnwrap from '../../assets/icons/unwrap.svg'
 import IconTxTypeUnknown from '../../assets/icons/unknown.svg'
 import IconPsychiatry from '../../assets/icons/psychiatry.svg'
 import IconBluetooth from '../../assets/icons/bluetooth.svg'
+import IconMoneyBag from '../../assets/icons/money_bag.svg'
 
 // token logos
 import AAVE from '../../assets/tokenLogos/AAVE.svg'
@@ -248,11 +254,13 @@ export const Icons = {
     Refresh: IconRefresh,
     Layers: IconLayers,
     Stake: IconStake,
+    Earn: IconEarn,
     Browser: IconBrowser,
     Track: IconTrack
   },
   Notification: {
-    Sync: IconSync
+    Sync: IconSync,
+    SyncV2: IconSyncV2
   },
   Social: {
     RemoveModerator: IconRemoveModerator,
@@ -338,7 +346,10 @@ export const Icons = {
     Download: IconDownload,
     SwapProviderAuto: IconSwapProviderAuto,
     Ledger: IconLedger,
-    Bluetooth: IconBluetooth
+    Bluetooth: IconBluetooth,
+    Avalanche: AvalancheLogo,
+    Solana: SolanaLogo,
+    MoneyBag: IconMoneyBag
   },
   RecoveryMethod: {
     Passkey: IconPasskey,

@@ -52,12 +52,12 @@ export const RecentContacts = ({
   const { vmName } = useGlobalSearchParams<{ vmName: NetworkVMType }>()
 
   const searchResults = useMemo(() => {
-    if (searchText.trim() === '') {
+    if (searchText.trim().length === 0) {
       return recentAddresses
     }
     return contacts.filter(
       contact =>
-        contact.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        contact.name?.toLowerCase().includes(searchText.toLowerCase()) ||
         contact.address?.toLowerCase().includes(searchText.toLowerCase()) ||
         contact.addressXP?.toLowerCase().includes(searchText.toLowerCase()) ||
         contact.addressBTC?.toLowerCase().includes(searchText.toLowerCase())
@@ -197,7 +197,7 @@ const ContactListItem = ({
     <ListViewItem
       avatar={avatar}
       title={item.name}
-      renderTop={
+      renderTop={() =>
         wallet &&
         walletsCount > 1 && (
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
@@ -233,7 +233,7 @@ const ContactListItem = ({
       }}
       isLast={isLast}
       onPress={() => onSelectContact(item)}
-      hideArrow
+      showArrow
     />
   )
 }

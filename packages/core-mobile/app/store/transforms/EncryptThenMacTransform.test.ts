@@ -115,6 +115,7 @@ const initialState = {
     } as Networks
   } as NetworkState,
   account: {
+    ledgerAddresses: {},
     accounts: {
       '0': {
         addressC: '0x341b0073b66bfc19FCB54308861f604F5Eb8f51b',
@@ -130,9 +131,7 @@ const initialState = {
         walletId: 'walletId0',
         walletType: WalletType.MNEMONIC,
         id: 'id0',
-        walletName: 'Wallet 1',
-        xpAddresses: [],
-        xpAddressDictionary: {}
+        walletName: 'Wallet 1'
       }
     },
     activeAccountId: '0'

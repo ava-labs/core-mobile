@@ -138,7 +138,7 @@ class PortfolioPage {
   }
 
   get testnetModeIsOn() {
-    return selectors.getByText(portfolio.testnetModeIsOn)
+    return selectors.getBySomeText(portfolio.testnetModeIsOn)
   }
 
   get sendButton() {
@@ -231,6 +231,14 @@ class PortfolioPage {
 
   get untitledDisplayed() {
     return selectors.getById(portfolio.untitledDisplayed)
+  }
+
+  get portfolioBalanceHeader() {
+    return selectors.getById(portfolio.portfolioBalanceHeader)
+  }
+
+  get portfolioAccountName() {
+    return selectors.getById(portfolio.portfolioAccountName)
   }
 
   async verifyPorfolioScreen() {
@@ -328,7 +336,8 @@ class PortfolioPage {
     await actions.tap(selectors.getById(portfolio.activeNetwork + network))
   }
 
-  async tapToken(token = 'avax') {
+  async tapToken(token = 'Avalanche') {
+    // It taps on the name of the token on the portfolio asset (ex - Avalanche, Bitcoin, Wrapped Ether...)
     await actions.tap(
       selectors.getById(`${portfolio.portfolioTokenItem}${token}`)
     )
@@ -664,6 +673,21 @@ class PortfolioPage {
     await actions.isEnabled(this.untitledDisplayed, false)
     await commonElsPage.dismissBottomSheet()
     await actions.isNotVisible(selectors.getByText(portfolio.untitledNft))
+  }
+
+  async verifyBalanceHeader() {
+    await actions.waitFor(commonElsPage.loadingSpinnerHidden)
+    await actions.isVisible(this.portfolioBalanceHeader)
+    await actions.isNotVisible(commonElsPage.loadingSpinnerVisible)
+  }
+
+  async verifyAssetsList(token = 'Avalanche') {
+    await actions.waitFor(commonElsPage.loadingSpinnerHidden)
+    await actions.isNotVisible(commonElsPage.inProgress)
+    await actions.isVisible(this.portfolioTokenList)
+    await actions.isVisible(
+      selectors.getById(`${portfolio.portfolioTokenItem}${token}`)
+    )
   }
 }
 

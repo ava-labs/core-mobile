@@ -1,21 +1,22 @@
 import { showAlert } from '@avalabs/k2-alpine'
-import { CoreAccountType } from '@avalabs/types'
 import { DropdownItem } from 'common/components/DropdownMenu'
 import {
   dismissAlertWithTextInput,
   showAlertWithTextInput
 } from 'common/utils/alertWithTextInput'
+import { useLedgerWalletMap } from 'features/ledger/store'
 import { showSnackbar } from 'new/common/utils/toast'
 import { useCallback, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
-import { addAccount } from 'store/account'
-import { removeAccount, selectAccounts } from 'store/account/slice'
+import { addAccount, selectAccounts } from 'store/account'
+import { removeAccount, selectImportedAccounts } from 'store/account/slice'
 import { AppThunkDispatch } from 'store/types'
 import {
   selectIsMigratingActiveAccounts,
-  selectWallets,
+  selectRemovableWallets,
+  selectWalletsCount,
   setWalletName
 } from 'store/wallet/slice'
 import { removeWallet } from 'store/wallet/thunks'
@@ -24,26 +25,26 @@ import Logger from 'utils/Logger'
 
 export const useManageWallet = (): {
   handleAddAccount: (wallet: Wallet) => void
-  getDropdownItems: (wallet: Wallet) => DropdownItem[]
+  getDropdownItems: (wallet: Wallet, canAddAccount?: boolean) => DropdownItem[]
   handleDropdownSelect: (action: string, wallet: Wallet) => void
   isAddingAccount: boolean
 } => {
+  const { removeLedgerWallet } = useLedgerWalletMap()
   const [isAddingAccount, setIsAddingAccount] = useState(false)
   const dispatch = useDispatch<AppThunkDispatch>()
-  const wallets = useSelector(selectWallets)
+  const walletsCount = useSelector(selectWalletsCount)
+  const importedAccounts = useSelector(selectImportedAccounts)
+  const removableWallets = useSelector(selectRemovableWallets)
   const accounts = useSelector(selectAccounts)
   const isMigratingActiveAccounts = useSelector(selectIsMigratingActiveAccounts)
 
   const handleRemoveAllImportedAccounts = useCallback((): void => {
-    const importedAccounts = Object.values(accounts).filter(
-      account => account.type === CoreAccountType.IMPORTED
-    )
     importedAccounts.forEach(account => {
       dispatch(removeAccount(account.id))
       // removeWallet will also set the first account of the first wallet as active
       dispatch(removeWallet(account.walletId))
     })
-  }, [dispatch, accounts])
+  }, [dispatch, importedAccounts])
 
   const handleRenameWallet = useCallback(
     (wallet: Wallet): void => {
@@ -76,9 +77,7 @@ export const useManageWallet = (): {
 
   const handleRemoveWallet = useCallback(
     (wallet: Wallet): void => {
-      const walletCount = Object.keys(wallets).length
-
-      if (walletCount <= 1) {
+      if (walletsCount <= 1) {
         showAlert({
           title: 'Cannot remove wallet',
           description:
@@ -104,12 +103,19 @@ export const useManageWallet = (): {
             style: 'destructive',
             onPress: () => {
               dispatch(removeWallet(wallet.id))
+
+              if (
+                wallet.type === WalletType.LEDGER ||
+                wallet.type === WalletType.LEDGER_LIVE
+              ) {
+                removeLedgerWallet(wallet.id)
+              }
             }
           }
         ]
       })
     },
-    [dispatch, wallets]
+    [dispatch, walletsCount, removeLedgerWallet]
   )
 
   const handleAddAccount = useCallback(
@@ -145,25 +151,18 @@ export const useManageWallet = (): {
       if (wallet.type === WalletType.SEEDLESS) return false
 
       // 2. Mnemonic wallets can be removed if there are multiple mnemonic/seedless/keystone wallets
-      const walletCount = Object.values(wallets).filter(
-        w =>
-          w.type === WalletType.MNEMONIC ||
-          w.type === WalletType.SEEDLESS ||
-          w.type === WalletType.KEYSTONE
-      ).length
-
       const isLastRemovableMnemonic =
-        walletCount === 1 &&
+        removableWallets.length === 1 &&
         (wallet.type === WalletType.MNEMONIC ||
           wallet.type === WalletType.KEYSTONE)
 
       return !isLastRemovableMnemonic
     },
-    [wallets]
+    [removableWallets]
   )
 
   const getDropdownItems = useCallback(
-    (wallet: Wallet): DropdownItem[] => {
+    (wallet: Wallet, canAddAccount?: boolean): DropdownItem[] => {
       const baseItems: DropdownItem[] = []
 
       if (wallet.type !== WalletType.PRIVATE_KEY) {
@@ -177,9 +176,9 @@ export const useManageWallet = (): {
         [
           WalletType.MNEMONIC,
           WalletType.SEEDLESS,
-          WalletType.LEDGER,
           WalletType.KEYSTONE
-        ].includes(wallet.type)
+        ].includes(wallet.type) ||
+        canAddAccount
       ) {
         baseItems.push({
           id: 'add_account',

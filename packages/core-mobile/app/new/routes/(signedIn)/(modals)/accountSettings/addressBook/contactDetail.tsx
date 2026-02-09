@@ -2,6 +2,7 @@ import { Button, showAlert, useTheme } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ContactForm } from 'features/accountSettings/components/ContactForm'
+import { shouldRemoveContact } from 'features/accountSettings/utils/shouldRemoveContact'
 import React, { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -103,15 +104,6 @@ const ContactDetailScreen = (): React.JSX.Element => {
       )}
     </ScrollScreen>
   )
-}
-
-const shouldRemoveContact = (contact: Contact): boolean => {
-  const numOfAddresses = Object.keys(contact).filter(
-    key =>
-      key.startsWith('address') &&
-      (contact as Record<string, unknown>)[key] !== undefined
-  )
-  return numOfAddresses.length === 0
 }
 
 export default ContactDetailScreen

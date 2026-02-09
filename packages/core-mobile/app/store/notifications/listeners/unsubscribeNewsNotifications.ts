@@ -1,5 +1,4 @@
-import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
-import FCMService from 'services/fcm/FCMService'
+import { registerAndGetDeviceArn } from 'services/notifications/registerDeviceToNotificationSender'
 import { unSubscribeForNews } from 'services/notifications/news/unsubscribeForNews'
 import { NewsChannelId } from 'services/notifications/channels'
 
@@ -8,7 +7,6 @@ export async function unsubscribeNewsNotifications({
 }: {
   channelIds: NewsChannelId[]
 }): Promise<void> {
-  const fcmToken = await FCMService.getFCMToken()
-  const deviceArn = await registerDeviceToNotificationSender(fcmToken)
+  const deviceArn = await registerAndGetDeviceArn()
   await unSubscribeForNews({ deviceArn, channelIds })
 }

@@ -3,7 +3,6 @@ import {
   ASSET_BALANCE_SORTS,
   ASSET_MANAGE_VIEWS,
   AssetBalanceSort,
-  AssetManageView,
   AssetNetworkFilter,
   LocalTokenWithBalance
 } from 'store/balance'
@@ -16,6 +15,9 @@ import { selectEnabledNetworks } from 'store/network'
 import { usePrevious } from 'common/hooks/usePrevious'
 import { ActivityNetworkFilter } from 'features/activity/hooks/useActivityFilterAndSearch'
 import { isEqual } from 'lodash'
+import { usePortfolioView } from 'features/portfolio/store'
+import { selectActiveAccount } from 'store/account'
+import { NetworkVMType } from '@avalabs/vm-module-types'
 
 export const useAssetsFilterAndSort = (): {
   onResetFilter: () => void
@@ -27,15 +29,31 @@ export const useAssetsFilterAndSort = (): {
   isRefetching: boolean
   isLoading: boolean
 } => {
+  const account = useSelector(selectActiveAccount)
+  const { selectedView, setSelectedView } = usePortfolioView()
+
   const erc20ContractTokens = useErc20ContractTokens()
   const enabledNetworks = useSelector(selectEnabledNetworks)
+
+  // remove solana network from the list if account has no SVM address
+  const filteredEnabledNetworks = useMemo(() => {
+    const accountHasSvmAddress =
+      account?.addressSVM !== undefined && account?.addressSVM.length > 0
+    if (accountHasSvmAddress) {
+      return enabledNetworks
+    }
+    return enabledNetworks.filter(
+      network => network.vmName !== NetworkVMType.SVM
+    )
+  }, [account?.addressSVM, enabledNetworks])
+
   const { filteredTokenList, refetch, isRefetching, isLoading } =
     useSearchableTokenList({
       tokens: erc20ContractTokens
     })
 
   const networkFilters = useMemo(() => {
-    const enabledNetworksFilter = enabledNetworks.map(network => {
+    const enabledNetworksFilter = filteredEnabledNetworks.map(network => {
       return { filterName: network.chainName, chainId: network.chainId }
     })
     return [
@@ -45,7 +63,7 @@ export const useAssetsFilterAndSort = (): {
       },
       ...enabledNetworksFilter
     ]
-  }, [enabledNetworks])
+  }, [filteredEnabledNetworks])
 
   const [selectedNetworkFilters, setSelectedNetworkFilters] =
     useState<ActivityNetworkFilter[]>(networkFilters)
@@ -64,9 +82,6 @@ export const useAssetsFilterAndSort = (): {
   )
   const [selectedSort, setSelectedSort] = useState<AssetBalanceSort>(
     AssetBalanceSort.HighToLow
-  )
-  const [selectedView, setSelectedView] = useState<AssetManageView>(
-    AssetManageView.List
   )
 
   const filterOption = useMemo(() => {
@@ -177,9 +192,9 @@ export const useAssetsFilterAndSort = (): {
       title: 'View',
       data: viewData,
       selected: selectedView,
-      onSelected: (value: string) => setSelectedView(value as AssetManageView)
+      onSelected: setSelectedView
     }),
-    [viewData, selectedView]
+    [viewData, selectedView, setSelectedView]
   )
 
   const onResetFilter = useCallback((): void => {

@@ -10,6 +10,12 @@ import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 
 describe('earn/importP', () => {
   describe('importP', () => {
+    const testXpAddresses = ['avax123', 'avax456']
+    const testXpAddressDictionary = {
+      avax123: { space: 'e' as const, index: 0, hasActivity: true },
+      avax456: { space: 'i' as const, index: 1, hasActivity: true }
+    }
+
     const getTxStatusMockFn = jest.fn().mockReturnValue({
       status: 'Committed'
     })
@@ -57,9 +63,11 @@ describe('earn/importP', () => {
       await importP({
         walletId: 'test-wallet-id',
         walletType: WalletType.MNEMONIC,
-        account: { xpAddresses: [] } as unknown as Account,
+        account: {} as Account,
         isTestnet: false,
-        selectedCurrency: VsCurrencyType.USD
+        selectedCurrency: VsCurrencyType.USD,
+        xpAddresses: testXpAddresses,
+        xpAddressDictionary: testXpAddressDictionary
       })
       expect(AvalancheWalletService.createImportPTx).toHaveBeenCalled()
     })
@@ -68,9 +76,11 @@ describe('earn/importP', () => {
       await importP({
         walletId: 'test-wallet-id',
         walletType: WalletType.MNEMONIC,
-        account: { xpAddresses: [] } as unknown as Account,
+        account: {} as Account,
         isTestnet: false,
-        selectedCurrency: VsCurrencyType.USD
+        selectedCurrency: VsCurrencyType.USD,
+        xpAddresses: testXpAddresses,
+        xpAddressDictionary: testXpAddressDictionary
       })
       expect(WalletService.sign).toHaveBeenCalled()
     })
@@ -79,9 +89,11 @@ describe('earn/importP', () => {
       await importP({
         walletId: 'test-wallet-id',
         walletType: WalletType.MNEMONIC,
-        account: { xpAddresses: [] } as unknown as Account,
+        account: {} as Account,
         isTestnet: false,
-        selectedCurrency: VsCurrencyType.USD
+        selectedCurrency: VsCurrencyType.USD,
+        xpAddresses: testXpAddresses,
+        xpAddressDictionary: testXpAddressDictionary
       })
       expect(NetworkService.sendTransaction).toHaveBeenCalled()
     })

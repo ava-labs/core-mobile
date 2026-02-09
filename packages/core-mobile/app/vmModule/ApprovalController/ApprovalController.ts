@@ -1,32 +1,30 @@
 import { router } from 'expo-router'
-import { Network } from '@avalabs/core-chains-sdk'
+import LedgerService from 'services/ledger/LedgerService'
 import {
   ApprovalController as VmModuleApprovalController,
   ApprovalParams,
   ApprovalResponse,
-  RpcMethod,
   RpcRequest,
   RequestPublicKeyParams
 } from '@avalabs/vm-module-types'
-import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
-import { btcSignTransaction } from 'vmModule/handlers/btcSignTransaction'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { RequestContext } from 'store/rpc/types'
 import { NavigationPresentationMode } from 'new/common/types'
-import { solanaSendTransaction } from 'vmModule/handlers/solanaSendTransaction'
-import { Account } from 'store/account'
-import { WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
 import { Curve } from 'utils/publicKeys'
-import { solanaSignMessage } from 'vmModule/handlers/solanaSignMessage'
-import { solanaSignTransaction } from 'vmModule/handlers/solanaSignTransaction'
-import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
-import { ethSendTransaction } from '../handlers/ethSendTransaction'
-import { signMessage } from '../handlers/signMessage'
-import { btcSendTransaction } from '../handlers/btcSendTransaction'
-import { avalancheSendTransaction } from '../handlers/avalancheSendTransaction'
+import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
+import { OnApproveParams } from 'services/walletconnectv2/walletConnectCache/types'
+import { WalletType } from 'services/wallet/types'
+import { showLedgerReviewTransaction } from 'features/ledger/utils'
+import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
+import { CONFETTI_DURATION_MS } from 'common/consts'
+import { currentRouteStore } from 'new/routes/store'
+import { onApprove } from './onApprove'
+import { onReject } from './onReject'
+import { handleLedgerErrorAndShowAlert } from './utils'
 
 class ApprovalController implements VmModuleApprovalController {
   async requestPublicKey({
@@ -44,8 +42,37 @@ class ApprovalController implements VmModuleApprovalController {
     })
   }
 
-  onTransactionPending({ request }: { request: RpcRequest }): void {
-    transactionSnackbar.pending({ toastId: request.requestId })
+  onTransactionPending({
+    txHash: _txHash,
+    request,
+    explorerLink: _explorerLink
+  }: {
+    txHash: string
+    request: RpcRequest
+    explorerLink?: string
+  }): void {
+    const numericChainId = getChainIdFromCaip2(request.chainId)
+
+    if (
+      numericChainId &&
+      isAvalancheChainId(numericChainId) &&
+      isInAppRequest(request)
+    ) {
+      const confettiDisabled =
+        request.context?.[RequestContext.CONFETTI_DISABLED]
+
+      transactionSnackbar.success({
+        message: 'Transaction sent'
+      })
+
+      if (!confettiDisabled) {
+        setTimeout(() => {
+          confetti.restart()
+        }, 100)
+      }
+    } else {
+      transactionSnackbar.pending({ toastId: request.requestId })
+    }
   }
 
   onTransactionConfirmed({
@@ -55,6 +82,25 @@ class ApprovalController implements VmModuleApprovalController {
     explorerLink: string
     request: RpcRequest
   }): void {
+    const inAppReview = request.context?.[RequestContext.IN_APP_REVIEW]
+
+    if (inAppReview) {
+      // Run the app-review prompt flow after confetti finishes
+      setTimeout(() => {
+        promptForAppReviewAfterSuccessfulTransaction()
+      }, CONFETTI_DURATION_MS + 200)
+    }
+
+    const numericChainId = getChainIdFromCaip2(request.chainId)
+
+    if (
+      numericChainId &&
+      isAvalancheChainId(numericChainId) &&
+      isInAppRequest(request)
+    ) {
+      return // do not show success toast for in-app avalanche transactions as we've already shown it in onTransactionPending
+    }
+
     transactionSnackbar.success({ explorerLink, toastId: request.requestId })
 
     const confettiDisabled = request.context?.[RequestContext.CONFETTI_DISABLED]
@@ -71,181 +117,83 @@ class ApprovalController implements VmModuleApprovalController {
     transactionSnackbar.error({ error: 'Transaction reverted' })
   }
 
+  handleLedgerOnReject = async ({
+    resolve
+  }: {
+    resolve: (value: ApprovalResponse | PromiseLike<ApprovalResponse>) => void
+  }): Promise<void> => {
+    await LedgerService.disconnect()
+    onReject({ resolve })
+  }
+
+  handleGoBackIfNeeded = (): void => {
+    const currentRoute = currentRouteStore.getState().currentRoute
+    if (
+      (currentRoute?.endsWith('ledgerReviewTransaction') ||
+        currentRoute?.endsWith('approval')) &&
+      router.canGoBack()
+    ) {
+      router.back()
+    }
+  }
+
   async requestApproval({
     request,
     displayData,
     signingData
   }: ApprovalParams): Promise<ApprovalResponse> {
     return new Promise<ApprovalResponse>(resolve => {
-      const onApprove = async ({
-        walletId,
-        walletType,
-        network,
-        account,
-        maxFeePerGas,
-        maxPriorityFeePerGas,
-        gasLimit,
-        overrideData
-      }: {
-        walletId: string
-        walletType: WalletType
-        network: Network
-        account: Account
-        maxFeePerGas?: bigint
-        maxPriorityFeePerGas?: bigint
-        gasLimit?: number
-        overrideData?: string
-      }): Promise<void> => {
-        switch (signingData.type) {
-          case RpcMethod.BITCOIN_SEND_TRANSACTION: {
-            btcSendTransaction({
-              walletId,
-              walletType,
-              transactionData: signingData.data,
-              finalFeeRate: Number(maxFeePerGas || 0),
-              account,
-              network,
-              resolve
-            })
-
-            break
-          }
-          case RpcMethod.BITCOIN_SIGN_TRANSACTION: {
-            btcSignTransaction({
-              walletId,
-              walletType,
-              transactionData: signingData.data,
-              account,
-              network,
-              resolve
-            })
-
-            break
-          }
-          case RpcMethod.ETH_SEND_TRANSACTION: {
-            ethSendTransaction({
-              walletId,
-              walletType,
-              transactionRequest: signingData.data,
-              network,
-              account,
-              maxFeePerGas,
-              maxPriorityFeePerGas,
-              gasLimit,
-              overrideData,
-              resolve
-            })
-            break
-          }
-          case RpcMethod.PERSONAL_SIGN:
-          case RpcMethod.ETH_SIGN:
-          case RpcMethod.SIGN_TYPED_DATA:
-          case RpcMethod.SIGN_TYPED_DATA_V1:
-          case RpcMethod.SIGN_TYPED_DATA_V3:
-          case RpcMethod.SIGN_TYPED_DATA_V4:
-          case RpcMethod.AVALANCHE_SIGN_MESSAGE: {
-            signMessage({
-              walletId,
-              walletType,
-              method: signingData.type,
-              data: signingData.data,
-              account,
-              network,
-              resolve
-            })
-            break
-          }
-          case RpcMethod.AVALANCHE_SEND_TRANSACTION: {
-            avalancheSendTransaction({
-              walletId,
-              walletType,
-              unsignedTxJson: signingData.unsignedTxJson,
-              vm: signingData.vm,
-              externalIndices: signingData.externalIndices ?? [],
-              internalIndices: signingData.internalIndices ?? [],
-              account,
-              isTestnet: network.isTestnet,
-              resolve
-            })
-            break
-          }
-          case RpcMethod.AVALANCHE_SIGN_TRANSACTION: {
-            avalancheSignTransaction({
-              walletId,
-              walletType,
-              unsignedTxJson: signingData.unsignedTxJson,
-              ownSignatureIndices: signingData.ownSignatureIndices,
-              account,
-              network,
-              resolve
-            })
-            break
-          }
-
-          case RpcMethod.SOLANA_SIGN_AND_SEND_TRANSACTION: {
-            solanaSendTransaction({
-              walletId,
-              walletType,
-              transactionData: signingData.data,
-              account,
-              network,
-              resolve
-            })
-            break
-          }
-          case RpcMethod.SOLANA_SIGN_MESSAGE: {
-            solanaSignMessage({
-              walletId,
-              walletType,
-              message: {
-                pubkey: signingData.account,
-                message: signingData.data
-              },
-              account,
-              network,
-              resolve
-            })
-            break
-          }
-          case RpcMethod.SOLANA_SIGN_TRANSACTION: {
-            solanaSignTransaction({
-              walletId,
-              walletType,
-              transactionData: {
-                account: account.addressSVM,
-                message: signingData.data
-              },
-              account,
-              network,
-              resolve
-            })
-            break
-          }
-          default:
-            resolve({
-              error: providerErrors.unsupportedMethod(
-                'unsupported signing data type'
-              )
-            })
-        }
-      }
-
-      const onReject = (message?: string): void => {
-        const error = message
-          ? rpcErrors.internal(message)
-          : providerErrors.userRejectedRequest()
-
-        resolve({
-          error
-        })
-      }
-
       walletConnectCache.approvalParams.set({
         request,
         displayData,
         signingData,
-        onApprove,
-        onReject
+        onApprove: async (params: OnApproveParams) => {
+          if (
+            params.walletType === WalletType.LEDGER ||
+            params.walletType === WalletType.LEDGER_LIVE
+          ) {
+            const resolveWithRetry = (
+              value: ApprovalResponse | PromiseLike<ApprovalResponse>
+            ): void => {
+              if ('error' in value) {
+                handleLedgerErrorAndShowAlert({
+                  error: value.error,
+                  network: params.network,
+                  onRetry: () =>
+                    onApprove({
+                      ...params,
+                      signingData,
+                      resolve: resolveWithRetry
+                    }),
+                  onCancel: () => {
+                    this.handleGoBackIfNeeded()
+                    this.handleLedgerOnReject({ resolve })
+                  }
+                })
+              } else {
+                resolve(value)
+                this.handleGoBackIfNeeded()
+              }
+            }
+
+            showLedgerReviewTransaction({
+              network: params.network,
+              onApprove: () =>
+                onApprove({
+                  ...params,
+                  signingData,
+                  resolve: resolveWithRetry
+                }),
+              onReject: () => {
+                this.handleLedgerOnReject({ resolve })
+                this.handleGoBackIfNeeded()
+              }
+            })
+          } else {
+            return onApprove({ ...params, resolve, signingData })
+          }
+        },
+        onReject: (message?: string) => onReject({ resolve, message })
       })
 
       router.navigate({

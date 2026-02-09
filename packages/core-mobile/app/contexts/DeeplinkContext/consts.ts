@@ -16,6 +16,7 @@ export const DEEPLINK_WHITELIST = [
   'core://meld/onramp',
   'core://meld/offramp',
   'core://stake',
+  'core://earn',
   'core://claimStakeReward',
   'core://addStake',
   'core://discoverCollectibles',

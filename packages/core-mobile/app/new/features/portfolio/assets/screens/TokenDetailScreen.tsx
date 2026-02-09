@@ -4,12 +4,14 @@ import {
 } from '@avalabs/avalanche-module'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
+import { ChainId } from '@avalabs/core-chains-sdk'
 import {
   NavigationTitleHeader,
   SegmentedControl,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { useHeaderHeight } from '@react-navigation/elements'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   CollapsibleTabs,
@@ -26,12 +28,16 @@ import {
 } from 'common/consts/swap'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { useHasXpAddresses } from 'common/hooks/useHasXpAddresses'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { getSourceChainId } from 'common/utils/bridgeUtils'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useAssetBalances } from 'features/bridge/hooks/useAssetBalances'
+import { useBuy } from 'features/meld/hooks/useBuy'
+import { useWithdraw } from 'features/meld/hooks/useWithdraw'
 import {
   ActionButton,
   ActionButtons
@@ -39,16 +45,20 @@ import {
 import TokenDetail from 'features/portfolio/assets/components/TokenDetail'
 import TransactionHistory from 'features/portfolio/assets/components/TransactionHistory'
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
+import { useIsBalanceAccurateByNetwork } from 'features/portfolio/hooks/useIsBalanceAccurateByNetwork'
+import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
 import { useSendSelectedToken } from 'features/send/store'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
   LayoutChangeEvent,
   LayoutRectangle,
-  Platform
+  Platform,
+  useWindowDimensions
 } from 'react-native'
 import Animated, {
   useAnimatedStyle,
@@ -57,28 +67,20 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { useNetworks } from 'hooks/networks/useNetworks'
-import { ChainId } from '@avalabs/core-chains-sdk'
-import { useBuy } from 'features/meld/hooks/useBuy'
-import { useWithdraw } from 'features/meld/hooks/useWithdraw'
+import { AVAX_P_ID } from 'services/balance/const'
+import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
+import { selectActiveAccount } from 'store/account/slice'
 import {
   selectIsBridgeBlocked,
   selectIsBridgeBtcBlocked,
   selectIsBridgeEthBlocked,
   selectIsMeldOfframpBlocked
 } from 'store/posthog'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectSelectedCurrency } from 'store/settings/currency'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
-import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
-import { AVAX_P_ID } from 'services/balance/const'
-import { selectActiveAccount } from 'store/account/slice'
-import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
-import { useIsBalanceAccurateByNetwork } from 'features/portfolio/hooks/useIsBalanceAccurateByNetwork'
-import { useHasXpAddresses } from 'common/hooks/useHasXpAddresses'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -89,10 +91,16 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const { getNetwork } = useNetworks()
   const { navigateToSwap } = useNavigateToSwap()
   const { addStake, canAddStake } = useAddStake()
-  const botomInset = useSafeAreaInsets().bottom
+  const frame = useWindowDimensions()
+  const headerHeight = useHeaderHeight()
+  const insets = useSafeAreaInsets()
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const [_, setSelectedToken] = useSendSelectedToken()
   const [tokenHeaderLayout, setTokenHeaderLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+  const [titleLayout, setTitleLayout] = useState<LayoutRectangle | undefined>()
+  const [segmentedControlLayout, setSegmentedControlLayout] = useState<
     LayoutRectangle | undefined
   >()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
@@ -104,8 +112,10 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
 
   const erc20ContractTokens = useErc20ContractTokens()
+  // Keep zero balance tokens visible so the page doesn't crash after sending max balance
   const { filteredTokenList } = useSearchableTokenList({
-    tokens: erc20ContractTokens
+    tokens: erc20ContractTokens,
+    hideZeroBalance: false
   })
   const { formatCurrency } = useFormatCurrency()
 
@@ -135,6 +145,17 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const handleHeaderLayout = useCallback((event: LayoutChangeEvent): void => {
     setTokenHeaderLayout(event.nativeEvent.layout)
   }, [])
+
+  const handleTitleLayout = useCallback((event: LayoutChangeEvent): void => {
+    setTitleLayout(event.nativeEvent.layout)
+  }, [])
+
+  const handleSegmentedControlLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      setSegmentedControlLayout(event.nativeEvent.layout)
+    },
+    []
+  )
 
   const tokenName = token?.name ?? ''
 
@@ -288,14 +309,15 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     return buttons
   }, [
     handleSend,
-    isMeldOfframpBlocked,
     isSwapDisabled,
     token,
     isBuyable,
     isTokenStakable,
+    hasXpAddresses,
     isBridgeDisabled,
     isTokenBridgeable,
     isWithdrawable,
+    isMeldOfframpBlocked,
     navigateToSwap,
     navigateToBuy,
     canAddStake,
@@ -306,7 +328,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header: header,
-    targetLayout: tokenHeaderLayout
+    targetLayout: titleLayout
   })
   const selectedSegmentIndex = useSharedValue(0)
 
@@ -383,15 +405,17 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       <View
         style={{
           backgroundColor: colors.$surfacePrimary,
-          paddingHorizontal: 16,
-          paddingBottom: 16,
-          paddingTop: Platform.OS === 'ios' ? 16 : 0
-        }}>
-        <View onLayout={handleHeaderLayout}>
+          paddingTop: Platform.OS === 'ios' ? 12 : 0
+        }}
+        onLayout={handleHeaderLayout}>
+        <View
+          onLayout={handleTitleLayout}
+          style={{
+            paddingHorizontal: 16
+          }}>
           <Animated.View
             style={[
               {
-                paddingBottom: 16,
                 backgroundColor: colors.$surfacePrimary
               },
               animatedHeaderStyle
@@ -408,21 +432,45 @@ export const TokenDetailScreen = (): React.JSX.Element => {
             />
           </Animated.View>
         </View>
-        <ActionButtons buttons={actionButtons} />
+        <ActionButtons
+          buttons={actionButtons}
+          contentContainerStyle={{
+            padding: 16
+          }}
+        />
+        {/* TODO: add after design is finalized */}
+        {/* <View style={{ paddingHorizontal: 16, paddingBottom: 12 }}>
+          <TokenPriceCard token={token} />
+        </View> */}
       </View>
     )
   }, [
-    animatedHeaderStyle,
+    token,
     colors.$surfacePrimary,
-    formattedBalance,
     handleHeaderLayout,
+    handleTitleLayout,
+    animatedHeaderStyle,
+    formattedBalance,
+    selectedCurrency,
     isBalanceAccurate,
     isBalanceLoading,
-    selectedCurrency,
-    token,
-    actionButtons,
-    isPrivacyModeEnabled
+    isPrivacyModeEnabled,
+    actionButtons
   ])
+
+  const tabHeight = useMemo(() => {
+    return Platform.select({
+      ios: frame.height - headerHeight,
+      android: frame.height - headerHeight + (tokenHeaderLayout?.height ?? 0)
+    })
+  }, [frame.height, headerHeight, tokenHeaderLayout?.height])
+
+  const contentContainerStyle = useMemo(() => {
+    return {
+      paddingBottom: (segmentedControlLayout?.height ?? 0) + 32,
+      minHeight: tabHeight
+    }
+  }, [segmentedControlLayout?.height, tabHeight])
 
   const tabs = useMemo(() => {
     const activityTab = {
@@ -432,6 +480,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
           token={token}
           handleExplorerLink={handleExplorerLink}
           handlePendingBridge={handlePendingBridge}
+          containerStyle={contentContainerStyle}
         />
       )
     }
@@ -445,7 +494,27 @@ export const TokenDetailScreen = (): React.JSX.Element => {
           activityTab
         ]
       : [activityTab]
-  }, [handleExplorerLink, isXpToken, token, handlePendingBridge])
+  }, [
+    token,
+    handleExplorerLink,
+    handlePendingBridge,
+    contentContainerStyle,
+    isXpToken
+  ])
+
+  const renderSegmentedControl = useCallback((): JSX.Element => {
+    return (
+      <LinearGradientBottomWrapper>
+        <SegmentedControl
+          dynamicItemWidth={false}
+          items={SEGMENT_ITEMS}
+          selectedSegmentIndex={selectedSegmentIndex}
+          onSelectSegment={handleSelectSegment}
+          style={{ marginHorizontal: 16, marginBottom: insets.bottom }}
+        />
+      </LinearGradientBottomWrapper>
+    )
+  }, [handleSelectSegment, selectedSegmentIndex, insets.bottom])
 
   return (
     <BlurredBarsContentLayout>
@@ -458,15 +527,16 @@ export const TokenDetailScreen = (): React.JSX.Element => {
         tabs={tabs}
       />
       {isXpToken && (
-        <LinearGradientBottomWrapper>
-          <SegmentedControl
-            dynamicItemWidth={false}
-            items={SEGMENT_ITEMS}
-            selectedSegmentIndex={selectedSegmentIndex}
-            onSelectSegment={handleSelectSegment}
-            style={{ marginHorizontal: 16, marginBottom: botomInset }}
-          />
-        </LinearGradientBottomWrapper>
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0
+          }}
+          onLayout={handleSegmentedControlLayout}>
+          {renderSegmentedControl()}
+        </View>
       )}
     </BlurredBarsContentLayout>
   )

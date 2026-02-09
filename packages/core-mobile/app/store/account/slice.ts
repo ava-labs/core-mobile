@@ -1,18 +1,21 @@
 import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit'
 import { RootState } from 'store/types'
 import { WalletType } from 'services/wallet/types'
+import { CoreAccountType } from '@avalabs/types'
 import {
   Account,
   AccountsState,
   AccountCollection,
-  PrimaryAccount
+  PrimaryAccount,
+  LedgerAddressesCollection
 } from './types'
 
 export const reducerName = 'account'
 
 const initialState = {
   accounts: {},
-  activeAccountId: ''
+  activeAccountId: '',
+  ledgerAddresses: {}
 } as AccountsState
 
 const accountsSlice = createSlice({
@@ -23,6 +26,15 @@ const accountsSlice = createSlice({
       // setAccounts does the same thing as setNonActiveAccounts
       // but there are listeners that should only listen and react to setAccounts
       state.accounts = { ...state.accounts, ...action.payload }
+    },
+    setLedgerAddresses: (
+      state,
+      action: PayloadAction<LedgerAddressesCollection>
+    ) => {
+      state.ledgerAddresses = {
+        ...state.ledgerAddresses,
+        ...action.payload
+      }
     },
     setAccount: (state, action: PayloadAction<Account>) => {
       const newAccount = action.payload
@@ -58,6 +70,10 @@ const accountsSlice = createSlice({
 // selectors
 export const selectAccounts = (state: RootState): AccountCollection =>
   state.account.accounts
+
+export const selectLedgerAddresses = (
+  state: RootState
+): LedgerAddressesCollection => state.account.ledgerAddresses
 
 export const selectAccountByAddress =
   (address: string) =>
@@ -97,6 +113,15 @@ export const selectAccountsByWalletId = createSelector(
   }
 )
 
+export const selectLedgerAddressesByWalletId = createSelector(
+  [selectLedgerAddresses, (_: RootState, walletId: string) => walletId],
+  (accounts, walletId) => {
+    return Object.values(accounts)
+      .filter(account => account.walletId === walletId)
+      .sort((a, b) => a.index - b.index)
+  }
+)
+
 export const selectAccountByIndex =
   (walletId: string, index: number) =>
   (state: RootState): Account | undefined => {
@@ -110,11 +135,29 @@ export const selectAccountByIndex =
     return primaryAccount || accounts[0]
   }
 
+// Memoized selectors to avoid repeated Object.values operations
+export const selectAccountsArray = createSelector(
+  [selectAccounts],
+  (accounts): Account[] => Object.values(accounts)
+)
+
+export const selectImportedAccounts = createSelector(
+  [selectAccountsArray],
+  (accounts): Account[] =>
+    accounts.filter(account => account.type === CoreAccountType.IMPORTED)
+)
+
+export const selectAccountsCount = createSelector(
+  [selectAccounts],
+  (accounts): number => Object.keys(accounts).length
+)
+
 // actions
 export const {
   setAccountTitle,
   setActiveAccountId,
   setAccount,
+  setLedgerAddresses,
   setAccounts,
   setNonActiveAccounts,
   removeAccount

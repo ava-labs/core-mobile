@@ -26,12 +26,12 @@ export const ContactList = ({
   const [searchText, setSearchText] = useState('')
 
   const searchResults = useMemo(() => {
-    if (searchText === '' || contacts.length === 0) {
+    if (searchText.trim().length === 0 || contacts.length === 0) {
       return contacts
     }
     return contacts.filter(
       contact =>
-        contact.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        contact.name?.toLowerCase().includes(searchText.toLowerCase()) ||
         contact.address?.toLowerCase().includes(searchText.toLowerCase()) ||
         contact.addressXP?.toLowerCase().includes(searchText.toLowerCase()) ||
         contact.addressBTC?.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -64,6 +64,7 @@ export const ContactList = ({
           }}
           isLast={isLastItem}
           onPress={() => onPress(item)}
+          showArrow
         />
       )
     },

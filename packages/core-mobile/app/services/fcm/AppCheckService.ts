@@ -51,8 +51,10 @@ class AppCheckService {
     }
   }
 
-  getToken = async (): Promise<FirebaseAppCheckTypes.AppCheckTokenResult> => {
-    return await firebase.appCheck().getToken(false)
+  getToken = async (
+    forceRefresh = false
+  ): Promise<FirebaseAppCheckTypes.AppCheckTokenResult> => {
+    return await firebase.appCheck().getToken(forceRefresh)
   }
 }
 

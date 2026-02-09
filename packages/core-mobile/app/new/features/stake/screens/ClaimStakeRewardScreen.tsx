@@ -20,15 +20,19 @@ import { useRouter } from 'expo-router'
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
 import { useClaimRewards } from 'hooks/earn/useClaimRewards'
 import { usePChainBalance } from 'hooks/earn/usePChainBalance'
-import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useRefreshStakingBalances } from 'hooks/earn/useRefreshStakingBalances'
+import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
+import { CONFETTI_DURATION_MS } from 'common/consts'
+import { selectIsInAppReviewBlocked } from 'store/posthog/slice'
+import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
 
 export const ClaimStakeRewardScreen = (): JSX.Element => {
+  const isInAppReviewBlocked = useSelector(selectIsInAppReviewBlocked)
   const { navigate, back } = useRouter()
   const { formatTokenInCurrency } = useFormatCurrency()
   const pChainBalance = usePChainBalance()
@@ -37,7 +41,7 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
     useState<TokenUnit>()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
-  const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
+  const avaxPrice = useAvaxPrice()
   const refreshStakingBalances = useRefreshStakingBalances()
   const onClaimSuccess = (): void => {
     refreshStakingBalances({ shouldRefreshStakes: false })
@@ -50,6 +54,13 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
     setTimeout(() => {
       confetti.restart()
     }, 100)
+
+    if (!isInAppReviewBlocked) {
+      // Run the app-review prompt flow after confetti finishes
+      setTimeout(() => {
+        promptForAppReviewAfterSuccessfulTransaction()
+      }, CONFETTI_DURATION_MS + 200)
+    }
   }
 
   const onClaimError = (error: Error): void => {
