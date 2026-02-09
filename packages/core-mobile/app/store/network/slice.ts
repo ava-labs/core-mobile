@@ -1,7 +1,8 @@
 import {
   BITCOIN_NETWORK,
   ChainId as ChainsSDKChainId,
-  Network
+  Network,
+  NetworkVMType
 } from '@avalabs/core-chains-sdk'
 import {
   createAction,
@@ -220,7 +221,7 @@ export const selectEnabledNetworks = createSelector(
     return enabledChainIds.reduce((acc, chainId) => {
       const network = networks[chainId]
       if (network && network.isTestnet === isDeveloperMode) {
-        if (network.vmName === 'SVM') {
+        if (network.vmName === NetworkVMType.SVM) {
           if (
             activeAccount?.addressSVM !== undefined &&
             activeAccount.addressSVM.length > 0
@@ -243,11 +244,12 @@ export const selectEnabledNetworksMap = createSelector(
     selectNetworks,
     selectActiveAccount
   ],
+  // eslint-disable-next-line max-params
   (enabledChainIds, isDeveloperMode, networks, activeAccount) => {
     return enabledChainIds.reduce<Networks>((acc, chainId) => {
       const network = networks[chainId]
       if (network && network.isTestnet === isDeveloperMode) {
-        if (network.vmName === 'SVM') {
+        if (network.vmName === NetworkVMType.SVM) {
           if (
             activeAccount?.addressSVM !== undefined &&
             activeAccount.addressSVM.length > 0
@@ -268,22 +270,25 @@ export const selectEnabledNetworksByTestnet =
     const networks = selectNetworks(state)
     const enabledChainIds = selectEnabledChainIds(state)
     const activeAccount = selectActiveAccount(state)
-    return enabledChainIds.reduce((acc, chainId) => {
+
+    const results: Network[] = []
+    for (const chainId of enabledChainIds) {
       const network = networks[chainId]
       if (network && network.isTestnet === isTestnet) {
-        if (network.vmName === 'SVM') {
+        if (network.vmName === NetworkVMType.SVM) {
           if (
             activeAccount?.addressSVM !== undefined &&
             activeAccount.addressSVM.length > 0
           ) {
-            acc[chainId] = network
+            results.push(network)
           }
         } else {
-          acc[chainId] = network
+          results.push(network)
         }
       }
-      return acc
-    }, [] as Network[])
+    }
+
+    return results
   }
 
 export const selectIsTestnet = (chainId: number) => (state: RootState) => {
