@@ -1,5 +1,5 @@
 import React, { PropsWithChildren } from 'react'
-import { SxProp, View } from 'dripsy'
+import { SxProp } from 'dripsy'
 import { TextProps } from 'react-native'
 import { TextVariant } from '../../theme/tokens/text'
 import { MaskedView } from '../MaskedView/MaskedView'
