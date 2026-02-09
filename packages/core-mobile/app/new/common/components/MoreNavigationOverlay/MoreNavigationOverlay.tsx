@@ -64,7 +64,7 @@ const createExitKeyframe = (delay: number): ReanimatedKeyframe =>
     .duration(EXIT_DURATION)
     .delay(delay)
 
-const MoreNavigationOverlayContent = (): JSX.Element | null => {
+export const MoreNavigationOverlay = (): JSX.Element | null => {
   const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const { isOpen, toggle, close } = useMoreNavigationOverlayStore()
@@ -314,4 +314,3 @@ const MoreNavigationOverlayContent = (): JSX.Element | null => {
   )
 }
 
-export const MoreNavigationOverlay = MoreNavigationOverlayContent

@@ -99,13 +99,13 @@ export function RootNavigator(): JSX.Element {
         <Stack.Screen name="+not-found" />
       </Stack>
 
+      {/* render "More" navigation overlay so it appears above all native screens */}
+      <MoreNavigationOverlay />
+
       {/* render this pin screen as full window overlay if walletState is previously active and app is coming back from background state */}
       {!shouldRenderOnlyPinScreen && walletState === WalletState.INACTIVE && (
         <PinScreenOverlay />
       )}
-
-      {/* render "More" navigation overlay so it appears above all native screens */}
-      <MoreNavigationOverlay />
     </>
   )
 }
