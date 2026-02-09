@@ -70,7 +70,6 @@ export const AaveAvaxSelectAmountForm = ({
       validateAmount={validateAmount}
       submit={aaveDepositAvax}
       onSuccess={handleSuccess}
-      onFailure={() => AnalyticsService.capture('EarnDepositFailure')}
     />
   )
 }

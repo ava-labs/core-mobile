@@ -70,7 +70,6 @@ export const BenqiAvaxSelectAmountForm = ({
       validateAmount={validateAmount}
       submit={benqiDepositAvax}
       onSuccess={handleSuccess}
-      onFailure={() => AnalyticsService.capture('EarnDepositFailure')}
     />
   )
 }

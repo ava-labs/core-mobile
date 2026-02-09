@@ -57,7 +57,6 @@ export const WithdrawBenqiSelectAmountForm = ({
       validateAmount={validateAmount}
       submit={withdraw}
       onSuccess={handleSuccess}
-      onFailure={() => AnalyticsService.capture('EarnWithdrawFailure')}
     />
   )
 }

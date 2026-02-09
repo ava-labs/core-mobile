@@ -57,7 +57,6 @@ export const WithdrawAaveSelectAmountForm = ({
       validateAmount={validateAmount}
       submit={withdraw}
       onSuccess={handleSuccess}
-      onFailure={() => AnalyticsService.capture('EarnWithdrawFailure')}
     />
   )
 }

@@ -120,7 +120,6 @@ export const AaveErc20SelectAmountForm = ({
       validateAmount={validateAmount}
       submit={aaveDepositErc20}
       onSuccess={handleSuccess}
-      onFailure={() => AnalyticsService.capture('EarnDepositFailure')}
     />
   )
 }

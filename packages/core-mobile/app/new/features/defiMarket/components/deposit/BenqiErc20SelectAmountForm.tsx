@@ -117,7 +117,6 @@ export const BenqiErc20SelectAmountForm = ({
       validateAmount={validateAmount}
       submit={benqiDepositErc20}
       onSuccess={handleSuccess}
-      onFailure={() => AnalyticsService.capture('EarnDepositFailure')}
     />
   )
 }

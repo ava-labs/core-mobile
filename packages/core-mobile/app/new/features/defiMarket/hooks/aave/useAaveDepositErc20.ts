@@ -6,8 +6,6 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { RpcMethod, TokenType } from '@avalabs/vm-module-types'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
-import { RequestContext } from 'store/rpc/types'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { AAVE_AVALANCHE3_POOL_PROXY_ABI } from 'features/defiMarket/abis/aaveAvalanche3PoolProxy'
@@ -16,6 +14,7 @@ import { TransactionParams } from '@avalabs/evm-module'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export const useAaveDepositErc20 = ({
   asset,
@@ -90,27 +89,24 @@ export const useAaveDepositErc20 = ({
             })
           }
         ],
-        chainId,
-        context: {
-          [RequestContext.ON_CONFIRMED]: () =>
-            AnalyticsService.capture('EarnDepositSuccess'),
-          [RequestContext.ON_REVERTED]: () =>
-            AnalyticsService.capture('EarnDepositFailure')
-        }
+        chainId
       })
 
-      // Invalidate cache in background after transaction is confirmed
+      // Invalidate cache and fire analytics in background after transaction is confirmed
       provider
         .waitForTransaction(txHash)
         .then(receipt => {
           if (receipt && receipt.status === 1) {
+            AnalyticsService.capture('EarnDepositSuccess')
             queryClient.invalidateQueries({
               queryKey: [ReactQueryKeys.AAVE_AVAILABLE_MARKETS]
             })
+          } else {
+            AnalyticsService.capture('EarnDepositFailure')
           }
         })
         .catch(() => {
-          // Silently ignore - cache will be stale but not critical
+          AnalyticsService.capture('EarnDepositFailure')
         })
 
       return txHash

@@ -176,11 +176,5 @@ export enum RequestContext {
   SHOULD_RETRY = 'shouldRetry',
 
   // used to signal that the in-app review logic should be triggered
-  IN_APP_REVIEW = 'inAppReview',
-
-  // callback to run when the transaction is confirmed on-chain
-  ON_CONFIRMED = 'onConfirmed',
-
-  // callback to run when the transaction reverts on-chain
-  ON_REVERTED = 'onReverted'
+  IN_APP_REVIEW = 'inAppReview'
 }

@@ -5,8 +5,6 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
-import { RequestContext } from 'store/rpc/types'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { BENQI_Q_TOKEN } from 'features/defiMarket/abis/benqiQToken'
@@ -14,6 +12,7 @@ import { MAX_UINT256 } from 'features/defiMarket/consts'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export const useBenqiWithdraw = ({
   market
@@ -55,27 +54,24 @@ export const useBenqiWithdraw = ({
             })
           }
         ],
-        chainId: getEvmCaip2ChainId(market.network.chainId),
-        context: {
-          [RequestContext.ON_CONFIRMED]: () =>
-            AnalyticsService.capture('EarnWithdrawSuccess'),
-          [RequestContext.ON_REVERTED]: () =>
-            AnalyticsService.capture('EarnWithdrawFailure')
-        }
+        chainId: getEvmCaip2ChainId(market.network.chainId)
       })
 
-      // Invalidate cache in background after transaction is confirmed
+      // Invalidate cache and fire analytics in background after transaction is confirmed
       provider
         .waitForTransaction(txHash)
         .then(receipt => {
           if (receipt && receipt.status === 1) {
+            AnalyticsService.capture('EarnWithdrawSuccess')
             queryClient.invalidateQueries({
               queryKey: [ReactQueryKeys.BENQI_ACCOUNT_SNAPSHOT]
             })
+          } else {
+            AnalyticsService.capture('EarnWithdrawFailure')
           }
         })
         .catch(() => {
-          // Silently ignore - cache will be stale but not critical
+          AnalyticsService.capture('EarnWithdrawFailure')
         })
 
       return txHash
