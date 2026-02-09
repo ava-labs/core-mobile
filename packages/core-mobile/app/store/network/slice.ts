@@ -221,7 +221,7 @@ export const selectEnabledNetworks = createSelector(
     return enabledChainIds.reduce((acc, chainId) => {
       const network = networks[chainId]
       if (network && network.isTestnet === isDeveloperMode) {
-        if (network.vmName === 'SVM') {
+        if (network.vmName === NetworkVMType.SVM) {
           if (
             activeAccount?.addressSVM !== undefined &&
             activeAccount.addressSVM.length > 0
@@ -249,7 +249,7 @@ export const selectEnabledNetworksMap = createSelector(
     return enabledChainIds.reduce<Networks>((acc, chainId) => {
       const network = networks[chainId]
       if (network && network.isTestnet === isDeveloperMode) {
-        if (network.vmName === 'SVM') {
+        if (network.vmName === NetworkVMType.SVM) {
           if (
             activeAccount?.addressSVM !== undefined &&
             activeAccount.addressSVM.length > 0
