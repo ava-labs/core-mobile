@@ -98,6 +98,10 @@ export const AaveErc20SelectAmountForm = ({
     ]
   )
 
+  const handleFailure = useCallback(() => {
+    AnalyticsService.capture('EarnDepositFailure')
+  }, [])
+
   const handleSuccess = useCallback(
     ({ txHash, amount }: { txHash: string; amount: TokenUnit }) => {
       AnalyticsService.capture('EarnDepositSubmitted', {
@@ -120,6 +124,7 @@ export const AaveErc20SelectAmountForm = ({
       validateAmount={validateAmount}
       submit={aaveDepositErc20}
       onSuccess={handleSuccess}
+      onFailure={handleFailure}
     />
   )
 }

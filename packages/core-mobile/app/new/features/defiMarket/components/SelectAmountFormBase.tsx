@@ -18,7 +18,8 @@ export const SelectAmountFormBase = ({
   maxAmount,
   validateAmount,
   submit,
-  onSuccess
+  onSuccess,
+  onFailure
 }: {
   title?: string
   token: {
@@ -30,6 +31,7 @@ export const SelectAmountFormBase = ({
   validateAmount: (amount: TokenUnit) => Promise<void>
   submit: ({ amount }: { amount: TokenUnit }) => Promise<string>
   onSuccess: (params: { txHash: string; amount: TokenUnit }) => void
+  onFailure?: () => void
 }): JSX.Element => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [amount, setAmount] = useState<TokenUnit>()
@@ -54,11 +56,11 @@ export const SelectAmountFormBase = ({
       const txHash = await submit({ amount })
       onSuccess({ txHash, amount })
     } catch {
-      // submission failure is handled by the caller
+      onFailure?.()
     } finally {
       setIsSubmitting(false)
     }
-  }, [amount, submit, onSuccess])
+  }, [amount, submit, onSuccess, onFailure])
 
   const canSubmit =
     !isSubmitting &&

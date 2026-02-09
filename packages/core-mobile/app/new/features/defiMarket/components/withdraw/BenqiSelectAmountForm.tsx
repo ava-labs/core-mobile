@@ -34,6 +34,10 @@ export const WithdrawBenqiSelectAmountForm = ({
     [tokenBalance]
   )
 
+  const handleFailure = useCallback(() => {
+    AnalyticsService.capture('EarnWithdrawFailure')
+  }, [])
+
   const handleSuccess = useCallback(
     ({ txHash, amount }: { txHash: string; amount: TokenUnit }) => {
       AnalyticsService.capture('EarnWithdrawSubmitted', {
@@ -57,6 +61,7 @@ export const WithdrawBenqiSelectAmountForm = ({
       validateAmount={validateAmount}
       submit={withdraw}
       onSuccess={handleSuccess}
+      onFailure={handleFailure}
     />
   )
 }

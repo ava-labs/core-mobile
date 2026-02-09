@@ -48,6 +48,10 @@ export const BenqiAvaxSelectAmountForm = ({
     [tokenBalance, maxAmount]
   )
 
+  const handleFailure = useCallback(() => {
+    AnalyticsService.capture('EarnDepositFailure')
+  }, [])
+
   const handleSuccess = useCallback(
     ({ txHash, amount }: { txHash: string; amount: TokenUnit }) => {
       AnalyticsService.capture('EarnDepositSubmitted', {
@@ -70,6 +74,7 @@ export const BenqiAvaxSelectAmountForm = ({
       validateAmount={validateAmount}
       submit={benqiDepositAvax}
       onSuccess={handleSuccess}
+      onFailure={handleFailure}
     />
   )
 }

@@ -95,6 +95,10 @@ export const BenqiErc20SelectAmountForm = ({
     ]
   )
 
+  const handleFailure = useCallback(() => {
+    AnalyticsService.capture('EarnDepositFailure')
+  }, [])
+
   const handleSuccess = useCallback(
     ({ txHash, amount }: { txHash: string; amount: TokenUnit }) => {
       AnalyticsService.capture('EarnDepositSubmitted', {
@@ -117,6 +121,7 @@ export const BenqiErc20SelectAmountForm = ({
       validateAmount={validateAmount}
       submit={benqiDepositErc20}
       onSuccess={handleSuccess}
+      onFailure={handleFailure}
     />
   )
 }

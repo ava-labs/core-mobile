@@ -48,6 +48,10 @@ export const AaveAvaxSelectAmountForm = ({
     [tokenBalance, maxAmount]
   )
 
+  const handleFailure = useCallback(() => {
+    AnalyticsService.capture('EarnDepositFailure')
+  }, [])
+
   const handleSuccess = useCallback(
     ({ txHash, amount }: { txHash: string; amount: TokenUnit }) => {
       AnalyticsService.capture('EarnDepositSubmitted', {
@@ -70,6 +74,7 @@ export const AaveAvaxSelectAmountForm = ({
       validateAmount={validateAmount}
       submit={aaveDepositAvax}
       onSuccess={handleSuccess}
+      onFailure={handleFailure}
     />
   )
 }
