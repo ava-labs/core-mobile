@@ -44,17 +44,25 @@ export class BitcoinWalletPolicyService {
   }
 
   /**
-   * Find Bitcoin wallet policy details in public keys array
+   * Find Bitcoin wallet policy details in public keys array for a specific account
+   * Uses the same per-account key lookup as getEvmPublicKey to ensure the correct policy is returned
    */
   static findBtcWalletPolicyInPublicKeys(
-    publicKeys: PublicKey[]
+    publicKeys: PublicKey[],
+    accountIndex: number
   ): BtcWalletPolicyDetails | undefined {
-    for (const pubKey of publicKeys) {
-      if (pubKey.btcWalletPolicy) {
-        return pubKey.btcWalletPolicy
-      }
-    }
-    return undefined
+    // Generate the EVM derivation path for the given account index
+    const evmPath = getAddressDerivationPath({
+      accountIndex,
+      vmType: NetworkVMType.EVM
+    })
+
+    // Find the SECP256K1 key at the EVM derivation path for this account
+    const evmPubKey = publicKeys.find(
+      pk => pk.curve === Curve.SECP256K1 && pk.derivationPath === evmPath
+    )
+
+    return evmPubKey?.btcWalletPolicy
   }
 
   /**
@@ -128,10 +136,18 @@ export class BitcoinWalletPolicyService {
   }
 
   /**
-   * Check if Bitcoin wallet policy registration is needed
+   * Check if Bitcoin wallet policy registration is needed for a specific account
    */
-  static needsBtcWalletPolicyRegistration(publicKeys: PublicKey[]): boolean {
-    return !publicKeys.some(pk => pk.btcWalletPolicy)
+  static needsBtcWalletPolicyRegistration(
+    publicKeys: PublicKey[],
+    accountIndex: number
+  ): boolean {
+    // Check if the specific account's EVM public key has a policy
+    const btcPolicy = this.findBtcWalletPolicyInPublicKeys(
+      publicKeys,
+      accountIndex
+    )
+    return btcPolicy === undefined
   }
 
   /**

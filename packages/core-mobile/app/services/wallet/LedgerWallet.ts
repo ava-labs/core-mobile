@@ -210,10 +210,11 @@ export class LedgerWallet implements Wallet {
         )
       }
 
-      // Get wallet policy details from public key data
+      // Get wallet policy details from public key data for this specific account
       const btcPolicy =
         BitcoinWalletPolicyService.findBtcWalletPolicyInPublicKeys(
-          this.publicKeys
+          this.publicKeys,
+          accountIndex
         )
 
       if (btcPolicy === undefined) {
@@ -576,10 +577,11 @@ export class LedgerWallet implements Wallet {
     network: Network
     provider: BitcoinProvider
   }): Promise<string> {
-    // Check if wallet policy is registered
+    // Check if wallet policy is registered for this specific account
     const needsRegistration =
       BitcoinWalletPolicyService.needsBtcWalletPolicyRegistration(
-        this.publicKeys
+        this.publicKeys,
+        accountIndex
       )
 
     if (needsRegistration) {
