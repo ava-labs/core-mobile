@@ -4,6 +4,7 @@ import { LedgerAppType, LedgerDerivationPathType } from 'services/ledger/types'
 import { OnDelegationProgress } from 'contexts/DelegationContext'
 import { z } from 'zod'
 import { ledgerParamsStore, StakingProgressParams } from '../store'
+import Logger from 'utils/Logger'
 
 export const showLedgerReviewTransaction = ({
   network,
@@ -42,17 +43,21 @@ export const executeLedgerStakingOperation = ({
   showLedgerReviewTransaction({
     network,
     onApprove: async onProgress => {
+      Logger.info('Ledger transaction approved')
       action(onProgress)
     },
     onReject: () => {
       // User cancelled Ledger connection
+      Logger.info('Ledger transaction rejected')
     },
     stakingProgress: {
       totalSteps,
       onComplete: () => {
         // TODO: Consider using AnalyticsService here to track successful Ledger transactions
+        Logger.info('Ledger transaction completed')
       },
       onCancel: () => {
+        Logger.info('Ledger transaction cancelled')
         router.back()
       }
     }
