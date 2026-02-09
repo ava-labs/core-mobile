@@ -517,6 +517,14 @@ export const selectIsNestEggEligible = (state: RootState): boolean => {
   return false
 }
 
+export const selectIsFusionEnabled = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    featureFlags[FeatureGates.FUSION] === true &&
+    featureFlags[FeatureGates.EVERYTHING] === true
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions
