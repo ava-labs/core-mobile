@@ -5,6 +5,7 @@ import React, { forwardRef } from 'react'
 import { View as RNView } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import NavigationBarButton from './NavigationBarButton'
 
 export const AccountSettingBarButton = forwardRef<RNView>(
   (props, ref): JSX.Element => {
@@ -18,31 +19,20 @@ export const AccountSettingBarButton = forwardRef<RNView>(
     }
 
     return (
-      <TouchableOpacity
+      <NavigationBarButton
         ref={ref}
         accessibilityLabel="account_setting_bar_btn"
         testID="account_setting_bar_btn"
-        // onPress doesn't work for Android when using svgs (only on production)
-        onPressOut={handlePress}
-        style={{
-          paddingRight: 8,
-          height: '100%'
-        }}>
-        <View
-          sx={{
-            height: '100%',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}>
-          <Avatar
-            size={34}
-            source={avatar.source}
-            hasBlur={false}
-            hasLoading={false}
-            isDeveloperMode={isDeveloperMode}
-          />
-        </View>
-      </TouchableOpacity>
+        onPress={handlePress}
+        isLeft>
+        <Avatar
+          size={34}
+          source={avatar.source}
+          hasBlur={false}
+          hasLoading={false}
+          isDeveloperMode={isDeveloperMode}
+        />
+      </NavigationBarButton>
     )
   }
 )
