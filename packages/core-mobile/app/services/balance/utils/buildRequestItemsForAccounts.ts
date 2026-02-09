@@ -37,6 +37,16 @@ const MAX_ADDRESSES_PER_ITEM = 50
 const MAX_ADDRESS_DETAILS_PER_ITEM = 50
 
 /**
+ * Extracts the reference part from a CAIP-2 chain ID.
+ * CAIP-2 format: namespace:reference
+ * Example: "bip122:000000000019d6689c085ae165831e93" -> "000000000019d6689c085ae165831e93"
+ */
+const extractCaip2Reference = (caip2Id: string): string => {
+  const parts = caip2Id.split(':')
+  return parts[1] ?? caip2Id // Fallback to original if no colon found
+}
+
+/**
  * Builds one or more `data` arrays for balance requests by grouping all networks
  * across multiple accounts into the correct namespace buckets (EVM, BTC, SVM, AVAX).
  *
@@ -88,15 +98,15 @@ export const buildRequestItemsForAccounts = ({
       case NetworkVMType.BITCOIN:
         btcReferences.add(
           network.isTestnet
-            ? BitcoinCaip2ChainId.TESTNET.replace('bip122:', '')
-            : BitcoinCaip2ChainId.MAINNET.replace('bip122:', '')
+            ? extractCaip2Reference(BitcoinCaip2ChainId.TESTNET)
+            : extractCaip2Reference(BitcoinCaip2ChainId.MAINNET)
         )
         break
       case NetworkVMType.SVM:
         svmReferences.add(
           network.isTestnet
-            ? SolanaCaip2ChainId.DEVNET.replace('solana:', '')
-            : SolanaCaip2ChainId.MAINNET.replace('solana:', '')
+            ? extractCaip2Reference(SolanaCaip2ChainId.DEVNET)
+            : extractCaip2Reference(SolanaCaip2ChainId.MAINNET)
         )
         break
       case NetworkVMType.AVM:
@@ -104,11 +114,11 @@ export const buildRequestItemsForAccounts = ({
         const ref =
           network.vmName === NetworkVMType.PVM
             ? network.isTestnet
-              ? AvalancheCaip2ChainId.P_TESTNET.replace('avax:', '')
-              : AvalancheCaip2ChainId.P.replace('avax:', '')
+              ? extractCaip2Reference(AvalancheCaip2ChainId.P_TESTNET)
+              : extractCaip2Reference(AvalancheCaip2ChainId.P)
             : network.isTestnet
-            ? AvalancheCaip2ChainId.X_TESTNET.replace('avax:', '')
-            : AvalancheCaip2ChainId.X.replace('avax:', '')
+            ? extractCaip2Reference(AvalancheCaip2ChainId.X_TESTNET)
+            : extractCaip2Reference(AvalancheCaip2ChainId.X)
         avaxReferences.add(ref)
         break
       }
