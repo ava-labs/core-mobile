@@ -15,6 +15,7 @@ import { selectWallets } from 'store/wallet/slice'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { getCachedXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
+import Logger from 'utils/Logger'
 
 /**
  * Stale time in milliseconds
@@ -118,7 +119,12 @@ export function useAccountsBalances(
         accounts.map(async account => {
           const wallet = wallets[account.walletId]
           if (!wallet) {
-            return // This should never happen, but guard against it just in case
+            // This should never happen, but guard and log against it just in case
+            Logger.error(
+              'useAccountsBalances',
+              `Wallet not found for account ${account.id}`
+            )
+            return
           }
           const { xpAddresses } = await getCachedXPAddresses({
             walletId: wallet.id,

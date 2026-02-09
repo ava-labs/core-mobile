@@ -219,8 +219,9 @@ export const getXpubXPIfAvailable = async ({
   let xpubXP
 
   try {
-    // TODO: currently getRawXpubXP for keystone wallet does not work for different account index,
-    // for now, just return undefined for keystone to fallback to fetching individual addresses. This needs to be fixed in the future to properly support multiple accounts for keystone wallet.
+    // TODO: https://ava-labs.atlassian.net/browse/CP-13335
+    // Currently getRawXpubXP for Keystone wallets does not work for different account indices,
+    // so we return undefined for Keystone to fall back to fetching individual addresses and avoid relying on incorrect xpub behavior.
     if (walletType === WalletType.KEYSTONE) {
       return undefined
     }
