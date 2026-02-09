@@ -1,7 +1,7 @@
+const path = require('path')
 const { mergeConfig } = require('@react-native/metro-config')
 const { getSentryExpoConfig } = require('@sentry/react-native/metro')
 const merge = require('lodash.merge')
-const path = require('path')
 
 const monorepoConfig = require('./metro.monorepo.config')
 
