@@ -15,6 +15,7 @@ import {
   maxTransactionCreationRetries,
   maxTransactionStatusCheckRetries
 } from './utils'
+import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 
 export type ImportPParams = {
   walletId: string
@@ -107,20 +108,30 @@ export async function importP({
 const getUnlockedUnstakedAmount = async ({
   network,
   account,
+  walletId,
+  walletType,
   selectedCurrency,
   xpAddresses
 }: {
+  walletId: string
+  walletType: WalletType
   network: Network
   account: Account
   selectedCurrency: string
   xpAddresses: string[]
 }): Promise<bigint | undefined> => {
   try {
+    const xpub = await getXpubXPIfAvailable({
+      walletId,
+      walletType,
+      accountIndex: account.index
+    })
     const pChainBalance = await getPChainBalance({
       account,
       currency: selectedCurrency,
       avaxXPNetwork: network,
-      xpAddresses
+      xpAddresses,
+      xpub
     })
 
     return pChainBalance.balancePerType.unlockedUnstaked
@@ -148,6 +159,8 @@ export async function importPWithBalanceCheck({
   const unlockedUnstakedBeforeImport = await getUnlockedUnstakedAmount({
     network,
     account,
+    walletId,
+    walletType,
     selectedCurrency,
     xpAddresses
   })
@@ -170,6 +183,8 @@ export async function importPWithBalanceCheck({
       getUnlockedUnstakedAmount({
         network,
         account,
+        walletId,
+        walletType,
         selectedCurrency,
         xpAddresses
       }),

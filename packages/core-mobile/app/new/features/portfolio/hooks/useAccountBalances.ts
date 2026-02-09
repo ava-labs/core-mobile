@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import BalanceService from 'services/balance/BalanceService'
 import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
@@ -10,6 +10,8 @@ import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { Network } from '@avalabs/core-chains-sdk'
 import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import * as store from '../store'
+import { selectWalletById } from 'store/wallet/slice'
+import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 
 /**
  * Stale time in milliseconds
@@ -55,8 +57,9 @@ export function useAccountBalances(
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const currency = useSelector(selectSelectedCurrency)
   const { xpAddresses } = useXPAddresses(account)
+  const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
 
-  const isNotReady = !account || enabledNetworks.length === 0
+  const isNotReady = !account || enabledNetworks.length === 0 || !wallet
 
   const enabled = !isNotReady
 
@@ -74,11 +77,18 @@ export function useAccountBalances(
     queryFn: async () => {
       if (isNotReady) return []
 
+      const xpub = await getXpubXPIfAvailable({
+        walletId: wallet.id,
+        walletType: wallet.type,
+        accountIndex: account.index
+      })
+
       return await BalanceService.getBalancesForAccount({
         networks: enabledNetworks,
         account,
         currency: currency.toLowerCase(),
         xpAddresses,
+        xpub,
         onBalanceLoaded: balance => {
           queryClient.setQueryData(
             balanceKey(account, enabledNetworks),

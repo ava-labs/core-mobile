@@ -126,20 +126,21 @@ export function useAccountsBalances(
             )
             return
           }
-          const { xpAddresses } = await getCachedXPAddresses({
-            walletId: wallet.id,
-            walletType: wallet.type,
-            account,
-            isDeveloperMode
-          })
-
           const xpub = await getXpubXPIfAvailable({
             walletId: wallet.id,
             walletType: wallet.type,
             accountIndex: account.index
           })
           xpubByAccountId.set(account.id, xpub)
-          xpAddressesByAccountId.set(account.id, xpAddresses)
+          if (!xpub) {
+            const { xpAddresses } = await getCachedXPAddresses({
+              walletId: wallet.id,
+              walletType: wallet.type,
+              account,
+              isDeveloperMode
+            })
+            xpAddressesByAccountId.set(account.id, xpAddresses)
+          }
         })
       )
 
