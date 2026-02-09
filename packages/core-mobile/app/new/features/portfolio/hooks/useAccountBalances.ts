@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import BalanceService from 'services/balance/BalanceService'
 import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
@@ -9,9 +9,9 @@ import { selectEnabledNetworks } from 'store/network/slice'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { Network } from '@avalabs/core-chains-sdk'
 import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
-import * as store from '../store'
 import { selectWalletById } from 'store/wallet/slice'
 import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
+import * as store from '../store'
 
 /**
  * Stale time in milliseconds

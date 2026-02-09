@@ -10,12 +10,12 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { getPChainBalance } from 'services/balance/getPChainBalance'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
+import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 import {
   maxBalanceCheckRetries,
   maxTransactionCreationRetries,
   maxTransactionStatusCheckRetries
 } from './utils'
-import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 
 export type ImportPParams = {
   walletId: string
