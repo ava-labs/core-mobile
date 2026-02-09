@@ -610,9 +610,6 @@ export class LedgerWallet implements Wallet {
         this.publicKeys = updatedWalletData.publicKeys
         Logger.info('Reloaded public keys with new Bitcoin wallet policy')
       }
-
-      // Clear the bitcoin wallet instance so it gets recreated with the new policy
-      this.bitcoinWallet = undefined
     }
     const bitcoinProvider = await getBitcoinProvider(network.isTestnet)
     const signer = await this.getBitcoinSigner(
