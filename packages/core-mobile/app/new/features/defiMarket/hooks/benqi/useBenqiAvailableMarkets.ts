@@ -3,15 +3,20 @@ import { useCallback } from 'react'
 import { multicall } from 'viem/actions'
 import { Address, PublicClient, zeroAddress } from 'viem'
 import { Network } from '@avalabs/core-chains-sdk'
+import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import Logger from 'utils/Logger'
 import { DefiMarket, MarketNames } from 'features/defiMarket/types'
 import { getBenqiDepositedBalance } from 'features/defiMarket/utils/getBenqiDepositedBalance'
+import { getBenqiBorrowApyPercent } from 'features/defiMarket/utils/getBenqiBorrowApyPercent'
 import { getBenqiSupplyApyPercent } from 'features/defiMarket/utils/getBenqiSupplyApyPercent'
 import { getUniqueMarketId } from 'features/defiMarket/utils/getUniqueMarketId'
 import { BENQI_LENS_ABI } from 'features/defiMarket/abis/benqiLens'
 import { BENQI_PRICE_ORACLE } from 'features/defiMarket/abis/benqiPriceOracle'
+import { BENQI_COMPTROLLER_ABI } from 'features/defiMarket/abis/benqiComptroller'
 import {
+  BENQI_COMPTROLLER_C_CHAIN_ADDRESS,
   BENQI_LENS_C_CHAIN_ADDRESS,
   BENQI_PRICE_ORACLE_C_CHAIN_ADDRESS,
   BENQI_QAVAX_C_CHAIN_ADDRESS,
@@ -38,6 +43,8 @@ export const useBenqiAvailableMarkets = ({
   // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
   const getCChainToken = useGetCChainToken()
+  const activeAccount = useSelector(selectActiveAccount)
+  const addressEVM = activeAccount?.addressC
   const {
     data: accountSnapshot,
     isLoading: isLoadingAccountSnapshot,
@@ -68,10 +75,9 @@ export const useBenqiAvailableMarkets = ({
     queryFn: shouldFetch
       ? async () => {
           try {
-            // Fetch all market metadata and prices in a single multicall
-            const [marketsRaw, qiPriceRaw, avaxPriceRaw] = await multicall(
-              networkClient,
-              {
+            // Fetch all market metadata, prices, and user's collateral markets
+            const [marketsRaw, qiPriceRaw, avaxPriceRaw, assetsInRaw] =
+              await multicall(networkClient, {
                 contracts: [
                   {
                     address: BENQI_LENS_C_CHAIN_ADDRESS,
@@ -92,27 +98,45 @@ export const useBenqiAvailableMarkets = ({
                     abi: BENQI_PRICE_ORACLE,
                     functionName: 'getUnderlyingPrice',
                     args: [BENQI_QAVAX_C_CHAIN_ADDRESS]
+                  },
+                  // Get user's collateral markets
+                  {
+                    address: BENQI_COMPTROLLER_C_CHAIN_ADDRESS,
+                    abi: BENQI_COMPTROLLER_ABI,
+                    functionName: 'getAssetsIn',
+                    args: [(addressEVM as Address) ?? '0x0']
                   }
                 ]
-              }
-            )
+              })
 
             const markets = marketsRaw.result ?? []
             const qiPrice = qiPriceRaw.result ?? 0n
             const avaxPrice = avaxPriceRaw.result ?? 0n
+
+            // Build a Set of qToken addresses that user has enabled as collateral
+            const assetsIn = assetsInRaw.result ?? []
+            const collateralSet = new Set(
+              assetsIn.map(addr => addr.toLowerCase())
+            )
 
             return markets
               .map(rawBenqiMarket => {
                 try {
                   const {
                     mintPaused: isPaused,
+                    borrowPaused,
                     underlying,
                     totalUnderlyingSupply,
+                    totalBorrows,
                     qiSupplyRewardSpeed,
                     avaxSupplyRewardSpeed,
+                    qiBorrowRewardSpeed,
+                    avaxBorrowRewardSpeed,
                     price,
                     supplyRate,
-                    market: qTokenAddress
+                    borrowRate,
+                    market: qTokenAddress,
+                    collateralFactor
                   } = rawBenqiMarket
 
                   // We don't currently show paused markets
@@ -140,6 +164,21 @@ export const useBenqiAvailableMarkets = ({
                     supplyRate
                   })
 
+                  const formattedTotalBorrows = formatAmount(
+                    bigIntToBig(totalBorrows),
+                    underlyingTokenDecimals
+                  )
+
+                  const borrowApyPercent = getBenqiBorrowApyPercent({
+                    qiBorrowRewardSpeed,
+                    avaxBorrowRewardSpeed,
+                    avaxPrice,
+                    qiPrice,
+                    formattedTotalBorrows,
+                    formattedUnderlyingPrice,
+                    borrowRate
+                  })
+
                   const token = getCChainToken(
                     underlying.symbol,
                     underlying.token
@@ -160,6 +199,11 @@ export const useBenqiAvailableMarkets = ({
                       ? undefined
                       : underlying.token
 
+                  // Check if user has this market enabled as collateral
+                  const isCollateralEnabled = collateralSet.has(
+                    (qTokenAddress as string).toLowerCase()
+                  )
+
                   const marketData: Omit<DefiMarket, 'uniqueMarketId'> = {
                     marketName: MarketNames.benqi,
                     network,
@@ -179,9 +223,16 @@ export const useBenqiAvailableMarkets = ({
                     type: 'lending',
                     supplyApyPercent,
                     historicalApyPercent: undefined,
+                    borrowApyPercent,
+                    historicalBorrowApyPercent: undefined,
+                    borrowingEnabled: !borrowPaused,
                     totalDeposits: formattedUnderlyingTotalSupply,
                     // There currently are no supply caps on Benqi markets we support.
-                    supplyCapReached: false
+                    supplyCapReached: false,
+                    // collateralFactor > 0 means the asset can be used as collateral
+                    canBeUsedAsCollateral: collateralFactor > 0n,
+                    // User's collateral status from getAssetsIn
+                    usageAsCollateralEnabledOnUser: isCollateralEnabled
                   }
 
                   const market: DefiMarket = {
