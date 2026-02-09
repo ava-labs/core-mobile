@@ -68,13 +68,15 @@ describe('buildRequestItemsForAccounts', () => {
     const xpAddressesByAccountId = new Map(
       accounts.map(acc => [acc.id, [`avax1${acc.id}`, `avax2${acc.id}`]])
     )
+    const xpubByAccountId = new Map(accounts.map(acc => [acc.id, undefined]))
 
-    const batches = buildRequestItemsForAccounts(
+    const batches = buildRequestItemsForAccounts({
       networks,
       accounts,
       xpAddressesByAccountId,
-      undefined
-    )
+      xpubByAccountId
+    })
+
     const evmItems = batches
       .flatMap(batch => batch)
       .filter(item => item.namespace === BlockchainNamespace.EIP155) as any[]
