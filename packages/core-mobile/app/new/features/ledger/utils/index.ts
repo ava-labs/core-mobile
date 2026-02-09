@@ -30,6 +30,35 @@ export const showLedgerReviewTransaction = ({
   }, 100)
 }
 
+export const executeLedgerStakingOperation = ({
+  network,
+  totalSteps,
+  action
+}: {
+  network: Network
+  totalSteps: number
+  action: (onProgress?: OnDelegationProgress) => void
+}): void => {
+  showLedgerReviewTransaction({
+    network,
+    onApprove: async onProgress => {
+      action(onProgress)
+    },
+    onReject: () => {
+      // User cancelled Ledger connection
+    },
+    stakingProgress: {
+      totalSteps,
+      onComplete: () => {
+        // TODO: Consider using AnalyticsService here to track successful Ledger transactions
+      },
+      onCancel: () => {
+        router.back()
+      }
+    }
+  })
+}
+
 export const getLedgerAppName = (network?: Network): LedgerAppType => {
   return network?.chainId === ChainId.AVALANCHE_MAINNET_ID ||
     network?.chainId === ChainId.AVALANCHE_TESTNET_ID ||
