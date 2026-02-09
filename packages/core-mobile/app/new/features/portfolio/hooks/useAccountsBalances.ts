@@ -133,12 +133,12 @@ export function useAccountsBalances(
             isDeveloperMode
           })
 
-          const _ = await getXpubXPIfAvailable({
+          const xpub = await getXpubXPIfAvailable({
             walletId: wallet.id,
             walletType: wallet.type,
             accountIndex: account.index
           })
-          xpubByAccountId.set(account.id, undefined)
+          xpubByAccountId.set(account.id, xpub)
           xpAddressesByAccountId.set(account.id, xpAddresses)
         })
       )
