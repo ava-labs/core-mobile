@@ -12,7 +12,10 @@ const fs = require('fs')
 const path = require('path')
 
 const MODALS_DIR = path.join(__dirname, '../app/new/routes/(signedIn)/(modals)')
-const OUTPUT_FILE = path.join(__dirname, '../app/new/common/router/generatedThrottledRoutes.ts')
+const OUTPUT_FILE = path.join(
+  __dirname,
+  '../app/new/common/router/generatedThrottledRoutes.ts'
+)
 
 /**
  * Recursively get all route paths from a directory
