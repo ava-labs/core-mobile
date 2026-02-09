@@ -2,6 +2,15 @@ import { useQuery } from '@tanstack/react-query'
 import { AAVE_CHAN_MERIT_API_URL } from '../../consts'
 import { aaveMeritAprSchema } from '../../schema'
 
+export type MeritAprs = {
+  'avalanche-supply-ausd': number | null
+  'avalanche-supply-btcb': number | null
+  'avalanche-supply-gho': number | null
+  'avalanche-supply-savax': number | null
+  'avalanche-supply-usdc': number | null
+  'avalanche-supply-usdt': number | null
+}
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useMeritAprs = () => {
   return useQuery({
