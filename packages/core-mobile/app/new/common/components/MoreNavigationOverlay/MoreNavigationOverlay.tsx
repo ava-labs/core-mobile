@@ -167,7 +167,8 @@ export const MoreNavigationOverlay = (): JSX.Element | null => {
   const containerStyle = useAnimatedStyle(() => {
     const progress = Math.min(dragY.value / DISMISS_THRESHOLD, 1)
     return {
-      opacity: withTiming(isOpen ? 1 - progress * 0.3 : 0, { duration: 300 })
+      transform: [{ translateY: dragY.value }],
+      opacity: isOpen ? 1 - progress * 0.3 : 0
     }
   })
 
