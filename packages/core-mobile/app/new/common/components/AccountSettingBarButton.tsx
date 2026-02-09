@@ -1,4 +1,4 @@
-import { Avatar, TouchableOpacity, View } from '@avalabs/k2-alpine'
+import { Avatar } from '@avalabs/k2-alpine'
 import { useAvatar } from 'common/hooks/useAvatar'
 import { useRouter } from 'expo-router'
 import React, { forwardRef } from 'react'
