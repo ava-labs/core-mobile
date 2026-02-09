@@ -119,6 +119,7 @@ import IconTxTypeUnwrap from '../../assets/icons/unwrap.svg'
 import IconTxTypeUnknown from '../../assets/icons/unknown.svg'
 import IconPsychiatry from '../../assets/icons/psychiatry.svg'
 import IconBluetooth from '../../assets/icons/bluetooth.svg'
+import IconMoneyBag from '../../assets/icons/money_bag.svg'
 
 // token logos
 import AAVE from '../../assets/tokenLogos/AAVE.svg'
@@ -347,7 +348,8 @@ export const Icons = {
     Ledger: IconLedger,
     Bluetooth: IconBluetooth,
     Avalanche: AvalancheLogo,
-    Solana: SolanaLogo
+    Solana: SolanaLogo,
+    MoneyBag: IconMoneyBag
   },
   RecoveryMethod: {
     Passkey: IconPasskey,

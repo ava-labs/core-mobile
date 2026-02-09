@@ -2,7 +2,8 @@ import type { z } from 'zod'
 import type { aaveMeritAprSchema } from '../schema'
 
 type MeritSupplyResponse = z.infer<typeof aaveMeritAprSchema>
-type MeritSupplyKey = keyof MeritSupplyResponse['currentAPR']['actionsAPR']
+export type MeritSupplyKey =
+  keyof MeritSupplyResponse['currentAPR']['actionsAPR']
 
 export const isMeritSupplyKey = (key: string): key is MeritSupplyKey => {
   return [
