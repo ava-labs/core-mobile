@@ -38,6 +38,7 @@ import { useAccountPerformanceSummary } from 'features/portfolio/hooks/useAccoun
 import { useBalanceTotalPriceChangeForAccount } from 'features/portfolio/hooks/useBalanceTotalPriceChangeForAccount'
 import { useSendSelectedToken } from 'features/send/store'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
+import { useNavigateToSwap as useNavigateToSwapV2 } from 'features/swapV2/hooks/useNavigateToSwap'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
@@ -57,7 +58,8 @@ import { LocalTokenWithBalance } from 'store/balance/types'
 import {
   selectIsBridgeBlocked,
   selectIsMeldOfframpBlocked,
-  selectIsInAppDefiBorrowBlocked
+  selectIsInAppDefiBorrowBlocked,
+  selectIsFusionEnabled
 } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
@@ -91,6 +93,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
   const isBridgeBlocked = useSelector(selectIsBridgeBlocked)
   const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
+  const isFusionEnabled = useSelector(selectIsFusionEnabled)
 
   // When borrow feature is enabled, Activity moves to Portfolio sub-tab
   const segmentItems = isInAppDefiBorrowBlocked
@@ -104,6 +107,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { navigate, push } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
+  const { navigateToSwap: navigateToSwapV2 } = useNavigateToSwapV2()
 
   const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
     LayoutRectangle | undefined
@@ -246,6 +250,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
         onPress: () => navigateToSwap()
       })
     }
+    if (isFusionEnabled) {
+      buttons.push({
+        title: ActionButtonTitle.SwapV2,
+        icon: 'swap',
+        onPress: () => navigateToSwapV2()
+      })
+    }
     buttons.push({
       title: ActionButtonTitle.Buy,
       icon: 'buy',
@@ -279,8 +290,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleReceive,
     handleBridge,
     navigateToSwap,
+    navigateToSwapV2,
     isMeldOfframpBlocked,
-    isBridgeBlocked
+    isBridgeBlocked,
+    isFusionEnabled
   ])
 
   const renderMaskView = useCallback((): JSX.Element => {
