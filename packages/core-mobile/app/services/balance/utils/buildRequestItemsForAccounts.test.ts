@@ -72,7 +72,8 @@ describe('buildRequestItemsForAccounts', () => {
     const batches = buildRequestItemsForAccounts(
       networks,
       accounts,
-      xpAddressesByAccountId
+      xpAddressesByAccountId,
+      undefined
     )
     const evmItems = batches
       .flatMap(batch => batch)
@@ -104,11 +105,14 @@ describe('buildRequestItemsForAccounts', () => {
       accounts.map(acc => [acc.id, [`avax1${acc.id}`]])
     )
 
-    const batches = buildRequestItemsForAccounts(
+    const xpubByAccountId = new Map(accounts.map(acc => [acc.id, undefined]))
+
+    const batches = buildRequestItemsForAccounts({
       networks,
       accounts,
-      xpAddressesByAccountId
-    )
+      xpAddressesByAccountId,
+      xpubByAccountId
+    })
     const btcItems = batches
       .flatMap(batch => batch)
       .filter(item => item.namespace === BlockchainNamespace.BIP122) as any[]
@@ -139,11 +143,14 @@ describe('buildRequestItemsForAccounts', () => {
       accounts.map(acc => [acc.id, [`avax1${acc.id}`]])
     )
 
-    const batches = buildRequestItemsForAccounts(
+    const xpubByAccountId = new Map(accounts.map(acc => [acc.id, undefined]))
+
+    const batches = buildRequestItemsForAccounts({
       networks,
       accounts,
-      xpAddressesByAccountId
-    )
+      xpAddressesByAccountId,
+      xpubByAccountId
+    })
     const svmItems = batches
       .flatMap(batch => batch)
       .filter(item => item.namespace === BlockchainNamespace.SOLANA) as any[]
@@ -175,11 +182,14 @@ describe('buildRequestItemsForAccounts', () => {
       accounts.map(acc => [acc.id, [`avax1${acc.id}`]])
     )
 
-    const batches = buildRequestItemsForAccounts(
+    const xpubByAccountId = new Map(accounts.map(acc => [acc.id, undefined]))
+
+    const batches = buildRequestItemsForAccounts({
       networks,
       accounts,
-      xpAddressesByAccountId
-    )
+      xpAddressesByAccountId,
+      xpubByAccountId
+    })
     const avaxItems = batches
       .flatMap(batch => batch)
       .filter(item => item.namespace === BlockchainNamespace.AVAX) as any[]
@@ -203,11 +213,13 @@ describe('buildRequestItemsForAccounts', () => {
     const accounts = [account]
 
     const xpAddressesByAccountId = new Map([[account.id, xpAddresses]])
-    const batches = buildRequestItemsForAccounts(
+    const xpubByAccountId = new Map([[account.id, undefined]])
+    const batches = buildRequestItemsForAccounts({
       networks,
       accounts,
-      xpAddressesByAccountId
-    )
+      xpAddressesByAccountId,
+      xpubByAccountId
+    })
     const avaxItems = batches
       .flatMap(batch => batch)
       .filter(item => item.namespace === BlockchainNamespace.AVAX) as any[]
@@ -250,12 +262,14 @@ describe('buildRequestItemsForAccounts', () => {
 
     // Even with xpAddresses, if account has no valid addresses, nothing should be emitted
     const xpAddressesByAccountId = new Map([[account.id, []]])
+    const xpubByAccountId = new Map([[account.id, undefined]])
 
-    const batches = buildRequestItemsForAccounts(
+    const batches = buildRequestItemsForAccounts({
       networks,
       accounts,
-      xpAddressesByAccountId
-    )
+      xpAddressesByAccountId,
+      xpubByAccountId
+    })
     const allItems = batches.flatMap(batch => batch)
 
     expect(allItems).toHaveLength(0)
@@ -278,12 +292,14 @@ describe('buildRequestItemsForAccounts', () => {
     const xpAddressesByAccountId = new Map(
       accounts.map(acc => [acc.id, [`avax1${acc.id}`]])
     )
+    const xpubByAccountId = new Map(accounts.map(acc => [acc.id, undefined]))
 
-    const batches = buildRequestItemsForAccounts(
+    const batches = buildRequestItemsForAccounts({
       networks,
       accounts,
-      xpAddressesByAccountId
-    )
+      xpAddressesByAccountId,
+      xpubByAccountId
+    })
     const evmItems = batches
       .flatMap(batch => batch)
       .filter(item => item.namespace === BlockchainNamespace.EIP155) as any[]
@@ -315,12 +331,14 @@ describe('buildRequestItemsForAccounts', () => {
     const xpAddressesByAccountId = new Map(
       accounts.map(acc => [acc.id, [`avax1${acc.id}`]])
     )
+    const xpubByAccountId = new Map(accounts.map(acc => [acc.id, undefined]))
 
-    const batches = buildRequestItemsForAccounts(
+    const batches = buildRequestItemsForAccounts({
       networks,
       accounts,
-      xpAddressesByAccountId
-    )
+      xpAddressesByAccountId,
+      xpubByAccountId
+    })
     const allItems = batches.flatMap(batch => batch)
 
     expect(allItems).toHaveLength(6)
@@ -332,5 +350,92 @@ describe('buildRequestItemsForAccounts', () => {
       expect(firstBatch.length).toBe(5)
       expect(secondBatch.length).toBe(1)
     }
+  })
+
+  it('uses extendedPublicKeyDetails when xpub is provided', () => {
+    const networks = [createMockNetwork(1, NetworkVMType.AVM)]
+    const accounts = [
+      createMockAccount({ id: 'acc-with-xpub' }),
+      createMockAccount({ id: 'acc-without-xpub' })
+    ]
+
+    const xpAddressesByAccountId = new Map([
+      ['acc-with-xpub', ['avax1addr1', 'avax1addr2']],
+      ['acc-without-xpub', ['avax1addr3', 'avax1addr4']]
+    ])
+
+    const xpubByAccountId = new Map([
+      [
+        'acc-with-xpub',
+        'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8'
+      ]
+    ])
+
+    const batches = buildRequestItemsForAccounts({
+      networks,
+      accounts,
+      xpAddressesByAccountId,
+      xpubByAccountId
+    })
+
+    const avaxItems = batches
+      .flatMap(batch => batch)
+      .filter(item => item.namespace === BlockchainNamespace.AVAX) as any[]
+
+    expect(avaxItems).toHaveLength(1)
+    const [item] = avaxItems
+
+    // Should have extendedPublicKeyDetails for account with xpub
+    expect(item.extendedPublicKeyDetails).toBeDefined()
+    expect(item.extendedPublicKeyDetails).toHaveLength(1)
+    expect(item.extendedPublicKeyDetails[0].id).toBe('acc-with-xpub')
+    expect(item.extendedPublicKeyDetails[0].extendedPublicKey).toBe(
+      'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8'
+    )
+
+    // Should have addressDetails for account without xpub
+    expect(item.addressDetails).toBeDefined()
+    expect(item.addressDetails).toHaveLength(1)
+    expect(item.addressDetails[0].id).toBe('acc-without-xpub')
+    expect(item.addressDetails[0].addresses).toEqual([
+      'avax1addr3',
+      'avax1addr4'
+    ])
+  })
+
+  it('uses only extendedPublicKeyDetails when all accounts have xpub', () => {
+    const networks = [createMockNetwork(1, NetworkVMType.PVM)]
+    const accounts = [
+      createMockAccount({ id: 'acc-1' }),
+      createMockAccount({ id: 'acc-2' })
+    ]
+
+    const xpAddressesByAccountId = new Map([
+      ['acc-1', ['avax1addr1']],
+      ['acc-2', ['avax1addr2']]
+    ])
+
+    const xpubByAccountId = new Map([
+      ['acc-1', 'xpub1'],
+      ['acc-2', 'xpub2']
+    ])
+
+    const batches = buildRequestItemsForAccounts({
+      networks,
+      accounts,
+      xpAddressesByAccountId,
+      xpubByAccountId
+    })
+    const avaxItems = batches
+      .flatMap(batch => batch)
+      .filter(item => item.namespace === BlockchainNamespace.AVAX) as any[]
+
+    expect(avaxItems).toHaveLength(1)
+    const [item] = avaxItems
+
+    // Should only have extendedPublicKeyDetails
+    expect(item.extendedPublicKeyDetails).toBeDefined()
+    expect(item.extendedPublicKeyDetails).toHaveLength(2)
+    expect(item.addressDetails).toBeUndefined()
   })
 })

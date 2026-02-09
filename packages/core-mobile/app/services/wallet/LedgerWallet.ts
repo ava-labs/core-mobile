@@ -832,7 +832,7 @@ export class LedgerWallet implements Wallet {
     }
   }
 
-  public async getRawXpubXP(accountIndex: number): Promise<string> {
+  public getRawXpubXP(accountIndex: number): string {
     if (!this.isBIP44() || !this.extendedPublicKeys) {
       throw new Error('getRawXpubXP not available for this wallet type')
     }

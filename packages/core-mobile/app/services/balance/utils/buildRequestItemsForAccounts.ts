@@ -1,4 +1,10 @@
-import { BlockchainNamespace, Network } from '@avalabs/core-chains-sdk'
+import {
+  AvalancheCaip2ChainId,
+  BitcoinCaip2ChainId,
+  BlockchainNamespace,
+  Network,
+  SolanaCaip2ChainId
+} from '@avalabs/core-chains-sdk'
 import { Account } from 'store/account/types'
 import { getAddressByNetwork } from 'store/account/utils'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
@@ -45,15 +51,25 @@ const MAX_ADDRESS_DETAILS_PER_ITEM = 50
  *
  * Empty arrays are never emitted in request items.
  *
+ * @param xpubByAccountId - Map of account IDs to their Avalanche extended public keys (xpub).
+ *                          When provided, the account will use extendedPublicKeyDetails
+ *                          instead of addressDetails for more efficient balance queries.
+ *
  * @returns An array of request batches. Each batch is a complete `data` array
  *          that can be sent as a separate request.
  */
-export const buildRequestItemsForAccounts = (
-  networks: Network[],
-  accounts: Account[],
+export const buildRequestItemsForAccounts = ({
+  networks,
+  accounts,
+  xpAddressesByAccountId,
+  xpubByAccountId
+}: {
+  networks: Network[]
+  accounts: Account[]
   xpAddressesByAccountId: Map<string, string[]>
+  xpubByAccountId: Map<string, string | undefined>
   // eslint-disable-next-line sonarjs/cognitive-complexity
-): GetBalancesRequestBody['data'][] => {
+}): GetBalancesRequestBody['data'][] => {
   const evmReferences = new Set<string>()
   const btcReferences = new Set<string>()
   const svmReferences = new Set<string>()
@@ -72,15 +88,15 @@ export const buildRequestItemsForAccounts = (
       case NetworkVMType.BITCOIN:
         btcReferences.add(
           network.isTestnet
-            ? '000000000933ea01ad0ee984209779ba'
-            : '000000000019d6689c085ae165831e93'
+            ? BitcoinCaip2ChainId.TESTNET.replace('bip122:', '')
+            : BitcoinCaip2ChainId.MAINNET.replace('bip122:', '')
         )
         break
       case NetworkVMType.SVM:
         svmReferences.add(
           network.isTestnet
-            ? 'EtWTRABZaYq6iMfeYKouRu166VU2xqa1'
-            : '5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'
+            ? SolanaCaip2ChainId.DEVNET.replace('solana:', '')
+            : SolanaCaip2ChainId.MAINNET.replace('solana:', '')
         )
         break
       case NetworkVMType.AVM:
@@ -88,11 +104,11 @@ export const buildRequestItemsForAccounts = (
         const ref =
           network.vmName === NetworkVMType.PVM
             ? network.isTestnet
-              ? 'Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG'
-              : 'Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo'
+              ? AvalancheCaip2ChainId.P_TESTNET.replace('avax:', '')
+              : AvalancheCaip2ChainId.P.replace('avax:', '')
             : network.isTestnet
-            ? '8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl'
-            : 'imji8papUf2EhV3le337w1vgFauqkJg-'
+            ? AvalancheCaip2ChainId.X_TESTNET.replace('avax:', '')
+            : AvalancheCaip2ChainId.X.replace('avax:', '')
         avaxReferences.add(ref)
         break
       }
@@ -124,20 +140,35 @@ export const buildRequestItemsForAccounts = (
     }
   }
 
-  // --- Build AVAX addressDetails ----------------------------------------------
+  // --- Build AVAX addressDetails and extendedPublicKeyDetails ----------------
   const avaxAddressDetails: AvalancheXpGetBalancesRequestItem['addressDetails'] =
     []
+  const avaxExtendedPublicKeyDetails: AvalancheXpGetBalancesRequestItem['extendedPublicKeyDetails'] =
+    []
+
   if (avaxReferences.size > 0) {
     for (const account of accounts) {
-      const xpAddresses = xpAddressesByAccountId?.get(account.id)
-      if (!xpAddresses || xpAddresses.length === 0) continue
+      const xpub = xpubByAccountId.get(account.id)
 
-      const addressChunks = chunkArray(xpAddresses, MAX_ADDRESSES_PER_ITEM)
-      for (const chunk of addressChunks) {
-        avaxAddressDetails.push({
+      // If account has xpub, use extendedPublicKeyDetails (more efficient)
+      if (xpub) {
+        avaxExtendedPublicKeyDetails.push({
           id: account.id,
-          addresses: chunk
+          extendedPublicKey: xpub
         })
+      } else {
+        // Otherwise, use addressDetails with individual addresses
+        const xpAddresses = xpAddressesByAccountId?.get(account.id)
+
+        if (!xpAddresses || xpAddresses.length === 0) continue
+
+        const addressChunks = chunkArray(xpAddresses, MAX_ADDRESSES_PER_ITEM)
+        for (const chunk of addressChunks) {
+          avaxAddressDetails.push({
+            id: account.id,
+            addresses: chunk
+          })
+        }
       }
     }
   }
@@ -200,19 +231,55 @@ export const buildRequestItemsForAccounts = (
   const avaxRefs = Array.from(
     avaxReferences
   ) as AvalancheXpGetBalancesRequestItem['references']
-  if (avaxRefs.length > 0 && avaxAddressDetails.length > 0) {
-    const detailChunks = chunkArray(
+
+  // Build AVAX items if we have any references and at least one of addressDetails or extendedPublicKeyDetails
+  if (
+    avaxRefs.length > 0 &&
+    (avaxAddressDetails.length > 0 || avaxExtendedPublicKeyDetails.length > 0)
+  ) {
+    // Chunk addressDetails (max 50 per item)
+    const addressDetailChunks = chunkArray(
       avaxAddressDetails,
       MAX_ADDRESS_DETAILS_PER_ITEM
     )
-    for (const detailChunk of detailChunks) {
-      if (detailChunk.length === 0) continue
-      avaxItems.push({
+
+    // Chunk extendedPublicKeyDetails (max 50 per item)
+    const xpubDetailChunks = chunkArray(
+      avaxExtendedPublicKeyDetails,
+      MAX_ADDRESS_DETAILS_PER_ITEM
+    )
+
+    // If we have both types, we need to create items that may contain both
+    // For simplicity, we'll create separate chunks for each type
+    const maxChunks = Math.max(
+      addressDetailChunks.length,
+      xpubDetailChunks.length
+    )
+
+    for (let i = 0; i < maxChunks; i++) {
+      const addressChunk = addressDetailChunks[i] || []
+      const xpubChunk = xpubDetailChunks[i] || []
+
+      // Skip if both chunks are empty
+      if (addressChunk.length === 0 && xpubChunk.length === 0) continue
+
+      const item: AvalancheXpGetBalancesRequestItem = {
         namespace: BlockchainNamespace.AVAX,
         references: avaxRefs,
-        addressDetails: detailChunk,
         filterOutDustUtxos: false
-      })
+      }
+
+      // Add addressDetails if present
+      if (addressChunk.length > 0) {
+        item.addressDetails = addressChunk
+      }
+
+      // Add extendedPublicKeyDetails if present
+      if (xpubChunk.length > 0) {
+        item.extendedPublicKeyDetails = xpubChunk
+      }
+
+      avaxItems.push(item)
     }
   }
 

@@ -314,7 +314,7 @@ class WalletService {
       )
     }
 
-    const xpub = await wallet.getRawXpubXP(accountIndex)
+    const xpub = wallet.getRawXpubXP(accountIndex)
 
     // Cache the result
     WalletFactory.cache.setXpub(walletId, accountIndex, xpub)

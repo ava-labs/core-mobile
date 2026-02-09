@@ -11,9 +11,10 @@ import { AdjustedNormalizedBalancesForAccounts } from 'services/balance/types'
 import { Account } from 'store/account'
 import { selectEnabledNetworks } from 'store/network/slice'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
-import { selectActiveWallet } from 'store/wallet/slice'
+import { selectWallets } from 'store/wallet/slice'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { getCachedXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
+import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 
 /**
  * Stale time in milliseconds
@@ -57,7 +58,7 @@ export function useAccountsBalances(
   const queryClient = useQueryClient()
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const currency = useSelector(selectSelectedCurrency)
-  const activeWallet = useSelector(selectActiveWallet)
+  const wallets = useSelector(selectWallets)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const enabledChainIdsKey = useMemo(() => {
@@ -111,26 +112,37 @@ export function useAccountsBalances(
     queryFn: async () => {
       // Build xpAddresses map for all accounts
       const xpAddressesByAccountId = new Map<string, string[]>()
+      const xpubByAccountId = new Map<string, string | undefined>()
 
-      if (activeWallet) {
-        await Promise.all(
-          accounts.map(async account => {
-            const { xpAddresses } = await getCachedXPAddresses({
-              walletId: activeWallet.id,
-              walletType: activeWallet.type,
-              account,
-              isDeveloperMode
-            })
-            xpAddressesByAccountId.set(account.id, xpAddresses)
+      await Promise.all(
+        accounts.map(async account => {
+          const wallet = wallets[account.walletId]
+          if (!wallet) {
+            return // This should never happen, but guard against it just in case
+          }
+          const { xpAddresses } = await getCachedXPAddresses({
+            walletId: wallet.id,
+            walletType: wallet.type,
+            account,
+            isDeveloperMode
           })
-        )
-      }
+
+          const _ = await getXpubXPIfAvailable({
+            walletId: wallet.id,
+            walletType: wallet.type,
+            accountIndex: account.index
+          })
+          xpubByAccountId.set(account.id, undefined)
+          xpAddressesByAccountId.set(account.id, xpAddresses)
+        })
+      )
 
       return BalanceService.getBalancesForAccounts({
         networks: enabledNetworks,
         accounts,
         currency: currency.toLowerCase(),
         xpAddressesByAccountId,
+        xpubByAccountId,
         onBalanceLoaded: balance => {
           queryClient.setQueryData(
             queryKey,
