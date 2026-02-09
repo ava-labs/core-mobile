@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 
 /**
  * This script generates the list of throttled modal routes from the (modals) folder structure.
@@ -10,14 +11,8 @@
 const fs = require('fs')
 const path = require('path')
 
-const MODALS_DIR = path.join(
-  __dirname,
-  '../app/new/routes/(signedIn)/(modals)'
-)
-const OUTPUT_FILE = path.join(
-  __dirname,
-  '../app/new/common/router/generatedThrottledRoutes.ts'
-)
+const MODALS_DIR = path.join(__dirname, '../app/new/routes/(signedIn)/(modals)')
+const OUTPUT_FILE = path.join(__dirname, '../app/new/common/router/generatedThrottledRoutes.ts')
 
 /**
  * Recursively get all route paths from a directory
@@ -43,10 +38,7 @@ function getRoutePaths(dir, prefix = '') {
         routes.push(routePath)
 
         // Recursively scan subdirectories for nested routes
-        const subRoutes = getRoutePaths(
-          path.join(dir, routeName),
-          routePath
-        )
+        const subRoutes = getRoutePaths(path.join(dir, routeName), routePath)
         routes.push(...subRoutes)
       }
     }
@@ -81,7 +73,7 @@ export const GENERATED_THROTTLED_ROUTES = [
 ${routes.map(route => `  '${route}'`).join(',\n')}
 ] as const
 
-export type ThrottledRoute = (typeof GENERATED_THROTTLED_ROUTES)[number]
+export type ThrottledRoute = typeof GENERATED_THROTTLED_ROUTES[number]
 `
 
   // Ensure directory exists
