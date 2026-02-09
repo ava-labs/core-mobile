@@ -1,5 +1,8 @@
 import React, { useCallback, useMemo } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { DefiMarket, DepositAsset } from '../../types'
 import { MINT_GAS_AMOUNT } from '../../consts'
 import { useMaxDepositAmount } from '../../hooks/useMaxDepositAmount'
@@ -15,6 +18,7 @@ export const BenqiAvaxSelectAmountForm = ({
   market: DefiMarket
   onSuccess: () => void
 }): JSX.Element => {
+  const activeAccount = useSelector(selectActiveAccount)
   const tokenBalance = useMemo(() => {
     return new TokenUnit(
       asset.token.balance,
@@ -44,6 +48,24 @@ export const BenqiAvaxSelectAmountForm = ({
     [tokenBalance, maxAmount]
   )
 
+  const handleFailure = useCallback(() => {
+    AnalyticsService.capture('EarnDepositFailure')
+  }, [])
+
+  const handleSuccess = useCallback(
+    ({ txHash, amount }: { txHash: string; amount: TokenUnit }) => {
+      AnalyticsService.capture('EarnDepositSubmitted', {
+        token: asset.token.symbol,
+        quantity: amount.toDisplay(),
+        protocol: market.marketName,
+        txHash,
+        address: activeAccount?.addressC ?? ''
+      })
+      onSuccess()
+    },
+    [asset.token.symbol, market.marketName, activeAccount?.addressC, onSuccess]
+  )
+
   return (
     <SelectAmountFormBase
       token={asset.token}
@@ -51,7 +73,8 @@ export const BenqiAvaxSelectAmountForm = ({
       maxAmount={maxAmount}
       validateAmount={validateAmount}
       submit={benqiDepositAvax}
-      onSuccess={onSuccess}
+      onSuccess={handleSuccess}
+      onFailure={handleFailure}
     />
   )
 }
