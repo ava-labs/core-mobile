@@ -1,6 +1,6 @@
 import { PriceChangeStatus } from '@avalabs/k2-alpine'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
-import React, { useCallback, memo } from 'react'
+import React, { useRef, useCallback, memo } from 'react'
 import { LocalTokenWithBalance } from 'store/balance'
 import { useTokenNameForDisplay } from 'common/hooks/useTokenNameForDisplay'
 import { useMarketToken } from 'common/hooks/useMarketToken'
@@ -54,8 +54,21 @@ export const TokenListItem = memo(
           : PriceChangeStatus.Neutral
         : undefined
 
+    const isPressDisabledRef = useRef(false)
+
     const handlePress = useCallback(() => {
+      // Prevent multiple presses
+      if (isPressDisabledRef.current) return
+
+      // Disable further presses
+      isPressDisabledRef.current = true
+
       onPress(token)
+
+      // Re-enable after 300ms
+      setTimeout(() => {
+        isPressDisabledRef.current = false
+      }, 300)
     }, [onPress, token])
 
     return isGridView ? (
