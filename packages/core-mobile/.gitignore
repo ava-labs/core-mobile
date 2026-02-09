@@ -102,3 +102,6 @@ expo-env.d.ts
 app/utils/apiClient/generated/profileApi.client.ts
 app/utils/apiClient/generated/balanceApi.client/
 app/utils/api/generated
+
+# generated throttled routes for navigation throttling
+app/new/common/router/generatedThrottledRoutes.ts

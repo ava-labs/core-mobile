@@ -3,74 +3,15 @@
 import { useRouter } from 'expo-router-original'
 import { useCallback, useMemo } from 'react'
 import { Platform } from 'react-native'
+import { GENERATED_THROTTLED_ROUTES } from 'common/router/generatedThrottledRoutes'
 
 const THROTTLE_MS = 300
 
 let lastNavigationTime = 0
 
-/**
- * Modal routes that should be throttled to prevent bottom sheet iOS navigation crashes.
- */
-const THROTTLED_ROUTES = [
-  '/accountSettings',
-  '/approval',
-  '/keystoneSigner',
-  '/keystoneTroubleshooting',
-  '/receive',
-  '/notifications',
-  '/walletConnectScan',
-  '/authorizeDapp',
-  '/collectibleSend',
-  '/send',
-  '/swap',
-  '/selectSwapFromToken',
-  '/selectSwapToToken',
-  '/buy',
-  '/selectSendToken',
-  '/selectReceiveNetwork',
-  '/tokenManagement',
-  '/tokenDetail',
-  '/defiDetail',
-  '/collectibleDetail',
-  '/trackTokenDetail',
-  '/collectibleManagement',
-  '/bridge',
-  '/bridgeStatus',
-  '/selectBridgeSourceNetwork',
-  '/selectBridgeTargetNetwork',
-  '/selectBridgeToken',
-  '/addStake',
-  '/stakeDetail',
-  '/claimStakeReward',
-  '/toggleDeveloperMode',
-  '/editContact',
-  '/addEthereumChain',
-  '/selectCustomTokenNetwork',
-  '/meld/onramp',
-  '/meld/offramp',
-  '/meldOnrampTokenList',
-  '/meldOfframpTokenList',
-  '/meldOnrampPaymentMethod',
-  '/meldOfframpPaymentMethod',
-  '/meldOnrampCountry',
-  '/meldOnrampCurrency',
-  '/meldOfframpCountry',
-  '/meldOfframpCurrency',
-  '/transactionSuccessful',
-  '/solanaLaunch',
-  '/nestEggCampaign',
-  '/appUpdate',
-  '/deposit',
-  '/depositDetail',
-  '/withdraw',
-  '/wallets',
-  '/ledgerReviewTransaction',
-  '/solanaConnection'
-] as const
-
 const isThrottledRoute = (route: string | object): boolean => {
   if (typeof route === 'string') {
-    return THROTTLED_ROUTES.some(
+    return GENERATED_THROTTLED_ROUTES.some(
       throttledRoute =>
         route === throttledRoute || route.startsWith(`${throttledRoute}/`)
     )
@@ -78,7 +19,7 @@ const isThrottledRoute = (route: string | object): boolean => {
 
   if (typeof route === 'object' && route !== null && 'pathname' in route) {
     const pathname = (route as { pathname: string }).pathname
-    return THROTTLED_ROUTES.some(
+    return GENERATED_THROTTLED_ROUTES.some(
       throttledRoute =>
         pathname === throttledRoute ||
         pathname.startsWith(`${throttledRoute}/`) ||
@@ -102,8 +43,10 @@ const isThrottled = (): boolean => {
  * A wrapper around expo-router's useRouter that throttles navigation
  * to modal routes to prevent bottom sheet iOS navigation crashes.
  *
- * Only routes in the THROTTLED_ROUTES will be throttled.
+ * Only routes in GENERATED_THROTTLED_ROUTES (auto-generated from modals folder) will be throttled.
  * Other routes will navigate immediately without throttling.
+ *
+ * Run 'yarn generate:throttled-routes' to regenerate the routes list after adding new modals.
  */
 export const useSafeRouter = (): ReturnType<typeof useRouter> => {
   const router = useRouter()
