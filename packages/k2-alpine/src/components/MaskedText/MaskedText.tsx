@@ -1,5 +1,5 @@
 import React, { PropsWithChildren } from 'react'
-import { SxProp } from 'dripsy'
+import { SxProp, View } from 'dripsy'
 import { TextProps } from 'react-native'
 import { TextVariant } from '../../theme/tokens/text'
 import { MaskedView } from '../MaskedView/MaskedView'
@@ -41,9 +41,13 @@ export const MaskedText = ({
     )
   }
 
-  return (
-    <Text variant={variant} sx={sx} testID={testID} {...rest}>
-      {children}
-    </Text>
-  )
+  if (typeof children === 'string') {
+    return (
+      <Text variant={variant} sx={sx} testID={testID} {...rest}>
+        {children}
+      </Text>
+    )
+  }
+
+  return <>{children}</>
 }

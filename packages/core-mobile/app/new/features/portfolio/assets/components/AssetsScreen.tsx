@@ -208,8 +208,8 @@ const AssetsScreen: FC<Props> = ({
   }, [isInitialLoading, hasNoAssets, filter, sort, view, handleManageList])
 
   const keyExtractor = useCallback(
-    (item: LocalTokenWithBalance, index: number): string =>
-      `${index}-${item.networkChainId}-${item.localId}`,
+    (item: LocalTokenWithBalance, _index: number): string =>
+      `${item.networkChainId}-${item.localId}`,
     []
   )
 
