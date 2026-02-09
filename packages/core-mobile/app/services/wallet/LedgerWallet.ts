@@ -211,7 +211,6 @@ export class LedgerWallet implements Wallet {
       }
 
       // Get wallet policy details from public key data
-      // let walletPolicyDetails: WalletPolicyDetails | undefined
       const btcPolicy =
         BitcoinWalletPolicyService.findBtcWalletPolicyInPublicKeys(
           this.publicKeys
@@ -483,7 +482,6 @@ export class LedgerWallet implements Wallet {
       // Ensure device is connected
       await LedgerService.ensureConnection(this.deviceId)
 
-      // await LedgerService.openApp(LedgerAppType.BITCOIN)
       // Ensure Bitcoin app is ready
       Logger.info('Ensuring Bitcoin app is ready...')
       await LedgerService.waitForApp(
