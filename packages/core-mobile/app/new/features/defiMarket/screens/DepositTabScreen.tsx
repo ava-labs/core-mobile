@@ -30,6 +30,7 @@ import {
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useDeposits } from 'hooks/earn/useDeposits'
 import { useRouter } from 'expo-router'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Placeholder } from 'common/components/Placeholder'
 import { LoadingState } from 'common/components/LoadingState'
 import { DropdownSelections } from 'common/components/DropdownSelections'
@@ -77,6 +78,7 @@ const DepositTabScreen = ({
   }, [filteredDeposits, isLoading])
 
   const handleAddDeposit = useCallback(() => {
+    AnalyticsService.capture('EarnDepositStart')
     // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/deposit' })
   }, [navigate])
@@ -94,6 +96,7 @@ const DepositTabScreen = ({
 
   const handleWithdrawDeposit = useCallback(
     (deposit: DefiMarket) => {
+      AnalyticsService.capture('EarnWithdrawStart')
       navigate({
         // @ts-ignore TODO: make routes typesafe
         pathname: '/withdraw/selectAmount',

@@ -50,6 +50,7 @@ import { BN } from 'bn.js'
 import { isTypedData } from '@avalabs/evm-module'
 import { convertTxData, makeBigIntLike } from 'services/wallet/utils'
 import { signer } from 'services/wallet/KeystoneWallet/keystoneSigner'
+import { SignatureRSV } from '../types'
 
 export const EVM_DERIVATION_PATH = `m/44'/60'/0'`
 export const AVAX_DERIVATION_PATH = `m/44'/9000'/0'`
@@ -84,11 +85,7 @@ export default class KeystoneWallet implements Wallet {
     throw new Error('signSvmTransaction not implemented')
   }
 
-  private async deriveEthSignature(cbor: Buffer): Promise<{
-    r: string
-    s: string
-    v: number
-  }> {
+  private async deriveEthSignature(cbor: Buffer): Promise<SignatureRSV> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const signature: any = ETHSignature.fromCBOR(cbor).getSignature()
     const r = hexlify(new Uint8Array(signature.slice(0, 32)))
@@ -272,7 +269,7 @@ export default class KeystoneWallet implements Wallet {
 
   private async getTxFromTransactionRequest(
     txRequest: TransactionRequest,
-    signature?: { r: string; s: string; v: number }
+    signature?: SignatureRSV
   ): Promise<LegacyTransaction | FeeMarketEIP1559Transaction> {
     const _signature = signature
       ? {

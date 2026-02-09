@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { encodeFunctionData, Address } from 'viem'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { RpcMethod } from '@avalabs/vm-module-types'
@@ -150,8 +151,10 @@ export const useClaimRewards = (): {
 
       // Refetch all rewards data after claiming
       refetchAll()
+      AnalyticsService.capture('EarnClaimSuccess')
     } catch (error) {
       Logger.error('[DefiMarket] claimRewards Error:', error)
+      AnalyticsService.capture('EarnClaimFailure')
     } finally {
       setClaimStatus('idle')
     }

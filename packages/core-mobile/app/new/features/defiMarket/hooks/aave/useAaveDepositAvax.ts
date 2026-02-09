@@ -15,6 +15,7 @@ import { selectActiveAccount } from 'store/account'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export const useAaveDepositAvax = ({
   market
@@ -55,18 +56,21 @@ export const useAaveDepositAvax = ({
         chainId: getEvmCaip2ChainId(market.network.chainId)
       })
 
-      // Invalidate cache in background after transaction is confirmed
+      // Invalidate cache and fire analytics in background after transaction is confirmed
       provider
         .waitForTransaction(txHash)
         .then(receipt => {
           if (receipt && receipt.status === 1) {
+            AnalyticsService.capture('EarnDepositSuccess')
             queryClient.invalidateQueries({
               queryKey: [ReactQueryKeys.AAVE_AVAILABLE_MARKETS]
             })
+          } else {
+            AnalyticsService.capture('EarnDepositFailure')
           }
         })
         .catch(() => {
-          // Silently ignore - cache will be stale but not critical
+          AnalyticsService.capture('EarnDepositFailure')
         })
 
       return txHash

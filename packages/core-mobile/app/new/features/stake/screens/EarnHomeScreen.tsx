@@ -7,7 +7,7 @@ import {
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import DepositTabScreen from 'features/defiMarket/screens/DepositTabScreen'
+import { useFocusEffect } from 'expo-router'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   LayoutChangeEvent,
@@ -37,11 +37,19 @@ import {
   selectIsInAppDefiBlocked,
   selectIsInAppDefiNewBlocked
 } from 'store/posthog'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import DepositTabScreen from 'features/defiMarket/screens/DepositTabScreen'
 import StakeTabScreen from './StakeTabScreen'
 
 export const EarnHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
   const insets = useSafeAreaInsets()
+
+  useFocusEffect(
+    useCallback(() => {
+      AnalyticsService.capture('EarnOpened')
+    }, [])
+  )
   const pagerRef = useRef<PagerView>(null)
   const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
   const isInAppDefiNewBlocked = useSelector(selectIsInAppDefiNewBlocked)

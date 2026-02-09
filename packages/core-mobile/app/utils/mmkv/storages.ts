@@ -8,7 +8,8 @@ export const commonStorageKeys = [
   StorageKey.POSTHOG_SUSPENDED,
   StorageKey.SECURE_ACCESS_SET,
   StorageKey.LAST_SEEN_UPDATE_APP_VERSION,
-  StorageKey.MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS
+  StorageKey.MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS,
+  StorageKey.BORROW_PROTOCOL
 ]
 
 export const commonStorage = createMMKV({

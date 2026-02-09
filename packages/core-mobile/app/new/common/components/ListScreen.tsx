@@ -11,6 +11,7 @@ import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, {
   RefObject,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -36,6 +37,7 @@ import {
 } from 'react-native-keyboard-controller'
 import Animated, {
   Extrapolation,
+  FadeIn,
   interpolate,
   useAnimatedStyle,
   useSharedValue
@@ -46,6 +48,7 @@ import {
 } from 'react-native-safe-area-context'
 import { ErrorState } from './ErrorState'
 import Grabber from './Grabber'
+import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 
 // Use this component when you need to display a list of items in a screen.
 // It handles all the logic for the header and footer, including keyboard interactions and gestures.
@@ -88,6 +91,8 @@ export interface ListScreenProps<T>
   renderHeaderRight?: () => React.ReactNode
   /** Optional function to render content when the list is empty */
   renderEmpty?: () => React.ReactNode
+  /** Optional function to render a fixed footer at the bottom of the screen */
+  renderFooter?: () => React.ReactNode
   /** Whether to show the sticky header */
   shouldShowStickyHeader?: boolean
   /** Optional ref to the flat list */
@@ -113,6 +118,7 @@ export const ListScreen = <T,>({
   renderEmpty,
   renderHeader,
   renderHeaderRight,
+  renderFooter,
   shouldShowStickyHeader = true,
   flatListRef,
   ...props
@@ -134,6 +140,14 @@ export const ListScreen = <T,>({
   // State for React re-renders (used in useMemo)
   const [contentHeaderHeight, setContentHeaderHeight] = useState<number>(0)
   const [renderHeaderHeight, setRenderHeaderHeight] = useState<number>(0)
+  const [footerHeight, setFooterHeight] = useState<number>(0)
+  const [showFooter, setShowFooter] = useState(false)
+
+  useEffect(() => {
+    if (renderFooter && !showFooter) {
+      setShowFooter(true)
+    }
+  }, [renderFooter, showFooter])
 
   useImperativeHandle(
     flatListRef,
@@ -268,8 +282,8 @@ export const ListScreen = <T,>({
       opacity: !shouldShowStickyHeader
         ? 0
         : backgroundColor
-        ? targetHiddenProgress.value
-        : 1
+          ? targetHiddenProgress.value
+          : 1
     }
   })
 
@@ -281,9 +295,10 @@ export const ListScreen = <T,>({
   })
 
   const contentContainerStyle = useMemo(() => {
+    const footerPadding = renderFooter ? footerHeight : 0
     const paddingBottom = keyboard.isVisible
       ? keyboard.height + 16
-      : insets.bottom + 16
+      : insets.bottom + 16 + footerPadding
 
     const extraPadding =
       Platform.OS === 'android' ? (isModal ? insets.top : 8) : 16
@@ -292,8 +307,8 @@ export const ListScreen = <T,>({
       props?.contentContainerStyle,
       data.length === 0
         ? {
-            flex: 1
-          }
+          flex: 1
+        }
         : {},
       {
         paddingBottom,
@@ -315,7 +330,9 @@ export const ListScreen = <T,>({
     frame.height,
     contentHeaderHeight,
     shouldShowStickyHeader,
-    renderHeaderHeight
+    renderHeaderHeight,
+    renderFooter,
+    footerHeight
   ])
 
   const ListHeaderComponent = useMemo(() => {
@@ -435,6 +452,33 @@ export const ListScreen = <T,>({
       )
   }, [insets.top, isModal])
 
+  const handleFooterLayout = useCallback((event: LayoutChangeEvent) => {
+    const { height } = event.nativeEvent.layout
+    setFooterHeight(height)
+  }, [])
+
+  const renderFooterContent = useCallback(() => {
+    if (renderFooter && showFooter) {
+      const footer = renderFooter()
+      if (footer) {
+        return (
+          <LinearGradientBottomWrapper>
+            <Animated.View
+              entering={FadeIn.delay(150)}
+              onLayout={handleFooterLayout}
+              style={{
+                paddingHorizontal: 16,
+                paddingBottom: insets.bottom + 16
+              }}>
+              {footer}
+            </Animated.View>
+          </LinearGradientBottomWrapper>
+        )
+      }
+    }
+    return null
+  }, [renderFooter, showFooter, handleFooterLayout, insets.bottom])
+
   return (
     <Animated.View
       style={[{ flex: 1 }]}
@@ -468,6 +512,7 @@ export const ListScreen = <T,>({
         ListEmptyComponent={ListEmptyComponent}
       />
       {renderGrabber()}
+      {renderFooterContent()}
     </Animated.View>
   )
 }
