@@ -1,5 +1,8 @@
 import React, { useCallback, useMemo } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { DefiMarket } from '../../types'
 import { useBenqiWithdraw } from '../../hooks/benqi/useBenqiWithdraw'
 import { SelectAmountFormBase } from '../SelectAmountFormBase'
@@ -11,6 +14,7 @@ export const WithdrawBenqiSelectAmountForm = ({
   market: DefiMarket
   onSuccess: () => void
 }): JSX.Element => {
+  const activeAccount = useSelector(selectActiveAccount)
   const tokenBalance = useMemo(() => {
     return new TokenUnit(
       market.asset.mintTokenBalance.balance,
@@ -30,6 +34,21 @@ export const WithdrawBenqiSelectAmountForm = ({
     [tokenBalance]
   )
 
+  const handleSuccess = useCallback(
+    ({ txHash, amount }: { txHash: string; amount: TokenUnit }) => {
+      AnalyticsService.capture('EarnWithdrawSubmitted', {
+        token: market.asset.symbol,
+        quantity: amount.toDisplay(),
+        protocol: market.marketName,
+        txHash,
+        address: activeAccount?.addressC ?? ''
+      })
+      AnalyticsService.capture('EarnWithdrawSuccess')
+      onSuccess()
+    },
+    [market.asset.symbol, market.marketName, activeAccount?.addressC, onSuccess]
+  )
+
   return (
     <SelectAmountFormBase
       title="How much do you want to withdraw?"
@@ -38,7 +57,8 @@ export const WithdrawBenqiSelectAmountForm = ({
       maxAmount={tokenBalance}
       validateAmount={validateAmount}
       submit={withdraw}
-      onSuccess={onSuccess}
+      onSuccess={handleSuccess}
+      onFailure={() => AnalyticsService.capture('EarnWithdrawFailure')}
     />
   )
 }

@@ -7,6 +7,7 @@ import { hasEnoughAllowance } from 'features/swap/utils/evm/ensureAllowance'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { TokenType } from '@avalabs/vm-module-types'
 import { useCChainGasCost } from 'common/hooks/useCChainGasCost'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { DefiMarket, DepositAsset } from '../../types'
 import { useAaveDepositErc20 } from '../../hooks/aave/useAaveDepositErc20'
 import {
@@ -97,6 +98,21 @@ export const AaveErc20SelectAmountForm = ({
     ]
   )
 
+  const handleSuccess = useCallback(
+    ({ txHash, amount }: { txHash: string; amount: TokenUnit }) => {
+      AnalyticsService.capture('EarnDepositSubmitted', {
+        token: asset.token.symbol,
+        quantity: amount.toDisplay(),
+        protocol: market.marketName,
+        txHash,
+        address: address ?? ''
+      })
+      AnalyticsService.capture('EarnDepositSuccess')
+      onSuccess()
+    },
+    [asset.token.symbol, market.marketName, address, onSuccess]
+  )
+
   return (
     <SelectAmountFormBase
       token={asset.token}
@@ -104,7 +120,8 @@ export const AaveErc20SelectAmountForm = ({
       maxAmount={tokenBalance}
       validateAmount={validateAmount}
       submit={aaveDepositErc20}
-      onSuccess={onSuccess}
+      onSuccess={handleSuccess}
+      onFailure={() => AnalyticsService.capture('EarnDepositFailure')}
     />
   )
 }
