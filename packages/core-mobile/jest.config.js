@@ -7,7 +7,10 @@ module.exports = {
     'react-native-safe-area-context':
       '<rootDir>/node_modules/react-native-safe-area-context',
     'react-native-svg': '<rootDir>/node_modules/react-native-svg',
-    '^@solana/(.+)$': '<rootDir>/node_modules/@solana/$1/dist/index.node.cjs'
+    '^@solana/(.+)$': '<rootDir>/node_modules/@solana/$1/dist/index.node.cjs',
+    // Map expo-router-original to expo-router for Jest
+    // (Metro uses this alias to avoid circular dependencies in our custom router module)
+    '^expo-router-original$': 'expo-router'
   },
   testPathIgnorePatterns: [
     '<rootDir>/e2e/tests/playwright/',

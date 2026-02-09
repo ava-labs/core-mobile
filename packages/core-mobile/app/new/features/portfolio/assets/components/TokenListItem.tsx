@@ -4,7 +4,6 @@ import React, { useCallback, memo } from 'react'
 import { LocalTokenWithBalance } from 'store/balance'
 import { useTokenNameForDisplay } from 'common/hooks/useTokenNameForDisplay'
 import { useMarketToken } from 'common/hooks/useMarketToken'
-import { globalThrottledOnPress } from 'common/utils/globalThrottledOnPress'
 import { TokenListView } from './TokenListView'
 import { TokenGridView } from './TokenGridView'
 
@@ -56,7 +55,7 @@ export const TokenListItem = memo(
         : undefined
 
     const handlePress = useCallback(() => {
-      globalThrottledOnPress(() => onPress(token))
+      onPress(token)
     }, [onPress, token])
 
     return isGridView ? (

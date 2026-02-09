@@ -1,8 +1,15 @@
 const { mergeConfig } = require('@react-native/metro-config')
 const { getSentryExpoConfig } = require('@sentry/react-native/metro')
 const merge = require('lodash.merge')
+const path = require('path')
 
 const monorepoConfig = require('./metro.monorepo.config')
+
+// Absolute path to our custom router module
+const CUSTOM_ROUTER_PATH = path.resolve(
+  __dirname,
+  './app/new/common/router/index.ts'
+)
 const defaultConfig = getSentryExpoConfig(__dirname)
 const { assetExts, sourceExts } = defaultConfig.resolver
 
@@ -44,6 +51,24 @@ const baseConfig = {
     // TODO: should this be a temporary fix?
     unstable_enablePackageExports: false,
     resolveRequest: (context, moduleName, platform) => {
+      // Redirect expo-router imports from app/new/** to our custom router module
+      // that wraps useRouter with throttling for modal routes
+      if (
+        moduleName === 'expo-router' &&
+        context.originModulePath &&
+        context.originModulePath.includes('/app/new/') &&
+        !context.originModulePath.includes('/common/router/') &&
+        !context.originModulePath.includes('/common/hooks/useSafeRouter')
+      ) {
+        return {
+          type: 'sourceFile',
+          filePath: CUSTOM_ROUTER_PATH
+        }
+      }
+      // Resolve expo-router-original to the actual expo-router package
+      if (moduleName === 'expo-router-original') {
+        return context.resolveRequest(context, 'expo-router', platform)
+      }
       // Enable package exports only for @lombard.finance/sdk
       if (moduleName.startsWith('@lombard.finance/sdk')) {
         const newContext = {
