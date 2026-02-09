@@ -9,6 +9,7 @@ import { WalletState } from 'store/app/types'
 import { useSelector } from 'react-redux'
 import { selectIsReady, selectWalletState } from 'store/app/slice'
 import { PinScreenOverlay } from 'common/components/PinScreenOverlay'
+import { MoreNavigationOverlay } from 'common/components/MoreNavigationOverlay'
 import { currentRouteStore } from './store'
 
 export function RootNavigator(): JSX.Element {
@@ -102,6 +103,9 @@ export function RootNavigator(): JSX.Element {
       {!shouldRenderOnlyPinScreen && walletState === WalletState.INACTIVE && (
         <PinScreenOverlay />
       )}
+
+      {/* render "More" navigation overlay so it appears above all native screens */}
+      <MoreNavigationOverlay />
     </>
   )
 }

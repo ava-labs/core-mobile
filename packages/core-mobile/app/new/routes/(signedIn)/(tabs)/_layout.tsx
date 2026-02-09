@@ -10,19 +10,12 @@ import {
 import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
 import { BottomTabBarProps } from '@bottom-tabs/react-navigation'
 import { BottomTabs } from 'common/components/BottomTabs'
-import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
+import { useMoreNavigationOverlayStore } from 'common/components/MoreNavigationOverlay'
 import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import { useHasXpAddresses } from 'common/hooks/useHasXpAddresses'
-import React, { FC, useEffect, useMemo, useState } from 'react'
-import { Platform, ScrollView, StyleSheet } from 'react-native'
-import Animated, {
-  FadeIn,
-  FadeOut,
-  SlideInDown,
-  SlideOutDown
-} from 'react-native-reanimated'
+import React, { FC, useMemo } from 'react'
+import { Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { FullWindowOverlay } from 'react-native-screens'
 import { SvgProps } from 'react-native-svg'
 import { useSelector } from 'react-redux'
 import {
@@ -164,7 +157,7 @@ const TabBar = ({
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
   const hasXpAddresses = useHasXpAddresses()
-  const [isMoreOpen, setIsMoreOpen] = useState(false)
+  const toggleMore = useMoreNavigationOverlayStore(s => s.toggle)
 
   const backgroundColor = useMemo(() => {
     return theme.isDark
@@ -174,13 +167,8 @@ const TabBar = ({
       : alpha(theme.colors.$surfacePrimary, isIOS ? 0.8 : 1)
   }, [theme.colors.$surfacePrimary, theme.isDark])
 
-  const onToggleMore = (): void => {
-    setIsMoreOpen(!isMoreOpen)
-  }
-
   return (
     <View>
-      <BottomSheet isOpen={isMoreOpen} onToggle={onToggleMore} />
       <BlurViewWithFallback
         style={{
           position: 'absolute',
@@ -243,7 +231,7 @@ const TabBar = ({
           index={state.routes.length + 1}
           isActive={false}
           Icon={Icons.Navigation.Check}
-          onPress={onToggleMore}
+          onPress={toggleMore}
           title="More"
         />
       </BlurViewWithFallback>
@@ -311,106 +299,4 @@ function getIcon(name: string): FC<SvgProps> {
     default:
       return Icons.Navigation.Layers
   }
-}
-
-const ITEMS = [1, 2, 3]
-const EXIT_ANIMATION_DURATION = 300
-const EXIT_STAGGER_DELAY = 40
-// Total time needed for all exit animations to finish before unmounting
-const EXIT_TOTAL_MS =
-  EXIT_ANIMATION_DURATION + EXIT_STAGGER_DELAY * (ITEMS.length - 1) + 50
-
-const BottomSheet = ({
-  isOpen,
-  onToggle
-}: {
-  isOpen: boolean
-  onToggle: () => void
-}): JSX.Element | null => {
-  const { theme } = useTheme()
-  const insets = useSafeAreaInsets()
-  const [isVisible, setIsVisible] = useState(false)
-
-  useEffect(() => {
-    if (isOpen) {
-      setIsVisible(true)
-    } else {
-      // Keep the overlay mounted while items animate out
-      const timeout = setTimeout(() => {
-        setIsVisible(false)
-      }, EXIT_TOTAL_MS)
-      return () => clearTimeout(timeout)
-    }
-  }, [isOpen])
-
-  if (!isVisible) return null
-
-  return (
-    <FullWindowOverlay>
-      <Animated.View
-        entering={FadeIn.duration(250)}
-        exiting={FadeOut.duration(200)}
-        pointerEvents={isOpen ? 'auto' : 'none'}
-        style={{
-          position: 'absolute',
-          top: 0,
-          bottom: 0,
-          left: 0,
-          right: 0,
-          width: '100%',
-          zIndex: 1
-        }}>
-        <Pressable
-          onPress={onToggle}
-          style={{
-            flex: 1,
-            backgroundColor: 'red'
-          }}
-        />
-      </Animated.View>
-      <Animated.View
-        entering={FadeIn.duration(300)}
-        exiting={FadeOut.duration(200)}
-        pointerEvents={isOpen ? 'auto' : 'none'}
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          minHeight: 300,
-          zIndex: 10,
-          width: '100%'
-        }}>
-        <ScrollView
-          horizontal
-          contentContainerStyle={{
-            paddingBottom: insets.bottom + 16,
-            paddingHorizontal: 16,
-            paddingTop: 16,
-            gap: 20
-          }}
-          showsHorizontalScrollIndicator={false}>
-          {isOpen &&
-            ITEMS.map((item, index) => (
-              <Animated.View
-                key={item}
-                entering={SlideInDown.duration(400).delay(index * 60)}
-                exiting={SlideOutDown.duration(EXIT_ANIMATION_DURATION).delay(
-                  (ITEMS.length - 1 - index) * EXIT_STAGGER_DELAY
-                )}
-                style={{
-                  width: 200,
-                  height: 260,
-                  borderRadius: 16,
-                  borderWidth: 1,
-                  borderColor: theme.colors.$borderPrimary,
-                  backgroundColor: theme.colors.$surfaceSecondary,
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}>
-                <Text>{item}</Text>
-              </Animated.View>
-            ))}
-        </ScrollView>
-      </Animated.View>
-    </FullWindowOverlay>
-  )
 }

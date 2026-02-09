@@ -249,7 +249,8 @@ export const ListScreen = <T,>({
     )
     return {
       opacity: 1 - targetHiddenProgress.value,
-      transform: [{ scale: data.length === 0 ? 1 : scale }]
+      transform: [{ scale: data.length === 0 ? 1 : scale }],
+      transformOrigin: 'left bottom'
     }
   })
 
@@ -266,8 +267,8 @@ export const ListScreen = <T,>({
       opacity: !shouldShowStickyHeader
         ? 0
         : backgroundColor
-        ? targetHiddenProgress.value
-        : 1
+          ? targetHiddenProgress.value
+          : 1
     }
   })
 
@@ -290,8 +291,8 @@ export const ListScreen = <T,>({
       props?.contentContainerStyle,
       data.length === 0
         ? {
-            flex: 1
-          }
+          flex: 1
+        }
         : {},
       {
         paddingBottom,
