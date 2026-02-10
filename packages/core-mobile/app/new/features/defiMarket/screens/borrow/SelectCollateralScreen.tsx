@@ -30,6 +30,7 @@ import {
   AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS,
   PROTOCOL_DISPLAY_NAMES
 } from '../../consts'
+import { useRedirectToBorrowAfterDeposit } from '../../store'
 import errorIcon from '../../../../assets/icons/melting_face.png'
 
 // Track which items are currently being toggled (transaction in progress)
@@ -133,13 +134,17 @@ export const SelectCollateralScreen = (): JSX.Element => {
     navigate('/borrow/selectAsset')
   }, [navigate])
 
+  const [, setRedirectToBorrow] = useRedirectToBorrowAfterDeposit()
+
   const handleDepositMoreAssets = useCallback(() => {
+    // Set flag to redirect back to borrow after deposit completes
+    setRedirectToBorrow(true)
     // Dismiss borrow modal and navigate to deposit
     navigation.getParent()?.goBack()
     // Navigate to deposit flow
     // @ts-ignore TODO: make routes typesafe
     navigate('/deposit/onboarding')
-  }, [navigation, navigate])
+  }, [navigation, navigate, setRedirectToBorrow])
 
   const hasSelectedCollateral = useMemo(() => {
     // Check if any deposit has collateral enabled on-chain
