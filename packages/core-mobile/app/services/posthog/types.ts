@@ -46,7 +46,11 @@ export enum FeatureGates {
   GASLESS_INSTANT = 'gasless-instant',
   NEST_EGG_CAMPAIGN = 'nest-egg-campaign',
   NEST_EGG_NEW_SEEDLESS_ONLY = 'nest-egg-new-seedless-only',
-  FUSION = 'fusion'
+  FUSION = 'fusion',
+  FUSION_MARKR = 'fusion-markr',
+  FUSION_AVALANCHE_EVM = 'fusion-avalanche-evm',
+  FUSION_LOMBARD_BTC_TO_AVA = 'fusion-lombard-btc-to-ava',
+  FUSION_LOMBARD_AVA_TO_BTC = 'fusion-lombard-ava-to-btc'
 }
 
 export enum FeatureVars {
