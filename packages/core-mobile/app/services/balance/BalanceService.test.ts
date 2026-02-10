@@ -394,7 +394,8 @@ describe('BalanceService', () => {
         xpAddressesByAccountId: new Map([
           [testAccount.id, ['avax1test1', 'avax1test2']],
           [testAccount2.id, ['avax2test1', 'avax2test2']]
-        ])
+        ]),
+        xpubByAccountId: new Map()
       })
 
       expect(result[testAccount.id]).toHaveLength(1)
@@ -441,7 +442,8 @@ describe('BalanceService', () => {
         xpAddressesByAccountId: new Map([
           [testAccount.id, ['avax1test1', 'avax1test2']],
           [testAccount2.id, ['avax2test1', 'avax2test2']]
-        ])
+        ]),
+        xpubByAccountId: new Map()
       })
 
       expect(mockLoadModuleByNetwork).toHaveBeenCalledWith(cChainNetwork)
@@ -500,7 +502,8 @@ describe('BalanceService', () => {
         currency: 'usd',
         xpAddressesByAccountId: new Map([
           [testAccount.id, ['avax1test1', 'avax1test2']]
-        ])
+        ]),
+        xpubByAccountId: new Map()
       })
 
       // Should have called VM module only for Ethereum (failed chain)
@@ -546,7 +549,8 @@ describe('BalanceService', () => {
         currency: 'usd',
         xpAddressesByAccountId: new Map([
           [testAccount.id, ['avax1test1', 'avax1test2']]
-        ])
+        ]),
+        xpubByAccountId: new Map()
       })
 
       // The failed balance should be replaced with VM result
@@ -585,7 +589,8 @@ describe('BalanceService', () => {
         onBalanceLoaded,
         xpAddressesByAccountId: new Map([
           [testAccount.id, ['avax1test1', 'avax1test2']]
-        ])
+        ]),
+        xpubByAccountId: new Map()
       })
 
       // onBalanceLoaded should be called for the VM fallback result
@@ -705,7 +710,8 @@ describe('BalanceService', () => {
         xpAddressesByAccountId: new Map([
           [testAccount.id, ['avax1test1', 'avax1test2']],
           [testAccount2.id, ['avax2test1', 'avax2test2']]
-        ])
+        ]),
+        xpubByAccountId: new Map()
       })
 
       expect(result).toEqual({})
