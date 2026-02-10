@@ -384,7 +384,8 @@ export const AutoSizeTextInput = forwardRef<
 const GAP_WIDTH = 4
 
 // Scale factor to keep input text slightly smaller than full available width
-const FIT_SCALE_FACTOR = 0.885
+// On Android, we don't need to scale down the text
+const FIT_SCALE_FACTOR = Platform.OS === 'ios' ? 0.885 : 1
 
 // Text shorter than this resets to initialFontSize without measuring
 const MIN_LENGTH_TO_RESIZE = 4
@@ -406,7 +407,7 @@ const styles = StyleSheet.create({
   },
   measurementContainer: {
     position: 'absolute',
-    opacity: 0
+    opacity: 1
   },
   measurementText: {
     flexShrink: 0,
