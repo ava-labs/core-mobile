@@ -116,7 +116,7 @@ const calculateMinimumForNewAccount = async (
 
   // Use rpcUrl if available, otherwise fallback to chainId for cache key
   const rpcKey =
-    network.rpcUrl || network.rpcUrl.length > 0
+    network.rpcUrl && network.rpcUrl.length > 0
       ? network.rpcUrl
       : `chain:${network.chainId}`
 
@@ -126,8 +126,7 @@ const calculateMinimumForNewAccount = async (
     rpcKey
   )
 
-  // Return undefined if account already exists (even with 0 space)
-  if (accountInfo.exists) {
+  if (accountInfo.space !== 0n) {
     return undefined
   }
 
