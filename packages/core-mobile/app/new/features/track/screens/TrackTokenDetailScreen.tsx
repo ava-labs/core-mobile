@@ -3,12 +3,12 @@ import {
   GroupList,
   GroupListItem,
   Icons,
+  SegmentedControl,
   showAlert,
   SPRING_LINEAR_TRANSITION,
   Text,
   TouchableOpacity,
   useTheme,
-  SegmentedControl,
   View
 } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
@@ -19,7 +19,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
  * See: https://github.com/expo/expo/issues/35383
  * TODO: Adjust import back to expo-router once the bug is resolved.
  */
-import { truncateAddress } from '@avalabs/core-utils-sdk'
+import { noop, truncateAddress } from '@avalabs/core-utils-sdk'
 import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { ShareBarButton } from 'common/components/ShareBarButton'
@@ -27,6 +27,7 @@ import { AVAX_TOKEN_ID } from 'common/consts/swap'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useTokenDetails } from 'common/hooks/useTokenDetails'
 import { copyToClipboard } from 'common/utils/clipboard'
+import { isIOS26 } from 'common/utils/isIOS26'
 import { AVAX_COINGECKO_ID } from 'consts/coingecko'
 import { format } from 'date-fns'
 import { useBuy } from 'features/meld/hooks/useBuy'
@@ -282,8 +283,9 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         ),
         onPress: () =>
           copyToClipboard(tokenInfo.contractAddress, 'Contract address copied'),
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        onLongPress: () => {}
+        onLongPress: () => {
+          noop()
+        }
       })
     }
 
@@ -321,14 +323,13 @@ const TrackTokenDetailScreen = (): JSX.Element => {
           <FavoriteBarButton
             isFavorite={isFavorite}
             onPress={handleFavorite}
-            style={{ paddingRight: 12 }}
+            style={{ paddingHorizontal: isIOS26 ? 0 : 12 }}
           />
         )}
         <ShareBarButton
           onPress={handleShare}
           style={{
-            paddingRight: 12,
-            paddingLeft: 8
+            paddingHorizontal: isIOS26 ? 0 : 12
           }}
         />
       </View>
