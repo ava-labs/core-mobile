@@ -36,11 +36,17 @@ jest.mock('./utils/mapBalanceResponseToLegacy', () => ({
 
 // Mock buildRequestItemsForAccounts to return simple batches
 jest.mock('./utils/buildRequestItemsForAccounts', () => ({
-  buildRequestItemsForAccounts: (
-    networks: any[],
-    _accounts: any[],
-    _xpAddressesByAccountId: Map<string, string[]>
-  ) => {
+  buildRequestItemsForAccounts: ({
+    networks,
+    accounts: _accounts,
+    xpAddressesByAccountId: _xpAddressesByAccountId,
+    xpubByAccountId: _xpubByAccountId
+  }: {
+    networks: any[]
+    accounts: any[]
+    xpAddressesByAccountId: Map<string, string[]>
+    xpubByAccountId: Map<string, string | undefined>
+  }) => {
     // Return one batch with all networks
     return [
       networks.map((n: any) => ({
@@ -388,7 +394,8 @@ describe('BalanceService', () => {
         xpAddressesByAccountId: new Map([
           [testAccount.id, ['avax1test1', 'avax1test2']],
           [testAccount2.id, ['avax2test1', 'avax2test2']]
-        ])
+        ]),
+        xpubByAccountId: new Map()
       })
 
       expect(result[testAccount.id]).toHaveLength(1)
@@ -435,7 +442,8 @@ describe('BalanceService', () => {
         xpAddressesByAccountId: new Map([
           [testAccount.id, ['avax1test1', 'avax1test2']],
           [testAccount2.id, ['avax2test1', 'avax2test2']]
-        ])
+        ]),
+        xpubByAccountId: new Map()
       })
 
       expect(mockLoadModuleByNetwork).toHaveBeenCalledWith(cChainNetwork)
@@ -494,7 +502,8 @@ describe('BalanceService', () => {
         currency: 'usd',
         xpAddressesByAccountId: new Map([
           [testAccount.id, ['avax1test1', 'avax1test2']]
-        ])
+        ]),
+        xpubByAccountId: new Map()
       })
 
       // Should have called VM module only for Ethereum (failed chain)
@@ -540,7 +549,8 @@ describe('BalanceService', () => {
         currency: 'usd',
         xpAddressesByAccountId: new Map([
           [testAccount.id, ['avax1test1', 'avax1test2']]
-        ])
+        ]),
+        xpubByAccountId: new Map()
       })
 
       // The failed balance should be replaced with VM result
@@ -579,7 +589,8 @@ describe('BalanceService', () => {
         onBalanceLoaded,
         xpAddressesByAccountId: new Map([
           [testAccount.id, ['avax1test1', 'avax1test2']]
-        ])
+        ]),
+        xpubByAccountId: new Map()
       })
 
       // onBalanceLoaded should be called for the VM fallback result
@@ -699,7 +710,8 @@ describe('BalanceService', () => {
         xpAddressesByAccountId: new Map([
           [testAccount.id, ['avax1test1', 'avax1test2']],
           [testAccount2.id, ['avax2test1', 'avax2test2']]
-        ])
+        ]),
+        xpubByAccountId: new Map()
       })
 
       expect(result).toEqual({})
