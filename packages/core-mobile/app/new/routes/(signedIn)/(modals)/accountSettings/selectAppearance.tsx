@@ -1,4 +1,10 @@
-import { AnimatedPressable, Text, useTheme, View } from '@avalabs/k2-alpine'
+import {
+  AnimatedPressable,
+  Button,
+  Text,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
 
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { FC } from 'react'
@@ -84,41 +90,19 @@ const AppearanceComponent = ({
         onPress={onPress}>
         <Icon />
       </AnimatedPressable>
-      <AnimatedPressable onPress={onPress}>
-        <TextLabel isSelected={isSelected}>{appearance}</TextLabel>
-      </AnimatedPressable>
-    </View>
-  )
-}
-
-const TextLabel = ({
-  children,
-  isSelected
-}: {
-  children: string
-  isSelected: boolean
-}): JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
-  return (
-    <View
-      sx={{
-        alignItems: 'center',
-        justifyContent: 'center',
-        alignSelf: 'center',
-        paddingVertical: 6,
-        paddingHorizontal: 20,
-        borderRadius: 20,
-        backgroundColor: isSelected ? colors.$textPrimary : 'transparent'
-      }}>
-      <Text
-        variant="buttonSmall"
-        sx={{
-          color: isSelected ? colors.$surfacePrimary : colors.$textPrimary
+      <AnimatedPressable
+        onPress={onPress}
+        style={{
+          alignSelf: 'center',
+          minWidth: 70
         }}>
-        {children}
-      </Text>
+        <Button
+          type={isSelected ? 'primary' : 'tertiary'}
+          size="small"
+          onPress={onPress}>
+          {appearance}
+        </Button>
+      </AnimatedPressable>
     </View>
   )
 }
