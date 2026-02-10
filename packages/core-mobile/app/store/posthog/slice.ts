@@ -525,6 +525,44 @@ export const selectIsFusionEnabled = (state: RootState): boolean => {
   )
 }
 
+export const selectIsFusionMarkrEnabled = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    featureFlags[FeatureGates.FUSION_MARKR] === true &&
+    featureFlags[FeatureGates.EVERYTHING] === true
+  )
+}
+
+export const selectIsFusionAvalancheEvmEnabled = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    featureFlags[FeatureGates.FUSION_AVALANCHE_EVM] === true &&
+    featureFlags[FeatureGates.EVERYTHING] === true
+  )
+}
+
+export const selectIsFusionLombardBtcToAvaEnabled = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    featureFlags[FeatureGates.FUSION_LOMBARD_BTC_TO_AVA] === true &&
+    featureFlags[FeatureGates.EVERYTHING] === true
+  )
+}
+
+export const selectIsFusionLombardAvaToBtcEnabled = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    featureFlags[FeatureGates.FUSION_LOMBARD_AVA_TO_BTC] === true &&
+    featureFlags[FeatureGates.EVERYTHING] === true
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions
