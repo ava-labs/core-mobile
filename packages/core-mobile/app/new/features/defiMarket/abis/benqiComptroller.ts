@@ -82,5 +82,36 @@ export const BENQI_COMPTROLLER_ABI = [
     payable: false,
     stateMutability: 'nonpayable',
     type: 'function'
+  },
+  {
+    constant: true,
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'account',
+        type: 'address'
+      }
+    ],
+    name: 'getAccountLiquidity',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: 'error',
+        type: 'uint256'
+      },
+      {
+        internalType: 'uint256',
+        name: 'liquidity',
+        type: 'uint256'
+      },
+      {
+        internalType: 'uint256',
+        name: 'shortfall',
+        type: 'uint256'
+      }
+    ],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function'
   }
 ] as const

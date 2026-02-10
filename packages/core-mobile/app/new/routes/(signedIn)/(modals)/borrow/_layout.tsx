@@ -15,6 +15,7 @@ export default function BorrowLayout(): JSX.Element {
       <Stack.Screen name="onboarding" options={modalFirstScreenOptions} />
       <Stack.Screen name="selectCollateral" />
       <Stack.Screen name="selectAsset" />
+      <Stack.Screen name="selectAmount" />
     </Stack>
   )
 }
