@@ -42,7 +42,8 @@ export const SelectCollateralScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
   const { selectedProtocol } = useBorrowProtocol()
-  const { deposits, isLoading, refresh, isRefreshing } = useDeposits()
+  const { deposits, isLoading, isFetching, refresh, isRefreshing } =
+    useDeposits()
   const network = useCChainNetwork()
   const provider = useAvalancheEvmProvider()
 
@@ -234,7 +235,8 @@ export const SelectCollateralScreen = (): JSX.Element => {
   )
 
   const renderEmpty = useCallback(() => {
-    if (isLoading) {
+    // Show loading for initial load or background refetch (but not for pull-to-refresh)
+    if (isLoading || (isFetching && !isRefreshing)) {
       return <LoadingState sx={{ flex: 1 }} />
     }
     return (
@@ -245,7 +247,7 @@ export const SelectCollateralScreen = (): JSX.Element => {
         description="Deposit assets first to use them as collateral"
       />
     )
-  }, [isLoading])
+  }, [isLoading, isFetching, isRefreshing])
 
   const renderFooter = useCallback(() => {
     return (

@@ -49,8 +49,9 @@ export const SelectAmountScreen = (): JSX.Element => {
     AnalyticsService.capture('EarnDepositSuccess')
     if (redirectToBorrow) {
       setRedirectToBorrow(false)
+      // Skip onboarding and go directly to select collateral
       // @ts-ignore TODO: make routes typesafe
-      navigate('/borrow/onboarding')
+      navigate('/borrow/selectCollateral')
     }
   }, [redirectToBorrow, setRedirectToBorrow, navigate])
 
