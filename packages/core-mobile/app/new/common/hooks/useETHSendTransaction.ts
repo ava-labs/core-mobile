@@ -11,7 +11,8 @@ import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 type UseETHSendTransactionProps = {
   network: Network | undefined
   provider: JsonRpcBatchInternal | undefined
-  onSuccess?: (requestId?: string) => void
+  onConfirmed?: (requestId?: string) => void // Called when transaction is confirmed (status === 1)
+  onReverted?: (requestId?: string) => void // Called when transaction is reverted (status === 0)
   onError?: (error: unknown, requestId?: string) => void
   onSettled?: (requestId?: string) => void // Called when transaction completes (success or failure)
 }
@@ -33,7 +34,8 @@ type ETHSendTransactionParams = {
 export const useETHSendTransaction = ({
   network,
   provider,
-  onSuccess,
+  onConfirmed,
+  onReverted,
   onError,
   onSettled
 }: UseETHSendTransactionProps): {
@@ -43,15 +45,19 @@ export const useETHSendTransaction = ({
   const activeAccount = useSelector(selectActiveAccount)
   const address = activeAccount?.addressC
 
-  // Track mounted state to prevent callbacks after unmount
-  const isMountedRef = useRef(true)
+  // Store callbacks in refs to ensure they're called even after unmount
+  // This is important because transaction confirmation may arrive after the modal is dismissed
+  const onConfirmedRef = useRef(onConfirmed)
+  const onRevertedRef = useRef(onReverted)
+  const onErrorRef = useRef(onError)
+  const onSettledRef = useRef(onSettled)
 
   useEffect(() => {
-    isMountedRef.current = true
-    return () => {
-      isMountedRef.current = false
-    }
-  }, [])
+    onConfirmedRef.current = onConfirmed
+    onRevertedRef.current = onReverted
+    onErrorRef.current = onError
+    onSettledRef.current = onSettled
+  }, [onConfirmed, onReverted, onError, onSettled])
 
   const sendTransaction = useCallback(
     async ({
@@ -59,8 +65,7 @@ export const useETHSendTransaction = ({
       encodedData,
       value,
       requestId
-    }: // eslint-disable-next-line sonarjs/cognitive-complexity
-    ETHSendTransactionParams) => {
+    }: ETHSendTransactionParams) => {
       if (!provider) {
         throw new Error('No provider found')
       }
@@ -76,46 +81,49 @@ export const useETHSendTransaction = ({
       const accountAddress = address as Address
       const chainId = getEvmCaip2ChainId(network.chainId)
 
-      const txHash = await request({
-        method: RpcMethod.ETH_SEND_TRANSACTION,
-        params: [
-          {
-            from: accountAddress,
-            to: contractAddress,
-            data: encodedData,
-            ...(value && { value })
-          }
-        ],
-        chainId
-      })
+      let txHash: string
+      try {
+        txHash = await request({
+          method: RpcMethod.ETH_SEND_TRANSACTION,
+          params: [
+            {
+              from: accountAddress,
+              to: contractAddress,
+              data: encodedData,
+              ...(value && { value })
+            }
+          ],
+          chainId
+        })
+      } catch (error) {
+        onErrorRef.current?.(error, requestId)
+        onSettledRef.current?.(requestId)
+        throw error // Re-throw to maintain existing flow for callers
+      }
 
       // Wait for transaction confirmation in background (fire-and-forget)
-      // Callbacks are only invoked if the component is still mounted
+      // Use refs to ensure callbacks are called even after component unmount
       provider
         .waitForTransaction(txHash)
         .then(receipt => {
-          if (!isMountedRef.current) return
-
           if (receipt && receipt.status === 1) {
-            onSuccess?.(requestId)
+            onConfirmedRef.current?.(requestId)
           } else if (receipt && receipt.status === 0) {
-            onError?.(new Error('Transaction reverted'), requestId)
+            onRevertedRef.current?.(requestId)
           } else {
-            onError?.(new Error('Transaction failed'), requestId)
+            onErrorRef.current?.(new Error('Transaction failed'), requestId)
           }
         })
         .catch(error => {
-          if (!isMountedRef.current) return
-          onError?.(error, requestId)
+          onErrorRef.current?.(error, requestId)
         })
         .finally(() => {
-          if (!isMountedRef.current) return
-          onSettled?.(requestId)
+          onSettledRef.current?.(requestId)
         })
 
       return txHash
     },
-    [request, network, address, provider, onSuccess, onError, onSettled]
+    [request, network, address, provider]
   )
 
   return {

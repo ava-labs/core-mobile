@@ -7,7 +7,6 @@ import { hasEnoughAllowance } from 'features/swap/utils/evm/ensureAllowance'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { TokenType } from '@avalabs/vm-module-types'
 import { useCChainGasCost } from 'common/hooks/useCChainGasCost'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import { DefiMarket, DepositAsset } from '../../types'
 import { APPROVE_GAS_AMOUNT, MINT_GAS_AMOUNT } from '../../consts'
 import { useBenqiDepositErc20 } from '../../hooks/benqi/useBenqiDepositErc20'
@@ -16,11 +15,17 @@ import { SelectAmountFormBase } from '../SelectAmountFormBase'
 export const BenqiErc20SelectAmountForm = ({
   asset,
   market,
-  onSuccess
+  onSubmitted,
+  onConfirmed,
+  onReverted,
+  onError
 }: {
   asset: DepositAsset
   market: DefiMarket
-  onSuccess: () => void
+  onSubmitted: (params: { txHash: string; amount: TokenUnit }) => void
+  onConfirmed?: () => void
+  onReverted?: () => void
+  onError?: () => void
 }): JSX.Element => {
   const provider = useAvalancheEvmProvider()
   const tokenBalance = useMemo(() => {
@@ -40,7 +45,10 @@ export const BenqiErc20SelectAmountForm = ({
   })
   const { benqiDepositErc20 } = useBenqiDepositErc20({
     asset,
-    market
+    market,
+    onConfirmed,
+    onReverted,
+    onError
   })
 
   const validateAmount = useCallback(
@@ -95,24 +103,6 @@ export const BenqiErc20SelectAmountForm = ({
     ]
   )
 
-  const handleFailure = useCallback(() => {
-    AnalyticsService.capture('EarnDepositFailure')
-  }, [])
-
-  const handleSuccess = useCallback(
-    ({ txHash, amount }: { txHash: string; amount: TokenUnit }) => {
-      AnalyticsService.capture('EarnDepositSubmitted', {
-        token: asset.token.symbol,
-        quantity: amount.toDisplay(),
-        protocol: market.marketName,
-        txHash,
-        address: address ?? ''
-      })
-      onSuccess()
-    },
-    [asset.token.symbol, market.marketName, address, onSuccess]
-  )
-
   return (
     <SelectAmountFormBase
       token={asset.token}
@@ -120,8 +110,7 @@ export const BenqiErc20SelectAmountForm = ({
       maxAmount={tokenBalance}
       validateAmount={validateAmount}
       submit={benqiDepositErc20}
-      onSuccess={handleSuccess}
-      onFailure={handleFailure}
+      onSubmitted={onSubmitted}
     />
   )
 }
