@@ -384,25 +384,31 @@ describe('buildRequestItemsForAccounts', () => {
       .flatMap(batch => batch)
       .filter(item => item.namespace === BlockchainNamespace.AVAX) as any[]
 
-    expect(avaxItems).toHaveLength(1)
-    const [item] = avaxItems
+    // Should create 2 separate items: one for xpub, one for addresses
+    expect(avaxItems).toHaveLength(2)
 
-    // Should have extendedPublicKeyDetails for account with xpub
-    expect(item.extendedPublicKeyDetails).toBeDefined()
-    expect(item.extendedPublicKeyDetails).toHaveLength(1)
-    expect(item.extendedPublicKeyDetails[0].id).toBe('acc-with-xpub')
-    expect(item.extendedPublicKeyDetails[0].extendedPublicKey).toBe(
+    // Find the item with extendedPublicKeyDetails
+    const xpubItem = avaxItems.find(item => item.extendedPublicKeyDetails)
+    expect(xpubItem).toBeDefined()
+    expect(xpubItem.extendedPublicKeyDetails).toHaveLength(1)
+    expect(xpubItem.extendedPublicKeyDetails[0].id).toBe('acc-with-xpub')
+    expect(xpubItem.extendedPublicKeyDetails[0].extendedPublicKey).toBe(
       'xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8'
     )
+    // Should NOT have addressDetails
+    expect(xpubItem.addressDetails).toBeUndefined()
 
-    // Should have addressDetails for account without xpub
-    expect(item.addressDetails).toBeDefined()
-    expect(item.addressDetails).toHaveLength(1)
-    expect(item.addressDetails[0].id).toBe('acc-without-xpub')
-    expect(item.addressDetails[0].addresses).toEqual([
+    // Find the item with addressDetails
+    const addressItem = avaxItems.find(item => item.addressDetails)
+    expect(addressItem).toBeDefined()
+    expect(addressItem.addressDetails).toHaveLength(1)
+    expect(addressItem.addressDetails[0].id).toBe('acc-without-xpub')
+    expect(addressItem.addressDetails[0].addresses).toEqual([
       'avax1addr3',
       'avax1addr4'
     ])
+    // Should NOT have extendedPublicKeyDetails
+    expect(addressItem.extendedPublicKeyDetails).toBeUndefined()
   })
 
   it('uses only extendedPublicKeyDetails when all accounts have xpub', () => {
@@ -439,5 +445,59 @@ describe('buildRequestItemsForAccounts', () => {
     expect(item.extendedPublicKeyDetails).toBeDefined()
     expect(item.extendedPublicKeyDetails).toHaveLength(2)
     expect(item.addressDetails).toBeUndefined()
+  })
+
+  it('never mixes extendedPublicKeyDetails and addressDetails in the same request item', () => {
+    const networks = [createMockNetwork(1, NetworkVMType.AVM)]
+    const accounts = Array.from({ length: 60 }, (_, i) =>
+      createMockAccount({ id: `acc-${i}` })
+    )
+
+    const xpAddressesByAccountId = new Map(
+      accounts.map(acc => [acc.id, [`avax1${acc.id}-1`, `avax1${acc.id}-2`]])
+    )
+
+    // First 30 accounts have xpub, last 30 don't
+    const xpubByAccountId = new Map(
+      accounts.map((acc, i) => [acc.id, i < 30 ? `xpub-${acc.id}` : undefined])
+    )
+
+    const batches = buildRequestItemsForAccounts({
+      networks,
+      accounts,
+      xpAddressesByAccountId,
+      xpubByAccountId
+    })
+
+    const avaxItems = batches
+      .flatMap(batch => batch)
+      .filter(item => item.namespace === BlockchainNamespace.AVAX) as any[]
+
+    // Should have at least 2 items (one for xpub accounts, one for address accounts)
+    expect(avaxItems.length).toBeGreaterThanOrEqual(2)
+
+    // Verify that no item has both extendedPublicKeyDetails and addressDetails
+    avaxItems.forEach(item => {
+      const hasXpub = item.extendedPublicKeyDetails !== undefined
+      const hasAddresses = item.addressDetails !== undefined
+
+      // Each item should have exactly one of these, never both
+      expect(hasXpub || hasAddresses).toBe(true)
+      expect(hasXpub && hasAddresses).toBe(false)
+    })
+
+    // Verify all xpub accounts are in items with only extendedPublicKeyDetails
+    const xpubItems = avaxItems.filter(
+      item => item.extendedPublicKeyDetails !== undefined
+    )
+    xpubItems.forEach(item => {
+      expect(item.addressDetails).toBeUndefined()
+    })
+
+    // Verify all address accounts are in items with only addressDetails
+    const addressItems = avaxItems.filter(item => item.addressDetails !== undefined)
+    addressItems.forEach(item => {
+      expect(item.extendedPublicKeyDetails).toBeUndefined()
+    })
   })
 })
