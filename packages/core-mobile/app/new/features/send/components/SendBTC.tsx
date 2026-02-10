@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { TokenWithBalanceBTC } from '@avalabs/vm-module-types'
 import { Account } from 'store/account'
 import { Network } from '@avalabs/core-chains-sdk'
 import useBTCSend from 'common/hooks/send/useBTCSend'
+import { MINIMUM_SATOSHI_SEND_AMOUNT } from 'consts/amount'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useSendSelectedToken } from '../store'
 import { useSendContext } from '../context/sendContext'
 import { SendToken } from './SendToken'
@@ -46,5 +48,13 @@ export const SendBTC = ({
     }
   }
 
-  return <SendToken onSend={handleSend} />
+  const minimumSendAmount = useMemo((): TokenUnit => {
+    return new TokenUnit(
+      MINIMUM_SATOSHI_SEND_AMOUNT,
+      nativeToken.decimals,
+      nativeToken.symbol
+    )
+  }, [nativeToken.decimals, nativeToken.symbol])
+
+  return <SendToken onSend={handleSend} minimumSendAmount={minimumSendAmount} />
 }
