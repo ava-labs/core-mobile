@@ -142,9 +142,9 @@ export const SelectCollateralScreen = (): JSX.Element => {
     setRedirectToBorrow(true)
     // Dismiss borrow modal and navigate to deposit
     navigation.getParent()?.goBack()
-    // Navigate to deposit flow
+    // Navigate to deposit flow, skip onboarding
     // @ts-ignore TODO: make routes typesafe
-    navigate('/deposit/onboarding')
+    navigate('/deposit/selectAsset')
   }, [navigation, navigate, setRedirectToBorrow])
 
   const hasSelectedCollateral = useMemo(() => {
