@@ -10,6 +10,7 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { getPChainBalance } from 'services/balance/getPChainBalance'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
+import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 import {
   maxBalanceCheckRetries,
   maxTransactionCreationRetries,
@@ -107,20 +108,30 @@ export async function importP({
 const getUnlockedUnstakedAmount = async ({
   network,
   account,
+  walletId,
+  walletType,
   selectedCurrency,
   xpAddresses
 }: {
+  walletId: string
+  walletType: WalletType
   network: Network
   account: Account
   selectedCurrency: string
   xpAddresses: string[]
 }): Promise<bigint | undefined> => {
   try {
+    const xpub = await getXpubXPIfAvailable({
+      walletId,
+      walletType,
+      accountIndex: account.index
+    })
     const pChainBalance = await getPChainBalance({
       account,
       currency: selectedCurrency,
       avaxXPNetwork: network,
-      xpAddresses
+      xpAddresses,
+      xpub
     })
 
     return pChainBalance.balancePerType.unlockedUnstaked
@@ -148,6 +159,8 @@ export async function importPWithBalanceCheck({
   const unlockedUnstakedBeforeImport = await getUnlockedUnstakedAmount({
     network,
     account,
+    walletId,
+    walletType,
     selectedCurrency,
     xpAddresses
   })
@@ -170,6 +183,8 @@ export async function importPWithBalanceCheck({
       getUnlockedUnstakedAmount({
         network,
         account,
+        walletId,
+        walletType,
         selectedCurrency,
         xpAddresses
       }),

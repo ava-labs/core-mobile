@@ -7,18 +7,20 @@ import { DefiMarketLogo } from './DefiMarketLogo'
 export const DefiMarketAssetLogo = ({
   market,
   logoWidth = 62,
-  networkLogoWidth = 20
+  networkLogoWidth = 20,
+  overwrappingWidth = 20
 }: {
   market: DefiMarket
   logoWidth?: number
   networkLogoWidth?: number
+  overwrappingWidth?: number
 }): JSX.Element => {
   return (
     <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
       <DefiAssetLogo asset={market.asset} width={logoWidth} />
       <View
         sx={{
-          marginLeft: -20,
+          marginLeft: -overwrappingWidth,
           borderWidth: 2,
           borderRadius: logoWidth / 2,
           borderColor: '$surfaceSecondary'

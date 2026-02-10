@@ -233,6 +233,31 @@ export type AnalyticsEvents = {
   // App Review
   InAppReviewRequested: undefined
 
+  // CORE EARN (defi deposit/withdraw/claim)
+  EarnOpened: undefined
+  EarnDepositStart: undefined
+  EarnDepositSubmitted: {
+    token: string
+    quantity: string
+    protocol: string
+    txHash: string
+    address: string
+  }
+  EarnDepositSuccess: undefined
+  EarnDepositFailure: undefined
+  EarnWithdrawStart: undefined
+  EarnWithdrawSubmitted: {
+    token: string
+    quantity: string
+    protocol: string
+    txHash: string
+    address: string
+  }
+  EarnWithdrawSuccess: undefined
+  EarnWithdrawFailure: undefined
+  EarnClaimSuccess: undefined
+  EarnClaimFailure: undefined
+
   // NEST EGG CAMPAIGN
   NestEggCampaignModalViewed: { addressC: string }
   NestEggSuccessModalViewed: { addressC: string }

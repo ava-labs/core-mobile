@@ -1,4 +1,10 @@
-import { BlockchainNamespace, Network } from '@avalabs/core-chains-sdk'
+import {
+  AvalancheCaip2ChainId,
+  BitcoinCaip2ChainId,
+  BlockchainNamespace,
+  Network,
+  SolanaCaip2ChainId
+} from '@avalabs/core-chains-sdk'
 import { Account } from 'store/account/types'
 import { getAddressByNetwork } from 'store/account/utils'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
@@ -31,6 +37,16 @@ const MAX_ADDRESSES_PER_ITEM = 50
 const MAX_ADDRESS_DETAILS_PER_ITEM = 50
 
 /**
+ * Extracts the reference part from a CAIP-2 chain ID.
+ * CAIP-2 format: namespace:reference
+ * Example: "bip122:000000000019d6689c085ae165831e93" -> "000000000019d6689c085ae165831e93"
+ */
+const extractCaip2Reference = (caip2Id: string): string => {
+  const parts = caip2Id.split(':')
+  return parts[1] ?? caip2Id // Fallback to original if no colon found
+}
+
+/**
  * Builds one or more `data` arrays for balance requests by grouping all networks
  * across multiple accounts into the correct namespace buckets (EVM, BTC, SVM, AVAX).
  *
@@ -45,15 +61,27 @@ const MAX_ADDRESS_DETAILS_PER_ITEM = 50
  *
  * Empty arrays are never emitted in request items.
  *
+ * @param xpubByAccountId - Map of account IDs to their Avalanche extended public keys (xpub).
+ *                          For AVAX requests:
+ *                          - Accounts WITH xpub: Only extendedPublicKeyDetails is included
+ *                          - Accounts WITHOUT xpub: Only addressDetails is included
+ *                          - These are sent in separate request items (never mixed)
+ *
  * @returns An array of request batches. Each batch is a complete `data` array
  *          that can be sent as a separate request.
  */
-export const buildRequestItemsForAccounts = (
-  networks: Network[],
-  accounts: Account[],
+export const buildRequestItemsForAccounts = ({
+  networks,
+  accounts,
+  xpAddressesByAccountId,
+  xpubByAccountId
+}: {
+  networks: Network[]
+  accounts: Account[]
   xpAddressesByAccountId: Map<string, string[]>
+  xpubByAccountId: Map<string, string | undefined>
   // eslint-disable-next-line sonarjs/cognitive-complexity
-): GetBalancesRequestBody['data'][] => {
+}): GetBalancesRequestBody['data'][] => {
   const evmReferences = new Set<string>()
   const btcReferences = new Set<string>()
   const svmReferences = new Set<string>()
@@ -72,15 +100,15 @@ export const buildRequestItemsForAccounts = (
       case NetworkVMType.BITCOIN:
         btcReferences.add(
           network.isTestnet
-            ? '000000000933ea01ad0ee984209779ba'
-            : '000000000019d6689c085ae165831e93'
+            ? extractCaip2Reference(BitcoinCaip2ChainId.TESTNET)
+            : extractCaip2Reference(BitcoinCaip2ChainId.MAINNET)
         )
         break
       case NetworkVMType.SVM:
         svmReferences.add(
           network.isTestnet
-            ? 'EtWTRABZaYq6iMfeYKouRu166VU2xqa1'
-            : '5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'
+            ? extractCaip2Reference(SolanaCaip2ChainId.DEVNET)
+            : extractCaip2Reference(SolanaCaip2ChainId.MAINNET)
         )
         break
       case NetworkVMType.AVM:
@@ -88,11 +116,11 @@ export const buildRequestItemsForAccounts = (
         const ref =
           network.vmName === NetworkVMType.PVM
             ? network.isTestnet
-              ? 'Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG'
-              : 'Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo'
+              ? extractCaip2Reference(AvalancheCaip2ChainId.P_TESTNET)
+              : extractCaip2Reference(AvalancheCaip2ChainId.P)
             : network.isTestnet
-            ? '8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl'
-            : 'imji8papUf2EhV3le337w1vgFauqkJg-'
+            ? extractCaip2Reference(AvalancheCaip2ChainId.X_TESTNET)
+            : extractCaip2Reference(AvalancheCaip2ChainId.X)
         avaxReferences.add(ref)
         break
       }
@@ -124,20 +152,35 @@ export const buildRequestItemsForAccounts = (
     }
   }
 
-  // --- Build AVAX addressDetails ----------------------------------------------
+  // --- Build AVAX addressDetails and extendedPublicKeyDetails ----------------
   const avaxAddressDetails: AvalancheXpGetBalancesRequestItem['addressDetails'] =
     []
+  const avaxExtendedPublicKeyDetails: AvalancheXpGetBalancesRequestItem['extendedPublicKeyDetails'] =
+    []
+
   if (avaxReferences.size > 0) {
     for (const account of accounts) {
-      const xpAddresses = xpAddressesByAccountId?.get(account.id)
-      if (!xpAddresses || xpAddresses.length === 0) continue
+      const xpub = xpubByAccountId.get(account.id)
 
-      const addressChunks = chunkArray(xpAddresses, MAX_ADDRESSES_PER_ITEM)
-      for (const chunk of addressChunks) {
-        avaxAddressDetails.push({
+      // If account has xpub, use extendedPublicKeyDetails (more efficient)
+      if (xpub) {
+        avaxExtendedPublicKeyDetails.push({
           id: account.id,
-          addresses: chunk
+          extendedPublicKey: xpub
         })
+      } else {
+        // Otherwise, use addressDetails with individual addresses
+        const xpAddresses = xpAddressesByAccountId?.get(account.id)
+
+        if (!xpAddresses || xpAddresses.length === 0) continue
+
+        const addressChunks = chunkArray(xpAddresses, MAX_ADDRESSES_PER_ITEM)
+        for (const chunk of addressChunks) {
+          avaxAddressDetails.push({
+            id: account.id,
+            addresses: chunk
+          })
+        }
       }
     }
   }
@@ -200,19 +243,44 @@ export const buildRequestItemsForAccounts = (
   const avaxRefs = Array.from(
     avaxReferences
   ) as AvalancheXpGetBalancesRequestItem['references']
-  if (avaxRefs.length > 0 && avaxAddressDetails.length > 0) {
-    const detailChunks = chunkArray(
-      avaxAddressDetails,
-      MAX_ADDRESS_DETAILS_PER_ITEM
-    )
-    for (const detailChunk of detailChunks) {
-      if (detailChunk.length === 0) continue
-      avaxItems.push({
-        namespace: BlockchainNamespace.AVAX,
-        references: avaxRefs,
-        addressDetails: detailChunk,
-        filterOutDustUtxos: false
-      })
+
+  if (avaxRefs.length > 0) {
+    // Create separate request items for extendedPublicKeyDetails (xpub-based accounts)
+    if (avaxExtendedPublicKeyDetails.length > 0) {
+      const xpubDetailChunks = chunkArray(
+        avaxExtendedPublicKeyDetails,
+        MAX_ADDRESS_DETAILS_PER_ITEM
+      )
+
+      for (const xpubChunk of xpubDetailChunks) {
+        if (xpubChunk.length === 0) continue
+
+        avaxItems.push({
+          namespace: BlockchainNamespace.AVAX,
+          references: avaxRefs,
+          filterOutDustUtxos: false,
+          extendedPublicKeyDetails: xpubChunk
+        })
+      }
+    }
+
+    // Create separate request items for addressDetails (address-based accounts)
+    if (avaxAddressDetails.length > 0) {
+      const addressDetailChunks = chunkArray(
+        avaxAddressDetails,
+        MAX_ADDRESS_DETAILS_PER_ITEM
+      )
+
+      for (const addressChunk of addressDetailChunks) {
+        if (addressChunk.length === 0) continue
+
+        avaxItems.push({
+          namespace: BlockchainNamespace.AVAX,
+          references: avaxRefs,
+          filterOutDustUtxos: false,
+          addressDetails: addressChunk
+        })
+      }
     }
   }
 
