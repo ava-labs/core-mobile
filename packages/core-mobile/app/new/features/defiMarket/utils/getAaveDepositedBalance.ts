@@ -11,9 +11,8 @@ import {
 } from '../consts'
 import { formatAmount } from './formatInterest'
 
-const DEFAULT_BALANCE = {
+const DEFAULT_BALANCE: DefiAssetBalance = {
   balance: 0n,
-  formatted: BIG_ZERO,
   balanceValue: {
     value: BIG_ZERO,
     valueString: '0',

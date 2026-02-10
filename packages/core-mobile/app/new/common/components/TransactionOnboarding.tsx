@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Button,
   GroupList,
   Text,
@@ -20,7 +21,8 @@ export const TransactionOnboarding = ({
   viewOnceKey,
   onPressNext,
   footerAccessory,
-  scrollEnabled
+  scrollEnabled,
+  isLoading
 }: {
   icon: {
     component: React.FC<SvgProps>
@@ -29,20 +31,23 @@ export const TransactionOnboarding = ({
   title: string
   subtitle: string
   buttonTitle?: string
-  viewOnceKey: ViewOnceKey
+  viewOnceKey?: ViewOnceKey
   onPressNext: () => void
   footerAccessory?: JSX.Element
   scrollEnabled?: boolean
+  isLoading?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
   const dispatch = useDispatch()
   const [hide, setHide] = useState(true)
 
   const handlePressNext = useCallback(() => {
-    if (hide) {
-      dispatch(setViewOnce(viewOnceKey))
-    } else {
-      dispatch(resetViewOnce(viewOnceKey))
+    if (viewOnceKey) {
+      if (hide) {
+        dispatch(setViewOnce(viewOnceKey))
+      } else {
+        dispatch(resetViewOnce(viewOnceKey))
+      }
     }
     onPressNext()
   }, [dispatch, hide, onPressNext, viewOnceKey])
@@ -60,23 +65,33 @@ export const TransactionOnboarding = ({
     return (
       <View sx={{ gap: 20 }}>
         {footerAccessory}
-        <GroupList
-          data={groupListData}
-          titleSx={{ fontFamily: 'Inter-Regular', fontSize: 15 }}
-          textContainerSx={{
-            paddingVertical: 4
-          }}
-        />
+        {viewOnceKey && (
+          <GroupList
+            data={groupListData}
+            titleSx={{ fontFamily: 'Inter-Regular', fontSize: 15 }}
+            textContainerSx={{
+              paddingVertical: 4
+            }}
+          />
+        )}
         <Button
           type="primary"
           size="large"
+          disabled={isLoading}
           onPress={handlePressNext}
-          testID="transaction_onboarding__next">
-          {buttonTitle ?? "Let's go!"}
+          testID={isLoading ? undefined : 'transaction_onboarding__next'}>
+          {isLoading ? <ActivityIndicator /> : buttonTitle ?? "Let's go!"}
         </Button>
       </View>
     )
-  }, [groupListData, handlePressNext, buttonTitle, footerAccessory])
+  }, [
+    groupListData,
+    handlePressNext,
+    buttonTitle,
+    footerAccessory,
+    viewOnceKey,
+    isLoading
+  ])
 
   return (
     <ScrollScreen
