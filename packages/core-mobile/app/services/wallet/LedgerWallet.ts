@@ -27,7 +27,6 @@ import { networks } from 'bitcoinjs-lib'
 import { utils as avalancheUtils, networkIDs } from '@avalabs/avalanchejs'
 import bs58 from 'bs58'
 import { TransactionRequest } from 'ethers'
-import { now } from 'moment'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import LedgerService from 'services/ledger/LedgerService'
 import {
@@ -96,8 +95,6 @@ export class LedgerWallet implements Wallet {
     accountIndex: number
   }): Promise<LedgerSigner> {
     if (!this.evmSigner || accountIndex !== undefined) {
-      Logger.info('evmLedgerSigner', now())
-
       Logger.info('getEvmSigner', {
         provider,
         transport: this.getTransport(),
@@ -120,7 +117,6 @@ export class LedgerWallet implements Wallet {
         )
 
         Logger.info('LedgerSigner created successfully')
-        Logger.info('evmLedgerSigner end', now())
       } catch (error) {
         Logger.error('Failed to create LedgerSigner:', error)
         throw new Error(`Failed to create LedgerSigner: ${error}`)
@@ -133,8 +129,6 @@ export class LedgerWallet implements Wallet {
     accountIndex: number
   ): Promise<Avalanche.SimpleLedgerSigner | Avalanche.LedgerSigner> {
     if (!this.avalancheSigner) {
-      Logger.info('avalancheLedgerSigner', now())
-
       const transport = await this.getTransport()
 
       if (this.derivationPathSpec === LedgerDerivationPathType.BIP44) {
@@ -185,8 +179,6 @@ export class LedgerWallet implements Wallet {
           transport as any // TransportBLE is runtime compatible with wallets SDK expectations
         )
       }
-
-      Logger.info('avalancheLedgerSigner end', now())
     }
     return this.avalancheSigner
   }
@@ -195,8 +187,6 @@ export class LedgerWallet implements Wallet {
     isTestnet = false
   ): Promise<BitcoinLedgerWallet> {
     if (!this.bitcoinWallet) {
-      Logger.info('bitcoinLedgerWallet', now())
-
       // Get the proper Bitcoin provider using provided network context
       const bitcoinProvider = await getBitcoinProvider(isTestnet)
 
@@ -244,8 +234,6 @@ export class LedgerWallet implements Wallet {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         walletPolicyDetails as any // Use actual wallet policy details or null if not available
       )
-
-      Logger.info('bitcoinLedgerWallet end', now())
     }
     return this.bitcoinWallet
   }
