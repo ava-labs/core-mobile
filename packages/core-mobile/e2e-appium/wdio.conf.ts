@@ -9,25 +9,6 @@ import {
 
 let runId: number | undefined
 const sectionCache: Record<string, number> = {}
-<<<<<<< Updated upstream
-const isBitrise = process.env.CI === 'true'
-const goHeadless = isBitrise ? true : false
-const goRetry = isBitrise ? 1 : 0
-const iosLocalPath = process.env.E2E_LOCAL_PATH
-  ? '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
-  : './ios/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
-const androidLocalPath = process.env.E2E_LOCAL_PATH
-  ? '/Users/eunji.song/Downloads/app-internal-e2e-bitrise-signed.apk'
-  : './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
-const iosPath = isBitrise
-  ? process.env.BITRISE_APP_DIR_PATH
-  : path.resolve(iosLocalPath)
-const androidPath = isBitrise
-  ? process.env.BITRISE_APK_PATH
-  : path.resolve(androidLocalPath)
-const platformToRun = process.env.PLATFORM
-<<<<<<< HEAD
-=======
 
 // AWS Device Farm provides these environment variables
 const isDeviceFarm = !!process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL
@@ -40,38 +21,32 @@ const deviceName = process.env.DEVICEFARM_DEVICE_NAME || 'device'
 const platformVersion = process.env.DEVICEFARM_DEVICE_OS_VERSION || '14.0'
 const deviceUdid = process.env.DEVICEFARM_DEVICE_UDID || ''
 const chromedriverExecutableDir = process.env.DEVICEFARM_CHROMEDRIVER_EXECUTABLE_DIR || ''
->>>>>>> Stashed changes
-=======
-const isSmoke = process.env.IS_SMOKE === 'true'
-const isPerformance = process.env.IS_PERFORMANCE === 'true'
-
-// Determine which specs to run based on test type
-const getSpecs = () => {
-  if (isPerformance) {
-    return ['./specs/performance/**/*.ts']
-  }
-  return ['./specs/**/*.ts']
-}
->>>>>>> main
 
 const allCaps = [
   {
     platformName: 'Android',
-<<<<<<< HEAD
     'appium:deviceName': deviceName,
     'appium:platformVersion': platformVersion,
-=======
-    'appium:deviceName': 'emulator-5554',
-    'appium:platformVersion': '15.0',
->>>>>>> main
     'appium:automationName': 'UiAutomator2',
     'appium:app': appPath,
     // Include Device Farm specific capabilities if available
     ...(deviceUdid ? { 'appium:udid': deviceUdid } : {}),
-    ...(chromedriverExecutableDir ? { 'appium:chromedriverExecutableDir': chromedriverExecutableDir } : {}),
+    ...(chromedriverExecutableDir
+      ? { 'appium:chromedriverExecutableDir': chromedriverExecutableDir }
+      : {}),
     'appium:appWaitActivity': '*',
+    'appium:autoGrantPermissions': true,
+    'appium:newCommandTimeout': 120,
+    'appium:adbExecTimeout': 60000,
+    'appium:uiautomator2ServerLaunchTimeout': 60000,
+    'appium:uiautomator2ServerInstallTimeout': 60000,
+    'appium:noSign': true,
     'appium:disableWindowAnimation': true,
-    'appium:autoGrantPermissions': true
+    'appium:fullReset': true,
+    'appium:enforceAppInstall': true,
+    'appium:uiautomator2ServerReadTimeout': 60000,
+    'appium:skipDeviceInitialization': false,
+    'appium:skipLogcatCapture': false
   },
   {
     platformName: 'iOS',
@@ -100,7 +75,7 @@ const caps = platformToRun
 export const config: WebdriverIO.Config = {
   runner: 'local',
   tsConfigPath: './tsconfig.json',
-  specs: getSpecs(),
+  specs: ['./specs/**/*.ts'],
   exclude: [
     // 'path/to/excluded/files'
     './specs/login.e2e.ts'
@@ -126,7 +101,7 @@ export const config: WebdriverIO.Config = {
   logLevel: 'info', // More verbose for Device Farm debugging
   bail: 0,
   waitforTimeout: 20000,
-  specFileRetries: goRetry,
+  specFileRetries: 0,
   connectionRetryTimeout: 120000,
   connectionRetryCount: 2,
   framework: 'mocha',
@@ -140,12 +115,17 @@ export const config: WebdriverIO.Config = {
   // hoook before: make or get testRun before test
   before: async () => {
     const platform = driver.isAndroid ? 'Android' : 'iOS'
-<<<<<<< HEAD
     runId = await getTestRun(platform)
-=======
-    runId = await getTestRun(platform, isSmoke, isPerformance)
->>>>>>> main
-    console.log(`------------Starting test run------------`)
+    console.log(`------------Starting test run on AWS Device Farm------------`)
+    console.log(`Platform: ${platform}`)
+    console.log(`Device: ${deviceName}`)
+    console.log(`OS Version: ${platformVersion}`)
+    if (deviceUdid) {
+      console.log(`Device UDID: ${deviceUdid}`)
+    }
+    if (chromedriverExecutableDir) {
+      console.log(`ChromeDriver Dir: ${chromedriverExecutableDir}`)
+    }
   },
 
   // hoook beforeTest: make or get testSection before test

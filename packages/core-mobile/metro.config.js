@@ -20,7 +20,7 @@ const baseConfig = {
     getTransformOptions: async () => ({
       transform: {
         experimentalImportSupport: true,
-        inlineRequires: true
+        inlineRequires: false  // Temporarily disabled due to Metro bug with destructured parameters
       }
     }),
     babelTransformerPath: require.resolve('react-native-svg-transformer')

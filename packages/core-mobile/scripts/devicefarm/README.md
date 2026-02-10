@@ -22,6 +22,47 @@ This directory contains scripts and configuration for running Appium tests on AW
 4. **App Build** ready
    - Android: `.apk` file
    - iOS: `.ipa` file
+   - You can either build locally or download from Bitrise (see below)
+
+## Getting the APK
+
+### Option 1: Download from Bitrise (Recommended)
+
+Download the latest internalE2e APK from Bitrise:
+
+```bash
+cd packages/core-mobile
+
+# Set your Bitrise credentials
+export BITRISE_APP_SLUG="your-app-slug"  # Get from Bitrise dashboard URL
+export BITRISE_ARTIFACTS_TOKEN="your-artifacts-token"  # Get from Bitrise Settings > API
+
+# Download the latest build (index 0)
+node scripts/devicefarm/download-bitrise-apk.js
+
+# Or download a specific build (e.g., second latest = index 1)
+node scripts/devicefarm/download-bitrise-apk.js 1
+
+# Or specify a custom output path
+node scripts/devicefarm/download-bitrise-apk.js 0 ./my-custom-path.apk
+```
+
+**Getting your Bitrise credentials:**
+1. **App Slug**: Found in your Bitrise dashboard URL: `https://app.bitrise.io/app/<APP_SLUG>`
+2. **Artifacts Token**: Bitrise Dashboard > Settings > API > Artifacts Access Token
+
+The script will download the APK to: `./android/app/build/outputs/apk/internal/e2e/app-internal-e2e.apk`
+
+### Option 2: Build Locally
+
+Build the APK locally:
+
+```bash
+cd packages/core-mobile/android
+./gradlew assembleInternalE2e
+```
+
+The APK will be at: `app/build/outputs/apk/internal/e2e/app-internal-e2e.apk`
 
 ## Setup
 
@@ -47,14 +88,38 @@ This directory contains scripts and configuration for running Appium tests on AW
 
 ## Running Tests
 
-### Option 1: Using the script (recommended)
+### Option 1: Download from Bitrise and Run (Recommended for CI/CD)
+
+Download the APK from Bitrise and automatically trigger Device Farm tests:
+
+```bash
+cd packages/core-mobile
+
+# Set required environment variables
+export BITRISE_APP_SLUG="your-app-slug"
+export BITRISE_ARTIFACTS_TOKEN="your-artifacts-token"
+export DEVICEFARM_PROJECT_ARN="arn:aws:devicefarm:us-west-2:..."
+export DEVICEFARM_DEVICE_POOL_ARN="arn:aws:devicefarm:us-west-2:..."
+export AWS_ACCESS_KEY_ID="your-access-key"
+export AWS_SECRET_ACCESS_KEY="your-secret-key"
+
+# Run the script (downloads APK and triggers tests)
+./scripts/devicefarm/bitrise-to-devicefarm.sh
+```
+
+**Optional environment variables:**
+- `BITRISE_BUILD_INDEX` - Which build to download (0 = latest). Default: 0
+- `WAIT_FOR_COMPLETION` - Wait for test completion (true/false). Default: false
+- `AWS_REGION` - AWS region. Default: us-west-2
+
+### Option 2: Using the script with local APK
 
 ```bash
 cd packages/core-mobile
 ./scripts/devicefarm/run-devicefarm.sh
 ```
 
-### Option 2: Manual AWS CLI commands
+### Option 3: Manual AWS CLI commands
 
 1. **Upload the app:**
    ```bash
@@ -118,22 +183,37 @@ Device Farm provides these environment variables automatically:
 
 ## CI/CD Integration
 
-You can integrate this into your CI/CD pipeline:
+### Bitrise Workflow Example
+
+You can integrate this into your Bitrise workflow. The `bitrise-to-devicefarm.sh` script handles everything:
 
 ```yaml
-# Example Bitrise step
+# Example Bitrise workflow step
 - script-runner@0:
-    title: Package Device Farm Tests
+    title: Download APK and Run Device Farm Tests
     inputs:
-      - file_path: scripts/devicefarm/package-tests.sh
+      - file_path: packages/core-mobile/scripts/devicefarm/bitrise-to-devicefarm.sh
+    envs:
+      - BITRISE_APP_SLUG: $BITRISE_APP_SLUG  # Automatically set by Bitrise
+      - BITRISE_ARTIFACTS_TOKEN: $BITRISE_ARTIFACTS_TOKEN  # Set in Bitrise secrets
+      - DEVICEFARM_PROJECT_ARN: $DEVICEFARM_PROJECT_ARN
+      - DEVICEFARM_DEVICE_POOL_ARN: $DEVICEFARM_DEVICE_POOL_ARN
+      - AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+      - WAIT_FOR_COMPLETION: "false"  # Set to "true" to wait for completion
+```
+
+**Or use the existing APK from the current build:**
+
+```yaml
 - script-runner@0:
     title: Run Device Farm Tests
     inputs:
-      - file_path: scripts/devicefarm/run-devicefarm.sh
+      - file_path: packages/core-mobile/scripts/devicefarm/run-devicefarm.sh
     envs:
       - DEVICEFARM_PROJECT_ARN: $DEVICEFARM_PROJECT_ARN
       - DEVICEFARM_DEVICE_POOL_ARN: $DEVICEFARM_DEVICE_POOL_ARN
-      - DEVICEFARM_APP_PATH: $BITRISE_APK_PATH
+      - DEVICEFARM_APP_PATH: $BITRISE_APK_PATH  # Use APK from current build
       - PLATFORM: android
 ```
 

@@ -5,8 +5,8 @@ set -euo pipefail
 # Requires AWS CLI and proper credentials configured
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
-CORE_MOBILE_DIR="$PROJECT_ROOT/packages/core-mobile"
+# Calculate CORE_MOBILE_DIR directly: scripts/devicefarm -> packages/core-mobile
+CORE_MOBILE_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 ZIP_FILE="$CORE_MOBILE_DIR/e2e-appium/appium-tests-devicefarm.zip"
 
 # Configuration - update these values
@@ -68,6 +68,7 @@ echo "Test Package: $ZIP_FILE"
 # Upload app
 echo -e "${GREEN}📤 Uploading app...${NC}"
 APP_UPLOAD_OUTPUT=$(aws devicefarm create-upload \
+  --region us-west-2 \
   --project-arn "$PROJECT_ARN" \
   --name "$(basename "$APP_PATH")" \
   --type "$([ "$PLATFORM" = "android" ] && echo "ANDROID_APP" || echo "IOS_APP")" \
@@ -84,7 +85,7 @@ curl -T "$APP_PATH" "$APP_UPLOAD_URL"
 # Wait for app upload to complete
 echo -e "${GREEN}⏳ Waiting for app upload to complete...${NC}"
 while true; do
-  STATUS=$(aws devicefarm get-upload --arn "$APP_UPLOAD_ARN" --output json | jq -r '.upload.status')
+  STATUS=$(aws devicefarm get-upload --region us-west-2 --arn "$APP_UPLOAD_ARN" --output json | jq -r '.upload.status')
   echo "App upload status: $STATUS"
   if [ "$STATUS" = "SUCCEEDED" ]; then
     break
@@ -98,6 +99,7 @@ done
 # Upload test package
 echo -e "${GREEN}📤 Uploading test package...${NC}"
 TEST_UPLOAD_OUTPUT=$(aws devicefarm create-upload \
+  --region us-west-2 \
   --project-arn "$PROJECT_ARN" \
   --name "appium-tests.zip" \
   --type "APPIUM_NODE_TEST_PACKAGE" \
@@ -114,7 +116,7 @@ curl -T "$ZIP_FILE" "$TEST_UPLOAD_URL"
 # Wait for test upload to complete
 echo -e "${GREEN}⏳ Waiting for test package upload to complete...${NC}"
 while true; do
-  STATUS=$(aws devicefarm get-upload --arn "$TEST_UPLOAD_ARN" --output json | jq -r '.upload.status')
+  STATUS=$(aws devicefarm get-upload --region us-west-2 --arn "$TEST_UPLOAD_ARN" --output json | jq -r '.upload.status')
   echo "Test upload status: $STATUS"
   if [ "$STATUS" = "SUCCEEDED" ]; then
     break
@@ -134,6 +136,7 @@ if [ ! -f "$TEST_SPEC_PATH" ]; then
 fi
 
 TEST_SPEC_UPLOAD_OUTPUT=$(aws devicefarm create-upload \
+  --region us-west-2 \
   --project-arn "$PROJECT_ARN" \
   --name "aws_test_spec.yaml" \
   --type "APPIUM_NODE_TEST_SPEC" \
@@ -150,7 +153,7 @@ curl -T "$TEST_SPEC_PATH" "$TEST_SPEC_UPLOAD_URL"
 # Wait for test spec upload to complete
 echo -e "${GREEN}⏳ Waiting for test spec upload to complete...${NC}"
 while true; do
-  STATUS=$(aws devicefarm get-upload --arn "$TEST_SPEC_UPLOAD_ARN" --output json | jq -r '.upload.status')
+  STATUS=$(aws devicefarm get-upload --region us-west-2 --arn "$TEST_SPEC_UPLOAD_ARN" --output json | jq -r '.upload.status')
   echo "Test spec upload status: $STATUS"
   if [ "$STATUS" = "SUCCEEDED" ]; then
     break
@@ -176,6 +179,7 @@ cat > "$TEST_SPEC_FILE" <<EOF
 EOF
 
 RUN_OUTPUT=$(aws devicefarm schedule-run \
+  --region us-west-2 \
   --project-arn "$PROJECT_ARN" \
   --app-arn "$APP_UPLOAD_ARN" \
   --device-pool-arn "$DEVICE_POOL_ARN" \
@@ -196,7 +200,7 @@ echo "View run at: $RUN_URL"
 if [ "${WAIT_FOR_COMPLETION:-false}" = "true" ]; then
   echo -e "${GREEN}⏳ Waiting for test run to complete...${NC}"
   while true; do
-    STATUS=$(aws devicefarm get-run --arn "$RUN_ARN" --output json | jq -r '.run.status')
+    STATUS=$(aws devicefarm get-run --region us-west-2 --arn "$RUN_ARN" --output json | jq -r '.run.status')
     echo "Test run status: $STATUS"
     if [ "$STATUS" = "COMPLETED" ] || [ "$STATUS" = "ERRORED" ] || [ "$STATUS" = "STOPPED" ]; then
       break
@@ -205,7 +209,7 @@ if [ "${WAIT_FOR_COMPLETION:-false}" = "true" ]; then
   done
   
   # Get results
-  RESULT=$(aws devicefarm get-run --arn "$RUN_ARN" --output json)
+  RESULT=$(aws devicefarm get-run --region us-west-2 --arn "$RUN_ARN" --output json)
   RESULT_STATUS=$(echo "$RESULT" | jq -r '.run.result')
   echo -e "${GREEN}📊 Test run completed with result: $RESULT_STATUS${NC}"
 fi
