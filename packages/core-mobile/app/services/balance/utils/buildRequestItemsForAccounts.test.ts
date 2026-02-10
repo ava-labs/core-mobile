@@ -495,7 +495,9 @@ describe('buildRequestItemsForAccounts', () => {
     })
 
     // Verify all address accounts are in items with only addressDetails
-    const addressItems = avaxItems.filter(item => item.addressDetails !== undefined)
+    const addressItems = avaxItems.filter(
+      item => item.addressDetails !== undefined
+    )
     addressItems.forEach(item => {
       expect(item.extendedPublicKeyDetails).toBeUndefined()
     })

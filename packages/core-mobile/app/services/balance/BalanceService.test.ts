@@ -36,11 +36,17 @@ jest.mock('./utils/mapBalanceResponseToLegacy', () => ({
 
 // Mock buildRequestItemsForAccounts to return simple batches
 jest.mock('./utils/buildRequestItemsForAccounts', () => ({
-  buildRequestItemsForAccounts: (
-    networks: any[],
-    _accounts: any[],
-    _xpAddressesByAccountId: Map<string, string[]>
-  ) => {
+  buildRequestItemsForAccounts: ({
+    networks,
+    accounts: _accounts,
+    xpAddressesByAccountId: _xpAddressesByAccountId,
+    xpubByAccountId: _xpubByAccountId
+  }: {
+    networks: any[]
+    accounts: any[]
+    xpAddressesByAccountId: Map<string, string[]>
+    xpubByAccountId: Map<string, string | undefined>
+  }) => {
     // Return one batch with all networks
     return [
       networks.map((n: any) => ({
