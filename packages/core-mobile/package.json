@@ -19,6 +19,8 @@
     "appium:ios": "PLATFORM=ios wdio run ./e2e-appium/wdio.conf.ts",
     "appium:android": "PLATFORM=android wdio run ./e2e-appium/wdio.conf.ts",
     "appium": "wdio run ./e2e-appium/wdio.conf.ts",
+    "devicefarm:package": "./scripts/devicefarm/package-tests.sh",
+    "devicefarm:run": "./scripts/devicefarm/run-devicefarm.sh",
     "appium:smoke": "IS_SMOKE=true wdio run ./e2e-appium/wdio.conf.ts --mochaOpts.grep='\\[(s|S)moke\\]'",
     "appium:smokeIos": "IS_SMOKE=true PLATFORM=ios wdio run ./e2e-appium/wdio.conf.ts --mochaOpts.grep='\\[(s|S)moke\\]'",
     "appium:smokeAndroid": "IS_SMOKE=true PLATFORM=android wdio run ./e2e-appium/wdio.conf.ts --mochaOpts.grep='\\[(s|S)moke\\]'"
@@ -257,6 +259,7 @@
   },
   "devDependencies": {
     "@avalabs/tsconfig-mobile": "workspace:*",
+    "@aws-sdk/client-device-farm": "^3.986.0",
     "@babel/core": "7.28.0",
     "@babel/plugin-proposal-nullish-coalescing-operator": "7.18.6",
     "@babel/plugin-syntax-object-rest-spread": "7.8.3",

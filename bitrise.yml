@@ -644,6 +644,49 @@ workflows:
         inputs:
         - variables: |-
             IS_REGRESSION_RUN=$IS_REGRESSION_RUN
+  android-internal-e2e-aws-regression-run:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    - _build-android-internal-for-testing
+    after_run:
+    - _send-test-result-notification-slack
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: internalE2e
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - IS_REGRESSION_RUN: "true"
+      opts:
+        is_expand: false
+    - IS_INTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+    - IS_DEVICEFARM_RUN: "true"
+      opts:
+        is_expand: false
+    steps:
+    - script-runner@0:
+        title: Run Android Appium Tests on AWS Device Farm
+        no_output_timeout: 1800
+        inputs:
+        - file_path: packages/core-mobile/scripts/bitrise/devicefarm/androidDeviceFarmRegression.sh
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            IS_REGRESSION_RUN=$IS_REGRESSION_RUN
+            IS_DEVICEFARM_RUN=$IS_DEVICEFARM_RUN
   android-e2e-run-pixel9:
     before_run:
     - _install-and-set-env

@@ -1,0 +1,145 @@
+version: 0.1
+
+# This flag enables your test to run using Device Farm's Amazon Linux 2 test host. For more information,
+# please see https://docs.aws.amazon.com/devicefarm/latest/developerguide/amazon-linux-2.html
+android_test_host: amazon_linux_2
+
+# Phases represent collections of commands that are executed during your test run on the test host.
+phases:
+
+  # The install phase contains commands for installing dependencies to run your tests.
+  # For your convenience, certain dependencies are preinstalled on the test host. To learn about which
+  # software is included with the host, and how to install additional software, please see:
+  # https://docs.aws.amazon.com/devicefarm/latest/developerguide/amazon-linux-2-supported-software.html
+
+  # Many software libraries you may need are available from the test host using the devicefarm-cli tool.
+  # To learn more about what software is available from it and how to use it, please see:
+  # https://docs.aws.amazon.com/devicefarm/latest/developerguide/amazon-linux-2-devicefarm-cli.html
+  install:
+    commands:
+      # The Appium server is written using Node.js. In order to run your desired version of Appium,
+      # you first need to set up a Node.js environment that is compatible with your version of Appium.
+      # Our tests require Node.js 20.19.0 or higher as specified in package.json
+      - devicefarm-cli use node 20
+      - node --version
+
+      # Use the devicefarm-cli to select a preinstalled major version of Appium.
+      - devicefarm-cli use appium 2
+      - appium --version
+
+      # The Device Farm service automatically updates the preinstalled Appium versions over time to
+      # incorporate the latest minor and patch versions for each major version. If you wish to
+      # select a specific version of Appium, you can use NPM to install it.
+      # - npm install -g appium@2.1.3
+
+      # For Appium version 2, Device Farm automatically updates the preinstalled UIAutomator2 driver
+      # over time to incorporate the latest minor and patch versions for its major version 2. If you
+      # want to install a specific version of the driver, you can use the Appium extension CLI to
+      # uninstall the existing UIAutomator2 driver and install your desired version:
+      # - appium driver uninstall uiautomator2
+      # - appium driver install uiautomator2@2.34.0
+
+      # We recommend setting the Appium server's base path explicitly for accepting commands.
+      - export APPIUM_BASE_PATH=/wd/hub
+
+      # Install the NodeJS dependencies from the extracted test package.
+      # The test package is a zip file that gets extracted to $DEVICEFARM_TEST_PACKAGE_PATH
+      - cd $DEVICEFARM_TEST_PACKAGE_PATH
+      # If the zip contains an e2e-appium folder, navigate into it
+      - |
+        if [ -d "e2e-appium" ]; then
+          cd e2e-appium
+        fi
+      # Install dependencies from package.json
+      - npm install
+      # Verify that dependencies were installed correctly
+      - npm list --depth=0 || true
+
+  # The pre-test phase contains commands for setting up your test environment.
+  pre_test:
+    commands:
+      # Appium downloads Chromedriver using a feature that is considered insecure for multitenant
+      # environments. This is not a problem for Device Farm because each test host is allocated
+      # exclusively for one customer, then terminated entirely. For more information, please see
+      # https://github.com/appium/appium/blob/master/packages/appium/docs/en/guides/security.md
+
+      # We recommend starting the Appium server process in the background using the command below.
+      # The Appium server log will be written to the $DEVICEFARM_LOG_DIR directory.
+      # The environment variables passed as capabilities to the server will be automatically assigned
+      # during your test run based on your test's specific device.
+      # For more information about which environment variables are set and how they're set, please see
+      # https://docs.aws.amazon.com/devicefarm/latest/developerguide/custom-test-environment-variables.html
+      - |-
+        appium --base-path=$APPIUM_BASE_PATH --log-timestamp \
+          --log-no-colors --relaxed-security --default-capabilities \
+          "{\"appium:deviceName\": \"$DEVICEFARM_DEVICE_NAME\", \
+          \"platformName\": \"$DEVICEFARM_DEVICE_PLATFORM_NAME\", \
+          \"appium:app\": \"$DEVICEFARM_APP_PATH\", \
+          \"appium:udid\":\"$DEVICEFARM_DEVICE_UDID\", \
+          \"appium:platformVersion\": \"$DEVICEFARM_DEVICE_OS_VERSION\", \
+          \"appium:chromedriverExecutableDir\": \"$DEVICEFARM_CHROMEDRIVER_EXECUTABLE_DIR\", \
+          \"appium:automationName\": \"UiAutomator2\"}" \
+          >> $DEVICEFARM_LOG_DIR/appium.log 2>&1 &
+
+      # This code will wait until the Appium server starts.
+      - |-
+        appium_initialization_time=0;
+        until curl --silent --fail "http://0.0.0.0:4723${APPIUM_BASE_PATH}/status"; do
+          if [[ $appium_initialization_time -gt 30 ]]; then
+            echo "Appium did not start within 30 seconds. Exiting...";
+            exit 1;
+          fi;
+          appium_initialization_time=$((appium_initialization_time + 1));
+          echo "Waiting for Appium to start on port 4723...";
+          sleep 1;
+        done;
+
+      # Set environment variables for WebdriverIO to connect to Device Farm's Appium server
+      - export AWS_DEVICE_FARM_APPIUM_SERVER_URL="http://0.0.0.0:4723${APPIUM_BASE_PATH}"
+      - export AWS_DEVICE_FARM_APP_PATH="$DEVICEFARM_APP_PATH"
+      - export PLATFORM="$DEVICEFARM_DEVICE_PLATFORM_NAME"
+      # Export Device Farm device-specific variables for WebdriverIO capabilities
+      - export DEVICEFARM_DEVICE_NAME="$DEVICEFARM_DEVICE_NAME"
+      - export DEVICEFARM_DEVICE_OS_VERSION="$DEVICEFARM_DEVICE_OS_VERSION"
+      - export DEVICEFARM_DEVICE_UDID="$DEVICEFARM_DEVICE_UDID"
+      - export DEVICEFARM_CHROMEDRIVER_EXECUTABLE_DIR="$DEVICEFARM_CHROMEDRIVER_EXECUTABLE_DIR"
+
+  # The test phase contains commands for running your tests.
+  test:
+    commands:
+      # Your test package is downloaded and unpackaged into the $DEVICEFARM_TEST_PACKAGE_PATH directory.
+      # The zip file contains all test files and package.json. After npm install, we can run tests directly.
+      - cd $DEVICEFARM_TEST_PACKAGE_PATH
+      # If the zip contains an e2e-appium folder, navigate into it
+      - |
+        if [ -d "e2e-appium" ]; then
+          cd e2e-appium
+        fi
+      - echo "Starting the Appium NodeJS test"
+      - node --version
+      - npm --version
+      
+      # Run the tests using npm test, which executes "wdio run wdio.conf.ts"
+      # The wdio.conf.ts file is automatically created from wdio.devicefarm.conf.ts during packaging
+      - npm test
+
+  # The post-test phase contains commands that are run after your tests have completed.
+  # If you need to run any commands to generating logs and reports on how your test performed,
+  # we recommend adding them to this section.
+  post_test:
+    commands:
+      # List test results and logs for debugging
+      - echo "Test execution completed"
+      - ls -la $DEVICEFARM_LOG_DIR || true
+      - echo "Test package contents:"
+      - ls -la $DEVICEFARM_TEST_PACKAGE_PATH || true
+
+# Artifacts are a list of paths on the filesystem where you can store test output and reports.
+# All files in these paths will be collected by Device Farm.
+# These files will be available through the ListArtifacts API as your "Customer Artifacts".
+artifacts:
+  # By default, Device Farm will collect your artifacts from the $DEVICEFARM_LOG_DIR directory.
+  - $DEVICEFARM_LOG_DIR
+  # Also collect test results from the test package directory
+  - $DEVICEFARM_TEST_PACKAGE_PATH
+
