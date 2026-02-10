@@ -203,7 +203,8 @@ export const SendTokenUnitInputWidget = forwardRef<
             alignItems: 'center',
             paddingTop: 32,
             paddingHorizontal: 16,
-            paddingBottom: 22
+            paddingBottom: 22,
+            overflow: 'hidden'
           }}>
           <TokenUnitInput
             returnKeyType={returnKeyType}
