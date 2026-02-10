@@ -312,13 +312,15 @@ export class BalanceService {
     account,
     currency,
     onBalanceLoaded,
-    xpAddresses
+    xpAddresses,
+    xpub
   }: {
     networks: Network[]
     account: Account
     currency: string
     onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
     xpAddresses: string[]
+    xpub?: string
   }): Promise<AdjustedNormalizedBalancesForAccount[]> {
     // Final aggregated result
     const finalResults = new Map<number, AdjustedNormalizedBalancesForAccount>()
@@ -326,11 +328,12 @@ export class BalanceService {
     const { networks: supportedNetworks, filteredOutChainIds } =
       await this.filterNetworksBySupportedEvm(networks)
 
-    const requestBatches = buildRequestItemsForAccounts(
-      supportedNetworks,
-      [account],
-      new Map([[account.id, xpAddresses]])
-    )
+    const requestBatches = buildRequestItemsForAccounts({
+      networks: supportedNetworks,
+      accounts: [account],
+      xpAddressesByAccountId: new Map([[account.id, xpAddresses]]),
+      xpubByAccountId: new Map([[account.id, xpub]])
+    })
 
     const { balanceApiThrew, failedChainIds } =
       await this.processBalanceBatches({
@@ -386,13 +389,15 @@ export class BalanceService {
     accounts,
     currency,
     onBalanceLoaded,
-    xpAddressesByAccountId
+    xpAddressesByAccountId,
+    xpubByAccountId
   }: {
     networks: Network[]
     accounts: Account[]
     currency: string
     onBalanceLoaded?: (balance: AdjustedNormalizedBalancesForAccount) => void
     xpAddressesByAccountId: Map<string, string[]>
+    xpubByAccountId: Map<string, string | undefined>
   }): Promise<AdjustedNormalizedBalancesForAccounts> {
     const finalResults: AdjustedNormalizedBalancesForAccounts = {}
 
@@ -402,11 +407,13 @@ export class BalanceService {
 
     const { networks: supportedNetworks, filteredOutChainIds } =
       await this.filterNetworksBySupportedEvm(networks)
-    const requestBatches = buildRequestItemsForAccounts(
-      supportedNetworks,
+
+    const requestBatches = buildRequestItemsForAccounts({
+      networks: supportedNetworks,
       accounts,
-      xpAddressesByAccountId
-    )
+      xpAddressesByAccountId,
+      xpubByAccountId
+    })
 
     const accountById = accounts.reduce((acc, a) => {
       acc[a.id] = a
