@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   },
   measurementContainer: {
     position: 'absolute',
-    opacity: 1
+    opacity: 0
   },
   measurementText: {
     flexShrink: 0,
