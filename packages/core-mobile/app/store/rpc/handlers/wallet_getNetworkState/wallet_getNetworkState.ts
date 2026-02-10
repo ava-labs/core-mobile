@@ -7,6 +7,9 @@ import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { selectTokenVisibility } from 'store/portfolio/slice'
 import { selectActiveAccount } from 'store/account'
+import { queryClient } from 'contexts/ReactQueryProvider'
+import { balanceKey } from 'features/portfolio/hooks/useAccountBalances'
+import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
 import { HandleResponse, RpcRequestHandler } from '../types'
 import { parseRequestParams } from './utils'
 import { getTokensByNetworkFromCache } from './getTokensByNetworkFromCache'
@@ -73,15 +76,21 @@ class WalletGetNetworkStateHandler
     }
 
     const enabledNetworks = selectEnabledNetworksByTestnet(isTestnet)(state)
+
     const tokenVisibility = selectTokenVisibility(state)
 
     const activeAccount = selectActiveAccount(state)
+
+    const cachedBalancesForAccount = queryClient.getQueryData(
+      balanceKey(activeAccount, enabledNetworks)
+    ) as AdjustedNormalizedBalancesForAccount[] | undefined
 
     const networks = enabledNetworks.map(network => {
       const { enabledTokens, disabledTokens } = getTokensByNetworkFromCache({
         account: activeAccount,
         network,
-        tokenVisibility
+        tokenVisibility,
+        cachedBalancesForAccount
       })
 
       return {
