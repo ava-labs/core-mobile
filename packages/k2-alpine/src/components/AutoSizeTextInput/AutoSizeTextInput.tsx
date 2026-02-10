@@ -110,11 +110,10 @@ export const AutoSizeTextInput = forwardRef<
         inputRef.current?.setNativeProps(_props)
     }))
 
-    const textColor = !valid
-      ? theme.colors.$textDanger
-      : editable
-        ? theme.colors.$textPrimary
-        : theme.colors.$textSecondary
+    const editableTextColor = editable
+      ? theme.colors.$textPrimary
+      : theme.colors.$textSecondary
+    const textColor = !valid ? theme.colors.$textDanger : editableTextColor
     const placeholderTextColor = alpha(theme.colors.$textSecondary, 0.2)
 
     // Update hasValue shared value synchronously during render
