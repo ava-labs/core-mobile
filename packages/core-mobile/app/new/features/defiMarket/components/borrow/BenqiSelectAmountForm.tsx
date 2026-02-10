@@ -1,11 +1,11 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Address } from 'viem'
-import { DefiMarket, MarketNames } from '../../types'
 import {
-  useUserBorrowData,
-  convertUsdToTokenAmount
-} from '../../hooks/useUserBorrowData'
+  convertUsdToTokenAmount,
+  useUserBorrowData
+} from 'features/defiMarket/hooks/useUserBorrowData'
+import { DefiMarket, MarketNames } from '../../types'
 import { WAD } from '../../consts'
 import { BorrowSelectAmountFormBase } from './BorrowSelectAmountFormBase'
 
@@ -57,8 +57,62 @@ export const BorrowBenqiSelectAmountForm = ({
     )
   }, [borrowData, market.asset.decimals, market.asset.symbol])
 
-  // Benqi doesn't provide health factor directly via getAccountLiquidity
-  // Would need additional calls to calculate: (totalCollateral * liquidationThreshold) / totalDebt
+  // Calculate current health score
+  // For Benqi: health = (liquidity + totalBorrowUSD) / totalBorrowUSD
+  // When totalBorrowUSD is 0, health is infinite
+  const currentHealthScore = useMemo(() => {
+    if (!borrowData?.benqiLiquidity) return undefined
+
+    const { benqiLiquidity, benqiTotalBorrowUSD } = borrowData
+
+    // If no borrows, health is infinite
+    if (!benqiTotalBorrowUSD || benqiTotalBorrowUSD === 0n) {
+      return Infinity
+    }
+
+    // health = (liquidity + totalBorrow) / totalBorrow
+    // This gives us: health = 1 + (liquidity / totalBorrow)
+    // When liquidity = totalBorrow * (health - 1)
+    const numerator = benqiLiquidity + benqiTotalBorrowUSD
+    const healthBigInt = (numerator * BigInt(10 ** 18)) / benqiTotalBorrowUSD
+    return Number(healthBigInt) / 10 ** 18
+  }, [borrowData])
+
+  // Calculate new health score based on borrow amount
+  // Formula: newHealth = (liquidity + totalBorrow) / (totalBorrow + newBorrow)
+  // Note: liquidity already accounts for collateral factors
+  const calculateHealthScore = useCallback(
+    (borrowAmount: TokenUnit): number | undefined => {
+      if (!borrowData?.benqiLiquidity || !borrowData?.tokenPriceUSD) {
+        return undefined
+      }
+
+      const { benqiLiquidity, benqiTotalBorrowUSD, tokenPriceUSD } = borrowData
+      const currentTotalBorrow = benqiTotalBorrowUSD ?? 0n
+
+      // Convert borrow amount to USD (18 decimals)
+      // borrowAmountUSD = borrowAmount * tokenPrice / 10^tokenDecimals
+      // Since tokenPrice is scaled by 10^(36-decimals), and we want 18 decimals:
+      // borrowAmountUSD = borrowAmount * tokenPrice / 10^(36-decimals) * 10^18 / 10^tokenDecimals
+      // = borrowAmount * tokenPrice / 10^18
+      const borrowAmountRaw = borrowAmount.toSubUnit()
+      const newBorrowUSD = (borrowAmountRaw * tokenPriceUSD) / BigInt(10 ** WAD)
+
+      const newTotalBorrow = currentTotalBorrow + newBorrowUSD
+
+      if (newTotalBorrow === 0n) {
+        return Infinity
+      }
+
+      // newHealth = (liquidity + currentTotalBorrow) / newTotalBorrow
+      // Note: We use (liquidity + currentTotalBorrow) because this represents
+      // the total "borrowing capacity" before the new borrow
+      const numerator = benqiLiquidity + currentTotalBorrow
+      const newHealthBigInt = (numerator * BigInt(10 ** 18)) / newTotalBorrow
+      return Number(newHealthBigInt) / 10 ** 18
+    },
+    [borrowData]
+  )
 
   // TODO: Implement borrow hook
   const handleSubmit = async ({
@@ -81,8 +135,8 @@ export const BorrowBenqiSelectAmountForm = ({
     <BorrowSelectAmountFormBase
       token={market.asset}
       availableToBorrow={availableToBorrow}
-      currentHealthScore={undefined}
-      calculateHealthScore={undefined}
+      currentHealthScore={currentHealthScore}
+      calculateHealthScore={calculateHealthScore}
       submit={handleSubmit}
       onSubmitted={onSubmitted}
     />

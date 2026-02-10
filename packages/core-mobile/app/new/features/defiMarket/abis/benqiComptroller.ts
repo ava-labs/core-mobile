@@ -113,5 +113,51 @@ export const BENQI_COMPTROLLER_ABI = [
     payable: false,
     stateMutability: 'view',
     type: 'function'
+  },
+  {
+    constant: true,
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'account',
+        type: 'address'
+      },
+      {
+        internalType: 'address',
+        name: 'qiTokenModify',
+        type: 'address'
+      },
+      {
+        internalType: 'uint256',
+        name: 'redeemTokens',
+        type: 'uint256'
+      },
+      {
+        internalType: 'uint256',
+        name: 'borrowAmount',
+        type: 'uint256'
+      }
+    ],
+    name: 'getHypotheticalAccountLiquidity',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: 'error',
+        type: 'uint256'
+      },
+      {
+        internalType: 'uint256',
+        name: 'liquidity',
+        type: 'uint256'
+      },
+      {
+        internalType: 'uint256',
+        name: 'shortfall',
+        type: 'uint256'
+      }
+    ],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function'
   }
 ] as const

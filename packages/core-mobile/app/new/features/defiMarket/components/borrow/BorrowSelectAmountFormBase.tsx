@@ -118,7 +118,7 @@ export const BorrowSelectAmountFormBase = ({
         return theme.colors.$textSuccess // Green
       }
       if (score >= 1.1) {
-        return '#FF9500' // Orange
+        return '#F7B500' // Orange
       }
       return theme.colors.$textDanger // Red
     },
@@ -169,9 +169,7 @@ export const BorrowSelectAmountFormBase = ({
               alignItems: 'center',
               justifyContent: 'space-between'
             }}>
-            <Text
-              variant="body1"
-              sx={{ color: theme.colors.$textPrimary, fontWeight: 400 }}>
+            <Text variant="body1" sx={{ color: theme.colors.$textPrimary }}>
               Health score
             </Text>
             <View sx={{ alignItems: 'flex-end' }}>
