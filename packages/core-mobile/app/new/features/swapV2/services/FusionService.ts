@@ -27,6 +27,16 @@ class FusionService implements IFusionService {
   #transferManager: TransferManager | null = null
 
   /**
+   * Private getter that throws if the service is not initialized
+   */
+  private get transferManager(): TransferManager {
+    if (!this.#transferManager) {
+      throw new Error('Fusion service is not initialized')
+    }
+    return this.#transferManager
+  }
+
+  /**
    * Get enabled services based on feature flags
    */
   private getEnabledServices(featureFlags: FeatureFlags): ServiceType[] {
@@ -174,10 +184,20 @@ class FusionService implements IFusionService {
   }
 
   /**
-   * Get the initialized TransferManager instance
+   * Get supported chains from the TransferManager
+   * Returns CAIP-2 chain IDs that are supported by the enabled services
+   *
+   * @returns Promise resolving to array of CAIP-2 chain IDs
    */
-  getTransferManager(): TransferManager | null {
-    return this.#transferManager
+  async getSupportedChains(): Promise<readonly string[]> {
+    try {
+      const chains = await this.transferManager.getSupportedChains()
+      Logger.info(`Fusion SDK supports ${chains.length} chains`, chains)
+      return chains
+    } catch (error) {
+      Logger.error('Failed to fetch supported chains from Fusion SDK', error)
+      throw error
+    }
   }
 
   /**

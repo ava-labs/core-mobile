@@ -47,6 +47,10 @@ export enum ReactQueryKeys {
   // bridge
   BRIDGE_CONFIG = 'bridgeConfig',
 
+  // fusion
+  FUSION_SUPPORTED_CHAINS = 'fusionSupportedChains',
+  FUSION_TOKENS = 'fusionTokens',
+
   // deposit
   AAVE_AVAILABLE_MARKETS = 'aaveAvailableMarkets',
   BENQI_AVAILABLE_MARKETS = 'benqiAvailableMarkets',

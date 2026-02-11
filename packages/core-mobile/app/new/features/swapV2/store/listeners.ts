@@ -1,5 +1,5 @@
 import { AppListenerEffectAPI, AppStartListening, RootState } from 'store/types'
-import { onAppUnlocked } from 'store/app/slice'
+import { onAppUnlocked, onLogOut, selectIsLocked } from 'store/app/slice'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
@@ -76,6 +76,12 @@ export const initFusionService = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
+  const isLocked = selectIsLocked(state)
+
+  if (isLocked) {
+    Logger.info('App is locked, skipping Fusion service initialization')
+    return
+  }
 
   const request = createInAppRequest(listenerApi.dispatch)
 
@@ -143,6 +149,13 @@ export const initFusionService = async (
   }
 }
 
+export const cleanupFusionService = async (
+  _action: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  _listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  FusionService.cleanup()
+}
+
 /**
  * Register Fusion service listeners
  */
@@ -150,5 +163,10 @@ export const addFusionListeners = (startListening: AppStartListening): void => {
   startListening({
     matcher: isAnyOf(onAppUnlocked, toggleDeveloperMode, setFeatureFlags),
     effect: initFusionService
+  })
+
+  startListening({
+    actionCreator: onLogOut,
+    effect: cleanupFusionService
   })
 }

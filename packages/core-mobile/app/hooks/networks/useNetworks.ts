@@ -48,7 +48,10 @@ export const useNetworks = () => {
         const chainId = parseInt(key)
         const network = rawNetworks[chainId]
         if (network && network.isTestnet === isDeveloperMode) {
-          reducedNetworks[chainId] = network
+          reducedNetworks[chainId] = {
+            ...network,
+            caip2ChainId: getCaip2ChainId(chainId)
+          }
         }
         return reducedNetworks
       },
@@ -61,7 +64,10 @@ export const useNetworks = () => {
         const network = _customNetworks[chainId]
 
         if (network && network.isTestnet === isDeveloperMode) {
-          reducedNetworks[chainId] = network
+          reducedNetworks[chainId] = {
+            ...network,
+            caip2ChainId: getCaip2ChainId(chainId)
+          }
         }
         return reducedNetworks
       },
@@ -70,7 +76,7 @@ export const useNetworks = () => {
     return { ...populatedNetworks, ...populatedCustomNetworks }
   }, [rawNetworks, _customNetworks, isDeveloperMode])
 
-  const customNetworks = useMemo(() => {
+  const customNetworks: NetworkWithCaip2ChainId[] = useMemo(() => {
     if (networks === undefined) return []
 
     const customNetworkChainIds = Object.values(_customNetworks).map(
@@ -81,7 +87,7 @@ export const useNetworks = () => {
     )
   }, [networks, _customNetworks])
 
-  const enabledNetworks = useMemo(() => {
+  const enabledNetworks: NetworkWithCaip2ChainId[] = useMemo(() => {
     if (networks === undefined) return []
 
     const lastTransactedChainIds = lastTransactedChains
@@ -93,10 +99,10 @@ export const useNetworks = () => {
     const enabled = allChainIds.reduce((acc, chainId) => {
       const network = networks[chainId]
       if (network && network.isTestnet === isDeveloperMode) {
-        acc.push(network)
+        acc.push({ ...network, caip2ChainId: getCaip2ChainId(network.chainId) })
       }
       return acc
-    }, [] as Network[])
+    }, [] as NetworkWithCaip2ChainId[])
 
     // sort all C/X/P networks to the top
     return enabled.sort((a, b) => {
@@ -162,6 +168,13 @@ export const useNetworks = () => {
     [allNetworks]
   )
 
+  const getEnabledNetworkByCaip2ChainId = useCallback(
+    (caip2ChainId: string) => {
+      return enabledNetworks.find(n => n.caip2ChainId === caip2ChainId)
+    },
+    [enabledNetworks]
+  )
+
   const getFromPopulatedNetwork = useCallback(
     (chainId?: number) => {
       if (chainId === undefined || networks === undefined) return
@@ -180,6 +193,7 @@ export const useNetworks = () => {
     getSomeNetworks,
     getNetwork,
     getNetworkByCaip2ChainId,
+    getEnabledNetworkByCaip2ChainId,
     getFromPopulatedNetwork,
     toggleNetwork
   }
