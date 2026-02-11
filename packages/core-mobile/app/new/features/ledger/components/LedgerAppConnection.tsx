@@ -234,7 +234,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
             ),
             title: 'Connect to Avalanche App',
             subtitle: `Open the Avalanche app on your ${connectedDeviceName}, then press Continue when ready.`,
-            showAnimation: false
+            showAnimation: false,
+            isLoading: !connectedDeviceId
           }
 
         case AppConnectionStep.AVALANCHE_LOADING:
@@ -287,7 +288,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           return null
       }
     },
-    [colors.$textPrimary, connectedDeviceName, onlySolana]
+    [colors.$textPrimary, connectedDeviceId, connectedDeviceName, onlySolana]
   )
 
   const renderStepContent = useCallback((): React.ReactNode => {
@@ -403,6 +404,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     addressListData,
     colors.$textPrimary,
     colors.$textSecondary,
+    completeStepTitle,
     currentStep,
     getStepConfig
   ])
