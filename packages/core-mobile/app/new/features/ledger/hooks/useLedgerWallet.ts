@@ -228,7 +228,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           addressAVM: formattedAddresses.avm,
           addressPVM: formattedAddresses.pvm,
           addressSVM: solanaKeys[0]?.key || '',
-          addressCoreEth: ''
+          addressCoreEth: addresses.coreEth || ''
         }
 
         dispatch(setAccount(newAccount))
