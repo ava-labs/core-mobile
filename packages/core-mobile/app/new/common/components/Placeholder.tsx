@@ -50,6 +50,7 @@ export const Placeholder = ({
         {button && (
           <View>
             <Button
+              testID={`btn__${button.title}`}
               size="medium"
               type="secondary"
               style={{ marginTop: 16 }}

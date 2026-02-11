@@ -26,7 +26,7 @@ describe('Settings', () => {
 
   it('Contacts - Should edit contact', async () => {
     // Edit contact name & verify
-    await settings.tapContactByName('Core Dev')
+    await settings.tapContact('Core Dev', cl.myEvmAddress)
     await settings.editContactAddress(newAddress, 'Core QA')
     await settings.verifyContact(cl.myEvmAddress2, 'Core QA')
   })
@@ -47,8 +47,8 @@ describe('Settings', () => {
 
   it('Contacts - Should delete contact', async () => {
     // Delete contact
-    await settings.tapContactByName('Core QA')
-    await cp.tapDelete()
+    await settings.tapContact('Core QA', cl.myEvmAddress2)
+    await settings.tapDeleteContact()
     await cp.tapDeleteAlert()
     await settings.verifyEmptyContacts()
   })

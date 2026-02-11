@@ -8,7 +8,7 @@ describe('[Smoke] Stake on Testnet', () => {
     await warmup()
     await settingsPage.switchToTestnet()
     await settingsPage.verifyTestnetMode()
-    await bottomTabsPage.tapEarnTab()
+    await bottomTabsPage.tapStakeTab()
     await txPage.stake()
   })
 
