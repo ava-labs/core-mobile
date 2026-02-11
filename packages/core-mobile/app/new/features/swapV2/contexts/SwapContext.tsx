@@ -18,7 +18,7 @@ import {
   useQuotes,
   useSwapSelectedFromToken,
   useSwapSelectedToToken
-} from '../store'
+} from '../hooks/useZustandStore'
 import { getTokenAddress } from '../utils/getTokenAddress'
 
 const DEFAULT_SLIPPAGE = 0.2
