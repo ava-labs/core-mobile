@@ -10,6 +10,8 @@ import { TokenUnit } from '@avalabs/core-utils-sdk/dist'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import { transactionSnackbar } from 'common/utils/toast'
+import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 
 export const SelectAmountFormBase = ({
   title = 'How much do you want to deposit?',
@@ -52,6 +54,16 @@ export const SelectAmountFormBase = ({
       setIsSubmitting(true)
       const txHash = await submit({ amount })
       onSubmitted({ txHash, amount })
+    } catch (error) {
+      // Don't show error toast if user rejected the transaction
+      if (!isUserRejectedError(error)) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Transaction failed'
+        transactionSnackbar.error({
+          message: 'Transaction failed',
+          error: errorMessage
+        })
+      }
     } finally {
       setIsSubmitting(false)
     }
