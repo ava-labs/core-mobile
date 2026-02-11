@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Address, formatUnits } from 'viem'
 import { DefiMarket, MarketNames } from '../../types'
@@ -6,7 +6,12 @@ import {
   useUserBorrowData,
   convertUsdToTokenAmount
 } from '../../hooks/useUserBorrowData'
-import { AAVE_PRICE_ORACLE_SCALE } from '../../consts'
+import {
+  AAVE_PRICE_ORACLE_SCALE,
+  AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS
+} from '../../consts'
+import { useAaveBorrowErc20 } from '../../hooks/aave/useAaveBorrowErc20'
+import { useUnwrapWavax } from '../../hooks/useUnwrapWavax'
 import { BorrowSelectAmountFormBase } from './BorrowSelectAmountFormBase'
 
 export const BorrowAaveSelectAmountForm = ({
@@ -22,14 +27,48 @@ export const BorrowAaveSelectAmountForm = ({
   onReverted?: () => void
   onError?: () => void
 }): JSX.Element => {
+  // Check if this is native AVAX (no contractAddress)
+  const isNativeAvax = !market.asset.contractAddress
+
+  // Store pending amount for unwrap after borrow confirmation
+  const pendingUnwrapAmountRef = useRef<TokenUnit | null>(null)
+
   // For AAVE, pass the underlying asset address to get price from AAVE Price Oracle
-  const underlyingAssetAddress = market.asset.contractAddress as
-    | Address
-    | undefined
+  // For native AVAX, use WAVAX address
+  const underlyingAssetAddress = (market.asset.contractAddress ??
+    AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS) as Address
   const { data: borrowData } = useUserBorrowData(
     MarketNames.aave,
     underlyingAssetAddress
   )
+
+  // Unwrap hook - called after borrow is confirmed for native AVAX
+  const { unwrapWavax } = useUnwrapWavax({
+    network: market.network,
+    onConfirmed, // Final confirmation after unwrap
+    onReverted,
+    onError
+  })
+
+  // Handle borrow confirmation - trigger unwrap for native AVAX
+  const handleBorrowConfirmed = useCallback(() => {
+    if (isNativeAvax && pendingUnwrapAmountRef.current) {
+      // Borrow confirmed, now unwrap WAVAX to AVAX
+      unwrapWavax({ amount: pendingUnwrapAmountRef.current })
+      pendingUnwrapAmountRef.current = null
+    } else {
+      // Not native AVAX, call original onConfirmed
+      onConfirmed?.()
+    }
+  }, [isNativeAvax, unwrapWavax, onConfirmed])
+
+  // Borrow hook - always use ERC20 borrow (WAVAX for native AVAX market)
+  const { aaveBorrowErc20 } = useAaveBorrowErc20({
+    market,
+    onConfirmed: handleBorrowConfirmed,
+    onReverted,
+    onError
+  })
 
   // Calculate available to borrow in token units using oracle price
   const availableToBorrow = useMemo(() => {
@@ -104,22 +143,19 @@ export const BorrowAaveSelectAmountForm = ({
     [borrowData, market.asset.decimals]
   )
 
-  // TODO: Implement borrow hook
-  const handleSubmit = async ({
-    amount
-  }: {
-    amount: TokenUnit
-  }): Promise<string> => {
-    // eslint-disable-next-line no-console
-    console.log(
-      'AAVE borrow:',
-      amount.toDisplay(),
-      onConfirmed,
-      onReverted,
-      onError
-    )
-    throw new Error('Borrow not implemented yet')
-  }
+  // For native AVAX: borrow WAVAX, then unwrap to AVAX after confirmation
+  // For other tokens: borrow ERC20 directly
+  const handleSubmit = useCallback(
+    async ({ amount }: { amount: TokenUnit }): Promise<string> => {
+      if (isNativeAvax) {
+        // Store amount for unwrap after borrow confirmation
+        pendingUnwrapAmountRef.current = amount
+      }
+      // For native AVAX, disable confetti on borrow tx (will show on unwrap tx instead)
+      return aaveBorrowErc20({ amount, confettiDisabled: isNativeAvax })
+    },
+    [aaveBorrowErc20, isNativeAvax]
+  )
 
   return (
     <BorrowSelectAmountFormBase

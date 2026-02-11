@@ -55,14 +55,48 @@ async function fetchAaveUserBorrowData(
   userAddress: Address,
   tokenAddress?: Address
 ): Promise<UserBorrowData> {
-  // Fetch user account data
-  const accountData = await networkClient.readContract({
+  // Use multicall to fetch account data and token price in the same block
+  // This ensures price consistency and reduces timing issues
+  const accountDataContract = {
     address: AAVE_POOL_C_CHAIN_ADDRESS,
     abi: AAVE_AVALANCHE3_POOL_PROXY_ABI,
-    functionName: 'getUserAccountData',
-    args: [userAddress]
-  })
+    functionName: 'getUserAccountData' as const,
+    args: [userAddress] as const
+  }
 
+  const priceContract = tokenAddress
+    ? {
+        address: AAVE_PRICE_ORACLE_C_CHAIN_ADDRESS,
+        abi: AAVE_PRICE_ORACLE_ABI,
+        functionName: 'getAssetPrice' as const,
+        args: [tokenAddress] as const
+      }
+    : null
+
+  const contracts = priceContract
+    ? [accountDataContract, priceContract]
+    : [accountDataContract]
+
+  const results = await multicall(networkClient, { contracts })
+
+  // Parse account data
+  const accountDataResult = results[0]
+  if (
+    !accountDataResult ||
+    accountDataResult.status !== 'success' ||
+    !accountDataResult.result
+  ) {
+    throw new Error('Failed to fetch AAVE user account data')
+  }
+
+  const accountData = accountDataResult.result as [
+    bigint,
+    bigint,
+    bigint,
+    bigint,
+    bigint,
+    bigint
+  ]
   const [
     totalCollateralBase,
     totalDebtBase,
@@ -72,15 +106,10 @@ async function fetchAaveUserBorrowData(
     healthFactor
   ] = accountData
 
-  // Get token price (8 decimals) if token address provided
+  // Parse token price
   let tokenPriceUSD = 0n
-  if (tokenAddress) {
-    tokenPriceUSD = await networkClient.readContract({
-      address: AAVE_PRICE_ORACLE_C_CHAIN_ADDRESS,
-      abi: AAVE_PRICE_ORACLE_ABI,
-      functionName: 'getAssetPrice',
-      args: [tokenAddress]
-    })
+  if (tokenAddress && results[1]?.status === 'success') {
+    tokenPriceUSD = results[1].result as bigint
   }
 
   return {
@@ -197,12 +226,13 @@ async function fetchBenqiUserBorrowData(
 }
 
 /**
- * Converts USD amount to token amount
+ * Converts USD amount to token amount with safety buffer
  * @param params.usdAmount - Amount in USD (with usdDecimals precision)
  * @param params.tokenPriceUSD - Token price in USD (with priceDecimals precision)
  * @param params.tokenDecimals - Decimals of the target token
  * @param params.usdDecimals - Decimals of the USD amount
  * @param params.priceDecimals - Decimals of the price
+ * @param params.safetyBufferPercent - Safety buffer percentage (0-100), default 1 (99% of max)
  */
 export function convertUsdToTokenAmount(params: {
   usdAmount: bigint
@@ -210,24 +240,31 @@ export function convertUsdToTokenAmount(params: {
   tokenDecimals: number
   usdDecimals: number
   priceDecimals: number
+  safetyBufferPercent?: number
 }): bigint {
   const {
     usdAmount,
     tokenPriceUSD,
     tokenDecimals,
     usdDecimals,
-    priceDecimals
+    priceDecimals,
+    safetyBufferPercent = 1 // Default 1% buffer (99% of max)
   } = params
 
   if (tokenPriceUSD === 0n) return 0n
+
+  // Apply safety buffer to account for price fluctuations and rounding
+  // This matches AAVE's approach of not allowing exact max borrows
+  const bufferMultiplier = 100 - safetyBufferPercent
+  const adjustedUsdAmount = (usdAmount * BigInt(bufferMultiplier)) / 100n
 
   // tokenAmount = usdAmount * 10^tokenDecimals * 10^priceDecimals / (tokenPriceUSD * 10^usdDecimals)
   // Simplified: tokenAmount = usdAmount * 10^(tokenDecimals + priceDecimals - usdDecimals) / tokenPriceUSD
   const scaleFactor = tokenDecimals + priceDecimals - usdDecimals
   if (scaleFactor >= 0) {
-    return (usdAmount * BigInt(10 ** scaleFactor)) / tokenPriceUSD
+    return (adjustedUsdAmount * BigInt(10 ** scaleFactor)) / tokenPriceUSD
   } else {
-    return usdAmount / (tokenPriceUSD * BigInt(10 ** -scaleFactor))
+    return adjustedUsdAmount / (tokenPriceUSD * BigInt(10 ** -scaleFactor))
   }
 }
 
