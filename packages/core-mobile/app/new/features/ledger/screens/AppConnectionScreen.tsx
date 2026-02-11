@@ -47,7 +47,7 @@ export default function AppConnectionScreen({
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
 
-  const isLedgerReady = !!deviceId
+  const hasDeviceId = !!deviceId
 
   // Local key state - managed only in this component
   const [keys, setKeys] = useState<LedgerKeys>({
@@ -253,7 +253,7 @@ export default function AppConnectionScreen({
           onPress: handleConnectAvalanche,
           disable:
             currentAppConnectionStep === AppConnectionStep.AVALANCHE_LOADING ||
-            isLedgerReady === false
+            hasDeviceId === false
         }
         break
       case AppConnectionStep.SOLANA_CONNECT:
@@ -263,7 +263,7 @@ export default function AppConnectionScreen({
           onPress: handleConnectSolana,
           disable:
             currentAppConnectionStep === AppConnectionStep.SOLANA_LOADING ||
-            isLedgerReady === false
+            hasDeviceId === false
         }
         secondary = {
           text: 'Skip Solana',
@@ -312,7 +312,7 @@ export default function AppConnectionScreen({
     handleConnectAvalanche,
     handleConnectSolana,
     handleSkipSolana,
-    isLedgerReady,
+    hasDeviceId,
     isUpdatingWallet,
     keys
   ])
