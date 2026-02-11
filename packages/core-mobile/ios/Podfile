@@ -88,6 +88,10 @@ abstract_target 'common' do
   pod 'GoogleUtilities', :modular_headers => true;
   pod 'FirebaseCore', :modular_headers => true
   pod 'react-native-branch', path: '../node_modules/react-native-branch'
+
+  # Prevents iOS SIGABRT crash when two modals are presented simultaneously.
+  # Queues UIViewController present/dismiss transitions via method swizzling.
+  pod 'LVModalQueue', :git => 'https://github.com/lovoo/LVModalQueue.git'
   
   target 'AvaxWallet' do
   end

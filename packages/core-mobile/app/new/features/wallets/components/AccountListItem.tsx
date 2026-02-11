@@ -109,9 +109,11 @@ export const AccountListItem = ({
                 isAccurate={balance.dataAccurate}
                 variant="skeleton"
               />
-              <TouchableOpacity hitSlop={16} onPress={onPressDetails}>
+              <TouchableOpacity
+                hitSlop={16}
+                onPress={onPressDetails}
+                testID={`account_detail_icon__${wallet.name}__${account.name}`}>
                 <Icons.Alert.AlertCircle
-                  testID={`account_detail_icon__${wallet.name}_${account.name}`}
                   color={theme.colors.$textPrimary}
                   width={18}
                   height={18}

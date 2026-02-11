@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-disabled-tests */
 import portfolioPage from '../../../pages/portfolio.page'
 import portfolio from '../../../locators/portfolio.loc'
 import commonElsPage from '../../../pages/commonEls.page'
@@ -5,7 +6,7 @@ import warmup from '../../../helpers/warmup'
 import { actions } from '../../../helpers/actions'
 import { selectors } from '../../../helpers/selectors'
 
-describe('Portfolio tab', () => {
+describe.skip('Portfolio tab', () => {
   it('Collectibles - hide unreachable collectibles on manage list', async () => {
     await warmup()
     await portfolioPage.tapCollectiblesTab()

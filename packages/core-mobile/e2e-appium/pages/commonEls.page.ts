@@ -517,8 +517,12 @@ class CommonElsPage {
   }
 
   async switchAccount(account = commonEls.secondAccount) {
-    await actions.tap(portfolioPage.portfolioAccountName)
+    await this.goMyWallets()
     await actions.tap(selectors.getById(`manage_accounts_list__${account}`))
+  }
+
+  async goMyWallets() {
+    await actions.tap(portfolioPage.portfolioAccountName)
   }
 }
 

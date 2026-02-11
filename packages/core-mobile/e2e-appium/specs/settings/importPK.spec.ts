@@ -1,23 +1,22 @@
 import settings from '../../pages/settings.page'
 import warmup from '../../helpers/warmup'
-import { actions } from '../../helpers/actions'
-import { selectors } from '../../helpers/selectors'
+import common from '../../pages/commonEls.page'
 
 describe('Settings', () => {
-  it('Import PK wallet - import a wallet', async () => {
+  it('Import PK wallet', async () => {
     await warmup()
-    await settings.goSettings()
+    await common.goMyWallets()
     await settings.importWalletViaPK(process.env.E2E_PK as string)
-    await settings.verifyPKWalletImported()
+    await settings.tapWalletByName('Imported')
+    await settings.verifyAccountDetail('Wallet 2', 'Account 1', true, true)
   })
 
   it('Import PK wallet - can not add an account', async () => {
-    await actions.isVisible(selectors.getById(`more_icon__Wallet 1`))
-    await actions.isNotVisible(selectors.getById(`more_icon__Wallet 2`))
+    await settings.verifyAddAccountDisabled()
   })
 
   it('Import PK wallet - get a private key', async () => {
-    await settings.goToAccountDetail(undefined, 'Account 3')
+    await settings.goToAccountDetail('Wallet 2', 'Account 1')
     await settings.tapShowPrivateKey()
     await settings.enterCurrentPin()
     await settings.verifyShowPrivateKeyScreen(process.env.E2E_PK as string)
