@@ -9,6 +9,7 @@ import { getUnixTime, secondsToMilliseconds } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { PChainId } from '@avalabs/glacier-sdk'
 import { UTCDate } from '@date-fns/utc'
+import { getPvmAddresses } from 'services/earn/computeDelegationSteps/utils'
 import {
   AddDelegatorProps,
   CreateExportCTxParams,
@@ -18,8 +19,6 @@ import {
   CreateSendPTxParams
 } from './types'
 import { getAvaxAssetId } from './utils'
-import { getPvmAddresses } from 'services/earn/computeDelegationSteps/utils'
-
 class AvalancheWalletService {
   /**
    * Get atomic transactions that are in VM memory.
