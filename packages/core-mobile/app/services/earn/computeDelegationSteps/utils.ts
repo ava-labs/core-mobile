@@ -24,7 +24,7 @@ import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
 const DUMMY_AMOUNT = 1000000n
 const DUMMY_UTXO_ID = 'dummy'
 
-const getPvmAddresses = (xpAddresses: string[]): string[] => {
+export const getPvmAddresses = (xpAddresses: string[]): string[] => {
   return xpAddresses.map(addr => `P-${addr}`)
 }
 
