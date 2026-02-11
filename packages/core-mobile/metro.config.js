@@ -119,14 +119,9 @@ const baseConfig = {
           platform
         )
       }
-
       if (moduleName === 'stream') {
         // when importing stream, resolve to readable-stream
-        return context.resolveRequest(
-          context,
-          'readable-stream',
-          platform
-        )
+        return context.resolveRequest(context, 'readable-stream', platform)
       }
 
       // optionally, chain to the standard Metro resolver.
