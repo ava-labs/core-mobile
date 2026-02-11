@@ -10,7 +10,8 @@ import {
   LedgerKeys,
   LedgerTransportState,
   WalletCreationOptions,
-  WalletUpdateOptions
+  WalletUpdateOptions,
+  WalletUpdateSolanaOptions
 } from 'services/ledger/types'
 import { WalletType } from 'services/wallet/types'
 import { PrimaryAccount, setAccount, setActiveAccountId } from 'store/account'
@@ -18,11 +19,9 @@ import { AppThunkDispatch } from 'store/types'
 import { setActiveWallet } from 'store/wallet/slice'
 import { storeWallet } from 'store/wallet/thunks'
 import Logger from 'utils/Logger'
-import { Curve } from 'utils/publicKeys'
 import { uuid } from 'utils/uuid'
 import { CoreAccountType } from '@avalabs/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import { DERIVATION_PATHS } from '../consts'
 import { LedgerWalletSecretSchema } from '../utils'
 
 export interface UseLedgerWalletReturn {
@@ -37,7 +36,12 @@ export interface UseLedgerWalletReturn {
   createLedgerWallet: (
     options: WalletCreationOptions & LedgerKeys
   ) => Promise<{ walletId: string; accountId: string }>
-  updateSolanaForLedgerWallet: (options: WalletUpdateOptions) => Promise<void>
+  updateSolanaForLedgerWallet: (
+    options: WalletUpdateSolanaOptions
+  ) => Promise<void>
+  updateLedgerWallet: (
+    options: WalletUpdateOptions & LedgerKeys
+  ) => Promise<{ walletId: string; accountId: string }>
 }
 
 export function useLedgerWallet(): UseLedgerWalletReturn {
@@ -108,7 +112,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       deviceId,
       deviceName = 'Ledger Device',
       derivationPathType = LedgerDerivationPathType.BIP44,
-      individualKeys = [],
       avalancheKeys,
       solanaKeys = [],
       bitcoinAddress
@@ -123,6 +126,11 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         if (!avalancheKeys) {
           throw new Error('Missing Avalanche keys for wallet creation')
         }
+
+        if (!bitcoinAddress) {
+          throw new Error('Missing Bitcoin address for wallet creation')
+        }
+
         // Solana keys are optional - wallet can be created with only Avalanche keys
 
         const newWalletId = uuid()
@@ -136,44 +144,11 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
             ? addresses.evm.slice(2) // Remove first 0x to fix double prefix
             : addresses.evm,
           avm: addresses.avm,
-          pvm: addresses.pvm
+          pvm: addresses.pvm,
+          coreEth: addresses.coreEth?.startsWith('0x0x')
+            ? addresses.coreEth.slice(2) // Remove first 0x to fix double prefix
+            : addresses.coreEth
         }
-
-        // Also fix the public keys array to ensure no double prefixes in storage
-        const formattedPublicKeys = individualKeys.map(key => ({
-          ...key,
-          key: key.key?.startsWith('0x0x') ? key.key.slice(2) : key.key
-        }))
-
-        // Create the public keys array for BIP44
-        const publicKeysToStore = [
-          // Use formatted addresses for BIP44
-          {
-            key: formattedAddresses.evm, // Use formatted address
-            derivationPath: DERIVATION_PATHS.BIP44.EVM,
-            curve: Curve.SECP256K1
-          },
-          {
-            key: formattedAddresses.avm,
-            derivationPath: DERIVATION_PATHS.BIP44.AVALANCHE,
-            curve: Curve.SECP256K1
-          },
-          {
-            key: formattedAddresses.pvm,
-            derivationPath: DERIVATION_PATHS.BIP44.AVALANCHE,
-            curve: Curve.SECP256K1
-          },
-          // Only include Solana key if it exists
-          ...(solanaKeys.length > 0 && solanaKeys[0]?.key
-            ? [
-                {
-                  key: solanaKeys[0].key, // Solana addresses don't use 0x prefix
-                  derivationPath: solanaKeys[0].derivationPath, // Use the same path from getSolanaKeys
-                  curve: Curve.ED25519
-                }
-              ]
-            : [])
-        ]
 
         // Store the Ledger wallet with the specified derivation path type
         // For BIP44, store xpub in per-account format for future account additions
@@ -194,14 +169,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
                     avalanche: xpubs.avalanche // Store base58 xpub for derivation
                   }
                 }
-              }),
-              publicKeys:
-                derivationPathType === LedgerDerivationPathType.LedgerLive &&
-                individualKeys.length > 0
-                  ? formattedPublicKeys // Use formatted individual keys for Ledger Live
-                  : publicKeysToStore, // Use the public keys we just created
-              avalancheKeys: formattedAddresses, // Use formatted addresses for display
-              solanaKeys
+              })
             }),
             type:
               derivationPathType === LedgerDerivationPathType.BIP44
@@ -222,11 +190,11 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           type: CoreAccountType.PRIMARY,
           index: 0,
           addressC: formattedAddresses.evm,
-          addressBTC: bitcoinAddress || '',
+          addressBTC: bitcoinAddress,
           addressAVM: formattedAddresses.avm,
           addressPVM: formattedAddresses.pvm,
           addressSVM: solanaKeys[0]?.key || '',
-          addressCoreEth: addresses.coreEth || ''
+          addressCoreEth: formattedAddresses.coreEth
         }
 
         dispatch(setAccount(newAccount))
@@ -245,15 +213,113 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
     [dispatch]
   )
 
-  const updateSolanaForLedgerWallet = useCallback(
+  const updateLedgerWallet = useCallback(
     async ({
       deviceId,
       walletId,
       walletName,
       walletType,
+      accountIndexToUse,
+      avalancheKeys,
+      solanaKeys = [],
+      bitcoinAddress
+    }: WalletUpdateOptions & LedgerKeys) => {
+      try {
+        setIsLoading(true)
+
+        if (!avalancheKeys) {
+          throw new Error('Missing Avalanche keys for account creation')
+        }
+
+        if (!bitcoinAddress) {
+          throw new Error('Missing Bitcoin address for account creation')
+        }
+
+        // Use addresses for display and xpubs for wallet functionality
+        const { addresses, xpubs } = avalancheKeys
+
+        const walletSecretResult = await BiometricsSDK.loadWalletSecret(
+          walletId
+        )
+
+        if (
+          walletSecretResult.success === false ||
+          walletSecretResult.value === undefined
+        ) {
+          throw new Error('Failed to load existing wallet secret for update')
+        }
+
+        const parsedWalletSecret = LedgerWalletSecretSchema.parse(
+          JSON.parse(walletSecretResult.value)
+        )
+
+        if (deviceId !== parsedWalletSecret.deviceId) {
+          throw new Error(
+            'Device ID mismatch between connected wallet and stored wallet'
+          )
+        }
+
+        // Update the Ledger wallet exntended public keys for new account
+        await dispatch(
+          storeWallet({
+            walletId,
+            name: walletName,
+            type: walletType,
+            walletSecret: JSON.stringify({
+              ...parsedWalletSecret,
+              // For BIP44, update the extended public keys for account index
+              ...(parsedWalletSecret.derivationPathSpec ===
+                LedgerDerivationPathType.BIP44 && {
+                extendedPublicKeys: {
+                  ...parsedWalletSecret.extendedPublicKeys,
+                  [accountIndexToUse]: {
+                    evm: xpubs.evm, // Update with new xpub from getAvalancheKeys
+                    avalanche: xpubs.avalanche // Update with new xpub from getAvalancheKeys
+                  }
+                }
+              })
+            })
+          })
+        ).unwrap()
+
+        const newAccountId = uuid()
+        const updatedAccount: PrimaryAccount = {
+          id: newAccountId,
+          walletId,
+          name: `Account ${accountIndexToUse + 1}`,
+          type: CoreAccountType.PRIMARY,
+          index: accountIndexToUse,
+          addressC: addresses.evm,
+          addressCoreEth: addresses.coreEth,
+          addressAVM: addresses.avm,
+          addressPVM: addresses.pvm,
+          addressBTC: bitcoinAddress,
+          addressSVM: solanaKeys[0]?.key || ''
+        }
+
+        dispatch(setAccount(updatedAccount))
+        dispatch(setActiveAccountId(newAccountId))
+
+        Logger.info('Account created successfully')
+        showSnackbar('Account created successfully!')
+        return { walletId, accountId: newAccountId }
+      } catch (error) {
+        Logger.error('Failed to create account:', error)
+        throw error
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [dispatch]
+  )
+
+  const updateSolanaForLedgerWallet = useCallback(
+    async ({
+      deviceId,
+      walletId,
       account,
       solanaKeys = []
-    }: WalletUpdateOptions) => {
+    }: WalletUpdateSolanaOptions) => {
       try {
         setIsLoading(true)
 
@@ -281,32 +347,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
             'Device ID mismatch between connected wallet and stored wallet'
           )
         }
-
-        // Create the public keys array for BIP44
-        const publicKeysToStore = [
-          // Use formatted addresses for BIP44
-          ...parsedWalletSecret.publicKeys,
-          // Only include Solana key if it exists
-          {
-            key: solanaKeys[0].key, // Solana addresses don't use 0x prefix
-            derivationPath: solanaKeys[0].derivationPath, // Use the same path from getSolanaKeys
-            curve: Curve.ED25519
-          }
-        ]
-
-        // Store the Ledger wallet with the specified derivation path type
-        await dispatch(
-          storeWallet({
-            walletId,
-            name: walletName,
-            type: walletType,
-            walletSecret: JSON.stringify({
-              ...parsedWalletSecret,
-              publicKeys: publicKeysToStore,
-              solanaKeys
-            })
-          })
-        ).unwrap()
 
         // For the first account (index 0), use the addresses we retrieved during setup
         // This avoids the complex derivation logic that returns empty addresses
@@ -336,6 +376,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
     disconnectDevice,
     isLoading,
     createLedgerWallet,
-    updateSolanaForLedgerWallet
+    updateSolanaForLedgerWallet,
+    updateLedgerWallet
   }
 }

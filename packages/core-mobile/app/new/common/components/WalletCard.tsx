@@ -23,7 +23,6 @@ import {
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { WalletType } from 'services/wallet/types'
 import { LedgerAppType } from 'services/ledger/types'
-import { LedgerConnectionCaption } from 'features/accountSettings/components/LedgerConnectionCaption'
 import { useObserveLedgerState } from 'common/hooks/useObserveLedgerState'
 import { DropdownMenu } from './DropdownMenu'
 import { WalletIcon } from './WalletIcon'
@@ -153,34 +152,26 @@ const WalletCard = ({
         />
 
         {wallet.type !== WalletType.PRIVATE_KEY ? (
-          <View sx={{ gap: 16 }}>
-            {((isLedger && isAppOpened) || !isLedger) && (
-              <Button
-                testID={`add_account_btn__${wallet.name}`}
-                size="medium"
-                leftIcon={
-                  isAddingAccount ? undefined : (
-                    <Icons.Content.Add
-                      color={colors.$textPrimary}
-                      width={24}
-                      height={24}
-                    />
-                  )
-                }
-                type="secondary"
-                disabled={isAddingAccount}
-                onPress={() => handleAddAccountToWallet(wallet)}>
-                {isAddingAccount ? (
-                  <ActivityIndicator size="small" color={colors.$textPrimary} />
-                ) : (
-                  'Add account'
-                )}
-              </Button>
+          <Button
+            size="medium"
+            leftIcon={
+              isAddingAccount ? undefined : (
+                <Icons.Content.Add
+                  color={colors.$textPrimary}
+                  width={24}
+                  height={24}
+                />
+              )
+            }
+            type="secondary"
+            disabled={isAddingAccount}
+            onPress={() => handleAddAccountToWallet(wallet)}>
+            {isAddingAccount ? (
+              <ActivityIndicator size="small" color={colors.$textPrimary} />
+            ) : (
+              'Add account'
             )}
-            {isLedger && !isAppOpened && (
-              <LedgerConnectionCaption appType={LedgerAppType.AVALANCHE} />
-            )}
-          </View>
+          </Button>
         ) : (
           <></>
         )}

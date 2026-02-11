@@ -21,8 +21,6 @@ import { WalletType } from 'services/wallet/types'
 import { useSelector } from 'react-redux'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { useRouter } from 'expo-router'
-import { LedgerAppType } from 'services/ledger/types'
-import { LedgerConnectionCaption } from './LedgerConnectionCaption'
 
 export const AccountAddresses = ({
   account
@@ -140,9 +138,6 @@ export const AccountAddresses = ({
           lineHeight: 22
         }}
       />
-      {isMissingSolanaAddress && !isSolanaSupportBlocked && (
-        <LedgerConnectionCaption appType={LedgerAppType.SOLANA} />
-      )}
     </View>
   )
 }

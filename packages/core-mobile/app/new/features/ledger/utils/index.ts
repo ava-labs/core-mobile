@@ -4,6 +4,7 @@ import { LedgerAppType, LedgerDerivationPathType } from 'services/ledger/types'
 import { OnDelegationProgress } from 'contexts/DelegationContext'
 import { z } from 'zod'
 import Logger from 'utils/Logger'
+import LedgerService from 'services/ledger/LedgerService'
 import { ledgerParamsStore, StakingProgressParams } from '../store'
 
 export const showLedgerReviewTransaction = ({
@@ -83,30 +84,50 @@ export const LedgerWalletSecretSchema = z.object({
   deviceId: z.string(),
   deviceName: z.string(),
   derivationPathSpec: z.nativeEnum(LedgerDerivationPathType),
-  extendedPublicKeys: z
-    .object({
+  extendedPublicKeys: z.record(
+    z.string(),
+    z.object({
       evm: z.string().optional(),
       avalanche: z.string().optional()
     })
-    .optional(),
-  publicKeys: z.array(
-    z.object({
-      key: z.string(),
-      derivationPath: z.string(),
-      curve: z.string()
-    })
-  ),
-  avalancheKeys: z.object({
-    evm: z.string().optional(),
-    avm: z.string().optional(),
-    pvm: z.string().optional()
-  }),
-  solanaKeys: z.array(
-    z.object({
-      key: z.string(),
-      derivationPath: z.string(),
-      curve: z.string()
-    })
-  ),
-  bitcoinAddress: z.string().optional()
+  )
 })
+
+export const getOppositeKeys = async ({
+  acountIndex = 0,
+  isDeveloperMode
+}: {
+  acountIndex?: number
+  isDeveloperMode: boolean
+}): Promise<{
+  addressBTC: string
+  addressAVM: string
+  addressPVM: string
+  addressCoreEth: string
+}> => {
+  try {
+    const avalancheKeys = await LedgerService.getAvalancheKeys(
+      acountIndex,
+      !isDeveloperMode
+    )
+    const { bitcoinAddress } = await LedgerService.getBitcoinAndXPAddresses(
+      acountIndex,
+      !isDeveloperMode
+    )
+
+    return {
+      addressBTC: bitcoinAddress,
+      addressAVM: avalancheKeys.addresses.avm,
+      addressPVM: avalancheKeys.addresses.pvm,
+      addressCoreEth: avalancheKeys.addresses.coreEth
+    }
+  } catch (err) {
+    Logger.error('Failed to get opposite keys', err)
+    return {
+      addressBTC: '',
+      addressAVM: '',
+      addressPVM: '',
+      addressCoreEth: ''
+    }
+  }
+}

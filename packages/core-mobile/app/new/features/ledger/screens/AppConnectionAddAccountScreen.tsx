@@ -1,0 +1,127 @@
+import React, { useCallback, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { useLocalSearchParams, useRouter } from 'expo-router'
+import { LedgerKeys } from 'services/ledger/types'
+import Logger from 'utils/Logger'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import LedgerService from 'services/ledger/LedgerService'
+import { Alert } from 'react-native'
+import { selectWalletById } from 'store/wallet/slice'
+import { RootState } from 'store/types'
+import { selectAccountsByWalletId } from 'store/account'
+import { useLedgerWallet } from '../hooks/useLedgerWallet'
+import { useSetLedgerAddress } from '../hooks/useSetLedgerAddress'
+import { useLedgerSetupContext } from '../contexts/LedgerSetupContext'
+import { useLedgerDeviceInfo } from '../hooks/useLedgerDeviceInfo'
+import AppConnectionScreen from './AppConnectionScreen'
+
+export const AppConnectionAddAccountScreen = (): JSX.Element => {
+  const { walletId } = useLocalSearchParams<{ walletId: string }>()
+  const { dismiss } = useRouter()
+  const [isUpdatingWallet, setIsUpdatingWallet] = useState(false)
+  const { updateLedgerWallet } = useLedgerWallet()
+  const { setLedgerAddress } = useSetLedgerAddress()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const wallet = useSelector(selectWalletById(walletId))
+  const accounts = useSelector((state: RootState) =>
+    selectAccountsByWalletId(state, walletId)
+  )
+
+  const { deviceName, deviceId, derivationPathType } = useLedgerDeviceInfo(
+    wallet?.id
+  )
+
+  const { resetSetup, disconnectDevice } = useLedgerSetupContext()
+
+  const handleComplete = useCallback(
+    async (keys: LedgerKeys) => {
+      if (
+        keys &&
+        deviceId &&
+        wallet &&
+        accounts.length &&
+        derivationPathType &&
+        !isUpdatingWallet
+      ) {
+        Logger.info('All conditions met, creating account...')
+        setIsUpdatingWallet(true)
+
+        try {
+          const { accountId } = await updateLedgerWallet({
+            walletId: wallet.id,
+            walletName: wallet.name,
+            walletType: wallet.type,
+            accountIndexToUse: accounts.length,
+            deviceId,
+            deviceName,
+            derivationPathType,
+            avalancheKeys: keys.avalancheKeys,
+            solanaKeys: keys.solanaKeys,
+            bitcoinAddress: keys.bitcoinAddress
+          })
+
+          await setLedgerAddress({
+            accountIndex: accounts.length,
+            walletId,
+            isDeveloperMode,
+            accountId,
+            keys
+          })
+
+          Logger.info('Account created successfully, dismissing modals')
+          // Stop polling since we no longer need app detection
+          LedgerService.stopAppPolling()
+
+          dismiss()
+        } catch (error) {
+          Logger.error('Account creation failed', error)
+          Alert.alert(
+            'Account Creation Failed',
+            error instanceof Error
+              ? error.message
+              : 'Failed to create Ledger account. Please try again.',
+            [{ text: 'OK' }]
+          )
+          setIsUpdatingWallet(false)
+        }
+      } else {
+        Logger.info(
+          'Account creation conditions not met, skipping account creation',
+          {
+            hasAvalancheKeys: !!keys.avalancheKeys,
+            hasConnectedDeviceId: !!deviceId,
+            hasSelectedDerivationPath: !!derivationPathType,
+            isUpdatingWallet
+          }
+        )
+        dismiss()
+      }
+    },
+    [
+      deviceId,
+      wallet,
+      derivationPathType,
+      isUpdatingWallet,
+      updateLedgerWallet,
+      accounts,
+      deviceName,
+      setLedgerAddress,
+      walletId,
+      isDeveloperMode,
+      dismiss
+    ]
+  )
+
+  return (
+    <AppConnectionScreen
+      completeStepTitle={`Your Account\nis being set up`}
+      handleComplete={handleComplete}
+      deviceId={deviceId}
+      deviceName={deviceName}
+      resetSetup={resetSetup}
+      disconnectDevice={disconnectDevice}
+      isUpdatingWallet={isUpdatingWallet}
+      accountIndex={accounts.length}
+    />
+  )
+}

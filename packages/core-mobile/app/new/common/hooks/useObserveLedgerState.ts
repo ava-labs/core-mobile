@@ -1,11 +1,11 @@
 import { useLedgerWallet } from 'features/ledger/hooks/useLedgerWallet'
-import { useLedgerWalletMap } from 'features/ledger/store'
 import { LedgerAppType } from 'services/ledger/types'
 import { useEffect, useMemo, useState } from 'react'
 import LedgerService from 'services/ledger/LedgerService'
 import { useSelector } from 'react-redux'
 import { selectWalletById } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
+import { useLedgerDeviceInfo } from 'features/ledger/hooks/useLedgerDeviceInfo'
 
 export const useObserveLedgerState = (
   walletId: string,
@@ -15,13 +15,9 @@ export const useObserveLedgerState = (
   isLedger: boolean
 } => {
   const { transportState } = useLedgerWallet()
-  const { ledgerWalletMap } = useLedgerWalletMap()
+  const { deviceId } = useLedgerDeviceInfo(walletId)
   const wallet = useSelector(selectWalletById(walletId))
   const [isAppOpened, setIsAppOpened] = useState(false)
-
-  const deviceForWallet = useMemo(() => {
-    return ledgerWalletMap[walletId]
-  }, [ledgerWalletMap, walletId])
 
   const [isConnected, setIsConnected] = useState(false)
 
@@ -53,10 +49,10 @@ export const useObserveLedgerState = (
 
   useEffect(() => {
     async function checkAppIsOpened(): Promise<void> {
-      if (isLedger && deviceForWallet?.deviceId && transportState.available) {
+      if (isLedger && deviceId && transportState.available) {
         setIsConnected(false)
         try {
-          await LedgerService.ensureConnection(deviceForWallet.deviceId)
+          await LedgerService.ensureConnection(deviceId)
           setIsConnected(true)
         } catch (error) {
           setIsConnected(false)
@@ -66,7 +62,7 @@ export const useObserveLedgerState = (
       }
     }
     checkAppIsOpened()
-  }, [deviceForWallet?.deviceId, isLedger, transportState.available])
+  }, [deviceId, isLedger, transportState.available])
 
   return { isAppOpened, isLedger }
 }

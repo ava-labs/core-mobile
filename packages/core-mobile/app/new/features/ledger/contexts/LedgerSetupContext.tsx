@@ -8,13 +8,9 @@ import React, {
 } from 'react'
 import {
   LedgerDerivationPathType,
-  WalletCreationOptions,
   LedgerTransportState,
-  LedgerKeys,
-  WalletUpdateOptions
 } from 'services/ledger/types'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
-import { useLedgerWalletMap } from '../store'
 
 interface LedgerSetupContextValue {
   // State values
@@ -35,10 +31,6 @@ interface LedgerSetupContextValue {
   transportState: LedgerTransportState
   connectToDevice: (deviceId: string) => Promise<void>
   disconnectDevice: () => Promise<void>
-  createLedgerWallet: (
-    options: WalletCreationOptions & LedgerKeys
-  ) => Promise<{ walletId: string; accountId: string }>
-  updateSolanaForLedgerWallet: (options: WalletUpdateOptions) => Promise<void>
   // Helper methods
   resetSetup: () => void
 }
@@ -62,31 +54,8 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
   const [isCreatingWallet, setIsCreatingWallet] = useState<boolean>(false)
   const [hasStartedSetup, setHasStartedSetup] = useState<boolean>(false)
 
-  const {
-    isConnecting,
-    transportState,
-    connectToDevice,
-    disconnectDevice,
-    createLedgerWallet: _createLedgerWallet,
-    updateSolanaForLedgerWallet
-  } = useLedgerWallet()
-
-  const { setLedgerWalletMap } = useLedgerWalletMap()
-
-  const createLedgerWallet = useCallback(
-    async (
-      options: WalletCreationOptions
-    ): Promise<{ walletId: string; accountId: string }> => {
-      const { walletId, accountId } = await _createLedgerWallet(options)
-      setLedgerWalletMap(
-        walletId,
-        options.deviceId,
-        options.deviceName || 'Ledger Device'
-      )
-      return { walletId, accountId }
-    },
-    [_createLedgerWallet, setLedgerWalletMap]
-  )
+  const { isConnecting, transportState, connectToDevice, disconnectDevice } =
+    useLedgerWallet()
 
   const handleSetConnectedDevice = useCallback(
     (deviceId: string, deviceName: string) => {
@@ -115,8 +84,6 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
       transportState,
       connectToDevice,
       disconnectDevice,
-      createLedgerWallet,
-      updateSolanaForLedgerWallet,
       setSelectedDerivationPath,
       setConnectedDevice: handleSetConnectedDevice,
       setIsCreatingWallet,
@@ -133,8 +100,6 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
       transportState,
       connectToDevice,
       disconnectDevice,
-      createLedgerWallet,
-      updateSolanaForLedgerWallet,
       handleSetConnectedDevice,
       resetSetup
     ]

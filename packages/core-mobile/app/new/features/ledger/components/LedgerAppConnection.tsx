@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { View, ActivityIndicator } from 'react-native'
 import { Text, useTheme, Icons, GroupList } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
-import { LedgerDerivationPathType, LedgerKeys } from 'services/ledger/types'
+import { LedgerKeys } from 'services/ledger/types'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
@@ -36,9 +36,7 @@ interface StepConfig {
 }
 
 interface LedgerAppConnectionProps {
-  deviceName: string
-  selectedDerivationPath: LedgerDerivationPathType | null
-  isCreatingWallet?: boolean
+  completeStepTitle: string
   connectedDeviceId?: string | null
   connectedDeviceName?: string
   keys?: LedgerKeys
@@ -48,8 +46,7 @@ interface LedgerAppConnectionProps {
 }
 
 export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
-  deviceName,
-  selectedDerivationPath: _selectedDerivationPath,
+  completeStepTitle,
   connectedDeviceId,
   connectedDeviceName,
   keys,
@@ -223,74 +220,77 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   ])
 
   // Step configurations
-  const getStepConfig = (step: AppConnectionStep): StepConfig | null => {
-    switch (step) {
-      case AppConnectionStep.AVALANCHE_CONNECT:
-        return {
-          icon: (
-            <Icons.Custom.Avalanche
-              width={44}
-              height={40}
-              color={colors.$textPrimary}
-            />
-          ),
-          title: 'Connect to Avalanche App',
-          subtitle: `Open the Avalanche app on your ${deviceName}, then press Continue when ready.`,
-          showAnimation: false
-        }
+  const getStepConfig = useCallback(
+    (step: AppConnectionStep): StepConfig | null => {
+      switch (step) {
+        case AppConnectionStep.AVALANCHE_CONNECT:
+          return {
+            icon: (
+              <Icons.Custom.Avalanche
+                width={44}
+                height={40}
+                color={colors.$textPrimary}
+              />
+            ),
+            title: 'Connect to Avalanche App',
+            subtitle: `Open the Avalanche app on your ${connectedDeviceName}, then press Continue when ready.`,
+            showAnimation: false
+          }
 
-      case AppConnectionStep.AVALANCHE_LOADING:
-        return {
-          icon: (
-            <Icons.Custom.Avalanche
-              width={44}
-              height={40}
-              color={colors.$textPrimary}
-            />
-          ),
-          title: 'Connecting to Avalanche app',
-          subtitle: `Please keep your Avalanche app open on your ${deviceName}, We're retrieving your Avalanche addresses...`,
-          showAnimation: true,
-          isLoading: true
-        }
+        case AppConnectionStep.AVALANCHE_LOADING:
+          return {
+            icon: (
+              <Icons.Custom.Avalanche
+                width={44}
+                height={40}
+                color={colors.$textPrimary}
+              />
+            ),
+            title: 'Connecting to Avalanche app',
+            subtitle: `Please keep your Avalanche app open on your ${connectedDeviceName}, We're retrieving your Avalanche addresses...`,
+            showAnimation: true,
+            isLoading: true
+          }
 
-      case AppConnectionStep.SOLANA_CONNECT:
-        return {
-          icon: (
-            <Icons.Custom.Solana
-              width={40}
-              height={32}
-              color={colors.$textPrimary}
-            />
-          ),
-          title: 'Connect to Solana App',
-          subtitle: onlySolana
-            ? `Open the Solana app on your ${deviceName}, then press Continue when ready.`
-            : `Close the Avalanche app and open the Solana app on your ${deviceName}, then press Continue when ready.`,
-          showAnimation: false
-        }
+        case AppConnectionStep.SOLANA_CONNECT:
+          return {
+            icon: (
+              <Icons.Custom.Solana
+                width={40}
+                height={32}
+                color={colors.$textPrimary}
+              />
+            ),
+            title: 'Connect to Solana App',
+            subtitle: onlySolana
+              ? `Open the Solana app on your ${connectedDeviceName}, then press Continue when ready.`
+              : `Close the Avalanche app and open the Solana app on your ${connectedDeviceName}, then press Continue when ready.`,
+            showAnimation: false
+          }
 
-      case AppConnectionStep.SOLANA_LOADING:
-        return {
-          icon: (
-            <Icons.Custom.Solana
-              width={40}
-              height={32}
-              color={colors.$textPrimary}
-            />
-          ),
-          title: 'Connecting to Solana',
-          subtitle: `Please keep your Solana app open on your ${deviceName}, We're retrieving your Solana address...`,
-          showAnimation: true,
-          isLoading: true
-        }
+        case AppConnectionStep.SOLANA_LOADING:
+          return {
+            icon: (
+              <Icons.Custom.Solana
+                width={40}
+                height={32}
+                color={colors.$textPrimary}
+              />
+            ),
+            title: 'Connecting to Solana',
+            subtitle: `Please keep your Solana app open on your ${connectedDeviceName}, We're retrieving your Solana address...`,
+            showAnimation: true,
+            isLoading: true
+          }
 
-      default:
-        return null
-    }
-  }
+        default:
+          return null
+      }
+    },
+    [colors.$textPrimary, connectedDeviceName, onlySolana]
+  )
 
-  const renderStepContent = (): React.ReactNode => {
+  const renderStepContent = useCallback((): React.ReactNode => {
     // Handle COMPLETE step separately as it has unique layout
     if (currentStep === AppConnectionStep.COMPLETE) {
       return (
@@ -308,7 +308,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
               <Text
                 variant="heading3"
                 style={{ textAlign: 'center', marginBottom: 8 }}>
-                {`Your Ledger wallet \nis being set up`}
+                {completeStepTitle}
               </Text>
 
               <View style={{ paddingHorizontal: 16 }}>
@@ -399,11 +399,17 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
         </View>
       </View>
     )
-  }
+  }, [
+    addressListData,
+    colors.$textPrimary,
+    colors.$textSecondary,
+    currentStep,
+    getStepConfig
+  ])
 
   // Create device object for display
   const connectedDevice = connectedDeviceId
-    ? [{ id: connectedDeviceId, name: connectedDeviceName || deviceName }]
+    ? [{ id: connectedDeviceId, name: connectedDeviceName ?? 'Ledger Device' }]
     : []
 
   return (
