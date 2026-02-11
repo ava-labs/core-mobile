@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useMemo } from 'react'
+import React, { useCallback, useState, useEffect } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Alert } from 'react-native'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -15,7 +15,8 @@ import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { LedgerDerivationPathType } from 'services/ledger/types'
 import { WalletType } from 'services/wallet/types'
 import { useSelector } from 'react-redux'
-import { useLedgerWalletMap } from '../store'
+import { useLedgerDeviceInfo } from '../hooks/useLedgerDeviceInfo'
+import { useLedgerWallet } from '../hooks/useLedgerWallet'
 
 export default function SolanaConnectionScreen(): JSX.Element {
   const { accountId } = useLocalSearchParams<{ accountId: string }>()
@@ -23,23 +24,19 @@ export default function SolanaConnectionScreen(): JSX.Element {
   const { back, canGoBack } = useRouter()
   const [isUpdatingWallet, setIsUpdatingWallet] = useState(false)
   const wallet = useActiveWallet()
-  const { ledgerWalletMap } = useLedgerWalletMap()
+  const { deviceName, deviceId } = useLedgerDeviceInfo(wallet?.id)
   const [currentAppConnectionStep, setAppConnectionStep] = useState<
     AppConnectionStep.SOLANA_CONNECT | AppConnectionStep.SOLANA_LOADING
   >(AppConnectionStep.SOLANA_CONNECT)
 
-  const deviceForWallet = useMemo(() => {
-    if (!wallet?.id) return undefined
-    return ledgerWalletMap[wallet.id]
-  }, [ledgerWalletMap, wallet?.id])
-
   const {
     connectedDeviceId,
     connectedDeviceName,
-    updateSolanaForLedgerWallet,
     connectToDevice,
     setConnectedDevice
   } = useLedgerSetupContext()
+
+  const { updateSolanaForLedgerWallet } = useLedgerWallet()
 
   // Cleanup: Stop polling when component unmounts (unless wallet update is in progress)
   useEffect(() => {
@@ -62,18 +59,18 @@ export default function SolanaConnectionScreen(): JSX.Element {
       setAppConnectionStep(AppConnectionStep.SOLANA_LOADING)
 
       // Connect to device if not already connected
-      if (connectedDeviceId === null && deviceForWallet?.deviceId) {
-        await connectToDevice(deviceForWallet.deviceId)
-        setConnectedDevice(deviceForWallet.deviceId, deviceForWallet.deviceName)
+      if (connectedDeviceId === null && deviceId) {
+        await connectToDevice(deviceId)
+        setConnectedDevice(deviceId, deviceName)
       }
 
       // Get keys from service
       const solanaKeys = await LedgerService.getSolanaKeys(account.index)
 
-      if (solanaKeys.length === 0 || deviceForWallet?.deviceId === undefined) {
+      if (solanaKeys.length === 0 || deviceId === undefined) {
         Logger.info('Missing required data for Solana wallet update', {
           solanaKeysCount: solanaKeys.length,
-          hasConnectedDeviceId: !!deviceForWallet?.deviceId,
+          hasConnectedDeviceId: !!deviceId,
           isUpdatingWallet
         })
         throw new Error('Missing required data for Solana wallet update')
@@ -81,10 +78,8 @@ export default function SolanaConnectionScreen(): JSX.Element {
 
       if (wallet?.id && wallet?.name) {
         await updateSolanaForLedgerWallet({
-          deviceId: deviceForWallet.deviceId,
+          deviceId,
           walletId: wallet.id,
-          walletName: wallet.name,
-          walletType: wallet.type,
           account: account as PrimaryAccount,
           solanaKeys
         })
@@ -110,14 +105,13 @@ export default function SolanaConnectionScreen(): JSX.Element {
     canGoBack,
     connectToDevice,
     connectedDeviceId,
-    deviceForWallet?.deviceId,
-    deviceForWallet?.deviceName,
+    deviceId,
+    deviceName,
     isUpdatingWallet,
     setConnectedDevice,
     updateSolanaForLedgerWallet,
     wallet.id,
-    wallet.name,
-    wallet.type
+    wallet?.name
   ])
 
   const renderFooter = useCallback(() => {

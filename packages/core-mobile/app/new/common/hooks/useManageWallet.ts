@@ -4,7 +4,7 @@ import {
   dismissAlertWithTextInput,
   showAlertWithTextInput
 } from 'common/utils/alertWithTextInput'
-import { useLedgerWalletMap } from 'features/ledger/store'
+import { useRouter } from 'expo-router'
 import { showSnackbar } from 'new/common/utils/toast'
 import { useCallback, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -29,7 +29,7 @@ export const useManageWallet = (): {
   handleDropdownSelect: (action: string, wallet: Wallet) => void
   isAddingAccount: boolean
 } => {
-  const { removeLedgerWallet } = useLedgerWalletMap()
+  const { navigate } = useRouter()
   const [isAddingAccount, setIsAddingAccount] = useState(false)
   const dispatch = useDispatch<AppThunkDispatch>()
   const walletsCount = useSelector(selectWalletsCount)
@@ -103,19 +103,12 @@ export const useManageWallet = (): {
             style: 'destructive',
             onPress: () => {
               dispatch(removeWallet(wallet.id))
-
-              if (
-                wallet.type === WalletType.LEDGER ||
-                wallet.type === WalletType.LEDGER_LIVE
-              ) {
-                removeLedgerWallet(wallet.id)
-              }
             }
           }
         ]
       })
     },
-    [dispatch, walletsCount, removeLedgerWallet]
+    [dispatch, walletsCount]
   )
 
   const handleAddAccount = useCallback(
@@ -123,6 +116,18 @@ export const useManageWallet = (): {
       if (isAddingAccount) return
 
       try {
+        if (
+          wallet.type === WalletType.LEDGER ||
+          wallet.type === WalletType.LEDGER_LIVE
+        ) {
+          navigate({
+            // @ts-ignore TODO: make routes typesafe
+            pathname: '/addAccountAppConnection',
+            params: { walletId: wallet.id }
+          })
+          return
+        }
+
         AnalyticsService.capture('AccountSelectorAddAccount', {
           accountNumber: Object.keys(accounts).length + 1
         })
@@ -142,7 +147,7 @@ export const useManageWallet = (): {
         setIsAddingAccount(false)
       }
     },
-    [isAddingAccount, accounts, dispatch]
+    [isAddingAccount, accounts, dispatch, navigate]
   )
 
   const canRemoveWallet = useCallback(

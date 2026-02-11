@@ -145,14 +145,18 @@ export interface WalletCreationOptions {
   deviceName?: string
   derivationPathType: LedgerDerivationPathType
   accountCount?: number
-  individualKeys?: PublicKeyInfo[]
 }
 
-export interface WalletUpdateOptions {
-  deviceId: string
+export interface WalletUpdateOptions extends WalletCreationOptions {
   walletId: string
   walletName: string
   walletType: WalletType
+  accountIndexToUse: number
+}
+
+export interface WalletUpdateSolanaOptions {
+  deviceId: string
+  walletId: string
   account: PrimaryAccount
   solanaKeys: PublicKeyInfo[]
 }
