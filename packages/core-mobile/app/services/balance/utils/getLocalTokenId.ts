@@ -3,6 +3,7 @@ import {
   NetworkContractToken,
   TokenType
 } from '@avalabs/vm-module-types'
+import Logger from 'utils/Logger'
 
 export function getLocalTokenId(
   token: TokenWithBalance | NetworkContractToken
@@ -12,5 +13,10 @@ export function getLocalTokenId(
     return fallbackTokenId
   }
 
-  return token.address ?? fallbackTokenId
+  if (!token.address) {
+    Logger.error('Token address is missing', { token })
+    return fallbackTokenId
+  }
+
+  return token.address
 }
