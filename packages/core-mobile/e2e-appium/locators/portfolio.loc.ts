@@ -79,5 +79,6 @@ export default {
   managedNft: 'The Free Mint',
   unreachable: 'unreachable',
   untitledNft: 'Untitled',
-  untitledDisplayed: 'Untitled_displayed'
+  untitledDisplayed: 'Untitled_displayed',
+  tokenHeaderFiatBalance: 'token_header_fiat_balance'
 }

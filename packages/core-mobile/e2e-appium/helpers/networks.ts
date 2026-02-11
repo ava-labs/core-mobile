@@ -13,13 +13,13 @@ export type Network = {
 }
 
 export const customNetwork: Network = {
-  name: 'POLYGON',
+  name: 'Shape',
   haveToggle: true,
   data: {
-    rpcUrl: 'https://polygon-rpc.com',
-    chainId: '137',
-    tokenSymbol: 'POLY',
-    tokenName: 'Polygon Ecosystem Token'
+    rpcUrl: 'https://mainnet.shape.network/',
+    chainId: '360',
+    tokenSymbol: 'ETH',
+    tokenName: 'ETH'
   }
 }
 export const networks: Network[] = [

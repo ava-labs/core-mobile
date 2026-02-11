@@ -160,10 +160,8 @@ class TransactionsPage {
   }
 
   async dismissTransactionOnboarding() {
-    try {
+    if (await actions.getVisible(this.transactionOnboardingNext)) {
       await actions.tap(this.transactionOnboardingNext)
-    } catch (e) {
-      console.log('Transaction onboarding not found')
     }
   }
 
@@ -197,10 +195,7 @@ class TransactionsPage {
     await actions.tap(this.sendSelectTokenListBtn)
   }
 
-  async selectToken(
-    tokenName: string,
-    network: string | undefined = undefined
-  ) {
+  async selectToken(tokenName: string, network?: string) {
     if (network) {
       await actions.tap(selectors.getById(`network_selector__${network}`))
     }
@@ -233,9 +228,9 @@ class TransactionsPage {
     }
   }
 
-  async tapNext() {
+  async tapNext(nextPage?: ChainablePromiseElement) {
     await actions.waitFor(this.nextBtn)
-    await actions.tap(this.nextBtn)
+    await actions.tap(this.nextBtn, nextPage)
   }
 
   async tapApprove() {
@@ -243,7 +238,8 @@ class TransactionsPage {
     await actions.tap(this.approveBtn)
   }
 
-  async tapRecentAccount(account: string) {
+  async tapRecentAccount(account = txLoc.accountTwo) {
+    await this.typeSearchBar(account[0] as string)
     await actions.tap(selectors.getById(`recent_contacts__${account}`))
   }
 
@@ -254,7 +250,6 @@ class TransactionsPage {
   ) {
     await this.tapSend()
     await this.dismissTransactionOnboarding()
-    await this.typeSearchBar(account)
     await this.tapRecentAccount(account)
     if (token) {
       await this.goToSelectTokenList()
@@ -269,6 +264,7 @@ class TransactionsPage {
       await this.tapNext()
       await this.tapApprove()
     }
+    return performance.now()
   }
 
   async checkInsufficientBalance() {
@@ -346,13 +342,16 @@ class TransactionsPage {
     await this.enterSendAmount(amount)
     let tryCount = 5
     let newAmount = amount
-
-    while (await actions.getVisible(this.errorMsg)) {
-      newAmount = await this.adjustAmount(newAmount)
-      await this.enterSendAmount(newAmount)
-      tryCount--
-      if ((await actions.getVisible(this.nextBtn)) || tryCount === 0) {
-        break
+    try {
+      await actions.waitForNotVisible(this.errorMsg)
+    } catch (e) {
+      while (await actions.getVisible(this.errorMsg)) {
+        newAmount = await this.adjustAmount(newAmount)
+        await this.enterSendAmount(newAmount)
+        tryCount--
+        if ((await actions.getVisible(this.nextBtn)) || tryCount === 0) {
+          break
+        }
       }
     }
   }
@@ -402,31 +401,23 @@ class TransactionsPage {
     await this.tapSwap()
     await this.dismissTransactionOnboarding()
 
-    // Enter input
-    await this.enterAmountAndAdjust(amount)
-
     // select tokens
-    if (from === 'USDC' && to === 'AVAX') {
-      await this.tapSwapVerticalIcon()
-    } else {
-      // Select From Token
-      if (from !== 'AVAX') {
-        await this.tapYouPay()
-        await this.selectToken(from, network)
-      }
-
-      // Select To Token
-      if (to !== 'USDC') {
-        await this.tapYouReceive()
-        await this.selectToken(to, network)
-      }
-      console.log(`swapping ${from} to ${to}...`)
+    const fromTokenOnUi = await actions.getText(this.youPay)
+    if (from !== fromTokenOnUi) {
+      await this.tapYouPay()
+      await this.selectToken(from, network)
     }
 
-    await this.tapNext()
+    const toTokenOnUi = await actions.getText(this.youReceive)
+    if (to !== toTokenOnUi) {
+      await this.tapYouReceive()
+      await this.selectToken(to, network)
+    }
+    await this.enterAmountAndAdjust(amount)
+    await this.tapNext(this.approveBtn)
 
     // If `from` is not AVAX, we need to approve the spend limit
-    if (from !== 'AVAX') {
+    if (from !== 'AVAX' && network === txLoc.cChain) {
       try {
         await actions.waitFor(this.tokenSpendApproval, 30000)
         await this.tapApprove()
@@ -447,7 +438,7 @@ class TransactionsPage {
     }
   }
 
-  async swapOnTrack(index = 1, amount = '0.000001') {
+  async swapOnTrack(index = 1, amount = '0.00001') {
     await this.tapTrackBuyBtn(index)
     await this.dismissTransactionOnboarding()
     await this.enterAmountAndAdjust(amount)

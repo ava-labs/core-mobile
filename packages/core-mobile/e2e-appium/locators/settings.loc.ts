@@ -1,5 +1,8 @@
 export default {
-  // NEW BELOW:
+  deleteContactBtn: 'delete_contact_btn',
+  addAccountBtn: 'add_account_btn',
+  removeAllAccounts: 'Remove all accounts',
+  myWallets: 'My wallets',
   account: 'Account 1',
   account2: 'Account 2',
   account3: 'Account 3',
@@ -59,7 +62,8 @@ export default {
   testnetAvatar: 'testnet_avatar',
   addressCopied: ' address copied',
   renameAccount: 'Rename account',
-  removeAccount: 'Remove account',
+  removeAccount: 'remove_account',
+  removeAccountDisabled: 'remove_account_disabled',
   showPrivateKey: 'Show private key',
   rename: 'Rename',
   addAccountToThisWallet: 'Add account to this wallet',
@@ -68,7 +72,7 @@ export default {
   manageAccountsBtn: 'manage_accounts',
   emptyContacts: 'No saved addresses',
   emptyContactsText: 'Save addresses for quick access in future transactions',
-  addAddressButton: 'Add an address',
+  addAddressButton: 'btn__Add an address',
   connectedSites: 'Connected sites',
   disconnectAll: 'Disconnect all',
   manageAccountsTitle: 'Manage accounts',

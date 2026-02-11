@@ -4,11 +4,15 @@ import common from '../../pages/commonEls.page'
 import warmup from '../../helpers/warmup'
 
 describe('Settings', () => {
-  it('Accounts - should verify the account detail', async () => {
-    // go to the account detail from the accounts carousel
+  it('Accounts - should auto-add the second account', async () => {
     await warmup()
-    await settings.goSettings()
-    await settings.goToAccountDetail(undefined, sl.account)
+    await common.goMyWallets()
+    await settings.verifyMyWalletsAccountName(sl.account)
+    await settings.verifyMyWalletsAccountName(sl.account2)
+  })
+
+  it('Accounts - should verify the account detail', async () => {
+    await settings.goToAccountDetail()
     await common.verifyAccountName(sl.account)
   })
 
@@ -16,28 +20,23 @@ describe('Settings', () => {
     // Rename on account detail
     await settings.tapRenameAccount()
     await settings.setNewAccountName(sl.newAccountName)
-
     // Verify the new name on account detail
     await common.verifyAccountName(sl.newAccountName)
+    await common.goBack()
 
-    // Verify the new name on portfolio page
-    await common.dismissBottomSheet()
+    // verify the new name on my wallets
+    await settings.verifyMyWalletsAccountName(sl.newAccountName)
+
+    // verify the new name on portfolio
+    await common.goBack()
     await common.verifyAccountName(sl.newAccountName, 'portfolio')
-
-    // Verify the new name on account carousel
-    await settings.goSettings()
-    await settings.verifyAccountCarouselItem(sl.newAccountName)
-  })
-
-  it('Accounts - should auto-add the second account', async () => {
-    await settings.verifyAccountCarouselItem(sl.account2)
-    await settings.tapManageAccountsBtn()
-    await settings.verifyManageAccountsListItem(sl.account2)
   })
 
   it('Accounts - should add an account', async () => {
+    await common.goMyWallets()
     await settings.addAccount(3)
-    await common.dismissBottomSheet()
+    await settings.verifyMyWalletsAccountName(sl.account3)
+    await common.goBack()
   })
 
   it('Accounts - should switch account', async () => {
