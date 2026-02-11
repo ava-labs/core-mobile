@@ -159,7 +159,7 @@ async function click(ele: ChainablePromiseElement) {
 
 async function dismissKeyboard(id = 'Return') {
   if (driver.isIOS) {
-    await tap(selectors.getById(id))
+    await click(selectors.getById(id))
   } else {
     await driver.hideKeyboard()
   }

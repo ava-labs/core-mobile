@@ -78,6 +78,7 @@ const ContactDetailScreen = (): React.JSX.Element => {
   const renderFooter = useCallback(() => {
     return (
       <Button
+        testID="delete_contact_btn"
         type="secondary"
         size="large"
         onPress={handleDelete}
