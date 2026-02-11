@@ -5,7 +5,7 @@ import {
   useQuotes,
   useSwapSelectedFromToken,
   useSwapSelectedToToken
-} from 'features/swapV2/store'
+} from 'features/swapV2/hooks/useZustandStore'
 
 export default (): JSX.Element => {
   const [fromToken] = useSwapSelectedFromToken()

@@ -543,22 +543,22 @@ export const selectIsFusionAvalancheEvmEnabled = (
   )
 }
 
-export const selectIsFusionLombardBtcToAvaEnabled = (
+export const selectIsFusionLombardBtcToBtcbEnabled = (
   state: RootState
 ): boolean => {
   const { featureFlags } = state.posthog
   return (
-    featureFlags[FeatureGates.FUSION_LOMBARD_BTC_TO_AVA] === true &&
+    featureFlags[FeatureGates.FUSION_LOMBARD_BTC_TO_BTCB] === true &&
     featureFlags[FeatureGates.EVERYTHING] === true
   )
 }
 
-export const selectIsFusionLombardAvaToBtcEnabled = (
+export const selectIsFusionLombardBtcbToBtcEnabled = (
   state: RootState
 ): boolean => {
   const { featureFlags } = state.posthog
   return (
-    featureFlags[FeatureGates.FUSION_LOMBARD_AVA_TO_BTC] === true &&
+    featureFlags[FeatureGates.FUSION_LOMBARD_BTCB_TO_BTC] === true &&
     featureFlags[FeatureGates.EVERYTHING] === true
   )
 }
