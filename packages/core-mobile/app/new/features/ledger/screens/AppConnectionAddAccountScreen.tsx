@@ -5,10 +5,10 @@ import { LedgerKeys } from 'services/ledger/types'
 import Logger from 'utils/Logger'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import LedgerService from 'services/ledger/LedgerService'
-import { Alert } from 'react-native'
 import { selectWalletById } from 'store/wallet/slice'
 import { RootState } from 'store/types'
 import { selectAccountsByWalletId } from 'store/account'
+import { showSnackbar } from 'common/utils/toast'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useSetLedgerAddress } from '../hooks/useSetLedgerAddress'
 import { useLedgerSetupContext } from '../contexts/LedgerSetupContext'
@@ -71,17 +71,12 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
           Logger.info('Account created successfully, dismissing modals')
           // Stop polling since we no longer need app detection
           LedgerService.stopAppPolling()
-
+          showSnackbar('Account added successfully')
           dismiss()
         } catch (error) {
           Logger.error('Account creation failed', error)
-          Alert.alert(
-            'Account Creation Failed',
-            error instanceof Error
-              ? error.message
-              : 'Failed to create Ledger account. Please try again.',
-            [{ text: 'OK' }]
-          )
+          showSnackbar('Unable to add account')
+        } finally {
           setIsUpdatingWallet(false)
         }
       } else {

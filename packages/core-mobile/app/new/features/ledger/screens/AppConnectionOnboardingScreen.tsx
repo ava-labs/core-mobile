@@ -80,6 +80,7 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
               : 'Failed to create Ledger wallet. Please try again.',
             [{ text: 'OK' }]
           )
+        } finally {
           setIsUpdatingWallet(false)
         }
       } else {
