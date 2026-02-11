@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { Network } from '@avalabs/core-chains-sdk'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
+import { RequestContext } from 'store/rpc/types'
 
 type UseETHSendTransactionProps = {
   network: Network | undefined
@@ -22,6 +23,7 @@ type ETHSendTransactionParams = {
   encodedData: Hex
   value?: Hex // Optional value for native token transfers (e.g., AVAX)
   requestId?: string // Optional identifier to track which request completed in callbacks
+  confettiDisabled?: boolean // Disable confetti animation on transaction success
 }
 
 /**
@@ -64,7 +66,8 @@ export const useETHSendTransaction = ({
       contractAddress,
       encodedData,
       value,
-      requestId
+      requestId,
+      confettiDisabled
     }: ETHSendTransactionParams) => {
       if (!provider) {
         throw new Error('No provider found')
@@ -93,7 +96,10 @@ export const useETHSendTransaction = ({
               ...(value && { value })
             }
           ],
-          chainId
+          chainId,
+          ...(confettiDisabled && {
+            context: { [RequestContext.CONFETTI_DISABLED]: true }
+          })
         })
       } catch (error) {
         onErrorRef.current?.(error, requestId)
