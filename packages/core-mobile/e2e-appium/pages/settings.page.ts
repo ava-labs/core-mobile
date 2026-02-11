@@ -614,7 +614,11 @@ class Settings {
       selectors.getById(`advanced_input__${type.toLowerCase()}`),
       value
     )
-    await actions.dismissKeyboard()
+    try {
+      await actions.dismissKeyboard()
+    } catch (e) {
+      await actions.dismissKeyboard(`advanced_input__${type.toLowerCase()}`)
+    }
   }
 
   async addNetwork(network: Network) {
@@ -680,12 +684,8 @@ class Settings {
   }
 
   async tapNetworkByName(networkName: string) {
-    try {
-      await actions.tap(this.networkList(networkName))
-    } catch (e) {
-      await common.typeSearchBar(networkName)
-      await actions.tap(this.networkList(networkName))
-    }
+    await common.typeSearchBar(networkName)
+    await actions.tap(this.networkList(networkName))
   }
 
   async verifyNetworkDetails(network: Network) {

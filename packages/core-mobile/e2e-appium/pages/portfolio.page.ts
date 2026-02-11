@@ -372,12 +372,12 @@ class PortfolioPage {
   }
 
   async verifyNetworksRemoved(networks: Network[]) {
-    await this.tapAssetsTab
-    await actions.click(commonElsPage.filterDropdown)
+    await this.tapAssetsTab()
+    await this.tapFilterDropdown()
     for (const { name, haveToggle } of networks) {
       if (haveToggle) await actions.isNotVisible(selectors.getByText(name))
     }
-    await this.dismissFilterDropdown()
+    await this.tapFilterDropdown()
     await this.tapActivityTab()
     await this.tapNetworksDropdown()
     for (const { name, haveToggle } of networks) {
@@ -392,21 +392,17 @@ class PortfolioPage {
     }
   }
 
-  async dismissFilterDropdown() {
-    if (driver.isAndroid) {
-      await actions.click(selectors.getByText(commonEls.allNetworks))
-    } else {
-      await actions.tap(commonElsPage.accountOne)
-    }
+  async tapFilterDropdown() {
+    await actions.click(commonElsPage.filterDropdown)
   }
 
   async verifyNetworksAdded(networks: Network[]) {
     await this.tapAssetsTab()
-    await actions.click(commonElsPage.filterDropdown)
+    await this.tapFilterDropdown()
     for (const { name, haveToggle } of networks) {
       if (haveToggle) await actions.isVisible(selectors.getByText(name))
     }
-    await this.dismissFilterDropdown()
+    await this.tapFilterDropdown()
     await this.tapActivityTab()
     await this.tapNetworksDropdown()
     for (const { name, haveToggle } of networks) {
