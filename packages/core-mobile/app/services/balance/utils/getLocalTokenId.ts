@@ -7,9 +7,10 @@ import {
 export function getLocalTokenId(
   token: TokenWithBalance | NetworkContractToken
 ): string {
+  const fallbackTokenId = `${token.type}-${token.symbol}`
   if (token.type === TokenType.NATIVE) {
-    return `${token.type}-${token.symbol}`
+    return fallbackTokenId
   }
 
-  return token.address
+  return token.address ?? fallbackTokenId
 }
