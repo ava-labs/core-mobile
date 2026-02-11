@@ -1,5 +1,4 @@
 import { Curve } from 'utils/publicKeys'
-import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import { BtcWalletPolicyDetails } from '@avalabs/vm-module-types'
 import { PrimaryAccount } from 'store/account'
@@ -165,7 +164,6 @@ export interface WalletUpdateOptions {
 // Base interface for common wallet data
 interface BaseLedgerWalletData {
   deviceId: string
-  vmType: NetworkVMType
   transport?: TransportBLE // Optional for backward compatibility
   publicKeys: PublicKey[]
 }
@@ -181,7 +179,6 @@ export interface PerAccountExtendedPublicKeys {
 // BIP44 specific wallet data
 export interface BIP44LedgerWalletData extends BaseLedgerWalletData {
   derivationPathSpec: LedgerDerivationPathType.BIP44
-  derivationPath: string
   // Extended keys required for BIP44 - stored per account
   extendedPublicKeys: PerAccountExtendedPublicKeys
 }
@@ -189,7 +186,6 @@ export interface BIP44LedgerWalletData extends BaseLedgerWalletData {
 // Ledger Live specific wallet data
 export interface LedgerLiveWalletData extends BaseLedgerWalletData {
   derivationPathSpec: LedgerDerivationPathType.LedgerLive
-  derivationPath: string
   // No extended keys for Ledger Live
   extendedPublicKeys?: never
 }

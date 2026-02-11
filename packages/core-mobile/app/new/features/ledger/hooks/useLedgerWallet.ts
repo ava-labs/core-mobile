@@ -160,7 +160,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           },
           {
             key: formattedAddresses.pvm,
-            derivationPath: DERIVATION_PATHS.BIP44.PVM,
+            derivationPath: DERIVATION_PATHS.BIP44.AVALANCHE,
             curve: Curve.SECP256K1
           },
           // Only include Solana key if it exists
@@ -184,8 +184,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
             walletSecret: JSON.stringify({
               deviceId,
               deviceName,
-              derivationPath: DERIVATION_PATHS.BIP44.EVM,
-              vmType: 'EVM',
               derivationPathSpec: derivationPathType,
               ...(derivationPathType === LedgerDerivationPathType.BIP44 && {
                 // Store in per-account format: { [accountIndex]: { evm, avalanche } }
