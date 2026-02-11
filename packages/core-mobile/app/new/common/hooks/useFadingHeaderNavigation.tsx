@@ -23,7 +23,6 @@ import Animated, {
  */
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
-import Grabber from 'common/components/Grabber'
 import { Pressable } from 'react-native-gesture-handler'
 
 export const useFadingHeaderNavigation = ({
@@ -129,14 +128,11 @@ export const useFadingHeaderNavigation = ({
   const headerBackgroundComponent = useMemo(() => {
     return hideHeaderBackground ? (
       // Use a Pressable to receive gesture events for modal gestures
-      <Pressable style={{ flex: 1 }}>
-        {shouldHeaderHaveGrabber === true ? <Grabber /> : null}
-      </Pressable>
+      <Pressable style={{ flex: 1 }} />
     ) : (
       <BlurredBackgroundView
         backgroundColor={backgroundColor}
         shouldDelayBlurOniOS={shouldDelayBlurOniOS}
-        hasGrabber={shouldHeaderHaveGrabber}
         hasAnimation={hasBackgroundAnimation}
         separator={
           hasSeparator
@@ -150,7 +146,6 @@ export const useFadingHeaderNavigation = ({
     )
   }, [
     hideHeaderBackground,
-    shouldHeaderHaveGrabber,
     backgroundColor,
     shouldDelayBlurOniOS,
     hasBackgroundAnimation,
@@ -169,8 +164,10 @@ export const useFadingHeaderNavigation = ({
       <View
         style={{
           justifyContent: 'center',
+          alignItems: 'center',
           overflow: 'hidden',
           // Hardcoded value for Android because 100% doesn't work properly
+          // On iOS 26+, use fixed height to prevent Liquid Glass header resizing issues
           height: Platform.OS === 'ios' ? '100%' : 56
         }}>
         <View onLayout={handleLayout}>
@@ -213,7 +210,21 @@ export const useFadingHeaderNavigation = ({
   }, [])
 
   const stableHeaderRight = useCallback((): React.ReactNode => {
-    return renderHeaderRightRef.current?.()
+    const content = renderHeaderRightRef.current?.()
+    if (!content) return null
+    // Wrap in a constrained container to prevent header right from enlarging
+    // after repeated route open/close on iOS (React Navigation header slot can stretch)
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          flexGrow: 0,
+          flexShrink: 0
+        }}>
+        {content}
+      </View>
+    )
   }, [])
 
   /**
@@ -256,7 +267,10 @@ export const useFadingHeaderNavigation = ({
     }, [hasParent, navigation, renderHeaderRight, stableHeaderRight])
   )
 
-  // Set navigation options on focus
+  // Set navigation options when the screen gains focus (and on mount).
+  // We do NOT clear options in the cleanup here: useFocusEffect cleanup runs on
+  // blur (e.g. when a modal opens), which would remove the underlying screen's
+  // header. Options are cleared only on unmount via the useEffect below.
   useFocusEffect(
     useCallback(() => {
       const nav = hasParent ? navigation.getParent() : navigation
@@ -269,17 +283,7 @@ export const useFadingHeaderNavigation = ({
         navigationOptions.headerTitle = stableHeaderTitle
       }
 
-      // Set the navigation options
       nav?.setOptions(navigationOptions)
-
-      // Clean up navigation options when the screen is unmounted
-      return () => {
-        nav?.setOptions({
-          headerBackground: undefined,
-          headerTitle: undefined
-        })
-      }
-      // Only depend on stable references - runs once on mount/focus
     }, [
       hasParent,
       navigation,
@@ -288,6 +292,18 @@ export const useFadingHeaderNavigation = ({
       showNavigationHeaderTitle
     ])
   )
+
+  // Clear header options only when the screen unmounts (not on blur).
+  // This keeps the underlying screen's header intact when a modal is presented.
+  useEffect(() => {
+    const nav = hasParent ? navigation.getParent() : navigation
+    return () => {
+      nav?.setOptions({
+        headerBackground: undefined,
+        headerTitle: undefined
+      })
+    }
+  }, [hasParent, navigation])
 
   // Update navigation header title whenever header content changes
   // This ensures the header updates when account changes, even if screen stays focused
