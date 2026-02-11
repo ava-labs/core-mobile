@@ -831,18 +831,14 @@ class LedgerService {
         })
 
         // Bitcoin public key
-        const btcPath = getAddressDerivationPath({
-          accountIndex: i,
-          vmType: NetworkVMType.BITCOIN
-        })
         const btcResponse = await avalancheApp.getAddressAndPubKey(
-          btcPath,
+          evmPath,
           false,
           'bc'
         )
         publicKeys.push({
           key: btcResponse.publicKey.toString('hex'),
-          derivationPath: btcPath,
+          derivationPath: evmPath,
           curve: Curve.SECP256K1
         })
       }
@@ -920,12 +916,8 @@ class LedgerService {
         })
 
         // Bitcoin addresses - derive from EVM public key (like the extension)
-        const btcPath = getAddressDerivationPath({
-          accountIndex: i,
-          vmType: NetworkVMType.EVM // Use EVM path for Bitcoin
-        })
         const btcPublicKeyResponse = await avalancheApp.getAddressAndPubKey(
-          btcPath,
+          evmPath,
           false,
           networkHrp // hrp for mainnet or testnet
         )
@@ -937,7 +929,7 @@ class LedgerService {
         addresses.push({
           id: `bitcoin-${i}`,
           address: btcAddress,
-          derivationPath: btcPath,
+          derivationPath: evmPath,
           network: ChainName.BITCOIN
         })
       }
