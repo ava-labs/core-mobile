@@ -24,15 +24,15 @@ phases:
       - node --version
 
       # Use the devicefarm-cli to select a preinstalled major version of Appium.
-      - devicefarm-cli use appium 2
+      - devicefarm-cli use appium 3
       - appium --version
 
       # The Device Farm service automatically updates the preinstalled Appium versions over time to
       # incorporate the latest minor and patch versions for each major version. If you wish to
       # select a specific version of Appium, you can use NPM to install it.
-      # - npm install -g appium@2.1.3
+      # - npm install -g appium@3.0.0
 
-      # For Appium version 2, Device Farm automatically updates the preinstalled UIAutomator2 driver
+      # For Appium version 3, Device Farm automatically updates the preinstalled UIAutomator2 driver
       # over time to incorporate the latest minor and patch versions for its major version 2. If you
       # want to install a specific version of the driver, you can use the Appium extension CLI to
       # uninstall the existing UIAutomator2 driver and install your desired version:

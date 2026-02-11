@@ -5,5 +5,4 @@
     }
   ],
   "typescript.tsdk": "./packages/core-mobile/node_modules/typescript/lib",
-  "java.compile.nullAnalysis.mode": "automatic"
 }
