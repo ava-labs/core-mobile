@@ -51,6 +51,7 @@ interface TokenAddresses {
   address?: string
   addressXP?: string
   addressBTC?: string
+  addressSVM?: string
 }
 
 export type ToAddress = {

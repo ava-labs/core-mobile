@@ -166,11 +166,13 @@ export interface Wallet {
    * @param provider - The Bitcoin provider.
    */
   signBtcTransaction({
+    accountName,
     accountIndex,
     transaction,
     network,
     provider
   }: {
+    accountName?: string
     accountIndex: number
     transaction: BtcTransactionRequest
     network: Network
@@ -242,4 +244,10 @@ export interface Wallet {
     network: Network
     provider: SolanaProvider
   }): Promise<string>
+}
+
+export type SignatureRSV = {
+  r: string
+  s: string
+  v: string | number
 }

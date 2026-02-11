@@ -9,6 +9,8 @@ import { selectEnabledNetworks } from 'store/network/slice'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { Network } from '@avalabs/core-chains-sdk'
 import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
+import { selectWalletById } from 'store/wallet/slice'
+import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 import * as store from '../store'
 
 /**
@@ -55,8 +57,9 @@ export function useAccountBalances(
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const currency = useSelector(selectSelectedCurrency)
   const { xpAddresses } = useXPAddresses(account)
+  const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
 
-  const isNotReady = !account || enabledNetworks.length === 0
+  const isNotReady = !account || enabledNetworks.length === 0 || !wallet
 
   const enabled = !isNotReady
 
@@ -74,11 +77,18 @@ export function useAccountBalances(
     queryFn: async () => {
       if (isNotReady) return []
 
+      const xpub = await getXpubXPIfAvailable({
+        walletId: wallet.id,
+        walletType: wallet.type,
+        accountIndex: account.index
+      })
+
       return await BalanceService.getBalancesForAccount({
         networks: enabledNetworks,
         account,
         currency: currency.toLowerCase(),
         xpAddresses,
+        xpub,
         onBalanceLoaded: balance => {
           queryClient.setQueryData(
             balanceKey(account, enabledNetworks),

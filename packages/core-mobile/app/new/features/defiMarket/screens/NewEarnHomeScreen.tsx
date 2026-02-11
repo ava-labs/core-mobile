@@ -10,6 +10,7 @@ import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout
 import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import { Placeholder } from 'common/components/Placeholder'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { useFocusEffect } from 'expo-router'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   LayoutChangeEvent,
@@ -34,6 +35,7 @@ import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import CoreAppIconLight from '../../../assets/icons/core-app-icon-light.svg'
 import CoreAppIconDark from '../../../assets/icons/core-app-icon-dark.svg'
 import DepositTabScreen from './DepositTabScreen'
@@ -41,6 +43,12 @@ import BorrowTabScreen from './BorrowTabScreen'
 
 export const NewEarnHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
+
+  useFocusEffect(
+    useCallback(() => {
+      AnalyticsService.capture('EarnOpened')
+    }, [])
+  )
   const headerHeight = useHeaderHeight()
   const pagerRef = useRef<PagerView>(null)
   const { theme } = useTheme()
