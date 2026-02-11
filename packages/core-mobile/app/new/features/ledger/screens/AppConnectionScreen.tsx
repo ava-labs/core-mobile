@@ -278,7 +278,7 @@ export default function AppConnectionScreen({
           disable: isUpdatingWallet
         }
         secondary = {
-          text: 'Cancel setup',
+          text: 'Cancel',
           onPress: handleCancel,
           disable: isUpdatingWallet
         }
