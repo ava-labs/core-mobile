@@ -3,8 +3,7 @@ import type {
   BtcSigner,
   Environment,
   EvmSignerWithMessage,
-  ServiceType,
-  TransferManager
+  ServiceType
 } from '@avalabs/unified-asset-transfer'
 
 /**
@@ -41,9 +40,10 @@ export interface IFusionService {
   }): Promise<void>
 
   /**
-   * Get the initialized TransferManager instance
+   * Get supported chains from the Fusion SDK
+   * Returns CAIP-2 chain IDs that are supported by the enabled services
    */
-  getTransferManager(): TransferManager | null
+  getSupportedChains(): Promise<readonly string[]>
 
   /**
    * Check if the service is initialized

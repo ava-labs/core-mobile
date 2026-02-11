@@ -15,16 +15,13 @@ import { ErrorState } from 'common/components/ErrorState'
 import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
-import useCChainNetwork from 'hooks/earn/useCChainNetwork'
-import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ListRenderItem } from '@shopify/flash-list'
-import { useSelector } from 'react-redux'
 import { LocalTokenWithBalance } from 'store/balance'
-import { selectIsSolanaSwapBlocked } from 'store/posthog'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { useFilteredSwapTokens } from '../hooks/useFilteredSwapTokens'
 import { useSwapV2Tokens } from '../hooks/useSwapV2Tokens'
+import { useSupportedChains } from '../hooks/useSupportedChains'
 
 export const SelectSwapV2TokenScreen = ({
   selectedToken,
@@ -43,42 +40,33 @@ export const SelectSwapV2TokenScreen = ({
   const { back, canGoBack } = useRouter()
   const [searchText, setSearchText] = useState<string>('')
 
-  // Get available networks
-  const cChainNetwork = useCChainNetwork()
-  const solanaNetwork = useSolanaNetwork()
-  const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
+  // Get dynamically supported networks from Fusion SDK
+  const { chains: networks } = useSupportedChains()
 
-  // Network list
-  const networks = useMemo(() => {
-    const list = [cChainNetwork]
-    if (!isSolanaSwapBlocked && solanaNetwork) {
-      list.push(solanaNetwork)
-    }
-    return list.filter(Boolean) as Network[]
-  }, [cChainNetwork, solanaNetwork, isSolanaSwapBlocked])
-
-  // Selected network state (default to C-Chain or provided default)
+  // Selected network state (default to first network or provided default)
   const [selectedNetwork, setSelectedNetwork] = useState<Network | undefined>(
-    cChainNetwork
+    undefined
   )
 
+  // Set default network when networks are loaded
   useEffect(() => {
+    if (!networks || networks.length === 0) return
+
     if (defaultNetworkChainId) {
       const found = networks.find(n => n.chainId === defaultNetworkChainId)
-      setSelectedNetwork(found)
+      setSelectedNetwork(found ?? networks[0])
+    } else if (!selectedNetwork) {
+      setSelectedNetwork(networks[0])
     }
-  }, [defaultNetworkChainId, networks])
+  }, [defaultNetworkChainId, networks, selectedNetwork])
 
   // Get CAIP2 ID for selected network
   const caip2Id = useMemo(() => {
     if (selectedNetwork) {
       return getCaip2ChainId(selectedNetwork.chainId)
     }
-    if (cChainNetwork) {
-      return getCaip2ChainId(cChainNetwork.chainId)
-    }
     return ''
-  }, [selectedNetwork, cChainNetwork])
+  }, [selectedNetwork])
 
   // Lazy load tokens for selected network (with balance data merged)
   const { tokens, isLoading } = useSwapV2Tokens(caip2Id)
@@ -97,7 +85,7 @@ export const SelectSwapV2TokenScreen = ({
 
   // Render network tabs
   const renderNetworkSelector = useCallback(() => {
-    if (networks.length <= 1) return null
+    if (!networks || networks.length <= 1) return null
 
     return (
       <View
