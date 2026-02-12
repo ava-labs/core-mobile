@@ -543,6 +543,7 @@ PODS:
     - glog
     - hermes-engine
     - NitroModules
+    - QuickCrypto
     - RCT-Folly (= 2024.11.18.00)
     - RCTRequired
     - RCTTypeSafety
@@ -615,10 +616,35 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - OpenSSL-Universal (1.1.1100)
   - OpenTelemetrySwiftApi (1.13.1)
   - PLCrashReporter (1.12.0)
   - PromisesObjC (2.4.0)
+  - QuickCrypto (1.0.7):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - NitroModules
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-callinvoker
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RCT-Folly (2024.11.18.00):
     - boost
     - DoubleConversion
@@ -2288,32 +2314,6 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-quick-crypto (0.7.15):
-    - DoubleConversion
-    - glog
-    - hermes-engine
-    - OpenSSL-Universal
-    - RCT-Folly (= 2024.11.18.00)
-    - RCTRequired
-    - RCTTypeSafety
-    - React
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - Yoga
   - react-native-restart (0.0.27):
     - React-Core
   - react-native-safe-area-context (5.5.2):
@@ -3522,7 +3522,7 @@ DEPENDENCIES:
   - NitroAvalabsCrypto (from `../node_modules/react-native-nitro-avalabs-crypto`)
   - NitroFetch (from `../node_modules/react-native-nitro-fetch`)
   - NitroModules (from `../node_modules/react-native-nitro-modules`)
-  - OpenSSL-Universal (= 1.1.1100)
+  - QuickCrypto (from `../node_modules/react-native-quick-crypto`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
@@ -3574,7 +3574,6 @@ DEPENDENCIES:
   - react-native-passkey (from `../node_modules/react-native-passkey`)
   - react-native-performance (from `../node_modules/react-native-performance`)
   - react-native-quick-base64 (from `../node_modules/react-native-quick-base64`)
-  - react-native-quick-crypto (from `../node_modules/react-native-quick-crypto`)
   - react-native-restart (from `../node_modules/react-native-restart`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-skia (from `../node_modules/@shopify/react-native-skia`)"
@@ -3679,7 +3678,6 @@ SPEC REPOS:
     - lottie-ios
     - MultiplatformBleAdapter
     - nanopb
-    - OpenSSL-Universal
     - OpenTelemetrySwiftApi
     - PLCrashReporter
     - PromisesObjC
@@ -3780,6 +3778,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-nitro-fetch"
   NitroModules:
     :path: "../node_modules/react-native-nitro-modules"
+  QuickCrypto:
+    :path: "../node_modules/react-native-quick-crypto"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -3878,8 +3878,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-performance"
   react-native-quick-base64:
     :path: "../node_modules/react-native-quick-base64"
-  react-native-quick-crypto:
-    :path: "../node_modules/react-native-quick-crypto"
   react-native-restart:
     :path: "../node_modules/react-native-restart"
   react-native-safe-area-context:
@@ -4097,13 +4095,13 @@ SPEC CHECKSUMS:
   LVModalQueue: 79984475a7adaccb33e8e3ef9ad06742852ff81b
   MultiplatformBleAdapter: b1fddd0d499b96b607e00f0faa8e60648343dc1d
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
-  NitroAvalabsCrypto: 1e5e1dbdc072022443c355b70d6d598841bf8557
+  NitroAvalabsCrypto: 51a5d05222529a10c7ac99d963bab93fb1070072
   NitroFetch: 23ea318ee7382714fc4d32a4777583dba391833a
   NitroModules: 6a2c62dd870fa31c50daa55b63f59adecc68a8eb
-  OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   OpenTelemetrySwiftApi: aaee576ed961e0c348af78df58b61300e95bd104
   PLCrashReporter: db59ef96fa3d25f3650040d02ec2798cffee75f2
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
+  QuickCrypto: d18e0bbaba69c477f6d6296175322d058da6f28a
   RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
   RCTDeprecation: 5f638f65935e273753b1f31a365db6a8d6dc53b5
   RCTRequired: 8b46a520ea9071e2bc47d474aa9ca31b4a935bd8
@@ -4154,7 +4152,6 @@ SPEC CHECKSUMS:
   react-native-passkey: 3aac247c18127443ef4a002b59d8e12dc7e99f2e
   react-native-performance: 4194ce7222056671d8f0ce10e96a8fead7278550
   react-native-quick-base64: 651d972291fd5d9902869636a1b3c46820324490
-  react-native-quick-crypto: 71b622aa0a231ac068759f5eef37982ad5eae58c
   react-native-restart: 0bc732f4461709022a742bb29bcccf6bbc5b4863
   react-native-safe-area-context: 7e926a200d4bc9c56562275743705c6b56176455
   react-native-skia: 5c086469906cf854e26126b5b88dcbb6c93eb90f
@@ -4232,6 +4229,6 @@ SPEC CHECKSUMS:
   Yoga: adb397651e1c00672c12e9495babca70777e411e
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: 5c40fea57eb45cbbb8186acd410997f14944226c
+PODFILE CHECKSUM: a2419b0d699403a5728ebd8c44ade7e08b6edb43
 
 COCOAPODS: 1.16.2
