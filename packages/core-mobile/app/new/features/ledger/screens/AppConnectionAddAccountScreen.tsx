@@ -72,6 +72,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
           // Stop polling since we no longer need app detection
           LedgerService.stopAppPolling()
           showSnackbar('Account added successfully')
+          resetSetup()
           dismiss()
         } catch (error) {
           Logger.error('Account creation failed', error)
@@ -89,20 +90,22 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
             isUpdatingWallet
           }
         )
+        resetSetup()
         dismiss()
       }
     },
     [
       deviceId,
       wallet,
+      accounts.length,
       derivationPathType,
       isUpdatingWallet,
       updateLedgerWallet,
-      accounts,
       deviceName,
       setLedgerAddress,
       walletId,
       isDeveloperMode,
+      resetSetup,
       dismiss
     ]
   )
