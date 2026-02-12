@@ -267,7 +267,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           )
         }
 
-        // Update the Ledger wallet exntended public keys for new account
+        // Update the Ledger wallet extended public keys for new account
         await dispatch(
           storeWallet({
             walletId,
