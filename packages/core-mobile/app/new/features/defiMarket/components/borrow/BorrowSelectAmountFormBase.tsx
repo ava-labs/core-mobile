@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { LoadingState } from 'common/components/LoadingState'
 import {
   ActivityIndicator,
   Button,
@@ -23,7 +24,8 @@ export const BorrowSelectAmountFormBase = ({
   currentHealthScore,
   calculateHealthScore,
   submit,
-  onSubmitted
+  onSubmitted,
+  isLoading = false
 }: {
   title?: string
   token: {
@@ -35,6 +37,7 @@ export const BorrowSelectAmountFormBase = ({
   calculateHealthScore?: (borrowAmount: TokenUnit) => number | undefined
   submit: ({ amount }: { amount: TokenUnit }) => Promise<string>
   onSubmitted: (params: { txHash: string; amount: TokenUnit }) => void
+  isLoading?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -136,6 +139,10 @@ export const BorrowSelectAmountFormBase = ({
     },
     [theme.colors]
   )
+
+  if (isLoading) {
+    return <LoadingState sx={{ flex: 1 }} />
+  }
 
   return (
     <ScrollScreen
