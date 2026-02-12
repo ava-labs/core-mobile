@@ -13,13 +13,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 export function useEffectiveHeaderHeight(): number {
   const headerHeight = useHeaderHeight()
   const insets = useSafeAreaInsets()
+  return computeEffectiveHeaderHeight(Platform.OS, headerHeight, insets.top)
+}
 
+export function computeEffectiveHeaderHeight(
+  platform: string,
+  headerHeight: number,
+  insetTop: number
+): number {
   // React Navigation's default Material-like header height on Android (without inset)
-  const ANDROID_HEADER_HEIGHT = 56
-
-  if (Platform.OS === 'android' && headerHeight === 0) {
-    return ANDROID_HEADER_HEIGHT + insets.top
+  if (platform === 'android' && headerHeight === 0) {
+    return 56 + insetTop
   }
-
   return headerHeight
 }
