@@ -116,7 +116,6 @@
     "@walletconnect/react-native-compat": "2.11.0",
     "@walletconnect/types": "2.17.2",
     "@walletconnect/utils": "2.17.2",
-    "@zodios/core": "10.9.6",
     "assert": "2.1.0",
     "axios": "1.12.2",
     "base-64": "1.0.0",
