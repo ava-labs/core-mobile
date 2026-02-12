@@ -279,6 +279,10 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           )
         }
 
+        // Destructure to explicitly omit extendedPublicKeys from spread
+        // This ensures LedgerLive wallets don't preserve invalid extendedPublicKeys
+        const { extendedPublicKeys, ...baseWalletSecret } = parsedWalletSecret
+
         // Update the Ledger wallet extended public keys for new account
         await dispatch(
           storeWallet({
@@ -286,12 +290,12 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
             name: walletName,
             type: walletType,
             walletSecret: JSON.stringify({
-              ...parsedWalletSecret,
+              ...baseWalletSecret,
               // For BIP44, update the extended public keys for account index
-              ...(parsedWalletSecret.derivationPathSpec ===
+              ...(baseWalletSecret.derivationPathSpec ===
                 LedgerDerivationPathType.BIP44 && {
                 extendedPublicKeys: {
-                  ...parsedWalletSecret.extendedPublicKeys,
+                  ...extendedPublicKeys,
                   [accountIndexToUse]: {
                     evm: xpubs.evm, // Update with new xpub from getAvalancheKeys
                     avalanche: xpubs.avalanche // Update with new xpub from getAvalancheKeys
