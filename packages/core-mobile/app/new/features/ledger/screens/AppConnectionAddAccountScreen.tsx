@@ -41,7 +41,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
   const handleComplete = useCallback(
     async (keys: LedgerKeys) => {
       if (
-        keys &&
+        keys.avalancheKeys &&
         device &&
         wallet &&
         accounts.length &&
@@ -86,6 +86,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
           setIsUpdatingWallet(false)
         }
       } else {
+        showSnackbar('Unable to add account')
         Logger.info(
           'Account creation conditions not met, skipping account creation',
           {
