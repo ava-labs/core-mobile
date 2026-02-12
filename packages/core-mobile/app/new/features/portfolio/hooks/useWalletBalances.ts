@@ -2,10 +2,7 @@ import { QueryObserverResult } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { AdjustedNormalizedBalancesForAccounts } from 'services/balance/types'
-import {
-  selectAccountsByWalletId,
-  selectImportedAccounts
-} from 'store/account'
+import { selectAccountsByWalletId, selectImportedAccounts } from 'store/account'
 import { RootState } from 'store/types'
 import { Wallet } from 'store/wallet/types'
 import { IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID } from 'new/features/wallets/consts'

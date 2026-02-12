@@ -196,8 +196,7 @@ export class BalanceService {
             // assign balances to every owning account (supports duplicate
             // addresses from imported-PK accounts).
             for (const responseAddress of Object.keys(balancesResponse)) {
-              const matchedAccounts =
-                addressMap[responseAddress.toLowerCase()]
+              const matchedAccounts = addressMap[responseAddress.toLowerCase()]
               const balances = balancesResponse[responseAddress]
 
               if (!matchedAccounts || matchedAccounts.length === 0 || !balances)

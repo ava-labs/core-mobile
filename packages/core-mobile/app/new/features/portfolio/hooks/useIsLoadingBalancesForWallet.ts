@@ -1,8 +1,5 @@
 import { useSelector } from 'react-redux'
-import {
-  selectAccountsByWalletId,
-  selectImportedAccounts
-} from 'store/account'
+import { selectAccountsByWalletId, selectImportedAccounts } from 'store/account'
 import { RootState } from 'store/types'
 import { Wallet } from 'store/wallet/types'
 import { IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID } from 'features/wallets/consts'
