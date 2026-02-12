@@ -25,8 +25,7 @@ const LedgerReviewTransactionScreen = ({
 }): JSX.Element => {
   const approvalTriggeredRef = useRef(false)
   const walletId = useSelector(selectActiveWalletId)
-  const { deviceId: cachedDeviceId, deviceName: cachedDeviceName } =
-    useLedgerDeviceInfo(walletId)
+  const { device } = useLedgerDeviceInfo(walletId)
   const [isConnected, setIsConnected] = useState(false)
   const [isCancelEnabled, setIsCancelEnabled] = useState(false)
   const {
@@ -55,15 +54,15 @@ const LedgerReviewTransactionScreen = ({
   )
 
   useEffect(() => {
-    if (!cachedDeviceId) return
-    handleReconnect(cachedDeviceId)
-  }, [cachedDeviceId, handleReconnect])
+    if (!device) return
+    handleReconnect(device.id)
+  }, [device, handleReconnect])
 
   useEffect(() => {
     if (approvalTriggeredRef.current) return
 
     const handleApproveTransaction = async (): Promise<void> => {
-      if (cachedDeviceId && isConnected) {
+      if (device && isConnected) {
         try {
           approvalTriggeredRef.current = true
           await LedgerService.openApp(ledgerAppName)
@@ -74,7 +73,7 @@ const LedgerReviewTransactionScreen = ({
       }
     }
     handleApproveTransaction()
-  }, [cachedDeviceId, onApprove, isConnected, ledgerAppName])
+  }, [device, onApprove, isConnected, ledgerAppName])
 
   useEffect(() => {
     if (isConnected && isCancelEnabled === false) {
@@ -105,7 +104,7 @@ const LedgerReviewTransactionScreen = ({
   }, [onReject, isCancelEnabled])
 
   const renderDeviceItem = useCallback(() => {
-    if (cachedDeviceId) {
+    if (device) {
       return (
         <View
           sx={{
@@ -154,7 +153,7 @@ const LedgerReviewTransactionScreen = ({
                     fontSize: 16,
                     color: '$textPrimary'
                   }}>
-                  {cachedDeviceName}
+                  {device.name}
                 </Text>
               </View>
               <Text
@@ -175,11 +174,11 @@ const LedgerReviewTransactionScreen = ({
                 flex: 1,
                 justifyContent: 'flex-end'
               }}>
-              {!isConnected && (
+              {!isConnected && device && (
                 <Button
                   type="primary"
                   size="small"
-                  onPress={() => handleReconnect(cachedDeviceId)}
+                  onPress={() => handleReconnect(device.id)}
                   disabled={isConnecting}>
                   {isConnecting ? 'Connecting...' : 'Connect'}
                 </Button>
@@ -191,28 +190,27 @@ const LedgerReviewTransactionScreen = ({
     }
     return null
   }, [
-    cachedDeviceId,
+    device,
     colors.$surfaceSecondary,
     colors.$textPrimary,
     colors.$textSecondary,
-    cachedDeviceName,
     isConnected,
     isConnecting,
     handleReconnect
   ])
 
   const title = useMemo(() => {
-    if (cachedDeviceId) {
-      return `Please review the transaction on your ${cachedDeviceName}`
+    if (device) {
+      return `Please review the transaction on your ${device.name}`
     }
     return 'Get your Ledger ready'
-  }, [cachedDeviceId, cachedDeviceName])
+  }, [device])
   const subtitle = useMemo(() => {
-    if (cachedDeviceId) {
+    if (device) {
       return `Open the ${ledgerAppName} app on your Ledger device in order to continue with this transaction`
     }
     return 'Make sure your Ledger device is unlocked and the Avalanche app is open'
-  }, [cachedDeviceId, ledgerAppName])
+  }, [device, ledgerAppName])
 
   return (
     <ScrollScreen
@@ -226,7 +224,7 @@ const LedgerReviewTransactionScreen = ({
       <View style={{ flex: 1, justifyContent: 'center' }}>
         <AnimatedIconWithText
           icon={
-            cachedDeviceId ? (
+            device ? (
               <Icons.Custom.Bluetooth
                 color={colors.$textPrimary}
                 width={44}
