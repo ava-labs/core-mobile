@@ -58,10 +58,10 @@ export const LedgerWalletSecretSchema = z.object({
 })
 
 export const getOppositeKeys = async ({
-  acountIndex = 0,
+  accountIndex = 0,
   isDeveloperMode
 }: {
-  acountIndex?: number
+  accountIndex?: number
   isDeveloperMode: boolean
 }): Promise<{
   addressBTC: string
@@ -71,11 +71,11 @@ export const getOppositeKeys = async ({
 }> => {
   try {
     const avalancheKeys = await LedgerService.getAvalancheKeys(
-      acountIndex,
+      accountIndex,
       !isDeveloperMode
     )
     const { bitcoinAddress } = await LedgerService.getBitcoinAndXPAddresses(
-      acountIndex,
+      accountIndex,
       !isDeveloperMode
     )
 
