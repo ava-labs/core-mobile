@@ -32,9 +32,9 @@ const BlurredBackgroundView = ({
       Platform.OS === 'ios' && hasAnimation ? separator?.opacity.value : 1
   }))
   const insets = useSafeAreaInsets()
+
   return (
     <View
-      testID={hasGrabber ? 'grabber' : undefined}
       pointerEvents={hasGrabber ? 'auto' : 'none'}
       style={{
         flex: 1,

@@ -407,6 +407,7 @@ class CommonElsPage {
   }
 
   async dismissBottomSheet(element = this.grabber) {
+    await actions.waitFor(element, 30000)
     await actions.dragAndDrop(element, [0, 1500])
     await actions.delay(1000)
     console.log('Dismissed bottom sheet')
