@@ -2,12 +2,12 @@ import React from 'react'
 import { Stack } from 'common/components/Stack'
 import {
   modalFirstScreenOptions,
-  modalStackNavigatorScreenOptions
+  ledgerModalScreensOptions
 } from 'common/consts/screenOptions'
 
 export default function LedgerReviewTransactionLayout(): JSX.Element {
   return (
-    <Stack screenOptions={modalStackNavigatorScreenOptions}>
+    <Stack screenOptions={ledgerModalScreensOptions}>
       <Stack.Screen name="index" options={modalFirstScreenOptions} />
     </Stack>
   )
