@@ -18,7 +18,7 @@ export const handleLedgerErrorAndShowAlert = ({
   onCancel: () => void
 }): void => {
   // @ts-ignore
-  const message = error.data?.cause?.message || ''
+  const message = error.data?.cause?.message || error.message || ''
   const lowercasedMessage = message.toLowerCase()
 
   const ledgerAppName = getLedgerAppName(network)
