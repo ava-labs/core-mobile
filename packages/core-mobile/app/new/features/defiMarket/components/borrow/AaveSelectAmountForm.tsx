@@ -6,7 +6,8 @@ import { DefiMarket } from '../../types'
 import { convertUsdToTokenAmount } from '../../utils/borrow'
 import {
   AAVE_PRICE_ORACLE_SCALE,
-  AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS
+  AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS,
+  WAD
 } from '../../consts'
 import { useAaveBorrowData } from '../../hooks/aave/useAaveBorrowData'
 import { useAaveBorrowErc20 } from '../../hooks/aave/useAaveBorrowErc20'
@@ -100,7 +101,7 @@ export const BorrowAaveSelectAmountForm = ({
   const currentHealthScore = useMemo(() => {
     if (!borrowData) return undefined
     // Convert from 18 decimals to number
-    return Number(formatUnits(borrowData.healthFactor, 18))
+    return Number(formatUnits(borrowData.healthFactor, WAD))
   }, [borrowData])
 
   // Calculate new health score based on borrow amount
@@ -131,11 +132,11 @@ export const BorrowAaveSelectAmountForm = ({
       // AAVE liquidationThreshold is in basis points (4 decimals, e.g., 8500 = 85%)
       // newHealthFactor = (totalCollateralUSD * liquidationThreshold) / (newTotalDebtUSD * 10000)
       // Result in 18 decimals for precision
-      const newHealthFactorBigInt =
-        (totalCollateralUSD * liquidationThreshold * BigInt(10 ** 18)) /
+      const newHealthFactor =
+        (totalCollateralUSD * liquidationThreshold * BigInt(10 ** WAD)) /
         (newTotalDebtUSD * BigInt(10000))
 
-      return Number(formatUnits(newHealthFactorBigInt, 18))
+      return Number(formatUnits(newHealthFactor, WAD))
     },
     [borrowData, market.asset.decimals]
   )

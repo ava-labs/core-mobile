@@ -69,8 +69,8 @@ export const BorrowBenqiSelectAmountForm = ({
     // health = (liquidity + totalDebt) / totalDebt
     // This gives us: health = 1 + (liquidity / totalDebt)
     const numerator = liquidity + totalDebtUSD
-    const healthBigInt = (numerator * BigInt(10 ** 18)) / totalDebtUSD
-    return Number(healthBigInt) / 10 ** 18
+    const health = (numerator * BigInt(10 ** WAD)) / totalDebtUSD
+    return Number(health) / 10 ** WAD
   }, [borrowData])
 
   // Calculate new health score based on borrow amount
@@ -100,8 +100,8 @@ export const BorrowBenqiSelectAmountForm = ({
       // Note: We use (liquidity + currentTotalDebt) because this represents
       // the total "borrowing capacity" before the new borrow
       const numerator = liquidity + totalDebtUSD
-      const newHealthBigInt = (numerator * BigInt(10 ** 18)) / newTotalDebt
-      return Number(newHealthBigInt) / 10 ** 18
+      const newHealth = (numerator * BigInt(10 ** WAD)) / newTotalDebt
+      return Number(newHealth) / 10 ** WAD
     },
     [borrowData]
   )
