@@ -4,7 +4,8 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   getMaxDecimals,
   normalizeValue,
-  normalizeNumericTextInput
+  normalizeNumericTextInput,
+  parseDecimalToBigInt
 } from './tokenUnitInput'
 
 const xpChainToken = {
@@ -241,6 +242,72 @@ describe('normalizeNumericTextInput', () => {
       expect(normalizeNumericTextInput('123456789.123456789')).toBe(
         '123456789.123456789'
       )
+    })
+  })
+})
+
+describe('parseDecimalToBigInt', () => {
+  describe('basic conversions', () => {
+    it('converts whole numbers correctly', () => {
+      expect(parseDecimalToBigInt('1', 18)).toBe(1000000000000000000n)
+      expect(parseDecimalToBigInt('100', 18)).toBe(100000000000000000000n)
+      expect(parseDecimalToBigInt('1', 8)).toBe(100000000n)
+    })
+
+    it('converts decimal numbers correctly', () => {
+      expect(parseDecimalToBigInt('1.5', 18)).toBe(1500000000000000000n)
+      expect(parseDecimalToBigInt('0.5', 18)).toBe(500000000000000000n)
+      expect(parseDecimalToBigInt('1.23', 8)).toBe(123000000n)
+    })
+
+    it('handles high precision decimals', () => {
+      expect(parseDecimalToBigInt('0.15358017127655023', 18)).toBe(
+        153580171276550230n
+      )
+      expect(parseDecimalToBigInt('0.000000000000000001', 18)).toBe(1n)
+    })
+  })
+
+  describe('edge cases', () => {
+    it('returns 0n for empty or zero values', () => {
+      expect(parseDecimalToBigInt('', 18)).toBe(0n)
+      expect(parseDecimalToBigInt('0', 18)).toBe(0n)
+      expect(parseDecimalToBigInt('0.', 18)).toBe(0n)
+    })
+
+    it('handles values with commas (formatted numbers)', () => {
+      expect(parseDecimalToBigInt('1,000', 18)).toBe(1000000000000000000000n)
+      expect(parseDecimalToBigInt('1,234.56', 8)).toBe(123456000000n)
+    })
+
+    it('truncates decimals exceeding specified precision', () => {
+      // 18 decimals, but input has 20 decimal places
+      expect(parseDecimalToBigInt('0.12345678901234567890', 18)).toBe(
+        123456789012345678n
+      )
+    })
+
+    it('pads decimals when input has fewer than specified', () => {
+      expect(parseDecimalToBigInt('1.5', 18)).toBe(1500000000000000000n)
+      expect(parseDecimalToBigInt('0.1', 8)).toBe(10000000n)
+    })
+
+    it('handles leading zeros in integer part', () => {
+      expect(parseDecimalToBigInt('01', 18)).toBe(1000000000000000000n)
+      expect(parseDecimalToBigInt('001.5', 18)).toBe(1500000000000000000n)
+    })
+  })
+
+  describe('precision preservation', () => {
+    it('preserves precision for large numbers', () => {
+      expect(parseDecimalToBigInt('9999999999.999999999999999999', 18)).toBe(
+        9999999999999999999999999999n
+      )
+    })
+
+    it('handles small decimal values correctly', () => {
+      expect(parseDecimalToBigInt('0.000001', 18)).toBe(1000000000000n)
+      expect(parseDecimalToBigInt('0.00000001', 8)).toBe(1n)
     })
   })
 })
