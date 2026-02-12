@@ -92,7 +92,7 @@ export const AccountAddresses = ({
           value:
             isLedger &&
             network.vmName === NetworkVMType.SVM &&
-            (address === undefined || address === '') &&
+            isMissingSolanaAddress &&
             !isSolanaSupportBlocked ? (
               <SolanaEnableButton accountId={account.id} />
             ) : (
