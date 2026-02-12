@@ -130,10 +130,13 @@ export const useDelegation = (): {
       let txHash
       let stepIndex = 0
 
-      for (const step of steps) {
-        // Notify progress via callback if available
-        onProgress?.(stepIndex, step.operation)
+      // Show the first operation before starting
+      const firstStep = steps[0]
+      if (firstStep) {
+        onProgress?.(0, firstStep.operation)
+      }
 
+      for (const step of steps) {
         switch (step.operation) {
           case Operation.DELEGATE: {
             Logger.info(
@@ -214,11 +217,19 @@ export const useDelegation = (): {
             throw new Error(`unknown step: ${step}`)
         }
 
+        // Update progress after operation completes
+        // Use setTimeout pattern (proven successful in commit 0c60ac513)
+        // This ensures React Native has time to flush state updates before next operation
         stepIndex++
-      }
+        const nextStep = steps[stepIndex]
 
-      // Signal completion - stepIndex now equals steps.length
-      onProgress?.(stepIndex, null)
+        await new Promise<void>(resolve => {
+          setTimeout(() => {
+            onProgress?.(stepIndex, nextStep?.operation ?? null)
+            resolve()
+          }, 10)
+        })
+      }
 
       if (!txHash) {
         throw new Error('No transaction hash found')
