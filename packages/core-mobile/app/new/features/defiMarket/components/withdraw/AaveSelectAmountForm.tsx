@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useRef } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { transactionSnackbar } from 'common/utils/toast'
 import { DefiMarket } from '../../types'
 import { useAaveWithdraw } from '../../hooks/aave/useAaveWithdraw'
 import { useUnwrapWavax } from '../../hooks/useUnwrapWavax'
@@ -43,6 +44,8 @@ export const WithdrawAaveSelectAmountForm = ({
   // Handle withdraw confirmation - trigger unwrap for native AVAX
   const handleWithdrawConfirmed = useCallback(() => {
     if (isNativeAvax && pendingUnwrapAmountRef.current) {
+      // Show toast before unwrap
+      transactionSnackbar.pending({ message: 'Unwrapping WAVAX to AVAX...' })
       // Withdraw confirmed, now unwrap WAVAX to AVAX
       unwrapWavax({ amount: pendingUnwrapAmountRef.current })
       pendingUnwrapAmountRef.current = null

@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 import { useRouter } from 'expo-router'
 import { useLocalSearchParams } from 'expo-router'
+import { useNavigation } from '@react-navigation/native'
 import { TokenUnit } from '@avalabs/core-utils-sdk/dist'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
@@ -14,6 +15,7 @@ export const SelectAmountScreen = (): JSX.Element => {
   const { uniqueMarketId } = useLocalSearchParams<{ uniqueMarketId: string }>()
   const { data: markets } = useAvailableMarkets()
   const activeAccount = useSelector(selectActiveAccount)
+  const navigation = useNavigation()
   const market = useMemo(() => {
     return markets?.find(item => item.uniqueMarketId === uniqueMarketId)
   }, [markets, uniqueMarketId])
@@ -28,9 +30,14 @@ export const SelectAmountScreen = (): JSX.Element => {
         txHash,
         address: activeAccount?.addressC ?? ''
       })
-      dismissAll()
+      // Dismiss the entire borrow modal
+      if (navigation.getParent()?.canGoBack()) {
+        navigation.getParent()?.goBack()
+      } else {
+        dismissAll()
+      }
     },
-    [market, activeAccount, dismissAll]
+    [market, activeAccount, navigation, dismissAll]
   )
 
   // Called when transaction is confirmed on-chain
