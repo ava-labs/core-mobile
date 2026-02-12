@@ -1,7 +1,17 @@
 import type { HybridObject } from 'react-native-nitro-modules'
 
-// Use ArrayBuffer in specs (Nitro’s zero-copy binary type)
+// Use ArrayBuffer in specs (Nitro's zero-copy binary type)
 export type HexLike = string | ArrayBuffer
+
+/**
+ * Extended public key result from Ed25519 derivation
+ */
+export interface ExtendedPublicKey {
+  head: ArrayBuffer
+  prefix: ArrayBuffer
+  scalar: string // bigint as decimal string (little-endian)
+  pointBytes: ArrayBuffer
+}
 
 export interface Crypto extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
   // existing methods
@@ -66,4 +76,11 @@ export interface Crypto extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
     messageHash: HexLike,
     signature: HexLike
   ): boolean
+
+  /**
+   * Ed25519 extended public key derivation.
+   * @param secretKey Hex string or ArrayBuffer (32 bytes)
+   * @returns Extended public key object with all components
+   */
+  getExtendedPublicKey(secretKey: HexLike): ExtendedPublicKey
 }
