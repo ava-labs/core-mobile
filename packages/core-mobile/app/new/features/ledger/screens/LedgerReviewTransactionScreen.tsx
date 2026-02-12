@@ -15,12 +15,11 @@ import { selectActiveWalletId } from 'store/wallet/slice'
 import LedgerService from 'services/ledger/LedgerService'
 import { BackHandler } from 'react-native'
 import { useNavigation } from 'expo-router'
+import { TRANSACTION_CANCELLED_BY_USER } from 'vmModule/ApprovalController/utils'
 import { LedgerReviewTransactionParams } from '../services/ledgerParamsCache'
 import { useLedgerWalletMap } from '../store'
 import { getLedgerAppName } from '../utils'
 import { withLedgerParamsCache } from '../services/withLedgerParamsCache'
-
-const TRANSACTION_CANCELLED_BY_USER = 'Transaction cancelled by user'
 
 const LedgerReviewTransactionScreen = ({
   params: { network, onApprove, onReject }
