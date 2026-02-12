@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { LedgerKeys } from 'services/ledger/types'
@@ -18,7 +18,6 @@ import AppConnectionScreen from './AppConnectionScreen'
 export const AppConnectionAddAccountScreen = (): JSX.Element => {
   const { walletId } = useLocalSearchParams<{ walletId: string }>()
   const { dismiss } = useRouter()
-  const [isUpdatingWallet, setIsUpdatingWallet] = useState(false)
   const { updateLedgerWallet } = useLedgerWallet()
   const { setLedgerAddress } = useSetLedgerAddress()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -31,7 +30,12 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
     wallet?.id
   )
 
-  const { resetSetup, disconnectDevice } = useLedgerSetupContext()
+  const {
+    resetSetup,
+    disconnectDevice,
+    isUpdatingWallet,
+    setIsUpdatingWallet
+  } = useLedgerSetupContext()
 
   const handleComplete = useCallback(
     async (keys: LedgerKeys) => {
@@ -100,6 +104,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
       accounts.length,
       derivationPathType,
       isUpdatingWallet,
+      setIsUpdatingWallet,
       updateLedgerWallet,
       deviceName,
       setLedgerAddress,

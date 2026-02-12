@@ -29,7 +29,6 @@ export default function AppConnectionScreen({
   handleComplete,
   deviceId,
   deviceName = 'Ledger Device',
-  resetSetup,
   disconnectDevice,
   accountIndex
 }: {
@@ -63,9 +62,8 @@ export default function AppConnectionScreen({
 
   const handleCancel = useCallback(async () => {
     await disconnectDevice()
-    resetSetup()
     back()
-  }, [disconnectDevice, resetSetup, back])
+  }, [disconnectDevice, back])
 
   const progressDotsCurrentStep = useMemo(() => {
     if (isSolanaSupportBlocked) {

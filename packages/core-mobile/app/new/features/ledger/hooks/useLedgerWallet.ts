@@ -86,7 +86,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
   const connectToDevice = useCallback(async (deviceId: string) => {
     setIsConnecting(true)
     try {
-      await LedgerService.connect(deviceId)
+      await LedgerService.ensureConnection(deviceId)
       Logger.info('Connected to Ledger device')
     } catch (error) {
       Logger.error('Failed to connect to device', error)
