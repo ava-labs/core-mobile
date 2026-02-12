@@ -218,7 +218,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         setIsLoading(false)
       }
     },
-    [dispatch]
+    [dispatch, setLedgerWalletMap]
   )
 
   const updateLedgerWallet = useCallback(
@@ -245,6 +245,18 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 
         // Use addresses for display and xpubs for wallet functionality
         const { addresses, xpubs } = avalancheKeys
+
+        // Fix address formatting - remove double 0x prefixes that cause VM module errors
+        const formattedAddresses = {
+          evm: addresses.evm?.startsWith('0x0x')
+            ? addresses.evm.slice(2) // Remove first 0x to fix double prefix
+            : addresses.evm,
+          avm: addresses.avm,
+          pvm: addresses.pvm,
+          coreEth: addresses.coreEth?.startsWith('0x0x')
+            ? addresses.coreEth.slice(2) // Remove first 0x to fix double prefix
+            : addresses.coreEth
+        }
 
         const walletSecretResult = await BiometricsSDK.loadWalletSecret(
           walletId
@@ -297,10 +309,10 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           name: `Account ${accountIndexToUse + 1}`,
           type: CoreAccountType.PRIMARY,
           index: accountIndexToUse,
-          addressC: addresses.evm,
-          addressCoreEth: addresses.coreEth,
-          addressAVM: addresses.avm,
-          addressPVM: addresses.pvm,
+          addressC: formattedAddresses.evm,
+          addressCoreEth: formattedAddresses.coreEth,
+          addressAVM: formattedAddresses.avm,
+          addressPVM: formattedAddresses.pvm,
           addressBTC: bitcoinAddress,
           addressSVM: solanaKeys[0]?.key || ''
         }

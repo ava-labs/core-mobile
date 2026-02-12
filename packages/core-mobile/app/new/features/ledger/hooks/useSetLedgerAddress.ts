@@ -35,7 +35,10 @@ export const useSetLedgerAddress = (): {
       accountIndex: number
       keys: LedgerKeys
     }) => {
-      const oppositeKeys = await getOppositeKeys({ isDeveloperMode })
+      const oppositeKeys = await getOppositeKeys({
+        accountIndex,
+        isDeveloperMode
+      })
 
       const mainnet = isDeveloperMode
         ? oppositeKeys

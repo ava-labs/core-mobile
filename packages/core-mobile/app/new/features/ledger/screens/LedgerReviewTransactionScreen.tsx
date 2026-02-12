@@ -33,7 +33,7 @@ const LedgerReviewTransactionScreen = ({
   } = useTheme()
 
   const deviceForWallet = useMemo(
-    () => getLedgerInfoByWalletId(walletId).device,
+    () => getLedgerInfoByWalletId(walletId)?.device,
     [getLedgerInfoByWalletId, walletId]
   )
 
