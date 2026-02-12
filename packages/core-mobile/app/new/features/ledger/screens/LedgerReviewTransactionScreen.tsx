@@ -20,6 +20,8 @@ import { useLedgerWalletMap } from '../store'
 import { getLedgerAppName } from '../utils'
 import { withLedgerParamsCache } from '../services/withLedgerParamsCache'
 
+const TRANSACTION_CANCELLED_BY_USER = 'Transaction cancelled by user'
+
 const LedgerReviewTransactionScreen = ({
   params: { network, onApprove, onReject }
 }: {
@@ -103,7 +105,7 @@ const LedgerReviewTransactionScreen = ({
   useEffect(() => {
     const onBackPress = (): boolean => {
       if (isCancelEnabled) {
-        onReject('Transaction cancelled by user')
+        onReject(TRANSACTION_CANCELLED_BY_USER)
         return true // Prevent default back behavior, onReject handles navigation
       }
       return false
@@ -126,7 +128,7 @@ const LedgerReviewTransactionScreen = ({
       ) {
         e.preventDefault()
         // Modal is being dismissed via gesture
-        onReject('Transaction cancelled by user')
+        onReject(TRANSACTION_CANCELLED_BY_USER)
       }
     })
   }, [navigation, onReject, isCancelEnabled])
@@ -136,7 +138,7 @@ const LedgerReviewTransactionScreen = ({
       <Button
         type="secondary"
         size="large"
-        onPress={() => onReject('Transaction cancelled by user')}
+        onPress={() => onReject(TRANSACTION_CANCELLED_BY_USER)}
         disabled={!isCancelEnabled}>
         Cancel
       </Button>
