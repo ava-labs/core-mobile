@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback } from 'react'
 import Logger from 'utils/Logger'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -15,7 +15,6 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
   const { createLedgerWallet } = useLedgerWallet()
   const { push } = useRouter()
   const { setLedgerAddress } = useSetLedgerAddress()
-  const [isUpdatingWallet, setIsUpdatingWallet] = useState(false)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const {
@@ -23,7 +22,9 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
     connectedDeviceName,
     selectedDerivationPath,
     resetSetup,
-    disconnectDevice
+    disconnectDevice,
+    isUpdatingWallet,
+    setIsUpdatingWallet
   } = useLedgerSetupContext()
 
   const handleComplete = useCallback(
@@ -101,6 +102,7 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
       connectedDeviceId,
       selectedDerivationPath,
       isUpdatingWallet,
+      setIsUpdatingWallet,
       createLedgerWallet,
       connectedDeviceName,
       setLedgerAddress,

@@ -36,7 +36,7 @@ interface StepConfig {
 }
 
 interface LedgerAppConnectionProps {
-  completeStepTitle: string
+  completeStepTitle?: string
   connectedDeviceId?: string | null
   connectedDeviceName?: string
   keys?: LedgerKeys
@@ -46,7 +46,7 @@ interface LedgerAppConnectionProps {
 }
 
 export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
-  completeStepTitle,
+  completeStepTitle = `Your Ledger wallet\nis being set up`,
   connectedDeviceId,
   connectedDeviceName,
   keys,
