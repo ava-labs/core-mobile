@@ -121,7 +121,6 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
       handleComplete={handleComplete}
       deviceId={device?.id}
       deviceName={device?.name}
-      resetSetup={resetSetup}
       disconnectDevice={disconnectDevice}
       isUpdatingWallet={isUpdatingWallet}
       accountIndex={accounts.length}
