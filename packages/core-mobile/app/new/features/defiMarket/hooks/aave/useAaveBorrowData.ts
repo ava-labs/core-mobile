@@ -6,7 +6,7 @@ import { selectActiveAccount } from 'store/account'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { getViemChain } from 'utils/getViemChain/getViemChain'
-import { AaveBorrowData, MarketNames } from '../../types'
+import { AaveBorrowData } from '../../types'
 import { fetchAaveUserBorrowData } from '../../utils/borrow'
 
 export const useAaveBorrowData = (
@@ -34,8 +34,7 @@ export const useAaveBorrowData = (
   const { data, isLoading, isFetching, error } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [
-      ReactQueryKeys.USER_BORROW_DATA,
-      MarketNames.aave,
+      ReactQueryKeys.AAVE_USER_BORROW_DATA,
       tokenAddress,
       userAddress,
       networkClient?.chain.id

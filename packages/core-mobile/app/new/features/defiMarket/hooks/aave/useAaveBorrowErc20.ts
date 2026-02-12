@@ -43,7 +43,7 @@ export const useAaveBorrowErc20 = ({
       queryKey: [ReactQueryKeys.AAVE_AVAILABLE_MARKETS]
     })
     queryClient.invalidateQueries({
-      queryKey: [ReactQueryKeys.USER_BORROW_DATA]
+      queryKey: [ReactQueryKeys.AAVE_USER_BORROW_DATA]
     })
     onConfirmed?.()
   }, [onConfirmed])

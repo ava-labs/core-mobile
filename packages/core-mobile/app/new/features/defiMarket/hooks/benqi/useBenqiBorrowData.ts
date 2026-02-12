@@ -6,7 +6,7 @@ import { selectActiveAccount } from 'store/account'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { getViemChain } from 'utils/getViemChain/getViemChain'
-import { BenqiBorrowData, MarketNames } from '../../types'
+import { BenqiBorrowData } from '../../types'
 import { fetchBenqiUserBorrowData } from '../../utils/borrow'
 
 export const useBenqiBorrowData = (
@@ -34,8 +34,7 @@ export const useBenqiBorrowData = (
   const { data, isLoading, isFetching, error } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [
-      ReactQueryKeys.USER_BORROW_DATA,
-      MarketNames.benqi,
+      ReactQueryKeys.BENQI_USER_BORROW_DATA,
       qTokenAddress,
       userAddress,
       networkClient?.chain.id
