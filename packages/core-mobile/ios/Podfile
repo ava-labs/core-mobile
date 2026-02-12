@@ -83,6 +83,8 @@ abstract_target 'common' do
 
   pod 'RNFS', :path => '../node_modules/react-native-fs'
   
+  # specify OpenSSL version explicitly due to https://github.com/margelo/react-native-quick-crypto/issues/189
+  pod "OpenSSL-Universal", "1.1.1100"
   pod 'GoogleUtilities', :modular_headers => true;
   pod 'FirebaseCore', :modular_headers => true
   pod 'react-native-branch', path: '../node_modules/react-native-branch'
@@ -136,6 +138,14 @@ abstract_target 'common' do
       command = "#{bitcode_strip_path} #{framework_path} -r -o #{framework_path}"
       puts "Stripping bitcode: #{command}"
       system(command)
+    end
+
+    framework_paths = [
+      "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework/ios-arm64_armv7/OpenSSL.framework/OpenSSL",
+    ]
+
+    framework_paths.each do |framework_relative_path|
+      strip_bitcode_from_framework(bitcode_strip_path, framework_relative_path)
     end
 
     # Disable Swift modules for RNArgon2 to fix the build error on Xcode 26
