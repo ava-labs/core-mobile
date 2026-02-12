@@ -2,9 +2,9 @@ import { router } from 'expo-router'
 import { ChainId, Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { LedgerAppType, LedgerDerivationPathType } from 'services/ledger/types'
 import { z } from 'zod'
-import { ledgerParamsCache } from '../services/ledgerParamsCache'
 import LedgerService from 'services/ledger/LedgerService'
 import Logger from 'utils/Logger'
+import { ledgerParamsCache } from '../services/ledgerParamsCache'
 
 export const showLedgerReviewTransaction = ({
   network,
