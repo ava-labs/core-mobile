@@ -10,7 +10,7 @@ import ModuleManager from 'vmModule/ModuleManager'
 import { AVALANCHE_DERIVATION_PATH_PREFIX, Curve } from 'utils/publicKeys'
 import { toSegments } from 'utils/toSegments'
 import { AddressIndex } from '@avalabs/types'
-import { GetAddressesResponse } from '../apiClient/profile/types'
+import { GetAddressesResponse } from 'utils/api/generated/profileApi.client/types.gen'
 
 type GetAddressesFromXpubParams = {
   isDeveloperMode: boolean

@@ -1,7 +1,7 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { queryClient } from 'contexts/ReactQueryProvider'
-import { getV1BalanceGetSupportedChains } from 'utils/apiClient/generated/balanceApi.client'
+import { getV1BalanceGetSupportedChains } from 'utils/api/generated/balanceApi.client'
 import { balanceApiClient } from 'utils/api/clients/balanceApiClient'
 
 const STALE_TIME = 5 * 60 * 1000 // 5 minutes
