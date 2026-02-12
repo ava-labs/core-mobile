@@ -13,6 +13,8 @@ import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIco
 import { useSelector } from 'react-redux'
 import { selectActiveWalletId } from 'store/wallet/slice'
 import LedgerService from 'services/ledger/LedgerService'
+import { BackHandler } from 'react-native'
+import { useNavigation } from 'expo-router'
 import { LedgerReviewTransactionParams } from '../services/ledgerParamsCache'
 import { useLedgerWalletMap } from '../store'
 import { getLedgerAppName } from '../utils'
@@ -23,6 +25,7 @@ const LedgerReviewTransactionScreen = ({
 }: {
   params: LedgerReviewTransactionParams
 }): JSX.Element => {
+  const navigation = useNavigation()
   const approvalTriggeredRef = useRef(false)
   const walletId = useSelector(selectActiveWalletId)
   const { ledgerWalletMap } = useLedgerWalletMap()
@@ -96,12 +99,44 @@ const LedgerReviewTransactionScreen = ({
     return () => clearTimeout(timer)
   }, [])
 
+  // Handle Android hardware back button
+  useEffect(() => {
+    const onBackPress = (): boolean => {
+      if (isCancelEnabled) {
+        onReject('Transaction cancelled by user')
+        return true // Prevent default back behavior, onReject handles navigation
+      }
+      return false
+    }
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      onBackPress
+    )
+
+    return () => backHandler.remove()
+  }, [onReject, isCancelEnabled])
+
+  // Handle gesture dismissal (swipe down)
+  useEffect(() => {
+    return navigation.addListener('beforeRemove', e => {
+      if (
+        e.data.action.type === 'POP' && // gesture dismissed
+        isCancelEnabled
+      ) {
+        e.preventDefault()
+        // Modal is being dismissed via gesture
+        onReject('Transaction cancelled by user')
+      }
+    })
+  }, [navigation, onReject, isCancelEnabled])
+
   const renderFooter = useCallback(() => {
     return (
       <Button
         type="secondary"
         size="large"
-        onPress={onReject}
+        onPress={() => onReject('Transaction cancelled by user')}
         disabled={!isCancelEnabled}>
         Cancel
       </Button>

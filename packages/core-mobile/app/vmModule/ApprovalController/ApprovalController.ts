@@ -27,6 +27,8 @@ import { onReject } from './onReject'
 import { handleLedgerErrorAndShowAlert } from './utils'
 
 class ApprovalController implements VmModuleApprovalController {
+  private userCancelledMap = new Map<string, boolean>()
+
   async requestPublicKey({
     secretId,
     derivationPath,
@@ -142,6 +144,10 @@ class ApprovalController implements VmModuleApprovalController {
     displayData,
     signingData
   }: ApprovalParams): Promise<ApprovalResponse> {
+    const requestId = request.requestId
+    // Clear any previous cancellation state for this request
+    this.userCancelledMap.delete(requestId)
+
     return new Promise<ApprovalResponse>(resolve => {
       walletConnectCache.approvalParams.set({
         request,
@@ -156,6 +162,12 @@ class ApprovalController implements VmModuleApprovalController {
               value: ApprovalResponse | PromiseLike<ApprovalResponse>
             ): void => {
               if ('error' in value) {
+                // Don't show alert if user explicitly cancelled
+                if (this.userCancelledMap.get(requestId)) {
+                  this.userCancelledMap.delete(requestId)
+                  return
+                }
+
                 handleLedgerErrorAndShowAlert({
                   error: value.error,
                   network: params.network,
@@ -166,6 +178,7 @@ class ApprovalController implements VmModuleApprovalController {
                       resolve: resolveWithRetry
                     }),
                   onCancel: () => {
+                    this.userCancelledMap.set(requestId, true)
                     this.handleGoBackIfNeeded()
                     this.handleLedgerOnReject({ resolve })
                   }
@@ -173,6 +186,7 @@ class ApprovalController implements VmModuleApprovalController {
               } else {
                 resolve(value)
                 this.handleGoBackIfNeeded()
+                this.userCancelledMap.delete(requestId)
               }
             }
 
@@ -185,6 +199,7 @@ class ApprovalController implements VmModuleApprovalController {
                   resolve: resolveWithRetry
                 }),
               onReject: () => {
+                this.userCancelledMap.set(requestId, true)
                 this.handleLedgerOnReject({ resolve })
                 this.handleGoBackIfNeeded()
               }
