@@ -7,6 +7,7 @@ import {
 } from 'features/defiMarket/hooks/useUserBorrowData'
 import { DefiMarket, MarketNames } from '../../types'
 import { WAD } from '../../consts'
+import { useBenqiBorrow } from '../../hooks/benqi/useBenqiBorrow'
 import { BorrowSelectAmountFormBase } from './BorrowSelectAmountFormBase'
 
 export const BorrowBenqiSelectAmountForm = ({
@@ -114,22 +115,20 @@ export const BorrowBenqiSelectAmountForm = ({
     [borrowData]
   )
 
-  // TODO: Implement borrow hook
-  const handleSubmit = async ({
-    amount
-  }: {
-    amount: TokenUnit
-  }): Promise<string> => {
-    // eslint-disable-next-line no-console
-    console.log(
-      'Benqi borrow:',
-      amount.toDisplay(),
-      onConfirmed,
-      onReverted,
-      onError
-    )
-    throw new Error('Borrow not implemented yet')
-  }
+  // Benqi borrow hook
+  const { benqiBorrow } = useBenqiBorrow({
+    market,
+    onConfirmed,
+    onReverted,
+    onError
+  })
+
+  const handleSubmit = useCallback(
+    async ({ amount }: { amount: TokenUnit }): Promise<string> => {
+      return benqiBorrow({ amount })
+    },
+    [benqiBorrow]
+  )
 
   return (
     <BorrowSelectAmountFormBase
