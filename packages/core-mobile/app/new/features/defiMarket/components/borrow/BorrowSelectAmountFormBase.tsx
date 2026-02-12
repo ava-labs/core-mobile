@@ -16,6 +16,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { transactionSnackbar } from 'common/utils/toast'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
+import { HEALTH_SCORE_CAUTION_COLOR } from '../../consts'
 
 export const BorrowSelectAmountFormBase = ({
   title = 'How much would you like to borrow?',
@@ -133,7 +134,7 @@ export const BorrowSelectAmountFormBase = ({
         return theme.colors.$textSuccess // Green
       }
       if (score >= 1.1) {
-        return '#F7B500' // Orange
+        return HEALTH_SCORE_CAUTION_COLOR
       }
       return theme.colors.$textDanger // Red
     },
