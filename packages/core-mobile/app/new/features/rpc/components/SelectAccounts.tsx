@@ -15,6 +15,11 @@ import type { Account, AccountCollection } from 'store/account/types'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { useBalanceInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
+import { useSelector } from 'react-redux'
+import { WalletIcon } from 'common/components/WalletIcon'
+import { selectAccountById } from 'store/account'
+import { selectWalletById, selectWalletsCount } from 'store/wallet/slice'
+import { WalletType } from 'services/wallet/types'
 
 type Props = {
   onSelect: (account: Account) => void
@@ -120,6 +125,9 @@ const Account = ({
   const { balance: accountBalance, isLoadingBalance } =
     useBalanceInCurrencyForAccount(account.id)
   const { formatCurrency } = useFormatCurrency()
+  const accountData = useSelector(selectAccountById(account.id))
+  const wallet = useSelector(selectWalletById(accountData?.walletId ?? ''))
+  const walletsCount = useSelector(selectWalletsCount)
 
   const renderBalance = useCallback(() => {
     if (isLoadingBalance) {
@@ -141,6 +149,42 @@ const Account = ({
     )
   }, [isLoadingBalance, accountBalance, formatCurrency])
 
+  const renderWalletBadge = useCallback(() => {
+    // Only show wallet badge if there are multiple wallets
+    if (!wallet || walletsCount <= 1) {
+      return null
+    }
+
+    const walletLabel =
+      wallet.type === WalletType.PRIVATE_KEY ? 'Imported' : wallet.name
+
+    return (
+      <View
+        sx={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 2,
+          marginBottom: 4
+        }}>
+        <WalletIcon
+          wallet={wallet}
+          width={16}
+          height={16}
+          isExpanded
+          color={colors.$textSecondary}
+        />
+        <Text
+          variant="buttonSmall"
+          sx={{
+            color: '$textSecondary',
+            lineHeight: 16
+          }}>
+          {walletLabel}
+        </Text>
+      </View>
+    )
+  }, [wallet, walletsCount, colors.$textSecondary])
+
   return (
     <>
       <View
@@ -152,6 +196,7 @@ const Account = ({
           marginHorizontal: 16
         }}>
         <View style={{ width: '40%' }}>
+          {renderWalletBadge()}
           <Text
             variant="body1"
             numberOfLines={1}
