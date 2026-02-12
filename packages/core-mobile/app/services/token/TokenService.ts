@@ -308,11 +308,7 @@ export class TokenService {
     useCoingeckoProxy = false
   ): Promise<CoinsInfoResponse | CoingeckoError> {
     if (useCoingeckoProxy) {
-      return coingeckoProxyClient.marketDataByCoinId(undefined, {
-        params: {
-          id: coingeckoId
-        }
-      })
+      return coingeckoProxyClient.marketDataByCoinId(coingeckoId)
     }
     return coinsInfo(coingeckoBasicClient, {
       coinId: coingeckoId
@@ -332,14 +328,10 @@ export class TokenService {
   }): Promise<ChartData | CoingeckoError | undefined> {
     let rawData: ContractMarketChartResponse | undefined
     if (useCoingeckoProxy) {
-      rawData = await coingeckoProxyClient.marketChartByCoinId(undefined, {
-        params: {
-          id: coingeckoId
-        },
-        queries: {
-          vs_currency: currency,
-          days: days?.toString()
-        }
+      rawData = await coingeckoProxyClient.marketChartByCoinId({
+        id: coingeckoId,
+        vs_currency: currency,
+        days: days?.toString() ?? '1'
       })
     } else {
       rawData = await coinsMarketChart(coingeckoBasicClient, {
@@ -362,14 +354,12 @@ export class TokenService {
     CoinMarket[] | CoingeckoError
   > {
     if (useCoingeckoProxy) {
-      return coingeckoProxyClient.coinsMarket(undefined, {
-        queries: {
-          ids: coinIds?.join(','),
-          vs_currency: currency,
-          per_page: perPage,
-          page,
-          sparkline
-        }
+      return coingeckoProxyClient.coinsMarket({
+        ids: coinIds?.join(','),
+        vs_currency: currency,
+        per_page: perPage,
+        page,
+        sparkline
       })
     }
     return coinsMarket(coingeckoBasicClient, {
@@ -393,15 +383,13 @@ export class TokenService {
     SimplePriceResponse | CoingeckoError
   > {
     if (useCoingeckoProxy) {
-      const rawData = await coingeckoProxyClient.simplePrice(undefined, {
-        queries: {
-          ids: coinIds?.join(','),
-          vs_currencies: currencies.join(','),
-          include_market_cap: String(marketCap),
-          include_24hr_vol: String(vol24),
-          include_24hr_change: String(change24),
-          include_last_updated_at: String(lastUpdated)
-        }
+      const rawData = await coingeckoProxyClient.simplePrice({
+        ids: coinIds?.join(','),
+        vs_currencies: currencies.join(','),
+        include_market_cap: String(marketCap),
+        include_24hr_vol: String(vol24),
+        include_24hr_change: String(change24),
+        include_last_updated_at: String(lastUpdated)
       })
       return transformSimplePriceResponse(rawData, currencies)
     }
@@ -421,11 +409,7 @@ export class TokenService {
     useCoingeckoProxy = false
   ): Promise<CoinsSearchResponse | CoingeckoError> {
     if (useCoingeckoProxy) {
-      return coingeckoProxyClient.searchCoins(undefined, {
-        queries: {
-          query
-        }
-      })
+      return coingeckoProxyClient.searchCoins(query)
     }
     return coinsSearch(coingeckoBasicClient, {
       query
