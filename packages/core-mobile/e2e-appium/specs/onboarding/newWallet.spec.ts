@@ -14,7 +14,7 @@ describe('[Smoke] Onboarding', () => {
 
     // get the full recovery phrase
     const words = await onboardingPage.getMnemonicWords()
-    await commonElsPage.tapNext()
+    await commonElsPage.tapNextBtnById()
     await onboardingPage.dismissSecurityWarning()
 
     // select words
@@ -22,7 +22,7 @@ describe('[Smoke] Onboarding', () => {
     await onboardingPage.selectWord(words, 'firstWord')
     await onboardingPage.selectWord(words, 'secondWord')
     await onboardingPage.selectWord(words, 'thirdWord')
-    await commonElsPage.tapNext()
+    await commonElsPage.tapNextBtnById()
 
     // enter pin
     await onboardingPage.enterPin()

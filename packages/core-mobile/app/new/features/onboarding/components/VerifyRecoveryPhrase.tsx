@@ -125,6 +125,7 @@ export const VerifyRecoveryPhrase = ({
       <Button
         size="large"
         type="primary"
+        testID="next_btn"
         disabled={canVerify === false}
         onPress={handleNext}>
         Next
