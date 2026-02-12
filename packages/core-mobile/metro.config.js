@@ -29,6 +29,7 @@ const baseConfig = {
     // mute warnings about circular dependencies
     requireCycleIgnorePatterns: [/^app\/.*/, /^node_modules\/.*/],
     extraNodeModules: {
+      stream: require.resolve('./node_modules/stream-browserify'),
       '@noble/hashes': require.resolve('./node_modules/@noble/hashes')
     },
     // sbmodern is needed for storybook
@@ -119,11 +120,6 @@ const baseConfig = {
           platform
         )
       }
-      if (moduleName === 'stream') {
-        // when importing stream, resolve to readable-stream
-        return context.resolveRequest(context, 'readable-stream', platform)
-      }
-
       // optionally, chain to the standard Metro resolver.
       return context.resolveRequest(context, moduleName, platform)
     }
