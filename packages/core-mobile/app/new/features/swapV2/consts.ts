@@ -1,3 +1,4 @@
+import Config from 'react-native-config'
 import { Environment } from '@avalabs/unified-asset-transfer'
 import { BuildTxParams } from "features/swap/services/ParaswapService"
 
@@ -100,7 +101,7 @@ export const MAX_SLIPPAGE_PERCENT = 50
  */
 // TODO add to env variables once stable
 export const MARKR_API_URL =
-  process.env.MARKR_API_URL ?? 'https://proxy-api.avax.network/proxy/markr-staging'
+  Config.MARKR_API_URL ?? 'https://proxy-api.avax.network/proxy/markr-staging'
 
 /**
  * Determines the Fusion SDK environment based on app settings

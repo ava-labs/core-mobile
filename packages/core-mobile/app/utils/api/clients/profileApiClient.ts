@@ -1,7 +1,13 @@
 import Config from 'react-native-config'
+import Logger from 'utils/Logger'
 import { appCheckFetch } from '../common/appCheckFetch'
 import { CORE_HEADERS } from '../constants'
 import { createClient } from '../generated/profileApi.client/client'
+
+if (!Config.CORE_PROFILE_URL)
+  Logger.warn(
+    'CORE_PROFILE_URL is missing in env file. Profile API will not work properly.'
+  )
 
 /**
  * Profile API client configured with:
