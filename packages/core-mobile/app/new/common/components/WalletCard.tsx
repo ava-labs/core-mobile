@@ -78,7 +78,7 @@ const WalletCard = ({
     ({ item }) => {
       return (
         <AccountListItem
-          testID={`manage_accounts_list__${item.account.name}`}
+          testID={`manage_accounts_list__${wallet.name}__${item.account.name}`}
           isRefreshing={isRefreshing}
           {...item}
         />
@@ -156,6 +156,7 @@ const WalletCard = ({
           <View sx={{ gap: 16 }}>
             {((isLedger && isAppOpened) || !isLedger) && (
               <Button
+                testID={`add_account_btn__${wallet.name}`}
                 size="medium"
                 leftIcon={
                   isAddingAccount ? undefined : (

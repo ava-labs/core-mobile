@@ -4,7 +4,6 @@ export const DERIVATION_PATHS = {
   BIP44: {
     EVM: "m/44'/60'/0'/0/0",
     AVALANCHE: "m/44'/9000'/0'/0/0",
-    PVM: "m/44'/9000'/0'/0/0", // Same as Avalanche for now
     SOLANA: "m/44'/501'/0'/0",
     BITCOIN: "m/44'/0'/0'/0/0"
   },
@@ -13,7 +12,6 @@ export const DERIVATION_PATHS = {
   LEDGER_LIVE: {
     EVM: (accountIndex: number) => `m/44'/60'/${accountIndex}'/0/0`,
     AVALANCHE: (accountIndex: number) => `m/44'/9000'/${accountIndex}'/0/0`,
-    PVM: (accountIndex: number) => `m/44'/9000'/${accountIndex}'/0/0`,
     SOLANA: (accountIndex: number) => `44'/501'/${accountIndex}'/0`,
     BITCOIN: (accountIndex: number) => `m/44'/0'/${accountIndex}'/0/0`
   },

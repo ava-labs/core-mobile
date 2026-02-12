@@ -56,8 +56,7 @@ export const ContactList = ({
               : undefined
           }
           titleProps={{
-            testID: `contact_preview_address`,
-            accessibilityLabel: `contact_preview_address`
+            testID: `contact__${name}__${address}`
           }}
           subtitleProps={{
             variant: 'mono'

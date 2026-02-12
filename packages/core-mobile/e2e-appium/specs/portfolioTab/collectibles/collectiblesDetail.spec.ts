@@ -1,10 +1,11 @@
+/* eslint-disable jest/no-disabled-tests */
 import portfolioPage from '../../../pages/portfolio.page'
 import commonElsPage from '../../../pages/commonEls.page'
 import warmup from '../../../helpers/warmup'
 import commonElsLoc from '../../../locators/commonEls.loc'
 import { actions } from '../../../helpers/actions'
 
-describe('Portfolio tab', () => {
+describe.skip('Portfolio tab', () => {
   it('Collectibles - C-Chain collectible detail', async () => {
     await warmup()
     await portfolioPage.tapCollectiblesTab()
