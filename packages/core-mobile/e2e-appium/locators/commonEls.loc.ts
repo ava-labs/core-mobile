@@ -55,7 +55,7 @@ export default {
   transactionOnboardingNext: 'transaction_onboarding__next',
   tokenAmountInputField: 'token_amount_input_field',
   transactionSuccess: 'Transaction successful',
-  nextBtn: 'next_btn',
+  nextBtnById: 'next_btn',
   approveBtn: 'approve_button',
   rejectBtn: 'reject_button',
   dropdownScrollView: 'dropdown_scroll_view',
