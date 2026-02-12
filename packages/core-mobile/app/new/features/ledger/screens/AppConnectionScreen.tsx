@@ -36,7 +36,6 @@ export default function AppConnectionScreen({
   isUpdatingWallet: boolean
   deviceId?: string | null
   deviceName?: string
-  resetSetup: () => void
   disconnectDevice: () => Promise<void>
   handleComplete: (keys: LedgerKeys) => Promise<void>
   accountIndex: number

@@ -95,7 +95,7 @@ const LedgerReviewTransactionScreen = (): JSX.Element | null => {
   const headerHeight = useHeaderHeight()
 
   const deviceForWallet = useMemo(
-    () => getLedgerInfoByWalletId(walletId).device,
+    () => getLedgerInfoByWalletId(walletId)?.device,
     [getLedgerInfoByWalletId, walletId]
   )
 
