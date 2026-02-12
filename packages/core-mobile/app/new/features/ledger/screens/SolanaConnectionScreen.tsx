@@ -21,7 +21,7 @@ export default function SolanaConnectionScreen(): JSX.Element {
   const account = useSelector(selectAccountById(accountId))
   const { back, canGoBack } = useRouter()
   const wallet = useActiveWallet()
-  const { deviceName, deviceId } = useLedgerDeviceInfo(wallet?.id)
+  const { device } = useLedgerDeviceInfo(wallet?.id)
   const [currentAppConnectionStep, setAppConnectionStep] = useState<
     AppConnectionStep.SOLANA_CONNECT | AppConnectionStep.SOLANA_LOADING
   >(AppConnectionStep.SOLANA_CONNECT)
@@ -58,17 +58,17 @@ export default function SolanaConnectionScreen(): JSX.Element {
       setAppConnectionStep(AppConnectionStep.SOLANA_LOADING)
 
       // Connect to device if not already connected
-      if (connectedDeviceId === null && deviceId) {
-        await connectToDevice(deviceId, deviceName)
+      if (connectedDeviceId === null && device) {
+        await connectToDevice(device.id, device.name)
       }
 
       // Get keys from service
       const solanaKeys = await LedgerService.getSolanaKeys(account.index)
 
-      if (solanaKeys.length === 0 || deviceId === undefined) {
+      if (solanaKeys.length === 0 || device === undefined) {
         Logger.info('Missing required data for Solana wallet update', {
           solanaKeysCount: solanaKeys.length,
-          hasConnectedDeviceId: !!deviceId,
+          hasConnectedDeviceId: !!device?.id,
           isUpdatingWallet
         })
         throw new Error('Missing required data for Solana wallet update')
@@ -76,7 +76,7 @@ export default function SolanaConnectionScreen(): JSX.Element {
 
       if (wallet?.id && wallet?.name) {
         await updateSolanaForLedgerWallet({
-          deviceId,
+          deviceId: device.id,
           walletId: wallet.id,
           account: account as PrimaryAccount,
           solanaKeys
@@ -101,14 +101,13 @@ export default function SolanaConnectionScreen(): JSX.Element {
     account,
     setIsUpdatingWallet,
     connectedDeviceId,
-    deviceId,
+    device,
     wallet.id,
     wallet?.name,
     resetSetup,
     canGoBack,
     back,
     connectToDevice,
-    deviceName,
     isUpdatingWallet,
     updateSolanaForLedgerWallet
   ])

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
-import { LedgerDerivationPathType } from 'services/ledger/types'
+import { LedgerDerivationPathType, LedgerDevice } from 'services/ledger/types'
 import { useSelector } from 'react-redux'
 import { selectWalletById } from 'store/wallet/slice'
 import { LedgerWalletSecretSchema } from '../utils'
@@ -9,12 +9,10 @@ import { LedgerWalletSecretSchema } from '../utils'
 export const useLedgerDeviceInfo = (
   walletId?: string | null
 ): {
-  deviceId?: string
-  deviceName?: string
+  device?: LedgerDevice
   derivationPathType?: LedgerDerivationPathType
 } => {
-  const [deviceId, setDeviceId] = useState<string>()
-  const [deviceName, setDeviceName] = useState<string>()
+  const [device, setDevice] = useState<LedgerDevice>()
   const [derivationPathType, setDerivationPathType] =
     useState<LedgerDerivationPathType>()
   const wallet = useSelector(selectWalletById(walletId ?? ''))
@@ -28,8 +26,7 @@ export const useLedgerDeviceInfo = (
           !wallet ||
           (wallet.type !== 'LEDGER' && wallet.type !== 'LEDGER_LIVE')
         ) {
-          setDeviceId(undefined)
-          setDeviceName(undefined)
+          setDevice(undefined)
           setDerivationPathType(undefined)
           return
         }
@@ -45,12 +42,13 @@ export const useLedgerDeviceInfo = (
           JSON.parse(walletSecret.value)
         )
         setDerivationPathType(parsedWalletSecret.derivationPathSpec)
-        setDeviceId(parsedWalletSecret.deviceId)
-        setDeviceName(parsedWalletSecret.deviceName || 'Ledger Device')
+        setDevice({
+          id: parsedWalletSecret.deviceId,
+          name: parsedWalletSecret.deviceName
+        })
       } catch (error) {
         Logger.error('Failed to fetch Ledger device info:', error)
-        setDeviceId(undefined)
-        setDeviceName(undefined)
+        setDevice(undefined)
         setDerivationPathType(undefined)
       }
     }
@@ -58,5 +56,5 @@ export const useLedgerDeviceInfo = (
     fetchDeviceInfo()
   }, [wallet])
 
-  return { deviceId, deviceName, derivationPathType }
+  return { device, derivationPathType }
 }

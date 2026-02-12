@@ -15,7 +15,7 @@ export const useObserveLedgerState = (
   isLedger: boolean
 } => {
   const { transportState } = useLedgerWallet()
-  const { deviceId } = useLedgerDeviceInfo(walletId)
+  const { device } = useLedgerDeviceInfo(walletId)
   const wallet = useSelector(selectWalletById(walletId))
   const [isAppOpened, setIsAppOpened] = useState(false)
 
@@ -49,10 +49,10 @@ export const useObserveLedgerState = (
 
   useEffect(() => {
     async function checkAppIsOpened(): Promise<void> {
-      if (isLedger && deviceId && transportState.available) {
+      if (isLedger && device?.id && transportState.available) {
         setIsConnected(false)
         try {
-          await LedgerService.ensureConnection(deviceId)
+          await LedgerService.ensureConnection(device.id)
           setIsConnected(true)
         } catch (error) {
           setIsConnected(false)
@@ -62,7 +62,7 @@ export const useObserveLedgerState = (
       }
     }
     checkAppIsOpened()
-  }, [deviceId, isLedger, transportState.available])
+  }, [device, isLedger, transportState.available])
 
   return { isAppOpened, isLedger }
 }

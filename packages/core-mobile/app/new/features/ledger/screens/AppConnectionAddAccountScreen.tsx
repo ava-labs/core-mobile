@@ -26,9 +26,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
     selectAccountsByWalletId(state, walletId)
   )
 
-  const { deviceName, deviceId, derivationPathType } = useLedgerDeviceInfo(
-    wallet?.id
-  )
+  const { device, derivationPathType } = useLedgerDeviceInfo(wallet?.id)
 
   const {
     resetSetup,
@@ -41,7 +39,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
     async (keys: LedgerKeys) => {
       if (
         keys &&
-        deviceId &&
+        device &&
         wallet &&
         accounts.length &&
         derivationPathType &&
@@ -56,8 +54,8 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
             walletName: wallet.name,
             walletType: wallet.type,
             accountIndexToUse: accounts.length,
-            deviceId,
-            deviceName,
+            deviceId: device.id,
+            deviceName: device.name,
             derivationPathType,
             avalancheKeys: keys.avalancheKeys,
             solanaKeys: keys.solanaKeys,
@@ -89,7 +87,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
           'Account creation conditions not met, skipping account creation',
           {
             hasAvalancheKeys: !!keys.avalancheKeys,
-            hasConnectedDeviceId: !!deviceId,
+            hasConnectedDeviceId: !!device?.id,
             hasSelectedDerivationPath: !!derivationPathType,
             isUpdatingWallet
           }
@@ -99,14 +97,13 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
       }
     },
     [
-      deviceId,
+      device,
       wallet,
       accounts.length,
       derivationPathType,
       isUpdatingWallet,
       setIsUpdatingWallet,
       updateLedgerWallet,
-      deviceName,
       setLedgerAddress,
       walletId,
       isDeveloperMode,
@@ -119,8 +116,8 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
     <AppConnectionScreen
       completeStepTitle={`Your Account\nis being set up`}
       handleComplete={handleComplete}
-      deviceId={deviceId}
-      deviceName={deviceName}
+      deviceId={device?.id}
+      deviceName={device?.name}
       resetSetup={resetSetup}
       disconnectDevice={disconnectDevice}
       isUpdatingWallet={isUpdatingWallet}
