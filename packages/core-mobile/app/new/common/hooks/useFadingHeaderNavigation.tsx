@@ -131,7 +131,6 @@ export const useFadingHeaderNavigation = ({
       <Pressable style={{ flex: 1 }} />
     ) : (
       <BlurredBackgroundView
-        hasGrabber={shouldHeaderHaveGrabber}
         backgroundColor={backgroundColor}
         shouldDelayBlurOniOS={shouldDelayBlurOniOS}
         hasAnimation={hasBackgroundAnimation}
