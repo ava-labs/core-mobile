@@ -5,6 +5,7 @@ import { AAVE_AVALANCHE3_POOL_PROXY_ABI } from '../abis/aaveAvalanche3PoolProxy'
 import { AAVE_PRICE_ORACLE_ABI } from '../abis/aavePriceOracle'
 import { BENQI_COMPTROLLER_ABI } from '../abis/benqiComptroller'
 import { BENQI_PRICE_ORACLE } from '../abis/benqiPriceOracle'
+import { BENQI_Q_TOKEN } from '../abis/benqiQToken'
 import {
   AAVE_POOL_C_CHAIN_ADDRESS,
   AAVE_PRICE_ORACLE_C_CHAIN_ADDRESS,
@@ -12,19 +13,6 @@ import {
   BENQI_PRICE_ORACLE_C_CHAIN_ADDRESS,
   WAD
 } from '../consts'
-
-// Minimal qToken ABI for borrowBalanceStored
-const BENQI_QTOKEN_BORROW_ABI = [
-  {
-    constant: true,
-    inputs: [{ internalType: 'address', name: 'account', type: 'address' }],
-    name: 'borrowBalanceStored',
-    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function'
-  }
-] as const
 
 export async function fetchAaveUserBorrowData(
   networkClient: PublicClient,
@@ -132,7 +120,7 @@ export async function fetchBenqiUserBorrowData(
     const borrowCalls = assetsIn.flatMap(qToken => [
       {
         address: qToken,
-        abi: BENQI_QTOKEN_BORROW_ABI,
+        abi: BENQI_Q_TOKEN,
         functionName: 'borrowBalanceStored' as const,
         args: [userAddress]
       },
