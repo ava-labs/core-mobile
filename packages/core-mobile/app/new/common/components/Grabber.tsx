@@ -6,7 +6,6 @@ const Grabber = (): JSX.Element => {
   const { theme } = useTheme()
   return (
     <View
-      testID="grabber"
       accessible={true}
       style={{
         height: 5,
