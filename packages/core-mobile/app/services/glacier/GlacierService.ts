@@ -6,7 +6,7 @@ import {
 } from '@avalabs/glacier-sdk'
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
-import { CORE_HEADERS } from 'utils/apiClient/constants'
+import { CORE_HEADERS } from 'utils/api/constants'
 import { GlacierFetchHttpRequest } from './GlacierFetchHttpRequest'
 
 if (!Config.GLACIER_URL)

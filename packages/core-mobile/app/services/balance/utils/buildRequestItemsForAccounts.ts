@@ -14,7 +14,7 @@ import {
   EvmGetBalancesRequestItem,
   GetBalancesRequestBody,
   SvmGetBalancesRequestItem
-} from 'utils/apiClient/generated/balanceApi.client'
+} from 'utils/api/generated/balanceApi.client'
 
 /**
  * Maximum number of EVM references allowed per request item

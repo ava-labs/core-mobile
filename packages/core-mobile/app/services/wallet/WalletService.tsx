@@ -22,9 +22,9 @@ import {
 } from '@avalabs/vm-module-types'
 import { SpanName } from 'services/sentry/types'
 import { Curve } from 'utils/publicKeys'
-
-import { profileApi } from 'utils/apiClient/profile/profileApi'
-import { GetAddressesResponse } from 'utils/apiClient/profile/types'
+import { GetAddressesResponse } from 'utils/api/generated/profileApi.client/types.gen'
+import { postV1GetAddresses } from 'utils/api/generated/profileApi.client'
+import { profileApiClient } from 'utils/api/clients/profileApiClient'
 import {
   getAddressDerivationPath,
   isAvalancheTransactionRequest,
@@ -347,12 +347,21 @@ class WalletService {
     })
 
     try {
-      return await profileApi.postV1getAddresses({
-        networkType: networkType,
-        extendedPublicKey: xpubXP,
-        isTestnet,
-        onlyWithActivity
+      const response = await postV1GetAddresses({
+        client: profileApiClient,
+        body: {
+          networkType: networkType,
+          extendedPublicKey: xpubXP,
+          isTestnet,
+          onlyWithActivity
+        }
       })
+
+      if (!response.data) {
+        throw new Error('Failed to get addresses from postV1GetAddresses')
+      }
+
+      return response.data
     } catch (err) {
       Logger.error(`[WalletService.ts][getAddressesFromXpubXP]${err}`)
       throw err
