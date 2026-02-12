@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useRef } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Address, formatUnits } from 'viem'
+import { transactionSnackbar } from 'common/utils/toast'
 import { DefiMarket, MarketNames } from '../../types'
 import {
   useUserBorrowData,
@@ -53,6 +54,8 @@ export const BorrowAaveSelectAmountForm = ({
   // Handle borrow confirmation - trigger unwrap for native AVAX
   const handleBorrowConfirmed = useCallback(() => {
     if (isNativeAvax && pendingUnwrapAmountRef.current) {
+      // Show toast before unwrap
+      transactionSnackbar.pending({ message: 'Unwrapping WAVAX to AVAX...' })
       // Borrow confirmed, now unwrap WAVAX to AVAX
       unwrapWavax({ amount: pendingUnwrapAmountRef.current })
       pendingUnwrapAmountRef.current = null
