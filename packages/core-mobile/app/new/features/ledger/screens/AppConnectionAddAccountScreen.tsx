@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { LedgerKeys } from 'services/ledger/types'
@@ -12,7 +12,7 @@ import { showSnackbar } from 'common/utils/toast'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useSetLedgerAddress } from '../hooks/useSetLedgerAddress'
 import { useLedgerSetupContext } from '../contexts/LedgerSetupContext'
-import { useLedgerDeviceInfo } from '../hooks/useLedgerDeviceInfo'
+import { useLedgerWalletMap } from '../store'
 import AppConnectionScreen from './AppConnectionScreen'
 
 export const AppConnectionAddAccountScreen = (): JSX.Element => {
@@ -25,8 +25,11 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
   const accounts = useSelector((state: RootState) =>
     selectAccountsByWalletId(state, walletId)
   )
+  const { getLedgerInfoByWalletId } = useLedgerWalletMap()
 
-  const { device, derivationPathType } = useLedgerDeviceInfo(wallet?.id)
+  const { device, derivationPathType } = useMemo(() => {
+    return getLedgerInfoByWalletId(walletId)
+  }, [getLedgerInfoByWalletId, walletId])
 
   const {
     resetSetup,
