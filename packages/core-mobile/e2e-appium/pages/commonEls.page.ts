@@ -161,8 +161,8 @@ class CommonElsPage {
     return selectors.getBySomeText(commonEls.copy)
   }
 
-  get nextButton() {
-    return selectors.getById(commonEls.nextBtn)
+  get nextBtnById() {
+    return selectors.getById(commonEls.nextBtnById)
   }
 
   get approveButton() {
@@ -398,16 +398,18 @@ class CommonElsPage {
     try {
       await actions.tap(this.next)
     } catch (e) {
-      await actions.tap(this.nextButton)
+      await actions.tap(this.nextBtnById)
     }
   }
 
+  async tapNextBtnById() {
+    await actions.tap(this.nextBtnById)
+  }
+
   async dismissBottomSheet(element = this.grabber) {
-    await actions.waitFor(element, 20000)
-    while (await actions.getVisible(element)) {
-      await actions.dragAndDrop(element, [0, 1500])
-      await actions.delay(1000)
-    }
+    await actions.waitFor(element, 30000)
+    await actions.dragAndDrop(element, [0, 1500])
+    await actions.delay(1000)
     console.log('Dismissed bottom sheet')
   }
 
