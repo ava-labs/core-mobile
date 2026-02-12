@@ -4,6 +4,7 @@ import type { Network } from '@avalabs/core-chains-sdk'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import Logger from 'utils/Logger'
+import { exponentialBackoff } from 'utils/reactQuery'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import FusionService from '../services/FusionService'
 
@@ -41,7 +42,8 @@ export function useSupportedChains(): {
       return FusionService.getSupportedChains()
     },
     staleTime: STALE_TIME,
-    enabled: FusionService.isInitialized()
+    retry: 3,
+    retryDelay: exponentialBackoff(5000)
   })
 
   // Convert CAIP-2 IDs to Network objects from enabled networks
@@ -53,8 +55,11 @@ export function useSupportedChains(): {
       .filter((network): network is Network => network !== undefined)
       .sort((a, b) => {
         // Avalanche C-Chain always first
-        if (isAvalancheChainId(a.chainId)) return -1
-        if (isAvalancheChainId(b.chainId)) return 1
+        const aIsAvalanche = isAvalancheChainId(a.chainId)
+        const bIsAvalanche = isAvalancheChainId(b.chainId)
+
+        if (aIsAvalanche && !bIsAvalanche) return -1
+        if (!aIsAvalanche && bIsAvalanche) return 1
         return 0
       })
 

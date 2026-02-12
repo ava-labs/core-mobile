@@ -7,11 +7,15 @@ import { rpcErrors } from '@metamask/rpc-errors'
  * @param value - The value to check
  * @param message - Optional error message
  * @throws RPC internal error if value is falsy
+ * @example
+ *   const foo: string | null = getValue()
+ *   assert(foo, 'foo is required')
+ *   // foo is now typed as string (non-nullable)
  */
-export function assert(
-  value: unknown,
+export function assert<T>(
+  value: T,
   message?: string
-): asserts value is NonNullable<unknown> {
+): asserts value is NonNullable<T> {
   if (!value) {
     throw rpcErrors.internal({
       data: { reason: message || 'Assertion failed' }
