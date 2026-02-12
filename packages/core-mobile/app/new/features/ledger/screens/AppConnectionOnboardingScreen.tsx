@@ -21,7 +21,6 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
     connectedDeviceId,
     connectedDeviceName,
     selectedDerivationPath,
-    resetSetup,
     disconnectDevice,
     isUpdatingWallet,
     setIsUpdatingWallet
@@ -118,7 +117,6 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
       deviceId={connectedDeviceId}
       deviceName={connectedDeviceName}
       isUpdatingWallet={isUpdatingWallet}
-      resetSetup={resetSetup}
       disconnectDevice={disconnectDevice}
       accountIndex={0} // intentionally setting it to zero here as this screen is used for importing the wallet for the first time
     />
