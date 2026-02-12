@@ -47,7 +47,7 @@ export const handleLedgerErrorAndShowAlert = ({
     description = `Update the ${ledgerAppName} app on your Ledger device to continue`
   } else if (
     lowercasedMessage.includes(LEDGER_ERROR_CODES.USER_CANCELLED) ||
-    lowercasedMessage.includes('cancelled')
+    lowercasedMessage.includes('transaction cancelled by user')
   ) {
     // User cancelled, no need to show alert
     return

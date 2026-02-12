@@ -119,7 +119,7 @@ const LedgerReviewTransactionScreen = ({
 
   // Handle gesture dismissal (swipe down)
   useEffect(() => {
-    return navigation.addListener('beforeRemove', e => {
+    const unsubscribe = navigation.addListener('beforeRemove', e => {
       if (
         e.data.action.type === 'POP' && // gesture dismissed
         isCancelEnabled
@@ -129,6 +129,8 @@ const LedgerReviewTransactionScreen = ({
         onReject('Transaction cancelled by user')
       }
     })
+
+    return unsubscribe
   }, [navigation, onReject, isCancelEnabled])
 
   const renderFooter = useCallback(() => {

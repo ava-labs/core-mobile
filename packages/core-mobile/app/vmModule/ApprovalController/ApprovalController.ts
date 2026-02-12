@@ -28,6 +28,7 @@ import { handleLedgerErrorAndShowAlert } from './utils'
 
 class ApprovalController implements VmModuleApprovalController {
   private userCancelledMap = new Map<string, boolean>()
+  private cleanupTimeouts = new Map<string, NodeJS.Timeout>()
 
   async requestPublicKey({
     secretId,
@@ -139,6 +140,25 @@ class ApprovalController implements VmModuleApprovalController {
     }
   }
 
+  private setUserCancelled(requestId: string): void {
+    this.userCancelledMap.set(requestId, true)
+    // Auto-cleanup after 5 seconds to prevent memory leaks
+    const timeout = setTimeout(() => {
+      this.userCancelledMap.delete(requestId)
+      this.cleanupTimeouts.delete(requestId)
+    }, 5000)
+    this.cleanupTimeouts.set(requestId, timeout)
+  }
+
+  private clearUserCancelled(requestId: string): void {
+    this.userCancelledMap.delete(requestId)
+    const timeout = this.cleanupTimeouts.get(requestId)
+    if (timeout) {
+      clearTimeout(timeout)
+      this.cleanupTimeouts.delete(requestId)
+    }
+  }
+
   async requestApproval({
     request,
     displayData,
@@ -146,7 +166,7 @@ class ApprovalController implements VmModuleApprovalController {
   }: ApprovalParams): Promise<ApprovalResponse> {
     const requestId = request.requestId
     // Clear any previous cancellation state for this request
-    this.userCancelledMap.delete(requestId)
+    this.clearUserCancelled(requestId)
 
     return new Promise<ApprovalResponse>(resolve => {
       walletConnectCache.approvalParams.set({
@@ -164,7 +184,7 @@ class ApprovalController implements VmModuleApprovalController {
               if ('error' in value) {
                 // Don't show alert if user explicitly cancelled
                 if (this.userCancelledMap.get(requestId)) {
-                  this.userCancelledMap.delete(requestId)
+                  this.clearUserCancelled(requestId)
                   return
                 }
 
@@ -178,7 +198,7 @@ class ApprovalController implements VmModuleApprovalController {
                       resolve: resolveWithRetry
                     }),
                   onCancel: () => {
-                    this.userCancelledMap.set(requestId, true)
+                    this.setUserCancelled(requestId)
                     this.handleGoBackIfNeeded()
                     this.handleLedgerOnReject({ resolve })
                   }
@@ -186,7 +206,7 @@ class ApprovalController implements VmModuleApprovalController {
               } else {
                 resolve(value)
                 this.handleGoBackIfNeeded()
-                this.userCancelledMap.delete(requestId)
+                this.clearUserCancelled(requestId)
               }
             }
 
@@ -199,7 +219,7 @@ class ApprovalController implements VmModuleApprovalController {
                   resolve: resolveWithRetry
                 }),
               onReject: () => {
-                this.userCancelledMap.set(requestId, true)
+                this.setUserCancelled(requestId)
                 this.handleLedgerOnReject({ resolve })
                 this.handleGoBackIfNeeded()
               }
