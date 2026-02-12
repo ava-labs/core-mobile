@@ -1,5 +1,6 @@
 const isCI = process.env.APP_ENV === 'ci'
 
+// use production environment on CI for stability
 const BALANCE_SCHEMA_URL = isCI
   ? 'https://core-balance-api.avax.network/schema.json'
   : 'https://core-balance-api.avax-test.network/schema.json'

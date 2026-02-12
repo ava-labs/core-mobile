@@ -115,5 +115,5 @@ export function getFusionEnvironment(
   }
 
   // Default to production environment
-  return Environment.PROD 
+  return Environment.PROD
 }

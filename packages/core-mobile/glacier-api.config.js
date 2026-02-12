@@ -1,5 +1,6 @@
 const isCI = process.env.APP_ENV === 'ci'
 
+// use production environment on CI for stability
 const GLACIER_SCHEMA_URL = isCI
   ? 'https://glacier-api.avax.network/api-json'
   : 'https://glacier-api-dev.avax.network/api-json'
