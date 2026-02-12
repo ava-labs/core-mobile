@@ -4,7 +4,8 @@ export class BoundedMap<K, V> extends Map<K, V> {
     super()
     this.maxSize = maxSize
   }
-  // Enforce a maximum size with simple LRU-style eviction based on insertion order.
+  // Enforce a maximum size with FIFO eviction: oldest entries are removed first.
+  // Note: updating an existing key does NOT refresh its position.
   override set(key: K, value: V): this {
     if (!this.has(key) && this.size >= this.maxSize) {
       const oldestKey = this.keys().next().value as K | undefined
