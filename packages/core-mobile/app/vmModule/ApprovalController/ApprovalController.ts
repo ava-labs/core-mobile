@@ -22,12 +22,13 @@ import { showLedgerReviewTransaction } from 'features/ledger/utils'
 import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
 import { CONFETTI_DURATION_MS } from 'common/consts'
 import { currentRouteStore } from 'new/routes/store'
+import { BoundedMap } from 'common/utils/boundedMap'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { handleLedgerErrorAndShowAlert } from './utils'
 
 class ApprovalController implements VmModuleApprovalController {
-  private userCancelledMap = new Map<string, boolean>()
+  private userCancelledMap = new BoundedMap<string, boolean>(10)
 
   async requestPublicKey({
     secretId,
