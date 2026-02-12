@@ -190,6 +190,7 @@ export default function AppConnectionScreen({
       if (!deviceId) {
         throw new Error('No device ID found')
       }
+      await LedgerService.ensureConnection(deviceId)
       setAppConnectionStep(AppConnectionStep.SOLANA_LOADING)
 
       // Open Solana app before getting keys
