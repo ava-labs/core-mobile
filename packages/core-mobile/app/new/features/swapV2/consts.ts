@@ -99,7 +99,7 @@ export const MAX_SLIPPAGE_PERCENT = 50
 /**
  * Markr API endpoint for Fusion SDK
  */
-// TODO add to env variables once stable
+// TODO add to env variables once stable https://ava-labs.atlassian.net/browse/CP-13381
 export const MARKR_API_URL =
   Config.MARKR_API_URL ?? 'https://proxy-api.avax.network/proxy/markr-staging'
 
