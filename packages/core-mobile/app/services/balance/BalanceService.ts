@@ -113,14 +113,21 @@ export class BalanceService {
               }))
             )
 
+            // Map each address to ALL owning accounts so that
+            // imported-PK accounts that share the same address also receive
+            // the balance.  Keys are lowercased for case-insensitive lookups.
             const addressMap = addressEntries.reduce(
               (acc, { address, account }) => {
                 if (address) {
-                  acc[address] = account
+                  const key = address.toLowerCase()
+                  if (!acc[key]) acc[key] = []
+                  if (!acc[key].some(a => a.id === account.id)) {
+                    acc[key].push(account)
+                  }
                 }
                 return acc
               },
-              {} as Record<string, Account>
+              {} as Record<string, Account[]>
             )
 
             const addresses = Object.keys(addressMap)
@@ -185,47 +192,53 @@ export class BalanceService {
               })
             }
 
-            // Process accounts
-            for (const address of addresses) {
-              const account = addressMap[address]
-              const balances = balancesResponse[address]
+            // Process accounts – iterate over the response addresses and
+            // assign balances to every owning account (supports duplicate
+            // addresses from imported-PK accounts).
+            for (const responseAddress of Object.keys(balancesResponse)) {
+              const matchedAccounts =
+                addressMap[responseAddress.toLowerCase()]
+              const balances = balancesResponse[responseAddress]
 
-              if (!account || !balances) continue
+              if (!matchedAccounts || matchedAccounts.length === 0 || !balances)
+                continue
 
-              if ('error' in balances) {
+              for (const account of matchedAccounts) {
+                if ('error' in balances) {
+                  partial[account.id] = {
+                    accountId: account.id,
+                    chainId: network.chainId,
+                    tokens: [],
+                    dataAccurate: false,
+                    error: balances.error as Error
+                  }
+                  continue
+                }
+
+                const tokens = Object.values(balances)
+                  .filter((t): t is TokenWithBalance => !('error' in t))
+                  .map(token => {
+                    const localId = isPChain(network.chainId)
+                      ? AVAX_P_ID
+                      : isXChain(network.chainId)
+                      ? AVAX_X_ID
+                      : getLocalTokenId(token)
+
+                    return {
+                      ...token,
+                      localId,
+                      networkChainId: network.chainId,
+                      isDataAccurate: true
+                    }
+                  })
+
                 partial[account.id] = {
                   accountId: account.id,
                   chainId: network.chainId,
-                  tokens: [],
-                  dataAccurate: false,
-                  error: balances.error as Error
+                  tokens,
+                  dataAccurate: true,
+                  error: null
                 }
-                continue
-              }
-
-              const tokens = Object.values(balances)
-                .filter((t): t is TokenWithBalance => !('error' in t))
-                .map(token => {
-                  const localId = isPChain(network.chainId)
-                    ? AVAX_P_ID
-                    : isXChain(network.chainId)
-                    ? AVAX_X_ID
-                    : getLocalTokenId(token)
-
-                  return {
-                    ...token,
-                    localId,
-                    networkChainId: network.chainId,
-                    isDataAccurate: true
-                  }
-                })
-
-              partial[account.id] = {
-                accountId: account.id,
-                chainId: network.chainId,
-                tokens,
-                dataAccurate: true,
-                error: null
               }
             }
 
@@ -420,7 +433,14 @@ export class BalanceService {
       return acc
     }, {} as Record<string, Account>)
 
-    const accountByAddress = accounts.reduce((acc, account) => {
+    // Map each address to ALL accounts that own it.
+    // Keys are lowercased so lookups are case-insensitive — the Balance API
+    // may return addresses in a different case (e.g. lowercased EVM) than
+    // what the account stores (checksummed).  With a single account this was
+    // hidden by the `accounts.length === 1` fallback; with 2+ accounts the
+    // fallback no longer applies and the mismatch causes balances to be
+    // silently dropped.
+    const accountsByAddress = accounts.reduce((acc, account) => {
       const xpAddresses = xpAddressesByAccountId.get(account.id) ?? []
 
       const addresses = supportedNetworks.flatMap(network =>
@@ -431,10 +451,16 @@ export class BalanceService {
         })
       )
       for (const address of addresses) {
-        if (address && address.length > 0) acc[address] = account
+        if (address && address.length > 0) {
+          const key = address.toLowerCase()
+          if (!acc[key]) acc[key] = []
+          if (!acc[key].some(a => a.id === account.id)) {
+            acc[key].push(account)
+          }
+        }
       }
       return acc
-    }, {} as Record<string, Account>)
+    }, {} as Record<string, Account[]>)
 
     let balanceApiThrew = false
     const failedChainIds = new Set<number>()
@@ -451,12 +477,30 @@ export class BalanceService {
       try {
         for await (const balance of balanceApi.getBalancesStream(body)) {
           const id = 'id' in balance ? balance.id : undefined
-          const account =
-            (id ? accountById[id] : undefined) ??
-            (id ? accountByAddress[id] : undefined) ??
-            (accounts.length === 1 ? accounts[0] : undefined)
 
-          if (!account) {
+          // Resolve to one or more matching accounts.
+          // An address may map to multiple accounts when the same private key
+          // has been imported, so we must assign the balance to every owner.
+          // Lookups are case-insensitive to handle API response case variance.
+          const matchedAccounts: Account[] = []
+
+          if (id) {
+            const byId = accountById[id]
+            if (byId) {
+              matchedAccounts.push(byId)
+            } else {
+              const byAddress = accountsByAddress[id.toLowerCase()]
+              if (byAddress) {
+                matchedAccounts.push(...byAddress)
+              }
+            }
+          }
+
+          if (matchedAccounts.length === 0 && accounts.length === 1) {
+            matchedAccounts.push(accounts[0]!)
+          }
+
+          if (matchedAccounts.length === 0) {
             Logger.error(
               '[BalanceService][getBalancesForAccounts] Could not map streamed balance to an account',
               {
@@ -469,18 +513,20 @@ export class BalanceService {
             continue
           }
 
-          const normalized = mapBalanceResponseToLegacy(account, balance)
-          if (!normalized) continue
+          for (const account of matchedAccounts) {
+            const normalized = mapBalanceResponseToLegacy(account, balance)
+            if (!normalized) continue
 
-          if (normalized.error) {
-            // Mark chain as failed for retry
-            failedChainIds.add(normalized.chainId)
-          } else {
-            // Progressive update callback for successful balance
-            onBalanceLoaded?.(normalized)
+            if (normalized.error) {
+              // Mark chain as failed for retry
+              failedChainIds.add(normalized.chainId)
+            } else {
+              // Progressive update callback for successful balance
+              onBalanceLoaded?.(normalized)
+            }
+
+            finalResults[account.id]?.push(normalized)
           }
-
-          finalResults[account.id]?.push(normalized)
         }
       } catch (err) {
         balanceApiThrew = true
