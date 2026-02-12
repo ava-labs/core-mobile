@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-element-overwrite */
 import { BoundedMap } from './boundedMap'
 
 describe('BoundedMap', () => {
