@@ -1,12 +1,10 @@
 import React, { useCallback, useMemo } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Address } from 'viem'
-import {
-  convertUsdToTokenAmount,
-  useUserBorrowData
-} from 'features/defiMarket/hooks/useUserBorrowData'
-import { DefiMarket, MarketNames } from '../../types'
+import { DefiMarket } from '../../types'
+import { convertUsdToTokenAmount } from '../../utils/borrow'
 import { WAD } from '../../consts'
+import { useBenqiBorrowData } from '../../hooks/benqi/useBenqiBorrowData'
 import { useBenqiBorrow } from '../../hooks/benqi/useBenqiBorrow'
 import { BorrowSelectAmountFormBase } from './BorrowSelectAmountFormBase'
 
@@ -25,10 +23,7 @@ export const BorrowBenqiSelectAmountForm = ({
 }): JSX.Element => {
   // For Benqi, pass the qToken address to get price from Benqi Price Oracle
   const qTokenAddress = market.asset.mintTokenAddress as Address
-  const { data: borrowData } = useUserBorrowData(
-    MarketNames.benqi,
-    qTokenAddress
-  )
+  const { data: borrowData, isLoading } = useBenqiBorrowData(qTokenAddress)
 
   // Calculate available to borrow in token units using oracle price
   const availableToBorrow = useMemo(() => {
@@ -59,37 +54,33 @@ export const BorrowBenqiSelectAmountForm = ({
   }, [borrowData, market.asset.decimals, market.asset.symbol])
 
   // Calculate current health score
-  // For Benqi: health = (liquidity + totalBorrowUSD) / totalBorrowUSD
-  // When totalBorrowUSD is 0, health is infinite
+  // For Benqi: health = (liquidity + totalDebtUSD) / totalDebtUSD
+  // When totalDebtUSD is 0, health is infinite
   const currentHealthScore = useMemo(() => {
-    if (!borrowData?.benqiLiquidity) return undefined
+    if (!borrowData) return undefined
 
-    const { benqiLiquidity, benqiTotalBorrowUSD } = borrowData
+    const { liquidity, totalDebtUSD } = borrowData
 
     // If no borrows, health is infinite
-    if (!benqiTotalBorrowUSD || benqiTotalBorrowUSD === 0n) {
+    if (totalDebtUSD === 0n) {
       return Infinity
     }
 
-    // health = (liquidity + totalBorrow) / totalBorrow
-    // This gives us: health = 1 + (liquidity / totalBorrow)
-    // When liquidity = totalBorrow * (health - 1)
-    const numerator = benqiLiquidity + benqiTotalBorrowUSD
-    const healthBigInt = (numerator * BigInt(10 ** 18)) / benqiTotalBorrowUSD
+    // health = (liquidity + totalDebt) / totalDebt
+    // This gives us: health = 1 + (liquidity / totalDebt)
+    const numerator = liquidity + totalDebtUSD
+    const healthBigInt = (numerator * BigInt(10 ** 18)) / totalDebtUSD
     return Number(healthBigInt) / 10 ** 18
   }, [borrowData])
 
   // Calculate new health score based on borrow amount
-  // Formula: newHealth = (liquidity + totalBorrow) / (totalBorrow + newBorrow)
+  // Formula: newHealth = (liquidity + totalDebt) / (totalDebt + newBorrow)
   // Note: liquidity already accounts for collateral factors
   const calculateHealthScore = useCallback(
     (borrowAmount: TokenUnit): number | undefined => {
-      if (!borrowData?.benqiLiquidity || !borrowData?.tokenPriceUSD) {
-        return undefined
-      }
+      if (!borrowData) return undefined
 
-      const { benqiLiquidity, benqiTotalBorrowUSD, tokenPriceUSD } = borrowData
-      const currentTotalBorrow = benqiTotalBorrowUSD ?? 0n
+      const { liquidity, totalDebtUSD, tokenPriceUSD } = borrowData
 
       // Convert borrow amount to USD (18 decimals)
       // borrowAmountUSD = borrowAmount * tokenPrice / 10^tokenDecimals
@@ -99,17 +90,17 @@ export const BorrowBenqiSelectAmountForm = ({
       const borrowAmountRaw = borrowAmount.toSubUnit()
       const newBorrowUSD = (borrowAmountRaw * tokenPriceUSD) / BigInt(10 ** WAD)
 
-      const newTotalBorrow = currentTotalBorrow + newBorrowUSD
+      const newTotalDebt = totalDebtUSD + newBorrowUSD
 
-      if (newTotalBorrow === 0n) {
+      if (newTotalDebt === 0n) {
         return Infinity
       }
 
-      // newHealth = (liquidity + currentTotalBorrow) / newTotalBorrow
-      // Note: We use (liquidity + currentTotalBorrow) because this represents
+      // newHealth = (liquidity + currentTotalDebt) / newTotalDebt
+      // Note: We use (liquidity + currentTotalDebt) because this represents
       // the total "borrowing capacity" before the new borrow
-      const numerator = benqiLiquidity + currentTotalBorrow
-      const newHealthBigInt = (numerator * BigInt(10 ** 18)) / newTotalBorrow
+      const numerator = liquidity + totalDebtUSD
+      const newHealthBigInt = (numerator * BigInt(10 ** 18)) / newTotalDebt
       return Number(newHealthBigInt) / 10 ** 18
     },
     [borrowData]
@@ -138,6 +129,7 @@ export const BorrowBenqiSelectAmountForm = ({
       calculateHealthScore={calculateHealthScore}
       submit={handleSubmit}
       onSubmitted={onSubmitted}
+      isLoading={isLoading}
     />
   )
 }

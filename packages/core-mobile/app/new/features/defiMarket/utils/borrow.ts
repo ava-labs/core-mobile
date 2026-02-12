@@ -1,13 +1,6 @@
-import { skipToken, useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
-import { useSelector } from 'react-redux'
-import { Address, createPublicClient, http, PublicClient } from 'viem'
+import { Address, PublicClient } from 'viem'
 import { multicall } from 'viem/actions'
-import { selectActiveAccount } from 'store/account'
-import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import useCChainNetwork from 'hooks/earn/useCChainNetwork'
-import { getViemChain } from 'utils/getViemChain/getViemChain'
-import { MarketName, MarketNames } from '../types'
+import { AaveAccountData, AaveBorrowData, BenqiBorrowData } from '../types'
 import { AAVE_AVALANCHE3_POOL_PROXY_ABI } from '../abis/aaveAvalanche3PoolProxy'
 import { AAVE_PRICE_ORACLE_ABI } from '../abis/aavePriceOracle'
 import { BENQI_COMPTROLLER_ABI } from '../abis/benqiComptroller'
@@ -33,28 +26,11 @@ const BENQI_QTOKEN_BORROW_ABI = [
   }
 ] as const
 
-export interface UserBorrowData {
-  // Common fields
-  availableBorrowsUSD: bigint
-  tokenPriceUSD: bigint
-
-  // AAVE specific
-  healthFactor?: bigint
-  totalCollateralUSD: bigint
-  totalDebtUSD: bigint
-  liquidationThreshold?: bigint
-
-  // Benqi specific
-  benqiLiquidity?: bigint
-  benqiShortfall?: bigint
-  benqiTotalBorrowUSD?: bigint
-}
-
-async function fetchAaveUserBorrowData(
+export async function fetchAaveUserBorrowData(
   networkClient: PublicClient,
   userAddress: Address,
   tokenAddress?: Address
-): Promise<UserBorrowData> {
+): Promise<AaveBorrowData> {
   // Use multicall to fetch account data and token price in the same block
   // This ensures price consistency and reduces timing issues
   const accountDataContract = {
@@ -89,14 +65,7 @@ async function fetchAaveUserBorrowData(
     throw new Error('Failed to fetch AAVE user account data')
   }
 
-  const accountData = accountDataResult.result as [
-    bigint,
-    bigint,
-    bigint,
-    bigint,
-    bigint,
-    bigint
-  ]
+  const accountData = accountDataResult.result as AaveAccountData
   const [
     totalCollateralBase,
     totalDebtBase,
@@ -122,11 +91,11 @@ async function fetchAaveUserBorrowData(
   }
 }
 
-async function fetchBenqiUserBorrowData(
+export async function fetchBenqiUserBorrowData(
   networkClient: PublicClient,
   userAddress: Address,
   qTokenAddress?: Address
-): Promise<UserBorrowData> {
+): Promise<BenqiBorrowData> {
   // First, get account liquidity and assets in
   const [liquidityResult, assetsInResult] = await multicall(networkClient, {
     contracts: [
@@ -216,12 +185,10 @@ async function fetchBenqiUserBorrowData(
   // For Benqi: availableBorrowsUSD = liquidity (in 18 decimals)
   return {
     availableBorrowsUSD: liquidity,
-    totalCollateralUSD: 0n, // Not directly available from Benqi
     totalDebtUSD: totalBorrowUSD,
     tokenPriceUSD,
-    benqiLiquidity: liquidity,
-    benqiShortfall: shortfall,
-    benqiTotalBorrowUSD: totalBorrowUSD
+    liquidity,
+    shortfall
   }
 }
 
@@ -265,64 +232,5 @@ export function convertUsdToTokenAmount(params: {
     return (adjustedUsdAmount * BigInt(10 ** scaleFactor)) / tokenPriceUSD
   } else {
     return adjustedUsdAmount / (tokenPriceUSD * BigInt(10 ** -scaleFactor))
-  }
-}
-
-export const useUserBorrowData = (
-  marketName: MarketName,
-  tokenAddress?: Address
-): {
-  data: UserBorrowData | undefined
-  isLoading: boolean
-  isFetching: boolean
-  error: Error | null
-} => {
-  const activeAccount = useSelector(selectActiveAccount)
-  const userAddress = activeAccount?.addressC as Address | undefined
-  const cChainNetwork = useCChainNetwork()
-
-  const networkClient = useMemo(() => {
-    if (!cChainNetwork) {
-      return undefined
-    }
-    const cChain = getViemChain(cChainNetwork)
-    return createPublicClient({ chain: cChain, transport: http() })
-  }, [cChainNetwork])
-
-  const shouldFetch = !!networkClient && !!userAddress
-
-  const { data, isLoading, isFetching, error } = useQuery({
-    queryKey: [
-      ReactQueryKeys.USER_BORROW_DATA,
-      marketName,
-      tokenAddress,
-      userAddress,
-      cChainNetwork?.chainId
-    ],
-    queryFn: shouldFetch
-      ? async () => {
-          if (marketName === MarketNames.aave) {
-            return fetchAaveUserBorrowData(
-              networkClient,
-              userAddress,
-              tokenAddress
-            )
-          } else {
-            return fetchBenqiUserBorrowData(
-              networkClient,
-              userAddress,
-              tokenAddress
-            )
-          }
-        }
-      : skipToken,
-    staleTime: 30 * 1000 // 30 seconds
-  })
-
-  return {
-    data,
-    isLoading,
-    isFetching,
-    error
   }
 }

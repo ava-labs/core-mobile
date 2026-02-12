@@ -2,15 +2,13 @@ import React, { useCallback, useMemo, useRef } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Address, formatUnits } from 'viem'
 import { transactionSnackbar } from 'common/utils/toast'
-import { DefiMarket, MarketNames } from '../../types'
-import {
-  useUserBorrowData,
-  convertUsdToTokenAmount
-} from '../../hooks/useUserBorrowData'
+import { DefiMarket } from '../../types'
+import { convertUsdToTokenAmount } from '../../utils/borrow'
 import {
   AAVE_PRICE_ORACLE_SCALE,
   AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS
 } from '../../consts'
+import { useAaveBorrowData } from '../../hooks/aave/useAaveBorrowData'
 import { useAaveBorrowErc20 } from '../../hooks/aave/useAaveBorrowErc20'
 import { useUnwrapWavax } from '../../hooks/useUnwrapWavax'
 import { BorrowSelectAmountFormBase } from './BorrowSelectAmountFormBase'
@@ -38,8 +36,7 @@ export const BorrowAaveSelectAmountForm = ({
   // For native AVAX, use WAVAX address
   const underlyingAssetAddress = (market.asset.contractAddress ??
     AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS) as Address
-  const { data: borrowData } = useUserBorrowData(
-    MarketNames.aave,
+  const { data: borrowData, isLoading } = useAaveBorrowData(
     underlyingAssetAddress
   )
 
@@ -101,32 +98,29 @@ export const BorrowAaveSelectAmountForm = ({
 
   // Current health factor (AAVE returns 18 decimals, 1e18 = 1.0)
   const currentHealthScore = useMemo(() => {
-    if (!borrowData?.healthFactor) return undefined
+    if (!borrowData) return undefined
     // Convert from 18 decimals to number
     return Number(formatUnits(borrowData.healthFactor, 18))
-  }, [borrowData?.healthFactor])
+  }, [borrowData])
 
   // Calculate new health score based on borrow amount
   // Formula: newHealthFactor = (totalCollateralUSD * liquidationThreshold / 10000) / (totalDebtUSD + newBorrowAmountUSD)
   const calculateHealthScore = useCallback(
     (borrowAmount: TokenUnit): number | undefined => {
-      if (
-        !borrowData?.totalCollateralUSD ||
-        !borrowData?.liquidationThreshold ||
-        !borrowData?.tokenPriceUSD
-      ) {
-        return undefined
-      }
+      if (!borrowData) return undefined
 
-      const { totalCollateralUSD, totalDebtUSD, liquidationThreshold } =
-        borrowData
+      const {
+        totalCollateralUSD,
+        totalDebtUSD,
+        liquidationThreshold,
+        tokenPriceUSD
+      } = borrowData
 
       // Convert borrow amount to USD (8 decimals)
       // borrowAmountUSD = borrowAmount * tokenPriceUSD / 10^tokenDecimals
       const borrowAmountRaw = borrowAmount.toSubUnit()
       const newBorrowUSD =
-        (borrowAmountRaw * borrowData.tokenPriceUSD) /
-        BigInt(10 ** market.asset.decimals)
+        (borrowAmountRaw * tokenPriceUSD) / BigInt(10 ** market.asset.decimals)
 
       const newTotalDebtUSD = totalDebtUSD + newBorrowUSD
 
@@ -168,6 +162,7 @@ export const BorrowAaveSelectAmountForm = ({
       calculateHealthScore={calculateHealthScore}
       submit={handleSubmit}
       onSubmitted={onSubmitted}
+      isLoading={isLoading}
     />
   )
 }
