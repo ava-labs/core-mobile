@@ -1,3 +1,4 @@
+import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import {
   ActivityIndicator,
@@ -15,7 +16,6 @@ import { ErrorState } from 'common/components/ErrorState'
 import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { ListRenderItem } from '@shopify/flash-list'
 import { LocalTokenWithBalance } from 'store/balance'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
@@ -48,17 +48,23 @@ export const SelectSwapV2TokenScreen = ({
     undefined
   )
 
-  // Set default network when networks are loaded
+  // Track if we've set the default network
+  const hasSetDefaultNetwork = useRef(false)
+
+  // Set default network once when networks are loaded
   useEffect(() => {
-    if (!networks || networks.length === 0) return
+    if (!networks || networks.length === 0 || hasSetDefaultNetwork.current)
+      return
 
     if (defaultNetworkChainId) {
       const found = networks.find(n => n.chainId === defaultNetworkChainId)
       setSelectedNetwork(found ?? networks[0])
-    } else if (!selectedNetwork) {
+    } else {
       setSelectedNetwork(networks[0])
     }
-  }, [defaultNetworkChainId, networks, selectedNetwork])
+
+    hasSetDefaultNetwork.current = true
+  }, [defaultNetworkChainId, networks])
 
   // Get CAIP2 ID for selected network
   const caip2Id = useMemo(() => {
