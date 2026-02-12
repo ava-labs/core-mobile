@@ -23,6 +23,7 @@ import { uuid } from 'utils/uuid'
 import { CoreAccountType } from '@avalabs/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { LedgerWalletSecretSchema } from '../utils'
+import { useLedgerWalletMap } from '../store'
 
 export interface UseLedgerWalletReturn {
   // Connection state
@@ -45,6 +46,7 @@ export interface UseLedgerWalletReturn {
 }
 
 export function useLedgerWallet(): UseLedgerWalletReturn {
+  const { setLedgerWalletMap } = useLedgerWalletMap()
   const dispatch = useDispatch<AppThunkDispatch>()
   const isLedgerBlocked = useSelector(selectIsLedgerSupportBlocked)
   const [transportState, setTransportState] = useState<LedgerTransportState>({
@@ -177,6 +179,12 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
                 : WalletType.LEDGER_LIVE
           })
         ).unwrap()
+
+        setLedgerWalletMap(
+          newWalletId,
+          { id: deviceId, name: deviceName || 'Ledger Device' },
+          derivationPathType
+        )
 
         dispatch(setActiveWallet(newWalletId))
 

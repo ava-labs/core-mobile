@@ -72,7 +72,7 @@ const LedgerReviewTransactionScreen = (): JSX.Element | null => {
   const navigation = useNavigation()
   const dismissInProgressRef = useRef(false)
   const walletId = useSelector(selectActiveWalletId)
-  const { ledgerWalletMap } = useLedgerWalletMap()
+  const { getLedgerInfoByWalletId } = useLedgerWalletMap()
   const { reviewTransactionParams } = useLedgerParams()
 
   // Extract params from store
@@ -94,14 +94,14 @@ const LedgerReviewTransactionScreen = (): JSX.Element | null => {
   } = useTheme()
   const headerHeight = useHeaderHeight()
 
+  const deviceForWallet = useMemo(
+    () => getLedgerInfoByWalletId(walletId).device,
+    [getLedgerInfoByWalletId, walletId]
+  )
+
   const ledgerAppName = useMemo(() => getLedgerAppName(network), [network])
 
   const { isConnecting } = useLedgerSetupContext()
-
-  const deviceForWallet = useMemo(() => {
-    if (!walletId) return undefined
-    return ledgerWalletMap[walletId]
-  }, [ledgerWalletMap, walletId])
 
   const handleReconnect = useCallback(
     async (deviceId: string): Promise<void> => {

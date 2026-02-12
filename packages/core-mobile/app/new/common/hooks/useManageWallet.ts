@@ -22,6 +22,7 @@ import {
 import { removeWallet } from 'store/wallet/thunks'
 import { Wallet } from 'store/wallet/types'
 import Logger from 'utils/Logger'
+import { useLedgerWalletMap } from 'features/ledger/store'
 
 export const useManageWallet = (): {
   handleAddAccount: (wallet: Wallet) => void
@@ -29,6 +30,7 @@ export const useManageWallet = (): {
   handleDropdownSelect: (action: string, wallet: Wallet) => void
   isAddingAccount: boolean
 } => {
+  const { removeLedgerWallet } = useLedgerWalletMap()
   const { navigate } = useRouter()
   const [isAddingAccount, setIsAddingAccount] = useState(false)
   const dispatch = useDispatch<AppThunkDispatch>()
@@ -103,12 +105,19 @@ export const useManageWallet = (): {
             style: 'destructive',
             onPress: () => {
               dispatch(removeWallet(wallet.id))
+
+              if (
+                wallet.type === WalletType.LEDGER ||
+                wallet.type === WalletType.LEDGER_LIVE
+              ) {
+                removeLedgerWallet(wallet.id)
+              }
             }
           }
         ]
       })
     },
-    [dispatch, walletsCount]
+    [dispatch, removeLedgerWallet, walletsCount]
   )
 
   const handleAddAccount = useCallback(
