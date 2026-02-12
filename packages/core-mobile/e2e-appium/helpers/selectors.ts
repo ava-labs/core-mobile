@@ -8,7 +8,7 @@ function withPlatformAll(ios: string, android: string) {
 
 function getByText(text: string) {
   return withPlatform(
-    `-ios predicate string:name == "${text}" AND accessible == true`,
+    `-ios predicate string:name == "${text}"`,
     `//*[@text='${text}']`
   )
 }

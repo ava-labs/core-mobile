@@ -531,6 +531,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - LVModalQueue (0.3.0)
   - MultiplatformBleAdapter (0.2.0)
   - nanopb (3.30910.0):
     - nanopb/decode (= 3.30910.0)
@@ -3517,6 +3518,7 @@ DEPENDENCIES:
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - jail-monkey (from `../node_modules/jail-monkey`)
   - lottie-react-native (from `../node_modules/lottie-react-native`)
+  - LVModalQueue (from `https://github.com/lovoo/LVModalQueue.git`)
   - NitroAvalabsCrypto (from `../node_modules/react-native-nitro-avalabs-crypto`)
   - NitroFetch (from `../node_modules/react-native-nitro-fetch`)
   - NitroModules (from `../node_modules/react-native-nitro-modules`)
@@ -3768,6 +3770,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/jail-monkey"
   lottie-react-native:
     :path: "../node_modules/lottie-react-native"
+  LVModalQueue:
+    :git: https://github.com/lovoo/LVModalQueue.git
   NitroAvalabsCrypto:
     :path: "../node_modules/react-native-nitro-avalabs-crypto"
   NitroFetch:
@@ -4013,6 +4017,11 @@ EXTERNAL SOURCES:
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
+CHECKOUT OPTIONS:
+  LVModalQueue:
+    :commit: 34a9980dc5491acb22df7a69600c10d985f8a6fe
+    :git: https://github.com/lovoo/LVModalQueue.git
+
 SPEC CHECKSUMS:
   AppAuth: d4f13a8fe0baf391b2108511793e4b479691fb73
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
@@ -4083,6 +4092,7 @@ SPEC CHECKSUMS:
   libdav1d: 23581a4d8ec811ff171ed5e2e05cd27bad64c39f
   lottie-ios: a881093fab623c467d3bce374367755c272bdd59
   lottie-react-native: 8bc11e10576d1a3f77f4e0ae5b70503c5c890a09
+  LVModalQueue: 79984475a7adaccb33e8e3ef9ad06742852ff81b
   MultiplatformBleAdapter: b1fddd0d499b96b607e00f0faa8e60648343dc1d
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   NitroAvalabsCrypto: 51a5d05222529a10c7ac99d963bab93fb1070072
@@ -4219,6 +4229,6 @@ SPEC CHECKSUMS:
   Yoga: adb397651e1c00672c12e9495babca70777e411e
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: 968ab83072815a1b972e49ba8ed417f9bc6f294f
+PODFILE CHECKSUM: a2419b0d699403a5728ebd8c44ade7e08b6edb43
 
 COCOAPODS: 1.16.2

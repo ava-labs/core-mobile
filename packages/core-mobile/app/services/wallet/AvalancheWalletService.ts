@@ -9,6 +9,7 @@ import { getUnixTime, secondsToMilliseconds } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { PChainId } from '@avalabs/glacier-sdk'
 import { UTCDate } from '@date-fns/utc'
+import { getPvmAddresses } from 'services/earn/computeDelegationSteps/utils'
 import {
   AddDelegatorProps,
   CreateExportCTxParams,
@@ -18,7 +19,6 @@ import {
   CreateSendPTxParams
 } from './types'
 import { getAvaxAssetId } from './utils'
-
 class AvalancheWalletService {
   /**
    * Get atomic transactions that are in VM memory.
@@ -458,7 +458,7 @@ class AvalancheWalletService {
       weight: stakeAmountInNAvax,
       nodeId: 'NodeID-1',
       subnetId: PChainId._11111111111111111111111111111111LPO_YY,
-      fromAddresses: xpAddresses,
+      fromAddresses: getPvmAddresses(xpAddresses),
       rewardAddresses: [destinationAddress ?? ''],
       start: BigInt(getUnixTime(new Date())),
       // setting this end date here for this dummy tx is okay. since the end date does not add complexity for this tx, so it doesn't affect the txFee that is returned.

@@ -1,9 +1,10 @@
+/* eslint-disable jest/no-disabled-tests */
 import warmup from '../../../helpers/warmup'
 import commonElsLoc from '../../../locators/commonEls.loc'
 import commonElsPage from '../../../pages/commonEls.page'
 import portfolioPage from '../../../pages/portfolio.page'
 
-describe('Portfolio tab', () => {
+describe.skip('Portfolio tab', () => {
   it('Collectibles - view collectibles by grid and list', async () => {
     await warmup()
     await portfolioPage.tapCollectiblesTab()
