@@ -2,8 +2,6 @@ import { router } from 'expo-router'
 import { ChainId, Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { LedgerAppType, LedgerDerivationPathType } from 'services/ledger/types'
 import { z } from 'zod'
-import LedgerService from 'services/ledger/LedgerService'
-import Logger from 'utils/Logger'
 import { ledgerParamsCache } from '../services/ledgerParamsCache'
 
 export const showLedgerReviewTransaction = ({
@@ -56,44 +54,3 @@ export const LedgerWalletSecretSchema = z.object({
     })
   )
 })
-
-export const getOppositeKeys = async ({
-  accountIndex = 0,
-  isDeveloperMode
-}: {
-  accountIndex?: number
-  isDeveloperMode: boolean
-}): Promise<{
-  addressBTC: string
-  addressAVM: string
-  addressPVM: string
-  addressCoreEth: string
-}> => {
-  try {
-    const avalancheKeys = await LedgerService.getAvalancheKeys(
-      accountIndex,
-      !isDeveloperMode
-    )
-
-    return {
-      addressBTC: bitcoinAddress,
-      addressAVM: avalancheKeys.addresses.avm,
-      addressPVM: avalancheKeys.addresses.pvm,
-      addressCoreEth: avalancheKeys.addresses.coreEth
-    }
-  } catch (err) {
-    Logger.error(
-      `Failed to get addresses for ${
-        isDeveloperMode ? 'testnet' : 'mainnet'
-      } network`,
-      err
-    )
-    throw err instanceof Error
-      ? err
-      : new Error(
-          `Failed to get addresses for ${
-            isDeveloperMode ? 'testnet' : 'mainnet'
-          } network`
-        )
-  }
-}

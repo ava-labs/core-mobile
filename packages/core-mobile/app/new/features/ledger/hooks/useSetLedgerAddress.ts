@@ -31,14 +31,14 @@ export const useSetLedgerAddress = (): {
       keys: LedgerKeysByNetwork
     }) => {
       const mainnet = {
-        addressBTC: keys.mainnet.bitcoinAddress ?? '',
+        addressBTC: keys.mainnet.avalancheKeys?.addresses.btc ?? '',
         addressAVM: keys.mainnet.avalancheKeys?.addresses.avm || '',
         addressPVM: keys.mainnet.avalancheKeys?.addresses.pvm || '',
         addressCoreEth: keys.mainnet.avalancheKeys?.addresses.coreEth || ''
       }
 
       const testnet = {
-        addressBTC: keys.testnet.bitcoinAddress ?? '',
+        addressBTC: keys.testnet.avalancheKeys?.addresses.btc ?? '',
         addressAVM: keys.testnet.avalancheKeys?.addresses.avm || '',
         addressPVM: keys.testnet.avalancheKeys?.addresses.pvm || '',
         addressCoreEth: keys.testnet.avalancheKeys?.addresses.coreEth || ''
