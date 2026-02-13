@@ -575,12 +575,6 @@ workflows:
     - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
-    steps:
-    - script-runner@0:
-        title: Trigger AWS Device Farm Test Run
-        no_output_timeout: 600
-        inputs:
-        - file_path: packages/core-mobile/scripts/devicefarm/trigger-test-run-bitrise.sh
   android-external-e2e-regression-run:
     before_run:
     - _install-and-set-env
@@ -616,11 +610,6 @@ workflows:
         inputs:
         - variables: |-
             IS_REGRESSION_RUN=$IS_REGRESSION_RUN
-    - script-runner@0:
-        title: Trigger AWS Device Farm Test Run
-        no_output_timeout: 600
-        inputs:
-        - file_path: packages/core-mobile/scripts/devicefarm/trigger-test-run-bitrise.sh
   android-internal-e2e-regression-run:
     before_run:
     - _install-and-set-env
