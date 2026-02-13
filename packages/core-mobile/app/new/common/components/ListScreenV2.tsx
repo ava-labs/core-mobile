@@ -24,12 +24,12 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
+  ScrollView,
   ScrollViewProps,
   View
 } from 'react-native'
 import {
   KeyboardAwareScrollView,
-  KeyboardAwareScrollViewRef,
   useKeyboardState
 } from 'react-native-keyboard-controller'
 import Animated, {
@@ -562,7 +562,6 @@ export const ListScreenV2 = <T,>({
   )
 }
 
-const RenderScrollComponent = React.forwardRef<
-  KeyboardAwareScrollViewRef,
-  ScrollViewProps
->((props, ref) => <KeyboardAwareScrollView {...props} ref={ref} />)
+const RenderScrollComponent = React.forwardRef<ScrollView, ScrollViewProps>(
+  (props, ref) => <KeyboardAwareScrollView {...props} ref={ref} />
+)
