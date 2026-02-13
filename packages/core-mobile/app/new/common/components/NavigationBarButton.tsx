@@ -1,4 +1,5 @@
 import { TouchableOpacity, View } from '@avalabs/k2-alpine'
+import { isIOS26 } from 'common/utils/isIOS26'
 import React, { useMemo } from 'react'
 import {
   Platform,
@@ -6,7 +7,6 @@ import {
   TouchableOpacityProps,
   ViewStyle
 } from 'react-native'
-import DeviceInfo from 'react-native-device-info'
 
 interface NavigationBarButtonProps extends TouchableOpacityProps {
   onPress?: () => void
@@ -27,7 +27,7 @@ const NavigationBarButton = React.forwardRef<
     ref
   ): JSX.Element => {
     const containerStyle: ViewStyle = useMemo(() => {
-      if (DeviceInfo.getSystemVersion() >= '26' && Platform.OS === 'ios') {
+      if (isIOS26) {
         return {
           height: 36,
           width: 36,

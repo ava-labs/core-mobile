@@ -9,8 +9,10 @@ import {
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
-import { getSourceChainId } from 'common/utils/bridgeUtils'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { getSourceChainId } from 'common/utils/bridgeUtils'
+import { useRouter } from 'expo-router'
+import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
 import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useCallback, useMemo } from 'react'
@@ -18,13 +20,11 @@ import { Platform, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
-import { useRouter } from 'expo-router'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account/slice'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
-import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
-import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
-import AnalyticsService from 'services/analytics/AnalyticsService'
+import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
 import { ActivityList } from '../components/ActivityList'
 import { NetworkFilterDropdown } from '../components/NetworkFilterDropdown'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
@@ -45,6 +45,7 @@ export const ActivityScreen = ({
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { openUrl } = useInAppBrowser()
   const header = useHeaderMeasurements()
+  const collapsibleHeaderHeight = header?.height ?? 0
   const {
     data,
     filter,
@@ -99,7 +100,7 @@ export const ActivityScreen = ({
         {
           translateY: withTiming(
             isSearchBarFocused
-              ? -header.height + (Platform.OS === 'ios' ? 40 : 32)
+              ? -collapsibleHeaderHeight + (Platform.OS === 'ios' ? 40 : 32)
               : 0,
             {
               ...ANIMATED.TIMING_CONFIG
@@ -190,7 +191,7 @@ export const ActivityScreen = ({
 
   const renderEmpty = useCallback(() => {
     return (
-      <CollapsibleTabs.ContentWrapper extraOffset={100}>
+      <CollapsibleTabs.ContentWrapper>
         <Animated.View
           style={[keyboardAvoidingStyle, { justifyContent: 'center' }]}>
           {emptyComponent}
@@ -215,11 +216,7 @@ export const ActivityScreen = ({
         xpToken={xpToken}
         handlePendingBridge={handlePendingBridge}
         handleExplorerLink={handleExplorerLink}
-        overrideProps={{
-          contentContainerStyle: {
-            ...containerStyle
-          }
-        }}
+        containerStyle={containerStyle}
         renderHeader={renderHeader}
         renderEmpty={renderEmpty}
         isRefreshing={isRefreshing}

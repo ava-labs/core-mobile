@@ -7,6 +7,7 @@ export const Toggle: FC<SwitchProps> = ({
   value,
   disabled,
   testID,
+  style,
   ...rest
 }) => {
   const {
@@ -20,7 +21,7 @@ export const Toggle: FC<SwitchProps> = ({
       {...rest}
       testID={testID}
       value={value}
-      style={{ opacity }}
+      style={[style, { opacity, alignSelf: 'center' }]}
       disabled={disabled}
       thumbColor={'#FFFFFF'}
       trackColor={{

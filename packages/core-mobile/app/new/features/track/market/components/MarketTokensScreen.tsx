@@ -1,11 +1,11 @@
 import { Separator, View } from '@avalabs/k2-alpine'
-import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { Space } from 'common/components/Space'
 import { ViewOption, DropdownSelection } from 'common/types'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback } from 'react'
 import { StyleSheet, ViewStyle } from 'react-native'
 import { Charts, MarketToken, MarketType } from 'store/watchlist'
+import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import { MarketListItem } from './MarketListItem'
 
 const MarketTokensScreen = ({
@@ -15,8 +15,7 @@ const MarketTokensScreen = ({
   view,
   goToMarketDetail,
   renderEmpty,
-  containerStyle,
-  key
+  containerStyle
 }: {
   data: MarketToken[]
   charts: Charts
@@ -25,15 +24,14 @@ const MarketTokensScreen = ({
   goToMarketDetail: (tokenId: string, marketType: MarketType) => void
   renderEmpty: () => React.JSX.Element
   containerStyle: ViewStyle
-  key?: React.Key | null
 }): JSX.Element => {
   const isGridView = view.selected === ViewOption.Grid
   const numColumns = isGridView ? 2 : 1
 
   const dataLength = data.length
 
-  const dropdowns = useMemo(() => {
-    if (dataLength === 0) return
+  const renderHeader = useCallback(() => {
+    if (dataLength === 0) return null
 
     return (
       <View sx={styles.dropdownContainer}>
@@ -86,26 +84,19 @@ const MarketTokensScreen = ({
     return isGridView ? <Space y={12} /> : <Separator sx={{ marginLeft: 68 }} />
   }, [isGridView])
 
-  const overrideProps = {
-    contentContainerStyle: {
-      ...containerStyle
-    }
-  }
+  const keyExtractor = useCallback((item: MarketToken) => item.id, [])
 
   return (
-    <CollapsibleTabs.FlashList
-      key={key}
-      overrideProps={overrideProps}
+    <CollapsibleTabList
       data={data}
-      numColumns={numColumns}
       renderItem={renderItem}
-      ListHeaderComponent={dropdowns}
-      ListEmptyComponent={renderEmpty}
-      ItemSeparatorComponent={renderSeparator}
-      showsVerticalScrollIndicator={false}
+      keyExtractor={keyExtractor}
+      containerStyle={containerStyle}
+      renderEmpty={renderEmpty}
+      renderHeader={renderHeader}
+      renderSeparator={renderSeparator}
+      numColumns={numColumns}
       extraData={{ isGridView }}
-      keyExtractor={item => item.id}
-      estimatedItemSize={isGridView ? 200 : 120}
     />
   )
 }

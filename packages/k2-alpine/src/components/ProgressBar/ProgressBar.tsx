@@ -1,12 +1,12 @@
 import React, { ReactNode } from 'react'
 import { View, ViewStyle } from 'react-native'
 import Animated, {
-  runOnJS,
   SharedValue,
   useAnimatedStyle,
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 import { useTheme } from '../../hooks'
 import { ANIMATED } from '../../utils'
 
@@ -43,7 +43,7 @@ export const ProgressBar = ({
         `${progress.value * 100}%`,
         ANIMATED.TIMING_CONFIG,
         () => {
-          runOnJS(endProgress)()
+          scheduleOnRN(endProgress)
         }
       )
     }

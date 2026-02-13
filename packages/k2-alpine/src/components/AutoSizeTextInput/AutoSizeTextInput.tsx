@@ -24,8 +24,6 @@ import { useTheme } from '../../hooks'
 import { alpha } from '../../utils'
 import { View } from '../Primitives'
 
-const AnimatedTextInput = Animated.createAnimatedComponent(TextInput)
-
 interface TextInputProps extends _TextInputProps {
   /** Initial and maximum font size */
   initialFontSize?: number
@@ -52,6 +50,8 @@ interface TextInputProps extends _TextInputProps {
   /** Test ID */
   testID?: string
 }
+
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput)
 
 export const AutoSizeTextInput = forwardRef<
   {

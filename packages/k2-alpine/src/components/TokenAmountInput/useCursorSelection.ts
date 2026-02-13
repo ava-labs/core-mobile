@@ -1,10 +1,6 @@
 import { noop } from '@avalabs/core-utils-sdk'
-import { useState, useCallback } from 'react'
-import {
-  NativeSyntheticEvent,
-  TextInputSelectionChangeEventData,
-  Platform
-} from 'react-native'
+import { useCallback, useState } from 'react'
+import { Platform, TextInputSelectionChangeEvent } from 'react-native'
 
 const CURSOR_MAX = 100 // arbitrarily large number
 
@@ -16,7 +12,7 @@ const CURSOR_MAX = 100 // arbitrarily large number
 export const useCursorSelection = (): {
   selection: { start: number; end: number } | undefined
   handleSelectionChange:
-    | ((e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => void)
+    | ((e: TextInputSelectionChangeEvent) => void)
     | undefined
   moveCursorToFront: () => void
   moveCursorToEnd: () => void
@@ -24,7 +20,7 @@ export const useCursorSelection = (): {
   const [selection, setSelection] = useState({ start: 0, end: 0 })
 
   const handleSelectionChange = useCallback(
-    (e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
+    (e: TextInputSelectionChangeEvent) => {
       setSelection(e.nativeEvent.selection)
     },
     []

@@ -1,22 +1,19 @@
 import { Separator } from '@avalabs/k2-alpine'
-import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
 import { useIsSwappable } from 'common/hooks/useIsSwapable'
 import { useBuy } from 'features/meld/hooks/useBuy'
+import { useBalanceTotalForAccount } from 'features/portfolio/hooks/useBalanceTotalForAccount'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
 import React, { useCallback } from 'react'
 import { StyleSheet, ViewStyle } from 'react-native'
 import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
 import { selectIsSwapBlocked } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectActiveAccount } from 'store/account'
 import { MarketToken, MarketType } from 'store/watchlist'
-import { useBalanceTotalForAccount } from 'features/portfolio/hooks/useBalanceTotalForAccount'
+import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import { TrendingTokenListItem } from './TrendingTokenListItem'
-
-const numColumns = 1
-const estimatedItemSize = 120
 
 const TrendingTokensScreen = ({
   data,
@@ -92,39 +89,27 @@ const TrendingTokensScreen = ({
     return <Separator sx={{ marginLeft: 68 }} />
   }, [])
 
-  const overrideProps = {
-    contentContainerStyle: {
-      ...containerStyle
-    }
-  }
+  const renderEmpty = useCallback(() => emptyComponent, [emptyComponent])
+
+  const keyExtractor = useCallback((item: MarketToken) => item.id, [])
 
   return (
-    <CollapsibleTabs.FlashList
-      overrideProps={overrideProps}
-      contentContainerStyle={styles.container}
+    <CollapsibleTabList
       data={data}
-      extraData={isDeveloperMode}
-      numColumns={numColumns}
       renderItem={renderItem}
-      ListEmptyComponent={emptyComponent}
-      ItemSeparatorComponent={renderSeparator}
-      showsVerticalScrollIndicator={false}
-      key={'list'}
-      keyExtractor={item => item.id}
-      estimatedItemSize={estimatedItemSize}
+      keyExtractor={keyExtractor}
+      containerStyle={containerStyle}
+      renderEmpty={renderEmpty}
+      renderSeparator={renderSeparator}
+      extraData={isDeveloperMode}
+      listKey="list"
+      contentContainerStyle={styles.container}
     />
   )
 }
 
 const styles = StyleSheet.create({
-  container: { paddingBottom: 16 },
-  dropdownContainer: { paddingHorizontal: 16 },
-  dropdown: { marginTop: 14, marginBottom: 16 },
-  headerContainer: {
-    marginTop: 8,
-    marginBottom: 16,
-    marginHorizontal: 16
-  }
+  container: { paddingBottom: 16 }
 })
 
 export default TrendingTokensScreen

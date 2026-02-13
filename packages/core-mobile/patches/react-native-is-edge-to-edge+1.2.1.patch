@@ -1,0 +1,46 @@
+diff --git a/node_modules/react-native-is-edge-to-edge/dist/index.android.js b/node_modules/react-native-is-edge-to-edge/dist/index.android.js
+index 84954ce..c654070 100644
+--- a/node_modules/react-native-is-edge-to-edge/dist/index.android.js
++++ b/node_modules/react-native-is-edge-to-edge/dist/index.android.js
+@@ -5,8 +5,16 @@ var reactNative = require('react-native');
+ // src/index.android.ts
+ var warnings = /* @__PURE__ */ new Set();
+ var isEdgeToEdge = () => {
+-  var _a, _b;
+-  return reactNative.TurboModuleRegistry.get("RNEdgeToEdge") != null || ((_b = (_a = reactNative.TurboModuleRegistry.get("DeviceInfo")) == null ? void 0 : _a.getConstants) == null ? void 0 : _b.call(_a).isEdgeToEdge) === true;
++  try {
++    if (reactNative.TurboModuleRegistry.get("RNEdgeToEdge") != null) {
++      return true;
++    }
++    const deviceInfo = reactNative.TurboModuleRegistry.get("DeviceInfo");
++    const constants = deviceInfo?.getConstants?.();
++    return constants?.isEdgeToEdge === true;
++  } catch {
++    return false;
++  }
+ };
+ var controlEdgeToEdgeValues = (values) => {
+   if (__DEV__ && isEdgeToEdge()) {
+diff --git a/node_modules/react-native-is-edge-to-edge/dist/index.android.mjs b/node_modules/react-native-is-edge-to-edge/dist/index.android.mjs
+index e163b5e..911d0b9 100644
+--- a/node_modules/react-native-is-edge-to-edge/dist/index.android.mjs
++++ b/node_modules/react-native-is-edge-to-edge/dist/index.android.mjs
+@@ -3,8 +3,16 @@ import { TurboModuleRegistry } from 'react-native';
+ // src/index.android.ts
+ var warnings = /* @__PURE__ */ new Set();
+ var isEdgeToEdge = () => {
+-  var _a, _b;
+-  return TurboModuleRegistry.get("RNEdgeToEdge") != null || ((_b = (_a = TurboModuleRegistry.get("DeviceInfo")) == null ? void 0 : _a.getConstants) == null ? void 0 : _b.call(_a).isEdgeToEdge) === true;
++  try {
++    if (TurboModuleRegistry.get("RNEdgeToEdge") != null) {
++      return true;
++    }
++    const deviceInfo = TurboModuleRegistry.get("DeviceInfo");
++    const constants = deviceInfo?.getConstants?.();
++    return constants?.isEdgeToEdge === true;
++  } catch {
++    return false;
++  }
+ };
+ var controlEdgeToEdgeValues = (values) => {
+   if (__DEV__ && isEdgeToEdge()) {

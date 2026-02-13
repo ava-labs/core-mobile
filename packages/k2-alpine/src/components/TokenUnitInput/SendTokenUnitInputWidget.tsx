@@ -202,7 +202,7 @@ export const SendTokenUnitInputWidget = forwardRef<
             borderRadius: 12,
             alignItems: 'center',
             paddingTop: 32,
-            paddingHorizontal: 16,
+            paddingHorizontal: 0,
             paddingBottom: 22,
             overflow: 'hidden'
           }}>

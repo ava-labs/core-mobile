@@ -1,27 +1,27 @@
 import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
+import { FloatingDevTools } from 'common/containers/FloatingDevTools'
 import NavigationThemeProvider from 'common/contexts/NavigationThemeProvider'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
 import { GlobalAlertWithTextInput } from 'common/utils/alertWithTextInput'
 import { GlobalToast } from 'common/utils/toast'
+import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
+import { setStatusBarStyle } from 'expo-status-bar'
 import { RecoveryMethodProvider } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { PrivacyScreen } from 'features/privacyScreen/components/PrivacyScreen'
 import React, { useEffect } from 'react'
 import { Appearance as RnAppearance } from 'react-native'
 import Bootsplash from 'react-native-bootsplash'
-import { SystemBars } from 'react-native-edge-to-edge'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
 import 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
 import {
   Appearance,
   selectSelectedAppearance,
   selectSelectedColorScheme,
   setSelectedColorScheme
 } from 'store/settings/appearance'
-import { FloatingDevTools } from 'common/containers/FloatingDevTools'
 import { RootNavigator } from './RootNavigator'
 
 export default function Root(): JSX.Element | null {
@@ -35,7 +35,7 @@ export default function Root(): JSX.Element | null {
       ({ colorScheme: updatedColorSchemes }) => {
         if (selectedAppearance === Appearance.System && !isDeveloperMode) {
           dispatch(setSelectedColorScheme(updatedColorSchemes ?? 'light'))
-          SystemBars.setStyle(updatedColorSchemes === 'dark' ? 'light' : 'dark')
+          setStatusBarStyle(updatedColorSchemes === 'dark' ? 'light' : 'dark')
         }
       }
     )
@@ -43,7 +43,7 @@ export default function Root(): JSX.Element | null {
   }, [dispatch, isDeveloperMode, selectedAppearance])
 
   useEffect(() => {
-    SystemBars.setStyle(colorScheme === 'dark' ? 'light' : 'dark')
+    setStatusBarStyle(colorScheme === 'dark' ? 'light' : 'dark')
   }, [colorScheme])
 
   useLoadFonts()

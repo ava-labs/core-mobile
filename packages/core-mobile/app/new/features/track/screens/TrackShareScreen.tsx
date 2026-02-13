@@ -4,7 +4,7 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { CORE_WEB_URL } from 'common/consts'
 import { useTokenDetails } from 'common/hooks/useTokenDetails'
 import { copyToClipboard } from 'common/utils/clipboard'
-import * as FileSystem from 'expo-file-system'
+import * as FileSystem from 'expo-file-system/legacy'
 import { useLocalSearchParams } from 'expo-router'
 import * as SMS from 'expo-sms'
 import {

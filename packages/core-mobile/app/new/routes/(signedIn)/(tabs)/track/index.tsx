@@ -47,7 +47,6 @@ const TrackHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
-
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const [searchText, setSearchText] = useState('')
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
@@ -193,8 +192,8 @@ const TrackHomeScreen = (): JSX.Element => {
 
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios: frame.height - (stickyHeaderLayout?.height ?? 0) - insets.top + 10,
-      android: frame.height - insets.top - 4
+      ios: frame.height - (stickyHeaderLayout?.height ?? 0) - insets.top,
+      android: frame.height - insets.top
     })
   }, [frame.height, insets.top, stickyHeaderLayout?.height])
 
