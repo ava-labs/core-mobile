@@ -1,30 +1,30 @@
-import React, { useMemo, useState, useCallback, useEffect } from 'react'
+import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import {
+  ActivityIndicator,
+  Button,
   Icons,
   SCREEN_WIDTH,
+  SearchBar,
   Separator,
   Text,
   TouchableOpacity,
   useTheme,
-  View,
-  Button,
-  SearchBar,
-  ActivityIndicator
+  View
 } from '@avalabs/k2-alpine'
-import { ListRenderItem } from 'react-native'
+import { ErrorState } from 'common/components/ErrorState'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { useRouter } from 'expo-router'
-import { LocalTokenWithBalance } from 'store/balance'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
-import { ListScreen } from 'common/components/ListScreen'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { ListRenderItem } from '@shopify/flash-list'
 import { useSelector } from 'react-redux'
+import { LocalTokenWithBalance } from 'store/balance'
 import { selectIsSolanaSwapBlocked } from 'store/posthog'
-import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
-import { ErrorState } from 'common/components/ErrorState'
-import { useSwapV2Tokens } from '../hooks/useSwapV2Tokens'
 import { useFilteredSwapTokens } from '../hooks/useFilteredSwapTokens'
+import { useSwapV2Tokens } from '../hooks/useSwapV2Tokens'
 
 export const SelectSwapV2TokenScreen = ({
   selectedToken,
@@ -195,34 +195,21 @@ export const SelectSwapV2TokenScreen = ({
 
   const renderEmpty = useCallback(() => {
     if (isLoading) {
-      return (
-        <View
-          sx={{
-            flex: 1,
-            top: '10%',
-            alignItems: 'center'
-          }}>
-          <ActivityIndicator />
-        </View>
-      )
+      return <ActivityIndicator />
     }
-
-    return (
-      <ErrorState
-        icon={undefined}
-        sx={{ top: '10%' }}
-        title="No tokens found"
-      />
-    )
+    return <ErrorState icon={undefined} title="No tokens found" />
   }, [isLoading])
 
   return (
-    <ListScreen
+    <ListScreenV2
       title="Select a token"
       data={results}
       isModal
       renderItem={renderItem}
-      keyExtractor={(item: LocalTokenWithBalance) => item.localId}
+      estimatedItemSize={66}
+      keyExtractor={(item: LocalTokenWithBalance) =>
+        `token-${item.localId}-${item.internalId}`
+      }
       renderHeader={renderHeader}
       renderEmpty={renderEmpty}
     />
