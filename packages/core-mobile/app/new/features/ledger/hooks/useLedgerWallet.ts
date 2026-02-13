@@ -219,6 +219,8 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
   const createLedgerAccount = useCallback(
     async ({
       deviceId,
+      deviceName,
+      derivationPathType,
       walletId,
       walletName,
       walletType,
@@ -294,6 +296,12 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
             })
           })
         ).unwrap()
+
+        setLedgerWalletMap(
+          walletId,
+          { id: deviceId, name: deviceName || 'Ledger Device' },
+          derivationPathType
+        )
 
         const newAccountId = uuid()
         const updatedAccount: PrimaryAccount = {
