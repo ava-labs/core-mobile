@@ -18,7 +18,7 @@ import AppConnectionScreen from './AppConnectionScreen'
 export const AppConnectionAddAccountScreen = (): JSX.Element => {
   const { walletId } = useLocalSearchParams<{ walletId: string }>()
   const { dismiss } = useRouter()
-  const { updateLedgerWallet } = useLedgerWallet()
+  const { createLedgerAccount } = useLedgerWallet()
   const { setLedgerAddress } = useSetLedgerAddress()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const wallet = useSelector(selectWalletById(walletId))
@@ -44,7 +44,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
         keys.avalancheKeys &&
         device &&
         wallet &&
-        accounts.length &&
+        accounts.length > 0 &&
         derivationPathType &&
         !isUpdatingWallet
       ) {
@@ -52,7 +52,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
         setIsUpdatingWallet(true)
 
         try {
-          const { accountId } = await updateLedgerWallet({
+          const { accountId } = await createLedgerAccount({
             walletId: wallet.id,
             walletName: wallet.name,
             walletType: wallet.type,
@@ -77,13 +77,13 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
           // Stop polling since we no longer need app detection
           LedgerService.stopAppPolling()
           showSnackbar('Account added successfully')
-          resetSetup()
-          dismiss()
         } catch (error) {
           Logger.error('Account creation failed', error)
           showSnackbar('Unable to add account')
         } finally {
           setIsUpdatingWallet(false)
+          resetSetup()
+          dismiss()
         }
       } else {
         showSnackbar('Unable to add account')
@@ -107,7 +107,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
       derivationPathType,
       isUpdatingWallet,
       setIsUpdatingWallet,
-      updateLedgerWallet,
+      createLedgerAccount,
       setLedgerAddress,
       walletId,
       isDeveloperMode,
@@ -121,7 +121,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
       completeStepTitle={`Your Account\nis being set up`}
       handleComplete={handleComplete}
       deviceId={device?.id}
-      deviceName={device?.name}
+      deviceName={device?.name ?? 'Ledger Device'}
       disconnectDevice={disconnectDevice}
       isUpdatingWallet={isUpdatingWallet}
       accountIndex={accounts.length}
