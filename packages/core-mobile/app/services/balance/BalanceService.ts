@@ -117,10 +117,11 @@ export class BalanceService {
             // imported-PK accounts that share the same address also receive
             // the balance.  EVM keys are normalized to lowercase for
             // case-insensitive lookups; other formats are kept as-is.
+            const isEvm = network.vmName === NetworkVMType.EVM
             const addressMap = addressEntries.reduce(
               (acc, { address, account }) => {
                 if (address) {
-                  const key = normalizeAddressKey(address)
+                  const key = normalizeAddressKey(address, isEvm)
                   if (!acc[key]) acc[key] = []
                   if (!acc[key].some(a => a.id === account.id)) {
                     acc[key].push(account)
@@ -198,7 +199,7 @@ export class BalanceService {
             // addresses from imported-PK accounts).
             for (const responseAddress of Object.keys(balancesResponse)) {
               const matchedAccounts =
-                addressMap[normalizeAddressKey(responseAddress)]
+                addressMap[normalizeAddressKey(responseAddress, isEvm)]
               const balances = balancesResponse[responseAddress]
 
               if (!matchedAccounts || matchedAccounts.length === 0 || !balances)
@@ -444,16 +445,19 @@ export class BalanceService {
     const accountsByAddress = accounts.reduce((acc, account) => {
       const xpAddresses = xpAddressesByAccountId.get(account.id) ?? []
 
-      const addresses = supportedNetworks.flatMap(network =>
+      const addressesWithNetwork = supportedNetworks.flatMap(network =>
         getAddressesForAccountAndNetwork({
           account,
           network,
           xpAddresses
-        })
+        }).map(address => ({
+          address,
+          isEvm: network.vmName === NetworkVMType.EVM
+        }))
       )
-      for (const address of addresses) {
+      for (const { address, isEvm } of addressesWithNetwork) {
         if (address && address.length > 0) {
-          const key = normalizeAddressKey(address)
+          const key = normalizeAddressKey(address, isEvm)
           if (!acc[key]) acc[key] = []
           if (!acc[key].some(a => a.id === account.id)) {
             acc[key].push(account)
@@ -482,7 +486,10 @@ export class BalanceService {
           // Resolve to one or more matching accounts.
           // An address may map to multiple accounts when the same private key
           // has been imported, so we must assign the balance to every owner.
-          // Lookups are case-insensitive to handle API response case variance.
+          // EVM lookups are case-insensitive to handle API response case
+          // variance (checksummed vs lowercased).
+          const isEvmBalance =
+            'networkType' in balance && balance.networkType === 'evm'
           const matchedAccounts: Account[] = []
 
           if (id) {
@@ -490,7 +497,8 @@ export class BalanceService {
             if (byId) {
               matchedAccounts.push(byId)
             } else {
-              const byAddress = accountsByAddress[normalizeAddressKey(id)]
+              const byAddress =
+                accountsByAddress[normalizeAddressKey(id, isEvmBalance)]
               if (byAddress) {
                 matchedAccounts.push(...byAddress)
               }
@@ -776,14 +784,14 @@ const formatXpAddressesForNetwork = (
 
 /**
  * Normalize an address for use as a map key.
- * Only EVM hex addresses (0x-prefixed) are lowercased because EIP-55
- * checksumming is just cosmetic — the address identity is case-insensitive.
- * Other formats (base58 for BTC/X/P-Chain, base58-checked for Solana) are
- * case-sensitive, so they must be kept as-is to avoid false collisions.
+ * EVM addresses are lowercased because EIP-55 checksumming is cosmetic —
+ * the address identity is case-insensitive.  Other formats (base58 for
+ * BTC/X/P-Chain, base58-checked for Solana) are case-sensitive and kept
+ * as-is to avoid false collisions.
+ *
+ * @param isEvm – true when the address belongs to an EVM network
  */
-const normalizeAddressKey = (address: string): string =>
-  address.startsWith('0x') || address.startsWith('0X')
-    ? address.toLowerCase()
-    : address
+const normalizeAddressKey = (address: string, isEvm: boolean): string =>
+  isEvm ? address.toLowerCase() : address
 
 export default new BalanceService()
