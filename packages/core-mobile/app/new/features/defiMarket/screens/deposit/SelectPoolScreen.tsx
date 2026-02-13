@@ -17,6 +17,7 @@ import errorIcon from '../../../../assets/icons/melting_face.png'
 import { DefiMarket } from '../../types'
 import { DefiMarketLogo } from '../../components/DefiMarketLogo'
 import { useAvailableMarkets } from '../../hooks/useAvailableMarkets'
+import { useRedirectToBorrowAfterDeposit } from '../../store'
 
 export const SelectPoolScreen = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -28,8 +29,18 @@ export const SelectPoolScreen = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const { data: markets, isPending: isLoadingMarkets } = useAvailableMarkets()
+  const [redirectToBorrow] = useRedirectToBorrowAfterDeposit()
+
   const filteredAvailableMarkets = useMemo(() => {
-    return markets.filter(market => {
+    let filtered = markets
+
+    // Filter by protocol if redirected from borrow flow
+    if (redirectToBorrow) {
+      filtered = filtered.filter(m => m.marketName === redirectToBorrow)
+    }
+
+    // Filter by asset (contractAddress or symbol)
+    return filtered.filter(market => {
       if (contractAddress) {
         return (
           market.asset.contractAddress?.toLowerCase() ===
@@ -41,7 +52,7 @@ export const SelectPoolScreen = (): JSX.Element => {
       }
       return true
     })
-  }, [markets, contractAddress, symbol])
+  }, [markets, contractAddress, symbol, redirectToBorrow])
 
   const handleSelectPool = useCallback(
     (market: DefiMarket) => {

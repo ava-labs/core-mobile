@@ -138,14 +138,14 @@ export const SelectCollateralScreen = (): JSX.Element => {
   const [, setRedirectToBorrow] = useRedirectToBorrowAfterDeposit()
 
   const handleDepositMoreAssets = useCallback(() => {
-    // Set flag to redirect back to borrow after deposit completes
-    setRedirectToBorrow(true)
+    // Set protocol to redirect back to borrow after deposit completes
+    setRedirectToBorrow(selectedProtocol)
     // Dismiss borrow modal and navigate to deposit
     navigation.getParent()?.goBack()
     // Navigate to deposit flow, skip onboarding
     // @ts-ignore TODO: make routes typesafe
     navigate('/deposit/selectAsset')
-  }, [navigation, navigate, setRedirectToBorrow])
+  }, [navigation, navigate, selectedProtocol, setRedirectToBorrow])
 
   const hasSelectedCollateral = useMemo(() => {
     // Check if any deposit has collateral enabled on-chain
