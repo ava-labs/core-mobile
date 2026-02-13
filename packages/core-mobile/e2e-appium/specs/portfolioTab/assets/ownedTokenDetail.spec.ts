@@ -16,8 +16,11 @@ describe('Portfolio Assets', () => {
     xchain: ['Send']
   }
 
-  it('AVAX owned token detail', async () => {
+  before(async () => {
     await warmup()
+  })
+
+  it('AVAX owned token detail', async () => {
     await commonElsPage.filter(commonElsLoc.cChain_2)
     await portfolioPage.verifyOwnedTokenDetail('Avalanche', tokens.avax)
   })

@@ -530,9 +530,6 @@ class Settings {
   }
 
   async tapCurrency() {
-    if (!(await actions.getVisible(this.currencyId))) {
-      await this.swipeSettings()
-    }
     await actions.tap(this.currencyId)
   }
 
@@ -557,15 +554,10 @@ class Settings {
     await actions.tap(this.showRecoveryPhrase)
   }
 
-  async createNthAccount(
-    account = 2,
-    activeAccount = settings.account,
-    walletName = 'Wallet 1'
-  ) {
-    await this.goSettings()
-    await this.tapManageAccountsBtn()
+  async createNthAccount(account = 2, walletName = 'Wallet 1') {
+    await common.goMyWallets()
     await this.addAccount(account, walletName)
-    await this.selectAccount(activeAccount, walletName)
+    await common.goBack()
   }
 
   async tapNetworks() {
