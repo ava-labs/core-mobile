@@ -22,11 +22,14 @@ import { showLedgerReviewTransaction } from 'features/ledger/utils'
 import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
 import { CONFETTI_DURATION_MS } from 'common/consts'
 import { currentRouteStore } from 'new/routes/store'
+import { BoundedMap } from 'common/utils/boundedMap'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { handleLedgerErrorAndShowAlert } from './utils'
 
 class ApprovalController implements VmModuleApprovalController {
+  private userCancelledMap = new BoundedMap<string, boolean>(10)
+
   async requestPublicKey({
     secretId,
     derivationPath,
@@ -142,6 +145,10 @@ class ApprovalController implements VmModuleApprovalController {
     displayData,
     signingData
   }: ApprovalParams): Promise<ApprovalResponse> {
+    const requestId = request.requestId
+    // Clear any previous cancellation state for this request
+    this.userCancelledMap.delete(requestId)
+
     return new Promise<ApprovalResponse>(resolve => {
       walletConnectCache.approvalParams.set({
         request,
@@ -156,6 +163,12 @@ class ApprovalController implements VmModuleApprovalController {
               value: ApprovalResponse | PromiseLike<ApprovalResponse>
             ): void => {
               if ('error' in value) {
+                // Don't show alert if user explicitly cancelled
+                if (this.userCancelledMap.get(requestId)) {
+                  this.userCancelledMap.delete(requestId)
+                  return
+                }
+
                 handleLedgerErrorAndShowAlert({
                   error: value.error,
                   network: params.network,
@@ -166,6 +179,7 @@ class ApprovalController implements VmModuleApprovalController {
                       resolve: resolveWithRetry
                     }),
                   onCancel: () => {
+                    this.userCancelledMap.set(requestId, true)
                     this.handleGoBackIfNeeded()
                     this.handleLedgerOnReject({ resolve })
                   }
@@ -173,6 +187,7 @@ class ApprovalController implements VmModuleApprovalController {
               } else {
                 resolve(value)
                 this.handleGoBackIfNeeded()
+                this.userCancelledMap.delete(requestId)
               }
             }
 
@@ -185,6 +200,7 @@ class ApprovalController implements VmModuleApprovalController {
                   resolve: resolveWithRetry
                 }),
               onReject: () => {
+                this.userCancelledMap.set(requestId, true)
                 this.handleLedgerOnReject({ resolve })
                 this.handleGoBackIfNeeded()
               }

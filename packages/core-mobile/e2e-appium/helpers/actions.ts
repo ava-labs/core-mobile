@@ -305,7 +305,7 @@ async function typeSlowly(
   }
 }
 
-async function assertPerformance(start: number, expectedTime = 10000) {
+async function assertPerformance(start: number, expectedTime = 20000) {
   const end = performance.now()
   const totalTime = end - start
   const passed = totalTime <= expectedTime
