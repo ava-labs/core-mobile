@@ -1,5 +1,5 @@
 import { throttle } from 'lodash'
-import { useCallback, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { GestureResponderEvent, ViewStyle } from 'react-native'
 import { GestureTouchEvent } from 'react-native-gesture-handler'
 import {
@@ -49,20 +49,27 @@ export function usePressableGesture(
     }
   })
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const throttledCallback = useCallback(
-    throttle(
-      (event: GestureResponderEvent | GestureTouchEvent) => {
-        callback?.(event as GestureResponderEvent)
-      },
-      THROTTLE_MS,
-      {
-        leading: true,
-        trailing: false
-      }
-    ),
-    [callback]
+  const callbackRef = useRef(callback)
+  callbackRef.current = callback
+
+  const throttledCallback = useMemo(
+    () =>
+      throttle(
+        (event: GestureResponderEvent | GestureTouchEvent) => {
+          callbackRef.current?.(event as GestureResponderEvent)
+        },
+        THROTTLE_MS,
+        {
+          leading: true,
+          trailing: false
+        }
+      ),
+    []
   )
+
+  useEffect(() => {
+    return () => throttledCallback.cancel()
+  }, [throttledCallback])
 
   const startAnimation = (): void => {
     'worklet'
