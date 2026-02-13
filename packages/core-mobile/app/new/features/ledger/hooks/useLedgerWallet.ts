@@ -40,7 +40,7 @@ export interface UseLedgerWalletReturn {
   updateSolanaForLedgerWallet: (
     options: WalletUpdateSolanaOptions
   ) => Promise<void>
-  updateLedgerWallet: (
+  createLedgerAccount: (
     options: WalletUpdateOptions & LedgerKeys
   ) => Promise<{ walletId: string; accountId: string }>
 }
@@ -221,7 +221,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
     [dispatch, setLedgerWalletMap]
   )
 
-  const updateLedgerWallet = useCallback(
+  const createLedgerAccount = useCallback(
     async ({
       deviceId,
       walletId,
@@ -401,6 +401,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
     isLoading,
     createLedgerWallet,
     updateSolanaForLedgerWallet,
-    updateLedgerWallet
+    createLedgerAccount
   }
 }
