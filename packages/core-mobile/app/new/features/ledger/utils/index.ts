@@ -112,7 +112,7 @@ export const getOppositeKeys = async ({
     )
 
     return {
-      addressBTC: bitcoinAddress,
+      addressBTC: avalancheKeys.addresses.btc,
       addressAVM: avalancheKeys.addresses.avm,
       addressPVM: avalancheKeys.addresses.pvm,
       addressCoreEth: avalancheKeys.addresses.coreEth
