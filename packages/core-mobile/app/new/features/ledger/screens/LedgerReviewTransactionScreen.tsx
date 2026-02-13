@@ -28,6 +28,7 @@ const LedgerReviewTransactionScreen = ({
 }): JSX.Element => {
   const navigation = useNavigation()
   const approvalTriggeredRef = useRef(false)
+  const dismissInProgressRef = useRef(false)
   const walletId = useSelector(selectActiveWalletId)
   const { ledgerWalletMap } = useLedgerWalletMap()
   const [isConnected, setIsConnected] = useState(false)
@@ -103,7 +104,8 @@ const LedgerReviewTransactionScreen = ({
   // Handle Android hardware back button
   useEffect(() => {
     const onBackPress = (): boolean => {
-      if (isCancelEnabled) {
+      if (isCancelEnabled && !dismissInProgressRef.current) {
+        dismissInProgressRef.current = true
         onReject(TRANSACTION_CANCELLED_BY_USER)
         return true // Prevent default back behavior, onReject handles navigation
       }
@@ -123,9 +125,11 @@ const LedgerReviewTransactionScreen = ({
     return navigation.addListener('beforeRemove', e => {
       if (
         e.data.action.type === 'POP' && // gesture dismissed
-        isCancelEnabled
+        isCancelEnabled &&
+        !dismissInProgressRef.current
       ) {
         e.preventDefault()
+        dismissInProgressRef.current = true
         // Modal is being dismissed via gesture
         onReject(TRANSACTION_CANCELLED_BY_USER)
       }
