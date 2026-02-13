@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { LedgerKeys } from 'services/ledger/types'
+import { LedgerKeysByNetwork } from 'services/ledger/types'
 import Logger from 'utils/Logger'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import LedgerService from 'services/ledger/LedgerService'
@@ -39,9 +39,10 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
   } = useLedgerSetupContext()
 
   const handleComplete = useCallback(
-    async (keys: LedgerKeys) => {
+    async (keys: LedgerKeysByNetwork) => {
+      const keysByNetwork = isDeveloperMode ? keys.testnet : keys.mainnet
       if (
-        keys.avalancheKeys &&
+        keysByNetwork.avalancheKeys &&
         device &&
         wallet &&
         accounts?.length > 0 &&
@@ -60,15 +61,13 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
             deviceId: device.id,
             deviceName: device.name,
             derivationPathType,
-            avalancheKeys: keys.avalancheKeys,
-            solanaKeys: keys.solanaKeys,
-            bitcoinAddress: keys.bitcoinAddress
+            avalancheKeys: keysByNetwork.avalancheKeys,
+            solanaKeys: keysByNetwork.solanaKeys
           })
 
           await setLedgerAddress({
             accountIndex: accounts?.length ?? 0,
             walletId,
-            isDeveloperMode,
             accountId,
             keys
           })
@@ -90,7 +89,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
         Logger.info(
           'Account creation conditions not met, skipping account creation',
           {
-            hasAvalancheKeys: !!keys.avalancheKeys,
+            hasAvalancheKeys: !!keysByNetwork.avalancheKeys,
             hasConnectedDeviceId: !!device?.id,
             hasSelectedDerivationPath: !!derivationPathType,
             isUpdatingWallet
