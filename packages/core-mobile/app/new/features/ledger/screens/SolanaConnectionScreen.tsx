@@ -36,7 +36,7 @@ export default function SolanaConnectionScreen(): JSX.Element {
   } = useLedgerSetupContext()
 
   const deviceForWallet = useMemo(() => {
-    return getLedgerInfoByWalletId(wallet.id)?.device
+    return getLedgerInfoByWalletId(wallet?.id)?.device
   }, [getLedgerInfoByWalletId, wallet?.id])
 
   const { updateSolanaForLedgerWallet } = useLedgerWallet()

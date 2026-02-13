@@ -42,22 +42,24 @@ export const getLedgerAppName = (network?: Network): LedgerAppType => {
     : LedgerAppType.UNKNOWN
 }
 
-export const LedgerWalletSecretSchema = z.object({
-  deviceId: z.string(),
-  deviceName: z.string(),
-  derivationPathSpec: z.nativeEnum(LedgerDerivationPathType),
-  extendedPublicKeys: z.record(
-    z.string(),
-    z.object({
-      evm: z.string().optional(),
-      avalanche: z.string().optional()
-    })
-  ),
-  publicKeys: z.array(
-    z.object({
-      key: z.string(),
-      derivationPath: z.string(),
-      curve: z.string()
-    })
-  )
-})
+export const LedgerWalletSecretSchema = z
+  .object({
+    deviceId: z.string(),
+    deviceName: z.string(),
+    derivationPathSpec: z.nativeEnum(LedgerDerivationPathType),
+    extendedPublicKeys: z.record(
+      z.string(),
+      z.object({
+        evm: z.string().optional(),
+        avalanche: z.string().optional()
+      })
+    ),
+    publicKeys: z.array(
+      z.object({
+        key: z.string(),
+        derivationPath: z.string(),
+        curve: z.string()
+      })
+    )
+  })
+  .passthrough()
