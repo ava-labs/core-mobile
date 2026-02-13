@@ -182,6 +182,15 @@ class OnboardingPage {
 
   async enterPin(pin = '000000') {
     await actions.waitFor(this.enterPinFirstScreenTitle)
+    
+    // Disable biometrics toggle if it's enabled (to avoid biometric prompt during login)
+    const isToggleOn = await actions.isBiometricToggleOn(1500)
+    if (isToggleOn) {
+      const toggleOn = selectors.getById('toggle_biometrics_on')
+      await toggleOn.click()
+      await driver.pause(1000)
+    }
+    
     await this.tapZero(pin)
     await actions.waitFor(this.enterPinSecondScreenTitle)
     await this.tapZero(pin)
@@ -209,7 +218,26 @@ class OnboardingPage {
     await actions.dragAndDrop(element, [0, 500])
   }
 
-async verifyLoggedIn() {
+  async handleBiometricPrompt() {
+    // Check if biometric prompt is showing (system UI) and tap "Use PIN" to fall back to PIN entry
+    // The biometric prompt is from Android system UI, not the app itself
+    // Skip biometric handling if biometrics are not enabled in OS settings
+    // Uses Promise.race() to return immediately when prompt appears or timeout expires
+    const isBiometricPromptVisible = await actions.waitForBiometricPrompt(2000)
+    
+    if (isBiometricPromptVisible) {
+      console.log('Biometric prompt detected, tapping "Use PIN" to fall back to PIN entry')
+      const usePinButton = selectors.getByXpath('//*[@package="com.android.systemui" and (@text="Use PIN" or @resource-id="com.android.systemui:id/button_use_credential")]')
+      await usePinButton.click()
+      await driver.pause(1000) // Wait for PIN screen to appear
+    } else {
+      // No biometric prompt appeared - this means biometrics are not enabled in OS settings
+      // Skip biometric entry and continue with normal flow
+      console.log('Biometrics not enabled in OS settings - skipping biometric prompt handling')
+    }
+  }
+
+  async verifyLoggedIn() {
     await actions.waitFor(commonElsPage.accountOne, 40000)
     console.log('Verified you are logged in')
   }

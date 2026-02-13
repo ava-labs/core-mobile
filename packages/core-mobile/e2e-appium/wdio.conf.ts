@@ -115,7 +115,9 @@ export const config: WebdriverIO.Config = {
   // hoook before: make or get testRun before test
   before: async () => {
     const platform = driver.isAndroid ? 'Android' : 'iOS'
-    runId = await getTestRun(platform)
+    const isSmoke = process.env.TEST_TYPE === 'smoke' || false
+    const isPerformance = process.env.TEST_TYPE === 'performance' || false
+    runId = await getTestRun(platform, isSmoke, isPerformance)
     console.log(`------------Starting test run on AWS Device Farm------------`)
     console.log(`Platform: ${platform}`)
     console.log(`Device: ${deviceName}`)
@@ -146,6 +148,24 @@ export const config: WebdriverIO.Config = {
     const sectionId = sectionCache[sectionTitle]
     const caseId = await getTestCase(test.title, sectionId)
     const statusId = passed ? 1 : 5
+    
+    // Capture page source on test failure for debugging
+    if (!passed) {
+      try {
+        const fs = require('fs')
+        const path = require('path')
+        const pageSource = await driver.getPageSource()
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+        const sanitizedTestName = test.title.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50)
+        const pageSourcePath = path.join(process.cwd(), `page-source-failure-${sanitizedTestName}-${timestamp}.xml`)
+        fs.writeFileSync(pageSourcePath, pageSource)
+        console.log(`\n📄 Page source saved on test failure: ${pageSourcePath}`)
+      } catch (e: unknown) {
+        const saveError = e instanceof Error ? e.message : String(e)
+        console.error('Failed to save page source on test failure:', saveError)
+      }
+    }
+    
     if (runId) {
       await addCaseToRun(runId, caseId)
       const resultId = await sendResult(runId, caseId, statusId, error)

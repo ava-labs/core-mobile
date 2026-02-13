@@ -3,6 +3,11 @@ import onboardingPage from '../pages/onboarding.page'
 export default async function warmup(
   mnemonic = process.env.E2E_MNEMONIC as string
 ) {
+  // Validate mnemonic is provided
+  if (!mnemonic) {
+    throw new Error('E2E_MNEMONIC environment variable is not set. Please set it before running tests.')
+  }
+  
   await onboardingPage.exitMetro()
   await onboardingPage.tapAccessExistingWallet()
   await onboardingPage.tapTypeInRecoveryPhase()
@@ -10,6 +15,7 @@ export default async function warmup(
   await onboardingPage.tapUnlockBtn()
   await onboardingPage.enterRecoveryPhrase(mnemonic)
   await onboardingPage.tapImport()
+  // Enter PIN (this will also disable the biometrics toggle if needed)
   await onboardingPage.enterPin()
   await onboardingPage.enterWalletName()
   await onboardingPage.tapNextBtnOnNameWallet()

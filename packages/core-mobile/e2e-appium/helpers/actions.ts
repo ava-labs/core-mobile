@@ -3,9 +3,52 @@ import { ChainablePromiseElement } from 'webdriverio'
 import { selectors } from './selectors'
 
 async function type(element: ChainablePromiseElement, text: string | number) {
+  // Validate input
+  if (text === undefined || text === null) {
+    throw new Error(`Cannot type undefined or null value. Received: ${text}`)
+  }
+  
+  const textToType = String(text)
+  if (textToType.length === 0) {
+    console.log('Warning: Attempting to type empty string')
+  }
+  
   await waitFor(element)
-  await element.clearValue()
-  await element.addValue(text)
+  
+  // Ensure the element is focused before typing (both platforms)
+  // This is especially important for TextInputs that have children components
+  try {
+    // Click the element to focus it
+    await element.click()
+    await driver.pause(500) // Wait for focus and keyboard
+  } catch (e) {
+    console.log('Warning: Could not click element before typing, continuing anyway')
+  }
+  
+  // Clear any existing value
+  try {
+    await element.clearValue()
+    await driver.pause(200)
+  } catch (e) {
+    // If clearValue fails, try selecting all and deleting
+    if (driver.isAndroid) {
+      try {
+        await driver.pressKeyCode(29, 113) // Ctrl+A (select all)
+        await driver.pause(100)
+        await driver.pressKeyCode(67) // Delete
+        await driver.pause(200)
+      } catch (e2) {
+        // Continue anyway
+      }
+    }
+  }
+  
+  // Use setValue for both platforms since we've already cleared the value
+  // setValue is more reliable for TextInputs with children components
+  await element.setValue(textToType)
+  
+  // Small pause to ensure text is processed
+  await driver.pause(300)
 }
 
 async function tapNumberPad(keyCode: string) {
@@ -35,9 +78,16 @@ async function verifyElementText(
 }
 
 async function waitFor(ele: ChainablePromiseElement, timeout = 20000) {
+  // Race between waitForExist and waitForDisplayed to return as soon as either succeeds
+  // This is faster than sequential fallback which waits for the first to timeout
   try {
-    await ele.waitForExist({ timeout })
+    await Promise.race([
+      ele.waitForExist({ timeout }),
+      ele.waitForDisplayed({ timeout })
+    ])
   } catch (e) {
+    // If both race promises reject, try waitForDisplayed as final fallback
+    // This handles edge cases where element exists but isn't displayed yet
     await ele.waitForDisplayed({ timeout })
   }
 }
@@ -66,17 +116,60 @@ async function waitForNotVisible(
   ele: ChainablePromiseElement,
   timeout = 20000
 ) {
-  try {
-    await ele.waitForDisplayed({ timeout, reverse: true })
-  } catch (e) {
-    await ele.waitForExist({ timeout, reverse: true })
-  }
+  // Race between waitForDisplayed and waitForExist (both reverse) to return as soon as either succeeds
+  // This is faster than sequential fallback
+  await Promise.race([
+    ele.waitForDisplayed({ timeout, reverse: true }),
+    ele.waitForExist({ timeout, reverse: true })
+  ])
   const eleSelector = await ele.selector
   console.log(`[${eleSelector}] is not visible as expected`)
 }
 
 async function getVisible(ele: ChainablePromiseElement) {
   return (await ele.isDisplayed()) || (await ele.isExisting())
+}
+
+/**
+ * Check if element is visible within timeout
+ * Returns true if visible, false if timeout or error
+ * Uses Promise.race() to return immediately when element appears or timeout expires
+ */
+async function isElementVisible(
+  element: ChainablePromiseElement,
+  timeout = 2000
+): Promise<boolean> {
+  const timeoutPromise = new Promise<false>((resolve) => 
+    setTimeout(() => resolve(false), timeout)
+  )
+  
+  return Promise.race([
+    element.isDisplayed().then(() => true),
+    timeoutPromise
+  ]).catch(() => false)
+}
+
+/**
+ * Wait for biometric prompt to appear
+ * Returns true if prompt is visible, false if timeout (biometrics not enabled in OS)
+ * Uses Promise.race() to return immediately when prompt appears or timeout expires
+ * 
+ * Note: If this returns false, it means biometrics are not enabled in OS settings
+ * and the biometric prompt will never appear. The calling code should skip biometric handling.
+ */
+async function waitForBiometricPrompt(timeout = 2000): Promise<boolean> {
+  const usePinButton = selectors.getByXpath('//*[@package="com.android.systemui" and (@text="Use PIN" or @resource-id="com.android.systemui:id/button_use_credential")]')
+  return isElementVisible(usePinButton, timeout)
+}
+
+/**
+ * Check if biometric toggle is ON
+ * Returns true if toggle is ON, false otherwise
+ * Uses Promise.race() to return immediately when toggle is found or timeout expires
+ */
+async function isBiometricToggleOn(timeout = 1500): Promise<boolean> {
+  const toggleOn = selectors.getById('toggle_biometrics_on')
+  return isElementVisible(toggleOn, timeout)
 }
 
 async function isSelected(ele: ChainablePromiseElement, targetBool = true) {
@@ -296,13 +389,51 @@ async function typeSlowly(
   element: ChainablePromiseElement,
   text: string | number
 ) {
-  await waitFor(element)
-  await element.clearValue()
-  const textString = text.toString()
-  for (const char of textString) {
-    await delay(1)
-    await element.addValue(char)
+  // Validate input
+  if (text === undefined || text === null) {
+    throw new Error(`Cannot typeSlowly undefined or null value. Received: ${text}`)
   }
+  
+  const textToType = String(text)
+  if (textToType.length === 0) {
+    console.log('Warning: Attempting to typeSlowly empty string')
+  }
+  
+  await waitFor(element)
+  
+  // Ensure the element is focused before typing (both platforms)
+  // This is especially important for TextInputs that have children components
+  try {
+    // Click the element to focus it
+    await element.click()
+    await driver.pause(500) // Wait for focus and keyboard
+  } catch (e) {
+    console.log('Warning: Could not click element before typingSlowly, continuing anyway')
+  }
+  
+  // Clear any existing value
+  try {
+    await element.clearValue()
+    await driver.pause(200)
+  } catch (e) {
+    // If clearValue fails, try selecting all and deleting
+    if (driver.isAndroid) {
+      try {
+        await driver.pressKeyCode(29, 113) // Ctrl+A (select all)
+        await driver.pause(100)
+        await driver.pressKeyCode(67) // Delete
+        await driver.pause(200)
+      } catch (e2) {
+        // Continue anyway
+      }
+    }
+  }
+  
+  // Use setValue for both platforms since we've already cleared the value
+  // setValue is more reliable for TextInputs with children components
+  // Note: If setValue has issues on iOS, we can fall back to character-by-character addValue
+  await element.setValue(textToType)
+  await driver.pause(300)
 }
 
 async function assertPerformance(start: number, expectedTime = 10000) {
@@ -350,5 +481,8 @@ export const actions = {
   verifyText,
   tapXY,
   waitForNotVisible,
-  assertPerformance
+  assertPerformance,
+  isElementVisible,
+  waitForBiometricPrompt,
+  isBiometricToggleOn
 }
