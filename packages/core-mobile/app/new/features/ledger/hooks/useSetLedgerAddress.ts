@@ -35,28 +35,21 @@ export const useSetLedgerAddress = (): {
       accountIndex: number
       keys: LedgerKeys
     }) => {
-      const oppositeKeys = await getOppositeKeys({
+      const oppositeAddresses = await getOppositeKeys({
         accountIndex,
         isDeveloperMode
       })
 
-      const mainnet = isDeveloperMode
-        ? oppositeKeys
-        : {
-            addressBTC: keys.bitcoinAddress ?? '',
-            addressAVM: keys.avalancheKeys?.addresses.avm || '',
-            addressPVM: keys.avalancheKeys?.addresses.pvm || '',
-            addressCoreEth: keys.avalancheKeys?.addresses.coreEth || ''
-          }
+      const addresses = {
+        addressBTC: keys.bitcoinAddress ?? '',
+        addressAVM: keys.avalancheKeys?.addresses.avm || '',
+        addressPVM: keys.avalancheKeys?.addresses.pvm || '',
+        addressCoreEth: keys.avalancheKeys?.addresses.coreEth || ''
+      }
 
-      const testnet = isDeveloperMode
-        ? {
-            addressBTC: keys.bitcoinAddress ?? '',
-            addressAVM: keys.avalancheKeys?.addresses.avm || '',
-            addressPVM: keys.avalancheKeys?.addresses.pvm || '',
-            addressCoreEth: keys.avalancheKeys?.addresses.coreEth || ''
-          }
-        : oppositeKeys
+      const mainnet = isDeveloperMode ? oppositeAddresses : addresses
+
+      const testnet = isDeveloperMode ? addresses : oppositeAddresses
 
       dispatch(
         setLedgerAddresses({
