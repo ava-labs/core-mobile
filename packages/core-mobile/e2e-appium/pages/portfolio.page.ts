@@ -351,7 +351,7 @@ class PortfolioPage {
   async tapToken(token = 'Avalanche') {
     // It taps on the name of the token on the portfolio asset (ex - Avalanche, Bitcoin, Wrapped Ether...)
     token = token.replace(/^Avalanche [PX]-Chain$/, 'Avalanche')
-    await actions.tap(
+    await actions.click(
       selectors.getById(`${portfolio.portfolioTokenItem}${token}`)
     )
   }
