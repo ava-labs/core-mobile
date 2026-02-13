@@ -237,8 +237,8 @@ export const ListScreenV2 = <T,>({
   const animatedHeaderContainerStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
       scrollY.value,
-      [0, contentHeaderHeight],
-      [0, -contentHeaderHeight - (isModal ? 16 : 20)],
+      [0, headerHeight],
+      [0, -headerHeight],
       Extrapolation.CLAMP
     )
 
@@ -318,44 +318,54 @@ export const ListScreenV2 = <T,>({
     }
   })
 
-  const contentContainerStyle = useMemo(() => {
-    const footerPadding = renderFooter ? footerHeight : 0
-    const paddingBottom = keyboard.isVisible
-      ? 16
-      : insets.bottom + 16 + footerPadding
+  const minHeight = useMemo(() => {
+    const extraPadding = Platform.OS === 'android' ? (isModal ? 24 : 8) : -40
 
+    return (
+      frame.height -
+      headerHeight -
+      contentHeaderHeight -
+      renderHeaderHeight -
+      extraPadding -
+      (keyboard.isVisible ? keyboard.height : 0)
+    )
+  }, [
+    contentHeaderHeight,
+    frame.height,
+    headerHeight,
+    isModal,
+    keyboard.height,
+    keyboard.isVisible,
+    renderHeaderHeight
+  ])
+
+  const contentContainerStyle = useMemo(() => {
     // FlashList's contentContainerStyle only supports:
     // backgroundColor, paddingTop, paddingBottom, paddingLeft, paddingRight, padding
     // Do NOT pass minHeight, flex, or other unsupported properties
     return {
       ...(props?.contentContainerStyle ?? {}),
-      paddingBottom
+      paddingBottom: renderFooter ? footerHeight + 16 : 16
     }
-  }, [
-    renderFooter,
-    footerHeight,
-    keyboard.isVisible,
-    insets.bottom,
-    props?.contentContainerStyle
-  ])
+  }, [renderFooter, footerHeight, props?.contentContainerStyle])
 
   const animatedEmptyComponent = useAnimatedStyle(() => {
-    const emptySpacing =
-      frame.height -
-      headerHeight -
-      contentHeaderHeight -
-      renderHeaderHeight -
-      insets.bottom -
-      100 -
-      (keyboard.isVisible ? keyboard.height : 0)
+    const translateY = interpolate(
+      scrollY.value,
+      [0, headerHeight],
+      [-headerHeight, 0],
+      Extrapolation.CLAMP
+    )
 
     return {
-      height: withTiming(emptySpacing, {
-        ...ANIMATED.TIMING_CONFIG,
-        duration: 150
-      }),
+      minHeight,
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      transform: [
+        {
+          translateY
+        }
+      ]
     }
   })
 
@@ -382,7 +392,7 @@ export const ListScreenV2 = <T,>({
         <View
           style={{
             position: 'absolute',
-            top: Platform.OS === 'android' ? insets.top - 2 : 0,
+            top: Platform.OS === 'android' ? 16 : 0,
             left: 0,
             right: 0,
             zIndex: 1000
@@ -390,7 +400,7 @@ export const ListScreenV2 = <T,>({
           <Grabber />
         </View>
       )
-  }, [insets.top, isModal])
+  }, [isModal])
 
   const handleFooterLayout = useCallback((event: LayoutChangeEvent) => {
     const { height } = event.nativeEvent.layout
@@ -507,6 +517,15 @@ export const ListScreenV2 = <T,>({
     return null
   }, [renderFooter, showFooter, handleFooterLayout, insets.bottom])
 
+  const overrideProps = useMemo(() => {
+    return {
+      contentContainerStyle: {
+        ...contentContainerStyle,
+        minHeight
+      }
+    }
+  }, [contentContainerStyle, minHeight])
+
   return (
     <Animated.View
       style={[{ flex: 1 }]}
@@ -525,6 +544,7 @@ export const ListScreenV2 = <T,>({
             keyboardDismissMode="interactive"
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
+            overrideProps={overrideProps}
             contentContainerStyle={contentContainerStyle}
             {...props}
             style={[
