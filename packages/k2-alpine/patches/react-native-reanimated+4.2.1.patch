@@ -20,17 +20,17 @@ index 6256687..2d6e16e 100644
   */
  export function useAnimatedSensor(
    sensorType: SensorType.ROTATION,
-+  isActive: boolean,
++  isActive?: boolean,
    userConfig?: Partial<SensorConfig>
  ): AnimatedSensor<ValueRotation>;
  export function useAnimatedSensor(
    sensorType: Exclude<SensorType, SensorType.ROTATION>,
-+  isActive: boolean,
++  isActive?: boolean,
    userConfig?: Partial<SensorConfig>
  ): AnimatedSensor<Value3D>;
  export function useAnimatedSensor(
    sensorType: SensorType,
-+  isActive: boolean,
++  isActive?: boolean,
    userConfig?: Partial<SensorConfig>
  ): AnimatedSensor<ValueRotation> | AnimatedSensor<Value3D> {
    const userConfigRef = useRef(userConfig);

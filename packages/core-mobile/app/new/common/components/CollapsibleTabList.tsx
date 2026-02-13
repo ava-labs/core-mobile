@@ -168,7 +168,7 @@ export function CollapsibleTabList<T>({
       numColumns={numColumns}
       masonry={masonry}
       overrideProps={finalOverrideProps}
-      contentContainerStyle={additionalContentStyle}
+      contentContainerStyle={baseContentContainerStyle}
       refreshControl={refreshControl}
       ListHeaderComponent={renderHeader}
       ItemSeparatorComponent={renderSeparator}
