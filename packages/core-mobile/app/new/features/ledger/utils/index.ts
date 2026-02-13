@@ -122,12 +122,18 @@ export const getOppositeKeys = async ({
       addressCoreEth: avalancheKeys.addresses.coreEth
     }
   } catch (err) {
-    Logger.error('Failed to get opposite keys', err)
-    return {
-      addressBTC: '',
-      addressAVM: '',
-      addressPVM: '',
-      addressCoreEth: ''
-    }
+    Logger.error(
+      `Failed to get addresses for ${
+        isDeveloperMode ? 'testnet' : 'mainnet'
+      } network`,
+      err
+    )
+    throw err instanceof Error
+      ? err
+      : new Error(
+          `Failed to get addresses for ${
+            isDeveloperMode ? 'testnet' : 'mainnet'
+          } network`
+        )
   }
 }

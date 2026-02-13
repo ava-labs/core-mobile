@@ -165,6 +165,7 @@ const WalletCard = ({
             }
             type="secondary"
             disabled={isAddingAccount}
+            testID="add_account_btn"
             onPress={() => handleAddAccountToWallet(wallet)}>
             {isAddingAccount ? (
               <ActivityIndicator size="small" color={colors.$textPrimary} />
