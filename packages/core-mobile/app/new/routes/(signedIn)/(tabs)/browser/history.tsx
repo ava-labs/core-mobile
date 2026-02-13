@@ -1,9 +1,16 @@
-import { Button, SearchBar, showAlert } from '@avalabs/k2-alpine'
+import {
+  Button,
+  SearchBar,
+  showAlert,
+  Text,
+  TouchableOpacity
+} from '@avalabs/k2-alpine'
 import { useNavigation } from '@react-navigation/native'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
+import { isIOS26 } from 'common/utils/isIOS26'
 import { BrowserItem } from 'features/browser/components/BrowserItem'
 import { useSearchHistory } from 'features/browser/hooks/useSearchHistory'
 import { prepareFaviconToLoad } from 'features/browser/utils'
@@ -104,14 +111,24 @@ const HistoryScreen = (): JSX.Element => {
     )
   }
 
-  const renderHeaderRight = (): JSX.Element => {
+  const renderHeaderRight = (): JSX.Element | null => {
+    if (!hasHistory) return null
+    if (isIOS26)
+      return (
+        <TouchableOpacity
+          onPress={removeAll}
+          style={{
+            paddingHorizontal: 10
+          }}>
+          <Text variant="buttonSmall">Clear all</Text>
+        </TouchableOpacity>
+      )
+
     return (
       <NavigationBarButton>
-        {hasHistory && (
-          <Button type="secondary" size="small" onPress={removeAll}>
-            Clear all
-          </Button>
-        )}
+        <Button type="secondary" size="small" onPress={removeAll}>
+          Clear all
+        </Button>
       </NavigationBarButton>
     )
   }
