@@ -4,6 +4,8 @@ import { RpcError } from '@avalabs/vm-module-types'
 import { getLedgerAppName } from 'features/ledger/utils'
 import { LEDGER_ERROR_CODES } from 'services/ledger/types'
 
+export const TRANSACTION_CANCELLED_BY_USER = 'Transaction cancelled by user'
+
 export const handleLedgerErrorAndShowAlert = ({
   error,
   network,
@@ -16,7 +18,7 @@ export const handleLedgerErrorAndShowAlert = ({
   onCancel: () => void
 }): void => {
   // @ts-ignore
-  const message = error.data?.cause?.message || ''
+  const message = error.data?.cause?.message || error.message || ''
   const lowercasedMessage = message.toLowerCase()
 
   const ledgerAppName = getLedgerAppName(network)
@@ -45,7 +47,11 @@ export const handleLedgerErrorAndShowAlert = ({
   } else if (lowercasedMessage.includes(LEDGER_ERROR_CODES.UPDATE_REQUIRED)) {
     title = 'Update required'
     description = `Update the ${ledgerAppName} app on your Ledger device to continue`
-  } else if (lowercasedMessage.includes(LEDGER_ERROR_CODES.USER_CANCELLED)) {
+  } else if (
+    lowercasedMessage.includes(LEDGER_ERROR_CODES.USER_CANCELLED) ||
+    lowercasedMessage.includes(TRANSACTION_CANCELLED_BY_USER.toLowerCase()) ||
+    lowercasedMessage.includes('action cancelled by user')
+  ) {
     // User cancelled, no need to show alert
     return
   } else if (
