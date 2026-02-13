@@ -115,11 +115,12 @@ export class BalanceService {
 
             // Map each address to ALL owning accounts so that
             // imported-PK accounts that share the same address also receive
-            // the balance.  Keys are lowercased for case-insensitive lookups.
+            // the balance.  EVM keys are normalized to lowercase for
+            // case-insensitive lookups; other formats are kept as-is.
             const addressMap = addressEntries.reduce(
               (acc, { address, account }) => {
                 if (address) {
-                  const key = address.toLowerCase()
+                  const key = normalizeAddressKey(address)
                   if (!acc[key]) acc[key] = []
                   if (!acc[key].some(a => a.id === account.id)) {
                     acc[key].push(account)
@@ -196,7 +197,8 @@ export class BalanceService {
             // assign balances to every owning account (supports duplicate
             // addresses from imported-PK accounts).
             for (const responseAddress of Object.keys(balancesResponse)) {
-              const matchedAccounts = addressMap[responseAddress.toLowerCase()]
+              const matchedAccounts =
+                addressMap[normalizeAddressKey(responseAddress)]
               const balances = balancesResponse[responseAddress]
 
               if (!matchedAccounts || matchedAccounts.length === 0 || !balances)
@@ -433,12 +435,12 @@ export class BalanceService {
     }, {} as Record<string, Account>)
 
     // Map each address to ALL accounts that own it.
-    // Keys are lowercased so lookups are case-insensitive — the Balance API
-    // may return addresses in a different case (e.g. lowercased EVM) than
-    // what the account stores (checksummed).  With a single account this was
-    // hidden by the `accounts.length === 1` fallback; with 2+ accounts the
-    // fallback no longer applies and the mismatch causes balances to be
-    // silently dropped.
+    // EVM keys are normalized to lowercase because the Balance API may return
+    // addresses in a different case (e.g. lowercased) than what the account
+    // stores (EIP-55 checksummed).  Non-EVM formats (base58 for BTC/X/P-Chain,
+    // Solana) are case-sensitive and kept as-is.
+    // With a single account the old `accounts.length === 1` fallback masked
+    // mismatches; with 2+ accounts the fallback no longer applies.
     const accountsByAddress = accounts.reduce((acc, account) => {
       const xpAddresses = xpAddressesByAccountId.get(account.id) ?? []
 
@@ -451,7 +453,7 @@ export class BalanceService {
       )
       for (const address of addresses) {
         if (address && address.length > 0) {
-          const key = address.toLowerCase()
+          const key = normalizeAddressKey(address)
           if (!acc[key]) acc[key] = []
           if (!acc[key].some(a => a.id === account.id)) {
             acc[key].push(account)
@@ -488,7 +490,7 @@ export class BalanceService {
             if (byId) {
               matchedAccounts.push(byId)
             } else {
-              const byAddress = accountsByAddress[id.toLowerCase()]
+              const byAddress = accountsByAddress[normalizeAddressKey(id)]
               if (byAddress) {
                 matchedAccounts.push(...byAddress)
               }
@@ -771,5 +773,17 @@ const formatXpAddressesForNetwork = (
 
   return [...normalized]
 }
+
+/**
+ * Normalize an address for use as a map key.
+ * Only EVM hex addresses (0x-prefixed) are lowercased because EIP-55
+ * checksumming is just cosmetic — the address identity is case-insensitive.
+ * Other formats (base58 for BTC/X/P-Chain, base58-checked for Solana) are
+ * case-sensitive, so they must be kept as-is to avoid false collisions.
+ */
+const normalizeAddressKey = (address: string): string =>
+  address.startsWith('0x') || address.startsWith('0X')
+    ? address.toLowerCase()
+    : address
 
 export default new BalanceService()
