@@ -55,7 +55,9 @@ export const BorrowAaveSelectAmountForm = ({
       // Show toast before unwrap
       transactionSnackbar.pending({ message: 'Unwrapping WAVAX to AVAX...' })
       // Borrow confirmed, now unwrap WAVAX to AVAX
-      unwrapWavax({ amount: pendingUnwrapAmountRef.current })
+      // Error handling is done by useUnwrapWavax's onError callback
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      unwrapWavax({ amount: pendingUnwrapAmountRef.current }).catch(() => {})
       pendingUnwrapAmountRef.current = null
     } else {
       // Not native AVAX, call original onConfirmed

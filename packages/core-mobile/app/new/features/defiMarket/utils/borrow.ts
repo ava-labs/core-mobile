@@ -79,6 +79,7 @@ export async function fetchAaveUserBorrowData(
   }
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export async function fetchBenqiUserBorrowData(
   networkClient: PublicClient,
   userAddress: Address,
@@ -106,7 +107,12 @@ export async function fetchBenqiUserBorrowData(
     throw new Error('Failed to fetch Benqi account liquidity')
   }
 
-  const [, liquidity, shortfall] = liquidityResult.result
+  const [errorCode, liquidity, shortfall] = liquidityResult.result
+
+  // Check for Benqi/Compound error codes (0 = NO_ERROR)
+  if (errorCode !== 0n) {
+    throw new Error(`Benqi getAccountLiquidity error code: ${errorCode}`)
+  }
   const assetsIn =
     assetsInResult.status === 'success'
       ? (assetsInResult.result as Address[])
