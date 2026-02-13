@@ -76,24 +76,26 @@ export const MoreNavigationOverlay = (): JSX.Element | null => {
   const isDragging = useSharedValue(false)
   // Whether closing was triggered by gesture (skip Keyframe exit)
   const gestureClose = useSharedValue(false)
+  // Background opacity driven on the UI thread so it's reliable on first frame
+  const bgOpacity = useSharedValue(0)
 
   const items = useMemo(
     () => [
       {
         title: 'Chat',
-        onPress: () => { }
+        onPress: () => {}
       },
       {
         title: 'Prediction markets',
-        onPress: () => { }
+        onPress: () => {}
       },
       {
         title: 'Perpetual futures',
-        onPress: () => { }
+        onPress: () => {}
       },
       {
         title: 'Pay for everything on Avalanche',
-        onPress: () => { }
+        onPress: () => {}
       }
     ],
     []
@@ -168,7 +170,7 @@ export const MoreNavigationOverlay = (): JSX.Element | null => {
     const progress = Math.min(dragY.value / DISMISS_THRESHOLD, 1)
     return {
       transform: [{ translateY: dragY.value }],
-      opacity: isOpen ? 1 - progress * 0.3 : 0
+      opacity: bgOpacity.value * (1 - progress * 0.3)
     }
   })
 
@@ -177,14 +179,16 @@ export const MoreNavigationOverlay = (): JSX.Element | null => {
       setIsVisible(true)
       dragY.value = 0
       gestureClose.value = false
+      bgOpacity.value = withTiming(1, { duration: 300 })
     } else {
+      bgOpacity.value = withTiming(0, { duration: 200 })
       // Keep the overlay mounted while items animate out
       const timeout = setTimeout(() => {
         setIsVisible(false)
       }, exitTotalMs)
       return () => clearTimeout(timeout)
     }
-  }, [dragY, exitTotalMs, gestureClose, isOpen])
+  }, [bgOpacity, dragY, exitTotalMs, gestureClose, isOpen])
 
   const content = useMemo(
     () => (
@@ -314,4 +318,3 @@ export const MoreNavigationOverlay = (): JSX.Element | null => {
     </Modal>
   )
 }
-
