@@ -28,7 +28,7 @@ class MainApplication : Application(), ReactApplication {
         override fun getPackages(): List<ReactPackage> =
             PackageList(this).packages.apply {
               // Packages that cannot be autolinked yet can be added manually here, for example:
-              add(MainPackage())
+              // add(MainPackage())
             }
 
             override fun getJSMainModuleName(): String = "index"
