@@ -1,4 +1,5 @@
 import {
+  ANIMATED,
   NavigationTitleHeader,
   Separator,
   SPRING_LINEAR_TRANSITION,
@@ -37,7 +38,8 @@ import Animated, {
   FadeIn,
   interpolate,
   useAnimatedStyle,
-  useSharedValue
+  useSharedValue,
+  withTiming
 } from 'react-native-reanimated'
 import {
   useSafeAreaFrame,
@@ -291,26 +293,6 @@ export const ListScreenV2 = <T,>({
     }
   })
 
-  // Calculate available height for the empty state component
-  // since flex: 1 is not supported in FlashList's recycler
-  const emptyComponentHeight = useMemo(() => {
-    return Math.max(
-      0,
-      frame.height -
-        headerHeight -
-        contentHeaderHeight -
-        renderHeaderHeight -
-        insets.bottom -
-        100
-    )
-  }, [
-    frame.height,
-    headerHeight,
-    contentHeaderHeight,
-    renderHeaderHeight,
-    insets.bottom
-  ])
-
   const animatedListContainer = useAnimatedStyle(() => {
     const top = interpolate(
       scrollY.value,
@@ -319,13 +301,20 @@ export const ListScreenV2 = <T,>({
       Extrapolation.CLAMP
     )
 
+    const bottom = interpolate(
+      scrollY.value,
+      [0, headerHeight],
+      [-headerHeight, 0],
+      Extrapolation.CLAMP
+    )
+
     return {
       flex: 1,
       position: 'absolute',
       top,
+      bottom,
       left: 0,
-      right: 0,
-      bottom: 0
+      right: 0
     }
   })
 
@@ -350,28 +339,40 @@ export const ListScreenV2 = <T,>({
     props?.contentContainerStyle
   ])
 
+  const animatedEmptyComponent = useAnimatedStyle(() => {
+    const emptySpacing =
+      frame.height -
+      headerHeight -
+      contentHeaderHeight -
+      renderHeaderHeight -
+      insets.bottom -
+      100 -
+      (keyboard.isVisible ? keyboard.height : 0)
+
+    return {
+      height: withTiming(emptySpacing, {
+        ...ANIMATED.TIMING_CONFIG,
+        duration: 150
+      }),
+      alignItems: 'center',
+      justifyContent: 'center'
+    }
+  })
+
   const ListEmptyComponent = useMemo(() => {
     if (renderEmpty) {
       return (
-        <View
-          style={{
-            height: emptyComponentHeight,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'red'
-          }}>
+        <Animated.View style={animatedEmptyComponent}>
           {renderEmpty()}
-        </View>
+        </Animated.View>
       )
     }
     return (
-      <ErrorState
-        sx={{ height: emptyComponentHeight }}
-        title="No results"
-        description="Try a different search"
-      />
+      <Animated.View style={animatedEmptyComponent}>
+        <ErrorState title="No results" description="Try a different search" />
+      </Animated.View>
     )
-  }, [renderEmpty, emptyComponentHeight])
+  }, [renderEmpty, animatedEmptyComponent])
 
   const renderGrabber = useCallback(() => {
     if (isModal)

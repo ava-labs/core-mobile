@@ -195,16 +195,7 @@ export const SelectSwapV2TokenScreen = ({
 
   const renderEmpty = useCallback(() => {
     if (isLoading) {
-      return (
-        <View
-          sx={{
-            flex: 1,
-            top: '10%',
-            alignItems: 'center'
-          }}>
-          <ActivityIndicator />
-        </View>
-      )
+      return <ActivityIndicator />
     }
 
     return (
