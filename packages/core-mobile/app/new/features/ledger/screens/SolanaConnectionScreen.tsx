@@ -82,6 +82,8 @@ export default function SolanaConnectionScreen(): JSX.Element {
         await updateSolanaForLedgerWallet({
           deviceId: deviceForWallet.id,
           walletId: wallet.id,
+          walletName: wallet.name,
+          walletType: wallet.type,
           account: account as PrimaryAccount,
           solanaKeys
         })

@@ -161,6 +161,8 @@ export interface WalletUpdateOptions extends WalletCreationOptions {
 export interface WalletUpdateSolanaOptions {
   deviceId: string
   walletId: string
+  walletName: string
+  walletType: WalletType
   account: PrimaryAccount
   solanaKeys: PublicKeyInfo[]
 }

@@ -90,6 +90,13 @@ export const LedgerWalletSecretSchema = z.object({
       evm: z.string().optional(),
       avalanche: z.string().optional()
     })
+  ),
+  publicKeys: z.array(
+    z.object({
+      key: z.string(),
+      derivationPath: z.string(),
+      curve: z.string()
+    })
   )
 })
 
