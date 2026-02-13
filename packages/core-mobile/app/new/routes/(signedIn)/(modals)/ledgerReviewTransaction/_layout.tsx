@@ -8,7 +8,13 @@ import {
 export default function LedgerReviewTransactionLayout(): JSX.Element {
   return (
     <Stack screenOptions={ledgerModalScreensOptions}>
-      <Stack.Screen name="index" options={modalFirstScreenOptions} />
+      <Stack.Screen
+        name="index"
+        options={{
+          ...modalFirstScreenOptions,
+          freezeOnBlur: false // Explicitly disable freezeOnBlur on iOS for this screen
+        }}
+      />
     </Stack>
   )
 }
