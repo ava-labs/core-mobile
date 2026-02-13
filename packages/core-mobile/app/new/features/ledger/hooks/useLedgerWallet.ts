@@ -365,6 +365,12 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           JSON.parse(walletSecretResult.value)
         )
 
+        if (deviceId !== parsedWalletSecret.deviceId) {
+          throw new Error(
+            'Device ID mismatch between connected wallet and stored wallet'
+          )
+        }
+
         const { publicKeys, ...baseWalletSecret } = parsedWalletSecret
 
         // Update the Ledger wallet extended public keys for new account
@@ -390,12 +396,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
             })
           })
         ).unwrap()
-
-        if (deviceId !== parsedWalletSecret.deviceId) {
-          throw new Error(
-            'Device ID mismatch between connected wallet and stored wallet'
-          )
-        }
 
         const updatedAccount: PrimaryAccount = {
           ...account,
