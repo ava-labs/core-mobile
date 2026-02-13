@@ -1,7 +1,7 @@
 import { QueryObserverResult } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import { AdjustedNormalizedBalancesForAccounts } from 'services/balance/types'
-import { selectAccounts } from 'store/account'
+import { selectAccountsArray } from 'store/account'
 import { useAccountsBalances } from './useAccountsBalances'
 
 /**
@@ -20,7 +20,11 @@ export function useAllBalances(options?: {
     QueryObserverResult<AdjustedNormalizedBalancesForAccounts, Error>
   >
 } {
-  const allAccounts = useSelector(selectAccounts)
+  // Use the memoized selector so the array reference is stable between
+  // renders.  Object.values(selectAccounts) created a new array every render,
+  // which made the useEffect in useAccountsBalances fire on every render,
+  // flooding queryClient.setQueryData and causing a render storm / freeze.
+  const allAccounts = useSelector(selectAccountsArray)
 
-  return useAccountsBalances(Object.values(allAccounts), options)
+  return useAccountsBalances(allAccounts, options)
 }

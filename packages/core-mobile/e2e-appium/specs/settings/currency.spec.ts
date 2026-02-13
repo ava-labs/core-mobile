@@ -14,15 +14,13 @@ describe('Settings', () => {
     await settingsPage.selectCurrency('EUR')
     await settingsPage.tapCurrency()
     await settingsPage.verifyCurrencyScreen('EUR')
-    await commonElsPage.dismissBottomSheet()
+    await commonElsPage.goBack()
   })
 
   it('Currency - Should change currency back to USD', async () => {
-    await settingsPage.goSettings()
     await settingsPage.tapCurrency()
     await settingsPage.selectCurrency('USD')
     await settingsPage.tapCurrency()
     await settingsPage.verifyCurrencyScreen('USD')
-    await commonElsPage.dismissBottomSheet()
   })
 })

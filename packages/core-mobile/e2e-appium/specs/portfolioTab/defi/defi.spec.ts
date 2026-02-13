@@ -60,7 +60,7 @@ describe('Portfolio tab', () => {
   })
 
   it('Defi - Should verify the empty defi screen', async () => {
-    await settingsPage.switchAccount('Account 2')
+    await settingsPage.createNthAccount(3)
     await portfolioPage.verifyEmptyDefiScreen()
   })
 })

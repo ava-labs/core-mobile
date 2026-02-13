@@ -144,6 +144,7 @@ const SectionHeader = ({
         backgroundColor: theme.colors.$surfacePrimary
       }}>
       <Text
+        testID="section_header"
         variant="heading3"
         sx={{
           color: theme.colors.$textPrimary

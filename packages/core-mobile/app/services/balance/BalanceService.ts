@@ -113,14 +113,23 @@ export class BalanceService {
               }))
             )
 
+            // Map each address to ALL owning accounts so that
+            // imported-PK accounts that share the same address also receive
+            // the balance.  EVM keys are normalized to lowercase for
+            // case-insensitive lookups; other formats are kept as-is.
+            const isEvm = network.vmName === NetworkVMType.EVM
             const addressMap = addressEntries.reduce(
               (acc, { address, account }) => {
                 if (address) {
-                  acc[address] = account
+                  const key = normalizeAddressKey(address, isEvm)
+                  if (!acc[key]) acc[key] = []
+                  if (!acc[key].some(a => a.id === account.id)) {
+                    acc[key].push(account)
+                  }
                 }
                 return acc
               },
-              {} as Record<string, Account>
+              {} as Record<string, Account[]>
             )
 
             const addresses = Object.keys(addressMap)
@@ -185,47 +194,53 @@ export class BalanceService {
               })
             }
 
-            // Process accounts
-            for (const address of addresses) {
-              const account = addressMap[address]
-              const balances = balancesResponse[address]
+            // Process accounts – iterate over the response addresses and
+            // assign balances to every owning account (supports duplicate
+            // addresses from imported-PK accounts).
+            for (const responseAddress of Object.keys(balancesResponse)) {
+              const matchedAccounts =
+                addressMap[normalizeAddressKey(responseAddress, isEvm)]
+              const balances = balancesResponse[responseAddress]
 
-              if (!account || !balances) continue
+              if (!matchedAccounts || matchedAccounts.length === 0 || !balances)
+                continue
 
-              if ('error' in balances) {
+              for (const account of matchedAccounts) {
+                if ('error' in balances) {
+                  partial[account.id] = {
+                    accountId: account.id,
+                    chainId: network.chainId,
+                    tokens: [],
+                    dataAccurate: false,
+                    error: balances.error as Error
+                  }
+                  continue
+                }
+
+                const tokens = Object.values(balances)
+                  .filter((t): t is TokenWithBalance => !('error' in t))
+                  .map(token => {
+                    const localId = isPChain(network.chainId)
+                      ? AVAX_P_ID
+                      : isXChain(network.chainId)
+                      ? AVAX_X_ID
+                      : getLocalTokenId(token)
+
+                    return {
+                      ...token,
+                      localId,
+                      networkChainId: network.chainId,
+                      isDataAccurate: true
+                    }
+                  })
+
                 partial[account.id] = {
                   accountId: account.id,
                   chainId: network.chainId,
-                  tokens: [],
-                  dataAccurate: false,
-                  error: balances.error as Error
+                  tokens,
+                  dataAccurate: true,
+                  error: null
                 }
-                continue
-              }
-
-              const tokens = Object.values(balances)
-                .filter((t): t is TokenWithBalance => !('error' in t))
-                .map(token => {
-                  const localId = isPChain(network.chainId)
-                    ? AVAX_P_ID
-                    : isXChain(network.chainId)
-                    ? AVAX_X_ID
-                    : getLocalTokenId(token)
-
-                  return {
-                    ...token,
-                    localId,
-                    networkChainId: network.chainId,
-                    isDataAccurate: true
-                  }
-                })
-
-              partial[account.id] = {
-                accountId: account.id,
-                chainId: network.chainId,
-                tokens,
-                dataAccurate: true,
-                error: null
               }
             }
 
@@ -420,21 +435,37 @@ export class BalanceService {
       return acc
     }, {} as Record<string, Account>)
 
-    const accountByAddress = accounts.reduce((acc, account) => {
+    // Map each address to ALL accounts that own it.
+    // EVM keys are normalized to lowercase because the Balance API may return
+    // addresses in a different case (e.g. lowercased) than what the account
+    // stores (EIP-55 checksummed).  Non-EVM formats (base58 for BTC/X/P-Chain,
+    // Solana) are case-sensitive and kept as-is.
+    // With a single account the old `accounts.length === 1` fallback masked
+    // mismatches; with 2+ accounts the fallback no longer applies.
+    const accountsByAddress = accounts.reduce((acc, account) => {
       const xpAddresses = xpAddressesByAccountId.get(account.id) ?? []
 
-      const addresses = supportedNetworks.flatMap(network =>
+      const addressesWithNetwork = supportedNetworks.flatMap(network =>
         getAddressesForAccountAndNetwork({
           account,
           network,
           xpAddresses
-        })
+        }).map(address => ({
+          address,
+          isEvm: network.vmName === NetworkVMType.EVM
+        }))
       )
-      for (const address of addresses) {
-        if (address && address.length > 0) acc[address] = account
+      for (const { address, isEvm } of addressesWithNetwork) {
+        if (address && address.length > 0) {
+          const key = normalizeAddressKey(address, isEvm)
+          if (!acc[key]) acc[key] = []
+          if (!acc[key].some(a => a.id === account.id)) {
+            acc[key].push(account)
+          }
+        }
       }
       return acc
-    }, {} as Record<string, Account>)
+    }, {} as Record<string, Account[]>)
 
     let balanceApiThrew = false
     const failedChainIds = new Set<number>()
@@ -451,12 +482,34 @@ export class BalanceService {
       try {
         for await (const balance of balanceApi.getBalancesStream(body)) {
           const id = 'id' in balance ? balance.id : undefined
-          const account =
-            (id ? accountById[id] : undefined) ??
-            (id ? accountByAddress[id] : undefined) ??
-            (accounts.length === 1 ? accounts[0] : undefined)
 
-          if (!account) {
+          // Resolve to one or more matching accounts.
+          // An address may map to multiple accounts when the same private key
+          // has been imported, so we must assign the balance to every owner.
+          // EVM lookups are case-insensitive to handle API response case
+          // variance (checksummed vs lowercased).
+          const isEvmBalance =
+            'networkType' in balance && balance.networkType === 'evm'
+          const matchedAccounts: Account[] = []
+
+          if (id) {
+            const byId = accountById[id]
+            if (byId) {
+              matchedAccounts.push(byId)
+            } else {
+              const byAddress =
+                accountsByAddress[normalizeAddressKey(id, isEvmBalance)]
+              if (byAddress) {
+                matchedAccounts.push(...byAddress)
+              }
+            }
+          }
+
+          if (matchedAccounts.length === 0 && accounts.length === 1) {
+            matchedAccounts.push(accounts[0]!)
+          }
+
+          if (matchedAccounts.length === 0) {
             Logger.error(
               '[BalanceService][getBalancesForAccounts] Could not map streamed balance to an account',
               {
@@ -469,18 +522,20 @@ export class BalanceService {
             continue
           }
 
-          const normalized = mapBalanceResponseToLegacy(account, balance)
-          if (!normalized) continue
+          for (const account of matchedAccounts) {
+            const normalized = mapBalanceResponseToLegacy(account, balance)
+            if (!normalized) continue
 
-          if (normalized.error) {
-            // Mark chain as failed for retry
-            failedChainIds.add(normalized.chainId)
-          } else {
-            // Progressive update callback for successful balance
-            onBalanceLoaded?.(normalized)
+            if (normalized.error) {
+              // Mark chain as failed for retry
+              failedChainIds.add(normalized.chainId)
+            } else {
+              // Progressive update callback for successful balance
+              onBalanceLoaded?.(normalized)
+            }
+
+            finalResults[account.id]?.push(normalized)
           }
-
-          finalResults[account.id]?.push(normalized)
         }
       } catch (err) {
         balanceApiThrew = true
@@ -726,5 +781,17 @@ const formatXpAddressesForNetwork = (
 
   return [...normalized]
 }
+
+/**
+ * Normalize an address for use as a map key.
+ * EVM addresses are lowercased because EIP-55 checksumming is cosmetic —
+ * the address identity is case-insensitive.  Other formats (base58 for
+ * BTC/X/P-Chain, base58-checked for Solana) are case-sensitive and kept
+ * as-is to avoid false collisions.
+ *
+ * @param isEvm – true when the address belongs to an EVM network
+ */
+const normalizeAddressKey = (address: string, isEvm: boolean): string =>
+  isEvm ? address.toLowerCase() : address
 
 export default new BalanceService()

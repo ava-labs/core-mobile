@@ -7,9 +7,12 @@ import { actions } from '../../helpers/actions'
 import { selectors } from '../../helpers/selectors'
 
 describe('Settings', () => {
-  it('Custom Networks - should add a custom network', async () => {
+  before(async () => {
     await warmup()
     await settings.goNetworks()
+  })
+
+  it('Custom Networks - should add a custom network', async () => {
     await settings.addNetwork(customNetwork)
     await settings.verifyNetworkDetails(customNetwork)
   })
