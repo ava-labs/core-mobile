@@ -44,7 +44,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
         keys.avalancheKeys &&
         device &&
         wallet &&
-        accounts.length > 0 &&
+        accounts?.length > 0 &&
         derivationPathType &&
         !isUpdatingWallet
       ) {
@@ -56,7 +56,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
             walletId: wallet.id,
             walletName: wallet.name,
             walletType: wallet.type,
-            accountIndexToUse: accounts.length,
+            accountIndexToUse: accounts?.length ?? 0,
             deviceId: device.id,
             deviceName: device.name,
             derivationPathType,
@@ -66,7 +66,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
           })
 
           await setLedgerAddress({
-            accountIndex: accounts.length,
+            accountIndex: accounts?.length ?? 0,
             walletId,
             isDeveloperMode,
             accountId,
@@ -103,7 +103,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
     [
       device,
       wallet,
-      accounts.length,
+      accounts?.length,
       derivationPathType,
       isUpdatingWallet,
       setIsUpdatingWallet,
@@ -124,7 +124,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
       deviceName={device?.name ?? 'Ledger Device'}
       disconnectDevice={disconnectDevice}
       isUpdatingWallet={isUpdatingWallet}
-      accountIndex={accounts.length}
+      accountIndex={accounts?.length ?? 0}
     />
   )
 }
