@@ -88,29 +88,65 @@ The APK will be at: `app/build/outputs/apk/internal/e2e/app-internal-e2e.apk`
 
 ## Running Tests
 
-### Option 1: Download from Bitrise and Run (Recommended for CI/CD)
+### Option 1: Local Development - Download APK and Trigger Tests
 
-Download the APK from Bitrise and automatically trigger Device Farm tests:
+Use `trigger-test-run.sh` for local development. It automatically downloads the latest APK from Bitrise:
 
 ```bash
 cd packages/core-mobile
 
 # Set required environment variables
-export BITRISE_APP_SLUG="your-app-slug"
-export BITRISE_ARTIFACTS_TOKEN="your-artifacts-token"
 export DEVICEFARM_PROJECT_ARN="arn:aws:devicefarm:us-west-2:..."
 export DEVICEFARM_DEVICE_POOL_ARN="arn:aws:devicefarm:us-west-2:..."
-export AWS_ACCESS_KEY_ID="your-access-key"
-export AWS_SECRET_ACCESS_KEY="your-secret-key"
+export BITRISE_APP_SLUG="your-app-slug"
+export BITRISE_ARTIFACTS_TOKEN="your-artifacts-token"
 
-# Run the script (downloads APK and triggers tests)
-./scripts/devicefarm/bitrise-to-devicefarm.sh
+# Download latest APK and trigger tests
+./scripts/devicefarm/trigger-test-run.sh
+
+# Or specify a branch to download APK from
+./scripts/devicefarm/trigger-test-run.sh --branch feature/my-feature
+
+# Or use an existing APK (skip download)
+export DEVICEFARM_APP_PATH="/path/to/your/app.apk"
+./scripts/devicefarm/trigger-test-run.sh
 ```
 
 **Optional environment variables:**
-- `BITRISE_BUILD_INDEX` - Which build to download (0 = latest). Default: 0
-- `WAIT_FOR_COMPLETION` - Wait for test completion (true/false). Default: false
+- `DEVICEFARM_APP_PATH` - Path to APK (if not set, downloads from Bitrise)
+- `PLATFORM` - Platform (android/ios). Default: android
 - `AWS_REGION` - AWS region. Default: us-west-2
+
+### Option 2: Bitrise CI/CD - Use Build Artifact
+
+Use `trigger-test-run-bitrise.sh` when running in Bitrise workflows. This script uses the APK artifact from the current build:
+
+```bash
+# In Bitrise workflow, add a script step:
+# File path: packages/core-mobile/scripts/devicefarm/trigger-test-run-bitrise.sh
+
+# Required Bitrise Secrets:
+# - DEVICEFARM_PROJECT_ARN
+# - DEVICEFARM_DEVICE_POOL_ARN
+# - AWS_ACCESS_KEY_ID
+# - AWS_SECRET_ACCESS_KEY
+
+# The script automatically uses $BITRISE_APK_PATH from the build artifacts
+```
+
+**Note:** The Bitrise script expects `BITRISE_APK_PATH` to be set automatically by Bitrise when APK artifacts are available from the build.
+
+### Option 3: Legacy Scripts
+
+For backwards compatibility, these scripts are still available:
+
+```bash
+# Download from Bitrise and run (legacy)
+./scripts/devicefarm/bitrise-to-devicefarm.sh
+
+# Use local APK (legacy)
+./scripts/devicefarm/run-devicefarm.sh
+```
 
 ### Option 2: Using the script with local APK
 
