@@ -129,11 +129,17 @@ export const useManageWallet = (): {
           wallet.type === WalletType.LEDGER ||
           wallet.type === WalletType.LEDGER_LIVE
         ) {
+          setIsAddingAccount(true)
           navigate({
             // @ts-ignore TODO: make routes typesafe
             pathname: '/addAccountAppConnection',
             params: { walletId: wallet.id }
           })
+          // Reset the flag after navigation to allow future attempts
+          // The modal dismissal will naturally reset this state
+          setTimeout(() => {
+            setIsAddingAccount(false)
+          }, 1000)
           return
         }
 
