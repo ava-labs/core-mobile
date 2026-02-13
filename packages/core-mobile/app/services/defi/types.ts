@@ -96,7 +96,7 @@ export interface DeFiPerpetualItem extends BaseDeFiItem {
 
 export const ExchangeRateSchema = object({
   date: string(),
-  usd: record(number())
+  usd: record(string(), number())
 })
 export type ExchangeRate = z.infer<typeof ExchangeRateSchema>
 

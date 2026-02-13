@@ -1,99 +1,148 @@
-import { Zodios } from '@zodios/core'
 import Config from 'react-native-config'
+import { z } from 'zod'
 import {
+  CoinMarket,
   CoinMarketSchema,
+  CoinsContractInfoResponse,
   CoinsContractInfoResponseSchema,
+  CoinsSearchResponse,
   CoinsSearchResponseSchema,
+  ContractMarketChartResponse,
   ContractMarketChartResponseSchema,
+  RawSimplePriceResponse,
   RawSimplePriceResponseSchema
 } from 'services/token/types'
-import { boolean, number, string } from 'zod'
 import Logger from 'utils/Logger'
+import {
+  fetchJson,
+  buildQueryString
+} from 'utils/api/common/fetchWithValidation'
 
 if (!Config.PROXY_URL)
   Logger.warn('PROXY_URL is missing in env file. Coin prices are disabled.')
 
 const baseUrl = Config.PROXY_URL + '/proxy/coingecko'
 
-export const coingeckoProxyClient = new Zodios(
-  baseUrl,
-  [
-    {
-      method: 'post',
-      path: '/coins/markets',
-      parameters: [
-        { name: 'vs_currency', type: 'Query', schema: string() },
-        { name: 'ids', type: 'Query', schema: string().optional() },
-        { name: 'per_page', type: 'Query', schema: number().optional() },
-        { name: 'page', type: 'Query', schema: number().optional() },
-        { name: 'sparkline', type: 'Query', schema: boolean().optional() }
-      ],
-      alias: 'coinsMarket',
-      response: CoinMarketSchema.array()
-    },
-    {
-      method: 'post',
-      path: '/simple/price',
-      parameters: [
-        { name: 'ids', type: 'Query', schema: string() },
-        { name: 'vs_currencies', type: 'Query', schema: string() },
-        {
-          name: 'include_market_cap',
-          type: 'Query',
-          schema: string().optional()
-        },
-        {
-          name: 'include_24hr_vol',
-          type: 'Query',
-          schema: string().optional()
-        },
-        {
-          name: 'include_24hr_change',
-          type: 'Query',
-          schema: string().optional()
-        },
-        {
-          name: 'include_last_updated_at',
-          type: 'Query',
-          schema: string().optional()
-        }
-      ],
-      alias: 'simplePrice',
-      response: RawSimplePriceResponseSchema
-    },
-    {
-      method: 'post',
-      path: '/coins/:id',
-      parameters: [{ name: 'id', type: 'Path', schema: string() }],
-      alias: 'marketDataByCoinId',
-      response: CoinsContractInfoResponseSchema
-    },
-    {
-      method: 'post',
-      path: '/coins/:id/market_chart',
-      parameters: [
-        { name: 'id', type: 'Path', schema: string() },
-        { name: 'vs_currency', type: 'Query', schema: string() },
-        { name: 'days', type: 'Query', schema: string() },
-        { name: 'interval', type: 'Query', schema: string().optional() },
-        { name: 'precision', type: 'Query', schema: string().optional() }
-      ],
-      alias: 'marketChartByCoinId',
-      response: ContractMarketChartResponseSchema
-    },
-    {
-      method: 'post',
-      path: '/search',
-      parameters: [{ name: 'query', type: 'Query', schema: string() }],
-      alias: 'searchCoins',
-      response: CoinsSearchResponseSchema
-    }
-  ],
-  {
-    axiosConfig: {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    }
+export const coingeckoProxyClient = {
+  // POST /coins/markets
+  coinsMarket: async ({
+    vs_currency,
+    ids,
+    per_page,
+    page,
+    sparkline
+  }: {
+    vs_currency: string
+    ids?: string
+    per_page?: number
+    page?: number
+    sparkline?: boolean
+  }): Promise<CoinMarket[]> => {
+    const queryString = buildQueryString({
+      vs_currency,
+      ids,
+      per_page,
+      page,
+      sparkline
+    })
+    return fetchJson(
+      `${baseUrl}/coins/markets${queryString}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      },
+      z.array(CoinMarketSchema)
+    )
+  },
+
+  // POST /simple/price
+  simplePrice: async ({
+    ids,
+    vs_currencies,
+    include_market_cap,
+    include_24hr_vol,
+    include_24hr_change,
+    include_last_updated_at
+  }: {
+    ids: string
+    vs_currencies: string
+    include_market_cap?: string
+    include_24hr_vol?: string
+    include_24hr_change?: string
+    include_last_updated_at?: string
+  }): Promise<RawSimplePriceResponse> => {
+    const queryString = buildQueryString({
+      ids,
+      vs_currencies,
+      include_market_cap,
+      include_24hr_vol,
+      include_24hr_change,
+      include_last_updated_at
+    })
+    return fetchJson(
+      `${baseUrl}/simple/price${queryString}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      },
+      RawSimplePriceResponseSchema
+    )
+  },
+
+  // POST /coins/:id
+  marketDataByCoinId: async (
+    id: string
+  ): Promise<CoinsContractInfoResponse> => {
+    return fetchJson(
+      `${baseUrl}/coins/${id}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      },
+      CoinsContractInfoResponseSchema
+    )
+  },
+
+  // POST /coins/:id/market_chart
+  marketChartByCoinId: async ({
+    id,
+    vs_currency,
+    days,
+    interval,
+    precision
+  }: {
+    id: string
+    vs_currency: string
+    days: string
+    interval?: string
+    precision?: string
+  }): Promise<ContractMarketChartResponse> => {
+    const queryString = buildQueryString({
+      vs_currency,
+      days,
+      interval,
+      precision
+    })
+    return fetchJson(
+      `${baseUrl}/coins/${id}/market_chart${queryString}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      },
+      ContractMarketChartResponseSchema
+    )
+  },
+
+  // POST /search
+  searchCoins: async (query: string): Promise<CoinsSearchResponse> => {
+    const queryString = buildQueryString({ query })
+    return fetchJson(
+      `${baseUrl}/search${queryString}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      },
+      CoinsSearchResponseSchema
+    )
   }
-)
+}

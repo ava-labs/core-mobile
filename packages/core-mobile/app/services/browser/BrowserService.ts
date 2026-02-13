@@ -4,10 +4,7 @@ import { DeFiProtocolInformationObject } from './debankTypes'
 class BrowserService {
   static getDeFiProtocolInformationList = (): Promise<
     DeFiProtocolInformationObject[]
-  > =>
-    browserApiClient.getDeFiProtocolInformationList({
-      queries: { chain_id: 'avax' }
-    })
+  > => browserApiClient.getDeFiProtocolInformationList('avax')
 }
 
 export default BrowserService

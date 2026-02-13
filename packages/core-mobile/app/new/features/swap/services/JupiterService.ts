@@ -64,14 +64,12 @@ class JupiterService {
 
     try {
       const data = await jupiterApi.getQuote({
-        queries: {
-          inputMint,
-          outputMint,
-          swapMode,
-          amount: amount.toString(),
-          slippageBps: Math.round(slippageBps).toString(),
-          platformFeeBps: platformFeeBps?.toString()
-        },
+        inputMint,
+        outputMint,
+        swapMode,
+        amount: amount.toString(),
+        slippageBps: Math.round(slippageBps).toString(),
+        platformFeeBps: platformFeeBps?.toString(),
         signal: abortSignal
       })
 

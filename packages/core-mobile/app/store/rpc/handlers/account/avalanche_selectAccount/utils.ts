@@ -11,9 +11,9 @@ export const accountSchema = z.object({
   addressCoreEth: z.string(),
   active: z.boolean(),
   id: z.string(),
-  type: z.nativeEnum(CoreAccountType),
+  type: z.enum(CoreAccountType),
   walletId: z.string(),
-  walletType: z.nativeEnum(WalletType)
+  walletType: z.enum(WalletType)
 })
 
 const paramsSchema = z.tuple([z.string()])
@@ -22,9 +22,8 @@ const approveDataSchema = z.object({
   account: accountSchema
 })
 
-export const parseRequestParams = (
-  params: unknown
-): z.SafeParseReturnType<[string], [string]> => {
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export const parseRequestParams = (params: unknown) => {
   return paramsSchema.safeParse(params)
 }
 

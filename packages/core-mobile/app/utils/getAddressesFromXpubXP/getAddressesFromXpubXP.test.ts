@@ -1,7 +1,7 @@
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import WalletService from 'services/wallet/WalletService'
 import { WalletType } from 'services/wallet/types'
-import { GetAddressesResponse } from '../apiClient/profile/types'
+import { GetAddressesResponse } from 'utils/api/generated/profileApi.client/types.gen'
 import { getAddressesFromXpubXP } from './getAddressesFromXpubXP'
 
 jest.mock('services/wallet/WalletService')

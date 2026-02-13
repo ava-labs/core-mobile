@@ -1,7 +1,7 @@
 import Config from 'react-native-config'
 import queryString from 'query-string'
-import { CORE_HEADERS } from 'utils/apiClient/constants'
 import Logger from 'utils/Logger'
+import { CORE_HEADERS } from '../constants'
 import { createClient } from '../generated/tokenAggregator/aggregatorApi.client/client/client.gen'
 import { appCheckFetch } from '../common/appCheckFetch'
 
