@@ -23,17 +23,23 @@ export const OnboardingScreen = (): JSX.Element => {
   const handlePressNext = useCallback(() => {
     if (protocolDeposits.length === 0) {
       // No deposits for selected protocol - dismiss borrow modal and navigate to deposit flow
-      // Set flag to redirect back to borrow after deposit completes
-      setRedirectToBorrow(true)
+      // Set protocol to redirect back to borrow after deposit completes
+      setRedirectToBorrow(selectedProtocol)
       navigation.getParent()?.goBack()
       // @ts-ignore TODO: make routes typesafe
-      navigate('/deposit/onboarding')
+      navigate('/deposit/selectAsset')
     } else {
       // Has deposits - proceed to collateral selection
       // @ts-ignore TODO: make routes typesafe
       navigate('/borrow/selectCollateral')
     }
-  }, [navigate, navigation, protocolDeposits.length, setRedirectToBorrow])
+  }, [
+    navigate,
+    navigation,
+    protocolDeposits.length,
+    selectedProtocol,
+    setRedirectToBorrow
+  ])
 
   const renderFooterAccessory = useCallback(() => {
     const accessory = (

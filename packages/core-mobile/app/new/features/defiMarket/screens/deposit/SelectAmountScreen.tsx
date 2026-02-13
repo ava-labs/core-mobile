@@ -48,7 +48,7 @@ export const SelectAmountScreen = (): JSX.Element => {
   const handleConfirmed = useCallback(() => {
     AnalyticsService.capture('EarnDepositSuccess')
     if (redirectToBorrow) {
-      setRedirectToBorrow(false)
+      setRedirectToBorrow(undefined)
       // Skip onboarding and go directly to select collateral
       // @ts-ignore TODO: make routes typesafe
       navigate('/borrow/selectCollateral')
