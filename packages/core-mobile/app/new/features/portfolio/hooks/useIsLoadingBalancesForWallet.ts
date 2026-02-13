@@ -1,7 +1,8 @@
 import { useSelector } from 'react-redux'
-import { selectAccountsByWalletId } from 'store/account'
+import { selectAccountsByWalletId, selectImportedAccounts } from 'store/account'
 import { RootState } from 'store/types'
 import { Wallet } from 'store/wallet/types'
+import { IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID } from 'features/wallets/consts'
 import { useAllBalances } from './useAllBalances'
 
 /**
@@ -9,9 +10,18 @@ import { useAllBalances } from './useAllBalances'
  * Checks if any account within the wallet is missing balance data.
  */
 export const useIsLoadingBalancesForWallet = (wallet?: Wallet): boolean => {
-  const accounts = useSelector((state: RootState) =>
+  const accountsForWallet = useSelector((state: RootState) =>
     selectAccountsByWalletId(state, wallet?.id ?? '')
   )
+  const importedAccounts = useSelector(selectImportedAccounts)
+
+  // The virtual "Imported" wallet groups all private-key accounts under one
+  // card, but those accounts have real wallet UUIDs — not the virtual ID.
+  const accounts =
+    wallet?.id === IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID
+      ? importedAccounts
+      : accountsForWallet
+
   const { data } = useAllBalances()
 
   if (!wallet || accounts.length === 0) return true
