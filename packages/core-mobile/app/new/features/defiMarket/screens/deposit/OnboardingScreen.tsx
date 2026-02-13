@@ -1,13 +1,21 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { TransactionOnboarding } from 'common/components/TransactionOnboarding'
 import { GroupList, Icons, useTheme } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import { LoadingState } from 'common/components/LoadingState'
 import { useAvailableMarkets } from '../../hooks/useAvailableMarkets'
+import { useRedirectToBorrowAfterDeposit } from '../../store'
 
 export const OnboardingScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { theme } = useTheme()
+  const [, setRedirectToBorrow] = useRedirectToBorrowAfterDeposit()
+
+  // Clear any stale redirect state when entering deposit via onboarding
+  // (borrow redirect skips onboarding, so this won't clear that state)
+  useEffect(() => {
+    setRedirectToBorrow(undefined)
+  }, [setRedirectToBorrow])
 
   const handlePressNext = useCallback(() => {
     // @ts-ignore TODO: make routes typesafe
