@@ -359,20 +359,22 @@ export const ListScreenV2 = <T,>({
     }
   })
 
-  const ListEmptyComponent = useMemo(() => {
+  const renderEmptyComponent = useCallback(() => {
     if (renderEmpty) {
-      return (
-        <Animated.View style={animatedEmptyComponent}>
-          {renderEmpty()}
-        </Animated.View>
-      )
+      return renderEmpty()
     }
     return (
+      <ErrorState title="No results" description="Try a different search" />
+    )
+  }, [renderEmpty])
+
+  const ListEmptyComponent = useMemo(() => {
+    return (
       <Animated.View style={animatedEmptyComponent}>
-        <ErrorState title="No results" description="Try a different search" />
+        {renderEmptyComponent()}
       </Animated.View>
     )
-  }, [renderEmpty, animatedEmptyComponent])
+  }, [animatedEmptyComponent, renderEmptyComponent])
 
   const renderGrabber = useCallback(() => {
     if (isModal)

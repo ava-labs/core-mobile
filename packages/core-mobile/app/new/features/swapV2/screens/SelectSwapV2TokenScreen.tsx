@@ -197,14 +197,7 @@ export const SelectSwapV2TokenScreen = ({
     if (isLoading) {
       return <ActivityIndicator />
     }
-
-    return (
-      <ErrorState
-        icon={undefined}
-        sx={{ top: '10%' }}
-        title="No tokens found"
-      />
-    )
+    return <ErrorState icon={undefined} title="No tokens found" />
   }, [isLoading])
 
   return (
