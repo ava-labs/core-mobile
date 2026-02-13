@@ -1,5 +1,4 @@
 import {
-  ANIMATED,
   NavigationTitleHeader,
   Separator,
   SPRING_LINEAR_TRANSITION,
@@ -38,8 +37,7 @@ import Animated, {
   FadeIn,
   interpolate,
   useAnimatedStyle,
-  useSharedValue,
-  withTiming
+  useSharedValue
 } from 'react-native-reanimated'
 import {
   useSafeAreaFrame,
