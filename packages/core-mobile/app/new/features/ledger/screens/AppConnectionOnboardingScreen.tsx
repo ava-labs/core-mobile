@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { Alert } from 'react-native'
 import LedgerService from 'services/ledger/LedgerService'
-import { LedgerKeys } from 'services/ledger/types'
+import { LedgerKeysByNetwork } from 'services/ledger/types'
 import { useRouter } from 'expo-router'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useLedgerSetupContext } from '../contexts/LedgerSetupContext'
@@ -27,18 +27,19 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
   } = useLedgerSetupContext()
 
   const handleComplete = useCallback(
-    async (keys: LedgerKeys) => {
+    async (keys: LedgerKeysByNetwork) => {
+      const keysByNetwork = isDeveloperMode ? keys.testnet : keys.mainnet
       Logger.info('handleComplete called', {
-        hasAvalancheKeys: !!keys.avalancheKeys,
+        hasAvalancheKeys: !!keysByNetwork.avalancheKeys,
         hasConnectedDeviceId: !!connectedDeviceId,
         hasSelectedDerivationPath: !!selectedDerivationPath,
         isUpdatingWallet,
-        solanaKeysCount: keys.solanaKeys?.length ?? 0
+        solanaKeysCount: keysByNetwork.solanaKeys?.length ?? 0
       })
 
       // If wallet hasn't been created yet, create it now
       if (
-        keys.avalancheKeys &&
+        keysByNetwork.avalancheKeys &&
         connectedDeviceId &&
         selectedDerivationPath &&
         !isUpdatingWallet
@@ -51,15 +52,13 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
             deviceId: connectedDeviceId,
             deviceName: connectedDeviceName,
             derivationPathType: selectedDerivationPath,
-            avalancheKeys: keys.avalancheKeys,
-            solanaKeys: keys.solanaKeys,
-            bitcoinAddress: keys.bitcoinAddress
+            avalancheKeys: keysByNetwork.avalancheKeys,
+            solanaKeys: keysByNetwork.solanaKeys
           })
 
           await setLedgerAddress({
             accountIndex: 0,
             walletId,
-            isDeveloperMode,
             accountId,
             keys
           })
@@ -87,7 +86,7 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
         Logger.info(
           'Wallet creation conditions not met, skipping wallet creation',
           {
-            hasAvalancheKeys: !!keys.avalancheKeys,
+            hasAvalancheKeys: !!keysByNetwork.avalancheKeys,
             hasConnectedDeviceId: !!connectedDeviceId,
             hasSelectedDerivationPath: !!selectedDerivationPath,
             isUpdatingWallet

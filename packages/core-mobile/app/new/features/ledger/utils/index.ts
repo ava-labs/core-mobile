@@ -110,10 +110,6 @@ export const getOppositeKeys = async ({
       accountIndex,
       !isDeveloperMode
     )
-    const { bitcoinAddress } = await LedgerService.getBitcoinAndXPAddresses(
-      accountIndex,
-      !isDeveloperMode
-    )
 
     return {
       addressBTC: bitcoinAddress,

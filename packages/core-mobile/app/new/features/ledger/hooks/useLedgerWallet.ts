@@ -115,8 +115,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       deviceName = 'Ledger Device',
       derivationPathType = LedgerDerivationPathType.BIP44,
       avalancheKeys,
-      solanaKeys = [],
-      bitcoinAddress
+      solanaKeys = []
     }: WalletCreationOptions & LedgerKeys) => {
       try {
         setIsLoading(true)
@@ -127,10 +126,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 
         if (!avalancheKeys) {
           throw new Error('Missing Avalanche keys for wallet creation')
-        }
-
-        if (!bitcoinAddress) {
-          throw new Error('Missing Bitcoin address for wallet creation')
         }
 
         // Solana keys are optional - wallet can be created with only Avalanche keys
@@ -147,6 +142,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
             : addresses.evm,
           avm: addresses.avm,
           pvm: addresses.pvm,
+          btc: addresses.btc,
           coreEth: addresses.coreEth?.startsWith('0x0x')
             ? addresses.coreEth.slice(2) // Remove first 0x to fix double prefix
             : addresses.coreEth
@@ -198,7 +194,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           type: CoreAccountType.PRIMARY,
           index: 0,
           addressC: formattedAddresses.evm,
-          addressBTC: bitcoinAddress,
+          addressBTC: formattedAddresses.btc,
           addressAVM: formattedAddresses.avm,
           addressPVM: formattedAddresses.pvm,
           addressSVM: solanaKeys[0]?.key || '',
@@ -229,18 +225,13 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       walletType,
       accountIndexToUse,
       avalancheKeys,
-      solanaKeys = [],
-      bitcoinAddress
+      solanaKeys = []
     }: WalletUpdateOptions & LedgerKeys) => {
       try {
         setIsLoading(true)
 
         if (!avalancheKeys) {
           throw new Error('Missing Avalanche keys for account creation')
-        }
-
-        if (!bitcoinAddress) {
-          throw new Error('Missing Bitcoin address for account creation')
         }
 
         // Use addresses for display and xpubs for wallet functionality
@@ -253,6 +244,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
             : addresses.evm,
           avm: addresses.avm,
           pvm: addresses.pvm,
+          btc: addresses.btc,
           coreEth: addresses.coreEth?.startsWith('0x0x')
             ? addresses.coreEth.slice(2) // Remove first 0x to fix double prefix
             : addresses.coreEth
@@ -317,7 +309,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           addressCoreEth: formattedAddresses.coreEth,
           addressAVM: formattedAddresses.avm,
           addressPVM: formattedAddresses.pvm,
-          addressBTC: bitcoinAddress,
+          addressBTC: formattedAddresses.btc,
           addressSVM: solanaKeys[0]?.key || ''
         }
 

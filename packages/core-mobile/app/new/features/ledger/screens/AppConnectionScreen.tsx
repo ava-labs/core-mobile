@@ -17,7 +17,7 @@ import Logger from 'utils/Logger'
 import LedgerService from 'services/ledger/LedgerService'
 import { ActivityIndicator, Button, ButtonType } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
-import { LedgerAppType, LedgerKeys } from 'services/ledger/types'
+import { LedgerAppType, LedgerKeysByNetwork } from 'services/ledger/types'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { useSelector } from 'react-redux'
 import { showSnackbar } from 'common/utils/toast'
@@ -37,7 +37,7 @@ export default function AppConnectionScreen({
   deviceId?: string | null
   deviceName?: string
   disconnectDevice: () => Promise<void>
-  handleComplete: (keys: LedgerKeys) => Promise<void>
+  handleComplete: (keys: LedgerKeysByNetwork) => Promise<void>
   accountIndex: number
 }): JSX.Element {
   const { back } = useRouter()
@@ -48,11 +48,15 @@ export default function AppConnectionScreen({
   const hasDeviceId = !!deviceId
 
   // Local key state - managed only in this component
-  const [keys, setKeys] = useState<LedgerKeys>({
-    solanaKeys: [],
-    avalancheKeys: undefined,
-    bitcoinAddress: '',
-    xpAddress: ''
+  const [keys, setKeys] = useState<LedgerKeysByNetwork>({
+    mainnet: {
+      solanaKeys: [],
+      avalancheKeys: undefined
+    },
+    testnet: {
+      solanaKeys: [],
+      avalancheKeys: undefined
+    }
   })
 
   const [currentAppConnectionStep, setAppConnectionStep] =
@@ -146,25 +150,31 @@ export default function AppConnectionScreen({
       await LedgerService.ensureConnection(deviceId)
       setAppConnectionStep(AppConnectionStep.AVALANCHE_LOADING)
 
-      // Open Avalanche app before getting keys
-      await LedgerService.openApp(LedgerAppType.AVALANCHE)
       // Get keys from service
       const avalancheKeys = await LedgerService.getAvalancheKeys(
         accountIndex,
         isDeveloperMode
       )
-      const { bitcoinAddress, xpAddress } =
-        await LedgerService.getBitcoinAndXPAddresses(
-          accountIndex,
-          isDeveloperMode
-        )
+      const oppositeAvalancheKeys = await LedgerService.getAvalancheKeys(
+        accountIndex,
+        !isDeveloperMode
+      )
+
       // Update local state
-      setKeys(prev => ({
-        ...prev,
-        avalancheKeys,
-        bitcoinAddress,
-        xpAddress
-      }))
+      setKeys({
+        mainnet: {
+          avalancheKeys: isDeveloperMode
+            ? oppositeAvalancheKeys
+            : avalancheKeys,
+          solanaKeys: []
+        },
+        testnet: {
+          avalancheKeys: isDeveloperMode
+            ? avalancheKeys
+            : oppositeAvalancheKeys,
+          solanaKeys: []
+        }
+      })
 
       // Show success toast notification
       showSnackbar('Avalanche app connected')
@@ -193,15 +203,20 @@ export default function AppConnectionScreen({
       await LedgerService.ensureConnection(deviceId)
       setAppConnectionStep(AppConnectionStep.SOLANA_LOADING)
 
-      // Open Solana app before getting keys
-      await LedgerService.openApp(LedgerAppType.SOLANA)
       // Get keys from service
       const solanaKeys = await LedgerService.getSolanaKeys(accountIndex)
 
       // Update local state
       setKeys(prev => ({
         ...prev,
-        solanaKeys
+        mainnet: {
+          ...prev.mainnet,
+          solanaKeys
+        },
+        testnet: {
+          ...prev.testnet,
+          solanaKeys
+        }
       }))
 
       // Show success toast notification

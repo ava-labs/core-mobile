@@ -2,7 +2,6 @@ import React, { useCallback, useMemo } from 'react'
 import { View, ActivityIndicator } from 'react-native'
 import { Text, useTheme, Icons, GroupList } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
-import { LedgerKeys } from 'services/ledger/types'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
@@ -16,6 +15,8 @@ import { ChainName } from 'services/network/consts'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { LedgerKeysByNetwork } from 'services/ledger/types'
 import { LedgerDeviceList } from './LedgerDeviceList'
 import { AnimatedIconWithText } from './AnimatedIconWithText'
 
@@ -39,7 +40,7 @@ interface LedgerAppConnectionProps {
   completeStepTitle?: string
   connectedDeviceId?: string | null
   connectedDeviceName?: string
-  keys?: LedgerKeys
+  keys?: LedgerKeysByNetwork
   appConnectionStep: AppConnectionStep
   skipSolana?: boolean
   onlySolana?: boolean
@@ -57,23 +58,27 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   const {
     theme: { colors }
   } = useTheme()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
+
+  const keysByNetwork = isDeveloperMode ? keys?.testnet : keys?.mainnet
 
   const hasAllKeys = useMemo(() => {
     return (
-      !!keys?.avalancheKeys &&
-      keys?.bitcoinAddress !== '' &&
-      keys?.xpAddress !== '' &&
+      !!keysByNetwork?.avalancheKeys?.addresses.pvm &&
+      !!keysByNetwork?.avalancheKeys?.addresses.avm &&
+      !!keysByNetwork?.avalancheKeys?.addresses.evm &&
+      !!keysByNetwork?.avalancheKeys?.addresses.btc &&
+      // Solana keys are optional, so we don't require them to consider the wallet "ready"
+
       (isSolanaSupportBlocked ||
         skipSolana ||
-        (keys?.solanaKeys && keys.solanaKeys.length > 0))
+        (keysByNetwork?.solanaKeys && keysByNetwork.solanaKeys.length > 0))
     )
   }, [
     isSolanaSupportBlocked,
-    keys?.avalancheKeys,
-    keys?.bitcoinAddress,
-    keys?.solanaKeys,
-    keys?.xpAddress,
+    keysByNetwork?.avalancheKeys?.addresses,
+    keysByNetwork?.solanaKeys,
     skipSolana
   ])
 
@@ -82,11 +87,11 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     const addresses = []
 
     // C-Chain/EVM address (derived from avalanche keys)
-    if (keys?.avalancheKeys?.addresses.evm) {
+    if (keysByNetwork?.avalancheKeys?.addresses.evm) {
       addresses.push({
         title: AVALANCHE_MAINNET_NETWORK.chainName,
         subtitle: truncateAddress(
-          keys.avalancheKeys.addresses.evm,
+          keysByNetwork.avalancheKeys.addresses.evm,
           TRUNCATE_ADDRESS_LENGTH
         ),
         value: (
@@ -108,7 +113,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     }
 
     // X/P Chain address
-    if (keys?.xpAddress) {
+    if (keysByNetwork?.avalancheKeys?.addresses.pvm) {
       const xpNetwork = {
         ...AVALANCHE_XP_NETWORK,
         chainName: ChainName.AVALANCHE_XP
@@ -116,7 +121,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
       addresses.push({
         title: xpNetwork.chainName,
         subtitle: truncateAddress(
-          stripAddressPrefix(keys.xpAddress),
+          stripAddressPrefix(keysByNetwork.avalancheKeys.addresses.pvm),
           TRUNCATE_ADDRESS_LENGTH
         ),
         value: (
@@ -138,14 +143,17 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     }
 
     // Bitcoin address
-    if (keys?.bitcoinAddress) {
+    if (keysByNetwork?.avalancheKeys?.addresses.btc) {
       const bitcoinNetwork = {
         ...BITCOIN_NETWORK,
         chainName: ChainName.BITCOIN
       }
       addresses.push({
         title: bitcoinNetwork.chainName,
-        subtitle: truncateAddress(keys.bitcoinAddress, TRUNCATE_ADDRESS_LENGTH),
+        subtitle: truncateAddress(
+          keysByNetwork.avalancheKeys.addresses.btc,
+          TRUNCATE_ADDRESS_LENGTH
+        ),
         value: (
           <Icons.Navigation.Check
             color={colors.$textSuccess}
@@ -166,12 +174,12 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
 
     // Solana address
     if (
-      keys?.solanaKeys &&
-      keys?.solanaKeys.length > 0 &&
-      keys?.solanaKeys[0]?.key
+      keysByNetwork?.solanaKeys &&
+      keysByNetwork.solanaKeys.length > 0 &&
+      keysByNetwork.solanaKeys[0]?.key
     ) {
       // The key is already a Solana address (Base58 encoded) from LedgerService
-      const solanaAddress = keys.solanaKeys[0].key
+      const solanaAddress = keysByNetwork.solanaKeys[0].key
 
       addresses.push({
         title: NETWORK_SOLANA.chainName,
@@ -210,10 +218,10 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
 
     return addresses
   }, [
-    keys?.avalancheKeys?.addresses.evm,
-    keys?.xpAddress,
-    keys?.bitcoinAddress,
-    keys?.solanaKeys,
+    keysByNetwork?.avalancheKeys?.addresses.evm,
+    keysByNetwork?.avalancheKeys?.addresses.pvm,
+    keysByNetwork?.avalancheKeys?.addresses.btc,
+    keysByNetwork?.solanaKeys,
     hasAllKeys,
     colors.$textSuccess,
     colors.$surfaceSecondary

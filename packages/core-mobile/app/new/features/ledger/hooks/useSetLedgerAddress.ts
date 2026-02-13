@@ -1,22 +1,19 @@
 import { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
-import { LedgerKeys } from 'services/ledger/types'
+import { LedgerKeysByNetwork } from 'services/ledger/types'
 import { setLedgerAddresses } from 'store/account'
-import { getOppositeKeys } from '../utils'
 
 export const useSetLedgerAddress = (): {
   setLedgerAddress: ({
     walletId,
-    isDeveloperMode,
     accountId,
     accountIndex,
     keys
   }: {
     walletId: string
-    isDeveloperMode: boolean
     accountId: string
     accountIndex: number
-    keys: LedgerKeys
+    keys: LedgerKeysByNetwork
   }) => Promise<void>
 } => {
   const dispatch = useDispatch()
@@ -24,32 +21,28 @@ export const useSetLedgerAddress = (): {
   const setLedgerAddress = useCallback(
     async ({
       walletId,
-      isDeveloperMode,
       accountId,
       accountIndex,
       keys
     }: {
       walletId: string
-      isDeveloperMode: boolean
       accountId: string
       accountIndex: number
-      keys: LedgerKeys
+      keys: LedgerKeysByNetwork
     }) => {
-      const oppositeAddresses = await getOppositeKeys({
-        accountIndex,
-        isDeveloperMode
-      })
-
-      const addresses = {
-        addressBTC: keys.bitcoinAddress ?? '',
-        addressAVM: keys.avalancheKeys?.addresses.avm || '',
-        addressPVM: keys.avalancheKeys?.addresses.pvm || '',
-        addressCoreEth: keys.avalancheKeys?.addresses.coreEth || ''
+      const mainnet = {
+        addressBTC: keys.mainnet.bitcoinAddress ?? '',
+        addressAVM: keys.mainnet.avalancheKeys?.addresses.avm || '',
+        addressPVM: keys.mainnet.avalancheKeys?.addresses.pvm || '',
+        addressCoreEth: keys.mainnet.avalancheKeys?.addresses.coreEth || ''
       }
 
-      const mainnet = isDeveloperMode ? oppositeAddresses : addresses
-
-      const testnet = isDeveloperMode ? addresses : oppositeAddresses
+      const testnet = {
+        addressBTC: keys.testnet.bitcoinAddress ?? '',
+        addressAVM: keys.testnet.avalancheKeys?.addresses.avm || '',
+        addressPVM: keys.testnet.avalancheKeys?.addresses.pvm || '',
+        addressCoreEth: keys.testnet.avalancheKeys?.addresses.coreEth || ''
+      }
 
       dispatch(
         setLedgerAddresses({
