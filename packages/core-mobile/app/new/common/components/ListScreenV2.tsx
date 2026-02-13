@@ -180,18 +180,19 @@ export const ListScreenV2 = <T,>({
 
   const onScrollEndDrag = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>): void => {
-      'worklet'
       if (event.nativeEvent.contentOffset.y < contentHeaderHeight) {
         if (event.nativeEvent.contentOffset.y > titleHeight.value) {
           scrollViewRef.current?.scrollToOffset({
             offset:
               event.nativeEvent.contentOffset.y > contentHeaderHeight
                 ? event.nativeEvent.contentOffset.y
-                : contentHeaderHeight
+                : contentHeaderHeight,
+            animated: true
           })
         } else {
           scrollViewRef.current?.scrollToOffset({
-            offset: 0
+            offset: 0,
+            animated: true
           })
         }
       }
@@ -239,21 +240,13 @@ export const ListScreenV2 = <T,>({
       Extrapolation.CLAMP
     )
 
-    const marginBottom = interpolate(
-      scrollY.value,
-      [0, headerHeight],
-      [-16, -headerHeight - 16],
-      Extrapolation.CLAMP
-    )
-
     return {
       zIndex: 10,
       transform: [
         {
           translateY: shouldShowStickyHeader ? translateY : 0
         }
-      ],
-      marginBottom
+      ]
     }
   })
 
@@ -298,28 +291,6 @@ export const ListScreenV2 = <T,>({
     }
   })
 
-  const contentContainerStyle = useMemo(() => {
-    const footerPadding = renderFooter ? footerHeight : 0
-    const paddingBottom = keyboard.isVisible
-      ? 16
-      : insets.bottom + 16 + footerPadding
-
-    // FlashList's contentContainerStyle only supports:
-    // backgroundColor, paddingTop, paddingBottom, paddingLeft, paddingRight, padding
-    // Do NOT pass minHeight, flex, or other unsupported properties
-    return {
-      ...(props?.contentContainerStyle ?? {}),
-      paddingBottom,
-      paddingTop: 16
-    }
-  }, [
-    renderFooter,
-    footerHeight,
-    keyboard.isVisible,
-    insets.bottom,
-    props?.contentContainerStyle
-  ])
-
   // Calculate available height for the empty state component
   // since flex: 1 is not supported in FlashList's recycler
   const emptyComponentHeight = useMemo(() => {
@@ -340,10 +311,57 @@ export const ListScreenV2 = <T,>({
     insets.bottom
   ])
 
+  const animatedListContainer = useAnimatedStyle(() => {
+    const top = interpolate(
+      scrollY.value,
+      [0, headerHeight],
+      [0, -headerHeight],
+      Extrapolation.CLAMP
+    )
+
+    return {
+      flex: 1,
+      position: 'absolute',
+      top,
+      left: 0,
+      right: 0,
+      bottom: 0
+    }
+  })
+
+  const contentContainerStyle = useMemo(() => {
+    const footerPadding = renderFooter ? footerHeight : 0
+    const paddingBottom = keyboard.isVisible
+      ? 16
+      : insets.bottom + 16 + footerPadding
+
+    // FlashList's contentContainerStyle only supports:
+    // backgroundColor, paddingTop, paddingBottom, paddingLeft, paddingRight, padding
+    // Do NOT pass minHeight, flex, or other unsupported properties
+    return {
+      ...(props?.contentContainerStyle ?? {}),
+      paddingBottom
+    }
+  }, [
+    renderFooter,
+    footerHeight,
+    keyboard.isVisible,
+    insets.bottom,
+    props?.contentContainerStyle
+  ])
+
   const ListEmptyComponent = useMemo(() => {
     if (renderEmpty) {
       return (
-        <View style={{ height: emptyComponentHeight }}>{renderEmpty()}</View>
+        <View
+          style={{
+            height: emptyComponentHeight,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'red'
+          }}>
+          {renderEmpty()}
+        </View>
       )
     }
     return (
@@ -492,25 +510,31 @@ export const ListScreenV2 = <T,>({
       layout={SPRING_LINEAR_TRANSITION}
       entering={getListItemEnteringAnimation(0)}>
       {renderHeaderComponent()}
-      <FlashList
-        data={data}
-        ref={scrollViewRef}
-        renderScrollComponent={RenderScrollComponent}
-        onScroll={onScrollEvent}
-        onScrollEndDrag={onScrollEndDrag}
-        keyboardDismissMode="interactive"
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={contentContainerStyle}
-        {...props}
-        style={[
-          props.style,
-          {
-            backgroundColor: backgroundColor ?? 'transparent'
-          }
-        ]}
-        ListEmptyComponent={ListEmptyComponent}
-      />
+
+      <View style={{ flex: 1, position: 'relative' }}>
+        <Animated.View style={animatedListContainer}>
+          <FlashList
+            data={data}
+            ref={scrollViewRef}
+            renderScrollComponent={RenderScrollComponent}
+            onScroll={onScrollEvent}
+            onScrollEndDrag={onScrollEndDrag}
+            keyboardDismissMode="interactive"
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={contentContainerStyle}
+            {...props}
+            style={[
+              props.style,
+              {
+                backgroundColor: backgroundColor ?? 'transparent'
+              }
+            ]}
+            ListEmptyComponent={ListEmptyComponent}
+          />
+        </Animated.View>
+      </View>
+
       {renderGrabber()}
       {renderFooterContent()}
     </Animated.View>

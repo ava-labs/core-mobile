@@ -223,7 +223,9 @@ export const SelectSwapV2TokenScreen = ({
       isModal
       renderItem={renderItem}
       estimatedItemSize={66}
-      keyExtractor={(item: LocalTokenWithBalance) => item.localId}
+      keyExtractor={(item: LocalTokenWithBalance) =>
+        `token-${item.localId}-${item.internalId}`
+      }
       renderHeader={renderHeader}
       renderEmpty={renderEmpty}
     />
