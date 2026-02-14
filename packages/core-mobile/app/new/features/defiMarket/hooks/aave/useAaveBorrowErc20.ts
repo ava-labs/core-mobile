@@ -3,19 +3,22 @@ import { useCallback } from 'react'
 import { Address, encodeFunctionData } from 'viem'
 import {
   AAVE_POOL_C_CHAIN_ADDRESS,
-  AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS,
-  MAX_UINT256
+  AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS
 } from 'features/defiMarket/consts'
+import { AAVE_AVALANCHE3_POOL_PROXY_ABI } from 'features/defiMarket/abis/aaveAvalanche3PoolProxy'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import { AAVE_AVALANCHE3_POOL_PROXY_ABI } from 'features/defiMarket/abis/aaveAvalanche3PoolProxy'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { useETHSendTransaction } from 'common/hooks/useETHSendTransaction'
 
-export const useAaveWithdraw = ({
+/**
+ * Hook to borrow ERC20 tokens (including WAVAX) from AAVE Pool directly.
+ * For native AVAX (unwrapped), use useAaveBorrowAvax instead.
+ */
+export const useAaveBorrowErc20 = ({
   market,
   onConfirmed,
   onReverted,
@@ -26,7 +29,7 @@ export const useAaveWithdraw = ({
   onReverted?: () => void
   onError?: () => void
 }): {
-  withdraw: (params: {
+  aaveBorrowErc20: (params: {
     amount: TokenUnit
     confettiDisabled?: boolean
   }) => Promise<string>
@@ -39,6 +42,9 @@ export const useAaveWithdraw = ({
     queryClient.invalidateQueries({
       queryKey: [ReactQueryKeys.AAVE_AVAILABLE_MARKETS]
     })
+    queryClient.invalidateQueries({
+      queryKey: [ReactQueryKeys.AAVE_USER_BORROW_DATA]
+    })
     onConfirmed?.()
   }, [onConfirmed])
 
@@ -50,7 +56,7 @@ export const useAaveWithdraw = ({
     onError
   })
 
-  const withdraw = useCallback(
+  const aaveBorrowErc20 = useCallback(
     async ({
       amount,
       confettiDisabled
@@ -62,17 +68,16 @@ export const useAaveWithdraw = ({
         throw new Error('No address found')
       }
 
-      const assetAddress =
-        market.asset.contractAddress ?? AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS
-      const isMax = amount.toSubUnit() === market.asset.mintTokenBalance.balance
-      // If they've selected the max amount at time of load, pass MAX_UINT256 to avoid dust remaining.
-      // See: IPool.sol#withdraw method – https://snowtrace.io/address/0x1C984121713329114d1D97f5B4Aae9D4D5BfA0eB/contract/43114/code
-      const withdrawAmount = isMax ? MAX_UINT256 : amount.toSubUnit()
+      // For native AVAX market, borrow WAVAX
+      const assetAddress = (market.asset.contractAddress ??
+        AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS) as Address
 
+      // borrow(asset, amount, interestRateMode, referralCode, onBehalfOf)
+      // interestRateMode: 2 = variable rate (AAVE v3 only supports variable)
       const encodedData = encodeFunctionData({
         abi: AAVE_AVALANCHE3_POOL_PROXY_ABI,
-        functionName: 'withdraw',
-        args: [assetAddress, withdrawAmount, address as Address]
+        functionName: 'borrow',
+        args: [assetAddress, amount.toSubUnit(), 2n, 0, address as Address]
       })
 
       return sendTransaction({
@@ -81,10 +86,10 @@ export const useAaveWithdraw = ({
         confettiDisabled
       })
     },
-    [market, address, sendTransaction]
+    [address, market.asset.contractAddress, sendTransaction]
   )
 
   return {
-    withdraw
+    aaveBorrowErc20
   }
 }

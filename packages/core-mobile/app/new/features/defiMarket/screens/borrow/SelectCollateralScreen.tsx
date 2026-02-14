@@ -30,6 +30,7 @@ import {
   AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS,
   PROTOCOL_DISPLAY_NAMES
 } from '../../consts'
+import { useRedirectToBorrowAfterDeposit } from '../../store'
 import errorIcon from '../../../../assets/icons/melting_face.png'
 
 // Track which items are currently being toggled (transaction in progress)
@@ -41,7 +42,8 @@ export const SelectCollateralScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
   const { selectedProtocol } = useBorrowProtocol()
-  const { deposits, isLoading, refresh, isRefreshing } = useDeposits()
+  const { deposits, isLoading, isFetching, refresh, isRefreshing } =
+    useDeposits()
   const network = useCChainNetwork()
   const provider = useAvalancheEvmProvider()
 
@@ -133,13 +135,17 @@ export const SelectCollateralScreen = (): JSX.Element => {
     navigate('/borrow/selectAsset')
   }, [navigate])
 
+  const [, setRedirectToBorrow] = useRedirectToBorrowAfterDeposit()
+
   const handleDepositMoreAssets = useCallback(() => {
+    // Set protocol to redirect back to borrow after deposit completes
+    setRedirectToBorrow(selectedProtocol)
     // Dismiss borrow modal and navigate to deposit
     navigation.getParent()?.goBack()
-    // Navigate to deposit flow
+    // Navigate to deposit flow, skip onboarding
     // @ts-ignore TODO: make routes typesafe
-    navigate('/deposit/onboarding')
-  }, [navigation, navigate])
+    navigate('/deposit/selectAsset')
+  }, [navigation, navigate, selectedProtocol, setRedirectToBorrow])
 
   const hasSelectedCollateral = useMemo(() => {
     // Check if any deposit has collateral enabled on-chain
@@ -229,7 +235,8 @@ export const SelectCollateralScreen = (): JSX.Element => {
   )
 
   const renderEmpty = useCallback(() => {
-    if (isLoading) {
+    // Show loading for initial load or background refetch (but not for pull-to-refresh)
+    if (isLoading || (isFetching && !isRefreshing)) {
       return <LoadingState sx={{ flex: 1 }} />
     }
     return (
@@ -240,7 +247,7 @@ export const SelectCollateralScreen = (): JSX.Element => {
         description="Deposit assets first to use them as collateral"
       />
     )
-  }, [isLoading])
+  }, [isLoading, isFetching, isRefreshing])
 
   const renderFooter = useCallback(() => {
     return (

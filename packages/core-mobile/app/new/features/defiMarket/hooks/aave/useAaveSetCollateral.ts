@@ -26,7 +26,7 @@ export const useAaveSetCollateral = ({
   const { sendTransaction } = useETHSendTransaction({
     network,
     provider,
-    onSuccess: () => {
+    onConfirmed: () => {
       queryClient.invalidateQueries({
         queryKey: [ReactQueryKeys.AAVE_AVAILABLE_MARKETS]
       })

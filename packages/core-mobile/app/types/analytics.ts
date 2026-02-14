@@ -257,6 +257,16 @@ export type AnalyticsEvents = {
   EarnWithdrawFailure: undefined
   EarnClaimSuccess: undefined
   EarnClaimFailure: undefined
+  EarnBorrowStart: undefined
+  EarnBorrowSubmitted: {
+    token: string
+    quantity: string
+    protocol: string
+    txHash: string
+    address: string
+  }
+  EarnBorrowSuccess: undefined
+  EarnBorrowFailure: undefined
 
   // NEST EGG CAMPAIGN
   NestEggCampaignModalViewed: { addressC: string }

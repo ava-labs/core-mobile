@@ -1,20 +1,30 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/account'
-import AnalyticsService from 'services/analytics/AnalyticsService'
+import { transactionSnackbar } from 'common/utils/toast'
 import { DefiMarket } from '../../types'
 import { useAaveWithdraw } from '../../hooks/aave/useAaveWithdraw'
+import { useUnwrapWavax } from '../../hooks/useUnwrapWavax'
 import { SelectAmountFormBase } from '../SelectAmountFormBase'
 
 export const WithdrawAaveSelectAmountForm = ({
   market,
-  onSuccess
+  onSubmitted,
+  onConfirmed,
+  onReverted,
+  onError
 }: {
   market: DefiMarket
-  onSuccess: () => void
+  onSubmitted: (params: { txHash: string; amount: TokenUnit }) => void
+  onConfirmed?: () => void
+  onReverted?: () => void
+  onError?: () => void
 }): JSX.Element => {
-  const activeAccount = useSelector(selectActiveAccount)
+  // Check if this is native AVAX (no contractAddress)
+  const isNativeAvax = !market.asset.contractAddress
+
+  // Store pending amount for unwrap after withdraw confirmation
+  const pendingUnwrapAmountRef = useRef<TokenUnit | null>(null)
+
   const tokenBalance = useMemo(() => {
     return new TokenUnit(
       market.asset.mintTokenBalance.balance,
@@ -23,7 +33,36 @@ export const WithdrawAaveSelectAmountForm = ({
     )
   }, [market])
 
-  const { withdraw } = useAaveWithdraw({ market })
+  // Unwrap hook - called after withdraw is confirmed for native AVAX
+  const { unwrapWavax } = useUnwrapWavax({
+    network: market.network,
+    onConfirmed, // Final confirmation after unwrap
+    onReverted,
+    onError
+  })
+
+  // Handle withdraw confirmation - trigger unwrap for native AVAX
+  const handleWithdrawConfirmed = useCallback(() => {
+    if (isNativeAvax && pendingUnwrapAmountRef.current) {
+      // Show toast before unwrap
+      transactionSnackbar.pending({ message: 'Unwrapping WAVAX to AVAX...' })
+      // Withdraw confirmed, now unwrap WAVAX to AVAX
+      // Error handling is done by useUnwrapWavax's onError callback
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      unwrapWavax({ amount: pendingUnwrapAmountRef.current }).catch(() => {})
+      pendingUnwrapAmountRef.current = null
+    } else {
+      // Not native AVAX, call original onConfirmed
+      onConfirmed?.()
+    }
+  }, [isNativeAvax, unwrapWavax, onConfirmed])
+
+  const { withdraw } = useAaveWithdraw({
+    market,
+    onConfirmed: handleWithdrawConfirmed,
+    onReverted,
+    onError
+  })
 
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {
@@ -34,22 +73,18 @@ export const WithdrawAaveSelectAmountForm = ({
     [tokenBalance]
   )
 
-  const handleFailure = useCallback(() => {
-    AnalyticsService.capture('EarnWithdrawFailure')
-  }, [])
-
-  const handleSuccess = useCallback(
-    ({ txHash, amount }: { txHash: string; amount: TokenUnit }) => {
-      AnalyticsService.capture('EarnWithdrawSubmitted', {
-        token: market.asset.symbol,
-        quantity: amount.toDisplay(),
-        protocol: market.marketName,
-        txHash,
-        address: activeAccount?.addressC ?? ''
-      })
-      onSuccess()
+  // For native AVAX: withdraw WAVAX, then unwrap to AVAX after confirmation
+  // For other tokens: withdraw directly
+  const handleSubmit = useCallback(
+    async ({ amount }: { amount: TokenUnit }): Promise<string> => {
+      if (isNativeAvax) {
+        // Store amount for unwrap after withdraw confirmation
+        pendingUnwrapAmountRef.current = amount
+      }
+      // For native AVAX, disable confetti on withdraw tx (will show on unwrap tx instead)
+      return withdraw({ amount, confettiDisabled: isNativeAvax })
     },
-    [market.asset.symbol, market.marketName, activeAccount?.addressC, onSuccess]
+    [withdraw, isNativeAvax]
   )
 
   return (
@@ -59,9 +94,8 @@ export const WithdrawAaveSelectAmountForm = ({
       tokenBalance={tokenBalance}
       maxAmount={tokenBalance}
       validateAmount={validateAmount}
-      submit={withdraw}
-      onSuccess={handleSuccess}
-      onFailure={handleFailure}
+      submit={handleSubmit}
+      onSubmitted={onSubmitted}
     />
   )
 }
