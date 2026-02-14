@@ -115,6 +115,7 @@ export interface AvalancheKey {
     avm: string
     pvm: string
     coreEth: string // C-chain bech32 format (C-avax1... or C-fuji1...)
+    btc: string // Bitcoin address
   }
   xpubs: {
     evm: string
@@ -125,8 +126,11 @@ export interface AvalancheKey {
 export interface LedgerKeys {
   solanaKeys?: PublicKeyInfo[]
   avalancheKeys?: AvalancheKey
-  bitcoinAddress?: string
-  xpAddress?: string
+}
+
+export type LedgerKeysByNetwork = {
+  mainnet: LedgerKeys
+  testnet: LedgerKeys
 }
 
 // ============================================================================
@@ -145,10 +149,16 @@ export interface WalletCreationOptions {
   deviceName?: string
   derivationPathType: LedgerDerivationPathType
   accountCount?: number
-  individualKeys?: PublicKeyInfo[]
 }
 
-export interface WalletUpdateOptions {
+export interface WalletUpdateOptions extends WalletCreationOptions {
+  walletId: string
+  walletName: string
+  walletType: WalletType
+  accountIndexToUse: number
+}
+
+export interface WalletUpdateSolanaOptions {
   deviceId: string
   walletId: string
   walletName: string

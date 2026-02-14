@@ -1,3 +1,3 @@
-import AppConnectionScreen from 'new/features/ledger/screens/AppConnectionScreen'
+import { AppConnectionOnboardingScreen } from 'new/features/ledger/screens/AppConnectionOnboardingScreen'
 
-export { AppConnectionScreen as default }
+export { AppConnectionOnboardingScreen as default }

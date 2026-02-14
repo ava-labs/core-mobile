@@ -17,9 +17,9 @@ import { BackHandler } from 'react-native'
 import { useNavigation } from 'expo-router'
 import { TRANSACTION_CANCELLED_BY_USER } from 'vmModule/ApprovalController/utils'
 import { LedgerReviewTransactionParams } from '../services/ledgerParamsCache'
-import { useLedgerWalletMap } from '../store'
 import { getLedgerAppName } from '../utils'
 import { withLedgerParamsCache } from '../services/withLedgerParamsCache'
+import { useLedgerWalletMap } from '../store'
 
 const LedgerReviewTransactionScreen = ({
   params: { network, onApprove, onReject }
@@ -30,21 +30,21 @@ const LedgerReviewTransactionScreen = ({
   const approvalTriggeredRef = useRef(false)
   const dismissInProgressRef = useRef(false)
   const walletId = useSelector(selectActiveWalletId)
-  const { ledgerWalletMap } = useLedgerWalletMap()
+  const { getLedgerInfoByWalletId } = useLedgerWalletMap()
   const [isConnected, setIsConnected] = useState(false)
   const [isCancelEnabled, setIsCancelEnabled] = useState(false)
   const {
     theme: { colors }
   } = useTheme()
 
+  const deviceForWallet = useMemo(
+    () => getLedgerInfoByWalletId(walletId)?.device,
+    [getLedgerInfoByWalletId, walletId]
+  )
+
   const ledgerAppName = useMemo(() => getLedgerAppName(network), [network])
 
   const { isConnecting } = useLedgerSetupContext()
-
-  const deviceForWallet = useMemo(() => {
-    if (!walletId) return undefined
-    return ledgerWalletMap[walletId]
-  }, [ledgerWalletMap, walletId])
 
   const handleReconnect = useCallback(
     async (deviceId: string): Promise<void> => {
@@ -65,7 +65,7 @@ const LedgerReviewTransactionScreen = ({
 
   useEffect(() => {
     if (!deviceForWallet) return
-    handleReconnect(deviceForWallet.deviceId)
+    handleReconnect(deviceForWallet.id)
   }, [deviceForWallet, handleReconnect])
 
   useEffect(() => {
@@ -198,7 +198,7 @@ const LedgerReviewTransactionScreen = ({
                     fontSize: 16,
                     color: '$textPrimary'
                   }}>
-                  {deviceForWallet.deviceName}
+                  {deviceForWallet.name}
                 </Text>
               </View>
               <Text
@@ -219,11 +219,11 @@ const LedgerReviewTransactionScreen = ({
                 flex: 1,
                 justifyContent: 'flex-end'
               }}>
-              {!isConnected && (
+              {!isConnected && deviceForWallet && (
                 <Button
                   type="primary"
                   size="small"
-                  onPress={() => handleReconnect(deviceForWallet.deviceId)}
+                  onPress={() => handleReconnect(deviceForWallet.id)}
                   disabled={isConnecting}>
                   {isConnecting ? 'Connecting...' : 'Connect'}
                 </Button>
@@ -246,11 +246,10 @@ const LedgerReviewTransactionScreen = ({
 
   const title = useMemo(() => {
     if (deviceForWallet) {
-      return `Please review the transaction on your ${deviceForWallet.deviceName}`
+      return `Please review the transaction on your ${deviceForWallet.name}`
     }
     return 'Get your Ledger ready'
   }, [deviceForWallet])
-
   const subtitle = useMemo(() => {
     if (deviceForWallet) {
       return `Open the ${ledgerAppName} app on your Ledger device in order to continue with this transaction`
