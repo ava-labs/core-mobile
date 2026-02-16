@@ -331,7 +331,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         setIsLoading(false)
       }
     },
-    [dispatch]
+    [dispatch, setLedgerWalletMap]
   )
 
   const updateSolanaForLedgerWallet = useCallback(
