@@ -1,11 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
+import { useSelector } from 'react-redux'
 import type { Network } from '@avalabs/core-chains-sdk'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import Logger from 'utils/Logger'
 import { exponentialBackoff } from 'utils/reactQuery'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
+import { isSolanaNetwork } from 'utils/network/isSolanaNetwork'
+import { selectIsSolanaSwapBlocked } from 'store/posthog'
 import FusionService from '../services/FusionService'
 
 /**
@@ -30,6 +33,7 @@ export function useSupportedChains(): {
   error: Error | null
 } {
   const { getEnabledNetworkByCaip2ChainId } = useNetworks()
+  const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
 
   // Fetch raw CAIP-2 chain IDs from Fusion SDK
   const {
@@ -53,6 +57,10 @@ export function useSupportedChains(): {
     const supportedNetworks = caip2ChainIds
       .map(caip2Id => getEnabledNetworkByCaip2ChainId(caip2Id))
       .filter((network): network is Network => network !== undefined)
+      .filter(network => {
+        // Filter out Solana networks if Solana swap is blocked
+        return !(isSolanaSwapBlocked && isSolanaNetwork(network))
+      })
       .sort((a, b) => {
         // Avalanche C-Chain always first
         const aIsAvalanche = isAvalancheChainId(a.chainId)
@@ -69,7 +77,7 @@ export function useSupportedChains(): {
     )
 
     return supportedNetworks
-  }, [caip2ChainIds, getEnabledNetworkByCaip2ChainId])
+  }, [caip2ChainIds, getEnabledNetworkByCaip2ChainId, isSolanaSwapBlocked])
 
   return {
     chains,
