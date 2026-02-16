@@ -18,15 +18,8 @@ import { useNavigation } from '@react-navigation/native'
 import Big from 'big.js'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
-import {
-  AVAX_TOKEN_ID,
-  SOLANA_TOKEN_LOCAL_ID,
-  USDC_AVALANCHE_C_TOKEN_ID,
-  USDC_SOLANA_TOKEN_ID
-} from 'common/consts/swap'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
-import { usePrevious } from 'common/hooks/usePrevious'
 import { useSwapList } from 'common/hooks/useSwapList'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
@@ -617,51 +610,6 @@ export const SwapScreen = (): JSX.Element => {
       </Button>
     )
   }, [canSwap, handleSwap, swapInProcess])
-
-  const prevFromToken = usePrevious(fromToken)
-  const prevToToken = usePrevious(toToken)
-  useEffect(() => {
-    // if both tokens are on the same chain, do nothing
-    if (fromToken?.networkChainId === toToken?.networkChainId) return
-
-    const prevFrom = prevFromToken
-    const prevTo = prevToToken
-
-    // determine which token actually changed
-    const isFromChanged =
-      prevFrom?.localId !== fromToken?.localId && !!fromToken
-    const isToChanged =
-      !isFromChanged && prevTo?.localId !== toToken?.localId && !!toToken
-    if (!isFromChanged && !isToChanged) return
-
-    // pick the token that changed and compute the default counterpart
-    const changedToken = isFromChanged ? fromToken : toToken
-    const isAvaxChain = changedToken?.networkChainId === cChainNetwork?.chainId
-    const [baseId, pairId] = isAvaxChain
-      ? [AVAX_TOKEN_ID, USDC_AVALANCHE_C_TOKEN_ID]
-      : [SOLANA_TOKEN_LOCAL_ID, USDC_SOLANA_TOKEN_ID]
-    const targetLocalId = changedToken?.localId === baseId ? pairId : baseId
-    const defaultToken = swapList.find(
-      tk => tk.localId.toLowerCase() === targetLocalId.toLowerCase()
-    )
-
-    // update the opposite token
-    if (isFromChanged) {
-      setToToken(defaultToken)
-    } else {
-      setFromToken(defaultToken)
-    }
-  }, [
-    fromToken,
-    toToken,
-    prevFromToken,
-    prevToToken,
-    cChainNetwork?.chainId,
-    solanaNetwork?.chainId,
-    swapList,
-    setFromToken,
-    setToToken
-  ])
 
   return (
     <ScrollScreen
