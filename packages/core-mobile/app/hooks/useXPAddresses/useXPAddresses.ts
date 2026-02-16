@@ -13,6 +13,11 @@ import { transformXPAddresses } from './transformXPAddresses'
 
 const STALE_TIME = 60 * 1000 // 1 minute
 
+const EMPTY_XP_ADDRESSES = {
+  xpAddresses: [] as string[],
+  xpAddressDictionary: {} as XPAddressDictionary
+}
+
 const getQueryKey = ({
   walletId,
   walletType,
@@ -53,10 +58,12 @@ export const useXPAddresses = (
 
   const shouldDisable = !wallet || !account
 
-  // Keystone stores one XP xpub shared across all accounts.  All XP
-  // addresses belong to the primary account (index 0).  Non-primary
-  // accounts must return empty so the addressPVM fallback in
-  // transformXPAddresses does not re-introduce per-address balances.
+  // TODO: https://ava-labs.atlassian.net/browse/CP-13335
+  // Keystone SDK currently only exposes a single XP xpub (account index 0)
+  // for all accounts.  Until their SDK supports per-account xpubs, non-primary
+  // accounts must return empty to avoid duplicate XP balances caused by the
+  // addressPVM fallback in transformXPAddresses.
+  // Remove this workaround once the Keystone SDK is fixed.
   const isKeystoneNonPrimary =
     walletType === WalletType.KEYSTONE && accountIndex > 0
 
@@ -83,21 +90,13 @@ export const useXPAddresses = (
           }
   })
 
-  const emptyResult = useMemo(
-    () => ({
-      xpAddresses: [] as string[],
-      xpAddressDictionary: {} as XPAddressDictionary
-    }),
-    []
-  )
-
   const transformed = useMemo(
     () => transformXPAddresses(queryResult.data, account),
     [queryResult.data, account]
   )
 
   return {
-    ...(isKeystoneNonPrimary ? emptyResult : transformed),
+    ...(isKeystoneNonPrimary ? EMPTY_XP_ADDRESSES : transformed),
     isLoading: queryResult.isLoading
   }
 }
@@ -116,14 +115,10 @@ export async function getCachedXPAddresses({
   xpAddresses: string[]
   xpAddressDictionary: XPAddressDictionary
 }> {
-  // Keystone non-primary accounts don't own XP addresses.
-  // Return empty to prevent the addressPVM fallback from
-  // re-introducing duplicate balances.
+  // TODO: https://ava-labs.atlassian.net/browse/CP-13335
+  // Remove once the Keystone SDK supports per-account XP xpubs.
   if (walletType === WalletType.KEYSTONE && account.index > 0) {
-    return {
-      xpAddresses: [],
-      xpAddressDictionary: {}
-    }
+    return EMPTY_XP_ADDRESSES
   }
 
   try {
