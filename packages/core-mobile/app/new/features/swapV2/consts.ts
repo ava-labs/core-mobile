@@ -111,7 +111,7 @@ export function getFusionEnvironment(
 ): Environment {
   // If developer mode is enabled, use TEST environment
   if (isDeveloperMode) {
-    return Environment.TEST 
+    return Environment.TEST
   }
 
   // Default to production environment
