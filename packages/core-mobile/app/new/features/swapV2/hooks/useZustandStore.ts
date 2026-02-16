@@ -1,6 +1,6 @@
 import { createZustandStore } from 'common/utils/createZustandStore'
 import { LocalTokenWithBalance } from 'store/balance'
-import { NormalizedSwapQuoteResult } from './types'
+import { NormalizedSwapQuoteResult } from '../types'
 
 export const useSwapSelectedFromToken = createZustandStore<
   LocalTokenWithBalance | undefined

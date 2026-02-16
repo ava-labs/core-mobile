@@ -12,7 +12,7 @@ import {
   NativeTokenBalance,
   PvmGetBalancesResponse,
   SvmGetBalancesResponse
-} from 'utils/apiClient/generated/balanceApi.client'
+} from 'utils/api/generated/balanceApi.client'
 import { TokenType } from '@avalabs/vm-module-types'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { AVAX_P_ID, AVAX_X_ID } from '../const'

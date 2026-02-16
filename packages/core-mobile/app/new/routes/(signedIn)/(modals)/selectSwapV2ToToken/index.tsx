@@ -1,7 +1,7 @@
 import React from 'react'
 import { useLocalSearchParams } from 'expo-router'
 import { SelectSwapV2TokenScreen } from 'features/swapV2/screens/SelectSwapV2TokenScreen'
-import { useSwapSelectedToToken } from 'features/swapV2/store'
+import { useSwapSelectedToToken } from 'features/swapV2/hooks/useZustandStore'
 
 const SelectSwapV2ToTokenScreen = (): JSX.Element => {
   const [selectedToToken, setSelectedToToken] = useSwapSelectedToToken()

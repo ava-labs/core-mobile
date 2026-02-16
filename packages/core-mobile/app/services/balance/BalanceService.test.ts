@@ -11,9 +11,9 @@ const mockLoadModuleByNetwork = jest.fn()
 const mockGetSupportedChainsFromCache = jest.fn()
 const mockMapBalanceResponseToLegacy = jest.fn()
 
-jest.mock('utils/apiClient/balance/balanceApi', () => ({
-  balanceApi: {
-    getBalancesStream: (...args: unknown[]) => mockGetBalancesStream(...args)
+jest.mock('utils/api/clients/balanceApiClient', () => ({
+  streamingBalanceApiClient: {
+    getBalances: (...args: unknown[]) => mockGetBalancesStream(...args)
   }
 }))
 

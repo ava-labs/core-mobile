@@ -7,12 +7,10 @@ import { LocalTokenWithBalance } from 'store/balance'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { selectActiveAccount } from 'store/account'
 import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
-import useCChainNetwork from 'hooks/earn/useCChainNetwork'
-import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { TokenType } from '@avalabs/vm-module-types'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
-import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { mapApiTokenToLocal } from '../utils/mapApiTokenToLocal'
 import { getLocalTokenIdFromApi } from '../utils/getLocalTokenIdFromApi'
 
@@ -42,10 +40,13 @@ export const useSwapV2Tokens = (
   // Derive chainId from caip2Id
   const chainId = useMemo(() => getChainIdFromCaip2(caip2Id), [caip2Id])
   const activeAccount = useSelector(selectActiveAccount)
+  const { getNetwork } = useNetworks()
 
-  // Get network configurations for native tokens
-  const cChainNetwork = useCChainNetwork()
-  const solanaNetwork = useSolanaNetwork()
+  // Get current network
+  const currentNetwork = useMemo(
+    () => (chainId ? getNetwork(chainId) : undefined),
+    [chainId, getNetwork]
+  )
 
   // Get balances
   const balances = useTokensWithBalanceByNetworkForAccount(
@@ -55,7 +56,7 @@ export const useSwapV2Tokens = (
 
   // Fetch tokens from API
   const query = useQuery({
-    queryKey: ['swapV2Tokens', caip2Id],
+    queryKey: [ReactQueryKeys.FUSION_TOKENS, caip2Id],
     queryFn: async () => {
       if (!caip2Id) return []
 
@@ -72,8 +73,7 @@ export const useSwapV2Tokens = (
 
   // Transform and merge with balance data
   const tokens = useMemo((): LocalTokenWithBalance[] => {
-    if (!chainId || query.data === undefined || query.data.length === 0)
-      return []
+    if (!chainId || query.data === undefined) return []
 
     // Create balance lookup map by localId
     const balanceMap = new Map<string, LocalTokenWithBalance>()
@@ -83,21 +83,14 @@ export const useSwapV2Tokens = (
       }
     })
 
-    // Determine current network
-    const currentNetwork = isAvalancheCChainId(chainId)
-      ? cChainNetwork
-      : isSolanaChainId(chainId)
-      ? solanaNetwork
-      : null
-
     // Create native token if network is available
     let nativeToken: LocalTokenWithBalance | null = null
 
     if (currentNetwork) {
       const symbol = currentNetwork.networkToken.symbol
       const decimals = currentNetwork.networkToken.decimals
-      const localId = `native-${symbol.toLowerCase()}`
-      const nativeBalanceData = balanceMap.get(localId)
+      const localId = `NATIVE-${symbol}`
+      const nativeBalanceData = balanceMap.get(localId.toLowerCase())
 
       const balance = nativeBalanceData?.balance ?? 0n
       const balanceDisplayValue = new TokenUnit(
@@ -125,16 +118,19 @@ export const useSwapV2Tokens = (
       }
     }
 
-    // Map API tokens
-    const apiTokens = query.data.map(apiToken => {
-      const localId = getLocalTokenIdFromApi(apiToken)
-      const balanceData = balanceMap.get(localId)
-      return mapApiTokenToLocal(apiToken, chainId, balanceData)
-    })
+    // Map API tokens (if any)
+    const apiTokens =
+      query.data.length > 0
+        ? query.data.map(apiToken => {
+            const localId = getLocalTokenIdFromApi(apiToken)
+            const balanceData = balanceMap.get(localId.toLowerCase())
+            return mapApiTokenToLocal(apiToken, chainId, balanceData)
+          })
+        : []
 
     // Add native token
     return nativeToken ? [nativeToken, ...apiTokens] : apiTokens
-  }, [query.data, balances, chainId, cChainNetwork, solanaNetwork])
+  }, [query.data, balances, chainId, currentNetwork])
 
   return {
     tokens,

@@ -1,7 +1,7 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { fetch as expoFetch } from 'expo/fetch'
-import { Zodios } from '@zodios/core'
 import { z } from 'zod'
+import { fetchJsonWithExpo as fetchJson } from 'utils/api/common/fetchWithValidation'
 import { MARKR_EVM_PARTNER_ID } from '../consts'
 import { MarkrTransaction } from '../types'
 
@@ -197,44 +197,40 @@ const GetSpenderAddressResponseSchema = z.object({
   address: z.string()
 })
 
-const markrServiceClient = new Zodios(
-  ORCHESTRATOR_URL,
-  [
-    {
-      method: 'post',
-      path: '/swap',
-      alias: 'swap',
-      parameters: [
-        {
-          name: 'body',
-          type: 'Body',
-          schema: GetSwapTransactionBodySchema
-        }
-      ],
-      response: GetSwapTransactionResponseSchema
-    },
-    {
-      method: 'get',
-      path: '/spender-address',
-      alias: 'getSpenderAddress',
-      parameters: [
-        {
-          name: 'chainId',
-          type: 'Query',
-          schema: z.number()
-        }
-      ],
-      response: GetSpenderAddressResponseSchema
-    }
-  ],
-  {
-    axiosConfig: {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    }
+// Infer TypeScript types from Zod schemas
+type GetSwapTransactionBody = z.infer<typeof GetSwapTransactionBodySchema>
+type GetSwapTransactionResponse = z.infer<
+  typeof GetSwapTransactionResponseSchema
+>
+type GetSpenderAddressResponse = z.infer<typeof GetSpenderAddressResponseSchema>
+
+const markrApiClient = {
+  // POST /swap
+  swap: async (
+    body: GetSwapTransactionBody
+  ): Promise<GetSwapTransactionResponse> => {
+    return fetchJson(
+      `${ORCHESTRATOR_URL}/swap`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      },
+      GetSwapTransactionResponseSchema
+    )
+  },
+
+  // GET /spender-address
+  getSpenderAddress: async (
+    chainId: number
+  ): Promise<GetSpenderAddressResponse> => {
+    return fetchJson(
+      `${ORCHESTRATOR_URL}/spender-address?chainId=${chainId}`,
+      { method: 'GET' },
+      GetSpenderAddressResponseSchema
+    )
   }
-)
+}
 
 class MarkrService {
   async getSwapRateStream({
@@ -343,7 +339,7 @@ class MarkrService {
     from: string
   }): Promise<MarkrTransaction> {
     const { uuid } = quote
-    return await markrServiceClient.swap({
+    return await markrApiClient.swap({
       uuid,
       chainId: network.chainId,
       from,
@@ -356,9 +352,7 @@ class MarkrService {
   }
 
   async getSpenderAddress({ chainId }: { chainId: number }): Promise<string> {
-    const { address } = await markrServiceClient.getSpenderAddress({
-      queries: { chainId }
-    })
+    const { address } = await markrApiClient.getSpenderAddress(chainId)
     return address
   }
 }
