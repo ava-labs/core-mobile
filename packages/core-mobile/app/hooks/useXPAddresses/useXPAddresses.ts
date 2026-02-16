@@ -53,6 +53,13 @@ export const useXPAddresses = (
 
   const shouldDisable = !wallet || !account
 
+  // Keystone stores one XP xpub shared across all accounts.  All XP
+  // addresses belong to the primary account (index 0).  Non-primary
+  // accounts must return empty so the addressPVM fallback in
+  // transformXPAddresses does not re-introduce per-address balances.
+  const isKeystoneNonPrimary =
+    walletType === WalletType.KEYSTONE && accountIndex > 0
+
   const queryResult = useQuery({
     staleTime: STALE_TIME,
     queryKey: getQueryKey({
@@ -62,18 +69,27 @@ export const useXPAddresses = (
       accountId,
       isDeveloperMode
     }),
-    queryFn: shouldDisable
-      ? skipToken
-      : () => {
-          return getAddressesFromXpubXP({
-            isDeveloperMode,
-            walletId,
-            walletType: walletType as WalletType,
-            accountIndex,
-            onlyWithActivity: true
-          })
-        }
+    queryFn:
+      shouldDisable || isKeystoneNonPrimary
+        ? skipToken
+        : () => {
+            return getAddressesFromXpubXP({
+              isDeveloperMode,
+              walletId,
+              walletType: walletType as WalletType,
+              accountIndex,
+              onlyWithActivity: true
+            })
+          }
   })
+
+  const emptyResult = useMemo(
+    () => ({
+      xpAddresses: [] as string[],
+      xpAddressDictionary: {} as XPAddressDictionary
+    }),
+    []
+  )
 
   const transformed = useMemo(
     () => transformXPAddresses(queryResult.data, account),
@@ -81,7 +97,7 @@ export const useXPAddresses = (
   )
 
   return {
-    ...transformed,
+    ...(isKeystoneNonPrimary ? emptyResult : transformed),
     isLoading: queryResult.isLoading
   }
 }
@@ -100,6 +116,16 @@ export async function getCachedXPAddresses({
   xpAddresses: string[]
   xpAddressDictionary: XPAddressDictionary
 }> {
+  // Keystone non-primary accounts don't own XP addresses.
+  // Return empty to prevent the addressPVM fallback from
+  // re-introducing duplicate balances.
+  if (walletType === WalletType.KEYSTONE && account.index > 0) {
+    return {
+      xpAddresses: [],
+      xpAddressDictionary: {}
+    }
+  }
+
   try {
     const result = await queryClient.fetchQuery({
       staleTime: STALE_TIME,

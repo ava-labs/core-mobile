@@ -137,4 +137,87 @@ describe('getAddressesFromXpubXP', () => {
       { address: 'avax1aaa', index: 1 }
     ])
   })
+
+  describe('Keystone wallet XP address ownership', () => {
+    const keystoneArgs = {
+      isDeveloperMode: false,
+      walletId: 'keystone-wallet-1',
+      walletType: WalletType.KEYSTONE,
+      accountIndex: 0,
+      onlyWithActivity: true
+    }
+
+    it('returns all addresses for Keystone primary account (index 0)', async () => {
+      const avm = makeResponse(
+        'AVM',
+        ['X-avax1aaa', 'X-avax1bbb', 'X-avax1ccc'],
+        []
+      )
+      const pvm = makeResponse(
+        'PVM',
+        ['P-avax1aaa', 'P-avax1bbb', 'P-avax1ccc'],
+        []
+      )
+
+      mockWalletService.getAddressesFromXpubXP.mockImplementation(
+        async ({ networkType }) =>
+          networkType === NetworkVMType.AVM ? avm : pvm
+      )
+
+      const result = await getAddressesFromXpubXP(keystoneArgs)
+
+      // Account 0 should see ALL addresses under the shared xpub
+      expect(result.xpAddresses).toEqual([
+        { address: 'avax1aaa', index: 0 },
+        { address: 'avax1bbb', index: 1 },
+        { address: 'avax1ccc', index: 2 }
+      ])
+    })
+
+    it('returns empty for Keystone non-primary account (index 1)', async () => {
+      const result = await getAddressesFromXpubXP({
+        ...keystoneArgs,
+        accountIndex: 1
+      })
+
+      expect(result.xpAddresses).toEqual([])
+      expect(Object.keys(result.xpAddressDictionary)).toHaveLength(0)
+      // Should NOT call the Profile API at all
+      expect(mockWalletService.getAddressesFromXpubXP).not.toHaveBeenCalled()
+    })
+
+    it('returns empty for Keystone non-primary account (index 4)', async () => {
+      const result = await getAddressesFromXpubXP({
+        ...keystoneArgs,
+        accountIndex: 4
+      })
+
+      expect(result.xpAddresses).toEqual([])
+      expect(Object.keys(result.xpAddressDictionary)).toHaveLength(0)
+      expect(mockWalletService.getAddressesFromXpubXP).not.toHaveBeenCalled()
+    })
+
+    it('does not affect mnemonic wallets with non-zero account index', async () => {
+      const avm = makeResponse(
+        'AVM',
+        ['X-avax1aaa', 'X-avax1bbb'],
+        []
+      )
+      const pvm = makeResponse('PVM', [], [])
+
+      mockWalletService.getAddressesFromXpubXP.mockImplementation(
+        async ({ networkType }) =>
+          networkType === NetworkVMType.AVM ? avm : pvm
+      )
+
+      const result = await getAddressesFromXpubXP({
+        ...args,
+        accountIndex: 2
+      })
+
+      // Mnemonic wallets should still return all addresses regardless of index
+      expect(result.xpAddresses).toHaveLength(2)
+      expect(mockWalletService.getAddressesFromXpubXP).toHaveBeenCalled()
+    })
+  })
 })

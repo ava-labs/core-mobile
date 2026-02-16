@@ -156,6 +156,14 @@ export const getAddressesFromXpubXP = async ({
     })
   }
 
+  // Keystone stores a single XP xpub at m/44'/9000'/0' shared by all accounts.
+  // Only the primary account (index 0) should own all addresses derived from
+  // this xpub.  Non-primary accounts must return empty so the aggregated XP
+  // balance is attributed exclusively to account 0, avoiding duplicates.
+  if (walletType === WalletType.KEYSTONE && accountIndex > 0) {
+    return EMPTY_RESULT
+  }
+
   if (!WalletService.hasXpub(walletType)) {
     return EMPTY_RESULT
   }
