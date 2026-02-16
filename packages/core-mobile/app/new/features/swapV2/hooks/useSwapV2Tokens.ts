@@ -79,7 +79,7 @@ export const useSwapV2Tokens = (
     const balanceMap = new Map<string, LocalTokenWithBalance>()
     balances?.forEach(balance => {
       if (balance.localId) {
-        balanceMap.set(balance.localId, balance)
+        balanceMap.set(balance.localId.toLowerCase(), balance)
       }
     })
 
@@ -90,7 +90,7 @@ export const useSwapV2Tokens = (
       const symbol = currentNetwork.networkToken.symbol
       const decimals = currentNetwork.networkToken.decimals
       const localId = `NATIVE-${symbol}`
-      const nativeBalanceData = balanceMap.get(localId)
+      const nativeBalanceData = balanceMap.get(localId.toLowerCase())
 
       const balance = nativeBalanceData?.balance ?? 0n
       const balanceDisplayValue = new TokenUnit(
@@ -123,7 +123,7 @@ export const useSwapV2Tokens = (
       query.data.length > 0
         ? query.data.map(apiToken => {
             const localId = getLocalTokenIdFromApi(apiToken)
-            const balanceData = balanceMap.get(localId)
+            const balanceData = balanceMap.get(localId.toLowerCase())
             return mapApiTokenToLocal(apiToken, chainId, balanceData)
           })
         : []
