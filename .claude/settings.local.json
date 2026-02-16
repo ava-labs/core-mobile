@@ -9,8 +9,7 @@
       "Bash(yarn core lint:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
-      "Bash(./node_modules/.bin/tsc:*)",
-      "Bash(git log:*)"
+      "Bash(./node_modules/.bin/tsc:*)"
     ]
   }
 }

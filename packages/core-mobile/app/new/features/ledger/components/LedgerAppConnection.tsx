@@ -60,7 +60,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   } = useTheme()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
-
+  const deviceName = connectedDeviceName || 'Ledger Device'
   const keysByNetwork = isDeveloperMode ? keys?.testnet : keys?.mainnet
 
   const hasAllKeys = useMemo(() => {
@@ -241,7 +241,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
               />
             ),
             title: 'Connect to Avalanche App',
-            subtitle: `Open the Avalanche app on your ${connectedDeviceName}, then press Continue when ready.`,
+            subtitle: `Open the Avalanche app on your ${deviceName}, then press Continue when ready.`,
             showAnimation: false,
             isLoading: !connectedDeviceId
           }
@@ -256,7 +256,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
               />
             ),
             title: 'Connecting to Avalanche app',
-            subtitle: `Please keep your Avalanche app open on your ${connectedDeviceName}, We're retrieving your Avalanche addresses...`,
+            subtitle: `Please keep your Avalanche app open on your ${deviceName}, We're retrieving your Avalanche addresses...`,
             showAnimation: true,
             isLoading: true
           }
@@ -272,8 +272,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
             ),
             title: 'Connect to Solana App',
             subtitle: onlySolana
-              ? `Open the Solana app on your ${connectedDeviceName}, then press Continue when ready.`
-              : `Close the Avalanche app and open the Solana app on your ${connectedDeviceName}, then press Continue when ready.`,
+              ? `Open the Solana app on your ${deviceName}, then press Continue when ready.`
+              : `Close the Avalanche app and open the Solana app on your ${deviceName}, then press Continue when ready.`,
             showAnimation: false
           }
 
@@ -287,7 +287,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
               />
             ),
             title: 'Connecting to Solana',
-            subtitle: `Please keep your Solana app open on your ${connectedDeviceName}, We're retrieving your Solana address...`,
+            subtitle: `Please keep your Solana app open on your ${deviceName}, We're retrieving your Solana address...`,
             showAnimation: true,
             isLoading: true
           }
@@ -296,7 +296,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           return null
       }
     },
-    [colors.$textPrimary, connectedDeviceId, connectedDeviceName, onlySolana]
+    [colors.$textPrimary, connectedDeviceId, deviceName, onlySolana]
   )
 
   const renderStepContent = useCallback((): React.ReactNode => {
@@ -419,7 +419,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
 
   // Create device object for display
   const connectedDevice = connectedDeviceId
-    ? [{ id: connectedDeviceId, name: connectedDeviceName ?? 'Ledger Device' }]
+    ? [{ id: connectedDeviceId, name: deviceName }]
     : []
 
   return (
