@@ -23,7 +23,7 @@ import { Operation } from 'services/earn/computeDelegationSteps/types'
 import { BackHandler } from 'react-native'
 import { useNavigation } from 'expo-router'
 import { TRANSACTION_CANCELLED_BY_USER } from 'vmModule/ApprovalController/utils'
-import { LedgerReviewTransactionParams, useLedgerWalletMap } from '../store'
+import { useLedgerWalletMap, useLedgerParams } from '../store'
 import { getLedgerAppName } from '../utils'
 
 type Phase = 'connection' | 'progress'
@@ -68,16 +68,18 @@ const getStepConfig = (operation: Operation | null): StepConfig => {
   }
 }
 
-const LedgerReviewTransactionScreen = ({
-  params: { network, onApprove, onReject, stakingProgress }
-}: {
-  params: LedgerReviewTransactionParams
-}): JSX.Element => {
+const LedgerReviewTransactionScreen = (): JSX.Element | null => {
   const navigation = useNavigation()
-  const approvalTriggeredRef = useRef(false)
   const dismissInProgressRef = useRef(false)
   const walletId = useSelector(selectActiveWalletId)
   const { ledgerWalletMap } = useLedgerWalletMap()
+  const { reviewTransactionParams } = useLedgerParams()
+
+  // Extract params from store
+  const network = reviewTransactionParams?.network
+  const onApprove = reviewTransactionParams?.onApprove
+  const onReject = reviewTransactionParams?.onReject
+  const stakingProgress = reviewTransactionParams?.stakingProgress
 
   const [isConnected, setIsConnected] = useState(false)
   const [isAvalancheAppOpen, setIsAvalancheAppOpen] = useState(false)
@@ -122,23 +124,6 @@ const LedgerReviewTransactionScreen = ({
     if (!deviceForWallet) return
     handleReconnect(deviceForWallet.deviceId)
   }, [deviceForWallet, handleReconnect])
-
-  useEffect(() => {
-    if (approvalTriggeredRef.current) return
-
-    const handleApproveTransaction = async (): Promise<void> => {
-      if (deviceForWallet && isConnected) {
-        try {
-          approvalTriggeredRef.current = true
-          await LedgerService.openApp(ledgerAppName)
-          await onApprove()
-        } finally {
-          approvalTriggeredRef.current = false
-        }
-      }
-    }
-    handleApproveTransaction()
-  }, [deviceForWallet, onApprove, isConnected, ledgerAppName])
 
   // Poll for device connection and app status while in connection phase
   useEffect(() => {
@@ -238,7 +223,7 @@ const LedgerReviewTransactionScreen = ({
     const onBackPress = (): boolean => {
       if (isCancelEnabled && !dismissInProgressRef.current) {
         dismissInProgressRef.current = true
-        onReject(TRANSACTION_CANCELLED_BY_USER)
+        onReject?.(TRANSACTION_CANCELLED_BY_USER)
         return true // Prevent default back behavior, onReject handles navigation
       }
       return false
@@ -263,7 +248,7 @@ const LedgerReviewTransactionScreen = ({
         e.preventDefault()
         dismissInProgressRef.current = true
         // Modal is being dismissed via gesture
-        onReject(TRANSACTION_CANCELLED_BY_USER)
+        onReject?.(TRANSACTION_CANCELLED_BY_USER)
       }
     })
   }, [navigation, onReject, isCancelEnabled])
@@ -273,7 +258,7 @@ const LedgerReviewTransactionScreen = ({
       <Button
         type="secondary"
         size="large"
-        onPress={() => onReject(TRANSACTION_CANCELLED_BY_USER)}
+        onPress={() => onReject?.(TRANSACTION_CANCELLED_BY_USER)}
         disabled={!isCancelEnabled}>
         Cancel
       </Button>
@@ -503,6 +488,11 @@ const LedgerReviewTransactionScreen = ({
     connectionSubtitle,
     renderDeviceItem
   ])
+
+  // Return null if params not available yet
+  if (!reviewTransactionParams || !onApprove || !onReject) {
+    return null
+  }
 
   return (
     <ScrollScreen
