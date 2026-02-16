@@ -58,12 +58,11 @@ export const useXPAddresses = (
 
   const shouldDisable = !wallet || !account
 
-  // TODO: https://ava-labs.atlassian.net/browse/CP-13335
   // Keystone SDK currently only exposes a single XP xpub (account index 0)
   // for all accounts.  Until their SDK supports per-account xpubs, non-primary
   // accounts must return empty to avoid duplicate XP balances caused by the
   // addressPVM fallback in transformXPAddresses.
-  // Remove this workaround once the Keystone SDK is fixed.
+  // TODO: Remove this workaround once the Keystone SDK is fixed.
   const isKeystoneNonPrimary =
     walletType === WalletType.KEYSTONE && accountIndex > 0
 
