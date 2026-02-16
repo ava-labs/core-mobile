@@ -704,22 +704,37 @@ export class LedgerWallet implements Wallet {
 
     // Get chain alias from transaction VM
     const vmName = transaction.tx.getVM()
-    const chainAlias = vmName === 'EVM' ? 'C' : 'X' // X for both X-chain and P-chain
+    let chainAlias: 'X' | 'P' | 'C'
+    switch (vmName) {
+      case 'AVM':
+        chainAlias = 'X'
+        break
+      case 'PVM':
+        chainAlias = 'P'
+        break
+      case 'EVM':
+        chainAlias = 'C'
+        break
+      default:
+        throw new Error(`Unsupported VM type: ${vmName}`)
+    }
 
     // Build the account path based on chain
     // For X/P chain: m/44'/9000'/{accountIndex}'
-    // For C chain (EVM): m/44'/60'/0'
+    // For C chain (EVM): m/44'/60'/{accountIndex}'
     const accountPath =
-      chainAlias === 'C' ? `m/44'/60'/0'` : `m/44'/9000'/${accountIndex}'`
+      chainAlias === 'C'
+        ? `m/44'/60'/${accountIndex}'`
+        : `m/44'/9000'/${accountIndex}'`
 
     // Build signing paths from external indices
-    // For C-chain: use 0/{accountIndex} as the signing path
-    // For X/P-chain: use external indices (default to 0/0 if empty or undefined)
+    // For C-chain: always use 0/0 (first external address)
+    // For X/P-chain: use external indices from UTXO analysis (default to [0] → '0/0' if empty)
     const externalIndices = transaction.externalIndices ?? []
     const hasIndices = externalIndices.length > 0
     const signingPaths =
       chainAlias === 'C'
-        ? [`0/${accountIndex}`]
+        ? ['0/0']
         : (hasIndices ? externalIndices : [0]).map(i => `0/${i}`)
 
     // Build change paths from internal indices

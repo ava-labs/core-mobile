@@ -92,7 +92,7 @@ export const secondaryModalScreensOptions: NativeStackNavigationOptions = {
  */
 export const ledgerModalScreensOptions: NativeStackNavigationOptions = {
   ...modalScreensOptions,
-  freezeOnBlur: Platform.OS === 'ios' ? false : true,
+  freezeOnBlur: Platform.OS === 'ios' ? false : undefined,
   sheetAllowedDetents: [Platform.OS === 'android' ? 0.92 : 0.99]
 }
 
