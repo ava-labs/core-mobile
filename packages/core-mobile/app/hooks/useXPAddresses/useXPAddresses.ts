@@ -115,8 +115,7 @@ export async function getCachedXPAddresses({
   xpAddresses: string[]
   xpAddressDictionary: XPAddressDictionary
 }> {
-  // TODO: https://ava-labs.atlassian.net/browse/CP-13335
-  // Remove once the Keystone SDK supports per-account XP xpubs.
+  // TODO: Remove this workaround once the Keystone SDK supports per-account XP xpubs.
   if (walletType === WalletType.KEYSTONE && account.index > 0) {
     return EMPTY_XP_ADDRESSES
   }
