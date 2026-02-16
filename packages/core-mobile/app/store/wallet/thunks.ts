@@ -12,7 +12,8 @@ import {
 import {
   removeAccount,
   selectAccountsByWalletId,
-  setActiveAccountId
+  setActiveAccountId,
+  removeLedgerAddress
 } from 'store/account/slice'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { ThunkApi } from 'store/types'
@@ -174,9 +175,12 @@ export const removeWallet = createAsyncThunk<void, string, ThunkApi>(
 
     // Step 1: Update all Redux state first (before any keychain operations)
     const accountsToRemove = selectAccountsByWalletId(stateBefore, walletId)
+
     accountsToRemove.forEach(account => {
       thunkApi.dispatch(removeAccount(account.id))
+      thunkApi.dispatch(removeLedgerAddress(account.id))
     })
+
     thunkApi.dispatch(_removeWallet(walletId))
 
     // If we removed the active wallet, set the first account of the new active wallet as active

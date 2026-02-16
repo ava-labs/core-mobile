@@ -315,7 +315,7 @@ export class LedgerWallet implements Wallet {
     }
 
     if (!this.extendedPublicKeys) {
-      Logger.error(`No extendedPublicKeys available`)
+      Logger.error(`[getExtendedPublicKeyFor] No extendedPublicKeys available`)
       return null
     }
 
@@ -665,25 +665,112 @@ export class LedgerWallet implements Wallet {
     network: Network
     provider: Avalanche.JsonRpcProvider
   }): Promise<string> {
-    const signer = await this.getAvalancheProvider(accountIndex)
+    Logger.info('signAvalancheTransaction called')
 
-    if (
-      !(
-        signer instanceof Avalanche.SimpleLedgerSigner ||
-        signer instanceof Avalanche.LedgerSigner
+    await LedgerService.openApp(LedgerAppType.AVALANCHE)
+
+    // First ensure we're connected to the device
+    Logger.info('Ensuring connection to Ledger device...')
+    try {
+      await LedgerService.ensureConnection(this.deviceId)
+      Logger.info('Successfully connected to Ledger device')
+    } catch (error) {
+      Logger.error('Failed to connect to Ledger device:', error)
+      throw new Error(
+        'Please make sure your Ledger device is nearby, unlocked, and Bluetooth is enabled.'
       )
-    ) {
-      throw new Error('Unable to sign avalanche transaction: invalid signer')
     }
 
-    const txToSign = {
-      tx: transaction.tx,
-      externalIndices: transaction.externalIndices,
-      internalIndices: transaction.internalIndices
+    // Now ensure Avalanche app is ready
+    Logger.info('Ensuring Avalanche app is ready...')
+    try {
+      await LedgerService.waitForApp(
+        LedgerAppType.AVALANCHE,
+        LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT
+      )
+      Logger.info('Avalanche app is ready')
+    } catch (error) {
+      Logger.error('Failed to detect Avalanche app:', error)
+      throw new Error(
+        'Please open the Avalanche app on your Ledger device and try again.'
+      )
     }
 
-    const sig = await signer.signTx(txToSign)
-    return JSON.stringify(sig.toJSON())
+    // Get transport and create Avalanche app instance directly
+    // (bypassing SDK's ZondaxProvider which has module resolution issues in React Native)
+    const transport = await this.getTransport()
+
+    const avaxApp = new AppAvax(transport as Transport)
+
+    // Get chain alias from transaction VM
+    const vmName = transaction.tx.getVM()
+    let chainAlias: 'X' | 'P' | 'C'
+    switch (vmName) {
+      case 'AVM':
+        chainAlias = 'X'
+        break
+      case 'PVM':
+        chainAlias = 'P'
+        break
+      case 'EVM':
+        chainAlias = 'C'
+        break
+      default:
+        throw new Error(`Unsupported VM type: ${vmName}`)
+    }
+
+    // Build the account path based on chain
+    // For X/P chain: m/44'/9000'/{accountIndex}'
+    // For C chain (EVM): m/44'/60'/{accountIndex}'
+    const accountPath =
+      chainAlias === 'C'
+        ? `m/44'/60'/${accountIndex}'`
+        : `m/44'/9000'/${accountIndex}'`
+
+    // Build signing paths from external indices
+    // For C-chain: always use 0/0 (first external address)
+    // For X/P-chain: use external indices from UTXO analysis (default to [0] → '0/0' if empty)
+    const externalIndices = transaction.externalIndices ?? []
+    const hasIndices = externalIndices.length > 0
+    const signingPaths =
+      chainAlias === 'C'
+        ? ['0/0']
+        : (hasIndices ? externalIndices : [0]).map(i => `0/${i}`)
+
+    // Build change paths from internal indices
+    const changePaths = (transaction.internalIndices ?? []).map(i => `1/${i}`)
+
+    // Serialize the transaction
+    const txBuffer = Buffer.from(transaction.tx.toBytes())
+
+    Logger.info('Calling avaxApp.sign...')
+    try {
+      // Sign directly with the Ledger device
+      const signResult = await avaxApp.sign(
+        accountPath,
+        signingPaths,
+        txBuffer,
+        changePaths.length > 0 ? changePaths : undefined
+      )
+      Logger.info('avaxApp.sign completed')
+
+      // Add signatures to the transaction
+      const signatures = signResult.signatures || new Map()
+      signatures.forEach(signature => {
+        transaction.tx.addSignature(signature)
+      })
+
+      Logger.info('signAvalancheTransaction completed successfully')
+      return JSON.stringify(transaction.tx.toJSON())
+    } catch (signError) {
+      Logger.error('avaxApp.sign failed with error:', signError)
+      if (signError instanceof Error) {
+        throw new Error(
+          `Avalanche transaction signing failed: ${signError.message}`
+        )
+      }
+      throw signError
+    }
   }
 
   // eslint-disable-next-line sonarjs/cognitive-complexity

@@ -79,6 +79,23 @@ export const secondaryModalScreensOptions: NativeStackNavigationOptions = {
   sheetAllowedDetents: [Platform.OS === 'android' ? 0.92 : 0.99]
 }
 
+/**
+ * Screen options specifically for Ledger transaction review modals.
+ * These modals need to update their UI in real-time during transaction signing,
+ * which requires re-rendering even when the modal is blurred.
+ *
+ * On iOS, freezeOnBlur prevents state updates from triggering re-renders when
+ * the modal loses focus during Ledger device interactions, causing the UI to
+ * appear frozen on "Step 1" even after the transaction completes.
+ *
+ * On Android, freezeOnBlur works correctly and provides performance benefits.
+ */
+export const ledgerModalScreensOptions: NativeStackNavigationOptions = {
+  ...modalScreensOptions,
+  freezeOnBlur: Platform.OS === 'ios' ? false : undefined,
+  sheetAllowedDetents: [Platform.OS === 'android' ? 0.92 : 0.99]
+}
+
 export const modalStackNavigatorScreenOptions: NativeStackNavigationOptions = {
   ...modalScreensOptions,
   presentation: 'card'
