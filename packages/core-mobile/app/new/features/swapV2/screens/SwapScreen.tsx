@@ -346,9 +346,16 @@ export const SwapScreen = (): JSX.Element => {
   )
 
   const handleSelectFromToken = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
-    navigate('/selectSwapV2FromToken')
-  }, [navigate])
+    const tokenParams = toToken?.networkChainId
+      ? { networkChainId: toToken.networkChainId.toString() }
+      : {}
+
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/selectSwapV2FromToken',
+      params: tokenParams
+    })
+  }, [navigate, toToken])
 
   const handleSelectToToken = useCallback((): void => {
     const tokenParams = fromToken?.networkChainId
