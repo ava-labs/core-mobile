@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Platform } from 'react-native'
 import {
   Text,
@@ -23,7 +23,7 @@ import { Operation } from 'services/earn/computeDelegationSteps/types'
 import { BackHandler } from 'react-native'
 import { useNavigation } from 'expo-router'
 import { TRANSACTION_CANCELLED_BY_USER } from 'vmModule/ApprovalController/utils'
-import { useLedgerWalletMap, useLedgerParams } from '../store'
+import { LedgerReviewTransactionParams, useLedgerWalletMap } from '../store'
 import { getLedgerAppName } from '../utils'
 
 type Phase = 'connection' | 'progress'
@@ -78,13 +78,6 @@ const LedgerReviewTransactionScreen = ({
   const dismissInProgressRef = useRef(false)
   const walletId = useSelector(selectActiveWalletId)
   const { ledgerWalletMap } = useLedgerWalletMap()
-  const { reviewTransactionParams } = useLedgerParams()
-
-  // Extract params from store
-  const network = reviewTransactionParams?.network
-  const onApprove = reviewTransactionParams?.onApprove
-  const onReject = reviewTransactionParams?.onReject
-  const stakingProgress = reviewTransactionParams?.stakingProgress
 
   const [isConnected, setIsConnected] = useState(false)
   const [isAvalancheAppOpen, setIsAvalancheAppOpen] = useState(false)
@@ -129,6 +122,23 @@ const LedgerReviewTransactionScreen = ({
     if (!deviceForWallet) return
     handleReconnect(deviceForWallet.deviceId)
   }, [deviceForWallet, handleReconnect])
+
+  useEffect(() => {
+    if (approvalTriggeredRef.current) return
+
+    const handleApproveTransaction = async (): Promise<void> => {
+      if (deviceForWallet && isConnected) {
+        try {
+          approvalTriggeredRef.current = true
+          await LedgerService.openApp(ledgerAppName)
+          await onApprove()
+        } finally {
+          approvalTriggeredRef.current = false
+        }
+      }
+    }
+    handleApproveTransaction()
+  }, [deviceForWallet, onApprove, isConnected, ledgerAppName])
 
   // Poll for device connection and app status while in connection phase
   useEffect(() => {
@@ -223,13 +233,6 @@ const LedgerReviewTransactionScreen = ({
     return () => clearTimeout(timer)
   }, [])
 
-  const handleCancel = useCallback(() => {
-    if (phase === 'progress' && stakingProgress) {
-      stakingProgress.onCancel()
-    }
-    onReject?.()
-  }, [phase, stakingProgress, onReject])
-
   // Handle Android hardware back button
   useEffect(() => {
     const onBackPress = (): boolean => {
@@ -275,7 +278,7 @@ const LedgerReviewTransactionScreen = ({
         Cancel
       </Button>
     )
-  }, [handleCancel, isCancelEnabled])
+  }, [onReject, isCancelEnabled])
 
   const renderDeviceItem = useCallback(() => {
     if (deviceForWallet && phase === 'connection') {
@@ -500,11 +503,6 @@ const LedgerReviewTransactionScreen = ({
     connectionSubtitle,
     renderDeviceItem
   ])
-
-  // Return null if params not available (placed after all hooks to comply with rules of hooks)
-  if (!reviewTransactionParams || !onApprove || !onReject) {
-    return null
-  }
 
   return (
     <ScrollScreen

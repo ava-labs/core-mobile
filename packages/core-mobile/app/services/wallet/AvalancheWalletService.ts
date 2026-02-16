@@ -9,7 +9,6 @@ import { getUnixTime, secondsToMilliseconds } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { PChainId } from '@avalabs/glacier-sdk'
 import { UTCDate } from '@date-fns/utc'
-import { getPvmAddresses } from 'services/earn/computeDelegationSteps/utils'
 import {
   AddDelegatorProps,
   CreateExportCTxParams,
