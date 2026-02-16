@@ -10,9 +10,9 @@ import { SPAN_STATUS_ERROR } from '@sentry/core'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { Account } from 'store/account/types'
 import { getAddressByNetwork } from 'store/account/utils'
-import { balanceApi } from 'utils/apiClient/balance/balanceApi'
+import { streamingBalanceApiClient } from 'utils/api/clients/balanceApiClient'
 import { getSupportedChainsFromCache } from 'hooks/balance/useSupportedChains'
-import { GetBalancesRequestBody } from 'utils/apiClient/generated/balanceApi.client'
+import { GetBalancesRequestBody } from 'utils/api/generated/balanceApi.client'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import Logger from 'utils/Logger'
 import {
@@ -480,7 +480,9 @@ export class BalanceService {
       }
 
       try {
-        for await (const balance of balanceApi.getBalancesStream(body)) {
+        for await (const balance of streamingBalanceApiClient.getBalances(
+          body
+        )) {
           const id = 'id' in balance ? balance.id : undefined
 
           // Resolve to one or more matching accounts.
@@ -632,7 +634,9 @@ export class BalanceService {
       }
 
       try {
-        for await (const balance of balanceApi.getBalancesStream(body)) {
+        for await (const balance of streamingBalanceApiClient.getBalances(
+          body
+        )) {
           const normalized = mapBalanceResponseToLegacy(account, balance)
           if (!normalized) continue
 

@@ -1,3 +1,5 @@
+import Config from 'react-native-config'
+import { Environment } from '@avalabs/unified-asset-transfer'
 import { BuildTxParams } from "features/swap/services/ParaswapService"
 
 /**
@@ -93,3 +95,25 @@ export const MIN_SLIPPAGE_PERCENT = 0.1
  * @example 50 -> 50%
  */
 export const MAX_SLIPPAGE_PERCENT = 50
+
+/**
+ * Markr API endpoint for Fusion SDK
+ */
+// TODO add to env variables once stable https://ava-labs.atlassian.net/browse/CP-13381
+export const MARKR_API_URL =
+  Config.MARKR_API_URL ?? 'https://proxy-api.avax.network/proxy/markr-staging'
+
+/**
+ * Determines the Fusion SDK environment based on app settings
+ */
+export function getFusionEnvironment(
+  isDeveloperMode: boolean,
+): Environment {
+  // If developer mode is enabled, use TEST environment
+  if (isDeveloperMode) {
+    return Environment.TEST
+  }
+
+  // Default to production environment
+  return Environment.PROD
+}
