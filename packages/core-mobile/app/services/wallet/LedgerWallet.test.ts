@@ -2,15 +2,22 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { Curve } from 'utils/publicKeys'
 import { LedgerAppType, LedgerDerivationPathType } from 'services/ledger/types'
-import { AvalancheTransactionRequest } from './types'
 
 // Mock dependencies
-jest.mock('utils/api/generated/profileApi.client', () => ({
-  postV1GetAddresses: jest.fn()
-}), { virtual: true })
-jest.mock('utils/api/clients/profileApiClient', () => ({
-  profileApiClient: {}
-}), { virtual: true })
+jest.mock(
+  'utils/api/generated/profileApi.client',
+  () => ({
+    postV1GetAddresses: jest.fn()
+  }),
+  { virtual: true }
+)
+jest.mock(
+  'utils/api/clients/profileApiClient',
+  () => ({
+    profileApiClient: {}
+  }),
+  { virtual: true }
+)
 
 // Mock LedgerService - the default export is the service instance
 // We need to create the mock inline so Jest can hoist it properly
@@ -45,8 +52,9 @@ jest.mock('@avalabs/hw-app-avalanche', () => {
 })
 
 // Import after mocking
-import { LedgerWallet } from './LedgerWallet'
 import LedgerService from 'services/ledger/LedgerService'
+import { AvalancheTransactionRequest } from './types'
+import { LedgerWallet } from './LedgerWallet'
 
 // Get references to the mocked functions
 const mockOpenApp = LedgerService.openApp as jest.Mock
@@ -258,8 +266,8 @@ describe('LedgerWallet', () => {
         })
 
         expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/60'/0'",  // Account 0
-          ['0/0'],          // Always first address
+          "m/44'/60'/0'", // Account 0
+          ['0/0'], // Always first address
           expect.any(Buffer),
           undefined
         )
@@ -278,8 +286,8 @@ describe('LedgerWallet', () => {
         })
 
         expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/60'/1'",  // Account 1
-          ['0/0'],          // Always first address
+          "m/44'/60'/1'", // Account 1
+          ['0/0'], // Always first address
           expect.any(Buffer),
           undefined
         )
@@ -298,8 +306,8 @@ describe('LedgerWallet', () => {
         })
 
         expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/60'/2'",  // Account 2
-          ['0/0'],          // Always first address
+          "m/44'/60'/2'", // Account 2
+          ['0/0'], // Always first address
           expect.any(Buffer),
           undefined
         )
@@ -319,8 +327,8 @@ describe('LedgerWallet', () => {
         })
 
         expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/60'/5'",  // Account 5
-          ['0/0'],          // Still 0/0, not 0/5
+          "m/44'/60'/5'", // Account 5
+          ['0/0'], // Still 0/0, not 0/5
           expect.any(Buffer),
           undefined
         )
@@ -329,7 +337,7 @@ describe('LedgerWallet', () => {
       it('should ignore externalIndices for C-chain transactions', async () => {
         const transaction: AvalancheTransactionRequest = {
           tx: createCChainTx() as any,
-          externalIndices: [3, 5, 7]  // Should be ignored for C-chain
+          externalIndices: [3, 5, 7] // Should be ignored for C-chain
         }
 
         await ledgerWallet.signAvalancheTransaction({
@@ -341,7 +349,7 @@ describe('LedgerWallet', () => {
 
         expect(mockSign).toHaveBeenCalledWith(
           "m/44'/60'/0'",
-          ['0/0'],  // Not ['0/3', '0/5', '0/7']
+          ['0/0'], // Not ['0/3', '0/5', '0/7']
           expect.any(Buffer),
           undefined
         )
@@ -363,7 +371,7 @@ describe('LedgerWallet', () => {
         })
 
         expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/9000'/2'",  // Account 2
+          "m/44'/9000'/2'", // Account 2
           ['0/0'],
           expect.any(Buffer),
           undefined
@@ -384,7 +392,7 @@ describe('LedgerWallet', () => {
         })
 
         expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/9000'/3'",  // Account 3
+          "m/44'/9000'/3'", // Account 3
           ['0/0'],
           expect.any(Buffer),
           undefined
@@ -406,7 +414,7 @@ describe('LedgerWallet', () => {
 
         expect(mockSign).toHaveBeenCalledWith(
           "m/44'/9000'/0'",
-          ['0/3', '0/5', '0/7'],  // Multiple UTXO signing paths
+          ['0/3', '0/5', '0/7'], // Multiple UTXO signing paths
           expect.any(Buffer),
           undefined
         )
@@ -427,7 +435,7 @@ describe('LedgerWallet', () => {
 
         expect(mockSign).toHaveBeenCalledWith(
           "m/44'/9000'/0'",
-          ['0/0'],  // Default fallback
+          ['0/0'], // Default fallback
           expect.any(Buffer),
           undefined
         )
@@ -448,7 +456,7 @@ describe('LedgerWallet', () => {
 
         expect(mockSign).toHaveBeenCalledWith(
           "m/44'/9000'/0'",
-          ['0/0'],  // Default fallback
+          ['0/0'], // Default fallback
           expect.any(Buffer),
           undefined
         )
@@ -495,7 +503,7 @@ describe('LedgerWallet', () => {
           "m/44'/9000'/0'",
           ['0/0'],
           expect.any(Buffer),
-          ['1/1', '1/3']  // Change paths
+          ['1/1', '1/3'] // Change paths
         )
       })
 
@@ -517,7 +525,7 @@ describe('LedgerWallet', () => {
           "m/44'/9000'/0'",
           ['0/0'],
           expect.any(Buffer),
-          undefined  // No change paths
+          undefined // No change paths
         )
       })
 
@@ -539,7 +547,7 @@ describe('LedgerWallet', () => {
           "m/44'/9000'/0'",
           ['0/0'],
           expect.any(Buffer),
-          undefined  // No change paths
+          undefined // No change paths
         )
       })
     })
@@ -609,7 +617,9 @@ describe('LedgerWallet', () => {
 
     describe('error handling', () => {
       it('should throw error when connection fails', async () => {
-        mockEnsureConnection.mockRejectedValueOnce(new Error('Connection failed'))
+        mockEnsureConnection.mockRejectedValueOnce(
+          new Error('Connection failed')
+        )
 
         const mockTx = {
           getVM: jest.fn().mockReturnValue('AVM'),
