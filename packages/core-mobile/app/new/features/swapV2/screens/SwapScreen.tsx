@@ -582,8 +582,12 @@ export const SwapScreen = (): JSX.Element => {
 
   useEffect(() => {
     if (fromToken && toToken && fromToken.localId === toToken.localId) {
-      // Always clear the "to" field when same token is selected (matches swap v1 behavior)
-      setToToken(undefined)
+      if (prevFromRef.current !== fromToken) {
+        setToToken(undefined)
+      } else if (prevToRef.current !== toToken) {
+        setFromToken(undefined)
+      }
+
       setAmount(undefined)
       setToTokenValue(undefined)
       setFromTokenValue(undefined)
