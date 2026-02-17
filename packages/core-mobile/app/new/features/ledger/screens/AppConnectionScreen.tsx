@@ -101,17 +101,13 @@ export default function AppConnectionScreen({
     }
   }, [currentAppConnectionStep, isSolanaSupportBlocked])
 
-  // Cleanup: Stop polling when component unmounts (unless wallet creation is in progress)
+  // Cleanup: Stop polling when component unmounts
   useEffect(() => {
     return () => {
-      // Only stop polling if we're not in the middle of wallet creation
-      // If wallet creation succeeded, the connection should remain for the wallet to use
-      if (!isUpdatingWallet) {
-        Logger.info('AppConnectionScreen unmounting, stopping app polling')
-        LedgerService.stopAppPolling()
-      }
+      Logger.info('AppConnectionScreen unmounting, stopping app polling')
+      LedgerService.stopAppPolling()
     }
-  }, [isUpdatingWallet])
+  }, [])
 
   const headerCenterOverlay = useMemo(() => {
     const paddingTop = Platform.OS === 'ios' ? 15 : 50

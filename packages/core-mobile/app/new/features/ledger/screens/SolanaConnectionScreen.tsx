@@ -41,17 +41,13 @@ export default function SolanaConnectionScreen(): JSX.Element {
 
   const { updateSolanaForLedgerWallet } = useLedgerWallet()
 
-  // Cleanup: Stop polling when component unmounts (unless wallet update is in progress)
+  // Cleanup: Stop polling when component unmounts
   useEffect(() => {
     return () => {
-      // Only stop polling if we're not in the middle of wallet update
-      // If wallet update succeeded, the connection should remain for the wallet to use
-      if (!isUpdatingWallet) {
-        Logger.info('AppConnectionScreen unmounting, stopping app polling')
-        LedgerService.stopAppPolling()
-      }
+      Logger.info('SolanaConnectionScreen unmounting, stopping app polling')
+      LedgerService.stopAppPolling()
     }
-  }, [isUpdatingWallet])
+  }, [])
 
   const handleConnectSolana = useCallback(async () => {
     try {

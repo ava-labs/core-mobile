@@ -25,6 +25,7 @@ import { useNavigation } from 'expo-router'
 import { TRANSACTION_CANCELLED_BY_USER } from 'vmModule/ApprovalController/utils'
 import { useLedgerWalletMap, useLedgerParams } from '../store'
 import { getLedgerAppName } from '../utils'
+import { LEDGER_DEVICE_BRIEF_DELAY_MS } from '../consts'
 
 type Phase = 'connection' | 'progress'
 
@@ -153,7 +154,10 @@ const LedgerReviewTransactionScreen = (): JSX.Element | null => {
     checkDeviceReady()
 
     // Poll every 1000ms
-    const pollInterval = setInterval(checkDeviceReady, 1000)
+    const pollInterval = setInterval(
+      checkDeviceReady,
+      LEDGER_DEVICE_BRIEF_DELAY_MS
+    )
 
     return () => clearInterval(pollInterval)
   }, [phase])
@@ -185,7 +189,7 @@ const LedgerReviewTransactionScreen = (): JSX.Element | null => {
             if (step >= stakingProgress.totalSteps) {
               setTimeout(() => {
                 stakingProgress.onComplete()
-              }, 500) // Brief delay to show final state
+              }, LEDGER_DEVICE_BRIEF_DELAY_MS) // Brief delay to show final state
             }
           }
           // Transition to progress phase

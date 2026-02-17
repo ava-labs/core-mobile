@@ -78,3 +78,5 @@ export const LEDGER_TIMEOUTS = {
   APP_CHECK_DELAY: 1000, // 1 second delay between app detection attempts
   REQUEST_DELAY: 3000 // 3s delay between APDU commands
 } as const
+
+export const LEDGER_DEVICE_BRIEF_DELAY_MS = 1000

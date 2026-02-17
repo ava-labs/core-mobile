@@ -23,6 +23,7 @@ import { removeWallet } from 'store/wallet/thunks'
 import { Wallet } from 'store/wallet/types'
 import Logger from 'utils/Logger'
 import { useLedgerWalletMap } from 'features/ledger/store'
+import { LEDGER_DEVICE_BRIEF_DELAY_MS } from 'features/ledger/consts'
 
 export const useManageWallet = (): {
   handleAddAccount: (wallet: Wallet) => void
@@ -139,7 +140,7 @@ export const useManageWallet = (): {
           // The modal dismissal will naturally reset this state
           setTimeout(() => {
             setIsAddingAccount(false)
-          }, 1000)
+          }, LEDGER_DEVICE_BRIEF_DELAY_MS)
           return
         }
 

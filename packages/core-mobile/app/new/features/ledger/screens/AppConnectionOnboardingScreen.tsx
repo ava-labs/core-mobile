@@ -83,7 +83,7 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
           setIsUpdatingWallet(false)
         }
       } else {
-        Logger.info(
+        Logger.error(
           'Wallet creation conditions not met, skipping wallet creation',
           {
             hasAvalancheKeys: !!keysByNetwork.avalancheKeys,
