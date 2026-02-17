@@ -3,7 +3,9 @@ import type {
   BtcSigner,
   Environment,
   EvmSignerWithMessage,
-  ServiceType
+  QuoterInterface,
+  ServiceType,
+  TransferManager
 } from '@avalabs/unified-asset-transfer'
 
 /**
@@ -23,6 +25,12 @@ export interface FusionSigners {
 }
 
 /**
+ * Parameters for creating a Quoter instance
+ * Extracts the parameter type from TransferManager's getQuoter method
+ */
+export type QuoterParams = Parameters<TransferManager['getQuoter']>[0]
+
+/**
  * Service interface for Fusion SDK operations
  */
 export interface IFusionService {
@@ -40,10 +48,17 @@ export interface IFusionService {
   }): Promise<void>
 
   /**
-   * Get supported chains from the Fusion SDK
+   * Get supported chains from the Fusion Service
    * Returns CAIP-2 chain IDs that are supported by the enabled services
    */
   getSupportedChains(): Promise<readonly string[]>
+
+  /**
+   * Creates a Quoter instance for fetching real-time swap quotes
+   * @param params Quote request parameters
+   * @returns Quoter instance
+   */
+  getQuoter(params: QuoterParams): QuoterInterface | null
 
   /**
    * Check if the service is initialized

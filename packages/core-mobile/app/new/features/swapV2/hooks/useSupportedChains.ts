@@ -17,7 +17,7 @@ import FusionService from '../services/FusionService'
 const STALE_TIME = 2 * 60 * 1000 // 2 minutes
 
 /**
- * React hook to fetch supported chains from the Fusion SDK dynamically
+ * React hook to fetch supported chains from the Fusion Service dynamically
  *
  * This hook:
  * - Fetches supported chains from FusionService
@@ -35,7 +35,7 @@ export function useSupportedChains(): {
   const { getEnabledNetworkByCaip2ChainId } = useNetworks()
   const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
 
-  // Fetch raw CAIP-2 chain IDs from Fusion SDK
+  // Fetch raw CAIP-2 chain IDs from Fusion Service
   const {
     data: caip2ChainIds,
     isLoading,

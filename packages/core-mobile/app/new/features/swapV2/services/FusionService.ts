@@ -5,6 +5,7 @@ import {
   EvmServiceInitializer,
   LombardServiceInitializer,
   MarkrServiceInitializer,
+  QuoterInterface,
   ServiceInitializer,
   ServiceType,
   TransferManager
@@ -15,7 +16,12 @@ import {
   MARKR_API_URL,
   MARKR_EVM_PARTNER_ID
 } from '../consts'
-import type { FusionConfig, FusionSigners, IFusionService } from './types'
+import type {
+  FusionConfig,
+  FusionSigners,
+  IFusionService,
+  QuoterParams
+} from './types'
 
 /**
  * Service class for managing Fusion SDK TransferManager
@@ -192,10 +198,26 @@ class FusionService implements IFusionService {
   async getSupportedChains(): Promise<readonly string[]> {
     try {
       const chains = await this.transferManager.getSupportedChains()
-      Logger.info(`Fusion SDK supports ${chains.length} chains`, chains)
+      Logger.info(`Fusion Service supports ${chains.length} chains`, chains)
       return chains
     } catch (error) {
-      Logger.error('Failed to fetch supported chains from Fusion SDK', error)
+      Logger.error('Failed to fetch supported chains from Fusion Service', error)
+      throw error
+    }
+  }
+
+  /**
+   * Creates a Quoter instance for fetching real-time swap quotes
+   * @param params Quote request parameters
+   * @returns Quoter instance
+   */
+  getQuoter(params: QuoterParams): QuoterInterface | null {
+    try {
+      const quoter = this.transferManager.getQuoter(params)
+      Logger.info('Quoter instance created successfully')
+      return quoter
+    } catch (error) {
+      Logger.error('Failed to create Quoter instance', error)
       throw error
     }
   }

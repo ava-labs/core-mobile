@@ -40,7 +40,7 @@ export const SelectSwapV2TokenScreen = ({
   const { back, canGoBack } = useRouter()
   const [searchText, setSearchText] = useState<string>('')
 
-  // Get dynamically supported networks from Fusion SDK
+  // Get dynamically supported networks from Fusion Service
   const { chains: networks } = useSupportedChains()
 
   // Selected network state (default to first network or provided default)
