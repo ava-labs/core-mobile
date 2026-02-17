@@ -22,8 +22,7 @@ export default function DeviceConnectionScreen(): JSX.Element {
     theme: { colors }
   } = useTheme()
 
-  const { isConnecting, connectToDevice, setConnectedDevice, resetSetup } =
-    useLedgerSetupContext()
+  const { isConnecting, connectToDevice, resetSetup } = useLedgerSetupContext()
 
   // Local device management
   const [devices, setDevices] = useState<LedgerDevice[]>([])
@@ -132,8 +131,7 @@ export default function DeviceConnectionScreen(): JSX.Element {
   const handleDeviceConnection = useCallback(
     async (deviceId: string, deviceName: string) => {
       try {
-        await connectToDevice(deviceId)
-        setConnectedDevice(deviceId, deviceName)
+        await connectToDevice(deviceId, deviceName)
 
         // Navigate to app connection step
         // @ts-ignore TODO: make routes typesafe
@@ -154,7 +152,7 @@ export default function DeviceConnectionScreen(): JSX.Element {
         )
       }
     },
-    [connectToDevice, setConnectedDevice, push, resetSetup]
+    [connectToDevice, push, resetSetup]
   )
 
   const handleCancel = useCallback(() => {
