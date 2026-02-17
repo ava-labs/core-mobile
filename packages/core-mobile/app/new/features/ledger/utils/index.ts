@@ -4,7 +4,6 @@ import { LedgerAppType, LedgerDerivationPathType } from 'services/ledger/types'
 import { OnDelegationProgress } from 'contexts/DelegationContext'
 import { z } from 'zod'
 import Logger from 'utils/Logger'
-import LedgerService from 'services/ledger/LedgerService'
 import { ledgerParamsStore, StakingProgressParams } from '../store'
 
 export const showLedgerReviewTransaction = ({
