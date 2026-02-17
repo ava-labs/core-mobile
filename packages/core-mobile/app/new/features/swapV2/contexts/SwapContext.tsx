@@ -104,7 +104,9 @@ export const SwapContextProvider = ({
     fromAmount: amount,
     fromAddress,
     toAddress,
-    slippageBps: slippage * 100
+    // When auto slippage is enabled, pass undefined to let SDK determine optimal slippage
+    // When manual, use the user's specified slippage value
+    slippageBps: autoSlippage ? undefined : slippage * 100
   })
 
   // Method to select a specific quote or auto mode

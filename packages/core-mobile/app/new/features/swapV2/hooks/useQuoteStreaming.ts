@@ -16,7 +16,7 @@ interface UseQuoteStreamingParams {
   fromAmount: bigint | undefined
   fromAddress: string | undefined
   toAddress: string | undefined
-  slippageBps: number
+  slippageBps: number | undefined
 }
 
 interface UseQuoteStreamingResult {

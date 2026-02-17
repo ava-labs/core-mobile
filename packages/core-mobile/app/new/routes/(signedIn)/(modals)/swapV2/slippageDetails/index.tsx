@@ -22,6 +22,7 @@ export default (): JSX.Element => {
       autoSlippage={autoSlippage}
       setAutoSlippage={setAutoSlippage}
       serviceType={selectedQuote?.serviceType}
+      quoteSlippageBps={selectedQuote?.slippageBps}
     />
   )
 }

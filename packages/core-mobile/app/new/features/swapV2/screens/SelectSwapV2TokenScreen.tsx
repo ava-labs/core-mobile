@@ -20,8 +20,8 @@ import { ListRenderItem } from '@shopify/flash-list'
 import { LocalTokenWithBalance } from 'store/balance'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { useFilteredSwapTokens } from '../hooks/useFilteredSwapTokens'
-import { useSwapV2Tokens } from '../hooks/useSwapV2Tokens'
 import { useSupportedChains } from '../hooks/useSupportedChains'
+import { useSwapTokens } from '../hooks/useSwapTokens'
 
 export const SelectSwapV2TokenScreen = ({
   selectedToken,
@@ -75,7 +75,7 @@ export const SelectSwapV2TokenScreen = ({
   }, [selectedNetwork])
 
   // Lazy load tokens for selected network (with balance data merged)
-  const { tokens, isLoading } = useSwapV2Tokens(caip2Id)
+  const { tokens, isLoading } = useSwapTokens(caip2Id)
 
   // Filter and sort tokens
   const results = useFilteredSwapTokens({ tokens, searchText, hideZeroBalance })

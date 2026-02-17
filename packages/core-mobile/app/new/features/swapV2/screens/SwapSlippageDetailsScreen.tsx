@@ -17,6 +17,7 @@ import {
 } from 'common/utils/alertWithTextInput'
 import { isSlippageValid } from '../utils/isSlippageValid'
 import { ServiceType } from '../types'
+import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
 
 const CUSTOM_SLIPPAGE_INPUT_KEY = 'customSlippage'
 const PRESET_SLIPPAGES = [1, 2] as const
@@ -27,6 +28,7 @@ interface SwapSlippageDetailsScreenProps {
   autoSlippage: boolean
   setAutoSlippage: (autoSlippage: boolean) => void
   serviceType?: ServiceType
+  quoteSlippageBps?: number
 }
 
 export const SwapSlippageDetailsScreen = ({
@@ -34,7 +36,8 @@ export const SwapSlippageDetailsScreen = ({
   setSlippage,
   autoSlippage,
   setAutoSlippage,
-  serviceType
+  serviceType,
+  quoteSlippageBps
 }: SwapSlippageDetailsScreenProps): JSX.Element => {
   const {
     theme: { colors, isDark }
@@ -125,7 +128,12 @@ export const SwapSlippageDetailsScreen = ({
     })
   }, [isCustom, slippage, sanitizeInput, setSlippage, setAutoSlippage])
 
-  const displayValue = autoSlippage ? `Auto • ${slippage}%` : `${slippage}%`
+  const displayValue = getDisplaySlippageValue({
+    autoSlippage,
+    quoteSlippageBps,
+    manualSlippage: slippage
+  })
+
   const isSlippageApplicable = serviceType === ServiceType.MARKR
 
   const handleDone = useCallback(() => {

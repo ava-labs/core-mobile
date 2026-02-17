@@ -43,6 +43,7 @@ import { selectActiveAccount } from 'store/account'
 import Logger from 'utils/Logger'
 import { useSwapContext } from '../contexts/SwapContext'
 import { useSwapRate } from '../hooks/useSwapRate'
+import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
 import { ServiceType } from '../types'
 
 export const SwapScreen = (): JSX.Element => {
@@ -465,7 +466,11 @@ export const SwapScreen = (): JSX.Element => {
       errorMessage ===
         ParaswapError[ParaswapErrorCode.ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT]
     ) {
-      const displayValue = autoSlippage ? `Auto • ${slippage}%` : `${slippage}%`
+      const displayValue = getDisplaySlippageValue({
+        autoSlippage,
+        quoteSlippageBps: selectedQuote?.slippageBps,
+        manualSlippage: slippage
+      })
       items.push({
         title: 'Slippage',
         value: displayValue,
