@@ -63,11 +63,6 @@ export interface IFusionService {
   getQuoter(params: QuoterParams): QuoterInterface | null
 
   /**
-   * Check if the service is initialized
-   */
-  isInitialized(): boolean
-
-  /**
    * Cleanup and reset the service
    */
   cleanup(): void

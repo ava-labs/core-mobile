@@ -237,13 +237,6 @@ class FusionService implements IFusionService {
   }
 
   /**
-   * Check if the service is initialized
-   */
-  isInitialized(): boolean {
-    return this.#transferManager !== null
-  }
-
-  /**
    * Cleanup and reset the service
    */
   cleanup(): void {

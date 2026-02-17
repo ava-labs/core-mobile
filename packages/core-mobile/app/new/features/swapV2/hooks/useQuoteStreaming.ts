@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSelector } from 'react-redux'
 import type { LocalTokenWithBalance } from 'store/balance'
 import Logger from 'utils/Logger'
 import { NetworkWithCaip2ChainId } from 'store/network'
 import FusionService from '../services/FusionService'
+import { selectIsFusionServiceReady } from '../store/slice'
 import { toSwappableAsset, toChain } from '../utils/fusionTypeConverters'
 import { useBestQuote, useUserQuote, useAllQuotes } from './useZustandStore'
 
@@ -40,6 +42,9 @@ export function useQuoteStreaming(
     slippageBps
   } = params
 
+  // Subscribe to FusionService ready state
+  const isFusionServiceReady = useSelector(selectIsFusionServiceReady)
+
   const [, setBestQuote] = useBestQuote()
   const [, setUserQuote] = useUserQuote()
   const [, setAllQuotes] = useAllQuotes()
@@ -49,6 +54,11 @@ export function useQuoteStreaming(
 
   // Create Quoter instance when all required params are available
   const quoter = useMemo(() => {
+    // First check if FusionService is ready
+    if (!isFusionServiceReady) {
+      return null
+    }
+
     // Validate all required parameters
     if (
       !fromToken ||
@@ -70,7 +80,7 @@ export function useQuoteStreaming(
       const sourceChain = toChain(fromNetwork)
       const targetChain = toChain(toNetwork)
 
-      // Create quoter
+      // Create quoter (service is guaranteed to be ready)
       return FusionService.getQuoter({
         fromAddress,
         toAddress,
@@ -91,6 +101,7 @@ export function useQuoteStreaming(
       return null
     }
   }, [
+    isFusionServiceReady,
     fromToken,
     fromNetwork,
     toToken,

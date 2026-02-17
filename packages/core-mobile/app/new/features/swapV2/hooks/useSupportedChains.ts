@@ -5,10 +5,10 @@ import type { Network } from '@avalabs/core-chains-sdk'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import Logger from 'utils/Logger'
-import { exponentialBackoff } from 'utils/reactQuery'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { isSolanaNetwork } from 'utils/network/isSolanaNetwork'
 import { selectIsSolanaSwapBlocked } from 'store/posthog'
+import { selectIsFusionServiceReady } from '../store/slice'
 import FusionService from '../services/FusionService'
 
 /**
@@ -34,6 +34,7 @@ export function useSupportedChains(): {
 } {
   const { getEnabledNetworkByCaip2ChainId } = useNetworks()
   const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
+  const isFusionServiceReady = useSelector(selectIsFusionServiceReady)
 
   // Fetch raw CAIP-2 chain IDs from Fusion Service
   const {
@@ -45,9 +46,8 @@ export function useSupportedChains(): {
     queryFn: async () => {
       return FusionService.getSupportedChains()
     },
-    staleTime: STALE_TIME,
-    retry: 3,
-    retryDelay: exponentialBackoff(5000)
+    enabled: isFusionServiceReady,
+    staleTime: STALE_TIME
   })
 
   // Convert CAIP-2 IDs to Network objects from enabled networks

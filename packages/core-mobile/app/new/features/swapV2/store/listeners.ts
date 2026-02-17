@@ -91,6 +91,7 @@ import FusionService from '../services/FusionService'
 import { getFusionEnvironment } from '../consts'
 import { createEvmSigner } from '../services/signers/EvmSigner'
 import { createBtcSigner } from '../services/signers/BtcSigner'
+import { setFusionServiceReady, selectIsFusionServiceReady } from './slice'
 
 /**
  * Get the current state of all Fusion feature flags
@@ -157,12 +158,14 @@ export const initFusionService = async (
   const request = createInAppRequest(listenerApi.dispatch)
 
   // Check if already initialized and if reinitialization is needed
-  if (FusionService.isInitialized()) {
+  const isFusionServiceReady = selectIsFusionServiceReady(state)
+  if (isFusionServiceReady) {
     const prevState = listenerApi.getOriginalState()
 
     if (!shouldReinitializeFusion(prevState, state)) return
 
-    // Cleanup before reinitializing
+    // Mark as not ready during reinitialization
+    listenerApi.dispatch(setFusionServiceReady(false))
     FusionService.cleanup()
   }
 
@@ -171,11 +174,15 @@ export const initFusionService = async (
   // Don't initialize if Fusion is not enabled
   if (!featureStates.isFusionEnabled) {
     Logger.info('Fusion is disabled, skipping initialization')
+    listenerApi.dispatch(setFusionServiceReady(false))
     return
   }
 
   try {
     Logger.info('Initializing Fusion service', featureStates)
+
+    // Mark as not ready at start
+    listenerApi.dispatch(setFusionServiceReady(false))
 
     // Create signers
     const evmSigner = createEvmSigner(request)
@@ -210,6 +217,9 @@ export const initFusionService = async (
       }
     })
 
+    // Mark as ready after successful init
+    listenerApi.dispatch(setFusionServiceReady(true))
+
     Logger.info('Fusion service initialized successfully', {
       environment,
       enabledServices: Object.entries(featureFlags)
@@ -218,14 +228,17 @@ export const initFusionService = async (
     })
   } catch (error) {
     Logger.error('Failed to initialize Fusion service', error)
+    // Mark as not ready on error
+    listenerApi.dispatch(setFusionServiceReady(false))
   }
 }
 
 export const cleanupFusionService = async (
   _action: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-  _listenerApi: AppListenerEffectAPI
+  listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   FusionService.cleanup()
+  listenerApi.dispatch(setFusionServiceReady(false))
 }
 
 /**
