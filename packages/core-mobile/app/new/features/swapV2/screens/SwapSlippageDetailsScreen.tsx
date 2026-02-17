@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Button,
   Separator,
@@ -51,6 +51,17 @@ export const SwapSlippageDetailsScreen = ({
   const [isCustom, setIsCustom] = useState(
     !PRESET_SLIPPAGES.includes(slippage as never)
   )
+
+  // Track last known valid serviceType to prevent UI flicker during refetches
+  const lastKnownServiceTypeRef = useRef(serviceType)
+
+  useEffect(() => {
+    if (serviceType !== undefined) {
+      lastKnownServiceTypeRef.current = serviceType
+    }
+  }, [serviceType])
+
+  const stableServiceType = serviceType ?? lastKnownServiceTypeRef.current
 
   // Sync local state when slippage changes
   useEffect(() => {
@@ -134,7 +145,7 @@ export const SwapSlippageDetailsScreen = ({
     manualSlippage: slippage
   })
 
-  const isSlippageApplicable = serviceType === ServiceType.MARKR
+  const isSlippageApplicable = stableServiceType === ServiceType.MARKR
 
   const handleDone = useCallback(() => {
     router.back()
