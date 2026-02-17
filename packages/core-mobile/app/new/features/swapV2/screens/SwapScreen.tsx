@@ -22,7 +22,6 @@ import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { useSwapList } from 'common/hooks/useSwapList'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { ParaswapError, ParaswapErrorCode } from 'errors/swapError'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
@@ -460,12 +459,7 @@ export const SwapScreen = (): JSX.Element => {
       }
     }
 
-    if (
-      showFeesAndSlippage ||
-      // display slippage field if slippage tolerance is exceeded
-      errorMessage ===
-        ParaswapError[ParaswapErrorCode.ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT]
-    ) {
+    if (showFeesAndSlippage) {
       const displayValue = getDisplaySlippageValue({
         autoSlippage,
         quoteSlippageBps: selectedQuote?.slippageBps,
@@ -485,7 +479,6 @@ export const SwapScreen = (): JSX.Element => {
     rate,
     selectedQuote,
     allQuotes,
-    errorMessage,
     showFeesAndSlippage,
     slippage,
     autoSlippage,

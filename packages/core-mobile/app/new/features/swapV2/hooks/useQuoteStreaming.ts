@@ -123,6 +123,11 @@ export function useQuoteStreaming(
       return
     }
 
+    // Clear quotes when starting new subscription (e.g., token pair changed)
+    // This prevents stale quotes from previous pair being displayed
+    setBestQuote(null)
+    setUserQuote(null)
+    setAllQuotes([])
     setIsLoading(true)
     setError(null)
 
