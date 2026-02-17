@@ -39,6 +39,7 @@ module.exports = {
         '@notifee/react-native',
         '@invertase/react-native-apple-authentication',
         '@avalabs/vm-module-types',
+        '@avalabs/unified-asset-transfer',
         'camelcase-keys',
         'map-obj',
         'camelcase',

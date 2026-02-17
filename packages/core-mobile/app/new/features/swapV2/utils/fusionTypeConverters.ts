@@ -1,4 +1,3 @@
-import type { Network } from '@avalabs/core-chains-sdk'
 import { TokenType as AppTokenType } from '@avalabs/vm-module-types'
 import {
   TokenType as SdkTokenType,
@@ -9,7 +8,6 @@ import {
 import type { Address as EvmAddress } from 'viem'
 import type { Address as SolanaAddress } from '@solana/kit'
 import type { LocalTokenWithBalance } from 'store/balance'
-import { isSolanaNetwork } from 'utils/network/isSolanaNetwork'
 import { NetworkWithCaip2ChainId } from 'store/network'
 
 /**
@@ -22,14 +20,11 @@ import { NetworkWithCaip2ChainId } from 'store/network'
  * Converts LocalTokenWithBalance to Fusion SDK Asset format
  *
  * @param token - App's token representation with balance
- * @param network - Network that the token belongs to
+ * @param _network - Network that the token belongs to (unused, kept for API compatibility)
  * @returns SDK's Asset format (discriminated union)
  * @throws Error if token type is not supported
  */
-export function toSwappableAsset(
-  token: LocalTokenWithBalance,
-  network: Network
-): Asset {
+export function toSwappableAsset(token: LocalTokenWithBalance): Asset {
   if (token.type === AppTokenType.ERC721) {
     throw new Error('ERC721 tokens are not supported for swaps')
   }
@@ -68,7 +63,7 @@ export function toSwappableAsset(
   }
 
   // Handle SPL tokens (require Solana address format)
-  if (isSolanaNetwork(network)) {
+  if (token.type === AppTokenType.SPL) {
     if (!('address' in token) || !token.address) {
       throw new Error('SPL token must have an address')
     }
@@ -81,7 +76,7 @@ export function toSwappableAsset(
     }
   }
 
-  throw new Error(`Unsupported token type: ${token.type}`)
+  throw new Error(`Unsupported token type: ${token}`)
 }
 
 /**

@@ -75,8 +75,8 @@ export function useQuoteStreaming(
 
     try {
       // Convert app types to SDK types
-      const sourceAsset = toSwappableAsset(fromToken, fromNetwork)
-      const targetAsset = toSwappableAsset(toToken, toNetwork)
+      const sourceAsset = toSwappableAsset(fromToken)
+      const targetAsset = toSwappableAsset(toToken)
       const sourceChain = toChain(fromNetwork)
       const targetChain = toChain(toNetwork)
 
