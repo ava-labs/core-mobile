@@ -3,6 +3,7 @@ import {
   createTransferManager,
   Environment,
   EvmServiceInitializer,
+  FetchFunction,
   LombardServiceInitializer,
   MarkrServiceInitializer,
   QuoterInterface,
@@ -152,6 +153,7 @@ class FusionService implements IFusionService {
       // Create the TransferManager instance
       this.#transferManager = await createTransferManager({
         environment: config.environment,
+        fetch: config.fetch,
         serviceInitializers: initializers as [
           ServiceInitializer,
           ...ServiceInitializer[]
@@ -171,11 +173,13 @@ class FusionService implements IFusionService {
    */
   async initWithFeatureFlags({
     bitcoinProvider,
+    fetch,
     environment,
     featureFlags,
     signers
   }: {
     bitcoinProvider: BitcoinFunctions
+    fetch: FetchFunction
     environment: Environment
     featureFlags: FeatureFlags
     signers: FusionSigners
@@ -184,7 +188,7 @@ class FusionService implements IFusionService {
 
     return this.init({
       bitcoinProvider,
-      config: { environment, enabledServices },
+      config: { environment, enabledServices, fetch },
       signers
     })
   }
@@ -197,9 +201,19 @@ class FusionService implements IFusionService {
    */
   async getSupportedChains(): Promise<readonly string[]> {
     try {
-      const chains = await this.transferManager.getSupportedChains()
-      Logger.info(`Fusion Service supports ${chains.length} chains`, chains)
-      return chains
+      const chainsMap = await this.transferManager.getSupportedChains()
+      const sourceChains = Array.from(chainsMap.keys())
+
+      // Log supported chains with their destinations
+      Logger.info(`Fusion Service supports ${sourceChains.length} source chains`)
+      chainsMap.forEach((destinations, source) => {
+        Logger.info(
+          `Chain ${source} can transfer to ${destinations.size} destinations:`,
+          Array.from(destinations)
+        )
+      })
+
+      return sourceChains
     } catch (error) {
       Logger.error('Failed to fetch supported chains from Fusion Service', error)
       throw error

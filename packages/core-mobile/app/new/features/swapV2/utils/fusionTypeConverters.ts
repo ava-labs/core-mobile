@@ -10,6 +10,7 @@ import type { Address as EvmAddress } from 'viem'
 import type { Address as SolanaAddress } from '@solana/kit'
 import type { LocalTokenWithBalance } from 'store/balance'
 import { isSolanaNetwork } from 'utils/network/isSolanaNetwork'
+import { NetworkWithCaip2ChainId } from 'store/network'
 
 /**
  * Type conversion utilities for Fusion SDK integration
@@ -90,12 +91,12 @@ export function toSwappableAsset(
  * @returns SDK's Chain format
  * @throws Error if network is missing required fields
  */
-export function toChain(network: Network): Chain {
+export function toChain(network: NetworkWithCaip2ChainId): Chain {
   // Require CAIP-2 chain ID (e.g., "eip155:1" for Ethereum mainnet)
-  if (!network.caip2Id) {
+  if (!network.caip2ChainId) {
     throw new Error(`Network ${network.chainName} is missing caip2Id`)
   }
-  const caip2ChainId = network.caip2Id as Caip2ChainId
+  const caip2ChainId = network.caip2ChainId as Caip2ChainId
 
   // Convert network token to SDK's NativeAsset format
   const networkToken: Asset = {

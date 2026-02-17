@@ -15,7 +15,6 @@ import {
 import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { SwapSide } from '@paraswap/sdk'
 import { useNavigation } from '@react-navigation/native'
-import Big from 'big.js'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
@@ -38,26 +37,13 @@ import Animated, {
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { LocalTokenWithBalance } from 'store/balance'
-import {
-  selectIsSwapFeesBlocked,
-  selectIsSwapFeesJupiterBlocked
-} from 'store/posthog'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
 import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio/hooks/useTokensWithZeroBalanceByNetworksForAccount'
 import { selectActiveAccount } from 'store/account'
-import {
-  JUPITER_PARTNER_FEE_BPS,
-  MARKR_PARTNER_FEE_BPS,
-  PARASWAP_PARTNER_FEE_BPS
-} from '../consts'
+import Logger from 'utils/Logger'
 import { useSwapContext } from '../contexts/SwapContext'
 import { useSwapRate } from '../hooks/useSwapRate'
-import {
-  isJupiterQuote,
-  isMarkrQuote,
-  isParaswapQuote,
-  SwapProviders
-} from '../types'
+import { ServiceType } from '../types'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -80,13 +66,15 @@ export const SwapScreen = (): JSX.Element => {
     toToken,
     setToToken,
     destination,
-    quotes,
-    isFetchingQuote,
+    bestQuote,
+    userQuote,
+    allQuotes,
+    isQuoteLoading,
     setDestination,
     slippage,
     autoSlippage,
     setAmount,
-    error: swapError,
+    quoteError,
     swapStatus
   } = useSwapContext()
   const [maxFromValue, setMaxFromValue] = useState<bigint | undefined>()
@@ -111,56 +99,29 @@ export const SwapScreen = (): JSX.Element => {
     [theme]
   )
   const errorMessage = useMemo(
-    () => localError || swapError,
-    [localError, swapError]
+    () => localError || quoteError?.message,
+    [localError, quoteError]
   )
 
-  const selectedQuote = useMemo(() => {
-    if (!quotes || !quotes.selected) {
-      return undefined
-    }
-
-    return quotes.selected
-  }, [quotes])
-
-  const selectedProvider = useMemo(() => {
-    if (!quotes) {
-      return undefined
-    }
-
-    return quotes.provider
-  }, [quotes])
+  // userQuote takes precedence over bestQuote
+  const selectedQuote = userQuote ?? bestQuote
+  Logger.info('selectedQuote', selectedQuote)
 
   const canSwap: boolean =
-    !localError &&
-    !swapError &&
-    !!fromToken &&
-    !!toToken &&
-    !!selectedQuote &&
-    !!selectedProvider
+    !localError && !quoteError && !!fromToken && !!toToken && !!selectedQuote
 
   const swapInProcess = swapStatus === 'Swapping'
-  const isSwapFeesBlocked = useSelector(selectIsSwapFeesBlocked)
-  const isSwapFeesJupiterBlocked = useSelector(selectIsSwapFeesJupiterBlocked)
 
   const coreFeeMessage = useMemo(() => {
     if (!selectedQuote) return
 
-    const { quote } = selectedQuote
-    let feeBps: number | undefined
-
-    if (isParaswapQuote(quote) && !isSwapFeesBlocked) {
-      feeBps = PARASWAP_PARTNER_FEE_BPS
-    } else if (isJupiterQuote(quote) && !isSwapFeesJupiterBlocked) {
-      feeBps = JUPITER_PARTNER_FEE_BPS
-    } else if (isMarkrQuote(quote) && !isSwapFeesBlocked) {
-      feeBps = MARKR_PARTNER_FEE_BPS
-    }
+    // Fusion SDK Quote has partnerFeeBps directly
+    const feeBps = selectedQuote.partnerFeeBps
 
     if (!feeBps) return
 
     return `Quote includes a ${basisPointsToPercentage(feeBps)} Core fee`
-  }, [selectedQuote, isSwapFeesBlocked, isSwapFeesJupiterBlocked])
+  }, [selectedQuote])
 
   const updateMissingTokenPrice = useCallback(
     async (token: LocalTokenWithBalance | undefined) => {
@@ -196,44 +157,20 @@ export const SwapScreen = (): JSX.Element => {
     }
   }, [fromTokenValue, maxFromValue])
 
-  const applyFeeDeduction = useCallback(
-    (amount: string, direction: SwapSide): bigint => {
-      const feePercent = PARASWAP_PARTNER_FEE_BPS / 10_000
-
-      if (direction === SwapSide.SELL) {
-        const minAmountOut = new Big(amount).times(1 - feePercent).toFixed(0)
-        return BigInt(minAmountOut)
-      } else {
-        const maxAmountIn = new Big(amount).times(1 + feePercent).toFixed(0)
-        return BigInt(maxAmountIn)
-      }
-    },
-    []
-  )
-
   const applyQuote = useCallback(() => {
-    if (
-      !fromTokenValue ||
-      !selectedQuote ||
-      selectedQuote?.quote === undefined
-    ) {
+    if (!fromTokenValue || !selectedQuote) {
       setToTokenValue(undefined)
       return
     }
-    const quote = selectedQuote.quote
-    const amountIn = selectedQuote.metadata.amountIn
-    const amountOut = selectedQuote.metadata.amountOut
-    if (
-      selectedProvider === SwapProviders.PARASWAP &&
-      isParaswapQuote(quote) &&
-      quote.side === SwapSide.BUY &&
-      amountIn
-    ) {
-      setFromTokenValue(applyFeeDeduction(amountIn, SwapSide.BUY))
-    } else if (amountOut) {
-      setToTokenValue(applyFeeDeduction(amountOut, SwapSide.SELL))
+
+    // Fusion SDK Quote has amountOut as bigint - fees are already included
+    // No need to apply fee deduction - the SDK/backend handles all fees
+    const amountOut = selectedQuote.amountOut
+
+    if (amountOut) {
+      setToTokenValue(amountOut)
     }
-  }, [selectedQuote, selectedProvider, fromTokenValue, applyFeeDeduction])
+  }, [selectedQuote, fromTokenValue])
 
   const calculateMax = useCallback(() => {
     if (!fromToken) return
@@ -305,16 +242,7 @@ export const SwapScreen = (): JSX.Element => {
     swapList
   ])
 
-  const showFeesAndSlippage = useMemo(() => {
-    return (
-      quotes &&
-      [
-        SwapProviders.MARKR,
-        SwapProviders.PARASWAP,
-        SwapProviders.JUPITER
-      ].includes(quotes.provider)
-    )
-  }, [quotes])
+  const showFeesAndSlippage = selectedQuote?.serviceType === ServiceType.MARKR
 
   const handleSwap = useCallback(() => {
     AnalyticsService.capture('SwapReviewOrder', {
@@ -484,7 +412,7 @@ export const SwapScreen = (): JSX.Element => {
           formatInCurrency={amount => formatInCurrency(toToken, amount)}
           onAmountChange={handleToAmountChange}
           onSelectToken={handleSelectToToken}
-          isLoadingAmount={isFetchingQuote}
+          isLoadingAmount={isQuoteLoading}
         />
       </View>
     )
@@ -495,13 +423,13 @@ export const SwapScreen = (): JSX.Element => {
     toToken,
     getNetwork,
     toTokenValue,
-    isFetchingQuote,
+    isQuoteLoading,
     handleSelectToToken,
     swapInProcess
   ])
 
   const rate = useSwapRate({
-    quote: quotes?.selected?.quote,
+    quote: selectedQuote,
     fromToken,
     toToken
   })
@@ -509,11 +437,11 @@ export const SwapScreen = (): JSX.Element => {
   const data = useMemo(() => {
     const items: GroupListItem[] = []
 
-    if (!quotes || quotes.quotes.length === 0) {
+    if (!selectedQuote || allQuotes.length === 0) {
       return items
     }
 
-    const haveMultipleQuotes = quotes.quotes.length > 1
+    const haveMultipleQuotes = allQuotes.length > 1
     if (fromToken && toToken && rate) {
       if (haveMultipleQuotes) {
         items.push({
@@ -550,7 +478,8 @@ export const SwapScreen = (): JSX.Element => {
     fromToken,
     toToken,
     rate,
-    quotes,
+    selectedQuote,
+    allQuotes,
     errorMessage,
     showFeesAndSlippage,
     slippage,

@@ -16,7 +16,7 @@ import {
   showAlertWithTextInput
 } from 'common/utils/alertWithTextInput'
 import { isSlippageValid } from '../utils/isSlippageValid'
-import { SwapProviders } from '../types'
+import { ServiceType } from '../types'
 
 const CUSTOM_SLIPPAGE_INPUT_KEY = 'customSlippage'
 const PRESET_SLIPPAGES = [1, 2] as const
@@ -26,7 +26,7 @@ interface SwapSlippageDetailsScreenProps {
   setSlippage: (slippage: number) => void
   autoSlippage: boolean
   setAutoSlippage: (autoSlippage: boolean) => void
-  provider?: SwapProviders
+  serviceType?: ServiceType
 }
 
 export const SwapSlippageDetailsScreen = ({
@@ -34,7 +34,7 @@ export const SwapSlippageDetailsScreen = ({
   setSlippage,
   autoSlippage,
   setAutoSlippage,
-  provider
+  serviceType
 }: SwapSlippageDetailsScreenProps): JSX.Element => {
   const {
     theme: { colors, isDark }
@@ -126,7 +126,7 @@ export const SwapSlippageDetailsScreen = ({
   }, [isCustom, slippage, sanitizeInput, setSlippage, setAutoSlippage])
 
   const displayValue = autoSlippage ? `Auto • ${slippage}%` : `${slippage}%`
-  const isSlippageApplicable = provider !== SwapProviders.WNATIVE
+  const isSlippageApplicable = serviceType === ServiceType.MARKR
 
   const handleDone = useCallback(() => {
     router.back()

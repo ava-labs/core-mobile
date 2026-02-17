@@ -3,8 +3,17 @@ import { SwapSlippageDetailsScreen } from 'features/swapV2/screens/SwapSlippageD
 import { useSwapContext } from 'features/swapV2/contexts/SwapContext'
 
 export default (): JSX.Element => {
-  const { slippage, setSlippage, autoSlippage, setAutoSlippage, quotes } =
-    useSwapContext()
+  const {
+    slippage,
+    setSlippage,
+    autoSlippage,
+    setAutoSlippage,
+    bestQuote,
+    userQuote
+  } = useSwapContext()
+
+  // userQuote takes precedence over bestQuote
+  const selectedQuote = userQuote ?? bestQuote
 
   return (
     <SwapSlippageDetailsScreen
@@ -12,7 +21,7 @@ export default (): JSX.Element => {
       setSlippage={setSlippage}
       autoSlippage={autoSlippage}
       setAutoSlippage={setAutoSlippage}
-      provider={quotes?.provider}
+      serviceType={selectedQuote?.serviceType}
     />
   )
 }

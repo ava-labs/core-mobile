@@ -13,6 +13,7 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { getAddressByNetwork } from 'store/account/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import type { Quote } from '../types'
 import {
   useSwapSelectedFromToken,
   useSwapSelectedToToken,
@@ -32,9 +33,9 @@ interface SwapContextState {
   toToken?: LocalTokenWithBalance
   setFromToken: Dispatch<LocalTokenWithBalance | undefined>
   setToToken: Dispatch<LocalTokenWithBalance | undefined>
-  bestQuote: unknown | null
-  userQuote: unknown | null
-  allQuotes: unknown[]
+  bestQuote: Quote | null
+  userQuote: Quote | null
+  allQuotes: Quote[]
   isQuoteLoading: boolean
   quoteError: Error | null
   selectQuoteById: (quoteId: string | null) => void
@@ -114,21 +115,19 @@ export const SwapContextProvider = ({
         setUserQuote(null)
       } else {
         // User manually selected specific aggregator
-        const selectedQuote = (allQuotes as Array<{ id: string }>).find(
-          q => q.id === quoteId
-        )
+        const selectedQuote = allQuotes.find(q => q.id === quoteId)
         setUserQuote(selectedQuote ?? null)
       }
     },
     [allQuotes, setUserQuote]
   )
 
-  // Active quote for swap execution (userQuote takes precedence over bestQuote)
-  const activeQuote = userQuote ?? bestQuote
-
   // Stub swap function - will be implemented in next phase
   const swap = useCallback(async () => {
-    if (!activeQuote) {
+    // userQuote takes precedence over bestQuote
+    const selectedQuote = userQuote ?? bestQuote
+
+    if (!selectedQuote) {
       throw new Error('No quote available')
     }
 
@@ -140,11 +139,11 @@ export const SwapContextProvider = ({
       toToken,
       amount,
       slippage,
-      activeQuote
+      selectedQuote
     })
 
     setSwapStatus('Idle')
-  }, [fromToken, toToken, amount, slippage, activeQuote])
+  }, [fromToken, toToken, amount, slippage, userQuote, bestQuote])
 
   const value: SwapContextState = {
     fromToken,

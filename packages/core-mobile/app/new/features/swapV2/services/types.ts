@@ -5,7 +5,8 @@ import type {
   EvmSignerWithMessage,
   QuoterInterface,
   ServiceType,
-  TransferManager
+  TransferManager,
+  FetchFunction
 } from '@avalabs/unified-asset-transfer'
 
 /**
@@ -14,6 +15,7 @@ import type {
 export interface FusionConfig {
   environment: Environment
   enabledServices: ServiceType[]
+  fetch: FetchFunction
 }
 
 /**

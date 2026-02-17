@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { Network } from '@avalabs/core-chains-sdk'
 import type { LocalTokenWithBalance } from 'store/balance'
 import Logger from 'utils/Logger'
+import { NetworkWithCaip2ChainId } from 'store/network'
 import FusionService from '../services/FusionService'
 import { toSwappableAsset, toChain } from '../utils/fusionTypeConverters'
 import { useBestQuote, useUserQuote, useAllQuotes } from './useZustandStore'
 
 interface UseQuoteStreamingParams {
   fromToken: LocalTokenWithBalance | undefined
-  fromNetwork: Network | undefined
+  fromNetwork: NetworkWithCaip2ChainId | undefined
   toToken: LocalTokenWithBalance | undefined
-  toNetwork: Network | undefined
+  toNetwork: NetworkWithCaip2ChainId | undefined
   fromAmount: bigint | undefined
   fromAddress: string | undefined
   toAddress: string | undefined

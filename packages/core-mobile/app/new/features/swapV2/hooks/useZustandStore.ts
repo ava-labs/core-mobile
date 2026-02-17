@@ -1,5 +1,6 @@
 import { createZustandStore } from 'common/utils/createZustandStore'
 import type { LocalTokenWithBalance } from 'store/balance'
+import type { Quote } from '../types'
 
 // Token selection stores
 export const useSwapSelectedFromToken = createZustandStore<
@@ -11,7 +12,6 @@ export const useSwapSelectedToToken = createZustandStore<
 >(undefined)
 
 // Quote stores for Fusion Service integration
-// Using generic type to avoid circular dependency with SDK
-export const useBestQuote = createZustandStore<unknown | null>(null)
-export const useUserQuote = createZustandStore<unknown | null>(null)
-export const useAllQuotes = createZustandStore<unknown[]>([])
+export const useBestQuote = createZustandStore<Quote | null>(null)
+export const useUserQuote = createZustandStore<Quote | null>(null)
+export const useAllQuotes = createZustandStore<Quote[]>([])
