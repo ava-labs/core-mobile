@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react'
+import { ScrollView } from 'react-native'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import {
   ActivityIndicator,
@@ -94,12 +95,10 @@ export const SelectSwapV2TokenScreen = ({
     if (!networks || networks.length <= 1) return null
 
     return (
-      <View
-        sx={{
-          flexDirection: 'row',
-          gap: 8,
-          justifyContent: 'flex-start'
-        }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: 8 }}>
         {networks.map(network => (
           <Button
             key={network.chainId}
@@ -117,7 +116,7 @@ export const SelectSwapV2TokenScreen = ({
               : network.chainName}
           </Button>
         ))}
-      </View>
+      </ScrollView>
     )
   }, [networks, selectedNetwork])
 
