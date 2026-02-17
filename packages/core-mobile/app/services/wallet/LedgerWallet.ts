@@ -71,9 +71,6 @@ export class LedgerWallet implements Wallet {
   private extendedPublicKeys?: PerAccountExtendedPublicKeys
   private publicKeys: PublicKey[]
   private evmSigner?: LedgerSigner
-  private avalancheSigner?:
-    | Avalanche.SimpleLedgerSigner
-    | Avalanche.LedgerSigner
   private bitcoinWallet?: BitcoinLedgerWallet
   private walletId: string
 
@@ -133,64 +130,6 @@ export class LedgerWallet implements Wallet {
       }
     }
     return this.evmSigner
-  }
-
-  private async getAvalancheProvider(
-    accountIndex: number
-  ): Promise<Avalanche.SimpleLedgerSigner | Avalanche.LedgerSigner> {
-    if (!this.avalancheSigner) {
-      const transport = await this.getTransport()
-
-      if (this.derivationPathSpec === LedgerDerivationPathType.BIP44) {
-        // BIP44 mode - use extended public keys for the specific account
-        const extPublicKey = this.getExtendedPublicKeyFor(
-          NetworkVMType.AVM,
-          accountIndex
-        )
-        if (!extPublicKey) {
-          throw new Error(
-            `Missing extended public key for AVM account ${accountIndex}`
-          )
-        }
-
-        this.avalancheSigner = new Avalanche.SimpleLedgerSigner(
-          accountIndex,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          transport as any, // TransportBLE is runtime compatible with wallets SDK expectations
-          extPublicKey.key
-        )
-      } else {
-        // LedgerLive mode - use individual public keys
-        const pubkeyEVM = await this.getPublicKeyFor({
-          derivationPath: this.getDerivationPath(
-            accountIndex,
-            NetworkVMType.EVM
-          ),
-          curve: Curve.SECP256K1
-        })
-        const pubkeyAVM = await this.getPublicKeyFor({
-          derivationPath: this.getDerivationPath(
-            accountIndex,
-            NetworkVMType.AVM
-          ),
-          curve: Curve.SECP256K1
-        })
-
-        if (!pubkeyEVM || !pubkeyAVM) {
-          throw new Error('Missing public keys for LedgerLive mode')
-        }
-
-        this.avalancheSigner = new Avalanche.LedgerSigner(
-          Buffer.from(pubkeyAVM, 'hex'),
-          this.getDerivationPath(accountIndex, NetworkVMType.AVM),
-          Buffer.from(pubkeyEVM, 'hex'),
-          this.getDerivationPath(accountIndex, NetworkVMType.EVM),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          transport as any // TransportBLE is runtime compatible with wallets SDK expectations
-        )
-      }
-    }
-    return this.avalancheSigner
   }
 
   private async getBitcoinSigner(
@@ -666,35 +605,8 @@ export class LedgerWallet implements Wallet {
     provider: Avalanche.JsonRpcProvider
   }): Promise<string> {
     Logger.info('signAvalancheTransaction called')
-
-    await LedgerService.openApp(LedgerAppType.AVALANCHE)
-
-    // First ensure we're connected to the device
-    Logger.info('Ensuring connection to Ledger device...')
-    try {
-      await LedgerService.ensureConnection(this.deviceId)
-      Logger.info('Successfully connected to Ledger device')
-    } catch (error) {
-      Logger.error('Failed to connect to Ledger device:', error)
-      throw new Error(
-        'Please make sure your Ledger device is nearby, unlocked, and Bluetooth is enabled.'
-      )
-    }
-
-    // Now ensure Avalanche app is ready
-    Logger.info('Ensuring Avalanche app is ready...')
-    try {
-      await LedgerService.waitForApp(
-        LedgerAppType.AVALANCHE,
-        LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT
-      )
-      Logger.info('Avalanche app is ready')
-    } catch (error) {
-      Logger.error('Failed to detect Avalanche app:', error)
-      throw new Error(
-        'Please open the Avalanche app on your Ledger device and try again.'
-      )
-    }
+    const appType = LedgerAppType.AVALANCHE
+    await this.handleAppConnection(appType)
 
     // Get transport and create Avalanche app instance directly
     // (bypassing SDK's ZondaxProvider which has module resolution issues in React Native)
@@ -765,9 +677,7 @@ export class LedgerWallet implements Wallet {
     } catch (signError) {
       Logger.error('avaxApp.sign failed with error:', signError)
       if (signError instanceof Error) {
-        throw new Error(
-          `Avalanche transaction signing failed: ${signError.message}`
-        )
+        handleLedgerError({ error: signError, appType })
       }
       throw signError
     }
@@ -787,39 +697,14 @@ export class LedgerWallet implements Wallet {
   }): Promise<string> {
     Logger.info('signEvmTransaction called')
 
-    // First ensure we're connected to the device
-    Logger.info('Ensuring connection to Ledger device...')
-    try {
-      await LedgerService.ensureConnection(this.deviceId)
-      Logger.info('Successfully connected to Ledger device')
-    } catch (error) {
-      Logger.error('Failed to connect to Ledger device:', error)
-      if (error instanceof Error) {
-        handleLedgerError({ error, network })
-      }
-      throw error
-    }
-
     // Determine chain type and required app
     const chainId = transaction.chainId ? Number(transaction.chainId) : 43114
     const isAvalanche = isAvalancheChainId(chainId)
-    const appName = isAvalanche
+    const appType = isAvalanche
       ? LedgerAppType.AVALANCHE
       : LedgerAppType.ETHEREUM
 
-    // Ensure the correct app is ready
-    Logger.info(`Ensuring ${appName} app is ready...`)
-    try {
-      await LedgerService.openApp(appName)
-      await LedgerService.waitForApp(appName, LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT)
-      Logger.info(`${appName} app is ready`)
-    } catch (error) {
-      Logger.error(`Failed to detect ${appName} app:`, error)
-      if (error instanceof Error) {
-        handleLedgerError({ error, network })
-      }
-      throw error
-    }
+    await this.handleAppConnection(appType)
 
     // Get transport
     const transport = await this.getTransport()
@@ -1088,9 +973,55 @@ export class LedgerWallet implements Wallet {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any
   ): Promise<string> {
-    const signer = await this.getAvalancheProvider(accountIndex)
-    const signature = await signer.signMessage(data)
-    return signature.toString('hex')
+    Logger.info('signAvalancheMessage called')
+    const appType = LedgerAppType.AVALANCHE
+    await this.handleAppConnection(appType)
+
+    try {
+      // Get transport and create Avalanche app instance directly
+      const transport = await this.getTransport()
+      const avaxApp = new AppAvax(transport as Transport)
+      Logger.info('Created AppAvax instance')
+
+      // Get the account path for Avalanche (X-Chain/P-Chain use 9000')
+      const accountPath = `m/44'/9000'/${accountIndex}'`
+      Logger.info('Using account path:', accountPath)
+
+      // Signing paths for the first address (0/0)
+      // For message signing, we typically only sign with the primary address (0/0),
+      // which is the expected behavior.
+      const signingPaths = ['0/0']
+
+      // Convert message to string if needed
+      const messageString =
+        typeof data === 'string' ? data : JSON.stringify(data)
+
+      Logger.info('Signing message with AppAvax.signMsg')
+      // Sign the message using the Avalanche app
+      const signResult = await avaxApp.signMsg(
+        accountPath,
+        signingPaths,
+        messageString
+      )
+
+      // Extract the signature from the result
+      const signatures = signResult.signatures || new Map()
+      if (signatures.size === 0) {
+        throw new Error('No signatures returned from device')
+      }
+
+      // Get the first signature and convert to hex
+      const signatureBuffer = Array.from(signatures.values())[0]
+      const hexSignature = signatureBuffer.toString('hex')
+      Logger.info('Successfully signed Avalanche message')
+      return hexSignature
+    } catch (error) {
+      Logger.error('Failed to sign Avalanche message:', error)
+      if (error instanceof Error) {
+        handleLedgerError({ error, appType })
+      }
+      throw error
+    }
   }
 
   // eslint-disable-next-line max-params
@@ -1142,6 +1073,9 @@ export class LedgerWallet implements Wallet {
     account: Account
     xpub: { evm: string; avalanche: string }
   }> {
+    const appType = LedgerAppType.AVALANCHE
+    await this.handleAppConnection(appType)
+
     const addresses = await LedgerService.getAllAddresses(index, 1, isTestnet)
     const addressC = addresses.find(addr => addr.id.includes('evm'))?.address
     const addressAVM = addresses.find(addr =>
@@ -1280,5 +1214,34 @@ export class LedgerWallet implements Wallet {
     }
     Logger.info('Got signature from Ethereum app:', signature)
     return signature
+  }
+
+  private handleAppConnection = async (appType: LedgerAppType) => {
+    // First ensure we're connected to the device
+    Logger.info('Ensuring connection to Ledger device...')
+    try {
+      await LedgerService.ensureConnection(this.deviceId)
+      Logger.info('Successfully connected to Ledger device')
+    } catch (error) {
+      Logger.error('Failed to connect to Ledger device:', error)
+      if (error instanceof Error) {
+        handleLedgerError({ error, appType })
+      }
+      throw error
+    }
+
+    // Ensure the correct app is ready
+    Logger.info(`Ensuring ${appType} app is ready...`)
+    try {
+      await LedgerService.openApp(appType)
+      await LedgerService.waitForApp(appType, LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT)
+      Logger.info(`${appType} app is ready`)
+    } catch (error) {
+      Logger.error(`Failed to detect ${appType} app:`, error)
+      if (error instanceof Error) {
+        handleLedgerError({ error, appType })
+      }
+      throw error
+    }
   }
 }
