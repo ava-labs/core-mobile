@@ -55,7 +55,7 @@ export const LedgerReviewTransactionScreen = (): JSX.Element | null => {
 
   // Handle connection established - require correct app open
   useEffect(() => {
-    if (deviceForWallet && isConnected) {
+    if (deviceForWallet && isConnected && isAppOpened) {
       const handleApproval = async (): Promise<void> => {
         try {
           await onApprove?.()
@@ -71,7 +71,7 @@ export const LedgerReviewTransactionScreen = (): JSX.Element | null => {
       }
       handleApproval()
     }
-  }, [deviceForWallet, isConnected, onApprove])
+  }, [deviceForWallet, isAppOpened, isConnected, onApprove])
 
   return (
     <LedgerReviewScreen
