@@ -62,7 +62,6 @@ import {
   SignatureRSV
 } from './types'
 import { getAddressDerivationPath, handleLedgerError } from './utils'
-import { transaction } from '../../new/features/ledger/screens/LedgerReviewStakingScreen'
 
 export class LedgerWallet implements Wallet {
   private deviceId: string
