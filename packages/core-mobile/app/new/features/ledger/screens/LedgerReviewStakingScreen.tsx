@@ -78,6 +78,7 @@ export const LedgerReviewStakingScreen = (): JSX.Element | null => {
   const [currentOperation, setCurrentOperation] = useState<Operation | null>(
     null
   )
+  const [approvalInProgress, setApprovalInProgress] = useState(false)
   const headerHeight = useHeaderHeight()
 
   const deviceForWallet = useMemo(
@@ -92,9 +93,11 @@ export const LedgerReviewStakingScreen = (): JSX.Element | null => {
       deviceForWallet &&
       isConnected &&
       isAvalancheAppOpen &&
-      phase === 'connection'
+      phase === 'connection' &&
+      !approvalInProgress
     ) {
       const handleApproval = async (): Promise<void> => {
+        setApprovalInProgress(true)
         try {
           // Create progress callback that updates local state
           const onProgress = (
@@ -123,8 +126,9 @@ export const LedgerReviewStakingScreen = (): JSX.Element | null => {
               'Something went wrong while communicating with your Ledger device. Please try again.',
             buttons: [{ text: 'OK', style: 'default' }]
           })
-          // Reset phase and local progress state so the user can retry or cancel
+          // Reset phase, approval flag, and local progress state so the user can retry or cancel
           setPhase('connection')
+          setApprovalInProgress(false)
           setCurrentStep(0)
           setCurrentOperation(null)
         }
@@ -137,7 +141,8 @@ export const LedgerReviewStakingScreen = (): JSX.Element | null => {
     phase,
     stakingProgress,
     onApprove,
-    deviceForWallet
+    deviceForWallet,
+    approvalInProgress
   ])
 
   const stepConfig = useMemo(

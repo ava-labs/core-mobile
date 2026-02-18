@@ -18,6 +18,7 @@ export const LedgerReviewTransactionScreen = (): JSX.Element | null => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [isConnected, setIsConnected] = useState(false)
   const [isAppOpened, setIsAppOpened] = useState(false)
+  const [approvalInProgress, setApprovalInProgress] = useState(false)
 
   // Extract params from store
   const {
@@ -49,8 +50,9 @@ export const LedgerReviewTransactionScreen = (): JSX.Element | null => {
 
   // Handle connection established - require correct app open
   useEffect(() => {
-    if (deviceForWallet && isConnected && isAppOpened) {
+    if (deviceForWallet && isConnected && isAppOpened && !approvalInProgress) {
       const handleApproval = async (): Promise<void> => {
+        setApprovalInProgress(true)
         try {
           await onApprove?.()
         } catch (error) {
@@ -61,11 +63,12 @@ export const LedgerReviewTransactionScreen = (): JSX.Element | null => {
               'Something went wrong while communicating with your Ledger device. Please try again.',
             buttons: [{ text: 'OK', style: 'default' }]
           })
+          setApprovalInProgress(false)
         }
       }
       handleApproval()
     }
-  }, [deviceForWallet, isAppOpened, isConnected, onApprove])
+  }, [deviceForWallet, isAppOpened, isConnected, onApprove, approvalInProgress])
 
   return (
     <LedgerReviewScreen

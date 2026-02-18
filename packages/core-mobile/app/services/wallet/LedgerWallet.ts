@@ -62,6 +62,7 @@ import {
   SignatureRSV
 } from './types'
 import { getAddressDerivationPath, handleLedgerError } from './utils'
+import { transaction } from '../../new/features/ledger/screens/LedgerReviewStakingScreen'
 
 export class LedgerWallet implements Wallet {
   private deviceId: string
@@ -368,7 +369,7 @@ export class LedgerWallet implements Wallet {
 
     try {
       // Ensure device is connected
-      await LedgerService.ensureConnection(this.deviceId)
+      const transport = await this.getTransport()
 
       // Ensure Bitcoin app is ready
       Logger.info('Ensuring Bitcoin app is ready...')
@@ -377,7 +378,6 @@ export class LedgerWallet implements Wallet {
         LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT
       )
 
-      const transport = await this.getTransport()
       const btcApp = new BtcClient(transport as Transport)
 
       // Get master fingerprint from device
@@ -554,11 +554,9 @@ export class LedgerWallet implements Wallet {
   }): Promise<string> {
     Logger.info('signAvalancheTransaction called')
     const appType = LedgerAppType.AVALANCHE
-    await this.handleAppConnection(appType)
-
     // Get transport and create Avalanche app instance directly
     // (bypassing SDK's ZondaxProvider which has module resolution issues in React Native)
-    const transport = await this.getTransport()
+    const transport = await this.handleAppConnection(appType)
 
     const avaxApp = new AppAvax(transport as Transport)
 
@@ -652,11 +650,8 @@ export class LedgerWallet implements Wallet {
       ? LedgerAppType.AVALANCHE
       : LedgerAppType.ETHEREUM
 
-    await this.handleAppConnection(appType)
-
     // Get transport
-    const transport = await this.getTransport()
-    Logger.info('Got transport')
+    const transport = await this.handleAppConnection(appType)
 
     try {
       // Get the derivation path for this account
@@ -743,45 +738,7 @@ export class LedgerWallet implements Wallet {
     network: Network
     provider: SolanaProvider
   }): Promise<string> {
-    Logger.info('signSvmTransaction called')
-    Logger.info('Transaction data:', {
-      account: transaction.account,
-      serializedTxLength: transaction.serializedTx?.length
-    })
-
-    // First ensure we're connected to the device
-    Logger.info('Ensuring connection to Ledger device...')
-    try {
-      await LedgerService.ensureConnection(this.deviceId)
-      Logger.info('Successfully connected to Ledger device')
-    } catch (error) {
-      Logger.error('Failed to connect to Ledger device:', error)
-      if (error instanceof Error) {
-        handleLedgerError({ error, network })
-      }
-      throw error
-    }
-
-    try {
-      await LedgerService.openApp(LedgerAppType.SOLANA)
-      // Now ensure Solana app is ready
-      Logger.info('Ensuring Solana app is ready...')
-      await LedgerService.waitForApp(
-        LedgerAppType.SOLANA,
-        LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT
-      )
-      Logger.info('Solana app is ready')
-    } catch (error) {
-      Logger.error('Failed to detect Solana app:', error)
-      if (error instanceof Error) {
-        handleLedgerError({ error, network })
-      }
-      throw error
-    }
-
-    // Get transport
-    const transport = await this.getTransport()
-    Logger.info('Got transport')
+    const transport = await this.handleAppConnection(LedgerAppType.SOLANA)
 
     // Create AppSolana instance
     const solanaApp = new AppSolana(transport as Transport)
@@ -923,11 +880,10 @@ export class LedgerWallet implements Wallet {
   ): Promise<string> {
     Logger.info('signAvalancheMessage called')
     const appType = LedgerAppType.AVALANCHE
-    await this.handleAppConnection(appType)
+    // Get transport and create Avalanche app instance directly
+    const transport = await this.handleAppConnection(appType)
 
     try {
-      // Get transport and create Avalanche app instance directly
-      const transport = await this.getTransport()
       const avaxApp = new AppAvax(transport as Transport)
       Logger.info('Created AppAvax instance')
 
@@ -1134,12 +1090,10 @@ export class LedgerWallet implements Wallet {
           ? LedgerAppType.AVALANCHE
           : LedgerAppType.ETHEREUM
         // Get transport and create Ethereum app instance
-        const transport = await this.getTransport()
+        const transport = await this.handleAppConnection(appType)
         const app = isAvalancheChainId(network.chainId)
           ? new AppAvax(transport as Transport)
           : new Eth(transport as Transport)
-
-        await this.handleAppConnection(appType)
 
         // Handle typed data signing
         Logger.info('Signing typed data', {
@@ -1156,60 +1110,12 @@ export class LedgerWallet implements Wallet {
           (typeof data === 'string' && data.trim().startsWith('['))
 
         if (isV1Format || rpcMethod === RpcMethod.SIGN_TYPED_DATA_V1) {
-          Logger.info('Detected EIP-712 v1 format (array)')
-
-          // Parse if string
-          let v1Data: Array<{ name: string; type: string; value: unknown }>
-          if (typeof data === 'string') {
-            v1Data = JSON.parse(data)
-          } else {
-            v1Data = data as Array<{
-              name: string
-              type: string
-              value: unknown
-            }>
-          }
-
-          // Convert v1 format to v4 format for Ledger
-          // v1: [{name, type, value}, ...]
-          // v4: {domain, types: {Message: [...], EIP712Domain: [...]}, primaryType, message}
-          const message: Record<string, unknown> = {}
-          v1Data.forEach(({ name, value }) => {
-            message[name] = value
-          })
-
-          // Create a minimal valid domain for v1 messages
-          // Ledger requires at least a name or chainId in the domain
-          const eip712Message = {
-            domain: {
-              name: 'Core Mobile',
-              version: '1'
-            },
-            types: {
-              EIP712Domain: [
-                { name: 'name', type: 'string' },
-                { name: 'version', type: 'string' }
-              ],
-              Message: v1Data.map(({ name, type }) => ({ name, type }))
-            },
-            primaryType: 'Message',
-            message
-          }
-
-          Logger.info('Converted v1 to v4 format with minimal domain:', {
-            domain: eip712Message.domain,
-            typesKeys: Object.keys(eip712Message.types),
-            messageKeys: Object.keys(message),
-            primaryType: eip712Message.primaryType
-          })
-
-          const hexSignature = await this.signEIP712WithFallback(
-            app,
-            derivationPath,
-            eip712Message
+          Logger.error(
+            'eth_signTypedData v1 format is not supported on Ledger devices'
           )
-          Logger.info('Successfully signed v1 typed data')
-          return hexSignature
+          throw new Error(
+            'eth_signTypedData v1 is not supported on Ledger devices.'
+          )
         }
 
         // Handle EIP-712 v3/v4 format
@@ -1282,9 +1188,8 @@ export class LedgerWallet implements Wallet {
       ) {
         const appType = LedgerAppType.ETHEREUM
         // Get transport and create Ethereum app instance
-        const transport = await this.getTransport()
+        const transport = await this.handleAppConnection(appType)
         const app = new Eth(transport as Transport)
-        await this.handleAppConnection(appType)
 
         // Handle personal sign and eth_sign
         Logger.info('Signing personal message')
@@ -1478,11 +1383,14 @@ export class LedgerWallet implements Wallet {
     return signature
   }
 
-  private handleAppConnection = async (appType: LedgerAppType) => {
+  private handleAppConnection = async (
+    appType: LedgerAppType
+  ): Promise<TransportBLE> => {
     // First ensure we're connected to the device
     Logger.info('Ensuring connection to Ledger device...')
+    let transport: TransportBLE
     try {
-      await LedgerService.ensureConnection(this.deviceId)
+      transport = await LedgerService.ensureConnection(this.deviceId)
       Logger.info('Successfully connected to Ledger device')
     } catch (error) {
       Logger.error('Failed to connect to Ledger device:', error)
@@ -1498,6 +1406,7 @@ export class LedgerWallet implements Wallet {
       await LedgerService.openApp(appType)
       await LedgerService.waitForApp(appType, LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT)
       Logger.info(`${appType} app is ready`)
+      return transport
     } catch (error) {
       Logger.error(`Failed to detect ${appType} app:`, error)
       if (error instanceof Error) {
