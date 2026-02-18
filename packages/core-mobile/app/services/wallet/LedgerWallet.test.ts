@@ -50,7 +50,7 @@ jest.mock('@avalabs/hw-app-avalanche', () => {
       signMsg = mockSignMsg
       getETHAddress = mockGetETHAddress
       signEVMTransaction = mockSignEVMTransaction
-      constructor(_transport: any) {
+      constructor(_transport: unknown) {
         // Constructor accepts transport but doesn't use it
       }
     }
@@ -73,7 +73,8 @@ jest.mock('@ledgerhq/hw-app-eth', () => {
       signPersonalMessage = mockEthSignPersonalMessage
       signEIP712Message = mockEthSignEIP712Message
       signEIP712HashedMessage = mockEthSignEIP712HashedMessage
-      constructor(_transport: any) {}
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      constructor(_transport: unknown) {}
     }
   }
 })
@@ -89,7 +90,8 @@ jest.mock('ledger-bitcoin', () => {
       getMasterFingerprint = mockGetMasterFingerprint
       getExtendedPubkey = mockGetExtendedPubkey
       registerWallet = mockRegisterWallet
-      constructor(_transport: any) {}
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      constructor(_transport: unknown) {}
     },
     DefaultWalletPolicy: jest.fn(),
     WalletPolicy: jest.fn()
@@ -138,12 +140,11 @@ jest.mock('@avalabs/core-wallets-sdk', () => ({
 
 // Import after mocking
 import LedgerService from 'services/ledger/LedgerService'
+import { bip32 } from 'utils/bip32'
+import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import { AvalancheTransactionRequest } from './types'
 import { LedgerWallet } from './LedgerWallet'
 import { BitcoinWalletPolicyService } from './BitcoinWalletPolicyService'
-import BiometricsSDK from 'utils/BiometricsSDK'
-import { bip32 } from 'utils/bip32'
-import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 
 // Get references to the mocked functions
 const mockOpenApp = LedgerService.openApp as jest.Mock
@@ -241,7 +242,7 @@ describe('LedgerWallet', () => {
         }
 
         const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as any,
+          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
           externalIndices: [0]
         }
 
@@ -270,7 +271,7 @@ describe('LedgerWallet', () => {
         }
 
         const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as any,
+          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
           externalIndices: [0]
         }
 
@@ -299,7 +300,7 @@ describe('LedgerWallet', () => {
         }
 
         const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as any
+          tx: mockTx as unknown as AvalancheTransactionRequest['tx']
         }
 
         await ledgerWallet.signAvalancheTransaction({
@@ -327,7 +328,7 @@ describe('LedgerWallet', () => {
         }
 
         const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as any
+          tx: mockTx as unknown as AvalancheTransactionRequest['tx']
         }
 
         await expect(
@@ -344,7 +345,7 @@ describe('LedgerWallet', () => {
     describe('C-chain derivation paths', () => {
       it('should use account 0 path for C-chain with account index 0', async () => {
         const transaction: AvalancheTransactionRequest = {
-          tx: createCChainTx() as any
+          tx: createCChainTx() as unknown as AvalancheTransactionRequest['tx']
         }
 
         await ledgerWallet.signAvalancheTransaction({
@@ -364,7 +365,7 @@ describe('LedgerWallet', () => {
 
       it('should use account 1 path for C-chain with account index 1', async () => {
         const transaction: AvalancheTransactionRequest = {
-          tx: createCChainTx() as any
+          tx: createCChainTx() as unknown as AvalancheTransactionRequest['tx']
         }
 
         await ledgerWallet.signAvalancheTransaction({
@@ -384,7 +385,7 @@ describe('LedgerWallet', () => {
 
       it('should use account 2 path for C-chain with account index 2', async () => {
         const transaction: AvalancheTransactionRequest = {
-          tx: createCChainTx() as any
+          tx: createCChainTx() as unknown as AvalancheTransactionRequest['tx']
         }
 
         await ledgerWallet.signAvalancheTransaction({
@@ -404,7 +405,7 @@ describe('LedgerWallet', () => {
 
       it('should always use 0/0 signing path for C-chain regardless of account index', async () => {
         const transaction: AvalancheTransactionRequest = {
-          tx: createCChainTx() as any
+          tx: createCChainTx() as unknown as AvalancheTransactionRequest['tx']
         }
 
         // Test with account 5
@@ -425,7 +426,7 @@ describe('LedgerWallet', () => {
 
       it('should ignore externalIndices for C-chain transactions', async () => {
         const transaction: AvalancheTransactionRequest = {
-          tx: createCChainTx() as any,
+          tx: createCChainTx() as unknown as AvalancheTransactionRequest['tx'],
           externalIndices: [3, 5, 7] // Should be ignored for C-chain
         }
 
@@ -448,7 +449,7 @@ describe('LedgerWallet', () => {
     describe('X/P-chain derivation paths', () => {
       it('should use account index in X-chain account path', async () => {
         const transaction: AvalancheTransactionRequest = {
-          tx: createXChainTx() as any,
+          tx: createXChainTx() as unknown as AvalancheTransactionRequest['tx'],
           externalIndices: [0]
         }
 
@@ -469,7 +470,7 @@ describe('LedgerWallet', () => {
 
       it('should use account index in P-chain account path', async () => {
         const transaction: AvalancheTransactionRequest = {
-          tx: createPChainTx() as any,
+          tx: createPChainTx() as unknown as AvalancheTransactionRequest['tx'],
           externalIndices: [0]
         }
 
@@ -490,7 +491,7 @@ describe('LedgerWallet', () => {
 
       it('should map external indices to signing paths for X-chain', async () => {
         const transaction: AvalancheTransactionRequest = {
-          tx: createXChainTx() as any,
+          tx: createXChainTx() as unknown as AvalancheTransactionRequest['tx'],
           externalIndices: [3, 5, 7]
         }
 
@@ -511,7 +512,7 @@ describe('LedgerWallet', () => {
 
       it('should default to [0/0] when externalIndices is empty array for X-chain', async () => {
         const transaction: AvalancheTransactionRequest = {
-          tx: createXChainTx() as any,
+          tx: createXChainTx() as unknown as AvalancheTransactionRequest['tx'],
           externalIndices: []
         }
 
@@ -532,7 +533,7 @@ describe('LedgerWallet', () => {
 
       it('should default to [0/0] when externalIndices is undefined for X-chain', async () => {
         const transaction: AvalancheTransactionRequest = {
-          tx: createXChainTx() as any
+          tx: createXChainTx() as unknown as AvalancheTransactionRequest['tx']
           // externalIndices not provided
         }
 
@@ -553,7 +554,7 @@ describe('LedgerWallet', () => {
 
       it('should handle single external index for P-chain', async () => {
         const transaction: AvalancheTransactionRequest = {
-          tx: createPChainTx() as any,
+          tx: createPChainTx() as unknown as AvalancheTransactionRequest['tx'],
           externalIndices: [2]
         }
 
@@ -576,7 +577,7 @@ describe('LedgerWallet', () => {
     describe('internal indices / change paths', () => {
       it('should map internal indices to change paths', async () => {
         const transaction: AvalancheTransactionRequest = {
-          tx: createXChainTx() as any,
+          tx: createXChainTx() as unknown as AvalancheTransactionRequest['tx'],
           externalIndices: [0],
           internalIndices: [1, 3]
         }
@@ -598,7 +599,7 @@ describe('LedgerWallet', () => {
 
       it('should not include change paths when internalIndices is empty', async () => {
         const transaction: AvalancheTransactionRequest = {
-          tx: createXChainTx() as any,
+          tx: createXChainTx() as unknown as AvalancheTransactionRequest['tx'],
           externalIndices: [0],
           internalIndices: []
         }
@@ -620,7 +621,7 @@ describe('LedgerWallet', () => {
 
       it('should not include change paths when internalIndices is undefined', async () => {
         const transaction: AvalancheTransactionRequest = {
-          tx: createXChainTx() as any,
+          tx: createXChainTx() as unknown as AvalancheTransactionRequest['tx'],
           externalIndices: [0]
           // internalIndices not provided
         }
@@ -663,7 +664,7 @@ describe('LedgerWallet', () => {
         }
 
         const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as any,
+          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
           externalIndices: [0, 1]
         }
 
@@ -689,7 +690,7 @@ describe('LedgerWallet', () => {
         }
 
         const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as any,
+          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
           externalIndices: [0]
         }
 
@@ -718,7 +719,7 @@ describe('LedgerWallet', () => {
         }
 
         const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as any,
+          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
           externalIndices: [0]
         }
 
@@ -745,7 +746,7 @@ describe('LedgerWallet', () => {
         }
 
         const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as any,
+          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
           externalIndices: [0]
         }
 
@@ -772,7 +773,7 @@ describe('LedgerWallet', () => {
         }
 
         const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as any,
+          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
           externalIndices: [0]
         }
 
@@ -799,7 +800,7 @@ describe('LedgerWallet', () => {
         }
 
         const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as any,
+          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
           externalIndices: [0]
         }
 
@@ -824,7 +825,7 @@ describe('LedgerWallet', () => {
         }
 
         const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as any,
+          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
           externalIndices: [0]
         }
 
@@ -849,7 +850,7 @@ describe('LedgerWallet', () => {
         }
 
         const transaction: AvalancheTransactionRequest = {
-          tx: mockTx as any,
+          tx: mockTx as unknown as AvalancheTransactionRequest['tx'],
           externalIndices: [0]
         }
 

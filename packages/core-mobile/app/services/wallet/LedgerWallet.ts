@@ -344,7 +344,7 @@ export class LedgerWallet implements Wallet {
       case RpcMethod.SIGN_TYPED_DATA_V1:
       case RpcMethod.SIGN_TYPED_DATA_V3:
       case RpcMethod.SIGN_TYPED_DATA_V4:
-        return this.signEvmMessage(data, accountIndex, network, rpcMethod)
+        return this.signEvmMessage({ data, accountIndex, network, rpcMethod })
 
       default:
         throw new Error('unknown method')
@@ -976,6 +976,7 @@ export class LedgerWallet implements Wallet {
    * Filter EIP-712 types to only include primary type and its dependencies
    * This prevents "ambiguous primary types or unused types" errors
    */
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   private filterEIP712Types(
     types: Record<string, Array<{ name: string; type: string }>>,
     primaryType: string,
@@ -1105,13 +1106,18 @@ export class LedgerWallet implements Wallet {
     return `0x${r}${s}${v}`
   }
 
-  // eslint-disable-next-line max-params
-  private async signEvmMessage(
-    data: string | TypedDataV1 | TypedData<MessageTypes>,
-    accountIndex: number,
-    network: Network,
+  // eslint-disable-next-line sonarjs/cognitive-complexity
+  private async signEvmMessage({
+    data,
+    accountIndex,
+    network,
+    rpcMethod
+  }: {
+    data: string | TypedDataV1 | TypedData<MessageTypes>
+    accountIndex: number
+    network: Network
     rpcMethod: RpcMethod
-  ): Promise<string> {
+  }): Promise<string> {
     // Get the derivation path for this account
     const derivationPath = this.getDerivationPath(
       accountIndex,
