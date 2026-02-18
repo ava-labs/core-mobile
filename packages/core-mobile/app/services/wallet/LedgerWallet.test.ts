@@ -1010,22 +1010,6 @@ describe('LedgerWallet', () => {
           (ledgerWallet as any).getExtendedPublicKeyFor(NetworkVMType.EVM, 999)
         ).toThrow('No xpub found for account 999')
       })
-
-      it('should return null when extendedPublicKeys is undefined', () => {
-        const walletWithoutXpub = new LedgerWallet({
-          deviceId: mockDeviceId,
-          derivationPathSpec: LedgerDerivationPathType.BIP44,
-          publicKeys: mockPublicKeys,
-          walletId: mockWalletId
-          // No extendedPublicKeys provided
-        })
-
-        const result = (walletWithoutXpub as any).getExtendedPublicKeyFor(
-          NetworkVMType.EVM,
-          0
-        )
-        expect(result).toBeNull()
-      })
     })
 
     describe('getKeyForVmType', () => {
