@@ -65,8 +65,8 @@ describe('wallet_enableNetwork handler', () => {
       })
     })
 
-    it('should return error when chainId is null', async () => {
-      const testRequest = createRequest({ chainId: null })
+    it('should return error when chainId is not a number', async () => {
+      const testRequest = createRequest({ chainId: 'not-a-number' })
       const result = await handler.handle(testRequest, mockListenerApi)
 
       expect(result).toEqual({
@@ -82,7 +82,7 @@ describe('wallet_enableNetwork handler', () => {
 
       expect(result).toEqual({
         success: false,
-        error: rpcErrors.invalidParams('Unknown chain id: 99999')
+        error: rpcErrors.invalidParams('Unsupported chain id: 99999')
       })
     })
 

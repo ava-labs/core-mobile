@@ -1,4 +1,5 @@
 import { rpcErrors } from '@metamask/rpc-errors'
+import { z } from 'zod'
 import { AppListenerEffectAPI } from 'store/types'
 import {
   selectAllNetworks,
@@ -8,7 +9,9 @@ import {
 import { RpcMethod, RpcRequest } from '../../../types'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 
-type Params = { chainId: number }
+const paramsSchema = z.object({
+  chainId: z.number()
+})
 
 export type WalletEnableNetworkRpcRequest =
   RpcRequest<RpcMethod.WALLET_ENABLE_NETWORK>
@@ -22,15 +25,16 @@ class WalletEnableNetworkHandler
     request: WalletEnableNetworkRpcRequest,
     listenerApi: AppListenerEffectAPI
   ): HandleResponse<number[]> => {
-    const params = request.data.params.request.params as Params | undefined
-    const chainId = params?.chainId
+    const result = paramsSchema.safeParse(request.data.params.request.params)
 
-    if (chainId == null) {
+    if (!result.success) {
       return {
         success: false,
         error: rpcErrors.invalidParams('Missing parameter: chainId')
       }
     }
+
+    const { chainId } = result.data
 
     const state = listenerApi.getState()
     const allNetworks = selectAllNetworks(state)
@@ -39,7 +43,7 @@ class WalletEnableNetworkHandler
     if (!network) {
       return {
         success: false,
-        error: rpcErrors.invalidParams(`Unknown chain id: ${chainId}`)
+        error: rpcErrors.invalidParams(`Unsupported chain id: ${chainId}`)
       }
     }
 
