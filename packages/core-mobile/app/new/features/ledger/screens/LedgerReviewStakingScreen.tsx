@@ -94,39 +94,42 @@ export const LedgerReviewStakingScreen = (): JSX.Element | null => {
       isAvalancheAppOpen &&
       phase === 'connection'
     ) {
-      try {
-        // Create progress callback that updates local state
-        const onProgress = (
-          step: number,
-          operation: Operation | null
-        ): void => {
-          setCurrentStep(step)
-          setCurrentOperation(operation)
+      const handleApproval = async (): Promise<void> => {
+        try {
+          // Create progress callback that updates local state
+          const onProgress = (
+            step: number,
+            operation: Operation | null
+          ): void => {
+            setCurrentStep(step)
+            setCurrentOperation(operation)
 
-          // Auto-complete when all steps are done
-          if (step >= stakingProgress.totalSteps) {
-            setTimeout(() => {
-              stakingProgress.onComplete()
-            }, LEDGER_DEVICE_BRIEF_DELAY_MS) // Brief delay to show final state
+            // Auto-complete when all steps are done
+            if (step >= stakingProgress.totalSteps) {
+              setTimeout(() => {
+                stakingProgress.onComplete()
+              }, LEDGER_DEVICE_BRIEF_DELAY_MS) // Brief delay to show final state
+            }
           }
+          // Transition to progress phase
+          setPhase('progress')
+          // Start the transaction process with progress callback
+          await onApprove?.(onProgress)
+        } catch (error) {
+          Logger.error('Error during Ledger transaction approval', error)
+          showAlert({
+            title: 'Transaction failed',
+            description:
+              'Something went wrong while communicating with your Ledger device. Please try again.',
+            buttons: [{ text: 'OK', style: 'default' }]
+          })
+          // Reset phase and local progress state so the user can retry or cancel
+          setPhase('connection')
+          setCurrentStep(0)
+          setCurrentOperation(null)
         }
-        // Transition to progress phase
-        setPhase('progress')
-        // Start the transaction process with progress callback
-        onApprove?.(onProgress)
-      } catch (error) {
-        Logger.error('Error during Ledger transaction approval', error)
-        showAlert({
-          title: 'Transaction failed',
-          description:
-            'Something went wrong while communicating with your Ledger device. Please try again.',
-          buttons: [{ text: 'OK', style: 'default' }]
-        })
-        // Reset phase and local progress state so the user can retry or cancel
-        setPhase('connection')
-        setCurrentStep(0)
-        setCurrentOperation(null)
       }
+      handleApproval()
     }
   }, [
     isConnected,

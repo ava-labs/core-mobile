@@ -113,8 +113,10 @@ export const LedgerReviewScreen = ({
     const onBackPress = (): boolean => {
       if (!dismissInProgressRef.current) {
         dismissInProgressRef.current = true
-        onReject?.(TRANSACTION_CANCELLED_BY_USER)
-        return true // Prevent default back behavior, onReject handles navigation
+        if (onReject) {
+          onReject(TRANSACTION_CANCELLED_BY_USER)
+          return true // Prevent default back behavior, onReject handles navigation
+        }
       }
       return false
     }
@@ -132,12 +134,13 @@ export const LedgerReviewScreen = ({
     return navigation.addListener('beforeRemove', e => {
       if (
         e.data.action.type === 'POP' && // gesture dismissed
-        !dismissInProgressRef.current
+        !dismissInProgressRef.current &&
+        onReject
       ) {
         e.preventDefault()
         dismissInProgressRef.current = true
         // Modal is being dismissed via gesture
-        onReject?.(TRANSACTION_CANCELLED_BY_USER)
+        onReject(TRANSACTION_CANCELLED_BY_USER)
       }
     })
   }, [navigation, onReject])

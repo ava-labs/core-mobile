@@ -56,17 +56,20 @@ export const LedgerReviewTransactionScreen = (): JSX.Element | null => {
   // Handle connection established - require correct app open
   useEffect(() => {
     if (deviceForWallet && isConnected) {
-      try {
-        onApprove?.()
-      } catch (error) {
-        Logger.error('Error during Ledger transaction approval', error)
-        showAlert({
-          title: 'Transaction failed',
-          description:
-            'Something went wrong while communicating with your Ledger device. Please try again.',
-          buttons: [{ text: 'OK', style: 'default' }]
-        })
+      const handleApproval = async (): Promise<void> => {
+        try {
+          await onApprove?.()
+        } catch (error) {
+          Logger.error('Error during Ledger transaction approval', error)
+          showAlert({
+            title: 'Transaction failed',
+            description:
+              'Something went wrong while communicating with your Ledger device. Please try again.',
+            buttons: [{ text: 'OK', style: 'default' }]
+          })
+        }
       }
+      handleApproval()
     }
   }, [deviceForWallet, isConnected, onApprove])
 
