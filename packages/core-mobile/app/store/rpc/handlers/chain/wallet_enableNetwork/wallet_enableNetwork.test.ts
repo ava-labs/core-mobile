@@ -86,7 +86,7 @@ describe('wallet_enableNetwork handler', () => {
       })
     })
 
-    it('should enable network and return updated enabled chain IDs (object form)', async () => {
+    it('should enable network and return updated enabled chain IDs', async () => {
       mockAllNetworks.mockReturnValue(mockNetworks)
       mockEnabledChainIds
         .mockReturnValueOnce([43114]) // before enabling
@@ -104,29 +104,11 @@ describe('wallet_enableNetwork handler', () => {
       })
     })
 
-    it('should enable network and return updated enabled chain IDs (tuple form)', async () => {
-      mockAllNetworks.mockReturnValue(mockNetworks)
-      mockEnabledChainIds
-        .mockReturnValueOnce([43114]) // before enabling
-        .mockReturnValueOnce([43114, 1]) // after enabling
-
-      const testRequest = createRequest([{ chainId: 1 }])
-      const result = await handler.handle(testRequest, mockListenerApi)
-
-      expect(mockDispatch).toHaveBeenCalledWith(
-        NetworkSlice.toggleEnabledChainId(1)
-      )
-      expect(result).toEqual({
-        success: true,
-        value: [43114, 1]
-      })
-    })
-
     it('should not dispatch if network is already enabled', async () => {
       mockAllNetworks.mockReturnValue(mockNetworks)
       mockEnabledChainIds.mockReturnValue([43114, 1])
 
-      const testRequest = createRequest([{ chainId: 1 }])
+      const testRequest = createRequest({ chainId: 1 })
       const result = await handler.handle(testRequest, mockListenerApi)
 
       expect(mockDispatch).not.toHaveBeenCalled()
