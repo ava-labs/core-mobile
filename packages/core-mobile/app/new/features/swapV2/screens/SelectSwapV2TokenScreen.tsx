@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react'
+import React, { useMemo, useState, useCallback, useEffect } from 'react'
 import { ScrollView } from 'react-native'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import {
@@ -21,19 +21,20 @@ import { ListRenderItem } from '@shopify/flash-list'
 import { LocalTokenWithBalance } from 'store/balance'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { useFilteredSwapTokens } from '../hooks/useFilteredSwapTokens'
-import { useSupportedChains } from '../hooks/useSupportedChains'
 import { useSwapTokens } from '../hooks/useSwapTokens'
 
 export const SelectSwapV2TokenScreen = ({
   selectedToken,
   setSelectedToken,
   defaultNetworkChainId,
-  hideZeroBalance = false
+  hideZeroBalance = false,
+  networks
 }: {
   selectedToken: LocalTokenWithBalance | undefined
   setSelectedToken: (token: LocalTokenWithBalance) => void
   defaultNetworkChainId?: number
   hideZeroBalance?: boolean
+  networks: Network[] | undefined
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -41,21 +42,14 @@ export const SelectSwapV2TokenScreen = ({
   const { back, canGoBack } = useRouter()
   const [searchText, setSearchText] = useState<string>('')
 
-  // Get dynamically supported networks from Fusion Service
-  const { chains: networks } = useSupportedChains()
-
   // Selected network state (default to first network or provided default)
   const [selectedNetwork, setSelectedNetwork] = useState<Network | undefined>(
     undefined
   )
 
-  // Track if we've set the default network
-  const hasSetDefaultNetwork = useRef(false)
-
   // Set default network once when networks are loaded
   useEffect(() => {
-    if (!networks || networks.length === 0 || hasSetDefaultNetwork.current)
-      return
+    if (!networks || networks.length === 0) return
 
     if (defaultNetworkChainId) {
       const found = networks.find(n => n.chainId === defaultNetworkChainId)
@@ -63,8 +57,6 @@ export const SelectSwapV2TokenScreen = ({
     } else {
       setSelectedNetwork(networks[0])
     }
-
-    hasSetDefaultNetwork.current = true
   }, [defaultNetworkChainId, networks])
 
   // Get CAIP2 ID for selected network

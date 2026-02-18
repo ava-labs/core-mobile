@@ -42,6 +42,7 @@ import { selectActiveAccount } from 'store/account'
 import Logger from 'utils/Logger'
 import { useSwapContext } from '../contexts/SwapContext'
 import { useSwapRate } from '../hooks/useSwapRate'
+import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
 import { ServiceType } from '../types'
 
@@ -523,6 +524,31 @@ export const SwapScreen = (): JSX.Element => {
     prevFromRef.current = fromToken
     prevToRef.current = toToken
   }, [fromToken, toToken, setToToken, setFromToken, setAmount])
+
+  // Validate token pair compatibility - clear TO token if incompatible with FROM chain
+  const { isValidDestination } = useSupportedChains()
+
+  useEffect(() => {
+    // Skip if either token missing
+    if (!fromToken || !toToken) return
+
+    // Check if TO token's network is valid for FROM chain
+    const isValid = isValidDestination(
+      fromToken.networkChainId,
+      toToken.networkChainId
+    )
+
+    if (!isValid) {
+      // Clear incompatible TO token
+      setToToken(undefined)
+      setLocalError(
+        `Cannot swap from ${fromToken.symbol} network to ${toToken.symbol} network. Please select a different token.`
+      )
+    } else {
+      // Clear error if tokens are compatible
+      setLocalError('')
+    }
+  }, [fromToken, toToken, isValidDestination, setToToken])
 
   useEffect(() => {
     if (!fromTokenValue) {

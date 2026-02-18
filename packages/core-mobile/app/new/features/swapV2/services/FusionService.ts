@@ -194,18 +194,21 @@ class FusionService implements IFusionService {
   }
 
   /**
-   * Get supported chains from the TransferManager
-   * Returns CAIP-2 chain IDs that are supported by the enabled services
+   * Get supported chains map from the TransferManager
+   * Returns the full Map structure with source → destinations mapping
    *
-   * @returns Promise resolving to array of CAIP-2 chain IDs
+   * @returns Promise resolving to Map<sourceChainId, Set<destinationChainIds>> (CAIP-2 format)
    */
-  async getSupportedChains(): Promise<readonly string[]> {
+  async getSupportedChains(): Promise<
+    ReadonlyMap<string, ReadonlySet<string>>
+  > {
     try {
       const chainsMap = await this.transferManager.getSupportedChains()
-      const sourceChains = Array.from(chainsMap.keys())
 
       // Log supported chains with their destinations
-      Logger.info(`Fusion Service supports ${sourceChains.length} source chains`)
+      Logger.info(
+        `Fusion Service: ${chainsMap.size} source chains with destinations`
+      )
       chainsMap.forEach((destinations, source) => {
         Logger.info(
           `Chain ${source} can transfer to ${destinations.size} destinations:`,
@@ -213,9 +216,9 @@ class FusionService implements IFusionService {
         )
       })
 
-      return sourceChains
+      return chainsMap
     } catch (error) {
-      Logger.error('Failed to fetch supported chains from Fusion Service', error)
+      Logger.error('Failed to fetch supported chains map', error)
       throw error
     }
   }

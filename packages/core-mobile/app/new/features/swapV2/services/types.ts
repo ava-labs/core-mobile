@@ -50,10 +50,11 @@ export interface IFusionService {
   }): Promise<void>
 
   /**
-   * Get supported chains from the Fusion Service
-   * Returns CAIP-2 chain IDs that are supported by the enabled services
+   * Get supported chains map from the Fusion Service
+   * Returns the full Map structure with source → destinations mapping
+   * @returns Promise resolving to Map<sourceChainId, Set<destinationChainIds>> (CAIP-2 format)
    */
-  getSupportedChains(): Promise<readonly string[]>
+  getSupportedChains(): Promise<ReadonlyMap<string, ReadonlySet<string>>>
 
   /**
    * Creates a Quoter instance for fetching real-time swap quotes

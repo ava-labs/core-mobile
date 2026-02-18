@@ -239,8 +239,7 @@ describe('mapApiTokenToLocal', () => {
         address: '',
         decimals: 18,
         isNative: true,
-        internalId: 'test-token',
-        logoUri: 'https://example.com/test.png'
+        internalId: 'test-token'
       } as ApiToken
 
       const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
