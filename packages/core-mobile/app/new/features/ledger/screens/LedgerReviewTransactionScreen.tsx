@@ -29,22 +29,16 @@ export const LedgerReviewTransactionScreen = (): JSX.Element | null => {
 
   const { networks } = useNetworks()
 
-  // Compute Ethereum network separately to avoid triggering network re-computation
-  const ethNetwork = useMemo(
-    () => getEthereumNetwork(networks, isDeveloperMode),
-    [networks, isDeveloperMode]
-  )
-
+  // Only compute Ethereum network when needed for ETH_SIGN or PERSONAL_SIGN
   const network = useMemo(() => {
     if (
-      (rpcMethod === RpcMethod.ETH_SIGN ||
-        rpcMethod === RpcMethod.PERSONAL_SIGN) &&
-      ethNetwork
+      rpcMethod === RpcMethod.ETH_SIGN ||
+      rpcMethod === RpcMethod.PERSONAL_SIGN
     ) {
-      return ethNetwork
+      return getEthereumNetwork(networks, isDeveloperMode) ?? _network
     }
     return _network
-  }, [_network, ethNetwork, rpcMethod])
+  }, [_network, networks, isDeveloperMode, rpcMethod])
 
   const deviceForWallet = useMemo(
     () => getLedgerInfoByWalletId(walletId)?.device,
