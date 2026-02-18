@@ -212,7 +212,7 @@ export const NotificationsScreen = (): JSX.Element => {
     )
   }, [selectedTabIndex, handleSelectSegment, showFullEmptyState, isLoading])
 
-  const renderContent = () => {
+  const renderContent = (): React.JSX.Element => {
     if (isLoading) {
       return <LoadingState sx={{ height: emptyStateHeight }} />
     }
