@@ -145,10 +145,6 @@ class AccountsService {
     account: Account
     xpub?: { evm: string; avalanche: string }
   }> {
-  }): Promise<{
-    account: Account
-    xpub?: { evm: string; avalanche: string }
-  }> {
     if (walletType === WalletType.UNSET) throw new Error('invalid wallet type')
 
     if (walletType === WalletType.SEEDLESS) {

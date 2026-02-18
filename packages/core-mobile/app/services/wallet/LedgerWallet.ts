@@ -31,7 +31,6 @@ import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Transport from '@ledgerhq/hw-transport'
 import { networks } from 'bitcoinjs-lib'
 import { utils as avalancheUtils, networkIDs } from '@avalabs/avalanchejs'
-import { utils as avalancheUtils, networkIDs } from '@avalabs/avalanchejs'
 import bs58 from 'bs58'
 import { TransactionRequest } from 'ethers'
 import { now } from 'moment'
@@ -42,8 +41,6 @@ import {
   LedgerAppType,
   LedgerDerivationPathType,
   LedgerWalletData,
-  PublicKey,
-  PerAccountExtendedPublicKeys
   PublicKey,
   PerAccountExtendedPublicKeys
 } from 'services/ledger/types'
@@ -659,7 +656,6 @@ export class LedgerWallet implements Wallet {
 
   public async signAvalancheTransaction({
     accountIndex,
-    accountIndex,
     transaction,
     network: _network,
     provider: _provider
@@ -1065,15 +1061,34 @@ export class LedgerWallet implements Wallet {
   }
 
   public async getRawXpubXP(accountIndex: number): Promise<string> {
+    Logger.info('[LedgerWallet] getRawXpubXP called', {
+      accountIndex,
+      isBIP44: this.isBIP44(),
+      hasExtendedPublicKeys: !!this.extendedPublicKeys,
+      extendedPublicKeysKeys: this.extendedPublicKeys
+        ? Object.keys(this.extendedPublicKeys)
+        : []
+    })
+
     if (!this.isBIP44() || !this.extendedPublicKeys) {
+      Logger.error('[LedgerWallet] getRawXpubXP failed: not BIP44 or no extendedPublicKeys')
       throw new Error('getRawXpubXP not available for this wallet type')
     }
 
     const accountKeys = this.extendedPublicKeys[accountIndex]
+    Logger.info('[LedgerWallet] Account keys for index', {
+      accountIndex,
+      hasAccountKeys: !!accountKeys,
+      hasEvm: !!accountKeys?.evm,
+      hasAvalanche: !!accountKeys?.avalanche
+    })
+
     if (accountKeys?.avalanche) {
+      Logger.info('[LedgerWallet] Returning avalanche xpub')
       return accountKeys.avalanche
     }
 
+    Logger.error('[LedgerWallet] No xpub stored for account index', accountIndex)
     throw new Error(`No xpub stored for account index ${accountIndex}`)
   }
 

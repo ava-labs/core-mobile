@@ -33,6 +33,7 @@ import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview
 import { selectActiveWallet } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
 import { showLedgerReviewTransaction } from 'features/ledger/utils'
+import { Operation } from 'services/earn/computeDelegationSteps/types'
 
 export const ClaimStakeRewardScreen = (): JSX.Element => {
   const isInAppReviewBlocked = useSelector(selectIsInAppReviewBlocked)
@@ -53,7 +54,12 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
     activeWallet?.type === WalletType.LEDGER_LIVE
 
   // Use ref to break circular dependency between onFundsStuck and claimRewards
-  const claimRewardsRef = useRef<(() => Promise<void>) | undefined>(undefined)
+  const claimRewardsRef = useRef<
+    | ((
+        onProgress?: (step: number, operation: Operation | null) => void
+      ) => Promise<void>)
+    | undefined
+  >(undefined)
 
   const onClaimSuccess = useCallback((): void => {
     refreshStakingBalances({ shouldRefreshStakes: false })
@@ -120,9 +126,11 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
   )
 
   const onFundsStuck = useCallback((): void => {
-    const performRetry = (): void => {
+    const performRetry = (
+      onProgress?: (step: number, operation: Operation | null) => void
+    ): void => {
       AnalyticsService.capture('StakeIssueClaim')
-      claimRewardsRef.current?.()
+      claimRewardsRef.current?.(onProgress)
     }
 
     showAlert({
@@ -141,15 +149,18 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
             if (isLedgerWallet) {
               showLedgerReviewTransaction({
                 network: pNetwork,
-                onApprove: async () => {
-                  performRetry()
+                onApprove: async onProgress => {
+                  performRetry(onProgress)
                 },
                 onReject: () => {
                   // User cancelled Ledger connection
                 },
                 stakingProgress: {
-                  totalSteps: 2,
+                  // Use 3 steps as worst case (may be 2 if no atomic memory funds)
+                  totalSteps: 3,
+                  // eslint-disable-next-line @typescript-eslint/no-empty-function
                   onComplete: () => {},
+                  // eslint-disable-next-line @typescript-eslint/no-empty-function
                   onCancel: () => {}
                 }
               })
@@ -189,17 +200,19 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
     // and we don't want to show the updated balance while the tx is still pending (spinner is being displayed)
     // as that might confuse the user
     // thus, we only update the balance if the tx is not pending
-    if (pChainBalance?.balancePerType.unlockedUnstaked) {
-      const unlockedInUnit = new TokenUnit(
-        pChainBalance.balancePerType.unlockedUnstaked,
+    // TESTING: Always show 0.1 AVAX for testing, even when actual balance is 0
+    // TokenUnit expects value in smallest unit (nanoAVAX), so 0.1 AVAX = 0.1 * 10^9
+    if (pChainBalance) {
+      const testClaimAmount = new TokenUnit(
+        0.1 * Math.pow(10, pNetwork.networkToken.decimals),
         pNetwork.networkToken.decimals,
         pNetwork.networkToken.symbol
       )
 
-      setClaimableAmountInAvax(unlockedInUnit)
+      setClaimableAmountInAvax(testClaimAmount)
     }
   }, [
-    pChainBalance?.balancePerType.unlockedUnstaked,
+    pChainBalance,
     pNetwork.networkToken,
     isClaimRewardsPending
   ])
@@ -226,8 +239,8 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
         onReject: () => {
           // User cancelled Ledger connection
         },
-        // Claim flow has 2 steps: EXPORT_P → IMPORT_C
         stakingProgress: {
+          // Normal claim flow has 2 steps: Export P → Import C
           totalSteps: 2,
           onComplete: () => {
             // Progress will auto-complete when all steps are done
@@ -283,18 +296,19 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
     }
   }, [claimableAmountInAvax])
 
-  useEffect(() => {
-    if (
-      pChainBalance &&
-      pChainBalance.balancePerType.unlockedUnstaked === undefined
-    ) {
-      showAlert({
-        title: 'No claimable balance',
-        description: 'You have no balance available for claiming.',
-        buttons: [{ text: 'Go back', onPress: back }]
-      })
-    }
-  }, [pChainBalance, back])
+  // TESTING: Commented out to allow testing with 0.1 AVAX even when balance is 0
+  // useEffect(() => {
+  //   if (
+  //     pChainBalance &&
+  //     pChainBalance.balancePerType.unlockedUnstaked === undefined
+  //   ) {
+  //     showAlert({
+  //       title: 'No claimable balance',
+  //       description: 'You have no balance available for claiming.',
+  //       buttons: [{ text: 'Go back', onPress: back }]
+  //     })
+  //   }
+  // }, [pChainBalance, back])
 
   const renderFooter = useCallback(() => {
     return (

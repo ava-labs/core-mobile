@@ -11,13 +11,10 @@ export const showLedgerReviewTransaction = ({
   onApprove,
   onReject,
   stakingProgress
-  onReject,
-  stakingProgress
 }: {
   network: Network
   onApprove: (onProgress?: OnDelegationProgress) => Promise<void>
   onReject: (message?: string) => void
-  stakingProgress?: StakingProgressParams
   stakingProgress?: StakingProgressParams
 }): void => {
   ledgerParamsStore.getState().setReviewTransactionParams({
@@ -73,11 +70,11 @@ export const getLedgerAppName = (network?: Network): LedgerAppType => {
     network?.vmName === NetworkVMType.AVM ||
     network?.vmName === NetworkVMType.PVM
     ? LedgerAppType.AVALANCHE
-    : network.vmName === NetworkVMType.EVM
+    : network?.vmName === NetworkVMType.EVM
     ? LedgerAppType.ETHEREUM
-    : network.vmName === NetworkVMType.BITCOIN
+    : network?.vmName === NetworkVMType.BITCOIN
     ? LedgerAppType.BITCOIN
-    : network.vmName === NetworkVMType.SVM
+    : network?.vmName === NetworkVMType.SVM
     ? LedgerAppType.SOLANA
     : LedgerAppType.UNKNOWN
 }

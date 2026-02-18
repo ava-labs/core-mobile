@@ -263,7 +263,7 @@ const LedgerReviewTransactionScreen = (): JSX.Element | null => {
         Cancel
       </Button>
     )
-  }, [handleCancel, isCancelEnabled])
+  }, [isCancelEnabled, onReject])
 
   const renderDeviceItem = useCallback(() => {
     if (deviceForWallet && phase === 'connection') {

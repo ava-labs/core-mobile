@@ -15,7 +15,6 @@ import {
 } from '@avalabs/core-wallets-sdk'
 import { networks } from 'bitcoinjs-lib'
 import { utils as avalancheUtils, networkIDs } from '@avalabs/avalanchejs'
-import { utils as avalancheUtils, networkIDs } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
 import bs58 from 'bs58'
 import { Platform, PermissionsAndroid, Alert, Linking } from 'react-native'
@@ -1092,8 +1091,6 @@ class LedgerService {
       addresses: {
         evm: evmAddress,
         avm: avmAddress,
-        pvm: pvmAddress,
-        coreEth: coreEthAddress
         pvm: pvmAddress,
         coreEth: coreEthAddress
       },

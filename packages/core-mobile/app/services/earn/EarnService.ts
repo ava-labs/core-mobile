@@ -123,7 +123,8 @@ class EarnService {
         account,
         isTestnet,
         cBaseFeeMultiplier,
-        xpAddresses
+        xpAddresses,
+        xpAddressDictionary
       })
       progressEvents?.(RecoveryEvents.ImportCFinish)
     }
@@ -191,7 +192,8 @@ class EarnService {
       account,
       isTestnet,
       cBaseFeeMultiplier,
-      xpAddresses
+      xpAddresses,
+      xpAddressDictionary
     })
 
     // Update progress state: Completed (step 2 of 2)
