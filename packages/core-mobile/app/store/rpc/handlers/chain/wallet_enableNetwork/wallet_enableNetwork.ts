@@ -9,9 +9,14 @@ import {
 import { RpcMethod, RpcRequest } from '../../../types'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 
-const paramsSchema = z.object({
-  chainId: z.number()
-})
+const chainIdSchema = z.object({ chainId: z.number() })
+
+// Accept both EIP-1193 tuple form [{ chainId }] (WalletConnect convention)
+// and plain object form { chainId } (Core extension convention)
+const paramsSchema = z.union([
+  z.tuple([chainIdSchema]).transform(([p]) => p),
+  chainIdSchema
+])
 
 export type WalletEnableNetworkRpcRequest =
   RpcRequest<RpcMethod.WALLET_ENABLE_NETWORK>
