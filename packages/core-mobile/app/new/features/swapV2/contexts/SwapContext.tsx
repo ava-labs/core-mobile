@@ -18,7 +18,7 @@ import {
   useSwapSelectedFromToken,
   useSwapSelectedToToken,
   useBestQuote,
-  useUserQuote,
+  useUserSelectedQuoteId,
   useAllQuotes
 } from '../hooks/useZustandStore'
 import { useQuoteStreaming } from '../hooks/useQuoteStreaming'
@@ -69,8 +69,15 @@ export const SwapContextProvider = ({
 
   // Get quotes
   const [bestQuote] = useBestQuote()
-  const [userQuote, setUserQuote] = useUserQuote()
+  const [selectedQuoteId, setSelectedQuoteId] = useUserSelectedQuoteId()
   const [allQuotes] = useAllQuotes()
+
+  // Derive the actual selected quote from allQuotes based on the stored ID
+  // This ensures we always have fresh quote data when quotes update
+  const userQuote = useMemo(() => {
+    if (!selectedQuoteId) return null
+    return allQuotes.find(q => q.id === selectedQuoteId) ?? null
+  }, [selectedQuoteId, allQuotes])
 
   // Get account and networks
   const activeAccount = useSelector(selectActiveAccount)
@@ -112,16 +119,11 @@ export const SwapContextProvider = ({
   // Method to select a specific quote or auto mode
   const selectQuoteById = useCallback(
     (quoteId: string | null) => {
-      if (quoteId === null) {
-        // User selected "Auto" - use SDK's bestQuote
-        setUserQuote(null)
-      } else {
-        // User manually selected specific aggregator
-        const selectedQuote = allQuotes.find(q => q.id === quoteId)
-        setUserQuote(selectedQuote ?? null)
-      }
+      // Store only the quote ID (not the entire quote object)
+      // The actual quote will be derived from allQuotes in real-time
+      setSelectedQuoteId(quoteId)
     },
-    [allQuotes, setUserQuote]
+    [setSelectedQuoteId]
   )
 
   // Stub swap function - will be implemented in next phase

@@ -17,6 +17,28 @@ import { NetworkWithCaip2ChainId } from 'store/network'
  */
 
 /**
+ * Helper to safely create error message for unsupported token types
+ */
+function getUnsupportedTokenError(token: unknown): Error {
+  const tokenType =
+    typeof token === 'object' && token !== null && 'type' in token
+      ? (token as { type: unknown }).type
+      : 'unknown'
+  const symbol =
+    typeof token === 'object' && token !== null && 'symbol' in token
+      ? (token as { symbol: unknown }).symbol
+      : 'unknown'
+  const localId =
+    typeof token === 'object' && token !== null && 'localId' in token
+      ? (token as { localId: unknown }).localId
+      : 'unknown'
+
+  return new Error(
+    `Unsupported token type: ${tokenType} (symbol: ${symbol}, localId: ${localId})`
+  )
+}
+
+/**
  * Converts LocalTokenWithBalance to Fusion SDK Asset format
  *
  * @param token - App's token representation with balance
@@ -76,7 +98,7 @@ export function toSwappableAsset(token: LocalTokenWithBalance): Asset {
     }
   }
 
-  throw new Error(`Unsupported token type: ${token}`)
+  throw getUnsupportedTokenError(token)
 }
 
 /**

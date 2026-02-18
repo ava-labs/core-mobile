@@ -8,7 +8,7 @@ export const getDisplaySlippageValue = ({
   manualSlippage: number
 }): string => {
   // When auto slippage is ON and a quote is available → displays the quote's actual slippageBps
-  if (autoSlippage && quoteSlippageBps) {
+  if (autoSlippage && quoteSlippageBps !== undefined) {
     return `Auto • ${quoteSlippageBps / 100}%`
   }
 

@@ -13,5 +13,7 @@ export const useSwapSelectedToToken = createZustandStore<
 
 // Quote stores for Fusion Service integration
 export const useBestQuote = createZustandStore<Quote | null>(null)
-export const useUserQuote = createZustandStore<Quote | null>(null)
+// Store only the selected quote ID, not the entire quote object
+// This prevents stale quote data when allQuotes updates with fresh objects
+export const useUserSelectedQuoteId = createZustandStore<string | null>(null)
 export const useAllQuotes = createZustandStore<Quote[]>([])

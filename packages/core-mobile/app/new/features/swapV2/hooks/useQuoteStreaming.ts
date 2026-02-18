@@ -6,7 +6,11 @@ import { NetworkWithCaip2ChainId } from 'store/network'
 import FusionService from '../services/FusionService'
 import { selectIsFusionServiceReady } from '../store/slice'
 import { toSwappableAsset, toChain } from '../utils/fusionTypeConverters'
-import { useBestQuote, useUserQuote, useAllQuotes } from './useZustandStore'
+import {
+  useBestQuote,
+  useUserSelectedQuoteId,
+  useAllQuotes
+} from './useZustandStore'
 
 interface UseQuoteStreamingParams {
   fromToken: LocalTokenWithBalance | undefined
@@ -46,17 +50,18 @@ export function useQuoteStreaming(
   const isFusionServiceReady = useSelector(selectIsFusionServiceReady)
 
   const [, setBestQuote] = useBestQuote()
-  const [, setUserQuote] = useUserQuote()
+  const [, setSelectedQuoteId] = useUserSelectedQuoteId()
   const [, setAllQuotes] = useAllQuotes()
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
   // Create Quoter instance when all required params are available
-  const quoter = useMemo(() => {
+  // Returns {quoter, error} to keep memoization pure (no side effects)
+  const quoterResult = useMemo(() => {
     // First check if FusionService is ready
     if (!isFusionServiceReady) {
-      return null
+      return { quoter: null, error: null }
     }
 
     // Validate all required parameters
@@ -70,7 +75,7 @@ export function useQuoteStreaming(
       !fromAddress ||
       !toAddress
     ) {
-      return null
+      return { quoter: null, error: null }
     }
 
     try {
@@ -81,7 +86,7 @@ export function useQuoteStreaming(
       const targetChain = toChain(toNetwork)
 
       // Create quoter (service is guaranteed to be ready)
-      return FusionService.getQuoter({
+      const quoter = FusionService.getQuoter({
         fromAddress,
         toAddress,
         sourceAsset,
@@ -91,14 +96,17 @@ export function useQuoteStreaming(
         amount: fromAmount,
         slippageBps
       })
+
+      return { quoter, error: null }
     } catch (err) {
       Logger.error('Failed to create Quoter instance', err)
-      setError(
-        err instanceof Error
-          ? err
-          : new Error('Failed to create Quoter instance')
-      )
-      return null
+      return {
+        quoter: null,
+        error:
+          err instanceof Error
+            ? err
+            : new Error('Failed to create Quoter instance')
+      }
     }
   }, [
     isFusionServiceReady,
@@ -114,19 +122,32 @@ export function useQuoteStreaming(
 
   // Subscribe to quote stream
   useEffect(() => {
+    // Handle error from quoter creation (side effect moved from useMemo)
+    if (quoterResult.error) {
+      setError(quoterResult.error)
+      setBestQuote(null)
+      setSelectedQuoteId(null)
+      setAllQuotes([])
+      setIsLoading(false)
+      return
+    }
+
+    const quoter = quoterResult.quoter
+
     // Clear quotes and reset state if quoter is invalid
     if (!quoter) {
       setBestQuote(null)
-      setUserQuote(null)
+      setSelectedQuoteId(null)
       setAllQuotes([])
       setIsLoading(false)
+      setError(null)
       return
     }
 
     // Clear quotes when starting new subscription (e.g., token pair changed)
     // This prevents stale quotes from previous pair being displayed
     setBestQuote(null)
-    setUserQuote(null)
+    setSelectedQuoteId(null)
     setAllQuotes([])
     setIsLoading(true)
     setError(null)
@@ -155,7 +176,7 @@ export function useQuoteStreaming(
     return () => {
       unsubscribe()
     }
-  }, [quoter, setBestQuote, setUserQuote, setAllQuotes])
+  }, [quoterResult, setBestQuote, setSelectedQuoteId, setAllQuotes])
 
   return {
     isLoading,

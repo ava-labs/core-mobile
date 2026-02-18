@@ -49,8 +49,8 @@ describe('getDisplaySlippageValue', () => {
         manualSlippage: 2
       })
 
-      // Note: 0 is falsy, so it falls through to "Auto" without percentage
-      expect(result).toBe('Auto')
+      // 0 is a valid slippage value and should be displayed
+      expect(result).toBe('Auto • 0%')
     })
   })
 
