@@ -505,7 +505,8 @@ describe('session_request handler', () => {
             'avalanche_getAddressesInRange',
             'avalanche_renameAccount',
             'avalanche_addAccount',
-            'wallet_getNetworkState'
+            'wallet_getNetworkState',
+            'wallet_enableNetwork'
           ],
           // all requested events
           events: validRequiredNamespaces.eip155.events
@@ -544,7 +545,8 @@ describe('session_request handler', () => {
             'avalanche_sendTransaction',
             'avalanche_signTransaction',
             'avalanche_signMessage',
-            'wallet_getNetworkState'
+            'wallet_getNetworkState',
+            'wallet_enableNetwork'
           ]
         },
         bip122: {
@@ -664,7 +666,8 @@ describe('session_request handler', () => {
             'avalanche_getAddressesInRange',
             'avalanche_renameAccount',
             'avalanche_addAccount',
-            'wallet_getNetworkState'
+            'wallet_getNetworkState',
+            'wallet_enableNetwork'
           ],
           // all requested events
           events: validRequiredNamespaces.eip155.events
@@ -703,7 +706,8 @@ describe('session_request handler', () => {
             'avalanche_sendTransaction',
             'avalanche_signTransaction',
             'avalanche_signMessage',
-            'wallet_getNetworkState'
+            'wallet_getNetworkState',
+            'wallet_enableNetwork'
           ]
         },
         bip122: {
