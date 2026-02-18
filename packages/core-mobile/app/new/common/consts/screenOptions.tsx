@@ -3,6 +3,7 @@ import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
 import { AccountSettingBarButton } from 'common/components/AccountSettingBarButton'
 import BackBarButton from 'common/components/BackBarButton'
 import { ConnectButton } from 'common/components/ConnectButton'
+import { ConnectedNotificationBarButton } from 'common/components/ConnectedNotificationBarButton'
 import React from 'react'
 import { Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -104,9 +105,7 @@ export const homeScreenOptions: NativeStackNavigationOptions = {
           alignItems: 'center'
         }}>
         <ConnectButton />
-        {/* <Link href="/notifications/" asChild>
-            <NotificationBarButton />
-          </Link> */}
+        <ConnectedNotificationBarButton />
       </View>
     )
   }
