@@ -1,1 +1,1 @@
-export { LedgerReviewTransactionScreen as default } from 'features/ledger/screens/LedgerReviewTransactionScreen'
+export { LedgerReviewStakingScreen as default } from 'features/ledger/screens/LedgerReviewStakingScreen'
