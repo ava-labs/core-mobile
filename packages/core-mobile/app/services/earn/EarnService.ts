@@ -38,7 +38,7 @@ import {
   maxGetAtomicUTXOsRetries,
   maxTransactionStatusCheckRetries
 } from './utils'
-import { ledgerStakingProgressCache } from 'new/features/ledger/services/ledgerStakingProgressCache'
+import { OnDelegationProgress } from 'contexts/DelegationContext'
 import { Operation } from './computeDelegationSteps/types'
 
 class EarnService {
@@ -149,7 +149,8 @@ class EarnService {
     feeState,
     cBaseFeeMultiplier,
     xpAddresses,
-    xpAddressDictionary
+    xpAddressDictionary,
+    onProgress
   }: {
     walletId: string
     walletType: WalletType
@@ -161,12 +162,9 @@ class EarnService {
     cBaseFeeMultiplier: number
     xpAddresses: string[]
     xpAddressDictionary: XPAddressDictionary
+    onProgress?: OnDelegationProgress
   }): Promise<void> {
-    // Update progress state: Step 0 - EXPORT_P
-    ledgerStakingProgressCache.state.set({
-      currentStep: 0,
-      currentOperation: Operation.EXPORT_P
-    })
+    onProgress?.(0, Operation.EXPORT_P)
 
     await exportP({
       walletId,
@@ -180,10 +178,11 @@ class EarnService {
       xpAddressDictionary
     })
 
-    // Update progress state: Step 1 - IMPORT_C
-    ledgerStakingProgressCache.state.set({
-      currentStep: 1,
-      currentOperation: Operation.IMPORT_C
+    await new Promise<void>(resolve => {
+      setTimeout(() => {
+        onProgress?.(1, Operation.IMPORT_C)
+        resolve()
+      }, 10)
     })
 
     await importC({
@@ -196,10 +195,11 @@ class EarnService {
       xpAddressDictionary
     })
 
-    // Update progress state: Completed (step 2 of 2)
-    ledgerStakingProgressCache.state.set({
-      currentStep: 2,
-      currentOperation: null
+    await new Promise<void>(resolve => {
+      setTimeout(() => {
+        onProgress?.(2, null)
+        resolve()
+      }, 10)
     })
   }
 

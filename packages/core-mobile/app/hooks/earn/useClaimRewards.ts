@@ -8,9 +8,10 @@ import { FundsStuckError } from 'hooks/earn/errors'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { SendErrorMessage } from 'errors/sendError'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import { useUiSafeMutation } from 'hooks/useUiSafeMutation'
 import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
+import { OnDelegationProgress } from 'contexts/DelegationContext'
 import { useClaimFees } from './useClaimFees'
 import { useGetFeeState } from './useGetFeeState'
 
@@ -26,7 +27,7 @@ export const useClaimRewards = (
   onError: (error: Error) => void,
   onFundsStuck: (error: Error) => void
 ): {
-  claimRewards: () => Promise<void>
+  claimRewards: (onProgress?: OnDelegationProgress) => Promise<void>
   isPending: boolean
   totalFees?: TokenUnit
   feeCalculationError?: SendErrorMessage
@@ -37,6 +38,7 @@ export const useClaimRewards = (
   const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
   const activeWallet = useActiveWallet()
   const { xpAddresses, xpAddressDictionary } = useXPAddresses(activeAccount)
+  const onProgressRef = useRef<OnDelegationProgress | undefined>(undefined)
 
   const {
     totalFees,
@@ -70,7 +72,8 @@ export const useClaimRewards = (
       feeState: defaultFeeState,
       cBaseFeeMultiplier,
       xpAddresses,
-      xpAddressDictionary
+      xpAddressDictionary,
+      onProgress: onProgressRef.current
     })
   }, [
     activeAccount,
@@ -103,8 +106,16 @@ export const useClaimRewards = (
     onError: handleError
   })
 
+  const claimRewards = useCallback(
+    async (onProgress?: OnDelegationProgress) => {
+      onProgressRef.current = onProgress
+      return safeMutate()
+    },
+    [safeMutate]
+  )
+
   return {
-    claimRewards: safeMutate,
+    claimRewards,
     isPending,
     totalFees,
     feeCalculationError

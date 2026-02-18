@@ -200,19 +200,17 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
     // and we don't want to show the updated balance while the tx is still pending (spinner is being displayed)
     // as that might confuse the user
     // thus, we only update the balance if the tx is not pending
-    // TESTING: Always show 0.1 AVAX for testing, even when actual balance is 0
-    // TokenUnit expects value in smallest unit (nanoAVAX), so 0.1 AVAX = 0.1 * 10^9
-    if (pChainBalance) {
-      const testClaimAmount = new TokenUnit(
-        0.1 * Math.pow(10, pNetwork.networkToken.decimals),
+    if (pChainBalance?.balancePerType.unlockedUnstaked) {
+      const unlockedInUnit = new TokenUnit(
+        pChainBalance.balancePerType.unlockedUnstaked,
         pNetwork.networkToken.decimals,
         pNetwork.networkToken.symbol
       )
 
-      setClaimableAmountInAvax(testClaimAmount)
+      setClaimableAmountInAvax(unlockedInUnit)
     }
   }, [
-    pChainBalance,
+    pChainBalance?.balancePerType.unlockedUnstaked,
     pNetwork.networkToken,
     isClaimRewardsPending
   ])
@@ -229,25 +227,21 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
   const issueClaimRewards = useCallback(() => {
     AnalyticsService.capture('StakeIssueClaim')
 
-    // For Ledger wallets, show the review transaction modal with progress tracking
     if (isLedgerWallet) {
       showLedgerReviewTransaction({
         network: pNetwork,
-        onApprove: async () => {
-          claimRewards()
+        onApprove: async onProgress => {
+          claimRewards(onProgress)
         },
         onReject: () => {
           // User cancelled Ledger connection
         },
         stakingProgress: {
-          // Normal claim flow has 2 steps: Export P → Import C
           totalSteps: 2,
-          onComplete: () => {
-            // Progress will auto-complete when all steps are done
-          },
-          onCancel: () => {
-            // User cancelled from progress screen
-          }
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          onComplete: () => {},
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          onCancel: () => {}
         }
       })
     } else {
