@@ -6,7 +6,6 @@ import { unifiedBridgeReducer as unifiedBridge } from 'store/unifiedBridge/slice
 import { migrations } from 'store/migrations'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { EncryptThenMacTransform } from 'store/transforms/EncryptThenMacTransform'
-import { fusionReducer as fusion } from 'features/swapV2/store/slice'
 import reactotron from '../../ReactotronConfig'
 import { networkReducer as network } from './network/slice'
 import { appReducer as app, onLogOut, onRehydrationComplete } from './app/slice'
@@ -36,7 +35,7 @@ const STORAGE_WRITE_THROTTLE = 200
 
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform
-const blacklist = ['swap', 'fusion', 'rpc', transactionApi.reducerPath]
+const blacklist = ['swap', 'rpc', transactionApi.reducerPath]
 
 const combinedReducer = combineReducers({
   app,
@@ -55,7 +54,6 @@ const combinedReducer = combineReducers({
   browser,
   snapshots,
   nestEgg,
-  fusion,
 
   // user preferences
   settings,

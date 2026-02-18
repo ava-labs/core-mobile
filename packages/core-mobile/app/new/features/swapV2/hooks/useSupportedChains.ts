@@ -9,8 +9,8 @@ import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { isSolanaNetwork } from 'utils/network/isSolanaNetwork'
 import { selectIsSolanaSwapBlocked } from 'store/posthog'
-import { selectIsFusionServiceReady } from '../store/slice'
 import FusionService from '../services/FusionService'
+import { useIsFusionServiceReady } from './useZustandStore'
 
 /**
  * Stale time in milliseconds
@@ -65,7 +65,7 @@ export function useSupportedChains(sourceChainId?: number): {
 } {
   const { getEnabledNetworkByCaip2ChainId } = useNetworks()
   const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
-  const isFusionServiceReady = useSelector(selectIsFusionServiceReady)
+  const [isFusionServiceReady] = useIsFusionServiceReady()
 
   // Fetch supported chains Map from Fusion Service
   const {

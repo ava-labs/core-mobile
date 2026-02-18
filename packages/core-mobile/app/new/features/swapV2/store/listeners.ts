@@ -91,7 +91,7 @@ import FusionService from '../services/FusionService'
 import { getFusionEnvironment } from '../consts'
 import { createEvmSigner } from '../services/signers/EvmSigner'
 import { createBtcSigner } from '../services/signers/BtcSigner'
-import { setFusionServiceReady, selectIsFusionServiceReady } from './slice'
+import { useIsFusionServiceReady } from '../hooks/useZustandStore'
 
 /**
  * Get the current state of all Fusion feature flags
@@ -158,14 +158,14 @@ export const initFusionService = async (
   const request = createInAppRequest(listenerApi.dispatch)
 
   // Check if already initialized and if reinitialization is needed
-  const isFusionServiceReady = selectIsFusionServiceReady(state)
+  const isFusionServiceReady = useIsFusionServiceReady.getState()
   if (isFusionServiceReady) {
     const prevState = listenerApi.getOriginalState()
 
     if (!shouldReinitializeFusion(prevState, state)) return
 
     // Mark as not ready during reinitialization
-    listenerApi.dispatch(setFusionServiceReady(false))
+    useIsFusionServiceReady.setState(false)
     FusionService.cleanup()
   }
 
@@ -174,7 +174,7 @@ export const initFusionService = async (
   // Don't initialize if Fusion is not enabled
   if (!featureStates.isFusionEnabled) {
     Logger.info('Fusion is disabled, skipping initialization')
-    listenerApi.dispatch(setFusionServiceReady(false))
+    useIsFusionServiceReady.setState(false)
     return
   }
 
@@ -182,7 +182,7 @@ export const initFusionService = async (
     Logger.info('Initializing Fusion service', featureStates)
 
     // Mark as not ready at start
-    listenerApi.dispatch(setFusionServiceReady(false))
+    useIsFusionServiceReady.setState(false)
 
     // Create signers
     const evmSigner = createEvmSigner(request)
@@ -218,7 +218,7 @@ export const initFusionService = async (
     })
 
     // Mark as ready after successful init
-    listenerApi.dispatch(setFusionServiceReady(true))
+    useIsFusionServiceReady.setState(true)
 
     Logger.info('Fusion service initialized successfully', {
       environment,
@@ -229,16 +229,16 @@ export const initFusionService = async (
   } catch (error) {
     Logger.error('Failed to initialize Fusion service', error)
     // Mark as not ready on error
-    listenerApi.dispatch(setFusionServiceReady(false))
+    useIsFusionServiceReady.setState(false)
   }
 }
 
 export const cleanupFusionService = async (
   _action: any, // eslint-disable-line @typescript-eslint/no-explicit-any
-  listenerApi: AppListenerEffectAPI
+  _listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   FusionService.cleanup()
-  listenerApi.dispatch(setFusionServiceReady(false))
+  useIsFusionServiceReady.setState(false)
 }
 
 /**

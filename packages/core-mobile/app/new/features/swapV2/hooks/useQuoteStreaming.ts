@@ -1,15 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSelector } from 'react-redux'
 import type { LocalTokenWithBalance } from 'store/balance'
 import Logger from 'utils/Logger'
 import { NetworkWithCaip2ChainId } from 'store/network'
 import FusionService from '../services/FusionService'
-import { selectIsFusionServiceReady } from '../store/slice'
 import { toSwappableAsset, toChain } from '../utils/fusionTypeConverters'
 import {
   useBestQuote,
   useUserSelectedQuoteId,
-  useAllQuotes
+  useAllQuotes,
+  useIsFusionServiceReady
 } from './useZustandStore'
 
 interface UseQuoteStreamingParams {
@@ -47,7 +46,7 @@ export function useQuoteStreaming(
   } = params
 
   // Subscribe to FusionService ready state
-  const isFusionServiceReady = useSelector(selectIsFusionServiceReady)
+  const [isFusionServiceReady] = useIsFusionServiceReady()
 
   const [, setBestQuote] = useBestQuote()
   const [, setSelectedQuoteId] = useUserSelectedQuoteId()

@@ -17,3 +17,6 @@ export const useBestQuote = createZustandStore<Quote | null>(null)
 // This prevents stale quote data when allQuotes updates with fresh objects
 export const useUserSelectedQuoteId = createZustandStore<string | null>(null)
 export const useAllQuotes = createZustandStore<Quote[]>([])
+
+// Fusion service state
+export const useIsFusionServiceReady = createZustandStore<boolean>(false)
