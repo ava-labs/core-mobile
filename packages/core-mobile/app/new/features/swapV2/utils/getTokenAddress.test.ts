@@ -8,7 +8,7 @@ describe('getTokenAddress', () => {
         type: TokenType.NATIVE,
         symbol: 'AVAX',
         address: ''
-      } as TokenWithBalance
+      } as unknown as TokenWithBalance
 
       expect(getTokenAddress(token)).toBe('AVAX')
     })
@@ -18,7 +18,7 @@ describe('getTokenAddress', () => {
         type: TokenType.NATIVE,
         symbol: 'SOL',
         address: ''
-      } as TokenWithBalance
+      } as unknown as TokenWithBalance
 
       expect(getTokenAddress(token)).toBe('SOL')
     })
@@ -28,7 +28,7 @@ describe('getTokenAddress', () => {
         type: TokenType.NATIVE,
         symbol: 'BTC',
         address: ''
-      } as TokenWithBalance
+      } as unknown as TokenWithBalance
 
       expect(getTokenAddress(token)).toBe('BTC')
     })
@@ -94,7 +94,7 @@ describe('getTokenAddress', () => {
         type: TokenType.NATIVE,
         symbol: 'ETH',
         address: ''
-      } as TokenWithBalance
+      } as unknown as TokenWithBalance
 
       expect(getTokenAddress(token)).toBe('ETH')
     })
@@ -104,7 +104,7 @@ describe('getTokenAddress', () => {
         type: TokenType.NATIVE,
         symbol: '  AVAX  ',
         address: ''
-      } as TokenWithBalance
+      } as unknown as TokenWithBalance
 
       expect(getTokenAddress(token)).toBe('  AVAX  ')
     })
@@ -138,7 +138,7 @@ describe('getTokenAddress', () => {
         type: TokenType.NATIVE,
         symbol: 'AVAX',
         address: '0x0000000000000000000000000000000000000000'
-      } as TokenWithBalance
+      } as unknown as TokenWithBalance
 
       expect(getTokenAddress(token)).toBe('AVAX')
     })
@@ -150,7 +150,7 @@ describe('getTokenAddress', () => {
         type: TokenType.NATIVE,
         symbol: 'AVAX',
         address: ''
-      } as TokenWithBalance
+      } as unknown as TokenWithBalance
 
       const erc20Token: TokenWithBalance = {
         type: TokenType.ERC20,
