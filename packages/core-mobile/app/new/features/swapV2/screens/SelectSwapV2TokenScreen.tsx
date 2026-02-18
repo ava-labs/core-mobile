@@ -179,11 +179,15 @@ export const SelectSwapV2TokenScreen = ({
   )
 
   const renderEmpty = useCallback(() => {
-    if (isLoading) {
+    // Show loading if:
+    // - Networks not loaded yet
+    // - Network not selected yet (initializing)
+    // - Token data is loading
+    if (!networks || !selectedNetwork || isLoading) {
       return <ActivityIndicator />
     }
     return <ErrorState icon={undefined} title="No tokens found" />
-  }, [isLoading])
+  }, [networks, selectedNetwork, isLoading])
 
   return (
     <ListScreenV2
