@@ -3,8 +3,10 @@ import {
   createTransferManager,
   Environment,
   EvmServiceInitializer,
+  FetchFunction,
   LombardServiceInitializer,
   MarkrServiceInitializer,
+  QuoterInterface,
   ServiceInitializer,
   ServiceType,
   TransferManager
@@ -15,7 +17,12 @@ import {
   MARKR_API_URL,
   MARKR_EVM_PARTNER_ID
 } from '../consts'
-import type { FusionConfig, FusionSigners, IFusionService } from './types'
+import type {
+  FusionConfig,
+  FusionSigners,
+  IFusionService,
+  QuoterParams
+} from './types'
 
 /**
  * Service class for managing Fusion SDK TransferManager
@@ -146,6 +153,7 @@ class FusionService implements IFusionService {
       // Create the TransferManager instance
       this.#transferManager = await createTransferManager({
         environment: config.environment,
+        fetch: config.fetch,
         serviceInitializers: initializers as [
           ServiceInitializer,
           ...ServiceInitializer[]
@@ -165,11 +173,13 @@ class FusionService implements IFusionService {
    */
   async initWithFeatureFlags({
     bitcoinProvider,
+    fetch,
     environment,
     featureFlags,
     signers
   }: {
     bitcoinProvider: BitcoinFunctions
+    fetch: FetchFunction
     environment: Environment
     featureFlags: FeatureFlags
     signers: FusionSigners
@@ -178,33 +188,55 @@ class FusionService implements IFusionService {
 
     return this.init({
       bitcoinProvider,
-      config: { environment, enabledServices },
+      config: { environment, enabledServices, fetch },
       signers
     })
   }
 
   /**
-   * Get supported chains from the TransferManager
-   * Returns CAIP-2 chain IDs that are supported by the enabled services
+   * Get supported chains map from the TransferManager
+   * Returns the full Map structure with source → destinations mapping
    *
-   * @returns Promise resolving to array of CAIP-2 chain IDs
+   * @returns Promise resolving to Map<sourceChainId, Set<destinationChainIds>> (CAIP-2 format)
    */
-  async getSupportedChains(): Promise<readonly string[]> {
+  async getSupportedChains(): Promise<
+    ReadonlyMap<string, ReadonlySet<string>>
+  > {
     try {
-      const chains = await this.transferManager.getSupportedChains()
-      Logger.info(`Fusion SDK supports ${chains.length} chains`, chains)
-      return chains
+      const chainsMap = await this.transferManager.getSupportedChains()
+
+      // Log supported chains with their destinations
+      Logger.info(
+        `Fusion Service: ${chainsMap.size} source chains with destinations`
+      )
+      chainsMap.forEach((destinations, source) => {
+        Logger.info(
+          `Chain ${source} can transfer to ${destinations.size} destinations:`,
+          Array.from(destinations)
+        )
+      })
+
+      return chainsMap
     } catch (error) {
-      Logger.error('Failed to fetch supported chains from Fusion SDK', error)
+      Logger.error('Failed to fetch supported chains map', error)
       throw error
     }
   }
 
   /**
-   * Check if the service is initialized
+   * Creates a Quoter instance for fetching real-time swap quotes
+   * @param params Quote request parameters
+   * @returns Quoter instance
    */
-  isInitialized(): boolean {
-    return this.#transferManager !== null
+  getQuoter(params: QuoterParams): QuoterInterface | null {
+    try {
+      const quoter = this.transferManager.getQuoter(params)
+      Logger.info('Quoter instance created successfully')
+      return quoter
+    } catch (error) {
+      Logger.error('Failed to create Quoter instance', error)
+      throw error
+    }
   }
 
   /**

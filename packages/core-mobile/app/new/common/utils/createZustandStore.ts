@@ -19,11 +19,19 @@ import { create } from 'zustand'
  *
  *   return <button onClick={() => setCount(prev => prev + 1)}>Count: {count}</button>
  * }
+ *
+ * // For non-React contexts (e.g., Redux listeners, utilities):
+ * useCounter.setState(10)
+ * useCounter.getState() // returns 10
  * ```
  */
-export function createZustandStore<T>(
-  initialValue: T
-): () => readonly [T, (next: T | ((curr: T) => T)) => void] {
+export function createZustandStore<T>(initialValue: T): (() => readonly [
+  T,
+  (next: T | ((curr: T) => T)) => void
+]) & {
+  setState: (next: T | ((curr: T) => T)) => void
+  getState: () => T
+} {
   const useInner = create<{
     value: T
     setValue: (next: T | ((curr: T) => T)) => void
@@ -38,9 +46,20 @@ export function createZustandStore<T>(
       }))
   }))
 
-  return () => {
+  const useHook = (): [T, (next: T | ((curr: T) => T)) => void] => {
     const value = useInner(s => s.value)
     const setValue = useInner(s => s.setValue)
     return [value, setValue] as const
   }
+
+  // Expose setState and getState for non-React contexts
+  useHook.setState = (next: T | ((curr: T) => T)) => {
+    useInner.getState().setValue(next)
+  }
+
+  useHook.getState = () => {
+    return useInner.getState().value
+  }
+
+  return useHook
 }
