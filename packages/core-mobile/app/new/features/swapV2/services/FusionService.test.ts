@@ -299,10 +299,56 @@ describe('FusionService', () => {
 
       const result = await FusionService.getSupportedChains()
 
-      expect(result).toEqual(['eip155:43114', 'eip155:1'])
+      expect(result).toEqual(mockChainsMap)
       expect(Logger.info).toHaveBeenCalledWith(
-        'Fusion Service supports 2 source chains'
+        'Fusion Service: 2 source chains with destinations'
       )
+    })
+
+    it('should return Map with each source chain having destination Sets', async () => {
+      const mockChainsMap = new Map([
+        ['eip155:43114', new Set(['eip155:1', 'eip155:56'])],
+        ['eip155:1', new Set(['eip155:43114'])]
+      ])
+
+      const mockTransferManager = {
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn().mockResolvedValue(mockChainsMap)
+      }
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      const config: FusionConfig = {
+        environment: Environment.PROD,
+        enabledServices: [ServiceType.MARKR],
+        fetch: mockFetch
+      }
+
+      await FusionService.init({
+        bitcoinProvider: mockBitcoinProvider,
+        config,
+        signers: mockSigners
+      })
+
+      const result = await FusionService.getSupportedChains()
+
+      // Verify it's a Map
+      expect(result).toBeInstanceOf(Map)
+      expect(result.size).toBe(2)
+
+      // Verify first source chain (Avalanche) has destination Sets
+      const avalancheDestinations = result.get('eip155:43114')
+      expect(avalancheDestinations).toBeInstanceOf(Set)
+      expect(avalancheDestinations?.size).toBe(2)
+      expect(avalancheDestinations?.has('eip155:1')).toBe(true)
+      expect(avalancheDestinations?.has('eip155:56')).toBe(true)
+
+      // Verify second source chain (Ethereum) has destination Sets
+      const ethereumDestinations = result.get('eip155:1')
+      expect(ethereumDestinations).toBeInstanceOf(Set)
+      expect(ethereumDestinations?.size).toBe(1)
+      expect(ethereumDestinations?.has('eip155:43114')).toBe(true)
     })
 
     it('should throw error when service is not initialized', async () => {
@@ -338,7 +384,7 @@ describe('FusionService', () => {
       )
 
       expect(Logger.error).toHaveBeenCalledWith(
-        'Failed to fetch supported chains from Fusion Service',
+        'Failed to fetch supported chains map',
         error
       )
     })
