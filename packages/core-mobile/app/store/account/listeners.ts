@@ -312,16 +312,6 @@ const handleInitAccountsIfNeeded = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const accounts = selectAccounts(state)
-  const activeAccount = selectActiveAccount(state)
-  const activeWallet = selectActiveWallet(state)
-
-  console.log(
-    '------> handleInitAccountsIfNeeded called, activeWallet:',
-    activeWallet?.id,
-    activeAccount?.id,
-    activeAccount?.addressPVM,
-    activeAccount?.addressAVM
-  )
 
   // if there are no accounts, we need to initialize them
   // initAcounts after onboarding might have failed

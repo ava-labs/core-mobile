@@ -36,17 +36,9 @@ export const LedgerReviewTransactionScreen = (): JSX.Element | null => {
   )
 
   const network = useMemo(() => {
-    console.log(
-      '-------> LedgerReviewTransactionScreen - rpcMethod:',
-      rpcMethod
-    )
     if (
       (rpcMethod === RpcMethod.ETH_SIGN ||
-        rpcMethod === RpcMethod.PERSONAL_SIGN ||
-        rpcMethod === RpcMethod.SIGN_TYPED_DATA ||
-        rpcMethod === RpcMethod.SIGN_TYPED_DATA_V1 ||
-        rpcMethod === RpcMethod.SIGN_TYPED_DATA_V4 ||
-        rpcMethod === RpcMethod.SIGN_TYPED_DATA_V3) &&
+        rpcMethod === RpcMethod.PERSONAL_SIGN) &&
       ethNetwork
     ) {
       return ethNetwork
