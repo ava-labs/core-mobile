@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button, SegmentedControl, Text, View } from '@avalabs/k2-alpine'
 import { useWindowDimensions } from 'react-native'
 import { useSharedValue } from 'react-native-reanimated'
@@ -14,6 +14,7 @@ import SwipeableRow from '../components/SwipeableRow'
 import PriceAlertItem from '../components/PriceAlertItem'
 import BalanceChangeItem from '../components/BalanceChangeItem'
 import GenericNotificationItem from '../components/GenericNotificationItem'
+import SwapActivityItem from '../components/SwapActivityItem'
 import {
   useNotifications,
   useMarkAllAsRead,
@@ -24,8 +25,14 @@ import {
   AppNotification,
   NotificationTab,
   isPriceAlertNotification,
-  isBalanceChangeNotification
+  isBalanceChangeNotification,
+  SwapActivityItem as SwapActivityItemType
 } from '../types'
+import {
+  useSwapActivities,
+  clearCompletedSwapActivities,
+  removeSwapActivity
+} from '../hooks/useSwapActivities'
 
 const TAB_ITEMS = [
   { title: 'All', value: NotificationTab.ALL },
@@ -91,6 +98,9 @@ const renderNotificationItem = (
   return <GenericNotificationItem notification={item} {...props} />
 }
 
+// TODO: depend on what we get from backend,
+// we might need to check locally persisted swap item with the backend transaction
+// to avoid duplication in the list. For now we assume they are separate and just sort by timestamp.
 export const NotificationsScreen = (): JSX.Element => {
   const insets = useSafeAreaInsets()
   const { height: screenHeight } = useWindowDimensions()
@@ -120,28 +130,79 @@ export const NotificationsScreen = (): JSX.Element => {
     return () => clearTimeout(clearAllTimerRef.current)
   }, [])
 
+  // ── Swap activities ────────────────────────────────────────────────────────
+  // Reads from MMKV. Call saveSwapActivity() from the swap completion handler
+  // to populate this list
+  const { swapActivities } = useSwapActivities()
+
+  const handleSwapActivityPress = useCallback(
+    (item: SwapActivityItemType) => {
+      router.dismiss()
+      openUrl({
+        url: item.explorerUrl,
+        title: `Swap ${item.fromToken} to ${item.toToken}`
+      })
+    },
+    [openUrl]
+  )
+
+  // Combined list sorted by timestamp desc. All items (swaps + notifications)
+  // are ordered purely by recency — no special pinning for in_progress swaps.
+  type CombinedItem =
+    | { kind: 'swap'; item: SwapActivityItemType }
+    | { kind: 'notification'; item: AppNotification }
+
+  const combinedItems = useMemo((): CombinedItem[] => {
+    const showSwaps =
+      selectedTab === NotificationTab.ALL ||
+      selectedTab === NotificationTab.TRANSACTIONS
+
+    return [
+      ...(showSwaps
+        ? swapActivities.map((s): CombinedItem => ({ kind: 'swap', item: s }))
+        : []),
+      ...notifications.map(
+        (n): CombinedItem => ({ kind: 'notification', item: n })
+      )
+    ].sort((a, b) => b.item.timestamp - a.item.timestamp)
+  }, [swapActivities, notifications, selectedTab])
+  // ──────────────────────────────────────────────────────────────────────────
+
+  // Items that "Clear All" will remove: backend notifications + completed swaps
+  const clearableItems = useMemo(
+    () =>
+      combinedItems.filter(
+        item =>
+          item.kind === 'notification' ||
+          (item.kind === 'swap' && item.item.status === 'completed')
+      ),
+    [combinedItems]
+  )
+
   const handleClearAll = useCallback(() => {
-    if (isClearingAll || notifications.length === 0) return
+    if (isClearingAll || clearableItems.length === 0) return
 
     setIsClearingAll(true)
 
     // Only animate visible items, rest disappear instantly when data clears
-    const animatedCount = Math.min(notifications.length, MAX_ANIMATED_ITEMS)
+    const animatedCount = Math.min(clearableItems.length, MAX_ANIMATED_ITEMS)
     const totalTime = animatedCount * SWIPE_DELAY + SWIPE_DURATION
     clearAllTimerRef.current = setTimeout(() => {
       markAllAsRead()
+      clearCompletedSwapActivities()
       setIsClearingAll(false)
     }, totalTime)
-  }, [isClearingAll, notifications, markAllAsRead])
+  }, [isClearingAll, clearableItems, markAllAsRead])
 
-  // Differentiate between "no notifications at all" vs "current tab empty but other tabs have items"
-  const hasNoNotificationsAtAll = totalUnreadCount === 0
-  const isCurrentTabEmpty =
-    notifications.length === 0 && !isClearingAll && !isLoading
-  // Full empty state only when there are no notifications at all
-  const showFullEmptyState = isCurrentTabEmpty && hasNoNotificationsAtAll
-  // Filtered empty state when current tab is empty but other tabs have items
-  const showFilteredEmptyState = isCurrentTabEmpty && !hasNoNotificationsAtAll
+  // Full empty state: no backend notifications AND no swap activities
+  const hasNoContentAtAll =
+    totalUnreadCount === 0 && swapActivities.length === 0
+  const isCurrentViewEmpty =
+    combinedItems.length === 0 && !isClearingAll && !isLoading
+  // Full empty state only when there is truly nothing to show
+  const showFullEmptyState = isCurrentViewEmpty && hasNoContentAtAll
+  // Filtered empty state when current tab view is empty but content exists elsewhere
+  const showFilteredEmptyState = isCurrentViewEmpty && !hasNoContentAtAll
 
   const emptyStateHeight = screenHeight - insets.bottom - insets.top - 100
 
@@ -204,7 +265,7 @@ export const NotificationsScreen = (): JSX.Element => {
     )
   }, [selectedTabIndex, handleSelectSegment, showFullEmptyState, isLoading])
 
-  const renderContent = () => {
+  const renderContent = (): React.JSX.Element => {
     if (isLoading) {
       return <LoadingState sx={{ height: emptyStateHeight }} />
     }
@@ -239,22 +300,48 @@ export const NotificationsScreen = (): JSX.Element => {
 
     return (
       <View>
-        {notifications.map((item, index) => {
-          const isLast = index === notifications.length - 1
+        {combinedItems.map((combined, index) => {
+          const isLast = index === combinedItems.length - 1
+
+          if (combined.kind === 'swap') {
+            const swap = combined.item
+            const isCompleted = swap.status === 'completed'
+            return (
+              <SwipeableRow
+                key={swap.id}
+                animateOut={
+                  isCompleted && isClearingAll && index < MAX_ANIMATED_ITEMS
+                }
+                animateDelay={index * SWIPE_DELAY}
+                onSwipeComplete={() => removeSwapActivity(swap.id)}
+                onPress={() => handleSwapActivityPress(swap)}
+                enabled={!isClearingAll && isCompleted}>
+                <SwapActivityItem
+                  item={swap}
+                  showSeparator={!isLast}
+                  testID={`swap-activity-${swap.id}`}
+                />
+              </SwipeableRow>
+            )
+          }
+
+          const notification = combined.item
           // Only animate first MAX_ANIMATED_ITEMS, rest disappear instantly
           const shouldAnimate = isClearingAll && index < MAX_ANIMATED_ITEMS
           return (
             <SwipeableRow
-              key={item.id}
+              key={notification.id}
               animateOut={shouldAnimate}
               animateDelay={index * SWIPE_DELAY}
-              onSwipeComplete={() => dismissNotification(item)}
-              onPress={() => handleNotificationPress(item)}
+              onSwipeComplete={() => dismissNotification(notification)}
+              onPress={() => handleNotificationPress(notification)}
               enabled={!isClearingAll}>
-              {renderNotificationItem(item, {
+              {renderNotificationItem(notification, {
                 showSeparator: !isLast,
-                accessoryType: hasActionableUrl(item) ? 'chevron' : 'none',
-                testID: `notification-item-${item.id}`
+                accessoryType: hasActionableUrl(notification)
+                  ? 'chevron'
+                  : 'none',
+                testID: `notification-item-${notification.id}`
               })}
             </SwipeableRow>
           )

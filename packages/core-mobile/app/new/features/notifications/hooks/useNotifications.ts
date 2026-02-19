@@ -1,5 +1,11 @@
 import { useMemo, useCallback, useState, useEffect } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  UseMutationResult,
+  UseQueryResult
+} from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { StorageKey } from 'resources/Constants'
 import { commonStorage } from 'utils/mmkv'
@@ -39,12 +45,18 @@ export function useDeviceArn(): string | undefined {
 /**
  * Hook to fetch notifications from backend
  */
-export function useBackendNotifications() {
+export function useBackendNotifications(): UseQueryResult<
+  BackendNotification[],
+  Error
+> {
   const deviceArn = useDeviceArn()
 
   return useQuery<BackendNotification[], Error>({
     queryKey: [ReactQueryKeys.NOTIFICATION_CENTER_LIST, deviceArn],
-    queryFn: () => NotificationCenterService.fetchNotifications(deviceArn!),
+    queryFn: () =>
+      deviceArn
+        ? NotificationCenterService.fetchNotifications(deviceArn)
+        : Promise.resolve([]),
     enabled: !!deviceArn,
     staleTime: 1000 * 60 * 1 // 1 minute
   })
@@ -54,7 +66,10 @@ export function useBackendNotifications() {
  * Hook to get notifications with tab filtering.
  * All notifications returned by the API are unread.
  */
-export function useNotifications(tab: NotificationTab = NotificationTab.ALL) {
+export function useNotifications(tab: NotificationTab = NotificationTab.ALL): {
+  notifications: BackendNotification[]
+  isLoading: boolean
+} {
   const { data: backendNotifications, isLoading } = useBackendNotifications()
 
   const notifications = useMemo(() => {
@@ -84,7 +99,14 @@ export function useUnreadCount(): number {
 /**
  * Hook to mark a backend notification as read
  */
-export function useMarkAsRead() {
+export function useMarkAsRead(): UseMutationResult<
+  void,
+  Error,
+  string,
+  {
+    previousData: BackendNotification[] | undefined
+  }
+> {
   const deviceArn = useDeviceArn()
   const queryClient = useQueryClient()
 
@@ -132,7 +154,14 @@ export function useMarkAsRead() {
 /**
  * Hook to mark all notifications as read
  */
-export function useMarkAllAsRead() {
+export function useMarkAllAsRead(): UseMutationResult<
+  void,
+  Error,
+  void,
+  {
+    previousData: BackendNotification[] | undefined
+  }
+> {
   const deviceArn = useDeviceArn()
   const queryClient = useQueryClient()
 
@@ -177,7 +206,9 @@ export function useMarkAllAsRead() {
 /**
  * Hook to dismiss a notification (mark as read)
  */
-export function useDismissNotification() {
+export function useDismissNotification(): (
+  notification: AppNotification
+) => void {
   const { mutate: markAsRead } = useMarkAsRead()
 
   return useCallback(
