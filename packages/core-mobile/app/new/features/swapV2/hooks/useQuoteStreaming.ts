@@ -6,7 +6,6 @@ import FusionService from '../services/FusionService'
 import { toSwappableAsset, toChain } from '../utils/fusionTypeConverters'
 import {
   useBestQuote,
-  useUserSelectedQuoteId,
   useAllQuotes,
   useIsFusionServiceReady
 } from './useZustandStore'
@@ -49,7 +48,6 @@ export function useQuoteStreaming(
   const [isFusionServiceReady] = useIsFusionServiceReady()
 
   const [, setBestQuote] = useBestQuote()
-  const [, setSelectedQuoteId] = useUserSelectedQuoteId()
   const [, setAllQuotes] = useAllQuotes()
 
   const [isLoading, setIsLoading] = useState(false)
@@ -125,7 +123,6 @@ export function useQuoteStreaming(
     if (quoterResult.error) {
       setError(quoterResult.error)
       setBestQuote(null)
-      setSelectedQuoteId(null)
       setAllQuotes([])
       setIsLoading(false)
       return
@@ -136,7 +133,6 @@ export function useQuoteStreaming(
     // Clear quotes and reset state if quoter is invalid
     if (!quoter) {
       setBestQuote(null)
-      setSelectedQuoteId(null)
       setAllQuotes([])
       setIsLoading(false)
       setError(null)
@@ -146,7 +142,6 @@ export function useQuoteStreaming(
     // Clear quotes when starting new subscription (e.g., token pair changed)
     // This prevents stale quotes from previous pair being displayed
     setBestQuote(null)
-    setSelectedQuoteId(null)
     setAllQuotes([])
     setIsLoading(true)
     setError(null)
@@ -175,7 +170,7 @@ export function useQuoteStreaming(
     return () => {
       unsubscribe()
     }
-  }, [quoterResult, setBestQuote, setSelectedQuoteId, setAllQuotes])
+  }, [quoterResult, setBestQuote, setAllQuotes])
 
   return {
     isLoading,
