@@ -135,10 +135,10 @@ export class ActivityService {
     // Build a combined token metadata map from multiple sources
     const tokenMap = new Map<string, { symbol: string; name: string }>()
 
-    // Source 1: Module's token registry (/solana-tokens endpoint)
+    // Source 1: Module's token registry
     await this.populateFromModuleTokens(tokenMap, network, module)
 
-    // Source 2: User's cached balance data (already fetched, no extra API call)
+    // Source 2: User's cached balance data
     this.populateFromBalanceCache(tokenMap, network.chainId)
 
     return this.applyTokenMetadata(transactions, tokenMap)
@@ -167,8 +167,6 @@ export class ActivityService {
 
   /**
    * Looks up token metadata from the user's cached balance data.
-   * This data is already fetched and cached by the balance service,
-   * so this is a free in-memory lookup with no additional API calls.
    */
   private populateFromBalanceCache(
     tokenMap: Map<string, { symbol: string; name: string }>,
@@ -181,31 +179,48 @@ export class ActivityService {
         queryKey: [ReactQueryKeys.ACCOUNT_BALANCE]
       })
 
-      for (const [, balanceData] of cachedBalances) {
-        if (!balanceData) continue
+      const tokens = this.extractTokensFromBalanceCache(cachedBalances, chainId)
 
-        for (const networkBalance of balanceData) {
-          if (networkBalance.chainId !== chainId) continue
-
-          for (const token of networkBalance.tokens) {
-            const address =
-              'address' in token ? String(token.address) : undefined
-
-            if (address && token.symbol) {
-              // Only add if not already present from a higher-priority source
-              if (!tokenMap.has(address)) {
-                tokenMap.set(address, {
-                  symbol: token.symbol,
-                  name: token.name ?? token.symbol
-                })
-              }
-            }
-          }
+      for (const { address, symbol, name } of tokens) {
+        if (!tokenMap.has(address)) {
+          tokenMap.set(address, { symbol, name })
         }
       }
     } catch (error) {
       Logger.warn('Failed to read balance cache for token resolution', error)
     }
+  }
+
+  private extractTokensFromBalanceCache(
+    cachedBalances: [
+      unknown,
+      AdjustedNormalizedBalancesForAccount[] | undefined
+    ][],
+    chainId: number
+  ): { address: string; symbol: string; name: string }[] {
+    const seen = new Set<string>()
+
+    return cachedBalances
+      .flatMap(([, balanceData]) => balanceData ?? [])
+      .filter(networkBalance => networkBalance.chainId === chainId)
+      .flatMap(networkBalance => networkBalance.tokens)
+      .reduce<{ address: string; symbol: string; name: string }[]>(
+        (result, token) => {
+          const address = 'address' in token ? String(token.address) : undefined
+
+          if (address && token.symbol && !seen.has(address)) {
+            seen.add(address)
+            result.push({
+              address,
+              symbol: token.symbol,
+              name: token.name ?? token.symbol
+            })
+          }
+
+          return result
+        },
+        []
+      )
   }
 
   private applyTokenMetadata(
@@ -215,10 +230,7 @@ export class ActivityService {
     return transactions.map(tx => ({
       ...tx,
       tokens: tx.tokens.map(token => {
-        if (
-          token.symbol !== UNKNOWN_TOKEN_SYMBOL ||
-          !('address' in token)
-        ) {
+        if (token.symbol !== UNKNOWN_TOKEN_SYMBOL || !('address' in token)) {
           return token
         }
 
