@@ -18,7 +18,7 @@ import {
   useSwapSelectedFromToken,
   useSwapSelectedToToken,
   useBestQuote,
-  useUserSelectedQuoteId,
+  useUserSelectedQuote,
   useAllQuotes
 } from '../hooks/useZustandStore'
 import { useQuoteStreaming } from '../hooks/useQuoteStreaming'
@@ -69,15 +69,30 @@ export const SwapContextProvider = ({
 
   // Get quotes
   const [bestQuote] = useBestQuote()
-  const [selectedQuoteId, setSelectedQuoteId] = useUserSelectedQuoteId()
+  const [selectedQuote, setSelectedQuote] = useUserSelectedQuote()
   const [allQuotes] = useAllQuotes()
 
-  // Derive the actual selected quote from allQuotes based on the stored ID
-  // This ensures we always have fresh quote data when quotes update
+  // Derive the actual selected quote from allQuotes with fallback matching
+  // Strategy:
+  // 1. Try to match by exact quoteId (preferred - same quote after refresh)
+  // 2. Fallback to serviceType + aggregatorId (same provider after refresh)
+  // This ensures quote selection persists across quote updates (slippage/expiry)
   const userQuote = useMemo(() => {
-    if (!selectedQuoteId) return null
-    return allQuotes.find(q => q.id === selectedQuoteId) ?? null
-  }, [selectedQuoteId, allQuotes])
+    if (!selectedQuote) return null
+
+    // Try exact match first
+    const exactMatch = allQuotes.find(q => q.id === selectedQuote.quoteId)
+    if (exactMatch) return exactMatch
+
+    // Fallback: match by serviceType + aggregatorId
+    const fallbackMatch = allQuotes.find(
+      q =>
+        q.serviceType === selectedQuote.serviceType &&
+        q.aggregator.id === selectedQuote.aggregatorId
+    )
+
+    return fallbackMatch ?? null
+  }, [selectedQuote, allQuotes])
 
   // Get account and networks
   const activeAccount = useSelector(selectActiveAccount)
@@ -119,19 +134,35 @@ export const SwapContextProvider = ({
   // Method to select a specific quote or auto mode
   const selectQuoteById = useCallback(
     (quoteId: string | null) => {
-      // Store only the quote ID (not the entire quote object)
-      // The actual quote will be derived from allQuotes in real-time
-      setSelectedQuoteId(quoteId)
+      if (quoteId === null) {
+        // Clear selection (Auto mode)
+        setSelectedQuote(null)
+        return
+      }
+
+      // Find the quote to extract serviceType and aggregatorId
+      const quote = allQuotes.find(q => q.id === quoteId)
+      if (!quote) {
+        setSelectedQuote(null)
+        return
+      }
+
+      // Store all identifiers for fallback matching
+      setSelectedQuote({
+        quoteId: quote.id,
+        serviceType: quote.serviceType,
+        aggregatorId: quote.aggregator.id
+      })
     },
-    [setSelectedQuoteId]
+    [allQuotes, setSelectedQuote]
   )
 
   // Stub swap function - will be implemented in next phase
   const swap = useCallback(async () => {
     // userQuote takes precedence over bestQuote
-    const selectedQuote = userQuote ?? bestQuote
+    const quoteToUse = userQuote ?? bestQuote
 
-    if (!selectedQuote) {
+    if (!quoteToUse) {
       throw new Error('No quote available')
     }
 
@@ -143,7 +174,7 @@ export const SwapContextProvider = ({
       toToken,
       amount,
       slippage,
-      selectedQuote
+      selectedQuote: quoteToUse
     })
 
     setSwapStatus('Idle')
