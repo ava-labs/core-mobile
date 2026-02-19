@@ -20,6 +20,7 @@ type SwapIconProps = {
 /**
  * Icon shown on the left of each swap item:
  *  - completed  → static green circle with a white checkmark
+ *  - failed     → static red circle with a white X icon
  *  - in_progress → grey circle with a continuously spinning sync icon
  */
 const SwapIcon: FC<SwapIconProps> = ({ status }) => {
@@ -65,6 +66,26 @@ const SwapIcon: FC<SwapIconProps> = ({ status }) => {
     )
   }
 
+  if (status === 'failed') {
+    return (
+      <View
+        sx={{
+          width: ICON_SIZE,
+          height: ICON_SIZE,
+          borderRadius: ICON_SIZE / 2,
+          backgroundColor: '$textDanger',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+        <Icons.Content.Close
+          color={colors.$surfacePrimary}
+          width={ICON_SIZE / 2}
+          height={ICON_SIZE / 2}
+        />
+      </View>
+    )
+  }
+
   return (
     <View
       sx={{
@@ -101,7 +122,9 @@ const SwapActivityItem: FC<SwapActivityItemProps> = ({
   const title =
     item.status === 'completed'
       ? `Swapped ${item.fromToken} to ${item.toToken}`
-      : `Swapping ${item.fromToken} to ${item.toToken} in progress...`
+      : item.status === 'failed'
+        ? `Swap ${item.fromToken} to ${item.toToken} failed`
+        : `Swapping ${item.fromToken} to ${item.toToken} in progress...`
 
   return (
     <NotificationListItem
