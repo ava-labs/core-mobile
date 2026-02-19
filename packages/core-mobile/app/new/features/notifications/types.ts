@@ -114,6 +114,33 @@ export function isBalanceChangeNotification(
   return notification.type === 'BALANCE_CHANGES'
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Swap activity types
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Status of a swap transaction.
+ */
+export type SwapStatus = 'completed' | 'in_progress'
+
+/**
+ * Represents a swap activity item shown in the notification center.
+ */
+export interface SwapActivityItem {
+  /** Unique transaction identifier */
+  id: string
+  /** Symbol of the token being swapped from (e.g. "AVAX") */
+  fromToken: string
+  /** Symbol of the token being swapped to (e.g. "USDC") */
+  toToken: string
+  /** Current status of the swap */
+  status: SwapStatus
+  /** Unix timestamp in milliseconds */
+  timestamp: number
+  /** Block explorer URL for the transaction */
+  explorerUrl: string
+}
+
 /**
  * Map notification type to category for UI tabs
  */
