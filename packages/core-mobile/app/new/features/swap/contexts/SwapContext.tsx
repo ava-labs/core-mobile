@@ -29,8 +29,6 @@ import { LocalTokenWithBalance } from 'store/balance'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
-import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
-import { saveSwapActivity } from 'new/features/notifications/hooks/useSwapActivities'
 import { selectMarkrSwapMaxRetries } from 'store/posthog'
 import { swapCompleted } from 'store/nestEgg'
 import {
