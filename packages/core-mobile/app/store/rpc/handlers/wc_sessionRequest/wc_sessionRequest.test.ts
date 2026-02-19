@@ -98,7 +98,8 @@ const testNonEVMNamespacesToApprove = {
       RpcMethod.AVALANCHE_SEND_TRANSACTION,
       RpcMethod.AVALANCHE_SIGN_TRANSACTION,
       RpcMethod.AVALANCHE_SIGN_MESSAGE,
-      RpcMethod.WALLET_GET_NETWORK_STATE
+      RpcMethod.WALLET_GET_NETWORK_STATE,
+      RpcMethod.WALLET_ENABLE_NETWORK
     ],
     events: [
       'chainChanged',
@@ -505,7 +506,8 @@ describe('session_request handler', () => {
             'avalanche_getAddressesInRange',
             'avalanche_renameAccount',
             'avalanche_addAccount',
-            'wallet_getNetworkState'
+            'wallet_getNetworkState',
+            'wallet_enableNetwork'
           ],
           // all requested events
           events: validRequiredNamespaces.eip155.events
@@ -544,7 +546,8 @@ describe('session_request handler', () => {
             'avalanche_sendTransaction',
             'avalanche_signTransaction',
             'avalanche_signMessage',
-            'wallet_getNetworkState'
+            'wallet_getNetworkState',
+            'wallet_enableNetwork'
           ]
         },
         bip122: {
@@ -664,7 +667,8 @@ describe('session_request handler', () => {
             'avalanche_getAddressesInRange',
             'avalanche_renameAccount',
             'avalanche_addAccount',
-            'wallet_getNetworkState'
+            'wallet_getNetworkState',
+            'wallet_enableNetwork'
           ],
           // all requested events
           events: validRequiredNamespaces.eip155.events
@@ -703,7 +707,8 @@ describe('session_request handler', () => {
             'avalanche_sendTransaction',
             'avalanche_signTransaction',
             'avalanche_signMessage',
-            'wallet_getNetworkState'
+            'wallet_getNetworkState',
+            'wallet_enableNetwork'
           ]
         },
         bip122: {
