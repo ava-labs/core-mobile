@@ -53,7 +53,9 @@ describe('FusionService', () => {
     it('should initialize with MARKR service enabled', async () => {
       const mockTransferManager = {
         getQuoter: jest.fn(),
-        getSupportedChains: jest.fn()
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn()
       }
       ;(createTransferManager as jest.Mock).mockResolvedValue(
         mockTransferManager
@@ -89,7 +91,9 @@ describe('FusionService', () => {
     it('should initialize with multiple services enabled', async () => {
       const mockTransferManager = {
         getQuoter: jest.fn(),
-        getSupportedChains: jest.fn()
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn()
       }
       ;(createTransferManager as jest.Mock).mockResolvedValue(
         mockTransferManager
@@ -144,7 +148,9 @@ describe('FusionService', () => {
     it('should initialize in TEST environment', async () => {
       const mockTransferManager = {
         getQuoter: jest.fn(),
-        getSupportedChains: jest.fn()
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn()
       }
       ;(createTransferManager as jest.Mock).mockResolvedValue(
         mockTransferManager
@@ -198,7 +204,9 @@ describe('FusionService', () => {
     it('should enable MARKR service when feature flag is true', async () => {
       const mockTransferManager = {
         getQuoter: jest.fn(),
-        getSupportedChains: jest.fn()
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn()
       }
       ;(createTransferManager as jest.Mock).mockResolvedValue(
         mockTransferManager
@@ -227,7 +235,9 @@ describe('FusionService', () => {
     it('should enable multiple services based on feature flags', async () => {
       const mockTransferManager = {
         getQuoter: jest.fn(),
-        getSupportedChains: jest.fn()
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn()
       }
       ;(createTransferManager as jest.Mock).mockResolvedValue(
         mockTransferManager
@@ -496,11 +506,212 @@ describe('FusionService', () => {
     })
   })
 
+  describe('transferAsset', () => {
+    it('should execute transfer successfully', async () => {
+      const mockQuote = {
+        id: 'quote-123',
+        aggregator: { name: 'Markr', id: 'markr' },
+        serviceType: ServiceType.MARKR
+      } as any
+
+      const mockTransfer = {
+        id: 'transfer-456',
+        status: 'pending',
+        quote: mockQuote
+      } as any
+
+      const mockTransferManager = {
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn().mockResolvedValue(mockTransfer),
+        estimateGas: jest.fn()
+      }
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      const config: FusionConfig = {
+        environment: Environment.PROD,
+        enabledServices: [ServiceType.MARKR],
+        fetch: mockFetch
+      }
+
+      await FusionService.init({
+        bitcoinProvider: mockBitcoinProvider,
+        config,
+        signers: mockSigners
+      })
+
+      const result = await FusionService.transferAsset(mockQuote)
+
+      expect(result).toBe(mockTransfer)
+      expect(mockTransferManager.transferAsset).toHaveBeenCalledWith({
+        quote: mockQuote
+      })
+      expect(Logger.info).toHaveBeenCalledWith(
+        'Executing transfer with quote:',
+        {
+          aggregator: 'Markr',
+          serviceType: ServiceType.MARKR
+        }
+      )
+      expect(Logger.info).toHaveBeenCalledWith('Transfer executed:', {
+        transferId: 'transfer-456',
+        status: 'pending'
+      })
+    })
+
+    it('should throw error when service is not initialized', async () => {
+      const mockQuote = {
+        id: 'quote-123',
+        aggregator: { name: 'Markr', id: 'markr' },
+        serviceType: ServiceType.MARKR
+      } as any
+
+      await expect(FusionService.transferAsset(mockQuote)).rejects.toThrow(
+        'Fusion service is not initialized'
+      )
+    })
+
+    it('should log and throw error when transferAsset fails', async () => {
+      const mockQuote = {
+        id: 'quote-123',
+        aggregator: { name: 'Markr', id: 'markr' },
+        serviceType: ServiceType.MARKR
+      } as any
+
+      const error = new Error('Transfer failed')
+      const mockTransferManager = {
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn().mockRejectedValue(error),
+        estimateGas: jest.fn()
+      }
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      const config: FusionConfig = {
+        environment: Environment.PROD,
+        enabledServices: [ServiceType.MARKR],
+        fetch: mockFetch
+      }
+
+      await FusionService.init({
+        bitcoinProvider: mockBitcoinProvider,
+        config,
+        signers: mockSigners
+      })
+
+      await expect(FusionService.transferAsset(mockQuote)).rejects.toThrow(
+        'Transfer failed'
+      )
+
+      expect(Logger.error).toHaveBeenCalledWith(
+        'Failed to execute transfer',
+        error
+      )
+    })
+  })
+
+  describe('estimateGas', () => {
+    it('should estimate gas successfully', async () => {
+      const mockQuote = {
+        id: 'quote-123',
+        aggregator: { name: 'Markr', id: 'markr' },
+        serviceType: ServiceType.MARKR
+      } as any
+
+      const mockGasEstimate = 21000n
+
+      const mockTransferManager = {
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn().mockResolvedValue(mockGasEstimate)
+      }
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      const config: FusionConfig = {
+        environment: Environment.PROD,
+        enabledServices: [ServiceType.MARKR],
+        fetch: mockFetch
+      }
+
+      await FusionService.init({
+        bitcoinProvider: mockBitcoinProvider,
+        config,
+        signers: mockSigners
+      })
+
+      const result = await FusionService.estimateGas(mockQuote)
+
+      expect(result).toBe(mockGasEstimate)
+      expect(mockTransferManager.estimateGas).toHaveBeenCalledWith({
+        quote: mockQuote
+      })
+      expect(Logger.info).toHaveBeenCalledWith('Gas estimated:', '21000')
+    })
+
+    it('should throw error when service is not initialized', async () => {
+      const mockQuote = {
+        id: 'quote-123',
+        aggregator: { name: 'Markr', id: 'markr' },
+        serviceType: ServiceType.MARKR
+      } as any
+
+      await expect(FusionService.estimateGas(mockQuote)).rejects.toThrow(
+        'Fusion service is not initialized'
+      )
+    })
+
+    it('should log and throw error when estimateGas fails', async () => {
+      const mockQuote = {
+        id: 'quote-123',
+        aggregator: { name: 'Markr', id: 'markr' },
+        serviceType: ServiceType.MARKR
+      } as any
+
+      const error = new Error('Gas estimation failed')
+      const mockTransferManager = {
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn().mockRejectedValue(error)
+      }
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      const config: FusionConfig = {
+        environment: Environment.PROD,
+        enabledServices: [ServiceType.MARKR],
+        fetch: mockFetch
+      }
+
+      await FusionService.init({
+        bitcoinProvider: mockBitcoinProvider,
+        config,
+        signers: mockSigners
+      })
+
+      await expect(FusionService.estimateGas(mockQuote)).rejects.toThrow(
+        'Gas estimation failed'
+      )
+
+      expect(Logger.error).toHaveBeenCalledWith('Failed to estimate gas', error)
+    })
+  })
+
   describe('cleanup', () => {
     it('should cleanup and reset the service', async () => {
       const mockTransferManager = {
         getQuoter: jest.fn(),
-        getSupportedChains: jest.fn()
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn()
       }
       ;(createTransferManager as jest.Mock).mockResolvedValue(
         mockTransferManager
@@ -544,7 +755,9 @@ describe('FusionService', () => {
     it('should allow re-initialization after cleanup', async () => {
       const mockTransferManager = {
         getQuoter: jest.fn(),
-        getSupportedChains: jest.fn()
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn()
       }
       ;(createTransferManager as jest.Mock).mockResolvedValue(
         mockTransferManager
@@ -591,7 +804,9 @@ describe('FusionService', () => {
     it('should configure MARKR with correct parameters', async () => {
       const mockTransferManager = {
         getQuoter: jest.fn(),
-        getSupportedChains: jest.fn()
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn()
       }
       ;(createTransferManager as jest.Mock).mockResolvedValue(
         mockTransferManager
@@ -625,7 +840,9 @@ describe('FusionService', () => {
     it('should configure Lombard services with BTC signer', async () => {
       const mockTransferManager = {
         getQuoter: jest.fn(),
-        getSupportedChains: jest.fn()
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn()
       }
       ;(createTransferManager as jest.Mock).mockResolvedValue(
         mockTransferManager

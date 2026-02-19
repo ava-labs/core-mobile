@@ -143,9 +143,24 @@ export type AnalyticsEvents = {
     address: string
     chainId: number
   }
-  SwapReviewOrder: {
-    destinationInputField: string
-    slippageTolerance: number | undefined
+  SwapReviewOrder:
+    | {
+        // fusion swap
+        provider: string
+        slippage: number
+      }
+    | {
+        // legacy swap
+        destinationInputField: string
+        slippageTolerance: number | undefined
+      }
+  SwapConfirmed: {
+    address: string
+    chainId: string
+  }
+  SwapFailed: {
+    address: string
+    chainId: string
   }
   Swap_TokenSelected: undefined
   TermsAndConditionsAccepted: undefined

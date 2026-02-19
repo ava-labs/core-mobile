@@ -3,8 +3,10 @@ import type {
   BtcSigner,
   Environment,
   EvmSignerWithMessage,
+  Quote,
   QuoterInterface,
   ServiceType,
+  Transfer,
   TransferManager,
   FetchFunction
 } from '@avalabs/unified-asset-transfer'
@@ -62,6 +64,20 @@ export interface IFusionService {
    * @returns Quoter instance
    */
   getQuoter(params: QuoterParams): QuoterInterface | null
+
+  /**
+   * Execute a transfer using the provided quote
+   * @param quote The quote to execute
+   * @returns Transfer object with status and transaction details
+   */
+  transferAsset(quote: Quote): Promise<Transfer>
+
+  /**
+   * Estimate gas for a quote
+   * @param quote The quote to estimate gas for
+   * @returns Estimated gas in BigInt
+   */
+  estimateGas(quote: Quote): Promise<bigint>
 
   /**
    * Cleanup and reset the service

@@ -6,9 +6,11 @@ import {
   FetchFunction,
   LombardServiceInitializer,
   MarkrServiceInitializer,
+  Quote,
   QuoterInterface,
   ServiceInitializer,
   ServiceType,
+  Transfer,
   TransferManager
 } from '@avalabs/unified-asset-transfer'
 import type { FeatureFlags } from 'services/posthog/types'
@@ -235,6 +237,48 @@ class FusionService implements IFusionService {
       return quoter
     } catch (error) {
       Logger.error('Failed to create Quoter instance', error)
+      throw error
+    }
+  }
+
+  /**
+   * Execute a transfer using the provided quote
+   * @param quote The quote to execute
+   * @returns Transfer object with status and transaction details
+   */
+  async transferAsset(quote: Quote): Promise<Transfer> {
+    try {
+      Logger.info('Executing transfer with quote:', {
+        aggregator: quote.aggregator.name,
+        serviceType: quote.serviceType
+      })
+
+      const transfer = await this.transferManager.transferAsset({ quote })
+
+      Logger.info('Transfer executed:', {
+        transferId: transfer.id,
+        status: transfer.status
+      })
+
+      return transfer
+    } catch (error) {
+      Logger.error('Failed to execute transfer', error)
+      throw error
+    }
+  }
+
+  /**
+   * Estimate gas for a quote
+   * @param quote The quote to estimate gas for
+   * @returns Estimated gas in BigInt
+   */
+  async estimateGas(quote: Quote): Promise<bigint> {
+    try {
+      const gasEstimate = await this.transferManager.estimateGas({ quote })
+      Logger.info('Gas estimated:', gasEstimate.toString())
+      return gasEstimate
+    } catch (error) {
+      Logger.error('Failed to estimate gas', error)
       throw error
     }
   }

@@ -13,20 +13,35 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { getAddressByNetwork } from 'store/account/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import type { Quote } from '../types'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { transactionSnackbar } from 'common/utils/toast'
+import Logger from 'utils/Logger'
+import { selectMarkrSwapMaxRetries } from 'store/posthog'
+import type { Quote, Transfer } from '../types'
 import {
   useSwapSelectedFromToken,
   useSwapSelectedToToken,
   useBestQuote,
   useUserSelectedQuote,
-  useAllQuotes
+  useAllQuotes,
+  useFusionTransfers
 } from '../hooks/useZustandStore'
 import { useQuoteStreaming } from '../hooks/useQuoteStreaming'
+import FusionService from '../services/FusionService'
+import {
+  isUserRejectionError,
+  shouldRetryWithNextQuote,
+  getSwapErrorMessage
+} from '../utils/swapErrors'
 
 const DEFAULT_SLIPPAGE = 0.2
 
-// success here just means the transaction was sent, not that it was successful/confirmed
-type SwapStatus = 'Idle' | 'Swapping' | 'Success' | 'Fail'
+export enum SwapStatus {
+  Idle = 'Idle',
+  Swapping = 'Swapping',
+  Success = 'Success',
+  Fail = 'Fail'
+}
 
 interface SwapContextState {
   fromToken?: LocalTokenWithBalance
@@ -64,13 +79,16 @@ export const SwapContextProvider = ({
   const [slippage, setSlippage] = useState<number>(DEFAULT_SLIPPAGE)
   const [autoSlippage, setAutoSlippage] = useState<boolean>(true)
   const [destination, setDestination] = useState<SwapSide>(SwapSide.SELL)
-  const [swapStatus, setSwapStatus] = useState<SwapStatus>('Idle')
+  const [swapStatus, setSwapStatus] = useState<SwapStatus>(SwapStatus.Idle)
   const [amount, setAmount] = useState<bigint>()
 
   // Get quotes
   const [bestQuote] = useBestQuote()
   const [selectedQuote, setSelectedQuote] = useUserSelectedQuote()
   const [allQuotes] = useAllQuotes()
+
+  // Transfer storage
+  const [, setTransfers] = useFusionTransfers()
 
   // Derive the actual selected quote from allQuotes with fallback matching
   // Strategy:
@@ -96,6 +114,7 @@ export const SwapContextProvider = ({
 
   // Get account and networks
   const activeAccount = useSelector(selectActiveAccount)
+  const maxRetries = useSelector(selectMarkrSwapMaxRetries)
   const { getNetwork } = useNetworks()
   const fromNetwork = useMemo(
     () => (fromToken ? getNetwork(fromToken.networkChainId) : undefined),
@@ -157,28 +176,160 @@ export const SwapContextProvider = ({
     [allQuotes, setSelectedQuote]
   )
 
-  // Stub swap function - will be implemented in next phase
-  const swap = useCallback(async () => {
-    // userQuote takes precedence over bestQuote
-    const quoteToUse = userQuote ?? bestQuote
+  // Handle swap success: logging, storage, and analytics
+  const handleSwapSuccess = useCallback(
+    (params: {
+      transfer: Transfer
+      quote: Quote
+      address: string
+      fromTokenData: LocalTokenWithBalance
+      toTokenData: LocalTokenWithBalance
+    }) => {
+      const { transfer, quote, address, fromTokenData, toTokenData } = params
 
-    if (!quoteToUse) {
-      throw new Error('No quote available')
-    }
+      AnalyticsService.capture('SwapConfirmed', {
+        address,
+        chainId: quote.sourceChain.chainId
+      })
 
-    // eslint-disable-next-line no-console
-    console.log('Swap execution not yet implemented - coming in next phase')
-    // eslint-disable-next-line no-console
-    console.log({
+      Logger.info('[SwapContext] transfer executed', {
+        transfer
+      })
+
+      // Store transfer in Zustand for tracking
+      setTransfers(prev => ({
+        ...prev,
+        [transfer.id]: {
+          transfer,
+          fromToken: {
+            localId: fromTokenData.localId,
+            internalId: fromTokenData.internalId,
+            logoUri: fromTokenData.logoUri
+          },
+          toToken: {
+            localId: toTokenData.localId,
+            internalId: toTokenData.internalId,
+            logoUri: toTokenData.logoUri
+          },
+          timestamp: Date.now()
+        }
+      }))
+
+      setSwapStatus(SwapStatus.Success)
+    },
+    [setTransfers]
+  )
+
+  // Handle swap error: logging, toast, and analytics
+  const handleSwapError = useCallback(
+    (error: unknown, quote: Quote, address: string) => {
+      setSwapStatus(SwapStatus.Fail)
+
+      // Show error toast (only for non-transaction errors)
+      transactionSnackbar.error({
+        message: 'Swap failed',
+        error: getSwapErrorMessage(error)
+      })
+
+      AnalyticsService.capture('SwapFailed', {
+        address,
+        chainId: quote.sourceChain.chainId
+      })
+
+      Logger.error('Swap execution failed', error)
+    },
+    []
+  )
+
+  // Swap execution with retry logic
+  const swap = useCallback(
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    async (retryQuote?: Quote, retries = 0) => {
+      // Determine which quote to use (retry or normal flow)
+      const quoteToUse = retryQuote ?? userQuote ?? bestQuote
+
+      if (!quoteToUse) {
+        throw new Error('No quote available')
+      }
+
+      if (!fromToken || !toToken) {
+        throw new Error('Tokens not selected')
+      }
+
+      if (!fromAddress || !toAddress) {
+        throw new Error('Addresses not specified')
+      }
+
+      setSwapStatus(SwapStatus.Swapping)
+
+      try {
+        AnalyticsService.capture('SwapReviewOrder', {
+          provider: quoteToUse.aggregator.name,
+          slippage
+        })
+
+        const transfer = await FusionService.transferAsset(quoteToUse)
+
+        if (transfer.status === 'failed') {
+          throw new Error('Transfer failed')
+        }
+
+        handleSwapSuccess({
+          transfer,
+          quote: quoteToUse,
+          address: fromAddress,
+          fromTokenData: fromToken,
+          toTokenData: toToken
+        })
+      } catch (error) {
+        // Handle user rejection - silent exit, no error shown
+        if (isUserRejectionError(error)) {
+          setSwapStatus(SwapStatus.Idle)
+          return
+        }
+
+        Logger.info('[SwapContext] error occurred during swap', error)
+
+        // Auto-retry with next quote (only if using auto mode and under retry limit)
+        if (
+          !userQuote &&
+          retries < maxRetries &&
+          allQuotes.length > 1 &&
+          shouldRetryWithNextQuote(error)
+        ) {
+          const currentIndex = allQuotes.findIndex(q => q.id === quoteToUse.id)
+          const nextQuote = allQuotes[currentIndex + 1]
+
+          if (nextQuote) {
+            Logger.info('[SwapContext] retrying with next quote:', {
+              failed: quoteToUse.aggregator.name,
+              retrying: nextQuote.aggregator.name,
+              attempt: retries + 1,
+              maxRetries
+            })
+            // Recursive retry
+            return swap(nextQuote, retries + 1)
+          }
+        }
+
+        // All retries exhausted or non-retryable error
+        handleSwapError(error, quoteToUse, fromAddress)
+      }
+    },
+    [
       fromToken,
       toToken,
-      amount,
       slippage,
-      selectedQuote: quoteToUse
-    })
-
-    setSwapStatus('Idle')
-  }, [fromToken, toToken, amount, slippage, userQuote, bestQuote])
+      fromAddress,
+      toAddress,
+      userQuote,
+      bestQuote,
+      allQuotes,
+      maxRetries,
+      handleSwapSuccess,
+      handleSwapError
+    ]
+  )
 
   const value: SwapContextState = {
     fromToken,
