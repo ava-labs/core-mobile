@@ -30,7 +30,7 @@ const STALE_TIME = 5 * 60 * 1000 // 5 minutes
  *   - isLoading: Boolean indicating if the initial fetch is in progress
  *   - error: Error object if the fetch failed, null otherwise
  */
-export const useSwapV2Tokens = (
+export const useSwapTokens = (
   caip2Id: string
 ): {
   tokens: LocalTokenWithBalance[]
