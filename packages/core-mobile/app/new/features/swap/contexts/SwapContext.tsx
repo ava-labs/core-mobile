@@ -29,8 +29,6 @@ import { LocalTokenWithBalance } from 'store/balance'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
-import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
-import { saveSwapActivity } from 'new/features/notifications/hooks/useSwapActivities'
 import { selectMarkrSwapMaxRetries } from 'store/posthog'
 import {
   NormalizedSwapQuoteResult,
@@ -290,24 +288,8 @@ export const SwapContextProvider = ({
         chainId
       })
       audioFeedback(Audios.Send)
-
-      const network =
-        chainId === cChainNetwork?.chainId ? cChainNetwork : solanaNetwork
-      const explorerUrl =
-        network?.explorerUrl && swapTxHash
-          ? getExplorerAddressByNetwork(network.explorerUrl, swapTxHash, 'tx')
-          : ''
-
-      saveSwapActivity({
-        id: swapTxHash,
-        fromToken: fromToken?.symbol ?? '',
-        toToken: toToken?.symbol ?? '',
-        status: 'in_progress',
-        timestamp: Date.now(),
-        explorerUrl
-      })
     },
-    [cChainNetwork, solanaNetwork, fromToken, toToken]
+    []
   )
 
   const swap = useCallback(
