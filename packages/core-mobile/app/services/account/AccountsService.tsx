@@ -58,11 +58,11 @@ class AccountsService {
       // For Ledger wallets, preserve existing addresses
       // since they were retrieved from the device during wallet creation
       return {
-        [NetworkVMType.BITCOIN]: addressBTC || account.addressBTC,
+        [NetworkVMType.BITCOIN]: addressBTC || '',
         [NetworkVMType.EVM]: account.addressC,
-        [NetworkVMType.AVM]: addressAVM || account.addressAVM,
-        [NetworkVMType.PVM]: addressPVM || account.addressPVM,
-        [NetworkVMType.CoreEth]: addressCoreEth || account.addressCoreEth || '',
+        [NetworkVMType.AVM]: addressAVM || '',
+        [NetworkVMType.PVM]: addressPVM || '',
+        [NetworkVMType.CoreEth]: addressCoreEth || '',
         [NetworkVMType.SVM]: account.addressSVM ?? ''
       } as Record<NetworkVMType, string>
     }

@@ -1,26 +1,29 @@
 import React from 'react'
 import { SwapPricingDetailsScreen } from 'features/swapV2/screens/SwapPricingDetailsScreen'
-import {
-  useManuallySelected,
-  useQuotes,
-  useSwapSelectedFromToken,
-  useSwapSelectedToToken
-} from 'features/swapV2/hooks/useZustandStore'
+import { useSwapContext } from 'features/swapV2/contexts/SwapContext'
 
 export default (): JSX.Element => {
-  const [fromToken] = useSwapSelectedFromToken()
-  const [toToken] = useSwapSelectedToToken()
-  const [quotes, setQuotes] = useQuotes()
-  const [manuallySelected, setManuallySelected] = useManuallySelected()
+  const {
+    bestQuote,
+    selectQuoteById,
+    allQuotes,
+    userQuote,
+    fromToken,
+    toToken
+  } = useSwapContext()
+
+  // userQuote takes precedence over bestQuote
+  const selectedQuote = userQuote ?? bestQuote
 
   return (
     <SwapPricingDetailsScreen
       fromToken={fromToken}
       toToken={toToken}
-      quotes={quotes}
-      setQuotes={setQuotes}
-      manuallySelected={manuallySelected}
-      setManuallySelected={setManuallySelected}
+      bestQuote={bestQuote}
+      userQuote={userQuote}
+      selectedQuote={selectedQuote}
+      allQuotes={allQuotes}
+      selectQuoteById={selectQuoteById}
     />
   )
 }

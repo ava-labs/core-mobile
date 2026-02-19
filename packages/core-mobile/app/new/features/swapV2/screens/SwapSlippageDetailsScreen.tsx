@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Button,
   Separator,
@@ -16,7 +16,8 @@ import {
   showAlertWithTextInput
 } from 'common/utils/alertWithTextInput'
 import { isSlippageValid } from '../utils/isSlippageValid'
-import { SwapProviders } from '../types'
+import { ServiceType } from '../types'
+import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
 
 const CUSTOM_SLIPPAGE_INPUT_KEY = 'customSlippage'
 const PRESET_SLIPPAGES = [1, 2] as const
@@ -26,7 +27,8 @@ interface SwapSlippageDetailsScreenProps {
   setSlippage: (slippage: number) => void
   autoSlippage: boolean
   setAutoSlippage: (autoSlippage: boolean) => void
-  provider?: SwapProviders
+  serviceType?: ServiceType
+  quoteSlippageBps?: number
 }
 
 export const SwapSlippageDetailsScreen = ({
@@ -34,7 +36,8 @@ export const SwapSlippageDetailsScreen = ({
   setSlippage,
   autoSlippage,
   setAutoSlippage,
-  provider
+  serviceType,
+  quoteSlippageBps
 }: SwapSlippageDetailsScreenProps): JSX.Element => {
   const {
     theme: { colors, isDark }
@@ -48,6 +51,17 @@ export const SwapSlippageDetailsScreen = ({
   const [isCustom, setIsCustom] = useState(
     !PRESET_SLIPPAGES.includes(slippage as never)
   )
+
+  // Track last known valid serviceType to prevent UI flicker during refetches
+  const lastKnownServiceTypeRef = useRef(serviceType)
+
+  useEffect(() => {
+    if (serviceType !== undefined) {
+      lastKnownServiceTypeRef.current = serviceType
+    }
+  }, [serviceType])
+
+  const stableServiceType = serviceType ?? lastKnownServiceTypeRef.current
 
   // Sync local state when slippage changes
   useEffect(() => {
@@ -125,8 +139,13 @@ export const SwapSlippageDetailsScreen = ({
     })
   }, [isCustom, slippage, sanitizeInput, setSlippage, setAutoSlippage])
 
-  const displayValue = autoSlippage ? `Auto • ${slippage}%` : `${slippage}%`
-  const isSlippageApplicable = provider !== SwapProviders.WNATIVE
+  const displayValue = getDisplaySlippageValue({
+    autoSlippage,
+    quoteSlippageBps,
+    manualSlippage: slippage
+  })
+
+  const isSlippageApplicable = stableServiceType === ServiceType.MARKR
 
   const handleDone = useCallback(() => {
     router.back()

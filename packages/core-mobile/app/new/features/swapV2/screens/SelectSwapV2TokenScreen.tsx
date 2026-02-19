@@ -1,4 +1,5 @@
-import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react'
+import React, { useMemo, useState, useCallback, useEffect } from 'react'
+import { ScrollView } from 'react-native'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import {
   ActivityIndicator,
@@ -20,19 +21,20 @@ import { ListRenderItem } from '@shopify/flash-list'
 import { LocalTokenWithBalance } from 'store/balance'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { useFilteredSwapTokens } from '../hooks/useFilteredSwapTokens'
-import { useSwapV2Tokens } from '../hooks/useSwapV2Tokens'
-import { useSupportedChains } from '../hooks/useSupportedChains'
+import { useSwapTokens } from '../hooks/useSwapTokens'
 
 export const SelectSwapV2TokenScreen = ({
   selectedToken,
   setSelectedToken,
   defaultNetworkChainId,
-  hideZeroBalance = false
+  hideZeroBalance = false,
+  networks
 }: {
   selectedToken: LocalTokenWithBalance | undefined
   setSelectedToken: (token: LocalTokenWithBalance) => void
   defaultNetworkChainId?: number
   hideZeroBalance?: boolean
+  networks: Network[] | undefined
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -40,21 +42,14 @@ export const SelectSwapV2TokenScreen = ({
   const { back, canGoBack } = useRouter()
   const [searchText, setSearchText] = useState<string>('')
 
-  // Get dynamically supported networks from Fusion SDK
-  const { chains: networks } = useSupportedChains()
-
   // Selected network state (default to first network or provided default)
   const [selectedNetwork, setSelectedNetwork] = useState<Network | undefined>(
     undefined
   )
 
-  // Track if we've set the default network
-  const hasSetDefaultNetwork = useRef(false)
-
   // Set default network once when networks are loaded
   useEffect(() => {
-    if (!networks || networks.length === 0 || hasSetDefaultNetwork.current)
-      return
+    if (!networks || networks.length === 0) return
 
     if (defaultNetworkChainId) {
       const found = networks.find(n => n.chainId === defaultNetworkChainId)
@@ -62,8 +57,6 @@ export const SelectSwapV2TokenScreen = ({
     } else {
       setSelectedNetwork(networks[0])
     }
-
-    hasSetDefaultNetwork.current = true
   }, [defaultNetworkChainId, networks])
 
   // Get CAIP2 ID for selected network
@@ -75,7 +68,7 @@ export const SelectSwapV2TokenScreen = ({
   }, [selectedNetwork])
 
   // Lazy load tokens for selected network (with balance data merged)
-  const { tokens, isLoading } = useSwapV2Tokens(caip2Id)
+  const { tokens, isLoading } = useSwapTokens(caip2Id)
 
   // Filter and sort tokens
   const results = useFilteredSwapTokens({ tokens, searchText, hideZeroBalance })
@@ -94,12 +87,10 @@ export const SelectSwapV2TokenScreen = ({
     if (!networks || networks.length <= 1) return null
 
     return (
-      <View
-        sx={{
-          flexDirection: 'row',
-          gap: 8,
-          justifyContent: 'flex-start'
-        }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: 8 }}>
         {networks.map(network => (
           <Button
             key={network.chainId}
@@ -117,7 +108,7 @@ export const SelectSwapV2TokenScreen = ({
               : network.chainName}
           </Button>
         ))}
-      </View>
+      </ScrollView>
     )
   }, [networks, selectedNetwork])
 
@@ -188,11 +179,15 @@ export const SelectSwapV2TokenScreen = ({
   )
 
   const renderEmpty = useCallback(() => {
-    if (isLoading) {
+    // Show loading if:
+    // - Networks not loaded yet
+    // - Network not selected yet (initializing)
+    // - Token data is loading
+    if (!networks || !selectedNetwork || isLoading) {
       return <ActivityIndicator />
     }
     return <ErrorState icon={undefined} title="No tokens found" />
-  }, [isLoading])
+  }, [networks, selectedNetwork, isLoading])
 
   return (
     <ListScreenV2

@@ -25,6 +25,7 @@ import { useNavigation } from 'expo-router'
 import { TRANSACTION_CANCELLED_BY_USER } from 'vmModule/ApprovalController/utils'
 import { useLedgerWalletMap, useLedgerParams } from '../store'
 import { getLedgerAppName } from '../utils'
+import { LEDGER_DEVICE_BRIEF_DELAY_MS } from '../consts'
 
 type Phase = 'connection' | 'progress'
 
@@ -71,15 +72,14 @@ const getStepConfig = (operation: Operation | null): StepConfig => {
 const LedgerReviewTransactionScreen = (): JSX.Element | null => {
   const navigation = useNavigation()
   const dismissInProgressRef = useRef(false)
+  const [onApproveCalled, setOnApproveCalled] = useState(false)
   const walletId = useSelector(selectActiveWalletId)
-  const { ledgerWalletMap } = useLedgerWalletMap()
+  const { getLedgerInfoByWalletId } = useLedgerWalletMap()
   const { reviewTransactionParams } = useLedgerParams()
 
   // Extract params from store
-  const network = reviewTransactionParams?.network
-  const onApprove = reviewTransactionParams?.onApprove
-  const onReject = reviewTransactionParams?.onReject
-  const stakingProgress = reviewTransactionParams?.stakingProgress
+  const { network, onApprove, onReject, stakingProgress } =
+    reviewTransactionParams || {}
 
   const [isConnected, setIsConnected] = useState(false)
   const [isAvalancheAppOpen, setIsAvalancheAppOpen] = useState(false)
@@ -94,14 +94,14 @@ const LedgerReviewTransactionScreen = (): JSX.Element | null => {
   } = useTheme()
   const headerHeight = useHeaderHeight()
 
+  const deviceForWallet = useMemo(
+    () => getLedgerInfoByWalletId(walletId)?.device,
+    [getLedgerInfoByWalletId, walletId]
+  )
+
   const ledgerAppName = useMemo(() => getLedgerAppName(network), [network])
 
   const { isConnecting } = useLedgerSetupContext()
-
-  const deviceForWallet = useMemo(() => {
-    if (!walletId) return undefined
-    return ledgerWalletMap[walletId]
-  }, [ledgerWalletMap, walletId])
 
   const handleReconnect = useCallback(
     async (deviceId: string): Promise<void> => {
@@ -122,7 +122,7 @@ const LedgerReviewTransactionScreen = (): JSX.Element | null => {
 
   useEffect(() => {
     if (!deviceForWallet) return
-    handleReconnect(deviceForWallet.deviceId)
+    handleReconnect(deviceForWallet.id)
   }, [deviceForWallet, handleReconnect])
 
   // Poll for device connection and app status while in connection phase
@@ -153,8 +153,11 @@ const LedgerReviewTransactionScreen = (): JSX.Element | null => {
     // Initial check
     checkDeviceReady()
 
-    // Poll every 500ms
-    const pollInterval = setInterval(checkDeviceReady, 500)
+    // Poll every 1000ms
+    const pollInterval = setInterval(
+      checkDeviceReady,
+      LEDGER_DEVICE_BRIEF_DELAY_MS
+    )
 
     return () => clearInterval(pollInterval)
   }, [phase])
@@ -166,31 +169,51 @@ const LedgerReviewTransactionScreen = (): JSX.Element | null => {
       isConnected &&
       isAvalancheAppOpen &&
       phase === 'connection' &&
-      onApprove
+      onApprove &&
+      !onApproveCalled
     ) {
-      if (stakingProgress) {
-        // Create progress callback that updates local state
-        const onProgress = (
-          step: number,
-          operation: Operation | null
-        ): void => {
-          setCurrentStep(step)
-          setCurrentOperation(operation)
+      try {
+        // Mark as called to prevent duplicate calls
+        setOnApproveCalled(true)
 
-          // Auto-complete when all steps are done
-          if (step >= stakingProgress.totalSteps) {
-            setTimeout(() => {
-              stakingProgress.onComplete()
-            }, 500) // Brief delay to show final state
+        if (stakingProgress) {
+          // Create progress callback that updates local state
+          const onProgress = (
+            step: number,
+            operation: Operation | null
+          ): void => {
+            setCurrentStep(step)
+            setCurrentOperation(operation)
+
+            // Auto-complete when all steps are done
+            if (step >= stakingProgress.totalSteps) {
+              setTimeout(() => {
+                stakingProgress.onComplete()
+              }, LEDGER_DEVICE_BRIEF_DELAY_MS) // Brief delay to show final state
+            }
           }
+          // Transition to progress phase
+          setPhase('progress')
+          // Start the transaction process with progress callback
+          onApprove(onProgress)
+        } else {
+          // No staking progress tracking, just approve and let the caller handle navigation
+          onApprove()
         }
-        // Transition to progress phase
-        setPhase('progress')
-        // Start the transaction process with progress callback
-        onApprove(onProgress)
-      } else {
-        // No staking progress tracking, just approve and let the caller handle navigation
-        onApprove()
+      } catch (error) {
+        Logger.error('Error during Ledger transaction approval', error)
+        showAlert({
+          title: 'Transaction failed',
+          description:
+            'Something went wrong while communicating with your Ledger device. Please try again.',
+          buttons: [{ text: 'OK', style: 'default' }]
+        })
+        if (stakingProgress) {
+          // Reset phase and local progress state so the user can retry or cancel
+          setPhase('connection')
+          setCurrentStep(0)
+          setCurrentOperation(null)
+        }
       }
     }
   }, [
@@ -199,7 +222,8 @@ const LedgerReviewTransactionScreen = (): JSX.Element | null => {
     isAvalancheAppOpen,
     phase,
     stakingProgress,
-    onApprove
+    onApprove,
+    onApproveCalled
   ])
 
   useEffect(() => {
@@ -315,7 +339,7 @@ const LedgerReviewTransactionScreen = (): JSX.Element | null => {
                     fontSize: 16,
                     color: '$textPrimary'
                   }}>
-                  {deviceForWallet.deviceName}
+                  {deviceForWallet.name}
                 </Text>
               </View>
               <Text
@@ -340,7 +364,7 @@ const LedgerReviewTransactionScreen = (): JSX.Element | null => {
                 <Button
                   type="primary"
                   size="small"
-                  onPress={() => handleReconnect(deviceForWallet.deviceId)}
+                  onPress={() => handleReconnect(deviceForWallet.id)}
                   disabled={isConnecting}>
                   {isConnecting ? 'Connecting...' : 'Connect'}
                 </Button>
@@ -364,7 +388,7 @@ const LedgerReviewTransactionScreen = (): JSX.Element | null => {
 
   const connectionTitle = useMemo(() => {
     if (deviceForWallet) {
-      return `Please review the transaction on your ${deviceForWallet.deviceName}`
+      return `Please review the transaction on your ${deviceForWallet.name}`
     }
     return 'Get your Ledger ready'
   }, [deviceForWallet])
@@ -375,7 +399,7 @@ const LedgerReviewTransactionScreen = (): JSX.Element | null => {
         return `Please open the ${ledgerAppName} app on your Ledger device to continue`
       }
       if (!isConnected) {
-        return `Connect your ${deviceForWallet.deviceName} and open the ${ledgerAppName} app`
+        return `Connect your ${deviceForWallet.name} and open the ${ledgerAppName} app`
       }
       return `Open the ${ledgerAppName} app on your Ledger device in order to continue with this transaction`
     }

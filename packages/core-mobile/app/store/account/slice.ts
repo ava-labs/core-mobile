@@ -66,10 +66,7 @@ const accountsSlice = createSlice({
     },
     removeLedgerAddress: (state, action: PayloadAction<string>) => {
       const accountId = action.payload
-      const ledgerAddress = state.ledgerAddresses[accountId]
-      if (ledgerAddress) {
-        delete state.ledgerAddresses[accountId]
-      }
+      delete state.ledgerAddresses[accountId]
     }
   }
 })
