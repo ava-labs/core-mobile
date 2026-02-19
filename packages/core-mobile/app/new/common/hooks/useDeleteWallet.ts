@@ -9,6 +9,7 @@ export const useDeleteWallet = (): {
   deleteWallet: () => void
 } => {
   const { deleteRecentAccounts } = useRecentAccounts()
+  const { clearAllSwapActivities } = useSwapActivitiesStore()
   const dispatch = useDispatch()
   const { resetLedgerWalletMap } = useLedgerWalletMap()
 
@@ -17,7 +18,13 @@ export const useDeleteWallet = (): {
     dispatch(resetLoginAttempt())
     deleteRecentAccounts()
     resetLedgerWalletMap()
-  }, [deleteRecentAccounts, dispatch, resetLedgerWalletMap])
+    clearAllSwapActivities()
+  }, [
+    deleteRecentAccounts,
+    dispatch,
+    resetLedgerWalletMap,
+    clearAllSwapActivities
+  ])
 
   return { deleteWallet }
 }
