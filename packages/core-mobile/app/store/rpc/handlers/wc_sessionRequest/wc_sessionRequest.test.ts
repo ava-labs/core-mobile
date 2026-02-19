@@ -98,7 +98,8 @@ const testNonEVMNamespacesToApprove = {
       RpcMethod.AVALANCHE_SEND_TRANSACTION,
       RpcMethod.AVALANCHE_SIGN_TRANSACTION,
       RpcMethod.AVALANCHE_SIGN_MESSAGE,
-      RpcMethod.WALLET_GET_NETWORK_STATE
+      RpcMethod.WALLET_GET_NETWORK_STATE,
+      RpcMethod.WALLET_ENABLE_NETWORK
     ],
     events: [
       'chainChanged',
