@@ -3,12 +3,12 @@ import { Button, Separator, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
-import { swapActivitiesStore } from '../store'
-import { removeSwapActivity } from '../hooks/useSwapActivities'
+import { swapActivitiesStore, useSwapActivitiesStore } from '../store'
 import { TokenAmountRow } from '../components/TokenAmountRow'
 import { NetworkStatusCard } from '../components/NetworkStatusCard'
 
 export const SwapActivityDetailScreen = (): JSX.Element => {
+  const { removeSwapActivity } = useSwapActivitiesStore()
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
@@ -42,7 +42,7 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
       return
     }
     router.canGoBack() && router.back()
-  }, [router, isCompleted, isFailed, id, navigateToSwap])
+  }, [isCompleted, isFailed, router, removeSwapActivity, id, navigateToSwap])
 
   const renderFooter = (): React.ReactNode => (
     <Button size="large" type="primary" onPress={handleFooterPress}>

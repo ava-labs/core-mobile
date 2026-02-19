@@ -28,11 +28,7 @@ import {
   isBalanceChangeNotification,
   SwapActivityItem as SwapActivityItemType
 } from '../types'
-import {
-  useSwapActivities,
-  clearCompletedSwapActivities,
-  removeSwapActivity
-} from '../hooks/useSwapActivities'
+import { useSwapActivitiesStore } from '../store'
 
 const TITLE = 'Notifications'
 
@@ -104,6 +100,8 @@ const renderNotificationItem = (
 // we might need to check locally persisted swap item with the backend transaction
 // to avoid duplication in the list. For now we assume they are separate and just sort by timestamp.
 export const NotificationsScreen = (): JSX.Element => {
+  const { removeSwapActivity, clearCompletedSwapActivities, swapActivities } =
+    useSwapActivitiesStore()
   const insets = useSafeAreaInsets()
   const { height: screenHeight } = useWindowDimensions()
   const { openUrl } = useCoreBrowser()
@@ -131,11 +129,6 @@ export const NotificationsScreen = (): JSX.Element => {
   useEffect(() => {
     return () => clearTimeout(clearAllTimerRef.current)
   }, [])
-
-  // ── Swap activities ────────────────────────────────────────────────────────
-  // Reads from MMKV. Call saveSwapActivity() from the swap completion handler
-  // to populate this list
-  const { swapActivities } = useSwapActivities()
 
   const handleSwapActivityPress = useCallback((item: SwapActivityItemType) => {
     router.push({
@@ -171,7 +164,7 @@ export const NotificationsScreen = (): JSX.Element => {
   // so it is no longer in progress and the backend notification supersedes it.
   useEffect(() => {
     duplicateSwapIds.forEach(id => removeSwapActivity(id))
-  }, [duplicateSwapIds])
+  }, [duplicateSwapIds, removeSwapActivity])
 
   // Combined list sorted by timestamp desc. All items (swaps + notifications)
   // are ordered purely by recency — no special pinning for in_progress swaps.
@@ -223,7 +216,12 @@ export const NotificationsScreen = (): JSX.Element => {
       clearCompletedSwapActivities()
       setIsClearingAll(false)
     }, totalTime)
-  }, [isClearingAll, clearableItems, markAllAsRead])
+  }, [
+    isClearingAll,
+    clearableItems.length,
+    markAllAsRead,
+    clearCompletedSwapActivities
+  ])
 
   // Full empty state: no backend notifications AND no swap activities
   const hasNoContentAtAll =

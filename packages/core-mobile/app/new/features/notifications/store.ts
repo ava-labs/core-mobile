@@ -9,6 +9,7 @@ interface SwapActivitiesState {
   saveSwapActivity: (item: SwapActivityItem) => void
   removeSwapActivity: (id: string) => void
   clearCompletedSwapActivities: () => void
+  clearAllSwapActivities: () => void
 }
 
 export const swapActivitiesStore = create<SwapActivitiesState>()(
@@ -33,7 +34,8 @@ export const swapActivitiesStore = create<SwapActivitiesState>()(
           swapActivities: state.swapActivities.filter(
             s => s.status !== 'completed' && s.status !== 'failed'
           )
-        }))
+        })),
+      clearAllSwapActivities: () => set({ swapActivities: [] })
     }),
     {
       name: ZustandStorageKeys.SWAP_ACTIVITIES,
@@ -41,3 +43,8 @@ export const swapActivitiesStore = create<SwapActivitiesState>()(
     }
   )
 )
+
+// React hook that uses the store
+export const useSwapActivitiesStore = (): SwapActivitiesState => {
+  return swapActivitiesStore()
+}
