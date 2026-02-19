@@ -146,6 +146,34 @@ export const NotificationsScreen = (): JSX.Element => {
     [openUrl]
   )
 
+  // Map notification transactionHash → notification for BALANCE_CHANGES items
+  const notificationByTxHash = useMemo(() => {
+    const map = new Map<string, AppNotification>()
+    for (const n of notifications) {
+      if (isBalanceChangeNotification(n) && n.data?.transactionHash) {
+        map.set(n.data.transactionHash, n)
+      }
+    }
+    return map
+  }, [notifications])
+
+  // Swap IDs whose transaction hash matches a backend notification (duplicates)
+  const duplicateSwapIds = useMemo(
+    () =>
+      new Set(
+        swapActivities
+          .filter(s => notificationByTxHash.has(s.id))
+          .map(s => s.id)
+      ),
+    [swapActivities, notificationByTxHash]
+  )
+
+  // Side effect: remove duplicate swap entries from MMKV — the tx is confirmed
+  // so it is no longer in progress and the backend notification supersedes it.
+  useEffect(() => {
+    duplicateSwapIds.forEach(id => removeSwapActivity(id))
+  }, [duplicateSwapIds])
+
   // Combined list sorted by timestamp desc. All items (swaps + notifications)
   // are ordered purely by recency — no special pinning for in_progress swaps.
   type CombinedItem =
@@ -159,13 +187,16 @@ export const NotificationsScreen = (): JSX.Element => {
 
     return [
       ...(showSwaps
-        ? swapActivities.map((s): CombinedItem => ({ kind: 'swap', item: s }))
+        ? swapActivities
+            // Exclude swaps that already have a matching backend notification
+            .filter(s => !notificationByTxHash.has(s.id))
+            .map((s): CombinedItem => ({ kind: 'swap', item: s }))
         : []),
       ...notifications.map(
         (n): CombinedItem => ({ kind: 'notification', item: n })
       )
     ].sort((a, b) => b.item.timestamp - a.item.timestamp)
-  }, [swapActivities, notifications, selectedTab])
+  }, [swapActivities, notifications, selectedTab, notificationByTxHash])
   // ──────────────────────────────────────────────────────────────────────────
 
   // Items that "Clear All" will remove: backend notifications + completed swaps
