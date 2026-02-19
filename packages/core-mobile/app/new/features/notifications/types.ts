@@ -121,18 +121,38 @@ export function isBalanceChangeNotification(
 /**
  * Status of a swap transaction.
  */
-export type SwapStatus = 'completed' | 'in_progress'
+export type SwapStatus = 'completed' | 'in_progress' | 'failed'
 
 /**
  * Represents a swap activity item shown in the notification center.
  */
 export interface SwapActivityItem {
-  /** Unique transaction identifier */
+  /** Unique transaction identifier (also used as the tx hash for dedup) */
   id: string
-  /** Symbol of the token being swapped from (e.g. "AVAX") */
+  /** Symbol of the token being swapped from (e.g. "LINK") */
   fromToken: string
-  /** Symbol of the token being swapped to (e.g. "USDC") */
+  /** Symbol of the token being swapped to (e.g. "AVAX") */
   toToken: string
+  /** Human-readable amount of fromToken (e.g. "1.4054") */
+  fromAmount?: string
+  /** Human-readable amount of toToken (e.g. "30.24") */
+  toAmount?: string
+  /** USD equivalent of fromAmount as a plain number string (e.g. "28.18") */
+  fromAmountUsd?: string
+  /** USD equivalent of toAmount as a plain number string (e.g. "28.18") */
+  toAmountUsd?: string
+  /** Display name of the source network (e.g. "Ethereum") */
+  fromNetwork?: string
+  /** Display name of the destination network (e.g. "Avalanche C-Chain") */
+  toNetwork?: string
+  /** Logo URI for the source network */
+  fromNetworkLogoUri?: string
+  /** Logo URI for the destination network */
+  toNetworkLogoUri?: string
+  /** Logo URI for the from token */
+  fromTokenLogoUri?: string
+  /** Logo URI for the to token */
+  toTokenLogoUri?: string
   /** Current status of the swap */
   status: SwapStatus
   /** Unix timestamp in milliseconds */

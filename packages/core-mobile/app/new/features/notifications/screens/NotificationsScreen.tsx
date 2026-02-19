@@ -39,6 +39,8 @@ import {
   removeSwapActivity
 } from '../hooks/useSwapActivities'
 
+const TITLE = 'Notifications'
+
 const TAB_ITEMS = [
   { title: 'All', value: NotificationTab.ALL },
   { title: 'Transactions', value: NotificationTab.TRANSACTIONS },
@@ -142,16 +144,13 @@ export const NotificationsScreen = (): JSX.Element => {
   // to populate this list
   const { swapActivities } = useSwapActivities()
 
-  const handleSwapActivityPress = useCallback(
-    (item: SwapActivityItemType) => {
-      router.dismiss()
-      openUrl({
-        url: item.explorerUrl,
-        title: `Swap ${item.fromToken} to ${item.toToken}`
-      })
-    },
-    [openUrl]
-  )
+  const handleSwapActivityPress = useCallback((item: SwapActivityItemType) => {
+    router.push({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/notifications/swapDetail',
+      params: { id: item.id }
+    })
+  }, [])
 
   // Map notification transactionHash → notification for BALANCE_CHANGES items
   const notificationByTxHash = useMemo(() => {
@@ -212,7 +211,8 @@ export const NotificationsScreen = (): JSX.Element => {
       combinedItems.filter(
         item =>
           item.kind === 'notification' ||
-          (item.kind === 'swap' && item.item.status === 'completed')
+          (item.kind === 'swap' &&
+            (item.item.status === 'completed' || item.item.status === 'failed'))
       ),
     [combinedItems]
   )
@@ -259,7 +259,7 @@ export const NotificationsScreen = (): JSX.Element => {
           marginTop: 8,
           marginBottom: 10
         }}>
-        <Text variant="heading2">Notifications</Text>
+        <Text variant="heading2">{TITLE}</Text>
         {!showFilteredEmptyState && (
           <Button type="secondary" size="small" onPress={handleClearAll}>
             Clear all
@@ -344,17 +344,18 @@ export const NotificationsScreen = (): JSX.Element => {
 
           if (combined.kind === 'swap') {
             const swap = combined.item
-            const isCompleted = swap.status === 'completed'
+            const isDismissable =
+              swap.status === 'completed' || swap.status === 'failed'
             return (
               <SwipeableRow
                 key={swap.id}
                 animateOut={
-                  isCompleted && isClearingAll && index < MAX_ANIMATED_ITEMS
+                  isDismissable && isClearingAll && index < MAX_ANIMATED_ITEMS
                 }
                 animateDelay={index * SWIPE_DELAY}
                 onSwipeComplete={() => removeSwapActivity(swap.id)}
                 onPress={() => handleSwapActivityPress(swap)}
-                enabled={!isClearingAll && isCompleted}>
+                enabled={!isClearingAll && isDismissable}>
                 <SwapActivityItem
                   item={swap}
                   showSeparator={!isLast}
@@ -392,6 +393,7 @@ export const NotificationsScreen = (): JSX.Element => {
   return (
     <ScrollScreen
       isModal
+      navigationTitle={TITLE}
       renderFooter={renderFooter}
       renderHeader={renderHeader}>
       {renderContent()}

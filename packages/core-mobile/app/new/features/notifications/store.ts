@@ -31,7 +31,7 @@ export const swapActivitiesStore = create<SwapActivitiesState>()(
       clearCompletedSwapActivities: () =>
         set(state => ({
           swapActivities: state.swapActivities.filter(
-            s => s.status !== 'completed'
+            s => s.status !== 'completed' && s.status !== 'failed'
           )
         }))
     }),
