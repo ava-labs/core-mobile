@@ -106,7 +106,7 @@ const SwapActivityItem: FC<SwapActivityItemProps> = ({
   return (
     <NotificationListItem
       title={title}
-      subtitle="Click for more details"
+      subtitle="Tap for more details"
       icon={<SwapIcon status={item.status} />}
       timestamp={item.timestamp}
       showSeparator={showSeparator}
