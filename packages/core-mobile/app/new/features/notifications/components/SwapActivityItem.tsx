@@ -38,7 +38,7 @@ const SwapActivityItem: FC<SwapActivityItemProps> = ({
       ? 'Failed'
       : 'Tap for more details'
 
-  const accessaryType =
+  const accessoryType =
     status === 'completed' || status === 'failed' ? 'none' : 'chevron'
 
   const renderSubtitle = useCallback(() => {
@@ -69,7 +69,7 @@ const SwapActivityItem: FC<SwapActivityItemProps> = ({
       icon={<SwapIcon status={status} />}
       timestamp={status === 'failed' ? undefined : item.timestamp}
       showSeparator={showSeparator}
-      accessoryType={accessaryType}
+      accessoryType={accessoryType}
       testID={testID}
       rightAccessory={<RetryButton status={status} item={item} />}
     />
