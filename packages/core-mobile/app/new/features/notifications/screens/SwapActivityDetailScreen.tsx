@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { Button, Separator, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams, useRouter } from 'expo-router'
+import { ErrorState } from 'common/components/ErrorState'
 import { useSwapActivitiesStore } from '../store'
 import { TokenAmountRow } from '../components/TokenAmountRow'
 import { NetworkStatusCard } from '../components/NetworkStatusCard'
@@ -18,11 +19,6 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
   // Always call the hook unconditionally; it returns undefined when swap is undefined.
   const display = useSwapActivityDisplay(swap)
 
-  if (!swap || !display) {
-    // TODO: show a proper empty state if swap not found (e.g. invalid id or deleted swap)
-    return <></>
-  }
-
   const handleFooterPress = (): void => {
     router.canGoBack() && router.back()
   }
@@ -33,12 +29,23 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
     </Button>
   )
 
-  return (
-    <ScrollScreen
-      title={`Swap\nin progress...`}
-      navigationTitle={'Swap in progress...'}
-      renderFooter={renderFooter}
-      contentContainerStyle={{ padding: 16 }}>
+  const renderEmpty = useCallback(() => {
+    return (
+      <ErrorState
+        sx={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
+        title="Transaction failed to load"
+        description=""
+      />
+    )
+  }, [])
+
+  const renderContent = useCallback(() => {
+    if (!display) return renderEmpty()
+    return (
       <View sx={{ gap: 16, marginTop: 16 }}>
         {/* Card 1: token amounts */}
         <View
@@ -81,6 +88,16 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
           status={display.toChainStatus}
         />
       </View>
+    )
+  }, [display, renderEmpty])
+
+  return (
+    <ScrollScreen
+      title={`Swap\nin progress...`}
+      navigationTitle={'Swap in progress...'}
+      renderFooter={renderFooter}
+      contentContainerStyle={{ flex: 1, padding: 16 }}>
+      {renderContent()}
     </ScrollScreen>
   )
 }
