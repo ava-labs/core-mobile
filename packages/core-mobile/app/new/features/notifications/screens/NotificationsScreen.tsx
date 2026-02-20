@@ -34,6 +34,7 @@ import {
   SwapActivityItem as SwapActivityItemType
 } from '../types'
 import { useSwapActivitiesStore } from '../store'
+import { isSwapDismissable } from '../utils'
 
 const TITLE = 'Notifications'
 
@@ -141,7 +142,7 @@ export const NotificationsScreen = (): JSX.Element => {
     router.push({
       // @ts-ignore TODO: make routes typesafe
       pathname: '/notifications/swapDetail',
-      params: { id: item.id }
+      params: { id: item.transfer.id }
     })
   }, [])
 
@@ -156,13 +157,16 @@ export const NotificationsScreen = (): JSX.Element => {
     return map
   }, [notifications])
 
-  // Swap IDs whose transaction hash matches a backend notification (duplicates)
-  const duplicateSwapIds = useMemo(
+  // Transfer IDs whose source txHash matches a backend notification (duplicates).
+  const duplicateTransferIds = useMemo(
     () =>
       new Set(
-        swapActivities
-          .filter(s => notificationByTxHash.has(s.id))
-          .map(s => s.id)
+        Object.values(swapActivities)
+          .filter(s => {
+            const txHash = s.transfer.source?.txHash
+            return txHash !== undefined && notificationByTxHash.has(txHash)
+          })
+          .map(s => s.transfer.id)
       ),
     [swapActivities, notificationByTxHash]
   )
@@ -170,8 +174,8 @@ export const NotificationsScreen = (): JSX.Element => {
   // Side effect: remove duplicate swap entries from MMKV — the tx is confirmed
   // so it is no longer in progress and the backend notification supersedes it.
   useEffect(() => {
-    duplicateSwapIds.forEach(id => removeSwapActivity(id))
-  }, [duplicateSwapIds, removeSwapActivity])
+    duplicateTransferIds.forEach(transferId => removeSwapActivity(transferId))
+  }, [duplicateTransferIds, removeSwapActivity])
 
   // Combined list sorted by timestamp desc. All items (swaps + notifications)
   // are ordered purely by recency — no special pinning for in_progress swaps.
@@ -186,9 +190,12 @@ export const NotificationsScreen = (): JSX.Element => {
 
     return [
       ...(showSwaps
-        ? swapActivities
+        ? Object.values(swapActivities)
             // Exclude swaps that already have a matching backend notification
-            .filter(s => !notificationByTxHash.has(s.id))
+            .filter(s => {
+              const txHash = s.transfer.source?.txHash
+              return txHash === undefined || !notificationByTxHash.has(txHash)
+            })
             .map((s): CombinedItem => ({ kind: 'swap', item: s }))
         : []),
       ...notifications.map(
@@ -204,8 +211,7 @@ export const NotificationsScreen = (): JSX.Element => {
       combinedItems.filter(
         item =>
           item.kind === 'notification' ||
-          (item.kind === 'swap' &&
-            (item.item.status === 'completed' || item.item.status === 'failed'))
+          (item.kind === 'swap' && isSwapDismissable(item.item))
       ),
     [combinedItems]
   )
@@ -232,7 +238,7 @@ export const NotificationsScreen = (): JSX.Element => {
 
   // Full empty state: no backend notifications AND no swap activities
   const hasNoContentAtAll =
-    totalUnreadCount === 0 && swapActivities.length === 0
+    totalUnreadCount === 0 && Object.keys(swapActivities).length === 0
   const isCurrentViewEmpty =
     combinedItems.length === 0 && !isClearingAll && !isLoading
   // Full empty state only when there is truly nothing to show
@@ -342,22 +348,21 @@ export const NotificationsScreen = (): JSX.Element => {
 
           if (combined.kind === 'swap') {
             const swap = combined.item
-            const isDismissable =
-              swap.status === 'completed' || swap.status === 'failed'
+            const isDismissable = isSwapDismissable(swap)
             return (
               <SwipeableRow
-                key={swap.id}
+                key={swap.transfer.id}
                 animateOut={
                   isDismissable && isClearingAll && index < MAX_ANIMATED_ITEMS
                 }
                 animateDelay={index * SWIPE_DELAY}
-                onSwipeComplete={() => removeSwapActivity(swap.id)}
+                onSwipeComplete={() => removeSwapActivity(swap.transfer.id)}
                 onPress={() => handleSwapActivityPress(swap)}
                 enabled={!isClearingAll && isDismissable}>
                 <SwapActivityItem
                   item={swap}
                   showSeparator={!isLast}
-                  testID={`swap-activity-${swap.id}`}
+                  testID={`swap-activity-${swap.transfer.id}`}
                 />
               </SwipeableRow>
             )

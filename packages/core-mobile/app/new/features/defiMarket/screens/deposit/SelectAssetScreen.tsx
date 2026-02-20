@@ -86,7 +86,10 @@ export const SelectAssetScreen = (): JSX.Element => {
       } else {
         // Dismiss entire deposit modal and navigate to swap
         navigation.getParent()?.goBack()
-        navigateToSwap(AVAX_TOKEN_ID, marketAsset.contractAddress)
+        navigateToSwap({
+          fromTokenId: AVAX_TOKEN_ID,
+          toTokenId: marketAsset.contractAddress
+        })
       }
     },
     [

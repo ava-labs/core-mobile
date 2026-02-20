@@ -1,14 +1,14 @@
 import { Separator, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { NetworkLogo } from 'common/components/NetworkLogo'
 import React from 'react'
-import { SwapActivityItem } from '../types'
+import { SwapStatus } from '../types'
 import { StatusIcon } from './StatusIcon'
 
 type NetworkStatusCardProps = {
   directionLabel: 'From' | 'To'
   networkName?: string
   networkLogoUri?: string
-  status: SwapActivityItem['status']
+  status: SwapStatus
 }
 
 export const NetworkStatusCard = ({
