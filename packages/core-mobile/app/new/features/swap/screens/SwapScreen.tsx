@@ -414,10 +414,9 @@ export const SwapScreen = (): JSX.Element => {
 
     dismissKeyboardIfNeeded()
 
-    // if this swap is initiated from a failed swap activity,
-    // remove that activity so it doesn't show up in the notifications list while this new swap is in progress.
-    // if the user goes back from the review screen,
-    // we'll not remove the failed activity to ensure the user can still access it if they want to retry or view details before confirming this new swap.
+    // If this swap is initiated from a failed swap activity, immediately remove that
+    // activity so it doesn't continue to show up in the notifications list while this
+    // new swap attempt is in progress.
     params.retryingSwapActivityId &&
       removeSwapActivity(params.retryingSwapActivityId)
 

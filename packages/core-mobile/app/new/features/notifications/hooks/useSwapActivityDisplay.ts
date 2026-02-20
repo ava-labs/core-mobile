@@ -6,6 +6,7 @@ import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useToke
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { SwapActivityItem, SwapStatus } from '../types'
 import {
   mapTransferToSourceChainStatus,
@@ -33,15 +34,6 @@ export type SwapActivityDisplay = {
   /** Status for the target (To) chain leg only. */
   toChainStatus: SwapStatus
   txHash?: string
-}
-
-/**
- * Parses a CAIP-2 chain ID (e.g. "eip155:43114") into a numeric chain ID.
- * Returns undefined if the format is unexpected.
- */
-function parseCAIP2ChainId(caip2: string): number | undefined {
-  const id = parseInt(caip2.split(':')[1] ?? '', 10)
-  return isNaN(id) ? undefined : id
 }
 
 /**
@@ -134,8 +126,8 @@ export function useSwapActivityDisplay(
     if (!item) return undefined
 
     const { transfer } = item
-    const sourceChainId = parseCAIP2ChainId(transfer.sourceChain.chainId)
-    const targetChainId = parseCAIP2ChainId(transfer.targetChain.chainId)
+    const sourceChainId = getChainIdFromCaip2(transfer.sourceChain.chainId)
+    const targetChainId = getChainIdFromCaip2(transfer.targetChain.chainId)
     const fromNetworkData =
       sourceChainId !== undefined
         ? getNetworkByCaip2ChainId(transfer.sourceChain.chainId)
