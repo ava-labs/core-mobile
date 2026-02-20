@@ -7,6 +7,29 @@ import { mapTransferToSwapStatus } from './utils'
 
 type TransferId = string
 
+const MAX_SWAP_ACTIVITIES = 50
+const RETENTION_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
+
+function pruneSwapActivities(
+  activities: Record<TransferId, SwapActivityItem>
+): Record<TransferId, SwapActivityItem> {
+  const now = Date.now()
+
+  // Drop entries older than the retention window
+  let entries = Object.entries(activities).filter(
+    ([, s]) => now - s.timestamp < RETENTION_MS
+  )
+
+  // If still over the cap, keep the most recent MAX_SWAP_ACTIVITIES by timestamp
+  if (entries.length > MAX_SWAP_ACTIVITIES) {
+    entries = entries
+      .sort(([, a], [, b]) => b.timestamp - a.timestamp)
+      .slice(0, MAX_SWAP_ACTIVITIES)
+  }
+
+  return Object.fromEntries(entries)
+}
+
 interface SwapActivitiesState {
   /** Swap activities keyed by transfer.id for O(1) lookup and deduplication. */
   swapActivities: Record<TransferId, SwapActivityItem>
@@ -22,10 +45,10 @@ export const swapActivitiesStore = create<SwapActivitiesState>()(
       swapActivities: {},
       saveSwapActivity: (item: SwapActivityItem) =>
         set(state => ({
-          swapActivities: {
+          swapActivities: pruneSwapActivities({
             ...state.swapActivities,
             [item.transfer.id]: item
-          }
+          })
         })),
       removeSwapActivity: (transferId: TransferId) =>
         set(state => {
