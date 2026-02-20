@@ -45,6 +45,7 @@ import IconSignature from '../../assets/icons/signature.svg'
 import IconArrowDownHandleBar from '../../assets/icons/arrow_down_handlebar.svg'
 import IconSignPost from '../../assets/icons/signpost.svg'
 import IconSync from '../../assets/icons/sync.svg'
+import IconEllipse from '../../assets/icons/ellipse.svg'
 import IconVisibilityOff from '../../assets/icons/visibility_off.svg'
 import IconVisibilityOn from '../../assets/icons/visibility_on.svg'
 import IconVolumeOff from '../../assets/icons/volume_off.svg'
@@ -252,7 +253,8 @@ export const Icons = {
     Track: IconTrack
   },
   Notification: {
-    Sync: IconSync
+    Sync: IconSync,
+    Ellipse: IconEllipse
   },
   Social: {
     RemoveModerator: IconRemoveModerator,

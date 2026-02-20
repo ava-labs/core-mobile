@@ -39,13 +39,17 @@ export const NetworkStatusCard = ({
           justifyContent: 'space-between',
           paddingVertical: 14
         }}>
-        <Text variant="body1" sx={{ color: '$textSecondary' }}>
+        <Text
+          variant="body1"
+          sx={{ color: '$textPrimary', lineHeight: 22, fontWeight: '500' }}>
           {directionLabel}
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <NetworkLogo logoUri={networkLogoUri} size={20} />
           {networkName !== undefined && (
-            <Text variant="body1" sx={{ color: '$textPrimary' }}>
+            <Text
+              variant="body1"
+              sx={{ color: '$textPrimary', lineHeight: 22 }}>
               {networkName}
             </Text>
           )}
@@ -62,7 +66,9 @@ export const NetworkStatusCard = ({
           justifyContent: 'space-between',
           paddingVertical: 14
         }}>
-        <Text variant="body1" sx={{ color: '$textSecondary' }}>
+        <Text
+          variant="body1"
+          sx={{ color: '$textPrimary', lineHeight: 22, fontWeight: '500' }}>
           Status
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -70,13 +76,15 @@ export const NetworkStatusCard = ({
           <Text
             variant="body1"
             sx={{
+              lineHeight: 22,
+              fontWeight: '500',
               color: isCompleted
                 ? colors.$textSuccess
                 : isFailed
                 ? colors.$textDanger
-                : colors.$textPrimary
+                : colors.$textSecondary
             }}>
-            {isCompleted ? 'Complete' : isFailed ? 'Failed' : 'In progress'}
+            {isCompleted ? 'Complete' : isFailed ? 'Failed' : 'Pending...'}
           </Text>
         </View>
       </View>

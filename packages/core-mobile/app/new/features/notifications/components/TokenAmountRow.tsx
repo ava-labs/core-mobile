@@ -3,25 +3,21 @@ import { TokenLogo } from 'common/components/TokenLogo'
 import React from 'react'
 
 const TOKEN_LOGO_SIZE = 40
-const NETWORK_LOGO_SIZE = 16
-const BORDER_WIDTH = 2
-const NETWORK_LOGO_OFFSET = -6
 
 type TokenAmountRowProps = {
   symbol: string
   logoUri?: string
   networkLogoUri?: string
   amount?: string
-  amountUsd?: string
+  amountInCurrency?: string
   isDebit: boolean
 }
 
 export const TokenAmountRow = ({
   symbol,
   logoUri,
-  networkLogoUri,
   amount,
-  amountUsd,
+  amountInCurrency,
   isDebit
 }: TokenAmountRowProps): JSX.Element => {
   const {
@@ -36,53 +32,29 @@ export const TokenAmountRow = ({
         gap: 12,
         paddingVertical: 4
       }}>
-      <View sx={{ width: TOKEN_LOGO_SIZE }}>
-        <TokenLogo symbol={symbol} logoUri={logoUri} size={TOKEN_LOGO_SIZE} />
-        {networkLogoUri && (
-          <View
-            sx={{
-              width: NETWORK_LOGO_SIZE + BORDER_WIDTH * 2,
-              height: NETWORK_LOGO_SIZE + BORDER_WIDTH * 2,
-              borderRadius: 20 / 2,
-              justifyContent: 'center',
-              alignItems: 'center',
-              borderWidth: BORDER_WIDTH,
-              borderColor: colors.$surfaceSecondary,
-              position: 'absolute',
-              bottom: NETWORK_LOGO_OFFSET,
-              right: NETWORK_LOGO_OFFSET,
-              backgroundColor: 'transparent'
-            }}>
-            <TokenLogo
-              size={NETWORK_LOGO_SIZE}
-              symbol=""
-              logoUri={networkLogoUri}
-              isNetworkToken
-            />
-          </View>
-        )}
-      </View>
+      <TokenLogo symbol={symbol} logoUri={logoUri} size={TOKEN_LOGO_SIZE} />
       <View style={{ flex: 1 }}>
-        <Text variant="buttonMedium" sx={{ color: '$textSecondary' }}>
+        <Text variant="buttonMedium" sx={{ color: '$textPrimary' }}>
           {symbol}
         </Text>
       </View>
       {amount !== undefined && (
         <View style={{ alignItems: 'flex-end' }}>
           <Text
-            variant="heading4"
+            variant="heading2"
             sx={{
+              fontWeight: '500',
               color: isDebit ? colors.$textDanger : colors.$textPrimary
             }}>
             {isDebit ? `-${amount}` : amount}
           </Text>
-          {amountUsd !== undefined && (
+          {amountInCurrency !== undefined && (
             <Text
               variant="body2"
               sx={{
                 color: isDebit ? colors.$textDanger : colors.$textSecondary
               }}>
-              {isDebit ? `-$${amountUsd} USD` : `$${amountUsd} USD`}
+              {amountInCurrency}
             </Text>
           )}
         </View>

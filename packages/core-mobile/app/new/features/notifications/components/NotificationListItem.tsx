@@ -84,20 +84,22 @@ const NotificationListItem: FC<NotificationListItemProps> = ({
             ))}
         </View>
         {rightAccessory}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          {timestamp !== undefined && (
-            <Text
-              variant="body2"
-              sx={{ color: colors.$textSecondary, textAlign: 'right' }}>
-              {isSameDay(new Date(timestamp), new Date())
-                ? format(new Date(timestamp), 'h:mm a')
-                : getDayString(timestamp)}
-            </Text>
-          )}
-          {accessoryType === 'chevron' && (
-            <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
-          )}
-        </View>
+        {(timestamp !== undefined || accessoryType === 'chevron') && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            {timestamp !== undefined && (
+              <Text
+                variant="body2"
+                sx={{ color: colors.$textSecondary, textAlign: 'right' }}>
+                {isSameDay(new Date(timestamp), new Date())
+                  ? format(new Date(timestamp), 'h:mm a')
+                  : getDayString(timestamp)}
+              </Text>
+            )}
+            {accessoryType === 'chevron' && (
+              <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
+            )}
+          </View>
+        )}
       </View>
     </View>
   )

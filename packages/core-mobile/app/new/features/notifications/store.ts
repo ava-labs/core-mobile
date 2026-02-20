@@ -2,7 +2,8 @@ import { ZustandStorageKeys } from 'resources/Constants'
 import { zustandMMKVStorage } from 'utils/mmkv/storages'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { mapTransferToSwapStatus, SwapActivityItem } from './types'
+import { SwapActivityItem } from './types'
+import { mapTransferToSwapStatus } from './utils'
 
 type TransferId = string
 

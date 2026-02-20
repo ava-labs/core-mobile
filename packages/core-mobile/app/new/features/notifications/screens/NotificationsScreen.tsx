@@ -29,7 +29,7 @@ import {
   SwapActivityItem as SwapActivityItemType
 } from '../types'
 import { useSwapActivitiesStore } from '../store'
-import { isSwapDismissable } from '../utils'
+import { isSwapCompletedOrFailed } from '../utils'
 
 const TITLE = 'Notifications'
 
@@ -203,7 +203,7 @@ export const NotificationsScreen = (): JSX.Element => {
       combinedItems.filter(
         item =>
           item.kind === 'notification' ||
-          (item.kind === 'swap' && isSwapDismissable(item.item))
+          (item.kind === 'swap' && isSwapCompletedOrFailed(item.item))
       ),
     [combinedItems]
   )
@@ -263,7 +263,13 @@ export const NotificationsScreen = (): JSX.Element => {
         )}
       </View>
     )
-  }, [showFullEmptyState, showFilteredEmptyState, isLoading, handleClearAll, clearableItems.length])
+  }, [
+    showFullEmptyState,
+    showFilteredEmptyState,
+    isLoading,
+    handleClearAll,
+    clearableItems.length
+  ])
 
   const handleNotificationPress = useCallback(
     (notification: AppNotification) => {
@@ -339,17 +345,21 @@ export const NotificationsScreen = (): JSX.Element => {
 
           if (combined.kind === 'swap') {
             const swap = combined.item
-            const isDismissable = isSwapDismissable(swap)
+            const isCompletedOrFailed = isSwapCompletedOrFailed(swap)
             return (
               <SwipeableRow
                 key={swap.transfer.id}
                 animateOut={
-                  isDismissable && isClearingAll && index < MAX_ANIMATED_ITEMS
+                  isCompletedOrFailed &&
+                  isClearingAll &&
+                  index < MAX_ANIMATED_ITEMS
                 }
                 animateDelay={index * SWIPE_DELAY}
                 onSwipeComplete={() => removeSwapActivity(swap.transfer.id)}
-                onPress={() => handleSwapActivityPress(swap)}
-                enabled={!isClearingAll && isDismissable}>
+                onPress={() =>
+                  isCompletedOrFailed === false && handleSwapActivityPress(swap)
+                }
+                enabled={!isClearingAll && isCompletedOrFailed}>
                 <SwapActivityItem
                   item={swap}
                   showSeparator={!isLast}

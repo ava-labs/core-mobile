@@ -11,12 +11,8 @@ import { StorageKey } from 'resources/Constants'
 import { commonStorage } from 'utils/mmkv'
 import Logger from 'utils/Logger'
 import NotificationCenterService from '../services/NotificationCenterService'
-import {
-  AppNotification,
-  BackendNotification,
-  NotificationTab,
-  filterByTab
-} from '../types'
+import { AppNotification, BackendNotification, NotificationTab } from '../types'
+import { filterByTab } from '../utils'
 
 /**
  * Hook to get deviceArn from MMKV storage.
