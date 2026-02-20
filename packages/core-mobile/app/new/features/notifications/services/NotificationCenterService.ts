@@ -1,11 +1,8 @@
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import { appCheckPostJson } from 'utils/api/common/appCheckFetch'
-import {
-  BackendNotification,
-  NotificationResponse,
-  mapTypeToCategory
-} from '../types'
+import { BackendNotification, NotificationResponse } from '../types'
+import { mapTypeToCategory } from '../utils'
 import {
   NotificationListResponseSchema,
   SuccessResponseSchema,

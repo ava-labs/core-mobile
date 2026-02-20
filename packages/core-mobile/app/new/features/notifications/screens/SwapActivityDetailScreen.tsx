@@ -2,17 +2,15 @@ import React from 'react'
 import { Button, Separator, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useSwapActivitiesStore } from '../store'
 import { TokenAmountRow } from '../components/TokenAmountRow'
 import { NetworkStatusCard } from '../components/NetworkStatusCard'
 import { useSwapActivityDisplay } from '../hooks/useSwapActivityDisplay'
 
 export const SwapActivityDetailScreen = (): JSX.Element => {
-  const { removeSwapActivity, swapActivities } = useSwapActivitiesStore()
+  const { swapActivities } = useSwapActivitiesStore()
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
-  const { navigateToSwap } = useNavigateToSwap()
 
   // id from route params is transfer.id, which is the Record key
   const swap = swapActivities[id]
@@ -25,45 +23,20 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
     return <></>
   }
 
-  const { status } = display
-  const isCompleted = status === 'completed'
-  const isFailed = status === 'failed'
-  const title = isCompleted
-    ? 'Swap successful!'
-    : isFailed
-    ? 'Swap failed'
-    : 'Swap in progress'
-
   const handleFooterPress = (): void => {
-    if (isCompleted) {
-      router.canGoBack() && router.back()
-      removeSwapActivity(id)
-      return
-    }
-    if (isFailed) {
-      router.dismiss()
-      // Pass the swap id so the swap screen can remove this failed activity
-      // once the retry either succeeds or fails (not before).
-      navigateToSwap({
-        fromTokenId: swap.fromTokenId,
-        toTokenId: swap.toTokenId,
-        retryingSwapActivityId: swap.transfer.id
-      })
-      return
-    }
     router.canGoBack() && router.back()
   }
 
   const renderFooter = (): React.ReactNode => (
     <Button size="large" type="primary" onPress={handleFooterPress}>
-      {isCompleted ? 'Close' : isFailed ? 'Retry' : "Notify me when it's done"}
+      Notify me when it's done
     </Button>
   )
 
   return (
     <ScrollScreen
-      title={title}
-      navigationTitle={title}
+      title={`Swap\nin progress...`}
+      navigationTitle={'Swap in progress...'}
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16 }}>
       <View sx={{ gap: 16, marginTop: 16 }}>
@@ -78,18 +51,16 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
           <TokenAmountRow
             symbol={display.fromToken}
             logoUri={display.fromTokenLogoUri}
-            networkLogoUri={display.fromNetworkLogoUri}
             amount={display.fromAmount}
-            amountUsd={display.fromAmountUsd}
+            amountInCurrency={display.fromAmountInCurrency}
             isDebit={true}
           />
           <Separator sx={{ marginVertical: 8 }} />
           <TokenAmountRow
             symbol={display.toToken}
             logoUri={display.toTokenLogoUri}
-            networkLogoUri={display.toNetworkLogoUri}
             amount={display.toAmount}
-            amountUsd={display.toAmountUsd}
+            amountInCurrency={display.toAmountInCurrency}
             isDebit={false}
           />
         </View>

@@ -10,12 +10,8 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import Logger from 'utils/Logger'
 import { useDeviceArn } from 'common/hooks/useDeviceArn'
 import NotificationCenterService from '../services/NotificationCenterService'
-import {
-  AppNotification,
-  BackendNotification,
-  NotificationTab,
-  filterByTab
-} from '../types'
+import { AppNotification, BackendNotification, NotificationTab } from '../types'
+import { filterByTab } from '../utils'
 
 /**
  * Hook to fetch notifications from backend

@@ -7,7 +7,7 @@ import {
 } from './types'
 import {
   filterByTab,
-  isSwapDismissable,
+  isSwapCompletedOrFailed,
   mapTransferToSourceChainStatus,
   mapTransferToSwapStatus,
   mapTransferToTargetChainStatus,
@@ -34,8 +34,18 @@ const makeTransfer = (status: SwapTransfer['status']): SwapTransfer =>
     amountIn: '1',
     amountOut: '2',
     status,
-    sourceAsset: { type: 'ERC20', symbol: 'AVAX', name: 'Avalanche', decimals: 18 },
-    targetAsset: { type: 'ERC20', symbol: 'USDC', name: 'USD Coin', decimals: 6 },
+    sourceAsset: {
+      type: 'ERC20',
+      symbol: 'AVAX',
+      name: 'Avalanche',
+      decimals: 18
+    },
+    targetAsset: {
+      type: 'ERC20',
+      symbol: 'USDC',
+      name: 'USD Coin',
+      decimals: 6
+    },
     sourceChain: { chainId: 'eip155:43114', chainName: 'Avalanche' },
     targetChain: { chainId: 'eip155:1', chainName: 'Ethereum' }
   } as SwapTransfer)
@@ -146,27 +156,29 @@ describe('mapTransferToSwapStatus', () => {
   )
 })
 
-// ─── isSwapDismissable ────────────────────────────────────────────────────────
+// ─── isSwapCompletedOrFailed ────────────────────────────────────────────────────────
 
-describe('isSwapDismissable', () => {
+describe('isSwapCompletedOrFailed', () => {
   it('returns true when the swap is completed', () => {
-    expect(isSwapDismissable(makeSwapItem('completed'))).toBe(true)
+    expect(isSwapCompletedOrFailed(makeSwapItem('completed'))).toBe(true)
   })
 
   it('returns true when the swap has failed', () => {
-    expect(isSwapDismissable(makeSwapItem('failed'))).toBe(true)
+    expect(isSwapCompletedOrFailed(makeSwapItem('failed'))).toBe(true)
   })
 
   it('returns false when the swap is in progress (source-pending)', () => {
-    expect(isSwapDismissable(makeSwapItem('source-pending'))).toBe(false)
+    expect(isSwapCompletedOrFailed(makeSwapItem('source-pending'))).toBe(false)
   })
 
   it('returns false when the swap is in progress (target-pending)', () => {
-    expect(isSwapDismissable(makeSwapItem('target-pending'))).toBe(false)
+    expect(isSwapCompletedOrFailed(makeSwapItem('target-pending'))).toBe(false)
   })
 
   it('returns false when the swap is in progress (source-confirmed)', () => {
-    expect(isSwapDismissable(makeSwapItem('source-confirmed'))).toBe(false)
+    expect(isSwapCompletedOrFailed(makeSwapItem('source-confirmed'))).toBe(
+      false
+    )
   })
 })
 
@@ -176,7 +188,9 @@ describe('mapTransferToSourceChainStatus', () => {
   it.each([['source-failed'], ['failed'], ['error']])(
     'returns failed for status "%s"',
     status => {
-      expect(mapTransferToSourceChainStatus(makeTransfer(status))).toBe('failed')
+      expect(mapTransferToSourceChainStatus(makeTransfer(status))).toBe(
+        'failed'
+      )
     }
   )
 
@@ -192,7 +206,9 @@ describe('mapTransferToSourceChainStatus', () => {
     ['target-confirmed'],
     ['completed']
   ])('returns completed for status "%s" (source is done)', status => {
-    expect(mapTransferToSourceChainStatus(makeTransfer(status))).toBe('completed')
+    expect(mapTransferToSourceChainStatus(makeTransfer(status))).toBe(
+      'completed'
+    )
   })
 })
 
@@ -202,14 +218,18 @@ describe('mapTransferToTargetChainStatus', () => {
   it.each([['target-failed'], ['failed'], ['error'], ['source-failed']])(
     'returns failed for status "%s"',
     status => {
-      expect(mapTransferToTargetChainStatus(makeTransfer(status))).toBe('failed')
+      expect(mapTransferToTargetChainStatus(makeTransfer(status))).toBe(
+        'failed'
+      )
     }
   )
 
   it.each([['completed'], ['target-confirmed']])(
     'returns completed for status "%s"',
     status => {
-      expect(mapTransferToTargetChainStatus(makeTransfer(status))).toBe('completed')
+      expect(mapTransferToTargetChainStatus(makeTransfer(status))).toBe(
+        'completed'
+      )
     }
   )
 

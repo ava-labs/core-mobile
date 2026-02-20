@@ -1,23 +1,25 @@
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { selectActiveAccount } from 'store/account'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { SwapActivityItem, SwapStatus } from '../types'
 import {
   mapTransferToSourceChainStatus,
   mapTransferToSwapStatus,
-  mapTransferToTargetChainStatus,
-  SwapActivityItem,
-  SwapStatus
-} from '../types'
+  mapTransferToTargetChainStatus
+} from '../utils'
 
 export type SwapActivityDisplay = {
   fromToken: string
   toToken: string
   fromAmount: string
   toAmount: string
-  fromAmountUsd?: string
-  toAmountUsd?: string
+  fromAmountInCurrency?: string
+  toAmountInCurrency?: string
   fromNetwork: string
   toNetwork: string
   fromNetworkLogoUri?: string
@@ -31,21 +33,6 @@ export type SwapActivityDisplay = {
   /** Status for the target (To) chain leg only. */
   toChainStatus: SwapStatus
   txHash?: string
-}
-
-/**
- * Formats a raw token amount (big integer string) into a human-readable string.
- */
-function formatTokenAmount(rawAmount: string, decimals: number): string {
-  try {
-    const value = Number(BigInt(rawAmount)) / 10 ** decimals
-    if (value === 0) return '0'
-    if (value >= 1000) return value.toFixed(2)
-    if (value >= 1) return value.toFixed(4)
-    return value.toPrecision(4)
-  } catch {
-    return '0'
-  }
 }
 
 /**
@@ -73,6 +60,7 @@ export function useSwapActivityDisplay(
 ): SwapActivityDisplay | undefined {
   const activeAccount = useSelector(selectActiveAccount)
   const { getNetworkByCaip2ChainId } = useNetworks()
+  const { formatTokenInCurrency } = useFormatCurrency()
 
   // Balance data is already fetched by the portfolio screen; this just reads
   // from the React Query cache without issuing a new network request.
@@ -88,39 +76,59 @@ export function useSwapActivityDisplay(
     [tokens, item]
   )
 
-  const fromAmount = useMemo(() => {
-    if (!item) return '0'
-    return formatTokenAmount(
-      item.transfer.amountIn,
-      item.transfer.sourceAsset.decimals
-    )
+  const fromTokenUnit = useMemo(() => {
+    if (!item) return undefined
+    try {
+      return new TokenUnit(
+        BigInt(item.transfer.amountIn),
+        item.transfer.sourceAsset.decimals,
+        item.transfer.sourceAsset.symbol
+      )
+    } catch {
+      return undefined
+    }
   }, [item])
 
-  const toAmount = useMemo(() => {
-    if (!item) return '0'
-    return formatTokenAmount(
-      item.transfer.amountOut,
-      item.transfer.targetAsset.decimals
-    )
+  const toTokenUnit = useMemo(() => {
+    if (!item) return undefined
+    try {
+      return new TokenUnit(
+        BigInt(item.transfer.amountOut),
+        item.transfer.targetAsset.decimals,
+        item.transfer.targetAsset.symbol
+      )
+    } catch {
+      return undefined
+    }
   }, [item])
 
-  const fromAmountUsd = useMemo(() => {
+  const fromAmount = useMemo(
+    () => fromTokenUnit?.toDisplay() ?? UNKNOWN_AMOUNT,
+    [fromTokenUnit]
+  )
+
+  const toAmount = useMemo(
+    () => toTokenUnit?.toDisplay() ?? UNKNOWN_AMOUNT,
+    [toTokenUnit]
+  )
+
+  const fromAmountInCurrency = useMemo(() => {
     const price = (fromTokenData as { priceInCurrency?: number } | undefined)
       ?.priceInCurrency
-    if (!price) return undefined
-    const amount = parseFloat(fromAmount)
-    if (isNaN(amount)) return undefined
-    return (amount * price).toFixed(2)
-  }, [fromAmount, fromTokenData])
+    if (!price || !fromTokenUnit) return undefined
+    return formatTokenInCurrency({
+      amount: fromTokenUnit.mul(price).toDisplay({ asNumber: true })
+    })
+  }, [fromTokenUnit, fromTokenData, formatTokenInCurrency])
 
-  const toAmountUsd = useMemo(() => {
+  const toAmountInCurrency = useMemo(() => {
     const price = (toTokenData as { priceInCurrency?: number } | undefined)
       ?.priceInCurrency
-    if (!price) return undefined
-    const amount = parseFloat(toAmount)
-    if (isNaN(amount)) return undefined
-    return (amount * price).toFixed(2)
-  }, [toAmount, toTokenData])
+    if (!price || !toTokenUnit) return undefined
+    return formatTokenInCurrency({
+      amount: toTokenUnit.mul(price).toDisplay({ asNumber: true })
+    })
+  }, [toTokenUnit, toTokenData, formatTokenInCurrency])
 
   return useMemo(() => {
     if (!item) return undefined
@@ -142,8 +150,8 @@ export function useSwapActivityDisplay(
       toToken: transfer.targetAsset.symbol,
       fromAmount,
       toAmount,
-      fromAmountUsd,
-      toAmountUsd,
+      fromAmountInCurrency,
+      toAmountInCurrency,
       fromNetwork: transfer.sourceChain.chainName,
       toNetwork: transfer.targetChain.chainName,
       fromNetworkLogoUri: fromNetworkData?.logoUri,
@@ -162,8 +170,8 @@ export function useSwapActivityDisplay(
     getNetworkByCaip2ChainId,
     fromAmount,
     toAmount,
-    fromAmountUsd,
-    toAmountUsd,
+    fromAmountInCurrency,
+    toAmountInCurrency,
     fromTokenData,
     toTokenData
   ])

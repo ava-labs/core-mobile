@@ -16,7 +16,7 @@ import {
  * the user can track them; only terminal states (completed / failed) are
  * eligible for removal.
  */
-export function isSwapDismissable(swap: SwapActivityItem): boolean {
+export function isSwapCompletedOrFailed(swap: SwapActivityItem): boolean {
   const status = mapTransferToSwapStatus(swap.transfer)
   return status === 'completed' || status === 'failed'
 }

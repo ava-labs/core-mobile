@@ -1,13 +1,6 @@
 import { Icons, useTheme, View } from '@avalabs/k2-alpine'
-import Animated, {
-  cancelAnimation,
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withTiming
-} from 'react-native-reanimated'
-import React, { useEffect } from 'react'
+import React from 'react'
+import { AnimatedEllipseIcon } from 'common/components/AnimatedEllipseIcon'
 import { SwapStatus } from '../types'
 
 const STATUS_ICON_SIZE = 20
@@ -16,24 +9,6 @@ export const StatusIcon = ({ status }: { status: SwapStatus }): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-
-  const rotation = useSharedValue(0)
-
-  useEffect(() => {
-    if (status === 'in_progress') {
-      rotation.value = withRepeat(
-        withTiming(360, { duration: 1200, easing: Easing.linear }),
-        -1
-      )
-    }
-    return () => {
-      cancelAnimation(rotation)
-    }
-  }, [status, rotation])
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${rotation.value}deg` }]
-  }))
 
   if (status === 'completed') {
     return (
@@ -85,13 +60,7 @@ export const StatusIcon = ({ status }: { status: SwapStatus }): JSX.Element => {
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-      <Animated.View style={animatedStyle}>
-        <Icons.Notification.Sync
-          color={colors.$textPrimary}
-          width={STATUS_ICON_SIZE * 0.65}
-          height={STATUS_ICON_SIZE * 0.65}
-        />
-      </Animated.View>
+      <AnimatedEllipseIcon size={STATUS_ICON_SIZE * 0.65} />
     </View>
   )
 }
