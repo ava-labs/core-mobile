@@ -19,8 +19,14 @@ import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { DropdownGroup } from 'common/components/DropdownMenu'
 import { useActivity } from '../store'
-import { ActivityListItem, buildGroupedData, getDateGroups } from '../utils'
-import { isSupportedNftChainId } from '../utils'
+import {
+  ActivityListItem,
+  buildGroupedData,
+  filterSwapBySearch,
+  getDateGroups,
+  isSupportedNftChainId
+} from '../utils'
+import { useInProgressSwaps } from './useInProgressSwaps'
 
 export type ActivityNetworkFilter = {
   filterName: string
@@ -92,6 +98,8 @@ export const useActivityFilterAndSearch = ({
       )
     })
   }, [filteredTokenList, selectedNetwork?.chainId, isXpChain])
+
+  const inProgressSwaps = useInProgressSwaps({ chainId: selectedNetwork?.chainId })
 
   const { transactions, refresh, isLoading, isRefreshing, isError } =
     useGetRecentTransactions(network)
@@ -236,13 +244,26 @@ export const useActivityFilterAndSearch = ({
       const filteredPendingBridge = filteredPendingBridgeTxs.filter(tx =>
         filterPendingBridgeBySearch(tx, searchText)
       )
+      const filteredSwaps = inProgressSwaps.filter(swap =>
+        filterSwapBySearch(swap, searchText)
+      )
       const { todayTxs, monthGroups } = getDateGroups(filteredTransactions)
-      return buildGroupedData(todayTxs, monthGroups, filteredPendingBridge)
+      return buildGroupedData(
+        todayTxs,
+        monthGroups,
+        filteredPendingBridge,
+        filteredSwaps
+      )
     }
 
     const { todayTxs, monthGroups } = getDateGroups(data)
-    return buildGroupedData(todayTxs, monthGroups, filteredPendingBridgeTxs)
-  }, [data, searchText, pendingBridgeTxs])
+    return buildGroupedData(
+      todayTxs,
+      monthGroups,
+      filteredPendingBridgeTxs,
+      inProgressSwaps
+    )
+  }, [data, searchText, pendingBridgeTxs, inProgressSwaps])
 
   return {
     data: combinedData as ActivityListItem[],

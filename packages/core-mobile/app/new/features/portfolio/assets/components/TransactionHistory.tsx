@@ -17,6 +17,7 @@ import {
   isSupportedNftChainId
 } from 'features/activity/utils'
 import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
+import { useInProgressSwaps } from 'features/activity/hooks/useInProgressSwaps'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { FC, useCallback, useMemo } from 'react'
 import { Platform, ViewStyle } from 'react-native'
@@ -143,14 +144,24 @@ const TransactionHistory: FC<Props> = ({
     filters
   })
 
+  const inProgressSwaps = useInProgressSwaps({
+    chainId: token?.networkChainId,
+    symbol: token?.symbol
+  })
+
   const combinedData = useMemo(() => {
     const filteredPendingBridgeTxs = pendingBridgeTxs
       .toSorted((a, b) => b.sourceStartedAt - a.sourceStartedAt)
       .filter(tx => getBridgeAssetSymbol(tx) === token?.symbol)
 
     const { todayTxs, monthGroups } = getDateGroups(data)
-    return buildGroupedData(todayTxs, monthGroups, filteredPendingBridgeTxs)
-  }, [data, pendingBridgeTxs, token?.symbol])
+    return buildGroupedData(
+      todayTxs,
+      monthGroups,
+      filteredPendingBridgeTxs,
+      inProgressSwaps
+    )
+  }, [data, pendingBridgeTxs, token?.symbol, inProgressSwaps])
 
   const renderEmptyComponent = useCallback(() => {
     if (isLoading) {
