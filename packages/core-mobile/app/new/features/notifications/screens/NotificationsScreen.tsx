@@ -102,9 +102,8 @@ const renderNotificationItem = (
   return <GenericNotificationItem notification={item} {...props} />
 }
 
-// TODO: depend on what we get from backend,
-// we might need to check locally persisted swap item with the backend transaction
-// to avoid duplication in the list. For now we assume they are separate and just sort by timestamp.
+//  Note: Swap activities and backend notifications are combined and de-duplicated
+// (e.g., by transaction hash) to avoid duplicated swap entries in the list.
 export const NotificationsScreen = (): JSX.Element => {
   const { removeSwapActivity, clearCompletedSwapActivities, swapActivities } =
     useSwapActivitiesStore()
@@ -264,14 +263,14 @@ export const NotificationsScreen = (): JSX.Element => {
           marginBottom: 10
         }}>
         <Text variant="heading2">{TITLE}</Text>
-        {!showFilteredEmptyState && (
+        {!showFilteredEmptyState && clearableItems.length > 0 && (
           <Button type="secondary" size="small" onPress={handleClearAll}>
             Clear all
           </Button>
         )}
       </View>
     )
-  }, [showFullEmptyState, showFilteredEmptyState, isLoading, handleClearAll])
+  }, [showFullEmptyState, showFilteredEmptyState, isLoading, handleClearAll, clearableItems.length])
 
   const handleNotificationPress = useCallback(
     (notification: AppNotification) => {
