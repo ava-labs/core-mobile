@@ -8,15 +8,11 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import React, { useEffect } from 'react'
-import { SwapActivityItem } from '../types'
+import { SwapStatus } from '../types'
 
 const STATUS_ICON_SIZE = 20
 
-export const StatusIcon = ({
-  status
-}: {
-  status: SwapActivityItem['status']
-}): JSX.Element => {
+export const StatusIcon = ({ status }: { status: SwapStatus }): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()

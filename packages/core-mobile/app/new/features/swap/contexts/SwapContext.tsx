@@ -30,11 +30,6 @@ import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
 import { selectMarkrSwapMaxRetries } from 'store/posthog'
-import { useGlobalSearchParams } from 'expo-router'
-import {
-  swapActivitiesStore,
-  useSwapActivitiesStore
-} from 'new/features/notifications/store'
 import {
   NormalizedSwapQuoteResult,
   NormalizedSwapQuote,

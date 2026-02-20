@@ -82,7 +82,7 @@ export const TokenAmountRow = ({
               sx={{
                 color: isDebit ? colors.$textDanger : colors.$textSecondary
               }}>
-              {isDebit ? `-$${amountUsd}USD` : `$${amountUsd}USD`}
+              {isDebit ? `-$${amountUsd} USD` : `$${amountUsd} USD`}
             </Text>
           )}
         </View>
