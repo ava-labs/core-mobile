@@ -60,7 +60,8 @@ export const RecentContacts = ({
         contact.name?.toLowerCase().includes(searchText.toLowerCase()) ||
         contact.address?.toLowerCase().includes(searchText.toLowerCase()) ||
         contact.addressXP?.toLowerCase().includes(searchText.toLowerCase()) ||
-        contact.addressBTC?.toLowerCase().includes(searchText.toLowerCase())
+        contact.addressBTC?.toLowerCase().includes(searchText.toLowerCase()) ||
+        contact.addressSVM?.toLowerCase().includes(searchText.toLowerCase())
     )
   }, [contacts, recentAddresses, searchText])
 
@@ -87,13 +88,34 @@ export const RecentContacts = ({
     [isDeveloperMode, onSubmitEditing]
   )
 
-  const renderItem = useCallback(
-    (item: Contact, index: number): React.JSX.Element => {
-      const address = getAddressByVmName({
-        contact: item,
+  const getMatchingAddress = useCallback(
+    (contact: Contact): string | undefined => {
+      if (searchText.trim().length > 0) {
+        const lowerSearch = searchText.toLowerCase()
+        const addressFields = [
+          contact.address,
+          contact.addressXP,
+          contact.addressBTC,
+          contact.addressSVM
+        ]
+        const matched = addressFields.find(addr =>
+          addr?.toLowerCase().includes(lowerSearch)
+        )
+        if (matched) return matched
+      }
+
+      return getAddressByVmName({
+        contact,
         vmName,
         isDeveloperMode
       })
+    },
+    [searchText, vmName, isDeveloperMode]
+  )
+
+  const renderItem = useCallback(
+    (item: Contact, index: number): React.JSX.Element => {
+      const address = getMatchingAddress(item)
       const isLast = index === searchResults.length - 1
 
       return (
@@ -105,7 +127,7 @@ export const RecentContacts = ({
         />
       )
     },
-    [vmName, isDeveloperMode, searchResults.length, onSelectContact]
+    [getMatchingAddress, searchResults.length, onSelectContact]
   )
 
   const renderHeader = useCallback(() => {
