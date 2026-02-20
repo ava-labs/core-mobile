@@ -124,41 +124,152 @@ export function isBalanceChangeNotification(
 export type SwapStatus = 'completed' | 'in_progress' | 'failed'
 
 /**
- * Represents a swap activity item shown in the notification center.
+ * Asset info within a swap transfer (source or target).
+ */
+export interface SwapTransferAsset {
+  type: string
+  symbol: string
+  name: string
+  decimals: number
+  address?: string
+}
+
+/**
+ * Chain info within a swap transfer.
+ * chainId is in CAIP-2 format, e.g. "eip155:43114"
+ */
+export interface SwapTransferChain {
+  chainId: string
+  chainName: string
+}
+
+/**
+ * Source confirmation tracking within a swap transfer.
+ */
+export interface SwapTransferSource {
+  confirmationCount: number
+  requiredConfirmationCount: number
+  startedAtMs: number
+  txHash: string
+}
+
+/**
+ * All backend status strings that Markr can return for a transfer.
+ * The overall lifecycle is:
+ *   source-pending → source-confirmed → target-pending → target-confirmed → completed
+ * Any step can result in a corresponding *-failed or a top-level "failed".
+ */
+export type SwapTransferStatus =
+  | 'source-pending'
+  | 'source-confirmed'
+  | 'target-pending'
+  | 'target-confirmed'
+  | 'completed'
+  | 'source-failed'
+  | 'target-failed'
+  | 'failed'
+  | 'error'
+
+/**
+ * Raw transfer object received from the Markr backend.
+ */
+export interface SwapTransfer {
+  id: string
+  amountIn: string
+  amountOut: string
+  /** Backend status string reflecting the overall swap lifecycle. */
+  status: SwapTransferStatus | string
+  sourceAsset: SwapTransferAsset
+  targetAsset: SwapTransferAsset
+  sourceChain: SwapTransferChain
+  targetChain: SwapTransferChain
+  /** Present once the source tx is broadcast. */
+  source?: SwapTransferSource
+  /** Present once the target tx is broadcast. */
+  target?: SwapTransferSource
+  fromAddress?: string
+  toAddress?: string
+}
+
+/**
+ * Maps the raw backend transfer status to the simplified SwapStatus used in
+ * the UI. Both "source-pending" and "target-pending" map to 'in_progress'.
+ */
+export function mapTransferToSwapStatus(transfer: SwapTransfer): SwapStatus {
+  const lower = transfer.status.toLowerCase()
+
+  if (lower === 'completed' || lower === 'target-confirmed') return 'completed'
+  if (
+    lower.includes('fail') ||
+    lower === 'error' ||
+    lower === 'source-failed' ||
+    lower === 'target-failed'
+  )
+    return 'failed'
+
+  // source-pending, source-confirmed, target-pending → all still in progress
+  return 'in_progress'
+}
+
+/**
+ * Returns the SwapStatus for the **source** (From) chain only.
+ *   - source-pending                                          → in_progress
+ *   - source-confirmed / target-pending / completed / etc.   → completed
+ *   - source-failed / failed                                  → failed
+ */
+export function mapTransferToSourceChainStatus(
+  transfer: SwapTransfer
+): SwapStatus {
+  const lower = transfer.status.toLowerCase()
+
+  if (lower === 'source-failed' || lower === 'failed' || lower === 'error')
+    return 'failed'
+
+  if (lower === 'source-pending') return 'in_progress'
+
+  // source-confirmed, target-pending, target-confirmed, completed → source done
+  return 'completed'
+}
+
+/**
+ * Returns the SwapStatus for the **target** (To) chain only.
+ *   - source-pending / source-confirmed   → in_progress (target hasn't started)
+ *   - target-pending                      → in_progress
+ *   - target-confirmed / completed        → completed
+ *   - target-failed / failed              → failed
+ */
+export function mapTransferToTargetChainStatus(
+  transfer: SwapTransfer
+): SwapStatus {
+  const lower = transfer.status.toLowerCase()
+
+  if (
+    lower === 'target-failed' ||
+    lower === 'failed' ||
+    lower === 'error' ||
+    lower === 'source-failed'
+  )
+    return 'failed'
+
+  if (lower === 'completed' || lower === 'target-confirmed') return 'completed'
+
+  // source-pending, source-confirmed, target-pending → target not done yet
+  return 'in_progress'
+}
+
+/**
+ * Represents a swap activity item stored in the notification-center Zustand
+ * store. All display-level data is derived at render time from this raw shape.
  */
 export interface SwapActivityItem {
-  /** Unique transaction identifier (also used as the tx hash for dedup) */
-  id: string
-  /** Symbol of the token being swapped from (e.g. "LINK") */
-  fromToken: string
-  /** Symbol of the token being swapped to (e.g. "AVAX") */
-  toToken: string
-  /** Human-readable amount of fromToken (e.g. "1.4054") */
-  fromAmount?: string
-  /** Human-readable amount of toToken (e.g. "30.24") */
-  toAmount?: string
-  /** USD equivalent of fromAmount as a plain number string (e.g. "28.18") */
-  fromAmountUsd?: string
-  /** USD equivalent of toAmount as a plain number string (e.g. "28.18") */
-  toAmountUsd?: string
-  /** Display name of the source network (e.g. "Ethereum") */
-  fromNetwork?: string
-  /** Display name of the destination network (e.g. "Avalanche C-Chain") */
-  toNetwork?: string
-  /** Logo URI for the source network */
-  fromNetworkLogoUri?: string
-  /** Logo URI for the destination network */
-  toNetworkLogoUri?: string
-  /** Logo URI for the from token */
-  fromTokenLogoUri?: string
-  /** Logo URI for the to token */
-  toTokenLogoUri?: string
-  /** Current status of the swap */
-  status: SwapStatus
-  /** Unix timestamp in milliseconds */
+  /** Raw transfer payload received from the Markr backend */
+  transfer: SwapTransfer
+  /** localId of the "from" token (e.g. "NATIVE-AVAX" or a contract address) */
+  fromTokenId: string
+  /** localId of the "to" token */
+  toTokenId: string
+  /** Unix timestamp in milliseconds (set when the swap was initiated) */
   timestamp: number
-  /** Block explorer URL for the transaction */
-  explorerUrl: string
 }
 
 /**

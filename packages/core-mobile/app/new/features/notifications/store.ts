@@ -2,12 +2,15 @@ import { ZustandStorageKeys } from 'resources/Constants'
 import { zustandMMKVStorage } from 'utils/mmkv/storages'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { SwapActivityItem } from './types'
+import { mapTransferToSwapStatus, SwapActivityItem } from './types'
+
+type TransferId = string
 
 interface SwapActivitiesState {
-  swapActivities: SwapActivityItem[]
+  /** Swap activities keyed by transfer.id for O(1) lookup and deduplication. */
+  swapActivities: Record<TransferId, SwapActivityItem>
   saveSwapActivity: (item: SwapActivityItem) => void
-  removeSwapActivity: (id: string) => void
+  removeSwapActivity: (transferId: TransferId) => void
   clearCompletedSwapActivities: () => void
   clearAllSwapActivities: () => void
 }
@@ -15,27 +18,29 @@ interface SwapActivitiesState {
 export const swapActivitiesStore = create<SwapActivitiesState>()(
   persist(
     set => ({
-      swapActivities: [],
+      swapActivities: {},
       saveSwapActivity: (item: SwapActivityItem) =>
-        set(state => {
-          const exists = state.swapActivities.some(s => s.id === item.id)
-          return {
-            swapActivities: exists
-              ? state.swapActivities.map(s => (s.id === item.id ? item : s))
-              : [item, ...state.swapActivities]
-          }
-        }),
-      removeSwapActivity: (id: string) =>
         set(state => ({
-          swapActivities: state.swapActivities.filter(s => s.id !== id)
+          swapActivities: {
+            ...state.swapActivities,
+            [item.transfer.id]: item
+          }
         })),
+      removeSwapActivity: (transferId: TransferId) =>
+        set(state => {
+          const { [transferId]: _, ...rest } = state.swapActivities
+          return { swapActivities: rest }
+        }),
       clearCompletedSwapActivities: () =>
         set(state => ({
-          swapActivities: state.swapActivities.filter(
-            s => s.status !== 'completed' && s.status !== 'failed'
+          swapActivities: Object.fromEntries(
+            Object.entries(state.swapActivities).filter(([, s]) => {
+              const status = mapTransferToSwapStatus(s.transfer)
+              return status !== 'completed' && status !== 'failed'
+            })
           )
         })),
-      clearAllSwapActivities: () => set({ swapActivities: [] })
+      clearAllSwapActivities: () => set({ swapActivities: {} })
     }),
     {
       name: ZustandStorageKeys.SWAP_ACTIVITIES,

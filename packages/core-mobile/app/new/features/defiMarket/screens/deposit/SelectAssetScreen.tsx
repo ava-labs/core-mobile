@@ -76,7 +76,10 @@ export const SelectAssetScreen = (): JSX.Element => {
           address: marketAsset.contractAddress
         })
       } else {
-        navigateToSwap(AVAX_TOKEN_ID, marketAsset.contractAddress)
+        navigateToSwap({
+          fromTokenId: AVAX_TOKEN_ID,
+          toTokenId: marketAsset.contractAddress
+        })
       }
     },
     [

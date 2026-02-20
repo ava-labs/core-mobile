@@ -52,6 +52,7 @@ import {
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
 import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio/hooks/useTokensWithZeroBalanceByNetworksForAccount'
 import { selectActiveAccount } from 'store/account'
+import { useSwapActivitiesStore } from 'features/notifications/store'
 import {
   JUPITER_PARTNER_FEE_BPS,
   MARKR_PARTNER_FEE_BPS,
@@ -73,6 +74,7 @@ export const SwapScreen = (): JSX.Element => {
   const params = useGlobalSearchParams<{
     initialTokenIdFrom?: string
     initialTokenIdTo?: string
+    retryingSwapActivityId?: string
   }>()
 
   const { formatCurrency } = useFormatCurrency()
@@ -96,6 +98,7 @@ export const SwapScreen = (): JSX.Element => {
     error: swapError,
     swapStatus
   } = useSwapContext()
+  const { removeSwapActivity } = useSwapActivitiesStore()
   const [maxFromValue, setMaxFromValue] = useState<bigint | undefined>()
   const [fromTokenValue, setFromTokenValue] = useState<bigint>()
   const [toTokenValue, setToTokenValue] = useState<bigint>()
@@ -331,8 +334,21 @@ export const SwapScreen = (): JSX.Element => {
 
     dismissKeyboardIfNeeded()
 
+    // if this swap is initiated from a failed swap activity,
+    // remove that activity so it doesn't show up in the notifications list while this new swap is in progress.
+    // if the user goes back from the review screen,
+    // we'll not remove the failed activity to ensure the user can still access it if they want to retry or view details before confirming this new swap.
+    params.retryingSwapActivityId &&
+      removeSwapActivity(params.retryingSwapActivityId)
+
     swap()
-  }, [swap, destination, slippage])
+  }, [
+    swap,
+    destination,
+    slippage,
+    params.retryingSwapActivityId,
+    removeSwapActivity
+  ])
 
   const handleFromAmountChange = useCallback(
     (amount: bigint): void => {

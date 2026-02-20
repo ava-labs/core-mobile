@@ -8,13 +8,17 @@ import Animated, {
   withRepeat,
   withTiming
 } from 'react-native-reanimated'
-import { SwapActivityItem as SwapActivityItemType } from '../types'
+import {
+  mapTransferToSwapStatus,
+  SwapActivityItem as SwapActivityItemType,
+  SwapStatus
+} from '../types'
 import NotificationListItem from './NotificationListItem'
 
 const ICON_SIZE = 32
 
 type SwapIconProps = {
-  status: SwapActivityItemType['status']
+  status: SwapStatus
 }
 
 /**
@@ -119,18 +123,22 @@ const SwapActivityItem: FC<SwapActivityItemProps> = ({
   showSeparator,
   testID
 }) => {
+  const status = mapTransferToSwapStatus(item.transfer)
+  const fromSymbol = item.transfer.sourceAsset.symbol
+  const toSymbol = item.transfer.targetAsset.symbol
+
   const title =
-    item.status === 'completed'
-      ? `Swapped ${item.fromToken} to ${item.toToken}`
-      : item.status === 'failed'
-        ? `Swap ${item.fromToken} to ${item.toToken} failed`
-        : `Swapping ${item.fromToken} to ${item.toToken} in progress...`
+    status === 'completed'
+      ? `Swapped ${fromSymbol} to ${toSymbol}`
+      : status === 'failed'
+      ? `Swap ${fromSymbol} to ${toSymbol} failed`
+      : `Swapping ${fromSymbol} to ${toSymbol} in progress...`
 
   return (
     <NotificationListItem
       title={title}
       subtitle="Tap for more details"
-      icon={<SwapIcon status={item.status} />}
+      icon={<SwapIcon status={status} />}
       timestamp={item.timestamp}
       showSeparator={showSeparator}
       accessoryType="chevron"
