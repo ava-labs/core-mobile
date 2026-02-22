@@ -59,12 +59,20 @@ const baseConfig = {
       if (moduleName.startsWith('@lombard.finance/sdk')) {
         const newContext = {
           ...context,
-          unstable_enablePackageExports: true,
-          unstable_conditionNames: ['require', 'import'],
-          preferNativePlatform: true
+          unstable_enablePackageExports: true
         }
         return context.resolveRequest(newContext, moduleName, platform)
       }
+
+      // Enable package exports only for @avalabs/unified-asset-transfer
+      if (moduleName.startsWith('@avalabs/unified-asset-transfer')) {
+        const newContext = {
+          ...context,
+          unstable_enablePackageExports: true
+        }
+        return context.resolveRequest(newContext, moduleName, platform)
+      }
+
       if (moduleName.startsWith('@ledgerhq/cryptoassets-evm-signatures')) {
         return context.resolveRequest(
           context,

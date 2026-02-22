@@ -16,6 +16,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { DappLogo } from 'common/components/DappLogo'
 import { ErrorState } from 'common/components/ErrorState'
 import NavigationBarButton from 'common/components/NavigationBarButton'
+import { isIOS26 } from 'common/utils/isIOS26'
 
 const ConnectedSitesScreen = (): JSX.Element => {
   const {
@@ -167,14 +168,23 @@ const ConnectedSitesScreen = (): JSX.Element => {
 
   const renderSeparator = (): JSX.Element => <View sx={{ height: 12 }} />
 
-  const renderHeaderRight = (): JSX.Element => {
+  const renderHeaderRight = (): JSX.Element | null => {
+    if (allApprovedDapps.length === 0) return null
+    if (isIOS26)
+      return (
+        <TouchableOpacity
+          onPress={disconnectAll}
+          style={{
+            paddingHorizontal: 10
+          }}>
+          <Text variant="buttonSmall">Disconnect all</Text>
+        </TouchableOpacity>
+      )
     return (
       <NavigationBarButton>
-        {allApprovedDapps.length ? (
-          <Button size="small" onPress={disconnectAll} type="secondary">
-            Disconnect all
-          </Button>
-        ) : null}
+        <Button size="small" onPress={disconnectAll} type="secondary">
+          Disconnect all
+        </Button>
       </NavigationBarButton>
     )
   }

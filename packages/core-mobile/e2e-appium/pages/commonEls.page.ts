@@ -3,6 +3,7 @@ import { actions } from '../helpers/actions'
 import { selectors } from '../helpers/selectors'
 import commonEls from '../locators/commonEls.loc'
 import portfolioPage from './portfolio.page'
+import settingsPage from './settings.page'
 
 class CommonElsPage {
   get retryBtn() {
@@ -407,6 +408,13 @@ class CommonElsPage {
   }
 
   async dismissBottomSheet(element = this.grabber) {
+    await actions.delay(1000)
+    const backBtn =
+      !(await actions.getVisible(element)) &&
+      (await actions.getVisible(this.backButton))
+    if (backBtn) {
+      await actions.tap(this.backButton)
+    }
     await actions.waitFor(element, 30000)
     await actions.dragAndDrop(element, [0, 1500])
     await actions.delay(1000)
@@ -518,9 +526,12 @@ class CommonElsPage {
     await actions.waitForDisplayed(this.copied)
   }
 
-  async switchAccount(account = commonEls.secondAccount) {
+  async switchAccount(
+    account = commonEls.secondAccount,
+    walletName = 'Wallet 1'
+  ) {
     await this.goMyWallets()
-    await actions.tap(selectors.getById(`manage_accounts_list__${account}`))
+    await settingsPage.tapAccount(account, walletName)
   }
 
   async goMyWallets() {

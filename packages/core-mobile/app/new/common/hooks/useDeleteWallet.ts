@@ -8,9 +8,9 @@ import { resetLoginAttempt } from 'store/security'
 export const useDeleteWallet = (): {
   deleteWallet: () => void
 } => {
-  const { resetLedgerWalletMap } = useLedgerWalletMap()
   const { deleteRecentAccounts } = useRecentAccounts()
   const dispatch = useDispatch()
+  const { resetLedgerWalletMap } = useLedgerWalletMap()
 
   const deleteWallet = useCallback(() => {
     dispatch(onLogOut())

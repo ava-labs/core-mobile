@@ -49,6 +49,11 @@ import { useDebouncedCallback } from 'use-debounce'
 import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
 import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
 import { formatLargeCurrency } from 'utils/Utils'
+<<<<<<< HEAD
+=======
+import { useDebouncedCallback } from 'use-debounce'
+import { isIOS26 } from 'common/utils/isIOS26'
+>>>>>>> main
 import { useTrackTokenActions } from '../hooks/useTrackTokenActions'
 
 const MAX_VALUE_WIDTH = '80%'
@@ -323,14 +328,19 @@ const TrackTokenDetailScreen = (): JSX.Element => {
           <FavoriteBarButton
             isFavorite={isFavorite}
             onPress={handleFavorite}
-            style={{ paddingHorizontal: isIOS26 ? 0 : 12 }}
+            style={isIOS26 ? { paddingHorizontal: 12 } : { paddingRight: 12 }}
           />
         )}
         <ShareBarButton
           onPress={handleShare}
-          style={{
-            paddingHorizontal: isIOS26 ? 0 : 12
-          }}
+          style={
+            isIOS26
+              ? { paddingHorizontal: 12 }
+              : {
+                  paddingRight: 12,
+                  paddingLeft: 8
+                }
+          }
         />
       </View>
     )

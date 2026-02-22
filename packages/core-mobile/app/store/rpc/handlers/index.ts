@@ -14,6 +14,7 @@ import { avalancheRenameAccountHandler } from './account/avalanche_renameAccount
 import { walletGetNetworkStateHandler } from './wallet_getNetworkState/wallet_getNetworkState'
 import { avalancheAddAccountHandler } from './account/avalanche_addAccount/avalanche_addAccount'
 import { walletSwitchEthereumChainHandler } from './chain/wallet_switchEthereumChain/wallet_switchEthereumChain'
+import { walletEnableNetworkHandler } from './chain/wallet_enableNetwork/wallet_enableNetwork'
 
 const handlerMap = [
   avalancheSelectAccountHandler,
@@ -30,7 +31,8 @@ const handlerMap = [
   avalancheSetDeveloperModeHandler,
   avalancheRenameAccountHandler,
   walletGetNetworkStateHandler,
-  avalancheAddAccountHandler
+  avalancheAddAccountHandler,
+  walletEnableNetworkHandler
 ].reduce((acc, current) => {
   if (current?.methods === undefined) return acc
 
