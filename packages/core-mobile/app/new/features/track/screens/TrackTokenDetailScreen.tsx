@@ -49,11 +49,6 @@ import { useDebouncedCallback } from 'use-debounce'
 import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
 import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
 import { formatLargeCurrency } from 'utils/Utils'
-<<<<<<< HEAD
-=======
-import { useDebouncedCallback } from 'use-debounce'
-import { isIOS26 } from 'common/utils/isIOS26'
->>>>>>> main
 import { useTrackTokenActions } from '../hooks/useTrackTokenActions'
 
 const MAX_VALUE_WIDTH = '80%'
