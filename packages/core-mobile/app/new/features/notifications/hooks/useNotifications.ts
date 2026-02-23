@@ -21,7 +21,8 @@ export function useBackendNotifications() {
     queryKey: [ReactQueryKeys.NOTIFICATION_CENTER_LIST, deviceArn],
     queryFn: () => NotificationCenterService.fetchNotifications(deviceArn!),
     enabled: !!deviceArn,
-    staleTime: 1000 * 60 * 1 // 1 minute
+    staleTime: 1000 * 60 * 1, // 1 minute
+    refetchInterval: 1000 * 60 * 1 // 1 minute
   })
 }
 

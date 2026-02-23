@@ -99,7 +99,7 @@ class NotificationCenterService {
         '[NotificationCenterService] fetchNotifications failed:',
         error
       )
-      throw error
+      return []
     }
   }
 
