@@ -16,6 +16,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { transactionSnackbar } from 'common/utils/toast'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { HEALTH_SCORE_CAUTION_COLOR } from '../../consts'
 
 export const BorrowSelectAmountFormBase = ({
@@ -100,7 +101,7 @@ export const BorrowSelectAmountFormBase = ({
     amount &&
     amount.gt(0) &&
     availableToBorrow &&
-    (amount.lt(availableToBorrow) || amount?.eq(availableToBorrow))
+    (amount.lt(availableToBorrow) || amount.eq(availableToBorrow))
 
   const renderFooter = useCallback(() => {
     return (
@@ -115,7 +116,7 @@ export const BorrowSelectAmountFormBase = ({
   }, [handleSubmit, isSubmitting, canSubmit])
 
   const formatHealthScore = useCallback((score: number | undefined): string => {
-    if (score === undefined || Number.isNaN(score)) return '-'
+    if (score === undefined || Number.isNaN(score)) return UNKNOWN_AMOUNT
     // AAVE returns a very large number when debt is 0 (effectively infinite)
     if (score > 1e10 || !Number.isFinite(score)) return '∞'
     return score.toFixed(2)
@@ -151,8 +152,7 @@ export const BorrowSelectAmountFormBase = ({
       titleSx={{ maxWidth: '80%' }}
       isModal
       contentContainerStyle={{
-        padding: 16,
-        paddingTop: 0
+        padding: 16
       }}
       renderFooter={renderFooter}>
       <View sx={{ flex: 1 }}>

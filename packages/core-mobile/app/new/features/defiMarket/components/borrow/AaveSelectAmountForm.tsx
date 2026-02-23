@@ -137,7 +137,7 @@ export const BorrowAaveSelectAmountForm = ({
       const newTotalDebtUSD = totalDebtUSD + newBorrowUSD
 
       if (newTotalDebtUSD === 0n) {
-        return undefined // Infinite health factor
+        return Infinity
       }
 
       // AAVE liquidationThreshold is in basis points (4 decimals, e.g., 8500 = 85%)
