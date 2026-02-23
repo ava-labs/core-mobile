@@ -26,8 +26,11 @@ export function convertUsdToTokenAmount(params: {
 
   if (tokenPriceUSD === 0n) return 0n
 
-  // Clamp safetyBufferPercent to valid range [0, 100]
-  const clampedBuffer = Math.max(0, Math.min(100, safetyBufferPercent))
+  // Clamp safetyBufferPercent to valid range [0, 100] and round to integer
+  // (BigInt doesn't accept non-integers)
+  const clampedBuffer = Math.round(
+    Math.max(0, Math.min(100, safetyBufferPercent))
+  )
 
   // Apply safety buffer to account for price fluctuations and rounding
   // This matches AAVE's approach of not allowing exact max borrows

@@ -42,20 +42,29 @@ export const WithdrawAaveSelectAmountForm = ({
   })
 
   // Handle withdraw confirmation - trigger unwrap for native AVAX
-  const handleWithdrawConfirmed = useCallback(() => {
+  const handleWithdrawConfirmed = useCallback(async () => {
     if (isNativeAvax && pendingUnwrapAmountRef.current) {
       // Show toast before unwrap
       transactionSnackbar.pending({ message: 'Unwrapping WAVAX to AVAX...' })
       // Withdraw confirmed, now unwrap WAVAX to AVAX
-      // Error handling is done by useUnwrapWavax's onError callback
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      unwrapWavax({ amount: pendingUnwrapAmountRef.current }).catch(() => {})
-      pendingUnwrapAmountRef.current = null
+      const amountToUnwrap = pendingUnwrapAmountRef.current
+      try {
+        await unwrapWavax({ amount: amountToUnwrap })
+        // Only clear after successful submission
+        pendingUnwrapAmountRef.current = null
+      } catch (error) {
+        // Show error toast for submission failures
+        // (onError callback handles post-submission errors)
+        transactionSnackbar.error({
+          message: 'Failed to unwrap WAVAX to AVAX'
+        })
+        onError?.()
+      }
     } else {
       // Not native AVAX, call original onConfirmed
       onConfirmed?.()
     }
-  }, [isNativeAvax, unwrapWavax, onConfirmed])
+  }, [isNativeAvax, unwrapWavax, onConfirmed, onError])
 
   const { withdraw } = useAaveWithdraw({
     market,
