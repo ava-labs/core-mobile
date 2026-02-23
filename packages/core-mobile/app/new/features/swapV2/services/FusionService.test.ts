@@ -20,7 +20,8 @@ jest.mock('@avalabs/unified-asset-transfer', () => ({
     MARKR: 'MARKR',
     AVALANCHE_EVM: 'AVALANCHE_EVM',
     LOMBARD_BTC_TO_BTCB: 'LOMBARD_BTC_TO_BTCB',
-    LOMBARD_BTCB_TO_BTC: 'LOMBARD_BTCB_TO_BTC'
+    LOMBARD_BTCB_TO_BTC: 'LOMBARD_BTCB_TO_BTC',
+    WRAP_UNWRAP: 'WRAP_UNWRAP'
   },
   createTransferManager: jest.fn()
 }))
@@ -116,17 +117,28 @@ describe('FusionService', () => {
       })
 
       const call = (createTransferManager as jest.Mock).mock.calls[0][0]
-      expect(call.serviceInitializers).toHaveLength(3)
+      expect(call.serviceInitializers).toHaveLength(4)
       expect(call.serviceInitializers).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ type: ServiceType.MARKR }),
           expect.objectContaining({ type: ServiceType.AVALANCHE_EVM }),
-          expect.objectContaining({ type: ServiceType.LOMBARD_BTC_TO_BTCB })
+          expect.objectContaining({ type: ServiceType.LOMBARD_BTC_TO_BTCB }),
+          expect.objectContaining({ type: ServiceType.WRAP_UNWRAP })
         ])
       )
     })
 
-    it('should skip initialization when no services are enabled', async () => {
+    it('should still initialize with only WRAP_UNWRAP when no other services are enabled', async () => {
+      const mockTransferManager = {
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn()
+      }
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
       const config: FusionConfig = {
         environment: Environment.PROD,
         enabledServices: [],
@@ -139,10 +151,14 @@ describe('FusionService', () => {
         signers: mockSigners
       })
 
-      expect(createTransferManager).not.toHaveBeenCalled()
-      expect(Logger.warn).toHaveBeenCalledWith(
-        'No Fusion services enabled. Skipping initialization.'
-      )
+      // WRAP_UNWRAP is always included, so initialization still happens
+      expect(createTransferManager).toHaveBeenCalled()
+      const call = (createTransferManager as jest.Mock).mock.calls[0][0]
+      expect(call.serviceInitializers).toHaveLength(1)
+      expect(call.serviceInitializers[0]).toMatchObject({
+        type: ServiceType.WRAP_UNWRAP,
+        evmSigner: mockEvmSigner
+      })
     })
 
     it('should initialize in TEST environment', async () => {
@@ -259,10 +275,20 @@ describe('FusionService', () => {
       })
 
       const call = (createTransferManager as jest.Mock).mock.calls[0][0]
-      expect(call.serviceInitializers).toHaveLength(4)
+      expect(call.serviceInitializers).toHaveLength(5)
     })
 
-    it('should not enable services when feature flags are false', async () => {
+    it('should only include WRAP_UNWRAP when all feature flags are false', async () => {
+      const mockTransferManager = {
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn()
+      }
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
       const featureFlags: Partial<FeatureFlags> = {
         'fusion-markr': false,
         'fusion-avalanche-evm': false
@@ -276,7 +302,13 @@ describe('FusionService', () => {
         signers: mockSigners
       })
 
-      expect(createTransferManager).not.toHaveBeenCalled()
+      // WRAP_UNWRAP is always included, so initialization still happens
+      expect(createTransferManager).toHaveBeenCalled()
+      const call = (createTransferManager as jest.Mock).mock.calls[0][0]
+      expect(call.serviceInitializers).toHaveLength(1)
+      expect(call.serviceInitializers[0]).toMatchObject({
+        type: ServiceType.WRAP_UNWRAP
+      })
     })
   })
 
@@ -614,97 +646,6 @@ describe('FusionService', () => {
     })
   })
 
-  describe('estimateGas', () => {
-    it('should estimate gas successfully', async () => {
-      const mockQuote = {
-        id: 'quote-123',
-        aggregator: { name: 'Markr', id: 'markr' },
-        serviceType: ServiceType.MARKR
-      } as any
-
-      const mockGasEstimate = 21000n
-
-      const mockTransferManager = {
-        getQuoter: jest.fn(),
-        getSupportedChains: jest.fn(),
-        transferAsset: jest.fn(),
-        estimateGas: jest.fn().mockResolvedValue(mockGasEstimate)
-      }
-      ;(createTransferManager as jest.Mock).mockResolvedValue(
-        mockTransferManager
-      )
-
-      const config: FusionConfig = {
-        environment: Environment.PROD,
-        enabledServices: [ServiceType.MARKR],
-        fetch: mockFetch
-      }
-
-      await FusionService.init({
-        bitcoinProvider: mockBitcoinProvider,
-        config,
-        signers: mockSigners
-      })
-
-      const result = await FusionService.estimateGas(mockQuote)
-
-      expect(result).toBe(mockGasEstimate)
-      expect(mockTransferManager.estimateGas).toHaveBeenCalledWith({
-        quote: mockQuote
-      })
-      expect(Logger.info).toHaveBeenCalledWith('Gas estimated:', '21000')
-    })
-
-    it('should throw error when service is not initialized', async () => {
-      const mockQuote = {
-        id: 'quote-123',
-        aggregator: { name: 'Markr', id: 'markr' },
-        serviceType: ServiceType.MARKR
-      } as any
-
-      await expect(FusionService.estimateGas(mockQuote)).rejects.toThrow(
-        'Fusion service is not initialized'
-      )
-    })
-
-    it('should log and throw error when estimateGas fails', async () => {
-      const mockQuote = {
-        id: 'quote-123',
-        aggregator: { name: 'Markr', id: 'markr' },
-        serviceType: ServiceType.MARKR
-      } as any
-
-      const error = new Error('Gas estimation failed')
-      const mockTransferManager = {
-        getQuoter: jest.fn(),
-        getSupportedChains: jest.fn(),
-        transferAsset: jest.fn(),
-        estimateGas: jest.fn().mockRejectedValue(error)
-      }
-      ;(createTransferManager as jest.Mock).mockResolvedValue(
-        mockTransferManager
-      )
-
-      const config: FusionConfig = {
-        environment: Environment.PROD,
-        enabledServices: [ServiceType.MARKR],
-        fetch: mockFetch
-      }
-
-      await FusionService.init({
-        bitcoinProvider: mockBitcoinProvider,
-        config,
-        signers: mockSigners
-      })
-
-      await expect(FusionService.estimateGas(mockQuote)).rejects.toThrow(
-        'Gas estimation failed'
-      )
-
-      expect(Logger.error).toHaveBeenCalledWith('Failed to estimate gas', error)
-    })
-  })
-
   describe('cleanup', () => {
     it('should cleanup and reset the service', async () => {
       const mockTransferManager = {
@@ -871,6 +812,101 @@ describe('FusionService', () => {
         btcSigner: mockBtcSigner
       })
       expect(lombardInit.btcFunctions).toBe(mockBitcoinProvider)
+    })
+
+    it('should always include WRAP_UNWRAP initializer regardless of enabledServices', async () => {
+      const mockTransferManager = {
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn()
+      }
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      // Test with no services
+      const config: FusionConfig = {
+        environment: Environment.PROD,
+        enabledServices: [],
+        fetch: mockFetch
+      }
+
+      await FusionService.init({
+        bitcoinProvider: mockBitcoinProvider,
+        config,
+        signers: mockSigners
+      })
+
+      const call = (createTransferManager as jest.Mock).mock.calls[0][0]
+      const wrapUnwrapInit = call.serviceInitializers.find(
+        (init: any) => init.type === ServiceType.WRAP_UNWRAP
+      )
+
+      expect(wrapUnwrapInit).toBeDefined()
+    })
+
+    it('should configure WRAP_UNWRAP with correct EVM signer', async () => {
+      const mockTransferManager = {
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn()
+      }
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      const config: FusionConfig = {
+        environment: Environment.PROD,
+        enabledServices: [ServiceType.MARKR],
+        fetch: mockFetch
+      }
+
+      await FusionService.init({
+        bitcoinProvider: mockBitcoinProvider,
+        config,
+        signers: mockSigners
+      })
+
+      const call = (createTransferManager as jest.Mock).mock.calls[0][0]
+      const wrapUnwrapInit = call.serviceInitializers.find(
+        (init: any) => init.type === ServiceType.WRAP_UNWRAP
+      )
+
+      expect(wrapUnwrapInit).toMatchObject({
+        type: ServiceType.WRAP_UNWRAP,
+        evmSigner: mockEvmSigner
+      })
+    })
+
+    it('should append WRAP_UNWRAP as the last initializer', async () => {
+      const mockTransferManager = {
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn()
+      }
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      const config: FusionConfig = {
+        environment: Environment.PROD,
+        enabledServices: [ServiceType.MARKR, ServiceType.AVALANCHE_EVM],
+        fetch: mockFetch
+      }
+
+      await FusionService.init({
+        bitcoinProvider: mockBitcoinProvider,
+        config,
+        signers: mockSigners
+      })
+
+      const call = (createTransferManager as jest.Mock).mock.calls[0][0]
+      const last = call.serviceInitializers[call.serviceInitializers.length - 1]
+
+      expect(last.type).toBe(ServiceType.WRAP_UNWRAP)
     })
   })
 })

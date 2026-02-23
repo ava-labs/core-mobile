@@ -8,7 +8,7 @@ import type {
   ServiceType,
   Transfer,
   TransferManager,
-  FetchFunction
+  Fetch
 } from '@avalabs/unified-asset-transfer'
 
 /**
@@ -17,7 +17,7 @@ import type {
 export interface FusionConfig {
   environment: Environment
   enabledServices: ServiceType[]
-  fetch: FetchFunction
+  fetch: Fetch
 }
 
 /**
@@ -71,13 +71,6 @@ export interface IFusionService {
    * @returns Transfer object with status and transaction details
    */
   transferAsset(quote: Quote): Promise<Transfer>
-
-  /**
-   * Estimate gas for a quote
-   * @param quote The quote to estimate gas for
-   * @returns Estimated gas in BigInt
-   */
-  estimateGas(quote: Quote): Promise<bigint>
 
   /**
    * Cleanup and reset the service

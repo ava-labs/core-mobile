@@ -3,7 +3,6 @@ import {
   createTransferManager,
   Environment,
   EvmServiceInitializer,
-  FetchFunction,
   LombardServiceInitializer,
   MarkrServiceInitializer,
   Quote,
@@ -11,7 +10,8 @@ import {
   ServiceInitializer,
   ServiceType,
   Transfer,
-  TransferManager
+  TransferManager,
+  Fetch
 } from '@avalabs/unified-asset-transfer'
 import type { FeatureFlags } from 'services/posthog/types'
 import Logger from 'utils/Logger'
@@ -113,11 +113,16 @@ class FusionService implements IFusionService {
              
           } satisfies LombardServiceInitializer)
           break
-
         default:
           throw new Error(`Unknown service type: ${serviceType}`)
       }
     }
+
+    // Always include wrap/unwrap service
+    initializers.push({
+      type: ServiceType.WRAP_UNWRAP,
+      evmSigner: signers.evm,
+    } satisfies EvmServiceInitializer)
 
     return initializers
   }
@@ -181,7 +186,7 @@ class FusionService implements IFusionService {
     signers
   }: {
     bitcoinProvider: BitcoinFunctions
-    fetch: FetchFunction
+    fetch: Fetch
     environment: Environment
     featureFlags: FeatureFlags
     signers: FusionSigners
@@ -263,22 +268,6 @@ class FusionService implements IFusionService {
       return transfer
     } catch (error) {
       Logger.error('Failed to execute transfer', error)
-      throw error
-    }
-  }
-
-  /**
-   * Estimate gas for a quote
-   * @param quote The quote to estimate gas for
-   * @returns Estimated gas in BigInt
-   */
-  async estimateGas(quote: Quote): Promise<bigint> {
-    try {
-      const gasEstimate = await this.transferManager.estimateGas({ quote })
-      Logger.info('Gas estimated:', gasEstimate.toString())
-      return gasEstimate
-    } catch (error) {
-      Logger.error('Failed to estimate gas', error)
       throw error
     }
   }

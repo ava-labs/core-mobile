@@ -4,6 +4,7 @@ import React, {
   ReactNode,
   useCallback,
   useContext,
+  useRef,
   useState,
   useMemo
 } from 'react'
@@ -83,6 +84,7 @@ export const SwapContextProvider = ({
   const [autoSlippage, setAutoSlippage] = useState<boolean>(true)
   const [destination, setDestination] = useState<SwapSide>(SwapSide.SELL)
   const [swapStatus, setSwapStatus] = useState<SwapStatus>(SwapStatus.Idle)
+  const isSwappingRef = useRef(false)
   const [amount, setAmount] = useState<bigint>()
 
   // Get quotes
@@ -277,6 +279,10 @@ export const SwapContextProvider = ({
   const swap = useCallback(
     // eslint-disable-next-line sonarjs/cognitive-complexity
     async (retryQuote?: Quote, retries = 0) => {
+      // Guard against concurrent swap executions (ref is synchronous, unlike state)
+      if (isSwappingRef.current) return
+      if (retries === 0) isSwappingRef.current = true
+
       // Determine which quote to use (retry or normal flow)
       const quoteToUse = retryQuote ?? userQuote ?? bestQuote
 
@@ -295,17 +301,13 @@ export const SwapContextProvider = ({
       setSwapStatus(SwapStatus.Swapping)
 
       try {
-        AnalyticsService.captureWithEncryption('SwapReviewOrder', {
-          provider: quoteToUse.aggregator.name,
-          slippage
-        })
-
         const transfer = await FusionService.transferAsset(quoteToUse)
 
         if (transfer.status === 'failed') {
           throw new Error('Transfer failed')
         }
 
+        isSwappingRef.current = false
         handleSwapSuccess({
           transfer,
           quote: quoteToUse,
@@ -316,6 +318,7 @@ export const SwapContextProvider = ({
       } catch (error) {
         // Handle user rejection - silent exit, no error shown
         if (isUserRejectionError(error)) {
+          isSwappingRef.current = false
           setSwapStatus(SwapStatus.Idle)
           return
         }
@@ -345,13 +348,13 @@ export const SwapContextProvider = ({
         }
 
         // All retries exhausted or non-retryable error
+        isSwappingRef.current = false
         handleSwapError(error, quoteToUse, fromAddress)
       }
     },
     [
       fromToken,
       toToken,
-      slippage,
       fromAddress,
       toAddress,
       userQuote,
