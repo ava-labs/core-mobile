@@ -1,5 +1,4 @@
 import { fetch as expoFetch } from 'expo/fetch'
-import Logger from 'utils/Logger'
 
 /**
  * Fetch adapter that uses expo-fetch for all requests
@@ -48,20 +47,9 @@ export const fetchAdapter: typeof globalThis.fetch = async (input, init) => {
 
   if (isStreaming) {
     // For streaming: return expo-fetch response as-is (SDK reads .body directly)
-    Logger.info('Streaming response, returning as-is:', {
-      url,
-      contentType,
-      status: response.status
-    })
     return response
   } else {
     // For non-streaming: read body and create standard Response to support .clone()
-    Logger.info('Non-streaming response, creating cloneable Response:', {
-      url,
-      contentType,
-      status: response.status
-    })
-
     const body = await response.text()
     return new Response(body, {
       status: response.status,

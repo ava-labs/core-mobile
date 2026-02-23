@@ -304,7 +304,9 @@ export const SwapContextProvider = ({
         const transfer = await FusionService.transferAsset(quoteToUse)
 
         if (transfer.status === 'failed') {
-          throw new Error('Transfer failed')
+          const reason =
+            transfer.errorReason ?? transfer.errorCode ?? 'Unknown reason'
+          throw new Error(`Transfer failed: ${reason}`)
         }
 
         isSwappingRef.current = false
