@@ -27,7 +27,8 @@ import { Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectWalletById, selectWallets } from 'store/wallet/slice'
 import EMPTY_ADDRESS_BOOK_ICON from '../../../assets/icons/address_book_empty.png'
-import { getAddressByVmName } from '../utils/getAddressByVmName'
+import { filterContactsBySearchText } from '../utils/filterContactsBySearchText'
+import { getMatchingAddress } from '../utils/getMatchingAddress'
 
 interface Props {
   recentAddresses: Contact[]
@@ -55,13 +56,7 @@ export const RecentContacts = ({
     if (searchText.trim().length === 0) {
       return recentAddresses
     }
-    return contacts.filter(
-      contact =>
-        contact.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-        contact.address?.toLowerCase().includes(searchText.toLowerCase()) ||
-        contact.addressXP?.toLowerCase().includes(searchText.toLowerCase()) ||
-        contact.addressBTC?.toLowerCase().includes(searchText.toLowerCase())
-    )
+    return filterContactsBySearchText(contacts, searchText)
   }, [contacts, recentAddresses, searchText])
 
   const handleSumbitEditing = useCallback(
@@ -89,8 +84,9 @@ export const RecentContacts = ({
 
   const renderItem = useCallback(
     (item: Contact, index: number): React.JSX.Element => {
-      const address = getAddressByVmName({
+      const address = getMatchingAddress({
         contact: item,
+        searchText,
         vmName,
         isDeveloperMode
       })
@@ -105,7 +101,7 @@ export const RecentContacts = ({
         />
       )
     },
-    [vmName, isDeveloperMode, searchResults.length, onSelectContact]
+    [searchText, vmName, isDeveloperMode, searchResults.length, onSelectContact]
   )
 
   const renderHeader = useCallback(() => {
