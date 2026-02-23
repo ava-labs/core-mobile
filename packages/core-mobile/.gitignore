@@ -99,6 +99,7 @@ expo-env.d.ts
 /ios/config.xcconfig
 
 # generated api clients
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 app/utils/apiClient/generated/profileApi.client.ts
 app/utils/apiClient/generated/balanceApi.client/
@@ -114,3 +115,6 @@ e2e-appium/*.tgz
 e2e-appium/node_modules/
 e2e-appium/package-lock.json
 >>>>>>> Stashed changes
+=======
+app/utils/api/generated
+>>>>>>> main

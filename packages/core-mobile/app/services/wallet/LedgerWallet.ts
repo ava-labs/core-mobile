@@ -7,7 +7,8 @@ import {
   compileSolanaTx,
   serializeSolanaTx,
   getEvmAddressFromPubKey,
-  getBtcAddressFromPubKey
+  getBtcAddressFromPubKey,
+  BitcoinProviderAbstract
 } from '@avalabs/core-wallets-sdk'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
@@ -21,6 +22,11 @@ import {
 import AppAvax from '@avalabs/hw-app-avalanche'
 import AppSolana from '@ledgerhq/hw-app-solana'
 import Eth from '@ledgerhq/hw-app-eth'
+import {
+  AppClient as BtcClient,
+  DefaultWalletPolicy,
+  WalletPolicy
+} from 'ledger-bitcoin'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Transport from '@ledgerhq/hw-transport'
 import { networks } from 'bitcoinjs-lib'
@@ -30,6 +36,7 @@ import { TransactionRequest } from 'ethers'
 import { now } from 'moment'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import LedgerService from 'services/ledger/LedgerService'
+import BiometricsSDK from 'utils/BiometricsSDK'
 import {
   LedgerAppType,
   LedgerDerivationPathType,
@@ -60,7 +67,6 @@ import { getAddressDerivationPath, handleLedgerError } from './utils'
 
 export class LedgerWallet implements Wallet {
   private deviceId: string
-  private derivationPath: string
   private derivationPathSpec: LedgerDerivationPathType
   private extendedPublicKeys?: PerAccountExtendedPublicKeys
   private publicKeys: PublicKey[]
@@ -69,12 +75,13 @@ export class LedgerWallet implements Wallet {
     | Avalanche.SimpleLedgerSigner
     | Avalanche.LedgerSigner
   private bitcoinWallet?: BitcoinLedgerWallet
+  private walletId: string
 
-  constructor(ledgerData: LedgerWalletData) {
+  constructor(ledgerData: LedgerWalletData & { walletId: string }) {
     this.deviceId = ledgerData.deviceId
-    this.derivationPath = ledgerData.derivationPath
     this.derivationPathSpec = ledgerData.derivationPathSpec
     this.publicKeys = ledgerData.publicKeys
+    this.walletId = ledgerData.walletId
 
     // For BIP44 wallets, store extended public keys (per-account format)
     // For Ledger Live, extendedPublicKeys remains undefined
@@ -95,13 +102,12 @@ export class LedgerWallet implements Wallet {
     provider?: JsonRpcBatchInternal
     accountIndex: number
   }): Promise<LedgerSigner> {
-    if (!this.evmSigner || accountIndex !== undefined) {
+    if (!this.evmSigner) {
       Logger.info('evmLedgerSigner', now())
 
       Logger.info('getEvmSigner', {
         provider,
         transport: this.getTransport(),
-        derivationPath: this.derivationPath,
         derivationPathSpec: this.derivationPathSpec,
         accountIndex
       })
@@ -133,8 +139,6 @@ export class LedgerWallet implements Wallet {
     accountIndex: number
   ): Promise<Avalanche.SimpleLedgerSigner | Avalanche.LedgerSigner> {
     if (!this.avalancheSigner) {
-      Logger.info('avalancheLedgerSigner', now())
-
       const transport = await this.getTransport()
 
       if (this.derivationPathSpec === LedgerDerivationPathType.BIP44) {
@@ -185,69 +189,80 @@ export class LedgerWallet implements Wallet {
           transport as any // TransportBLE is runtime compatible with wallets SDK expectations
         )
       }
-
-      Logger.info('avalancheLedgerSigner end', now())
     }
     return this.avalancheSigner
   }
 
-  private async getBitcoinProvider(
-    isTestnet = false
+  private async getBitcoinSigner(
+    accountIndex = 0,
+    bitcoinProvider: BitcoinProviderAbstract,
+    network: Network
   ): Promise<BitcoinLedgerWallet> {
-    if (!this.bitcoinWallet) {
-      Logger.info('bitcoinLedgerWallet', now())
+    try {
+      const evmPubKey = BitcoinWalletPolicyService.getEvmPublicKey(
+        this.publicKeys,
+        accountIndex
+      )
 
-      // Get the proper Bitcoin provider using provided network context
-      const bitcoinProvider = await getBitcoinProvider(isTestnet)
-
-      // Get wallet policy details from public key data (on-demand storage)
-      let walletPolicyDetails = null
-      if (this.publicKeys) {
-        const btcPolicy =
-          BitcoinWalletPolicyService.findBtcWalletPolicyInPublicKeys(
-            this.publicKeys
-          )
-        if (btcPolicy) {
-          try {
-            walletPolicyDetails =
-              BitcoinWalletPolicyService.parseWalletPolicyDetailsFromPublicKey(
-                btcPolicy
-              )
-          } catch (error) {
-            Logger.warn(
-              'Failed to parse Bitcoin wallet policy details from public key data:',
-              error
-            )
-          }
-        }
+      if (!evmPubKey) {
+        throw new Error(
+          `EVM public key not found for account index ${accountIndex}`
+        )
       }
 
-      if (!walletPolicyDetails) {
-        Logger.info(
-          'Bitcoin wallet policy details not found. Attempting on-demand registration...'
+      // Get wallet policy details from public key data for this specific account
+      const btcPolicy =
+        BitcoinWalletPolicyService.findBtcWalletPolicyInPublicKeys(
+          this.publicKeys,
+          accountIndex
         )
 
-        // Bitcoin wallet policy details should be fetched by hook/LedgerService and stored via storeBtcWalletPolicy
-        Logger.info(
-          'Bitcoin wallet policy details not found. Hook/LedgerService should handle fetching and storing.'
+      if (btcPolicy === undefined) {
+        Logger.error('Bitcoin wallet policy not found in public keys')
+        throw new Error('Bitcoin wallet policy not found in public keys')
+      }
+
+      const walletPolicyDetails =
+        BitcoinWalletPolicyService.parseWalletPolicyDetailsFromPublicKey(
+          btcPolicy,
+          accountIndex
         )
+      Logger.info('Bitcoin wallet policy loaded from storage')
+
+      // Derive the actual Bitcoin address public key from the registered xpub
+      // The xpub was registered from path m/44'/60'/accountIndex'
+      // We need to derive the address public key at path 0/0 from that xpub
+      // Parse the xpub to get the HD node
+      const hdNode = bip32.fromBase58(
+        btcPolicy.xpub,
+        network.isTestnet ? networks.testnet : networks.bitcoin
+      )
+
+      // Derive the Bitcoin address public key: m/44'/60'/accountIndex'/0/0
+      // Since xpub is already at account level, we derive 0/0
+      const addressNode = hdNode.derive(0).derive(0)
+
+      if (!addressNode.publicKey) {
+        throw new Error('Failed to derive Bitcoin address public key')
       }
 
       const transport = await this.getTransport()
 
-      // BitcoinLedgerWallet constructor needs: publicKey, derivationPath, provider, transport, walletPolicyDetails
       this.bitcoinWallet = new BitcoinLedgerWallet(
-        Buffer.from(this.deviceId, 'hex'), // publicKey - using deviceId as placeholder, should be actual public key
-        this.derivationPath,
-        bitcoinProvider, // provider - BitcoinProviderAbstract
-        transport as Transport, // transport
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        walletPolicyDetails as any // Use actual wallet policy details or null if not available
+        addressNode.publicKey,
+        evmPubKey.derivationPath,
+        bitcoinProvider,
+        transport as Transport,
+        walletPolicyDetails
       )
-
-      Logger.info('bitcoinLedgerWallet end', now())
+      Logger.info('BitcoinLedgerWallet created successfully')
+      return this.bitcoinWallet
+    } catch (error) {
+      Logger.error('Failed to create BitcoinLedgerWallet:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : String(error)
+      throw new Error(`Failed to create BitcoinLedgerWallet: ${errorMessage}`)
     }
-    return this.bitcoinWallet
   }
 
   private getDerivationPath(
@@ -300,7 +315,7 @@ export class LedgerWallet implements Wallet {
     }
 
     if (!this.extendedPublicKeys) {
-      Logger.error(`No extendedPublicKeys available`)
+      Logger.error(`[getExtendedPublicKeyFor] No extendedPublicKeys available`)
       return null
     }
 
@@ -449,32 +464,198 @@ export class LedgerWallet implements Wallet {
     }
   }
 
+  /**
+   * Register Bitcoin wallet policy with Ledger device
+   * This must be done once before signing Bitcoin transactions
+   */
+  private async registerBitcoinWalletPolicy({
+    accountName,
+    accountIndex,
+    walletId
+  }: {
+    accountName: string
+    accountIndex: number
+    walletId: string
+  }): Promise<void> {
+    Logger.info('Registering Bitcoin wallet policy with Ledger device')
+
+    try {
+      // Ensure device is connected
+      await LedgerService.ensureConnection(this.deviceId)
+
+      // Ensure Bitcoin app is ready
+      Logger.info('Ensuring Bitcoin app is ready...')
+      await LedgerService.waitForApp(
+        LedgerAppType.BITCOIN,
+        LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT
+      )
+
+      const transport = await this.getTransport()
+      const btcApp = new BtcClient(transport as Transport)
+
+      // Get master fingerprint from device
+      const masterFpr = await btcApp.getMasterFingerprint()
+
+      // Get EVM derivation path for this account
+      const derivationPath = `44'/60'/${accountIndex}'`
+
+      Logger.info(
+        'Getting extended public key from device at path:',
+        derivationPath
+      )
+
+      // Get extended public key from device
+      const xpub = await btcApp.getExtendedPubkey(derivationPath, true)
+
+      Logger.info('Extended public key retrieved')
+
+      const keyInfo = `[${masterFpr}/${derivationPath}]${xpub}`
+
+      // Create wallet policy for native SegWit (P2WPKH)
+      // Format: [masterFpr/derivationPath]xpub
+      const template = new DefaultWalletPolicy(`wpkh(@0/**)`, keyInfo)
+
+      // Note: We use WalletPolicy (not DefaultWalletPolicy) because we need a named policy for registration
+      const policyName = `Core - ${accountName}`
+      const walletPolicy = new WalletPolicy(
+        policyName,
+        'wpkh(@0/**)', // Native SegWit descriptor template
+        template.keys // keys array
+      )
+
+      Logger.info('Created wallet policy for registration')
+
+      // Register the policy with the device
+      Logger.info('Registering policy with Ledger device...')
+      const [policyId, policyHmac] = await btcApp.registerWallet(walletPolicy)
+
+      Logger.info('Wallet policy registered successfully:', {
+        policyId: policyId.toString('hex'),
+        policyHmacLength: policyHmac.length
+      })
+
+      // Store the policy details in wallet data
+      const policyDetails = {
+        hmacHex: policyHmac.toString('hex'),
+        masterFingerprint: masterFpr,
+        xpub,
+        name: policyName
+      }
+
+      const stored = await BitcoinWalletPolicyService.storeBtcWalletPolicy({
+        walletId,
+        publicKeys: this.publicKeys,
+        policyDetails,
+        accountIndex
+      })
+
+      if (!stored) {
+        throw new Error('Failed to persist Bitcoin wallet policy')
+      }
+
+      Logger.info('Bitcoin wallet policy registered and persisted successfully')
+    } catch (error) {
+      Logger.error('Failed to register Bitcoin wallet policy:', error)
+      throw new Error(
+        `Failed to register Bitcoin wallet policy: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      )
+    }
+  }
+
   public async signBtcTransaction({
-    accountIndex: _accountIndex,
+    accountName,
+    accountIndex,
     transaction,
     network,
     provider: _provider
   }: {
+    accountName?: string
     accountIndex: number
     transaction: BtcTransactionRequest
     network: Network
     provider: BitcoinProvider
   }): Promise<string> {
-    const signer = await this.getBitcoinProvider(network.isTestnet)
+    // Check if wallet policy is registered for this specific account
+    const needsRegistration =
+      BitcoinWalletPolicyService.needsBtcWalletPolicyRegistration(
+        this.publicKeys,
+        accountIndex
+      )
+
+    if (needsRegistration) {
+      Logger.info(
+        'Bitcoin wallet policy not registered, registering for the first time...'
+      )
+
+      if (!this.walletId) {
+        throw new Error(
+          'Bitcoin wallet policy registration requires walletId. Please ensure walletId is set.'
+        )
+      }
+
+      // Register the wallet policy with the Ledger device
+      await this.registerBitcoinWalletPolicy({
+        accountName: accountName || `Account ${accountIndex}`,
+        accountIndex,
+        walletId: this.walletId
+      })
+
+      // After registration, we need to reload the public keys to include the new policy
+      // This is necessary because the storeBtcWalletPolicy updates the wallet data in BiometricsSDK
+      const walletSecret = await BiometricsSDK.loadWalletSecret(this.walletId)
+      if (walletSecret.success) {
+        const updatedWalletData = JSON.parse(walletSecret.value)
+        this.publicKeys = updatedWalletData.publicKeys
+        Logger.info('Reloaded public keys with new Bitcoin wallet policy')
+      }
+    }
+    const bitcoinProvider = await getBitcoinProvider(network.isTestnet)
+    const signer = await this.getBitcoinSigner(
+      accountIndex,
+      bitcoinProvider,
+      network
+    )
 
     if (!(signer instanceof BitcoinLedgerWallet)) {
       throw new Error('Unable to sign btc transaction: invalid signer')
     }
-
-    const signedTx = await signer.signTx(
-      transaction.inputs,
-      transaction.outputs
+    const txToSign = await this.prepareBtcTxForLedger(
+      transaction,
+      bitcoinProvider
     )
+    const signedTx = await signer.signTx(txToSign.inputs, txToSign.outputs)
     return signedTx.toHex()
   }
 
+  private async prepareBtcTxForLedger(
+    tx: BtcTransactionRequest,
+    provider: BitcoinProviderAbstract
+  ): Promise<BtcTransactionRequest> {
+    //get unique hashes
+    const txHashSet = new Set<string>(tx.inputs.map(i => i.txHash))
+
+    // Get the tx hex for each input tx in parallel
+    const txHexDict: Record<string, string> = {}
+    await Promise.all(
+      Array.from(txHashSet, async hash => {
+        const hex = await provider.getTxHex(hash)
+        txHexDict[hash] = hex
+      })
+    )
+
+    return {
+      ...tx,
+      inputs: tx.inputs.map(input => ({
+        ...input,
+        txHex: txHexDict[input.txHash]
+      }))
+    }
+  }
+
   public async signAvalancheTransaction({
-    accountIndex: _accountIndex,
+    accountIndex,
     transaction,
     network: _network,
     provider: _provider
@@ -484,32 +665,119 @@ export class LedgerWallet implements Wallet {
     network: Network
     provider: Avalanche.JsonRpcProvider
   }): Promise<string> {
-    const signer = await this.getAvalancheProvider(_accountIndex)
+    Logger.info('signAvalancheTransaction called')
 
-    if (
-      !(
-        signer instanceof Avalanche.SimpleLedgerSigner ||
-        signer instanceof Avalanche.LedgerSigner
+    await LedgerService.openApp(LedgerAppType.AVALANCHE)
+
+    // First ensure we're connected to the device
+    Logger.info('Ensuring connection to Ledger device...')
+    try {
+      await LedgerService.ensureConnection(this.deviceId)
+      Logger.info('Successfully connected to Ledger device')
+    } catch (error) {
+      Logger.error('Failed to connect to Ledger device:', error)
+      throw new Error(
+        'Please make sure your Ledger device is nearby, unlocked, and Bluetooth is enabled.'
       )
-    ) {
-      throw new Error('Unable to sign avalanche transaction: invalid signer')
     }
 
-    const txToSign = {
-      tx: transaction.tx,
-      externalIndices: transaction.externalIndices,
-      internalIndices: transaction.internalIndices
+    // Now ensure Avalanche app is ready
+    Logger.info('Ensuring Avalanche app is ready...')
+    try {
+      await LedgerService.waitForApp(
+        LedgerAppType.AVALANCHE,
+        LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT
+      )
+      Logger.info('Avalanche app is ready')
+    } catch (error) {
+      Logger.error('Failed to detect Avalanche app:', error)
+      throw new Error(
+        'Please open the Avalanche app on your Ledger device and try again.'
+      )
     }
 
-    const sig = await signer.signTx(txToSign)
-    return JSON.stringify(sig.toJSON())
+    // Get transport and create Avalanche app instance directly
+    // (bypassing SDK's ZondaxProvider which has module resolution issues in React Native)
+    const transport = await this.getTransport()
+
+    const avaxApp = new AppAvax(transport as Transport)
+
+    // Get chain alias from transaction VM
+    const vmName = transaction.tx.getVM()
+    let chainAlias: 'X' | 'P' | 'C'
+    switch (vmName) {
+      case 'AVM':
+        chainAlias = 'X'
+        break
+      case 'PVM':
+        chainAlias = 'P'
+        break
+      case 'EVM':
+        chainAlias = 'C'
+        break
+      default:
+        throw new Error(`Unsupported VM type: ${vmName}`)
+    }
+
+    // Build the account path based on chain
+    // For X/P chain: m/44'/9000'/{accountIndex}'
+    // For C chain (EVM): m/44'/60'/{accountIndex}'
+    const accountPath =
+      chainAlias === 'C'
+        ? `m/44'/60'/${accountIndex}'`
+        : `m/44'/9000'/${accountIndex}'`
+
+    // Build signing paths from external indices
+    // For C-chain: always use 0/0 (first external address)
+    // For X/P-chain: use external indices from UTXO analysis (default to [0] → '0/0' if empty)
+    const externalIndices = transaction.externalIndices ?? []
+    const hasIndices = externalIndices.length > 0
+    const signingPaths =
+      chainAlias === 'C'
+        ? ['0/0']
+        : (hasIndices ? externalIndices : [0]).map(i => `0/${i}`)
+
+    // Build change paths from internal indices
+    const changePaths = (transaction.internalIndices ?? []).map(i => `1/${i}`)
+
+    // Serialize the transaction
+    const txBuffer = Buffer.from(transaction.tx.toBytes())
+
+    Logger.info('Calling avaxApp.sign...')
+    try {
+      // Sign directly with the Ledger device
+      const signResult = await avaxApp.sign(
+        accountPath,
+        signingPaths,
+        txBuffer,
+        changePaths.length > 0 ? changePaths : undefined
+      )
+      Logger.info('avaxApp.sign completed')
+
+      // Add signatures to the transaction
+      const signatures = signResult.signatures || new Map()
+      signatures.forEach(signature => {
+        transaction.tx.addSignature(signature)
+      })
+
+      Logger.info('signAvalancheTransaction completed successfully')
+      return JSON.stringify(transaction.tx.toJSON())
+    } catch (signError) {
+      Logger.error('avaxApp.sign failed with error:', signError)
+      if (signError instanceof Error) {
+        throw new Error(
+          `Avalanche transaction signing failed: ${signError.message}`
+        )
+      }
+      throw signError
+    }
   }
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
   public async signEvmTransaction({
     accountIndex,
     transaction,
-    network: _network,
+    network,
     provider: _provider
   }: {
     accountIndex: number
@@ -527,7 +795,7 @@ export class LedgerWallet implements Wallet {
     } catch (error) {
       Logger.error('Failed to connect to Ledger device:', error)
       if (error instanceof Error) {
-        handleLedgerError({ error, network: _network })
+        handleLedgerError({ error, network })
       }
       throw error
     }
@@ -548,7 +816,7 @@ export class LedgerWallet implements Wallet {
     } catch (error) {
       Logger.error(`Failed to detect ${appName} app:`, error)
       if (error instanceof Error) {
-        handleLedgerError({ error, network: _network })
+        handleLedgerError({ error, network })
       }
       throw error
     }
@@ -624,7 +892,7 @@ export class LedgerWallet implements Wallet {
 
       // Provide more specific error messages
       if (error instanceof Error) {
-        handleLedgerError({ error, network: _network })
+        handleLedgerError({ error, network })
       }
 
       throw error
@@ -634,8 +902,8 @@ export class LedgerWallet implements Wallet {
   public async signSvmTransaction({
     accountIndex,
     transaction,
-    network: _network,
-    provider: _provider
+    network,
+    provider
   }: {
     accountIndex: number
     transaction: SolanaTransactionRequest
@@ -656,14 +924,15 @@ export class LedgerWallet implements Wallet {
     } catch (error) {
       Logger.error('Failed to connect to Ledger device:', error)
       if (error instanceof Error) {
-        handleLedgerError({ error, network: _network })
+        handleLedgerError({ error, network })
       }
       throw error
     }
 
-    // Now ensure Solana app is ready
-    Logger.info('Ensuring Solana app is ready...')
     try {
+      await LedgerService.openApp(LedgerAppType.SOLANA)
+      // Now ensure Solana app is ready
+      Logger.info('Ensuring Solana app is ready...')
       await LedgerService.waitForApp(
         LedgerAppType.SOLANA,
         LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT
@@ -672,7 +941,7 @@ export class LedgerWallet implements Wallet {
     } catch (error) {
       Logger.error('Failed to detect Solana app:', error)
       if (error instanceof Error) {
-        handleLedgerError({ error, network: _network })
+        handleLedgerError({ error, network })
       }
       throw error
     }
@@ -707,7 +976,7 @@ export class LedgerWallet implements Wallet {
       Logger.info('Deserializing transaction message')
       const txMessage = await deserializeTransactionMessage(
         transaction.serializedTx,
-        _provider
+        provider
       )
 
       Logger.info('Compiling Solana transaction')
@@ -739,7 +1008,7 @@ export class LedgerWallet implements Wallet {
 
       // Provide more specific error messages
       if (error instanceof Error) {
-        handleLedgerError({ error, network: _network })
+        handleLedgerError({ error, network })
       }
 
       throw error

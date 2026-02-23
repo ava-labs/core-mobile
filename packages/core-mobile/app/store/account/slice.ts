@@ -63,6 +63,10 @@ const accountsSlice = createSlice({
     removeAccount: (state, action: PayloadAction<string>) => {
       const accountId = action.payload
       delete state.accounts[accountId]
+    },
+    removeLedgerAddress: (state, action: PayloadAction<string>) => {
+      const accountId = action.payload
+      delete state.ledgerAddresses[accountId]
     }
   }
 })
@@ -160,7 +164,8 @@ export const {
   setLedgerAddresses,
   setAccounts,
   setNonActiveAccounts,
-  removeAccount
+  removeAccount,
+  removeLedgerAddress
 } = accountsSlice.actions
 
 export const accountsReducer = accountsSlice.reducer

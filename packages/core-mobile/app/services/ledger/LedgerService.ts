@@ -831,18 +831,14 @@ class LedgerService {
         })
 
         // Bitcoin public key
-        const btcPath = getAddressDerivationPath({
-          accountIndex: i,
-          vmType: NetworkVMType.BITCOIN
-        })
         const btcResponse = await avalancheApp.getAddressAndPubKey(
-          btcPath,
+          evmPath,
           false,
           'bc'
         )
         publicKeys.push({
           key: btcResponse.publicKey.toString('hex'),
-          derivationPath: btcPath,
+          derivationPath: evmPath,
           curve: Curve.SECP256K1
         })
       }
@@ -860,13 +856,14 @@ class LedgerService {
     isTestnet: boolean
   ): Promise<AddressInfo[]> {
     // Connect to Avalanche app
+    await this.openApp(LedgerAppType.AVALANCHE)
     await this.waitForApp(LedgerAppType.AVALANCHE)
 
     // Create Avalanche app instance
     const avalancheApp = new AppAvalanche(this.transport as Transport)
 
     const addresses: AddressInfo[] = []
-    const networkHrp = isTestnet ? 'fuji' : 'avax'
+    const networkHrp = isTestnet ? networkIDs.FujiHRP : networkIDs.MainnetHRP
 
     try {
       // Derive addresses for each chain
@@ -896,7 +893,7 @@ class LedgerService {
           await avalancheApp.getAddressAndPubKey(
             avalancheChainPath,
             false,
-            isTestnet ? 'fuji' : 'avax' // hrp for mainnet or testnet,
+            networkHrp
           )
 
         const addressWithoutPrefix = stripAddressPrefix(
@@ -920,14 +917,10 @@ class LedgerService {
         })
 
         // Bitcoin addresses - derive from EVM public key (like the extension)
-        const btcPath = getAddressDerivationPath({
-          accountIndex: i,
-          vmType: NetworkVMType.EVM // Use EVM path for Bitcoin
-        })
         const btcPublicKeyResponse = await avalancheApp.getAddressAndPubKey(
-          btcPath,
+          evmPath,
           false,
-          networkHrp // hrp for mainnet or testnet
+          networkHrp
         )
         const btcAddress = getBtcAddressFromPubKey(
           Buffer.from(btcPublicKeyResponse.publicKey.toString('hex'), 'hex'),
@@ -937,7 +930,7 @@ class LedgerService {
         addresses.push({
           id: `bitcoin-${i}`,
           address: btcAddress,
-          derivationPath: btcPath,
+          derivationPath: evmPath,
           network: ChainName.BITCOIN
         })
       }
@@ -1013,6 +1006,7 @@ class LedgerService {
    */
   async getSolanaKeys(accountIndex: number): Promise<PublicKeyInfo[]> {
     Logger.info('Getting Solana keys with passive app detection')
+    await this.openApp(LedgerAppType.SOLANA)
     await this.waitForApp(LedgerAppType.SOLANA)
 
     // Get address directly from Solana app
@@ -1065,6 +1059,9 @@ class LedgerService {
       addresses.find(addr => addr.network === ChainName.AVALANCHE_P)?.address ||
       ''
 
+    const btcAddress =
+      addresses.find(addr => addr.network === ChainName.BITCOIN)?.address || ''
+
     // Derive C-chain bech32 address from EVM address
     // CoreEth is the EVM address (hex) encoded in bech32 format with C- prefix
     const hrp = isTestnet ? networkIDs.FujiHRP : networkIDs.MainnetHRP
@@ -1100,39 +1097,13 @@ class LedgerService {
         evm: evmAddress,
         avm: avmAddress,
         pvm: pvmAddress,
-        coreEth: coreEthAddress
+        coreEth: coreEthAddress,
+        btc: btcAddress
       },
       xpubs: {
         evm: evmXpub,
         avalanche: avalancheXpub
       }
-    }
-  }
-
-  /**
-   * Get Bitcoin and XP addresses from Avalanche keys
-   * @param avalancheKeys The avalanche keys to derive addresses from
-   * @returns Bitcoin and XP addresses
-   */
-  async getBitcoinAndXPAddresses(
-    accountIndex: number,
-    isTestnet: boolean
-  ): Promise<{
-    bitcoinAddress: string
-    xpAddress: string
-  }> {
-    const addresses = await this.getAllAddresses(accountIndex, 1, isTestnet)
-
-    // Get addresses for display
-    const xChainAddress =
-      addresses.find(addr => addr.network === ChainName.AVALANCHE_X)?.address ||
-      ''
-    const btcAddress =
-      addresses.find(addr => addr.network === ChainName.BITCOIN)?.address || ''
-
-    return {
-      bitcoinAddress: btcAddress,
-      xpAddress: xChainAddress
     }
   }
 

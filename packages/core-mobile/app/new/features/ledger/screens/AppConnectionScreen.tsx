@@ -1,4 +1,10 @@
-import React, { useCallback, useState, useEffect, useMemo } from 'react'
+import React, {
+  useCallback,
+  useState,
+  useEffect,
+  useMemo,
+  ReactNode
+} from 'react'
 import { useRouter } from 'expo-router'
 import { Alert, Platform, View } from 'react-native'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -7,192 +13,60 @@ import {
   AppConnectionStep,
   LedgerAppConnection
 } from 'new/features/ledger/components/LedgerAppConnection'
-import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import Logger from 'utils/Logger'
 import LedgerService from 'services/ledger/LedgerService'
-import { Button, ButtonType } from '@avalabs/k2-alpine'
+import { ActivityIndicator, Button, ButtonType } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
-import { LedgerAppType, LedgerKeys } from 'services/ledger/types'
+import { LedgerKeysByNetwork } from 'services/ledger/types'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { showSnackbar } from 'common/utils/toast'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { setLedgerAddresses } from 'store/account'
 
-export default function AppConnectionScreen(): JSX.Element {
-  const { push, back } = useRouter()
-  const [isCreatingWallet, setIsCreatingWallet] = useState(false)
+export default function AppConnectionScreen({
+  completeStepTitle,
+  isUpdatingWallet,
+  handleComplete,
+  deviceId,
+  deviceName = 'Ledger Device',
+  disconnectDevice,
+  accountIndex
+}: {
+  completeStepTitle: string
+  isUpdatingWallet: boolean
+  deviceId?: string | null
+  deviceName?: string
+  disconnectDevice: () => Promise<void>
+  handleComplete: (keys: LedgerKeysByNetwork) => Promise<void>
+  accountIndex: number
+}): JSX.Element {
+  const { back } = useRouter()
   const headerHeight = useHeaderHeight()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
-  const dispatch = useDispatch()
+
+  const hasDeviceId = !!deviceId
 
   // Local key state - managed only in this component
-  const [keys, setKeys] = useState<LedgerKeys>({
-    solanaKeys: [],
-    avalancheKeys: undefined,
-    bitcoinAddress: '',
-    xpAddress: ''
+  const [keys, setKeys] = useState<LedgerKeysByNetwork>({
+    mainnet: {
+      solanaKeys: [],
+      avalancheKeys: undefined
+    },
+    testnet: {
+      solanaKeys: [],
+      avalancheKeys: undefined
+    }
   })
 
   const [currentAppConnectionStep, setAppConnectionStep] =
     useState<AppConnectionStep>(AppConnectionStep.AVALANCHE_CONNECT)
   const [skipSolana, setSkipSolana] = useState(false)
 
-  const {
-    connectedDeviceId,
-    connectedDeviceName,
-    selectedDerivationPath,
-    resetSetup,
-    disconnectDevice,
-    createLedgerWallet
-  } = useLedgerSetupContext()
-
-  const getOppositeKeys = useCallback(async () => {
-    try {
-      const avalancheKeys = await LedgerService.getAvalancheKeys(
-        0,
-        !isDeveloperMode
-      )
-      const { bitcoinAddress } = await LedgerService.getBitcoinAndXPAddresses(
-        0,
-        !isDeveloperMode
-      )
-
-      return {
-        addressBTC: bitcoinAddress,
-        addressAVM: avalancheKeys.addresses.avm,
-        addressPVM: avalancheKeys.addresses.pvm,
-        addressCoreEth: avalancheKeys.addresses.coreEth
-      }
-    } catch (err) {
-      Logger.error('Failed to get opposite keys', err)
-      return {
-        addressBTC: '',
-        addressAVM: '',
-        addressPVM: '',
-        addressCoreEth: ''
-      }
-    }
-  }, [isDeveloperMode])
-
-  // eslint-disable-next-line sonarjs/cognitive-complexity
-  const handleComplete = useCallback(async () => {
-    Logger.info('handleComplete called', {
-      hasAvalancheKeys: !!keys.avalancheKeys,
-      hasConnectedDeviceId: !!connectedDeviceId,
-      hasSelectedDerivationPath: !!selectedDerivationPath,
-      isCreatingWallet,
-      solanaKeysCount: keys.solanaKeys?.length ?? 0
-    })
-
-    // If wallet hasn't been created yet, create it now
-    if (
-      keys.avalancheKeys &&
-      connectedDeviceId &&
-      selectedDerivationPath &&
-      !isCreatingWallet
-    ) {
-      Logger.info('All conditions met, creating wallet...')
-      setIsCreatingWallet(true)
-
-      try {
-        const { walletId, accountId } = await createLedgerWallet({
-          deviceId: connectedDeviceId,
-          deviceName: connectedDeviceName,
-          derivationPathType: selectedDerivationPath,
-          avalancheKeys: keys.avalancheKeys,
-          solanaKeys: keys.solanaKeys,
-          bitcoinAddress: keys.bitcoinAddress
-        })
-
-        // TODO: implement await/retry logic for any ledger APDU commands
-        // that could fail due to transport race conditions
-        setTimeout(async () => {
-          const oppositeKeys = await getOppositeKeys()
-
-          const mainnet = isDeveloperMode
-            ? oppositeKeys
-            : {
-                addressBTC: keys.bitcoinAddress ?? '',
-                addressAVM: keys.avalancheKeys?.addresses.avm || '',
-                addressPVM: keys.avalancheKeys?.addresses.pvm || '',
-                addressCoreEth: keys.avalancheKeys?.addresses.coreEth || ''
-              }
-
-          const testnet = isDeveloperMode
-            ? {
-                addressBTC: keys.bitcoinAddress ?? '',
-                addressAVM: keys.avalancheKeys?.addresses.avm || '',
-                addressPVM: keys.avalancheKeys?.addresses.pvm || '',
-                addressCoreEth: keys.avalancheKeys?.addresses.coreEth || ''
-              }
-            : oppositeKeys
-
-          dispatch(
-            setLedgerAddresses({
-              [accountId]: {
-                mainnet,
-                testnet,
-                walletId,
-                index: 0,
-                id: accountId
-              }
-            })
-          )
-        }, 500)
-
-        Logger.info(
-          'Wallet created successfully, navigating to complete screen'
-        )
-        // Stop polling since we no longer need app detection
-        LedgerService.stopAppPolling()
-        // @ts-ignore TODO: make routes typesafe
-        push('/accountSettings/ledger/complete')
-      } catch (error) {
-        Logger.error('Wallet creation failed', error)
-        Alert.alert(
-          'Wallet Creation Failed',
-          error instanceof Error
-            ? error.message
-            : 'Failed to create Ledger wallet. Please try again.',
-          [{ text: 'OK' }]
-        )
-        setIsCreatingWallet(false)
-      }
-    } else {
-      Logger.info(
-        'Wallet creation conditions not met, skipping wallet creation',
-        {
-          hasAvalancheKeys: !!keys.avalancheKeys,
-          hasConnectedDeviceId: !!connectedDeviceId,
-          hasSelectedDerivationPath: !!selectedDerivationPath,
-          isCreatingWallet
-        }
-      )
-      // @ts-ignore TODO: make routes typesafe
-      push('/accountSettings/ledger/complete')
-    }
-  }, [
-    keys.avalancheKeys,
-    keys.solanaKeys,
-    keys.bitcoinAddress,
-    connectedDeviceId,
-    selectedDerivationPath,
-    isCreatingWallet,
-    createLedgerWallet,
-    connectedDeviceName,
-    getOppositeKeys,
-    isDeveloperMode,
-    dispatch,
-    push
-  ])
-
   const handleCancel = useCallback(async () => {
     await disconnectDevice()
-    resetSetup()
     back()
-  }, [disconnectDevice, resetSetup, back])
+  }, [disconnectDevice, back])
 
   const progressDotsCurrentStep = useMemo(() => {
     if (isSolanaSupportBlocked) {
@@ -227,17 +101,13 @@ export default function AppConnectionScreen(): JSX.Element {
     }
   }, [currentAppConnectionStep, isSolanaSupportBlocked])
 
-  // Cleanup: Stop polling when component unmounts (unless wallet creation is in progress)
+  // Cleanup: Stop polling when component unmounts
   useEffect(() => {
     return () => {
-      // Only stop polling if we're not in the middle of wallet creation
-      // If wallet creation succeeded, the connection should remain for the wallet to use
-      if (!isCreatingWallet) {
-        Logger.info('AppConnectionScreen unmounting, stopping app polling')
-        LedgerService.stopAppPolling()
-      }
+      Logger.info('AppConnectionScreen unmounting, stopping app polling')
+      LedgerService.stopAppPolling()
     }
-  }, [isCreatingWallet])
+  }, [])
 
   const headerCenterOverlay = useMemo(() => {
     const paddingTop = Platform.OS === 'ios' ? 15 : 50
@@ -268,37 +138,39 @@ export default function AppConnectionScreen(): JSX.Element {
     )
   }, [headerHeight, isSolanaSupportBlocked, progressDotsCurrentStep])
 
-  // Handler for completing wallet creation
-  const handleCompleteWallet = useCallback(() => {
-    Logger.info('User clicked complete wallet button', {
-      hasAvalancheKeys: !!keys.avalancheKeys,
-      hasSolanaKeys: keys.solanaKeys && keys.solanaKeys.length > 0,
-      solanaKeysCount: keys.solanaKeys?.length ?? 0
-    })
-    handleComplete()
-  }, [keys, handleComplete])
-
   const handleConnectAvalanche = useCallback(async () => {
     try {
+      if (!deviceId) {
+        throw new Error('No device ID found')
+      }
+      await LedgerService.ensureConnection(deviceId)
       setAppConnectionStep(AppConnectionStep.AVALANCHE_LOADING)
 
-      // Open Avalanche app before getting keys
-      await LedgerService.openApp(LedgerAppType.AVALANCHE)
       // Get keys from service
       const avalancheKeys = await LedgerService.getAvalancheKeys(
-        0,
+        accountIndex,
         isDeveloperMode
       )
-      const { bitcoinAddress, xpAddress } =
-        await LedgerService.getBitcoinAndXPAddresses(0, isDeveloperMode)
+      const oppositeAvalancheKeys = await LedgerService.getAvalancheKeys(
+        accountIndex,
+        !isDeveloperMode
+      )
 
       // Update local state
-      setKeys(prev => ({
-        ...prev,
-        avalancheKeys,
-        bitcoinAddress,
-        xpAddress
-      }))
+      setKeys({
+        mainnet: {
+          avalancheKeys: isDeveloperMode
+            ? oppositeAvalancheKeys
+            : avalancheKeys,
+          solanaKeys: []
+        },
+        testnet: {
+          avalancheKeys: isDeveloperMode
+            ? avalancheKeys
+            : oppositeAvalancheKeys,
+          solanaKeys: []
+        }
+      })
 
       // Show success toast notification
       showSnackbar('Avalanche app connected')
@@ -317,21 +189,30 @@ export default function AppConnectionScreen(): JSX.Element {
         [{ text: 'OK' }]
       )
     }
-  }, [isDeveloperMode, isSolanaSupportBlocked])
+  }, [accountIndex, deviceId, isDeveloperMode, isSolanaSupportBlocked])
 
   const handleConnectSolana = useCallback(async () => {
     try {
+      if (!deviceId) {
+        throw new Error('No device ID found')
+      }
+      await LedgerService.ensureConnection(deviceId)
       setAppConnectionStep(AppConnectionStep.SOLANA_LOADING)
 
-      // Open Solana app before getting keys
-      await LedgerService.openApp(LedgerAppType.SOLANA)
       // Get keys from service
-      const solanaKeys = await LedgerService.getSolanaKeys(0)
+      const solanaKeys = await LedgerService.getSolanaKeys(accountIndex)
 
       // Update local state
       setKeys(prev => ({
         ...prev,
-        solanaKeys
+        mainnet: {
+          ...prev.mainnet,
+          solanaKeys
+        },
+        testnet: {
+          ...prev.testnet,
+          solanaKeys
+        }
       }))
 
       // Show success toast notification
@@ -348,7 +229,7 @@ export default function AppConnectionScreen(): JSX.Element {
         [{ text: 'OK' }]
       )
     }
-  }, [])
+  }, [accountIndex, deviceId])
 
   const handleSkipSolana = useCallback(() => {
     // Skip Solana and proceed to complete step
@@ -357,11 +238,20 @@ export default function AppConnectionScreen(): JSX.Element {
   }, [setAppConnectionStep])
 
   const renderFooter = useCallback(() => {
-    let primary: { text: string; onPress?: () => void; disable?: boolean } = {
+    let primary: {
+      text: string | ReactNode
+      onPress?: () => void
+      disable?: boolean
+    } = {
       text: 'Continue'
     }
     let secondary:
-      | { text: string; onPress?: () => void; type?: ButtonType }
+      | {
+          text: string
+          onPress?: () => void
+          type?: ButtonType
+          disable?: boolean
+        }
       | undefined
 
     switch (currentAppConnectionStep) {
@@ -371,7 +261,8 @@ export default function AppConnectionScreen(): JSX.Element {
           text: 'Continue',
           onPress: handleConnectAvalanche,
           disable:
-            currentAppConnectionStep === AppConnectionStep.AVALANCHE_LOADING
+            currentAppConnectionStep === AppConnectionStep.AVALANCHE_LOADING ||
+            hasDeviceId === false
         }
         break
       case AppConnectionStep.SOLANA_CONNECT:
@@ -379,7 +270,9 @@ export default function AppConnectionScreen(): JSX.Element {
         primary = {
           text: 'Continue',
           onPress: handleConnectSolana,
-          disable: currentAppConnectionStep === AppConnectionStep.SOLANA_LOADING
+          disable:
+            currentAppConnectionStep === AppConnectionStep.SOLANA_LOADING ||
+            hasDeviceId === false
         }
         secondary = {
           text: 'Skip Solana',
@@ -389,12 +282,14 @@ export default function AppConnectionScreen(): JSX.Element {
         break
       case AppConnectionStep.COMPLETE:
         primary = {
-          text: 'Complete setup',
-          onPress: handleCompleteWallet
+          text: isUpdatingWallet ? <ActivityIndicator /> : 'Complete setup',
+          onPress: () => handleComplete(keys),
+          disable: isUpdatingWallet
         }
         secondary = {
-          text: 'Cancel setup',
-          onPress: handleCancel
+          text: 'Cancel',
+          onPress: handleCancel,
+          disable: isUpdatingWallet
         }
         break
     }
@@ -411,6 +306,7 @@ export default function AppConnectionScreen(): JSX.Element {
         {secondary && (
           <Button
             type={secondary?.type ?? 'tertiary'}
+            disabled={secondary?.disable}
             size="large"
             onPress={secondary?.onPress}>
             {secondary?.text}
@@ -421,10 +317,13 @@ export default function AppConnectionScreen(): JSX.Element {
   }, [
     currentAppConnectionStep,
     handleCancel,
-    handleCompleteWallet,
+    handleComplete,
     handleConnectAvalanche,
     handleConnectSolana,
-    handleSkipSolana
+    handleSkipSolana,
+    hasDeviceId,
+    isUpdatingWallet,
+    keys
   ])
 
   return (
@@ -442,11 +341,9 @@ export default function AppConnectionScreen(): JSX.Element {
             : 1
       }}>
       <LedgerAppConnection
-        deviceName={connectedDeviceName}
-        selectedDerivationPath={selectedDerivationPath}
-        isCreatingWallet={isCreatingWallet}
-        connectedDeviceId={connectedDeviceId}
-        connectedDeviceName={connectedDeviceName}
+        completeStepTitle={completeStepTitle}
+        connectedDeviceId={deviceId}
+        connectedDeviceName={deviceName}
         keys={keys}
         appConnectionStep={currentAppConnectionStep}
         skipSolana={skipSolana}

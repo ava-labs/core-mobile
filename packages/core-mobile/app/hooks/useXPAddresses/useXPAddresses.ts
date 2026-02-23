@@ -13,6 +13,11 @@ import { transformXPAddresses } from './transformXPAddresses'
 
 const STALE_TIME = 60 * 1000 // 1 minute
 
+const EMPTY_XP_ADDRESSES = {
+  xpAddresses: [] as string[],
+  xpAddressDictionary: {} as XPAddressDictionary
+}
+
 const getQueryKey = ({
   walletId,
   walletType,
@@ -53,6 +58,14 @@ export const useXPAddresses = (
 
   const shouldDisable = !wallet || !account
 
+  // Keystone SDK currently only exposes a single XP xpub (account index 0)
+  // for all accounts.  Until their SDK supports per-account xpubs, non-primary
+  // accounts must return empty to avoid duplicate XP balances caused by the
+  // addressPVM fallback in transformXPAddresses.
+  // TODO: Remove this workaround once the Keystone SDK is fixed.
+  const isKeystoneNonPrimary =
+    walletType === WalletType.KEYSTONE && accountIndex > 0
+
   const queryResult = useQuery({
     staleTime: STALE_TIME,
     queryKey: getQueryKey({
@@ -62,17 +75,18 @@ export const useXPAddresses = (
       accountId,
       isDeveloperMode
     }),
-    queryFn: shouldDisable
-      ? skipToken
-      : () => {
-          return getAddressesFromXpubXP({
-            isDeveloperMode,
-            walletId,
-            walletType: walletType as WalletType,
-            accountIndex,
-            onlyWithActivity: true
-          })
-        }
+    queryFn:
+      shouldDisable || isKeystoneNonPrimary
+        ? skipToken
+        : () => {
+            return getAddressesFromXpubXP({
+              isDeveloperMode,
+              walletId,
+              walletType: walletType as WalletType,
+              accountIndex,
+              onlyWithActivity: true
+            })
+          }
   })
 
   const transformed = useMemo(
@@ -81,7 +95,7 @@ export const useXPAddresses = (
   )
 
   return {
-    ...transformed,
+    ...(isKeystoneNonPrimary ? EMPTY_XP_ADDRESSES : transformed),
     isLoading: queryResult.isLoading
   }
 }
@@ -100,6 +114,11 @@ export async function getCachedXPAddresses({
   xpAddresses: string[]
   xpAddressDictionary: XPAddressDictionary
 }> {
+  // TODO: Remove this workaround once the Keystone SDK supports per-account XP xpubs.
+  if (walletType === WalletType.KEYSTONE && account.index > 0) {
+    return EMPTY_XP_ADDRESSES
+  }
+
   try {
     const result = await queryClient.fetchQuery({
       staleTime: STALE_TIME,

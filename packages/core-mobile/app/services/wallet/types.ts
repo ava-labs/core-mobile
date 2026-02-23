@@ -166,11 +166,13 @@ export interface Wallet {
    * @param provider - The Bitcoin provider.
    */
   signBtcTransaction({
+    accountName,
     accountIndex,
     transaction,
     network,
     provider
   }: {
+    accountName?: string
     accountIndex: number
     transaction: BtcTransactionRequest
     network: Network

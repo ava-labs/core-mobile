@@ -15,22 +15,13 @@ import {
 import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { SwapSide } from '@paraswap/sdk'
 import { useNavigation } from '@react-navigation/native'
-import Big from 'big.js'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
-import {
-  AVAX_TOKEN_ID,
-  SOLANA_TOKEN_LOCAL_ID,
-  USDC_AVALANCHE_C_TOKEN_ID,
-  USDC_SOLANA_TOKEN_ID
-} from 'common/consts/swap'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
-import { usePrevious } from 'common/hooks/usePrevious'
 import { useSwapList } from 'common/hooks/useSwapList'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { ParaswapError, ParaswapErrorCode } from 'errors/swapError'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
@@ -45,26 +36,15 @@ import Animated, {
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { LocalTokenWithBalance } from 'store/balance'
-import {
-  selectIsSwapFeesBlocked,
-  selectIsSwapFeesJupiterBlocked
-} from 'store/posthog'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
 import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio/hooks/useTokensWithZeroBalanceByNetworksForAccount'
 import { selectActiveAccount } from 'store/account'
-import {
-  JUPITER_PARTNER_FEE_BPS,
-  MARKR_PARTNER_FEE_BPS,
-  PARASWAP_PARTNER_FEE_BPS
-} from '../consts'
+import Logger from 'utils/Logger'
 import { useSwapContext } from '../contexts/SwapContext'
 import { useSwapRate } from '../hooks/useSwapRate'
-import {
-  isJupiterQuote,
-  isMarkrQuote,
-  isParaswapQuote,
-  SwapProviders
-} from '../types'
+import { useSupportedChains } from '../hooks/useSupportedChains'
+import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
+import { ServiceType } from '../types'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -87,13 +67,15 @@ export const SwapScreen = (): JSX.Element => {
     toToken,
     setToToken,
     destination,
-    quotes,
-    isFetchingQuote,
+    bestQuote,
+    userQuote,
+    allQuotes,
+    isQuoteLoading,
     setDestination,
     slippage,
     autoSlippage,
     setAmount,
-    error: swapError,
+    quoteError,
     swapStatus
   } = useSwapContext()
   const [maxFromValue, setMaxFromValue] = useState<bigint | undefined>()
@@ -118,56 +100,29 @@ export const SwapScreen = (): JSX.Element => {
     [theme]
   )
   const errorMessage = useMemo(
-    () => localError || swapError,
-    [localError, swapError]
+    () => localError || quoteError?.message,
+    [localError, quoteError]
   )
 
-  const selectedQuote = useMemo(() => {
-    if (!quotes || !quotes.selected) {
-      return undefined
-    }
-
-    return quotes.selected
-  }, [quotes])
-
-  const selectedProvider = useMemo(() => {
-    if (!quotes) {
-      return undefined
-    }
-
-    return quotes.provider
-  }, [quotes])
+  // userQuote takes precedence over bestQuote
+  const selectedQuote = userQuote ?? bestQuote
+  Logger.info('selectedQuote', selectedQuote)
 
   const canSwap: boolean =
-    !localError &&
-    !swapError &&
-    !!fromToken &&
-    !!toToken &&
-    !!selectedQuote &&
-    !!selectedProvider
+    !localError && !quoteError && !!fromToken && !!toToken && !!selectedQuote
 
   const swapInProcess = swapStatus === 'Swapping'
-  const isSwapFeesBlocked = useSelector(selectIsSwapFeesBlocked)
-  const isSwapFeesJupiterBlocked = useSelector(selectIsSwapFeesJupiterBlocked)
 
   const coreFeeMessage = useMemo(() => {
     if (!selectedQuote) return
 
-    const { quote } = selectedQuote
-    let feeBps: number | undefined
-
-    if (isParaswapQuote(quote) && !isSwapFeesBlocked) {
-      feeBps = PARASWAP_PARTNER_FEE_BPS
-    } else if (isJupiterQuote(quote) && !isSwapFeesJupiterBlocked) {
-      feeBps = JUPITER_PARTNER_FEE_BPS
-    } else if (isMarkrQuote(quote) && !isSwapFeesBlocked) {
-      feeBps = MARKR_PARTNER_FEE_BPS
-    }
+    // Fusion SDK Quote has partnerFeeBps directly
+    const feeBps = selectedQuote.partnerFeeBps
 
     if (!feeBps) return
 
     return `Quote includes a ${basisPointsToPercentage(feeBps)} Core fee`
-  }, [selectedQuote, isSwapFeesBlocked, isSwapFeesJupiterBlocked])
+  }, [selectedQuote])
 
   const updateMissingTokenPrice = useCallback(
     async (token: LocalTokenWithBalance | undefined) => {
@@ -203,44 +158,20 @@ export const SwapScreen = (): JSX.Element => {
     }
   }, [fromTokenValue, maxFromValue])
 
-  const applyFeeDeduction = useCallback(
-    (amount: string, direction: SwapSide): bigint => {
-      const feePercent = PARASWAP_PARTNER_FEE_BPS / 10_000
-
-      if (direction === SwapSide.SELL) {
-        const minAmountOut = new Big(amount).times(1 - feePercent).toFixed(0)
-        return BigInt(minAmountOut)
-      } else {
-        const maxAmountIn = new Big(amount).times(1 + feePercent).toFixed(0)
-        return BigInt(maxAmountIn)
-      }
-    },
-    []
-  )
-
   const applyQuote = useCallback(() => {
-    if (
-      !fromTokenValue ||
-      !selectedQuote ||
-      selectedQuote?.quote === undefined
-    ) {
+    if (!fromTokenValue || !selectedQuote) {
       setToTokenValue(undefined)
       return
     }
-    const quote = selectedQuote.quote
-    const amountIn = selectedQuote.metadata.amountIn
-    const amountOut = selectedQuote.metadata.amountOut
-    if (
-      selectedProvider === SwapProviders.PARASWAP &&
-      isParaswapQuote(quote) &&
-      quote.side === SwapSide.BUY &&
-      amountIn
-    ) {
-      setFromTokenValue(applyFeeDeduction(amountIn, SwapSide.BUY))
-    } else if (amountOut) {
-      setToTokenValue(applyFeeDeduction(amountOut, SwapSide.SELL))
+
+    // Fusion SDK Quote has amountOut as bigint - fees are already included
+    // No need to apply fee deduction - the SDK/backend handles all fees
+    const amountOut = selectedQuote.amountOut
+
+    if (amountOut) {
+      setToTokenValue(amountOut)
     }
-  }, [selectedQuote, selectedProvider, fromTokenValue, applyFeeDeduction])
+  }, [selectedQuote, fromTokenValue])
 
   const calculateMax = useCallback(() => {
     if (!fromToken) return
@@ -312,16 +243,7 @@ export const SwapScreen = (): JSX.Element => {
     swapList
   ])
 
-  const showFeesAndSlippage = useMemo(() => {
-    return (
-      quotes &&
-      [
-        SwapProviders.MARKR,
-        SwapProviders.PARASWAP,
-        SwapProviders.JUPITER
-      ].includes(quotes.provider)
-    )
-  }, [quotes])
+  const showFeesAndSlippage = selectedQuote?.serviceType === ServiceType.MARKR
 
   const handleSwap = useCallback(() => {
     AnalyticsService.capture('SwapReviewOrder', {
@@ -353,9 +275,16 @@ export const SwapScreen = (): JSX.Element => {
   )
 
   const handleSelectFromToken = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
-    navigate('/selectSwapV2FromToken')
-  }, [navigate])
+    const tokenParams = toToken?.networkChainId
+      ? { networkChainId: toToken.networkChainId.toString() }
+      : {}
+
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/selectSwapV2FromToken',
+      params: tokenParams
+    })
+  }, [navigate, toToken])
 
   const handleSelectToToken = useCallback((): void => {
     const tokenParams = fromToken?.networkChainId
@@ -484,7 +413,7 @@ export const SwapScreen = (): JSX.Element => {
           formatInCurrency={amount => formatInCurrency(toToken, amount)}
           onAmountChange={handleToAmountChange}
           onSelectToken={handleSelectToToken}
-          isLoadingAmount={isFetchingQuote}
+          isLoadingAmount={isQuoteLoading}
         />
       </View>
     )
@@ -495,13 +424,13 @@ export const SwapScreen = (): JSX.Element => {
     toToken,
     getNetwork,
     toTokenValue,
-    isFetchingQuote,
+    isQuoteLoading,
     handleSelectToToken,
     swapInProcess
   ])
 
   const rate = useSwapRate({
-    quote: quotes?.selected?.quote,
+    quote: selectedQuote,
     fromToken,
     toToken
   })
@@ -509,11 +438,11 @@ export const SwapScreen = (): JSX.Element => {
   const data = useMemo(() => {
     const items: GroupListItem[] = []
 
-    if (!quotes || quotes.quotes.length === 0) {
+    if (!selectedQuote || allQuotes.length === 0) {
       return items
     }
 
-    const haveMultipleQuotes = quotes.quotes.length > 1
+    const haveMultipleQuotes = allQuotes.length > 1
     if (fromToken && toToken && rate) {
       if (haveMultipleQuotes) {
         items.push({
@@ -531,13 +460,12 @@ export const SwapScreen = (): JSX.Element => {
       }
     }
 
-    if (
-      showFeesAndSlippage ||
-      // display slippage field if slippage tolerance is exceeded
-      errorMessage ===
-        ParaswapError[ParaswapErrorCode.ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT]
-    ) {
-      const displayValue = autoSlippage ? `Auto • ${slippage}%` : `${slippage}%`
+    if (showFeesAndSlippage) {
+      const displayValue = getDisplaySlippageValue({
+        autoSlippage,
+        quoteSlippageBps: selectedQuote?.slippageBps,
+        manualSlippage: slippage
+      })
       items.push({
         title: 'Slippage',
         value: displayValue,
@@ -550,8 +478,8 @@ export const SwapScreen = (): JSX.Element => {
     fromToken,
     toToken,
     rate,
-    quotes,
-    errorMessage,
+    selectedQuote,
+    allQuotes,
     showFeesAndSlippage,
     slippage,
     autoSlippage,
@@ -597,6 +525,31 @@ export const SwapScreen = (): JSX.Element => {
     prevToRef.current = toToken
   }, [fromToken, toToken, setToToken, setFromToken, setAmount])
 
+  // Validate token pair compatibility - clear TO token if incompatible with FROM chain
+  const { isValidDestination } = useSupportedChains()
+
+  useEffect(() => {
+    // Skip if either token missing
+    if (!fromToken || !toToken) return
+
+    // Check if TO token's network is valid for FROM chain
+    const isValid = isValidDestination(
+      fromToken.networkChainId,
+      toToken.networkChainId
+    )
+
+    if (!isValid) {
+      // Clear incompatible TO token
+      setToToken(undefined)
+      setLocalError(
+        `Cannot swap from ${fromToken.symbol} network to ${toToken.symbol} network. Please select a different token.`
+      )
+    } else {
+      // Clear error if tokens are compatible
+      setLocalError('')
+    }
+  }, [fromToken, toToken, isValidDestination, setToToken])
+
   useEffect(() => {
     if (!fromTokenValue) {
       setToTokenValue(undefined)
@@ -617,51 +570,6 @@ export const SwapScreen = (): JSX.Element => {
       </Button>
     )
   }, [canSwap, handleSwap, swapInProcess])
-
-  const prevFromToken = usePrevious(fromToken)
-  const prevToToken = usePrevious(toToken)
-  useEffect(() => {
-    // if both tokens are on the same chain, do nothing
-    if (fromToken?.networkChainId === toToken?.networkChainId) return
-
-    const prevFrom = prevFromToken
-    const prevTo = prevToToken
-
-    // determine which token actually changed
-    const isFromChanged =
-      prevFrom?.localId !== fromToken?.localId && !!fromToken
-    const isToChanged =
-      !isFromChanged && prevTo?.localId !== toToken?.localId && !!toToken
-    if (!isFromChanged && !isToChanged) return
-
-    // pick the token that changed and compute the default counterpart
-    const changedToken = isFromChanged ? fromToken : toToken
-    const isAvaxChain = changedToken?.networkChainId === cChainNetwork?.chainId
-    const [baseId, pairId] = isAvaxChain
-      ? [AVAX_TOKEN_ID, USDC_AVALANCHE_C_TOKEN_ID]
-      : [SOLANA_TOKEN_LOCAL_ID, USDC_SOLANA_TOKEN_ID]
-    const targetLocalId = changedToken?.localId === baseId ? pairId : baseId
-    const defaultToken = swapList.find(
-      tk => tk.localId.toLowerCase() === targetLocalId.toLowerCase()
-    )
-
-    // update the opposite token
-    if (isFromChanged) {
-      setToToken(defaultToken)
-    } else {
-      setFromToken(defaultToken)
-    }
-  }, [
-    fromToken,
-    toToken,
-    prevFromToken,
-    prevToToken,
-    cChainNetwork?.chainId,
-    solanaNetwork?.chainId,
-    swapList,
-    setFromToken,
-    setToToken
-  ])
 
   return (
     <ScrollScreen

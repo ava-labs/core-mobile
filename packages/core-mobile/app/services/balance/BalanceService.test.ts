@@ -11,9 +11,9 @@ const mockLoadModuleByNetwork = jest.fn()
 const mockGetSupportedChainsFromCache = jest.fn()
 const mockMapBalanceResponseToLegacy = jest.fn()
 
-jest.mock('utils/apiClient/balance/balanceApi', () => ({
-  balanceApi: {
-    getBalancesStream: (...args: unknown[]) => mockGetBalancesStream(...args)
+jest.mock('utils/api/clients/balanceApiClient', () => ({
+  streamingBalanceApiClient: {
+    getBalances: (...args: unknown[]) => mockGetBalancesStream(...args)
   }
 }))
 
@@ -123,6 +123,22 @@ const testAccount2: Account = {
   addressSVM: '7hUdUTkJLwdcmt3pm6rC3WCiLxNXNYiRp3m34sT9Cqct',
   addressAVM: 'X-avax1bbhxdv3wqxd42rxdalvp2knxs244r06wrxmvlg',
   addressPVM: 'P-avax1bbhxdv3wqxd42rxdalvp2knxs244r06wrxmvlg'
+}
+
+// Imported PK account that shares the same EVM address as testAccount
+// (simulates exporting PK from mnemonic and re-importing it)
+const importedAccount: Account = {
+  name: 'Imported Account',
+  id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+  walletId: 'imported-wallet-id',
+  index: 0,
+  type: CoreAccountType.IMPORTED as CoreAccountType.IMPORTED,
+  addressC: '0x066b2322a30d7C5838035112F3b816b46D639bBC', // same as testAccount
+  addressCoreEth: '0x066b2322a30d7C5838035112F3b816b46D639bBC',
+  addressBTC: 'bc1qdifferentbtcaddressforimportedpkaccount',
+  addressSVM: 'DifferentSolAddressForImportedPkAccount1234567',
+  addressAVM: 'X-avax1differentavmaddressforimported',
+  addressPVM: 'P-avax1differentpvmaddressforimported'
 }
 
 const cChainNetwork = {
@@ -685,6 +701,266 @@ describe('BalanceService', () => {
 
       expect(mockLoadModuleByNetwork).toHaveBeenCalledTimes(2)
       expect(result[testAccount.id]).toHaveLength(2)
+    })
+  })
+
+  describe('duplicate address handling (imported PK accounts)', () => {
+    describe('getBalancesForAccounts', () => {
+      it('should assign balance to both accounts when they share the same EVM address', async () => {
+        // API returns one balance for the shared EVM address
+        const mockStreamResponse = [
+          {
+            caip2Id: 'eip155:43114',
+            networkType: 'evm',
+            id: testAccount.addressC // shared address
+          }
+        ]
+
+        mockGetBalancesStream.mockReturnValue(
+          createAsyncIterator(mockStreamResponse)
+        )
+
+        const mockNormalizedBalance = {
+          accountId: 'PLACEHOLDER',
+          chainId: 43114,
+          tokens: [{ symbol: 'AVAX', balance: 1000n }],
+          dataAccurate: true,
+          error: null
+        }
+
+        // mapBalanceResponseToLegacy is called once per matched account
+        mockMapBalanceResponseToLegacy
+          .mockReturnValueOnce({
+            ...mockNormalizedBalance,
+            accountId: testAccount.id
+          })
+          .mockReturnValueOnce({
+            ...mockNormalizedBalance,
+            accountId: importedAccount.id
+          })
+
+        const onBalanceLoaded = jest.fn()
+
+        const result = await balanceService.getBalancesForAccounts({
+          networks: [cChainNetwork as any],
+          accounts: [testAccount, importedAccount],
+          currency: 'usd',
+          onBalanceLoaded,
+          xpAddressesByAccountId: new Map([
+            [testAccount.id, ['avax1test1', 'avax1test2']],
+            [importedAccount.id, []]
+          ]),
+          xpubByAccountId: new Map()
+        })
+
+        // Both accounts should have received the balance
+        expect(result[testAccount.id]).toHaveLength(1)
+        expect(result[importedAccount.id]).toHaveLength(1)
+        expect(result[testAccount.id]?.[0]?.accountId).toBe(testAccount.id)
+        expect(result[importedAccount.id]?.[0]?.accountId).toBe(
+          importedAccount.id
+        )
+        // onBalanceLoaded should fire for both
+        expect(onBalanceLoaded).toHaveBeenCalledTimes(2)
+      })
+
+      it('should match address case-insensitively (API returns lowercase, account stores checksummed)', async () => {
+        // API returns the address in LOWERCASE
+        const lowercaseAddress =
+          testAccount.addressC?.toLowerCase() ?? 'missing'
+
+        const mockStreamResponse = [
+          {
+            caip2Id: 'eip155:43114',
+            networkType: 'evm',
+            id: lowercaseAddress // lowercase from API
+          }
+        ]
+
+        mockGetBalancesStream.mockReturnValue(
+          createAsyncIterator(mockStreamResponse)
+        )
+
+        mockMapBalanceResponseToLegacy
+          .mockReturnValueOnce({
+            accountId: testAccount.id,
+            chainId: 43114,
+            tokens: [{ symbol: 'AVAX', balance: 500n }],
+            dataAccurate: true,
+            error: null
+          })
+          .mockReturnValueOnce({
+            accountId: importedAccount.id,
+            chainId: 43114,
+            tokens: [{ symbol: 'AVAX', balance: 500n }],
+            dataAccurate: true,
+            error: null
+          })
+
+        const result = await balanceService.getBalancesForAccounts({
+          networks: [cChainNetwork as any],
+          accounts: [testAccount, importedAccount],
+          currency: 'usd',
+          xpAddressesByAccountId: new Map([
+            [testAccount.id, ['avax1test1', 'avax1test2']],
+            [importedAccount.id, []]
+          ]),
+          xpubByAccountId: new Map()
+        })
+
+        // Both should match despite case difference
+        expect(result[testAccount.id]).toHaveLength(1)
+        expect(result[importedAccount.id]).toHaveLength(1)
+      })
+
+      it('should not duplicate when account id matches directly in accountById', async () => {
+        // If the API returns the account.id directly as the balance id,
+        // it should resolve via accountById (direct lookup) — not the address map.
+        const mockStreamResponse = [
+          {
+            caip2Id: 'eip155:43114',
+            networkType: 'evm',
+            id: testAccount.id // matches account id directly
+          }
+        ]
+
+        mockGetBalancesStream.mockReturnValue(
+          createAsyncIterator(mockStreamResponse)
+        )
+
+        mockMapBalanceResponseToLegacy.mockReturnValue({
+          accountId: testAccount.id,
+          chainId: 43114,
+          tokens: [],
+          dataAccurate: true,
+          error: null
+        })
+
+        const result = await balanceService.getBalancesForAccounts({
+          networks: [cChainNetwork as any],
+          accounts: [testAccount, importedAccount],
+          currency: 'usd',
+          xpAddressesByAccountId: new Map([
+            [testAccount.id, []],
+            [importedAccount.id, []]
+          ]),
+          xpubByAccountId: new Map()
+        })
+
+        // Only testAccount should match (by id), not importedAccount
+        expect(result[testAccount.id]).toHaveLength(1)
+        expect(result[importedAccount.id]).toHaveLength(0)
+      })
+    })
+
+    describe('getVMBalancesForAccounts', () => {
+      it('should assign VM balance to both accounts sharing the same EVM address', async () => {
+        const mockModule = {
+          getBalances: jest.fn().mockResolvedValue({
+            [testAccount.addressC!]: {
+              avax: {
+                name: 'Avalanche',
+                symbol: 'AVAX',
+                decimals: 18,
+                balance: '1000000000000000000',
+                type: TokenType.NATIVE
+              }
+            }
+          })
+        }
+        mockLoadModuleByNetwork.mockResolvedValue(mockModule)
+
+        const onBalanceLoaded = jest.fn()
+
+        const result = await balanceService.getVMBalancesForAccounts({
+          networks: [cChainNetwork as any],
+          accounts: [testAccount, importedAccount],
+          currency: 'usd',
+          customTokens: {},
+          onBalanceLoaded,
+          xpAddressesByAccountId: new Map([
+            [testAccount.id, ['avax1test1', 'avax1test2']],
+            [importedAccount.id, []]
+          ])
+        })
+
+        // Both accounts should have received the VM balance
+        expect(result[testAccount.id]).toHaveLength(1)
+        expect(result[importedAccount.id]).toHaveLength(1)
+        expect(result[testAccount.id]?.[0]?.accountId).toBe(testAccount.id)
+        expect(result[importedAccount.id]?.[0]?.accountId).toBe(
+          importedAccount.id
+        )
+      })
+
+      it('should handle VM error for both accounts sharing an address', async () => {
+        const mockModule = {
+          getBalances: jest.fn().mockResolvedValue({
+            [testAccount.addressC!]: {
+              error: new Error('VM fetch failed')
+            }
+          })
+        }
+        mockLoadModuleByNetwork.mockResolvedValue(mockModule)
+
+        const result = await balanceService.getVMBalancesForAccounts({
+          networks: [cChainNetwork as any],
+          accounts: [testAccount, importedAccount],
+          currency: 'usd',
+          customTokens: {},
+          xpAddressesByAccountId: new Map([
+            [testAccount.id, ['avax1test1', 'avax1test2']],
+            [importedAccount.id, []]
+          ])
+        })
+
+        // Both accounts should have received an error entry
+        expect(result[testAccount.id]).toHaveLength(1)
+        expect(result[importedAccount.id]).toHaveLength(1)
+        expect(result[testAccount.id]?.[0]?.dataAccurate).toBe(false)
+        expect(result[importedAccount.id]?.[0]?.dataAccurate).toBe(false)
+      })
+
+      it('should not add duplicate account entries for the same address', async () => {
+        // Create a second imported account with the exact same address
+        const importedAccount2: Account = {
+          ...importedAccount,
+          id: 'duplicate-imported-id',
+          name: 'Imported Account 2'
+        }
+
+        const mockModule = {
+          getBalances: jest.fn().mockResolvedValue({
+            [testAccount.addressC!]: {
+              avax: {
+                name: 'Avalanche',
+                symbol: 'AVAX',
+                decimals: 18,
+                balance: '1000000000000000000',
+                type: TokenType.NATIVE
+              }
+            }
+          })
+        }
+        mockLoadModuleByNetwork.mockResolvedValue(mockModule)
+
+        const result = await balanceService.getVMBalancesForAccounts({
+          networks: [cChainNetwork as any],
+          accounts: [testAccount, importedAccount, importedAccount2],
+          currency: 'usd',
+          customTokens: {},
+          xpAddressesByAccountId: new Map([
+            [testAccount.id, ['avax1test1', 'avax1test2']],
+            [importedAccount.id, []],
+            [importedAccount2.id, []]
+          ])
+        })
+
+        // All three accounts should get exactly 1 balance entry
+        expect(result[testAccount.id]).toHaveLength(1)
+        expect(result[importedAccount.id]).toHaveLength(1)
+        expect(result[importedAccount2.id]).toHaveLength(1)
+      })
     })
   })
 

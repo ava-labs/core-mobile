@@ -1,7 +1,7 @@
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import WalletService from 'services/wallet/WalletService'
 import { WalletType } from 'services/wallet/types'
-import { GetAddressesResponse } from '../apiClient/profile/types'
+import { GetAddressesResponse } from 'utils/api/generated/profileApi.client/types.gen'
 import { getAddressesFromXpubXP } from './getAddressesFromXpubXP'
 
 jest.mock('services/wallet/WalletService')
@@ -136,5 +136,42 @@ describe('getAddressesFromXpubXP', () => {
       { address: 'avax1zzz', index: 0 },
       { address: 'avax1aaa', index: 1 }
     ])
+  })
+
+  describe('Keystone wallet XP address ownership', () => {
+    const keystoneArgs = {
+      isDeveloperMode: false,
+      walletId: 'keystone-wallet-1',
+      walletType: WalletType.KEYSTONE,
+      accountIndex: 0,
+      onlyWithActivity: true
+    }
+
+    it('returns all addresses for Keystone primary account (index 0)', async () => {
+      const avm = makeResponse(
+        'AVM',
+        ['X-avax1aaa', 'X-avax1bbb', 'X-avax1ccc'],
+        []
+      )
+      const pvm = makeResponse(
+        'PVM',
+        ['P-avax1aaa', 'P-avax1bbb', 'P-avax1ccc'],
+        []
+      )
+
+      mockWalletService.getAddressesFromXpubXP.mockImplementation(
+        async ({ networkType }) =>
+          networkType === NetworkVMType.AVM ? avm : pvm
+      )
+
+      const result = await getAddressesFromXpubXP(keystoneArgs)
+
+      // Account 0 should see ALL addresses under the shared xpub
+      expect(result.xpAddresses).toEqual([
+        { address: 'avax1aaa', index: 0 },
+        { address: 'avax1bbb', index: 1 },
+        { address: 'avax1ccc', index: 2 }
+      ])
+    })
   })
 })

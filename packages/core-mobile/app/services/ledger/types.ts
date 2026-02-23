@@ -1,5 +1,4 @@
 import { Curve } from 'utils/publicKeys'
-import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import { BtcWalletPolicyDetails } from '@avalabs/vm-module-types'
 import { PrimaryAccount } from 'store/account'
@@ -116,6 +115,7 @@ export interface AvalancheKey {
     avm: string
     pvm: string
     coreEth: string // C-chain bech32 format (C-avax1... or C-fuji1...)
+    btc: string // Bitcoin address
   }
   xpubs: {
     evm: string
@@ -126,8 +126,11 @@ export interface AvalancheKey {
 export interface LedgerKeys {
   solanaKeys?: PublicKeyInfo[]
   avalancheKeys?: AvalancheKey
-  bitcoinAddress?: string
-  xpAddress?: string
+}
+
+export type LedgerKeysByNetwork = {
+  mainnet: LedgerKeys
+  testnet: LedgerKeys
 }
 
 // ============================================================================
@@ -146,10 +149,16 @@ export interface WalletCreationOptions {
   deviceName?: string
   derivationPathType: LedgerDerivationPathType
   accountCount?: number
-  individualKeys?: PublicKeyInfo[]
 }
 
-export interface WalletUpdateOptions {
+export interface WalletUpdateOptions extends WalletCreationOptions {
+  walletId: string
+  walletName: string
+  walletType: WalletType
+  accountIndexToUse: number
+}
+
+export interface WalletUpdateSolanaOptions {
   deviceId: string
   walletId: string
   walletName: string
@@ -165,7 +174,6 @@ export interface WalletUpdateOptions {
 // Base interface for common wallet data
 interface BaseLedgerWalletData {
   deviceId: string
-  vmType: NetworkVMType
   transport?: TransportBLE // Optional for backward compatibility
   publicKeys: PublicKey[]
 }
@@ -181,7 +189,6 @@ export interface PerAccountExtendedPublicKeys {
 // BIP44 specific wallet data
 export interface BIP44LedgerWalletData extends BaseLedgerWalletData {
   derivationPathSpec: LedgerDerivationPathType.BIP44
-  derivationPath: string
   // Extended keys required for BIP44 - stored per account
   extendedPublicKeys: PerAccountExtendedPublicKeys
 }
@@ -189,7 +196,6 @@ export interface BIP44LedgerWalletData extends BaseLedgerWalletData {
 // Ledger Live specific wallet data
 export interface LedgerLiveWalletData extends BaseLedgerWalletData {
   derivationPathSpec: LedgerDerivationPathType.LedgerLive
-  derivationPath: string
   // No extended keys for Ledger Live
   extendedPublicKeys?: never
 }

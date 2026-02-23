@@ -2,6 +2,7 @@ import { SxProp } from 'dripsy'
 import React, {
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useRef,
   useState
@@ -9,15 +10,13 @@ import React, {
 import {
   TextInputProps as _TextInputProps,
   LayoutChangeEvent,
-  NativeSyntheticEvent,
   Platform,
   Pressable,
+  StyleSheet,
   TextInput,
-  TextInputFocusEventData,
   TextStyle
 } from 'react-native'
 import Animated, {
-  interpolateColor,
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
@@ -76,9 +75,13 @@ export const AutoSizeTextInput = forwardRef<
       renderLeft,
       renderRight,
       onChangeText,
+      onBlur,
+      onFocus,
       editable = true,
       valid = true,
       testID,
+      value,
+      style,
       ...props
     },
     ref
@@ -87,13 +90,12 @@ export const AutoSizeTextInput = forwardRef<
     const { theme } = useTheme()
 
     const [containerWidth, setContainerWidth] = useState(0)
-    const [leftWidth, setLeftWidth] = useState(0)
-    const [rightWidth, setRightWidth] = useState(0)
+    const leftWidthRef = useRef(0)
+    const rightWidthRef = useRef(0)
     const lastTextWidthRef = useRef(0)
     const prevContainerWidthRef = useRef(0)
 
-    const isFocused = useSharedValue(false)
-
+    const hasValue = useSharedValue(false)
     const animatedFontSize = useSharedValue(initialFontSize)
     const animatedSuffixFontSize = useSharedValue(
       initialFontSize * suffixFontSizeMultiplier
@@ -108,39 +110,42 @@ export const AutoSizeTextInput = forwardRef<
         inputRef.current?.setNativeProps(_props)
     }))
 
-    const textColor = !valid
-      ? theme.colors.$textDanger
-      : editable
+    const editableTextColor = editable
       ? theme.colors.$textPrimary
       : theme.colors.$textSecondary
+    const textColor = !valid ? theme.colors.$textDanger : editableTextColor
     const placeholderTextColor = alpha(theme.colors.$textSecondary, 0.2)
 
+    // Update hasValue shared value synchronously during render
+    hasValue.value = (value?.length ?? 0) > 0
+
     const textStyle = useAnimatedStyle(() => {
-      const color = interpolateColor(
-        props?.value && props?.value?.length > 0 ? 1 : 0,
-        [0, 1],
-        [placeholderTextColor, textColor]
-      )
       return {
         textAlign,
         fontFamily: 'Aeonik-Medium',
         fontSize: animatedFontSize.value,
         lineHeight: animatedFontSize.value * 1.1,
-        color
+        color: hasValue.value ? textColor : placeholderTextColor
+      }
+    })
+
+    const inputTextStyle = useAnimatedStyle(() => {
+      const fontSize = animatedFontSize.value * FIT_SCALE_FACTOR
+      return {
+        textAlign,
+        fontFamily: 'Aeonik-Medium',
+        fontSize,
+        lineHeight: fontSize * 1.1,
+        color: hasValue.value ? textColor : placeholderTextColor
       }
     })
 
     const suffixTextStyle = useAnimatedStyle(() => {
-      const color = interpolateColor(
-        props?.value && props?.value?.length > 0 ? 1 : 0,
-        [0, 1],
-        [placeholderTextColor, textColor]
-      )
       return {
         fontFamily: 'Aeonik-Medium',
         fontSize: animatedSuffixFontSize.value,
         lineHeight: animatedSuffixFontSize.value * 1.1,
-        color
+        color: hasValue.value ? textColor : placeholderTextColor
       }
     })
 
@@ -155,8 +160,8 @@ export const AutoSizeTextInput = forwardRef<
         // Calculate available width for text input
         const availableWidth =
           containerWidth -
-          leftWidth -
-          rightWidth -
+          leftWidthRef.current -
+          rightWidthRef.current -
           totalGapWidth -
           (Platform.OS === 'ios' ? 32 : 8)
 
@@ -165,6 +170,7 @@ export const AutoSizeTextInput = forwardRef<
         // On iOS, the calculated font size doesn't fully fill the container width.
         // This 1.1x correction factor increases the font size to better utilize the available space.
         const correctionFactor = Platform.OS === 'ios' ? 1.1 : 1
+
         const ratio = (availableWidth / textWidth) * correctionFactor
         let newFontSize = Math.round(animatedFontSize.value * ratio)
         let newSuffixFontSize = Math.round(animatedSuffixFontSize.value * ratio)
@@ -185,8 +191,6 @@ export const AutoSizeTextInput = forwardRef<
         }
       },
       [
-        leftWidth,
-        rightWidth,
         animatedFontSize,
         animatedSuffixFontSize,
         containerWidth,
@@ -218,32 +222,61 @@ export const AutoSizeTextInput = forwardRef<
     )
 
     const handleLeftLayout = useCallback((e: LayoutChangeEvent): void => {
-      setLeftWidth(e.nativeEvent.layout.width)
+      leftWidthRef.current = e.nativeEvent.layout.width
     }, [])
 
     const handleRightLayout = useCallback((e: LayoutChangeEvent): void => {
-      setRightWidth(e.nativeEvent.layout.width)
+      rightWidthRef.current = e.nativeEvent.layout.width
     }, [])
 
     const handleTextLayout = useCallback(
       (e: LayoutChangeEvent): void => {
-        if (!containerWidth) return
+        const textWidth = e.nativeEvent.layout.width
 
-        const currentText = props.value || ''
+        // Always keep the measured width up to date (even when text hasn't changed,
+        // e.g. after a font size adjustment), so handleLayout can use it accurately
+        if (textWidth > 0) {
+          lastTextWidthRef.current = textWidth
+        }
+
+        // Only recalculate font size when the text content actually changed
+        const currentText = value || ''
         if (lastTextRef.current === currentText) {
           return
         }
 
         lastTextRef.current = currentText
-        const textWidth = e.nativeEvent.layout.width
 
-        if (textWidth > 0) {
-          lastTextWidthRef.current = textWidth
+        // Short text fits at initial size — skip measurement and reset
+        if (currentText.length < MIN_LENGTH_TO_RESIZE) {
+          animatedFontSize.value = initialFontSize
+          animatedSuffixFontSize.value =
+            initialFontSize * suffixFontSizeMultiplier
+          return
+        }
+
+        if (textWidth > 0 && containerWidth > 0) {
           calculateAndUpdateFontSize(textWidth)
         }
       },
-      [containerWidth, props.value, calculateAndUpdateFontSize]
+      [
+        containerWidth,
+        value,
+        calculateAndUpdateFontSize,
+        animatedFontSize,
+        animatedSuffixFontSize,
+        initialFontSize,
+        suffixFontSizeMultiplier
+      ]
     )
+
+    // Handles initial sizing when containerWidth becomes available
+    // after text width has already been recorded
+    useEffect(() => {
+      if (containerWidth > 0 && lastTextWidthRef.current > 0) {
+        calculateAndUpdateFontSize(lastTextWidthRef.current)
+      }
+    }, [containerWidth, calculateAndUpdateFontSize])
 
     const focusTextInput = useCallback(() => {
       inputRef.current?.focus()
@@ -303,22 +336,6 @@ export const AutoSizeTextInput = forwardRef<
       suffixTextStyle
     ])
 
-    const onBlurTextInput = useCallback(
-      (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
-        isFocused.value = false
-        props.onBlur?.(e)
-      },
-      [isFocused, props]
-    )
-
-    const onFocusTextInput = useCallback(
-      (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
-        isFocused.value = true
-        props.onFocus?.(e)
-      },
-      [isFocused, props]
-    )
-
     return (
       <View
         sx={{
@@ -326,26 +343,19 @@ export const AutoSizeTextInput = forwardRef<
           minHeight: initialFontSize + 12,
           justifyContent: 'center'
         }}>
-        <View
-          onLayout={handleLayout}
-          style={{
-            width: '100%',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: GAP_WIDTH
-          }}>
+        <View onLayout={handleLayout} style={styles.row}>
           {renderPrefix()}
 
           <AnimatedTextInput
             {...props}
             ref={inputRef}
             testID={testID}
-            style={[{ padding: 0 }, textStyle, props.style]}
+            value={value}
+            style={[styles.input, inputTextStyle, style]}
             maxLength={maxLength}
             editable={editable}
-            onBlur={onBlurTextInput}
-            onFocus={onFocusTextInput}
+            onBlur={onBlur}
+            onFocus={onFocus}
             onChangeText={onChangeText}
             placeholderTextColor={placeholderTextColor}
             selectionColor={theme.colors.$textPrimary}
@@ -357,28 +367,13 @@ export const AutoSizeTextInput = forwardRef<
           {renderSuffix()}
         </View>
 
-        {/* Hidden TextInput for capturing layout width */}
-        <View
-          style={{
-            position: 'absolute',
-            zIndex: 10
-          }}>
+        {/* Hidden text for measuring content width */}
+        <View style={styles.measurementContainer} pointerEvents="none">
           <Animated.Text
-            pointerEvents="none"
             numberOfLines={1}
             onLayout={handleTextLayout}
-            style={[
-              {
-                flexShrink: 0,
-                flexWrap: 'nowrap',
-                fontFamily: 'Aeonik-Medium',
-                position: 'absolute',
-                textAlign,
-                opacity: 0
-              },
-              textStyle
-            ]}>
-            {props.value || ' '}
+            style={[styles.measurementText, textStyle]}>
+            {value || ' '}
           </Animated.Text>
         </View>
       </View>
@@ -388,6 +383,36 @@ export const AutoSizeTextInput = forwardRef<
 
 const GAP_WIDTH = 4
 
+// Scale factor to keep input text slightly smaller than full available width
+// On Android, we don't need to scale down the text
+const FIT_SCALE_FACTOR = Platform.OS === 'ios' ? 0.885 : 1
+
+// Text shorter than this resets to initialFontSize without measuring
+const MIN_LENGTH_TO_RESIZE = 4
+
 // Threshold (in pixels) to distinguish real layout changes (focus/blur, rotation) from
 // minor fluctuations caused by font size adjustments
 const LAYOUT_CHANGE_THRESHOLD = 10
+
+const styles = StyleSheet.create({
+  row: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: GAP_WIDTH
+  },
+  input: {
+    padding: 0
+  },
+  measurementContainer: {
+    position: 'absolute',
+    opacity: 0
+  },
+  measurementText: {
+    flexShrink: 0,
+    flexWrap: 'nowrap',
+    fontFamily: 'Aeonik-Medium',
+    position: 'absolute'
+  }
+})

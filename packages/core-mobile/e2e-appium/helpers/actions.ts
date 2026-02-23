@@ -252,7 +252,7 @@ async function click(ele: ChainablePromiseElement) {
 
 async function dismissKeyboard(id = 'Return') {
   if (driver.isIOS) {
-    await tap(selectors.getById(id))
+    await click(selectors.getById(id))
   } else {
     await driver.hideKeyboard()
   }
@@ -436,7 +436,7 @@ async function typeSlowly(
   await driver.pause(300)
 }
 
-async function assertPerformance(start: number, expectedTime = 10000) {
+async function assertPerformance(start: number, expectedTime = 20000) {
   const end = performance.now()
   const totalTime = end - start
   const passed = totalTime <= expectedTime

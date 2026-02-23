@@ -122,6 +122,9 @@ export const AccountButtons = ({
       </Button>
       {walletType !== WalletType.SEEDLESS && (
         <Button
+          testID={
+            !isRemoveEnabled ? 'remove_account_disabled' : 'remove_account'
+          }
           style={{ borderRadius: 12 }}
           size="large"
           textStyle={{

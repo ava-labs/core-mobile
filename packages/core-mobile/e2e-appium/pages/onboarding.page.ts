@@ -3,6 +3,7 @@ import { actions } from '../helpers/actions'
 import { selectors } from '../helpers/selectors'
 import onboardingLoc from '../locators/onboarding.loc'
 import commonElsPage from './commonEls.page'
+import portfolioPage from './portfolio.page'
 
 class OnboardingPage {
   get accessExistingWallet() {
@@ -248,6 +249,9 @@ class OnboardingPage {
 
   async verifyLoggedIn() {
     await actions.waitFor(commonElsPage.accountOne, 40000)
+    await actions.waitFor(commonElsPage.loadingSpinnerHidden)
+    await actions.isNotVisible(commonElsPage.inProgress)
+    await actions.isVisible(portfolioPage.portfolioTokenList)
     console.log('Verified you are logged in')
   }
 

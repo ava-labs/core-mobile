@@ -96,7 +96,11 @@ class Settings {
   }
 
   get removeAccount() {
-    return selectors.getBySmartText(settings.removeAccount)
+    return selectors.getById(settings.removeAccount)
+  }
+
+  get removeAccountDisabled() {
+    return selectors.getById(settings.removeAccountDisabled)
   }
 
   get rename() {
@@ -105,6 +109,10 @@ class Settings {
 
   get addAccountToThisWallet() {
     return selectors.getByText(settings.addAccountToThisWallet)
+  }
+
+  get removeAllAccounts() {
+    return selectors.getByText(settings.removeAllAccounts)
   }
 
   get removeWallet() {
@@ -128,11 +136,11 @@ class Settings {
   }
 
   get securityAndPrivacy() {
-    return selectors.getBySomeText(settings.securityAndPrivacy)
+    return common.listItem(settings.securityAndPrivacy)
   }
 
   get changePin() {
-    return selectors.getByText(settings.changePin)
+    return common.listItem(settings.changePin)
   }
 
   get enterYourCurrentPinTitle() {
@@ -168,7 +176,7 @@ class Settings {
   }
 
   get notificationsPreferences() {
-    return selectors.getByText(settings.notificationsPreferences)
+    return common.listItem(settings.notificationsPreferences)
   }
 
   get notificationsPreferencesTitle() {
@@ -188,7 +196,7 @@ class Settings {
   }
 
   get showRecoveryPhrase() {
-    return selectors.getByText(settings.showRecoveryPhrase)
+    return common.listItem(settings.showRecoveryPhrase)
   }
 
   get showRecoveryPhraseTitle() {
@@ -208,11 +216,15 @@ class Settings {
   }
 
   get contacts() {
-    return selectors.getBySomeText(settings.contacts)
+    return common.listItem(settings.contacts)
   }
 
   get addAddressButton() {
-    return selectors.getByText(settings.addAddressButton)
+    return selectors.getById(settings.addAddressButton)
+  }
+
+  get deleteContactBtn() {
+    return selectors.getById(settings.deleteContactBtn)
   }
 
   get typeInOrPasteAddress() {
@@ -225,6 +237,10 @@ class Settings {
 
   get customAvatar() {
     return selectors.getById(settings.customAvatar)
+  }
+
+  get myWallets() {
+    return selectors.getByText(settings.myWallets)
   }
 
   networkList(name: string) {
@@ -261,12 +277,27 @@ class Settings {
     return selectors.getById(`private_key_account__${accountName}`)
   }
 
+  accountDetailIcon(walletName = 'Wallet 1', accountName: string) {
+    return selectors.getById(
+      `${settings.accountDetailIconIdPrefix}${walletName}__${accountName}`
+    )
+  }
+
+  addAccountBtnByWallet(walletName = 'Wallet 1') {
+    return selectors.getById(`${settings.addAccountBtn}__${walletName}`)
+  }
+
+  contact(contactName: string, address: string) {
+    return selectors.getById(`contact__${contactName}__${address}`)
+  }
+
   get hkd() {
     return selectors.getByText(settings.hkd)
   }
 
   async verifyEmptyContacts() {
     await actions.waitFor(this.emptyContacts)
+    await actions.isVisible(this.addAddressButton)
   }
 
   async editContactAddress(
@@ -286,8 +317,12 @@ class Settings {
     await common.goBack()
   }
 
-  async tapContactByName(contactName: string) {
-    await actions.tap(selectors.getBySomeText(contactName))
+  async tapContact(contactName: string, address: string) {
+    await actions.tap(this.contact(contactName, address))
+  }
+
+  async tapDeleteContact() {
+    await actions.tap(this.deleteContactBtn)
   }
 
   async setAddress(network: string, address: string, contactName: string) {
@@ -297,13 +332,12 @@ class Settings {
       selectors.getById(`advanced_input__${network.toLowerCase()}`),
       address
     )
+    await actions.dismissKeyboard()
     await actions.tap(selectors.getByText(contactName))
   }
 
   async verifyContact(address: string, contactName: string) {
-    const previewAddress = address.slice(0, 5)
-    await actions.waitFor(selectors.getBySomeText(contactName))
-    await actions.waitFor(selectors.getBySomeText(previewAddress))
+    await actions.waitFor(this.contact(contactName, address))
   }
 
   async addContactAddress(
@@ -321,7 +355,7 @@ class Settings {
   }
 
   async tapAddAddressButton() {
-    await actions.tap(this.addAddressButton)
+    await actions.click(this.addAddressButton)
   }
 
   async tapContacts() {
@@ -354,17 +388,19 @@ class Settings {
   }
 
   async tapAddWalletBtn() {
-    await actions.tap(this.addWalletBtn)
+    await actions.click(this.addWalletBtn)
   }
 
   async addAccount(accountNum = 2, walletName = 'Wallet 1') {
     const accountName = `Account ${accountNum}`
     const ele = this.manageAccountsAccountName(walletName, accountName)
     while (!(await actions.getVisible(ele))) {
-      await this.tapAddWalletBtn()
-      await actions.tap(this.createNewAccountBtn)
-      await actions.tap(this.manageAccountsTitle)
+      await this.tapAddAccountBtn(walletName)
     }
+  }
+
+  async tapAddAccountBtn(walletName = 'Wallet 1') {
+    await actions.click(this.addAccountBtnByWallet(walletName))
   }
 
   async tapMoreIconByWallet(walletName = 'Wallet 1') {
@@ -376,31 +412,28 @@ class Settings {
     await actions.tap(this.importWalletBtn)
   }
 
+  async verifyAddAccountDisabled(walletName = 'Imported') {
+    await this.tapMoreIconByWallet(walletName)
+    await actions.isNotVisible(this.addAccountToThisWallet)
+    await actions.isVisible(this.removeAllAccounts)
+    await actions.isNotVisible(this.addAccountBtnByWallet(walletName))
+    await this.tapMoreIconByWallet(walletName)
+  }
+
   async importWallet(mnemonic: string) {
-    await this.tapManageAccountsBtn()
     await this.tapAddWalletBtn()
     await this.tapImportRecoveryPhraseBtn()
     await onboardingPage.enterRecoveryPhrase(mnemonic)
     await this.tapImportWalletBtn()
+    await onboardingPage.enterWalletName('Wallet 2')
+    await onboardingPage.tapNextBtnOnNameWallet()
   }
 
   async importWalletViaPK(privateKey: string) {
-    await this.tapManageAccountsBtn()
     await this.tapAddWalletBtn()
     await this.tapImportPrivateKeyBtn()
     await actions.pasteText(common.inputTextField, privateKey)
     await this.tapImportWalletBtn()
-  }
-
-  async verifyPKWalletImported(accountName = 'Account 3') {
-    // verify the account on Manage Accounts screen
-    await actions.waitFor(this.manageAccountsWalletName(settings.imported))
-    await actions.isVisible(this.privateKeyAccount(accountName))
-
-    // verify the account detail screen
-    await this.goToAccountDetail(undefined, accountName)
-    await this.verifyAccountDetail(undefined, accountName)
-    await common.goBack()
   }
 
   async verifyPKWalletRemoved(accountName = 'Account 3') {
@@ -408,33 +441,27 @@ class Settings {
     await actions.isNotVisible(this.privateKeyAccount(accountName))
   }
 
-  async verifyWalletImported(walletName = 'Wallet 2', accountCount = 3) {
-    // verify the wallet name and account on Manage Accounts screen
-    const accountName = `Account ${accountCount}`
-    await actions.waitFor(this.manageAccountsWalletName(walletName))
+  async tapWalletByName(walletName = 'Wallet 2', accountName = 'Account 1') {
+    await actions.tap(this.manageAccountsWalletName(walletName))
     await actions.isVisible(
       this.manageAccountsAccountName(walletName, accountName)
     )
-    // verify the account detail screen
-    await this.goToAccountDetail(walletName, accountName)
-    await this.verifyAccountDetail(walletName, accountName)
-    await common.goBack()
   }
 
   async verifyAccountDetail(
-    walletName: string | undefined,
-    accountName: string
+    walletName = 'Wallet 2',
+    accountName = 'Account 1',
+    isPKWallet = false,
+    canDelete = false
   ) {
     // verify the account name
+    await this.goToAccountDetail(walletName, accountName)
     await common.verifyAccountName(accountName)
-    if (walletName) {
-      // if walletName is defined, it is a seed phrase imported wallet
-      await actions.isVisible(selectors.getBySmartText(walletName))
-      await actions.isVisible(selectors.getBySmartText(settings.primary))
+    await actions.isVisible(selectors.getByText(walletName))
+    if (isPKWallet) {
+      await actions.isVisible(selectors.getByText(settings.imported))
     } else {
-      // if walletName is undefined, it is a Private Key imported wallet
-      await actions.isNotVisible(selectors.getBySmartText(settings.primary))
-      await actions.isVisible(selectors.getBySmartText(settings.imported))
+      await actions.isVisible(selectors.getByText(settings.primary))
     }
 
     // verify the networks on the account detail screen
@@ -449,7 +476,12 @@ class Settings {
 
     // verify the rename and remove account buttons
     await actions.isVisible(this.renameAccount)
-    await actions.isVisible(this.removeAccount)
+    if (canDelete) {
+      await actions.isVisible(this.removeAccount)
+    } else {
+      await actions.isVisible(this.removeAccountDisabled)
+    }
+    await common.goBack()
   }
 
   async tapRename() {
@@ -487,15 +519,6 @@ class Settings {
     await actions.tap(this.manageAccountsBtn)
   }
 
-  async verifyManageAccountsListItem(
-    accountName: string,
-    walletName = 'Wallet 1'
-  ) {
-    await actions.waitFor(
-      this.manageAccountsAccountName(walletName, accountName)
-    )
-  }
-
   async goSettings() {
     await actions.delay(1500)
     await actions.click(this.settingsBtn)
@@ -507,9 +530,6 @@ class Settings {
   }
 
   async tapCurrency() {
-    if (!(await actions.getVisible(this.currencyId))) {
-      await this.swipeSettings()
-    }
     await actions.tap(this.currencyId)
   }
 
@@ -519,9 +539,6 @@ class Settings {
   }
 
   async tapNotifications() {
-    if (!(await actions.getVisible(this.notificationsPreferences))) {
-      await this.swipeSettings()
-    }
     await actions.tap(this.notificationsPreferences)
   }
 
@@ -537,19 +554,14 @@ class Settings {
     await actions.tap(this.showRecoveryPhrase)
   }
 
-  async createNthAccount(
-    account = 2,
-    activeAccount = settings.account,
-    walletName = 'Wallet 1'
-  ) {
-    await this.goSettings()
-    await this.tapManageAccountsBtn()
+  async createNthAccount(account = 2, walletName = 'Wallet 1') {
+    await common.goMyWallets()
     await this.addAccount(account, walletName)
-    await this.selectAccount(activeAccount, walletName)
+    await common.goBack()
   }
 
   async tapNetworks() {
-    await actions.tap(this.networks)
+    await actions.tap(common.listItem(settings.networks))
   }
 
   async tapAddNetworkBtn() {
@@ -590,13 +602,12 @@ class Settings {
 
   async setNetworkData(type: string, value: string) {
     await actions.tap(selectors.getByText(`Add ${type}`))
-    await actions.dragAndDrop(this.nameThisNetworkBtn, [0, -500])
     await actions.type(
       selectors.getById(`advanced_input__${type.toLowerCase()}`),
       value
     )
     try {
-      await actions.tapEnterOnKeyboard()
+      await actions.dismissKeyboard()
     } catch (e) {
       await actions.dismissKeyboard(`advanced_input__${type.toLowerCase()}`)
     }
@@ -665,12 +676,8 @@ class Settings {
   }
 
   async tapNetworkByName(networkName: string) {
-    try {
-      await actions.tap(this.networkList(networkName))
-    } catch (e) {
-      await common.typeSearchBar(networkName)
-      await actions.tap(this.networkList(networkName))
-    }
+    await common.typeSearchBar(networkName)
+    await actions.tap(this.networkList(networkName))
   }
 
   async verifyNetworkDetails(network: Network) {
@@ -699,21 +706,17 @@ class Settings {
     await actions.longPress(selectors.getById(networkPrefix))
   }
 
-  async tapNetworkSwitches(isEnabled = true) {
-    for (const { name, haveToggle } of networks) {
-      if (haveToggle) await this.tapNetworkSwitch(name, isEnabled)
+  async tapNetworkSwitches(isEnabled = true, items = networks) {
+    for (const { name, haveToggle } of items) {
+      if (haveToggle) {
+        await common.typeSearchBar(name)
+        await this.tapNetworkSwitch(name, isEnabled)
+      }
     }
   }
 
-  async goToAccountDetail(
-    walletName: string | undefined = undefined,
-    accountName: string
-  ) {
-    const targetId = walletName
-      ? `${settings.accountDetailIconIdPrefix}${walletName}_${accountName}`
-      : `${settings.accountDetailIconIdPrefix}${accountName}`
-
-    await actions.tap(selectors.getById(targetId))
+  async goToAccountDetail(walletName = 'Wallet 1', accountName = 'Account 1') {
+    await actions.tap(this.accountDetailIcon(walletName, accountName))
   }
 
   async tapShowPrivateKey() {
@@ -733,10 +736,17 @@ class Settings {
     }
   }
 
-  async verifyAccountCarouselItem(accountName: string) {
+  async verifyMyWalletsAccountName(
+    accountName = 'Account 1',
+    walletName = 'Wallet 1'
+  ) {
     await actions.waitFor(
-      selectors.getById(`${settings.accountCarouselItemIdPrefix}${accountName}`)
+      this.manageAccountsAccountName(walletName, accountName)
     )
+  }
+
+  async tapAccount(accountName = 'Account 1', walletName = 'Wallet 1') {
+    await actions.tap(this.manageAccountsAccountName(walletName, accountName))
   }
 
   async switchAccountByCarousel(accountName: string) {
@@ -745,15 +755,12 @@ class Settings {
     )
   }
 
-  async switchAccount(name = settings.account) {
-    await this.goSettings()
-    await this.switchAccountByCarousel(name)
+  async switchAccount(accountName = 'Account 1', walletName = 'Wallet 1') {
+    await common.goMyWallets()
+    await this.tapAccount(accountName, walletName)
   }
 
-  async tapTheme(needSwipe = true) {
-    if (needSwipe) {
-      await this.swipeSettings()
-    }
+  async tapTheme() {
     await actions.tap(this.theme)
   }
 

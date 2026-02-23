@@ -16,9 +16,10 @@ export function transformXPAddresses(
   xpAddressDictionary: XPAddressDictionary
 } {
   // Derive xpAddresses with fallback
+  // Note: All addresses should be stripped of HRP prefix for consistency with SDK expectations
   let xpAddresses: string[] = []
   if (queryData?.xpAddresses && queryData.xpAddresses.length > 0) {
-    xpAddresses = queryData.xpAddresses.map(x => x.address)
+    xpAddresses = queryData.xpAddresses.map(x => stripAddressPrefix(x.address))
   } else if (account?.addressPVM) {
     xpAddresses = [stripAddressPrefix(account.addressPVM)]
   }
