@@ -44,12 +44,19 @@ export const swapActivitiesStore = create<SwapActivitiesState>()(
     set => ({
       swapActivities: {},
       saveSwapActivity: (item: SwapActivityItem) =>
-        set(state => ({
-          swapActivities: pruneSwapActivities({
+        set(state => {
+          const newActivities = {
             ...state.swapActivities,
             [item.transfer.id]: item
-          })
-        })),
+          }
+          // Only prune if we're over the cap
+          return {
+            swapActivities:
+              Object.keys(newActivities).length > MAX_SWAP_ACTIVITIES
+                ? pruneSwapActivities(newActivities)
+                : newActivities
+          }
+        }),
       removeSwapActivity: (transferId: TransferId) =>
         set(state => {
           const { [transferId]: _, ...rest } = state.swapActivities

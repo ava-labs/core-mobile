@@ -156,25 +156,22 @@ export const NotificationsScreen = (): JSX.Element => {
     return map
   }, [notifications])
 
-  // Transfer IDs whose source txHash matches a backend notification (duplicates).
-  const duplicateTransferIds = useMemo(
-    () =>
-      new Set(
-        Object.values(swapActivities)
-          .filter(s => {
-            const txHash = s.transfer.source?.txHash
-            return txHash !== undefined && notificationByTxHash.has(txHash)
-          })
-          .map(s => s.transfer.id)
-      ),
-    [swapActivities, notificationByTxHash]
-  )
-
   // Side effect: remove duplicate swap entries from MMKV — the tx is confirmed
   // so it is no longer in progress and the backend notification supersedes it.
   useEffect(() => {
-    duplicateTransferIds.forEach(transferId => removeSwapActivity(transferId))
-  }, [duplicateTransferIds, removeSwapActivity])
+    const duplicateTransferIds = Object.values(swapActivities)
+      .filter(s => {
+        const txHash = s.transfer.source?.txHash
+        return txHash !== undefined && notificationByTxHash.has(txHash)
+      })
+      .map(s => s.transfer.id)
+    if (duplicateTransferIds.length === 0) {
+      return
+    }
+    duplicateTransferIds.forEach(transferId => {
+      removeSwapActivity(transferId)
+    })
+  }, [swapActivities, notificationByTxHash, removeSwapActivity])
 
   // Combined list sorted by timestamp desc. All items (swaps + notifications)
   // are ordered purely by recency — no special pinning for in_progress swaps.
