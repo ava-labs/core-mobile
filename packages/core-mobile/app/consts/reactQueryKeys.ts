@@ -58,6 +58,7 @@ export enum ReactQueryKeys {
 
   // borrow
   AAVE_USER_BORROW_DATA = 'aaveUserBorrowData',
+  AAVE_USER_RESERVES_DATA = 'aaveUserReservesData',
   BENQI_USER_BORROW_DATA = 'benqiUserBorrowData',
 
   // rewards

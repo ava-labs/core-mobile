@@ -12,6 +12,7 @@ import {
   getListItemExitingAnimation
 } from 'common/utils/animations'
 import { useRouter } from 'expo-router'
+import { transactionSnackbar } from 'common/utils/toast'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import {
   LayoutChangeEvent,
@@ -21,8 +22,18 @@ import {
   ViewStyle
 } from 'react-native'
 import Animated from 'react-native-reanimated'
+import { LoadingState } from 'common/components/LoadingState'
+import { DropdownSelections } from 'common/components/DropdownSelections'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { BorrowProtocolSelector } from '../components/BorrowProtocolSelector'
+import { BorrowCard } from '../components/BorrowCard'
+import { BorrowSummaryBanner } from '../components/BorrowSummaryBanner'
+import { useSelectedBorrowProtocol } from '../hooks/useBorrowProtocol'
+import {
+  BorrowPosition,
+  useBorrowPositionsSummary
+} from '../hooks/useBorrowPositionsSummary'
+import { useBorrowsFilterAndSort } from '../hooks/useBorrowsFilterAndSort'
 
 interface BorrowTabScreenProps {
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent> | number) => void
@@ -42,16 +53,32 @@ const BorrowTabScreen = ({
   const { navigate } = useRouter()
   const { theme } = useTheme()
   const scrollOffsetRef = useRef({ x: 0, y: 0 })
+  const [selectedProtocol] = useSelectedBorrowProtocol()
+
+  const { positions, summary, isLoading, refresh, isRefreshing } =
+    useBorrowPositionsSummary({ protocol: selectedProtocol })
+  const { data: filteredBorrows, sort } = useBorrowsFilterAndSort({
+    borrows: positions
+  })
 
   const data: BorrowCardType[] = useMemo(() => {
-    // TODO: Add actual borrow data when available
-    return [StaticCard.Add]
-  }, [])
+    return isLoading ? [] : [StaticCard.Add, ...filteredBorrows]
+  }, [filteredBorrows, isLoading])
 
   const handleAddBorrow = useCallback(() => {
     AnalyticsService.capture('EarnBorrowStart')
     navigate({ pathname: '/borrow/onboarding' })
   }, [navigate])
+
+  const handleRepayBorrow = useCallback(() => {
+    transactionSnackbar.plain({ message: 'Repay flow is coming soon' })
+  }, [])
+
+  const handlePressHealthScore = useCallback(() => {
+    transactionSnackbar.plain({
+      message: 'Health score details are coming soon'
+    })
+  }, [])
 
   const renderItem = useCallback(
     ({
@@ -61,8 +88,16 @@ const BorrowTabScreen = ({
       let content = null
       if (item === StaticCard.Add) {
         content = <AddCard width={CARD_WIDTH} onPress={handleAddBorrow} />
+      } else {
+        content = (
+          <BorrowCard
+            market={item.market}
+            borrowedAmountUsd={item.borrowedAmountUsd}
+            width={CARD_WIDTH}
+            onRepayPress={handleRepayBorrow}
+          />
+        )
       }
-      // TODO: Add BorrowCard rendering when available
 
       if (content) {
         return (
@@ -81,7 +116,7 @@ const BorrowTabScreen = ({
 
       return null
     },
-    [handleAddBorrow]
+    [handleAddBorrow, handleRepayBorrow]
   )
 
   const overrideProps = {
@@ -112,9 +147,28 @@ const BorrowTabScreen = ({
             Take a loan against your deposits and repay anytime.
           </Text>
         </Animated.View>
+        {summary && (
+          <BorrowSummaryBanner
+            summary={summary}
+            protocol={selectedProtocol}
+            onHealthScorePress={handlePressHealthScore}
+          />
+        )}
+        <DropdownSelections
+          sort={sort}
+          sx={{ paddingHorizontal: 16, marginTop: 4 }}
+        />
       </View>
     )
-  }, [theme.colors.$surfacePrimary, onHeaderLayout, animatedHeaderStyle])
+  }, [
+    animatedHeaderStyle,
+    onHeaderLayout,
+    sort,
+    summary,
+    selectedProtocol,
+    handlePressHealthScore,
+    theme.colors.$surfacePrimary
+  ])
 
   useEffect(() => {
     if (scrollOffsetRef.current && isActive) {
@@ -139,11 +193,14 @@ const BorrowTabScreen = ({
       renderItem={renderItem}
       showsVerticalScrollIndicator={false}
       keyExtractor={item =>
-        item === StaticCard.Add ? 'add-borrow' : item.uniqueMarketId
+        item === StaticCard.Add ? 'add-borrow' : item.market.uniqueMarketId
       }
       removeClippedSubviews={true}
       extraData={{ isDark: theme.isDark }}
+      onRefresh={refresh}
+      refreshing={isRefreshing}
       ListHeaderComponent={renderHeader}
+      ListEmptyComponent={<LoadingState sx={{ height: 500 }} />}
     />
   )
 }
@@ -153,7 +210,7 @@ enum StaticCard {
 }
 
 // TODO: Replace with actual Borrow type when available
-type BorrowItem = { uniqueMarketId: string }
+type BorrowItem = BorrowPosition
 type BorrowCardType = StaticCard | BorrowItem
 
 const CARD_WIDTH = Math.floor((SCREEN_WIDTH - 16 * 2 - GRID_GAP) / 2)
