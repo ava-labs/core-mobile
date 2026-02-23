@@ -49,10 +49,8 @@ export function useBackendNotifications(): UseQueryResult<
 
   return useQuery<BackendNotification[], Error>({
     queryKey: [ReactQueryKeys.NOTIFICATION_CENTER_LIST, deviceArn],
-    queryFn: () =>
-      deviceArn
-        ? NotificationCenterService.fetchNotifications(deviceArn)
-        : Promise.resolve([]),
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    queryFn: () => NotificationCenterService.fetchNotifications(deviceArn!),
     enabled: !!deviceArn,
     staleTime: 1000 * 60 * 1 // 1 minute
   })
