@@ -24,12 +24,13 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
-  ScrollView,
   ScrollViewProps,
-  View
+  View,
+  ViewStyle
 } from 'react-native'
 import {
   KeyboardAwareScrollView,
+  KeyboardAwareScrollViewRef,
   useKeyboardState
 } from 'react-native-keyboard-controller'
 import Animated, {
@@ -97,7 +98,7 @@ export interface ListScreenProps<T>
 }
 
 export type ListScreenRef<T> = {
-  scrollViewRef?: RefObject<FlashList<T>>
+  scrollViewRef?: RefObject<KeyboardAwareScrollViewRef<T>>
 }
 
 export const ListScreenV2 = <T,>({
@@ -126,7 +127,7 @@ export const ListScreenV2 = <T,>({
   const [targetLayout, setTargetLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const scrollViewRef = useRef<FlashList<T>>(null)
+  const scrollViewRef = useRef<KeyboardAwareScrollViewRef<T>>(null)
 
   // Shared values for worklets (UI thread animations)
   const titleHeight = useSharedValue<number>(0)
@@ -147,7 +148,7 @@ export const ListScreenV2 = <T,>({
   useImperativeHandle(
     flatListRef,
     () => ({
-      scrollViewRef: scrollViewRef as RefObject<FlashList<T>>
+      scrollViewRef
     }),
     [scrollViewRef]
   )
@@ -342,7 +343,7 @@ export const ListScreenV2 = <T,>({
     // backgroundColor, paddingTop, paddingBottom, paddingLeft, paddingRight, padding
     // Do NOT pass minHeight, flex, or other unsupported properties
     return {
-      ...(props?.contentContainerStyle ?? {}),
+      ...((props?.contentContainerStyle as ViewStyle) ?? {}),
       paddingBottom: renderFooter ? footerHeight + 16 : 16
     }
   }, [renderFooter, footerHeight, props?.contentContainerStyle])
@@ -545,12 +546,10 @@ export const ListScreenV2 = <T,>({
             overrideProps={overrideProps}
             contentContainerStyle={contentContainerStyle}
             {...props}
-            style={[
-              props.style,
-              {
-                backgroundColor: backgroundColor ?? 'transparent'
-              }
-            ]}
+            style={{
+              backgroundColor: backgroundColor ?? 'transparent',
+              ...props.style
+            }}
             ListEmptyComponent={ListEmptyComponent}
           />
         </Animated.View>
@@ -562,6 +561,7 @@ export const ListScreenV2 = <T,>({
   )
 }
 
-const RenderScrollComponent = React.forwardRef<ScrollView, ScrollViewProps>(
-  (props, ref) => <KeyboardAwareScrollView {...props} ref={ref} />
-)
+const RenderScrollComponent = React.forwardRef<
+  KeyboardAwareScrollViewRef,
+  ScrollViewProps
+>((props, ref) => <KeyboardAwareScrollView {...props} ref={ref} />)
