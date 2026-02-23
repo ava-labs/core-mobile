@@ -56,14 +56,6 @@ export type AnalyticsEvents = {
   CurrencySettingClicked: undefined
   DeveloperModeEnabled: undefined
   DeveloperModeDisabled: undefined
-  FABItemSelected_Bridge: undefined
-  FABItemSelected_Buy: undefined
-  FABItemSelected_Send: undefined
-  FABItemSelected_Receive: undefined
-  FABItemSelected_Swap: undefined
-  FABItemSelected_WalletConnect: undefined
-  FABClosed: undefined
-  FABOpened: undefined
   HelpCenterClicked: undefined
   LegalClicked: undefined
   'LoginWithMnemonic:WalletNameSet': undefined
@@ -151,18 +143,19 @@ export type AnalyticsEvents = {
       }
     | {
         // legacy swap
+        // TODO remove once fusion is out
         destinationInputField: string
         slippageTolerance: number | undefined
       }
   SwapConfirmed: {
     address: string
+    txHash: string
     chainId: string
   }
   SwapFailed: {
     address: string
     chainId: string
   }
-  Swap_TokenSelected: undefined
   TermsAndConditionsAccepted: undefined
   TermsOfUseClicked: undefined
   TotpValidationFailed: { error: string }
@@ -214,6 +207,8 @@ export type AnalyticsEvents = {
     }[]
   }
   SendTransactionSucceeded: { txHash: string; chainId: number }
+
+  // TODO remove once fusion is out
   SwapTransactionSucceeded: { txHash: string; chainId: number }
   StakeTransactionStarted: { txHash: string; chainId: number }
   BridgeTransactionStarted: {

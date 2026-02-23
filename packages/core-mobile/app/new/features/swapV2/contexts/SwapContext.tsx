@@ -9,7 +9,7 @@ import React, {
 } from 'react'
 import { SwapSide } from '@paraswap/sdk'
 import { LocalTokenWithBalance } from 'store/balance'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { getAddressByNetwork } from 'store/account/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -17,6 +17,8 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { transactionSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
 import { selectMarkrSwapMaxRetries } from 'store/posthog'
+import { audioFeedback, Audios } from 'utils/AudioFeedback'
+import { swapCompleted } from 'store/nestEgg'
 import type { Quote, Transfer } from '../types'
 import {
   useSwapSelectedFromToken,
@@ -74,6 +76,7 @@ export const SwapContextProvider = ({
 }: {
   children: ReactNode
 }): JSX.Element => {
+  const dispatch = useDispatch()
   const [fromToken, setFromToken] = useSwapSelectedFromToken()
   const [toToken, setToToken] = useSwapSelectedToToken()
   const [slippage, setSlippage] = useState<number>(DEFAULT_SLIPPAGE)
@@ -186,10 +189,11 @@ export const SwapContextProvider = ({
       toTokenData: LocalTokenWithBalance
     }) => {
       const { transfer, quote, address, fromTokenData, toTokenData } = params
-
-      AnalyticsService.capture('SwapConfirmed', {
+      audioFeedback(Audios.Send)
+      AnalyticsService.captureWithEncryption('SwapConfirmed', {
         address,
-        chainId: quote.sourceChain.chainId
+        chainId: quote.sourceChain.chainId,
+        txHash: transfer.id
       })
 
       Logger.info('[SwapContext] transfer executed', {
@@ -216,8 +220,36 @@ export const SwapContextProvider = ({
       }))
 
       setSwapStatus(SwapStatus.Success)
+
+      // Dispatch swapCompleted for Nest Egg qualification tracking
+      const swapTxHash = transfer.source?.txHash
+      if (
+        swapTxHash &&
+        transfer.amountIn &&
+        fromTokenData.priceInCurrency &&
+        'decimals' in fromTokenData
+      ) {
+        // Calculate USD amount from the quote for Nest Egg tracking
+        // amountIn is the swap amount in token units (as string)
+
+        // Convert amount from token units to decimal value
+        const amountDecimal =
+          Number(transfer.amountIn) / Math.pow(10, fromTokenData.decimals)
+        const fromAmountUsd = amountDecimal * fromTokenData.priceInCurrency
+
+        dispatch(
+          swapCompleted({
+            txHash: swapTxHash,
+            chainId: Number(quote.sourceChain.chainId.split(':')[1]),
+            fromTokenSymbol: fromTokenData.symbol,
+            toTokenSymbol: toTokenData.symbol,
+            fromAmountUsd,
+            toAmountUsd: fromAmountUsd
+          })
+        )
+      }
     },
-    [setTransfers]
+    [dispatch, setTransfers]
   )
 
   // Handle swap error: logging, toast, and analytics
@@ -231,7 +263,7 @@ export const SwapContextProvider = ({
         error: getSwapErrorMessage(error)
       })
 
-      AnalyticsService.capture('SwapFailed', {
+      AnalyticsService.captureWithEncryption('SwapFailed', {
         address,
         chainId: quote.sourceChain.chainId
       })
@@ -263,7 +295,7 @@ export const SwapContextProvider = ({
       setSwapStatus(SwapStatus.Swapping)
 
       try {
-        AnalyticsService.capture('SwapReviewOrder', {
+        AnalyticsService.captureWithEncryption('SwapReviewOrder', {
           provider: quoteToUse.aggregator.name,
           slippage
         })
