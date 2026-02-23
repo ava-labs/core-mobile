@@ -7,8 +7,7 @@ import { convertUsdToTokenAmount } from '../../utils/borrow'
 import {
   AAVE_PRICE_ORACLE_SCALE,
   AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS,
-  WAD,
-  WAD_BIGINT
+  WAD
 } from '../../consts'
 import { useAaveBorrowData } from '../../hooks/aave/useAaveBorrowData'
 import { useAaveBorrowErc20 } from '../../hooks/aave/useAaveBorrowErc20'
@@ -136,7 +135,7 @@ export const BorrowAaveSelectAmountForm = ({
       // newHealthFactor = (totalCollateralUSD * liquidationThreshold) / (newTotalDebtUSD * 10000)
       // Result in 18 decimals for precision
       const newHealthFactor =
-        (totalCollateralUSD * liquidationThreshold * WAD_BIGINT) /
+        (totalCollateralUSD * liquidationThreshold * 10n ** BigInt(WAD)) /
         (newTotalDebtUSD * 10000n)
 
       return Number(formatUnits(newHealthFactor, WAD))
