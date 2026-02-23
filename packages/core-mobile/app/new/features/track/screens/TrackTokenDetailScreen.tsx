@@ -5,7 +5,6 @@ import {
   Icons,
   SegmentedControl,
   showAlert,
-  SPRING_LINEAR_TRANSITION,
   Text,
   TouchableOpacity,
   useTheme,
@@ -355,7 +354,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     return (
       <Animated.View
         entering={FadeIn.delay(200)}
-        layout={SPRING_LINEAR_TRANSITION}
         style={{
           flexDirection: 'row',
           gap: 12
@@ -459,7 +457,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         <View sx={styles.lastUpdatedContainer}>
           <Animated.View
             entering={FadeIn.delay(DELAY * 3)}
-            layout={SPRING_LINEAR_TRANSITION}
             style={{
               alignSelf: 'center',
               position: 'absolute'
@@ -483,9 +480,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         <View sx={styles.lastUpdatedContainer} />
       )}
       {tokenInfo?.has24hChartDataOnly === false && (
-        <Animated.View
-          entering={FadeIn.delay(DELAY * 3)}
-          layout={SPRING_LINEAR_TRANSITION}>
+        <Animated.View entering={FadeIn.delay(DELAY * 3)}>
           <SegmentedControl
             type="thin"
             dynamicItemWidth={false}
@@ -498,9 +493,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
       )}
       <View sx={styles.aboutContainer}>
         {tokenInfo?.description && (
-          <Animated.View
-            entering={FadeIn.delay(DELAY * 4)}
-            layout={SPRING_LINEAR_TRANSITION}>
+          <Animated.View entering={FadeIn.delay(DELAY * 4)}>
             <TouchableOpacity onPress={handlePressAbout}>
               <Card sx={styles.aboutCard}>
                 <Text variant="heading4">About</Text>
@@ -515,9 +508,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
           </Animated.View>
         )}
         {marketData.length > 0 && (
-          <Animated.View
-            entering={FadeIn.delay(DELAY * 5)}
-            layout={SPRING_LINEAR_TRANSITION}>
+          <Animated.View entering={FadeIn.delay(DELAY * 5)}>
             <GroupList
               data={marketData}
               valueSx={{
@@ -527,9 +518,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
           </Animated.View>
         )}
         {metaData.length > 0 && (
-          <Animated.View
-            entering={FadeIn.delay(DELAY * 6)}
-            layout={SPRING_LINEAR_TRANSITION}>
+          <Animated.View entering={FadeIn.delay(DELAY * 6)}>
             <GroupList
               data={metaData}
               valueSx={{

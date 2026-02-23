@@ -6,13 +6,16 @@ import {
   GRID_GAP,
   ProgressCard,
   SCREEN_WIDTH,
-  SPRING_LINEAR_TRANSITION,
   useMotion,
   useTheme
 } from '@avalabs/k2-alpine'
+import { useIsFocused } from '@react-navigation/native'
 import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
+import { LoadingState } from 'common/components/LoadingState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { useRouter } from 'expo-router'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
+import { useStakes } from 'hooks/earn/useStakes'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   AppState,
@@ -27,15 +30,11 @@ import { useSelector } from 'react-redux'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isCompleted, isOnGoing } from 'utils/earn/status'
-import { useStakes } from 'hooks/earn/useStakes'
-import { useIsFocused } from '@react-navigation/native'
-import { useRouter } from 'expo-router'
-import { LoadingState } from 'common/components/LoadingState'
 import CompleteCardBackgroundImageDark from '../../../assets/icons/complete-card-bg-dark.png'
 import CompleteCardBackgroundImageLight from '../../../assets/icons/complete-card-bg-light.png'
-import { getActiveStakeProgress, getStakeTitle } from '../utils'
 import { useAddStake } from '../hooks/useAddStake'
 import { useStakeFilterAndSort } from '../hooks/useStakeFilterAndSort'
+import { getActiveStakeProgress, getStakeTitle } from '../utils'
 
 export interface StakeCardListHeaderProps {
   isEmpty: boolean
@@ -187,8 +186,7 @@ export const StakeCardList = ({
               marginRight: index % 2 === 0 ? 6 : 16,
               marginLeft: index % 2 !== 0 ? 6 : 16
             }}
-            entering={getListItemEnteringAnimation(index)}
-            layout={SPRING_LINEAR_TRANSITION}>
+            entering={getListItemEnteringAnimation(index)}>
             {content}
           </Animated.View>
         )

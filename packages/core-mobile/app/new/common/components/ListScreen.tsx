@@ -1,9 +1,4 @@
-import {
-  NavigationTitleHeader,
-  Separator,
-  SPRING_LINEAR_TRANSITION,
-  Text
-} from '@avalabs/k2-alpine'
+import { NavigationTitleHeader, Separator, Text } from '@avalabs/k2-alpine'
 import { BlurViewWithFallback } from '@avalabs/k2-alpine/src/components/BlurViewWithFallback/BlurViewWithFallback'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
@@ -482,7 +477,6 @@ export const ListScreen = <T,>({
   return (
     <Animated.View
       style={[{ flex: 1 }]}
-      layout={SPRING_LINEAR_TRANSITION}
       entering={getListItemEnteringAnimation(0)}>
       {/* @ts-expect-error */}
       <AnimatedFlatList

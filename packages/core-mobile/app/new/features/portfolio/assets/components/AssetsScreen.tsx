@@ -1,10 +1,11 @@
-import { SPRING_LINEAR_TRANSITION, View } from '@avalabs/k2-alpine'
+import { View } from '@avalabs/k2-alpine'
 import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { Space } from 'common/components/Space'
+import { ViewOption } from 'common/types'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useAccountBalanceSummary } from 'features/portfolio/hooks/useAccountBalanceSummary'
 import React, { FC, memo, useCallback } from 'react'
@@ -19,7 +20,6 @@ import {
   LocalTokenWithBalance
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
-import { ViewOption } from 'common/types'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { EmptyState } from './EmptyState'
 import { TokenListItem } from './TokenListItem'
@@ -216,7 +216,6 @@ const AssetsScreen: FC<Props> = ({
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(10)}
-      layout={SPRING_LINEAR_TRANSITION}
       style={{
         flex: 1
       }}>

@@ -2,7 +2,6 @@ import {
   AnimatedPressable,
   Icons,
   SCREEN_WIDTH,
-  SPRING_LINEAR_TRANSITION,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -278,7 +277,6 @@ export const CollectiblesScreen = ({
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(0)}
-      layout={SPRING_LINEAR_TRANSITION}
       style={{
         flex: 1
       }}>

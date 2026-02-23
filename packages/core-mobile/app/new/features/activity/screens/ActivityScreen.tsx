@@ -1,11 +1,6 @@
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import {
-  ANIMATED,
-  Image,
-  SPRING_LINEAR_TRANSITION,
-  View
-} from '@avalabs/k2-alpine'
+import { ANIMATED, Image, View } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
@@ -207,7 +202,6 @@ export const ActivityScreen = ({
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(5)}
-      layout={SPRING_LINEAR_TRANSITION}
       style={{
         flex: 1
       }}>

@@ -1,9 +1,4 @@
-import {
-  NavigationTitleHeader,
-  Separator,
-  SPRING_LINEAR_TRANSITION,
-  Text
-} from '@avalabs/k2-alpine'
+import { NavigationTitleHeader, Separator, Text } from '@avalabs/k2-alpine'
 import { BlurViewWithFallback } from '@avalabs/k2-alpine/src/components/BlurViewWithFallback/BlurViewWithFallback'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { FlashList, FlashListProps, FlashListRef } from '@shopify/flash-list'
@@ -528,7 +523,6 @@ export const ListScreenV2 = <T,>({
   return (
     <Animated.View
       style={[{ flex: 1 }]}
-      layout={SPRING_LINEAR_TRANSITION}
       entering={getListItemEnteringAnimation(0)}>
       {renderHeaderComponent()}
 

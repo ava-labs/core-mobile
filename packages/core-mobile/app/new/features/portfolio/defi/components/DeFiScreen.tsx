@@ -1,9 +1,4 @@
-import {
-  Image,
-  SCREEN_WIDTH,
-  SPRING_LINEAR_TRANSITION,
-  View
-} from '@avalabs/k2-alpine'
+import { Image, SCREEN_WIDTH, View } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
 import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
@@ -13,6 +8,7 @@ import { LoadingState } from 'common/components/LoadingState'
 import { Placeholder } from 'common/components/Placeholder'
 import { HORIZONTAL_MARGIN } from 'common/consts'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
+import { ViewOption } from 'common/types'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useRouter } from 'expo-router'
 import { HORIZONTAL_ITEM_GAP } from 'features/portfolio/collectibles/consts'
@@ -22,7 +18,6 @@ import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { DeFiSimpleProtocol } from 'services/defi/types'
-import { ViewOption } from 'common/types'
 import { useDeFiProtocols } from '../hooks/useDeFiProtocols'
 import { DeFiListItem } from './DeFiListItem'
 
@@ -200,7 +195,6 @@ export const DeFiScreen = ({
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(0)}
-      layout={SPRING_LINEAR_TRANSITION}
       style={{
         flex: 1
       }}>

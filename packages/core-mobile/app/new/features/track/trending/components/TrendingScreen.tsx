@@ -1,4 +1,3 @@
-import { SPRING_LINEAR_TRANSITION } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
@@ -70,7 +69,6 @@ export const TrendingScreen = ({
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(5)}
-      layout={SPRING_LINEAR_TRANSITION}
       style={{
         flex: 1
       }}>
