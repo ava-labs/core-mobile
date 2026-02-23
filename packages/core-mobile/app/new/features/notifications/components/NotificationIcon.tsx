@@ -25,16 +25,17 @@ const NotificationIcon: FC<NotificationIconProps> = ({ notification }) => {
   const { getMarketTokenById } = useWatchlist()
   const { getNetwork } = useNetworks()
 
-  // Check if we should render TokenLogo (for price alerts with token data)
-  const shouldRenderTokenLogo = (): boolean => {
-    if (notification.type !== 'PRICE_ALERTS') {
-      return false
-    }
-    const tokenId = notification.data?.tokenId as string | undefined
-    const tokenSymbol = notification.data?.tokenSymbol as string | undefined
-    const marketToken = tokenId ? getMarketTokenById(tokenId) : undefined
-    return Boolean(tokenSymbol || marketToken)
-  }
+  // Resolve market token once for price alerts
+  const priceAlertTokenId = isPriceAlertNotification(notification)
+    ? notification.data?.tokenId
+    : undefined
+  const priceAlertTokenSymbol = isPriceAlertNotification(notification)
+    ? notification.data?.tokenSymbol
+    : undefined
+  const marketToken = priceAlertTokenId
+    ? getMarketTokenById(priceAlertTokenId)
+    : undefined
+  const shouldRenderTokenLogo = Boolean(priceAlertTokenSymbol || marketToken)
 
   const renderBalanceChangeIcon = (): React.JSX.Element => {
     if (!isBalanceChangeNotification(notification)) {
@@ -102,13 +103,10 @@ const NotificationIcon: FC<NotificationIconProps> = ({ notification }) => {
   }
 
   // For price alerts with token data, render TokenLogo directly (without circular wrapper)
-  if (shouldRenderTokenLogo() && isPriceAlertNotification(notification)) {
-    const { tokenId, tokenSymbol } = notification.data ?? {}
-    const marketToken = tokenId ? getMarketTokenById(tokenId) : undefined
-
+  if (shouldRenderTokenLogo) {
     return (
       <TokenLogo
-        symbol={tokenSymbol ?? marketToken?.symbol ?? ''}
+        symbol={priceAlertTokenSymbol ?? marketToken?.symbol ?? ''}
         logoUri={marketToken?.logoUri}
         size={ICON_SIZE}
       />
