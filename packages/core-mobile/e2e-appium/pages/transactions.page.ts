@@ -438,7 +438,7 @@ class TransactionsPage {
     }
   }
 
-  async swapOnTrack(index = 1, amount = '0.00001') {
+  async swapOnTrack(index = 1, amount = '0.001') {
     await this.tapTrackBuyBtn(index)
     await this.dismissTransactionOnboarding()
     await this.enterAmountAndAdjust(amount)
