@@ -56,6 +56,10 @@ export enum ReactQueryKeys {
   BENQI_AVAILABLE_MARKETS = 'benqiAvailableMarkets',
   BENQI_ACCOUNT_SNAPSHOT = 'benqiAccountSnapshot',
 
+  // borrow
+  AAVE_USER_BORROW_DATA = 'aaveUserBorrowData',
+  BENQI_USER_BORROW_DATA = 'benqiUserBorrowData',
+
   // rewards
   MERKL_USER_REWARDS = 'merklUserRewards',
   BENQI_REWARDS = 'benqiRewards'

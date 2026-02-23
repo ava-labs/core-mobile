@@ -89,3 +89,6 @@ export const MERKL_API_URL = 'https://api.merkl.xyz/v4'
 export const MERKL_STALE_TIME_MS = 5 * 60 * 1000 // 5 minutes
 
 export const MAX_UINT256 = 2n ** 256n - 1n
+
+// Health score color for caution state (1.1 - 3.0)
+export const HEALTH_SCORE_CAUTION_COLOR = '#F7B500'
