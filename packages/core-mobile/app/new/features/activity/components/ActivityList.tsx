@@ -13,8 +13,6 @@ import { PendingBridgeTransactionItem } from 'features/portfolio/assets/componen
 import { TokenActivityListItem } from 'features/portfolio/assets/components/TokenActivityListItem'
 import { XpActivityListItem } from 'features/portfolio/assets/components/XpActivityListItem'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import { SwapIcon } from 'new/features/notifications/components/SwapIcon'
-import { router } from 'expo-router'
 import React, { useCallback } from 'react'
 import { ViewStyle } from 'react-native'
 import { ActivityListItem } from '../utils'
@@ -56,33 +54,6 @@ export const ActivityList = ({
             item={item.transaction}
             showSeparator={index !== data.length - 1}
             onPress={() => handlePendingBridge(item.transaction)}
-          />
-        )
-      }
-
-      if (item.type === 'pendingSwap') {
-        const swap = item.swapActivity
-        const fromSymbol = swap.transfer.sourceAsset.symbol
-        const toSymbol = swap.transfer.targetAsset.symbol
-        const nextItem = data[index + 1]
-        const showSeparator =
-          nextItem?.type !== 'header' && index !== data.length - 1
-        return (
-          <ActivityListItemView
-            title={`Swapping ${fromSymbol} to ${toSymbol} in progress...`}
-            subtitle="Tap for more details"
-            subtitleType="text"
-            accessoryType="chevron"
-            timestamp={swap.timestamp}
-            showSeparator={showSeparator}
-            icon={<SwapIcon status="in_progress" />}
-            onPress={() =>
-              router.push({
-                // @ts-ignore TODO: make routes typesafe
-                pathname: '/notifications/swapDetail',
-                params: { id: swap.transfer.id }
-              })
-            }
           />
         )
       }
