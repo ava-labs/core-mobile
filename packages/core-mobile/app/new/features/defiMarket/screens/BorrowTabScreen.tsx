@@ -21,6 +21,7 @@ import {
   ViewStyle
 } from 'react-native'
 import Animated from 'react-native-reanimated'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { BorrowProtocolSelector } from '../components/BorrowProtocolSelector'
 
 interface BorrowTabScreenProps {
@@ -48,7 +49,7 @@ const BorrowTabScreen = ({
   }, [])
 
   const handleAddBorrow = useCallback(() => {
-    // TODO: Navigate to borrow flow
+    AnalyticsService.capture('EarnBorrowStart')
     // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/borrow' })
   }, [navigate])
