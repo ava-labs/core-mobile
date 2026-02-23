@@ -175,7 +175,7 @@ export const BorrowSummaryBanner = ({
                     width: HEALTH_SCORE_BADGE_SIZE,
                     height: HEALTH_SCORE_BADGE_SIZE,
                     borderRadius: HEALTH_SCORE_BADGE_SIZE / 2,
-                    backgroundColor: '$surfacePrimary',
+                    backgroundColor: 'transparent',
                     borderWidth: HEALTH_SCORE_BADGE_BORDER_WIDTH,
                     borderColor: healthScoreRingColor,
                     alignItems: 'center',
