@@ -6,7 +6,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { BlurViewWithFallback } from '@avalabs/k2-alpine/src/components/BlurViewWithFallback/BlurViewWithFallback'
 import { useHeaderHeight } from '@react-navigation/elements'
-import { FlashList, FlashListProps } from '@shopify/flash-list'
+import { FlashList, FlashListProps, FlashListRef } from '@shopify/flash-list'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, {
@@ -98,7 +98,7 @@ export interface ListScreenProps<T>
 }
 
 export type ListScreenRef<T> = {
-  scrollViewRef?: RefObject<KeyboardAwareScrollViewRef<T>>
+  scrollViewRef?: RefObject<FlashListRef<T>>
 }
 
 export const ListScreenV2 = <T,>({
@@ -127,7 +127,7 @@ export const ListScreenV2 = <T,>({
   const [targetLayout, setTargetLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const scrollViewRef = useRef<KeyboardAwareScrollViewRef<T>>(null)
+  const scrollViewRef = useRef<FlashListRef<T>>(null)
 
   // Shared values for worklets (UI thread animations)
   const titleHeight = useSharedValue<number>(0)
@@ -148,7 +148,7 @@ export const ListScreenV2 = <T,>({
   useImperativeHandle(
     flatListRef,
     () => ({
-      scrollViewRef
+      scrollViewRef: scrollViewRef as RefObject<FlashListRef<T>>
     }),
     [scrollViewRef]
   )
