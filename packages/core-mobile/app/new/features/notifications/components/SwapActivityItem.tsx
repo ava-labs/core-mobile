@@ -1,5 +1,7 @@
-import React, { FC, useCallback } from 'react'
+import React, { FC, useCallback, useMemo } from 'react'
 import { Text } from '@avalabs/k2-alpine'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { SwapActivityItem as SwapActivityItemType } from '../types'
 import { mapTransferToSwapStatus } from '../utils'
 import NotificationListItem from './NotificationListItem'
@@ -15,20 +17,52 @@ type SwapActivityItemProps = {
 /**
  * List item for a swap transaction in the notification center.
  *
- * Title is derived from the item's fromToken / toToken
+ * Title is derived from the item's fromToken / toToken amounts and symbols
  */
 const SwapActivityItem: FC<SwapActivityItemProps> = ({
   item,
   showSeparator,
   testID
 }) => {
+  const { getNetworkByCaip2ChainId } = useNetworks()
+
   const status = mapTransferToSwapStatus(item.transfer)
   const fromSymbol = item.transfer.sourceAsset.symbol
   const toSymbol = item.transfer.targetAsset.symbol
 
+  const fromNetworkLogoUri = getNetworkByCaip2ChainId(
+    item.transfer.sourceChain.chainId
+  )?.logoUri
+
+  const fromAmount = useMemo(() => {
+    try {
+      return new TokenUnit(
+        BigInt(item.transfer.amountIn),
+        item.transfer.sourceAsset.decimals,
+        item.transfer.sourceAsset.symbol
+      ).toDisplay()
+    } catch {
+      return ''
+    }
+  }, [item.transfer])
+
+  const toAmount = useMemo(() => {
+    try {
+      return new TokenUnit(
+        BigInt(item.transfer.amountOut),
+        item.transfer.targetAsset.decimals,
+        item.transfer.targetAsset.symbol
+      ).toDisplay()
+    } catch {
+      return ''
+    }
+  }, [item.transfer])
+
   const title =
-    status === 'completed' || status === 'failed'
-      ? `Swapped ${fromSymbol} to ${toSymbol}`
+    status === 'failed'
+      ? `${fromAmount} ${fromSymbol} swapped for ${toAmount} ${toSymbol}`
+      : status === 'completed'
+      ? `${fromAmount} ${fromSymbol} were swapped for ${toAmount} ${toSymbol}`
       : `Swapping ${fromSymbol} to ${toSymbol} in progress...`
 
   const subtitle =
@@ -66,7 +100,7 @@ const SwapActivityItem: FC<SwapActivityItemProps> = ({
     <NotificationListItem
       title={title}
       subtitle={renderSubtitle()}
-      icon={<SwapIcon status={status} />}
+      icon={<SwapIcon status={status} networkLogoUri={fromNetworkLogoUri} />}
       timestamp={status === 'failed' ? undefined : item.timestamp}
       showSeparator={showSeparator}
       accessoryType={accessoryType}
