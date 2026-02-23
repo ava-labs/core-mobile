@@ -114,6 +114,7 @@ export const TokenHeader = ({
       <Text
         variant="heading2"
         sx={{ color: '$textSecondary', lineHeight: 38, marginTop: 10 }}
+        testID={`token_header_name__${tokenNameForDisplay}`}
         numberOfLines={1}>
         {tokenNameForDisplay}
       </Text>

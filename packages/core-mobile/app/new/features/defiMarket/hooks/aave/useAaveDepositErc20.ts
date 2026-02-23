@@ -14,13 +14,20 @@ import { TransactionParams } from '@avalabs/evm-module'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { useETHSendTransaction } from 'common/hooks/useETHSendTransaction'
 
 export const useAaveDepositErc20 = ({
   asset,
-  market
+  market,
+  onConfirmed,
+  onReverted,
+  onError
 }: {
   asset: DepositAsset
   market: DefiMarket
+  onConfirmed?: () => void
+  onReverted?: () => void
+  onError?: () => void
 }): {
   aaveDepositErc20: (params: { amount: TokenUnit }) => Promise<string>
 } => {
@@ -28,6 +35,21 @@ export const useAaveDepositErc20 = ({
   const provider = useAvalancheEvmProvider()
   const activeAccount = useSelector(selectActiveAccount)
   const address = activeAccount?.addressC
+
+  const handleConfirmed = useCallback(() => {
+    queryClient.invalidateQueries({
+      queryKey: [ReactQueryKeys.AAVE_AVAILABLE_MARKETS]
+    })
+    onConfirmed?.()
+  }, [onConfirmed])
+
+  const { sendTransaction } = useETHSendTransaction({
+    network: market.network,
+    provider,
+    onConfirmed: handleConfirmed,
+    onReverted,
+    onError
+  })
 
   const aaveDepositErc20 = useCallback(
     async ({ amount }: { amount: TokenUnit }) => {
@@ -47,6 +69,7 @@ export const useAaveDepositErc20 = ({
       const accountAddress = address as Address
       const chainId = getEvmCaip2ChainId(market.network.chainId)
 
+      // Use request directly for approve (ensureAllowance needs signAndSend)
       const signAndSend = (
         txParams: [TransactionParams],
         context?: Record<string, unknown>
@@ -75,39 +98,26 @@ export const useAaveDepositErc20 = ({
         }
       }
 
-      const txHash = await request({
-        method: RpcMethod.ETH_SEND_TRANSACTION,
-        params: [
-          {
-            from: accountAddress,
-            to: AAVE_POOL_C_CHAIN_ADDRESS,
-            data: encodeFunctionData({
-              abi: AAVE_AVALANCHE3_POOL_PROXY_ABI,
-              functionName: 'supply',
-              args: [tokenAddress, amount.toSubUnit(), accountAddress, 0]
-            })
-          }
-        ],
-        chainId
+      // Use sendTransaction for supply (handles waitForTransaction and callbacks)
+      const encodedData = encodeFunctionData({
+        abi: AAVE_AVALANCHE3_POOL_PROXY_ABI,
+        functionName: 'supply',
+        args: [tokenAddress, amount.toSubUnit(), accountAddress, 0]
       })
 
-      // Invalidate cache in background after transaction is confirmed
-      provider
-        .waitForTransaction(txHash)
-        .then(receipt => {
-          if (receipt && receipt.status === 1) {
-            queryClient.invalidateQueries({
-              queryKey: [ReactQueryKeys.AAVE_AVAILABLE_MARKETS]
-            })
-          }
-        })
-        .catch(() => {
-          // Silently ignore - cache will be stale but not critical
-        })
-
-      return txHash
+      return sendTransaction({
+        contractAddress: AAVE_POOL_C_CHAIN_ADDRESS,
+        encodedData
+      })
     },
-    [request, market, address, asset.token, provider]
+    [
+      request,
+      market.network.chainId,
+      address,
+      asset.token,
+      provider,
+      sendTransaction
+    ]
   )
 
   return {

@@ -81,9 +81,8 @@ class WalletFactory {
         if (!walletSecret.success) {
           throw new Error('Failed to load wallet secret')
         }
-
         const ledgerData = JSON.parse(walletSecret.value)
-        return new LedgerWallet(ledgerData)
+        return new LedgerWallet({ ...ledgerData, walletId })
       }
       default:
         throw new Error(

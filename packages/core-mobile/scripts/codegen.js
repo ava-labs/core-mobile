@@ -4,12 +4,6 @@ const path = require('path')
 
 const root = path.resolve(__dirname, '..')
 
-const isCI = process.env.APP_ENV === 'ci'
-
-const PROFILE_SCHEMA_URL = isCI
-  ? 'https://core-profile-api.avax.network/schema.json'
-  : 'https://core-profile-api.avax-test.network/schema.json'
-
 function run(cmd) {
   execSync(cmd, {
     stdio: 'inherit',
@@ -19,7 +13,7 @@ function run(cmd) {
 
 function main() {
   // ensure output dir
-  run('mkdir -p app/utils/apiClient/generated')
+  run('mkdir -p app/utils/api/generated')
 
   // contracts
   run(
@@ -28,15 +22,9 @@ function main() {
       './node_modules/@openzeppelin/contracts/build/contracts/ERC721.json ' +
       './node_modules/@openzeppelin/contracts/build/contracts/ERC1155.json'
   )
-  // profile API (+ patch script)
-  run(
-    `npx openapi-zod-client '${PROFILE_SCHEMA_URL}' ` +
-      "-o './app/utils/apiClient/generated/profileApi.client.ts'"
-  )
-  run(
-    'node ./app/utils/apiClient/scripts/fixZodIntersections.js ' +
-      './app/utils/apiClient/generated/profileApi.client.ts'
-  )
+
+  // profile API
+  run('npx @hey-api/openapi-ts -f profile-api.config.js')
 
   // balance API
   run('npx @hey-api/openapi-ts -f balance-api.config.js')

@@ -20,10 +20,13 @@ import { addBufferToCChainBaseFee } from 'services/wallet/utils'
 import Logger from 'utils/Logger'
 import { Account } from 'store/account'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
-import { getPvmAddresses } from 'common/utils/getPvmAddresses'
 
 const DUMMY_AMOUNT = 1000000n
 const DUMMY_UTXO_ID = 'dummy'
+
+export const getPvmAddresses = (xpAddresses: string[]): string[] => {
+  return xpAddresses.map(addr => `P-${addr}`)
+}
 
 export const getDelegationFee = async ({
   stakeAmount,
@@ -32,7 +35,8 @@ export const getDelegationFee = async ({
   rewardAddress,
   feeState,
   provider,
-  pFeeAdjustmentThreshold
+  pFeeAdjustmentThreshold,
+  xpAddresses
 }: {
   stakeAmount: bigint
   account: Account
@@ -41,6 +45,7 @@ export const getDelegationFee = async ({
   feeState: pvm.FeeState
   provider: Avalanche.JsonRpcProvider
   pFeeAdjustmentThreshold: number
+  xpAddresses: string[]
 }): Promise<bigint> => {
   const unsignedTx = await AvalancheWalletService.createAddDelegatorTx({
     account,
@@ -54,7 +59,8 @@ export const getDelegationFee = async ({
     isTestnet,
     shouldValidateBurnedAmount: true,
     feeState,
-    pFeeAdjustmentThreshold
+    pFeeAdjustmentThreshold,
+    xpAddresses
   })
 
   const tx = await Avalanche.parseAvalancheTx(
@@ -73,7 +79,8 @@ export const getDelegationFeePostPImport = async ({
   feeState,
   pChainAtomicBalance,
   importPFee,
-  provider
+  provider,
+  xpAddresses
 }: {
   stakeAmount: bigint
   account: Account
@@ -82,12 +89,14 @@ export const getDelegationFeePostPImport = async ({
   pChainAtomicBalance: bigint
   importPFee: bigint
   provider: Avalanche.JsonRpcProvider
+  xpAddresses: string[]
 }): Promise<bigint> => {
   const assetId = getAvaxAssetId(isTestnet)
 
   const pChainUTXOs = await AvalancheWalletService.getPChainUTXOs({
     account,
-    isTestnet
+    isTestnet,
+    xpAddresses
   })
 
   // put the incoming UTXO on top as if the import P already happened
@@ -95,7 +104,7 @@ export const getDelegationFeePostPImport = async ({
     getTransferOutputUtxos({
       amt: pChainAtomicBalance - importPFee,
       assetId,
-      addresses: getPvmAddresses(account)
+      addresses: getPvmAddresses(xpAddresses)
     }),
     ...pChainUTXOs.getUTXOs()
   ]
@@ -109,7 +118,8 @@ export const getDelegationFeePostPImport = async ({
       isTestnet,
       stakeAmountInNAvax: stakeAmount,
       destinationAddress: account.addressPVM,
-      feeState
+      feeState,
+      xpAddresses
     })
 
   const tx = await Avalanche.parseAvalancheTx(
@@ -128,7 +138,8 @@ export const getDelegationFeePostCExportAndPImport = async ({
   feeState,
   provider,
   pChainBalance = 0n,
-  pFeeAdjustmentThreshold
+  pFeeAdjustmentThreshold,
+  xpAddresses
 }: {
   stakeAmount: bigint
   account: Account
@@ -137,15 +148,17 @@ export const getDelegationFeePostCExportAndPImport = async ({
   provider: Avalanche.JsonRpcProvider
   pChainBalance?: bigint
   pFeeAdjustmentThreshold: number
+  xpAddresses: string[]
 }): Promise<bigint> => {
   const assetId = getAvaxAssetId(isTestnet)
 
   const pChainUTXOs = await AvalancheWalletService.getPChainUTXOs({
     account,
-    isTestnet
+    isTestnet,
+    xpAddresses
   })
 
-  const pvmAddresses = getPvmAddresses(account)
+  const pvmAddresses = getPvmAddresses(xpAddresses)
 
   // put the incoming UTXO on top as if the export C + import P already happened
   // here we need to do a try catch to grab the missing amount since we don't
@@ -173,7 +186,8 @@ export const getDelegationFeePostCExportAndPImport = async ({
         isTestnet,
         stakeAmountInNAvax: stakeAmount,
         destinationAddress: account.addressPVM,
-        feeState
+        feeState,
+        xpAddresses
       })
   } catch (error) {
     Logger.warn('unable to simulate add delegator tx', error)
@@ -214,7 +228,8 @@ export const getDelegationFeePostCExportAndPImport = async ({
         isTestnet,
         stakeAmountInNAvax: stakeAmount,
         destinationAddress: account.addressPVM,
-        feeState
+        feeState,
+        xpAddresses
       })
   }
 
@@ -232,13 +247,15 @@ export const getImportPFee = async ({
   isTestnet,
   destinationAddress,
   feeState,
-  provider
+  provider,
+  xpAddresses
 }: {
   account: Account
   isTestnet: boolean
   destinationAddress: string
   feeState: pvm.FeeState
   provider: Avalanche.JsonRpcProvider
+  xpAddresses: string[]
 }): Promise<bigint> => {
   const unsignedTx = await AvalancheWalletService.createImportPTx({
     account,
@@ -246,7 +263,8 @@ export const getImportPFee = async ({
     sourceChain: 'C',
     destinationAddress,
     shouldValidateBurnedAmount: true,
-    feeState
+    feeState,
+    xpAddresses
   })
 
   const tx = await Avalanche.parseAvalancheTx(
@@ -262,19 +280,22 @@ export const getImportPFeePostCExport = async ({
   account,
   isTestnet,
   feeState,
-  provider
+  provider,
+  xpAddresses
 }: {
   account: Account
   isTestnet: boolean
   feeState: pvm.FeeState
   provider: Avalanche.JsonRpcProvider
+  xpAddresses: string[]
 }): Promise<bigint> => {
   const assetId = getAvaxAssetId(isTestnet)
 
   const { pChainUtxo: atomicPChainUTXOs } =
     await AvalancheWalletService.getAtomicUTXOs({
       account,
-      isTestnet
+      isTestnet,
+      xpAddresses
     })
 
   // put the incoming UTXO on top as if the export C already happened
@@ -283,7 +304,7 @@ export const getImportPFeePostCExport = async ({
     getTransferOutputUtxos({
       amt: DUMMY_AMOUNT,
       assetId,
-      addresses: getPvmAddresses(account)
+      addresses: getPvmAddresses(xpAddresses)
     }),
     ...atomicPChainUTXOs.getUTXOs()
   ]
@@ -296,7 +317,8 @@ export const getImportPFeePostCExport = async ({
     isTestnet,
     sourceChain: 'C',
     destinationAddress: account.addressPVM,
-    feeState
+    feeState,
+    xpAddresses
   })
 
   const tx = await Avalanche.parseAvalancheTx(
@@ -313,13 +335,15 @@ export const getExportCFee = async ({
   account,
   isTestnet,
   cBaseFeeMultiplier,
-  avalancheEvmProvider
+  avalancheEvmProvider,
+  xpAddresses
 }: {
   cChainBaseFee: TokenUnit
   account: Account
   isTestnet: boolean
   cBaseFeeMultiplier: number
   avalancheEvmProvider: JsonRpcBatchInternal
+  xpAddresses: string[]
 }): Promise<bigint> => {
   const paddedCChainBaseFee = addBufferToCChainBaseFee(
     cChainBaseFee,
@@ -335,7 +359,8 @@ export const getExportCFee = async ({
     destinationChain: 'P',
     destinationAddress: account.addressPVM,
     shouldValidateBurnedAmount: true,
-    avalancheEvmProvider
+    avalancheEvmProvider,
+    xpAddresses
   })
 
   const exportCFee = calculateCChainFee(paddedCChainBaseFee, unsignedTx)
@@ -345,14 +370,17 @@ export const getExportCFee = async ({
 
 export const getPChainAtomicBalance = async ({
   isTestnet,
-  account
+  account,
+  xpAddresses
 }: {
   isTestnet: boolean
   account: Account
+  xpAddresses: string[]
 }): Promise<bigint> => {
   const atomicUTXOs = await AvalancheWalletService.getAtomicUTXOs({
     account,
-    isTestnet
+    isTestnet,
+    xpAddresses
   })
 
   const assetId = getAvaxAssetId(isTestnet)

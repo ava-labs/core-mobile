@@ -25,7 +25,7 @@ import { SupportedReceiveEvmTokens } from '../components/SupportedReceiveEvmToke
 export const ReceiveScreen = (): ReactNode => {
   const { vmName } = useLocalSearchParams<{ vmName: string }>()
   const { theme } = useTheme()
-  const { networks } = useCombinedPrimaryNetworks()
+  const { networks } = useCombinedPrimaryNetworks({ hideEmptySolana: true })
   const hasXpAddresses = useHasXpAddresses()
   const [selectedNetwork, setSelectedNetwork] = useReceiveSelectedNetwork()
 

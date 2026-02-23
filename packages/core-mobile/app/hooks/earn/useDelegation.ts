@@ -25,6 +25,7 @@ import Logger from 'utils/Logger'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { selectActiveAccount } from 'store/account'
 import { getMinimumStakeDurationMs } from 'services/earn/utils'
+import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import {
   useAvalancheEvmProvider,
   useAvalancheXpProvider
@@ -48,6 +49,7 @@ export const useDelegation = (): {
   const crossChainFeesMultiplier = useSelector(selectCrossChainFeesMultiplier)
   const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
   const { defaultFeeState } = useGetFeeState()
+  const { xpAddresses, xpAddressDictionary } = useXPAddresses(activeAccount)
   const avaxProvider = useAvalancheXpProvider(isDeveloperMode)
   const avalancheEvmProvider = useAvalancheEvmProvider(isDeveloperMode)
   const cChainBaseFee = useCChainBaseFee()
@@ -80,7 +82,8 @@ export const useDelegation = (): {
         feeState: defaultFeeState,
         stakeAmount,
         crossChainFeesMultiplier,
-        avalancheEvmProvider
+        avalancheEvmProvider,
+        xpAddresses
       })
 
       setSteps(result)
@@ -97,13 +100,14 @@ export const useDelegation = (): {
       cBaseFeeMultiplier,
       crossChainFeesMultiplier,
       avaxProvider,
-      avalancheEvmProvider
+      avalancheEvmProvider,
+      xpAddresses
     ]
   )
 
   const delegate: Delegate = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-shadow
-    async ({ steps, startDate, endDate, nodeId }) => {
+    async ({ steps, startDate, endDate, nodeId, onProgress }) => {
       if (activeAccount === undefined) {
         throw new Error('No active account')
       }
@@ -124,6 +128,13 @@ export const useDelegation = (): {
       setSteps(steps)
 
       let txHash
+      let stepIndex = 0
+
+      // Show the first operation before starting
+      const firstStep = steps[0]
+      if (firstStep) {
+        onProgress?.(0, firstStep.operation)
+      }
 
       for (const step of steps) {
         switch (step.operation) {
@@ -163,7 +174,9 @@ export const useDelegation = (): {
               stakeAmountNanoAvax: step.amount,
               startDate: delegateStartDate,
               feeState: defaultFeeState,
-              pFeeAdjustmentThreshold
+              pFeeAdjustmentThreshold,
+              xpAddresses,
+              xpAddressDictionary
             })
             break
           }
@@ -176,7 +189,9 @@ export const useDelegation = (): {
               account: activeAccount,
               selectedCurrency,
               isTestnet: isDeveloperMode,
-              feeState: defaultFeeState
+              feeState: defaultFeeState,
+              xpAddresses,
+              xpAddressDictionary
             })
             break
 
@@ -193,13 +208,27 @@ export const useDelegation = (): {
               account: activeAccount,
               isTestnet: isDeveloperMode,
               cBaseFeeMultiplier,
-              avalancheEvmProvider
+              avalancheEvmProvider,
+              xpAddresses
             })
             break
 
           default:
             throw new Error(`unknown step: ${step}`)
         }
+
+        // Update progress after operation completes
+        // Use setTimeout pattern (proven successful in commit 0c60ac513)
+        // This ensures React Native has time to flush state updates before next operation
+        stepIndex++
+        const nextStep = steps[stepIndex]
+
+        await new Promise<void>(resolve => {
+          setTimeout(() => {
+            onProgress?.(stepIndex, nextStep?.operation ?? null)
+            resolve()
+          }, 10)
+        })
       }
 
       if (!txHash) {
@@ -218,7 +247,9 @@ export const useDelegation = (): {
       pFeeAdjustmentThreshold,
       selectedCurrency,
       cBaseFeeMultiplier,
-      avalancheEvmProvider
+      avalancheEvmProvider,
+      xpAddresses,
+      xpAddressDictionary
     ]
   )
 

@@ -77,7 +77,6 @@ export const AnimatedBalance = ({
 
   return (
     <Animated.View
-      testID="animated_balance"
       style={{
         flexDirection: 'row',
         alignItems: 'flex-end'

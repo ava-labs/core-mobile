@@ -211,6 +211,7 @@ class FCMService {
         },
         dispatch: action => action,
         isEarnBlocked: false,
+        isInAppDefiBorrowBlocked: false,
         openUrl: link =>
           router.navigate({
             // @ts-ignore TODO: make routes typesafe

@@ -51,7 +51,7 @@ export const AccountButtons = ({
   const handleShowAlertWithTextInput = (): void => {
     showAlertWithTextInput({
       title: 'Rename account',
-      inputs: [{ key: 'accountName', defaultValue: account?.name }],
+      inputs: [{ key: 'accountName', defaultValue: account?.name.trim() }],
       buttons: [
         {
           text: 'Cancel',
@@ -60,7 +60,7 @@ export const AccountButtons = ({
         {
           text: 'Save',
           shouldDisable: (values: Record<string, string>) => {
-            return values.accountName?.length === 0
+            return values.accountName?.trim().length === 0
           },
           onPress: handleSaveAccountName
         }
@@ -95,13 +95,13 @@ export const AccountButtons = ({
 
   const handleSaveAccountName = useCallback(
     (values: Record<string, string>): void => {
-      if (values.accountName && values.accountName.length > 0) {
+      if (values.accountName && values.accountName.trim().length > 0) {
         dismissAlertWithTextInput()
-        if (account && values.accountName !== account.name) {
+        if (account && values.accountName.trim() !== account.name.trim()) {
           dispatch(
             setAccountTitle({
               accountId: account.id,
-              title: values.accountName,
+              title: values.accountName.trim(),
               walletType
             })
           )
@@ -122,6 +122,9 @@ export const AccountButtons = ({
       </Button>
       {walletType !== WalletType.SEEDLESS && (
         <Button
+          testID={
+            !isRemoveEnabled ? 'remove_account_disabled' : 'remove_account'
+          }
           style={{ borderRadius: 12 }}
           size="large"
           textStyle={{

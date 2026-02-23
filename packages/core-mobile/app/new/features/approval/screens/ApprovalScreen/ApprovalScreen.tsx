@@ -23,7 +23,10 @@ import {
   selectAccountByIndex,
   selectActiveAccount
 } from 'store/account/slice'
-import { selectIsSeedlessSigningBlocked } from 'store/posthog/slice'
+import {
+  selectIsGaslessInstantBlocked,
+  selectIsSeedlessSigningBlocked
+} from 'store/posthog/slice'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { RequestContext } from 'store/rpc/types'
 import Logger from 'utils/Logger'
@@ -53,6 +56,7 @@ const ApprovalScreen = ({
   const [amountError, setAmountError] = useState<string | undefined>()
   const nativeToken = useNativeTokenWithBalanceByNetwork(network)
   const activeWallet = useActiveWallet()
+  const isGaslessInstantBlocked = useSelector(selectIsGaslessInstantBlocked)
 
   const symbol = chainId
     ? (L2_NETWORK_SYMBOL_MAPPING[chainId] as NetworkTokenSymbols)
@@ -139,7 +143,8 @@ const ApprovalScreen = ({
       // flag VM-module retry via request context instead of mutating tx data
       request.context = {
         ...request.context,
-        [RequestContext.SHOULD_RETRY]: gaslessEnabled
+        [RequestContext.SHOULD_RETRY]:
+          gaslessEnabled && !isGaslessInstantBlocked
       }
     }
 
@@ -174,7 +179,8 @@ const ApprovalScreen = ({
     maxFeePerGas,
     maxPriorityFeePerGas,
     gasLimit,
-    hashedCustomSpend
+    hashedCustomSpend,
+    isGaslessInstantBlocked
   ])
 
   const validateEthSendTransaction = useCallback(() => {
@@ -185,6 +191,13 @@ const ApprovalScreen = ({
       signingData.type !== RpcMethod.ETH_SEND_TRANSACTION
     )
       return
+
+    // Skip validation if gasless is enabled and available
+    if (gaslessEnabled && shouldShowGaslessSwitch) {
+      setAmountError(undefined)
+      return
+    }
+
     const ethSendTx = signingData.data
 
     try {
@@ -207,7 +220,15 @@ const ApprovalScreen = ({
         setAmountError(SendErrorMessage.UNKNOWN_ERROR)
       }
     }
-  }, [signingData, network, maxFeePerGas, nativeToken, gasLimit])
+  }, [
+    signingData,
+    network?.networkToken,
+    nativeToken,
+    gaslessEnabled,
+    shouldShowGaslessSwitch,
+    gasLimit,
+    maxFeePerGas
+  ])
 
   const handleFeesChange = useCallback((fees: Eip1559Fees) => {
     setGasLimit(fees.gasLimit)

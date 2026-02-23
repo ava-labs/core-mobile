@@ -15,12 +15,11 @@ import { Account, selectActiveAccount } from 'store/account'
 import { selectActiveWallet } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import {
-  getAddressesFromXpubXP,
-  getXpubXPIfAvailable
-} from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
+import { selectIsInAppReviewBlocked } from 'store/posthog/slice'
+import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
+import { getCachedXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { CurrentAvalancheAccount } from '@avalabs/avalanche-module'
-import { AgnosticRpcProvider, Request } from '../../types'
+import { AgnosticRpcProvider, Request, RequestContext } from '../../types'
 
 export const handleRequestViaVMModule = async ({
   module,
@@ -59,6 +58,9 @@ export const handleRequestViaVMModule = async ({
   }
 
   const network = selectNetwork(chainId)(listenerApi.getState())
+  const isInAppReviewBlocked = selectIsInAppReviewBlocked(
+    listenerApi.getState()
+  )
 
   if (!network) {
     Logger.error(`Network ${chainId} not found`)
@@ -90,6 +92,24 @@ export const handleRequestViaVMModule = async ({
   const params = request.data.params.request.params
   const method = request.method as unknown as VmModuleRpcMethod
 
+  let context =
+    request.context ??
+    (await getContext({
+      method,
+      params,
+      activeAccount,
+      walletId: activeWallet.id,
+      walletType: activeWallet.type,
+      isTestnet
+    }))
+
+  if (!isInAppReviewBlocked) {
+    context = {
+      ...context,
+      [RequestContext.IN_APP_REVIEW]: true
+    }
+  }
+
   const response = await module.onRpcRequest(
     {
       requestId: String(request.data.id),
@@ -102,16 +122,7 @@ export const handleRequestViaVMModule = async ({
       },
       method,
       params,
-      context:
-        request.context ??
-        (await getContext({
-          method,
-          params,
-          activeAccount,
-          walletId: activeWallet.id,
-          walletType: activeWallet.type,
-          isTestnet
-        }))
+      context
     },
     mapToVmNetwork(network)
   )
@@ -194,12 +205,11 @@ const getContextAccount = async ({
       accountIndex: account.index
     })
 
-    const externalXPAddressesResult = await getAddressesFromXpubXP({
-      accountIndex: account.index,
+    const externalXPAddressesResult = await getCachedXPAddresses({
+      account,
       walletId,
       walletType,
-      isDeveloperMode: isTestnet,
-      onlyWithActivity: true
+      isDeveloperMode: isTestnet
     })
     const prefix = chainAlias === 'P' ? 'P' : 'X'
 
@@ -207,14 +217,12 @@ const getContextAccount = async ({
       xpAddress: currentAddress,
       evmAddress: account.addressC,
       xpubXP,
-      externalXPAddresses: externalXPAddressesResult.xpAddresses.map(
-        address => {
-          return {
-            index: address.index,
-            address: `${prefix}-` + address.address
-          }
-        }
-      )
+      externalXPAddresses: Object.entries(
+        externalXPAddressesResult.xpAddressDictionary
+      ).map(([address, info]) => ({
+        index: info.index,
+        address: `${prefix}-${address}`
+      }))
     }
   }
   return undefined

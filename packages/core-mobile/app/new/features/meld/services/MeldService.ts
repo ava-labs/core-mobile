@@ -35,12 +35,10 @@ class MeldService {
     countries
   }: MeldDefaultParams): Promise<Country[]> {
     return this.#meldApiClient.getCountries({
-      queries: {
-        serviceProviders: serviceProviders?.join(','),
-        categories: categories.join(','),
-        accountFilter,
-        countries: countries?.join(',')
-      }
+      serviceProviders: serviceProviders?.join(','),
+      categories: categories.join(','),
+      accountFilter,
+      countries: countries?.join(',')
     })
   }
 
@@ -52,13 +50,11 @@ class MeldService {
     countries
   }: SearchFiatCurrenciesParams): Promise<FiatCurrency[]> {
     return this.#meldApiClient.getFiatCurrencies({
-      queries: {
-        serviceProviders: serviceProviders?.join(','),
-        categories: categories.join(','),
-        accountFilter,
-        countries: countries?.join(','),
-        fiatCurrencies: fiatCurrencies?.join(',')
-      }
+      serviceProviders: serviceProviders?.join(','),
+      categories: categories.join(','),
+      accountFilter,
+      countries: countries?.join(','),
+      fiatCurrencies: fiatCurrencies?.join(',')
     })
   }
 
@@ -69,15 +65,12 @@ class MeldService {
     cryptoCurrencies,
     accountFilter = true
   }: SearchCryptoCurrenciesParams): Promise<CryptoCurrency[]> {
-    const queries = {
+    return this.#meldApiClient.getCryptoCurrencies({
       serviceProviders: serviceProviders?.join(','),
       categories: categories.join(','),
       accountFilter,
       countries: countries?.join(','),
       cryptoCurrencies: cryptoCurrencies?.join(',')
-    }
-    return this.#meldApiClient.getCryptoCurrencies({
-      queries
     })
   }
 
@@ -87,14 +80,11 @@ class MeldService {
     accountFilter = true,
     cryptoCurrencies
   }: SearchServiceProvidersParams): Promise<ServiceProvider[]> {
-    const queries = {
+    return this.#meldApiClient.getServiceProviders({
       categories: categories.join(','),
       accountFilter,
       countries: countries?.join(','),
       cryptoCurrencies: cryptoCurrencies?.join(',')
-    }
-    return this.#meldApiClient.getServiceProviders({
-      queries
     })
   }
 
@@ -103,12 +93,11 @@ class MeldService {
     countries,
     accountFilter = true
   }: SearchDefaultsByCountryParams): Promise<SearchDefaultsByCountry[]> {
-    const queries = {
+    return this.#meldApiClient.getDefaultsByCountry({
       categories: categories.join(','),
       accountFilter,
       countries: countries?.join(',')
-    }
-    return this.#meldApiClient.getDefaultsByCountry({ queries })
+    })
   }
 
   async getPurchaseLimits({
@@ -120,7 +109,7 @@ class MeldService {
     cryptoCurrencyCodes,
     includeDetails = false
   }: GetTradeLimitsParams): Promise<GetTradeLimits[]> {
-    const queries = {
+    return this.#meldApiClient.getPurchaseLimits({
       categories: categories.join(','),
       accountFilter,
       countries: countries?.join(','),
@@ -128,8 +117,7 @@ class MeldService {
       fiatCurrencies: fiatCurrencies?.join(','),
       cryptoCurrencies: cryptoCurrencyCodes?.join(','),
       includeDetails
-    }
-    return this.#meldApiClient.getPurchaseLimits({ queries })
+    })
   }
 
   async getSellLimits({
@@ -141,7 +129,7 @@ class MeldService {
     cryptoCurrencyCodes,
     includeDetails = false
   }: GetTradeLimitsParams): Promise<GetTradeLimits[]> {
-    const queries = {
+    return this.#meldApiClient.getSellLimits({
       categories: categories.join(','),
       accountFilter,
       countries: countries?.join(','),
@@ -149,8 +137,7 @@ class MeldService {
       fiatCurrencies: fiatCurrencies?.join(','),
       cryptoCurrencies: cryptoCurrencyCodes?.join(','),
       includeDetails
-    }
-    return this.#meldApiClient.getSellLimits({ queries })
+    })
   }
 
   async searchPaymentMethods({
@@ -161,15 +148,14 @@ class MeldService {
     fiatCurrencies,
     cryptoCurrencyCodes
   }: SearchPaymentMethodsParams): Promise<SearchPaymentMethods[]> {
-    const queries = {
+    return this.#meldApiClient.getPaymentMethods({
       categories: categories.join(','),
       accountFilter,
       countries: countries?.join(','),
       serviceProviders: serviceProviders?.join(','),
       fiatCurrencies: fiatCurrencies?.join(','),
       cryptoCurrencies: cryptoCurrencyCodes?.join(',')
-    }
-    return this.#meldApiClient.getPaymentMethods({ queries })
+    })
   }
 
   async createCryptoQuote({
@@ -236,9 +222,7 @@ class MeldService {
   }: {
     sessionId: string
   }): Promise<MeldTransaction | undefined> {
-    return await this.#meldApiClient.fetchTransactionBySessionId({
-      params: { id: sessionId }
-    })
+    return await this.#meldApiClient.fetchTransactionBySessionId(sessionId)
   }
 }
 

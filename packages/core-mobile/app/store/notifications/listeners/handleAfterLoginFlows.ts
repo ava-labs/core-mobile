@@ -3,11 +3,21 @@ import { AuthorizationStatus } from '@notifee/react-native'
 import { AnyAction } from '@reduxjs/toolkit'
 import { navigateWithPromise } from 'common/utils/navigateWithPromise'
 import { waitForInteractions } from 'common/utils/waitForInteractions'
+import Config from 'react-native-config'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AppUpdateService } from 'services/AppUpdateService/AppUpdateService'
 import NotificationsService from 'services/notifications/NotificationsService'
 import {
+  selectHasAcknowledgedNestEggQualification,
+  selectHasQualifiedForNestEgg,
+  selectIsUserEligibleForNestEggModal
+} from 'store/nestEgg'
+import { selectIsNewSeedlessUserEligibleForNestEggModal } from 'store/nestEgg/slice'
+import {
   selectIsEnableNotificationPromptBlocked,
+  selectIsNestEggCampaignBlocked,
+  selectIsNestEggEligible,
+  selectIsNestEggNewSeedlessOnly,
   selectIsSolanaLaunchModalBlocked,
   selectIsSolanaSupportBlocked
 } from 'store/posthog'
@@ -17,7 +27,6 @@ import {
   setViewOnce,
   ViewOnceKey
 } from 'store/viewOnce'
-import Config from 'react-native-config'
 import { turnOnAllNotifications } from '../slice'
 
 export const handleAfterLoginFlows = async (
@@ -27,6 +36,7 @@ export const handleAfterLoginFlows = async (
   await promptAppUpdateScreenIfNeeded()
   await promptEnableNotificationsIfNeeded(listenerApi)
   await promptSolanaLaunchModalIfNeeded(listenerApi)
+  await promptNestEggCampaignModalIfNeeded(listenerApi)
 }
 
 const promptAppUpdateScreenIfNeeded = async (): Promise<void> => {
@@ -146,5 +156,76 @@ const promptSolanaLaunchModalIfNeeded = async (
     await navigateWithPromise({
       pathname: '/(signedIn)/(modals)/solanaLaunch'
     })
+  }
+}
+
+/**
+ * Show Nest Egg campaign modal
+ * Only applies to seedless wallets (not mnemonic or keystone)
+ *
+ * Flag behavior (independent flags):
+ * - nest-egg-campaign ON: All seedless users see the modal
+ * - nest-egg-new-seedless-only ON: Only new seedless users see the modal
+ */
+const promptNestEggCampaignModalIfNeeded = async (
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const { getState } = listenerApi
+  const state = getState()
+
+  // Check if campaign is blocked (neither flag is enabled)
+  const isCampaignBlocked = selectIsNestEggCampaignBlocked(state)
+  if (isCampaignBlocked) {
+    return
+  }
+
+  // Only seedless wallets are eligible for the campaign
+  const isEligible = selectIsNestEggEligible(state)
+  if (!isEligible) {
+    return
+  }
+
+  // Check if user has already qualified (completed a swap)
+  const hasQualified = selectHasQualifiedForNestEgg(state)
+  // Check if user has acknowledged qualification
+  const hasAcknowledged = selectHasAcknowledgedNestEggQualification(state)
+
+  // First, check if user qualified but hasn't acknowledged yet
+  // This handles the case where user qualified, app closed, and now opening again
+  if (hasQualified && !hasAcknowledged) {
+    await waitForInteractions()
+
+    await navigateWithPromise({
+      pathname: '/(signedIn)/(modals)/nestEggCampaign/success'
+    })
+    return
+  }
+
+  // Check which flag is enabled (they work independently)
+  const isNewSeedlessOnly = selectIsNestEggNewSeedlessOnly(state)
+
+  if (isNewSeedlessOnly) {
+    // nest-egg-new-seedless-only is ON: only NEW seedless users see the modal
+    const isNewUserEligible =
+      selectIsNewSeedlessUserEligibleForNestEggModal(state)
+
+    if (isNewUserEligible) {
+      await waitForInteractions()
+
+      await navigateWithPromise({
+        pathname: '/(signedIn)/(modals)/nestEggCampaign'
+      })
+    }
+  } else {
+    // nest-egg-campaign is ON: ALL seedless users can see the modal
+    const isUserEligible = selectIsUserEligibleForNestEggModal(state)
+
+    if (isUserEligible) {
+      await waitForInteractions()
+
+      await navigateWithPromise({
+        pathname: '/(signedIn)/(modals)/nestEggCampaign'
+      })
+    }
   }
 }

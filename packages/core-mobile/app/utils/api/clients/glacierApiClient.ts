@@ -1,9 +1,9 @@
 import Config from 'react-native-config'
 import queryString from 'query-string'
-import { CORE_HEADERS } from 'utils/apiClient/constants'
 import Logger from 'utils/Logger'
 import { createClient } from 'utils/api/generated/glacier/glacierApi.client/client'
 import { appCheckFetch } from '../common/appCheckFetch'
+import { CORE_HEADERS } from '../constants'
 
 if (!Config.GLACIER_URL)
   Logger.warn(

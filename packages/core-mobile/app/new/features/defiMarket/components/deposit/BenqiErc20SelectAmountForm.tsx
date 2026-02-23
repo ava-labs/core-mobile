@@ -6,20 +6,26 @@ import { Address } from 'viem'
 import { hasEnoughAllowance } from 'features/swap/utils/evm/ensureAllowance'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { TokenType } from '@avalabs/vm-module-types'
+import { useCChainGasCost } from 'common/hooks/useCChainGasCost'
 import { DefiMarket, DepositAsset } from '../../types'
 import { APPROVE_GAS_AMOUNT, MINT_GAS_AMOUNT } from '../../consts'
-import { useGasCost } from '../../hooks/useGasCost'
 import { useBenqiDepositErc20 } from '../../hooks/benqi/useBenqiDepositErc20'
 import { SelectAmountFormBase } from '../SelectAmountFormBase'
 
 export const BenqiErc20SelectAmountForm = ({
   asset,
   market,
-  onSuccess
+  onSubmitted,
+  onConfirmed,
+  onReverted,
+  onError
 }: {
   asset: DepositAsset
   market: DefiMarket
-  onSuccess: () => void
+  onSubmitted: (params: { txHash: string; amount: TokenUnit }) => void
+  onConfirmed?: () => void
+  onReverted?: () => void
+  onError?: () => void
 }): JSX.Element => {
   const provider = useAvalancheEvmProvider()
   const tokenBalance = useMemo(() => {
@@ -31,15 +37,18 @@ export const BenqiErc20SelectAmountForm = ({
   }, [asset.token])
   const activeAccount = useSelector(selectActiveAccount)
   const address = activeAccount?.addressC
-  const { gasCost: mintGasCost } = useGasCost({
+  const { gasCost: mintGasCost } = useCChainGasCost({
     gasAmount: MINT_GAS_AMOUNT
   })
-  const { gasCost: approveGasCost } = useGasCost({
+  const { gasCost: approveGasCost } = useCChainGasCost({
     gasAmount: APPROVE_GAS_AMOUNT
   })
   const { benqiDepositErc20 } = useBenqiDepositErc20({
     asset,
-    market
+    market,
+    onConfirmed,
+    onReverted,
+    onError
   })
 
   const validateAmount = useCallback(
@@ -101,7 +110,7 @@ export const BenqiErc20SelectAmountForm = ({
       maxAmount={tokenBalance}
       validateAmount={validateAmount}
       submit={benqiDepositErc20}
-      onSuccess={onSuccess}
+      onSubmitted={onSubmitted}
     />
   )
 }

@@ -32,13 +32,36 @@ const baseConfig = {
       stream: require.resolve('./node_modules/stream-browserify'),
       '@noble/hashes': require.resolve('./node_modules/@noble/hashes')
     },
-    // TODO: should this be a temporary fix?
-    unstable_enablePackageExports: false,
     // sbmodern is needed for storybook
     resolverMainFields: ['sbmodern', 'react-native', 'browser', 'main'],
     assetExts: assetExts.filter(ext => ext !== 'svg'),
     sourceExts: [...sourceExts, 'svg', 'cjs', 'mjs'],
+    unstable_conditionNames: ['require', 'import'],
+    unstable_conditionsByPlatform: {
+      android: ['require', 'react-native'],
+      ios: ['require', 'react-native']
+    },
+    // TODO: should this be a temporary fix?
+    unstable_enablePackageExports: false,
     resolveRequest: (context, moduleName, platform) => {
+      // Enable package exports only for @lombard.finance/sdk
+      if (moduleName.startsWith('@lombard.finance/sdk')) {
+        const newContext = {
+          ...context,
+          unstable_enablePackageExports: true
+        }
+        return context.resolveRequest(newContext, moduleName, platform)
+      }
+
+      // Enable package exports only for @avalabs/unified-asset-transfer
+      if (moduleName.startsWith('@avalabs/unified-asset-transfer')) {
+        const newContext = {
+          ...context,
+          unstable_enablePackageExports: true
+        }
+        return context.resolveRequest(newContext, moduleName, platform)
+      }
+
       if (moduleName.startsWith('@ledgerhq/cryptoassets-evm-signatures')) {
         return context.resolveRequest(
           context,

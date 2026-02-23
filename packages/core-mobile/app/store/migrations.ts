@@ -6,7 +6,6 @@ import BiometricsSDK, {
 import {
   Contact,
   CoreAccountType,
-  CorePrimaryAccount,
   WalletType as CoreWalletType
 } from '@avalabs/types'
 import {
@@ -412,11 +411,11 @@ export const migrations = {
 
     Object.entries(oldAccountsState.accounts).forEach(
       ([accIndex, oldAccountData]) => {
-        const oldAccount = oldAccountData as CorePrimaryAccount // Old state only had CorePrimaryAccount
+        const oldAccount = oldAccountData as PrimaryAccount
         const index = Number(accIndex)
 
         // Create the new account structure (PrimaryAccount)
-        const newAccount: PrimaryAccount = {
+        const newAccount = {
           // Keep essential properties from CorePrimaryAccount
           name: oldAccount.name,
           type: CoreAccountType.PRIMARY,
@@ -435,10 +434,10 @@ export const migrations = {
           hasMigratedXpAddresses: false
         }
 
-        newAccountsCollection[newAccount.id] = newAccount
+        newAccountsCollection[newAccount.id] = newAccount as PrimaryAccount
 
         // Check if this account was the active one
-        if (oldAccount.active) {
+        if ('active' in oldAccount && oldAccount.active) {
           newActiveAccountId = newAccount.id
         }
       }
@@ -446,7 +445,8 @@ export const migrations = {
 
     const newAccountsState: AccountsState = {
       accounts: newAccountsCollection,
-      activeAccountId: newActiveAccountId
+      activeAccountId: newActiveAccountId,
+      ledgerAddresses: {}
     }
 
     Logger.info('newAccountsState', newAccountsState)
@@ -489,6 +489,34 @@ export const migrations = {
         favorites: state.watchlist.favorites.filter(
           (favorite: string) => typeof favorite === 'string'
         )
+      }
+    }
+  },
+  26: (state: any) => {
+    // Remove xpAddresses, xpAddressDictionary, and hasMigratedXpAddresses from accounts
+    // These are now fetched dynamically via React Query
+    if (!state.account?.accounts) {
+      return state
+    }
+
+    const migratedAccounts: any = {}
+    Object.entries(state.account.accounts).forEach(
+      ([id, account]: [string, any]) => {
+        const {
+          xpAddresses,
+          xpAddressDictionary,
+          hasMigratedXpAddresses,
+          ...rest
+        } = account
+        migratedAccounts[id] = rest
+      }
+    )
+
+    return {
+      ...state,
+      account: {
+        ...state.account,
+        accounts: migratedAccounts
       }
     }
   }

@@ -1,4 +1,6 @@
 export default {
+  keypadUpButton: 'keypad_up_button',
+  successfullyAdded: 'successfully added',
   backButton: 'header_back',
   inputTextField: 'input_text',
   simpleToastMsg: 'simple_toast_msg',
@@ -53,7 +55,7 @@ export default {
   transactionOnboardingNext: 'transaction_onboarding__next',
   tokenAmountInputField: 'token_amount_input_field',
   transactionSuccess: 'Transaction successful',
-  nextBtn: 'next_btn',
+  nextBtnById: 'next_btn',
   approveBtn: 'approve_button',
   rejectBtn: 'reject_button',
   dropdownScrollView: 'dropdown_scroll_view',
@@ -104,5 +106,8 @@ export default {
   usa: 'United States',
   southKorea: 'South Korea',
   cChainId: '43114',
-  ethChainId: '1'
+  ethChainId: '1',
+  loadingSpinnerVisible: 'loading_spinner_visible',
+  loadingSpinnerHidden: 'loading_spinner_hidden',
+  inProgress: 'In progress'
 }

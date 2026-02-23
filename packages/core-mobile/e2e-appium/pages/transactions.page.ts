@@ -156,14 +156,12 @@ class TransactionsPage {
   }
 
   async typeSearchBar(text: string) {
-    await actions.type(this.searchBar, text)
+    await actions.typeSlowly(this.searchBar, text)
   }
 
   async dismissTransactionOnboarding() {
-    try {
+    if (await actions.getVisible(this.transactionOnboardingNext)) {
       await actions.tap(this.transactionOnboardingNext)
-    } catch (e) {
-      console.log('Transaction onboarding not found')
     }
   }
 
@@ -197,23 +195,29 @@ class TransactionsPage {
     await actions.tap(this.sendSelectTokenListBtn)
   }
 
-  async selectToken(
-    tokenName: string,
-    network: string | undefined = undefined
-  ) {
+  async selectToken(tokenName: string, network?: string) {
     if (network) {
       await actions.tap(selectors.getById(`network_selector__${network}`))
     }
     await actions.type(this.searchBar, tokenName)
-    await actions.tap(selectors.getById(`token_selector__${tokenName}`))
+    try {
+      await actions.tap(selectors.getById(`token_selector__${tokenName}`))
+    } catch (e) {
+      await actions.typeSlowly(this.searchBar, tokenName)
+      await actions.tap(selectors.getById(`token_selector__${tokenName}`))
+    }
   }
 
   async enterSendAmount(amount: string) {
     try {
-      await actions.type(this.amountToSendInput, amount)
+      await actions.typeSlowly(this.amountToSendInput, amount)
     } catch (e) {
       await actions.tapNumberPad(amount)
     }
+  }
+
+  get insufficientSendBalance() {
+    return selectors.getByText(txLoc.insufficientSendBalance)
   }
 
   async enterStakingAmount(amount: string) {
@@ -224,9 +228,9 @@ class TransactionsPage {
     }
   }
 
-  async tapNext() {
+  async tapNext(nextPage?: ChainablePromiseElement) {
     await actions.waitFor(this.nextBtn)
-    await actions.tap(this.nextBtn)
+    await actions.tap(this.nextBtn, nextPage)
   }
 
   async tapApprove() {
@@ -234,7 +238,8 @@ class TransactionsPage {
     await actions.tap(this.approveBtn)
   }
 
-  async tapRecentAccount(account: string) {
+  async tapRecentAccount(account = txLoc.accountTwo) {
+    await this.typeSearchBar(account[0] as string)
     await actions.tap(selectors.getById(`recent_contacts__${account}`))
   }
 
@@ -245,7 +250,6 @@ class TransactionsPage {
   ) {
     await this.tapSend()
     await this.dismissTransactionOnboarding()
-    await this.typeSearchBar(account)
     await this.tapRecentAccount(account)
     if (token) {
       await this.goToSelectTokenList()
@@ -253,8 +257,18 @@ class TransactionsPage {
       console.log(`sending ${token} ${amount}....`)
     }
     await this.enterSendAmount(amount)
-    await this.tapNext()
-    await this.tapApprove()
+    const isInsufficientBalance = await this.checkInsufficientBalance()
+    if (isInsufficientBalance) {
+      await commonElsPage.dismissBottomSheet()
+    } else {
+      await this.tapNext()
+      await this.tapApprove()
+    }
+    return performance.now()
+  }
+
+  async checkInsufficientBalance() {
+    return await actions.getVisible(this.insufficientSendBalance)
   }
 
   async tapAddStakeCard() {
@@ -293,17 +307,18 @@ class TransactionsPage {
   }
 
   async claim() {
-    if (await actions.getVisible(this.claimCard)) {
+    const isClaimCardVisible = await actions.getVisible(this.claimCard)
+    if (isClaimCardVisible) {
       await this.tapClaimCard()
       await this.tapClaimNow()
     } else {
-      await actions.isNotVisible(this.claimCard)
+      console.log('Claim card is not visible')
     }
   }
 
   async verifySuccessToast() {
     console.log('verifySuccessToast')
-    // await actions.waitFor(this.transactionsuccess, timeout)
+    await actions.waitForNotVisible(commonElsPage.grabber)
   }
 
   async tapSelectToken() {
@@ -327,13 +342,16 @@ class TransactionsPage {
     await this.enterSendAmount(amount)
     let tryCount = 5
     let newAmount = amount
-
-    while (await actions.getVisible(this.errorMsg)) {
-      newAmount = await this.adjustAmount(newAmount)
-      await this.enterSendAmount(newAmount)
-      tryCount--
-      if ((await actions.getVisible(this.nextBtn)) || tryCount === 0) {
-        break
+    try {
+      await actions.waitForNotVisible(this.errorMsg)
+    } catch (e) {
+      while (await actions.getVisible(this.errorMsg)) {
+        newAmount = await this.adjustAmount(newAmount)
+        await this.enterSendAmount(newAmount)
+        tryCount--
+        if ((await actions.getVisible(this.nextBtn)) || tryCount === 0) {
+          break
+        }
       }
     }
   }
@@ -341,6 +359,36 @@ class TransactionsPage {
   async tapSwapVerticalIcon() {
     await actions.tap(this.swapText)
     await actions.click(this.swapVerticalIcon)
+  }
+
+  async swapViaTokenDetail(
+    network: string,
+    fromToken: string,
+    toToken: string,
+    amount = '0.000001'
+  ) {
+    await commonElsPage.filter(network)
+    await portfolioPage.tapToken(fromToken)
+    await this.tapSwap()
+    await this.dismissTransactionOnboarding()
+    await this.enterAmountAndAdjust(amount)
+    // Select To Token
+    if (toToken !== 'USDC') {
+      await this.tapYouReceive()
+      await this.selectToken(toToken, network)
+    }
+    await this.tapNext()
+    // If `fromToken` is not AVAX AND network is C-Chain, we need to approve the spend limit
+    if (fromToken !== 'AVAX' || network !== txLoc.solana) {
+      try {
+        await actions.waitFor(this.tokenSpendApproval, 30000)
+        await this.tapApprove()
+      } catch (e) {
+        console.log('Spend limit approval is not needed')
+      }
+    }
+    await actions.waitFor(this.approveTitle, 40000)
+    await this.tapApprove()
   }
 
   async swap(
@@ -354,29 +402,22 @@ class TransactionsPage {
     await this.dismissTransactionOnboarding()
 
     // select tokens
-    if (from === 'USDC' && to === 'AVAX') {
-      await this.tapSwapVerticalIcon()
-    } else {
-      // Select From Token
-      if (from !== 'AVAX') {
-        await this.tapYouPay()
-        await this.selectToken(from, network)
-      }
-
-      // Select To Token
-      if (to !== 'USDC') {
-        await this.tapYouReceive()
-        await this.selectToken(to, network)
-      }
-      console.log(`swapping ${from} to ${to}...`)
+    const fromTokenOnUi = await actions.getText(this.youPay)
+    if (from !== fromTokenOnUi) {
+      await this.tapYouPay()
+      await this.selectToken(from, network)
     }
 
-    // Enter input
+    const toTokenOnUi = await actions.getText(this.youReceive)
+    if (to !== toTokenOnUi) {
+      await this.tapYouReceive()
+      await this.selectToken(to, network)
+    }
     await this.enterAmountAndAdjust(amount)
-    await this.tapNext()
+    await this.tapNext(this.approveBtn)
 
     // If `from` is not AVAX, we need to approve the spend limit
-    if (from !== 'AVAX') {
+    if (from !== 'AVAX' && network === txLoc.cChain) {
       try {
         await actions.waitFor(this.tokenSpendApproval, 30000)
         await this.tapApprove()
@@ -397,7 +438,7 @@ class TransactionsPage {
     }
   }
 
-  async swapOnTrack(index = 1, amount = '0.000001') {
+  async swapOnTrack(index = 1, amount = '0.00001') {
     await this.tapTrackBuyBtn(index)
     await this.dismissTransactionOnboarding()
     await this.enterAmountAndAdjust(amount)
@@ -464,7 +505,7 @@ class TransactionsPage {
     await this.tapWithdraw()
     await this.tapNext()
     await actions.tap(selectors.getById(`list_item__${token}`))
-    await actions.type(selectors.getById('fiat_amount_input'), '100')
+    await actions.type(selectors.getById('$ fiat_amount_input  '), '100')
     await actions.waitFor(this.errorMsg)
     await actions.isNotVisible(this.nextBtn)
     await actions.isVisible(this.nextBtnDisabled)

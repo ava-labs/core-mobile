@@ -10,7 +10,7 @@ import ModuleManager from 'vmModule/ModuleManager'
 import { AVALANCHE_DERIVATION_PATH_PREFIX, Curve } from 'utils/publicKeys'
 import { toSegments } from 'utils/toSegments'
 import { AddressIndex } from '@avalabs/types'
-import { GetAddressesResponse } from '../apiClient/profile/types'
+import { GetAddressesResponse } from 'utils/api/generated/profileApi.client/types.gen'
 
 type GetAddressesFromXpubParams = {
   isDeveloperMode: boolean
@@ -191,7 +191,16 @@ const toAddressIndexArray = (
   dictionary: XPAddressDictionary
 ): AddressIndex[] => {
   return Object.keys(dictionary)
-    .sort()
+    .sort((a, b) => {
+      const indexA = dictionary[a]?.index ?? 0
+      const indexB = dictionary[b]?.index ?? 0
+      // Sort by index first
+      if (indexA !== indexB) {
+        return indexA - indexB
+      }
+      // If same index, sort lexicographically
+      return a.localeCompare(b)
+    })
     .map(address => ({
       address,
       index: dictionary[address]?.index ?? 0
@@ -210,6 +219,12 @@ export const getXpubXPIfAvailable = async ({
   let xpubXP
 
   try {
+    // TODO: https://ava-labs.atlassian.net/browse/CP-13335
+    // Currently getRawXpubXP for Keystone wallets does not work for different account indices,
+    // so we return undefined for Keystone to fall back to fetching individual addresses and avoid relying on incorrect xpub behavior.
+    if (walletType === WalletType.KEYSTONE) {
+      return undefined
+    }
     xpubXP = await WalletService.getRawXpubXP({
       walletId,
       walletType,

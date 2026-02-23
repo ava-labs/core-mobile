@@ -1,5 +1,7 @@
 export enum ReactQueryKeys {
   ACCOUNT_BALANCE = 'accountBalance',
+  ACCOUNTS_BALANCES = 'accountsBalances',
+  BALANCE_SUPPORTED_CHAINS = 'balanceSupportedChains',
   XP_ADDRESSES = 'xpAddresses',
 
   // defi
@@ -45,10 +47,18 @@ export enum ReactQueryKeys {
   // bridge
   BRIDGE_CONFIG = 'bridgeConfig',
 
+  // fusion
+  FUSION_SUPPORTED_CHAINS = 'fusionSupportedChains',
+  FUSION_TOKENS = 'fusionTokens',
+
   // deposit
   AAVE_AVAILABLE_MARKETS = 'aaveAvailableMarkets',
   BENQI_AVAILABLE_MARKETS = 'benqiAvailableMarkets',
   BENQI_ACCOUNT_SNAPSHOT = 'benqiAccountSnapshot',
+
+  // borrow
+  AAVE_USER_BORROW_DATA = 'aaveUserBorrowData',
+  BENQI_USER_BORROW_DATA = 'benqiUserBorrowData',
 
   // rewards
   MERKL_USER_REWARDS = 'merklUserRewards',

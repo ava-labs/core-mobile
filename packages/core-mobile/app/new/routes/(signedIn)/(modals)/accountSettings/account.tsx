@@ -1,10 +1,11 @@
 import { BalanceHeader, showAlert, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { AccountAddresses } from 'features/accountSettings/components/accountAddresses'
 import { AccountButtons } from 'features/accountSettings/components/AccountButtons'
+import { useAccountBalanceSummary } from 'features/portfolio/hooks/useAccountBalanceSummary'
+import { formatBalanceDisplay } from 'features/wallets/utils/formatBalanceDisplay'
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccountById } from 'store/account'
@@ -15,7 +16,6 @@ import { WalletInfo } from 'features/accountSettings/components/WalletInfo'
 import { selectWalletById } from 'store/wallet/slice'
 import { CoreAccountType } from '@avalabs/types'
 import { WalletType } from 'services/wallet/types'
-import { useAccountBalanceSummary } from 'features/portfolio/hooks/useAccountBalanceSummary'
 
 const AccountScreen = (): JSX.Element => {
   const router = useRouter()
@@ -37,14 +37,19 @@ const AccountScreen = (): JSX.Element => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
   const formattedBalance = useMemo(() => {
-    // CP-10570: Balances should never show $0.00
-    return allBalancesInaccurate || balanceTotalInCurrency === 0
-      ? UNKNOWN_AMOUNT
-      : formatCurrency({
-          amount: balanceTotalInCurrency,
-          withoutCurrencySuffix: true
-        })
-  }, [allBalancesInaccurate, balanceTotalInCurrency, formatCurrency])
+    return formatBalanceDisplay({
+      balance: balanceTotalInCurrency,
+      isDeveloperMode,
+      formatCurrency,
+      hasError: allBalancesInaccurate,
+      withoutCurrencySuffix: true
+    })
+  }, [
+    isDeveloperMode,
+    allBalancesInaccurate,
+    balanceTotalInCurrency,
+    formatCurrency
+  ])
 
   const isPrivateKeyAvailable = useMemo(
     () =>

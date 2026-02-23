@@ -23,7 +23,6 @@ import { usePrevious } from 'common/hooks/usePrevious'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { loadAvatar } from 'common/utils/loadAvatar'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
-import { MINIMUM_SATOSHI_SEND_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
@@ -33,7 +32,13 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
 
-export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
+export const SendToken = ({
+  onSend,
+  minimumSendAmount
+}: {
+  onSend: () => void
+  minimumSendAmount?: TokenUnit
+}): JSX.Element => {
   const {
     recipient,
     setError,
@@ -138,9 +143,9 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
     addressToSend !== undefined &&
     tokenBalance &&
     (amount.lt(tokenBalance) || amount?.eq(tokenBalance)) &&
-    ((selectedToken?.symbol === 'BTC' &&
-      amount.toSubUnit() >= MINIMUM_SATOSHI_SEND_AMOUNT) ||
-      selectedToken?.symbol !== 'BTC')
+    (minimumSendAmount === undefined ||
+      amount.gt(minimumSendAmount) ||
+      amount.eq(minimumSendAmount))
 
   const handleSelectToken = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
@@ -155,15 +160,16 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
           'The specified send amount exceeds the available balance'
         )
       }
-      if (
-        amt.toSubUnit() < MINIMUM_SATOSHI_SEND_AMOUNT &&
-        selectedToken?.symbol === 'BTC'
-      ) {
-        setError('The specified send amount is too low')
-        throw new Error('The specified send amount is too low')
+      if (minimumSendAmount && amt.lt(minimumSendAmount)) {
+        setError(
+          `Minimum amount is ${minimumSendAmount.toDisplay()} ${minimumSendAmount.getSymbol()}.`
+        )
+        throw new Error(
+          `Minimum amount is ${minimumSendAmount.toDisplay()} ${minimumSendAmount.getSymbol()}.`
+        )
       }
     },
-    [setError, tokenBalance, selectedToken?.symbol]
+    [tokenBalance, minimumSendAmount, setError]
   )
 
   const formatInCurrency = useCallback(

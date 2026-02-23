@@ -8,7 +8,8 @@ export enum StorageKey {
   LAST_TRANSACTED_ERC20_NETWORKS = 'lastTransactedErc20Networks',
   USER_UNIQUE_ID = 'USER_UNIQUE_ID',
   LAST_SEEN_UPDATE_APP_VERSION = 'LAST_SEEN_UPDATE_APP_VERSION',
-  MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS = 'MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS'
+  MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS = 'MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS',
+  BORROW_PROTOCOL = 'borrowProtocol'
 }
 
 export enum ZustandStorageKeys {
@@ -19,7 +20,9 @@ export enum ZustandStorageKeys {
   DEFI_VIEW = 'defiView',
   MARKET_VIEW = 'marketView',
   FAVORITES_VIEW = 'favoritesView',
-  TRACK_SEARCH_VIEW = 'trackSearchView'
+  TRACK_SEARCH_VIEW = 'trackSearchView',
+  LEDGER_WALLET_MAP = 'ledgerWalletMap',
+  APP_REVIEW = 'appReview'
 }
 
 export const CORE_UNIVERSAL_LINK_HOSTS = ['core.app', 'test.core.app']

@@ -39,7 +39,7 @@ export const ContactForm = ({
   onUpdate: (contact: Contact) => void
   onSelectAvatar: () => void
 }): React.JSX.Element => {
-  const { networks } = useCombinedPrimaryNetworks()
+  const { networks } = useCombinedPrimaryNetworks({ hideEmptySolana: true })
 
   const avatar = useMemo(() => {
     return loadAvatar(contact.avatar)
@@ -57,6 +57,20 @@ export const ContactForm = ({
     },
     [contact, onUpdate]
   )
+
+  const addressCount = useMemo(() => {
+    let count = 0
+    if (contact.address) count++
+    if (contact.addressBTC) count++
+    if (contact.addressXP) count++
+    if (contact.addressSVM) count++
+    return count
+  }, [
+    contact.address,
+    contact.addressBTC,
+    contact.addressXP,
+    contact.addressSVM
+  ])
 
   const data: AdvancedFieldProps[] = useMemo(() => {
     return networks.map(network => {
@@ -78,6 +92,12 @@ export const ContactForm = ({
         }
       })()
 
+      // If this is the last address, provide a custom onDelete that bypasses
+      // the AdvancedField's internal delete alert (which clears UI prematurely)
+      // and directly triggers the update flow. The parent's handleUpdate will
+      // then show the "remove contact" prompt.
+      const isLastAddress = addressCount === 1 && address !== undefined
+
       return {
         id: network.chainName,
         title: network.chainName,
@@ -87,7 +107,11 @@ export const ContactForm = ({
         type: 'address',
         onUpdate: (id, value) => {
           handleUpdateAddress(id as AddressType, value)
-        }
+        },
+        onDelete: isLastAddress
+          ? () =>
+              handleUpdateAddress(network.chainName as AddressType, undefined)
+          : undefined
       }
     })
   }, [
@@ -96,7 +120,8 @@ export const ContactForm = ({
     contact.addressXP,
     contact.addressSVM,
     handleUpdateAddress,
-    networks
+    networks,
+    addressCount
   ])
 
   const handleShowAlertWithTextInput = useCallback((): void => {

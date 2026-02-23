@@ -9,6 +9,7 @@ import {
 } from 'services/network/consts'
 import { selectIsSolanaSupportBlocked } from 'store/posthog/slice'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectActiveAccount } from 'store/account'
 import { useHasXpAddresses } from './useHasXpAddresses'
 
 /**
@@ -17,26 +18,35 @@ import { useHasXpAddresses } from './useHasXpAddresses'
  * for example, C-Chain and EVM are merged togther, and X-Chain and P-Chain are merged together.
  * @returns {Object} An array containing the combined primary networks.
  */
-export function useCombinedPrimaryNetworks(): {
+export function useCombinedPrimaryNetworks({
+  hideEmptySolana = true
+}: {
+  hideEmptySolana?: boolean
+}): {
   networks: Network[]
 } {
   const hasXpAddresses = useHasXpAddresses()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
+  const account = useSelector(selectActiveAccount)
+
+  const hideSolana = hideEmptySolana
+    ? account?.addressSVM === undefined || account?.addressSVM.length === 0
+    : false
 
   const networks = useMemo(() => {
     // Test networks
     if (isDeveloperMode) {
-      return isSolanaSupportBlocked
+      return isSolanaSupportBlocked || hideSolana
         ? (TEST_PRIMARY_NETWORKS as Network[])
         : [...TEST_PRIMARY_NETWORKS, NETWORK_SOLANA_DEVNET]
     }
 
     // Main networks
-    return isSolanaSupportBlocked
+    return isSolanaSupportBlocked || hideSolana
       ? (MAIN_PRIMARY_NETWORKS as Network[])
       : [...MAIN_PRIMARY_NETWORKS, NETWORK_SOLANA]
-  }, [isDeveloperMode, isSolanaSupportBlocked])
+  }, [hideSolana, isDeveloperMode, isSolanaSupportBlocked])
 
   // filter out networks that are missing XP addresses
   const filteredNetworks = useMemo(() => {

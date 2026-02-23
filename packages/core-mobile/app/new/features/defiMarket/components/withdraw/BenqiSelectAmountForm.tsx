@@ -6,10 +6,16 @@ import { SelectAmountFormBase } from '../SelectAmountFormBase'
 
 export const WithdrawBenqiSelectAmountForm = ({
   market,
-  onSuccess
+  onSubmitted,
+  onConfirmed,
+  onReverted,
+  onError
 }: {
   market: DefiMarket
-  onSuccess: () => void
+  onSubmitted: (params: { txHash: string; amount: TokenUnit }) => void
+  onConfirmed?: () => void
+  onReverted?: () => void
+  onError?: () => void
 }): JSX.Element => {
   const tokenBalance = useMemo(() => {
     return new TokenUnit(
@@ -19,7 +25,12 @@ export const WithdrawBenqiSelectAmountForm = ({
     )
   }, [market])
 
-  const { withdraw } = useBenqiWithdraw({ market })
+  const { withdraw } = useBenqiWithdraw({
+    market,
+    onConfirmed,
+    onReverted,
+    onError
+  })
 
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {
@@ -38,7 +49,7 @@ export const WithdrawBenqiSelectAmountForm = ({
       maxAmount={tokenBalance}
       validateAmount={validateAmount}
       submit={withdraw}
-      onSuccess={onSuccess}
+      onSubmitted={onSubmitted}
     />
   )
 }

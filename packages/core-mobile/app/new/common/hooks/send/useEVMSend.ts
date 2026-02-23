@@ -5,7 +5,10 @@ import { assertNotUndefined } from 'utils/assertions'
 import { useEVMProvider } from 'hooks/networks/networkProviderHooks'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import Logger from 'utils/Logger'
-import { selectIsGaslessBlocked } from 'store/posthog'
+import {
+  selectIsGaslessBlocked,
+  selectIsGaslessInstantBlocked
+} from 'store/posthog'
 import { useSelector } from 'react-redux'
 import { useSendContext } from 'new/features/send/context/sendContext'
 import { useSendSelectedToken } from 'new/features/send/store'
@@ -44,6 +47,7 @@ const useEVMSend: SendAdapterEVM = ({
   const [selectedToken] = useSendSelectedToken()
   const provider = useEVMProvider(network)
   const isGaslessBlocked = useSelector(selectIsGaslessBlocked)
+  const isGaslessInstantBlocked = useSelector(selectIsGaslessInstantBlocked)
 
   const send = useCallback(async () => {
     try {
@@ -63,7 +67,9 @@ const useEVMSend: SendAdapterEVM = ({
         toAddress: addressToSend,
         amount: amount?.toSubUnit(),
         context: {
-          [RequestContext.NON_CONTRACT_RECIPIENT_ADDRESS]: addressToSend
+          [RequestContext.NON_CONTRACT_RECIPIENT_ADDRESS]: addressToSend,
+          [RequestContext.SHOULD_RETRY]:
+            !isGaslessBlocked && !isGaslessInstantBlocked
         }
       })
     } finally {
@@ -77,7 +83,9 @@ const useEVMSend: SendAdapterEVM = ({
     provider,
     setIsSending,
     request,
-    amount
+    amount,
+    isGaslessBlocked,
+    isGaslessInstantBlocked
   ])
 
   const handleError = useCallback(
