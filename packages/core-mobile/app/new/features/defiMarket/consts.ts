@@ -10,6 +10,8 @@ export const PROTOCOL_DISPLAY_NAMES: Record<MarketName, string> = {
 export const RAY = 27
 // Scale for BENQI supply rates
 export const WAD = 18
+// WAD as BigInt for precise calculations (avoids JS Number precision loss)
+export const WAD_BIGINT = 10n ** 18n
 // Scale for AAVE Price Oracle rates
 export const AAVE_PRICE_ORACLE_SCALE = 8
 

@@ -26,17 +26,20 @@ export function convertUsdToTokenAmount(params: {
 
   if (tokenPriceUSD === 0n) return 0n
 
+  // Clamp safetyBufferPercent to valid range [0, 100]
+  const clampedBuffer = Math.max(0, Math.min(100, safetyBufferPercent))
+
   // Apply safety buffer to account for price fluctuations and rounding
   // This matches AAVE's approach of not allowing exact max borrows
-  const bufferMultiplier = 100 - safetyBufferPercent
+  const bufferMultiplier = 100 - clampedBuffer
   const adjustedUsdAmount = (usdAmount * BigInt(bufferMultiplier)) / 100n
 
   // tokenAmount = usdAmount * 10^tokenDecimals * 10^priceDecimals / (tokenPriceUSD * 10^usdDecimals)
   // Simplified: tokenAmount = usdAmount * 10^(tokenDecimals + priceDecimals - usdDecimals) / tokenPriceUSD
   const scaleFactor = tokenDecimals + priceDecimals - usdDecimals
   if (scaleFactor >= 0) {
-    return (adjustedUsdAmount * BigInt(10 ** scaleFactor)) / tokenPriceUSD
+    return (adjustedUsdAmount * 10n ** BigInt(scaleFactor)) / tokenPriceUSD
   } else {
-    return adjustedUsdAmount / (tokenPriceUSD * BigInt(10 ** -scaleFactor))
+    return adjustedUsdAmount / (tokenPriceUSD * 10n ** BigInt(-scaleFactor))
   }
 }
