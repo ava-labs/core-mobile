@@ -108,7 +108,8 @@ export const BorrowSummaryBanner = ({
     <View
       sx={{
         marginHorizontal: 16,
-        marginBottom: 12,
+        marginTop: 14,
+        marginBottom: 20,
         padding: 16,
         borderRadius: 16,
         backgroundColor: '$surfaceSecondary'
@@ -119,14 +120,14 @@ export const BorrowSummaryBanner = ({
           gap: 12
         }}>
         {metrics.map((item, index) => (
-          <View key={item.label} sx={{ flex: index === 2 ? 0.8 : 0.5, gap: 2 }}>
+          <View key={item.label} sx={{ flex: index === 2 ? 0.8 : 0.5, gap: 0 }}>
             <MaskedText
               variant="heading5"
               shouldMask={isPrivacyModeEnabled}
               maskWidth={item.maskWidth}>
               {item.value}
             </MaskedText>
-            <Text variant="subtitle2" sx={{ color: '$textSecondary' }}>
+            <Text variant="caption" sx={{ color: '$textSecondary' }}>
               {item.label}
             </Text>
           </View>
