@@ -6,6 +6,8 @@ import { TokenUnit } from '@avalabs/core-utils-sdk/dist'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { ErrorState } from 'common/components/ErrorState'
+import { LoadingState } from 'common/components/LoadingState'
 import { useAvailableMarkets } from '../../hooks/useAvailableMarkets'
 import { MarketNames } from '../../types'
 import { BorrowAaveSelectAmountForm } from '../../components/borrow/AaveSelectAmountForm'
@@ -51,7 +53,7 @@ export const SelectAmountScreen = (): JSX.Element => {
   }, [])
 
   if (!market) {
-    return <></>
+    return <LoadingState sx={{ flex: 1 }} />
   }
 
   if (market.marketName === MarketNames.aave) {
@@ -64,7 +66,9 @@ export const SelectAmountScreen = (): JSX.Element => {
         onError={handleError}
       />
     )
-  } else if (market.marketName === MarketNames.benqi) {
+  }
+
+  if (market.marketName === MarketNames.benqi) {
     return (
       <BorrowBenqiSelectAmountForm
         market={market}
@@ -76,5 +80,5 @@ export const SelectAmountScreen = (): JSX.Element => {
     )
   }
 
-  return <></>
+  return <ErrorState sx={{ flex: 1 }} />
 }
