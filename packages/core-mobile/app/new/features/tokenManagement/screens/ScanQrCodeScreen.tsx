@@ -1,13 +1,13 @@
 import { Text, View } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useRouter } from 'expo-router'
 import React from 'react'
 import { useTokenAddress } from '../store'
 
 export const ScanQrCodeScreen = (): JSX.Element => {
   const { dismiss } = useRouter()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const [tokenAddress, setTokenAddress] = useTokenAddress()
 
   const handleOnSuccess = (address: string): void => {

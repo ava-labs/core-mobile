@@ -3,16 +3,20 @@ import {
   GRID_GAP,
   PrivacyModeAlert,
   SCREEN_WIDTH,
-  SPRING_LINEAR_TRANSITION,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { FlashList, ListRenderItemInfo } from '@shopify/flash-list'
+import { DropdownSelections } from 'common/components/DropdownSelections'
+import { LoadingState } from 'common/components/LoadingState'
+import { Placeholder } from 'common/components/Placeholder'
 import {
   getListItemEnteringAnimation,
   getListItemExitingAnimation
 } from 'common/utils/animations'
+import { useRouter } from 'expo-router'
+import { useDeposits } from 'hooks/earn/useDeposits'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import {
   LayoutChangeEvent,
@@ -23,25 +27,20 @@ import {
 } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { useDeposits } from 'hooks/earn/useDeposits'
-import { useRouter } from 'expo-router'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { Placeholder } from 'common/components/Placeholder'
-import { LoadingState } from 'common/components/LoadingState'
-import { DropdownSelections } from 'common/components/DropdownSelections'
-import CoreAppIconLight from '../../../assets/icons/core-app-icon-light.svg'
 import CoreAppIconDark from '../../../assets/icons/core-app-icon-dark.svg'
-import { DefiMarket } from '../types'
+import CoreAppIconLight from '../../../assets/icons/core-app-icon-light.svg'
 import { DepositCard } from '../components/DepositCard'
-import { useDepositsFilterAndSort } from '../hooks/useDepositsFilterAndSort'
+import { RewardsBanner } from '../components/RewardsBanner'
 import { useAvailableRewards } from '../hooks/useAvailableRewards'
 import { useClaimRewards } from '../hooks/useClaimRewards'
-import { RewardsBanner } from '../components/RewardsBanner'
+import { useDepositsFilterAndSort } from '../hooks/useDepositsFilterAndSort'
+import { DefiMarket } from '../types'
 
 const DepositTabScreen = ({
   onScroll,
@@ -134,8 +133,7 @@ const DepositTabScreen = ({
               marginLeft: index % 2 !== 0 ? 6 : 16
             }}
             entering={getListItemEnteringAnimation(index)}
-            exiting={getListItemExitingAnimation(index)}
-            layout={SPRING_LINEAR_TRANSITION}>
+            exiting={getListItemExitingAnimation(index)}>
             {content}
           </Animated.View>
         )

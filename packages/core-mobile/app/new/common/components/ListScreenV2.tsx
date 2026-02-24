@@ -1,12 +1,7 @@
-import {
-  NavigationTitleHeader,
-  Separator,
-  SPRING_LINEAR_TRANSITION,
-  Text
-} from '@avalabs/k2-alpine'
+import { NavigationTitleHeader, Separator, Text } from '@avalabs/k2-alpine'
 import { BlurViewWithFallback } from '@avalabs/k2-alpine/src/components/BlurViewWithFallback/BlurViewWithFallback'
 import { useHeaderHeight } from '@react-navigation/elements'
-import { FlashList, FlashListProps } from '@shopify/flash-list'
+import { FlashList, FlashListProps, FlashListRef } from '@shopify/flash-list'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, {
@@ -24,12 +19,13 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
-  ScrollView,
   ScrollViewProps,
-  View
+  View,
+  ViewStyle
 } from 'react-native'
 import {
   KeyboardAwareScrollView,
+  KeyboardAwareScrollViewRef,
   useKeyboardState
 } from 'react-native-keyboard-controller'
 import Animated, {
@@ -97,7 +93,7 @@ export interface ListScreenProps<T>
 }
 
 export type ListScreenRef<T> = {
-  scrollViewRef?: RefObject<FlashList<T>>
+  scrollViewRef?: RefObject<FlashListRef<T>>
 }
 
 export const ListScreenV2 = <T,>({
@@ -126,7 +122,7 @@ export const ListScreenV2 = <T,>({
   const [targetLayout, setTargetLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const scrollViewRef = useRef<FlashList<T>>(null)
+  const scrollViewRef = useRef<FlashListRef<T>>(null)
 
   // Shared values for worklets (UI thread animations)
   const titleHeight = useSharedValue<number>(0)
@@ -147,7 +143,7 @@ export const ListScreenV2 = <T,>({
   useImperativeHandle(
     flatListRef,
     () => ({
-      scrollViewRef: scrollViewRef as RefObject<FlashList<T>>
+      scrollViewRef: scrollViewRef as RefObject<FlashListRef<T>>
     }),
     [scrollViewRef]
   )
@@ -342,7 +338,7 @@ export const ListScreenV2 = <T,>({
     // backgroundColor, paddingTop, paddingBottom, paddingLeft, paddingRight, padding
     // Do NOT pass minHeight, flex, or other unsupported properties
     return {
-      ...(props?.contentContainerStyle ?? {}),
+      ...((props?.contentContainerStyle as ViewStyle) ?? {}),
       paddingBottom: renderFooter ? footerHeight + 16 : 16
     }
   }, [renderFooter, footerHeight, props?.contentContainerStyle])
@@ -527,7 +523,6 @@ export const ListScreenV2 = <T,>({
   return (
     <Animated.View
       style={[{ flex: 1 }]}
-      layout={SPRING_LINEAR_TRANSITION}
       entering={getListItemEnteringAnimation(0)}>
       {renderHeaderComponent()}
 
@@ -545,12 +540,10 @@ export const ListScreenV2 = <T,>({
             overrideProps={overrideProps}
             contentContainerStyle={contentContainerStyle}
             {...props}
-            style={[
-              props.style,
-              {
-                backgroundColor: backgroundColor ?? 'transparent'
-              }
-            ]}
+            style={{
+              backgroundColor: backgroundColor ?? 'transparent',
+              ...props.style
+            }}
             ListEmptyComponent={ListEmptyComponent}
           />
         </Animated.View>
@@ -562,6 +555,7 @@ export const ListScreenV2 = <T,>({
   )
 }
 
-const RenderScrollComponent = React.forwardRef<ScrollView, ScrollViewProps>(
-  (props, ref) => <KeyboardAwareScrollView {...props} ref={ref} />
-)
+const RenderScrollComponent = React.forwardRef<
+  KeyboardAwareScrollViewRef,
+  ScrollViewProps
+>((props, ref) => <KeyboardAwareScrollView {...props} ref={ref} />)

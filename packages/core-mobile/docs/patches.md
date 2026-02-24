@@ -27,13 +27,10 @@
 
 Android implementation of `getColorFromURL` will crash when facing urls with `ipfs://` scheme/protocol. The patch allows the method to fail without crashing.
 
-### pino+7.11.0.patch
+### pino+10.0.0.patch
 
 Calling pino({ level: 'error' }) will throw an error `Cannot assign to read only property 'error' of object`. The patch just replaces Object.create with Object.assign. Pino is the logger of Wallet Connect V2.
 
-### @walletconnect+react-native-compat+2.11.0.patch
-
-commenting out import "react-native-url-polyfill/auto" as we already import it ourselves
 
 ### @hpke+core+1.2.7.patch
 
@@ -48,26 +45,20 @@ to prevent a crash on iOS when react-native-svg is unable to render certain svgs
 logger in wallet connect is hard coded to trace. this patch adjusts it to "error" level for local development and "silent" level for production
 https://github.com/WalletConnect/walletconnect-utils/issues/171
 
-### react-native-reanimated+3.17.4.patch
+### react-native-reanimated+4.2.1.patch
 
 added isActive prop for useAnimatedSensor
 
-### react-native-collapsible-tab-view+8.0.0.patch
-
-perf improvement
-https://github.com/PedroBern/react-native-collapsible-tab-view/pull/461
-
+### react-native-collapsible-tab-view+9.0.0-rc.patch
 exposed toggleSyncScrollFrame using scrollResync ref for manually recomputing layout
 
-### react-native-webview-crypto+0.0.26.patch
+updated module to support react-native-reanimated 4 and react-native 0.81+
+
+### react-native-webview-crypto+0.0.27.patch
 
 with the latest react native, if the webview is not rendered using `display: none`, nothing will work: all the javascript injection, message relaying,...
 
 to fix it, we patched the lib so that the webview is still rendered but won't be visible.
-
-### @datadog+mobile-react-native+2.6.4.patch
-
-we can't build Android with this version of datadog. they have fixed this in 2.6.5 but haven't released yet.
 
 ### @noble+hashes+1.8.0.patch
 
@@ -84,15 +75,14 @@ we replace several hash + key derivation functions with the ones from react-nati
 
 we replace tiny-secp256k1 with @bitcoinerlab/secp256k1 (which uses @noble/secp256k1) and use that as the default ECC instance
 
-### react-native-reanimated+3.18.0.patch
-
-there is a perf issue with reanimated around executeOnUIRuntimeSync https://github.com/rainbow-me/rainbow/pull/6774
-
-### react-native-bottom-tabs+0.10.1.patch
+### react-native-bottom-tabs+1.1.0.patch
 
 we patched the tab selection handlers to allow native tab bars (iOS UITabBarController, Android BottomNavigationView) to handle selection directly, instead of routing everything through JS. this removes the extra JS roundtrip that caused visible delays/flicker.
 https://github.com/callstackincubator/react-native-bottom-tabs/issues/383
 https://github.com/callstackincubator/react-native-bottom-tabs/pull/408
+
+Updated 1.1.0
+we patched this to work with xcode 16.3 builds => Remove after we're building with xcode 26 on CI (est. March 2026)
 
 ### react-native-toast-notifications+3.4.0.patch
 
@@ -112,6 +102,6 @@ You can wrap a toast container with a custom wrapper.
 // In order to display a toast over a native-stack modal, use [FullWindowOverlay component](https://github.com/software-mansion/react-native-screens?tab=readme-ov-file#fullwindowoverlay).
 ```
 
-### @react-buoy+shared-ui+0.1.33.patch
+### @buoy-gg+shared-ui+2.1.1.patch
 
-This patch fixed the "unable to resolve @react-buoy/shared-ui/dataViewer" issue. Please refer to https://github.com/LovesWorking/react-native-buoy/issues/46 for more info.
+This patch fixes the "unable to resolve @buoy-gg/shared-ui/dataViewer" issue when Metro has `unstable_enablePackageExports: false` by mapping `./dataViewer` in `react-native` to `./lib/commonjs/dataViewer/index.js`. Please refer to https://github.com/LovesWorking/react-native-buoy/issues/46 for more info.

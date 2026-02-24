@@ -5,7 +5,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
+import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import {
@@ -14,6 +14,7 @@ import {
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
@@ -88,7 +89,7 @@ const SEGMENT_EVENT_MAP: Record<number, AnalyticsEventName> = {
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
   const isBridgeBlocked = useSelector(selectIsBridgeBlocked)
   const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
@@ -495,8 +496,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   useFocusEffect(
     useCallback(() => {
-      tabViewRef.current?.scrollResync()
-    }, [])
+      handleScrollResync()
+    }, [handleScrollResync])
   )
 
   const tabHeight = useMemo(() => {
@@ -607,6 +608,25 @@ const PortfolioHomeScreen = (): JSX.Element => {
         onLayout={handleSegmentedControlLayout}>
         <BottomTabWrapper>{renderSegmentedControl()}</BottomTabWrapper>
       </View>
+
+      {/* 
+        This is a workaround to display the header background + separator on Android.
+        Android returns a header height of 0, so we need to display the background + separator manually.
+      */}
+      {Platform.OS === 'android' && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: headerHeight
+          }}>
+          <BlurredBackgroundView
+            separator={{ opacity: targetHiddenProgress, position: 'bottom' }}
+          />
+        </View>
+      )}
     </BlurredBarsContentLayout>
   )
 }

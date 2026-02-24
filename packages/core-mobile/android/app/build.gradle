@@ -65,6 +65,7 @@ react {
     autolinkLibrariesWithApp()
 }
 
+
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
 apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
 
@@ -100,6 +101,8 @@ android {
         versionName rootProject.ext.appVersionName
         versionCode rootProject.ext.appBuildNumber
 
+        buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
+
         testBuildType System.getProperty('testBuildType', 'e2e')  // To control the test apk build type
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
@@ -119,6 +122,7 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            minifyEnabled false
             // necessary for old versions of Android to run on dev mode
             testCoverageEnabled true
             dexOptions {
@@ -193,3 +197,19 @@ tasks.named('build') {
 }
 
 apply plugin: 'com.google.gms.google-services'
+
+// Workaround: when New Architecture is enabled, Gradle's externalNativeBuild *clean* tasks
+// can re-run CMake and fail if autolinked libraries' generated codegen JNI folders were
+// deleted by a previous clean. Disabling those clean tasks prevents "clean" from failing.
+// We still explicitly delete the app's CMake/Ninja intermediates via cleanCxx.
+tasks.register("cleanCxx", Delete) {
+    delete file("$projectDir/.cxx")
+}
+
+tasks.matching { it.name == "clean" }.configureEach {
+    dependsOn("cleanCxx")
+}
+
+tasks.matching { it.name.startsWith("externalNativeBuildClean") }.configureEach {
+    enabled = false
+}

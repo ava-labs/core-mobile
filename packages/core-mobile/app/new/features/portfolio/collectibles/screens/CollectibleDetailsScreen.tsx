@@ -1,5 +1,5 @@
 import { ANIMATED, Icons, useTheme, View } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useNavigation } from '@react-navigation/native'
 import { ErrorState } from 'common/components/ErrorState'
 import NavigationBarButton from 'common/components/NavigationBarButton'
@@ -58,7 +58,7 @@ export const CollectibleDetailsScreen = ({
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const insets = useSafeAreaInsets()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const frame = useSafeAreaFrame()
 
   const { filteredAndSorted, isHiddenVisible } =
@@ -301,7 +301,9 @@ export const CollectibleDetailsScreen = ({
           showsVerticalScrollIndicator={false}
           scrollEventThrottle={16}
           stickyHeaderIndices={[0]}>
-          <Animated.View
+          {/* This outer view must not use animated styles because stickyHeaderIndices
+              wraps it in a non-animated ScrollViewStickyHeader component */}
+          <View
             style={[
               {
                 flex: 1,
@@ -313,58 +315,58 @@ export const CollectibleDetailsScreen = ({
                 bottom: 0
               }
             ]}>
-            <Animated.View
-              style={[
-                heroStyle,
-                bounceStyle,
-                {
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }
-              ]}>
-              <CollectibleDetailsHero
-                collectible={collectible}
-                scrollY={scrollY}
-              />
+            <Animated.View style={[bounceStyle, { flex: 1 }]}>
               <Animated.View
                 style={[
-                  expandStyle,
+                  heroStyle,
                   {
                     position: 'absolute',
+                    top: 0,
                     left: 0,
                     right: 0,
-                    zIndex: 100,
-                    bottom: insets.bottom + 20,
+                    bottom: 0,
                     justifyContent: 'center',
                     alignItems: 'center'
                   }
                 ]}>
-                <Pressable
-                  onPress={onSeeMore}
-                  hitSlop={{
-                    top: 34,
-                    bottom: 34,
-                    left: 4,
-                    right: 4
-                  }}
-                  style={{
-                    opacity: 0.3
-                  }}>
-                  <Icons.Custom.ArrowDownHandleBar
-                    testID="collectibles_handler"
-                    color={colors.$textSecondary}
-                    width={40}
-                  />
-                </Pressable>
+                <CollectibleDetailsHero
+                  collectible={collectible}
+                  scrollY={scrollY}
+                />
+                <Animated.View
+                  style={[
+                    expandStyle,
+                    {
+                      position: 'absolute',
+                      left: 0,
+                      right: 0,
+                      zIndex: 100,
+                      bottom: insets.bottom + 20,
+                      justifyContent: 'center',
+                      alignItems: 'center'
+                    }
+                  ]}>
+                  <Pressable
+                    onPress={onSeeMore}
+                    hitSlop={{
+                      top: 34,
+                      bottom: 34,
+                      left: 4,
+                      right: 4
+                    }}
+                    style={{
+                      opacity: 0.3
+                    }}>
+                    <Icons.Custom.ArrowDownHandleBar
+                      testID="collectibles_handler"
+                      color={colors.$textSecondary}
+                      width={40}
+                    />
+                  </Pressable>
+                </Animated.View>
               </Animated.View>
             </Animated.View>
-          </Animated.View>
-
+          </View>
           <Animated.View
             style={[
               {

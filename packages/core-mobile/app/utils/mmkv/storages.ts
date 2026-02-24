@@ -1,4 +1,4 @@
-import { MMKV } from 'react-native-mmkv'
+import { createMMKV, MMKV } from 'react-native-mmkv'
 import { StorageKey } from 'resources/Constants'
 import Logger from 'utils/Logger'
 import { StorageValue } from 'zustand/middleware'
@@ -12,15 +12,15 @@ export const commonStorageKeys = [
   StorageKey.BORROW_PROTOCOL
 ]
 
-export const commonStorage = new MMKV({
+export const commonStorage = createMMKV({
   id: `common`
 })
 
-export const queryStorage = new MMKV({
+export const queryStorage = createMMKV({
   id: `query`
 })
 
-const zustandStorage = new MMKV({
+const zustandStorage = createMMKV({
   id: `zustand`
 })
 
@@ -33,7 +33,7 @@ export const zustandMMKVStorage: PersistStorage<StateStorage> = {
     zustandStorage.set(name, JSON.stringify(value))
   },
   removeItem: (name: string) => {
-    zustandStorage.delete(name)
+    zustandStorage.remove(name)
   }
 }
 
