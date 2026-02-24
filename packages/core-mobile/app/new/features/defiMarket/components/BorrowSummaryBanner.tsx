@@ -40,9 +40,7 @@ export const BorrowSummaryBanner = ({
   }, [formatCurrency, summary.netWorthUsd])
 
   const formattedNetApy = useMemo(() => {
-    // Truncate to 2 decimal places (don't round up to avoid overstating APY)
-    const truncated = Math.trunc(summary.netApyPercent * 100) / 100
-    return `${truncated.toFixed(2)}%`
+    return `${summary.netApyPercent.toFixed(2)}%`
   }, [summary.netApyPercent])
 
   const formattedBorrowPowerUsed = useMemo(() => {
