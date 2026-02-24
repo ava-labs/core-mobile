@@ -266,11 +266,13 @@ const getScopedBorrowData = ({
 }
 
 const computeBorrowSummary = ({
+  protocol,
   markets,
   positions,
   aaveBorrowData,
   benqiBorrowData
 }: {
+  protocol?: MarketName
   markets: DefiMarket[]
   positions: BorrowPosition[]
   aaveBorrowData: AaveBorrowData | undefined
@@ -301,10 +303,13 @@ const computeBorrowSummary = ({
     0
   )
   const netWorthUsd = totalDepositsUsd - totalBorrowUsd
+  const netApyDenominatorUsd =
+    protocol === MarketNames.benqi ? totalDepositsUsd : netWorthUsd
 
   const netApyPercent =
-    netWorthUsd > 0
-      ? ((totalSupplyIncomeUsd - totalBorrowCostUsd) / netWorthUsd) * 100
+    netApyDenominatorUsd > 0
+      ? ((totalSupplyIncomeUsd - totalBorrowCostUsd) / netApyDenominatorUsd) *
+        100
       : 0
 
   const aaveDebtUsd = getAaveDebtUsd(aaveBorrowData)
@@ -338,11 +343,13 @@ const computeBorrowSummary = ({
 }
 
 const getBorrowSummary = ({
+  protocol,
   markets,
   positions,
   aaveBorrowData,
   benqiBorrowData
 }: {
+  protocol?: MarketName
   markets: DefiMarket[]
   positions: BorrowPosition[]
   aaveBorrowData: AaveBorrowData | undefined
@@ -353,6 +360,7 @@ const getBorrowSummary = ({
   }
 
   return computeBorrowSummary({
+    protocol,
     markets,
     positions,
     aaveBorrowData,
@@ -482,12 +490,19 @@ export const useBorrowPositionsSummary = ({
 
   const summary = useMemo<BorrowSummary | undefined>(() => {
     return getBorrowSummary({
+      protocol,
       markets: filteredMarkets,
       positions,
       aaveBorrowData: scopedAaveBorrowData,
       benqiBorrowData: scopedBenqiBorrowData
     })
-  }, [filteredMarkets, positions, scopedAaveBorrowData, scopedBenqiBorrowData])
+  }, [
+    filteredMarkets,
+    positions,
+    protocol,
+    scopedAaveBorrowData,
+    scopedBenqiBorrowData
+  ])
 
   return {
     positions,
