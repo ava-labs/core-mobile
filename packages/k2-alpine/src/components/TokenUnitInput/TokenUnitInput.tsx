@@ -152,16 +152,17 @@ export const TokenUnitInput = forwardRef<
 
     return (
       <View
+        accessible={false}
         sx={{
           alignItems: 'center',
           ...sx
         }}>
-        <TouchableWithoutFeedback onPress={handlePress}>
-          <View style={{ paddingHorizontal: 16, width: '100%' }}>
+        <TouchableWithoutFeedback accessible={false} onPress={handlePress}>
+          <View
+            accessible={false}
+            style={{ paddingHorizontal: 16, width: '100%' }}>
             <AutoSizeTextInput
               testID="token_amount_input_field"
-              accessibilityLabel="token_amount_input_field"
-              accessible={true}
               ref={textInputRef}
               editable={editable}
               placeholder={PLACEHOLDER}
@@ -189,6 +190,7 @@ export const TokenUnitInput = forwardRef<
 
         {formatInCurrency && (
           <Text
+            accessible={false}
             variant="subtitle2"
             sx={{ marginTop: 0, color: alpha(colors.$textPrimary, 0.9) }}>
             {formatInCurrency(inputAmount)}

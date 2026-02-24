@@ -338,18 +338,20 @@ export const AutoSizeTextInput = forwardRef<
 
     return (
       <View
+        accessible={false}
         sx={{
           ...containerSx,
           minHeight: initialFontSize + 12,
           justifyContent: 'center'
         }}>
-        <View onLayout={handleLayout} style={styles.row}>
+        <View accessible={false} onLayout={handleLayout} style={styles.row}>
           {renderPrefix()}
 
           <AnimatedTextInput
             {...props}
             ref={inputRef}
             testID={testID}
+            nativeID={testID}
             value={value}
             style={[styles.input, inputTextStyle, style]}
             maxLength={maxLength}
@@ -368,7 +370,12 @@ export const AutoSizeTextInput = forwardRef<
         </View>
 
         {/* Hidden text for measuring content width */}
-        <View style={styles.measurementContainer} pointerEvents="none">
+        <View
+          style={styles.measurementContainer}
+          pointerEvents="none"
+          accessible={false}
+          accessibilityElementsHidden={true}
+          importantForAccessibility="no-hide-descendants">
           <Animated.Text
             numberOfLines={1}
             onLayout={handleTextLayout}

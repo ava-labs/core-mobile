@@ -191,7 +191,11 @@ export function DepositDetailScreen(): JSX.Element {
 
     return (
       <View sx={{ marginBottom: bottom, padding: 16 }}>
-        <Button type="primary" size="large" onPress={handleWithdraw}>
+        <Button
+          testID={`withdraw_btn__${deposit.marketName}__${deposit.asset.symbol}`}
+          type="primary"
+          size="large"
+          onPress={handleWithdraw}>
           Withdraw
         </Button>
       </View>
