@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button, SegmentedControl, Text, View } from '@avalabs/k2-alpine'
 import { useWindowDimensions } from 'react-native'
+import { FlatList } from 'react-native-gesture-handler'
 import { useSharedValue } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
@@ -276,6 +277,65 @@ export const NotificationsScreen = (): JSX.Element => {
     )
   }, [selectedTabIndex, handleSelectSegment, showFullEmptyState, isLoading])
 
+  const keyExtractor = useCallback((combined: CombinedItem) => {
+    if (combined.kind === 'swap') return `swap-${combined.item.transfer.id}`
+    return `notification-${combined.item.id}`
+  }, [])
+
+  const renderItem = useCallback(
+    ({ item: combined, index }: { item: CombinedItem; index: number }) => {
+      const isLast = index === combinedItems.length - 1
+
+      if (combined.kind === 'swap') {
+        const transfer = combined.item
+        const isCompletedOrFailed = isSwapCompletedOrFailed(transfer.transfer)
+        return (
+          <SwipeableRow
+            animateOut={
+              isCompletedOrFailed && isClearingAll && index < MAX_ANIMATED_ITEMS
+            }
+            animateDelay={index * SWIPE_DELAY}
+            onSwipeComplete={() => removeTransfer(transfer.transfer.id)}
+            onPress={() => {
+              isCompletedOrFailed === false && handleSwapActivityPress(transfer)
+            }}
+            enabled={!isClearingAll && isCompletedOrFailed}>
+            <FusionTransferItem
+              item={transfer}
+              showSeparator={!isLast}
+              testID={`swap-activity-${transfer.transfer.id}`}
+            />
+          </SwipeableRow>
+        )
+      }
+
+      const notification = combined.item
+      const shouldAnimate = isClearingAll && index < MAX_ANIMATED_ITEMS
+      return (
+        <SwipeableRow
+          animateOut={shouldAnimate}
+          animateDelay={index * SWIPE_DELAY}
+          onSwipeComplete={() => dismissNotification(notification)}
+          onPress={() => handleNotificationPress(notification)}
+          enabled={!isClearingAll}>
+          {renderNotificationItem(notification, {
+            showSeparator: !isLast,
+            accessoryType: hasActionableUrl(notification) ? 'chevron' : 'none',
+            testID: `notification-item-${notification.id}`
+          })}
+        </SwipeableRow>
+      )
+    },
+    [
+      combinedItems.length,
+      isClearingAll,
+      removeTransfer,
+      handleSwapActivityPress,
+      dismissNotification,
+      handleNotificationPress
+    ]
+  )
+
   const renderContent = (): React.JSX.Element => {
     if (isLoading) {
       return <LoadingState sx={{ height: emptyStateHeight }} />
@@ -310,61 +370,12 @@ export const NotificationsScreen = (): JSX.Element => {
     }
 
     return (
-      <View>
-        {combinedItems.map((combined, index) => {
-          const isLast = index === combinedItems.length - 1
-
-          if (combined.kind === 'swap') {
-            const transfer = combined.item
-            const isCompletedOrFailed = isSwapCompletedOrFailed(
-              transfer.transfer
-            )
-            return (
-              <SwipeableRow
-                key={transfer.transfer.id}
-                animateOut={
-                  isCompletedOrFailed &&
-                  isClearingAll &&
-                  index < MAX_ANIMATED_ITEMS
-                }
-                animateDelay={index * SWIPE_DELAY}
-                onSwipeComplete={() => removeTransfer(transfer.transfer.id)}
-                onPress={() => {
-                  isCompletedOrFailed === false &&
-                    handleSwapActivityPress(transfer)
-                }}
-                enabled={!isClearingAll && isCompletedOrFailed}>
-                <FusionTransferItem
-                  item={transfer}
-                  showSeparator={!isLast}
-                  testID={`swap-activity-${transfer.transfer.id}`}
-                />
-              </SwipeableRow>
-            )
-          }
-
-          const notification = combined.item
-          // Only animate first MAX_ANIMATED_ITEMS, rest disappear instantly
-          const shouldAnimate = isClearingAll && index < MAX_ANIMATED_ITEMS
-          return (
-            <SwipeableRow
-              key={notification.id}
-              animateOut={shouldAnimate}
-              animateDelay={index * SWIPE_DELAY}
-              onSwipeComplete={() => dismissNotification(notification)}
-              onPress={() => handleNotificationPress(notification)}
-              enabled={!isClearingAll}>
-              {renderNotificationItem(notification, {
-                showSeparator: !isLast,
-                accessoryType: hasActionableUrl(notification)
-                  ? 'chevron'
-                  : 'none',
-                testID: `notification-item-${notification.id}`
-              })}
-            </SwipeableRow>
-          )
-        })}
-      </View>
+      <FlatList
+        data={combinedItems}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        scrollEnabled={false}
+      />
     )
   }
 
