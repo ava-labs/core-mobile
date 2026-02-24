@@ -1,13 +1,8 @@
+import { polyfillGlobal } from 'react-native/Libraries/Utilities/PolyfillFunctions'
 import structuredClone from '@ungap/structured-clone'
 
-const setupPolyfills = async () => {
-  const { polyfillGlobal } = await import(
-    'react-native/Libraries/Utilities/PolyfillFunctions'
-  )
-
-  if (!('structuredClone' in global)) {
-    polyfillGlobal('structuredClone', () => structuredClone)
-  }
+// Fusion SDK requires structuredClone and it's not available in react-native
+// so we need to polyfill it
+if (!('structuredClone' in global)) {
+  polyfillGlobal('structuredClone', () => structuredClone)
 }
-
-setupPolyfills()

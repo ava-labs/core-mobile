@@ -162,19 +162,20 @@ export function useQuoteStreaming(
             quotesCount: data.quotes.length
           })
           break
-        case 'error':
+        case 'error': {
           Logger.error('Quote stream error', data)
-          setError(new Error(data.message))
+          setError(data)
           setIsLoading(false)
           break
+        }
         case 'done':
+          setIsLoading(false)
           if (data.reason === 'no-eligible-services') {
             setError(
               new Error(
                 'No swap routes available for this pair. Please try a different token pair.'
               )
             )
-            setIsLoading(false)
           }
           break
       }

@@ -210,10 +210,23 @@ export const addFusionListeners = (startListening: AppStartListening): void => {
 
   startListening({
     actionCreator: trackFusionTransfer,
-    effect: async ({ payload: transfer }) => {
-      // 2s delay: avoids Markr API race condition before it indexes the tx
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      FusionService.trackTransfer(transfer, updateFusionTransfer)
+    effect: async (
+      { payload: transfer },
+      listenerApi: AppListenerEffectAPI
+    ) => {
+      try {
+        // 2s delay: avoids Markr API race condition before it indexes the tx
+        await listenerApi.delay(2000)
+      } catch {
+        // Listener aborted (e.g. on logout); do not continue
+        return
+      }
+
+      try {
+        FusionService.trackTransfer(transfer, updateFusionTransfer)
+      } catch (error) {
+        Logger.error('Failed to track fusion transfer', error)
+      }
     }
   })
 }
