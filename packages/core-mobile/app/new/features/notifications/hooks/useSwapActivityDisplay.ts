@@ -8,7 +8,7 @@ import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { FusionTransfer } from 'features/swapV2/types'
-import { SwapStatus } from '../types'
+import { NotificationSwapStatus } from '../types'
 import {
   mapTransferToSourceChainStatus,
   mapTransferToSwapStatus,
@@ -29,11 +29,11 @@ export type SwapActivityDisplay = {
   fromTokenLogoUri?: string
   toTokenLogoUri?: string
   /** Overall swap status (completed only when both chains are done). */
-  status: SwapStatus
+  status: NotificationSwapStatus
   /** Status for the source (From) chain leg only. */
-  fromChainStatus: SwapStatus
+  fromChainStatus: NotificationSwapStatus
   /** Status for the target (To) chain leg only. */
-  toChainStatus: SwapStatus
+  toChainStatus: NotificationSwapStatus
   txHash?: string
 }
 

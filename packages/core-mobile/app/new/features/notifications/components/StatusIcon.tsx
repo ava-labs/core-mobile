@@ -1,11 +1,15 @@
 import { Icons, useTheme, View } from '@avalabs/k2-alpine'
 import React from 'react'
 import { AnimatedEllipseIcon } from 'common/components/AnimatedEllipseIcon'
-import { SwapStatus } from '../types'
+import { NotificationSwapStatus } from '../types'
 
 const STATUS_ICON_SIZE = 20
 
-export const StatusIcon = ({ status }: { status: SwapStatus }): JSX.Element => {
+export const StatusIcon = ({
+  status
+}: {
+  status: NotificationSwapStatus
+}): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()

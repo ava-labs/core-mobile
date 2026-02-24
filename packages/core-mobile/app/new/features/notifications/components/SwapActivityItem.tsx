@@ -6,7 +6,7 @@ import { FusionTransfer } from 'features/swapV2/types'
 import { mapTransferToSwapStatus } from '../utils'
 import NotificationListItem from './NotificationListItem'
 import { SwapIcon } from './SwapIcon'
-import { RetryButton } from './RetryButton'
+import { RetrySwapButton } from './RetrySwapButtontton'
 
 type FusionTransferItemProps = {
   item: FusionTransfer
@@ -105,7 +105,7 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
       showSeparator={showSeparator}
       accessoryType={accessoryType}
       testID={testID}
-      rightAccessory={<RetryButton status={status} item={item} />}
+      rightAccessory={<RetrySwapButton status={status} item={item} />}
     />
   )
 }

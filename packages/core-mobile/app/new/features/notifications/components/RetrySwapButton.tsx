@@ -2,13 +2,13 @@ import { Button } from '@avalabs/k2-alpine'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import React from 'react'
 import { FusionTransfer } from 'features/swapV2/types'
-import { SwapStatus } from '../types'
+import { NotificationSwapStatus } from '../types'
 
-export const RetryButton = ({
+export const RetrySwapButton = ({
   status,
   item
 }: {
-  status: SwapStatus
+  status: NotificationSwapStatus
   item: FusionTransfer
 }): JSX.Element | null => {
   const { navigateToSwap } = useNavigateToSwap()

@@ -1,22 +1,22 @@
 import { Separator, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { NetworkLogo } from 'common/components/NetworkLogo'
 import React from 'react'
-import { SwapStatus } from '../types'
+import { NotificationSwapStatus } from '../types'
 import { StatusIcon } from './StatusIcon'
 
-type NetworkStatusCardProps = {
+type SwapStatusCardProps = {
   directionLabel: 'From' | 'To'
   networkName?: string
   networkLogoUri?: string
-  status: SwapStatus
+  status: NotificationSwapStatus
 }
 
-export const NetworkStatusCard = ({
+export const SwapStatusCard = ({
   directionLabel,
   networkName,
   networkLogoUri,
   status
-}: NetworkStatusCardProps): JSX.Element => {
+}: SwapStatusCardProps): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()

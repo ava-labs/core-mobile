@@ -5,7 +5,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
 import { useFusionTransfers } from 'features/swapV2/hooks/useZustandStore'
 import { TokenAmountRow } from '../components/TokenAmountRow'
-import { NetworkStatusCard } from '../components/NetworkStatusCard'
+import { SwapStatusCard } from '../components/SwapStatusCard'
 import { useSwapActivityDisplay } from '../hooks/useSwapActivityDisplay'
 
 export const SwapActivityDetailScreen = (): JSX.Element => {
@@ -73,7 +73,7 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
         </View>
 
         {/* Card 2: From network + source-chain status */}
-        <NetworkStatusCard
+        <SwapStatusCard
           directionLabel="From"
           networkName={display.fromNetwork}
           networkLogoUri={display.fromNetworkLogoUri}
@@ -81,7 +81,7 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
         />
 
         {/* Card 3: To network + target-chain status */}
-        <NetworkStatusCard
+        <SwapStatusCard
           directionLabel="To"
           networkName={display.toNetwork}
           networkLogoUri={display.toNetworkLogoUri}

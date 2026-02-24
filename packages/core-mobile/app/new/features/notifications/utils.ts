@@ -4,7 +4,7 @@ import {
   NotificationCategory,
   NotificationTab,
   NotificationType,
-  SwapStatus
+  NotificationSwapStatus
 } from './types'
 
 /**
@@ -24,7 +24,9 @@ export function isSwapCompletedOrFailed(transfer: Transfer): boolean {
  * Maps the raw backend transfer status to the simplified SwapStatus used in
  * the UI. Both "source-pending" and "target-pending" map to 'in_progress'.
  */
-export function mapTransferToSwapStatus(transfer: Transfer): SwapStatus {
+export function mapTransferToSwapStatus(
+  transfer: Transfer
+): NotificationSwapStatus {
   const lower = transfer.status.toLowerCase()
 
   if (lower === 'completed') return 'completed'
@@ -40,7 +42,9 @@ export function mapTransferToSwapStatus(transfer: Transfer): SwapStatus {
  *   - source-completed / target-pending / completed / etc.    → completed
  *   - failed                                                   → failed
  */
-export function mapTransferToSourceChainStatus(transfer: Transfer): SwapStatus {
+export function mapTransferToSourceChainStatus(
+  transfer: Transfer
+): NotificationSwapStatus {
   const lower = transfer.status.toLowerCase()
 
   if (lower === 'failed') return 'failed'
@@ -57,7 +61,9 @@ export function mapTransferToSourceChainStatus(transfer: Transfer): SwapStatus {
  *   - completed                           → completed
  *   - failed                              → failed
  */
-export function mapTransferToTargetChainStatus(transfer: Transfer): SwapStatus {
+export function mapTransferToTargetChainStatus(
+  transfer: Transfer
+): NotificationSwapStatus {
   const lower = transfer.status.toLowerCase()
 
   if (lower === 'failed') return 'failed'

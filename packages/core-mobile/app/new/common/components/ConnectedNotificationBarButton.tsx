@@ -29,7 +29,7 @@ export const ConnectedNotificationBarButton = (): JSX.Element => {
     <NotificationBarButton
       onPress={handlePress}
       hasUnread={unreadCount > 0}
-      isSwapInProgress={isSwapInProgress}
+      isInProgress={isSwapInProgress}
     />
   )
 }

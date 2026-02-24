@@ -44,6 +44,12 @@ const TAB_ITEMS = [
   { title: 'Price updates', value: NotificationTab.PRICE_UPDATES }
 ]
 
+// Combined list sorted by timestamp desc. All items (swaps + notifications)
+// are ordered purely by recency — no special pinning for in_progress swaps.
+type CombinedItem =
+  | { kind: 'swap'; item: FusionTransfer }
+  | { kind: 'notification'; item: AppNotification }
+
 const SWIPE_DELAY = 100 // ms between each swipe animation
 const SWIPE_DURATION = 500 // animation duration for each swipe
 const MAX_ANIMATED_ITEMS = 10 // only animate visible items, rest disappear instantly
@@ -142,12 +148,6 @@ export const NotificationsScreen = (): JSX.Element => {
       params: { id: item.transfer.id }
     })
   }, [])
-
-  // Combined list sorted by timestamp desc. All items (swaps + notifications)
-  // are ordered purely by recency — no special pinning for in_progress swaps.
-  type CombinedItem =
-    | { kind: 'swap'; item: FusionTransfer }
-    | { kind: 'notification'; item: AppNotification }
 
   const combinedItems = useMemo((): CombinedItem[] => {
     const showSwaps =
@@ -329,10 +329,10 @@ export const NotificationsScreen = (): JSX.Element => {
                 }
                 animateDelay={index * SWIPE_DELAY}
                 onSwipeComplete={() => removeTransfer(transfer.transfer.id)}
-                onPress={() =>
+                onPress={() => {
                   isCompletedOrFailed === false &&
-                  handleSwapActivityPress(transfer)
-                }
+                    handleSwapActivityPress(transfer)
+                }}
                 enabled={!isClearingAll && isCompletedOrFailed}>
                 <FusionTransferItem
                   item={transfer}

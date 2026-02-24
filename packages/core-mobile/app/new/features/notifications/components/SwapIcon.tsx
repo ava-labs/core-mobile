@@ -2,14 +2,14 @@ import React, { FC } from 'react'
 import { Icons, useTheme, View } from '@avalabs/k2-alpine'
 import { NetworkLogo } from 'common/components/NetworkLogo'
 import { AnimatedSyncIcon } from 'common/components/AnimatedSyncIcon'
-import { SwapStatus } from '../types'
+import { NotificationSwapStatus } from '../types'
 
 const ICON_SIZE = 32
 const BADGE_SIZE = 10
 const BADGE_BORDER_WIDTH = 2
 
 type SwapIconProps = {
-  status: SwapStatus
+  status: NotificationSwapStatus
   networkLogoUri?: string
 }
 
