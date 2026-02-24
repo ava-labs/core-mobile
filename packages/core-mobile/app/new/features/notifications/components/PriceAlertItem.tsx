@@ -25,7 +25,7 @@ const getTitle = (
   if (!isPriceAlertNotification(notification)) return notification.title
   const { tokenSymbol, currentPrice } = notification.data ?? {}
   if (!tokenSymbol || currentPrice === undefined) return notification.title
-  return `${tokenSymbol} reached ${formatCurrency({ amount: currentPrice })}`
+  return `${tokenSymbol.toUpperCase()} reached ${formatCurrency({ amount: currentPrice })}`
 }
 
 const Subtitle = ({
@@ -80,6 +80,7 @@ const getChart = (
       style={{ width: CHART_WIDTH, height: CHART_HEIGHT }}
       data={chartData.dataPoints}
       negative={chartData.ranges.diffValue < 0}
+      showReferenceLine
     />
   )
 }

@@ -46,7 +46,7 @@ const NotificationListItem: FC<NotificationListItemProps> = ({
           flexDirection: 'row',
           flex: 1,
           alignItems: 'center',
-          gap: 12,
+          gap: 8,
           minHeight: NOTIFICATION_LIST_ITEM_HEIGHT,
           paddingTop: 12,
           paddingBottom: 12,

@@ -64,6 +64,28 @@ export const PriceAlertsMetadataSchema = z.object({
 })
 
 /**
+ * Price alert data item inside NEWS-wrapped price alerts
+ */
+export const PriceAlertDataItemSchema = z.object({
+  tokenName: z.string(),
+  currentPrice: z.number(),
+  tokenId: z.string(),
+  tokenSymbol: z.string(),
+  priceChangePercent: z.number()
+})
+
+/**
+ * NEWS-wrapped price alert metadata schema.
+ * Backend sends price alerts as type:"NEWS" with event:"PRICE_ALERTS"
+ * and price data in a data[] array.
+ */
+export const NewsPriceAlertMetadataSchema = z.object({
+  event: z.literal('PRICE_ALERTS'),
+  url: z.string(),
+  data: z.array(PriceAlertDataItemSchema).min(1)
+})
+
+/**
  * News metadata schema
  */
 export const NewsMetadataSchema = z.object({

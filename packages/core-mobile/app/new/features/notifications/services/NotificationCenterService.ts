@@ -11,6 +11,7 @@ import {
   SuccessResponseSchema,
   BalanceChangesMetadataSchema,
   PriceAlertsMetadataSchema,
+  NewsPriceAlertMetadataSchema,
   NewsMetadataSchema
 } from './schemas'
 
@@ -51,6 +52,23 @@ function transformNotification(
       }
     }
     case 'NEWS': {
+      // Check if this is a NEWS-wrapped price alert (type:"NEWS" + event:"PRICE_ALERTS")
+      const priceAlert = NewsPriceAlertMetadataSchema.safeParse(
+        response.metadata
+      )
+      if (priceAlert.success) {
+        const priceData = priceAlert.data.data[0]!
+        return {
+          ...base,
+          category: mapTypeToCategory('PRICE_ALERTS'),
+          type: 'PRICE_ALERTS' as const,
+          data: {
+            ...priceData,
+            url: priceAlert.data.url
+          }
+        }
+      }
+
       const parsed = NewsMetadataSchema.safeParse(response.metadata)
       return {
         ...base,
