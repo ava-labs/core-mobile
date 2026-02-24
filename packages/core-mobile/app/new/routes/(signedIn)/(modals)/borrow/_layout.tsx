@@ -16,6 +16,10 @@ export default function BorrowLayout(): JSX.Element {
       <Stack.Screen name="selectCollateral" />
       <Stack.Screen name="selectAsset" />
       <Stack.Screen name="selectAmount" />
+      <Stack.Screen
+        name="healthScoreExplained"
+        options={modalFirstScreenOptions}
+      />
     </Stack>
   )
 }

@@ -12,9 +12,12 @@ import { GestureResponderEvent } from 'react-native'
 import { useSelector } from 'react-redux'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { HEALTH_SCORE_CAUTION_COLOR } from '../consts'
-import { BorrowSummary } from '../hooks/useBorrowPositionsSummary'
-import { MarketName } from '../types'
+import { BorrowSummary, MarketName } from '../types'
+import {
+  getHealthRisk,
+  getHealthRiskColor,
+  HealthRisk
+} from '../utils/healthRisk'
 import { DefiMarketLogo } from './DefiMarketLogo'
 
 const HEALTH_SCORE_BADGE_SIZE = 30
@@ -71,19 +74,29 @@ export const BorrowSummaryBanner = ({
     [formattedBorrowPowerUsed, formattedNetApy, formattedNetWorth]
   )
 
+  const healthRisk = useMemo(() => {
+    if (summary.healthScore === undefined) {
+      return HealthRisk.LOW
+    }
+    return getHealthRisk(summary.healthScore)
+  }, [summary.healthScore])
+
   const healthScoreRingColor = useMemo(() => {
-    if (summary.healthRiskLabel === 'high risk') {
-      return theme.colors.$textDanger
+    return getHealthRiskColor({
+      risk: healthRisk,
+      colors: theme.colors
+    })
+  }, [healthRisk, theme.colors])
+
+  const healthRiskLabel = useMemo(() => {
+    if (healthRisk === HealthRisk.HIGH) {
+      return 'high risk'
     }
-    if (summary.healthRiskLabel === 'moderate risk') {
-      return HEALTH_SCORE_CAUTION_COLOR
+    if (healthRisk === HealthRisk.MODERATE) {
+      return 'moderate risk'
     }
-    return theme.colors.$textSuccess
-  }, [
-    summary.healthRiskLabel,
-    theme.colors.$textDanger,
-    theme.colors.$textSuccess
-  ])
+    return 'low risk'
+  }, [healthRisk])
 
   const healthScoreBadgeText = useMemo(() => {
     const score = summary.healthScore
@@ -198,8 +211,7 @@ export const BorrowSummaryBanner = ({
                     sx={{
                       color: '$textPrimary'
                     }}>
-                    Your health score is currently rated as{' '}
-                    {summary.healthRiskLabel}
+                    Your health score is currently rated as {healthRiskLabel}
                   </Text>
                 </View>
               </View>

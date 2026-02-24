@@ -1,8 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { DropdownGroup } from 'common/components/DropdownMenu'
 import { DropdownSelection } from 'common/types'
-import { MarketNames } from '../types'
-import { BorrowPosition } from './useBorrowPositionsSummary'
+import { BorrowPosition, MarketNames } from '../types'
 
 export const useBorrowsFilterAndSort = ({
   borrows
