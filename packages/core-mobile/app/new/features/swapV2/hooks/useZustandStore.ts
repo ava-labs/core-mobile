@@ -70,7 +70,7 @@ export const fusionTransfersStore = create<FusionTransfersState>()(
           transfers: Object.fromEntries(
             Object.entries(state.transfers).filter(([, t]) => {
               const status = mapTransferToSwapStatus(t.transfer)
-              return status === 'completed' || status === 'failed'
+              return status === 'in_progress'
             })
           )
         })),
