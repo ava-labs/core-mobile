@@ -3,6 +3,7 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback, useMemo } from 'react'
 import {
+  formatHealthScore,
   getHealthRiskColor,
   getHealthRisk,
   HealthRisk
@@ -48,10 +49,7 @@ export const HealthScoreExplainedScreen = (): JSX.Element | null => {
   }, [healthRisk, theme.colors])
 
   const formattedHealthScore = useMemo(() => {
-    if (parsedHealthScore === undefined) {
-      return '--'
-    }
-    return parsedHealthScore.toFixed(1)
+    return formatHealthScore(parsedHealthScore)
   }, [parsedHealthScore])
 
   const handleDone = useCallback(() => {

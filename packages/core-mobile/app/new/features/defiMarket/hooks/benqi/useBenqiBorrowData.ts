@@ -16,6 +16,7 @@ export const useBenqiBorrowData = (
   isLoading: boolean
   isFetching: boolean
   error: Error | null
+  refetch: () => Promise<unknown>
 } => {
   const { enabled = true } = options
   const activeAccount = useSelector(selectActiveAccount)
@@ -25,7 +26,7 @@ export const useBenqiBorrowData = (
 
   const shouldFetch = enabled && !!networkClient && !!userAddress
 
-  const { data, isLoading, isFetching, error } = useQuery({
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [
       ReactQueryKeys.BENQI_USER_BORROW_DATA,
@@ -44,6 +45,7 @@ export const useBenqiBorrowData = (
     data,
     isLoading,
     isFetching,
-    error
+    error,
+    refetch
   }
 }
