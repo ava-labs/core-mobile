@@ -40,7 +40,7 @@ import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
 import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio/hooks/useTokensWithZeroBalanceByNetworksForAccount'
 import { selectActiveAccount } from 'store/account'
 import Logger from 'utils/Logger'
-import { useSwapContext } from '../contexts/SwapContext'
+import { SwapStatus, useSwapContext } from '../contexts/SwapContext'
 import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
@@ -66,7 +66,6 @@ export const SwapScreen = (): JSX.Element => {
     setFromToken,
     toToken,
     setToToken,
-    destination,
     bestQuote,
     userQuote,
     allQuotes,
@@ -105,24 +104,24 @@ export const SwapScreen = (): JSX.Element => {
   )
 
   // userQuote takes precedence over bestQuote
-  const selectedQuote = userQuote ?? bestQuote
-  Logger.info('selectedQuote', selectedQuote)
+  const activeQuote = userQuote ?? bestQuote
+  Logger.info('activeQuote', activeQuote)
 
   const canSwap: boolean =
-    !localError && !quoteError && !!fromToken && !!toToken && !!selectedQuote
+    !localError && !quoteError && !!fromToken && !!toToken && !!activeQuote
 
-  const swapInProcess = swapStatus === 'Swapping'
+  const isSwapping = swapStatus === SwapStatus.Swapping
 
   const coreFeeMessage = useMemo(() => {
-    if (!selectedQuote) return
+    if (!activeQuote) return
 
     // Fusion SDK Quote has partnerFeeBps directly
-    const feeBps = selectedQuote.partnerFeeBps
+    const feeBps = activeQuote.partnerFeeBps
 
     if (!feeBps) return
 
     return `Quote includes a ${basisPointsToPercentage(feeBps)} Core fee`
-  }, [selectedQuote])
+  }, [activeQuote])
 
   const updateMissingTokenPrice = useCallback(
     async (token: LocalTokenWithBalance | undefined) => {
@@ -159,19 +158,19 @@ export const SwapScreen = (): JSX.Element => {
   }, [fromTokenValue, maxFromValue])
 
   const applyQuote = useCallback(() => {
-    if (!fromTokenValue || !selectedQuote) {
+    if (!fromTokenValue || !activeQuote) {
       setToTokenValue(undefined)
       return
     }
 
     // Fusion SDK Quote has amountOut as bigint - fees are already included
     // No need to apply fee deduction - the SDK/backend handles all fees
-    const amountOut = selectedQuote.amountOut
+    const amountOut = activeQuote.amountOut
 
     if (amountOut) {
       setToTokenValue(amountOut)
     }
-  }, [selectedQuote, fromTokenValue])
+  }, [activeQuote, fromTokenValue])
 
   const calculateMax = useCallback(() => {
     if (!fromToken) return
@@ -243,18 +242,18 @@ export const SwapScreen = (): JSX.Element => {
     swapList
   ])
 
-  const showFeesAndSlippage = selectedQuote?.serviceType === ServiceType.MARKR
+  const showFeesAndSlippage = activeQuote?.serviceType === ServiceType.MARKR
 
   const handleSwap = useCallback(() => {
     AnalyticsService.capture('SwapReviewOrder', {
-      destinationInputField: destination,
-      slippageTolerance: slippage
+      provider: activeQuote?.aggregator.name ?? 'Unknown',
+      slippage
     })
 
     dismissKeyboardIfNeeded()
 
     swap()
-  }, [swap, destination, slippage])
+  }, [swap, activeQuote, slippage])
 
   const handleFromAmountChange = useCallback(
     (amount: bigint): void => {
@@ -340,8 +339,8 @@ export const SwapScreen = (): JSX.Element => {
           paddingBottom: 4
         }}>
         <TokenInputWidget
-          disabled={swapInProcess}
-          editable={!swapInProcess}
+          disabled={isSwapping}
+          editable={!isSwapping}
           autoFocus={!hasAutoFocused.current} // Only auto-focus if we haven't done it yet
           amount={fromTokenValue}
           balance={fromToken?.balance}
@@ -380,7 +379,7 @@ export const SwapScreen = (): JSX.Element => {
     fromToken,
     localError,
     fromTokenValue,
-    swapInProcess
+    isSwapping
   ])
 
   const renderToSection = useCallback((): JSX.Element => {
@@ -394,7 +393,7 @@ export const SwapScreen = (): JSX.Element => {
           backgroundColor: theme.colors.$surfaceSecondary
         }}>
         <TokenInputWidget
-          disabled={swapInProcess}
+          disabled={isSwapping}
           editable={false}
           amount={toTokenValue}
           balance={toToken?.balance}
@@ -426,11 +425,11 @@ export const SwapScreen = (): JSX.Element => {
     toTokenValue,
     isQuoteLoading,
     handleSelectToToken,
-    swapInProcess
+    isSwapping
   ])
 
   const rate = useSwapRate({
-    quote: selectedQuote,
+    quote: activeQuote,
     fromToken,
     toToken
   })
@@ -438,7 +437,7 @@ export const SwapScreen = (): JSX.Element => {
   const data = useMemo(() => {
     const items: GroupListItem[] = []
 
-    if (!selectedQuote || allQuotes.length === 0) {
+    if (!activeQuote || allQuotes.length === 0) {
       return items
     }
 
@@ -463,13 +462,13 @@ export const SwapScreen = (): JSX.Element => {
     if (showFeesAndSlippage) {
       const displayValue = getDisplaySlippageValue({
         autoSlippage,
-        quoteSlippageBps: selectedQuote?.slippageBps,
+        quoteSlippageBps: activeQuote?.slippageBps,
         manualSlippage: slippage
       })
       items.push({
         title: 'Slippage',
         value: displayValue,
-        onPress: swapInProcess ? undefined : handleSelectSlippageDetails
+        onPress: isSwapping ? undefined : handleSelectSlippageDetails
       })
     }
 
@@ -478,18 +477,18 @@ export const SwapScreen = (): JSX.Element => {
     fromToken,
     toToken,
     rate,
-    selectedQuote,
+    activeQuote,
     allQuotes,
     showFeesAndSlippage,
     slippage,
     autoSlippage,
-    swapInProcess,
+    isSwapping,
     handleSelectPricingDetails,
     handleSelectSlippageDetails
   ])
 
   useEffect(() => {
-    if (swapStatus === 'Success') {
+    if (swapStatus === SwapStatus.Success) {
       if (navigation.getParent()?.canGoBack()) {
         navigation.getParent()?.goBack()
       } else {
@@ -556,20 +555,20 @@ export const SwapScreen = (): JSX.Element => {
     }
   }, [fromTokenValue])
 
-  usePreventScreenRemoval(swapInProcess)
+  usePreventScreenRemoval(isSwapping)
 
   const renderFooter = useCallback(() => {
     return (
       <Button
-        testID={!canSwap || swapInProcess ? 'next_btn_disabled' : 'next_btn'}
+        testID={!canSwap || isSwapping ? 'next_btn_disabled' : 'next_btn'}
         type="primary"
         size="large"
         onPress={handleSwap}
-        disabled={!canSwap || swapInProcess}>
-        {swapInProcess ? <ActivityIndicator size="small" /> : 'Next'}
+        disabled={!canSwap || isSwapping}>
+        {isSwapping ? <ActivityIndicator size="small" /> : 'Next'}
       </Button>
     )
-  }, [canSwap, handleSwap, swapInProcess])
+  }, [canSwap, handleSwap, isSwapping])
 
   return (
     <ScrollScreen
@@ -619,7 +618,7 @@ export const SwapScreen = (): JSX.Element => {
                   height: 40,
                   alignSelf: 'center'
                 }}
-                disabled={swapInProcess}
+                disabled={isSwapping}
                 onPress={handleToggleTokens}>
                 <Icons.Custom.SwapVertical />
               </CircularButton>

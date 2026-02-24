@@ -7,11 +7,13 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
 
 class SecureActivity(context: ReactApplicationContext) : ReactContextBaseJavaModule(context) {
+    private val reactContext = context
 
     @ReactMethod
     fun onCreate() {
-        currentActivity?.runOnUiThread {
-            currentActivity?.window?.setFlags(
+        val activity = reactContext.currentActivity ?: return
+        activity.runOnUiThread {
+            activity.window?.setFlags(
                 WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE
             )
         }
@@ -19,8 +21,9 @@ class SecureActivity(context: ReactApplicationContext) : ReactContextBaseJavaMod
 
     @ReactMethod
     fun onDestroy() {
-        currentActivity?.runOnUiThread {
-            currentActivity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        val activity = reactContext.currentActivity ?: return
+        activity.runOnUiThread {
+            activity.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
     }
 

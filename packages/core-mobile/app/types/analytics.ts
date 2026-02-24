@@ -56,14 +56,6 @@ export type AnalyticsEvents = {
   CurrencySettingClicked: undefined
   DeveloperModeEnabled: undefined
   DeveloperModeDisabled: undefined
-  FABItemSelected_Bridge: undefined
-  FABItemSelected_Buy: undefined
-  FABItemSelected_Send: undefined
-  FABItemSelected_Receive: undefined
-  FABItemSelected_Swap: undefined
-  FABItemSelected_WalletConnect: undefined
-  FABClosed: undefined
-  FABOpened: undefined
   HelpCenterClicked: undefined
   LegalClicked: undefined
   'LoginWithMnemonic:WalletNameSet': undefined
@@ -143,11 +135,27 @@ export type AnalyticsEvents = {
     address: string
     chainId: number
   }
-  SwapReviewOrder: {
-    destinationInputField: string
-    slippageTolerance: number | undefined
+  SwapReviewOrder:
+    | {
+        // fusion swap
+        provider: string
+        slippage: number
+      }
+    | {
+        // legacy swap
+        // TODO remove once fusion is out
+        destinationInputField: string
+        slippageTolerance: number | undefined
+      }
+  SwapConfirmed: {
+    address: string
+    txHash: string
+    chainId: string
   }
-  Swap_TokenSelected: undefined
+  SwapFailed: {
+    address: string
+    chainId: string
+  }
   TermsAndConditionsAccepted: undefined
   TermsOfUseClicked: undefined
   TotpValidationFailed: { error: string }
@@ -199,6 +207,8 @@ export type AnalyticsEvents = {
     }[]
   }
   SendTransactionSucceeded: { txHash: string; chainId: number }
+
+  // TODO remove once fusion is out
   SwapTransactionSucceeded: { txHash: string; chainId: number }
   StakeTransactionStarted: { txHash: string; chainId: number }
   BridgeTransactionStarted: {
@@ -257,6 +267,16 @@ export type AnalyticsEvents = {
   EarnWithdrawFailure: undefined
   EarnClaimSuccess: undefined
   EarnClaimFailure: undefined
+  EarnBorrowStart: undefined
+  EarnBorrowSubmitted: {
+    token: string
+    quantity: string
+    protocol: string
+    txHash: string
+    address: string
+  }
+  EarnBorrowSuccess: undefined
+  EarnBorrowFailure: undefined
 
   // NEST EGG CAMPAIGN
   NestEggCampaignModalViewed: { addressC: string }

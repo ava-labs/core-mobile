@@ -19,7 +19,8 @@ import { useTheme } from '../../hooks'
 import { alpha } from '../../utils'
 import {
   normalizeNumericTextInput,
-  normalizeValue
+  normalizeValue,
+  parseDecimalToBigInt
 } from '../../utils/tokenUnitInput'
 import { Text, View } from '../Primitives'
 import { AutoSizeTextInput } from '../AutoSizeTextInput/AutoSizeTextInput'
@@ -69,9 +70,8 @@ export const TokenUnitInput = forwardRef<
     const textInputRef = useRef<TextInput>(null)
 
     const inputAmount = useMemo(() => {
-      const sanitizedValue = value?.replace(/,/g, '')
       return new TokenUnit(
-        !sanitizedValue ? 0n : Number(sanitizedValue) * 10 ** token.maxDecimals,
+        !value ? 0n : parseDecimalToBigInt(value, token.maxDecimals),
         token.maxDecimals,
         token.symbol
       )
@@ -120,7 +120,7 @@ export const TokenUnitInput = forwardRef<
           setValue(normalizedValue)
           onChange?.(
             new TokenUnit(
-              Number(normalizedValue) * 10 ** token.maxDecimals,
+              parseDecimalToBigInt(normalizedValue, token.maxDecimals),
               token.maxDecimals,
               token.symbol
             )
@@ -160,7 +160,7 @@ export const TokenUnitInput = forwardRef<
         <TouchableWithoutFeedback accessible={false} onPress={handlePress}>
           <View
             accessible={false}
-            style={{ paddingHorizontal: 16, width: '100%' }}>
+            style={{ paddingHorizontal: 0, width: '100%' }}>
             <AutoSizeTextInput
               testID="token_amount_input_field"
               ref={textInputRef}

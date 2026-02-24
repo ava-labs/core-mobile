@@ -2,7 +2,6 @@
   "expo": {
     "scheme": "core",
     "name": "AvaxWallet",
-    "displayName": "Core Mobile",
     "slug": "core-wallet",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
@@ -10,15 +9,6 @@
       "./plugins/useWithAndroidNightTheme.js",
       [
         "@vonovak/react-native-theme-control"
-      ],
-      [
-        "react-native-edge-to-edge",
-        {
-          "android": {
-            "parentTheme": "Material3",
-            "enforceNavigationBarContrast": false
-          }
-        }
       ],
       [
         "expo-build-properties",
@@ -73,7 +63,9 @@
         }
       ],
       "expo-localization",
-      "expo-video"
+      "expo-video",
+      "@react-native-community/datetimepicker",
+      "@sentry/react-native"
     ],
     "experiments": {
       "typedRoutes": true

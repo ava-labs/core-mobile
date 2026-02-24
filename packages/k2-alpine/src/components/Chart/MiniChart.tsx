@@ -4,7 +4,9 @@ import { ViewStyle } from 'react-native'
 import {
   Canvas,
   Circle,
+  DashPathEffect,
   Group,
+  Line,
   PaintStyle,
   Path,
   Skia,
@@ -21,12 +23,14 @@ export const MiniChart = ({
   style,
   data,
   downsampleTo = 10,
-  negative = false
+  negative = false,
+  showReferenceLine = false
 }: {
   style?: ViewStyle
   data: { value: number }[]
   downsampleTo?: number
   negative?: boolean
+  showReferenceLine?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
   const [graphSize, setGraphSize] = useState<{ width: number; height: number }>(
@@ -99,6 +103,15 @@ export const MiniChart = ({
           width: graphSize.width,
           height: graphSize.height
         }}>
+        {showReferenceLine && graphSize.width > 0 && (
+          <Line
+            p1={vec(0, graphSize.height / 2)}
+            p2={vec(graphSize.width, graphSize.height / 2)}
+            color="rgba(40, 40, 46, 0.1)"
+            strokeWidth={1.5}>
+            <DashPathEffect intervals={[4, 4]} />
+          </Line>
+        )}
         {path && (
           <Path style="stroke" path={path} strokeWidth={2} paint={paint} />
         )}

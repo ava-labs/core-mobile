@@ -4,6 +4,7 @@ import {
   modalStackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
 import React from 'react'
+
 export default function NotificationsLayout(): JSX.Element {
   return (
     <Stack screenOptions={modalStackNavigatorScreenOptions}>

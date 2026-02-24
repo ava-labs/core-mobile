@@ -8,7 +8,7 @@ import {
   GestureHandlerRootView,
   GestureType
 } from 'react-native-gesture-handler'
-import { runOnJS } from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 
 interface EdgeGestureProps {
   onGesture: (direction: 'left' | 'right') => void
@@ -67,10 +67,10 @@ export const EdgeGesture = ({
       const translationX = currentX - startPosition.current.x
 
       if (translationX > distance) {
-        runOnJS(onGesture)('left')
+        scheduleOnRN(onGesture, 'left')
       }
       if (translationX < -distance) {
-        runOnJS(onGesture)('right')
+        scheduleOnRN(onGesture, 'right')
       }
     })
     .maxPointers(1)
@@ -104,10 +104,10 @@ export const EdgeGesture = ({
       const translationX = currentX - startPosition.current.x
 
       if (translationX > distance) {
-        runOnJS(onGesture)('left')
+        scheduleOnRN(onGesture, 'left')
       }
       if (translationX < -distance) {
-        runOnJS(onGesture)('right')
+        scheduleOnRN(onGesture, 'right')
       }
     })
     .maxPointers(1)

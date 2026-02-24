@@ -42,7 +42,7 @@ const clientPersister = createSyncStoragePersister({
       return queryStorage.set(key, value)
     },
     removeItem: (key: string) => {
-      return queryStorage.delete(key)
+      return queryStorage.remove(key)
     }
   },
   retry: removeOldestQuery

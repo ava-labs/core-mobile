@@ -7,24 +7,22 @@ import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { Text, useTheme, View } from '@avalabs/k2-alpine'
 import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { FlashListProps, ListRenderItem } from '@shopify/flash-list'
-import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
+import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import { isXpTransaction } from 'common/utils/isXpTransactions'
-import { ACTIVITY_LIST_ITEM_HEIGHT } from 'features/portfolio/assets/components/ActivityListItem'
 import { PendingBridgeTransactionItem } from 'features/portfolio/assets/components/PendingBridgeTransactionItem'
 import { TokenActivityListItem } from 'features/portfolio/assets/components/TokenActivityListItem'
 import { XpActivityListItem } from 'features/portfolio/assets/components/XpActivityListItem'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback } from 'react'
-import { Platform } from 'react-native'
-import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
-import { RefreshControl } from 'react-native-gesture-handler'
+import { ViewStyle } from 'react-native'
 import { ActivityListItem } from '../utils'
 
 export const ActivityList = ({
   data,
   xpToken,
-  overrideProps,
+  containerStyle,
   isRefreshing,
+  overrideProps,
   refresh,
   handlePendingBridge,
   handleExplorerLink,
@@ -32,9 +30,10 @@ export const ActivityList = ({
   renderEmpty
 }: {
   data: ActivityListItem[]
-  overrideProps?: FlashListProps<ActivityListItem>['overrideProps']
+  containerStyle?: ViewStyle
   xpToken: TokenWithBalance | undefined
   isRefreshing: boolean
+  overrideProps?: FlashListProps<ActivityListItem>['overrideProps']
   handlePendingBridge: (transaction: BridgeTransaction | BridgeTransfer) => void
   handleExplorerLink: (explorerLink: string) => void
   refresh: () => void
@@ -42,6 +41,7 @@ export const ActivityList = ({
   renderEmpty: () => React.ReactNode
 }): JSX.Element => {
   const { prices } = useWatchlist()
+
   const renderItem: ListRenderItem<ActivityListItem> = useCallback(
     ({ item, index }) => {
       if (item.type === 'header') {
@@ -97,29 +97,19 @@ export const ActivityList = ({
 
   const keyExtractor = useCallback((item: ActivityListItem) => item.id, [])
 
-  const header = useHeaderMeasurements()
-
   return (
-    <CollapsibleTabs.FlashList
-      key={xpToken?.symbol}
-      overrideProps={overrideProps}
+    <CollapsibleTabList
       data={data}
-      extraData={{ prices }}
       renderItem={renderItem}
-      refreshControl={
-        <RefreshControl
-          refreshing={isRefreshing}
-          onRefresh={refresh}
-          progressViewOffset={Platform.OS === 'ios' ? 0 : header.height}
-        />
-      }
-      ListHeaderComponent={renderHeader}
-      ListEmptyComponent={renderEmpty}
-      showsVerticalScrollIndicator={false}
       keyExtractor={keyExtractor}
-      estimatedItemSize={ACTIVITY_LIST_ITEM_HEIGHT}
-      refreshing={isRefreshing}
+      containerStyle={containerStyle}
+      renderEmpty={renderEmpty}
+      renderHeader={renderHeader}
+      isRefreshing={isRefreshing}
       onRefresh={refresh}
+      extraData={{ prices }}
+      listKey={xpToken?.symbol}
+      overrideProps={overrideProps}
     />
   )
 }
