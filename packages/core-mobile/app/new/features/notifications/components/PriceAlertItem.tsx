@@ -25,7 +25,9 @@ const getTitle = (
   if (!isPriceAlertNotification(notification)) return notification.title
   const { tokenSymbol, currentPrice } = notification.data ?? {}
   if (!tokenSymbol || currentPrice === undefined) return notification.title
-  return `${tokenSymbol.toUpperCase()} reached ${formatCurrency({ amount: currentPrice })}`
+  return `${tokenSymbol.toUpperCase()} reached ${formatCurrency({
+    amount: currentPrice
+  })}`
 }
 
 const Subtitle = ({
