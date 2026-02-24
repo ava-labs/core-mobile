@@ -373,7 +373,10 @@ describe('Fusion listeners', () => {
       const effect = call[0].effect
       const transfer = { id: 'transfer-1', status: 'source-pending' } as any
 
-      const effectPromise = effect({ payload: transfer }, {})
+      const mockListenerApi = {
+        delay: (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+      }
+      const effectPromise = effect({ payload: transfer }, mockListenerApi)
 
       // trackTransfer should not be called immediately
       expect(FusionService.trackTransfer).not.toHaveBeenCalled()
