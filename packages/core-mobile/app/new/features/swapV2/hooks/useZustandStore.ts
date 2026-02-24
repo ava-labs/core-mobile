@@ -84,18 +84,7 @@ export const fusionTransfersStore = create<FusionTransfersState>()(
   )
 )
 
-// Export hook that matches the createZustandStore API
-export const useFusionTransfers = (): {
-  transfers: FusionTransfersMap
-  setTransfers: (
-    next:
-      | FusionTransfersMap
-      | ((curr: FusionTransfersMap) => FusionTransfersMap)
-  ) => void
-  removeTransfer: (transferId: string) => void
-  clearCompletedTransfers: () => void
-  clearAllTransfers: () => void
-} => {
+export const useFusionTransfers = (): FusionTransfersState => {
   const transfers = fusionTransfersStore(s => s.transfers)
   const setTransfers = fusionTransfersStore(s => s.setTransfers)
   const removeTransfer = fusionTransfersStore(s => s.removeTransfer)
