@@ -80,10 +80,6 @@ class EarnPage {
     await txPage.tapApprove()
     await txPage.verifySuccessToast()
   }
-
-  async dismissBottomSheet() {
-    await commonElsPage.dismissBottomSheet()
-  }
 }
 
 export default new EarnPage()
