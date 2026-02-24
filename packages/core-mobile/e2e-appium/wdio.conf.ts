@@ -51,10 +51,10 @@ const allCaps = [
   {
     platformName: 'iOS',
     // 'appium:noReset': true,
-    'appium:deviceName': 'iPhone 16 Pro',
+    'appium:deviceName': 'iPhone 17 Pro',
     'appium:waitForIdleTimeout': 0,
     'appium:maxTypingFrequency': 30,
-    'appium:platformVersion': '18.4',
+    'appium:platformVersion': '26.0',
     'appium:automationName': 'xcuitest',
     'appium:app': iosPath,
     'appium:autoAcceptAlerts': true,
