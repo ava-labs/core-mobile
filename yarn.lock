@@ -633,6 +633,7 @@ __metadata:
     "@walletconnect/utils": 2.17.2
     "@wdio/appium-service": 9.23.0
     "@wdio/cli": 9.23.0
+    "@wdio/globals": 9.23.0
     "@wdio/local-runner": 9.23.0
     "@wdio/mocha-framework": 9.23.0
     "@wdio/spec-reporter": 9.20.0
@@ -35892,7 +35893,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 44ee8c8ebc4dc4d3423e9045e1aebac31829eb518824e24f41b2bd10ab1e8343e824e9d912f259bfec7bfa798e96513cc05dbdcdf36087b2a43806f74a3b0fa2
+  checksum: 3e4689674406deb2ad9efa9f529597341b4ab33e379b7c7cd72aff8d5e37862fda1a37aba984951a67cc3938969be138bc3c4469e4963dd170b172148339e056
   languageName: node
   linkType: hard
 
