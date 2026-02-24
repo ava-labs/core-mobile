@@ -36,7 +36,7 @@ const NotificationListItem: FC<NotificationListItemProps> = ({
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 11,
+        gap: 15,
         paddingLeft: 16
       }}>
       {icon}
@@ -46,11 +46,11 @@ const NotificationListItem: FC<NotificationListItemProps> = ({
           flexDirection: 'row',
           flex: 1,
           alignItems: 'center',
-          gap: 8,
+          gap: 6,
           minHeight: NOTIFICATION_LIST_ITEM_HEIGHT,
           paddingTop: 12,
           paddingBottom: 12,
-          paddingRight: 16,
+          paddingRight: 10,
           borderBottomWidth: showSeparator ? 1 : 0,
           borderBottomColor: colors.$borderPrimary
         }}>
@@ -84,7 +84,7 @@ const NotificationListItem: FC<NotificationListItemProps> = ({
             ))}
         </View>
         {rightAccessory}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
           {timestamp !== undefined && (
             <Text
               variant="body2"
