@@ -1,4 +1,6 @@
 import messaging from '@react-native-firebase/messaging'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { queryClient } from 'contexts/ReactQueryProvider'
 import {
   ACTIONS,
   DeepLinkOrigin,
@@ -65,6 +67,13 @@ class FCMService {
         )
         return
       }
+
+      // Refetch notification center list when a new notification arrives
+      queryClient
+        .invalidateQueries({
+          queryKey: [ReactQueryKeys.NOTIFICATION_CENTER_LIST]
+        })
+        .catch(Logger.error)
 
       if (
         result.data.data.event === BalanceChangeEvents.BALANCES_SPENT ||
