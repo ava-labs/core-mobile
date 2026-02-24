@@ -11,7 +11,7 @@ export const ConnectedNotificationBarButton = (): JSX.Element => {
   const unreadCount = useUnreadCount()
 
   const handlePress = useCallback(() => {
-    // @ts-expect-error - expo-router route not typed
+    // @ts-ignore - expo-router route not typed
     router.navigate('/notifications')
   }, [])
 
