@@ -304,7 +304,10 @@ class FusionService implements IFusionService {
 
     result
       .then(completed => wrappedListener(completed))
-      .catch(err => Logger.error('[FusionService] trackTransfer error', err))
+      .catch(err => {
+        Logger.error('[FusionService] trackTransfer error', err)
+        this.#trackingCancels.delete(transfer.id)
+      })
   }
 
   /**
