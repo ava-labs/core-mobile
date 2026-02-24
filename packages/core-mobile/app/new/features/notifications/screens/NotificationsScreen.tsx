@@ -14,12 +14,13 @@ import {
 } from 'store/posthog'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { LoadingState } from 'common/components/LoadingState'
+import { useFusionTransfers } from 'features/swapV2/hooks/useZustandStore'
+import { FusionTransfer } from 'features/swapV2/types'
 import NotificationEmptyState from '../components/NotificationEmptyState'
 import SwipeableRow from '../components/SwipeableRow'
 import PriceAlertItem from '../components/PriceAlertItem'
 import BalanceChangeItem from '../components/BalanceChangeItem'
 import GenericNotificationItem from '../components/GenericNotificationItem'
-import SwapActivityItem from '../components/SwapActivityItem'
 import {
   useNotifications,
   useMarkAllAsRead,
@@ -30,11 +31,10 @@ import {
   AppNotification,
   NotificationTab,
   isPriceAlertNotification,
-  isBalanceChangeNotification,
-  SwapActivityItem as SwapActivityItemType
+  isBalanceChangeNotification
 } from '../types'
-import { useSwapActivitiesStore } from '../store'
 import { isSwapCompletedOrFailed } from '../utils'
+import { FusionTransferItem } from '../components/SwapActivityItem'
 
 const TITLE = 'Notifications'
 
@@ -105,8 +105,8 @@ const renderNotificationItem = (
 //  Note: Swap activities and backend notifications are combined and de-duplicated
 // (e.g., by transaction hash) to avoid duplicated swap entries in the list.
 export const NotificationsScreen = (): JSX.Element => {
-  const { removeSwapActivity, clearCompletedSwapActivities, swapActivities } =
-    useSwapActivitiesStore()
+  const { removeTransfer, clearCompletedTransfers, transfers } =
+    useFusionTransfers()
   const insets = useSafeAreaInsets()
   const { height: screenHeight } = useWindowDimensions()
   const { openUrl } = useCoreBrowser()
@@ -137,7 +137,7 @@ export const NotificationsScreen = (): JSX.Element => {
     return () => clearTimeout(clearAllTimerRef.current)
   }, [])
 
-  const handleSwapActivityPress = useCallback((item: SwapActivityItemType) => {
+  const handleSwapActivityPress = useCallback((item: FusionTransfer) => {
     router.push({
       // @ts-ignore TODO: make routes typesafe
       pathname: '/notifications/swapDetail',
@@ -159,7 +159,7 @@ export const NotificationsScreen = (): JSX.Element => {
   // Side effect: remove duplicate swap entries from MMKV — the tx is confirmed
   // so it is no longer in progress and the backend notification supersedes it.
   useEffect(() => {
-    const duplicateTransferIds = Object.values(swapActivities)
+    const duplicateTransferIds = Object.values(transfers)
       .filter(s => {
         const txHash = s.transfer.source?.txHash
         return txHash !== undefined && notificationByTxHash.has(txHash)
@@ -169,14 +169,14 @@ export const NotificationsScreen = (): JSX.Element => {
       return
     }
     duplicateTransferIds.forEach(transferId => {
-      removeSwapActivity(transferId)
+      removeTransfer(transferId)
     })
-  }, [swapActivities, notificationByTxHash, removeSwapActivity])
+  }, [transfers, notificationByTxHash, removeTransfer])
 
   // Combined list sorted by timestamp desc. All items (swaps + notifications)
   // are ordered purely by recency — no special pinning for in_progress swaps.
   type CombinedItem =
-    | { kind: 'swap'; item: SwapActivityItemType }
+    | { kind: 'swap'; item: FusionTransfer }
     | { kind: 'notification'; item: AppNotification }
 
   const combinedItems = useMemo((): CombinedItem[] => {
@@ -186,7 +186,7 @@ export const NotificationsScreen = (): JSX.Element => {
 
     return [
       ...(showSwaps
-        ? Object.values(swapActivities)
+        ? Object.values(transfers)
             // Exclude swaps that already have a matching backend notification
             .filter(s => {
               const txHash = s.transfer.source?.txHash
@@ -198,7 +198,7 @@ export const NotificationsScreen = (): JSX.Element => {
         (n): CombinedItem => ({ kind: 'notification', item: n })
       )
     ].sort((a, b) => b.item.timestamp - a.item.timestamp)
-  }, [swapActivities, notifications, selectedTab, notificationByTxHash])
+  }, [transfers, notifications, selectedTab, notificationByTxHash])
   // ──────────────────────────────────────────────────────────────────────────
 
   // Items that "Clear All" will remove: backend notifications + completed swaps
@@ -207,7 +207,7 @@ export const NotificationsScreen = (): JSX.Element => {
       combinedItems.filter(
         item =>
           item.kind === 'notification' ||
-          (item.kind === 'swap' && isSwapCompletedOrFailed(item.item))
+          (item.kind === 'swap' && isSwapCompletedOrFailed(item.item.transfer))
       ),
     [combinedItems]
   )
@@ -222,19 +222,19 @@ export const NotificationsScreen = (): JSX.Element => {
     const totalTime = animatedCount * SWIPE_DELAY + SWIPE_DURATION
     clearAllTimerRef.current = setTimeout(() => {
       markAllAsRead()
-      clearCompletedSwapActivities()
+      clearCompletedTransfers()
       setIsClearingAll(false)
     }, totalTime)
   }, [
     isClearingAll,
     clearableItems.length,
     markAllAsRead,
-    clearCompletedSwapActivities
+    clearCompletedTransfers
   ])
 
   // Full empty state: no backend notifications AND no swap activities
   const hasNoContentAtAll =
-    totalUnreadCount === 0 && Object.keys(swapActivities).length === 0
+    totalUnreadCount === 0 && Object.keys(transfers).length === 0
   const isCurrentViewEmpty =
     combinedItems.length === 0 && !isClearingAll && !isLoading
   // Full empty state only when there is truly nothing to show
@@ -349,26 +349,29 @@ export const NotificationsScreen = (): JSX.Element => {
           const isLast = index === combinedItems.length - 1
 
           if (combined.kind === 'swap') {
-            const swap = combined.item
-            const isCompletedOrFailed = isSwapCompletedOrFailed(swap)
+            const transfer = combined.item
+            const isCompletedOrFailed = isSwapCompletedOrFailed(
+              transfer.transfer
+            )
             return (
               <SwipeableRow
-                key={swap.transfer.id}
+                key={transfer.transfer.id}
                 animateOut={
                   isCompletedOrFailed &&
                   isClearingAll &&
                   index < MAX_ANIMATED_ITEMS
                 }
                 animateDelay={index * SWIPE_DELAY}
-                onSwipeComplete={() => removeSwapActivity(swap.transfer.id)}
+                onSwipeComplete={() => removeTransfer(transfer.transfer.id)}
                 onPress={() =>
-                  isCompletedOrFailed === false && handleSwapActivityPress(swap)
+                  isCompletedOrFailed === false &&
+                  handleSwapActivityPress(transfer)
                 }
                 enabled={!isClearingAll && isCompletedOrFailed}>
-                <SwapActivityItem
-                  item={swap}
+                <FusionTransferItem
+                  item={transfer}
                   showSeparator={!isLast}
-                  testID={`swap-activity-${swap.transfer.id}`}
+                  testID={`swap-activity-${transfer.transfer.id}`}
                 />
               </SwipeableRow>
             )

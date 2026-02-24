@@ -7,7 +7,8 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
-import { SwapActivityItem, SwapStatus } from '../types'
+import { FusionTransfer } from 'features/swapV2/types'
+import { SwapStatus } from '../types'
 import {
   mapTransferToSourceChainStatus,
   mapTransferToSwapStatus,
@@ -48,7 +49,7 @@ export type SwapActivityDisplay = {
  * is safe to use unconditionally even when the item may not yet be available.
  */
 export function useSwapActivityDisplay(
-  item?: SwapActivityItem
+  item?: FusionTransfer
 ): SwapActivityDisplay | undefined {
   const activeAccount = useSelector(selectActiveAccount)
   const { getNetworkByCaip2ChainId } = useNetworks()
@@ -59,12 +60,18 @@ export function useSwapActivityDisplay(
   const tokens = useTokensWithBalanceForAccount({ account: activeAccount })
 
   const fromTokenData = useMemo(
-    () => (item ? tokens.find(t => t.localId === item.fromTokenId) : undefined),
+    () =>
+      item
+        ? tokens.find(t => t.internalId === item.fromToken.internalId)
+        : undefined,
     [tokens, item]
   )
 
   const toTokenData = useMemo(
-    () => (item ? tokens.find(t => t.localId === item.toTokenId) : undefined),
+    () =>
+      item
+        ? tokens.find(t => t.internalId === item.toToken.internalId)
+        : undefined,
     [tokens, item]
   )
 

@@ -2,24 +2,24 @@ import React, { FC, useCallback, useMemo } from 'react'
 import { Text } from '@avalabs/k2-alpine'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { SwapActivityItem as SwapActivityItemType } from '../types'
+import { FusionTransfer } from 'features/swapV2/types'
 import { mapTransferToSwapStatus } from '../utils'
 import NotificationListItem from './NotificationListItem'
 import { SwapIcon } from './SwapIcon'
 import { RetryButton } from './RetryButton'
 
-type SwapActivityItemProps = {
-  item: SwapActivityItemType
+type FusionTransferItemProps = {
+  item: FusionTransfer
   showSeparator: boolean
   testID?: string
 }
 
 /**
- * List item for a swap transaction in the notification center.
+ * List item for a fusion transfer transaction in the notification center.
  *
  * Title is derived from the item's fromToken / toToken amounts and symbols
  */
-const SwapActivityItem: FC<SwapActivityItemProps> = ({
+export const FusionTransferItem: FC<FusionTransferItemProps> = ({
   item,
   showSeparator,
   testID
@@ -109,5 +109,3 @@ const SwapActivityItem: FC<SwapActivityItemProps> = ({
     />
   )
 }
-
-export default SwapActivityItem

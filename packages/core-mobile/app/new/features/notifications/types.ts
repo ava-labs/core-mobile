@@ -169,39 +169,3 @@ export type SwapTransferStatus =
   | 'target-failed'
   | 'failed'
   | 'error'
-
-/**
- * Raw transfer object received from the Markr backend.
- */
-export interface SwapTransfer {
-  id: string
-  amountIn: string
-  amountOut: string
-  /** Backend status string reflecting the overall swap lifecycle. */
-  status: SwapTransferStatus | string
-  sourceAsset: SwapTransferAsset
-  targetAsset: SwapTransferAsset
-  sourceChain: SwapTransferChain
-  targetChain: SwapTransferChain
-  /** Present once the source tx is broadcast. */
-  source?: SwapTransferSource
-  /** Present once the target tx is broadcast. */
-  target?: SwapTransferSource
-  fromAddress?: string
-  toAddress?: string
-}
-
-/**
- * Represents a swap activity item stored in the notification-center Zustand
- * store. All display-level data is derived at render time from this raw shape.
- */
-export interface SwapActivityItem {
-  /** Raw transfer payload received from the Markr backend */
-  transfer: SwapTransfer
-  /** localId of the "from" token (e.g. "NATIVE-AVAX" or a contract address) */
-  fromTokenId: string
-  /** localId of the "to" token */
-  toTokenId: string
-  /** Unix timestamp in milliseconds (set when the swap was initiated) */
-  timestamp: number
-}

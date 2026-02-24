@@ -3,21 +3,21 @@ import { Button, Separator, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
-import { useSwapActivitiesStore } from '../store'
+import { useFusionTransfers } from 'features/swapV2/hooks/useZustandStore'
 import { TokenAmountRow } from '../components/TokenAmountRow'
 import { NetworkStatusCard } from '../components/NetworkStatusCard'
 import { useSwapActivityDisplay } from '../hooks/useSwapActivityDisplay'
 
 export const SwapActivityDetailScreen = (): JSX.Element => {
-  const { swapActivities } = useSwapActivitiesStore()
+  const { transfers } = useFusionTransfers()
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
 
   // id from route params is transfer.id, which is the Record key
-  const swap = swapActivities[id]
+  const transfer = transfers[id]
 
   // Always call the hook unconditionally; it returns undefined when swap is undefined.
-  const display = useSwapActivityDisplay(swap)
+  const display = useSwapActivityDisplay(transfer)
 
   const handleFooterPress = (): void => {
     router.canGoBack() && router.back()

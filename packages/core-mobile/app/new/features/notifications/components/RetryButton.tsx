@@ -1,14 +1,15 @@
 import { Button } from '@avalabs/k2-alpine'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import React from 'react'
-import { SwapActivityItem, SwapStatus } from '../types'
+import { FusionTransfer } from 'features/swapV2/types'
+import { SwapStatus } from '../types'
 
 export const RetryButton = ({
   status,
   item
 }: {
   status: SwapStatus
-  item: SwapActivityItem
+  item: FusionTransfer
 }): JSX.Element | null => {
   const { navigateToSwap } = useNavigateToSwap()
 
@@ -20,8 +21,8 @@ export const RetryButton = ({
       size="small"
       onPress={() =>
         navigateToSwap({
-          fromTokenId: item.fromTokenId,
-          toTokenId: item.toTokenId,
+          fromTokenId: item.fromToken.internalId,
+          toTokenId: item.toToken.internalId,
           retryingSwapActivityId: item.transfer.id
         })
       }>

@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo } from 'react'
 import { router } from 'expo-router'
 import { useUnreadCount } from 'features/notifications/hooks/useNotifications'
-import { useSwapActivitiesStore } from 'features/notifications/store'
 import { mapTransferToSwapStatus } from 'features/notifications/utils'
+import { useFusionTransfers } from 'features/swapV2/hooks/useZustandStore'
 import { NotificationBarButton } from './NotificationBarButton'
 
 /**
@@ -12,13 +12,13 @@ import { NotificationBarButton } from './NotificationBarButton'
  */
 export const ConnectedNotificationBarButton = (): JSX.Element => {
   const unreadCount = useUnreadCount()
-  const { swapActivities } = useSwapActivitiesStore()
+  const { transfers } = useFusionTransfers()
 
   const isSwapInProgress = useMemo(() => {
-    return Object.values(swapActivities).some(
+    return Object.values(transfers).some(
       item => mapTransferToSwapStatus(item.transfer) === 'in_progress'
     )
-  }, [swapActivities])
+  }, [transfers])
 
   const handlePress = useCallback(() => {
     // @ts-ignore - expo-router route not typed

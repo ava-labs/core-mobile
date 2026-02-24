@@ -1,11 +1,10 @@
+import { Transfer } from 'features/swapV2/types'
 import {
   AppNotification,
   NotificationCategory,
   NotificationTab,
   NotificationType,
-  SwapActivityItem,
-  SwapStatus,
-  SwapTransfer
+  SwapStatus
 } from './types'
 
 /**
@@ -16,8 +15,8 @@ import {
  * the user can track them; only terminal states (completed / failed) are
  * eligible for removal.
  */
-export function isSwapCompletedOrFailed(swap: SwapActivityItem): boolean {
-  const status = mapTransferToSwapStatus(swap.transfer)
+export function isSwapCompletedOrFailed(transfer: Transfer): boolean {
+  const status = mapTransferToSwapStatus(transfer)
   return status === 'completed' || status === 'failed'
 }
 
@@ -25,65 +24,46 @@ export function isSwapCompletedOrFailed(swap: SwapActivityItem): boolean {
  * Maps the raw backend transfer status to the simplified SwapStatus used in
  * the UI. Both "source-pending" and "target-pending" map to 'in_progress'.
  */
-export function mapTransferToSwapStatus(transfer: SwapTransfer): SwapStatus {
+export function mapTransferToSwapStatus(transfer: Transfer): SwapStatus {
   const lower = transfer.status.toLowerCase()
 
-  if (lower === 'completed' || lower === 'target-confirmed') return 'completed'
-  if (
-    lower.includes('fail') ||
-    lower === 'error' ||
-    lower === 'source-failed' ||
-    lower === 'target-failed'
-  )
-    return 'failed'
+  if (lower === 'completed') return 'completed'
+  if (lower === 'failed') return 'failed'
 
-  // source-pending, source-confirmed, target-pending → all still in progress
+  // source-pending, source-completed, target-pending → all still in progress
   return 'in_progress'
 }
 
 /**
  * Returns the SwapStatus for the **source** (From) chain only.
- *   - source-pending                                          → in_progress
- *   - source-confirmed / target-pending / completed / etc.   → completed
- *   - source-failed / failed                                  → failed
+ *   - source-pending                                           → in_progress
+ *   - source-completed / target-pending / completed / etc.    → completed
+ *   - failed                                                   → failed
  */
-export function mapTransferToSourceChainStatus(
-  transfer: SwapTransfer
-): SwapStatus {
+export function mapTransferToSourceChainStatus(transfer: Transfer): SwapStatus {
   const lower = transfer.status.toLowerCase()
 
-  if (lower === 'source-failed' || lower === 'failed' || lower === 'error')
-    return 'failed'
-
+  if (lower === 'failed') return 'failed'
   if (lower === 'source-pending') return 'in_progress'
 
-  // source-confirmed, target-pending, target-confirmed, completed → source done
+  // source-completed, target-pending, completed → source done
   return 'completed'
 }
 
 /**
  * Returns the SwapStatus for the **target** (To) chain only.
- *   - source-pending / source-confirmed   → in_progress (target hasn't started)
+ *   - source-pending / source-completed   → in_progress (target hasn't started)
  *   - target-pending                      → in_progress
- *   - target-confirmed / completed        → completed
- *   - target-failed / failed              → failed
+ *   - completed                           → completed
+ *   - failed                              → failed
  */
-export function mapTransferToTargetChainStatus(
-  transfer: SwapTransfer
-): SwapStatus {
+export function mapTransferToTargetChainStatus(transfer: Transfer): SwapStatus {
   const lower = transfer.status.toLowerCase()
 
-  if (
-    lower === 'target-failed' ||
-    lower === 'failed' ||
-    lower === 'error' ||
-    lower === 'source-failed'
-  )
-    return 'failed'
+  if (lower === 'failed') return 'failed'
+  if (lower === 'completed') return 'completed'
 
-  if (lower === 'completed' || lower === 'target-confirmed') return 'completed'
-
-  // source-pending, source-confirmed, target-pending → target not done yet
+  // source-pending, source-completed, target-pending → target not done yet
   return 'in_progress'
 }
 

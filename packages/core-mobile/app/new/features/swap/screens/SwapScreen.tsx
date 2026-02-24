@@ -54,7 +54,7 @@ import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
 import { useCChainGasCost } from 'common/hooks/useCChainGasCost'
 import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio/hooks/useTokensWithZeroBalanceByNetworksForAccount'
 import { selectActiveAccount } from 'store/account'
-import { useSwapActivitiesStore } from 'features/notifications/store'
+import { useFusionTransfers } from 'features/swapV2/hooks/useZustandStore'
 import {
   JUPITER_PARTNER_FEE_BPS,
   MARKR_DEFAULT_GAS_LIMIT,
@@ -75,6 +75,7 @@ import {
 import { getMaxSwapAmount } from '../utils/getMaxSwapAmount'
 
 export const SwapScreen = (): JSX.Element => {
+  const { removeTransfer } = useFusionTransfers()
   const { theme } = useTheme()
   const { navigate, dismissAll } = useRouter()
   const navigation = useNavigation()
@@ -418,7 +419,7 @@ export const SwapScreen = (): JSX.Element => {
     // activity so it doesn't continue to show up in the notifications list while this
     // new swap attempt is in progress.
     params.retryingSwapActivityId &&
-      removeSwapActivity(params.retryingSwapActivityId)
+      removeTransfer(params.retryingSwapActivityId)
 
     swap()
   }, [
@@ -426,7 +427,7 @@ export const SwapScreen = (): JSX.Element => {
     destination,
     slippage,
     params.retryingSwapActivityId,
-    removeSwapActivity
+    removeTransfer
   ])
 
   const handleFromAmountChange = useCallback(

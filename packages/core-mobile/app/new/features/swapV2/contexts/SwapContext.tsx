@@ -94,7 +94,7 @@ export const SwapContextProvider = ({
   const [allQuotes] = useAllQuotes()
 
   // Transfer storage
-  const [, setTransfers] = useFusionTransfers()
+  const { setTransfers } = useFusionTransfers()
 
   // Derive the actual selected quote from allQuotes with fallback matching
   // Strategy:
