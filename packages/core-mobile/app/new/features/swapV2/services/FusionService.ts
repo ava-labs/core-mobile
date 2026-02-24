@@ -3,13 +3,15 @@ import {
   createTransferManager,
   Environment,
   EvmServiceInitializer,
-  FetchFunction,
   LombardServiceInitializer,
   MarkrServiceInitializer,
+  Quote,
   QuoterInterface,
   ServiceInitializer,
   ServiceType,
-  TransferManager
+  Transfer,
+  TransferManager,
+  Fetch
 } from '@avalabs/unified-asset-transfer'
 import type { FeatureFlags } from 'services/posthog/types'
 import Logger from 'utils/Logger'
@@ -111,11 +113,16 @@ class FusionService implements IFusionService {
              
           } satisfies LombardServiceInitializer)
           break
-
         default:
           throw new Error(`Unknown service type: ${serviceType}`)
       }
     }
+
+    // Always include wrap/unwrap service
+    initializers.push({
+      type: ServiceType.WRAP_UNWRAP,
+      evmSigner: signers.evm,
+    } satisfies EvmServiceInitializer)
 
     return initializers
   }
@@ -179,7 +186,7 @@ class FusionService implements IFusionService {
     signers
   }: {
     bitcoinProvider: BitcoinFunctions
-    fetch: FetchFunction
+    fetch: Fetch
     environment: Environment
     featureFlags: FeatureFlags
     signers: FusionSigners
@@ -235,6 +242,32 @@ class FusionService implements IFusionService {
       return quoter
     } catch (error) {
       Logger.error('Failed to create Quoter instance', error)
+      throw error
+    }
+  }
+
+  /**
+   * Execute a transfer using the provided quote
+   * @param quote The quote to execute
+   * @returns Transfer object with status and transaction details
+   */
+  async transferAsset(quote: Quote): Promise<Transfer> {
+    try {
+      Logger.info('Executing transfer with quote:', {
+        aggregator: quote.aggregator.name,
+        serviceType: quote.serviceType
+      })
+
+      const transfer = await this.transferManager.transferAsset({ quote })
+
+      Logger.info('Transfer executed:', {
+        transferId: transfer.id,
+        status: transfer.status
+      })
+
+      return transfer
+    } catch (error) {
+      Logger.error('Failed to execute transfer', error)
       throw error
     }
   }

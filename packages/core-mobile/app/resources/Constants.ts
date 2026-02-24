@@ -22,7 +22,8 @@ export enum ZustandStorageKeys {
   FAVORITES_VIEW = 'favoritesView',
   TRACK_SEARCH_VIEW = 'trackSearchView',
   LEDGER_WALLET_MAP = 'ledgerWalletMap',
-  APP_REVIEW = 'appReview'
+  APP_REVIEW = 'appReview',
+  FUSION_TRANSFERS = 'fusionTransfers'
 }
 
 export const CORE_UNIVERSAL_LINK_HOSTS = ['core.app', 'test.core.app']
