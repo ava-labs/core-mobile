@@ -102,8 +102,6 @@ const renderNotificationItem = (
   return <GenericNotificationItem notification={item} {...props} />
 }
 
-//  Note: Swap activities and backend notifications are combined and de-duplicated
-// (e.g., by transaction hash) to avoid duplicated swap entries in the list.
 export const NotificationsScreen = (): JSX.Element => {
   const { removeTransfer, clearCompletedTransfers, transfers } =
     useFusionTransfers()
@@ -145,34 +143,6 @@ export const NotificationsScreen = (): JSX.Element => {
     })
   }, [])
 
-  // Map notification transactionHash → notification for BALANCE_CHANGES items
-  const notificationByTxHash = useMemo(() => {
-    const map = new Map<string, AppNotification>()
-    for (const n of notifications) {
-      if (isBalanceChangeNotification(n) && n.data?.transactionHash) {
-        map.set(n.data.transactionHash, n)
-      }
-    }
-    return map
-  }, [notifications])
-
-  // Side effect: remove duplicate swap entries from MMKV — the tx is confirmed
-  // so it is no longer in progress and the backend notification supersedes it.
-  useEffect(() => {
-    const duplicateTransferIds = Object.values(transfers)
-      .filter(s => {
-        const txHash = s.transfer.source?.txHash
-        return txHash !== undefined && notificationByTxHash.has(txHash)
-      })
-      .map(s => s.transfer.id)
-    if (duplicateTransferIds.length === 0) {
-      return
-    }
-    duplicateTransferIds.forEach(transferId => {
-      removeTransfer(transferId)
-    })
-  }, [transfers, notificationByTxHash, removeTransfer])
-
   // Combined list sorted by timestamp desc. All items (swaps + notifications)
   // are ordered purely by recency — no special pinning for in_progress swaps.
   type CombinedItem =
@@ -186,19 +156,15 @@ export const NotificationsScreen = (): JSX.Element => {
 
     return [
       ...(showSwaps
-        ? Object.values(transfers)
-            // Exclude swaps that already have a matching backend notification
-            .filter(s => {
-              const txHash = s.transfer.source?.txHash
-              return txHash === undefined || !notificationByTxHash.has(txHash)
-            })
-            .map((s): CombinedItem => ({ kind: 'swap', item: s }))
+        ? Object.values(transfers).map(
+            (s): CombinedItem => ({ kind: 'swap', item: s })
+          )
         : []),
       ...notifications.map(
         (n): CombinedItem => ({ kind: 'notification', item: n })
       )
     ].sort((a, b) => b.item.timestamp - a.item.timestamp)
-  }, [transfers, notifications, selectedTab, notificationByTxHash])
+  }, [transfers, notifications, selectedTab])
   // ──────────────────────────────────────────────────────────────────────────
 
   // Items that "Clear All" will remove: backend notifications + completed swaps
