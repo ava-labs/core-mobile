@@ -14,6 +14,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { BorrowSummary, MarketName } from '../types'
 import {
+  formatHealthScore,
   getHealthRisk,
   getHealthRiskColor,
   HealthRisk
@@ -99,22 +100,7 @@ export const BorrowSummaryBanner = ({
   }, [healthRisk])
 
   const healthScoreBadgeText = useMemo(() => {
-    const score = summary.healthScore
-
-    if (score === undefined || Number.isNaN(score)) {
-      return '--'
-    }
-
-    if (!Number.isFinite(score)) {
-      return '∞'
-    }
-
-    // Keep the badge text compact so it stays centered in the 30x30 circle.
-    if (score >= 10) {
-      return score.toFixed(0)
-    }
-
-    return score.toFixed(1)
+    return formatHealthScore(summary.healthScore)
   }, [summary.healthScore])
 
   return (

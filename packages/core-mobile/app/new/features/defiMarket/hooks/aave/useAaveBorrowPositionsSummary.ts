@@ -40,13 +40,15 @@ export const useAaveBorrowPositionsSummary = (): BorrowSummaryResult => {
   const {
     data: aaveBorrowData,
     isLoading: isLoadingAaveBorrowData,
-    isFetching: isFetchingAaveBorrowData
+    isFetching: isFetchingAaveBorrowData,
+    refetch: refetchAaveBorrowData
   } = useAaveBorrowData()
 
   const {
     data: aaveDebtMap,
     isLoading: isLoadingAaveDebtMap,
-    isFetching: isFetchingAaveDebtMap
+    isFetching: isFetchingAaveDebtMap,
+    refetch: refetchAaveDebtMap
   } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [
@@ -106,9 +108,13 @@ export const useAaveBorrowPositionsSummary = (): BorrowSummaryResult => {
 
   const refresh = useCallback(async () => {
     setIsRefreshing(true)
-    await refetchAaveMarkets()
+    await Promise.all([
+      refetchAaveMarkets(),
+      refetchAaveBorrowData(),
+      refetchAaveDebtMap()
+    ])
     setIsRefreshing(false)
-  }, [refetchAaveMarkets])
+  }, [refetchAaveMarkets, refetchAaveBorrowData, refetchAaveDebtMap])
 
   return {
     positions,

@@ -38,3 +38,16 @@ export const getHealthRiskColor = ({
   }
   return colors.$textSuccess
 }
+
+export const formatHealthScore = (score: number | undefined): string => {
+  if (score === undefined || Number.isNaN(score)) {
+    return '--'
+  }
+  if (!Number.isFinite(score)) {
+    return '∞'
+  }
+  if (score >= 100) {
+    return Math.round(score).toString()
+  }
+  return score.toFixed(1)
+}

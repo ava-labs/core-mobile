@@ -28,13 +28,15 @@ export const useBenqiBorrowPositionsSummary = (): BorrowSummaryResult => {
   const {
     data: benqiBorrowData,
     isLoading: isLoadingBenqiBorrowData,
-    isFetching: isFetchingBenqiBorrowData
+    isFetching: isFetchingBenqiBorrowData,
+    refetch: refetchBenqiBorrowData
   } = useBenqiBorrowData()
 
   const {
     data: benqiAccountSnapshot,
     isLoading: isLoadingBenqiSnapshot,
-    isFetching: isFetchingBenqiSnapshot
+    isFetching: isFetchingBenqiSnapshot,
+    refetch: refetchBenqiSnapshot
   } = useBenqiAccountSnapshot({ networkClient })
 
   const benqiDebtMap = useMemo(() => {
@@ -66,9 +68,13 @@ export const useBenqiBorrowPositionsSummary = (): BorrowSummaryResult => {
 
   const refresh = useCallback(async () => {
     setIsRefreshing(true)
-    await refetchBenqiMarkets()
+    await Promise.all([
+      refetchBenqiMarkets(),
+      refetchBenqiBorrowData(),
+      refetchBenqiSnapshot()
+    ])
     setIsRefreshing(false)
-  }, [refetchBenqiMarkets])
+  }, [refetchBenqiMarkets, refetchBenqiBorrowData, refetchBenqiSnapshot])
 
   return {
     positions,
