@@ -8,6 +8,7 @@ import Logger from 'utils/Logger'
 import { Network } from '@avalabs/core-chains-sdk'
 import { WalletType } from 'services/wallet/types'
 import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
+import { getCachedXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 
 export const avalancheSignTransaction = async ({
   unsignedTxJson,
@@ -32,6 +33,14 @@ export const avalancheSignTransaction = async ({
 
   try {
     const unsignedTx = UnsignedTx.fromJSON(unsignedTxJson)
+
+    const { xpAddressDictionary } = await getCachedXPAddresses({
+      walletId,
+      walletType,
+      account,
+      isDeveloperMode: network.isTestnet ?? false
+    })
+
     const signedTransactionJson = await WalletService.sign({
       walletId,
       walletType,
@@ -39,7 +48,7 @@ export const avalancheSignTransaction = async ({
         tx: unsignedTx,
         ...getInternalExternalAddrs({
           utxos: unsignedTx.utxos,
-          xpAddressDict: account.xpAddressDictionary,
+          xpAddressDict: xpAddressDictionary,
           isTestnet: network.isTestnet ?? false
         })
       },

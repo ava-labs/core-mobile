@@ -112,8 +112,10 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
 
   const erc20ContractTokens = useErc20ContractTokens()
+  // Keep zero balance tokens visible so the page doesn't crash after sending max balance
   const { filteredTokenList } = useSearchableTokenList({
-    tokens: erc20ContractTokens
+    tokens: erc20ContractTokens,
+    hideZeroBalance: false
   })
   const { formatCurrency } = useFormatCurrency()
 

@@ -19,7 +19,7 @@ import {
   isGasEstimationError,
   isSwapTxBuildError
 } from 'errors/swapError'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { TokenType } from '@avalabs/vm-module-types'
 import { Account, selectActiveAccount } from 'store/account'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -30,6 +30,7 @@ import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
 import { selectMarkrSwapMaxRetries } from 'store/posthog'
+import { swapCompleted } from 'store/nestEgg'
 import {
   NormalizedSwapQuoteResult,
   NormalizedSwapQuote,
@@ -85,6 +86,7 @@ export const SwapContextProvider = ({
 }: {
   children: ReactNode
 }): JSX.Element => {
+  const dispatch = useDispatch()
   const activeAccount = useSelector(selectActiveAccount)
   const [fromToken, setFromToken] = useSwapSelectedFromToken()
   const [toToken, setToToken] = useSwapSelectedToToken()
@@ -281,15 +283,48 @@ export const SwapContextProvider = ({
   )
 
   const handleSwapSuccess = useCallback(
-    ({ swapTxHash, chainId }: { swapTxHash: string; chainId: number }) => {
+    ({
+      swapTxHash,
+      chainId,
+      fromTokenInfo,
+      toTokenInfo,
+      fromAmountUsd,
+      toAmountUsd
+    }: {
+      swapTxHash: string | undefined
+      chainId: number
+      fromTokenInfo?: { symbol: string }
+      toTokenInfo?: { symbol: string }
+      fromAmountUsd?: number
+      toAmountUsd?: number
+    }) => {
       setSwapStatus('Success')
       AnalyticsService.captureWithEncryption('SwapTransactionSucceeded', {
         txHash: swapTxHash ?? '',
         chainId
       })
       audioFeedback(Audios.Send)
+
+      // Dispatch swapCompleted for Nest Egg qualification tracking
+      if (
+        swapTxHash &&
+        fromTokenInfo &&
+        toTokenInfo &&
+        fromAmountUsd !== undefined
+      ) {
+        dispatch(
+          swapCompleted({
+            txHash: swapTxHash,
+            chainId,
+            fromTokenSymbol: fromTokenInfo.symbol,
+            toTokenSymbol: toTokenInfo.symbol,
+            fromAmountUsd,
+            toAmountUsd: toAmountUsd ?? 0
+          })
+        )
+      }
     },
-    []
+    [dispatch]
   )
 
   const swap = useCallback(
@@ -364,9 +399,29 @@ export const SwapContextProvider = ({
             }
 
             if (swapTxHash && chainId) {
+              // Calculate USD amount from the quote for Nest Egg tracking
+              // amountIn is the swap amount in token units (as string)
+              const amountIn = quoteToUse.metadata.amountIn
+              let fromAmountUsd = 0
+
+              if (
+                amountIn &&
+                fromToken.priceInCurrency &&
+                'decimals' in fromToken
+              ) {
+                // Convert amount from token units to decimal value
+                const amountDecimal =
+                  Number(amountIn) / Math.pow(10, fromToken.decimals)
+                fromAmountUsd = amountDecimal * fromToken.priceInCurrency
+              }
+
               handleSwapSuccess({
-                swapTxHash,
-                chainId
+                swapTxHash: swapTxHash,
+                chainId,
+                fromTokenInfo: { symbol: fromToken.symbol },
+                toTokenInfo: { symbol: toToken.symbol },
+                fromAmountUsd,
+                toAmountUsd: fromAmountUsd
               })
             }
           } catch (err) {

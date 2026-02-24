@@ -24,6 +24,8 @@ const avalancheEvmProvider = {
 } as unknown as JsonRpcBatchInternal
 
 describe('computeDelegationSteps', () => {
+  const testXpAddresses = ['avax123', 'avax456']
+
   afterEach(() => {
     jest.clearAllMocks()
   })
@@ -40,7 +42,8 @@ describe('computeDelegationSteps', () => {
     provider: {} as Avalanche.JsonRpcProvider,
     pFeeAdjustmentThreshold: 5,
     crossChainFeesMultiplier: 4,
-    cBaseFeeMultiplier: 1
+    cBaseFeeMultiplier: 1,
+    xpAddresses: testXpAddresses
   }
 
   it('should throw an error when there is insufficient balance', async () => {

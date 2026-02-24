@@ -3,7 +3,9 @@ import { balanceKey } from 'features/portfolio/hooks/useAccountBalances'
 import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
+import { selectEnabledNetworks } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 
 export const useRefreshStakingBalances = (
   timeout = 2000
@@ -11,23 +13,29 @@ export const useRefreshStakingBalances = (
   const queryClient = useQueryClient()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
-  const pAddresses =
-    activeAccount?.xpAddresses?.map(address => address.address) ?? []
-  const pAddressesSorted = pAddresses.sort().join(',')
+  const { xpAddresses } = useXPAddresses(activeAccount)
+  const enabledNetworks = useSelector(selectEnabledNetworks)
 
   return useCallback(
     ({ shouldRefreshStakes }: { shouldRefreshStakes: boolean }) => {
       setTimeout(() => {
         if (shouldRefreshStakes) {
           queryClient.invalidateQueries({
-            queryKey: ['stakes', isDeveloperMode, pAddressesSorted]
+            queryKey: ['stakes', isDeveloperMode, xpAddresses.join(',')]
           })
         }
         queryClient.invalidateQueries({
-          queryKey: balanceKey(activeAccount)
+          queryKey: balanceKey(activeAccount, Object.values(enabledNetworks))
         })
       }, timeout)
     },
-    [queryClient, timeout, activeAccount, isDeveloperMode, pAddressesSorted]
+    [
+      queryClient,
+      timeout,
+      activeAccount,
+      isDeveloperMode,
+      enabledNetworks,
+      xpAddresses
+    ]
   )
 }

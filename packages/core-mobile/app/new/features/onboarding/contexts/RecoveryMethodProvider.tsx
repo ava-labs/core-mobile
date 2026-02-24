@@ -26,6 +26,8 @@ export interface RecoveryMethodContextState {
   setOidcAuth: Dispatch<SetStateAction<OidcAuth | undefined>>
   mfaMethods?: MFA[]
   setMfaMethods: Dispatch<SetStateAction<MFA[] | undefined>>
+  isNewSeedlessUser: boolean
+  setIsNewSeedlessUser: Dispatch<SetStateAction<boolean>>
   resetSeedlessAuth: () => void
 }
 
@@ -41,6 +43,7 @@ export const RecoveryMethodProvider = ({
   const [oidcAuth, setOidcAuth] = useState<OidcAuth>()
   const [mfaMethods, setMfaMethods] = useState<MFA[]>()
   const [totpChallenge, setTotpChallenge] = useState<TotpChallenge>()
+  const [isNewSeedlessUser, setIsNewSeedlessUser] = useState(false)
 
   const totpKey = useMemo(() => {
     if (totpChallenge?.url) {
@@ -73,6 +76,7 @@ export const RecoveryMethodProvider = ({
     setTotpChallenge(undefined)
     setOidcAuth(undefined)
     setMfaMethods(undefined)
+    setIsNewSeedlessUser(false)
   }
 
   const state: RecoveryMethodContextState = {
@@ -85,6 +89,8 @@ export const RecoveryMethodProvider = ({
     setOidcAuth,
     mfaMethods,
     setMfaMethods,
+    isNewSeedlessUser,
+    setIsNewSeedlessUser,
     resetSeedlessAuth
   }
 

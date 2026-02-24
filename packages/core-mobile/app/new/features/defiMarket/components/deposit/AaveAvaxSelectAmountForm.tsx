@@ -9,11 +9,17 @@ import { SelectAmountFormBase } from '../SelectAmountFormBase'
 export const AaveAvaxSelectAmountForm = ({
   asset,
   market,
-  onSuccess
+  onSubmitted,
+  onConfirmed,
+  onReverted,
+  onError
 }: {
   asset: DepositAsset
   market: DefiMarket
-  onSuccess: () => void
+  onSubmitted: (params: { txHash: string; amount: TokenUnit }) => void
+  onConfirmed?: () => void
+  onReverted?: () => void
+  onError?: () => void
 }): JSX.Element => {
   const tokenBalance = useMemo(() => {
     return new TokenUnit(
@@ -23,7 +29,12 @@ export const AaveAvaxSelectAmountForm = ({
     )
   }, [asset.token])
 
-  const { aaveDepositAvax } = useAaveDepositAvax({ market })
+  const { aaveDepositAvax } = useAaveDepositAvax({
+    market,
+    onConfirmed,
+    onReverted,
+    onError
+  })
   const { maxAmount } = useMaxDepositAmount({
     token: asset.token,
     gasAmount: DEPOSIT_ETH_GAS_AMOUNT
@@ -51,7 +62,7 @@ export const AaveAvaxSelectAmountForm = ({
       maxAmount={maxAmount}
       validateAmount={validateAmount}
       submit={aaveDepositAvax}
-      onSuccess={onSuccess}
+      onSubmitted={onSubmitted}
     />
   )
 }

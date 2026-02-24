@@ -315,6 +315,7 @@ export const PinScreen = ({
 
   return (
     <TouchableWithoutFeedback
+      accessible={false}
       style={{ flex: 1 }}
       onPress={handlePressBackground}>
       <View sx={{ flex: 1, paddingBottom: 16 }}>
@@ -387,7 +388,7 @@ export const PinScreen = ({
           </Reanimated.View>
         </View>
 
-        <Reanimated.View style={buttonContainerStyle}>
+        <Reanimated.View accessible={true} style={buttonContainerStyle}>
           <View
             sx={{
               flexDirection: 'row',
@@ -404,7 +405,9 @@ export const PinScreen = ({
               </CircularButton>
             )}
             {isEnteringPin === false && !disableKeypad && (
-              <CircularButton onPress={handleTogglePinInput}>
+              <CircularButton
+                testID="keypad_up_button"
+                onPress={handleTogglePinInput}>
                 <Icons.Custom.Pin width={26} height={26} />
               </CircularButton>
             )}

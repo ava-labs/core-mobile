@@ -1,0 +1,536 @@
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Platform } from 'react-native'
+import {
+  Text,
+  Button,
+  useTheme,
+  Icons,
+  View,
+  showAlert,
+  ActivityIndicator
+} from '@avalabs/k2-alpine'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
+import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIconWithText'
+import { ProgressDots } from 'common/components/ProgressDots'
+import { useSelector } from 'react-redux'
+import { selectActiveWalletId } from 'store/wallet/slice'
+import LedgerService from 'services/ledger/LedgerService'
+import { LedgerAppType } from 'services/ledger/types'
+import Logger from 'utils/Logger'
+import { useHeaderHeight } from '@react-navigation/elements'
+import { Operation } from 'services/earn/computeDelegationSteps/types'
+import { BackHandler } from 'react-native'
+import { useNavigation } from 'expo-router'
+import { TRANSACTION_CANCELLED_BY_USER } from 'vmModule/ApprovalController/utils'
+import { useLedgerWalletMap, useLedgerParams } from '../store'
+import { getLedgerAppName } from '../utils'
+import { LEDGER_DEVICE_BRIEF_DELAY_MS } from '../consts'
+
+type Phase = 'connection' | 'progress'
+
+interface StepConfig {
+  title: string
+  subtitle: string
+}
+
+const getStepConfig = (operation: Operation | null): StepConfig => {
+  switch (operation) {
+    case Operation.EXPORT_C:
+      return {
+        title: 'Export from C-Chain',
+        subtitle: 'Sign the export transaction on your Ledger device'
+      }
+    case Operation.IMPORT_P:
+      return {
+        title: 'Import to P-Chain',
+        subtitle: 'Sign the import transaction on your Ledger device'
+      }
+    case Operation.DELEGATE:
+      return {
+        title: 'Delegate Stake',
+        subtitle: 'Sign the delegation transaction on your Ledger device'
+      }
+    case Operation.EXPORT_P:
+      return {
+        title: 'Export from P-Chain',
+        subtitle: 'Sign the export transaction on your Ledger device'
+      }
+    case Operation.IMPORT_C:
+      return {
+        title: 'Import to C-Chain',
+        subtitle: 'Sign the import transaction on your Ledger device'
+      }
+    default:
+      return {
+        title: 'Preparing transaction...',
+        subtitle: 'Please wait while we prepare your staking transaction'
+      }
+  }
+}
+
+const LedgerReviewTransactionScreen = (): JSX.Element | null => {
+  const navigation = useNavigation()
+  const dismissInProgressRef = useRef(false)
+  const [onApproveCalled, setOnApproveCalled] = useState(false)
+  const walletId = useSelector(selectActiveWalletId)
+  const { getLedgerInfoByWalletId } = useLedgerWalletMap()
+  const { reviewTransactionParams } = useLedgerParams()
+
+  // Extract params from store
+  const { network, onApprove, onReject, stakingProgress } =
+    reviewTransactionParams || {}
+
+  const [isConnected, setIsConnected] = useState(false)
+  const [isAvalancheAppOpen, setIsAvalancheAppOpen] = useState(false)
+  const [isCancelEnabled, setIsCancelEnabled] = useState(false)
+  const [phase, setPhase] = useState<Phase>('connection')
+  const [currentStep, setCurrentStep] = useState(0)
+  const [currentOperation, setCurrentOperation] = useState<Operation | null>(
+    null
+  )
+  const {
+    theme: { colors }
+  } = useTheme()
+  const headerHeight = useHeaderHeight()
+
+  const deviceForWallet = useMemo(
+    () => getLedgerInfoByWalletId(walletId)?.device,
+    [getLedgerInfoByWalletId, walletId]
+  )
+
+  const ledgerAppName = useMemo(() => getLedgerAppName(network), [network])
+
+  const { isConnecting } = useLedgerSetupContext()
+
+  const handleReconnect = useCallback(
+    async (deviceId: string): Promise<void> => {
+      try {
+        await LedgerService.ensureConnection(deviceId)
+        setIsConnected(true)
+      } catch (error) {
+        setIsConnected(false)
+        showAlert({
+          title: 'Ledger disconnected',
+          description: 'Reconnect your Ledger device to continue',
+          buttons: [{ text: 'Got it', style: 'destructive' }]
+        })
+      }
+    },
+    []
+  )
+
+  useEffect(() => {
+    if (!deviceForWallet) return
+    handleReconnect(deviceForWallet.id)
+  }, [deviceForWallet, handleReconnect])
+
+  // Poll for device connection and app status while in connection phase
+  useEffect(() => {
+    if (phase !== 'connection') return
+
+    const checkDeviceReady = async (): Promise<void> => {
+      try {
+        // Check if device is connected
+        const connected = LedgerService.isConnected()
+        setIsConnected(connected)
+
+        if (connected) {
+          // Check if Avalanche app is open
+          const appType = LedgerService.getCurrentAppType()
+          const isAvaxApp = appType === LedgerAppType.AVALANCHE
+          setIsAvalancheAppOpen(isAvaxApp)
+        } else {
+          setIsAvalancheAppOpen(false)
+        }
+      } catch (error) {
+        Logger.error('Error checking device status', error)
+        setIsConnected(false)
+        setIsAvalancheAppOpen(false)
+      }
+    }
+
+    // Initial check
+    checkDeviceReady()
+
+    // Poll every 1000ms
+    const pollInterval = setInterval(
+      checkDeviceReady,
+      LEDGER_DEVICE_BRIEF_DELAY_MS
+    )
+
+    return () => clearInterval(pollInterval)
+  }, [phase])
+
+  // Handle connection established - require BOTH connection AND Avalanche app open
+  useEffect(() => {
+    if (
+      deviceForWallet &&
+      isConnected &&
+      isAvalancheAppOpen &&
+      phase === 'connection' &&
+      onApprove &&
+      !onApproveCalled
+    ) {
+      try {
+        // Mark as called to prevent duplicate calls
+        setOnApproveCalled(true)
+
+        if (stakingProgress) {
+          // Create progress callback that updates local state
+          const onProgress = (
+            step: number,
+            operation: Operation | null
+          ): void => {
+            setCurrentStep(step)
+            setCurrentOperation(operation)
+
+            // Auto-complete when all steps are done
+            if (step >= stakingProgress.totalSteps) {
+              setTimeout(() => {
+                stakingProgress.onComplete()
+              }, LEDGER_DEVICE_BRIEF_DELAY_MS) // Brief delay to show final state
+            }
+          }
+          // Transition to progress phase
+          setPhase('progress')
+          // Start the transaction process with progress callback
+          onApprove(onProgress)
+        } else {
+          // No staking progress tracking, just approve and let the caller handle navigation
+          onApprove()
+        }
+      } catch (error) {
+        Logger.error('Error during Ledger transaction approval', error)
+        showAlert({
+          title: 'Transaction failed',
+          description:
+            'Something went wrong while communicating with your Ledger device. Please try again.',
+          buttons: [{ text: 'OK', style: 'default' }]
+        })
+        if (stakingProgress) {
+          // Reset phase and local progress state so the user can retry or cancel
+          setPhase('connection')
+          setCurrentStep(0)
+          setCurrentOperation(null)
+        }
+      }
+    }
+  }, [
+    deviceForWallet,
+    isConnected,
+    isAvalancheAppOpen,
+    phase,
+    stakingProgress,
+    onApprove,
+    onApproveCalled
+  ])
+
+  useEffect(() => {
+    if (isConnected && isCancelEnabled === false) {
+      setIsCancelEnabled(true)
+    }
+  }, [isCancelEnabled, isConnected])
+
+  // Enable cancel button after 3 seconds to prevent ledger triggers transaction signing prompt
+  // after user cancels, since it takes a few seconds for ledger to prompt the transaction signing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsCancelEnabled(true)
+    }, 3000)
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Handle Android hardware back button
+  useEffect(() => {
+    const onBackPress = (): boolean => {
+      if (isCancelEnabled && !dismissInProgressRef.current) {
+        dismissInProgressRef.current = true
+        onReject?.(TRANSACTION_CANCELLED_BY_USER)
+        return true // Prevent default back behavior, onReject handles navigation
+      }
+      return false
+    }
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      onBackPress
+    )
+
+    return () => backHandler.remove()
+  }, [onReject, isCancelEnabled])
+
+  // Handle gesture dismissal (swipe down)
+  useEffect(() => {
+    return navigation.addListener('beforeRemove', e => {
+      if (
+        e.data.action.type === 'POP' && // gesture dismissed
+        isCancelEnabled &&
+        !dismissInProgressRef.current
+      ) {
+        e.preventDefault()
+        dismissInProgressRef.current = true
+        // Modal is being dismissed via gesture
+        onReject?.(TRANSACTION_CANCELLED_BY_USER)
+      }
+    })
+  }, [navigation, onReject, isCancelEnabled])
+
+  const renderFooter = useCallback(() => {
+    return (
+      <Button
+        type="secondary"
+        size="large"
+        onPress={() => onReject?.(TRANSACTION_CANCELLED_BY_USER)}
+        disabled={!isCancelEnabled}>
+        Cancel
+      </Button>
+    )
+  }, [onReject, isCancelEnabled])
+
+  const renderDeviceItem = useCallback(() => {
+    if (deviceForWallet && phase === 'connection') {
+      return (
+        <View
+          sx={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: colors.$surfaceSecondary,
+            gap: 16,
+            borderRadius: 12,
+            paddingHorizontal: 16
+          }}>
+          <View
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: colors.$surfaceSecondary,
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+            <Icons.Custom.Bluetooth
+              color={colors.$textPrimary}
+              width={24}
+              height={24}
+            />
+          </View>
+          <View
+            sx={{
+              flex: 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12
+            }}>
+            <View sx={{ marginVertical: 14 }}>
+              <View
+                sx={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 8
+                }}>
+                <Text
+                  numberOfLines={2}
+                  variant="buttonMedium"
+                  sx={{
+                    fontFamily: 'Inter-Medium',
+                    fontSize: 16,
+                    color: '$textPrimary'
+                  }}>
+                  {deviceForWallet.name}
+                </Text>
+              </View>
+              <Text
+                variant="caption"
+                sx={{
+                  fontSize: 13,
+                  paddingTop: 4,
+                  color: colors.$textSecondary
+                }}>
+                Connected over Bluetooth
+              </Text>
+            </View>
+            <View
+              sx={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 4,
+                flex: 1,
+                justifyContent: 'flex-end'
+              }}>
+              {!isConnected && (
+                <Button
+                  type="primary"
+                  size="small"
+                  onPress={() => handleReconnect(deviceForWallet.id)}
+                  disabled={isConnecting}>
+                  {isConnecting ? 'Connecting...' : 'Connect'}
+                </Button>
+              )}
+            </View>
+          </View>
+        </View>
+      )
+    }
+    return null
+  }, [
+    deviceForWallet,
+    phase,
+    colors.$surfaceSecondary,
+    colors.$textPrimary,
+    colors.$textSecondary,
+    isConnected,
+    isConnecting,
+    handleReconnect
+  ])
+
+  const connectionTitle = useMemo(() => {
+    if (deviceForWallet) {
+      return `Please review the transaction on your ${deviceForWallet.name}`
+    }
+    return 'Get your Ledger ready'
+  }, [deviceForWallet])
+
+  const connectionSubtitle = useMemo(() => {
+    if (deviceForWallet) {
+      if (isConnected && !isAvalancheAppOpen) {
+        return `Please open the ${ledgerAppName} app on your Ledger device to continue`
+      }
+      if (!isConnected) {
+        return `Connect your ${deviceForWallet.name} and open the ${ledgerAppName} app`
+      }
+      return `Open the ${ledgerAppName} app on your Ledger device in order to continue with this transaction`
+    }
+    return 'Make sure your Ledger device is unlocked and the Avalanche app is open'
+  }, [deviceForWallet, ledgerAppName, isConnected, isAvalancheAppOpen])
+
+  const stepConfig = useMemo(
+    () => getStepConfig(currentOperation),
+    [currentOperation]
+  )
+
+  const headerCenterOverlay = useMemo(() => {
+    if (phase !== 'progress' || !stakingProgress) return undefined
+
+    const paddingTop = Platform.OS === 'ios' ? 15 : 50
+
+    return (
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: headerHeight
+        }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingTop
+          }}>
+          <ProgressDots
+            totalSteps={stakingProgress.totalSteps}
+            currentStep={currentStep}
+          />
+        </View>
+      </View>
+    )
+  }, [phase, stakingProgress, headerHeight, currentStep])
+
+  // Render content based on current phase
+  const renderContent = useCallback(() => {
+    if (phase === 'progress' && stakingProgress) {
+      return (
+        <>
+          <View style={{ flex: 1, justifyContent: 'center' }}>
+            <AnimatedIconWithText
+              icon={
+                <Icons.Custom.Avalanche
+                  color={colors.$textPrimary}
+                  width={44}
+                  height={44}
+                />
+              }
+              title={stepConfig.title}
+              subtitle={stepConfig.subtitle}
+              subtitleStyle={{ fontSize: 12 }}
+              showAnimation={true}
+            />
+            <View
+              style={{
+                marginTop: 32,
+                alignItems: 'center'
+              }}>
+              <ActivityIndicator size="large" color={colors.$textPrimary} />
+            </View>
+          </View>
+        </>
+      )
+    }
+
+    // Connection phase
+    return (
+      <>
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          <AnimatedIconWithText
+            icon={
+              deviceForWallet ? (
+                <Icons.Custom.Bluetooth
+                  color={colors.$textPrimary}
+                  width={44}
+                  height={44}
+                />
+              ) : (
+                <Icons.Custom.Ledger
+                  color={colors.$textPrimary}
+                  width={44}
+                  height={44}
+                />
+              )
+            }
+            title={connectionTitle}
+            subtitle={connectionSubtitle}
+            subtitleStyle={{ fontSize: 12 }}
+            showAnimation={true}
+          />
+        </View>
+        <View style={{ alignItems: 'flex-end' }}>{renderDeviceItem()}</View>
+      </>
+    )
+  }, [
+    phase,
+    stakingProgress,
+    colors.$textPrimary,
+    stepConfig,
+    deviceForWallet,
+    connectionTitle,
+    connectionSubtitle,
+    renderDeviceItem
+  ])
+
+  // Return null if params not available yet
+  if (!reviewTransactionParams || !onApprove || !onReject) {
+    return null
+  }
+
+  return (
+    <ScrollScreen
+      isModal
+      renderFooter={renderFooter}
+      headerCenterOverlay={headerCenterOverlay}
+      contentContainerStyle={{
+        padding: 16,
+        flex: 1,
+        flexDirection: 'column'
+      }}>
+      {renderContent()}
+    </ScrollScreen>
+  )
+}
+
+export default LedgerReviewTransactionScreen

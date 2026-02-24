@@ -13,13 +13,20 @@ import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { BENQI_Q_TOKEN } from 'features/defiMarket/abis/benqiQToken'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { useETHSendTransaction } from 'common/hooks/useETHSendTransaction'
 
 export const useBenqiDepositErc20 = ({
   asset,
-  market
+  market,
+  onConfirmed,
+  onReverted,
+  onError
 }: {
   asset: DepositAsset
   market: DefiMarket
+  onConfirmed?: () => void
+  onReverted?: () => void
+  onError?: () => void
 }): {
   benqiDepositErc20: (params: { amount: TokenUnit }) => Promise<string>
 } => {
@@ -27,6 +34,21 @@ export const useBenqiDepositErc20 = ({
   const provider = useAvalancheEvmProvider()
   const activeAccount = useSelector(selectActiveAccount)
   const address = activeAccount?.addressC
+
+  const handleConfirmed = useCallback(() => {
+    queryClient.invalidateQueries({
+      queryKey: [ReactQueryKeys.BENQI_ACCOUNT_SNAPSHOT]
+    })
+    onConfirmed?.()
+  }, [onConfirmed])
+
+  const { sendTransaction } = useETHSendTransaction({
+    network: market.network,
+    provider,
+    onConfirmed: handleConfirmed,
+    onReverted,
+    onError
+  })
 
   const benqiDepositErc20 = useCallback(
     async ({ amount }: { amount: TokenUnit }) => {
@@ -46,6 +68,7 @@ export const useBenqiDepositErc20 = ({
       const accountAddress = address as Address
       const chainId = getEvmCaip2ChainId(market.network.chainId)
 
+      // Use request directly for approve (ensureAllowance needs signAndSend)
       const signAndSend = (
         txParams: [TransactionParams],
         context?: Record<string, unknown>
@@ -74,39 +97,27 @@ export const useBenqiDepositErc20 = ({
         }
       }
 
-      const txHash = await request({
-        method: RpcMethod.ETH_SEND_TRANSACTION,
-        params: [
-          {
-            from: accountAddress,
-            to: market.asset.mintTokenAddress,
-            data: encodeFunctionData({
-              abi: BENQI_Q_TOKEN,
-              functionName: 'mint',
-              args: [amount.toSubUnit()]
-            })
-          }
-        ],
-        chainId
+      // Use sendTransaction for mint (handles waitForTransaction and callbacks)
+      const encodedData = encodeFunctionData({
+        abi: BENQI_Q_TOKEN,
+        functionName: 'mint',
+        args: [amount.toSubUnit()]
       })
 
-      // Invalidate cache in background after transaction is confirmed
-      provider
-        .waitForTransaction(txHash)
-        .then(receipt => {
-          if (receipt && receipt.status === 1) {
-            queryClient.invalidateQueries({
-              queryKey: [ReactQueryKeys.BENQI_ACCOUNT_SNAPSHOT]
-            })
-          }
-        })
-        .catch(() => {
-          // Silently ignore - cache will be stale but not critical
-        })
-
-      return txHash
+      return sendTransaction({
+        contractAddress: market.asset.mintTokenAddress,
+        encodedData
+      })
     },
-    [request, market, address, asset.token, provider]
+    [
+      request,
+      market.network.chainId,
+      market.asset.mintTokenAddress,
+      address,
+      asset.token,
+      provider,
+      sendTransaction
+    ]
   )
 
   return {

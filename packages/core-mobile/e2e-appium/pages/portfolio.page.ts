@@ -233,6 +233,22 @@ class PortfolioPage {
     return selectors.getById(portfolio.untitledDisplayed)
   }
 
+  get portfolioBalanceHeader() {
+    return selectors.getById(portfolio.portfolioBalanceHeader)
+  }
+
+  get portfolioAccountName() {
+    return selectors.getById(portfolio.portfolioAccountName)
+  }
+
+  get tokenHeaderFiatBalance() {
+    return selectors.getById(portfolio.tokenHeaderFiatBalance)
+  }
+
+  tokenHeaderName(token: string) {
+    return selectors.getById(`token_header_name__${token}`)
+  }
+
   async verifyPorfolioScreen() {
     await actions.isVisible(this.viewAllBtn)
     await actions.isVisible(this.favoritesHeader)
@@ -289,6 +305,10 @@ class PortfolioPage {
     await actions.click(this.defiTab)
   }
 
+  async tapActivityTab() {
+    await actions.tap(this.activityTab)
+  }
+
   async tapEthNetwork() {
     await actions.tap(this.ethNetwork)
   }
@@ -328,16 +348,16 @@ class PortfolioPage {
     await actions.tap(selectors.getById(portfolio.activeNetwork + network))
   }
 
-  async tapToken(token = 'avax') {
-    await actions.tap(
+  async tapToken(token = 'Avalanche') {
+    // It taps on the name of the token on the portfolio asset (ex - Avalanche, Bitcoin, Wrapped Ether...)
+    token = token.replace(/^Avalanche [PX]-Chain$/, 'Avalanche')
+    await actions.click(
       selectors.getById(`${portfolio.portfolioTokenItem}${token}`)
     )
   }
 
   async getFiatBalance() {
-    const balance = await actions.getText(
-      selectors.getById('token_header_fiat_balance')
-    )
+    const balance = await actions.getText(this.tokenHeaderFiatBalance)
     const amount = balance.split(' ')[0] || '0'
     console.log(`Fiat balance: ${amount}`)
     return amount
@@ -352,13 +372,13 @@ class PortfolioPage {
   }
 
   async verifyNetworksRemoved(networks: Network[]) {
-    await bottomTabsPage.tapPortfolioTab()
-    await actions.click(commonElsPage.filterDropdown)
+    await this.tapAssetsTab()
+    await this.tapFilterDropdown()
     for (const { name, haveToggle } of networks) {
       if (haveToggle) await actions.isNotVisible(selectors.getByText(name))
     }
-    await this.dismissFilterDropdown()
-    await bottomTabsPage.tapActivityTab()
+    await this.tapFilterDropdown()
+    await this.tapActivityTab()
     await this.tapNetworksDropdown()
     for (const { name, haveToggle } of networks) {
       if (haveToggle) await actions.isNotVisible(selectors.getByText(name))
@@ -372,28 +392,23 @@ class PortfolioPage {
     }
   }
 
-  async dismissFilterDropdown() {
-    if (driver.isAndroid) {
-      await actions.click(selectors.getByText(commonEls.allNetworks))
-    } else {
-      await actions.tap(commonElsPage.accountOne)
-    }
+  async tapFilterDropdown() {
+    await actions.click(commonElsPage.filterDropdown)
   }
 
   async verifyNetworksAdded(networks: Network[]) {
-    await bottomTabsPage.tapPortfolioTab()
-    await actions.click(commonElsPage.filterDropdown)
+    await this.tapAssetsTab()
+    await this.tapFilterDropdown()
     for (const { name, haveToggle } of networks) {
       if (haveToggle) await actions.isVisible(selectors.getByText(name))
     }
-    await this.dismissFilterDropdown()
-    await bottomTabsPage.tapActivityTab()
+    await this.tapFilterDropdown()
+    await this.tapActivityTab()
     await this.tapNetworksDropdown()
     for (const { name, haveToggle } of networks) {
       if (haveToggle) await actions.isVisible(selectors.getByText(name))
     }
     await this.dismissNetworkDropdown()
-    await bottomTabsPage.tapPortfolioTab()
   }
 
   async verifyAccountName(name: string) {
@@ -539,9 +554,11 @@ class PortfolioPage {
 
   async verifyOwnedTokenDetail(token: string, buttons: string[]) {
     await this.tapToken(token)
+    await actions.waitFor(this.tokenHeaderName(token))
     await this.verifyOwnedTokenActionButtons(buttons)
     const fiatBalance = await this.getFiatBalance()
     await commonElsPage.goBack(selectors.getByText(fiatBalance))
+    await actions.waitFor(selectors.getByText(fiatBalance))
   }
 
   async toggleCollectible(goOff = true, prefix = 'The Free Mint') {
@@ -664,6 +681,23 @@ class PortfolioPage {
     await actions.isEnabled(this.untitledDisplayed, false)
     await commonElsPage.dismissBottomSheet()
     await actions.isNotVisible(selectors.getByText(portfolio.untitledNft))
+  }
+
+  async verifyBalanceHeader() {
+    await actions.waitFor(commonElsPage.loadingSpinnerHidden)
+    await actions.isVisible(this.portfolioBalanceHeader)
+    await actions.isNotVisible(commonElsPage.loadingSpinnerVisible)
+  }
+
+  async verifyAssetsList(token = 'Avalanche') {
+    const start = performance.now()
+    await actions.waitFor(commonElsPage.loadingSpinnerHidden)
+    await actions.isNotVisible(commonElsPage.inProgress)
+    await actions.isVisible(this.portfolioTokenList)
+    await actions.isVisible(
+      selectors.getById(`${portfolio.portfolioTokenItem}${token}`)
+    )
+    return start
   }
 }
 

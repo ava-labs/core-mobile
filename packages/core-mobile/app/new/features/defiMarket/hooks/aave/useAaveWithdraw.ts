@@ -7,36 +7,59 @@ import {
   MAX_UINT256
 } from 'features/defiMarket/consts'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { useInAppRequest } from 'hooks/useInAppRequest'
-import { RpcMethod } from '@avalabs/vm-module-types'
-import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { AAVE_AVALANCHE3_POOL_PROXY_ABI } from 'features/defiMarket/abis/aaveAvalanche3PoolProxy'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
+import { useETHSendTransaction } from 'common/hooks/useETHSendTransaction'
 
 export const useAaveWithdraw = ({
-  market
+  market,
+  onConfirmed,
+  onReverted,
+  onError
 }: {
   market: DefiMarket
+  onConfirmed?: () => void
+  onReverted?: () => void
+  onError?: () => void
 }): {
-  withdraw: (params: { amount: TokenUnit }) => Promise<string>
+  withdraw: (params: {
+    amount: TokenUnit
+    confettiDisabled?: boolean
+  }) => Promise<string>
 } => {
-  const { request } = useInAppRequest()
   const activeAccount = useSelector(selectActiveAccount)
   const address = activeAccount?.addressC
   const provider = useAvalancheEvmProvider()
 
+  const handleConfirmed = useCallback(() => {
+    queryClient.invalidateQueries({
+      queryKey: [ReactQueryKeys.AAVE_AVAILABLE_MARKETS]
+    })
+    onConfirmed?.()
+  }, [onConfirmed])
+
+  const { sendTransaction } = useETHSendTransaction({
+    network: market.network,
+    provider,
+    onConfirmed: handleConfirmed,
+    onReverted,
+    onError
+  })
+
   const withdraw = useCallback(
-    async ({ amount }: { amount: TokenUnit }) => {
+    async ({
+      amount,
+      confettiDisabled
+    }: {
+      amount: TokenUnit
+      confettiDisabled?: boolean
+    }) => {
       if (!address) {
         throw new Error('No address found')
-      }
-
-      if (!provider) {
-        throw new Error('No provider found')
       }
 
       const assetAddress =
@@ -46,39 +69,19 @@ export const useAaveWithdraw = ({
       // See: IPool.sol#withdraw method – https://snowtrace.io/address/0x1C984121713329114d1D97f5B4Aae9D4D5BfA0eB/contract/43114/code
       const withdrawAmount = isMax ? MAX_UINT256 : amount.toSubUnit()
 
-      const txHash = await request({
-        method: RpcMethod.ETH_SEND_TRANSACTION,
-        params: [
-          {
-            from: address,
-            to: AAVE_POOL_C_CHAIN_ADDRESS,
-            data: encodeFunctionData({
-              abi: AAVE_AVALANCHE3_POOL_PROXY_ABI,
-              functionName: 'withdraw',
-              args: [assetAddress, withdrawAmount, address as Address]
-            })
-          }
-        ],
-        chainId: getEvmCaip2ChainId(market.network.chainId)
+      const encodedData = encodeFunctionData({
+        abi: AAVE_AVALANCHE3_POOL_PROXY_ABI,
+        functionName: 'withdraw',
+        args: [assetAddress, withdrawAmount, address as Address]
       })
 
-      // Invalidate cache in background after transaction is confirmed
-      provider
-        .waitForTransaction(txHash)
-        .then(receipt => {
-          if (receipt && receipt.status === 1) {
-            queryClient.invalidateQueries({
-              queryKey: [ReactQueryKeys.AAVE_AVAILABLE_MARKETS]
-            })
-          }
-        })
-        .catch(() => {
-          // Silently ignore - cache will be stale but not critical
-        })
-
-      return txHash
+      return sendTransaction({
+        contractAddress: AAVE_POOL_C_CHAIN_ADDRESS,
+        encodedData,
+        confettiDisabled
+      })
     },
-    [request, market, address, provider]
+    [market, address, sendTransaction]
   )
 
   return {

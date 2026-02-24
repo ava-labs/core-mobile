@@ -40,7 +40,17 @@ export enum FeatureGates {
   ENABLE_MELD_SANDBOX = 'enable-meld-sandbox',
   LEDGER_SUPPORT = 'ledger-support',
   IN_APP_DEFI = 'in-app-defi',
-  IN_APP_DEFI_IS_NEW = 'in-app-defi-is-new'
+  IN_APP_DEFI_IS_NEW = 'in-app-defi-is-new',
+  IN_APP_DEFI_BORROW = 'in-app-defi-borrow',
+  IN_APP_REVIEW = 'in-app-review',
+  GASLESS_INSTANT = 'gasless-instant',
+  NEST_EGG_CAMPAIGN = 'nest-egg-campaign',
+  NEST_EGG_NEW_SEEDLESS_ONLY = 'nest-egg-new-seedless-only',
+  FUSION = 'fusion',
+  FUSION_MARKR = 'fusion-markr',
+  FUSION_AVALANCHE_EVM = 'fusion-avalanche-evm',
+  FUSION_LOMBARD_BTC_TO_BTCB = 'fusion-lombard-btc-to-btcb',
+  FUSION_LOMBARD_BTCB_TO_BTC = 'fusion-lombard-btcb-to-btc'
 }
 
 export enum FeatureVars {

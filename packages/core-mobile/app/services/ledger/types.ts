@@ -1,6 +1,8 @@
 import { Curve } from 'utils/publicKeys'
-import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import { BtcWalletPolicyDetails } from '@avalabs/vm-module-types'
+import { PrimaryAccount } from 'store/account'
+import { WalletType } from 'services/wallet/types'
 
 // ============================================================================
 // LEDGER APP TYPES
@@ -10,6 +12,7 @@ export enum LedgerAppType {
   AVALANCHE = 'Avalanche',
   SOLANA = 'Solana',
   ETHEREUM = 'Ethereum',
+  BITCOIN = 'Bitcoin',
   UNKNOWN = 'Unknown'
 }
 
@@ -29,6 +32,22 @@ export const LedgerReturnCode = {
   DEVICE_LOCKED: 0x5515,
   INVALID_PARAMETER: 0x6b00,
   COMMAND_NOT_ALLOWED: 0x6986
+} as const
+
+export const LEDGER_ERROR_CODES = {
+  WRONG_APP: '0x6a80',
+  COMMUNICATION_ERROR: '0x6511',
+  REJECTED: '0x6985',
+  REJECTED_ALT: '0x6986',
+  NOT_READY: '0x6a86',
+  DEVICE_LOCKED: '0x5515',
+  UPDATE_REQUIRED: '0x6e00',
+  USER_CANCELLED: 'user_cancelled',
+  DISCONNECTED_DEVICE: 'disconnecteddevice',
+  TRANSPORT_RACE_CONDITION: 'transportracecondition',
+  TRANSPORT_RACE_CONDITION_ALT:
+    'an action was already pending on the ledger device',
+  BLIND_SIGNATURE: 'blind'
 } as const
 
 export type LedgerReturnCodeType =
@@ -54,10 +73,14 @@ export interface LedgerTransportState {
 // CRYPTOGRAPHIC KEY TYPES
 // ============================================================================
 
+export interface PublicKey extends PublicKeyInfo {
+  btcWalletPolicy?: BtcWalletPolicyDetails
+}
+
 export interface PublicKeyInfo {
   key: string
   derivationPath: string
-  curve: 'secp256k1' | 'ed25519'
+  curve: Curve
 }
 
 export interface ExtendedPublicKey {
@@ -86,17 +109,28 @@ export enum LedgerDerivationPathType {
 // LEDGER KEYS MANAGEMENT
 // ============================================================================
 
-export interface LedgerKeys {
-  solanaKeys: Array<{
-    key: string
-    derivationPath: string
-    curve: Curve
-  }>
-  avalancheKeys: {
+export interface AvalancheKey {
+  addresses: {
+    evm: string
+    avm: string
+    pvm: string
+    coreEth: string // C-chain bech32 format (C-avax1... or C-fuji1...)
+    btc: string // Bitcoin address
+  }
+  xpubs: {
     evm: string
     avalanche: string
-    pvm: string
-  } | null
+  }
+}
+
+export interface LedgerKeys {
+  solanaKeys?: PublicKeyInfo[]
+  avalancheKeys?: AvalancheKey
+}
+
+export type LedgerKeysByNetwork = {
+  mainnet: LedgerKeys
+  testnet: LedgerKeys
 }
 
 // ============================================================================
@@ -113,13 +147,24 @@ export interface SetupProgress {
 export interface WalletCreationOptions {
   deviceId: string
   deviceName?: string
-  derivationPathType?: LedgerDerivationPathType
+  derivationPathType: LedgerDerivationPathType
   accountCount?: number
-  individualKeys?: Array<{
-    key: string
-    derivationPath: string
-    curve: Curve
-  }>
+}
+
+export interface WalletUpdateOptions extends WalletCreationOptions {
+  walletId: string
+  walletName: string
+  walletType: WalletType
+  accountIndexToUse: number
+}
+
+export interface WalletUpdateSolanaOptions {
+  deviceId: string
+  walletId: string
+  walletName: string
+  walletType: WalletType
+  account: PrimaryAccount
+  solanaKeys: PublicKeyInfo[]
 }
 
 // ============================================================================
@@ -129,38 +174,28 @@ export interface WalletCreationOptions {
 // Base interface for common wallet data
 interface BaseLedgerWalletData {
   deviceId: string
-  vmType: NetworkVMType
   transport?: TransportBLE // Optional for backward compatibility
-  publicKeys: Array<{
-    key: string
-    derivationPath: string
-    curve: Curve
-    btcWalletPolicy?: {
-      hmacHex: string
-      xpub: string
-      masterFingerprint: string
-      name: string
-    }
-  }>
+  publicKeys: PublicKey[]
+}
+
+// Per-account extended public keys format
+export interface PerAccountExtendedPublicKeys {
+  [accountIndex: number]: {
+    evm: string
+    avalanche: string
+  }
 }
 
 // BIP44 specific wallet data
 export interface BIP44LedgerWalletData extends BaseLedgerWalletData {
   derivationPathSpec: LedgerDerivationPathType.BIP44
-  derivationPath: string
-  // Extended keys required for BIP44 - supports both legacy (string) and new (ExtendedPublicKey) formats
-  extendedPublicKeys:
-    | {
-        evm: string
-        avalanche: string
-      }
-    | ExtendedPublicKey[]
+  // Extended keys required for BIP44 - stored per account
+  extendedPublicKeys: PerAccountExtendedPublicKeys
 }
 
 // Ledger Live specific wallet data
 export interface LedgerLiveWalletData extends BaseLedgerWalletData {
   derivationPathSpec: LedgerDerivationPathType.LedgerLive
-  derivationPath: string
   // No extended keys for Ledger Live
   extendedPublicKeys?: never
 }

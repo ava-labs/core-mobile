@@ -1,4 +1,4 @@
-import { AddressIndex, CoreAccountType } from '@avalabs/types'
+import { CoreAccountType } from '@avalabs/types'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import AccountsService from 'services/account/AccountsService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -7,13 +7,13 @@ import {
   Account,
   ImportedAccount,
   setAccount,
-  setActiveAccount,
-  XPAddressDictionary
+  setActiveAccount
 } from 'store/account'
 import {
   removeAccount,
   selectAccountsByWalletId,
-  setActiveAccountId
+  setActiveAccountId,
+  removeLedgerAddress
 } from 'store/account/slice'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { ThunkApi } from 'store/types'
@@ -21,10 +21,6 @@ import { reducerName, selectWallets, setActiveWallet } from 'store/wallet/slice'
 import { StoreWalletParams, Wallet } from 'store/wallet/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { uuid } from 'utils/uuid'
-import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP'
-import Logger from 'utils/Logger'
-import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
-import { NetworkVMType } from '@avalabs/vm-module-types'
 import { _removeWallet, selectActiveWalletId } from './slice'
 import { generateWalletName } from './utils'
 
@@ -136,28 +132,6 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
       isTestnet: isDeveloperMode
     })
 
-    let xpAddresses: AddressIndex[] = [
-      { address: stripAddressPrefix(addresses[NetworkVMType.AVM]), index: 0 }
-    ]
-    let xpAddressDictionary: XPAddressDictionary = {}
-    let hasMigratedXpAddresses = false
-    try {
-      const result = await getAddressesFromXpubXP({
-        isDeveloperMode,
-        walletId: newWalletId,
-        walletType: walletType,
-        accountIndex,
-        onlyWithActivity: true
-      })
-
-      xpAddresses =
-        result.xpAddresses.length > 0 ? result.xpAddresses : xpAddresses
-      xpAddressDictionary = result.xpAddressDictionary
-      hasMigratedXpAddresses = true
-    } catch (error) {
-      Logger.error('Error getting XP addresses', error)
-    }
-
     const newAccountId = uuid()
     const newAccount: Account = {
       id: newAccountId,
@@ -170,10 +144,7 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
       addressAVM: addresses.AVM,
       addressPVM: addresses.PVM,
       addressSVM: addresses.SVM,
-      addressCoreEth: addresses.CoreEth,
-      xpAddresses,
-      xpAddressDictionary,
-      hasMigratedXpAddresses
+      addressCoreEth: addresses.CoreEth
     }
 
     dispatch(setAccount(newAccount))
@@ -184,6 +155,11 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
     })
   }
 )
+
+// Wait duration to ensure Redux persist has flushed state to storage.
+// This must be greater than STORAGE_WRITE_THROTTLE (200ms) in store/index.ts
+// to prevent race conditions between state persistence and keychain operations.
+const PERSIST_FLUSH_DELAY_MS = 250
 
 export const removeWallet = createAsyncThunk<void, string, ThunkApi>(
   'wallet/removeWallet',
@@ -197,12 +173,15 @@ export const removeWallet = createAsyncThunk<void, string, ThunkApi>(
       selectWallets(stateBefore)
     ).indexOf(activeWalletIdBefore)
 
+    // Step 1: Update all Redux state first (before any keychain operations)
     const accountsToRemove = selectAccountsByWalletId(stateBefore, walletId)
+
     accountsToRemove.forEach(account => {
       thunkApi.dispatch(removeAccount(account.id))
+      thunkApi.dispatch(removeLedgerAddress(account.id))
     })
+
     thunkApi.dispatch(_removeWallet(walletId))
-    await BiometricsSDK.removeWalletSecret(walletId)
 
     // If we removed the active wallet, set the first account of the new active wallet as active
     if (activeWalletIdBefore === walletId) {
@@ -224,5 +203,17 @@ export const removeWallet = createAsyncThunk<void, string, ThunkApi>(
         thunkApi.dispatch(setActiveAccountId(accountsForWallet[0].id))
       }
     }
+
+    // Step 2: Wait for Redux persist to flush the state to storage.
+    // This prevents a race condition where:
+    // - The keychain secret is deleted immediately
+    // - But Redux state hasn't been persisted yet (due to 200ms throttle)
+    // - If the user kills the app before persist completes, the old state
+    //   (with the deleted wallet as active) would be restored on next launch
+    // - The PIN screen would then fail to load the deleted wallet's secret
+    await new Promise(resolve => setTimeout(resolve, PERSIST_FLUSH_DELAY_MS))
+
+    // Step 3: Safe to remove the keychain secret
+    await BiometricsSDK.removeWalletSecret(walletId)
   }
 )

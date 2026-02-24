@@ -21,6 +21,7 @@ import { PvmCapableAccount } from 'common/hooks/send/utils/types'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { selectActiveAccount } from 'store/account'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
+import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { usePChainBalance } from './usePChainBalance'
 import { useGetFeeState } from './useGetFeeState'
 import { extractNeededAmount } from './utils/extractNeededAmount'
@@ -53,7 +54,7 @@ export const useClaimFees = (): {
   const xpProvider = useAvalancheXpProvider()
   const cChainBaseFee = useCChainBaseFee()
   const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
-
+  const { xpAddresses } = useXPAddresses(activeAccount)
   const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
 
   const totalClaimable = useMemo(() => {
@@ -96,7 +97,8 @@ export const useClaimFees = (): {
         destinationAddress: activeAccount.addressC,
         // we only need to validate burned amount
         // when the actual submission happens
-        shouldValidateBurnedAmount: false
+        shouldValidateBurnedAmount: false,
+        xpAddresses
       })
 
       const importCFee = calculateCChainFee(instantBaseFee, unsignedTx)
@@ -108,7 +110,8 @@ export const useClaimFees = (): {
           avaxXPNetwork,
           provider: xpProvider,
           feeState,
-          pFeeAdjustmentThreshold
+          pFeeAdjustmentThreshold,
+          xpAddresses
         })
 
       Logger.info('importCFee', importCFee.toDisplay())
@@ -150,7 +153,8 @@ export const useClaimFees = (): {
     feeState,
     pFeeAdjustmentThreshold,
     cBaseFeeMultiplier,
-    activeWallet
+    activeWallet,
+    xpAddresses
   ])
 
   return {
@@ -167,7 +171,8 @@ const getExportPFee = async ({
   avaxXPNetwork,
   provider,
   feeState,
-  pFeeAdjustmentThreshold
+  pFeeAdjustmentThreshold,
+  xpAddresses
 }: {
   amountInNAvax: TokenUnit
   activeAccount: PvmCapableAccount
@@ -176,6 +181,7 @@ const getExportPFee = async ({
   feeState?: pvm.FeeState
   missingAvax?: bigint
   pFeeAdjustmentThreshold: number
+  xpAddresses: string[]
 }): Promise<{
   txFee: TokenUnit
   txAmount: TokenUnit
@@ -195,7 +201,8 @@ const getExportPFee = async ({
       isTestnet: Boolean(avaxXPNetwork.isTestnet),
       destinationAddress: activeAccount.addressPVM,
       destinationChain: 'C',
-      feeState
+      feeState,
+      xpAddresses
     })
   } catch (error) {
     Logger.warn('unable to create export p tx', error)
@@ -238,7 +245,8 @@ const getExportPFee = async ({
       isTestnet: Boolean(avaxXPNetwork.isTestnet),
       destinationAddress: activeAccount.addressPVM,
       destinationChain: 'C',
-      feeState
+      feeState,
+      xpAddresses
     })
 
     txAmount = new TokenUnit(

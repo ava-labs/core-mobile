@@ -1,6 +1,7 @@
 import {
   AddCard,
   GRID_GAP,
+  PrivacyModeAlert,
   SCREEN_WIDTH,
   SPRING_LINEAR_TRANSITION,
   Text,
@@ -26,8 +27,10 @@ import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useDeposits } from 'hooks/earn/useDeposits'
 import { useRouter } from 'expo-router'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { Placeholder } from 'common/components/Placeholder'
 import { LoadingState } from 'common/components/LoadingState'
 import { DropdownSelections } from 'common/components/DropdownSelections'
@@ -57,6 +60,7 @@ const DepositTabScreen = ({
   const { deposits, isLoading, refresh, isRefreshing } = useDeposits()
   const { theme } = useTheme()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const scrollOffsetRef = useRef({ x: 0, y: 0 })
   const dispatch = useDispatch()
 
@@ -74,6 +78,7 @@ const DepositTabScreen = ({
   }, [filteredDeposits, isLoading])
 
   const handleAddDeposit = useCallback(() => {
+    AnalyticsService.capture('EarnDepositStart')
     // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/deposit' })
   }, [navigate])
@@ -91,6 +96,7 @@ const DepositTabScreen = ({
 
   const handleWithdrawDeposit = useCallback(
     (deposit: DefiMarket) => {
+      AnalyticsService.capture('EarnWithdrawStart')
       navigate({
         // @ts-ignore TODO: make routes typesafe
         pathname: '/withdraw/selectAmount',
@@ -169,6 +175,11 @@ const DepositTabScreen = ({
             anytime.
           </Text>
         </Animated.View>
+        {isPrivacyModeEnabled && (
+          <View sx={{ paddingHorizontal: 16, marginBottom: 8 }}>
+            <PrivacyModeAlert />
+          </View>
+        )}
         {availableRewards.hasRewardsToClaim && (
           <RewardsBanner
             availableRewards={availableRewards}
@@ -191,7 +202,8 @@ const DepositTabScreen = ({
     sort,
     availableRewards,
     claimAllRewards,
-    isClaimingRewards
+    isClaimingRewards,
+    isPrivacyModeEnabled
   ])
 
   useEffect(() => {

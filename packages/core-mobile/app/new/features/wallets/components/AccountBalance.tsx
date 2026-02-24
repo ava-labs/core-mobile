@@ -2,62 +2,52 @@ import {
   ActivityIndicator,
   alpha,
   AnimatedBalance,
-  Icons,
   LoadingContent,
-  Pressable,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
-import { useBalanceInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
-import { useIsAccountsBalanceAccurate } from 'features/portfolio/hooks/useIsAccountsBalancesAccurate'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { formatBalanceDisplay } from 'features/wallets/utils/formatBalanceDisplay'
+import React, { useCallback, useMemo } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { useSelector } from 'react-redux'
-import { Account } from 'store/account'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 
 export const AccountBalance = ({
   isActive,
-  account,
-  variant = 'spinner',
-  balancesRefetchInterval
+  balance,
+  isLoading,
+  isAccurate,
+  hasLoaded,
+  isRefreshing,
+  errorMessage,
+  variant = 'spinner'
 }: {
   isActive: boolean
-  account: Account
+  balance: number
+  isLoading: boolean
+  isAccurate: boolean
+  hasLoaded?: boolean
+  isRefreshing?: boolean
+  errorMessage: string
   variant?: 'spinner' | 'skeleton'
-  balancesRefetchInterval?: number | false
 }): React.JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const {
     theme: { colors, isDark }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
-  const { refetch, isFetching } = useAccountBalances(account, {
-    refetchInterval: balancesRefetchInterval
-  })
-  const { balance: accountBalance } = useBalanceInCurrencyForAccount(account.id)
-  const isBalanceAccurate = useIsAccountsBalanceAccurate([account])
 
-  const [hasLoaded, setHasLoaded] = useState(false)
-
-  useEffect(() => {
-    if (!isFetching) {
-      setHasLoaded(true)
-    }
-  }, [isFetching])
-
-  const balance = useMemo(() => {
-    return accountBalance === 0
-      ? formatCurrency({ amount: 0 }).replace(/[\d.,]+/g, UNKNOWN_AMOUNT)
-      : formatCurrency({
-          amount: accountBalance,
-          notation: accountBalance < 100000 ? undefined : 'compact'
-        })
-  }, [accountBalance, formatCurrency])
+  const accountBalance = useMemo(() => {
+    return formatBalanceDisplay({
+      balance,
+      isDeveloperMode,
+      formatCurrency
+    })
+  }, [balance, formatCurrency, isDeveloperMode])
 
   const renderMaskView = useCallback(() => {
     return (
@@ -73,32 +63,26 @@ export const AccountBalance = ({
     )
   }, [colors.$textPrimary, isActive])
 
-  const renderError = useCallback(() => {
-    if (isFetching) return null
+  const hasError = useMemo(() => {
+    if (errorMessage) return true
+    if (isLoading) return false
 
     // // Balance is 0 and all balances are accurate
-    if (!accountBalance && isBalanceAccurate) return null
+    if (!balance && isAccurate) return false
 
     // Balance is inaccurate
-    if (!isBalanceAccurate)
-      return (
-        <Pressable hitSlop={16} onPress={refetch}>
-          <Icons.Alert.Error
-            color={colors.$textDanger}
-            width={14}
-            height={14}
-          />
-        </Pressable>
-      )
-  }, [
-    accountBalance,
-    colors.$textDanger,
-    isBalanceAccurate,
-    isFetching,
-    refetch
-  ])
+    if (!balance && !isAccurate) return true
+  }, [errorMessage, isLoading, balance, isAccurate])
 
-  if (!hasLoaded && isFetching) {
+  const isLoadingContent = useMemo(() => {
+    return (
+      (!hasLoaded && isLoading) ||
+      (hasLoaded && isLoading && !isAccurate) ||
+      (hasError && isRefreshing)
+    )
+  }, [hasLoaded, isLoading, isAccurate, hasError, isRefreshing])
+
+  if (!hasLoaded && isLoading) {
     if (variant === 'skeleton') {
       return (
         <ContentLoader
@@ -125,18 +109,20 @@ export const AccountBalance = ({
         flexShrink: 1,
         gap: 6
       }}>
-      {renderError()}
       <LoadingContent
-        hideSpinner={isFetching}
+        hideSpinner={!isAccurate}
         minOpacity={0.2}
         maxOpacity={1}
-        isLoading={
-          (!hasLoaded && isFetching) ||
-          (hasLoaded && isFetching && !isBalanceAccurate)
-        }>
+        isLoading={isLoadingContent}
+        hasError={hasError}
+        alertOptions={{
+          title: 'Unable to load balance',
+          description: errorMessage,
+          buttons: [{ text: 'Close' }]
+        }}>
         <AnimatedBalance
           variant="body1"
-          balance={balance}
+          balance={accountBalance}
           shouldMask={isPrivacyModeEnabled}
           balanceSx={{
             color: isActive

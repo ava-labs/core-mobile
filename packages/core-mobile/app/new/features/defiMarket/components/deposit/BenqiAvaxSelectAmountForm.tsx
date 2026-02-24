@@ -9,11 +9,17 @@ import { SelectAmountFormBase } from '../SelectAmountFormBase'
 export const BenqiAvaxSelectAmountForm = ({
   asset,
   market,
-  onSuccess
+  onSubmitted,
+  onConfirmed,
+  onReverted,
+  onError
 }: {
   asset: DepositAsset
   market: DefiMarket
-  onSuccess: () => void
+  onSubmitted: (params: { txHash: string; amount: TokenUnit }) => void
+  onConfirmed?: () => void
+  onReverted?: () => void
+  onError?: () => void
 }): JSX.Element => {
   const tokenBalance = useMemo(() => {
     return new TokenUnit(
@@ -23,7 +29,12 @@ export const BenqiAvaxSelectAmountForm = ({
     )
   }, [asset.token])
 
-  const { benqiDepositAvax } = useBenqiDepositAvax({ market })
+  const { benqiDepositAvax } = useBenqiDepositAvax({
+    market,
+    onConfirmed,
+    onReverted,
+    onError
+  })
   const { maxAmount } = useMaxDepositAmount({
     token: asset.token,
     gasAmount: MINT_GAS_AMOUNT
@@ -51,7 +62,7 @@ export const BenqiAvaxSelectAmountForm = ({
       maxAmount={maxAmount}
       validateAmount={validateAmount}
       submit={benqiDepositAvax}
-      onSuccess={onSuccess}
+      onSubmitted={onSubmitted}
     />
   )
 }

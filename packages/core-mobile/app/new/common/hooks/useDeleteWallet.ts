@@ -1,5 +1,6 @@
 import { useRecentAccounts } from 'features/accountSettings/store'
 import { useSwapActivitiesStore } from 'features/notifications/store'
+import { useLedgerWalletMap } from 'features/ledger/store'
 import { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 import { onLogOut } from 'store/app'
@@ -11,6 +12,7 @@ export const useDeleteWallet = (): {
   const { deleteRecentAccounts } = useRecentAccounts()
   const { clearAllSwapActivities } = useSwapActivitiesStore()
   const dispatch = useDispatch()
+  const { resetLedgerWalletMap } = useLedgerWalletMap()
 
   const deleteWallet = useCallback(() => {
     dispatch(onLogOut())
@@ -18,6 +20,8 @@ export const useDeleteWallet = (): {
     deleteRecentAccounts()
     clearAllSwapActivities()
   }, [deleteRecentAccounts, clearAllSwapActivities, dispatch])
+    resetLedgerWalletMap()
+  }, [deleteRecentAccounts, dispatch, resetLedgerWalletMap])
 
   return { deleteWallet }
 }

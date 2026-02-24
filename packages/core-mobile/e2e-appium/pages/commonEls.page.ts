@@ -2,6 +2,8 @@ import assert from 'assert'
 import { actions } from '../helpers/actions'
 import { selectors } from '../helpers/selectors'
 import commonEls from '../locators/commonEls.loc'
+import portfolioPage from './portfolio.page'
+import settingsPage from './settings.page'
 
 class CommonElsPage {
   get retryBtn() {
@@ -160,8 +162,8 @@ class CommonElsPage {
     return selectors.getBySomeText(commonEls.copy)
   }
 
-  get nextButton() {
-    return selectors.getById(commonEls.nextBtn)
+  get nextBtnById() {
+    return selectors.getById(commonEls.nextBtnById)
   }
 
   get approveButton() {
@@ -262,6 +264,26 @@ class CommonElsPage {
 
   get hkd() {
     return selectors.getByText(commonEls.hkd)
+  }
+
+  get successfullyAdded() {
+    return selectors.getBySomeText(commonEls.successfullyAdded)
+  }
+
+  get loadingSpinnerVisible() {
+    return selectors.getById(commonEls.loadingSpinnerVisible)
+  }
+
+  get loadingSpinnerHidden() {
+    return selectors.getById(commonEls.loadingSpinnerHidden)
+  }
+
+  get inProgress() {
+    return selectors.getByText(commonEls.inProgress)
+  }
+
+  get keypadUpButton() {
+    return selectors.getById(commonEls.keypadUpButton)
   }
 
   listItem(name: string) {
@@ -377,16 +399,25 @@ class CommonElsPage {
     try {
       await actions.tap(this.next)
     } catch (e) {
-      await actions.tap(this.nextButton)
+      await actions.tap(this.nextBtnById)
     }
   }
 
+  async tapNextBtnById() {
+    await actions.tap(this.nextBtnById)
+  }
+
   async dismissBottomSheet(element = this.grabber) {
-    await actions.waitFor(element, 20000)
-    while (await actions.getVisible(element)) {
-      await actions.dragAndDrop(element, [0, 1500])
-      await actions.delay(1000)
+    await actions.delay(1000)
+    const backBtn =
+      !(await actions.getVisible(element)) &&
+      (await actions.getVisible(this.backButton))
+    if (backBtn) {
+      await actions.tap(this.backButton)
     }
+    await actions.waitFor(element, 30000)
+    await actions.dragAndDrop(element, [0, 1500])
+    await actions.delay(1000)
     console.log('Dismissed bottom sheet')
   }
 
@@ -460,12 +491,14 @@ class CommonElsPage {
     await actions.tap(this.approveButton)
   }
 
-  async selectDropdownItem(item: string) {
-    const xpath = driver.isIOS
-      ? `//XCUIElementTypeCell//*[contains(@name, "${item}")]`
-      : `//android.widget.ListView//*[contains(@text, "${item}")]`
-    const ele = selectors.getByXpath(xpath)
-    await actions.click(ele)
+  async selectDropdownItem(item: string, dropdown = this.filterDropdown) {
+    const ele = selectors.getBySomeText(item)
+    if (await actions.getVisible(ele)) {
+      await actions.click(ele)
+    } else {
+      await actions.click(dropdown)
+      await actions.tap(ele)
+    }
   }
 
   async tapDelete() {
@@ -491,6 +524,18 @@ class CommonElsPage {
   async tapCopy() {
     await actions.tap(this.copy)
     await actions.waitForDisplayed(this.copied)
+  }
+
+  async switchAccount(
+    account = commonEls.secondAccount,
+    walletName = 'Wallet 1'
+  ) {
+    await this.goMyWallets()
+    await settingsPage.tapAccount(account, walletName)
+  }
+
+  async goMyWallets() {
+    await actions.tap(portfolioPage.portfolioAccountName)
   }
 }
 

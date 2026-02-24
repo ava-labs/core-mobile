@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import React, { FC, useMemo } from 'react'
 import { MiniChart, Text } from '@avalabs/k2-alpine'
 import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
@@ -93,6 +93,11 @@ const PriceAlertItem: FC<PriceAlertItemProps> = ({
   const { getWatchlistChart } = useWatchlist()
   const { formatCurrency } = useFormatCurrency()
 
+  const chart = useMemo(
+    () => getChart(notification, getWatchlistChart),
+    [notification, getWatchlistChart]
+  )
+
   return (
     <NotificationListItem
       title={getTitle(notification, formatCurrency)}
@@ -100,7 +105,7 @@ const PriceAlertItem: FC<PriceAlertItemProps> = ({
         <Subtitle notification={notification} formatCurrency={formatCurrency} />
       }
       icon={<NotificationIcon notification={notification} />}
-      rightAccessory={getChart(notification, getWatchlistChart)}
+      rightAccessory={chart}
       timestamp={notification.timestamp}
       showSeparator={showSeparator}
       accessoryType={accessoryType}

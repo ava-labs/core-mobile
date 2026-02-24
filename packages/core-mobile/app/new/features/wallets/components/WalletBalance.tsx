@@ -8,12 +8,13 @@ import {
 } from '@avalabs/k2-alpine'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useBalanceTotalInCurrencyForWallet } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForWallet'
-import { useWalletBalances } from 'features/portfolio/hooks/useWalletBalances'
+import { useIsLoadingBalancesForWallet } from 'features/portfolio/hooks/useIsLoadingBalancesForWallet'
+import { formatBalanceDisplay } from 'features/wallets/utils/formatBalanceDisplay'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import ContentLoader, { Rect } from 'react-content-loader/native'
 import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { Wallet } from 'store/wallet/types'
 
@@ -21,41 +22,37 @@ export const WalletBalance = ({
   wallet,
   isRefreshing,
   balanceSx,
-  variant = 'spinner',
-  balancesRefetchInterval
+  variant = 'spinner'
 }: {
   wallet: Wallet
   isRefreshing: boolean
   balanceSx?: SxProp
   variant?: 'spinner' | 'skeleton'
-  balancesRefetchInterval?: number | false
 }): JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const {
     theme: { colors, isDark }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
-  const { isFetching: isLoadingBalance } = useWalletBalances(wallet, {
-    refetchInterval: balancesRefetchInterval
-  })
-  const walletBalance = useBalanceTotalInCurrencyForWallet(wallet)
+  const isLoading = useIsLoadingBalancesForWallet(wallet)
+  const balanceTotalInCurrency = useBalanceTotalInCurrencyForWallet(wallet)
 
   const [hasLoaded, setHasLoaded] = useState(false)
 
   useEffect(() => {
-    if (!isLoadingBalance && walletBalance !== undefined) {
+    if (!isLoading && balanceTotalInCurrency !== undefined) {
       setHasLoaded(true)
     }
-  }, [isLoadingBalance, isRefreshing, walletBalance])
+  }, [isLoading, balanceTotalInCurrency])
 
-  const balance = useMemo(() => {
-    return walletBalance > 0
-      ? formatCurrency({
-          amount: walletBalance,
-          notation: walletBalance < 100000 ? undefined : 'compact'
-        })
-      : formatCurrency({ amount: 0 }).replace(/[\d.,]+/g, UNKNOWN_AMOUNT)
-  }, [formatCurrency, walletBalance])
+  const walletBalance = useMemo(() => {
+    return formatBalanceDisplay({
+      balance: balanceTotalInCurrency,
+      isDeveloperMode,
+      formatCurrency
+    })
+  }, [formatCurrency, balanceTotalInCurrency, isDeveloperMode])
 
   const renderMaskView = useCallback(() => {
     return (
@@ -94,7 +91,7 @@ export const WalletBalance = ({
       isLoading={isRefreshing}>
       <AnimatedBalance
         variant="heading4"
-        balance={balance}
+        balance={walletBalance}
         shouldMask={isPrivacyModeEnabled}
         balanceSx={{
           ...balanceSx,

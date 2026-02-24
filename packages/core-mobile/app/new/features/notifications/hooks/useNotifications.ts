@@ -7,36 +7,11 @@ import {
   UseQueryResult
 } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { StorageKey } from 'resources/Constants'
-import { commonStorage } from 'utils/mmkv'
 import Logger from 'utils/Logger'
+import { useDeviceArn } from 'common/hooks/useDeviceArn'
 import NotificationCenterService from '../services/NotificationCenterService'
 import { AppNotification, BackendNotification, NotificationTab } from '../types'
 import { filterByTab } from '../utils'
-
-/**
- * Hook to get deviceArn from MMKV storage.
- * Subscribes to storage changes so the value updates reactively
- * when registerDeviceToNotificationSender writes the ARN.
- */
-export function useDeviceArn(): string | undefined {
-  const [deviceArn, setDeviceArn] = useState<string | undefined>(() =>
-    commonStorage.getString(StorageKey.NOTIFICATIONS_OPTIMIZATION)
-  )
-
-  useEffect(() => {
-    const listener = commonStorage.addOnValueChangedListener(changedKey => {
-      if (changedKey === StorageKey.NOTIFICATIONS_OPTIMIZATION) {
-        setDeviceArn(
-          commonStorage.getString(StorageKey.NOTIFICATIONS_OPTIMIZATION)
-        )
-      }
-    })
-    return () => listener.remove()
-  }, [])
-
-  return deviceArn
-}
 
 /**
  * Hook to fetch notifications from backend
@@ -52,7 +27,8 @@ export function useBackendNotifications(): UseQueryResult<
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     queryFn: () => NotificationCenterService.fetchNotifications(deviceArn!),
     enabled: !!deviceArn,
-    staleTime: 1000 * 60 * 1 // 1 minute
+    staleTime: 1000 * 60 * 1, // 1 minute
+    refetchInterval: 1000 * 60 * 1 // 1 minute
   })
 }
 

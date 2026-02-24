@@ -1,7 +1,7 @@
 import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
-import { Account } from 'store/account'
+import { Account, XPAddressDictionary } from 'store/account'
 import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
 import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import NetworkService from 'services/network/NetworkService'
@@ -19,6 +19,8 @@ export type ExportPParams = {
   account: Account
   isTestnet: boolean
   feeState?: pvm.FeeState
+  xpAddresses: string[]
+  xpAddressDictionary: XPAddressDictionary
 }
 
 export async function exportP({
@@ -28,7 +30,9 @@ export async function exportP({
   requiredAmount,
   account,
   isTestnet,
-  feeState
+  feeState,
+  xpAddresses,
+  xpAddressDictionary
 }: ExportPParams): Promise<void> {
   Logger.info('exporting P started')
 
@@ -43,7 +47,8 @@ export async function exportP({
     isTestnet,
     destinationChain: 'C',
     destinationAddress: account.addressCoreEth,
-    feeState
+    feeState,
+    xpAddresses
   })
 
   const signedTxJson = await WalletService.sign({
@@ -53,7 +58,7 @@ export async function exportP({
       tx: unsignedTx,
       ...getInternalExternalAddrs({
         utxos: unsignedTx.utxos,
-        xpAddressDict: account.xpAddressDictionary,
+        xpAddressDict: xpAddressDictionary,
         isTestnet
       })
     } as AvalancheTransactionRequest,

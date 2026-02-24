@@ -12,7 +12,7 @@ import { useManageWallet } from 'common/hooks/useManageWallet'
 import { AccountDisplayData, WalletDisplayData } from 'common/types'
 import { AccountListItem } from 'features/wallets/components/AccountListItem'
 import { WalletBalance } from 'features/wallets/components/WalletBalance'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   FlatList,
   LayoutChangeEvent,
@@ -31,11 +31,10 @@ const WalletCard = ({
   wallet,
   isActive,
   isExpanded,
+  isRefreshing,
   showMoreButton = true,
   style,
-  onToggleExpansion,
-  isRefreshing,
-  balancesRefetchInterval
+  onToggleExpansion
 }: {
   wallet: WalletDisplayData
   isActive: boolean
@@ -44,17 +43,25 @@ const WalletCard = ({
   showMoreButton?: boolean
   style?: StyleProp<ViewStyle>
   onToggleExpansion: () => void
-  balancesRefetchInterval?: number | false
 }): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+
   const {
     getDropdownItems,
     handleDropdownSelect,
     handleAddAccount: handleAddAccountToWallet,
     isAddingAccount
   } = useManageWallet()
+
+  const isLedger = useMemo(() => {
+    return (
+      wallet?.type === WalletType.LEDGER_LIVE ||
+      wallet?.type === WalletType.LEDGER
+    )
+  }, [wallet?.type])
+
   const renderExpansionIcon = useCallback(() => {
     return (
       <Icons.Navigation.ChevronRight
@@ -70,13 +77,13 @@ const WalletCard = ({
     ({ item }) => {
       return (
         <AccountListItem
-          testID={`manage_accounts_list__${item.account.name}`}
+          testID={`manage_accounts_list__${wallet.name}__${item.account.name}`}
+          isRefreshing={isRefreshing}
           {...item}
-          balancesRefetchInterval={balancesRefetchInterval}
         />
       )
     },
-    [balancesRefetchInterval]
+    [isRefreshing, wallet.name]
   )
 
   const renderEmpty = useCallback(() => {
@@ -143,6 +150,7 @@ const WalletCard = ({
             paddingTop: 1
           }}
         />
+
         {wallet.type !== WalletType.PRIVATE_KEY ? (
           <Button
             size="medium"
@@ -157,6 +165,7 @@ const WalletCard = ({
             }
             type="secondary"
             disabled={isAddingAccount}
+            testID={`add_account_btn__${wallet.name}`}
             onPress={() => handleAddAccountToWallet(wallet)}>
             {isAddingAccount ? (
               <ActivityIndicator size="small" color={colors.$textPrimary} />
@@ -254,14 +263,13 @@ const WalletCard = ({
             }}
             isRefreshing={isRefreshing}
             wallet={wallet}
-            balancesRefetchInterval={balancesRefetchInterval}
           />
           {showMoreButton && (
             <DropdownMenu
               groups={[
                 {
                   key: 'wallet-actions',
-                  items: getDropdownItems(wallet)
+                  items: getDropdownItems(wallet, isLedger)
                 }
               ]}
               onPressAction={(event: { nativeEvent: { event: string } }) =>

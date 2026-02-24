@@ -4,6 +4,7 @@ import {
   dismissAlertWithTextInput,
   showAlertWithTextInput
 } from 'common/utils/alertWithTextInput'
+import { useRouter } from 'expo-router'
 import { showSnackbar } from 'new/common/utils/toast'
 import { useCallback, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -21,13 +22,17 @@ import {
 import { removeWallet } from 'store/wallet/thunks'
 import { Wallet } from 'store/wallet/types'
 import Logger from 'utils/Logger'
+import { useLedgerWalletMap } from 'features/ledger/store'
+import { LEDGER_DEVICE_BRIEF_DELAY_MS } from 'features/ledger/consts'
 
 export const useManageWallet = (): {
   handleAddAccount: (wallet: Wallet) => void
-  getDropdownItems: (wallet: Wallet) => DropdownItem[]
+  getDropdownItems: (wallet: Wallet, canAddAccount?: boolean) => DropdownItem[]
   handleDropdownSelect: (action: string, wallet: Wallet) => void
   isAddingAccount: boolean
 } => {
+  const { removeLedgerWallet } = useLedgerWalletMap()
+  const { navigate } = useRouter()
   const [isAddingAccount, setIsAddingAccount] = useState(false)
   const dispatch = useDispatch<AppThunkDispatch>()
   const walletsCount = useSelector(selectWalletsCount)
@@ -101,12 +106,19 @@ export const useManageWallet = (): {
             style: 'destructive',
             onPress: () => {
               dispatch(removeWallet(wallet.id))
+
+              if (
+                wallet.type === WalletType.LEDGER ||
+                wallet.type === WalletType.LEDGER_LIVE
+              ) {
+                removeLedgerWallet(wallet.id)
+              }
             }
           }
         ]
       })
     },
-    [dispatch, walletsCount]
+    [dispatch, removeLedgerWallet, walletsCount]
   )
 
   const handleAddAccount = useCallback(
@@ -114,6 +126,24 @@ export const useManageWallet = (): {
       if (isAddingAccount) return
 
       try {
+        if (
+          wallet.type === WalletType.LEDGER ||
+          wallet.type === WalletType.LEDGER_LIVE
+        ) {
+          setIsAddingAccount(true)
+          navigate({
+            // @ts-ignore TODO: make routes typesafe
+            pathname: '/addAccountAppConnection',
+            params: { walletId: wallet.id }
+          })
+          // Reset the flag after navigation to allow future attempts
+          // The modal dismissal will naturally reset this state
+          setTimeout(() => {
+            setIsAddingAccount(false)
+          }, LEDGER_DEVICE_BRIEF_DELAY_MS)
+          return
+        }
+
         AnalyticsService.capture('AccountSelectorAddAccount', {
           accountNumber: Object.keys(accounts).length + 1
         })
@@ -133,7 +163,7 @@ export const useManageWallet = (): {
         setIsAddingAccount(false)
       }
     },
-    [isAddingAccount, accounts, dispatch]
+    [isAddingAccount, accounts, dispatch, navigate]
   )
 
   const canRemoveWallet = useCallback(
@@ -153,7 +183,7 @@ export const useManageWallet = (): {
   )
 
   const getDropdownItems = useCallback(
-    (wallet: Wallet): DropdownItem[] => {
+    (wallet: Wallet, canAddAccount?: boolean): DropdownItem[] => {
       const baseItems: DropdownItem[] = []
 
       if (wallet.type !== WalletType.PRIVATE_KEY) {
@@ -167,9 +197,9 @@ export const useManageWallet = (): {
         [
           WalletType.MNEMONIC,
           WalletType.SEEDLESS,
-          WalletType.LEDGER,
           WalletType.KEYSTONE
-        ].includes(wallet.type)
+        ].includes(wallet.type) ||
+        canAddAccount
       ) {
         baseItems.push({
           id: 'add_account',

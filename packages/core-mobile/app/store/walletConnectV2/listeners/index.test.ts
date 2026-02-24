@@ -85,6 +85,12 @@ const listenerMiddlewareInstance = createListenerMiddleware({
 
 jest.mock('services/analytics/AnalyticsService')
 ;(AnalyticsService.capture as jest.Mock).mockReturnValue(undefined)
+
+jest.mock('contexts/ReactQueryProvider', () => ({
+  queryClient: {
+    clear: jest.fn()
+  }
+}))
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const dispatchSpyMiddleware = () => (next: any) => (action: any) => {
   return next(action)

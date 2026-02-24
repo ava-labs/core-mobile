@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { ListScreen } from 'common/components/ListScreen'
 import {
   Button,
@@ -13,7 +13,7 @@ import { ErrorState } from 'common/components/ErrorState'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
-import { useBuy } from 'features/meld/hooks/useBuy'
+import { useNavigation } from '@react-navigation/native'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
@@ -25,12 +25,16 @@ import errorIcon from '../../../../assets/icons/melting_face.png'
 import { DefiAssetDetails } from '../../types'
 import { DefiAssetLogo } from '../../components/DefiAssetLogo'
 import { findMatchingTokenWithBalance } from '../../utils/findMatchingTokenWithBalance'
-import { useDepositSelectedAsset } from '../../store'
+import {
+  useDepositSelectedAsset,
+  useRedirectToBorrowAfterDeposit
+} from '../../store'
 import { useAvailableMarkets } from '../../hooks/useAvailableMarkets'
 import { useDepositableTokens } from '../../hooks/useDepositableTokens'
 
 export const SelectAssetScreen = (): JSX.Element => {
   const { navigate } = useRouter()
+  const navigation = useNavigation()
   const activeAccount = useSelector(selectActiveAccount)
   const cChainNetwork = useCChainNetwork()
   const cChainTokensWithBalance = useTokensWithBalanceForAccount({
@@ -38,15 +42,24 @@ export const SelectAssetScreen = (): JSX.Element => {
     chainId: cChainNetwork?.chainId
   })
   const { data: markets, isPending: isLoadingMarkets } = useAvailableMarkets()
+  const [redirectToBorrow] = useRedirectToBorrowAfterDeposit()
+
+  // Filter markets by protocol if redirected from borrow flow
+  const filteredMarkets = useMemo(() => {
+    if (redirectToBorrow) {
+      return markets.filter(m => m.marketName === redirectToBorrow)
+    }
+    return markets
+  }, [markets, redirectToBorrow])
+
   const depositableTokens = useDepositableTokens(
-    markets,
+    filteredMarkets,
     cChainTokensWithBalance
   )
   const {
     theme: { colors }
   } = useTheme()
   const { formatCurrency } = useFormatCurrency()
-  const { navigateToBuy, isBuyable } = useBuy()
   const { navigateToSwap } = useNavigateToSwap()
   const [, setSelectedAsset] = useDepositSelectedAsset()
 
@@ -70,12 +83,9 @@ export const SelectAssetScreen = (): JSX.Element => {
             symbol: marketAsset.symbol
           }
         })
-      } else if (isBuyable(undefined, marketAsset.contractAddress)) {
-        navigateToBuy({
-          showAvaxWarning: true,
-          address: marketAsset.contractAddress
-        })
       } else {
+        // Dismiss entire deposit modal and navigate to swap
+        navigation.getParent()?.goBack()
         navigateToSwap({
           fromTokenId: AVAX_TOKEN_ID,
           toTokenId: marketAsset.contractAddress
@@ -84,8 +94,7 @@ export const SelectAssetScreen = (): JSX.Element => {
     },
     [
       navigate,
-      navigateToBuy,
-      isBuyable,
+      navigation,
       navigateToSwap,
       cChainTokensWithBalance,
       setSelectedAsset
@@ -137,7 +146,10 @@ export const SelectAssetScreen = (): JSX.Element => {
               type="secondary"
               size="small"
               onPress={() => handleSelectToken(item)}>
-              {tokenWithBalance?.balanceInCurrency ? 'Deposit' : 'Buy'}
+              {tokenWithBalance?.balance !== undefined &&
+              tokenWithBalance.balance > 0n
+                ? 'Deposit'
+                : 'Buy'}
             </Button>
           </View>
         </TouchableOpacity>

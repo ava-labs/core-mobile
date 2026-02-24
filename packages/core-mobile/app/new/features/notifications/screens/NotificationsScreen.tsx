@@ -4,9 +4,11 @@ import { useWindowDimensions } from 'react-native'
 import { useSharedValue } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
+import { useSelector } from 'react-redux'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { handleDeeplink } from 'contexts/DeeplinkContext/utils/handleDeeplink'
 import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
+import { selectIsEarnBlocked } from 'store/posthog'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { LoadingState } from 'common/components/LoadingState'
 import NotificationEmptyState from '../components/NotificationEmptyState'
@@ -105,6 +107,7 @@ export const NotificationsScreen = (): JSX.Element => {
   const insets = useSafeAreaInsets()
   const { height: screenHeight } = useWindowDimensions()
   const { openUrl } = useCoreBrowser()
+  const isEarnBlocked = useSelector(selectIsEarnBlocked)
   const selectedTabIndex = useSharedValue(0)
   const [selectedTabState, setSelectedTabState] = useState(0)
   const selectedTab = TAB_ITEMS[selectedTabState]?.value ?? NotificationTab.ALL
@@ -279,12 +282,12 @@ export const NotificationsScreen = (): JSX.Element => {
             origin: DeepLinkOrigin.ORIGIN_NOTIFICATION
           },
           dispatch: action => action,
-          isEarnBlocked: false,
+          isEarnBlocked,
           openUrl
         })
       }
     },
-    [openUrl]
+    [openUrl, isEarnBlocked]
   )
 
   const renderFooter = useCallback(() => {

@@ -9,7 +9,7 @@ import { getUnixTime, secondsToMilliseconds } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
 import { PChainId } from '@avalabs/glacier-sdk'
 import { UTCDate } from '@date-fns/utc'
-import { getPvmAddresses } from 'common/utils/getPvmAddresses'
+import { getPvmAddresses } from 'services/earn/computeDelegationSteps/utils'
 import {
   AddDelegatorProps,
   CreateExportCTxParams,
@@ -19,22 +19,27 @@ import {
   CreateSendPTxParams
 } from './types'
 import { getAvaxAssetId } from './utils'
-
 class AvalancheWalletService {
   /**
    * Get atomic transactions that are in VM memory.
    */
   public async getAtomicUTXOs({
     account,
-    isTestnet
+    isTestnet,
+    xpAddresses
   }: {
     account: Account
     isTestnet: boolean
+    xpAddresses: string[]
   }): Promise<{
     pChainUtxo: utils.UtxoSet
     cChainUtxo: utils.UtxoSet
   }> {
-    const readOnlySigner = await this.getReadOnlySigner(account, isTestnet)
+    const readOnlySigner = await this.getReadOnlySigner({
+      account,
+      isTestnet,
+      xpAddresses
+    })
 
     const pChainUtxo = await readOnlySigner.getAtomicUTXOs('P', 'C')
     const cChainUtxo = await readOnlySigner.getAtomicUTXOs('C', 'P')
@@ -50,12 +55,18 @@ class AvalancheWalletService {
    */
   public async getPChainAtomicUTXOs({
     account,
-    isTestnet
+    isTestnet,
+    xpAddresses
   }: {
     account: Account
     isTestnet: boolean
+    xpAddresses: string[]
   }): Promise<utils.UtxoSet> {
-    const readOnlySigner = await this.getReadOnlySigner(account, isTestnet)
+    const readOnlySigner = await this.getReadOnlySigner({
+      account,
+      isTestnet,
+      xpAddresses
+    })
 
     return readOnlySigner.getAtomicUTXOs('P', 'C')
   }
@@ -65,12 +76,18 @@ class AvalancheWalletService {
    */
   public async getPChainUTXOs({
     account,
-    isTestnet
+    isTestnet,
+    xpAddresses
   }: {
     account: Account
     isTestnet: boolean
+    xpAddresses: string[]
   }): Promise<utils.UtxoSet> {
-    const readOnlySigner = await this.getReadOnlySigner(account, isTestnet)
+    const readOnlySigner = await this.getReadOnlySigner({
+      account,
+      isTestnet,
+      xpAddresses
+    })
 
     return readOnlySigner.getUTXOs('P')
   }
@@ -83,9 +100,14 @@ class AvalancheWalletService {
     destinationChain,
     destinationAddress,
     shouldValidateBurnedAmount = true,
-    avalancheEvmProvider
+    avalancheEvmProvider,
+    xpAddresses
   }: CreateExportCTxParams): Promise<UnsignedTx> {
-    const readOnlySigner = await this.getReadOnlySigner(account, isTestnet)
+    const readOnlySigner = await this.getReadOnlySigner({
+      account,
+      isTestnet,
+      xpAddresses
+    })
 
     // Get nonce from C-Chain EVM provider
     const evmAddress = readOnlySigner.getAddressEVM()
@@ -116,9 +138,14 @@ class AvalancheWalletService {
     sourceChain,
     destinationAddress,
     shouldValidateBurnedAmount = true,
-    feeState
+    feeState,
+    xpAddresses
   }: CreateImportPTxParams): Promise<UnsignedTx> {
-    const readOnlySigner = await this.getReadOnlySigner(account, isTestnet)
+    const readOnlySigner = await this.getReadOnlySigner({
+      account,
+      isTestnet,
+      xpAddresses
+    })
 
     const utxoSet = await readOnlySigner.getAtomicUTXOs('P', sourceChain)
 
@@ -145,9 +172,14 @@ class AvalancheWalletService {
     destinationChain,
     destinationAddress,
     shouldValidateBurnedAmount = true,
-    feeState
+    feeState,
+    xpAddresses
   }: CreateExportPTxParams): Promise<UnsignedTx> {
-    const readOnlySigner = await this.getReadOnlySigner(account, isTestnet)
+    const readOnlySigner = await this.getReadOnlySigner({
+      account,
+      isTestnet,
+      xpAddresses
+    })
 
     const utxoSet = await readOnlySigner.getUTXOs('P')
 
@@ -177,13 +209,18 @@ class AvalancheWalletService {
     isTestnet,
     destinationAddress,
     sourceAddress,
-    feeState
+    feeState,
+    xpAddresses
   }: CreateSendPTxParams): Promise<UnsignedTx> {
     if (!destinationAddress) {
       throw new Error('destination address must be set')
     }
 
-    const readOnlySigner = await this.getReadOnlySigner(account, isTestnet)
+    const readOnlySigner = await this.getReadOnlySigner({
+      account,
+      isTestnet,
+      xpAddresses
+    })
 
     // P-chain has a tx size limit of 64KB
     let utxoSet = await readOnlySigner.getUTXOs('P')
@@ -218,13 +255,18 @@ class AvalancheWalletService {
     account,
     isTestnet,
     destinationAddress,
-    sourceAddress
+    sourceAddress,
+    xpAddresses
   }: CreateSendPTxParams): Promise<UnsignedTx> {
     if (!destinationAddress) {
       throw new Error('destination address must be set')
     }
 
-    const readOnlySigner = await this.getReadOnlySigner(account, isTestnet)
+    const readOnlySigner = await this.getReadOnlySigner({
+      account,
+      isTestnet,
+      xpAddresses
+    })
 
     // P-chain has a tx size limit of 64KB
     const utxoSet = await readOnlySigner.getUTXOs('X')
@@ -248,9 +290,14 @@ class AvalancheWalletService {
     isTestnet,
     sourceChain,
     destinationAddress,
-    shouldValidateBurnedAmount = true
+    shouldValidateBurnedAmount = true,
+    xpAddresses
   }: CreateImportCTxParams): Promise<UnsignedTx> {
-    const readOnlySigner = await this.getReadOnlySigner(account, isTestnet)
+    const readOnlySigner = await this.getReadOnlySigner({
+      account,
+      isTestnet,
+      xpAddresses
+    })
 
     const utxoSet = await readOnlySigner.getAtomicUTXOs('C', sourceChain)
 
@@ -281,7 +328,8 @@ class AvalancheWalletService {
     endDate,
     rewardAddress,
     shouldValidateBurnedAmount = true,
-    feeState
+    feeState,
+    xpAddresses
   }: AddDelegatorProps): Promise<UnsignedTx> {
     if (!nodeId.startsWith('NodeID-')) {
       throw Error('Invalid node id: ' + nodeId)
@@ -314,7 +362,11 @@ class AvalancheWalletService {
       throw Error('Reward address must be from P chain')
     }
 
-    const readOnlySigner = await this.getReadOnlySigner(account, isTestnet)
+    const readOnlySigner = await this.getReadOnlySigner({
+      account,
+      isTestnet,
+      xpAddresses
+    })
 
     const utxoSet = await readOnlySigner.getUTXOs('P')
 
@@ -352,7 +404,8 @@ class AvalancheWalletService {
     isTestnet,
     sourceChain,
     destinationAddress,
-    feeState
+    feeState,
+    xpAddresses
   }: {
     utxos: utils.UtxoSet
     account: Account
@@ -361,8 +414,13 @@ class AvalancheWalletService {
     destinationAddress: string
     shouldValidateBurnedAmount?: boolean
     feeState?: pvm.FeeState
+    xpAddresses: string[]
   }): Promise<UnsignedTx> {
-    const readOnlySigner = await this.getReadOnlySigner(account, isTestnet)
+    const readOnlySigner = await this.getReadOnlySigner({
+      account,
+      isTestnet,
+      xpAddresses
+    })
 
     return readOnlySigner.importP({
       utxoSet: utxos,
@@ -378,7 +436,8 @@ class AvalancheWalletService {
     account,
     isTestnet,
     destinationAddress,
-    feeState
+    feeState,
+    xpAddresses
   }: {
     utxos: utils.UtxoSet
     stakeAmountInNAvax: bigint
@@ -387,14 +446,19 @@ class AvalancheWalletService {
     destinationAddress: string
     shouldValidateBurnedAmount?: boolean
     feeState?: pvm.FeeState
+    xpAddresses: string[]
   }): Promise<UnsignedTx> {
-    const readOnlySigner = await this.getReadOnlySigner(account, isTestnet)
+    const readOnlySigner = await this.getReadOnlySigner({
+      account,
+      isTestnet,
+      xpAddresses
+    })
 
     return readOnlySigner.addPermissionlessDelegator({
       weight: stakeAmountInNAvax,
       nodeId: 'NodeID-1',
       subnetId: PChainId._11111111111111111111111111111111LPO_YY,
-      fromAddresses: getPvmAddresses(account),
+      fromAddresses: getPvmAddresses(xpAddresses),
       rewardAddresses: [destinationAddress ?? ''],
       start: BigInt(getUnixTime(new Date())),
       // setting this end date here for this dummy tx is okay. since the end date does not add complexity for this tx, so it doesn't affect the txFee that is returned.
@@ -405,23 +469,21 @@ class AvalancheWalletService {
     })
   }
 
-  private async getReadOnlySigner(
-    account: Account,
+  private async getReadOnlySigner({
+    account,
+    isTestnet,
+    xpAddresses
+  }: {
+    account: Account
     isTestnet: boolean
-  ): Promise<Avalanche.AddressWallet> {
+    xpAddresses: string[]
+  }): Promise<Avalanche.AddressWallet> {
     const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
-
-    const xpAddr =
-      account.xpAddresses && account.xpAddresses.length > 0
-        ? [...account.xpAddresses]
-            .sort((a, b) => a.index - b.index)
-            .map(xpAddress => stripAddressPrefix(xpAddress.address))
-        : [stripAddressPrefix(account.addressPVM)]
 
     return new Avalanche.AddressWallet(
       account.addressC,
       stripAddressPrefix(account.addressCoreEth),
-      xpAddr,
+      xpAddresses,
       stripAddressPrefix(account.addressPVM),
       provXP
     )

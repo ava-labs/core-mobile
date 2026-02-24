@@ -88,13 +88,15 @@ class NotificationCenterService {
         return []
       }
 
-      return parsed.data.notifications.map(transformNotification)
+      return parsed.data.notifications
+        .map(transformNotification)
+        .filter(n => n.data !== undefined)
     } catch (error) {
       Logger.error(
         '[NotificationCenterService] fetchNotifications failed:',
         error
       )
-      throw error
+      return []
     }
   }
 

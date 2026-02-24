@@ -7,7 +7,7 @@ import {
   RpcMethod,
   CORE_WALLET_METHODS
 } from 'store/rpc/types'
-import { SafeParseError, SafeParseSuccess, z, ZodArray } from 'zod'
+import { z } from 'zod'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
 import Logger from 'utils/Logger'
 import BlockaidService from 'services/blockaid/BlockaidService'
@@ -136,38 +136,11 @@ export type NamespaceToApprove = z.infer<typeof namespaceToApproveSchema>
 
 const approveDataSchema = z.object({
   selectedAccounts: z.array(coreAccountAddresses).nonempty(),
-  namespaces: z.record(namespaceToApproveSchema)
+  namespaces: z.record(z.string(), namespaceToApproveSchema)
 })
 
-export const parseApproveData: (data: unknown) =>
-  | SafeParseSuccess<{
-      selectedAccounts: ZodArray<
-        typeof coreAccountAddresses,
-        'atleastone'
-      >['_output']
-      namespaces: Record<
-        string,
-        {
-          chains?: string[]
-          methods: string[]
-          events: string[]
-        }
-      >
-    }>
-  | SafeParseError<{
-      selectedAccounts: ZodArray<
-        typeof coreAccountAddresses,
-        'atleastone'
-      >['_input']
-      namespaces: Record<
-        string,
-        {
-          chains?: string[]
-          methods: string[]
-          events: string[]
-        }
-      >
-    }> = (data: unknown) => {
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export const parseApproveData = (data: unknown) => {
   return approveDataSchema.safeParse(data)
 }
 

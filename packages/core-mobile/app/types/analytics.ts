@@ -94,6 +94,7 @@ export type AnalyticsEvents = {
   PortfolioAssetsClicked: undefined
   PortfolioCollectiblesClicked: undefined
   PortfolioDeFiClicked: undefined
+  PortfolioActivityClicked: undefined
   PortfolioTokenSelected: { name: string; symbol: string; chainId: number }
   PrivacyPolicyClicked: undefined
   ReceivePageVisited: undefined
@@ -227,5 +228,56 @@ export type AnalyticsEvents = {
   PushNotificationSubscribed: {
     channelId: string
     tokenId?: string
+  }
+
+  // App Review
+  InAppReviewRequested: undefined
+
+  // CORE EARN (defi deposit/withdraw/claim)
+  EarnOpened: undefined
+  EarnDepositStart: undefined
+  EarnDepositSubmitted: {
+    token: string
+    quantity: string
+    protocol: string
+    txHash: string
+    address: string
+  }
+  EarnDepositSuccess: undefined
+  EarnDepositFailure: undefined
+  EarnWithdrawStart: undefined
+  EarnWithdrawSubmitted: {
+    token: string
+    quantity: string
+    protocol: string
+    txHash: string
+    address: string
+  }
+  EarnWithdrawSuccess: undefined
+  EarnWithdrawFailure: undefined
+  EarnClaimSuccess: undefined
+  EarnClaimFailure: undefined
+  EarnBorrowStart: undefined
+  EarnBorrowSubmitted: {
+    token: string
+    quantity: string
+    protocol: string
+    txHash: string
+    address: string
+  }
+  EarnBorrowSuccess: undefined
+  EarnBorrowFailure: undefined
+
+  // NEST EGG CAMPAIGN
+  NestEggCampaignModalViewed: { addressC: string }
+  NestEggSuccessModalViewed: { addressC: string }
+  NestEggQualified: {
+    addressC: string
+    txHash: string
+    chainId: number
+    fromTokenSymbol: string
+    toTokenSymbol: string
+    fromAmountUsd: number
+    timestamp: number
   }
 }

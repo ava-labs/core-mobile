@@ -43,10 +43,21 @@ export type DefiMarket = {
   readonly supplyApyPercent: number
   // Based on 30-day historical - this data may not be available.
   readonly historicalApyPercent: number | undefined
+  // Borrow APY for this market
+  readonly borrowApyPercent: number
+  // Historical borrow APY (30-day average) - this data may not be available.
+  readonly historicalBorrowApyPercent: number | undefined
+  // Whether borrowing is enabled for this market
+  readonly borrowingEnabled: boolean
   readonly supplyCapReached: boolean
   // Total deposits for this market globally - not based on current wallet.
   readonly totalDeposits: Big | undefined
   readonly uniqueMarketId: string
+  // Reserve-level setting: whether this asset CAN be used as collateral
+  readonly canBeUsedAsCollateral: boolean
+  // User-level setting: whether the user has enabled this asset as collateral
+  // Only available for AAVE markets (for now)
+  readonly usageAsCollateralEnabledOnUser: boolean | undefined
 }
 
 export type AaveReserveData = {
@@ -97,3 +108,27 @@ export type DepositAsset = {
   token: LocalTokenWithBalance & { type: TokenType.ERC20 | TokenType.NATIVE }
   nativeToken: (LocalTokenWithBalance & { type: TokenType.NATIVE }) | undefined
 }
+
+// Common fields for borrow data
+interface BaseBorrowData {
+  availableBorrowsUSD: bigint
+  tokenPriceUSD: bigint
+  totalDebtUSD: bigint
+}
+
+// AAVE-specific borrow data
+export interface AaveBorrowData extends BaseBorrowData {
+  healthFactor: bigint
+  totalCollateralUSD: bigint
+  liquidationThreshold: bigint
+}
+
+// Benqi-specific borrow data
+export interface BenqiBorrowData extends BaseBorrowData {
+  liquidity: bigint
+  shortfall: bigint
+}
+
+// AAVE getUserAccountData return type:
+// [totalCollateralBase, totalDebtBase, availableBorrowsBase, currentLiquidationThreshold, ltv, healthFactor]
+export type AaveAccountData = [bigint, bigint, bigint, bigint, bigint, bigint]

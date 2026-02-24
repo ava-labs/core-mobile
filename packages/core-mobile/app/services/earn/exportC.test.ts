@@ -17,6 +17,8 @@ const avalancheEvmProvider = {
 
 describe('earn/exportC', () => {
   describe('exportC', () => {
+    const testXpAddresses = ['avax123', 'avax456']
+
     const baseFeeMockFn = jest.fn().mockReturnValue(BigInt(0.003 * 1e9))
     const getAtomicTxStatusMockFn = jest.fn().mockReturnValue({
       status: 'Accepted'
@@ -75,9 +77,10 @@ describe('earn/exportC', () => {
           cChainBalanceWei: BigInt(1e18),
           requiredAmountWei: BigInt(10e18),
           isTestnet: false,
-          account: { xpAddresses: [] } as unknown as Account,
+          account: {} as Account,
           cBaseFeeMultiplier: testCBaseFeeMultiplier,
-          avalancheEvmProvider
+          avalancheEvmProvider,
+          xpAddresses: testXpAddresses
         })
       }).rejects.toThrow('Not enough balance on C chain')
     })
@@ -89,9 +92,10 @@ describe('earn/exportC', () => {
         cChainBalanceWei: BigInt(10e18),
         requiredAmountWei: BigInt(1e18),
         isTestnet: false,
-        account: { xpAddresses: [] } as unknown as Account,
+        account: {} as Account,
         cBaseFeeMultiplier: testCBaseFeeMultiplier,
-        avalancheEvmProvider
+        avalancheEvmProvider,
+        xpAddresses: []
       })
       expect(baseFeeMockFn).toHaveBeenCalled()
     })
@@ -104,9 +108,10 @@ describe('earn/exportC', () => {
           cChainBalanceWei: BigInt(10e18),
           requiredAmountWei: BigInt(1e18),
           isTestnet: false,
-          account: { xpAddresses: [] } as unknown as Account,
+          account: {} as Account,
           cBaseFeeMultiplier: testCBaseFeeMultiplier,
-          avalancheEvmProvider
+          avalancheEvmProvider,
+          xpAddresses: testXpAddresses
         })
         expect(AvalancheWalletService.createExportCTx).toHaveBeenCalledWith({
           amountInNAvax: 1000000000n,
@@ -114,8 +119,9 @@ describe('earn/exportC', () => {
           destinationChain: 'P',
           destinationAddress: undefined,
           isTestnet: false,
-          account: { xpAddresses: [] } as unknown as Account,
-          avalancheEvmProvider
+          account: {} as Account,
+          avalancheEvmProvider,
+          xpAddresses: testXpAddresses
         })
       }).not.toThrow()
     })
@@ -128,9 +134,10 @@ describe('earn/exportC', () => {
           cChainBalanceWei: BigInt(10e18),
           requiredAmountWei: BigInt(1e18),
           isTestnet: false,
-          account: { xpAddresses: [] } as unknown as Account,
+          account: {} as Account,
           cBaseFeeMultiplier: testCBaseFeeMultiplier,
-          avalancheEvmProvider
+          avalancheEvmProvider,
+          xpAddresses: testXpAddresses
         })
         expect(WalletService.sign).toHaveBeenCalled()
       }).not.toThrow()
@@ -144,9 +151,10 @@ describe('earn/exportC', () => {
           cChainBalanceWei: BigInt(10e18),
           requiredAmountWei: BigInt(1e18),
           isTestnet: false,
-          account: { xpAddresses: [] } as unknown as Account,
+          account: {} as Account,
           cBaseFeeMultiplier: testCBaseFeeMultiplier,
-          avalancheEvmProvider
+          avalancheEvmProvider,
+          xpAddresses: testXpAddresses
         })
         expect(NetworkService.sendTransaction).toHaveBeenCalled()
       }).not.toThrow()

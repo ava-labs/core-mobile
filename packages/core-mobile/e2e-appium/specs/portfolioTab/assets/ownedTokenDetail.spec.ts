@@ -2,13 +2,12 @@ import portfolioPage from '../../../pages/portfolio.page'
 import commonElsPage from '../../../pages/commonEls.page'
 import warmup from '../../../helpers/warmup'
 import commonElsLoc from '../../../locators/commonEls.loc'
-import bottomTabsPage from '../../../pages/bottomTabs.page'
 
-describe('Portfolio tab', () => {
-  const tokens: Record<string, string[]> = {
+describe('Portfolio Assets', () => {
+  const tokens = {
     avax: ['Send', 'Swap', 'Buy', 'Withdraw', 'Stake'],
     usdcCChain: ['Send', 'Swap', 'Buy', 'Bridge', 'Withdraw'],
-    btc: ['Send', 'Buy', 'Bridge', 'Withdraw'],
+    btc: ['Send', 'Buy', 'Withdraw'],
     eth: ['Send', 'Buy', 'Bridge', 'Withdraw'],
     usdcETH: ['Send', 'Buy', 'Bridge', 'Withdraw'],
     sol: ['Send', 'Swap', 'Buy', 'Withdraw'],
@@ -17,55 +16,55 @@ describe('Portfolio tab', () => {
     xchain: ['Send']
   }
 
-  it('Assets - AVAX owned token detail', async () => {
+  before(async () => {
     await warmup()
-    await bottomTabsPage.tapPortfolioTab()
+  })
+
+  it('AVAX owned token detail', async () => {
     await commonElsPage.filter(commonElsLoc.cChain_2)
-    await portfolioPage.verifyOwnedTokenDetail('Avalanche', tokens.avax || [])
+    await portfolioPage.verifyOwnedTokenDetail('Avalanche', tokens.avax)
   })
 
-  it('Assets - USDC owned token detail', async () => {
-    await bottomTabsPage.tapPortfolioTab()
-    await portfolioPage.verifyOwnedTokenDetail('USDC', tokens.usdcCChain || [])
+  it('USDC owned token detail', async () => {
+    await portfolioPage.verifyOwnedTokenDetail('USDC', tokens.usdcCChain)
   })
 
-  it('Assets - BTC owned token detail', async () => {
-    await bottomTabsPage.tapPortfolioTab()
+  it('BTC owned token detail', async () => {
     await commonElsPage.filter(commonElsLoc.bitcoin)
-    await portfolioPage.verifyOwnedTokenDetail('Bitcoin', tokens.btc || [])
+    await portfolioPage.verifyOwnedTokenDetail('Bitcoin', tokens.btc)
   })
 
-  it('Assets - ETH owned token detail', async () => {
-    await bottomTabsPage.tapPortfolioTab()
+  it('ETH owned token detail', async () => {
     await commonElsPage.filter(commonElsLoc.ethereum)
-    await portfolioPage.verifyOwnedTokenDetail('ETH', tokens.eth || [])
+    await portfolioPage.verifyOwnedTokenDetail('ETH', tokens.eth)
   })
 
-  it('Assets - ETH ERC20 owned token detail', async () => {
-    await bottomTabsPage.tapPortfolioTab()
-    await portfolioPage.verifyOwnedTokenDetail('USD Coin', tokens.usdcETH || [])
+  it('Ethereum ERC20 owned token detail', async () => {
+    await portfolioPage.verifyOwnedTokenDetail('USD Coin', tokens.usdcETH)
   })
 
-  it('Assets - SOL owned token detail', async () => {
-    await bottomTabsPage.tapPortfolioTab()
+  it('SOL owned token detail', async () => {
     await commonElsPage.filter(commonElsLoc.solana)
-    await portfolioPage.verifyOwnedTokenDetail('SOL', tokens.sol || [])
+    await portfolioPage.verifyOwnedTokenDetail('SOL', tokens.sol)
   })
 
-  it('Assets - SPL owned token detail', async () => {
-    await bottomTabsPage.tapPortfolioTab()
-    await portfolioPage.verifyOwnedTokenDetail('Orca', tokens.orca || [])
+  it('Solana SPL owned token detail', async () => {
+    await portfolioPage.verifyOwnedTokenDetail('Orca', tokens.orca)
   })
 
-  it('Assets - P-Chain owned token detail', async () => {
-    await bottomTabsPage.tapPortfolioTab()
+  it('P-Chain owned token detail', async () => {
     await commonElsPage.filter(commonElsLoc.pChain)
-    await portfolioPage.verifyOwnedTokenDetail('Avalanche', tokens.pchain || [])
+    await portfolioPage.verifyOwnedTokenDetail(
+      'Avalanche P-Chain',
+      tokens.pchain
+    )
   })
 
-  it('Assets - X-Chain owned token detail', async () => {
-    await bottomTabsPage.tapPortfolioTab()
+  it('X-Chain owned token detail', async () => {
     await commonElsPage.filter(commonElsLoc.xChain)
-    await portfolioPage.verifyOwnedTokenDetail('Avalanche', tokens.xchain || [])
+    await portfolioPage.verifyOwnedTokenDetail(
+      'Avalanche X-Chain',
+      tokens.xchain
+    )
   })
 })

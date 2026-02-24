@@ -19,13 +19,14 @@ class DeFiService {
     protocolId: string
   ): Promise<DeFiProtocolObject> =>
     defiApiClient.getDeFiProtocol({
-      queries: { id: userAddress, protocol_id: protocolId }
+      id: userAddress,
+      protocol_id: protocolId
     })
 
   static getDeFiProtocolList = (
     userAddress: string
   ): Promise<DeFiSimpleProtocolObject[]> =>
-    defiApiClient.getDeFiProtocolList({ queries: { id: userAddress } })
+    defiApiClient.getDeFiProtocolList(userAddress)
 
   static getExchangeRates = async (): Promise<ExchangeRate> => {
     try {
