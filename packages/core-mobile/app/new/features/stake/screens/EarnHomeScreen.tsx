@@ -1,10 +1,9 @@
 import {
   NavigationTitleHeader,
-  SegmentedControl,
   Text,
-  View
+  View,
+  SegmentedControl
 } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
@@ -23,13 +22,16 @@ import PagerView, {
 } from 'react-native-pager-view'
 import Animated, {
   AnimatedStyle,
-  runOnJS,
   useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import { useSafeAreaFrame } from 'react-native-safe-area-context'
+import {
+  useSafeAreaFrame,
+  useSafeAreaInsets
+} from 'react-native-safe-area-context'
+import { scheduleOnRN } from 'react-native-worklets'
 import { useSelector } from 'react-redux'
 import {
   selectIsInAppDefiBlocked,
@@ -41,13 +43,13 @@ import StakeTabScreen from './StakeTabScreen'
 
 export const EarnHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
+  const insets = useSafeAreaInsets()
 
   useFocusEffect(
     useCallback(() => {
       AnalyticsService.capture('EarnOpened')
     }, [])
   )
-  const headerHeight = useHeaderHeight()
   const pagerRef = useRef<PagerView>(null)
   const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
   const isInAppDefiNewBlocked = useSelector(selectIsInAppDefiNewBlocked)
@@ -67,7 +69,7 @@ export const EarnHomeScreen = (): JSX.Element => {
     () => selectedSegmentIndex.value,
     (currentValue, previousValue) => {
       if (currentValue !== previousValue && Number.isInteger(currentValue)) {
-        runOnJS(setSelectedIndex)(currentValue)
+        scheduleOnRN(setSelectedIndex, currentValue)
       }
     }
   )
@@ -109,8 +111,7 @@ export const EarnHomeScreen = (): JSX.Element => {
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header: header,
-    targetLayout: headerLayout,
-    hasSeparator: false
+    targetLayout: headerLayout
   })
 
   const animatedHeaderStyle = useAnimatedStyle(() => ({
@@ -143,8 +144,8 @@ export const EarnHomeScreen = (): JSX.Element => {
   )
 
   const tabHeight = useMemo(() => {
-    return frame.height - headerHeight
-  }, [frame.height, headerHeight])
+    return frame.height + (Platform.OS === 'android' ? insets.bottom : 0)
+  }, [frame.height, insets.bottom])
 
   const contentContainerStyle = useMemo(() => {
     return {

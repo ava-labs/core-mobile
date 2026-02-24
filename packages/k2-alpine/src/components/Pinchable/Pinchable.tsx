@@ -2,11 +2,11 @@ import React, { ReactNode, useRef } from 'react'
 import { Pressable, ViewStyle } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 import { ANIMATED } from '../../utils'
 
 export const Pinchable = ({
@@ -39,11 +39,11 @@ export const Pinchable = ({
     .enabled(!disabled)
     .onUpdate(event => {
       scale.value = event.scale > 4 ? 4 : event.scale < 0.8 ? 0.8 : event.scale
-      runOnJS(onUpdate)()
+      scheduleOnRN(onUpdate)
     })
     .onEnd(() => {
       scale.value = withTiming(1, ANIMATED.TIMING_CONFIG, () => {
-        runOnJS(onEnd)()
+        scheduleOnRN(onEnd)
       })
     })
 
@@ -52,11 +52,11 @@ export const Pinchable = ({
     .onUpdate(event => {
       const degrees = (event.rotation * 180) / Math.PI
       rotation.value = degrees >= 360 ? 360 : degrees <= -360 ? -360 : degrees
-      runOnJS(onUpdate)()
+      scheduleOnRN(onUpdate)
     })
     .onEnd(() => {
       rotation.value = withTiming(0, ANIMATED.TIMING_CONFIG, () => {
-        runOnJS(onEnd)()
+        scheduleOnRN(onEnd)
       })
     })
 

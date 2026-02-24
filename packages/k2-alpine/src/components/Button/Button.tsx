@@ -125,18 +125,22 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
                   style: { marginRight: 8 }
                 })
               : null}
-            <Text
-              numberOfLines={1}
-              variant={textVariant}
-              style={[
-                {
-                  color: tintColor,
-                  flexShrink: 1
-                },
-                textStyle
-              ]}>
-              {children}
-            </Text>
+            {typeof children === 'string' ? (
+              <Text
+                numberOfLines={1}
+                variant={textVariant}
+                style={[
+                  {
+                    color: tintColor,
+                    flexShrink: 1
+                  },
+                  textStyle
+                ]}>
+                {children}
+              </Text>
+            ) : (
+              children
+            )}
             {React.isValidElement(rightIcon)
               ? rightIcon
               : isButtonIconType(rightIcon)

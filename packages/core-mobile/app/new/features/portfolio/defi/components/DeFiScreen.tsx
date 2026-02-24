@@ -1,10 +1,6 @@
-import {
-  Image,
-  SCREEN_WIDTH,
-  SPRING_LINEAR_TRANSITION,
-  View
-} from '@avalabs/k2-alpine'
+import { Image, SCREEN_WIDTH, View } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
+import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { ErrorState } from 'common/components/ErrorState'
@@ -12,18 +8,16 @@ import { LoadingState } from 'common/components/LoadingState'
 import { Placeholder } from 'common/components/Placeholder'
 import { HORIZONTAL_MARGIN } from 'common/consts'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
+import { ViewOption } from 'common/types'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useRouter } from 'expo-router'
 import { HORIZONTAL_ITEM_GAP } from 'features/portfolio/collectibles/consts'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
-import React, { useCallback, useEffect } from 'react'
-import { Platform, ViewStyle } from 'react-native'
-import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
-import { RefreshControl } from 'react-native-gesture-handler'
+import React, { useCallback, useEffect, useMemo } from 'react'
+import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { DeFiSimpleProtocol } from 'services/defi/types'
-import { ViewOption } from 'common/types'
 import { useDeFiProtocols } from '../hooks/useDeFiProtocols'
 import { DeFiListItem } from './DeFiListItem'
 
@@ -52,7 +46,6 @@ export const DeFiScreen = ({
     chainList
   } = useDeFiProtocols()
   const listType = view.selected
-  const header = useHeaderMeasurements()
 
   const getAmount = useExchangedAmount()
 
@@ -95,7 +88,7 @@ export const DeFiScreen = ({
     openUrl({ url: 'https://core.app/discover/', title: 'Core Web' })
   }, [openUrl])
 
-  const renderEmpty = useCallback(() => {
+  const renderEmptyContent = useCallback(() => {
     if (isLoading) {
       return <LoadingState />
     }
@@ -124,6 +117,14 @@ export const DeFiScreen = ({
       />
     )
   }, [isLoading, error, isPaused, isSuccess, handleExplore, refetch])
+
+  const renderEmpty = useCallback(() => {
+    return (
+      <CollapsibleTabs.ContentWrapper>
+        {renderEmptyContent()}
+      </CollapsibleTabs.ContentWrapper>
+    )
+  }, [renderEmptyContent])
 
   const renderItem: ListRenderItem<DeFiSimpleProtocol> = useCallback(
     ({ item, index }): JSX.Element => {
@@ -155,7 +156,7 @@ export const DeFiScreen = ({
   )
 
   const renderHeader = useCallback(() => {
-    if (data.length === 0) return
+    if (data.length === 0) return null
 
     return (
       <View
@@ -178,59 +179,38 @@ export const DeFiScreen = ({
     )
   }, [data.length, isGridView, onScrollResync, sort, view])
 
-  const contentContainerStyle = {
-    paddingHorizontal: !isGridView
-      ? 0
-      : data.length
-      ? HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP / 2
-      : 0
-  }
+  const contentContainerStyle = useMemo(
+    () => ({
+      paddingHorizontal: !isGridView
+        ? 0
+        : data.length
+        ? HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP / 2
+        : 0
+    }),
+    [isGridView, data.length]
+  )
 
-  // Fix for making the list scrollable if there are just a few collectibles
-  // overrideProps and contentContainerStyle need to be both used with the same stylings for item width calculations
-  const overrideProps = {
-    contentContainerStyle: {
-      flexGrow: 1,
-      ...contentContainerStyle,
-      ...containerStyle
-    }
-  }
-
-  const renderEmptyComponent = useCallback(() => {
-    return (
-      <CollapsibleTabs.ContentWrapper extraOffset={100}>
-        {renderEmpty()}
-      </CollapsibleTabs.ContentWrapper>
-    )
-  }, [renderEmpty])
+  const keyExtractor = useCallback((item: DeFiSimpleProtocol) => item.id, [])
 
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(0)}
-      layout={SPRING_LINEAR_TRANSITION}
       style={{
         flex: 1
       }}>
-      <CollapsibleTabs.FlashList
-        key={`assets-list-${listType}`}
+      <CollapsibleTabList
         data={data}
-        extraData={{ isGridView }}
-        keyExtractor={item => item.id}
-        overrideProps={overrideProps}
-        contentContainerStyle={contentContainerStyle}
-        estimatedItemSize={isGridView ? 183 : 73}
-        numColumns={numColumns}
         renderItem={renderItem}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={pullToRefresh}
-            progressViewOffset={Platform.OS === 'ios' ? 0 : header.height}
-          />
-        }
-        ListHeaderComponent={renderHeader}
-        ListEmptyComponent={renderEmptyComponent}
-        showsVerticalScrollIndicator={false}
+        keyExtractor={keyExtractor}
+        containerStyle={containerStyle}
+        contentContainerStyle={contentContainerStyle}
+        renderEmpty={renderEmpty}
+        renderHeader={renderHeader}
+        isRefreshing={isRefreshing}
+        onRefresh={pullToRefresh}
+        numColumns={numColumns}
+        extraData={{ isGridView }}
+        listKey={`assets-list-${listType}`}
       />
     </Animated.View>
   )

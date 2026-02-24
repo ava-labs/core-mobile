@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { ViewStyle, View, Platform } from 'react-native'
+import { Platform, View, ViewStyle } from 'react-native'
 import Animated, {
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
   withTiming
 } from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 import { useTheme } from '../../hooks'
 
 export const PageControl = ({
@@ -44,7 +44,7 @@ export const PageControl = ({
             targetTranslation,
             { duration: Configuration.translationAnimation.duration },
             () => {
-              runOnJS(setTranslatedX)(targetTranslation)
+              scheduleOnRN(setTranslatedX, targetTranslation)
             }
           )
         : targetTranslation

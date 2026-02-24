@@ -27,8 +27,8 @@
     "plist": "3.0.5",
     "ansi-regex": "4.1.1",
     "ansi-styles": "3.2.1",
-    "@types/react": "19.0.10",
-    "@types/react-dom": "19.0.4",
+    "@types/react": "19.1.10",
+    "@types/react-dom": "19.1.7",
     "rxjs": "7.8.1",
     "eslint": "8.50.0",
     "eslint-config-prettier": "8.10.0",
@@ -57,7 +57,10 @@
     "@ledgerhq/hw-transport": "6.31.0",
     "jail-monkey@2.8.0": "patch:jail-monkey@npm%3A2.8.0#./.yarn/patches/jail-monkey-npm-2.8.0-77e4d06b40.patch",
     "@bitcoinerlab/secp256k1@1.2.0": "patch:@bitcoinerlab/secp256k1@npm%3A1.2.0#./.yarn/patches/@bitcoinerlab-secp256k1-npm-1.2.0-1098d4b329.patch",
-    "@bitcoinerlab/secp256k1@^1.0.5": "patch:@bitcoinerlab/secp256k1@npm%3A1.2.0#./.yarn/patches/@bitcoinerlab-secp256k1-npm-1.2.0-1098d4b329.patch"
+    "@bitcoinerlab/secp256k1@^1.0.5": "patch:@bitcoinerlab/secp256k1@npm%3A1.2.0#./.yarn/patches/@bitcoinerlab-secp256k1-npm-1.2.0-1098d4b329.patch",
+    "react-native-is-edge-to-edge": "1.2.1",
+    "react-native-reanimated": "4.2.1",
+    "react-native-worklets": "0.7.1"
   },
   "engines": {
     "node": ">=20.18.0",

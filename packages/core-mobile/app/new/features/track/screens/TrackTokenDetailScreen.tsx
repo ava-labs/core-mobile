@@ -5,7 +5,6 @@ import {
   Icons,
   SegmentedControl,
   showAlert,
-  SPRING_LINEAR_TRANSITION,
   Text,
   TouchableOpacity,
   useTheme,
@@ -19,7 +18,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
  * See: https://github.com/expo/expo/issues/35383
  * TODO: Adjust import back to expo-router once the bug is resolved.
  */
-import { truncateAddress } from '@avalabs/core-utils-sdk'
+import { noop, truncateAddress } from '@avalabs/core-utils-sdk'
 import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { ShareBarButton } from 'common/components/ShareBarButton'
@@ -27,6 +26,7 @@ import { AVAX_TOKEN_ID } from 'common/consts/swap'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useTokenDetails } from 'common/hooks/useTokenDetails'
 import { copyToClipboard } from 'common/utils/clipboard'
+import { isIOS26 } from 'common/utils/isIOS26'
 import { AVAX_COINGECKO_ID } from 'consts/coingecko'
 import { format } from 'date-fns'
 import { useBuy } from 'features/meld/hooks/useBuy'
@@ -44,11 +44,10 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist'
+import { useDebouncedCallback } from 'use-debounce'
 import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
 import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
 import { formatLargeCurrency } from 'utils/Utils'
-import { useDebouncedCallback } from 'use-debounce'
-import { isIOS26 } from 'common/utils/isIOS26'
 import { useTrackTokenActions } from '../hooks/useTrackTokenActions'
 
 const MAX_VALUE_WIDTH = '80%'
@@ -283,8 +282,9 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         ),
         onPress: () =>
           copyToClipboard(tokenInfo.contractAddress, 'Contract address copied'),
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
-        onLongPress: () => {}
+        onLongPress: () => {
+          noop()
+        }
       })
     }
 
@@ -354,7 +354,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     return (
       <Animated.View
         entering={FadeIn.delay(200)}
-        layout={SPRING_LINEAR_TRANSITION}
         style={{
           flexDirection: 'row',
           gap: 12
@@ -458,7 +457,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         <View sx={styles.lastUpdatedContainer}>
           <Animated.View
             entering={FadeIn.delay(DELAY * 3)}
-            layout={SPRING_LINEAR_TRANSITION}
             style={{
               alignSelf: 'center',
               position: 'absolute'
@@ -482,9 +480,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         <View sx={styles.lastUpdatedContainer} />
       )}
       {tokenInfo?.has24hChartDataOnly === false && (
-        <Animated.View
-          entering={FadeIn.delay(DELAY * 3)}
-          layout={SPRING_LINEAR_TRANSITION}>
+        <Animated.View entering={FadeIn.delay(DELAY * 3)}>
           <SegmentedControl
             type="thin"
             dynamicItemWidth={false}
@@ -497,9 +493,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
       )}
       <View sx={styles.aboutContainer}>
         {tokenInfo?.description && (
-          <Animated.View
-            entering={FadeIn.delay(DELAY * 4)}
-            layout={SPRING_LINEAR_TRANSITION}>
+          <Animated.View entering={FadeIn.delay(DELAY * 4)}>
             <TouchableOpacity onPress={handlePressAbout}>
               <Card sx={styles.aboutCard}>
                 <Text variant="heading4">About</Text>
@@ -514,9 +508,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
           </Animated.View>
         )}
         {marketData.length > 0 && (
-          <Animated.View
-            entering={FadeIn.delay(DELAY * 5)}
-            layout={SPRING_LINEAR_TRANSITION}>
+          <Animated.View entering={FadeIn.delay(DELAY * 5)}>
             <GroupList
               data={marketData}
               valueSx={{
@@ -526,9 +518,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
           </Animated.View>
         )}
         {metaData.length > 0 && (
-          <Animated.View
-            entering={FadeIn.delay(DELAY * 6)}
-            layout={SPRING_LINEAR_TRANSITION}>
+          <Animated.View entering={FadeIn.delay(DELAY * 6)}>
             <GroupList
               data={metaData}
               valueSx={{
