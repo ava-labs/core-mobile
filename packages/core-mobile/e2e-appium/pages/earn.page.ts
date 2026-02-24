@@ -2,7 +2,6 @@ import { actions } from '../helpers/actions'
 import { selectors } from '../helpers/selectors'
 import earnLoc from '../locators/earn.loc'
 import txPage from './transactions.page'
-import commonElsPage from './commonEls.page'
 import bottomTabsPage from './bottomTabs.page'
 
 class EarnPage {
