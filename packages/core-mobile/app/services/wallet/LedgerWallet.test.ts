@@ -1,5 +1,6 @@
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Avalanche, BitcoinProviderAbstract } from '@avalabs/core-wallets-sdk'
+import { RpcMethod } from '@avalabs/vm-module-types'
 import { Curve } from 'utils/publicKeys'
 import { LedgerAppType, LedgerDerivationPathType } from 'services/ledger/types'
 
@@ -40,6 +41,8 @@ const mockSign = jest.fn()
 const mockSignMsg = jest.fn()
 const mockGetETHAddress = jest.fn()
 const mockSignEVMTransaction = jest.fn()
+const mockAvaxSignEIP712Message = jest.fn()
+const mockAvaxSignEIP712HashedMessage = jest.fn()
 
 jest.mock('@avalabs/hw-app-avalanche', () => {
   // Create mock class inside the factory function
@@ -50,6 +53,8 @@ jest.mock('@avalabs/hw-app-avalanche', () => {
       signMsg = mockSignMsg
       getETHAddress = mockGetETHAddress
       signEVMTransaction = mockSignEVMTransaction
+      signEIP712Message = mockAvaxSignEIP712Message
+      signEIP712HashedMessage = mockAvaxSignEIP712HashedMessage
       constructor(_transport: unknown) {
         // Constructor accepts transport but doesn't use it
       }
@@ -138,10 +143,16 @@ jest.mock('@avalabs/core-wallets-sdk', () => ({
   }))
 }))
 
+// Mock isAvalancheChainId to control Avalanche vs Ethereum app selection
+jest.mock('services/network/utils/isAvalancheNetwork', () => ({
+  isAvalancheChainId: jest.fn().mockReturnValue(false)
+}))
+
 // Import after mocking
 import LedgerService from 'services/ledger/LedgerService'
 import { bip32 } from 'utils/bip32'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
+import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { AvalancheTransactionRequest } from './types'
 import { LedgerWallet } from './LedgerWallet'
 import { BitcoinWalletPolicyService } from './BitcoinWalletPolicyService'
@@ -202,6 +213,7 @@ describe('LedgerWallet', () => {
     mockWaitForApp.mockResolvedValue(undefined)
     mockIsConnected.mockReturnValue(true)
     mockGetCurrentAppType.mockReturnValue('AVALANCHE')
+    ;(isAvalancheChainId as jest.Mock).mockReturnValue(false)
 
     // Create wallet instance with correct constructor signature
     ledgerWallet = new LedgerWallet({
@@ -1379,13 +1391,10 @@ describe('LedgerWallet', () => {
         expect(result).toMatch(/^0x[0-9a-f]{130}$/i) // 0x + 64 chars (r) + 64 chars (s) + 2 chars (v)
       })
 
-      it('should fallback to signEIP712HashedMessage for Nano S', async () => {
-        // First call fails (Nano S doesn't support signEIP712Message)
+      it('should fallback to signEIP712HashedMessage for Nano S (INS_NOT_SUPPORTED 0x6d00)', async () => {
         mockEthSignEIP712Message.mockRejectedValue(
-          new Error('Method not supported')
+          new Error('Ledger device: UNKNOWN_ERROR (0x6d00)')
         )
-
-        // Fallback succeeds
         mockEthSignEIP712HashedMessage.mockResolvedValue({
           r: '1234567890abcdef',
           s: 'fedcba0987654321',
@@ -1406,6 +1415,98 @@ describe('LedgerWallet', () => {
         expect(mockEthSignEIP712Message).toHaveBeenCalled()
         expect(mockEthSignEIP712HashedMessage).toHaveBeenCalled()
         expect(result).toMatch(/^0x[0-9a-f]{130}$/i)
+      })
+
+      it('should fallback to signEIP712HashedMessage when method not supported', async () => {
+        mockEthSignEIP712Message.mockRejectedValue(
+          new Error('Method not supported')
+        )
+        mockEthSignEIP712HashedMessage.mockResolvedValue({
+          r: '1234567890abcdef',
+          s: 'fedcba0987654321',
+          v: 28
+        })
+
+        const mockApp = {
+          signEIP712Message: mockEthSignEIP712Message,
+          signEIP712HashedMessage: mockEthSignEIP712HashedMessage
+        }
+
+        await (ledgerWallet as any).signEIP712WithFallback(
+          mockApp,
+          "m/44'/60'/0'/0/0",
+          mockEIP712Message
+        )
+
+        expect(mockEthSignEIP712HashedMessage).toHaveBeenCalled()
+      })
+
+      it('should rethrow user-rejection errors without triggering fallback', async () => {
+        mockEthSignEIP712Message.mockRejectedValue(
+          new Error('Ledger device: Conditions of use not satisfied (0x6985)')
+        )
+
+        const mockApp = {
+          signEIP712Message: mockEthSignEIP712Message,
+          signEIP712HashedMessage: mockEthSignEIP712HashedMessage
+        }
+
+        await expect(
+          (ledgerWallet as any).signEIP712WithFallback(
+            mockApp,
+            "m/44'/60'/0'/0/0",
+            mockEIP712Message
+          )
+        ).rejects.toThrow('0x6985')
+
+        expect(mockEthSignEIP712HashedMessage).not.toHaveBeenCalled()
+      })
+
+      it('should rethrow unknown errors without triggering fallback', async () => {
+        mockEthSignEIP712Message.mockRejectedValue(
+          new Error('Unexpected device error')
+        )
+
+        const mockApp = {
+          signEIP712Message: mockEthSignEIP712Message,
+          signEIP712HashedMessage: mockEthSignEIP712HashedMessage
+        }
+
+        await expect(
+          (ledgerWallet as any).signEIP712WithFallback(
+            mockApp,
+            "m/44'/60'/0'/0/0",
+            mockEIP712Message
+          )
+        ).rejects.toThrow('Unexpected device error')
+
+        expect(mockEthSignEIP712HashedMessage).not.toHaveBeenCalled()
+      })
+
+      it('should use TypedDataEncoder.hashStruct with explicit primaryType in fallback', async () => {
+        mockEthSignEIP712Message.mockRejectedValue(
+          new Error('Ledger device: UNKNOWN_ERROR (0x6d00)')
+        )
+        mockEthSignEIP712HashedMessage.mockResolvedValue({
+          r: '1234567890abcdef',
+          s: 'fedcba0987654321',
+          v: 28
+        })
+
+        const mockApp = {
+          signEIP712Message: mockEthSignEIP712Message,
+          signEIP712HashedMessage: mockEthSignEIP712HashedMessage
+        }
+
+        // Should not throw "ambiguous primary types" even when type keys are
+        // in an arbitrary insertion order, because we pass primaryType explicitly
+        await expect(
+          (ledgerWallet as any).signEIP712WithFallback(
+            mockApp,
+            "m/44'/60'/0'/0/0",
+            mockEIP712Message
+          )
+        ).resolves.toMatch(/^0x/)
       })
 
       it('should pad signature components correctly', async () => {
@@ -1433,6 +1534,48 @@ describe('LedgerWallet', () => {
             '0000000000000000000000000000000000000000000000000000000000000002' + // s padded
             '1b' // v = 27 = 0x1b
         )
+      })
+    })
+
+    describe('isDeviceCapabilityError', () => {
+      it('should return true for INS_NOT_SUPPORTED status (0x6d00)', () => {
+        const err = new Error('Ledger device: UNKNOWN_ERROR (0x6d00)')
+        expect((ledgerWallet as any).isDeviceCapabilityError(err)).toBe(true)
+      })
+
+      it('should return true for CLA_NOT_SUPPORTED status (0x6e00)', () => {
+        const err = new Error('Ledger device: CLA_NOT_SUPPORTED (0x6e00)')
+        expect((ledgerWallet as any).isDeviceCapabilityError(err)).toBe(true)
+      })
+
+      it('should return true for "not supported" message', () => {
+        const err = new Error('Method not supported')
+        expect((ledgerWallet as any).isDeviceCapabilityError(err)).toBe(true)
+      })
+
+      it('should return true for "not implemented" message', () => {
+        const err = new Error('Feature not implemented on this device')
+        expect((ledgerWallet as any).isDeviceCapabilityError(err)).toBe(true)
+      })
+
+      it('should return false for user-rejection (0x6985)', () => {
+        const err = new Error(
+          'Ledger device: Conditions of use not satisfied (0x6985)'
+        )
+        expect((ledgerWallet as any).isDeviceCapabilityError(err)).toBe(false)
+      })
+
+      it('should return false for unrelated errors', () => {
+        const err = new Error('Unexpected device error')
+        expect((ledgerWallet as any).isDeviceCapabilityError(err)).toBe(false)
+      })
+
+      it('should return false for non-Error values', () => {
+        expect((ledgerWallet as any).isDeviceCapabilityError('string')).toBe(
+          false
+        )
+        expect((ledgerWallet as any).isDeviceCapabilityError(null)).toBe(false)
+        expect((ledgerWallet as any).isDeviceCapabilityError(42)).toBe(false)
       })
     })
 
@@ -1674,6 +1817,314 @@ describe('LedgerWallet', () => {
           'xpub123',
           expect.anything()
         )
+      })
+    })
+
+    describe('getHexSignature', () => {
+      it('should format signature into 0x-prefixed hex string', () => {
+        const result = (ledgerWallet as any).getHexSignature({
+          r: '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+          s: 'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321',
+          v: 27
+        })
+
+        expect(result).toMatch(/^0x[0-9a-f]{130}$/i)
+      })
+
+      it('should pad r and s to 64 characters', () => {
+        const result = (ledgerWallet as any).getHexSignature({
+          r: '1',
+          s: '2',
+          v: 27
+        })
+
+        expect(result).toBe(
+          '0x' +
+            '0000000000000000000000000000000000000000000000000000000000000001' + // r padded to 64
+            '0000000000000000000000000000000000000000000000000000000000000002' + // s padded to 64
+            '1b' // v = 27 = 0x1b
+        )
+      })
+
+      it('should convert v to 2-character hex', () => {
+        const result = (ledgerWallet as any).getHexSignature({
+          r: '0'.repeat(64),
+          s: '0'.repeat(64),
+          v: 28
+        })
+
+        expect(result).toMatch(/1c$/) // v = 28 = 0x1c
+      })
+    })
+
+    describe('handleEthAndPersonalSign', () => {
+      const derivationPath = "m/44'/60'/0'/0/0"
+
+      beforeEach(() => {
+        mockEthSignPersonalMessage.mockResolvedValue({
+          r: '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+          s: 'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321',
+          v: 27
+        })
+      })
+
+      it('should sign a plain string message using Ethereum app', async () => {
+        const result = await (ledgerWallet as any).handleEthAndPersonalSign({
+          data: 'hello world',
+          derivationPath
+        })
+
+        const expectedHex = Buffer.from('hello world', 'utf8').toString('hex')
+        expect(mockEthSignPersonalMessage).toHaveBeenCalledWith(
+          derivationPath,
+          expectedHex
+        )
+        expect(result).toMatch(/^0x/)
+      })
+
+      it('should strip 0x prefix from hex-encoded string data', async () => {
+        await (ledgerWallet as any).handleEthAndPersonalSign({
+          data: '0xdeadbeef',
+          derivationPath
+        })
+
+        expect(mockEthSignPersonalMessage).toHaveBeenCalledWith(
+          derivationPath,
+          'deadbeef'
+        )
+      })
+
+      it('should stringify non-string data before signing', async () => {
+        const objData = { foo: 'bar', num: 42 }
+        await (ledgerWallet as any).handleEthAndPersonalSign({
+          data: objData,
+          derivationPath
+        })
+
+        const expectedHex = Buffer.from(
+          JSON.stringify(objData),
+          'utf8'
+        ).toString('hex')
+        expect(mockEthSignPersonalMessage).toHaveBeenCalledWith(
+          derivationPath,
+          expectedHex
+        )
+      })
+
+      it('should return hex-formatted signature', async () => {
+        mockEthSignPersonalMessage.mockResolvedValue({ r: '1', s: '2', v: 27 })
+
+        const result = await (ledgerWallet as any).handleEthAndPersonalSign({
+          data: 'test',
+          derivationPath
+        })
+
+        expect(result).toBe(
+          '0x' +
+            '0000000000000000000000000000000000000000000000000000000000000001' +
+            '0000000000000000000000000000000000000000000000000000000000000002' +
+            '1b'
+        )
+      })
+
+      it('should throw when app connection fails', async () => {
+        mockEnsureConnection.mockRejectedValueOnce(new Error('No device'))
+
+        await expect(
+          (ledgerWallet as any).handleEthAndPersonalSign({
+            data: 'hello',
+            derivationPath
+          })
+        ).rejects.toThrow('No device')
+      })
+    })
+
+    describe('handleSignedTypedData', () => {
+      const derivationPath = "m/44'/60'/0'/0/0"
+      const ethChainId = 1
+      const avaxChainId = 43114
+
+      const validTypedData = {
+        domain: { name: 'Test App', version: '1' },
+        types: {
+          EIP712Domain: [
+            { name: 'name', type: 'string' },
+            { name: 'version', type: 'string' }
+          ],
+          Message: [{ name: 'content', type: 'string' }]
+        },
+        primaryType: 'Message',
+        message: { content: 'Hello' }
+      }
+
+      beforeEach(() => {
+        mockEthSignEIP712Message.mockResolvedValue({
+          r: '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+          s: 'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321',
+          v: 27
+        })
+        mockAvaxSignEIP712Message.mockResolvedValue({
+          r: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          s: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+          v: 28
+        })
+      })
+
+      it('should throw for v1 array format data', async () => {
+        await expect(
+          (ledgerWallet as any).handleSignedTypedData({
+            data: [{ name: 'test', type: 'string', value: 'hello' }],
+            rpcMethod: RpcMethod.SIGN_TYPED_DATA,
+            derivationPath,
+            chainId: ethChainId
+          })
+        ).rejects.toThrow(
+          'eth_signTypedData v1 is not supported on Ledger devices.'
+        )
+      })
+
+      it('should throw for v1 JSON array string', async () => {
+        await expect(
+          (ledgerWallet as any).handleSignedTypedData({
+            data: '[{"name":"test","type":"string","value":"hello"}]',
+            rpcMethod: RpcMethod.SIGN_TYPED_DATA,
+            derivationPath,
+            chainId: ethChainId
+          })
+        ).rejects.toThrow(
+          'eth_signTypedData v1 is not supported on Ledger devices.'
+        )
+      })
+
+      it('should throw when rpcMethod is SIGN_TYPED_DATA_V1', async () => {
+        await expect(
+          (ledgerWallet as any).handleSignedTypedData({
+            data: validTypedData,
+            rpcMethod: RpcMethod.SIGN_TYPED_DATA_V1,
+            derivationPath,
+            chainId: ethChainId
+          })
+        ).rejects.toThrow(
+          'eth_signTypedData v1 is not supported on Ledger devices.'
+        )
+      })
+
+      it('should sign EIP-712 typed data object with Ethereum app', async () => {
+        const result = await (ledgerWallet as any).handleSignedTypedData({
+          data: validTypedData,
+          rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
+          derivationPath,
+          chainId: ethChainId
+        })
+
+        expect(mockEthSignEIP712Message).toHaveBeenCalledWith(
+          derivationPath,
+          expect.objectContaining({ primaryType: 'Message' })
+        )
+        expect(result).toMatch(/^0x/)
+      })
+
+      it('should sign EIP-712 data passed as JSON string', async () => {
+        const result = await (ledgerWallet as any).handleSignedTypedData({
+          data: JSON.stringify(validTypedData),
+          rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
+          derivationPath,
+          chainId: ethChainId
+        })
+
+        expect(mockEthSignEIP712Message).toHaveBeenCalled()
+        expect(result).toMatch(/^0x/)
+      })
+
+      it('should throw when JSON string is invalid', async () => {
+        await expect(
+          (ledgerWallet as any).handleSignedTypedData({
+            data: 'not-valid-json',
+            rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
+            derivationPath,
+            chainId: ethChainId
+          })
+        ).rejects.toThrow(
+          'Invalid typed data format: expected JSON string or object'
+        )
+      })
+
+      it('should throw when domain is missing', async () => {
+        const { domain: _domain, ...dataWithoutDomain } = validTypedData
+        await expect(
+          (ledgerWallet as any).handleSignedTypedData({
+            data: dataWithoutDomain,
+            rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
+            derivationPath,
+            chainId: ethChainId
+          })
+        ).rejects.toThrow('TypedData missing required field: domain')
+      })
+
+      it('should throw when types is missing', async () => {
+        const { types: _types, ...dataWithoutTypes } = validTypedData
+        await expect(
+          (ledgerWallet as any).handleSignedTypedData({
+            data: dataWithoutTypes,
+            rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
+            derivationPath,
+            chainId: ethChainId
+          })
+        ).rejects.toThrow('TypedData missing required field: types')
+      })
+
+      it('should throw when primaryType is missing', async () => {
+        const { primaryType: _primaryType, ...dataWithoutPrimary } =
+          validTypedData
+        await expect(
+          (ledgerWallet as any).handleSignedTypedData({
+            data: dataWithoutPrimary,
+            rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
+            derivationPath,
+            chainId: ethChainId
+          })
+        ).rejects.toThrow('TypedData missing required field: primaryType')
+      })
+
+      it('should throw when message is missing', async () => {
+        const { message: _message, ...dataWithoutMessage } = validTypedData
+        await expect(
+          (ledgerWallet as any).handleSignedTypedData({
+            data: dataWithoutMessage,
+            rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
+            derivationPath,
+            chainId: ethChainId
+          })
+        ).rejects.toThrow('TypedData missing required field: message')
+      })
+
+      it('should use Avalanche app for Avalanche chain IDs', async () => {
+        ;(isAvalancheChainId as jest.Mock).mockReturnValue(true)
+
+        await (ledgerWallet as any).handleSignedTypedData({
+          data: validTypedData,
+          rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
+          derivationPath,
+          chainId: avaxChainId
+        })
+
+        expect(mockAvaxSignEIP712Message).toHaveBeenCalledWith(
+          derivationPath,
+          expect.objectContaining({ primaryType: 'Message' })
+        )
+        expect(mockEthSignEIP712Message).not.toHaveBeenCalled()
+      })
+
+      it('should use Ethereum app for non-Avalanche chain IDs', async () => {
+        await (ledgerWallet as any).handleSignedTypedData({
+          data: validTypedData,
+          rpcMethod: RpcMethod.SIGN_TYPED_DATA_V4,
+          derivationPath,
+          chainId: ethChainId
+        })
+
+        expect(mockEthSignEIP712Message).toHaveBeenCalled()
+        expect(mockAvaxSignEIP712Message).not.toHaveBeenCalled()
       })
     })
   })

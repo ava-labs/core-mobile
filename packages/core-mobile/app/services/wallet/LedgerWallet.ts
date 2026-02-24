@@ -43,6 +43,8 @@ import {
   PerAccountExtendedPublicKeys
 } from 'services/ledger/types'
 import {
+  DERIVATION_PATHS,
+  DerivationPathKey,
   LEDGER_TIMEOUTS,
   getSolanaDerivationPath
 } from 'new/features/ledger/consts'
@@ -887,7 +889,8 @@ export class LedgerWallet implements Wallet {
       Logger.info('Created AppAvax instance')
 
       // Get the account path for Avalanche (X-Chain/P-Chain use 9000')
-      const accountPath = `m/44'/9000'/${accountIndex}'`
+      const accountPath =
+        DERIVATION_PATHS.EXTENDED[DerivationPathKey.AVALANCHE](accountIndex)
       Logger.info('Using account path:', accountPath)
 
       // Signing paths for the first address (0/0)
@@ -1002,6 +1005,28 @@ export class LedgerWallet implements Wallet {
   /**
    * Consolidated method to sign EIP-712 messages with fallback for Nano S devices
    */
+  /**
+   * Returns true only for errors that indicate the device firmware lacks the
+   * capability to execute signEIP712Message (e.g. Nano S). User-rejection and
+   * other definitive failures must NOT trigger a silent retry.
+   *
+   * Known capability error status codes:
+   *   0x6d00 – INS_NOT_SUPPORTED
+   *   0x6e00 – CLA_NOT_SUPPORTED
+   */
+  private isDeviceCapabilityError(error: unknown): boolean {
+    if (!(error instanceof Error)) return false
+    const msg = error.message.toLowerCase()
+    return (
+      msg.includes('0x6d00') ||
+      msg.includes('0x6e00') ||
+      msg.includes('ins_not_supported') ||
+      msg.includes('cla_not_supported') ||
+      msg.includes('not supported') ||
+      msg.includes('not implemented')
+    )
+  }
+
   private async signEIP712WithFallback(
     app: Eth | AppAvax,
     derivationPath: string,
@@ -1018,9 +1043,15 @@ export class LedgerWallet implements Wallet {
     try {
       signature = await app.signEIP712Message(derivationPath, eip712Message)
     } catch (error) {
-      // Fallback for Nano S devices that don't support signEIP712Message
+      // Only fall back to hash mode for Nano S (firmware lacks clear-signing
+      // support). Rethrow user rejections and all other definitive failures so
+      // they surface to the caller without a second signing prompt.
+      if (!this.isDeviceCapabilityError(error)) {
+        throw error
+      }
+
       Logger.warn(
-        'signEIP712Message failed, falling back to signEIP712HashedMessage for Nano S',
+        'signEIP712Message not supported on this device, falling back to signEIP712HashedMessage',
         error
       )
 
@@ -1029,9 +1060,9 @@ export class LedgerWallet implements Wallet {
         eip712Message.domain
       )
 
-      // For message hash: exclude EIP712Domain from types
-      // TypedDataEncoder treats all types as potential primary types,
-      // so including EIP712Domain causes "ambiguous primary types" error
+      // For message hash: exclude EIP712Domain from types.
+      // Use TypedDataEncoder.hashStruct with an explicit primary type so the
+      // hash does not depend on object key insertion order.
       const typesWithoutDomain = Object.keys(eip712Message.types)
         .filter(key => key !== 'EIP712Domain')
         .reduce((acc, key) => {
@@ -1042,7 +1073,9 @@ export class LedgerWallet implements Wallet {
           return acc
         }, {} as Record<string, Array<{ name: string; type: string }>>)
 
-      const messageHash = TypedDataEncoder.from(typesWithoutDomain).hash(
+      const messageHash = TypedDataEncoder.hashStruct(
+        eip712Message.primaryType,
+        typesWithoutDomain,
         eip712Message.message
       )
 
@@ -1053,15 +1086,142 @@ export class LedgerWallet implements Wallet {
       )
     }
 
-    // Convert signature to hex format (0x-prefixed)
-    const r = signature.r.padStart(64, '0')
-    const s = signature.s.padStart(64, '0')
-    const v = signature.v.toString(16).padStart(2, '0')
-
-    return `0x${r}${s}${v}`
+    return this.getHexSignature(signature)
   }
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
+  private validateTypedData(typedData: TypedData<MessageTypes>) {
+    if (!typedData.domain) {
+      throw new Error('TypedData missing required field: domain')
+    }
+    if (!typedData.types) {
+      throw new Error('TypedData missing required field: types')
+    }
+    if (!typedData.primaryType) {
+      throw new Error('TypedData missing required field: primaryType')
+    }
+    if (!typedData.message) {
+      throw new Error('TypedData missing required field: message')
+    }
+  }
+
+  private async handleSignedTypedData({
+    data,
+    rpcMethod,
+    derivationPath,
+    chainId
+  }: {
+    data: string | TypedDataV1 | TypedData<MessageTypes>
+    rpcMethod: RpcMethod
+    derivationPath: string
+    chainId: number
+  }): Promise<string> {
+    const appType = isAvalancheChainId(chainId)
+      ? LedgerAppType.AVALANCHE
+      : LedgerAppType.ETHEREUM
+    // Get transport and create Ethereum app instance
+    const transport = await this.handleAppConnection(appType)
+    const app = isAvalancheChainId(chainId)
+      ? new AppAvax(transport as Transport)
+      : new Eth(transport as Transport)
+
+    // Check if this is EIP-712 v1 format (array of {name, type, value})
+    const isV1Format =
+      Array.isArray(data) ||
+      (typeof data === 'string' && data.trim().startsWith('['))
+
+    if (isV1Format || rpcMethod === RpcMethod.SIGN_TYPED_DATA_V1) {
+      Logger.error(
+        'eth_signTypedData v1 format is not supported on Ledger devices'
+      )
+      throw new Error(
+        'eth_signTypedData v1 is not supported on Ledger devices.'
+      )
+    }
+
+    // Handle EIP-712 v3/v4 format
+    Logger.info('Handling EIP-712 v3/v4 format')
+
+    // Parse data if it's a string
+    let typedData: TypedData<MessageTypes>
+    if (typeof data === 'string') {
+      try {
+        typedData = JSON.parse(data) as TypedData<MessageTypes>
+        Logger.info('Parsed typed data from string')
+      } catch (parseError) {
+        Logger.error('Failed to parse typed data string:', parseError)
+        throw new Error(
+          'Invalid typed data format: expected JSON string or object'
+        )
+      }
+    } else {
+      typedData = data as TypedData<MessageTypes>
+    }
+
+    // Validate required fields
+    this.validateTypedData(typedData)
+
+    // Use signEIP712Message for EIP-712 typed data
+    // The library expects the full EIP-712 message object
+    // Filter types to only include primary type and its dependencies
+    const filteredTypes = this.filterEIP712Types(
+      typedData.types,
+      String(typedData.primaryType),
+      typedData.domain
+    )
+
+    const eip712Message = {
+      domain: typedData.domain,
+      types: filteredTypes,
+      primaryType: String(typedData.primaryType),
+      message: typedData.message
+    }
+
+    Logger.info('Prepared EIP712 message for signing', {
+      primaryType: eip712Message.primaryType,
+      hasEIP712Domain: !!eip712Message.types.EIP712Domain,
+      originalTypesCount: Object.keys(typedData.types).length,
+      filteredTypesCount: Object.keys(filteredTypes).length,
+      filteredTypes: Object.keys(filteredTypes)
+    })
+
+    const hexSignature = await this.signEIP712WithFallback(
+      app,
+      derivationPath,
+      eip712Message
+    )
+    Logger.info('Successfully signed typed data')
+    return hexSignature
+  }
+
+  private async handleEthAndPersonalSign({
+    data,
+    derivationPath
+  }: {
+    data: string | TypedDataV1 | TypedData<MessageTypes>
+    derivationPath: string
+  }): Promise<string> {
+    const appType = LedgerAppType.ETHEREUM
+    // Get transport and create Ethereum app instance
+    const transport = await this.handleAppConnection(appType)
+    const app = new Eth(transport as Transport)
+
+    // Handle personal sign and eth_sign
+    Logger.info('Signing personal message')
+    const messageToSign = typeof data === 'string' ? data : JSON.stringify(data)
+
+    // Remove 0x prefix if present
+    const messageHex = messageToSign.startsWith('0x')
+      ? messageToSign.slice(2)
+      : Buffer.from(messageToSign, 'utf8').toString('hex')
+
+    const signature = await app.signPersonalMessage(derivationPath, messageHex)
+
+    // Convert signature to hex format (0x-prefixed)
+    const hexSignature = this.getHexSignature(signature)
+    Logger.info('Successfully signed personal message')
+    return hexSignature
+  }
+
   private async signEvmMessage({
     data,
     accountIndex,
@@ -1085,134 +1245,17 @@ export class LedgerWallet implements Wallet {
         rpcMethod === RpcMethod.SIGN_TYPED_DATA_V3 ||
         rpcMethod === RpcMethod.SIGN_TYPED_DATA_V4
       ) {
-        const appType = isAvalancheChainId(network.chainId)
-          ? LedgerAppType.AVALANCHE
-          : LedgerAppType.ETHEREUM
-        // Get transport and create Ethereum app instance
-        const transport = await this.handleAppConnection(appType)
-        const app = isAvalancheChainId(network.chainId)
-          ? new AppAvax(transport as Transport)
-          : new Eth(transport as Transport)
-
-        // Handle typed data signing
-        Logger.info('Signing typed data', {
+        return this.handleSignedTypedData({
+          data,
           rpcMethod,
-          dataType: typeof data,
-          isString: typeof data === 'string',
-          isArray: Array.isArray(data),
-          rawData: data
-        })
-
-        // Check if this is EIP-712 v1 format (array of {name, type, value})
-        const isV1Format =
-          Array.isArray(data) ||
-          (typeof data === 'string' && data.trim().startsWith('['))
-
-        if (isV1Format || rpcMethod === RpcMethod.SIGN_TYPED_DATA_V1) {
-          Logger.error(
-            'eth_signTypedData v1 format is not supported on Ledger devices'
-          )
-          throw new Error(
-            'eth_signTypedData v1 is not supported on Ledger devices.'
-          )
-        }
-
-        // Handle EIP-712 v3/v4 format
-        Logger.info('Handling EIP-712 v3/v4 format')
-
-        // Parse data if it's a string
-        let typedData: TypedData<MessageTypes>
-        if (typeof data === 'string') {
-          try {
-            typedData = JSON.parse(data) as TypedData<MessageTypes>
-            Logger.info('Parsed typed data from string')
-          } catch (parseError) {
-            Logger.error('Failed to parse typed data string:', parseError)
-            throw new Error(
-              'Invalid typed data format: expected JSON string or object'
-            )
-          }
-        } else {
-          typedData = data as TypedData<MessageTypes>
-        }
-
-        // Validate required fields
-        if (!typedData.domain) {
-          throw new Error('TypedData missing required field: domain')
-        }
-        if (!typedData.types) {
-          throw new Error('TypedData missing required field: types')
-        }
-        if (!typedData.primaryType) {
-          throw new Error('TypedData missing required field: primaryType')
-        }
-        if (!typedData.message) {
-          throw new Error('TypedData missing required field: message')
-        }
-
-        // Use signEIP712Message for EIP-712 typed data
-        // The library expects the full EIP-712 message object
-        // Filter types to only include primary type and its dependencies
-        const filteredTypes = this.filterEIP712Types(
-          typedData.types,
-          String(typedData.primaryType),
-          typedData.domain
-        )
-
-        const eip712Message = {
-          domain: typedData.domain,
-          types: filteredTypes,
-          primaryType: String(typedData.primaryType),
-          message: typedData.message
-        }
-
-        Logger.info('Prepared EIP712 message for signing', {
-          primaryType: eip712Message.primaryType,
-          hasEIP712Domain: !!eip712Message.types.EIP712Domain,
-          originalTypesCount: Object.keys(typedData.types).length,
-          filteredTypesCount: Object.keys(filteredTypes).length,
-          filteredTypes: Object.keys(filteredTypes)
-        })
-
-        const hexSignature = await this.signEIP712WithFallback(
-          app,
           derivationPath,
-          eip712Message
-        )
-        Logger.info('Successfully signed typed data')
-        return hexSignature
+          chainId: network.chainId
+        })
       } else if (
         rpcMethod === RpcMethod.ETH_SIGN ||
         rpcMethod === RpcMethod.PERSONAL_SIGN
       ) {
-        const appType = LedgerAppType.ETHEREUM
-        // Get transport and create Ethereum app instance
-        const transport = await this.handleAppConnection(appType)
-        const app = new Eth(transport as Transport)
-
-        // Handle personal sign and eth_sign
-        Logger.info('Signing personal message')
-        const messageToSign =
-          typeof data === 'string' ? data : JSON.stringify(data)
-
-        // Remove 0x prefix if present
-        const messageHex = messageToSign.startsWith('0x')
-          ? messageToSign.slice(2)
-          : Buffer.from(messageToSign, 'utf8').toString('hex')
-
-        const signature = await app.signPersonalMessage(
-          derivationPath,
-          messageHex
-        )
-
-        // Convert signature to hex format (0x-prefixed)
-        const r = signature.r.padStart(64, '0')
-        const s = signature.s.padStart(64, '0')
-        const v = signature.v.toString(16).padStart(2, '0')
-
-        const hexSignature = `0x${r}${s}${v}`
-        Logger.info('Successfully signed personal message')
-        return hexSignature
+        return this.handleEthAndPersonalSign({ data, derivationPath })
       } else {
         throw new Error('This function is not supported on your wallet')
       }
@@ -1413,5 +1456,13 @@ export class LedgerWallet implements Wallet {
       }
       throw error
     }
+  }
+
+  // Convert signature to hex format (0x-prefixed)
+  private getHexSignature = (signature: SignatureRSV): string => {
+    const r = signature.r.padStart(64, '0')
+    const s = signature.s.padStart(64, '0')
+    const v = signature.v.toString(16).padStart(2, '0')
+    return `0x${r}${s}${v}`
   }
 }
