@@ -73,6 +73,16 @@ export interface IFusionService {
   transferAsset(quote: Quote): Promise<Transfer>
 
   /**
+   * Track a transfer's status changes via the SDK
+   * @param transfer The transfer to track
+   * @param updateListener Callback invoked on every status change
+   */
+  trackTransfer(
+    transfer: Transfer,
+    updateListener: (updated: Transfer) => void
+  ): void
+
+  /**
    * Cleanup and reset the service
    */
   cleanup(): void

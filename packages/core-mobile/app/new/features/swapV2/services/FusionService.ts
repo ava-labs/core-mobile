@@ -19,6 +19,7 @@ import {
   MARKR_API_URL,
   MARKR_EVM_PARTNER_ID
 } from '../consts'
+import { isTransferInProgress } from '../utils/transferStatus'
 import type {
   FusionConfig,
   FusionSigners,
@@ -34,6 +35,7 @@ import type {
  */
 class FusionService implements IFusionService {
   #transferManager: TransferManager | null = null
+  #trackingCancels = new Map<string, () => void>()
 
   /**
    * Private getter that throws if the service is not initialized
@@ -273,9 +275,47 @@ class FusionService implements IFusionService {
   }
 
   /**
-   * Cleanup and reset the service
+   * Track a transfer's status changes via the SDK
+   * Calls updateListener on each status update and when the transfer completes
+   * @param transfer The transfer to track
+   * @param updateListener Callback invoked on every status change
+   */
+  trackTransfer(
+    transfer: Transfer,
+    updateListener: (updated: Transfer) => void
+  ): void {
+    const wrappedListener = (updated: Transfer): void => {
+      Logger.info('[FusionService] new transfer status', {
+        transferId: updated.id,
+        status: updated.status
+      })
+      updateListener(updated)
+      if (!isTransferInProgress(updated)) {
+        this.#trackingCancels.delete(updated.id)
+      }
+    }
+
+    const { cancel, result } = this.transferManager.trackTransfer({
+      transfer,
+      updateListener: wrappedListener
+    })
+
+    this.#trackingCancels.set(transfer.id, cancel)
+
+    result
+      .then(completed => wrappedListener(completed))
+      .catch(err => Logger.error('[FusionService] trackTransfer error', err))
+  }
+
+  /**
+   * Cleanup and reset the service.
+   * Cancels all in-flight tracking before destroying the transferManager.
    */
   cleanup(): void {
+    for (const cancel of this.#trackingCancels.values()) {
+      cancel()
+    }
+    this.#trackingCancels.clear()
     this.#transferManager = null
     Logger.info('Fusion service cleaned up')
   }
