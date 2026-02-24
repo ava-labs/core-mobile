@@ -1021,9 +1021,7 @@ export class LedgerWallet implements Wallet {
       msg.includes('0x6d00') ||
       msg.includes('0x6e00') ||
       msg.includes('ins_not_supported') ||
-      msg.includes('cla_not_supported') ||
-      msg.includes('not supported') ||
-      msg.includes('not implemented')
+      msg.includes('cla_not_supported')
     )
   }
 
