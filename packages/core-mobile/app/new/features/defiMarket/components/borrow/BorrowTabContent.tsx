@@ -85,6 +85,17 @@ export const BorrowTabContent = ({
     transactionSnackbar.plain({ message: 'Repay flow is coming soon' })
   }, [])
 
+  const handlePressBorrow = useCallback(
+    (marketId: string) => {
+      navigate({
+        // @ts-ignore TODO: make routes typesafe
+        pathname: '/borrowDetail',
+        params: { marketId }
+      })
+    },
+    [navigate]
+  )
+
   const handlePressHealthScore = useCallback(() => {
     if (summary?.healthScore === undefined) {
       return
@@ -113,6 +124,7 @@ export const BorrowTabContent = ({
             market={item.market}
             borrowedAmountUsd={item.borrowedAmountUsd}
             width={CARD_WIDTH}
+            onPress={() => handlePressBorrow(item.market.uniqueMarketId)}
             onRepayPress={handleRepayBorrow}
           />
         )
@@ -136,7 +148,7 @@ export const BorrowTabContent = ({
 
       return null
     },
-    [handleAddBorrow, handleRepayBorrow]
+    [handleAddBorrow, handlePressBorrow, handleRepayBorrow]
   )
 
   const overrideProps = {

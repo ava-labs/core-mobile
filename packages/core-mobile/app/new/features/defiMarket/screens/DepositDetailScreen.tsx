@@ -1,6 +1,7 @@
 import {
   Button,
   Card,
+  NavigationTitleHeader,
   PrivacyModeAlert,
   ScrollView,
   Separator,
@@ -10,7 +11,8 @@ import {
 import { LoadingState } from 'common/components/LoadingState'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useDeposits } from 'hooks/earn/useDeposits'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
+import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { useSelector } from 'react-redux'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { DeFiRowItem } from 'features/portfolio/defi/components/DeFiRowItem'
@@ -20,6 +22,7 @@ import { useExchangedAmount } from 'common/hooks/useExchangedAmount'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { DefiMarketAssetLogo } from '../components/DefiMarketAssetLogo'
 import { DefiAssetLogo } from '../components/DefiAssetLogo'
 
@@ -33,6 +36,24 @@ export function DepositDetailScreen(): JSX.Element {
   }, [deposits, marketId])
   const getAmount = useExchangedAmount()
   const { bottom } = useSafeAreaInsets()
+  const [headerLayout, setHeaderLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+
+  const navHeader = useMemo(
+    () => <NavigationTitleHeader title="Deposit details" />,
+    []
+  )
+
+  const { onScroll } = useFadingHeaderNavigation({
+    header: navHeader,
+    targetLayout: headerLayout,
+    shouldHeaderHaveGrabber: false
+  })
+
+  const handleHeaderLayout = useCallback((event: LayoutChangeEvent): void => {
+    setHeaderLayout(event.nativeEvent.layout)
+  }, [])
 
   const amountInCurrency = useMemo(() => {
     if (!deposit) return undefined
@@ -56,7 +77,7 @@ export function DepositDetailScreen(): JSX.Element {
     if (!deposit) return null
 
     return (
-      <View>
+      <View onLayout={handleHeaderLayout}>
         <DefiMarketAssetLogo
           market={deposit}
           logoWidth={42}
@@ -83,7 +104,7 @@ export function DepositDetailScreen(): JSX.Element {
         </View>
       </View>
     )
-  }, [amountInCurrency, deposit, isPrivacyModeEnabled])
+  }, [amountInCurrency, deposit, isPrivacyModeEnabled, handleHeaderLayout])
 
   const renderBanner = useCallback(() => {
     if (!deposit) return null
@@ -203,7 +224,10 @@ export function DepositDetailScreen(): JSX.Element {
 
   return (
     <BlurredBarsContentLayout>
-      <ScrollView contentContainerSx={{ padding: 16 }}>
+      <ScrollView
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        contentContainerSx={{ padding: 16 }}>
         {renderHeader()}
         {renderBanner()}
         {renderContent()}
