@@ -68,7 +68,8 @@ export const LedgerReviewTransactionScreen = (): JSX.Element | null => {
       }
       handleApproval()
     }
-  }, [deviceForWallet, isAppOpened, isConnected, onApprove, approvalInProgress])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deviceForWallet, isAppOpened, isConnected, approvalInProgress])
 
   return (
     <LedgerReviewScreen

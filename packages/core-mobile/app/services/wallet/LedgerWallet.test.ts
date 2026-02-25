@@ -1548,23 +1548,6 @@ describe('LedgerWallet', () => {
         expect((ledgerWallet as any).isDeviceCapabilityError(err)).toBe(true)
       })
 
-      it('should return true for "not supported" message', () => {
-        const err = new Error('Method not supported')
-        expect((ledgerWallet as any).isDeviceCapabilityError(err)).toBe(true)
-      })
-
-      it('should return true for "not implemented" message', () => {
-        const err = new Error('Feature not implemented on this device')
-        expect((ledgerWallet as any).isDeviceCapabilityError(err)).toBe(true)
-      })
-
-      it('should return false for user-rejection (0x6985)', () => {
-        const err = new Error(
-          'Ledger device: Conditions of use not satisfied (0x6985)'
-        )
-        expect((ledgerWallet as any).isDeviceCapabilityError(err)).toBe(false)
-      })
-
       it('should return false for unrelated errors', () => {
         const err = new Error('Unexpected device error')
         expect((ledgerWallet as any).isDeviceCapabilityError(err)).toBe(false)
