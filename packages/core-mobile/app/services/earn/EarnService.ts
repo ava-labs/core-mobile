@@ -38,6 +38,8 @@ import {
   maxGetAtomicUTXOsRetries,
   maxTransactionStatusCheckRetries
 } from './utils'
+import { OnDelegationProgress } from 'contexts/DelegationContext'
+import { Operation } from './computeDelegationSteps/types'
 
 class EarnService {
   /**
@@ -121,7 +123,8 @@ class EarnService {
         account,
         isTestnet,
         cBaseFeeMultiplier,
-        xpAddresses
+        xpAddresses,
+        xpAddressDictionary
       })
       progressEvents?.(RecoveryEvents.ImportCFinish)
     }
@@ -146,7 +149,8 @@ class EarnService {
     feeState,
     cBaseFeeMultiplier,
     xpAddresses,
-    xpAddressDictionary
+    xpAddressDictionary,
+    onProgress
   }: {
     walletId: string
     walletType: WalletType
@@ -158,7 +162,10 @@ class EarnService {
     cBaseFeeMultiplier: number
     xpAddresses: string[]
     xpAddressDictionary: XPAddressDictionary
+    onProgress?: OnDelegationProgress
   }): Promise<void> {
+    onProgress?.(0, Operation.EXPORT_P)
+
     await exportP({
       walletId,
       walletType,
@@ -170,13 +177,29 @@ class EarnService {
       xpAddresses,
       xpAddressDictionary
     })
+
+    await new Promise<void>(resolve => {
+      setTimeout(() => {
+        onProgress?.(1, Operation.IMPORT_C)
+        resolve()
+      }, 10)
+    })
+
     await importC({
       walletId,
       walletType,
       account,
       isTestnet,
       cBaseFeeMultiplier,
-      xpAddresses
+      xpAddresses,
+      xpAddressDictionary
+    })
+
+    await new Promise<void>(resolve => {
+      setTimeout(() => {
+        onProgress?.(2, null)
+        resolve()
+      }, 10)
     })
   }
 

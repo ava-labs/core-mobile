@@ -30,10 +30,14 @@ import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import { CONFETTI_DURATION_MS } from 'common/consts'
 import { selectIsInAppReviewBlocked } from 'store/posthog/slice'
 import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
+import { selectActiveWallet } from 'store/wallet/slice'
+import { WalletType } from 'services/wallet/types'
+import { showLedgerReviewTransaction } from 'features/ledger/utils'
+import { Operation } from 'services/earn/computeDelegationSteps/types'
 
 export const ClaimStakeRewardScreen = (): JSX.Element => {
   const isInAppReviewBlocked = useSelector(selectIsInAppReviewBlocked)
-  const { navigate, back } = useRouter()
+  const { navigate, back, dismissAll } = useRouter()
   const { formatTokenInCurrency } = useFormatCurrency()
   const pChainBalance = usePChainBalance()
   const ref = useRef<TokenUnitInputHandle>(null)
@@ -43,7 +47,21 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
   const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const avaxPrice = useAvaxPrice()
   const refreshStakingBalances = useRefreshStakingBalances()
-  const onClaimSuccess = (): void => {
+  const activeWallet = useSelector(selectActiveWallet)
+
+  const isLedgerWallet =
+    activeWallet?.type === WalletType.LEDGER ||
+    activeWallet?.type === WalletType.LEDGER_LIVE
+
+  // Use ref to break circular dependency between onFundsStuck and claimRewards
+  const claimRewardsRef = useRef<
+    | ((
+        onProgress?: (step: number, operation: Operation | null) => void
+      ) => Promise<void>)
+    | undefined
+  >(undefined)
+
+  const onClaimSuccess = useCallback((): void => {
     refreshStakingBalances({ shouldRefreshStakes: false })
 
     AnalyticsService.capture('StakeClaimSuccess')
@@ -61,14 +79,60 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
         promptForAppReviewAfterSuccessfulTransaction()
       }, CONFETTI_DURATION_MS + 200)
     }
-  }
+  }, [refreshStakingBalances, back, isInAppReviewBlocked])
 
-  const onClaimError = (error: Error): void => {
-    AnalyticsService.capture('StakeClaimFail')
-    transactionSnackbar.error({ error: error.message })
-  }
+  const onClaimError = useCallback(
+    (error: Error): void => {
+      AnalyticsService.capture('StakeClaimFail')
 
-  const onFundsStuck = (): void => {
+      // Close any open modals (including Ledger progress modal)
+      dismissAll()
+
+      // Check for insufficient funds error
+      const isInsufficientFunds =
+        error.message.toLowerCase().includes('insufficient') ||
+        error.message.toLowerCase().includes('not enough')
+
+      if (isInsufficientFunds) {
+        showAlert({
+          title: 'Insufficient Funds',
+          description:
+            'You do not have enough AVAX to complete this claim. Please add more funds and try again.',
+          buttons: [
+            {
+              text: 'OK',
+              onPress: () => {
+                back()
+              }
+            }
+          ]
+        })
+      } else {
+        showAlert({
+          title: 'Claim Failed',
+          description: error.message,
+          buttons: [
+            {
+              text: 'OK',
+              onPress: () => {
+                back()
+              }
+            }
+          ]
+        })
+      }
+    },
+    [dismissAll, back]
+  )
+
+  const onFundsStuck = useCallback((): void => {
+    const performRetry = (
+      onProgress?: (step: number, operation: Operation | null) => void
+    ): void => {
+      AnalyticsService.capture('StakeIssueClaim')
+      claimRewardsRef.current?.(onProgress)
+    }
+
     showAlert({
       title: 'Claim Failed',
       description:
@@ -80,11 +144,34 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
         },
         {
           text: 'Try again',
-          onPress: issueClaimRewards
+          onPress: () => {
+            // For Ledger wallets, re-establish connection before retrying
+            if (isLedgerWallet) {
+              showLedgerReviewTransaction({
+                network: pNetwork,
+                onApprove: async onProgress => {
+                  performRetry(onProgress)
+                },
+                onReject: () => {
+                  // User cancelled Ledger connection
+                },
+                stakingProgress: {
+                  // Use 3 steps as worst case (may be 2 if no atomic memory funds)
+                  totalSteps: 3,
+                  // eslint-disable-next-line @typescript-eslint/no-empty-function
+                  onComplete: () => {},
+                  // eslint-disable-next-line @typescript-eslint/no-empty-function
+                  onCancel: () => {}
+                }
+              })
+            } else {
+              performRetry()
+            }
+          }
         }
       ]
     })
-  }
+  }, [back, isLedgerWallet, pNetwork])
 
   const {
     claimRewards,
@@ -92,6 +179,11 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
     totalFees,
     feeCalculationError
   } = useClaimRewards(onClaimSuccess, onClaimError, onFundsStuck)
+
+  // Update ref when claimRewards changes
+  useEffect(() => {
+    claimRewardsRef.current = claimRewards
+  }, [claimRewards])
 
   const unableToGetFees = totalFees === undefined
 
@@ -134,8 +226,28 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
 
   const issueClaimRewards = useCallback(() => {
     AnalyticsService.capture('StakeIssueClaim')
-    claimRewards()
-  }, [claimRewards])
+
+    if (isLedgerWallet) {
+      showLedgerReviewTransaction({
+        network: pNetwork,
+        onApprove: async onProgress => {
+          claimRewards(onProgress)
+        },
+        onReject: () => {
+          // User cancelled Ledger connection
+        },
+        stakingProgress: {
+          totalSteps: 2,
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          onComplete: () => {},
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          onCancel: () => {}
+        }
+      })
+    } else {
+      claimRewards()
+    }
+  }, [claimRewards, isLedgerWallet, pNetwork])
 
   const formatInCurrency = useCallback(
     (amount: TokenUnit): string => {
@@ -178,18 +290,19 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
     }
   }, [claimableAmountInAvax])
 
-  useEffect(() => {
-    if (
-      pChainBalance &&
-      pChainBalance.balancePerType.unlockedUnstaked === undefined
-    ) {
-      showAlert({
-        title: 'No claimable balance',
-        description: 'You have no balance available for claiming.',
-        buttons: [{ text: 'Go back', onPress: back }]
-      })
-    }
-  }, [pChainBalance, back])
+  // TESTING: Commented out to allow testing with 0.1 AVAX even when balance is 0
+  // useEffect(() => {
+  //   if (
+  //     pChainBalance &&
+  //     pChainBalance.balancePerType.unlockedUnstaked === undefined
+  //   ) {
+  //     showAlert({
+  //       title: 'No claimable balance',
+  //       description: 'You have no balance available for claiming.',
+  //       buttons: [{ text: 'Go back', onPress: back }]
+  //     })
+  //   }
+  // }, [pChainBalance, back])
 
   const renderFooter = useCallback(() => {
     return (

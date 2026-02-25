@@ -1061,15 +1061,34 @@ export class LedgerWallet implements Wallet {
   }
 
   public async getRawXpubXP(accountIndex: number): Promise<string> {
+    Logger.info('[LedgerWallet] getRawXpubXP called', {
+      accountIndex,
+      isBIP44: this.isBIP44(),
+      hasExtendedPublicKeys: !!this.extendedPublicKeys,
+      extendedPublicKeysKeys: this.extendedPublicKeys
+        ? Object.keys(this.extendedPublicKeys)
+        : []
+    })
+
     if (!this.isBIP44() || !this.extendedPublicKeys) {
+      Logger.error('[LedgerWallet] getRawXpubXP failed: not BIP44 or no extendedPublicKeys')
       throw new Error('getRawXpubXP not available for this wallet type')
     }
 
     const accountKeys = this.extendedPublicKeys[accountIndex]
+    Logger.info('[LedgerWallet] Account keys for index', {
+      accountIndex,
+      hasAccountKeys: !!accountKeys,
+      hasEvm: !!accountKeys?.evm,
+      hasAvalanche: !!accountKeys?.avalanche
+    })
+
     if (accountKeys?.avalanche) {
+      Logger.info('[LedgerWallet] Returning avalanche xpub')
       return accountKeys.avalanche
     }
 
+    Logger.error('[LedgerWallet] No xpub stored for account index', accountIndex)
     throw new Error(`No xpub stored for account index ${accountIndex}`)
   }
 

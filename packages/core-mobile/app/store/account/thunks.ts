@@ -82,6 +82,19 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
               })
             )
             .unwrap()
+          await thunkApi
+            .dispatch(
+              storeWallet({
+                walletId,
+                name: wallet.name,
+                type: wallet.type,
+                walletSecret: JSON.stringify({
+                  ...parsedSecret,
+                  extendedPublicKeys
+                })
+              })
+            )
+            .unwrap()
 
           Logger.info(
             `Stored xpub for account ${existingAccountsCount} in wallet secret`

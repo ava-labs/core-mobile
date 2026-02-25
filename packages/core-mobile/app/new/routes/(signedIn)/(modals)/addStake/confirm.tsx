@@ -43,10 +43,10 @@ import NetworkService from 'services/network/NetworkService'
 import { WalletType } from 'services/wallet/types'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveWallet } from 'store/wallet/slice'
-import { executeLedgerStakingOperation } from 'features/ledger/utils'
 import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { truncateNodeId } from 'utils/Utils'
+import { executeLedgerStakingOperation } from 'features/ledger/utils'
 
 const StakeConfirmScreen = (): JSX.Element => {
   const { theme } = useTheme()
