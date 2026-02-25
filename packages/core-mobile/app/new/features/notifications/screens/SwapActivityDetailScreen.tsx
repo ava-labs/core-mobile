@@ -4,11 +4,14 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
 import { useFusionTransfers } from 'features/swapV2/hooks/useZustandStore'
+import { useNavigateToSwap } from 'features/swapV2/hooks/useNavigateToSwap'
 import { TokenAmountRow } from '../components/TokenAmountRow'
 import { SwapStatusCard } from '../components/SwapStatusCard'
 import { useSwapActivityDisplay } from '../hooks/useSwapActivityDisplay'
 
 export const SwapActivityDetailScreen = (): JSX.Element => {
+  const { navigateToSwap } = useNavigateToSwap()
+
   const { transfers } = useFusionTransfers()
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
@@ -19,15 +22,38 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
   // Always call the hook unconditionally; it returns undefined when swap is undefined.
   const display = useSwapActivityDisplay(transfer)
 
-  const handleFooterPress = (): void => {
+  const handleHide = (): void => {
     router.canGoBack() && router.back()
   }
 
-  const renderFooter = (): React.ReactNode => (
-    <Button size="large" type="primary" onPress={handleFooterPress}>
-      Notify me when it's done
-    </Button>
-  )
+  const handleRetry = (): void => {
+    router.canGoBack() && router.back()
+    navigateToSwap({
+      fromTokenId: transfer?.fromToken.internalId,
+      toTokenId: transfer?.toToken.internalId,
+      retryingSwapActivityId: transfer?.transfer.id
+    })
+  }
+
+  const renderFooter = (): React.ReactNode => {
+    if (display?.status === 'failed') {
+      return (
+        <View sx={{ gap: 8 }}>
+          <Button size="large" type="primary" onPress={handleRetry}>
+            Retry
+          </Button>
+          <Button size="large" type="secondary" onPress={handleHide}>
+            Hide
+          </Button>
+        </View>
+      )
+    }
+    return (
+      <Button size="large" type="primary" onPress={handleHide}>
+        Hide
+      </Button>
+    )
+  }
 
   const renderEmpty = useCallback(() => {
     return (
@@ -91,10 +117,19 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
     )
   }, [display, renderEmpty])
 
+  const getTitle = useCallback(
+    ({ isNavigationTitle = false }: { isNavigationTitle: boolean }) => {
+      if (display?.status === 'failed') return `Swap failed`
+      if (display?.status === 'completed') return `Swap successful!`
+      return isNavigationTitle ? `Swap in progress...` : `Swap\nin progress...`
+    },
+    [display]
+  )
+
   return (
     <ScrollScreen
-      title={`Swap\nin progress...`}
-      navigationTitle={'Swap in progress...'}
+      title={getTitle({ isNavigationTitle: false })}
+      navigationTitle={getTitle({ isNavigationTitle: true })}
       renderFooter={renderFooter}
       contentContainerStyle={{ flex: 1, padding: 16 }}>
       {renderContent()}

@@ -4,7 +4,6 @@ import { AVAX_TOKEN_ID, USDC_AVALANCHE_C_TOKEN_ID } from 'common/consts/swap'
 interface NavigateToSwapParams {
   fromTokenId?: string
   toTokenId?: string
-  retryingSwapActivityId?: string
 }
 
 export const useNavigateToSwap = (): {
@@ -14,8 +13,7 @@ export const useNavigateToSwap = (): {
 
   const navigateToSwap = ({
     fromTokenId,
-    toTokenId,
-    retryingSwapActivityId
+    toTokenId
   }: NavigateToSwapParams = {}): void => {
     if (fromTokenId === undefined && toTokenId === undefined) {
       navigate({
@@ -35,8 +33,7 @@ export const useNavigateToSwap = (): {
       pathname: '/swap',
       params: {
         initialTokenIdFrom: fromTokenId,
-        initialTokenIdTo: toTokenId,
-        retryingSwapActivityId
+        initialTokenIdTo: toTokenId
       }
     })
   }
