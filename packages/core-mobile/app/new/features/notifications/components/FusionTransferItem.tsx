@@ -64,11 +64,13 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
 
   const title = useMemo(() => {
     return status === 'failed'
-      ? `${fromAmount} ${fromSymbol} swapped for ${toAmount} ${toSymbol}`
+      ? `${fromAmount?.toDisplay() ?? ''} ${fromSymbol} swapped for ${
+          toAmount?.toDisplay() ?? ''
+        } ${toSymbol}`
       : status === 'completed'
-      ? `${fromAmount} ${fromSymbol} ${
+      ? `${fromAmount?.toDisplay() ?? ''} ${fromSymbol} ${
           shouldBePlural ? 'were' : 'was'
-        } swapped for ${toAmount} ${toSymbol}`
+        } swapped for ${toAmount?.toDisplay() ?? ''} ${toSymbol}`
       : `Swapping ${fromSymbol} to ${toSymbol} in progress...`
   }, [fromAmount, fromSymbol, shouldBePlural, toAmount, toSymbol, status])
 
