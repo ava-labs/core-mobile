@@ -21,8 +21,7 @@ export default {
   solSendingAmount: '0.001',
   myAccounts: 'My Accounts',
   sendTitle: 'Send',
-  amountToSend: 'token_amount_input_field  ',
-  amountToStake: 'token_amount_input_field AVAX  ',
+  amountInput: 'token_amount_input_field',
   sendSelectTokenListBtn: 'send_select_token_list_btn',
   usdcToken: 'USDC',
   wethToken: 'WETH',
@@ -98,10 +97,11 @@ export default {
   countrySelector: 'list_item__Country',
   currencySelector: 'list_item__Currency',
   selectOtherTokenBtn: 'list_item__Select other token',
-  addStakeCard: 'add_card_enabled',
+  addCard: 'add_card_enabled',
   claimCard: 'claim_card',
   duration: 'Duration',
   confirmStake: 'confirm_stake',
   reviewStakeTitle: 'Review your stake',
-  claimNow: 'claim_now'
+  claimNow: 'claim_now',
+  maxBtn: 'Max'
 }

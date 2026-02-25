@@ -35,6 +35,7 @@ export const DepositCard = ({
   return (
     <BaseCard
       onPress={onPress}
+      accessible={false}
       sx={{ justifyContent: 'center', alignItems: 'center', width, height }}>
       <DefiMarketAssetLogo market={market} />
       <View
@@ -55,7 +56,12 @@ export const DepositCard = ({
       <View
         onTouchStart={e => e.stopPropagation()}
         onTouchEnd={e => e.stopPropagation()}>
-        <Button type="secondary" size="small" onPress={onWithdrawPress}>
+        <Button
+          accessible={true}
+          testID={`withdraw_btn__${market.marketName}__${market.asset.symbol}`}
+          type="secondary"
+          size="small"
+          onPress={onWithdrawPress}>
           Withdraw
         </Button>
       </View>
