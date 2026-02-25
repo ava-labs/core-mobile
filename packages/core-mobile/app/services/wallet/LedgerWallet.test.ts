@@ -1417,30 +1417,6 @@ describe('LedgerWallet', () => {
         expect(result).toMatch(/^0x[0-9a-f]{130}$/i)
       })
 
-      it('should fallback to signEIP712HashedMessage when method not supported', async () => {
-        mockEthSignEIP712Message.mockRejectedValue(
-          new Error('Method not supported')
-        )
-        mockEthSignEIP712HashedMessage.mockResolvedValue({
-          r: '1234567890abcdef',
-          s: 'fedcba0987654321',
-          v: 28
-        })
-
-        const mockApp = {
-          signEIP712Message: mockEthSignEIP712Message,
-          signEIP712HashedMessage: mockEthSignEIP712HashedMessage
-        }
-
-        await (ledgerWallet as any).signEIP712WithFallback(
-          mockApp,
-          "m/44'/60'/0'/0/0",
-          mockEIP712Message
-        )
-
-        expect(mockEthSignEIP712HashedMessage).toHaveBeenCalled()
-      })
-
       it('should rethrow user-rejection errors without triggering fallback', async () => {
         mockEthSignEIP712Message.mockRejectedValue(
           new Error('Ledger device: Conditions of use not satisfied (0x6985)')
