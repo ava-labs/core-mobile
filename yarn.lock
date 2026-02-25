@@ -514,7 +514,7 @@ __metadata:
     "@avalabs/svm-module": 3.1.3
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": 3.1.0-alpha.71
-    "@avalabs/unified-asset-transfer": 0.0.0-project-fusion-pr-20260220233431
+    "@avalabs/unified-asset-transfer": 0.0.0-project-fusion-pr-20260224175214
     "@avalabs/vm-module-types": 3.1.3
     "@babel/core": 7.28.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
@@ -627,6 +627,7 @@ __metadata:
     "@types/react-dom": 19.1.7
     "@types/react-test-renderer": 19.1.0
     "@types/semver": 7.5.4
+    "@ungap/structured-clone": 1.3.0
     "@vonovak/react-native-theme-control": 7.0.2
     "@walletconnect/react-native-compat": 2.11.0
     "@walletconnect/types": 2.17.2
@@ -1095,19 +1096,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/unified-asset-transfer@npm:0.0.0-project-fusion-pr-20260220233431":
-  version: 0.0.0-project-fusion-pr-20260220233431
-  resolution: "@avalabs/unified-asset-transfer@npm:0.0.0-project-fusion-pr-20260220233431"
+"@avalabs/unified-asset-transfer@npm:0.0.0-project-fusion-pr-20260224175214":
+  version: 0.0.0-project-fusion-pr-20260224175214
+  resolution: "@avalabs/unified-asset-transfer@npm:0.0.0-project-fusion-pr-20260224175214"
   dependencies:
+    "@bitcoinerlab/secp256k1": ^1.2.0
+    "@layerzerolabs/lz-v2-utilities": ^3.0.17
     "@lombard.finance/sdk": ^4.3.0
     "@scure/base": ^1.0.1
+    axios: ^1.12.0
+    bignumber.js: ^9.3.1
+    bitcoinjs-lib: ^6.1.5
     coinselect: ^3.1.13
     es-toolkit: ^1.42.0
   peerDependencies:
     "@solana/kit": ^5.0.0
     viem: ^2.38.0
     zod: ^4.1.0
-  checksum: e59dbde1e174ea0dcfb7d609d2ed3ee93274b4a6996ca1df1154ef7e7832211ea7c2f09182f4d279bd4fb65309ca79570b6ff94afaa6feb9912c477b9fd9651d
+  checksum: ab3e090d329871a31e383a885e365dbebf976f33eef6a289eff053d6a7fc1ee7ae18f037e9cc332805dbb4a1e8a981a42437af4909b58d7740c24b46ba1901c0
   languageName: node
   linkType: hard
 
@@ -6013,7 +6019,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ethersproject/abi@npm:^5.7.0":
+"@ethersproject/abi@npm:^5.7.0, @ethersproject/abi@npm:^5.8.0":
   version: 5.8.0
   resolution: "@ethersproject/abi@npm:5.8.0"
   dependencies:
@@ -6351,7 +6357,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ethersproject/solidity@npm:^5.7.0":
+"@ethersproject/solidity@npm:^5.7.0, @ethersproject/solidity@npm:^5.8.0":
   version: 5.8.0
   resolution: "@ethersproject/solidity@npm:5.8.0"
   dependencies:
@@ -10067,6 +10073,22 @@ __metadata:
     bs58: ^5.0.0
     tiny-invariant: ^1.3.1
   checksum: f2ab54993d5234b52714832e90d648ae4752d7e2abad17da8c5e686fedcccbc31b8deed2cb58e442d0c73800d5f9463def67f8bb7d498723c5a8ca8c9c80cfc4
+  languageName: node
+  linkType: hard
+
+"@layerzerolabs/lz-v2-utilities@npm:^3.0.17":
+  version: 3.0.161
+  resolution: "@layerzerolabs/lz-v2-utilities@npm:3.0.161"
+  dependencies:
+    "@ethersproject/abi": ^5.8.0
+    "@ethersproject/address": ^5.8.0
+    "@ethersproject/bignumber": ^5.8.0
+    "@ethersproject/bytes": ^5.8.0
+    "@ethersproject/keccak256": ^5.8.0
+    "@ethersproject/solidity": ^5.8.0
+    bs58: ^5.0.0
+    tiny-invariant: ^1.3.1
+  checksum: c30f30c16368ffe51331716215164992bbfc60c65a2b7b6e3f7eee599800301988c78453a347ef9077c277f72d28dee2dc1cf9bb2bf7904628ecccdd5f72753f
   languageName: node
   linkType: hard
 
@@ -17074,7 +17096,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ungap/structured-clone@npm:^1.3.0":
+"@ungap/structured-clone@npm:1.3.0, @ungap/structured-clone@npm:^1.3.0":
   version: 1.3.0
   resolution: "@ungap/structured-clone@npm:1.3.0"
   checksum: 64ed518f49c2b31f5b50f8570a1e37bde3b62f2460042c50f132430b2d869c4a6586f13aa33a58a4722715b8158c68cae2827389d6752ac54da2893c83e480fc
@@ -19966,7 +19988,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bignumber.js@npm:^9.0.1":
+"bignumber.js@npm:^9.0.1, bignumber.js@npm:^9.3.1":
   version: 9.3.1
   resolution: "bignumber.js@npm:9.3.1"
   checksum: 6ab100271a23a75bb8b99a4b1a34a1a94967ac0b9a52a198147607bd91064e72c6f356380d7a09cd687bf50d81ad2ed1a0a8edfaa90369c9003ed8bb2440d7f0
@@ -20105,7 +20127,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bitcoinjs-lib@npm:^6.1.7":
+"bitcoinjs-lib@npm:^6.1.5, bitcoinjs-lib@npm:^6.1.7":
   version: 6.1.7
   resolution: "bitcoinjs-lib@npm:6.1.7"
   dependencies:
@@ -35893,7 +35915,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 3e4689674406deb2ad9efa9f529597341b4ab33e379b7c7cd72aff8d5e37862fda1a37aba984951a67cc3938969be138bc3c4469e4963dd170b172148339e056
+  checksum: d6ceb75e1d0f5755370d6d91f67902bd2b8a23a3ca43cb853d2964b43798f30477e8ab0223ea8b620534fbdf5f56d39550f40d24bec2d2398c323ccfe8a5a556
   languageName: node
   linkType: hard
 
