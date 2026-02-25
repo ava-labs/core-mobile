@@ -1,7 +1,9 @@
 /* eslint-disable no-bitwise */
 import { ed25519 } from '@noble/curves/ed25519'
 import { NitroModules } from 'react-native-nitro-modules'
-import type { Crypto } from './specs/Crypto.nitro'
+import type { Crypto, ExtendedPublicKeyResult } from './specs/Crypto.nitro'
+
+export type { ExtendedPublicKeyResult } from './specs/Crypto.nitro'
 
 // Native hybrid object
 const NativeCrypto = NitroModules.createHybridObject<Crypto>('Crypto')
@@ -318,40 +320,27 @@ export function verifySchnorr(
 /**
  * Edwards curve extended public key derivation (Ed25519).
  *
- * This is a **JS-level view** on top of the native `Crypto.getExtendedPublicKey`
- * Nitro method:
- *
- * - Native returns the `ExtendedPublicKey` bridge type:
- *   `{ head: ArrayBuffer, prefix: ArrayBuffer, scalar: string, pointBytes: ArrayBuffer }`
- *   where `pointBytes` is intentionally empty.
- * - This wrapper:
- *   - converts `head`/`prefix` to `Uint8Array`
- *   - parses `scalar` into a `bigint` and applies modulo reduction
- *   - derives `point`/`pointBytes` via `@noble/curves/ed25519` to exactly match
- *     the web wallet / noble implementation.
- *
- * The returned shape is therefore richer than the raw native result and is the
- * one that callers should rely on.
+ * Return type: ExtendedPublicKeyResult (see specs/Crypto.nitro.ts). This is **not**
+ * the same as the native ExtendedPublicKey. The native Nitro method returns
+ * ExtendedPublicKey with pointBytes: ArrayBuffer (empty). This wrapper transforms
+ * that into ExtendedPublicKeyResult (Uint8Array fields, scalar as bigint, point and
+ * pointBytes derived via @noble/curves). Callers should use the returned
+ * ExtendedPublicKeyResult only.
  */
 export function getExtendedPublicKey(
   secretKey: string | ArrayBuffer | Uint8Array
-): {
-  head: Uint8Array
-  prefix: Uint8Array
-  scalar: bigint
-  point: { toRawBytes: () => Uint8Array }
-  pointBytes: Uint8Array
-} {
-  // Convert input to ArrayBuffer (only TS-side work)
+): ExtendedPublicKeyResult {
   const skAB = hexLikeToArrayBuffer(secretKey)
-  // All computation and object construction happens in C++
-  // C++ returns ExtendedPublicKey object with { head, prefix, scalar (string), pointBytes }
   const result = NativeCrypto.getExtendedPublicKey(skAB)
   const prefix = new Uint8Array(result.prefix)
   const head = new Uint8Array(result.head)
 
   // Apply modular reduction to match @noble/curves Fn.create() behavior
-  // Ed25519 curve order (n)
+  //  Ed25519 curve order (n). This value is the group order L from RFC 8032 §5.1.1:
+  // L = 2^252 + 27742317777372353535851937790883648493
+  // Hex representation taken directly from the specification:
+  // 0x1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ed
+
   const ED25519_ORDER = BigInt(
     '0x1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ed'
   )
