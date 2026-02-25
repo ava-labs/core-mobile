@@ -17,7 +17,9 @@ import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
 import { useSelector } from 'react-redux'
 import { selectIsSolanaSwapBlocked } from 'store/posthog'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { ChainId } from '@avalabs/core-chains-sdk'
+import { isAddressLikeSearch } from 'common/utils/isAddressLikeSearch'
 
 export const SelectSwapTokenScreen = ({
   tokens,
@@ -38,6 +40,7 @@ export const SelectSwapTokenScreen = ({
   const cChainNetwork = useCChainNetwork()
   const solanaNetwork = useSolanaNetwork()
   const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const networkFilters = useMemo(() => {
     if (isSolanaSwapBlocked) return undefined
     return [cChainNetwork, solanaNetwork]
@@ -59,16 +62,18 @@ export const SelectSwapTokenScreen = ({
   }
 
   const searchResults = useMemo(() => {
-    if (searchText.length === 0) {
+    if (searchText.trim().length === 0) {
       return tokens
     }
+    const query = searchText.toLowerCase().trim()
+    const searchByAddress = isAddressLikeSearch(searchText, isDeveloperMode)
     return tokens.filter(
       token =>
-        token.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        token.symbol.toLowerCase().includes(searchText.toLowerCase()) ||
-        token.localId.toLowerCase().includes(searchText.toLowerCase())
+        token.name.toLowerCase().includes(query) ||
+        token.symbol.toLowerCase().includes(query) ||
+        (searchByAddress && token.localId.toLowerCase().includes(query))
     )
-  }, [tokens, searchText])
+  }, [tokens, searchText, isDeveloperMode])
 
   const keyExtractor = (item: LocalTokenWithBalance): string => {
     return [item.networkChainId, item.localId].join('-')
