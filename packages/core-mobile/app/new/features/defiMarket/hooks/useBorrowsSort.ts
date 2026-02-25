@@ -3,7 +3,7 @@ import { DropdownGroup } from 'common/components/DropdownMenu'
 import { DropdownSelection } from 'common/types'
 import { BorrowPosition } from '../types'
 
-export const useBorrowsFilterAndSort = ({
+export const useBorrowsSort = ({
   borrows
 }: {
   borrows: BorrowPosition[]
