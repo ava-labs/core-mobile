@@ -11,6 +11,7 @@ import {
   DefiMarket,
   MarketNames
 } from '../types'
+import { calculateNetApy } from './calculateNetApy'
 
 const getAaveDebtUsd = (aaveBorrowData: AaveBorrowData): number => {
   return Number(
@@ -93,36 +94,20 @@ export const getAaveBorrowSummary = ({
     return undefined
   }
 
-  const totalDepositsUsd = markets.reduce(
-    (sum, market) =>
-      sum + market.asset.mintTokenBalance.balanceValue.value.toNumber(),
-    0
-  )
-  const totalBorrowUsd = positions.reduce(
-    (sum, position) => sum + position.borrowedAmountUsd,
-    0
-  )
+  const deposits = markets.map(market => ({
+    valueUsd: market.asset.mintTokenBalance.balanceValue.value.toNumber(),
+    apyPercent: market.supplyApyPercent
+  }))
 
-  const totalSupplyIncomeUsd = markets.reduce(
-    (sum, market) =>
-      sum +
-      (market.asset.mintTokenBalance.balanceValue.value.toNumber() *
-        market.supplyApyPercent) /
-        100,
-    0
-  )
-  const totalBorrowCostUsd = positions.reduce(
-    (sum, position) =>
-      sum +
-      (position.borrowedAmountUsd * position.market.borrowApyPercent) / 100,
-    0
-  )
+  const borrows = positions.map(position => ({
+    valueUsd: position.borrowedAmountUsd,
+    apyPercent: position.market.borrowApyPercent
+  }))
 
+  const totalDepositsUsd = deposits.reduce((sum, d) => sum + d.valueUsd, 0)
+  const totalBorrowUsd = borrows.reduce((sum, b) => sum + b.valueUsd, 0)
   const netWorthUsd = totalDepositsUsd - totalBorrowUsd
-  const netApyPercent =
-    netWorthUsd > 0
-      ? ((totalSupplyIncomeUsd - totalBorrowCostUsd) / netWorthUsd) * 100
-      : 0
+  const netApyPercent = calculateNetApy({ deposits, borrows }) ?? 0
 
   const aaveDebtUsd = getAaveDebtUsd(aaveBorrowData)
   const aaveAvailableUsd = getAaveAvailableUsd(aaveBorrowData)

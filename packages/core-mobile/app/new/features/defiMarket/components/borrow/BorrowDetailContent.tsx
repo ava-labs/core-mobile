@@ -8,6 +8,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
+import { ErrorState } from 'common/components/ErrorState'
 import React, { useCallback, useMemo } from 'react'
 import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -17,6 +18,7 @@ import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { BorrowAssetRow } from '../BorrowAssetRow'
 import { BorrowPosition } from '../../types'
+import { calculateNetApy } from '../../utils/calculateNetApy'
 
 interface BorrowDetailContentProps {
   borrowPosition: BorrowPosition | undefined
@@ -55,20 +57,19 @@ export function BorrowDetailContent({
   const netApyPercent = useMemo(() => {
     if (!borrowPosition || totalCollateralUsd === 0) return undefined
 
-    const { borrowedAmountUsd, market } = borrowPosition
-    const netWorthUsd = totalCollateralUsd - borrowedAmountUsd
+    const depositItems = collateralDeposits.map(d => ({
+      valueUsd: d.asset.mintTokenBalance.balanceValue.value.toNumber(),
+      apyPercent: d.supplyApyPercent
+    }))
 
-    if (netWorthUsd <= 0) return undefined
+    const borrowItems = [
+      {
+        valueUsd: borrowPosition.borrowedAmountUsd,
+        apyPercent: borrowPosition.market.borrowApyPercent
+      }
+    ]
 
-    const collateralEarnings = collateralDeposits.reduce((sum, d) => {
-      const depositValue =
-        d.asset.mintTokenBalance.balanceValue.value.toNumber()
-      return sum + (d.supplyApyPercent / 100) * depositValue
-    }, 0)
-
-    const borrowCost = (market.borrowApyPercent / 100) * borrowedAmountUsd
-
-    return ((collateralEarnings - borrowCost) / netWorthUsd) * 100
+    return calculateNetApy({ deposits: depositItems, borrows: borrowItems })
   }, [borrowPosition, collateralDeposits, totalCollateralUsd])
 
   const handleRepay = useCallback(() => {
@@ -218,6 +219,18 @@ export function BorrowDetailContent({
     return (
       <BlurredBarsContentLayout>
         <LoadingState sx={{ flex: 1 }} />
+      </BlurredBarsContentLayout>
+    )
+  }
+
+  if (!borrowPosition) {
+    return (
+      <BlurredBarsContentLayout>
+        <ErrorState
+          sx={{ flex: 1 }}
+          title="Position not found"
+          description="Unable to load borrow position details"
+        />
       </BlurredBarsContentLayout>
     )
   }
