@@ -29,7 +29,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { BorrowProtocolSelector } from '../BorrowProtocolSelector'
 import { BorrowCard } from '../BorrowCard'
 import { BorrowSummaryBanner } from '../BorrowSummaryBanner'
-import { useBorrowsFilterAndSort } from '../../hooks/useBorrowsFilterAndSort'
+import { useBorrowsSort } from '../../hooks/useBorrowsSort'
 import { BorrowPosition, BorrowSummary, MarketName } from '../../types'
 
 export interface BorrowTabScreenProps {
@@ -69,13 +69,13 @@ export const BorrowTabContent = ({
   const { theme } = useTheme()
   const scrollOffsetRef = useRef({ x: 0, y: 0 })
 
-  const { data: filteredBorrows, sort } = useBorrowsFilterAndSort({
+  const { data: sortedBorrows, sort } = useBorrowsSort({
     borrows: positions
   })
 
   const data: BorrowCardType[] = useMemo(() => {
-    return isLoading ? [] : [StaticCard.Add, ...filteredBorrows]
-  }, [filteredBorrows, isLoading])
+    return isLoading ? [] : [StaticCard.Add, ...sortedBorrows]
+  }, [sortedBorrows, isLoading])
 
   const handleAddBorrow = useCallback(() => {
     AnalyticsService.capture('EarnBorrowStart')
