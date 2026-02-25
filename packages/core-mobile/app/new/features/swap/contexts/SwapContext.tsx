@@ -346,9 +346,9 @@ export const SwapContextProvider = ({
       const quote = quoteToUse.quote
       const swapProviderToUse = specificProvider || quotes.provider
 
-      const fromTokenAddress = getTokenAddress(fromToken)
+      const from = getTokenAddress(fromToken)
       const isFromTokenNative = fromToken.type === TokenType.NATIVE
-      const toTokenAddress = getTokenAddress(toToken)
+      const to = getTokenAddress(toToken)
       const isToTokenNative = toToken.type === TokenType.NATIVE
 
       InteractionManager.runAfterInteractions(async () => {
@@ -370,9 +370,9 @@ export const SwapContextProvider = ({
               swapTxHash = await evmSwap({
                 account: activeAccount,
                 network: cChainNetwork,
-                fromTokenAddress,
+                fromTokenAddress: from,
                 isFromTokenNative,
-                toTokenAddress,
+                toTokenAddress: to,
                 isToTokenNative,
                 swapProvider: swapProviderToUse,
                 quote,
@@ -389,9 +389,9 @@ export const SwapContextProvider = ({
                 account: activeAccount,
                 network: solanaNetwork,
                 isFromTokenNative,
-                fromTokenAddress,
+                fromTokenAddress: from,
                 isToTokenNative,
-                toTokenAddress,
+                toTokenAddress: to,
                 swapProvider: swapProviderToUse,
                 quote,
                 slippage

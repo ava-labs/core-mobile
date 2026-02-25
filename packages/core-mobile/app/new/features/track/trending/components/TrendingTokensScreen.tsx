@@ -52,7 +52,10 @@ const TrendingTokensScreen = ({
       if (isZeroBalance || isSwapBlocked) {
         openBuy(initialTokenIdTo)
       } else {
-        navigateToSwap(AVAX_TOKEN_ID, initialTokenIdTo)
+        navigateToSwap({
+          fromTokenId: AVAX_TOKEN_ID,
+          toTokenId: initialTokenIdTo
+        })
       }
     },
     [isZeroBalance, openBuy, navigateToSwap, isSwapBlocked]

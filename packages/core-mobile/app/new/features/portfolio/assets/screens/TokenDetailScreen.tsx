@@ -270,7 +270,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       buttons.push({
         title: ActionButtonTitle.Swap,
         icon: 'swap',
-        onPress: () => navigateToSwap(fromTokenId, toTokenId)
+        onPress: () => navigateToSwap({ fromTokenId, toTokenId })
       })
     }
 
