@@ -32,7 +32,7 @@ export const useBenqiBorrowData = (
       ReactQueryKeys.BENQI_USER_BORROW_DATA,
       qTokenAddress,
       userAddress,
-      networkClient?.chain.id
+      networkClient?.chain?.id
     ],
     queryFn: shouldFetch
       ? async () =>

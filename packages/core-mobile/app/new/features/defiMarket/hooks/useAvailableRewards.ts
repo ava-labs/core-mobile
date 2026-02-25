@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import Big from 'big.js'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useMerklUserRewards } from './aave/useMerklUserRewards'
