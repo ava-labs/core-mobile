@@ -4,7 +4,7 @@ set -ex
 echo "Built app at: $BITRISE_APP_DIR_PATH"
 ls -la "$BITRISE_APP_DIR_PATH" || true
 
-DEVICE_NAME="iPhone 16 Pro"
+DEVICE_NAME="iPhone 17 Pro"
 
 SIM_STATUS=$(xcrun simctl list devices | grep "$DEVICE_NAME" | grep -o "Booted" || true)
 
@@ -19,8 +19,14 @@ fi
 which node
 node -v
 yarn -v
-npx appium -v || true
-npx appium driver list || true
+
+# Install xcuitest driver for Appium 2.x+
+echo "Installing Appium xcuitest driver..."
+yarn appium driver install xcuitest || npx appium driver install xcuitest || true
+
+# Verify installation
+yarn appium -v || true
+yarn appium driver list || true
 
 if [[ "$IS_SMOKE" == "true" ]]; then
   echo "Running iOS SMOKE tests"
