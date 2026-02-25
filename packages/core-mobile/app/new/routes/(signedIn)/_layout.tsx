@@ -281,6 +281,10 @@ export default function WalletLayout(): JSX.Element {
               options={ledgerModalScreensOptions}
             />
             <Stack.Screen
+              name="(modals)/ledgerReviewStaking"
+              options={ledgerModalScreensOptions}
+            />
+            <Stack.Screen
               name="(modals)/solanaConnection"
               options={secondaryModalScreensOptions}
             />

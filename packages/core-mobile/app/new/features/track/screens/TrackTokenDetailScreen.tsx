@@ -110,7 +110,10 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
   const handleSwap = useCallback(
     (initialTokenIdTo?: string): void => {
-      navigateToSwap(AVAX_TOKEN_ID, initialTokenIdTo)
+      navigateToSwap({
+        fromTokenId: AVAX_TOKEN_ID,
+        toTokenId: initialTokenIdTo
+      })
     },
     [navigateToSwap]
   )

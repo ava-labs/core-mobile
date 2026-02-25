@@ -15,10 +15,7 @@ import {
 } from '@avalabs/unified-asset-transfer'
 import type { FeatureFlags } from 'services/posthog/types'
 import Logger from 'utils/Logger'
-import {
-  MARKR_API_URL,
-  MARKR_EVM_PARTNER_ID
-} from '../consts'
+import { MARKR_API_URL, MARKR_EVM_PARTNER_ID } from '../consts'
 import { isTransferInProgress } from '../utils/transferStatus'
 import type {
   FusionConfig,
@@ -93,7 +90,7 @@ class FusionService implements IFusionService {
             type: serviceType,
             evmSigner: signers.evm,
             markrApiUrl: MARKR_API_URL,
-            markrAppId: MARKR_EVM_PARTNER_ID,
+            markrAppId: MARKR_EVM_PARTNER_ID
             // eslint-disable-next-line prettier/prettier
           } satisfies MarkrServiceInitializer)
           break
@@ -101,7 +98,7 @@ class FusionService implements IFusionService {
         case ServiceType.AVALANCHE_EVM:
           initializers.push({
             type: serviceType,
-            evmSigner: signers.evm,
+            evmSigner: signers.evm
           } satisfies EvmServiceInitializer)
           break
 
@@ -111,8 +108,7 @@ class FusionService implements IFusionService {
             type: serviceType,
             evmSigner: signers.evm,
             btcSigner: signers.btc,
-            btcFunctions,
-             
+            btcFunctions
           } satisfies LombardServiceInitializer)
           break
         default:
@@ -123,7 +119,7 @@ class FusionService implements IFusionService {
     // Always include wrap/unwrap service
     initializers.push({
       type: ServiceType.WRAP_UNWRAP,
-      evmSigner: signers.evm,
+      evmSigner: signers.evm
     } satisfies EvmServiceInitializer)
 
     return initializers

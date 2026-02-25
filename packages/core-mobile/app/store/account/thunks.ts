@@ -57,7 +57,6 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
       wallet.type === WalletType.LEDGER_LIVE
     ) {
       // Store the xpub for this account in wallet secret
-
       if (result.xpub) {
         const secretResult = await BiometricsSDK.loadWalletSecret(walletId)
         if (secretResult.success && secretResult.value) {

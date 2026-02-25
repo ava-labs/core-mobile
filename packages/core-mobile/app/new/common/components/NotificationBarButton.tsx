@@ -1,25 +1,32 @@
-import { Icons, TouchableOpacity, useTheme, View } from '@avalabs/k2-alpine'
+import { Icons, useTheme, View } from '@avalabs/k2-alpine'
 import React, { forwardRef } from 'react'
 import { View as RNView } from 'react-native'
+import { AnimatedSyncIcon } from './AnimatedSyncIcon'
+import NavigationBarButton from './NavigationBarButton'
 
 const BADGE_SIZE = 5
 
 interface NotificationBarButtonProps {
   onPress?: () => void
   hasUnread?: boolean
+  isInProgress?: boolean
 }
 
 export const NotificationBarButton = forwardRef<
   RNView,
   NotificationBarButtonProps
->(({ onPress, hasUnread = false }, ref): JSX.Element => {
+>(({ onPress, hasUnread = false, isInProgress = false }, ref): JSX.Element => {
   const { theme } = useTheme()
 
   return (
-    <TouchableOpacity ref={ref} onPress={onPress} testID="notification_icon">
+    <NavigationBarButton ref={ref} onPress={onPress} testID="notification_icon">
       <View sx={{ position: 'relative' }}>
-        <Icons.Social.Notifications color={theme.colors.$textPrimary} />
-        {hasUnread && (
+        {isInProgress ? (
+          <AnimatedSyncIcon />
+        ) : (
+          <Icons.Social.Notifications color={theme.colors.$textPrimary} />
+        )}
+        {hasUnread && !isInProgress && (
           <View
             sx={{
               position: 'absolute',
@@ -33,6 +40,6 @@ export const NotificationBarButton = forwardRef<
           />
         )}
       </View>
-    </TouchableOpacity>
+    </NavigationBarButton>
   )
 })

@@ -62,6 +62,8 @@ const NotificationListItem: FC<NotificationListItemProps> = ({
           }}>
           <Text
             variant="buttonMedium"
+            numberOfLines={2}
+            ellipsizeMode="tail"
             sx={{
               color: '$textPrimary',
               lineHeight: 15
@@ -87,6 +89,7 @@ const NotificationListItem: FC<NotificationListItemProps> = ({
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
           {timestamp !== undefined && (
             <Text
+              numberOfLines={1}
               variant="body2"
               sx={{ color: colors.$textSecondary, textAlign: 'right' }}>
               {isSameDay(new Date(timestamp), new Date())
