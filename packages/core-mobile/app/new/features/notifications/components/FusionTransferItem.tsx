@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo } from 'react'
+import React, { FC, use, useCallback, useMemo } from 'react'
 import { Text } from '@avalabs/k2-alpine'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -40,9 +40,9 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
         BigInt(item.transfer.amountIn),
         item.transfer.sourceAsset.decimals,
         item.transfer.sourceAsset.symbol
-      ).toDisplay()
+      )
     } catch {
-      return ''
+      return undefined
     }
   }, [item.transfer])
 
@@ -52,18 +52,25 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
         BigInt(item.transfer.amountOut),
         item.transfer.targetAsset.decimals,
         item.transfer.targetAsset.symbol
-      ).toDisplay()
+      )
     } catch {
-      return ''
+      return undefined
     }
   }, [item.transfer])
 
-  const title =
-    status === 'failed'
+  const shouldBePlural = useMemo(() => {
+    return !!fromAmount?.gt(1)
+  }, [fromAmount])
+
+  const title = useMemo(() => {
+    return status === 'failed'
       ? `${fromAmount} ${fromSymbol} swapped for ${toAmount} ${toSymbol}`
       : status === 'completed'
-      ? `${fromAmount} ${fromSymbol} was swapped for ${toAmount} ${toSymbol}`
+      ? `${fromAmount} ${fromSymbol} ${
+          shouldBePlural ? 'were' : 'was'
+        } swapped for ${toAmount} ${toSymbol}`
       : `Swapping ${fromSymbol} to ${toSymbol} in progress...`
+  }, [fromAmount, fromSymbol, shouldBePlural, toAmount, toSymbol, status])
 
   const subtitle =
     status === 'completed'
