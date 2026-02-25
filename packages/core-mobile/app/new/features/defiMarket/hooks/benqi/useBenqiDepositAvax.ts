@@ -27,6 +27,9 @@ export const useBenqiDepositAvax = ({
     queryClient.invalidateQueries({
       queryKey: [ReactQueryKeys.BENQI_ACCOUNT_SNAPSHOT]
     })
+    queryClient.invalidateQueries({
+      queryKey: [ReactQueryKeys.BENQI_USER_BORROW_DATA]
+    })
     onConfirmed?.()
   }, [onConfirmed])
 
