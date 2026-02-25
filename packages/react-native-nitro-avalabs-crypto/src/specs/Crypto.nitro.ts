@@ -9,7 +9,7 @@ export type HexLike = string | ArrayBuffer
 export interface ExtendedPublicKey {
   head: ArrayBuffer
   prefix: ArrayBuffer
-  scalar: string // bigint as decimal string (little-endian)
+  scalar: string // bigint as hex string (big-endian)
   pointBytes: ArrayBuffer
 }
 

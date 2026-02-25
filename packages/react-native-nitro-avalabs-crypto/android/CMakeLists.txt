@@ -119,7 +119,7 @@ else()
     message(WARNING "  1. Ensure android/build.gradle has:")
     message(WARNING "     buildFeatures { prefab true }")
     message(WARNING "  2. Ensure dependencies include:")
-    message(WARNING "     implementation 'com.android.ndk.thirdparty:openssl:1.1.1q-beta-1'")
+    message(WARNING "     implementation 'io.github.ronickg:openssl:3.6.0-1'")
     message(WARNING "  3. Run: cd android && ./gradlew clean build")
     message(WARNING "==================================")
     

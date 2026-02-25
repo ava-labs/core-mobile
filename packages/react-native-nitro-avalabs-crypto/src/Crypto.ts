@@ -1,4 +1,5 @@
 /* eslint-disable no-bitwise */
+import { ed25519 } from '@noble/curves/ed25519'
 import { NitroModules } from 'react-native-nitro-modules'
 import type { Crypto } from './specs/Crypto.nitro'
 
@@ -361,7 +362,6 @@ export function getExtendedPublicKey(
   // - C++ does: SHA-512 hash + clamp (fast native operations)
   // - TypeScript does: modulo reduction + point derivation using @noble/curves
   // This ensures the point derivation matches the web wallet exactly
-  const { ed25519 } = require('@noble/curves/ed25519')
   const point = ed25519.ExtendedPoint.BASE.multiply(scalar)
   const pointBytes = point.toRawBytes()
 

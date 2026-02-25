@@ -7,7 +7,6 @@
 #ifndef OPENSSL_NOT_AVAILABLE
 
 #include <openssl/evp.h>
-#include <openssl/sha.h>
 
 #endif
 #ifdef __ANDROID__
@@ -245,10 +244,6 @@ namespace margelo::nitro::nitroavalabscrypto {
         auto msg32 = require32(messageHash, "messageHash");
         auto aux32 = require32(auxRand, "auxRand");
 
-        LOGI("signSchnorr sk=%s", toHex(sk.data(), 32).c_str());
-        LOGI("signSchnorr msg=%s", toHex(msg32.data(), 32).c_str());
-        LOGI("signSchnorr aux=%s", toHex(aux32.data(), 32).c_str());
-
         if (secp256k1_ec_seckey_verify(ctx(), sk.data()) != 1)
             throw std::invalid_argument("Invalid secret key");
 
@@ -264,7 +259,6 @@ namespace margelo::nitro::nitroavalabscrypto {
             if (secp256k1_keypair_xonly_pub(ctx(), &xpk, &parity, &keypair) == 1) {
                 unsigned char x32[32];
                 secp256k1_xonly_pubkey_serialize(ctx(), x32, &xpk);
-                LOGI("signSchnorr xonly.pk.x=%s parity=%d", toHex(x32, 32).c_str(), parity);
             } else {
                 LOGI("signSchnorr xonly.pk FAILED");
             }
@@ -276,7 +270,6 @@ namespace margelo::nitro::nitroavalabscrypto {
                 size_t compLen = 33;
                 if (secp256k1_ec_pubkey_serialize(ctx(), comp33, &compLen, &full,
                                                   SECP256K1_EC_COMPRESSED) == 1) {
-                    LOGI("signSchnorr pubkey(compressed,33)=%s", toHex(comp33, compLen).c_str());
                 } else {
                     LOGI("signSchnorr pubkey serialize FAILED");
                 }
@@ -301,7 +294,6 @@ namespace margelo::nitro::nitroavalabscrypto {
             throw std::runtime_error("Schnorr self-verify failed");
         }
 
-        LOGI("signSchnorr sig=%s", toHex(sig64.data(), 64).c_str());
         return toAB(std::vector<uint8_t>(sig64.begin(), sig64.end()));
     }
 
@@ -315,10 +307,6 @@ namespace margelo::nitro::nitroavalabscrypto {
         if (sig.size() != 64) return false;
 
         auto pkBytes = bytesFromVariant(publicKey);
-        LOGI("verifySchnorr pkLen=%zu msg=%s sig=%s", pkBytes.size(),
-             toHex(reinterpret_cast<const uint8_t *>(msg32.data()), 32).c_str(),
-             toHex(sig.data(), 64).c_str());
-
         secp256k1_xonly_pubkey xpk{};
         if (pkBytes.size() == 32) {
             if (secp256k1_xonly_pubkey_parse(ctx(), &xpk, pkBytes.data()) != 1) return false;
