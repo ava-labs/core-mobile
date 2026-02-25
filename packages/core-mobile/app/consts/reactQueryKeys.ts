@@ -62,5 +62,8 @@ export enum ReactQueryKeys {
 
   // rewards
   MERKL_USER_REWARDS = 'merklUserRewards',
-  BENQI_REWARDS = 'benqiRewards'
+  BENQI_REWARDS = 'benqiRewards',
+
+  // notifications
+  NOTIFICATION_CENTER_LIST = 'notificationCenterList'
 }

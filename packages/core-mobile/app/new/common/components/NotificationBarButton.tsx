@@ -1,15 +1,38 @@
-import { Icons, TouchableOpacity, useTheme } from '@avalabs/k2-alpine'
+import { Icons, TouchableOpacity, useTheme, View } from '@avalabs/k2-alpine'
 import React, { forwardRef } from 'react'
 import { View as RNView } from 'react-native'
 
-export const NotificationBarButton = forwardRef<RNView>(
-  ({ onPress }: { onPress?: () => void }, ref): JSX.Element => {
-    const { theme } = useTheme()
+const BADGE_SIZE = 5
 
-    return (
-      <TouchableOpacity ref={ref} onPress={onPress} testID="notification_icon">
+interface NotificationBarButtonProps {
+  onPress?: () => void
+  hasUnread?: boolean
+}
+
+export const NotificationBarButton = forwardRef<
+  RNView,
+  NotificationBarButtonProps
+>(({ onPress, hasUnread = false }, ref): JSX.Element => {
+  const { theme } = useTheme()
+
+  return (
+    <TouchableOpacity ref={ref} onPress={onPress} testID="notification_icon">
+      <View sx={{ position: 'relative' }}>
         <Icons.Social.Notifications color={theme.colors.$textPrimary} />
-      </TouchableOpacity>
-    )
-  }
-)
+        {hasUnread && (
+          <View
+            sx={{
+              position: 'absolute',
+              top: -1,
+              right: 1,
+              width: BADGE_SIZE,
+              height: BADGE_SIZE,
+              borderRadius: BADGE_SIZE / 2,
+              backgroundColor: '$textDanger'
+            }}
+          />
+        )}
+      </View>
+    </TouchableOpacity>
+  )
+})

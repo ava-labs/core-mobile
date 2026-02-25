@@ -9,13 +9,15 @@ export const BaseCard = ({
   sx,
   children,
   disabled,
-  testID
+  testID,
+  accessible
 }: {
   onPress?: () => void
   sx?: SxProp
   children: React.ReactNode
   disabled?: boolean
   testID?: string
+  accessible?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
   const borderColor = theme.isDark ? '#FFFFFF1A' : '#0000001A'
@@ -25,7 +27,8 @@ export const BaseCard = ({
       testID={testID}
       style={{ flex: 1 }}
       onPress={onPress}
-      disabled={disabled}>
+      disabled={disabled}
+      accessible={accessible}>
       <View
         sx={{
           borderRadius: 18,

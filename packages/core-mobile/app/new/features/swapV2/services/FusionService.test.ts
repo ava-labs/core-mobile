@@ -909,4 +909,187 @@ describe('FusionService', () => {
       expect(last.type).toBe(ServiceType.WRAP_UNWRAP)
     })
   })
+
+  describe('trackTransfer', () => {
+    it('should call SDK trackTransfer with the correct transfer and a wrapped listener', async () => {
+      const resolvedTransfer = { id: 'transfer-1', status: 'completed' } as any
+      const mockTrackTransfer = jest.fn().mockReturnValue({
+        cancel: jest.fn(),
+        result: Promise.resolve(resolvedTransfer)
+      })
+      const mockTransferManager = {
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn(),
+        trackTransfer: mockTrackTransfer
+      }
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      const config: FusionConfig = {
+        environment: Environment.PROD,
+        enabledServices: [ServiceType.MARKR],
+        fetch: mockFetch
+      }
+
+      await FusionService.init({
+        bitcoinProvider: mockBitcoinProvider,
+        config,
+        signers: mockSigners
+      })
+
+      const transfer = { id: 'transfer-1', status: 'source-pending' } as any
+      const updateListener = jest.fn()
+
+      FusionService.trackTransfer(transfer, updateListener)
+
+      // SDK receives the correct transfer and a wrapped listener (not the original)
+      expect(mockTrackTransfer).toHaveBeenCalledWith({
+        transfer,
+        updateListener: expect.any(Function)
+      })
+
+      // Calling the wrapped listener delegates to updateListener
+      const wrappedListener = mockTrackTransfer.mock.calls[0][0].updateListener
+      const update = { id: 'transfer-1', status: 'source-pending' } as any
+      wrappedListener(update)
+      expect(updateListener).toHaveBeenCalledWith(update)
+    })
+
+    it('should call updateListener with the resolved transfer when result resolves', async () => {
+      const resolvedTransfer = { id: 'transfer-1', status: 'completed' } as any
+      const mockTrackTransfer = jest.fn().mockReturnValue({
+        cancel: jest.fn(),
+        result: Promise.resolve(resolvedTransfer)
+      })
+      const mockTransferManager = {
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn(),
+        trackTransfer: mockTrackTransfer
+      }
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      const config: FusionConfig = {
+        environment: Environment.PROD,
+        enabledServices: [ServiceType.MARKR],
+        fetch: mockFetch
+      }
+
+      await FusionService.init({
+        bitcoinProvider: mockBitcoinProvider,
+        config,
+        signers: mockSigners
+      })
+
+      const transfer = { id: 'transfer-1', status: 'source-pending' } as any
+      const updateListener = jest.fn()
+
+      FusionService.trackTransfer(transfer, updateListener)
+
+      // Wait for the promise to resolve
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      expect(updateListener).toHaveBeenCalledWith(resolvedTransfer)
+    })
+
+    it('should log error when result rejects', async () => {
+      const trackError = new Error('tracking failed')
+      const mockTrackTransfer = jest.fn().mockReturnValue({
+        cancel: jest.fn(),
+        result: Promise.reject(trackError)
+      })
+      const mockTransferManager = {
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn(),
+        trackTransfer: mockTrackTransfer
+      }
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      const config: FusionConfig = {
+        environment: Environment.PROD,
+        enabledServices: [ServiceType.MARKR],
+        fetch: mockFetch
+      }
+
+      await FusionService.init({
+        bitcoinProvider: mockBitcoinProvider,
+        config,
+        signers: mockSigners
+      })
+
+      const transfer = { id: 'transfer-1', status: 'source-pending' } as any
+      const updateListener = jest.fn()
+
+      FusionService.trackTransfer(transfer, updateListener)
+
+      // Wait for the promise to reject
+      await new Promise(resolve => setTimeout(resolve, 0))
+
+      expect(Logger.error).toHaveBeenCalledWith(
+        '[FusionService] trackTransfer error',
+        trackError
+      )
+      expect(updateListener).not.toHaveBeenCalled()
+    })
+
+    it('should throw error when service is not initialized', () => {
+      const transfer = { id: 'transfer-1', status: 'source-pending' } as any
+      const updateListener = jest.fn()
+
+      expect(() =>
+        FusionService.trackTransfer(transfer, updateListener)
+      ).toThrow('Fusion service is not initialized')
+    })
+
+    it('should cancel in-flight tracking when cleanup is called', async () => {
+      const mockCancel = jest.fn()
+      const mockTrackTransfer = jest.fn().mockReturnValue({
+        cancel: mockCancel,
+        result: new Promise(() => {
+          // do nothing
+        }) // never resolves (in-flight)
+      })
+      const mockTransferManager = {
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateGas: jest.fn(),
+        trackTransfer: mockTrackTransfer
+      }
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      const config: FusionConfig = {
+        environment: Environment.PROD,
+        enabledServices: [ServiceType.MARKR],
+        fetch: mockFetch
+      }
+
+      await FusionService.init({
+        bitcoinProvider: mockBitcoinProvider,
+        config,
+        signers: mockSigners
+      })
+
+      const transfer = { id: 'transfer-1', status: 'source-pending' } as any
+      FusionService.trackTransfer(transfer, jest.fn())
+
+      expect(mockCancel).not.toHaveBeenCalled()
+
+      FusionService.cleanup()
+
+      expect(mockCancel).toHaveBeenCalled()
+    })
+  })
 })

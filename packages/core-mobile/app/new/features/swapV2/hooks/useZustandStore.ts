@@ -4,7 +4,13 @@ import { persist } from 'zustand/middleware'
 import { zustandMMKVStorage } from 'utils/mmkv/storages'
 import { ZustandStorageKeys } from 'resources/Constants'
 import type { LocalTokenWithBalance } from 'store/balance'
-import type { Quote, FusionTransfersMap } from '../types'
+import type {
+  Quote,
+  Transfer,
+  FusionTransfer,
+  FusionTransfersMap
+} from '../types'
+import { isTransferInProgress } from '../utils/transferStatus'
 
 // Token selection stores
 export const useSwapSelectedFromToken = createZustandStore<
@@ -42,7 +48,7 @@ interface FusionTransfersState {
   ) => void
 }
 
-const fusionTransfersStore = create<FusionTransfersState>()(
+export const fusionTransfersStore = create<FusionTransfersState>()(
   persist(
     set => ({
       transfers: {},
@@ -82,4 +88,23 @@ useFusionTransfers.setState = (
 
 useFusionTransfers.getState = () => {
   return fusionTransfersStore.getState().transfers
+}
+
+// Updates only the transfer field for a given id; keeps token metadata/timestamp intact
+export function updateFusionTransfer(updatedTransfer: Transfer): void {
+  fusionTransfersStore.getState().setTransfers(prev => {
+    const existing = prev[updatedTransfer.id]
+    if (!existing) return prev
+    return {
+      ...prev,
+      [updatedTransfer.id]: { ...existing, transfer: updatedTransfer }
+    }
+  })
+}
+
+// Returns all transfers that need re-tracking after app restart
+export function getPendingFusionTransfers(): FusionTransfer[] {
+  return Object.values(fusionTransfersStore.getState().transfers).filter(ft =>
+    isTransferInProgress(ft.transfer)
+  )
 }
