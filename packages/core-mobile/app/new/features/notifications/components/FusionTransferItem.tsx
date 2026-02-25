@@ -40,9 +40,9 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
         BigInt(item.transfer.amountIn),
         item.transfer.sourceAsset.decimals,
         item.transfer.sourceAsset.symbol
-      ).toDisplay()
+      )
     } catch {
-      return ''
+      return undefined
     }
   }, [item.transfer])
 
@@ -52,18 +52,27 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
         BigInt(item.transfer.amountOut),
         item.transfer.targetAsset.decimals,
         item.transfer.targetAsset.symbol
-      ).toDisplay()
+      )
     } catch {
-      return ''
+      return undefined
     }
   }, [item.transfer])
 
-  const title =
-    status === 'failed'
-      ? `${fromAmount} ${fromSymbol} swapped for ${toAmount} ${toSymbol}`
+  const shouldBePlural = useMemo(() => {
+    return !!fromAmount?.gt(1)
+  }, [fromAmount])
+
+  const title = useMemo(() => {
+    const from = fromAmount
+      ? `${fromAmount.toDisplay()} ${fromSymbol}`
+      : fromSymbol
+    const to = toAmount ? `${toAmount.toDisplay()} ${toSymbol}` : toSymbol
+    return status === 'failed'
+      ? `${from} swapped for ${to}`
       : status === 'completed'
-      ? `${fromAmount} ${fromSymbol} were swapped for ${toAmount} ${toSymbol}`
+      ? `${from} ${shouldBePlural ? 'were' : 'was'} swapped for ${to}`
       : `Swapping ${fromSymbol} to ${toSymbol} in progress...`
+  }, [fromAmount, fromSymbol, shouldBePlural, toAmount, toSymbol, status])
 
   const subtitle =
     status === 'completed'
