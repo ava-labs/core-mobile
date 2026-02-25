@@ -1,7 +1,8 @@
-import { Icons, TouchableOpacity, useTheme, View } from '@avalabs/k2-alpine'
+import { Icons, useTheme, View } from '@avalabs/k2-alpine'
 import React, { forwardRef } from 'react'
 import { View as RNView } from 'react-native'
 import { AnimatedSyncIcon } from './AnimatedSyncIcon'
+import NavigationBarButton from './NavigationBarButton'
 
 const BADGE_SIZE = 5
 
@@ -18,7 +19,7 @@ export const NotificationBarButton = forwardRef<
   const { theme } = useTheme()
 
   return (
-    <TouchableOpacity ref={ref} onPress={onPress} testID="notification_icon">
+    <NavigationBarButton ref={ref} onPress={onPress} testID="notification_icon">
       <View sx={{ position: 'relative' }}>
         {isInProgress ? (
           <AnimatedSyncIcon />
@@ -39,6 +40,6 @@ export const NotificationBarButton = forwardRef<
           />
         )}
       </View>
-    </TouchableOpacity>
+    </NavigationBarButton>
   )
 })
