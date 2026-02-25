@@ -26,14 +26,16 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
     router.canGoBack() && router.back()
   }
 
-  const handleRetry = (): void => {
+  const handleRetry = useCallback((): void => {
     router.canGoBack() && router.back()
+
+    if (!transfer) return
     navigateToSwap({
-      fromTokenId: transfer?.fromToken.internalId,
-      toTokenId: transfer?.toToken.internalId,
-      retryingSwapActivityId: transfer?.transfer.id
+      fromTokenId: transfer.fromToken.internalId,
+      toTokenId: transfer.toToken.internalId,
+      retryingSwapActivityId: transfer.transfer.id
     })
-  }
+  }, [navigateToSwap, router, transfer])
 
   const renderFooter = (): React.ReactNode => {
     if (display?.status === 'failed') {
