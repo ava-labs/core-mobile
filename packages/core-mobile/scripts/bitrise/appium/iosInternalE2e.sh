@@ -4,7 +4,7 @@ set -ex
 echo "Built app at: $BITRISE_APP_DIR_PATH"
 ls -la "$BITRISE_APP_DIR_PATH" || true
 
-DEVICE_NAME="iPhone 16 Pro"
+DEVICE_NAME="iPhone 17 Pro"
 
 SIM_STATUS=$(xcrun simctl list devices | grep "$DEVICE_NAME" | grep -o "Booted" || true)
 
