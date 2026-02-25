@@ -17,54 +17,10 @@ import {
   buildAaveBorrowPositions,
   getAaveBorrowSummary
 } from '../../utils/aaveBorrowPositionsSummary'
+import { buildActualDebtMap } from '../../utils/aaveDebtMap'
 import { useNetworkClient } from '../useNetworkClient'
 import { useAaveBorrowData } from './useAaveBorrowData'
 import { useAaveAvailableMarkets } from './useAaveAvailableMarkets'
-
-const RAY_PRECISION = 10n ** 27n
-
-type ReserveData = {
-  underlyingAsset: Address
-  variableBorrowIndex: bigint
-}
-
-type UserReserveData = {
-  underlyingAsset: Address
-  scaledVariableDebt: bigint
-}
-
-const buildVariableBorrowIndexMap = (
-  reservesData: readonly ReserveData[]
-): Map<string, bigint> => {
-  const indexMap = new Map<string, bigint>()
-  for (const reserve of reservesData) {
-    indexMap.set(
-      reserve.underlyingAsset.toLowerCase(),
-      reserve.variableBorrowIndex
-    )
-  }
-  return indexMap
-}
-
-const buildActualDebtMap = (
-  userReserves: readonly UserReserveData[],
-  reservesData: readonly ReserveData[]
-): Map<string, bigint> => {
-  const variableBorrowIndexMap = buildVariableBorrowIndexMap(reservesData)
-
-  const debtMap = new Map<string, bigint>()
-  for (const reserve of userReserves) {
-    const address = reserve.underlyingAsset.toLowerCase()
-    const scaledDebt = reserve.scaledVariableDebt
-    const borrowIndex = variableBorrowIndexMap.get(address) ?? RAY_PRECISION
-
-    // actualDebt = scaledVariableDebt * variableBorrowIndex / RAY
-    const actualDebt = (scaledDebt * borrowIndex) / RAY_PRECISION
-    debtMap.set(address, actualDebt)
-  }
-
-  return debtMap
-}
 
 const fetchAaveDebtMap = async (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
