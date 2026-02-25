@@ -92,10 +92,10 @@ export const BorrowTabContent = ({
       navigate({
         // @ts-ignore TODO: make routes typesafe
         pathname: '/borrowDetail',
-        params: { marketId }
+        params: { marketId, protocol: selectedProtocol }
       })
     },
-    [navigate]
+    [navigate, selectedProtocol]
   )
 
   const handlePressHealthScore = useCallback(() => {
