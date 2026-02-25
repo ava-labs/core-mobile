@@ -192,6 +192,7 @@ class ApprovalController implements VmModuleApprovalController {
             }
 
             showLedgerReviewTransaction({
+              rpcMethod: request.method,
               network: params.network,
               onApprove: () =>
                 onApprove({
