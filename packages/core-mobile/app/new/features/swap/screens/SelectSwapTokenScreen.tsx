@@ -69,9 +69,9 @@ export const SelectSwapTokenScreen = ({
     const searchByAddress = isAddressLikeSearch(searchText, isDeveloperMode)
     return tokens.filter(
       token =>
-        (token.name ?? '').toLowerCase().includes(query) ||
-        (token.symbol ?? '').toLowerCase().includes(query) ||
-        (searchByAddress && (token.localId ?? '').toLowerCase().includes(query))
+        token.name.toLowerCase().includes(query) ||
+        token.symbol.toLowerCase().includes(query) ||
+        (searchByAddress && token.localId.toLowerCase().includes(query))
     )
   }, [tokens, searchText, isDeveloperMode])
 
