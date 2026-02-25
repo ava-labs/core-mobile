@@ -1,7 +1,7 @@
 import { skipToken, useQuery } from '@tanstack/react-query'
 import { useCallback, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { Address } from 'viem'
+import { Address, PublicClient } from 'viem'
 import { multicall } from 'viem/actions'
 import { selectActiveAccount } from 'store/account'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
@@ -23,8 +23,7 @@ import { useAaveBorrowData } from './useAaveBorrowData'
 import { useAaveAvailableMarkets } from './useAaveAvailableMarkets'
 
 const fetchAaveDebtMap = async (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  networkClient: any,
+  networkClient: PublicClient,
   userAddress: Address
 ): Promise<Map<string, bigint>> => {
   const [userReservesRaw, reservesDataRaw] = await multicall(networkClient, {

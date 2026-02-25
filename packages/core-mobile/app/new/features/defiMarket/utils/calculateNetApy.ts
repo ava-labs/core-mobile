@@ -8,6 +8,19 @@ type BorrowItem = {
   apyPercent: number
 }
 
+/**
+ * Calculates the Net APY (Annual Percentage Yield) for a DeFi position.
+ *
+ * Formula:
+ *   Net APY = ((Total Supply Income - Total Borrow Cost) / Net Worth) × 100
+ *
+ * Where:
+ *   - Total Supply Income = Σ(deposit_value × deposit_apy / 100)
+ *   - Total Borrow Cost = Σ(borrow_value × borrow_apy / 100)
+ *   - Net Worth = Total Deposits - Total Borrows
+ *
+ * @returns The net APY as a percentage, or undefined if net worth is zero or negative
+ */
 export const calculateNetApy = ({
   deposits,
   borrows
