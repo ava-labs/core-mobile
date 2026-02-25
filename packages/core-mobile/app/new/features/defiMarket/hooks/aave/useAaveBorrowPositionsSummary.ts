@@ -6,6 +6,7 @@ import { multicall } from 'viem/actions'
 import { selectActiveAccount } from 'store/account'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import Logger from 'utils/Logger'
 import {
   AAVE_POOL_ADDRESSES_PROVIDER_C_CHAIN_ADDRESS,
   AAVE_UI_POOL_DATA_PROVIDER_C_CHAIN_ADDRESS
@@ -32,17 +33,24 @@ type UserReserveData = {
   scaledVariableDebt: bigint
 }
 
-const buildActualDebtMap = (
-  userReserves: readonly UserReserveData[],
+const buildVariableBorrowIndexMap = (
   reservesData: readonly ReserveData[]
 ): Map<string, bigint> => {
-  const variableBorrowIndexMap = new Map<string, bigint>()
+  const indexMap = new Map<string, bigint>()
   for (const reserve of reservesData) {
-    variableBorrowIndexMap.set(
+    indexMap.set(
       reserve.underlyingAsset.toLowerCase(),
       reserve.variableBorrowIndex
     )
   }
+  return indexMap
+}
+
+const buildActualDebtMap = (
+  userReserves: readonly UserReserveData[],
+  reservesData: readonly ReserveData[]
+): Map<string, bigint> => {
+  const variableBorrowIndexMap = buildVariableBorrowIndexMap(reservesData)
 
   const debtMap = new Map<string, bigint>()
   for (const reserve of userReserves) {
@@ -56,6 +64,41 @@ const buildActualDebtMap = (
   }
 
   return debtMap
+}
+
+const fetchAaveDebtMap = async (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  networkClient: any,
+  userAddress: Address
+): Promise<Map<string, bigint>> => {
+  const [userReservesRaw, reservesDataRaw] = await multicall(networkClient, {
+    contracts: [
+      {
+        address: AAVE_UI_POOL_DATA_PROVIDER_C_CHAIN_ADDRESS,
+        abi: AAVE_POOL_DATA_PROVIDER,
+        functionName: 'getUserReservesData',
+        args: [AAVE_POOL_ADDRESSES_PROVIDER_C_CHAIN_ADDRESS, userAddress]
+      },
+      {
+        address: AAVE_UI_POOL_DATA_PROVIDER_C_CHAIN_ADDRESS,
+        abi: AAVE_POOL_DATA_PROVIDER,
+        functionName: 'getReservesData',
+        args: [AAVE_POOL_ADDRESSES_PROVIDER_C_CHAIN_ADDRESS]
+      }
+    ]
+  })
+
+  if (userReservesRaw.status === 'failure') {
+    Logger.error('Failed to fetch AAVE user reserves', userReservesRaw.error)
+  }
+  if (reservesDataRaw.status === 'failure') {
+    Logger.error('Failed to fetch AAVE reserves data', reservesDataRaw.error)
+  }
+
+  const userReserves = userReservesRaw.result?.[0] ?? []
+  const reservesData = reservesDataRaw.result?.[0] ?? []
+
+  return buildActualDebtMap(userReserves, reservesData)
 }
 
 export const useAaveBorrowPositionsSummary = (): BorrowSummaryResult => {
@@ -96,35 +139,7 @@ export const useAaveBorrowPositionsSummary = (): BorrowSummaryResult => {
     ],
     queryFn:
       networkClient && userAddress
-        ? async () => {
-            const [userReservesRaw, reservesDataRaw] = await multicall(
-              networkClient,
-              {
-                contracts: [
-                  {
-                    address: AAVE_UI_POOL_DATA_PROVIDER_C_CHAIN_ADDRESS,
-                    abi: AAVE_POOL_DATA_PROVIDER,
-                    functionName: 'getUserReservesData',
-                    args: [
-                      AAVE_POOL_ADDRESSES_PROVIDER_C_CHAIN_ADDRESS,
-                      userAddress
-                    ]
-                  },
-                  {
-                    address: AAVE_UI_POOL_DATA_PROVIDER_C_CHAIN_ADDRESS,
-                    abi: AAVE_POOL_DATA_PROVIDER,
-                    functionName: 'getReservesData',
-                    args: [AAVE_POOL_ADDRESSES_PROVIDER_C_CHAIN_ADDRESS]
-                  }
-                ]
-              }
-            )
-
-            const userReserves = userReservesRaw.result?.[0] ?? []
-            const reservesData = reservesDataRaw.result?.[0] ?? []
-
-            return buildActualDebtMap(userReserves, reservesData)
-          }
+        ? () => fetchAaveDebtMap(networkClient, userAddress)
         : skipToken,
     staleTime: 30 * 1000
   })
