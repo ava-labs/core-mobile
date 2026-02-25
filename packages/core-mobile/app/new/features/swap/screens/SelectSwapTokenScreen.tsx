@@ -71,8 +71,7 @@ export const SelectSwapTokenScreen = ({
       token =>
         (token.name ?? '').toLowerCase().includes(query) ||
         (token.symbol ?? '').toLowerCase().includes(query) ||
-        (searchByAddress &&
-          (token.localId ?? '').toLowerCase().includes(query))
+        (searchByAddress && (token.localId ?? '').toLowerCase().includes(query))
     )
   }, [tokens, searchText, isDeveloperMode])
 
