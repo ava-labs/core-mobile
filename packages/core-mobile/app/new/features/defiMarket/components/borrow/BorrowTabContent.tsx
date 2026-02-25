@@ -44,6 +44,7 @@ export type BorrowContentState = {
   positions: BorrowPosition[]
   summary: BorrowSummary | undefined
   isLoading: boolean
+  isFetching: boolean
   isRefreshing: boolean
   refresh: () => void
 }
@@ -62,7 +63,8 @@ export const BorrowTabContent = ({
   containerStyle,
   isActive
 }: BorrowTabContentProps): JSX.Element => {
-  const { positions, summary, isLoading, isRefreshing, refresh } = contentState
+  const { positions, summary, isLoading, isFetching, isRefreshing, refresh } =
+    contentState
   const { navigate } = useRouter()
   const { theme } = useTheme()
   const scrollOffsetRef = useRef({ x: 0, y: 0 })
@@ -183,6 +185,7 @@ export const BorrowTabContent = ({
           <BorrowSummaryBanner
             summary={summary}
             protocol={selectedProtocol}
+            isUpdating={isFetching}
             onHealthScorePress={handlePressHealthScore}
           />
         )}
@@ -198,6 +201,7 @@ export const BorrowTabContent = ({
     sort,
     summary,
     selectedProtocol,
+    isFetching,
     handlePressHealthScore,
     theme.colors.$surfacePrimary
   ])
