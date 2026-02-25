@@ -35,7 +35,7 @@ import {
   isBalanceChangeNotification
 } from '../types'
 import { isSwapCompletedOrFailed } from '../utils'
-import { FusionTransferItem } from '../components/SwapActivityItem'
+import { FusionTransferItem } from '../components/FusionTransferItem'
 
 const TITLE = 'Notifications'
 

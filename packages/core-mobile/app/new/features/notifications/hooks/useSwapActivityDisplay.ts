@@ -62,7 +62,11 @@ export function useSwapActivityDisplay(
   const fromTokenData = useMemo(
     () =>
       item
-        ? tokens.find(t => t.internalId === item.fromToken.internalId)
+        ? tokens.find(
+            t =>
+              t.internalId === item.fromToken.internalId ||
+              t.localId === item.fromToken.localId
+          )
         : undefined,
     [tokens, item]
   )
@@ -70,7 +74,11 @@ export function useSwapActivityDisplay(
   const toTokenData = useMemo(
     () =>
       item
-        ? tokens.find(t => t.internalId === item.toToken.internalId)
+        ? tokens.find(
+            t =>
+              t.internalId === item.toToken.internalId ||
+              t.localId === item.toToken.localId
+          )
         : undefined,
     [tokens, item]
   )
