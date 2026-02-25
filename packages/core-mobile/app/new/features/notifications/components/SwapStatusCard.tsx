@@ -2,7 +2,7 @@ import { Separator, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { NetworkLogo } from 'common/components/NetworkLogo'
 import React from 'react'
 import { NotificationSwapStatus } from '../types'
-import { StatusIcon } from './StatusIcon'
+import { SwapStatusIcon } from './SwapStatusIcon'
 
 type SwapStatusCardProps = {
   directionLabel: 'From' | 'To'
@@ -72,7 +72,7 @@ export const SwapStatusCard = ({
           Status
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <StatusIcon status={status} />
+          <SwapStatusIcon status={status} />
           <Text
             variant="body1"
             sx={{

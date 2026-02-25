@@ -5,7 +5,7 @@ import { NotificationSwapStatus } from '../types'
 
 const STATUS_ICON_SIZE = 20
 
-export const StatusIcon = ({
+export const SwapStatusIcon = ({
   status
 }: {
   status: NotificationSwapStatus
