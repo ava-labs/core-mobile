@@ -148,22 +148,36 @@ export function useQuoteStreaming(
 
     // Subscribe to quote stream
     const unsubscribe = quoter.subscribe((event, data) => {
-      if (event === 'quote') {
-        // Write to Zustand stores
-        setBestQuote(data.bestQuote)
-        setAllQuotes([...data.quotes]) // Convert readonly array to mutable
+      switch (event) {
+        case 'quote':
+          // Write to Zustand stores
+          setBestQuote(data.bestQuote)
+          setAllQuotes([...data.quotes]) // Convert readonly array to mutable
 
-        setIsLoading(false)
-        setError(null)
+          setIsLoading(false)
+          setError(null)
 
-        Logger.info('Quote update received', {
-          bestQuote: data.bestQuote,
-          quotesCount: data.quotes.length
-        })
-      } else if (event === 'error') {
-        Logger.error('Quote stream error', data)
-        setError(data)
-        setIsLoading(false)
+          Logger.info('Quote update received', {
+            bestQuote: data.bestQuote,
+            quotesCount: data.quotes.length
+          })
+          break
+        case 'error': {
+          Logger.error('Quote stream error', data)
+          setError(data)
+          setIsLoading(false)
+          break
+        }
+        case 'done':
+          setIsLoading(false)
+          if (data.reason === 'no-eligible-services') {
+            setError(
+              new Error(
+                'No swap routes available for this pair. Please try a different token pair.'
+              )
+            )
+          }
+          break
       }
     })
 
