@@ -58,25 +58,30 @@ export function BorrowAssetRow({
           {asset.symbol}
         </Text>
       </View>
-      {isPrivacyModeEnabled ? (
-        <HiddenBalanceText variant="body1" sx={{ color: '$textSecondary' }} />
-      ) : (
-        <View sx={{ alignItems: 'flex-end' }}>
-          <Text variant="body2" sx={{ color: resolvedLabelColor }}>
-            {label}
-          </Text>
-          <Text
-            variant="heading2"
-            sx={{ color: '$textPrimary', fontWeight: '500' }}>
-            {formatNumber(amount)}
-          </Text>
-          <Text
-            variant="subtitle2"
-            sx={{ color: '$textSecondary', lineHeight: 13 }}>
-            {formatCurrency({ amount: amountUsd })}
-          </Text>
-        </View>
-      )}
+      <View sx={{ alignItems: 'flex-end' }}>
+        <Text variant="body2" sx={{ color: resolvedLabelColor }}>
+          {label}
+        </Text>
+        {isPrivacyModeEnabled ? (
+          <HiddenBalanceText
+            variant="heading3"
+            sx={{ fontWeight: '500', marginTop: 2 }}
+          />
+        ) : (
+          <>
+            <Text
+              variant="heading2"
+              sx={{ color: '$textPrimary', fontWeight: '500' }}>
+              {formatNumber(amount)}
+            </Text>
+            <Text
+              variant="subtitle2"
+              sx={{ color: '$textSecondary', lineHeight: 13 }}>
+              {formatCurrency({ amount: amountUsd })}
+            </Text>
+          </>
+        )}
+      </View>
     </DeFiRowItem>
   )
 }

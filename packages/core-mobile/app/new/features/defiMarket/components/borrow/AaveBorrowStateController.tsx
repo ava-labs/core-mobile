@@ -7,7 +7,7 @@ export const AaveBorrowStateController = ({
 }: {
   onStateChange: (state: BorrowContentState) => void
 }): null => {
-  const { positions, summary, isLoading, isRefreshing, refresh } =
+  const { positions, summary, isLoading, isFetching, isRefreshing, refresh } =
     useAaveBorrowPositionsSummary()
 
   useEffect(() => {
@@ -15,10 +15,19 @@ export const AaveBorrowStateController = ({
       positions,
       summary,
       isLoading,
+      isFetching,
       isRefreshing,
       refresh
     })
-  }, [positions, summary, isLoading, isRefreshing, refresh, onStateChange])
+  }, [
+    positions,
+    summary,
+    isLoading,
+    isFetching,
+    isRefreshing,
+    refresh,
+    onStateChange
+  ])
 
   return null
 }

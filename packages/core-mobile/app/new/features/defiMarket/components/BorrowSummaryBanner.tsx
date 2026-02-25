@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Icons,
   MaskedText,
   Separator,
@@ -29,10 +30,12 @@ const HEALTH_SCORE_BADGE_OVERLAP = HEALTH_SCORE_BADGE_BORDER_WIDTH
 export const BorrowSummaryBanner = ({
   summary,
   protocol,
+  isUpdating,
   onHealthScorePress
 }: {
   summary: BorrowSummary
   protocol?: MarketName
+  isUpdating?: boolean
   onHealthScorePress?: (event: GestureResponderEvent) => void
 }): JSX.Element => {
   const { theme } = useTheme()
@@ -133,81 +136,99 @@ export const BorrowSummaryBanner = ({
         ))}
       </View>
 
-      {summary.healthScore !== undefined && (
+      {(summary.healthScore !== undefined || isUpdating) && (
         <>
           <Separator sx={{ marginVertical: 12 }} />
-          <TouchableOpacity
-            onPress={onHealthScorePress}
-            disabled={!onHealthScorePress}>
+          {isUpdating ? (
             <View
               sx={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 8
+                gap: 12,
+                paddingVertical: 6,
+                marginLeft: 6
               }}>
+              <ActivityIndicator size="small" />
+              <Text
+                variant="body2"
+                sx={{ color: '$textSecondary', fontWeight: 500 }}>
+                Your health score is updating...
+              </Text>
+            </View>
+          ) : (
+            <TouchableOpacity
+              onPress={onHealthScorePress}
+              disabled={!onHealthScorePress}>
               <View
                 sx={{
                   flexDirection: 'row',
                   alignItems: 'center',
-                  gap: HEALTH_SCORE_BADGE_ICON_GAP,
-                  flex: 1
+                  justifyContent: 'space-between',
+                  gap: 8
                 }}>
-                {protocol && (
-                  <View sx={{ zIndex: 2 }}>
-                    <DefiMarketLogo
-                      marketName={protocol}
-                      width={HEALTH_SCORE_BADGE_SIZE}
-                    />
-                  </View>
-                )}
                 <View
                   sx={{
-                    marginLeft: protocol
-                      ? -(
-                          HEALTH_SCORE_BADGE_ICON_GAP +
-                          HEALTH_SCORE_BADGE_OVERLAP
-                        )
-                      : 0,
-                    width: HEALTH_SCORE_BADGE_SIZE,
-                    height: HEALTH_SCORE_BADGE_SIZE,
-                    borderRadius: HEALTH_SCORE_BADGE_SIZE / 2,
-                    backgroundColor: 'transparent',
-                    borderWidth: HEALTH_SCORE_BADGE_BORDER_WIDTH,
-                    borderColor: healthScoreRingColor,
+                    flexDirection: 'row',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    gap: HEALTH_SCORE_BADGE_ICON_GAP,
+                    flex: 1
                   }}>
-                  <Text
-                    variant="caption"
+                  {protocol && (
+                    <View sx={{ zIndex: 2 }}>
+                      <DefiMarketLogo
+                        marketName={protocol}
+                        width={HEALTH_SCORE_BADGE_SIZE}
+                      />
+                    </View>
+                  )}
+                  <View
                     sx={{
-                      width: '100%',
-                      textAlign: 'center'
+                      marginLeft: protocol
+                        ? -(
+                            HEALTH_SCORE_BADGE_ICON_GAP +
+                            HEALTH_SCORE_BADGE_OVERLAP
+                          )
+                        : 0,
+                      width: HEALTH_SCORE_BADGE_SIZE,
+                      height: HEALTH_SCORE_BADGE_SIZE,
+                      borderRadius: HEALTH_SCORE_BADGE_SIZE / 2,
+                      backgroundColor: 'transparent',
+                      borderWidth: HEALTH_SCORE_BADGE_BORDER_WIDTH,
+                      borderColor: healthScoreRingColor,
+                      alignItems: 'center',
+                      justifyContent: 'center'
                     }}>
-                    {healthScoreBadgeText}
-                  </Text>
-                </View>
-                <View
-                  sx={{
-                    flex: 1,
-                    justifyContent: 'center'
-                  }}>
-                  <Text
-                    variant="body2"
+                    <Text
+                      variant="caption"
+                      sx={{
+                        width: '100%',
+                        textAlign: 'center'
+                      }}>
+                      {healthScoreBadgeText}
+                    </Text>
+                  </View>
+                  <View
                     sx={{
-                      color: '$textPrimary'
+                      flex: 1,
+                      justifyContent: 'center'
                     }}>
-                    Your health score is currently rated as {healthRiskLabel}
-                  </Text>
+                    <Text
+                      variant="body2"
+                      sx={{
+                        color: '$textPrimary'
+                      }}>
+                      Your health score is currently rated as {healthRiskLabel}
+                    </Text>
+                  </View>
                 </View>
+                <Icons.Navigation.ChevronRight
+                  width={20}
+                  height={20}
+                  color={theme.colors.$textSecondary}
+                />
               </View>
-              <Icons.Navigation.ChevronRight
-                width={20}
-                height={20}
-                color={theme.colors.$textSecondary}
-              />
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          )}
         </>
       )}
     </View>
