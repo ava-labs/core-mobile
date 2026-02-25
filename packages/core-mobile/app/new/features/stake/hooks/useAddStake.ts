@@ -29,7 +29,7 @@ export const useAddStake = (): {
     }
     buttons.push({
       text: 'Swap AVAX',
-      onPress: navigateToSwap
+      onPress: () => navigateToSwap()
     })
     buttons.push({
       text: 'Cancel'

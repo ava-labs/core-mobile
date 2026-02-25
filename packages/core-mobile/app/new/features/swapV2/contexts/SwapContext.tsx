@@ -94,7 +94,7 @@ export const SwapContextProvider = ({
   const [allQuotes] = useAllQuotes()
 
   // Transfer storage
-  const [, setTransfers] = useFusionTransfers()
+  const { setTransfers } = useFusionTransfers()
 
   // Derive the actual selected quote from allQuotes with fallback matching
   // Strategy:
@@ -283,9 +283,8 @@ export const SwapContextProvider = ({
   const swap = useCallback(
     // eslint-disable-next-line sonarjs/cognitive-complexity
     async (retryQuote?: Quote, retries = 0) => {
-      // Guard against concurrent swap executions (ref is synchronous, unlike state)
-      if (isSwappingRef.current) return
-      if (retries === 0) isSwappingRef.current = true
+      // Guard against concurrent swap executions on initial call (ref is synchronous, unlike state)
+      if (retries === 0 && isSwappingRef.current) return
 
       // Determine which quote to use (retry or normal flow)
       const quoteToUse = retryQuote ?? userQuote ?? bestQuote
@@ -302,6 +301,9 @@ export const SwapContextProvider = ({
         throw new Error('Addresses not specified')
       }
 
+      // Set only after all validations pass so a validation throw can't permanently
+      // lock the ref (these throws are outside the try/catch below)
+      if (retries === 0) isSwappingRef.current = true
       setSwapStatus(SwapStatus.Swapping)
 
       try {

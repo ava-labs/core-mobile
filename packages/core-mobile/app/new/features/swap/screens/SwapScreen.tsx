@@ -80,6 +80,7 @@ export const SwapScreen = (): JSX.Element => {
   const params = useGlobalSearchParams<{
     initialTokenIdFrom?: string
     initialTokenIdTo?: string
+    retryingSwapActivityId?: string
   }>()
 
   const { formatCurrency } = useFormatCurrency()

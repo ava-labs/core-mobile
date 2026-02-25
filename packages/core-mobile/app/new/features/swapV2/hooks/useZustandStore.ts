@@ -4,6 +4,7 @@ import { persist } from 'zustand/middleware'
 import { zustandMMKVStorage } from 'utils/mmkv/storages'
 import { ZustandStorageKeys } from 'resources/Constants'
 import type { LocalTokenWithBalance } from 'store/balance'
+import { mapTransferToSwapStatus } from 'features/notifications/utils'
 import type {
   Quote,
   Transfer,
@@ -46,6 +47,9 @@ interface FusionTransfersState {
       | FusionTransfersMap
       | ((curr: FusionTransfersMap) => FusionTransfersMap)
   ) => void
+  removeTransfer: (transferId: string) => void
+  clearCompletedTransfers: () => void
+  clearAllTransfers: () => void
 }
 
 export const fusionTransfersStore = create<FusionTransfersState>()(
@@ -55,7 +59,22 @@ export const fusionTransfersStore = create<FusionTransfersState>()(
       setTransfers: next =>
         set(state => ({
           transfers: typeof next === 'function' ? next(state.transfers) : next
-        }))
+        })),
+      removeTransfer: (transferId: string) =>
+        set(state => {
+          const { [transferId]: _, ...rest } = state.transfers
+          return { transfers: rest }
+        }),
+      clearCompletedTransfers: () =>
+        set(state => ({
+          transfers: Object.fromEntries(
+            Object.entries(state.transfers).filter(([, t]) => {
+              const status = mapTransferToSwapStatus(t.transfer)
+              return status === 'in_progress'
+            })
+          )
+        })),
+      clearAllTransfers: () => set({ transfers: {} })
     }),
     {
       name: ZustandStorageKeys.FUSION_TRANSFERS,
@@ -65,18 +84,21 @@ export const fusionTransfersStore = create<FusionTransfersState>()(
   )
 )
 
-// Export hook that matches the createZustandStore API
-export const useFusionTransfers = (): [
-  FusionTransfersMap,
-  (
-    next:
-      | FusionTransfersMap
-      | ((curr: FusionTransfersMap) => FusionTransfersMap)
-  ) => void
-] => {
+export const useFusionTransfers = (): FusionTransfersState => {
   const transfers = fusionTransfersStore(s => s.transfers)
   const setTransfers = fusionTransfersStore(s => s.setTransfers)
-  return [transfers, setTransfers]
+  const removeTransfer = fusionTransfersStore(s => s.removeTransfer)
+  const clearCompletedTransfers = fusionTransfersStore(
+    s => s.clearCompletedTransfers
+  )
+  const clearAllTransfers = fusionTransfersStore(s => s.clearAllTransfers)
+  return {
+    transfers,
+    setTransfers,
+    removeTransfer,
+    clearCompletedTransfers,
+    clearAllTransfers
+  }
 }
 
 // Expose setState and getState for non-React contexts
@@ -88,6 +110,18 @@ useFusionTransfers.setState = (
 
 useFusionTransfers.getState = () => {
   return fusionTransfersStore.getState().transfers
+}
+
+useFusionTransfers.removeTransfer = (transferId: string) => {
+  fusionTransfersStore.getState().removeTransfer(transferId)
+}
+
+useFusionTransfers.clearCompletedTransfers = () => {
+  fusionTransfersStore.getState().clearCompletedTransfers()
+}
+
+useFusionTransfers.clearAllTransfers = () => {
+  fusionTransfersStore.getState().clearAllTransfers()
 }
 
 // Updates only the transfer field for a given id; keeps token metadata/timestamp intact

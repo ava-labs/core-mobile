@@ -45,14 +45,18 @@ import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
 import { ServiceType } from '../types'
+import { useFusionTransfers } from '../hooks/useZustandStore'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
+  const { removeTransfer } = useFusionTransfers()
   const { navigate, dismissAll } = useRouter()
   const navigation = useNavigation()
+
   const params = useGlobalSearchParams<{
     initialTokenIdFrom?: string
     initialTokenIdTo?: string
+    retryingSwapActivityId?: string
   }>()
 
   const { formatCurrency } = useFormatCurrency()
@@ -252,8 +256,20 @@ export const SwapScreen = (): JSX.Element => {
 
     dismissKeyboardIfNeeded()
 
+    // If this swap is initiated from a failed swap activity, immediately remove that
+    // activity so it doesn't continue to show up in the notifications list while this
+    // new swap attempt is in progress.
+    params.retryingSwapActivityId &&
+      removeTransfer(params.retryingSwapActivityId)
+
     swap()
-  }, [swap, activeQuote, slippage])
+  }, [
+    swap,
+    activeQuote,
+    slippage,
+    removeTransfer,
+    params.retryingSwapActivityId
+  ])
 
   const handleFromAmountChange = useCallback(
     (amount: bigint): void => {

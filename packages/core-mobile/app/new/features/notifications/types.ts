@@ -114,42 +114,11 @@ export function isBalanceChangeNotification(
   return notification.type === 'BALANCE_CHANGES'
 }
 
-/**
- * Map notification type to category for UI tabs
- */
-export function mapTypeToCategory(
-  type: NotificationType
-): NotificationCategory {
-  switch (type) {
-    case 'BALANCE_CHANGES':
-      return NotificationCategory.TRANSACTION
-    case 'PRICE_ALERTS':
-      return NotificationCategory.PRICE_UPDATE
-    case 'NEWS':
-    default:
-      return NotificationCategory.NEWS
-  }
-}
+// ─────────────────────────────────────────────────────────────────────────────
+// Swap activity types
+// ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Filter notifications by tab
+ * Status of a swap transaction.
  */
-export function filterByTab(
-  notifications: AppNotification[],
-  tab: NotificationTab
-): AppNotification[] {
-  switch (tab) {
-    case NotificationTab.ALL:
-      return notifications
-    case NotificationTab.TRANSACTIONS:
-      return notifications.filter(
-        n => n.category === NotificationCategory.TRANSACTION
-      )
-    case NotificationTab.PRICE_UPDATES:
-      return notifications.filter(
-        n => n.category === NotificationCategory.PRICE_UPDATE
-      )
-    default:
-      return notifications
-  }
-}
+export type NotificationSwapStatus = 'completed' | 'in_progress' | 'failed'
