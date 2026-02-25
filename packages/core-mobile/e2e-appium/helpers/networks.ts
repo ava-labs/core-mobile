@@ -3,6 +3,7 @@ import common from '../locators/commonEls.loc'
 export type Network = {
   name: string
   haveToggle: boolean
+  secondName?: string
   data?: {
     rpcUrl?: string
     explorerUrl?: string
@@ -25,6 +26,7 @@ export const customNetwork: Network = {
 export const networks: Network[] = [
   {
     name: common.cChain,
+    secondName: common.cChain_2,
     haveToggle: false,
     data: {
       rpcUrl: 'https://api.avax.network/ext/bc/C/rpc',
@@ -71,7 +73,7 @@ export const networks: Network[] = [
     haveToggle: false,
     data: {
       rpcUrl: 'https://proxy-api.avax.network/proxy/infura/mainnet',
-      explorerUrl: 'https://routescan.io',
+      explorerUrl: 'https://etherscan.io/',
       chainId: '1',
       tokenSymbol: 'ETH',
       tokenName: 'Ethereum'

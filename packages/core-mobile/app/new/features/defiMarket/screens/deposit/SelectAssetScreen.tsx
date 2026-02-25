@@ -142,6 +142,7 @@ export const SelectAssetScreen = (): JSX.Element => {
             <Button
               type="secondary"
               size="small"
+              testID={`depositOrBuy__${item.symbol}`}
               onPress={() => handleSelectToken(item)}>
               {tokenWithBalance?.balance !== undefined &&
               tokenWithBalance.balance > 0n

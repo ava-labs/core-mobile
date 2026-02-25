@@ -40,7 +40,7 @@ export const DefiMarketLogo = ({
           height: width,
           borderRadius: width / 2
         }}
-        testID="protocol_logo"
+        testID={`protocol_logo__${marketName}`}
       />
       {networkLogoUri && (
         <View
