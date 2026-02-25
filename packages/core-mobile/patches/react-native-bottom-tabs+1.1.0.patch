@@ -1,0 +1,101 @@
+diff --git a/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/RCTTabView.kt b/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/RCTTabView.kt
+index 23cd875..7cfb407 100644
+--- a/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/RCTTabView.kt
++++ b/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/RCTTabView.kt
+@@ -269,9 +269,6 @@ class ReactBottomNavigationView(context: Context) : LinearLayout(context) {
+             onTabLongPressed(menuItem)
+             true
+           }
+-          view.setOnClickListener {
+-            onTabSelected(menuItem)
+-          }
+ 
+           item.testID?.let { testId ->
+             view.findViewById<View>(com.google.android.material.R.id.navigation_bar_item_content_container)
+@@ -286,6 +283,17 @@ class ReactBottomNavigationView(context: Context) : LinearLayout(context) {
+     post {
+       updateTextAppearance()
+       updateTintColors()
++
++      bottomNavigation.setOnItemSelectedListener { item ->
++        onTabSelected(item)
++        true
++      }
++
++      // Re-selecting the currently active tab does not trigger OnItemSelectedListener,
++      // but it should still notify JS (e.g. scroll-to-top behavior), matching iOS.
++      bottomNavigation.setOnItemReselectedListener { item ->
++        onTabSelected(item)
++      }
+     }
+   }
+ 
+diff --git a/node_modules/react-native-bottom-tabs/ios/BottomAccessoryProvider.swift b/node_modules/react-native-bottom-tabs/ios/BottomAccessoryProvider.swift
+index 539efee..83dbe29 100644
+--- a/node_modules/react-native-bottom-tabs/ios/BottomAccessoryProvider.swift
++++ b/node_modules/react-native-bottom-tabs/ios/BottomAccessoryProvider.swift
+@@ -8,7 +8,8 @@ import SwiftUI
+     self.delegate = delegate
+   }
+ 
+-  #if !os(macOS)
++  // iOS 26 APIs require Swift 6.1+ / Xcode 26+ SDK
++  #if !os(macOS) && swift(>=6.1)
+   @available(iOS 26.0, *)
+   public func emitPlacementChanged(_ placement: TabViewBottomAccessoryPlacement?) {
+     var placementValue = "none"
+diff --git a/node_modules/react-native-bottom-tabs/ios/TabItemEventModifier.swift b/node_modules/react-native-bottom-tabs/ios/TabItemEventModifier.swift
+index 42eb1e6..7e612a1 100644
+--- a/node_modules/react-native-bottom-tabs/ios/TabItemEventModifier.swift
++++ b/node_modules/react-native-bottom-tabs/ios/TabItemEventModifier.swift
+@@ -24,7 +24,7 @@ private final class TabBarDelegate: NSObject, UITabBarControllerDelegate {
+         _ = onClick?(index)
+       }
+ 
+-      return false
++      return true
+     }
+ 
+     // Unfortunately, due to iOS 26 new tab switching animations, controlling state from JavaScript is causing significant delays when switching tabs.
+diff --git a/node_modules/react-native-bottom-tabs/ios/TabView/NewTabView.swift b/node_modules/react-native-bottom-tabs/ios/TabView/NewTabView.swift
+index d699315..2484cc4 100644
+--- a/node_modules/react-native-bottom-tabs/ios/TabView/NewTabView.swift
++++ b/node_modules/react-native-bottom-tabs/ios/TabView/NewTabView.swift
+@@ -68,9 +68,9 @@ struct ConditionalBottomAccessoryModifier: ViewModifier {
+ 
+   func body(content: Content) -> some View {
+     #if os(macOS)
+-    // tabViewBottomAccessory is not available on macOS
+     content
+-    #else
++    #elseif swift(>=6.1)
++    // iOS 26 tabViewBottomAccessory API requires Swift 6.1+ / Xcode 26+ SDK
+     if #available(iOS 26.0, tvOS 26.0, visionOS 3.0, *), bottomAccessoryView != nil {
+       content
+         .tabViewBottomAccessory {
+@@ -79,12 +79,14 @@ struct ConditionalBottomAccessoryModifier: ViewModifier {
+     } else {
+       content
+     }
++    #else
++    content
+     #endif
+   }
+ 
+   @ViewBuilder
+   private func renderBottomAccessoryView() -> some View {
+-    #if !os(macOS)
++    #if !os(macOS) && swift(>=6.1)
+     if let bottomAccessoryView {
+       if #available(iOS 26.0, *) {
+         BottomAccessoryRepresentableView(view: bottomAccessoryView)
+@@ -94,7 +96,8 @@ struct ConditionalBottomAccessoryModifier: ViewModifier {
+   }
+ }
+ 
+-#if !os(macOS)
++// iOS 26 BottomAccessoryRepresentableView requires Swift 6.1+ / Xcode 26+ SDK
++#if !os(macOS) && swift(>=6.1)
+ @available(iOS 26.0, *)
+ struct BottomAccessoryRepresentableView: PlatformViewRepresentable {
+   @Environment(\.tabViewBottomAccessoryPlacement) var tabViewBottomAccessoryPlacement

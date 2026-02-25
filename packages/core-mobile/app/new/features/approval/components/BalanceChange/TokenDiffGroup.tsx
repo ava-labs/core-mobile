@@ -24,15 +24,19 @@ export const TokenDiffGroup = ({
 }: {
   tokenDiff: TokenDiff
   isOut: boolean
-}): JSX.Element => {
+}): JSX.Element | null => {
   const token = tokenDiff.token
 
   const diffItems = tokenDiff.items
 
   const [expanded, setExpanded] = useState(diffItems.length === 1)
 
+  if (diffItems.length === 0) {
+    return null
+  }
+
   return (
-    <View>
+    <View sx={{ paddingVertical: 16 }}>
       {diffItems.length > 1 && (
         <TouchableOpacity onPress={() => setExpanded(!expanded)}>
           <View

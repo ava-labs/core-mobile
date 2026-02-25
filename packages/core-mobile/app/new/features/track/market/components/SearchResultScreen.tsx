@@ -66,14 +66,18 @@ const SearchResultScreen = ({
   })
 
   const header = useHeaderMeasurements()
+  const collapsibleHeaderHeight = header?.height ?? 0
 
   const keyboardAvoidingStyle = useAnimatedStyle(() => {
     return {
       transform: [
         {
-          translateY: withTiming(isSearchBarFocused ? -header.height + 40 : 0, {
-            ...ANIMATED.TIMING_CONFIG
-          })
+          translateY: withTiming(
+            isSearchBarFocused ? -collapsibleHeaderHeight + 40 : 0,
+            {
+              ...ANIMATED.TIMING_CONFIG
+            }
+          )
         }
       ]
     }

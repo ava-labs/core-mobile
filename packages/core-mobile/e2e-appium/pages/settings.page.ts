@@ -682,7 +682,11 @@ class Settings {
 
   async verifyNetworkDetails(network: Network) {
     await this.tapNetworkByName(network.name)
-    await actions.waitFor(this.networkName(network.name))
+    if (network.secondName) {
+      await actions.waitFor(this.networkName(network.secondName))
+    } else {
+      await actions.waitFor(this.networkName(network.name))
+    }
     if (![commonElsLoc.bitcoin, commonElsLoc.solana].includes(network.name)) {
       await actions.isVisible(this.networkRpcUrl)
       await actions.isVisible(this.networkDetails(network.data?.rpcUrl ?? ''))

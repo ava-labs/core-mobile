@@ -2,7 +2,6 @@ import {
   AddCard,
   GRID_GAP,
   SCREEN_WIDTH,
-  SPRING_LINEAR_TRANSITION,
   Text,
   useTheme,
   View
@@ -12,6 +11,7 @@ import {
   getListItemEnteringAnimation,
   getListItemExitingAnimation
 } from 'common/utils/animations'
+import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import {
   LayoutChangeEvent,
@@ -21,7 +21,7 @@ import {
   ViewStyle
 } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { useRouter } from 'expo-router'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { BorrowProtocolSelector } from '../components/BorrowProtocolSelector'
 
 interface BorrowTabScreenProps {
@@ -49,7 +49,7 @@ const BorrowTabScreen = ({
   }, [])
 
   const handleAddBorrow = useCallback(() => {
-    // TODO: Navigate to borrow flow
+    AnalyticsService.capture('EarnBorrowStart')
     // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/borrow' })
   }, [navigate])
@@ -74,8 +74,7 @@ const BorrowTabScreen = ({
               marginLeft: index % 2 !== 0 ? 6 : 16
             }}
             entering={getListItemEnteringAnimation(index)}
-            exiting={getListItemExitingAnimation(index)}
-            layout={SPRING_LINEAR_TRANSITION}>
+            exiting={getListItemExitingAnimation(index)}>
             {content}
           </Animated.View>
         )

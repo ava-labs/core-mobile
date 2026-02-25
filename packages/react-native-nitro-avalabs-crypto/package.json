@@ -54,15 +54,15 @@
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
-    "@react-native/babel-preset": "0.79.5",
+    "@react-native/babel-preset": "0.81.5",
     "@react-native/eslint-config": "0.82.0",
     "@rushstack/eslint-patch": "1.10.4",
-    "@types/react": "19.0.10",
+    "@types/react": "19.1.10",
     "eslint": "8.50.0",
     "eslint-plugin-avalabs-mobile": "workspace:*",
     "nitrogen": "0.32.0",
-    "react": "19.0.0",
-    "react-native": "0.79.5",
+    "react": "19.1.0",
+    "react-native": "0.81.5",
     "react-native-nitro-modules": "0.32.2",
     "typescript": "^5.8.3"
   },

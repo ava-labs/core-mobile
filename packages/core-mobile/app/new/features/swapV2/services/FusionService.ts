@@ -3,13 +3,15 @@ import {
   createTransferManager,
   Environment,
   EvmServiceInitializer,
-  FetchFunction,
   LombardServiceInitializer,
   MarkrServiceInitializer,
+  Quote,
   QuoterInterface,
   ServiceInitializer,
   ServiceType,
-  TransferManager
+  Transfer,
+  TransferManager,
+  Fetch
 } from '@avalabs/unified-asset-transfer'
 import type { FeatureFlags } from 'services/posthog/types'
 import Logger from 'utils/Logger'
@@ -17,6 +19,7 @@ import {
   MARKR_API_URL,
   MARKR_EVM_PARTNER_ID
 } from '../consts'
+import { isTransferInProgress } from '../utils/transferStatus'
 import type {
   FusionConfig,
   FusionSigners,
@@ -32,6 +35,7 @@ import type {
  */
 class FusionService implements IFusionService {
   #transferManager: TransferManager | null = null
+  #trackingCancels = new Map<string, () => void>()
 
   /**
    * Private getter that throws if the service is not initialized
@@ -111,11 +115,16 @@ class FusionService implements IFusionService {
              
           } satisfies LombardServiceInitializer)
           break
-
         default:
           throw new Error(`Unknown service type: ${serviceType}`)
       }
     }
+
+    // Always include wrap/unwrap service
+    initializers.push({
+      type: ServiceType.WRAP_UNWRAP,
+      evmSigner: signers.evm,
+    } satisfies EvmServiceInitializer)
 
     return initializers
   }
@@ -179,7 +188,7 @@ class FusionService implements IFusionService {
     signers
   }: {
     bitcoinProvider: BitcoinFunctions
-    fetch: FetchFunction
+    fetch: Fetch
     environment: Environment
     featureFlags: FeatureFlags
     signers: FusionSigners
@@ -240,9 +249,76 @@ class FusionService implements IFusionService {
   }
 
   /**
-   * Cleanup and reset the service
+   * Execute a transfer using the provided quote
+   * @param quote The quote to execute
+   * @returns Transfer object with status and transaction details
+   */
+  async transferAsset(quote: Quote): Promise<Transfer> {
+    try {
+      Logger.info('Executing transfer with quote:', {
+        aggregator: quote.aggregator.name,
+        serviceType: quote.serviceType
+      })
+
+      const transfer = await this.transferManager.transferAsset({ quote })
+
+      Logger.info('Transfer executed:', {
+        transferId: transfer.id,
+        status: transfer.status
+      })
+
+      return transfer
+    } catch (error) {
+      Logger.error('Failed to execute transfer', error)
+      throw error
+    }
+  }
+
+  /**
+   * Track a transfer's status changes via the SDK
+   * Calls updateListener on each status update and when the transfer completes
+   * @param transfer The transfer to track
+   * @param updateListener Callback invoked on every status change
+   */
+  trackTransfer(
+    transfer: Transfer,
+    updateListener: (updated: Transfer) => void
+  ): void {
+    const wrappedListener = (updated: Transfer): void => {
+      Logger.info('[FusionService] new transfer status', {
+        transferId: updated.id,
+        status: updated.status
+      })
+      updateListener(updated)
+      if (!isTransferInProgress(updated)) {
+        this.#trackingCancels.delete(updated.id)
+      }
+    }
+
+    const { cancel, result } = this.transferManager.trackTransfer({
+      transfer,
+      updateListener: wrappedListener
+    })
+
+    this.#trackingCancels.set(transfer.id, cancel)
+
+    result
+      .then(completed => wrappedListener(completed))
+      .catch(err => {
+        Logger.error('[FusionService] trackTransfer error', err)
+        this.#trackingCancels.delete(transfer.id)
+      })
+  }
+
+  /**
+   * Cleanup and reset the service.
+   * Cancels all in-flight tracking before destroying the transferManager.
    */
   cleanup(): void {
+    for (const cancel of this.#trackingCancels.values()) {
+      cancel()
+    }
+    this.#trackingCancels.clear()
     this.#transferManager = null
     Logger.info('Fusion service cleaned up')
   }

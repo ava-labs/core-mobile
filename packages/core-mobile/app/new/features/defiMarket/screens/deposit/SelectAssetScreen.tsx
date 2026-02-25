@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { ListScreen } from 'common/components/ListScreen'
 import {
   Button,
@@ -25,7 +25,10 @@ import errorIcon from '../../../../assets/icons/melting_face.png'
 import { DefiAssetDetails } from '../../types'
 import { DefiAssetLogo } from '../../components/DefiAssetLogo'
 import { findMatchingTokenWithBalance } from '../../utils/findMatchingTokenWithBalance'
-import { useDepositSelectedAsset } from '../../store'
+import {
+  useDepositSelectedAsset,
+  useRedirectToBorrowAfterDeposit
+} from '../../store'
 import { useAvailableMarkets } from '../../hooks/useAvailableMarkets'
 import { useDepositableTokens } from '../../hooks/useDepositableTokens'
 
@@ -39,8 +42,18 @@ export const SelectAssetScreen = (): JSX.Element => {
     chainId: cChainNetwork?.chainId
   })
   const { data: markets, isPending: isLoadingMarkets } = useAvailableMarkets()
+  const [redirectToBorrow] = useRedirectToBorrowAfterDeposit()
+
+  // Filter markets by protocol if redirected from borrow flow
+  const filteredMarkets = useMemo(() => {
+    if (redirectToBorrow) {
+      return markets.filter(m => m.marketName === redirectToBorrow)
+    }
+    return markets
+  }, [markets, redirectToBorrow])
+
   const depositableTokens = useDepositableTokens(
-    markets,
+    filteredMarkets,
     cChainTokensWithBalance
   )
   const {
@@ -129,6 +142,7 @@ export const SelectAssetScreen = (): JSX.Element => {
             <Button
               type="secondary"
               size="small"
+              testID={`depositOrBuy__${item.symbol}`}
               onPress={() => handleSelectToken(item)}>
               {tokenWithBalance?.balance !== undefined &&
               tokenWithBalance.balance > 0n

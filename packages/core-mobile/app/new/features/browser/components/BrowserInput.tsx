@@ -10,12 +10,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { useNavigation } from '@react-navigation/native'
 import React, { ReactNode, useCallback, useMemo } from 'react'
-import {
-  NativeSyntheticEvent,
-  Platform,
-  TextInput,
-  TextInputSubmitEditingEventData
-} from 'react-native'
+import { Platform, TextInput, TextInputSubmitEditingEvent } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   interpolateColor,
@@ -79,9 +74,7 @@ export const BrowserInput = (): ReactNode => {
     setUrlEntry(text)
   }
 
-  const onSubmit = (
-    event: NativeSyntheticEvent<TextInputSubmitEditingEventData>
-  ): void => {
+  const onSubmit = (event: TextInputSubmitEditingEvent): void => {
     AnalyticsService.capture('BrowserSearchSubmitted').catch(Logger.error)
 
     setUrlEntry(event.nativeEvent.text)

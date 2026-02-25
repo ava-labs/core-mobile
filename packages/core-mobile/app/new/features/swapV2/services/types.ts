@@ -3,10 +3,12 @@ import type {
   BtcSigner,
   Environment,
   EvmSignerWithMessage,
+  Quote,
   QuoterInterface,
   ServiceType,
+  Transfer,
   TransferManager,
-  FetchFunction
+  Fetch
 } from '@avalabs/unified-asset-transfer'
 
 /**
@@ -15,7 +17,7 @@ import type {
 export interface FusionConfig {
   environment: Environment
   enabledServices: ServiceType[]
-  fetch: FetchFunction
+  fetch: Fetch
 }
 
 /**
@@ -62,6 +64,23 @@ export interface IFusionService {
    * @returns Quoter instance
    */
   getQuoter(params: QuoterParams): QuoterInterface | null
+
+  /**
+   * Execute a transfer using the provided quote
+   * @param quote The quote to execute
+   * @returns Transfer object with status and transaction details
+   */
+  transferAsset(quote: Quote): Promise<Transfer>
+
+  /**
+   * Track a transfer's status changes via the SDK
+   * @param transfer The transfer to track
+   * @param updateListener Callback invoked on every status change
+   */
+  trackTransfer(
+    transfer: Transfer,
+    updateListener: (updated: Transfer) => void
+  ): void
 
   /**
    * Cleanup and reset the service

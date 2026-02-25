@@ -173,8 +173,7 @@ export const TokenInputWidget = ({
             <View sx={{ flex: 1, justifyContent: 'space-between' }}>
               <View
                 sx={{
-                  flexDirection: 'row',
-                  gap: 8
+                  flexDirection: 'row'
                 }}>
                 <TouchableOpacity
                   onPress={onSelectToken}

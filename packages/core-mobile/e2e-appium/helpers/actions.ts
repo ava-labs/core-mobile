@@ -204,6 +204,17 @@ async function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+/**
+ * Drags an element by the specified offset.
+ *
+ * Scroll direction guide (based on finger gesture):
+ * - Negative y offset [0, -200]: Drag UP → Scroll DOWN (reveals content below)
+ * - Positive y offset [0, 200]: Drag DOWN → Scroll UP (reveals content above)
+ *
+ * @param ele - The element to drag
+ * @param targetOffset - [x, y] offset from current position
+ * @param duration - Duration of the drag gesture in ms (default: 500)
+ */
 async function dragAndDrop(
   ele: ChainablePromiseElement,
   targetOffset: [number, number],

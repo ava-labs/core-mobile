@@ -5,8 +5,9 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { Network } from '@avalabs/core-chains-sdk'
 import { OnDelegationProgress } from 'contexts/DelegationContext'
+import { RpcMethod } from '@avalabs/vm-module-types'
 
-type walletId = string
+type WalletId = string
 
 // Types for ledger review transaction params
 export type StakingProgressParams = {
@@ -16,6 +17,7 @@ export type StakingProgressParams = {
 }
 
 export type LedgerReviewTransactionParams = {
+  rpcMethod?: RpcMethod
   network: Network
   onApprove: (onProgress?: OnDelegationProgress) => Promise<void>
   onReject: (message?: string) => void
@@ -31,20 +33,20 @@ interface LedgerParamsState {
 
 interface LedgerWalletMapState {
   ledgerWalletMap: Record<
-    walletId,
+    WalletId,
     {
       device: Omit<LedgerDevice, 'rssi'>
       derivationPathType: LedgerDerivationPathType
     }
   >
   setLedgerWalletMap: (
-    walletId: walletId,
+    walletId: WalletId,
     device: Omit<LedgerDevice, 'rssi'>,
     derivationPathType: LedgerDerivationPathType
   ) => void
-  removeLedgerWallet: (walletId: walletId) => void
+  removeLedgerWallet: (walletId: WalletId) => void
   resetLedgerWalletMap: () => void
-  getLedgerInfoByWalletId: (walletId?: walletId | null) => {
+  getLedgerInfoByWalletId: (walletId?: WalletId | null) => {
     device: Omit<LedgerDevice, 'rssi'> | undefined
     derivationPathType: LedgerDerivationPathType | undefined
   }
@@ -54,7 +56,7 @@ export const ledgerWalletMapStore = create<LedgerWalletMapState>()(
   persist(
     (set, get) => ({
       ledgerWalletMap: {},
-      getLedgerInfoByWalletId: (walletId?: walletId | null) => {
+      getLedgerInfoByWalletId: (walletId?: WalletId | null) => {
         const ledgerWallet = walletId
           ? get().ledgerWalletMap[walletId]
           : undefined
@@ -64,7 +66,7 @@ export const ledgerWalletMapStore = create<LedgerWalletMapState>()(
         }
       },
       setLedgerWalletMap: (
-        walletId: walletId,
+        walletId: WalletId,
         device: Omit<LedgerDevice, 'rssi'>,
         derivationPathType: LedgerDerivationPathType
       ) =>
@@ -74,7 +76,7 @@ export const ledgerWalletMapStore = create<LedgerWalletMapState>()(
             [walletId]: { device, derivationPathType }
           }
         }),
-      removeLedgerWallet: (walletId: walletId) => {
+      removeLedgerWallet: (walletId: WalletId) => {
         const newLedgerWalletMap = { ...get().ledgerWalletMap }
         delete newLedgerWalletMap[walletId]
         set({
