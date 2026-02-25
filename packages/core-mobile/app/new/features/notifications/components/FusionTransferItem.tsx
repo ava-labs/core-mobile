@@ -1,4 +1,4 @@
-import React, { FC, use, useCallback, useMemo } from 'react'
+import React, { FC, useCallback, useMemo } from 'react'
 import { Text } from '@avalabs/k2-alpine'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useNetworks } from 'hooks/networks/useNetworks'
