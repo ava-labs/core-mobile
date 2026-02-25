@@ -62,7 +62,7 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
     status === 'failed'
       ? `${fromAmount} ${fromSymbol} swapped for ${toAmount} ${toSymbol}`
       : status === 'completed'
-      ? `${fromAmount} ${fromSymbol} were swapped for ${toAmount} ${toSymbol}`
+      ? `${fromAmount} ${fromSymbol} was swapped for ${toAmount} ${toSymbol}`
       : `Swapping ${fromSymbol} to ${toSymbol} in progress...`
 
   const subtitle =
