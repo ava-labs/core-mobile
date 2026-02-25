@@ -164,14 +164,13 @@ export const BorrowSummaryBanner = ({
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  gap: 8
+                  gap: 12
                 }}>
                 <View
                   sx={{
                     flexDirection: 'row',
                     alignItems: 'center',
-                    gap: HEALTH_SCORE_BADGE_ICON_GAP,
-                    flex: 1
+                    gap: HEALTH_SCORE_BADGE_ICON_GAP
                   }}>
                   {protocol && (
                     <View sx={{ zIndex: 2 }}>
@@ -207,19 +206,19 @@ export const BorrowSummaryBanner = ({
                       {healthScoreBadgeText}
                     </Text>
                   </View>
-                  <View
+                </View>
+                <View
+                  sx={{
+                    flex: 1,
+                    justifyContent: 'center'
+                  }}>
+                  <Text
+                    variant="body2"
                     sx={{
-                      flex: 1,
-                      justifyContent: 'center'
+                      color: '$textPrimary'
                     }}>
-                    <Text
-                      variant="body2"
-                      sx={{
-                        color: '$textPrimary'
-                      }}>
-                      Your health score is currently rated as {healthRiskLabel}
-                    </Text>
-                  </View>
+                    Your health score is currently rated as {healthRiskLabel}
+                  </Text>
                 </View>
                 <Icons.Navigation.ChevronRight
                   width={20}
