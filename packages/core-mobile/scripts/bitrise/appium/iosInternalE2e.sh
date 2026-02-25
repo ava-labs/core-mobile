@@ -19,8 +19,14 @@ fi
 which node
 node -v
 yarn -v
-npx appium -v || true
-npx appium driver list || true
+
+# Install xcuitest driver for Appium 2.x+
+echo "Installing Appium xcuitest driver..."
+yarn appium driver install xcuitest || npx appium driver install xcuitest || true
+
+# Verify installation
+yarn appium -v || true
+yarn appium driver list || true
 
 if [[ "$IS_SMOKE" == "true" ]]; then
   echo "Running iOS SMOKE tests"
