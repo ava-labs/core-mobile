@@ -1,6 +1,5 @@
 import { AppListenerEffectAPI, AppStartListening, RootState } from 'store/types'
 import { onAppUnlocked, onLogOut, selectIsLocked } from 'store/app/slice'
-
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
@@ -21,8 +20,13 @@ import FusionService from '../services/FusionService'
 import { getFusionEnvironment } from '../consts'
 import { createEvmSigner } from '../services/signers/EvmSigner'
 import { createBtcSigner } from '../services/signers/BtcSigner'
-import { useIsFusionServiceReady } from '../hooks/useZustandStore'
+import {
+  useIsFusionServiceReady,
+  updateFusionTransfer,
+  getPendingFusionTransfers
+} from '../hooks/useZustandStore'
 import { fetchAdapter } from '../utils/fetchAdapter'
+import { trackFusionTransfer } from './actions'
 
 /**
  * Get the current state of all Fusion feature flags
@@ -69,6 +73,22 @@ const shouldReinitializeFusion = (
       currentFeatures.isFusionLombardBtcbToBtcEnabled ||
     prevFeatures.isDeveloperMode !== currentFeatures.isDeveloperMode
   )
+}
+
+/**
+ * Resume tracking for any transfers that were in-progress.
+ * Called after every Fusion reinit since the transferManager is recreated.
+ */
+const resumeTransfersTracking = (): void => {
+  try {
+    const pending = getPendingFusionTransfers()
+    for (const { transfer } of pending) {
+      Logger.info('[FusionTracking] resuming tracking for', transfer.id)
+      FusionService.trackTransfer(transfer, updateFusionTransfer)
+    }
+  } catch (error) {
+    Logger.error('[FusionTracking] failed to resume transfer tracking', error)
+  }
 }
 
 /**
@@ -157,6 +177,8 @@ export const initFusionService = async (
         .filter(([, enabled]) => enabled)
         .map(([key]) => key)
     })
+
+    resumeTransfersTracking()
   } catch (error) {
     Logger.error('Failed to initialize Fusion service', error)
     // Mark as not ready on error
@@ -184,5 +206,27 @@ export const addFusionListeners = (startListening: AppStartListening): void => {
   startListening({
     actionCreator: onLogOut,
     effect: cleanupFusionService
+  })
+
+  startListening({
+    actionCreator: trackFusionTransfer,
+    effect: async (
+      { payload: transfer },
+      listenerApi: AppListenerEffectAPI
+    ) => {
+      try {
+        // 2s delay: avoids Markr API race condition before it indexes the tx
+        await listenerApi.delay(2000)
+      } catch {
+        // Listener aborted (e.g. on logout); do not continue
+        return
+      }
+
+      try {
+        FusionService.trackTransfer(transfer, updateFusionTransfer)
+      } catch (error) {
+        Logger.error('Failed to track fusion transfer', error)
+      }
+    }
   })
 }

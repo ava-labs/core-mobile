@@ -36,6 +36,7 @@ import {
   shouldRetryWithNextQuote,
   getSwapErrorMessage
 } from '../utils/swapErrors'
+import { trackFusionTransfer } from '../store/actions'
 
 const DEFAULT_SLIPPAGE = 0.2
 
@@ -222,6 +223,9 @@ export const SwapContextProvider = ({
       }))
 
       setSwapStatus(SwapStatus.Success)
+
+      // Dispatch trackFusionTransfer to start tracking transfer status
+      dispatch(trackFusionTransfer(transfer))
 
       // Dispatch swapCompleted for Nest Egg qualification tracking
       const swapTxHash = transfer.source?.txHash
