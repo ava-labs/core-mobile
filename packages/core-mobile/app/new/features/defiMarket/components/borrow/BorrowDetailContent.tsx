@@ -10,6 +10,7 @@ import {
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
 import React, { useCallback, useMemo } from 'react'
+import { formatUnits } from 'viem'
 import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { transactionSnackbar } from 'common/utils/toast'
@@ -94,124 +95,127 @@ export function BorrowDetailContent({
     )
   }, [handleHeaderLayout, animatedHeaderStyle])
 
-  const renderBanner = useCallback(() => {
-    if (!borrowPosition) return null
+  const renderBanner = useCallback(
+    (position: BorrowPosition) => {
+      const { market } = position
 
-    const { market } = borrowPosition
+      const collateralApyPercent =
+        totalCollateralUsd > 0
+          ? collateralDeposits.reduce((sum, d) => {
+              const depositValue =
+                d.asset.mintTokenBalance.balanceValue.value.toNumber()
+              return sum + d.supplyApyPercent * depositValue
+            }, 0) / totalCollateralUsd
+          : undefined
 
-    const collateralApyPercent =
-      totalCollateralUsd > 0
-        ? collateralDeposits.reduce((sum, d) => {
-            const depositValue =
-              d.asset.mintTokenBalance.balanceValue.value.toNumber()
-            return sum + d.supplyApyPercent * depositValue
-          }, 0) / totalCollateralUsd
-        : undefined
+      const data = [
+        {
+          value: `${market.borrowApyPercent.toFixed(2)}%`,
+          label: 'Borrow APY'
+        },
+        {
+          value:
+            collateralApyPercent !== undefined
+              ? `${collateralApyPercent.toFixed(2)}%`
+              : '--',
+          label: 'Collateral APY'
+        },
+        {
+          value:
+            netApyPercent !== undefined ? `${netApyPercent.toFixed(2)}%` : '--',
+          label: 'Net APY'
+        }
+      ]
 
-    const data = [
-      {
-        value: `${market.borrowApyPercent.toFixed(2)}%`,
-        label: 'Borrow APY'
-      },
-      {
-        value:
-          collateralApyPercent !== undefined
-            ? `${collateralApyPercent.toFixed(2)}%`
-            : '--',
-        label: 'Collateral APY'
-      },
-      {
-        value:
-          netApyPercent !== undefined ? `${netApyPercent.toFixed(2)}%` : '--',
-        label: 'Net APY'
-      }
-    ]
-
-    return (
-      <View
-        sx={{
-          marginTop: 25,
-          padding: 16,
-          backgroundColor: '$surfaceSecondary',
-          borderRadius: 18
-        }}>
+      return (
         <View
           sx={{
-            flexDirection: 'row',
-            gap: 12
+            marginTop: 25,
+            padding: 16,
+            backgroundColor: '$surfaceSecondary',
+            borderRadius: 18
           }}>
-          {data.map((item, index) => (
-            <View key={index} sx={{ flex: 1 }}>
-              <Text variant="heading5" sx={{ color: '$textPrimary' }}>
-                {item.value}
-              </Text>
-              <Text variant="caption" sx={{ color: '$textSecondary' }}>
-                {item.label}
-              </Text>
-            </View>
-          ))}
+          <View
+            sx={{
+              flexDirection: 'row',
+              gap: 12
+            }}>
+            {data.map((item, index) => (
+              <View key={index} sx={{ flex: 1 }}>
+                <Text variant="heading5" sx={{ color: '$textPrimary' }}>
+                  {item.value}
+                </Text>
+                <Text variant="caption" sx={{ color: '$textSecondary' }}>
+                  {item.label}
+                </Text>
+              </View>
+            ))}
+          </View>
         </View>
-      </View>
-    )
-  }, [borrowPosition, collateralDeposits, netApyPercent, totalCollateralUsd])
+      )
+    },
+    [collateralDeposits, netApyPercent, totalCollateralUsd]
+  )
 
-  const renderContent = useCallback(() => {
-    if (!borrowPosition) return <LoadingState sx={{ flex: 1 }} />
+  const renderContent = useCallback(
+    (position: BorrowPosition) => {
+      const { market, borrowedAmount, borrowedAmountUsd } = position
 
-    const { market, borrowedAmount, borrowedAmountUsd } = borrowPosition
-
-    return (
-      <View sx={{ marginTop: 12, gap: 12 }}>
-        <Card
-          sx={{
-            alignItems: 'stretch',
-            padding: 0
-          }}>
-          <BorrowAssetRow
-            asset={market.asset}
-            network={market.network}
-            label="Borrowed"
-            amount={borrowedAmount}
-            amountUsd={borrowedAmountUsd}
-          />
-        </Card>
-
-        {collateralDeposits.length > 0 && (
+      return (
+        <View sx={{ marginTop: 12, gap: 12 }}>
           <Card
             sx={{
               alignItems: 'stretch',
               padding: 0
             }}>
-            {collateralDeposits.map((deposit, index) => {
-              const depositAmount =
-                Number(deposit.asset.mintTokenBalance.balance) /
-                10 ** deposit.asset.decimals
-              const depositAmountUsd =
-                deposit.asset.mintTokenBalance.balanceValue.value.toNumber()
-
-              return (
-                <React.Fragment key={deposit.uniqueMarketId}>
-                  {index > 0 && <Separator sx={{ marginHorizontal: 16 }} />}
-                  <BorrowAssetRow
-                    asset={deposit.asset}
-                    network={deposit.network}
-                    label="Collateral"
-                    labelColor={theme.colors.$textSecondary}
-                    amount={depositAmount}
-                    amountUsd={depositAmountUsd}
-                  />
-                </React.Fragment>
-              )
-            })}
+            <BorrowAssetRow
+              asset={market.asset}
+              network={market.network}
+              label="Borrowed"
+              amount={borrowedAmount}
+              amountUsd={borrowedAmountUsd}
+            />
           </Card>
-        )}
-      </View>
-    )
-  }, [borrowPosition, collateralDeposits, theme.colors.$textSecondary])
+
+          {collateralDeposits.length > 0 && (
+            <Card
+              sx={{
+                alignItems: 'stretch',
+                padding: 0
+              }}>
+              {collateralDeposits.map((deposit, index) => {
+                const depositAmount = Number(
+                  formatUnits(
+                    deposit.asset.mintTokenBalance.balance,
+                    deposit.asset.decimals
+                  )
+                )
+                const depositAmountUsd =
+                  deposit.asset.mintTokenBalance.balanceValue.value.toNumber()
+
+                return (
+                  <React.Fragment key={deposit.uniqueMarketId}>
+                    {index > 0 && <Separator sx={{ marginHorizontal: 16 }} />}
+                    <BorrowAssetRow
+                      asset={deposit.asset}
+                      network={deposit.network}
+                      label="Collateral"
+                      labelColor={theme.colors.$textSecondary}
+                      amount={depositAmount}
+                      amountUsd={depositAmountUsd}
+                    />
+                  </React.Fragment>
+                )
+              })}
+            </Card>
+          )}
+        </View>
+      )
+    },
+    [collateralDeposits, theme.colors.$textSecondary]
+  )
 
   const renderFooter = useCallback(() => {
-    if (!borrowPosition) return null
-
     return (
       <View sx={{ marginBottom: bottom, padding: 16 }}>
         <Button type="primary" size="large" onPress={handleRepay}>
@@ -219,7 +223,7 @@ export function BorrowDetailContent({
         </Button>
       </View>
     )
-  }, [borrowPosition, handleRepay, bottom])
+  }, [handleRepay, bottom])
 
   if (isLoading) {
     return (
@@ -248,8 +252,8 @@ export function BorrowDetailContent({
         scrollEventThrottle={16}
         contentContainerSx={{ padding: 16 }}>
         {renderHeader()}
-        {renderBanner()}
-        {renderContent()}
+        {renderBanner(borrowPosition)}
+        {renderContent(borrowPosition)}
       </ScrollView>
       {renderFooter()}
     </BlurredBarsContentLayout>
