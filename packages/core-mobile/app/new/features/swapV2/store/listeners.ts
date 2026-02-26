@@ -214,6 +214,8 @@ export const addFusionListeners = (startListening: AppStartListening): void => {
       { payload: transfer },
       listenerApi: AppListenerEffectAPI
     ) => {
+      if (!selectIsFusionEnabled(listenerApi.getState())) return
+
       try {
         // 2s delay: avoids Markr API race condition before it indexes the tx
         await listenerApi.delay(2000)
