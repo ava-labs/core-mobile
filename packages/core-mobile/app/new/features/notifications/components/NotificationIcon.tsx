@@ -1,7 +1,7 @@
 import React, { FC } from 'react'
 import { Icons, Logos, useTheme, View } from '@avalabs/k2-alpine'
 import { TokenLogo } from 'common/components/TokenLogo'
-import { NetworkLogo } from 'common/components/NetworkLogo'
+import { NetworkBadge } from 'common/components/NetworkBadge'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import {
@@ -12,9 +12,6 @@ import {
 } from '../types'
 
 const ICON_SIZE = 36
-const CHAIN_LOGO_SIZE = 16
-const CHAIN_LOGO_BORDER_WIDTH = 2
-const CHAIN_LOGO_OFFSET = 6
 
 type NotificationIconProps = {
   notification: AppNotification
@@ -88,25 +85,8 @@ const NotificationIcon: FC<NotificationIconProps> = ({ notification }) => {
     const network = getNetwork(Number(chainId))
     if (!network) return null
 
-    const badgeContainerSize = CHAIN_LOGO_SIZE + CHAIN_LOGO_BORDER_WIDTH * 2
     return (
-      <View
-        sx={{
-          position: 'absolute',
-          bottom: -CHAIN_LOGO_OFFSET,
-          right: -CHAIN_LOGO_OFFSET,
-          width: badgeContainerSize,
-          height: badgeContainerSize,
-          borderRadius: badgeContainerSize / 2,
-          justifyContent: 'center',
-          alignItems: 'center',
-          borderWidth: CHAIN_LOGO_BORDER_WIDTH,
-          borderColor: '$surfacePrimary',
-          backgroundColor: 'transparent',
-          overflow: 'hidden'
-        }}>
-        <NetworkLogo logoUri={network.logoUri} size={CHAIN_LOGO_SIZE} />
-      </View>
+      <NetworkBadge logoUri={network.logoUri} borderColor='$surfacePrimary' />
     )
   }
 

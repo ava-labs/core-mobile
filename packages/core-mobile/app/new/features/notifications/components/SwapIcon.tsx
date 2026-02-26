@@ -1,43 +1,14 @@
 import React, { FC } from 'react'
 import { Icons, useTheme, View } from '@avalabs/k2-alpine'
-import { NetworkLogo } from 'common/components/NetworkLogo'
+import { NetworkBadge } from 'common/components/NetworkBadge'
 import { AnimatedSyncIcon } from 'common/components/AnimatedSyncIcon'
 import { NotificationSwapStatus } from '../types'
 
 const ICON_SIZE = 36
-const BADGE_SIZE = 16
-const BADGE_BORDER_WIDTH = 2
-const BADGE_OFFSET = 6
 
 type SwapIconProps = {
   status: NotificationSwapStatus
   networkLogoUri?: string
-}
-
-const NetworkBadge: FC<{ networkLogoUri: string; borderColor: string }> = ({
-  networkLogoUri,
-  borderColor
-}) => {
-  const badgeContainerSize = BADGE_SIZE + BADGE_BORDER_WIDTH * 2
-  return (
-    <View
-      sx={{
-        width: badgeContainerSize,
-        height: badgeContainerSize,
-        borderRadius: badgeContainerSize / 2,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: BADGE_BORDER_WIDTH,
-        borderColor,
-        position: 'absolute',
-        bottom: -BADGE_OFFSET,
-        right: -BADGE_OFFSET,
-        backgroundColor: 'transparent',
-        overflow: 'hidden'
-      }}>
-      <NetworkLogo logoUri={networkLogoUri} size={BADGE_SIZE} />
-    </View>
-  )
 }
 
 /**
@@ -67,7 +38,7 @@ export const SwapIcon: FC<SwapIconProps> = ({ status, networkLogoUri }) => {
         </View>
         {networkLogoUri && (
           <NetworkBadge
-            networkLogoUri={networkLogoUri}
+            logoUri={networkLogoUri}
             borderColor={colors.$surfacePrimary}
           />
         )}
