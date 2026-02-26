@@ -164,7 +164,6 @@ const AccountSettingsScreen = (): JSX.Element => {
                 data={[
                   {
                     title: 'Contacts',
-                    // @ts-ignore TODO: make routes typesafe
                     onPress: () => navigate('/accountSettings/addressBook'),
                     value: (
                       <Text
