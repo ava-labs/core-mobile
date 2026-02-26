@@ -4,9 +4,10 @@ import { NetworkLogo } from 'common/components/NetworkLogo'
 import { AnimatedSyncIcon } from 'common/components/AnimatedSyncIcon'
 import { NotificationSwapStatus } from '../types'
 
-const ICON_SIZE = 32
-const BADGE_SIZE = 10
+const ICON_SIZE = 36
+const BADGE_SIZE = 16
 const BADGE_BORDER_WIDTH = 2
+const BADGE_OFFSET = 6
 
 type SwapIconProps = {
   status: NotificationSwapStatus
@@ -29,8 +30,8 @@ const NetworkBadge: FC<{ networkLogoUri: string; borderColor: string }> = ({
         borderWidth: BADGE_BORDER_WIDTH,
         borderColor,
         position: 'absolute',
-        bottom: -BADGE_BORDER_WIDTH,
-        right: -BADGE_BORDER_WIDTH,
+        bottom: -BADGE_OFFSET,
+        right: -BADGE_OFFSET,
         backgroundColor: 'transparent',
         overflow: 'hidden'
       }}>
@@ -62,11 +63,7 @@ export const SwapIcon: FC<SwapIconProps> = ({ status, networkLogoUri }) => {
             justifyContent: 'center',
             alignItems: 'center'
           }}>
-          <Icons.Custom.Compare
-            color={colors.$textPrimary}
-            width={ICON_SIZE / 2}
-            height={ICON_SIZE / 2}
-          />
+          <Icons.Custom.Compare color={colors.$textPrimary} />
         </View>
         {networkLogoUri && (
           <NetworkBadge

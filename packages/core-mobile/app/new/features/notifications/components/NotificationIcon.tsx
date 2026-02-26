@@ -13,6 +13,8 @@ import {
 
 const ICON_SIZE = 36
 const CHAIN_LOGO_SIZE = 16
+const CHAIN_LOGO_BORDER_WIDTH = 2
+const CHAIN_LOGO_OFFSET = 6
 
 type NotificationIconProps = {
   notification: AppNotification
@@ -86,15 +88,21 @@ const NotificationIcon: FC<NotificationIconProps> = ({ notification }) => {
     const network = getNetwork(Number(chainId))
     if (!network) return null
 
+    const badgeContainerSize = CHAIN_LOGO_SIZE + CHAIN_LOGO_BORDER_WIDTH * 2
     return (
       <View
-        style={{
+        sx={{
           position: 'absolute',
-          bottom: -2,
-          right: -2,
-          width: CHAIN_LOGO_SIZE,
-          height: CHAIN_LOGO_SIZE,
-          borderRadius: CHAIN_LOGO_SIZE / 2,
+          bottom: -CHAIN_LOGO_OFFSET,
+          right: -CHAIN_LOGO_OFFSET,
+          width: badgeContainerSize,
+          height: badgeContainerSize,
+          borderRadius: badgeContainerSize / 2,
+          justifyContent: 'center',
+          alignItems: 'center',
+          borderWidth: CHAIN_LOGO_BORDER_WIDTH,
+          borderColor: '$surfacePrimary',
+          backgroundColor: 'transparent',
           overflow: 'hidden'
         }}>
         <NetworkLogo logoUri={network.logoUri} size={CHAIN_LOGO_SIZE} />

@@ -8,7 +8,7 @@ import { AppNotification, isPriceAlertNotification } from '../types'
 import NotificationListItem from './NotificationListItem'
 import NotificationIcon from './NotificationIcon'
 
-const CHART_WIDTH = 70
+const CHART_WIDTH = 76
 const CHART_HEIGHT = 22
 
 type PriceAlertItemProps = {
