@@ -24,6 +24,8 @@ import type {
   QuoterParams
 } from './types'
 
+const QUOTE_TIMEOUT_MS = 15_000 // 15 seconds
+
 /**
  * Service class for managing Fusion SDK TransferManager
  *
@@ -89,6 +91,7 @@ class FusionService implements IFusionService {
           initializers.push({
             type: serviceType,
             evmSigner: signers.evm,
+            solanaSigner: signers.svm,
             markrApiUrl: MARKR_API_URL,
             markrAppId: MARKR_EVM_PARTNER_ID
             // eslint-disable-next-line prettier/prettier
@@ -235,7 +238,8 @@ class FusionService implements IFusionService {
    */
   getQuoter(params: QuoterParams): QuoterInterface | null {
     try {
-      const quoter = this.transferManager.getQuoter(params)
+      const quoter = this.transferManager.getQuoter(params, 
+        { quoteTimeoutMs: QUOTE_TIMEOUT_MS })
       Logger.info('Quoter instance created successfully')
       return quoter
     } catch (error) {
