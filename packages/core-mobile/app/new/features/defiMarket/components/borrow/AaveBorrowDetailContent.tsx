@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react'
 import { useAaveBorrowPositionsSummary } from '../../hooks/aave/useAaveBorrowPositionsSummary'
+import { MarketNames } from '../../types'
 import { BorrowDetailContent } from './BorrowDetailContent'
 
 interface AaveBorrowDetailContentProps {
@@ -19,6 +20,7 @@ export function AaveBorrowDetailContent({
     <BorrowDetailContent
       borrowPosition={borrowPosition}
       isLoading={isLoading}
+      protocol={MarketNames.aave}
     />
   )
 }

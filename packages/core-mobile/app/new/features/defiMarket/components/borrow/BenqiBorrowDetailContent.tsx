@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react'
 import { useBenqiBorrowPositionsSummary } from '../../hooks/benqi/useBenqiBorrowPositionsSummary'
+import { MarketNames } from '../../types'
 import { BorrowDetailContent } from './BorrowDetailContent'
 
 interface BenqiBorrowDetailContentProps {
@@ -19,6 +20,7 @@ export function BenqiBorrowDetailContent({
     <BorrowDetailContent
       borrowPosition={borrowPosition}
       isLoading={isLoading}
+      protocol={MarketNames.benqi}
     />
   )
 }

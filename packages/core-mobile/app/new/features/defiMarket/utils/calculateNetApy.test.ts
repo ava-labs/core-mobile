@@ -1,3 +1,4 @@
+import { MarketNames } from '../types'
 import { calculateNetApy } from './calculateNetApy'
 
 describe('calculateNetApy', () => {
@@ -165,6 +166,57 @@ describe('calculateNetApy', () => {
       // Borrow cost = 50000
       // Net APY = 0%
       expect(result).toBe(0)
+    })
+  })
+
+  describe('protocol-specific calculations', () => {
+    it('should use net worth as denominator for AAVE', () => {
+      const result = calculateNetApy({
+        deposits: [{ valueUsd: 1000, apyPercent: 10 }],
+        borrows: [{ valueUsd: 500, apyPercent: 10 }],
+        protocol: MarketNames.aave
+      })
+
+      // Net worth = 1000 - 500 = 500
+      // Supply income = 1000 * 10% = 100
+      // Borrow cost = 500 * 10% = 50
+      // Net APY = (100 - 50) / 500 * 100 = 10%
+      expect(result).toBe(10)
+    })
+
+    it('should use total deposits as denominator for Benqi', () => {
+      const result = calculateNetApy({
+        deposits: [{ valueUsd: 1000, apyPercent: 10 }],
+        borrows: [{ valueUsd: 500, apyPercent: 10 }],
+        protocol: MarketNames.benqi
+      })
+
+      // Total deposits = 1000
+      // Supply income = 1000 * 10% = 100
+      // Borrow cost = 500 * 10% = 50
+      // Net APY = (100 - 50) / 1000 * 100 = 5%
+      expect(result).toBe(5)
+    })
+
+    it('should return undefined for Benqi when total deposits is zero', () => {
+      const result = calculateNetApy({
+        deposits: [],
+        borrows: [{ valueUsd: 100, apyPercent: 10 }],
+        protocol: MarketNames.benqi
+      })
+
+      expect(result).toBeUndefined()
+    })
+
+    it('should use net worth as denominator when protocol is not specified', () => {
+      const result = calculateNetApy({
+        deposits: [{ valueUsd: 1000, apyPercent: 10 }],
+        borrows: [{ valueUsd: 500, apyPercent: 10 }]
+      })
+
+      // Same as AAVE behavior (default)
+      // Net APY = (100 - 50) / 500 * 100 = 10%
+      expect(result).toBe(10)
     })
   })
 })
