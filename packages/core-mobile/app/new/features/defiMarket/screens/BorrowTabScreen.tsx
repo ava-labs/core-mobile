@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react'
+import { noop } from '@avalabs/core-utils-sdk'
 import {
   BorrowTabContent,
   BorrowContentState,
@@ -9,9 +10,19 @@ import { BenqiBorrowStateController } from '../components/borrow/BenqiBorrowStat
 import { useSelectedBorrowProtocol } from '../hooks/useBorrowProtocol'
 import { MarketNames } from '../types'
 
+const initialContentState: BorrowContentState = {
+  positions: [],
+  summary: undefined,
+  isLoading: true,
+  isFetching: false,
+  isRefreshing: false,
+  refresh: noop
+}
+
 const BorrowTabScreen = (props: BorrowTabScreenProps): JSX.Element => {
   const [selectedProtocol] = useSelectedBorrowProtocol()
-  const [contentState, setContentState] = useState<BorrowContentState>()
+  const [contentState, setContentState] =
+    useState<BorrowContentState>(initialContentState)
 
   const handleStateChange = useCallback((nextState: BorrowContentState) => {
     setContentState(nextState)
@@ -24,13 +35,11 @@ const BorrowTabScreen = (props: BorrowTabScreenProps): JSX.Element => {
       ) : (
         <BenqiBorrowStateController onStateChange={handleStateChange} />
       )}
-      {contentState && (
-        <BorrowTabContent
-          {...props}
-          selectedProtocol={selectedProtocol}
-          contentState={contentState}
-        />
-      )}
+      <BorrowTabContent
+        {...props}
+        selectedProtocol={selectedProtocol}
+        contentState={contentState}
+      />
     </>
   )
 }
