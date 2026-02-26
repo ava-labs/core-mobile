@@ -1,4 +1,5 @@
 import Big from 'big.js'
+import { CurrencyCode } from '@avalabs/glacier-sdk'
 import {
   AaveBorrowData,
   BorrowPosition,
@@ -26,12 +27,12 @@ const createMockMarket = (overrides: Partial<DefiMarket> = {}): DefiMarket => ({
       balanceValue: {
         value: new Big(100),
         valueString: '100',
-        currencyCode: 'USD'
+        currencyCode: CurrencyCode.USD
       },
       price: {
         value: new Big(1),
         valueString: '1',
-        currencyCode: 'USD'
+        currencyCode: CurrencyCode.USD
       }
     }
   },
@@ -346,7 +347,7 @@ describe('getAaveBorrowSummary', () => {
             balanceValue: {
               value: new Big(1000),
               valueString: '1000',
-              currencyCode: 'USD'
+              currencyCode: CurrencyCode.USD
             }
           }
         }
