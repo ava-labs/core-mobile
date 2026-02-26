@@ -86,7 +86,10 @@ const NotificationIcon: FC<NotificationIconProps> = ({ notification }) => {
     if (!network) return null
 
     return (
-      <NetworkBadge logoUri={network.logoUri} borderColor='$surfacePrimary' />
+      <NetworkBadge
+        logoUri={network.logoUri}
+        borderColor={colors.$surfacePrimary}
+      />
     )
   }
 

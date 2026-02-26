@@ -17,7 +17,10 @@ type NetworkBadgeProps = {
  *
  * Default dimensions: 16 px logo, 2 px border, −6 px offset.
  */
-export const NetworkBadge: FC<NetworkBadgeProps> = ({ logoUri, borderColor }) => {
+export const NetworkBadge: FC<NetworkBadgeProps> = ({
+  logoUri,
+  borderColor
+}) => {
   const badgeContainerSize = BADGE_SIZE + BADGE_BORDER_WIDTH * 2
   return (
     <View
