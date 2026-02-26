@@ -35,7 +35,6 @@ export const isSupportedSPLToken = (
 ): boolean =>
   token.networkChainId === ChainId.SOLANA_MAINNET_ID &&
   token.type === TokenType.SPL &&
-  // @ts-ignore: there is no chainId but has token address for solana
   crypto.contractAddress?.toLowerCase() === token.address.toLowerCase()
 
 export const isBtcToken = (

@@ -98,7 +98,7 @@ const checkPendingNestEggSuccess = async (
   if (hasQualified && !hasAcknowledged) {
     await waitForInteractions()
     await navigateWithPromise({
-      pathname: '/(signedIn)/(modals)/nestEggSuccess'
+      pathname: '/nestEggSuccess'
     })
   }
 }

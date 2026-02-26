@@ -58,7 +58,6 @@ const terminateSeedless = async (): Promise<void> => {
 }
 
 const handleTokenExpired = async (): Promise<void> => {
-  // @ts-ignore - absolute path to session expired screen
   router.navigate('/sessionExpired')
 }
 

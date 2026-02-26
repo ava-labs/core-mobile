@@ -214,7 +214,6 @@ class FCMService {
         isInAppDefiBorrowBlocked: false,
         openUrl: link =>
           router.navigate({
-            // @ts-ignore TODO: make routes typesafe
             pathname: '/browser',
             params: { deeplinkUrl: link.url }
           })
