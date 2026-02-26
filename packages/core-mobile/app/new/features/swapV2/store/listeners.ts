@@ -20,6 +20,7 @@ import FusionService from '../services/FusionService'
 import { getFusionEnvironment } from '../consts'
 import { createEvmSigner } from '../services/signers/EvmSigner'
 import { createBtcSigner } from '../services/signers/BtcSigner'
+import { createSvmSigner } from '../services/signers/SvmSigner'
 import {
   useIsFusionServiceReady,
   updateFusionTransfer,
@@ -138,6 +139,7 @@ export const initFusionService = async (
     // Create signers
     const evmSigner = createEvmSigner(request)
     const btcSigner = createBtcSigner(request, featureStates.isDeveloperMode)
+    const svmSigner = createSvmSigner(request, featureStates.isDeveloperMode)
 
     // Determine environment
     const environment = getFusionEnvironment(featureStates.isDeveloperMode)
@@ -164,7 +166,8 @@ export const initFusionService = async (
       featureFlags,
       signers: {
         evm: evmSigner,
-        btc: btcSigner
+        btc: btcSigner,
+        svm: svmSigner
       }
     })
 

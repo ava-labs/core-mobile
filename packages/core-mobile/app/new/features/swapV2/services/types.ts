@@ -8,7 +8,8 @@ import type {
   ServiceType,
   Transfer,
   TransferManager,
-  Fetch
+  Fetch,
+  SolanaSigner
 } from '@avalabs/unified-asset-transfer'
 
 /**
@@ -26,6 +27,7 @@ export interface FusionConfig {
 export interface FusionSigners {
   evm: EvmSignerWithMessage
   btc: BtcSigner
+  svm: SolanaSigner
 }
 
 /**

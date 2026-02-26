@@ -6,6 +6,7 @@ import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { assert } from 'store/rpc/utils/assert'
 import Logger from 'utils/Logger'
+import { RequestContext } from 'store/rpc/types'
 
 /**
  * EVM Signer implementation for Fusion SDK
@@ -18,7 +19,11 @@ export function createEvmSigner(request: Request): EvmSignerWithMessage {
     /**
      * Sign and send an EVM transaction
      */
-    sign: async ({ from, data, to, value, chainId }) => {
+    sign: async (
+      { from, data, to, value, chainId },
+      _,
+      { currentSignature, requiredSignatures }
+    ) => {
       assert(to, 'Invalid transaction: missing "to" field')
       assert(from, 'Invalid transaction: missing "from" field')
       assert(data, 'Invalid transaction: missing "data" field')
@@ -36,7 +41,12 @@ export function createEvmSigner(request: Request): EvmSignerWithMessage {
               chainId
             }
           ],
-          chainId: getEvmCaip2ChainId(Number(chainId))
+          chainId: getEvmCaip2ChainId(Number(chainId)),
+          context: {
+            // we only want to show confetti for the final approval
+            [RequestContext.CONFETTI_DISABLED]:
+              requiredSignatures > currentSignature
+          }
         })
 
         return result as `0x${string}`

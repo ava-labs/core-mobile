@@ -19,7 +19,23 @@ import { setupDeBankCaching } from './app/utils/setupDeBankCaching'
 if (__DEV__) {
   require('./ReactotronConfig')
 
-  DevDebuggingConfig.LOGBOX_DISABLED && LogBox.ignoreAllLogs(true)
+  if (DevDebuggingConfig.LOGBOX_DISABLED) {
+    LogBox.ignoreAllLogs(true)
+
+    const ignoreWarns = ['Reanimated']
+
+    // eslint-disable-next-line no-console
+    const warn = console.warn
+    // eslint-disable-next-line no-console
+    console.warn = (...arg) => {
+      for (const warning of ignoreWarns) {
+        if (arg[0].includes(warning)) {
+          return
+        }
+      }
+      warn(...arg)
+    }
+  }
 
   // eslint-disable-next-line no-console
   console.reportErrorsAsExceptions = false

@@ -514,7 +514,7 @@ __metadata:
     "@avalabs/svm-module": 3.1.3
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": 3.1.0-alpha.71
-    "@avalabs/unified-asset-transfer": 0.0.0-project-fusion-pr-20260224175214
+    "@avalabs/unified-asset-transfer": 0.0.0-project-fusion-pr-20260225200603
     "@avalabs/vm-module-types": 3.1.3
     "@babel/core": 7.28.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
@@ -1096,9 +1096,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/unified-asset-transfer@npm:0.0.0-project-fusion-pr-20260224175214":
-  version: 0.0.0-project-fusion-pr-20260224175214
-  resolution: "@avalabs/unified-asset-transfer@npm:0.0.0-project-fusion-pr-20260224175214"
+"@avalabs/unified-asset-transfer@npm:0.0.0-project-fusion-pr-20260225200603":
+  version: 0.0.0-project-fusion-pr-20260225200603
+  resolution: "@avalabs/unified-asset-transfer@npm:0.0.0-project-fusion-pr-20260225200603"
   dependencies:
     "@bitcoinerlab/secp256k1": ^1.2.0
     "@layerzerolabs/lz-v2-utilities": ^3.0.17
@@ -1113,7 +1113,7 @@ __metadata:
     "@solana/kit": ^5.0.0
     viem: ^2.38.0
     zod: ^4.1.0
-  checksum: ab3e090d329871a31e383a885e365dbebf976f33eef6a289eff053d6a7fc1ee7ae18f037e9cc332805dbb4a1e8a981a42437af4909b58d7740c24b46ba1901c0
+  checksum: 88143c5330968bee8e91ab44c2bef88d2eebbc8c5fc9d52805105d1b50bb6db5cdaadafe9eea41f5149ec6eba67d02f8d48528c4c4230d3a6dcb804aa8cea8f6
   languageName: node
   linkType: hard
 
@@ -36043,7 +36043,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: e08d1254d04f3074970b63cdf0a363d6b189009270d457e868a26ef534addd69b320b85bef2a22e4eddb79006751bded431b56aaf2baf41976a6d0a5a2a2b91e
+  checksum: d6ceb75e1d0f5755370d6d91f67902bd2b8a23a3ca43cb853d2964b43798f30477e8ab0223ea8b620534fbdf5f56d39550f40d24bec2d2398c323ccfe8a5a556
   languageName: node
   linkType: hard
 
