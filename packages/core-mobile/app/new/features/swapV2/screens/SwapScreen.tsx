@@ -355,6 +355,7 @@ export const SwapScreen = (): JSX.Element => {
           paddingBottom: 4
         }}>
         <TokenInputWidget
+          amountInputTestID="token_amount_input_field__you_pay"
           disabled={isSwapping}
           editable={!isSwapping}
           autoFocus={!hasAutoFocused.current} // Only auto-focus if we haven't done it yet
@@ -409,6 +410,7 @@ export const SwapScreen = (): JSX.Element => {
           backgroundColor: theme.colors.$surfaceSecondary
         }}>
         <TokenInputWidget
+          amountInputTestID="token_amount_input_field__you_receive"
           disabled={isSwapping}
           editable={false}
           amount={toTokenValue}

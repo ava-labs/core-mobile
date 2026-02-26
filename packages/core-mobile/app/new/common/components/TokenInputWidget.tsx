@@ -41,7 +41,8 @@ export const TokenInputWidget = ({
   editable = true,
   isLoadingAmount = false,
   autoFocus,
-  valid = true
+  valid = true,
+  amountInputTestID = 'token_amount_input_field'
 }: {
   title: string
   amount?: bigint
@@ -61,6 +62,7 @@ export const TokenInputWidget = ({
   isLoadingAmount?: boolean
   autoFocus?: boolean
   valid?: boolean
+  amountInputTestID?: string
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -200,9 +202,11 @@ export const TokenInputWidget = ({
                   </View>
                 </TouchableOpacity>
                 <TouchableOpacity
+                  accessible={false}
                   sx={{ flex: 1 }}
                   onPress={token === undefined ? onSelectToken : undefined}>
                   <View
+                    accessible={false}
                     sx={{
                       alignItems: 'flex-end',
                       justifyContent: 'center',
@@ -212,9 +216,7 @@ export const TokenInputWidget = ({
                     pointerEvents={token === undefined ? 'none' : 'auto'}>
                     <TokenAmountInput
                       ref={tokenAmountInputRef}
-                      testID="token_amount_input_field"
-                      accessibilityLabel="token_amount_input_field"
-                      accessible={true}
+                      testID={amountInputTestID}
                       autoFocus={autoFocus}
                       editable={editable}
                       denomination={token?.decimals ?? 0}

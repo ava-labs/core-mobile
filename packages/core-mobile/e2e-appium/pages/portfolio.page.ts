@@ -237,6 +237,10 @@ class PortfolioPage {
     return selectors.getById(portfolio.portfolioBalanceHeader)
   }
 
+  get loadingPortfolioBalanceHeader() {
+    return selectors.getById(portfolio.loadingPortfolioBalanceHeader)
+  }
+
   get portfolioAccountName() {
     return selectors.getById(portfolio.portfolioAccountName)
   }
@@ -684,14 +688,13 @@ class PortfolioPage {
   }
 
   async verifyBalanceHeader() {
-    await actions.waitFor(commonElsPage.loadingSpinnerHidden)
-    await actions.isVisible(this.portfolioBalanceHeader)
-    await actions.isNotVisible(commonElsPage.loadingSpinnerVisible)
+    await actions.waitFor(this.portfolioBalanceHeader)
+    await actions.isNotVisible(this.loadingPortfolioBalanceHeader)
   }
 
   async verifyAssetsList(token = 'Avalanche') {
     const start = performance.now()
-    await actions.waitFor(commonElsPage.loadingSpinnerHidden)
+    await actions.waitFor(this.portfolioBalanceHeader)
     await actions.isNotVisible(commonElsPage.inProgress)
     await actions.isVisible(this.portfolioTokenList)
     await actions.isVisible(

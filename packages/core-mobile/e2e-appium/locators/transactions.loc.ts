@@ -22,6 +22,7 @@ export default {
   myAccounts: 'My Accounts',
   sendTitle: 'Send',
   amountInput: 'token_amount_input_field',
+  swapAmountInput: 'token_amount_input_field__you_pay',
   sendSelectTokenListBtn: 'send_select_token_list_btn',
   usdcToken: 'USDC',
   wethToken: 'WETH',

@@ -117,7 +117,11 @@ export const BalanceHeader = ({
     return (
       <View
         accessible={true}
-        testID="portfolio__balance_header"
+        testID={
+          isLoadingBalances
+            ? 'loading_portfolio__balance_header'
+            : 'portfolio__balance_header'
+        }
         accessibilityLabel={`${formattedBalance} ${currency}`}
         style={{
           flexDirection: 'column',

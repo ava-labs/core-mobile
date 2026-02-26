@@ -67,6 +67,10 @@ class TransactionsPage {
     return selectors.getById(txLoc.amountInput)
   }
 
+  get swapAmountInput() {
+    return selectors.getById(txLoc.swapAmountInput)
+  }
+
   get nextBtn() {
     return selectors.getById(txLoc.nextBtn)
   }
@@ -208,9 +212,12 @@ class TransactionsPage {
     }
   }
 
-  async enterAmount(amount: string) {
+  async enterAmount(
+    amount: string,
+    input: ReturnType<typeof selectors.getById> = this.amountInput
+  ) {
     try {
-      await actions.typeSlowly(this.amountInput, amount)
+      await actions.typeSlowly(input, amount)
     } catch (e) {
       await actions.tapNumberPad(amount)
     }
@@ -330,8 +337,11 @@ class TransactionsPage {
     return (parseFloat(amount) * 10).toFixed(10).replace(/\.?0+$/, '')
   }
 
-  async enterAmountAndAdjust(amount: string) {
-    await this.enterAmount(amount)
+  async enterAmountAndAdjust(
+    amount: string,
+    input: ReturnType<typeof selectors.getById> = this.amountInput
+  ) {
+    await this.enterAmount(amount, input)
     let tryCount = 5
     let newAmount = amount
     try {
@@ -339,7 +349,7 @@ class TransactionsPage {
     } catch (e) {
       while (await actions.getVisible(this.errorMsg)) {
         newAmount = await this.adjustAmount(newAmount)
-        await this.enterAmount(newAmount)
+        await this.enterAmount(newAmount, input)
         tryCount--
         if ((await actions.getVisible(this.nextBtn)) || tryCount === 0) {
           break
@@ -363,7 +373,7 @@ class TransactionsPage {
     await portfolioPage.tapToken(fromToken)
     await this.tapSwap()
     await this.dismissTransactionOnboarding()
-    await this.enterAmountAndAdjust(amount)
+    await this.enterAmountAndAdjust(amount, this.swapAmountInput)
     // Select To Token
     if (toToken !== 'USDC') {
       await this.tapYouReceive()
@@ -405,7 +415,7 @@ class TransactionsPage {
       await this.tapYouReceive()
       await this.selectToken(to, network)
     }
-    await this.enterAmountAndAdjust(amount)
+    await this.enterAmountAndAdjust(amount, this.swapAmountInput)
     await this.tapNext(this.approveBtn)
 
     // If `from` is not AVAX, we need to approve the spend limit
@@ -437,7 +447,7 @@ class TransactionsPage {
   async swapOnTrack(index = 1, amount = '0.001') {
     await this.tapTrackBuyBtn(index)
     await this.dismissTransactionOnboarding()
-    await this.enterAmountAndAdjust(amount)
+    await this.enterAmountAndAdjust(amount, this.swapAmountInput)
     await this.tapNext()
     await this.tapApprove()
     await this.verifySuccessToast()
