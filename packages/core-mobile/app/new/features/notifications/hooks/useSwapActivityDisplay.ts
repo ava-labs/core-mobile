@@ -163,10 +163,8 @@ export function useSwapActivityDisplay(
       toNetwork: transfer.targetChain.chainName,
       fromNetworkLogoUri: fromNetworkData?.logoUri,
       toNetworkLogoUri: toNetworkData?.logoUri,
-      fromTokenLogoUri: (fromTokenData as { logoUri?: string } | undefined)
-        ?.logoUri,
-      toTokenLogoUri: (toTokenData as { logoUri?: string } | undefined)
-        ?.logoUri,
+      fromTokenLogoUri: item.fromToken.logoUri,
+      toTokenLogoUri: item.toToken.logoUri,
       status: mapTransferToSwapStatus(transfer),
       fromChainStatus: mapTransferToSourceChainStatus(transfer),
       toChainStatus: mapTransferToTargetChainStatus(transfer),
@@ -178,8 +176,6 @@ export function useSwapActivityDisplay(
     fromAmount,
     toAmount,
     fromAmountInCurrency,
-    toAmountInCurrency,
-    fromTokenData,
-    toTokenData
+    toAmountInCurrency
   ])
 }
