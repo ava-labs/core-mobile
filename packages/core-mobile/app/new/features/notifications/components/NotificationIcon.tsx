@@ -1,7 +1,7 @@
 import React, { FC } from 'react'
 import { Icons, Logos, useTheme, View } from '@avalabs/k2-alpine'
 import { TokenLogo } from 'common/components/TokenLogo'
-import { NetworkLogo } from 'common/components/NetworkLogo'
+import { NetworkBadge } from 'common/components/NetworkBadge'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import {
@@ -12,7 +12,6 @@ import {
 } from '../types'
 
 const ICON_SIZE = 36
-const CHAIN_LOGO_SIZE = 16
 
 type NotificationIconProps = {
   notification: AppNotification
@@ -87,18 +86,10 @@ const NotificationIcon: FC<NotificationIconProps> = ({ notification }) => {
     if (!network) return null
 
     return (
-      <View
-        style={{
-          position: 'absolute',
-          bottom: -2,
-          right: -2,
-          width: CHAIN_LOGO_SIZE,
-          height: CHAIN_LOGO_SIZE,
-          borderRadius: CHAIN_LOGO_SIZE / 2,
-          overflow: 'hidden'
-        }}>
-        <NetworkLogo logoUri={network.logoUri} size={CHAIN_LOGO_SIZE} />
-      </View>
+      <NetworkBadge
+        logoUri={network.logoUri}
+        borderColor={colors.$surfacePrimary}
+      />
     )
   }
 
