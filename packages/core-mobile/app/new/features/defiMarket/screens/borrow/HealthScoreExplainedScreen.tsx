@@ -18,20 +18,26 @@ export const HealthScoreExplainedScreen = (): JSX.Element | null => {
 
   const parsedHealthScore = useMemo(() => {
     const score = Number(healthScore)
-    if (!Number.isFinite(score)) {
+    if (Number.isNaN(score)) {
       return undefined
     }
     return score
   }, [healthScore])
 
-  const healthRisk = useMemo((): HealthRisk => {
+  const healthRisk = useMemo((): HealthRisk | undefined => {
     if (parsedHealthScore === undefined) {
+      return undefined
+    }
+    if (!Number.isFinite(parsedHealthScore)) {
       return HealthRisk.LOW
     }
     return getHealthRisk(parsedHealthScore)
   }, [parsedHealthScore])
 
   const riskLabel = useMemo(() => {
+    if (healthRisk === undefined) {
+      return null
+    }
     if (healthRisk === HealthRisk.HIGH) {
       return 'high risk'
     }
@@ -42,6 +48,9 @@ export const HealthScoreExplainedScreen = (): JSX.Element | null => {
   }, [healthRisk])
 
   const ringColor = useMemo(() => {
+    if (healthRisk === undefined) {
+      return theme.colors.$textSecondary
+    }
     return getHealthRiskColor({
       risk: healthRisk,
       colors: theme.colors
@@ -92,15 +101,27 @@ export const HealthScoreExplainedScreen = (): JSX.Element | null => {
             </Text>
           </View>
 
-          <Text
-            variant="heading3"
-            sx={{
-              marginTop: 24,
-              textAlign: 'center',
-              maxWidth: 340
-            }}>
-            Your health score is currently rated as {riskLabel}
-          </Text>
+          {riskLabel !== null ? (
+            <Text
+              variant="heading3"
+              sx={{
+                marginTop: 24,
+                textAlign: 'center',
+                maxWidth: 340
+              }}>
+              Your health score is currently rated as {riskLabel}
+            </Text>
+          ) : (
+            <Text
+              variant="heading3"
+              sx={{
+                marginTop: 24,
+                textAlign: 'center',
+                maxWidth: 340
+              }}>
+              Your health score is not available
+            </Text>
+          )}
         </View>
 
         <View sx={{ gap: 12 }}>

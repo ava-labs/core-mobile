@@ -1,4 +1,5 @@
 import Big from 'big.js'
+import { CurrencyCode } from '@avalabs/glacier-sdk'
 import {
   BenqiBorrowData,
   BorrowPosition,
@@ -25,12 +26,12 @@ const createMockMarket = (overrides: Partial<DefiMarket> = {}): DefiMarket => ({
       balanceValue: {
         value: new Big(100),
         valueString: '100',
-        currencyCode: 'USD'
+        currencyCode: CurrencyCode.USD
       },
       price: {
         value: new Big(1),
         valueString: '1',
-        currencyCode: 'USD'
+        currencyCode: CurrencyCode.USD
       }
     }
   },
@@ -160,7 +161,7 @@ describe('buildBenqiBorrowPositions', () => {
             price: {
               value: new Big(2), // 2 USD per token
               valueString: '2',
-              currencyCode: 'USD'
+              currencyCode: CurrencyCode.USD
             }
           }
         }
@@ -351,7 +352,7 @@ describe('getBenqiBorrowSummary', () => {
             balanceValue: {
               value: new Big(1000),
               valueString: '1000',
-              currencyCode: 'USD'
+              currencyCode: CurrencyCode.USD
             }
           }
         }
@@ -382,7 +383,7 @@ describe('getBenqiBorrowSummary', () => {
             balanceValue: {
               value: new Big(0),
               valueString: '0',
-              currencyCode: 'USD'
+              currencyCode: CurrencyCode.USD
             }
           }
         }
@@ -412,7 +413,7 @@ describe('getBenqiBorrowSummary', () => {
             balanceValue: {
               value: new Big(500),
               valueString: '500',
-              currencyCode: 'USD'
+              currencyCode: CurrencyCode.USD
             }
           }
         },
@@ -429,7 +430,7 @@ describe('getBenqiBorrowSummary', () => {
             balanceValue: {
               value: new Big(500),
               valueString: '500',
-              currencyCode: 'USD'
+              currencyCode: CurrencyCode.USD
             }
           }
         },
