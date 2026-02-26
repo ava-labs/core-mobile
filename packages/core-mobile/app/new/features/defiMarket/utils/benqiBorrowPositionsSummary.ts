@@ -4,8 +4,10 @@ import {
   BenqiBorrowData,
   BorrowPosition,
   BorrowSummary,
-  DefiMarket
+  DefiMarket,
+  MarketNames
 } from '../types'
+import { calculateNetApy } from './calculateNetApy'
 
 const getBenqiDebtUsd = (benqiBorrowData: BenqiBorrowData): number => {
   return Number(formatUnits(benqiBorrowData.totalDebtUSD, WAD))
@@ -75,36 +77,21 @@ export const getBenqiBorrowSummary = ({
     return undefined
   }
 
-  const totalDepositsUsd = markets.reduce(
-    (sum, market) =>
-      sum + market.asset.mintTokenBalance.balanceValue.value.toNumber(),
-    0
-  )
-  const totalBorrowUsd = positions.reduce(
-    (sum, position) => sum + position.borrowedAmountUsd,
-    0
-  )
+  const deposits = markets.map(market => ({
+    valueUsd: market.asset.mintTokenBalance.balanceValue.value.toNumber(),
+    apyPercent: market.supplyApyPercent
+  }))
 
-  const totalSupplyIncomeUsd = markets.reduce(
-    (sum, market) =>
-      sum +
-      (market.asset.mintTokenBalance.balanceValue.value.toNumber() *
-        market.supplyApyPercent) /
-        100,
-    0
-  )
-  const totalBorrowCostUsd = positions.reduce(
-    (sum, position) =>
-      sum +
-      (position.borrowedAmountUsd * position.market.borrowApyPercent) / 100,
-    0
-  )
+  const borrows = positions.map(position => ({
+    valueUsd: position.borrowedAmountUsd,
+    apyPercent: position.market.borrowApyPercent
+  }))
 
+  const totalDepositsUsd = deposits.reduce((sum, d) => sum + d.valueUsd, 0)
+  const totalBorrowUsd = borrows.reduce((sum, b) => sum + b.valueUsd, 0)
   const netWorthUsd = totalDepositsUsd - totalBorrowUsd
   const netApyPercent =
-    totalDepositsUsd > 0
-      ? ((totalSupplyIncomeUsd - totalBorrowCostUsd) / totalDepositsUsd) * 100
-      : 0
+    calculateNetApy({ deposits, borrows, protocol: MarketNames.benqi }) ?? 0
 
   const benqiDebtUsd = getBenqiDebtUsd(benqiBorrowData)
   const benqiAvailableUsd = getBenqiAvailableUsd(benqiBorrowData)

@@ -107,7 +107,8 @@ export const getAaveBorrowSummary = ({
   const totalDepositsUsd = deposits.reduce((sum, d) => sum + d.valueUsd, 0)
   const totalBorrowUsd = borrows.reduce((sum, b) => sum + b.valueUsd, 0)
   const netWorthUsd = totalDepositsUsd - totalBorrowUsd
-  const netApyPercent = calculateNetApy({ deposits, borrows }) ?? 0
+  const netApyPercent =
+    calculateNetApy({ deposits, borrows, protocol: MarketNames.aave }) ?? 0
 
   const aaveDebtUsd = getAaveDebtUsd(aaveBorrowData)
   const aaveAvailableUsd = getAaveAvailableUsd(aaveBorrowData)

@@ -17,17 +17,19 @@ import { useDeposits } from 'hooks/earn/useDeposits'
 import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { BorrowAssetRow } from '../BorrowAssetRow'
-import { BorrowPosition } from '../../types'
+import { BorrowPosition, MarketName } from '../../types'
 import { calculateNetApy } from '../../utils/calculateNetApy'
 
 interface BorrowDetailContentProps {
   borrowPosition: BorrowPosition | undefined
   isLoading: boolean
+  protocol: MarketName
 }
 
 export function BorrowDetailContent({
   borrowPosition,
-  isLoading
+  isLoading,
+  protocol
 }: BorrowDetailContentProps): JSX.Element {
   const { bottom } = useSafeAreaInsets()
   const { deposits } = useDeposits()
@@ -69,8 +71,12 @@ export function BorrowDetailContent({
       }
     ]
 
-    return calculateNetApy({ deposits: depositItems, borrows: borrowItems })
-  }, [borrowPosition, collateralDeposits, totalCollateralUsd])
+    return calculateNetApy({
+      deposits: depositItems,
+      borrows: borrowItems,
+      protocol
+    })
+  }, [borrowPosition, collateralDeposits, totalCollateralUsd, protocol])
 
   const handleRepay = useCallback(() => {
     transactionSnackbar.plain({ message: 'Repay flow is coming soon' })
