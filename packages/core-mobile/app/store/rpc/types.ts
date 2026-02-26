@@ -164,7 +164,7 @@ export const CORE_MOBILE_META: PeerMeta = {
   name: 'Core',
   description: 'Core Mobile Wallet',
   url: 'https://core.app/',
-  icons: []
+  icons: ['https://core.app/favicon.ico']
 }
 
 // request context keys for in-app requests
