@@ -471,7 +471,9 @@ describe('FusionService', () => {
       const result = FusionService.getQuoter(params)
 
       expect(result).toBe(mockQuoter)
-      expect(mockTransferManager.getQuoter).toHaveBeenCalledWith(params)
+      expect(mockTransferManager.getQuoter).toHaveBeenCalledWith(params, {
+        quoteTimeoutMs: 15000
+      })
       expect(Logger.info).toHaveBeenCalledWith(
         'Quoter instance created successfully'
       )
