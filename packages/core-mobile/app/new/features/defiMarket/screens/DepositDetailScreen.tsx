@@ -47,7 +47,6 @@ export function DepositDetailScreen(): JSX.Element {
     if (!deposit) return
 
     navigate({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/withdraw/selectAmount',
       params: { marketId: deposit.uniqueMarketId }
     })

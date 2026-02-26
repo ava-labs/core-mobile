@@ -57,7 +57,6 @@ export const SelectPoolScreen = (): JSX.Element => {
   const handleSelectPool = useCallback(
     (market: DefiMarket) => {
       navigate({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/deposit/selectAmount',
         params: { marketId: market.uniqueMarketId }
       })

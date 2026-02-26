@@ -26,11 +26,9 @@ export const OnboardingScreen = (): JSX.Element => {
       // Set protocol to redirect back to borrow after deposit completes
       setRedirectToBorrow(selectedProtocol)
       navigation.getParent()?.goBack()
-      // @ts-ignore TODO: make routes typesafe
       navigate('/deposit/selectAsset')
     } else {
       // Has deposits - proceed to collateral selection
-      // @ts-ignore TODO: make routes typesafe
       navigate('/borrow/selectCollateral')
     }
   }, [
