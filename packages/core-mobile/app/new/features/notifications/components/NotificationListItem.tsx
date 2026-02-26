@@ -91,10 +91,17 @@ const NotificationListItem: FC<NotificationListItemProps> = ({
             <Text
               numberOfLines={1}
               variant="body2"
-              sx={{ color: colors.$textSecondary, textAlign: 'right' }}>
+              sx={{
+                color: colors.$textSecondary,
+                textAlign: 'right',
+                // The longest possible output is now "Sep 30, 2026" — 12 characters.
+                // At body2 (~12sp), with ~7px average char width: 12 × 7 = ~84px.
+                // width: 90 would be a safe fit with a small buffer.
+                width: 90
+              }}>
               {isSameDay(new Date(timestamp), new Date())
                 ? format(new Date(timestamp), 'h:mm a')
-                : getDayString(timestamp)}
+                : getDayString(timestamp, 'short')}
             </Text>
           )}
           {accessoryType === 'chevron' && (

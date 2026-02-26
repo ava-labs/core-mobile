@@ -108,8 +108,9 @@ export const MiniChart = ({
             p1={vec(0, graphSize.height / 2)}
             p2={vec(graphSize.width, graphSize.height / 2)}
             color="rgba(40, 40, 46, 0.1)"
-            strokeWidth={1.5}>
-            <DashPathEffect intervals={[4, 4]} />
+            strokeWidth={3}
+            strokeCap="round">
+            <DashPathEffect intervals={[0, 7]} />
           </Line>
         )}
         {path && (
