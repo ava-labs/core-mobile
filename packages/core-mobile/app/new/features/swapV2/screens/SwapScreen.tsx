@@ -216,35 +216,33 @@ export const SwapScreen = (): JSX.Element => {
   const setInitialTokensFx = useCallback(() => {
     if (initialized.current) return
 
-    if (params.initialTokenIdFrom || params.initialTokenIdTo) {
+    const { initialTokenIdFrom, initialTokenIdTo } = params
+
+    if (initialTokenIdFrom || initialTokenIdTo) {
       initialized.current = true
     }
 
     let initialFromToken: LocalTokenWithBalance | undefined
-    if (params?.initialTokenIdFrom) {
+    if (initialTokenIdFrom) {
       initialFromToken = swapList.find(
         tk =>
-          tk.localId.toLowerCase() === params.initialTokenIdFrom?.toLowerCase()
+          tk.localId.toLowerCase() === initialTokenIdFrom?.toLowerCase() ||
+          tk.internalId === initialTokenIdFrom
       )
     }
     setFromToken(initialFromToken)
 
     let initialToToken: LocalTokenWithBalance | undefined
-    if (params?.initialTokenIdTo) {
+    if (initialTokenIdTo) {
       initialToToken = swapList.find(
         tk =>
-          tk.localId.toLowerCase() === params.initialTokenIdTo?.toLowerCase()
+          tk.localId.toLowerCase() === initialTokenIdTo?.toLowerCase() ||
+          tk.internalId === initialTokenIdTo
       )
     }
 
     setToToken(initialToToken)
-  }, [
-    params.initialTokenIdFrom,
-    params.initialTokenIdTo,
-    setFromToken,
-    setToToken,
-    swapList
-  ])
+  }, [params, setFromToken, setToToken, swapList])
 
   const showFeesAndSlippage = activeQuote?.serviceType === ServiceType.MARKR
 
@@ -648,7 +646,9 @@ export const SwapScreen = (): JSX.Element => {
             sx={{
               color: '$textDanger',
               alignSelf: 'center',
-              marginVertical: 8
+              marginVertical: 8,
+              width: '85%',
+              textAlign: 'center'
             }}>
             {errorMessage}
           </Text>
