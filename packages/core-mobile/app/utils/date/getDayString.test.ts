@@ -1,5 +1,8 @@
 describe('getDayString', () => {
-  let getDayString: (timestamp: number, monthFormat?: 'short' | 'long') => string
+  let getDayString: (
+    timestamp: number,
+    monthFormat?: 'short' | 'long'
+  ) => string
 
   beforeEach(() => {
     jest.useFakeTimers()
@@ -7,7 +10,6 @@ describe('getDayString', () => {
     // endOfToday() / endOfYesterday() constants are deterministic
     jest.setSystemTime(new Date(2025, 6, 15, 12, 0, 0))
     jest.resetModules()
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     getDayString = require('./getDayString').getDayString
   })
 
