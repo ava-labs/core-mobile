@@ -53,18 +53,30 @@ class AnalyticsService implements AnalyticsServiceInterface {
       return
     }
 
-    const stringifiedProperties = JSON.stringify(properties)
-    const { encrypted, enc, keyID } = await encrypt(
-      stringifiedProperties,
-      this.analyticsEncryptionKey,
-      this.analyticsEncryptionKeyId
-    )
+    try {
+      const stringifiedProperties = JSON.stringify(properties)
+      const { encrypted, enc, keyID } = await encrypt(
+        stringifiedProperties,
+        this.analyticsEncryptionKey,
+        this.analyticsEncryptionKeyId
+      )
 
-    return PostHogService.capture(eventName, {
-      data: encrypted,
-      enc,
-      keyID: keyID
-    })
+      return PostHogService.capture(eventName, {
+        data: encrypted,
+        enc,
+        keyID: keyID
+      })
+    } catch (error) {
+      alert(
+        `Failed to capture encrypted analytics event: ${eventName}, ${JSON.stringify(
+          error
+        )}`
+      )
+      Logger.error(
+        `Failed to capture encrypted analytics event: ${eventName}`,
+        error
+      )
+    }
   }
 }
 
