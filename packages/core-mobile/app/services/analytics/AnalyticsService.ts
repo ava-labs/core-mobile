@@ -67,11 +67,6 @@ class AnalyticsService implements AnalyticsServiceInterface {
         keyID: keyID
       })
     } catch (error) {
-      alert(
-        `Failed to capture encrypted analytics event: ${eventName}, ${JSON.stringify(
-          error
-        )}`
-      )
       Logger.error(
         `Failed to capture encrypted analytics event: ${eventName}`,
         error
