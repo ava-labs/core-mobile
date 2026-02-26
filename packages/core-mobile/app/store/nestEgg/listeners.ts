@@ -55,7 +55,7 @@ const handleSwapForNestEgg = async (
     return
   }
 
-  // Check minimum swap amount ($10 USD)
+  // Check minimum swap amount ($9 USD)
   if (fromAmountUsd < MINIMUM_SWAP_AMOUNT_USD) {
     return
   }
