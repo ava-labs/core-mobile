@@ -73,7 +73,6 @@ export const dismissMeldStack = (
     router.canGoBack() && router.back()
   })
   router.navigate({
-    // @ts-ignore TODO: make routes typesafe
     pathname: '/transactionSuccessful',
     params: {
       title: 'Transaction submitted',

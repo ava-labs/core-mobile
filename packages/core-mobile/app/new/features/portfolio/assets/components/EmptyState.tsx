@@ -61,7 +61,6 @@ export const EmptyState = ({
       {
         title: 'Receive crypto',
         subtitle: 'Move funds from another wallet or exchange',
-        // @ts-ignore TODO: make routes typesafe
         onPress: () => router.navigate('/receive'),
         leftIcon: (
           <View style={leftIconStyle}>
@@ -75,8 +74,8 @@ export const EmptyState = ({
   useLayoutEffect(() => {
     if (animationContainerRef.current) {
       animationContainerRef.current.measure(
-        (x: number, y: number, width: number, height: number) => {
-          setAvailableHeight(height)
+        (...args: [number, number, number, number]) => {
+          setAvailableHeight(args[3])
         }
       )
     }

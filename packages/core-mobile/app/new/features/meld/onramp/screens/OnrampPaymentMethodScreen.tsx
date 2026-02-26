@@ -7,7 +7,6 @@ export const OnrampPaymentMethodScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
 
   const handleSelectServiceProvider = useCallback(() => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/meldOnrampPaymentMethod/onrampServiceProvider')
   }, [navigate])
 
