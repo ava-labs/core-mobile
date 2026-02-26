@@ -173,7 +173,7 @@ export function useQuoteStreaming(
           if (data.reason === 'no-eligible-services') {
             setError(
               new Error(
-                'No swap routes available for this pair. Please try a different token pair.'
+                'No swap routes available.\nPlease try a different token pair!'
               )
             )
           }
