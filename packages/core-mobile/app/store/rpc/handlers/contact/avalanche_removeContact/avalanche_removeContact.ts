@@ -55,7 +55,6 @@ class AvalancheRemoveContactHandler
       action: 'remove'
     })
 
-    // @ts-ignore TODO: make routes typesafe
     router.navigate('/editContact')
     return { success: true, value: DEFERRED_RESULT }
   }

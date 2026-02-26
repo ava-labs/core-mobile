@@ -21,7 +21,6 @@ export default function CreatePin(): JSX.Element {
 
   const navigateToSetWalletName = useCallback(() => {
     navigate({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/onboarding/mnemonic/setWalletName'
     })
   }, [navigate])

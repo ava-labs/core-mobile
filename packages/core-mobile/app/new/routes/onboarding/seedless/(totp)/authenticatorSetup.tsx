@@ -13,12 +13,10 @@ export default function AuthenticatorSetup(): JSX.Element {
   const { totpResetInit } = useSeedlessManageMFA()
 
   const goToVerifyCode = (): void => {
-    // @ts-ignore TODO: make routes typesafe
     router.push('/onboarding/seedless/verifyCode')
   }
 
   const goToScanQrCode = (): void => {
-    // @ts-ignore TODO: make routes typesafe
     router.navigate('/onboarding/seedless/scanQrCode')
   }
 

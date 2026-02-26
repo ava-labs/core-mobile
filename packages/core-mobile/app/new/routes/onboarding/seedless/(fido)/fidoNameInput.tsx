@@ -23,7 +23,6 @@ const FidoNameInput = (): JSX.Element => {
   const onAccountVerified = useCallback(async (): Promise<void> => {
     router.back()
 
-    // @ts-ignore TODO: make routes typesafe
     router.navigate('/onboarding/seedless/analyticsConsent')
     AnalyticsService.capture('SeedlessMfaVerified', {
       type: fidoType ?? 'Fido'

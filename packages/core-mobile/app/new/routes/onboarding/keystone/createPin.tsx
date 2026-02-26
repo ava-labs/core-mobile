@@ -19,7 +19,6 @@ export default function CreatePin(): JSX.Element {
   const activeWalletId = useSelector(selectActiveWalletId)
 
   const navigateToNextStep = useCallback(() => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/onboarding/keystone/setWalletName')
   }, [navigate])
 
