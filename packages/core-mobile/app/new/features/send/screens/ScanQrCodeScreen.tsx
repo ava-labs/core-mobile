@@ -45,7 +45,6 @@ export const ScanQrCodeScreen = (): JSX.Element => {
       })
       resetAmount()
       replace({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/send/send'
       })
     },

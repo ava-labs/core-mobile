@@ -446,7 +446,6 @@ export const SwapScreen = (): JSX.Element => {
   }, [navigate, fromToken])
 
   const handleSelectPricingDetails = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/swap/pricingDetails' })
   }, [navigate])
 
