@@ -9,7 +9,6 @@ import type { Address as EvmAddress } from 'viem'
 import type { Address as SolanaAddress } from '@solana/kit'
 import type { LocalTokenWithBalance } from 'store/balance'
 import { NetworkWithCaip2ChainId } from 'store/network'
-import { isSolanaNetwork } from 'utils/network/isSolanaNetwork'
 
 /**
  * Type conversion utilities for Fusion SDK integration
@@ -128,10 +127,7 @@ export function toChain(network: NetworkWithCaip2ChainId): Chain {
     chainId: caip2ChainId,
     chainName: network.chainName,
     networkToken,
-    // TODO remove once backend fixes solana's rpc url
-    rpcUrl: isSolanaNetwork(network)
-      ? 'https://proxy-api.avax.network/proxy/nownodes/sol'
-      : network.rpcUrl
+    rpcUrl: network.rpcUrl
   }
 
   // Add utility addresses if available
