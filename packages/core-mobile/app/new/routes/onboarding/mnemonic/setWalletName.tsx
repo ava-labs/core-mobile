@@ -16,7 +16,6 @@ export default function SetWalletName(): JSX.Element {
     AnalyticsService.capture('Onboard:WalletNameSet')
     dispatch(setWalletName({ walletId: activeWallet.id, name }))
     navigate({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/onboarding/mnemonic/selectAvatar'
     })
   }, [activeWallet.id, dispatch, name, navigate])

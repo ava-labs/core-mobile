@@ -8,7 +8,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useNavigation } from '@react-navigation/native'
+import { useRouter } from 'expo-router'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { Platform, TextInput, TextInputSubmitEditingEvent } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
@@ -33,7 +33,7 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput)
 
 export const BrowserInput = (): ReactNode => {
   const { theme } = useTheme()
-  const { navigate } = useNavigation()
+  const { navigate } = useRouter()
   const activeTab = useSelector(selectActiveTab)
   const {
     urlEntry,
@@ -96,8 +96,7 @@ export const BrowserInput = (): ReactNode => {
 
   const navigateToTabs = useCallback((): void => {
     AnalyticsService.capture('BrowserTabsOpened').catch(Logger.error)
-    // @ts-ignore TODO: make routes typesafe
-    navigate('tabs')
+    navigate('/browser/tabs')
   }, [navigate])
 
   const renderPlaceholder = useCallback((): ReactNode => {

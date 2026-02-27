@@ -165,7 +165,6 @@ const TrackHomeScreen = (): JSX.Element => {
   const handleGotoMarketDetail = useCallback(
     (tokenId: string, marketType: MarketType): void => {
       navigate({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/trackTokenDetail',
         params: { tokenId, marketType }
       })

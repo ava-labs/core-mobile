@@ -94,6 +94,7 @@ export const handleDeeplink = ({
           return
         }
         const path = deeplink.url.split(':/')[1]
+        // @ts-ignore - dynamic path
         path && navigateFromDeeplinkUrl(path)
       }
       break

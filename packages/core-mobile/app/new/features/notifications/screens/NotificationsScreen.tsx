@@ -146,7 +146,6 @@ export const NotificationsScreen = (): JSX.Element => {
 
   const handleSwapActivityPress = useCallback((item: FusionTransfer) => {
     router.push({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/notifications/swapDetail',
       params: { id: item.transfer.id }
     })

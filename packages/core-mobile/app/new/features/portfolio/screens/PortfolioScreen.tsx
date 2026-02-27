@@ -188,7 +188,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }, [navigate, setSelectedToken])
 
   const handleReceive = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/receive')
   }, [navigate])
 
@@ -302,8 +301,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const openWalletsModal = useCallback(() => {
     navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/(signedIn)/(modals)/wallets'
+      pathname: '/wallets'
     })
   }, [navigate])
 
@@ -452,7 +450,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
         chainId: networkChainId
       })
       push({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/tokenDetail',
         params: { localId, chainId: networkChainId }
       })
@@ -461,14 +458,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const handleGoToTokenManagement = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/tokenManagement')
   }, [navigate])
 
   const handleGoToCollectibleDetail = useCallback(
     (localId: string, initial: CollectibleFilterAndSortInitialState): void => {
       navigate({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/collectibleDetail',
         params: { localId, initial: JSON.stringify(initial) }
       })
@@ -477,13 +472,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const handleGoToCollectibleManagement = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/collectibleManagement')
   }, [navigate])
 
   const handleGoToDiscoverCollectibles = useCallback((): void => {
     navigate({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/discoverCollectibles'
     })
   }, [navigate])

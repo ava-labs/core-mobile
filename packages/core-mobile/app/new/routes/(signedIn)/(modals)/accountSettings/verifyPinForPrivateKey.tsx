@@ -45,7 +45,6 @@ const VerifyPinForPrivateKeyScreen = (): JSX.Element => {
 
     if (wallet.type === WalletType.PRIVATE_KEY) {
       replace({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/viewPrivateKey',
         params: { privateKey: walletSecret }
       })
@@ -58,7 +57,6 @@ const VerifyPinForPrivateKeyScreen = (): JSX.Element => {
       getPrivateKeyFromMnemonic(walletSecret, cChainNetwork)
         .then(privateKey => {
           replace({
-            // @ts-ignore TODO: make routes typesafe
             pathname: '/accountSettings/viewPrivateKey',
             params: { privateKey }
           })

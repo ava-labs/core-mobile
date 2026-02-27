@@ -33,7 +33,7 @@
           "launchMode": "most-recent"
         }
       ],
-      "expo-router",
+      ["expo-router", { "root": "./app/new/routes" }],
       [
         "expo-camera",
         {

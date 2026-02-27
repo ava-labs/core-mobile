@@ -59,7 +59,6 @@ class AvalancheUpdateContactHandler
       action: 'update'
     })
 
-    // @ts-ignore TODO: make routes typesafe
     router.navigate('/editContact')
     return { success: true, value: DEFERRED_RESULT }
   }

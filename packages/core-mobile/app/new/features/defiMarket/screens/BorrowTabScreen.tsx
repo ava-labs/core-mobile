@@ -50,8 +50,7 @@ const BorrowTabScreen = ({
 
   const handleAddBorrow = useCallback(() => {
     AnalyticsService.capture('EarnBorrowStart')
-    // @ts-ignore TODO: make routes typesafe
-    navigate({ pathname: '/borrow' })
+    navigate({ pathname: '/borrow/onboarding' })
   }, [navigate])
 
   const renderItem = useCallback(

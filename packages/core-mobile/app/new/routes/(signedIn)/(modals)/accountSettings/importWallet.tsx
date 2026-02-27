@@ -17,18 +17,15 @@ const ImportWalletScreen = (): JSX.Element => {
 
   const data = useMemo(() => {
     const handleTypeRecoveryPhrase = (): void => {
-      // @ts-ignore TODO: make routes typesafe
       navigate({ pathname: '/accountSettings/importSeedWallet' })
     }
 
     const handleImportPrivateKey = (): void => {
-      // @ts-ignore TODO: make routes typesafe
       navigate({ pathname: '/accountSettings/importPrivateKey' })
     }
 
     const handleImportLedger = (): void => {
-      // @ts-ignore TODO: make routes typesafe
-      navigate({ pathname: '/accountSettings/ledger' })
+      navigate({ pathname: '/accountSettings/ledger/pathSelection' })
     }
 
     const baseData = [
