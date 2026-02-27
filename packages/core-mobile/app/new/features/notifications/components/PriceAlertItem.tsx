@@ -1,5 +1,5 @@
 import React, { FC, useMemo } from 'react'
-import { MiniChart, Text } from '@avalabs/k2-alpine'
+import { Icons, MiniChart, Text, View } from '@avalabs/k2-alpine'
 import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
@@ -8,7 +8,7 @@ import { AppNotification, isPriceAlertNotification } from '../types'
 import NotificationListItem from './NotificationListItem'
 import NotificationIcon from './NotificationIcon'
 
-const CHART_WIDTH = 70
+const CHART_WIDTH = 76
 const CHART_HEIGHT = 22
 
 type PriceAlertItemProps = {
@@ -46,23 +46,34 @@ const Subtitle = ({
       ? (currentPrice * priceChangePercent) / 100
       : undefined
   const isPositive = priceChangePercent >= 0
-  const arrow = isPositive ? '▲' : '▼'
   const sign = isPositive ? '+' : ''
-  const dollarColor = isPositive ? colors.$accentTeal : colors.$accentDanger
+  const dollarColor = isPositive ? colors.$accentSuccessL : colors.$accentDanger
+  const arrowColor = isPositive ? colors.$accentSuccessL : colors.$accentDanger
 
   return (
-    <Text variant="body1">
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
       {priceChangeAmount !== undefined && (
-        <Text sx={{ color: dollarColor }}>
-          {`${sign}${formatCurrency({
-            amount: Math.abs(priceChangeAmount)
-          })} ${arrow} `}
+        <Text variant="body1" sx={{ color: dollarColor }}>
+          {`${sign}${formatCurrency({ amount: Math.abs(priceChangeAmount) })}`}
         </Text>
       )}
-      <Text sx={{ color: '$textPrimary' }}>
+      {isPositive ? (
+        <Icons.Custom.TrendingArrowUp
+          color={arrowColor}
+          width={10}
+          height={10}
+        />
+      ) : (
+        <Icons.Custom.TrendingArrowDown
+          color={arrowColor}
+          width={10}
+          height={10}
+        />
+      )}
+      <Text variant="body1" sx={{ color: '$textPrimary' }}>
         {`${Math.abs(priceChangePercent).toFixed(2)}%`}
       </Text>
-    </Text>
+    </View>
   )
 }
 

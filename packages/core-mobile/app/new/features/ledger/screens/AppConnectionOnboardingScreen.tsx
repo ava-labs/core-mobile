@@ -68,7 +68,6 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
           )
           // Stop polling since we no longer need app detection
           LedgerService.stopAppPolling()
-          // @ts-ignore TODO: make routes typesafe
           push('/accountSettings/ledger/complete')
         } catch (error) {
           Logger.error('Wallet creation failed', error)
@@ -92,7 +91,6 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
             isUpdatingWallet
           }
         )
-        // @ts-ignore TODO: make routes typesafe
         push('/accountSettings/ledger/complete')
       }
     },

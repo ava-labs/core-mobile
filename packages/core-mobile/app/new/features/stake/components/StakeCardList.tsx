@@ -105,13 +105,11 @@ export const StakeCardList = ({
   const scrollOffsetRef = useRef({ x: 0, y: 0 })
 
   const handleClaim = useCallback(() => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/claimStakeReward')
   }, [navigate])
 
   const handlePressStake = useCallback(
     (txHash: string) => {
-      // @ts-ignore TODO: make routes typesafe
       navigate({ pathname: '/stakeDetail', params: { txHash } })
     },
     [navigate]

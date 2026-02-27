@@ -11,7 +11,8 @@ import { handleDeeplink } from 'contexts/DeeplinkContext/utils/handleDeeplink'
 import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import {
   selectIsEarnBlocked,
-  selectIsInAppDefiBorrowBlocked
+  selectIsInAppDefiBorrowBlocked,
+  selectIsFusionEnabled
 } from 'store/posthog'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { LoadingState } from 'common/components/LoadingState'
@@ -117,6 +118,7 @@ export const NotificationsScreen = (): JSX.Element => {
   const { openUrl } = useCoreBrowser()
   const isEarnBlocked = useSelector(selectIsEarnBlocked)
   const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
+  const isFusionEnabled = useSelector(selectIsFusionEnabled)
   const selectedTabIndex = useSharedValue(0)
   const [selectedTabState, setSelectedTabState] = useState(0)
   const selectedTab = TAB_ITEMS[selectedTabState]?.value ?? NotificationTab.ALL
@@ -144,7 +146,6 @@ export const NotificationsScreen = (): JSX.Element => {
 
   const handleSwapActivityPress = useCallback((item: FusionTransfer) => {
     router.push({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/notifications/swapDetail',
       params: { id: item.transfer.id }
     })
@@ -152,8 +153,9 @@ export const NotificationsScreen = (): JSX.Element => {
 
   const combinedItems = useMemo((): CombinedItem[] => {
     const showSwaps =
-      selectedTab === NotificationTab.ALL ||
-      selectedTab === NotificationTab.TRANSACTIONS
+      isFusionEnabled &&
+      (selectedTab === NotificationTab.ALL ||
+        selectedTab === NotificationTab.TRANSACTIONS)
 
     return [
       ...(showSwaps
@@ -165,7 +167,7 @@ export const NotificationsScreen = (): JSX.Element => {
         (n): CombinedItem => ({ kind: 'notification', item: n })
       )
     ].sort((a, b) => b.item.timestamp - a.item.timestamp)
-  }, [transfers, notifications, selectedTab])
+  }, [isFusionEnabled, transfers, notifications, selectedTab])
   // ──────────────────────────────────────────────────────────────────────────
 
   // Items that "Clear All" will remove: backend notifications + completed swaps
@@ -189,19 +191,21 @@ export const NotificationsScreen = (): JSX.Element => {
     const totalTime = animatedCount * SWIPE_DELAY + SWIPE_DURATION
     clearAllTimerRef.current = setTimeout(() => {
       markAllAsRead()
-      clearCompletedTransfers()
+      if (isFusionEnabled) clearCompletedTransfers()
       setIsClearingAll(false)
     }, totalTime)
   }, [
     isClearingAll,
     clearableItems.length,
     markAllAsRead,
+    isFusionEnabled,
     clearCompletedTransfers
   ])
 
   // Full empty state: no backend notifications AND no swap activities
   const hasNoContentAtAll =
-    totalUnreadCount === 0 && Object.keys(transfers).length === 0
+    totalUnreadCount === 0 &&
+    (!isFusionEnabled || Object.keys(transfers).length === 0)
   const isCurrentViewEmpty =
     combinedItems.length === 0 && !isClearingAll && !isLoading
   // Full empty state only when there is truly nothing to show

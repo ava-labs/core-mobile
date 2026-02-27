@@ -8,8 +8,7 @@ const BridgeOnboardingScreen = (): JSX.Element => {
   const { navigate } = useRouter()
 
   const handlePressNext = useCallback(() => {
-    // @ts-ignore TODO: make routes typesafe
-    navigate('bridge/bridge')
+    navigate('/bridge/bridge')
   }, [navigate])
 
   return (

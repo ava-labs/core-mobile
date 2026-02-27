@@ -435,25 +435,21 @@ export const SwapScreen = (): JSX.Element => {
   )
 
   const handleSelectFromToken = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/selectSwapFromToken' })
   }, [navigate])
 
   const handleSelectToToken = useCallback((): void => {
     navigate({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/selectSwapToToken',
       params: { networkChainId: fromToken?.networkChainId }
     })
   }, [navigate, fromToken])
 
   const handleSelectPricingDetails = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/swap/pricingDetails' })
   }, [navigate])
 
   const handleSelectSlippageDetails = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/swap/slippageDetails' })
   }, [navigate])
 

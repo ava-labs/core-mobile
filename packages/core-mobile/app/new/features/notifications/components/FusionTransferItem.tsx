@@ -89,7 +89,7 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
       <Text
         variant="body2"
         sx={{
-          lineHeight: 22,
+          lineHeight: 15,
           fontWeight: 500,
           color:
             status === 'completed'

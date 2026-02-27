@@ -43,7 +43,6 @@ export const SelectAssetScreen = (): JSX.Element => {
   const handleSelectAsset = useCallback(
     (market: DefiMarket) => {
       navigate({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/borrow/selectAmount',
         params: {
           uniqueMarketId: market.uniqueMarketId

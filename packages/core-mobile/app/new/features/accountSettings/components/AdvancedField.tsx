@@ -96,7 +96,7 @@ export const AdvancedField = forwardRef<AdvancedFieldRef, AdvancedFieldProps>(
           }
         ]
       })
-    }, [id, onUpdate, onDelete])
+    }, [id, onUpdate, onDelete, type])
 
     const onEdit = useCallback(() => {
       setIsEditing(true)
@@ -123,7 +123,6 @@ export const AdvancedField = forwardRef<AdvancedFieldRef, AdvancedFieldProps>(
 
     const handleScanQrCode = useCallback(() => {
       navigate({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/addressBook/scanQrCode',
         params: { addressType: title }
       })
