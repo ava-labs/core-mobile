@@ -79,8 +79,7 @@ export const BorrowTabContent = ({
 
   const handleAddBorrow = useCallback(() => {
     AnalyticsService.capture('EarnBorrowStart')
-    // @ts-ignore TODO: make routes typesafe
-    navigate({ pathname: '/borrow' })
+    navigate({ pathname: '/borrow/onboarding' })
   }, [navigate])
 
   const handleRepayBorrow = useCallback(() => {
@@ -90,7 +89,6 @@ export const BorrowTabContent = ({
   const handlePressBorrow = useCallback(
     (marketId: string) => {
       navigate({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/borrowDetail',
         params: { marketId, protocol: selectedProtocol }
       })
@@ -104,7 +102,6 @@ export const BorrowTabContent = ({
     }
 
     navigate({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/borrow/healthScoreExplained',
       params: {
         healthScore: summary.healthScore.toString()
