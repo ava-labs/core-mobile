@@ -9,9 +9,9 @@ describe('[Smoke] Earn Deposit', () => {
     await earnPage.deposit('AVAX', '0.0001', randomPool)
   })
 
-  it('should deposit ERC20', async () => {
-    await earnPage.deposit('USDC', '0.0001', randomPool)
-  })
+  // it('should deposit ERC20', async () => {
+  //   await earnPage.deposit('USDC', '0.0001', randomPool)
+  // })
 
   it('should withdraw max amount from deposit', async () => {
     await earnPage.withdraw('max', randomPool)

@@ -57,7 +57,7 @@ export const DefiMarketLogo = ({
           <Logo
             logoUri={networkLogoUri}
             size={networkLogoWidth - borderWidth * 2}
-            testID="network_logo"
+            testID={`protocol_logo__${marketName}`}
           />
         </View>
       )}
