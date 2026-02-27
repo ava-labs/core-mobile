@@ -746,6 +746,7 @@ __metadata:
     react-native-ios-utilities: 5.2.0
     react-native-keyboard-controller: 1.20.7
     react-native-keychain: 10.0.0
+    react-native-launch-arguments: ^4.1.1
     react-native-level-fs: 3.0.1
     react-native-localize: 3.2.1
     react-native-mmkv: 4.1.1
@@ -35587,6 +35588,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-launch-arguments@npm:^4.1.1":
+  version: 4.1.1
+  resolution: "react-native-launch-arguments@npm:4.1.1"
+  peerDependencies:
+    react: ">=16.8.1"
+    react-native: ">=0.60.0-rc.0 <1.0.x"
+  checksum: 24dd1a283a11cac415efc4b55220bfd11dc3e487d272d12e6dad54a76eec75ab6716874383034ee1267b6a956fae7865c9d602550a1a5a063c61ed037c7ef518
+  languageName: node
+  linkType: hard
+
 "react-native-level-fs@npm:3.0.1":
   version: 3.0.1
   resolution: "react-native-level-fs@npm:3.0.1"
@@ -36043,7 +36054,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: e08d1254d04f3074970b63cdf0a363d6b189009270d457e868a26ef534addd69b320b85bef2a22e4eddb79006751bded431b56aaf2baf41976a6d0a5a2a2b91e
+  checksum: fbf6f420002cabeaf80eda574a5ebfa1e536fe6dfe822f136e7dfb24feaf874e5702fa31b405b5e601a95d48c343bd502f42274e3e1549c3daddc8721fc3fce6
   languageName: node
   linkType: hard
 

@@ -1,4 +1,5 @@
 import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
+import { E2EAutoImportGate } from 'common/components/E2EAutoImportGate'
 import { FloatingDevTools } from 'common/containers/FloatingDevTools'
 import NavigationThemeProvider from 'common/contexts/NavigationThemeProvider'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
@@ -59,8 +60,10 @@ export default function Root(): JSX.Element | null {
           <NavigationThemeProvider>
             <DeeplinkContextProvider>
               <RecoveryMethodProvider>
-                <RootNavigator />
-                <PrivacyScreen />
+                <E2EAutoImportGate>
+                  <RootNavigator />
+                  <PrivacyScreen />
+                </E2EAutoImportGate>
               </RecoveryMethodProvider>
             </DeeplinkContextProvider>
           </NavigationThemeProvider>

@@ -2686,6 +2686,8 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - react-native-launch-arguments (4.1.1):
+    - React
   - react-native-menu (2.0.0):
     - boost
     - DoubleConversion
@@ -4437,6 +4439,7 @@ DEPENDENCIES:
   - react-native-ios-context-menu (from `../node_modules/react-native-ios-context-menu`)
   - react-native-ios-utilities (from `../node_modules/react-native-ios-utilities`)
   - react-native-keyboard-controller (from `../node_modules/react-native-keyboard-controller`)
+  - react-native-launch-arguments (from `../node_modules/react-native-launch-arguments`)
   - "react-native-menu (from `../node_modules/@react-native-menu/menu`)"
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
@@ -4741,6 +4744,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-ios-utilities"
   react-native-keyboard-controller:
     :path: "../node_modules/react-native-keyboard-controller"
+  react-native-launch-arguments:
+    :path: "../node_modules/react-native-launch-arguments"
   react-native-menu:
     :path: "../node_modules/@react-native-menu/menu"
   react-native-netinfo:
@@ -5019,6 +5024,7 @@ SPEC CHECKSUMS:
   react-native-ios-context-menu: afeb0ca80a48e6d13a5d712928ca3b2fdbef037e
   react-native-ios-utilities: d9ed1f5ea011650e9c7e9cb7c82272c1f0363e44
   react-native-keyboard-controller: dbf568b5d029cdc5b26667a7c2323b160c25dc00
+  react-native-launch-arguments: eab68037b01ea7c78a0b3b55da3a5e967e9aaf92
   react-native-menu: 8d2c831a735c9e6528c28b26ca14e57591d87e14
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-pager-view: a0516effb17ca5120ac2113bfd21b91130ad5748
