@@ -92,6 +92,8 @@ const resumeTransfersTracking = (): void => {
   }
 }
 
+let isFusionInitializing = false
+
 /**
  * Initialize the Fusion service with current settings
  */
@@ -99,38 +101,41 @@ export const initFusionService = async (
   _action: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  const state = listenerApi.getState()
-  const isLocked = selectIsLocked(state)
-
-  if (isLocked) {
-    Logger.info('App is locked, skipping Fusion service initialization')
-    return
-  }
-
-  const request = createInAppRequest(listenerApi.dispatch)
-
-  // Check if already initialized and if reinitialization is needed
-  const isFusionServiceReady = useIsFusionServiceReady.getState()
-  if (isFusionServiceReady) {
-    const prevState = listenerApi.getOriginalState()
-
-    if (!shouldReinitializeFusion(prevState, state)) return
-
-    // Mark as not ready during reinitialization
-    useIsFusionServiceReady.setState(false)
-    FusionService.cleanup()
-  }
-
-  const featureStates = getFusionFeatureStates(state)
-
-  // Don't initialize if Fusion is not enabled
-  if (!featureStates.isFusionEnabled) {
-    Logger.info('Fusion is disabled, skipping initialization')
-    useIsFusionServiceReady.setState(false)
-    return
-  }
+  if (isFusionInitializing) return
+  isFusionInitializing = true
 
   try {
+    const state = listenerApi.getState()
+    const isLocked = selectIsLocked(state)
+
+    if (isLocked) {
+      Logger.info('App is locked, skipping Fusion service initialization')
+      return
+    }
+
+    const request = createInAppRequest(listenerApi.dispatch)
+
+    // Check if already initialized and if reinitialization is needed
+    const isFusionServiceReady = useIsFusionServiceReady.getState()
+    if (isFusionServiceReady) {
+      const prevState = listenerApi.getOriginalState()
+
+      if (!shouldReinitializeFusion(prevState, state)) return
+
+      // Mark as not ready during reinitialization
+      useIsFusionServiceReady.setState(false)
+      FusionService.cleanup()
+    }
+
+    const featureStates = getFusionFeatureStates(state)
+
+    // Don't initialize if Fusion is not enabled
+    if (!featureStates.isFusionEnabled) {
+      Logger.info('Fusion is disabled, skipping initialization')
+      useIsFusionServiceReady.setState(false)
+      return
+    }
+
     Logger.info('Initializing Fusion service', featureStates)
 
     // Mark as not ready at start
@@ -174,18 +179,12 @@ export const initFusionService = async (
     // Mark as ready after successful init
     useIsFusionServiceReady.setState(true)
 
-    Logger.info('Fusion service initialized successfully', {
-      environment,
-      enabledServices: Object.entries(featureFlags)
-        .filter(([, enabled]) => enabled)
-        .map(([key]) => key)
-    })
-
     resumeTransfersTracking()
   } catch (error) {
     Logger.error('Failed to initialize Fusion service', error)
-    // Mark as not ready on error
     useIsFusionServiceReady.setState(false)
+  } finally {
+    isFusionInitializing = false
   }
 }
 

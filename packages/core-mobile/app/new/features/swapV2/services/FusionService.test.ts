@@ -87,7 +87,11 @@ describe('FusionService', () => {
         ])
       })
       expect(Logger.info).toHaveBeenCalledWith(
-        'Fusion service initialized successfully'
+        'Fusion service initialized successfully',
+        {
+          environment: Environment.PROD,
+          enabledServices: [ServiceType.MARKR]
+        }
       )
     })
 
@@ -962,12 +966,21 @@ describe('FusionService', () => {
       expect(updateListener).toHaveBeenCalledWith(update)
     })
 
-    it('should call updateListener with the resolved transfer when result resolves', async () => {
-      const resolvedTransfer = { id: 'transfer-1', status: 'completed' } as any
-      const mockTrackTransfer = jest.fn().mockReturnValue({
-        cancel: jest.fn(),
-        result: Promise.resolve(resolvedTransfer)
-      })
+    it('should call updateListener when the SDK calls the wrapped listener with a status update', async () => {
+      const completedTransfer = {
+        id: 'transfer-1',
+        status: 'completed'
+      } as any
+      const mockTrackTransfer = jest
+        .fn()
+        .mockImplementation(({ updateListener: wrappedListener }) => {
+          // Simulate the SDK calling wrappedListener with a status update
+          wrappedListener(completedTransfer)
+          return {
+            cancel: jest.fn(),
+            result: Promise.resolve(completedTransfer)
+          }
+        })
       const mockTransferManager = {
         getQuoter: jest.fn(),
         getSupportedChains: jest.fn(),
@@ -996,10 +1009,8 @@ describe('FusionService', () => {
 
       FusionService.trackTransfer(transfer, updateListener)
 
-      // Wait for the promise to resolve
-      await new Promise(resolve => setTimeout(resolve, 0))
-
-      expect(updateListener).toHaveBeenCalledWith(resolvedTransfer)
+      expect(updateListener).toHaveBeenCalledWith(completedTransfer)
+      expect(updateListener).toHaveBeenCalledTimes(1)
     })
 
     it('should log error when result rejects', async () => {
