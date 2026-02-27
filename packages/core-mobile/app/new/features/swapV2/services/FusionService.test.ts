@@ -38,10 +38,12 @@ describe('FusionService', () => {
   const mockFetch = jest.fn() as any
   const mockEvmSigner = {} as any
   const mockBtcSigner = {} as any
+  const mockSvmSigner = {} as any
 
   const mockSigners: FusionSigners = {
     evm: mockEvmSigner,
-    btc: mockBtcSigner
+    btc: mockBtcSigner,
+    svm: mockSvmSigner
   }
 
   beforeEach(() => {
