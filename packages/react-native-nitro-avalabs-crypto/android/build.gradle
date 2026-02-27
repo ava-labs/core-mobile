@@ -536,6 +536,8 @@ android {
             "**/libjscexecutor.so"
     ]
     pickFirst "**/libsecp256k1.so"
+    pickFirst "**/libcrypto.so"
+    pickFirst "**/libssl.so"
   }
 
   buildFeatures {
@@ -614,4 +616,8 @@ dependencies {
     exclude group: "com.facebook.react", module: "react-android"
     exclude group: "com.facebook.react", module: "react-native"
   }
+  // OpenSSL 3.6.0-1 - aligned with react-native-quick-crypto (see
+  // packages/core-mobile/node_modules/react-native-quick-crypto/android/build.gradle).
+  // If quick-crypto changes its OpenSSL version, update this to keep the ABI compatible.
+  implementation 'io.github.ronickg:openssl:3.6.0-1'
 }

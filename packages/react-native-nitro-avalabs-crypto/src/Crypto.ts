@@ -1,8 +1,9 @@
 /* eslint-disable no-bitwise */
+import { ed25519 } from '@noble/curves/ed25519'
 import { NitroModules } from 'react-native-nitro-modules'
-import type { Crypto } from './specs/Crypto.nitro'
+import type { Crypto, ExtendedPublicKeyResult } from './specs/Crypto.nitro'
 
-const con = console
+export type { ExtendedPublicKeyResult } from './specs/Crypto.nitro'
 
 // Native hybrid object
 const NativeCrypto = NitroModules.createHybridObject<Crypto>('Crypto')
@@ -86,46 +87,34 @@ export function getPublicKey(
   secretKey: Uint8Array | ArrayBuffer | string | bigint,
   isCompressed = true
 ): Uint8Array {
-  con.log('[Crypto] getPublicKey called with', typeof secretKey, isCompressed)
   let ab: ArrayBuffer | undefined
   let hex: string | undefined
 
   if (typeof secretKey === 'bigint') {
-    con.log('[Crypto] Secret is bigint')
     // Prefer zero-copy native path via ArrayBuffer
     ab = bigintToArrayBuffer32(secretKey)
     // hex fallback available if needed: hex = bigintToHex64(secretKey);
   } else if (typeof secretKey === 'string') {
-    con.log('[Crypto] Secret is string', secretKey.slice(0, 10) + '...')
     hex = normalizeHex(secretKey)
   } else {
-    con.log(
-      '[Crypto] Secret is buffer-like',
-      secretKey instanceof Uint8Array,
-      secretKey instanceof ArrayBuffer
-    )
     ab = toArrayBuffer(secretKey)
   }
 
   let outBuf: ArrayBuffer
   if (ab && typeof NativeCrypto.getPublicKeyFromArrayBuffer === 'function') {
-    con.log('[Crypto] Calling NativeCrypto.getPublicKeyFromArrayBuffer')
     outBuf = NativeCrypto.getPublicKeyFromArrayBuffer(ab, isCompressed)
   } else if (hex && typeof NativeCrypto.getPublicKeyFromString === 'function') {
-    con.log('[Crypto] Calling NativeCrypto.getPublicKeyFromString')
     // Native returns ArrayBuffer already — no conversion needed
     outBuf = NativeCrypto.getPublicKeyFromString(hex, isCompressed)
   } else if (
     hex &&
     typeof NativeCrypto.getPublicKeyFromArrayBuffer === 'function'
   ) {
-    con.log('[Crypto] Calling NativeCrypto.getPublicKeyFromArrayBuffer')
     outBuf = NativeCrypto.getPublicKeyFromArrayBuffer(
       hexToArrayBuffer(hex),
       isCompressed
     )
   } else if (ab && typeof NativeCrypto.getPublicKeyFromString === 'function') {
-    con.log('[Crypto] Calling NativeCrypto.getPublicKeyFromString')
     // fallback: convert buffer to hex and use string method; native returns ArrayBuffer
     const bytes = new Uint8Array(ab)
     let h = ''
@@ -141,20 +130,7 @@ export function getPublicKey(
       'Native Crypto hybrid does not expose the expected methods.'
     )
   }
-
-  con.log(
-    '[Crypto] Native call succeeded, result byteLength:',
-    outBuf.byteLength
-  )
-  con.log('[Crypto] Returning Uint8Array with length', outBuf.byteLength)
-  try {
-    const res = new Uint8Array(outBuf)
-    con.log('[Crypto] getPublicKey completed')
-    return res
-  } catch (error) {
-    con.error('[Crypto] getPublicKey failed', error)
-    throw error
-  }
+  return new Uint8Array(outBuf)
 }
 
 // Optionally re-export the native methods (typed) if you want direct access:
@@ -169,7 +145,6 @@ export function pointAddScalar(
   tweak: string | ArrayBuffer | Uint8Array,
   isCompressed = true
 ): Uint8Array {
-  con.log('[Crypto] pointAddScalar called')
   const pkAB = hexLikeToArrayBuffer(publicKey as unknown as string)
   const twAB = hexLikeToArrayBuffer(tweak as unknown as string)
   const out = NativeCrypto.pointAddScalar(pkAB, twAB, isCompressed)
@@ -224,7 +199,6 @@ export function sign(
   secretKey: string | ArrayBuffer | Uint8Array,
   message: string | ArrayBuffer | Uint8Array
 ): Uint8Array {
-  con.log('[Crypto] sign called')
   const skAB = hexLikeToArrayBuffer(secretKey)
   const msgAB = hexLikeToArrayBuffer(message)
   if (msgAB.byteLength !== 32)
@@ -233,7 +207,6 @@ export function sign(
   let sig = new Uint8Array(out)
   // Normalize to compact(64) – many JS libs expect r||s
   if (isDerSignature(sig)) {
-    con.log('[Crypto] sign: converting DER signature to compact(64)')
     sig = derToCompact64(sig)
   } else if (sig.length !== 64) {
     throw new TypeError(`ECDSA signature has unexpected length: ${sig.length}`)
@@ -290,7 +263,6 @@ export function verify(
   message: string | ArrayBuffer | Uint8Array,
   signature: string | ArrayBuffer | Uint8Array
 ): boolean {
-  con.log('[Crypto] verify called')
   const pkAB = hexLikeToArrayBuffer(publicKey)
   const msgAB = hexLikeToArrayBuffer(message)
   const sigAB0 = hexLikeToArrayBuffer(signature)
@@ -299,16 +271,8 @@ export function verify(
 
   // Normalize signature to DER if it is compact-64
   let sigU8 = new Uint8Array(sigAB0)
-  if (!isDerSignature(sigU8)) {
-    if (sigU8.length === 64) {
-      con.log('[Crypto] verify: converting compact(64) signature to DER')
-      sigU8 = compact64ToDer(sigU8) as Uint8Array<ArrayBuffer>
-    } else {
-      con.log(
-        '[Crypto] verify: non-DER signature with unexpected length',
-        sigU8.length
-      )
-    }
+  if (!isDerSignature(sigU8) && sigU8.length === 64) {
+    sigU8 = compact64ToDer(sigU8) as Uint8Array<ArrayBuffer>
   }
   return NativeCrypto.verify(pkAB, msgAB, sigU8.buffer)
 }
@@ -320,12 +284,6 @@ export function signSchnorr(
   secretKey: string | ArrayBuffer | Uint8Array,
   auxRand?: string | ArrayBuffer | Uint8Array
 ): Uint8Array {
-  con.log('[Crypto] signSchnorr called (msg, sk, aux). args=', {
-    msgType: typeof messageHash,
-    skType: typeof secretKey,
-    hasAux: auxRand !== undefined
-  })
-
   const msgAB = ensure32(
     'Schnorr messageHash',
     hexLikeToArrayBuffer(messageHash)
@@ -334,21 +292,14 @@ export function signSchnorr(
 
   let auxAB: ArrayBuffer
   if (auxRand === undefined) {
-    con.log('[Crypto] signSchnorr: using zero-filled auxRand')
     auxAB = new Uint8Array(32).buffer
   } else {
     auxAB = ensure32('Schnorr auxRand', hexLikeToArrayBuffer(auxRand))
-    con.log(
-      '[Crypto] signSchnorr: auxRand provided, byteLength=',
-      (auxAB as ArrayBuffer).byteLength
-    )
   }
 
   // Native expects (secretKey, messageHash, auxRand)
   const out = NativeCrypto.signSchnorr(skAB, msgAB, auxAB)
-  const sig = new Uint8Array(out)
-  con.log('[Crypto] signSchnorr: native returned', sig.length, 'bytes')
-  return sig
+  return new Uint8Array(out)
 }
 /** Schnorr verify (BIP-340). messageHash must be 32 bytes. Signature must be 64 bytes. */
 export function verifySchnorr(
@@ -356,7 +307,6 @@ export function verifySchnorr(
   messageHash: string | ArrayBuffer | Uint8Array,
   signature: string | ArrayBuffer | Uint8Array
 ): boolean {
-  con.log('[Crypto] verifySchnorr called')
   const pkAB = hexLikeToArrayBuffer(publicKey)
   const msgAB = hexLikeToArrayBuffer(messageHash)
   const sigAB = hexLikeToArrayBuffer(signature)
@@ -365,4 +315,50 @@ export function verifySchnorr(
   if (sigAB.byteLength !== 64)
     throw new TypeError('Schnorr signature must be 64 bytes')
   return NativeCrypto.verifySchnorr(pkAB, msgAB, sigAB)
+}
+
+/**
+ * Edwards curve extended public key derivation (Ed25519).
+ *
+ * Return type: ExtendedPublicKeyResult (see specs/Crypto.nitro.ts). This is **not**
+ * the same as the native ExtendedPublicKey. The native Nitro method returns
+ * ExtendedPublicKey with pointBytes: ArrayBuffer (empty). This wrapper transforms
+ * that into ExtendedPublicKeyResult (Uint8Array fields, scalar as bigint, point and
+ * pointBytes derived via @noble/curves). Callers should use the returned
+ * ExtendedPublicKeyResult only.
+ */
+export function getExtendedPublicKey(
+  secretKey: string | ArrayBuffer | Uint8Array
+): ExtendedPublicKeyResult {
+  const skAB = hexLikeToArrayBuffer(secretKey)
+  const result = NativeCrypto.getExtendedPublicKey(skAB)
+  const prefix = new Uint8Array(result.prefix)
+  const head = new Uint8Array(result.head)
+
+  // Apply modular reduction to match @noble/curves Fn.create() behavior
+  //  Ed25519 curve order (n). This value is the group order L from RFC 8032 §5.1.1:
+  // L = 2^252 + 27742317777372353535851937790883648493
+  // Hex representation taken directly from the specification:
+  // 0x1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ed
+
+  const ED25519_ORDER = BigInt(
+    '0x1000000000000000000000000000000014def9dea2f79cd65812631a5cf5d3ed'
+  )
+  const scalarRaw = BigInt(result.scalar)
+  const scalar = scalarRaw % ED25519_ORDER
+
+  // HYBRID APPROACH for web wallet compatibility:
+  // - C++ does: SHA-512 hash + clamp (fast native operations)
+  // - TypeScript does: modulo reduction + point derivation using @noble/curves
+  // This ensures the point derivation matches the web wallet exactly
+  const point = ed25519.ExtendedPoint.BASE.multiply(scalar)
+  const pointBytes = point.toRawBytes()
+
+  return {
+    head: head,
+    prefix: prefix,
+    scalar: scalar,
+    point: { toRawBytes: () => pointBytes },
+    pointBytes: pointBytes
+  }
 }
