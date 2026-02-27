@@ -61,8 +61,7 @@ const allCaps = [
 
 const caps = platformToRun
   ? allCaps.filter(
-      cap =>
-        (cap.platformName as string)?.toLowerCase() === platformToRun
+      cap => (cap.platformName as string)?.toLowerCase() === platformToRun
     )
   : allCaps
 
