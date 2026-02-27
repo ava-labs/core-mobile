@@ -141,11 +141,6 @@ class FusionService implements IFusionService {
     signers: FusionSigners
   }): Promise<void> {
     try {
-      Logger.info('Initializing Fusion service', {
-        environment: config.environment,
-        enabledServices: config.enabledServices
-      })
-
       const initializers = this.getServiceInitializers({
         btcFunctions: bitcoinProvider,
         enabledServices: config.enabledServices,
@@ -168,7 +163,11 @@ class FusionService implements IFusionService {
         ]
       })
 
-      Logger.info('Fusion service initialized successfully')
+      Logger.info('Fusion service initialized successfully', {
+        environment: config.environment,
+        enabledServices: config.enabledServices
+      })
+  
     } catch (error) {
       Logger.error('Failed to initialize Fusion service', error)
       throw error
