@@ -8,6 +8,7 @@ import React, {
   useState,
   useMemo
 } from 'react'
+import { showAlert } from '@avalabs/k2-alpine'
 import { SwapSide } from '@paraswap/sdk'
 import { LocalTokenWithBalance } from 'store/balance'
 import { useDispatch, useSelector } from 'react-redux'
@@ -142,6 +143,14 @@ export const SwapContextProvider = ({
     return getAddressByNetwork(activeAccount, toNetwork)
   }, [activeAccount, toNetwork])
 
+  const onNoQuotesError = useCallback((retry: () => void) => {
+    showAlert({
+      title: 'No quotes available',
+      description: 'Please try again',
+      buttons: [{ text: 'Close' }, { text: 'Retry', onPress: retry }]
+    })
+  }, [])
+
   // Subscribe to quote stream
   const { isLoading: isQuoteLoading, error: quoteError } = useQuoteStreaming({
     fromToken,
@@ -153,7 +162,8 @@ export const SwapContextProvider = ({
     toAddress,
     // When auto slippage is enabled, pass undefined to let SDK determine optimal slippage
     // When manual, use the user's specified slippage value
-    slippageBps: autoSlippage ? undefined : slippage * 100
+    slippageBps: autoSlippage ? undefined : slippage * 100,
+    onNoQuotesError
   })
 
   // Method to select a specific quote or auto mode
