@@ -216,7 +216,8 @@ export const SwapScreen = (): JSX.Element => {
   const setInitialTokensFx = useCallback(() => {
     if (initialized.current) return
 
-    const { initialTokenIdFrom, initialTokenIdTo } = params
+    const initialTokenIdFrom = params.initialTokenIdFrom
+    const initialTokenIdTo = params.initialTokenIdTo
 
     if (initialTokenIdFrom || initialTokenIdTo) {
       initialized.current = true
@@ -242,7 +243,13 @@ export const SwapScreen = (): JSX.Element => {
     }
 
     setToToken(initialToToken)
-  }, [params, setFromToken, setToToken, swapList])
+  }, [
+    params.initialTokenIdFrom,
+    params.initialTokenIdTo,
+    setFromToken,
+    setToToken,
+    swapList
+  ])
 
   const showFeesAndSlippage = activeQuote?.serviceType === ServiceType.MARKR
 

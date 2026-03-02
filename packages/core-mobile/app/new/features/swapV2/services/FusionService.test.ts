@@ -1009,7 +1009,11 @@ describe('FusionService', () => {
 
       FusionService.trackTransfer(transfer, updateListener)
 
+      // Flush microtasks so any promise continuations (e.g. result.then/catch) run
+      await Promise.resolve()
+
       expect(updateListener).toHaveBeenCalledWith(completedTransfer)
+      // Exactly once: the SDK's updateListener callback — not again when result resolves
       expect(updateListener).toHaveBeenCalledTimes(1)
     })
 
