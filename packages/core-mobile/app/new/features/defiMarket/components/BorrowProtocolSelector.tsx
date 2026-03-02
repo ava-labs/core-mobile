@@ -3,7 +3,7 @@ import { Icons, Image, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { DropdownGroup, DropdownMenu } from 'common/components/DropdownMenu'
 import { MarketName, MarketNames } from '../types'
-import { useBorrowProtocol } from '../hooks/useBorrowProtocol'
+import { useSelectedBorrowProtocol } from '../hooks/useBorrowProtocol'
 import { PROTOCOL_DISPLAY_NAMES } from '../consts'
 
 const PROTOCOL_LOGOS: Record<MarketName, number> = {
@@ -13,7 +13,7 @@ const PROTOCOL_LOGOS: Record<MarketName, number> = {
 
 export const BorrowProtocolSelector = (): React.JSX.Element => {
   const { theme } = useTheme()
-  const { selectedProtocol, setSelectedProtocol } = useBorrowProtocol()
+  const [selectedProtocol, setSelectedProtocol] = useSelectedBorrowProtocol()
 
   const dropdownGroups: DropdownGroup[] = useMemo(
     () => [

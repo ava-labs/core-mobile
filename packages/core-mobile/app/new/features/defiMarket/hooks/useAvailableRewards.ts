@@ -1,10 +1,9 @@
 import { useCallback, useMemo } from 'react'
-import { createPublicClient, http } from 'viem'
 import Big from 'big.js'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
-import { getViemChain } from 'utils/getViemChain/getViemChain'
 import { useMerklUserRewards } from './aave/useMerklUserRewards'
 import { useBenqiRewards } from './benqi/useBenqiRewards'
+import { useNetworkClient } from './useNetworkClient'
 
 const BIG_ZERO = Big(0)
 
@@ -83,13 +82,7 @@ export const useAvailableRewards = (): {
   refetch: () => void
 } => {
   const cChainNetwork = useCChainNetwork()
-  const networkClient = useMemo(() => {
-    if (!cChainNetwork) {
-      return undefined
-    }
-    const cChain = getViemChain(cChainNetwork)
-    return createPublicClient({ chain: cChain, transport: http() })
-  }, [cChainNetwork])
+  const networkClient = useNetworkClient(cChainNetwork)
 
   const {
     data: merklUserRewards,

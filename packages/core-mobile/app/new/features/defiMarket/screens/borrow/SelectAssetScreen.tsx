@@ -13,7 +13,7 @@ import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
 import { DefiMarket } from '../../types'
 import { DefiAssetLogo } from '../../components/DefiAssetLogo'
-import { useBorrowProtocol } from '../../hooks/useBorrowProtocol'
+import { useSelectedBorrowProtocol } from '../../hooks/useBorrowProtocol'
 import { useAvailableMarkets } from '../../hooks/useAvailableMarkets'
 import { PROTOCOL_DISPLAY_NAMES } from '../../consts'
 import errorIcon from '../../../../assets/icons/melting_face.png'
@@ -21,7 +21,7 @@ import errorIcon from '../../../../assets/icons/melting_face.png'
 export const SelectAssetScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { theme } = useTheme()
-  const { selectedProtocol } = useBorrowProtocol()
+  const [selectedProtocol] = useSelectedBorrowProtocol()
   const {
     data: markets,
     isPending: isLoading,
