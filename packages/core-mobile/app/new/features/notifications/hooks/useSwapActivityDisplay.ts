@@ -40,7 +40,8 @@ export type SwapActivityDisplay = {
 /**
  * Derives all display-level data for a swap activity from its raw stored shape.
  *
- * - Token logos are resolved from the active account's in-memory balance data.
+ * - Token logos are resolved from metadata stored at swap time (always available,
+ *   even if the token is no longer held).
  * - Network logos are resolved from the Redux networks store.
  * - USD values are computed from the on-chain amount × token price.
  * - Returns undefined when item is undefined (swap not found).

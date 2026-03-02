@@ -28,9 +28,12 @@ if (__DEV__) {
     const warn = console.warn
     // eslint-disable-next-line no-console
     console.warn = (...arg) => {
-      for (const warning of ignoreWarns) {
-        if (arg[0].includes(warning)) {
-          return
+      const first = arg[0]
+      if (typeof first === 'string') {
+        for (const warning of ignoreWarns) {
+          if (first.includes(warning)) {
+            return
+          }
         }
       }
       warn(...arg)

@@ -29,7 +29,7 @@ export function createSvmSigner(
       assert(account, 'Invalid transaction: missing "account"')
 
       try {
-        const result = await request({
+        return await request({
           method: RpcMethod.SOLANA_SIGN_AND_SEND_TRANSACTION,
           params: [
             {
@@ -45,8 +45,6 @@ export function createSvmSigner(
               requiredSignatures > currentSignature
           }
         })
-
-        return result as `0x${string}`
       } catch (err) {
         Logger.error('[fusion::svmSigner.signAndSend]', err)
         throw err

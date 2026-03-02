@@ -167,7 +167,6 @@ class FusionService implements IFusionService {
         environment: config.environment,
         enabledServices: config.enabledServices
       })
-  
     } catch (error) {
       Logger.error('Failed to initialize Fusion service', error)
       throw error
