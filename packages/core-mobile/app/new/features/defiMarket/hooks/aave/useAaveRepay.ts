@@ -30,7 +30,7 @@ export const useAaveRepay = ({
   onReverted,
   onError
 }: {
-  market: DefiMarket
+  market?: DefiMarket
   onConfirmed?: () => void
   onReverted?: () => void
   onError?: () => void
@@ -60,7 +60,7 @@ export const useAaveRepay = ({
   }, [onConfirmed])
 
   const { sendTransaction } = useETHSendTransaction({
-    network: market.network,
+    network: market?.network,
     provider,
     onConfirmed: handleConfirmed,
     onReverted,
@@ -77,8 +77,14 @@ export const useAaveRepay = ({
       isMaxRepay: boolean
       confettiDisabled?: boolean
     }) => {
+      if (!market) {
+        throw new Error('Market is required')
+      }
       if (!address) {
         throw new Error('No address found')
+      }
+      if (!provider) {
+        throw new Error('No provider found')
       }
 
       const isNativeAvax =

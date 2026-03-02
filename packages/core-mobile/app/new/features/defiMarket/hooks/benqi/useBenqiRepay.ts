@@ -23,7 +23,7 @@ export const useBenqiRepay = ({
   onReverted,
   onError
 }: {
-  market: DefiMarket
+  market?: DefiMarket
   onConfirmed?: () => void
   onReverted?: () => void
   onError?: () => void
@@ -71,8 +71,14 @@ export const useBenqiRepay = ({
       isMaxRepay: boolean
       confettiDisabled?: boolean
     }) => {
+      if (!market) {
+        throw new Error('Market is required')
+      }
       if (!address) {
         throw new Error('No address found')
+      }
+      if (!provider) {
+        throw new Error('No provider found')
       }
 
       const qTokenAddress = market.asset.mintTokenAddress
