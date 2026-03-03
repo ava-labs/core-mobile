@@ -12,13 +12,13 @@ import { useInAppRequest } from 'hooks/useInAppRequest'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { useETHSendTransaction } from 'common/hooks/useETHSendTransaction'
 import { ensureAllowance } from 'features/swap/utils/evm/ensureAllowance'
+import { WAVAX_ADDRESS } from 'features/swap/consts'
 import { TransactionParams } from '@avalabs/evm-module'
 import { AAVE_AVALANCHE3_POOL_PROXY_ABI } from '../../abis/aaveAvalanche3PoolProxy'
 import { AAVE_WRAPPED_AVAX_GATEWAY_ABI } from '../../abis/aaveWappedAvaxGateway'
 import {
   AAVE_POOL_C_CHAIN_ADDRESS,
   AAVE_WRAPPED_AVAX_GATEWAY_ADDRESS,
-  AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS,
   MAX_UINT256,
   REPAY_ETH_DUST_BUFFER,
   REPAY_ETH_GAS_AMOUNT
@@ -93,7 +93,7 @@ export const useAaveRepay = ({
       const isNativeAvax =
         !market.asset.contractAddress ||
         market.asset.contractAddress.toLowerCase() ===
-          AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS.toLowerCase()
+          WAVAX_ADDRESS.toLowerCase()
 
       const actualAmount = amount.toSubUnit()
       const accountAddress = address as Address

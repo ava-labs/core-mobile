@@ -1,9 +1,6 @@
 import { formatUnits } from 'viem'
-import {
-  AAVE_PRICE_ORACLE_SCALE,
-  AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS,
-  WAD
-} from '../consts'
+import { WAVAX_ADDRESS } from 'features/swap/consts'
+import { AAVE_PRICE_ORACLE_SCALE, WAD } from '../consts'
 import {
   AaveBorrowData,
   BorrowPosition,
@@ -39,8 +36,7 @@ const getAaveHealthScore = (
 const isAaveWavaxMarket = (market: DefiMarket): boolean => {
   return (
     market.marketName === MarketNames.aave &&
-    market.asset.contractAddress?.toLowerCase() ===
-      AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS.toLowerCase()
+    market.asset.contractAddress?.toLowerCase() === WAVAX_ADDRESS.toLowerCase()
   )
 }
 
@@ -57,8 +53,7 @@ export const buildAaveBorrowPositions = ({
       return []
     }
 
-    const lookupAddress =
-      market.asset.contractAddress ?? AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS
+    const lookupAddress = market.asset.contractAddress ?? WAVAX_ADDRESS
     const borrowedBalance = aaveDebtMap?.get(lookupAddress.toLowerCase()) ?? 0n
 
     if (borrowedBalance <= 0n) {

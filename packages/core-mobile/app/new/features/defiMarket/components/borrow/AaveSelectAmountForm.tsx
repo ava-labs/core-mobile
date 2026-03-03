@@ -2,13 +2,10 @@ import React, { useCallback, useMemo, useRef } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Address, formatUnits } from 'viem'
 import { transactionSnackbar } from 'common/utils/toast'
+import { WAVAX_ADDRESS } from 'features/swap/consts'
 import { DefiMarket } from '../../types'
 import { convertUsdToTokenAmount } from '../../utils/borrow'
-import {
-  AAVE_PRICE_ORACLE_SCALE,
-  AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS,
-  WAD
-} from '../../consts'
+import { AAVE_PRICE_ORACLE_SCALE, WAD } from '../../consts'
 import { useAaveBorrowData } from '../../hooks/aave/useAaveBorrowData'
 import { useAaveBorrowErc20 } from '../../hooks/aave/useAaveBorrowErc20'
 import { useUnwrapWavax } from '../../hooks/useUnwrapWavax'
@@ -36,7 +33,7 @@ export const BorrowAaveSelectAmountForm = ({
   // For AAVE, pass the underlying asset address to get price from AAVE Price Oracle
   // For native AVAX, use WAVAX address
   const underlyingAssetAddress = (market.asset.contractAddress ??
-    AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS) as Address
+    WAVAX_ADDRESS) as Address
   const { data: borrowData, isLoading } = useAaveBorrowData(
     underlyingAssetAddress
   )
