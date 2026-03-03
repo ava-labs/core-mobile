@@ -52,6 +52,8 @@ export const BENQI_LENS_C_CHAIN_ADDRESS =
   '0x15f30De066D21e4828D78A497d31c665a6162D2D' as const
 export const BENQI_COMPTROLLER_C_CHAIN_ADDRESS =
   '0x486Af39519B4Dc9a7fCcd318217352830E8AD9b4' as const
+export const BENQI_MAXIMILLION_C_CHAIN_ADDRESS =
+  '0xd78DEd803b28A5A9C860c2cc7A4d84F611aA4Ef8' as const
 export const BENQI_QI_TOKEN_DECIMALS = 8
 
 // Benqi reward types for claimReward function

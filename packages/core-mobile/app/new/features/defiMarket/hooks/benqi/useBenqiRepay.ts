@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { encodeFunctionData, Hex } from 'viem'
+import { Address, encodeFunctionData, Hex } from 'viem'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useSelector } from 'react-redux'
 import { RpcMethod } from '@avalabs/vm-module-types'
@@ -14,7 +14,12 @@ import { ensureAllowance } from 'features/swap/utils/evm/ensureAllowance'
 import { TransactionParams } from '@avalabs/evm-module'
 import { BENQI_Q_TOKEN } from '../../abis/benqiQToken'
 import { BENQI_QI_AVAX } from '../../abis/benqiQiAvax'
-import { BENQI_QAVAX_C_CHAIN_ADDRESS } from '../../consts'
+import { BENQI_MAXIMILLION_ABI } from '../../abis/benqiMaximillion'
+import {
+  BENQI_MAXIMILLION_C_CHAIN_ADDRESS,
+  BENQI_QAVAX_C_CHAIN_ADDRESS,
+  REPAY_ETH_DUST_BUFFER
+} from '../../consts'
 import { DefiMarket } from '../../types'
 
 export const useBenqiRepay = ({
@@ -84,8 +89,26 @@ export const useBenqiRepay = ({
       const qTokenAddress = market.asset.mintTokenAddress
 
       if (isQiAvax) {
-        // qiAVAX.repayBorrow() - payable, send AVAX with tx
         const repayAmount = amount.toSubUnit()
+
+        if (isMaxRepay) {
+          // Use Maximillion contract for max repay - it repays the full debt
+          // and refunds any overage back to the sender
+          const repayWithBuffer = repayAmount + REPAY_ETH_DUST_BUFFER
+
+          const encodedData = encodeFunctionData({
+            abi: BENQI_MAXIMILLION_ABI,
+            functionName: 'repayBehalf',
+            args: [address as Address]
+          })
+
+          return sendTransaction({
+            contractAddress: BENQI_MAXIMILLION_C_CHAIN_ADDRESS,
+            encodedData,
+            value: `0x${repayWithBuffer.toString(16)}` as Hex,
+            confettiDisabled
+          })
+        }
 
         const encodedData = encodeFunctionData({
           abi: BENQI_QI_AVAX,
