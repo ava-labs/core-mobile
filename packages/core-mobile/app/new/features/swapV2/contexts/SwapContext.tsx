@@ -145,9 +145,9 @@ export const SwapContextProvider = ({
 
   const onNoQuotesError = useCallback((retry: () => void) => {
     showAlert({
-      title: 'No quotes available',
-      description: 'Please try again',
-      buttons: [{ text: 'Close' }, { text: 'Retry', onPress: retry }]
+      title: 'Quotes unavailable',
+      description: "We couldn't fetch quotes right now",
+      buttons: [{ text: 'Close' }, { text: 'Try again', onPress: retry }]
     })
   }, [])
 
