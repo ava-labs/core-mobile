@@ -17,7 +17,23 @@ const appCheckRequestFetch = async (request: Request): Promise<Response> => {
   const headers = new Headers(request.headers)
   headers.set(APPCHECK_HEADER, token)
 
-  const response = await nitroFetch(new Request(request, { headers }))
+  // nitroFetch reads body from init.body, not from the Request object itself,
+  // so we must extract the body explicitly to avoid it being silently dropped.
+  // Note: request.body is null in React Native even when a body exists,
+  // so we always call request.text(). An empty string is coerced to undefined
+  // (i.e. no body is sent).
+  let bodyText: string | undefined
+  try {
+    bodyText = (await request.text()) || undefined
+  } catch (e) {
+    Logger.warn('appCheckFetch: failed to read request body', e)
+  }
+
+  const response = await nitroFetch(request.url, {
+    method: request.method,
+    headers,
+    body: bodyText
+  })
 
   if (!shouldRetry(response.status)) {
     return response
@@ -27,7 +43,11 @@ const appCheckRequestFetch = async (request: Request): Promise<Response> => {
   const { token: freshToken } = await AppCheckService.getToken(true)
   headers.set(APPCHECK_HEADER, freshToken)
 
-  return nitroFetch(new Request(request, { headers }))
+  return nitroFetch(request.url, {
+    method: request.method,
+    headers,
+    body: bodyText
+  })
 }
 
 /**
