@@ -44,3 +44,7 @@ export function getFusionEnvironment(isDeveloperMode: boolean): Environment {
  * This represents letting the SDK automatically select the best quote
  */
 export const AUTO_QUOTE_ID = 'auto'
+
+export const TOKEN_IDS = {
+  BTC_B: 'eip155:43114-0x152b9d0fdc40c096757f570a51e494bd4b943e50'
+}

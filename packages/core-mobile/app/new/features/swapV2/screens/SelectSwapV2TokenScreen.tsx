@@ -28,13 +28,18 @@ export const SelectSwapV2TokenScreen = ({
   setSelectedToken,
   defaultNetworkChainId,
   hideZeroBalance = false,
-  networks
+  networks,
+  tokenFilter
 }: {
   selectedToken: LocalTokenWithBalance | undefined
   setSelectedToken: (token: LocalTokenWithBalance) => void
   defaultNetworkChainId?: number
   hideZeroBalance?: boolean
   networks: Network[] | undefined
+  tokenFilter?: (
+    token: LocalTokenWithBalance,
+    selectedNetwork: Network | undefined
+  ) => boolean
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -71,7 +76,18 @@ export const SelectSwapV2TokenScreen = ({
   const { tokens, isLoading } = useSwapTokens(caip2Id)
 
   // Filter and sort tokens
-  const results = useFilteredSwapTokens({ tokens, searchText, hideZeroBalance })
+  const baseResults = useFilteredSwapTokens({
+    tokens,
+    searchText,
+    hideZeroBalance
+  })
+  const results = useMemo(
+    () =>
+      tokenFilter
+        ? baseResults.filter(t => tokenFilter(t, selectedNetwork))
+        : baseResults,
+    [baseResults, tokenFilter, selectedNetwork]
+  )
 
   // Handle token selection
   const handleSelectToken = useCallback(
