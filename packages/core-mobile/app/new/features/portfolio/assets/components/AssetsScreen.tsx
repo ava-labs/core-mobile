@@ -254,12 +254,15 @@ const AssetsScreen: FC<Props> = ({
     []
   )
 
-  const assetsListKey = useMemo(
-    () => `assets-list-${activeAccount?.id ?? 'unknown'}-${listType}`,
-    [activeAccount?.id, listType]
-  )
-
   const maintainVisibleContentPosition = useMemo(() => ({ disabled: true }), [])
+
+  const assetsListKey = useMemo(
+    () =>
+      `assets-list-${activeAccount?.id ?? 'unknown'}-${listType}-${
+        filter.selected
+      }-${sort.selected}`,
+    [activeAccount?.id, listType, filter.selected, sort.selected]
+  )
 
   return (
     <Animated.View

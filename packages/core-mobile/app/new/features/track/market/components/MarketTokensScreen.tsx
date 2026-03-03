@@ -97,6 +97,7 @@ const MarketTokensScreen = ({
       renderSeparator={renderSeparator}
       numColumns={numColumns}
       extraData={{ isGridView }}
+      listKey={`market-tokens-${view.selected}-${sort.selected}`}
     />
   )
 }
