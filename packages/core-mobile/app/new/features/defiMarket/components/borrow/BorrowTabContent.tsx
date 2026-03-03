@@ -217,11 +217,9 @@ export const BorrowTabContent = ({
     [onScroll]
   )
 
-  const listKey = `borrow-tab-${sort.selected}`
-
   return (
     <FlashList
-      key={listKey}
+      key={`borrow-tab-${sort.selected}`}
       onScroll={handleScroll}
       overrideProps={overrideProps}
       data={data}

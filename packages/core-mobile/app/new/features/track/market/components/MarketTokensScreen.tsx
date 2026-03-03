@@ -86,9 +86,6 @@ const MarketTokensScreen = ({
 
   const keyExtractor = useCallback((item: MarketToken) => item.id, [])
 
-  // Include sort in listKey so FlashList remounts when sort changes and grid layout stays correct
-  const listKey = `market-tokens-${view.selected}-${sort.selected}`
-
   return (
     <CollapsibleTabList
       data={data}
@@ -100,7 +97,7 @@ const MarketTokensScreen = ({
       renderSeparator={renderSeparator}
       numColumns={numColumns}
       extraData={{ isGridView }}
-      listKey={listKey}
+      listKey={`market-tokens-${view.selected}-${sort.selected}`}
     />
   )
 }
