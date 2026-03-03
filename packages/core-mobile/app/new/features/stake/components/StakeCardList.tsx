@@ -247,6 +247,7 @@ export const StakeCardList = ({
 
   return (
     <FlashList
+      key={`stake-card-list-${filter.selected}-${sort.selected}`}
       onScroll={handleScroll}
       overrideProps={overrideProps}
       data={data}

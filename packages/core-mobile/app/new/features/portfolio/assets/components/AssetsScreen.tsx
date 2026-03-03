@@ -231,7 +231,7 @@ const AssetsScreen: FC<Props> = ({
         onRefresh={refetch}
         numColumns={numColumns}
         extraData={{ isGridView }}
-        listKey={`assets-list-${listType}`}
+        listKey={`assets-list-${listType}-${filter.selected}-${sort.selected}`}
         testID="portfolio_token_list"
       />
     </Animated.View>
