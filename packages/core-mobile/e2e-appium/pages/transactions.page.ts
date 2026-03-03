@@ -428,7 +428,7 @@ class TransactionsPage {
 
   async approveSpendLimitIfNeeded() {
     try {
-      await actions.waitFor(this.tokenSpendApproval, 30000)
+      await actions.waitFor(this.tokenSpendApproval, 5000)
       await this.tapApprove()
     } catch (e) {
       console.log('Spend limit approval not needed')

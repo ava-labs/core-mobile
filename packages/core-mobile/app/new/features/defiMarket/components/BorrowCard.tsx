@@ -40,6 +40,7 @@ export const BorrowCard = ({
 
   return (
     <BaseCard
+      testID={`borrow_card__${market.uniqueMarketId}`}
       onPress={onPress}
       sx={{ justifyContent: 'center', alignItems: 'center', width, height }}>
       <DefiAssetLogo
@@ -64,7 +65,11 @@ export const BorrowCard = ({
       <View
         onTouchStart={e => e.stopPropagation()}
         onTouchEnd={e => e.stopPropagation()}>
-        <Button type="secondary" size="small" onPress={onRepayPress}>
+        <Button
+          testID={`borrow_card_repay_btn__${market.uniqueMarketId}`}
+          type="secondary"
+          size="small"
+          onPress={onRepayPress}>
           Repay
         </Button>
       </View>

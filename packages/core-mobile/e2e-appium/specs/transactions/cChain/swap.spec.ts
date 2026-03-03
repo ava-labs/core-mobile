@@ -1,4 +1,5 @@
 import warmup from '../../../helpers/warmup'
+import bottomTabsPage from '../../../pages/bottomTabs.page'
 import txPage from '../../../pages/transactions.page'
 
 describe('Swap on C-Chain', () => {
@@ -17,4 +18,16 @@ describe('Swap on C-Chain', () => {
     await txPage.swap('USDC', 'USDT', '0.001')
     await txPage.verifySuccessToast()
   })
+
+  it('Should swap AVAX to the No.1 trending token', async () => {
+    await bottomTabsPage.tapTrackTab()
+    await txPage.swapOnTrack()
+    await txPage.verifySuccessToast()
+  })
+
+  // it('Should swap from the deposit flow', async () => {
+  //   await bottomTabsPage.tapDepositTab()
+  //   await txPage.swap('AVAX', 'USDC', '0.001')
+  //   await txPage.verifySuccessToast()
+  // })
 })

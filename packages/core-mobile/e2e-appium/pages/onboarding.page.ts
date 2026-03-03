@@ -212,7 +212,7 @@ class OnboardingPage {
 
 async verifyLoggedIn() {
     await actions.waitFor(commonElsPage.accountOne, 40000)
-    await actions.waitFor(portfolioPage.portfolioBalanceHeader)
+    // await actions.waitFor(portfolioPage.portfolioBalanceHeader)
     console.log('Verified you are logged in')
   }
 

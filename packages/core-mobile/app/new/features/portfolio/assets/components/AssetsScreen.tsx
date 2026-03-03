@@ -215,6 +215,7 @@ const AssetsScreen: FC<Props> = ({
 
   return (
     <Animated.View
+      testID="portfolio_token_list"
       entering={getListItemEnteringAnimation(10)}
       style={{
         flex: 1
@@ -232,7 +233,6 @@ const AssetsScreen: FC<Props> = ({
         numColumns={numColumns}
         extraData={{ isGridView }}
         listKey={`assets-list-${listType}`}
-        testID="portfolio_token_list"
       />
     </Animated.View>
   )

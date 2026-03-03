@@ -34,6 +34,7 @@ export const DepositCard = ({
 
   return (
     <BaseCard
+      testID={`deposit_card__${market.marketName}__${market.asset.symbol}`}
       onPress={onPress}
       accessible={false}
       sx={{ justifyContent: 'center', alignItems: 'center', width, height }}>
