@@ -122,9 +122,13 @@ export const SwapScreen = (): JSX.Element => {
     // Fusion SDK Quote has partnerFeeBps directly
     const feeBps = activeQuote.partnerFeeBps
 
-    if (!feeBps) return
+    const partnerName = activeQuote.fees?.find(
+      fee => fee.type === 'partner'
+    )?.name
 
-    return `Quote includes a ${basisPointsToPercentage(feeBps)} Core fee`
+    if (!feeBps || !partnerName) return
+
+    return `Quote includes a ${basisPointsToPercentage(feeBps)} ${partnerName}`
   }, [activeQuote])
 
   const updateMissingTokenPrice = useCallback(
