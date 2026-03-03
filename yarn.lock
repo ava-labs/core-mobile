@@ -769,7 +769,7 @@ __metadata:
     react-native-restart: 0.0.27
     react-native-root-siblings: 5.0.1
     react-native-safe-area-context: 5.6.0
-    react-native-screens: 4.16.0
+    react-native-screens: 4.21.0
     react-native-sensors: 7.3.6
     react-native-share: 12.0.9
     react-native-sound: 0.12.0
@@ -35888,17 +35888,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-screens@npm:4.16.0":
-  version: 4.16.0
-  resolution: "react-native-screens@npm:4.16.0"
+"react-native-screens@npm:4.21.0":
+  version: 4.21.0
+  resolution: "react-native-screens@npm:4.21.0"
   dependencies:
     react-freeze: ^1.0.0
-    react-native-is-edge-to-edge: ^1.2.1
     warn-once: ^0.1.0
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 71bebbead1d8f886b80b70cf9d69b0179e035fb425fae84fbcbb2930167220cb90c2ee70b26d3fd94f940fa3e6ce325b0ec2e283d039d5abb29bf6898c58e485
+  checksum: f501de4eb7afbb62f7eec883afe4eaf8df3c8c4c3952a4d672718219c0d7bf4c485d72b04e4560ba8186faa680037651e32decee443dcc69b1d991b1ebd1f658
   languageName: node
   linkType: hard
 
@@ -36037,7 +36036,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: d6ceb75e1d0f5755370d6d91f67902bd2b8a23a3ca43cb853d2964b43798f30477e8ab0223ea8b620534fbdf5f56d39550f40d24bec2d2398c323ccfe8a5a556
+  checksum: d6880e5ce50f78dafc5b51a87916e4c1e9925357c4f21cc20e5891311800297da97ba5a1b8d1f70381816d32e65d81cc635fe988d584dbf94d4b57a7ee509e3b
   languageName: node
   linkType: hard
 
