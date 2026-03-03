@@ -84,9 +84,6 @@ export const REPAY_ETH_GAS_AMOUNT = 200_000
 // Small buffer for max repay to avoid dust (rounding + interest accrual). Contract refunds excess.
 export const REPAY_ETH_DUST_BUFFER = 10_000_000_000n // 1e10 wei = 0.00000001 AVAX
 
-// Fallback gas reserve when network fee is loading (~0.02 AVAX in wei)
-export const REPAY_ETH_FALLBACK_GAS_RESERVE = 20_000_000_000_000_000n
-
 // Aave v3 GraphQL
 export const AAVE_V3_GQL_API_URL = 'https://api.v3.aave.com/graphql'
 

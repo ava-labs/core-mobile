@@ -196,7 +196,6 @@ export function RepaySelectAmountFormBase({
             walletBalance ??
             new TokenUnit(0n, market.asset.decimals, market.asset.symbol)
           }
-          balanceLabel="Wallet balance:"
           formatInCurrency={amt => formatInCurrency(amt, market.asset.symbol)}
           onChange={setAmount}
           validateAmount={validateAmount}

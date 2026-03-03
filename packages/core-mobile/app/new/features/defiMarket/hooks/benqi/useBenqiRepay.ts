@@ -18,6 +18,7 @@ import { BENQI_MAXIMILLION_ABI } from '../../abis/benqiMaximillion'
 import {
   BENQI_MAXIMILLION_C_CHAIN_ADDRESS,
   BENQI_QAVAX_C_CHAIN_ADDRESS,
+  MAX_UINT256,
   REPAY_ETH_DUST_BUFFER
 } from '../../consts'
 import { DefiMarket } from '../../types'
@@ -55,7 +56,7 @@ export const useBenqiRepay = ({
   }, [onConfirmed])
 
   const { sendTransaction } = useETHSendTransaction({
-    network: market.network,
+    network: market?.network,
     provider,
     onConfirmed: handleConfirmed,
     onReverted,
@@ -126,7 +127,7 @@ export const useBenqiRepay = ({
 
       // ERC20 qToken: repayBorrow(repayAmount)
       // User must approve qToken to spend their underlying
-      const repayAmount = isMaxRepay ? 2n ** 256n - 1n : amount.toSubUnit()
+      const repayAmount = isMaxRepay ? MAX_UINT256 : amount.toSubUnit()
 
       const underlyingAddress = market.asset.contractAddress
       if (!underlyingAddress) {

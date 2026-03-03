@@ -5,16 +5,10 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
-import { useCChainGasCost } from 'common/hooks/useCChainGasCost'
 import { useTokenBalance } from 'common/hooks/useTokenBalance'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useBenqiBorrowPositionsSummary } from '../../hooks/benqi/useBenqiBorrowPositionsSummary'
 import { useBenqiRepay } from '../../hooks/benqi/useBenqiRepay'
-import {
-  BENQI_QAVAX_C_CHAIN_ADDRESS,
-  REPAY_ETH_FALLBACK_GAS_RESERVE,
-  REPAY_ETH_GAS_AMOUNT
-} from '../../consts'
 import { RepaySelectAmountFormBase } from './RepaySelectAmountFormBase'
 
 export type BenqiRepaySelectAmountFormProps = {
@@ -37,32 +31,10 @@ export function BenqiRepaySelectAmountForm({
     [marketId, benqiSummary.positions]
   )
 
-  const rawWalletBalance = useTokenBalance(
+  const walletBalance = useTokenBalance(
     borrowPosition?.market.asset,
     cChainNetwork?.chainId
   )
-  const { gasCost: repayEthGasCost } = useCChainGasCost({
-    gasAmount: REPAY_ETH_GAS_AMOUNT,
-    keyPrefix: 'benqi-repay-eth'
-  })
-
-  const isQiAvax =
-    borrowPosition?.market.asset.mintTokenAddress?.toLowerCase() ===
-    BENQI_QAVAX_C_CHAIN_ADDRESS.toLowerCase()
-
-  const walletBalance = useMemo(() => {
-    if (!rawWalletBalance) return undefined
-    if (!isQiAvax) return rawWalletBalance
-    const gasReserve = repayEthGasCost ?? REPAY_ETH_FALLBACK_GAS_RESERVE
-    const balanceSubUnit = rawWalletBalance.toSubUnit()
-    const afterGas =
-      balanceSubUnit > gasReserve ? balanceSubUnit - gasReserve : 0n
-    return new TokenUnit(
-      afterGas,
-      rawWalletBalance.getMaxDecimals(),
-      rawWalletBalance.getSymbol()
-    )
-  }, [rawWalletBalance, isQiAvax, repayEthGasCost])
 
   const { benqiRepay } = useBenqiRepay({
     market: borrowPosition?.market

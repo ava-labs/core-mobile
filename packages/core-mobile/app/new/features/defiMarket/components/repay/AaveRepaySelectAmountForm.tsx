@@ -5,15 +5,10 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
-import { useCChainGasCost } from 'common/hooks/useCChainGasCost'
 import { useTokenBalance } from 'common/hooks/useTokenBalance'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useAaveBorrowPositionsSummary } from '../../hooks/aave/useAaveBorrowPositionsSummary'
 import { useAaveRepay } from '../../hooks/aave/useAaveRepay'
-import {
-  REPAY_ETH_FALLBACK_GAS_RESERVE,
-  REPAY_ETH_GAS_AMOUNT
-} from '../../consts'
 import { RepaySelectAmountFormBase } from './RepaySelectAmountFormBase'
 
 export type AaveRepaySelectAmountFormProps = {
@@ -35,30 +30,10 @@ export function AaveRepaySelectAmountForm({
     [marketId, aaveSummary.positions]
   )
 
-  const rawWalletBalance = useTokenBalance(
+  const walletBalance = useTokenBalance(
     borrowPosition?.market.asset,
     cChainNetwork?.chainId
   )
-  const { gasCost: repayEthGasCost } = useCChainGasCost({
-    gasAmount: REPAY_ETH_GAS_AMOUNT,
-    keyPrefix: 'aave-repay-eth'
-  })
-
-  // For native AVAX: reserve gas + buffer in wallet - contract refunds excess
-  const isNativeAvax = !borrowPosition?.market.asset.contractAddress
-  const walletBalance = useMemo(() => {
-    if (!rawWalletBalance) return undefined
-    if (!isNativeAvax) return rawWalletBalance
-    const gasReserve = repayEthGasCost ?? REPAY_ETH_FALLBACK_GAS_RESERVE
-    const balanceSubUnit = rawWalletBalance.toSubUnit()
-    const afterGas =
-      balanceSubUnit > gasReserve ? balanceSubUnit - gasReserve : 0n
-    return new TokenUnit(
-      afterGas,
-      rawWalletBalance.getMaxDecimals(),
-      rawWalletBalance.getSymbol()
-    )
-  }, [rawWalletBalance, isNativeAvax, repayEthGasCost])
 
   const { aaveRepay } = useAaveRepay({
     market: borrowPosition?.market
