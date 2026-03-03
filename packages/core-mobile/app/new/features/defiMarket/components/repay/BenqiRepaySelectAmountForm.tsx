@@ -5,9 +5,10 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
+import { useTokenBalance } from 'common/hooks/useTokenBalance'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useBenqiBorrowPositionsSummary } from '../../hooks/benqi/useBenqiBorrowPositionsSummary'
 import { useBenqiRepay } from '../../hooks/benqi/useBenqiRepay'
-import { useWalletBalanceForRepay } from '../../hooks/useWalletBalanceForRepay'
 import { RepaySelectAmountFormBase } from './RepaySelectAmountFormBase'
 
 export type BenqiRepaySelectAmountFormProps = {
@@ -22,13 +23,18 @@ export function BenqiRepaySelectAmountForm({
   const benqiSummary = useBenqiBorrowPositionsSummary()
   const { getMarketTokenBySymbol } = useWatchlist()
   const selectedCurrency = useSelector(selectSelectedCurrency)
+  const cChainNetwork = useCChainNetwork()
 
   const borrowPosition = useMemo(
     () =>
       benqiSummary.positions.find(p => p.market.uniqueMarketId === marketId),
     [marketId, benqiSummary.positions]
   )
-  const walletBalance = useWalletBalanceForRepay(borrowPosition?.market.asset)
+
+  const walletBalance = useTokenBalance(
+    borrowPosition?.market.asset,
+    cChainNetwork?.chainId
+  )
 
   const { benqiRepay } = useBenqiRepay({
     market: borrowPosition?.market

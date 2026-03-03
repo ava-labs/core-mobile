@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { Address, encodeFunctionData, Hex } from 'viem'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { resolve, TokenUnit } from '@avalabs/core-utils-sdk'
+import { bigIntToHex } from '@ethereumjs/util'
 import { useSelector } from 'react-redux'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
@@ -18,7 +19,9 @@ import {
   AAVE_POOL_C_CHAIN_ADDRESS,
   AAVE_WRAPPED_AVAX_GATEWAY_ADDRESS,
   AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS,
-  MAX_UINT256
+  MAX_UINT256,
+  REPAY_ETH_DUST_BUFFER,
+  REPAY_ETH_GAS_AMOUNT
 } from '../../consts'
 import { DefiMarket } from '../../types'
 
@@ -93,23 +96,45 @@ export const useAaveRepay = ({
           AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS.toLowerCase()
 
       const actualAmount = amount.toSubUnit()
-      const repayAmountParam = isMaxRepay ? MAX_UINT256 : actualAmount
       const accountAddress = address as Address
       const chainId = getEvmCaip2ChainId(market.network.chainId)
+      // ERC20 Pool.repay uses MAX_UINT256 for max repay; native AVAX repayETH uses actual amount (Aave web app pattern)
+      const repayAmountParam = isMaxRepay ? MAX_UINT256 : actualAmount
 
       if (isNativeAvax) {
         // repayETH(pool, amount, onBehalfOf) - payable, send ETH with tx
-        // amount param: MAX_UINT256 to repay full debt; value = actual ETH to send
+        // Match Aave web app: pass actual amount for both param and value (not MAX_UINT256)
+        // so eth_estimateGas succeeds and parseErc20Tx can simulate correctly
+        // Add dust buffer for max repay to cover rounding + interest accrual; contract refunds excess
+        const repayAmount = isMaxRepay
+          ? actualAmount + REPAY_ETH_DUST_BUFFER
+          : actualAmount
         const encodedData = encodeFunctionData({
           abi: AAVE_WRAPPED_AVAX_GATEWAY_ABI,
           functionName: 'repayETH',
-          args: [AAVE_POOL_C_CHAIN_ADDRESS, repayAmountParam, accountAddress]
+          args: [AAVE_POOL_C_CHAIN_ADDRESS, repayAmount, accountAddress]
         })
+
+        const valueHex = `0x${repayAmount.toString(16)}` as Hex
+        const repayEthTx = {
+          from: accountAddress,
+          to: AAVE_WRAPPED_AVAX_GATEWAY_ADDRESS,
+          data: encodedData,
+          value: valueHex
+        }
+
+        // Pre-estimate gas to avoid "Unable to calculate gas limit" in approval flow.
+        // eth_estimateGas can fail for repayETH(MAX_UINT256) during simulation.
+        const [estimatedGas] = await resolve(provider.estimateGas(repayEthTx))
+        const gasLimitRaw = estimatedGas ?? BigInt(REPAY_ETH_GAS_AMOUNT)
+        const gasLimitWithBuffer = (gasLimitRaw * 6n) / 5n // 20% padding
+        const gas = bigIntToHex(gasLimitWithBuffer) as Hex
 
         return sendTransaction({
           contractAddress: AAVE_WRAPPED_AVAX_GATEWAY_ADDRESS,
           encodedData,
-          value: `0x${actualAmount.toString(16)}` as Hex,
+          value: valueHex,
+          gas,
           confettiDisabled
         })
       }

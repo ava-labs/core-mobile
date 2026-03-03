@@ -78,6 +78,15 @@ export const APPROVE_GAS_AMOUNT = 60_000
 // https://snowtrace.io/tx/0x4454791ad6d1f3b1b276bd77a0847eabc6e5fe9ae8f7c6c79a3639e38b6159bc?chainid=43114
 export const DEPOSIT_ETH_GAS_AMOUNT = 200_000
 
+// Gas for repayETH (Aave Wrapped AVAX Gateway) - must reserve for native AVAX repay
+export const REPAY_ETH_GAS_AMOUNT = 200_000
+
+// Small buffer for max repay to avoid dust (rounding + interest accrual). Contract refunds excess.
+export const REPAY_ETH_DUST_BUFFER = 10_000_000_000n // 1e10 wei = 0.00000001 AVAX
+
+// Fallback gas reserve when network fee is loading (~0.02 AVAX in wei)
+export const REPAY_ETH_FALLBACK_GAS_RESERVE = 20_000_000_000_000_000n
+
 // Aave v3 GraphQL
 export const AAVE_V3_GQL_API_URL = 'https://api.v3.aave.com/graphql'
 
