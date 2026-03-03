@@ -18,7 +18,6 @@ export const OnboardingScreen = (): JSX.Element => {
   }, [setRedirectToBorrow])
 
   const handlePressNext = useCallback(() => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/deposit/selectAsset')
   }, [navigate])
 

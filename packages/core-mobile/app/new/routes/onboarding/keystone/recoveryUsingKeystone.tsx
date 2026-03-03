@@ -13,18 +13,16 @@ export default function RecoveryUsingKeystone(): JSX.Element {
       KeystoneService.init(ur)
 
       navigate({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/onboarding/keystone/createPin'
       })
-    } catch (error: any) {
-      Logger.error(error.message)
+    } catch (error: unknown) {
+      Logger.error(error instanceof Error ? error.message : 'Unknown error')
       throw new Error('Failed to parse UR')
     }
   }
 
   function handleError(): void {
     replace({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/onboarding/keystone/keystoneTroubleshooting'
     })
   }

@@ -102,7 +102,6 @@ export const WalletsScreen = (): JSX.Element => {
   const gotoAccountDetails = useCallback(
     (accountId: string): void => {
       navigate({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/account',
         params: { accountId }
       })
@@ -257,7 +256,6 @@ export const WalletsScreen = (): JSX.Element => {
   }, [])
 
   const handleAddAccount = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/accountSettings/importWallet')
   }, [navigate])
 

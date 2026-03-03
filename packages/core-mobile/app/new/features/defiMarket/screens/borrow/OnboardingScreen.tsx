@@ -4,7 +4,7 @@ import { GroupList, Icons, useTheme } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import { useNavigation } from '@react-navigation/native'
 import { useDeposits } from 'hooks/earn/useDeposits'
-import { useBorrowProtocol } from '../../hooks/useBorrowProtocol'
+import { useSelectedBorrowProtocol } from '../../hooks/useBorrowProtocol'
 import { useRedirectToBorrowAfterDeposit } from '../../store'
 
 export const OnboardingScreen = (): JSX.Element => {
@@ -12,7 +12,7 @@ export const OnboardingScreen = (): JSX.Element => {
   const navigation = useNavigation()
   const { theme } = useTheme()
   const { deposits, isLoading } = useDeposits()
-  const { selectedProtocol } = useBorrowProtocol()
+  const [selectedProtocol] = useSelectedBorrowProtocol()
   const [, setRedirectToBorrow] = useRedirectToBorrowAfterDeposit()
 
   // Filter deposits by selected protocol
@@ -26,11 +26,9 @@ export const OnboardingScreen = (): JSX.Element => {
       // Set protocol to redirect back to borrow after deposit completes
       setRedirectToBorrow(selectedProtocol)
       navigation.getParent()?.goBack()
-      // @ts-ignore TODO: make routes typesafe
       navigate('/deposit/selectAsset')
     } else {
       // Has deposits - proceed to collateral selection
-      // @ts-ignore TODO: make routes typesafe
       navigate('/borrow/selectCollateral')
     }
   }, [

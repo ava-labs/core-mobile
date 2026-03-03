@@ -18,7 +18,6 @@ const RecoveryPhraseVerifyPinScreen = (): JSX.Element => {
       const walletSecret = result.value
 
       replace({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/showRecoveryPhrase',
         params: { mnemonic: walletSecret }
       })

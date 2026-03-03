@@ -13,7 +13,6 @@ export const SelectTokenScreen = (): React.JSX.Element => {
   } = useWithdraw()
 
   const selectOtherToken = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/meldOfframpTokenList')
   }, [navigate])
 

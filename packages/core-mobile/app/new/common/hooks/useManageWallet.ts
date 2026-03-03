@@ -132,7 +132,6 @@ export const useManageWallet = (): {
         ) {
           setIsAddingAccount(true)
           navigate({
-            // @ts-ignore TODO: make routes typesafe
             pathname: '/addAccountAppConnection',
             params: { walletId: wallet.id }
           })

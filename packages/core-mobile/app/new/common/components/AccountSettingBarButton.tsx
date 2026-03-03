@@ -14,8 +14,7 @@ export const AccountSettingBarButton = forwardRef<RNView>(
     const { navigate } = useRouter()
 
     const handlePress = (): void => {
-      // @ts-ignore
-      navigate('/accountSettings/')
+      navigate('/accountSettings')
     }
 
     return (

@@ -33,13 +33,11 @@ export default function Signup(): JSX.Element {
   }, [hideLogoModal, isRegistering, showLogoModal])
 
   const handleSignupWithMnemonic = (): void => {
-    // @ts-ignore TODO: make routes typesafe
     router.navigate('/onboarding/mnemonic/termsAndConditions')
     AnalyticsService.capture('RecoveryPhraseClicked')
   }
 
   const handleAccessExistingWallet = (): void => {
-    // @ts-ignore TODO: make routes typesafe
     router.navigate('/accessWallet')
     AnalyticsService.capture('AccessExistingWalletClicked')
   }
@@ -49,13 +47,11 @@ export default function Signup(): JSX.Element {
     mfaId: string
   }): void => {
     setOidcAuth(oidcAuth)
-    // @ts-ignore TODO: make routes typesafe
     router.navigate('/onboarding/seedless/termsAndConditions')
   }
 
   const handleAccountVerified = (): void => {
     router.navigate({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/onboarding/seedless/termsAndConditions',
       params: { recovering: 'true' }
     })
@@ -71,7 +67,6 @@ export default function Signup(): JSX.Element {
     setOidcAuth(oidcAuth)
     setMfaMethods(mfaMethods)
     router.navigate({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/onboarding/seedless/termsAndConditions',
       params: { recovering: 'true' }
     })

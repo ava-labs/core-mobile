@@ -54,12 +54,10 @@ export const AddCustomTokenScreen = (): JSX.Element => {
   }, [reset])
 
   const goToScanQrCode = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/tokenManagement/scanQrCode')
   }, [navigate])
 
   const goToSelectNetwork = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/selectCustomTokenNetwork')
   }, [navigate])
 

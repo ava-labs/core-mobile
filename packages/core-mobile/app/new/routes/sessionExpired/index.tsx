@@ -53,7 +53,6 @@ const SessionExpiredScreen = (): React.JSX.Element => {
             const mfa = mfaMethods[0]
             if (mfa?.type === 'totp') {
               router.navigate({
-                // @ts-ignore TODO: make routes typesafe
                 pathname: '/sessionExpired/verifyTotpCode',
                 params: {
                   mfaId: result.value.mfaId,
@@ -73,7 +72,6 @@ const SessionExpiredScreen = (): React.JSX.Element => {
             }
           }
           router.navigate({
-            // @ts-ignore TODO: make routes typesafe
             pathname: '/sessionExpired/selectMfaMethod',
             params: {
               mfaId: result.value.mfaId,

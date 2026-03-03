@@ -65,7 +65,6 @@ export const DeFiScreen = ({
   const handlePressDeFiItem = useCallback(
     (item: DeFiSimpleProtocol): void => {
       navigate({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/defiDetail',
         params: { protocolId: item.id }
       })

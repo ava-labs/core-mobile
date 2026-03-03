@@ -374,6 +374,7 @@ describe('Fusion listeners', () => {
       const transfer = { id: 'transfer-1', status: 'source-pending' } as any
 
       const mockListenerApi = {
+        getState: jest.fn().mockReturnValue({}),
         delay: (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
       }
       const effectPromise = effect({ payload: transfer }, mockListenerApi)
@@ -390,6 +391,30 @@ describe('Fusion listeners', () => {
       )
 
       jest.useRealTimers()
+    })
+
+    it('should return early and not call trackTransfer when selectIsFusionEnabled returns false', async () => {
+      mockSelectIsFusionEnabled.mockReturnValue(false)
+
+      const startListening = jest.fn()
+      addFusionListeners(startListening as any)
+
+      // Extract the effect registered for trackFusionTransfer
+      const call = startListening.mock.calls.find(
+        c => c[0]?.actionCreator?.type === 'fusion/trackTransfer'
+      )
+      const effect = call[0].effect
+      const transfer = { id: 'transfer-1', status: 'source-pending' } as any
+
+      const mockListenerApi = {
+        getState: jest.fn().mockReturnValue({}),
+        delay: jest.fn()
+      }
+
+      await effect({ payload: transfer }, mockListenerApi)
+
+      expect(FusionService.trackTransfer).not.toHaveBeenCalled()
+      expect(mockListenerApi.delay).not.toHaveBeenCalled()
     })
   })
 })

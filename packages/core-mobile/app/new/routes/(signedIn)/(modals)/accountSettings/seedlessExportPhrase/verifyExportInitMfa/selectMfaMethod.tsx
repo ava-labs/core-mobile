@@ -21,7 +21,6 @@ const SelectMfaMethodScreen = (): React.JSX.Element => {
     async (recoveryMethod: RecoveryMethod): Promise<void> => {
       if (recoveryMethod.mfa?.type === 'totp') {
         navigate(
-          // @ts-ignore TODO: make routes typesafe
           '/accountSettings/seedlessExportPhrase/verifyExportInitMfa/verifyTotpCode'
         )
         return

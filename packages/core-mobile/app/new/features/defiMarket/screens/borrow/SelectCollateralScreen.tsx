@@ -23,7 +23,7 @@ import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import Logger from 'utils/Logger'
 import { DefiMarket, MarketNames } from '../../types'
 import { DefiMarketAssetLogo } from '../../components/DefiMarketAssetLogo'
-import { useBorrowProtocol } from '../../hooks/useBorrowProtocol'
+import { useSelectedBorrowProtocol } from '../../hooks/useBorrowProtocol'
 import { useAaveSetCollateral } from '../../hooks/aave/useAaveSetCollateral'
 import { useBenqiSetCollateral } from '../../hooks/benqi/useBenqiSetCollateral'
 import {
@@ -41,7 +41,7 @@ export const SelectCollateralScreen = (): JSX.Element => {
   const navigation = useNavigation()
   const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
-  const { selectedProtocol } = useBorrowProtocol()
+  const [selectedProtocol] = useSelectedBorrowProtocol()
   const { deposits, isLoading, isFetching, refresh, isRefreshing } =
     useDeposits()
   const network = useCChainNetwork()
@@ -131,7 +131,6 @@ export const SelectCollateralScreen = (): JSX.Element => {
     //   })
     //   .map(deposit => deposit.uniqueMarketId)
 
-    // @ts-ignore TODO: make routes typesafe
     navigate('/borrow/selectAsset')
   }, [navigate])
 
@@ -143,7 +142,6 @@ export const SelectCollateralScreen = (): JSX.Element => {
     // Dismiss borrow modal and navigate to deposit
     navigation.getParent()?.goBack()
     // Navigate to deposit flow, skip onboarding
-    // @ts-ignore TODO: make routes typesafe
     navigate('/deposit/selectAsset')
   }, [navigation, navigate, selectedProtocol, setRedirectToBorrow])
 

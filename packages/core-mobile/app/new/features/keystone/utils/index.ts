@@ -11,7 +11,6 @@ export const showKeystoneTroubleshooting = (
   keystoneParamsCache.keystoneTroubleshootingParams.set(params)
 
   router.navigate({
-    // @ts-ignore
     pathname: '/keystoneTroubleshooting'
   })
 }
@@ -20,7 +19,6 @@ export const requestKeystoneSigner = (params: KeystoneSignerParams): void => {
   keystoneParamsCache.keystoneSignerParams.set(params)
 
   router.navigate({
-    // @ts-ignore
     pathname: '/keystoneSigner'
   })
 }

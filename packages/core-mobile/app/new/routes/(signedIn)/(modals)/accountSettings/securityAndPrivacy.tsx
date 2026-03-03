@@ -46,7 +46,6 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     (value: boolean): void => {
       setUseBiometrics(value)
       if (value) {
-        // @ts-ignore TODO: make routes typesafe
         navigate('/accountSettings/biometricVerifyPin')
       } else {
         BiometricsSDK.disableBiometry().catch(Logger.error)
@@ -86,7 +85,6 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       {
         title: 'Connected sites',
         onPress: () => {
-          // @ts-ignore TODO: make routes typesafe
           navigate('/accountSettings/connectedSites')
         },
         value: allApprovedDapps.length.toString()
@@ -111,7 +109,6 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       {
         title: 'Change PIN',
         onPress: () => {
-          // @ts-ignore TODO: make routes typesafe
           navigate('/accountSettings/verifyChangePin')
         }
       }
@@ -147,11 +144,9 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
         title: 'Show recovery phrase',
         onPress: () => {
           if (wallet.type === WalletType.SEEDLESS) {
-            // @ts-ignore TODO: make routes typesafe
             navigate('/accountSettings/seedlessExportPhrase')
             return
           }
-          // @ts-ignore TODO: make routes typesafe
           navigate('/accountSettings/recoveryPhraseVerifyPin')
         }
       }
@@ -161,7 +156,6 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       data.push({
         title: 'Recovery methods',
         onPress: () => {
-          // @ts-ignore TODO: make routes typesafe
           navigate('/accountSettings/addRecoveryMethods')
         }
       })

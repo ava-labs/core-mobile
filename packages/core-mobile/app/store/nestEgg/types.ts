@@ -14,7 +14,7 @@ export interface NestEggState {
   hasAcknowledgedQualification: boolean
 }
 
-export const MINIMUM_SWAP_AMOUNT_USD = 10
+export const MINIMUM_SWAP_AMOUNT_USD = 9
 
 // Campaign landing page URL
 export const NEST_EGG_CAMPAIGN_URL = 'https://core.app/discover/bonus'

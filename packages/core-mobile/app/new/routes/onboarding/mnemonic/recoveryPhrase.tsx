@@ -11,7 +11,6 @@ export default function RecoveryPhrase(): JSX.Element {
 
   function handleNext(): void {
     navigate({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/onboarding/mnemonic/verifyRecoveryPhrase',
       params: { mnemonic: localMnemonic }
     })

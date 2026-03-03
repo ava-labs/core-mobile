@@ -214,7 +214,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
   const handleShare = useCallback(() => {
     navigate({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/trackTokenDetail/share',
       params: {
         tokenId,

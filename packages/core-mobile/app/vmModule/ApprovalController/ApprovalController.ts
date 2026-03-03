@@ -214,7 +214,6 @@ class ApprovalController implements VmModuleApprovalController {
       })
 
       router.navigate({
-        // @ts-ignore
         pathname: '/approval',
         params: {
           presentationMode: isInAppRequest(request)

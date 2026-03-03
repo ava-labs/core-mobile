@@ -250,7 +250,6 @@ const StakeConfirmScreen = (): JSX.Element => {
       transactionSnackbar.success({ message: 'Stake successful' })
 
       handleDismiss()
-      // @ts-ignore TODO: make routes typesafe
       navigate('/stake')
 
       dispatch(

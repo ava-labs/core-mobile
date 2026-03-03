@@ -21,7 +21,6 @@ export default function SelectAvatar(): JSX.Element {
     }
 
     navigate({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/onboarding/mnemonic/confirmation',
       params: { selectedAvatarId: selectedAvatar?.id }
     })

@@ -103,7 +103,6 @@ export const RecentContactsScreen = (): JSX.Element | null => {
   )
 
   const handleGoToQrCode = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/collectibleSend/scanQrCode')
   }, [navigate])
 

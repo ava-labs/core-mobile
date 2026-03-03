@@ -89,7 +89,7 @@ describe('nestEgg listeners', () => {
   })
 
   describe('swapCompleted action', () => {
-    it('should qualify user for C-Chain swap >= $10', async () => {
+    it('should qualify user for C-Chain swap >= $9', async () => {
       const store = createTestStore({
         nestEggState: {
           hasSeenCampaign: true // User has seen the campaign modal
@@ -116,7 +116,7 @@ describe('nestEgg listeners', () => {
       expect(state.nestEgg.qualifiedAt).toBeDefined()
     })
 
-    it('should NOT qualify user for swap below $10', async () => {
+    it('should NOT qualify user for swap below $9', async () => {
       const store = createTestStore({
         nestEggState: {
           hasSeenCampaign: true
@@ -129,8 +129,8 @@ describe('nestEgg listeners', () => {
           chainId: C_CHAIN_ID,
           fromTokenSymbol: 'AVAX',
           toTokenSymbol: 'USDC',
-          fromAmountUsd: 9.99,
-          toAmountUsd: 9.9
+          fromAmountUsd: 8.99,
+          toAmountUsd: 8.9
         })
       )
 
@@ -261,7 +261,7 @@ describe('nestEgg listeners', () => {
       expect(state.nestEgg.hasQualified).toBe(false)
     })
 
-    it('should qualify exactly at $10 threshold', async () => {
+    it('should qualify exactly at $9 threshold', async () => {
       const store = createTestStore({
         nestEggState: {
           hasSeenCampaign: true // User has seen the campaign modal

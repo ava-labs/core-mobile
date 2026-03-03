@@ -50,7 +50,6 @@ export const SelectAmountScreen = (): JSX.Element => {
     if (redirectToBorrow) {
       setRedirectToBorrow(undefined)
       // Skip onboarding and go directly to select collateral
-      // @ts-ignore TODO: make routes typesafe
       navigate('/borrow/selectCollateral')
     }
   }, [redirectToBorrow, setRedirectToBorrow, navigate])

@@ -12,7 +12,6 @@ export default function PathSelectionScreen(): JSX.Element {
     (derivationPathType: LedgerDerivationPathType) => {
       setSelectedDerivationPath(derivationPathType)
       // Navigate to device connection step
-      // @ts-ignore TODO: make routes typesafe
       push('/accountSettings/ledger/deviceConnection')
     },
     [setSelectedDerivationPath, push]

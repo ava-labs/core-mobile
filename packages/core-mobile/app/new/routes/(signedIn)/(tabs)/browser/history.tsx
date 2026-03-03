@@ -5,7 +5,7 @@ import {
   Text,
   TouchableOpacity
 } from '@avalabs/k2-alpine'
-import { useNavigation } from '@react-navigation/native'
+import { useRouter } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
 import NavigationBarButton from 'common/components/NavigationBarButton'
@@ -29,7 +29,7 @@ import {
 } from 'store/browser/slices/globalHistory'
 
 const HistoryScreen = (): JSX.Element => {
-  const { navigate } = useNavigation()
+  const { navigate } = useRouter()
   const dispatch = useDispatch()
   const tabBarHeight = useBottomTabBarHeight()
 
@@ -67,8 +67,7 @@ const HistoryScreen = (): JSX.Element => {
     dispatch(addTab())
     if (activeTab) {
       dispatch(addHistoryForActiveTab(item))
-      // @ts-ignore TODO: make routes typesafe
-      navigate('index')
+      navigate('/browser')
     }
   }
 

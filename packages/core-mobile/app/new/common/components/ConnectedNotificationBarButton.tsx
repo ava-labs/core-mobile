@@ -21,7 +21,6 @@ export const ConnectedNotificationBarButton = (): JSX.Element => {
   }, [transfers])
 
   const handlePress = useCallback(() => {
-    // @ts-ignore - expo-router route not typed
     router.navigate('/notifications')
   }, [])
 

@@ -78,14 +78,12 @@ const DepositTabScreen = ({
 
   const handleAddDeposit = useCallback(() => {
     AnalyticsService.capture('EarnDepositStart')
-    // @ts-ignore TODO: make routes typesafe
-    navigate({ pathname: '/deposit' })
+    navigate({ pathname: '/deposit/onboarding' })
   }, [navigate])
 
   const handlePressDeposit = useCallback(
     (item: DefiMarket) => {
       navigate({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/depositDetail',
         params: { marketId: item.uniqueMarketId }
       })
@@ -97,7 +95,6 @@ const DepositTabScreen = ({
     (deposit: DefiMarket) => {
       AnalyticsService.capture('EarnWithdrawStart')
       navigate({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/withdraw/selectAmount',
         params: { marketId: deposit.uniqueMarketId }
       })

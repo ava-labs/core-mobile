@@ -1,10 +1,9 @@
 import { useCallback, useMemo, useState } from 'react'
-import { createPublicClient, http } from 'viem'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
-import { getViemChain } from 'utils/getViemChain/getViemChain'
 import { DefiMarket } from '../types'
 import { useAaveAvailableMarkets } from './aave/useAaveAvailableMarkets'
 import { useBenqiAvailableMarkets } from './benqi/useBenqiAvailableMarkets'
+import { useNetworkClient } from './useNetworkClient'
 
 export const useAvailableMarkets = (): {
   data: DefiMarket[]
@@ -16,15 +15,7 @@ export const useAvailableMarkets = (): {
   refresh: () => void
 } => {
   const cChainNetwork = useCChainNetwork()
-  const networkClient = useMemo(() => {
-    if (!cChainNetwork) {
-      return undefined
-    }
-
-    const cChain = getViemChain(cChainNetwork)
-
-    return createPublicClient({ chain: cChain, transport: http() })
-  }, [cChainNetwork])
+  const networkClient = useNetworkClient(cChainNetwork)
   const [isRefreshing, setIsRefreshing] = useState(false)
 
   const {

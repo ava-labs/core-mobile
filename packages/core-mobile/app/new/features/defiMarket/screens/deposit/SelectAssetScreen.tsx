@@ -76,7 +76,6 @@ export const SelectAssetScreen = (): JSX.Element => {
         setSelectedAsset({ token, nativeToken })
 
         navigate({
-          // @ts-ignore TODO: make routes typesafe
           pathname: '/deposit/selectPool',
           params: {
             contractAddress: marketAsset.contractAddress,

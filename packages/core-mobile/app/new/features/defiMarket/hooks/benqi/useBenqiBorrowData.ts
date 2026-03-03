@@ -1,43 +1,38 @@
 import { skipToken, useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { Address, createPublicClient, http } from 'viem'
+import { Address } from 'viem'
 import { selectActiveAccount } from 'store/account'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
-import { getViemChain } from 'utils/getViemChain/getViemChain'
 import { BenqiBorrowData } from '../../types'
 import { fetchBenqiUserBorrowData } from '../../utils/borrow'
+import { useNetworkClient } from '../useNetworkClient'
 
 export const useBenqiBorrowData = (
-  qTokenAddress?: Address
+  qTokenAddress?: Address,
+  options: { enabled?: boolean } = {}
 ): {
   data: BenqiBorrowData | undefined
   isLoading: boolean
   isFetching: boolean
   error: Error | null
+  refetch: () => Promise<unknown>
 } => {
+  const { enabled = true } = options
   const activeAccount = useSelector(selectActiveAccount)
   const userAddress = activeAccount?.addressC as Address | undefined
   const cChainNetwork = useCChainNetwork()
+  const networkClient = useNetworkClient(cChainNetwork)
 
-  const networkClient = useMemo(() => {
-    if (!cChainNetwork) {
-      return undefined
-    }
-    const cChain = getViemChain(cChainNetwork)
-    return createPublicClient({ chain: cChain, transport: http() })
-  }, [cChainNetwork])
+  const shouldFetch = enabled && !!networkClient && !!userAddress
 
-  const shouldFetch = !!networkClient && !!userAddress
-
-  const { data, isLoading, isFetching, error } = useQuery({
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [
       ReactQueryKeys.BENQI_USER_BORROW_DATA,
       qTokenAddress,
       userAddress,
-      networkClient?.chain.id
+      networkClient?.chain?.id
     ],
     queryFn: shouldFetch
       ? async () =>
@@ -50,6 +45,7 @@ export const useBenqiBorrowData = (
     data,
     isLoading,
     isFetching,
-    error
+    error,
+    refetch
   }
 }

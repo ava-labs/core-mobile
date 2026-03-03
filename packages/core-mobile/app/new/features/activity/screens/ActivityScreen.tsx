@@ -59,7 +59,6 @@ export const ActivityScreen = ({
   const handlePendingBridge = useCallback(
     (pendingBridge: BridgeTransaction | BridgeTransfer): void => {
       navigate({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/bridgeStatus',
         params: {
           txHash: pendingBridge.sourceTxHash,

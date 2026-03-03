@@ -72,7 +72,6 @@ export const useWithdraw = (): {
       } else {
         setOfframpToken(undefined)
       }
-      // @ts-ignore TODO: make routes typesafe
       navigate('/meld/offramp')
     },
     [getTradableCryptoCurrency, isMeldOfframpBlocked, navigate, setOfframpToken]
@@ -82,7 +81,6 @@ export const useWithdraw = (): {
     (token: CryptoCurrencyWithBalance) => {
       if (isMeldOfframpBlocked) return
       setOfframpToken(token)
-      // @ts-ignore TODO: make routes typesafe
       navigate('/meld/offramp/selectWithdrawAmount')
     },
     [isMeldOfframpBlocked, navigate, setOfframpToken]
@@ -91,14 +89,12 @@ export const useWithdraw = (): {
   const navigateToWithdrawAmountWithAvax = useCallback(() => {
     if (avax === undefined || isMeldOfframpBlocked) return
     setOfframpToken(avax)
-    // @ts-ignore TODO: make routes typesafe
     navigate('/meld/offramp/selectWithdrawAmount')
   }, [avax, isMeldOfframpBlocked, navigate, setOfframpToken])
 
   const navigateToWithdrawAmountWithUsdc = useCallback(() => {
     if (usdc === undefined || isMeldOfframpBlocked) return
     setOfframpToken(usdc)
-    // @ts-ignore TODO: make routes typesafe
     navigate('/meld/offramp/selectWithdrawAmount')
   }, [usdc, isMeldOfframpBlocked, navigate, setOfframpToken])
 

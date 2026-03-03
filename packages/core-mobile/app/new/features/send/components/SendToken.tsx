@@ -148,7 +148,6 @@ export const SendToken = ({
       amount.eq(minimumSendAmount))
 
   const handleSelectToken = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/selectSendToken', params: toAddress })
   }, [navigate, toAddress])
 

@@ -7,7 +7,6 @@ export default function KeystoneTroubleshooting(): JSX.Element {
 
   const retry = useCallback(() => {
     replace({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/onboarding/keystone/recoveryUsingKeystone'
     })
   }, [replace])
