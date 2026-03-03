@@ -4,6 +4,7 @@ import { resolve, TokenUnit } from '@avalabs/core-utils-sdk'
 import { bigIntToHex } from '@ethereumjs/util'
 import { useSelector } from 'react-redux'
 import { RpcMethod } from '@avalabs/vm-module-types'
+import Logger from 'utils/Logger'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { selectActiveAccount } from 'store/account'
 import { queryClient } from 'contexts/ReactQueryProvider'
@@ -70,82 +71,69 @@ export const useAaveRepay = ({
     onError
   })
 
-  const aaveRepay = useCallback(
-    async ({
-      amount,
-      isMaxRepay,
-      confettiDisabled
-    }: {
-      amount: TokenUnit
+  const repayNativeAvax = useCallback(
+    async (params: {
+      actualAmount: bigint
       isMaxRepay: boolean
+      accountAddress: Address
       confettiDisabled?: boolean
     }) => {
-      if (!market) {
-        throw new Error('Market is required')
+      if (!provider) throw new Error('No provider found')
+      const { actualAmount, isMaxRepay, accountAddress, confettiDisabled } =
+        params
+      const repayAmount = isMaxRepay
+        ? actualAmount + REPAY_ETH_DUST_BUFFER
+        : actualAmount
+      const encodedData = encodeFunctionData({
+        abi: AAVE_WRAPPED_AVAX_GATEWAY_ABI,
+        functionName: 'repayETH',
+        args: [AAVE_POOL_C_CHAIN_ADDRESS, repayAmount, accountAddress]
+      })
+      const valueHex = `0x${repayAmount.toString(16)}` as Hex
+      const repayEthTx = {
+        from: accountAddress,
+        to: AAVE_WRAPPED_AVAX_GATEWAY_ADDRESS,
+        data: encodedData,
+        value: valueHex
       }
-      if (!address) {
-        throw new Error('No address found')
+      const [estimatedGas, estimateError] = await resolve(
+        provider.estimateGas(repayEthTx)
+      )
+      if (estimateError) {
+        Logger.warn(
+          'Aave repayETH gas estimation failed, using fallback',
+          estimateError
+        )
       }
-      if (!provider) {
-        throw new Error('No provider found')
-      }
+      const gasLimitRaw = estimatedGas ?? BigInt(REPAY_ETH_GAS_AMOUNT)
+      const gasLimitWithBuffer = (gasLimitRaw * 6n) / 5n
+      const gas = bigIntToHex(gasLimitWithBuffer) as Hex
+      return sendTransaction({
+        contractAddress: AAVE_WRAPPED_AVAX_GATEWAY_ADDRESS,
+        encodedData,
+        value: valueHex,
+        gas,
+        confettiDisabled
+      })
+    },
+    [provider, sendTransaction]
+  )
 
-      const isNativeAvax =
-        !market.asset.contractAddress ||
-        market.asset.contractAddress.toLowerCase() ===
-          WAVAX_ADDRESS.toLowerCase()
-
-      const actualAmount = amount.toSubUnit()
-      const accountAddress = address as Address
+  const repayErc20 = useCallback(
+    async (params: {
+      actualAmount: bigint
+      isMaxRepay: boolean
+      accountAddress: Address
+      confettiDisabled?: boolean
+    }) => {
+      if (!market) throw new Error('Market is required')
+      if (!provider) throw new Error('No provider found')
+      const { actualAmount, isMaxRepay, accountAddress, confettiDisabled } =
+        params
       const chainId = getEvmCaip2ChainId(market.network.chainId)
-      // ERC20 Pool.repay uses MAX_UINT256 for max repay; native AVAX repayETH uses actual amount (Aave web app pattern)
       const repayAmountParam = isMaxRepay ? MAX_UINT256 : actualAmount
-
-      if (isNativeAvax) {
-        // repayETH(pool, amount, onBehalfOf) - payable, send ETH with tx
-        // Match Aave web app: pass actual amount for both param and value (not MAX_UINT256)
-        // so eth_estimateGas succeeds and parseErc20Tx can simulate correctly
-        // Add dust buffer for max repay to cover rounding + interest accrual; contract refunds excess
-        const repayAmount = isMaxRepay
-          ? actualAmount + REPAY_ETH_DUST_BUFFER
-          : actualAmount
-        const encodedData = encodeFunctionData({
-          abi: AAVE_WRAPPED_AVAX_GATEWAY_ABI,
-          functionName: 'repayETH',
-          args: [AAVE_POOL_C_CHAIN_ADDRESS, repayAmount, accountAddress]
-        })
-
-        const valueHex = `0x${repayAmount.toString(16)}` as Hex
-        const repayEthTx = {
-          from: accountAddress,
-          to: AAVE_WRAPPED_AVAX_GATEWAY_ADDRESS,
-          data: encodedData,
-          value: valueHex
-        }
-
-        // Pre-estimate gas to avoid "Unable to calculate gas limit" in approval flow.
-        // eth_estimateGas can fail for repayETH(MAX_UINT256) during simulation.
-        const [estimatedGas] = await resolve(provider.estimateGas(repayEthTx))
-        const gasLimitRaw = estimatedGas ?? BigInt(REPAY_ETH_GAS_AMOUNT)
-        const gasLimitWithBuffer = (gasLimitRaw * 6n) / 5n // 20% padding
-        const gas = bigIntToHex(gasLimitWithBuffer) as Hex
-
-        return sendTransaction({
-          contractAddress: AAVE_WRAPPED_AVAX_GATEWAY_ADDRESS,
-          encodedData,
-          value: valueHex,
-          gas,
-          confettiDisabled
-        })
-      }
-
-      // ERC20: approve Pool then call Pool.repay()
       const tokenAddress = market.asset.contractAddress as Address
-
-      if (!tokenAddress) {
-        throw new Error('Token address not found')
-      }
-
+      if (!tokenAddress) throw new Error('Token address not found')
       const signAndSend = (
         txParams: [TransactionParams],
         context?: Record<string, unknown>
@@ -156,8 +144,6 @@ export const useAaveRepay = ({
           chainId,
           context
         })
-
-      // Approve only the actual amount being transferred (never MAX_UINT256)
       const approvalTxHash = await ensureAllowance({
         amount: actualAmount,
         provider,
@@ -166,15 +152,12 @@ export const useAaveRepay = ({
         tokenAddress,
         userAddress: accountAddress
       })
-
       if (approvalTxHash) {
         const receipt = await provider.waitForTransaction(approvalTxHash)
         if (!receipt || receipt.status !== 1) {
           throw new Error('Approval transaction reverted')
         }
       }
-
-      // Pool.repay(asset, amount, interestRateMode, onBehalfOf)
       const encodedData = encodeFunctionData({
         abi: AAVE_AVALANCHE3_POOL_PROXY_ABI,
         functionName: 'repay',
@@ -185,14 +168,50 @@ export const useAaveRepay = ({
           accountAddress
         ]
       })
-
       return sendTransaction({
         contractAddress: AAVE_POOL_C_CHAIN_ADDRESS,
         encodedData,
         confettiDisabled
       })
     },
-    [address, market, provider, request, sendTransaction]
+    [market, provider, request, sendTransaction]
+  )
+
+  const aaveRepay = useCallback(
+    async ({
+      amount,
+      isMaxRepay,
+      confettiDisabled
+    }: {
+      amount: TokenUnit
+      isMaxRepay: boolean
+      confettiDisabled?: boolean
+    }) => {
+      if (!market) throw new Error('Market is required')
+      if (!address) throw new Error('No address found')
+      if (!provider) throw new Error('No provider found')
+      const actualAmount = amount.toSubUnit()
+      const accountAddress = address as Address
+      const isNativeAvax =
+        !market.asset.contractAddress ||
+        market.asset.contractAddress.toLowerCase() ===
+          WAVAX_ADDRESS.toLowerCase()
+      if (isNativeAvax) {
+        return repayNativeAvax({
+          actualAmount,
+          isMaxRepay,
+          accountAddress,
+          confettiDisabled
+        })
+      }
+      return repayErc20({
+        actualAmount,
+        isMaxRepay,
+        accountAddress,
+        confettiDisabled
+      })
+    },
+    [address, market, provider, repayNativeAvax, repayErc20]
   )
 
   return { aaveRepay }
