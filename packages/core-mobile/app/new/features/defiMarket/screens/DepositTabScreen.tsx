@@ -246,8 +246,12 @@ const DepositTabScreen = ({
     )
   }
 
+  // Remount list when filter/sort changes so grid layout stays correct
+  const listKey = `deposit-tab-${filter.selected}-${sort.selected}`
+
   return (
     <FlashList
+      key={listKey}
       onScroll={handleScroll}
       overrideProps={overrideProps}
       data={data}

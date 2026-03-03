@@ -245,8 +245,11 @@ export const StakeCardList = ({
     return <LoadingState sx={{ flex: 1 }} />
   }
 
+  const listKey = `stake-card-list-${filter.selected}-${sort.selected}`
+
   return (
     <FlashList
+      key={listKey}
       onScroll={handleScroll}
       overrideProps={overrideProps}
       data={data}

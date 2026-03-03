@@ -209,7 +209,7 @@ export const DeFiScreen = ({
         onRefresh={pullToRefresh}
         numColumns={numColumns}
         extraData={{ isGridView }}
-        listKey={`assets-list-${listType}`}
+        listKey={`defi-list-${listType}-${sort.selected}`}
       />
     </Animated.View>
   )
