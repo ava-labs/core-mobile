@@ -5,7 +5,7 @@ import {
   AAVE_POOL_C_CHAIN_ADDRESS,
   AAVE_WRAPPED_AVAX_GATEWAY_ADDRESS
 } from 'features/defiMarket/consts'
-import { AAVE_WRAPPED_AVAX_GATEWAY_ABI } from 'features/defiMarket/abis/aaveWappedAvaxGateway'
+import { AAVE_WRAPPED_AVAX_GATEWAY_ABI } from 'features/defiMarket/abis/aaveWrappedAvaxGateway'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'

@@ -16,7 +16,7 @@ import { ensureAllowance } from 'features/swap/utils/evm/ensureAllowance'
 import { WAVAX_ADDRESS } from 'features/swap/consts'
 import { TransactionParams } from '@avalabs/evm-module'
 import { AAVE_AVALANCHE3_POOL_PROXY_ABI } from '../../abis/aaveAvalanche3PoolProxy'
-import { AAVE_WRAPPED_AVAX_GATEWAY_ABI } from '../../abis/aaveWappedAvaxGateway'
+import { AAVE_WRAPPED_AVAX_GATEWAY_ABI } from '../../abis/aaveWrappedAvaxGateway'
 import {
   AAVE_POOL_C_CHAIN_ADDRESS,
   AAVE_WRAPPED_AVAX_GATEWAY_ADDRESS,
