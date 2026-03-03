@@ -23,7 +23,7 @@ export type RepaySelectAmountFormBaseProps = {
   borrowPosition: BorrowPosition
   totalDebtUsd: number
   currentHealthScore: number | undefined
-  walletBalance: TokenUnit | undefined
+  balance: TokenUnit | undefined
   formatInCurrency: (amt: TokenUnit, symbol: string) => string
   submit: (params: {
     amount: TokenUnit
@@ -36,7 +36,7 @@ export function RepaySelectAmountFormBase({
   borrowPosition,
   totalDebtUsd,
   currentHealthScore,
-  walletBalance,
+  balance,
   formatInCurrency,
   submit,
   onSubmitted
@@ -57,11 +57,9 @@ export function RepaySelectAmountFormBase({
   }, [borrowPosition, market])
 
   const maxRepayAmount = useMemo(() => {
-    if (!borrowedAmountUnit || !walletBalance) return borrowedAmountUnit
-    return borrowedAmountUnit.lt(walletBalance)
-      ? borrowedAmountUnit
-      : walletBalance
-  }, [borrowedAmountUnit, walletBalance])
+    if (!borrowedAmountUnit || !balance) return borrowedAmountUnit
+    return borrowedAmountUnit.lt(balance) ? borrowedAmountUnit : balance
+  }, [borrowedAmountUnit, balance])
 
   const calculateHealthScoreAfterRepay = useCallback(
     (repayAmount: TokenUnit): number | undefined => {
@@ -193,7 +191,7 @@ export function RepaySelectAmountFormBase({
             symbol: market.asset.symbol
           }}
           balance={
-            walletBalance ??
+            balance ??
             new TokenUnit(0n, market.asset.decimals, market.asset.symbol)
           }
           formatInCurrency={amt => formatInCurrency(amt, market.asset.symbol)}

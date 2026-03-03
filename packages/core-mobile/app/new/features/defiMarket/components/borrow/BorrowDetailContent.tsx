@@ -86,7 +86,7 @@ export function BorrowDetailContent({
       pathname: '/borrowRepay',
       params: {
         marketId: borrowPosition.market.uniqueMarketId,
-        protocol: protocol
+        protocol
       }
     })
   }, [borrowPosition, protocol, router])

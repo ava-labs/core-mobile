@@ -30,7 +30,7 @@ export function AaveRepaySelectAmountForm({
     [marketId, aaveSummary.positions]
   )
 
-  const walletBalance = useTokenBalance(
+  const balance = useTokenBalance(
     borrowPosition?.market.asset,
     cChainNetwork?.chainId
   )
@@ -82,7 +82,7 @@ export function AaveRepaySelectAmountForm({
       borrowPosition={borrowPosition}
       totalDebtUsd={totalDebtUsd}
       currentHealthScore={aaveSummary.summary?.healthScore}
-      walletBalance={walletBalance}
+      balance={balance}
       formatInCurrency={formatInCurrency}
       submit={submit}
       onSubmitted={onSubmitted}

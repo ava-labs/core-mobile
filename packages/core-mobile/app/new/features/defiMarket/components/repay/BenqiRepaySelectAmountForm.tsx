@@ -31,7 +31,7 @@ export function BenqiRepaySelectAmountForm({
     [marketId, benqiSummary.positions]
   )
 
-  const walletBalance = useTokenBalance(
+  const balance = useTokenBalance(
     borrowPosition?.market.asset,
     cChainNetwork?.chainId
   )
@@ -83,7 +83,7 @@ export function BenqiRepaySelectAmountForm({
       borrowPosition={borrowPosition}
       totalDebtUsd={totalDebtUsd}
       currentHealthScore={benqiSummary.summary?.healthScore}
-      walletBalance={walletBalance}
+      balance={balance}
       formatInCurrency={formatInCurrency}
       submit={submit}
       onSubmitted={onSubmitted}
