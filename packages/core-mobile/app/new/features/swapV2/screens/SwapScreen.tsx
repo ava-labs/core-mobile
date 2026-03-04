@@ -462,22 +462,13 @@ export const SwapScreen = (): JSX.Element => {
       return items
     }
 
-    const haveMultipleQuotes = allQuotes.length > 1
     if (fromToken && toToken && rate) {
-      if (haveMultipleQuotes) {
-        items.push({
-          title: 'Pricing',
-          value: `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${
-            toToken.symbol
-          }`,
-          onPress: handleSelectPricingDetails
-        })
-      } else {
-        items.push({
-          title: 'Rate',
-          value: `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${toToken.symbol}`
-        })
-      }
+      const haveMultipleQuotes = allQuotes.length > 1
+      items.push({
+        title: haveMultipleQuotes ? 'Pricing' : 'Rate',
+        value: `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${toToken.symbol}`,
+        onPress: handleSelectPricingDetails
+      })
     }
 
     if (showFeesAndSlippage) {
