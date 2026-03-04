@@ -1,3 +1,14 @@
+diff --git a/node_modules/jail-monkey/android/build.gradle b/node_modules/jail-monkey/android/build.gradle
+index 1234567..abcdefg 100644
+--- a/node_modules/jail-monkey/android/build.gradle
++++ b/node_modules/jail-monkey/android/build.gradle
+@@ -22,5 +22,5 @@ repositories {
+ 
+ dependencies {
+     implementation 'com.facebook.react:react-native:+'
+-    implementation 'com.scottyab:rootbeer-lib:0.0.9'
++    implementation 'com.scottyab:rootbeer-lib:0.1.1'
+ }
 diff --git a/node_modules/jail-monkey/android/src/main/java/com/gantix/JailMonkey/JailMonkeyModule.java b/node_modules/jail-monkey/android/src/main/java/com/gantix/JailMonkey/JailMonkeyModule.java
 index 018d705..e89a135 100644
 --- a/node_modules/jail-monkey/android/src/main/java/com/gantix/JailMonkey/JailMonkeyModule.java

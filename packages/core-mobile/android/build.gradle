@@ -41,20 +41,6 @@ buildscript {
 }
 
 
-// Ensure all CMake-compiled native libraries use 16KB page size alignment (NDK 27).
-// NDK 28+ does this by default; this flag is needed for NDK 27.
-subprojects { subproject ->
-    afterEvaluate {
-        if (subproject.plugins.hasPlugin('com.android.library') || subproject.plugins.hasPlugin('com.android.application')) {
-            try {
-                if (subproject.android.externalNativeBuild.cmake.path != null) {
-                    subproject.android.defaultConfig.externalNativeBuild.cmake.arguments.add("-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON")
-                }
-            } catch (Exception ignored) {}
-        }
-    }
-}
-
 def reactNativeAndroidDir = new File(
   providers.exec {
     workingDir(rootDir)
@@ -79,13 +65,9 @@ allprojects {
     }
     
     configurations.all {
-        resolutionStrategy {
-            force 'com.scottyab:rootbeer-lib:0.1.1'
-
-            eachDependency { DependencyResolveDetails details ->
-                if (details.requested.group == 'org.jetbrains.kotlin') {
-                    details.useVersion rootProject.ext.kotlinVersion
-                }
+        resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+            if (details.requested.group == 'org.jetbrains.kotlin') {
+                details.useVersion rootProject.ext.kotlinVersion
             }
         }
     }
