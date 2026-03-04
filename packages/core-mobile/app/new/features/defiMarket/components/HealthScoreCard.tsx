@@ -40,7 +40,7 @@ export const HealthScoreCard = ({
               color,
               fontWeight: 500
             }}>
-            {formatHealthScore(score, 2)}
+            {formatHealthScore(score, { fractionDigits: 2 })}
           </Text>
           <Text variant="caption" sx={{ color: '$textSecondary' }}>
             Liquidation at {'<'}1.0
