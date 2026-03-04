@@ -15,8 +15,6 @@ import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { BorrowPosition } from '../../types'
 import { HealthScoreCard } from '../HealthScoreCard'
 
-const MIN_DEBT_USD_THRESHOLD = 1e-6
-
 export type RepaySelectAmountFormBaseProps = {
   borrowPosition: BorrowPosition
   totalDebtUsd: number
@@ -54,7 +52,7 @@ export function RepaySelectAmountFormBase({
   }, [borrowPosition, market])
 
   const maxRepayAmount = useMemo(() => {
-    if (!borrowedAmountUnit || !balance) return borrowedAmountUnit
+    if (!borrowedAmountUnit || !balance) return undefined
     return borrowedAmountUnit.lt(balance) ? borrowedAmountUnit : balance
   }, [borrowedAmountUnit, balance])
 
@@ -66,11 +64,10 @@ export function RepaySelectAmountFormBase({
 
       const pricePerToken = market.asset.mintTokenBalance.price.value.toNumber()
       const repayAmountUsd =
-        (Number(repayAmount.toSubUnit()) * pricePerToken) /
-        10 ** market.asset.decimals
+        repayAmount.toDisplay({ asNumber: true }) * pricePerToken
 
       const newTotalDebtUsd = Math.max(0, totalDebtUsd - repayAmountUsd)
-      if (newTotalDebtUsd <= MIN_DEBT_USD_THRESHOLD) return Infinity
+      if (newTotalDebtUsd <= 0) return Infinity
 
       return currentHealthScore * (totalDebtUsd / newTotalDebtUsd)
     },

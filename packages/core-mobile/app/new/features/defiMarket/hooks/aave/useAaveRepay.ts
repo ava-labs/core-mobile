@@ -145,7 +145,7 @@ export const useAaveRepay = ({
           context
         })
       const approvalTxHash = await ensureAllowance({
-        amount: actualAmount,
+        amount: isMaxRepay ? MAX_UINT256 : actualAmount,
         provider,
         signAndSend,
         spenderAddress: AAVE_POOL_C_CHAIN_ADDRESS,

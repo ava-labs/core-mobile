@@ -22,7 +22,7 @@ type ETHSendTransactionParams = {
   contractAddress: Address
   encodedData: Hex
   value?: Hex // Optional value for native token transfers (e.g., AVAX)
-  gas?: Hex // Optional gas limit (avoids estimation failure in approval flow)
+  gas?: Hex // Optional gas limit override to skip automatic estimation
   requestId?: string // Optional identifier to track which request completed in callbacks
   confettiDisabled?: boolean // Disable confetti animation on transaction success
 }
