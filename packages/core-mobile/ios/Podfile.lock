@@ -486,7 +486,7 @@ PODS:
   - hermes-engine (0.81.5):
     - hermes-engine/Pre-built (= 0.81.5)
   - hermes-engine/Pre-built (0.81.5)
-  - jail-monkey (2.8.5):
+  - jail-monkey (2.8.0):
     - React-Core
   - libavif/core (1.0.0)
   - libavif/libdav1d (1.0.0):
@@ -666,7 +666,7 @@ PODS:
   - OpenTelemetrySwiftApi (1.13.1)
   - PLCrashReporter (1.12.0)
   - PromisesObjC (2.4.0)
-  - QuickCrypto (1.0.16):
+  - QuickCrypto (1.0.14):
     - boost
     - DoubleConversion
     - fast_float
@@ -4930,7 +4930,7 @@ SPEC CHECKSUMS:
   GTMAppAuth: f69bd07d68cd3b766125f7e072c45d7340dea0de
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   hermes-engine: 9f4dfe93326146a1c99eb535b1cb0b857a3cd172
-  jail-monkey: 561b37e135171fae4576181d87137b0400442c40
+  jail-monkey: 1846061ac12e861ac5a8ec7197b0daa775b83733
   libavif: 5f8e715bea24debec477006f21ef9e95432e254d
   libdav1d: 23581a4d8ec811ff171ed5e2e05cd27bad64c39f
   libwebp: 02b23773aedb6ff1fd38cec7a77b81414c6842a8
@@ -4946,7 +4946,7 @@ SPEC CHECKSUMS:
   OpenTelemetrySwiftApi: aaee576ed961e0c348af78df58b61300e95bd104
   PLCrashReporter: db59ef96fa3d25f3650040d02ec2798cffee75f2
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  QuickCrypto: d66ec8fb666a4434b0795fa1d5361eaa07c93863
+  QuickCrypto: 6d61b13c0e934bf8f0e0afa429889426dc373f90
   RCT-Folly: 846fda9475e61ec7bcbf8a3fe81edfcaeb090669
   RCTDeprecation: 5eb1d2eeff5fb91151e8a8eef45b6c7658b6c897
   RCTRequired: cebcf9442fc296c9b89ac791dfd463021d9f6f23
