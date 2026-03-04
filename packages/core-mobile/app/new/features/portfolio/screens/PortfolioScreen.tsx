@@ -490,14 +490,24 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
+  const previousAccountIdRef = useRef(activeAccount?.id)
+
   const handleScrollResync = useCallback(() => {
     tabViewRef.current?.scrollResync()
   }, [])
 
+  const scrollToTop = useCallback(() => {
+    tabViewRef.current?.scrollToTop()
+  }, [])
+
   useFocusEffect(
     useCallback(() => {
+      if (previousAccountIdRef.current !== activeAccount?.id) {
+        previousAccountIdRef.current = activeAccount?.id
+        scrollToTop()
+      }
       handleScrollResync()
-    }, [handleScrollResync])
+    }, [activeAccount?.id, handleScrollResync, scrollToTop])
   )
 
   const tabHeight = useMemo(() => {
@@ -524,6 +534,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
             goToTokenManagement={handleGoToTokenManagement}
             goToBuy={navigateToBuy}
             onScrollResync={handleScrollResync}
+            onScrollToTop={scrollToTop}
             containerStyle={contentContainerStyle}
           />
         )
@@ -565,6 +576,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleGoToTokenManagement,
     navigateToBuy,
     handleScrollResync,
+    scrollToTop,
     contentContainerStyle,
     handleGoToCollectibleDetail,
     handleGoToCollectibleManagement,
