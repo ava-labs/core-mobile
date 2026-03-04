@@ -694,7 +694,7 @@ __metadata:
     fast-equals: 5.2.2
     https-browserify: 1.0.0
     hypersdk-client: 0.4.16
-    jail-monkey: 2.8.5
+    jail-monkey: 2.8.0
     jest: 30.1.3
     jimp: 1.6.0
     jsc-android: 294992.0.0
@@ -763,7 +763,7 @@ __metadata:
     react-native-progress: 5.0.1
     react-native-qrcode-svg: 6.3.2
     react-native-quick-base64: 2.2.2
-    react-native-quick-crypto: 1.0.16
+    react-native-quick-crypto: 1.0.14
     react-native-reanimated: 4.2.1
     react-native-redash: 18.1.4
     react-native-restart: 0.0.27
@@ -29070,10 +29070,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jail-monkey@npm:2.8.5":
-  version: 2.8.5
-  resolution: "jail-monkey@npm:2.8.5"
-  checksum: de08a1a115fb32dbc453c266b42b5c8cc1052e8e6e0d5185ddae4e223be9ee88b365a1ac24a89ed3cd537b2f2caa82f05d8270953627c1e7e1f1d39bda3011ed
+"jail-monkey@npm:2.8.0":
+  version: 2.8.0
+  resolution: "jail-monkey@npm:2.8.0"
+  checksum: 103956be764707954799924f9851255a0fc5d978621cee811547c26354411eba372dcf309ade406ab20d48fb36202274c6b4e8f698f8bf802a03b12d1a6dfb57
   languageName: node
   linkType: hard
 
@@ -35798,9 +35798,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-quick-crypto@npm:1.0.16":
-  version: 1.0.16
-  resolution: "react-native-quick-crypto@npm:1.0.16"
+"react-native-quick-crypto@npm:1.0.14":
+  version: 1.0.14
+  resolution: "react-native-quick-crypto@npm:1.0.14"
   dependencies:
     "@craftzdog/react-native-buffer": 6.1.0
     events: 3.3.0
@@ -35820,7 +35820,7 @@ __metadata:
       optional: true
     expo-build-properties:
       optional: true
-  checksum: 73cc7507e66c8a2d2d87ba9b5858acc6973b7dd08fabdb2db10c09ad112666496813a6e48f50018708468f5b6060ca52eb6ad85a7a0eae6b9a7b3eae2e203bb8
+  checksum: d2da6572553c24907a53a6eac1010aff6f532c3368690a6382eb8c6e3308e9381b94ea3bc40c93bf0e14c371f57e366576201f50fe909c5931793d99424b8a25
   languageName: node
   linkType: hard
 
