@@ -1,0 +1,82 @@
+diff --git a/node_modules/jail-monkey/android/src/main/java/com/gantix/JailMonkey/JailMonkeyModule.java b/node_modules/jail-monkey/android/src/main/java/com/gantix/JailMonkey/JailMonkeyModule.java
+index 018d705..e89a135 100644
+--- a/node_modules/jail-monkey/android/src/main/java/com/gantix/JailMonkey/JailMonkeyModule.java
++++ b/node_modules/jail-monkey/android/src/main/java/com/gantix/JailMonkey/JailMonkeyModule.java
+@@ -74,11 +74,7 @@ public class JailMonkeyModule extends ReactContextBaseJavaModule {
+         final Map<String, Object> constants = new HashMap<>();
+ 
+         constants.put("isJailBroken", rootedCheck.isJailBroken());
+-        constants.put("rootedDetectionMethods", rootedCheck.getResultByDetectionMethod());
+-        constants.put("hookDetected", hookDetected(context));
+-        constants.put("canMockLocation", isMockLocationOn(context));
+-        constants.put("isOnExternalStorage", isOnExternalStorage(context));
+-        constants.put("AdbEnabled", AdbEnabled(context));
+         return constants;
+     }
+ }
++
+diff --git a/node_modules/jail-monkey/android/src/main/java/com/gantix/JailMonkey/Rooted/RootedCheck.java b/node_modules/jail-monkey/android/src/main/java/com/gantix/JailMonkey/Rooted/RootedCheck.java
+index bf75f27..d63ac51 100644
+--- a/node_modules/jail-monkey/android/src/main/java/com/gantix/JailMonkey/Rooted/RootedCheck.java
++++ b/node_modules/jail-monkey/android/src/main/java/com/gantix/JailMonkey/Rooted/RootedCheck.java
+@@ -4,25 +4,44 @@ import android.content.Context;
+ import com.scottyab.rootbeer.RootBeer;
+ import java.util.HashMap;
+ import java.util.Map;
++import java.util.concurrent.CountDownLatch;
++
++import androidx.tracing.Trace;
+ 
+ public class RootedCheck {
+     private static boolean checkWithJailMonkeyMethod() {
+-        CheckApiVersion check;
+-
+-        if (android.os.Build.VERSION.SDK_INT >= 23) {
+-            check = new GreaterThan23();
+-        } else {
+-            check = new LessThan23();
++        Trace.beginSection("[JailMonkey] checkWithJailMonkeyMethod");
++        try {
++            CheckApiVersion check;
++
++            if (android.os.Build.VERSION.SDK_INT >= 23) {
++                check = new GreaterThan23();
++            } else {
++                check = new LessThan23();
++            }
++            return check.checkRooted();
++        } finally {
++            Trace.endSection();
+         }
+-        return check.checkRooted();
+     }
+ 
+-    private final boolean jailMonkeyResult;
+-    private final RootBeerResults rootBeerResults;
++    private static boolean jailMonkeyResult;
++    private static RootBeerResults rootBeerResults;
++    private static CountDownLatch latch = new CountDownLatch(1);
++    public static void precompute(Context context) {
++        new Thread(() -> {
++            jailMonkeyResult = checkWithJailMonkeyMethod();
++            rootBeerResults = new RootBeerResults(context);
++            latch.countDown();
++        }).start();
++    }
+ 
+     public RootedCheck(Context context) {
+-        jailMonkeyResult = checkWithJailMonkeyMethod();
+-        rootBeerResults = new RootBeerResults(context);
++        try {
++            latch.await();
++        } catch (InterruptedException e) {
++            throw new RuntimeException(e);
++        }
+     }
+ 
+     public boolean isJailBroken() {
+@@ -87,3 +106,4 @@ public class RootedCheck {
+         }
+     }
+ }
++

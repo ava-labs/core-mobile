@@ -164,6 +164,13 @@ android {
 
     packagingOptions {
         pickFirst '**/*.so'
+        // Compress .so files to bypass 16KB ZIP alignment for prebuilt AARs
+        // that haven't been rebuilt with 16KB ELF alignment yet
+        // (penfeizhou animation-decoder-gif from expo-image).
+        // TODO: Remove once expo-image upgrades to Glide 5.0.5+ (expo-image >= 55.0.0)
+        jniLibs {
+            useLegacyPackaging true
+        }
     }
 }
 
