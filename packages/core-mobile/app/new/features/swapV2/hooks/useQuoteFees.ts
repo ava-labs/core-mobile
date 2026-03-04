@@ -18,7 +18,8 @@ import { TOKEN_IDS } from '../consts'
 
 type FeeBreakdownItem = {
   name: string
-  fiatAmount: number
+  tokenAmount: string
+  fiatAmount?: number // undefined when price data is unavailable
 }
 
 type AggregatedFees = {
@@ -86,15 +87,17 @@ function buildBreakdownItem(
   if (decimals == null) return undefined
 
   const tokenUnit = new TokenUnit(fee.amount, decimals, entry.symbol)
+  const tokenAmount = `${tokenUnit.toDisplay()} ${entry.symbol}`
   const price = entry.priceInfo?.[currency.toLowerCase()]?.price
 
   if (price != null) {
     return {
       name: fee.name,
+      tokenAmount,
       fiatAmount: tokenUnit.mul(price).toDisplay({ asNumber: true })
     }
   }
-  return { name: fee.name, fiatAmount: 0 }
+  return { name: fee.name, tokenAmount }
 }
 
 export function useQuoteFees(
@@ -144,7 +147,7 @@ export function useQuoteFees(
       const item = buildBreakdownItem(fee, entry, currency)
       if (!item) continue
 
-      total += item.fiatAmount
+      total += item.fiatAmount ?? 0
       breakdown.push(item)
     }
 

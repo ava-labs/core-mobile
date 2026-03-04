@@ -152,7 +152,7 @@ export const SwapScreen = (): JSX.Element => {
   }, [toToken, updateMissingTokenPrice])
 
   const validateInputs = useCallback(() => {
-    if (fromTokenValue && fromTokenValue === 0n) {
+    if (fromTokenValue !== undefined && fromTokenValue === 0n) {
       setValidationError(fusionErrors.enterAmount())
     } else if (
       maxFromValue !== undefined &&

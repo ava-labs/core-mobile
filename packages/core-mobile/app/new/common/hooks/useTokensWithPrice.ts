@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import {
@@ -13,6 +14,13 @@ export type TokenWithPriceData =
 
 const STALE_TIME = 30 * 1000 // 30 seconds
 
+const tokenToKey = (token: Caip2IdAddressPair | InternalId): string => {
+  if ('internalId' in token) {
+    return token.internalId
+  }
+  return `${token.caip2Id}:${token.address}`
+}
+
 /**
  * Fetches price and metadata for a list of tokens from the token aggregator.
  *
@@ -22,8 +30,12 @@ const STALE_TIME = 30 * 1000 // 30 seconds
 export function useTokensWithPrice(
   tokens: Array<Caip2IdAddressPair | InternalId>
 ): TokenWithPriceData[] {
+  // tokenKeys is the stable string representation of tokens for the query key.
+  const tokenKeys = useMemo(() => tokens.map(tokenToKey), [tokens])
+
   const { data } = useQuery({
-    queryKey: [ReactQueryKeys.TOKEN_LOOKUP_WITH_PRICE, tokens],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    queryKey: [ReactQueryKeys.TOKEN_LOOKUP_WITH_PRICE, tokenKeys],
     queryFn: async () => {
       const response = await postV1TokenLookupWithPrice({
         client: tokenAggregatorApi,

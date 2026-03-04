@@ -207,12 +207,13 @@ export const SwapPricingDetailsScreen = ({
 
     if (totalFees !== undefined) {
       const breakdownDescription = totalFees.breakdown
-        .map(
-          item =>
-            `${item.name}: ${formatCurrency({
-              amount: item.fiatAmount,
-              showLessThanThreshold: true
-            })}`
+        .map(item =>
+          item.fiatAmount != null
+            ? `${item.name}: ${formatCurrency({
+                amount: item.fiatAmount,
+                showLessThanThreshold: true
+              })}`
+            : `${item.name}: ${item.tokenAmount}`
         )
         .join('\n')
 
