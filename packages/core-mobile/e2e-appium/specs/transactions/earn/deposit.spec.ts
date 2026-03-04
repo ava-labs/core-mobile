@@ -1,24 +1,22 @@
 import warmup from '../../../helpers/warmup'
 import earnPage from '../../../pages/earn.page'
+import commonPage from '../../../pages/commonEls.page'
 
-describe('[Smoke] Earn', () => {
+describe('Earn', () => {
   const randomPool = Math.random() < 0.5 ? 'aave' : 'benqi'
 
-  it('should deposit AVAX', async () => {
+  it('[Smoke] should deposit AVAX', async () => {
     await warmup()
-    await earnPage.deposit('AVAX', '0.0001', randomPool)
-  })
-
-  it('should deposit ERC20', async () => {
-    await earnPage.deposit('USDC', '0.0001', randomPool)
+    await earnPage.deposit(randomPool, 'AVAX', '0.0001')
   })
 
   it('should verify deposit detail', async () => {
-    await earnPage.tapDepositCard('AVAX', randomPool)
+    await earnPage.tapDepositCard(randomPool, 'AVAX')
     await earnPage.verifyDepositDetail('AVAX', randomPool)
+    await commonPage.goBack()
   })
 
   it('should withdraw max amount', async () => {
-    await earnPage.withdraw('max', randomPool)
+    await earnPage.withdraw(randomPool, 'AVAX', 'max')
   })
 })

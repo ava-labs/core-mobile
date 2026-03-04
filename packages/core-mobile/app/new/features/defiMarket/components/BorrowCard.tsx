@@ -40,7 +40,8 @@ export const BorrowCard = ({
 
   return (
     <BaseCard
-      testID={`borrow_card__${market.uniqueMarketId}`}
+      testID={`borrow_card__${market.marketName}__${market.asset.symbol}`}
+      accessible={false}
       onPress={onPress}
       sx={{ justifyContent: 'center', alignItems: 'center', width, height }}>
       <DefiAssetLogo
@@ -66,7 +67,8 @@ export const BorrowCard = ({
         onTouchStart={e => e.stopPropagation()}
         onTouchEnd={e => e.stopPropagation()}>
         <Button
-          testID={`borrow_card_repay_btn__${market.uniqueMarketId}`}
+          accessible={true}
+          testID={`repay_btn__${market.marketName}__${market.asset.symbol}`}
           type="secondary"
           size="small"
           onPress={onRepayPress}>

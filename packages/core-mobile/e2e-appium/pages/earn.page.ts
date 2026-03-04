@@ -5,28 +5,8 @@ import txPage from './transactions.page'
 import bottomTabsPage from './bottomTabs.page'
 
 class EarnPage {
-  get depositFormTitle() {
-    return selectors.getByText(earnLoc.depositFormTitle)
-  }
-
-  get withdrawFormTitle() {
-    return selectors.getByText(earnLoc.withdrawFormTitle)
-  }
-
   get earnSubtitle() {
     return selectors.getByText(earnLoc.earnSubtitle)
-  }
-
-  withdrawBtn(marketName: string, token: string) {
-    return selectors.getById(`withdraw_btn__${marketName}__${token}`)
-  }
-
-  depositCard(marketName: string, token: string) {
-    return selectors.getById(`deposit_card__${marketName}__${token}`)
-  }
-
-  borrowCard(marketId: string) {
-    return selectors.getById(`borrow_card__${marketId}`)
   }
 
   get depositDetailsTitle() {
@@ -43,6 +23,10 @@ class EarnPage {
 
   get depositDetailCurrentApy() {
     return selectors.getByText(earnLoc.depositDetailCurrentApy)
+  }
+
+  get borrowOn() {
+    return selectors.getByText(earnLoc.borrowOn)
   }
 
   get borrowDetailsTitle() {
@@ -70,7 +54,7 @@ class EarnPage {
   }
 
   get borrowDetailRepayBtn() {
-    return selectors.getById('borrow_detail_repay_btn')
+    return selectors.getById(earnLoc.borrowDetailRepayBtn)
   }
 
   get borrowTab() {
@@ -81,16 +65,40 @@ class EarnPage {
     return selectors.getByText(earnLoc.selectDepositsToUseAsCollateralTitle)
   }
 
-  selectTokenBtn(tokenSymbol: string) {
+  selectDepositTokenBtn(tokenSymbol: string) {
     return selectors.getById(`depositOrBuy__${tokenSymbol}`)
+  }
+
+  selectBorrowTokenBtn(tokenSymbol: string) {
+    return selectors.getById(`borrow_asset__${tokenSymbol}`)
   }
 
   pool(poolName: string) {
     return selectors.getById(`protocol_logo__${poolName}`)
   }
 
-  async selectAsset(tokenSymbol: string) {
-    await actions.tap(this.selectTokenBtn(tokenSymbol))
+  withdrawBtn(pool: string, token: string) {
+    return selectors.getById(`withdraw_btn__${pool}__${token}`)
+  }
+
+  repayBtn(pool: string, token: string) {
+    return selectors.getById(`repay_btn__${pool}__${token}`)
+  }
+
+  depositCard(pool: string, token: string) {
+    return selectors.getById(`deposit_card__${pool}__${token}`)
+  }
+
+  borrowCard(pool: string, token: string) {
+    return selectors.getById(`borrow_card__${pool}__${token}`)
+  }
+
+  async selectDepositAsset(tokenSymbol: string) {
+    await actions.tap(this.selectDepositTokenBtn(tokenSymbol))
+  }
+
+  async selectBorrowAsset(tokenSymbol: string) {
+    await actions.tap(this.selectBorrowTokenBtn(tokenSymbol))
   }
 
   async selectPool(poolName = 'aave') {
@@ -102,41 +110,31 @@ class EarnPage {
     await actions.type(txPage.amountInput, amount)
   }
 
-  async selectBorrowPool(pool: string) {
-    const protocolName = pool === 'aave' ? 'Aave' : 'Benqi'
-    const borrowOnTrigger = selectors.getBySomeText('Borrow on')
-    if (await actions.getVisible(borrowOnTrigger)) {
-      await actions.tap(borrowOnTrigger)
-      await actions.delay(500)
-      await actions.tap(selectors.getByText(protocolName))
-      await actions.delay(500)
-    }
-  }
-
-  async borrow(token = 'AVAX', pool?: string) {
-    const targetPool = pool ?? 'aave'
-    console.log(`Borrowing ${token} from ${targetPool}...`)
+  async borrow(pool = 'aave', token = 'AVAX') {
+    console.log(`Borrowing ${token} from ${pool}...`)
     await this.goBorrow()
     await txPage.tapAddCard()
     await txPage.dismissTransactionOnboarding()
     await actions.waitFor(this.selectDepositsToUseAsCollateralTitle)
     await txPage.tapNext()
-    await this.selectAsset(token)
+    await this.selectBorrowAsset(token)
     await txPage.tapMax()
     await txPage.tapAddCard()
     await txPage.tapNext()
     await txPage.tapApprove()
-    await txPage.tapApprove()
+    if (token === 'AVAX') {
+      await txPage.tapApprove()
+    }
     await txPage.verifySuccessToast()
   }
 
-  async deposit(token = 'AVAX', amount = '0.0001', pool?: string) {
+  async deposit(pool: string, token = 'AVAX', amount = '0.0001') {
     console.log(`Depositing ${amount} ${token} to ${pool ?? 'random pool'}...`)
     await bottomTabsPage.tapEarnTab()
     await actions.delay(1000)
     await txPage.tapAddCard()
     await txPage.dismissTransactionOnboarding()
-    await this.selectAsset(token)
+    await this.selectDepositAsset(token)
     await this.selectPool(pool)
     await this.enterAmount(amount)
     await txPage.tapAddCard()
@@ -148,14 +146,13 @@ class EarnPage {
     await txPage.verifySuccessToast()
   }
 
-  async tapWithdraw(marketName: string, token: string) {
-    await actions.click(this.withdrawBtn(marketName, token))
+  async tapWithdraw(pool: string, token: string) {
+    await actions.click(this.withdrawBtn(pool, token))
   }
 
-  async tapDepositCard(token: string, pool: string) {
-    const marketName = pool === 'aave' ? 'Aave' : 'Benqi'
+  async tapDepositCard(pool: string, token: string) {
     await bottomTabsPage.tapEarnTab()
-    await actions.tap(this.depositCard(marketName, token))
+    await actions.tap(this.depositCard(pool, token))
   }
 
   async verifyDepositDetail(token: string, pool: string) {
@@ -170,39 +167,14 @@ class EarnPage {
   async goBorrow() {
     await bottomTabsPage.tapEarnTab()
     await actions.tap(this.borrowTab)
-    await actions.delay(1000)
+    await actions.waitFor(this.borrowOn)
   }
 
-  async openBorrowDetail(marketId: string) {
-    await this.goBorrow()
-    await actions.tap(this.borrowCard(marketId))
-    await actions.waitFor(this.borrowDetailsTitle)
+  async tapBorrowCard(pool = 'aave', token = 'AVAX') {
+    await actions.tap(this.borrowCard(pool, token))
   }
 
-  async openFirstBorrowDetail(assetProtocolLabel = 'AVAX on Aave') {
-    await this.goBorrow()
-    const card = selectors.getByText(assetProtocolLabel)
-    const visible = await actions.getVisible(card)
-    if (visible) {
-      await actions.tap(card)
-      await actions.waitFor(this.borrowDetailsTitle)
-      return true
-    }
-    return false
-  }
-
-  getBorrowCardLabel(token: string, pool: string) {
-    const protocolName = pool === 'aave' ? 'Aave' : 'Benqi'
-    return `${token} on ${protocolName}`
-  }
-
-  async tapBorrowCard(token: string, pool: string) {
-    const label = this.getBorrowCardLabel(token, pool)
-    await actions.tap(selectors.getByText(label))
-    await actions.waitFor(this.borrowDetailsTitle)
-  }
-
-  async verifyBorrowDetail(_token: string, _pool: string) {
+  async verifyBorrowDetail() {
     await actions.waitFor(this.borrowDetailsTitle)
     await actions.isVisible(this.borrowDetailsTitle)
     await actions.isVisible(this.borrowDetailBorrowApy)
@@ -215,22 +187,19 @@ class EarnPage {
     }
   }
 
-  async tapBorrowDetailRepay() {
-    await actions.tap(this.borrowDetailRepayBtn)
+  async tapRepay(pool: string, token: string) {
+    await actions.tap(this.repayBtn(pool, token))
   }
 
-  async repay(pool: string) {
+  async repay(pool = 'aave', token = 'AVAX') {
     console.log(`Repay flow - tapping repay button (feature not complete yet)`)
-    await this.tapBorrowCard('AVAX', pool)
-    await this.tapBorrowDetailRepay()
+    await this.tapRepay(pool, token)
     console.log('Repay button tapped')
   }
 
-  async withdraw(amount = 'max', marketName = 'aave', token = 'AVAX') {
+  async withdraw(pool: string, token = 'AVAX', amount = 'max') {
     console.log(`Withdrawing ${amount}...`)
-    await bottomTabsPage.tapEarnTab()
-    await actions.delay(1000)
-    await this.tapWithdraw(marketName, token)
+    await this.tapWithdraw(pool, token)
     if (amount.toLowerCase() === 'max') {
       await txPage.tapMax()
       await txPage.tapAddCard()
