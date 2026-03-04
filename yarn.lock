@@ -694,7 +694,7 @@ __metadata:
     fast-equals: 5.2.2
     https-browserify: 1.0.0
     hypersdk-client: 0.4.16
-    jail-monkey: 2.8.0
+    jail-monkey: 2.8.5
     jest: 30.1.3
     jimp: 1.6.0
     jsc-android: 294992.0.0
@@ -763,7 +763,7 @@ __metadata:
     react-native-progress: 5.0.1
     react-native-qrcode-svg: 6.3.2
     react-native-quick-base64: 2.2.2
-    react-native-quick-crypto: 1.0.14
+    react-native-quick-crypto: 1.0.16
     react-native-reanimated: 4.2.1
     react-native-redash: 18.1.4
     react-native-restart: 0.0.27
@@ -29070,17 +29070,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jail-monkey@npm:2.8.0":
-  version: 2.8.0
-  resolution: "jail-monkey@npm:2.8.0"
-  checksum: 103956be764707954799924f9851255a0fc5d978621cee811547c26354411eba372dcf309ade406ab20d48fb36202274c6b4e8f698f8bf802a03b12d1a6dfb57
-  languageName: node
-  linkType: hard
-
-"jail-monkey@patch:jail-monkey@npm%3A2.8.0#./.yarn/patches/jail-monkey-npm-2.8.0-77e4d06b40.patch::locator=mobile-monorepo%40workspace%3A.":
-  version: 2.8.0
-  resolution: "jail-monkey@patch:jail-monkey@npm%3A2.8.0#./.yarn/patches/jail-monkey-npm-2.8.0-77e4d06b40.patch::version=2.8.0&hash=225a6a&locator=mobile-monorepo%40workspace%3A."
-  checksum: c5caacdc4a38dcdd45209f55c3376d39cd2ea7ae788f90e4bdb270838cb8f13c1b5001a79cd7c6f1ed7f0d462c9ef2d0fbc959e1e48a26dff4dd9aa7ab9ab4f4
+"jail-monkey@npm:2.8.5":
+  version: 2.8.5
+  resolution: "jail-monkey@npm:2.8.5"
+  checksum: de08a1a115fb32dbc453c266b42b5c8cc1052e8e6e0d5185ddae4e223be9ee88b365a1ac24a89ed3cd537b2f2caa82f05d8270953627c1e7e1f1d39bda3011ed
   languageName: node
   linkType: hard
 
@@ -35805,9 +35798,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-quick-crypto@npm:1.0.14":
-  version: 1.0.14
-  resolution: "react-native-quick-crypto@npm:1.0.14"
+"react-native-quick-crypto@npm:1.0.16":
+  version: 1.0.16
+  resolution: "react-native-quick-crypto@npm:1.0.16"
   dependencies:
     "@craftzdog/react-native-buffer": 6.1.0
     events: 3.3.0
@@ -35827,7 +35820,7 @@ __metadata:
       optional: true
     expo-build-properties:
       optional: true
-  checksum: d2da6572553c24907a53a6eac1010aff6f532c3368690a6382eb8c6e3308e9381b94ea3bc40c93bf0e14c371f57e366576201f50fe909c5931793d99424b8a25
+  checksum: 73cc7507e66c8a2d2d87ba9b5858acc6973b7dd08fabdb2db10c09ad112666496813a6e48f50018708468f5b6060ca52eb6ad85a7a0eae6b9a7b3eae2e203bb8
   languageName: node
   linkType: hard
 
@@ -36036,7 +36029,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: d6880e5ce50f78dafc5b51a87916e4c1e9925357c4f21cc20e5891311800297da97ba5a1b8d1f70381816d32e65d81cc635fe988d584dbf94d4b57a7ee509e3b
+  checksum: 3e4689674406deb2ad9efa9f529597341b4ab33e379b7c7cd72aff8d5e37862fda1a37aba984951a67cc3938969be138bc3c4469e4963dd170b172148339e056
   languageName: node
   linkType: hard
 
