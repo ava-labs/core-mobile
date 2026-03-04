@@ -9,7 +9,7 @@ import {
   useSwapSelectedToToken
 } from 'features/swapV2/hooks/useZustandStore'
 import { useSupportedChains } from 'features/swapV2/hooks/useSupportedChains'
-import { TOKEN_IDS } from 'features/swapV2/consts'
+import { TOKEN_IDS } from 'consts/tokenIds'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 
 const SelectSwapV2ToTokenScreen = (): JSX.Element => {

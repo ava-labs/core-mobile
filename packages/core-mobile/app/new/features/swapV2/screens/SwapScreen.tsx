@@ -40,6 +40,7 @@ import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
 import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio/hooks/useTokensWithZeroBalanceByNetworksForAccount'
 import { selectActiveAccount } from 'store/account'
 import Logger from 'utils/Logger'
+import { TOKEN_IDS } from 'consts/tokenIds'
 import { SwapStatus, useSwapContext } from '../contexts/SwapContext'
 import { FusionQuoteError, fusionErrors } from '../utils/fusionErrors'
 import { useSwapRate } from '../hooks/useSwapRate'
@@ -520,7 +521,10 @@ export const SwapScreen = (): JSX.Element => {
   const prevToRef = useRef(toToken)
 
   useEffect(() => {
-    if (fromToken && toToken && fromToken.localId === toToken.localId) {
+    function clearSameToken(): void {
+      if (!(fromToken && toToken && fromToken.localId === toToken.localId))
+        return
+
       if (prevFromRef.current !== fromToken) {
         setToToken(undefined)
       } else if (prevToRef.current !== toToken) {
@@ -530,11 +534,37 @@ export const SwapScreen = (): JSX.Element => {
       setAmount(undefined)
       setToTokenValue(undefined)
       setFromTokenValue(undefined)
+
+      prevFromRef.current = fromToken
+      prevToRef.current = toToken
     }
 
-    prevFromRef.current = fromToken
-    prevToRef.current = toToken
-  }, [fromToken, toToken, setToToken, setFromToken, setAmount])
+    function autoSelectBtcb(): void {
+      if (
+        fromToken?.localId?.toLowerCase() !== TOKEN_IDS.BTC.toLowerCase() &&
+        fromToken?.internalId !== TOKEN_IDS.BTC
+      )
+        return
+
+      const btcb = [...swapList, ...tokensWithZeroBalance].find(
+        tk => tk.internalId === TOKEN_IDS.BTC_B
+      )
+      if (btcb) setToToken(btcb)
+    }
+
+    clearSameToken()
+    // auto select BTC.b needs to run after clearSameToken so the auto-select can
+    // override any same-token clear (e.g. BTC.b→BTC then switching FROM to BTC).
+    autoSelectBtcb()
+  }, [
+    fromToken,
+    toToken,
+    setToToken,
+    setFromToken,
+    setAmount,
+    swapList,
+    tokensWithZeroBalance
+  ])
 
   // Validate token pair compatibility - clear TO token if incompatible with FROM chain
   const { isValidDestination } = useSupportedChains()

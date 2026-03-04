@@ -14,7 +14,7 @@ import {
   useTokensWithPrice,
   type TokenWithPriceData
 } from 'common/hooks/useTokensWithPrice'
-import { TOKEN_IDS } from '../consts'
+import { TOKEN_IDS } from 'consts/tokenIds'
 
 type FeeBreakdownItem = {
   name: string

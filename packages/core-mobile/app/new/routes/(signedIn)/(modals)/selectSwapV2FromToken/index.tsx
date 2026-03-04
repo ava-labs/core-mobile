@@ -10,7 +10,7 @@ import {
   useSwapSelectedToToken
 } from 'features/swapV2/hooks/useZustandStore'
 import { useSupportedChains } from 'features/swapV2/hooks/useSupportedChains'
-import { TOKEN_IDS } from 'features/swapV2/consts'
+import { TOKEN_IDS } from 'consts/tokenIds'
 
 const SelectSwapV2FromTokenScreen = (): JSX.Element => {
   const [selectedFromToken, setSelectedFromToken] = useSwapSelectedFromToken()
