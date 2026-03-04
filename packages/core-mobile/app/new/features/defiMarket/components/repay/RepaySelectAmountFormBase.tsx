@@ -5,7 +5,6 @@ import {
   Card,
   SendTokenUnitInputWidget,
   Text,
-  useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -14,8 +13,7 @@ import { transactionSnackbar } from 'common/utils/toast'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { BorrowPosition } from '../../types'
-import { HEALTH_SCORE_CAUTION_COLOR } from '../../consts'
-import { formatHealthScore } from '../../utils/healthRisk'
+import { HealthScoreCard } from '../HealthScoreCard'
 
 const MIN_DEBT_USD_THRESHOLD = 1e-6
 
@@ -41,7 +39,6 @@ export function RepaySelectAmountFormBase({
   submit,
   onSubmitted
 }: RepaySelectAmountFormBaseProps): JSX.Element {
-  const { theme } = useTheme()
   const [amount, setAmount] = useState<TokenUnit>()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -105,22 +102,6 @@ export function RepaySelectAmountFormBase({
       return borrowedAmountUnit
     }
   }, [borrowedAmountUnit, amount])
-
-  const getHealthScoreColor = useCallback(
-    (score: number | undefined): string => {
-      if (score === undefined || Number.isNaN(score)) {
-        return theme.colors.$textSecondary
-      }
-      if (score > 1e10 || !Number.isFinite(score) || score > 3) {
-        return theme.colors.$textSuccess
-      }
-      if (score >= 1.1) {
-        return HEALTH_SCORE_CAUTION_COLOR
-      }
-      return theme.colors.$textDanger
-    },
-    [theme.colors]
-  )
 
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {
@@ -235,34 +216,7 @@ export function RepaySelectAmountFormBase({
               </View>
             </View>
           </Card>
-          <Card sx={{ padding: 16 }}>
-            <View
-              sx={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: 12
-              }}>
-              <Text
-                variant="body1"
-                sx={{ color: '$textPrimary', flexShrink: 0 }}>
-                Health score
-              </Text>
-              <View sx={{ flex: 1, alignItems: 'flex-end', gap: 2 }}>
-                <Text
-                  variant="body1"
-                  sx={{
-                    color: getHealthScoreColor(healthScoreAfterRepay),
-                    fontWeight: 500
-                  }}>
-                  {formatHealthScore(healthScoreAfterRepay)}
-                </Text>
-                <Text variant="caption" sx={{ color: '$textSecondary' }}>
-                  Liquidation at {'<'}1.0
-                </Text>
-              </View>
-            </View>
-          </Card>
+          <HealthScoreCard score={healthScoreAfterRepay} />
         </View>
       </View>
     </ScrollScreen>

@@ -62,15 +62,18 @@ export const getHealthRiskColor = ({
  * - >= 100: Rounded integer
  * - < 100: One decimal place
  */
-export const formatHealthScore = (score: number | undefined): string => {
+export const formatHealthScore = (
+  score: number | undefined,
+  fractionDigits = 1
+): string => {
   if (score === undefined || Number.isNaN(score)) {
     return '--'
   }
-  if (!Number.isFinite(score)) {
+  if (!Number.isFinite(score) || score > 1e10) {
     return '∞'
   }
   if (score >= 100) {
     return Math.round(score).toString()
   }
-  return score.toFixed(1)
+  return score.toFixed(fractionDigits)
 }
