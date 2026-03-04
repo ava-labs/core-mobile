@@ -144,6 +144,15 @@ export function CollapsibleTabList<T>({
     [baseContentContainerStyle, overrideProps]
   )
 
+  const maintainVisibleContentPosition = useMemo(
+    () => ({
+      // FlashList v2 keeps visible content anchored by default; for portfolio-style
+      // data swaps (for example account switch), that can shift offset unexpectedly.
+      disabled: true
+    }),
+    []
+  )
+
   if (shouldUseScrollView) {
     return (
       <CollapsibleTabs.ScrollView
@@ -170,6 +179,7 @@ export function CollapsibleTabList<T>({
       overrideProps={finalOverrideProps}
       contentContainerStyle={baseContentContainerStyle}
       refreshControl={refreshControl}
+      maintainVisibleContentPosition={maintainVisibleContentPosition}
       ListHeaderComponent={renderHeader}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}

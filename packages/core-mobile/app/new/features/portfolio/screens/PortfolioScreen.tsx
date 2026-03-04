@@ -483,24 +483,14 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
-  const previousAccountIdRef = useRef(activeAccount?.id)
-
   const handleScrollResync = useCallback(() => {
     tabViewRef.current?.scrollResync()
   }, [])
 
-  const scrollToTop = useCallback(() => {
-    tabViewRef.current?.scrollToTop()
-  }, [])
-
   useFocusEffect(
     useCallback(() => {
-      if (previousAccountIdRef.current !== activeAccount?.id) {
-        previousAccountIdRef.current = activeAccount?.id
-        scrollToTop()
-      }
       handleScrollResync()
-    }, [activeAccount?.id, handleScrollResync, scrollToTop])
+    }, [handleScrollResync])
   )
 
   const tabHeight = useMemo(() => {
