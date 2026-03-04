@@ -540,14 +540,22 @@ export const SwapScreen = (): JSX.Element => {
     }
 
     function autoSelectBtcb(): void {
-      if (
-        fromToken?.localId?.toLowerCase() !== TOKEN_IDS.BTC.toLowerCase() &&
-        fromToken?.internalId !== TOKEN_IDS.BTC
-      )
-        return
+      const fromIsBtc =
+        fromToken?.localId?.toLowerCase() === TOKEN_IDS.BTC.toLowerCase() ||
+        fromToken?.internalId === TOKEN_IDS.BTC
+      if (!fromIsBtc) return
+
+      // Skip if TO is already BTC.b — avoids overriding a valid selection
+      // or causing unnecessary state writes on re-renders.
+      const toIsBtcB =
+        toToken?.localId?.toLowerCase() === TOKEN_IDS.BTC_B.toLowerCase() ||
+        toToken?.internalId === TOKEN_IDS.BTC_B
+      if (toIsBtcB) return
 
       const btcb = [...swapList, ...tokensWithZeroBalance].find(
-        tk => tk.internalId === TOKEN_IDS.BTC_B
+        tk =>
+          tk.localId.toLowerCase() === TOKEN_IDS.BTC_B.toLowerCase() ||
+          tk.internalId === TOKEN_IDS.BTC_B
       )
       if (btcb) setToToken(btcb)
     }

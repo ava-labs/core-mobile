@@ -16,9 +16,9 @@ const STALE_TIME = 30 * 1000 // 30 seconds
 
 const tokenToKey = (token: Caip2IdAddressPair | InternalId): string => {
   if ('internalId' in token) {
-    return token.internalId
+    return token.internalId.toLowerCase()
   }
-  return `${token.caip2Id}:${token.address}`
+  return `${token.caip2Id.toLowerCase()}:${token.address.toLowerCase()}`
 }
 
 /**
