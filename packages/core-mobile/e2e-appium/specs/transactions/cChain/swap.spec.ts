@@ -24,10 +24,4 @@ describe('Swap on C-Chain', () => {
     await txPage.swapOnTrack()
     await txPage.verifySuccessToast()
   })
-
-  // it('Should swap from the deposit flow', async () => {
-  //   await bottomTabsPage.tapDepositTab()
-  //   await txPage.swap('AVAX', 'USDC', '0.001')
-  //   await txPage.verifySuccessToast()
-  // })
 })
