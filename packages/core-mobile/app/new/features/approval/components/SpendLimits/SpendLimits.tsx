@@ -96,7 +96,7 @@ export const SpendLimits = ({
       limitType === Limit.UNLIMITED ||
       (tokenValue !== undefined && tokenValue >= BigInt(MaxUint256.toString()))
     )
-      return ['∞', undefined]
+      return ['∞', `Unlimited ${selectedCurrency}`]
 
     if (!tokenValue || !tokenDecimals || !tokenSymbol)
       return [UNKNOWN_AMOUNT, undefined]

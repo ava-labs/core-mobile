@@ -30,7 +30,6 @@ import {
   TokenUnit,
   truncateAddress
 } from '@avalabs/core-utils-sdk'
-import { MaxUint256 } from 'ethers'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
@@ -229,7 +228,6 @@ export const Details = ({
 
   const renderCurrencyValue = useCallback(
     (value: bigint, decimals: number, s: string): JSX.Element => {
-      const isUnlimited = value >= BigInt(MaxUint256.toString())
       const marketToken = getMarketTokenBySymbol(s)
       return (
         <View sx={{ alignItems: 'flex-end' }}>
@@ -242,11 +240,9 @@ export const Details = ({
               color: valueTextColor
             }}
             testID="token_amount">
-            {isUnlimited
-              ? `Unlimited ${s}`
-              : `${new TokenUnit(value, decimals, s).toDisplay()} ${s}`}
+            {new TokenUnit(value, decimals, s).toDisplay()} {s}
           </Text>
-          {!isUnlimited && marketToken?.currentPrice !== undefined && (
+          {marketToken?.currentPrice !== undefined && (
             <Text
               variant="body1"
               numberOfLines={1}
