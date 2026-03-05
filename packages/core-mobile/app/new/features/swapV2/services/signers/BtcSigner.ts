@@ -3,7 +3,7 @@ import { BtcSigner } from '@avalabs/fusion-sdk'
 import { getBitcoinCaip2ChainId } from 'utils/caip2ChainIds'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import Logger from 'utils/Logger'
-import { RequestContext } from 'store/rpc'
+import { buildRequestContext } from '../../utils/buildRequestContext'
 
 /**
  * BTC Signer implementation for Fusion SDK
@@ -21,11 +21,7 @@ export function createBtcSigner(
     /**
      * Sign a Bitcoin transaction with inputs and outputs
      */
-    sign: async (
-      { inputs, outputs },
-      _,
-      { requiredSignatures, currentSignature }
-    ) => {
+    sign: async ({ inputs, outputs }, _, stepDetails) => {
       try {
         const result = await request({
           method: RpcMethod.BITCOIN_SIGN_TRANSACTION,
@@ -34,11 +30,7 @@ export function createBtcSigner(
             outputs
           },
           chainId,
-          context: {
-            // we only want to show confetti for the final approval
-            [RequestContext.CONFETTI_DISABLED]:
-              requiredSignatures > currentSignature
-          }
+          context: buildRequestContext(stepDetails)
         })
 
         return result as `0x${string}`

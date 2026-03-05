@@ -4,7 +4,7 @@ import { SolanaCaip2ChainId } from '@avalabs/core-chains-sdk'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { assert } from 'store/rpc/utils/assert'
 import Logger from 'utils/Logger'
-import { RequestContext } from 'store/rpc/types'
+import { buildRequestContext } from '../../utils/buildRequestContext'
 
 /**
  * SVM Signer implementation for Fusion SDK
@@ -23,7 +23,7 @@ export function createSvmSigner(
   return {
     signAndSend: async (
       { serializedTx, sendOptions, account },
-      { currentSignature, requiredSignatures }
+      stepDetails
     ) => {
       assert(serializedTx, 'Invalid transaction: missing "serializedTx"')
       assert(account, 'Invalid transaction: missing "account"')
@@ -39,11 +39,7 @@ export function createSvmSigner(
             }
           ],
           chainId,
-          context: {
-            // we only want to show confetti for the final approval
-            [RequestContext.CONFETTI_DISABLED]:
-              requiredSignatures > currentSignature
-          }
+          context: buildRequestContext(stepDetails)
         })
       } catch (err) {
         Logger.error('[fusion::svmSigner.signAndSend]', err)
