@@ -226,6 +226,7 @@ export type AnalyticsEvents = {
   SolanaSwapFeeAccountNotInitialized: { mint: string }
 
   // PUSH NOTIFICATIONS
+  PushNotificationPromptShown: undefined
   PushNotificationAccepted: undefined
   PushNotificationRejected: undefined
   PushNotificationPressed: {
