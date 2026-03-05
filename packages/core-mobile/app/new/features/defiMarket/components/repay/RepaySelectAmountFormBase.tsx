@@ -26,7 +26,7 @@ export type RepaySelectAmountFormBaseProps = {
     amount: TokenUnit
     isMaxRepay: boolean
   }) => Promise<string>
-  onSubmitted: () => void
+  onSubmitted: (params: { txHash: string; amount: TokenUnit }) => void
 }
 
 export function RepaySelectAmountFormBase({
@@ -122,8 +122,8 @@ export function RepaySelectAmountFormBase({
 
     try {
       setIsSubmitting(true)
-      await submit({ amount, isMaxRepay })
-      onSubmitted()
+      const txHash = await submit({ amount, isMaxRepay })
+      onSubmitted({ txHash, amount })
     } catch (error) {
       if (!isUserRejectedError(error)) {
         Logger.error('[RepaySelectAmountFormBase] repay failed', error)

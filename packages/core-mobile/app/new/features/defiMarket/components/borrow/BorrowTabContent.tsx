@@ -83,6 +83,7 @@ export const BorrowTabContent = ({
 
   const handleRepayBorrow = useCallback(
     (marketId: string) => {
+      AnalyticsService.capture('EarnRepayStart')
       navigate({
         pathname: '/borrowRepay',
         params: { marketId, protocol: selectedProtocol }

@@ -13,12 +13,18 @@ import { RepaySelectAmountFormBase } from './RepaySelectAmountFormBase'
 
 export type AaveRepaySelectAmountFormProps = {
   marketId: string
-  onSubmitted: () => void
+  onSubmitted: (params: { txHash: string; amount: TokenUnit }) => void
+  onConfirmed?: () => void
+  onReverted?: () => void
+  onError?: () => void
 }
 
 export function AaveRepaySelectAmountForm({
   marketId,
-  onSubmitted
+  onSubmitted,
+  onConfirmed,
+  onReverted,
+  onError
 }: AaveRepaySelectAmountFormProps): JSX.Element {
   const aaveSummary = useAaveBorrowPositionsSummary()
   const { getMarketTokenBySymbol } = useWatchlist()
@@ -36,7 +42,10 @@ export function AaveRepaySelectAmountForm({
   )
 
   const { aaveRepay } = useAaveRepay({
-    market: borrowPosition?.market
+    market: borrowPosition?.market,
+    onConfirmed,
+    onReverted,
+    onError
   })
 
   const formatInCurrency = useCallback(
