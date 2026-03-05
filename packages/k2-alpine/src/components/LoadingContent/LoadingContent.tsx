@@ -65,7 +65,6 @@ export const LoadingContent = ({
 
   return (
     <View
-      testID={isLoading ? 'loading_spinner_visible' : 'loading_spinner_hidden'}
       style={{
         gap: 8,
         flexDirection: 'row',

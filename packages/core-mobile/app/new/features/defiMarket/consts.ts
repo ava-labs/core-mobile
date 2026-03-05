@@ -27,8 +27,6 @@ export const AAVE_UI_INCENTIVES_DATA_PROVIDER_C_CHAIN_ADDRESS =
   '0x99732D5dA21f44f9e45e36eF9da4B1df2Eb0b28E' as const
 export const AAVE_WRAPPED_AVAX_GATEWAY_ADDRESS =
   '0x2825cE5921538d17cc15Ae00a8B24fF759C6CDaE' as const
-export const AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS =
-  '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7' as const
 export const AAVE_STAKED_AVAX_C_CHAIN_ADDRESS =
   '0x513c7E3a9c69cA3e22550eF58AC1C0088e918FFf' as const
 export const AAVE_PRICE_ORACLE_C_CHAIN_ADDRESS =
@@ -54,6 +52,8 @@ export const BENQI_LENS_C_CHAIN_ADDRESS =
   '0x15f30De066D21e4828D78A497d31c665a6162D2D' as const
 export const BENQI_COMPTROLLER_C_CHAIN_ADDRESS =
   '0x486Af39519B4Dc9a7fCcd318217352830E8AD9b4' as const
+export const BENQI_MAXIMILLION_C_CHAIN_ADDRESS =
+  '0xd78DEd803b28A5A9C860c2cc7A4d84F611aA4Ef8' as const
 export const BENQI_QI_TOKEN_DECIMALS = 8
 
 // Benqi reward types for claimReward function
@@ -77,6 +77,12 @@ export const APPROVE_GAS_AMOUNT = 60_000
 // https://snowtrace.io/tx/0x15145ac8601065c771df33a8dbf239b27a4e0f736dc0826ee229ec46dccab5a2?chainid=43114
 // https://snowtrace.io/tx/0x4454791ad6d1f3b1b276bd77a0847eabc6e5fe9ae8f7c6c79a3639e38b6159bc?chainid=43114
 export const DEPOSIT_ETH_GAS_AMOUNT = 200_000
+
+// Gas for repayETH (Aave Wrapped AVAX Gateway) - must reserve for native AVAX repay
+export const REPAY_ETH_GAS_AMOUNT = 200_000
+
+// Small buffer for max repay to avoid dust (rounding + interest accrual). Contract refunds excess.
+export const REPAY_ETH_DUST_BUFFER = 10_000_000_000n // 1e10 wei = 0.00000001 AVAX
 
 // Aave v3 GraphQL
 export const AAVE_V3_GQL_API_URL = 'https://api.v3.aave.com/graphql'

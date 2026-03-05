@@ -107,7 +107,5 @@ export default {
   southKorea: 'South Korea',
   cChainId: '43114',
   ethChainId: '1',
-  loadingSpinnerVisible: 'loading_spinner_visible',
-  loadingSpinnerHidden: 'loading_spinner_hidden',
   inProgress: 'In progress'
 }

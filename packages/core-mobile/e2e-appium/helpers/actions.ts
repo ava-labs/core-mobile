@@ -159,7 +159,11 @@ async function click(ele: ChainablePromiseElement) {
 
 async function dismissKeyboard(id = 'Return') {
   if (driver.isIOS) {
-    await click(selectors.getById(id))
+    try {
+      await click(selectors.getById(id))
+    } catch (e) {
+      await click(selectors.getById('Done'))
+    }
   } else {
     await driver.hideKeyboard()
   }
@@ -168,7 +172,11 @@ async function dismissKeyboard(id = 'Return') {
 
 async function tapEnterOnKeyboard(id = 'Return') {
   if (driver.isIOS) {
-    await click(selectors.getById(id))
+    try {
+      await click(selectors.getById(id))
+    } catch (e) {
+      await click(selectors.getById('Done'))
+    }
   } else {
     await driver.pressKeyCode(66)
   }
@@ -263,7 +271,11 @@ async function verifyText(text: string, ele: ChainablePromiseElement) {
   )
 }
 
-async function pasteText(inputElement: ChainablePromiseElement, text: string) {
+async function pasteText(
+  inputElement: ChainablePromiseElement,
+  text: string,
+  keyboardId = 'Return'
+) {
   const encodedText = Buffer.from(text, 'utf-8').toString('base64')
   if (driver.isIOS) {
     await driver.setClipboard(encodedText)
@@ -284,7 +296,7 @@ async function pasteText(inputElement: ChainablePromiseElement, text: string) {
     await tapXY(160, 650)
   }
 
-  await tapEnterOnKeyboard()
+  await tapEnterOnKeyboard(keyboardId)
 }
 
 async function tapXY(x: number, y: number) {

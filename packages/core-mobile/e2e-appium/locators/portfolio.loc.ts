@@ -9,6 +9,7 @@ export default {
   sort: 'sort_dropdown_btn',
   view: 'view_dropdown_btn',
   portfolioBalanceHeader: 'portfolio__balance_header',
+  loadingPortfolioBalanceHeader: 'loading_portfolio__balance_header',
   portfolioAccountName: 'portfolio__balance_header_account_name',
   activityTab: 'Activity',
   addToWatchlist: 'add_svg',

@@ -11,6 +11,24 @@ import {
 import { hexToBigInt, isHex } from 'viem'
 import { safeBigInt } from 'common/utils/safeBigInt'
 
+const toSpendLimit = (tokenApproval: TokenApproval): SpendLimit => {
+  const token = tokenApproval.token
+  if (token.type === TokenType.ERC20 && tokenApproval.value) {
+    const bn = isHex(tokenApproval.value)
+      ? hexToBigInt(tokenApproval.value)
+      : safeBigInt(tokenApproval.value, 0n)
+    if (bn >= BigInt(MaxUint256.toString())) {
+      return { limitType: Limit.UNLIMITED, value: undefined, tokenApproval }
+    }
+    return {
+      limitType: Limit.DEFAULT,
+      value: { bn, amount: bigIntToString(bn, token.decimals) },
+      tokenApproval
+    }
+  }
+  return { limitType: Limit.DEFAULT, tokenApproval }
+}
+
 export const useSpendLimits = (
   tokenApprovals: TokenApprovals | undefined
 ): {
@@ -28,31 +46,7 @@ export const useSpendLimits = (
       return
     }
 
-    const _spendLimits: SpendLimit[] = []
-
-    for (const tokenApproval of tokenApprovals.approvals) {
-      const token = tokenApproval.token
-      if (token.type === TokenType.ERC20 && tokenApproval.value) {
-        const defaultLimitBN = isHex(tokenApproval.value)
-          ? hexToBigInt(tokenApproval.value)
-          : safeBigInt(tokenApproval.value, 0n)
-        _spendLimits.push({
-          limitType: Limit.DEFAULT,
-          value: {
-            bn: defaultLimitBN,
-            amount: bigIntToString(defaultLimitBN, token.decimals)
-          },
-          tokenApproval
-        })
-      } else {
-        _spendLimits.push({
-          limitType: Limit.DEFAULT,
-          tokenApproval
-        })
-      }
-    }
-
-    setSpendLimits(_spendLimits)
+    setSpendLimits(tokenApprovals.approvals.map(toSpendLimit))
   }, [tokenApprovals])
 
   const canEdit = tokenApprovals !== undefined && tokenApprovals.isEditable

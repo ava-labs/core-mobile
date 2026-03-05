@@ -12,7 +12,6 @@ import {
   getListItemEnteringAnimation,
   getListItemExitingAnimation
 } from 'common/utils/animations'
-import { transactionSnackbar } from 'common/utils/toast'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import {
   LayoutChangeEvent,
@@ -82,9 +81,15 @@ export const BorrowTabContent = ({
     navigate({ pathname: '/borrow/onboarding' })
   }, [navigate])
 
-  const handleRepayBorrow = useCallback(() => {
-    transactionSnackbar.plain({ message: 'Repay flow is coming soon' })
-  }, [])
+  const handleRepayBorrow = useCallback(
+    (marketId: string) => {
+      navigate({
+        pathname: '/borrowRepay',
+        params: { marketId, protocol: selectedProtocol }
+      })
+    },
+    [navigate, selectedProtocol]
+  )
 
   const handlePressBorrow = useCallback(
     (marketId: string) => {
@@ -124,7 +129,7 @@ export const BorrowTabContent = ({
             borrowedAmountUsd={item.borrowedAmountUsd}
             width={CARD_WIDTH}
             onPress={() => handlePressBorrow(item.market.uniqueMarketId)}
-            onRepayPress={handleRepayBorrow}
+            onRepayPress={() => handleRepayBorrow(item.market.uniqueMarketId)}
           />
         )
       }

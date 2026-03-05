@@ -145,7 +145,7 @@ class OnboardingPage {
   }
 
   async enterRecoveryPhrase(recoveryPhrase: string) {
-    await actions.type(this.recoveryPhraseInput, recoveryPhrase)
+    await actions.pasteText(this.recoveryPhraseInput, recoveryPhrase, 'Done')
     await actions.tap(this.enterRecoveryPhraseTitle)
   }
 
@@ -212,9 +212,7 @@ class OnboardingPage {
 
 async verifyLoggedIn() {
     await actions.waitFor(commonElsPage.accountOne, 40000)
-    await actions.waitFor(commonElsPage.loadingSpinnerHidden)
-    await actions.isNotVisible(commonElsPage.inProgress)
-    await actions.isVisible(portfolioPage.portfolioTokenList)
+    await actions.waitFor(portfolioPage.portfolioBalanceHeader)
     console.log('Verified you are logged in')
   }
 

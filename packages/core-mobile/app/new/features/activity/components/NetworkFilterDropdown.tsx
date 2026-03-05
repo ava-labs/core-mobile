@@ -47,8 +47,7 @@ export const NetworkFilterDropdown = ({
           gap: 4
         }}
         size="large"
-        hitSlop={8}
-        testID="network_dropdown_btn">
+        hitSlop={8}>
         {title}
       </Chip>
     </DropdownMenu>
