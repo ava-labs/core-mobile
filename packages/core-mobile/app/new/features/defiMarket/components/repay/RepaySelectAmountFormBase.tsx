@@ -58,7 +58,8 @@ export function RepaySelectAmountFormBase({
 
   const calculateHealthScoreAfterRepay = useCallback(
     (repayAmount: TokenUnit): number | undefined => {
-      if (!currentHealthScore) return currentHealthScore
+      if (currentHealthScore === undefined || Number.isNaN(currentHealthScore))
+        return currentHealthScore
 
       if (totalDebtUsd <= 0) return undefined
 
@@ -102,10 +103,10 @@ export function RepaySelectAmountFormBase({
 
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {
-      if (!maxRepayAmount || amt.gt(maxRepayAmount)) {
+      if (maxRepayAmount && amt.gt(maxRepayAmount)) {
         throw new Error('The specified amount exceeds available to repay')
       }
-      if (!borrowedAmountUnit || amt.gt(borrowedAmountUnit)) {
+      if (borrowedAmountUnit && amt.gt(borrowedAmountUnit)) {
         throw new Error('The specified amount exceeds your debt')
       }
     },
