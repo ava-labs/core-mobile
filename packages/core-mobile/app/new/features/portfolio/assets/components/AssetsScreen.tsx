@@ -263,6 +263,7 @@ const AssetsScreen: FC<Props> = ({
 
   return (
     <Animated.View
+      testID="portfolio_token_list"
       entering={getListItemEnteringAnimation(10)}
       style={{
         flex: 1

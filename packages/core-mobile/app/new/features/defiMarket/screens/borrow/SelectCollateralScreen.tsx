@@ -251,6 +251,7 @@ export const SelectCollateralScreen = (): JSX.Element => {
     return (
       <View sx={{ gap: 12 }}>
         <Button
+          testID="next_btn"
           type="primary"
           size="large"
           disabled={!hasSelectedCollateral || filteredDeposits.length === 0}

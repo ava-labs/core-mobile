@@ -105,7 +105,6 @@ export function CollapsibleTabList<T>({
   extraData,
   masonry,
   listKey,
-  testID,
   overrideProps,
   contentContainerStyle: additionalContentStyle,
   nestedScrollEnabled,
@@ -165,7 +164,6 @@ export function CollapsibleTabList<T>({
   return (
     <CollapsibleTabs.FlashList
       key={listKey}
-      testID={testID}
       data={data}
       extraData={extraData}
       keyExtractor={keyExtractor}

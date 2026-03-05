@@ -106,6 +106,7 @@ export const BorrowSelectAmountFormBase = ({
   const renderFooter = useCallback(() => {
     return (
       <Button
+        testID={canSubmit ? 'next_btn' : 'next_btn_disabled'}
         size="large"
         type="primary"
         onPress={handleSubmit}

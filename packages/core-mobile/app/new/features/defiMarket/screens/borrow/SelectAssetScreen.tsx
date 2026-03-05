@@ -80,6 +80,7 @@ export const SelectAssetScreen = (): JSX.Element => {
             />
             <View sx={{ flex: 1 }}>
               <Text
+                testID={`borrow_asset__${item.asset.symbol}`}
                 variant="body2"
                 sx={{ color: theme.colors.$textPrimary, fontWeight: 500 }}>
                 {item.asset.symbol}

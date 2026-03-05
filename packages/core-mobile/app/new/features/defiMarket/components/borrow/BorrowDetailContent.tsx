@@ -218,7 +218,11 @@ export function BorrowDetailContent({
   const renderFooter = useCallback(() => {
     return (
       <View sx={{ marginBottom: bottom, padding: 16 }}>
-        <Button type="primary" size="large" onPress={handleRepay}>
+        <Button
+          testID="borrow_detail_repay_btn"
+          type="primary"
+          size="large"
+          onPress={handleRepay}>
           Repay
         </Button>
       </View>

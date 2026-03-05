@@ -270,14 +270,6 @@ class CommonElsPage {
     return selectors.getBySomeText(commonEls.successfullyAdded)
   }
 
-  get loadingSpinnerVisible() {
-    return selectors.getById(commonEls.loadingSpinnerVisible)
-  }
-
-  get loadingSpinnerHidden() {
-    return selectors.getById(commonEls.loadingSpinnerHidden)
-  }
-
   get inProgress() {
     return selectors.getByText(commonEls.inProgress)
   }
