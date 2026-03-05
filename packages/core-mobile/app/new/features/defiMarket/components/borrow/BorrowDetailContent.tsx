@@ -9,6 +9,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import React, { useCallback, useMemo } from 'react'
 import { formatUnits } from 'viem'
 import Animated from 'react-native-reanimated'
@@ -82,6 +83,7 @@ export function BorrowDetailContent({
 
   const handleRepay = useCallback(() => {
     if (!borrowPosition) return
+    AnalyticsService.capture('EarnRepayStart')
     router.push({
       pathname: '/borrowRepay',
       params: {
