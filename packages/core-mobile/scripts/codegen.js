@@ -17,7 +17,7 @@ function main() {
 
   // contracts
   run(
-    'typechain --target=ethers-v6 --out-dir app/contracts/openzeppelin ' +
+    'npx typechain --target=ethers-v6 --out-dir app/contracts/openzeppelin ' +
       './node_modules/@openzeppelin/contracts/build/contracts/ERC20.json ' +
       './node_modules/@openzeppelin/contracts/build/contracts/ERC721.json ' +
       './node_modules/@openzeppelin/contracts/build/contracts/ERC1155.json'
