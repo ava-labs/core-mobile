@@ -126,9 +126,7 @@ describe('handleAfterLoginFlows - promptEnableNotificationsIfNeeded', () => {
       ;(selectIsEnableNotificationPromptBlocked as jest.Mock).mockReturnValue(
         true
       )
-      mockGetNotificationSettings.mockResolvedValue(
-        AuthorizationStatus.DENIED
-      )
+      mockGetNotificationSettings.mockResolvedValue(AuthorizationStatus.DENIED)
 
       const listenerApi = createListenerApi()
       await handleAfterLoginFlows(action, listenerApi)
@@ -262,9 +260,7 @@ describe('handleAfterLoginFlows - promptEnableNotificationsIfNeeded', () => {
 
   describe('"Turn on" button', () => {
     it('should open system settings and resolve when status is DENIED (previously denied)', async () => {
-      mockGetNotificationSettings.mockResolvedValue(
-        AuthorizationStatus.DENIED
-      )
+      mockGetNotificationSettings.mockResolvedValue(AuthorizationStatus.DENIED)
       ;(selectHasBeenViewedOnce as jest.Mock).mockReturnValue(() => false)
       ;(selectIsEnableNotificationPromptBlocked as jest.Mock).mockReturnValue(
         false
