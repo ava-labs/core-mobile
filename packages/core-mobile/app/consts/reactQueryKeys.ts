@@ -51,6 +51,9 @@ export enum ReactQueryKeys {
   FUSION_SUPPORTED_CHAINS = 'fusionSupportedChains',
   FUSION_TOKENS = 'fusionTokens',
 
+  // token aggregator
+  TOKEN_LOOKUP_WITH_PRICE = 'tokenLookupWithPrice',
+
   // deposit
   AAVE_AVAILABLE_MARKETS = 'aaveAvailableMarkets',
   BENQI_AVAILABLE_MARKETS = 'benqiAvailableMarkets',

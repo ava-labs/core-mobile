@@ -1,7 +1,19 @@
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { TokenType } from '@avalabs/vm-module-types'
+import { MaxUint256 } from 'ethers'
 import { Limit, SpendLimit } from 'hooks/useSpendLimits'
 import { hexToBigInt } from 'viem'
+
+const MAX_UINT256 = BigInt(MaxUint256.toString())
+
+const formatTokenAmount = (
+  value: bigint,
+  decimals: number,
+  symbol: string
+): string =>
+  value >= MAX_UINT256
+    ? 'Unlimited'
+    : new TokenUnit(value, decimals, symbol).toDisplay()
 
 export const getDefaultSpendLimitValue = (
   spendLimit: SpendLimit
@@ -13,11 +25,8 @@ export const getDefaultSpendLimitValue = (
   }
 
   if (spendLimit?.tokenApproval?.value) {
-    return new TokenUnit(
-      hexToBigInt(spendLimit.tokenApproval.value as `0x${string}`),
-      token.decimals,
-      token.symbol
-    ).toDisplay()
+    const value = hexToBigInt(spendLimit.tokenApproval.value as `0x${string}`)
+    return formatTokenAmount(value, token.decimals, token.symbol)
   }
 }
 
@@ -38,19 +47,12 @@ export const getSpendLimitValueBasedOnCurrentLimitType = (
     spendLimit.limitType === Limit.DEFAULT &&
     spendLimit?.tokenApproval?.value
   ) {
-    return new TokenUnit(
-      hexToBigInt(spendLimit.tokenApproval.value as `0x${string}`),
-      token.decimals,
-      token.symbol
-    ).toDisplay()
+    const value = hexToBigInt(spendLimit.tokenApproval.value as `0x${string}`)
+    return formatTokenAmount(value, token.decimals, token.symbol)
   }
 
   if (spendLimit.limitType === Limit.CUSTOM && spendLimit?.value?.bn) {
-    return new TokenUnit(
-      spendLimit.value.bn,
-      token.decimals,
-      token.symbol
-    ).toDisplay()
+    return formatTokenAmount(spendLimit.value.bn, token.decimals, token.symbol)
   }
 }
 

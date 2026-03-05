@@ -22,6 +22,7 @@ type ETHSendTransactionParams = {
   contractAddress: Address
   encodedData: Hex
   value?: Hex // Optional value for native token transfers (e.g., AVAX)
+  gas?: Hex // Optional gas limit override to skip automatic estimation
   requestId?: string // Optional identifier to track which request completed in callbacks
   confettiDisabled?: boolean // Disable confetti animation on transaction success
 }
@@ -66,6 +67,7 @@ export const useETHSendTransaction = ({
       contractAddress,
       encodedData,
       value,
+      gas,
       requestId,
       confettiDisabled
     }: ETHSendTransactionParams) => {
@@ -93,7 +95,8 @@ export const useETHSendTransaction = ({
               from: accountAddress,
               to: contractAddress,
               data: encodedData,
-              ...(value && { value })
+              ...(value && { value }),
+              ...(gas && { gas })
             }
           ],
           chainId,

@@ -3,6 +3,7 @@ import { GroupList, Text, View } from '@avalabs/k2-alpine'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { MaxUint256 } from 'ethers'
 import { Limit, SpendLimit } from 'hooks/useSpendLimits'
 import { DropdownGroup } from 'new/common/components/DropdownMenu'
 import { DropdownMenuIcon } from 'new/common/components/DropdownMenuIcons'
@@ -91,7 +92,11 @@ export const SpendLimits = ({
   const marketToken = useMarketTokenBySymbol({ symbol: tokenSymbol })
 
   const [amount, amountInCurrency] = useMemo(() => {
-    if (limitType === Limit.UNLIMITED) return ['∞', undefined]
+    if (
+      limitType === Limit.UNLIMITED ||
+      (tokenValue !== undefined && tokenValue >= BigInt(MaxUint256.toString()))
+    )
+      return ['∞', `Unlimited ${selectedCurrency}`]
 
     if (!tokenValue || !tokenDecimals || !tokenSymbol)
       return [UNKNOWN_AMOUNT, undefined]

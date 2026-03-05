@@ -1,10 +1,8 @@
 import { DefiMarket } from 'features/defiMarket/types'
 import { useCallback } from 'react'
 import { Address, encodeFunctionData } from 'viem'
-import {
-  AAVE_POOL_C_CHAIN_ADDRESS,
-  AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS
-} from 'features/defiMarket/consts'
+import { AAVE_POOL_C_CHAIN_ADDRESS } from 'features/defiMarket/consts'
+import { WAVAX_ADDRESS } from 'features/swap/consts'
 import { AAVE_AVALANCHE3_POOL_PROXY_ABI } from 'features/defiMarket/abis/aaveAvalanche3PoolProxy'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useSelector } from 'react-redux'
@@ -73,7 +71,7 @@ export const useAaveBorrowErc20 = ({
 
       // For native AVAX market, borrow WAVAX
       const assetAddress = (market.asset.contractAddress ??
-        AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS) as Address
+        WAVAX_ADDRESS) as Address
 
       // borrow(asset, amount, interestRateMode, referralCode, onBehalfOf)
       // interestRateMode: 2 = variable rate (AAVE v3 only supports variable)

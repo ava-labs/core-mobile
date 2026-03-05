@@ -22,7 +22,8 @@ export const Logo: FC<LogoProps> = ({
   borderColor,
   size = DEFAULT_SIZE,
   backgroundColor,
-  borderRadius
+  borderRadius,
+  testID
 }) => {
   const [failedToLoad, setFailedToLoad] = useState(false)
 
@@ -60,7 +61,7 @@ export const Logo: FC<LogoProps> = ({
       }}
       onLoad={() => setFailedToLoad(false)}
       onError={() => setFailedToLoad(true)}
-      testID="avatar__logo_avatar"
+      testID={testID}
     />
   ) : (
     <Image
@@ -79,7 +80,7 @@ export const Logo: FC<LogoProps> = ({
       }}
       onLoad={() => setFailedToLoad(false)}
       onError={() => setFailedToLoad(true)}
-      testID="avatar__logo_avatar"
+      testID={testID}
     />
   )
 }

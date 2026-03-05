@@ -5,10 +5,11 @@ import { WAVAX_ADDRESS, WETH_ADDRESS } from '../../consts'
 export const getWrapUnwrapAbi = (
   tokenAddress: string
 ): typeof WETH_ABI | typeof WAVAX_ABI | undefined => {
-  if (tokenAddress === WETH_ADDRESS) {
+  const addr = tokenAddress.toLowerCase()
+  if (addr === WETH_ADDRESS.toLowerCase()) {
     return WETH_ABI
   }
-  if (tokenAddress === WAVAX_ADDRESS) {
+  if (addr === WAVAX_ADDRESS.toLowerCase()) {
     return WAVAX_ABI
   }
   return undefined
