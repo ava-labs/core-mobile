@@ -15,6 +15,7 @@ import {
 } from '@avalabs/unified-asset-transfer'
 import type { FeatureFlags } from 'services/posthog/types'
 import Logger from 'utils/Logger'
+import { fusionErrors } from '../utils/fusionErrors'
 import { MARKR_API_URL, MARKR_EVM_PARTNER_ID } from '../consts'
 import { isTransferInProgress } from '../utils/transferStatus'
 import type {
@@ -23,8 +24,6 @@ import type {
   IFusionService,
   QuoterParams
 } from './types'
-
-const QUOTE_TIMEOUT_MS = 15_000 // 15 seconds
 
 /**
  * Service class for managing Fusion SDK TransferManager
@@ -41,7 +40,7 @@ class FusionService implements IFusionService {
    */
   private get transferManager(): TransferManager {
     if (!this.#transferManager) {
-      throw new Error('Fusion service is not initialized')
+      throw fusionErrors.serviceNotInitialized()
     }
     return this.#transferManager
   }
@@ -115,7 +114,7 @@ class FusionService implements IFusionService {
           } satisfies LombardServiceInitializer)
           break
         default:
-          throw new Error(`Unknown service type: ${serviceType}`)
+          throw fusionErrors.unknownServiceType(serviceType)
       }
     }
 
@@ -236,8 +235,7 @@ class FusionService implements IFusionService {
    */
   getQuoter(params: QuoterParams): QuoterInterface | null {
     try {
-      const quoter = this.transferManager.getQuoter(params, 
-        { quoteTimeoutMs: QUOTE_TIMEOUT_MS })
+      const quoter = this.transferManager.getQuoter(params)
       Logger.info('Quoter instance created successfully')
       return quoter
     } catch (error) {
