@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { LocalTokenWithBalance } from 'store/balance'
 import Logger from 'utils/Logger'
 import { NetworkWithCaip2ChainId } from 'store/network'
 import FusionService from '../services/FusionService'
 import { toSwappableAsset, toChain } from '../utils/fusionTypeConverters'
+import { fusionErrors } from '../utils/fusionErrors'
 import {
   useBestQuote,
   useAllQuotes,
@@ -19,6 +20,7 @@ interface UseQuoteStreamingParams {
   fromAddress: string | undefined
   toAddress: string | undefined
   slippageBps: number | undefined
+  onNoQuotesError?: (retry: () => void) => void
 }
 
 interface UseQuoteStreamingResult {
@@ -41,7 +43,8 @@ export function useQuoteStreaming(
     fromAmount,
     fromAddress,
     toAddress,
-    slippageBps
+    slippageBps,
+    onNoQuotesError
   } = params
 
   // Subscribe to FusionService ready state
@@ -52,6 +55,8 @@ export function useQuoteStreaming(
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
+  const [retryCount, setRetryCount] = useState(0)
+  const retry = useCallback(() => setRetryCount(c => c + 1), [])
 
   // Create Quoter instance when all required params are available
   // Returns {quoter, error} to keep memoization pure (no side effects)
@@ -76,6 +81,8 @@ export function useQuoteStreaming(
     }
 
     try {
+      Logger.info('Creating Quoter instance', { attempt: retryCount + 1 })
+
       // Convert app types to SDK types
       const sourceAsset = toSwappableAsset(fromToken)
       const targetAsset = toSwappableAsset(toToken)
@@ -114,7 +121,8 @@ export function useQuoteStreaming(
     fromAmount,
     fromAddress,
     toAddress,
-    slippageBps
+    slippageBps,
+    retryCount
   ])
 
   // Subscribe to quote stream
@@ -170,13 +178,14 @@ export function useQuoteStreaming(
         }
         case 'done':
           setIsLoading(false)
-          if (data.reason === 'no-eligible-services') {
-            setError(
-              new Error(
-                'No swap routes available.\nPlease try a different token pair!'
-              )
-            )
+          if (data.reason === 'no-quotes') {
+            setError(fusionErrors.noQuotes())
+            onNoQuotesError?.(retry)
           }
+          if (data.reason === 'no-eligible-services') {
+            setError(fusionErrors.noEligibleServices())
+          }
+
           break
       }
     })
@@ -184,7 +193,7 @@ export function useQuoteStreaming(
     return () => {
       unsubscribe()
     }
-  }, [quoterResult, setBestQuote, setAllQuotes])
+  }, [quoterResult, setBestQuote, setAllQuotes, onNoQuotesError, retry])
 
   return {
     isLoading,

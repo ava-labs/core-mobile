@@ -78,6 +78,10 @@ type CollapsibleTabListProps<T> = {
    * Override props for the FlashList
    */
   overrideProps?: FlashListProps<T>['overrideProps']
+  /**
+   * FlashList visible-content anchoring behavior
+   */
+  maintainVisibleContentPosition?: FlashListProps<T>['maintainVisibleContentPosition']
 }
 
 /**
@@ -104,7 +108,8 @@ export function CollapsibleTabList<T>({
   overrideProps,
   contentContainerStyle: additionalContentStyle,
   nestedScrollEnabled,
-  removeClippedSubviews
+  removeClippedSubviews,
+  maintainVisibleContentPosition
 }: CollapsibleTabListProps<T>): JSX.Element {
   const header = useHeaderMeasurements()
   const collapsibleHeaderHeight = header?.height ?? 0
@@ -168,6 +173,7 @@ export function CollapsibleTabList<T>({
       overrideProps={finalOverrideProps}
       contentContainerStyle={baseContentContainerStyle}
       refreshControl={refreshControl}
+      maintainVisibleContentPosition={maintainVisibleContentPosition}
       ListHeaderComponent={renderHeader}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}

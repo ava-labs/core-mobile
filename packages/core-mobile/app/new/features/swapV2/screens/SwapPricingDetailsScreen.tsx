@@ -6,6 +6,7 @@ import {
   Image,
   Separator,
   Text,
+  Tooltip,
   TouchableOpacity,
   useTheme,
   View
@@ -18,6 +19,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { FlatList } from 'react-native-gesture-handler'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import { useSwapRate } from '../hooks/useSwapRate'
+import { useQuoteFees } from '../hooks/useQuoteFees'
 import { AUTO_QUOTE_ID } from '../consts'
 import type { Quote } from '../types'
 
@@ -45,6 +47,7 @@ export const SwapPricingDetailsScreen = ({
   const [accordionResetKey, setAccordionResetKey] = useState(0)
 
   const { formatCurrency } = useFormatCurrency()
+  const totalFees = useQuoteFees(selectedQuote?.fees)
 
   const formatInCurrency = useCallback(
     (
@@ -195,13 +198,39 @@ export const SwapPricingDetailsScreen = ({
       return []
     }
 
-    return [
+    const items: GroupListItem[] = [
       {
         title: 'Rate',
         value: `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${toToken.symbol}`
       }
     ]
-  }, [fromToken, toToken, rate])
+
+    if (totalFees !== undefined) {
+      const breakdownDescription = totalFees.breakdown
+        .map(item =>
+          item.fiatAmount != null
+            ? `${item.name}: ${formatCurrency({
+                amount: item.fiatAmount,
+                showLessThanThreshold: true
+              })}`
+            : `${item.name}: ${item.tokenAmount}`
+        )
+        .join('\n')
+
+      items.push({
+        title: totalFees.breakdown.length === 1 ? 'Fee' : 'Fees',
+        rightIcon: (
+          <Tooltip title="Fee Breakdown" description={breakdownDescription} />
+        ),
+        value: formatCurrency({
+          amount: totalFees.total,
+          showLessThanThreshold: true
+        })
+      })
+    }
+
+    return items
+  }, [fromToken, toToken, rate, totalFees, formatCurrency])
 
   const providerData = useMemo(() => {
     const items: GroupListItem[] = []
@@ -210,30 +239,33 @@ export const SwapPricingDetailsScreen = ({
       return items
     }
 
+    const haveMultipleQuotes = allQuotes.length > 1
     items.push({
       title: 'Provider',
       value: !userQuote
         ? `Auto • ${selectedQuote.aggregator.name}`
         : `${selectedQuote.aggregator.name}`,
-      expanded: isAccordionExpanded,
-      accordion: (
-        <FlatList
-          data={[
-            {
-              ...bestQuote,
-              aggregator: {
-                ...bestQuote.aggregator,
-                id: AUTO_QUOTE_ID,
-                name: 'Auto'
-              }
-            } as Quote,
-            ...allQuotes
-          ]}
-          keyExtractor={(item): string => item.aggregator.id}
-          renderItem={item => renderItem(item.item, item.index)}
-          scrollEnabled={false}
-        />
-      )
+      ...(haveMultipleQuotes && {
+        expanded: isAccordionExpanded,
+        accordion: (
+          <FlatList
+            data={[
+              {
+                ...bestQuote,
+                aggregator: {
+                  ...bestQuote.aggregator,
+                  id: AUTO_QUOTE_ID,
+                  name: 'Auto'
+                }
+              } as Quote,
+              ...allQuotes
+            ]}
+            keyExtractor={(item): string => item.aggregator.id}
+            renderItem={item => renderItem(item.item, item.index)}
+            scrollEnabled={false}
+          />
+        )
+      })
     })
 
     return items

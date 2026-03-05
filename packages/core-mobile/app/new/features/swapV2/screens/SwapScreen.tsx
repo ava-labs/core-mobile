@@ -40,7 +40,9 @@ import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
 import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio/hooks/useTokensWithZeroBalanceByNetworksForAccount'
 import { selectActiveAccount } from 'store/account'
 import Logger from 'utils/Logger'
+import { TOKEN_IDS } from 'consts/tokenIds'
 import { SwapStatus, useSwapContext } from '../contexts/SwapContext'
+import { FusionQuoteError, fusionErrors } from '../utils/fusionErrors'
 import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
@@ -84,7 +86,8 @@ export const SwapScreen = (): JSX.Element => {
   const [maxFromValue, setMaxFromValue] = useState<bigint | undefined>()
   const [fromTokenValue, setFromTokenValue] = useState<bigint>()
   const [toTokenValue, setToTokenValue] = useState<bigint>()
-  const [localError, setLocalError] = useState<string>('')
+  const [validationError, setValidationError] =
+    useState<FusionQuoteError | null>(null)
   const cChainNetwork = useCChainNetwork()
   const solanaNetwork = useSolanaNetwork()
   const activeAccount = useSelector(selectActiveAccount)
@@ -102,17 +105,15 @@ export const SwapScreen = (): JSX.Element => {
     () => getButtonBackgroundColor('secondary', theme),
     [theme]
   )
-  const errorMessage = useMemo(
-    () => localError || quoteError?.message,
-    [localError, quoteError]
-  )
 
   // userQuote takes precedence over bestQuote
   const activeQuote = userQuote ?? bestQuote
   Logger.info('activeQuote', activeQuote)
 
+  const activeError = validationError ?? quoteError
+
   const canSwap: boolean =
-    !localError && !quoteError && !!fromToken && !!toToken && !!activeQuote
+    !activeError && !!fromToken && !!toToken && !!activeQuote
 
   const isSwapping = swapStatus === SwapStatus.Swapping
 
@@ -122,9 +123,13 @@ export const SwapScreen = (): JSX.Element => {
     // Fusion SDK Quote has partnerFeeBps directly
     const feeBps = activeQuote.partnerFeeBps
 
-    if (!feeBps) return
+    const partnerName = activeQuote.fees?.find(
+      fee => fee.type === 'partner'
+    )?.name
 
-    return `Quote includes a ${basisPointsToPercentage(feeBps)} Core fee`
+    if (!feeBps || !partnerName) return
+
+    return `Quote includes a ${basisPointsToPercentage(feeBps)} ${partnerName}`
   }, [activeQuote])
 
   const updateMissingTokenPrice = useCallback(
@@ -148,16 +153,16 @@ export const SwapScreen = (): JSX.Element => {
   }, [toToken, updateMissingTokenPrice])
 
   const validateInputs = useCallback(() => {
-    if (fromTokenValue && fromTokenValue === 0n) {
-      setLocalError('Please enter an amount')
+    if (fromTokenValue !== undefined && fromTokenValue === 0n) {
+      setValidationError(fusionErrors.enterAmount())
     } else if (
       maxFromValue !== undefined &&
       fromTokenValue !== undefined &&
       fromTokenValue > maxFromValue
     ) {
-      setLocalError('Amount exceeds available balance')
+      setValidationError(fusionErrors.exceedsBalance())
     } else {
-      setLocalError('')
+      setValidationError(null)
     }
   }, [fromTokenValue, maxFromValue])
 
@@ -189,7 +194,7 @@ export const SwapScreen = (): JSX.Element => {
           token.name === toToken?.name && token.symbol === toToken?.symbol
       )
     ) {
-      setLocalError(`You don't have any ${toToken?.symbol} token for swap`)
+      setValidationError(fusionErrors.noDestinationToken(toToken?.symbol ?? ''))
       return
     }
 
@@ -384,7 +389,7 @@ export const SwapScreen = (): JSX.Element => {
           onBlur={() => setIsInputFocused(false)}
           onSelectToken={handleSelectFromToken}
           maximum={fromToken?.balance}
-          valid={!localError}
+          valid={!validationError}
         />
       </View>
     )
@@ -395,7 +400,7 @@ export const SwapScreen = (): JSX.Element => {
     handleSelectFromToken,
     getNetwork,
     fromToken,
-    localError,
+    validationError,
     fromTokenValue,
     isSwapping
   ])
@@ -460,22 +465,13 @@ export const SwapScreen = (): JSX.Element => {
       return items
     }
 
-    const haveMultipleQuotes = allQuotes.length > 1
     if (fromToken && toToken && rate) {
-      if (haveMultipleQuotes) {
-        items.push({
-          title: 'Pricing',
-          value: `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${
-            toToken.symbol
-          }`,
-          onPress: handleSelectPricingDetails
-        })
-      } else {
-        items.push({
-          title: 'Rate',
-          value: `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${toToken.symbol}`
-        })
-      }
+      const haveMultipleQuotes = allQuotes.length > 1
+      items.push({
+        title: haveMultipleQuotes ? 'Pricing' : 'Rate',
+        value: `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${toToken.symbol}`,
+        onPress: handleSelectPricingDetails
+      })
     }
 
     if (showFeesAndSlippage) {
@@ -527,7 +523,10 @@ export const SwapScreen = (): JSX.Element => {
   const prevToRef = useRef(toToken)
 
   useEffect(() => {
-    if (fromToken && toToken && fromToken.localId === toToken.localId) {
+    function clearSameToken(): void {
+      if (!(fromToken && toToken && fromToken.localId === toToken.localId))
+        return
+
       if (prevFromRef.current !== fromToken) {
         setToToken(undefined)
       } else if (prevToRef.current !== toToken) {
@@ -537,11 +536,45 @@ export const SwapScreen = (): JSX.Element => {
       setAmount(undefined)
       setToTokenValue(undefined)
       setFromTokenValue(undefined)
+
+      prevFromRef.current = fromToken
+      prevToRef.current = toToken
     }
 
-    prevFromRef.current = fromToken
-    prevToRef.current = toToken
-  }, [fromToken, toToken, setToToken, setFromToken, setAmount])
+    function autoSelectBtcb(): void {
+      const fromIsBtc =
+        fromToken?.localId?.toLowerCase() === TOKEN_IDS.BTC.toLowerCase() ||
+        fromToken?.internalId === TOKEN_IDS.BTC
+      if (!fromIsBtc) return
+
+      // Skip if TO is already BTC.b — avoids overriding a valid selection
+      // or causing unnecessary state writes on re-renders.
+      const toIsBtcB =
+        toToken?.localId?.toLowerCase() === TOKEN_IDS.BTC_B.toLowerCase() ||
+        toToken?.internalId === TOKEN_IDS.BTC_B
+      if (toIsBtcB) return
+
+      const btcb = [...swapList, ...tokensWithZeroBalance].find(
+        tk =>
+          tk.localId.toLowerCase() === TOKEN_IDS.BTC_B.toLowerCase() ||
+          tk.internalId === TOKEN_IDS.BTC_B
+      )
+      if (btcb) setToToken(btcb)
+    }
+
+    clearSameToken()
+    // auto select BTC.b needs to run after clearSameToken so the auto-select can
+    // override any same-token clear (e.g. BTC.b→BTC then switching FROM to BTC).
+    autoSelectBtcb()
+  }, [
+    fromToken,
+    toToken,
+    setToToken,
+    setFromToken,
+    setAmount,
+    swapList,
+    tokensWithZeroBalance
+  ])
 
   // Validate token pair compatibility - clear TO token if incompatible with FROM chain
   const { isValidDestination } = useSupportedChains()
@@ -559,12 +592,12 @@ export const SwapScreen = (): JSX.Element => {
     if (!isValid) {
       // Clear incompatible TO token
       setToToken(undefined)
-      setLocalError(
-        `Cannot swap from ${fromToken.symbol} network to ${toToken.symbol} network. Please select a different token.`
+      setValidationError(
+        fusionErrors.incompatibleNetworks(fromToken.symbol, toToken.symbol)
       )
     } else {
       // Clear error if tokens are compatible
-      setLocalError('')
+      setValidationError(null)
     }
   }, [fromToken, toToken, isValidDestination, setToToken])
 
@@ -575,6 +608,38 @@ export const SwapScreen = (): JSX.Element => {
   }, [fromTokenValue])
 
   usePreventScreenRemoval(isSwapping)
+
+  const renderError = useCallback(() => {
+    if (!activeError) return null
+
+    return (
+      <Animated.View
+        entering={FadeIn}
+        exiting={FadeOut}
+        style={{
+          alignItems: 'center',
+          marginVertical: 8,
+          width: '85%',
+          alignSelf: 'center'
+        }}>
+        <Text
+          testID="error_msg"
+          variant="caption"
+          sx={{ color: '$textDanger', textAlign: 'center' }}>
+          {activeError.message}
+        </Text>
+      </Animated.View>
+    )
+  }, [activeError])
+
+  const renderPartnerFee = useCallback(() => {
+    if (coreFeeMessage === undefined) return null
+    return (
+      <Text variant="caption" sx={{ marginTop: 6, alignSelf: 'center' }}>
+        {coreFeeMessage}
+      </Text>
+    )
+  }, [coreFeeMessage])
 
   const renderFooter = useCallback(() => {
     return (
@@ -647,29 +712,10 @@ export const SwapScreen = (): JSX.Element => {
         {renderToSection()}
       </Animated.View>
 
-      {errorMessage && (
-        <Animated.View entering={FadeIn} exiting={FadeOut}>
-          <Text
-            testID="error_msg"
-            variant="caption"
-            sx={{
-              color: '$textDanger',
-              alignSelf: 'center',
-              marginVertical: 8,
-              width: '85%',
-              textAlign: 'center'
-            }}>
-            {errorMessage}
-          </Text>
-        </Animated.View>
-      )}
+      {renderError()}
       <View style={{ marginTop: 24 }}>
         <GroupList data={data} separatorMarginRight={16} />
-        {coreFeeMessage !== undefined && (
-          <Text variant="caption" sx={{ marginTop: 6, alignSelf: 'center' }}>
-            {coreFeeMessage}
-          </Text>
-        )}
+        {renderPartnerFee()}
       </View>
     </ScrollScreen>
   )

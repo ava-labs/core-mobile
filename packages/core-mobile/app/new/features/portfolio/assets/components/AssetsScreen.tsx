@@ -8,7 +8,7 @@ import { Space } from 'common/components/Space'
 import { ViewOption } from 'common/types'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useAccountBalanceSummary } from 'features/portfolio/hooks/useAccountBalanceSummary'
-import React, { FC, memo, useCallback } from 'react'
+import React, { FC, memo, useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
@@ -30,6 +30,7 @@ interface Props {
   goToTokenManagement: () => void
   goToBuy: () => void
   onScrollResync: () => void
+  onScrollToTop: () => void
 }
 
 const AssetsScreen: FC<Props> = ({
@@ -37,7 +38,8 @@ const AssetsScreen: FC<Props> = ({
   goToTokenDetail,
   goToTokenManagement,
   goToBuy,
-  onScrollResync
+  onScrollResync,
+  onScrollToTop
 }): JSX.Element => {
   const { onResetFilter, data, filter, sort, view, refetch, isRefetching } =
     useAssetsFilterAndSort()
@@ -65,6 +67,38 @@ const AssetsScreen: FC<Props> = ({
       view.onSelected(value)
     },
     [onScrollResync, view, goToTokenManagement]
+  )
+
+  const handleFilterSelected = useCallback(
+    (value: string): void => {
+      onScrollToTop()
+      filter.onSelected(value)
+    },
+    [filter, onScrollToTop]
+  )
+
+  const handleSortSelected = useCallback(
+    (value: string): void => {
+      onScrollToTop()
+      sort.onSelected(value)
+    },
+    [onScrollToTop, sort]
+  )
+
+  const filterSelection = useMemo(
+    () => ({
+      ...filter,
+      onSelected: handleFilterSelected
+    }),
+    [filter, handleFilterSelected]
+  )
+
+  const sortSelection = useMemo(
+    () => ({
+      ...sort,
+      onSelected: handleSortSelected
+    }),
+    [handleSortSelected, sort]
   )
 
   const isLoadingBalance =
@@ -199,19 +233,33 @@ const AssetsScreen: FC<Props> = ({
         }}>
         <DropdownSelections
           sx={{ marginBottom: hasNoAssets ? 0 : 16 }}
-          filter={hasNoAssets ? undefined : filter}
-          sort={hasNoAssets ? undefined : sort}
+          filter={hasNoAssets ? undefined : filterSelection}
+          sort={hasNoAssets ? undefined : sortSelection}
           view={{ ...view, onSelected: handleManageList }}
         />
       </View>
     )
-  }, [isInitialLoading, hasNoAssets, filter, sort, view, handleManageList])
+  }, [
+    isInitialLoading,
+    hasNoAssets,
+    filterSelection,
+    sortSelection,
+    view,
+    handleManageList
+  ])
 
   const keyExtractor = useCallback(
     (item: LocalTokenWithBalance, _index: number): string =>
       `${item.networkChainId}-${item.localId}`,
     []
   )
+
+  const assetsListKey = useMemo(
+    () => `assets-list-${activeAccount?.id ?? 'unknown'}-${listType}`,
+    [activeAccount?.id, listType]
+  )
+
+  const maintainVisibleContentPosition = useMemo(() => ({ disabled: true }), [])
 
   return (
     <Animated.View
@@ -232,7 +280,8 @@ const AssetsScreen: FC<Props> = ({
         onRefresh={refetch}
         numColumns={numColumns}
         extraData={{ isGridView }}
-        listKey={`assets-list-${listType}-${filter.selected}-${sort.selected}`}
+        maintainVisibleContentPosition={maintainVisibleContentPosition}
+        listKey={assetsListKey}
         testID="portfolio_token_list"
       />
     </Animated.View>
