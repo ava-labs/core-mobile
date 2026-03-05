@@ -12,6 +12,7 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { transactionSnackbar } from 'common/utils/toast'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import Logger from 'utils/Logger'
 import { BorrowPosition } from '../../types'
 import { HealthScoreCard } from '../HealthScoreCard'
 
@@ -68,7 +69,7 @@ export function RepaySelectAmountFormBase({
         repayAmount.toDisplay({ asNumber: true }) * pricePerToken
 
       const newTotalDebtUsd = Math.max(0, totalDebtUsd - repayAmountUsd)
-      if (newTotalDebtUsd <= 0) return Infinity
+      if (newTotalDebtUsd === 0) return Infinity
 
       return currentHealthScore * (totalDebtUsd / newTotalDebtUsd)
     },
@@ -125,6 +126,7 @@ export function RepaySelectAmountFormBase({
       onSubmitted()
     } catch (error) {
       if (!isUserRejectedError(error)) {
+        Logger.error('[RepaySelectAmountFormBase] repay failed', error)
         transactionSnackbar.error({
           message: 'Transaction failed',
           error: error instanceof Error ? error.message : 'Transaction failed'
