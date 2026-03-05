@@ -10,7 +10,7 @@ import type {
   TransferManager,
   Fetch,
   SolanaSigner
-} from '@avalabs/unified-asset-transfer'
+} from '@avalabs/fusion-sdk'
 
 /**
  * Configuration for initializing the Fusion SDK

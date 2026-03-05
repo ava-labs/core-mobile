@@ -4,7 +4,7 @@ import {
   type Asset,
   type Chain,
   type Caip2ChainId
-} from '@avalabs/unified-asset-transfer'
+} from '@avalabs/fusion-sdk'
 import type { Address as EvmAddress } from 'viem'
 import type { Address as SolanaAddress } from '@solana/kit'
 import type { LocalTokenWithBalance } from 'store/balance'

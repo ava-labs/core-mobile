@@ -1,5 +1,5 @@
 import { RpcMethod } from '@avalabs/vm-module-types'
-import { SolanaSigner } from '@avalabs/unified-asset-transfer'
+import { SolanaSigner } from '@avalabs/fusion-sdk'
 import { SolanaCaip2ChainId } from '@avalabs/core-chains-sdk'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { assert } from 'store/rpc/utils/assert'

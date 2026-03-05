@@ -1,17 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  Environment,
-  ServiceType,
-  QuoterInterface
-} from '@avalabs/unified-asset-transfer'
+import { Environment, ServiceType, QuoterInterface } from '@avalabs/fusion-sdk'
 import type { FeatureFlags } from 'services/posthog/types'
-import { createTransferManager } from '@avalabs/unified-asset-transfer'
+import { createTransferManager } from '@avalabs/fusion-sdk'
 import Logger from 'utils/Logger'
 import FusionService from './FusionService'
 import type { FusionConfig, FusionSigners, QuoterParams } from './types'
 
 // Mock the unified-asset-transfer SDK
-jest.mock('@avalabs/unified-asset-transfer', () => ({
+jest.mock('@avalabs/fusion-sdk', () => ({
   Environment: {
     PROD: 'PROD',
     TEST: 'TEST'

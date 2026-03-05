@@ -1,7 +1,7 @@
 import { hex, utf8 } from '@scure/base'
 import { bigIntToHex } from '@ethereumjs/util'
 import { RpcMethod } from '@avalabs/vm-module-types'
-import { EvmSignerWithMessage } from '@avalabs/unified-asset-transfer'
+import { EvmSignerWithMessage } from '@avalabs/fusion-sdk'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { assert } from 'store/rpc/utils/assert'

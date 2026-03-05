@@ -1,4 +1,4 @@
-import type { QuoterDoneReason } from '@avalabs/unified-asset-transfer'
+import type { QuoterDoneReason } from '@avalabs/fusion-sdk'
 
 export class FusionQuoteError extends Error {
   constructor(message: string, public readonly reason?: QuoterDoneReason) {

@@ -12,7 +12,7 @@ import {
   Transfer,
   TransferManager,
   Fetch
-} from '@avalabs/unified-asset-transfer'
+} from '@avalabs/fusion-sdk'
 import type { FeatureFlags } from 'services/posthog/types'
 import Logger from 'utils/Logger'
 import { fusionErrors } from '../utils/fusionErrors'

@@ -1,5 +1,5 @@
 import { RpcMethod } from '@avalabs/vm-module-types'
-import { BtcSigner } from '@avalabs/unified-asset-transfer'
+import { BtcSigner } from '@avalabs/fusion-sdk'
 import { getBitcoinCaip2ChainId } from 'utils/caip2ChainIds'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import Logger from 'utils/Logger'
