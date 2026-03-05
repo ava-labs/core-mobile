@@ -58,19 +58,28 @@ export const getHealthRiskColor = ({
 /**
  * Formats the health score for display.
  * - undefined/NaN: '--'
- * - Infinity: '∞' (no borrows means infinite health)
+ * - Infinity or > 1e10: '∞'
+ * - > maxDisplay (if set): e.g. '10+'
  * - >= 100: Rounded integer
- * - < 100: One decimal place
+ * - Otherwise: fixed decimal places (fractionDigits)
  */
-export const formatHealthScore = (score: number | undefined): string => {
+export const formatHealthScore = (
+  score: number | undefined,
+  options?: { fractionDigits?: number; maxDisplay?: number }
+): string => {
+  const { fractionDigits = 1, maxDisplay } = options ?? {}
+
   if (score === undefined || Number.isNaN(score)) {
     return '--'
   }
-  if (!Number.isFinite(score)) {
+  if (!Number.isFinite(score) || score > 1e10) {
     return '∞'
+  }
+  if (maxDisplay !== undefined && score > maxDisplay) {
+    return `${maxDisplay}+`
   }
   if (score >= 100) {
     return Math.round(score).toString()
   }
-  return score.toFixed(1)
+  return score.toFixed(fractionDigits)
 }

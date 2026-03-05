@@ -13,7 +13,7 @@ import React, { useCallback, useMemo } from 'react'
 import { formatUnits } from 'viem'
 import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { transactionSnackbar } from 'common/utils/toast'
+import { useRouter } from 'expo-router'
 import { useDeposits } from 'hooks/earn/useDeposits'
 import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
@@ -35,6 +35,7 @@ export function BorrowDetailContent({
   const { bottom } = useSafeAreaInsets()
   const { deposits } = useDeposits()
   const { theme } = useTheme()
+  const router = useRouter()
 
   const { onScroll, animatedHeaderStyle, handleHeaderLayout } =
     useSimpleFadingHeader({
@@ -80,8 +81,15 @@ export function BorrowDetailContent({
   }, [borrowPosition, collateralDeposits, totalCollateralUsd, protocol])
 
   const handleRepay = useCallback(() => {
-    transactionSnackbar.plain({ message: 'Repay flow is coming soon' })
-  }, [])
+    if (!borrowPosition) return
+    router.push({
+      pathname: '/borrowRepay',
+      params: {
+        marketId: borrowPosition.market.uniqueMarketId,
+        protocol
+      }
+    })
+  }, [borrowPosition, protocol, router])
 
   const renderHeader = useCallback(() => {
     return (

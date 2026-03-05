@@ -21,10 +21,10 @@ import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useToke
 import { selectActiveAccount } from 'store/account'
 import { useSelector } from 'react-redux'
 import { TokenType } from '@avalabs/vm-module-types'
+import { findMatchingTokenWithBalance } from 'common/utils/findMatchingTokenWithBalance'
 import errorIcon from '../../../../assets/icons/melting_face.png'
 import { DefiAssetDetails } from '../../types'
 import { DefiAssetLogo } from '../../components/DefiAssetLogo'
-import { findMatchingTokenWithBalance } from '../../utils/findMatchingTokenWithBalance'
 import {
   useDepositSelectedAsset,
   useRedirectToBorrowAfterDeposit

@@ -94,13 +94,21 @@ describe('formatHealthScore', () => {
     })
   })
 
-  describe('infinity', () => {
+  describe('infinity and very large values', () => {
     it('should return "∞" for Infinity', () => {
       expect(formatHealthScore(Infinity)).toBe('∞')
     })
 
     it('should return "∞" for negative Infinity', () => {
       expect(formatHealthScore(-Infinity)).toBe('∞')
+    })
+
+    it('should return "∞" for very large number (> 1e10)', () => {
+      expect(formatHealthScore(1.15e59)).toBe('∞')
+    })
+
+    it('should return "∞" for 1e10 + 1', () => {
+      expect(formatHealthScore(1e10 + 1)).toBe('∞')
     })
   })
 
@@ -137,6 +145,42 @@ describe('formatHealthScore', () => {
 
     it('should return one decimal place for score 50', () => {
       expect(formatHealthScore(50)).toBe('50.0')
+    })
+  })
+
+  describe('fractionDigits option', () => {
+    it('should use 2 decimal places when fractionDigits is 2', () => {
+      expect(formatHealthScore(2.345, { fractionDigits: 2 })).toBe('2.35')
+    })
+
+    it('should use 0 decimal places when fractionDigits is 0', () => {
+      expect(formatHealthScore(2.7, { fractionDigits: 0 })).toBe('3')
+    })
+
+    it('should default to 1 decimal place', () => {
+      expect(formatHealthScore(2.345)).toBe('2.3')
+    })
+  })
+
+  describe('maxDisplay option', () => {
+    it('should return "10+" when score > 10 and maxDisplay is 10', () => {
+      expect(formatHealthScore(15, { maxDisplay: 10 })).toBe('10+')
+    })
+
+    it('should return normal format when score <= maxDisplay', () => {
+      expect(formatHealthScore(8.5, { maxDisplay: 10 })).toBe('8.5')
+    })
+
+    it('should return normal format when score equals maxDisplay', () => {
+      expect(formatHealthScore(10, { maxDisplay: 10 })).toBe('10.0')
+    })
+
+    it('should still return "∞" for Infinity even with maxDisplay', () => {
+      expect(formatHealthScore(Infinity, { maxDisplay: 10 })).toBe('∞')
+    })
+
+    it('should still return "∞" for very large numbers even with maxDisplay', () => {
+      expect(formatHealthScore(1e11, { maxDisplay: 10 })).toBe('∞')
     })
   })
 })
