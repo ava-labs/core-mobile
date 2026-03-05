@@ -9,6 +9,7 @@ import type { Address as EvmAddress } from 'viem'
 import type { Address as SolanaAddress } from '@solana/kit'
 import type { LocalTokenWithBalance } from 'store/balance'
 import { NetworkWithCaip2ChainId } from 'store/network'
+import { fusionErrors } from './fusionErrors'
 
 /**
  * Type conversion utilities for Fusion SDK integration
@@ -48,16 +49,16 @@ function getUnsupportedTokenError(token: unknown): Error {
  */
 export function toSwappableAsset(token: LocalTokenWithBalance): Asset {
   if (token.type === AppTokenType.ERC721) {
-    throw new Error('ERC721 tokens are not supported for swaps')
+    throw fusionErrors.erc721Unsupported()
   }
 
   if (token.type === AppTokenType.ERC1155) {
-    throw new Error('ERC1155 tokens are not supported for swaps')
+    throw fusionErrors.erc1155Unsupported()
   }
 
   // All swappable tokens have decimals
   if (!('decimals' in token) || typeof token.decimals !== 'number') {
-    throw new Error('Token must have decimals for swaps')
+    throw fusionErrors.missingDecimals()
   }
 
   // Handle native tokens (no address required)
@@ -73,7 +74,7 @@ export function toSwappableAsset(token: LocalTokenWithBalance): Asset {
   // Handle ERC20 tokens (require EVM address format)
   if (token.type === AppTokenType.ERC20) {
     if (!('address' in token) || !token.address) {
-      throw new Error('ERC20 token must have an address')
+      throw fusionErrors.erc20MissingAddress()
     }
     return {
       type: SdkTokenType.ERC20,
@@ -87,7 +88,7 @@ export function toSwappableAsset(token: LocalTokenWithBalance): Asset {
   // Handle SPL tokens (require Solana address format)
   if (token.type === AppTokenType.SPL) {
     if (!('address' in token) || !token.address) {
-      throw new Error('SPL token must have an address')
+      throw fusionErrors.splMissingAddress()
     }
     return {
       type: SdkTokenType.SPL,
@@ -111,7 +112,7 @@ export function toSwappableAsset(token: LocalTokenWithBalance): Asset {
 export function toChain(network: NetworkWithCaip2ChainId): Chain {
   // Require CAIP-2 chain ID (e.g., "eip155:1" for Ethereum mainnet)
   if (!network.caip2ChainId) {
-    throw new Error(`Network ${network.chainName} is missing caip2Id`)
+    throw fusionErrors.networkMissingCaip2(network.chainName)
   }
   const caip2ChainId = network.caip2ChainId as Caip2ChainId
 
