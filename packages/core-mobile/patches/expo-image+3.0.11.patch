@@ -1,12 +1,16 @@
 diff --git a/node_modules/expo-image/android/build.gradle b/node_modules/expo-image/android/build.gradle
-index 96ec610..abf5671 100644
+index 96ec610..3a223b4 100644
 --- a/node_modules/expo-image/android/build.gradle
 +++ b/node_modules/expo-image/android/build.gradle
-@@ -35,7 +35,9 @@ dependencies {
+@@ -34,8 +34,12 @@ dependencies {
+   kapt "com.github.bumptech.glide:compiler:${GLIDE_VERSION}"
    api 'com.caverock:androidsvg-aar:1.4'
  
-   implementation "com.github.penfeizhou.android.animation:glide-plugin:3.0.5"
+-  implementation "com.github.penfeizhou.android.animation:glide-plugin:3.0.5"
 -  implementation "com.github.bumptech.glide:avif-integration:${GLIDE_VERSION}"
++  implementation("com.github.penfeizhou.android.animation:glide-plugin:3.0.5") {
++    exclude group: 'com.github.penfeizhou.android.animation', module: 'gif'
++  }
 +  implementation("com.github.bumptech.glide:avif-integration:${GLIDE_VERSION}") {
 +    exclude group: 'org.aomedia.avif.android', module: 'avif'
 +  }
