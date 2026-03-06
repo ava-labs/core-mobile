@@ -55,6 +55,10 @@ import { Account } from 'store/account'
 import { uuid } from 'utils/uuid'
 import { CoreAccountType } from '@avalabs/types'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
+import {
+  enrollTrustedName,
+  extractSplTransferInfo
+} from 'services/ledger/LedgerTrustedNameService'
 import { BitcoinWalletPolicyService } from './BitcoinWalletPolicyService'
 import {
   Wallet,
@@ -774,11 +778,42 @@ export class LedgerWallet implements Wallet {
       const { messageBytes } = compileSolanaTx(txMessage)
       Logger.info('Message bytes length:', messageBytes.length)
 
-      // Sign the transaction with Ledger
-      Logger.info('Signing transaction with Ledger')
+      let userInputType: 'ata' | undefined
+      const splInfo = extractSplTransferInfo(txMessage)
+      if (splInfo) {
+        Logger.info(
+          `[LedgerSPL] SPL transfer detected: destATA=${splInfo.destATA}, mint=${splInfo.mintAddress}, needsCreateATA=${splInfo.needsCreateATA}, owner=${splInfo.ownerAddress ?? 'N/A'}`
+        )
+        userInputType = 'ata'
+        try {
+          const appConfig = await solanaApp.getAppConfiguration()
+          Logger.info(
+            `[LedgerSPL] Solana app version: ${appConfig.version}, blindSigning: ${appConfig.blindSigningEnabled}`
+          )
+          await enrollTrustedName(
+            transport as Transport,
+            solanaApp,
+            splInfo
+          )
+          Logger.info('[LedgerSPL] Trusted name enrollment succeeded')
+        } catch (e) {
+          Logger.info(
+            `[LedgerSPL] Trusted name enrollment FAILED: ${e instanceof Error ? e.message : String(e)}`
+          )
+        }
+      } else {
+        Logger.info(
+          '[LedgerSPL] No SPL transfer detected in transaction instructions'
+        )
+      }
+
+      Logger.info(
+        `[LedgerSPL] Signing with userInputType=${userInputType ?? 'undefined'}`
+      )
       const signResult = await solanaApp.signTransaction(
         derivationPath,
-        Buffer.from(messageBytes)
+        Buffer.from(messageBytes),
+        userInputType
       )
       Logger.info('Got signature from Ledger')
 
