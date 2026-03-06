@@ -13,12 +13,18 @@ import { RepaySelectAmountFormBase } from './RepaySelectAmountFormBase'
 
 export type BenqiRepaySelectAmountFormProps = {
   marketId: string
-  onSubmitted: () => void
+  onSubmitted: (params: { txHash: string; amount: TokenUnit }) => void
+  onConfirmed?: () => void
+  onReverted?: () => void
+  onError?: () => void
 }
 
 export function BenqiRepaySelectAmountForm({
   marketId,
-  onSubmitted
+  onSubmitted,
+  onConfirmed,
+  onReverted,
+  onError
 }: BenqiRepaySelectAmountFormProps): JSX.Element {
   const benqiSummary = useBenqiBorrowPositionsSummary()
   const { getMarketTokenBySymbol } = useWatchlist()
@@ -37,7 +43,10 @@ export function BenqiRepaySelectAmountForm({
   )
 
   const { benqiRepay } = useBenqiRepay({
-    market: borrowPosition?.market
+    market: borrowPosition?.market,
+    onConfirmed,
+    onReverted,
+    onError
   })
 
   const formatInCurrency = useCallback(
