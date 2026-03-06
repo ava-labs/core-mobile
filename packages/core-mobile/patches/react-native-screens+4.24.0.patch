@@ -1,8 +1,7 @@
 diff --git a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt
-index 972de61..92fcb9a 100644
 --- a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt
 +++ b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt
-@@ -338,27 +338,8 @@ class SheetDelegate(
+@@ -355,27 +355,8 @@
      // Otherwise, it shifts the sheet as high as possible, even if it means part of its content
      // will remain hidden behind the keyboard.
      internal fun computeSheetOffsetYWithIMEPresent(keyboardHeight: Int): Int {
@@ -32,7 +31,7 @@ index 972de61..92fcb9a 100644
      }
  
      // This is listener function, not the view's.
-@@ -534,17 +515,8 @@ class SheetDelegate(
+@@ -551,17 +532,8 @@
      }
  
      internal fun handleKeyboardInsetsProgress(insets: WindowInsetsCompat) {

@@ -769,7 +769,7 @@ __metadata:
     react-native-restart: 0.0.27
     react-native-root-siblings: 5.0.1
     react-native-safe-area-context: 5.6.0
-    react-native-screens: 4.23.0
+    react-native-screens: 4.24.0
     react-native-sensors: 7.3.6
     react-native-share: 12.0.9
     react-native-sound: 0.12.0
@@ -35881,16 +35881,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-screens@npm:4.23.0":
-  version: 4.23.0
-  resolution: "react-native-screens@npm:4.23.0"
+"react-native-screens@npm:4.24.0":
+  version: 4.24.0
+  resolution: "react-native-screens@npm:4.24.0"
   dependencies:
     react-freeze: ^1.0.0
     warn-once: ^0.1.0
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 9b7d4cc2aed913a68abd725c51b41ae1d3c24abe3b47285f7a397d15c2f672710fa16819a8062ced3b60fb36e623d58d929a700863e1ae6e764a7f3ff981dd58
+  checksum: 670873e5a358db95a7eeaae94a1548f5461e3a0d315bb81b7c52b544826a245fed878b13dab8037eb2371c54d3ebced472642c18889892c17f91a92964d40108
   languageName: node
   linkType: hard
 
