@@ -27,8 +27,9 @@ export function computeEffectiveHeaderHeight(
   headerHeight: number,
   insetTop: number
 ): number {
-  if (platform === 'android' && headerHeight <= insetTop) {
-    return ANDROID_DEFAULT_HEADER_HEIGHT + insetTop
+  const expectedMinHeight = ANDROID_DEFAULT_HEADER_HEIGHT + insetTop
+  if (platform === 'android' && headerHeight < expectedMinHeight) {
+    return expectedMinHeight
   }
   return headerHeight
 }
