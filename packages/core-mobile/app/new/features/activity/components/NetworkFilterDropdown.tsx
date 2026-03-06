@@ -35,6 +35,7 @@ export const NetworkFilterDropdown = ({
 
   return (
     <DropdownMenu
+      testID={`network_dropdown_btn`}
       groups={data}
       onPressAction={(event: { nativeEvent: { event: string } }) =>
         onSelected(event.nativeEvent.event)

@@ -177,6 +177,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     return [
       {
         title: 'Participate in Core analytics',
+        disableRowAccessibility: true,
         value: (
           <Toggle
             onValueChange={() =>

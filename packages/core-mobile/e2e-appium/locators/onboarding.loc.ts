@@ -18,7 +18,7 @@ export default {
   nextBtnOnAvatarScreen: 'avatar_next_btn',
   updateAppModalTitle: 'update_app_title',
   solanaLaunchTitle: 'solana_launch_title',
-  grabber: 'grabber',
+  bottomSheet: 'bottom_sheet',
   forgotPin: 'forgot_pin_btn',
   manuallyCreateNewWallet: 'manually_create_new_wallet_button',
   noThanksBtn: 'No thanks',

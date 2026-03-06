@@ -104,7 +104,7 @@ export const networks: Network[] = [
     name: common.base,
     haveToggle: true,
     data: {
-      rpcUrl: 'https://mainnet.base.org',
+      rpcUrl: 'https://base.drpc.org',
       explorerUrl: 'https://basescan.org',
       chainId: '8453',
       tokenSymbol: 'ETH',

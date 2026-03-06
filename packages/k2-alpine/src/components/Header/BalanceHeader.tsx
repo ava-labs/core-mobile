@@ -54,7 +54,9 @@ export const BalanceHeader = ({
   const renderPriceChangeIndicator = useCallback((): React.JSX.Element => {
     if (isDeveloperModeEnabled) {
       return (
-        <View sx={{ gap: 4, alignItems: 'center', flexDirection: 'row' }}>
+        <View
+          testID="testnet_mode_is_on"
+          sx={{ gap: 4, alignItems: 'center', flexDirection: 'row' }}>
           <Icons.Custom.WaterDropFilled width={16} height={16} />
           <Text
             variant="buttonMedium"

@@ -49,7 +49,6 @@ describe('Settings', () => {
     // Delete contact
     await settings.tapContact('Core QA', cl.myEvmAddress2)
     await settings.tapDeleteContact()
-    await cp.tapDeleteAlert()
     await settings.verifyEmptyContacts()
   })
 })

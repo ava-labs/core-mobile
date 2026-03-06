@@ -138,7 +138,7 @@ class PortfolioPage {
   }
 
   get testnetModeIsOn() {
-    return selectors.getByText(portfolio.testnetModeIsOn)
+    return selectors.getById(portfolio.testnetModeIsOn)
   }
 
   get sendButton() {
@@ -379,13 +379,11 @@ class PortfolioPage {
     for (const { name, haveToggle } of networks) {
       if (haveToggle) await actions.isNotVisible(selectors.getByText(name))
     }
-    await this.tapFilterDropdown()
     await this.tapActivityTab()
     await this.tapNetworksDropdown()
     for (const { name, haveToggle } of networks) {
-      if (haveToggle) await actions.isNotVisible(selectors.getByText(name))
+      if (haveToggle) await actions.isNotVisible(selectors.getBySomeText(name))
     }
-    await this.dismissNetworkDropdown()
   }
 
   async dismissNetworkDropdown(network = commonEls.cChain) {
@@ -408,9 +406,8 @@ class PortfolioPage {
     await this.tapActivityTab()
     await this.tapNetworksDropdown()
     for (const { name, haveToggle } of networks) {
-      if (haveToggle) await actions.isVisible(selectors.getByText(name))
+      if (haveToggle) await actions.isVisible(selectors.getBySomeText(name))
     }
-    await this.dismissNetworkDropdown()
   }
 
   async verifyAccountName(name: string) {
@@ -436,7 +433,7 @@ class PortfolioPage {
   async verifyAssetRow(index: number, isListView = true) {
     const prefix = isListView ? 'list' : 'grid'
     await actions.waitFor(selectors.getById(`${prefix}_fiat_balance__${index}`))
-    await actions.isVisible(
+    await actions.waitFor(
       selectors.getById(`${prefix}_token_balance__${index}`)
     )
   }

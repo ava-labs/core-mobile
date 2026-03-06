@@ -1,6 +1,6 @@
 export default {
   // NEW BELOW:
-  testnetModeIsOn: 'Testnet mode is on',
+  testnetModeIsOn: 'testnet_mode_is_on',
   sendButton: 'action_button__Send',
   swapButton: 'action_button__Swap',
   buyButton: 'action_button__Buy',
