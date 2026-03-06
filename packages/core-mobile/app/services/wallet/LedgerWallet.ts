@@ -55,6 +55,10 @@ import { Account } from 'store/account'
 import { uuid } from 'utils/uuid'
 import { CoreAccountType } from '@avalabs/types'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
+import {
+  enrollTrustedName,
+  extractSplTransferInfo
+} from 'services/ledger/LedgerTrustedNameService'
 import { BitcoinWalletPolicyService } from './BitcoinWalletPolicyService'
 import {
   Wallet,
@@ -774,11 +778,25 @@ export class LedgerWallet implements Wallet {
       const { messageBytes } = compileSolanaTx(txMessage)
       Logger.info('Message bytes length:', messageBytes.length)
 
-      // Sign the transaction with Ledger
+      let userInputType: 'ata' | undefined
+      const splInfo = extractSplTransferInfo(txMessage)
+      if (splInfo) {
+        userInputType = 'ata'
+        try {
+          await enrollTrustedName(transport as Transport, solanaApp, splInfo)
+        } catch (e) {
+          Logger.warn(
+            'Failed to enroll trusted name, falling back to blind signing',
+            e
+          )
+        }
+      }
+
       Logger.info('Signing transaction with Ledger')
       const signResult = await solanaApp.signTransaction(
         derivationPath,
-        Buffer.from(messageBytes)
+        Buffer.from(messageBytes),
+        userInputType
       )
       Logger.info('Got signature from Ledger')
 

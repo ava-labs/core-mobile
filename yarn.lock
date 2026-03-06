@@ -560,7 +560,7 @@ __metadata:
     "@lavamoat/allow-scripts": 3.2.1
     "@lavamoat/preinstall-always-fail": 2.1.0
     "@ledgerhq/hw-app-eth": 6.45.18
-    "@ledgerhq/hw-app-solana": 7.5.3
+    "@ledgerhq/hw-app-solana": 7.7.0
     "@ledgerhq/react-native-hw-transport-ble": 6.37.0
     "@metamask/eth-sig-util": 7.0.3
     "@metamask/rpc-errors": 6.3.0
@@ -10149,6 +10149,17 @@ __metadata:
     "@ledgerhq/hw-transport": ^6.31.10
     bip32-path: ^0.4.2
   checksum: 3e927553e9aaf1f47b0a5fb96db72bd4ffa21609a56c35f91a89d697cafa5c349d87974e8e9b075ce1d9562d8c85fd729541b660765aad2aab81e82bafd3c86a
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/hw-app-solana@npm:7.7.0":
+  version: 7.7.0
+  resolution: "@ledgerhq/hw-app-solana@npm:7.7.0"
+  dependencies:
+    "@ledgerhq/errors": ^6.29.0
+    "@ledgerhq/hw-transport": 6.32.0
+    bip32-path: ^0.4.2
+  checksum: 8ab24772778b7901883ac46935926e3089ef6e9b160c7e6ab11291ffb7452e59cc7cb9d422e2d9dad732a81e33acc8393af6d446a8e703236b16b3c21e2c75b4
   languageName: node
   linkType: hard
 
