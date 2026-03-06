@@ -783,11 +783,7 @@ export class LedgerWallet implements Wallet {
       if (splInfo) {
         userInputType = 'ata'
         try {
-          await enrollTrustedName(
-            transport as Transport,
-            solanaApp,
-            splInfo
-          )
+          await enrollTrustedName(transport as Transport, solanaApp, splInfo)
         } catch (e) {
           Logger.warn(
             'Failed to enroll trusted name, falling back to blind signing',

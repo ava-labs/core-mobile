@@ -113,7 +113,8 @@ function getDeviceModelName(transport: Transport): string {
     if (name.includes('flex')) return 'flex'
     if (name.includes('stax')) return 'stax'
     if (name.includes('nano x')) return 'nanox'
-    if (name.includes('nano s plus') || name.includes('nano sp')) return 'nanosp'
+    if (name.includes('nano s plus') || name.includes('nano sp'))
+      return 'nanosp'
   }
 
   // BLE-only devices: default to nanox (most common)
@@ -215,8 +216,7 @@ export async function enrollTrustedName(
 ): Promise<void> {
   const deviceModelName = getDeviceModelName(transport)
 
-  const { descriptor, signature } =
-    await fetchPKICertificate(deviceModelName)
+  const { descriptor, signature } = await fetchPKICertificate(deviceModelName)
   await loadPKICertificate(transport, descriptor, signature)
 
   const challenge = await solanaApp.getChallenge()
