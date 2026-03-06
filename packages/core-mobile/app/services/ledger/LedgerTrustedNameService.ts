@@ -102,9 +102,6 @@ function getDeviceModelName(transport: Transport): string {
   const model = t.deviceModel
   const deviceName: string | undefined =
     t.device?.name ?? t.device?.localName ?? t.deviceName
-  Logger.info(
-    `[LedgerSPL] transport props: deviceModel.id=${model?.id ?? 'N/A'}, deviceName=${deviceName ?? 'N/A'}`
-  )
 
   if (model?.id && DEVICE_MODEL_MAP[model.id]) {
     return DEVICE_MODEL_MAP[model.id]!
@@ -217,29 +214,15 @@ export async function enrollTrustedName(
   splInfo: SplTransferInfo
 ): Promise<void> {
   const deviceModelName = getDeviceModelName(transport)
-  Logger.info(`[LedgerSPL] Step 1: device model = ${deviceModelName}`)
 
   const { descriptor, signature } =
     await fetchPKICertificate(deviceModelName)
-  Logger.info(
-    `[LedgerSPL] Step 2: PKI cert fetched (desc ${descriptor.length} chars, sig ${signature.length} chars)`
-  )
-
   await loadPKICertificate(transport, descriptor, signature)
-  Logger.info('[LedgerSPL] Step 3: PKI cert loaded onto device')
 
   const challenge = await solanaApp.getChallenge()
-  Logger.info(`[LedgerSPL] Step 4: challenge = ${challenge}`)
-
   const signedDescriptor = await fetchSignedDescriptor(splInfo, challenge)
-  Logger.info(
-    `[LedgerSPL] Step 5: signed descriptor = ${signedDescriptor ? `${signedDescriptor.length} chars` : 'MISSING'}`
-  )
 
   if (signedDescriptor) {
     await solanaApp.provideTrustedName(signedDescriptor)
-    Logger.info('[LedgerSPL] Step 6: provideTrustedName succeeded')
-  } else {
-    Logger.info('[LedgerSPL] Step 5: No signed descriptor returned')
   }
 }

@@ -781,35 +781,22 @@ export class LedgerWallet implements Wallet {
       let userInputType: 'ata' | undefined
       const splInfo = extractSplTransferInfo(txMessage)
       if (splInfo) {
-        Logger.info(
-          `[LedgerSPL] SPL transfer detected: destATA=${splInfo.destATA}, mint=${splInfo.mintAddress}, needsCreateATA=${splInfo.needsCreateATA}, owner=${splInfo.ownerAddress ?? 'N/A'}`
-        )
         userInputType = 'ata'
         try {
-          const appConfig = await solanaApp.getAppConfiguration()
-          Logger.info(
-            `[LedgerSPL] Solana app version: ${appConfig.version}, blindSigning: ${appConfig.blindSigningEnabled}`
-          )
           await enrollTrustedName(
             transport as Transport,
             solanaApp,
             splInfo
           )
-          Logger.info('[LedgerSPL] Trusted name enrollment succeeded')
         } catch (e) {
-          Logger.info(
-            `[LedgerSPL] Trusted name enrollment FAILED: ${e instanceof Error ? e.message : String(e)}`
+          Logger.warn(
+            'Failed to enroll trusted name, falling back to blind signing',
+            e
           )
         }
-      } else {
-        Logger.info(
-          '[LedgerSPL] No SPL transfer detected in transaction instructions'
-        )
       }
 
-      Logger.info(
-        `[LedgerSPL] Signing with userInputType=${userInputType ?? 'undefined'}`
-      )
+      Logger.info('Signing transaction with Ledger')
       const signResult = await solanaApp.signTransaction(
         derivationPath,
         Buffer.from(messageBytes),
