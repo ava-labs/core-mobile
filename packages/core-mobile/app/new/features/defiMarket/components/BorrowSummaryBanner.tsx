@@ -103,7 +103,7 @@ export const BorrowSummaryBanner = ({
   }, [healthRisk])
 
   const healthScoreBadgeText = useMemo(() => {
-    return formatHealthScore(summary.healthScore)
+    return formatHealthScore(summary.healthScore, { maxDisplay: 10 })
   }, [summary.healthScore])
 
   return (

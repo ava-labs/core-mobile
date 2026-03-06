@@ -88,15 +88,16 @@ export const SendTokenUnitInputWidget = forwardRef<
 
     useEffect(() => {
       const presets = []
+      const base = maxAmount ?? balance
       if (presetPercentages && presetPercentages.length > 0) {
         presetPercentages.forEach(percentage => {
-          const value = balance.mul(percentage).div(100)
+          const value = base.mul(percentage).div(100)
           presets.push({
             text: `${percentage}%`,
             amount: new TokenUnit(
               value.toSubUnit(),
-              balance.getMaxDecimals(),
-              balance.getSymbol()
+              base.getMaxDecimals(),
+              base.getSymbol()
             ),
             isSelected: amount
               ? amount.toSubUnit() === value.toSubUnit()

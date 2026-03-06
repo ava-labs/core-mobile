@@ -16,8 +16,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { transactionSnackbar } from 'common/utils/toast'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { HEALTH_SCORE_CAUTION_COLOR } from '../../consts'
+import { HealthScoreCard } from '../HealthScoreCard'
 
 export const BorrowSelectAmountFormBase = ({
   title = 'How much would you like to borrow?',
@@ -116,33 +115,6 @@ export const BorrowSelectAmountFormBase = ({
     )
   }, [handleSubmit, isSubmitting, canSubmit])
 
-  const formatHealthScore = useCallback((score: number | undefined): string => {
-    if (score === undefined || Number.isNaN(score)) return UNKNOWN_AMOUNT
-    // AAVE returns a very large number when debt is 0 (effectively infinite)
-    if (score > 1e10 || !Number.isFinite(score)) return '∞'
-    return score.toFixed(2)
-  }, [])
-
-  // Health score color based on AAVE's convention:
-  // > 3.0: Green (safe)
-  // 1.1 - 3.0: Orange (caution)
-  // < 1.1: Red (danger)
-  const getHealthScoreColor = useCallback(
-    (score: number | undefined): string => {
-      if (score === undefined || Number.isNaN(score)) {
-        return theme.colors.$textSecondary
-      }
-      if (score > 1e10 || !Number.isFinite(score) || score > 3) {
-        return theme.colors.$textSuccess // Green
-      }
-      if (score >= 1.1) {
-        return HEALTH_SCORE_CAUTION_COLOR
-      }
-      return theme.colors.$textDanger // Red
-    },
-    [theme.colors]
-  )
-
   if (isLoading) {
     return <LoadingState sx={{ flex: 1 }} />
   }
@@ -174,41 +146,8 @@ export const BorrowSelectAmountFormBase = ({
           maxAmount={availableToBorrow}
         />
 
-        {/* Health Score Section */}
-        <View
-          sx={{
-            marginTop: 24,
-            backgroundColor: theme.colors.$surfaceSecondary,
-            borderRadius: 12,
-            overflow: 'hidden'
-          }}>
-          <View
-            sx={{
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}>
-            <Text variant="body1" sx={{ color: theme.colors.$textPrimary }}>
-              Health score
-            </Text>
-            <View sx={{ alignItems: 'flex-end' }}>
-              <Text
-                variant="body1"
-                sx={{
-                  color: getHealthScoreColor(healthScore),
-                  fontWeight: 500
-                }}>
-                {formatHealthScore(healthScore)}
-              </Text>
-              <Text
-                variant="caption"
-                sx={{ color: theme.colors.$textSecondary }}>
-                Liquidation at {'<'}1.0
-              </Text>
-            </View>
-          </View>
+        <View sx={{ marginTop: 24 }}>
+          <HealthScoreCard score={healthScore} />
         </View>
 
         {/* Warning Section */}

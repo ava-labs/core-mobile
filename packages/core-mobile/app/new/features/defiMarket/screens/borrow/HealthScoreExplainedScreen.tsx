@@ -58,7 +58,7 @@ export const HealthScoreExplainedScreen = (): JSX.Element | null => {
   }, [healthRisk, theme.colors])
 
   const formattedHealthScore = useMemo(() => {
-    return formatHealthScore(parsedHealthScore)
+    return formatHealthScore(parsedHealthScore, { maxDisplay: 10 })
   }, [parsedHealthScore])
 
   const handleDone = useCallback(() => {

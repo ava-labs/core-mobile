@@ -21,15 +21,13 @@ import { useDeposits } from 'hooks/earn/useDeposits'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import Logger from 'utils/Logger'
+import { WAVAX_ADDRESS } from 'features/swap/consts'
 import { DefiMarket, MarketNames } from '../../types'
 import { DefiMarketAssetLogo } from '../../components/DefiMarketAssetLogo'
 import { useSelectedBorrowProtocol } from '../../hooks/useBorrowProtocol'
 import { useAaveSetCollateral } from '../../hooks/aave/useAaveSetCollateral'
 import { useBenqiSetCollateral } from '../../hooks/benqi/useBenqiSetCollateral'
-import {
-  AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS,
-  PROTOCOL_DISPLAY_NAMES
-} from '../../consts'
+import { PROTOCOL_DISPLAY_NAMES } from '../../consts'
 import { useRedirectToBorrowAfterDeposit } from '../../store'
 import errorIcon from '../../../../assets/icons/melting_face.png'
 
@@ -93,8 +91,7 @@ export const SelectCollateralScreen = (): JSX.Element => {
       try {
         if (deposit.marketName === MarketNames.aave) {
           // Use WAVAX address for AVAX (native token has no contract address)
-          const assetAddress =
-            deposit.asset.contractAddress ?? AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS
+          const assetAddress = deposit.asset.contractAddress ?? WAVAX_ADDRESS
           await setAaveCollateral({
             assetAddress: assetAddress as Address,
             useAsCollateral: newValue,

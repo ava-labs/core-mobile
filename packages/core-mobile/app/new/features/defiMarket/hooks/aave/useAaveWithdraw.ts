@@ -3,9 +3,9 @@ import { useCallback } from 'react'
 import { Address, encodeFunctionData } from 'viem'
 import {
   AAVE_POOL_C_CHAIN_ADDRESS,
-  AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS,
   MAX_UINT256
 } from 'features/defiMarket/consts'
+import { WAVAX_ADDRESS } from 'features/swap/consts'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
@@ -62,8 +62,7 @@ export const useAaveWithdraw = ({
         throw new Error('No address found')
       }
 
-      const assetAddress =
-        market.asset.contractAddress ?? AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS
+      const assetAddress = market.asset.contractAddress ?? WAVAX_ADDRESS
       const isMax = amount.toSubUnit() === market.asset.mintTokenBalance.balance
       // If they've selected the max amount at time of load, pass MAX_UINT256 to avoid dust remaining.
       // See: IPool.sol#withdraw method – https://snowtrace.io/address/0x1C984121713329114d1D97f5B4Aae9D4D5BfA0eB/contract/43114/code

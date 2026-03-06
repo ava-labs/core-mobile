@@ -226,6 +226,7 @@ export type AnalyticsEvents = {
   SolanaSwapFeeAccountNotInitialized: { mint: string }
 
   // PUSH NOTIFICATIONS
+  PushNotificationPromptShown: undefined
   PushNotificationAccepted: undefined
   PushNotificationRejected: undefined
   PushNotificationPressed: {
@@ -277,6 +278,16 @@ export type AnalyticsEvents = {
   }
   EarnBorrowSuccess: undefined
   EarnBorrowFailure: undefined
+  EarnRepayStart: undefined
+  EarnRepaySubmitted: {
+    token: string
+    quantity: string
+    protocol: string
+    txHash: string
+    address: string
+  }
+  EarnRepaySuccess: undefined
+  EarnRepayFailure: undefined
 
   // NEST EGG CAMPAIGN
   NestEggCampaignModalViewed: { addressC: string }

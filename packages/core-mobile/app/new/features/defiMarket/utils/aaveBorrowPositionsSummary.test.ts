@@ -1,12 +1,12 @@
 import Big from 'big.js'
 import { CurrencyCode } from '@avalabs/glacier-sdk'
+import { WAVAX_ADDRESS } from 'features/swap/consts'
 import {
   AaveBorrowData,
   BorrowPosition,
   DefiMarket,
   MarketNames
 } from '../types'
-import { AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS } from '../consts'
 import {
   buildAaveBorrowPositions,
   getAaveBorrowSummary
@@ -136,11 +136,11 @@ describe('buildAaveBorrowPositions', () => {
       const wavaxMarket = createMockMarket({
         asset: {
           ...createMockMarket().asset,
-          contractAddress: AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS
+          contractAddress: WAVAX_ADDRESS
         }
       })
       const debtMap = new Map([
-        [AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS.toLowerCase(), 1000000000000000000n]
+        [WAVAX_ADDRESS.toLowerCase(), 1000000000000000000n]
       ])
 
       const result = buildAaveBorrowPositions({
@@ -160,7 +160,7 @@ describe('buildAaveBorrowPositions', () => {
         }
       })
       const debtMap = new Map([
-        [AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS.toLowerCase(), 1000000000000000000n]
+        [WAVAX_ADDRESS.toLowerCase(), 1000000000000000000n]
       ])
 
       const result = buildAaveBorrowPositions({
