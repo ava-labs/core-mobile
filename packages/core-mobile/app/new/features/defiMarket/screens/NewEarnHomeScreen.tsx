@@ -5,7 +5,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import { Placeholder } from 'common/components/Placeholder'
@@ -49,7 +49,7 @@ export const NewEarnHomeScreen = (): JSX.Element => {
       AnalyticsService.capture('EarnOpened')
     }, [])
   )
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const pagerRef = useRef<PagerView>(null)
   const { theme } = useTheme()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)

@@ -1,22 +1,22 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Platform } from 'react-native'
 import {
-  useTheme,
+  ActivityIndicator,
   Icons,
   View,
   showAlert,
-  ActivityIndicator
+  useTheme
 } from '@avalabs/k2-alpine'
-import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIconWithText'
 import { ProgressDots } from 'common/components/ProgressDots'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
+import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIconWithText'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
-import { selectActiveWalletId } from 'store/wallet/slice'
-import { LedgerAppType } from 'services/ledger/types'
-import Logger from 'utils/Logger'
-import { useHeaderHeight } from '@react-navigation/elements'
 import { Operation } from 'services/earn/computeDelegationSteps/types'
+import { LedgerAppType } from 'services/ledger/types'
+import { selectActiveWalletId } from 'store/wallet/slice'
+import Logger from 'utils/Logger'
 import { LEDGER_DEVICE_BRIEF_DELAY_MS } from '../consts'
-import { useLedgerWalletMap, useLedgerParams } from '../store'
+import { useLedgerParams, useLedgerWalletMap } from '../store'
 import { LedgerReviewScreen } from './LedgerReviewScreen'
 
 type Phase = 'connection' | 'progress'
@@ -79,7 +79,7 @@ export const LedgerReviewStakingScreen = (): JSX.Element | null => {
     null
   )
   const [approvalInProgress, setApprovalInProgress] = useState(false)
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
 
   const deviceForWallet = useMemo(
     () => getLedgerInfoByWalletId(walletId)?.device,

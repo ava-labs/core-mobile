@@ -1,27 +1,27 @@
-import React, {
-  useCallback,
-  useState,
-  useEffect,
-  useMemo,
-  ReactNode
-} from 'react'
-import { useRouter } from 'expo-router'
-import { Alert, Platform, View } from 'react-native'
-import { ScrollScreen } from 'common/components/ScrollScreen'
+import { ActivityIndicator, Button, ButtonType } from '@avalabs/k2-alpine'
 import { ProgressDots } from 'common/components/ProgressDots'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
+import { showSnackbar } from 'common/utils/toast'
+import { useRouter } from 'expo-router'
 import {
   AppConnectionStep,
   LedgerAppConnection
 } from 'new/features/ledger/components/LedgerAppConnection'
-import Logger from 'utils/Logger'
+import React, {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
+import { Alert, Platform, View } from 'react-native'
+import { useSelector } from 'react-redux'
 import LedgerService from 'services/ledger/LedgerService'
-import { ActivityIndicator, Button, ButtonType } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import { LedgerKeysByNetwork } from 'services/ledger/types'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
-import { useSelector } from 'react-redux'
-import { showSnackbar } from 'common/utils/toast'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import Logger from 'utils/Logger'
 
 export default function AppConnectionScreen({
   completeStepTitle,
@@ -41,7 +41,7 @@ export default function AppConnectionScreen({
   accountIndex: number
 }): JSX.Element {
   const { back } = useRouter()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
 
