@@ -346,7 +346,7 @@ abis.each { abi ->
 
       // Build CFLAGS with proper architecture flags
       def cflags = ["-fPIC", "-O2", "--sysroot=${sysroot}"]
-      def ldflags = []
+      def ldflags = ["-Wl,-z,max-page-size=16384"]
       
       // ARM-specific flags
       if (abi == 'armeabi-v7a') {
