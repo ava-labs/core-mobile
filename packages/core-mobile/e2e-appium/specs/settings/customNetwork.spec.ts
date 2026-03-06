@@ -47,10 +47,10 @@ describe('Settings', () => {
     await settings.removeNetwork(networkName)
     await common.typeSearchBar(networkName)
     await actions.isNotVisible(
-      selectors.getByText(`network_toggle_enabled__${networkName}`)
+      selectors.getById(`network_toggle_enabled__${networkName}`)
     )
     await actions.isNotVisible(
-      selectors.getByText(`network_toggle_disabled__${networkName}`)
+      selectors.getById(`network_toggle_disabled__${networkName}`)
     )
   })
 })

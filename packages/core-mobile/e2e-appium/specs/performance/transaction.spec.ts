@@ -11,7 +11,7 @@ describe('[Performance] Transaction', () => {
 
   it('Send performance on C-Chain', async () => {
     const start = await txPage.send(txLoc.avaxToken, txLoc.sendingAmount)
-    await actions.isNotVisible(commonElsPage.grabber)
+    await actions.isNotVisible(commonElsPage.bottomSheet)
     await actions.assertPerformance(start)
   })
 })

@@ -108,7 +108,6 @@ const AccountSettingsScreen = (): JSX.Element => {
       isModal
       navigationTitle="Settings"
       renderHeaderRight={renderHeaderRight}
-      testID="settings_scroll_view"
       contentContainerStyle={{
         paddingTop: 16
       }}>
@@ -138,6 +137,7 @@ const AccountSettingsScreen = (): JSX.Element => {
               data={[
                 {
                   title: 'Testnet mode',
+                  disableRowAccessibility: true,
                   value: (
                     <Toggle
                       testID={

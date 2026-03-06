@@ -194,6 +194,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
 
     return (
       <Pressable
+        accessible={false}
         style={{
           flexDirection: 'row',
           alignItems: 'center',

@@ -28,7 +28,7 @@ describe('Settings', () => {
     await settings.verifyMyWalletsAccountName(sl.newAccountName)
 
     // verify the new name on portfolio
-    await common.goBack()
+    await settings.exitMyWallets()
     await common.verifyAccountName(sl.newAccountName, 'portfolio')
   })
 
@@ -36,7 +36,7 @@ describe('Settings', () => {
     await common.goMyWallets()
     await settings.addAccount(3)
     await settings.verifyMyWalletsAccountName(sl.account3)
-    await common.goBack()
+    await settings.exitMyWallets()
   })
 
   it('Accounts - should switch account', async () => {
