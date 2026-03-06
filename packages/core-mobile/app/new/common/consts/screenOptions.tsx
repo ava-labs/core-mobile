@@ -35,7 +35,7 @@ export const modalScreensOptions: NativeStackNavigationOptions = {
   presentation: Platform.OS === 'ios' ? 'pageSheet' : 'formSheet',
   sheetElevation: 0,
   sheetInitialDetentIndex: 0,
-  sheetAllowedDetents: [Platform.OS === 'android' ? 0.93 : 0.99],
+  sheetAllowedDetents: [Platform.OS === 'android' ? 0.89 : 0.99],
   headerLeft: () => <BackBarButton />,
   gestureEnabled: true,
   headerTransparent: true
@@ -64,14 +64,14 @@ export function useModalScreensOptions(): {
         // by removing the insets.top this we adjust the navigation bar position
         marginTop: Platform.OS === 'android' ? -insets.top + 8 : undefined
       },
-      sheetAllowedDetents: [Platform.OS === 'android' ? 0.92 : 0.99]
+      sheetAllowedDetents: [Platform.OS === 'android' ? 0.875 : 0.99]
     }
   }
 }
 
 export const secondaryModalScreensOptions: NativeStackNavigationOptions = {
   ...modalScreensOptions,
-  sheetAllowedDetents: [Platform.OS === 'android' ? 0.92 : 0.99]
+  sheetAllowedDetents: [Platform.OS === 'android' ? 0.875 : 0.99]
 }
 
 /**

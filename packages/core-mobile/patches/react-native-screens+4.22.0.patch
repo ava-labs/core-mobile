@@ -1,0 +1,54 @@
+diff --git a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt
+index 69103b2..30bb03d 100644
+--- a/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt
++++ b/node_modules/react-native-screens/android/src/main/java/com/swmansion/rnscreens/bottomsheet/SheetDelegate.kt
+@@ -295,27 +295,8 @@ class SheetDelegate(
+     // Otherwise, it shifts the sheet as high as possible, even if it means part of its content
+     // will remain hidden behind the keyboard.
+     internal fun computeSheetOffsetYWithIMEPresent(keyboardHeight: Int): Int {
+-        val containerHeight = tryResolveMaxFormSheetHeight()
+-        check(containerHeight != null) {
+-            "[RNScreens] Failed to find window height during bottom sheet behaviour configuration"
+-        }
+-
+-        if (screen.isSheetFitToContents()) {
+-            val contentHeight = screen.contentWrapper?.height ?: 0
+-            val offsetFromTop = maxOf(containerHeight - contentHeight, 0)
+-            // If the content is higher than the Screen, offsetFromTop becomes negative.
+-            // In such cases, we return 0 because a negative translation would shift the Screen
+-            // to the bottom, which is not intended.
+-            return minOf(offsetFromTop, keyboardHeight)
+-        }
+-
+-        val detents = screen.sheetDetents
+-
+-        val detentValue = detents.highest().coerceIn(0.0, 1.0)
+-        val sheetHeight = (detentValue * containerHeight).toInt()
+-        val offsetFromTop = containerHeight - sheetHeight
+-
+-        return minOf(offsetFromTop, keyboardHeight)
++        // Patched: always return 0 so the sheet does not shift for the keyboard.
++        return 0
+     }
+ 
+     // This is listener function, not the view's.
+@@ -491,17 +472,8 @@ class SheetDelegate(
+     }
+ 
+     internal fun handleKeyboardInsetsProgress(insets: WindowInsetsCompat) {
+-        lastKeyboardBottomOffset = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+-        // Prioritize enter/exit animations over direct keyboard inset reactions.
+-        // We store the latest keyboard offset in `lastKeyboardBottomOffset`
+-        // so that it can always be respected when applying translations in `updateSheetTranslationY`.
+-        //
+-        // This approach allows screen translation to be triggered from two sources, but without messing them together:
+-        // - During enter/exit animations, while accounting for the keyboard height.
+-        // - While interacting with a TextInput inside the bottom sheet, to handle keyboard show/hide events.
+-        if (!isSheetAnimationInProgress) {
+-            updateSheetTranslationY(0f)
+-        }
++        // Patched: prevent formSheet from translating upward when keyboard appears.
++        // The keyboard is handled by react-native-keyboard-controller at the content level instead.
+     }
+ 
+     private fun attachCommonListeners(
