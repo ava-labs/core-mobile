@@ -192,7 +192,6 @@ class EarnPage {
   }
 
   async repay(pool = 'aave', token = 'AVAX') {
-    console.log(`Repay flow - tapping repay button (feature not complete yet)`)
     await this.tapRepay(pool, token)
     await txPage.tapMax()
     await txPage.tapAddCard()

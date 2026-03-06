@@ -572,12 +572,9 @@ class Settings {
         break
       }
       try {
-        console.log(`3`)
         await actions.click(common.backButton)
       } catch {
-        console.log(`4`)
         await actions.tap(common.backButton)
-
       }
       await actions.delay(1000)
       maxAttempts--
