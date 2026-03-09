@@ -64,5 +64,8 @@ export const fusionErrors = {
     return new FusionQuoteError(
       `Cannot swap from ${fromSymbol} network to ${toSymbol} network. Please select a different token.`
     )
+  },
+  belowMinimumAmount(formattedMin: string): FusionQuoteError {
+    return new FusionQuoteError(`Minimum amount is ${formattedMin}.`)
   }
 }
