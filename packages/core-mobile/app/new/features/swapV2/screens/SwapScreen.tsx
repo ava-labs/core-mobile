@@ -255,9 +255,9 @@ export const SwapScreen = (): JSX.Element => {
     setFromToken(from)
     setToToken(to)
     setDestination(SwapSide.SELL)
-    setFromTokenValue(toTokenValue)
+    setFromTokenValue(undefined)
     setToTokenValue(undefined)
-    toTokenValue && setAmount(toTokenValue)
+    setAmount(undefined)
   }, [
     fromToken,
     toToken,
@@ -266,7 +266,6 @@ export const SwapScreen = (): JSX.Element => {
     setDestination,
     setFromTokenValue,
     setAmount,
-    toTokenValue,
     tokensWithZeroBalance
   ])
 
@@ -582,6 +581,16 @@ export const SwapScreen = (): JSX.Element => {
 
   const initialized = useRef(false)
   useEffect(setInitialTokensFx, [setInitialTokensFx])
+
+  // Reset from amount when the user selects a different from token.
+  const prevFromTokenIdRef = useRef(fromToken?.localId)
+  useEffect(() => {
+    const prevId = prevFromTokenIdRef.current
+    prevFromTokenIdRef.current = fromToken?.localId
+    if (prevId === undefined || prevId === fromToken?.localId) return
+    setFromTokenValue(undefined)
+    setAmount(undefined)
+  }, [fromToken, setFromTokenValue, setAmount])
 
   const prevFromRef = useRef(fromToken)
   const prevToRef = useRef(toToken)
