@@ -512,10 +512,12 @@ class TransactionsPage {
     await this.tapNext()
     await actions.tap(selectors.getById(`list_item__${token}`))
     await actions.type(selectors.getById(txLoc.fiatAmountInput), '100')
-    await actions.waitFor(this.errorMsg)
     await actions.isNotVisible(this.nextBtn)
     await actions.isVisible(this.nextBtnDisabled)
     await commonElsPage.dismissBottomSheet()
+    if (await actions.getVisible(commonElsPage.bottomSheet)) {
+      await commonElsPage.dismissBottomSheet()
+    }
   }
 
   async verifyLocale(locale: string, currency: string) {

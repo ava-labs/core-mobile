@@ -353,8 +353,9 @@ class PortfolioPage {
   }
 
   async tapToken(token = 'Avalanche') {
+    const normalizedToken = token.replace(/\s(P|X)-Chain$/, '')
     await actions.tap(
-      selectors.getById(`${portfolio.portfolioTokenItem}${token}`)
+      selectors.getById(`${portfolio.portfolioTokenItem}${normalizedToken}`)
     )
   }
 
