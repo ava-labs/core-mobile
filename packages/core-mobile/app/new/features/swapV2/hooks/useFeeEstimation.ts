@@ -38,7 +38,12 @@ export const useFeeEstimation = ({
 
   const { data: gasFee, error } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [ReactQueryKeys.FUSION_SWAP_FEE_ESTIMATE, quote?.id],
+    queryKey: [
+      ReactQueryKeys.FUSION_SWAP_FEE_ESTIMATE,
+      quote?.id,
+      feeOptions.feeUnitsMarginBps,
+      gasSafetyBps
+    ],
     queryFn: quote
       ? async () => {
           const { totalFee } = await FusionService.estimateNativeFee(

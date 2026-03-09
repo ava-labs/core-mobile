@@ -109,7 +109,11 @@ export function useQuoteStreaming(
 
       return {
         quoter: null,
-        error: isSdkError(err) ? err.walk() : (err as Error)
+        error: isSdkError(err)
+          ? err.walk()
+          : err instanceof Error
+          ? err
+          : new Error('Failed to create Quoter instance')
       }
     }
   }, [
