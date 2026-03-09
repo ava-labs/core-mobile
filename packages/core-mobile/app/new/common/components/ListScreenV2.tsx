@@ -1,6 +1,6 @@
 import { NavigationTitleHeader, Separator, Text } from '@avalabs/k2-alpine'
 import { BlurViewWithFallback } from '@avalabs/k2-alpine/src/components/BlurViewWithFallback/BlurViewWithFallback'
-import { useHeaderHeight } from '@react-navigation/elements'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { FlashList, FlashListProps, FlashListRef } from '@shopify/flash-list'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
@@ -115,7 +115,7 @@ export const ListScreenV2 = <T,>({
   ...props
 }: ListScreenProps<T>): JSX.Element => {
   const insets = useSafeAreaInsets()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const keyboard = useKeyboardState()
   const frame = useSafeAreaFrame()
 
