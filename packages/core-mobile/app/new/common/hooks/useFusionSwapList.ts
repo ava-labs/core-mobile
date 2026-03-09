@@ -17,8 +17,17 @@ export const useFusionSwapList = ({
   const toTokens = useSwapTokens(toCaip2Id ?? '')
 
   return useMemo(() => {
+    const seen = new Set<string>()
+    const tokens = [...fromTokens.tokens, ...toTokens.tokens].filter(t => {
+      // using networkChainId + localId as a unique key to filter duplicates across from/to lists
+      // internalId is optional and may not be present for all tokens, so we fall back to caip2Id + address if internalId is missing
+      const key = `${t.networkChainId}:${t.localId}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
     return {
-      tokens: [...fromTokens.tokens, ...toTokens.tokens],
+      tokens,
       isLoading: fromTokens.isLoading || toTokens.isLoading,
       error: fromTokens.error || toTokens.error
     }
