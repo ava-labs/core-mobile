@@ -552,6 +552,7 @@ class PortfolioPage {
   }
 
   async verifyOwnedTokenDetail(token: string, buttons: string[]) {
+    await commonElsPage.pullToRefresh()
     await this.tapToken(token)
     await actions.waitFor(this.tokenHeaderName(token))
     await this.verifyOwnedTokenActionButtons(buttons)

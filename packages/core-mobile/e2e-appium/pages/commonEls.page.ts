@@ -483,14 +483,9 @@ class CommonElsPage {
     await actions.tap(this.approveButton)
   }
 
-  async selectDropdownItem(item: string, dropdown = this.filterDropdown) {
+  async selectDropdownItem(item: string) {
     const ele = selectors.getBySomeText(item)
-    if (await actions.getVisible(ele)) {
-      await actions.click(ele)
-    } else {
-      await actions.click(dropdown)
-      await actions.tap(ele)
-    }
+    await actions.click(ele)
   }
 
   async tapDelete() {

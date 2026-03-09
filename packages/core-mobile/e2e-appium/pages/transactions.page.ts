@@ -148,7 +148,7 @@ class TransactionsPage {
   }
 
   get reviewStakeTitle() {
-    return selectors.getBySomeText(txLoc.reviewStakeTitle)
+    return selectors.getByText(txLoc.reviewStakeTitle)
   }
 
   get maxBtn() {
@@ -511,7 +511,7 @@ class TransactionsPage {
     await this.tapWithdraw()
     await this.tapNext()
     await actions.tap(selectors.getById(`list_item__${token}`))
-    await actions.type(selectors.getById('$ fiat_amount_input  '), '100')
+    await actions.type(selectors.getById(txLoc.fiatAmountInput), '100')
     await actions.waitFor(this.errorMsg)
     await actions.isNotVisible(this.nextBtn)
     await actions.isVisible(this.nextBtnDisabled)
