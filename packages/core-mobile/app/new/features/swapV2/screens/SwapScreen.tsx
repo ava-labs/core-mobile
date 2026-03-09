@@ -856,7 +856,7 @@ export const SwapScreen = (): JSX.Element => {
       renderFooter={renderFooter}
       isModal
       shouldAvoidKeyboard
-      contentContainerStyle={{ padding: 16 }}>
+      contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
       {renderFromAndToSections()}
       {renderError()}
       <View style={{ marginTop: 24 }}>

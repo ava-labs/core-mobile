@@ -11,9 +11,9 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { TokenType } from '@avalabs/vm-module-types'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { selectIsSolanaSwapBlocked } from 'store/posthog'
 import { mapApiTokenToLocal } from '../utils/mapApiTokenToLocal'
 import { getLocalTokenIdFromApi } from '../utils/getLocalTokenIdFromApi'
-import { selectIsSolanaSwapBlocked } from 'store/posthog'
 
 const STALE_TIME = 5 * 60 * 1000 // 5 minutes
 
