@@ -1,3 +1,5 @@
+import { isSdkError } from '@avalabs/fusion-sdk'
+
 /**
  * Check if error is user rejection (user cancelled transaction)
  * Don't show error toast for these - user intentionally cancelled
@@ -45,7 +47,13 @@ export function shouldRetryWithNextQuote(error: unknown): boolean {
 export function getSwapErrorMessage(error: unknown): string {
   if (!(error instanceof Error)) return 'Unknown error occurred'
 
-  const message = error.message
+  let actualError: Error | undefined
+
+  if (isSdkError(error)) {
+    actualError = error.walk()
+  }
+
+  const message = actualError?.message ?? error.message
 
   // Common error patterns
   if (message.includes('insufficient funds')) {
