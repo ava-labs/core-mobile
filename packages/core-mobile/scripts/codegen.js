@@ -4,6 +4,13 @@ const path = require('path')
 
 const root = path.resolve(__dirname, '..')
 
+const isCI = process.env.APP_ENV === 'ci'
+
+if (!isCI) {
+  delete process.env.SSL_CERT_FILE
+  delete process.env.SSL_CERT_DIR
+}
+
 function run(cmd) {
   execSync(cmd, {
     stdio: 'inherit',
