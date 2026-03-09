@@ -345,9 +345,11 @@ export const selectFusionFeeUnitsMarginBps = (state: RootState): number => {
   )
 }
 
-export const selectFusionFeeSafetyBps = (state: RootState): number => {
+export const selectFusionMaxAmountGasSafetyBps = (state: RootState): number => {
   const { featureFlags } = state.posthog
-  return parseInt(featureFlags[FeatureVars.FUSION_FEE_SAFETY_BPS] as string)
+  return parseInt(
+    featureFlags[FeatureVars.FUSION_MAX_AMOUNT_GAS_SAFETY_BPS] as string
+  )
 }
 
 export const selectFusionBridgeFeeSafetyBps = (state: RootState): number => {
