@@ -591,7 +591,7 @@ __metadata:
     "@react-native/typescript-config": 0.81.5
     "@react-navigation/bottom-tabs": 7.9.0
     "@react-navigation/elements": 2.9.4
-    "@react-navigation/native": 7.1.26
+    "@react-navigation/native": 7.1.27
     "@react-navigation/native-stack": 7.9.0
     "@reduxjs/toolkit": 1.8.1
     "@reown/walletkit": 1.0.0
@@ -13357,9 +13357,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/native@npm:7.1.26":
-  version: 7.1.26
-  resolution: "@react-navigation/native@npm:7.1.26"
+"@react-navigation/native@npm:7.1.27":
+  version: 7.1.27
+  resolution: "@react-navigation/native@npm:7.1.27"
   dependencies:
     "@react-navigation/core": ^7.13.7
     escape-string-regexp: ^4.0.0
@@ -13369,7 +13369,7 @@ __metadata:
   peerDependencies:
     react: ">= 18.2.0"
     react-native: "*"
-  checksum: 37d41b358b33ed5e9b1cddea62f8d3f9a60e160d89102609ce700003adeaab8df8e41db1c534f2d59acb4f279cc09e624f31298030d25beb06269c736e8230b9
+  checksum: 4299c6eab40d79feabcc6ddac472779722bab0394d16bb4016643664d91e8ab849fd59f8438f43efc5fbebcd3827ffa77f6595191d58f82a25576c6abb934106
   languageName: node
   linkType: hard
 
