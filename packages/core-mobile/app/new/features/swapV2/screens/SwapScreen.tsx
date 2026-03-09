@@ -138,7 +138,7 @@ export const SwapScreen = (): JSX.Element => {
   const feeValidationError = useFeeValidation({
     fromToken,
     nativeTokenBalance: nativeFromToken?.balance,
-    amount: fromTokenValue,
+    amount: debouncedFromTokenValue,
     quote: activeQuote
   })
 
@@ -185,13 +185,16 @@ export const SwapScreen = (): JSX.Element => {
   }, [toToken, updateMissingTokenPrice])
 
   const validateInputs = useCallback(() => {
-    if (fromTokenValue !== undefined && fromTokenValue === 0n) {
+    if (
+      debouncedFromTokenValue !== undefined &&
+      debouncedFromTokenValue === 0n
+    ) {
       setValidationError(fusionErrors.enterAmount())
     } else if (
       minimumTransferAmount !== null &&
-      fromTokenValue !== undefined &&
-      fromTokenValue > 0n &&
-      fromTokenValue < minimumTransferAmount &&
+      debouncedFromTokenValue !== undefined &&
+      debouncedFromTokenValue > 0n &&
+      debouncedFromTokenValue < minimumTransferAmount &&
       fromToken &&
       'decimals' in fromToken
     ) {
@@ -201,15 +204,15 @@ export const SwapScreen = (): JSX.Element => {
       )} ${fromToken.symbol}`
       setValidationError(fusionErrors.belowMinimumAmount(formattedMin))
     } else if (
-      fromTokenValue !== undefined &&
+      debouncedFromTokenValue !== undefined &&
       fromToken !== undefined &&
-      fromTokenValue > fromToken.balance
+      debouncedFromTokenValue > fromToken.balance
     ) {
       setValidationError(fusionErrors.exceedsBalance())
     } else if (
       fromMaxSwapAmount !== undefined &&
-      fromTokenValue !== undefined &&
-      fromTokenValue > fromMaxSwapAmount
+      debouncedFromTokenValue !== undefined &&
+      debouncedFromTokenValue > fromMaxSwapAmount
     ) {
       setValidationError(fusionErrors.insufficientBalanceForFees())
     } else if (feeValidationError) {
@@ -218,7 +221,7 @@ export const SwapScreen = (): JSX.Element => {
       setValidationError(null)
     }
   }, [
-    fromTokenValue,
+    debouncedFromTokenValue,
     minimumTransferAmount,
     fromToken,
     fromMaxSwapAmount,
@@ -226,7 +229,7 @@ export const SwapScreen = (): JSX.Element => {
   ])
 
   const applyQuote = useCallback(() => {
-    if (!fromTokenValue || !activeQuote) {
+    if (!debouncedFromTokenValue || !activeQuote) {
       setToTokenValue(undefined)
       return
     }
@@ -238,7 +241,7 @@ export const SwapScreen = (): JSX.Element => {
     if (amountOut) {
       setToTokenValue(amountOut)
     }
-  }, [activeQuote, fromTokenValue])
+  }, [activeQuote, debouncedFromTokenValue])
 
   const handleToggleTokens = useCallback(() => {
     if (
@@ -675,10 +678,10 @@ export const SwapScreen = (): JSX.Element => {
   }, [fromToken, toToken, isValidDestination, setToToken])
 
   useEffect(() => {
-    if (!fromTokenValue) {
+    if (!debouncedFromTokenValue) {
       setToTokenValue(undefined)
     }
-  }, [fromTokenValue])
+  }, [debouncedFromTokenValue])
 
   usePreventScreenRemoval(isSwapping)
 
