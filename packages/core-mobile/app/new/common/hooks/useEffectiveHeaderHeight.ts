@@ -9,7 +9,7 @@ const ANDROID_DEFAULT_HEADER_HEIGHT = 56
  * After some dependency upgrades, Android can report incorrect values for screens
  * inside nested stacks (e.g. Stack inside native BottomTabs).
  *
- * react-native-screens 4.22+ changed nested stacks to use childFragmentManager,
+ * react-native-screens 4.21.0 changed nested stacks to use childFragmentManager,
  * which can cause the reported header height to be 0 or just the status bar inset
  * instead of the full header height (toolbar + inset).
  *
