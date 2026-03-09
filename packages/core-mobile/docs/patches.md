@@ -45,6 +45,17 @@ to prevent a crash on iOS when react-native-svg is unable to render certain svgs
 logger in wallet connect is hard coded to trace. this patch adjusts it to "error" level for local development and "silent" level for production
 https://github.com/WalletConnect/walletconnect-utils/issues/171
 
+### react-native-screens+4.21.0.patch
+
+1/ CustomToolbar.kt
+
+When Android `WindowInsets` reports `0` for the top system bar inset (common on emulators without a display cutout), the native header toolbar has no status bar padding. This patch adds a fallback that reads the `status_bar_height` system resource to ensure the header is always positioned below the status bar.
+
+2/ SheetDelegate.kt
+
+- `computeSheetOffsetYWithIMEPresent`: patched to always return `0` so the FormSheet does not shift upward when the keyboard appears. Keyboard positioning is handled by `react-native-keyboard-controller` at the content level instead.
+- `handleKeyboardInsetsProgress`: no-op'd to prevent the FormSheet from translating based on keyboard inset changes, avoiding conflicts with `react-native-keyboard-controller`.
+
 ### react-native-reanimated+4.2.1.patch
 
 added isActive prop for useAnimatedSensor

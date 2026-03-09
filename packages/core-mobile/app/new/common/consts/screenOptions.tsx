@@ -4,6 +4,7 @@ import { AccountSettingBarButton } from 'common/components/AccountSettingBarButt
 import BackBarButton from 'common/components/BackBarButton'
 import { ConnectButton } from 'common/components/ConnectButton'
 import { ConnectedNotificationBarButton } from 'common/components/ConnectedNotificationBarButton'
+import { isIOS26 } from 'common/utils/isIOS26'
 import React from 'react'
 import { Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -111,7 +112,7 @@ export const homeScreenOptions: NativeStackNavigationOptions = {
       <View
         sx={{
           flexDirection: 'row',
-          gap: 12,
+          gap: isIOS26 ? 0 : 12,
           height: '100%',
           alignItems: 'center'
         }}>
