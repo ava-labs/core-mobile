@@ -13,23 +13,38 @@ export const useFusionSwapList = ({
   isLoading: boolean
   error: Error | null
 } => {
-  const fromTokens = useSwapTokens(fromCaip2Id ?? '')
-  const toTokens = useSwapTokens(toCaip2Id ?? '')
+  const {
+    tokens: fromTokensList,
+    isLoading: fromIsLoading,
+    error: fromError
+  } = useSwapTokens(fromCaip2Id ?? '')
+  const {
+    tokens: toTokensList,
+    isLoading: toIsLoading,
+    error: toError
+  } = useSwapTokens(toCaip2Id ?? '')
 
   return useMemo(() => {
     const seen = new Set<string>()
-    const tokens = [...fromTokens.tokens, ...toTokens.tokens].filter(t => {
-      // using networkChainId + localId as a unique key to filter duplicates across from/to lists
-      // internalId is optional and may not be present for all tokens, so we fall back to caip2Id + address if internalId is missing
-      const key = `${t.networkChainId}:${t.localId}`
+    const tokens = [...fromTokensList, ...toTokensList].filter(t => {
+      // using networkChainId + localId (lowercased) as a unique key to deduplicate tokens
+      // that appear in both from/to lists
+      const key = `${t.networkChainId}:${t.localId.toLowerCase()}`
       if (seen.has(key)) return false
       seen.add(key)
       return true
     })
     return {
       tokens,
-      isLoading: fromTokens.isLoading || toTokens.isLoading,
-      error: fromTokens.error || toTokens.error
+      isLoading: fromIsLoading || toIsLoading,
+      error: fromError || toError
     }
-  }, [fromTokens, toTokens])
+  }, [
+    fromTokensList,
+    toTokensList,
+    fromIsLoading,
+    toIsLoading,
+    fromError,
+    toError
+  ])
 }
