@@ -113,14 +113,22 @@ export const WithdrawAaveSelectAmountForm = ({
     [borrowData, market.asset.decimals]
   )
 
-  // Max safe withdraw: keep health factor at same level as borrow max (LTV-based)
-  // maxWithdrawUSD = availableBorrowsUSD * 10000 / ltv
+  // Max safe withdraw: keep health factor > 1.0 (liquidation threshold-based)
+  // maxWithdrawUSD = totalCollateralUSD - (totalDebtUSD * 10000 / liquidationThreshold)
   const maxWithdrawAmount = useMemo(() => {
-    if (!hasDebt || !borrowData?.tokenPriceUSD || !borrowData.ltv) {
+    if (
+      !hasDebt ||
+      !borrowData?.tokenPriceUSD ||
+      !borrowData.liquidationThreshold
+    ) {
       return tokenBalance
     }
+    const minCollateralUSD =
+      (borrowData.totalDebtUSD * 10000n) / borrowData.liquidationThreshold
     const maxWithdrawUSD =
-      (borrowData.availableBorrowsUSD * 10000n) / borrowData.ltv
+      borrowData.totalCollateralUSD > minCollateralUSD
+        ? borrowData.totalCollateralUSD - minCollateralUSD
+        : 0n
     const maxTokens = convertUsdToTokenAmount({
       usdAmount: maxWithdrawUSD,
       tokenPriceUSD: borrowData.tokenPriceUSD,

@@ -248,7 +248,7 @@ const DepositTabScreen = ({
 
   return (
     <FlashList
-      key={`deposit-tab-${filter.selected}-${sort.selected}`}
+      key={`deposit-tab-${filter.selected}-${sort.selected}-${data.length}`}
       onScroll={handleScroll}
       overrideProps={overrideProps}
       data={data}
