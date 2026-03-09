@@ -6,8 +6,10 @@ import Logger from 'utils/Logger'
 const CAL_SERVICE_URL = 'https://crypto-assets-service.api.ledger.com'
 const TRUST_SERVICE_URL = 'https://nft.api.live.ledger.com'
 
-const SPL_TOKEN_PROGRAM = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
-const SPL_TOKEN_2022_PROGRAM = 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb'
+const SPL_TOKEN_PROGRAMS = new Set([
+  'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+  'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb'
+])
 const ATA_PROGRAM = 'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'
 
 const TRANSFER_CHECKED_DISCRIMINATOR = 12
@@ -27,11 +29,42 @@ const DEVICE_MODEL_MAP: Record<string, string> = {
   apex: 'apexp'
 }
 
+const BLE_NAME_PATTERNS: ReadonlyArray<[string, string]> = [
+  ['gen 5', 'apexp'],
+  ['apex', 'apexp'],
+  ['flex', 'flex'],
+  ['stax', 'stax'],
+  ['nano x', 'nanox'],
+  ['nano s plus', 'nanosp'],
+  ['nano sp', 'nanosp']
+]
+
 export interface SplTransferInfo {
   destATA: string
   mintAddress: string
   ownerAddress?: string
   needsCreateATA: boolean
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getProgramAddress(ix: any): string | undefined {
+  return ix.programAddress ?? ix.programId?.toString?.()
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getAccountAddress(account: any): string {
+  return account?.address?.toString?.() ?? String(account)
+}
+
+function isTransferChecked(data: unknown): boolean {
+  return (
+    data instanceof Uint8Array && data[0] === TRANSFER_CHECKED_DISCRIMINATOR
+  )
+}
+
+function isCreateATA(data: unknown): boolean {
+  if (!(data instanceof Uint8Array)) return !data
+  return data.length === 0 || data[0] === CREATE_ATA_IDEMPOTENT_DISCRIMINATOR
 }
 
 /**
@@ -43,53 +76,35 @@ export function extractSplTransferInfo(txMessage: any): SplTransferInfo | null {
   const instructions = txMessage?.instructions
   if (!Array.isArray(instructions)) return null
 
-  let transferCheckedIx = null
-  let createATAIx = null
+  const transferIx = instructions.find((ix: unknown) => {
+    const addr = getProgramAddress(ix)
+    return (
+      addr &&
+      SPL_TOKEN_PROGRAMS.has(addr) &&
+      isTransferChecked((ix as Record<string, unknown>).data)
+    )
+  })
+  if (!transferIx) return null
 
-  for (const ix of instructions) {
-    const programAddr = ix.programAddress ?? ix.programId?.toString?.()
-    if (!programAddr) continue
-
-    if (
-      programAddr === SPL_TOKEN_PROGRAM ||
-      programAddr === SPL_TOKEN_2022_PROGRAM
-    ) {
-      const data = ix.data
-      if (
-        data instanceof Uint8Array &&
-        data[0] === TRANSFER_CHECKED_DISCRIMINATOR
-      ) {
-        transferCheckedIx = ix
-      }
-    }
-
-    if (programAddr === ATA_PROGRAM) {
-      const data = ix.data
-      const isCreateIdempotent =
-        data instanceof Uint8Array &&
-        data[0] === CREATE_ATA_IDEMPOTENT_DISCRIMINATOR
-      const isCreateWithNoData =
-        !data || (data instanceof Uint8Array && data.length === 0)
-      if (isCreateIdempotent || isCreateWithNoData) {
-        createATAIx = ix
-      }
-    }
-  }
-
-  if (!transferCheckedIx) return null
-
-  const accounts = transferCheckedIx.accounts
+  const accounts = transferIx.accounts
   if (!accounts || accounts.length < 4) return null
 
-  const mintAddress = accounts[1]?.address?.toString?.() ?? String(accounts[1])
-  const destATA = accounts[2]?.address?.toString?.() ?? String(accounts[2])
+  const mintAddress = getAccountAddress(accounts[1])
+  const destATA = getAccountAddress(accounts[2])
 
-  if (createATAIx) {
-    const ataAccounts = createATAIx.accounts
-    if (ataAccounts && ataAccounts.length >= 4) {
-      const ownerAddress =
-        ataAccounts[2]?.address?.toString?.() ?? String(ataAccounts[2])
-      return { destATA, mintAddress, ownerAddress, needsCreateATA: true }
+  const createATAIx = instructions.find((ix: unknown) => {
+    const addr = getProgramAddress(ix)
+    return (
+      addr === ATA_PROGRAM && isCreateATA((ix as Record<string, unknown>).data)
+    )
+  })
+
+  if (createATAIx?.accounts?.length >= 4) {
+    return {
+      destATA,
+      mintAddress,
+      ownerAddress: getAccountAddress(createATAIx.accounts[2]),
+      needsCreateATA: true
     }
   }
 
@@ -99,25 +114,21 @@ export function extractSplTransferInfo(txMessage: any): SplTransferInfo | null {
 function getDeviceModelName(transport: Transport): string {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const t = transport as any
-  const model = t.deviceModel
+  const modelId: string | undefined = t.deviceModel?.id
+
+  if (modelId && DEVICE_MODEL_MAP[modelId]) {
+    return DEVICE_MODEL_MAP[modelId]!
+  }
+
   const deviceName: string | undefined =
     t.device?.name ?? t.device?.localName ?? t.deviceName
 
-  if (model?.id && DEVICE_MODEL_MAP[model.id]) {
-    return DEVICE_MODEL_MAP[model.id]!
-  }
-
   if (deviceName) {
     const name = deviceName.toLowerCase()
-    if (name.includes('gen 5') || name.includes('apex')) return 'apexp'
-    if (name.includes('flex')) return 'flex'
-    if (name.includes('stax')) return 'stax'
-    if (name.includes('nano x')) return 'nanox'
-    if (name.includes('nano s plus') || name.includes('nano sp'))
-      return 'nanosp'
+    const match = BLE_NAME_PATTERNS.find(([pattern]) => name.includes(pattern))
+    if (match) return match[1]!
   }
 
-  // BLE-only devices: default to nanox (most common)
   Logger.info('[LedgerSPL] Could not detect model, defaulting to nanox')
   return 'nanox'
 }
@@ -179,15 +190,14 @@ async function fetchSignedDescriptor(
   splInfo: SplTransferInfo,
   challenge: string
 ): Promise<string | undefined> {
-  let url: string
+  const path =
+    splInfo.needsCreateATA && splInfo.ownerAddress
+      ? `computed-token-account/${splInfo.ownerAddress}/${splInfo.mintAddress}`
+      : `owner/${splInfo.destATA}`
 
-  if (splInfo.needsCreateATA && splInfo.ownerAddress) {
-    url = `${TRUST_SERVICE_URL}/v2/solana/computed-token-account/${splInfo.ownerAddress}/${splInfo.mintAddress}?challenge=${challenge}`
-  } else {
-    url = `${TRUST_SERVICE_URL}/v2/solana/owner/${splInfo.destATA}?challenge=${challenge}`
-  }
-
-  const response = await fetch(url)
+  const response = await fetch(
+    `${TRUST_SERVICE_URL}/v2/solana/${path}?challenge=${challenge}`
+  )
   if (!response.ok) {
     throw new Error(
       `Trust service fetch failed: ${response.status} ${response.statusText}`
