@@ -55,10 +55,7 @@ import { Account } from 'store/account'
 import { uuid } from 'utils/uuid'
 import { CoreAccountType } from '@avalabs/types'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
-import {
-  enrollTrustedName,
-  extractSplTransferInfo
-} from 'services/ledger/LedgerTrustedNameService'
+import LedgerTrustedNameService from 'services/ledger/LedgerTrustedNameService'
 import { BitcoinWalletPolicyService } from './BitcoinWalletPolicyService'
 import {
   Wallet,
@@ -779,11 +776,15 @@ export class LedgerWallet implements Wallet {
       Logger.info('Message bytes length:', messageBytes.length)
 
       let userInputType: 'ata' | undefined
-      const splInfo = extractSplTransferInfo(txMessage)
+      const splInfo = LedgerTrustedNameService.extractSplTransferInfo(txMessage)
       if (splInfo) {
         userInputType = 'ata'
         try {
-          await enrollTrustedName(transport as Transport, solanaApp, splInfo)
+          await LedgerTrustedNameService.enrollTrustedName(
+            transport as Transport,
+            solanaApp,
+            splInfo
+          )
         } catch (e) {
           Logger.warn(
             'Failed to enroll trusted name, falling back to blind signing',

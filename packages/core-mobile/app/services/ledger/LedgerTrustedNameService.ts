@@ -46,193 +46,205 @@ export interface SplTransferInfo {
   needsCreateATA: boolean
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getProgramAddress(ix: any): string | undefined {
-  return ix.programAddress ?? ix.programId?.toString?.()
-}
+class LedgerTrustedNameService {
+  /**
+   * Extract SPL transfer info from a decompiled Solana transaction message.
+   * Returns null if the transaction does not contain a TransferChecked instruction.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static extractSplTransferInfo(txMessage: any): SplTransferInfo | null {
+    const instructions = txMessage?.instructions
+    if (!Array.isArray(instructions)) return null
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getAccountAddress(account: any): string {
-  return account?.address?.toString?.() ?? String(account)
-}
+    const transferIx = instructions.find((ix: unknown) => {
+      const addr = this.getProgramAddress(ix)
+      return (
+        addr &&
+        SPL_TOKEN_PROGRAMS.has(addr) &&
+        this.isTransferChecked((ix as Record<string, unknown>).data)
+      )
+    })
+    if (!transferIx) return null
 
-function isTransferChecked(data: unknown): boolean {
-  return (
-    data instanceof Uint8Array && data[0] === TRANSFER_CHECKED_DISCRIMINATOR
-  )
-}
+    const accounts = transferIx.accounts
+    if (!accounts || accounts.length < 4) return null
 
-function isCreateATA(data: unknown): boolean {
-  if (!(data instanceof Uint8Array)) return !data
-  return data.length === 0 || data[0] === CREATE_ATA_IDEMPOTENT_DISCRIMINATOR
-}
+    const mintAddress = this.getAccountAddress(accounts[1])
+    const destATA = this.getAccountAddress(accounts[2])
 
-/**
- * Extract SPL transfer info from a decompiled Solana transaction message.
- * Returns null if the transaction does not contain a TransferChecked instruction.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function extractSplTransferInfo(txMessage: any): SplTransferInfo | null {
-  const instructions = txMessage?.instructions
-  if (!Array.isArray(instructions)) return null
+    const createATAIx = instructions.find((ix: unknown) => {
+      const addr = this.getProgramAddress(ix)
+      return (
+        addr === ATA_PROGRAM &&
+        this.isCreateATA((ix as Record<string, unknown>).data)
+      )
+    })
 
-  const transferIx = instructions.find((ix: unknown) => {
-    const addr = getProgramAddress(ix)
-    return (
-      addr &&
-      SPL_TOKEN_PROGRAMS.has(addr) &&
-      isTransferChecked((ix as Record<string, unknown>).data)
+    if (createATAIx?.accounts?.length >= 4) {
+      return {
+        destATA,
+        mintAddress,
+        ownerAddress: this.getAccountAddress(createATAIx.accounts[2]),
+        needsCreateATA: true
+      }
+    }
+
+    return { destATA, mintAddress, needsCreateATA: false }
+  }
+
+  /**
+   * Provide trusted name info to the Ledger device for an SPL token transfer.
+   * This enables clear signing instead of blind signing for TransferChecked instructions.
+   *
+   * The flow:
+   * 1. Fetch PKI certificate from CAL service
+   * 2. Load PKI certificate onto the device
+   * 3. Get a challenge from the device
+   * 4. Fetch signed descriptor from the trust service
+   * 5. Send the signed descriptor to the device via provideTrustedName
+   */
+  static async enrollTrustedName(
+    transport: Transport,
+    solanaApp: AppSolana,
+    splInfo: SplTransferInfo
+  ): Promise<void> {
+    const deviceModelName = this.getDeviceModelName(transport)
+
+    const { descriptor, signature } = await this.fetchPKICertificate(
+      deviceModelName
     )
-  })
-  if (!transferIx) return null
+    await this.loadPKICertificate(transport, descriptor, signature)
 
-  const accounts = transferIx.accounts
-  if (!accounts || accounts.length < 4) return null
-
-  const mintAddress = getAccountAddress(accounts[1])
-  const destATA = getAccountAddress(accounts[2])
-
-  const createATAIx = instructions.find((ix: unknown) => {
-    const addr = getProgramAddress(ix)
-    return (
-      addr === ATA_PROGRAM && isCreateATA((ix as Record<string, unknown>).data)
+    const challenge = await solanaApp.getChallenge()
+    const signedDescriptor = await this.fetchSignedDescriptor(
+      splInfo,
+      challenge
     )
-  })
 
-  if (createATAIx?.accounts?.length >= 4) {
-    return {
-      destATA,
-      mintAddress,
-      ownerAddress: getAccountAddress(createATAIx.accounts[2]),
-      needsCreateATA: true
+    if (signedDescriptor) {
+      await solanaApp.provideTrustedName(signedDescriptor)
     }
   }
 
-  return { destATA, mintAddress, needsCreateATA: false }
-}
-
-function getDeviceModelName(transport: Transport): string {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const t = transport as any
-  const modelId: string | undefined = t.deviceModel?.id
-
-  if (modelId && DEVICE_MODEL_MAP[modelId]) {
-    return DEVICE_MODEL_MAP[modelId]!
+  private static getProgramAddress(ix: any): string | undefined {
+    return ix.programAddress ?? ix.programId?.toString?.()
   }
 
-  const deviceName: string | undefined =
-    t.device?.name ?? t.device?.localName ?? t.deviceName
-
-  if (deviceName) {
-    const name = deviceName.toLowerCase()
-    const match = BLE_NAME_PATTERNS.find(([pattern]) => name.includes(pattern))
-    if (match) return match[1]!
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private static getAccountAddress(account: any): string {
+    return account?.address?.toString?.() ?? String(account)
   }
 
-  Logger.info('[LedgerSPL] Could not detect model, defaulting to nanox')
-  return 'nanox'
-}
-
-async function fetchPKICertificate(
-  deviceModelName: string
-): Promise<{ descriptor: string; signature: string }> {
-  const params = new URLSearchParams({
-    output:
-      'id,target_device,not_valid_after,public_key_usage,certificate_version,descriptor',
-    target_device: deviceModelName,
-    public_key_usage: 'trusted_name',
-    public_key_id: 'domain_metadata_key',
-    latest: 'true'
-  })
-
-  const response = await fetch(`${CAL_SERVICE_URL}/v1/certificates?${params}`)
-  if (!response.ok) {
-    throw new Error(
-      `CAL certificate fetch failed: ${response.status} ${response.statusText}`
+  private static isTransferChecked(data: unknown): boolean {
+    return (
+      data instanceof Uint8Array && data[0] === TRANSFER_CHECKED_DISCRIMINATOR
     )
   }
 
-  const data = await response.json()
-  if (!Array.isArray(data) || data.length === 0) {
-    throw new Error('No PKI certificate returned from CAL service')
+  private static isCreateATA(data: unknown): boolean {
+    if (!(data instanceof Uint8Array)) return !data
+    return data.length === 0 || data[0] === CREATE_ATA_IDEMPOTENT_DISCRIMINATOR
   }
 
-  return {
-    descriptor: data[0].descriptor.data,
-    signature: data[0].descriptor.signatures.prod
+  private static getDeviceModelName(transport: Transport): string {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const t = transport as any
+    const modelId: string | undefined = t.deviceModel?.id
+
+    if (modelId && DEVICE_MODEL_MAP[modelId]) {
+      return DEVICE_MODEL_MAP[modelId]!
+    }
+
+    const deviceName: string | undefined =
+      t.device?.name ?? t.device?.localName ?? t.deviceName
+
+    if (deviceName) {
+      const name = deviceName.toLowerCase()
+      const match = BLE_NAME_PATTERNS.find(([pattern]) =>
+        name.includes(pattern)
+      )
+      if (match?.[1]) return match[1]
+    }
+
+    Logger.info('[LedgerSPL] Could not detect model, defaulting to nanox')
+    return 'nanox'
   }
-}
 
-async function loadPKICertificate(
-  transport: Transport,
-  descriptor: string,
-  signature: string
-): Promise<void> {
-  const descriptorBytes = new Uint8Array(Buffer.from(descriptor, 'hex'))
-  const signatureBytes = new Uint8Array(Buffer.from(signature, 'hex'))
-  const tag = new Uint8Array([0x15, signatureBytes.length])
+  private static async fetchPKICertificate(
+    deviceModelName: string
+  ): Promise<{ descriptor: string; signature: string }> {
+    const params = new URLSearchParams({
+      output:
+        'id,target_device,not_valid_after,public_key_usage,certificate_version,descriptor',
+      target_device: deviceModelName,
+      public_key_usage: 'trusted_name',
+      public_key_id: 'domain_metadata_key',
+      latest: 'true'
+    })
 
-  const payload = Buffer.from(
-    new Uint8Array([...descriptorBytes, ...tag, ...signatureBytes])
-  )
+    const response = await fetch(`${CAL_SERVICE_URL}/v1/certificates?${params}`)
+    if (!response.ok) {
+      throw new Error(
+        `CAL certificate fetch failed: ${response.status} ${response.statusText}`
+      )
+    }
 
-  await transport.send(
-    PKI_CLA,
-    PKI_INS,
-    PKI_KEY_USAGE_TRUSTED_NAME,
-    0x00,
-    payload,
-    [StatusCodes.OK]
-  )
-}
+    const data = await response.json()
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error('No PKI certificate returned from CAL service')
+    }
 
-async function fetchSignedDescriptor(
-  splInfo: SplTransferInfo,
-  challenge: string
-): Promise<string | undefined> {
-  const path =
-    splInfo.needsCreateATA && splInfo.ownerAddress
-      ? `computed-token-account/${splInfo.ownerAddress}/${splInfo.mintAddress}`
-      : `owner/${splInfo.destATA}`
+    return {
+      descriptor: data[0].descriptor.data,
+      signature: data[0].descriptor.signatures.prod
+    }
+  }
 
-  const response = await fetch(
-    `${TRUST_SERVICE_URL}/v2/solana/${path}?challenge=${challenge}`
-  )
-  if (!response.ok) {
-    throw new Error(
-      `Trust service fetch failed: ${response.status} ${response.statusText}`
+  private static async loadPKICertificate(
+    transport: Transport,
+    descriptor: string,
+    signature: string
+  ): Promise<void> {
+    const descriptorBytes = new Uint8Array(Buffer.from(descriptor, 'hex'))
+    const signatureBytes = new Uint8Array(Buffer.from(signature, 'hex'))
+    const tag = new Uint8Array([0x15, signatureBytes.length])
+
+    const payload = Buffer.from(
+      new Uint8Array([...descriptorBytes, ...tag, ...signatureBytes])
+    )
+
+    await transport.send(
+      PKI_CLA,
+      PKI_INS,
+      PKI_KEY_USAGE_TRUSTED_NAME,
+      0x00,
+      payload,
+      [StatusCodes.OK]
     )
   }
 
-  const data = await response.json()
-  return data.signedDescriptor
-}
+  private static async fetchSignedDescriptor(
+    splInfo: SplTransferInfo,
+    challenge: string
+  ): Promise<string | undefined> {
+    const path =
+      splInfo.needsCreateATA && splInfo.ownerAddress
+        ? `computed-token-account/${splInfo.ownerAddress}/${splInfo.mintAddress}`
+        : `owner/${splInfo.destATA}`
 
-/**
- * Provide trusted name info to the Ledger device for an SPL token transfer.
- * This enables clear signing instead of blind signing for TransferChecked instructions.
- *
- * The flow:
- * 1. Fetch PKI certificate from CAL service
- * 2. Load PKI certificate onto the device
- * 3. Get a challenge from the device
- * 4. Fetch signed descriptor from the trust service
- * 5. Send the signed descriptor to the device via provideTrustedName
- */
-export async function enrollTrustedName(
-  transport: Transport,
-  solanaApp: AppSolana,
-  splInfo: SplTransferInfo
-): Promise<void> {
-  const deviceModelName = getDeviceModelName(transport)
+    const response = await fetch(
+      `${TRUST_SERVICE_URL}/v2/solana/${path}?challenge=${challenge}`
+    )
+    if (!response.ok) {
+      throw new Error(
+        `Trust service fetch failed: ${response.status} ${response.statusText}`
+      )
+    }
 
-  const { descriptor, signature } = await fetchPKICertificate(deviceModelName)
-  await loadPKICertificate(transport, descriptor, signature)
-
-  const challenge = await solanaApp.getChallenge()
-  const signedDescriptor = await fetchSignedDescriptor(splInfo, challenge)
-
-  if (signedDescriptor) {
-    await solanaApp.provideTrustedName(signedDescriptor)
+    const data = await response.json()
+    return data.signedDescriptor
   }
 }
+
+export default LedgerTrustedNameService
