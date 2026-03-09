@@ -39,6 +39,12 @@ export const useAaveWithdraw = ({
     queryClient.invalidateQueries({
       queryKey: [ReactQueryKeys.AAVE_AVAILABLE_MARKETS]
     })
+    queryClient.invalidateQueries({
+      queryKey: [ReactQueryKeys.AAVE_USER_BORROW_DATA]
+    })
+    queryClient.invalidateQueries({
+      queryKey: [ReactQueryKeys.AAVE_USER_RESERVES_DATA]
+    })
     onConfirmed?.()
   }, [onConfirmed])
 

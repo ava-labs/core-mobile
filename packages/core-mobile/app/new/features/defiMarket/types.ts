@@ -121,12 +121,14 @@ export interface AaveBorrowData extends BaseBorrowData {
   healthFactor: bigint
   totalCollateralUSD: bigint
   liquidationThreshold: bigint
+  ltv: bigint
 }
 
 // Benqi-specific borrow data
 export interface BenqiBorrowData extends BaseBorrowData {
   liquidity: bigint
   shortfall: bigint
+  collateralFactor: bigint
 }
 
 // AAVE getUserAccountData return type:

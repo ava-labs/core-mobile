@@ -8,8 +8,9 @@ import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { TokenType } from '@avalabs/vm-module-types'
 import { useCChainGasCost } from 'common/hooks/useCChainGasCost'
 import { DefiMarket, DepositAsset } from '../../types'
-import { APPROVE_GAS_AMOUNT, MINT_GAS_AMOUNT } from '../../consts'
+import { APPROVE_GAS_AMOUNT, MINT_GAS_AMOUNT, WAD } from '../../consts'
 import { useBenqiDepositErc20 } from '../../hooks/benqi/useBenqiDepositErc20'
+import { useBenqiBorrowData } from '../../hooks/benqi/useBenqiBorrowData'
 import { SelectAmountFormBase } from '../SelectAmountFormBase'
 
 export const BenqiErc20SelectAmountForm = ({
@@ -50,6 +51,38 @@ export const BenqiErc20SelectAmountForm = ({
     onReverted,
     onError
   })
+
+  const qTokenAddress = market.asset.mintTokenAddress as Address
+  const { data: borrowData } = useBenqiBorrowData(qTokenAddress)
+
+  const currentHealthScore = useMemo(() => {
+    if (!borrowData) return undefined
+    const { liquidity, totalDebtUSD } = borrowData
+    if (totalDebtUSD === 0n) return Infinity
+    const numerator = liquidity + totalDebtUSD
+    const health = (numerator * 10n ** BigInt(WAD)) / totalDebtUSD
+    return Number(health) / Number(10n ** BigInt(WAD))
+  }, [borrowData])
+
+  const hasDebt = borrowData !== undefined && borrowData.totalDebtUSD > 0n
+
+  const calculateHealthScore = useCallback(
+    (depositAmount: TokenUnit): number | undefined => {
+      if (!borrowData) return undefined
+      const { liquidity, totalDebtUSD, tokenPriceUSD, collateralFactor } =
+        borrowData
+      if (totalDebtUSD === 0n) return Infinity
+      const depositUSD =
+        (depositAmount.toSubUnit() * tokenPriceUSD) / 10n ** BigInt(WAD)
+      const depositCollateralEffect =
+        (depositUSD * collateralFactor) / 10n ** BigInt(WAD)
+      const newLiquidity = liquidity + depositCollateralEffect
+      const numerator = newLiquidity + totalDebtUSD
+      const newHealth = (numerator * 10n ** BigInt(WAD)) / totalDebtUSD
+      return Number(newHealth) / Number(10n ** BigInt(WAD))
+    },
+    [borrowData]
+  )
 
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {
@@ -111,6 +144,8 @@ export const BenqiErc20SelectAmountForm = ({
       validateAmount={validateAmount}
       submit={benqiDepositErc20}
       onSubmitted={onSubmitted}
+      currentHealthScore={hasDebt ? currentHealthScore : undefined}
+      calculateHealthScore={hasDebt ? calculateHealthScore : undefined}
     />
   )
 }

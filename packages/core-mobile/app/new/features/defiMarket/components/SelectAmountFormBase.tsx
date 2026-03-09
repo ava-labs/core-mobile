@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import {
   ActivityIndicator,
@@ -12,6 +12,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { transactionSnackbar } from 'common/utils/toast'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
+import { HealthScoreCard } from './HealthScoreCard'
 
 export const SelectAmountFormBase = ({
   title = 'How much do you want to deposit?',
@@ -20,7 +21,9 @@ export const SelectAmountFormBase = ({
   maxAmount,
   validateAmount,
   submit,
-  onSubmitted
+  onSubmitted,
+  currentHealthScore,
+  calculateHealthScore
 }: {
   title?: string
   token: {
@@ -32,6 +35,8 @@ export const SelectAmountFormBase = ({
   validateAmount: (amount: TokenUnit) => Promise<void>
   submit: ({ amount }: { amount: TokenUnit }) => Promise<string>
   onSubmitted: (params: { txHash: string; amount: TokenUnit }) => void
+  currentHealthScore?: number
+  calculateHealthScore?: (amount: TokenUnit) => number | undefined
 }): JSX.Element => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [amount, setAmount] = useState<TokenUnit>()
@@ -68,6 +73,16 @@ export const SelectAmountFormBase = ({
       setIsSubmitting(false)
     }
   }, [amount, submit, onSubmitted])
+
+  const healthScore = useMemo(() => {
+    if (!calculateHealthScore) return undefined
+    if (!amount || amount.toSubUnit() === 0n) return currentHealthScore
+    try {
+      return calculateHealthScore(amount)
+    } catch {
+      return currentHealthScore
+    }
+  }, [amount, currentHealthScore, calculateHealthScore])
 
   const canSubmit =
     !isSubmitting &&
@@ -116,6 +131,11 @@ export const SelectAmountFormBase = ({
           presetPercentages={[25, 50]}
           maxAmount={maxAmount}
         />
+        {calculateHealthScore !== undefined && (
+          <View sx={{ marginTop: 24 }}>
+            <HealthScoreCard score={healthScore} />
+          </View>
+        )}
       </View>
     </ScrollScreen>
   )
