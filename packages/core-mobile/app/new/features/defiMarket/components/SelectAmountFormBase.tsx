@@ -23,7 +23,9 @@ export const SelectAmountFormBase = ({
   submit,
   onSubmitted,
   currentHealthScore,
-  calculateHealthScore
+  calculateHealthScore,
+  balanceLabel,
+  maxAmountZeroMessage
 }: {
   title?: string
   token: {
@@ -37,6 +39,8 @@ export const SelectAmountFormBase = ({
   onSubmitted: (params: { txHash: string; amount: TokenUnit }) => void
   currentHealthScore?: number
   calculateHealthScore?: (amount: TokenUnit) => number | undefined
+  balanceLabel?: string
+  maxAmountZeroMessage?: string
 }): JSX.Element => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [amount, setAmount] = useState<TokenUnit>()
@@ -84,12 +88,13 @@ export const SelectAmountFormBase = ({
     }
   }, [amount, currentHealthScore, calculateHealthScore])
 
+  const effectiveMax = maxAmount ?? tokenBalance
   const canSubmit =
     !isSubmitting &&
     amount &&
     amount.gt(0) &&
-    tokenBalance &&
-    (amount.lt(tokenBalance) || amount?.eq(tokenBalance))
+    effectiveMax &&
+    (amount.lt(effectiveMax) || amount.eq(effectiveMax))
 
   const renderFooter = useCallback(() => {
     return (
@@ -130,6 +135,8 @@ export const SelectAmountFormBase = ({
           autoFocus
           presetPercentages={[25, 50]}
           maxAmount={maxAmount}
+          balanceLabel={balanceLabel}
+          maxAmountZeroMessage={maxAmountZeroMessage}
         />
         {calculateHealthScore !== undefined && (
           <View sx={{ marginTop: 24 }}>

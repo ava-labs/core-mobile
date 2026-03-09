@@ -46,6 +46,7 @@ type SendTokenUnitInputWidgetProps = {
   maxAmount?: TokenUnit
   presetPercentages?: number[]
   balanceLabel?: string
+  maxAmountZeroMessage?: string
 }
 
 export const SendTokenUnitInputWidget = forwardRef<
@@ -67,7 +68,8 @@ export const SendTokenUnitInputWidget = forwardRef<
       autoFocus,
       maxAmount,
       presetPercentages,
-      balanceLabel = 'Balance:'
+      balanceLabel = 'Balance:',
+      maxAmountZeroMessage = "You don't have enough gas fees for this transaction"
     },
     ref
     // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -278,7 +280,7 @@ export const SendTokenUnitInputWidget = forwardRef<
                 color: '$textDanger',
                 fontFamily: 'Inter-Medium'
               }}>
-              You don't have enough gas fees for this transaction
+              {maxAmountZeroMessage}
             </Text>
           </View>
         )}

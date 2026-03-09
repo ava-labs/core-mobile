@@ -113,8 +113,7 @@ export const WithdrawAaveSelectAmountForm = ({
     [borrowData, market.asset.decimals]
   )
 
-  // Max safe withdraw: keep health factor > 1.0 (liquidation threshold-based)
-  // maxWithdrawUSD = totalCollateralUSD - (totalDebtUSD * 10000 / liquidationThreshold)
+  // Max safe withdraw: keep health factor >= 1.01 (liquidation threshold-based)
   const maxWithdrawAmount = useMemo(() => {
     if (
       !hasDebt ||
@@ -124,7 +123,7 @@ export const WithdrawAaveSelectAmountForm = ({
       return tokenBalance
     }
     const minCollateralUSD =
-      (borrowData.totalDebtUSD * 10000n) / borrowData.liquidationThreshold
+      (borrowData.totalDebtUSD * 10100n) / borrowData.liquidationThreshold
     const maxWithdrawUSD =
       borrowData.totalCollateralUSD > minCollateralUSD
         ? borrowData.totalCollateralUSD - minCollateralUSD
@@ -149,8 +148,13 @@ export const WithdrawAaveSelectAmountForm = ({
       if (tokenBalance && amt.gt(tokenBalance)) {
         throw new Error('The specified amount exceeds the available balance')
       }
+      if (maxWithdrawAmount && amt.gt(maxWithdrawAmount)) {
+        throw new Error(
+          'The specified amount exceeds the available to withdraw'
+        )
+      }
     },
-    [tokenBalance]
+    [tokenBalance, maxWithdrawAmount]
   )
 
   // For native AVAX: withdraw WAVAX, then unwrap to AVAX after confirmation
@@ -178,6 +182,8 @@ export const WithdrawAaveSelectAmountForm = ({
       onSubmitted={onSubmitted}
       currentHealthScore={hasDebt ? currentHealthScore : undefined}
       calculateHealthScore={hasDebt ? calculateHealthScore : undefined}
+      balanceLabel="Available to withdraw:"
+      maxAmountZeroMessage="Your position is too close to liquidation to withdraw"
     />
   )
 }

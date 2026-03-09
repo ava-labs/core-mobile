@@ -104,8 +104,13 @@ export const WithdrawBenqiSelectAmountForm = ({
       if (tokenBalance && amt.gt(tokenBalance)) {
         throw new Error('The specified amount exceeds the available balance')
       }
+      if (maxWithdrawAmount && amt.gt(maxWithdrawAmount)) {
+        throw new Error(
+          'The specified amount exceeds the available to withdraw'
+        )
+      }
     },
-    [tokenBalance]
+    [tokenBalance, maxWithdrawAmount]
   )
 
   return (
@@ -119,6 +124,8 @@ export const WithdrawBenqiSelectAmountForm = ({
       onSubmitted={onSubmitted}
       currentHealthScore={hasDebt ? currentHealthScore : undefined}
       calculateHealthScore={hasDebt ? calculateHealthScore : undefined}
+      balanceLabel="Available to withdraw:"
+      maxAmountZeroMessage="Your position is too close to liquidation to withdraw"
     />
   )
 }
