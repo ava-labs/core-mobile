@@ -19,7 +19,7 @@ export const DefaultFeatureFlagConfig = {
   [FeatureVars.STAKE_APY_BPS]: `${DEFAULT_ANNUAL_PERCENTAGE_YIELD_BPS}`,
   [FeatureVars.FUSION_FEE_UNITS_MARGIN_BPS]: '2000', // 20% fee units buffer
   [FeatureVars.FUSION_MAX_AMOUNT_GAS_SAFETY_BPS]: '5000', // 50% safety margin on gas (Max swap amount)
-  [FeatureVars.FUSION_BRIDGE_FEE_SAFETY_BPS]: '2000', // 20% safety margin on bridge fee
+  [FeatureVars.FUSION_BRIDGE_FEE_SAFETY_BPS]: '4000', // 40% safety margin on bridge fee
   [FeatureVars.FUSION_TRANSFER_GAS_MARGIN_BPS]: '2000', // 20% gas units buffer for transfers
   [FeatureGates.BUY_COINBASE_PAY]: true,
   [FeatureGates.SEEDLESS_ONBOARDING]: true,
