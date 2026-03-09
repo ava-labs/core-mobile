@@ -1222,10 +1222,10 @@ describe('FusionService', () => {
       })
 
       const props = {
-        sourceChain: {} as any,
         sourceAsset: {} as any,
-        targetChain: {} as any,
-        targetAsset: {} as any
+        sourceChainId: 'eip155:43114' as any,
+        targetAsset: {} as any,
+        targetChainId: 'eip155:1' as any
       }
 
       const result = await FusionService.getMinimumTransferAmount(props)
@@ -1262,10 +1262,10 @@ describe('FusionService', () => {
       })
 
       const props = {
-        sourceChain: {} as any,
         sourceAsset: {} as any,
-        targetChain: {} as any,
-        targetAsset: {} as any
+        sourceChainId: 'eip155:43114' as any,
+        targetAsset: {} as any,
+        targetChainId: 'eip155:1' as any
       }
 
       const result = await FusionService.getMinimumTransferAmount(props)
@@ -1275,10 +1275,10 @@ describe('FusionService', () => {
 
     it('should throw when service is not initialized', async () => {
       const props = {
-        sourceChain: {} as any,
         sourceAsset: {} as any,
-        targetChain: {} as any,
-        targetAsset: {} as any
+        sourceChainId: 'eip155:43114' as any,
+        targetAsset: {} as any,
+        targetChainId: 'eip155:1' as any
       }
 
       await expect(
