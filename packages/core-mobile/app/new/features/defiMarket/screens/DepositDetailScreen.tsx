@@ -6,6 +6,7 @@ import {
   ScrollView,
   Separator,
   Text,
+  useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
@@ -27,6 +28,9 @@ import { DefiMarketAssetLogo } from '../components/DefiMarketAssetLogo'
 import { DefiAssetLogo } from '../components/DefiAssetLogo'
 
 export function DepositDetailScreen(): JSX.Element {
+  const {
+    theme: { colors }
+  } = useTheme()
   const { marketId } = useLocalSearchParams<{ marketId: string }>()
   const { navigate } = useRouter()
   const { deposits } = useDeposits()
@@ -82,6 +86,7 @@ export function DepositDetailScreen(): JSX.Element {
           market={deposit}
           logoWidth={42}
           networkLogoWidth={18}
+          borderColor={colors.$surfacePrimary}
         />
         <View
           sx={{
@@ -104,7 +109,13 @@ export function DepositDetailScreen(): JSX.Element {
         </View>
       </View>
     )
-  }, [amountInCurrency, deposit, isPrivacyModeEnabled, handleHeaderLayout])
+  }, [
+    amountInCurrency,
+    deposit,
+    isPrivacyModeEnabled,
+    handleHeaderLayout,
+    colors.$surfacePrimary
+  ])
 
   const renderBanner = useCallback(() => {
     if (!deposit) return null

@@ -174,13 +174,14 @@ export const BorrowTabContent = ({
               paddingHorizontal: 14,
               marginTop: 6,
               marginBottom: 10,
-              backgroundColor: theme.colors.$surfacePrimary,
-              gap: 7
+              backgroundColor: theme.colors.$surfacePrimary
             },
             animatedHeaderStyle
           ]}>
           <BorrowProtocolSelector />
-          <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
+          <Text
+            variant="subtitle1"
+            sx={{ color: '$textSecondary', marginTop: -1 }}>
             Take a loan against your deposits and repay anytime.
           </Text>
         </Animated.View>
