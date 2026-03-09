@@ -33,7 +33,7 @@ describe('extractBridgeFee', () => {
     expect(extractBridgeFee(quote)).toBe(0n)
   })
 
-  it('returns 0n when no bridge or protocol fees exist', () => {
+  it('returns 0n when only a network fee is present', () => {
     const quote = makeQuote([
       makeFee({
         type: 'network',
