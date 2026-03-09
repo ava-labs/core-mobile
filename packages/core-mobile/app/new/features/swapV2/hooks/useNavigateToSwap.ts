@@ -46,8 +46,10 @@ export const useNavigateToSwap = (): {
       params: {
         initialTokenIdFrom: fromTokenId,
         initialTokenIdTo: toTokenId,
-        initialFromCaip2Id: fromCaip2Id,
-        initialToCaip2Id: toCaip2Id
+        initialFromCaip2Id:
+          fromCaip2Id ?? cChainNetwork?.caip2Id ?? SUPPORTED_PLATFORM_ID,
+        initialToCaip2Id:
+          toCaip2Id ?? cChainNetwork?.caip2Id ?? SUPPORTED_PLATFORM_ID
       }
     })
   }
