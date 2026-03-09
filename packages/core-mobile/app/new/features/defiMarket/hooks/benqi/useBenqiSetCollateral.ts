@@ -30,6 +30,9 @@ export const useBenqiSetCollateral = ({
       queryClient.invalidateQueries({
         queryKey: [ReactQueryKeys.BENQI_AVAILABLE_MARKETS]
       })
+      queryClient.invalidateQueries({
+        queryKey: [ReactQueryKeys.BENQI_USER_BORROW_DATA]
+      })
     },
     onSettled
   })
