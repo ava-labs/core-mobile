@@ -278,16 +278,22 @@ const WalletCard = ({
               <TouchableOpacity
                 style={{
                   minHeight: HEADER_HEIGHT,
-                  minWidth: 54,
                   paddingRight: 21,
                   justifyContent: 'center',
                   alignItems: 'flex-end'
                 }}>
-                <Icons.Navigation.MoreHoriz
-                  color={colors.$textPrimary}
-                  width={24}
-                  height={24}
-                />
+                <View
+                  style={{
+                    minWidth: 54,
+                    paddingRight: 21,
+                    alignItems: 'flex-end'
+                  }}>
+                  <Icons.Navigation.MoreHoriz
+                    color={colors.$textPrimary}
+                    width={24}
+                    height={24}
+                  />
+                </View>
               </TouchableOpacity>
             </DropdownMenu>
           )}

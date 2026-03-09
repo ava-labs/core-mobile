@@ -112,7 +112,6 @@ export const homeScreenOptions: NativeStackNavigationOptions = {
       <View
         sx={{
           flexDirection: 'row',
-          gap: isIOS26 ? 0 : 12,
           height: '100%',
           alignItems: 'center'
         }}>
