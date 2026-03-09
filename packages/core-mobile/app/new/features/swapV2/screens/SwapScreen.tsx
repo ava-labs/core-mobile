@@ -1,3 +1,5 @@
+import LombardWordmarkDark from 'assets/icons/lombard-wordmark-dark.svg'
+import LombardWordmarkLight from 'assets/icons/lombard-wordmark-light.svg'
 import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
 import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
 import {
@@ -311,6 +313,10 @@ export const SwapScreen = (): JSX.Element => {
   ])
 
   const showFeesAndSlippage = activeQuote?.serviceType === ServiceType.MARKR
+
+  const isLombard =
+    activeQuote?.serviceType === ServiceType.LOMBARD_BTC_TO_BTCB ||
+    activeQuote?.serviceType === ServiceType.LOMBARD_BTCB_TO_BTC
 
   const handleSwap = useCallback(() => {
     AnalyticsService.capture('SwapReviewOrder', {
@@ -717,18 +723,44 @@ export const SwapScreen = (): JSX.Element => {
     )
   }, [coreFeeMessage])
 
+  const renderLombardLogo = useCallback(() => {
+    return (
+      <View
+        sx={{
+          alignItems: 'center',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          gap: 4,
+          marginBottom: 8,
+          opacity: 0.4
+        }}>
+        <Text variant="caption" sx={{ marginRight: -14 }}>
+          {'Powered by'}
+        </Text>
+        {theme.isDark ? (
+          <LombardWordmarkDark width={120} height={40} />
+        ) : (
+          <LombardWordmarkLight width={120} height={40} />
+        )}
+      </View>
+    )
+  }, [theme.isDark])
+
   const renderFooter = useCallback(() => {
     return (
-      <Button
-        testID={!canSwap || isSwapping ? 'next_btn_disabled' : 'next_btn'}
-        type="primary"
-        size="large"
-        onPress={handleSwap}
-        disabled={!canSwap || isSwapping}>
-        {isSwapping ? <ActivityIndicator size="small" /> : 'Next'}
-      </Button>
+      <>
+        {isLombard && renderLombardLogo()}
+        <Button
+          testID={!canSwap || isSwapping ? 'next_btn_disabled' : 'next_btn'}
+          type="primary"
+          size="large"
+          onPress={handleSwap}
+          disabled={!canSwap || isSwapping}>
+          {isSwapping ? <ActivityIndicator size="small" /> : 'Next'}
+        </Button>
+      </>
     )
-  }, [canSwap, handleSwap, isSwapping])
+  }, [canSwap, handleSwap, isSwapping, isLombard, renderLombardLogo])
 
   return (
     <ScrollScreen
