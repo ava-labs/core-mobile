@@ -55,10 +55,10 @@ export const BorrowProtocolSelector = (): React.JSX.Element => {
             flexDirection: 'row',
             alignItems: 'center',
             backgroundColor: '$surfaceSecondary',
-            paddingTop: 8,
-            paddingBottom: 4,
+            paddingTop: 6,
+            paddingBottom: 2,
             paddingLeft: 8,
-            paddingRight: 4,
+            paddingRight: 6,
             borderRadius: 100,
             gap: 6
           }}>

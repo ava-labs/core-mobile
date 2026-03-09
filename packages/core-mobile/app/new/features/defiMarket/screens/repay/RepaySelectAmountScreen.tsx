@@ -10,7 +10,7 @@ import { AaveRepaySelectAmountForm } from '../../components/repay/AaveRepaySelec
 import { BenqiRepaySelectAmountForm } from '../../components/repay/BenqiRepaySelectAmountForm'
 
 export function RepaySelectAmountScreen(): JSX.Element {
-  const router = useRouter()
+  const { dismissAll } = useRouter()
   const activeAccount = useSelector(selectActiveAccount)
   const { marketId, protocol } = useLocalSearchParams<{
     marketId: string
@@ -26,13 +26,9 @@ export function RepaySelectAmountScreen(): JSX.Element {
         txHash,
         address: activeAccount?.addressC ?? ''
       })
-      if (router.canDismiss()) {
-        router.dismiss()
-      } else if (router.canGoBack()) {
-        router.back()
-      }
+      dismissAll()
     },
-    [router, protocol, activeAccount]
+    [dismissAll, protocol, activeAccount]
   )
 
   const handleConfirmed = useCallback(() => {

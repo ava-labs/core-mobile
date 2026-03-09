@@ -160,7 +160,7 @@ const DepositTabScreen = ({
               marginTop: 6,
               marginBottom: 10,
               backgroundColor: theme.colors.$surfacePrimary,
-              gap: 7
+              gap: 8
             },
             animatedHeaderStyle
           ]}>
@@ -182,11 +182,13 @@ const DepositTabScreen = ({
             isClaiming={isClaimingRewards}
           />
         )}
-        <DropdownSelections
-          filter={filter}
-          sort={sort}
-          sx={{ paddingHorizontal: 16, marginTop: 4 }}
-        />
+        {deposits.length > 0 && (
+          <DropdownSelections
+            filter={filter}
+            sort={sort}
+            sx={{ paddingHorizontal: 16, marginTop: 4 }}
+          />
+        )}
       </View>
     )
   }, [
@@ -198,7 +200,8 @@ const DepositTabScreen = ({
     availableRewards,
     claimAllRewards,
     isClaimingRewards,
-    isPrivacyModeEnabled
+    isPrivacyModeEnabled,
+    deposits.length
   ])
 
   useEffect(() => {
