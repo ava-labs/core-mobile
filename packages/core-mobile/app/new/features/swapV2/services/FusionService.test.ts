@@ -212,8 +212,12 @@ describe('FusionService', () => {
       ).rejects.toThrow('SDK initialization failed')
 
       expect(Logger.error).toHaveBeenCalledWith(
-        'Failed to initialize Fusion service',
-        error
+        `Failed to initialize Fusion service: ${error.message}`,
+        {
+          error,
+          environment: config.environment,
+          enabledServices: config.enabledServices
+        }
       )
     })
   })
