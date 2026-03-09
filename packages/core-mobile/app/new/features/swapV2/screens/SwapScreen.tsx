@@ -1,4 +1,5 @@
-import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
+import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   Button,
@@ -25,6 +26,7 @@ import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
+import { useDebounce } from 'hooks/useDebounce'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -48,6 +50,8 @@ import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
 import { ServiceType } from '../types'
 import { useFusionTransfers } from '../hooks/useZustandStore'
+import { useMaxSwapAmount } from '../hooks/useMaxSwapAmount'
+import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -83,11 +87,19 @@ export const SwapScreen = (): JSX.Element => {
     quoteError,
     swapStatus
   } = useSwapContext()
-  const [maxFromValue, setMaxFromValue] = useState<bigint | undefined>()
   const [fromTokenValue, setFromTokenValue] = useState<bigint>()
   const [toTokenValue, setToTokenValue] = useState<bigint>()
   const [validationError, setValidationError] =
     useState<FusionQuoteError | null>(null)
+  const minimumTransferAmount = useMinimumTransferAmount({ fromToken, toToken })
+
+  const fromMaxSwapAmount = useMaxSwapAmount({
+    fromToken,
+    toToken,
+    minimumTransferAmount
+  })
+
+  const { debounced: debouncedFromTokenValue } = useDebounce(fromTokenValue)
   const cChainNetwork = useCChainNetwork()
   const solanaNetwork = useSolanaNetwork()
   const activeAccount = useSelector(selectActiveAccount)
@@ -156,15 +168,28 @@ export const SwapScreen = (): JSX.Element => {
     if (fromTokenValue !== undefined && fromTokenValue === 0n) {
       setValidationError(fusionErrors.enterAmount())
     } else if (
-      maxFromValue !== undefined &&
+      minimumTransferAmount !== null &&
       fromTokenValue !== undefined &&
-      fromTokenValue > maxFromValue
+      fromTokenValue > 0n &&
+      fromTokenValue < minimumTransferAmount &&
+      fromToken &&
+      'decimals' in fromToken
+    ) {
+      const formattedMin = `${formatTokenAmount(
+        bigintToBig(minimumTransferAmount, fromToken.decimals),
+        fromToken.decimals
+      )} ${fromToken.symbol}`
+      setValidationError(fusionErrors.belowMinimumAmount(formattedMin))
+    } else if (
+      fromMaxSwapAmount !== undefined &&
+      fromTokenValue !== undefined &&
+      fromTokenValue > fromMaxSwapAmount
     ) {
       setValidationError(fusionErrors.exceedsBalance())
     } else {
       setValidationError(null)
     }
-  }, [fromTokenValue, maxFromValue])
+  }, [fromTokenValue, minimumTransferAmount, fromToken, fromMaxSwapAmount])
 
   const applyQuote = useCallback(() => {
     if (!fromTokenValue || !activeQuote) {
@@ -180,12 +205,6 @@ export const SwapScreen = (): JSX.Element => {
       setToTokenValue(amountOut)
     }
   }, [activeQuote, fromTokenValue])
-
-  const calculateMax = useCallback(() => {
-    if (!fromToken) return
-
-    setMaxFromValue(fromToken?.balance)
-  }, [fromToken])
 
   const handleToggleTokens = useCallback(() => {
     if (
@@ -205,7 +224,6 @@ export const SwapScreen = (): JSX.Element => {
     setFromTokenValue(toTokenValue)
     setToTokenValue(undefined)
     toTokenValue && setAmount(toTokenValue)
-    setMaxFromValue(undefined)
   }, [
     fromToken,
     toToken,
@@ -285,9 +303,8 @@ export const SwapScreen = (): JSX.Element => {
     (amount: bigint): void => {
       setFromTokenValue(amount)
       setDestination(SwapSide.SELL)
-      setAmount(amount)
     },
-    [setDestination, setAmount]
+    [setDestination]
   )
 
   const handleToAmountChange = useCallback(
@@ -388,7 +405,7 @@ export const SwapScreen = (): JSX.Element => {
           }}
           onBlur={() => setIsInputFocused(false)}
           onSelectToken={handleSelectFromToken}
-          maximum={fromToken?.balance}
+          maximum={fromMaxSwapAmount}
           valid={!validationError}
         />
       </View>
@@ -400,6 +417,7 @@ export const SwapScreen = (): JSX.Element => {
     handleSelectFromToken,
     getNetwork,
     fromToken,
+    fromMaxSwapAmount,
     validationError,
     fromTokenValue,
     isSwapping
@@ -512,9 +530,21 @@ export const SwapScreen = (): JSX.Element => {
     }
   }, [navigation, dismissAll, swapStatus])
 
+  // Trigger quote fetch when debounced amount settles, skip if below minimum
+  const syncDebouncedAmount = useCallback(() => {
+    if (debouncedFromTokenValue === undefined) return
+    if (
+      minimumTransferAmount !== null &&
+      debouncedFromTokenValue > 0n &&
+      debouncedFromTokenValue < minimumTransferAmount
+    )
+      return
+    setAmount(debouncedFromTokenValue)
+  }, [debouncedFromTokenValue, minimumTransferAmount, setAmount])
+
   useEffect(validateInputs, [validateInputs])
   useEffect(applyQuote, [applyQuote])
-  useEffect(calculateMax, [calculateMax])
+  useEffect(syncDebouncedAmount, [syncDebouncedAmount])
 
   const initialized = useRef(false)
   useEffect(setInitialTokensFx, [setInitialTokensFx])

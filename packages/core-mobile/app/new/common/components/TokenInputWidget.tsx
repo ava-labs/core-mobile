@@ -307,7 +307,12 @@ export const TokenInputWidget = ({
                   style={{
                     minWidth: 72
                   }}
-                  disabled={disabled || balance === undefined}
+                  disabled={
+                    disabled ||
+                    balance === undefined ||
+                    // Keep Max disabled until maximum is known
+                    (button.percent === 1 && maximum === undefined)
+                  }
                   onPress={() => {
                     handlePressPercentageButton(button, index)
                     tokenAmountInputRef.current?.blur()

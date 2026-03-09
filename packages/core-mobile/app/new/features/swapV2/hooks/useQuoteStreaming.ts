@@ -2,9 +2,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { LocalTokenWithBalance } from 'store/balance'
 import Logger from 'utils/Logger'
 import { NetworkWithCaip2ChainId } from 'store/network'
+import { isSdkError } from '@avalabs/fusion-sdk'
 import FusionService from '../services/FusionService'
 import { toSwappableAsset, toChain } from '../utils/fusionTypeConverters'
 import { fusionErrors } from '../utils/fusionErrors'
+import { logSdkError } from '../utils/fusionLogger'
 import {
   useBestQuote,
   useAllQuotes,
@@ -103,13 +105,11 @@ export function useQuoteStreaming(
 
       return { quoter, error: null }
     } catch (err) {
-      Logger.error('Failed to create Quoter instance', err)
+      logSdkError('[useQuoteStreaming] getQuoter error', err)
+
       return {
         quoter: null,
-        error:
-          err instanceof Error
-            ? err
-            : new Error('Failed to create Quoter instance')
+        error: isSdkError(err) ? err.walk() : (err as Error)
       }
     }
   }, [

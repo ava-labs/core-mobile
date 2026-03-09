@@ -2,9 +2,12 @@ import {
   BitcoinFunctions,
   createTransferManager,
   Environment,
+  EstimateNativeFeeOptions,
   EvmServiceInitializer,
+  GetMinimumTransferAmountProps,
   LombardServiceInitializer,
   MarkrServiceInitializer,
+  NativeFeeEstimate,
   Quote,
   QuoterInterface,
   ServiceInitializer,
@@ -247,16 +250,20 @@ class FusionService implements IFusionService {
   /**
    * Execute a transfer using the provided quote
    * @param quote The quote to execute
+   * @param estimateGasMarginBps Margin in basis points added to the gas estimate to reduce out-of-gas risk
    * @returns Transfer object with status and transaction details
    */
-  async transferAsset(quote: Quote): Promise<Transfer> {
+  async transferAsset(quote: Quote, estimateGasMarginBps: number): Promise<Transfer> {
     try {
       Logger.info('Executing transfer with quote:', {
         aggregator: quote.aggregator.name,
         serviceType: quote.serviceType
       })
 
-      const transfer = await this.transferManager.transferAsset({ quote })
+      const transfer = await this.transferManager.transferAsset({
+        quote,
+        gasSettings: { estimateGasMarginBps }
+      })
 
       Logger.info('Transfer executed:', {
         transferId: transfer.id,
@@ -302,6 +309,26 @@ class FusionService implements IFusionService {
       Logger.error('[FusionService] trackTransfer error', err)
       this.#trackingCancels.delete(transfer.id)
     })
+  }
+
+  /**
+   * Estimate the native fee required to execute the provided quote.
+   */
+  async estimateNativeFee(
+    quote: Quote,
+    options?: EstimateNativeFeeOptions
+  ): Promise<NativeFeeEstimate> {
+    return this.transferManager.estimateNativeFee(quote, options)
+  }
+
+  /**
+   * Returns the minimum source amount per service for the given token pair.
+   * Returns null when no service supports the pair.
+   */
+  async getMinimumTransferAmount(
+    props: GetMinimumTransferAmountProps
+  ): Promise<{ [key in ServiceType]?: bigint } | null> {
+    return this.transferManager.getMinimumTransferAmount(props)
   }
 
   /**
