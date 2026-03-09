@@ -278,7 +278,6 @@ const WalletCard = ({
               <TouchableOpacity
                 style={{
                   minHeight: HEADER_HEIGHT,
-                  paddingRight: 21,
                   justifyContent: 'center',
                   alignItems: 'flex-end'
                 }}>
