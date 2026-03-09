@@ -210,7 +210,7 @@ describe('Fusion listeners', () => {
 
       expect(mockUseIsFusionServiceReady.setState).toHaveBeenCalledWith(false)
       expect(Logger.error).toHaveBeenCalledWith(
-        'Failed to initialize Fusion service',
+        '[initFusionService listener] Failed to initialize Fusion service',
         error
       )
     })
