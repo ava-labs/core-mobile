@@ -1,16 +1,12 @@
-import { skipToken, useQuery } from '@tanstack/react-query'
 import { TokenType } from '@avalabs/vm-module-types'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { selectActiveAccount } from 'store/account'
 import { getAddressByNetwork } from 'store/account/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { useNetworkFee } from 'hooks/useNetworkFee'
 import type { LocalTokenWithBalance } from 'store/balance'
 import { NetworkWithCaip2ChainId } from 'store/network'
 import {
-  selectFusionFeeUnitsMarginBps,
   selectFusionMaxAmountGasSafetyBps,
   selectFusionBridgeFeeSafetyBps
 } from 'store/posthog'
@@ -20,7 +16,9 @@ import { toSwappableAsset, toChain } from '../../utils/fusionTypeConverters'
 import type { Quote } from '../../types'
 import type { QuoterParams } from '../../services/types'
 import { useIsFusionServiceReady } from '../useZustandStore'
-import { buildFeeOptions, computeMaxAmount, getNativeBridgeFee } from './utils'
+import { useFeeEstimation } from '../useFeeEstimation'
+import { getNativeBridgeFee } from '../../utils/bridgeFee'
+import { computeMaxAmount } from './utils'
 
 /**
  * Subscribes to the first quote emitted by a Quoter for the given params,
@@ -155,7 +153,6 @@ export const useMaxSwapAmount = ({
   const [isFusionServiceReady] = useIsFusionServiceReady()
   const { getNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
-  const feeUnitsMarginBps = useSelector(selectFusionFeeUnitsMarginBps)
   const maxAmountGasSafetyBps = useSelector(selectFusionMaxAmountGasSafetyBps)
   const bridgeFeeSafetyBps = useSelector(selectFusionBridgeFeeSafetyBps)
 
@@ -184,13 +181,6 @@ export const useMaxSwapAmount = ({
 
   const isNative = fromToken?.type === TokenType.NATIVE
 
-  const { data: networkFee } = useNetworkFee(fromNetwork)
-
-  const feeOptions = useMemo(
-    () => buildFeeOptions(feeUnitsMarginBps, networkFee),
-    [feeUnitsMarginBps, networkFee]
-  )
-
   const dummyQuote = useDummyQuote({
     isNative,
     isFusionServiceReady,
@@ -210,25 +200,11 @@ export const useMaxSwapAmount = ({
     [isNative, dummyQuote, bridgeFeeSafetyBps]
   )
 
-  const { data: bufferedFee, error } = useQuery({
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [ReactQueryKeys.FUSION_MAX_SWAP_FEE_ESTIMATE, dummyQuote?.id],
-    queryFn: dummyQuote
-      ? async () => {
-          const { totalFee } = await FusionService.estimateNativeFee(
-            dummyQuote,
-            feeOptions
-          )
-          return (totalFee * (10000n + BigInt(maxAmountGasSafetyBps))) / 10000n
-        }
-      : skipToken,
-    staleTime: 0,
-    retry: false
+  const { gasFee: bufferedFee, error } = useFeeEstimation({
+    quote: dummyQuote,
+    fromNetwork,
+    gasSafetyBps: maxAmountGasSafetyBps
   })
-
-  useEffect(() => {
-    if (error) logSdkError('[useMaxSwapAmount] estimateNativeFee error', error)
-  }, [error])
 
   return useMemo(
     () =>

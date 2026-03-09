@@ -13,7 +13,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { TokenWithBalance } from '@avalabs/vm-module-types'
+import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
 import { SwapSide } from '@paraswap/sdk'
 import { useNavigation } from '@react-navigation/native'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -52,6 +52,7 @@ import { ServiceType } from '../types'
 import { useFusionTransfers } from '../hooks/useZustandStore'
 import { useMaxSwapAmount } from '../hooks/useMaxSwapAmount'
 import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
+import { useFeeValidation } from '../hooks/useFeeValidation'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -122,6 +123,25 @@ export const SwapScreen = (): JSX.Element => {
   const activeQuote = userQuote ?? bestQuote
   Logger.info('activeQuote', activeQuote)
 
+  const nativeFromToken = useMemo(
+    () =>
+      fromToken
+        ? swapList.find(
+            t =>
+              t.type === TokenType.NATIVE &&
+              t.networkChainId === fromToken.networkChainId
+          )
+        : undefined,
+    [fromToken, swapList]
+  )
+
+  const feeValidationError = useFeeValidation({
+    fromToken,
+    nativeTokenBalance: nativeFromToken?.balance,
+    amount: fromTokenValue,
+    quote: activeQuote
+  })
+
   const activeError = validationError ?? quoteError
 
   const canSwap: boolean =
@@ -181,15 +201,29 @@ export const SwapScreen = (): JSX.Element => {
       )} ${fromToken.symbol}`
       setValidationError(fusionErrors.belowMinimumAmount(formattedMin))
     } else if (
+      fromTokenValue !== undefined &&
+      fromToken !== undefined &&
+      fromTokenValue > fromToken.balance
+    ) {
+      setValidationError(fusionErrors.exceedsBalance())
+    } else if (
       fromMaxSwapAmount !== undefined &&
       fromTokenValue !== undefined &&
       fromTokenValue > fromMaxSwapAmount
     ) {
-      setValidationError(fusionErrors.exceedsBalance())
+      setValidationError(fusionErrors.insufficientBalanceForFees())
+    } else if (feeValidationError) {
+      setValidationError(feeValidationError)
     } else {
       setValidationError(null)
     }
-  }, [fromTokenValue, minimumTransferAmount, fromToken, fromMaxSwapAmount])
+  }, [
+    fromTokenValue,
+    minimumTransferAmount,
+    fromToken,
+    fromMaxSwapAmount,
+    feeValidationError
+  ])
 
   const applyQuote = useCallback(() => {
     if (!fromTokenValue || !activeQuote) {

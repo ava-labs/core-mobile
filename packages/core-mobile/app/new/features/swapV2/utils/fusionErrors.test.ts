@@ -4,7 +4,7 @@ import {
   isInvalidResponseError,
   shouldRetryWithNextQuote,
   getSwapErrorMessage
-} from './swapErrors'
+} from './fusionErrors'
 
 describe('isUserRejectionError', () => {
   it('should return true for "user rejected" message', () => {

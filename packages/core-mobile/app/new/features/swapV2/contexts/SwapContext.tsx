@@ -39,7 +39,7 @@ import {
   isUserRejectionError,
   shouldRetryWithNextQuote,
   getSwapErrorMessage
-} from '../utils/swapErrors'
+} from '../utils/fusionErrors'
 import { trackFusionTransfer } from '../store/actions'
 import { logSdkError } from '../utils/fusionLogger'
 
