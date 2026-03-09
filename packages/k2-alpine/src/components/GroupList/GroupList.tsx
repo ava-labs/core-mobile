@@ -146,12 +146,14 @@ export const GroupList = ({
           onPress,
           onLongPress,
           containerSx,
-          hideSeparator
+          hideSeparator,
+          disableRowAccessibility
         } = item
 
         return (
           <View key={index} sx={containerSx}>
             <TouchableOpacity
+              accessible={!disableRowAccessibility}
               testID={testID ? testID : `list_item__${title}`}
               onPress={() => handlePress(item, index)}
               disabled={!onPress && !accordion}
@@ -258,6 +260,8 @@ export type GroupListItem = {
   expanded?: boolean
   containerSx?: SxProp
   hideSeparator?: boolean
+  /** When true, sets accessible={false} on the row so child testIDs (e.g. Toggle) are findable by Appium */
+  disableRowAccessibility?: boolean
 }
 
 const AnimatedChevron = ({ expanded }: { expanded: boolean }): JSX.Element => {

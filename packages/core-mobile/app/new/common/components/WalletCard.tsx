@@ -250,8 +250,6 @@ const WalletCard = ({
         </View>
 
         <View
-          accessible={true}
-          testID={`more_icon__${wallet.name}`}
           sx={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -266,6 +264,7 @@ const WalletCard = ({
           />
           {showMoreButton && (
             <DropdownMenu
+              testID={`more_icon__${wallet.name}`}
               groups={[
                 {
                   key: 'wallet-actions',

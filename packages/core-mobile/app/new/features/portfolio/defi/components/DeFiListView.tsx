@@ -34,6 +34,7 @@ export const DeFiListView = ({
 
   return (
     <TouchableOpacity
+      testID={`defi_list_item__${index}`}
       onPress={onPress}
       sx={{
         paddingLeft: HORIZONTAL_MARGIN,
@@ -41,12 +42,7 @@ export const DeFiListView = ({
         alignItems: 'center',
         gap: HORIZONTAL_ITEM_GAP
       }}>
-      <LogoWithNetwork
-        item={item}
-        chain={chain}
-        size="small"
-        testID={`defi_list_item__${index}`}
-      />
+      <LogoWithNetwork item={item} chain={chain} size="small" />
       <View
         sx={{
           flex: 1,

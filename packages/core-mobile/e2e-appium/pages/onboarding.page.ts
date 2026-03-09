@@ -94,10 +94,6 @@ class OnboardingPage {
     return selectors.getById(onboardingLoc.solanaLaunchTitle)
   }
 
-  get grabber() {
-    return selectors.getById(onboardingLoc.grabber)
-  }
-
   get securityWarningContent() {
     return selectors.getByText(onboardingLoc.securityWarningContent)
   }
@@ -105,7 +101,10 @@ class OnboardingPage {
   get verifyYourRecoveryPhraseTitle() {
     return selectors.getByText(onboardingLoc.verifyYourRecoveryPhraseTitle)
   }
-
+  
+  get bottomSheet() {
+    return selectors.getById(onboardingLoc.bottomSheet)
+  }
   async tapAccessExistingWallet() {
     await actions.tap(this.accessExistingWallet, this.typeInRecoveryPhase)
   }
@@ -205,7 +204,7 @@ class OnboardingPage {
     await actions.delay(1000)
   }
 
-  async dismissBottomSheet(element = this.grabber) {
+  async dismissBottomSheet(element = this.bottomSheet) {
     await actions.waitFor(element, 30000)
     await actions.dragAndDrop(element, [0, 500])
   }

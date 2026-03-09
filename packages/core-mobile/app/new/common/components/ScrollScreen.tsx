@@ -104,7 +104,7 @@ export const ScrollScreen = ({
   hideHeaderBackground,
   headerCenterOverlay,
   headerStyle,
-  testID,
+  testID = 'bottom_sheet',
   renderHeader,
   renderFooter,
   renderHeaderRight,

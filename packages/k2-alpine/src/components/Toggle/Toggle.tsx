@@ -19,6 +19,7 @@ export const Toggle: FC<SwitchProps> = ({
   return (
     <Switch
       {...rest}
+      accessible={testID !== undefined}
       testID={testID}
       value={value}
       style={[style, { opacity, alignSelf: 'center' }]}

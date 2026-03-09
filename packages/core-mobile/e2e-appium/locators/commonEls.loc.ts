@@ -1,4 +1,5 @@
 export default {
+  bottomSheet: 'bottom_sheet',
   keypadUpButton: 'keypad_up_button',
   successfullyAdded: 'successfully added',
   backButton: 'header_back',
@@ -21,7 +22,6 @@ export default {
   next: 'Next',
   dismiss: 'Dismiss',
   dismissAndroid: 'DISMISS',
-  grabber: 'grabber',
   cChain: 'Avalanche C-Chain',
   cChain_2: 'Avalanche (C-Chain)',
   pChain: 'Avalanche P-Chain',

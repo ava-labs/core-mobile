@@ -90,10 +90,6 @@ class CommonElsPage {
     return selectors.getByText(commonEls.dismissAndroid)
   }
 
-  get grabber() {
-    return selectors.getById(commonEls.grabber)
-  }
-
   get cChain() {
     return selectors.getByText(commonEls.cChain)
   }
@@ -278,6 +274,10 @@ class CommonElsPage {
     return selectors.getById(commonEls.keypadUpButton)
   }
 
+  get bottomSheet() {
+    return selectors.getById(commonEls.bottomSheet)
+  }
+
   listItem(name: string) {
     return selectors.getById(`list_item__${name}`)
   }
@@ -399,7 +399,7 @@ class CommonElsPage {
     await actions.tap(this.nextBtnById)
   }
 
-  async dismissBottomSheet(element = this.grabber) {
+  async dismissBottomSheet(element = this.bottomSheet) {
     await actions.delay(1000)
     const backBtn =
       !(await actions.getVisible(element)) &&
