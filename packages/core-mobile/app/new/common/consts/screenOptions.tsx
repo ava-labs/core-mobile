@@ -35,7 +35,6 @@ export const modalScreensOptions: NativeStackNavigationOptions = {
   presentation: Platform.OS === 'ios' ? 'pageSheet' : 'formSheet',
   sheetElevation: 0,
   sheetInitialDetentIndex: 0,
-  sheetShouldOverflowTopInset: false,
   sheetAllowedDetents: [Platform.OS === 'android' ? 0.93 : 0.99],
   headerLeft: () => <BackBarButton />,
   gestureEnabled: true,
