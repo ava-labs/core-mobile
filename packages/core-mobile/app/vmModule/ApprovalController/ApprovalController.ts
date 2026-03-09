@@ -8,8 +8,15 @@ import {
   RequestPublicKeyParams
 } from '@avalabs/vm-module-types'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
+import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
+import {
+  TxSendConfirmedEvent,
+  TxSendFailedEvent
+} from 'store/rpc/utils/txSendMethods'
+import { RequestContext } from 'store/rpc/types'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NavigationPresentationMode } from 'new/common/types'
 import WalletService from 'services/wallet/WalletService'
 import { Curve } from 'utils/publicKeys'
@@ -30,6 +37,17 @@ import {
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { handleLedgerErrorAndShowAlert } from './utils'
+
+/**
+ * Extracts the user's address from the WalletConnect session for the given dapp request.
+ * Session namespace accounts are formatted as "namespace:chainId:address" (e.g. "eip155:1:0x...").
+ */
+const getDappRequestAddress = (request: RpcRequest): string => {
+  const session = WalletConnectService.getSession(request.sessionId)
+  const namespace = request.chainId.split(':')[0] ?? ''
+  const caip2Account = session?.namespaces[namespace]?.accounts[0] ?? ''
+  return caip2Account.split(':')[2] ?? ''
+}
 
 class ApprovalController implements VmModuleApprovalController {
   private userCancelledMap = new BoundedMap<string, boolean>(10)
@@ -74,9 +92,11 @@ class ApprovalController implements VmModuleApprovalController {
   }
 
   onTransactionConfirmed({
+    txHash,
     explorerLink,
     request
   }: {
+    txHash: string
     explorerLink: string
     request: RpcRequest
   }): void {
@@ -96,13 +116,47 @@ class ApprovalController implements VmModuleApprovalController {
     transactionSnackbar.success({ explorerLink, toastId: request.requestId })
 
     // only show confetti for in-app requests
-    if (isInAppRequest(request) && isConfettiEnabled(request)) {
-      showConfetti()
+    if (isInAppRequest(request) && !confettiDisabled) {
+      setTimeout(() => {
+        confetti.restart()
+      }, 100)
+    }
+
+    if (!isInAppRequest(request)) {
+      const address = getDappRequestAddress(request)
+      // VM module only calls onTransactionConfirmed for tx send methods
+      const eventName = `${request.method}_confirmed` as TxSendConfirmedEvent
+      AnalyticsService.captureWithEncryption(eventName, {
+        dAppUrl: request.dappInfo.url,
+        address,
+        chainId: numericChainId ?? 0,
+        txHash
+      })
     }
   }
 
-  onTransactionReverted(): void {
+  onTransactionReverted({
+    txHash,
+    request
+  }: {
+    txHash: string
+    request: RpcRequest
+  }): void {
     transactionSnackbar.error({ error: 'Transaction reverted' })
+
+    if (!isInAppRequest(request)) {
+      const address = getDappRequestAddress(request)
+      const chainId = getChainIdFromCaip2(request.chainId) ?? 0
+
+      // VM module only calls onTransactionReverted for tx send methods
+      const eventName = `${request.method}_failed` as TxSendFailedEvent
+      AnalyticsService.captureWithEncryption(eventName, {
+        dAppUrl: request.dappInfo.url,
+        address,
+        chainId,
+        txHash
+      })
+    }
   }
 
   handleLedgerOnReject = async ({

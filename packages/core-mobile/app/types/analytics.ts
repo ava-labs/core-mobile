@@ -137,6 +137,78 @@ export type AnalyticsEvents = {
   BrowserHistoryTapped: { url: string }
   WalletConnectedToDapp: { dAppUrl: string }
   TxSubmittedToDapp: undefined
+  eth_sendTransaction_success: {
+    dAppUrl: string
+    address: string
+    chainId: number
+    txHash: string
+  }
+  avalanche_sendTransaction_success: {
+    dAppUrl: string
+    address: string
+    chainId: number
+    txHash: string
+  }
+  bitcoin_sendTransaction_success: {
+    dAppUrl: string
+    address: string
+    chainId: number
+    txHash: string
+  }
+  solana_signAndSendTransaction_success: {
+    dAppUrl: string
+    address: string
+    chainId: number
+    txHash: string
+  }
+  eth_sendTransaction_confirmed: {
+    dAppUrl: string
+    address: string
+    chainId: number
+    txHash: string
+  }
+  avalanche_sendTransaction_confirmed: {
+    dAppUrl: string
+    address: string
+    chainId: number
+    txHash: string
+  }
+  bitcoin_sendTransaction_confirmed: {
+    dAppUrl: string
+    address: string
+    chainId: number
+    txHash: string
+  }
+  solana_signAndSendTransaction_confirmed: {
+    dAppUrl: string
+    address: string
+    chainId: number
+    txHash: string
+  }
+  eth_sendTransaction_failed: {
+    dAppUrl: string
+    address: string
+    chainId: number
+    txHash: string
+  }
+  avalanche_sendTransaction_failed: {
+    dAppUrl: string
+    address: string
+    chainId: number
+    txHash: string
+  }
+  bitcoin_sendTransaction_failed: {
+    dAppUrl: string
+    address: string
+    chainId: number
+    txHash: string
+  }
+  solana_signAndSendTransaction_failed: {
+    dAppUrl: string
+    address: string
+    chainId: number
+    txHash: string
+  }
 
   // CP-7989 - Address and Tx Hash Analytics Collection
   AccountAddressesUpdated: {
