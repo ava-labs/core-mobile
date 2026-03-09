@@ -22,7 +22,6 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
-import { useSwapList } from 'common/hooks/useSwapList'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
@@ -45,33 +44,47 @@ import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio
 import { selectActiveAccount } from 'store/account'
 import Logger from 'utils/Logger'
 import { TOKEN_IDS } from 'consts/tokenIds'
+import { useFusionSwapList } from 'common/hooks/useFusionSwapList'
+import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { SwapStatus, useSwapContext } from '../contexts/SwapContext'
 import { FusionQuoteError, fusionErrors } from '../utils/fusionErrors'
 import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
 import { ServiceType } from '../types'
-import { useFusionTransfers } from '../hooks/useZustandStore'
 import { useMaxSwapAmount } from '../hooks/useMaxSwapAmount'
 import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 import { useFeeValidation } from '../hooks/useFeeValidation'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const { removeTransfer } = useFusionTransfers()
   const { navigate, dismissAll } = useRouter()
   const navigation = useNavigation()
 
   const params = useGlobalSearchParams<{
     initialTokenIdFrom?: string
     initialTokenIdTo?: string
-    retryingSwapActivityId?: string
+    initialFromCaip2Id?: string
+    initialToCaip2Id?: string
   }>()
 
   const { formatCurrency } = useFormatCurrency()
   const { getMarketTokenById } = useWatchlist()
 
-  const swapList = useSwapList()
+  const { tokens: swapList, isLoading: isSwapListLoading } = useFusionSwapList({
+    fromCaip2Id: params.initialFromCaip2Id,
+    toCaip2Id: params.initialToCaip2Id
+  })
+
+  const fromTokenChainId = useMemo(() => {
+    if (!params.initialFromCaip2Id) return undefined
+    return getChainIdFromCaip2(params.initialFromCaip2Id)
+  }, [params.initialFromCaip2Id])
+
+  const toTokenChainId = useMemo(() => {
+    if (!params.initialToCaip2Id) return undefined
+    return getChainIdFromCaip2(params.initialToCaip2Id)
+  }, [params.initialToCaip2Id])
 
   const {
     swap,
@@ -281,35 +294,49 @@ export const SwapScreen = (): JSX.Element => {
     const initialTokenIdTo = params.initialTokenIdTo
 
     if (initialTokenIdFrom || initialTokenIdTo) {
+      if (isSwapListLoading) return
       initialized.current = true
     }
 
     let initialFromToken: LocalTokenWithBalance | undefined
     if (initialTokenIdFrom) {
-      initialFromToken = swapList.find(
-        tk =>
-          tk.localId.toLowerCase() === initialTokenIdFrom?.toLowerCase() ||
-          tk.internalId === initialTokenIdFrom
-      )
+      initialFromToken = swapList.find(tk => {
+        const matchesId =
+          tk.localId.toLowerCase() ===
+            params.initialTokenIdFrom?.toLowerCase() ||
+          tk.internalId?.toLowerCase() ===
+            params.initialTokenIdFrom?.toLowerCase()
+        const matchesChain =
+          fromTokenChainId === undefined ||
+          tk.networkChainId === fromTokenChainId
+        return matchesId && matchesChain
+      })
     }
     setFromToken(initialFromToken)
 
     let initialToToken: LocalTokenWithBalance | undefined
     if (initialTokenIdTo) {
-      initialToToken = swapList.find(
-        tk =>
-          tk.localId.toLowerCase() === initialTokenIdTo?.toLowerCase() ||
-          tk.internalId === initialTokenIdTo
-      )
+      initialToToken = swapList.find(tk => {
+        const matchesId =
+          tk.localId.toLowerCase() === params.initialTokenIdTo?.toLowerCase() ||
+          tk.internalId?.toLowerCase() ===
+            params.initialTokenIdTo?.toLowerCase()
+        const matchesChain =
+          toTokenChainId === undefined || tk.networkChainId === toTokenChainId
+        return matchesId && matchesChain
+      })
     }
 
     setToToken(initialToToken)
   }, [
+    fromTokenChainId,
+    isSwapListLoading,
     params.initialTokenIdFrom,
     params.initialTokenIdTo,
     setFromToken,
     setToToken,
-    swapList
+    swapList,
+    toTokenChainId
   ])
 
   const showFeesAndSlippage = activeQuote?.serviceType === ServiceType.MARKR
@@ -326,20 +353,8 @@ export const SwapScreen = (): JSX.Element => {
 
     dismissKeyboardIfNeeded()
 
-    // If this swap is initiated from a failed swap activity, immediately remove that
-    // activity so it doesn't continue to show up in the notifications list while this
-    // new swap attempt is in progress.
-    params.retryingSwapActivityId &&
-      removeTransfer(params.retryingSwapActivityId)
-
     swap()
-  }, [
-    swap,
-    activeQuote,
-    slippage,
-    removeTransfer,
-    params.retryingSwapActivityId
-  ])
+  }, [swap, activeQuote, slippage])
 
   const handleFromAmountChange = useCallback(
     (amount: bigint): void => {
@@ -762,13 +777,15 @@ export const SwapScreen = (): JSX.Element => {
     )
   }, [canSwap, handleSwap, isSwapping, isLombard, renderLombardLogo])
 
-  return (
-    <ScrollScreen
-      title="Swap"
-      renderFooter={renderFooter}
-      isModal
-      shouldAvoidKeyboard
-      contentContainerStyle={{ padding: 16 }}>
+  const renderFromAndToSections = useCallback(() => {
+    if (isSwapListLoading && !fromToken && !toToken) {
+      return (
+        <ActivityIndicator
+          sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        />
+      )
+    }
+    return (
       <Animated.View layout={LinearTransition}>
         {renderFromSection()}
         <Animated.View
@@ -819,7 +836,28 @@ export const SwapScreen = (): JSX.Element => {
         </Animated.View>
         {renderToSection()}
       </Animated.View>
+    )
+  }, [
+    fromToken,
+    handleToggleTokens,
+    isInputFocused,
+    isSwapListLoading,
+    isSwapping,
+    renderFromSection,
+    renderToSection,
+    swapButtonBackgroundColor,
+    theme.colors.$surfaceSecondary,
+    toToken
+  ])
 
+  return (
+    <ScrollScreen
+      title="Swap"
+      renderFooter={renderFooter}
+      isModal
+      shouldAvoidKeyboard
+      contentContainerStyle={{ padding: 16 }}>
+      {renderFromAndToSections()}
       {renderError()}
       <View style={{ marginTop: 24 }}>
         <GroupList data={data} separatorMarginRight={16} />

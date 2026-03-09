@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { getV1Tokens } from 'utils/api/generated/tokenAggregator/aggregatorApi.client'
 import { tokenAggregatorApi } from 'utils/api/clients/aggregatedTokensApiClient'
 import { LocalTokenWithBalance } from 'store/balance'
-import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import { getChainIdFromCaip2, isSvmChainId } from 'utils/caip2ChainIds'
 import { selectActiveAccount } from 'store/account'
 import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -13,6 +13,7 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { mapApiTokenToLocal } from '../utils/mapApiTokenToLocal'
 import { getLocalTokenIdFromApi } from '../utils/getLocalTokenIdFromApi'
+import { selectIsSolanaSwapBlocked } from 'store/posthog'
 
 const STALE_TIME = 5 * 60 * 1000 // 5 minutes
 
@@ -37,6 +38,12 @@ export const useSwapTokens = (
   isLoading: boolean
   error: Error | null
 } => {
+  const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
+
+  const isSolanaBlocked = useMemo(() => {
+    return isSvmChainId(caip2Id) && isSolanaSwapBlocked
+  }, [caip2Id, isSolanaSwapBlocked])
+
   // Derive chainId from caip2Id
   const chainId = useMemo(() => getChainIdFromCaip2(caip2Id), [caip2Id])
   const activeAccount = useSelector(selectActiveAccount)
@@ -56,9 +63,9 @@ export const useSwapTokens = (
 
   // Fetch tokens from API
   const query = useQuery({
-    queryKey: [ReactQueryKeys.FUSION_TOKENS, caip2Id],
+    queryKey: [ReactQueryKeys.FUSION_TOKENS, caip2Id, isSolanaBlocked],
     queryFn: async () => {
-      if (!caip2Id) return []
+      if (!caip2Id || isSolanaBlocked) return []
 
       const response = await getV1Tokens({
         client: tokenAggregatorApi,
@@ -67,7 +74,7 @@ export const useSwapTokens = (
 
       return response.data?.data || []
     },
-    enabled: !!caip2Id,
+    enabled: !!caip2Id && !isSolanaBlocked,
     staleTime: STALE_TIME
   })
 

@@ -27,7 +27,8 @@ export const RetrySwapButton = ({
         navigateToSwap({
           fromTokenId,
           toTokenId,
-          retryingSwapActivityId: item.transfer.id
+          fromCaip2Id: item.transfer.sourceChain.chainId,
+          toCaip2Id: item.transfer.targetChain.chainId
         })
       }>
       Retry
