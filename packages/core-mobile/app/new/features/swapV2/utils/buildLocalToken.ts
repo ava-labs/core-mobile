@@ -23,14 +23,21 @@ export const buildLocalToken = ({
   const nativeDecimals =
     NATIVE_DECIMALS[tokenInfo.internalId as keyof typeof NATIVE_DECIMALS]
 
+  const address = isNative
+    ? ''
+    : balanceData?.address ?? tokenInfo.platforms?.[caip2Id] ?? ''
+
+  if (!isNative && (!address || address.trim() === '')) {
+    throw new Error(
+      `Invalid non-native token: missing address for internalId=${tokenInfo.internalId} on caip2Id=${caip2Id}`
+    )
+  }
+
   return mapApiTokenToLocal(
     {
       symbol: balanceData?.symbol ?? tokenInfo.symbol,
       name: balanceData?.name ?? tokenInfo.name,
-      address:
-        balanceData?.type === TokenType.NATIVE
-          ? ''
-          : tokenInfo.platforms?.[caip2Id] ?? '',
+      address,
       decimals:
         isNative && nativeDecimals !== undefined
           ? nativeDecimals

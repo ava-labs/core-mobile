@@ -325,7 +325,13 @@ export const SwapScreen = (): JSX.Element => {
           ? EvmChainId.AVALANCHE_TESTNET
           : EvmChainId.AVALANCHE_MAINNET)
     })
-  }, [tokens, accountTokens, cChainNetwork?.caip2Id, cChainNetwork?.chainId])
+  }, [
+    tokens,
+    accountTokens,
+    cChainNetwork?.caip2Id,
+    cChainNetwork?.chainId,
+    isDeveloperMode
+  ])
 
   const setInitialTokensFx = useCallback(() => {
     if (initialized.current) return
