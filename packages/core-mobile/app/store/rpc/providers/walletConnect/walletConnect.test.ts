@@ -206,7 +206,7 @@ describe('walletConnectProvider', () => {
         )
       })
 
-      it('uses empty string for txHash when result is not a string', async () => {
+      it('does not fire analytics when result is not a string', async () => {
         const request = makeMockRequest(
           RpcMethod.ETH_SEND_TRANSACTION,
           'eip155:1'
@@ -218,10 +218,22 @@ describe('walletConnectProvider', () => {
           listenerApi: mockListenerApi
         })
 
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
-          'eth_sendTransaction_success',
-          expect.objectContaining({ txHash: '' })
+        expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
+      })
+
+      it('does not fire analytics when result is an empty string', async () => {
+        const request = makeMockRequest(
+          RpcMethod.ETH_SEND_TRANSACTION,
+          'eip155:1'
         )
+
+        await walletConnectProvider.onSuccess({
+          request,
+          result: '',
+          listenerApi: mockListenerApi
+        })
+
+        expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
       })
     })
 

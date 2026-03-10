@@ -21,13 +21,6 @@ import { isTxSendMethod } from '../../utils/txSendMethods'
 import { isSessionProposal, isUserRejectedError } from './utils'
 import { transformSolanaParams } from './solanaRequestUtils'
 
-/**
- * Returns the chain-appropriate address for analytics.
- * CAIP2 namespace determines which address field to use:
- *   eip155 / avax → addressC (EVM)
- *   bip122        → addressBTC (Bitcoin)
- *   solana        → addressSVM (Solana)
- */
 // Solana signing methods require the result to be wrapped in a specific shape
 // before being returned to the dapp via WalletConnect
 const transformResult = (method: RpcMethod, result: unknown): unknown => {
@@ -38,6 +31,15 @@ const transformResult = (method: RpcMethod, result: unknown): unknown => {
   return result
 }
 
+/**
+ * Returns the chain-appropriate address for analytics.
+ * CAIP2 namespace determines which address field to use:
+ *   eip155 / avax C-Chain → addressC (EVM)
+ *   avax P-Chain          → addressPVM
+ *   avax X-Chain          → addressAVM
+ *   bip122                → addressBTC (Bitcoin)
+ *   solana                → addressSVM (Solana)
+ */
 const getAddressForChain = (
   account: Account | null | undefined,
   caip2ChainId: string
@@ -67,10 +69,7 @@ const chainAgnosticMethods = [
 class WalletConnectProvider implements AgnosticRpcProvider {
   provider = RpcProvider.WALLET_CONNECT
 
-  onError: AgnosticRpcProvider['onError'] = async ({
-    request,
-    error
-  }) => {
+  onError: AgnosticRpcProvider['onError'] = async ({ request, error }) => {
     // only show error toast if it is not a user rejected error
     const shouldShowErrorToast = !isUserRejectedError(error)
 
@@ -175,18 +174,23 @@ class WalletConnectProvider implements AgnosticRpcProvider {
       // fire _success when the txHash is returned (transaction submitted to mempool)
       // _confirmed fires later via ApprovalController.onTransactionConfirmed once the VM module
       // polls getTransactionReceipt and the chain finalizes the transaction
-      if (isTxSendMethod(request.method)) {
+      // skip capture if result is not a non-empty string — a missing txHash would produce
+      // misleading "success" events and skew MTU / lifecycle metrics
+      if (
+        isTxSendMethod(request.method) &&
+        typeof result === 'string' &&
+        result
+      ) {
         const chainId = getChainIdFromCaip2(request.data.params.chainId) ?? 0
         const address = getAddressForChain(
           selectActiveAccount(listenerApi.getState()),
           request.data.params.chainId
         )
-        const txHash = typeof result === 'string' ? result : ''
         AnalyticsService.captureWithEncryption(`${request.method}_success`, {
           dAppUrl: request.peerMeta.url,
           address,
           chainId,
-          txHash
+          txHash: result
         })
       }
 

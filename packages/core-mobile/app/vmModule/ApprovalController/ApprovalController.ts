@@ -41,11 +41,15 @@ import { handleLedgerErrorAndShowAlert } from './utils'
 /**
  * Extracts the user's address from the WalletConnect session for the given dapp request.
  * Session namespace accounts are formatted as "namespace:chainId:address" (e.g. "eip155:1:0x...").
+ * Prefer the account entry whose chainId prefix matches request.chainId; fall back to the first
+ * account in the namespace if no exact chain match is found.
  */
 const getDappRequestAddress = (request: RpcRequest): string => {
   const session = WalletConnectService.getSession(request.sessionId)
   const namespace = request.chainId.split(':')[0] ?? ''
-  const caip2Account = session?.namespaces[namespace]?.accounts[0] ?? ''
+  const accounts = session?.namespaces[namespace]?.accounts ?? []
+  const caip2Account =
+    accounts.find(a => a.startsWith(`${request.chainId}:`)) ?? accounts[0] ?? ''
   return caip2Account.split(':')[2] ?? ''
 }
 

@@ -121,6 +121,58 @@ describe('ApprovalController', () => {
       expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
     })
 
+    it('selects the account matching request.chainId when session has multiple chains', () => {
+      const chain1Address = '0xAAAA'
+      const chain137Address = '0xBBBB'
+      jest.spyOn(WalletConnectService, 'getSession').mockReturnValue({
+        namespaces: {
+          eip155: {
+            accounts: [
+              `eip155:1:${chain1Address}`,
+              `eip155:137:${chain137Address}`
+            ],
+            methods: [],
+            events: []
+          }
+        }
+      } as never)
+
+      approvalController.onTransactionConfirmed({
+        txHash: TX_HASH,
+        explorerLink: '',
+        request: makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION, 'eip155:137')
+      })
+
+      expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        'eth_sendTransaction_confirmed',
+        expect.objectContaining({ address: chain137Address })
+      )
+    })
+
+    it('falls back to first account when no chain match found', () => {
+      const firstAddress = '0xFIRST'
+      jest.spyOn(WalletConnectService, 'getSession').mockReturnValue({
+        namespaces: {
+          eip155: {
+            accounts: [`eip155:1:${firstAddress}`, 'eip155:5:0xOTHER'],
+            methods: [],
+            events: []
+          }
+        }
+      } as never)
+
+      approvalController.onTransactionConfirmed({
+        txHash: TX_HASH,
+        explorerLink: '',
+        request: makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION, 'eip155:999')
+      })
+
+      expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        'eth_sendTransaction_confirmed',
+        expect.objectContaining({ address: firstAddress })
+      )
+    })
+
     it('extracts address from WalletConnect session namespace', () => {
       const solanaAddress = '9gQmZ7fTTgv5hVScrr9QqT6SpBs7i4cKLDdj4tuae3sW'
       jest.spyOn(WalletConnectService, 'getSession').mockReturnValue({
