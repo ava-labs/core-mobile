@@ -54,6 +54,7 @@ export enum ReactQueryKeys {
   FUSION_SWAP_FEE_ESTIMATE = 'fusionSwapFeeEstimate',
 
   // token aggregator
+  TOKEN_LOOKUP = 'tokenLookup',
   TOKEN_LOOKUP_WITH_PRICE = 'tokenLookupWithPrice',
 
   // deposit

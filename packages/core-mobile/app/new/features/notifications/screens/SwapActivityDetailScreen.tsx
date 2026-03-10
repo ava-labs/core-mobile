@@ -33,7 +33,8 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
     navigateToSwap({
       fromTokenId: transfer.fromToken.internalId,
       toTokenId: transfer.toToken.internalId,
-      retryingSwapActivityId: transfer.transfer.id
+      fromCaip2Id: transfer.transfer.sourceChain.chainId,
+      toCaip2Id: transfer.transfer.targetChain.chainId
     })
   }, [navigateToSwap, router, transfer])
 
