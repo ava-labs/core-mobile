@@ -51,6 +51,8 @@ import {
   SUPPORTED_PLATFORM_ID,
   SUPPORTED_PLATFORM_ID_TESTNET
 } from 'common/consts/swap'
+import { EvmChainId } from '@avalabs/fusion-sdk'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { SwapStatus, useSwapContext } from '../contexts/SwapContext'
 import { FusionQuoteError, fusionErrors } from '../utils/fusionErrors'
 import { useSwapRate } from '../hooks/useSwapRate'
@@ -61,8 +63,6 @@ import { useMaxSwapAmount } from '../hooks/useMaxSwapAmount'
 import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 import { useFeeValidation } from '../hooks/useFeeValidation'
 import { buildLocalToken } from '../utils/buildLocalToken'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { EvmChainId } from '@avalabs/fusion-sdk'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -315,13 +315,15 @@ export const SwapScreen = (): JSX.Element => {
       accountTokens,
       tokenInfo,
       caip2Id:
-        cChainNetwork?.caip2Id ?? isDeveloperMode
+        cChainNetwork?.caip2Id ??
+        (isDeveloperMode
           ? SUPPORTED_PLATFORM_ID_TESTNET
-          : SUPPORTED_PLATFORM_ID,
+          : SUPPORTED_PLATFORM_ID),
       chainId:
-        cChainNetwork?.chainId ?? isDeveloperMode
+        cChainNetwork?.chainId ??
+        (isDeveloperMode
           ? EvmChainId.AVALANCHE_TESTNET
-          : EvmChainId.AVALANCHE_MAINNET
+          : EvmChainId.AVALANCHE_MAINNET)
     })
   }, [tokens, accountTokens, cChainNetwork?.caip2Id, cChainNetwork?.chainId])
 

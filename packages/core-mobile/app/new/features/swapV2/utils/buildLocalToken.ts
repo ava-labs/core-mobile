@@ -16,7 +16,7 @@ export const buildLocalToken = ({
   chainId: number
 }): LocalTokenWithBalance => {
   const balanceData = accountTokens.find(
-    t => t.internalId === tokenInfo.internalId
+    t => t.internalId === tokenInfo.internalId && t.networkChainId === chainId
   )
   const isNative = balanceData?.type === TokenType.NATIVE || tokenInfo.isNative
 

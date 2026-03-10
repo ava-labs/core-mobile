@@ -32,7 +32,7 @@ const makeBalanceToken = (
     balanceInCurrency: 5,
     priceInCurrency: 0.005,
     ...overrides
-  }) as LocalTokenWithBalance
+  } as LocalTokenWithBalance)
 
 describe('buildLocalToken', () => {
   describe('native token decimals override', () => {
