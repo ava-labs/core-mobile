@@ -47,7 +47,10 @@ import { TOKEN_IDS } from 'consts/tokenIds'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { useTokenLookup } from 'common/hooks/useTokenLookup'
 import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
-import { SUPPORTED_PLATFORM_ID } from 'common/consts/swap'
+import {
+  SUPPORTED_PLATFORM_ID,
+  SUPPORTED_PLATFORM_ID_TESTNET
+} from 'common/consts/swap'
 import { SwapStatus, useSwapContext } from '../contexts/SwapContext'
 import { FusionQuoteError, fusionErrors } from '../utils/fusionErrors'
 import { useSwapRate } from '../hooks/useSwapRate'
@@ -58,9 +61,12 @@ import { useMaxSwapAmount } from '../hooks/useMaxSwapAmount'
 import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 import { useFeeValidation } from '../hooks/useFeeValidation'
 import { buildLocalToken } from '../utils/buildLocalToken'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { EvmChainId } from '@avalabs/fusion-sdk'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { navigate, dismissAll } = useRouter()
   const navigation = useNavigation()
 
@@ -308,8 +314,14 @@ export const SwapScreen = (): JSX.Element => {
     return buildLocalToken({
       accountTokens,
       tokenInfo,
-      caip2Id: cChainNetwork?.caip2Id ?? SUPPORTED_PLATFORM_ID,
-      chainId: cChainNetwork?.chainId ?? 0
+      caip2Id:
+        cChainNetwork?.caip2Id ?? isDeveloperMode
+          ? SUPPORTED_PLATFORM_ID_TESTNET
+          : SUPPORTED_PLATFORM_ID,
+      chainId:
+        cChainNetwork?.chainId ?? isDeveloperMode
+          ? EvmChainId.AVALANCHE_TESTNET
+          : EvmChainId.AVALANCHE_MAINNET
     })
   }, [tokens, accountTokens, cChainNetwork?.caip2Id, cChainNetwork?.chainId])
 
@@ -324,19 +336,23 @@ export const SwapScreen = (): JSX.Element => {
       return
     }
 
+    // Wait for token lookup to complete before initializing so we don't
+    // commit to undefined tokens and block further retries.
+    if (isTokensLoading) return
+
     let initialFromToken: LocalTokenWithBalance | undefined
     if (initialTokenIdFrom) {
-      const fromTokenInfo = initialTokenIdFrom
-        ? tokens[initialTokenIdFrom]
-        : undefined
+      const fromTokenInfo = tokens[initialTokenIdFrom]
 
       initialFromToken =
-        fromTokenInfo && params.initialFromCaip2Id
+        fromTokenInfo &&
+        params.initialFromCaip2Id &&
+        Number.isFinite(fromTokenChainId)
           ? buildLocalToken({
               accountTokens,
               tokenInfo: fromTokenInfo,
               caip2Id: params.initialFromCaip2Id,
-              chainId: fromTokenChainId ?? 0
+              chainId: fromTokenChainId as number
             })
           : undefined
     }
@@ -344,24 +360,27 @@ export const SwapScreen = (): JSX.Element => {
 
     let initialToToken: LocalTokenWithBalance | undefined
     if (initialTokenIdTo) {
-      const toTokenInfo = initialTokenIdTo
-        ? tokens[initialTokenIdTo]
-        : undefined
+      const toTokenInfo = tokens[initialTokenIdTo]
 
       initialToToken =
-        toTokenInfo && params.initialToCaip2Id
+        toTokenInfo &&
+        params.initialToCaip2Id &&
+        Number.isFinite(toTokenChainId)
           ? buildLocalToken({
               accountTokens,
               tokenInfo: toTokenInfo,
               caip2Id: params.initialToCaip2Id,
-              chainId: toTokenChainId ?? 0
+              chainId: toTokenChainId as number
             })
           : undefined
     }
     setToToken(initialToToken)
+
+    initialized.current = true
   }, [
     accountTokens,
     fromTokenChainId,
+    isTokensLoading,
     params.initialFromCaip2Id,
     params.initialToCaip2Id,
     params.initialTokenIdFrom,
