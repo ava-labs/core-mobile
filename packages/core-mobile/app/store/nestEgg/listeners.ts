@@ -76,9 +76,7 @@ const handleSwapForNestEgg = async (
 
   // Show success modal
   await waitForInteractions()
-  await navigateWithPromise({
-    pathname: '/(signedIn)/(modals)/nestEggCampaign/success'
-  })
+  await navigateWithPromise('/nestEggCampaign/success')
 }
 
 /**
@@ -97,9 +95,7 @@ const checkPendingNestEggSuccess = async (
   // If user qualified but hasn't acknowledged, show success modal
   if (hasQualified && !hasAcknowledged) {
     await waitForInteractions()
-    await navigateWithPromise({
-      pathname: '/nestEggSuccess'
-    })
+    await navigateWithPromise('/nestEggCampaign/success')
   }
 }
 

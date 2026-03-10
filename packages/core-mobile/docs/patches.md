@@ -31,7 +31,6 @@ Android implementation of `getColorFromURL` will crash when facing urls with `ip
 
 Calling pino({ level: 'error' }) will throw an error `Cannot assign to read only property 'error' of object`. The patch just replaces Object.create with Object.assign. Pino is the logger of Wallet Connect V2.
 
-
 ### @hpke+core+1.2.7.patch
 
 for some reason, metro can only consume esm folder so we had to adjust the package.json to only expose esm folder
@@ -61,6 +60,7 @@ When Android `WindowInsets` reports `0` for the top system bar inset (common on 
 added isActive prop for useAnimatedSensor
 
 ### react-native-collapsible-tab-view+9.0.0-rc.patch
+
 exposed toggleSyncScrollFrame using scrollResync ref for manually recomputing layout
 
 updated module to support react-native-reanimated 4 and react-native 0.81+
@@ -116,3 +116,12 @@ You can wrap a toast container with a custom wrapper.
 ### @buoy-gg+shared-ui+2.1.1.patch
 
 This patch fixes the "unable to resolve @buoy-gg/shared-ui/dataViewer" issue when Metro has `unstable_enablePackageExports: false` by mapping `./dataViewer` in `react-native` to `./lib/commonjs/dataViewer/index.js`. Please refer to https://github.com/LovesWorking/react-native-buoy/issues/46 for more info.
+
+### react-native+0.81.5.patch
+
+RCTEnhancedScrollView.mm
+On iOS 26, `UIScrollEdgeEffect` adds a blur/gradient at scroll view edges (part of the Liquid Glass redesign). This creates an unwanted gradient overlay on content that scrolls behind the navigation bar — most visibly on the Portfolio screen's action buttons after switching tabs and scrolling back up. The patch hides the `topEdgeEffect` on all scroll views on iOS 26+. Gated behind `@available(iOS 26.0, *)` so older versions are unaffected.
+
+- https://github.com/facebook/react-native/issues/54181
+- https://github.com/facebook/react-native/pull/55037
+- https://developer.apple.com/documentation/uikit/uiscrolledgeeffect
