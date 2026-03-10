@@ -1,0 +1,15 @@
+diff --git a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm
+index c593d9e..f9408e4 100644
+--- a/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm
++++ b/node_modules/react-native/React/Fabric/Mounting/ComponentViews/ScrollView/RCTEnhancedScrollView.mm
+@@ -41,6 +41,10 @@ - (instancetype)initWithFrame:(CGRect)frame
+     // scrollbar flip because we also flip it with whole `UIScrollView` flip.
+     self.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
+ 
++    if (@available(iOS 26.0, *)) {
++      self.topEdgeEffect.hidden = YES;
++    }
++
+     __weak __typeof(self) weakSelf = self;
+     _delegateSplitter = [[RCTGenericDelegateSplitter alloc] initWithDelegateUpdateBlock:^(id delegate) {
+       [weakSelf setPrivateDelegate:delegate];
