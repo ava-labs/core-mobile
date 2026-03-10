@@ -87,6 +87,11 @@ export const SwapScreen = (): JSX.Element => {
   const { data: tokens, isLoading: isTokensLoading } =
     useTokenLookup(lookupTokenIds)
 
+  const fromTokenChainId = useMemo(() => {
+    if (!params.initialFromCaip2Id) return undefined
+    return getChainIdFromCaip2(params.initialFromCaip2Id)
+  }, [params.initialFromCaip2Id])
+
   const toTokenChainId = useMemo(() => {
     if (!params.initialToCaip2Id) return undefined
     return getChainIdFromCaip2(params.initialToCaip2Id)
@@ -319,38 +324,45 @@ export const SwapScreen = (): JSX.Element => {
       return
     }
 
-    const toTokenInfo = initialTokenIdTo
-      ? tokens[initialTokenIdTo.toLowerCase()]
-      : undefined
-
     let initialFromToken: LocalTokenWithBalance | undefined
     if (initialTokenIdFrom) {
-      initialFromToken = accountTokens.find(
-        tk => tk.internalId === initialTokenIdFrom
-      )
+      const fromTokenInfo = initialTokenIdFrom
+        ? tokens[initialTokenIdFrom]
+        : undefined
+
+      initialFromToken =
+        fromTokenInfo && params.initialFromCaip2Id
+          ? buildLocalToken({
+              accountTokens,
+              tokenInfo: fromTokenInfo,
+              caip2Id: params.initialFromCaip2Id,
+              chainId: fromTokenChainId ?? 0
+            })
+          : undefined
     }
     setFromToken(initialFromToken)
 
     let initialToToken: LocalTokenWithBalance | undefined
     if (initialTokenIdTo) {
-      initialToToken = accountTokens.find(
-        tk => tk.internalId === initialTokenIdTo
-      )
-      if (!initialToToken) {
-        initialToToken =
-          toTokenInfo && params.initialToCaip2Id
-            ? buildLocalToken({
-                accountTokens,
-                tokenInfo: toTokenInfo,
-                caip2Id: params.initialToCaip2Id,
-                chainId: toTokenChainId ?? 0
-              })
-            : undefined
-      }
+      const toTokenInfo = initialTokenIdTo
+        ? tokens[initialTokenIdTo]
+        : undefined
+
+      initialToToken =
+        toTokenInfo && params.initialToCaip2Id
+          ? buildLocalToken({
+              accountTokens,
+              tokenInfo: toTokenInfo,
+              caip2Id: params.initialToCaip2Id,
+              chainId: toTokenChainId ?? 0
+            })
+          : undefined
     }
     setToToken(initialToToken)
   }, [
     accountTokens,
+    fromTokenChainId,
+    params.initialFromCaip2Id,
     params.initialToCaip2Id,
     params.initialTokenIdFrom,
     params.initialTokenIdTo,
