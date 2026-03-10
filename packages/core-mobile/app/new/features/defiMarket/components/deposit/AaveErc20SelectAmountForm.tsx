@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import { Address, formatUnits } from 'viem'
+import { Address } from 'viem'
 import { hasEnoughAllowance } from 'features/swap/utils/evm/ensureAllowance'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { TokenType } from '@avalabs/vm-module-types'
@@ -10,11 +10,11 @@ import { useCChainGasCost } from 'common/hooks/useCChainGasCost'
 import { DefiMarket, DepositAsset } from '../../types'
 import { useAaveDepositErc20 } from '../../hooks/aave/useAaveDepositErc20'
 import { useAaveBorrowData } from '../../hooks/aave/useAaveBorrowData'
+import { useAaveHealthScore } from '../../hooks/aave/useAaveHealthScore'
 import {
   AAVE_POOL_C_CHAIN_ADDRESS,
   APPROVE_GAS_AMOUNT,
-  MINT_GAS_AMOUNT,
-  WAD
+  MINT_GAS_AMOUNT
 } from '../../consts'
 import { SelectAmountFormBase } from '../SelectAmountFormBase'
 
@@ -57,38 +57,13 @@ export const AaveErc20SelectAmountForm = ({
     onError
   })
 
-  const underlyingAssetAddress = asset.token.address as Address
+  const underlyingAssetAddress = market.asset.contractAddress as Address
   const { data: borrowData } = useAaveBorrowData(underlyingAssetAddress)
-
-  const currentHealthScore = useMemo(() => {
-    if (!borrowData) return undefined
-    if (borrowData.totalDebtUSD === 0n) return Infinity
-    return Number(formatUnits(borrowData.healthFactor, WAD))
-  }, [borrowData])
-
-  const hasDebt = borrowData !== undefined && borrowData.totalDebtUSD > 0n
-
-  const calculateHealthScore = useCallback(
-    (depositAmount: TokenUnit): number | undefined => {
-      if (!borrowData) return undefined
-      const {
-        totalCollateralUSD,
-        totalDebtUSD,
-        liquidationThreshold,
-        tokenPriceUSD
-      } = borrowData
-      if (totalDebtUSD === 0n) return Infinity
-      const depositUSD =
-        (depositAmount.toSubUnit() * tokenPriceUSD) /
-        10n ** BigInt(market.asset.decimals)
-      const newCollateralUSD = totalCollateralUSD + depositUSD
-      const newHealthFactor =
-        (newCollateralUSD * liquidationThreshold * 10n ** BigInt(WAD)) /
-        (totalDebtUSD * 10000n)
-      return Number(formatUnits(newHealthFactor, WAD))
-    },
-    [borrowData, market.asset.decimals]
-  )
+  const { currentHealthScore, calculateHealthScore } = useAaveHealthScore({
+    borrowData,
+    tokenDecimals: market.asset.decimals,
+    direction: 'deposit'
+  })
 
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {
@@ -113,7 +88,7 @@ export const AaveErc20SelectAmountForm = ({
       }
 
       const hasEnoughAllowanceResult = await hasEnoughAllowance({
-        tokenAddress: asset.token.address as Address,
+        tokenAddress: underlyingAssetAddress,
         provider: provider,
         userAddress: address as Address,
         spenderAddress: AAVE_POOL_C_CHAIN_ADDRESS,
@@ -135,7 +110,8 @@ export const AaveErc20SelectAmountForm = ({
       mintGasCost,
       approveGasCost,
       asset.nativeToken,
-      asset.token,
+      asset.token.type,
+      underlyingAssetAddress,
       provider,
       address
     ]
@@ -149,8 +125,8 @@ export const AaveErc20SelectAmountForm = ({
       validateAmount={validateAmount}
       submit={aaveDepositErc20}
       onSubmitted={onSubmitted}
-      currentHealthScore={hasDebt ? currentHealthScore : undefined}
-      calculateHealthScore={hasDebt ? calculateHealthScore : undefined}
+      currentHealthScore={currentHealthScore}
+      calculateHealthScore={calculateHealthScore}
     />
   )
 }

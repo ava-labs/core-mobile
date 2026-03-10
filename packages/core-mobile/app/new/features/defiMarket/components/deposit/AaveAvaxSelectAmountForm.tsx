@@ -1,12 +1,13 @@
 import React, { useCallback, useMemo } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { Address, formatUnits } from 'viem'
+import { Address } from 'viem'
 import { WAVAX_ADDRESS } from 'features/swap/consts'
 import { DefiMarket, DepositAsset } from '../../types'
-import { DEPOSIT_ETH_GAS_AMOUNT, WAD } from '../../consts'
+import { DEPOSIT_ETH_GAS_AMOUNT } from '../../consts'
 import { useMaxDepositAmount } from '../../hooks/useMaxDepositAmount'
 import { useAaveDepositAvax } from '../../hooks/aave/useAaveDepositAvax'
 import { useAaveBorrowData } from '../../hooks/aave/useAaveBorrowData'
+import { useAaveHealthScore } from '../../hooks/aave/useAaveHealthScore'
 import { SelectAmountFormBase } from '../SelectAmountFormBase'
 
 export const AaveAvaxSelectAmountForm = ({
@@ -44,36 +45,11 @@ export const AaveAvaxSelectAmountForm = ({
   })
 
   const { data: borrowData } = useAaveBorrowData(WAVAX_ADDRESS as Address)
-
-  const currentHealthScore = useMemo(() => {
-    if (!borrowData) return undefined
-    if (borrowData.totalDebtUSD === 0n) return Infinity
-    return Number(formatUnits(borrowData.healthFactor, WAD))
-  }, [borrowData])
-
-  const hasDebt = borrowData !== undefined && borrowData.totalDebtUSD > 0n
-
-  const calculateHealthScore = useCallback(
-    (depositAmount: TokenUnit): number | undefined => {
-      if (!borrowData) return undefined
-      const {
-        totalCollateralUSD,
-        totalDebtUSD,
-        liquidationThreshold,
-        tokenPriceUSD
-      } = borrowData
-      if (totalDebtUSD === 0n) return Infinity
-      const depositUSD =
-        (depositAmount.toSubUnit() * tokenPriceUSD) /
-        10n ** BigInt(asset.token.decimals)
-      const newCollateralUSD = totalCollateralUSD + depositUSD
-      const newHealthFactor =
-        (newCollateralUSD * liquidationThreshold * 10n ** BigInt(WAD)) /
-        (totalDebtUSD * 10000n)
-      return Number(formatUnits(newHealthFactor, WAD))
-    },
-    [borrowData, asset.token.decimals]
-  )
+  const { currentHealthScore, calculateHealthScore } = useAaveHealthScore({
+    borrowData,
+    tokenDecimals: asset.token.decimals,
+    direction: 'deposit'
+  })
 
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {
@@ -98,8 +74,8 @@ export const AaveAvaxSelectAmountForm = ({
       validateAmount={validateAmount}
       submit={aaveDepositAvax}
       onSubmitted={onSubmitted}
-      currentHealthScore={hasDebt ? currentHealthScore : undefined}
-      calculateHealthScore={hasDebt ? calculateHealthScore : undefined}
+      currentHealthScore={currentHealthScore}
+      calculateHealthScore={calculateHealthScore}
     />
   )
 }

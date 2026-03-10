@@ -7,7 +7,7 @@ import { DefiMarket, MarketNames } from '../../types'
 import { useBenqiSetCollateral } from '../../hooks/benqi/useBenqiSetCollateral'
 import { useBenqiBorrowData } from '../../hooks/benqi/useBenqiBorrowData'
 import { useNetworkClient } from '../../hooks/useNetworkClient'
-import { BENQI_COMPTROLLER_C_CHAIN_ADDRESS, WAD } from '../../consts'
+import { BENQI_COMPTROLLER_C_CHAIN_ADDRESS, WAD_SCALE } from '../../consts'
 import { BENQI_COMPTROLLER_ABI } from '../../abis/benqiComptroller'
 import { showHealthImpactAlert } from '../../utils/collateralHealthAlert'
 import { SelectCollateralBase } from './SelectCollateralBase'
@@ -42,9 +42,8 @@ export const BenqiSelectCollateralContent = (): JSX.Element => {
       if (totalDebtUSD === 0n) return true
 
       const currentNumerator = liquidity + totalDebtUSD
-      const currentHealth =
-        (currentNumerator * 10n ** BigInt(WAD)) / totalDebtUSD
-      const currentScore = Number(currentHealth) / Number(10n ** BigInt(WAD))
+      const currentHealth = (currentNumerator * WAD_SCALE) / totalDebtUSD
+      const currentScore = Number(currentHealth) / Number(WAD_SCALE)
 
       try {
         const marketsResult = await readContract(networkClient, {
@@ -61,16 +60,16 @@ export const BenqiSelectCollateralContent = (): JSX.Element => {
 
         const depositUSD = BigInt(
           deposit.asset.mintTokenBalance.balanceValue.value
-            .mul((10n ** BigInt(WAD)).toString())
+            .mul(WAD_SCALE.toString())
             .toFixed(0)
         )
         const collateralReduction =
-          (depositUSD * collateralFactorMantissa) / 10n ** BigInt(WAD)
+          (depositUSD * collateralFactorMantissa) / WAD_SCALE
         const newLiquidity =
           liquidity > collateralReduction ? liquidity - collateralReduction : 0n
         const newNumerator = newLiquidity + totalDebtUSD
-        const newHealth = (newNumerator * 10n ** BigInt(WAD)) / totalDebtUSD
-        const newScore = Number(newHealth) / Number(10n ** BigInt(WAD))
+        const newHealth = (newNumerator * WAD_SCALE) / totalDebtUSD
+        const newScore = Number(newHealth) / Number(WAD_SCALE)
 
         return showHealthImpactAlert(
           deposit.asset.symbol,

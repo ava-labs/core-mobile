@@ -7,7 +7,7 @@ import { WAVAX_ADDRESS } from 'features/swap/consts'
 import { DefiMarket, MarketNames } from '../../types'
 import { useAaveSetCollateral } from '../../hooks/aave/useAaveSetCollateral'
 import { useAaveBorrowData } from '../../hooks/aave/useAaveBorrowData'
-import { AAVE_PRICE_ORACLE_SCALE, WAD } from '../../consts'
+import { AAVE_PRICE_ORACLE_SCALE, WAD, WAD_SCALE } from '../../consts'
 import { showHealthImpactAlert } from '../../utils/collateralHealthAlert'
 import { SelectCollateralBase } from './SelectCollateralBase'
 
@@ -53,7 +53,7 @@ export const AaveSelectCollateralContent = (): JSX.Element => {
       const newCollateralUSD =
         totalCollateralUSD > depositUSD ? totalCollateralUSD - depositUSD : 0n
       const newHealthFactor =
-        (newCollateralUSD * liquidationThreshold * 10n ** BigInt(WAD)) /
+        (newCollateralUSD * liquidationThreshold * WAD_SCALE) /
         (totalDebtUSD * 10000n)
       const newScore = Number(formatUnits(newHealthFactor, WAD))
 

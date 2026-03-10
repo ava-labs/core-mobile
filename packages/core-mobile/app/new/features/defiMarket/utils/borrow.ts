@@ -11,7 +11,7 @@ import {
   AAVE_PRICE_ORACLE_C_CHAIN_ADDRESS,
   BENQI_COMPTROLLER_C_CHAIN_ADDRESS,
   BENQI_PRICE_ORACLE_C_CHAIN_ADDRESS,
-  WAD
+  WAD_SCALE
 } from '../consts'
 
 export async function fetchAaveUserBorrowData(
@@ -159,7 +159,7 @@ export async function fetchBenqiUserBorrowData(
         // Note: price is scaled by 10^(36-decimals), and borrowBalance is in token decimals
         // The result is in 18 decimals (WAD)
         if (borrowBalance > 0n) {
-          totalBorrowUSD += (borrowBalance * price) / 10n ** BigInt(WAD)
+          totalBorrowUSD += (borrowBalance * price) / WAD_SCALE
         }
       }
     }

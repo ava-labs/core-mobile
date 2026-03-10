@@ -138,7 +138,7 @@ export const SelectAmountFormBase = ({
           balanceLabel={balanceLabel}
           maxAmountZeroMessage={maxAmountZeroMessage}
         />
-        {calculateHealthScore !== undefined && (
+        {currentHealthScore !== undefined && (
           <View sx={{ marginTop: 24 }}>
             <HealthScoreCard score={healthScore} />
           </View>

@@ -1,13 +1,14 @@
 import React, { useCallback, useMemo, useRef } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { Address, formatUnits } from 'viem'
+import { Address } from 'viem'
 import { transactionSnackbar } from 'common/utils/toast'
 import { WAVAX_ADDRESS } from 'features/swap/consts'
 import { DefiMarket } from '../../types'
-import { AAVE_PRICE_ORACLE_SCALE, WAD } from '../../consts'
+import { AAVE_PRICE_ORACLE_SCALE } from '../../consts'
 import { convertUsdToTokenAmount } from '../../utils/convertUsdToTokenAmount'
 import { useAaveWithdraw } from '../../hooks/aave/useAaveWithdraw'
 import { useAaveBorrowData } from '../../hooks/aave/useAaveBorrowData'
+import { useAaveHealthScore } from '../../hooks/aave/useAaveHealthScore'
 import { useUnwrapWavax } from '../../hooks/useUnwrapWavax'
 import { SelectAmountFormBase } from '../SelectAmountFormBase'
 
@@ -81,43 +82,18 @@ export const WithdrawAaveSelectAmountForm = ({
   const underlyingAssetAddress = (market.asset.contractAddress ??
     WAVAX_ADDRESS) as Address
   const { data: borrowData } = useAaveBorrowData(underlyingAssetAddress)
-
-  const currentHealthScore = useMemo(() => {
-    if (!borrowData) return undefined
-    if (borrowData.totalDebtUSD === 0n) return Infinity
-    return Number(formatUnits(borrowData.healthFactor, WAD))
-  }, [borrowData])
-
-  const hasDebt = borrowData !== undefined && borrowData.totalDebtUSD > 0n
-
-  const calculateHealthScore = useCallback(
-    (withdrawAmount: TokenUnit): number | undefined => {
-      if (!borrowData) return undefined
-      const {
-        totalCollateralUSD,
-        totalDebtUSD,
-        liquidationThreshold,
-        tokenPriceUSD
-      } = borrowData
-      if (totalDebtUSD === 0n) return Infinity
-      const withdrawUSD =
-        (withdrawAmount.toSubUnit() * tokenPriceUSD) /
-        10n ** BigInt(market.asset.decimals)
-      const newCollateralUSD =
-        totalCollateralUSD > withdrawUSD ? totalCollateralUSD - withdrawUSD : 0n
-      const newHealthFactor =
-        (newCollateralUSD * liquidationThreshold * 10n ** BigInt(WAD)) /
-        (totalDebtUSD * 10000n)
-      return Number(formatUnits(newHealthFactor, WAD))
-    },
-    [borrowData, market.asset.decimals]
-  )
+  const { currentHealthScore, calculateHealthScore } = useAaveHealthScore({
+    borrowData,
+    tokenDecimals: market.asset.decimals,
+    direction: 'withdraw'
+  })
 
   // Max safe withdraw: keep health factor >= 1.01 (liquidation threshold-based)
   const maxWithdrawAmount = useMemo(() => {
     if (
-      !hasDebt ||
-      !borrowData?.tokenPriceUSD ||
+      !borrowData ||
+      borrowData.totalDebtUSD === 0n ||
+      !borrowData.tokenPriceUSD ||
       !borrowData.liquidationThreshold
     ) {
       return tokenBalance
@@ -141,7 +117,7 @@ export const WithdrawAaveSelectAmountForm = ({
       market.asset.symbol
     )
     return maxUnit.lt(tokenBalance) ? maxUnit : tokenBalance
-  }, [hasDebt, borrowData, tokenBalance, market.asset])
+  }, [borrowData, tokenBalance, market.asset])
 
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {
@@ -180,8 +156,8 @@ export const WithdrawAaveSelectAmountForm = ({
       validateAmount={validateAmount}
       submit={handleSubmit}
       onSubmitted={onSubmitted}
-      currentHealthScore={hasDebt ? currentHealthScore : undefined}
-      calculateHealthScore={hasDebt ? calculateHealthScore : undefined}
+      currentHealthScore={currentHealthScore}
+      calculateHealthScore={calculateHealthScore}
       balanceLabel="Available to withdraw:"
       maxAmountZeroMessage="Your position is too close to liquidation to withdraw"
     />

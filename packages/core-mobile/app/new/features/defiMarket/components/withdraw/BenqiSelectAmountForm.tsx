@@ -2,10 +2,11 @@ import React, { useCallback, useMemo } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Address } from 'viem'
 import { DefiMarket } from '../../types'
-import { WAD } from '../../consts'
+import { WAD, WAD_SCALE } from '../../consts'
 import { convertUsdToTokenAmount } from '../../utils/convertUsdToTokenAmount'
 import { useBenqiWithdraw } from '../../hooks/benqi/useBenqiWithdraw'
 import { useBenqiBorrowData } from '../../hooks/benqi/useBenqiBorrowData'
+import { useBenqiHealthScore } from '../../hooks/benqi/useBenqiHealthScore'
 import { SelectAmountFormBase } from '../SelectAmountFormBase'
 
 export const WithdrawBenqiSelectAmountForm = ({
@@ -36,53 +37,27 @@ export const WithdrawBenqiSelectAmountForm = ({
     onError
   })
 
-  const qTokenAddress = market.asset.mintTokenAddress as Address
-  const { data: borrowData } = useBenqiBorrowData(qTokenAddress)
-
-  const currentHealthScore = useMemo(() => {
-    if (!borrowData) return undefined
-    const { liquidity, totalDebtUSD } = borrowData
-    if (totalDebtUSD === 0n) return Infinity
-    const numerator = liquidity + totalDebtUSD
-    const health = (numerator * 10n ** BigInt(WAD)) / totalDebtUSD
-    return Number(health) / Number(10n ** BigInt(WAD))
-  }, [borrowData])
-
-  const hasDebt = borrowData !== undefined && borrowData.totalDebtUSD > 0n
-
-  const calculateHealthScore = useCallback(
-    (withdrawAmount: TokenUnit): number | undefined => {
-      if (!borrowData) return undefined
-      const { liquidity, totalDebtUSD, tokenPriceUSD, collateralFactor } =
-        borrowData
-      if (totalDebtUSD === 0n) return Infinity
-      const withdrawUSD =
-        (withdrawAmount.toSubUnit() * tokenPriceUSD) / 10n ** BigInt(WAD)
-      const withdrawCollateralEffect =
-        (withdrawUSD * collateralFactor) / 10n ** BigInt(WAD)
-      const newLiquidity =
-        liquidity > withdrawCollateralEffect
-          ? liquidity - withdrawCollateralEffect
-          : 0n
-      const numerator = newLiquidity + totalDebtUSD
-      const newHealth = (numerator * 10n ** BigInt(WAD)) / totalDebtUSD
-      return Number(newHealth) / Number(10n ** BigInt(WAD))
-    },
-    [borrowData]
+  const { data: borrowData } = useBenqiBorrowData(
+    market.asset.mintTokenAddress as Address
   )
+  const { currentHealthScore, calculateHealthScore } = useBenqiHealthScore({
+    borrowData,
+    direction: 'withdraw'
+  })
 
   // Max safe withdraw: keep health factor at same level as borrow max
   // maxWithdrawUSD = liquidity * 10^WAD / collateralFactor
   const maxWithdrawAmount = useMemo(() => {
     if (
-      !hasDebt ||
-      !borrowData?.tokenPriceUSD ||
+      !borrowData ||
+      borrowData.totalDebtUSD === 0n ||
+      !borrowData.tokenPriceUSD ||
       !borrowData.collateralFactor
     ) {
       return tokenBalance
     }
     const maxWithdrawUSD =
-      (borrowData.liquidity * 10n ** BigInt(WAD)) / borrowData.collateralFactor
+      (borrowData.liquidity * WAD_SCALE) / borrowData.collateralFactor
     const priceDecimals = 36 - market.asset.decimals
     const maxTokens = convertUsdToTokenAmount({
       usdAmount: maxWithdrawUSD,
@@ -97,7 +72,7 @@ export const WithdrawBenqiSelectAmountForm = ({
       market.asset.symbol
     )
     return maxUnit.lt(tokenBalance) ? maxUnit : tokenBalance
-  }, [hasDebt, borrowData, tokenBalance, market.asset])
+  }, [borrowData, tokenBalance, market.asset])
 
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {
@@ -122,8 +97,8 @@ export const WithdrawBenqiSelectAmountForm = ({
       validateAmount={validateAmount}
       submit={withdraw}
       onSubmitted={onSubmitted}
-      currentHealthScore={hasDebt ? currentHealthScore : undefined}
-      calculateHealthScore={hasDebt ? calculateHealthScore : undefined}
+      currentHealthScore={currentHealthScore}
+      calculateHealthScore={calculateHealthScore}
       balanceLabel="Available to withdraw:"
       maxAmountZeroMessage="Your position is too close to liquidation to withdraw"
     />

@@ -3,7 +3,7 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Address } from 'viem'
 import { DefiMarket } from '../../types'
 import { convertUsdToTokenAmount } from '../../utils/borrow'
-import { WAD } from '../../consts'
+import { WAD_SCALE } from '../../consts'
 import { useBenqiBorrowData } from '../../hooks/benqi/useBenqiBorrowData'
 import { useBenqiBorrow } from '../../hooks/benqi/useBenqiBorrow'
 import { BorrowSelectAmountFormBase } from './BorrowSelectAmountFormBase'
@@ -69,8 +69,8 @@ export const BorrowBenqiSelectAmountForm = ({
     // health = (liquidity + totalDebt) / totalDebt
     // This gives us: health = 1 + (liquidity / totalDebt)
     const numerator = liquidity + totalDebtUSD
-    const health = (numerator * 10n ** BigInt(WAD)) / totalDebtUSD
-    return Number(health) / Number(10n ** BigInt(WAD))
+    const health = (numerator * WAD_SCALE) / totalDebtUSD
+    return Number(health) / Number(WAD_SCALE)
   }, [borrowData])
 
   // Calculate new health score based on borrow amount
@@ -88,8 +88,7 @@ export const BorrowBenqiSelectAmountForm = ({
       // borrowAmountUSD = borrowAmount * tokenPrice / 10^(36-decimals) * 10^18 / 10^tokenDecimals
       // = borrowAmount * tokenPrice / 10^18
       const borrowAmountRaw = borrowAmount.toSubUnit()
-      const newBorrowUSD =
-        (borrowAmountRaw * tokenPriceUSD) / 10n ** BigInt(WAD)
+      const newBorrowUSD = (borrowAmountRaw * tokenPriceUSD) / WAD_SCALE
 
       const newTotalDebt = totalDebtUSD + newBorrowUSD
 
@@ -101,8 +100,8 @@ export const BorrowBenqiSelectAmountForm = ({
       // Note: We use (liquidity + currentTotalDebt) because this represents
       // the total "borrowing capacity" before the new borrow
       const numerator = liquidity + totalDebtUSD
-      const newHealth = (numerator * 10n ** BigInt(WAD)) / newTotalDebt
-      return Number(newHealth) / Number(10n ** BigInt(WAD))
+      const newHealth = (numerator * WAD_SCALE) / newTotalDebt
+      return Number(newHealth) / Number(WAD_SCALE)
     },
     [borrowData]
   )
