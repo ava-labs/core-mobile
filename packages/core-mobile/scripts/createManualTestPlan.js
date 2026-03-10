@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/cognitive-complexity */
 /* eslint-disable no-console */
 /**
  * Parses a manual test plan markdown file and syncs it to TestRail:
@@ -103,6 +104,13 @@ async function addSection(projectId, name, parentId = null, suiteId = null) {
   return data.id
 }
 
+async function getCases(projectId, sectionId, suiteId) {
+  const params = { section_id: sectionId }
+  if (suiteId != null) params.suite_id = suiteId
+  const { data } = await api.get(`/get_cases/${projectId}`, { params })
+  return data.cases || data || []
+}
+
 async function addCase(sectionId, title) {
   const { data } = await api.post(`/add_case/${sectionId}`, { title })
   return data.id
@@ -163,13 +171,27 @@ async function run(filePath) {
       sectionId,
       TESTRAIL_SUITE_ID
     )
+    const existingCases = await getCases(
+      TESTRAIL_PROJECT_ID,
+      subId,
+      TESTRAIL_SUITE_ID
+    )
+    const existingTitles = new Set(
+      (existingCases || []).map(c => (c.title || '').trim())
+    )
     for (const title of sub.cases) {
+      const trimmed = title.trim()
+      if (existingTitles.has(trimmed)) {
+        console.log(`  Skipped (already exists): "${trimmed.slice(0, 50)}..."`)
+        continue
+      }
       try {
         const caseId = await addCase(subId, title)
-        console.log(`  Added case: "${title.slice(0, 50)}..." (id=${caseId})`)
+        existingTitles.add(trimmed)
+        console.log(`  Added case: "${trimmed.slice(0, 50)}..." (id=${caseId})`)
       } catch (e) {
         const msg = e.response?.data?.error || e.message
-        console.error(`  Failed to add case "${title.slice(0, 50)}...":`, msg)
+        console.error(`  Failed to add case "${trimmed.slice(0, 50)}...":`, msg)
       }
     }
   }
