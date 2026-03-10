@@ -156,13 +156,13 @@ export const SwapScreen = (): JSX.Element => {
   const nativeFromToken = useMemo(
     () =>
       fromToken
-        ? swapList.find(
+        ? accountTokens.find(
             t =>
               t.type === TokenType.NATIVE &&
               t.networkChainId === fromToken.networkChainId
           )
         : undefined,
-    [fromToken, swapList]
+    [fromToken, accountTokens]
   )
 
   const feeValidationError = useFeeValidation({
