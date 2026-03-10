@@ -45,6 +45,7 @@ import { selectActiveAccount } from 'store/account'
 import Logger from 'utils/Logger'
 import { TOKEN_IDS } from 'consts/tokenIds'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
 import { SwapStatus, useSwapContext } from '../contexts/SwapContext'
 import { FusionQuoteError, fusionErrors } from '../utils/fusionErrors'
@@ -55,7 +56,6 @@ import { ServiceType } from '../types'
 import { useMaxSwapAmount } from '../hooks/useMaxSwapAmount'
 import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 import { useFeeValidation } from '../hooks/useFeeValidation'
-import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -565,8 +565,11 @@ export const SwapScreen = (): JSX.Element => {
 
   useEffect(() => {
     function clearSameToken(): void {
-      if (!(fromToken && toToken && fromToken.internalId === toToken.internalId))
+      if (
+        !(fromToken && toToken && fromToken.internalId === toToken.internalId)
+      ) {
         return
+      }
 
       if (prevFromRef.current !== fromToken) {
         setToToken(undefined)
