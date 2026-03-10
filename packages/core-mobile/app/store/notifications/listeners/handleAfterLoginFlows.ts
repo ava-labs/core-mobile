@@ -56,7 +56,7 @@ const promptAppUpdateScreenIfNeeded = async (): Promise<void> => {
     await waitForInteractions()
 
     await navigateWithPromise({
-      pathname: '/(signedIn)/(modals)/appUpdate',
+      pathname: '/appUpdate',
       params: {
         appVersion: appUpdateStatus.version
       }
@@ -169,9 +169,7 @@ const promptSolanaLaunchModalIfNeeded = async (
   if (shouldShowSolanaLaunchModal) {
     await waitForInteractions()
 
-    await navigateWithPromise({
-      pathname: '/(signedIn)/(modals)/solanaLaunch'
-    })
+    await navigateWithPromise('/solanaLaunch')
   }
 }
 
@@ -211,9 +209,7 @@ const promptNestEggCampaignModalIfNeeded = async (
   if (hasQualified && !hasAcknowledged) {
     await waitForInteractions()
 
-    await navigateWithPromise({
-      pathname: '/(signedIn)/(modals)/nestEggCampaign/success'
-    })
+    await navigateWithPromise('/nestEggCampaign/success')
     return
   }
 
@@ -228,9 +224,7 @@ const promptNestEggCampaignModalIfNeeded = async (
     if (isNewUserEligible) {
       await waitForInteractions()
 
-      await navigateWithPromise({
-        pathname: '/(signedIn)/(modals)/nestEggCampaign'
-      })
+      await navigateWithPromise('/nestEggCampaign')
     }
   } else {
     // nest-egg-campaign is ON: ALL seedless users can see the modal
@@ -239,9 +233,7 @@ const promptNestEggCampaignModalIfNeeded = async (
     if (isUserEligible) {
       await waitForInteractions()
 
-      await navigateWithPromise({
-        pathname: '/(signedIn)/(modals)/nestEggCampaign'
-      })
+      await navigateWithPromise('/nestEggCampaign')
     }
   }
 }
