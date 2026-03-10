@@ -1,7 +1,12 @@
 import { useRouter } from 'expo-router'
-import { SUPPORTED_PLATFORM_ID } from 'common/consts/swap'
+import {
+  SUPPORTED_PLATFORM_ID,
+  SUPPORTED_PLATFORM_ID_TESTNET
+} from 'common/consts/swap'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { TOKEN_IDS } from 'consts/tokenIds'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 interface NavigateToSwapParams {
   fromTokenId?: string // internalId
@@ -13,6 +18,7 @@ interface NavigateToSwapParams {
 export const useNavigateToSwap = (): {
   navigateToSwap: (params?: NavigateToSwapParams) => void
 } => {
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { navigate } = useRouter()
   const cChainNetwork = useCChainNetwork()
 
@@ -29,8 +35,16 @@ export const useNavigateToSwap = (): {
         params: {
           initialTokenIdFrom: TOKEN_IDS.AVAX,
           initialTokenIdTo: TOKEN_IDS.USDC,
-          initialFromCaip2Id: cChainNetwork?.caip2Id ?? SUPPORTED_PLATFORM_ID,
-          initialToCaip2Id: cChainNetwork?.caip2Id ?? SUPPORTED_PLATFORM_ID
+          initialFromCaip2Id:
+            cChainNetwork?.caip2Id ??
+            (isDeveloperMode
+              ? SUPPORTED_PLATFORM_ID_TESTNET
+              : SUPPORTED_PLATFORM_ID),
+          initialToCaip2Id:
+            cChainNetwork?.caip2Id ??
+            (isDeveloperMode
+              ? SUPPORTED_PLATFORM_ID_TESTNET
+              : SUPPORTED_PLATFORM_ID)
         }
       })
 
@@ -44,9 +58,17 @@ export const useNavigateToSwap = (): {
         initialTokenIdFrom: fromTokenId,
         initialTokenIdTo: toTokenId,
         initialFromCaip2Id:
-          fromCaip2Id ?? cChainNetwork?.caip2Id ?? SUPPORTED_PLATFORM_ID,
+          fromCaip2Id ??
+          cChainNetwork?.caip2Id ??
+          (isDeveloperMode
+            ? SUPPORTED_PLATFORM_ID_TESTNET
+            : SUPPORTED_PLATFORM_ID),
         initialToCaip2Id:
-          toCaip2Id ?? cChainNetwork?.caip2Id ?? SUPPORTED_PLATFORM_ID
+          toCaip2Id ??
+          cChainNetwork?.caip2Id ??
+          (isDeveloperMode
+            ? SUPPORTED_PLATFORM_ID_TESTNET
+            : SUPPORTED_PLATFORM_ID)
       }
     })
   }
