@@ -21,7 +21,7 @@ When asked to create a **manual test plan** for a feature:
   - `AVAX on C-Chain → ETH on Ethereum`
   - `SOL on Solana → USDC on C-Chain`
   - `Amount exceeds balance shows "Amount exceeds available balance"`
-- Use **lists** (bullets or numbered), not tables. Provide many case variants so the plan is copy-ready for TestRail.
+- Use **bullet lists** with `- `, not numbered lists or tables. Provide many case variants so the plan is copy-ready for TestRail.
 
 ## 3. Deliverable
 
