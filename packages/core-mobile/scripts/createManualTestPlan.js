@@ -10,7 +10,7 @@
  *   TESTRAIL_API_KEY=xxx node scripts/createManualTestPlan.js <path-to.md>
  *
  * Example:
- *   node scripts/createManualTestPlan.js ../../docs/manual-test-plan-Fusion-sample.md
+ *   node scripts/createManualTestPlan.js docs/manual-test-plan-Fusion-sample.md
  *
  * Optional env:
  *   TESTRAIL_SUITE_ID  (default: 4 — from URL .../suites/view/4)
@@ -205,7 +205,7 @@ if (!filePath) {
     'Usage: TESTRAIL_API_KEY=xxx node scripts/createManualTestPlan.js <path-to.md>'
   )
   console.error(
-    'Example: node scripts/createManualTestPlan.js ../../docs/manual-test-plan-Fusion-sample.md'
+    'Example: node scripts/createManualTestPlan.js docs/manual-test-plan-Fusion-sample.md'
   )
   process.exit(1)
 }
