@@ -113,7 +113,6 @@ export const SwapScreen = (): JSX.Element => {
   const { isTokensLoading, btcBLocalToken } = useFusionTokenLookup({
     params,
     accountTokens,
-    cChainNetwork,
     isDeveloperMode,
     setFromToken,
     setToToken

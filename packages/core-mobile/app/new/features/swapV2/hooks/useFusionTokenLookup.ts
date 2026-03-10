@@ -17,24 +17,15 @@ type Params = {
   initialToCaip2Id?: string
 }
 
-type Network =
-  | {
-      caip2Id?: string
-      chainId: number
-    }
-  | undefined
-
 export function useFusionTokenLookup({
   params,
   accountTokens,
-  cChainNetwork,
   isDeveloperMode,
   setFromToken,
   setToToken
 }: {
   params: Params
   accountTokens: LocalTokenWithBalance[]
-  cChainNetwork: Network
   isDeveloperMode: boolean
   setFromToken: (token: LocalTokenWithBalance | undefined) => void
   setToToken: (token: LocalTokenWithBalance | undefined) => void
@@ -71,24 +62,14 @@ export function useFusionTokenLookup({
     return buildLocalToken({
       accountTokens,
       tokenInfo,
-      caip2Id:
-        cChainNetwork?.caip2Id ??
-        (isDeveloperMode
-          ? SUPPORTED_PLATFORM_ID_TESTNET
-          : SUPPORTED_PLATFORM_ID),
-      chainId:
-        cChainNetwork?.chainId ??
-        (isDeveloperMode
-          ? EvmChainId.AVALANCHE_TESTNET
-          : EvmChainId.AVALANCHE_MAINNET)
+      caip2Id: isDeveloperMode
+        ? SUPPORTED_PLATFORM_ID_TESTNET
+        : SUPPORTED_PLATFORM_ID,
+      chainId: isDeveloperMode
+        ? EvmChainId.AVALANCHE_TESTNET
+        : EvmChainId.AVALANCHE_MAINNET
     })
-  }, [
-    tokens,
-    accountTokens,
-    cChainNetwork?.caip2Id,
-    cChainNetwork?.chainId,
-    isDeveloperMode
-  ])
+  }, [tokens, accountTokens, isDeveloperMode])
 
   const initialized = useRef(false)
 
