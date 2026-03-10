@@ -135,7 +135,8 @@ export const SwapScreen = (): JSX.Element => {
   const { debounced: debouncedFromTokenValue } = useDebounce(fromTokenValue)
   const solanaNetwork = useSolanaNetwork()
   const activeAccount = useSelector(selectActiveAccount)
-  const { data: accountBalances } = useAccountBalances(activeAccount)
+  const { data: accountBalances, isLoading: isAccountBalancesLoading } =
+    useAccountBalances(activeAccount)
   const accountTokens = useMemo(
     () => accountBalances.flatMap(n => n.tokens as LocalTokenWithBalance[]),
     [accountBalances]
@@ -344,9 +345,9 @@ export const SwapScreen = (): JSX.Element => {
       return
     }
 
-    // Wait for token lookup to complete before initializing so we don't
-    // commit to undefined tokens and block further retries.
-    if (isTokensLoading) return
+    // Wait for token lookup and account balances to complete before initializing
+    // so we don't commit to undefined tokens or zero balances and block retries.
+    if (isTokensLoading || isAccountBalancesLoading) return
 
     let initialFromToken: LocalTokenWithBalance | undefined
     if (initialTokenIdFrom) {
