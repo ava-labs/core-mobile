@@ -25,6 +25,7 @@ const makeBalanceToken = (
   ({
     type: TokenType.ERC20,
     internalId: 'some-token',
+    networkChainId: ChainId.AVALANCHE_MAINNET_ID,
     symbol: 'SOME',
     name: 'Some Token',
     logoUri: 'https://example.com/some.png',
