@@ -1,5 +1,6 @@
 import Config from 'react-native-config'
 import { Environment } from '@avalabs/fusion-sdk'
+import { TOKEN_IDS } from 'consts/tokenIds'
 
 /**
  * The partner ID Markr uses for EVM swaps.
@@ -44,3 +45,10 @@ export function getFusionEnvironment(isDeveloperMode: boolean): Environment {
  * This represents letting the SDK automatically select the best quote
  */
 export const AUTO_QUOTE_ID = 'auto'
+
+export const NATIVE_DECIMALS: Record<string, number> = {
+  [TOKEN_IDS.ETH]: 18,
+  [TOKEN_IDS.AVAX]: 18,
+  [TOKEN_IDS.SOL]: 9,
+  [TOKEN_IDS.BTC]: 8
+}

@@ -15,18 +15,14 @@ export const RetrySwapButton = ({
 
   if (status !== 'failed') return null
 
-  // Prefer internalId over localId since it's more reliable and comes from the backend
-  const fromTokenId = item.fromToken.internalId ?? item.fromToken.localId
-  const toTokenId = item.toToken.internalId ?? item.toToken.localId
-
   return (
     <Button
       type="secondary"
       size="small"
       onPress={() =>
         navigateToSwap({
-          fromTokenId,
-          toTokenId,
+          fromTokenId: item.fromToken.internalId,
+          toTokenId: item.toToken.internalId,
           fromCaip2Id: item.transfer.sourceChain.chainId,
           toCaip2Id: item.transfer.targetChain.chainId
         })

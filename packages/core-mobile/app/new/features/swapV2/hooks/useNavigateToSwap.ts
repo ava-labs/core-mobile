@@ -1,10 +1,7 @@
 import { useRouter } from 'expo-router'
-import {
-  AVAX_TOKEN_ID,
-  SUPPORTED_PLATFORM_ID,
-  USDC_AVALANCHE_C_TOKEN_ID
-} from 'common/consts/swap'
+import { SUPPORTED_PLATFORM_ID } from 'common/consts/swap'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import { TOKEN_IDS } from 'consts/tokenIds'
 
 interface NavigateToSwapParams {
   fromTokenId?: string // internalId or localId
@@ -30,8 +27,8 @@ export const useNavigateToSwap = (): {
         // @ts-ignore TODO: make routes typesafe
         pathname: '/swapV2',
         params: {
-          initialTokenIdFrom: AVAX_TOKEN_ID,
-          initialTokenIdTo: USDC_AVALANCHE_C_TOKEN_ID,
+          initialTokenIdFrom: TOKEN_IDS.AVAX,
+          initialTokenIdTo: TOKEN_IDS.USDC,
           initialFromCaip2Id: cChainNetwork?.caip2Id ?? SUPPORTED_PLATFORM_ID,
           initialToCaip2Id: cChainNetwork?.caip2Id ?? SUPPORTED_PLATFORM_ID
         }

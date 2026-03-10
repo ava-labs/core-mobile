@@ -31,8 +31,8 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
 
     if (!transfer) return
     navigateToSwap({
-      fromTokenId: transfer.fromToken.internalId ?? transfer.fromToken.localId,
-      toTokenId: transfer.toToken.internalId ?? transfer.toToken.localId,
+      fromTokenId: transfer.fromToken.internalId,
+      toTokenId: transfer.toToken.internalId,
       fromCaip2Id: transfer.transfer.sourceChain.chainId,
       toCaip2Id: transfer.transfer.targetChain.chainId
     })

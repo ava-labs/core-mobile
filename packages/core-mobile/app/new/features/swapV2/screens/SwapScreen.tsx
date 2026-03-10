@@ -44,8 +44,10 @@ import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio
 import { selectActiveAccount } from 'store/account'
 import Logger from 'utils/Logger'
 import { TOKEN_IDS } from 'consts/tokenIds'
-import { useFusionSwapList } from 'common/hooks/useFusionSwapList'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import { useTokenLookup } from 'common/hooks/useTokenLookup'
+import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
+import { SUPPORTED_PLATFORM_ID } from 'common/consts/swap'
 import { SwapStatus, useSwapContext } from '../contexts/SwapContext'
 import { FusionQuoteError, fusionErrors } from '../utils/fusionErrors'
 import { useSwapRate } from '../hooks/useSwapRate'
@@ -55,6 +57,7 @@ import { ServiceType } from '../types'
 import { useMaxSwapAmount } from '../hooks/useMaxSwapAmount'
 import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 import { useFeeValidation } from '../hooks/useFeeValidation'
+import { buildLocalToken } from '../utils/buildLocalToken'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -62,24 +65,27 @@ export const SwapScreen = (): JSX.Element => {
   const navigation = useNavigation()
 
   const params = useGlobalSearchParams<{
-    initialTokenIdFrom?: string
-    initialTokenIdTo?: string
+    initialTokenIdFrom?: string // internalId
+    initialTokenIdTo?: string // internalId
     initialFromCaip2Id?: string
     initialToCaip2Id?: string
   }>()
 
   const { formatCurrency } = useFormatCurrency()
   const { getMarketTokenById } = useWatchlist()
+  const cChainNetwork = useCChainNetwork()
 
-  const { tokens: swapList, isLoading: isSwapListLoading } = useFusionSwapList({
-    fromCaip2Id: params.initialFromCaip2Id,
-    toCaip2Id: params.initialToCaip2Id
-  })
+  const lookupTokenIds = useMemo(() => {
+    const ids: Array<{ internalId: string }> = [{ internalId: TOKEN_IDS.BTC_B }]
+    if (params.initialTokenIdFrom)
+      ids.push({ internalId: params.initialTokenIdFrom })
+    if (params.initialTokenIdTo)
+      ids.push({ internalId: params.initialTokenIdTo })
+    return ids
+  }, [params.initialTokenIdFrom, params.initialTokenIdTo])
 
-  const fromTokenChainId = useMemo(() => {
-    if (!params.initialFromCaip2Id) return undefined
-    return getChainIdFromCaip2(params.initialFromCaip2Id)
-  }, [params.initialFromCaip2Id])
+  const { data: tokens, isLoading: isTokensLoading } =
+    useTokenLookup(lookupTokenIds)
 
   const toTokenChainId = useMemo(() => {
     if (!params.initialToCaip2Id) return undefined
@@ -116,9 +122,13 @@ export const SwapScreen = (): JSX.Element => {
   })
 
   const { debounced: debouncedFromTokenValue } = useDebounce(fromTokenValue)
-  const cChainNetwork = useCChainNetwork()
   const solanaNetwork = useSolanaNetwork()
   const activeAccount = useSelector(selectActiveAccount)
+  const { data: accountBalances } = useAccountBalances(activeAccount)
+  const accountTokens = useMemo(
+    () => accountBalances.flatMap(n => n.tokens as LocalTokenWithBalance[]),
+    [accountBalances]
+  )
   const tokensWithZeroBalance = useTokensWithZeroBalanceByNetworksForAccount(
     activeAccount,
     [cChainNetwork?.chainId, solanaNetwork?.chainId].filter(
@@ -287,56 +297,67 @@ export const SwapScreen = (): JSX.Element => {
     tokensWithZeroBalance
   ])
 
+  const btcBLocalToken = useMemo(() => {
+    const tokenInfo = tokens[TOKEN_IDS.BTC_B.toLowerCase()]
+    if (!tokenInfo) return undefined
+    return buildLocalToken({
+      accountTokens,
+      tokenInfo,
+      caip2Id: cChainNetwork?.caip2Id ?? SUPPORTED_PLATFORM_ID,
+      chainId: cChainNetwork?.chainId ?? 0
+    })
+  }, [tokens, accountTokens, cChainNetwork?.caip2Id, cChainNetwork?.chainId])
+
   const setInitialTokensFx = useCallback(() => {
     if (initialized.current) return
 
     const initialTokenIdFrom = params.initialTokenIdFrom
     const initialTokenIdTo = params.initialTokenIdTo
 
-    if (initialTokenIdFrom || initialTokenIdTo) {
-      if (isSwapListLoading) return
+    if (!initialTokenIdFrom && !initialTokenIdTo) {
       initialized.current = true
+      return
     }
+
+    const toTokenInfo = initialTokenIdTo
+      ? tokens[initialTokenIdTo.toLowerCase()]
+      : undefined
 
     let initialFromToken: LocalTokenWithBalance | undefined
     if (initialTokenIdFrom) {
-      initialFromToken = swapList.find(tk => {
-        const matchesId =
-          tk.localId.toLowerCase() ===
-            params.initialTokenIdFrom?.toLowerCase() ||
-          tk.internalId?.toLowerCase() ===
-            params.initialTokenIdFrom?.toLowerCase()
-        const matchesChain =
-          fromTokenChainId === undefined ||
-          tk.networkChainId === fromTokenChainId
-        return matchesId && matchesChain
-      })
+      initialFromToken = accountTokens.find(
+        tk => tk.internalId === initialTokenIdFrom
+      )
     }
     setFromToken(initialFromToken)
 
     let initialToToken: LocalTokenWithBalance | undefined
     if (initialTokenIdTo) {
-      initialToToken = swapList.find(tk => {
-        const matchesId =
-          tk.localId.toLowerCase() === params.initialTokenIdTo?.toLowerCase() ||
-          tk.internalId?.toLowerCase() ===
-            params.initialTokenIdTo?.toLowerCase()
-        const matchesChain =
-          toTokenChainId === undefined || tk.networkChainId === toTokenChainId
-        return matchesId && matchesChain
-      })
+      initialToToken = accountTokens.find(
+        tk => tk.internalId === initialTokenIdTo
+      )
+      if (!initialToToken) {
+        initialToToken =
+          toTokenInfo && params.initialToCaip2Id
+            ? buildLocalToken({
+                accountTokens,
+                tokenInfo: toTokenInfo,
+                caip2Id: params.initialToCaip2Id,
+                chainId: toTokenChainId ?? 0
+              })
+            : undefined
+      }
     }
-
     setToToken(initialToToken)
   }, [
-    fromTokenChainId,
-    isSwapListLoading,
+    accountTokens,
+    params.initialToCaip2Id,
     params.initialTokenIdFrom,
     params.initialTokenIdTo,
     setFromToken,
     setToToken,
-    swapList,
-    toTokenChainId
+    toTokenChainId,
+    tokens
   ])
 
   const showFeesAndSlippage = activeQuote?.serviceType === ServiceType.MARKR
@@ -651,10 +672,10 @@ export const SwapScreen = (): JSX.Element => {
         toToken?.internalId === TOKEN_IDS.BTC_B
       if (toIsBtcB) return
 
-      const btcb = [...swapList, ...tokensWithZeroBalance].find(
+      const btcb = [btcBLocalToken, ...tokensWithZeroBalance].find(
         tk =>
-          tk.localId.toLowerCase() === TOKEN_IDS.BTC_B.toLowerCase() ||
-          tk.internalId === TOKEN_IDS.BTC_B
+          tk?.localId.toLowerCase() === TOKEN_IDS.BTC_B.toLowerCase() ||
+          tk?.internalId === TOKEN_IDS.BTC_B
       )
       if (btcb) setToToken(btcb)
     }
@@ -669,8 +690,9 @@ export const SwapScreen = (): JSX.Element => {
     setToToken,
     setFromToken,
     setAmount,
-    swapList,
-    tokensWithZeroBalance
+    tokensWithZeroBalance,
+    accountTokens,
+    btcBLocalToken
   ])
 
   // Validate token pair compatibility - clear TO token if incompatible with FROM chain
@@ -778,7 +800,7 @@ export const SwapScreen = (): JSX.Element => {
   }, [canSwap, handleSwap, isSwapping, isLombard, renderLombardLogo])
 
   const renderFromAndToSections = useCallback(() => {
-    if (isSwapListLoading && !fromToken && !toToken) {
+    if (isTokensLoading && !fromToken && !toToken) {
       return (
         <ActivityIndicator
           sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
@@ -841,7 +863,7 @@ export const SwapScreen = (): JSX.Element => {
     fromToken,
     handleToggleTokens,
     isInputFocused,
-    isSwapListLoading,
+    isTokensLoading,
     isSwapping,
     renderFromSection,
     renderToSection,
