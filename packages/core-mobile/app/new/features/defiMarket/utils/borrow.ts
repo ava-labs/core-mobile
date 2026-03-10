@@ -211,4 +211,3 @@ export async function fetchBenqiUserBorrowData(
 }
 
 // Re-export for backward compatibility
-export { convertUsdToTokenAmount } from './convertUsdToTokenAmount'
