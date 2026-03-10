@@ -1,3 +1,20 @@
+/**
+ * Payload for dApp transaction lifecycle analytics events
+ * (_success, _confirmed, _failed).
+ *
+ * chainId is a CAIP-2 identifier, NOT a numeric chain ID.
+ * Examples: "eip155:1", "eip155:43114",
+ *           "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+ *           "bip122:000000000019d6689c085ae165831e93"
+ */
+type DappTxEventPayload = {
+  dAppUrl: string
+  address: string
+  /** CAIP-2 chain identifier (e.g. "eip155:1", "solana:...", "bip122:...") */
+  chainId: string
+  txHash: string
+}
+
 export type AnalyticsEvents = {
   AccountSelectorAddAccount: { accountNumber: number }
   ExplorerLinkClicked: undefined
@@ -137,83 +154,19 @@ export type AnalyticsEvents = {
   BrowserHistoryTapped: { url: string }
   WalletConnectedToDapp: { dAppUrl: string }
   TxSubmittedToDapp: undefined
-  eth_sendTransaction_success: {
-    dAppUrl: string
-    address: string
-    chainId: string
-    txHash: string
-  }
-  avalanche_sendTransaction_success: {
-    dAppUrl: string
-    address: string
-    chainId: string
-    txHash: string
-  }
-  bitcoin_sendTransaction_success: {
-    dAppUrl: string
-    address: string
-    chainId: string
-    txHash: string
-  }
-  solana_signAndSendTransaction_success: {
-    dAppUrl: string
-    address: string
-    chainId: string
-    txHash: string
-  }
-  eth_sendTransaction_confirmed: {
-    dAppUrl: string
-    address: string
-    chainId: string
-    txHash: string
-  }
-  avalanche_sendTransaction_confirmed: {
-    dAppUrl: string
-    address: string
-    chainId: string
-    txHash: string
-  }
-  bitcoin_sendTransaction_confirmed: {
-    dAppUrl: string
-    address: string
-    chainId: string
-    txHash: string
-  }
-  solana_signAndSendTransaction_confirmed: {
-    dAppUrl: string
-    address: string
-    chainId: string
-    txHash: string
-  }
-  eth_sendTransaction_failed: {
-    dAppUrl: string
-    address: string
-    chainId: string
-    txHash: string
-  }
-  avalanche_sendTransaction_failed: {
-    dAppUrl: string
-    address: string
-    chainId: string
-    txHash: string
-  }
-  bitcoin_sendTransaction_failed: {
-    dAppUrl: string
-    address: string
-    chainId: string
-    txHash: string
-  }
-  solana_signAndSendTransaction_failed: {
-    dAppUrl: string
-    address: string
-    chainId: string
-    txHash: string
-  }
-  solana_signTransaction_approved: {
-    dAppUrl: string
-    address: string
-    chainId: string
-  }
+  eth_sendTransaction_success: DappTxEventPayload
+  avalanche_sendTransaction_success: DappTxEventPayload
+  bitcoin_sendTransaction_success: DappTxEventPayload
+  solana_signAndSendTransaction_success: DappTxEventPayload
+  eth_sendTransaction_confirmed: DappTxEventPayload
+  avalanche_sendTransaction_confirmed: DappTxEventPayload
+  bitcoin_sendTransaction_confirmed: DappTxEventPayload
+  solana_signAndSendTransaction_confirmed: DappTxEventPayload
+  eth_sendTransaction_failed: DappTxEventPayload
+  avalanche_sendTransaction_failed: DappTxEventPayload
+  bitcoin_sendTransaction_failed: DappTxEventPayload
+  solana_signAndSendTransaction_failed: DappTxEventPayload
+  solana_signTransaction_approved: Omit<DappTxEventPayload, 'txHash'>
 
   // CP-7989 - Address and Tx Hash Analytics Collection
   AccountAddressesUpdated: {
