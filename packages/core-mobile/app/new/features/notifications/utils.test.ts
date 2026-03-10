@@ -1,4 +1,4 @@
-import type { Transfer } from '@avalabs/unified-asset-transfer'
+import type { Transfer } from '@avalabs/fusion-sdk'
 import { AppNotification, NotificationCategory, NotificationTab } from './types'
 import {
   filterByTab,

@@ -51,7 +51,7 @@ export const BalanceHeaderSection = memo(
           style={[
             {
               backgroundColor,
-              marginTop: 16,
+              marginTop: 8,
               paddingHorizontal: 16
             },
             animatedHeaderStyle

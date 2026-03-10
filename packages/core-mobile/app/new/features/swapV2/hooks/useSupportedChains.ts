@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import type { Network } from '@avalabs/core-chains-sdk'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
@@ -10,6 +10,7 @@ import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { isSolanaNetwork } from 'utils/network/isSolanaNetwork'
 import { selectIsSolanaSwapBlocked } from 'store/posthog'
 import FusionService from '../services/FusionService'
+import { logSdkError } from '../utils/fusionLogger'
 import { useIsFusionServiceReady } from './useZustandStore'
 
 /**
@@ -171,6 +172,11 @@ export function useSupportedChains(sourceChainId?: number): {
     },
     [chainsMap, getEnabledNetworkByCaip2ChainId, isSolanaSwapBlocked]
   )
+
+  useEffect(() => {
+    if (error)
+      logSdkError('[useSupportedChains] getSupportedChains error', error)
+  }, [error])
 
   return {
     chains,

@@ -18,7 +18,10 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { transactionSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
-import { selectMarkrSwapMaxRetries } from 'store/posthog'
+import {
+  selectMarkrSwapMaxRetries,
+  selectFusionTransferGasMarginBps
+} from 'store/posthog'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { swapCompleted } from 'store/nestEgg'
 import type { Quote, Transfer } from '../types'
@@ -36,8 +39,9 @@ import {
   isUserRejectionError,
   shouldRetryWithNextQuote,
   getSwapErrorMessage
-} from '../utils/swapErrors'
+} from '../utils/fusionErrors'
 import { trackFusionTransfer } from '../store/actions'
+import { logSdkError } from '../utils/fusionLogger'
 
 const DEFAULT_SLIPPAGE = 0.2
 
@@ -122,6 +126,7 @@ export const SwapContextProvider = ({
   // Get account and networks
   const activeAccount = useSelector(selectActiveAccount)
   const maxRetries = useSelector(selectMarkrSwapMaxRetries)
+  const transferGasMarginBps = useSelector(selectFusionTransferGasMarginBps)
   const { getNetwork } = useNetworks()
   const fromNetwork = useMemo(
     () => (fromToken ? getNetwork(fromToken.networkChainId) : undefined),
@@ -284,7 +289,7 @@ export const SwapContextProvider = ({
         chainId: quote.sourceChain.chainId
       })
 
-      Logger.error('Swap execution failed', error)
+      logSdkError('[handleSwapError] error', error)
     },
     []
   )
@@ -317,7 +322,10 @@ export const SwapContextProvider = ({
       setSwapStatus(SwapStatus.Swapping)
 
       try {
-        const transfer = await FusionService.transferAsset(quoteToUse)
+        const transfer = await FusionService.transferAsset(
+          quoteToUse,
+          transferGasMarginBps
+        )
 
         if (transfer.status === 'failed') {
           const reason =
@@ -379,6 +387,7 @@ export const SwapContextProvider = ({
       bestQuote,
       allQuotes,
       maxRetries,
+      transferGasMarginBps,
       handleSwapSuccess,
       handleSwapError
     ]

@@ -1,10 +1,7 @@
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import {
-  TokenType as SdkTokenType,
-  type QuoteFees
-} from '@avalabs/unified-asset-transfer'
+import { TokenType as SdkTokenType, type QuoteFees } from '@avalabs/fusion-sdk'
 import type {
   Caip2IdAddressPair,
   InternalId
