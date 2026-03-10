@@ -393,6 +393,14 @@ class TransactionsPage {
     await this.tapApprove()
   }
 
+  async quickSwap(amount = '0.0001') {
+    await this.tapSwap()
+    await this.dismissTransactionOnboarding()
+    await this.enterAmountAndAdjust(amount, this.swapAmountInput)
+    await this.tapNext()
+    await this.tapApprove()
+  }
+
   async swap(
     from: string,
     to: string,
