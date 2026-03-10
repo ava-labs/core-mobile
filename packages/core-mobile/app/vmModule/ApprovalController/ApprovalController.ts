@@ -133,7 +133,7 @@ class ApprovalController implements VmModuleApprovalController {
       AnalyticsService.captureWithEncryption(eventName, {
         dAppUrl: request.dappInfo.url,
         address,
-        chainId: numericChainId ?? 0,
+        chainId: request.chainId,
         txHash
       })
     }
@@ -150,14 +150,13 @@ class ApprovalController implements VmModuleApprovalController {
 
     if (!isInAppRequest(request)) {
       const address = getDappRequestAddress(request)
-      const chainId = getChainIdFromCaip2(request.chainId) ?? 0
 
       // VM module only calls onTransactionReverted for tx send methods
       const eventName = `${request.method}_failed` as TxSendFailedEvent
       AnalyticsService.captureWithEncryption(eventName, {
         dAppUrl: request.dappInfo.url,
         address,
-        chainId,
+        chainId: request.chainId,
         txHash
       })
     }

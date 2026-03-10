@@ -140,73 +140,73 @@ export type AnalyticsEvents = {
   eth_sendTransaction_success: {
     dAppUrl: string
     address: string
-    chainId: number
+    chainId: string
     txHash: string
   }
   avalanche_sendTransaction_success: {
     dAppUrl: string
     address: string
-    chainId: number
+    chainId: string
     txHash: string
   }
   bitcoin_sendTransaction_success: {
     dAppUrl: string
     address: string
-    chainId: number
+    chainId: string
     txHash: string
   }
   solana_signAndSendTransaction_success: {
     dAppUrl: string
     address: string
-    chainId: number
+    chainId: string
     txHash: string
   }
   eth_sendTransaction_confirmed: {
     dAppUrl: string
     address: string
-    chainId: number
+    chainId: string
     txHash: string
   }
   avalanche_sendTransaction_confirmed: {
     dAppUrl: string
     address: string
-    chainId: number
+    chainId: string
     txHash: string
   }
   bitcoin_sendTransaction_confirmed: {
     dAppUrl: string
     address: string
-    chainId: number
+    chainId: string
     txHash: string
   }
   solana_signAndSendTransaction_confirmed: {
     dAppUrl: string
     address: string
-    chainId: number
+    chainId: string
     txHash: string
   }
   eth_sendTransaction_failed: {
     dAppUrl: string
     address: string
-    chainId: number
+    chainId: string
     txHash: string
   }
   avalanche_sendTransaction_failed: {
     dAppUrl: string
     address: string
-    chainId: number
+    chainId: string
     txHash: string
   }
   bitcoin_sendTransaction_failed: {
     dAppUrl: string
     address: string
-    chainId: number
+    chainId: string
     txHash: string
   }
   solana_signAndSendTransaction_failed: {
     dAppUrl: string
     address: string
-    chainId: number
+    chainId: string
     txHash: string
   }
 

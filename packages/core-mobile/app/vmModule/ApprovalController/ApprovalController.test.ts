@@ -87,7 +87,7 @@ describe('ApprovalController', () => {
         {
           dAppUrl: DAPP_URL,
           address: EVM_ADDRESS,
-          chainId: 1,
+          chainId: 'eip155:1',
           txHash: TX_HASH
         }
       )
@@ -249,7 +249,7 @@ describe('ApprovalController', () => {
         {
           dAppUrl: DAPP_URL,
           address: EVM_ADDRESS,
-          chainId: 1,
+          chainId: 'eip155:1',
           txHash: TX_HASH
         }
       )

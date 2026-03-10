@@ -181,10 +181,10 @@ class WalletConnectProvider implements AgnosticRpcProvider {
         typeof result === 'string' &&
         result
       ) {
-        const chainId = getChainIdFromCaip2(request.data.params.chainId) ?? 0
+        const chainId = request.data.params.chainId
         const address = getAddressForChain(
           selectActiveAccount(listenerApi.getState()),
-          request.data.params.chainId
+          chainId
         )
         AnalyticsService.captureWithEncryption(`${request.method}_success`, {
           dAppUrl: request.peerMeta.url,
