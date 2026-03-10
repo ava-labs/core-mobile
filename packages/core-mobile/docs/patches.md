@@ -119,8 +119,11 @@ This patch fixes the "unable to resolve @buoy-gg/shared-ui/dataViewer" issue whe
 
 ### react-native+0.81.5.patch
 
-RCTEnhancedScrollView.mm
-On iOS 26, `UIScrollEdgeEffect` adds a blur/gradient at scroll view edges (part of the Liquid Glass redesign). This creates an unwanted gradient overlay on content that scrolls behind the navigation bar — most visibly on the Portfolio screen's action buttons after switching tabs and scrolling back up. The patch hides the `topEdgeEffect` on all scroll views on iOS 26+. Gated behind `@available(iOS 26.0, *)` so older versions are unaffected.
+On iOS 26, `UIScrollEdgeEffect` adds a blur/gradient at scroll view edges (part of the Liquid Glass redesign). This creates an unwanted gradient overlay on content that scrolls behind the navigation bar — most visibly on the Portfolio screen's action buttons after switching tabs and scrolling back up. The patch hides `topEdgeEffect` on all scroll views on iOS 26+ via the official `isHidden` API. Gated behind `@available(iOS 26.0, *)` so older versions are unaffected.
+
+1/ RCTEnhancedScrollView.mm — hides `topEdgeEffect` at scroll view creation (`initWithFrame:`)
+
+2/ RCTScrollViewComponentView.mm — re-hides `topEdgeEffect` in `didMoveToWindow` when the scroll view becomes visible again (e.g. after tab switching, where iOS may re-enable the effect)
 
 - https://github.com/facebook/react-native/issues/54181
 - https://github.com/facebook/react-native/pull/55037
