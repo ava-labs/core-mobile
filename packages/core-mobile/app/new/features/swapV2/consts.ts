@@ -46,7 +46,7 @@ export function getFusionEnvironment(isDeveloperMode: boolean): Environment {
  */
 export const AUTO_QUOTE_ID = 'auto'
 
-// TODO: these should be derived from the token list based on the current network instead of hardcoded
+// TODO: these should come from the token lookup  api based on the current network instead of hardcoded
 // For now, we need these to determine the decimals for native tokens since they don't come with an address
 export const NATIVE_DECIMALS: Record<string, number> = {
   [TOKEN_IDS.ETH]: 18,
