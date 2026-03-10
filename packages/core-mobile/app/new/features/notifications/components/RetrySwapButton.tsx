@@ -13,7 +13,7 @@ export const RetrySwapButton = ({
 }): JSX.Element | null => {
   const { navigateToSwap } = useNavigateToSwap()
 
-  // if (status !== 'failed') return null
+  if (status !== 'failed') return null
 
   return (
     <Button

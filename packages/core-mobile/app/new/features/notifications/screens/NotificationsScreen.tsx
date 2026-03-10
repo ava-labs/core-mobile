@@ -300,9 +300,9 @@ export const NotificationsScreen = (): JSX.Element => {
             }
             animateDelay={index * SWIPE_DELAY}
             onSwipeComplete={() => removeTransfer(transfer.transfer.id)}
-            // onPress={() => {
-            //   isCompletedOrFailed === false && handleSwapActivityPress(transfer)
-            // }}
+            onPress={() => {
+              isCompletedOrFailed === false && handleSwapActivityPress(transfer)
+            }}
             enabled={!isClearingAll && isCompletedOrFailed}>
             <FusionTransferItem
               item={transfer}
