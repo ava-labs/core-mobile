@@ -338,6 +338,34 @@ export const selectMarkrSwapGasBuffer = (state: RootState): number => {
   return parseFloat(featureFlags[FeatureVars.MARKR_SWAP_GAS_BUFFER] as string)
 }
 
+export const selectFusionFeeUnitsMarginBps = (state: RootState): number => {
+  const { featureFlags } = state.posthog
+  return parseInt(
+    featureFlags[FeatureVars.FUSION_FEE_UNITS_MARGIN_BPS] as string
+  )
+}
+
+export const selectFusionMaxAmountGasSafetyBps = (state: RootState): number => {
+  const { featureFlags } = state.posthog
+  return parseInt(
+    featureFlags[FeatureVars.FUSION_MAX_AMOUNT_GAS_SAFETY_BPS] as string
+  )
+}
+
+export const selectFusionBridgeFeeSafetyBps = (state: RootState): number => {
+  const { featureFlags } = state.posthog
+  return parseInt(
+    featureFlags[FeatureVars.FUSION_BRIDGE_FEE_SAFETY_BPS] as string
+  )
+}
+
+export const selectFusionTransferGasMarginBps = (state: RootState): number => {
+  const { featureFlags } = state.posthog
+  return parseInt(
+    featureFlags[FeatureVars.FUSION_TRANSFER_GAS_MARGIN_BPS] as string
+  )
+}
+
 export const selectMarkrSwapMaxRetries = (state: RootState): number => {
   const { featureFlags } = state.posthog
   return parseInt(featureFlags[FeatureVars.MARKR_SWAP_MAX_RETRIES] as string)

@@ -4,6 +4,13 @@ const path = require('path')
 
 const root = path.resolve(__dirname, '..')
 
+const isCI = process.env.APP_ENV === 'ci'
+
+if (!isCI) {
+  delete process.env.SSL_CERT_FILE
+  delete process.env.SSL_CERT_DIR
+}
+
 function run(cmd) {
   execSync(cmd, {
     stdio: 'inherit',
@@ -17,7 +24,7 @@ function main() {
 
   // contracts
   run(
-    'typechain --target=ethers-v6 --out-dir app/contracts/openzeppelin ' +
+    'npx typechain --target=ethers-v6 --out-dir app/contracts/openzeppelin ' +
       './node_modules/@openzeppelin/contracts/build/contracts/ERC20.json ' +
       './node_modules/@openzeppelin/contracts/build/contracts/ERC721.json ' +
       './node_modules/@openzeppelin/contracts/build/contracts/ERC1155.json'

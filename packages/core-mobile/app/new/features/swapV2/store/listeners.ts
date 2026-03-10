@@ -27,6 +27,7 @@ import {
   getPendingFusionTransfers
 } from '../hooks/useZustandStore'
 import { fetchAdapter } from '../utils/fetchAdapter'
+import { logSdkError } from '../utils/fusionLogger'
 import { trackFusionTransfer } from './actions'
 
 /**
@@ -181,7 +182,10 @@ export const initFusionService = async (
 
     resumeTransfersTracking()
   } catch (error) {
-    Logger.error('Failed to initialize Fusion service', error)
+    logSdkError(
+      '[initFusionService listener] Failed to initialize Fusion service',
+      error
+    )
     useIsFusionServiceReady.setState(false)
   } finally {
     isFusionInitializing = false
@@ -229,7 +233,7 @@ export const addFusionListeners = (startListening: AppStartListening): void => {
       try {
         FusionService.trackTransfer(transfer, updateFusionTransfer)
       } catch (error) {
-        Logger.error('Failed to track fusion transfer', error)
+        logSdkError('[trackFusionTransfer listener] error', error)
       }
     }
   })

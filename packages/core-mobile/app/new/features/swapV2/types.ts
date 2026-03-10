@@ -1,5 +1,5 @@
 import { TokensResponse } from 'utils/api/generated/tokenAggregator/aggregatorApi.client'
-import type { Transfer } from '@avalabs/unified-asset-transfer'
+import type { Transfer } from '@avalabs/fusion-sdk'
 
 // Token Aggregator API types
 export type ApiToken = TokensResponse['data'][number]
@@ -22,5 +22,5 @@ export type FusionTransfer = {
 
 export type FusionTransfersMap = Record<string, FusionTransfer>
 
-export type { Quote, Transfer } from '@avalabs/unified-asset-transfer'
-export { ServiceType } from '@avalabs/unified-asset-transfer'
+export type { Quote, Transfer } from '@avalabs/fusion-sdk'
+export { ServiceType } from '@avalabs/fusion-sdk'

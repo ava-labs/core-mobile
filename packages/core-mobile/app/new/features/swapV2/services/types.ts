@@ -2,7 +2,10 @@ import type {
   BitcoinFunctions,
   BtcSigner,
   Environment,
+  EstimateNativeFeeOptions,
   EvmSignerWithMessage,
+  GetMinimumTransferAmountProps,
+  NativeFeeEstimate,
   Quote,
   QuoterInterface,
   ServiceType,
@@ -10,7 +13,7 @@ import type {
   TransferManager,
   Fetch,
   SolanaSigner
-} from '@avalabs/unified-asset-transfer'
+} from '@avalabs/fusion-sdk'
 
 /**
  * Configuration for initializing the Fusion SDK
@@ -70,9 +73,10 @@ export interface IFusionService {
   /**
    * Execute a transfer using the provided quote
    * @param quote The quote to execute
+   * @param estimateGasMarginBps Margin in basis points added to the gas estimate to reduce out-of-gas risk
    * @returns Transfer object with status and transaction details
    */
-  transferAsset(quote: Quote): Promise<Transfer>
+  transferAsset(quote: Quote, estimateGasMarginBps: number): Promise<Transfer>
 
   /**
    * Track a transfer's status changes via the SDK
@@ -83,6 +87,21 @@ export interface IFusionService {
     transfer: Transfer,
     updateListener: (updated: Transfer) => void
   ): void
+
+  /**
+   * Estimate the native fee required to execute the provided quote.
+   */
+  estimateNativeFee(
+    quote: Quote,
+    options?: EstimateNativeFeeOptions
+  ): Promise<NativeFeeEstimate>
+
+  /**
+   * Returns the minimum source amount per service for the given token pair.
+   */
+  getMinimumTransferAmount(
+    props: GetMinimumTransferAmountProps
+  ): Promise<{ [key in ServiceType]?: bigint } | null>
 
   /**
    * Cleanup and reset the service

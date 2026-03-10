@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChainId } from '@avalabs/core-chains-sdk'
 import { TokenType as AppTokenType } from '@avalabs/vm-module-types'
-import { TokenType as SdkTokenType } from '@avalabs/unified-asset-transfer'
+import { TokenType as SdkTokenType } from '@avalabs/fusion-sdk'
 import { LocalTokenWithBalance } from 'store/balance'
 import { NetworkWithCaip2ChainId } from 'store/network'
 import { toSwappableAsset, toChain } from './fusionTypeConverters'

@@ -63,8 +63,8 @@ const baseConfig = {
         return context.resolveRequest(newContext, moduleName, platform)
       }
 
-      // Enable package exports only for @avalabs/unified-asset-transfer
-      if (moduleName.startsWith('@avalabs/unified-asset-transfer')) {
+      // Enable package exports only for @avalabs/fusion-sdk
+      if (moduleName.startsWith('@avalabs/fusion-sdk')) {
         const newContext = {
           ...context,
           unstable_enablePackageExports: true
