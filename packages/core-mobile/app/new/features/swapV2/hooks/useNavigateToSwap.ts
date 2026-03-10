@@ -4,8 +4,8 @@ import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { TOKEN_IDS } from 'consts/tokenIds'
 
 interface NavigateToSwapParams {
-  fromTokenId?: string // internalId or localId
-  toTokenId?: string // internalId or localId
+  fromTokenId?: string // internalId
+  toTokenId?: string // internalId
   fromCaip2Id?: string
   toCaip2Id?: string
 }
