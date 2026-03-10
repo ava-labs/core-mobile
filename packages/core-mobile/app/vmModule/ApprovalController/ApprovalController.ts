@@ -15,7 +15,6 @@ import {
   TxSendConfirmedEvent,
   TxSendFailedEvent
 } from 'store/rpc/utils/txSendMethods'
-import { RequestContext } from 'store/rpc/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NavigationPresentationMode } from 'new/common/types'
 import WalletService from 'services/wallet/WalletService'
@@ -120,10 +119,8 @@ class ApprovalController implements VmModuleApprovalController {
     transactionSnackbar.success({ explorerLink, toastId: request.requestId })
 
     // only show confetti for in-app requests
-    if (isInAppRequest(request) && !confettiDisabled) {
-      setTimeout(() => {
-        confetti.restart()
-      }, 100)
+    if (isInAppRequest(request) && isConfettiEnabled(request)) {
+      showConfetti()
     }
 
     if (!isInAppRequest(request)) {

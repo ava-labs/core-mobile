@@ -94,7 +94,7 @@ describe('walletConnectProvider', () => {
           {
             dAppUrl: 'https://test.dapp.com',
             address: mockActiveAccount.addressC,
-            chainId: 1,
+            chainId: 'eip155:1',
             txHash: '0xdeadbeef'
           }
         )
@@ -238,6 +238,43 @@ describe('walletConnectProvider', () => {
     })
 
     describe('non-tx-send methods', () => {
+      it('fires solana_signTransaction_approved when dApp handles broadcast', async () => {
+        const request = makeMockRequest(
+          RpcMethod.SOLANA_SIGN_TRANSACTION,
+          SolanaCaip2ChainId.MAINNET
+        )
+
+        await walletConnectProvider.onSuccess({
+          request,
+          result: 'serializedSignedTx',
+          listenerApi: mockListenerApi
+        })
+
+        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+          'solana_signTransaction_approved',
+          {
+            dAppUrl: 'https://test.dapp.com',
+            address: mockActiveAccount.addressSVM,
+            chainId: SolanaCaip2ChainId.MAINNET
+          }
+        )
+      })
+
+      it('does not fire solana_signTransaction_approved when result is empty', async () => {
+        const request = makeMockRequest(
+          RpcMethod.SOLANA_SIGN_TRANSACTION,
+          SolanaCaip2ChainId.MAINNET
+        )
+
+        await walletConnectProvider.onSuccess({
+          request,
+          result: '',
+          listenerApi: mockListenerApi
+        })
+
+        expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
+      })
+
       it('does not fire analytics for personal_sign', async () => {
         const request = makeMockRequest(RpcMethod.PERSONAL_SIGN, 'eip155:1')
 
@@ -259,21 +296,6 @@ describe('walletConnectProvider', () => {
         await walletConnectProvider.onSuccess({
           request,
           result: '0xsignature',
-          listenerApi: mockListenerApi
-        })
-
-        expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
-      })
-
-      it('does not fire analytics for solana_signTransaction', async () => {
-        const request = makeMockRequest(
-          RpcMethod.SOLANA_SIGN_TRANSACTION,
-          SolanaCaip2ChainId.MAINNET
-        )
-
-        await walletConnectProvider.onSuccess({
-          request,
-          result: 'signedTx',
           listenerApi: mockListenerApi
         })
 

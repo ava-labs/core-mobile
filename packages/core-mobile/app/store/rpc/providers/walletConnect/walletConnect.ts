@@ -194,6 +194,28 @@ class WalletConnectProvider implements AgnosticRpcProvider {
         })
       }
 
+      // For solana_signTransaction the dApp handles broadcast, so we never receive a txHash.
+      // Fire _approved on successful signing to enable usage measurement.
+      if (
+        request.method === RpcMethod.SOLANA_SIGN_TRANSACTION &&
+        typeof result === 'string' &&
+        result
+      ) {
+        const chainId = request.data.params.chainId
+        const address = getAddressForChain(
+          selectActiveAccount(listenerApi.getState()),
+          chainId
+        )
+        AnalyticsService.captureWithEncryption(
+          'solana_signTransaction_approved',
+          {
+            dAppUrl: request.peerMeta.url,
+            address,
+            chainId
+          }
+        )
+      }
+
       try {
         await WalletConnectService.approveRequest(
           topic,

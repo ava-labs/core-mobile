@@ -209,6 +209,11 @@ export type AnalyticsEvents = {
     chainId: string
     txHash: string
   }
+  solana_signTransaction_approved: {
+    dAppUrl: string
+    address: string
+    chainId: string
+  }
 
   // CP-7989 - Address and Tx Hash Analytics Collection
   AccountAddressesUpdated: {
