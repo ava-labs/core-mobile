@@ -551,11 +551,11 @@ export const SwapScreen = (): JSX.Element => {
   useEffect(syncDebouncedAmount, [syncDebouncedAmount])
 
   // Reset from amount when the user selects a different from token.
-  const prevFromTokenIdRef = useRef(fromToken?.localId)
+  const prevFromTokenIdRef = useRef(fromToken?.internalId)
   useEffect(() => {
     const prevId = prevFromTokenIdRef.current
-    prevFromTokenIdRef.current = fromToken?.localId
-    if (prevId === undefined || prevId === fromToken?.localId) return
+    prevFromTokenIdRef.current = fromToken?.internalId
+    if (prevId === undefined || prevId === fromToken?.internalId) return
     setFromTokenValue(undefined)
     setAmount(undefined)
   }, [fromToken, setFromTokenValue, setAmount])
@@ -565,7 +565,7 @@ export const SwapScreen = (): JSX.Element => {
 
   useEffect(() => {
     function clearSameToken(): void {
-      if (!(fromToken && toToken && fromToken.localId === toToken.localId))
+      if (!(fromToken && toToken && fromToken.internalId === toToken.internalId))
         return
 
       if (prevFromRef.current !== fromToken) {
@@ -583,22 +583,16 @@ export const SwapScreen = (): JSX.Element => {
     }
 
     function autoSelectBtcb(): void {
-      const fromIsBtc =
-        fromToken?.localId?.toLowerCase() === TOKEN_IDS.BTC.toLowerCase() ||
-        fromToken?.internalId === TOKEN_IDS.BTC
+      const fromIsBtc = fromToken?.internalId === TOKEN_IDS.BTC
       if (!fromIsBtc) return
 
       // Skip if TO is already BTC.b — avoids overriding a valid selection
       // or causing unnecessary state writes on re-renders.
-      const toIsBtcB =
-        toToken?.localId?.toLowerCase() === TOKEN_IDS.BTC_B.toLowerCase() ||
-        toToken?.internalId === TOKEN_IDS.BTC_B
+      const toIsBtcB = toToken?.internalId === TOKEN_IDS.BTC_B
       if (toIsBtcB) return
 
       const btcb = [btcBLocalToken, ...tokensWithZeroBalance].find(
-        tk =>
-          tk?.localId.toLowerCase() === TOKEN_IDS.BTC_B.toLowerCase() ||
-          tk?.internalId === TOKEN_IDS.BTC_B
+        tk => tk?.internalId === TOKEN_IDS.BTC_B
       )
       if (btcb) setToToken(btcb)
     }
