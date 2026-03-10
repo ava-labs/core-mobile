@@ -38,7 +38,7 @@ export const SelectAmountFormBase = ({
   submit: ({ amount }: { amount: TokenUnit }) => Promise<string>
   onSubmitted: (params: { txHash: string; amount: TokenUnit }) => void
   currentHealthScore?: number
-  calculateHealthScore?: (amount: TokenUnit) => number | undefined
+  calculateHealthScore: (amount: TokenUnit) => number | undefined
   balanceLabel?: string
   maxAmountZeroMessage?: string
 }): JSX.Element => {
@@ -79,7 +79,7 @@ export const SelectAmountFormBase = ({
   }, [amount, submit, onSubmitted])
 
   const healthScore = useMemo(() => {
-    if (!calculateHealthScore) return undefined
+    if (currentHealthScore === undefined) return undefined
     if (!amount || amount.toSubUnit() === 0n) return currentHealthScore
     try {
       return calculateHealthScore(amount)
