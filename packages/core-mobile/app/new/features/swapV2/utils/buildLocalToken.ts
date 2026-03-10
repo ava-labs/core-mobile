@@ -27,12 +27,6 @@ export const buildLocalToken = ({
     ? ''
     : balanceData?.address ?? tokenInfo.platforms?.[caip2Id] ?? ''
 
-  if (!isNative && (!address || address.trim() === '')) {
-    throw new Error(
-      `Invalid non-native token: missing address for internalId=${tokenInfo.internalId} on caip2Id=${caip2Id}`
-    )
-  }
-
   return mapApiTokenToLocal(
     {
       symbol: balanceData?.symbol ?? tokenInfo.symbol,
