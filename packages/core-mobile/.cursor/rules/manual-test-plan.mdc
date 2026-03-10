@@ -1,0 +1,43 @@
+---
+description: How to write manual test plans for features (TestRail-style, English MD)
+globs: docs/**/*.md
+alwaysApply: false
+---
+
+# Manual Test Plan Rule
+
+When asked to create a **manual test plan** for a feature:
+
+## 1. Learn the feature
+
+- **If Figma link is provided**: Use it to understand UI and flows.
+- **If no Figma**: Use the codebase (screens, services, hooks, types, feature flags) to infer behavior, entry points, validations, and supported chains/assets.
+
+## 2. Structure (TestRail-style)
+
+- **Section**: The feature name (e.g. `Fusion`, `Swap`) is the top-level section.
+- **Subsections**: Under the section, group test cases into subsections (e.g. by chain: C-Chain, Ethereum, Solana; or by flow: Quote & Fees, Transfer Lifecycle, Validation).
+- **Test case titles**: Under each subsection, list one title per line. Do **not** repeat the feature name in each title—write only the scenario, e.g.:
+  - `AVAX on C-Chain → ETH on Ethereum`
+  - `SOL on Solana → USDC on C-Chain`
+  - `Amount exceeds balance shows "Amount exceeds available balance"`
+- Use **lists** (bullets or numbered), not tables. Provide many case variants so the plan is copy-ready for TestRail.
+
+## 3. Deliverable
+
+- **File**: `packages/core-mobile/docs/manual-test-plan-<Feature>.md`
+- **Content**: Section title (feature name), subsections as headings, test case titles as list items under each subsection.
+- **Sample format**: Use `packages/core-mobile/docs/manual-test-plan-Fusion-sample.md` as the reference for structure and style.
+
+---
+
+**P.S. — For the user (include this when delivering a test plan):**
+
+When the user asks for a manual test plan for a feature (with or without a Figma link), create the plan and also give them a short **how-to** so they can add it to TestRail:
+
+1. **Request**: The user asks for a test plan for a feature; they may or may not provide a Figma link.
+2. **Deliverable**: You create `packages/core-mobile/docs/manual-test-plan-<Feature>.md` (section, subsections, test case titles as in 1–3 above).
+3. **How to add to TestRail**: Tell the user to run the script from `packages/core-mobile` with the doc path, e.g.:
+   - Run: `node scripts/createManualTestPlan.js docs/manual-test-plan-<Feature>.md`
+   - Sample: `docs/manual-test-plan-Fusion-sample.md`
+   - The script creates the section, subsections, and cases in TestRail (project 4, suite 4).
