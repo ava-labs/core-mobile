@@ -566,7 +566,12 @@ export const SwapScreen = (): JSX.Element => {
   useEffect(() => {
     function clearSameToken(): void {
       if (
-        !(fromToken && toToken && fromToken.internalId === toToken.internalId)
+        !(
+          fromToken &&
+          toToken &&
+          fromToken.internalId === toToken.internalId &&
+          fromToken.networkChainId === toToken.networkChainId
+        )
       ) {
         return
       }
