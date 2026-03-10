@@ -615,7 +615,6 @@ export const SwapScreen = (): JSX.Element => {
     setFromToken,
     setAmount,
     tokensWithZeroBalance,
-    accountTokens,
     btcBLocalToken
   ])
 
