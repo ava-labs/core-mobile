@@ -44,15 +44,8 @@ import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio
 import { selectActiveAccount } from 'store/account'
 import Logger from 'utils/Logger'
 import { TOKEN_IDS } from 'consts/tokenIds'
-import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
-import { useTokenLookup } from 'common/hooks/useTokenLookup'
-import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
-import {
-  SUPPORTED_PLATFORM_ID,
-  SUPPORTED_PLATFORM_ID_TESTNET
-} from 'common/consts/swap'
-import { EvmChainId } from '@avalabs/fusion-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
 import { SwapStatus, useSwapContext } from '../contexts/SwapContext'
 import { FusionQuoteError, fusionErrors } from '../utils/fusionErrors'
 import { useSwapRate } from '../hooks/useSwapRate'
@@ -62,7 +55,7 @@ import { ServiceType } from '../types'
 import { useMaxSwapAmount } from '../hooks/useMaxSwapAmount'
 import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 import { useFeeValidation } from '../hooks/useFeeValidation'
-import { buildLocalToken } from '../utils/buildLocalToken'
+import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -80,28 +73,6 @@ export const SwapScreen = (): JSX.Element => {
   const { formatCurrency } = useFormatCurrency()
   const { getMarketTokenById } = useWatchlist()
   const cChainNetwork = useCChainNetwork()
-
-  const lookupTokenIds = useMemo(() => {
-    const ids: Array<{ internalId: string }> = [{ internalId: TOKEN_IDS.BTC_B }]
-    if (params.initialTokenIdFrom)
-      ids.push({ internalId: params.initialTokenIdFrom })
-    if (params.initialTokenIdTo)
-      ids.push({ internalId: params.initialTokenIdTo })
-    return ids
-  }, [params.initialTokenIdFrom, params.initialTokenIdTo])
-
-  const { data: tokens, isLoading: isTokensLoading } =
-    useTokenLookup(lookupTokenIds)
-
-  const fromTokenChainId = useMemo(() => {
-    if (!params.initialFromCaip2Id) return undefined
-    return getChainIdFromCaip2(params.initialFromCaip2Id)
-  }, [params.initialFromCaip2Id])
-
-  const toTokenChainId = useMemo(() => {
-    if (!params.initialToCaip2Id) return undefined
-    return getChainIdFromCaip2(params.initialToCaip2Id)
-  }, [params.initialToCaip2Id])
 
   const {
     swap,
@@ -135,12 +106,19 @@ export const SwapScreen = (): JSX.Element => {
   const { debounced: debouncedFromTokenValue } = useDebounce(fromTokenValue)
   const solanaNetwork = useSolanaNetwork()
   const activeAccount = useSelector(selectActiveAccount)
-  const { data: accountBalances, isLoading: isAccountBalancesLoading } =
-    useAccountBalances(activeAccount)
-  const accountTokens = useMemo(
-    () => accountBalances.flatMap(n => n.tokens as LocalTokenWithBalance[]),
-    [accountBalances]
-  )
+  const accountTokens = useTokensWithBalanceForAccount({
+    account: activeAccount
+  })
+
+  const { isTokensLoading, btcBLocalToken } = useFusionTokenLookup({
+    params,
+    accountTokens,
+    cChainNetwork,
+    isDeveloperMode,
+    setFromToken,
+    setToToken
+  })
+
   const tokensWithZeroBalance = useTokensWithZeroBalanceByNetworksForAccount(
     activeAccount,
     [cChainNetwork?.chainId, solanaNetwork?.chainId].filter(
@@ -307,97 +285,6 @@ export const SwapScreen = (): JSX.Element => {
     setFromTokenValue,
     setAmount,
     tokensWithZeroBalance
-  ])
-
-  const btcBLocalToken = useMemo(() => {
-    const tokenInfo = tokens[TOKEN_IDS.BTC_B.toLowerCase()]
-    if (!tokenInfo) return undefined
-    return buildLocalToken({
-      accountTokens,
-      tokenInfo,
-      caip2Id:
-        cChainNetwork?.caip2Id ??
-        (isDeveloperMode
-          ? SUPPORTED_PLATFORM_ID_TESTNET
-          : SUPPORTED_PLATFORM_ID),
-      chainId:
-        cChainNetwork?.chainId ??
-        (isDeveloperMode
-          ? EvmChainId.AVALANCHE_TESTNET
-          : EvmChainId.AVALANCHE_MAINNET)
-    })
-  }, [
-    tokens,
-    accountTokens,
-    cChainNetwork?.caip2Id,
-    cChainNetwork?.chainId,
-    isDeveloperMode
-  ])
-
-  const setInitialTokensFx = useCallback(() => {
-    if (initialized.current) return
-
-    const initialTokenIdFrom = params.initialTokenIdFrom
-    const initialTokenIdTo = params.initialTokenIdTo
-
-    if (!initialTokenIdFrom && !initialTokenIdTo) {
-      initialized.current = true
-      return
-    }
-
-    // Wait for token lookup and account balances to complete before initializing
-    // so we don't commit to undefined tokens or zero balances and block retries.
-    if (isTokensLoading || isAccountBalancesLoading) return
-
-    let initialFromToken: LocalTokenWithBalance | undefined
-    if (initialTokenIdFrom) {
-      const fromTokenInfo = tokens[initialTokenIdFrom]
-
-      initialFromToken =
-        fromTokenInfo &&
-        params.initialFromCaip2Id &&
-        Number.isFinite(fromTokenChainId)
-          ? buildLocalToken({
-              accountTokens,
-              tokenInfo: fromTokenInfo,
-              caip2Id: params.initialFromCaip2Id,
-              chainId: fromTokenChainId as number
-            })
-          : undefined
-    }
-    setFromToken(initialFromToken)
-
-    let initialToToken: LocalTokenWithBalance | undefined
-    if (initialTokenIdTo) {
-      const toTokenInfo = tokens[initialTokenIdTo]
-
-      initialToToken =
-        toTokenInfo &&
-        params.initialToCaip2Id &&
-        Number.isFinite(toTokenChainId)
-          ? buildLocalToken({
-              accountTokens,
-              tokenInfo: toTokenInfo,
-              caip2Id: params.initialToCaip2Id,
-              chainId: toTokenChainId as number
-            })
-          : undefined
-    }
-    setToToken(initialToToken)
-
-    initialized.current = true
-  }, [
-    accountTokens,
-    fromTokenChainId,
-    isTokensLoading,
-    params.initialFromCaip2Id,
-    params.initialToCaip2Id,
-    params.initialTokenIdFrom,
-    params.initialTokenIdTo,
-    setFromToken,
-    setToToken,
-    toTokenChainId,
-    tokens
   ])
 
   const showFeesAndSlippage = activeQuote?.serviceType === ServiceType.MARKR
@@ -663,9 +550,6 @@ export const SwapScreen = (): JSX.Element => {
   useEffect(validateInputs, [validateInputs])
   useEffect(applyQuote, [applyQuote])
   useEffect(syncDebouncedAmount, [syncDebouncedAmount])
-
-  const initialized = useRef(false)
-  useEffect(setInitialTokensFx, [setInitialTokensFx])
 
   // Reset from amount when the user selects a different from token.
   const prevFromTokenIdRef = useRef(fromToken?.localId)
