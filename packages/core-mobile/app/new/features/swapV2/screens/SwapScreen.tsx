@@ -1,4 +1,7 @@
-import { TokenUnit } from '@avalabs/core-utils-sdk'
+import LombardWordmarkDark from 'assets/icons/lombard-wordmark-dark.svg'
+import LombardWordmarkLight from 'assets/icons/lombard-wordmark-light.svg'
+import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
+import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   Button,
@@ -12,7 +15,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { TokenWithBalance } from '@avalabs/vm-module-types'
+import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
 import { SwapSide } from '@paraswap/sdk'
 import { useNavigation } from '@react-navigation/native'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -25,6 +28,7 @@ import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
+import { useDebounce } from 'hooks/useDebounce'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -48,6 +52,9 @@ import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
 import { ServiceType } from '../types'
 import { useFusionTransfers } from '../hooks/useZustandStore'
+import { useMaxSwapAmount } from '../hooks/useMaxSwapAmount'
+import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
+import { useFeeValidation } from '../hooks/useFeeValidation'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -83,11 +90,19 @@ export const SwapScreen = (): JSX.Element => {
     quoteError,
     swapStatus
   } = useSwapContext()
-  const [maxFromValue, setMaxFromValue] = useState<bigint | undefined>()
   const [fromTokenValue, setFromTokenValue] = useState<bigint>()
   const [toTokenValue, setToTokenValue] = useState<bigint>()
   const [validationError, setValidationError] =
     useState<FusionQuoteError | null>(null)
+  const minimumTransferAmount = useMinimumTransferAmount({ fromToken, toToken })
+
+  const fromMaxSwapAmount = useMaxSwapAmount({
+    fromToken,
+    toToken,
+    minimumTransferAmount
+  })
+
+  const { debounced: debouncedFromTokenValue } = useDebounce(fromTokenValue)
   const cChainNetwork = useCChainNetwork()
   const solanaNetwork = useSolanaNetwork()
   const activeAccount = useSelector(selectActiveAccount)
@@ -109,6 +124,25 @@ export const SwapScreen = (): JSX.Element => {
   // userQuote takes precedence over bestQuote
   const activeQuote = userQuote ?? bestQuote
   Logger.info('activeQuote', activeQuote)
+
+  const nativeFromToken = useMemo(
+    () =>
+      fromToken
+        ? swapList.find(
+            t =>
+              t.type === TokenType.NATIVE &&
+              t.networkChainId === fromToken.networkChainId
+          )
+        : undefined,
+    [fromToken, swapList]
+  )
+
+  const feeValidationError = useFeeValidation({
+    fromToken,
+    nativeTokenBalance: nativeFromToken?.balance,
+    amount: debouncedFromTokenValue,
+    quote: activeQuote
+  })
 
   const activeError = validationError ?? quoteError
 
@@ -153,21 +187,51 @@ export const SwapScreen = (): JSX.Element => {
   }, [toToken, updateMissingTokenPrice])
 
   const validateInputs = useCallback(() => {
-    if (fromTokenValue !== undefined && fromTokenValue === 0n) {
+    if (
+      debouncedFromTokenValue !== undefined &&
+      debouncedFromTokenValue === 0n
+    ) {
       setValidationError(fusionErrors.enterAmount())
     } else if (
-      maxFromValue !== undefined &&
-      fromTokenValue !== undefined &&
-      fromTokenValue > maxFromValue
+      minimumTransferAmount !== null &&
+      debouncedFromTokenValue !== undefined &&
+      debouncedFromTokenValue > 0n &&
+      debouncedFromTokenValue < minimumTransferAmount &&
+      fromToken &&
+      'decimals' in fromToken
+    ) {
+      const formattedMin = `${formatTokenAmount(
+        bigintToBig(minimumTransferAmount, fromToken.decimals),
+        fromToken.decimals
+      )} ${fromToken.symbol}`
+      setValidationError(fusionErrors.belowMinimumAmount(formattedMin))
+    } else if (
+      debouncedFromTokenValue !== undefined &&
+      fromToken !== undefined &&
+      debouncedFromTokenValue > fromToken.balance
     ) {
       setValidationError(fusionErrors.exceedsBalance())
+    } else if (
+      fromMaxSwapAmount !== undefined &&
+      debouncedFromTokenValue !== undefined &&
+      debouncedFromTokenValue > fromMaxSwapAmount
+    ) {
+      setValidationError(fusionErrors.insufficientBalanceForFees())
+    } else if (feeValidationError) {
+      setValidationError(feeValidationError)
     } else {
       setValidationError(null)
     }
-  }, [fromTokenValue, maxFromValue])
+  }, [
+    debouncedFromTokenValue,
+    minimumTransferAmount,
+    fromToken,
+    fromMaxSwapAmount,
+    feeValidationError
+  ])
 
   const applyQuote = useCallback(() => {
-    if (!fromTokenValue || !activeQuote) {
+    if (!debouncedFromTokenValue || !activeQuote) {
       setToTokenValue(undefined)
       return
     }
@@ -179,13 +243,7 @@ export const SwapScreen = (): JSX.Element => {
     if (amountOut) {
       setToTokenValue(amountOut)
     }
-  }, [activeQuote, fromTokenValue])
-
-  const calculateMax = useCallback(() => {
-    if (!fromToken) return
-
-    setMaxFromValue(fromToken?.balance)
-  }, [fromToken])
+  }, [activeQuote, debouncedFromTokenValue])
 
   const handleToggleTokens = useCallback(() => {
     if (
@@ -202,10 +260,9 @@ export const SwapScreen = (): JSX.Element => {
     setFromToken(from)
     setToToken(to)
     setDestination(SwapSide.SELL)
-    setFromTokenValue(toTokenValue)
+    setFromTokenValue(undefined)
     setToTokenValue(undefined)
-    toTokenValue && setAmount(toTokenValue)
-    setMaxFromValue(undefined)
+    setAmount(undefined)
   }, [
     fromToken,
     toToken,
@@ -214,7 +271,6 @@ export const SwapScreen = (): JSX.Element => {
     setDestination,
     setFromTokenValue,
     setAmount,
-    toTokenValue,
     tokensWithZeroBalance
   ])
 
@@ -258,6 +314,10 @@ export const SwapScreen = (): JSX.Element => {
 
   const showFeesAndSlippage = activeQuote?.serviceType === ServiceType.MARKR
 
+  const isLombard =
+    activeQuote?.serviceType === ServiceType.LOMBARD_BTC_TO_BTCB ||
+    activeQuote?.serviceType === ServiceType.LOMBARD_BTCB_TO_BTC
+
   const handleSwap = useCallback(() => {
     AnalyticsService.capture('SwapReviewOrder', {
       provider: activeQuote?.aggregator.name ?? 'Unknown',
@@ -285,9 +345,8 @@ export const SwapScreen = (): JSX.Element => {
     (amount: bigint): void => {
       setFromTokenValue(amount)
       setDestination(SwapSide.SELL)
-      setAmount(amount)
     },
-    [setDestination, setAmount]
+    [setDestination]
   )
 
   const handleToAmountChange = useCallback(
@@ -388,7 +447,7 @@ export const SwapScreen = (): JSX.Element => {
           }}
           onBlur={() => setIsInputFocused(false)}
           onSelectToken={handleSelectFromToken}
-          maximum={fromToken?.balance}
+          maximum={fromMaxSwapAmount}
           valid={!validationError}
         />
       </View>
@@ -400,6 +459,7 @@ export const SwapScreen = (): JSX.Element => {
     handleSelectFromToken,
     getNetwork,
     fromToken,
+    fromMaxSwapAmount,
     validationError,
     fromTokenValue,
     isSwapping
@@ -512,12 +572,34 @@ export const SwapScreen = (): JSX.Element => {
     }
   }, [navigation, dismissAll, swapStatus])
 
+  // Trigger quote fetch when debounced amount settles, skip if below minimum
+  const syncDebouncedAmount = useCallback(() => {
+    if (debouncedFromTokenValue === undefined) return
+    if (
+      minimumTransferAmount !== null &&
+      debouncedFromTokenValue > 0n &&
+      debouncedFromTokenValue < minimumTransferAmount
+    )
+      return
+    setAmount(debouncedFromTokenValue)
+  }, [debouncedFromTokenValue, minimumTransferAmount, setAmount])
+
   useEffect(validateInputs, [validateInputs])
   useEffect(applyQuote, [applyQuote])
-  useEffect(calculateMax, [calculateMax])
+  useEffect(syncDebouncedAmount, [syncDebouncedAmount])
 
   const initialized = useRef(false)
   useEffect(setInitialTokensFx, [setInitialTokensFx])
+
+  // Reset from amount when the user selects a different from token.
+  const prevFromTokenIdRef = useRef(fromToken?.localId)
+  useEffect(() => {
+    const prevId = prevFromTokenIdRef.current
+    prevFromTokenIdRef.current = fromToken?.localId
+    if (prevId === undefined || prevId === fromToken?.localId) return
+    setFromTokenValue(undefined)
+    setAmount(undefined)
+  }, [fromToken, setFromTokenValue, setAmount])
 
   const prevFromRef = useRef(fromToken)
   const prevToRef = useRef(toToken)
@@ -602,10 +684,10 @@ export const SwapScreen = (): JSX.Element => {
   }, [fromToken, toToken, isValidDestination, setToToken])
 
   useEffect(() => {
-    if (!fromTokenValue) {
+    if (!debouncedFromTokenValue) {
       setToTokenValue(undefined)
     }
-  }, [fromTokenValue])
+  }, [debouncedFromTokenValue])
 
   usePreventScreenRemoval(isSwapping)
 
@@ -641,18 +723,44 @@ export const SwapScreen = (): JSX.Element => {
     )
   }, [coreFeeMessage])
 
+  const renderLombardLogo = useCallback(() => {
+    return (
+      <View
+        sx={{
+          alignItems: 'center',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          gap: 4,
+          marginBottom: 8,
+          opacity: 0.4
+        }}>
+        <Text variant="caption" sx={{ marginRight: -14 }}>
+          {'Powered by'}
+        </Text>
+        {theme.isDark ? (
+          <LombardWordmarkDark width={120} height={40} />
+        ) : (
+          <LombardWordmarkLight width={120} height={40} />
+        )}
+      </View>
+    )
+  }, [theme.isDark])
+
   const renderFooter = useCallback(() => {
     return (
-      <Button
-        testID={!canSwap || isSwapping ? 'next_btn_disabled' : 'next_btn'}
-        type="primary"
-        size="large"
-        onPress={handleSwap}
-        disabled={!canSwap || isSwapping}>
-        {isSwapping ? <ActivityIndicator size="small" /> : 'Next'}
-      </Button>
+      <>
+        {isLombard && renderLombardLogo()}
+        <Button
+          testID={!canSwap || isSwapping ? 'next_btn_disabled' : 'next_btn'}
+          type="primary"
+          size="large"
+          onPress={handleSwap}
+          disabled={!canSwap || isSwapping}>
+          {isSwapping ? <ActivityIndicator size="small" /> : 'Next'}
+        </Button>
+      </>
     )
-  }, [canSwap, handleSwap, isSwapping])
+  }, [canSwap, handleSwap, isSwapping, isLombard, renderLombardLogo])
 
   return (
     <ScrollScreen

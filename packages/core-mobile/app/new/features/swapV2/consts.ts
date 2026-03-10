@@ -1,5 +1,5 @@
 import Config from 'react-native-config'
-import { Environment } from '@avalabs/unified-asset-transfer'
+import { Environment } from '@avalabs/fusion-sdk'
 
 /**
  * The partner ID Markr uses for EVM swaps.
