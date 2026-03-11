@@ -58,6 +58,9 @@ export type DefiMarket = {
   // User-level setting: whether the user has enabled this asset as collateral
   // Only available for AAVE markets (for now)
   readonly usageAsCollateralEnabledOnUser: boolean | undefined
+  // Reserve-level LTV (basis points). 0 means asset cannot back new borrows.
+  // Only available for AAVE markets.
+  readonly baseLTVasCollateral?: bigint
 }
 
 export type AaveReserveData = {

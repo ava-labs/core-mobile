@@ -3,7 +3,10 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import {
   ActivityIndicator,
   Button,
+  Icons,
   SendTokenUnitInputWidget,
+  Text,
+  useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { TokenUnit } from '@avalabs/core-utils-sdk/dist'
@@ -25,7 +28,8 @@ export const SelectAmountFormBase = ({
   currentHealthScore,
   calculateHealthScore,
   balanceLabel,
-  maxAmountZeroMessage
+  maxAmountZeroMessage,
+  blockingError
 }: {
   title?: string
   token: {
@@ -41,7 +45,9 @@ export const SelectAmountFormBase = ({
   calculateHealthScore: (amount: TokenUnit) => number | undefined
   balanceLabel?: string
   maxAmountZeroMessage?: string
+  blockingError?: string
 }): JSX.Element => {
+  const { theme } = useTheme()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [amount, setAmount] = useState<TokenUnit>()
   const { getMarketTokenBySymbol } = useWatchlist()
@@ -91,6 +97,7 @@ export const SelectAmountFormBase = ({
   const effectiveMax = maxAmount ?? tokenBalance
   const canSubmit =
     !isSubmitting &&
+    !blockingError &&
     amount &&
     amount.gt(0) &&
     effectiveMax &&
@@ -141,6 +148,26 @@ export const SelectAmountFormBase = ({
         {currentHealthScore !== undefined && (
           <View sx={{ marginTop: 24 }}>
             <HealthScoreCard score={healthScore} />
+          </View>
+        )}
+        {blockingError && (
+          <View
+            sx={{
+              marginTop: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8
+            }}>
+            <Icons.Alert.ErrorOutline
+              width={24}
+              height={24}
+              color={theme.colors.$textDanger}
+            />
+            <Text
+              variant="body1"
+              sx={{ color: '$textDanger', flex: 1, fontWeight: 500 }}>
+              {blockingError}
+            </Text>
           </View>
         )}
       </View>

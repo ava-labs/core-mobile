@@ -8,6 +8,7 @@ import { convertUsdToTokenAmount } from '../../utils/convertUsdToTokenAmount'
 import { AAVE_PRICE_ORACLE_SCALE, WAD, WAD_SCALE } from '../../consts'
 import { useAaveBorrowData } from '../../hooks/aave/useAaveBorrowData'
 import { useAaveBorrowErc20 } from '../../hooks/aave/useAaveBorrowErc20'
+import { useAaveZeroLtvCollateral } from '../../hooks/aave/useAaveZeroLtvCollateral'
 import { useUnwrapWavax } from '../../hooks/useUnwrapWavax'
 import { BorrowSelectAmountFormBase } from './BorrowSelectAmountFormBase'
 
@@ -70,6 +71,8 @@ export const BorrowAaveSelectAmountForm = ({
       onConfirmed?.()
     }
   }, [isNativeAvax, unwrapWavax, onConfirmed, onError])
+
+  const { blockingError } = useAaveZeroLtvCollateral()
 
   // Borrow hook - always use ERC20 borrow (WAVAX for native AVAX market)
   const { aaveBorrowErc20 } = useAaveBorrowErc20({
@@ -172,6 +175,7 @@ export const BorrowAaveSelectAmountForm = ({
       submit={handleSubmit}
       onSubmitted={onSubmitted}
       isLoading={isLoading}
+      blockingError={blockingError}
     />
   )
 }

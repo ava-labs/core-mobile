@@ -9,6 +9,7 @@ import { convertUsdToTokenAmount } from '../../utils/convertUsdToTokenAmount'
 import { useAaveWithdraw } from '../../hooks/aave/useAaveWithdraw'
 import { useAaveBorrowData } from '../../hooks/aave/useAaveBorrowData'
 import { useAaveHealthScore } from '../../hooks/aave/useAaveHealthScore'
+import { useAaveZeroLtvCollateral } from '../../hooks/aave/useAaveZeroLtvCollateral'
 import { useUnwrapWavax } from '../../hooks/useUnwrapWavax'
 import { SelectAmountFormBase } from '../SelectAmountFormBase'
 
@@ -88,6 +89,10 @@ export const WithdrawAaveSelectAmountForm = ({
     direction: 'withdraw'
   })
 
+  const { blockingError: zeroLtvError } = useAaveZeroLtvCollateral()
+  const hasDebt = borrowData !== undefined && borrowData.totalDebtUSD > 0n
+  const blockingError = hasDebt ? zeroLtvError : undefined
+
   // Max safe withdraw: keep health factor >= 1.01 (liquidation threshold-based)
   const maxWithdrawAmount = useMemo(() => {
     if (
@@ -161,6 +166,7 @@ export const WithdrawAaveSelectAmountForm = ({
       calculateHealthScore={calculateHealthScore}
       balanceLabel="Available to withdraw:"
       maxAmountZeroMessage="Your position is too close to liquidation to withdraw"
+      blockingError={blockingError}
     />
   )
 }

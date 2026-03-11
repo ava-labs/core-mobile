@@ -26,7 +26,8 @@ export const BorrowSelectAmountFormBase = ({
   calculateHealthScore,
   submit,
   onSubmitted,
-  isLoading = false
+  isLoading = false,
+  blockingError
 }: {
   title?: string
   token: {
@@ -39,6 +40,7 @@ export const BorrowSelectAmountFormBase = ({
   submit: ({ amount }: { amount: TokenUnit }) => Promise<string>
   onSubmitted: (params: { txHash: string; amount: TokenUnit }) => void
   isLoading?: boolean
+  blockingError?: string
 }): JSX.Element => {
   const { theme } = useTheme()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -97,6 +99,7 @@ export const BorrowSelectAmountFormBase = ({
 
   const canSubmit =
     !isSubmitting &&
+    !blockingError &&
     amount &&
     amount.gt(0) &&
     availableToBorrow &&
@@ -149,6 +152,27 @@ export const BorrowSelectAmountFormBase = ({
         <View sx={{ marginTop: 24 }}>
           <HealthScoreCard score={healthScore} />
         </View>
+
+        {blockingError && (
+          <View
+            sx={{
+              marginTop: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8
+            }}>
+            <Icons.Alert.ErrorOutline
+              width={24}
+              height={24}
+              color={theme.colors.$textDanger}
+            />
+            <Text
+              variant="body1"
+              sx={{ color: '$textDanger', flex: 1, fontWeight: 500 }}>
+              {blockingError}
+            </Text>
+          </View>
+        )}
 
         {/* Warning Section */}
         <View
