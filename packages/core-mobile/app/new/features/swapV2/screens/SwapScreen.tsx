@@ -57,6 +57,11 @@ import { useMaxSwapAmount } from '../hooks/useMaxSwapAmount'
 import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 import { useFeeValidation } from '../hooks/useFeeValidation'
 
+// Combine internalId + networkChainId because native tokens share the same
+// internalId across EVM chains (e.g. NATIVE-eth on Ethereum vs Base).
+const getTokenKey = (token: LocalTokenWithBalance): string =>
+  `${token.internalId}-${token.networkChainId}`
+
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -103,7 +108,10 @@ export const SwapScreen = (): JSX.Element => {
     minimumTransferAmount
   })
 
-  const { debounced: debouncedFromTokenValue } = useDebounce(fromTokenValue)
+  const {
+    debounced: debouncedFromTokenValue,
+    setValueImmediately: resetDebouncedFromTokenValue
+  } = useDebounce(fromTokenValue)
   const solanaNetwork = useSolanaNetwork()
   const activeAccount = useSelector(selectActiveAccount)
   const accountTokens = useTokensWithBalanceForAccount({
@@ -199,13 +207,19 @@ export const SwapScreen = (): JSX.Element => {
   }, [toToken, updateMissingTokenPrice])
 
   const validateInputs = useCallback(() => {
+    // fromTokenValue drives the reset — if it's undefined (token just changed),
+    // clear any error immediately without waiting for the debounce to settle.
+    if (fromTokenValue === undefined) {
+      setValidationError(null)
+      return
+    }
     if (
       debouncedFromTokenValue !== undefined &&
       debouncedFromTokenValue === 0n
     ) {
       setValidationError(fusionErrors.enterAmount())
     } else if (
-      minimumTransferAmount !== null &&
+      minimumTransferAmount != null &&
       debouncedFromTokenValue !== undefined &&
       debouncedFromTokenValue > 0n &&
       debouncedFromTokenValue < minimumTransferAmount &&
@@ -235,6 +249,7 @@ export const SwapScreen = (): JSX.Element => {
       setValidationError(null)
     }
   }, [
+    fromTokenValue,
     debouncedFromTokenValue,
     minimumTransferAmount,
     fromToken,
@@ -321,15 +336,15 @@ export const SwapScreen = (): JSX.Element => {
   )
 
   const handleSelectFromToken = useCallback((): void => {
-    const tokenParams = toToken?.networkChainId
-      ? { networkChainId: toToken.networkChainId.toString() }
+    const tokenParams = fromToken?.networkChainId
+      ? { networkChainId: fromToken.networkChainId.toString() }
       : {}
 
     navigate({
       pathname: '/selectSwapV2FromToken',
       params: tokenParams
     })
-  }, [navigate, toToken])
+  }, [navigate, fromToken])
 
   const handleSelectToToken = useCallback((): void => {
     const tokenParams = fromToken?.networkChainId
@@ -538,7 +553,7 @@ export const SwapScreen = (): JSX.Element => {
   const syncDebouncedAmount = useCallback(() => {
     if (debouncedFromTokenValue === undefined) return
     if (
-      minimumTransferAmount !== null &&
+      minimumTransferAmount != null &&
       debouncedFromTokenValue > 0n &&
       debouncedFromTokenValue < minimumTransferAmount
     )
@@ -551,14 +566,18 @@ export const SwapScreen = (): JSX.Element => {
   useEffect(syncDebouncedAmount, [syncDebouncedAmount])
 
   // Reset from amount when the user selects a different from token.
-  const prevFromTokenIdRef = useRef(fromToken?.internalId)
+  const prevFromTokenKeyRef = useRef(
+    fromToken ? getTokenKey(fromToken) : undefined
+  )
   useEffect(() => {
-    const prevId = prevFromTokenIdRef.current
-    prevFromTokenIdRef.current = fromToken?.internalId
-    if (prevId === undefined || prevId === fromToken?.internalId) return
+    const key = fromToken ? getTokenKey(fromToken) : undefined
+    const prevKey = prevFromTokenKeyRef.current
+    prevFromTokenKeyRef.current = key
+    if (prevKey === undefined || prevKey === key) return
     setFromTokenValue(undefined)
+    resetDebouncedFromTokenValue(undefined)
     setAmount(undefined)
-  }, [fromToken, setFromTokenValue, setAmount])
+  }, [fromToken, setFromTokenValue, setAmount, resetDebouncedFromTokenValue])
 
   const prevFromRef = useRef(fromToken)
   const prevToRef = useRef(toToken)
