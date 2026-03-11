@@ -36,11 +36,7 @@ import {
   selectIsPrivacyModeEnabled,
   togglePrivacyMode
 } from 'store/settings/securityPrivacy'
-import {
-  onAppLocked,
-  setIsLocked,
-  setWalletState
-} from 'store/app/slice'
+import { onAppLocked, setIsLocked, setWalletState } from 'store/app/slice'
 import { WalletState } from 'store/app/types'
 
 const AccountSettingsScreen = (): JSX.Element => {
