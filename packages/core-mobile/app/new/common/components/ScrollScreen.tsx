@@ -129,8 +129,7 @@ export const ScrollScreen = ({
     (contentOffsetY: number) => {
       if (!onScrolledToEnd || hasReachedEndRef.current) return
 
-      const maxScroll =
-        scrollContentHeight.current - scrollViewHeight.current
+      const maxScroll = scrollContentHeight.current - scrollViewHeight.current
       const isAtEnd =
         maxScroll <= 0 || contentOffsetY >= maxScroll - SCROLL_END_THRESHOLD
 

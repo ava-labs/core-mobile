@@ -20,7 +20,7 @@ import { ScrollScreen } from './ScrollScreen'
  * - A scrollable content area.
  * - A sticky footer with two action buttons (confirm and cancel).
  * - A fading header that displays a grabber and dynamically shows the title as content is scrolled.
- * 
+ *
  * Ideal for approval flows or modal interactions that require user decisions.
  */
 export const ActionSheet = ({
@@ -107,9 +107,7 @@ export const ActionSheet = ({
       }}
       navigationTitle={navigationTitle}
       renderFooter={renderFooter}
-      onScrolledToEnd={
-        requireScrollToConfirm ? handleScrolledToEnd : undefined
-      }
+      onScrolledToEnd={requireScrollToConfirm ? handleScrolledToEnd : undefined}
       contentContainerStyle={{
         padding: 16,
         paddingTop: 0
