@@ -127,7 +127,7 @@ export const SelectAmountFormBase = ({
             maxDecimals: token.decimals,
             symbol: token.symbol
           }}
-          balance={tokenBalance}
+          balance={balanceLabel ? maxAmount ?? tokenBalance : tokenBalance}
           formatInCurrency={amt => formatInCurrency(amt, token.symbol)}
           onChange={setAmount}
           validateAmount={validateAmount}

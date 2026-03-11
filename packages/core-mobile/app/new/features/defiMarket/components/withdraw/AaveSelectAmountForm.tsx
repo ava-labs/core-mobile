@@ -99,7 +99,7 @@ export const WithdrawAaveSelectAmountForm = ({
       return tokenBalance
     }
     const minCollateralUSD =
-      (borrowData.totalDebtUSD * 10100n) / borrowData.liquidationThreshold
+      (borrowData.totalDebtUSD * 10200n) / borrowData.liquidationThreshold
     const maxWithdrawUSD =
       borrowData.totalCollateralUSD > minCollateralUSD
         ? borrowData.totalCollateralUSD - minCollateralUSD
@@ -109,7 +109,8 @@ export const WithdrawAaveSelectAmountForm = ({
       tokenPriceUSD: borrowData.tokenPriceUSD,
       tokenDecimals: market.asset.decimals,
       usdDecimals: AAVE_PRICE_ORACLE_SCALE,
-      priceDecimals: AAVE_PRICE_ORACLE_SCALE
+      priceDecimals: AAVE_PRICE_ORACLE_SCALE,
+      safetyBufferPercent: 0
     })
     const maxUnit = new TokenUnit(
       maxTokens,

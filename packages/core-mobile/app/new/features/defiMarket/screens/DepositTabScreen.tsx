@@ -76,6 +76,11 @@ const DepositTabScreen = ({
     return isLoading ? [] : [StaticCard.Add, ...filteredDeposits]
   }, [filteredDeposits, isLoading])
 
+  const orderKey = useMemo(
+    () => filteredDeposits.map(d => d.uniqueMarketId).join(','),
+    [filteredDeposits]
+  )
+
   const handleAddDeposit = useCallback(() => {
     AnalyticsService.capture('EarnDepositStart')
     navigate({ pathname: '/deposit/onboarding' })
@@ -251,7 +256,7 @@ const DepositTabScreen = ({
 
   return (
     <FlashList
-      key={`deposit-tab-${filter.selected}-${sort.selected}-${data.length}`}
+      key={`deposit-tab-${filter.selected}-${sort.selected}-${orderKey}`}
       onScroll={handleScroll}
       overrideProps={overrideProps}
       data={data}

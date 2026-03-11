@@ -64,7 +64,8 @@ export const WithdrawBenqiSelectAmountForm = ({
       tokenPriceUSD: borrowData.tokenPriceUSD,
       tokenDecimals: market.asset.decimals,
       usdDecimals: WAD,
-      priceDecimals
+      priceDecimals,
+      safetyBufferPercent: 0
     })
     const maxUnit = new TokenUnit(
       maxTokens,
