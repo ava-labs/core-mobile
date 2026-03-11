@@ -14,6 +14,8 @@ import {
   AppIcon,
   APP_ICON_DISPLAY_NAMES,
   APP_ICON_SUBTITLES,
+  DEFAULT_ICON_PREVIEW_DARK,
+  DEFAULT_ICON_PREVIEW_LIGHT,
   ICON_PREVIEWS,
   useAppIcon
 } from 'features/accountSettings/store'
@@ -62,10 +64,16 @@ const AppIconRow = ({
   onPress: () => void
 }): JSX.Element => {
   const {
-    theme: { colors }
+    theme: { colors, isDark }
   } = useTheme()
 
   const subtitle = APP_ICON_SUBTITLES[icon]
+  const iconSource =
+    icon === AppIcon.Default
+      ? isDark
+        ? DEFAULT_ICON_PREVIEW_LIGHT
+        : DEFAULT_ICON_PREVIEW_DARK
+      : ICON_PREVIEWS[icon]
 
   return (
     <TouchableOpacity
@@ -86,7 +94,7 @@ const AppIconRow = ({
             overflow: 'hidden'
           }}>
           <Image
-            source={ICON_PREVIEWS[icon]}
+            source={iconSource}
             style={{ width: '100%', height: '100%' }}
             contentFit="cover"
           />

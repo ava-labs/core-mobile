@@ -1,62 +1,326 @@
 {
-  "images" : [
+  "images": [
     {
-      "filename" : "core-20@2x.png",
-      "idiom" : "iphone",
-      "scale" : "2x",
-      "size" : "20x20"
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "2x",
+      "size": "20x20",
+      "filename": "icon-ios-light-20x20@2x.png"
     },
     {
-      "filename" : "core-20@3x.png",
-      "idiom" : "iphone",
-      "scale" : "3x",
-      "size" : "20x20"
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "2x",
+      "size": "20x20",
+      "filename": "icon-ios-dark-20x20@2x.png"
     },
     {
-      "filename" : "core-29@2x.png",
-      "idiom" : "iphone",
-      "scale" : "2x",
-      "size" : "29x29"
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "3x",
+      "size": "20x20",
+      "filename": "icon-ios-light-20x20@3x.png"
     },
     {
-      "filename" : "core-29@3x.png",
-      "idiom" : "iphone",
-      "scale" : "3x",
-      "size" : "29x29"
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "3x",
+      "size": "20x20",
+      "filename": "icon-ios-dark-20x20@3x.png"
     },
     {
-      "filename" : "core-40@2x.png",
-      "idiom" : "iphone",
-      "scale" : "2x",
-      "size" : "40x40"
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "2x",
+      "size": "29x29",
+      "filename": "icon-ios-light-29x29@2x.png"
     },
     {
-      "filename" : "core-40@3x.png",
-      "idiom" : "iphone",
-      "scale" : "3x",
-      "size" : "40x40"
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "2x",
+      "size": "29x29",
+      "filename": "icon-ios-dark-29x29@2x.png"
     },
     {
-      "filename" : "core-60@2x.png",
-      "idiom" : "iphone",
-      "scale" : "2x",
-      "size" : "60x60"
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "3x",
+      "size": "29x29",
+      "filename": "icon-ios-light-29x29@3x.png"
     },
     {
-      "filename" : "core-60@3x.png",
-      "idiom" : "iphone",
-      "scale" : "3x",
-      "size" : "60x60"
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "3x",
+      "size": "29x29",
+      "filename": "icon-ios-dark-29x29@3x.png"
     },
     {
-      "filename" : "core-1024.png",
-      "idiom" : "ios-marketing",
-      "scale" : "1x",
-      "size" : "1024x1024"
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "2x",
+      "size": "38x38",
+      "filename": "icon-ios-light-38x38@2x.png"
+    },
+    {
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "2x",
+      "size": "38x38",
+      "filename": "icon-ios-dark-38x38@2x.png"
+    },
+    {
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "3x",
+      "size": "38x38",
+      "filename": "icon-ios-light-38x38@3x.png"
+    },
+    {
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "3x",
+      "size": "38x38",
+      "filename": "icon-ios-dark-38x38@3x.png"
+    },
+    {
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "2x",
+      "size": "40x40",
+      "filename": "icon-ios-light-40x40@2x.png"
+    },
+    {
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "2x",
+      "size": "40x40",
+      "filename": "icon-ios-dark-40x40@2x.png"
+    },
+    {
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "3x",
+      "size": "40x40",
+      "filename": "icon-ios-light-40x40@3x.png"
+    },
+    {
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "3x",
+      "size": "40x40",
+      "filename": "icon-ios-dark-40x40@3x.png"
+    },
+    {
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "2x",
+      "size": "60x60",
+      "filename": "icon-ios-light-60x60@2x.png"
+    },
+    {
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "2x",
+      "size": "60x60",
+      "filename": "icon-ios-dark-60x60@2x.png"
+    },
+    {
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "3x",
+      "size": "60x60",
+      "filename": "icon-ios-light-60x60@3x.png"
+    },
+    {
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "3x",
+      "size": "60x60",
+      "filename": "icon-ios-dark-60x60@3x.png"
+    },
+    {
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "2x",
+      "size": "64x64",
+      "filename": "icon-ios-light-64x64@2x.png"
+    },
+    {
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "2x",
+      "size": "64x64",
+      "filename": "icon-ios-dark-64x64@2x.png"
+    },
+    {
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "3x",
+      "size": "64x64",
+      "filename": "icon-ios-light-64x64@3x.png"
+    },
+    {
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "3x",
+      "size": "64x64",
+      "filename": "icon-ios-dark-64x64@3x.png"
+    },
+    {
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "2x",
+      "size": "68x68",
+      "filename": "icon-ios-light-68x68@2x.png"
+    },
+    {
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "2x",
+      "size": "68x68",
+      "filename": "icon-ios-dark-68x68@2x.png"
+    },
+    {
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "2x",
+      "size": "76x76",
+      "filename": "icon-ios-light-76x76@2x.png"
+    },
+    {
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "2x",
+      "size": "76x76",
+      "filename": "icon-ios-dark-76x76@2x.png"
+    },
+    {
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "2x",
+      "size": "83.5x83.5",
+      "filename": "icon-ios-light-83.5x83.5@2x.png"
+    },
+    {
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "idiom": "universal",
+      "platform": "ios",
+      "scale": "2x",
+      "size": "83.5x83.5",
+      "filename": "icon-ios-dark-83.5x83.5@2x.png"
+    },
+    {
+      "idiom": "universal",
+      "platform": "ios",
+      "size": "1024x1024",
+      "filename": "icon-ios-light-1024x1024.png"
+    },
+    {
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "idiom": "universal",
+      "platform": "ios",
+      "size": "1024x1024",
+      "filename": "icon-ios-dark-1024x1024.png"
     }
   ],
-  "info" : {
-    "author" : "xcode",
-    "version" : 1
+  "info": {
+    "author": "xcode",
+    "version": 1
   }
 }

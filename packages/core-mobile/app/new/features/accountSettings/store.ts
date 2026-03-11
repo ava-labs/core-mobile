@@ -100,8 +100,11 @@ export const APP_ICON_SUBTITLES: Partial<Record<AppIcon, string>> = {
   [AppIcon.Default]: 'Default icon'
 }
 
+export const DEFAULT_ICON_PREVIEW_LIGHT: number = require('../../../assets/app-icons/AppIcon-light.png')
+export const DEFAULT_ICON_PREVIEW_DARK: number = require('../../../assets/app-icons/AppIcon-dark.png')
+
 export const ICON_PREVIEWS: Record<AppIcon, number> = {
-  [AppIcon.Default]: require('../../../assets/app-icons/AppIcon-dark.png'),
+  [AppIcon.Default]: DEFAULT_ICON_PREVIEW_DARK,
   [AppIcon.Old]: require('../../../assets/app-icons/AppIcon-old.png'),
   [AppIcon.Bling]: require('../../../assets/app-icons/AppIcon-bling.png'),
   [AppIcon.Shiny]: require('../../../assets/app-icons/AppIcon-shiny.png'),
