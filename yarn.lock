@@ -673,6 +673,7 @@ __metadata:
     ethers: 6.8.1
     events: 3.3.0
     expo: 54.0.33
+    expo-alternate-app-icons: ^8.0.0
     expo-application: 7.0.8
     expo-blur: 15.0.8
     expo-build-properties: 1.0.10
@@ -25043,6 +25044,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-alternate-app-icons@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "expo-alternate-app-icons@npm:8.0.0"
+  peerDependencies:
+    expo: ">=53"
+    react: "*"
+    react-native: "*"
+  checksum: 432b068c780b4babc6734247d78f65569f5b1dc7cc6e7ed05e6019fdcfa3738de76f29612be06762a2d362818f7894945e1d8561e2a4bf65033d4b21cdcaf0c1
+  languageName: node
+  linkType: hard
+
 "expo-application@npm:7.0.8":
   version: 7.0.8
   resolution: "expo-application@npm:7.0.8"
@@ -36040,7 +36052,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: e08d1254d04f3074970b63cdf0a363d6b189009270d457e868a26ef534addd69b320b85bef2a22e4eddb79006751bded431b56aaf2baf41976a6d0a5a2a2b91e
+  checksum: 3e4689674406deb2ad9efa9f529597341b4ab33e379b7c7cd72aff8d5e37862fda1a37aba984951a67cc3938969be138bc3c4469e4963dd170b172148339e056
   languageName: node
   linkType: hard
 
