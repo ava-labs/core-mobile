@@ -33,7 +33,10 @@ const refreshSeedlessToken = async (
     return
   }
 
-  Logger.error('refresh failed', refreshTokenResult.error)
+  Logger.error(
+    `[SeedlessListeners] refresh failed - error: ${refreshTokenResult.error?.message}, name: ${refreshTokenResult.error?.name}`,
+    refreshTokenResult.error
+  )
 }
 
 const invalidateSeedlessToken = async (): Promise<void> => {
@@ -49,7 +52,12 @@ const initSeedless = async (
   if (!seedlessWallet) return
 
   SeedlessService.init({
-    onSessionExpired: () => dispatch(onTokenExpired)
+    onSessionExpired: () => {
+      Logger.error(
+        '[SeedlessListeners] onSessionExpired fired - dispatching onTokenExpired'
+      )
+      dispatch(onTokenExpired())
+    }
   })
 }
 
@@ -58,6 +66,9 @@ const terminateSeedless = async (): Promise<void> => {
 }
 
 const handleTokenExpired = async (): Promise<void> => {
+  Logger.error(
+    '[SeedlessListeners] handleTokenExpired - navigating to /sessionExpired'
+  )
   router.navigate('/sessionExpired')
 }
 

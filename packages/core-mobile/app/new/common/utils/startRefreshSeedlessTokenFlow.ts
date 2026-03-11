@@ -21,10 +21,23 @@ export async function startRefreshSeedlessTokenFlow(
 > {
   const oidcProvider = await SecureStorageService.load(
     KeySlot.OidcProvider
-  ).catch(Logger.error)
+  ).catch(e => {
+    Logger.error(
+      '[RefreshSeedlessTokenFlow] failed to load OidcProvider from keychain',
+      e
+    )
+    return undefined
+  })
   const oidcUserId = await SecureStorageService.load(KeySlot.OidcUserId).catch(
-    Logger.error
+    e => {
+      Logger.error(
+        '[RefreshSeedlessTokenFlow] failed to load OidcUserId from keychain',
+        e
+      )
+      return undefined
+    }
   )
+
   let oidcTokenResult: OidcPayload
 
   try {
@@ -36,6 +49,9 @@ export async function startRefreshSeedlessTokenFlow(
         oidcTokenResult = await AppleSignInService.signIn()
         break
       default:
+        Logger.error(
+          `[RefreshSeedlessTokenFlow] unsupported OIDC provider: "${oidcProvider}" - keychain data may be missing`
+        )
         return {
           success: false,
           error: new RefreshSeedlessTokenFlowErrors({
@@ -45,6 +61,10 @@ export async function startRefreshSeedlessTokenFlow(
         }
     }
   } catch (e) {
+    Logger.error(
+      `[RefreshSeedlessTokenFlow] OIDC sign-in failed for provider: ${oidcProvider}`,
+      e
+    )
     return {
       success: false,
       error: new RefreshSeedlessTokenFlowErrors({

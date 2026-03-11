@@ -4,6 +4,7 @@ import Aes from 'react-native-aes-crypto'
 import { decrypt, encrypt } from 'utils/EncryptionHelper'
 import { serializeJson } from 'utils/serialization/serialize'
 import { deserializeJson } from 'utils/serialization/deserialize'
+import Logger from 'utils/Logger'
 
 export enum KeySlot {
   SignerSessionData = 'SignerSessionData',
@@ -41,6 +42,11 @@ class SecureStorageService {
         service: serviceForValues
       }
     )
+    if (result === false) {
+      Logger.error(
+        `[SecureStorage] store(${slot}) - setGenericPassword returned false! Keychain write FAILED`
+      )
+    }
     assert(result !== false)
   }
 
@@ -55,7 +61,12 @@ class SecureStorageService {
     const result = await Keychain.getGenericPassword({
       service: serviceForValues
     })
-    assert(result !== false)
+    if (result === false) {
+      Logger.error(
+        `[SecureStorage] load(${slot}) - getGenericPassword returned false! No data in keychain for service: ${serviceForValues}`
+      )
+    }
+    assert(result !== false, 'Failed to load data from secure storage')
     const decrypted = await decrypt(result.password, key)
     const stringified = decrypted.data
     return deserializeJson<T>(stringified)
@@ -86,6 +97,9 @@ class SecureStorageService {
     if (existingCredentials) {
       return existingCredentials.password
     }
+    Logger.error(
+      `[SecureStorage] getOrCreateKey(${slot}) - no existing encryption key found, generating NEW key. This will make any existing encrypted data for this slot UNREADABLE.`
+    )
     const key: string = await Aes.randomKey(32)
     const result = await Keychain.setGenericPassword(serviceForKeys, key, {
       service: serviceForKeys

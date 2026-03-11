@@ -152,7 +152,15 @@ class SeedlessSession {
         err.status === 403 &&
         err.isSessionExpiredError()
       ) {
+        Logger.error(
+          `[SeedlessSession] refreshToken() - 403 session expired. errorCode: ${err.errorCode}, calling onSessionExpired`
+        )
         this.onSessionExpired?.()
+      } else {
+        Logger.error(
+          `[SeedlessSession] refreshToken() - forceRefresh failed with non-403 error`,
+          err
+        )
       }
 
       return {

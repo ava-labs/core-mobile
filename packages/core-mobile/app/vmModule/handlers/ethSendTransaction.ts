@@ -5,6 +5,7 @@ import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
 import { TransactionRequest } from 'ethers'
 import { WalletType } from 'services/wallet/types'
+import Logger from 'utils/Logger'
 
 export const ethSendTransaction = async ({
   transactionRequest,
@@ -65,6 +66,10 @@ export const ethSendTransaction = async ({
       signedData: signedTx
     })
   } catch (error) {
+    Logger.error(
+      `[ethSendTransaction] signing FAILED - walletType: ${walletType}, error: ${error instanceof Error ? error.message : String(error)}`,
+      error
+    )
     resolve({
       error: rpcErrors.internal({
         message: 'Failed to sign evm transaction',

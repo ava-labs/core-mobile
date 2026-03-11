@@ -8,6 +8,7 @@ import {
   Wallet
 } from 'services/wallet/types'
 import { strip0x } from '@avalabs/core-utils-sdk'
+import Logger from 'utils/Logger'
 import { BytesLike, TransactionRequest, getBytes } from 'ethers'
 import {
   Avalanche,
@@ -342,7 +343,15 @@ export default class SeedlessWallet implements Wallet {
     const addressEVM = await this.getEvmAddress(accountIndex)
 
     const signer = new CsEthersSigner(addressEVM, this.#client, { provider })
-    return signer.signTransaction(transaction)
+    try {
+      return await signer.signTransaction(transaction)
+    } catch (error) {
+      Logger.error(
+        `[SeedlessWallet] signEvmTransaction FAILED - accountIndex: ${accountIndex}`,
+        error
+      )
+      throw error
+    }
   }
 
   public async getPublicKeyFor({
