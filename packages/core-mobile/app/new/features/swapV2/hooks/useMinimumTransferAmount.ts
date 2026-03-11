@@ -45,7 +45,7 @@ export const useMinimumTransferAmount = ({
 }: {
   fromToken: LocalTokenWithBalance | undefined
   toToken: LocalTokenWithBalance | undefined
-}): bigint | null => {
+}): bigint | null | undefined => {
   const [isFusionServiceReady] = useIsFusionServiceReady()
 
   const { data } = useQuery({
@@ -62,5 +62,8 @@ export const useMinimumTransferAmount = ({
     staleTime: 30_000
   })
 
-  return data ?? null
+  // undefined = still loading;
+  // null = settled but unavailable;
+  // bigint = ready
+  return data
 }
