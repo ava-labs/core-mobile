@@ -6,7 +6,7 @@ import Logger from 'utils/Logger'
 import FusionService from './FusionService'
 import type { FusionConfig, FusionSigners, QuoterParams } from './types'
 
-// Mock the unified-asset-transfer SDK
+// Mock the fusion-sdk
 jest.mock('@avalabs/fusion-sdk', () => ({
   Environment: {
     PROD: 'PROD',

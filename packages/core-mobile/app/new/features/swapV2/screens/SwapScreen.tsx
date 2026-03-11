@@ -22,7 +22,6 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
-import { useSwapList } from 'common/hooks/useSwapList'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
@@ -45,33 +44,35 @@ import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio
 import { selectActiveAccount } from 'store/account'
 import Logger from 'utils/Logger'
 import { TOKEN_IDS } from 'consts/tokenIds'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
+import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
 import { SwapStatus, useSwapContext } from '../contexts/SwapContext'
 import { FusionQuoteError, fusionErrors } from '../utils/fusionErrors'
 import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
 import { ServiceType } from '../types'
-import { useFusionTransfers } from '../hooks/useZustandStore'
 import { useMaxSwapAmount } from '../hooks/useMaxSwapAmount'
 import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 import { useFeeValidation } from '../hooks/useFeeValidation'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const { removeTransfer } = useFusionTransfers()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { navigate, dismissAll } = useRouter()
   const navigation = useNavigation()
 
   const params = useGlobalSearchParams<{
-    initialTokenIdFrom?: string
-    initialTokenIdTo?: string
-    retryingSwapActivityId?: string
+    initialTokenIdFrom?: string // internalId
+    initialTokenIdTo?: string // internalId
+    initialFromCaip2Id?: string
+    initialToCaip2Id?: string
   }>()
 
   const { formatCurrency } = useFormatCurrency()
   const { getMarketTokenById } = useWatchlist()
-
-  const swapList = useSwapList()
+  const cChainNetwork = useCChainNetwork()
 
   const {
     swap,
@@ -103,9 +104,20 @@ export const SwapScreen = (): JSX.Element => {
   })
 
   const { debounced: debouncedFromTokenValue } = useDebounce(fromTokenValue)
-  const cChainNetwork = useCChainNetwork()
   const solanaNetwork = useSolanaNetwork()
   const activeAccount = useSelector(selectActiveAccount)
+  const accountTokens = useTokensWithBalanceForAccount({
+    account: activeAccount
+  })
+
+  const { isTokensLoading, btcBLocalToken } = useFusionTokenLookup({
+    params,
+    accountTokens,
+    isDeveloperMode,
+    setFromToken,
+    setToToken
+  })
+
   const tokensWithZeroBalance = useTokensWithZeroBalanceByNetworksForAccount(
     activeAccount,
     [cChainNetwork?.chainId, solanaNetwork?.chainId].filter(
@@ -128,13 +140,13 @@ export const SwapScreen = (): JSX.Element => {
   const nativeFromToken = useMemo(
     () =>
       fromToken
-        ? swapList.find(
+        ? accountTokens.find(
             t =>
               t.type === TokenType.NATIVE &&
               t.networkChainId === fromToken.networkChainId
           )
         : undefined,
-    [fromToken, swapList]
+    [fromToken, accountTokens]
   )
 
   const feeValidationError = useFeeValidation({
@@ -274,44 +286,6 @@ export const SwapScreen = (): JSX.Element => {
     tokensWithZeroBalance
   ])
 
-  const setInitialTokensFx = useCallback(() => {
-    if (initialized.current) return
-
-    const initialTokenIdFrom = params.initialTokenIdFrom
-    const initialTokenIdTo = params.initialTokenIdTo
-
-    if (initialTokenIdFrom || initialTokenIdTo) {
-      initialized.current = true
-    }
-
-    let initialFromToken: LocalTokenWithBalance | undefined
-    if (initialTokenIdFrom) {
-      initialFromToken = swapList.find(
-        tk =>
-          tk.localId.toLowerCase() === initialTokenIdFrom?.toLowerCase() ||
-          tk.internalId === initialTokenIdFrom
-      )
-    }
-    setFromToken(initialFromToken)
-
-    let initialToToken: LocalTokenWithBalance | undefined
-    if (initialTokenIdTo) {
-      initialToToken = swapList.find(
-        tk =>
-          tk.localId.toLowerCase() === initialTokenIdTo?.toLowerCase() ||
-          tk.internalId === initialTokenIdTo
-      )
-    }
-
-    setToToken(initialToToken)
-  }, [
-    params.initialTokenIdFrom,
-    params.initialTokenIdTo,
-    setFromToken,
-    setToToken,
-    swapList
-  ])
-
   const showFeesAndSlippage = activeQuote?.serviceType === ServiceType.MARKR
 
   const isLombard =
@@ -326,20 +300,8 @@ export const SwapScreen = (): JSX.Element => {
 
     dismissKeyboardIfNeeded()
 
-    // If this swap is initiated from a failed swap activity, immediately remove that
-    // activity so it doesn't continue to show up in the notifications list while this
-    // new swap attempt is in progress.
-    params.retryingSwapActivityId &&
-      removeTransfer(params.retryingSwapActivityId)
-
     swap()
-  }, [
-    swap,
-    activeQuote,
-    slippage,
-    removeTransfer,
-    params.retryingSwapActivityId
-  ])
+  }, [swap, activeQuote, slippage])
 
   const handleFromAmountChange = useCallback(
     (amount: bigint): void => {
@@ -588,15 +550,12 @@ export const SwapScreen = (): JSX.Element => {
   useEffect(applyQuote, [applyQuote])
   useEffect(syncDebouncedAmount, [syncDebouncedAmount])
 
-  const initialized = useRef(false)
-  useEffect(setInitialTokensFx, [setInitialTokensFx])
-
   // Reset from amount when the user selects a different from token.
-  const prevFromTokenIdRef = useRef(fromToken?.localId)
+  const prevFromTokenIdRef = useRef(fromToken?.internalId)
   useEffect(() => {
     const prevId = prevFromTokenIdRef.current
-    prevFromTokenIdRef.current = fromToken?.localId
-    if (prevId === undefined || prevId === fromToken?.localId) return
+    prevFromTokenIdRef.current = fromToken?.internalId
+    if (prevId === undefined || prevId === fromToken?.internalId) return
     setFromTokenValue(undefined)
     setAmount(undefined)
   }, [fromToken, setFromTokenValue, setAmount])
@@ -606,8 +565,16 @@ export const SwapScreen = (): JSX.Element => {
 
   useEffect(() => {
     function clearSameToken(): void {
-      if (!(fromToken && toToken && fromToken.localId === toToken.localId))
+      if (
+        !(
+          fromToken &&
+          toToken &&
+          fromToken.internalId === toToken.internalId &&
+          fromToken.networkChainId === toToken.networkChainId
+        )
+      ) {
         return
+      }
 
       if (prevFromRef.current !== fromToken) {
         setToToken(undefined)
@@ -624,22 +591,16 @@ export const SwapScreen = (): JSX.Element => {
     }
 
     function autoSelectBtcb(): void {
-      const fromIsBtc =
-        fromToken?.localId?.toLowerCase() === TOKEN_IDS.BTC.toLowerCase() ||
-        fromToken?.internalId === TOKEN_IDS.BTC
+      const fromIsBtc = fromToken?.internalId === TOKEN_IDS.BTC
       if (!fromIsBtc) return
 
       // Skip if TO is already BTC.b — avoids overriding a valid selection
       // or causing unnecessary state writes on re-renders.
-      const toIsBtcB =
-        toToken?.localId?.toLowerCase() === TOKEN_IDS.BTC_B.toLowerCase() ||
-        toToken?.internalId === TOKEN_IDS.BTC_B
+      const toIsBtcB = toToken?.internalId === TOKEN_IDS.BTC_B
       if (toIsBtcB) return
 
-      const btcb = [...swapList, ...tokensWithZeroBalance].find(
-        tk =>
-          tk.localId.toLowerCase() === TOKEN_IDS.BTC_B.toLowerCase() ||
-          tk.internalId === TOKEN_IDS.BTC_B
+      const btcb = [btcBLocalToken, ...tokensWithZeroBalance].find(
+        tk => tk?.internalId === TOKEN_IDS.BTC_B
       )
       if (btcb) setToToken(btcb)
     }
@@ -654,8 +615,8 @@ export const SwapScreen = (): JSX.Element => {
     setToToken,
     setFromToken,
     setAmount,
-    swapList,
-    tokensWithZeroBalance
+    tokensWithZeroBalance,
+    btcBLocalToken
   ])
 
   // Validate token pair compatibility - clear TO token if incompatible with FROM chain
@@ -762,13 +723,15 @@ export const SwapScreen = (): JSX.Element => {
     )
   }, [canSwap, handleSwap, isSwapping, isLombard, renderLombardLogo])
 
-  return (
-    <ScrollScreen
-      title="Swap"
-      renderFooter={renderFooter}
-      isModal
-      shouldAvoidKeyboard
-      contentContainerStyle={{ padding: 16 }}>
+  const renderFromAndToSections = useCallback(() => {
+    if (isTokensLoading && !fromToken && !toToken) {
+      return (
+        <ActivityIndicator
+          sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        />
+      )
+    }
+    return (
       <Animated.View layout={LinearTransition}>
         {renderFromSection()}
         <Animated.View
@@ -819,7 +782,28 @@ export const SwapScreen = (): JSX.Element => {
         </Animated.View>
         {renderToSection()}
       </Animated.View>
+    )
+  }, [
+    fromToken,
+    handleToggleTokens,
+    isInputFocused,
+    isTokensLoading,
+    isSwapping,
+    renderFromSection,
+    renderToSection,
+    swapButtonBackgroundColor,
+    theme.colors.$surfaceSecondary,
+    toToken
+  ])
 
+  return (
+    <ScrollScreen
+      title="Swap"
+      renderFooter={renderFooter}
+      isModal
+      shouldAvoidKeyboard
+      contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
+      {renderFromAndToSections()}
       {renderError()}
       <View style={{ marginTop: 24 }}>
         <GroupList data={data} separatorMarginRight={16} />

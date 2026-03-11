@@ -1,30 +1,44 @@
 import { useRouter } from 'expo-router'
-import { AVAX_TOKEN_ID, USDC_AVALANCHE_C_TOKEN_ID } from 'common/consts/swap'
+import {
+  SUPPORTED_PLATFORM_ID,
+  SUPPORTED_PLATFORM_ID_TESTNET
+} from 'common/consts/swap'
+import { TOKEN_IDS } from 'consts/tokenIds'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 interface NavigateToSwapParams {
-  fromTokenId?: string
-  toTokenId?: string
-  retryingSwapActivityId?: string
+  fromTokenId?: string // internalId
+  toTokenId?: string // internalId
+  fromCaip2Id?: string
+  toCaip2Id?: string
 }
 
 export const useNavigateToSwap = (): {
   navigateToSwap: (params?: NavigateToSwapParams) => void
 } => {
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { navigate } = useRouter()
 
   const navigateToSwap = ({
     fromTokenId,
     toTokenId,
-    retryingSwapActivityId
+    fromCaip2Id,
+    toCaip2Id
   }: NavigateToSwapParams = {}): void => {
     if (fromTokenId === undefined && toTokenId === undefined) {
       navigate({
         // @ts-ignore TODO: make routes typesafe
         pathname: '/swapV2',
         params: {
-          initialTokenIdFrom: AVAX_TOKEN_ID,
-          initialTokenIdTo: USDC_AVALANCHE_C_TOKEN_ID,
-          retryingSwapActivityId
+          initialTokenIdFrom: TOKEN_IDS.AVAX,
+          initialTokenIdTo: TOKEN_IDS.USDC,
+          initialFromCaip2Id: isDeveloperMode
+            ? SUPPORTED_PLATFORM_ID_TESTNET
+            : SUPPORTED_PLATFORM_ID,
+          initialToCaip2Id: isDeveloperMode
+            ? SUPPORTED_PLATFORM_ID_TESTNET
+            : SUPPORTED_PLATFORM_ID
         }
       })
 
@@ -37,7 +51,16 @@ export const useNavigateToSwap = (): {
       params: {
         initialTokenIdFrom: fromTokenId,
         initialTokenIdTo: toTokenId,
-        retryingSwapActivityId
+        initialFromCaip2Id:
+          fromCaip2Id ??
+          (isDeveloperMode
+            ? SUPPORTED_PLATFORM_ID_TESTNET
+            : SUPPORTED_PLATFORM_ID),
+        initialToCaip2Id:
+          toCaip2Id ??
+          (isDeveloperMode
+            ? SUPPORTED_PLATFORM_ID_TESTNET
+            : SUPPORTED_PLATFORM_ID)
       }
     })
   }

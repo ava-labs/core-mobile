@@ -12,6 +12,7 @@ import {
   type TokenWithPriceData
 } from 'common/hooks/useTokensWithPrice'
 import { TOKEN_IDS } from 'consts/tokenIds'
+import { NATIVE_DECIMALS } from '../consts'
 
 type FeeBreakdownItem = {
   name: string
@@ -30,13 +31,6 @@ function getNativeInternalId(chainId: string): string | undefined {
   if (chainId.startsWith('solana:')) return TOKEN_IDS.SOL
   if (chainId.startsWith('bip122:')) return TOKEN_IDS.BTC
   return undefined
-}
-
-const NATIVE_DECIMALS: Record<string, number> = {
-  [TOKEN_IDS.ETH]: 18,
-  [TOKEN_IDS.AVAX]: 18,
-  [TOKEN_IDS.SOL]: 9,
-  [TOKEN_IDS.BTC]: 8
 }
 
 function getFeeLookupToken(
