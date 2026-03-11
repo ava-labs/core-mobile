@@ -15,4 +15,9 @@
     <color name="iconBackgroundMarker">#F5F0E8</color>
     <color name="iconBackgroundMinimalism">#FFFFFF</color>
     <color name="iconBackgroundOld">#1A1A1A</color>
+    <color name="iconBackgroundShiny">#1A1A2E</color>
+    <color name="iconBackgroundNeon">#000000</color>
+    <color name="iconBackgroundLayered">#000000</color>
+    <color name="iconBackgroundLiquid">#000000</color>
+    <color name="iconBackgroundMisaligned">#000000</color>
 </resources>
