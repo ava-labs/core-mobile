@@ -6,6 +6,7 @@ import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import FusionService from '../services/FusionService'
 import { logSdkError } from '../utils/fusionLogger'
 import { toSwappableAsset } from '../utils/fusionTypeConverters'
+import { getTokenKey } from '../utils/tokenKey'
 import { useIsFusionServiceReady } from './useZustandStore'
 
 const fetchMinimumTransferAmount = async (
@@ -52,8 +53,8 @@ export const useMinimumTransferAmount = ({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [
       ReactQueryKeys.FUSION_MINIMUM_TRANSFER_AMOUNT,
-      fromToken?.localId,
-      toToken?.localId
+      fromToken ? getTokenKey(fromToken) : undefined,
+      toToken ? getTokenKey(toToken) : undefined
     ],
     queryFn:
       isFusionServiceReady && fromToken && toToken

@@ -56,11 +56,7 @@ import { ServiceType } from '../types'
 import { useMaxSwapAmount } from '../hooks/useMaxSwapAmount'
 import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 import { useFeeValidation } from '../hooks/useFeeValidation'
-
-// Combine internalId + networkChainId because native tokens share the same
-// internalId across EVM chains (e.g. NATIVE-eth on Ethereum vs Base).
-const getTokenKey = (token: LocalTokenWithBalance): string =>
-  `${token.internalId}-${token.networkChainId}`
+import { getTokenKey } from '../utils/tokenKey'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()

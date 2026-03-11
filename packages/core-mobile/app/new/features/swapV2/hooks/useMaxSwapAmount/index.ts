@@ -18,6 +18,7 @@ import type { QuoterParams } from '../../services/types'
 import { useIsFusionServiceReady } from '../useZustandStore'
 import { useFeeEstimation } from '../useFeeEstimation'
 import { getNativeBridgeFee } from '../../utils/bridgeFee'
+import { getTokenKey } from '../../utils/tokenKey'
 import { computeMaxAmount } from './utils'
 
 /**
@@ -105,28 +106,22 @@ const useDummyQuote = ({
       !!fromAddress &&
       !!toAddress
 
-    if (!prerequisitesMet) {
-      setDummyQuoteEntry(null)
-      setFailed(false)
-      return
-    }
-
     // minimumTransferAmount === undefined means still loading — wait
-    if (minimumTransferAmount === undefined) {
+    if (!prerequisitesMet || minimumTransferAmount === undefined) {
       setDummyQuoteEntry(null)
       setFailed(false)
       return
     }
 
-    // minimumTransferAmount === null means the SDK couldn't provide one — treat as failure
-    if (!minimumTransferAmount) {
+    // null means the SDK couldn't provide a minimum; <= 0n would be unusable — treat both as failure
+    if (minimumTransferAmount === null || minimumTransferAmount <= 0n) {
       setDummyQuoteEntry(null)
       setFailed(true)
       return
     }
 
-    const fromId = fromToken.localId
-    const toId = toToken.localId
+    const fromId = getTokenKey(fromToken)
+    const toId = getTokenKey(toToken)
 
     const cleanup = subscribeToFirstQuote(
       {
@@ -169,12 +164,13 @@ const useDummyQuote = ({
   // Derive quote synchronously in render: return null when the stored entry
   // belongs to a different token pair
   const isCurrentPair =
-    dummyQuoteEntry?.fromId === fromToken?.localId &&
-    dummyQuoteEntry?.toId === toToken?.localId
+    dummyQuoteEntry?.fromId ===
+      (fromToken ? getTokenKey(fromToken) : undefined) &&
+    dummyQuoteEntry?.toId === (toToken ? getTokenKey(toToken) : undefined)
 
   return {
     quote: isCurrentPair ? dummyQuoteEntry?.quote ?? null : null,
-    failed
+    failed: isCurrentPair ? failed : false
   }
 }
 
