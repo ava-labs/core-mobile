@@ -52,6 +52,7 @@ export type AnalyticsEvents = {
   }
   'CreateWallet:WalletNameSet': undefined
   CreatedANewAccountSuccessfully: { walletType: string }
+  ChangedIcons: { iconName: string }
   CurrencySettingChanged: { currency: string }
   CurrencySettingClicked: undefined
   DeveloperModeEnabled: undefined

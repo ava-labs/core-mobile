@@ -1,18 +1,12 @@
 import React from 'react'
-import {
-  ActivityIndicator,
-  Button,
-  Logos,
-  Text,
-  View
-} from '@avalabs/k2-alpine'
-import { useSelector } from 'react-redux'
-import { selectSelectedColorScheme } from 'store/settings/appearance'
+import { ActivityIndicator, Button, Text, View } from '@avalabs/k2-alpine'
 import { useUpdateApp } from 'common/hooks/useUpdateApp'
+import { Image } from 'expo-image'
+import { ICON_PREVIEWS, useCurrentAppIcon } from 'features/accountSettings/store'
 
 export const AppUpdateBanner = (): JSX.Element => {
-  const selectedColorScheme = useSelector(selectSelectedColorScheme)
   const { updateApp, isUpdating } = useUpdateApp()
+  const currentIcon = useCurrentAppIcon()
 
   return (
     <View
@@ -39,17 +33,11 @@ export const AppUpdateBanner = (): JSX.Element => {
             borderRadius: 12,
             overflow: 'hidden'
           }}>
-          {selectedColorScheme === 'dark' ? (
-            <Logos.AppIcons.CoreAppIconLight
-              width={ICON_SIZE}
-              height={ICON_SIZE}
-            />
-          ) : (
-            <Logos.AppIcons.CoreAppIconDark
-              width={ICON_SIZE}
-              height={ICON_SIZE}
-            />
-          )}
+          <Image
+            source={ICON_PREVIEWS[currentIcon]}
+            style={{ width: ICON_SIZE, height: ICON_SIZE }}
+            contentFit="cover"
+          />
         </View>
         <View sx={{ flexShrink: 1, flexWrap: 'wrap' }}>
           <View>

@@ -8,4 +8,11 @@
     <color name="neutral900">#1A1A1C</color>
     <color name="neutral850">#2A2A2D</color>
     <color name="bootsplash_background">#28282E</color>
+    <color name="iconBackgroundBling">#000000</color>
+    <color name="iconBackgroundGrid">#091B25</color>
+    <color name="iconBackgroundIridescenceLight">#F0F0F0</color>
+    <color name="iconBackgroundIridescenceDark">#000000</color>
+    <color name="iconBackgroundMarker">#F5F0E8</color>
+    <color name="iconBackgroundMinimalism">#FFFFFF</color>
+    <color name="iconBackgroundOld">#1A1A1A</color>
 </resources>

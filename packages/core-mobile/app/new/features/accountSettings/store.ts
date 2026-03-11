@@ -4,6 +4,12 @@ import { ZustandStorageKeys } from 'resources/Constants'
 import { zustandMMKVStorage } from 'utils/mmkv/storages'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import {
+  getAppIconName,
+  setAlternateAppIcon,
+  supportsAlternateIcons
+} from 'expo-alternate-app-icons'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export const useNewContactAvatar = createZustandStore<AvatarType | undefined>(
   undefined
@@ -60,4 +66,85 @@ export const recentAccountsStore = create<RecentAccountsState>()(
 // React hook that uses the store
 export const useRecentAccounts = (): RecentAccountsState => {
   return recentAccountsStore()
+}
+
+// App Icon
+
+export enum AppIcon {
+  Default = 'Default',
+  IridescenceLight = 'IridescenceLight',
+  IridescenceDark = 'IridescenceDark',
+  Old = 'Old',
+  Bling = 'Bling',
+  Grid = 'Grid',
+  Marker = 'Marker',
+  Minimalism = 'Minimalism'
+}
+
+export const APP_ICON_DISPLAY_NAMES: Record<AppIcon, string> = {
+  [AppIcon.Default]: 'Core',
+  [AppIcon.IridescenceLight]: 'Iridescence light',
+  [AppIcon.IridescenceDark]: 'Iridescence dark',
+  [AppIcon.Old]: 'Old school Core',
+  [AppIcon.Bling]: 'Bling',
+  [AppIcon.Grid]: 'The grid',
+  [AppIcon.Marker]: 'Marker',
+  [AppIcon.Minimalism]: 'Minimalism'
+}
+
+export const APP_ICON_SUBTITLES: Partial<Record<AppIcon, string>> = {
+  [AppIcon.Default]: 'Default icon',
+  [AppIcon.IridescenceLight]: 'Available for a limited time',
+  [AppIcon.IridescenceDark]: 'Available for a limited time'
+}
+
+export const ICON_PREVIEWS: Record<AppIcon, number> = {
+  [AppIcon.Default]: require('../../../../assets/app-icons/AppIcon-dark.png'),
+  [AppIcon.IridescenceLight]: require('../../../../assets/app-icons/AppIcon-iridescence-light.png'),
+  [AppIcon.IridescenceDark]: require('../../../../assets/app-icons/AppIcon-iridescence-dark.png'),
+  [AppIcon.Old]: require('../../../../assets/app-icons/AppIcon-old.png'),
+  [AppIcon.Bling]: require('../../../../assets/app-icons/AppIcon-bling.png'),
+  [AppIcon.Grid]: require('../../../../assets/app-icons/AppIcon-grid.png'),
+  [AppIcon.Marker]: require('../../../../assets/app-icons/AppIcon-marker.png'),
+  [AppIcon.Minimalism]: require('../../../../assets/app-icons/AppIcon-minimalism.png')
+}
+
+function nativeNameToAppIcon(name: string | null): AppIcon {
+  if (name === null) return AppIcon.Default
+  return (
+    (Object.values(AppIcon).find(v => v === name) as AppIcon) ?? AppIcon.Default
+  )
+}
+
+interface AppIconState {
+  currentIcon: AppIcon
+  setIcon: (icon: AppIcon) => void
+}
+
+export const appIconStore = create<AppIconState>(set => ({
+  currentIcon: nativeNameToAppIcon(getAppIconName()),
+  setIcon: (icon: AppIcon) => {
+    const { currentIcon } = appIconStore.getState()
+    if (icon === currentIcon) return
+    if (!supportsAlternateIcons) return
+
+    const nativeIconName = icon === AppIcon.Default ? null : icon
+    set({ currentIcon: icon })
+
+    setAlternateAppIcon(nativeIconName)
+      .then(() => {
+        AnalyticsService.capture('ChangedIcons', { iconName: icon })
+      })
+      .catch(() => {
+        set({ currentIcon: nativeNameToAppIcon(getAppIconName()) })
+      })
+  }
+}))
+
+export const useAppIcon = (): AppIconState => {
+  return appIconStore()
+}
+
+export const useCurrentAppIcon = (): AppIcon => {
+  return appIconStore(s => s.currentIcon)
 }

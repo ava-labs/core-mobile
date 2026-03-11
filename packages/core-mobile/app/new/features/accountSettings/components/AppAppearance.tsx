@@ -11,13 +11,19 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { CurrencyIcon } from 'common/components/CurrencyIcon'
 import { selectSelectedAppearance } from 'store/settings/appearance'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import {
+  APP_ICON_DISPLAY_NAMES,
+  useCurrentAppIcon
+} from 'features/accountSettings/store'
 
 export const AppAppearance = ({
   selectAppAppearance,
-  selectCurrency
+  selectCurrency,
+  selectAppIcon
 }: {
   selectCurrency: () => void
   selectAppAppearance: () => void
+  selectAppIcon: () => void
 }): React.JSX.Element => {
   const {
     theme: { colors }
@@ -25,6 +31,7 @@ export const AppAppearance = ({
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const currency = useSelector(selectSelectedCurrency)
   const appearance = useSelector(selectSelectedAppearance)
+  const appIcon = useCurrentAppIcon()
 
   const data = useMemo(() => {
     const _data: GroupListItem[] = [
@@ -64,6 +71,11 @@ export const AppAppearance = ({
         value: appearance
       })
     }
+    _data.push({
+      title: 'App icon',
+      onPress: selectAppIcon,
+      value: APP_ICON_DISPLAY_NAMES[appIcon]
+    })
     return _data
   }, [
     selectCurrency,
@@ -71,7 +83,9 @@ export const AppAppearance = ({
     colors.$textSecondary,
     isDeveloperMode,
     selectAppAppearance,
-    appearance
+    appearance,
+    selectAppIcon,
+    appIcon
   ])
 
   return (

@@ -1,0 +1,14 @@
+{
+  "images" : [
+    {"filename":"Marker-20@2x.png","idiom":"iphone","scale":"2x","size":"20x20"},
+    {"filename":"Marker-20@3x.png","idiom":"iphone","scale":"3x","size":"20x20"},
+    {"filename":"Marker-29@2x.png","idiom":"iphone","scale":"2x","size":"29x29"},
+    {"filename":"Marker-29@3x.png","idiom":"iphone","scale":"3x","size":"29x29"},
+    {"filename":"Marker-40@2x.png","idiom":"iphone","scale":"2x","size":"40x40"},
+    {"filename":"Marker-40@3x.png","idiom":"iphone","scale":"3x","size":"40x40"},
+    {"filename":"Marker-60@2x.png","idiom":"iphone","scale":"2x","size":"60x60"},
+    {"filename":"Marker-60@3x.png","idiom":"iphone","scale":"3x","size":"60x60"},
+    {"filename":"Marker-1024.png","idiom":"ios-marketing","scale":"1x","size":"1024x1024"}
+  ],
+  "info":{"author":"xcode","version":1}
+}
