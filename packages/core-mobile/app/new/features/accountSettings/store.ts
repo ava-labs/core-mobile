@@ -140,10 +140,10 @@ interface AppIconState {
   setIcon: (icon: AppIcon) => void
 }
 
-export const appIconStore = create<AppIconState>((set, get) => ({
+export const appIconStore = create<AppIconState>(set => ({
   currentIcon: nativeNameToAppIcon(getAppIconName()),
   setIcon: (icon: AppIcon) => {
-    const { currentIcon } = get()
+    const { currentIcon } = appIconStore.getState()
     if (icon === currentIcon) return
     if (!supportsAlternateIcons) return
 

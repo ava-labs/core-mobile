@@ -31,9 +31,8 @@ export const SelectAppIconScreen = (): JSX.Element => {
 
   const handleIconPress = useCallback(
     (icon: AppIcon) => {
-      if (icon === currentIcon) return
       setIcon(icon)
-      if (canGoBack()) {
+      if (icon !== currentIcon && canGoBack()) {
         back()
       }
     },
