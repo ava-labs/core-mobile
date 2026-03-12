@@ -8,6 +8,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { ListScreen } from 'common/components/ListScreen'
 import { Image } from 'expo-image'
+import { useRouter } from 'expo-router'
 import React, { useCallback } from 'react'
 import { ListRenderItemInfo } from 'react-native'
 import {
@@ -20,11 +21,25 @@ import {
   useAppIcon
 } from 'features/accountSettings/store'
 
+// NOTE: setAlternateIconName does not work on the iOS 26 simulator.
+// For development, use an iOS 18 simulator or an iOS 26 physical device.
+
 const ALL_ICONS = Object.values(AppIcon)
 const ICON_THUMBNAIL_SIZE = 48
 
 export const SelectAppIconScreen = (): JSX.Element => {
   const { currentIcon, setIcon } = useAppIcon()
+  const { canGoBack, back } = useRouter()
+
+  const handleIconPress = useCallback(
+    (icon: AppIcon) => {
+      setIcon(icon)
+      if (icon !== currentIcon && canGoBack()) {
+        back()
+      }
+    },
+    [currentIcon, setIcon, canGoBack, back]
+  )
 
   const renderItem = useCallback(
     ({ item, index }: ListRenderItemInfo<AppIcon>) => {
@@ -33,11 +48,11 @@ export const SelectAppIconScreen = (): JSX.Element => {
           icon={item}
           isSelected={currentIcon === item}
           isLast={index === ALL_ICONS.length - 1}
-          onPress={() => setIcon(item)}
+          onPress={() => handleIconPress(item)}
         />
       )
     },
-    [currentIcon, setIcon]
+    [currentIcon, handleIconPress]
   )
 
   return (
