@@ -30,13 +30,13 @@ export const SelectAppIconScreen = (): JSX.Element => {
   const { canGoBack, back } = useRouter()
 
   const handleIconPress = useCallback(
-    (icon: AppIcon) => {
-      setIcon(icon)
-      if (icon !== currentIcon && canGoBack()) {
+    async (icon: AppIcon) => {
+      const didChange = await setIcon(icon)
+      if (didChange && canGoBack()) {
         back()
       }
     },
-    [currentIcon, setIcon, canGoBack, back]
+    [setIcon, canGoBack, back]
   )
 
   const renderItem = useCallback(
