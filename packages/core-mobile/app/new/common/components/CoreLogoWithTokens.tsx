@@ -18,7 +18,7 @@ import { runAfterInteractions } from 'utils/runAfterInteractions'
 
 export const CoreLogoWithTokens = (): JSX.Element => {
   const currentIcon = useCurrentAppIcon()
-
+  const { theme } = useTheme()
   const { animatedStyle: coreLogoAnimationStyle, pop: coreLogoPop } =
     usePopSpringAnimation({ minScale: 0.8 })
 
@@ -71,7 +71,9 @@ export const CoreLogoWithTokens = (): JSX.Element => {
             borderRadius: 32,
             overflow: 'hidden',
             width: CORE_ICON_SIZE,
-            height: CORE_ICON_SIZE
+            height: CORE_ICON_SIZE,
+            borderWidth: 1,
+            borderColor: theme.colors.$borderPrimary
           },
           coreLogoAnimationStyle
         ]}>
