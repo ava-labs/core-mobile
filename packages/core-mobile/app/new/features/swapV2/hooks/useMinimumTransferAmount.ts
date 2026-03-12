@@ -6,6 +6,7 @@ import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import FusionService from '../services/FusionService'
 import { logSdkError } from '../utils/fusionLogger'
 import { toSwappableAsset } from '../utils/fusionTypeConverters'
+import { getTokenKey } from '../utils/tokenKey'
 import { useIsFusionServiceReady } from './useZustandStore'
 
 const fetchMinimumTransferAmount = async (
@@ -45,15 +46,15 @@ export const useMinimumTransferAmount = ({
 }: {
   fromToken: LocalTokenWithBalance | undefined
   toToken: LocalTokenWithBalance | undefined
-}): bigint | null => {
+}): bigint | null | undefined => {
   const [isFusionServiceReady] = useIsFusionServiceReady()
 
   const { data } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [
       ReactQueryKeys.FUSION_MINIMUM_TRANSFER_AMOUNT,
-      fromToken?.localId,
-      toToken?.localId
+      fromToken ? getTokenKey(fromToken) : undefined,
+      toToken ? getTokenKey(toToken) : undefined
     ],
     queryFn:
       isFusionServiceReady && fromToken && toToken
@@ -62,5 +63,8 @@ export const useMinimumTransferAmount = ({
     staleTime: 30_000
   })
 
-  return data ?? null
+  // undefined = still loading;
+  // null = settled but unavailable;
+  // bigint = ready
+  return data
 }

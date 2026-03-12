@@ -35,14 +35,10 @@ describe('buildFeeOptions', () => {
     } as unknown as NetworkFees
 
     const result = buildFeeOptions(2000, networkFee)
-    expect(result).toEqual({
-      feeUnitsMarginBps: 2000,
-      overrides: {
-        feeRateTier: 'fast',
-        maxFeePerGas: 100n,
-        maxPriorityFeePerGas: 10n
-      }
-    })
+    expect(result.feeUnitsMarginBps).toBe(2000)
+    expect(result.overrides?.feeRateTier).toBe('fast')
+    expect(result.overrides?.maxFeePerGas).toBe(100n)
+    expect(result.overrides?.maxPriorityFeePerGas).toBe(10n)
   })
 })
 
@@ -106,7 +102,7 @@ describe('computeMaxAmount', () => {
     expect(result).toBe(3800n)
   })
 
-  it('returns 0n when fees exceed balance', () => {
+  it('returns undefined when fees exceed balance', () => {
     const token = makeToken(500n)
     const result = computeMaxAmount({
       fromToken: token,
@@ -115,6 +111,6 @@ describe('computeMaxAmount', () => {
       bridgeFee: 200n,
       hasEstimationError: false
     })
-    expect(result).toBe(0n)
+    expect(result).toBeUndefined()
   })
 })

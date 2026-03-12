@@ -47,5 +47,6 @@ export const computeMaxAmount = ({
   if (bufferedGas === undefined) return undefined
 
   const max = fromToken.balance - bufferedGas - bridgeFee
-  return max > 0n ? max : 0n
+  // Return undefined when balance can't cover fees — keeps Max button disabled
+  return max > 0n ? max : undefined
 }

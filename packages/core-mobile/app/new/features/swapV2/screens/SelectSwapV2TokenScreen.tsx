@@ -131,7 +131,9 @@ export const SelectSwapV2TokenScreen = ({
   // Render token item
   const renderItem: ListRenderItem<LocalTokenWithBalance> = useCallback(
     ({ item, index }) => {
-      const isSelected = selectedToken?.localId === item.localId
+      const isSelected =
+        selectedToken?.localId === item.localId &&
+        selectedToken.networkChainId === item.networkChainId
       const isLastItem = index === results.length - 1
 
       return (
@@ -212,7 +214,7 @@ export const SelectSwapV2TokenScreen = ({
       isModal
       renderItem={renderItem}
       keyExtractor={(item: LocalTokenWithBalance) =>
-        `token-${item.localId}-${item.internalId}`
+        `token-${item.localId}-${item.networkChainId}`
       }
       renderHeader={renderHeader}
       renderEmpty={renderEmpty}
