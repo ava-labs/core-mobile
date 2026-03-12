@@ -83,11 +83,16 @@ const AppIconRow = ({
 
   const subtitle = APP_ICON_SUBTITLES[icon]
   const iconSource = ICON_PREVIEWS[icon]
+  const accessibilityLabel = `${APP_ICON_DISPLAY_NAMES[icon]}${
+    isSelected ? ', selected' : ''
+  }`
 
   return (
     <TouchableOpacity
       testID={isSelected ? `app_icon_${icon}_selected` : `app_icon_${icon}`}
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
       sx={{ paddingHorizontal: 16 }}>
       <View
         sx={{
