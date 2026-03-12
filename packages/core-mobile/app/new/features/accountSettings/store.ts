@@ -10,7 +10,7 @@ import {
   supportsAlternateIcons
 } from 'expo-alternate-app-icons'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import Config from 'react-native-config'
+import DeviceInfo from 'react-native-device-info'
 import { Platform } from 'react-native'
 
 export const useNewContactAvatar = createZustandStore<AvatarType | undefined>(
@@ -104,7 +104,7 @@ export const APP_ICON_SUBTITLES: Partial<Record<AppIcon, string>> = {
   [AppIcon.Default]: 'Default icon'
 }
 
-const isInternalBuild = Config.ENVIRONMENT === 'development'
+const isInternalBuild = DeviceInfo.getBundleId().includes('internal')
 
 export const DEFAULT_ICON_PREVIEW_LIGHT: number = isInternalBuild
   ? require('../../../assets/app-icons/AppIcon-light-dev.png')
