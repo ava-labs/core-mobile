@@ -90,13 +90,9 @@ class SeedlessSession {
    */
   async userMfa(): Promise<MFA[]> {
     try {
-      const mfa = (await this.aboutMe()).mfa
-      return mfa
+      return (await this.aboutMe()).mfa
     } catch (error) {
-      Logger.error(
-        `[SeedlessSession] userMfa() FAILED`,
-        error
-      )
+      Logger.error(`[SeedlessSession] userMfa() FAILED`, error)
       throw error
     }
   }
