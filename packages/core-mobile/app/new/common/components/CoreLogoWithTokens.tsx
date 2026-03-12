@@ -5,8 +5,6 @@ import { selectSelectedColorScheme } from 'store/settings/appearance'
 import { Image } from 'expo-image'
 import {
   AppIcon,
-  DEFAULT_ICON_PREVIEW_DARK,
-  DEFAULT_ICON_PREVIEW_LIGHT,
   ICON_PREVIEWS,
   useCurrentAppIcon
 } from 'features/accountSettings/store'
@@ -92,20 +90,14 @@ export const CoreLogoWithTokens = (): JSX.Element => {
 
 const AppIconImage = React.memo(
   ({
-    currentIcon,
-    selectedColorScheme
+    currentIcon
   }: {
     currentIcon: AppIcon
     selectedColorScheme: string | undefined
   }): JSX.Element => {
     const source = useMemo(() => {
-      if (currentIcon === AppIcon.Default) {
-        return selectedColorScheme === 'dark'
-          ? DEFAULT_ICON_PREVIEW_LIGHT
-          : DEFAULT_ICON_PREVIEW_DARK
-      }
       return ICON_PREVIEWS[currentIcon]
-    }, [currentIcon, selectedColorScheme])
+    }, [currentIcon])
 
     return (
       <Image
