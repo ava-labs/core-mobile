@@ -26,9 +26,9 @@ export const useAaveZeroLtvCollateral = (): {
 
     const blockingError =
       symbols.length > 0
-        ? `Assets with zero LTV (${symbols.join(
+        ? `Aave requires assets with zero LTV (${symbols.join(
             ', '
-          )}) must be withdrawn or disabled as collateral to perform this action`
+          )}) to be withdrawn or disabled as collateral to perform this action`
         : undefined
 
     return { zeroLtvSymbols: symbols, blockingError }
