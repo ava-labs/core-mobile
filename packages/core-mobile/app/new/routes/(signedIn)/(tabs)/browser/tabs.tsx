@@ -187,7 +187,9 @@ const TabsScreen = (): JSX.Element => {
           }}
           onPressAction={onPressAction}
           groups={[{ id: 'menu-actions', items: MENU_ACTIONS }]}>
-          <Icons.Navigation.MoreHoriz color={theme.colors.$textPrimary} />
+          <View style={{ paddingRight: 21 }}>
+            <Icons.Navigation.MoreHoriz color={theme.colors.$textPrimary} />
+          </View>
         </DropdownMenu>
       </View>
     )
