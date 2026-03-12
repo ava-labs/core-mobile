@@ -299,27 +299,27 @@ export const TokenInputWidget = ({
               }}
               entering={FadeIn}
               exiting={FadeOut}>
-              {percentageButtons.map((button, index) => (
-                <Button
-                  key={index}
-                  size="small"
-                  type={button.isSelected ? 'primary' : 'secondary'}
-                  style={{
-                    minWidth: 72
-                  }}
-                  disabled={
-                    disabled ||
-                    balance === undefined ||
-                    // Keep Max disabled until maximum is known
-                    (button.percent === 1 && maximum === undefined)
-                  }
-                  onPress={() => {
-                    handlePressPercentageButton(button, index)
-                    tokenAmountInputRef.current?.blur()
-                  }}>
-                  {button.text}
-                </Button>
-              ))}
+              {percentageButtons
+                // Hide Max button when maximum is still loading or could not be calculated
+                .filter(
+                  button => !(button.percent === 1 && maximum === undefined)
+                )
+                .map((button, index) => (
+                  <Button
+                    key={index}
+                    size="small"
+                    type={button.isSelected ? 'primary' : 'secondary'}
+                    style={{
+                      minWidth: 72
+                    }}
+                    disabled={disabled || balance === undefined}
+                    onPress={() => {
+                      handlePressPercentageButton(button, index)
+                      tokenAmountInputRef.current?.blur()
+                    }}>
+                    {button.text}
+                  </Button>
+                ))}
             </Animated.View>
           )}
         </View>

@@ -74,6 +74,9 @@ export const fusionErrors = {
   },
   insufficientBalanceForFees(): FusionQuoteError {
     return new FusionQuoteError(INSUFFICIENT_BALANCE_FOR_FEES)
+  },
+  gasEstimationFailed(): FusionQuoteError {
+    return new FusionQuoteError('Unable to estimate gas')
   }
 }
 

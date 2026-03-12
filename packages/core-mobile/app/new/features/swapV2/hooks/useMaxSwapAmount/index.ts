@@ -18,6 +18,7 @@ import type { QuoterParams } from '../../services/types'
 import { useIsFusionServiceReady } from '../useZustandStore'
 import { useFeeEstimation } from '../useFeeEstimation'
 import { getNativeBridgeFee } from '../../utils/bridgeFee'
+import { getTokenKey } from '../../utils/tokenKey'
 import { computeMaxAmount } from './utils'
 
 /**
@@ -27,21 +28,28 @@ import { computeMaxAmount } from './utils'
  */
 const subscribeToFirstQuote = (
   params: QuoterParams,
-  onQuote: (quote: Quote) => void
+  onQuote: (quote: Quote) => void,
+  onFailed: () => void
 ): (() => void) | undefined => {
   try {
     const quoter = FusionService.getQuoter(params)
     if (!quoter) return undefined
 
-    let unsubscribed = false
+    let settled = false
     const unsubscribe = quoter.subscribe((event, data) => {
-      if (event === 'quote' && !unsubscribed) {
+      if (settled) return
+      if (event === 'quote') {
+        settled = true
         onQuote(data.bestQuote)
+        unsubscribe()
+      } else if (event === 'done' || event === 'error') {
+        settled = true
+        onFailed()
         unsubscribe()
       }
     })
     return () => {
-      unsubscribed = true
+      settled = true
       unsubscribe()
     }
   } catch (error) {
@@ -57,6 +65,12 @@ const subscribeToFirstQuote = (
  * The bridge fee in quote.fees is a flat fee independent of amount, so using
  * minimumTransferAmount produces the same bridge fee as the full balance.
  */
+type DummyQuoteEntry = {
+  quote: Quote
+  fromId: string
+  toId: string
+} | null
+
 const useDummyQuote = ({
   isNative,
   isFusionServiceReady,
@@ -76,25 +90,38 @@ const useDummyQuote = ({
   toNetwork: NetworkWithCaip2ChainId | undefined
   fromAddress: string | undefined
   toAddress: string | undefined
-  minimumTransferAmount: bigint | null
-}): Quote | null => {
-  const [dummyQuote, setDummyQuote] = useState<Quote | null>(null)
+  minimumTransferAmount: bigint | null | undefined
+}): { quote: Quote | null; failed: boolean } => {
+  const [dummyQuoteEntry, setDummyQuoteEntry] = useState<DummyQuoteEntry>(null)
+  const [failed, setFailed] = useState(false)
 
   useEffect(() => {
-    if (
-      !isNative ||
-      !isFusionServiceReady ||
-      !fromToken ||
-      !toToken ||
-      !fromNetwork ||
-      !toNetwork ||
-      !fromAddress ||
-      !toAddress ||
-      !minimumTransferAmount
-    ) {
-      setDummyQuote(null)
+    const prerequisitesMet =
+      isNative &&
+      isFusionServiceReady &&
+      !!fromToken &&
+      !!toToken &&
+      !!fromNetwork &&
+      !!toNetwork &&
+      !!fromAddress &&
+      !!toAddress
+
+    // minimumTransferAmount === undefined means still loading — wait
+    if (!prerequisitesMet || minimumTransferAmount === undefined) {
+      setDummyQuoteEntry(null)
+      setFailed(false)
       return
     }
+
+    // null means the SDK couldn't provide a minimum; <= 0n would be unusable — treat both as failure
+    if (minimumTransferAmount === null || minimumTransferAmount <= 0n) {
+      setDummyQuoteEntry(null)
+      setFailed(true)
+      return
+    }
+
+    const fromId = getTokenKey(fromToken)
+    const toId = getTokenKey(toToken)
 
     const cleanup = subscribeToFirstQuote(
       {
@@ -106,10 +133,20 @@ const useDummyQuote = ({
         targetChain: toChain(toNetwork),
         amount: minimumTransferAmount
       },
-      setDummyQuote
+      quote => {
+        setFailed(false)
+        setDummyQuoteEntry({ quote, fromId, toId })
+      },
+      () => {
+        setDummyQuoteEntry(null)
+        setFailed(true)
+      }
     )
 
-    if (!cleanup) setDummyQuote(null)
+    if (!cleanup) {
+      setDummyQuoteEntry(null)
+      setFailed(true)
+    }
 
     return cleanup
   }, [
@@ -124,7 +161,17 @@ const useDummyQuote = ({
     minimumTransferAmount
   ])
 
-  return dummyQuote
+  // Derive quote synchronously in render: return null when the stored entry
+  // belongs to a different token pair
+  const isCurrentPair =
+    dummyQuoteEntry?.fromId ===
+      (fromToken ? getTokenKey(fromToken) : undefined) &&
+    dummyQuoteEntry?.toId === (toToken ? getTokenKey(toToken) : undefined)
+
+  return {
+    quote: isCurrentPair ? dummyQuoteEntry?.quote ?? null : null,
+    failed: isCurrentPair ? failed : false
+  }
 }
 
 /**
@@ -148,7 +195,7 @@ export const useMaxSwapAmount = ({
 }: {
   fromToken: LocalTokenWithBalance | undefined
   toToken: LocalTokenWithBalance | undefined
-  minimumTransferAmount: bigint | null
+  minimumTransferAmount: bigint | null | undefined
 }): bigint | undefined => {
   const [isFusionServiceReady] = useIsFusionServiceReady()
   const { getNetwork } = useNetworks()
@@ -181,7 +228,7 @@ export const useMaxSwapAmount = ({
 
   const isNative = fromToken?.type === TokenType.NATIVE
 
-  const dummyQuote = useDummyQuote({
+  const { quote: dummyQuote, failed: dummyQuoteFailed } = useDummyQuote({
     isNative,
     isFusionServiceReady,
     fromToken,
@@ -200,7 +247,7 @@ export const useMaxSwapAmount = ({
     [isNative, dummyQuote, bridgeFeeSafetyBps]
   )
 
-  const { gasFee: bufferedFee, error } = useFeeEstimation({
+  const { gasFee: bufferedFee, error: feeEstimationError } = useFeeEstimation({
     quote: dummyQuote,
     fromNetwork,
     gasSafetyBps: maxAmountGasSafetyBps
@@ -213,8 +260,15 @@ export const useMaxSwapAmount = ({
         isNative,
         bufferedGas: bufferedFee,
         bridgeFee,
-        hasEstimationError: !!error
+        hasEstimationError: !!feeEstimationError || dummyQuoteFailed
       }),
-    [fromToken, isNative, bufferedFee, bridgeFee, error]
+    [
+      fromToken,
+      isNative,
+      bufferedFee,
+      bridgeFee,
+      feeEstimationError,
+      dummyQuoteFailed
+    ]
   )
 }

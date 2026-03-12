@@ -46,9 +46,13 @@ export const useFeeValidation = ({
     [isNative, quote, bridgeFeeSafetyBps]
   )
 
-  const { gasFee } = useFeeEstimation({ quote, fromNetwork })
+  const { gasFee, error } = useFeeEstimation({ quote, fromNetwork })
 
   return useMemo(() => {
+    if (error) {
+      return fusionErrors.gasEstimationFailed()
+    }
+
     if (!fromToken || gasFee === undefined) return undefined
 
     if (isNative) {
@@ -64,5 +68,13 @@ export const useFeeValidation = ({
       return fusionErrors.insufficientBalanceForFees()
 
     return undefined
-  }, [isNative, fromToken, nativeTokenBalance, amount, gasFee, bridgeFee])
+  }, [
+    isNative,
+    error,
+    fromToken,
+    nativeTokenBalance,
+    amount,
+    gasFee,
+    bridgeFee
+  ])
 }

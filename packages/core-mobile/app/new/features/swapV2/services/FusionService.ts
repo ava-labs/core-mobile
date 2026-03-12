@@ -95,7 +95,8 @@ class FusionService implements IFusionService {
             evmSigner: signers.evm,
             solanaSigner: signers.svm,
             markrApiUrl: MARKR_API_URL,
-            markrAppId: MARKR_EVM_PARTNER_ID
+            markrAppId: MARKR_EVM_PARTNER_ID,
+            getTargetChainAssets: () => Promise.resolve([])
             // eslint-disable-next-line prettier/prettier
           } satisfies MarkrServiceInitializer)
           break
