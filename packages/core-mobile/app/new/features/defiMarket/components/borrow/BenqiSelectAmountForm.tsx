@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { Address } from 'viem'
+import { Address, formatUnits } from 'viem'
 import { DefiMarket } from '../../types'
 import { convertUsdToTokenAmount } from '../../utils/convertUsdToTokenAmount'
 import { WAD, WAD_SCALE } from '../../consts'
@@ -70,7 +70,7 @@ export const BorrowBenqiSelectAmountForm = ({
     // This gives us: health = 1 + (liquidity / totalDebt)
     const numerator = liquidity + totalDebtUSD
     const health = (numerator * WAD_SCALE) / totalDebtUSD
-    return Number(health) / Number(WAD_SCALE)
+    return Number(formatUnits(health, WAD))
   }, [borrowData])
 
   // Calculate new health score based on borrow amount
@@ -101,7 +101,7 @@ export const BorrowBenqiSelectAmountForm = ({
       // the total "borrowing capacity" before the new borrow
       const numerator = liquidity + totalDebtUSD
       const newHealth = (numerator * WAD_SCALE) / newTotalDebt
-      return Number(newHealth) / Number(WAD_SCALE)
+      return Number(formatUnits(newHealth, WAD))
     },
     [borrowData]
   )

@@ -82,7 +82,7 @@ export const WithdrawBenqiSelectAmountForm = ({
       }
       if (maxWithdrawAmount && amt.gt(maxWithdrawAmount)) {
         throw new Error(
-          'The specified amount exceeds the available to withdraw'
+          'The specified amount exceeds the maximum withdrawable amount'
         )
       }
     },

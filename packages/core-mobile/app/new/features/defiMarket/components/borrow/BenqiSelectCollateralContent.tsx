@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react'
+import { formatUnits } from 'viem'
 import { readContract } from 'viem/actions'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
@@ -7,7 +8,7 @@ import { DefiMarket, MarketNames } from '../../types'
 import { useBenqiSetCollateral } from '../../hooks/benqi/useBenqiSetCollateral'
 import { useBenqiBorrowData } from '../../hooks/benqi/useBenqiBorrowData'
 import { useNetworkClient } from '../../hooks/useNetworkClient'
-import { BENQI_COMPTROLLER_C_CHAIN_ADDRESS, WAD_SCALE } from '../../consts'
+import { BENQI_COMPTROLLER_C_CHAIN_ADDRESS, WAD, WAD_SCALE } from '../../consts'
 import { BENQI_COMPTROLLER_ABI } from '../../abis/benqiComptroller'
 import { showHealthImpactAlert } from '../../utils/collateralHealthAlert'
 import { SelectCollateralBase } from './SelectCollateralBase'
@@ -43,7 +44,7 @@ export const BenqiSelectCollateralContent = (): JSX.Element => {
 
       const currentNumerator = liquidity + totalDebtUSD
       const currentHealth = (currentNumerator * WAD_SCALE) / totalDebtUSD
-      const currentScore = Number(currentHealth) / Number(WAD_SCALE)
+      const currentScore = Number(formatUnits(currentHealth, WAD))
 
       try {
         const marketsResult = await readContract(networkClient, {
@@ -69,7 +70,7 @@ export const BenqiSelectCollateralContent = (): JSX.Element => {
           liquidity > collateralReduction ? liquidity - collateralReduction : 0n
         const newNumerator = newLiquidity + totalDebtUSD
         const newHealth = (newNumerator * WAD_SCALE) / totalDebtUSD
-        const newScore = Number(newHealth) / Number(WAD_SCALE)
+        const newScore = Number(formatUnits(newHealth, WAD))
 
         return showHealthImpactAlert(
           deposit.asset.symbol,

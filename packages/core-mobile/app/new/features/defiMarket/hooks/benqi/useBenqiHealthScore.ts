@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { WAD_SCALE } from '../../consts'
+import { formatUnits } from 'viem'
+import { WAD, WAD_SCALE } from '../../consts'
 import { BenqiBorrowData } from '../../types'
 
 export function useBenqiHealthScore({
@@ -18,7 +19,7 @@ export function useBenqiHealthScore({
     const { liquidity, totalDebtUSD } = borrowData
     if (totalDebtUSD === 0n) return undefined
     const health = ((liquidity + totalDebtUSD) * WAD_SCALE) / totalDebtUSD
-    return Number(health) / Number(WAD_SCALE)
+    return Number(formatUnits(health, WAD))
   }, [borrowData])
 
   const calculateHealthScore = useCallback(
@@ -38,7 +39,7 @@ export function useBenqiHealthScore({
 
       const newHealth =
         ((newLiquidity + totalDebtUSD) * WAD_SCALE) / totalDebtUSD
-      return Number(newHealth) / Number(WAD_SCALE)
+      return Number(formatUnits(newHealth, WAD))
     },
     [borrowData, direction]
   )
