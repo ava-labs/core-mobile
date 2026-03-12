@@ -73,6 +73,7 @@ export const useRecentAccounts = (): RecentAccountsState => {
 
 export enum AppIcon {
   Default = 'Default',
+  Light = 'Light',
   Old = 'Old',
   Bling = 'Bling',
   Shiny = 'Shiny',
@@ -85,7 +86,8 @@ export enum AppIcon {
 }
 
 export const APP_ICON_DISPLAY_NAMES: Record<AppIcon, string> = {
-  [AppIcon.Default]: 'Core',
+  [AppIcon.Default]: 'Default',
+  [AppIcon.Light]: 'Core light',
   [AppIcon.Old]: 'Old school Core',
   [AppIcon.Bling]: 'Bling',
   [AppIcon.Shiny]: 'So shiny',
@@ -112,6 +114,7 @@ export const DEFAULT_ICON_PREVIEW_DARK: number = isInternalBuild
 
 export const ICON_PREVIEWS: Record<AppIcon, number> = {
   [AppIcon.Default]: DEFAULT_ICON_PREVIEW_DARK,
+  [AppIcon.Light]: DEFAULT_ICON_PREVIEW_LIGHT,
   [AppIcon.Old]: require('../../../assets/app-icons/AppIcon-old.png'),
   [AppIcon.Bling]: require('../../../assets/app-icons/AppIcon-bling.png'),
   [AppIcon.Shiny]: require('../../../assets/app-icons/AppIcon-shiny.png'),
@@ -125,6 +128,7 @@ export const ICON_PREVIEWS: Record<AppIcon, number> = {
 
 function nativeNameToAppIcon(name: string | null): AppIcon {
   if (name === null) return AppIcon.Default
+  if (name === 'Light-Internal') return AppIcon.Light
   return (
     (Object.values(AppIcon).find(v => v === name) as AppIcon) ?? AppIcon.Default
   )
@@ -142,7 +146,10 @@ export const appIconStore = create<AppIconState>(set => ({
     if (icon === currentIcon) return
     if (!supportsAlternateIcons) return
 
-    const nativeIconName = icon === AppIcon.Default ? null : icon
+    let nativeIconName: string | null = icon === AppIcon.Default ? null : icon
+    if (icon === AppIcon.Light && isInternalBuild) {
+      nativeIconName = 'Light-Internal'
+    }
     set({ currentIcon: icon })
 
     setAlternateAppIcon(nativeIconName)

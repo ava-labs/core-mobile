@@ -1,17 +1,8 @@
 import React from 'react'
-import {
-  ActivityIndicator,
-  Button,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { ActivityIndicator, Button, Text, View } from '@avalabs/k2-alpine'
 import { useUpdateApp } from 'common/hooks/useUpdateApp'
 import { Image } from 'expo-image'
 import {
-  AppIcon,
-  DEFAULT_ICON_PREVIEW_DARK,
-  DEFAULT_ICON_PREVIEW_LIGHT,
   ICON_PREVIEWS,
   useCurrentAppIcon
 } from 'features/accountSettings/store'
@@ -19,15 +10,7 @@ import {
 export const AppUpdateBanner = (): JSX.Element => {
   const { updateApp, isUpdating } = useUpdateApp()
   const currentIcon = useCurrentAppIcon()
-  const {
-    theme: { isDark }
-  } = useTheme()
-  const iconSource =
-    currentIcon === AppIcon.Default
-      ? isDark
-        ? DEFAULT_ICON_PREVIEW_LIGHT
-        : DEFAULT_ICON_PREVIEW_DARK
-      : ICON_PREVIEWS[currentIcon]
+  const iconSource = ICON_PREVIEWS[currentIcon]
 
   return (
     <View

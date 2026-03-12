@@ -15,8 +15,6 @@ import {
   AppIcon,
   APP_ICON_DISPLAY_NAMES,
   APP_ICON_SUBTITLES,
-  DEFAULT_ICON_PREVIEW_DARK,
-  DEFAULT_ICON_PREVIEW_LIGHT,
   ICON_PREVIEWS,
   useAppIcon
 } from 'features/accountSettings/store'
@@ -79,16 +77,11 @@ const AppIconRow = ({
   onPress: () => void
 }): JSX.Element => {
   const {
-    theme: { colors, isDark }
+    theme: { colors }
   } = useTheme()
 
   const subtitle = APP_ICON_SUBTITLES[icon]
-  const iconSource =
-    icon === AppIcon.Default
-      ? isDark
-        ? DEFAULT_ICON_PREVIEW_LIGHT
-        : DEFAULT_ICON_PREVIEW_DARK
-      : ICON_PREVIEWS[icon]
+  const iconSource = ICON_PREVIEWS[icon]
 
   return (
     <TouchableOpacity
