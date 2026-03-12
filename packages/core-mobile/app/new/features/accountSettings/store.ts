@@ -10,6 +10,7 @@ import {
   supportsAlternateIcons
 } from 'expo-alternate-app-icons'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import Config from 'react-native-config'
 
 export const useNewContactAvatar = createZustandStore<AvatarType | undefined>(
   undefined
@@ -100,8 +101,14 @@ export const APP_ICON_SUBTITLES: Partial<Record<AppIcon, string>> = {
   [AppIcon.Default]: 'Default icon'
 }
 
-export const DEFAULT_ICON_PREVIEW_LIGHT: number = require('../../../assets/app-icons/AppIcon-light.png')
-export const DEFAULT_ICON_PREVIEW_DARK: number = require('../../../assets/app-icons/AppIcon-dark.png')
+const isInternalBuild = Config.ENVIRONMENT === 'development'
+
+export const DEFAULT_ICON_PREVIEW_LIGHT: number = isInternalBuild
+  ? require('../../../assets/app-icons/AppIcon-light-dev.png')
+  : require('../../../assets/app-icons/AppIcon-light.png')
+export const DEFAULT_ICON_PREVIEW_DARK: number = isInternalBuild
+  ? require('../../../assets/app-icons/AppIcon-dark-dev.png')
+  : require('../../../assets/app-icons/AppIcon-dark.png')
 
 export const ICON_PREVIEWS: Record<AppIcon, number> = {
   [AppIcon.Default]: DEFAULT_ICON_PREVIEW_DARK,
