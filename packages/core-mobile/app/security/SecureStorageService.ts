@@ -47,7 +47,10 @@ class SecureStorageService {
         `[SecureStorage] store(${slot}) - setGenericPassword returned false! Keychain write FAILED`
       )
     }
-    assert(result !== false)
+    assert(
+      result !== false,
+      `[SecureStorage] store(${slot}) - Keychain write failed for service: ${serviceForValues}`
+    )
   }
 
   /**
@@ -97,14 +100,33 @@ class SecureStorageService {
     if (existingCredentials) {
       return existingCredentials.password
     }
-    Logger.error(
-      `[SecureStorage] getOrCreateKey(${slot}) - no existing encryption key found, generating NEW key. This will make any existing encrypted data for this slot UNREADABLE.`
-    )
+
+    // Check whether encrypted data already exists for this slot.
+    // If it does, the key was lost and data is unrecoverable — report to Sentry.
+    // If not, this is a normal first-run initialization.
+    const serviceForValues = `ss_value_${slot}`
+    const existingData = await Keychain.getGenericPassword({
+      service: serviceForValues
+    })
+
+    if (existingData) {
+      Logger.error(
+        `[SecureStorage] getOrCreateKey(${slot}) - encryption key MISSING but encrypted data EXISTS. Data for this slot is UNRECOVERABLE.`
+      )
+    } else {
+      Logger.warn(
+        `[SecureStorage] getOrCreateKey(${slot}) - no existing encryption key found, generating new key (expected on first run).`
+      )
+    }
+
     const key: string = await Aes.randomKey(32)
     const result = await Keychain.setGenericPassword(serviceForKeys, key, {
       service: serviceForKeys
     })
-    assert(result !== false)
+    assert(
+      result !== false,
+      `[SecureStorage] getOrCreateKey(${slot}) - Keychain write failed for service: ${serviceForKeys}`
+    )
     return key
   }
 }
