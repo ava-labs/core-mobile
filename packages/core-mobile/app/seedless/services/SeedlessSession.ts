@@ -165,7 +165,7 @@ class SeedlessSession {
         err.status === 403 &&
         err.isSessionExpiredError()
       ) {
-        Logger.error(
+        Logger.warn(
           `[SeedlessSession] refreshToken() - 403 session expired. errorCode: ${err.errorCode}, calling onSessionExpired`
         )
         this.onSessionExpired?.()

@@ -69,7 +69,10 @@ class SecureStorageService {
         `[SecureStorage] load(${slot}) - getGenericPassword returned false! No data in keychain for service: ${serviceForValues}`
       )
     }
-    assert(result !== false, 'Failed to load data from secure storage')
+    assert(
+      result !== false,
+      `[SecureStorage] load(${slot}) - Keychain read failed for service: ${serviceForValues}`
+    )
     const decrypted = await decrypt(result.password, key)
     const stringified = decrypted.data
     return deserializeJson<T>(stringified)

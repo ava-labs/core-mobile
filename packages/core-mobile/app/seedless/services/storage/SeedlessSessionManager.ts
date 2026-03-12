@@ -30,7 +30,7 @@ export class SeedlessSessionManager extends ExclusiveSessionManager {
       return signerSessionData
     } catch (error) {
       Logger.error(
-        `[SeedlessSessionManager] retrieve() FAILED - no session data in keychain`,
+        `[SeedlessSessionManager] retrieve() FAILED - slot: ${KeySlot.SignerSessionData}`,
         error
       )
       throw error
