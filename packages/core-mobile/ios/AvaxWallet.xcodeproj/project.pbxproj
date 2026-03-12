@@ -947,7 +947,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7CA105A259461A15C6B2A56F /* Pods-common-AvaxWallet.release.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "Light Light-Internal Bling Marker Minimalism Old Shiny Neon Layered Liquid Misaligned";
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "Light Bling Marker Minimalism Old Shiny Neon Layered Liquid Misaligned";
 				ASSETCATALOG_COMPILER_APPICON_NAME = Dark;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
