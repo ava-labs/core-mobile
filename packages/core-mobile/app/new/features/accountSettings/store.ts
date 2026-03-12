@@ -86,7 +86,7 @@ export enum AppIcon {
 }
 
 export const APP_ICON_DISPLAY_NAMES: Record<AppIcon, string> = {
-  [AppIcon.Default]: 'Default',
+  [AppIcon.Default]: 'Core',
   [AppIcon.Light]: 'Core light',
   [AppIcon.Old]: 'Old school Core',
   [AppIcon.Bling]: 'Bling',

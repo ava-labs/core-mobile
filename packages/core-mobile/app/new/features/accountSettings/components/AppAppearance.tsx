@@ -12,6 +12,7 @@ import { CurrencyIcon } from 'common/components/CurrencyIcon'
 import { selectSelectedAppearance } from 'store/settings/appearance'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import {
+  AppIcon,
   APP_ICON_DISPLAY_NAMES,
   useCurrentAppIcon
 } from 'features/accountSettings/store'
@@ -74,7 +75,10 @@ export const AppAppearance = ({
     _data.push({
       title: 'App icon',
       onPress: selectAppIcon,
-      value: APP_ICON_DISPLAY_NAMES[appIcon]
+      value:
+        appIcon === AppIcon.Default
+          ? 'Default'
+          : APP_ICON_DISPLAY_NAMES[appIcon]
     })
     return _data
   }, [
