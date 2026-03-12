@@ -147,7 +147,10 @@ export const SelectAmountFormBase = ({
         />
         {currentHealthScore !== undefined && (
           <View sx={{ marginTop: 24 }}>
-            <HealthScoreCard score={healthScore} />
+            <HealthScoreCard
+              score={healthScore}
+              currentScore={currentHealthScore}
+            />
           </View>
         )}
         {blockingError && (

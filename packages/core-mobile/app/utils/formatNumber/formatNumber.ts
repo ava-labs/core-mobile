@@ -32,9 +32,15 @@ const roundToFirstNonZeroDecimal = (num: number): string => {
  * - Very small values (e.g., 0.000006): Preserves all decimal places
  *
  * @param num - The number to format.
+ * @param options - Optional custom formatters for different magnitude ranges.
  * @returns Formatted number as a string.
  */
-export function formatNumber(num: number | string): string {
+export function formatNumber(
+  num: number | string,
+  options?: {
+    normalFormatter?: Intl.NumberFormat
+  }
+): string {
   const number = typeof num === 'number' ? num : Number(num)
 
   const rawValue = Math.abs(number)
@@ -50,6 +56,6 @@ export function formatNumber(num: number | string): string {
     return roundToFirstNonZeroDecimal(rawValue)
   } else {
     // handle normal numbers
-    return normalNumberFormatter.format(rawValue)
+    return (options?.normalFormatter ?? normalNumberFormatter).format(rawValue)
   }
 }

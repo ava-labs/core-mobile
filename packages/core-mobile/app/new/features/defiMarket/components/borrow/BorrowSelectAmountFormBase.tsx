@@ -150,7 +150,10 @@ export const BorrowSelectAmountFormBase = ({
         />
 
         <View sx={{ marginTop: 24 }}>
-          <HealthScoreCard score={healthScore} />
+          <HealthScoreCard
+            score={healthScore}
+            currentScore={currentHealthScore}
+          />
         </View>
 
         {blockingError && (

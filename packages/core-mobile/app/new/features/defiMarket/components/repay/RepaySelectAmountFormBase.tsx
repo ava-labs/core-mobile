@@ -80,11 +80,31 @@ export function RepaySelectAmountFormBase({
     if (!amount) return currentHealthScore
     try {
       if (amount.toSubUnit() === 0n) return currentHealthScore
+
+      // Full repay of this token — check if all debt would be cleared
+      if (
+        borrowedAmountUnit &&
+        amount.toSubUnit() >= borrowedAmountUnit.toSubUnit()
+      ) {
+        const pricePerToken =
+          market.asset.mintTokenBalance.price.value.toNumber()
+        const tokenDebtUsd =
+          borrowedAmountUnit.toDisplay({ asNumber: true }) * pricePerToken
+        if (totalDebtUsd - tokenDebtUsd < 0.01) return Infinity
+      }
+
       return calculateHealthScoreAfterRepay(amount)
     } catch {
       return currentHealthScore
     }
-  }, [amount, currentHealthScore, calculateHealthScoreAfterRepay])
+  }, [
+    amount,
+    currentHealthScore,
+    calculateHealthScoreAfterRepay,
+    borrowedAmountUnit,
+    market,
+    totalDebtUsd
+  ])
 
   const remainingDebt = useMemo(() => {
     if (!borrowedAmountUnit || !amount) return borrowedAmountUnit
@@ -216,7 +236,10 @@ export function RepaySelectAmountFormBase({
               </View>
             </View>
           </Card>
-          <HealthScoreCard score={healthScoreAfterRepay} />
+          <HealthScoreCard
+            score={healthScoreAfterRepay}
+            currentScore={currentHealthScore}
+          />
         </View>
       </View>
     </ScrollScreen>
