@@ -52,8 +52,7 @@ module.exports = {
         'uuid',
         '@ledgerhq',
         '@avalabs/hw-app-avalanche',
-        '@keystonehq',
-        'expo-alternate-app-icons'
+        '@keystonehq'
       ].join('|') +
       ')'
   ]
