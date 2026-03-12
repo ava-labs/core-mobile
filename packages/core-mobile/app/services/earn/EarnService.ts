@@ -9,6 +9,8 @@ import {
   AddDelegatorTransactionProps,
   RecoveryEvents
 } from 'services/earn/types'
+import { OnDelegationProgress } from 'contexts/DelegationContext'
+import { Operation } from 'services/earn/computeDelegationSteps/types'
 import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
 import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
@@ -85,7 +87,7 @@ class EarnService {
     const { pChainUtxo, cChainUtxo } = await retry({
       operation: retryIndex => {
         if (retryIndex !== 0) {
-          progressEvents?.(RecoveryEvents.GetAtomicUTXOsFailIng)
+          progressEvents?.(RecoveryEvents.GetAtomicUTXOsFailing)
         }
         return AvalancheWalletService.getAtomicUTXOs({
           account,
@@ -121,7 +123,8 @@ class EarnService {
         account,
         isTestnet,
         cBaseFeeMultiplier,
-        xpAddresses
+        xpAddresses,
+        xpAddressDictionary
       })
       progressEvents?.(RecoveryEvents.ImportCFinish)
     }
@@ -146,7 +149,8 @@ class EarnService {
     feeState,
     cBaseFeeMultiplier,
     xpAddresses,
-    xpAddressDictionary
+    xpAddressDictionary,
+    onProgress
   }: {
     walletId: string
     walletType: WalletType
@@ -158,7 +162,14 @@ class EarnService {
     cBaseFeeMultiplier: number
     xpAddresses: string[]
     xpAddressDictionary: XPAddressDictionary
+    onProgress?: OnDelegationProgress
   }): Promise<void> {
+    console.log(
+      '------> Claiming rewards, starting with exportP',
+      xpAddressDictionary
+    )
+    onProgress?.(0, Operation.EXPORT_P)
+
     await exportP({
       walletId,
       walletType,
@@ -170,14 +181,34 @@ class EarnService {
       xpAddresses,
       xpAddressDictionary
     })
+    console.log('------> exportP finished, starting importC', xpAddresses)
+
+    await new Promise<void>(resolve => {
+      setTimeout(() => {
+        onProgress?.(1, Operation.IMPORT_C)
+        resolve()
+      }, 10)
+    })
+
     await importC({
       walletId,
       walletType,
       account,
       isTestnet,
       cBaseFeeMultiplier,
-      xpAddresses
+      xpAddresses,
+      xpAddressDictionary
     })
+    console.log('------> importC finished, claimRewards complete')
+
+    await new Promise<void>(resolve => {
+      setTimeout(() => {
+        onProgress?.(2, null)
+        resolve()
+      }, 10)
+    })
+
+    console.log('------> all finished')
   }
 
   /**

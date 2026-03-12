@@ -23,26 +23,38 @@ const getQueryKey = ({
   walletType,
   accountIndex,
   accountId,
-  isDeveloperMode
+  isDeveloperMode,
+  onlyWithActivity
 }: {
   walletId: string
   walletType: WalletType | string
   accountIndex: number
   accountId: string
   isDeveloperMode: boolean
-}): readonly [string, string, WalletType | string, number, string, boolean] => {
+  onlyWithActivity: boolean
+}): readonly [
+  string,
+  string,
+  WalletType | string,
+  number,
+  string,
+  boolean,
+  boolean
+] => {
   return [
     ReactQueryKeys.XP_ADDRESSES,
     walletId,
     walletType,
     accountIndex,
     accountId,
-    isDeveloperMode
+    isDeveloperMode,
+    onlyWithActivity
   ]
 }
 
 export const useXPAddresses = (
-  account?: Account
+  account?: Account,
+  onlyWithActivity = true
 ): {
   xpAddresses: string[]
   xpAddressDictionary: XPAddressDictionary
@@ -73,7 +85,8 @@ export const useXPAddresses = (
       walletType,
       accountIndex,
       accountId,
-      isDeveloperMode
+      isDeveloperMode,
+      onlyWithActivity
     }),
     queryFn:
       shouldDisable || isKeystoneNonPrimary
@@ -84,7 +97,7 @@ export const useXPAddresses = (
               walletId,
               walletType: walletType as WalletType,
               accountIndex,
-              onlyWithActivity: true
+              onlyWithActivity
             })
           }
   })
@@ -127,7 +140,8 @@ export async function getCachedXPAddresses({
         walletType,
         accountIndex: account.index,
         accountId: account.id,
-        isDeveloperMode
+        isDeveloperMode,
+        onlyWithActivity: false
       }),
       queryFn: () =>
         getAddressesFromXpubXP({
@@ -135,7 +149,7 @@ export async function getCachedXPAddresses({
           walletId,
           walletType,
           accountIndex: account.index,
-          onlyWithActivity: true
+          onlyWithActivity: false
         })
     })
 

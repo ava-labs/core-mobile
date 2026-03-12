@@ -122,11 +122,21 @@ export const StakeCardList = ({
     }: ListRenderItemInfo<StakeCardType>): JSX.Element | null => {
       let content = null
       if (item === StaticCard.Add) {
+        // content = (
+        //   <AddCard
+        //     width={CARD_WIDTH}
+        //     onPress={addStake}
+        //     disabled={!canAddStake}
+        //   />
+        // )
         content = (
-          <AddCard
+          <ClaimCard
+            onPress={handleClaim}
+            title={`${claimableInAvax?.toDisplay({
+              fixedDp: 2
+            })} AVAX reward unlocked`}
             width={CARD_WIDTH}
-            onPress={addStake}
-            disabled={!canAddStake}
+            backgroundImageSource={completeCardBackground}
           />
         )
       } else if (item === StaticCard.Claim) {
@@ -144,17 +154,14 @@ export const StakeCardList = ({
         const now = new Date()
 
         if (isCompleted(item, now)) {
-          const title = getStakeTitle({
-            stake: item,
-            pChainNetworkToken,
-            isActive: false
-          })
-
           content = (
-            <CompletedCard
-              onPress={() => handlePressStake(item.txHash)}
-              title={title}
+            <ClaimCard
+              onPress={handleClaim}
+              title={`${claimableInAvax?.toDisplay({
+                fixedDp: 2
+              })} AVAX reward unlocked`}
               width={CARD_WIDTH}
+              backgroundImageSource={completeCardBackground}
             />
           )
         } else if (isOnGoing(item, now)) {

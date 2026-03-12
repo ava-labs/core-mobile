@@ -94,7 +94,9 @@ class NetworkService {
           signedTx instanceof avaxSerial.SignedTx &&
           provider instanceof Avalanche.JsonRpcProvider
         ) {
+          console.log('------> before issueTx', txID)
           txID = (await provider.issueTx(signedTx)).txID
+          console.log('------> txID', txID)
         } else if (typeof signedTx === 'string') {
           if (provider instanceof JsonRpcBatchInternal) {
             const tx = await provider.broadcastTransaction(signedTx)

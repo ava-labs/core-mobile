@@ -30,16 +30,24 @@ import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import { CONFETTI_DURATION_MS } from 'common/consts'
 import { selectIsInAppReviewBlocked } from 'store/posthog/slice'
 import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
+import { WalletType } from 'services/wallet/types'
+import { selectActiveWallet } from 'store/wallet/slice'
+import { executeLedgerStakingOperation } from 'features/ledger/utils'
+import { OnDelegationProgress } from 'contexts/DelegationContext'
 
 export const ClaimStakeRewardScreen = (): JSX.Element => {
   const isInAppReviewBlocked = useSelector(selectIsInAppReviewBlocked)
-  const { navigate, back } = useRouter()
+  const { navigate, back, dismissAll } = useRouter()
   const { formatTokenInCurrency } = useFormatCurrency()
   const pChainBalance = usePChainBalance()
   const ref = useRef<TokenUnitInputHandle>(null)
   const [claimableAmountInAvax, setClaimableAmountInAvax] =
     useState<TokenUnit>()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const activeWallet = useSelector(selectActiveWallet)
+  const isLedger =
+    activeWallet?.type === WalletType.LEDGER ||
+    activeWallet?.type === WalletType.LEDGER_LIVE
   const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const avaxPrice = useAvaxPrice()
   const refreshStakingBalances = useRefreshStakingBalances()
@@ -49,7 +57,7 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
     AnalyticsService.capture('StakeClaimSuccess')
 
     transactionSnackbar.success({ message: 'Stake reward claimed' })
-    back()
+    dismissAll()
 
     setTimeout(() => {
       confetti.restart()
@@ -80,7 +88,7 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
         },
         {
           text: 'Try again',
-          onPress: issueClaimRewards
+          onPress: handleClaimNow
         }
       ]
     })
@@ -131,10 +139,28 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
     navigate('/stake')
   }, [back, navigate])
 
-  const issueClaimRewards = useCallback(() => {
-    AnalyticsService.capture('StakeIssueClaim')
-    claimRewards()
-  }, [claimRewards])
+  const issueClaimRewards = useCallback(
+    (onProgress?: OnDelegationProgress) => {
+      console.log('------> issueClaimRewards called')
+      AnalyticsService.capture('StakeIssueClaim')
+      claimRewards(onProgress)
+    },
+    [claimRewards]
+  )
+
+  const handleClaimNow = useCallback(() => {
+    console.log('------>  handleClaimNow called, isLedger:', isLedger)
+
+    if (isLedger) {
+      executeLedgerStakingOperation({
+        network: pNetwork,
+        totalSteps: 2,
+        action: issueClaimRewards
+      })
+    } else {
+      issueClaimRewards()
+    }
+  }, [isLedger, pNetwork, issueClaimRewards])
 
   const formatInCurrency = useCallback(
     (amount: TokenUnit): string => {
@@ -201,7 +227,7 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
           accessible={true}
           type="primary"
           size="large"
-          onPress={issueClaimRewards}
+          onPress={handleClaimNow}
           disabled={shouldDisableClaimButton}>
           {isClaimRewardsPending ? <ActivityIndicator /> : 'Claim now'}
         </Button>
@@ -217,7 +243,7 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
   }, [
     isClaimRewardsPending,
     handleCancel,
-    issueClaimRewards,
+    handleClaimNow,
     shouldDisableClaimButton
   ])
 

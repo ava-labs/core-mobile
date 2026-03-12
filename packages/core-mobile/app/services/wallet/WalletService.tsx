@@ -84,6 +84,7 @@ class WalletService {
               'Unable to sign avalanche transaction: wrong provider obtained'
             )
 
+          console.log('-----> signing avalanche transaction with wallet')
           return wallet.signAvalancheTransaction({
             accountIndex,
             transaction,
@@ -110,6 +111,8 @@ class WalletService {
           throw new Error(
             'Unable to sign evm transaction: wrong provider obtained'
           )
+
+        console.log('-----> signing evm transaction with wallet')
 
         return wallet.signEvmTransaction({
           accountIndex,

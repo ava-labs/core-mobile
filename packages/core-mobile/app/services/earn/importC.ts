@@ -6,16 +6,14 @@ import NetworkService from 'services/network/NetworkService'
 import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
 import { addBufferToCChainBaseFee } from 'services/wallet/utils'
 import WalletService from 'services/wallet/WalletService'
-import { Account } from 'store/account'
+import { Account, XPAddressDictionary } from 'store/account'
 import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import { weiToNano } from 'utils/units/converter'
 import { cChainToken } from 'utils/units/knownTokens'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
-import {
-  maxTransactionCreationRetries,
-  maxTransactionStatusCheckRetries
-} from './utils'
+import { getInternalExternalAddrs } from 'common/hooks/send/utils/getInternalExternalAddrs'
+import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ImportCParams = {
   walletId: string
@@ -24,6 +22,7 @@ export type ImportCParams = {
   isTestnet: boolean
   cBaseFeeMultiplier: number
   xpAddresses: string[]
+  xpAddressDictionary: XPAddressDictionary
 }
 
 export async function importC({
@@ -32,8 +31,14 @@ export async function importC({
   account,
   isTestnet,
   cBaseFeeMultiplier,
-  xpAddresses
+  xpAddresses,
+  xpAddressDictionary
 }: ImportCParams): Promise<void> {
+  console.log(
+    '------> importing C started with params:',
+    xpAddressDictionary,
+    xpAddresses
+  )
   Logger.info(
     `importing C started with base fee multiplier: ${cBaseFeeMultiplier}`
   )
@@ -64,30 +69,24 @@ export async function importC({
     walletType,
     transaction: {
       tx: unsignedTx
+      // ...getInternalExternalAddrs({
+      //   utxos: unsignedTx.utxos,
+      //   xpAddressDict: xpAddressDictionary,
+      //   isTestnet
+      // })
     } as AvalancheTransactionRequest,
     accountIndex: account.index,
     network: avaxXPNetwork
   })
   const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
 
-  let txID: string
-  try {
-    txID = await retry({
-      operation: () =>
-        NetworkService.sendTransaction({ signedTx, network: avaxXPNetwork }),
-      shouldStop: result => result !== '',
-      maxRetries: maxTransactionCreationRetries
-    })
-  } catch (e) {
-    Logger.error('ISSUE_IMPORT_FAIL', e)
-    throw new FundsStuckError({
-      name: 'ISSUE_IMPORT_FAIL',
-      message: 'Sending import transaction failed ',
-      cause: e
-    })
-  }
-
+  const txID = await NetworkService.sendTransaction({
+    signedTx,
+    network: avaxXPNetwork
+  })
   Logger.trace('txID', txID)
+
+  console.log('------> importC sent, waiting for confirmation', { txID })
 
   try {
     const { status } = await retry<evm.GetAtomicTxStatusResponse>({
@@ -104,6 +103,7 @@ export async function importC({
       })
     }
   } catch (e) {
+    console.log('------> importC failed', e)
     Logger.error('importC failed', e)
     throw new FundsStuckError({
       name: 'CONFIRM_IMPORT_FAIL',

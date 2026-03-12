@@ -68,6 +68,8 @@ export const getInternalExternalAddrs = ({
     )
   )
 
+  console.log('------> getInternalExternalAddrs, normalizedDict:', utxosAddrs)
+
   return [...utxosAddrs].reduce(
     (accumulator, address) => {
       // This can happen when the CoreEth address owns a UTXO.

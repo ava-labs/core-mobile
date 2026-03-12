@@ -490,7 +490,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }, [])
 
   const scrollToTop = useCallback(() => {
-    tabViewRef.current?.scrollToTop()
+    // tabViewRef.current?.scrollToTop()
   }, [])
 
   useFocusEffect(

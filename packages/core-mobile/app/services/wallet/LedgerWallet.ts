@@ -7,7 +7,9 @@ import {
   serializeSolanaTx,
   getEvmAddressFromPubKey,
   getBtcAddressFromPubKey,
-  BitcoinProviderAbstract
+  BitcoinProviderAbstract,
+  LedgerSigner,
+  DerivationPath
 } from '@avalabs/core-wallets-sdk'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
@@ -29,6 +31,7 @@ import {
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Transport from '@ledgerhq/hw-transport'
 import { networks } from 'bitcoinjs-lib'
+import { sha256 } from '@noble/hashes/sha256'
 import { utils as avalancheUtils, networkIDs } from '@avalabs/avalanchejs'
 import bs58 from 'bs58'
 import { TransactionRequest, TypedDataEncoder } from 'ethers'
@@ -564,6 +567,7 @@ export class LedgerWallet implements Wallet {
 
     // Get chain alias from transaction VM
     const vmName = transaction.tx.getVM()
+
     let chainAlias: 'X' | 'P' | 'C'
     switch (vmName) {
       case 'AVM':
@@ -579,43 +583,56 @@ export class LedgerWallet implements Wallet {
         throw new Error(`Unsupported VM type: ${vmName}`)
     }
 
-    // Build the account path based on chain
-    // For X/P chain: m/44'/9000'/{accountIndex}'
-    // For C chain (EVM): m/44'/60'/{accountIndex}'
-    const accountPath =
-      chainAlias === 'C'
-        ? `m/44'/60'/${accountIndex}'`
-        : `m/44'/9000'/${accountIndex}'`
-
-    // Build signing paths from external indices
-    // For C-chain: always use 0/0 (first external address)
-    // For X/P-chain: use external indices from UTXO analysis (default to [0] → '0/0' if empty)
+    // Build signing paths from external/internal indices (X/P chain only)
     const externalIndices = transaction.externalIndices ?? []
-    const hasIndices = externalIndices.length > 0
-    const signingPaths =
-      chainAlias === 'C'
-        ? ['0/0']
-        : (hasIndices ? externalIndices : [0]).map(i => `0/${i}`)
+    const internalIndices = transaction.internalIndices ?? []
 
-    // Build change paths from internal indices
-    const changePaths = (transaction.internalIndices ?? []).map(i => `1/${i}`)
+    let accountPath: string
+    let signingPaths: string[]
+    let changePaths: string[]
+
+    if (chainAlias === 'C') {
+      // C-chain atomic transactions (importC/exportC):
+      // Use getDerivationPath so the correct path is used for both BIP44 and
+      // Ledger Live wallets:
+      //   BIP44      → m/44'/60'/0'/0/{accountIndex}
+      //   Ledger Live → m/44'/60'/{accountIndex}'/0/0
+      // avaxApp.sign() takes a 3-level account prefix and 2-level signing suffix,
+      // so we split on the 4th slash to separate them.
+      const fullEvmPath = this.getDerivationPath(
+        accountIndex,
+        NetworkVMType.EVM
+      )
+      const parts = fullEvmPath.split('/')
+      // parts[0] = 'm', [1] = "44'", [2] = "60'", [3] = account level, [4] = change, [5] = index
+      accountPath = parts.slice(0, 4).join('/') // e.g. "m/44'/60'/0'"
+      signingPaths = [parts.slice(4).join('/')] // e.g. ["0/0"] or ["0/1"]
+      changePaths = []
+    } else {
+      // X/P-chain: use Avalanche derivation with per-UTXO signing paths.
+      accountPath = `m/44'/9000'/${accountIndex}'`
+      signingPaths = (externalIndices.length > 0 ? externalIndices : [0]).map(
+        i => `0/${i}`
+      )
+      changePaths = internalIndices.map(i => `1/${i}`)
+    }
 
     // Serialize the transaction
     const txBuffer = Buffer.from(transaction.tx.toBytes())
 
-    Logger.info('Calling avaxApp.sign...')
+    Logger.info('Calling avaxApp sign...')
     try {
-      // Sign directly with the Ledger device
       const signResult = await avaxApp.sign(
         accountPath,
         signingPaths,
         txBuffer,
         changePaths.length > 0 ? changePaths : undefined
       )
-      Logger.info('avaxApp.sign completed')
+      Logger.info('avaxApp sign completed')
 
       // Add signatures to the transaction
       const signatures = signResult.signatures || new Map()
+
       signatures.forEach(signature => {
         transaction.tx.addSignature(signature)
       })
