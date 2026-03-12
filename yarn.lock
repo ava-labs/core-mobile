@@ -673,7 +673,7 @@ __metadata:
     ethers: 6.8.1
     events: 3.3.0
     expo: 54.0.33
-    expo-alternate-app-icons: ^8.0.0
+    expo-alternate-app-icons: 8.0.0
     expo-application: 7.0.8
     expo-blur: 15.0.8
     expo-build-properties: 1.0.10
@@ -25044,7 +25044,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-alternate-app-icons@npm:^8.0.0":
+"expo-alternate-app-icons@npm:8.0.0":
   version: 8.0.0
   resolution: "expo-alternate-app-icons@npm:8.0.0"
   peerDependencies:

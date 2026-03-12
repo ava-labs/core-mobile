@@ -1,26 +1,22 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Icons, useTheme, View } from '@avalabs/k2-alpine'
-import { useSelector } from 'react-redux'
-import { selectSelectedColorScheme } from 'store/settings/appearance'
+import { usePopSpringAnimation } from 'common/hooks/usePopSpringAnimation'
 import { Image } from 'expo-image'
 import {
-  AppIcon,
   ICON_PREVIEWS,
   useCurrentAppIcon
 } from 'features/accountSettings/store'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { LayoutChangeEvent } from 'react-native'
 import Animated, {
+  interpolate,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withDelay,
-  interpolate
+  withSpring
 } from 'react-native-reanimated'
-import { LayoutChangeEvent } from 'react-native'
-import { usePopSpringAnimation } from 'common/hooks/usePopSpringAnimation'
 import { runAfterInteractions } from 'utils/runAfterInteractions'
 
 export const CoreLogoWithTokens = (): JSX.Element => {
-  const selectedColorScheme = useSelector(selectSelectedColorScheme)
   const currentIcon = useCurrentAppIcon()
 
   const { animatedStyle: coreLogoAnimationStyle, pop: coreLogoPop } =
@@ -79,35 +75,15 @@ export const CoreLogoWithTokens = (): JSX.Element => {
           },
           coreLogoAnimationStyle
         ]}>
-        <AppIconImage
-          currentIcon={currentIcon}
-          selectedColorScheme={selectedColorScheme}
+        <Image
+          source={ICON_PREVIEWS[currentIcon]}
+          style={{ width: CORE_ICON_SIZE, height: CORE_ICON_SIZE }}
+          contentFit="cover"
         />
       </Animated.View>
     </View>
   )
 }
-
-const AppIconImage = React.memo(
-  ({
-    currentIcon
-  }: {
-    currentIcon: AppIcon
-    selectedColorScheme: string | undefined
-  }): JSX.Element => {
-    const source = useMemo(() => {
-      return ICON_PREVIEWS[currentIcon]
-    }, [currentIcon])
-
-    return (
-      <Image
-        source={source}
-        style={{ width: CORE_ICON_SIZE, height: CORE_ICON_SIZE }}
-        contentFit="cover"
-      />
-    )
-  }
-)
 
 const TokenLogo = ({
   Icon,
