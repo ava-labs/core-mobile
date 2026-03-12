@@ -307,6 +307,7 @@ export const TokenInputWidget = ({
                 .map((button, index) => (
                   <Button
                     key={index}
+                    size="small"
                     type={button.isSelected ? 'primary' : 'secondary'}
                     style={{
                       minWidth: 72
