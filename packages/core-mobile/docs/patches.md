@@ -44,7 +44,7 @@ to prevent a crash on iOS when react-native-svg is unable to render certain svgs
 logger in wallet connect is hard coded to trace. this patch adjusts it to "error" level for local development and "silent" level for production
 https://github.com/WalletConnect/walletconnect-utils/issues/171
 
-### react-native-screens+4.21.0.patch
+### react-native-screens+4.24.0.patch
 
 1/ CustomToolbar.kt
 
@@ -116,6 +116,12 @@ You can wrap a toast container with a custom wrapper.
 ### @buoy-gg+shared-ui+2.1.1.patch
 
 This patch fixes the "unable to resolve @buoy-gg/shared-ui/dataViewer" issue when Metro has `unstable_enablePackageExports: false` by mapping `./dataViewer` in `react-native` to `./lib/commonjs/dataViewer/index.js`. Please refer to https://github.com/LovesWorking/react-native-buoy/issues/46 for more info.
+
+### expo-router+6.0.23.patch
+
+`react-native-screens` 4.24.0 renamed `RNSBottomTabsScreenComponentView` → `RNSTabsScreenComponentView` and `RNSBottomTabsHostComponentView` → `RNSTabsHostComponentView`. `expo-router` 6.0.23 hardcodes the old names in its iOS LinkPreview native navigation files (`.h`, `.mm`, `.swift`), causing a build failure. This patch updates all references to the new class/method names.
+
+Remove after upgrading to a version of `expo-router` that supports `react-native-screens` >= 4.24.0.
 
 ### react-native+0.81.5.patch
 

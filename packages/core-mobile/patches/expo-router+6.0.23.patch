@@ -1,0 +1,134 @@
+diff --git a/node_modules/expo-router/ios/LinkPreview/LinkPreviewNativeNavigation.h b/node_modules/expo-router/ios/LinkPreview/LinkPreviewNativeNavigation.h
+--- a/node_modules/expo-router/ios/LinkPreview/LinkPreviewNativeNavigation.h
++++ b/node_modules/expo-router/ios/LinkPreview/LinkPreviewNativeNavigation.h
+@@ -32,13 +32,13 @@
+ 
+ + (nonnull NSString *)getTabKey:(UIView *)view;
+ 
+-+ (BOOL)isRNSBottomTabsScreenComponentView:(UIView *)view;
+++ (BOOL)isRNSTabsScreenComponentView:(UIView *)view;
+ 
+ + (BOOL)isRNSTabBarController:(UIView *)view;
+ 
+ + (nullable RNSTabBarController *)getBottomTabControllerFromView:(UIView *)view;
+ 
+-+ (BOOL)isRNSBottomTabsHostComponentView:(UIView *)view;
+++ (BOOL)isRNSTabsHostComponentView:(UIView *)view;
+ 
+ + (nullable UIView *)getTab:(UITabBarController *)controller
+                     withKey:(NSString *)key;
+diff --git a/node_modules/expo-router/ios/LinkPreview/LinkPreviewNativeNavigation.mm b/node_modules/expo-router/ios/LinkPreview/LinkPreviewNativeNavigation.mm
+--- a/node_modules/expo-router/ios/LinkPreview/LinkPreviewNativeNavigation.mm
++++ b/node_modules/expo-router/ios/LinkPreview/LinkPreviewNativeNavigation.mm
+@@ -17,26 +17,26 @@
+   return NO;
+ }
+ 
+-+ (BOOL)isRNSBottomTabsScreenComponentView:(UIView *)view {
+++ (BOOL)isRNSTabsScreenComponentView:(UIView *)view {
+   if (view != nil) {
+-    return [view isKindOfClass:[RNSBottomTabsScreenComponentView class]];
++    return [view isKindOfClass:[RNSTabsScreenComponentView class]];
+   }
+ 
+   return NO;
+ }
+ 
+-+ (BOOL)isRNSBottomTabsHostComponentView:(UIView *)view {
+++ (BOOL)isRNSTabsHostComponentView:(UIView *)view {
+   if (view != nil) {
+-    return [view isKindOfClass:[RNSBottomTabsHostComponentView class]];
++    return [view isKindOfClass:[RNSTabsHostComponentView class]];
+   }
+ 
+   return NO;
+ }
+ 
+ + (nullable UITabBarController *)getBottomTabControllerFromView:(UIView *)view {
+-  if ([view isKindOfClass:[RNSBottomTabsScreenComponentView class]]) {
+-    RNSBottomTabsScreenComponentView *bottomTabsView =
+-        (RNSBottomTabsScreenComponentView *)view;
++  if ([view isKindOfClass:[RNSTabsScreenComponentView class]]) {
++    RNSTabsScreenComponentView *bottomTabsView =
++        (RNSTabsScreenComponentView *)view;
+     UIViewController *reactVC = [bottomTabsView reactViewController];
+     if (reactVC != nil &&
+         [reactVC.tabBarController isKindOfClass:[RNSTabBarController class]]) {
+@@ -45,9 +45,9 @@
+       return tabBarController;
+     }
+   }
+-  if ([view isKindOfClass:[RNSBottomTabsHostComponentView class]]) {
+-    RNSBottomTabsHostComponentView *bottomTabsView =
+-        (RNSBottomTabsHostComponentView *)view;
++  if ([view isKindOfClass:[RNSTabsHostComponentView class]]) {
++    RNSTabsHostComponentView *bottomTabsView =
++        (RNSTabsHostComponentView *)view;
+     return [bottomTabsView controller];
+   }
+   return nil;
+@@ -58,8 +58,8 @@
+   if (controller != nil) {
+     for (UIViewController *subcontroller in controller.viewControllers) {
+       if ([subcontroller.view
+-              isKindOfClass:[RNSBottomTabsScreenComponentView class]]) {
+-        if (((RNSBottomTabsScreenComponentView *)subcontroller.view).tabKey ==
++              isKindOfClass:[RNSTabsScreenComponentView class]]) {
++        if (((RNSTabsScreenComponentView *)subcontroller.view).tabKey ==
+             key) {
+           return subcontroller.view;
+         }
+@@ -96,9 +96,9 @@
+ 
+ + (nonnull NSString *)getTabKey:(UIView *)view {
+   if (view != nil &&
+-      [view isKindOfClass:[RNSBottomTabsScreenComponentView class]]) {
+-    RNSBottomTabsScreenComponentView *tabScreenView =
+-        (RNSBottomTabsScreenComponentView *)view;
++      [view isKindOfClass:[RNSTabsScreenComponentView class]]) {
++    RNSTabsScreenComponentView *tabScreenView =
++        (RNSTabsScreenComponentView *)view;
+     return tabScreenView.tabKey;
+   }
+   return @"";
+diff --git a/node_modules/expo-router/ios/LinkPreview/LinkPreviewNativeNavigation.swift b/node_modules/expo-router/ios/LinkPreview/LinkPreviewNativeNavigation.swift
+--- a/node_modules/expo-router/ios/LinkPreview/LinkPreviewNativeNavigation.swift
++++ b/node_modules/expo-router/ios/LinkPreview/LinkPreviewNativeNavigation.swift
+@@ -31,7 +31,7 @@
+     let stackOrTabView = findStackViewWithScreenIdOrTabBarController(
+       screenId: screenId, tabKeys: oldTabKeys, responder: responder)
+     if let stackOrTabView = stackOrTabView {
+-      if LinkPreviewNativeNavigationObjC.isRNSBottomTabsScreenComponentView(stackOrTabView) {
++      if LinkPreviewNativeNavigationObjC.isRNSTabsScreenComponentView(stackOrTabView) {
+         let tabView = stackOrTabView
+         let newTabKeys = tabPath?.path.map { $0.newTabKey } ?? []
+         let stackView = findStackViewWithScreenIdInSubViews(
+@@ -71,8 +71,8 @@
+       if screenIds.contains(_screenId) {
+         return rootView
+       }
+-    } else if LinkPreviewNativeNavigationObjC.isRNSBottomTabsScreenComponentView(rootView)
+-      || LinkPreviewNativeNavigationObjC.isRNSBottomTabsHostComponentView(rootView) {
++    } else if LinkPreviewNativeNavigationObjC.isRNSTabsScreenComponentView(rootView)
++      || LinkPreviewNativeNavigationObjC.isRNSTabsHostComponentView(rootView) {
+       let tabBarController = LinkPreviewNativeNavigationObjC.getBottomTabController(from: rootView)
+       if let tabBarController = tabBarController {
+         let views = tabBarController.viewControllers?.compactMap { $0.view } ?? []
+@@ -80,7 +80,7 @@
+         if let (tabIndex, tabView) =
+           enumeratedViews
+           .first(where: { _, view in
+-            LinkPreviewNativeNavigationObjC.isRNSBottomTabsScreenComponentView(view)
++            LinkPreviewNativeNavigationObjC.isRNSTabsScreenComponentView(view)
+               && tabKeys.contains(LinkPreviewNativeNavigationObjC.getTabKey(view))
+           }) {
+           self.tabChangeCommands.append(
+@@ -123,7 +123,7 @@
+           return view
+         }
+       } else if let tabView = nextResponder as? UIView,
+-        LinkPreviewNativeNavigationObjC.isRNSBottomTabsScreenComponentView(tabView) {
++        LinkPreviewNativeNavigationObjC.isRNSTabsScreenComponentView(tabView) {
+         let tabKey = LinkPreviewNativeNavigationObjC.getTabKey(tabView)
+         if tabKeys.contains(tabKey) {
+           return tabView
