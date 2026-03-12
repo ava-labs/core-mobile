@@ -15,14 +15,12 @@ import { GRID_GAP } from 'common/consts'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import React from 'react'
-import { Dimensions } from 'react-native'
+import { useWindowDimensions } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { TokenListViewProps } from '../types'
 import { LogoWithNetwork } from './LogoWithNetwork'
-
-const SCREEN_WIDTH = Dimensions.get('window').width
 
 export const TokenGridView = ({
   token,
@@ -33,6 +31,7 @@ export const TokenGridView = ({
   formattedBalance,
   formattedPrice
 }: TokenListViewProps): React.JSX.Element => {
+  const { width: screenWidth } = useWindowDimensions()
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
 
   const {
@@ -68,7 +67,7 @@ export const TokenGridView = ({
             padding: 16,
             backgroundColor: '$surfaceSecondary',
             gap: 8,
-            width: (SCREEN_WIDTH - 16 * 2 - GRID_GAP) / 2
+            width: (screenWidth - 16 * 2 - GRID_GAP) / 2
           }}>
           <LogoWithNetwork
             token={token}
