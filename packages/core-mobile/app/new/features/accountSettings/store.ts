@@ -11,6 +11,7 @@ import {
 } from 'expo-alternate-app-icons'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Config from 'react-native-config'
+import { Platform } from 'react-native'
 
 export const useNewContactAvatar = createZustandStore<AvatarType | undefined>(
   undefined
@@ -147,7 +148,7 @@ export const appIconStore = create<AppIconState>(set => ({
     if (!supportsAlternateIcons) return
 
     let nativeIconName: string | null = icon === AppIcon.Default ? null : icon
-    if (icon === AppIcon.Light && isInternalBuild) {
+    if (icon === AppIcon.Light && isInternalBuild && Platform.OS === 'ios') {
       nativeIconName = 'Light-Internal'
     }
     set({ currentIcon: icon })

@@ -72,7 +72,7 @@ export const CoreLogoWithTokens = (): JSX.Element => {
             overflow: 'hidden',
             width: CORE_ICON_SIZE,
             height: CORE_ICON_SIZE,
-            borderWidth: 1,
+            borderWidth: 2,
             borderColor: theme.colors.$borderPrimary
           },
           coreLogoAnimationStyle
