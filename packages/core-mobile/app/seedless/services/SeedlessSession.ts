@@ -123,9 +123,6 @@ class SeedlessSession {
       )
 
       if (response.requiresMfa()) {
-        Logger.error(
-          `[SeedlessSession] requestOidcAuth() - MFA required, storing MFA client`
-        )
         // if MFA is required, we cannot access session data until MFA verification is complete
         // thus, we are just storing the MFA client here (for verification operations)
         const client = await response.mfaClient()
@@ -203,10 +200,7 @@ class SeedlessSession {
       const cubeSignerClient = await this.getSignerClient()
       return await cubeSignerClient.addFido(name)
     } catch (error) {
-      Logger.error(
-        `[SeedlessSession] fidoRegisterInit() FAILED - name: ${name}`,
-        error
-      )
+      Logger.error(`[SeedlessSession] fidoRegisterInit() FAILED`, error)
       throw error
     }
   }

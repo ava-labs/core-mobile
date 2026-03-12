@@ -49,9 +49,6 @@ export async function startRefreshSeedlessTokenFlow(
         oidcTokenResult = await AppleSignInService.signIn()
         break
       default:
-        Logger.error(
-          `[RefreshSeedlessTokenFlow] unsupported OIDC provider: "${oidcProvider}" - keychain data may be missing`
-        )
         return {
           success: false,
           error: new RefreshSeedlessTokenFlowErrors({

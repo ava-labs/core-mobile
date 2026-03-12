@@ -30,13 +30,7 @@ const refreshSeedlessToken = async (
 
   if (refreshTokenResult.success) {
     Logger.trace('Refresh token success')
-    return
   }
-
-  Logger.error(
-    `[SeedlessListeners] refresh failed - error: ${refreshTokenResult.error?.message}, name: ${refreshTokenResult.error?.name}`,
-    refreshTokenResult.error
-  )
 }
 
 const invalidateSeedlessToken = async (): Promise<void> => {
@@ -53,9 +47,6 @@ const initSeedless = async (
 
   SeedlessService.init({
     onSessionExpired: () => {
-      Logger.error(
-        '[SeedlessListeners] onSessionExpired fired - dispatching onTokenExpired'
-      )
       dispatch(onTokenExpired())
     }
   })
