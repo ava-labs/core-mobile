@@ -9,16 +9,9 @@ jest.mock('services/analytics/AnalyticsService', () => ({
   default: { capture: jest.fn() }
 }))
 
-import {
-  getAppIconName,
-  setAlternateAppIcon
-} from 'expo-alternate-app-icons'
+import { getAppIconName, setAlternateAppIcon } from 'expo-alternate-app-icons'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import {
-  appIconStore,
-  AppIcon,
-  APP_ICON_DISPLAY_NAMES
-} from './store'
+import { appIconStore, AppIcon, APP_ICON_DISPLAY_NAMES } from './store'
 
 const mockedGetAppIconName = getAppIconName as jest.Mock
 const mockedSetAlternateAppIcon = setAlternateAppIcon as jest.Mock
