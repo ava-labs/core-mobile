@@ -152,11 +152,14 @@ export const appIconStore = create<AppIconState>((set, get) => ({
       nativeIconName = 'Light-Internal'
     }
     set({ currentIcon: icon })
-    AnalyticsService.capture('ChangedIcons', { iconName: icon })
 
-    setAlternateAppIcon(nativeIconName).catch(() => {
-      set({ currentIcon: nativeNameToAppIcon(getAppIconName()) })
-    })
+    setAlternateAppIcon(nativeIconName)
+      .then(() => {
+        AnalyticsService.capture('ChangedIcons', { iconName: icon })
+      })
+      .catch(() => {
+        set({ currentIcon: nativeNameToAppIcon(getAppIconName()) })
+      })
   }
 }))
 
