@@ -67,7 +67,9 @@ export const ethSendTransaction = async ({
     })
   } catch (error) {
     Logger.error(
-      `[ethSendTransaction] signing FAILED - walletType: ${walletType}, error: ${error instanceof Error ? error.message : String(error)}`,
+      `[ethSendTransaction] signing FAILED - walletType: ${walletType}, error: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
       error
     )
     resolve({

@@ -12,7 +12,9 @@ export class SeedlessSessionManager extends ExclusiveSessionManager {
       await SecureStorageService.store(KeySlot.SignerSessionData, data)
     } catch (error) {
       Logger.error(
-        `[SeedlessSessionManager] store() FAILED - session data NOT persisted (epoch: ${data.session_info?.epoch ?? 'unknown'})`,
+        `[SeedlessSessionManager] store() FAILED - session data NOT persisted (epoch: ${
+          data.session_info?.epoch ?? 'unknown'
+        })`,
         error
       )
       throw error
