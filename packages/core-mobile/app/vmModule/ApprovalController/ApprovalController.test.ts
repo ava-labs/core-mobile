@@ -122,10 +122,7 @@ const DAPP_SESSION_ID = 'wc-topic-abc123'
 const TX_HASH = '0xdeadbeef'
 const EVM_ADDRESS = '0xcA0E993876152ccA6053eeDFC753092c8cE712D0'
 
-const makeDappRequest = (
-  method: RpcMethod,
-  chainId = 'eip155:1'
-): RpcRequest =>
+const makeDappRequest = (method: RpcMethod, chainId = 'eip155:1'): RpcRequest =>
   ({
     requestId: 'req-1',
     sessionId: DAPP_SESSION_ID,
@@ -133,7 +130,7 @@ const makeDappRequest = (
     chainId,
     params: {},
     dappInfo: { name: 'Uniswap', url: DAPP_URL, icon: '' }
-  }) as unknown as RpcRequest
+  } as unknown as RpcRequest)
 
 const mockEvmSession = {
   namespaces: {
@@ -367,10 +364,7 @@ describe('ApprovalController', () => {
         approvalController.onTransactionConfirmed({
           txHash: TX_HASH,
           explorerLink: '',
-          request: makeDappRequest(
-            RpcMethod.ETH_SEND_TRANSACTION,
-            'eip155:137'
-          )
+          request: makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION, 'eip155:137')
         })
 
         expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
@@ -394,10 +388,7 @@ describe('ApprovalController', () => {
         approvalController.onTransactionConfirmed({
           txHash: TX_HASH,
           explorerLink: '',
-          request: makeDappRequest(
-            RpcMethod.ETH_SEND_TRANSACTION,
-            'eip155:999'
-          )
+          request: makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION, 'eip155:999')
         })
 
         expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
