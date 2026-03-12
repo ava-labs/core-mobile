@@ -96,7 +96,7 @@ export const useSwapTokens = (
     if (currentNetwork) {
       const symbol = currentNetwork.networkToken.symbol
       const decimals = currentNetwork.networkToken.decimals
-      const localId = `NATIVE-${symbol}`
+      const localId = `NATIVE-${symbol.toLowerCase()}`
       const nativeBalanceData = balanceMap.get(localId.toLowerCase())
 
       const balance = nativeBalanceData?.balance ?? 0n
@@ -114,6 +114,7 @@ export const useSwapTokens = (
         decimals,
         logoUri: currentNetwork.logoUri,
         localId,
+        internalId: localId,
         networkChainId: chainId,
         isDataAccurate: true,
         balance,

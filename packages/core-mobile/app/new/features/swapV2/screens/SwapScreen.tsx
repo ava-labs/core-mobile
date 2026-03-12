@@ -606,10 +606,7 @@ export const SwapScreen = (): JSX.Element => {
     }
 
     function autoSelectBtcb(): void {
-      // TODO find out why btc doesn't have internalID and it's localId is NATIVE-BTC
-      // and switch to internalId instead of localId
-      const fromIsBtc =
-        fromToken?.localId.toLowerCase() === TOKEN_IDS.BTC.toLowerCase()
+      const fromIsBtc = fromToken?.internalId === TOKEN_IDS.BTC
 
       if (!fromIsBtc) return
 
