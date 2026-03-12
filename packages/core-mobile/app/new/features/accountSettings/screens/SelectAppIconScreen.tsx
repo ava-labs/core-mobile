@@ -98,6 +98,8 @@ const AppIconRow = ({
           sx={{
             width: ICON_THUMBNAIL_SIZE,
             height: ICON_THUMBNAIL_SIZE,
+            borderWidth: 1,
+            borderColor: colors.$borderPrimary,
             borderRadius: 12,
             overflow: 'hidden'
           }}>

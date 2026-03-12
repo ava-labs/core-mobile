@@ -1,7 +1,15 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Icons, Logos, useTheme, View } from '@avalabs/k2-alpine'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Icons, useTheme, View } from '@avalabs/k2-alpine'
 import { useSelector } from 'react-redux'
 import { selectSelectedColorScheme } from 'store/settings/appearance'
+import { Image } from 'expo-image'
+import {
+  AppIcon,
+  DEFAULT_ICON_PREVIEW_DARK,
+  DEFAULT_ICON_PREVIEW_LIGHT,
+  ICON_PREVIEWS,
+  useCurrentAppIcon
+} from 'features/accountSettings/store'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -15,6 +23,7 @@ import { runAfterInteractions } from 'utils/runAfterInteractions'
 
 export const CoreLogoWithTokens = (): JSX.Element => {
   const selectedColorScheme = useSelector(selectSelectedColorScheme)
+  const currentIcon = useCurrentAppIcon()
 
   const { animatedStyle: coreLogoAnimationStyle, pop: coreLogoPop } =
     usePopSpringAnimation({ minScale: 0.8 })
@@ -72,21 +81,41 @@ export const CoreLogoWithTokens = (): JSX.Element => {
           },
           coreLogoAnimationStyle
         ]}>
-        {selectedColorScheme === 'dark' ? (
-          <Logos.AppIcons.CoreAppIconLight
-            width={CORE_ICON_SIZE}
-            height={CORE_ICON_SIZE}
-          />
-        ) : (
-          <Logos.AppIcons.CoreAppIconDark
-            width={CORE_ICON_SIZE}
-            height={CORE_ICON_SIZE}
-          />
-        )}
+        <AppIconImage
+          currentIcon={currentIcon}
+          selectedColorScheme={selectedColorScheme}
+        />
       </Animated.View>
     </View>
   )
 }
+
+const AppIconImage = React.memo(
+  ({
+    currentIcon,
+    selectedColorScheme
+  }: {
+    currentIcon: AppIcon
+    selectedColorScheme: string | undefined
+  }): JSX.Element => {
+    const source = useMemo(() => {
+      if (currentIcon === AppIcon.Default) {
+        return selectedColorScheme === 'dark'
+          ? DEFAULT_ICON_PREVIEW_LIGHT
+          : DEFAULT_ICON_PREVIEW_DARK
+      }
+      return ICON_PREVIEWS[currentIcon]
+    }, [currentIcon, selectedColorScheme])
+
+    return (
+      <Image
+        source={source}
+        style={{ width: CORE_ICON_SIZE, height: CORE_ICON_SIZE }}
+        contentFit="cover"
+      />
+    )
+  }
+)
 
 const TokenLogo = ({
   Icon,
