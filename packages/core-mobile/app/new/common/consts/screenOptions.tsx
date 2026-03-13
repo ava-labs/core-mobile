@@ -33,7 +33,7 @@ export const stackScreensOptions: NativeStackNavigationOptions | undefined = {
 // Modals
 export const modalScreensOptions: NativeStackNavigationOptions = {
   ...commonNavigatorScreenOptions,
-  presentation: !isIOS26 ? 'pageSheet' : 'formSheet',
+  presentation: Platform.OS === 'ios' && !isIOS26 ? 'pageSheet' : 'formSheet',
   sheetElevation: 0,
   sheetInitialDetentIndex: 0,
   sheetAllowedDetents: [
