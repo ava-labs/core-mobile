@@ -124,7 +124,7 @@ export const useGasless = ({
           errorMessage,
           errorCategory
         })
-        Logger.error(`[ApprovalPopup.tsx][handleGaslessTx]${errorMessage}`)
+        Logger.error(`[useGasless.ts][handleGaslessTx]${errorMessage}`)
         showGaslessError()
         return undefined
       }
