@@ -45,7 +45,7 @@ describe('appIconStore', () => {
   it('should fire analytics on success', async () => {
     appIconStore.getState().setIcon(AppIcon.Old)
     await Promise.resolve()
-    expect(mockedCapture).toHaveBeenCalledWith('ChangedIcons', {
+    expect(mockedCapture).toHaveBeenCalledWith('AppIconChanged', {
       iconName: AppIcon.Old
     })
   })
