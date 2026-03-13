@@ -66,7 +66,9 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
       if (!isMountedRef.current) return
       setIsLedgerConnected(false)
     } finally {
-      setIsConnecting(false)
+      if (isMountedRef.current) {
+        setIsConnecting(false)
+      }
     }
   }, [deviceForWallet])
 
@@ -124,9 +126,6 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
       operation: Operation | null
     ): void => {
       if (operation === null) {
-        // Final progress tick: keep the last displayed step and operation
-        setLedgerCurrentStep(prev => prev)
-        setLedgerCurrentOperation(prev => prev)
         return
       }
       setLedgerCurrentStep(step + 1) // Convert to 1-based index for user display
@@ -134,6 +133,9 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
     }
 
     const resetOnFailure = (): void => {
+      if (!isMountedRef.current) {
+        return
+      }
       setApprovalInProgress(false)
       setLedgerPhase('connecting')
     }
