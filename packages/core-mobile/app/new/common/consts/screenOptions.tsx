@@ -4,7 +4,7 @@ import { AccountSettingBarButton } from 'common/components/AccountSettingBarButt
 import BackBarButton from 'common/components/BackBarButton'
 import { ConnectButton } from 'common/components/ConnectButton'
 import { ConnectedNotificationBarButton } from 'common/components/ConnectedNotificationBarButton'
-import { isIOS26 } from 'common/utils/isIOS26'
+import { isIOS26AndAbove } from 'common/utils/isIOS26AndAbove'
 import React from 'react'
 import { Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -33,11 +33,12 @@ export const stackScreensOptions: NativeStackNavigationOptions | undefined = {
 // Modals
 export const modalScreensOptions: NativeStackNavigationOptions = {
   ...commonNavigatorScreenOptions,
-  presentation: Platform.OS === 'ios' && !isIOS26 ? 'pageSheet' : 'formSheet',
+  presentation:
+    Platform.OS === 'ios' && !isIOS26AndAbove ? 'pageSheet' : 'formSheet',
   sheetElevation: 0,
   sheetInitialDetentIndex: 0,
   sheetAllowedDetents: [
-    Platform.OS === 'android' ? 0.93 : isIOS26 ? 0.98 : 0.99
+    Platform.OS === 'android' ? 0.93 : isIOS26AndAbove ? 0.98 : 0.99
   ],
   headerLeft: () => <BackBarButton />,
   gestureEnabled: true,
@@ -76,7 +77,7 @@ export function useModalScreensOptions(): {
 export const secondaryModalScreensOptions: NativeStackNavigationOptions = {
   ...modalScreensOptions,
   sheetAllowedDetents: [
-    Platform.OS === 'android' ? 0.92 : isIOS26 ? 0.97 : 0.99
+    Platform.OS === 'android' ? 0.92 : isIOS26AndAbove ? 0.97 : 0.99
   ]
 }
 
@@ -95,7 +96,7 @@ export const ledgerModalScreensOptions: NativeStackNavigationOptions = {
   ...modalScreensOptions,
   freezeOnBlur: Platform.OS === 'ios' ? false : undefined,
   sheetAllowedDetents: [
-    Platform.OS === 'android' ? 0.92 : isIOS26 ? 0.97 : 0.98
+    Platform.OS === 'android' ? 0.92 : isIOS26AndAbove ? 0.97 : 0.98
   ]
 }
 
