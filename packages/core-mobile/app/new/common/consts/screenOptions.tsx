@@ -4,6 +4,7 @@ import { AccountSettingBarButton } from 'common/components/AccountSettingBarButt
 import BackBarButton from 'common/components/BackBarButton'
 import { ConnectButton } from 'common/components/ConnectButton'
 import { ConnectedNotificationBarButton } from 'common/components/ConnectedNotificationBarButton'
+import { isIOS26 } from 'common/utils/isIOS26'
 import React from 'react'
 import { Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -32,10 +33,12 @@ export const stackScreensOptions: NativeStackNavigationOptions | undefined = {
 // Modals
 export const modalScreensOptions: NativeStackNavigationOptions = {
   ...commonNavigatorScreenOptions,
-  presentation: Platform.OS === 'ios' ? 'pageSheet' : 'formSheet',
+  presentation: !isIOS26 ? 'pageSheet' : 'formSheet',
   sheetElevation: 0,
   sheetInitialDetentIndex: 0,
-  sheetAllowedDetents: [Platform.OS === 'android' ? 0.93 : 0.99],
+  sheetAllowedDetents: [
+    Platform.OS === 'android' ? 0.93 : isIOS26 ? 0.98 : 0.99
+  ],
   headerLeft: () => <BackBarButton />,
   gestureEnabled: true,
   headerTransparent: true
@@ -53,25 +56,28 @@ export function useModalScreensOptions(): {
       contentStyle: {
         // Android formsheet in native-stack has a default top padding of insets.top
         // by removing the insets.top this we adjust the navigation bar position
-        marginTop: Platform.OS === 'android' ? -insets.top + 8 : undefined
+        marginTop: Platform.OS === 'android' ? -insets.top + 8 : undefined,
+        height: '100%'
       }
     },
     secondaryModalScreensOptions: {
-      ...modalScreensOptions,
+      ...secondaryModalScreensOptions,
       freezeOnBlur: true,
       contentStyle: {
         // Android formsheet in native-stack has a default top padding of insets.top
         // by removing the insets.top this we adjust the navigation bar position
-        marginTop: Platform.OS === 'android' ? -insets.top + 8 : undefined
-      },
-      sheetAllowedDetents: [Platform.OS === 'android' ? 0.92 : 0.99]
+        marginTop: Platform.OS === 'android' ? -insets.top + 8 : undefined,
+        height: '100%'
+      }
     }
   }
 }
 
 export const secondaryModalScreensOptions: NativeStackNavigationOptions = {
   ...modalScreensOptions,
-  sheetAllowedDetents: [Platform.OS === 'android' ? 0.92 : 0.99]
+  sheetAllowedDetents: [
+    Platform.OS === 'android' ? 0.92 : isIOS26 ? 0.97 : 0.99
+  ]
 }
 
 /**
@@ -88,7 +94,9 @@ export const secondaryModalScreensOptions: NativeStackNavigationOptions = {
 export const ledgerModalScreensOptions: NativeStackNavigationOptions = {
   ...modalScreensOptions,
   freezeOnBlur: Platform.OS === 'ios' ? false : undefined,
-  sheetAllowedDetents: [Platform.OS === 'android' ? 0.92 : 0.99]
+  sheetAllowedDetents: [
+    Platform.OS === 'android' ? 0.92 : isIOS26 ? 0.97 : 0.98
+  ]
 }
 
 export const modalStackNavigatorScreenOptions: NativeStackNavigationOptions = {
