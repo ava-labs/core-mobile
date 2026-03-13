@@ -225,11 +225,10 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
                     }}>
                     {!isLedgerConnected && (
                       <Button
-                        type="primary"
+                        type="secondary"
                         size="small"
                         style={{ width: 72 }}
-                        onPress={handleReconnect}
-                        disabled={ledgerPhase === 'connecting'}>
+                        onPress={handleReconnect}>
                         {ledgerPhase === 'connecting' ? (
                           <ActivityIndicator
                             size="small"
