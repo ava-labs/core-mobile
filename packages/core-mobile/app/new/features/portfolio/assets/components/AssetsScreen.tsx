@@ -20,6 +20,7 @@ import {
   LocalTokenWithBalance
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
+import { isIOS } from 'utils/Utils'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { EmptyState } from './EmptyState'
 import { TokenListItem } from './TokenListItem'
@@ -259,7 +260,18 @@ const AssetsScreen: FC<Props> = ({
     [activeAccount?.id, listType]
   )
 
-  const maintainVisibleContentPosition = useMemo(() => ({ disabled: true }), [])
+  const maintainVisibleContentPosition = useMemo(() => {
+    if (isIOS) {
+      return { disabled: true }
+    }
+
+    // On Android, we need to maintain the visible content position for the grid view
+    // otherwise the list will look broken
+    if (isGridView) {
+      return { disabled: false }
+    }
+    return { disabled: true }
+  }, [isGridView])
 
   return (
     <Animated.View
