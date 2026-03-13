@@ -464,7 +464,7 @@ const StakeConfirmScreen = (): JSX.Element => {
   ])
 
   const renderFooter = useCallback(() => {
-    const ledgerFooter = renderLedgerFooter()
+    const ledgerFooter = renderLedgerFooter(steps.length)
     if (ledgerFooter) return ledgerFooter
 
     return (
@@ -504,10 +504,11 @@ const StakeConfirmScreen = (): JSX.Element => {
     )
   }, [
     renderLedgerFooter,
-    handleCancel,
+    steps.length,
+    theme.colors.$textPrimary,
     handleDelegate,
     isIssueDelegationPending,
-    theme.colors.$textPrimary
+    handleCancel
   ])
 
   if (selectedValidator === undefined && (isFetchingNodes || !validator)) {

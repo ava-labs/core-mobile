@@ -8,6 +8,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { OnDelegationProgress } from 'contexts/DelegationContext'
 import { LEDGER_DEVICE_BRIEF_DELAY_MS } from 'features/ledger/consts'
+import { AnimatedIconWithText } from 'features/ledger/components/AnimatedIconWithText'
 import { useLedgerWalletMap } from 'features/ledger/store'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -23,7 +24,7 @@ type UseLedgerStakingReturn = {
     action: (onProgress?: OnDelegationProgress) => void
   ) => void
   resetLedgerState: () => void
-  renderLedgerFooter: () => JSX.Element | null
+  renderLedgerFooter: (totalSteps: number) => JSX.Element | null
 }
 
 export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
@@ -31,6 +32,7 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
   const [ledgerPhase, setLedgerPhase] = useState<LedgerPhase>('idle')
   const [isLedgerConnected, setIsLedgerConnected] = useState(false)
   const [isAvalancheAppOpen, setIsAvalancheAppOpen] = useState(false)
+  const [ledgerCurrentStep, setLedgerCurrentStep] = useState(0)
   const [ledgerCurrentOperation, setLedgerCurrentOperation] =
     useState<Operation | null>(null)
   const [approvalInProgress, setApprovalInProgress] = useState(false)
@@ -111,6 +113,7 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
       step: number,
       operation: Operation | null
     ): void => {
+      setLedgerCurrentStep(step + 1) // Convert to 1-based index for user display
       setLedgerCurrentOperation(operation)
     }
 
@@ -124,6 +127,7 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
     setLedgerPhase('connecting')
     setIsLedgerConnected(false)
     setIsAvalancheAppOpen(false)
+    setLedgerCurrentStep(0)
     setLedgerCurrentOperation(null)
     setApprovalInProgress(false)
   }
@@ -182,7 +186,7 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
     }
   }, [ledgerCurrentOperation])
 
-  const renderLedgerFooter = (): JSX.Element | null => {
+  const renderLedgerFooter = (totalSteps: number): JSX.Element | null => {
     if (!isLedger) return null
 
     if (ledgerPhase === 'connecting') {
@@ -282,20 +286,25 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
     }
 
     if (ledgerPhase === 'progress') {
+      const title = stepConfig.title.includes('Preparing')
+        ? stepConfig.title
+        : `${stepConfig.title} [${ledgerCurrentStep}/${totalSteps}]`
       return (
-        <View sx={{ gap: 16, alignItems: 'center' }}>
-          <View sx={{ alignItems: 'center', gap: 4, paddingHorizontal: 16 }}>
-            <Text variant="body1" sx={{ textAlign: 'center', lineHeight: 20 }}>
-              {stepConfig.title}
-            </Text>
-            <Text
-              variant="caption"
-              sx={{ textAlign: 'center', color: theme.colors.$textSecondary }}>
-              {stepConfig.subtitle}
-            </Text>
-          </View>
-          <ActivityIndicator size="small" color={theme.colors.$textPrimary} />
-        </View>
+        <AnimatedIconWithText
+          icon={
+            <Icons.Custom.Ledger
+              color={theme.colors.$textPrimary}
+              width={32}
+              height={32}
+            />
+          }
+          animationSize={{ width: 120, height: 120 }}
+          title={title}
+          titleStyle={{ fontSize: 16 }}
+          subtitle={stepConfig.subtitle}
+          subtitleStyle={{ fontSize: 12 }}
+          showAnimation
+        />
       )
     }
 
