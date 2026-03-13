@@ -56,7 +56,7 @@ export const VerifyCode = <T,>({
       } catch (error) {
         setShowError(true)
         AnalyticsService.capture('TotpValidationFailed', {
-          error: error as string
+          error: error instanceof Error ? error.message : String(error)
         })
       }
     },

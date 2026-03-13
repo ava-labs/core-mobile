@@ -45,6 +45,7 @@ import { selectActiveAccount } from 'store/account'
 import { selectActiveWallet } from 'store/wallet/slice'
 import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { truncateNodeId } from 'utils/Utils'
 import { useLedgerStaking } from './useLedgerStaking'
 
@@ -287,9 +288,11 @@ const StakeConfirmScreen = (): JSX.Element => {
 
   const onDelegationError = useCallback(
     (e: Error): void => {
-      AnalyticsService.capture('StakeDelegationFail', {
+      if (!isUserRejectedError(e)) {
+        AnalyticsService.capture('StakeDelegationFail', {
         isAdvanced: nodeId !== undefined
       })
+      }
 
       resetLedgerState()
 

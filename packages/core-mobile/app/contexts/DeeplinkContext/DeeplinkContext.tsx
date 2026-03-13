@@ -51,7 +51,7 @@ export const DeeplinkContextProvider = ({
   const handleNotificationCallback: HandleNotificationCallback = useCallback(
     (data: NotificationData | undefined) => {
       if (!data) {
-        Logger.error(
+        Logger.info(
           `[DeeplinkContext.tsx][handleNotificationCallback] no data`
         )
         return

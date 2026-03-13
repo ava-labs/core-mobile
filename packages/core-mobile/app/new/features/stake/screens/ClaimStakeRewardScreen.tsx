@@ -26,6 +26,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useRefreshStakingBalances } from 'hooks/earn/useRefreshStakingBalances'
+import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import { CONFETTI_DURATION_MS } from 'common/consts'
 import { selectIsInAppReviewBlocked } from 'store/posthog/slice'
@@ -84,8 +85,9 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
   }
 
   const onClaimError = (error: Error): void => {
-    resetLedgerState()
-    AnalyticsService.capture('StakeClaimFail')
+    if (!isUserRejectedError(error)) {
+      AnalyticsService.capture('StakeClaimFail')
+    }
     transactionSnackbar.error({ error: error.message })
   }
 

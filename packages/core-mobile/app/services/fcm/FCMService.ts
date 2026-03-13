@@ -46,6 +46,9 @@ export const EVENT_TO_CH_ID: Record<string, ChannelId> = {
  */
 class FCMService {
   getFCMToken = async (): Promise<string> => {
+    if (Platform.OS === 'ios') {
+      await messaging().registerDeviceForRemoteMessages()
+    }
     return await messaging().getToken()
   }
 
