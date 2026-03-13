@@ -1,6 +1,6 @@
 import React from 'react'
-import { SwapSlippageDetailsScreen } from 'features/swapV2/screens/SwapSlippageDetailsScreen'
-import { useSwapContext } from 'features/swapV2/contexts/SwapContext'
+import { SwapSlippageDetailsScreen } from 'features/swap/screens/SwapSlippageDetailsScreen'
+import { useSwapContext } from 'features/swap/contexts/SwapContext'
 
 export default (): JSX.Element => {
   const {

@@ -3,7 +3,7 @@ import {
   modalFirstScreenOptions,
   modalStackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
-import { SwapContextProvider } from 'features/swapV2/contexts/SwapContext'
+import { SwapContextProvider } from 'features/swap/contexts/SwapContext'
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'

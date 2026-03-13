@@ -3,16 +3,16 @@ import { useLocalSearchParams } from 'expo-router'
 import type { Network } from '@avalabs/core-chains-sdk'
 import type { LocalTokenWithBalance } from 'store/balance'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
-import { SelectSwapV2TokenScreen } from 'features/swapV2/screens/SelectSwapV2TokenScreen'
+import { SelectSwapTokenScreen } from 'features/swap/screens/SelectSwapTokenScreen'
 import {
   useSwapSelectedFromToken,
   useSwapSelectedToToken
-} from 'features/swapV2/hooks/useZustandStore'
-import { useSupportedChains } from 'features/swapV2/hooks/useSupportedChains'
+} from 'features/swap/hooks/useZustandStore'
+import { useSupportedChains } from 'features/swap/hooks/useSupportedChains'
 import { TOKEN_IDS } from 'consts/tokenIds'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 
-const SelectSwapV2ToTokenScreen = (): JSX.Element => {
+const SelectSwapToTokenScreen = (): JSX.Element => {
   const [selectedToToken, setSelectedToToken] = useSwapSelectedToToken()
   const [selectedFromToken] = useSwapSelectedFromToken()
   const { networkChainId } = useLocalSearchParams<{ networkChainId?: string }>()
@@ -42,7 +42,7 @@ const SelectSwapV2ToTokenScreen = (): JSX.Element => {
   )
 
   return (
-    <SelectSwapV2TokenScreen
+    <SelectSwapTokenScreen
       selectedToken={selectedToToken}
       setSelectedToken={setSelectedToToken}
       // Pre-select network to match "from" token's network
@@ -56,4 +56,4 @@ const SelectSwapV2ToTokenScreen = (): JSX.Element => {
   )
 }
 
-export default SelectSwapV2ToTokenScreen
+export default SelectSwapToTokenScreen

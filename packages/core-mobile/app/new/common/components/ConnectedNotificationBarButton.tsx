@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from 'react'
 import { router } from 'expo-router'
 import { useUnreadCount } from 'features/notifications/hooks/useNotifications'
 import { mapTransferToSwapStatus } from 'features/notifications/utils'
-import { useFusionTransfers } from 'features/swapV2/hooks/useZustandStore'
+import { useFusionTransfers } from 'features/swap/hooks/useZustandStore'
 import { NotificationBarButton } from './NotificationBarButton'
 
 /**

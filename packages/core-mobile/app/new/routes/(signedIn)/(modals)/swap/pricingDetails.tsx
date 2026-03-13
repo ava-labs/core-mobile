@@ -1,6 +1,6 @@
 import React from 'react'
-import { SwapPricingDetailsScreen } from 'features/swapV2/screens/SwapPricingDetailsScreen'
-import { useSwapContext } from 'features/swapV2/contexts/SwapContext'
+import { SwapPricingDetailsScreen } from 'features/swap/screens/SwapPricingDetailsScreen'
+import { useSwapContext } from 'features/swap/contexts/SwapContext'
 
 export default (): JSX.Element => {
   const {

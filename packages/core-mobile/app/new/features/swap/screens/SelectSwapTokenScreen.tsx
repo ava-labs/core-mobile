@@ -23,7 +23,7 @@ import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { useFilteredSwapTokens } from '../hooks/useFilteredSwapTokens'
 import { useSwapTokens } from '../hooks/useSwapTokens'
 
-export const SelectSwapV2TokenScreen = ({
+export const SelectSwapTokenScreen = ({
   selectedToken,
   setSelectedToken,
   defaultNetworkChainId,

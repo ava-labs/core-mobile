@@ -5,7 +5,7 @@ import {
 } from 'common/consts/screenOptions'
 import React from 'react'
 
-export default function SelectSwapV2ToTokenLayout(): JSX.Element {
+export default function SelectSwapFromTokenLayout(): JSX.Element {
   return (
     <Stack screenOptions={modalStackNavigatorScreenOptions}>
       <Stack.Screen name="index" options={modalFirstScreenOptions} />

@@ -8,7 +8,7 @@ export const SwapOnboardingScreen = (): JSX.Element => {
   const { navigate } = useRouter()
 
   const handlePressNext = useCallback(() => {
-    navigate('/swapV2/swap')
+    navigate('/swap/swap')
   }, [navigate])
 
   return (

@@ -4,15 +4,15 @@ import type { Network } from '@avalabs/core-chains-sdk'
 import type { LocalTokenWithBalance } from 'store/balance'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
-import { SelectSwapV2TokenScreen } from 'features/swapV2/screens/SelectSwapV2TokenScreen'
+import { SelectSwapTokenScreen } from 'features/swap/screens/SelectSwapTokenScreen'
 import {
   useSwapSelectedFromToken,
   useSwapSelectedToToken
-} from 'features/swapV2/hooks/useZustandStore'
-import { useSupportedChains } from 'features/swapV2/hooks/useSupportedChains'
+} from 'features/swap/hooks/useZustandStore'
+import { useSupportedChains } from 'features/swap/hooks/useSupportedChains'
 import { TOKEN_IDS } from 'consts/tokenIds'
 
-const SelectSwapV2FromTokenScreen = (): JSX.Element => {
+const SelectSwapFromTokenScreen = (): JSX.Element => {
   const [selectedFromToken, setSelectedFromToken] = useSwapSelectedFromToken()
   const [selectedToToken] = useSwapSelectedToToken()
   const { networkChainId } = useLocalSearchParams<{ networkChainId?: string }>()
@@ -37,7 +37,7 @@ const SelectSwapV2FromTokenScreen = (): JSX.Element => {
   )
 
   return (
-    <SelectSwapV2TokenScreen
+    <SelectSwapTokenScreen
       selectedToken={selectedFromToken}
       setSelectedToken={setSelectedFromToken}
       hideZeroBalance={true}
@@ -52,4 +52,4 @@ const SelectSwapV2FromTokenScreen = (): JSX.Element => {
   )
 }
 
-export default SelectSwapV2FromTokenScreen
+export default SelectSwapFromTokenScreen

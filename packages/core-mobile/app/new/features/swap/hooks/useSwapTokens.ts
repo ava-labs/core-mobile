@@ -18,7 +18,7 @@ import { getLocalTokenIdFromApi } from '../utils/getLocalTokenIdFromApi'
 const STALE_TIME = 5 * 60 * 1000 // 5 minutes
 
 /**
- * Fetches and prepares tokens for SwapV2 token selection.
+ * Fetches and prepares tokens for Swap token selection.
  *
  * This hook:
  * 1. Fetches tokens from the token aggregator API for the specified network

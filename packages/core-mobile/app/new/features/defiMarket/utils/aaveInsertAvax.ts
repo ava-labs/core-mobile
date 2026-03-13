@@ -1,7 +1,7 @@
 import { BIG_ZERO } from '@avalabs/core-utils-sdk'
 import { CurrencyCode } from '@avalabs/glacier-sdk'
 import { AVALANCHE_MAINNET_NETWORK } from 'services/network/consts'
-import { WAVAX_ADDRESS } from 'features/swapV2/consts'
+import { WAVAX_ADDRESS } from 'features/swap/consts'
 import type { DefiMarket } from '../types'
 import { AAVE_WRAPPED_AVAX_GATEWAY_ADDRESS } from '../consts'
 import { getUniqueMarketId } from './getUniqueMarketId'

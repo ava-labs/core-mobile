@@ -337,7 +337,7 @@ export const SwapScreen = (): JSX.Element => {
       : {}
 
     navigate({
-      pathname: '/selectSwapV2FromToken',
+      pathname: '/selectSwapFromToken',
       params: tokenParams
     })
   }, [navigate, fromToken])
@@ -348,17 +348,17 @@ export const SwapScreen = (): JSX.Element => {
       : {}
 
     navigate({
-      pathname: '/selectSwapV2ToToken',
+      pathname: '/selectSwapToToken',
       params: tokenParams
     })
   }, [navigate, fromToken])
 
   const handleSelectPricingDetails = useCallback((): void => {
-    navigate('/swapV2/pricingDetails')
+    navigate('/swap/pricingDetails')
   }, [navigate])
 
   const handleSelectSlippageDetails = useCallback((): void => {
-    navigate('/swapV2/slippageDetails')
+    navigate('/swap/slippageDetails')
   }, [navigate])
 
   const formatInCurrency = useCallback(

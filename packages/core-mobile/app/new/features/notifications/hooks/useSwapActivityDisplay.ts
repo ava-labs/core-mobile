@@ -7,7 +7,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
-import { FusionTransfer } from 'features/swapV2/types'
+import { FusionTransfer } from 'features/swap/types'
 import { NotificationSwapStatus } from '../types'
 import {
   mapTransferToSourceChainStatus,

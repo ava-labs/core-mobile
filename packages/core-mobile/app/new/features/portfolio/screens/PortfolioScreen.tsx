@@ -37,7 +37,7 @@ import { useAccountBalanceSummary } from 'features/portfolio/hooks/useAccountBal
 import { useAccountPerformanceSummary } from 'features/portfolio/hooks/useAccountPerformanceSummary'
 import { useBalanceTotalPriceChangeForAccount } from 'features/portfolio/hooks/useBalanceTotalPriceChangeForAccount'
 import { useSendSelectedToken } from 'features/send/store'
-import { useNavigateToSwap as useNavigateToSwapV2 } from 'features/swapV2/hooks/useNavigateToSwap'
+import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
@@ -103,7 +103,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const [_, setSelectedToken] = useSendSelectedToken()
   const { theme } = useTheme()
   const { navigate, push } = useRouter()
-  const { navigateToSwap: navigateToSwapV2 } = useNavigateToSwapV2()
+  const { navigateToSwap } = useNavigateToSwap()
 
   const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
     LayoutRectangle | undefined
@@ -233,9 +233,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
     ]
     if (isFusionEnabled) {
       buttons.push({
-        title: ActionButtonTitle.SwapV2,
+        title: ActionButtonTitle.Swap,
         icon: 'swap',
-        onPress: () => navigateToSwapV2()
+        onPress: () => navigateToSwap()
       })
     }
     buttons.push({
@@ -261,7 +261,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigateToBuy,
     navigateToWithdraw,
     handleReceive,
-    navigateToSwapV2,
+    navigateToSwap,
     isMeldOfframpBlocked,
     isFusionEnabled
   ])
