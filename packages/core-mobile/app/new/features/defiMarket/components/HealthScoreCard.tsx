@@ -27,11 +27,19 @@ export const HealthScoreCard = ({
   const projectedColor = useScoreColor(score)
   const currentColor = useScoreColor(currentScore)
 
+  const formattedCurrent =
+    currentScore !== undefined && !Number.isNaN(currentScore)
+      ? formatHealthScore(currentScore, { fractionDigits: 2 })
+      : undefined
+  const formattedProjected =
+    score !== undefined
+      ? formatHealthScore(score, { fractionDigits: 2 })
+      : undefined
+
   const showTransition =
-    currentScore !== undefined &&
-    score !== undefined &&
-    currentScore !== score &&
-    !Number.isNaN(currentScore)
+    formattedCurrent !== undefined &&
+    formattedProjected !== undefined &&
+    formattedCurrent !== formattedProjected
 
   return (
     <Card sx={{ padding: 16 }}>
@@ -51,7 +59,7 @@ export const HealthScoreCard = ({
               <Text
                 variant="body1"
                 sx={{ color: currentColor, fontWeight: 500 }}>
-                {formatHealthScore(currentScore, { fractionDigits: 2 })}
+                {formattedCurrent}
               </Text>
               <Text
                 variant="body1"
@@ -61,14 +69,14 @@ export const HealthScoreCard = ({
               <Text
                 variant="body1"
                 sx={{ color: projectedColor, fontWeight: 500 }}>
-                {formatHealthScore(score, { fractionDigits: 2 })}
+                {formattedProjected}
               </Text>
             </View>
           ) : (
             <Text
               variant="body1"
               sx={{ color: projectedColor, fontWeight: 500 }}>
-              {formatHealthScore(score, { fractionDigits: 2 })}
+              {formattedProjected}
             </Text>
           )}
           <Text variant="caption" sx={{ color: '$textSecondary' }}>

@@ -64,13 +64,16 @@ export const AaveSelectCollateralContent = (): JSX.Element => {
 
   const handleToggleCollateral = useCallback(
     async (deposit: DefiMarket, newValue: boolean) => {
-      if (!newValue) {
-        const shouldProceed = await checkHealthImpact(deposit)
-        if (!shouldProceed) return
-      }
-
       const requestId = deposit.uniqueMarketId
       setTogglingState(prev => ({ ...prev, [requestId]: true }))
+
+      if (!newValue) {
+        const shouldProceed = await checkHealthImpact(deposit)
+        if (!shouldProceed) {
+          setTogglingState(prev => ({ ...prev, [requestId]: false }))
+          return
+        }
+      }
 
       try {
         const assetAddress = deposit.asset.contractAddress ?? WAVAX_ADDRESS

@@ -91,16 +91,14 @@ export const BenqiSelectCollateralContent = (): JSX.Element => {
   const handleToggleCollateral = useCallback(
     async (deposit: DefiMarket, newValue: boolean) => {
       const requestId = deposit.uniqueMarketId
+      setTogglingState(prev => ({ ...prev, [requestId]: true }))
 
       if (!newValue) {
-        setTogglingState(prev => ({ ...prev, [requestId]: true }))
         const shouldProceed = await checkHealthImpact(deposit)
         if (!shouldProceed) {
           setTogglingState(prev => ({ ...prev, [requestId]: false }))
           return
         }
-      } else {
-        setTogglingState(prev => ({ ...prev, [requestId]: true }))
       }
 
       try {
