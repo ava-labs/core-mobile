@@ -1,5 +1,3 @@
-import { BridgeTransfer } from '@avalabs/bridge-unified'
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { TokenType, TransactionType } from '@avalabs/vm-module-types'
 import { format, isToday } from 'date-fns'
 import { TokenActivityTransaction } from 'features/portfolio/assets/components/TokenActivityListItem'
@@ -10,11 +8,6 @@ import { Transaction } from 'store/transaction'
 export type ActivityListItem =
   | { type: 'header'; title: string; id: string }
   | { type: 'transaction'; transaction: Transaction; id: string }
-  | {
-      type: 'pendingBridge'
-      transaction: BridgeTransaction | BridgeTransfer
-      id: string
-    }
 
 export function getDateGroups(transactions: Transaction[]): {
   todayTxs: Transaction[]
@@ -52,20 +45,10 @@ export function getDateGroups(transactions: Transaction[]): {
 
 export function buildGroupedData(
   todayTxs: Transaction[],
-  monthGroups: { [key: string]: Transaction[] },
-  pendingBridgeTxs: (BridgeTransaction | BridgeTransfer)[]
+  monthGroups: { [key: string]: Transaction[] }
 ): ActivityListItem[] {
   const now = new Date()
   const flatData: ActivityListItem[] = []
-
-  // Add pending bridge transactions at the top
-  pendingBridgeTxs.forEach(tx => {
-    flatData.push({
-      type: 'pendingBridge',
-      transaction: tx,
-      id: `pending-bridge-${tx.sourceTxHash}`
-    })
-  })
 
   // Add Today section
   if (todayTxs.length > 0) {

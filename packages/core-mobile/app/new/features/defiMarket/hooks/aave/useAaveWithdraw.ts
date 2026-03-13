@@ -5,7 +5,7 @@ import {
   AAVE_POOL_C_CHAIN_ADDRESS,
   MAX_UINT256
 } from 'features/defiMarket/consts'
-import { WAVAX_ADDRESS } from 'features/swap/consts'
+import { WAVAX_ADDRESS } from 'features/swapV2/consts'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'

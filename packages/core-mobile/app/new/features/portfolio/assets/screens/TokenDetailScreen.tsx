@@ -2,8 +2,6 @@ import {
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
-import { BridgeTransfer } from '@avalabs/bridge-unified'
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import {
   NavigationTitleHeader,
@@ -33,10 +31,8 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useHasXpAddresses } from 'common/hooks/useHasXpAddresses'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { getSourceChainId } from 'common/utils/bridgeUtils'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useAssetBalances } from 'features/bridge/hooks/useAssetBalances'
 import { useBuy } from 'features/meld/hooks/useBuy'
 import { useWithdraw } from 'features/meld/hooks/useWithdraw'
 import {
@@ -50,7 +46,7 @@ import { useIsBalanceAccurateByNetwork } from 'features/portfolio/hooks/useIsBal
 import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
 import { useSendSelectedToken } from 'features/send/store'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
-import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
+import { useNavigateToSwap } from 'features/swapV2/hooks/useNavigateToSwap'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
@@ -69,19 +65,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AVAX_P_ID } from 'services/balance/const'
-import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { selectActiveAccount } from 'store/account/slice'
-import {
-  selectIsBridgeBlocked,
-  selectIsBridgeBtcBlocked,
-  selectIsBridgeEthBlocked,
-  selectIsMeldOfframpBlocked
-} from 'store/posthog'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectIsMeldOfframpBlocked } from 'store/posthog'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
-import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -109,7 +97,6 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     localId: string
     chainId: string
   }>()
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
 
   const erc20ContractTokens = useErc20ContractTokens()
@@ -172,38 +159,6 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     UI.Swap,
     token?.networkChainId
   )
-  const isBridgeBlocked = useSelector(selectIsBridgeBlocked)
-  const isBridgeBtcBlocked = useSelector(selectIsBridgeBtcBlocked)
-  const isBridgeEthBlocked = useSelector(selectIsBridgeEthBlocked)
-  const isBridgeUIDisabledForNetwork = useIsUIDisabledForNetwork(
-    UI.Bridge,
-    token?.networkChainId
-  )
-
-  const isBridgeDisabled = useMemo(() => {
-    if (isBridgeBtcBlocked && token?.networkChainId) {
-      return isBitcoinChainId(token.networkChainId)
-    }
-
-    if (isBridgeEthBlocked && token?.networkChainId) {
-      return isEthereumChainId(token.networkChainId)
-    }
-
-    return isBridgeUIDisabledForNetwork || isBridgeBlocked
-  }, [
-    token?.networkChainId,
-    isBridgeUIDisabledForNetwork,
-    isBridgeBlocked,
-    isBridgeBtcBlocked,
-    isBridgeEthBlocked
-  ])
-  const { assetsWithBalances } = useAssetBalances(token?.networkChainId)
-  const isTokenBridgeable = Boolean(
-    assetsWithBalances &&
-      assetsWithBalances.some(
-        asset => (asset.symbolOnNetwork ?? asset.symbol) === token?.symbol
-      )
-  )
 
   const isTokenStakable = useMemo(
     () =>
@@ -217,19 +172,6 @@ export const TokenDetailScreen = (): React.JSX.Element => {
         token?.localId === AVAX_P_ID),
     [token]
   )
-
-  const handleBridge = useCallback(() => {
-    navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/bridge',
-      params: token
-        ? {
-            initialSourceNetworkChainId: token.networkChainId,
-            initialTokenSymbol: token.symbol
-          }
-        : undefined
-    })
-  }, [navigate, token])
 
   const handleSend = useCallback((): void => {
     setSelectedToken(token)
@@ -291,14 +233,6 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       })
     }
 
-    if (!isBridgeDisabled && isTokenBridgeable) {
-      buttons.push({
-        title: ActionButtonTitle.Bridge,
-        icon: 'bridge',
-        onPress: handleBridge
-      })
-    }
-
     if (token && isWithdrawable(token) && !isMeldOfframpBlocked) {
       buttons.push({
         title: ActionButtonTitle.Withdraw,
@@ -315,15 +249,12 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     isBuyable,
     isTokenStakable,
     hasXpAddresses,
-    isBridgeDisabled,
-    isTokenBridgeable,
     isWithdrawable,
     isMeldOfframpBlocked,
     navigateToSwap,
     navigateToBuy,
     canAddStake,
     addStake,
-    handleBridge,
     navigateToWithdraw
   ])
 
@@ -359,19 +290,6 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       openUrl(url)
     },
     [openUrl]
-  )
-
-  const handlePendingBridge = useCallback(
-    (pendingBridge: BridgeTransaction | BridgeTransfer): void => {
-      navigate({
-        pathname: '/bridgeStatus',
-        params: {
-          txHash: pendingBridge.sourceTxHash,
-          chainId: getSourceChainId(pendingBridge, isDeveloperMode)
-        }
-      })
-    },
-    [navigate, isDeveloperMode]
   )
 
   const handleSelectSegment = useCallback(
@@ -479,7 +397,6 @@ export const TokenDetailScreen = (): React.JSX.Element => {
         <TransactionHistory
           token={token}
           handleExplorerLink={handleExplorerLink}
-          handlePendingBridge={handlePendingBridge}
           containerStyle={contentContainerStyle}
         />
       )
@@ -494,13 +411,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
           activityTab
         ]
       : [activityTab]
-  }, [
-    token,
-    handleExplorerLink,
-    handlePendingBridge,
-    contentContainerStyle,
-    isXpToken
-  ])
+  }, [token, handleExplorerLink, contentContainerStyle, isXpToken])
 
   const renderSegmentedControl = useCallback((): JSX.Element => {
     return (

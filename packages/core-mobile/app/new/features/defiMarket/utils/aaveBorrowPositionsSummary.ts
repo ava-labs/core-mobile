@@ -1,5 +1,5 @@
 import { formatUnits } from 'viem'
-import { WAVAX_ADDRESS } from 'features/swap/consts'
+import { WAVAX_ADDRESS } from 'features/swapV2/consts'
 import { AAVE_PRICE_ORACLE_SCALE, WAD } from '../consts'
 import {
   AaveBorrowData,

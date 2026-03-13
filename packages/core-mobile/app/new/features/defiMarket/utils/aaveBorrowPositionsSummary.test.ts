@@ -1,6 +1,6 @@
 import Big from 'big.js'
 import { CurrencyCode } from '@avalabs/glacier-sdk'
-import { WAVAX_ADDRESS } from 'features/swap/consts'
+import { WAVAX_ADDRESS } from 'features/swapV2/consts'
 import {
   AaveBorrowData,
   BorrowPosition,
