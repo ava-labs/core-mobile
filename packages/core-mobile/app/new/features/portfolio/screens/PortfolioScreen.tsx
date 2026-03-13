@@ -179,8 +179,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const handleSend = useCallback((): void => {
     setSelectedToken(undefined)
-    // @ts-ignore TODO: make routes typesafe
-    navigate('/send')
+    navigate('/send/send')
   }, [navigate, setSelectedToken])
 
   const handleReceive = useCallback((): void => {

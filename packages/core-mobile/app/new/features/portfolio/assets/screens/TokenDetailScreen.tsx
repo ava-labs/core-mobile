@@ -171,8 +171,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const handleSend = useCallback((): void => {
     setSelectedToken(token)
     navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/send',
+      pathname: '/send/send',
       params: { vmName: getNetwork(token?.networkChainId)?.vmName }
     })
   }, [getNetwork, navigate, setSelectedToken, token])

@@ -25,8 +25,7 @@ export const useNavigateToSwap = (): {
   }: NavigateToSwapParams = {}): void => {
     if (fromTokenId === undefined && toTokenId === undefined) {
       navigate({
-        // @ts-ignore TODO: make routes typesafe
-        pathname: '/swap',
+        pathname: '/swap/swap',
         params: {
           initialTokenIdFrom: tokenIds.AVAX,
           initialTokenIdTo: tokenIds.USDC,
@@ -43,8 +42,7 @@ export const useNavigateToSwap = (): {
     }
 
     navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/swap',
+      pathname: '/swap/swap',
       params: {
         initialTokenIdFrom: fromTokenId,
         initialTokenIdTo: toTokenId,
