@@ -591,6 +591,16 @@ export const selectIsFusionLombardBtcbToBtcEnabled = (
   )
 }
 
+export const selectIsAlternateAppIconsBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.ALTERNATE_APP_ICONS] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions
