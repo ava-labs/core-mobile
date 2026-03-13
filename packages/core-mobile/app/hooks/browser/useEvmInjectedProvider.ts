@@ -206,29 +206,21 @@ export function useEvmInjectedProvider(
       // Connection methods (eth_requestAccounts, wallet_requestPermissions, etc.)
       // are handled entirely in the JS shim for instant response.
       // Only signing and read-only RPC methods reach native.
-      switch (method) {
-        case 'wallet_switchEthereumChain': {
-          Logger.info(
-            '[InjectedProvider] wallet_switchEthereumChain requested (demo stub)'
-          )
-          sendResponse(id, null, null)
-          break
-        }
-
-        default: {
-          if (method in SIGNING_METHODS) {
-            dispatchSigningRequest(id, method, params ?? [])
-          } else if (READ_ONLY_METHODS.has(method)) {
-            proxyToRpc(id, method, params ?? [])
-          } else {
-            sendResponse(
-              id,
-              { code: -32601, message: `Method not supported: ${method}` },
-              undefined
-            )
-          }
-          break
-        }
+      if (method === 'wallet_switchEthereumChain') {
+        Logger.info(
+          '[InjectedProvider] wallet_switchEthereumChain requested (demo stub)'
+        )
+        sendResponse(id, null, null)
+      } else if (method in SIGNING_METHODS) {
+        dispatchSigningRequest(id, method, params ?? [])
+      } else if (READ_ONLY_METHODS.has(method)) {
+        proxyToRpc(id, method, params ?? [])
+      } else {
+        sendResponse(
+          id,
+          { code: -32601, message: `Method not supported: ${method}` },
+          undefined
+        )
       }
     },
     [sendResponse, proxyToRpc, dispatchSigningRequest]
