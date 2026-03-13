@@ -232,14 +232,14 @@ const StakeConfirmScreen = (): JSX.Element => {
       description: 'Your stake setup will not go through if you close now',
       buttons: [
         {
-          text: 'Back'
-        },
-        {
-          text: 'Cancel',
-          style: 'destructive',
+          text: 'Yes',
           onPress: () => {
             handleDismiss()
           }
+        },
+        {
+          text: 'Cancel',
+          style: 'destructive'
         }
       ]
     })
