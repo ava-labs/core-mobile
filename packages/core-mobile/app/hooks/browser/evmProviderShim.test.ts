@@ -54,9 +54,7 @@ describe('buildEvmProviderShim', () => {
 
     it('initializes _accounts from _address', () => {
       const shim = buildEvmProviderShim(defaultParams)
-      expect(shim).toContain(
-        'var _accounts = _address ? [_address] : []'
-      )
+      expect(shim).toContain('var _accounts = _address ? [_address] : []')
     })
   })
 
@@ -244,9 +242,7 @@ describe('buildEvmProviderShim', () => {
     })
 
     it('defines __coreProviderEmit on window', () => {
-      expect(shim).toContain(
-        'window.__coreProviderEmit = function(eventName'
-      )
+      expect(shim).toContain('window.__coreProviderEmit = function(eventName')
     })
 
     it('uses safeSend wrapper for postMessage', () => {

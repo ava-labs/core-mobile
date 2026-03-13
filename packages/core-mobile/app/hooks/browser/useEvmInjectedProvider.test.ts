@@ -2,6 +2,7 @@ import { renderHook, act } from '@testing-library/react-hooks'
 import { useSelector, useDispatch } from 'react-redux'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { RpcMethod } from 'store/rpc/types'
+import RNWebView from 'react-native-webview'
 import { useEvmInjectedProvider } from './useEvmInjectedProvider'
 
 jest.mock('react-redux', () => ({
@@ -29,7 +30,7 @@ jest.mock('./evmProviderShim', () => ({
 const mockInjectJavaScript = jest.fn()
 const mockWebViewRef = {
   current: { injectJavaScript: mockInjectJavaScript }
-} as unknown as React.RefObject<{ injectJavaScript: jest.Mock } | null>
+} as unknown as React.RefObject<RNWebView | null>
 
 const mockDispatch = jest.fn()
 
@@ -56,14 +57,22 @@ function setupMocks(
     overrides.account === undefined ? mockActiveAccount : overrides.account
   const network = overrides.network ?? mockActiveNetwork
 
-  mockUseSelector.mockImplementation((selector: (state: unknown) => unknown) => {
-    const selectorStr = selector.toString()
-    if (selectorStr.includes('activeAccount') || selectorStr.includes('Account'))
-      return account
-    if (selectorStr.includes('activeNetwork') || selectorStr.includes('Network'))
-      return network
-    return undefined
-  })
+  mockUseSelector.mockImplementation(
+    (selector: (state: unknown) => unknown) => {
+      const selectorStr = selector.toString()
+      if (
+        selectorStr.includes('activeAccount') ||
+        selectorStr.includes('Account')
+      )
+        return account
+      if (
+        selectorStr.includes('activeNetwork') ||
+        selectorStr.includes('Network')
+      )
+        return network
+      return undefined
+    }
+  )
 }
 
 describe('useEvmInjectedProvider', () => {
@@ -110,13 +119,6 @@ describe('useEvmInjectedProvider', () => {
         useEvmInjectedProvider(mockWebViewRef)
       )
 
-      const payload = JSON.stringify({
-        id: 42,
-        request: { method: 'eth_getBalance', params: ['0x123', 'latest'] }
-      })
-
-      // Trigger a read-only method so sendResponse is called internally
-      // We'll test sendResponse via the emitEvent method instead for direct access
       act(() => {
         result.current.emitEvent('chainChanged', '0x1')
       })
@@ -138,7 +140,7 @@ describe('useEvmInjectedProvider', () => {
       })
 
       expect(mockInjectJavaScript).toHaveBeenCalledWith(
-        "window.__coreProviderEmit('chainChanged', \"0x1\"); true;"
+        'window.__coreProviderEmit(\'chainChanged\', "0x1"); true;'
       )
     })
 
@@ -152,7 +154,7 @@ describe('useEvmInjectedProvider', () => {
       })
 
       expect(mockInjectJavaScript).toHaveBeenCalledWith(
-        "window.__coreProviderEmit('accountsChanged', [\"0xNewAddr\"]); true;"
+        'window.__coreProviderEmit(\'accountsChanged\', ["0xNewAddr"]); true;'
       )
     })
   })
@@ -354,45 +356,40 @@ describe('useEvmInjectedProvider', () => {
         'eth_getBlockTransactionCountByNumber'
       ]
 
-      it.each(readOnlyMethods)(
-        'proxies %s to RPC node',
-        async method => {
-          const mockResponse = {
-            ok: true,
-            json: jest.fn().mockResolvedValue({ result: '0xABC' })
-          }
-          global.fetch = jest.fn().mockResolvedValue(mockResponse)
-
-          const { result } = renderHook(() =>
-            useEvmInjectedProvider(mockWebViewRef)
-          )
-
-          const payload = JSON.stringify({
-            id: 100,
-            request: { method, params: [] }
-          })
-
-          await act(async () => {
-            result.current.handleProviderMessage(payload)
-          })
-
-          expect(global.fetch).toHaveBeenCalledWith(
-            'https://api.avax.network/ext/bc/C/rpc',
-            expect.objectContaining({
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: expect.stringContaining(`"method":"${method}"`)
-            })
-          )
+      it.each(readOnlyMethods)('proxies %s to RPC node', async method => {
+        const mockResponse = {
+          ok: true,
+          json: jest.fn().mockResolvedValue({ result: '0xABC' })
         }
-      )
+        global.fetch = jest.fn().mockResolvedValue(mockResponse)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef)
+        )
+
+        const payload = JSON.stringify({
+          id: 100,
+          request: { method, params: [] }
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        expect(global.fetch).toHaveBeenCalledWith(
+          'https://api.avax.network/ext/bc/C/rpc',
+          expect.objectContaining({
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: expect.stringContaining(`"method":"${method}"`)
+          })
+        )
+      })
 
       it('returns RPC result to WebView', async () => {
         const mockResponse = {
           ok: true,
-          json: jest
-            .fn()
-            .mockResolvedValue({ result: '0xBalanceValue' })
+          json: jest.fn().mockResolvedValue({ result: '0xBalanceValue' })
         }
         global.fetch = jest.fn().mockResolvedValue(mockResponse)
 
@@ -444,9 +441,7 @@ describe('useEvmInjectedProvider', () => {
       })
 
       it('handles fetch failure gracefully', async () => {
-        global.fetch = jest
-          .fn()
-          .mockRejectedValue(new Error('Network error'))
+        global.fetch = jest.fn().mockRejectedValue(new Error('Network error'))
 
         const { result } = renderHook(() =>
           useEvmInjectedProvider(mockWebViewRef)
@@ -471,7 +466,10 @@ describe('useEvmInjectedProvider', () => {
 
       it('handles missing RPC URL', async () => {
         setupMocks({
-          network: { ...mockActiveNetwork, rpcUrl: '' } as typeof mockActiveNetwork
+          network: {
+            ...mockActiveNetwork,
+            rpcUrl: ''
+          } as typeof mockActiveNetwork
         })
 
         const { result } = renderHook(() =>
