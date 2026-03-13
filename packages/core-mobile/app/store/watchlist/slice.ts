@@ -1,13 +1,9 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store/types'
-import { TOKEN_IDS } from 'consts/tokenIds'
+import { tokenIds } from 'consts/tokenIds'
 import { initialState, InternalId } from './types'
 
-const DEFAULT_WATCHLIST_FAVORITES = [
-  TOKEN_IDS.ETH,
-  TOKEN_IDS.BTC,
-  TOKEN_IDS.AVAX
-]
+const DEFAULT_WATCHLIST_FAVORITES = [tokenIds.ETH, tokenIds.BTC, tokenIds.AVAX]
 
 export const reducerName = 'watchlist'
 

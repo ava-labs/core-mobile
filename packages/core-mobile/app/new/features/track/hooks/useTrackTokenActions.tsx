@@ -1,5 +1,5 @@
 import { Button } from '@avalabs/k2-alpine'
-import { USDC_AVALANCHE_C_TOKEN_ID } from 'common/consts/swap'
+import { tokenIds } from 'consts/tokenIds'
 import { useIsSwappable } from 'common/hooks/useIsSwapable'
 import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
 import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
@@ -109,9 +109,7 @@ export function useTrackTokenActions({
     // thus, we need to wait for the swap list to load
     // so that we can display the swap button accordingly
     if (showSwap && isSwapListLoaded) {
-      result.push(
-        generateSwapButton(isAVAX ? USDC_AVALANCHE_C_TOKEN_ID : contractAddress)
-      )
+      result.push(generateSwapButton(isAVAX ? tokenIds.USDC : contractAddress))
     }
 
     return result

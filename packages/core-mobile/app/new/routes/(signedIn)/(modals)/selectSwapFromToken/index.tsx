@@ -10,7 +10,7 @@ import {
   useSwapSelectedToToken
 } from 'features/swap/hooks/useZustandStore'
 import { useSupportedChains } from 'features/swap/hooks/useSupportedChains'
-import { TOKEN_IDS } from 'consts/tokenIds'
+import { tokenIds } from 'consts/tokenIds'
 
 const SelectSwapFromTokenScreen = (): JSX.Element => {
   const [selectedFromToken, setSelectedFromToken] = useSwapSelectedFromToken()
@@ -29,7 +29,7 @@ const SelectSwapFromTokenScreen = (): JSX.Element => {
         selectedNetwork !== undefined &&
         isAvalancheCChainId(selectedNetwork.chainId)
       ) {
-        return token.internalId === TOKEN_IDS.BTC_B
+        return token.internalId === tokenIds.BTC_B
       }
       return true
     },

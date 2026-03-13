@@ -1,6 +1,6 @@
 import Config from 'react-native-config'
 import { Environment } from '@avalabs/fusion-sdk'
-import { TOKEN_IDS } from 'consts/tokenIds'
+import { tokenIds } from 'consts/tokenIds'
 
 /**
  * The partner ID Markr uses for EVM swaps.
@@ -51,8 +51,8 @@ export const WAVAX_ADDRESS = '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7'
 // TODO: these should come from the token lookup  api based on the current network instead of hardcoded
 // For now, we need these to determine the decimals for native tokens since they don't come with an address
 export const NATIVE_DECIMALS: Record<string, number> = {
-  [TOKEN_IDS.ETH]: 18,
-  [TOKEN_IDS.AVAX]: 18,
-  [TOKEN_IDS.SOL]: 9,
-  [TOKEN_IDS.BTC]: 8
+  [tokenIds.ETH]: 18,
+  [tokenIds.AVAX]: 18,
+  [tokenIds.SOL]: 9,
+  [tokenIds.BTC]: 8
 }

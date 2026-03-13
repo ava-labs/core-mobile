@@ -43,7 +43,7 @@ import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
 import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio/hooks/useTokensWithZeroBalanceByNetworksForAccount'
 import { selectActiveAccount } from 'store/account'
 import Logger from 'utils/Logger'
-import { TOKEN_IDS } from 'consts/tokenIds'
+import { tokenIds } from 'consts/tokenIds'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
@@ -606,17 +606,17 @@ export const SwapScreen = (): JSX.Element => {
     }
 
     function autoSelectBtcb(): void {
-      const fromIsBtc = fromToken?.internalId === TOKEN_IDS.BTC
+      const fromIsBtc = fromToken?.internalId === tokenIds.BTC
 
       if (!fromIsBtc) return
 
       // Skip if TO is already BTC.b — avoids overriding a valid selection
       // or causing unnecessary state writes on re-renders.
-      const toIsBtcB = toToken?.internalId === TOKEN_IDS.BTC_B
+      const toIsBtcB = toToken?.internalId === tokenIds.BTC_B
       if (toIsBtcB) return
 
       const btcb = [btcBLocalToken, ...tokensWithZeroBalance].find(
-        tk => tk?.internalId === TOKEN_IDS.BTC_B
+        tk => tk?.internalId === tokenIds.BTC_B
       )
       if (btcb) setToToken(btcb)
     }

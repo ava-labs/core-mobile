@@ -1,15 +1,12 @@
 import { useRouter } from 'expo-router'
-import {
-  SUPPORTED_PLATFORM_ID,
-  SUPPORTED_PLATFORM_ID_TESTNET
-} from 'common/consts/swap'
-import { TOKEN_IDS } from 'consts/tokenIds'
+import { caip2ChainIds } from 'consts/caip2ChainIds'
+import { tokenIds } from 'consts/tokenIds'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 interface NavigateToSwapParams {
-  fromTokenId?: string // internalId
-  toTokenId?: string // internalId
+  fromTokenId?: string // internalId or raw contract address
+  toTokenId?: string // internalId or raw contract address
   fromCaip2Id?: string
   toCaip2Id?: string
 }
@@ -31,14 +28,14 @@ export const useNavigateToSwap = (): {
         // @ts-ignore TODO: make routes typesafe
         pathname: '/swap',
         params: {
-          initialTokenIdFrom: TOKEN_IDS.AVAX,
-          initialTokenIdTo: TOKEN_IDS.USDC,
+          initialTokenIdFrom: tokenIds.AVAX,
+          initialTokenIdTo: tokenIds.USDC,
           initialFromCaip2Id: isDeveloperMode
-            ? SUPPORTED_PLATFORM_ID_TESTNET
-            : SUPPORTED_PLATFORM_ID,
+            ? caip2ChainIds.FUJI
+            : caip2ChainIds.C_CHAIN,
           initialToCaip2Id: isDeveloperMode
-            ? SUPPORTED_PLATFORM_ID_TESTNET
-            : SUPPORTED_PLATFORM_ID
+            ? caip2ChainIds.FUJI
+            : caip2ChainIds.C_CHAIN
         }
       })
 
@@ -53,14 +50,10 @@ export const useNavigateToSwap = (): {
         initialTokenIdTo: toTokenId,
         initialFromCaip2Id:
           fromCaip2Id ??
-          (isDeveloperMode
-            ? SUPPORTED_PLATFORM_ID_TESTNET
-            : SUPPORTED_PLATFORM_ID),
+          (isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN),
         initialToCaip2Id:
           toCaip2Id ??
-          (isDeveloperMode
-            ? SUPPORTED_PLATFORM_ID_TESTNET
-            : SUPPORTED_PLATFORM_ID)
+          (isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN)
       }
     })
   }

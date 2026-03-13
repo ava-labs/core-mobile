@@ -22,7 +22,7 @@ import { noop, truncateAddress } from '@avalabs/core-utils-sdk'
 import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { ShareBarButton } from 'common/components/ShareBarButton'
-import { AVAX_TOKEN_ID } from 'common/consts/swap'
+import { tokenIds } from 'consts/tokenIds'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useTokenDetails } from 'common/hooks/useTokenDetails'
 import { copyToClipboard } from 'common/utils/clipboard'
@@ -111,7 +111,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   const handleSwap = useCallback(
     (initialTokenIdTo?: string): void => {
       navigateToSwap({
-        fromTokenId: AVAX_TOKEN_ID,
+        fromTokenId: tokenIds.AVAX,
         toTokenId: initialTokenIdTo
       })
     },

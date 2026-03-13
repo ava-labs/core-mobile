@@ -1,5 +1,5 @@
 import { Separator } from '@avalabs/k2-alpine'
-import { AVAX_TOKEN_ID } from 'common/consts/swap'
+import { tokenIds } from 'consts/tokenIds'
 import { useIsSwappable } from 'common/hooks/useIsSwapable'
 import { useBuy } from 'features/meld/hooks/useBuy'
 import { useBalanceTotalForAccount } from 'features/portfolio/hooks/useBalanceTotalForAccount'
@@ -53,7 +53,7 @@ const TrendingTokensScreen = ({
         openBuy(initialTokenIdTo)
       } else {
         navigateToSwap({
-          fromTokenId: AVAX_TOKEN_ID,
+          fromTokenId: tokenIds.AVAX,
           toTokenId: initialTokenIdTo
         })
       }
