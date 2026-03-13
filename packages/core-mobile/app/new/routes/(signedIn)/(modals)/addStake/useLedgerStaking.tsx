@@ -147,20 +147,38 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
     return 'Ready — starting transaction...'
   }, [isLedgerConnected, isAvalancheAppOpen, deviceForWallet])
 
-  const stepTitle = useMemo((): string => {
+  const stepConfig = useMemo(() => {
     switch (ledgerCurrentOperation) {
       case Operation.EXPORT_C:
-        return 'Exporting from C-Chain...'
+        return {
+          title: 'Export from C-Chain',
+          subtitle: 'Sign the export transaction on your Ledger device'
+        }
       case Operation.IMPORT_P:
-        return 'Importing to P-Chain...'
+        return {
+          title: 'Import to P-Chain',
+          subtitle: 'Sign the import transaction on your Ledger device'
+        }
       case Operation.DELEGATE:
-        return 'Issuing delegation...'
+        return {
+          title: 'Delegate Stake',
+          subtitle: 'Sign the delegation transaction on your Ledger device'
+        }
       case Operation.EXPORT_P:
-        return 'Exporting from P-Chain...'
+        return {
+          title: 'Export from P-Chain',
+          subtitle: 'Sign the export transaction on your Ledger device'
+        }
       case Operation.IMPORT_C:
-        return 'Importing to C-Chain...'
+        return {
+          title: 'Import to C-Chain',
+          subtitle: 'Sign the import transaction on your Ledger device'
+        }
       default:
-        return 'Preparing transaction...'
+        return {
+          title: 'Preparing transaction...',
+          subtitle: 'Please wait while we prepare your staking transaction'
+        }
     }
   }, [ledgerCurrentOperation])
 
@@ -266,9 +284,16 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
     if (ledgerPhase === 'progress') {
       return (
         <View sx={{ gap: 16, alignItems: 'center' }}>
-          <Text variant="body1" sx={{ textAlign: 'center', lineHeight: 20 }}>
-            {stepTitle}
-          </Text>
+          <View sx={{ alignItems: 'center', gap: 4, paddingHorizontal: 16 }}>
+            <Text variant="body1" sx={{ textAlign: 'center', lineHeight: 20 }}>
+              {stepConfig.title}
+            </Text>
+            <Text
+              variant="caption"
+              sx={{ textAlign: 'center', color: theme.colors.$textSecondary }}>
+              {stepConfig.subtitle}
+            </Text>
+          </View>
           <ActivityIndicator size="small" color={theme.colors.$textPrimary} />
         </View>
       )
