@@ -169,16 +169,12 @@ export const ScrollScreen = ({
 
   const renderHeaderContent = useCallback(() => {
     if (title || subtitle || renderHeader) {
+      const hasTitle = Boolean(title || subtitle)
       return (
         <View>
           <View
             ref={headerRef}
-            style={[
-              headerStyle,
-              {
-                gap: 8
-              }
-            ]}>
+            style={[headerStyle, hasTitle ? { gap: 8 } : undefined]}>
             {title ? (
               <Animated.View style={[animatedHeaderStyle]}>
                 <ScreenHeader
@@ -190,9 +186,10 @@ export const ScrollScreen = ({
             ) : null}
 
             {subtitle ? <Text variant="body1">{subtitle}</Text> : null}
+            {!hasTitle && renderHeader?.()}
           </View>
 
-          {renderHeader?.()}
+          {hasTitle && renderHeader?.()}
         </View>
       )
     } else {
