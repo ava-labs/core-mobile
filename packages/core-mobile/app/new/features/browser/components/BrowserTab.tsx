@@ -14,6 +14,7 @@ import {
   InjectedJsMessageWrapper,
   useInjectedJavascript
 } from 'hooks/browser/useInjectedJavascript'
+import { useEvmInjectedProvider } from 'hooks/browser/useEvmInjectedProvider'
 import useClipboardWatcher from 'hooks/useClipboardWatcher'
 import React, {
   forwardRef,
@@ -68,6 +69,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     const { onProgress, progress, setUrlEntry, inputRef } = useBrowserContext()
     const { setPendingDeepLink } = useDeeplink()
     const clipboard = useClipboardWatcher()
+    const webViewRef = useRef<RNWebView | null>(null)
     const {
       injectCoreAsRecent,
       injectGetDescriptionAndFavicon,
@@ -77,11 +79,23 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       injectGetPageStyles
     } = useInjectedJavascript()
 
+    const { providerShimJs, handleProviderMessage, handleDomainMetadata } =
+      useEvmInjectedProvider(webViewRef)
+
+    // When the EVM provider shim is available, use it instead of the
+    // legacy coreConnectInterceptor that rejects all window.ethereum calls.
+    const INJECTED_PROVIDER_DEMO_ENABLED = false
+
+    // Provider shim runs BEFORE page scripts so dApps see window.ethereum immediately.
+    const injectedBeforeContentLoaded = INJECTED_PROVIDER_DEMO_ENABLED
+      ? providerShimJs
+      : coreConnectInterceptor
+
+    // Post-load scripts that need the DOM (favicon, styles, etc.)
     const injectedJavascript =
       injectGetDescriptionAndFavicon +
       injectGetPageStyles +
       injectCoreAsRecent +
-      coreConnectInterceptor +
       injectCustomWindowOpen +
       injectCustomPrompt
 
@@ -117,7 +131,6 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       undefined
     )
 
-    const webViewRef = useRef<RNWebView | null>(null)
     const backgroundColor =
       pageStyles?.backgroundColor || theme.colors.$surfacePrimary
 
@@ -306,7 +319,16 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             case 'desc_and_favicon':
               parseDescriptionAndFavicon(wrapper, event)
               break
+            case 'provider_request': {
+              handleProviderMessage(wrapper.payload)
+              break
+            }
+            case 'domain_metadata': {
+              handleDomainMetadata(wrapper.payload)
+              break
+            }
             case 'window_ethereum_used': {
+              if (INJECTED_PROVIDER_DEMO_ENABLED) break
               const sessions = WalletConnectService.getSessions()
               if (
                 sessions.find(session =>
@@ -340,6 +362,8 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         parseDescriptionAndFavicon,
         parsePageStyles,
         showWalletConnectDialog,
+        handleProviderMessage,
+        handleDomainMetadata,
         urlToLoad
       ]
     )
@@ -522,6 +546,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             key={tabId}
             testID="myWebview"
             webViewRef={webViewRef}
+            injectedJavaScriptBeforeContentLoaded={injectedBeforeContentLoaded}
             injectedJavaScript={injectedJavascript}
             url={urlToLoad}
             onLoad={onLoad}

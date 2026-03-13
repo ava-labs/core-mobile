@@ -22,6 +22,8 @@ export type InjectedJsMessageWrapper = {
     | 'page_styles'
     | 'log'
     | 'walletConnect_deeplink_blocked'
+    | 'provider_request'
+    | 'domain_metadata'
   payload: string
 }
 

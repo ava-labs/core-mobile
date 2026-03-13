@@ -10,6 +10,7 @@ export interface WebViewParams extends WebViewProps {
   url: string
   webViewRef?: React.RefObject<RNWebView | null>
   injectedJavaScript?: string
+  injectedJavaScriptBeforeContentLoaded?: string
   onLoad?: (event: WebViewNavigationEvent) => void
   onMessage?: (event: WebViewMessageEvent) => void
   testID?: string
@@ -18,6 +19,7 @@ export interface WebViewParams extends WebViewProps {
 export const WebView = ({
   webViewRef,
   injectedJavaScript,
+  injectedJavaScriptBeforeContentLoaded,
   url,
   onLoad,
   onError,
@@ -33,6 +35,10 @@ export const WebView = ({
       ref={webViewRef}
       injectedJavaScriptForMainFrameOnly={false}
       injectedJavaScript={injectedJavaScript}
+      injectedJavaScriptBeforeContentLoaded={
+        injectedJavaScriptBeforeContentLoaded
+      }
+      injectedJavaScriptBeforeContentLoadedForMainFrameOnly={false}
       source={{ uri: url }}
       setSupportMultipleWindows={false}
       onError={event => {
