@@ -7,15 +7,10 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { OnDelegationProgress } from 'contexts/DelegationContext'
-import { LEDGER_DEVICE_BRIEF_DELAY_MS } from 'features/ledger/consts'
 import { AnimatedIconWithText } from 'features/ledger/components/AnimatedIconWithText'
-import { useLedgerWalletMap } from 'features/ledger/store'
+import { useLedgerBLEConnection } from 'features/ledger/hooks/useLedgerBLEConnection'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useSelector } from 'react-redux'
-import LedgerService from 'services/ledger/LedgerService'
-import { LedgerAppType } from 'services/ledger/types'
 import { Operation } from 'services/earn/computeDelegationSteps/types'
-import { selectActiveWalletId } from 'store/wallet/slice'
 
 type LedgerPhase = 'idle' | 'connecting' | 'progress'
 
@@ -30,13 +25,10 @@ type UseLedgerStakingReturn = {
 export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
   const { theme } = useTheme()
   const [ledgerPhase, setLedgerPhase] = useState<LedgerPhase>('idle')
-  const [isLedgerConnected, setIsLedgerConnected] = useState(false)
-  const [isAvalancheAppOpen, setIsAvalancheAppOpen] = useState(false)
   const [ledgerCurrentStep, setLedgerCurrentStep] = useState(0)
   const [ledgerCurrentOperation, setLedgerCurrentOperation] =
     useState<Operation | null>(null)
   const [approvalInProgress, setApprovalInProgress] = useState(false)
-  const [isConnecting, setIsConnecting] = useState(false)
   const pendingActionRef = useRef<
     ((onProgress?: OnDelegationProgress) => void | Promise<void>) | undefined
   >(undefined)
@@ -48,64 +40,16 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
     }
   }, [])
 
-  const activeWalletId = useSelector(selectActiveWalletId)
-  const { getLedgerInfoByWalletId } = useLedgerWalletMap()
-  const deviceForWallet = useMemo(
-    () => getLedgerInfoByWalletId(activeWalletId)?.device,
-    [getLedgerInfoByWalletId, activeWalletId]
-  )
-
-  const handleReconnect = useCallback(async (): Promise<void> => {
-    if (!deviceForWallet || !isMountedRef.current) return
-    setIsConnecting(true)
-    try {
-      await LedgerService.ensureConnection(deviceForWallet.id)
-      if (!isMountedRef.current) return
-      setIsLedgerConnected(true)
-    } catch {
-      if (!isMountedRef.current) return
-      setIsLedgerConnected(false)
-    } finally {
-      if (isMountedRef.current) {
-        setIsConnecting(false)
-      }
-    }
-  }, [deviceForWallet])
-
-  // Initiate BLE connection when entering connecting phase
-  useEffect(() => {
-    if (!isLedger || ledgerPhase !== 'connecting' || !deviceForWallet) return
-
-    handleReconnect()
-  }, [isLedger, ledgerPhase, deviceForWallet, handleReconnect])
-
-  // Poll for device connection and Avalanche app status
-  useEffect(() => {
-    if (!isLedger || ledgerPhase !== 'connecting') return
-
-    const checkDeviceReady = async (): Promise<void> => {
-      try {
-        const connected = LedgerService.isConnected()
-        setIsLedgerConnected(connected)
-        if (connected) {
-          const appType = LedgerService.getCurrentAppType()
-          setIsAvalancheAppOpen(appType === LedgerAppType.AVALANCHE)
-        } else {
-          setIsAvalancheAppOpen(false)
-        }
-      } catch {
-        setIsLedgerConnected(false)
-        setIsAvalancheAppOpen(false)
-      }
-    }
-
-    checkDeviceReady()
-    const pollInterval = setInterval(
-      checkDeviceReady,
-      LEDGER_DEVICE_BRIEF_DELAY_MS
-    )
-    return () => clearInterval(pollInterval)
-  }, [isLedger, ledgerPhase])
+  const {
+    isLedgerConnected,
+    isAvalancheAppOpen,
+    deviceForWallet,
+    handleReconnect,
+    connectionStatus
+  } = useLedgerBLEConnection({
+    isLedger,
+    isConnecting: ledgerPhase === 'connecting'
+  })
 
   // Start delegation once device is connected and Avalanche app is open
   useEffect(() => {
@@ -156,36 +100,24 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
     isLedger
   ])
 
-  const startLedgerDelegation = (
-    action: (onProgress?: OnDelegationProgress) => void | Promise<void>
-  ): void => {
-    pendingActionRef.current = action
-    setLedgerPhase('connecting')
-    setIsLedgerConnected(false)
-    setIsAvalancheAppOpen(false)
-    setLedgerCurrentStep(0)
-    setLedgerCurrentOperation(null)
-    setApprovalInProgress(false)
-  }
+  const startLedgerDelegation = useCallback(
+    (
+      action: (onProgress?: OnDelegationProgress) => void | Promise<void>
+    ): void => {
+      pendingActionRef.current = action
+      setLedgerPhase('connecting')
+      setLedgerCurrentStep(0)
+      setLedgerCurrentOperation(null)
+      setApprovalInProgress(false)
+    },
+    []
+  )
 
-  const resetLedgerState = (): void => {
+  const resetLedgerState = useCallback((): void => {
     setLedgerPhase('idle')
     setApprovalInProgress(false)
-  }
-
-  const connectionStatus = useMemo((): string => {
-    if (!isLedgerConnected) {
-      return deviceForWallet
-        ? `Connect ${deviceForWallet.name} and open the Avalanche app`
-        : 'Connect your Ledger and open the Avalanche app'
-    }
-    if (!isAvalancheAppOpen) {
-      return deviceForWallet
-        ? `Open the Avalanche app on ${deviceForWallet.name}`
-        : 'Open the Avalanche app on your Ledger'
-    }
-    return 'Ready — starting transaction...'
-  }, [isLedgerConnected, isAvalancheAppOpen, deviceForWallet])
+    pendingActionRef.current = undefined
+  }, [])
 
   const stepConfig = useMemo(() => {
     switch (ledgerCurrentOperation) {
@@ -222,132 +154,147 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
     }
   }, [ledgerCurrentOperation])
 
-  const renderLedgerFooter = (totalSteps: number): JSX.Element | null => {
-    if (!isLedger) return null
+  const renderLedgerFooter = useCallback(
+    (totalSteps: number): JSX.Element | null => {
+      if (!isLedger) return null
 
-    if (ledgerPhase === 'connecting') {
-      return (
-        <View sx={{ gap: 16, marginTop: 24 }}>
-          {deviceForWallet && (
-            <View
-              sx={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: theme.colors.$surfaceSecondary,
-                gap: 16,
-                borderRadius: 12,
-                paddingHorizontal: 16
-              }}>
-              <View
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 20,
-                  backgroundColor: theme.colors.$surfaceSecondary,
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}>
-                <Icons.Custom.Bluetooth
-                  color={theme.colors.$textPrimary}
-                  width={24}
-                  height={24}
-                />
-              </View>
+      if (ledgerPhase === 'connecting') {
+        return (
+          <View sx={{ gap: 16, marginTop: 24 }}>
+            {deviceForWallet && (
               <View
                 sx={{
-                  flex: 1,
                   flexDirection: 'row',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 12
+                  backgroundColor: theme.colors.$surfaceSecondary,
+                  gap: 16,
+                  borderRadius: 12,
+                  paddingHorizontal: 16
                 }}>
-                <View sx={{ marginVertical: 14, flex: 1, flexShrink: 1 }}>
-                  <Text
-                    numberOfLines={1}
-                    variant="buttonMedium"
-                    sx={{
-                      fontFamily: 'Inter-Medium',
-                      fontSize: 16,
-                      color: '$textPrimary'
-                    }}>
-                    {deviceForWallet.name}
-                  </Text>
-                  <Text
-                    numberOfLines={2}
-                    variant="caption"
-                    sx={{
-                      fontSize: 13,
-                      paddingTop: 4,
-                      color: theme.colors.$textSecondary
-                    }}>
-                    {connectionStatus}
-                  </Text>
+                <View
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 20,
+                    backgroundColor: theme.colors.$surfaceSecondary,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}>
+                  <Icons.Custom.Bluetooth
+                    color={theme.colors.$textPrimary}
+                    width={24}
+                    height={24}
+                  />
                 </View>
                 <View
                   sx={{
+                    flex: 1,
                     flexDirection: 'row',
                     alignItems: 'center',
-                    gap: 4,
-                    flexShrink: 0
+                    justifyContent: 'space-between',
+                    gap: 12
                   }}>
-                  {!isLedgerConnected && (
-                    <Button
-                      type="primary"
-                      size="small"
-                      style={{ width: 72 }}
-                      onPress={handleReconnect}
-                      disabled={isConnecting}>
-                      {isConnecting ? (
-                        <ActivityIndicator
-                          size="small"
-                          color={theme.colors.$surfacePrimary}
-                        />
-                      ) : (
-                        'Connect'
-                      )}
-                    </Button>
-                  )}
+                  <View sx={{ marginVertical: 14, flex: 1, flexShrink: 1 }}>
+                    <Text
+                      numberOfLines={1}
+                      variant="buttonMedium"
+                      sx={{
+                        fontFamily: 'Inter-Medium',
+                        fontSize: 16,
+                        color: '$textPrimary'
+                      }}>
+                      {deviceForWallet.name}
+                    </Text>
+                    <Text
+                      numberOfLines={2}
+                      variant="caption"
+                      sx={{
+                        fontSize: 13,
+                        paddingTop: 4,
+                        color: theme.colors.$textSecondary
+                      }}>
+                      {connectionStatus}
+                    </Text>
+                  </View>
+                  <View
+                    sx={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 4,
+                      flexShrink: 0
+                    }}>
+                    {!isLedgerConnected && (
+                      <Button
+                        type="primary"
+                        size="small"
+                        style={{ width: 72 }}
+                        onPress={handleReconnect}
+                        disabled={ledgerPhase === 'connecting'}>
+                        {ledgerPhase === 'connecting' ? (
+                          <ActivityIndicator
+                            size="small"
+                            color={theme.colors.$surfacePrimary}
+                          />
+                        ) : (
+                          'Connect'
+                        )}
+                      </Button>
+                    )}
+                  </View>
                 </View>
               </View>
-            </View>
-          )}
-          <Button
-            type="tertiary"
-            size="large"
-            onPress={() => setLedgerPhase('idle')}>
-            Cancel
-          </Button>
-        </View>
-      )
-    }
+            )}
+            <Button type="tertiary" size="large" onPress={resetLedgerState}>
+              Cancel
+            </Button>
+          </View>
+        )
+      }
 
-    if (ledgerPhase === 'progress') {
-      const title = stepConfig.title.includes('Preparing')
-        ? stepConfig.title
-        : `${stepConfig.title} [${ledgerCurrentStep}/${totalSteps}]`
-      return (
-        <AnimatedIconWithText
-          icon={
-            <Icons.Custom.Ledger
-              color={theme.colors.$textPrimary}
-              width={32}
-              height={32}
-            />
-          }
-          space={16}
-          style={{ marginTop: 24 }}
-          animationSize={{ width: 120, height: 120 }}
-          title={title}
-          titleStyle={{ fontSize: 16 }}
-          subtitle={stepConfig.subtitle}
-          subtitleStyle={{ fontSize: 12 }}
-          showAnimation
-        />
-      )
-    }
+      if (ledgerPhase === 'progress') {
+        const title = stepConfig.title.includes('Preparing')
+          ? stepConfig.title
+          : `${stepConfig.title} [${ledgerCurrentStep}/${totalSteps}]`
+        return (
+          <AnimatedIconWithText
+            icon={
+              <Icons.Custom.Ledger
+                color={theme.colors.$textPrimary}
+                width={32}
+                height={32}
+              />
+            }
+            space={16}
+            style={{ marginTop: 24 }}
+            animationSize={{ width: 120, height: 120 }}
+            title={title}
+            titleStyle={{ fontSize: 16 }}
+            subtitle={stepConfig.subtitle}
+            subtitleStyle={{ fontSize: 12 }}
+            showAnimation
+          />
+        )
+      }
 
-    return null
-  }
+      return null
+    },
+    [
+      isLedger,
+      ledgerPhase,
+      deviceForWallet,
+      theme.colors.$surfaceSecondary,
+      theme.colors.$textPrimary,
+      theme.colors.$textSecondary,
+      theme.colors.$surfacePrimary,
+      connectionStatus,
+      isLedgerConnected,
+      handleReconnect,
+      stepConfig.title,
+      stepConfig.subtitle,
+      ledgerCurrentStep,
+      resetLedgerState
+    ]
+  )
 
   return {
     startLedgerDelegation,
