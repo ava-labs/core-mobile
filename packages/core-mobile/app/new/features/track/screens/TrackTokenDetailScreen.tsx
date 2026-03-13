@@ -26,7 +26,7 @@ import { AVAX_TOKEN_ID } from 'common/consts/swap'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useTokenDetails } from 'common/hooks/useTokenDetails'
 import { copyToClipboard } from 'common/utils/clipboard'
-import { isIOS26 } from 'common/utils/isIOS26'
+import { isIOS26AndAbove } from 'common/utils/isIOS26AndAbove'
 import { AVAX_COINGECKO_ID } from 'consts/coingecko'
 import { format } from 'date-fns'
 import { useBuy } from 'features/meld/hooks/useBuy'
@@ -324,13 +324,15 @@ const TrackTokenDetailScreen = (): JSX.Element => {
           <FavoriteBarButton
             isFavorite={isFavorite}
             onPress={handleFavorite}
-            style={isIOS26 ? { paddingHorizontal: 12 } : { paddingRight: 12 }}
+            style={
+              isIOS26AndAbove ? { paddingHorizontal: 12 } : { paddingRight: 12 }
+            }
           />
         )}
         <ShareBarButton
           onPress={handleShare}
           style={
-            isIOS26
+            isIOS26AndAbove
               ? { paddingHorizontal: 12 }
               : {
                   paddingRight: 12,

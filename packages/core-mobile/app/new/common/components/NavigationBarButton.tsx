@@ -1,5 +1,5 @@
 import { TouchableOpacity, View } from '@avalabs/k2-alpine'
-import { isIOS26 } from 'common/utils/isIOS26'
+import { isIOS26AndAbove } from 'common/utils/isIOS26AndAbove'
 import React, { useMemo } from 'react'
 import {
   Platform,
@@ -27,7 +27,7 @@ const NavigationBarButton = React.forwardRef<
     ref
   ): JSX.Element => {
     const containerStyle: ViewStyle = useMemo(() => {
-      if (isIOS26) {
+      if (isIOS26AndAbove) {
         return {
           height: 36,
           width: 36,

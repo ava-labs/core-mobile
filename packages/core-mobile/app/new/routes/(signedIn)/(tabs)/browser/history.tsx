@@ -10,7 +10,7 @@ import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
-import { isIOS26 } from 'common/utils/isIOS26'
+import { isIOS26AndAbove } from 'common/utils/isIOS26AndAbove'
 import { BrowserItem } from 'features/browser/components/BrowserItem'
 import { useSearchHistory } from 'features/browser/hooks/useSearchHistory'
 import { prepareFaviconToLoad } from 'features/browser/utils'
@@ -112,7 +112,7 @@ const HistoryScreen = (): JSX.Element => {
 
   const renderHeaderRight = (): JSX.Element | null => {
     if (!hasHistory) return null
-    if (isIOS26)
+    if (isIOS26AndAbove)
       return (
         <TouchableOpacity
           onPress={removeAll}

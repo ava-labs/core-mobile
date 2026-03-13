@@ -16,7 +16,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { DappLogo } from 'common/components/DappLogo'
 import { ErrorState } from 'common/components/ErrorState'
 import NavigationBarButton from 'common/components/NavigationBarButton'
-import { isIOS26 } from 'common/utils/isIOS26'
+import { isIOS26AndAbove } from 'common/utils/isIOS26AndAbove'
 
 const ConnectedSitesScreen = (): JSX.Element => {
   const {
@@ -170,7 +170,7 @@ const ConnectedSitesScreen = (): JSX.Element => {
 
   const renderHeaderRight = (): JSX.Element | null => {
     if (allApprovedDapps.length === 0) return null
-    if (isIOS26)
+    if (isIOS26AndAbove)
       return (
         <TouchableOpacity
           onPress={disconnectAll}
