@@ -233,13 +233,13 @@ const StakeConfirmScreen = (): JSX.Element => {
       buttons: [
         {
           text: 'Yes',
+          style: 'destructive',
           onPress: () => {
             handleDismiss()
           }
         },
         {
-          text: 'Cancel',
-          style: 'destructive'
+          text: 'Cancel'
         }
       ]
     })

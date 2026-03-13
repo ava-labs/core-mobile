@@ -1,10 +1,4 @@
-import {
-  ActivityIndicator,
-  Icons,
-  View,
-  showAlert,
-  useTheme
-} from '@avalabs/k2-alpine'
+import { Icons, View, showAlert, useTheme } from '@avalabs/k2-alpine'
 import { ProgressDots } from 'common/components/ProgressDots'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIconWithText'

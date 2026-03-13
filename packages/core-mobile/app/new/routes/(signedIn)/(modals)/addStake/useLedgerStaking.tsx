@@ -21,7 +21,7 @@ type LedgerPhase = 'idle' | 'connecting' | 'progress'
 
 type UseLedgerStakingReturn = {
   startLedgerDelegation: (
-    action: (onProgress?: OnDelegationProgress) => void
+    action: (onProgress?: OnDelegationProgress) => void | Promise<void>
   ) => void
   resetLedgerState: () => void
   renderLedgerFooter: (totalSteps: number) => JSX.Element | null
@@ -38,8 +38,15 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
   const [approvalInProgress, setApprovalInProgress] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
   const pendingActionRef = useRef<
-    ((onProgress?: OnDelegationProgress) => void) | undefined
+    ((onProgress?: OnDelegationProgress) => void | Promise<void>) | undefined
   >(undefined)
+
+  const isMountedRef = useRef(true)
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
 
   const activeWalletId = useSelector(selectActiveWalletId)
   const { getLedgerInfoByWalletId } = useLedgerWalletMap()
@@ -49,12 +56,14 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
   )
 
   const handleReconnect = useCallback(async (): Promise<void> => {
-    if (!deviceForWallet) return
+    if (!deviceForWallet || !isMountedRef.current) return
     setIsConnecting(true)
     try {
       await LedgerService.ensureConnection(deviceForWallet.id)
+      if (!isMountedRef.current) return
       setIsLedgerConnected(true)
     } catch {
+      if (!isMountedRef.current) return
       setIsLedgerConnected(false)
     } finally {
       setIsConnecting(false)
@@ -113,15 +122,33 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
       step: number,
       operation: Operation | null
     ): void => {
+      if (operation === null) {
+        // Final progress tick: keep the last displayed step and operation
+        setLedgerCurrentStep(prev => prev)
+        setLedgerCurrentOperation(prev => prev)
+        return
+      }
       setLedgerCurrentStep(step + 1) // Convert to 1-based index for user display
       setLedgerCurrentOperation(operation)
     }
 
-    pendingActionRef.current?.(onProgress)
+    const resetOnFailure = (): void => {
+      setApprovalInProgress(false)
+      setLedgerPhase('connecting')
+    }
+
+    try {
+      const result = pendingActionRef.current?.(onProgress)
+      if (result instanceof Promise) {
+        result.catch(resetOnFailure)
+      }
+    } catch {
+      resetOnFailure()
+    }
   }, [ledgerPhase, isLedgerConnected, isAvalancheAppOpen, approvalInProgress])
 
   const startLedgerDelegation = (
-    action: (onProgress?: OnDelegationProgress) => void
+    action: (onProgress?: OnDelegationProgress) => void | Promise<void>
   ): void => {
     pendingActionRef.current = action
     setLedgerPhase('connecting')
@@ -191,7 +218,7 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
 
     if (ledgerPhase === 'connecting') {
       return (
-        <View sx={{ gap: 16 }}>
+        <View sx={{ gap: 16, marginTop: 24 }}>
           {deviceForWallet && (
             <View
               sx={{
@@ -298,6 +325,8 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
               height={32}
             />
           }
+          space={16}
+          style={{ marginTop: 24 }}
           animationSize={{ width: 120, height: 120 }}
           title={title}
           titleStyle={{ fontSize: 16 }}

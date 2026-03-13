@@ -29,6 +29,10 @@ interface AnimatedIconWithTextProps {
   animationSize?: { width: number; height: number }
   /** Custom color for the animation (defaults to theme textPrimary) */
   animationColor?: string
+  /** Optional vertical space between icon and title */
+  space?: number
+  /** Optional container style */
+  style?: React.ComponentProps<typeof View>['style']
 }
 
 export const AnimatedIconWithText: React.FC<AnimatedIconWithTextProps> = ({
@@ -40,7 +44,9 @@ export const AnimatedIconWithText: React.FC<AnimatedIconWithTextProps> = ({
   showAnimation = false,
   animationSource = connectWavesAnimation,
   animationSize = { width: 220, height: 220 },
-  animationColor
+  animationColor,
+  space = 34,
+  style
 }) => {
   const {
     theme: { colors }
@@ -48,10 +54,13 @@ export const AnimatedIconWithText: React.FC<AnimatedIconWithTextProps> = ({
 
   return (
     <View
-      style={{
-        alignItems: 'center',
-        paddingHorizontal: 16
-      }}>
+      style={[
+        {
+          alignItems: 'center',
+          paddingHorizontal: 16
+        },
+        style
+      ]}>
       <View
         style={{
           alignItems: 'center',
@@ -82,7 +91,7 @@ export const AnimatedIconWithText: React.FC<AnimatedIconWithTextProps> = ({
         )}
         {icon}
       </View>
-      <Space y={34} />
+      <Space y={space} />
       <Text
         variant="heading6"
         style={[
