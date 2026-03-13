@@ -9,19 +9,28 @@ jest.mock('services/analytics/AnalyticsService', () => ({
   default: { capture: jest.fn() }
 }))
 
+jest.mock('utils/Utils', () => ({
+  isDebugOrInternalBuild: jest.fn(() => false)
+}))
+
+import { Platform } from 'react-native'
 import { getAppIconName, setAlternateAppIcon } from 'expo-alternate-app-icons'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { isDebugOrInternalBuild } from 'utils/Utils'
 import { appIconStore, AppIcon, APP_ICON_DISPLAY_NAMES } from './store'
 
 const mockedGetAppIconName = getAppIconName as jest.Mock
 const mockedSetAlternateAppIcon = setAlternateAppIcon as jest.Mock
 const mockedCapture = AnalyticsService.capture as jest.Mock
+const mockedIsDebugOrInternalBuild = isDebugOrInternalBuild as jest.Mock
 
 describe('appIconStore', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockedGetAppIconName.mockReturnValue(null)
     mockedSetAlternateAppIcon.mockResolvedValue(null)
+    mockedIsDebugOrInternalBuild.mockReturnValue(false)
+    ;(Platform as { OS: string }).OS = 'ios'
     appIconStore.setState({ currentIcon: AppIcon.Default })
   })
 
@@ -76,5 +85,39 @@ describe('appIconStore', () => {
     for (const icon of Object.values(AppIcon)) {
       expect(APP_ICON_DISPLAY_NAMES[icon]).toBeDefined()
     }
+  })
+
+  describe('Light-Internal icon name mapping', () => {
+    it('should use Light-Internal on iOS internal builds', () => {
+      mockedIsDebugOrInternalBuild.mockReturnValue(true)
+      ;(Platform as { OS: string }).OS = 'ios'
+      appIconStore.getState().setIcon(AppIcon.Light)
+      expect(mockedSetAlternateAppIcon).toHaveBeenCalledWith('Light-Internal')
+    })
+
+    it('should use Light (not Light-Internal) on Android internal builds', () => {
+      mockedIsDebugOrInternalBuild.mockReturnValue(true)
+      ;(Platform as { OS: string }).OS = 'android'
+      appIconStore.getState().setIcon(AppIcon.Light)
+      expect(mockedSetAlternateAppIcon).toHaveBeenCalledWith('Light')
+    })
+
+    it('should use Light (not Light-Internal) on iOS non-internal builds', () => {
+      mockedIsDebugOrInternalBuild.mockReturnValue(false)
+      ;(Platform as { OS: string }).OS = 'ios'
+      appIconStore.getState().setIcon(AppIcon.Light)
+      expect(mockedSetAlternateAppIcon).toHaveBeenCalledWith('Light')
+    })
+
+    it('should map Light-Internal native name back to AppIcon.Light on rollback', async () => {
+      mockedSetAlternateAppIcon.mockRejectedValue(new Error('fail'))
+      mockedGetAppIconName.mockReturnValue('Light-Internal')
+      appIconStore.getState().setIcon(AppIcon.Marker)
+
+      await Promise.resolve()
+      await Promise.resolve()
+
+      expect(appIconStore.getState().currentIcon).toBe(AppIcon.Light)
+    })
   })
 })

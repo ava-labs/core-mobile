@@ -1,17 +1,17 @@
 import { AvatarType } from '@avalabs/k2-alpine'
 import { createZustandStore } from 'common/utils/createZustandStore'
-import { ZustandStorageKeys } from 'resources/Constants'
-import { zustandMMKVStorage } from 'utils/mmkv/storages'
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 import {
   getAppIconName,
   setAlternateAppIcon,
   supportsAlternateIcons
 } from 'expo-alternate-app-icons'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import DeviceInfo from 'react-native-device-info'
 import { Platform } from 'react-native'
+import { ZustandStorageKeys } from 'resources/Constants'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { zustandMMKVStorage } from 'utils/mmkv/storages'
+import { isDebugOrInternalBuild } from 'utils/Utils'
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 export const useNewContactAvatar = createZustandStore<AvatarType | undefined>(
   undefined
@@ -104,12 +104,10 @@ export const APP_ICON_SUBTITLES: Partial<Record<AppIcon, string>> = {
   [AppIcon.Default]: 'Default icon'
 }
 
-const isInternalBuild = DeviceInfo.getBundleId().includes('internal')
-
-export const DEFAULT_ICON_PREVIEW_LIGHT: number = isInternalBuild
+export const DEFAULT_ICON_PREVIEW_LIGHT: number = isDebugOrInternalBuild()
   ? require('../../../assets/app-icons/AppIcon-light-dev.png')
   : require('../../../assets/app-icons/AppIcon-light.png')
-export const DEFAULT_ICON_PREVIEW_DARK: number = isInternalBuild
+export const DEFAULT_ICON_PREVIEW_DARK: number = isDebugOrInternalBuild()
   ? require('../../../assets/app-icons/AppIcon-dark-dev.png')
   : require('../../../assets/app-icons/AppIcon-dark.png')
 
@@ -148,7 +146,11 @@ export const appIconStore = create<AppIconState>(set => ({
     if (!supportsAlternateIcons) return
 
     let nativeIconName: string | null = icon === AppIcon.Default ? null : icon
-    if (icon === AppIcon.Light && isInternalBuild && Platform.OS === 'ios') {
+    if (
+      icon === AppIcon.Light &&
+      isDebugOrInternalBuild() &&
+      Platform.OS === 'ios'
+    ) {
       nativeIconName = 'Light-Internal'
     }
     set({ currentIcon: icon })
