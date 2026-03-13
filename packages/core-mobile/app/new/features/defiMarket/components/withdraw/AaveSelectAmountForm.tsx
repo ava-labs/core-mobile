@@ -83,23 +83,28 @@ export const WithdrawAaveSelectAmountForm = ({
   const underlyingAssetAddress = (market.asset.contractAddress ??
     WAVAX_ADDRESS) as Address
   const { data: borrowData } = useAaveBorrowData(underlyingAssetAddress)
+  const isUsedAsCollateral = market.usageAsCollateralEnabledOnUser === true
+
   const { currentHealthScore, calculateHealthScore } = useAaveHealthScore({
     borrowData,
     tokenDecimals: market.asset.decimals,
-    direction: 'withdraw'
+    direction: 'withdraw',
+    isUsedAsCollateral
   })
 
   const { blockingError: zeroLtvError } = useAaveZeroLtvCollateral()
   const hasDebt = borrowData !== undefined && borrowData.totalDebtUSD > 0n
   const blockingError = hasDebt ? zeroLtvError : undefined
 
-  // Max safe withdraw: keep health factor >= 1.01 (liquidation threshold-based)
+  // Max safe withdraw: keep health factor >= 1.02 (liquidation threshold-based)
+  // Only applies when this asset is used as collateral and user has debt
   const maxWithdrawAmount = useMemo(() => {
     if (
       !borrowData ||
       borrowData.totalDebtUSD === 0n ||
       !borrowData.tokenPriceUSD ||
-      !borrowData.liquidationThreshold
+      !borrowData.liquidationThreshold ||
+      !isUsedAsCollateral
     ) {
       return tokenBalance
     }
@@ -123,7 +128,7 @@ export const WithdrawAaveSelectAmountForm = ({
       market.asset.symbol
     )
     return maxUnit.lt(tokenBalance) ? maxUnit : tokenBalance
-  }, [borrowData, tokenBalance, market.asset])
+  }, [borrowData, tokenBalance, market.asset, isUsedAsCollateral])
 
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {

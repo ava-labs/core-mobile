@@ -40,19 +40,23 @@ export const WithdrawBenqiSelectAmountForm = ({
   const { data: borrowData } = useBenqiBorrowData(
     market.asset.mintTokenAddress as Address
   )
+  const isUsedAsCollateral = market.usageAsCollateralEnabledOnUser === true
+
   const { currentHealthScore, calculateHealthScore } = useBenqiHealthScore({
     borrowData,
-    direction: 'withdraw'
+    direction: 'withdraw',
+    isUsedAsCollateral
   })
 
   // Max safe withdraw: keep health factor at same level as borrow max
-  // maxWithdrawUSD = liquidity * 10^WAD / collateralFactor
+  // Only applies when this asset is used as collateral and user has debt
   const maxWithdrawAmount = useMemo(() => {
     if (
       !borrowData ||
       borrowData.totalDebtUSD === 0n ||
       !borrowData.tokenPriceUSD ||
-      !borrowData.collateralFactor
+      !borrowData.collateralFactor ||
+      !isUsedAsCollateral
     ) {
       return tokenBalance
     }
@@ -73,7 +77,7 @@ export const WithdrawBenqiSelectAmountForm = ({
       market.asset.symbol
     )
     return maxUnit.lt(tokenBalance) ? maxUnit : tokenBalance
-  }, [borrowData, tokenBalance, market.asset])
+  }, [borrowData, tokenBalance, market.asset, isUsedAsCollateral])
 
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {

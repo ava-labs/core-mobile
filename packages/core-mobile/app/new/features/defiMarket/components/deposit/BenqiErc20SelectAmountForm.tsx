@@ -56,9 +56,12 @@ export const BenqiErc20SelectAmountForm = ({
   const { data: borrowData } = useBenqiBorrowData(
     market.asset.mintTokenAddress as Address
   )
+  const isUsedAsCollateral = market.usageAsCollateralEnabledOnUser === true
+
   const { currentHealthScore, calculateHealthScore } = useBenqiHealthScore({
     borrowData,
-    direction: 'deposit'
+    direction: 'deposit',
+    isUsedAsCollateral
   })
 
   const validateAmount = useCallback(

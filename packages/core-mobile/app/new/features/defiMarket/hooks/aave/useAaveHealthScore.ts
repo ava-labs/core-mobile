@@ -7,11 +7,13 @@ import { AaveBorrowData } from '../../types'
 export function useAaveHealthScore({
   borrowData,
   tokenDecimals,
-  direction
+  direction,
+  isUsedAsCollateral = true
 }: {
   borrowData: AaveBorrowData | undefined
   tokenDecimals: number
   direction: 'deposit' | 'withdraw'
+  isUsedAsCollateral?: boolean
 }): {
   currentHealthScore: number | undefined
   calculateHealthScore: (amount: TokenUnit) => number | undefined
@@ -24,6 +26,8 @@ export function useAaveHealthScore({
   const calculateHealthScore = useCallback(
     (amount: TokenUnit): number | undefined => {
       if (!borrowData) return undefined
+      if (!isUsedAsCollateral) return currentHealthScore
+
       const {
         totalCollateralUSD,
         totalDebtUSD,
@@ -47,7 +51,13 @@ export function useAaveHealthScore({
         (totalDebtUSD * 10000n)
       return Number(formatUnits(newHealthFactor, WAD))
     },
-    [borrowData, tokenDecimals, direction]
+    [
+      borrowData,
+      tokenDecimals,
+      direction,
+      isUsedAsCollateral,
+      currentHealthScore
+    ]
   )
 
   return { currentHealthScore, calculateHealthScore }

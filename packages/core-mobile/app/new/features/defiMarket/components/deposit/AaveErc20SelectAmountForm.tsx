@@ -59,10 +59,13 @@ export const AaveErc20SelectAmountForm = ({
 
   const underlyingAssetAddress = market.asset.contractAddress as Address
   const { data: borrowData } = useAaveBorrowData(underlyingAssetAddress)
+  const isUsedAsCollateral = market.usageAsCollateralEnabledOnUser === true
+
   const { currentHealthScore, calculateHealthScore } = useAaveHealthScore({
     borrowData,
     tokenDecimals: market.asset.decimals,
-    direction: 'deposit'
+    direction: 'deposit',
+    isUsedAsCollateral
   })
 
   const validateAmount = useCallback(

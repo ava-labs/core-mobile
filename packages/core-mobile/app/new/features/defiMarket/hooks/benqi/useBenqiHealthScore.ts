@@ -6,10 +6,12 @@ import { BenqiBorrowData } from '../../types'
 
 export function useBenqiHealthScore({
   borrowData,
-  direction
+  direction,
+  isUsedAsCollateral = true
 }: {
   borrowData: BenqiBorrowData | undefined
   direction: 'deposit' | 'withdraw'
+  isUsedAsCollateral?: boolean
 }): {
   currentHealthScore: number | undefined
   calculateHealthScore: (amount: TokenUnit) => number | undefined
@@ -25,6 +27,8 @@ export function useBenqiHealthScore({
   const calculateHealthScore = useCallback(
     (amount: TokenUnit): number | undefined => {
       if (!borrowData) return undefined
+      if (!isUsedAsCollateral) return currentHealthScore
+
       const { liquidity, totalDebtUSD, tokenPriceUSD, collateralFactor } =
         borrowData
       if (totalDebtUSD === 0n) return Infinity
@@ -41,7 +45,7 @@ export function useBenqiHealthScore({
         ((newLiquidity + totalDebtUSD) * WAD_SCALE) / totalDebtUSD
       return Number(formatUnits(newHealth, WAD))
     },
-    [borrowData, direction]
+    [borrowData, direction, isUsedAsCollateral, currentHealthScore]
   )
 
   return { currentHealthScore, calculateHealthScore }
