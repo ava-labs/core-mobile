@@ -16,7 +16,7 @@ export const showHealthImpactAlert = (
     return new Promise(resolve => {
       showAlert({
         title: 'Unable to disable collateral',
-        description: `Removing ${symbol} as collateral will lower your health score below 1.0, triggering liquidation.`,
+        description: `Removing ${symbol} as collateral will lower your health score to 1.0 or below, triggering liquidation.`,
         buttons: [{ text: 'Got it', onPress: () => resolve(false) }],
         options: { cancelable: false }
       })
