@@ -108,6 +108,7 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
   // Start delegation once device is connected and Avalanche app is open
   useEffect(() => {
     if (
+      !isLedger ||
       ledgerPhase !== 'connecting' ||
       !isLedgerConnected ||
       !isAvalancheAppOpen ||
@@ -145,7 +146,13 @@ export const useLedgerStaking = (isLedger: boolean): UseLedgerStakingReturn => {
     } catch {
       resetOnFailure()
     }
-  }, [ledgerPhase, isLedgerConnected, isAvalancheAppOpen, approvalInProgress])
+  }, [
+    ledgerPhase,
+    isLedgerConnected,
+    isAvalancheAppOpen,
+    approvalInProgress,
+    isLedger
+  ])
 
   const startLedgerDelegation = (
     action: (onProgress?: OnDelegationProgress) => void | Promise<void>
