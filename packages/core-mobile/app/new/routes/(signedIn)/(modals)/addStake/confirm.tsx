@@ -43,10 +43,10 @@ import NetworkService from 'services/network/NetworkService'
 import { WalletType } from 'services/wallet/types'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveWallet } from 'store/wallet/slice'
-import { executeLedgerStakingOperation } from 'features/ledger/utils'
 import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { truncateNodeId } from 'utils/Utils'
+import { useLedgerStaking } from './useLedgerStaking'
 
 const StakeConfirmScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -114,6 +114,9 @@ const StakeConfirmScreen = (): JSX.Element => {
   const isLedger =
     activeWallet?.type === WalletType.LEDGER ||
     activeWallet?.type === WalletType.LEDGER_LIVE
+
+  const { startLedgerDelegation, resetLedgerState, renderLedgerFooter } =
+    useLedgerStaking(isLedger)
 
   const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const networkFeesInAvax = useMemo(() => {
@@ -229,14 +232,14 @@ const StakeConfirmScreen = (): JSX.Element => {
       description: 'Your stake setup will not go through if you close now',
       buttons: [
         {
-          text: 'Back'
-        },
-        {
-          text: 'Cancel',
+          text: 'Yes',
           style: 'destructive',
           onPress: () => {
             handleDismiss()
           }
+        },
+        {
+          text: 'Cancel'
         }
       ]
     })
@@ -278,8 +281,7 @@ const StakeConfirmScreen = (): JSX.Element => {
     (e: Error): void => {
       AnalyticsService.capture('StakeDelegationFail')
 
-      // Close any open modals (including Ledger progress modal)
-      dismissAll()
+      resetLedgerState()
 
       // Check for insufficient funds error
       const isInsufficientFunds =
@@ -294,9 +296,7 @@ const StakeConfirmScreen = (): JSX.Element => {
           buttons: [
             {
               text: 'OK',
-              onPress: () => {
-                back()
-              }
+              onPress: isLedger ? undefined : () => back()
             }
           ]
         })
@@ -307,15 +307,13 @@ const StakeConfirmScreen = (): JSX.Element => {
           buttons: [
             {
               text: 'OK',
-              onPress: () => {
-                back()
-              }
+              onPress: isLedger ? undefined : () => back()
             }
           ]
         })
       }
     },
-    [dismissAll, back]
+    [back, isLedger, resetLedgerState]
   )
 
   // Use refs to break circular dependency between onFundsStuck and handleDelegate
@@ -375,11 +373,7 @@ const StakeConfirmScreen = (): JSX.Element => {
             text: 'Try again',
             onPress: () => {
               if (isLedger) {
-                executeLedgerStakingOperation({
-                  network: pNetwork,
-                  totalSteps: steps.length,
-                  action: performRetry
-                })
+                startLedgerDelegation(performRetry)
               } else {
                 performRetry()
               }
@@ -388,7 +382,7 @@ const StakeConfirmScreen = (): JSX.Element => {
         ]
       })
     },
-    [handleDismiss, isLedger, pNetwork, steps.length]
+    [handleDismiss, isLedger, startLedgerDelegation]
   )
 
   const { issueDelegation, isPending: isIssueDelegationPending } =
@@ -419,11 +413,7 @@ const StakeConfirmScreen = (): JSX.Element => {
       }
 
       if (isLedger) {
-        executeLedgerStakingOperation({
-          network: pNetwork,
-          totalSteps: steps.length,
-          action: performDelegation
-        })
+        startLedgerDelegation(performDelegation)
       } else {
         performDelegation()
       }
@@ -434,8 +424,7 @@ const StakeConfirmScreen = (): JSX.Element => {
       issueDelegation,
       minStartTime,
       validatedStakingEndTime,
-      pNetwork,
-      steps.length
+      startLedgerDelegation
     ]
   )
 
@@ -475,6 +464,9 @@ const StakeConfirmScreen = (): JSX.Element => {
   ])
 
   const renderFooter = useCallback(() => {
+    const ledgerFooter = renderLedgerFooter(steps.length)
+    if (ledgerFooter) return ledgerFooter
+
     return (
       <View
         sx={{
@@ -511,10 +503,12 @@ const StakeConfirmScreen = (): JSX.Element => {
       </View>
     )
   }, [
-    handleCancel,
+    renderLedgerFooter,
+    steps.length,
+    theme.colors.$textPrimary,
     handleDelegate,
     isIssueDelegationPending,
-    theme.colors.$textPrimary
+    handleCancel
   ])
 
   if (selectedValidator === undefined && (isFetchingNodes || !validator)) {
