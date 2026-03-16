@@ -2207,7 +2207,7 @@ describe('LedgerWallet', () => {
       })
     })
 
-    describe('BIP44 wallet — EVM paths (m/44\'/60\'/{account}\'/0/{index})', () => {
+    describe("BIP44 wallet — EVM paths (m/44'/60'/{account}'/0/{index})", () => {
       it('account 0: uses evm xpub[0] and derives change=0, address=0', async () => {
         const expectedHex =
           '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798'
@@ -2273,7 +2273,7 @@ describe('LedgerWallet', () => {
       })
     })
 
-    describe('BIP44 wallet — Avalanche paths (m/44\'/9000\'/{account}\'/0/{index})', () => {
+    describe("BIP44 wallet — Avalanche paths (m/44'/9000'/{account}'/0/{index})", () => {
       it('account 0: uses avalanche xpub[0] and derives 0/0', async () => {
         const expectedHex =
           '02e493dbf1c10d80f3581e4904930b1404cc6c13900ee0758474fa94abe8c4cd13'

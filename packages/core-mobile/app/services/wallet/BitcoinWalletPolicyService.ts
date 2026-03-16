@@ -4,8 +4,8 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import { BtcWalletPolicyDetails, NetworkVMType } from '@avalabs/vm-module-types'
 import { PublicKey } from 'services/ledger/types'
 import { Curve } from 'utils/publicKeys'
-import { getAddressDerivationPath } from './utils'
 import { LedgerWalletSecretSchema } from 'features/ledger/utils'
+import { getAddressDerivationPath } from './utils'
 
 export interface WalletPolicyDetails {
   hmac: Buffer
