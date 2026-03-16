@@ -5,6 +5,7 @@ import { BtcWalletPolicyDetails, NetworkVMType } from '@avalabs/vm-module-types'
 import { PublicKey } from 'services/ledger/types'
 import { Curve } from 'utils/publicKeys'
 import { getAddressDerivationPath } from './utils'
+import { LedgerWalletSecretSchema } from 'features/ledger/utils'
 
 export interface WalletPolicyDetails {
   hmac: Buffer
@@ -107,7 +108,9 @@ export class BitcoinWalletPolicyService {
       }
 
       // Parse the current wallet data
-      const currentWalletData = JSON.parse(walletSecretResult.value)
+      const currentWalletData = LedgerWalletSecretSchema.parse(
+        JSON.parse(walletSecretResult.value)
+      )
 
       // Update the publicKeys array with new policy details
       const updatedWalletData = {

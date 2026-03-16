@@ -4,7 +4,10 @@ import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { Alert } from 'react-native'
 import LedgerService from 'services/ledger/LedgerService'
-import { LedgerKeysByNetwork } from 'services/ledger/types'
+import {
+  LedgerDerivationPathType,
+  LedgerKeysByNetwork
+} from 'services/ledger/types'
 import { useRouter } from 'expo-router'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useLedgerSetupContext } from '../contexts/LedgerSetupContext'
@@ -18,7 +21,6 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const {
-    setSelectedDerivationPath,
     connectedDeviceId,
     connectedDeviceName,
     selectedDerivationPath,
@@ -110,7 +112,9 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
 
   return (
     <AppConnectionScreen
-      setSelectedDerivationPath={setSelectedDerivationPath}
+      selectedDerivationPath={
+        selectedDerivationPath ?? LedgerDerivationPathType.BIP44
+      }
       completeStepTitle={`Your Ledger wallet\nis being set up`}
       handleComplete={handleComplete}
       deviceId={connectedDeviceId}

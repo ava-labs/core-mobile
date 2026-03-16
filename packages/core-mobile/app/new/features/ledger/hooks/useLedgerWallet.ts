@@ -373,10 +373,10 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
               ...baseWalletSecret,
               publicKeys: {
                 ...publicKeys,
-                [accountIndex]: {
-                  ...publicKeys[accountIndex],
-                  solana: solanaKeys[0].key
-                }
+                [accountIndex]: [
+                  ...(publicKeys[accountIndex] ?? []),
+                  ...(solanaKeys.length > 0 ? [solanaKeys[0]] : [])
+                ].filter(Boolean)
               }
             })
           })

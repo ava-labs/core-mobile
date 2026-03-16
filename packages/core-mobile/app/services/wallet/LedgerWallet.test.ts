@@ -2145,4 +2145,432 @@ describe('LedgerWallet', () => {
       })
     })
   })
+
+  // ---------------------------------------------------------------------------
+  // getPublicKeyFor
+  // ---------------------------------------------------------------------------
+  describe('getPublicKeyFor', () => {
+    /**
+     * Build a two-level mock derivation chain that simulates bip32 node.derive().
+     * The leaf node exposes a publicKey Buffer so callers can assert on the hex.
+     */
+    const makeDerivationChain = (leafPubKeyHex: string) => {
+      const leafNode = { publicKey: Buffer.from(leafPubKeyHex, 'hex') }
+      const changeNode = { derive: jest.fn().mockReturnValue(leafNode) }
+      const accountNode = { derive: jest.fn().mockReturnValue(changeNode) }
+      return { accountNode, changeNode, leafNode }
+    }
+
+    /**
+     * EVM xpub stubs (opaque strings; the mock doesn't parse them).
+     * Account indices map to real-world BIP44 account derivation slots.
+     */
+    const EVM_XPUB: Record<number, string> = {
+      0: 'xpub-evm-account-0',
+      1: 'xpub-evm-account-1',
+      2: 'xpub-evm-account-2'
+    }
+    const AVAX_XPUB: Record<number, string> = {
+      0: 'xpub-avax-account-0',
+      1: 'xpub-avax-account-1'
+    }
+
+    let bip44WalletMulti: LedgerWallet
+
+    beforeEach(() => {
+      bip44WalletMulti = new LedgerWallet({
+        deviceId: mockDeviceId,
+        derivationPathSpec: LedgerDerivationPathType.BIP44,
+        publicKeys: {
+          0: [
+            {
+              key: 'fallback-key-0',
+              derivationPath: "m/44'/60'/0'/0/0",
+              curve: Curve.SECP256K1
+            }
+          ],
+          1: [
+            {
+              key: 'fallback-key-1',
+              derivationPath: "m/44'/60'/1'/0/0",
+              curve: Curve.SECP256K1
+            }
+          ],
+          2: []
+        },
+        walletId: mockWalletId,
+        extendedPublicKeys: {
+          0: { evm: EVM_XPUB[0]!, avalanche: AVAX_XPUB[0]! },
+          1: { evm: EVM_XPUB[1]!, avalanche: AVAX_XPUB[1]! },
+          2: { evm: EVM_XPUB[2]!, avalanche: 'xpub-avax-account-2' }
+        }
+      })
+    })
+
+    describe('BIP44 wallet — EVM paths (m/44\'/60\'/{account}\'/0/{index})', () => {
+      it('account 0: uses evm xpub[0] and derives change=0, address=0', async () => {
+        const expectedHex =
+          '0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798'
+        const { accountNode, changeNode } = makeDerivationChain(expectedHex)
+        ;(bip32.fromBase58 as jest.Mock).mockReturnValue(accountNode)
+
+        const result = await bip44WalletMulti.getPublicKeyFor({
+          derivationPath: "m/44'/60'/0'/0/0",
+          curve: Curve.SECP256K1
+        })
+
+        expect(bip32.fromBase58).toHaveBeenCalledWith(EVM_XPUB[0])
+        expect(accountNode.derive).toHaveBeenCalledWith(0) // change segment
+        expect(changeNode.derive).toHaveBeenCalledWith(0) // address segment
+        expect(result).toBe(expectedHex)
+      })
+
+      it('account 1: uses evm xpub[1] (not xpub[0])', async () => {
+        const expectedHex =
+          '02c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee5'
+        const { accountNode, changeNode } = makeDerivationChain(expectedHex)
+        ;(bip32.fromBase58 as jest.Mock).mockReturnValue(accountNode)
+
+        const result = await bip44WalletMulti.getPublicKeyFor({
+          derivationPath: "m/44'/60'/1'/0/0",
+          curve: Curve.SECP256K1
+        })
+
+        expect(bip32.fromBase58).toHaveBeenCalledWith(EVM_XPUB[1])
+        expect(accountNode.derive).toHaveBeenCalledWith(0)
+        expect(changeNode.derive).toHaveBeenCalledWith(0)
+        expect(result).toBe(expectedHex)
+      })
+
+      it('account 2: uses evm xpub[2]', async () => {
+        const expectedHex =
+          '02f9308a019258c31049344f85f89d5229b531c845836f99b08601f113bce036f9'
+        const { accountNode } = makeDerivationChain(expectedHex)
+        ;(bip32.fromBase58 as jest.Mock).mockReturnValue(accountNode)
+
+        await bip44WalletMulti.getPublicKeyFor({
+          derivationPath: "m/44'/60'/2'/0/0",
+          curve: Curve.SECP256K1
+        })
+
+        expect(bip32.fromBase58).toHaveBeenCalledWith(EVM_XPUB[2])
+      })
+
+      it('address index 3: passes correct index to second derive call', async () => {
+        const expectedHex =
+          '03e493dbf1c10d80f3581e4904930b1404cc6c13900ee0758474fa94abe8c4cd13'
+        const { accountNode, changeNode } = makeDerivationChain(expectedHex)
+        ;(bip32.fromBase58 as jest.Mock).mockReturnValue(accountNode)
+
+        const result = await bip44WalletMulti.getPublicKeyFor({
+          derivationPath: "m/44'/60'/0'/0/3",
+          curve: Curve.SECP256K1
+        })
+
+        expect(accountNode.derive).toHaveBeenCalledWith(0) // change = 0
+        expect(changeNode.derive).toHaveBeenCalledWith(3) // address = 3
+        expect(result).toBe(expectedHex)
+      })
+    })
+
+    describe('BIP44 wallet — Avalanche paths (m/44\'/9000\'/{account}\'/0/{index})', () => {
+      it('account 0: uses avalanche xpub[0] and derives 0/0', async () => {
+        const expectedHex =
+          '02e493dbf1c10d80f3581e4904930b1404cc6c13900ee0758474fa94abe8c4cd13'
+        const { accountNode, changeNode } = makeDerivationChain(expectedHex)
+        ;(bip32.fromBase58 as jest.Mock).mockReturnValue(accountNode)
+
+        const result = await bip44WalletMulti.getPublicKeyFor({
+          derivationPath: "m/44'/9000'/0'/0/0",
+          curve: Curve.SECP256K1
+        })
+
+        expect(bip32.fromBase58).toHaveBeenCalledWith(AVAX_XPUB[0])
+        expect(accountNode.derive).toHaveBeenCalledWith(0)
+        expect(changeNode.derive).toHaveBeenCalledWith(0)
+        expect(result).toBe(expectedHex)
+      })
+
+      it('account 1: uses avalanche xpub[1] (not xpub[0])', async () => {
+        const expectedHex =
+          '03a1af804ac108a8a51782198c2d034b28bf90c8803f5a53f76276fa69a4eae77f'
+        const { accountNode } = makeDerivationChain(expectedHex)
+        ;(bip32.fromBase58 as jest.Mock).mockReturnValue(accountNode)
+
+        await bip44WalletMulti.getPublicKeyFor({
+          derivationPath: "m/44'/9000'/1'/0/0",
+          curve: Curve.SECP256K1
+        })
+
+        expect(bip32.fromBase58).toHaveBeenCalledWith(AVAX_XPUB[1])
+      })
+
+      it('address index 5: passes correct index to second derive call', async () => {
+        const expectedHex =
+          '02d7924d4f7d43ea965a465ae3095ff41131e5946f3c85f79e44adbcf8e27e080e'
+        const { accountNode, changeNode } = makeDerivationChain(expectedHex)
+        ;(bip32.fromBase58 as jest.Mock).mockReturnValue(accountNode)
+
+        const result = await bip44WalletMulti.getPublicKeyFor({
+          derivationPath: "m/44'/9000'/0'/0/5",
+          curve: Curve.SECP256K1
+        })
+
+        expect(accountNode.derive).toHaveBeenCalledWith(0)
+        expect(changeNode.derive).toHaveBeenCalledWith(5)
+        expect(result).toBe(expectedHex)
+      })
+    })
+
+    describe('known xpub-derived value — real BIP32 derivation', () => {
+      /**
+       * These tests use the actual bip32 library (via jest.requireActual) to
+       * confirm that, given a published BIP32 test-vector xpub, getPublicKeyFor
+       * returns the deterministic compressed public key at child path 0/0.
+       *
+       * Test vectors taken from:
+       *   BIP32 Test Vector 1 — https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
+       *
+       * Chain m/0H extended public key:
+       *   xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEjWgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw
+       *
+       * We use this as a stand-in for a BIP44 account-level EVM xpub stored in
+       * extendedPublicKeys[0].evm and verify that derive(0).derive(0).publicKey
+       * matches the known expected hex.
+       */
+      const BIP32_TV1_M0H_XPUB =
+        'xpub68Gmy5EdvgibQVfPdqkBBCHxA5htiqg55crXYuXoQRKfDBFA1WEjWgP6LHhwBZeNK1VTsfTFUHCdrfp1bgwQ9xv5ski8PX9rL2dZXvgGDnw'
+
+      it('EVM path: returns hex matching real bip32 derive(0).derive(0)', async () => {
+        const { bip32: realBip32 } =
+          jest.requireActual<typeof import('utils/bip32')>('utils/bip32')
+
+        // Compute ground-truth using the real library
+        const expectedHex = realBip32
+          .fromBase58(BIP32_TV1_M0H_XPUB)
+          .derive(0)
+          .derive(0)
+          .publicKey.toString('hex')
+
+        // Wire the real implementation into the mock so LedgerWallet uses it
+        ;(bip32.fromBase58 as jest.Mock).mockImplementation(
+          realBip32.fromBase58.bind(realBip32)
+        )
+
+        const wallet = new LedgerWallet({
+          deviceId: mockDeviceId,
+          derivationPathSpec: LedgerDerivationPathType.BIP44,
+          publicKeys: {},
+          walletId: mockWalletId,
+          extendedPublicKeys: {
+            0: { evm: BIP32_TV1_M0H_XPUB, avalanche: BIP32_TV1_M0H_XPUB }
+          }
+        })
+
+        const result = await wallet.getPublicKeyFor({
+          derivationPath: "m/44'/60'/0'/0/0",
+          curve: Curve.SECP256K1
+        })
+
+        expect(result).toBe(expectedHex)
+        // Compressed SECP256K1 pubkey: 33 bytes = 66 hex chars, starts with 02 or 03
+        expect(result).toMatch(/^0[23][0-9a-f]{64}$/)
+      })
+
+      it('Avalanche path: returns hex matching real bip32 derive(0).derive(0)', async () => {
+        const { bip32: realBip32 } =
+          jest.requireActual<typeof import('utils/bip32')>('utils/bip32')
+
+        const expectedHex = realBip32
+          .fromBase58(BIP32_TV1_M0H_XPUB)
+          .derive(0)
+          .derive(0)
+          .publicKey.toString('hex')
+
+        ;(bip32.fromBase58 as jest.Mock).mockImplementation(
+          realBip32.fromBase58.bind(realBip32)
+        )
+
+        const wallet = new LedgerWallet({
+          deviceId: mockDeviceId,
+          derivationPathSpec: LedgerDerivationPathType.BIP44,
+          publicKeys: {},
+          walletId: mockWalletId,
+          extendedPublicKeys: {
+            0: { evm: BIP32_TV1_M0H_XPUB, avalanche: BIP32_TV1_M0H_XPUB }
+          }
+        })
+
+        const result = await wallet.getPublicKeyFor({
+          derivationPath: "m/44'/9000'/0'/0/0",
+          curve: Curve.SECP256K1
+        })
+
+        expect(result).toBe(expectedHex)
+        expect(result).toMatch(/^0[23][0-9a-f]{64}$/)
+      })
+
+      it('EVM account 1: selects xpub[1] and returns correct derived key', async () => {
+        const { bip32: realBip32 } =
+          jest.requireActual<typeof import('utils/bip32')>('utils/bip32')
+
+        // BIP32 test vector 1 m/0H/1 xpub (child 1 of m/0H)
+        const BIP32_TV1_M0H1_XPUB = realBip32
+          .fromBase58(BIP32_TV1_M0H_XPUB)
+          .derive(1)
+          .neutered()
+          .toBase58()
+
+        const expectedHex = realBip32
+          .fromBase58(BIP32_TV1_M0H1_XPUB)
+          .derive(0)
+          .derive(0)
+          .publicKey.toString('hex')
+
+        ;(bip32.fromBase58 as jest.Mock).mockImplementation(
+          realBip32.fromBase58.bind(realBip32)
+        )
+
+        const wallet = new LedgerWallet({
+          deviceId: mockDeviceId,
+          derivationPathSpec: LedgerDerivationPathType.BIP44,
+          publicKeys: {},
+          walletId: mockWalletId,
+          extendedPublicKeys: {
+            0: { evm: 'unused-account-0', avalanche: 'unused' },
+            1: { evm: BIP32_TV1_M0H1_XPUB, avalanche: 'unused' }
+          }
+        })
+
+        const result = await wallet.getPublicKeyFor({
+          derivationPath: "m/44'/60'/1'/0/0",
+          curve: Curve.SECP256K1
+        })
+
+        expect(result).toBe(expectedHex)
+        expect(result).toMatch(/^0[23][0-9a-f]{64}$/)
+      })
+    })
+
+    describe('error cases', () => {
+      it('throws when derivationPath is undefined', async () => {
+        await expect(
+          bip44WalletMulti.getPublicKeyFor({
+            derivationPath: undefined,
+            curve: Curve.SECP256K1
+          })
+        ).rejects.toThrow(
+          'derivationPath is required to get public key for LedgerWallet'
+        )
+      })
+
+      it('throws when no xpub for the account index', async () => {
+        // Account index 99 has no xpub in extendedPublicKeys and no fallback publicKey
+        await expect(
+          bip44WalletMulti.getPublicKeyFor({
+            derivationPath: "m/44'/60'/99'/0/0",
+            curve: Curve.SECP256K1
+          })
+        ).rejects.toThrow()
+      })
+
+      it('falls back to publicKeys when xpub derivation returns undefined (unrecognised coin type)', async () => {
+        // A path whose coin type doesn't match EVM (60) or Avalanche (9000) causes
+        // derivePublicKeyFromXpub to return undefined, triggering the publicKeys fallback.
+        const customKey = 'custom-secp256k1-pubkey'
+        const customPath = "m/44'/9999'/0'/0/0"
+        const customWallet = new LedgerWallet({
+          deviceId: mockDeviceId,
+          derivationPathSpec: LedgerDerivationPathType.BIP44,
+          publicKeys: {
+            0: [
+              {
+                key: customKey,
+                derivationPath: customPath,
+                curve: Curve.SECP256K1
+              }
+            ]
+          },
+          walletId: mockWalletId,
+          extendedPublicKeys: {
+            0: { evm: EVM_XPUB[0]!, avalanche: AVAX_XPUB[0]! }
+          }
+        })
+
+        const result = await customWallet.getPublicKeyFor({
+          derivationPath: customPath,
+          curve: Curve.SECP256K1
+        })
+
+        expect(result).toBe(customKey)
+        // bip32 must NOT be called when derivation falls back to publicKeys lookup
+        expect(bip32.fromBase58).not.toHaveBeenCalled()
+      })
+
+      it('throws when publicKeys fallback finds no matching entry', async () => {
+        // Coin type 9999 → xpub derivation returns undefined → publicKeys fallback
+        // Account 0 in bip44WalletMulti has no entry for this path/curve combo.
+        await expect(
+          bip44WalletMulti.getPublicKeyFor({
+            derivationPath: "m/44'/9999'/0'/0/0",
+            curve: Curve.SECP256K1
+          })
+        ).rejects.toThrow(
+          "No public key found for derivation path m/44'/9999'/0'/0/0 and curve secp256k1"
+        )
+      })
+    })
+
+    describe('Ledger Live wallet (non-BIP44) — publicKeys fallback', () => {
+      it('returns stored key when derivationPath and curve match', async () => {
+        const ledgerLiveWallet = new LedgerWallet({
+          deviceId: mockDeviceId,
+          derivationPathSpec: LedgerDerivationPathType.LedgerLive,
+          publicKeys: {
+            0: [
+              {
+                key: 'ledger-live-evm-pubkey',
+                derivationPath: "m/44'/60'/0'/0/0",
+                curve: Curve.SECP256K1
+              }
+            ]
+          },
+          walletId: mockWalletId
+        })
+
+        const result = await ledgerLiveWallet.getPublicKeyFor({
+          derivationPath: "m/44'/60'/0'/0/0",
+          curve: Curve.SECP256K1
+        })
+
+        expect(result).toBe('ledger-live-evm-pubkey')
+        // bip32 must NOT be called for Ledger Live wallets
+        expect(bip32.fromBase58).not.toHaveBeenCalled()
+      })
+
+      it('throws when no matching key found in publicKeys', async () => {
+        const ledgerLiveWallet = new LedgerWallet({
+          deviceId: mockDeviceId,
+          derivationPathSpec: LedgerDerivationPathType.LedgerLive,
+          publicKeys: {
+            0: [
+              {
+                key: 'ledger-live-evm-pubkey',
+                derivationPath: "m/44'/60'/0'/0/0",
+                curve: Curve.SECP256K1
+              }
+            ]
+          },
+          walletId: mockWalletId
+        })
+
+        await expect(
+          ledgerLiveWallet.getPublicKeyFor({
+            derivationPath: "m/44'/60'/1'/0/0", // account 1, not stored
+            curve: Curve.SECP256K1
+          })
+        ).rejects.toThrow('No public keys available for LedgerWallet')
+      })
+    })
+  })
 })

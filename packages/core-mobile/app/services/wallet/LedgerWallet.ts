@@ -60,6 +60,7 @@ import { uuid } from 'utils/uuid'
 import { CoreAccountType } from '@avalabs/types'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import LedgerTrustedNameService from 'services/ledger/LedgerTrustedNameService'
+import { toSegments } from 'utils/toSegments'
 import { BitcoinWalletPolicyService } from './BitcoinWalletPolicyService'
 import {
   Wallet,
@@ -69,7 +70,6 @@ import {
   SignatureRSV
 } from './types'
 import { getAddressDerivationPath, handleLedgerError } from './utils'
-import { toSegments } from 'utils/toSegments'
 
 export class LedgerWallet implements Wallet {
   private deviceId: string
