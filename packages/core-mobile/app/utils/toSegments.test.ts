@@ -98,37 +98,37 @@ describe('toSegments', () => {
   describe('invalid inputs - insufficient segments', () => {
     it('should throw error for empty string', () => {
       expect(() => toSegments('')).toThrow(
-        "Invalid derivation path: . Expected full format: m/purpose'/coinType'/account'/change/addressIndex"
+        "Invalid derivation path: . Expected format: m/purpose'/coinType'/account'/change/addressIndex"
       )
     })
 
     it('should throw error for path with only m', () => {
       expect(() => toSegments('m')).toThrow(
-        "Invalid derivation path: m. Expected full format: m/purpose'/coinType'/account'/change/addressIndex"
+        "Invalid derivation path: m. Expected format: m/purpose'/coinType'/account'/change/addressIndex"
       )
     })
 
     it('should throw error for path with 2 segments', () => {
       expect(() => toSegments('m/44')).toThrow(
-        "Invalid derivation path: m/44. Expected full format: m/purpose'/coinType'/account'/change/addressIndex"
+        "Invalid derivation path: m/44. Expected format: m/purpose'/coinType'/account'/change/addressIndex"
       )
     })
 
     it('should throw error for path with 3 segments', () => {
       expect(() => toSegments('m/44/60')).toThrow(
-        "Invalid derivation path: m/44/60. Expected full format: m/purpose'/coinType'/account'/change/addressIndex"
+        "Invalid derivation path: m/44/60. Expected format: m/purpose'/coinType'/account'/change/addressIndex"
       )
     })
 
     it('should throw error for path with 4 segments', () => {
       expect(() => toSegments('m/44/60/0')).toThrow(
-        "Invalid derivation path: m/44/60/0. Expected full format: m/purpose'/coinType'/account'/change/addressIndex"
+        "Invalid derivation path: m/44/60/0. Expected format: m/purpose'/coinType'/account'/change/addressIndex"
       )
     })
 
     it('should throw error for path with 5 segments', () => {
       expect(() => toSegments('m/44/60/0/0')).toThrow(
-        "Invalid derivation path: m/44/60/0/0. Expected full format: m/purpose'/coinType'/account'/change/addressIndex"
+        "Invalid derivation path: m/44/60/0/0. Expected format: m/purpose'/coinType'/account'/change/addressIndex"
       )
     })
   })
