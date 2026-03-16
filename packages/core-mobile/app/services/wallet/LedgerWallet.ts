@@ -67,7 +67,8 @@ import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
   SolanaTransactionRequest,
-  SignatureRSV
+  SignatureRSV,
+  WalletType
 } from './types'
 import { getAddressDerivationPath, handleLedgerError } from './utils'
 
@@ -879,10 +880,13 @@ export class LedgerWallet implements Wallet {
         return derived
       }
     }
+
     const segments = toSegments(derivationPath, curve)
     const pubkey = this.publicKeys[segments.accountIndex]
     if (!pubkey) {
-      throw new Error('No public keys available for LedgerWallet')
+      throw new Error(
+        `No public keys available for LedgerWallet at accountIndex ${segments.accountIndex} for derivation path ${derivationPath}`
+      )
     }
 
     // Fallback: look up the stored value for this derivation path and curve.
@@ -1419,21 +1423,24 @@ export class LedgerWallet implements Wallet {
       throw new Error('Failed to derive all addresses from Ledger')
     }
 
+    let xpub = { evm: '', avalanche: '' }
     // Get extended public keys for this account (device is already connected)
-    const extendedKeys = await LedgerService.getExtendedPublicKeys(index)
-    const xpub = {
-      evm: bip32
-        .fromPublicKey(
-          Buffer.from(extendedKeys.evm.key, 'hex'),
-          Buffer.from(extendedKeys.evm.chainCode, 'hex')
-        )
-        .toBase58(),
-      avalanche: bip32
-        .fromPublicKey(
-          Buffer.from(extendedKeys.avalanche.key, 'hex'),
-          Buffer.from(extendedKeys.avalanche.chainCode, 'hex')
-        )
-        .toBase58()
+    if (this.isBIP44()) {
+      const extendedKeys = await LedgerService.getExtendedPublicKeys(index)
+      xpub = {
+        evm: bip32
+          .fromPublicKey(
+            Buffer.from(extendedKeys.evm.key, 'hex'),
+            Buffer.from(extendedKeys.evm.chainCode, 'hex')
+          )
+          .toBase58(),
+        avalanche: bip32
+          .fromPublicKey(
+            Buffer.from(extendedKeys.avalanche.key, 'hex'),
+            Buffer.from(extendedKeys.avalanche.chainCode, 'hex')
+          )
+          .toBase58()
+      }
     }
 
     return {

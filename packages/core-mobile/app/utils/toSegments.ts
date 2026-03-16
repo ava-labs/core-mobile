@@ -17,9 +17,13 @@ export const toSegments = (
   // SECP256K1 paths use 6 segments: m/purpose'/coinType'/account'/change/addressIndex
   const minSegments = isED25519 ? 5 : 6
 
+  const expectedFormat = isED25519
+    ? "m/purpose'/coinType'/account'/change' (optional /addressIndex)"
+    : "m/purpose'/coinType'/account'/change/addressIndex"
+
   if (segments.length < minSegments) {
     throw new Error(
-      `Invalid derivation path: ${path}. Expected full format: m/purpose'/coinType'/account'/change/addressIndex`
+      `Invalid derivation path: ${path}. Expected format: ${expectedFormat}`
     )
   }
 
