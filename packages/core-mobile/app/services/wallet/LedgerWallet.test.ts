@@ -5,7 +5,8 @@ import { Curve } from 'utils/publicKeys'
 import {
   LedgerAddressType,
   LedgerAppType,
-  LedgerDerivationPathType
+  LedgerDerivationPathType,
+  PerAccountPublicKeys
 } from 'services/ledger/types'
 
 // Mock dependencies
@@ -205,13 +206,15 @@ describe('LedgerWallet', () => {
   let ledgerWallet: LedgerWallet
   const mockDeviceId = 'test-device-id'
   const mockWalletId = 'test-wallet-id'
-  const mockPublicKeys = [
-    {
-      key: 'mock-public-key',
-      derivationPath: "m/44'/60'/0'/0/0",
-      curve: Curve.SECP256K1
-    }
-  ]
+  const mockPublicKeys: PerAccountPublicKeys = {
+    0: [
+      {
+        key: 'mock-public-key',
+        derivationPath: "m/44'/60'/0'/0/0",
+        curve: Curve.SECP256K1
+      }
+    ]
+  }
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -1787,12 +1790,12 @@ describe('LedgerWallet', () => {
         )
 
         expect(BitcoinWalletPolicyService.getEvmPublicKey).toHaveBeenCalledWith(
-          mockPublicKeys,
+          mockPublicKeys[0],
           0
         )
         expect(
           BitcoinWalletPolicyService.findBtcWalletPolicyInPublicKeys
-        ).toHaveBeenCalledWith(mockPublicKeys, 0)
+        ).toHaveBeenCalledWith(mockPublicKeys[0], 0)
         expect(result).toBeDefined()
       })
 

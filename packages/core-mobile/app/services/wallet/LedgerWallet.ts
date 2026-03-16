@@ -863,8 +863,12 @@ export class LedgerWallet implements Wallet {
       )
     }
 
-    // For BIP44 wallets, derive the actual compressed public key from stored xpubs.
-    // publicKeys stores addresses (not raw public keys), so we must use extendedPublicKeys.
+    // For BIP44 secp256k1 wallets, first try to derive the compressed public key from stored xpubs.
+    // Historically, some legacy wallet secrets stored EVM/AVM addresses in `publicKeys` instead of raw
+    // compressed public keys, so we rely on `extendedPublicKeys` (xpubs) to recover the actual pubkey
+    // when available. Newer flows (e.g. LedgerService.getAvalancheKeys → useLedgerWallet) store
+    // compressed public key hex for EVM/AVM directly in `publicKeys`, so this xpub-based derivation is
+    // primarily for backward compatibility with legacy BIP44 data.
     if (
       this.isBIP44() &&
       this.extendedPublicKeys &&
@@ -881,7 +885,9 @@ export class LedgerWallet implements Wallet {
       throw new Error('No public keys available for LedgerWallet')
     }
 
-    // Fallback: look up the stored value (used for ED25519/Solana keys and Ledger Live wallets)
+    // Fallback: look up the stored value for this derivation path and curve.
+    // This is used for ED25519/Solana keys and Ledger Live wallets, and for modern flows where
+    // `publicKeys` already contains the compressed public key hex for EVM/AVM.
     const matchingPublicKey = pubkey.find(pk => {
       const curveMatches =
         (curve === Curve.SECP256K1 && pk.curve === 'secp256k1') ||
