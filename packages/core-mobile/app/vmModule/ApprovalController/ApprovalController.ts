@@ -12,6 +12,7 @@ import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import {
+  TX_SEND_METHODS,
   TxSendConfirmedEvent,
   TxSendFailedEvent
 } from 'store/rpc/utils/txSendMethods'
@@ -123,9 +124,12 @@ class ApprovalController implements VmModuleApprovalController {
       showConfetti()
     }
 
-    if (!isInAppRequest(request)) {
+    const isTxSend = (TX_SEND_METHODS as readonly string[]).includes(
+      request.method
+    )
+
+    if (!isInAppRequest(request) && isTxSend) {
       const address = getDappRequestAddress(request)
-      // VM module only calls onTransactionConfirmed for tx send methods
       const eventName = `${request.method}_confirmed` as TxSendConfirmedEvent
       AnalyticsService.captureWithEncryption(eventName, {
         dAppUrl: request.dappInfo.url,
@@ -145,10 +149,12 @@ class ApprovalController implements VmModuleApprovalController {
   }): void {
     transactionSnackbar.error({ error: 'Transaction reverted' })
 
-    if (!isInAppRequest(request)) {
-      const address = getDappRequestAddress(request)
+    const isTxSend = (TX_SEND_METHODS as readonly string[]).includes(
+      request.method
+    )
 
-      // VM module only calls onTransactionReverted for tx send methods
+    if (!isInAppRequest(request) && isTxSend) {
+      const address = getDappRequestAddress(request)
       const eventName = `${request.method}_failed` as TxSendFailedEvent
       AnalyticsService.captureWithEncryption(eventName, {
         dAppUrl: request.dappInfo.url,
