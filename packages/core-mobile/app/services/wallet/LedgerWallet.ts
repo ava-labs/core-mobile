@@ -67,8 +67,7 @@ import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
   SolanaTransactionRequest,
-  SignatureRSV,
-  WalletType
+  SignatureRSV
 } from './types'
 import { getAddressDerivationPath, handleLedgerError } from './utils'
 

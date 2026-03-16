@@ -19,9 +19,7 @@ import bs58 from 'bs58'
 import { Platform, PermissionsAndroid, Alert, Linking } from 'react-native'
 import {
   LEDGER_TIMEOUTS,
-  getSolanaDerivationPath,
-  DERIVATION_PATHS,
-  DerivationPathKey
+  getSolanaDerivationPath
 } from 'new/features/ledger/consts'
 import { assertNotNull } from 'utils/assertions'
 import { Curve } from 'utils/publicKeys'
