@@ -333,7 +333,7 @@ describe('toSegments', () => {
         coinType: 501,
         accountIndex: 0,
         change: 0,
-        addressIndex: undefined
+        addressIndex: 0
       })
     })
 
@@ -341,7 +341,7 @@ describe('toSegments', () => {
       const result = toSegments("m/44'/501'/2'/0'", Curve.ED25519)
 
       expect(result.accountIndex).toBe(2)
-      expect(result.addressIndex).toBeUndefined()
+      expect(result.addressIndex).toBe(0)
     })
 
     it('should throw for 5-segment path without ED25519 curve', () => {
