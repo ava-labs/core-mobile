@@ -919,7 +919,7 @@ export class LedgerWallet implements Wallet {
         EVM_BASE_DERIVATION_PATH_PREFIX.length
       )
       const parts = afterPrefix.split('/')
-      const accountIndex = parseInt(parts[0]?.replace("'", '') ?? '', 10)
+      const accountIndex = parseInt(parts[0]?.replace(/'$/, '') ?? '', 10)
       if (isNaN(accountIndex)) return undefined
       xpub = this.extendedPublicKeys[accountIndex]?.evm
       childSegmentsStr = parts.slice(1).join('/') // "0/0"
@@ -929,7 +929,7 @@ export class LedgerWallet implements Wallet {
         AVALANCHE_DERIVATION_PATH_PREFIX.length
       )
       const parts = afterPrefix.split('/')
-      const accountIndex = parseInt(parts[0]?.replace("'", '') ?? '', 10)
+      const accountIndex = parseInt(parts[0]?.replace(/'$/, '') ?? '', 10)
       if (isNaN(accountIndex)) return undefined
       xpub = this.extendedPublicKeys[accountIndex]?.avalanche
       childSegmentsStr = parts.slice(1).join('/')
