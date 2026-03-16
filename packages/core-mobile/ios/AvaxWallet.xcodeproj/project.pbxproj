@@ -902,7 +902,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3DABA85FC8718B3DA5932E5D /* Pods-common-AvaxWallet.debug.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "Light Light-Internal Bling Marker Minimalism Old Shiny Neon Layered Liquid Misaligned";
+				ASSETCATALOG_COMPILER_APPICON_NAME = Dark;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = AvaxWallet/AvaxWallet.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -945,7 +947,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7CA105A259461A15C6B2A56F /* Pods-common-AvaxWallet.release.xcconfig */;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "Light Light-Internal Bling Marker Minimalism Old Shiny Neon Layered Liquid Misaligned";
+				ASSETCATALOG_COMPILER_APPICON_NAME = Dark;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = AvaxWallet/AvaxWalletRelease.entitlements;
 				CODE_SIGN_STYLE = Manual;
@@ -1339,7 +1343,9 @@
 			baseConfigurationReference = F911BD13400D775A15AFA673 /* Pods-common-AvaxWalletInternal.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-Internal";
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "Light-Internal Bling Marker Minimalism Old Shiny Neon Layered Liquid Misaligned";
+				ASSETCATALOG_COMPILER_APPICON_NAME = "Dark-Internal";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = AvaxWallet/AvaxWallet.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -1376,7 +1382,9 @@
 			baseConfigurationReference = 2F31BBEBFE5CD53EFF464BD9 /* Pods-common-AvaxWalletInternal.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-Internal";
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "Light-Internal Bling Marker Minimalism Old Shiny Neon Layered Liquid Misaligned";
+				ASSETCATALOG_COMPILER_APPICON_NAME = "Dark-Internal";
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = AvaxWallet/AvaxWalletRelease.entitlements;
 				CODE_SIGN_STYLE = Manual;
