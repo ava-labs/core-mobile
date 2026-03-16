@@ -3,6 +3,7 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Address } from 'viem'
 import { DefiMarket } from '../../types'
 import { WAD, WAD_SCALE } from '../../consts'
+import { getBenqiPriceDecimals } from '../../utils/getBenqiPriceDecimals'
 import { convertUsdToTokenAmount } from '../../utils/convertUsdToTokenAmount'
 import { useBenqiWithdraw } from '../../hooks/benqi/useBenqiWithdraw'
 import { useBenqiBorrowData } from '../../hooks/benqi/useBenqiBorrowData'
@@ -62,7 +63,7 @@ export const WithdrawBenqiSelectAmountForm = ({
     }
     const maxWithdrawUSD =
       (borrowData.liquidity * WAD_SCALE) / borrowData.collateralFactor
-    const priceDecimals = 36 - market.asset.decimals
+    const priceDecimals = getBenqiPriceDecimals(market.asset.decimals)
     const maxTokens = convertUsdToTokenAmount({
       usdAmount: maxWithdrawUSD,
       tokenPriceUSD: borrowData.tokenPriceUSD,

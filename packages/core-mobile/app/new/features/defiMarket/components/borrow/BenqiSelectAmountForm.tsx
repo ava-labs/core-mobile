@@ -4,6 +4,7 @@ import { Address, formatUnits } from 'viem'
 import { DefiMarket } from '../../types'
 import { convertUsdToTokenAmount } from '../../utils/convertUsdToTokenAmount'
 import { WAD, WAD_SCALE } from '../../consts'
+import { getBenqiPriceDecimals } from '../../utils/getBenqiPriceDecimals'
 import { useBenqiBorrowData } from '../../hooks/benqi/useBenqiBorrowData'
 import { useBenqiBorrow } from '../../hooks/benqi/useBenqiBorrow'
 import { BorrowSelectAmountFormBase } from './BorrowSelectAmountFormBase'
@@ -35,9 +36,7 @@ export const BorrowBenqiSelectAmountForm = ({
       )
     }
 
-    // Benqi: USD amount is 18 decimals
-    // Benqi Price Oracle returns: price * 10^(36 - underlyingDecimals)
-    const priceDecimals = 36 - market.asset.decimals
+    const priceDecimals = getBenqiPriceDecimals(market.asset.decimals)
     const tokenAmount = convertUsdToTokenAmount({
       usdAmount: borrowData.availableBorrowsUSD,
       tokenPriceUSD: borrowData.tokenPriceUSD,
