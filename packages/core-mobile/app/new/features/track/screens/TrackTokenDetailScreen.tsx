@@ -87,7 +87,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     handleFavorite,
     openUrl,
     coingeckoId,
-    chainId,
     token
   } = useTokenDetails({ tokenId, marketType })
 
@@ -122,7 +121,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     isAVAX: coingeckoId === AVAX_COINGECKO_ID,
     marketType,
     contractAddress: tokenInfo?.contractAddress,
-    chainId,
     onBuy: () => handleBuy(tokenInfo?.contractAddress),
     onStake: addStake,
     onSwap: handleSwap
