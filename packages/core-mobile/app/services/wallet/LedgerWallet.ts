@@ -879,7 +879,6 @@ export class LedgerWallet implements Wallet {
         return derived
       }
     }
-    console.log('------> derivationPath', derivationPath)
     const segments = toSegments(derivationPath, curve)
     const pubkey = this.publicKeys[segments.accountIndex]
     if (!pubkey) {
