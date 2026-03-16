@@ -34,7 +34,8 @@ import {
   AppInfo,
   LedgerDevice,
   AvalancheKey,
-  LEDGER_ERROR_CODES
+  LEDGER_ERROR_CODES,
+  LedgerDerivationPathType
 } from './types'
 
 class LedgerService {
@@ -609,18 +610,12 @@ class LedgerService {
 
       return {
         evm: {
-          path: getAddressDerivationPath({
-            accountIndex,
-            vmType: NetworkVMType.EVM
-          }).replace('/0/0', ''),
+          path: evmPath,
           key: evmXpubResponse.publicKey.toString('hex'),
           chainCode: evmXpubResponse.chain_code.toString('hex')
         },
         avalanche: {
-          path: getAddressDerivationPath({
-            accountIndex,
-            vmType: NetworkVMType.AVM
-          }).replace('/0/0', ''),
+          path: avalanchePath,
           key: avalancheXpubResponse.publicKey.toString('hex'),
           chainCode: avalancheXpubResponse.chain_code.toString('hex')
         }
@@ -1061,7 +1056,8 @@ class LedgerService {
    */
   async getAvalancheKeys(
     accountIndex: number,
-    isTestnet: boolean
+    isTestnet: boolean,
+    derivationPath: LedgerDerivationPathType = LedgerDerivationPathType.BIP44
   ): Promise<AvalancheKey> {
     Logger.info('Getting Avalanche keys')
 
@@ -1110,6 +1106,22 @@ class LedgerService {
         .derive(0)
         .publicKey?.toString('hex') ?? ''
 
+    const derivationPathType =
+      derivationPath === LedgerDerivationPathType.BIP44
+        ? 'bip44'
+        : 'ledger_live'
+    const evmPath = getAddressDerivationPath({
+      accountIndex,
+      vmType: NetworkVMType.EVM,
+      derivationPathType
+    })
+
+    const avalanchePath = getAddressDerivationPath({
+      accountIndex,
+      vmType: NetworkVMType.AVM,
+      derivationPathType
+    })
+
     return {
       addresses: {
         evm: evmAddress,
@@ -1125,12 +1137,12 @@ class LedgerService {
       publicKeys: [
         {
           key: evmPublicKey,
-          derivationPath: extendedKeys.evm.path,
+          derivationPath: evmPath,
           curve: Curve.SECP256K1
         },
         {
           key: avalanchePublicKey,
-          derivationPath: extendedKeys.avalanche.path,
+          derivationPath: avalanchePath,
           curve: Curve.SECP256K1
         }
       ]

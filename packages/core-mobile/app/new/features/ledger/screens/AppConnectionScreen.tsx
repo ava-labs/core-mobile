@@ -18,12 +18,16 @@ import React, {
 import { Alert, Platform, View } from 'react-native'
 import { useSelector } from 'react-redux'
 import LedgerService from 'services/ledger/LedgerService'
-import { LedgerKeysByNetwork } from 'services/ledger/types'
+import {
+  LedgerDerivationPathType,
+  LedgerKeysByNetwork
+} from 'services/ledger/types'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import Logger from 'utils/Logger'
 
 export default function AppConnectionScreen({
+  selectedDerivationPath = LedgerDerivationPathType.BIP44,
   completeStepTitle,
   isUpdatingWallet,
   handleComplete,
@@ -32,6 +36,7 @@ export default function AppConnectionScreen({
   disconnectDevice,
   accountIndex
 }: {
+  selectedDerivationPath?: LedgerDerivationPathType
   completeStepTitle: string
   isUpdatingWallet: boolean
   deviceId?: string | null
@@ -149,11 +154,13 @@ export default function AppConnectionScreen({
       // Get keys from service
       const avalancheKeys = await LedgerService.getAvalancheKeys(
         accountIndex,
-        isDeveloperMode
+        isDeveloperMode,
+        selectedDerivationPath
       )
       const oppositeAvalancheKeys = await LedgerService.getAvalancheKeys(
         accountIndex,
-        !isDeveloperMode
+        !isDeveloperMode,
+        selectedDerivationPath
       )
 
       // Update local state
@@ -189,7 +196,13 @@ export default function AppConnectionScreen({
         [{ text: 'OK' }]
       )
     }
-  }, [accountIndex, deviceId, isDeveloperMode, isSolanaSupportBlocked])
+  }, [
+    accountIndex,
+    deviceId,
+    isDeveloperMode,
+    isSolanaSupportBlocked,
+    selectedDerivationPath
+  ])
 
   const handleConnectSolana = useCallback(async () => {
     try {

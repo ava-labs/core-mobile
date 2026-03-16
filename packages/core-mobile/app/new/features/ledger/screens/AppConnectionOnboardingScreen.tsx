@@ -18,6 +18,7 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const {
+    setSelectedDerivationPath,
     connectedDeviceId,
     connectedDeviceName,
     selectedDerivationPath,
@@ -109,6 +110,7 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
 
   return (
     <AppConnectionScreen
+      setSelectedDerivationPath={setSelectedDerivationPath}
       completeStepTitle={`Your Ledger wallet\nis being set up`}
       handleComplete={handleComplete}
       deviceId={connectedDeviceId}
