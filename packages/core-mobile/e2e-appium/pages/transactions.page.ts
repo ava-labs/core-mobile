@@ -148,7 +148,7 @@ class TransactionsPage {
   }
 
   get reviewStakeTitle() {
-    return selectors.getBySomeText(txLoc.reviewStakeTitle)
+    return selectors.getByText(txLoc.reviewStakeTitle)
   }
 
   get maxBtn() {
@@ -165,7 +165,7 @@ class TransactionsPage {
 
   async dismissTransactionOnboarding() {
     if (await actions.getVisible(this.transactionOnboardingNext)) {
-      await actions.tap(this.transactionOnboardingNext)
+      await actions.click(this.transactionOnboardingNext)
     }
   }
 
