@@ -1,21 +1,24 @@
+import { Icons, useTheme, View } from '@avalabs/k2-alpine'
+import { usePopSpringAnimation } from 'common/hooks/usePopSpringAnimation'
+import { Image } from 'expo-image'
+import {
+  ICON_PREVIEWS,
+  useCurrentAppIcon
+} from 'features/accountSettings/store'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Icons, Logos, useTheme, View } from '@avalabs/k2-alpine'
-import { useSelector } from 'react-redux'
-import { selectSelectedColorScheme } from 'store/settings/appearance'
+import { LayoutChangeEvent } from 'react-native'
 import Animated, {
+  interpolate,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withDelay,
-  interpolate
+  withSpring
 } from 'react-native-reanimated'
-import { LayoutChangeEvent } from 'react-native'
-import { usePopSpringAnimation } from 'common/hooks/usePopSpringAnimation'
 import { runAfterInteractions } from 'utils/runAfterInteractions'
 
 export const CoreLogoWithTokens = (): JSX.Element => {
-  const selectedColorScheme = useSelector(selectSelectedColorScheme)
-
+  const currentIcon = useCurrentAppIcon()
+  const { theme } = useTheme()
   const { animatedStyle: coreLogoAnimationStyle, pop: coreLogoPop } =
     usePopSpringAnimation({ minScale: 0.8 })
 
@@ -68,21 +71,17 @@ export const CoreLogoWithTokens = (): JSX.Element => {
             borderRadius: 32,
             overflow: 'hidden',
             width: CORE_ICON_SIZE,
-            height: CORE_ICON_SIZE
+            height: CORE_ICON_SIZE,
+            borderWidth: 2,
+            borderColor: theme.colors.$borderPrimary
           },
           coreLogoAnimationStyle
         ]}>
-        {selectedColorScheme === 'dark' ? (
-          <Logos.AppIcons.CoreAppIconLight
-            width={CORE_ICON_SIZE}
-            height={CORE_ICON_SIZE}
-          />
-        ) : (
-          <Logos.AppIcons.CoreAppIconDark
-            width={CORE_ICON_SIZE}
-            height={CORE_ICON_SIZE}
-          />
-        )}
+        <Image
+          source={ICON_PREVIEWS[currentIcon]}
+          style={{ width: CORE_ICON_SIZE, height: CORE_ICON_SIZE }}
+          contentFit="cover"
+        />
       </Animated.View>
     </View>
   )

@@ -68,6 +68,10 @@ const AccountSettingsScreen = (): JSX.Element => {
     navigate('/accountSettings/selectAppearance')
   }, [navigate])
 
+  const goToSelectAppIcon = useCallback(() => {
+    navigate('/accountSettings/selectAppIcon')
+  }, [navigate])
+
   const goToCurrency = useCallback(() => {
     navigate('/accountSettings/selectCurrency')
   }, [navigate])
@@ -208,6 +212,7 @@ const AccountSettingsScreen = (): JSX.Element => {
             <AppAppearance
               selectAppAppearance={goToAppAppearance}
               selectCurrency={goToCurrency}
+              selectAppIcon={goToSelectAppIcon}
             />
             <UserPreferences
               selectNotificationPreferences={goToNotificationPreferences}

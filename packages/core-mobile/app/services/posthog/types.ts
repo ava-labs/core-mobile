@@ -50,7 +50,8 @@ export enum FeatureGates {
   FUSION_MARKR = 'fusion-markr',
   FUSION_AVALANCHE_EVM = 'fusion-avalanche-evm',
   FUSION_LOMBARD_BTC_TO_BTCB = 'fusion-lombard-btc-to-btcb',
-  FUSION_LOMBARD_BTCB_TO_BTC = 'fusion-lombard-btcb-to-btc'
+  FUSION_LOMBARD_BTCB_TO_BTC = 'fusion-lombard-btcb-to-btc',
+  ALTERNATE_APP_ICONS = 'alternate-app-icons'
 }
 
 export enum FeatureVars {
