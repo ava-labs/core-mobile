@@ -55,6 +55,7 @@ import { WalletType } from 'services/wallet/types'
 import { selectActiveAccount } from 'store/account'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import {
+  selectIsBridgeBlocked,
   selectIsMeldOfframpBlocked,
   selectIsInAppDefiBorrowBlocked,
   selectIsFusionEnabled
@@ -89,6 +90,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
   const headerHeight = useEffectiveHeaderHeight()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
+  const isBridgeBlocked = useSelector(selectIsBridgeBlocked)
   const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
   const isFusionEnabled = useSelector(selectIsFusionEnabled)
 
@@ -104,6 +106,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { navigate, push } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
+
+  const handleBridge = useCallback(() => {
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/bridge'
+    })
+  }, [navigate])
 
   const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
     LayoutRectangle | undefined
@@ -247,6 +256,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
       icon: 'receive',
       onPress: handleReceive
     })
+    if (!isBridgeBlocked) {
+      buttons.push({
+        title: ActionButtonTitle.Bridge,
+        icon: 'bridge',
+        onPress: handleBridge
+      })
+    }
     if (!isMeldOfframpBlocked) {
       buttons.push({
         title: ActionButtonTitle.Withdraw,
@@ -260,8 +276,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigateToBuy,
     navigateToWithdraw,
     handleReceive,
+    handleBridge,
     navigateToSwap,
     isMeldOfframpBlocked,
+    isBridgeBlocked,
     isFusionEnabled
   ])
 

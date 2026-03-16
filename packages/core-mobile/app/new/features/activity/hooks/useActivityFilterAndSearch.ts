@@ -1,13 +1,16 @@
+import { BridgeTransfer } from '@avalabs/bridge-unified'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
-import { TokenWithBalance } from '@avalabs/vm-module-types'
+import { TokenWithBalance, TransactionType } from '@avalabs/vm-module-types'
 import { DropdownSelection } from 'common/types'
+import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
 import {
   TOKEN_DETAIL_FILTERS,
   TokenDetailFilter,
   useTokenDetailFilterAndSort
 } from 'features/portfolio/assets/hooks/useTokenDetailFilterAndSort'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
 import { Transaction } from 'store/transaction'
 import { useGetRecentTransactions } from 'store/transaction/hooks/useGetRecentTransactions'
@@ -93,13 +96,32 @@ export const useActivityFilterAndSearch = ({
   const { transactions, refresh, isLoading, isRefreshing, isError } =
     useGetRecentTransactions(network)
 
+  const pendingBridgeTxs = usePendingBridgeTransactions(
+    selectedNetwork?.chainId
+  )
+  const isPendingBridge = useCallback(
+    (tx: Transaction) => {
+      return (
+        tx.txType === TransactionType.BRIDGE &&
+        pendingBridgeTxs.some(
+          bridge =>
+            (bridge.sourceTxHash === tx.hash ||
+              (!!bridge.targetTxHash && bridge.targetTxHash === tx.hash)) &&
+            Boolean(bridge.completedAt) === false
+        )
+      )
+    },
+    [pendingBridgeTxs]
+  )
+
   const transactionsBySymbol = useMemo(() => {
     return (
       transactions
         // Remove transaction with empty token array
         .filter(tx => tx.tokens.length > 0)
+        .filter(tx => !isPendingBridge(tx))
     )
-  }, [transactions])
+  }, [transactions, isPendingBridge])
 
   const filters: DropdownGroup[] | undefined = useMemo(() => {
     if (selectedNetwork?.chainId) {
@@ -203,17 +225,24 @@ export const useActivityFilterAndSearch = ({
   }, [filter.selected, filters, resetFilter, searchText.length])
 
   const combinedData = useMemo(() => {
+    const filteredPendingBridgeTxs = pendingBridgeTxs.toSorted(
+      (a, b) => b.sourceStartedAt - a.sourceStartedAt
+    )
+
     if (searchText.length > 0) {
       const filteredTransactions = data.filter(tx =>
         filterTransactionBySearch(tx, searchText)
       )
+      const filteredPendingBridge = filteredPendingBridgeTxs.filter(tx =>
+        filterPendingBridgeBySearch(tx, searchText)
+      )
       const { todayTxs, monthGroups } = getDateGroups(filteredTransactions)
-      return buildGroupedData(todayTxs, monthGroups)
+      return buildGroupedData(todayTxs, monthGroups, filteredPendingBridge)
     }
 
     const { todayTxs, monthGroups } = getDateGroups(data)
-    return buildGroupedData(todayTxs, monthGroups)
-  }, [data, searchText])
+    return buildGroupedData(todayTxs, monthGroups, filteredPendingBridgeTxs)
+  }, [data, searchText, pendingBridgeTxs])
 
   return {
     data: combinedData as ActivityListItem[],
@@ -253,5 +282,17 @@ function filterTransactionBySearch(tx: Transaction, search: string): boolean {
     [tx.hash, tx.to, tx.from].some(field =>
       field.toLowerCase().includes(searchLower)
     )
+  )
+}
+
+function filterPendingBridgeBySearch(
+  tx: BridgeTransaction | BridgeTransfer,
+  search: string
+): boolean {
+  const searchLower = search.toLowerCase()
+
+  return Boolean(
+    tx.sourceTxHash.toLowerCase().includes(searchLower) ||
+      tx.targetTxHash?.toLowerCase().includes(searchLower)
   )
 }

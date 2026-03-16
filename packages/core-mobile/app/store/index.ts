@@ -1,6 +1,7 @@
 import { combineReducers } from 'redux'
 import { AnyAction, configureStore } from '@reduxjs/toolkit'
 import { createMigrate, persistReducer, persistStore } from 'redux-persist'
+import { bridgeReducer as bridge } from 'store/bridge/slice'
 import { unifiedBridgeReducer as unifiedBridge } from 'store/unifiedBridge/slice'
 import { migrations } from 'store/migrations'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
@@ -21,6 +22,7 @@ import { viewOnceReducer as viewOnce } from './viewOnce/slice'
 import settings from './settings'
 import { transactionApi } from './transaction'
 import { rpcReducer as rpc } from './rpc/slice'
+import { BridgeBlacklistTransform } from './transforms/BridgeBlacklistTransform'
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 import { combinedReducer as browser } from './browser'
 import { snapshotsReducer as snapshots } from './snapshots/slice'
@@ -41,6 +43,7 @@ const combinedReducer = combineReducers({
   account,
   notifications,
   addressBook,
+  bridge,
   unifiedBridge,
   customToken,
   posthog,
@@ -85,6 +88,7 @@ export function configureEncryptedStore(secretKey: string, macSecret: string) {
     rootReducer,
     transforms: [
       AppBlacklistTransform,
+      BridgeBlacklistTransform,
       EncryptThenMacTransform(secretKey, macSecret) // last!
     ],
     migrate: createMigrate(migrations, { debug: __DEV__ }),

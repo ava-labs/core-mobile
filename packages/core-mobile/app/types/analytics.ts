@@ -7,6 +7,23 @@ export type AnalyticsEvents = {
   ApplicationLaunched: { FontScale: number }
   ApplicationOpened: undefined
 
+  Bridge_TokenSelected: undefined
+  BridgeTokenSelectError: { errorMessage: string }
+  BridgeTransferRequestError: {
+    sourceBlockchain: string
+    targetBlockchain: string
+  }
+  BridgeTransferRequestSucceeded: undefined
+  BridgeTransferRequestUserRejectedError: {
+    sourceBlockchain: string
+    targetBlockchain: string
+    fee: number
+  }
+  BridgeTransferStarted: { sourceBlockchain: string; targetBlockchain: string }
+  BridgeTransactionHide: undefined
+  BridgeTransactionHideCancel: undefined
+  BridgeGasFeeOptionChanged: { modifier: string }
+
   // UNIFIED BRIDGE
   UnifedBridgeTransferStarted: {
     bridgeType: string
@@ -135,6 +152,12 @@ export type AnalyticsEvents = {
   SendTransactionSucceeded: { txHash: string; chainId: number }
 
   StakeTransactionStarted: { txHash: string; chainId: number }
+  BridgeTransactionStarted: {
+    sourceTxHash: string
+    chainId: number
+    fromAddress?: string
+    toAddress?: string
+  }
 
   //Gasless
   GaslessFundSuccessful: { fundTxHash: string }
