@@ -275,7 +275,10 @@ class WalletService {
       walletType
     })
 
-    const publicKey = await wallet.getPublicKeyFor({ derivationPath, curve })
+    const publicKey = await wallet.getPublicKeyFor({
+      derivationPath,
+      curve
+    })
 
     // Cache the result
     WalletFactory.cache.setPublicKey(walletId, cacheKey, curve, publicKey)

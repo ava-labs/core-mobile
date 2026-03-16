@@ -4,6 +4,7 @@ import { LedgerAppType, LedgerDerivationPathType } from 'services/ledger/types'
 import { OnDelegationProgress } from 'contexts/DelegationContext'
 import { z } from 'zod'
 import { RpcMethod } from '@avalabs/vm-module-types'
+import { Curve } from 'utils/publicKeys'
 import { ledgerParamsStore, StakingProgressParams } from '../store'
 
 export const showLedgerReviewTransaction = ({
@@ -53,22 +54,42 @@ export const getLedgerAppName = (network?: Network): LedgerAppType => {
     : LedgerAppType.UNKNOWN
 }
 
+const BtcWalletPolicySchema = z.object({
+  hmacHex: z.string(),
+  masterFingerprint: z.string(),
+  xpub: z.string(),
+  name: z.string()
+})
+
+const PublicKeyInfoSchema = z.object({
+  key: z.string(),
+  derivationPath: z.string(),
+  curve: z.enum([Curve.SECP256K1, Curve.ED25519]),
+  btcWalletPolicy: BtcWalletPolicySchema.optional()
+})
+
 export const LedgerWalletSecretSchema = z.looseObject({
   deviceId: z.string(),
   deviceName: z.string(),
-  derivationPathSpec: z.nativeEnum(LedgerDerivationPathType),
-  extendedPublicKeys: z.record(
-    z.string(),
-    z.object({
-      evm: z.string().optional(),
-      avalanche: z.string().optional()
-    })
-  ),
-  publicKeys: z.array(
-    z.object({
-      key: z.string(),
-      derivationPath: z.string(),
-      curve: z.string()
-    })
-  )
+  derivationPathSpec: z.enum([
+    LedgerDerivationPathType.BIP44,
+    LedgerDerivationPathType.LedgerLive
+  ]),
+  extendedPublicKeys: z
+    .record(
+      z.string(),
+      z.object({
+        evm: z.string().optional(),
+        avalanche: z.string().optional()
+      })
+    )
+    .optional(),
+  publicKeys: z
+    .record(z.string(), z.array(PublicKeyInfoSchema))
+    .transform(
+      record =>
+        Object.fromEntries(
+          Object.entries(record).map(([k, v]) => [Number(k), v])
+        ) as Record<number, z.infer<typeof PublicKeyInfoSchema>[]>
+    )
 })

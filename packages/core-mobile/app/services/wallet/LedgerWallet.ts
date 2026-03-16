@@ -39,8 +39,8 @@ import {
   LedgerAppType,
   LedgerDerivationPathType,
   LedgerWalletData,
-  PublicKey,
-  PerAccountExtendedPublicKeys
+  PerAccountExtendedPublicKeys,
+  PerAccountPublicKeys
 } from 'services/ledger/types'
 import {
   DERIVATION_PATHS,
@@ -50,7 +50,11 @@ import {
 } from 'new/features/ledger/consts'
 import { bip32 } from 'utils/bip32'
 import Logger from 'utils/Logger'
-import { Curve } from 'utils/publicKeys'
+import {
+  Curve,
+  EVM_BASE_DERIVATION_PATH_PREFIX,
+  AVALANCHE_DERIVATION_PATH_PREFIX
+} from 'utils/publicKeys'
 import { Account } from 'store/account'
 import { uuid } from 'utils/uuid'
 import { CoreAccountType } from '@avalabs/types'
@@ -65,12 +69,13 @@ import {
   SignatureRSV
 } from './types'
 import { getAddressDerivationPath, handleLedgerError } from './utils'
+import { toSegments } from 'utils/toSegments'
 
 export class LedgerWallet implements Wallet {
   private deviceId: string
   private derivationPathSpec: LedgerDerivationPathType
   private extendedPublicKeys?: PerAccountExtendedPublicKeys
-  private publicKeys: PublicKey[]
+  private publicKeys: PerAccountPublicKeys
   private bitcoinWallet?: BitcoinLedgerWallet
   private walletId: string
 
@@ -98,8 +103,16 @@ export class LedgerWallet implements Wallet {
     network: Network
   ): Promise<BitcoinLedgerWallet> {
     try {
+      const publicKeys = this.publicKeys[accountIndex]
+
+      if (!publicKeys) {
+        Logger.error(`Public key not found for account index ${accountIndex}`)
+        throw new Error(
+          `Public key not found for account index ${accountIndex}`
+        )
+      }
       const evmPubKey = BitcoinWalletPolicyService.getEvmPublicKey(
-        this.publicKeys,
+        publicKeys,
         accountIndex
       )
 
@@ -112,7 +125,7 @@ export class LedgerWallet implements Wallet {
       // Get wallet policy details from public key data for this specific account
       const btcPolicy =
         BitcoinWalletPolicyService.findBtcWalletPolicyInPublicKeys(
-          this.publicKeys,
+          publicKeys,
           accountIndex
         )
 
@@ -431,9 +444,17 @@ export class LedgerWallet implements Wallet {
         name: policyName
       }
 
+      const publicKeys = this.publicKeys[accountIndex]
+
+      if (!publicKeys) {
+        throw new Error(
+          `Public keys not found for account index ${accountIndex}`
+        )
+      }
+
       const stored = await BitcoinWalletPolicyService.storeBtcWalletPolicy({
         walletId,
-        publicKeys: this.publicKeys,
+        publicKeys,
         policyDetails,
         accountIndex
       })
@@ -466,10 +487,15 @@ export class LedgerWallet implements Wallet {
     network: Network
     provider: BitcoinProvider
   }): Promise<string> {
+    const publicKeys = this.publicKeys[accountIndex]
+
+    if (!publicKeys) {
+      throw new Error(`Public keys not found for account index ${accountIndex}`)
+    }
     // Check if wallet policy is registered for this specific account
     const needsRegistration =
       BitcoinWalletPolicyService.needsBtcWalletPolicyRegistration(
-        this.publicKeys,
+        publicKeys,
         accountIndex
       )
 
@@ -837,12 +863,26 @@ export class LedgerWallet implements Wallet {
       )
     }
 
-    if (!this.publicKeys) {
+    // For BIP44 wallets, derive the actual compressed public key from stored xpubs.
+    // publicKeys stores addresses (not raw public keys), so we must use extendedPublicKeys.
+    if (
+      this.isBIP44() &&
+      this.extendedPublicKeys &&
+      curve === Curve.SECP256K1
+    ) {
+      const derived = this.derivePublicKeyFromXpub(derivationPath)
+      if (derived !== undefined) {
+        return derived
+      }
+    }
+    const segments = toSegments(derivationPath)
+    const pubkey = this.publicKeys[segments.accountIndex]
+    if (!pubkey) {
       throw new Error('No public keys available for LedgerWallet')
     }
 
-    // Find the public key that matches the derivation path and curve
-    const matchingPublicKey = this.publicKeys.find(pk => {
+    // Fallback: look up the stored value (used for ED25519/Solana keys and Ledger Live wallets)
+    const matchingPublicKey = pubkey.find(pk => {
       const curveMatches =
         (curve === Curve.SECP256K1 && pk.curve === 'secp256k1') ||
         (curve === Curve.ED25519 && pk.curve === 'ed25519')
@@ -857,6 +897,58 @@ export class LedgerWallet implements Wallet {
     }
 
     return matchingPublicKey.key
+  }
+
+  /**
+   * Derives the compressed public key (hex) for a given BIP44 derivation path
+   * by looking up the per-account xpub in extendedPublicKeys and deriving children.
+   *
+   * e.g. path "m/44'/60'/0'/0/0":
+   *   - xpub is at extendedPublicKeys[0].evm  (account-level xpub at m/44'/60'/0')
+   *   - child segments are [0, 0]
+   */
+  private derivePublicKeyFromXpub(derivationPath: string): string | undefined {
+    if (!this.extendedPublicKeys) return undefined
+
+    let xpub: string | undefined
+    let childSegmentsStr: string | undefined
+
+    if (derivationPath.startsWith(EVM_BASE_DERIVATION_PATH_PREFIX)) {
+      // e.g. "m/44'/60'/0'/0/0" -> after prefix "0'/0/0"
+      const afterPrefix = derivationPath.slice(
+        EVM_BASE_DERIVATION_PATH_PREFIX.length
+      )
+      const parts = afterPrefix.split('/')
+      const accountIndex = parseInt(parts[0]?.replace("'", '') ?? '', 10)
+      if (isNaN(accountIndex)) return undefined
+      xpub = this.extendedPublicKeys[accountIndex]?.evm
+      childSegmentsStr = parts.slice(1).join('/') // "0/0"
+    } else if (derivationPath.startsWith(AVALANCHE_DERIVATION_PATH_PREFIX)) {
+      // e.g. "m/44'/9000'/0'/0/0" -> after prefix "0'/0/0"
+      const afterPrefix = derivationPath.slice(
+        AVALANCHE_DERIVATION_PATH_PREFIX.length
+      )
+      const parts = afterPrefix.split('/')
+      const accountIndex = parseInt(parts[0]?.replace("'", '') ?? '', 10)
+      if (isNaN(accountIndex)) return undefined
+      xpub = this.extendedPublicKeys[accountIndex]?.avalanche
+      childSegmentsStr = parts.slice(1).join('/')
+    }
+
+    if (!xpub || !childSegmentsStr) return undefined
+
+    try {
+      let node = bip32.fromBase58(xpub)
+      for (const segment of childSegmentsStr.split('/')) {
+        const index = parseInt(segment, 10)
+        if (isNaN(index)) return undefined
+        node = node.derive(index)
+      }
+      return node.publicKey.toString('hex')
+    } catch (error) {
+      Logger.error('LedgerWallet: failed to derive public key from xpub', error)
+      return undefined
+    }
   }
 
   // Cleanup method to disconnect LedgerService when wallet is no longer needed

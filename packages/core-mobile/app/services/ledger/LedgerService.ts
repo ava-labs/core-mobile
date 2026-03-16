@@ -1096,6 +1096,20 @@ class LedgerService {
       )
       .toBase58()
 
+    // Derive address-level public keys from account-level xpubs (child path 0/0)
+    const evmPublicKey =
+      bip32
+        .fromBase58(evmXpub)
+        .derive(0)
+        .derive(0)
+        .publicKey?.toString('hex') ?? ''
+    const avalanchePublicKey =
+      bip32
+        .fromBase58(avalancheXpub)
+        .derive(0)
+        .derive(0)
+        .publicKey?.toString('hex') ?? ''
+
     return {
       addresses: {
         evm: evmAddress,
@@ -1107,7 +1121,19 @@ class LedgerService {
       xpubs: {
         evm: evmXpub,
         avalanche: avalancheXpub
-      }
+      },
+      publicKeys: [
+        {
+          key: evmPublicKey,
+          derivationPath: extendedKeys.evm.path,
+          curve: Curve.SECP256K1
+        },
+        {
+          key: avalanchePublicKey,
+          derivationPath: extendedKeys.avalanche.path,
+          curve: Curve.SECP256K1
+        }
+      ]
     }
   }
 
