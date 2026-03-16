@@ -1,5 +1,8 @@
+import { Curve } from 'utils/publicKeys'
+
 export const toSegments = (
-  path: string
+  path: string,
+  curve?: Curve
 ): {
   m: 'm'
   purpose: string
@@ -9,8 +12,12 @@ export const toSegments = (
   addressIndex: number
 } => {
   const segments = path.replaceAll("'", '').split('/')
+  const isED25519 = curve === Curve.ED25519
+  // ED25519 (Solana) paths use 5 segments: m/purpose'/coinType'/account'/change'
+  // SECP256K1 paths use 6 segments: m/purpose'/coinType'/account'/change/addressIndex
+  const minSegments = isED25519 ? 5 : 6
 
-  if (segments.length < 6) {
+  if (segments.length < minSegments) {
     throw new Error(
       `Invalid derivation path: ${path}. Expected full format: m/purpose'/coinType'/account'/change/addressIndex`
     )
@@ -23,11 +30,24 @@ export const toSegments = (
     )
   }
 
-  const purpose = validateSegment(1, 'purpose', segments, path)
-  const coinType = validateSegment(2, 'coinType', segments, path)
-  const accountIndex = validateSegment(3, 'accountIndex', segments, path)
-  const change = validateSegment(4, 'change', segments, path)
-  const addressIndex = validateSegment(5, 'addressIndex', segments, path)
+  const purpose = validateSegment({ index: 1, name: 'purpose', segments, path })
+  const coinType = validateSegment({
+    index: 2,
+    name: 'coinType',
+    segments,
+    path
+  })
+  const accountIndex = validateSegment({
+    index: 3,
+    name: 'accountIndex',
+    segments,
+    path
+  })
+  const change = validateSegment({ index: 4, name: 'change', segments, path })
+  const addressIndex =
+    isED25519 && segments.length === 5
+      ? 0
+      : validateSegment({ index: 5, name: 'addressIndex', segments, path })
 
   return {
     m: 'm',
@@ -39,12 +59,17 @@ export const toSegments = (
   }
 }
 
-export const validateSegment = (
-  index: number,
-  name: string,
-  segments: string[],
+export const validateSegment = ({
+  index,
+  name,
+  segments,
+  path
+}: {
+  index: number
+  name: string
+  segments: string[]
   path: string
-): string => {
+}): string => {
   const segment = segments[index]
   if (!segment || !segment.trim() || segment !== segment.trim()) {
     throw new Error(

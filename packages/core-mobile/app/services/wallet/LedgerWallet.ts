@@ -879,7 +879,7 @@ export class LedgerWallet implements Wallet {
         return derived
       }
     }
-    const segments = toSegments(derivationPath)
+    const segments = toSegments(derivationPath, curve)
     const pubkey = this.publicKeys[segments.accountIndex]
     if (!pubkey) {
       throw new Error('No public keys available for LedgerWallet')
