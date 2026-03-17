@@ -1,10 +1,13 @@
 import { createZustandStore } from 'common/utils/createZustandStore'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { zustandMMKVStorage } from 'utils/mmkv/storages'
+import type { PersistStorage, StorageValue } from 'zustand/middleware'
+import { zustandStorageMMKV } from 'utils/mmkv/storages'
 import { ZustandStorageKeys } from 'resources/Constants'
 import type { LocalTokenWithBalance } from 'store/balance'
 import { mapTransferToSwapStatus } from 'features/notifications/utils'
+import { parseTransfer, stringifyTransfer } from '@avalabs/fusion-sdk'
+import Logger from 'utils/Logger'
 import type {
   Quote,
   Transfer,
@@ -38,6 +41,54 @@ export const useAllQuotes = createZustandStore<Quote[]>([])
 
 // Fusion service state
 export const useIsFusionServiceReady = createZustandStore<boolean>(false)
+
+// Persist storage for FusionTransfers.
+// stringifyTransfer/parseTransfer handle bigint serialization via {__type:'bigint'} tagging.
+type SerializedFusionTransfer = Omit<FusionTransfer, 'transfer'> & {
+  transfer: string
+}
+
+const fusionTransfersPersistStorage: PersistStorage<FusionTransfersState> = {
+  getItem: (name: string) => {
+    const raw = zustandStorageMMKV.getString(name)
+    if (!raw) return null
+    try {
+      const parsed = JSON.parse(raw) as StorageValue<{
+        transfers: Record<string, SerializedFusionTransfer>
+      }>
+      const transfers: FusionTransfersMap = {}
+      for (const [id, ft] of Object.entries(parsed.state?.transfers ?? {})) {
+        try {
+          transfers[id] = { ...ft, transfer: parseTransfer(ft.transfer) }
+        } catch (e) {
+          Logger.warn(
+            `[FusionTransfers] Skipping unparseable transfer ${id}`,
+            e
+          )
+        }
+      }
+      return {
+        ...parsed,
+        state: { transfers }
+      } as StorageValue<FusionTransfersState>
+    } catch {
+      return null
+    }
+  },
+  setItem: (name: string, value: StorageValue<FusionTransfersState>) => {
+    const serialized: Record<string, SerializedFusionTransfer> = {}
+    for (const [id, ft] of Object.entries(value.state.transfers)) {
+      serialized[id] = { ...ft, transfer: stringifyTransfer(ft.transfer) }
+    }
+    zustandStorageMMKV.set(
+      name,
+      JSON.stringify({ ...value, state: { transfers: serialized } })
+    )
+  },
+  removeItem: (name: string) => {
+    zustandStorageMMKV.remove(name)
+  }
+}
 
 // Fusion transfer storage with persistence
 interface FusionTransfersState {
@@ -78,7 +129,7 @@ export const fusionTransfersStore = create<FusionTransfersState>()(
     }),
     {
       name: ZustandStorageKeys.FUSION_TRANSFERS,
-      storage: zustandMMKVStorage,
+      storage: fusionTransfersPersistStorage,
       version: 1
     }
   )

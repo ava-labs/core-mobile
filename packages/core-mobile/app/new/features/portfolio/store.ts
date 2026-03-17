@@ -1,7 +1,7 @@
 import { CollectibleViewOption, ViewOption } from 'common/types'
 import { createZustandStore } from 'common/utils/createZustandStore'
 import { ZustandStorageKeys } from 'resources/Constants'
-import { zustandMMKVStorage } from 'utils/mmkv/storages'
+import { zustandPersistStorage } from 'utils/mmkv/storages'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
@@ -31,7 +31,7 @@ export const portfolioViewStore = create<PortfolioViewState>()(
     }),
     {
       name: ZustandStorageKeys.PORTFOLIO_VIEW,
-      storage: zustandMMKVStorage
+      storage: zustandPersistStorage
     }
   )
 )
@@ -57,7 +57,7 @@ export const collectiblesViewStore = create<CollectiblesViewState>()(
     }),
     {
       name: ZustandStorageKeys.COLLECTIBLES_VIEW,
-      storage: zustandMMKVStorage
+      storage: zustandPersistStorage
     }
   )
 )
@@ -83,7 +83,7 @@ export const defiViewStore = create<DeFiViewState>()(
     }),
     {
       name: ZustandStorageKeys.DEFI_VIEW,
-      storage: zustandMMKVStorage
+      storage: zustandPersistStorage
     }
   )
 )

@@ -19,20 +19,22 @@ export const queryStorage = createMMKV({
   id: `query`
 })
 
-const zustandStorage = createMMKV({
+export const zustandStorageMMKV = createMMKV({
   id: `zustand`
 })
 
-export const zustandMMKVStorage: PersistStorage<StateStorage> = {
+// Simple Zustand persist adapter backed by MMKV.
+// Uses JSON.parse/stringify
+export const zustandPersistStorage: PersistStorage<StateStorage> = {
   getItem: (name: string) => {
-    const value = zustandStorage.getString(name)
+    const value = zustandStorageMMKV.getString(name)
     return value ? JSON.parse(value) : null
   },
   setItem: (name: string, value: StorageValue<StateStorage>) => {
-    zustandStorage.set(name, JSON.stringify(value))
+    zustandStorageMMKV.set(name, JSON.stringify(value))
   },
   removeItem: (name: string) => {
-    zustandStorage.remove(name)
+    zustandStorageMMKV.remove(name)
   }
 }
 
