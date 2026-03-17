@@ -1,12 +1,10 @@
 import { Button } from '@avalabs/k2-alpine'
-import { USDC_AVALANCHE_C_TOKEN_ID } from 'common/consts/swap'
-import { useIsSwappable } from 'common/hooks/useIsSwapable'
-import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
+import { tokenIds } from 'consts/tokenIds'
 import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { useBalanceTotalForAccount } from 'features/portfolio/hooks/useBalanceTotalForAccount'
-import { selectIsEarnBlocked, selectIsSwapBlocked } from 'store/posthog'
+import { selectIsEarnBlocked, selectIsFusionEnabled } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { MarketType } from 'store/watchlist'
 import { selectActiveAccount } from 'store/account'
@@ -16,7 +14,6 @@ export function useTrackTokenActions({
   isAVAX,
   marketType,
   contractAddress,
-  chainId,
   onBuy,
   onStake,
   onSwap
@@ -24,26 +21,19 @@ export function useTrackTokenActions({
   isAVAX: boolean
   marketType: MarketType
   contractAddress: string | undefined
-  chainId: number | undefined
   onBuy: () => void
   onStake: () => void
   onSwap: (initialTokenIdTo?: string) => void
 }): { actions: JSX.Element[] } {
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const { isSwappable } = useIsSwappable()
-  const isSwapBlocked = useSelector(selectIsSwapBlocked)
+  const isFusionEnabled = useSelector(selectIsFusionEnabled)
   const balanceTotal = useBalanceTotalForAccount(activeAccount)
   const isZeroBalance = balanceTotal === 0n
   const { hasEnoughAvax } = useHasEnoughAvaxToStake()
   const isEarnBlocked = useSelector(selectIsEarnBlocked)
 
-  const isSwapListLoaded = useIsSwapListLoaded()
-
-  const isTokenSwappable = isSwappable({
-    tokenAddress: contractAddress,
-    chainId
-  })
+  const isTokenSwappable = isFusionEnabled && !!contractAddress
 
   const buyButton = useMemo(
     () => (
@@ -95,7 +85,7 @@ export function useTrackTokenActions({
       isAVAX,
       marketType,
       isTokenSwappable,
-      isSwapBlocked: isSwapBlocked || isDeveloperMode,
+      isSwapBlocked: isDeveloperMode,
       isZeroBalance,
       hasEnoughAvax,
       isEarnBlocked
@@ -105,13 +95,8 @@ export function useTrackTokenActions({
 
     showStake && result.push(stakeButton)
 
-    // the token's swapability depends on the swap list
-    // thus, we need to wait for the swap list to load
-    // so that we can display the swap button accordingly
-    if (showSwap && isSwapListLoaded) {
-      result.push(
-        generateSwapButton(isAVAX ? USDC_AVALANCHE_C_TOKEN_ID : contractAddress)
-      )
+    if (showSwap) {
+      result.push(generateSwapButton(isAVAX ? tokenIds.USDC : contractAddress))
     }
 
     return result
@@ -119,14 +104,12 @@ export function useTrackTokenActions({
     isAVAX,
     marketType,
     isTokenSwappable,
-    isSwapBlocked,
     isDeveloperMode,
     isZeroBalance,
     hasEnoughAvax,
     isEarnBlocked,
     buyButton,
     stakeButton,
-    isSwapListLoaded,
     generateSwapButton,
     contractAddress
   ])

@@ -4,7 +4,7 @@ import {
 } from '@avalabs/avalanche-module'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import { ChainId } from '@avalabs/core-chains-sdk'
+import { ChainId, SolanaCaip2ChainId } from '@avalabs/core-chains-sdk'
 import {
   NavigationTitleHeader,
   SegmentedControl,
@@ -20,12 +20,7 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { TokenHeader } from 'common/components/TokenHeader'
-import {
-  AVAX_TOKEN_ID,
-  SOLANA_TOKEN_LOCAL_ID,
-  USDC_AVALANCHE_C_TOKEN_ID,
-  USDC_SOLANA_TOKEN_ID
-} from 'common/consts/swap'
+import { tokenIds } from 'consts/tokenIds'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
@@ -72,21 +67,23 @@ import { AVAX_P_ID } from 'services/balance/const'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { selectActiveAccount } from 'store/account/slice'
 import {
-  selectIsBridgeBlocked,
+  selectIsLegacyBridgeEnabled,
   selectIsBridgeBtcBlocked,
   selectIsBridgeEthBlocked,
+  selectIsFusionEnabled,
   selectIsMeldOfframpBlocked
 } from 'store/posthog'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const hasXpAddresses = useHasXpAddresses()
   const { navigate } = useRouter()
   const { getNetwork } = useNetworks()
@@ -104,12 +101,15 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const [segmentedControlLayout, setSegmentedControlLayout] = useState<
     LayoutRectangle | undefined
   >()
+  const isFusionEnabled = useSelector(selectIsFusionEnabled)
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
+  const isLegacyBridgeEnabled = useSelector(selectIsLegacyBridgeEnabled)
+  const isBridgeBtcBlocked = useSelector(selectIsBridgeBtcBlocked)
+  const isBridgeEthBlocked = useSelector(selectIsBridgeEthBlocked)
   const { localId, chainId } = useLocalSearchParams<{
     localId: string
     chainId: string
   }>()
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
 
   const erc20ContractTokens = useErc20ContractTokens()
@@ -168,32 +168,38 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     [tokenName]
   )
 
-  const isSwapDisabled = useIsUIDisabledForNetwork(
-    UI.Swap,
-    token?.networkChainId
+  const isTokenStakable = useMemo(
+    () =>
+      (token?.networkChainId === ChainId.AVALANCHE_MAINNET_ID &&
+        token?.localId.toLowerCase() === tokenIds.AVAX.toLowerCase()) ||
+      (token?.networkChainId === ChainId.AVALANCHE_TESTNET_ID &&
+        token?.localId.toLowerCase() === tokenIds.AVAX.toLowerCase()) ||
+      (token?.networkChainId === ChainId.AVALANCHE_P &&
+        token?.localId.toLowerCase() === AVAX_P_ID.toLowerCase()) ||
+      (token?.networkChainId === ChainId.AVALANCHE_TEST_P &&
+        token?.localId.toLowerCase() === AVAX_P_ID.toLowerCase()),
+    [token]
   )
-  const isBridgeBlocked = useSelector(selectIsBridgeBlocked)
-  const isBridgeBtcBlocked = useSelector(selectIsBridgeBtcBlocked)
-  const isBridgeEthBlocked = useSelector(selectIsBridgeEthBlocked)
+
   const isBridgeUIDisabledForNetwork = useIsUIDisabledForNetwork(
     UI.Bridge,
     token?.networkChainId
   )
-
   const isBridgeDisabled = useMemo(() => {
+    if (!isLegacyBridgeEnabled || isBridgeUIDisabledForNetwork) {
+      return true
+    }
     if (isBridgeBtcBlocked && token?.networkChainId) {
       return isBitcoinChainId(token.networkChainId)
     }
-
     if (isBridgeEthBlocked && token?.networkChainId) {
       return isEthereumChainId(token.networkChainId)
     }
-
-    return isBridgeUIDisabledForNetwork || isBridgeBlocked
+    return false
   }, [
     token?.networkChainId,
     isBridgeUIDisabledForNetwork,
-    isBridgeBlocked,
+    isLegacyBridgeEnabled,
     isBridgeBtcBlocked,
     isBridgeEthBlocked
   ])
@@ -205,18 +211,13 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       )
   )
 
-  const isTokenStakable = useMemo(
-    () =>
-      (token?.networkChainId === ChainId.AVALANCHE_MAINNET_ID &&
-        token?.localId === AVAX_TOKEN_ID) ||
-      (token?.networkChainId === ChainId.AVALANCHE_TESTNET_ID &&
-        token?.localId === AVAX_TOKEN_ID) ||
-      (token?.networkChainId === ChainId.AVALANCHE_P &&
-        token?.localId === AVAX_P_ID) ||
-      (token?.networkChainId === ChainId.AVALANCHE_TEST_P &&
-        token?.localId === AVAX_P_ID),
-    [token]
-  )
+  const handleSend = useCallback((): void => {
+    setSelectedToken(token)
+    navigate({
+      pathname: '/send/send',
+      params: { vmName: getNetwork(token?.networkChainId)?.vmName }
+    })
+  }, [getNetwork, navigate, setSelectedToken, token])
 
   const handleBridge = useCallback(() => {
     navigate({
@@ -231,46 +232,43 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     })
   }, [navigate, token])
 
-  const handleSend = useCallback((): void => {
-    setSelectedToken(token)
-    navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/send',
-      params: { vmName: getNetwork(token?.networkChainId)?.vmName }
-    })
-  }, [getNetwork, navigate, setSelectedToken, token])
-
   const actionButtons: ActionButton[] = useMemo(() => {
     const buttons: ActionButton[] = [
       { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend }
     ]
 
-    if (!isSwapDisabled) {
-      const fromTokenId = token?.localId
+    if (isFusionEnabled) {
+      const fromTokenId = token?.internalId
 
+      let fromCaip2Id: string | undefined
       let toTokenId: string | undefined
+      let toCaip2Id: string | undefined
 
       switch (fromTokenId) {
-        case AVAX_TOKEN_ID:
-          toTokenId = USDC_AVALANCHE_C_TOKEN_ID
+        case tokenIds.AVAX:
+          toTokenId = tokenIds.USDC
           break
-        case USDC_AVALANCHE_C_TOKEN_ID:
-          toTokenId = AVAX_TOKEN_ID
+        case tokenIds.SOL: {
+          toTokenId = tokenIds.USDC
+          const caip2ChainId = isDeveloperMode
+            ? SolanaCaip2ChainId.DEVNET
+            : SolanaCaip2ChainId.MAINNET
+          fromCaip2Id = caip2ChainId
+          toCaip2Id = caip2ChainId
           break
-        case SOLANA_TOKEN_LOCAL_ID:
-          toTokenId = USDC_SOLANA_TOKEN_ID
-          break
-        case USDC_SOLANA_TOKEN_ID:
-          toTokenId = SOLANA_TOKEN_LOCAL_ID
+        }
+        case tokenIds.USDC:
+          toTokenId = tokenIds.AVAX
           break
         default:
-          toTokenId = AVAX_TOKEN_ID
+          toTokenId = tokenIds.USDC
       }
 
       buttons.push({
         title: ActionButtonTitle.Swap,
         icon: 'swap',
-        onPress: () => navigateToSwap({ fromTokenId, toTokenId })
+        onPress: () =>
+          navigateToSwap({ fromTokenId, toTokenId, fromCaip2Id, toCaip2Id })
       })
     }
 
@@ -310,21 +308,22 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     return buttons
   }, [
     handleSend,
-    isSwapDisabled,
     token,
     isBuyable,
     isTokenStakable,
     hasXpAddresses,
+    isWithdrawable,
+    isFusionEnabled,
+    isMeldOfframpBlocked,
     isBridgeDisabled,
     isTokenBridgeable,
-    isWithdrawable,
-    isMeldOfframpBlocked,
+    handleBridge,
     navigateToSwap,
     navigateToBuy,
     canAddStake,
     addStake,
-    handleBridge,
-    navigateToWithdraw
+    navigateToWithdraw,
+    isDeveloperMode
   ])
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({

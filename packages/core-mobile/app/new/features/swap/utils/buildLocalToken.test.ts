@@ -2,7 +2,7 @@
 import { TokenType } from '@avalabs/vm-module-types'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import { LocalTokenWithBalance } from 'store/balance/types'
-import { TOKEN_IDS } from 'consts/tokenIds'
+import { tokenIds } from 'consts/tokenIds'
 import { TokenInfo } from 'common/hooks/useTokenLookup'
 import { buildLocalToken } from './buildLocalToken'
 
@@ -39,13 +39,13 @@ describe('buildLocalToken', () => {
   describe('native token decimals override', () => {
     it('uses NATIVE_DECIMALS for AVAX when balanceData is native', () => {
       const tokenInfo = makeTokenInfo({
-        internalId: TOKEN_IDS.AVAX,
+        internalId: tokenIds.AVAX,
         isNative: true,
         meta: { logoUri: null, decimals: { [AVAX_CAIP2]: 6 } } // wrong decimals – should be overridden
       })
       const balanceData = makeBalanceToken({
         type: TokenType.NATIVE,
-        internalId: TOKEN_IDS.AVAX
+        internalId: tokenIds.AVAX
       })
 
       const result = buildLocalToken({
@@ -60,7 +60,7 @@ describe('buildLocalToken', () => {
 
     it('uses NATIVE_DECIMALS for SOL when tokenInfo.isNative is true', () => {
       const tokenInfo = makeTokenInfo({
-        internalId: TOKEN_IDS.SOL,
+        internalId: tokenIds.SOL,
         isNative: true,
         meta: { logoUri: null, decimals: { [SOL_CAIP2]: 1 } } // wrong decimals – should be overridden
       })
@@ -77,7 +77,7 @@ describe('buildLocalToken', () => {
 
     it('uses NATIVE_DECIMALS for ETH (18)', () => {
       const tokenInfo = makeTokenInfo({
-        internalId: TOKEN_IDS.ETH,
+        internalId: tokenIds.ETH,
         isNative: true
       })
 
@@ -112,13 +112,13 @@ describe('buildLocalToken', () => {
   describe('address selection', () => {
     it('returns empty address for native token (balanceData.type NATIVE)', () => {
       const tokenInfo = makeTokenInfo({
-        internalId: TOKEN_IDS.AVAX,
+        internalId: tokenIds.AVAX,
         isNative: true,
         platforms: { [AVAX_CAIP2]: '0xsome-native-address' }
       })
       const balanceData = makeBalanceToken({
         type: TokenType.NATIVE,
-        internalId: TOKEN_IDS.AVAX
+        internalId: tokenIds.AVAX
       })
 
       const result = buildLocalToken({
@@ -311,7 +311,7 @@ describe('buildLocalToken', () => {
   describe('chainId is forwarded', () => {
     it('sets networkChainId from the chainId argument', () => {
       const tokenInfo = makeTokenInfo({
-        internalId: TOKEN_IDS.ETH,
+        internalId: tokenIds.ETH,
         isNative: true
       })
 
@@ -362,12 +362,12 @@ describe('buildLocalToken', () => {
   describe('balance data integration', () => {
     it('merges balance from matching accountToken', () => {
       const tokenInfo = makeTokenInfo({
-        internalId: TOKEN_IDS.AVAX,
+        internalId: tokenIds.AVAX,
         isNative: true
       })
       const balanceData = makeBalanceToken({
         type: TokenType.NATIVE,
-        internalId: TOKEN_IDS.AVAX,
+        internalId: tokenIds.AVAX,
         balance: 5000000000000000000n,
         balanceInCurrency: 250,
         priceInCurrency: 50
@@ -387,7 +387,7 @@ describe('buildLocalToken', () => {
 
     it('uses zero balance defaults when no accountToken matches', () => {
       const tokenInfo = makeTokenInfo({
-        internalId: TOKEN_IDS.AVAX,
+        internalId: tokenIds.AVAX,
         isNative: true
       })
 

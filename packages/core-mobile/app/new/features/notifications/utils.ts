@@ -1,4 +1,4 @@
-import { Transfer } from 'features/swapV2/types'
+import { Transfer } from 'features/swap/types'
 import {
   AppNotification,
   NotificationCategory,

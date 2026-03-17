@@ -58,8 +58,8 @@ export function BridgeProvider({
 }): JSX.Element {
   const [configEnabled, setConfigEnabled] = useState(false)
 
-  const enableConfig = () => setConfigEnabled(true)
-  const disableConfig = () => setConfigEnabled(false)
+  const enableConfig = (): void => setConfigEnabled(true)
+  const disableConfig = (): void => setConfigEnabled(false)
 
   return (
     <BridgeConfigContext.Provider value={{ enableConfig, disableConfig }}>
@@ -175,4 +175,5 @@ function LocalBridgeProvider({
 }
 
 // Export hook to control config fetching
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useBridgeConfigControl = () => useContext(BridgeConfigContext)

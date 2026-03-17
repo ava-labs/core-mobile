@@ -1,4 +1,4 @@
-import { USDC_SOLANA_TOKEN_ID } from 'common/consts/swap'
+import { tokenAddresses } from 'consts/tokenIds'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
@@ -25,7 +25,7 @@ export const useSearchableERC20AndSolanaTokenList = (
       tk =>
         'chainId' in tk &&
         tk.chainId === ChainId.SOLANA_MAINNET_ID &&
-        tk.address === USDC_SOLANA_TOKEN_ID
+        tk.address === tokenAddresses.USDC_SOLANA
     )
   }, [solanaTokens])
 
@@ -44,8 +44,8 @@ export const useSearchableERC20AndSolanaTokenList = (
   const filteredUsdcSolanaToken = useMemo(() => {
     return filteredUsdcSolanaTokenList.find(
       tk =>
-        // @ts-expect-error: there is no chainId for SPL tokens
-        tk.address === USDC_SOLANA_TOKEN_ID &&
+        'address' in tk &&
+        tk.address === tokenAddresses.USDC_SOLANA &&
         tk.networkChainId === ChainId.SOLANA_MAINNET_ID
     )
   }, [filteredUsdcSolanaTokenList])
