@@ -7,7 +7,6 @@ import {
   getAddressDerivationPath,
   handleLedgerError
 } from 'services/wallet/utils'
-import { ChainName } from 'services/network/consts'
 import {
   getBtcAddressFromPubKey,
   getSolanaPublicKeyFromLedger,
@@ -27,6 +26,7 @@ import { Curve } from 'utils/publicKeys'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import {
   AddressInfo,
+  LedgerAddressType,
   ExtendedPublicKey,
   PublicKeyInfo,
   LedgerAppType,
@@ -771,10 +771,10 @@ class LedgerService {
         const address = bs58.encode(Uint8Array.from(Buffer.from(pk.key, 'hex')))
 
         return {
-          id: `solana-${startIndex + index}`,
+          id: `${LedgerAddressType.SOLANA}-${startIndex + index}`,
+          type: LedgerAddressType.SOLANA,
           address,
-          derivationPath: pk.derivationPath,
-          network: ChainName.SOLANA
+          derivationPath: pk.derivationPath
         }
       })
     } catch (error) {
@@ -878,30 +878,30 @@ class LedgerService {
           false // don't display on device
         )
         addresses.push({
-          id: `evm-${i}`,
+          id: `${LedgerAddressType.EVM}-${i}`,
+          type: LedgerAddressType.EVM,
           address: evmAddressResponse.address,
-          derivationPath: evmPath,
-          network: ChainName.AVALANCHE_C_EVM
+          derivationPath: evmPath
         })
 
         // Derive the CoreEth (C-chain bech32) address from the Avalanche Ledger
         // app using the EVM derivation path.  The Avalanche app's
-        // getAddressAndPubKey returns the bech32-encoded address derived from
-        // the public key at the given path — this is NOT the same as
-        // bech32-encoding the 0x EVM address bytes, because the Avalanche
-        // and EVM keys live on different curves / derivation branches.
+        // getAddressAndPubKey returns the bech32-encoded address and the
+        // Avalanche app public key at that EVM derivation path — this is NOT
+        // the same as bech32-encoding the 0x EVM address bytes. Both Avalanche
+        // C-chain and EVM/Ethereum on Ledger use secp256k1; the difference
+        // here is in the derivation path (and app behavior), not the
+        // underlying curve.
         const evmAvalancheAddressResponse =
           await avalancheApp.getAddressAndPubKey(evmPath, false, networkHrp)
         const coreEthAddress = `C-${stripAddressPrefix(
           evmAvalancheAddressResponse.address
         )}`
         addresses.push({
-          id: `avalanche-c-${i}`,
+          id: `${LedgerAddressType.AVALANCHE_CORE_ETH}-${i}`,
+          type: LedgerAddressType.AVALANCHE_CORE_ETH,
           address: coreEthAddress,
-          derivationPath: evmPath,
-          network: isTestnet
-            ? ChainName.AVALANCHE_C_TESTNET
-            : ChainName.AVALANCHE_C
+          derivationPath: evmPath
         })
 
         // xp addresses - get from device
@@ -922,21 +922,22 @@ class LedgerService {
 
         const xChainAddress = `X-${addressWithoutPrefix}`
         addresses.push({
-          id: `avalanche-x-${i}`,
+          id: `${LedgerAddressType.AVALANCHE_X}-${i}`,
+          type: LedgerAddressType.AVALANCHE_X,
           address: xChainAddress,
-          derivationPath: avalancheChainPath,
-          network: ChainName.AVALANCHE_X
+          derivationPath: avalancheChainPath
         })
         const pChainAddress = `P-${addressWithoutPrefix}`
 
         addresses.push({
-          id: `avalanche-p-${i}`,
+          id: `${LedgerAddressType.AVALANCHE_P}-${i}`,
+          type: LedgerAddressType.AVALANCHE_P,
           address: pChainAddress,
-          derivationPath: avalancheChainPath,
-          network: ChainName.AVALANCHE_P
+          derivationPath: avalancheChainPath
         })
 
-        // Bitcoin addresses - derive from EVM public key (like the extension)
+        // Bitcoin addresses - derive from the Avalanche app public key at the
+        // EVM derivation path (matching the browser extension behavior).
         const btcAddress = getBtcAddressFromPubKey(
           Buffer.from(
             evmAvalancheAddressResponse.publicKey.toString('hex'),
@@ -946,10 +947,10 @@ class LedgerService {
         )
 
         addresses.push({
-          id: `bitcoin-${i}`,
+          id: `${LedgerAddressType.BITCOIN}-${i}`,
+          type: LedgerAddressType.BITCOIN,
           address: btcAddress,
-          derivationPath: evmPath,
-          network: ChainName.BITCOIN
+          derivationPath: evmPath
         })
       }
     } catch (error) {
@@ -1067,24 +1068,14 @@ class LedgerService {
     // Get addresses for display
     const addresses = await this.getAllAddresses(accountIndex, 1, isTestnet)
 
-    const evmAddress =
-      addresses.find(addr => addr.network === ChainName.AVALANCHE_C_EVM)
-        ?.address || ''
-    const coreEthAddress =
-      addresses.find(
-        addr =>
-          addr.network ===
-          (isTestnet ? ChainName.AVALANCHE_C_TESTNET : ChainName.AVALANCHE_C)
-      )?.address || ''
-    const avmAddress =
-      addresses.find(addr => addr.network === ChainName.AVALANCHE_X)?.address ||
-      ''
-    const pvmAddress =
-      addresses.find(addr => addr.network === ChainName.AVALANCHE_P)?.address ||
-      ''
+    const findAddress = (type: LedgerAddressType): string =>
+      addresses.find(addr => addr.type === type)?.address || ''
 
-    const btcAddress =
-      addresses.find(addr => addr.network === ChainName.BITCOIN)?.address || ''
+    const evmAddress = findAddress(LedgerAddressType.EVM)
+    const coreEthAddress = findAddress(LedgerAddressType.AVALANCHE_CORE_ETH)
+    const avmAddress = findAddress(LedgerAddressType.AVALANCHE_X)
+    const pvmAddress = findAddress(LedgerAddressType.AVALANCHE_P)
+    const btcAddress = findAddress(LedgerAddressType.BITCOIN)
 
     // Get extended public keys and convert to base58 xpub format
     const extendedKeys = await this.getExtendedPublicKeys(accountIndex)

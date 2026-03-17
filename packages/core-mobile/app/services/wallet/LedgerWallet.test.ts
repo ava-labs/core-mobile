@@ -2,7 +2,11 @@ import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Avalanche, BitcoinProviderAbstract } from '@avalabs/core-wallets-sdk'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { Curve } from 'utils/publicKeys'
-import { LedgerAppType, LedgerDerivationPathType } from 'services/ledger/types'
+import {
+  LedgerAddressType,
+  LedgerAppType,
+  LedgerDerivationPathType
+} from 'services/ledger/types'
 
 // Mock dependencies
 jest.mock(
@@ -898,23 +902,28 @@ describe('LedgerWallet', () => {
     it('should persist the device-derived Avalanche C address as addressCoreEth', async () => {
       mockGetAllAddresses.mockResolvedValue([
         {
-          id: 'evm-0',
+          id: `${LedgerAddressType.EVM}-0`,
+          type: LedgerAddressType.EVM,
           address: '0x1234'
         },
         {
-          id: 'avalanche-x-0',
+          id: `${LedgerAddressType.AVALANCHE_X}-0`,
+          type: LedgerAddressType.AVALANCHE_X,
           address: 'X-fuji1xaddress'
         },
         {
-          id: 'avalanche-p-0',
+          id: `${LedgerAddressType.AVALANCHE_P}-0`,
+          type: LedgerAddressType.AVALANCHE_P,
           address: 'P-fuji1paddress'
         },
         {
-          id: 'avalanche-c-0',
+          id: `${LedgerAddressType.AVALANCHE_CORE_ETH}-0`,
+          type: LedgerAddressType.AVALANCHE_CORE_ETH,
           address: 'C-fuji1correctatomic'
         },
         {
-          id: 'bitcoin-0',
+          id: `${LedgerAddressType.BITCOIN}-0`,
+          type: LedgerAddressType.BITCOIN,
           address: 'bc1qbtcaddress'
         }
       ])

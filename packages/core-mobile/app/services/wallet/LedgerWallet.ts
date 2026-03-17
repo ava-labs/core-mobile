@@ -35,6 +35,7 @@ import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import LedgerService from 'services/ledger/LedgerService'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import {
+  LedgerAddressType,
   LedgerAppType,
   LedgerDerivationPathType,
   LedgerWalletData,
@@ -1301,19 +1302,14 @@ export class LedgerWallet implements Wallet {
     await this.handleAppConnection(appType)
 
     const addresses = await LedgerService.getAllAddresses(index, 1, isTestnet)
-    const addressC = addresses.find(addr => addr.id.includes('evm'))?.address
-    const addressAVM = addresses.find(addr =>
-      addr.id.includes('avalanche-x')
-    )?.address
-    const addressPVM = addresses.find(addr =>
-      addr.id.includes('avalanche-p')
-    )?.address
-    const addressCoreEth = addresses.find(addr =>
-      addr.id.includes('avalanche-c')
-    )?.address
-    const addressBTC = addresses.find(addr =>
-      addr.id.includes('bitcoin')
-    )?.address
+    const findAddress = (type: LedgerAddressType): string | undefined =>
+      addresses.find(addr => addr.type === type)?.address
+
+    const addressC = findAddress(LedgerAddressType.EVM)
+    const addressAVM = findAddress(LedgerAddressType.AVALANCHE_X)
+    const addressPVM = findAddress(LedgerAddressType.AVALANCHE_P)
+    const addressCoreEth = findAddress(LedgerAddressType.AVALANCHE_CORE_ETH)
+    const addressBTC = findAddress(LedgerAddressType.BITCOIN)
 
     if (
       !addressC ||
