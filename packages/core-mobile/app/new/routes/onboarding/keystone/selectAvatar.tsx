@@ -20,7 +20,6 @@ export default function SelectAvatar(): JSX.Element {
     }
 
     navigate({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/onboarding/keystone/confirmation',
       params: { selectedAvatarId: selectedAvatar?.id }
     })

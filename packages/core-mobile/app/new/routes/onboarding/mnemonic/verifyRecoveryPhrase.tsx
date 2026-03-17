@@ -8,7 +8,6 @@ export default function VerifyRecoveryPhrase(): JSX.Element {
 
   const handleVerified = (): void => {
     navigate({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/onboarding/mnemonic/createPin',
       params: { mnemonic }
     })

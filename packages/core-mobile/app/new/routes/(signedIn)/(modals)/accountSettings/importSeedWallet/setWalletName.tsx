@@ -29,7 +29,6 @@ export default function SetWalletName(): JSX.Element {
 
     if (migrationStatus !== MigrationStatus.NoMigrationNeeded) {
       router.navigate({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/verifyPin',
         params: {
           walletSecretToImport: normalizedMnemonic

@@ -5,16 +5,17 @@ import {
   SxProp,
   Text
 } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import React, {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState
-} from 'react'
-import { LayoutRectangle, StyleProp, View, ViewStyle } from 'react-native'
+import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import {
+  LayoutChangeEvent,
+  LayoutRectangle,
+  Platform,
+  StyleProp,
+  View,
+  ViewStyle
+} from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import {
   KeyboardAwareScrollView,
@@ -22,12 +23,12 @@ import {
   KeyboardStickyView
 } from 'react-native-keyboard-controller'
 import Animated, {
-  FadeIn,
   interpolate,
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Grabber from './Grabber'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
 
@@ -104,22 +105,21 @@ export const ScrollScreen = ({
   hideHeaderBackground,
   headerCenterOverlay,
   headerStyle,
-  testID,
+  testID = 'bottom_sheet',
   renderHeader,
   renderFooter,
   renderHeaderRight,
   ...props
 }: ScrollScreenProps): JSX.Element => {
   const insets = useSafeAreaInsets()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
 
   const headerRef = useRef<View>(null)
   const contentHeaderHeight = useSharedValue<number>(0)
-  const footerHeight = useSharedValue<number>(0)
-  const footerRef = useRef<View>(null)
+  const [footerMeasuredHeight, setFooterMeasuredHeight] = useState(0)
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
@@ -153,12 +153,9 @@ export const ScrollScreen = ({
     })
   }, [contentHeaderHeight])
 
-  useLayoutEffect(() => {
-    // eslint-disable-next-line max-params
-    footerRef?.current?.measure((x, y, width, height) => {
-      footerHeight.value = height
-    })
-  }, [footerHeight])
+  const onFooterLayout = useCallback((event: LayoutChangeEvent) => {
+    setFooterMeasuredHeight(event.nativeEvent.layout.height)
+  }, [])
 
   const animatedBorderStyle = useAnimatedStyle(() => {
     const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
@@ -169,16 +166,12 @@ export const ScrollScreen = ({
 
   const renderHeaderContent = useCallback(() => {
     if (title || subtitle || renderHeader) {
+      const hasTitle = Boolean(title || subtitle)
       return (
         <View>
           <View
             ref={headerRef}
-            style={[
-              headerStyle,
-              {
-                gap: 8
-              }
-            ]}>
+            style={[headerStyle, hasTitle ? { gap: 8 } : undefined]}>
             {title ? (
               <Animated.View style={[animatedHeaderStyle]}>
                 <ScreenHeader
@@ -190,9 +183,10 @@ export const ScrollScreen = ({
             ) : null}
 
             {subtitle ? <Text variant="body1">{subtitle}</Text> : null}
+            {!hasTitle && renderHeader?.()}
           </View>
 
-          {renderHeader?.()}
+          {hasTitle && renderHeader?.()}
         </View>
       )
     } else {
@@ -223,42 +217,14 @@ export const ScrollScreen = ({
     titleSx
   ])
 
-  const [showFooter, setShowFooter] = useState(false)
-
-  useEffect(() => {
-    if (renderFooter && !showFooter) {
-      setShowFooter(true)
-    }
-  }, [renderFooter, showFooter])
-
   const renderFooterContent = useCallback(() => {
-    if (renderFooter && showFooter) {
+    if (renderFooter) {
       const footer = renderFooter()
       if (footer) {
-        if (shouldAvoidKeyboard) {
-          return (
-            <KeyboardStickyView
-              enabled={!disableStickyFooter}
-              offset={{
-                opened: insets.bottom
-              }}>
-              <LinearGradientBottomWrapper>
-                <Animated.View
-                  entering={FadeIn.delay(150)}
-                  style={{
-                    paddingHorizontal: 16,
-                    paddingBottom: insets.bottom + 16
-                  }}>
-                  {footer}
-                </Animated.View>
-              </LinearGradientBottomWrapper>
-            </KeyboardStickyView>
-          )
-        } else {
-          return (
+        const footerInner = (
+          <View onLayout={onFooterLayout}>
             <LinearGradientBottomWrapper>
               <Animated.View
-                entering={FadeIn.delay(150)}
                 style={{
                   paddingHorizontal: 16,
                   paddingBottom: insets.bottom + 16
@@ -266,21 +232,53 @@ export const ScrollScreen = ({
                 {footer}
               </Animated.View>
             </LinearGradientBottomWrapper>
+          </View>
+        )
+
+        if (shouldAvoidKeyboard) {
+          return (
+            <KeyboardStickyView
+              enabled={!disableStickyFooter}
+              offset={{
+                opened: insets.bottom
+              }}>
+              {footerInner}
+            </KeyboardStickyView>
           )
         }
+
+        return footerInner
       }
     }
 
     return null
   }, [
     renderFooter,
-    showFooter,
     shouldAvoidKeyboard,
     disableStickyFooter,
-    insets.bottom
+    insets.bottom,
+    onFooterLayout
   ])
 
+  const renderGrabber = useCallback(() => {
+    if (isModal)
+      return (
+        <View
+          style={{
+            position: 'absolute',
+            top: Platform.OS === 'android' ? insets.top - 2 : 9,
+            left: 0,
+            right: 0,
+            zIndex: 1000
+          }}>
+          <Grabber />
+        </View>
+      )
+  }, [insets.top, isModal])
+
   const renderHeaderBackground = useCallback(() => {
+    if (hideHeaderBackground) return null
+
     return (
       <View
         pointerEvents="none"
@@ -312,7 +310,7 @@ export const ScrollScreen = ({
       </View>
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [headerHeight])
+  }, [headerHeight, hideHeaderBackground])
 
   // 90% of our screens reuse this component but only some need keyboard avoiding
   // If you have an input on the screen, you need to enable this prop
@@ -322,7 +320,7 @@ export const ScrollScreen = ({
         <KeyboardScrollView
           testID={testID}
           extraKeyboardSpace={
-            disableStickyFooter ? -footerHeight.value - insets.bottom : 0
+            disableStickyFooter ? -footerMeasuredHeight - insets.bottom : 0
           }
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
@@ -336,7 +334,7 @@ export const ScrollScreen = ({
             {
               paddingBottom: disableStickyFooter
                 ? insets.bottom + 24
-                : footerHeight.value + 16,
+                : footerMeasuredHeight + 16,
               paddingTop: headerHeight
             }
           ]}
@@ -348,6 +346,7 @@ export const ScrollScreen = ({
         {renderFooterContent()}
         {renderHeaderBackground()}
         {headerCenterOverlay}
+        {renderGrabber()}
       </View>
     )
   }
@@ -366,7 +365,9 @@ export const ScrollScreen = ({
         contentContainerStyle={[
           props?.contentContainerStyle,
           {
-            paddingBottom: 32,
+            paddingBottom: renderFooter
+              ? footerMeasuredHeight + 16
+              : insets.bottom + 24,
             paddingTop: headerHeight
           }
         ]}
@@ -378,6 +379,7 @@ export const ScrollScreen = ({
       {renderFooterContent()}
       {renderHeaderBackground()}
       {headerCenterOverlay}
+      {renderGrabber()}
     </View>
   )
 }

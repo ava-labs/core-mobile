@@ -140,10 +140,10 @@ const allCaps = [
   },
   {
     platformName: 'iOS',
-    'appium:deviceName': isDeviceFarm ? deviceName : 'iPhone 16e',
+    'appium:deviceName': isDeviceFarm ? deviceName : 'iPhone 17 Pro',
     'appium:waitForIdleTimeout': 0,
     'appium:maxTypingFrequency': 30,
-    'appium:platformVersion': isDeviceFarm ? platformVersion : '18.5',
+    'appium:platformVersion': isDeviceFarm ? platformVersion : '26.0',
     'appium:automationName': 'xcuitest',
     ...(isDeviceFarm
       ? { 'appium:app': appPath }

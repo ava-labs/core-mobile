@@ -138,7 +138,7 @@ class PortfolioPage {
   }
 
   get testnetModeIsOn() {
-    return selectors.getByText(portfolio.testnetModeIsOn)
+    return selectors.getById(portfolio.testnetModeIsOn)
   }
 
   get sendButton() {
@@ -235,6 +235,10 @@ class PortfolioPage {
 
   get portfolioBalanceHeader() {
     return selectors.getById(portfolio.portfolioBalanceHeader)
+  }
+
+  get loadingPortfolioBalanceHeader() {
+    return selectors.getById(portfolio.loadingPortfolioBalanceHeader)
   }
 
   get portfolioAccountName() {
@@ -349,10 +353,9 @@ class PortfolioPage {
   }
 
   async tapToken(token = 'Avalanche') {
-    // It taps on the name of the token on the portfolio asset (ex - Avalanche, Bitcoin, Wrapped Ether...)
-    token = token.replace(/^Avalanche [PX]-Chain$/, 'Avalanche')
-    await actions.click(
-      selectors.getById(`${portfolio.portfolioTokenItem}${token}`)
+    const normalizedToken = token.replace(/\s(P|X)-Chain$/, '')
+    await actions.tap(
+      selectors.getById(`${portfolio.portfolioTokenItem}${normalizedToken}`)
     )
   }
 
@@ -377,13 +380,11 @@ class PortfolioPage {
     for (const { name, haveToggle } of networks) {
       if (haveToggle) await actions.isNotVisible(selectors.getByText(name))
     }
-    await this.tapFilterDropdown()
     await this.tapActivityTab()
     await this.tapNetworksDropdown()
     for (const { name, haveToggle } of networks) {
-      if (haveToggle) await actions.isNotVisible(selectors.getByText(name))
+      if (haveToggle) await actions.isNotVisible(selectors.getBySomeText(name))
     }
-    await this.dismissNetworkDropdown()
   }
 
   async dismissNetworkDropdown(network = commonEls.cChain) {
@@ -406,9 +407,8 @@ class PortfolioPage {
     await this.tapActivityTab()
     await this.tapNetworksDropdown()
     for (const { name, haveToggle } of networks) {
-      if (haveToggle) await actions.isVisible(selectors.getByText(name))
+      if (haveToggle) await actions.isVisible(selectors.getBySomeText(name))
     }
-    await this.dismissNetworkDropdown()
   }
 
   async verifyAccountName(name: string) {
@@ -434,7 +434,7 @@ class PortfolioPage {
   async verifyAssetRow(index: number, isListView = true) {
     const prefix = isListView ? 'list' : 'grid'
     await actions.waitFor(selectors.getById(`${prefix}_fiat_balance__${index}`))
-    await actions.isVisible(
+    await actions.waitFor(
       selectors.getById(`${prefix}_token_balance__${index}`)
     )
   }
@@ -553,6 +553,7 @@ class PortfolioPage {
   }
 
   async verifyOwnedTokenDetail(token: string, buttons: string[]) {
+    await commonElsPage.pullToRefresh()
     await this.tapToken(token)
     await actions.waitFor(this.tokenHeaderName(token))
     await this.verifyOwnedTokenActionButtons(buttons)
@@ -684,14 +685,13 @@ class PortfolioPage {
   }
 
   async verifyBalanceHeader() {
-    await actions.waitFor(commonElsPage.loadingSpinnerHidden)
-    await actions.isVisible(this.portfolioBalanceHeader)
-    await actions.isNotVisible(commonElsPage.loadingSpinnerVisible)
+    await actions.waitFor(this.portfolioBalanceHeader)
+    await actions.isNotVisible(this.loadingPortfolioBalanceHeader)
   }
 
   async verifyAssetsList(token = 'Avalanche') {
     const start = performance.now()
-    await actions.waitFor(commonElsPage.loadingSpinnerHidden)
+    await actions.waitFor(this.portfolioBalanceHeader)
     await actions.isNotVisible(commonElsPage.inProgress)
     await actions.isVisible(this.portfolioTokenList)
     await actions.isVisible(

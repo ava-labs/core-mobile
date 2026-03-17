@@ -23,6 +23,8 @@ export default {
   sendTitle: 'Send',
   amountToSend: 'token_amount_input_field',
   amountToStake: 'token_amount_input_field AVAX',
+  amountInput: 'token_amount_input_field',
+  swapAmountInput: 'token_amount_input_field__you_pay',
   sendSelectTokenListBtn: 'send_select_token_list_btn',
   usdcToken: 'USDC',
   wethToken: 'WETH',
@@ -98,10 +100,12 @@ export default {
   countrySelector: 'list_item__Country',
   currencySelector: 'list_item__Currency',
   selectOtherTokenBtn: 'list_item__Select other token',
-  addStakeCard: 'add_card_enabled',
+  addCard: 'add_card_enabled',
   claimCard: 'claim_card',
   duration: 'Duration',
   confirmStake: 'confirm_stake',
-  reviewStakeTitle: 'Review your stake',
-  claimNow: 'claim_now'
+  reviewStakeTitle: `That's it!\nReview your stake`,
+  claimNow: 'claim_now',
+  maxBtn: 'Max',
+  fiatAmountInput: 'fiat_amount_input'
 }

@@ -166,7 +166,6 @@ export const navigateToSessionProposal = (
   params: SessionProposalV2Params
 ): void => {
   walletConnectCache.sessionProposalParams.set(params)
-  // @ts-ignore
   router.navigate('/authorizeDapp')
 }
 

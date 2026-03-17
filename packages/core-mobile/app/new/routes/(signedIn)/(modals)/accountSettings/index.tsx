@@ -61,27 +61,26 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [isPrivacyModeEnabled, dispatch])
 
   const goToSelectAvatar = useCallback(() => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/accountSettings/selectAvatar')
   }, [navigate])
 
   const goToAppAppearance = useCallback(() => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/accountSettings/selectAppearance')
   }, [navigate])
 
+  const goToSelectAppIcon = useCallback(() => {
+    navigate('/accountSettings/selectAppIcon')
+  }, [navigate])
+
   const goToCurrency = useCallback(() => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/accountSettings/selectCurrency')
   }, [navigate])
 
   const goToNotificationPreferences = useCallback(() => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/accountSettings/notificationPreferences')
   }, [navigate])
 
   const goToSecurityPrivacy = useCallback(() => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/accountSettings/securityAndPrivacy')
   }, [navigate])
 
@@ -113,7 +112,6 @@ const AccountSettingsScreen = (): JSX.Element => {
       isModal
       navigationTitle="Settings"
       renderHeaderRight={renderHeaderRight}
-      testID="settings_scroll_view"
       contentContainerStyle={{
         paddingTop: 16
       }}>
@@ -143,6 +141,7 @@ const AccountSettingsScreen = (): JSX.Element => {
               data={[
                 {
                   title: 'Testnet mode',
+                  disableRowAccessibility: true,
                   value: (
                     <Toggle
                       testID={
@@ -169,7 +168,6 @@ const AccountSettingsScreen = (): JSX.Element => {
                 data={[
                   {
                     title: 'Contacts',
-                    // @ts-ignore TODO: make routes typesafe
                     onPress: () => navigate('/accountSettings/addressBook'),
                     value: (
                       <Text
@@ -199,7 +197,6 @@ const AccountSettingsScreen = (): JSX.Element => {
                 data={[
                   {
                     title: 'Networks',
-                    // @ts-ignore TODO: make routes typesafe
                     onPress: () => navigate('/accountSettings/manageNetworks')
                   }
                 ]}
@@ -215,6 +212,7 @@ const AccountSettingsScreen = (): JSX.Element => {
             <AppAppearance
               selectAppAppearance={goToAppAppearance}
               selectCurrency={goToCurrency}
+              selectAppIcon={goToSelectAppIcon}
             />
             <UserPreferences
               selectNotificationPreferences={goToNotificationPreferences}

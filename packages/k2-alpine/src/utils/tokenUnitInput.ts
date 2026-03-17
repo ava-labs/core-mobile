@@ -50,3 +50,34 @@ export const normalizeNumericTextInput = (txt: string): string => {
 
   return normalized
 }
+
+/**
+ * Parses a decimal string to BigInt with specified decimals.
+ * This avoids JavaScript Number precision issues with large decimal values.
+ *
+ * @example
+ * parseDecimalToBigInt("0.15358017127655023", 18) => 153580171276550230n
+ * parseDecimalToBigInt("1.5", 18) => 1500000000000000000n
+ */
+export const parseDecimalToBigInt = (
+  value: string,
+  decimals: number
+): bigint => {
+  if (!value || value === '0' || value === '0.') return 0n
+
+  // Remove commas from formatted numbers
+  const cleanValue = value.replace(/,/g, '')
+
+  const [integerPart = '0', decimalPart = ''] = cleanValue.split('.')
+
+  // Pad or truncate the decimal part to match the specified decimals
+  const paddedDecimal = decimalPart.padEnd(decimals, '0').slice(0, decimals)
+
+  // Combine integer and decimal parts, then convert to BigInt
+  const combined = integerPart + paddedDecimal
+
+  // Remove leading zeros but keep at least one digit
+  const trimmed = combined.replace(/^0+/, '') || '0'
+
+  return BigInt(trimmed)
+}

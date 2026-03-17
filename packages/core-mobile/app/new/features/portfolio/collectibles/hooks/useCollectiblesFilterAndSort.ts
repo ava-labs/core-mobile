@@ -154,7 +154,7 @@ export const useCollectiblesFilterAndSort = (
 
   const getFiltered = useCallback(
     (nfts: NftItem[]) => {
-      if (nfts.length === 0) return []
+      if (nfts?.length === 0) return []
 
       const [network, contentType] = filter.selected
 
@@ -169,7 +169,7 @@ export const useCollectiblesFilterAndSort = (
         CollectibleTypeFilter.Videos
       ]
 
-      let tempNfts = [...nfts]
+      let tempNfts = [...(nfts ?? [])]
 
       if (isUnprocessableHidden)
         tempNfts = tempNfts.filter((nft: NftItem) => {

@@ -41,9 +41,13 @@ export const MaskedText = ({
     )
   }
 
-  return (
-    <Text variant={variant} sx={sx} testID={testID} {...rest}>
-      {children}
-    </Text>
-  )
+  if (typeof children === 'string') {
+    return (
+      <Text variant={variant} sx={sx} testID={testID} {...rest}>
+        {children}
+      </Text>
+    )
+  }
+
+  return <>{children}</>
 }

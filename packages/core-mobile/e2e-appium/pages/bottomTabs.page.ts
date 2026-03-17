@@ -1,6 +1,8 @@
 import { actions } from '../helpers/actions'
 import { selectors } from '../helpers/selectors'
 import bottomTabsLoc from '../locators/bottomTabs.loc'
+import commonElsPage from './commonEls.page'
+import earnPage from './earn.page'
 
 class BottomsTabsPage {
   get watchlistIcon() {
@@ -61,6 +63,7 @@ class BottomsTabsPage {
 
   async tapEarnTab() {
     await actions.longPress(this.earnTab)
+    await commonElsPage.pullToRefresh(earnPage.earnSubtitle)
   }
 
   async tapStakeTab() {

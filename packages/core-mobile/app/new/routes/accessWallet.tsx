@@ -14,23 +14,20 @@ const AccessWalletScreen = (): JSX.Element => {
 
   const handleEnterRecoveryPhrase = useCallback((): void => {
     navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/onboarding/mnemonic/',
+      pathname: '/onboarding/mnemonic/termsAndConditions',
       params: { recovering: 'true' }
     })
   }, [navigate])
 
   const handleEnterKeystone = useCallback((): void => {
     navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/onboarding/keystone/termsAndConditions/'
+      pathname: '/onboarding/keystone/termsAndConditions'
     })
   }, [navigate])
 
   const handleCreateMnemonicWallet = useCallback((): void => {
     navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/onboarding/mnemonic/'
+      pathname: '/onboarding/mnemonic/termsAndConditions'
     })
   }, [navigate])
 

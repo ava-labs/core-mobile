@@ -61,7 +61,6 @@ export const useBuy = (): {
   )
 
   const handleBuy = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/buy' })
   }, [navigate])
 
@@ -70,7 +69,6 @@ export const useBuy = (): {
       const { token, address, showAvaxWarning } = props ?? {}
       if (isMeldOnrampBlocked) {
         navigate({
-          // @ts-ignore TODO: make routes typesafe
           pathname: '/buy',
           params: { showAvaxWarning: showAvaxWarning?.toString() }
         })
@@ -80,11 +78,9 @@ export const useBuy = (): {
       if (token || address) {
         const cryptoCurrency = getTradableCryptoCurrency(token, address)
         setOnrampToken(cryptoCurrency)
-        // @ts-ignore TODO: make routes typesafe
         navigate('/meld/onramp/selectBuyAmount')
       } else {
         setOnrampToken(undefined)
-        // @ts-ignore TODO: make routes typesafe
         navigate('/meld/onramp')
       }
     },
@@ -99,7 +95,6 @@ export const useBuy = (): {
       }
 
       setOnrampToken(token)
-      // @ts-ignore TODO: make routes typesafe
       navigate('/meld/onramp/selectBuyAmount')
     },
     [handleBuy, isMeldOnrampBlocked, navigate, setOnrampToken]
@@ -114,7 +109,6 @@ export const useBuy = (): {
     if (avax === undefined) return
 
     setOnrampToken(avax)
-    // @ts-ignore TODO: make routes typesafe
     navigate('/meld/onramp/selectBuyAmount')
   }, [avax, handleBuy, isMeldOnrampBlocked, navigate, setOnrampToken])
 
@@ -126,7 +120,6 @@ export const useBuy = (): {
 
     if (usdc === undefined) return
     setOnrampToken(usdc)
-    // @ts-ignore TODO: make routes typesafe
     navigate('/meld/onramp/selectBuyAmount')
   }, [isMeldOnrampBlocked, usdc, setOnrampToken, navigate, handleBuy])
 

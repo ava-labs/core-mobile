@@ -38,6 +38,7 @@ interface DropdownMenuProps extends React.ComponentProps<typeof Root> {
   disabled?: boolean
   onPressAction: (event: { nativeEvent: { event: string } }) => void
   triggerAction?: 'press' | 'longPress'
+  testID?: string
 }
 
 export function DropdownMenu({
@@ -47,12 +48,20 @@ export function DropdownMenu({
   disabled,
   onPressAction,
   triggerAction = 'press',
+  testID,
   ...props
 }: DropdownMenuProps): React.ReactNode {
   const { theme } = useTheme()
 
   const renderItem = useCallback(
-    ({ title, id, icon, selected, testID, ...rest }: DropdownItem) => {
+    ({
+      title,
+      id,
+      icon,
+      selected,
+      testID: itemTestID,
+      ...rest
+    }: DropdownItem) => {
       const platformIcon = getPlatformIcons(icon, theme?.isDark, {
         disabled: rest.disabled,
         destructive: rest.destructive
@@ -72,7 +81,7 @@ export function DropdownMenu({
           <DropdownMenuItem
             {...rest}
             key={id}
-            testID={testID}
+            testID={itemTestID}
             onSelect={() => onPressAction({ nativeEvent: { event: id } })}>
             <DropdownMenuItemTitle
               color={
@@ -100,7 +109,7 @@ export function DropdownMenu({
         <DropdownMenuItem
           {...rest}
           key={id}
-          testID={testID}
+          testID={itemTestID}
           onSelect={() => onPressAction({ nativeEvent: { event: id } })}>
           <DropdownMenuItemTitle
             color={
@@ -134,8 +143,20 @@ export function DropdownMenu({
     ]
   )
 
+  const rootProps = {
+    ...props,
+    ...(testID && {
+      __unsafeIosProps: {
+        ...(props as { __unsafeIosProps?: Record<string, unknown> })
+          .__unsafeIosProps,
+        testID,
+        accessibilityLabel: testID
+      }
+    })
+  } as React.ComponentProps<typeof Root>
+
   return (
-    <Root {...props}>
+    <Root {...rootProps}>
       <DropdownMenuTrigger
         disabled={disabled}
         style={style}
@@ -164,7 +185,11 @@ const DropdownMenuTrigger = create(
     props: React.ComponentProps<typeof Trigger> & {
       action?: 'press' | 'longPress'
     }
-  ) => <Trigger {...props}>{props.children}</Trigger>,
+  ) => (
+    <Trigger {...props} asChild>
+      {props.children}
+    </Trigger>
+  ),
   'Trigger'
 )
 const DropdownMenuItem = create(

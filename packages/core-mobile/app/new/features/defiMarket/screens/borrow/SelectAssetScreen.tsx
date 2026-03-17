@@ -11,9 +11,10 @@ import { useRouter } from 'expo-router'
 import { ListScreen } from 'common/components/ListScreen'
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
-import { DefiMarket } from '../../types'
+import { WAVAX_ADDRESS } from 'features/swap/consts'
+import { DefiMarket, MarketNames } from '../../types'
 import { DefiAssetLogo } from '../../components/DefiAssetLogo'
-import { useBorrowProtocol } from '../../hooks/useBorrowProtocol'
+import { useSelectedBorrowProtocol } from '../../hooks/useBorrowProtocol'
 import { useAvailableMarkets } from '../../hooks/useAvailableMarkets'
 import { PROTOCOL_DISPLAY_NAMES } from '../../consts'
 import errorIcon from '../../../../assets/icons/melting_face.png'
@@ -21,7 +22,7 @@ import errorIcon from '../../../../assets/icons/melting_face.png'
 export const SelectAssetScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { theme } = useTheme()
-  const { selectedProtocol } = useBorrowProtocol()
+  const [selectedProtocol] = useSelectedBorrowProtocol()
   const {
     data: markets,
     isPending: isLoading,
@@ -30,12 +31,19 @@ export const SelectAssetScreen = (): JSX.Element => {
   } = useAvailableMarkets()
 
   // Filter markets by selected protocol and borrowing enabled, sorted by borrow APY (lowest first)
+  // For Aave, exclude WAVAX since AVAX borrow already handles wrapping via the Gateway contract
   const borrowableMarkets = useMemo(() => {
     if (!markets) return []
     return markets
       .filter(
         market =>
-          market.marketName === selectedProtocol && market.borrowingEnabled
+          market.marketName === selectedProtocol &&
+          market.borrowingEnabled &&
+          !(
+            market.marketName === MarketNames.aave &&
+            market.asset.contractAddress?.toLowerCase() ===
+              WAVAX_ADDRESS.toLowerCase()
+          )
       )
       .sort((a, b) => (a.borrowApyPercent ?? 0) - (b.borrowApyPercent ?? 0))
   }, [markets, selectedProtocol])
@@ -43,8 +51,7 @@ export const SelectAssetScreen = (): JSX.Element => {
   const handleSelectAsset = useCallback(
     (market: DefiMarket) => {
       navigate({
-        // @ts-ignore TODO: make routes typesafe
-        pathname: '/borrow/enterAmount',
+        pathname: '/borrow/selectAmount',
         params: {
           uniqueMarketId: market.uniqueMarketId
         }
@@ -81,6 +88,7 @@ export const SelectAssetScreen = (): JSX.Element => {
             />
             <View sx={{ flex: 1 }}>
               <Text
+                testID={`borrow_asset__${item.asset.symbol}`}
                 variant="body2"
                 sx={{ color: theme.colors.$textPrimary, fontWeight: 500 }}>
                 {item.asset.symbol}

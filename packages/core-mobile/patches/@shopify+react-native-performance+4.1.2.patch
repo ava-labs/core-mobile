@@ -1,0 +1,14 @@
+diff --git a/node_modules/@shopify/react-native-performance/android/src/main/kotlin/com/shopify/reactnativeperformance/PerformanceMarker.kt b/node_modules/@shopify/react-native-performance/android/src/main/kotlin/com/shopify/reactnativeperformance/PerformanceMarker.kt
+index 19b8fb4..9d90875 100644
+--- a/node_modules/@shopify/react-native-performance/android/src/main/kotlin/com/shopify/reactnativeperformance/PerformanceMarker.kt
++++ b/node_modules/@shopify/react-native-performance/android/src/main/kotlin/com/shopify/reactnativeperformance/PerformanceMarker.kt
+@@ -126,7 +126,8 @@ class PerformanceMarkerManager : SimpleViewManager<PerformanceMarker>() {
+                 "onRenderComplete",
+                 MapBuilder.of(
+                         "registrationName", "onRenderComplete")
+-        ).build();
++        ).build()
++        .toMutableMap();
+     }
+ 
+     override fun getName() = "PerformanceMarker"

@@ -30,9 +30,11 @@ export const DERIVATION_PATHS = {
 
   // Extended public key paths (without final /0/0)
   EXTENDED: {
-    [DerivationPathKey.EVM]: "m/44'/60'/0'",
-    [DerivationPathKey.AVALANCHE]: "m/44'/9000'/0'",
-    [DerivationPathKey.SOLANA]: "m/44'/501'/0'"
+    [DerivationPathKey.EVM]: (accountIndex = 0) => `m/44'/60'/${accountIndex}'`,
+    [DerivationPathKey.AVALANCHE]: (accountIndex = 0) =>
+      `m/44'/9000'/${accountIndex}'`,
+    [DerivationPathKey.SOLANA]: (accountIndex = 0) =>
+      `m/44'/501'/${accountIndex}'`
   }
 } as const
 

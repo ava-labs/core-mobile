@@ -24,8 +24,6 @@ import { useTheme } from '../../hooks'
 import { alpha } from '../../utils'
 import { View } from '../Primitives'
 
-const AnimatedTextInput = Animated.createAnimatedComponent(TextInput)
-
 interface TextInputProps extends _TextInputProps {
   /** Initial and maximum font size */
   initialFontSize?: number
@@ -52,6 +50,8 @@ interface TextInputProps extends _TextInputProps {
   /** Test ID */
   testID?: string
 }
+
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput)
 
 export const AutoSizeTextInput = forwardRef<
   {
@@ -338,12 +338,13 @@ export const AutoSizeTextInput = forwardRef<
 
     return (
       <View
+        accessible={false}
         sx={{
           ...containerSx,
           minHeight: initialFontSize + 12,
           justifyContent: 'center'
         }}>
-        <View onLayout={handleLayout} style={styles.row}>
+        <View accessible={false} onLayout={handleLayout} style={styles.row}>
           {renderPrefix()}
 
           <AnimatedTextInput
@@ -368,7 +369,10 @@ export const AutoSizeTextInput = forwardRef<
         </View>
 
         {/* Hidden text for measuring content width */}
-        <View style={styles.measurementContainer} pointerEvents="none">
+        <View
+          accessible={false}
+          style={styles.measurementContainer}
+          pointerEvents="none">
           <Animated.Text
             numberOfLines={1}
             onLayout={handleTextLayout}

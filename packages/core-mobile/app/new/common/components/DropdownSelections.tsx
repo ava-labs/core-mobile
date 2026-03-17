@@ -25,7 +25,7 @@ export const DropdownSelections = ({
         flexDirection: 'row',
         ...sx
       }}>
-      <View accessible={false} sx={{ flexDirection: 'row', gap: 8 }}>
+      <View sx={{ flexDirection: 'row', gap: 8 }}>
         {filter && (
           <Dropdown
             title={filter.title}
@@ -83,15 +83,11 @@ const Dropdown = memo(
     return (
       <DropdownMenu
         groups={data}
+        testID={testID}
         onPressAction={(event: { nativeEvent: { event: string } }) =>
           onSelected(event.nativeEvent.event)
         }>
-        <Chip
-          size="large"
-          hitSlop={8}
-          rightIcon={rightIcon}
-          testID={testID}
-          accessibilityLabel={testID}>
+        <Chip size="large" hitSlop={8} rightIcon={rightIcon}>
           {title}
         </Chip>
       </DropdownMenu>

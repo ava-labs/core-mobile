@@ -3,6 +3,7 @@ import { AuthorizationStatus } from '@notifee/react-native'
 import { AnyAction } from '@reduxjs/toolkit'
 import { navigateWithPromise } from 'common/utils/navigateWithPromise'
 import { waitForInteractions } from 'common/utils/waitForInteractions'
+import { Platform } from 'react-native'
 import Config from 'react-native-config'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AppUpdateService } from 'services/AppUpdateService/AppUpdateService'
@@ -55,7 +56,7 @@ const promptAppUpdateScreenIfNeeded = async (): Promise<void> => {
     await waitForInteractions()
 
     await navigateWithPromise({
-      pathname: '/(signedIn)/(modals)/appUpdate',
+      pathname: '/appUpdate',
       params: {
         appVersion: appUpdateStatus.version
       }
@@ -98,8 +99,17 @@ const promptEnableNotificationsIfNeeded = async (
     authorizationStatus === AuthorizationStatus.PROVISIONAL
   ) {
     dispatch(turnOnAllNotifications())
+
+    // for android users on versions less than 33
+    // the permissions are granted at install time
+    // so we need to capture the event here
+    if (Platform.OS === 'android' && Number(Platform.Version) < 33) {
+      AnalyticsService.capture('PushNotificationAccepted')
+    }
     return
   }
+
+  AnalyticsService.capture('PushNotificationPromptShown')
 
   await new Promise<void>(resolve => {
     showAlert({
@@ -117,11 +127,17 @@ const promptEnableNotificationsIfNeeded = async (
         {
           text: 'Turn on',
           onPress: async () => {
+            if (authorizationStatus === AuthorizationStatus.DENIED) {
+              NotificationsService.openSystemSettings()
+              resolve()
+              return
+            }
             const { permission } = await NotificationsService.getAllPermissions(
               false
             )
             if (permission !== 'authorized') {
-              NotificationsService.openSystemSettings()
+              AnalyticsService.capture('PushNotificationRejected')
+              resolve()
               return
             }
             dispatch(turnOnAllNotifications())
@@ -153,9 +169,7 @@ const promptSolanaLaunchModalIfNeeded = async (
   if (shouldShowSolanaLaunchModal) {
     await waitForInteractions()
 
-    await navigateWithPromise({
-      pathname: '/(signedIn)/(modals)/solanaLaunch'
-    })
+    await navigateWithPromise('/solanaLaunch')
   }
 }
 
@@ -195,9 +209,7 @@ const promptNestEggCampaignModalIfNeeded = async (
   if (hasQualified && !hasAcknowledged) {
     await waitForInteractions()
 
-    await navigateWithPromise({
-      pathname: '/(signedIn)/(modals)/nestEggCampaign/success'
-    })
+    await navigateWithPromise('/nestEggCampaign/success')
     return
   }
 
@@ -212,9 +224,7 @@ const promptNestEggCampaignModalIfNeeded = async (
     if (isNewUserEligible) {
       await waitForInteractions()
 
-      await navigateWithPromise({
-        pathname: '/(signedIn)/(modals)/nestEggCampaign'
-      })
+      await navigateWithPromise('/nestEggCampaign')
     }
   } else {
     // nest-egg-campaign is ON: ALL seedless users can see the modal
@@ -223,9 +233,7 @@ const promptNestEggCampaignModalIfNeeded = async (
     if (isUserEligible) {
       await waitForInteractions()
 
-      await navigateWithPromise({
-        pathname: '/(signedIn)/(modals)/nestEggCampaign'
-      })
+      await navigateWithPromise('/nestEggCampaign')
     }
   }
 }

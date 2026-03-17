@@ -26,7 +26,7 @@ module.exports = {
     'inline-dotenv',
     '@babel/plugin-transform-class-static-block',
     '@babel/plugin-transform-export-namespace-from',
-    'react-native-reanimated/plugin'
+    'react-native-worklets/plugin'
   ],
   overrides: [
     {

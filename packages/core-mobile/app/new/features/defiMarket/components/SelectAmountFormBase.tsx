@@ -10,6 +10,8 @@ import { TokenUnit } from '@avalabs/core-utils-sdk/dist'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import { transactionSnackbar } from 'common/utils/toast'
+import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 
 export const SelectAmountFormBase = ({
   title = 'How much do you want to deposit?',
@@ -18,8 +20,7 @@ export const SelectAmountFormBase = ({
   maxAmount,
   validateAmount,
   submit,
-  onSuccess,
-  onFailure
+  onSubmitted
 }: {
   title?: string
   token: {
@@ -30,8 +31,7 @@ export const SelectAmountFormBase = ({
   maxAmount: TokenUnit | undefined
   validateAmount: (amount: TokenUnit) => Promise<void>
   submit: ({ amount }: { amount: TokenUnit }) => Promise<string>
-  onSuccess: (params: { txHash: string; amount: TokenUnit }) => void
-  onFailure?: () => void
+  onSubmitted: (params: { txHash: string; amount: TokenUnit }) => void
 }): JSX.Element => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [amount, setAmount] = useState<TokenUnit>()
@@ -52,15 +52,22 @@ export const SelectAmountFormBase = ({
 
     try {
       setIsSubmitting(true)
-
       const txHash = await submit({ amount })
-      onSuccess({ txHash, amount })
-    } catch {
-      onFailure?.()
+      onSubmitted({ txHash, amount })
+    } catch (error) {
+      // Don't show error toast if user rejected the transaction
+      if (!isUserRejectedError(error)) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Transaction failed'
+        transactionSnackbar.error({
+          message: 'Transaction failed',
+          error: errorMessage
+        })
+      }
     } finally {
       setIsSubmitting(false)
     }
-  }, [amount, submit, onSuccess, onFailure])
+  }, [amount, submit, onSubmitted])
 
   const canSubmit =
     !isSubmitting &&
@@ -72,6 +79,7 @@ export const SelectAmountFormBase = ({
   const renderFooter = useCallback(() => {
     return (
       <Button
+        testID={canSubmit ? 'next_btn' : 'next_btn_disabled'}
         size="large"
         type="primary"
         onPress={handleSubmit}

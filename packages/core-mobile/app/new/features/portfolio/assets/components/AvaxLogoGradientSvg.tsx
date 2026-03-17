@@ -1,15 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import { View } from '@avalabs/k2-alpine'
+import { isScreenLargerThan6_2Inches } from 'features/portfolio/utils'
+import React, { useCallback, useEffect, useState } from 'react'
 import Animated, {
+  Easing,
   useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
-  Easing
+  withTiming
 } from 'react-native-reanimated'
-import Svg, { Defs, LinearGradient, Stop, Path } from 'react-native-svg'
-import { withTiming, runOnJS } from 'react-native-reanimated'
-import { isScreenLargerThan6_2Inches } from 'features/portfolio/utils'
-import { View } from '@avalabs/k2-alpine'
+import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg'
+import { scheduleOnRN } from 'react-native-worklets'
 
 const AnimatedView = Animated.View
 const DURATION = 4000
@@ -48,7 +49,7 @@ export const AvaxLogoGradientSvg = ({
     () => rotateValue.value,
     (value, prev) => {
       if (value !== prev) {
-        runOnJS(setGradientTransform)(`rotate(${value})`)
+        scheduleOnRN(setGradientTransform, `rotate(${value})`)
       }
     },
     [setGradientTransform]

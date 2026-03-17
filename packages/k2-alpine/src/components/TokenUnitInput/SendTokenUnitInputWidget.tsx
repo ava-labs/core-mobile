@@ -45,6 +45,7 @@ type SendTokenUnitInputWidgetProps = {
   testID?: string
   maxAmount?: TokenUnit
   presetPercentages?: number[]
+  balanceLabel?: string
 }
 
 export const SendTokenUnitInputWidget = forwardRef<
@@ -65,7 +66,8 @@ export const SendTokenUnitInputWidget = forwardRef<
       returnKeyType,
       autoFocus,
       maxAmount,
-      presetPercentages
+      presetPercentages,
+      balanceLabel = 'Balance:'
     },
     ref
     // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -86,15 +88,16 @@ export const SendTokenUnitInputWidget = forwardRef<
 
     useEffect(() => {
       const presets = []
+      const base = maxAmount ?? balance
       if (presetPercentages && presetPercentages.length > 0) {
         presetPercentages.forEach(percentage => {
-          const value = balance.mul(percentage).div(100)
+          const value = base.mul(percentage).div(100)
           presets.push({
             text: `${percentage}%`,
             amount: new TokenUnit(
               value.toSubUnit(),
-              balance.getMaxDecimals(),
-              balance.getSymbol()
+              base.getMaxDecimals(),
+              base.getSymbol()
             ),
             isSelected: amount
               ? amount.toSubUnit() === value.toSubUnit()
@@ -165,7 +168,7 @@ export const SendTokenUnitInputWidget = forwardRef<
     )
 
     const handlePressPresetButton = (amt: TokenUnit, index: number): void => {
-      textInputRef.current?.setValue(amt.toDisplay())
+      textInputRef.current?.setValue(amt.toString())
 
       onChange?.(amt)
 
@@ -202,7 +205,7 @@ export const SendTokenUnitInputWidget = forwardRef<
             borderRadius: 12,
             alignItems: 'center',
             paddingTop: 32,
-            paddingHorizontal: 16,
+            paddingHorizontal: 0,
             paddingBottom: 22,
             overflow: 'hidden'
           }}>
@@ -256,7 +259,7 @@ export const SendTokenUnitInputWidget = forwardRef<
           }}>
           {errorMessage
             ? normalizeErrorMessage(errorMessage)
-            : `Balance: ${balance.toDisplay()} ${token.symbol}`}
+            : `${balanceLabel} ${balance.toString()} ${token.symbol}`}
         </Text>
 
         {/* Show additional error message if max amount is 0 */}

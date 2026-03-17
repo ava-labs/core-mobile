@@ -51,7 +51,6 @@ const StakeSelectNode = (): JSX.Element => {
   const handlePressNode = useCallback(
     (node: NodeValidator) => {
       navigate({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/addStake/nodeDetails',
         params: { nodeId: node.nodeID, stakeEndTime }
       })

@@ -128,7 +128,6 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
 
     // we call back() first and then navigate() to prevent rerendering the stake home screen when user is already on it.
     back()
-    // @ts-ignore TODO: make routes typesafe
     navigate('/stake')
   }, [back, navigate])
 

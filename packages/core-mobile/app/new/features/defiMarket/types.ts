@@ -108,3 +108,50 @@ export type DepositAsset = {
   token: LocalTokenWithBalance & { type: TokenType.ERC20 | TokenType.NATIVE }
   nativeToken: (LocalTokenWithBalance & { type: TokenType.NATIVE }) | undefined
 }
+
+// Common fields for borrow data
+interface BaseBorrowData {
+  availableBorrowsUSD: bigint
+  tokenPriceUSD: bigint
+  totalDebtUSD: bigint
+}
+
+// AAVE-specific borrow data
+export interface AaveBorrowData extends BaseBorrowData {
+  healthFactor: bigint
+  totalCollateralUSD: bigint
+  liquidationThreshold: bigint
+}
+
+// Benqi-specific borrow data
+export interface BenqiBorrowData extends BaseBorrowData {
+  liquidity: bigint
+  shortfall: bigint
+}
+
+// AAVE getUserAccountData return type:
+// [totalCollateralBase, totalDebtBase, availableBorrowsBase, currentLiquidationThreshold, ltv, healthFactor]
+export type AaveAccountData = [bigint, bigint, bigint, bigint, bigint, bigint]
+
+export type BorrowPosition = {
+  market: DefiMarket
+  borrowedBalance: bigint
+  borrowedAmount: number
+  borrowedAmountUsd: number
+}
+
+export type BorrowSummary = {
+  netWorthUsd: number
+  netApyPercent: number
+  borrowPowerUsedPercent: number
+  healthScore?: number
+}
+
+export type BorrowSummaryResult = {
+  positions: BorrowPosition[]
+  summary: BorrowSummary | undefined
+  isLoading: boolean
+  isFetching: boolean
+  isRefreshing: boolean
+  refresh: () => void
+}

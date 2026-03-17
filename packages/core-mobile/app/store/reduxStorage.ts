@@ -1,9 +1,9 @@
-import { MMKV } from 'react-native-mmkv'
+import { createMMKV } from 'react-native-mmkv'
 import { Storage } from 'redux-persist'
 
 export const reduxStorageKeys = ['persist:root']
 
-const storage = new MMKV({
+const storage = createMMKV({
   id: `redux`
 })
 
@@ -17,7 +17,7 @@ export const reduxStorage: Storage & { clear: () => Promise<void> } = {
     return Promise.resolve(value)
   },
   removeItem: key => {
-    storage.delete(key)
+    storage.remove(key)
     return Promise.resolve()
   },
   clear: () => {

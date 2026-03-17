@@ -1,11 +1,11 @@
 import { Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { CoreAccountType } from '@avalabs/types'
-import { useHeaderHeight } from '@react-navigation/elements'
 import { ContentReveal } from 'common/components/ContentReveal'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen, ListScreenRef } from 'common/components/ListScreen'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import WalletCard from 'common/components/WalletCard'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { WalletDisplayData } from 'common/types'
 import { useRouter } from 'expo-router'
 import { useAllBalances } from 'features/portfolio/hooks/useAllBalances'
@@ -29,7 +29,7 @@ export const WalletsScreen = (): JSX.Element => {
   const {
     theme: { colors, isDark }
   } = useTheme()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const dispatch = useDispatch()
   const { navigate, dismiss } = useRouter()
   const accountCollection = useSelector(selectAccounts)
@@ -102,7 +102,6 @@ export const WalletsScreen = (): JSX.Element => {
   const gotoAccountDetails = useCallback(
     (accountId: string): void => {
       navigate({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/account',
         params: { accountId }
       })
@@ -257,7 +256,6 @@ export const WalletsScreen = (): JSX.Element => {
   }, [])
 
   const handleAddAccount = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/accountSettings/importWallet')
   }, [navigate])
 

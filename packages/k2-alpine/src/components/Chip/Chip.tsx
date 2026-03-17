@@ -19,7 +19,6 @@ type ChipIconType = 'expandMore'
 interface ChipProps {
   onPress?: () => void
   style?: StyleProp<ViewStyle>
-  testID?: string
   size: ChipSize
   variant?: ChipVariant
   rightIcon?: ChipIconType | JSX.Element
@@ -39,7 +38,6 @@ export const Chip = forwardRef<
       rightIcon,
       style,
       children,
-      testID,
       accessibilityLabel,
       renderLeft,
       ...rest
@@ -63,9 +61,7 @@ export const Chip = forwardRef<
     return (
       <TouchableOpacity
         ref={ref}
-        testID={testID}
-        accessibilityLabel={testID}
-        accessible={true}
+        accessible={false}
         style={[
           {
             ...sizeStyles[size],

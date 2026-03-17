@@ -2,7 +2,6 @@ import React, { forwardRef, useImperativeHandle, useMemo, useRef } from 'react'
 import { Platform, TextInput, Vibration, ViewStyle } from 'react-native'
 import Animated, {
   cancelAnimation,
-  runOnJS,
   SharedValue,
   useAnimatedStyle,
   useSharedValue,
@@ -11,8 +10,9 @@ import Animated, {
   withSpring,
   withTiming
 } from 'react-native-reanimated'
-import { TouchableOpacity } from '../Primitives'
+import { scheduleOnRN } from 'react-native-worklets'
 import { useTheme } from '../../hooks'
+import { TouchableOpacity } from '../Primitives'
 
 export const PinInput = forwardRef<PinInputActions, PinInputProps>(
   (
@@ -40,20 +40,20 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
               )
 
               setTimeout(() => {
-                runOnJS(resolve)()
+                scheduleOnRN(resolve)
               }, index * LoadingDotAnimationConfig.delayPerDot + LoadingDotAnimationConfig.duration * 2)
             })
         )
 
         return Promise.all(animationPromises).then(() => {
           if (isLoading.get()) {
-            runOnJS(triggerAnimations)()
+            scheduleOnRN(triggerAnimations)
           }
         })
       }
 
       isLoading.value = true
-      runOnJS(triggerAnimations)()
+      scheduleOnRN(triggerAnimations)
     }
 
     const stopLoadingAnimation = (onComplete?: () => void): void => {
@@ -64,7 +64,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
       })
 
       if (onComplete) {
-        runOnJS(onComplete)()
+        scheduleOnRN(onComplete)
       }
     }
 
@@ -118,8 +118,8 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
         ),
         withSpring(0, {}, isFinished => {
           if (isFinished) {
-            runOnJS(onComplete)()
-            runOnJS(vibratePhone)()
+            scheduleOnRN(onComplete)
+            scheduleOnRN(vibratePhone)
           }
         })
       )

@@ -202,7 +202,6 @@ export const BridgeScreen = (): JSX.Element => {
         canGoBack() && back()
       }
       navigate({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/bridgeStatus',
         params: bridgeResult
       })
@@ -294,7 +293,6 @@ export const BridgeScreen = (): JSX.Element => {
 
     setSelectedAsset(selectedBridgeAsset)
     navigate({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/selectBridgeToken',
       params: { sourceNetworkChainId: sourceNetwork.chainId }
     })
@@ -339,7 +337,6 @@ export const BridgeScreen = (): JSX.Element => {
 
   const handleSelectSourceNetwork = useCallback((): void => {
     setSelectedSourceNetwork(sourceNetwork)
-    // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/selectBridgeSourceNetwork' })
   }, [setSelectedSourceNetwork, sourceNetwork, navigate])
 
@@ -350,7 +347,6 @@ export const BridgeScreen = (): JSX.Element => {
 
     setSelectedTargetNetwork(targetNetwork)
     navigate({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/selectBridgeTargetNetwork',
       params: {
         targetChainIds: JSON.stringify(

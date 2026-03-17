@@ -1,12 +1,9 @@
 import React, { useState } from 'react'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import {
-  runOnJS,
-  useAnimatedReaction,
-  useSharedValue
-} from 'react-native-reanimated'
-import { ScrollView, Text, View } from '../Primitives'
+import { useAnimatedReaction, useSharedValue } from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 import { useTheme } from '../../hooks'
+import { ScrollView, Text, View } from '../Primitives'
 import { Slider } from './Slider'
 
 export default {
@@ -60,7 +57,7 @@ const SliderStory = ({
   useAnimatedReaction(
     () => value.value,
     newValue => {
-      runOnJS(setText)(newValue.toFixed(2))
+      scheduleOnRN(setText, newValue.toFixed(2))
     },
     [value]
   )

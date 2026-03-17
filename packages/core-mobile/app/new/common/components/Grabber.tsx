@@ -6,8 +6,6 @@ const Grabber = (): JSX.Element => {
   const { theme } = useTheme()
   return (
     <View
-      testID="grabber"
-      accessible={true}
       style={{
         height: 5,
         width: 50,
@@ -17,7 +15,7 @@ const Grabber = (): JSX.Element => {
           : alpha(theme.colors.$borderPrimary, 0.1),
         position: 'absolute',
         alignSelf: 'center',
-        top: 9
+        top: 0
       }}
     />
   )

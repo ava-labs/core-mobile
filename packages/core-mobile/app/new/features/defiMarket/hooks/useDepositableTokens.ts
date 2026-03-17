@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { LocalTokenWithBalance } from 'store/balance'
+import { findMatchingTokenWithBalance } from 'common/utils/findMatchingTokenWithBalance'
 import { DefiAssetDetails, DefiMarket } from '../types'
-import { findMatchingTokenWithBalance } from '../utils/findMatchingTokenWithBalance'
 
 export const useDepositableTokens = (
   markets: DefiMarket[],

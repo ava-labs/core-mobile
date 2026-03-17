@@ -1,11 +1,9 @@
 import { BIG_ZERO } from '@avalabs/core-utils-sdk'
 import { CurrencyCode } from '@avalabs/glacier-sdk'
 import { AVALANCHE_MAINNET_NETWORK } from 'services/network/consts'
+import { WAVAX_ADDRESS } from 'features/swap/consts'
 import type { DefiMarket } from '../types'
-import {
-  AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS,
-  AAVE_WRAPPED_AVAX_GATEWAY_ADDRESS
-} from '../consts'
+import { AAVE_WRAPPED_AVAX_GATEWAY_ADDRESS } from '../consts'
 import { getUniqueMarketId } from './getUniqueMarketId'
 
 /**
@@ -18,7 +16,9 @@ import { getUniqueMarketId } from './getUniqueMarketId'
  */
 export const aaveInsertAvax = (markets: DefiMarket[]): DefiMarket[] => {
   const wavaxMarket = markets.find(
-    market => market.asset.contractAddress === AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS
+    market =>
+      market.asset.contractAddress?.toLowerCase() ===
+      WAVAX_ADDRESS.toLowerCase()
   )
 
   if (!wavaxMarket) {
@@ -53,7 +53,9 @@ export const aaveInsertAvax = (markets: DefiMarket[]): DefiMarket[] => {
   }
 
   const marketsWithoutWavax = markets.filter(
-    market => market.asset.contractAddress !== AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS
+    market =>
+      market.asset.contractAddress?.toLowerCase() !==
+      WAVAX_ADDRESS.toLowerCase()
   )
 
   const avaxMarket: DefiMarket = {

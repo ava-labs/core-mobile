@@ -9,7 +9,6 @@ export const ConnectButton = forwardRef<RNView>((props, ref): JSX.Element => {
   const { navigate } = useRouter()
 
   const handlePress = (): void => {
-    // @ts-ignore
     navigate('/walletConnectScan')
   }
 

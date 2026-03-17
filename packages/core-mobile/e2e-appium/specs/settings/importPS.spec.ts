@@ -13,8 +13,7 @@ describe('Settings', () => {
   })
 
   it('Import PS wallet - add an account', async () => {
-    await settings.tapMoreIconByWallet('Wallet 2')
-    await settings.tapAddAccountToThisWallet()
+    await settings.tapAddAccountBtn('Wallet 2')
     await actions.waitFor(
       settings.manageAccountsAccountName('Wallet 2', 'Account 2')
     )

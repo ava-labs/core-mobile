@@ -41,6 +41,7 @@ const NotificationToggle = ({
   )
   return (
     <View
+      accessible={false}
       sx={{
         flexDirection: 'row',
         justifyContent: 'space-between',

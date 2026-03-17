@@ -1,15 +1,15 @@
-import { SPRING_LINEAR_TRANSITION, View } from '@avalabs/k2-alpine'
+import { View } from '@avalabs/k2-alpine'
+import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { Space } from 'common/components/Space'
+import { ViewOption } from 'common/types'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useAccountBalanceSummary } from 'features/portfolio/hooks/useAccountBalanceSummary'
-import React, { FC, memo, useCallback } from 'react'
-import { Platform, ViewStyle } from 'react-native'
-import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
-import { RefreshControl } from 'react-native-gesture-handler'
+import React, { FC, memo, useCallback, useMemo } from 'react'
+import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -20,7 +20,6 @@ import {
   LocalTokenWithBalance
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
-import { ViewOption } from 'common/types'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { EmptyState } from './EmptyState'
 import { TokenListItem } from './TokenListItem'
@@ -31,22 +30,20 @@ interface Props {
   goToTokenManagement: () => void
   goToBuy: () => void
   onScrollResync: () => void
+  onScrollToTop: () => void
 }
-
-const keyExtractor = (item: LocalTokenWithBalance, index: number): string =>
-  `${index}-${item.networkChainId}-${item.localId}`
 
 const AssetsScreen: FC<Props> = ({
   containerStyle,
   goToTokenDetail,
   goToTokenManagement,
   goToBuy,
-  onScrollResync
+  onScrollResync,
+  onScrollToTop
 }): JSX.Element => {
   const { onResetFilter, data, filter, sort, view, refetch, isRefetching } =
     useAssetsFilterAndSort()
   const listType = view.selected
-  const header = useHeaderMeasurements()
 
   const activeAccount = useSelector(selectActiveAccount)
   const enabledNetworks = useSelector(selectEnabledNetworks)
@@ -72,6 +69,38 @@ const AssetsScreen: FC<Props> = ({
     [onScrollResync, view, goToTokenManagement]
   )
 
+  const handleFilterSelected = useCallback(
+    (value: string): void => {
+      onScrollToTop()
+      filter.onSelected(value)
+    },
+    [filter, onScrollToTop]
+  )
+
+  const handleSortSelected = useCallback(
+    (value: string): void => {
+      onScrollToTop()
+      sort.onSelected(value)
+    },
+    [onScrollToTop, sort]
+  )
+
+  const filterSelection = useMemo(
+    () => ({
+      ...filter,
+      onSelected: handleFilterSelected
+    }),
+    [filter, handleFilterSelected]
+  )
+
+  const sortSelection = useMemo(
+    () => ({
+      ...sort,
+      onSelected: handleSortSelected
+    }),
+    [handleSortSelected, sort]
+  )
+
   const isLoadingBalance =
     isRefetchingBalance || isBalanceLoading || isBalancePolling
 
@@ -84,7 +113,13 @@ const AssetsScreen: FC<Props> = ({
   const hasNoAssets = data.length === 0 && isBalanceLoaded && !isInitialLoading
 
   const renderItem = useCallback(
-    (item: LocalTokenWithBalance, index: number): JSX.Element => {
+    ({
+      item,
+      index
+    }: {
+      item: LocalTokenWithBalance
+      index: number
+    }): JSX.Element => {
       const isLeftColumn = index % numColumns === 0
 
       const style = isGridView
@@ -121,7 +156,7 @@ const AssetsScreen: FC<Props> = ({
 
   const renderEmptyComponent = useCallback(() => {
     // Only show loading state during initial load, not background polling
-    if (isInitialLoading) {
+    if (isInitialLoading || !isBalanceLoaded || enabledNetworks.length === 0) {
       return (
         <CollapsibleTabs.ContentWrapper>
           <LoadingState />
@@ -170,6 +205,7 @@ const AssetsScreen: FC<Props> = ({
   }, [
     isInitialLoading,
     isBalanceLoaded,
+    enabledNetworks.length,
     isAllBalancesError,
     isAllBalancesInaccurate,
     filter.selected,
@@ -186,7 +222,7 @@ const AssetsScreen: FC<Props> = ({
 
   const renderHeader = useCallback(() => {
     if (isInitialLoading) {
-      return
+      return null
     }
 
     return (
@@ -197,60 +233,63 @@ const AssetsScreen: FC<Props> = ({
         }}>
         <DropdownSelections
           sx={{ marginBottom: hasNoAssets ? 0 : 16 }}
-          filter={hasNoAssets ? undefined : filter}
-          sort={hasNoAssets ? undefined : sort}
+          filter={hasNoAssets ? undefined : filterSelection}
+          sort={hasNoAssets ? undefined : sortSelection}
           view={{ ...view, onSelected: handleManageList }}
         />
       </View>
     )
-  }, [isInitialLoading, hasNoAssets, filter, sort, view, handleManageList])
+  }, [
+    isInitialLoading,
+    hasNoAssets,
+    filterSelection,
+    sortSelection,
+    view,
+    handleManageList
+  ])
 
-  const overrideProps = {
-    contentContainerStyle: {
-      ...containerStyle
+  const keyExtractor = useCallback(
+    (item: LocalTokenWithBalance, _index: number): string =>
+      `${item.networkChainId}-${item.localId}`,
+    []
+  )
+
+  const assetsListKey = useMemo(
+    () => `assets-list-${activeAccount?.id ?? 'unknown'}-${listType}`,
+    [activeAccount?.id, listType]
+  )
+
+  const maintainVisibleContentPosition = useMemo(() => {
+    // we need to maintain the visible content position for the grid view
+    // otherwise the list will look broken
+    if (isGridView) {
+      return { disabled: false }
     }
-  }
-
-  if (!isBalanceLoaded || enabledNetworks.length === 0) {
-    return (
-      <LoadingState
-        sx={{
-          minHeight: containerStyle.minHeight,
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}
-      />
-    )
-  }
+    return { disabled: true }
+  }, [isGridView])
 
   return (
     <Animated.View
+      testID="portfolio_token_list"
       entering={getListItemEnteringAnimation(10)}
-      layout={SPRING_LINEAR_TRANSITION}
       style={{
         flex: 1
       }}>
-      <CollapsibleTabs.FlashList
-        key={`assets-list-${listType}`}
+      <CollapsibleTabList
         data={data}
+        renderItem={renderItem}
         keyExtractor={keyExtractor}
-        testID="portfolio_token_list"
-        extraData={{ isGridView }}
-        overrideProps={overrideProps}
+        containerStyle={containerStyle}
+        renderEmpty={renderEmpty}
+        renderHeader={renderHeader}
+        renderSeparator={renderSeparator}
+        isRefreshing={isRefetching}
+        onRefresh={refetch}
         numColumns={numColumns}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={refetch}
-            progressViewOffset={Platform.OS === 'ios' ? 0 : header.height}
-          />
-        }
-        estimatedItemSize={isGridView ? 183 : 73}
-        renderItem={item => renderItem(item.item, item.index)}
-        ListHeaderComponent={renderHeader}
-        ListEmptyComponent={renderEmpty}
-        ItemSeparatorComponent={renderSeparator}
-        showsVerticalScrollIndicator={false}
+        extraData={{ isGridView }}
+        maintainVisibleContentPosition={maintainVisibleContentPosition}
+        listKey={assetsListKey}
+        testID="portfolio_token_list"
       />
     </Animated.View>
   )

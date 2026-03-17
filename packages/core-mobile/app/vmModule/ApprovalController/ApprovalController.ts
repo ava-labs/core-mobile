@@ -10,12 +10,9 @@ import {
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
-import { RequestContext } from 'store/rpc/types'
 import { NavigationPresentationMode } from 'new/common/types'
 import WalletService from 'services/wallet/WalletService'
 import { Curve } from 'utils/publicKeys'
-import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
-import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { OnApproveParams } from 'services/walletconnectv2/walletConnectCache/types'
 import { WalletType } from 'services/wallet/types'
 import { showLedgerReviewTransaction } from 'features/ledger/utils'
@@ -23,6 +20,13 @@ import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview
 import { CONFETTI_DURATION_MS } from 'common/consts'
 import { currentRouteStore } from 'new/routes/store'
 import { BoundedMap } from 'common/utils/boundedMap'
+import {
+  isToastsAndConfettiEnabled,
+  isConfettiEnabled,
+  isInAppAvalancheRequest,
+  isInAppReview,
+  showConfetti
+} from '../utils/requestContext'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { handleLedgerErrorAndShowAlert } from './utils'
@@ -54,24 +58,15 @@ class ApprovalController implements VmModuleApprovalController {
     request: RpcRequest
     explorerLink?: string
   }): void {
-    const numericChainId = getChainIdFromCaip2(request.chainId)
+    if (!isToastsAndConfettiEnabled(request)) return
 
-    if (
-      numericChainId &&
-      isAvalancheChainId(numericChainId) &&
-      isInAppRequest(request)
-    ) {
-      const confettiDisabled =
-        request.context?.[RequestContext.CONFETTI_DISABLED]
-
+    if (isInAppAvalancheRequest(request)) {
       transactionSnackbar.success({
         message: 'Transaction sent'
       })
 
-      if (!confettiDisabled) {
-        setTimeout(() => {
-          confetti.restart()
-        }, 100)
+      if (isConfettiEnabled(request)) {
+        showConfetti()
       }
     } else {
       transactionSnackbar.pending({ toastId: request.requestId })
@@ -85,34 +80,24 @@ class ApprovalController implements VmModuleApprovalController {
     explorerLink: string
     request: RpcRequest
   }): void {
-    const inAppReview = request.context?.[RequestContext.IN_APP_REVIEW]
+    if (!isToastsAndConfettiEnabled(request)) return
 
-    if (inAppReview) {
+    if (isInAppReview(request)) {
       // Run the app-review prompt flow after confetti finishes
       setTimeout(() => {
         promptForAppReviewAfterSuccessfulTransaction()
       }, CONFETTI_DURATION_MS + 200)
     }
 
-    const numericChainId = getChainIdFromCaip2(request.chainId)
-
-    if (
-      numericChainId &&
-      isAvalancheChainId(numericChainId) &&
-      isInAppRequest(request)
-    ) {
+    if (isInAppAvalancheRequest(request)) {
       return // do not show success toast for in-app avalanche transactions as we've already shown it in onTransactionPending
     }
 
     transactionSnackbar.success({ explorerLink, toastId: request.requestId })
 
-    const confettiDisabled = request.context?.[RequestContext.CONFETTI_DISABLED]
-
     // only show confetti for in-app requests
-    if (isInAppRequest(request) && !confettiDisabled) {
-      setTimeout(() => {
-        confetti.restart()
-      }, 100)
+    if (isInAppRequest(request) && isConfettiEnabled(request)) {
+      showConfetti()
     }
   }
 
@@ -192,6 +177,7 @@ class ApprovalController implements VmModuleApprovalController {
             }
 
             showLedgerReviewTransaction({
+              rpcMethod: request.method,
               network: params.network,
               onApprove: () =>
                 onApprove({
@@ -213,7 +199,6 @@ class ApprovalController implements VmModuleApprovalController {
       })
 
       router.navigate({
-        // @ts-ignore
         pathname: '/approval',
         params: {
           presentationMode: isInAppRequest(request)

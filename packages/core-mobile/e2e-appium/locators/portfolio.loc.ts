@@ -1,6 +1,6 @@
 export default {
   // NEW BELOW:
-  testnetModeIsOn: 'Testnet mode is on',
+  testnetModeIsOn: 'testnet_mode_is_on',
   sendButton: 'action_button__Send',
   swapButton: 'action_button__Swap',
   buyButton: 'action_button__Buy',
@@ -9,6 +9,7 @@ export default {
   sort: 'sort_dropdown_btn',
   view: 'view_dropdown_btn',
   portfolioBalanceHeader: 'portfolio__balance_header',
+  loadingPortfolioBalanceHeader: 'loading_portfolio__balance_header',
   portfolioAccountName: 'portfolio__balance_header_account_name',
   activityTab: 'Activity',
   addToWatchlist: 'add_svg',

@@ -4,7 +4,7 @@ import {
 } from '@avalabs/avalanche-module'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { PChainBalance, XChainBalances } from '@avalabs/glacier-sdk'
-import { SPRING_LINEAR_TRANSITION, Text, View } from '@avalabs/k2-alpine'
+import { Text, View } from '@avalabs/k2-alpine'
 import { BalanceText } from 'common/components/BalanceText'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
@@ -179,9 +179,7 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
   }, [])
 
   return (
-    <Animated.View
-      entering={getListItemEnteringAnimation(5)}
-      layout={SPRING_LINEAR_TRANSITION}>
+    <Animated.View entering={getListItemEnteringAnimation(5)}>
       <CollapsibleTabs.FlatList
         contentContainerStyle={{
           paddingHorizontal: 16,

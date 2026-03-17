@@ -7,7 +7,7 @@ import {
   showAlert,
   useTheme
 } from '@avalabs/k2-alpine'
-import { useNavigation } from '@react-navigation/native'
+import { useRouter } from 'expo-router'
 import { FlashList, ListRenderItem } from '@shopify/flash-list'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import { DropdownItem, DropdownMenu } from 'common/components/DropdownMenu'
@@ -65,7 +65,7 @@ const NUMBER_OF_COLUMNS = 2
 const TAB_WIDTH = (SCREEN_WIDTH - HORIZONTAL_MARGIN) / NUMBER_OF_COLUMNS
 
 const TabsScreen = (): JSX.Element => {
-  const navigation = useNavigation()
+  const { navigate, back } = useRouter()
   const dispatch = useDispatch()
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
@@ -79,8 +79,8 @@ const TabsScreen = (): JSX.Element => {
   const handleAddTab = useCallback(() => {
     handleClearAndFocus()
     dispatch(addTab())
-    navigation.goBack()
-  }, [dispatch, handleClearAndFocus, navigation])
+    back()
+  }, [dispatch, handleClearAndFocus, back])
 
   function handleCloseTab(tab: Tab): void {
     const isDeletingLastTab = sortedTabs.length === 1
@@ -94,7 +94,7 @@ const TabsScreen = (): JSX.Element => {
     SnapshotService.delete(tab.id)
 
     if (isDeletingLastTab) {
-      navigation.goBack()
+      back()
     }
   }
 
@@ -104,14 +104,14 @@ const TabsScreen = (): JSX.Element => {
       dispatch(addHistoryForActiveTab(tab.activeHistory))
     }
     setUrlEntry(tab.activeHistory?.url ?? '')
-    navigation.goBack()
+    back()
   }
 
   const handleConfirmCloseAll = useCallback(async (): Promise<void> => {
     dispatch(removeAllTabs())
     dispatch(deleteAllSnapshotTimestamps())
     setUrlEntry('')
-    navigation.goBack()
+    back()
 
     Promise.all(
       tabs.map(tab => {
@@ -121,7 +121,7 @@ const TabsScreen = (): JSX.Element => {
         }
       })
     ).catch(Logger.error)
-  }, [dispatch, navigation, setUrlEntry, tabs, browserRefs])
+  }, [dispatch, back, setUrlEntry, tabs, browserRefs])
 
   const handleCloseAll = useCallback((): void => {
     showAlert({
@@ -141,9 +141,8 @@ const TabsScreen = (): JSX.Element => {
   }, [handleConfirmCloseAll])
 
   const handleViewHistory = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
-    navigation.navigate('history')
-  }, [navigation])
+    navigate('/browser/history')
+  }, [navigate])
 
   const onPressAction = useCallback(
     ({ nativeEvent }: { nativeEvent: { event: string } }) => {
@@ -188,7 +187,9 @@ const TabsScreen = (): JSX.Element => {
           }}
           onPressAction={onPressAction}
           groups={[{ id: 'menu-actions', items: MENU_ACTIONS }]}>
-          <Icons.Navigation.MoreHoriz color={theme.colors.$textPrimary} />
+          <View style={{ paddingRight: 21 }}>
+            <Icons.Navigation.MoreHoriz color={theme.colors.$textPrimary} />
+          </View>
         </DropdownMenu>
       </View>
     )
@@ -257,7 +258,6 @@ const TabsScreen = (): JSX.Element => {
         showsVerticalScrollIndicator={false}
         renderItem={renderItem}
         ListHeaderComponent={renderHeader}
-        estimatedItemSize={TAB_WIDTH * 1.2}
         numColumns={NUMBER_OF_COLUMNS}
         keyExtractor={item => item.id}
       />

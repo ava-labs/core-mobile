@@ -5,12 +5,12 @@ import {
   Text,
   TouchableOpacity
 } from '@avalabs/k2-alpine'
-import { useNavigation } from '@react-navigation/native'
+import { useRouter } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
-import { isIOS26 } from 'common/utils/isIOS26'
+import { isIOS26AndAbove } from 'common/utils/isIOS26AndAbove'
 import { BrowserItem } from 'features/browser/components/BrowserItem'
 import { useSearchHistory } from 'features/browser/hooks/useSearchHistory'
 import { prepareFaviconToLoad } from 'features/browser/utils'
@@ -29,7 +29,7 @@ import {
 } from 'store/browser/slices/globalHistory'
 
 const HistoryScreen = (): JSX.Element => {
-  const { navigate } = useNavigation()
+  const { navigate } = useRouter()
   const dispatch = useDispatch()
   const tabBarHeight = useBottomTabBarHeight()
 
@@ -67,8 +67,7 @@ const HistoryScreen = (): JSX.Element => {
     dispatch(addTab())
     if (activeTab) {
       dispatch(addHistoryForActiveTab(item))
-      // @ts-ignore TODO: make routes typesafe
-      navigate('index')
+      navigate('/browser')
     }
   }
 
@@ -113,7 +112,7 @@ const HistoryScreen = (): JSX.Element => {
 
   const renderHeaderRight = (): JSX.Element | null => {
     if (!hasHistory) return null
-    if (isIOS26)
+    if (isIOS26AndAbove)
       return (
         <TouchableOpacity
           onPress={removeAll}

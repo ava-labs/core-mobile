@@ -9,14 +9,14 @@ import android.webkit.WebSettings
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactHost
+import com.facebook.react.ReactNativeApplicationEntryPoint.loadReactNative
+import com.facebook.react.common.ReleaseLevel
+import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.ReactNativeHost
 import com.facebook.react.ReactPackage
-import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.modules.network.OkHttpClientProvider
-import com.facebook.react.soloader.OpenSourceMergedSoMapping
-import com.facebook.soloader.SoLoader
 import com.gantix.JailMonkey.Rooted.RootedCheck
 import java.lang.reflect.Field
 import io.branch.rnbranch.*
@@ -24,12 +24,11 @@ import io.branch.rnbranch.*
 class MainApplication : Application(), ReactApplication {
 
     override val reactNativeHost: ReactNativeHost =
-        ReactNativeHostWrapper(this, object : DefaultReactNativeHost(this) {
-            override fun getPackages(): List<ReactPackage> {
-                val packages = PackageList(this).packages
-                // Packages that cannot be autolinked yet can be added manually here, for example:
-                packages.add(MainPackage());
-                return packages
+        ReactNativeHostWrapper( this, object : DefaultReactNativeHost(this) {
+        override fun getPackages(): List<ReactPackage> =
+            PackageList(this).packages.apply {
+              // Packages that cannot be autolinked yet can be added manually here, for example:
+              // add(MainPackage())
             }
 
             override fun getJSMainModuleName(): String = "index"
@@ -37,7 +36,6 @@ class MainApplication : Application(), ReactApplication {
             override fun getUseDeveloperSupport(): Boolean = BuildConfig.DEBUG
 
             override val isNewArchEnabled: Boolean = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED
-            override val isHermesEnabled: Boolean = BuildConfig.IS_HERMES_ENABLED
         })
 
     override val reactHost: ReactHost
@@ -58,11 +56,12 @@ class MainApplication : Application(), ReactApplication {
         // avaxwallet/0.14.15.1532 Mozilla/5.0 (Linux; Android 13; Pixel 7 Build/TQ1A.221205.011; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/128.0.6613.127 Mobile Safari/537.36
         OkHttpClientProvider.setOkHttpClientFactory(CoreOkHttpClientFactory(getUserAgent()))
 
-        SoLoader.init(this, OpenSourceMergedSoMapping)
-        if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
-            // If you opted-in for the New Architecture, we load the native entry point for this app.
-            load()
+        try {
+            DefaultNewArchitectureEntryPoint.releaseLevel = ReleaseLevel.valueOf(BuildConfig.REACT_NATIVE_RELEASE_LEVEL.uppercase())
+        } catch (e: IllegalArgumentException) {
+            DefaultNewArchitectureEntryPoint.releaseLevel = ReleaseLevel.STABLE
         }
+        loadReactNative(this)
 
         ApplicationLifecycleDispatcher.onApplicationCreate(this)
     }

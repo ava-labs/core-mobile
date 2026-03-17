@@ -39,12 +39,12 @@ class Settings {
     return selectors.getById(settings.settingsBtn)
   }
 
-  get accountList() {
-    return selectors.getById(settings.accountList)
+  get bottomSheet() {
+    return selectors.getById(settings.bottomSheet)
   }
 
-  get settingsScrollView() {
-    return selectors.getById(settings.settingsScrollView)
+  get accountList() {
+    return selectors.getById(settings.accountList)
   }
 
   get settingsFooter() {
@@ -309,7 +309,6 @@ class Settings {
     // add contact addresses
     for (const [network, address] of Object.entries(networkAndAddress)) {
       await actions.click(selectors.getById(`contact_delete_btn__${network}`))
-      await common.tapDeleteAlert()
       await actions.waitFor(selectors.getByText(`Add ${network} address`))
       await this.setAddress(network, address, contactName)
     }
@@ -396,6 +395,7 @@ class Settings {
     const ele = this.manageAccountsAccountName(walletName, accountName)
     while (!(await actions.getVisible(ele))) {
       await this.tapAddAccountBtn(walletName)
+      await actions.delay(1000)
     }
   }
 
@@ -414,10 +414,14 @@ class Settings {
 
   async verifyAddAccountDisabled(walletName = 'Imported') {
     await this.tapMoreIconByWallet(walletName)
+    await actions.waitFor(this.removeAllAccounts)
     await actions.isNotVisible(this.addAccountToThisWallet)
-    await actions.isVisible(this.removeAllAccounts)
     await actions.isNotVisible(this.addAccountBtnByWallet(walletName))
-    await this.tapMoreIconByWallet(walletName)
+    await this.tapMyWalletsTitle()
+  }
+
+  async tapMyWalletsTitle() {
+    await actions.click(selectors.getByText(settings.myWallets))
   }
 
   async importWallet(mnemonic: string) {
@@ -523,7 +527,7 @@ class Settings {
     await actions.delay(1500)
     await actions.click(this.settingsBtn)
     try {
-      await actions.waitFor(common.grabber, 5000)
+      await actions.waitFor(this.bottomSheet, 5000)
     } catch (e) {
       await actions.click(this.settingsBtn)
     }
@@ -557,7 +561,24 @@ class Settings {
   async createNthAccount(account = 2, walletName = 'Wallet 1') {
     await common.goMyWallets()
     await this.addAccount(account, walletName)
-    await common.goBack()
+  }
+
+  async exitMyWallets() {
+    let maxAttempts = 10
+    while (maxAttempts > 0) {
+      try {
+        if (!(await actions.getVisible(this.myWallets))) break
+      } catch {
+        break
+      }
+      try {
+        await actions.click(common.backButton)
+      } catch {
+        await actions.tap(common.backButton)
+      }
+      await actions.delay(1000)
+      maxAttempts--
+    }
   }
 
   async tapNetworks() {
@@ -606,10 +627,10 @@ class Settings {
       selectors.getById(`advanced_input__${type.toLowerCase()}`),
       value
     )
-    try {
-      await actions.dismissKeyboard()
-    } catch (e) {
+    if (type === 'Chain ID') {
       await actions.dismissKeyboard(`advanced_input__${type.toLowerCase()}`)
+    } else {
+      await actions.dismissKeyboard()
     }
   }
 
@@ -682,7 +703,11 @@ class Settings {
 
   async verifyNetworkDetails(network: Network) {
     await this.tapNetworkByName(network.name)
-    await actions.waitFor(this.networkName(network.name))
+    if (network.secondName) {
+      await actions.waitFor(this.networkName(network.secondName))
+    } else {
+      await actions.waitFor(this.networkName(network.name))
+    }
     if (![commonElsLoc.bitcoin, commonElsLoc.solana].includes(network.name)) {
       await actions.isVisible(this.networkRpcUrl)
       await actions.isVisible(this.networkDetails(network.data?.rpcUrl ?? ''))
@@ -788,6 +813,46 @@ class Settings {
     await actions.tap(selectors.getById(`${appearance}_unselected`))
   }
 
+  async tapAppIcon() {
+    await actions.tap(common.listItem(settings.appIcon))
+  }
+
+  async verifyAppIconScreen(selectedIconId: string) {
+    await actions.waitFor(selectors.getById(settings.appIconTitle))
+    const appIcons = [
+      'Light',
+      'Old',
+      'Bling',
+      'Shiny',
+      'Marker',
+      'Minimalism',
+      'Neon'
+    ]
+    if (selectedIconId !== 'Default') {
+      const idx = appIcons.indexOf(selectedIconId)
+      if (idx !== -1) {
+        appIcons.splice(idx, 1)
+      }
+      appIcons.push('Default')
+    }
+    await actions.isVisible(
+      selectors.getById(`app_icon_${selectedIconId}_selected`)
+    )
+    for (const icon of appIcons) {
+      await actions.isVisible(selectors.getById(`app_icon_${icon}`))
+    }
+  }
+
+  async selectAppIcon(iconId?: string) {
+    if (!iconId) {
+      iconId = ['Light', 'Old', 'Bling', 'Shiny', 'Marker', 'Minimalism'][
+        Math.floor(Math.random() * 6)
+      ] as string
+    }
+    await actions.tap(selectors.getById(`app_icon_${iconId}`))
+    return iconId
+  }
+
   async tapSecurityAndPrivacy(needSwipe = true) {
     if (needSwipe) {
       await this.swipeSettings()
@@ -820,7 +885,7 @@ class Settings {
 
   async switchToMainnet() {
     try {
-      await actions.isVisible(portfolioPage.testnetModeIsOn)
+      await actions.waitFor(portfolioPage.testnetModeIsOn)
       await this.goSettings()
       await actions.longPress(this.testnetSwitchOn)
       return true

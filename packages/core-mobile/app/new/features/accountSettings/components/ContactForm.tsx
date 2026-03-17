@@ -269,7 +269,6 @@ const ContactFormField = ({
                 style: 'default',
                 onPress: () => {
                   ref.current?.setInputValue('')
-                  // @ts-ignore TODO: make route params typesafe
                   setParams({ address: undefined, addressType: undefined })
                 }
               }
@@ -279,7 +278,6 @@ const ContactFormField = ({
         }
         onUpdateAddress(params.addressType, params.address)
         ref.current?.setInputValue(params.address)
-        // @ts-ignore TODO: make route params typesafe
         // Clear params immediately after use to prevent pollution
         setParams({ address: undefined, addressType: undefined })
       }

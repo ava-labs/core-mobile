@@ -23,7 +23,7 @@ describe('PostHogService', () => {
           Promise.resolve({
             featureFlags: {
               [FeatureGates.SOLANA_SUPPORT]: false,
-              [FeatureGates.BRIDGE]: true
+              [FeatureGates.LEGACY_BRIDGE]: true
             }
           }),
         ok: true,
@@ -34,7 +34,7 @@ describe('PostHogService', () => {
 
       expect(flags).toEqual({
         [FeatureGates.SOLANA_SUPPORT]: false,
-        [FeatureGates.BRIDGE]: true
+        [FeatureGates.LEGACY_BRIDGE]: true
       })
     })
 
@@ -44,9 +44,9 @@ describe('PostHogService', () => {
           Promise.resolve({
             featureFlags: {
               [FeatureGates.SOLANA_SUPPORT]: true,
-              [FeatureGates.BRIDGE]: true
+              [FeatureGates.LEGACY_BRIDGE]: true
             },
-            featureFlagPayloads: { [FeatureGates.BRIDGE]: '>=1.60.0' }
+            featureFlagPayloads: { [FeatureGates.LEGACY_BRIDGE]: '>=1.60.0' }
           }),
         ok: true,
         status: 200
@@ -56,7 +56,7 @@ describe('PostHogService', () => {
 
       expect(flags).toEqual({
         [FeatureGates.SOLANA_SUPPORT]: true,
-        [FeatureGates.BRIDGE]: false
+        [FeatureGates.LEGACY_BRIDGE]: false
       })
     })
   })
@@ -94,7 +94,7 @@ describe('PostHogService', () => {
         .mockRejectedValueOnce(new Error('some error'))
         .mockResolvedValueOnce({
           json: jest.fn().mockResolvedValue({
-            featureFlags: { [FeatureGates.BRIDGE]: false },
+            featureFlags: { [FeatureGates.LEGACY_BRIDGE]: false },
             featureFlagPayloads: { [FeatureGates.SOLANA_SUPPORT]: '>=1.60.0' }
           })
         })

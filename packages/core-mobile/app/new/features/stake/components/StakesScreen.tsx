@@ -7,7 +7,6 @@ import {
   Motion,
   ProgressCard,
   SCREEN_WIDTH,
-  SPRING_LINEAR_TRANSITION,
   useTheme
 } from '@avalabs/k2-alpine'
 import { ListRenderItemInfo } from '@shopify/flash-list'
@@ -134,8 +133,7 @@ const StakesScreen = ({
               marginRight: index % 2 === 0 ? 6 : 16,
               marginLeft: index % 2 !== 0 ? 6 : 16
             }}
-            entering={getListItemEnteringAnimation(index)}
-            layout={SPRING_LINEAR_TRANSITION}>
+            entering={getListItemEnteringAnimation(index)}>
             {content}
           </Animated.View>
         )

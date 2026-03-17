@@ -4,68 +4,66 @@ import React, {
   ReactNode,
   useCallback,
   useContext,
-  useEffect,
-  useMemo,
-  useState
+  useRef,
+  useState,
+  useMemo
 } from 'react'
-import { JsonRpcError } from '@metamask/rpc-errors'
+import { showAlert } from '@avalabs/k2-alpine'
 import { SwapSide } from '@paraswap/sdk'
-import { useDebouncedCallback } from 'use-debounce'
-import Logger from 'utils/Logger'
-import { InteractionManager } from 'react-native'
-import SentryWrapper from 'services/sentry/SentryWrapper'
-import {
-  humanizeSwapError,
-  isGasEstimationError,
-  isSwapTxBuildError
-} from 'errors/swapError'
-import { useDispatch, useSelector } from 'react-redux'
-import { TokenType } from '@avalabs/vm-module-types'
-import { Account, selectActiveAccount } from 'store/account'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { audioFeedback, Audios } from 'utils/AudioFeedback'
-import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { LocalTokenWithBalance } from 'store/balance'
-import useCChainNetwork from 'hooks/earn/useCChainNetwork'
-import { transactionSnackbar } from 'new/common/utils/toast'
-import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
-import { selectMarkrSwapMaxRetries } from 'store/posthog'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
+import { getAddressByNetwork } from 'store/account/utils'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { transactionSnackbar } from 'common/utils/toast'
+import Logger from 'utils/Logger'
+import {
+  selectMarkrSwapMaxRetries,
+  selectFusionTransferGasMarginBps
+} from 'store/posthog'
+import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { swapCompleted } from 'store/nestEgg'
+import type { Quote, Transfer } from '../types'
 import {
-  NormalizedSwapQuoteResult,
-  NormalizedSwapQuote,
-  SwapProviders,
-  isMarkrQuote
-} from '../types'
-import { useEvmSwap } from '../hooks/useEvmSwap'
-import { getTokenAddress } from '../utils/getTokenAddress'
-import {
-  useManuallySelected,
-  useQuotes,
   useSwapSelectedFromToken,
-  useSwapSelectedToToken
-} from '../store'
-import { SWAP_REFRESH_INTERVAL } from '../consts'
-import { isEvmSwapQuote, isSvmSwapQuote } from '../types'
-import { useSolanaSwap } from '../hooks/useSolanaSwap'
+  useSwapSelectedToToken,
+  useBestQuote,
+  useUserSelectedQuote,
+  useAllQuotes,
+  useFusionTransfers
+} from '../hooks/useZustandStore'
+import { useQuoteStreaming } from '../hooks/useQuoteStreaming'
+import FusionService from '../services/FusionService'
+import {
+  isUserRejectionError,
+  shouldRetryWithNextQuote,
+  getSwapErrorMessage
+} from '../utils/fusionErrors'
+import { trackFusionTransfer } from '../store/actions'
+import { logSdkError } from '../utils/fusionLogger'
 
-const DEFAULT_DEBOUNCE_MILLISECONDS = 300
 const DEFAULT_SLIPPAGE = 0.2
 
-// success here just means the transaction was sent, not that it was successful/confirmed
-type SwapStatus = 'Idle' | 'Swapping' | 'Success' | 'Fail'
+export enum SwapStatus {
+  Idle = 'Idle',
+  Swapping = 'Swapping',
+  Success = 'Success',
+  Fail = 'Fail'
+}
 
 interface SwapContextState {
   fromToken?: LocalTokenWithBalance
   toToken?: LocalTokenWithBalance
   setFromToken: Dispatch<LocalTokenWithBalance | undefined>
   setToToken: Dispatch<LocalTokenWithBalance | undefined>
-  quotes: NormalizedSwapQuoteResult | undefined
-  isFetchingQuote: boolean
-  swap(
-    specificProvider?: SwapProviders,
-    specificQuote?: NormalizedSwapQuote
-  ): void
+  bestQuote: Quote | null
+  userQuote: Quote | null
+  allQuotes: Quote[]
+  isQuoteLoading: boolean
+  quoteError: Error | null
+  selectQuoteById: (quoteId: string | null) => void
+  swap(): Promise<void>
   slippage: number
   setSlippage: Dispatch<number>
   autoSlippage: boolean
@@ -74,7 +72,6 @@ interface SwapContextState {
   setDestination: Dispatch<SwapSide>
   swapStatus: SwapStatus
   setAmount: Dispatch<bigint | undefined>
-  error: string
 }
 
 export const SwapContext = createContext<SwapContextState>(
@@ -87,429 +84,344 @@ export const SwapContextProvider = ({
   children: ReactNode
 }): JSX.Element => {
   const dispatch = useDispatch()
-  const activeAccount = useSelector(selectActiveAccount)
   const [fromToken, setFromToken] = useSwapSelectedFromToken()
   const [toToken, setToToken] = useSwapSelectedToToken()
   const [slippage, setSlippage] = useState<number>(DEFAULT_SLIPPAGE)
   const [autoSlippage, setAutoSlippage] = useState<boolean>(true)
   const [destination, setDestination] = useState<SwapSide>(SwapSide.SELL)
-  const [swapStatus, setSwapStatus] = useState<SwapStatus>('Idle')
+  const [swapStatus, setSwapStatus] = useState<SwapStatus>(SwapStatus.Idle)
+  const isSwappingRef = useRef(false)
   const [amount, setAmount] = useState<bigint>()
-  const [isFetchingQuote, setIsFetchingQuote] = useState(false)
-  const [quotes, setQuotes] = useQuotes()
-  const [manuallySelected, setManuallySelected] = useManuallySelected()
-  const [error, setError] = useState('')
-  const cChainNetwork = useCChainNetwork()
-  const { getQuote: getEvmQuote, swap: evmSwap } = useEvmSwap()
-  const solanaNetwork = useSolanaNetwork()
-  const { getQuote: getSvmQuote, swap: svmSwap } = useSolanaSwap()
-  const maxRetries = useSelector(selectMarkrSwapMaxRetries)
 
-  // debounce since fetching quotes can take awhile
-  const debouncedSetAmount = useDebouncedCallback(
-    setAmount,
-    DEFAULT_DEBOUNCE_MILLISECONDS
+  // Get quotes
+  const [bestQuote] = useBestQuote()
+  const [selectedQuote, setSelectedQuote] = useUserSelectedQuote()
+  const [allQuotes] = useAllQuotes()
+
+  // Transfer storage
+  const { setTransfers } = useFusionTransfers()
+
+  // Derive the actual selected quote from allQuotes with fallback matching
+  // Strategy:
+  // 1. Try to match by exact quoteId (preferred - same quote after refresh)
+  // 2. Fallback to serviceType + aggregatorId (same provider after refresh)
+  // This ensures quote selection persists across quote updates (slippage/expiry)
+  const userQuote = useMemo(() => {
+    if (!selectedQuote) return null
+
+    // Try exact match first
+    const exactMatch = allQuotes.find(q => q.id === selectedQuote.quoteId)
+    if (exactMatch) return exactMatch
+
+    // Fallback: match by serviceType + aggregatorId
+    const fallbackMatch = allQuotes.find(
+      q =>
+        q.serviceType === selectedQuote.serviceType &&
+        q.aggregator.id === selectedQuote.aggregatorId
+    )
+
+    return fallbackMatch ?? null
+  }, [selectedQuote, allQuotes])
+
+  // Get account and networks
+  const activeAccount = useSelector(selectActiveAccount)
+  const maxRetries = useSelector(selectMarkrSwapMaxRetries)
+  const transferGasMarginBps = useSelector(selectFusionTransferGasMarginBps)
+  const { getNetwork } = useNetworks()
+  const fromNetwork = useMemo(
+    () => (fromToken ? getNetwork(fromToken.networkChainId) : undefined),
+    [fromToken, getNetwork]
+  )
+  const toNetwork = useMemo(
+    () => (toToken ? getNetwork(toToken.networkChainId) : undefined),
+    [toToken, getNetwork]
   )
 
-  // Get token addresses for dependency tracking
-  const fromTokenAddress = fromToken ? getTokenAddress(fromToken) : undefined
-  const toTokenAddress = toToken ? getTokenAddress(toToken) : undefined
+  // Get appropriate addresses for the networks (EVM uses addressC, SVM uses addressSVM, etc.)
+  const fromAddress = useMemo(() => {
+    if (!activeAccount || !fromNetwork) return undefined
+    return getAddressByNetwork(activeAccount, fromNetwork)
+  }, [activeAccount, fromNetwork])
 
-  // Reset slippage to default when either token changes
-  useEffect(() => {
-    setSlippage(DEFAULT_SLIPPAGE)
-    setAutoSlippage(true)
-  }, [fromTokenAddress, toTokenAddress])
+  const toAddress = useMemo(() => {
+    if (!activeAccount || !toNetwork) return undefined
+    return getAddressByNetwork(activeAccount, toNetwork)
+  }, [activeAccount, toNetwork])
 
-  // Extract recommendedSlippage value to use as dependency
-  const recommendedSlippage = useMemo(() => {
-    const quote = quotes?.selected?.quote
-    if (quote && isMarkrQuote(quote)) {
-      return quote.recommendedSlippage
-    }
-    return undefined
-  }, [quotes])
+  const onNoQuotesError = useCallback((retry: () => void) => {
+    showAlert({
+      title: 'Quotes unavailable',
+      description: "We couldn't fetch quotes right now",
+      buttons: [{ text: 'Close' }, { text: 'Try again', onPress: retry }]
+    })
+  }, [])
 
-  // Auto-update slippage when auto mode is enabled
-  useEffect(() => {
-    if (!autoSlippage) return
-
-    // Don't do anything if quotes are undefined (during fetching)
-    if (!quotes) return
-
-    // Try to use recommendedSlippage from quote
-    if (recommendedSlippage) {
-      // Convert bps to percentage: 200 bps → 2%
-      const recommendedPercentage = recommendedSlippage / 100
-      // Only use if valid (greater than 0) AND different from current
-      if (recommendedPercentage > 0 && slippage !== recommendedPercentage) {
-        setSlippage(recommendedPercentage)
-      }
-      return
-    }
-
-    // Fallback to default when auto is enabled but no valid recommendedSlippage
-    if (slippage !== DEFAULT_SLIPPAGE) {
-      setSlippage(DEFAULT_SLIPPAGE)
-    }
-  }, [autoSlippage, recommendedSlippage, slippage, quotes])
-
-  const getQuote = useCallback(async () => {
-    const isValidFromToken = fromToken && 'decimals' in fromToken
-    const isValidToToken = toToken && 'decimals' in toToken
-
-    if (
-      !cChainNetwork ||
-      !solanaNetwork ||
-      !activeAccount ||
-      !amount ||
-      amount <= 0n ||
-      !isValidFromToken ||
-      !isValidToToken ||
-      fromToken.networkChainId !== toToken.networkChainId
-    ) {
-      setError('')
-      setQuotes(undefined)
-      return
-    }
-
-    try {
-      setIsFetchingQuote(true)
-      let tempQuote: NormalizedSwapQuoteResult | undefined
-
-      setQuotes(undefined)
-
-      if (fromToken.networkChainId === cChainNetwork.chainId) {
-        tempQuote = await getEvmQuote({
-          address: activeAccount.addressC,
-          network: cChainNetwork,
-          amount,
-          fromTokenAddress: getTokenAddress(fromToken),
-          fromTokenDecimals: fromToken.decimals,
-          isFromTokenNative: fromToken.type === TokenType.NATIVE,
-          toTokenAddress: getTokenAddress(toToken),
-          toTokenDecimals: toToken.decimals,
-          isToTokenNative: toToken.type === TokenType.NATIVE,
-          destination,
-          slippage,
-          onUpdate: (update: NormalizedSwapQuoteResult) => {
-            setManuallySelected(false)
-            setQuotes(update)
-          }
-        })
-      } else if (fromToken.networkChainId === solanaNetwork.chainId) {
-        tempQuote = await getSvmQuote({
-          amount,
-          fromTokenAddress: getTokenAddress(fromToken),
-          fromTokenDecimals: fromToken.decimals,
-          fromTokenBalance: fromToken.balance,
-          toTokenAddress: getTokenAddress(toToken),
-          toTokenDecimals: toToken.decimals,
-          destination,
-          network: solanaNetwork,
-          slippage
-        })
-      }
-
-      if (tempQuote) {
-        setError('')
-        setManuallySelected(false)
-        setQuotes(tempQuote)
-      }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Unknown error occurred'
-      setError(errorMessage)
-      Logger.error('Failed to fetch quote', err)
-    } finally {
-      setIsFetchingQuote(false)
-    }
-  }, [
-    activeAccount,
-    cChainNetwork,
-    amount,
-    destination,
+  // Subscribe to quote stream
+  const { isLoading: isQuoteLoading, error: quoteError } = useQuoteStreaming({
     fromToken,
+    fromNetwork,
     toToken,
-    getEvmQuote,
-    slippage,
-    setManuallySelected,
-    setQuotes,
-    getSvmQuote,
-    solanaNetwork
-  ])
+    toNetwork,
+    fromAmount: amount,
+    fromAddress,
+    toAddress,
+    // When auto slippage is enabled, pass undefined to let SDK determine optimal slippage
+    // When manual, use the user's specified slippage value
+    slippageBps: autoSlippage ? undefined : slippage * 100,
+    onNoQuotesError
+  })
 
-  useEffect(() => {
-    //call getQuote every time its params change to get fresh rates
-    getQuote()
-
-    // Auto-refresh quotes every 30 seconds
-    const intervalId = setInterval(() => {
-      getQuote()
-    }, SWAP_REFRESH_INTERVAL)
-
-    return () => {
-      clearInterval(intervalId)
-    }
-  }, [getQuote])
-
-  const handleSwapError = useCallback(
-    ({
-      account,
-      chainId,
-      err
-    }: {
-      account: Account
-      chainId: number
-      err: unknown
-    }) => {
-      if (!cChainNetwork) {
+  // Method to select a specific quote or auto mode
+  const selectQuoteById = useCallback(
+    (quoteId: string | null) => {
+      if (quoteId === null) {
+        // Clear selection (Auto mode)
+        setSelectedQuote(null)
         return
       }
 
-      AnalyticsService.captureWithEncryption('SwapTransactionFailed', {
-        address: account.addressC,
-        chainId
+      // Find the quote to extract serviceType and aggregatorId
+      const quote = allQuotes.find(q => q.id === quoteId)
+      if (!quote) {
+        setSelectedQuote(null)
+        return
+      }
+
+      // Store all identifiers for fallback matching
+      setSelectedQuote({
+        quoteId: quote.id,
+        serviceType: quote.serviceType,
+        aggregatorId: quote.aggregator.id
       })
-
-      const readableErrorMessage = humanizeSwapError(err)
-      const originalError =
-        err instanceof JsonRpcError ? err.data.cause : undefined
-
-      transactionSnackbar.error({ error: readableErrorMessage })
-      Logger.error(readableErrorMessage, originalError)
     },
-    [cChainNetwork]
+    [allQuotes, setSelectedQuote]
   )
 
+  // Handle swap success: logging, storage, and analytics
   const handleSwapSuccess = useCallback(
-    ({
-      swapTxHash,
-      chainId,
-      fromTokenInfo,
-      toTokenInfo,
-      fromAmountUsd,
-      toAmountUsd
-    }: {
-      swapTxHash: string | undefined
-      chainId: number
-      fromTokenInfo?: { symbol: string }
-      toTokenInfo?: { symbol: string }
-      fromAmountUsd?: number
-      toAmountUsd?: number
+    (params: {
+      transfer: Transfer
+      quote: Quote
+      address: string
+      fromTokenData: LocalTokenWithBalance
+      toTokenData: LocalTokenWithBalance
     }) => {
-      setSwapStatus('Success')
-      AnalyticsService.captureWithEncryption('SwapTransactionSucceeded', {
-        txHash: swapTxHash ?? '',
-        chainId
-      })
+      const { transfer, quote, address, fromTokenData, toTokenData } = params
       audioFeedback(Audios.Send)
+      AnalyticsService.captureWithEncryption('SwapConfirmed', {
+        address,
+        chainId: quote.sourceChain.chainId,
+        txHash: transfer.id
+      })
+
+      Logger.info('[SwapContext] transfer executed', {
+        transfer
+      })
+
+      // Store transfer in Zustand for tracking
+      setTransfers(prev => ({
+        ...prev,
+        [transfer.id]: {
+          transfer,
+          fromToken: {
+            localId: fromTokenData.localId,
+            internalId: fromTokenData.internalId,
+            logoUri: fromTokenData.logoUri
+          },
+          toToken: {
+            localId: toTokenData.localId,
+            internalId: toTokenData.internalId,
+            logoUri: toTokenData.logoUri
+          },
+          timestamp: Date.now()
+        }
+      }))
+
+      setSwapStatus(SwapStatus.Success)
+
+      // Dispatch trackFusionTransfer to start tracking transfer status
+      dispatch(trackFusionTransfer(transfer))
 
       // Dispatch swapCompleted for Nest Egg qualification tracking
+      const swapTxHash = transfer.source?.txHash
       if (
         swapTxHash &&
-        fromTokenInfo &&
-        toTokenInfo &&
-        fromAmountUsd !== undefined
+        transfer.amountIn &&
+        fromTokenData.priceInCurrency &&
+        'decimals' in fromTokenData
       ) {
+        // Calculate USD amount from the quote for Nest Egg tracking
+        // amountIn is the swap amount in token units (as string)
+
+        // Convert amount from token units to decimal value
+        const amountDecimal =
+          Number(transfer.amountIn) / Math.pow(10, fromTokenData.decimals)
+        const fromAmountUsd = amountDecimal * fromTokenData.priceInCurrency
+
         dispatch(
           swapCompleted({
             txHash: swapTxHash,
-            chainId,
-            fromTokenSymbol: fromTokenInfo.symbol,
-            toTokenSymbol: toTokenInfo.symbol,
+            chainId: Number(quote.sourceChain.chainId.split(':')[1]),
+            fromTokenSymbol: fromTokenData.symbol,
+            toTokenSymbol: toTokenData.symbol,
             fromAmountUsd,
-            toAmountUsd: toAmountUsd ?? 0
+            toAmountUsd: fromAmountUsd
           })
         )
       }
     },
-    [dispatch]
+    [dispatch, setTransfers]
   )
 
-  const swap = useCallback(
-    (
-      specificProvider?: SwapProviders,
-      specificQuote?: NormalizedSwapQuote,
-      retries = 0
-      // eslint-disable-next-line sonarjs/cognitive-complexity
-    ) => {
-      if (!activeAccount || !fromToken || !toToken || !quotes) {
-        return
-      }
+  // Handle swap error: logging, toast, and analytics
+  const handleSwapError = useCallback(
+    (error: unknown, quote: Quote, address: string) => {
+      setSwapStatus(SwapStatus.Fail)
 
-      const quoteToUse = specificQuote || quotes.selected
-      if (!quoteToUse) {
-        return
-      }
-
-      const quote = quoteToUse.quote
-      const swapProviderToUse = specificProvider || quotes.provider
-
-      const fromTokenAddress = getTokenAddress(fromToken)
-      const isFromTokenNative = fromToken.type === TokenType.NATIVE
-      const toTokenAddress = getTokenAddress(toToken)
-      const isToTokenNative = toToken.type === TokenType.NATIVE
-
-      InteractionManager.runAfterInteractions(async () => {
-        let chainId: number | undefined
-
-        SentryWrapper.startSpan({ name: 'swap' }, async span => {
-          try {
-            setSwapStatus('Swapping')
-
-            let swapTxHash: string | undefined
-
-            if (isEvmSwapQuote(quote)) {
-              if (!cChainNetwork) {
-                throw new Error('Invalid network')
-              }
-
-              chainId = cChainNetwork.chainId
-
-              swapTxHash = await evmSwap({
-                account: activeAccount,
-                network: cChainNetwork,
-                fromTokenAddress,
-                isFromTokenNative,
-                toTokenAddress,
-                isToTokenNative,
-                swapProvider: swapProviderToUse,
-                quote,
-                slippage
-              })
-            } else if (isSvmSwapQuote(quote)) {
-              if (!solanaNetwork) {
-                throw new Error('Invalid network')
-              }
-
-              chainId = solanaNetwork.chainId
-
-              swapTxHash = await svmSwap({
-                account: activeAccount,
-                network: solanaNetwork,
-                isFromTokenNative,
-                fromTokenAddress,
-                isToTokenNative,
-                toTokenAddress,
-                swapProvider: swapProviderToUse,
-                quote,
-                slippage
-              })
-            }
-
-            if (swapTxHash && chainId) {
-              // Calculate USD amount from the quote for Nest Egg tracking
-              // amountIn is the swap amount in token units (as string)
-              const amountIn = quoteToUse.metadata.amountIn
-              let fromAmountUsd = 0
-
-              if (
-                amountIn &&
-                fromToken.priceInCurrency &&
-                'decimals' in fromToken
-              ) {
-                // Convert amount from token units to decimal value
-                const amountDecimal =
-                  Number(amountIn) / Math.pow(10, fromToken.decimals)
-                fromAmountUsd = amountDecimal * fromToken.priceInCurrency
-              }
-
-              handleSwapSuccess({
-                swapTxHash: swapTxHash,
-                chainId,
-                fromTokenInfo: { symbol: fromToken.symbol },
-                toTokenInfo: { symbol: toToken.symbol },
-                fromAmountUsd,
-                toAmountUsd: fromAmountUsd
-              })
-            }
-          } catch (err) {
-            setSwapStatus('Fail')
-            if (!isUserRejectedError(err) && chainId && activeAccount) {
-              // Check if there are more quotes available to try
-              if (
-                !manuallySelected &&
-                quotes.provider === SwapProviders.MARKR &&
-                retries < maxRetries &&
-                (isSwapTxBuildError(err) || isGasEstimationError(err)) &&
-                quotes.quotes.length > 1
-              ) {
-                const currentQuoteIndex = quotes.quotes.findIndex(
-                  q => q === quoteToUse
-                )
-                const nextQuoteIndex = currentQuoteIndex + 1
-
-                if (nextQuoteIndex < quotes.quotes.length) {
-                  // Try the next quote automatically
-                  const nextQuote = quotes.quotes[nextQuoteIndex]
-                  const swapProvider = quotes.provider
-                  if (nextQuote) {
-                    setQuotes({
-                      ...quotes,
-                      selected: nextQuote
-                    })
-
-                    // Retry swap with next quote without showing error
-                    swap(swapProvider, nextQuote, retries + 1)
-                    return // Don't handle error since we're retrying
-                  }
-                }
-              }
-
-              // No more quotes to try, handle the error
-              handleSwapError({
-                account: activeAccount,
-                chainId,
-                err
-              })
-            }
-          } finally {
-            span?.end()
-          }
-        })
+      // Show error toast (only for non-transaction errors)
+      transactionSnackbar.error({
+        message: 'Swap failed',
+        error: getSwapErrorMessage(error)
       })
+
+      AnalyticsService.captureWithEncryption('SwapFailed', {
+        address,
+        chainId: quote.sourceChain.chainId
+      })
+
+      logSdkError('[handleSwapError] error', error)
+    },
+    []
+  )
+
+  // Swap execution with retry logic
+  const swap = useCallback(
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    async (retryQuote?: Quote, retries = 0) => {
+      // Guard against concurrent swap executions on initial call (ref is synchronous, unlike state)
+      if (retries === 0 && isSwappingRef.current) return
+
+      // Determine which quote to use (retry or normal flow)
+      const quoteToUse = retryQuote ?? userQuote ?? bestQuote
+
+      if (!quoteToUse) {
+        throw new Error('No quote available')
+      }
+
+      if (!fromToken || !toToken) {
+        throw new Error('Tokens not selected')
+      }
+
+      if (!fromAddress || !toAddress) {
+        throw new Error('Addresses not specified')
+      }
+
+      // Set only after all validations pass so a validation throw can't permanently
+      // lock the ref (these throws are outside the try/catch below)
+      if (retries === 0) isSwappingRef.current = true
+      setSwapStatus(SwapStatus.Swapping)
+
+      try {
+        const transfer = await FusionService.transferAsset(
+          quoteToUse,
+          transferGasMarginBps
+        )
+
+        if (transfer.status === 'failed') {
+          const reason =
+            transfer.errorReason ?? transfer.errorCode ?? 'Unknown reason'
+          throw new Error(`Transfer failed: ${reason}`)
+        }
+
+        isSwappingRef.current = false
+        handleSwapSuccess({
+          transfer,
+          quote: quoteToUse,
+          address: fromAddress,
+          fromTokenData: fromToken,
+          toTokenData: toToken
+        })
+      } catch (error) {
+        // Handle user rejection - silent exit, no error shown
+        if (isUserRejectionError(error)) {
+          isSwappingRef.current = false
+          setSwapStatus(SwapStatus.Idle)
+          return
+        }
+
+        Logger.info('[SwapContext] error occurred during swap', error)
+
+        // Auto-retry with next quote (only if using auto mode and under retry limit)
+        if (
+          !userQuote &&
+          retries < maxRetries &&
+          allQuotes.length > 1 &&
+          shouldRetryWithNextQuote(error)
+        ) {
+          const currentIndex = allQuotes.findIndex(q => q.id === quoteToUse.id)
+          const nextQuote = allQuotes[currentIndex + 1]
+
+          if (nextQuote) {
+            Logger.info('[SwapContext] retrying with next quote:', {
+              failed: quoteToUse.aggregator.name,
+              retrying: nextQuote.aggregator.name,
+              attempt: retries + 1,
+              maxRetries
+            })
+            // Recursive retry
+            return swap(nextQuote, retries + 1)
+          }
+        }
+
+        // All retries exhausted or non-retryable error
+        isSwappingRef.current = false
+        handleSwapError(error, quoteToUse, fromAddress)
+      }
     },
     [
-      activeAccount,
-      quotes,
-      setQuotes,
-      slippage,
-      cChainNetwork,
-      solanaNetwork,
-      evmSwap,
-      svmSwap,
       fromToken,
       toToken,
-      handleSwapError,
+      fromAddress,
+      toAddress,
+      userQuote,
+      bestQuote,
+      allQuotes,
+      maxRetries,
+      transferGasMarginBps,
       handleSwapSuccess,
-      manuallySelected,
-      maxRetries
+      handleSwapError
     ]
   )
 
-  const state: SwapContextState = {
+  const value: SwapContextState = {
     fromToken,
     setFromToken,
     toToken,
     setToToken,
+    bestQuote,
+    userQuote,
+    allQuotes,
+    isQuoteLoading,
+    quoteError,
+    selectQuoteById,
+    swap,
     slippage,
     setSlippage,
     autoSlippage,
     setAutoSlippage,
     destination,
     setDestination,
-    swap,
     swapStatus,
-    setAmount: debouncedSetAmount,
-    error,
-    quotes,
-    isFetchingQuote
+    setAmount
   }
 
-  return <SwapContext.Provider value={state}>{children}</SwapContext.Provider>
+  return <SwapContext.Provider value={value}>{children}</SwapContext.Provider>
 }
 
-export function useSwapContext(): SwapContextState {
-  return useContext(SwapContext)
+export const useSwapContext = (): SwapContextState => {
+  const context = useContext(SwapContext)
+  if (context === undefined) {
+    throw new Error('useSwapContext must be used within a SwapContextProvider')
+  }
+  return context
 }

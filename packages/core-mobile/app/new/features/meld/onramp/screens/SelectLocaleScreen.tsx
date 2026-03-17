@@ -26,17 +26,14 @@ export const SelectLocaleScreen = (): React.JSX.Element => {
   }, [selectedCountryCode, countryCode, setSelectedCountryCode])
 
   const handleOnNext = (): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/meld/onramp/selectToken')
   }
 
   const handleOnSelectCountry = (): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/meldOnrampCountry')
   }
 
   const handleOnSelectCurrency = (): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/meldOnrampCurrency')
   }
 

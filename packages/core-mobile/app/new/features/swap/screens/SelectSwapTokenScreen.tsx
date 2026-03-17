@@ -1,144 +1,223 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useCallback, useEffect } from 'react'
+import { ScrollView } from 'react-native'
+import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import {
+  ActivityIndicator,
+  Button,
   Icons,
   SCREEN_WIDTH,
+  SearchBar,
   Separator,
   Text,
   TouchableOpacity,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { ErrorState } from 'common/components/ErrorState'
+import { ListScreenV2 } from 'common/components/ListScreenV2'
+import { useRouter } from 'expo-router'
+import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { ListRenderItem } from '@shopify/flash-list'
 import { LocalTokenWithBalance } from 'store/balance'
-import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
-import { useRouter } from 'expo-router'
-import { SelectTokenScreen } from 'common/screens/SelectTokenScreen'
-import useCChainNetwork from 'hooks/earn/useCChainNetwork'
-import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
-import { useSelector } from 'react-redux'
-import { selectIsSolanaSwapBlocked } from 'store/posthog'
-import { ChainId } from '@avalabs/core-chains-sdk'
+import { getCaip2ChainId } from 'utils/caip2ChainIds'
+import { useFilteredSwapTokens } from '../hooks/useFilteredSwapTokens'
+import { useSwapTokens } from '../hooks/useSwapTokens'
 
 export const SelectSwapTokenScreen = ({
-  tokens,
   selectedToken,
   setSelectedToken,
-  networkChainId
+  defaultNetworkChainId,
+  hideZeroBalance = false,
+  networks,
+  tokenFilter
 }: {
-  tokens: LocalTokenWithBalance[]
   selectedToken: LocalTokenWithBalance | undefined
   setSelectedToken: (token: LocalTokenWithBalance) => void
-  networkChainId?: number
+  defaultNetworkChainId?: number
+  hideZeroBalance?: boolean
+  networks: Network[] | undefined
+  tokenFilter?: (
+    token: LocalTokenWithBalance,
+    selectedNetwork: Network | undefined
+  ) => boolean
 }): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const { back, canGoBack } = useRouter()
   const [searchText, setSearchText] = useState<string>('')
-  const cChainNetwork = useCChainNetwork()
-  const solanaNetwork = useSolanaNetwork()
-  const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
-  const networkFilters = useMemo(() => {
-    if (isSolanaSwapBlocked) return undefined
-    return [cChainNetwork, solanaNetwork]
-      .filter(network => !!network)
-      .map(network => {
-        if (network.chainId === ChainId.AVALANCHE_MAINNET_ID) {
-          return {
-            ...network,
-            name: 'Avalanche'
-          }
-        }
-        return network
-      })
-  }, [isSolanaSwapBlocked, cChainNetwork, solanaNetwork])
 
-  const handleSelectToken = (token: LocalTokenWithBalance): void => {
-    setSelectedToken(token)
-    canGoBack() && back()
-  }
+  // Selected network state (default to first network or provided default)
+  const [selectedNetwork, setSelectedNetwork] = useState<Network | undefined>(
+    undefined
+  )
 
-  const searchResults = useMemo(() => {
-    if (searchText.length === 0) {
-      return tokens
+  // Set default network once when networks are loaded
+  useEffect(() => {
+    if (!networks || networks.length === 0) return
+
+    if (defaultNetworkChainId) {
+      const found = networks.find(n => n.chainId === defaultNetworkChainId)
+      setSelectedNetwork(found ?? networks[0])
+    } else {
+      setSelectedNetwork(networks[0])
     }
-    return tokens.filter(
-      token =>
-        token.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        token.symbol.toLowerCase().includes(searchText.toLowerCase()) ||
-        token.localId.toLowerCase().includes(searchText.toLowerCase())
-    )
-  }, [tokens, searchText])
+  }, [defaultNetworkChainId, networks])
 
-  const keyExtractor = (item: LocalTokenWithBalance): string => {
-    return [item.networkChainId, item.localId].join('-')
-  }
+  // Get CAIP2 ID for selected network
+  const caip2Id = useMemo(() => {
+    if (selectedNetwork) {
+      return getCaip2ChainId(selectedNetwork.chainId)
+    }
+    return ''
+  }, [selectedNetwork])
 
-  const renderItem: ListRenderItem<LocalTokenWithBalance> = ({
-    item,
-    index
-  }): React.JSX.Element => {
-    const isSelected = selectedToken?.localId === item.localId
-    const isLastItem = index === searchResults.length - 1
+  // Lazy load tokens for selected network (with balance data merged)
+  const { tokens, isLoading } = useSwapTokens(caip2Id)
+
+  // Filter and sort tokens
+  const baseResults = useFilteredSwapTokens({
+    tokens,
+    searchText,
+    hideZeroBalance
+  })
+  const results = useMemo(
+    () =>
+      tokenFilter
+        ? baseResults.filter(t => tokenFilter(t, selectedNetwork))
+        : baseResults,
+    [baseResults, tokenFilter, selectedNetwork]
+  )
+
+  // Handle token selection
+  const handleSelectToken = useCallback(
+    (token: LocalTokenWithBalance) => {
+      setSelectedToken(token)
+      canGoBack() && back()
+    },
+    [setSelectedToken, canGoBack, back]
+  )
+
+  // Render network tabs
+  const renderNetworkSelector = useCallback(() => {
+    if (!networks || networks.length <= 1) return null
+
     return (
-      <TouchableOpacity
-        onPress={() => handleSelectToken(item)}
-        sx={{
-          marginTop: 10,
-          paddingLeft: 16
-        }}>
-        <View
-          sx={{
-            width: '100%',
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingRight: 16
-          }}>
-          <View sx={{ flexDirection: 'row', gap: 10 }}>
-            <LogoWithNetwork
-              token={item}
-              outerBorderColor={colors.$surfaceSecondary}
-            />
-            <View>
-              <Text
-                testID={`token_selector__${item.symbol}`}
-                variant="buttonMedium"
-                numberOfLines={1}
-                sx={{ width: SCREEN_WIDTH * 0.65 }}>
-                {item.name}
-              </Text>
-              <Text variant="subtitle2">
-                {item.balanceDisplayValue} {item.symbol}
-              </Text>
-            </View>
-          </View>
-          {isSelected && (
-            <Icons.Custom.CheckSmall color={colors.$textPrimary} />
-          )}
-        </View>
-        {!isLastItem && (
-          <Separator
-            sx={{
-              marginTop: 10,
-              marginLeft: 46,
-              width: '100%'
-            }}
-          />
-        )}
-      </TouchableOpacity>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: 8 }}>
+        {networks.map(network => (
+          <Button
+            key={network.chainId}
+            testID={`network_selector__${network.chainName}`}
+            size="small"
+            type={
+              network.chainId === selectedNetwork?.chainId
+                ? 'primary'
+                : 'secondary'
+            }
+            onPress={() => setSelectedNetwork(network)}
+            style={{ flexShrink: 0 }}>
+            {network.chainId === ChainId.AVALANCHE_MAINNET_ID
+              ? 'Avalanche (C-Chain)'
+              : network.chainName}
+          </Button>
+        ))}
+      </ScrollView>
     )
-  }
+  }, [networks, selectedNetwork])
+
+  // Render token item
+  const renderItem: ListRenderItem<LocalTokenWithBalance> = useCallback(
+    ({ item, index }) => {
+      const isSelected =
+        selectedToken?.localId === item.localId &&
+        selectedToken.networkChainId === item.networkChainId
+      const isLastItem = index === results.length - 1
+
+      return (
+        <TouchableOpacity
+          onPress={() => handleSelectToken(item)}
+          sx={{ marginTop: 10, paddingLeft: 16 }}>
+          <View
+            sx={{
+              width: '100%',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingRight: 16
+            }}>
+            <View sx={{ flexDirection: 'row', gap: 10 }}>
+              <LogoWithNetwork
+                token={item}
+                outerBorderColor={colors.$surfaceSecondary}
+              />
+              <View>
+                <Text
+                  testID={`token_selector__${item.symbol}`}
+                  variant="buttonMedium"
+                  numberOfLines={1}
+                  sx={{ width: SCREEN_WIDTH * 0.65 }}>
+                  {item.name}
+                </Text>
+                <Text variant="subtitle2">
+                  {item.balanceDisplayValue} {item.symbol}
+                </Text>
+              </View>
+            </View>
+            {isSelected && (
+              <Icons.Custom.CheckSmall color={colors.$textPrimary} />
+            )}
+          </View>
+          {!isLastItem && (
+            <Separator
+              sx={{
+                marginTop: 10,
+                marginLeft: 46,
+                width: '100%'
+              }}
+            />
+          )}
+        </TouchableOpacity>
+      )
+    },
+    [selectedToken, results.length, handleSelectToken, colors]
+  )
+
+  // Render header with search and network selector
+  const renderHeader = useCallback(
+    () => (
+      <View sx={{ gap: 12 }}>
+        <SearchBar onTextChanged={setSearchText} searchText={searchText} />
+        {renderNetworkSelector()}
+      </View>
+    ),
+    [searchText, renderNetworkSelector]
+  )
+
+  const renderEmpty = useCallback(() => {
+    // Show loading if:
+    // - Networks not loaded yet
+    // - Network not selected yet (initializing)
+    // - Token data is loading
+    if (!networks || !selectedNetwork || isLoading) {
+      return <ActivityIndicator />
+    }
+    return <ErrorState icon={undefined} title="No tokens found" />
+  }, [networks, selectedNetwork, isLoading])
 
   return (
-    <SelectTokenScreen
-      onSearchText={setSearchText}
-      searchText={searchText}
-      tokens={searchResults}
-      renderListItem={renderItem}
-      keyExtractor={keyExtractor}
-      networks={networkFilters}
-      networkChainId={networkChainId}
+    <ListScreenV2
+      title="Select a token"
+      data={results}
+      isModal
+      renderItem={renderItem}
+      keyExtractor={(item: LocalTokenWithBalance) =>
+        `token-${item.localId}-${item.networkChainId}`
+      }
+      renderHeader={renderHeader}
+      renderEmpty={renderEmpty}
     />
   )
 }

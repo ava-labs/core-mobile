@@ -35,6 +35,7 @@ export const NetworkFilterDropdown = ({
 
   return (
     <DropdownMenu
+      testID={`network_dropdown_btn`}
       groups={data}
       onPressAction={(event: { nativeEvent: { event: string } }) =>
         onSelected(event.nativeEvent.event)
@@ -47,8 +48,7 @@ export const NetworkFilterDropdown = ({
           gap: 4
         }}
         size="large"
-        hitSlop={8}
-        testID="network_dropdown_btn">
+        hitSlop={8}>
         {title}
       </Chip>
     </DropdownMenu>

@@ -1,11 +1,8 @@
 import React, { useState } from 'react'
 
 import { Slider, Text, Tooltip, View } from '@avalabs/k2-alpine'
-import {
-  runOnJS,
-  SharedValue,
-  useAnimatedReaction
-} from 'react-native-reanimated'
+import { SharedValue, useAnimatedReaction } from 'react-native-reanimated'
+import { scheduleOnRN } from 'react-native-worklets'
 
 export const NodeParameterWidget = ({
   title,
@@ -26,7 +23,8 @@ export const NodeParameterWidget = ({
     () => value.value,
     (current, previous) => {
       if (current !== previous) {
-        runOnJS(setValueState)(
+        scheduleOnRN(
+          setValueState,
           Math.round(Math.min(Math.max(current, minimumValue), maximumValue))
         )
       }

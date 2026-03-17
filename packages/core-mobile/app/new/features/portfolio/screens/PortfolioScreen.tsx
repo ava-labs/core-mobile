@@ -5,7 +5,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
+import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import {
@@ -14,6 +14,7 @@ import {
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
@@ -37,7 +38,6 @@ import { useAccountPerformanceSummary } from 'features/portfolio/hooks/useAccoun
 import { useBalanceTotalPriceChangeForAccount } from 'features/portfolio/hooks/useBalanceTotalPriceChangeForAccount'
 import { useSendSelectedToken } from 'features/send/store'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
-import { useNavigateToSwap as useNavigateToSwapV2 } from 'features/swapV2/hooks/useNavigateToSwap'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
@@ -55,7 +55,7 @@ import { WalletType } from 'services/wallet/types'
 import { selectActiveAccount } from 'store/account'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import {
-  selectIsBridgeBlocked,
+  selectIsLegacyBridgeEnabled,
   selectIsMeldOfframpBlocked,
   selectIsInAppDefiBorrowBlocked,
   selectIsFusionEnabled
@@ -88,9 +88,9 @@ const SEGMENT_EVENT_MAP: Record<number, AnalyticsEventName> = {
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
-  const isBridgeBlocked = useSelector(selectIsBridgeBlocked)
+  const isLegacyBridgeEnabled = useSelector(selectIsLegacyBridgeEnabled)
   const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
   const isFusionEnabled = useSelector(selectIsFusionEnabled)
 
@@ -106,7 +106,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { navigate, push } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
-  const { navigateToSwap: navigateToSwapV2 } = useNavigateToSwapV2()
+
+  const handleBridge = useCallback(() => {
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/bridge'
+    })
+  }, [navigate])
 
   const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
     LayoutRectangle | undefined
@@ -182,12 +188,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const handleSend = useCallback((): void => {
     setSelectedToken(undefined)
-    // @ts-ignore TODO: make routes typesafe
+    // @ts-ignore we need to navigate to modal root so _layout.tsx can decide between onboarding/recentContacts
     navigate('/send')
   }, [navigate, setSelectedToken])
 
   const handleReceive = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/receive')
   }, [navigate])
 
@@ -231,29 +236,15 @@ const PortfolioHomeScreen = (): JSX.Element => {
     opacity: 1 - targetHiddenProgress.value
   }))
 
-  const handleBridge = useCallback(() => {
-    navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/bridge'
-    })
-  }, [navigate])
-
   const actionButtons = useMemo(() => {
     const buttons: ActionButton[] = [
       { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend }
     ]
-    if (!isDeveloperMode) {
+    if (isFusionEnabled) {
       buttons.push({
         title: ActionButtonTitle.Swap,
         icon: 'swap',
         onPress: () => navigateToSwap()
-      })
-    }
-    if (isFusionEnabled) {
-      buttons.push({
-        title: ActionButtonTitle.SwapV2,
-        icon: 'swap',
-        onPress: () => navigateToSwapV2()
       })
     }
     buttons.push({
@@ -266,7 +257,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
       icon: 'receive',
       onPress: handleReceive
     })
-    if (!isBridgeBlocked) {
+    if (isLegacyBridgeEnabled) {
       buttons.push({
         title: ActionButtonTitle.Bridge,
         icon: 'bridge',
@@ -283,15 +274,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
     return buttons
   }, [
     handleSend,
-    isDeveloperMode,
     navigateToBuy,
     navigateToWithdraw,
     handleReceive,
     handleBridge,
     navigateToSwap,
-    navigateToSwapV2,
     isMeldOfframpBlocked,
-    isBridgeBlocked,
+    isLegacyBridgeEnabled,
     isFusionEnabled
   ])
 
@@ -301,8 +290,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const openWalletsModal = useCallback(() => {
     navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/(signedIn)/(modals)/wallets'
+      pathname: '/wallets'
     })
   }, [navigate])
 
@@ -451,7 +439,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
         chainId: networkChainId
       })
       push({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/tokenDetail',
         params: { localId, chainId: networkChainId }
       })
@@ -460,14 +447,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const handleGoToTokenManagement = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/tokenManagement')
   }, [navigate])
 
   const handleGoToCollectibleDetail = useCallback(
     (localId: string, initial: CollectibleFilterAndSortInitialState): void => {
       navigate({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/collectibleDetail',
         params: { localId, initial: JSON.stringify(initial) }
       })
@@ -476,27 +461,35 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const handleGoToCollectibleManagement = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/collectibleManagement')
   }, [navigate])
 
   const handleGoToDiscoverCollectibles = useCallback((): void => {
     navigate({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/discoverCollectibles'
     })
   }, [navigate])
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
+  const previousAccountIdRef = useRef(activeAccount?.id)
+
   const handleScrollResync = useCallback(() => {
     tabViewRef.current?.scrollResync()
   }, [])
 
+  const scrollToTop = useCallback(() => {
+    tabViewRef.current?.scrollToTop()
+  }, [])
+
   useFocusEffect(
     useCallback(() => {
-      tabViewRef.current?.scrollResync()
-    }, [])
+      if (previousAccountIdRef.current !== activeAccount?.id) {
+        previousAccountIdRef.current = activeAccount?.id
+        scrollToTop()
+      }
+      handleScrollResync()
+    }, [activeAccount?.id, handleScrollResync, scrollToTop])
   )
 
   const tabHeight = useMemo(() => {
@@ -523,6 +516,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
             goToTokenManagement={handleGoToTokenManagement}
             goToBuy={navigateToBuy}
             onScrollResync={handleScrollResync}
+            onScrollToTop={scrollToTop}
             containerStyle={contentContainerStyle}
           />
         )
@@ -564,6 +558,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleGoToTokenManagement,
     navigateToBuy,
     handleScrollResync,
+    scrollToTop,
     contentContainerStyle,
     handleGoToCollectibleDetail,
     handleGoToCollectibleManagement,
@@ -607,6 +602,25 @@ const PortfolioHomeScreen = (): JSX.Element => {
         onLayout={handleSegmentedControlLayout}>
         <BottomTabWrapper>{renderSegmentedControl()}</BottomTabWrapper>
       </View>
+
+      {/* 
+        This is a workaround to display the header background + separator on Android.
+        Android returns a header height of 0, so we need to display the background + separator manually.
+      */}
+      {Platform.OS === 'android' && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: headerHeight
+          }}>
+          <BlurredBackgroundView
+            separator={{ opacity: targetHiddenProgress, position: 'bottom' }}
+          />
+        </View>
+      )}
     </BlurredBarsContentLayout>
   )
 }

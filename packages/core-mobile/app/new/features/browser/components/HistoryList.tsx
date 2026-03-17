@@ -1,12 +1,14 @@
-import {
-  Icons,
-  Pressable,
-  SPRING_LINEAR_TRANSITION,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { Icons, Pressable, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
+import {
+  format,
+  isSameDay,
+  isSameMonth,
+  isSameWeek,
+  isYesterday,
+  subMonths,
+  subWeeks
+} from 'date-fns'
 import { useSearchHistory } from 'hooks/browser/useSearchHistory'
 import React, { ReactNode, useEffect } from 'react'
 import { FlatList, FlatListProps, ListRenderItem } from 'react-native'
@@ -14,15 +16,6 @@ import Animated from 'react-native-reanimated'
 import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, addTab, History } from 'store/browser'
-import {
-  format,
-  isSameDay,
-  isYesterday,
-  isSameWeek,
-  isSameMonth,
-  subWeeks,
-  subMonths
-} from 'date-fns'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN } from '../consts'
 import { prepareFaviconToLoad } from '../utils'
@@ -161,7 +154,6 @@ export const HistoryList = (
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(0)}
-      layout={SPRING_LINEAR_TRANSITION}
       style={{
         flex: 1
       }}>

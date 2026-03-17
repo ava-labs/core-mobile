@@ -63,12 +63,12 @@ class TransactionsPage {
     return selectors.getById(txLoc.approveBtn)
   }
 
-  get amountToSendInput() {
-    return selectors.getById(txLoc.amountToSend)
+  get amountInput() {
+    return selectors.getById(txLoc.amountInput)
   }
 
-  get amountToStakeInput() {
-    return selectors.getById(txLoc.amountToStake)
+  get swapAmountInput() {
+    return selectors.getById(txLoc.swapAmountInput)
   }
 
   get nextBtn() {
@@ -135,8 +135,8 @@ class TransactionsPage {
     return selectors.getById(txLoc.currencySelector)
   }
 
-  get addStakeCard() {
-    return selectors.getById(txLoc.addStakeCard)
+  get addCard() {
+    return selectors.getById(txLoc.addCard)
   }
 
   get claimCard() {
@@ -148,7 +148,11 @@ class TransactionsPage {
   }
 
   get reviewStakeTitle() {
-    return selectors.getBySomeText(txLoc.reviewStakeTitle)
+    return selectors.getByText(txLoc.reviewStakeTitle)
+  }
+
+  get maxBtn() {
+    return selectors.getByText(txLoc.maxBtn)
   }
 
   async tapSelectTokenTitle() {
@@ -222,9 +226,12 @@ class TransactionsPage {
     }
   }
 
-  async enterSendAmount(amount: string) {
+  async enterAmount(
+    amount: string,
+    input: ReturnType<typeof selectors.getById> = this.amountInput
+  ) {
     try {
-      await actions.typeSlowly(this.amountToSendInput, amount)
+      await actions.typeSlowly(input, amount)
     } catch (e) {
       await actions.tapNumberPad(amount)
     }
@@ -232,14 +239,6 @@ class TransactionsPage {
 
   get insufficientSendBalance() {
     return selectors.getByText(txLoc.insufficientSendBalance)
-  }
-
-  async enterStakingAmount(amount: string) {
-    try {
-      await actions.type(this.amountToStakeInput, amount)
-    } catch (e) {
-      await actions.tapNumberPad(amount)
-    }
   }
 
   async tapNext(nextPage?: ChainablePromiseElement) {
@@ -270,7 +269,7 @@ class TransactionsPage {
       await this.selectToken(token)
       console.log(`sending ${token} ${amount}....`)
     }
-    await this.enterSendAmount(amount)
+    await this.enterAmount(amount)
     const isInsufficientBalance = await this.checkInsufficientBalance()
     if (isInsufficientBalance) {
       await commonElsPage.dismissBottomSheet()
@@ -285,8 +284,8 @@ class TransactionsPage {
     return await actions.getVisible(this.insufficientSendBalance)
   }
 
-  async tapAddStakeCard() {
-    await actions.longPress(this.addStakeCard, this.transactionOnboardingNext)
+  async tapAddCard(expectedEle?: ChainablePromiseElement) {
+    await actions.longPress(this.addCard, expectedEle)
   }
 
   async tapClaimCard() {
@@ -310,9 +309,9 @@ class TransactionsPage {
   }
 
   async stake(amount = '1', duration = '1 Day') {
-    await this.tapAddStakeCard()
+    await this.tapAddCard(this.transactionOnboardingNext)
     await this.dismissTransactionOnboarding()
-    await this.enterStakingAmount(amount)
+    await this.enterAmount(amount)
     await this.tapNext()
     await this.selectDuration(duration)
     await this.tapNext()
@@ -332,7 +331,7 @@ class TransactionsPage {
 
   async verifySuccessToast() {
     console.log('verifySuccessToast')
-    await actions.waitForNotVisible(commonElsPage.grabber)
+    await actions.waitForNotVisible(commonElsPage.bottomSheet)
   }
 
   async tapSelectToken() {
@@ -352,8 +351,11 @@ class TransactionsPage {
     return (parseFloat(amount) * 10).toFixed(10).replace(/\.?0+$/, '')
   }
 
-  async enterAmountAndAdjust(amount: string) {
-    await this.enterSendAmount(amount)
+  async enterAmountAndAdjust(
+    amount: string,
+    input: ReturnType<typeof selectors.getById> = this.amountInput
+  ) {
+    await this.enterAmount(amount, input)
     let tryCount = 5
     let newAmount = amount
     try {
@@ -361,7 +363,7 @@ class TransactionsPage {
     } catch (e) {
       while (await actions.getVisible(this.errorMsg)) {
         newAmount = await this.adjustAmount(newAmount)
-        await this.enterSendAmount(newAmount)
+        await this.enterAmount(newAmount, input)
         tryCount--
         if ((await actions.getVisible(this.nextBtn)) || tryCount === 0) {
           break
@@ -385,7 +387,7 @@ class TransactionsPage {
     await portfolioPage.tapToken(fromToken)
     await this.tapSwap()
     await this.dismissTransactionOnboarding()
-    await this.enterAmountAndAdjust(amount)
+    await this.enterAmountAndAdjust(amount, this.swapAmountInput)
     // Select To Token
     if (toToken !== 'USDC') {
       await this.tapYouReceive()
@@ -427,20 +429,24 @@ class TransactionsPage {
       await this.tapYouReceive()
       await this.selectToken(to, network)
     }
-    await this.enterAmountAndAdjust(amount)
+    await this.enterAmountAndAdjust(amount, this.swapAmountInput)
     await this.tapNext(this.approveBtn)
 
     // If `from` is not AVAX, we need to approve the spend limit
     if (from !== 'AVAX' && network === txLoc.cChain) {
-      try {
-        await actions.waitFor(this.tokenSpendApproval, 30000)
-        await this.tapApprove()
-      } catch (e) {
-        console.log('Spend limit approval is not needed')
-      }
+      await this.approveSpendLimitIfNeeded()
     }
     await actions.waitFor(this.approveTitle, 40000)
     await this.tapApprove()
+  }
+
+  async approveSpendLimitIfNeeded() {
+    try {
+      await actions.waitFor(this.tokenSpendApproval, 5000)
+      await this.tapApprove()
+    } catch (e) {
+      console.log('Spend limit approval not needed')
+    }
   }
 
   async tapTrackBuyBtn(index = 1) {
@@ -452,10 +458,10 @@ class TransactionsPage {
     }
   }
 
-  async swapOnTrack(index = 1, amount = '0.00001') {
+  async swapOnTrack(index = 1, amount = '0.001') {
     await this.tapTrackBuyBtn(index)
     await this.dismissTransactionOnboarding()
-    await this.enterAmountAndAdjust(amount)
+    await this.enterAmountAndAdjust(amount, this.swapAmountInput)
     await this.tapNext()
     await this.tapApprove()
     await this.verifySuccessToast()
@@ -519,11 +525,13 @@ class TransactionsPage {
     await this.tapWithdraw()
     await this.tapNext()
     await actions.tap(selectors.getById(`list_item__${token}`))
-    await actions.type(selectors.getById('$ fiat_amount_input  '), '100')
-    await actions.waitFor(this.errorMsg)
+    await actions.type(selectors.getById(txLoc.fiatAmountInput), '100')
     await actions.isNotVisible(this.nextBtn)
     await actions.isVisible(this.nextBtnDisabled)
     await commonElsPage.dismissBottomSheet()
+    if (await actions.getVisible(commonElsPage.bottomSheet)) {
+      await commonElsPage.dismissBottomSheet()
+    }
   }
 
   async verifyLocale(locale: string, currency: string) {
@@ -539,6 +547,10 @@ class TransactionsPage {
     await actions.type(commonElsPage.searchBar, currency)
     await actions.tap(selectors.getById(`currency__${currency}`))
     await this.verifyLocale(locale, currency)
+  }
+
+  async tapMax() {
+    await actions.tap(this.maxBtn)
   }
 }
 

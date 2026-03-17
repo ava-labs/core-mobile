@@ -28,21 +28,17 @@ export const SelectLocaleScreen = (): React.JSX.Element => {
 
   const handleOnNext = (): void => {
     if (meldToken) {
-      // @ts-ignore TODO: make routes typesafe
       navigate('/meld/offramp/selectWithdrawAmount')
     } else {
-      // @ts-ignore TODO: make routes typesafe
       navigate('/meld/offramp/selectToken')
     }
   }
 
   const handleOnSelectCountry = (): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/meldOfframpCountry')
   }
 
   const handleOnSelectCurrency = (): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/meldOfframpCurrency')
   }
 

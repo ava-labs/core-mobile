@@ -1,12 +1,3 @@
-import React, {
-  useCallback,
-  useEffect,
-  forwardRef,
-  useImperativeHandle,
-  useMemo,
-  useState
-} from 'react'
-import { InteractionManager, LayoutChangeEvent, ViewStyle } from 'react-native'
 import {
   Canvas,
   PaintStyle,
@@ -16,23 +7,32 @@ import {
   TileMode,
   vec
 } from '@shopify/react-native-skia'
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState
+} from 'react'
+import { InteractionManager, LayoutChangeEvent, ViewStyle } from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   Easing,
-  runOnJS,
   SharedValue,
   useAnimatedReaction,
   useDerivedValue,
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import { View } from '../../Primitives'
+import { scheduleOnRN } from 'react-native-worklets'
 import { useTheme } from '../../../hooks'
-import { getYFromX, makeCurve } from '../../../utils/chart'
 import { alpha } from '../../../utils'
+import { getYFromX, makeCurve } from '../../../utils/chart'
+import { View } from '../../Primitives'
+import { DashedLine } from './DashedLine'
 import { SelectionIndicator } from './SelectionIndicator'
 import { useSelectionTitleLayoutAndStyle } from './useSelectionTitleLayoutAndStyle'
-import { DashedLine } from './DashedLine'
 
 export const StakeRewardChart = forwardRef<
   StakeRewardChartHandle,
@@ -308,7 +308,7 @@ const Grid = ({
       if (x !== undefined) {
         // updateSelectionY should be called on the JS thread,
         // since getYFromX function can't be a worklet, as it uses d3 functions
-        runOnJS(updateSelectionY)(x)
+        scheduleOnRN(updateSelectionY, x)
       }
     }
   )

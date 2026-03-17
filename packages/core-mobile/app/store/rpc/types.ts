@@ -164,7 +164,7 @@ export const CORE_MOBILE_META: PeerMeta = {
   name: 'Core',
   description: 'Core Mobile Wallet',
   url: 'https://core.app/',
-  icons: []
+  icons: ['https://core.app/favicon.ico']
 }
 
 // request context keys for in-app requests
@@ -180,5 +180,8 @@ export enum RequestContext {
   SHOULD_RETRY = 'shouldRetry',
 
   // used to signal that the in-app review logic should be triggered
-  IN_APP_REVIEW = 'inAppReview'
+  IN_APP_REVIEW = 'inAppReview',
+
+  // used to suppress all toasts and confetti for intermediate or cross-chain swap steps
+  TOASTS_AND_CONFETTI_DISABLED = 'toastsAndConfettiDisabled'
 }

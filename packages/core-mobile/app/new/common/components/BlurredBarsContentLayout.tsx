@@ -1,5 +1,4 @@
 import { SxProp, View } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import React, {
   PropsWithChildren,
   ReactElement,
@@ -8,11 +7,12 @@ import React, {
 } from 'react'
 import { Platform } from 'react-native'
 import { BottomTabBarHeightContext } from 'react-native-bottom-tabs'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 
 const BlurredBarsContentLayout: React.FC<
   PropsWithChildren & { sx?: SxProp }
 > = ({ children, sx }): JSX.Element => {
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
 
   // safe access to tab bar height using context directly
   // as we currently have screens that are not using the bottom tab navigator
@@ -32,9 +32,11 @@ const BlurredBarsContentLayout: React.FC<
     () =>
       React.Children.map(children, child => {
         if (React.isValidElement(child)) {
-          // Fix typing issues by narrowing child type and safely accessing style
+          // We don't care about the element's props type here, we only need to merge `style`.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return React.cloneElement(child as ReactElement<any>, {
             style: [
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (child as ReactElement<any>).props?.style || {},
               { overflow: 'visible' }
             ]

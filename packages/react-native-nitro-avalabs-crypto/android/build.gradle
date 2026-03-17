@@ -346,7 +346,7 @@ abis.each { abi ->
 
       // Build CFLAGS with proper architecture flags
       def cflags = ["-fPIC", "-O2", "--sysroot=${sysroot}"]
-      def ldflags = []
+      def ldflags = ["-Wl,-z,max-page-size=16384"]
       
       // ARM-specific flags
       if (abi == 'armeabi-v7a') {
@@ -536,6 +536,8 @@ android {
             "**/libjscexecutor.so"
     ]
     pickFirst "**/libsecp256k1.so"
+    pickFirst "**/libcrypto.so"
+    pickFirst "**/libssl.so"
   }
 
   buildFeatures {
@@ -596,8 +598,26 @@ repositories {
 
 def kotlin_version = getExtOrDefault("kotlinVersion")
 
+// Avoid bundling React Android runtime into this library's runtime classes jar.
+// Keep compile classpath intact so Kotlin can resolve React symbols.
+configurations.matching { cfg ->
+  cfg.name.toLowerCase().contains("runtime")
+}.configureEach {
+  exclude group: "com.facebook.react", module: "react-android"
+  exclude group: "com.facebook.react", module: "react-native"
+}
+
 dependencies {
-  implementation "com.facebook.react:react-android"
+  // Rely on the app's React Android runtime to avoid duplicate classes.
+  compileOnly "com.facebook.react:react-android"
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-  implementation project(":react-native-nitro-modules")
+  implementation(project(":react-native-nitro-modules")) {
+    // Prevent duplicate React runtime classes at app minify time.
+    exclude group: "com.facebook.react", module: "react-android"
+    exclude group: "com.facebook.react", module: "react-native"
+  }
+  // OpenSSL 3.6.0-1 - aligned with react-native-quick-crypto (see
+  // packages/core-mobile/node_modules/react-native-quick-crypto/android/build.gradle).
+  // If quick-crypto changes its OpenSSL version, update this to keep the ABI compatible.
+  implementation 'io.github.ronickg:openssl:3.6.0-1'
 }

@@ -18,7 +18,9 @@ import { useSelector } from 'react-redux'
 import { selectWalletState } from 'store/app'
 import { WalletState } from 'store/app/types'
 
-const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
+// Note: React.lazy() is not supported in React Native with Metro bundler since 0.81.0.
+// This polyfill needs to be available early anyway to ensure crypto operations work.
+import PolyfillCrypto from 'react-native-webview-crypto'
 
 export const unstable_settings = {
   initialRouteName: '(tabs)' // Ensure tabs are rendered first
@@ -93,18 +95,6 @@ export default function WalletLayout(): JSX.Element {
             />
             <Stack.Screen name="(modals)/send" options={modalScreensOptions} />
             <Stack.Screen name="(modals)/swap" options={modalScreensOptions} />
-            <Stack.Screen
-              name="(modals)/swapV2"
-              options={modalScreensOptions}
-            />
-            <Stack.Screen
-              name="(modals)/selectSwapV2FromToken"
-              options={secondaryModalScreensOptions}
-            />
-            <Stack.Screen
-              name="(modals)/selectSwapV2ToToken"
-              options={secondaryModalScreensOptions}
-            />
             <Stack.Screen
               name="(modals)/selectSwapFromToken"
               options={secondaryModalScreensOptions}
@@ -267,6 +257,10 @@ export default function WalletLayout(): JSX.Element {
               options={modalScreensOptions}
             />
             <Stack.Screen
+              name="(modals)/borrowRepay"
+              options={modalScreensOptions}
+            />
+            <Stack.Screen
               name="(modals)/wallets"
               options={{
                 ...stackScreensOptions,
@@ -276,6 +270,10 @@ export default function WalletLayout(): JSX.Element {
             />
             <Stack.Screen
               name="(modals)/ledgerReviewTransaction"
+              options={ledgerModalScreensOptions}
+            />
+            <Stack.Screen
+              name="(modals)/ledgerReviewStaking"
               options={ledgerModalScreensOptions}
             />
             <Stack.Screen

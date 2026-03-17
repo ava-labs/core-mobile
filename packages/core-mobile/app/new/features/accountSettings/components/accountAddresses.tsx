@@ -186,7 +186,6 @@ const SolanaEnableButton = ({
   const { navigate } = useRouter()
 
   const handleOnPress = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/solanaConnection', params: { accountId } })
   }, [navigate, accountId])
 

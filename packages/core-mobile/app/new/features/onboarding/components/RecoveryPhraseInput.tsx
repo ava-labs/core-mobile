@@ -1,14 +1,13 @@
+import { Button, Text, useTheme, View } from '@avalabs/k2-alpine'
+import * as bip39 from 'bip39'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   FlatList,
   InteractionManager,
   Keyboard,
-  NativeSyntheticEvent,
-  TextInput
+  TextInput,
+  TextInputSelectionChangeEvent
 } from 'react-native'
-import { Button, Text, useTheme, View } from '@avalabs/k2-alpine'
-import * as bip39 from 'bip39'
-import { TextInputSelectionChangeEventData } from 'react-native'
 import Animated, {
   SequencedTransition,
   ZoomIn,
@@ -97,9 +96,7 @@ export default function RecoveryPhraseInput({
     updateCurrentWord(text, selection.start)
   }
 
-  const handleSelectionChange = (
-    e: NativeSyntheticEvent<TextInputSelectionChangeEventData>
-  ): void => {
+  const handleSelectionChange = (e: TextInputSelectionChangeEvent): void => {
     setSelection(e.nativeEvent.selection)
   }
 

@@ -36,6 +36,6 @@ describe('[Smoke] Onboarding', () => {
 
     // finish onboarding
     await onboardingPage.tapLetsGo()
-    await onboardingPage.verifyLoggedIn()
+    await actions.waitFor(commonElsPage.accountOne, 40000)
   })
 })

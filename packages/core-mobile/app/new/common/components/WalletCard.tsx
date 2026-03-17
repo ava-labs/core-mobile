@@ -250,8 +250,6 @@ const WalletCard = ({
         </View>
 
         <View
-          accessible={true}
-          testID={`more_icon__${wallet.name}`}
           sx={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -266,6 +264,7 @@ const WalletCard = ({
           />
           {showMoreButton && (
             <DropdownMenu
+              testID={`more_icon__${wallet.name}`}
               groups={[
                 {
                   key: 'wallet-actions',
@@ -278,16 +277,21 @@ const WalletCard = ({
               <TouchableOpacity
                 style={{
                   minHeight: HEADER_HEIGHT,
-                  minWidth: 54,
-                  paddingRight: 21,
                   justifyContent: 'center',
                   alignItems: 'flex-end'
                 }}>
-                <Icons.Navigation.MoreHoriz
-                  color={colors.$textPrimary}
-                  width={24}
-                  height={24}
-                />
+                <View
+                  style={{
+                    minWidth: 54,
+                    paddingRight: 21,
+                    alignItems: 'flex-end'
+                  }}>
+                  <Icons.Navigation.MoreHoriz
+                    color={colors.$textPrimary}
+                    width={24}
+                    height={24}
+                  />
+                </View>
               </TouchableOpacity>
             </DropdownMenu>
           )}

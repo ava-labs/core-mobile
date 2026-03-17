@@ -41,7 +41,8 @@ export const TokenInputWidget = ({
   editable = true,
   isLoadingAmount = false,
   autoFocus,
-  valid = true
+  valid = true,
+  amountInputTestID = 'token_amount_input_field'
 }: {
   title: string
   amount?: bigint
@@ -61,6 +62,7 @@ export const TokenInputWidget = ({
   isLoadingAmount?: boolean
   autoFocus?: boolean
   valid?: boolean
+  amountInputTestID?: string
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -173,8 +175,7 @@ export const TokenInputWidget = ({
             <View sx={{ flex: 1, justifyContent: 'space-between' }}>
               <View
                 sx={{
-                  flexDirection: 'row',
-                  gap: 8
+                  flexDirection: 'row'
                 }}>
                 <TouchableOpacity
                   onPress={onSelectToken}
@@ -201,9 +202,11 @@ export const TokenInputWidget = ({
                   </View>
                 </TouchableOpacity>
                 <TouchableOpacity
+                  accessible={false}
                   sx={{ flex: 1 }}
                   onPress={token === undefined ? onSelectToken : undefined}>
                   <View
+                    accessible={false}
                     sx={{
                       alignItems: 'flex-end',
                       justifyContent: 'center',
@@ -213,9 +216,7 @@ export const TokenInputWidget = ({
                     pointerEvents={token === undefined ? 'none' : 'auto'}>
                     <TokenAmountInput
                       ref={tokenAmountInputRef}
-                      testID="token_amount_input_field"
-                      accessibilityLabel="token_amount_input_field"
-                      accessible={true}
+                      testID={amountInputTestID}
                       autoFocus={autoFocus}
                       editable={editable}
                       denomination={token?.decimals ?? 0}
@@ -298,22 +299,27 @@ export const TokenInputWidget = ({
               }}
               entering={FadeIn}
               exiting={FadeOut}>
-              {percentageButtons.map((button, index) => (
-                <Button
-                  key={index}
-                  size="small"
-                  type={button.isSelected ? 'primary' : 'secondary'}
-                  style={{
-                    minWidth: 72
-                  }}
-                  disabled={disabled || balance === undefined}
-                  onPress={() => {
-                    handlePressPercentageButton(button, index)
-                    tokenAmountInputRef.current?.blur()
-                  }}>
-                  {button.text}
-                </Button>
-              ))}
+              {percentageButtons
+                // Hide Max button when maximum is still loading or could not be calculated
+                .filter(
+                  button => !(button.percent === 1 && maximum === undefined)
+                )
+                .map((button, index) => (
+                  <Button
+                    key={index}
+                    size="small"
+                    type={button.isSelected ? 'primary' : 'secondary'}
+                    style={{
+                      minWidth: 72
+                    }}
+                    disabled={disabled || balance === undefined}
+                    onPress={() => {
+                      handlePressPercentageButton(button, index)
+                      tokenAmountInputRef.current?.blur()
+                    }}>
+                    {button.text}
+                  </Button>
+                ))}
             </Animated.View>
           )}
         </View>

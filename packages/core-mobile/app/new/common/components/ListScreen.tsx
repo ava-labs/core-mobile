@@ -1,11 +1,6 @@
-import {
-  NavigationTitleHeader,
-  Separator,
-  SPRING_LINEAR_TRANSITION,
-  Text
-} from '@avalabs/k2-alpine'
+import { NavigationTitleHeader, Separator, Text } from '@avalabs/k2-alpine'
 import { BlurViewWithFallback } from '@avalabs/k2-alpine/src/components/BlurViewWithFallback/BlurViewWithFallback'
-import { useHeaderHeight } from '@react-navigation/elements'
+import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, {
@@ -29,9 +24,10 @@ import {
   View,
   ViewStyle
 } from 'react-native'
-import { FlatList, ScrollView } from 'react-native-gesture-handler'
+import { FlatList } from 'react-native-gesture-handler'
 import {
   KeyboardAwareScrollView,
+  KeyboardAwareScrollViewRef,
   useKeyboardState
 } from 'react-native-keyboard-controller'
 import Animated, {
@@ -46,6 +42,7 @@ import {
   useSafeAreaInsets
 } from 'react-native-safe-area-context'
 import { ErrorState } from './ErrorState'
+import Grabber from './Grabber'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 
 // Use this component when you need to display a list of items in a screen.
@@ -122,7 +119,7 @@ export const ListScreen = <T,>({
   ...props
 }: ListScreenProps<T>): JSX.Element => {
   const insets = useSafeAreaInsets()
-  const headerHeight = useHeaderHeight()
+  const headerHeight = useEffectiveHeaderHeight()
   const keyboard = useKeyboardState()
   const frame = useSafeAreaFrame()
 
@@ -299,7 +296,7 @@ export const ListScreen = <T,>({
       : insets.bottom + 16 + footerPadding
 
     const extraPadding =
-      Platform.OS === 'android' ? (isModal ? insets.top - 24 : 8) : 16
+      Platform.OS === 'android' ? (isModal ? insets.top : 8) : 16
 
     return [
       props?.contentContainerStyle,
@@ -434,6 +431,22 @@ export const ListScreen = <T,>({
     )
   }, [renderEmpty])
 
+  const renderGrabber = useCallback(() => {
+    if (isModal)
+      return (
+        <View
+          style={{
+            position: 'absolute',
+            top: Platform.OS === 'android' ? insets.top - 2 : 9,
+            left: 0,
+            right: 0,
+            zIndex: 1000
+          }}>
+          <Grabber />
+        </View>
+      )
+  }, [insets.top, isModal])
+
   const handleFooterLayout = useCallback((event: LayoutChangeEvent) => {
     const { height } = event.nativeEvent.layout
     setFooterHeight(height)
@@ -464,7 +477,6 @@ export const ListScreen = <T,>({
   return (
     <Animated.View
       style={[{ flex: 1 }]}
-      layout={SPRING_LINEAR_TRANSITION}
       entering={getListItemEnteringAnimation(0)}>
       {/* @ts-expect-error */}
       <AnimatedFlatList
@@ -493,11 +505,13 @@ export const ListScreen = <T,>({
         ListHeaderComponent={ListHeaderComponent}
         ListEmptyComponent={ListEmptyComponent}
       />
+      {renderGrabber()}
       {renderFooterContent()}
     </Animated.View>
   )
 }
 
-const RenderScrollComponent = React.forwardRef<ScrollView, ScrollViewProps>(
-  (props, ref) => <KeyboardAwareScrollView {...props} ref={ref} />
-)
+const RenderScrollComponent = React.forwardRef<
+  KeyboardAwareScrollViewRef,
+  ScrollViewProps
+>((props, ref) => <KeyboardAwareScrollView {...props} ref={ref} />)

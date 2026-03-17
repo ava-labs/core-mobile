@@ -1,4 +1,5 @@
 export default {
+  bottomSheet: 'bottom_sheet',
   deleteContactBtn: 'delete_contact_btn',
   addAccountBtn: 'add_account_btn',
   removeAllAccounts: 'Remove all accounts',
@@ -7,7 +8,6 @@ export default {
   account2: 'Account 2',
   account3: 'Account 3',
   eyeIcon: 'eye_icon',
-  settingsScrollView: 'settings_scroll_view',
   settingsFooter: 'settings_footer',
   iUnderstandBtn: 'I understand, continue',
   analyticsOn: 'analytics_enabled',
@@ -104,5 +104,8 @@ export default {
   beamL1: 'Beam L1',
   customAvatar: 'custom_avatar',
   nameThisNetworkBtn: 'Name this network',
-  saveNetworkBtn: 'save_network_btn'
+  saveNetworkBtn: 'save_network_btn',
+  appIcon: 'App icon',
+  appIconTitle: 'Customize\nthe app icon',
+  default: 'Default'
 }

@@ -19,9 +19,16 @@ const today = endOfToday()
  * - if date is within this year, we show month + day. e.g. July 3rd
  * - else we show month + day + year. e.g. July 3rd, 2023
  */
-export const getDayString = (timestamp: number): string => {
+export const getDayString = (
+  timestamp: number,
+  monthFormat: 'short' | 'long' = 'long'
+): string => {
   if (isSameDay(today, timestamp)) return 'Today'
   if (isSameDay(yesterday, timestamp)) return 'Yesterday'
-  if (isSameYear(today, timestamp)) return format(timestamp, 'MMMM do')
-  return format(timestamp, 'MMMM d, yyyy')
+  if (isSameYear(today, timestamp))
+    return format(timestamp, `${monthFormat === 'short' ? 'MMM' : 'MMMM'} do`)
+  return format(
+    timestamp,
+    `${monthFormat === 'short' ? 'MMM' : 'MMMM'} d, yyyy`
+  )
 }

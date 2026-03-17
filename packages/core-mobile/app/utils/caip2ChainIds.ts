@@ -88,6 +88,7 @@ export const isSvmChainId = (caip2ChainId: string): boolean => {
   return (
     caip2ChainId === SolanaCaip2ChainId.MAINNET ||
     caip2ChainId === SolanaCaip2ChainId.DEVNET ||
+    caip2ChainId === SolanaCaip2ChainId.TESTNET ||
     caip2ChainId === SOLANA_LEGACY_CHAIN_ID
   )
 }

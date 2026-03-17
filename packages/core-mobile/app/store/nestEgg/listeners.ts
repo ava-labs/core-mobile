@@ -55,7 +55,7 @@ const handleSwapForNestEgg = async (
     return
   }
 
-  // Check minimum swap amount ($10 USD)
+  // Check minimum swap amount ($9 USD)
   if (fromAmountUsd < MINIMUM_SWAP_AMOUNT_USD) {
     return
   }
@@ -76,9 +76,7 @@ const handleSwapForNestEgg = async (
 
   // Show success modal
   await waitForInteractions()
-  await navigateWithPromise({
-    pathname: '/(signedIn)/(modals)/nestEggCampaign/success'
-  })
+  await navigateWithPromise('/nestEggCampaign/success')
 }
 
 /**
@@ -97,9 +95,7 @@ const checkPendingNestEggSuccess = async (
   // If user qualified but hasn't acknowledged, show success modal
   if (hasQualified && !hasAcknowledged) {
     await waitForInteractions()
-    await navigateWithPromise({
-      pathname: '/(signedIn)/(modals)/nestEggSuccess'
-    })
+    await navigateWithPromise('/nestEggCampaign/success')
   }
 }
 

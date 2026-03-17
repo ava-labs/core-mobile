@@ -18,7 +18,7 @@ import { addCurrencyListeners } from 'store/settings/currency/listeners'
 import { addMeldListeners } from 'store/meld/listeners'
 import { addBranchListeners } from 'store/branch/listener'
 import { addNestEggListeners } from 'store/nestEgg/listeners'
-import { addFusionListeners } from 'new/features/swapV2/store/listeners'
+import { addFusionListeners } from 'new/features/swap/store/listeners'
 
 const listener = createListenerMiddleware({
   onError: (error, errorInfo) => {

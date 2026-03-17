@@ -28,7 +28,6 @@ export const usePrivateKeyImportHandler = (
 
     if (migrationStatus !== MigrationStatus.NoMigrationNeeded) {
       navigate({
-        // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/verifyPinForImportPrivateKey',
         params: {
           privateKeyAccountString: JSON.stringify(tempAccountDetails),

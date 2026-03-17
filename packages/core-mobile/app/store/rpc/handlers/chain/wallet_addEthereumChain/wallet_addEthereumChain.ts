@@ -122,7 +122,6 @@ class WalletAddEthereumChainHandler
       network: customNetwork
     })
 
-    // @ts-ignore TODO: make routes typesafe
     router.navigate('/addEthereumChain')
     return { success: true, value: DEFERRED_RESULT }
   }

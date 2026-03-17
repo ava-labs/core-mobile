@@ -1,0 +1,110 @@
+---
+description: E2E Appium test writing conventions and patterns
+globs: e2e-appium/**/*.ts
+alwaysApply: false
+---
+
+# E2E Appium Test Rules
+
+## Folder Structure
+
+```
+e2e-appium/
+├── specs/           # Test files (*.spec.ts)
+├── pages/           # Page Object classes (*.page.ts)
+├── locators/        # Locator constants (*.loc.ts)
+├── helpers/         # Utilities (actions.ts, selectors.ts)
+└── testrail/        # TestRail integration
+```
+
+## Writing New Tests
+
+### 1. Spec File Structure
+
+```typescript
+import warmup from '../helpers/warmup'
+import txPage from '../pages/transactions.page'
+
+describe('Feature Name', () => {
+  it('[Smoke] Should do something', async () => {
+    await warmup()  // Call only in first test
+    await txPage.someAction()
+    await txPage.verifySuccessToast()
+  })
+
+  it('Should do another thing', async () => {
+    // No warmup needed
+  })
+})
+```
+
+### 2. Page Object Pattern
+
+```typescript
+import { actions } from '../helpers/actions'
+import { selectors } from '../helpers/selectors'
+import myLoc from '../locators/my.loc'
+
+class MyPage {
+  // Element getter - use selectors
+  get myButton() {
+    return selectors.getById(myLoc.myButton)
+  }
+
+  // Dynamic element
+  itemBtn(name: string) {
+    return selectors.getById(`item_btn__${name}`)
+  }
+
+  // Action method
+  async tapMyButton() {
+    await actions.tap(this.myButton)
+  }
+}
+
+export default new MyPage()
+```
+
+### 3. Locator File
+
+```typescript
+export default {
+  myButton: 'my_button_testid',
+  title: 'My Title Text'
+}
+```
+
+## Selector Usage
+
+| Method | Purpose |
+|--------|---------|
+| `selectors.getById(id)` | Find by testID |
+| `selectors.getByText(text)` | Exact text match |
+| `selectors.getBySomeText(text)` | Contains text |
+| `selectors.getBySmartText(str)` | ID or text |
+
+## Actions Usage
+
+| Method | Purpose |
+|--------|---------|
+| `actions.tap(element)` | Tap with wait |
+| `actions.click(element)` | Click |
+| `actions.type(element, text)` | Type text |
+| `actions.waitFor(element)` | Wait for element |
+| `actions.isVisible(element)` | Assert visible |
+| `actions.delay(ms)` | Delay |
+
+## Important Rules
+
+1. **testID naming**: Use `feature_action__param1__param2` format
+2. **Smoke tag**: Add `[Smoke]` tag for critical tests
+3. **Page reuse**: Maximize use of existing page methods
+4. **txPage usage**: Use `transactions.page.ts` for common transaction flows
+5. **accessible prop**: Set `accessible={true}` for Appium to find elements
+
+## React Native testID Rules
+
+For Appium to find elements:
+- Component must have `testID` prop
+- Parent must have `accessible={false}` for child testID to be accessible
+- k2-alpine components (Button, etc.) require explicit `accessible={true}`

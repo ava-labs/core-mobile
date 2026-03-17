@@ -50,44 +50,16 @@ export const selectIsSeedlessSigningBlocked = (state: RootState): boolean => {
   return isSeedlessSigningBlocked(state.posthog.featureFlags)
 }
 
-export const selectIsSwapBlocked = (state: RootState): boolean => {
+export const selectIsLegacyBridgeEnabled = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
-
-  // First check if the feature flag itself is disabled
-  if (
-    !featureFlags[FeatureGates.SWAP] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  ) {
-    return true
-  }
-
-  // For seedless wallets, additionally check seedless signing
   const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
-  if (isSeedlessWallet) {
-    return isSeedlessSigningBlocked(featureFlags)
+  if (isSeedlessWallet && isSeedlessSigningBlocked(featureFlags)) {
+    return false
   }
-
-  return false
-}
-
-export const selectIsBridgeBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-
-  // First check if the feature flag itself is disabled
-  if (
-    !featureFlags[FeatureGates.BRIDGE] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  ) {
-    return true
-  }
-
-  // For seedless wallets, additionally check seedless signing
-  const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
-  if (isSeedlessWallet) {
-    return isSeedlessSigningBlocked(featureFlags)
-  }
-
-  return false
+  return (
+    featureFlags[FeatureGates.LEGACY_BRIDGE] === true &&
+    featureFlags[FeatureGates.EVERYTHING] === true
+  )
 }
 
 export const selectIsBridgeBtcBlocked = (state: RootState): boolean => {
@@ -279,14 +251,6 @@ export const selectIsGaslessBlocked = (state: RootState): boolean => {
   )
 }
 
-export const selectIsSwapFeesBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.SWAP_FEES] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
 export const selectIsSolanaSupportBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
 
@@ -325,30 +289,37 @@ export const selectIsKeystoneBlocked = (state: RootState): boolean => {
   )
 }
 
-export const selectIsSwapUseMarkrBlocked = (state: RootState): boolean => {
+export const selectFusionFeeUnitsMarginBps = (state: RootState): number => {
   const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.SWAP_USE_MARKR] ||
-    !featureFlags[FeatureGates.EVERYTHING]
+  return parseInt(
+    featureFlags[FeatureVars.FUSION_FEE_UNITS_MARGIN_BPS] as string
   )
 }
 
-export const selectMarkrSwapGasBuffer = (state: RootState): number => {
+export const selectFusionMaxAmountGasSafetyBps = (state: RootState): number => {
   const { featureFlags } = state.posthog
-  return parseFloat(featureFlags[FeatureVars.MARKR_SWAP_GAS_BUFFER] as string)
+  return parseInt(
+    featureFlags[FeatureVars.FUSION_MAX_AMOUNT_GAS_SAFETY_BPS] as string
+  )
+}
+
+export const selectFusionBridgeFeeSafetyBps = (state: RootState): number => {
+  const { featureFlags } = state.posthog
+  return parseInt(
+    featureFlags[FeatureVars.FUSION_BRIDGE_FEE_SAFETY_BPS] as string
+  )
+}
+
+export const selectFusionTransferGasMarginBps = (state: RootState): number => {
+  const { featureFlags } = state.posthog
+  return parseInt(
+    featureFlags[FeatureVars.FUSION_TRANSFER_GAS_MARGIN_BPS] as string
+  )
 }
 
 export const selectMarkrSwapMaxRetries = (state: RootState): number => {
   const { featureFlags } = state.posthog
   return parseInt(featureFlags[FeatureVars.MARKR_SWAP_MAX_RETRIES] as string)
-}
-
-export const selectIsSwapFeesJupiterBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.SWAP_FEES_JUPITER] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
 }
 
 export const selectIsSolanaSwapBlocked = (state: RootState): boolean => {
@@ -519,6 +490,10 @@ export const selectIsNestEggEligible = (state: RootState): boolean => {
 
 export const selectIsFusionEnabled = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
+  const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
+  if (isSeedlessWallet && isSeedlessSigningBlocked(featureFlags)) {
+    return false
+  }
   return (
     featureFlags[FeatureGates.FUSION] === true &&
     featureFlags[FeatureGates.EVERYTHING] === true
@@ -560,6 +535,14 @@ export const selectIsFusionLombardBtcbToBtcEnabled = (
   return (
     featureFlags[FeatureGates.FUSION_LOMBARD_BTCB_TO_BTC] === true &&
     featureFlags[FeatureGates.EVERYTHING] === true
+  )
+}
+
+export const selectIsAlternateAppIconsBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.ALTERNATE_APP_ICONS] ||
+    !featureFlags[FeatureGates.EVERYTHING]
   )
 }
 

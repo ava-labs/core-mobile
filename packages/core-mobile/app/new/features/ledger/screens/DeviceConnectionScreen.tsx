@@ -134,7 +134,6 @@ export default function DeviceConnectionScreen(): JSX.Element {
         await connectToDevice(deviceId, deviceName)
 
         // Navigate to app connection step
-        // @ts-ignore TODO: make routes typesafe
         push('/accountSettings/ledger/appConnection')
       } catch (error) {
         Alert.alert(

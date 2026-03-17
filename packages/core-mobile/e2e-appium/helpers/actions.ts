@@ -202,7 +202,7 @@ async function tap(
     await waitFor(ele)
     await ele.waitForEnabled()
     await delay(1000)
-    await ele.tap()
+    await ele.click()
     const selector = await ele.selector
     console.log(`Tapped "${selector}"`)
     if (expectedEle) {
@@ -210,7 +210,7 @@ async function tap(
         await waitFor(expectedEle)
       } catch (e) {
         if (await getVisible(ele)) {
-          await ele.tap()
+          await ele.click()
           console.log(`Tapped again "${selector}"`)
         } else {
           console.log(`Skipping tap on "${selector}" because it is not visible`)
@@ -252,7 +252,11 @@ async function click(ele: ChainablePromiseElement) {
 
 async function dismissKeyboard(id = 'Return') {
   if (driver.isIOS) {
-    await click(selectors.getById(id))
+    try {
+      await click(selectors.getById(id))
+    } catch (e) {
+      await click(selectors.getById('Done'))
+    }
   } else {
     await driver.hideKeyboard()
   }
@@ -261,7 +265,11 @@ async function dismissKeyboard(id = 'Return') {
 
 async function tapEnterOnKeyboard(id = 'Return') {
   if (driver.isIOS) {
-    await click(selectors.getById(id))
+    try {
+      await click(selectors.getById(id))
+    } catch (e) {
+      await click(selectors.getById('Done'))
+    }
   } else {
     await driver.pressKeyCode(66)
   }
@@ -297,6 +305,17 @@ async function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+/**
+ * Drags an element by the specified offset.
+ *
+ * Scroll direction guide (based on finger gesture):
+ * - Negative y offset [0, -200]: Drag UP → Scroll DOWN (reveals content below)
+ * - Positive y offset [0, 200]: Drag DOWN → Scroll UP (reveals content above)
+ *
+ * @param ele - The element to drag
+ * @param targetOffset - [x, y] offset from current position
+ * @param duration - Duration of the drag gesture in ms (default: 500)
+ */
 async function dragAndDrop(
   ele: ChainablePromiseElement,
   targetOffset: [number, number],
@@ -345,7 +364,11 @@ async function verifyText(text: string, ele: ChainablePromiseElement) {
   )
 }
 
-async function pasteText(inputElement: ChainablePromiseElement, text: string) {
+async function pasteText(
+  inputElement: ChainablePromiseElement,
+  text: string,
+  keyboardId = 'Return'
+) {
   const encodedText = Buffer.from(text, 'utf-8').toString('base64')
   if (driver.isIOS) {
     await driver.setClipboard(encodedText)
@@ -366,7 +389,7 @@ async function pasteText(inputElement: ChainablePromiseElement, text: string) {
     await tapXY(160, 650)
   }
 
-  await tapEnterOnKeyboard()
+  await tapEnterOnKeyboard(keyboardId)
 }
 
 async function tapXY(x: number, y: number) {

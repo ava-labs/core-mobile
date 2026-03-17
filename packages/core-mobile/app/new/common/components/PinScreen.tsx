@@ -342,7 +342,7 @@ export const PinScreen = ({
             )}
           </View>
           <Reanimated.View
-            style={[avatarStyle, { zIndex: -100, marginTop: 10 }]}>
+            style={[avatarStyle, { zIndex: -100, marginTop: 32 }]}>
             <Avatar
               size="small"
               source={avatar.source}
@@ -356,7 +356,7 @@ export const PinScreen = ({
               {disableKeypad === false && (
                 <PinInput
                   ref={pinInputRef}
-                  style={{ paddingTop: 40, paddingBottom: 20 }}
+                  style={{ paddingTop: 36, paddingBottom: 20 }}
                   length={6}
                   onChangePin={onEnterPin}
                   value={enteredPin}

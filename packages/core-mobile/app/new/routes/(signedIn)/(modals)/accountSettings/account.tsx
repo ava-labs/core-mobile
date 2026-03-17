@@ -73,7 +73,6 @@ const AccountScreen = (): JSX.Element => {
       return
     }
     router.push({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/accountSettings/verifyPinForPrivateKey',
       params: {
         walletId: account.walletId,

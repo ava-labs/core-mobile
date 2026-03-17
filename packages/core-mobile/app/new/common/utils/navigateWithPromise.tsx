@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events'
 import React from 'react'
-import { router } from 'expo-router'
+import { Href, router } from 'expo-router'
 import { useEffect } from 'react'
 import { useLocalSearchParams } from 'expo-router'
 import { uuid } from 'utils/uuid'
@@ -8,15 +8,10 @@ import { uuid } from 'utils/uuid'
 const navigationEvents = new EventEmitter()
 
 /** Open a screen and resolve when it closes */
-export function navigateWithPromise({
-  pathname,
-  params = {},
-  timeoutMs = 60000
-}: {
-  pathname: string
-  params?: Record<string, string | number | boolean>
-  timeoutMs?: number
-}): Promise<void> {
+export function navigateWithPromise(
+  href: Href,
+  { timeoutMs = 60_000 }: { timeoutMs?: number } = {}
+): Promise<void> {
   const id = uuid()
 
   return new Promise<void>(resolve => {
@@ -31,12 +26,13 @@ export function navigateWithPromise({
 
     navigationEvents.once(`closed:${id}`, resolveOnce)
 
-    const timer = setTimeout(() => {
-      resolveOnce()
-    }, timeoutMs)
+    const timer = setTimeout(resolveOnce, timeoutMs)
 
-    // @ts-ignore TODO: make routes typesafe
-    router.navigate({ pathname, params: { ...params, navId: id } })
+    router.navigate(
+      (typeof href === 'string'
+        ? { pathname: href, params: { navId: id } }
+        : { ...href, params: { ...href.params, navId: id } }) as Href
+    )
   })
 }
 

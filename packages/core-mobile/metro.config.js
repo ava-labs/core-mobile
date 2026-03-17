@@ -29,21 +29,31 @@ const baseConfig = {
     // mute warnings about circular dependencies
     requireCycleIgnorePatterns: [/^app\/.*/, /^node_modules\/.*/],
     extraNodeModules: {
-      stream: require.resolve('./node_modules/stream-browserify'),
       '@noble/hashes': require.resolve('./node_modules/@noble/hashes')
     },
     // sbmodern is needed for storybook
     resolverMainFields: ['sbmodern', 'react-native', 'browser', 'main'],
     assetExts: assetExts.filter(ext => ext !== 'svg'),
     sourceExts: [...sourceExts, 'svg', 'cjs', 'mjs'],
+    // Prevents VM modules from bundling their own copy of @avalabs/core-wallets-sdk
+    // which breaks instanceof checks for provider types
+    unstable_enablePackageExports: false,
     unstable_conditionNames: ['require', 'import'],
     unstable_conditionsByPlatform: {
       android: ['require', 'react-native'],
       ios: ['require', 'react-native']
     },
-    // TODO: should this be a temporary fix?
-    unstable_enablePackageExports: false,
     resolveRequest: (context, moduleName, platform) => {
+      // Handle @buoy-gg subpath exports manually since unstable_enablePackageExports is false
+      const buoyMatch = moduleName.match(/^(@buoy-gg\/[^/]+)\/(.+)$/)
+      if (buoyMatch) {
+        const [, pkg, subpath] = buoyMatch
+        return context.resolveRequest(
+          context,
+          `${pkg}/lib/module/${subpath}/index.js`,
+          platform
+        )
+      }
       // Enable package exports only for @lombard.finance/sdk
       if (moduleName.startsWith('@lombard.finance/sdk')) {
         const newContext = {
@@ -53,8 +63,8 @@ const baseConfig = {
         return context.resolveRequest(newContext, moduleName, platform)
       }
 
-      // Enable package exports only for @avalabs/unified-asset-transfer
-      if (moduleName.startsWith('@avalabs/unified-asset-transfer')) {
+      // Enable package exports only for @avalabs/fusion-sdk
+      if (moduleName.startsWith('@avalabs/fusion-sdk')) {
         const newContext = {
           ...context,
           unstable_enablePackageExports: true

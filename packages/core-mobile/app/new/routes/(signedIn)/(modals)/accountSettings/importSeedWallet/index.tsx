@@ -90,7 +90,6 @@ const ImportSeedWallet = (): React.JSX.Element => {
     }
 
     navigate({
-      // @ts-ignore TODO: make routes typesafe
       pathname: '/accountSettings/importSeedWallet/setWalletName',
       params: {
         normalizedMnemonic

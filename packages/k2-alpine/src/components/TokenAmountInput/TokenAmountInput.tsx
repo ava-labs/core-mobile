@@ -9,10 +9,10 @@ import React, {
   useState
 } from 'react'
 import {
-  NativeSyntheticEvent,
+  BlurEvent,
+  FocusEvent,
   Platform,
   TextInput,
-  TextInputFocusEventData,
   TextInputProps
 } from 'react-native'
 import { useTheme } from '../../hooks'
@@ -137,7 +137,7 @@ export const TokenAmountInput = forwardRef<
     }, [valueAsString])
 
     const handleBlur = useCallback(
-      (e: NativeSyntheticEvent<TextInputFocusEventData>): void => {
+      (e: BlurEvent): void => {
         onBlur?.(e)
         moveCursorToFront()
       },
@@ -145,7 +145,7 @@ export const TokenAmountInput = forwardRef<
     )
 
     const handleFocus = useCallback(
-      (e: NativeSyntheticEvent<TextInputFocusEventData>): void => {
+      (e: FocusEvent): void => {
         onFocus?.(e)
         moveCursorToEnd()
       },

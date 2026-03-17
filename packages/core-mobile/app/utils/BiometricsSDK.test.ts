@@ -48,7 +48,7 @@ jest.mock('utils/mmkv', () => ({
   commonStorage: {
     getString: jest.fn(),
     set: jest.fn(),
-    delete: jest.fn()
+    remove: jest.fn()
   }
 }))
 
@@ -373,7 +373,7 @@ describe('BiometricsSDK', () => {
       expect(mockKeychain.resetGenericPassword).not.toHaveBeenCalledWith({
         service: 'some-other-service'
       })
-      expect(mockCommonStorage.delete).toHaveBeenCalledWith(
+      expect(mockCommonStorage.remove).toHaveBeenCalledWith(
         StorageKey.SECURE_ACCESS_SET
       )
     })

@@ -103,11 +103,12 @@ export const RewardsBanner = ({
             sx={{ flex: 1, color: '$textSecondary' }}
             shouldMask={isPrivacyModeEnabled}
             maskWidth={REWARDS_DETAIL_MASK_WIDTH}>
-            {rewards
+            {`${rewards
               .slice(0, 1)
               .map(reward => `${reward.amount.toFixed(7)} ${reward.token}`)
-              .join('')}
-            {rewards.length > 1 && ` +${rewards.length - 1} more`}
+              .join('')}${
+              rewards.length > 1 ? ` +${rewards.length - 1} more` : ''
+            }`}
           </MaskedText>
         </View>
       </View>

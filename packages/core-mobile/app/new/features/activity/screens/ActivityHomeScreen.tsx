@@ -36,7 +36,6 @@ const ActivityHomeScreen = (): JSX.Element => {
   const tabBarHeight = useBottomTabBarHeight()
   const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
-
   const [searchText, setSearchText] = useState('')
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
@@ -144,7 +143,7 @@ const ActivityHomeScreen = (): JSX.Element => {
 
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios: frame.height - (stickyHeaderLayout?.height ?? 0) - insets.top + 10,
+      ios: frame.height - (stickyHeaderLayout?.height ?? 0) - insets.top,
       android: frame.height - insets.top
     })
   }, [frame.height, insets.top, stickyHeaderLayout?.height])

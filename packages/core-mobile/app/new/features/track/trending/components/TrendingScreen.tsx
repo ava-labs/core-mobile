@@ -1,6 +1,4 @@
-import { SPRING_LINEAR_TRANSITION } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
-import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { ErrorState } from 'new/common/components/ErrorState'
@@ -25,8 +23,6 @@ export const TrendingScreen = ({
     refetchTrendingTokens
   } = useWatchlist()
 
-  const isSwapListLoaded = useIsSwapListLoaded()
-
   const emptyComponent = useMemo(() => {
     if (isRefetchingTrendingTokens) {
       return (
@@ -48,12 +44,7 @@ export const TrendingScreen = ({
     )
   }, [isRefetchingTrendingTokens, refetchTrendingTokens])
 
-  const showLoading =
-    isLoadingTrendingTokens ||
-    // each token's swapability depends on the swap list
-    // thus, we need to wait for the swap list to load
-    // so that we can display the buy button accordingly
-    !isSwapListLoaded
+  const showLoading = isLoadingTrendingTokens
 
   if (showLoading) {
     return (
@@ -70,7 +61,6 @@ export const TrendingScreen = ({
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(5)}
-      layout={SPRING_LINEAR_TRANSITION}
       style={{
         flex: 1
       }}>

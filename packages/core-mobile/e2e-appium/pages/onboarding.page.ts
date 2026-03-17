@@ -94,10 +94,6 @@ class OnboardingPage {
     return selectors.getById(onboardingLoc.solanaLaunchTitle)
   }
 
-  get grabber() {
-    return selectors.getById(onboardingLoc.grabber)
-  }
-
   get securityWarningContent() {
     return selectors.getByText(onboardingLoc.securityWarningContent)
   }
@@ -105,7 +101,10 @@ class OnboardingPage {
   get verifyYourRecoveryPhraseTitle() {
     return selectors.getByText(onboardingLoc.verifyYourRecoveryPhraseTitle)
   }
-
+  
+  get bottomSheet() {
+    return selectors.getById(onboardingLoc.bottomSheet)
+  }
   async tapAccessExistingWallet() {
     await actions.tap(this.accessExistingWallet, this.typeInRecoveryPhase)
   }
@@ -155,7 +154,7 @@ class OnboardingPage {
   }
 
   async enterRecoveryPhrase(recoveryPhrase: string) {
-    await actions.type(this.recoveryPhraseInput, recoveryPhrase)
+    await actions.pasteText(this.recoveryPhraseInput, recoveryPhrase, 'Done')
     await actions.tap(this.enterRecoveryPhraseTitle)
   }
 
@@ -224,7 +223,7 @@ class OnboardingPage {
     await actions.delay(1000)
   }
 
-  async dismissBottomSheet(element = this.grabber) {
+  async dismissBottomSheet(element = this.bottomSheet) {
     await actions.waitFor(element, 30000)
     await actions.dragAndDrop(element, [0, 500])
   }
@@ -250,9 +249,7 @@ class OnboardingPage {
 
   async verifyLoggedIn() {
     await actions.waitFor(commonElsPage.accountOne, 40000)
-    await actions.waitFor(commonElsPage.loadingSpinnerHidden)
-    await actions.isNotVisible(commonElsPage.inProgress)
-    await actions.isVisible(portfolioPage.portfolioTokenList)
+    await actions.waitFor(portfolioPage.portfolioBalanceHeader)
     console.log('Verified you are logged in')
   }
 

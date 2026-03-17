@@ -7,12 +7,10 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
 
   const handleSelectToken = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/meldOnrampTokenList')
   }, [navigate])
 
   const handleSelectPaymentMethod = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
     navigate('/meldOnrampPaymentMethod')
   }, [navigate])
 

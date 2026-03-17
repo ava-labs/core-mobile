@@ -67,7 +67,6 @@ class AvalancheSetDeveloperModeHandler
 
     walletConnectCache.setDeveloperModeParams.set(params)
 
-    // @ts-ignore TODO: make routes typesafe
     router.navigate('/toggleDeveloperMode')
 
     return { success: true, value: DEFERRED_RESULT }

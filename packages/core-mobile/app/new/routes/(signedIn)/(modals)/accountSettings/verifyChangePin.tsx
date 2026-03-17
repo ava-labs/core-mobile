@@ -6,7 +6,6 @@ const VerifyChangePinScreen = (): React.JSX.Element => {
   const { replace } = useRouter()
 
   const handleVerifySuccess = async (): Promise<void> => {
-    // @ts-ignore TODO: make routes typesafe
     replace('/accountSettings/changePin')
   }
 

@@ -13,7 +13,6 @@ export default function SetWalletName(): JSX.Element {
     // later, when the wallet is created, we will set the name in the listener
     setPendingSeedlessWalletName(name)
 
-    // @ts-ignore TODO: make routes typesafe
     navigate('/onboarding/seedless/selectAvatar')
   }, [name, setPendingSeedlessWalletName, navigate])
 

@@ -1,4 +1,3 @@
-import { SPRING_LINEAR_TRANSITION } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
@@ -76,7 +75,6 @@ const MarketScreen = ({
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(5)}
-      layout={SPRING_LINEAR_TRANSITION}
       style={{
         flex: 1
       }}>

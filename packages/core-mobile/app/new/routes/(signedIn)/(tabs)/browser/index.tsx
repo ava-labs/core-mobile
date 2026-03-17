@@ -67,7 +67,6 @@ const Browser = (): React.ReactNode => {
       }
 
       // Clear the deeplinkUrl param to mark it as handled
-      // @ts-ignore
       router.setParams({ deeplinkUrl: undefined })
     }
   }, [dispatch, deeplinkUrl, router])

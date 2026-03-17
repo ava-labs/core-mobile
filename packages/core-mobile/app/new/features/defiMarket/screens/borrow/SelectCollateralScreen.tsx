@@ -21,15 +21,14 @@ import { useDeposits } from 'hooks/earn/useDeposits'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import Logger from 'utils/Logger'
+import { WAVAX_ADDRESS } from 'features/swap/consts'
 import { DefiMarket, MarketNames } from '../../types'
 import { DefiMarketAssetLogo } from '../../components/DefiMarketAssetLogo'
-import { useBorrowProtocol } from '../../hooks/useBorrowProtocol'
+import { useSelectedBorrowProtocol } from '../../hooks/useBorrowProtocol'
 import { useAaveSetCollateral } from '../../hooks/aave/useAaveSetCollateral'
 import { useBenqiSetCollateral } from '../../hooks/benqi/useBenqiSetCollateral'
-import {
-  AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS,
-  PROTOCOL_DISPLAY_NAMES
-} from '../../consts'
+import { PROTOCOL_DISPLAY_NAMES } from '../../consts'
+import { useRedirectToBorrowAfterDeposit } from '../../store'
 import errorIcon from '../../../../assets/icons/melting_face.png'
 
 // Track which items are currently being toggled (transaction in progress)
@@ -40,8 +39,9 @@ export const SelectCollateralScreen = (): JSX.Element => {
   const navigation = useNavigation()
   const { theme } = useTheme()
   const { formatCurrency } = useFormatCurrency()
-  const { selectedProtocol } = useBorrowProtocol()
-  const { deposits, isLoading, refresh, isRefreshing } = useDeposits()
+  const [selectedProtocol] = useSelectedBorrowProtocol()
+  const { deposits, isLoading, isFetching, refresh, isRefreshing } =
+    useDeposits()
   const network = useCChainNetwork()
   const provider = useAvalancheEvmProvider()
 
@@ -91,8 +91,7 @@ export const SelectCollateralScreen = (): JSX.Element => {
       try {
         if (deposit.marketName === MarketNames.aave) {
           // Use WAVAX address for AVAX (native token has no contract address)
-          const assetAddress =
-            deposit.asset.contractAddress ?? AAVE_WRAPPED_AVAX_C_CHAIN_ADDRESS
+          const assetAddress = deposit.asset.contractAddress ?? WAVAX_ADDRESS
           await setAaveCollateral({
             assetAddress: assetAddress as Address,
             useAsCollateral: newValue,
@@ -129,17 +128,19 @@ export const SelectCollateralScreen = (): JSX.Element => {
     //   })
     //   .map(deposit => deposit.uniqueMarketId)
 
-    // @ts-ignore TODO: make routes typesafe
     navigate('/borrow/selectAsset')
   }, [navigate])
 
+  const [, setRedirectToBorrow] = useRedirectToBorrowAfterDeposit()
+
   const handleDepositMoreAssets = useCallback(() => {
+    // Set protocol to redirect back to borrow after deposit completes
+    setRedirectToBorrow(selectedProtocol)
     // Dismiss borrow modal and navigate to deposit
     navigation.getParent()?.goBack()
-    // Navigate to deposit flow
-    // @ts-ignore TODO: make routes typesafe
-    navigate('/deposit/onboarding')
-  }, [navigation, navigate])
+    // Navigate to deposit flow, skip onboarding
+    navigate('/deposit/selectAsset')
+  }, [navigation, navigate, selectedProtocol, setRedirectToBorrow])
 
   const hasSelectedCollateral = useMemo(() => {
     // Check if any deposit has collateral enabled on-chain
@@ -229,7 +230,8 @@ export const SelectCollateralScreen = (): JSX.Element => {
   )
 
   const renderEmpty = useCallback(() => {
-    if (isLoading) {
+    // Show loading for initial load or background refetch (but not for pull-to-refresh)
+    if (isLoading || (isFetching && !isRefreshing)) {
       return <LoadingState sx={{ flex: 1 }} />
     }
     return (
@@ -240,12 +242,13 @@ export const SelectCollateralScreen = (): JSX.Element => {
         description="Deposit assets first to use them as collateral"
       />
     )
-  }, [isLoading])
+  }, [isLoading, isFetching, isRefreshing])
 
   const renderFooter = useCallback(() => {
     return (
       <View sx={{ gap: 12 }}>
         <Button
+          testID="next_btn"
           type="primary"
           size="large"
           disabled={!hasSelectedCollateral || filteredDeposits.length === 0}

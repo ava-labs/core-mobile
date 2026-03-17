@@ -35,7 +35,6 @@ export const isSupportedSPLToken = (
 ): boolean =>
   token.networkChainId === ChainId.SOLANA_MAINNET_ID &&
   token.type === TokenType.SPL &&
-  // @ts-ignore: there is no chainId but has token address for solana
   crypto.contractAddress?.toLowerCase() === token.address.toLowerCase()
 
 export const isBtcToken = (
@@ -73,7 +72,6 @@ export const dismissMeldStack = (
     router.canGoBack() && router.back()
   })
   router.navigate({
-    // @ts-ignore TODO: make routes typesafe
     pathname: '/transactionSuccessful',
     params: {
       title: 'Transaction submitted',

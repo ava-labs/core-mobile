@@ -1,14 +1,14 @@
-import { Image, SPRING_LINEAR_TRANSITION } from '@avalabs/k2-alpine'
+import { Image } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { useFavoritesView } from 'features/track/store'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist'
-import { useFavoritesView } from 'features/track/store'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
 
@@ -58,7 +58,6 @@ const FavoriteScreen = ({
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(5)}
-      layout={SPRING_LINEAR_TRANSITION}
       style={{
         flex: 1
       }}>

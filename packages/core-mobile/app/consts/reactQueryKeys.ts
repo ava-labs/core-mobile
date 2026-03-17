@@ -50,13 +50,27 @@ export enum ReactQueryKeys {
   // fusion
   FUSION_SUPPORTED_CHAINS = 'fusionSupportedChains',
   FUSION_TOKENS = 'fusionTokens',
+  FUSION_MINIMUM_TRANSFER_AMOUNT = 'fusionMinimumTransferAmount',
+  FUSION_SWAP_FEE_ESTIMATE = 'fusionSwapFeeEstimate',
+
+  // token aggregator
+  TOKEN_LOOKUP = 'tokenLookup',
+  TOKEN_LOOKUP_WITH_PRICE = 'tokenLookupWithPrice',
 
   // deposit
   AAVE_AVAILABLE_MARKETS = 'aaveAvailableMarkets',
   BENQI_AVAILABLE_MARKETS = 'benqiAvailableMarkets',
   BENQI_ACCOUNT_SNAPSHOT = 'benqiAccountSnapshot',
 
+  // borrow
+  AAVE_USER_BORROW_DATA = 'aaveUserBorrowData',
+  AAVE_USER_RESERVES_DATA = 'aaveUserReservesData',
+  BENQI_USER_BORROW_DATA = 'benqiUserBorrowData',
+
   // rewards
   MERKL_USER_REWARDS = 'merklUserRewards',
-  BENQI_REWARDS = 'benqiRewards'
+  BENQI_REWARDS = 'benqiRewards',
+
+  // notifications
+  NOTIFICATION_CENTER_LIST = 'notificationCenterList'
 }

@@ -16,6 +16,8 @@ import {
   selectIsEarnBlocked
 } from 'store/posthog'
 import Logger from 'utils/Logger'
+import { useQueryClient } from '@tanstack/react-query'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
 
 const NotificationPreferencesScreen = (): JSX.Element => {
   const {
@@ -23,6 +25,17 @@ const NotificationPreferencesScreen = (): JSX.Element => {
   } = useTheme()
 
   const dispatch = useDispatch()
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    return () => {
+      queryClient
+        .invalidateQueries({
+          queryKey: [ReactQueryKeys.NOTIFICATION_CENTER_LIST]
+        })
+        .catch(Logger.error)
+    }
+  }, [queryClient])
   const [showAllowPushNotificationsCard, setShowAllowPushNotificationsCard] =
     useState(false)
   const [blockedChannels, setBlockedChannels] = useState(
