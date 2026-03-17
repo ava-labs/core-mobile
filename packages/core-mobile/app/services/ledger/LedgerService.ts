@@ -24,6 +24,7 @@ import {
 import { assertNotNull } from 'utils/assertions'
 import { Curve } from 'utils/publicKeys'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
+import { bip32 } from 'utils/bip32'
 import {
   AddressInfo,
   LedgerAddressType,
@@ -1092,7 +1093,6 @@ class LedgerService {
       // BIP44: fetch account-level xpubs and derive address-level public keys
       const extendedKeys = await this.getExtendedPublicKeys(accountIndex)
 
-      const { bip32 } = await import('utils/bip32')
 
       const evmXpub = bip32
         .fromPublicKey(
@@ -1213,6 +1213,14 @@ class LedgerService {
   // Attempt to open a specific app on the Ledger device
   // Best-effort, does not guarantee success
   async openApp(app: LedgerAppType): Promise<void> {
+    // Skip if the app is already open — sending the open-app APDU while inside
+    // a running app forces the device to exit and restart into the new app,
+    // causing a BLE disconnect that Android does not reliably recover from.
+    if (this.currentAppType === app) {
+      Logger.info(`${app} app is already open, skipping open request`)
+      return
+    }
+
     try {
       const apdu = this.buildOpenAppApdu(app)
       const response = await this.transport.exchange(apdu)
