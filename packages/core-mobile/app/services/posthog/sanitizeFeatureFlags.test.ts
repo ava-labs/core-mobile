@@ -64,7 +64,7 @@ describe('app/contexts/posthogUtils.ts', () => {
             {
               featureFlags: {
                 [FeatureGates.SOLANA_SUPPORT]: true,
-                [FeatureGates.SWAP]: false
+                [FeatureGates.EARN]: false
               },
               featureFlagPayloads: {
                 [FeatureGates.SOLANA_SUPPORT]: JSON.stringify('a.b.c')
@@ -77,7 +77,7 @@ describe('app/contexts/posthogUtils.ts', () => {
           expect(featureFlags[FeatureGates.SOLANA_SUPPORT]).toBe(false)
         })
         it('the basic feature flags are left in-tact', () => {
-          expect(featureFlags[FeatureGates.SWAP]).toBe(false)
+          expect(featureFlags[FeatureGates.EARN]).toBe(false)
         })
       })
 
@@ -149,12 +149,13 @@ describe('app/contexts/posthogUtils.ts', () => {
             const featureFlags = sanitizeFeatureFlags(
               {
                 featureFlags: {
-                  [FeatureGates.BRIDGE]: false,
+                  [FeatureGates.LEGACY_BRIDGE]: false,
                   [FeatureGates.SOLANA_SUPPORT]: true,
-                  [FeatureGates.SWAP]: false
+                  [FeatureGates.EARN]: false
                 },
                 featureFlagPayloads: {
-                  [FeatureGates.BRIDGE]: JSON.stringify(featureFlagPayloads),
+                  [FeatureGates.LEGACY_BRIDGE]:
+                    JSON.stringify(featureFlagPayloads),
                   [FeatureGates.SOLANA_SUPPORT]:
                     JSON.stringify(featureFlagPayloads)
                 }
@@ -163,9 +164,9 @@ describe('app/contexts/posthogUtils.ts', () => {
             )
 
             expect(featureFlags).toEqual({
-              [FeatureGates.BRIDGE]: false, // Comes disabled, should stay disabled even though it has a version attached.
+              [FeatureGates.LEGACY_BRIDGE]: false, // Comes disabled, should stay disabled even though it has a version attached.
               [FeatureGates.SOLANA_SUPPORT]: isEnabled, // Comes enabled with a payload, gotta be matched against the current version
-              [FeatureGates.SWAP]: false // Comes without a payload, should stay in-tact
+              [FeatureGates.EARN]: false // Comes without a payload, should stay in-tact
             })
           }
         )

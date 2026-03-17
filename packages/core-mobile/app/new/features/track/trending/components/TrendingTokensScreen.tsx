@@ -8,7 +8,7 @@ import React, { useCallback } from 'react'
 import { StyleSheet, ViewStyle } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import { selectIsFusionEnabled, selectIsSwapBlocked } from 'store/posthog'
+import { selectIsFusionEnabled } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { MarketToken, MarketType } from 'store/watchlist'
 import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
@@ -29,7 +29,6 @@ const TrendingTokensScreen = ({
   const { navigateToSwap } = useNavigateToSwap()
   const activeAccount = useSelector(selectActiveAccount)
   const isFusionEnabled = useSelector(selectIsFusionEnabled)
-  const isSwapBlocked = useSelector(selectIsSwapBlocked)
   const { navigateToBuy } = useBuy()
 
   const balanceTotal = useBalanceTotalForAccount(activeAccount)
@@ -48,7 +47,7 @@ const TrendingTokensScreen = ({
 
   const onBuyPress = useCallback(
     (initialTokenIdTo?: string) => {
-      if (isZeroBalance || isSwapBlocked) {
+      if (isZeroBalance) {
         openBuy(initialTokenIdTo)
       } else {
         navigateToSwap({
@@ -57,7 +56,7 @@ const TrendingTokensScreen = ({
         })
       }
     },
-    [isZeroBalance, openBuy, navigateToSwap, isSwapBlocked]
+    [isZeroBalance, openBuy, navigateToSwap]
   )
 
   const renderItem = useCallback(

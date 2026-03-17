@@ -67,7 +67,7 @@ import { AVAX_P_ID } from 'services/balance/const'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { selectActiveAccount } from 'store/account/slice'
 import {
-  selectIsBridgeBlocked,
+  selectIsLegacyBridgeEnabled,
   selectIsBridgeBtcBlocked,
   selectIsBridgeEthBlocked,
   selectIsFusionEnabled,
@@ -103,7 +103,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   >()
   const isFusionEnabled = useSelector(selectIsFusionEnabled)
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
-  const isBridgeBlocked = useSelector(selectIsBridgeBlocked)
+  const isLegacyBridgeEnabled = useSelector(selectIsLegacyBridgeEnabled)
   const isBridgeBtcBlocked = useSelector(selectIsBridgeBtcBlocked)
   const isBridgeEthBlocked = useSelector(selectIsBridgeEthBlocked)
   const { localId, chainId } = useLocalSearchParams<{
@@ -186,7 +186,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     token?.networkChainId
   )
   const isBridgeDisabled = useMemo(() => {
-    if (isBridgeBlocked || isBridgeUIDisabledForNetwork) {
+    if (!isLegacyBridgeEnabled || isBridgeUIDisabledForNetwork) {
       return true
     }
     if (isBridgeBtcBlocked && token?.networkChainId) {
@@ -199,7 +199,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   }, [
     token?.networkChainId,
     isBridgeUIDisabledForNetwork,
-    isBridgeBlocked,
+    isLegacyBridgeEnabled,
     isBridgeBtcBlocked,
     isBridgeEthBlocked
   ])

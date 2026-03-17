@@ -4,11 +4,7 @@ import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { useBalanceTotalForAccount } from 'features/portfolio/hooks/useBalanceTotalForAccount'
-import {
-  selectIsEarnBlocked,
-  selectIsFusionEnabled,
-  selectIsSwapBlocked
-} from 'store/posthog'
+import { selectIsEarnBlocked, selectIsFusionEnabled } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { MarketType } from 'store/watchlist'
 import { selectActiveAccount } from 'store/account'
@@ -32,7 +28,6 @@ export function useTrackTokenActions({
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isFusionEnabled = useSelector(selectIsFusionEnabled)
-  const isSwapBlocked = useSelector(selectIsSwapBlocked)
   const balanceTotal = useBalanceTotalForAccount(activeAccount)
   const isZeroBalance = balanceTotal === 0n
   const { hasEnoughAvax } = useHasEnoughAvaxToStake()
@@ -90,7 +85,7 @@ export function useTrackTokenActions({
       isAVAX,
       marketType,
       isTokenSwappable,
-      isSwapBlocked: isSwapBlocked || isDeveloperMode,
+      isSwapBlocked: isDeveloperMode,
       isZeroBalance,
       hasEnoughAvax,
       isEarnBlocked
@@ -109,7 +104,6 @@ export function useTrackTokenActions({
     isAVAX,
     marketType,
     isTokenSwappable,
-    isSwapBlocked,
     isDeveloperMode,
     isZeroBalance,
     hasEnoughAvax,

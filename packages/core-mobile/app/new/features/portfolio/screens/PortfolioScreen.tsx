@@ -55,7 +55,7 @@ import { WalletType } from 'services/wallet/types'
 import { selectActiveAccount } from 'store/account'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import {
-  selectIsBridgeBlocked,
+  selectIsLegacyBridgeEnabled,
   selectIsMeldOfframpBlocked,
   selectIsInAppDefiBorrowBlocked,
   selectIsFusionEnabled
@@ -90,7 +90,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
   const headerHeight = useEffectiveHeaderHeight()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
-  const isBridgeBlocked = useSelector(selectIsBridgeBlocked)
+  const isLegacyBridgeEnabled = useSelector(selectIsLegacyBridgeEnabled)
   const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
   const isFusionEnabled = useSelector(selectIsFusionEnabled)
 
@@ -256,7 +256,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
       icon: 'receive',
       onPress: handleReceive
     })
-    if (!isBridgeBlocked) {
+    if (isLegacyBridgeEnabled) {
       buttons.push({
         title: ActionButtonTitle.Bridge,
         icon: 'bridge',
@@ -279,7 +279,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleBridge,
     navigateToSwap,
     isMeldOfframpBlocked,
-    isBridgeBlocked,
+    isLegacyBridgeEnabled,
     isFusionEnabled
   ])
 
