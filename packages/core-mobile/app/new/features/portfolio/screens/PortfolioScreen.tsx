@@ -38,7 +38,6 @@ import { useAccountPerformanceSummary } from 'features/portfolio/hooks/useAccoun
 import { useBalanceTotalPriceChangeForAccount } from 'features/portfolio/hooks/useBalanceTotalPriceChangeForAccount'
 import { useSendSelectedToken } from 'features/send/store'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
-import { useNavigateToSwap as useNavigateToSwapV2 } from 'features/swapV2/hooks/useNavigateToSwap'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
@@ -56,7 +55,7 @@ import { WalletType } from 'services/wallet/types'
 import { selectActiveAccount } from 'store/account'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import {
-  selectIsBridgeBlocked,
+  selectIsLegacyBridgeEnabled,
   selectIsMeldOfframpBlocked,
   selectIsInAppDefiBorrowBlocked,
   selectIsFusionEnabled
@@ -91,7 +90,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
   const headerHeight = useEffectiveHeaderHeight()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
-  const isBridgeBlocked = useSelector(selectIsBridgeBlocked)
+  const isLegacyBridgeEnabled = useSelector(selectIsLegacyBridgeEnabled)
   const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
   const isFusionEnabled = useSelector(selectIsFusionEnabled)
 
@@ -107,7 +106,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { navigate, push } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
-  const { navigateToSwap: navigateToSwapV2 } = useNavigateToSwapV2()
+
+  const handleBridge = useCallback(() => {
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/bridge'
+    })
+  }, [navigate])
 
   const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
     LayoutRectangle | undefined
@@ -183,8 +188,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const handleSend = useCallback((): void => {
     setSelectedToken(undefined)
-    // @ts-ignore TODO: make routes typesafe
-    navigate('/send')
+    navigate('/send/send')
   }, [navigate, setSelectedToken])
 
   const handleReceive = useCallback((): void => {
@@ -231,29 +235,15 @@ const PortfolioHomeScreen = (): JSX.Element => {
     opacity: 1 - targetHiddenProgress.value
   }))
 
-  const handleBridge = useCallback(() => {
-    navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/bridge'
-    })
-  }, [navigate])
-
   const actionButtons = useMemo(() => {
     const buttons: ActionButton[] = [
       { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend }
     ]
-    if (!isDeveloperMode) {
+    if (isFusionEnabled) {
       buttons.push({
         title: ActionButtonTitle.Swap,
         icon: 'swap',
         onPress: () => navigateToSwap()
-      })
-    }
-    if (isFusionEnabled) {
-      buttons.push({
-        title: ActionButtonTitle.SwapV2,
-        icon: 'swap',
-        onPress: () => navigateToSwapV2()
       })
     }
     buttons.push({
@@ -266,7 +256,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
       icon: 'receive',
       onPress: handleReceive
     })
-    if (!isBridgeBlocked) {
+    if (isLegacyBridgeEnabled) {
       buttons.push({
         title: ActionButtonTitle.Bridge,
         icon: 'bridge',
@@ -283,15 +273,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
     return buttons
   }, [
     handleSend,
-    isDeveloperMode,
     navigateToBuy,
     navigateToWithdraw,
     handleReceive,
     handleBridge,
     navigateToSwap,
-    navigateToSwapV2,
     isMeldOfframpBlocked,
-    isBridgeBlocked,
+    isLegacyBridgeEnabled,
     isFusionEnabled
   ])
 

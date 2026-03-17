@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
-import { TOKEN_IDS } from 'consts/tokenIds'
+import { tokenIds } from 'consts/tokenIds'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { useTokenLookup, type TokenInfo } from 'common/hooks/useTokenLookup'
-import {
-  SUPPORTED_PLATFORM_ID,
-  SUPPORTED_PLATFORM_ID_TESTNET
-} from 'common/consts/swap'
+import type {
+  Caip2IdAddressPair,
+  InternalId
+} from 'utils/api/generated/tokenAggregator/aggregatorApi.client'
+import { caip2ChainIds } from 'consts/caip2ChainIds'
 import { EvmChainId } from '@avalabs/fusion-sdk'
 import { LocalTokenWithBalance } from 'store/balance'
 import { buildLocalToken } from '../utils/buildLocalToken'
@@ -15,6 +16,27 @@ type Params = {
   initialTokenIdTo?: string
   initialFromCaip2Id?: string
   initialToCaip2Id?: string
+}
+
+// internalIds are either NATIVE-* or CAIP-2 formatted (contain ':')
+// anything else is treated as a raw contract address
+const isRawAddress = (id: string): boolean =>
+  !id.startsWith('NATIVE') && !id.includes(':')
+
+// Build the lookup entry for the token aggregator API
+const toLookupEntry = (
+  id: string,
+  caip2Id?: string
+): Caip2IdAddressPair | InternalId =>
+  isRawAddress(id) && caip2Id
+    ? { caip2Id, address: id.toLowerCase() }
+    : { internalId: id.startsWith('NATIVE') ? id : id.toLowerCase() }
+
+// Build the map key matching tokenToKey in useTokensWithPrice
+const toTokensKey = (id: string, caip2Id?: string): string => {
+  if (isRawAddress(id) && caip2Id)
+    return `${caip2Id.toLowerCase()}-${id.toLowerCase()}`
+  return id.startsWith('NATIVE') ? id : id.toLowerCase()
 }
 
 export function useFusionTokenLookup({
@@ -35,13 +57,22 @@ export function useFusionTokenLookup({
   btcBLocalToken: LocalTokenWithBalance | undefined
 } {
   const lookupTokenIds = useMemo(() => {
-    const ids: Array<{ internalId: string }> = [{ internalId: TOKEN_IDS.BTC_B }]
+    const ids: Array<Caip2IdAddressPair | InternalId> = [
+      { internalId: tokenIds.BTC_B }
+    ]
     if (params.initialTokenIdFrom)
-      ids.push({ internalId: params.initialTokenIdFrom })
+      ids.push(
+        toLookupEntry(params.initialTokenIdFrom, params.initialFromCaip2Id)
+      )
     if (params.initialTokenIdTo)
-      ids.push({ internalId: params.initialTokenIdTo })
+      ids.push(toLookupEntry(params.initialTokenIdTo, params.initialToCaip2Id))
     return ids
-  }, [params.initialTokenIdFrom, params.initialTokenIdTo])
+  }, [
+    params.initialTokenIdFrom,
+    params.initialTokenIdTo,
+    params.initialFromCaip2Id,
+    params.initialToCaip2Id
+  ])
 
   const { data: tokens, isLoading: isTokensLoading } =
     useTokenLookup(lookupTokenIds)
@@ -57,14 +88,12 @@ export function useFusionTokenLookup({
   }, [params.initialToCaip2Id])
 
   const btcBLocalToken = useMemo(() => {
-    const tokenInfo = tokens[TOKEN_IDS.BTC_B.toLowerCase()]
+    const tokenInfo = tokens[tokenIds.BTC_B.toLowerCase()]
     if (!tokenInfo) return undefined
     return buildLocalToken({
       accountTokens,
       tokenInfo,
-      caip2Id: isDeveloperMode
-        ? SUPPORTED_PLATFORM_ID_TESTNET
-        : SUPPORTED_PLATFORM_ID,
+      caip2Id: isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN,
       chainId: isDeveloperMode
         ? EvmChainId.AVALANCHE_TESTNET
         : EvmChainId.AVALANCHE_MAINNET
@@ -90,7 +119,8 @@ export function useFusionTokenLookup({
 
     let initialFromToken: LocalTokenWithBalance | undefined
     if (initialTokenIdFrom) {
-      const fromTokenInfo = tokens[initialTokenIdFrom]
+      const fromTokenInfo =
+        tokens[toTokensKey(initialTokenIdFrom, params.initialFromCaip2Id)]
 
       initialFromToken =
         fromTokenInfo &&
@@ -108,7 +138,8 @@ export function useFusionTokenLookup({
 
     let initialToToken: LocalTokenWithBalance | undefined
     if (initialTokenIdTo) {
-      const toTokenInfo = tokens[initialTokenIdTo]
+      const toTokenInfo =
+        tokens[toTokensKey(initialTokenIdTo, params.initialToCaip2Id)]
 
       initialToToken =
         toTokenInfo &&

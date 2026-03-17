@@ -1,13 +1,7 @@
 import { ChainId } from '@avalabs/core-chains-sdk'
 
 export enum UI {
-  Swap = 'Swap',
   Bridge = 'Bridge'
-}
-
-// The list of features we want to enable on certain networks (whitelist)
-const enabledUIs: Partial<Record<UI, number[]>> = {
-  [UI.Swap]: [ChainId.AVALANCHE_MAINNET_ID, ChainId.SOLANA_MAINNET_ID]
 }
 
 // The list of features we want to disable on certain networks (blacklist)
@@ -25,10 +19,6 @@ export const useIsUIDisabledForNetwork = (
   chainId?: number
 ): boolean => {
   if (chainId === undefined) {
-    return false
-  }
-
-  if (enabledUIs[ui]?.includes(chainId)) {
     return false
   }
 

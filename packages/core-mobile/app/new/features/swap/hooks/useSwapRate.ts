@@ -1,26 +1,47 @@
 import { useMemo } from 'react'
 import { LocalTokenWithBalance } from 'store/balance'
-import { isEvmSwapQuote, isSvmSwapQuote, SwapQuote } from '../types'
-import { calculateRate as calculateEvmRate } from '../utils/evm/calculateRate'
-import { calculateRate as calculateSvmRate } from '../utils/svm/calculateRate'
+import { formatUnits } from 'viem'
+import type { Quote } from '../types'
 
 export const useSwapRate = ({
   quote,
   fromToken,
   toToken
 }: {
-  quote: SwapQuote | undefined
+  quote: Quote | null
   fromToken: LocalTokenWithBalance | undefined
   toToken: LocalTokenWithBalance | undefined
 }): number => {
   return useMemo(() => {
-    if (quote) {
-      if (isEvmSwapQuote(quote)) {
-        return calculateEvmRate(quote)
-      } else if (isSvmSwapQuote(quote) && fromToken && toToken) {
-        return calculateSvmRate({ quote: quote, fromToken, toToken })
-      }
+    if (!fromToken || !toToken || !quote) {
+      return 0
     }
-    return 0
+
+    // Type assertion needed due to complex union type
+    const fromDecimals = (fromToken as { decimals?: number }).decimals
+    const toDecimals = (toToken as { decimals?: number }).decimals
+
+    if (fromDecimals === undefined) {
+      throw new Error(
+        `Missing decimals for token: ${fromToken.symbol ?? 'unknown'}`
+      )
+    }
+
+    if (toDecimals === undefined) {
+      throw new Error(
+        `Missing decimals for token: ${toToken.symbol ?? 'unknown'}`
+      )
+    }
+
+    const amountInDecimal = parseFloat(
+      formatUnits(quote.amountIn, fromDecimals)
+    )
+    const amountOutDecimal = parseFloat(
+      formatUnits(quote.amountOut, toDecimals)
+    )
+
+    if (amountInDecimal === 0) return 0
+
+    return amountOutDecimal / amountInDecimal
   }, [quote, fromToken, toToken])
 }

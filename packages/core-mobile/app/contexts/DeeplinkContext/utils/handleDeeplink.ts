@@ -90,7 +90,7 @@ export const handleDeeplink = ({
       } else {
         const baseUrl = deeplink.url.split('?')[0]?.toLowerCase()
         if (baseUrl && !lowercasedDeeplinkWhitelist.includes(baseUrl)) {
-          Logger.warn(`${deeplink.url} is not allowed to be opened in the app`)
+          Logger.error(`${deeplink.url} is not allowed to be opened in the app`)
           return
         }
         const path = deeplink.url.split(':/')[1]

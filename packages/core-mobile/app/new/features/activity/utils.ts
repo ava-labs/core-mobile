@@ -53,7 +53,7 @@ export function getDateGroups(transactions: Transaction[]): {
 export function buildGroupedData(
   todayTxs: Transaction[],
   monthGroups: { [key: string]: Transaction[] },
-  pendingBridgeTxs: (BridgeTransaction | BridgeTransfer)[]
+  pendingBridgeTxs: (BridgeTransaction | BridgeTransfer)[] = []
 ): ActivityListItem[] {
   const now = new Date()
   const flatData: ActivityListItem[] = []
