@@ -716,21 +716,9 @@ export class LedgerWallet implements Wallet {
       Logger.info('Full serialized transaction:', serializedTx)
       Logger.info('Unsigned transaction (without type prefix):', unsignedTx)
 
-      let signature: SignatureRSV
-
-      if (isAvalanche) {
-        signature = await this.getCChainSignature({
-          transport,
-          derivationPath,
-          unsignedTx
-        })
-      } else {
-        signature = await this.getEvmSignature({
-          transport,
-          derivationPath,
-          unsignedTx
-        })
-      }
+      const signature: SignatureRSV = await (isAvalanche
+        ? this.getCChainSignature({ transport, derivationPath, unsignedTx })
+        : this.getEvmSignature({ transport, derivationPath, unsignedTx }))
 
       // Create the signed transaction
       const signedTx = Transaction.from({
