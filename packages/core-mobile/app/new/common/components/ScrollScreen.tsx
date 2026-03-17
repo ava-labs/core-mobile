@@ -119,7 +119,6 @@ export const ScrollScreen = ({
   const headerRef = useRef<View>(null)
   const contentHeaderHeight = useSharedValue<number>(0)
   const footerHeight = useSharedValue<number>(0)
-  const footerRef = useRef<View>(null)
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
@@ -153,12 +152,12 @@ export const ScrollScreen = ({
     })
   }, [contentHeaderHeight])
 
-  useLayoutEffect(() => {
-    // eslint-disable-next-line max-params
-    footerRef?.current?.measure((x, y, width, height) => {
-      footerHeight.value = height
-    })
-  }, [footerHeight])
+  const onFooterLayout = useCallback(
+    (event: { nativeEvent: { layout: { height: number } } }) => {
+      footerHeight.value = event.nativeEvent.layout.height
+    },
+    [footerHeight]
+  )
 
   const animatedBorderStyle = useAnimatedStyle(() => {
     const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
@@ -231,6 +230,22 @@ export const ScrollScreen = ({
               offset={{
                 opened: insets.bottom
               }}>
+              <View onLayout={onFooterLayout}>
+                <LinearGradientBottomWrapper>
+                  <Animated.View
+                    style={{
+                      paddingHorizontal: 16,
+                      paddingBottom: insets.bottom + 16
+                    }}>
+                    {footer}
+                  </Animated.View>
+                </LinearGradientBottomWrapper>
+              </View>
+            </KeyboardStickyView>
+          )
+        } else {
+          return (
+            <View onLayout={onFooterLayout}>
               <LinearGradientBottomWrapper>
                 <Animated.View
                   style={{
@@ -240,26 +255,20 @@ export const ScrollScreen = ({
                   {footer}
                 </Animated.View>
               </LinearGradientBottomWrapper>
-            </KeyboardStickyView>
-          )
-        } else {
-          return (
-            <LinearGradientBottomWrapper>
-              <Animated.View
-                style={{
-                  paddingHorizontal: 16,
-                  paddingBottom: insets.bottom + 16
-                }}>
-                {footer}
-              </Animated.View>
-            </LinearGradientBottomWrapper>
+            </View>
           )
         }
       }
     }
 
     return null
-  }, [renderFooter, shouldAvoidKeyboard, disableStickyFooter, insets.bottom])
+  }, [
+    renderFooter,
+    shouldAvoidKeyboard,
+    disableStickyFooter,
+    insets.bottom,
+    onFooterLayout
+  ])
 
   const renderGrabber = useCallback(() => {
     if (isModal)
@@ -366,7 +375,9 @@ export const ScrollScreen = ({
         contentContainerStyle={[
           props?.contentContainerStyle,
           {
-            paddingBottom: 32,
+            paddingBottom: renderFooter
+              ? footerHeight.value + 16
+              : insets.bottom + 24,
             paddingTop: headerHeight
           }
         ]}
