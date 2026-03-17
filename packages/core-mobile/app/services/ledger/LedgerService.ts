@@ -1093,7 +1093,6 @@ class LedgerService {
       // BIP44: fetch account-level xpubs and derive address-level public keys
       const extendedKeys = await this.getExtendedPublicKeys(accountIndex)
 
-
       const evmXpub = bip32
         .fromPublicKey(
           Buffer.from(extendedKeys.evm.key, 'hex'),
