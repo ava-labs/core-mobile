@@ -607,7 +607,7 @@ export class LedgerWallet implements Wallet {
 
     // Build the account path based on chain
     // For X/P chain: m/44'/9000'/{accountIndex}'
-    // For C chain (EVM): m/44'/60'/{accountIndex}'
+    // For C chain (EVM): bip44 uses m/44'/60'/{accountIndex}' or Ledger Live (m/44'/60'/0') depending on wallet type
     const accountPath =
       chainAlias === 'C'
         ? this.isBIP44()
@@ -616,7 +616,7 @@ export class LedgerWallet implements Wallet {
         : `m/44'/9000'/${accountIndex}'`
 
     // Build signing paths from external indices
-    // For C-chain: always use 0/0 (first external address)
+    // For C-chain: bip44 uses 0/<accountIndex> or Ledger Live always use 0/0 (first external address)
     // For X/P-chain: use external indices from UTXO analysis (default to [0] → '0/0' if empty)
     const externalIndices = transaction.externalIndices ?? []
     const hasIndices = externalIndices.length > 0
