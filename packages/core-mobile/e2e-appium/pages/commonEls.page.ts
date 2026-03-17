@@ -282,6 +282,10 @@ class CommonElsPage {
     return selectors.getById(`list_item__${name}`)
   }
 
+  listItemRightValue(name: string) {
+    return selectors.getById(`right_value__${name}`)
+  }
+
   async filter(
     item = commonEls.cChain_2,
     filterDropdown = this.filterDropdown
