@@ -9,6 +9,7 @@ import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import {
+  LayoutChangeEvent,
   LayoutRectangle,
   Platform,
   StyleProp,
@@ -118,8 +119,7 @@ export const ScrollScreen = ({
 
   const headerRef = useRef<View>(null)
   const contentHeaderHeight = useSharedValue<number>(0)
-  const footerHeight = useSharedValue<number>(0)
-  const footerRef = useRef<View>(null)
+  const [footerMeasuredHeight, setFooterMeasuredHeight] = useState(0)
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
@@ -153,12 +153,9 @@ export const ScrollScreen = ({
     })
   }, [contentHeaderHeight])
 
-  useLayoutEffect(() => {
-    // eslint-disable-next-line max-params
-    footerRef?.current?.measure((x, y, width, height) => {
-      footerHeight.value = height
-    })
-  }, [footerHeight])
+  const onFooterLayout = useCallback((event: LayoutChangeEvent) => {
+    setFooterMeasuredHeight(event.nativeEvent.layout.height)
+  }, [])
 
   const animatedBorderStyle = useAnimatedStyle(() => {
     const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
@@ -224,26 +221,8 @@ export const ScrollScreen = ({
     if (renderFooter) {
       const footer = renderFooter()
       if (footer) {
-        if (shouldAvoidKeyboard) {
-          return (
-            <KeyboardStickyView
-              enabled={!disableStickyFooter}
-              offset={{
-                opened: insets.bottom
-              }}>
-              <LinearGradientBottomWrapper>
-                <Animated.View
-                  style={{
-                    paddingHorizontal: 16,
-                    paddingBottom: insets.bottom + 16
-                  }}>
-                  {footer}
-                </Animated.View>
-              </LinearGradientBottomWrapper>
-            </KeyboardStickyView>
-          )
-        } else {
-          return (
+        const footerInner = (
+          <View onLayout={onFooterLayout}>
             <LinearGradientBottomWrapper>
               <Animated.View
                 style={{
@@ -253,13 +232,33 @@ export const ScrollScreen = ({
                 {footer}
               </Animated.View>
             </LinearGradientBottomWrapper>
+          </View>
+        )
+
+        if (shouldAvoidKeyboard) {
+          return (
+            <KeyboardStickyView
+              enabled={!disableStickyFooter}
+              offset={{
+                opened: insets.bottom
+              }}>
+              {footerInner}
+            </KeyboardStickyView>
           )
         }
+
+        return footerInner
       }
     }
 
     return null
-  }, [renderFooter, shouldAvoidKeyboard, disableStickyFooter, insets.bottom])
+  }, [
+    renderFooter,
+    shouldAvoidKeyboard,
+    disableStickyFooter,
+    insets.bottom,
+    onFooterLayout
+  ])
 
   const renderGrabber = useCallback(() => {
     if (isModal)
@@ -321,7 +320,7 @@ export const ScrollScreen = ({
         <KeyboardScrollView
           testID={testID}
           extraKeyboardSpace={
-            disableStickyFooter ? -footerHeight.value - insets.bottom : 0
+            disableStickyFooter ? -footerMeasuredHeight - insets.bottom : 0
           }
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
@@ -335,7 +334,7 @@ export const ScrollScreen = ({
             {
               paddingBottom: disableStickyFooter
                 ? insets.bottom + 24
-                : footerHeight.value + 16,
+                : footerMeasuredHeight + 16,
               paddingTop: headerHeight
             }
           ]}
@@ -366,7 +365,9 @@ export const ScrollScreen = ({
         contentContainerStyle={[
           props?.contentContainerStyle,
           {
-            paddingBottom: 32,
+            paddingBottom: renderFooter
+              ? footerMeasuredHeight + 16
+              : insets.bottom + 24,
             paddingTop: headerHeight
           }
         ]}
