@@ -29,13 +29,13 @@ import {
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Transport from '@ledgerhq/hw-transport'
 import { networks } from 'bitcoinjs-lib'
-import { utils as avalancheUtils, networkIDs } from '@avalabs/avalanchejs'
 import bs58 from 'bs58'
 import { TransactionRequest, TypedDataEncoder } from 'ethers'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import LedgerService from 'services/ledger/LedgerService'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import {
+  LedgerAddressType,
   LedgerAppType,
   LedgerDerivationPathType,
   LedgerWalletData,
@@ -631,7 +631,6 @@ export class LedgerWallet implements Wallet {
     }
   }
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
   public async signEvmTransaction({
     accountIndex,
     transaction,
@@ -986,7 +985,7 @@ export class LedgerWallet implements Wallet {
     visited.add('EIP712Domain')
 
     // Recursively collect all types referenced by the primary type
-    const collectDependencies = (typeName: string) => {
+    const collectDependencies = (typeName: string): void => {
       if (visited.has(typeName) || !types[typeName]) {
         return
       }
@@ -1106,7 +1105,7 @@ export class LedgerWallet implements Wallet {
     return this.getHexSignature(signature)
   }
 
-  private validateTypedData(typedData: TypedData<MessageTypes>) {
+  private validateTypedData(typedData: TypedData<MessageTypes>): void {
     if (!typedData.domain) {
       throw new Error('TypedData missing required field: domain')
     }
@@ -1303,31 +1302,24 @@ export class LedgerWallet implements Wallet {
     await this.handleAppConnection(appType)
 
     const addresses = await LedgerService.getAllAddresses(index, 1, isTestnet)
-    const addressC = addresses.find(addr => addr.id.includes('evm'))?.address
-    const addressAVM = addresses.find(addr =>
-      addr.id.includes('avalanche-x')
-    )?.address
-    const addressPVM = addresses.find(addr =>
-      addr.id.includes('avalanche-p')
-    )?.address
-    const addressBTC = addresses.find(addr =>
-      addr.id.includes('bitcoin')
-    )?.address
+    const findAddress = (type: LedgerAddressType): string | undefined =>
+      addresses.find(addr => addr.type === type)?.address
 
-    if (!addressC || !addressAVM || !addressPVM || !addressBTC) {
+    const addressC = findAddress(LedgerAddressType.EVM)
+    const addressAVM = findAddress(LedgerAddressType.AVALANCHE_X)
+    const addressPVM = findAddress(LedgerAddressType.AVALANCHE_P)
+    const addressCoreEth = findAddress(LedgerAddressType.AVALANCHE_CORE_ETH)
+    const addressBTC = findAddress(LedgerAddressType.BITCOIN)
+
+    if (
+      !addressC ||
+      !addressAVM ||
+      !addressPVM ||
+      !addressCoreEth ||
+      !addressBTC
+    ) {
       throw new Error('Failed to derive all addresses from Ledger')
     }
-
-    // Derive C-chain bech32 address from EVM address
-    // CoreEth is the EVM address (hex) encoded in bech32 format with C- prefix
-    const hrp = isTestnet ? networkIDs.FujiHRP : networkIDs.MainnetHRP
-    const evmAddressBytes = new Uint8Array(
-      Buffer.from(addressC.replace(/^0x/, ''), 'hex')
-    )
-    const addressCoreEth = `C-${avalancheUtils.formatBech32(
-      hrp,
-      evmAddressBytes
-    )}`
 
     // Get extended public keys for this account (device is already connected)
     const extendedKeys = await LedgerService.getExtendedPublicKeys(index)

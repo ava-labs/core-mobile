@@ -2,7 +2,11 @@ import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Avalanche, BitcoinProviderAbstract } from '@avalabs/core-wallets-sdk'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { Curve } from 'utils/publicKeys'
-import { LedgerAppType, LedgerDerivationPathType } from 'services/ledger/types'
+import {
+  LedgerAddressType,
+  LedgerAppType,
+  LedgerDerivationPathType
+} from 'services/ledger/types'
 
 // Mock dependencies
 jest.mock(
@@ -32,7 +36,9 @@ jest.mock('services/ledger/LedgerService', () => ({
     }),
     waitForApp: jest.fn().mockResolvedValue(undefined),
     isConnected: jest.fn().mockReturnValue(true),
-    getCurrentAppType: jest.fn().mockReturnValue('AVALANCHE')
+    getCurrentAppType: jest.fn().mockReturnValue('AVALANCHE'),
+    getAllAddresses: jest.fn(),
+    getExtendedPublicKeys: jest.fn()
   }
 }))
 
@@ -163,6 +169,9 @@ const mockEnsureConnection = LedgerService.ensureConnection as jest.Mock
 const mockWaitForApp = LedgerService.waitForApp as jest.Mock
 const mockIsConnected = LedgerService.isConnected as jest.Mock
 const mockGetCurrentAppType = LedgerService.getCurrentAppType as jest.Mock
+const mockGetAllAddresses = LedgerService.getAllAddresses as jest.Mock
+const mockGetExtendedPublicKeys =
+  LedgerService.getExtendedPublicKeys as jest.Mock
 
 // Mock transport
 class MockTransport {
@@ -213,6 +222,14 @@ describe('LedgerWallet', () => {
     mockWaitForApp.mockResolvedValue(undefined)
     mockIsConnected.mockReturnValue(true)
     mockGetCurrentAppType.mockReturnValue('AVALANCHE')
+    mockGetAllAddresses.mockResolvedValue([])
+    mockGetExtendedPublicKeys.mockResolvedValue({
+      evm: { key: '02'.repeat(33), chainCode: '03'.repeat(32) },
+      avalanche: { key: '04'.repeat(33), chainCode: '05'.repeat(32) }
+    })
+    ;(bip32.fromPublicKey as jest.Mock).mockReturnValue({
+      toBase58: jest.fn().mockReturnValue('mock-xpub')
+    })
     ;(isAvalancheChainId as jest.Mock).mockReturnValue(false)
 
     // Create wallet instance with correct constructor signature
@@ -878,6 +895,47 @@ describe('LedgerWallet', () => {
           expect.any(Number)
         )
       })
+    })
+  })
+
+  describe('addAccount', () => {
+    it('should persist the device-derived Avalanche C address as addressCoreEth', async () => {
+      mockGetAllAddresses.mockResolvedValue([
+        {
+          id: `${LedgerAddressType.EVM}-0`,
+          type: LedgerAddressType.EVM,
+          address: '0x1234'
+        },
+        {
+          id: `${LedgerAddressType.AVALANCHE_X}-0`,
+          type: LedgerAddressType.AVALANCHE_X,
+          address: 'X-fuji1xaddress'
+        },
+        {
+          id: `${LedgerAddressType.AVALANCHE_P}-0`,
+          type: LedgerAddressType.AVALANCHE_P,
+          address: 'P-fuji1paddress'
+        },
+        {
+          id: `${LedgerAddressType.AVALANCHE_CORE_ETH}-0`,
+          type: LedgerAddressType.AVALANCHE_CORE_ETH,
+          address: 'C-fuji1correctatomic'
+        },
+        {
+          id: `${LedgerAddressType.BITCOIN}-0`,
+          type: LedgerAddressType.BITCOIN,
+          address: 'bc1qbtcaddress'
+        }
+      ])
+
+      const result = await ledgerWallet.addAccount({
+        index: 0,
+        isTestnet: true,
+        walletId: mockWalletId,
+        name: 'Ledger 1'
+      })
+
+      expect(result.account.addressCoreEth).toBe('C-fuji1correctatomic')
     })
   })
 
