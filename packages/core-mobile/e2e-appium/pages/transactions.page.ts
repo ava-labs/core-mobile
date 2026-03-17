@@ -148,7 +148,7 @@ class TransactionsPage {
   }
 
   get reviewStakeTitle() {
-    return selectors.getBySomeText(txLoc.reviewStakeTitle)
+    return selectors.getByText(txLoc.reviewStakeTitle)
   }
 
   get maxBtn() {
@@ -164,8 +164,11 @@ class TransactionsPage {
   }
 
   async dismissTransactionOnboarding() {
-    if (await actions.getVisible(this.transactionOnboardingNext)) {
-      await actions.tap(this.transactionOnboardingNext)
+    try {
+      await actions.waitFor(this.transactionOnboardingNext, 10000)
+      await actions.click(this.transactionOnboardingNext)
+    } catch (e) {
+      console.log('Transaction onboarding not found')
     }
   }
 
@@ -511,11 +514,13 @@ class TransactionsPage {
     await this.tapWithdraw()
     await this.tapNext()
     await actions.tap(selectors.getById(`list_item__${token}`))
-    await actions.type(selectors.getById('$ fiat_amount_input  '), '100')
-    await actions.waitFor(this.errorMsg)
+    await actions.type(selectors.getById(txLoc.fiatAmountInput), '100')
     await actions.isNotVisible(this.nextBtn)
     await actions.isVisible(this.nextBtnDisabled)
     await commonElsPage.dismissBottomSheet()
+    if (await actions.getVisible(commonElsPage.bottomSheet)) {
+      await commonElsPage.dismissBottomSheet()
+    }
   }
 
   async verifyLocale(locale: string, currency: string) {

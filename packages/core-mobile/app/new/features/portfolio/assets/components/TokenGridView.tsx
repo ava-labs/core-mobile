@@ -82,9 +82,10 @@ export const TokenGridView = ({
               sx={{ lineHeight: 16 }}>
               {tokenNameForDisplay}
             </Text>
-            <View sx={{ flexDirection: 'row', flexShrink: 1 }}>
+            <View
+              testID={`grid_token_balance__${index}`}
+              sx={{ flexDirection: 'row', flexShrink: 1 }}>
               <MaskedText
-                testID={`grid_token_balance__${index}`}
                 shouldMask={isPrivacyModeEnabled}
                 maskWidth={65}
                 numberOfLines={1}
