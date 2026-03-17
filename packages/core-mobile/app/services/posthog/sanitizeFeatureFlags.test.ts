@@ -7,12 +7,12 @@ describe('app/contexts/posthogUtils.ts', () => {
       expect(
         sanitizeFeatureFlags({
           featureFlags: {
-            'bridge-feature': true,
+            [FeatureGates.LEGACY_BRIDGE]: true,
             'unknown-prop': true
           }
         })
       ).toStrictEqual({
-        'bridge-feature': true
+        [FeatureGates.LEGACY_BRIDGE]: true
       })
     })
 
