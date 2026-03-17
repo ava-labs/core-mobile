@@ -9,6 +9,7 @@ import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import {
+  LayoutChangeEvent,
   LayoutRectangle,
   Platform,
   StyleProp,
@@ -118,7 +119,7 @@ export const ScrollScreen = ({
 
   const headerRef = useRef<View>(null)
   const contentHeaderHeight = useSharedValue<number>(0)
-  const footerHeight = useSharedValue<number>(0)
+  const [footerMeasuredHeight, setFooterMeasuredHeight] = useState(0)
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
@@ -152,12 +153,9 @@ export const ScrollScreen = ({
     })
   }, [contentHeaderHeight])
 
-  const onFooterLayout = useCallback(
-    (event: { nativeEvent: { layout: { height: number } } }) => {
-      footerHeight.value = event.nativeEvent.layout.height
-    },
-    [footerHeight]
-  )
+  const onFooterLayout = useCallback((event: LayoutChangeEvent) => {
+    setFooterMeasuredHeight(event.nativeEvent.layout.height)
+  }, [])
 
   const animatedBorderStyle = useAnimatedStyle(() => {
     const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
@@ -330,7 +328,7 @@ export const ScrollScreen = ({
         <KeyboardScrollView
           testID={testID}
           extraKeyboardSpace={
-            disableStickyFooter ? -footerHeight.value - insets.bottom : 0
+            disableStickyFooter ? -footerMeasuredHeight - insets.bottom : 0
           }
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
@@ -344,7 +342,7 @@ export const ScrollScreen = ({
             {
               paddingBottom: disableStickyFooter
                 ? insets.bottom + 24
-                : footerHeight.value + 16,
+                : footerMeasuredHeight + 16,
               paddingTop: headerHeight
             }
           ]}
@@ -376,7 +374,7 @@ export const ScrollScreen = ({
           props?.contentContainerStyle,
           {
             paddingBottom: renderFooter
-              ? footerHeight.value + 16
+              ? footerMeasuredHeight + 16
               : insets.bottom + 24,
             paddingTop: headerHeight
           }
