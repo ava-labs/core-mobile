@@ -188,7 +188,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const handleSend = useCallback((): void => {
     setSelectedToken(undefined)
-    navigate('/send/send')
+    navigate('/send/recentContacts')
   }, [navigate, setSelectedToken])
 
   const handleReceive = useCallback((): void => {

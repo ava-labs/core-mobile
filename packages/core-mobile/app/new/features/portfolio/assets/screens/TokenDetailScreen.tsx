@@ -214,7 +214,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const handleSend = useCallback((): void => {
     setSelectedToken(token)
     navigate({
-      pathname: '/send/send',
+      pathname: '/send/recentContacts',
       params: { vmName: getNetwork(token?.networkChainId)?.vmName }
     })
   }, [getNetwork, navigate, setSelectedToken, token])
