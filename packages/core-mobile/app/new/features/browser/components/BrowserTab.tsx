@@ -43,6 +43,7 @@ import {
   selectTab,
   updateActiveHistoryForTab
 } from 'store/browser/slices/tabs'
+import { selectIsInjectedProviderBlocked } from 'store/posthog/slice'
 import Logger from 'utils/Logger'
 import ErrorIcon from '../../../assets/icons/melting_face.png'
 import { useBrowserContext } from '../BrowserContext'
@@ -82,12 +83,13 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     const { providerShimJs, handleProviderMessage, handleDomainMetadata } =
       useEvmInjectedProvider(webViewRef)
 
-    // When the EVM provider shim is available, use it instead of the
-    // legacy coreConnectInterceptor that rejects all window.ethereum calls.
-    const INJECTED_PROVIDER_DEMO_ENABLED = false
+    const isInjectedProviderBlocked = useSelector(
+      selectIsInjectedProviderBlocked
+    )
+    const injectedProviderEnabled = !isInjectedProviderBlocked
 
     // Provider shim runs BEFORE page scripts so dApps see window.ethereum immediately.
-    const injectedBeforeContentLoaded = INJECTED_PROVIDER_DEMO_ENABLED
+    const injectedBeforeContentLoaded = injectedProviderEnabled
       ? providerShimJs
       : coreConnectInterceptor
 
@@ -328,7 +330,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
               break
             }
             case 'window_ethereum_used': {
-              if (INJECTED_PROVIDER_DEMO_ENABLED) break
+              if (injectedProviderEnabled) break
               const sessions = WalletConnectService.getSessions()
               if (
                 sessions.find(session =>

@@ -393,7 +393,7 @@ graph LR
 - [x] Injection guards (skip XML, PDF, non-HTML pages)
 - [x] `window.core` and `window.avalanche` globals for library compatibility
 - [x] Legacy method support (`enable()`, `send()`, `sendAsync()`)
-- [x] Feature flag (`INJECTED_PROVIDER_DEMO_ENABLED`) for easy toggle
+- [x] PostHog Feature flag (`INJECTED_PROVIDER`)
 
 ---
 

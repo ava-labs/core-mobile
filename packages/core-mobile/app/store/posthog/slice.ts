@@ -546,6 +546,14 @@ export const selectIsAlternateAppIconsBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsInjectedProviderBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.INJECTED_PROVIDER] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions
