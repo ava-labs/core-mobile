@@ -91,13 +91,14 @@ export const TokenListView = ({
                 {tokenNameForDisplay}
               </Text>
               <MaskedText
-                testID={`list_token_balance__${index}`}
                 shouldMask={isPrivacyModeEnabled}
                 maskWidth={55}
                 sx={{ lineHeight: 16, flex: 1 }}
                 ellipsizeMode="tail"
                 numberOfLines={1}>
-                <View sx={{ flexDirection: 'row' }}>
+                <View
+                  testID={`list_token_balance__${index}`}
+                  sx={{ flexDirection: 'row' }}>
                   <SubTextNumber
                     number={token.balanceDisplayValue}
                     textVariant="body2"

@@ -104,5 +104,8 @@ export default {
   beamL1: 'Beam L1',
   customAvatar: 'custom_avatar',
   nameThisNetworkBtn: 'Name this network',
-  saveNetworkBtn: 'save_network_btn'
+  saveNetworkBtn: 'save_network_btn',
+  appIcon: 'App icon',
+  appIconTitle: 'Customize\nthe app icon',
+  default: 'Default'
 }

@@ -109,7 +109,7 @@ async function tap(
     await waitFor(ele)
     await ele.waitForEnabled()
     await delay(1000)
-    await ele.tap()
+    await ele.click()
     const selector = await ele.selector
     console.log(`Tapped "${selector}"`)
     if (expectedEle) {
@@ -117,7 +117,7 @@ async function tap(
         await waitFor(expectedEle)
       } catch (e) {
         if (await getVisible(ele)) {
-          await ele.tap()
+          await ele.click()
           console.log(`Tapped again "${selector}"`)
         } else {
           console.log(`Skipping tap on "${selector}" because it is not visible`)

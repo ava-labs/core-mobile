@@ -813,6 +813,46 @@ class Settings {
     await actions.tap(selectors.getById(`${appearance}_unselected`))
   }
 
+  async tapAppIcon() {
+    await actions.tap(common.listItem(settings.appIcon))
+  }
+
+  async verifyAppIconScreen(selectedIconId: string) {
+    await actions.waitFor(selectors.getById(settings.appIconTitle))
+    const appIcons = [
+      'Light',
+      'Old',
+      'Bling',
+      'Shiny',
+      'Marker',
+      'Minimalism',
+      'Neon'
+    ]
+    if (selectedIconId !== 'Default') {
+      const idx = appIcons.indexOf(selectedIconId)
+      if (idx !== -1) {
+        appIcons.splice(idx, 1)
+      }
+      appIcons.push('Default')
+    }
+    await actions.isVisible(
+      selectors.getById(`app_icon_${selectedIconId}_selected`)
+    )
+    for (const icon of appIcons) {
+      await actions.isVisible(selectors.getById(`app_icon_${icon}`))
+    }
+  }
+
+  async selectAppIcon(iconId?: string) {
+    if (!iconId) {
+      iconId = ['Light', 'Old', 'Bling', 'Shiny', 'Marker', 'Minimalism'][
+        Math.floor(Math.random() * 6)
+      ] as string
+    }
+    await actions.tap(selectors.getById(`app_icon_${iconId}`))
+    return iconId
+  }
+
   async tapSecurityAndPrivacy(needSwipe = true) {
     if (needSwipe) {
       await this.swipeSettings()

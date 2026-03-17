@@ -200,7 +200,7 @@ export const GroupList = ({
                     {value !== undefined &&
                       (typeof value === 'string' ? (
                         <Text
-                          testID={`right_value__${title}`}
+                          testID={`right_value__${value}`}
                           variant="body1"
                           numberOfLines={1}
                           sx={{ color: '$textSecondary', ...valueSx }}>

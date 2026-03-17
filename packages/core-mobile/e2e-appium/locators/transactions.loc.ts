@@ -102,7 +102,8 @@ export default {
   claimCard: 'claim_card',
   duration: 'Duration',
   confirmStake: 'confirm_stake',
-  reviewStakeTitle: 'Review your stake',
+  reviewStakeTitle: `That's it!\nReview your stake`,
   claimNow: 'claim_now',
-  maxBtn: 'Max'
+  maxBtn: 'Max',
+  fiatAmountInput: 'fiat_amount_input'
 }

@@ -153,8 +153,9 @@ export const FiatAmountInput = forwardRef<
           ...sx
         }}>
         {formatInSubTextNumber?.(Number(inputAmount ?? 0))}
-        <TouchableWithoutFeedback onPress={handlePress}>
+        <TouchableWithoutFeedback accessible={false} onPress={handlePress}>
           <View
+            accessible={false}
             style={{
               paddingHorizontal: 16,
               width: '100%'
@@ -163,7 +164,6 @@ export const FiatAmountInput = forwardRef<
               {...props}
               ref={textInputRef}
               value={value}
-              accessibilityLabel="fiat_amount_input"
               testID="fiat_amount_input"
               onChangeText={handleValueChanged}
               initialFontSize={60}
