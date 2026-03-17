@@ -610,7 +610,9 @@ export class LedgerWallet implements Wallet {
     // For C chain (EVM): m/44'/60'/{accountIndex}'
     const accountPath =
       chainAlias === 'C'
-        ? `m/44'/60'/${accountIndex}'`
+        ? this.isBIP44()
+          ? `m/44'/60'/0'`
+          : `m/44'/60'/${accountIndex}'`
         : `m/44'/9000'/${accountIndex}'`
 
     // Build signing paths from external indices
@@ -620,7 +622,9 @@ export class LedgerWallet implements Wallet {
     const hasIndices = externalIndices.length > 0
     const signingPaths =
       chainAlias === 'C'
-        ? ['0/0']
+        ? this.isBIP44()
+          ? [`0/${accountIndex}`]
+          : ['0/0']
         : (hasIndices ? externalIndices : [0]).map(i => `0/${i}`)
 
     // Build change paths from internal indices
