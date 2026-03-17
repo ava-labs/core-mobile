@@ -388,14 +388,14 @@ describe('LedgerWallet', () => {
         })
 
         expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/60'/0'", // Account 0
-          ['0/0'], // Always first address
+          "m/44'/60'/0'", // BIP44 always uses account 0
+          ['0/0'], // Address index matches account index (0)
           expect.any(Buffer),
           undefined
         )
       })
 
-      it('should use account 1 path for C-chain with account index 1', async () => {
+      it('should use account 0 path for C-chain with account index 1 (BIP44 always uses account 0)', async () => {
         const transaction: AvalancheTransactionRequest = {
           tx: createCChainTx() as unknown as AvalancheTransactionRequest['tx']
         }
@@ -408,14 +408,14 @@ describe('LedgerWallet', () => {
         })
 
         expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/60'/1'", // Account 1
-          ['0/0'], // Always first address
+          "m/44'/60'/0'", // BIP44 always uses account 0
+          ['0/1'], // Address index matches account index
           expect.any(Buffer),
           undefined
         )
       })
 
-      it('should use account 2 path for C-chain with account index 2', async () => {
+      it('should use account 0 path for C-chain with account index 2 (BIP44 always uses account 0)', async () => {
         const transaction: AvalancheTransactionRequest = {
           tx: createCChainTx() as unknown as AvalancheTransactionRequest['tx']
         }
@@ -428,14 +428,14 @@ describe('LedgerWallet', () => {
         })
 
         expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/60'/2'", // Account 2
-          ['0/0'], // Always first address
+          "m/44'/60'/0'", // BIP44 always uses account 0
+          ['0/2'], // Address index matches account index
           expect.any(Buffer),
           undefined
         )
       })
 
-      it('should always use 0/0 signing path for C-chain regardless of account index', async () => {
+      it('should use signing path 0/accountIndex for C-chain with BIP44', async () => {
         const transaction: AvalancheTransactionRequest = {
           tx: createCChainTx() as unknown as AvalancheTransactionRequest['tx']
         }
@@ -449,8 +449,8 @@ describe('LedgerWallet', () => {
         })
 
         expect(mockSign).toHaveBeenCalledWith(
-          "m/44'/60'/5'", // Account 5
-          ['0/0'], // Still 0/0, not 0/5
+          "m/44'/60'/0'", // BIP44 always uses account 0
+          ['0/5'], // Address index matches account index
           expect.any(Buffer),
           undefined
         )
