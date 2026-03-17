@@ -189,8 +189,8 @@ describe('buildEvmProviderShim', () => {
       expect(shim).toContain('eip6963:requestProvider')
     })
 
-    it('uses rdns app.core.extension', () => {
-      expect(shim).toContain("rdns: 'app.core.extension'")
+    it('uses rdns app.core.mobile', () => {
+      expect(shim).toContain("rdns: 'app.core.mobile'")
     })
 
     it('sets provider name to Core', () => {

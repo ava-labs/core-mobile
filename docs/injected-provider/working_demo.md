@@ -270,12 +270,9 @@ providerInfo = {
   uuid: 'core-mobile-' + Date.now(),
   name: 'Core',
   icon: 'data:image/svg+xml;base64,...',  // Core logo
-  rdns: 'app.core.extension'
+  rdns: 'app.core.mobile'
 }
 ```
-
-The `rdns: 'app.core.extension'` matches the Core browser extension's identifier in wallet connection libraries, so dApps show the correct Core branding.
-
 ---
 
 ## 6. Native Bridge Deep Dive
