@@ -160,26 +160,22 @@ class TransactionsPage {
   }
 
   async dismissTransactionOnboarding() {
-<<<<<<< HEAD
     // Check if onboarding was already dismissed in a previous test
     // This allows concurrent tests to skip the check if onboarding was already dismissed
     if (process.env.NEXT_BTN_DISMISSED === 'true') {
       console.log('Transaction onboarding already dismissed in previous test - skipping check')
       return
-    } else {
-      // If search bar not visible, check for next button and dismiss onboarding
-        const isNextButtonVisible = await actions.isElementVisible(this.transactionOnboardingNext, 10000)
-        if (isNextButtonVisible) {
-        console.log('Transaction onboarding next button visible - dismissing onboarding')
-        await actions.tap(this.transactionOnboardingNext)
-        process.env.NEXT_BTN_DISMISSED = 'true'
-      } else {
-        console.log('Transaction onboarding not found - may have been dismissed already')
-      }
-=======
-    if (await actions.getVisible(this.transactionOnboardingNext)) {
+    }
+    const isNextButtonVisible = await actions.isElementVisible(
+      this.transactionOnboardingNext,
+      10000
+    )
+    if (isNextButtonVisible) {
+      console.log('Transaction onboarding next button visible - dismissing onboarding')
       await actions.tap(this.transactionOnboardingNext)
->>>>>>> main
+      process.env.NEXT_BTN_DISMISSED = 'true'
+    } else {
+      console.log('Transaction onboarding not found - may have been dismissed already')
     }
   }
 

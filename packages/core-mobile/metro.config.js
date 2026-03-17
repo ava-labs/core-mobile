@@ -128,6 +128,32 @@ const baseConfig = {
           platform
         )
       }
+      if (moduleName === 'stream') {
+        // when importing stream, resolve to readable-stream
+        return context.resolveRequest(context, 'readable-stream', platform)
+      }
+      if (moduleName === 'http') {
+        return context.resolveRequest(
+          context,
+          '@tradle/react-native-http',
+          platform
+        )
+      }
+      if (moduleName === 'https') {
+        return context.resolveRequest(
+          context,
+          'https-browserify',
+          platform
+        )
+      }
+      if (moduleName === 'zlib') {
+        return context.resolveRequest(
+          context,
+          'browserify-zlib',
+          platform
+        )
+      }
+
       // optionally, chain to the standard Metro resolver.
       return context.resolveRequest(context, moduleName, platform)
     }

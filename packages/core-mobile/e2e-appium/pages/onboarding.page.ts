@@ -119,21 +119,22 @@ class OnboardingPage {
     // Device Farm uses E2E builds and doesn't have Metro bundler
     const isE2EBuild = process.env.E2E || process.env.E2E_LOCAL_PATH
     const isDeviceFarm = !!process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL
-    
+
     if (isE2EBuild || isDeviceFarm) {
       console.log('you are using the e2e build, skipping metro dev menu')
     } else {
       try {
-      console.log('you are using a dev build, skipping metro dev menu now...')
-      const preceedingHost = driver.isIOS ? 'localhost' : '10.0.2.2'
-      const metroDevMenu = selectors.getByText(`http://${preceedingHost}:8081`)
-      const dismissBtn = selectors.getByText("AvaxWallet")
-      await actions.waitFor(metroDevMenu)
-      await actions.tap(metroDevMenu, dismissBtn)
-      await actions.waitFor(dismissBtn, 30000)
-      await actions.dragAndDrop(dismissBtn, [0, 1500])
+        console.log('you are using a dev build, skipping metro dev menu now...')
+        const preceedingHost = driver.isIOS ? 'localhost' : '10.0.2.2'
+        const metroDevMenu = selectors.getByText(`http://${preceedingHost}:8081`)
+        const dismissBtn = selectors.getByText('AvaxWallet')
+        await actions.waitFor(metroDevMenu)
+        await actions.tap(metroDevMenu, dismissBtn)
+        await actions.waitFor(dismissBtn, 30000)
+        await actions.dragAndDrop(dismissBtn, [0, 1500])
+        console.log('Dismissed Metro dev menu')
       } catch (e) {
-        console.log('Metro dev menu is not found...')
+        console.log('Metro dev menu not found or already dismissed')
       }
     }
   }
