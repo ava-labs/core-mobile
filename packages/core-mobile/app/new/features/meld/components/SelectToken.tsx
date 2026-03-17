@@ -8,7 +8,7 @@ import { LoadingState } from 'common/components/LoadingState'
 import { useAvalancheErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
-import { USDC_AVALANCHE_C_TOKEN_ID } from 'common/consts/swap'
+import { tokenIds } from 'consts/tokenIds'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { LogoWithNetwork } from 'common/components/LogoWithNetwork'
 import { ServiceProviderCategories } from 'features/meld/consts'
@@ -48,13 +48,14 @@ export const SelectToken = ({
 
   useResetMeldTokenList()
 
-  const usdcAvalancheToken = filteredTokenList.find(
-    token =>
+  const usdcAvalancheToken = filteredTokenList.find(token => {
+    return (
       'chainId' in token &&
       token.chainId &&
       isAvalancheChainId(token.chainId) &&
-      token.address.toLowerCase() === USDC_AVALANCHE_C_TOKEN_ID.toLowerCase()
-  )
+      token.internalId === tokenIds.USDC
+    )
+  })
 
   const avaxAvalancheToken = filteredTokenList.find(
     token =>

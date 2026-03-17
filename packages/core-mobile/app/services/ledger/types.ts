@@ -89,11 +89,20 @@ export interface ExtendedPublicKey {
   chainCode: string
 }
 
+export enum LedgerAddressType {
+  EVM = 'evm',
+  AVALANCHE_X = 'avalanche-x',
+  AVALANCHE_P = 'avalanche-p',
+  AVALANCHE_CORE_ETH = 'avalanche-core-eth',
+  BITCOIN = 'bitcoin',
+  SOLANA = 'solana'
+}
+
 export interface AddressInfo {
   id: string
+  type: LedgerAddressType
   address: string
   derivationPath: string
-  network: string
 }
 
 // ============================================================================

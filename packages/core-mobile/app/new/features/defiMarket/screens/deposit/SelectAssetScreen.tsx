@@ -15,7 +15,7 @@ import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
 import { useNavigation } from '@react-navigation/native'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
-import { AVAX_TOKEN_ID } from 'common/consts/swap'
+import { tokenIds } from 'consts/tokenIds'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import { selectActiveAccount } from 'store/account'
@@ -86,7 +86,7 @@ export const SelectAssetScreen = (): JSX.Element => {
         // Dismiss entire deposit modal and navigate to swap
         navigation.getParent()?.goBack()
         navigateToSwap({
-          fromTokenId: AVAX_TOKEN_ID,
+          fromTokenId: tokenIds.AVAX,
           toTokenId: marketAsset.contractAddress
         })
       }

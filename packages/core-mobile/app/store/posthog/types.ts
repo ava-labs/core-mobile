@@ -5,8 +5,6 @@ import { uuid } from 'utils/uuid'
 export const DefaultFeatureFlagConfig = {
   [FeatureGates.EVERYTHING]: true,
   [FeatureGates.EVENTS]: true,
-  [FeatureGates.SWAP]: true,
-  [FeatureGates.BRIDGE]: true,
   [FeatureGates.BRIDGE_BTC]: true,
   [FeatureGates.BRIDGE_ETH]: true,
   [FeatureGates.EARN]: true,
@@ -14,7 +12,6 @@ export const DefaultFeatureFlagConfig = {
   [FeatureVars.P_FEE_ADJUSTMENT_THRESHOLD]: '1e-3', // 0.1%
   [FeatureVars.CROSS_CHAIN_FEES_MULTIPLIER]: '4e0', // 400%
   [FeatureVars.C_BASE_FEE_MULTIPLIER]: '1e0', // 100%
-  [FeatureVars.MARKR_SWAP_GAS_BUFFER]: '120', // 120%
   [FeatureVars.MARKR_SWAP_MAX_RETRIES]: '3', // 3 retries
   [FeatureVars.STAKE_APY_BPS]: `${DEFAULT_ANNUAL_PERCENTAGE_YIELD_BPS}`,
   [FeatureVars.FUSION_FEE_UNITS_MARGIN_BPS]: '2000', // 20% fee units buffer
@@ -38,12 +35,10 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.UNIFIED_BRIDGE_AB_BTC_TO_AVA]: true,
   [FeatureGates.HALLIDAY_BRIDGE_BANNER]: true,
   [FeatureGates.GASLESS]: true,
-  [FeatureGates.SWAP_FEES]: true,
   [FeatureGates.MELD_ONRAMP]: true,
   [FeatureGates.MELD_OFFRAMP]: true,
   [FeatureGates.SOLANA_SUPPORT]: true,
   [FeatureGates.SWAP_SOLANA]: true,
-  [FeatureGates.SWAP_FEES_JUPITER]: true,
   [FeatureGates.IN_APP_UPDATE_ANDROID]: true,
   [FeatureGates.ENABLE_MELD_SANDBOX]: false,
   [FeatureGates.SOLANA_LAUNCH_MODAL]: false,
@@ -60,7 +55,8 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.FUSION_AVALANCHE_EVM]: false,
   [FeatureGates.FUSION_LOMBARD_BTC_TO_BTCB]: false,
   [FeatureGates.FUSION_LOMBARD_BTCB_TO_BTC]: false,
-  [FeatureGates.ALTERNATE_APP_ICONS]: false
+  [FeatureGates.ALTERNATE_APP_ICONS]: false,
+  [FeatureGates.LEGACY_BRIDGE]: false
 }
 
 export const initialState = {

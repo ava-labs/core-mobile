@@ -3,8 +3,6 @@ import { JsonMap } from 'store/posthog'
 export enum FeatureGates {
   EVERYTHING = 'everything',
   EVENTS = 'events',
-  SWAP = 'swap-feature',
-  BRIDGE = 'bridge-feature',
   BRIDGE_BTC = 'bridge-feature-btc',
   BRIDGE_ETH = 'bridge-feature-eth',
   EARN = 'earn-feature',
@@ -27,14 +25,11 @@ export enum FeatureGates {
   ENABLE_NOTIFICATION_PROMPT = 'enable-notification-prompt',
   HALLIDAY_BRIDGE_BANNER = 'halliday-bridge-banner',
   GASLESS = 'gasless-feature',
-  SWAP_FEES = 'swap-fees',
   SOLANA_SUPPORT = 'solana-support',
   SOLANA_LAUNCH_MODAL = 'solana-launch-modal',
   MELD_ONRAMP = 'meld-onramp',
   MELD_OFFRAMP = 'meld-offramp',
-  SWAP_USE_MARKR = 'swap-use-markr',
   KEYSTONE = 'keystone',
-  SWAP_FEES_JUPITER = 'swap-fees-jupiter',
   SWAP_SOLANA = 'swap-solana',
   IN_APP_UPDATE_ANDROID = 'in-app-update-android',
   ENABLE_MELD_SANDBOX = 'enable-meld-sandbox',
@@ -51,7 +46,8 @@ export enum FeatureGates {
   FUSION_AVALANCHE_EVM = 'fusion-avalanche-evm',
   FUSION_LOMBARD_BTC_TO_BTCB = 'fusion-lombard-btc-to-btcb',
   FUSION_LOMBARD_BTCB_TO_BTC = 'fusion-lombard-btcb-to-btc',
-  ALTERNATE_APP_ICONS = 'alternate-app-icons'
+  ALTERNATE_APP_ICONS = 'alternate-app-icons',
+  LEGACY_BRIDGE = 'legacy-bridge'
 }
 
 export enum FeatureVars {
@@ -59,7 +55,6 @@ export enum FeatureVars {
   P_FEE_ADJUSTMENT_THRESHOLD = 'p-fee-adjustment-threshold',
   C_BASE_FEE_MULTIPLIER = 'c-base-fee-multiplier',
   CROSS_CHAIN_FEES_MULTIPLIER = 'cross-chain-fees-multiplier',
-  MARKR_SWAP_GAS_BUFFER = 'markr-swap-gas-buffer',
   MARKR_SWAP_MAX_RETRIES = 'markr-swap-max-retries',
   STAKE_APY_BPS = 'stake-apy-bps',
   FUSION_FEE_UNITS_MARGIN_BPS = 'fusion-fee-units-margin-bps',

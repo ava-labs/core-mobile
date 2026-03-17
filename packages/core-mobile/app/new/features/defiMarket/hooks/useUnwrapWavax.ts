@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { useETHSendTransaction } from 'common/hooks/useETHSendTransaction'
-import { WAVAX_ADDRESS } from 'new/features/swap/consts'
+import { WAVAX_ADDRESS } from 'features/swap/consts'
 import WAVAX_ABI from 'contracts/ABI_WAVAX.json'
 
 /**
