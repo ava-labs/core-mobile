@@ -569,6 +569,7 @@ export class LedgerWallet implements Wallet {
     }
   }
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   public async signAvalancheTransaction({
     accountIndex,
     transaction,
