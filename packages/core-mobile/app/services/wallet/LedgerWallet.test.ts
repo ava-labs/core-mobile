@@ -32,7 +32,9 @@ jest.mock('services/ledger/LedgerService', () => ({
     }),
     waitForApp: jest.fn().mockResolvedValue(undefined),
     isConnected: jest.fn().mockReturnValue(true),
-    getCurrentAppType: jest.fn().mockReturnValue('AVALANCHE')
+    getCurrentAppType: jest.fn().mockReturnValue('AVALANCHE'),
+    getAllAddresses: jest.fn(),
+    getExtendedPublicKeys: jest.fn()
   }
 }))
 
@@ -163,6 +165,9 @@ const mockEnsureConnection = LedgerService.ensureConnection as jest.Mock
 const mockWaitForApp = LedgerService.waitForApp as jest.Mock
 const mockIsConnected = LedgerService.isConnected as jest.Mock
 const mockGetCurrentAppType = LedgerService.getCurrentAppType as jest.Mock
+const mockGetAllAddresses = LedgerService.getAllAddresses as jest.Mock
+const mockGetExtendedPublicKeys =
+  LedgerService.getExtendedPublicKeys as jest.Mock
 
 // Mock transport
 class MockTransport {
@@ -213,6 +218,14 @@ describe('LedgerWallet', () => {
     mockWaitForApp.mockResolvedValue(undefined)
     mockIsConnected.mockReturnValue(true)
     mockGetCurrentAppType.mockReturnValue('AVALANCHE')
+    mockGetAllAddresses.mockResolvedValue([])
+    mockGetExtendedPublicKeys.mockResolvedValue({
+      evm: { key: '02'.repeat(33), chainCode: '03'.repeat(32) },
+      avalanche: { key: '04'.repeat(33), chainCode: '05'.repeat(32) }
+    })
+    ;(bip32.fromPublicKey as jest.Mock).mockReturnValue({
+      toBase58: jest.fn().mockReturnValue('mock-xpub')
+    })
     ;(isAvalancheChainId as jest.Mock).mockReturnValue(false)
 
     // Create wallet instance with correct constructor signature
@@ -878,6 +891,42 @@ describe('LedgerWallet', () => {
           expect.any(Number)
         )
       })
+    })
+  })
+
+  describe('addAccount', () => {
+    it('should persist the device-derived Avalanche C address as addressCoreEth', async () => {
+      mockGetAllAddresses.mockResolvedValue([
+        {
+          id: 'evm-0',
+          address: '0x1234'
+        },
+        {
+          id: 'avalanche-x-0',
+          address: 'X-fuji1xaddress'
+        },
+        {
+          id: 'avalanche-p-0',
+          address: 'P-fuji1paddress'
+        },
+        {
+          id: 'avalanche-c-0',
+          address: 'C-fuji1correctatomic'
+        },
+        {
+          id: 'bitcoin-0',
+          address: 'bc1qbtcaddress'
+        }
+      ])
+
+      const result = await ledgerWallet.addAccount({
+        index: 0,
+        isTestnet: true,
+        walletId: mockWalletId,
+        name: 'Ledger 1'
+      })
+
+      expect(result.account.addressCoreEth).toBe('C-fuji1correctatomic')
     })
   })
 

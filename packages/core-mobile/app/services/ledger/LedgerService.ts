@@ -14,7 +14,7 @@ import {
   getLedgerAppInfo
 } from '@avalabs/core-wallets-sdk'
 import { networks } from 'bitcoinjs-lib'
-import { utils as avalancheUtils, networkIDs } from '@avalabs/avalanchejs'
+import { networkIDs } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
 import bs58 from 'bs58'
 import { Platform, PermissionsAndroid, Alert, Linking } from 'react-native'
@@ -884,6 +884,20 @@ class LedgerService {
           network: ChainName.AVALANCHE_C_EVM
         })
 
+        const evmAvalancheAddressResponse =
+          await avalancheApp.getAddressAndPubKey(evmPath, false, networkHrp)
+        const coreEthAddress = `C-${stripAddressPrefix(
+          evmAvalancheAddressResponse.address
+        )}`
+        addresses.push({
+          id: `avalanche-c-${i}`,
+          address: coreEthAddress,
+          derivationPath: evmPath,
+          network: isTestnet
+            ? ChainName.AVALANCHE_C_TESTNET
+            : ChainName.AVALANCHE_C
+        })
+
         // xp addresses - get from device
         const avalancheChainPath = getAddressDerivationPath({
           accountIndex: i,
@@ -917,13 +931,11 @@ class LedgerService {
         })
 
         // Bitcoin addresses - derive from EVM public key (like the extension)
-        const btcPublicKeyResponse = await avalancheApp.getAddressAndPubKey(
-          evmPath,
-          false,
-          networkHrp
-        )
         const btcAddress = getBtcAddressFromPubKey(
-          Buffer.from(btcPublicKeyResponse.publicKey.toString('hex'), 'hex'),
+          Buffer.from(
+            evmAvalancheAddressResponse.publicKey.toString('hex'),
+            'hex'
+          ),
           isTestnet ? networks.testnet : networks.bitcoin // mainnet or testnet
         )
 
@@ -1052,6 +1064,12 @@ class LedgerService {
     const evmAddress =
       addresses.find(addr => addr.network === ChainName.AVALANCHE_C_EVM)
         ?.address || ''
+    const coreEthAddress =
+      addresses.find(
+        addr =>
+          addr.network ===
+          (isTestnet ? ChainName.AVALANCHE_C_TESTNET : ChainName.AVALANCHE_C)
+      )?.address || ''
     const avmAddress =
       addresses.find(addr => addr.network === ChainName.AVALANCHE_X)?.address ||
       ''
@@ -1061,17 +1079,6 @@ class LedgerService {
 
     const btcAddress =
       addresses.find(addr => addr.network === ChainName.BITCOIN)?.address || ''
-
-    // Derive C-chain bech32 address from EVM address
-    // CoreEth is the EVM address (hex) encoded in bech32 format with C- prefix
-    const hrp = isTestnet ? networkIDs.FujiHRP : networkIDs.MainnetHRP
-    const evmAddressBytes = new Uint8Array(
-      Buffer.from(evmAddress.replace(/^0x/, ''), 'hex')
-    )
-    const coreEthAddress = `C-${avalancheUtils.formatBech32(
-      hrp,
-      evmAddressBytes
-    )}`
 
     // Get extended public keys and convert to base58 xpub format
     const extendedKeys = await this.getExtendedPublicKeys(accountIndex)
