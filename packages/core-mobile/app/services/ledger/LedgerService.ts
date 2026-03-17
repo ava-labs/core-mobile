@@ -884,6 +884,12 @@ class LedgerService {
           network: ChainName.AVALANCHE_C_EVM
         })
 
+        // Derive the CoreEth (C-chain bech32) address from the Avalanche Ledger
+        // app using the EVM derivation path.  The Avalanche app's
+        // getAddressAndPubKey returns the bech32-encoded address derived from
+        // the public key at the given path — this is NOT the same as
+        // bech32-encoding the 0x EVM address bytes, because the Avalanche
+        // and EVM keys live on different curves / derivation branches.
         const evmAvalancheAddressResponse =
           await avalancheApp.getAddressAndPubKey(evmPath, false, networkHrp)
         const coreEthAddress = `C-${stripAddressPrefix(
