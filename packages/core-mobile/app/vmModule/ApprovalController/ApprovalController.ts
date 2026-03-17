@@ -8,7 +8,6 @@ import {
   RequestPublicKeyParams
 } from '@avalabs/vm-module-types'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
-import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import {
@@ -27,6 +26,7 @@ import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview
 import { CONFETTI_DURATION_MS } from 'common/consts'
 import { currentRouteStore } from 'new/routes/store'
 import { BoundedMap } from 'common/utils/boundedMap'
+import { getAddressForChainId } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import {
   isToastsAndConfettiEnabled,
   isConfettiEnabled,
@@ -38,23 +38,9 @@ import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { handleLedgerErrorAndShowAlert } from './utils'
 
-/**
- * Extracts the user's address from the WalletConnect session for the given dapp request.
- * Session namespace accounts are formatted as "namespace:chainId:address" (e.g. "eip155:1:0x...").
- * Prefer the account entry whose chainId prefix matches request.chainId; fall back to the first
- * account in the namespace if no exact chain match is found.
- */
-const getDappRequestAddress = (request: RpcRequest): string => {
-  const session = WalletConnectService.getSession(request.sessionId)
-  const namespace = request.chainId.split(':')[0] ?? ''
-  const accounts = session?.namespaces[namespace]?.accounts ?? []
-  const caip2Account =
-    accounts.find(a => a.startsWith(`${request.chainId}:`)) ?? accounts[0] ?? ''
-  return caip2Account.split(':')[2] ?? ''
-}
-
 class ApprovalController implements VmModuleApprovalController {
   private userCancelledMap = new BoundedMap<string, boolean>(10)
+  private signingAddressMap = new BoundedMap<string, string>(10)
 
   async requestPublicKey({
     secretId,
@@ -129,7 +115,8 @@ class ApprovalController implements VmModuleApprovalController {
     )
 
     if (!isInAppRequest(request) && isTxSend) {
-      const address = getDappRequestAddress(request)
+      const address = this.signingAddressMap.get(request.requestId) ?? ''
+      this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_confirmed` as TxSendConfirmedEvent
       AnalyticsService.captureWithEncryption(eventName, {
         dAppUrl: request.dappInfo.url,
@@ -154,7 +141,8 @@ class ApprovalController implements VmModuleApprovalController {
     )
 
     if (!isInAppRequest(request) && isTxSend) {
-      const address = getDappRequestAddress(request)
+      const address = this.signingAddressMap.get(request.requestId) ?? ''
+      this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_failed` as TxSendFailedEvent
       AnalyticsService.captureWithEncryption(eventName, {
         dAppUrl: request.dappInfo.url,
@@ -185,6 +173,17 @@ class ApprovalController implements VmModuleApprovalController {
     }
   }
 
+  private cacheSigningAddress(
+    requestId: string,
+    chainId: string,
+    account: OnApproveParams['account']
+  ): void {
+    const address = getAddressForChainId(chainId, account)
+    if (address) {
+      this.signingAddressMap.set(requestId, address)
+    }
+  }
+
   async requestApproval({
     request,
     displayData,
@@ -200,6 +199,8 @@ class ApprovalController implements VmModuleApprovalController {
         displayData,
         signingData,
         onApprove: async (params: OnApproveParams) => {
+          this.cacheSigningAddress(requestId, request.chainId, params.account)
+
           if (
             params.walletType === WalletType.LEDGER ||
             params.walletType === WalletType.LEDGER_LIVE

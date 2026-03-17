@@ -9,7 +9,7 @@ import { transactionSnackbar } from 'new/common/utils/toast'
 import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
 import { showLedgerReviewTransaction } from 'features/ledger/utils'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
+import { getAddressForChainId } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import {
   isToastsAndConfettiEnabled,
   isInAppAvalancheRequest,
@@ -76,7 +76,9 @@ jest.mock('./onReject', () => ({ onReject: jest.fn() }))
 jest.mock('./utils', () => ({ handleLedgerErrorAndShowAlert: jest.fn() }))
 jest.mock('common/consts', () => ({ CONFETTI_DURATION_MS: 3000 }))
 jest.mock('services/analytics/AnalyticsService')
-jest.mock('services/walletconnectv2/WalletConnectService')
+jest.mock('store/rpc/handlers/wc_sessionRequest/utils', () => ({
+  getAddressForChainId: jest.fn()
+}))
 
 // ─── Typed mock aliases ────────────────────────────────────────────────────────
 
@@ -95,6 +97,7 @@ const mockCurrentRouteStore = currentRouteStore as jest.Mocked<
 const mockShowLedgerReviewTransaction = showLedgerReviewTransaction as jest.Mock
 const mockWalletConnectCacheSet = walletConnectCache.approvalParams
   .set as jest.Mock
+const mockGetAddressForChainId = getAddressForChainId as jest.Mock
 const mockGetPublicKeyFor = jest.requireMock('services/wallet/WalletService')
   .default.getPublicKeyFor as jest.Mock
 const mockDisconnect = jest.requireMock('services/ledger/LedgerService').default
@@ -132,14 +135,37 @@ const makeDappRequest = (method: RpcMethod, chainId = 'eip155:1'): RpcRequest =>
     dappInfo: { name: 'Uniswap', url: DAPP_URL, icon: '' }
   } as unknown as RpcRequest)
 
-const mockEvmSession = {
-  namespaces: {
-    eip155: {
-      accounts: [`eip155:1:${EVM_ADDRESS}`],
-      methods: [],
-      events: []
-    }
-  }
+const mockAccount = {
+  addressC: EVM_ADDRESS,
+  addressBTC: 'tb1qlzsvluv4cahzz8zzwud40x2hn3zq4c7zak6spw',
+  addressAVM: 'X-avax1abc',
+  addressPVM: 'P-avax1abc',
+  addressCoreEth: EVM_ADDRESS,
+  addressSVM: '9gQmZ7fTTgv5hVScrr9QqT6SpBs7i4cKLDdj4tuae3sW'
+} as never
+
+/**
+ * Helper: triggers requestApproval → onApprove to populate the signingAddressMap,
+ * so that onTransactionConfirmed / onTransactionReverted can read the cached address.
+ */
+const populateSigningAddressCache = async (
+  request: RpcRequest,
+  address: string | undefined = EVM_ADDRESS
+): Promise<void> => {
+  mockGetAddressForChainId.mockReturnValue(address)
+  const signingData = { type: 'eth_sendTransaction', data: {} } as never
+  const displayData = {} as never
+  approvalController.requestApproval({ request, displayData, signingData })
+  const { onApprove: capturedOnApprove } =
+    mockWalletConnectCacheSet.mock.calls[
+      mockWalletConnectCacheSet.mock.calls.length - 1
+    ][0]
+  await capturedOnApprove({
+    walletType: WalletType.MNEMONIC,
+    walletId: 'w1',
+    network: {},
+    account: mockAccount
+  })
 }
 
 // ─── Tests ─────────────────────────────────────────────────────────────────────
@@ -293,17 +319,14 @@ describe('ApprovalController', () => {
     })
 
     describe('dapp analytics', () => {
-      beforeEach(() => {
-        jest
-          .spyOn(WalletConnectService, 'getSession')
-          .mockReturnValue(mockEvmSession as never)
-      })
+      it('fires captureWithEncryption with _confirmed event for dapp requests', async () => {
+        const request = makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+        await populateSigningAddressCache(request)
 
-      it('fires captureWithEncryption with _confirmed event for dapp requests', () => {
         approvalController.onTransactionConfirmed({
           txHash: TX_HASH,
           explorerLink: 'https://explorer.com/tx/0xdeadbeef',
-          request: makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+          request
         })
 
         expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
@@ -317,14 +340,17 @@ describe('ApprovalController', () => {
         )
       })
 
-      it('fires correct event name for avalanche_sendTransaction', () => {
+      it('fires correct event name for avalanche_sendTransaction', async () => {
+        const request = makeDappRequest(
+          RpcMethod.AVALANCHE_SEND_TRANSACTION,
+          'eip155:43114'
+        )
+        await populateSigningAddressCache(request)
+
         approvalController.onTransactionConfirmed({
           txHash: TX_HASH,
           explorerLink: '',
-          request: makeDappRequest(
-            RpcMethod.AVALANCHE_SEND_TRANSACTION,
-            'eip155:43114'
-          )
+          request
         })
 
         expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
@@ -345,92 +371,30 @@ describe('ApprovalController', () => {
         expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
       })
 
-      it('selects the account matching request.chainId when session has multiple chains', () => {
-        const chain1Address = '0xAAAA'
-        const chain137Address = '0xBBBB'
-        jest.spyOn(WalletConnectService, 'getSession').mockReturnValue({
-          namespaces: {
-            eip155: {
-              accounts: [
-                `eip155:1:${chain1Address}`,
-                `eip155:137:${chain137Address}`
-              ],
-              methods: [],
-              events: []
-            }
-          }
-        } as never)
+      it('uses getAddressForChainId to resolve the signing address', async () => {
+        const request = makeDappRequest(
+          RpcMethod.ETH_SEND_TRANSACTION,
+          'eip155:137'
+        )
+        await populateSigningAddressCache(request, '0xBBBB')
 
         approvalController.onTransactionConfirmed({
           txHash: TX_HASH,
           explorerLink: '',
-          request: makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION, 'eip155:137')
+          request
         })
 
+        expect(mockGetAddressForChainId).toHaveBeenCalledWith(
+          'eip155:137',
+          mockAccount
+        )
         expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
           'eth_sendTransaction_confirmed',
-          expect.objectContaining({ address: chain137Address })
+          expect.objectContaining({ address: '0xBBBB' })
         )
       })
 
-      it('falls back to first account when no chain match found', () => {
-        const firstAddress = '0xFIRST'
-        jest.spyOn(WalletConnectService, 'getSession').mockReturnValue({
-          namespaces: {
-            eip155: {
-              accounts: [`eip155:1:${firstAddress}`, 'eip155:5:0xOTHER'],
-              methods: [],
-              events: []
-            }
-          }
-        } as never)
-
-        approvalController.onTransactionConfirmed({
-          txHash: TX_HASH,
-          explorerLink: '',
-          request: makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION, 'eip155:999')
-        })
-
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
-          'eth_sendTransaction_confirmed',
-          expect.objectContaining({ address: firstAddress })
-        )
-      })
-
-      it('extracts address from WalletConnect session namespace', () => {
-        const solanaAddress = '9gQmZ7fTTgv5hVScrr9QqT6SpBs7i4cKLDdj4tuae3sW'
-        jest.spyOn(WalletConnectService, 'getSession').mockReturnValue({
-          namespaces: {
-            solana: {
-              accounts: [
-                `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:${solanaAddress}`
-              ],
-              methods: [],
-              events: []
-            }
-          }
-        } as never)
-
-        approvalController.onTransactionConfirmed({
-          txHash: TX_HASH,
-          explorerLink: '',
-          request: makeDappRequest(
-            RpcMethod.SOLANA_SIGN_AND_SEND_TRANSACTION,
-            'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'
-          )
-        })
-
-        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
-          'solana_signAndSendTransaction_confirmed',
-          expect.objectContaining({ address: solanaAddress })
-        )
-      })
-
-      it('uses empty string for address when session has no accounts', () => {
-        jest.spyOn(WalletConnectService, 'getSession').mockReturnValue({
-          namespaces: { eip155: { accounts: [], methods: [], events: [] } }
-        } as never)
-
+      it('uses empty string for address when cache has no entry', () => {
         approvalController.onTransactionConfirmed({
           txHash: TX_HASH,
           explorerLink: '',
@@ -443,15 +407,28 @@ describe('ApprovalController', () => {
         )
       })
 
-      it('uses empty string for address when session is not found', () => {
-        jest
-          .spyOn(WalletConnectService, 'getSession')
-          .mockReturnValue(undefined as never)
+      it('cleans up cached address after use', async () => {
+        const request = makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+        await populateSigningAddressCache(request)
 
+        // First call uses the cached address
         approvalController.onTransactionConfirmed({
           txHash: TX_HASH,
           explorerLink: '',
-          request: makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+          request
+        })
+
+        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+          'eth_sendTransaction_confirmed',
+          expect.objectContaining({ address: EVM_ADDRESS })
+        )
+
+        // Second call should get empty string (cache was cleaned up)
+        ;(AnalyticsService.captureWithEncryption as jest.Mock).mockClear()
+        approvalController.onTransactionConfirmed({
+          txHash: TX_HASH,
+          explorerLink: '',
+          request
         })
 
         expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
@@ -477,16 +454,13 @@ describe('ApprovalController', () => {
     })
 
     describe('dapp analytics', () => {
-      beforeEach(() => {
-        jest
-          .spyOn(WalletConnectService, 'getSession')
-          .mockReturnValue(mockEvmSession as never)
-      })
+      it('fires captureWithEncryption with _failed event including txHash for dapp requests', async () => {
+        const request = makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+        await populateSigningAddressCache(request)
 
-      it('fires captureWithEncryption with _failed event including txHash for dapp requests', () => {
         approvalController.onTransactionReverted({
           txHash: TX_HASH,
-          request: makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+          request
         })
 
         expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
@@ -500,26 +474,17 @@ describe('ApprovalController', () => {
         )
       })
 
-      it('fires bitcoin_sendTransaction_failed for bitcoin reverts', () => {
+      it('fires bitcoin_sendTransaction_failed for bitcoin reverts', async () => {
         const btcAddress = 'tb1qlzsvluv4cahzz8zzwud40x2hn3zq4c7zak6spw'
-        jest.spyOn(WalletConnectService, 'getSession').mockReturnValue({
-          namespaces: {
-            bip122: {
-              accounts: [
-                `bip122:000000000019d6689c085ae165831e93:${btcAddress}`
-              ],
-              methods: [],
-              events: []
-            }
-          }
-        } as never)
+        const request = makeDappRequest(
+          RpcMethod.BITCOIN_SEND_TRANSACTION,
+          'bip122:000000000019d6689c085ae165831e93'
+        )
+        await populateSigningAddressCache(request, btcAddress)
 
         approvalController.onTransactionReverted({
           txHash: 'btctxhash',
-          request: makeDappRequest(
-            RpcMethod.BITCOIN_SEND_TRANSACTION,
-            'bip122:000000000019d6689c085ae165831e93'
-          )
+          request
         })
 
         expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
@@ -542,13 +507,16 @@ describe('ApprovalController', () => {
         expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
       })
 
-      it('always includes txHash in _failed payload (matches Extension behavior)', () => {
+      it('always includes txHash in _failed payload (matches Extension behavior)', async () => {
+        const request = makeDappRequest(
+          RpcMethod.SOLANA_SIGN_AND_SEND_TRANSACTION,
+          'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'
+        )
+        await populateSigningAddressCache(request)
+
         approvalController.onTransactionReverted({
           txHash: '0xrevertedtx',
-          request: makeDappRequest(
-            RpcMethod.SOLANA_SIGN_AND_SEND_TRANSACTION,
-            'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'
-          )
+          request
         })
 
         const call = (AnalyticsService.captureWithEncryption as jest.Mock).mock
