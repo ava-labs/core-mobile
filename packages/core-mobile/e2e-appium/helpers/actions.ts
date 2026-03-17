@@ -7,14 +7,14 @@ async function type(element: ChainablePromiseElement, text: string | number) {
   if (text === undefined || text === null) {
     throw new Error(`Cannot type undefined or null value. Received: ${text}`)
   }
-  
+
   const textToType = String(text)
   if (textToType.length === 0) {
     console.log('Warning: Attempting to type empty string')
   }
-  
+
   await waitFor(element)
-  
+
   // Ensure the element is focused before typing (both platforms)
   // This is especially important for TextInputs that have children components
   try {
@@ -22,9 +22,11 @@ async function type(element: ChainablePromiseElement, text: string | number) {
     await element.click()
     await driver.pause(500) // Wait for focus and keyboard
   } catch (e) {
-    console.log('Warning: Could not click element before typing, continuing anyway')
+    console.log(
+      'Warning: Could not click element before typing, continuing anyway'
+    )
   }
-  
+
   // Clear any existing value
   try {
     await element.clearValue()
@@ -42,11 +44,11 @@ async function type(element: ChainablePromiseElement, text: string | number) {
       }
     }
   }
-  
+
   // Use setValue for both platforms since we've already cleared the value
   // setValue is more reliable for TextInputs with children components
   await element.setValue(textToType)
-  
+
   // Small pause to ensure text is processed
   await driver.pause(300)
 }
@@ -139,10 +141,10 @@ async function isElementVisible(
   element: ChainablePromiseElement,
   timeout = 2000
 ): Promise<boolean> {
-  const timeoutPromise = new Promise<false>((resolve) => 
+  const timeoutPromise = new Promise<false>(resolve =>
     setTimeout(() => resolve(false), timeout)
   )
-  
+
   return Promise.race([
     element.isDisplayed().then(() => true),
     timeoutPromise
@@ -153,12 +155,14 @@ async function isElementVisible(
  * Wait for biometric prompt to appear
  * Returns true if prompt is visible, false if timeout (biometrics not enabled in OS)
  * Uses Promise.race() to return immediately when prompt appears or timeout expires
- * 
+ *
  * Note: If this returns false, it means biometrics are not enabled in OS settings
  * and the biometric prompt will never appear. The calling code should skip biometric handling.
  */
 async function waitForBiometricPrompt(timeout = 2000): Promise<boolean> {
-  const usePinButton = selectors.getByXpath('//*[@package="com.android.systemui" and (@text="Use PIN" or @resource-id="com.android.systemui:id/button_use_credential")]')
+  const usePinButton = selectors.getByXpath(
+    '//*[@package="com.android.systemui" and (@text="Use PIN" or @resource-id="com.android.systemui:id/button_use_credential")]'
+  )
   return isElementVisible(usePinButton, timeout)
 }
 
@@ -414,16 +418,18 @@ async function typeSlowly(
 ) {
   // Validate input
   if (text === undefined || text === null) {
-    throw new Error(`Cannot typeSlowly undefined or null value. Received: ${text}`)
+    throw new Error(
+      `Cannot typeSlowly undefined or null value. Received: ${text}`
+    )
   }
-  
+
   const textToType = String(text)
   if (textToType.length === 0) {
     console.log('Warning: Attempting to typeSlowly empty string')
   }
-  
+
   await waitFor(element)
-  
+
   // Ensure the element is focused before typing (both platforms)
   // This is especially important for TextInputs that have children components
   try {
@@ -431,9 +437,11 @@ async function typeSlowly(
     await element.click()
     await driver.pause(500) // Wait for focus and keyboard
   } catch (e) {
-    console.log('Warning: Could not click element before typingSlowly, continuing anyway')
+    console.log(
+      'Warning: Could not click element before typingSlowly, continuing anyway'
+    )
   }
-  
+
   // Clear any existing value
   try {
     await element.clearValue()
@@ -451,7 +459,7 @@ async function typeSlowly(
       }
     }
   }
-  
+
   // Use setValue for both platforms since we've already cleared the value
   // setValue is more reliable for TextInputs with children components
   // Note: If setValue has issues on iOS, we can fall back to character-by-character addValue

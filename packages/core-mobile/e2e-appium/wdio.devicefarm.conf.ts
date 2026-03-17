@@ -12,15 +12,18 @@ const sectionCache: Record<string, number> = {}
 
 // AWS Device Farm provides these environment variables
 const isDeviceFarm = !!process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL
-const appiumServerUrl = process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL || 'http://localhost:4723'
+const appiumServerUrl =
+  process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL || 'http://localhost:4723'
 const appPath = process.env.AWS_DEVICE_FARM_APP_PATH || ''
-const platformToRun = process.env.PLATFORM || process.env.DEVICEFARM_DEVICE_PLATFORM_NAME
+const platformToRun =
+  process.env.PLATFORM || process.env.DEVICEFARM_DEVICE_PLATFORM_NAME
 
 // Device Farm provides device info via environment variables
 const deviceName = process.env.DEVICEFARM_DEVICE_NAME || 'device'
 const platformVersion = process.env.DEVICEFARM_DEVICE_OS_VERSION || '14.0'
 const deviceUdid = process.env.DEVICEFARM_DEVICE_UDID || ''
-const chromedriverExecutableDir = process.env.DEVICEFARM_CHROMEDRIVER_EXECUTABLE_DIR || ''
+const chromedriverExecutableDir =
+  process.env.DEVICEFARM_CHROMEDRIVER_EXECUTABLE_DIR || ''
 
 const allCaps = [
   {
@@ -69,7 +72,9 @@ const allCaps = [
 ]
 
 const caps = platformToRun
-  ? allCaps.filter(cap => cap.platformName.toLowerCase() === platformToRun.toLowerCase())
+  ? allCaps.filter(
+      cap => cap.platformName.toLowerCase() === platformToRun.toLowerCase()
+    )
   : allCaps
 
 export const config: WebdriverIO.Config = {
@@ -88,7 +93,10 @@ export const config: WebdriverIO.Config = {
         hostname: new URL(appiumServerUrl).hostname,
         port: parseInt(new URL(appiumServerUrl).port) || 4723,
         path: new URL(appiumServerUrl).pathname || '/',
-        protocol: (new URL(appiumServerUrl).protocol.slice(0, -1) as 'http' | 'https') || 'http'
+        protocol:
+          (new URL(appiumServerUrl).protocol.slice(0, -1) as
+            | 'http'
+            | 'https') || 'http'
       }
     : {
         hostname: 'localhost',
@@ -148,7 +156,7 @@ export const config: WebdriverIO.Config = {
     const sectionId = sectionCache[sectionTitle]
     const caseId = await getTestCase(test.title, sectionId)
     const statusId = passed ? 1 : 5
-    
+
     // Capture page source on test failure for debugging
     if (!passed) {
       try {
@@ -156,8 +164,13 @@ export const config: WebdriverIO.Config = {
         const path = require('path')
         const pageSource = await driver.getPageSource()
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-        const sanitizedTestName = test.title.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 50)
-        const pageSourcePath = path.join(process.cwd(), `page-source-failure-${sanitizedTestName}-${timestamp}.xml`)
+        const sanitizedTestName = test.title
+          .replace(/[^a-zA-Z0-9]/g, '_')
+          .substring(0, 50)
+        const pageSourcePath = path.join(
+          process.cwd(),
+          `page-source-failure-${sanitizedTestName}-${timestamp}.xml`
+        )
         fs.writeFileSync(pageSourcePath, pageSource)
         console.log(`\n📄 Page source saved on test failure: ${pageSourcePath}`)
       } catch (e: unknown) {
@@ -165,7 +178,7 @@ export const config: WebdriverIO.Config = {
         console.error('Failed to save page source on test failure:', saveError)
       }
     }
-    
+
     if (runId) {
       await addCaseToRun(runId, caseId)
       const resultId = await sendResult(runId, caseId, statusId, error)
@@ -179,4 +192,3 @@ export const config: WebdriverIO.Config = {
     }
   }
 }
-

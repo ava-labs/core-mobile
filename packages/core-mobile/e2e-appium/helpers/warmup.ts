@@ -5,9 +5,11 @@ export default async function warmup(
 ) {
   // Validate mnemonic is provided
   if (!mnemonic) {
-    throw new Error('E2E_MNEMONIC environment variable is not set. Please set it before running tests.')
+    throw new Error(
+      'E2E_MNEMONIC environment variable is not set. Please set it before running tests.'
+    )
   }
-  
+
   await onboardingPage.exitMetro()
   await onboardingPage.tapAccessExistingWallet()
   await onboardingPage.tapTypeInRecoveryPhase()

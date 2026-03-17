@@ -20,7 +20,8 @@ module.exports = {
     'android/app/build/**',
     'expo-env.d.ts',
     'ios/DerivedData',
-    'app/utils/api/generated/**'
+    'app/utils/api/generated/**',
+    'e2e-appium/scripts/load-secrets-from-aws.js' // Node script for Device Farm; not in tsconfig
   ],
   overrides: [
     {
@@ -36,7 +37,7 @@ module.exports = {
       }
     },
     {
-      files: ['e2e-appium/**/*'],
+      files: ['e2e-appium/**/*.ts'],
       parserOptions: {
         project: './e2e-appium/tsconfig.json',
         tsconfigRootDir: __dirname
@@ -45,6 +46,28 @@ module.exports = {
         'no-console': 0,
         '@typescript-eslint/explicit-function-return-type': 0,
         'no-param-reassign': 0
+      }
+    },
+    {
+      files: ['e2e-appium/**/*.js'],
+      parserOptions: {
+        ecmaVersion: 2020,
+        sourceType: 'script'
+      },
+      rules: {
+        'no-console': 0
+      }
+    },
+    {
+      files: ['scripts/devicefarm/**/*.js', 'scripts/bitrise/**/*.js'],
+      rules: {
+        'no-console': 0,
+        'eslint-comments/no-unlimited-disable': 0,
+        '@typescript-eslint/no-unused-vars': 0,
+        'no-constant-condition': 0,
+        'sonarjs/no-all-duplicated-branches': 0,
+        'no-shadow': 0,
+        'max-params': 0
       }
     }
   ]

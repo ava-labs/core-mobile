@@ -99,14 +99,7 @@ expo-env.d.ts
 /ios/config.xcconfig
 
 # generated api clients
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-app/utils/apiClient/generated/profileApi.client.ts
-app/utils/apiClient/generated/balanceApi.client/
 app/utils/api/generated
-=======
-app/utils/network/generated/glacierApi.client.ts
-app/utils/network/generated/tokenAggregatorApi.client.ts
 
 # AWS Device Farm
 devicefarm-package/
@@ -114,7 +107,3 @@ e2e-appium/appium-tests-devicefarm.zip
 e2e-appium/*.tgz
 e2e-appium/node_modules/
 e2e-appium/package-lock.json
->>>>>>> Stashed changes
-=======
-app/utils/api/generated
->>>>>>> main

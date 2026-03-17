@@ -20,7 +20,7 @@ const baseConfig = {
     getTransformOptions: async () => ({
       transform: {
         experimentalImportSupport: true,
-        inlineRequires: false  // Temporarily disabled due to Metro bug with destructured parameters
+        inlineRequires: false // Temporarily disabled due to Metro bug with destructured parameters
       }
     }),
     babelTransformerPath: require.resolve('react-native-svg-transformer')
@@ -150,18 +150,10 @@ const baseConfig = {
         )
       }
       if (moduleName === 'https') {
-        return context.resolveRequest(
-          context,
-          'https-browserify',
-          platform
-        )
+        return context.resolveRequest(context, 'https-browserify', platform)
       }
       if (moduleName === 'zlib') {
-        return context.resolveRequest(
-          context,
-          'browserify-zlib',
-          platform
-        )
+        return context.resolveRequest(context, 'browserify-zlib', platform)
       }
 
       // optionally, chain to the standard Metro resolver.

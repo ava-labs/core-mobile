@@ -57,12 +57,11 @@ class BrowserPage {
   async tapTabsButton() {
     // Use content-desc to avoid tapping the URL/search bar (which has similar bounds).
     // Tap near top-left corner to ensure we hit the tabs button, not overlapping URL bar.
-    const tabsButton =
-      driver.isIOS
-        ? selectors.getByText('Open tabs panel')
-        : selectors.getByXpath(
-            "//*[@resource-id='browser_tabs_button' or @content-desc='Open tabs panel']"
-          )
+    const tabsButton = driver.isIOS
+      ? selectors.getByText('Open tabs panel')
+      : selectors.getByXpath(
+          "//*[@resource-id='browser_tabs_button' or @content-desc='Open tabs panel']"
+        )
     await actions.tapTopLeft(tabsButton)
   }
 
