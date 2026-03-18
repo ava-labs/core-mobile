@@ -214,7 +214,8 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const handleSend = useCallback((): void => {
     setSelectedToken(token)
     navigate({
-      pathname: '/send/send',
+      // @ts-ignore we need to navigate to modal root so _layout.tsx can decide between onboarding/recentContacts
+      pathname: '/send',
       params: { vmName: getNetwork(token?.networkChainId)?.vmName }
     })
   }, [getNetwork, navigate, setSelectedToken, token])

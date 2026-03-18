@@ -188,7 +188,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const handleSend = useCallback((): void => {
     setSelectedToken(undefined)
-    navigate('/send/send')
+    // @ts-ignore we need to navigate to modal root so _layout.tsx can decide between onboarding/recentContacts
+    navigate('/send')
   }, [navigate, setSelectedToken])
 
   const handleReceive = useCallback((): void => {
