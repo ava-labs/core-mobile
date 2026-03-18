@@ -1,14 +1,14 @@
 import { OnDelegationProgress } from 'contexts/DelegationContext'
 import {
   getStepConfig,
-  LedgerReviewFooter
+  LedgerReviewFooter,
+  LedgerReviewPhase
 } from 'features/ledger/components/LedgerReviewFooter'
 import { useLedgerBLEConnection } from 'features/ledger/hooks/useLedgerBLEConnection'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Operation } from 'services/earn/computeDelegationSteps/types'
 import LedgerService from 'services/ledger/LedgerService'
 
-type LedgerPhase = 'idle' | 'connecting' | 'progress'
 
 type UseLedgerStakingReturn = {
   startLedgerDelegation: (
@@ -22,7 +22,7 @@ export const useLedgerStaking = (
   isLedger: boolean,
   onCancel?: () => void
 ): UseLedgerStakingReturn => {
-  const [ledgerPhase, setLedgerPhase] = useState<LedgerPhase>('idle')
+  const [ledgerPhase, setLedgerPhase] = useState<LedgerReviewPhase>(LedgerReviewPhase.IDLE)
   const [ledgerCurrentStep, setLedgerCurrentStep] = useState(0)
   const [ledgerCurrentOperation, setLedgerCurrentOperation] =
     useState<Operation | null>(null)
@@ -47,14 +47,14 @@ export const useLedgerStaking = (
     connectionStatus
   } = useLedgerBLEConnection({
     isLedger,
-    isConnecting: ledgerPhase === 'connecting'
+    isConnecting: ledgerPhase === LedgerReviewPhase.CONNECTING
   })
 
   // Start delegation once device is connected and Avalanche app is open
   useEffect(() => {
     if (
       !isLedger ||
-      ledgerPhase !== 'connecting' ||
+      ledgerPhase !== LedgerReviewPhase.CONNECTING ||
       !isLedgerConnected ||
       !isAvalancheAppOpen ||
       approvalInProgress
@@ -62,7 +62,7 @@ export const useLedgerStaking = (
       return
 
     setApprovalInProgress(true)
-    setLedgerPhase('progress')
+    setLedgerPhase(LedgerReviewPhase.PROGRESS)
 
     const onProgress: OnDelegationProgress = (
       step: number,
@@ -80,7 +80,7 @@ export const useLedgerStaking = (
         return
       }
       setApprovalInProgress(false)
-      setLedgerPhase('connecting')
+      setLedgerPhase(LedgerReviewPhase.CONNECTING)
     }
 
     try {
@@ -104,7 +104,7 @@ export const useLedgerStaking = (
       action: (onProgress?: OnDelegationProgress) => void | Promise<void>
     ): void => {
       pendingActionRef.current = action
-      setLedgerPhase('connecting')
+      setLedgerPhase(LedgerReviewPhase.CONNECTING)
       setLedgerCurrentStep(0)
       setLedgerCurrentOperation(null)
       setApprovalInProgress(false)
@@ -113,7 +113,7 @@ export const useLedgerStaking = (
   )
 
   const resetLedgerState = useCallback((): void => {
-    setLedgerPhase('idle')
+    setLedgerPhase(LedgerReviewPhase.IDLE)
     setApprovalInProgress(false)
     pendingActionRef.current = undefined
   }, [])
@@ -131,7 +131,7 @@ export const useLedgerStaking = (
 
   const renderLedgerFooter = useCallback(
     (totalSteps: number): JSX.Element | null => {
-      if (!isLedger || ledgerPhase === 'idle') return null
+      if (!isLedger || ledgerPhase === LedgerReviewPhase.IDLE) return null
 
       return (
         <LedgerReviewFooter
