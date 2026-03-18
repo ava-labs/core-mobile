@@ -103,8 +103,8 @@ export const useLedgerApproval = (
   const cancelLedger = useCallback((): void => {
     resetLedgerState()
     reviewTransactionParams?.onReject(TRANSACTION_CANCELLED_BY_USER)
-    LedgerService.disconnect()
     ledgerParamsStore.getState().setReviewTransactionParams(null)
+    LedgerService.disconnect()
   }, [resetLedgerState, reviewTransactionParams])
 
   const renderLedgerFooter = useCallback((): JSX.Element | null => {

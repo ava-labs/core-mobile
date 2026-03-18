@@ -120,8 +120,8 @@ export const useLedgerStaking = (
 
   const cancelLedger = useCallback((): void => {
     resetLedgerState()
-    LedgerService.disconnect()
     onCancel?.()
+    LedgerService.disconnect()
   }, [resetLedgerState, onCancel])
 
   const stepConfig = useMemo(

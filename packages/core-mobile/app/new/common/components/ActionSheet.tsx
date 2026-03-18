@@ -76,7 +76,7 @@ export const ActionSheet = ({
   const renderFooter = useCallback(() => {
     if (renderFooterOverride) {
       const overrideResult = renderFooterOverride()
-      if (overrideResult !== null) return overrideResult
+      if (overrideResult != null) return overrideResult
     }
     return <ActionButtons confirm={confirm} cancel={cancel} alert={alert} />
   }, [renderFooterOverride, confirm, cancel, alert])

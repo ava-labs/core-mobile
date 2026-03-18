@@ -76,7 +76,6 @@ export const useUiSafeMutation = <TData, TVariables = void>({
               onError(e)
             }
           }, 1)
-          throw e
         }
       }
     },
