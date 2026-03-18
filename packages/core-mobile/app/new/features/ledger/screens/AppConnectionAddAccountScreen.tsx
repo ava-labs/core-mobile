@@ -117,6 +117,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
 
   return (
     <AppConnectionScreen
+      selectedDerivationPath={derivationPathType}
       completeStepTitle={`Your Account\nis being set up`}
       handleComplete={handleComplete}
       deviceId={device?.id}

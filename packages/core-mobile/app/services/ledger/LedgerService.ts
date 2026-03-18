@@ -24,6 +24,7 @@ import {
 import { assertNotNull } from 'utils/assertions'
 import { Curve } from 'utils/publicKeys'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
+import { bip32 } from 'utils/bip32'
 import {
   AddressInfo,
   LedgerAddressType,
@@ -34,7 +35,8 @@ import {
   AppInfo,
   LedgerDevice,
   AvalancheKey,
-  LEDGER_ERROR_CODES
+  LEDGER_ERROR_CODES,
+  LedgerDerivationPathType
 } from './types'
 
 class LedgerService {
@@ -609,18 +611,12 @@ class LedgerService {
 
       return {
         evm: {
-          path: getAddressDerivationPath({
-            accountIndex,
-            vmType: NetworkVMType.EVM
-          }).replace('/0/0', ''),
+          path: evmPath,
           key: evmXpubResponse.publicKey.toString('hex'),
           chainCode: evmXpubResponse.chain_code.toString('hex')
         },
         avalanche: {
-          path: getAddressDerivationPath({
-            accountIndex,
-            vmType: NetworkVMType.AVM
-          }).replace('/0/0', ''),
+          path: avalanchePath,
           key: avalancheXpubResponse.publicKey.toString('hex'),
           chainCode: avalancheXpubResponse.chain_code.toString('hex')
         }
@@ -1061,7 +1057,8 @@ class LedgerService {
    */
   async getAvalancheKeys(
     accountIndex: number,
-    isTestnet: boolean
+    isTestnet: boolean,
+    derivationPath: LedgerDerivationPathType = LedgerDerivationPathType.BIP44
   ): Promise<AvalancheKey> {
     Logger.info('Getting Avalanche keys')
 
@@ -1077,24 +1074,92 @@ class LedgerService {
     const pvmAddress = findAddress(LedgerAddressType.AVALANCHE_P)
     const btcAddress = findAddress(LedgerAddressType.BITCOIN)
 
-    // Get extended public keys and convert to base58 xpub format
-    const extendedKeys = await this.getExtendedPublicKeys(accountIndex)
+    const derivationPathType =
+      derivationPath === LedgerDerivationPathType.BIP44
+        ? 'bip44'
+        : 'ledger_live'
+    const evmPath = getAddressDerivationPath({
+      accountIndex,
+      vmType: NetworkVMType.EVM,
+      derivationPathType
+    })
+    const avalanchePath = getAddressDerivationPath({
+      accountIndex,
+      vmType: NetworkVMType.AVM,
+      derivationPathType
+    })
 
-    const { bip32 } = await import('utils/bip32')
+    if (derivationPath === LedgerDerivationPathType.BIP44) {
+      // BIP44: fetch account-level xpubs and derive address-level public keys
+      const extendedKeys = await this.getExtendedPublicKeys(accountIndex)
 
-    const evmXpub = bip32
-      .fromPublicKey(
-        Buffer.from(extendedKeys.evm.key, 'hex'),
-        Buffer.from(extendedKeys.evm.chainCode, 'hex')
-      )
-      .toBase58()
+      const evmXpub = bip32
+        .fromPublicKey(
+          Buffer.from(extendedKeys.evm.key, 'hex'),
+          Buffer.from(extendedKeys.evm.chainCode, 'hex')
+        )
+        .toBase58()
 
-    const avalancheXpub = bip32
-      .fromPublicKey(
-        Buffer.from(extendedKeys.avalanche.key, 'hex'),
-        Buffer.from(extendedKeys.avalanche.chainCode, 'hex')
-      )
-      .toBase58()
+      const avalancheXpub = bip32
+        .fromPublicKey(
+          Buffer.from(extendedKeys.avalanche.key, 'hex'),
+          Buffer.from(extendedKeys.avalanche.chainCode, 'hex')
+        )
+        .toBase58()
+
+      const evmPublicKey =
+        bip32
+          .fromBase58(evmXpub)
+          .derive(0)
+          .derive(0)
+          .publicKey?.toString('hex') ?? ''
+      const avalanchePublicKey =
+        bip32
+          .fromBase58(avalancheXpub)
+          .derive(0)
+          .derive(0)
+          .publicKey?.toString('hex') ?? ''
+
+      return {
+        addresses: {
+          evm: evmAddress,
+          avm: avmAddress,
+          pvm: pvmAddress,
+          coreEth: coreEthAddress,
+          btc: btcAddress
+        },
+        xpubs: {
+          evm: evmXpub,
+          avalanche: avalancheXpub
+        },
+        publicKeys: [
+          {
+            key: evmPublicKey,
+            derivationPath: evmPath,
+            curve: Curve.SECP256K1
+          },
+          {
+            key: avalanchePublicKey,
+            derivationPath: avalanchePath,
+            curve: Curve.SECP256K1
+          }
+        ]
+      }
+    }
+
+    // Ledger Live: get public keys directly from the device at the account path.
+    // The Avalanche app is already open from the getAllAddresses call above.
+    const avalancheApp = new AppAvalanche(this.transport as Transport)
+    const evmKeyResponse = await avalancheApp.getAddressAndPubKey(
+      evmPath,
+      false,
+      'avax'
+    )
+    const avalancheKeyResponse = await avalancheApp.getAddressAndPubKey(
+      avalanchePath,
+      false,
+      'avax'
+    )
 
     return {
       addresses: {
@@ -1105,9 +1170,21 @@ class LedgerService {
         btc: btcAddress
       },
       xpubs: {
-        evm: evmXpub,
-        avalanche: avalancheXpub
-      }
+        evm: '',
+        avalanche: ''
+      },
+      publicKeys: [
+        {
+          key: evmKeyResponse.publicKey.toString('hex'),
+          derivationPath: evmPath,
+          curve: Curve.SECP256K1
+        },
+        {
+          key: avalancheKeyResponse.publicKey.toString('hex'),
+          derivationPath: avalanchePath,
+          curve: Curve.SECP256K1
+        }
+      ]
     }
   }
 
@@ -1135,6 +1212,14 @@ class LedgerService {
   // Attempt to open a specific app on the Ledger device
   // Best-effort, does not guarantee success
   async openApp(app: LedgerAppType): Promise<void> {
+    // Skip if the app is already open — sending the open-app APDU while inside
+    // a running app forces the device to exit and restart into the new app,
+    // causing a BLE disconnect that Android does not reliably recover from.
+    if (this.currentAppType === app) {
+      Logger.info(`${app} app is already open, skipping open request`)
+      return
+    }
+
     try {
       const apdu = this.buildOpenAppApdu(app)
       const response = await this.transport.exchange(apdu)
