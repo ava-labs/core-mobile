@@ -1,3 +1,33 @@
+diff --git a/node_modules/react-native-collapsible-tab-view/lib/module/Container.js b/node_modules/react-native-collapsible-tab-view/lib/module/Container.js
+index a1b2c3d..b4c5d6e 100644
+--- a/node_modules/react-native-collapsible-tab-view/lib/module/Container.js
++++ b/node_modules/react-native-collapsible-tab-view/lib/module/Container.js
+@@ -233,7 +233,24 @@ export const Container = React.memo(
+     getCurrentIndex: () => {
+       return index.value;
+-    }
+-  }), // eslint-disable-next-line react-hooks/exhaustive-deps
+-  [onTabPress]);
++    },
++    scrollResync: () => {
++      toggleSyncScrollFrame(true);
++    },
++    scrollToTop: () => {
++      scrollYCurrent.value = 0;
++      const resetMap = {};
++      for (const name of tabNamesArray) {
++        resetMap[name] = 0;
++      }
++      scrollY.value = { ...scrollY.value, ...resetMap };
++      const currentName = tabNames.value[index.value];
++      const ref = refMap[currentName];
++      if (ref) {
++        runOnUISync(scrollToImpl, ref, 0, -contentInset, false);
++      }
++      toggleSyncScrollFrame(true);
++    }
++  }), // eslint-disable-next-line react-hooks/exhaustive-deps
++  [onTabPress, toggleSyncScrollFrame]);
 diff --git a/node_modules/react-native-collapsible-tab-view/lib/typescript/src/types.d.ts b/node_modules/react-native-collapsible-tab-view/lib/typescript/src/types.d.ts
 index 38df065..c780667 100644
 --- a/node_modules/react-native-collapsible-tab-view/lib/typescript/src/types.d.ts
@@ -26,7 +56,7 @@ index 9ec4cfe..3a068c9 100644
          if (timeSinceFirstFrame > 1500) {
            scheduleOnRN(toggleSyncScrollFrame, false)
          }
-@@ -343,9 +345,24 @@ export const Container = React.memo(
+@@ -343,9 +345,27 @@ export const Container = React.memo(
            getCurrentIndex: () => {
              return index.value
            },
@@ -42,7 +72,9 @@ index 9ec4cfe..3a068c9 100644
 +            scrollY.value = { ...scrollY.value, ...resetMap }
 +            const currentName = tabNames.value[index.value]
 +            const ref = refMap[currentName]
-+            runOnUISync(scrollToImpl, ref, 0, -contentInset, false)
++            if (ref) {
++              runOnUISync(scrollToImpl, ref, 0, -contentInset, false)
++            }
 +            toggleSyncScrollFrame(true)
 +          },
          }),
@@ -50,7 +82,7 @@ index 9ec4cfe..3a068c9 100644
 -        [onTabPress]
 +        [onTabPress, toggleSyncScrollFrame]
        )
- 
+
        return (
 diff --git a/node_modules/react-native-collapsible-tab-view/src/types.ts b/node_modules/react-native-collapsible-tab-view/src/types.ts
 index 00fbafc..dee894c 100644
@@ -63,5 +95,5 @@ index 00fbafc..dee894c 100644
 +  scrollResync: () => void
 +  scrollToTop: () => void
  }
- 
+
  export type CollapsibleRef<T extends TabName = TabName> =
