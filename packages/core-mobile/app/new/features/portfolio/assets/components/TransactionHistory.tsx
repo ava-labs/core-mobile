@@ -85,6 +85,7 @@ const TransactionHistory: FC<Props> = ({
     },
     [pendingBridgeTxs]
   )
+
   const transactionsBySymbol = useMemo(() => {
     return transactions
       .filter(tx => {

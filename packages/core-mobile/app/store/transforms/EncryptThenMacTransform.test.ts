@@ -3,7 +3,6 @@ import {
   VersionedStore
 } from 'store/transforms/EncryptThenMacTransform'
 import { AppState } from 'store/app'
-import { BridgeState } from 'store/bridge'
 import { initialState as advancedState } from 'store/settings/advanced/types'
 import { initialState as securityState } from 'store/settings/securityPrivacy/types'
 import { initialState as currencyState } from 'store/settings/currency/types'
@@ -139,7 +138,6 @@ const initialState = {
   notifications: {
     notificationSubscriptions: {}
   } as NotificationsState,
-  bridge: {} as BridgeState,
   posthog: {
     distinctID: 'f624f1a0-deda-44e4-b054-0017aeea9d67',
     featureFlags: {

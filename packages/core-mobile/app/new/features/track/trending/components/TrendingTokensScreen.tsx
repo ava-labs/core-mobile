@@ -1,15 +1,14 @@
 import { Separator } from '@avalabs/k2-alpine'
-import { AVAX_TOKEN_ID } from 'common/consts/swap'
-import { useIsSwappable } from 'common/hooks/useIsSwapable'
+import { tokenIds } from 'consts/tokenIds'
 import { useBuy } from 'features/meld/hooks/useBuy'
 import { useBalanceTotalForAccount } from 'features/portfolio/hooks/useBalanceTotalForAccount'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
-import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
+import { getTokenAddress } from 'features/track/utils/utils'
 import React, { useCallback } from 'react'
 import { StyleSheet, ViewStyle } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import { selectIsSwapBlocked } from 'store/posthog'
+import { selectIsFusionEnabled } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { MarketToken, MarketType } from 'store/watchlist'
 import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
@@ -29,8 +28,7 @@ const TrendingTokensScreen = ({
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { navigateToSwap } = useNavigateToSwap()
   const activeAccount = useSelector(selectActiveAccount)
-  const { isSwappable } = useIsSwappable()
-  const isSwapBlocked = useSelector(selectIsSwapBlocked)
+  const isFusionEnabled = useSelector(selectIsFusionEnabled)
   const { navigateToBuy } = useBuy()
 
   const balanceTotal = useBalanceTotalForAccount(activeAccount)
@@ -49,16 +47,16 @@ const TrendingTokensScreen = ({
 
   const onBuyPress = useCallback(
     (initialTokenIdTo?: string) => {
-      if (isZeroBalance || isSwapBlocked) {
+      if (isZeroBalance) {
         openBuy(initialTokenIdTo)
       } else {
         navigateToSwap({
-          fromTokenId: AVAX_TOKEN_ID,
+          fromTokenId: tokenIds.AVAX,
           toTokenId: initialTokenIdTo
         })
       }
     },
-    [isZeroBalance, openBuy, navigateToSwap, isSwapBlocked]
+    [isZeroBalance, openBuy, navigateToSwap]
   )
 
   const renderItem = useCallback(
@@ -70,8 +68,7 @@ const TrendingTokensScreen = ({
       index: number
     }): React.JSX.Element => {
       const tokenAddress = getTokenAddress(item)
-      const chainId = getTokenChainId(item)
-      const showBuyButton = isSwappable({ tokenAddress, chainId })
+      const showBuyButton = isFusionEnabled && !!tokenAddress
 
       return (
         <TrendingTokenListItem
@@ -85,7 +82,7 @@ const TrendingTokensScreen = ({
         />
       )
     },
-    [goToMarketDetail, onBuyPress, isSwappable]
+    [goToMarketDetail, onBuyPress, isFusionEnabled]
   )
 
   const renderSeparator = useCallback((): JSX.Element => {

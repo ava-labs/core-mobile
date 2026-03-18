@@ -1,4 +1,4 @@
-import { SUPPORTED_PLATFORM_ID } from 'common/consts/swap'
+import { caip2ChainIds } from 'consts/caip2ChainIds'
 import { MarketToken } from 'store/watchlist'
 
 export const compareTokenPriceChangePercentage24h = (
@@ -23,7 +23,7 @@ export const getTokenAddress = (
   if (!token) return undefined
 
   return 'platforms' in token
-    ? token.platforms[SUPPORTED_PLATFORM_ID]
+    ? token.platforms[caip2ChainIds.C_CHAIN]
     : undefined
 }
 
@@ -33,8 +33,7 @@ export const getTokenChainId = (
   return token &&
     'platforms' in token &&
     token.platforms &&
-    token.platforms[SUPPORTED_PLATFORM_ID] &&
-    token.platforms[SUPPORTED_PLATFORM_ID].length > 0
-    ? Number(SUPPORTED_PLATFORM_ID.split(':')[1])
+    (token.platforms[caip2ChainIds.C_CHAIN]?.length ?? 0) > 0
+    ? Number(caip2ChainIds.C_CHAIN.split(':')[1])
     : undefined
 }

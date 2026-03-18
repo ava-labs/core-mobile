@@ -1,8 +1,9 @@
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import TokenService from 'services/token/TokenService'
-import { Prices } from 'features/bridge/hooks/useBridge'
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
+
+type Prices = Record<string, number | undefined>
 
 const REFETCH_INTERVAL = 10000 // 10 seconds
 

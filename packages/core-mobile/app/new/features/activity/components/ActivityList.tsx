@@ -34,7 +34,9 @@ export const ActivityList = ({
   xpToken: TokenWithBalance | undefined
   isRefreshing: boolean
   overrideProps?: FlashListProps<ActivityListItem>['overrideProps']
-  handlePendingBridge: (transaction: BridgeTransaction | BridgeTransfer) => void
+  handlePendingBridge?: (
+    transaction: BridgeTransaction | BridgeTransfer
+  ) => void
   handleExplorerLink: (explorerLink: string) => void
   refresh: () => void
   renderHeader: () => React.ReactNode
@@ -53,7 +55,7 @@ export const ActivityList = ({
           <PendingBridgeTransactionItem
             item={item.transaction}
             showSeparator={index !== data.length - 1}
-            onPress={() => handlePendingBridge(item.transaction)}
+            onPress={() => handlePendingBridge?.(item.transaction)}
           />
         )
       }

@@ -89,11 +89,20 @@ export interface ExtendedPublicKey {
   chainCode: string
 }
 
+export enum LedgerAddressType {
+  EVM = 'evm',
+  AVALANCHE_X = 'avalanche-x',
+  AVALANCHE_P = 'avalanche-p',
+  AVALANCHE_CORE_ETH = 'avalanche-core-eth',
+  BITCOIN = 'bitcoin',
+  SOLANA = 'solana'
+}
+
 export interface AddressInfo {
   id: string
+  type: LedgerAddressType
   address: string
   derivationPath: string
-  network: string
 }
 
 // ============================================================================
@@ -121,6 +130,7 @@ export interface AvalancheKey {
     evm: string
     avalanche: string
   }
+  publicKeys: PublicKeyInfo[]
 }
 
 export interface LedgerKeys {
@@ -175,7 +185,7 @@ export interface WalletUpdateSolanaOptions {
 interface BaseLedgerWalletData {
   deviceId: string
   transport?: TransportBLE // Optional for backward compatibility
-  publicKeys: PublicKey[]
+  publicKeys: PerAccountPublicKeys
 }
 
 // Per-account extended public keys format
@@ -184,6 +194,11 @@ export interface PerAccountExtendedPublicKeys {
     evm: string
     avalanche: string
   }
+}
+
+// Per-account public keys format
+export interface PerAccountPublicKeys {
+  [accountIndex: number]: Array<PublicKey>
 }
 
 // BIP44 specific wallet data

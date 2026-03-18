@@ -353,8 +353,9 @@ class PortfolioPage {
   }
 
   async tapToken(token = 'Avalanche') {
+    const normalizedToken = token.replace(/\s(P|X)-Chain$/, '')
     await actions.tap(
-      selectors.getById(`${portfolio.portfolioTokenItem}${token}`)
+      selectors.getById(`${portfolio.portfolioTokenItem}${normalizedToken}`)
     )
   }
 
@@ -552,6 +553,7 @@ class PortfolioPage {
   }
 
   async verifyOwnedTokenDetail(token: string, buttons: string[]) {
+    await commonElsPage.pullToRefresh()
     await this.tapToken(token)
     await actions.waitFor(this.tokenHeaderName(token))
     await this.verifyOwnedTokenActionButtons(buttons)

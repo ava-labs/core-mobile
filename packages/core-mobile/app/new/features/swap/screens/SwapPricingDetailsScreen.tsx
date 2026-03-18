@@ -6,6 +6,7 @@ import {
   Image,
   Separator,
   Text,
+  Tooltip,
   TouchableOpacity,
   useTheme,
   View
@@ -18,28 +19,26 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { FlatList } from 'react-native-gesture-handler'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import { useSwapRate } from '../hooks/useSwapRate'
-import { MarkrQuote } from '../services/MarkrService'
-import {
-  isJupiterQuote,
-  isMarkrQuote,
-  NormalizedSwapQuote,
-  NormalizedSwapQuoteResult
-} from '../types'
+import { useQuoteFees } from '../hooks/useQuoteFees'
+import { AUTO_QUOTE_ID } from '../consts'
+import type { Quote } from '../types'
 
 export const SwapPricingDetailsScreen = ({
+  bestQuote,
+  userQuote,
   fromToken,
   toToken,
-  quotes,
-  setQuotes,
-  manuallySelected,
-  setManuallySelected
+  selectedQuote,
+  allQuotes,
+  selectQuoteById
 }: {
   fromToken: LocalTokenWithBalance | undefined
   toToken: LocalTokenWithBalance | undefined
-  quotes: NormalizedSwapQuoteResult | undefined
-  setQuotes: (quotes: NormalizedSwapQuoteResult) => void
-  manuallySelected: boolean
-  setManuallySelected: (manuallySelected: boolean) => void
+  bestQuote: Quote | null
+  userQuote: Quote | null
+  selectedQuote: Quote | null
+  allQuotes: Quote[]
+  selectQuoteById: (quoteId: string | null) => void
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -48,6 +47,7 @@ export const SwapPricingDetailsScreen = ({
   const [accordionResetKey, setAccordionResetKey] = useState(0)
 
   const { formatCurrency } = useFormatCurrency()
+  const totalFees = useQuoteFees(selectedQuote?.fees)
 
   const formatInCurrency = useCallback(
     (
@@ -68,37 +68,33 @@ export const SwapPricingDetailsScreen = ({
   )
 
   const renderItem = useCallback(
-    (item: NormalizedSwapQuote, index: number): React.JSX.Element => {
-      if (!quotes || !quotes.selected) {
+    (item: Quote, index: number): React.JSX.Element => {
+      if (!bestQuote) {
         return <></>
       }
 
-      if (!isMarkrQuote(item.quote)) {
-        return <></>
-      }
+      const { id, name, logoUrl } = item.aggregator
 
-      const quote = item.quote as MarkrQuote
-
-      const { id, name, logo_url } = quote.aggregator
-      const isLastItem = index === quotes.quotes.length
-      const isSelected =
-        (!manuallySelected && index === 0) ||
-        (manuallySelected &&
-          isMarkrQuote(quotes.selected.quote) &&
-          (quotes.selected.quote as MarkrQuote).aggregator.id === id)
+      const isLastItem = index === allQuotes.length
+      // Check if this is the Auto item or a specific provider
+      const isAutoItem = id === AUTO_QUOTE_ID
+      const isSelected = isAutoItem
+        ? !userQuote // Auto is selected when no manual selection
+        : userQuote?.id === item.id // Specific provider is selected when it matches userQuote
 
       const usdEquivalent =
-        id === 'auto'
-          ? 0
-          : formatInCurrency(toToken, BigInt(item.metadata.amountOut as string))
+        id === AUTO_QUOTE_ID ? 0 : formatInCurrency(toToken, item.amountOut)
 
       return (
         <TouchableOpacity
           key={id}
           sx={{ marginTop: 12 }}
           onPress={() => {
-            setManuallySelected(true)
-            setQuotes({ ...quotes, selected: item })
+            if (id === AUTO_QUOTE_ID) {
+              selectQuoteById(null) // Select Auto mode
+            } else {
+              selectQuoteById(item.id) // Select specific quote
+            }
             setAccordionResetKey(prev => prev + 1)
             setIsAccordionExpanded(false)
           }}>
@@ -120,11 +116,11 @@ export const SwapPricingDetailsScreen = ({
                 justifyContent: 'center',
                 alignItems: 'center'
               }}>
-              {id === 'auto' ? (
+              {id === AUTO_QUOTE_ID ? (
                 <Icons.Custom.SwapProviderAuto />
-              ) : logo_url ? (
+              ) : logoUrl ? (
                 <Image
-                  source={{ uri: logo_url }}
+                  source={{ uri: logoUrl }}
                   testID={`icon__${id}`}
                   sx={{
                     borderRadius: 18,
@@ -159,7 +155,9 @@ export const SwapPricingDetailsScreen = ({
                   sx={{ lineHeight: 16, flex: 1 }}
                   ellipsizeMode="tail"
                   numberOfLines={1}>
-                  {id === 'auto' ? 'Best price available' : usdEquivalent}
+                  {id === AUTO_QUOTE_ID
+                    ? 'Best price available'
+                    : usdEquivalent}
                 </Text>
               </View>
               {isSelected && (
@@ -179,18 +177,18 @@ export const SwapPricingDetailsScreen = ({
       )
     },
     [
-      quotes,
+      bestQuote,
+      userQuote,
+      allQuotes,
       toToken,
       formatInCurrency,
       colors,
-      manuallySelected,
-      setManuallySelected,
-      setQuotes
+      selectQuoteById
     ]
   )
 
   const rate = useSwapRate({
-    quote: quotes?.selected?.quote,
+    quote: selectedQuote,
     fromToken,
     toToken
   })
@@ -200,65 +198,85 @@ export const SwapPricingDetailsScreen = ({
       return []
     }
 
-    return [
+    const items: GroupListItem[] = [
       {
         title: 'Rate',
         value: `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${toToken.symbol}`
       }
     ]
-  }, [fromToken, toToken, rate])
+
+    if (totalFees !== undefined) {
+      const breakdownDescription = totalFees.breakdown
+        .map(item =>
+          item.fiatAmount != null
+            ? `${item.name}: ${formatCurrency({
+                amount: item.fiatAmount,
+                showLessThanThreshold: true
+              })}`
+            : `${item.name}: ${item.tokenAmount}`
+        )
+        .join('\n')
+
+      items.push({
+        title: totalFees.breakdown.length === 1 ? 'Fee' : 'Fees',
+        rightIcon: (
+          <Tooltip title="Fee Breakdown" description={breakdownDescription} />
+        ),
+        value: formatCurrency({
+          amount: totalFees.total,
+          showLessThanThreshold: true
+        })
+      })
+    }
+
+    return items
+  }, [fromToken, toToken, rate, totalFees, formatCurrency])
 
   const providerData = useMemo(() => {
     const items: GroupListItem[] = []
 
-    if (
-      !quotes ||
-      quotes.quotes.length === 0 ||
-      !quotes.quotes[0] ||
-      !quotes.selected
-    ) {
+    if (allQuotes.length === 0 || !selectedQuote || !bestQuote) {
       return items
     }
 
-    const bestRate = quotes.quotes[0]
-    const selectedRate = quotes.selected
-
-    if (isMarkrQuote(selectedRate.quote)) {
-      items.push({
-        title: 'Provider',
-        value: !manuallySelected
-          ? `Auto • ${selectedRate.quote.aggregator.name}`
-          : `${selectedRate.quote.aggregator.name}`,
+    const haveMultipleQuotes = allQuotes.length > 1
+    items.push({
+      title: 'Provider',
+      value: !userQuote
+        ? `Auto • ${selectedQuote.aggregator.name}`
+        : `${selectedQuote.aggregator.name}`,
+      ...(haveMultipleQuotes && {
         expanded: isAccordionExpanded,
         accordion: (
           <FlatList
             data={[
               {
-                ...bestRate,
-                quote: {
-                  ...bestRate.quote,
-                  aggregator: { id: 'auto', name: 'Auto' }
+                ...bestQuote,
+                aggregator: {
+                  ...bestQuote.aggregator,
+                  id: AUTO_QUOTE_ID,
+                  name: 'Auto'
                 }
-              },
-              ...quotes.quotes
+              } as Quote,
+              ...allQuotes
             ]}
-            keyExtractor={(item): string =>
-              ((item as NormalizedSwapQuote).quote as MarkrQuote).aggregator.id
-            }
+            keyExtractor={(item): string => item.aggregator.id}
             renderItem={item => renderItem(item.item, item.index)}
             scrollEnabled={false}
           />
         )
       })
-    } else if (isJupiterQuote(selectedRate.quote)) {
-      items.push({
-        title: 'Provider',
-        value: `Jupiter`
-      })
-    }
+    })
 
     return items
-  }, [quotes, fromToken, toToken, manuallySelected, renderItem, rate])
+  }, [
+    bestQuote,
+    userQuote,
+    allQuotes,
+    isAccordionExpanded,
+    renderItem,
+    selectedQuote
+  ])
 
   useEffect(() => {
     setTimeout(() => {

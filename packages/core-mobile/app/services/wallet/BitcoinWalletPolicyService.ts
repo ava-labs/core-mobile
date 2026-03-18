@@ -1,10 +1,10 @@
 import { createWalletPolicy } from '@avalabs/core-wallets-sdk'
 import Logger from 'utils/Logger'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import { NetworkVMType } from '@avalabs/core-chains-sdk'
-import { Curve } from 'utils/publicKeys'
-import { BtcWalletPolicyDetails } from '@avalabs/vm-module-types'
+import { BtcWalletPolicyDetails, NetworkVMType } from '@avalabs/vm-module-types'
 import { PublicKey } from 'services/ledger/types'
+import { Curve } from 'utils/publicKeys'
+import { LedgerWalletSecretSchema } from 'features/ledger/utils'
 import { getAddressDerivationPath } from './utils'
 
 export interface WalletPolicyDetails {
@@ -108,12 +108,17 @@ export class BitcoinWalletPolicyService {
       }
 
       // Parse the current wallet data
-      const currentWalletData = JSON.parse(walletSecretResult.value)
+      const currentWalletData = LedgerWalletSecretSchema.parse(
+        JSON.parse(walletSecretResult.value)
+      )
 
       // Update the publicKeys array with new policy details
       const updatedWalletData = {
         ...currentWalletData,
-        publicKeys: updatedPublicKeys
+        publicKeys: {
+          ...currentWalletData.publicKeys,
+          [accountIndex]: updatedPublicKeys
+        }
       }
 
       // Store the updated wallet data back to BiometricsSDK
@@ -156,13 +161,7 @@ export class BitcoinWalletPolicyService {
   static getEvmPublicKey(
     publicKeys: PublicKey[],
     accountIndex: number
-  ):
-    | {
-        key: string
-        derivationPath: string
-        curve: Curve
-      }
-    | undefined {
+  ): PublicKey | undefined {
     // Generate the EVM derivation path for the given account index
     const evmPath = getAddressDerivationPath({
       accountIndex,

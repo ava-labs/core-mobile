@@ -3,8 +3,8 @@ import { ChainId, Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { LedgerAppType, LedgerDerivationPathType } from 'services/ledger/types'
 import { OnDelegationProgress } from 'contexts/DelegationContext'
 import { z } from 'zod'
-import Logger from 'utils/Logger'
 import { RpcMethod } from '@avalabs/vm-module-types'
+import { Curve } from 'utils/publicKeys'
 import { ledgerParamsStore, StakingProgressParams } from '../store'
 
 export const showLedgerReviewTransaction = ({
@@ -39,39 +39,6 @@ export const showLedgerReviewTransaction = ({
   }, 100)
 }
 
-export const executeLedgerStakingOperation = ({
-  network,
-  totalSteps,
-  action
-}: {
-  network: Network
-  totalSteps: number
-  action: (onProgress?: OnDelegationProgress) => void
-}): void => {
-  showLedgerReviewTransaction({
-    network,
-    onApprove: async onProgress => {
-      Logger.info('Ledger transaction approved')
-      action(onProgress)
-    },
-    onReject: () => {
-      // User cancelled Ledger connection
-      Logger.info('Ledger transaction rejected')
-    },
-    stakingProgress: {
-      totalSteps,
-      onComplete: () => {
-        // TODO: Consider using AnalyticsService here to track successful Ledger transactions
-        Logger.info('Ledger transaction completed')
-      },
-      onCancel: () => {
-        Logger.info('Ledger transaction cancelled')
-        router.back()
-      }
-    }
-  })
-}
-
 export const getLedgerAppName = (network?: Network): LedgerAppType => {
   return network?.chainId === ChainId.AVALANCHE_MAINNET_ID ||
     network?.chainId === ChainId.AVALANCHE_TESTNET_ID ||
@@ -87,22 +54,42 @@ export const getLedgerAppName = (network?: Network): LedgerAppType => {
     : LedgerAppType.UNKNOWN
 }
 
+const BtcWalletPolicySchema = z.object({
+  hmacHex: z.string(),
+  masterFingerprint: z.string(),
+  xpub: z.string(),
+  name: z.string()
+})
+
+const PublicKeyInfoSchema = z.object({
+  key: z.string(),
+  derivationPath: z.string(),
+  curve: z.enum([Curve.SECP256K1, Curve.ED25519]),
+  btcWalletPolicy: BtcWalletPolicySchema.optional()
+})
+
 export const LedgerWalletSecretSchema = z.looseObject({
   deviceId: z.string(),
   deviceName: z.string(),
-  derivationPathSpec: z.nativeEnum(LedgerDerivationPathType),
-  extendedPublicKeys: z.record(
-    z.string(),
-    z.object({
-      evm: z.string().optional(),
-      avalanche: z.string().optional()
-    })
-  ),
-  publicKeys: z.array(
-    z.object({
-      key: z.string(),
-      derivationPath: z.string(),
-      curve: z.string()
-    })
-  )
+  derivationPathSpec: z.enum([
+    LedgerDerivationPathType.BIP44,
+    LedgerDerivationPathType.LedgerLive
+  ]),
+  extendedPublicKeys: z
+    .record(
+      z.string(),
+      z.object({
+        evm: z.string().optional(),
+        avalanche: z.string().optional()
+      })
+    )
+    .optional(),
+  publicKeys: z
+    .record(z.string(), z.array(PublicKeyInfoSchema))
+    .transform(
+      record =>
+        Object.fromEntries(
+          Object.entries(record).map(([k, v]) => [Number(k), v])
+        ) as Record<number, z.infer<typeof PublicKeyInfoSchema>[]>
+    )
 })

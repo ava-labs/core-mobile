@@ -1,10 +1,4 @@
-import {
-  ActivityIndicator,
-  Icons,
-  View,
-  showAlert,
-  useTheme
-} from '@avalabs/k2-alpine'
+import { Icons, View, showAlert, useTheme } from '@avalabs/k2-alpine'
 import { ProgressDots } from 'common/components/ProgressDots'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIconWithText'
@@ -184,30 +178,19 @@ export const LedgerReviewStakingScreen = (): JSX.Element | null => {
   // Render content based on current phase
   const renderStakingInProgressContent = useCallback(() => {
     return (
-      <>
-        <View style={{ flex: 1, justifyContent: 'center' }}>
-          <AnimatedIconWithText
-            icon={
-              <Icons.Custom.Avalanche
-                color={colors.$textPrimary}
-                width={44}
-                height={44}
-              />
-            }
-            title={stepConfig.title}
-            subtitle={stepConfig.subtitle}
-            subtitleStyle={{ fontSize: 12 }}
-            showAnimation={true}
+      <AnimatedIconWithText
+        icon={
+          <Icons.Custom.Avalanche
+            color={colors.$textPrimary}
+            width={44}
+            height={44}
           />
-          <View
-            style={{
-              marginTop: 32,
-              alignItems: 'center'
-            }}>
-            <ActivityIndicator size="large" color={colors.$textPrimary} />
-          </View>
-        </View>
-      </>
+        }
+        title={stepConfig.title}
+        subtitle={stepConfig.subtitle}
+        subtitleStyle={{ fontSize: 12 }}
+        showAnimation={true}
+      />
     )
   }, [colors.$textPrimary, stepConfig])
 
