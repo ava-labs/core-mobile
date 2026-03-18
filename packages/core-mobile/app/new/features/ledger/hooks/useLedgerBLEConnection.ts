@@ -15,6 +15,7 @@ type UseLedgerBLEConnectionParams = {
 type UseLedgerBLEConnectionReturn = {
   isLedgerConnected: boolean
   isAvalancheAppOpen: boolean
+  isReconnecting: boolean
   deviceForWallet: LedgerDevice | undefined
   handleReconnect: () => Promise<void>
   connectionStatus: string
@@ -27,6 +28,7 @@ export const useLedgerBLEConnection = ({
 }: UseLedgerBLEConnectionParams): UseLedgerBLEConnectionReturn => {
   const [isLedgerConnected, setIsLedgerConnected] = useState(false)
   const [isAvalancheAppOpen, setIsAvalancheAppOpen] = useState(false)
+  const [isReconnecting, setIsReconnecting] = useState(false)
 
   const isMountedRef = useRef(true)
   useEffect(() => {
@@ -52,6 +54,7 @@ export const useLedgerBLEConnection = ({
 
   const handleReconnect = useCallback(async (): Promise<void> => {
     if (!deviceForWallet || !isMountedRef.current) return
+    setIsReconnecting(true)
     try {
       await LedgerService.ensureConnection(deviceForWallet.id)
       if (!isMountedRef.current) return
@@ -59,6 +62,10 @@ export const useLedgerBLEConnection = ({
     } catch {
       if (!isMountedRef.current) return
       setIsLedgerConnected(false)
+    } finally {
+      if (isMountedRef.current) {
+        setIsReconnecting(false)
+      }
     }
   }, [deviceForWallet])
 
@@ -113,6 +120,7 @@ export const useLedgerBLEConnection = ({
   return {
     isLedgerConnected,
     isAvalancheAppOpen,
+    isReconnecting,
     deviceForWallet,
     handleReconnect,
     connectionStatus

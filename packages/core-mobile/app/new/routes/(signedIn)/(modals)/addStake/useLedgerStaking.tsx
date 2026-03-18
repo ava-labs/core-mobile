@@ -41,6 +41,7 @@ export const useLedgerStaking = (
   const {
     isLedgerConnected,
     isAvalancheAppOpen,
+    isReconnecting,
     deviceForWallet,
     handleReconnect,
     connectionStatus
@@ -138,6 +139,7 @@ export const useLedgerStaking = (
           deviceForWallet={deviceForWallet}
           connectionStatus={connectionStatus}
           isLedgerConnected={isLedgerConnected}
+          isReconnecting={isReconnecting}
           handleReconnect={handleReconnect}
           onCancel={cancelLedger}
           stepTitle={stepConfig.title}
@@ -153,6 +155,7 @@ export const useLedgerStaking = (
       deviceForWallet,
       connectionStatus,
       isLedgerConnected,
+      isReconnecting,
       handleReconnect,
       cancelLedger,
       stepConfig.title,

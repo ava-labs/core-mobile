@@ -63,7 +63,11 @@ export const getAccountSelector = (
   if ('account' in signingData) {
     return selectAccountByAddress(signingData.account)
   }
-  if ('accountIndex' in signingData && signingData.accountIndex) {
+  if (
+    'accountIndex' in signingData &&
+    signingData.accountIndex !== undefined &&
+    signingData.accountIndex !== null
+  ) {
     return selectAccountByIndex(walletId, signingData.accountIndex)
   }
   return selectActiveAccount

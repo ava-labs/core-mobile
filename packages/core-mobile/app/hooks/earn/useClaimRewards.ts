@@ -103,7 +103,7 @@ export const useClaimRewards = (
     [onFundsStuck, onError]
   )
 
-  const { safeMutate, isPending, reset } = useUiSafeMutation<
+  const { safeMutate, isPending, safeReset } = useUiSafeMutation<
     void,
     OnDelegationProgress | undefined
   >({
@@ -120,7 +120,7 @@ export const useClaimRewards = (
   return {
     claimRewards,
     isPending,
-    reset,
+    reset: safeReset,
     totalFees,
     feeCalculationError
   }

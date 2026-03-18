@@ -83,7 +83,7 @@ export const useIssueDelegation = ({
     [onFundsStuck, onError]
   )
 
-  const { safeMutate, isPending, reset } = useUiSafeMutation({
+  const { safeMutate, isPending, safeReset } = useUiSafeMutation({
     mutationFn,
     onSuccess,
     onError: handleError
@@ -92,6 +92,6 @@ export const useIssueDelegation = ({
   return {
     issueDelegation: safeMutate,
     isPending,
-    reset
+    reset: safeReset
   }
 }

@@ -39,6 +39,7 @@ export const useLedgerApproval = (
   const {
     isLedgerConnected,
     isAvalancheAppOpen: isRequiredAppOpen,
+    isReconnecting,
     deviceForWallet,
     handleReconnect,
     connectionStatus
@@ -115,6 +116,7 @@ export const useLedgerApproval = (
         deviceForWallet={deviceForWallet}
         connectionStatus={connectionStatus}
         isLedgerConnected={isLedgerConnected}
+        isReconnecting={isReconnecting}
         handleReconnect={handleReconnect}
         onCancel={cancelLedger}
         stepTitle="Review Transaction"
@@ -129,6 +131,7 @@ export const useLedgerApproval = (
     deviceForWallet,
     connectionStatus,
     isLedgerConnected,
+    isReconnecting,
     handleReconnect,
     cancelLedger
   ])

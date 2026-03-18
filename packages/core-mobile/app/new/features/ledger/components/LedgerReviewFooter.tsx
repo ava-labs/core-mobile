@@ -58,6 +58,7 @@ type LedgerReviewFooterProps = {
   deviceForWallet?: LedgerDevice
   connectionStatus: string
   isLedgerConnected: boolean
+  isReconnecting: boolean
   handleReconnect: () => void
   onCancel: () => void
   stepTitle: string
@@ -71,6 +72,7 @@ export const LedgerReviewFooter = ({
   deviceForWallet,
   connectionStatus,
   isLedgerConnected,
+  isReconnecting,
   handleReconnect,
   onCancel,
   stepTitle,
@@ -151,7 +153,7 @@ export const LedgerReviewFooter = ({
                     size="small"
                     style={{ width: 72 }}
                     onPress={handleReconnect}>
-                    {ledgerPhase === 'connecting' ? (
+                    {isReconnecting ? (
                       <ActivityIndicator
                         size="small"
                         color={theme.colors.$surfacePrimary}

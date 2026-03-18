@@ -33,7 +33,7 @@ export const useUiSafeMutation = <TData, TVariables = void>({
 }): {
   safeMutate: (variables: TVariables) => Promise<void>
   isPending: boolean
-  reset: () => void
+  safeReset: () => void
 } => {
   const { mutateAsync, isPending, reset } = useMutation({ mutationFn })
 
@@ -46,9 +46,18 @@ export const useUiSafeMutation = <TData, TVariables = void>({
       isMountedRef.current = false
       if (timerRef.current) {
         clearTimeout(timerRef.current)
+        timerRef.current = null
       }
     }
   }, [])
+
+  const safeReset = useCallback(() => {
+    if (timerRef.current !== null) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+    reset()
+  }, [reset])
 
   const safeMutate = useCallback(
     async (variables: TVariables): Promise<void> => {
@@ -73,5 +82,5 @@ export const useUiSafeMutation = <TData, TVariables = void>({
     [mutateAsync, onSuccess, onError]
   )
 
-  return { safeMutate, isPending, reset }
+  return { safeMutate, isPending, safeReset }
 }
