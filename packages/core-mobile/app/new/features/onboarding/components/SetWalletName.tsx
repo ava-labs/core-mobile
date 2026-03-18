@@ -1,8 +1,15 @@
-import { ActivityIndicator, Button, View } from '@avalabs/k2-alpine'
+import {
+  ActivityIndicator,
+  Button,
+  TextInputRef,
+  View
+} from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { SimpleTextInput } from 'common/components/SimpleTextInput'
+import { useAfterScreenTransition } from 'common/hooks/useAfterScreenTransition'
 import { useFocusEffect } from 'expo-router'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
+import { Keyboard } from 'react-native'
 
 export const SetWalletName = ({
   name,
@@ -20,6 +27,9 @@ export const SetWalletName = ({
   onNext: () => void
 }): React.JSX.Element => {
   const [isLoading, setIsLoading] = useState(false)
+  const nameInputRef = useRef<TextInputRef>(null)
+
+  useAfterScreenTransition(() => nameInputRef.current?.focus())
 
   useFocusEffect(
     useCallback(() => {
@@ -29,6 +39,7 @@ export const SetWalletName = ({
 
   const handleNext = useCallback(() => {
     setIsLoading(true)
+    Keyboard.dismiss()
     setTimeout(() => {
       onNext()
     }, 100)
@@ -69,8 +80,8 @@ export const SetWalletName = ({
           marginBottom: 16
         }}>
         <SimpleTextInput
+          ref={nameInputRef}
           testID="name_text_input"
-          autoFocus
           value={name}
           onChangeText={setName}
         />
