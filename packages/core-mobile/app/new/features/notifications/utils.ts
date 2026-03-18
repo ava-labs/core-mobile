@@ -15,7 +15,7 @@ import {
  * the user can track them; only terminal states (completed / failed / refunded)
  * are eligible for removal.
  */
-export function isSwapCompletedOrFailed(transfer: Transfer): boolean {
+export function isSwapTerminal(transfer: Transfer): boolean {
   const status = mapTransferToSwapStatus(transfer)
   return status === 'completed' || status === 'failed' || status === 'refunded'
 }

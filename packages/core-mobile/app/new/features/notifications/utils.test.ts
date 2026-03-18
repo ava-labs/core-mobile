@@ -2,7 +2,7 @@ import type { Transfer } from '@avalabs/fusion-sdk'
 import { AppNotification, NotificationCategory, NotificationTab } from './types'
 import {
   filterByTab,
-  isSwapCompletedOrFailed,
+  isSwapTerminal,
   mapTransferToSourceChainStatus,
   mapTransferToSwapStatus,
   mapTransferToTargetChainStatus,
@@ -148,33 +148,31 @@ describe('mapTransferToSwapStatus', () => {
   )
 })
 
-// ─── isSwapCompletedOrFailed ────────────────────────────────────────────────────────
+// ─── isSwapTerminal ────────────────────────────────────────────────────────
 
-describe('isSwapCompletedOrFailed', () => {
+describe('isSwapTerminal', () => {
   it('returns true when the swap is completed', () => {
-    expect(isSwapCompletedOrFailed(makeTransfer('completed'))).toBe(true)
+    expect(isSwapTerminal(makeTransfer('completed'))).toBe(true)
   })
 
   it('returns true when the swap has failed', () => {
-    expect(isSwapCompletedOrFailed(makeTransfer('failed'))).toBe(true)
+    expect(isSwapTerminal(makeTransfer('failed'))).toBe(true)
   })
 
   it('returns true when the swap was refunded (partial failure)', () => {
-    expect(isSwapCompletedOrFailed(makeTransfer('refunded'))).toBe(true)
+    expect(isSwapTerminal(makeTransfer('refunded'))).toBe(true)
   })
 
   it('returns false when the swap is in progress (source-pending)', () => {
-    expect(isSwapCompletedOrFailed(makeTransfer('source-pending'))).toBe(false)
+    expect(isSwapTerminal(makeTransfer('source-pending'))).toBe(false)
   })
 
   it('returns false when the swap is in progress (target-pending)', () => {
-    expect(isSwapCompletedOrFailed(makeTransfer('target-pending'))).toBe(false)
+    expect(isSwapTerminal(makeTransfer('target-pending'))).toBe(false)
   })
 
   it('returns false when the swap is in progress (source-completed)', () => {
-    expect(isSwapCompletedOrFailed(makeTransfer('source-completed'))).toBe(
-      false
-    )
+    expect(isSwapTerminal(makeTransfer('source-completed'))).toBe(false)
   })
 })
 

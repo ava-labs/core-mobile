@@ -53,7 +53,7 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
     }
     return (
       <Button size="large" type="primary" onPress={handleDismiss}>
-        {'Hide'}
+        Hide
       </Button>
     )
   }
