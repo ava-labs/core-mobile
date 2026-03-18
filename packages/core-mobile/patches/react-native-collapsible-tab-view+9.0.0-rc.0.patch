@@ -80,7 +80,7 @@ index 9ec4cfe..3a068c9 100644
          }),
          // eslint-disable-next-line react-hooks/exhaustive-deps
 -        [onTabPress]
-+        [onTabPress, toggleSyncScrollFrame]
++        [onTabPress]
        )
 
        return (
