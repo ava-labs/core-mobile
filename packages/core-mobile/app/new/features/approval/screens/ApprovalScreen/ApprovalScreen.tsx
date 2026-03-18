@@ -5,6 +5,8 @@ import { withWalletConnectCache } from 'common/components/withWalletConnectCache
 import { validateFee } from 'common/hooks/send/utils/evm/validate'
 import { SendErrorMessage } from 'common/hooks/send/utils/types'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import { useLedgerApproval } from 'features/approval/hooks/useLedgerApproval'
+import { WalletType } from 'services/wallet/types'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { L2_NETWORK_SYMBOL_MAPPING } from 'consts/chainIdsWithIncorrectSymbol'
 import { router } from 'expo-router'
@@ -18,11 +20,6 @@ import { Warning } from 'new/common/components/Warning'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ApprovalParams } from 'services/walletconnectv2/walletConnectCache/types'
-import {
-  selectAccountByAddress,
-  selectAccountByIndex,
-  selectActiveAccount
-} from 'store/account/slice'
 import {
   selectIsGaslessInstantBlocked,
   selectIsSeedlessSigningBlocked
@@ -38,6 +35,7 @@ import { Network } from '../../components/Network'
 import { NetworkFeeSelectorWithGasless } from '../../components/NetworkFeeSelectorWithGasless'
 import { SpendLimits } from '../../components/SpendLimits/SpendLimits'
 import {
+  getAccountSelector,
   getInitialGasLimit,
   overrideContractItem,
   removeWebsiteItemIfNecessary
@@ -56,19 +54,17 @@ const ApprovalScreen = ({
   const [amountError, setAmountError] = useState<string | undefined>()
   const nativeToken = useNativeTokenWithBalanceByNetwork(network)
   const activeWallet = useActiveWallet()
+  const isLedger =
+    activeWallet.type === WalletType.LEDGER ||
+    activeWallet.type === WalletType.LEDGER_LIVE
   const isGaslessInstantBlocked = useSelector(selectIsGaslessInstantBlocked)
+  const { renderLedgerFooter } = useLedgerApproval(isLedger)
 
   const symbol = chainId
     ? (L2_NETWORK_SYMBOL_MAPPING[chainId] as NetworkTokenSymbols)
     : undefined
 
-  const accountSelector =
-    'account' in signingData
-      ? selectAccountByAddress(signingData.account)
-      : 'accountIndex' in signingData && signingData.accountIndex
-      ? selectAccountByIndex(activeWallet.id, signingData.accountIndex)
-      : selectActiveAccount
-
+  const accountSelector = getAccountSelector(signingData, activeWallet.id)
   const account = useSelector(accountSelector)
 
   const [submitting, setSubmitting] = useState(false)
@@ -129,23 +125,36 @@ const ApprovalScreen = ({
     [onReject]
   )
 
+  const handleGaslessPreApprove = useCallback(async (): Promise<boolean> => {
+    if (!shouldShowGaslessSwitch || !gaslessEnabled) return true
+
+    if (!account) return false
+    const txHash = await handleGaslessTx(account.addressC)
+    if (!txHash) return false
+
+    // flag VM-module retry via request context instead of mutating tx data
+    request.context = {
+      ...request.context,
+      [RequestContext.SHOULD_RETRY]: !isGaslessInstantBlocked
+    }
+    return true
+  }, [
+    shouldShowGaslessSwitch,
+    gaslessEnabled,
+    handleGaslessTx,
+    account,
+    request,
+    isGaslessInstantBlocked
+  ])
+
   const handleApprove = useCallback(async (): Promise<void> => {
     if (approveDisabled) return
     setSubmitting(true)
 
-    if (shouldShowGaslessSwitch && gaslessEnabled) {
-      const txHash = await handleGaslessTx(account.addressC)
-      if (!txHash) {
-        setSubmitting(false)
-        return
-      }
-
-      // flag VM-module retry via request context instead of mutating tx data
-      request.context = {
-        ...request.context,
-        [RequestContext.SHOULD_RETRY]:
-          gaslessEnabled && !isGaslessInstantBlocked
-      }
+    const canProceed = await handleGaslessPreApprove()
+    if (!canProceed) {
+      setSubmitting(false)
+      return
     }
 
     try {
@@ -159,28 +168,31 @@ const ApprovalScreen = ({
         gasLimit,
         overrideData: hashedCustomSpend
       })
-      router.canGoBack() && router.back()
+      // For Ledger, the controller sets the store and navigation is handled
+      // by ApprovalController.handleGoBackIfNeeded after signing completes
+      if (!isLedger) {
+        router.canGoBack() && router.back()
+      }
     } catch (error: unknown) {
       Logger.error('Error approving transaction', error)
     } finally {
-      setSubmitting(false)
+      if (!isLedger) {
+        setSubmitting(false)
+      }
     }
   }, [
     approveDisabled,
-    shouldShowGaslessSwitch,
-    gaslessEnabled,
-    handleGaslessTx,
-    account,
-    request,
+    handleGaslessPreApprove,
     onApprove,
     activeWallet.id,
     activeWallet.type,
     network,
+    account,
     maxFeePerGas,
     maxPriorityFeePerGas,
     gasLimit,
     hashedCustomSpend,
-    isGaslessInstantBlocked
+    isLedger
   ])
 
   const validateEthSendTransaction = useCallback(() => {
@@ -443,7 +455,8 @@ const ApprovalScreen = ({
         label: 'Reject',
         onPress: rejectAndClose,
         disabled: submitting
-      }}>
+      }}
+      renderFooterOverride={isLedger ? renderLedgerFooter : undefined}>
       {renderDappInfoOrTitle()}
       {renderGaslessAlert()}
       {renderBalanceChange()}

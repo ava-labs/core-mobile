@@ -7,6 +7,11 @@ import {
 } from '@avalabs/vm-module-types'
 import { RequestContext } from 'store/rpc/types'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
+import {
+  selectAccountByAddress,
+  selectAccountByIndex,
+  selectActiveAccount
+} from 'store/account/slice'
 
 export const removeWebsiteItemIfNecessary = (
   item: DetailItem,
@@ -49,6 +54,19 @@ export const overrideContractItem = (
   }
 
   return item
+}
+
+export const getAccountSelector = (
+  signingData: SigningData,
+  walletId: string
+): typeof selectActiveAccount => {
+  if ('account' in signingData) {
+    return selectAccountByAddress(signingData.account)
+  }
+  if ('accountIndex' in signingData && signingData.accountIndex) {
+    return selectAccountByIndex(walletId, signingData.accountIndex)
+  }
+  return selectActiveAccount
 }
 
 export const getInitialGasLimit = (data: SigningData): number | undefined => {

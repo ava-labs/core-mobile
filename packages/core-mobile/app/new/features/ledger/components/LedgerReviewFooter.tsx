@@ -11,7 +11,7 @@ import { Operation } from 'services/earn/computeDelegationSteps/types'
 import { LedgerDevice } from 'services/ledger/types'
 import { AnimatedIconWithText } from './AnimatedIconWithText'
 
-export type LedgerStakingPhase = 'connecting' | 'progress'
+export type LedgerReviewPhase = 'connecting' | 'progress'
 
 type StepConfig = {
   title: string
@@ -53,8 +53,8 @@ export const getStepConfig = (operation: Operation | null): StepConfig => {
   }
 }
 
-type LedgerStakingFooterProps = {
-  ledgerPhase: LedgerStakingPhase
+type LedgerReviewFooterProps = {
+  ledgerPhase: LedgerReviewPhase
   deviceForWallet?: LedgerDevice
   connectionStatus: string
   isLedgerConnected: boolean
@@ -66,7 +66,7 @@ type LedgerStakingFooterProps = {
   totalSteps: number
 }
 
-export const LedgerStakingFooter = ({
+export const LedgerReviewFooter = ({
   ledgerPhase,
   deviceForWallet,
   connectionStatus,
@@ -77,7 +77,7 @@ export const LedgerStakingFooter = ({
   stepSubtitle,
   ledgerCurrentStep,
   totalSteps
-}: LedgerStakingFooterProps): JSX.Element | null => {
+}: LedgerReviewFooterProps): JSX.Element | null => {
   const { theme } = useTheme()
 
   if (ledgerPhase === 'connecting') {
@@ -173,9 +173,10 @@ export const LedgerStakingFooter = ({
   }
 
   if (ledgerPhase === 'progress') {
-    const title = stepTitle.includes('Preparing')
-      ? stepTitle
-      : `${stepTitle} [${ledgerCurrentStep}/${totalSteps}]`
+    const title =
+      stepTitle.includes('Preparing') || totalSteps <= 1
+        ? stepTitle
+        : `${stepTitle} [${ledgerCurrentStep}/${totalSteps}]`
     return (
       <View sx={{ gap: 16, marginTop: 24 }}>
         <AnimatedIconWithText

@@ -1,8 +1,8 @@
 import { OnDelegationProgress } from 'contexts/DelegationContext'
 import {
   getStepConfig,
-  LedgerStakingFooter
-} from 'features/ledger/components/LedgerStakingFooter'
+  LedgerReviewFooter
+} from 'features/ledger/components/LedgerReviewFooter'
 import { useLedgerBLEConnection } from 'features/ledger/hooks/useLedgerBLEConnection'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Operation } from 'services/earn/computeDelegationSteps/types'
@@ -133,7 +133,7 @@ export const useLedgerClaimReward = (
       if (!isLedger || ledgerPhase === 'idle') return null
 
       return (
-        <LedgerStakingFooter
+        <LedgerReviewFooter
           ledgerPhase={ledgerPhase}
           deviceForWallet={deviceForWallet}
           connectionStatus={connectionStatus}
