@@ -300,7 +300,11 @@ export const NotificationsScreen = (): JSX.Element => {
             }
             animateDelay={index * SWIPE_DELAY}
             onSwipeComplete={() => removeTransfer(transfer.transfer.id)}
-            onPress={() => handleSwapActivityPress(transfer)}
+            onPress={
+              isClearingAll
+                ? undefined
+                : () => handleSwapActivityPress(transfer)
+            }
             enabled={!isClearingAll && isTerminal}>
             <FusionTransferItem
               item={transfer}
@@ -318,7 +322,11 @@ export const NotificationsScreen = (): JSX.Element => {
           animateOut={shouldAnimate}
           animateDelay={index * SWIPE_DELAY}
           onSwipeComplete={() => dismissNotification(notification)}
-          onPress={() => handleNotificationPress(notification)}
+          onPress={
+            isClearingAll
+              ? undefined
+              : () => handleNotificationPress(notification)
+          }
           enabled={!isClearingAll}>
           {renderNotificationItem(notification, {
             showSeparator: !isLast,

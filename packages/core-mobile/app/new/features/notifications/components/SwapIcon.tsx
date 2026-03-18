@@ -13,8 +13,9 @@ type SwapIconProps = {
 
 /**
  * Icon shown on the left of each swap item:
- *  - completed  → grey circle with Compare arrows (→←) + optional network badge
- *  - failed     → grey circle with Compare arrows (→←) + optional network badge
+ *  - completed   → grey circle with Compare arrows (→←) + optional network badge
+ *  - failed      → grey circle with Compare arrows (→←) + optional network badge
+ *  - refunded    → grey circle with Restart icon + optional network badge
  *  - in_progress → grey circle with a continuously spinning sync icon + optional network badge
  */
 export const SwapIcon: FC<SwapIconProps> = ({ status, networkLogoUri }) => {
