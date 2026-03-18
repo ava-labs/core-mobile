@@ -17,7 +17,11 @@ import {
  */
 export function isSwapTerminal(transfer: Transfer): boolean {
   const status = mapTransferToSwapStatus(transfer)
-  return status === 'completed' || status === 'failed' || status === 'refunded'
+  return (
+    status === NotificationSwapStatus.Completed ||
+    status === NotificationSwapStatus.Failed ||
+    status === NotificationSwapStatus.Refunded
+  )
 }
 
 /**
@@ -30,12 +34,12 @@ export function mapTransferToSwapStatus(
 ): NotificationSwapStatus {
   const lower = transfer.status.toLowerCase()
 
-  if (lower === 'completed') return 'completed'
-  if (lower === 'failed') return 'failed'
-  if (lower === 'refunded') return 'refunded'
+  if (lower === 'completed') return NotificationSwapStatus.Completed
+  if (lower === 'failed') return NotificationSwapStatus.Failed
+  if (lower === 'refunded') return NotificationSwapStatus.Refunded
 
   // source-pending, source-completed, target-pending → all still in progress
-  return 'in_progress'
+  return NotificationSwapStatus.InProgress
 }
 
 /**
@@ -50,11 +54,11 @@ export function mapTransferToSourceChainStatus(
 ): NotificationSwapStatus {
   const lower = transfer.status.toLowerCase()
 
-  if (lower === 'failed') return 'failed'
-  if (lower === 'source-pending') return 'in_progress'
+  if (lower === 'failed') return NotificationSwapStatus.Failed
+  if (lower === 'source-pending') return NotificationSwapStatus.InProgress
 
   // source-completed, target-pending, completed → source done
-  return 'completed'
+  return NotificationSwapStatus.Completed
 }
 
 /**
@@ -70,12 +74,12 @@ export function mapTransferToTargetChainStatus(
 ): NotificationSwapStatus {
   const lower = transfer.status.toLowerCase()
 
-  if (lower === 'failed') return 'failed'
-  if (lower === 'completed') return 'completed'
-  if (lower === 'refunded') return 'incomplete'
+  if (lower === 'failed') return NotificationSwapStatus.Failed
+  if (lower === 'completed') return NotificationSwapStatus.Completed
+  if (lower === 'refunded') return NotificationSwapStatus.Incomplete
 
   // source-pending, source-completed, target-pending → target not done yet
-  return 'in_progress'
+  return NotificationSwapStatus.InProgress
 }
 
 /**

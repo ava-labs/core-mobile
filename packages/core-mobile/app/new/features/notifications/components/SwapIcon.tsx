@@ -23,7 +23,7 @@ export const SwapIcon: FC<SwapIconProps> = ({ status, networkLogoUri }) => {
     theme: { colors }
   } = useTheme()
 
-  if (status === 'refunded') {
+  if (status === NotificationSwapStatus.Refunded) {
     return (
       <View sx={{ width: ICON_SIZE }}>
         <View
@@ -47,7 +47,10 @@ export const SwapIcon: FC<SwapIconProps> = ({ status, networkLogoUri }) => {
     )
   }
 
-  if (status === 'completed' || status === 'failed') {
+  if (
+    status === NotificationSwapStatus.Completed ||
+    status === NotificationSwapStatus.Failed
+  ) {
     return (
       <View sx={{ width: ICON_SIZE }}>
         <View

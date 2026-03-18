@@ -121,9 +121,10 @@ export function isBalanceChangeNotification(
 /**
  * Status of a swap transaction.
  */
-export type NotificationSwapStatus =
-  | 'completed'
-  | 'in_progress'
-  | 'failed'
-  | 'incomplete'
-  | 'refunded'
+export enum NotificationSwapStatus {
+  Completed = 'completed',
+  InProgress = 'in_progress',
+  Failed = 'failed',
+  Incomplete = 'incomplete',
+  Refunded = 'refunded'
+}

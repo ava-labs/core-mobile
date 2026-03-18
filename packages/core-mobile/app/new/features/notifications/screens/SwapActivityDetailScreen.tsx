@@ -5,6 +5,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
 import { useFusionTransfers } from 'features/swap/hooks/useZustandStore'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
+import { NotificationSwapStatus } from '../types'
 import { TokenAmountRow } from '../components/TokenAmountRow'
 import { SwapStatusCard } from '../components/SwapStatusCard'
 import { useSwapActivityDisplay } from '../hooks/useSwapActivityDisplay'
@@ -39,7 +40,7 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
   }, [navigateToSwap, router, transfer])
 
   const renderFooter = (): React.ReactNode => {
-    if (display?.status === 'failed') {
+    if (display?.status === NotificationSwapStatus.Failed) {
       return (
         <View sx={{ gap: 8 }}>
           <Button size="large" type="primary" onPress={handleRetry}>
@@ -136,9 +137,11 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
   }, [display, renderEmpty])
 
   const title = useMemo(() => {
-    if (display?.status === 'failed') return `Swap failed`
-    if (display?.status === 'completed') return `Swap\nsuccessful`
-    if (display?.status === 'refunded') return `Swap\npartial failure`
+    if (display?.status === NotificationSwapStatus.Failed) return `Swap failed`
+    if (display?.status === NotificationSwapStatus.Completed)
+      return `Swap\nsuccessful`
+    if (display?.status === NotificationSwapStatus.Refunded)
+      return `Swap\npartial failure`
     return `Swap\nin progress...`
   }, [display])
 

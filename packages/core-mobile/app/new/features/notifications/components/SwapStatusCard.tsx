@@ -25,9 +25,25 @@ export const SwapStatusCard = ({
     theme: { colors }
   } = useTheme()
 
-  const isCompleted = status === 'completed'
-  const isFailed = status === 'failed'
-  const isIncomplete = status === 'incomplete'
+  let statusTitle: string
+  let statusColor: string
+  switch (status) {
+    case NotificationSwapStatus.Completed:
+      statusTitle = 'Complete'
+      statusColor = colors.$textSuccess
+      break
+    case NotificationSwapStatus.Failed:
+      statusTitle = 'Failed'
+      statusColor = colors.$textDanger
+      break
+    case NotificationSwapStatus.Incomplete:
+      statusTitle = 'Incomplete'
+      statusColor = colors.$textDanger
+      break
+    default:
+      statusTitle = 'Pending...'
+      statusColor = colors.$textSecondary
+  }
 
   return (
     <View
@@ -83,19 +99,9 @@ export const SwapStatusCard = ({
             sx={{
               lineHeight: 22,
               fontWeight: '500',
-              color: isCompleted
-                ? colors.$textSuccess
-                : isFailed || isIncomplete
-                ? colors.$textDanger
-                : colors.$textSecondary
+              color: statusColor
             }}>
-            {isCompleted
-              ? 'Complete'
-              : isIncomplete
-              ? 'Incomplete'
-              : isFailed
-              ? 'Failed'
-              : 'Pending...'}
+            {statusTitle}
           </Text>
         </View>
       </View>

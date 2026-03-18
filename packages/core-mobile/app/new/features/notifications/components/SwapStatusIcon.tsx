@@ -14,7 +14,7 @@ export const SwapStatusIcon = ({
     theme: { colors }
   } = useTheme()
 
-  if (status === 'completed') {
+  if (status === NotificationSwapStatus.Completed) {
     return (
       <View
         sx={{
@@ -34,7 +34,7 @@ export const SwapStatusIcon = ({
     )
   }
 
-  if (status === 'failed') {
+  if (status === NotificationSwapStatus.Failed) {
     return (
       <Icons.Alert.Error
         color={colors.$textDanger}
@@ -44,7 +44,7 @@ export const SwapStatusIcon = ({
     )
   }
 
-  if (status === 'incomplete') {
+  if (status === NotificationSwapStatus.Incomplete) {
     return (
       <Icons.Alert.ErrorOutline
         color={colors.$textDanger}

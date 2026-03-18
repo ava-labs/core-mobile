@@ -4,8 +4,15 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { FusionTransfer } from 'features/swap/types'
 import { mapTransferToSwapStatus } from '../utils'
+import { NotificationSwapStatus } from '../types'
 import NotificationListItem from './NotificationListItem'
 import { SwapIcon } from './SwapIcon'
+
+const SUBTITLE_MAP = {
+  [NotificationSwapStatus.Completed]: 'Completed',
+  [NotificationSwapStatus.Failed]: 'Failed',
+  [NotificationSwapStatus.Refunded]: undefined
+} as const
 
 type FusionTransferItemProps = {
   item: FusionTransfer
@@ -58,7 +65,10 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
   }, [item.transfer])
 
   const title = useMemo(() => {
-    if (status === 'refunded' && 'refund' in item.transfer) {
+    if (
+      status === NotificationSwapStatus.Refunded &&
+      'refund' in item.transfer
+    ) {
       const { refund } = item.transfer
       if (refund.asset) {
         const refundUnit = new TokenUnit(
@@ -75,18 +85,14 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
       ? `${fromAmount.toDisplay()} ${fromSymbol}`
       : fromSymbol
     const to = toAmount ? `${toAmount.toDisplay()} ${toSymbol}` : toSymbol
-    return status === 'in_progress'
+    return status === NotificationSwapStatus.InProgress
       ? `Swapping ${fromSymbol} to ${toSymbol} in progress...`
       : `${from} swapped for ${to}`
   }, [fromAmount, fromSymbol, toAmount, toSymbol, status, item.transfer])
 
   const subtitle =
-    status === 'completed'
-      ? 'Completed'
-      : status === 'failed'
-      ? 'Failed'
-      : status === 'refunded'
-      ? undefined
+    status in SUBTITLE_MAP
+      ? SUBTITLE_MAP[status as keyof typeof SUBTITLE_MAP]
       : 'Tap for more details'
 
   const accessoryType = 'chevron'
@@ -100,9 +106,9 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
           lineHeight: 15,
           fontWeight: 500,
           color:
-            status === 'completed'
+            status === NotificationSwapStatus.Completed
               ? '$textSuccess'
-              : status === 'failed'
+              : status === NotificationSwapStatus.Failed
               ? '$textDanger'
               : '$textSecondary'
         }}
