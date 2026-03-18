@@ -11,6 +11,7 @@ import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useCallback } from 'react'
 import { useUiSafeMutation } from 'hooks/useUiSafeMutation'
 import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
+import { OnDelegationProgress } from 'contexts/DelegationContext'
 import { useClaimFees } from './useClaimFees'
 import { useGetFeeState } from './useGetFeeState'
 
@@ -26,8 +27,9 @@ export const useClaimRewards = (
   onError: (error: Error) => void,
   onFundsStuck: (error: Error) => void
 ): {
-  claimRewards: () => Promise<void>
+  claimRewards: (onProgress?: OnDelegationProgress) => Promise<void>
   isPending: boolean
+  reset: () => void
   totalFees?: TokenUnit
   feeCalculationError?: SendErrorMessage
 } => {
@@ -36,7 +38,10 @@ export const useClaimRewards = (
   const { defaultFeeState } = useGetFeeState()
   const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
   const activeWallet = useActiveWallet()
-  const { xpAddresses, xpAddressDictionary } = useXPAddresses(activeAccount)
+  const { xpAddresses, xpAddressDictionary } = useXPAddresses(
+    activeAccount,
+    false
+  )
 
   const {
     totalFees,
@@ -45,45 +50,49 @@ export const useClaimRewards = (
     feeCalculationError
   } = useClaimFees()
 
-  const mutationFn = useCallback(async () => {
-    if (!activeAccount) {
-      throw Error('No active account')
-    }
+  const mutationFn = useCallback(
+    async (onProgress?: OnDelegationProgress) => {
+      if (!activeAccount) {
+        throw Error('No active account')
+      }
 
-    if (!pClaimableBalance) {
-      throw Error('No claimable balance')
-    }
+      if (!pClaimableBalance) {
+        throw Error('No claimable balance')
+      }
 
-    if (!totalFees || !amountToTransfer) {
-      throw Error('Unable to calculate fees')
-    }
+      if (!totalFees || !amountToTransfer) {
+        throw Error('Unable to calculate fees')
+      }
 
-    Logger.info(`transfering ${amountToTransfer.toDisplay()} from P to C`)
+      Logger.info(`transfering ${amountToTransfer.toDisplay()} from P to C`)
 
-    return EarnService.claimRewards({
-      walletId: activeWallet.id,
-      walletType: activeWallet.type,
-      pChainBalance: pClaimableBalance,
-      requiredAmount: amountToTransfer,
-      account: activeAccount,
-      isTestnet: isDeveloperMode,
-      feeState: defaultFeeState,
+      return EarnService.claimRewards({
+        walletId: activeWallet.id,
+        walletType: activeWallet.type,
+        pChainBalance: pClaimableBalance,
+        requiredAmount: amountToTransfer,
+        account: activeAccount,
+        isTestnet: isDeveloperMode,
+        feeState: defaultFeeState,
+        cBaseFeeMultiplier,
+        xpAddresses,
+        xpAddressDictionary,
+        onProgress
+      })
+    },
+    [
+      activeAccount,
+      activeWallet,
+      amountToTransfer,
       cBaseFeeMultiplier,
+      defaultFeeState,
+      isDeveloperMode,
+      pClaimableBalance,
+      totalFees,
       xpAddresses,
       xpAddressDictionary
-    })
-  }, [
-    activeAccount,
-    activeWallet,
-    amountToTransfer,
-    cBaseFeeMultiplier,
-    defaultFeeState,
-    isDeveloperMode,
-    pClaimableBalance,
-    totalFees,
-    xpAddresses,
-    xpAddressDictionary
-  ])
+    ]
+  )
 
   const handleError = useCallback(
     (error: unknown) => {
@@ -97,15 +106,24 @@ export const useClaimRewards = (
     [onFundsStuck, onError]
   )
 
-  const { safeMutate, isPending } = useUiSafeMutation({
+  const { safeMutate, isPending, reset } = useUiSafeMutation<
+    void,
+    OnDelegationProgress | undefined
+  >({
     mutationFn,
     onSuccess,
     onError: handleError
   })
 
+  const claimRewards = useCallback(
+    (onProgress?: OnDelegationProgress) => safeMutate(onProgress),
+    [safeMutate]
+  )
+
   return {
-    claimRewards: safeMutate,
+    claimRewards,
     isPending,
+    reset,
     totalFees,
     feeCalculationError
   }

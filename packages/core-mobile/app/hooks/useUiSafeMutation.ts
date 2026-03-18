@@ -33,8 +33,9 @@ export const useUiSafeMutation = <TData, TVariables = void>({
 }): {
   safeMutate: (variables: TVariables) => Promise<void>
   isPending: boolean
+  reset: () => void
 } => {
-  const { mutateAsync, isPending } = useMutation({ mutationFn })
+  const { mutateAsync, isPending, reset } = useMutation({ mutationFn })
 
   const isMountedRef = useRef(true)
   const timerRef = useRef<number | null>(null)
@@ -72,5 +73,5 @@ export const useUiSafeMutation = <TData, TVariables = void>({
     [mutateAsync, onSuccess, onError]
   )
 
-  return { safeMutate, isPending }
+  return { safeMutate, isPending, reset }
 }

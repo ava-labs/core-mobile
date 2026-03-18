@@ -10,18 +10,18 @@ import LedgerService from 'services/ledger/LedgerService'
 
 type LedgerPhase = 'idle' | 'connecting' | 'progress'
 
-type UseLedgerStakingReturn = {
-  startLedgerDelegation: (
+type UseLedgerClaimRewardReturn = {
+  startLedgerClaimReward: (
     action: (onProgress?: OnDelegationProgress) => void | Promise<void>
   ) => void
   resetLedgerState: () => void
   renderLedgerFooter: (totalSteps: number) => JSX.Element | null
 }
 
-export const useLedgerStaking = (
+export const useLedgerClaimReward = (
   isLedger: boolean,
   onCancel?: () => void
-): UseLedgerStakingReturn => {
+): UseLedgerClaimRewardReturn => {
   const [ledgerPhase, setLedgerPhase] = useState<LedgerPhase>('idle')
   const [ledgerCurrentStep, setLedgerCurrentStep] = useState(0)
   const [ledgerCurrentOperation, setLedgerCurrentOperation] =
@@ -49,7 +49,7 @@ export const useLedgerStaking = (
     isConnecting: ledgerPhase === 'connecting'
   })
 
-  // Start delegation once device is connected and Avalanche app is open
+  // Start claim once device is connected and Avalanche app is open
   useEffect(() => {
     if (
       !isLedger ||
@@ -98,7 +98,7 @@ export const useLedgerStaking = (
     isLedger
   ])
 
-  const startLedgerDelegation = useCallback(
+  const startLedgerClaimReward = useCallback(
     (
       action: (onProgress?: OnDelegationProgress) => void | Promise<void>
     ): void => {
@@ -162,7 +162,7 @@ export const useLedgerStaking = (
   )
 
   return {
-    startLedgerDelegation,
+    startLedgerClaimReward,
     resetLedgerState,
     renderLedgerFooter
   }

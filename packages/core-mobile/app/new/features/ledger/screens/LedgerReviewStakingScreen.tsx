@@ -2,6 +2,7 @@ import { Icons, View, showAlert, useTheme } from '@avalabs/k2-alpine'
 import { ProgressDots } from 'common/components/ProgressDots'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIconWithText'
+import { getStepConfig } from 'new/features/ledger/components/LedgerStakingFooter'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -14,46 +15,6 @@ import { useLedgerParams, useLedgerWalletMap } from '../store'
 import { LedgerReviewScreen } from './LedgerReviewScreen'
 
 type Phase = 'connection' | 'progress'
-
-interface StepConfig {
-  title: string
-  subtitle: string
-}
-
-const getStepConfig = (operation: Operation | null): StepConfig => {
-  switch (operation) {
-    case Operation.EXPORT_C:
-      return {
-        title: 'Export from C-Chain',
-        subtitle: 'Sign the export transaction on your Ledger device'
-      }
-    case Operation.IMPORT_P:
-      return {
-        title: 'Import to P-Chain',
-        subtitle: 'Sign the import transaction on your Ledger device'
-      }
-    case Operation.DELEGATE:
-      return {
-        title: 'Delegate Stake',
-        subtitle: 'Sign the delegation transaction on your Ledger device'
-      }
-    case Operation.EXPORT_P:
-      return {
-        title: 'Export from P-Chain',
-        subtitle: 'Sign the export transaction on your Ledger device'
-      }
-    case Operation.IMPORT_C:
-      return {
-        title: 'Import to C-Chain',
-        subtitle: 'Sign the import transaction on your Ledger device'
-      }
-    default:
-      return {
-        title: 'Preparing transaction...',
-        subtitle: 'Please wait while we prepare your staking transaction'
-      }
-  }
-}
 
 export const LedgerReviewStakingScreen = (): JSX.Element | null => {
   const {

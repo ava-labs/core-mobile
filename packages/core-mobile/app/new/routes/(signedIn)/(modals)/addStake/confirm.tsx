@@ -115,8 +115,13 @@ const StakeConfirmScreen = (): JSX.Element => {
     activeWallet?.type === WalletType.LEDGER ||
     activeWallet?.type === WalletType.LEDGER_LIVE
 
+  // Use a ref to break the circular dependency between useLedgerStaking and useIssueDelegation
+  const onLedgerCancelRef = useRef<(() => void) | undefined>(undefined)
   const { startLedgerDelegation, resetLedgerState, renderLedgerFooter } =
-    useLedgerStaking(isLedger)
+    useLedgerStaking(
+      isLedger,
+      useCallback(() => onLedgerCancelRef.current?.(), [])
+    )
 
   const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const networkFeesInAvax = useMemo(() => {
@@ -390,12 +395,16 @@ const StakeConfirmScreen = (): JSX.Element => {
     [handleDismiss, isLedger, startLedgerDelegation]
   )
 
-  const { issueDelegation, isPending: isIssueDelegationPending } =
-    useIssueDelegation({
-      onSuccess: onDelegationSuccess,
-      onError: onDelegationError,
-      onFundsStuck
-    })
+  const {
+    issueDelegation,
+    isPending: isIssueDelegationPending,
+    reset: resetIssueDelegation
+  } = useIssueDelegation({
+    onSuccess: onDelegationSuccess,
+    onError: onDelegationError,
+    onFundsStuck
+  })
+  onLedgerCancelRef.current = resetIssueDelegation
 
   useEffect(() => {
     issueDelegationRef.current = issueDelegation

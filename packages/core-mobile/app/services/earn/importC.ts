@@ -12,10 +12,7 @@ import Logger from 'utils/Logger'
 import { weiToNano } from 'utils/units/converter'
 import { cChainToken } from 'utils/units/knownTokens'
 import AvalancheWalletService from 'services/wallet/AvalancheWalletService'
-import {
-  maxTransactionCreationRetries,
-  maxTransactionStatusCheckRetries
-} from './utils'
+import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ImportCParams = {
   walletId: string
@@ -70,23 +67,10 @@ export async function importC({
   })
   const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
 
-  let txID: string
-  try {
-    txID = await retry({
-      operation: () =>
-        NetworkService.sendTransaction({ signedTx, network: avaxXPNetwork }),
-      shouldStop: result => result !== '',
-      maxRetries: maxTransactionCreationRetries
-    })
-  } catch (e) {
-    Logger.error('ISSUE_IMPORT_FAIL', e)
-    throw new FundsStuckError({
-      name: 'ISSUE_IMPORT_FAIL',
-      message: 'Sending import transaction failed ',
-      cause: e
-    })
-  }
-
+  const txID = await NetworkService.sendTransaction({
+    signedTx,
+    network: avaxXPNetwork
+  })
   Logger.trace('txID', txID)
 
   try {
