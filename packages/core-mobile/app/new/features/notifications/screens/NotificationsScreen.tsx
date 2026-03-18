@@ -35,7 +35,7 @@ import {
   isPriceAlertNotification,
   isBalanceChangeNotification
 } from '../types'
-import { isSwapCompletedOrFailed } from '../utils'
+import { isSwapTerminal } from '../utils'
 import { FusionTransferItem } from '../components/FusionTransferItem'
 
 const TITLE = 'Notifications'
@@ -176,7 +176,7 @@ export const NotificationsScreen = (): JSX.Element => {
       combinedItems.filter(
         item =>
           item.kind === 'notification' ||
-          (item.kind === 'swap' && isSwapCompletedOrFailed(item.item.transfer))
+          (item.kind === 'swap' && isSwapTerminal(item.item.transfer))
       ),
     [combinedItems]
   )
@@ -292,18 +292,20 @@ export const NotificationsScreen = (): JSX.Element => {
 
       if (combined.kind === 'swap') {
         const transfer = combined.item
-        const isCompletedOrFailed = isSwapCompletedOrFailed(transfer.transfer)
+        const isTerminal = isSwapTerminal(transfer.transfer)
         return (
           <SwipeableRow
             animateOut={
-              isCompletedOrFailed && isClearingAll && index < MAX_ANIMATED_ITEMS
+              isTerminal && isClearingAll && index < MAX_ANIMATED_ITEMS
             }
             animateDelay={index * SWIPE_DELAY}
             onSwipeComplete={() => removeTransfer(transfer.transfer.id)}
-            onPress={() => {
-              isCompletedOrFailed === false && handleSwapActivityPress(transfer)
-            }}
-            enabled={!isClearingAll && isCompletedOrFailed}>
+            onPress={
+              isClearingAll
+                ? undefined
+                : () => handleSwapActivityPress(transfer)
+            }
+            enabled={!isClearingAll && isTerminal}>
             <FusionTransferItem
               item={transfer}
               showSeparator={!isLast}
@@ -320,7 +322,11 @@ export const NotificationsScreen = (): JSX.Element => {
           animateOut={shouldAnimate}
           animateDelay={index * SWIPE_DELAY}
           onSwipeComplete={() => dismissNotification(notification)}
-          onPress={() => handleNotificationPress(notification)}
+          onPress={
+            isClearingAll
+              ? undefined
+              : () => handleNotificationPress(notification)
+          }
           enabled={!isClearingAll}>
           {renderNotificationItem(notification, {
             showSeparator: !isLast,

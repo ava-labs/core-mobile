@@ -83,6 +83,7 @@ export const TokenActivityListItemTitle = ({
 
   // Smart swap title generation that identifies input vs output tokens
   const getSwapTitle = useCallback(
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     (transaction: TokenActivityTransaction): ReactNode[] => {
       // worst case scenario, just return 'Swap'
       if (!transaction.tokens || transaction.tokens.length === 0) {
@@ -127,10 +128,28 @@ export const TokenActivityListItemTitle = ({
         }
       }
 
+      // If input is known but output is not visible (e.g. cross-chain swap where
+      // the destination token lands on a different chain), show just the input.
+      if (inputTokens.length > 0 && outputTokens.length === 0) {
+        const inputToken = inputTokens[0]
+        if (inputToken) {
+          return [
+            renderAmount(inputToken.amount),
+            ' ',
+            inputToken.symbol,
+            ' swapped'
+          ]
+        }
+      }
+
       // fallback to original logic if we can't identify input and output tokens
       const { a1, a2, s1, s2 } = getIOTokenAmountAndSymbol()
 
       if (tx.tokens.length === 1) {
+        // Avoid "X swapped for X" when s2 falls back to the same network token symbol
+        if (s1 === s2) {
+          return [renderAmount(a1), ' ', s1, ' swapped']
+        }
         return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
       }
 

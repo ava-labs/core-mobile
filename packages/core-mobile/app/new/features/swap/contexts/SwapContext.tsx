@@ -72,6 +72,8 @@ interface SwapContextState {
   setDestination: Dispatch<SwapSide>
   swapStatus: SwapStatus
   setAmount: Dispatch<bigint | undefined>
+  /** ID of the transfer that was just successfully submitted */
+  successTransferId: string | undefined
 }
 
 export const SwapContext = createContext<SwapContextState>(
@@ -90,6 +92,9 @@ export const SwapContextProvider = ({
   const [autoSlippage, setAutoSlippage] = useState<boolean>(true)
   const [destination, setDestination] = useState<SwapSide>(SwapSide.SELL)
   const [swapStatus, setSwapStatus] = useState<SwapStatus>(SwapStatus.Idle)
+  const [successTransferId, setSuccessTransferId] = useState<
+    string | undefined
+  >()
   const isSwappingRef = useRef(false)
   const [amount, setAmount] = useState<bigint>()
 
@@ -237,6 +242,7 @@ export const SwapContextProvider = ({
         }
       }))
 
+      setSuccessTransferId(transfer.id)
       setSwapStatus(SwapStatus.Success)
 
       // Dispatch trackFusionTransfer to start tracking transfer status
@@ -319,6 +325,7 @@ export const SwapContextProvider = ({
       // Set only after all validations pass so a validation throw can't permanently
       // lock the ref (these throws are outside the try/catch below)
       if (retries === 0) isSwappingRef.current = true
+      setSuccessTransferId(undefined)
       setSwapStatus(SwapStatus.Swapping)
 
       try {
@@ -345,6 +352,7 @@ export const SwapContextProvider = ({
         // Handle user rejection - silent exit, no error shown
         if (isUserRejectionError(error)) {
           isSwappingRef.current = false
+          setSuccessTransferId(undefined)
           setSwapStatus(SwapStatus.Idle)
           return
         }
@@ -412,7 +420,8 @@ export const SwapContextProvider = ({
     destination,
     setDestination,
     swapStatus,
-    setAmount
+    setAmount,
+    successTransferId
   }
 
   return <SwapContext.Provider value={value}>{children}</SwapContext.Provider>

@@ -1,6 +1,6 @@
 import { ZustandStorageKeys } from 'resources/Constants'
 import { LedgerDerivationPathType, LedgerDevice } from 'services/ledger/types'
-import { zustandMMKVStorage } from 'utils/mmkv/storages'
+import { zustandPersistStorage } from 'utils/mmkv/storages'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { Network } from '@avalabs/core-chains-sdk'
@@ -87,7 +87,7 @@ export const ledgerWalletMapStore = create<LedgerWalletMapState>()(
     }),
     {
       name: ZustandStorageKeys.LEDGER_WALLET_MAP,
-      storage: zustandMMKVStorage
+      storage: zustandPersistStorage
     }
   )
 )

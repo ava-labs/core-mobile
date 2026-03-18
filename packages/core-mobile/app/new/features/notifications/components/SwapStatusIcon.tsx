@@ -14,7 +14,7 @@ export const SwapStatusIcon = ({
     theme: { colors }
   } = useTheme()
 
-  if (status === 'completed') {
+  if (status === NotificationSwapStatus.Completed) {
     return (
       <View
         sx={{
@@ -34,23 +34,23 @@ export const SwapStatusIcon = ({
     )
   }
 
-  if (status === 'failed') {
+  if (status === NotificationSwapStatus.Failed) {
     return (
-      <View
-        sx={{
-          width: STATUS_ICON_SIZE,
-          height: STATUS_ICON_SIZE,
-          borderRadius: STATUS_ICON_SIZE / 2,
-          backgroundColor: '$textDanger',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-        <Icons.Content.Close
-          color={colors.$surfacePrimary}
-          width={STATUS_ICON_SIZE * 0.55}
-          height={STATUS_ICON_SIZE * 0.55}
-        />
-      </View>
+      <Icons.Alert.Error
+        color={colors.$textDanger}
+        width={STATUS_ICON_SIZE}
+        height={STATUS_ICON_SIZE}
+      />
+    )
+  }
+
+  if (status === NotificationSwapStatus.Incomplete) {
+    return (
+      <Icons.Alert.ErrorOutline
+        color={colors.$textDanger}
+        width={STATUS_ICON_SIZE}
+        height={STATUS_ICON_SIZE}
+      />
     )
   }
 

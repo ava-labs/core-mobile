@@ -1,6 +1,6 @@
 import { ViewOption } from 'common/types'
 import { ZustandStorageKeys } from 'resources/Constants'
-import { zustandMMKVStorage } from 'utils/mmkv/storages'
+import { zustandPersistStorage } from 'utils/mmkv/storages'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
@@ -21,7 +21,7 @@ export const marketViewStore = create<MarketViewState>()(
     }),
     {
       name: ZustandStorageKeys.MARKET_VIEW,
-      storage: zustandMMKVStorage
+      storage: zustandPersistStorage
     }
   )
 )
@@ -47,7 +47,7 @@ export const favoritesViewStore = create<FavoritesViewState>()(
     }),
     {
       name: ZustandStorageKeys.FAVORITES_VIEW,
-      storage: zustandMMKVStorage
+      storage: zustandPersistStorage
     }
   )
 )
@@ -73,7 +73,7 @@ export const trackSearchViewStore = create<TrackSearchViewState>()(
     }),
     {
       name: ZustandStorageKeys.TRACK_SEARCH_VIEW,
-      storage: zustandMMKVStorage
+      storage: zustandPersistStorage
     }
   )
 )
