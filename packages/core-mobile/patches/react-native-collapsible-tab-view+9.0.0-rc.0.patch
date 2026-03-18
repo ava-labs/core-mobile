@@ -9,9 +9,6 @@ index a1b2c3d..b4c5d6e 100644
 -  }), // eslint-disable-next-line react-hooks/exhaustive-deps
 -  [onTabPress]);
 +    },
-+    scrollResync: () => {
-+      toggleSyncScrollFrame(true);
-+    },
 +    scrollToTop: () => {
 +      scrollYCurrent.value = 0;
 +      const resetMap = {};
@@ -36,7 +33,6 @@ index 38df065..c780667 100644
      setIndex: (index: number) => boolean;
      getFocusedTab: () => T;
      getCurrentIndex: () => number;
-+    scrollResync: () => void;
 +    scrollToTop: () => void;
  };
  export type CollapsibleRef<T extends TabName = TabName> = RefHandler<T> | undefined;
@@ -63,9 +59,6 @@ index 9ec4cfe..3a068c9 100644
            getCurrentIndex: () => {
              return index.value
            },
-+          scrollResync: () => {
-+            toggleSyncScrollFrame(true)
-+          },
 +          scrollToTop: () => {
 +            scrollYCurrent.value = 0
 +            const resetMap: Record<string, number> = {}
@@ -83,7 +76,7 @@ index 9ec4cfe..3a068c9 100644
          }),
          // eslint-disable-next-line react-hooks/exhaustive-deps
 -        [onTabPress]
-+        [onTabPress]
++        [onTabPress, toggleSyncScrollFrame]
        )
 
        return (
@@ -95,7 +88,6 @@ index 00fbafc..dee894c 100644
    setIndex: (index: number) => boolean
    getFocusedTab: () => T
    getCurrentIndex: () => number
-+  scrollResync: () => void
 +  scrollToTop: () => void
  }
 
