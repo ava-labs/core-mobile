@@ -12,17 +12,18 @@ import {
  * or cleared by the "Clear All" button.
  *
  * In-progress swaps are intentionally kept in the list until they resolve so
- * the user can track them; only terminal states (completed / failed) are
- * eligible for removal.
+ * the user can track them; only terminal states (completed / failed / refunded)
+ * are eligible for removal.
  */
 export function isSwapCompletedOrFailed(transfer: Transfer): boolean {
   const status = mapTransferToSwapStatus(transfer)
-  return status === 'completed' || status === 'failed'
+  return status === 'completed' || status === 'failed' || status === 'refunded'
 }
 
 /**
  * Maps the raw backend transfer status to the simplified SwapStatus used in
  * the UI. Both "source-pending" and "target-pending" map to 'in_progress'.
+ * 'refunded' is a terminal state indicating a partial failure.
  */
 export function mapTransferToSwapStatus(
   transfer: Transfer
@@ -31,6 +32,7 @@ export function mapTransferToSwapStatus(
 
   if (lower === 'completed') return 'completed'
   if (lower === 'failed') return 'failed'
+  if (lower === 'refunded') return 'refunded'
 
   // source-pending, source-completed, target-pending → all still in progress
   return 'in_progress'
@@ -40,6 +42,7 @@ export function mapTransferToSwapStatus(
  * Returns the SwapStatus for the **source** (From) chain only.
  *   - source-pending                                           → in_progress
  *   - source-completed / target-pending / completed / etc.    → completed
+ *   - refunded (source tx succeeded before refund was issued)  → completed
  *   - failed                                                   → failed
  */
 export function mapTransferToSourceChainStatus(
@@ -59,6 +62,7 @@ export function mapTransferToSourceChainStatus(
  *   - source-pending / source-completed   → in_progress (target hasn't started)
  *   - target-pending                      → in_progress
  *   - completed                           → completed
+ *   - refunded (target did not complete)  → incomplete
  *   - failed                              → failed
  */
 export function mapTransferToTargetChainStatus(
@@ -68,6 +72,7 @@ export function mapTransferToTargetChainStatus(
 
   if (lower === 'failed') return 'failed'
   if (lower === 'completed') return 'completed'
+  if (lower === 'refunded') return 'incomplete'
 
   // source-pending, source-completed, target-pending → target not done yet
   return 'in_progress'

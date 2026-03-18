@@ -22,6 +22,30 @@ export const SwapIcon: FC<SwapIconProps> = ({ status, networkLogoUri }) => {
     theme: { colors }
   } = useTheme()
 
+  if (status === 'refunded') {
+    return (
+      <View sx={{ width: ICON_SIZE }}>
+        <View
+          sx={{
+            width: ICON_SIZE,
+            height: ICON_SIZE,
+            borderRadius: ICON_SIZE / 2,
+            backgroundColor: '$surfaceSecondary',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+          <Icons.Custom.Restart color={colors.$textPrimary} />
+        </View>
+        {networkLogoUri && (
+          <NetworkBadge
+            logoUri={networkLogoUri}
+            borderColor={colors.$surfacePrimary}
+          />
+        )}
+      </View>
+    )
+  }
+
   if (status === 'completed' || status === 'failed') {
     return (
       <View sx={{ width: ICON_SIZE }}>

@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react'
-import { Button, Separator, View } from '@avalabs/k2-alpine'
+import React, { useCallback, useMemo } from 'react'
+import { Button, Separator, Text, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
@@ -22,7 +22,7 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
   // Always call the hook unconditionally; it returns undefined when swap is undefined.
   const display = useSwapActivityDisplay(transfer)
 
-  const handleHide = (): void => {
+  const handleDismiss = (): void => {
     router.canGoBack() && router.back()
   }
 
@@ -45,15 +45,15 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
           <Button size="large" type="primary" onPress={handleRetry}>
             Retry
           </Button>
-          <Button size="large" type="secondary" onPress={handleHide}>
-            Hide
+          <Button size="large" type="tertiary" onPress={handleDismiss}>
+            Dismiss
           </Button>
         </View>
       )
     }
     return (
-      <Button size="large" type="primary" onPress={handleHide}>
-        Hide
+      <Button size="large" type="primary" onPress={handleDismiss}>
+        {'Hide'}
       </Button>
     )
   }
@@ -107,6 +107,7 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
           networkName={display.fromNetwork}
           networkLogoUri={display.fromNetworkLogoUri}
           status={display.fromChainStatus}
+          confirmations={display.fromConfirmations}
         />
 
         {/* Card 3: To network + target-chain status */}
@@ -115,26 +116,42 @@ export const SwapActivityDetailScreen = (): JSX.Element => {
           networkName={display.toNetwork}
           networkLogoUri={display.toNetworkLogoUri}
           status={display.toChainStatus}
+          note={display.refundNote}
+          confirmations={display.toConfirmations}
         />
+
+        {display.errorReason !== undefined && (
+          <Text
+            variant="body2"
+            sx={{
+              color: '$textDanger',
+              textAlign: 'center',
+              marginHorizontal: '5%'
+            }}>
+            {display.errorReason}
+          </Text>
+        )}
       </View>
     )
   }, [display, renderEmpty])
 
-  const getTitle = useCallback(
-    ({ isNavigationTitle = false }: { isNavigationTitle: boolean }) => {
-      if (display?.status === 'failed') return `Swap failed`
-      if (display?.status === 'completed') return `Swap successful!`
-      return isNavigationTitle ? `Swap in progress...` : `Swap\nin progress...`
-    },
-    [display]
-  )
+  const title = useMemo(() => {
+    if (display?.status === 'failed') return `Swap failed`
+    if (display?.status === 'completed') return `Swap\nsuccessful`
+    if (display?.status === 'refunded') return `Swap\npartial failure`
+    return `Swap\nin progress...`
+  }, [display])
+
+  const navigationTitle = useMemo(() => {
+    return title.replace('\n', ' ')
+  }, [title])
 
   return (
     <ScrollScreen
-      title={getTitle({ isNavigationTitle: false })}
-      navigationTitle={getTitle({ isNavigationTitle: true })}
+      title={title}
+      navigationTitle={navigationTitle}
       renderFooter={renderFooter}
-      contentContainerStyle={{ flex: 1, padding: 16 }}>
+      contentContainerStyle={{ padding: 16 }}>
       {renderContent()}
     </ScrollScreen>
   )

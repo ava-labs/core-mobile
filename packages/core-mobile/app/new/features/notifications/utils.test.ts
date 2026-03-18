@@ -134,6 +134,10 @@ describe('mapTransferToSwapStatus', () => {
     expect(mapTransferToSwapStatus(makeTransfer('failed'))).toBe('failed')
   })
 
+  it('returns refunded for status "refunded"', () => {
+    expect(mapTransferToSwapStatus(makeTransfer('refunded'))).toBe('refunded')
+  })
+
   it.each([['source-pending'], ['source-completed'], ['target-pending']])(
     'returns in_progress for status "%s"',
     status => {
@@ -153,6 +157,10 @@ describe('isSwapCompletedOrFailed', () => {
 
   it('returns true when the swap has failed', () => {
     expect(isSwapCompletedOrFailed(makeTransfer('failed'))).toBe(true)
+  })
+
+  it('returns true when the swap was refunded (partial failure)', () => {
+    expect(isSwapCompletedOrFailed(makeTransfer('refunded'))).toBe(true)
   })
 
   it('returns false when the swap is in progress (source-pending)', () => {
@@ -185,6 +193,12 @@ describe('mapTransferToSourceChainStatus', () => {
     )
   })
 
+  it('returns completed for status "refunded" (source transaction succeeded)', () => {
+    expect(mapTransferToSourceChainStatus(makeTransfer('refunded'))).toBe(
+      'completed'
+    )
+  })
+
   it.each([['source-completed'], ['target-pending'], ['completed']])(
     'returns completed for status "%s" (source is done)',
     status => {
@@ -209,6 +223,12 @@ describe('mapTransferToTargetChainStatus', () => {
   it('returns completed for status "completed"', () => {
     expect(mapTransferToTargetChainStatus(makeTransfer('completed'))).toBe(
       'completed'
+    )
+  })
+
+  it('returns incomplete for status "refunded" (target did not complete)', () => {
+    expect(mapTransferToTargetChainStatus(makeTransfer('refunded'))).toBe(
+      'incomplete'
     )
   })
 

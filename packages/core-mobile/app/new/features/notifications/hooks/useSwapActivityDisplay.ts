@@ -35,6 +35,14 @@ export type SwapActivityDisplay = {
   /** Status for the target (To) chain leg only. */
   toChainStatus: NotificationSwapStatus
   txHash?: string
+  /** Refund note shown on the target card when the swap was partially refunded. */
+  refundNote?: string
+  /** Error reason shown on failed swaps. */
+  errorReason?: string
+  /** Confirmation progress for the source (From) chain leg. */
+  fromConfirmations?: { count: number; required: number }
+  /** Confirmation progress for the target (To) chain leg. */
+  toConfirmations?: { count: number; required: number }
 }
 
 /**
@@ -153,6 +161,25 @@ export function useSwapActivityDisplay(
         ? getNetworkByCaip2ChainId(transfer.targetChain.chainId)
         : undefined
 
+    let refundNote: string | undefined
+    if (transfer.status === 'refunded') {
+      const refundedTransfer = transfer
+      const { refund } = refundedTransfer
+      if (refund.asset) {
+        const refundTokenUnit = new TokenUnit(
+          refund.amount,
+          refund.asset.decimals,
+          refund.asset.symbol
+        )
+        const refundAmount = refundTokenUnit.toDisplay()
+        const werePluralRefund = refundTokenUnit.gt(1) ? 'were' : 'was'
+        const refundChainName =
+          getNetworkByCaip2ChainId(refund.chainId)?.chainName ??
+          transfer.targetChain.chainName
+        refundNote = `${refundAmount} ${refund.asset.symbol} ${werePluralRefund} refunded to your wallet on ${refundChainName}`
+      }
+    }
+
     return {
       fromToken: transfer.sourceAsset.symbol,
       toToken: transfer.targetAsset.symbol,
@@ -169,7 +196,23 @@ export function useSwapActivityDisplay(
       status: mapTransferToSwapStatus(transfer),
       fromChainStatus: mapTransferToSourceChainStatus(transfer),
       toChainStatus: mapTransferToTargetChainStatus(transfer),
-      txHash: transfer.source?.txHash
+      txHash: transfer.source?.txHash,
+      refundNote,
+      errorReason: 'errorReason' in transfer ? transfer.errorReason : undefined,
+      fromConfirmations:
+        'source' in transfer && transfer.source !== undefined
+          ? {
+              count: transfer.source.confirmationCount,
+              required: transfer.source.requiredConfirmationCount
+            }
+          : undefined,
+      toConfirmations:
+        'target' in transfer && transfer.target != null
+          ? {
+              count: transfer.target.confirmationCount,
+              required: transfer.target.requiredConfirmationCount
+            }
+          : undefined
     }
   }, [
     item,

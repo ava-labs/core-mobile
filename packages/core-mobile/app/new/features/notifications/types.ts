@@ -121,4 +121,9 @@ export function isBalanceChangeNotification(
 /**
  * Status of a swap transaction.
  */
-export type NotificationSwapStatus = 'completed' | 'in_progress' | 'failed'
+export type NotificationSwapStatus =
+  | 'completed'
+  | 'in_progress'
+  | 'failed'
+  | 'incomplete'
+  | 'refunded'

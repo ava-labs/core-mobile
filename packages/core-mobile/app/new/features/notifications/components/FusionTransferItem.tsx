@@ -6,7 +6,6 @@ import { FusionTransfer } from 'features/swap/types'
 import { mapTransferToSwapStatus } from '../utils'
 import NotificationListItem from './NotificationListItem'
 import { SwapIcon } from './SwapIcon'
-import { RetrySwapButton } from './RetrySwapButton'
 
 type FusionTransferItemProps = {
   item: FusionTransfer
@@ -58,33 +57,42 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
     }
   }, [item.transfer])
 
-  const shouldBePlural = useMemo(() => {
-    return !!fromAmount?.gt(1)
-  }, [fromAmount])
-
   const title = useMemo(() => {
+    if (status === 'refunded' && 'refund' in item.transfer) {
+      const { refund } = item.transfer
+      if (refund.asset) {
+        const refundUnit = new TokenUnit(
+          refund.amount,
+          refund.asset.decimals,
+          refund.asset.symbol
+        )
+        return `${refundUnit.toDisplay()} ${
+          refund.asset.symbol
+        } refunded to your wallet`
+      }
+    }
     const from = fromAmount
       ? `${fromAmount.toDisplay()} ${fromSymbol}`
       : fromSymbol
     const to = toAmount ? `${toAmount.toDisplay()} ${toSymbol}` : toSymbol
-    return status === 'failed'
-      ? `${from} swapped for ${to}`
-      : status === 'completed'
-      ? `${from} ${shouldBePlural ? 'were' : 'was'} swapped for ${to}`
-      : `Swapping ${fromSymbol} to ${toSymbol} in progress...`
-  }, [fromAmount, fromSymbol, shouldBePlural, toAmount, toSymbol, status])
+    return status === 'in_progress'
+      ? `Swapping ${fromSymbol} to ${toSymbol} in progress...`
+      : `${from} swapped for ${to}`
+  }, [fromAmount, fromSymbol, toAmount, toSymbol, status, item.transfer])
 
   const subtitle =
     status === 'completed'
       ? 'Completed'
       : status === 'failed'
       ? 'Failed'
+      : status === 'refunded'
+      ? undefined
       : 'Tap for more details'
 
-  const accessoryType =
-    status === 'completed' || status === 'failed' ? 'none' : 'chevron'
+  const accessoryType = 'chevron'
 
   const renderSubtitle = useCallback(() => {
+    if (!subtitle) return null
     return (
       <Text
         variant="body2"
@@ -110,11 +118,10 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
       title={title}
       subtitle={renderSubtitle()}
       icon={<SwapIcon status={status} networkLogoUri={fromNetworkLogoUri} />}
-      timestamp={status === 'failed' ? undefined : item.timestamp}
+      timestamp={item.timestamp}
       showSeparator={showSeparator}
       accessoryType={accessoryType}
       testID={testID}
-      rightAccessory={<RetrySwapButton status={status} item={item} />}
     />
   )
 }
