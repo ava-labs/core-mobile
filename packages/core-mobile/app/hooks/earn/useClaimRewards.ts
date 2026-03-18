@@ -38,10 +38,7 @@ export const useClaimRewards = (
   const { defaultFeeState } = useGetFeeState()
   const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
   const activeWallet = useActiveWallet()
-  const { xpAddresses, xpAddressDictionary } = useXPAddresses(
-    activeAccount,
-    false
-  )
+  const { xpAddresses, xpAddressDictionary } = useXPAddresses(activeAccount)
 
   const {
     totalFees,
