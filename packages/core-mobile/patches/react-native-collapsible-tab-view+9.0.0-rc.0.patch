@@ -48,9 +48,12 @@ index 9ec4cfe..3a068c9 100644
 @@ -227,7 +227,9 @@ export const Container = React.memo(
        const toggleSyncScrollFrame = (toggle: boolean) =>
          syncScrollFrame.setActive(toggle)
+       const lastSyncBucketRef = React.useRef(0)
        const syncScrollFrame = useFrameCallback(({ timeSinceFirstFrame }) => {
 -        syncCurrentTabScrollPosition()
-+        if (timeSinceFirstFrame % 100 === 0) {
++        const bucket = Math.floor(timeSinceFirstFrame / 100)
++        if (bucket !== lastSyncBucketRef.current) {
++          lastSyncBucketRef.current = bucket
 +          syncCurrentTabScrollPosition()
 +        }
          if (timeSinceFirstFrame > 1500) {
