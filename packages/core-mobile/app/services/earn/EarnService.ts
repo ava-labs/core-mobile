@@ -176,6 +176,7 @@ class EarnService {
       xpAddresses,
       xpAddressDictionary
     })
+    // defer the progress update so the UI can re-render before the blocking importC call starts
     await new Promise<void>(resolve => {
       setTimeout(() => {
         onProgress?.(1, Operation.IMPORT_C)
@@ -191,6 +192,7 @@ class EarnService {
       cBaseFeeMultiplier,
       xpAddresses
     })
+    // defer the completion progress update so the UI reflects the finished state after importC resolves
     await new Promise<void>(resolve => {
       setTimeout(() => {
         onProgress?.(2, null)

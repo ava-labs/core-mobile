@@ -51,6 +51,7 @@ export const useUiSafeMutation = <TData, TVariables = void>({
     }
   }, [])
 
+  // cancels any pending setTimeout callback and resets the mutation state (status, error, data)
   const safeReset = useCallback(() => {
     if (timerRef.current !== null) {
       clearTimeout(timerRef.current)

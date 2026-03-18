@@ -6,7 +6,6 @@ import { validateFee } from 'common/hooks/send/utils/evm/validate'
 import { SendErrorMessage } from 'common/hooks/send/utils/types'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useLedgerApproval } from 'features/approval/hooks/useLedgerApproval'
-import { WalletType } from 'services/wallet/types'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { L2_NETWORK_SYMBOL_MAPPING } from 'consts/chainIdsWithIncorrectSymbol'
 import { router } from 'expo-router'
@@ -28,6 +27,7 @@ import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { RequestContext } from 'store/rpc/types'
 import Logger from 'utils/Logger'
 import { Eip1559Fees } from 'utils/Utils'
+import { selectIsWalletLedger } from 'store/wallet/slice'
 import { Account } from '../../components/Account'
 import BalanceChange from '../../components/BalanceChange/BalanceChange'
 import { Details } from '../../components/Details'
@@ -54,9 +54,7 @@ const ApprovalScreen = ({
   const [amountError, setAmountError] = useState<string | undefined>()
   const nativeToken = useNativeTokenWithBalanceByNetwork(network)
   const activeWallet = useActiveWallet()
-  const isLedger =
-    activeWallet.type === WalletType.LEDGER ||
-    activeWallet.type === WalletType.LEDGER_LIVE
+  const isLedger = useSelector(selectIsWalletLedger(activeWallet.id))
   const isGaslessInstantBlocked = useSelector(selectIsGaslessInstantBlocked)
   const { renderLedgerFooter } = useLedgerApproval(isLedger)
 

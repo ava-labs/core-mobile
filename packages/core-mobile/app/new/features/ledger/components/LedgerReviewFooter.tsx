@@ -11,7 +11,11 @@ import { Operation } from 'services/earn/computeDelegationSteps/types'
 import { LedgerDevice } from 'services/ledger/types'
 import { AnimatedIconWithText } from './AnimatedIconWithText'
 
-export type LedgerReviewPhase = 'connecting' | 'progress'
+export enum LedgerReviewPhase {
+  IDLE = 'idle',
+  CONNECTING = 'connecting',
+  PROGRESS = 'progress'
+}
 
 type StepConfig = {
   title: string
@@ -82,7 +86,7 @@ export const LedgerReviewFooter = ({
 }: LedgerReviewFooterProps): JSX.Element | null => {
   const { theme } = useTheme()
 
-  if (ledgerPhase === 'connecting') {
+  if (ledgerPhase === LedgerReviewPhase.CONNECTING) {
     return (
       <View sx={{ gap: 16, marginTop: 24 }}>
         {deviceForWallet && (
@@ -174,7 +178,7 @@ export const LedgerReviewFooter = ({
     )
   }
 
-  if (ledgerPhase === 'progress') {
+  if (ledgerPhase === LedgerReviewPhase.PROGRESS) {
     const title =
       stepTitle.includes('Preparing') || totalSteps <= 1
         ? stepTitle

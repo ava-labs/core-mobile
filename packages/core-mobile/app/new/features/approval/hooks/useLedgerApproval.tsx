@@ -16,8 +16,8 @@ type UseLedgerApprovalReturn = {
 export const useLedgerApproval = (
   isLedger: boolean
 ): UseLedgerApprovalReturn => {
-  const [ledgerPhase, setLedgerPhase] = useState<LedgerReviewPhase | 'idle'>(
-    'idle'
+  const [ledgerPhase, setLedgerPhase] = useState<LedgerReviewPhase>(
+    LedgerReviewPhase.IDLE
   )
   const [approvalInProgress, setApprovalInProgress] = useState(false)
 
@@ -54,7 +54,7 @@ export const useLedgerApproval = (
     if (!isLedger || !reviewTransactionParams) return
     if (reviewTransactionParams === prevParamsRef.current) return
     prevParamsRef.current = reviewTransactionParams
-    setLedgerPhase('connecting')
+    setLedgerPhase(LedgerReviewPhase.CONNECTING)
     setApprovalInProgress(false)
   }, [reviewTransactionParams, isLedger])
 
@@ -70,12 +70,12 @@ export const useLedgerApproval = (
       return
 
     setApprovalInProgress(true)
-    setLedgerPhase('progress')
+    setLedgerPhase(LedgerReviewPhase.PROGRESS)
 
     const resetOnFailure = (): void => {
       if (!isMountedRef.current) return
       setApprovalInProgress(false)
-      setLedgerPhase('connecting')
+      setLedgerPhase(LedgerReviewPhase.CONNECTING)
     }
 
     try {
@@ -96,7 +96,7 @@ export const useLedgerApproval = (
   ])
 
   const resetLedgerState = useCallback((): void => {
-    setLedgerPhase('idle')
+    setLedgerPhase(LedgerReviewPhase.IDLE)
     setApprovalInProgress(false)
   }, [])
 
@@ -108,7 +108,7 @@ export const useLedgerApproval = (
   }, [resetLedgerState, reviewTransactionParams])
 
   const renderLedgerFooter = useCallback((): JSX.Element | null => {
-    if (!isLedger || ledgerPhase === 'idle') return null
+    if (!isLedger || ledgerPhase === LedgerReviewPhase.IDLE) return null
 
     return (
       <LedgerReviewFooter
