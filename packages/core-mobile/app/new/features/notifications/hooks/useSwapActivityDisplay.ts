@@ -7,6 +7,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import type { Transfer } from '@avalabs/fusion-sdk'
 import { FusionTransfer } from 'features/swap/types'
 import { NotificationSwapStatus } from '../types'
 import {
@@ -14,6 +15,30 @@ import {
   mapTransferToSwapStatus,
   mapTransferToTargetChainStatus
 } from '../utils'
+
+function buildRefundNote(
+  transfer: Transfer,
+  getNetworkByCaip2ChainId: (
+    chainId: string
+  ) => { chainName: string } | undefined
+): string | undefined {
+  if (!('refund' in transfer) || !transfer.refund?.asset) return undefined
+  const { refund } = transfer
+  const { asset } = refund
+  if (!asset) return undefined
+  const refundTokenUnit = new TokenUnit(
+    refund.amount,
+    asset.decimals,
+    asset.symbol
+  )
+  const plurality = refundTokenUnit.gt(1) ? 'were' : 'was'
+  const chainName =
+    getNetworkByCaip2ChainId(refund.chainId)?.chainName ??
+    transfer.targetChain.chainName
+  return `${refundTokenUnit.toDisplay()} ${
+    asset.symbol
+  } ${plurality} refunded to your wallet on ${chainName}`
+}
 
 export type SwapActivityDisplay = {
   fromToken: string
@@ -161,24 +186,10 @@ export function useSwapActivityDisplay(
         ? getNetworkByCaip2ChainId(transfer.targetChain.chainId)
         : undefined
 
-    let refundNote: string | undefined
-    if (transfer.status === 'refunded') {
-      const refundedTransfer = transfer
-      const { refund } = refundedTransfer
-      if (refund.asset) {
-        const refundTokenUnit = new TokenUnit(
-          refund.amount,
-          refund.asset.decimals,
-          refund.asset.symbol
-        )
-        const refundAmount = refundTokenUnit.toDisplay()
-        const werePluralRefund = refundTokenUnit.gt(1) ? 'were' : 'was'
-        const refundChainName =
-          getNetworkByCaip2ChainId(refund.chainId)?.chainName ??
-          transfer.targetChain.chainName
-        refundNote = `${refundAmount} ${refund.asset.symbol} ${werePluralRefund} refunded to your wallet on ${refundChainName}`
-      }
-    }
+    const refundNote =
+      mapTransferToSwapStatus(transfer) === NotificationSwapStatus.Refunded
+        ? buildRefundNote(transfer, getNetworkByCaip2ChainId)
+        : undefined
 
     return {
       fromToken: transfer.sourceAsset.symbol,
