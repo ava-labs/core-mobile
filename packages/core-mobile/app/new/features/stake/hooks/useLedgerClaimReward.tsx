@@ -9,7 +9,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Operation } from 'services/earn/computeDelegationSteps/types'
 import LedgerService from 'services/ledger/LedgerService'
 
-
 type UseLedgerClaimRewardReturn = {
   startLedgerClaimReward: (
     action: (onProgress?: OnDelegationProgress) => void | Promise<void>
@@ -22,7 +21,9 @@ export const useLedgerClaimReward = (
   isLedger: boolean,
   onCancel?: () => void
 ): UseLedgerClaimRewardReturn => {
-  const [ledgerPhase, setLedgerPhase] = useState<LedgerReviewPhase>(LedgerReviewPhase.IDLE)
+  const [ledgerPhase, setLedgerPhase] = useState<LedgerReviewPhase>(
+    LedgerReviewPhase.IDLE
+  )
   const [ledgerCurrentStep, setLedgerCurrentStep] = useState(0)
   const [ledgerCurrentOperation, setLedgerCurrentOperation] =
     useState<Operation | null>(null)
