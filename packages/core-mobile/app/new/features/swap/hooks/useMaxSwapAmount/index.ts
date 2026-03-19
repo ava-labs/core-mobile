@@ -247,7 +247,11 @@ export const useMaxSwapAmount = ({
     [isNative, dummyQuote, bridgeFeeSafetyBps]
   )
 
-  const { gasFee: bufferedFee, error: feeEstimationError } = useFeeEstimation({
+  const {
+    gasFee: bufferedFee,
+    error: feeEstimationError,
+    isFetching: isFeeEstimationFetching
+  } = useFeeEstimation({
     quote: dummyQuote,
     fromNetwork,
     gasSafetyBps: maxAmountGasSafetyBps
@@ -260,7 +264,8 @@ export const useMaxSwapAmount = ({
         isNative,
         bufferedGas: bufferedFee,
         bridgeFee,
-        hasEstimationError: !!feeEstimationError || dummyQuoteFailed
+        hasEstimationError:
+          (!!feeEstimationError && !isFeeEstimationFetching) || dummyQuoteFailed
       }),
     [
       fromToken,
@@ -268,7 +273,8 @@ export const useMaxSwapAmount = ({
       bufferedFee,
       bridgeFee,
       feeEstimationError,
-      dummyQuoteFailed
+      dummyQuoteFailed,
+      isFeeEstimationFetching
     ]
   )
 }
