@@ -13,5 +13,5 @@ export type TxSendSuccessEvent = `${TxSendMethod}_success`
 export type TxSendConfirmedEvent = `${TxSendMethod}_confirmed`
 export type TxSendFailedEvent = `${TxSendMethod}_failed`
 
-export const isTxSendMethod = (method: RpcMethod): method is TxSendMethod =>
-  (TX_SEND_METHODS as readonly RpcMethod[]).includes(method)
+export const isTxSendMethod = (method: string): method is TxSendMethod =>
+  (TX_SEND_METHODS as readonly string[]).includes(method)

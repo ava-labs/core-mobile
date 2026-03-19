@@ -196,7 +196,7 @@ class WalletConnectProvider implements AgnosticRpcProvider {
 
       // For solana_signTransaction the dApp handles broadcast, so we never receive a txHash.
       // Fire _approved on successful signing to enable usage measurement.
-      if (
+      else if (
         request.method === RpcMethod.SOLANA_SIGN_TRANSACTION &&
         typeof result === 'string' &&
         result

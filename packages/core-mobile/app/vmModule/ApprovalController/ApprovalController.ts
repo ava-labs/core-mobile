@@ -11,7 +11,7 @@ import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import {
-  TX_SEND_METHODS,
+  isTxSendMethod,
   TxSendConfirmedEvent,
   TxSendFailedEvent
 } from 'store/rpc/utils/txSendMethods'
@@ -110,11 +110,7 @@ class ApprovalController implements VmModuleApprovalController {
       showConfetti()
     }
 
-    const isTxSend = (TX_SEND_METHODS as readonly string[]).includes(
-      request.method
-    )
-
-    if (!isInAppRequest(request) && isTxSend) {
+    if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
       const address = this.signingAddressMap.get(request.requestId) ?? ''
       this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_confirmed` as TxSendConfirmedEvent
@@ -136,11 +132,7 @@ class ApprovalController implements VmModuleApprovalController {
   }): void {
     transactionSnackbar.error({ error: 'Transaction reverted' })
 
-    const isTxSend = (TX_SEND_METHODS as readonly string[]).includes(
-      request.method
-    )
-
-    if (!isInAppRequest(request) && isTxSend) {
+    if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
       const address = this.signingAddressMap.get(request.requestId) ?? ''
       this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_failed` as TxSendFailedEvent

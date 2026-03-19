@@ -1,4 +1,5 @@
 import { RpcMethod, RpcRequest } from '@avalabs/vm-module-types'
+import { AvalancheCaip2ChainId } from '@avalabs/core-chains-sdk'
 import { WalletType } from 'services/wallet/types'
 import { NavigationPresentationMode } from 'new/common/types'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
@@ -356,6 +357,28 @@ describe('ApprovalController', () => {
         expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
           'avalanche_sendTransaction_confirmed',
           expect.objectContaining({ txHash: TX_HASH })
+        )
+      })
+
+      it('fires correct event for avalanche_sendTransaction with AVAX C-chain chainId', async () => {
+        const request = makeDappRequest(
+          RpcMethod.AVALANCHE_SEND_TRANSACTION,
+          AvalancheCaip2ChainId.C
+        )
+        await populateSigningAddressCache(request)
+
+        approvalController.onTransactionConfirmed({
+          txHash: TX_HASH,
+          explorerLink: '',
+          request
+        })
+
+        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+          'avalanche_sendTransaction_confirmed',
+          expect.objectContaining({
+            chainId: AvalancheCaip2ChainId.C,
+            txHash: TX_HASH
+          })
         )
       })
 

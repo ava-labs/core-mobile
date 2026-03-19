@@ -40,6 +40,13 @@ describe('txSendMethods', () => {
       })
     })
 
+    it('works with plain string values (not just RpcMethod enum)', () => {
+      expect(isTxSendMethod('eth_sendTransaction')).toBe(true)
+      expect(isTxSendMethod('avalanche_sendTransaction')).toBe(true)
+      expect(isTxSendMethod('personal_sign')).toBe(false)
+      expect(isTxSendMethod('unknown_method')).toBe(false)
+    })
+
     it('returns false for non-transaction methods', () => {
       const otherMethods = [
         RpcMethod.ETH_REQUEST_ACCOUNTS,
