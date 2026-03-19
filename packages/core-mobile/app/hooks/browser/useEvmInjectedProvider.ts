@@ -86,6 +86,48 @@ function getOriginFromUrl(url: string): string | undefined {
   }
 }
 
+function parseProviderPayload(
+  payload: string,
+  respondWithError: (id: number, error: unknown) => void
+): ProviderRequest | undefined {
+  if (payload.length > MAX_MESSAGE_SIZE) {
+    Logger.warn(
+      `[InjectedProvider] Message exceeds ${MAX_MESSAGE_SIZE} byte limit`
+    )
+    try {
+      const { id } = JSON.parse(payload) as { id?: unknown }
+      if (typeof id === 'number') {
+        respondWithError(
+          id,
+          rpcErrors.invalidRequest('Message exceeds size limit')
+        )
+      }
+    } catch {
+      /* oversized and unparseable */
+    }
+    return undefined
+  }
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(payload)
+  } catch {
+    Logger.error('[InjectedProvider] Invalid JSON payload')
+    return undefined
+  }
+
+  if (!validateProviderRequest(parsed)) {
+    Logger.error('[InjectedProvider] Malformed provider_request')
+    const maybeId = (parsed as Record<string, unknown>)?.id
+    if (typeof maybeId === 'number') {
+      respondWithError(maybeId, rpcErrors.invalidRequest('Malformed request'))
+    }
+    return undefined
+  }
+
+  return parsed
+}
+
 /**
  * Hook providing EVM injected provider functionality for the in-app browser.
  *
@@ -247,48 +289,14 @@ export function useEvmInjectedProvider(
 
   const handleProviderMessage = useCallback(
     (payload: string) => {
-      if (payload.length > MAX_MESSAGE_SIZE) {
-        Logger.warn(
-          `[InjectedProvider] Message exceeds ${MAX_MESSAGE_SIZE} byte limit`
-        )
-        try {
-          const { id } = JSON.parse(payload) as { id?: unknown }
-          if (typeof id === 'number') {
-            sendResponse(
-              id,
-              rpcErrors.invalidRequest('Message exceeds size limit'),
-              undefined
-            )
-          }
-        } catch {
-          /* oversized and unparseable */
-        }
-        return
-      }
+      const respondWithError = (id: number, error: unknown): void =>
+        sendResponse(id, error, undefined)
 
-      let parsed: unknown
-      try {
-        parsed = JSON.parse(payload)
-      } catch {
-        Logger.error('[InjectedProvider] Invalid JSON payload')
-        return
-      }
+      const parsed = parseProviderPayload(payload, respondWithError)
+      if (!parsed) return
 
-      if (!validateProviderRequest(parsed)) {
-        Logger.error('[InjectedProvider] Malformed provider_request')
-        const maybeId = (parsed as Record<string, unknown>)?.id
-        if (typeof maybeId === 'number') {
-          sendResponse(
-            maybeId,
-            rpcErrors.invalidRequest('Malformed request'),
-            undefined
-          )
-        }
-        return
-      }
-
-      const { id, origin: pageOrigin, request } = parsed
-      const { method, params } = request
+      const { id, origin: pageOrigin, request: rpc } = parsed
+      const { method, params } = rpc
 
       const nativeOrigin = getOriginFromUrl(currentUrlRef.current)
       if (pageOrigin && nativeOrigin && pageOrigin !== nativeOrigin) {
@@ -308,14 +316,10 @@ export function useEvmInjectedProvider(
         return
       }
 
-      // Track origin at request time so sendResponse can gate delivery
       if (nativeOrigin) {
         pendingOrigins.current.set(id, nativeOrigin)
       }
 
-      // Connection methods (eth_requestAccounts, wallet_requestPermissions, etc.)
-      // are handled entirely in the JS shim for instant response.
-      // Only signing and read-only RPC methods reach native.
       if (method === 'wallet_switchEthereumChain') {
         Logger.info(
           '[InjectedProvider] wallet_switchEthereumChain requested (demo stub)'
