@@ -197,7 +197,8 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
           style={[StyleSheet.absoluteFillObject, { opacity: 0 }]}
           value={value}
           onChangeText={handleInputChange}
-          inputMode="numeric"
+          keyboardType={Platform.OS === 'ios' ? 'number-pad' : undefined}
+          inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
           autoFocus={autoFocus}
           maxLength={length}
           allowFontScaling={false}
