@@ -99,7 +99,7 @@ export type AnalyticsEvents = {
     targetAddress: string
     sourceChainId: string
     targetChainId: string
-    sourceTxHash: string
+    sourceTxHash?: string
     quoteSelectionMode: 'manual' | 'auto'
     autoRetryAttempt?: number
   }
@@ -108,7 +108,7 @@ export type AnalyticsEvents = {
     targetAddress: string
     sourceChainId: string
     targetChainId: string
-    sourceTxHash?: string
+    sourceTxHash: string
     targetTxHash?: string
   }
   SwapFailed: {
@@ -126,7 +126,7 @@ export type AnalyticsEvents = {
     targetAddress: string
     sourceChainId: string
     targetChainId: string
-    sourceTxHash?: string
+    sourceTxHash: string
     targetTxHash?: string
     refundTxHash?: string
   }

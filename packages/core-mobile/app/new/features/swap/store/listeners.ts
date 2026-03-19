@@ -218,31 +218,34 @@ export const cleanupFusionService = async (
 const captureSwapAnalytics = (
   concludedTransfer: CompletedTransfer | FailedTransfer | RefundedTransfer
 ): void => {
-  const base = {
+  const addresses = {
     sourceAddress: concludedTransfer.fromAddress,
     targetAddress: concludedTransfer.toAddress,
     sourceChainId: concludedTransfer.sourceChain.chainId,
-    targetChainId: concludedTransfer.targetChain.chainId,
-    sourceTxHash: concludedTransfer.source?.txHash
+    targetChainId: concludedTransfer.targetChain.chainId
   }
 
   if (isCompletedTransfer(concludedTransfer)) {
     AnalyticsService.captureWithEncryption('SwapSuccessful', {
-      ...base,
+      ...addresses,
+      sourceTxHash: concludedTransfer.source.txHash,
       targetTxHash: concludedTransfer.target?.txHash
     })
   } else if (isFailedTransfer(concludedTransfer)) {
+    // source is optional on FailedTransfer — tx may not have been submitted
     AnalyticsService.captureWithEncryption('SwapFailed', {
-      ...base,
+      ...addresses,
+      sourceTxHash: concludedTransfer.source?.txHash,
       targetTxHash: concludedTransfer.target?.txHash,
       errorCode: concludedTransfer.errorCode?.toString(),
       errorReason: concludedTransfer.errorReason ?? undefined
     })
   } else if (isRefundedTransfer(concludedTransfer)) {
     AnalyticsService.captureWithEncryption('SwapRefunded', {
-      ...base,
+      ...addresses,
+      sourceTxHash: concludedTransfer.source.txHash,
       targetTxHash: concludedTransfer.target?.txHash,
-      refundTxHash: concludedTransfer.refund?.txHash ?? undefined
+      refundTxHash: concludedTransfer.refund.txHash ?? undefined
     })
   }
 }
