@@ -60,9 +60,24 @@ export function useAfterScreenEnterTransition(
       }
 
       let didRun = false
+      let fallbackId: ReturnType<typeof setTimeout> | undefined
+      let unsubscribeTransition: (() => void) | undefined
+
+      const clearPendingScheduling = (): void => {
+        if (fallbackId !== undefined) {
+          clearTimeout(fallbackId)
+          fallbackId = undefined
+        }
+        if (unsubscribeTransition !== undefined) {
+          unsubscribeTransition()
+          unsubscribeTransition = undefined
+        }
+      }
+
       const run = (): void => {
         if (didRun) return
         didRun = true
+        clearPendingScheduling()
         callbackRef.current()
       }
 
@@ -73,21 +88,17 @@ export function useAfterScreenEnterTransition(
         run()
       }
 
-      const unsubscribe = navigation.addListener(
+      unsubscribeTransition = navigation.addListener(
         'transitionEnd',
         onTransitionEnd
       )
 
-      let fallbackId: ReturnType<typeof setTimeout> | undefined
       if (fallbackMs !== false && fallbackMs > 0) {
         fallbackId = setTimeout(run, fallbackMs)
       }
 
       return () => {
-        unsubscribe()
-        if (fallbackId !== undefined) {
-          clearTimeout(fallbackId)
-        }
+        clearPendingScheduling()
       }
     }, [enabled, fallbackMs, navigation, onScreenFocus])
   )
