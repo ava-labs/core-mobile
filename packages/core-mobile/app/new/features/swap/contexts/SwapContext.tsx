@@ -208,15 +208,31 @@ export const SwapContextProvider = ({
       transfer: Transfer
       quote: Quote
       address: string
+      targetAddress: string
       fromTokenData: LocalTokenWithBalance
       toTokenData: LocalTokenWithBalance
+      quoteSelectionMode: 'manual' | 'auto'
+      autoRetryAttempt?: number
     }) => {
-      const { transfer, quote, address, fromTokenData, toTokenData } = params
+      const {
+        transfer,
+        quote,
+        address,
+        targetAddress,
+        fromTokenData,
+        toTokenData,
+        quoteSelectionMode,
+        autoRetryAttempt
+      } = params
       audioFeedback(Audios.Send)
       AnalyticsService.captureWithEncryption('SwapConfirmed', {
-        address,
-        chainId: quote.sourceChain.chainId,
-        txHash: transfer.id
+        sourceAddress: address,
+        targetAddress,
+        sourceChainId: quote.sourceChain.chainId,
+        targetChainId: quote.targetChain.chainId,
+        sourceTxHash: transfer.source?.txHash ?? transfer.id,
+        quoteSelectionMode,
+        autoRetryAttempt
       })
 
       Logger.info('[SwapContext] transfer executed', {
@@ -345,8 +361,11 @@ export const SwapContextProvider = ({
           transfer,
           quote: quoteToUse,
           address: fromAddress,
+          targetAddress: toAddress,
           fromTokenData: fromToken,
-          toTokenData: toToken
+          toTokenData: toToken,
+          quoteSelectionMode: userQuote ? 'manual' : 'auto',
+          autoRetryAttempt: !userQuote && retries > 0 ? retries : undefined
         })
       } catch (error) {
         // Handle user rejection - silent exit, no error shown

@@ -95,13 +95,40 @@ export type AnalyticsEvents = {
     slippage: number
   }
   SwapConfirmed: {
-    address: string
-    txHash: string
-    chainId: string
+    sourceAddress: string
+    targetAddress: string
+    sourceChainId: string
+    targetChainId: string
+    sourceTxHash: string
+    quoteSelectionMode: 'manual' | 'auto'
+    autoRetryAttempt?: number
+  }
+  SwapSuccessful: {
+    sourceAddress: string
+    targetAddress: string
+    sourceChainId: string
+    targetChainId: string
+    sourceTxHash?: string
+    targetTxHash?: string
   }
   SwapFailed: {
-    address: string
-    chainId: string
+    sourceAddress: string
+    targetAddress: string
+    sourceChainId: string
+    targetChainId: string
+    sourceTxHash?: string
+    targetTxHash?: string
+    errorCode?: string
+    errorReason?: string
+  }
+  SwapRefunded: {
+    sourceAddress: string
+    targetAddress: string
+    sourceChainId: string
+    targetChainId: string
+    sourceTxHash?: string
+    targetTxHash?: string
+    refundTxHash?: string
   }
   TotpValidationFailed: { error: string }
   TotpValidationSuccess: undefined

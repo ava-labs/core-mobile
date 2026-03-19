@@ -14,8 +14,19 @@ import {
   setFeatureFlags
 } from 'store/posthog/slice'
 import Logger from 'utils/Logger'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
+import type {
+  CompletedTransfer,
+  FailedTransfer,
+  RefundedTransfer
+} from '@avalabs/fusion-sdk'
+import {
+  isCompletedTransfer,
+  isFailedTransfer,
+  isRefundedTransfer
+} from '../utils/transferStatus'
 import FusionService from '../services/FusionService'
 import { getFusionEnvironment } from '../consts'
 import { createEvmSigner } from '../services/signers/EvmSigner'
@@ -86,7 +97,11 @@ const resumeTransfersTracking = (): void => {
     const pending = getPendingFusionTransfers()
     for (const { transfer } of pending) {
       Logger.info('[FusionTracking] resuming tracking for', transfer.id)
-      FusionService.trackTransfer(transfer, updateFusionTransfer)
+      FusionService.trackTransfer(
+        transfer,
+        updateFusionTransfer,
+        captureSwapAnalytics
+      )
     }
   } catch (error) {
     Logger.error('[FusionTracking] failed to resume transfer tracking', error)
@@ -200,6 +215,38 @@ export const cleanupFusionService = async (
   useIsFusionServiceReady.setState(false)
 }
 
+const captureSwapAnalytics = (
+  concludedTransfer: CompletedTransfer | FailedTransfer | RefundedTransfer
+): void => {
+  const base = {
+    sourceAddress: concludedTransfer.fromAddress,
+    targetAddress: concludedTransfer.toAddress,
+    sourceChainId: concludedTransfer.sourceChain.chainId,
+    targetChainId: concludedTransfer.targetChain.chainId,
+    sourceTxHash: concludedTransfer.source?.txHash
+  }
+
+  if (isCompletedTransfer(concludedTransfer)) {
+    AnalyticsService.captureWithEncryption('SwapSuccessful', {
+      ...base,
+      targetTxHash: concludedTransfer.target?.txHash
+    })
+  } else if (isFailedTransfer(concludedTransfer)) {
+    AnalyticsService.captureWithEncryption('SwapFailed', {
+      ...base,
+      targetTxHash: concludedTransfer.target?.txHash,
+      errorCode: concludedTransfer.errorCode?.toString(),
+      errorReason: concludedTransfer.errorReason ?? undefined
+    })
+  } else if (isRefundedTransfer(concludedTransfer)) {
+    AnalyticsService.captureWithEncryption('SwapRefunded', {
+      ...base,
+      targetTxHash: concludedTransfer.target?.txHash,
+      refundTxHash: concludedTransfer.refund?.txHash ?? undefined
+    })
+  }
+}
+
 /**
  * Register Fusion service listeners
  */
@@ -231,7 +278,11 @@ export const addFusionListeners = (startListening: AppStartListening): void => {
       }
 
       try {
-        FusionService.trackTransfer(transfer, updateFusionTransfer)
+        FusionService.trackTransfer(
+          transfer,
+          updateFusionTransfer,
+          captureSwapAnalytics
+        )
       } catch (error) {
         logSdkError('[trackFusionTransfer listener] error', error)
       }
