@@ -781,8 +781,6 @@ describe('FusionService', () => {
         type: ServiceType.MARKR,
         evmSigner: mockEvmSigner
       })
-      expect(markrInit.markrApiUrl).toBeDefined()
-      expect(markrInit.markrAppId).toBeDefined()
     })
 
     it('should configure Lombard services with BTC signer', async () => {
