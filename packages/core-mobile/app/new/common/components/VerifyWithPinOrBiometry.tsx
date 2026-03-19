@@ -1,8 +1,9 @@
 import { PinInput, PinInputActions, Text, View } from '@avalabs/k2-alpine'
+import { useAfterScreenEnterTransition } from 'common/hooks/useAfterScreenEnterTransition'
 import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { useFocusEffect } from 'expo-router'
 import React, { useCallback, useEffect, useRef } from 'react'
-import { InteractionManager, Keyboard, Platform } from 'react-native'
+import { Keyboard, Platform } from 'react-native'
 import Logger from 'utils/Logger'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { ScrollScreen } from './ScrollScreen'
@@ -83,21 +84,21 @@ export const VerifyWithPinOrBiometry = ({
     }
   }, [])
 
+  useAfterScreenEnterTransition(() => {
+    const accessType = BiometricsSDK.getAccessType()
+    if (accessType === 'BIO') {
+      handlePromptBioLogin().catch(Logger.error)
+    } else {
+      focusPinInput()
+    }
+  })
+
   useFocusEffect(
     useCallback(() => {
-      InteractionManager.runAfterInteractions(() => {
-        const accessType = BiometricsSDK.getAccessType()
-        if (accessType === 'BIO') {
-          handlePromptBioLogin().catch(Logger.error)
-        } else {
-          focusPinInput()
-        }
-      })
-
       return () => {
         blurPinInput()
       }
-    }, [handlePromptBioLogin, focusPinInput])
+    }, [])
   )
 
   useEffect(() => {
@@ -136,7 +137,6 @@ export const VerifyWithPinOrBiometry = ({
         <PinInput
           disabled={disableKeypad}
           ref={pinInputRef}
-          autoFocus={true}
           length={6}
           onChangePin={onEnterPin}
           value={enteredPin}
