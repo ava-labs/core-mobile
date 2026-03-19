@@ -32,21 +32,21 @@ export const UnsupportedBitcoinApp = ({
       <Icons.Custom.Ledger color={colors.$textPrimary} width={32} height={32} />
       <View sx={{ alignItems: 'center', gap: 12 }}>
         <Text
-          variant="heading4"
+          variant="heading6"
           sx={{ textAlign: 'center', color: '$textPrimary' }}>
-          Bitcoin App Not Supported
+          Bitcoin app not supported
         </Text>
         <Text
-          variant="body2"
+          variant="body1"
           sx={{ textAlign: 'center', color: '$textSecondary' }}>
           {`Bitcoin app version ${currentVersion} is not supported. Please use the Bitcoin Recovery app instead.`}
         </Text>
         <Text
-          variant="body2"
+          variant="body1"
           sx={{ textAlign: 'center', color: '$textSecondary' }}>
           Open the{' '}
           <Text
-            variant="body2"
+            variant="body1"
             sx={{ fontWeight: '600', color: '$textPrimary' }}>
             Bitcoin Recovery
           </Text>{' '}
@@ -54,11 +54,11 @@ export const UnsupportedBitcoinApp = ({
         </Text>
       </View>
       <View sx={{ width: '100%', gap: 12 }}>
-        <Button type="primary" size="large" onPress={handleLearnMore}>
-          Learn More
+        <Button type="primary" size="large" onPress={onCancel}>
+          Dismiss
         </Button>
-        <Button type="tertiary" size="large" onPress={onCancel}>
-          Cancel
+        <Button type="tertiary" size="large" onPress={handleLearnMore}>
+          Learn More
         </Button>
       </View>
     </View>
