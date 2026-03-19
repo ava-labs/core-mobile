@@ -1,4 +1,3 @@
-import Config from 'react-native-config'
 import { Environment } from '@avalabs/fusion-sdk'
 import { tokenIds } from 'consts/tokenIds'
 
@@ -19,13 +18,6 @@ export const MIN_SLIPPAGE_PERCENT = 0.1
  * @example 50 -> 50%
  */
 export const MAX_SLIPPAGE_PERCENT = 50
-
-/**
- * Markr API endpoint for Fusion Service
- */
-// TODO add to env variables once stable https://ava-labs.atlassian.net/browse/CP-13381
-export const MARKR_API_URL =
-  Config.MARKR_API_URL ?? 'https://proxy-api.avax.network/proxy/markr-staging'
 
 /**
  * Determines the Fusion Service environment based on app settings

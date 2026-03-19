@@ -509,7 +509,7 @@ __metadata:
     "@avalabs/core-utils-sdk": 3.1.0-alpha.74
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.69
     "@avalabs/evm-module": 3.1.3
-    "@avalabs/fusion-sdk": 0.11.0
+    "@avalabs/fusion-sdk": 0.12.0
     "@avalabs/glacier-sdk": 3.1.0-alpha.69
     "@avalabs/k2-alpine": "workspace:*"
     "@avalabs/svm-module": 3.1.3
@@ -950,9 +950,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/fusion-sdk@npm:0.11.0":
-  version: 0.11.0
-  resolution: "@avalabs/fusion-sdk@npm:0.11.0"
+"@avalabs/fusion-sdk@npm:0.12.0":
+  version: 0.12.0
+  resolution: "@avalabs/fusion-sdk@npm:0.12.0"
   dependencies:
     "@bitcoinerlab/secp256k1": ^1.2.0
     "@layerzerolabs/lz-v2-utilities": ^3.0.17
@@ -967,7 +967,7 @@ __metadata:
     "@solana/kit": ^5.0.0
     viem: ^2.38.0
     zod: ^4.1.0
-  checksum: 55eb04845e2e4684399d80669d636646d6fa369534e4d9449dd5a2e2298287f5dcd32eb32314795fae71237e9c888b8873d6433d1c002b50d2048686d7e8137c
+  checksum: f1fc67921c217e870d8b60f4c0c83ede17ae066126118c64c9b71df962b95811620553e7ffc3367dea55bc441d77bea25d4f2df826941ed631a93514a50fa31e
   languageName: node
   linkType: hard
 
@@ -36052,7 +36052,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: e08d1254d04f3074970b63cdf0a363d6b189009270d457e868a26ef534addd69b320b85bef2a22e4eddb79006751bded431b56aaf2baf41976a6d0a5a2a2b91e
+  checksum: d6ceb75e1d0f5755370d6d91f67902bd2b8a23a3ca43cb853d2964b43798f30477e8ab0223ea8b620534fbdf5f56d39550f40d24bec2d2398c323ccfe8a5a556
   languageName: node
   linkType: hard
 
