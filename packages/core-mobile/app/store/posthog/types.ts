@@ -56,7 +56,8 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.FUSION_LOMBARD_BTC_TO_BTCB]: false,
   [FeatureGates.FUSION_LOMBARD_BTCB_TO_BTC]: false,
   [FeatureGates.ALTERNATE_APP_ICONS]: false,
-  [FeatureGates.LEGACY_BRIDGE]: false
+  [FeatureGates.LEGACY_BRIDGE]: false,
+  [FeatureGates.INJECTED_PROVIDER]: false
 }
 
 export const initialState = {
