@@ -8,7 +8,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { useAfterScreenTransition } from 'common/hooks/useAfterScreenTransition'
+import { useAfterScreenEnterTransition } from 'common/hooks/useAfterScreenEnterTransition'
 import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 import { Keyboard } from 'react-native'
@@ -58,7 +58,7 @@ export const CreatePin = ({
     processedValidPinRef.current = undefined
   }, [resetPin])
 
-  useAfterScreenTransition(() => ref.current?.focus(), {
+  useAfterScreenEnterTransition(() => ref.current?.focus(), {
     onScreenFocus
   })
 

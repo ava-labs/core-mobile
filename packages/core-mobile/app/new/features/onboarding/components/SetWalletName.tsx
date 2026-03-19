@@ -6,7 +6,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { SimpleTextInput } from 'common/components/SimpleTextInput'
-import { useAfterScreenTransition } from 'common/hooks/useAfterScreenTransition'
+import { useAfterScreenEnterTransition } from 'common/hooks/useAfterScreenEnterTransition'
 import { useFocusEffect } from 'expo-router'
 import React, { useCallback, useRef, useState } from 'react'
 import { Keyboard } from 'react-native'
@@ -29,7 +29,7 @@ export const SetWalletName = ({
   const [isLoading, setIsLoading] = useState(false)
   const nameInputRef = useRef<TextInputRef>(null)
 
-  useAfterScreenTransition(() => nameInputRef.current?.focus())
+  useAfterScreenEnterTransition(() => nameInputRef.current?.focus())
 
   useFocusEffect(
     useCallback(() => {

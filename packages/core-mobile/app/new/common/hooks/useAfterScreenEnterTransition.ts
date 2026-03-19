@@ -15,7 +15,7 @@ type NavigationWithTransitionEnd = {
   ): () => void
 }
 
-export type UseAfterScreenTransitionOptions = {
+export type UseAfterScreenEnterTransitionOptions = {
   /** When false, the callback is not scheduled. Default: true */
   enabled?: boolean
   /**
@@ -31,15 +31,17 @@ export type UseAfterScreenTransitionOptions = {
 }
 
 /**
- * Runs `callback` once after the screen’s push/pop transition finishes
- * (`transitionEnd`, ignoring `closing`). Intended for Native Stack.
+ * Runs `callback` once after this screen **finishes entering** the stack:
+ * Native Stack `transitionEnd` with `closing !== true` (not the event where this screen is being removed).
+ *
+ * Use for e.g. focusing an input after navigating *to* this screen. Not for “screen is closing” transitions.
  * Only active while the screen is focused (`useFocusEffect`).
  *
  * The latest `callback` is always used (stored in a ref), so inline lambdas are OK.
  */
-export function useAfterScreenTransition(
+export function useAfterScreenEnterTransition(
   callback: () => void,
-  options?: UseAfterScreenTransitionOptions
+  options?: UseAfterScreenEnterTransitionOptions
 ): void {
   const navigation = useNavigation() as NavigationWithTransitionEnd
   const enabled = options?.enabled ?? true
