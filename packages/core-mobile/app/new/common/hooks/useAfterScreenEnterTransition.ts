@@ -33,8 +33,10 @@ export type UseAfterScreenEnterTransitionOptions = {
   /** When false, the callback is not scheduled. Default: true */
   enabled?: boolean
   /**
-   * If `transitionEnd` never fires (edge cases), run after this delay (ms).
-   * Set to `false` to disable. Default: 500
+   * Fallback **time cap** (ms) for running the callback if `transitionEnd` is delayed or never
+   * fires. The callback will run after this fixed delay unless `false` is passed, even if
+   * `transitionEnd` later fires on a slower / longer transition. Set to `false` to disable.
+   * Default: 500.
    */
   transitionFallbackMs?: number | false
   /**
@@ -63,8 +65,9 @@ export type UseAfterScreenEnterTransitionOptions = {
 }
 
 /**
- * Runs `callback` once after the screen **enters** the native stack (`transitionEnd`, or
- * `transitionFallbackMs`). Optionally waits `layoutBufferMs` before invoking.
+ * Runs `callback` once after the screen is considered to have **entered** the native stack —
+ * whichever happens first: the native `transitionEnd` event or the `transitionFallbackMs`
+ * timeout (if enabled). Optionally waits `layoutBufferMs` before invoking.
  *
  * `navigation` is kept in a ref so a changing reference does not re-subscribe while focused (that
  * could miss `transitionEnd` and fire the fallback twice). `callback` uses a ref for fresh closures.
