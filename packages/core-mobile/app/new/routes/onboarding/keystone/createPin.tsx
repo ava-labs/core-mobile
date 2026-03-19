@@ -24,7 +24,6 @@ export default function CreatePin(): JSX.Element {
 
   const handleEnteredValidPin = useCallback(
     (pin: string) => {
-      console.log('PIN created:', pin) // For debugging purposes only, remove in production
       AnalyticsService.capture('OnboardingPasswordSet')
       onPinCreated({
         walletId: activeWalletId ?? uuid(),
