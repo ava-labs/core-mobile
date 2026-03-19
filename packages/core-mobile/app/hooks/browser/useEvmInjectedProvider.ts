@@ -5,9 +5,8 @@ import { selectActiveNetwork } from 'store/network/slice'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import RNWebView from 'react-native-webview'
 import Logger from 'utils/Logger'
-import { RpcMethod } from 'store/rpc/types'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
-import { RpcMethod as VmModuleRpcMethod } from '@avalabs/vm-module-types'
+import { RpcMethod } from '@avalabs/vm-module-types'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { buildEvmProviderShim } from './evmProviderShim'
 
@@ -49,13 +48,13 @@ const READ_ONLY_METHODS = new Set([
 ])
 
 const SIGNING_METHODS: Record<string, RpcMethod> = {
-  eth_sendTransaction: RpcMethod.ETH_SEND_TRANSACTION,
-  personal_sign: RpcMethod.PERSONAL_SIGN,
-  eth_sign: RpcMethod.ETH_SIGN,
-  eth_signTypedData: RpcMethod.SIGN_TYPED_DATA,
-  eth_signTypedData_v1: RpcMethod.SIGN_TYPED_DATA_V1,
-  eth_signTypedData_v3: RpcMethod.SIGN_TYPED_DATA_V3,
-  eth_signTypedData_v4: RpcMethod.SIGN_TYPED_DATA_V4
+  [RpcMethod.ETH_SEND_TRANSACTION]: RpcMethod.ETH_SEND_TRANSACTION,
+  [RpcMethod.PERSONAL_SIGN]: RpcMethod.PERSONAL_SIGN,
+  [RpcMethod.ETH_SIGN]: RpcMethod.ETH_SIGN,
+  [RpcMethod.SIGN_TYPED_DATA]: RpcMethod.SIGN_TYPED_DATA,
+  [RpcMethod.SIGN_TYPED_DATA_V1]: RpcMethod.SIGN_TYPED_DATA_V1,
+  [RpcMethod.SIGN_TYPED_DATA_V3]: RpcMethod.SIGN_TYPED_DATA_V3,
+  [RpcMethod.SIGN_TYPED_DATA_V4]: RpcMethod.SIGN_TYPED_DATA_V4
 }
 
 /**
@@ -168,7 +167,7 @@ export function useEvmInjectedProvider(
 
       try {
         const result = await request({
-          method: rpcMethod as unknown as VmModuleRpcMethod,
+          method: rpcMethod,
           params,
           chainId: caip2ChainId
         })
