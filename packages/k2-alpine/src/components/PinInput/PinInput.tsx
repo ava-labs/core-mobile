@@ -1,5 +1,12 @@
 import React, { forwardRef, useImperativeHandle, useMemo, useRef } from 'react'
-import { Platform, TextInput, Vibration, ViewStyle } from 'react-native'
+import {
+  Platform,
+  StyleSheet,
+  TextInput,
+  Vibration,
+  View,
+  ViewStyle
+} from 'react-native'
 import Animated, {
   cancelAnimation,
   SharedValue,
@@ -12,7 +19,6 @@ import Animated, {
 } from 'react-native-reanimated'
 import { scheduleOnRN } from 'react-native-worklets'
 import { useTheme } from '../../hooks'
-import { TouchableOpacity } from '../Primitives'
 
 export const PinInput = forwardRef<PinInputActions, PinInputProps>(
   (
@@ -134,6 +140,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
     }
 
     const handleInputChange = (text: string): void => {
+      console.log('Raw input:', text) // For debugging purposes only, remove in production
       const numericInput = text.replace(/[^0-9]/g, '').slice(0, length)
       onChangePin(numericInput)
     }
@@ -156,23 +163,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
     }))
 
     return (
-      <TouchableOpacity
-        disabled={disabled}
-        onPress={() => textInputRef.current?.focus()}
-        activeOpacity={1}>
-        {/* Hidden TextInput for capturing input */}
-        <TextInput
-          accessibilityLabel="pin_input"
-          testID="pin_input"
-          ref={textInputRef}
-          style={{ position: 'absolute', opacity: 0 }}
-          value={value}
-          onChangeText={handleInputChange}
-          keyboardType="number-pad"
-          autoFocus={autoFocus}
-          maxLength={length}
-          allowFontScaling={false}
-        />
+      <View>
         {/* Display for input dots */}
         <Animated.View
           style={[
@@ -197,7 +188,24 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
             )
           })}
         </Animated.View>
-      </TouchableOpacity>
+        {/* TextInput covers the full area as an invisible overlay.
+            Rendered last so it is on top in z-order, receiving all taps
+            and keyboard input without interference from the dots view. */}
+        <TextInput
+          accessibilityLabel="pin_input"
+          testID="pin_input"
+          ref={textInputRef}
+          style={[StyleSheet.absoluteFillObject, { opacity: 0 }]}
+          value={value}
+          onChangeText={handleInputChange}
+          inputMode="numeric"
+          autoFocus={autoFocus}
+          maxLength={length}
+          allowFontScaling={false}
+          caretHidden={true}
+          editable={!disabled}
+        />
+      </View>
     )
   }
 )
