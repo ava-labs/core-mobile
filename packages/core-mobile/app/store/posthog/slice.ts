@@ -325,11 +325,6 @@ export const selectMarkrSwapMaxRetries = (state: RootState): number => {
 export const selectIsSolanaSwapBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
 
-  const activeWallet = selectActiveWallet(state)
-  if (activeWallet?.type === WalletType.KEYSTONE) {
-    return true
-  }
-
   return (
     !featureFlags[FeatureGates.SWAP_SOLANA] ||
     !featureFlags[FeatureGates.EVERYTHING]

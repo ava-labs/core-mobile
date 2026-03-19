@@ -1,9 +1,10 @@
 import React, { useCallback, useMemo } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { Address } from 'viem'
+import { Address, formatUnits } from 'viem'
 import { DefiMarket } from '../../types'
-import { convertUsdToTokenAmount } from '../../utils/borrow'
-import { WAD } from '../../consts'
+import { convertUsdToTokenAmount } from '../../utils/convertUsdToTokenAmount'
+import { WAD, WAD_SCALE } from '../../consts'
+import { getBenqiPriceDecimals } from '../../utils/getBenqiPriceDecimals'
 import { useBenqiBorrowData } from '../../hooks/benqi/useBenqiBorrowData'
 import { useBenqiBorrow } from '../../hooks/benqi/useBenqiBorrow'
 import { BorrowSelectAmountFormBase } from './BorrowSelectAmountFormBase'
@@ -35,9 +36,7 @@ export const BorrowBenqiSelectAmountForm = ({
       )
     }
 
-    // Benqi: USD amount is 18 decimals
-    // Benqi Price Oracle returns: price * 10^(36 - underlyingDecimals)
-    const priceDecimals = 36 - market.asset.decimals
+    const priceDecimals = getBenqiPriceDecimals(market.asset.decimals)
     const tokenAmount = convertUsdToTokenAmount({
       usdAmount: borrowData.availableBorrowsUSD,
       tokenPriceUSD: borrowData.tokenPriceUSD,
@@ -69,8 +68,8 @@ export const BorrowBenqiSelectAmountForm = ({
     // health = (liquidity + totalDebt) / totalDebt
     // This gives us: health = 1 + (liquidity / totalDebt)
     const numerator = liquidity + totalDebtUSD
-    const health = (numerator * 10n ** BigInt(WAD)) / totalDebtUSD
-    return Number(health) / Number(10n ** BigInt(WAD))
+    const health = (numerator * WAD_SCALE) / totalDebtUSD
+    return Number(formatUnits(health, WAD))
   }, [borrowData])
 
   // Calculate new health score based on borrow amount
@@ -88,8 +87,7 @@ export const BorrowBenqiSelectAmountForm = ({
       // borrowAmountUSD = borrowAmount * tokenPrice / 10^(36-decimals) * 10^18 / 10^tokenDecimals
       // = borrowAmount * tokenPrice / 10^18
       const borrowAmountRaw = borrowAmount.toSubUnit()
-      const newBorrowUSD =
-        (borrowAmountRaw * tokenPriceUSD) / 10n ** BigInt(WAD)
+      const newBorrowUSD = (borrowAmountRaw * tokenPriceUSD) / WAD_SCALE
 
       const newTotalDebt = totalDebtUSD + newBorrowUSD
 
@@ -101,8 +99,8 @@ export const BorrowBenqiSelectAmountForm = ({
       // Note: We use (liquidity + currentTotalDebt) because this represents
       // the total "borrowing capacity" before the new borrow
       const numerator = liquidity + totalDebtUSD
-      const newHealth = (numerator * 10n ** BigInt(WAD)) / newTotalDebt
-      return Number(newHealth) / Number(10n ** BigInt(WAD))
+      const newHealth = (numerator * WAD_SCALE) / newTotalDebt
+      return Number(formatUnits(newHealth, WAD))
     },
     [borrowData]
   )

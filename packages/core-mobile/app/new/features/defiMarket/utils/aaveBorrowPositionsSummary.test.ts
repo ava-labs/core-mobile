@@ -59,6 +59,7 @@ const createMockAaveBorrowData = (
   healthFactor: 1500000000000000000n, // 1.5 (18 decimals)
   totalCollateralUSD: 100000000000n, // 1000 USD
   liquidationThreshold: 8000n, // 80%
+  ltv: 7500n, // 75%
   ...overrides
 })
 

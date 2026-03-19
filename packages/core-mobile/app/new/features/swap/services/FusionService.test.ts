@@ -1113,7 +1113,7 @@ describe('FusionService', () => {
 
   describe('estimateNativeFee', () => {
     it('should delegate to transferManager.estimateNativeFee', async () => {
-      const mockEstimate = { totalFee: 1000000n } as any
+      const mockEstimate = { totalUpfrontFee: 1000000n } as any
       const mockTransferManager = {
         getQuoter: jest.fn(),
         getSupportedChains: jest.fn(),
@@ -1150,7 +1150,7 @@ describe('FusionService', () => {
     })
 
     it('should call estimateNativeFee without options', async () => {
-      const mockEstimate = { totalFee: 500000n } as any
+      const mockEstimate = { totalUpfrontFee: 500000n } as any
       const mockTransferManager = {
         getQuoter: jest.fn(),
         getSupportedChains: jest.fn(),

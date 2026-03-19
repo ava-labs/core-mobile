@@ -1,0 +1,23 @@
+diff --git a/node_modules/reactotron-core-client/dist/commonjs/serialize.js b/node_modules/reactotron-core-client/dist/commonjs/serialize.js
+index 8526f85..6634cd0 100644
+--- a/node_modules/reactotron-core-client/dist/commonjs/serialize.js
++++ b/node_modules/reactotron-core-client/dist/commonjs/serialize.js
+@@ -29,12 +29,12 @@ const NEGATIVE_INFINITY = "~~~ -Infinity ~~~";
+  * https://github.com/infinitered/reactotron/issues/1436
+  */
+ 
+-if (typeof BigInt !== "undefined") {
+-  // eslint-disable-next-line no-extend-native
+-  BigInt.prototype.toJSON = function () {
+-    return this.toString();
+-  };
+-}
++// if (typeof BigInt !== "undefined") {
++//   // eslint-disable-next-line no-extend-native
++//   BigInt.prototype.toJSON = function () {
++//     return this.toString();
++//   };
++// }
+ 
+ /**
+  * Attempts to give a name to a function.

@@ -76,6 +76,11 @@ const DepositTabScreen = ({
     return isLoading ? [] : [StaticCard.Add, ...filteredDeposits]
   }, [filteredDeposits, isLoading])
 
+  const orderKey = useMemo(
+    () => filteredDeposits.map(d => d.uniqueMarketId).join(','),
+    [filteredDeposits]
+  )
+
   const handleAddDeposit = useCallback(() => {
     AnalyticsService.capture('EarnDepositStart')
     navigate({ pathname: '/deposit/onboarding' })
@@ -160,7 +165,7 @@ const DepositTabScreen = ({
               marginTop: 6,
               marginBottom: 10,
               backgroundColor: theme.colors.$surfacePrimary,
-              gap: 7
+              gap: 8
             },
             animatedHeaderStyle
           ]}>
@@ -182,11 +187,13 @@ const DepositTabScreen = ({
             isClaiming={isClaimingRewards}
           />
         )}
-        <DropdownSelections
-          filter={filter}
-          sort={sort}
-          sx={{ paddingHorizontal: 16, marginTop: 4 }}
-        />
+        {deposits.length > 0 && (
+          <DropdownSelections
+            filter={filter}
+            sort={sort}
+            sx={{ paddingHorizontal: 16, marginTop: 4 }}
+          />
+        )}
       </View>
     )
   }, [
@@ -198,7 +205,8 @@ const DepositTabScreen = ({
     availableRewards,
     claimAllRewards,
     isClaimingRewards,
-    isPrivacyModeEnabled
+    isPrivacyModeEnabled,
+    deposits.length
   ])
 
   useEffect(() => {
@@ -248,7 +256,7 @@ const DepositTabScreen = ({
 
   return (
     <FlashList
-      key={`deposit-tab-${filter.selected}-${sort.selected}`}
+      key={`deposit-tab-${filter.selected}-${sort.selected}-${orderKey}`}
       onScroll={handleScroll}
       overrideProps={overrideProps}
       data={data}

@@ -1,8 +1,15 @@
 import React, { useCallback, useMemo, useRef } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { Address } from 'viem'
 import { transactionSnackbar } from 'common/utils/toast'
+import { WAVAX_ADDRESS } from 'features/swap/consts'
 import { DefiMarket } from '../../types'
+import { AAVE_PRICE_ORACLE_SCALE } from '../../consts'
+import { convertUsdToTokenAmount } from '../../utils/convertUsdToTokenAmount'
 import { useAaveWithdraw } from '../../hooks/aave/useAaveWithdraw'
+import { useAaveBorrowData } from '../../hooks/aave/useAaveBorrowData'
+import { useAaveHealthScore } from '../../hooks/aave/useAaveHealthScore'
+import { useAaveZeroLtvCollateral } from '../../hooks/aave/useAaveZeroLtvCollateral'
 import { useUnwrapWavax } from '../../hooks/useUnwrapWavax'
 import { SelectAmountFormBase } from '../SelectAmountFormBase'
 
@@ -73,13 +80,68 @@ export const WithdrawAaveSelectAmountForm = ({
     onError
   })
 
+  const underlyingAssetAddress = (market.asset.contractAddress ??
+    WAVAX_ADDRESS) as Address
+  const { data: borrowData } = useAaveBorrowData(underlyingAssetAddress)
+  const isUsedAsCollateral = market.usageAsCollateralEnabledOnUser === true
+
+  const { currentHealthScore, calculateHealthScore } = useAaveHealthScore({
+    borrowData,
+    tokenDecimals: market.asset.decimals,
+    direction: 'withdraw',
+    isUsedAsCollateral
+  })
+
+  const { blockingError: zeroLtvError } = useAaveZeroLtvCollateral()
+  const hasDebt = borrowData !== undefined && borrowData.totalDebtUSD > 0n
+  const blockingError = hasDebt ? zeroLtvError : undefined
+
+  // Max safe withdraw: keep health factor >= 1.02 (liquidation threshold-based)
+  // Only applies when this asset is used as collateral and user has debt
+  const maxWithdrawAmount = useMemo(() => {
+    if (
+      !borrowData ||
+      borrowData.totalDebtUSD === 0n ||
+      !borrowData.tokenPriceUSD ||
+      !borrowData.liquidationThreshold ||
+      !isUsedAsCollateral
+    ) {
+      return tokenBalance
+    }
+    const minCollateralUSD =
+      (borrowData.totalDebtUSD * 10200n) / borrowData.liquidationThreshold
+    const maxWithdrawUSD =
+      borrowData.totalCollateralUSD > minCollateralUSD
+        ? borrowData.totalCollateralUSD - minCollateralUSD
+        : 0n
+    const maxTokens = convertUsdToTokenAmount({
+      usdAmount: maxWithdrawUSD,
+      tokenPriceUSD: borrowData.tokenPriceUSD,
+      tokenDecimals: market.asset.decimals,
+      usdDecimals: AAVE_PRICE_ORACLE_SCALE,
+      priceDecimals: AAVE_PRICE_ORACLE_SCALE,
+      safetyBufferPercent: 0
+    })
+    const maxUnit = new TokenUnit(
+      maxTokens,
+      market.asset.decimals,
+      market.asset.symbol
+    )
+    return maxUnit.lt(tokenBalance) ? maxUnit : tokenBalance
+  }, [borrowData, tokenBalance, market.asset, isUsedAsCollateral])
+
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {
       if (tokenBalance && amt.gt(tokenBalance)) {
         throw new Error('The specified amount exceeds the available balance')
       }
+      if (maxWithdrawAmount && amt.gt(maxWithdrawAmount)) {
+        throw new Error(
+          'The specified amount exceeds the maximum withdrawable amount'
+        )
+      }
     },
-    [tokenBalance]
+    [tokenBalance, maxWithdrawAmount]
   )
 
   // For native AVAX: withdraw WAVAX, then unwrap to AVAX after confirmation
@@ -101,10 +163,15 @@ export const WithdrawAaveSelectAmountForm = ({
       title="How much do you want to withdraw?"
       token={market.asset}
       tokenBalance={tokenBalance}
-      maxAmount={tokenBalance}
+      maxAmount={maxWithdrawAmount}
       validateAmount={validateAmount}
       submit={handleSubmit}
       onSubmitted={onSubmitted}
+      currentHealthScore={currentHealthScore}
+      calculateHealthScore={calculateHealthScore}
+      balanceLabel="Available to withdraw:"
+      maxAmountZeroMessage="Your position is too close to liquidation to withdraw"
+      blockingError={blockingError}
     />
   )
 }

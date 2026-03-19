@@ -9,6 +9,8 @@ import { TokenType } from '@avalabs/vm-module-types'
 import { useCChainGasCost } from 'common/hooks/useCChainGasCost'
 import { DefiMarket, DepositAsset } from '../../types'
 import { useAaveDepositErc20 } from '../../hooks/aave/useAaveDepositErc20'
+import { useAaveBorrowData } from '../../hooks/aave/useAaveBorrowData'
+import { useAaveHealthScore } from '../../hooks/aave/useAaveHealthScore'
 import {
   AAVE_POOL_C_CHAIN_ADDRESS,
   APPROVE_GAS_AMOUNT,
@@ -55,6 +57,17 @@ export const AaveErc20SelectAmountForm = ({
     onError
   })
 
+  const underlyingAssetAddress = market.asset.contractAddress as Address
+  const { data: borrowData } = useAaveBorrowData(underlyingAssetAddress)
+  const isUsedAsCollateral = market.usageAsCollateralEnabledOnUser === true
+
+  const { currentHealthScore, calculateHealthScore } = useAaveHealthScore({
+    borrowData,
+    tokenDecimals: market.asset.decimals,
+    direction: 'deposit',
+    isUsedAsCollateral
+  })
+
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {
       if (!asset.nativeToken) {
@@ -78,7 +91,7 @@ export const AaveErc20SelectAmountForm = ({
       }
 
       const hasEnoughAllowanceResult = await hasEnoughAllowance({
-        tokenAddress: asset.token.address as Address,
+        tokenAddress: underlyingAssetAddress,
         provider: provider,
         userAddress: address as Address,
         spenderAddress: AAVE_POOL_C_CHAIN_ADDRESS,
@@ -100,7 +113,8 @@ export const AaveErc20SelectAmountForm = ({
       mintGasCost,
       approveGasCost,
       asset.nativeToken,
-      asset.token,
+      asset.token.type,
+      underlyingAssetAddress,
       provider,
       address
     ]
@@ -114,6 +128,8 @@ export const AaveErc20SelectAmountForm = ({
       validateAmount={validateAmount}
       submit={aaveDepositErc20}
       onSubmitted={onSubmitted}
+      currentHealthScore={currentHealthScore}
+      calculateHealthScore={calculateHealthScore}
     />
   )
 }

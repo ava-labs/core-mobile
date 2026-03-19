@@ -1,5 +1,5 @@
 import { formatUnits } from 'viem'
-import { WAD } from '../consts'
+import { WAD, WAD_SCALE } from '../consts'
 import {
   BenqiBorrowData,
   BorrowPosition,
@@ -28,7 +28,7 @@ const getBenqiHealthScore = (
   const totalDebtWad = benqiBorrowData.totalDebtUSD
   const liquidityWad = benqiBorrowData.liquidity
   const healthScoreWad =
-    ((liquidityWad + totalDebtWad) * 10n ** BigInt(WAD)) / totalDebtWad
+    ((liquidityWad + totalDebtWad) * WAD_SCALE) / totalDebtWad
 
   return Number(formatUnits(healthScoreWad, WAD))
 }

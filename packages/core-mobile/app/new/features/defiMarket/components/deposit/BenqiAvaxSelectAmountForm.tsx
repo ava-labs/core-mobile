@@ -1,9 +1,12 @@
 import React, { useCallback, useMemo } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { Address } from 'viem'
 import { DefiMarket, DepositAsset } from '../../types'
 import { MINT_GAS_AMOUNT } from '../../consts'
 import { useMaxDepositAmount } from '../../hooks/useMaxDepositAmount'
 import { useBenqiDepositAvax } from '../../hooks/benqi/useBenqiDepositAvax'
+import { useBenqiBorrowData } from '../../hooks/benqi/useBenqiBorrowData'
+import { useBenqiHealthScore } from '../../hooks/benqi/useBenqiHealthScore'
 import { SelectAmountFormBase } from '../SelectAmountFormBase'
 
 export const BenqiAvaxSelectAmountForm = ({
@@ -40,6 +43,17 @@ export const BenqiAvaxSelectAmountForm = ({
     gasAmount: MINT_GAS_AMOUNT
   })
 
+  const { data: borrowData } = useBenqiBorrowData(
+    market.asset.mintTokenAddress as Address
+  )
+  const isUsedAsCollateral = market.usageAsCollateralEnabledOnUser === true
+
+  const { currentHealthScore, calculateHealthScore } = useBenqiHealthScore({
+    borrowData,
+    direction: 'deposit',
+    isUsedAsCollateral
+  })
+
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {
       if (tokenBalance && amt.gt(tokenBalance)) {
@@ -63,6 +77,8 @@ export const BenqiAvaxSelectAmountForm = ({
       validateAmount={validateAmount}
       submit={benqiDepositAvax}
       onSubmitted={onSubmitted}
+      currentHealthScore={currentHealthScore}
+      calculateHealthScore={calculateHealthScore}
     />
   )
 }

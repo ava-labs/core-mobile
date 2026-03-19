@@ -46,13 +46,13 @@ export const useFeeEstimation = ({
     ],
     queryFn: quote
       ? async () => {
-          const { totalFee } = await FusionService.estimateNativeFee(
+          const { totalUpfrontFee } = await FusionService.estimateNativeFee(
             quote,
             feeOptions
           )
           return gasSafetyBps > 0
-            ? (totalFee * (10000n + BigInt(gasSafetyBps))) / 10000n
-            : totalFee
+            ? (totalUpfrontFee * (10000n + BigInt(gasSafetyBps))) / 10000n
+            : totalUpfrontFee
         }
       : skipToken,
     staleTime: 0,
