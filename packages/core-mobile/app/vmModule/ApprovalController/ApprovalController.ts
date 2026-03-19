@@ -176,6 +176,68 @@ class ApprovalController implements VmModuleApprovalController {
     }
   }
 
+  private handleLedgerApproval({
+    requestId,
+    request,
+    params,
+    signingData,
+    resolve
+  }: {
+    requestId: string
+    request: ApprovalParams['request']
+    params: OnApproveParams
+    signingData: ApprovalParams['signingData']
+    resolve: (value: ApprovalResponse | PromiseLike<ApprovalResponse>) => void
+  }): void {
+    const resolveWithRetry = (
+      value: ApprovalResponse | PromiseLike<ApprovalResponse>
+    ): void => {
+      if ('error' in value) {
+        // Don't show alert if user explicitly cancelled
+        if (this.userCancelledMap.get(requestId)) {
+          this.userCancelledMap.delete(requestId)
+          return
+        }
+
+        handleLedgerErrorAndShowAlert({
+          error: value.error,
+          network: params.network,
+          onRetry: () =>
+            onApprove({
+              ...params,
+              signingData,
+              resolve: resolveWithRetry
+            }),
+          onCancel: () => {
+            this.userCancelledMap.set(requestId, true)
+            this.handleGoBackIfNeeded()
+            this.handleLedgerOnReject({ resolve })
+          }
+        })
+      } else {
+        resolve(value)
+        this.handleGoBackIfNeeded()
+        this.userCancelledMap.delete(requestId)
+      }
+    }
+
+    showLedgerReviewTransaction({
+      rpcMethod: request.method,
+      network: params.network,
+      onApprove: () =>
+        onApprove({
+          ...params,
+          signingData,
+          resolve: resolveWithRetry
+        }),
+      onReject: () => {
+        this.userCancelledMap.set(requestId, true)
+        this.handleLedgerOnReject({ resolve })
+        this.handleGoBackIfNeeded()
+      }
+    })
+  }
+
   async requestApproval({
     request,
     displayData,
@@ -191,67 +253,20 @@ class ApprovalController implements VmModuleApprovalController {
         displayData,
         signingData,
         onApprove: async (params: OnApproveParams) => {
-          if (
-            !isInAppRequest(request) &&
-            isTxSendMethod(request.method)
-          ) {
-            this.cacheSigningAddress(
-              requestId,
-              request.chainId,
-              params.account
-            )
+          if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
+            this.cacheSigningAddress(requestId, request.chainId, params.account)
           }
 
           if (
             params.walletType === WalletType.LEDGER ||
             params.walletType === WalletType.LEDGER_LIVE
           ) {
-            const resolveWithRetry = (
-              value: ApprovalResponse | PromiseLike<ApprovalResponse>
-            ): void => {
-              if ('error' in value) {
-                // Don't show alert if user explicitly cancelled
-                if (this.userCancelledMap.get(requestId)) {
-                  this.userCancelledMap.delete(requestId)
-                  return
-                }
-
-                handleLedgerErrorAndShowAlert({
-                  error: value.error,
-                  network: params.network,
-                  onRetry: () =>
-                    onApprove({
-                      ...params,
-                      signingData,
-                      resolve: resolveWithRetry
-                    }),
-                  onCancel: () => {
-                    this.userCancelledMap.set(requestId, true)
-                    this.handleGoBackIfNeeded()
-                    this.handleLedgerOnReject({ resolve })
-                  }
-                })
-              } else {
-                resolve(value)
-                this.handleGoBackIfNeeded()
-                this.userCancelledMap.delete(requestId)
-              }
-            }
-
-            showLedgerReviewTransaction({
-              rpcMethod: request.method,
-              network: params.network,
-              onApprove: () =>
-                onApprove({
-                  ...params,
-                  signingData,
-                  resolve: resolveWithRetry
-                }),
-              onReject: () => {
-                this.userCancelledMap.set(requestId, true)
-                this.handleLedgerOnReject({ resolve })
-                this.handleGoBackIfNeeded()
-              }
+            this.handleLedgerApproval({
+              requestId,
+              request,
+              params,
+              signingData,
+              resolve
             })
           } else {
             return onApprove({ ...params, resolve, signingData })
