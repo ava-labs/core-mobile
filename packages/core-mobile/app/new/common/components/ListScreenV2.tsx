@@ -339,9 +339,23 @@ export const ListScreenV2 = <T,>({
     // Do NOT pass minHeight, flex, or other unsupported properties
     return {
       ...((props?.contentContainerStyle as ViewStyle) ?? {}),
-      paddingBottom: renderFooter ? footerHeight + 16 : 16
+      paddingBottom: renderFooter
+        ? footerHeight + 16
+        : contentHeaderHeight +
+          renderHeaderHeight +
+          (renderHeader ? 12 : 0) +
+          insets.bottom +
+          16
     }
-  }, [renderFooter, footerHeight, props?.contentContainerStyle])
+  }, [
+    renderFooter,
+    footerHeight,
+    contentHeaderHeight,
+    renderHeaderHeight,
+    renderHeader,
+    insets.bottom,
+    props?.contentContainerStyle
+  ])
 
   const animatedEmptyComponent = useAnimatedStyle(() => {
     const translateY = interpolate(
