@@ -101,8 +101,8 @@ export type AnalyticsEvents = {
   StakeClaimFail: undefined
   StakeClaimSuccess: undefined
   StakeCountStakes: { active: number; history: number; total: number }
-  StakeDelegationSuccess: undefined
-  StakeDelegationFail: undefined
+  StakeDelegationSuccess: { isAdvanced: boolean }
+  StakeDelegationFail: { isAdvanced: boolean }
   StakeIssueClaim: undefined
   StakeIssueDelegation: undefined
   StakeOpened: undefined

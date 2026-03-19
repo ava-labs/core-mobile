@@ -249,7 +249,9 @@ const StakeConfirmScreen = (): JSX.Element => {
     (txHash: string): void => {
       refreshStakingBalances({ shouldRefreshStakes: true })
 
-      AnalyticsService.capture('StakeDelegationSuccess')
+      AnalyticsService.capture('StakeDelegationSuccess', {
+        isAdvanced: nodeId !== undefined
+      })
       transactionSnackbar.success({ message: 'Stake successful' })
 
       handleDismiss()
@@ -267,19 +269,22 @@ const StakeConfirmScreen = (): JSX.Element => {
       )
     },
     [
-      dispatch,
-      isDeveloperMode,
-      validatedStakingEndTime,
+      refreshStakingBalances,
+      nodeId,
       handleDismiss,
       navigate,
-      activeAccount,
-      refreshStakingBalances
+      dispatch,
+      validatedStakingEndTime,
+      activeAccount?.id,
+      isDeveloperMode
     ]
   )
 
   const onDelegationError = useCallback(
     (e: Error): void => {
-      AnalyticsService.capture('StakeDelegationFail')
+      AnalyticsService.capture('StakeDelegationFail', {
+        isAdvanced: nodeId !== undefined
+      })
 
       resetLedgerState()
 
