@@ -8,7 +8,7 @@ import {
 import { Platform } from 'react-native'
 import { ZustandStorageKeys } from 'resources/Constants'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { zustandMMKVStorage } from 'utils/mmkv/storages'
+import { zustandPersistStorage } from 'utils/mmkv/storages'
 import { isDebugOrInternalBuild } from 'utils/Utils'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
@@ -49,7 +49,7 @@ export const recentAccountsStore = create<RecentAccountsState>()(
     }),
     {
       name: ZustandStorageKeys.RECENT_ACCOUNTS,
-      storage: zustandMMKVStorage,
+      storage: zustandPersistStorage,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       migrate: (persistedState: any) => {
         // Check if this is legacy data with recentAccountIndexes

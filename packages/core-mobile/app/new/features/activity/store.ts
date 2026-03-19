@@ -1,7 +1,7 @@
 import { AvatarType } from '@avalabs/k2-alpine'
 import { createZustandStore } from 'common/utils/createZustandStore'
 import { ZustandStorageKeys } from 'resources/Constants'
-import { zustandMMKVStorage } from 'utils/mmkv/storages'
+import { zustandPersistStorage } from 'utils/mmkv/storages'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { ActivityNetworkFilter } from './hooks/useActivityFilterAndSearch'
@@ -27,7 +27,9 @@ export const activityStore = create<ActivityState>()(
     }),
     {
       name: ZustandStorageKeys.ACTIVITY,
-      storage: zustandMMKVStorage,
+      storage: zustandPersistStorage,
+      // TODO use correct type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       migrate: (persistedState: any) => {
         // Check if this is legacy data with recentAccountIndexes
         if (

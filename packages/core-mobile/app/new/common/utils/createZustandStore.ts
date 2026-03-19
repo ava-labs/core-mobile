@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, PersistOptions } from 'zustand/middleware'
-import { zustandMMKVStorage } from 'utils/mmkv/storages'
+import { zustandPersistStorage } from 'utils/mmkv/storages'
 
 /**
  * A lightweight utility for creating isolated Zustand stores that behave like `useState`
@@ -64,7 +64,7 @@ export function createZustandStore<T>(
           ...options.persist,
           storage:
             options.persist.storage ??
-            (zustandMMKVStorage as unknown as NonNullable<
+            (zustandPersistStorage as unknown as NonNullable<
               PersistOptions<StoreState<T>, { value: T }>['storage']
             >),
           partialize:

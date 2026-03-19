@@ -1,8 +1,13 @@
 import type { Transfer } from '@avalabs/fusion-sdk'
-import { AppNotification, NotificationCategory, NotificationTab } from './types'
+import {
+  AppNotification,
+  NotificationCategory,
+  NotificationSwapStatus,
+  NotificationTab
+} from './types'
 import {
   filterByTab,
-  isSwapCompletedOrFailed,
+  isSwapTerminal,
   mapTransferToSourceChainStatus,
   mapTransferToSwapStatus,
   mapTransferToTargetChainStatus,
@@ -127,11 +132,21 @@ describe('filterByTab', () => {
 
 describe('mapTransferToSwapStatus', () => {
   it('returns completed for status "completed"', () => {
-    expect(mapTransferToSwapStatus(makeTransfer('completed'))).toBe('completed')
+    expect(mapTransferToSwapStatus(makeTransfer('completed'))).toBe(
+      NotificationSwapStatus.Completed
+    )
   })
 
   it('returns failed for status "failed"', () => {
-    expect(mapTransferToSwapStatus(makeTransfer('failed'))).toBe('failed')
+    expect(mapTransferToSwapStatus(makeTransfer('failed'))).toBe(
+      NotificationSwapStatus.Failed
+    )
+  })
+
+  it('returns refunded for status "refunded"', () => {
+    expect(mapTransferToSwapStatus(makeTransfer('refunded'))).toBe(
+      NotificationSwapStatus.Refunded
+    )
   })
 
   it.each([['source-pending'], ['source-completed'], ['target-pending']])(
@@ -139,34 +154,36 @@ describe('mapTransferToSwapStatus', () => {
     status => {
       expect(
         mapTransferToSwapStatus(makeTransfer(status as Transfer['status']))
-      ).toBe('in_progress')
+      ).toBe(NotificationSwapStatus.InProgress)
     }
   )
 })
 
-// ─── isSwapCompletedOrFailed ────────────────────────────────────────────────────────
+// ─── isSwapTerminal ────────────────────────────────────────────────────────
 
-describe('isSwapCompletedOrFailed', () => {
+describe('isSwapTerminal', () => {
   it('returns true when the swap is completed', () => {
-    expect(isSwapCompletedOrFailed(makeTransfer('completed'))).toBe(true)
+    expect(isSwapTerminal(makeTransfer('completed'))).toBe(true)
   })
 
   it('returns true when the swap has failed', () => {
-    expect(isSwapCompletedOrFailed(makeTransfer('failed'))).toBe(true)
+    expect(isSwapTerminal(makeTransfer('failed'))).toBe(true)
+  })
+
+  it('returns true when the swap was refunded (partial failure)', () => {
+    expect(isSwapTerminal(makeTransfer('refunded'))).toBe(true)
   })
 
   it('returns false when the swap is in progress (source-pending)', () => {
-    expect(isSwapCompletedOrFailed(makeTransfer('source-pending'))).toBe(false)
+    expect(isSwapTerminal(makeTransfer('source-pending'))).toBe(false)
   })
 
   it('returns false when the swap is in progress (target-pending)', () => {
-    expect(isSwapCompletedOrFailed(makeTransfer('target-pending'))).toBe(false)
+    expect(isSwapTerminal(makeTransfer('target-pending'))).toBe(false)
   })
 
   it('returns false when the swap is in progress (source-completed)', () => {
-    expect(isSwapCompletedOrFailed(makeTransfer('source-completed'))).toBe(
-      false
-    )
+    expect(isSwapTerminal(makeTransfer('source-completed'))).toBe(false)
   })
 })
 
@@ -175,13 +192,19 @@ describe('isSwapCompletedOrFailed', () => {
 describe('mapTransferToSourceChainStatus', () => {
   it('returns failed for status "failed"', () => {
     expect(mapTransferToSourceChainStatus(makeTransfer('failed'))).toBe(
-      'failed'
+      NotificationSwapStatus.Failed
     )
   })
 
   it('returns in_progress for source-pending', () => {
     expect(mapTransferToSourceChainStatus(makeTransfer('source-pending'))).toBe(
-      'in_progress'
+      NotificationSwapStatus.InProgress
+    )
+  })
+
+  it('returns completed for status "refunded" (source transaction succeeded)', () => {
+    expect(mapTransferToSourceChainStatus(makeTransfer('refunded'))).toBe(
+      NotificationSwapStatus.Completed
     )
   })
 
@@ -192,7 +215,7 @@ describe('mapTransferToSourceChainStatus', () => {
         mapTransferToSourceChainStatus(
           makeTransfer(status as Transfer['status'])
         )
-      ).toBe('completed')
+      ).toBe(NotificationSwapStatus.Completed)
     }
   )
 })
@@ -202,13 +225,19 @@ describe('mapTransferToSourceChainStatus', () => {
 describe('mapTransferToTargetChainStatus', () => {
   it('returns failed for status "failed"', () => {
     expect(mapTransferToTargetChainStatus(makeTransfer('failed'))).toBe(
-      'failed'
+      NotificationSwapStatus.Failed
     )
   })
 
   it('returns completed for status "completed"', () => {
     expect(mapTransferToTargetChainStatus(makeTransfer('completed'))).toBe(
-      'completed'
+      NotificationSwapStatus.Completed
+    )
+  })
+
+  it('returns incomplete for status "refunded" (target did not complete)', () => {
+    expect(mapTransferToTargetChainStatus(makeTransfer('refunded'))).toBe(
+      NotificationSwapStatus.Incomplete
     )
   })
 
@@ -219,7 +248,7 @@ describe('mapTransferToTargetChainStatus', () => {
         mapTransferToTargetChainStatus(
           makeTransfer(status as Transfer['status'])
         )
-      ).toBe('in_progress')
+      ).toBe(NotificationSwapStatus.InProgress)
     }
   )
 })
