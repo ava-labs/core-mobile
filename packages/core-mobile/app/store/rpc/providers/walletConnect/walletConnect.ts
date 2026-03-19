@@ -8,14 +8,11 @@ import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
 import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import {
-  getChainIdFromCaip2,
-  isPChainId,
-  isXChainId
-} from 'utils/caip2ChainIds'
+import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { Account } from 'store/account/types'
+import { getAddressForChainId } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import { AgnosticRpcProvider, RpcMethod, RpcProvider } from '../../types'
 import { isTxSendMethod } from '../../utils/txSendMethods'
 import { isSessionProposal, isUserRejectedError } from './utils'
@@ -31,26 +28,12 @@ const transformResult = (method: RpcMethod, result: unknown): unknown => {
   return result
 }
 
-/**
- * Returns the chain-appropriate address for analytics.
- * CAIP2 namespace determines which address field to use:
- *   eip155 / avax C-Chain → addressC (EVM)
- *   avax P-Chain          → addressPVM
- *   avax X-Chain          → addressAVM
- *   bip122                → addressBTC (Bitcoin)
- *   solana                → addressSVM (Solana)
- */
 const getAddressForChain = (
   account: Account | null | undefined,
   caip2ChainId: string
 ): string => {
   if (!account) return ''
-  if (isPChainId(caip2ChainId)) return account.addressPVM
-  if (isXChainId(caip2ChainId)) return account.addressAVM
-  const namespace = caip2ChainId.split(':')[0]
-  if (namespace === 'bip122') return account.addressBTC
-  if (namespace === 'solana') return account.addressSVM
-  return account.addressC
+  return getAddressForChainId(caip2ChainId, account) ?? ''
 }
 
 const chainAgnosticMethods = [

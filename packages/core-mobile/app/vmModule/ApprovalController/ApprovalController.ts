@@ -90,6 +90,18 @@ class ApprovalController implements VmModuleApprovalController {
     explorerLink: string
     request: RpcRequest
   }): void {
+    if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
+      const address = this.signingAddressMap.get(request.requestId) ?? ''
+      this.signingAddressMap.delete(request.requestId)
+      const eventName = `${request.method}_confirmed` as TxSendConfirmedEvent
+      AnalyticsService.captureWithEncryption(eventName, {
+        dAppUrl: request.dappInfo.url,
+        address,
+        chainId: request.chainId,
+        txHash
+      })
+    }
+
     if (!isToastsAndConfettiEnabled(request)) return
 
     if (isInAppReview(request)) {
@@ -108,18 +120,6 @@ class ApprovalController implements VmModuleApprovalController {
     // only show confetti for in-app requests
     if (isInAppRequest(request) && isConfettiEnabled(request)) {
       showConfetti()
-    }
-
-    if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
-      const address = this.signingAddressMap.get(request.requestId) ?? ''
-      this.signingAddressMap.delete(request.requestId)
-      const eventName = `${request.method}_confirmed` as TxSendConfirmedEvent
-      AnalyticsService.captureWithEncryption(eventName, {
-        dAppUrl: request.dappInfo.url,
-        address,
-        chainId: request.chainId,
-        txHash
-      })
     }
   }
 
@@ -191,7 +191,16 @@ class ApprovalController implements VmModuleApprovalController {
         displayData,
         signingData,
         onApprove: async (params: OnApproveParams) => {
-          this.cacheSigningAddress(requestId, request.chainId, params.account)
+          if (
+            !isInAppRequest(request) &&
+            isTxSendMethod(request.method)
+          ) {
+            this.cacheSigningAddress(
+              requestId,
+              request.chainId,
+              params.account
+            )
+          }
 
           if (
             params.walletType === WalletType.LEDGER ||

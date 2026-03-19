@@ -246,7 +246,7 @@ describe('ApprovalController', () => {
       request
     })
 
-    it('does nothing when toasts and confetti are disabled', () => {
+    it('skips UI effects when toasts and confetti are disabled', () => {
       mockIsToastsAndConfettiEnabled.mockReturnValue(false)
 
       approvalController.onTransactionConfirmed(confirmedArgs(makeRequest()))
@@ -256,6 +256,23 @@ describe('ApprovalController', () => {
       expect(
         promptForAppReviewAfterSuccessfulTransaction
       ).not.toHaveBeenCalled()
+    })
+
+    it('still fires analytics when toasts and confetti are disabled', async () => {
+      mockIsToastsAndConfettiEnabled.mockReturnValue(false)
+      const request = makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+      await populateSigningAddressCache(request)
+
+      approvalController.onTransactionConfirmed({
+        txHash: TX_HASH,
+        explorerLink: '',
+        request
+      })
+
+      expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        'eth_sendTransaction_confirmed',
+        expect.objectContaining({ txHash: TX_HASH })
+      )
     })
 
     it('schedules app-review prompt when isInAppReview is true', () => {
@@ -458,6 +475,55 @@ describe('ApprovalController', () => {
           'eth_sendTransaction_confirmed',
           expect.objectContaining({ address: '' })
         )
+      })
+
+      it('does not cache signing address for in-app requests', async () => {
+        mockIsInAppRequest.mockReturnValue(true)
+        const request = makeRequest({ method: RpcMethod.ETH_SEND_TRANSACTION })
+
+        const signingData = { type: 'eth_sendTransaction', data: {} } as never
+        const displayData = {} as never
+        approvalController.requestApproval({
+          request,
+          displayData,
+          signingData
+        })
+        const { onApprove: capturedOnApprove } =
+          mockWalletConnectCacheSet.mock.calls[
+            mockWalletConnectCacheSet.mock.calls.length - 1
+          ][0]
+        await capturedOnApprove({
+          walletType: WalletType.MNEMONIC,
+          walletId: 'w1',
+          network: {},
+          account: mockAccount
+        })
+
+        expect(mockGetAddressForChainId).not.toHaveBeenCalled()
+      })
+
+      it('does not cache signing address for non-tx-send methods', async () => {
+        const request = makeDappRequest(RpcMethod.PERSONAL_SIGN)
+
+        const signingData = { type: 'personal_sign', data: {} } as never
+        const displayData = {} as never
+        approvalController.requestApproval({
+          request,
+          displayData,
+          signingData
+        })
+        const { onApprove: capturedOnApprove } =
+          mockWalletConnectCacheSet.mock.calls[
+            mockWalletConnectCacheSet.mock.calls.length - 1
+          ][0]
+        await capturedOnApprove({
+          walletType: WalletType.MNEMONIC,
+          walletId: 'w1',
+          network: {},
+          account: mockAccount
+        })
+
+        expect(mockGetAddressForChainId).not.toHaveBeenCalled()
       })
     })
   })
