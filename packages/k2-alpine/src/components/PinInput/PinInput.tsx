@@ -19,6 +19,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { scheduleOnRN } from 'react-native-worklets'
 import { useTheme } from '../../hooks'
+import { TouchableOpacity } from '../Primitives'
 
 export const PinInput = forwardRef<PinInputActions, PinInputProps>(
   (
@@ -131,14 +132,6 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
       )
     }
 
-    function vibratePhone(): void {
-      Vibration.vibrate(
-        Platform.OS === 'android'
-          ? [0, 150, 10, 150, 10, 150, 10, 150, 10, 150]
-          : [0, 10, 10, 10, 10]
-      )
-    }
-
     const handleInputChange = (text: string): void => {
       const numericInput = text.replace(/[^0-9]/g, '').slice(0, length)
       onChangePin(numericInput)
@@ -161,8 +154,18 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
       stopLoadingAnimation
     }))
 
+    const Container = Platform.OS === 'ios' ? TouchableOpacity : View
+    const containerProps =
+      Platform.OS === 'ios'
+        ? {
+            disabled,
+            onPress: () => textInputRef.current?.focus(),
+            activeOpacity: 1 as const
+          }
+        : {}
+
     return (
-      <View>
+      <Container {...containerProps}>
         {/* Display for input dots */}
         <Animated.View
           style={[
@@ -205,7 +208,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
           caretHidden={true}
           editable={!disabled}
         />
-      </View>
+      </Container>
     )
   }
 )
@@ -295,6 +298,14 @@ const useLoadingDotAnimations = (length: number): SharedValue<number>[] => {
       loadingDotAnimation8,
       length
     ]
+  )
+}
+
+function vibratePhone(): void {
+  Vibration.vibrate(
+    Platform.OS === 'android'
+      ? [0, 150, 10, 150, 10, 150, 10, 150, 10, 150]
+      : [0, 10, 10, 10, 10]
   )
 }
 
