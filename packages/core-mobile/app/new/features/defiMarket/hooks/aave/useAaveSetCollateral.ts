@@ -30,6 +30,9 @@ export const useAaveSetCollateral = ({
       queryClient.invalidateQueries({
         queryKey: [ReactQueryKeys.AAVE_AVAILABLE_MARKETS]
       })
+      queryClient.invalidateQueries({
+        queryKey: [ReactQueryKeys.AAVE_USER_BORROW_DATA]
+      })
     },
     onSettled
   })

@@ -3,23 +3,43 @@ import { Card, Text, useTheme, View } from '@avalabs/k2-alpine'
 import {
   formatHealthScore,
   getHealthRisk,
-  getHealthRiskColor
+  HealthRisk
 } from '../utils/healthRisk'
 
+const useScoreColor = (score: number | undefined): string => {
+  const { theme } = useTheme()
+  if (score === undefined || Number.isNaN(score)) {
+    return theme.colors.$textSecondary
+  }
+  const risk = getHealthRisk(score)
+  if (risk === HealthRisk.HIGH) return theme.colors.$textDanger
+  if (risk === HealthRisk.LOW) return theme.colors.$textSuccess
+  return theme.colors.$textPrimary
+}
+
 export const HealthScoreCard = ({
-  score
+  score,
+  currentScore
 }: {
   score: number | undefined
+  currentScore?: number | undefined
 }): JSX.Element => {
-  const { theme } = useTheme()
+  const projectedColor = useScoreColor(score)
+  const currentColor = useScoreColor(currentScore)
 
-  const color =
-    score === undefined || Number.isNaN(score)
-      ? theme.colors.$textSecondary
-      : getHealthRiskColor({
-          risk: getHealthRisk(score),
-          colors: theme.colors
-        })
+  const formattedCurrent =
+    currentScore !== undefined && !Number.isNaN(currentScore)
+      ? formatHealthScore(currentScore, { fractionDigits: 2 })
+      : undefined
+  const formattedProjected =
+    score !== undefined
+      ? formatHealthScore(score, { fractionDigits: 2 })
+      : undefined
+
+  const showTransition =
+    formattedCurrent !== undefined &&
+    formattedProjected !== undefined &&
+    formattedCurrent !== formattedProjected
 
   return (
     <Card sx={{ padding: 16 }}>
@@ -34,14 +54,31 @@ export const HealthScoreCard = ({
           Health score
         </Text>
         <View sx={{ flex: 1, alignItems: 'flex-end', gap: 2 }}>
-          <Text
-            variant="body1"
-            sx={{
-              color,
-              fontWeight: 500
-            }}>
-            {formatHealthScore(score, { fractionDigits: 2 })}
-          </Text>
+          {showTransition ? (
+            <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Text
+                variant="body1"
+                sx={{ color: currentColor, fontWeight: 500 }}>
+                {formattedCurrent}
+              </Text>
+              <Text
+                variant="body1"
+                sx={{ color: '$textSecondary', fontWeight: 500 }}>
+                →
+              </Text>
+              <Text
+                variant="body1"
+                sx={{ color: projectedColor, fontWeight: 500 }}>
+                {formattedProjected}
+              </Text>
+            </View>
+          ) : (
+            <Text
+              variant="body1"
+              sx={{ color: projectedColor, fontWeight: 500 }}>
+              {formattedProjected}
+            </Text>
+          )}
           <Text variant="caption" sx={{ color: '$textSecondary' }}>
             Liquidation at {'<'}1.0
           </Text>
