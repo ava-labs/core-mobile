@@ -1,14 +1,9 @@
-import { useAfterScreenEnterTransition } from 'common/hooks/useAfterScreenEnterTransition'
 import { EnterRecoveryPhrase as Component } from 'features/onboarding/components/EnterRecoveryPhrase'
 import { useRouter } from 'expo-router'
-import React, { useRef } from 'react'
-import { TextInput } from 'react-native'
+import React from 'react'
 
 export default function EnterRecoveryPhrase(): JSX.Element {
   const { navigate } = useRouter()
-  const recoveryPhraseInputRef = useRef<TextInput>(null)
-
-  useAfterScreenEnterTransition(() => recoveryPhraseInputRef.current?.focus())
 
   function handleNext(mnemonic: string): void {
     navigate({
@@ -17,5 +12,5 @@ export default function EnterRecoveryPhrase(): JSX.Element {
     })
   }
 
-  return <Component ref={recoveryPhraseInputRef} onNext={handleNext} />
+  return <Component onNext={handleNext} />
 }
