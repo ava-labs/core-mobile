@@ -191,8 +191,10 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
           })}
         </Animated.View>
         {/* TextInput covers the full area as an invisible overlay.
-            Rendered last so it is on top in z-order, receiving all taps
-            and keyboard input without interference from the dots view. */}
+             Rendered last so it is on top in z-order to capture keyboard input.
+             On iOS, taps are handled by the parent Container (TouchableOpacity),
+             which focuses this input; on other platforms the TextInput itself
+             may receive taps directly. */}
         <TextInput
           accessibilityLabel="pin_input"
           testID="pin_input"
