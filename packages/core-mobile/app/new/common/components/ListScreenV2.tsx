@@ -400,7 +400,7 @@ export const ListScreenV2 = <T,>({
         <View
           style={{
             position: 'absolute',
-            top: Platform.OS === 'android' ? 16 : 0,
+            top: Platform.OS === 'android' ? insets.top - 2 : 9,
             left: 0,
             right: 0,
             zIndex: 1000
@@ -408,7 +408,7 @@ export const ListScreenV2 = <T,>({
           <Grabber />
         </View>
       )
-  }, [isModal])
+  }, [insets.top, isModal])
 
   const handleFooterLayout = useCallback((event: LayoutChangeEvent) => {
     const { height } = event.nativeEvent.layout
