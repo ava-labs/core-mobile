@@ -57,7 +57,7 @@ class ApprovalController implements VmModuleApprovalController {
     })
   }
 
-  onTransactionPending({
+  onTransactionPending = ({
     txHash: _txHash,
     request,
     explorerLink: _explorerLink
@@ -65,7 +65,7 @@ class ApprovalController implements VmModuleApprovalController {
     txHash: string
     request: RpcRequest
     explorerLink?: string
-  }): void {
+  }): void => {
     if (!isToastsAndConfettiEnabled(request)) return
 
     if (isInAppAvalancheRequest(request)) {
@@ -81,7 +81,7 @@ class ApprovalController implements VmModuleApprovalController {
     }
   }
 
-  onTransactionConfirmed({
+  onTransactionConfirmed = ({
     txHash,
     explorerLink,
     request
@@ -89,8 +89,8 @@ class ApprovalController implements VmModuleApprovalController {
     txHash: string
     explorerLink: string
     request: RpcRequest
-  }): void {
-    if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
+  }): void => {
+    if (!isInAppRequest(request)) {
       const address = this.signingAddressMap.get(request.requestId) ?? ''
       this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_confirmed` as TxSendConfirmedEvent
@@ -123,16 +123,16 @@ class ApprovalController implements VmModuleApprovalController {
     }
   }
 
-  onTransactionReverted({
+  onTransactionReverted = ({
     txHash,
     request
   }: {
     txHash: string
     request: RpcRequest
-  }): void {
+  }): void => {
     transactionSnackbar.error({ error: 'Transaction reverted' })
 
-    if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
+    if (!isInAppRequest(request)) {
       const address = this.signingAddressMap.get(request.requestId) ?? ''
       this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_failed` as TxSendFailedEvent
