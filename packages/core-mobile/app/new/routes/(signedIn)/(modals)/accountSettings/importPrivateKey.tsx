@@ -5,16 +5,18 @@ import {
   GroupList,
   showAlert,
   Text,
+  TextInputRef,
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useAfterScreenEnterTransition } from 'common/hooks/useAfterScreenEnterTransition'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { usePrivateKeyBalance } from 'common/hooks/usePrivateKeyBalance'
 import { useCheckIfAccountExists } from 'common/hooks/useCheckIfAccountExists'
 import { SimpleTextInput } from 'new/common/components/SimpleTextInput'
 import { useDeriveAddresses } from 'new/common/hooks/useDeriveAddresses'
 import { usePrivateKeyImportHandler } from 'new/common/hooks/usePrivateKeyImportHandler'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useCheckIfPrivateKeyWalletExists } from 'common/hooks/useCheckIfPrivateKeyWalletExists'
@@ -25,6 +27,9 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
   const [privateKeyText, setPrivateKeyText] = useState('')
   const privateKey = useMemo(() => privateKeyText.trim(), [privateKeyText])
   const [errorMessage, setErrorMessage] = useState<string>()
+  const privateKeyInputRef = useRef<TextInputRef>(null)
+
+  useAfterScreenEnterTransition(() => privateKeyInputRef.current?.focus())
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
@@ -121,10 +126,10 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
       contentContainerStyle={{ padding: 16, flex: 1 }}>
       <View sx={{ gap: 12, paddingTop: 24 }}>
         <SimpleTextInput
+          ref={privateKeyInputRef}
           value={privateKeyText}
           onChangeText={setPrivateKeyText}
           placeholder="Enter private key"
-          autoFocus
           secureTextEntry={true}
         />
         {errorMessage ? (

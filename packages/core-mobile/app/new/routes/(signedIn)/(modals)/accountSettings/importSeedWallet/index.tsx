@@ -7,7 +7,10 @@ import { Button, showAlert, Text, useTheme, View } from '@avalabs/k2-alpine'
 import * as bip39 from 'bip39'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { MINIMUM_MNEMONIC_WORDS } from 'common/consts'
-import { useAfterScreenEnterTransition } from 'common/hooks/useAfterScreenEnterTransition'
+import {
+  FORM_SHEET_FOCUS_BUFFER_MS,
+  useAfterScreenEnterTransition
+} from 'common/hooks/useAfterScreenEnterTransition'
 import { useCheckIfAccountExists } from 'common/hooks/useCheckIfAccountExists'
 import { useRouter } from 'expo-router'
 import RecoveryPhraseInput from 'new/features/onboarding/components/RecoveryPhraseInput'
@@ -28,7 +31,9 @@ const ImportSeedWallet = (): React.JSX.Element => {
   const [mnemonic, setMnemonic] = useState('')
   const recoveryPhraseInputRef = useRef<TextInput>(null)
 
-  useAfterScreenEnterTransition(() => recoveryPhraseInputRef.current?.focus())
+  useAfterScreenEnterTransition(() => recoveryPhraseInputRef.current?.focus(), {
+    layoutBufferMs: FORM_SHEET_FOCUS_BUFFER_MS
+  })
   const [derivedAddresses, setDerivedAddresses] = useState<
     DerivedAddressItem[]
   >([])
