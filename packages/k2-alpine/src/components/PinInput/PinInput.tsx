@@ -140,7 +140,6 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
     }
 
     const handleInputChange = (text: string): void => {
-      console.log('Raw input:', text) // For debugging purposes only, remove in production
       const numericInput = text.replace(/[^0-9]/g, '').slice(0, length)
       onChangePin(numericInput)
     }
