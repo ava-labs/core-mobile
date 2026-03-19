@@ -19,7 +19,7 @@ import {
 import type { FeatureFlags } from 'services/posthog/types'
 import Logger from 'utils/Logger'
 import { fusionErrors } from '../utils/fusionErrors'
-import { MARKR_API_URL, MARKR_EVM_PARTNER_ID } from '../consts'
+import { MARKR_EVM_PARTNER_ID } from '../consts'
 import { isTransferInProgress } from '../utils/transferStatus'
 import type {
   FusionConfig,
@@ -94,7 +94,6 @@ class FusionService implements IFusionService {
             type: serviceType,
             evmSigner: signers.evm,
             solanaSigner: signers.svm,
-            markrApiUrl: MARKR_API_URL,
             markrAppId: MARKR_EVM_PARTNER_ID,
             getTargetChainAssets: () => Promise.resolve([])
             // eslint-disable-next-line prettier/prettier
