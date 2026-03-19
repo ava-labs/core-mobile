@@ -90,7 +90,7 @@ class ApprovalController implements VmModuleApprovalController {
     explorerLink: string
     request: RpcRequest
   }): void => {
-    if (!isInAppRequest(request)) {
+    if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
       const address = this.signingAddressMap.get(request.requestId) ?? ''
       this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_confirmed` as TxSendConfirmedEvent
@@ -132,7 +132,7 @@ class ApprovalController implements VmModuleApprovalController {
   }): void => {
     transactionSnackbar.error({ error: 'Transaction reverted' })
 
-    if (!isInAppRequest(request)) {
+    if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
       const address = this.signingAddressMap.get(request.requestId) ?? ''
       this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_failed` as TxSendFailedEvent
