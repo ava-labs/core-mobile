@@ -38,6 +38,7 @@ import {
 } from 'store/settings/securityPrivacy'
 import { onAppLocked, setIsLocked, setWalletState } from 'store/app/slice'
 import { WalletState } from 'store/app/types'
+import { manualLockStore } from 'features/accountSettings/store'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -54,6 +55,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   const { openUrl } = useInAppBrowser()
 
   const handleLockWallet = useCallback((): void => {
+    manualLockStore.setState({ wasManuallyLocked: true })
     dispatch(setIsLocked(true))
     dispatch(onAppLocked())
     dispatch(setWalletState(WalletState.INACTIVE))

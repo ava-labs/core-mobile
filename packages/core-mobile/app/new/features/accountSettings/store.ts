@@ -19,6 +19,8 @@ export const useNewContactAvatar = createZustandStore<AvatarType | undefined>(
 
 export const useDisableLockAppStore = create(() => ({ disableLockApp: false }))
 
+export const manualLockStore = create(() => ({ wasManuallyLocked: false }))
+
 interface RecentAccountsState {
   recentAccountIds: string[]
   addRecentAccounts: (accountIds: string[]) => void
