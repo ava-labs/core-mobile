@@ -1,5 +1,6 @@
 import { LEDGER_DEVICE_BRIEF_DELAY_MS } from 'features/ledger/consts'
 import { useLedgerWalletMap } from 'features/ledger/store'
+import { isBitcoinCompatibleApp } from 'features/ledger/utils'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import LedgerService from 'services/ledger/LedgerService'
@@ -15,6 +16,8 @@ type UseLedgerBLEConnectionParams = {
 type UseLedgerBLEConnectionReturn = {
   isLedgerConnected: boolean
   isAvalancheAppOpen: boolean
+  isUnsupportedBtcVersion: boolean
+  currentBtcVersion: string
   isReconnecting: boolean
   deviceForWallet: LedgerDevice | undefined
   handleReconnect: () => Promise<void>
@@ -28,6 +31,8 @@ export const useLedgerBLEConnection = ({
 }: UseLedgerBLEConnectionParams): UseLedgerBLEConnectionReturn => {
   const [isLedgerConnected, setIsLedgerConnected] = useState(false)
   const [isAvalancheAppOpen, setIsAvalancheAppOpen] = useState(false)
+  const [isUnsupportedBtcVersion, setIsUnsupportedBtcVersion] = useState(false)
+  const [currentBtcVersion, setCurrentBtcVersion] = useState('')
   const [isReconnecting, setIsReconnecting] = useState(false)
 
   const isMountedRef = useRef(true)
@@ -49,6 +54,8 @@ export const useLedgerBLEConnection = ({
     if (isConnecting) {
       setIsLedgerConnected(false)
       setIsAvalancheAppOpen(false)
+      setIsUnsupportedBtcVersion(false)
+      setCurrentBtcVersion('')
     }
   }, [isConnecting])
 
@@ -83,12 +90,30 @@ export const useLedgerBLEConnection = ({
       try {
         const connected = LedgerService.isConnected()
         setIsLedgerConnected(connected)
-        if (connected) {
-          const currentAppType = LedgerService.getCurrentAppType()
-          setIsAvalancheAppOpen(currentAppType === appType)
-        } else {
+        if (!connected) {
           setIsAvalancheAppOpen(false)
+          setIsUnsupportedBtcVersion(false)
+          return
         }
+        const currentAppType = LedgerService.getCurrentAppType()
+        if (appType !== LedgerAppType.BITCOIN) {
+          setIsAvalancheAppOpen(currentAppType === appType)
+          setIsUnsupportedBtcVersion(false)
+          return
+        }
+        const version = LedgerService.getCurrentAppVersion()
+        if (!version) {
+          // Version not yet populated; wait for the next poll
+          setIsAvalancheAppOpen(false)
+          setIsUnsupportedBtcVersion(false)
+          return
+        }
+        const compatible = isBitcoinCompatibleApp(currentAppType, version)
+        const unsupported =
+          currentAppType === LedgerAppType.BITCOIN && !compatible
+        setIsAvalancheAppOpen(compatible)
+        setIsUnsupportedBtcVersion(unsupported)
+        setCurrentBtcVersion(unsupported ? version : '')
       } catch {
         setIsLedgerConnected(false)
         setIsAvalancheAppOpen(false)
@@ -120,6 +145,8 @@ export const useLedgerBLEConnection = ({
   return {
     isLedgerConnected,
     isAvalancheAppOpen,
+    isUnsupportedBtcVersion,
+    currentBtcVersion,
     isReconnecting,
     deviceForWallet,
     handleReconnect,

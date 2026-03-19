@@ -1,8 +1,9 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { showAlert } from '@avalabs/k2-alpine'
 import { RpcError } from '@avalabs/vm-module-types'
-import { getLedgerAppName } from 'features/ledger/utils'
-import { LEDGER_ERROR_CODES } from 'services/ledger/types'
+import { getLedgerAppName, isBitcoinCompatibleApp } from 'features/ledger/utils'
+import LedgerService from 'services/ledger/LedgerService'
+import { LEDGER_ERROR_CODES, LedgerAppType } from 'services/ledger/types'
 
 export const TRANSACTION_CANCELLED_BY_USER = 'Transaction cancelled by user'
 
@@ -21,14 +22,19 @@ export const handleLedgerErrorAndShowAlert = ({
   const message = error.data?.cause?.message || error.message || ''
   const lowercasedMessage = message.toLowerCase()
 
+  const version = LedgerService.getCurrentAppVersion()
   const ledgerAppName = getLedgerAppName(network)
+  const compatible = isBitcoinCompatibleApp(ledgerAppName, version)
+  const unsupported = ledgerAppName === LedgerAppType.BITCOIN && !compatible
+
+  const appName = unsupported ? LedgerAppType.BITCOIN_RECOVERY : ledgerAppName
 
   let title = 'Transaction failed'
   let description = 'An error occurred while signing the transaction.'
 
   if (lowercasedMessage.includes(LEDGER_ERROR_CODES.WRONG_APP)) {
     title = 'Wrong app'
-    description = `Switch to the ${ledgerAppName} app on your Ledger device to continue`
+    description = `Switch to the ${appName} app on your Ledger device to continue`
   } else if (
     lowercasedMessage.includes(LEDGER_ERROR_CODES.REJECTED) ||
     lowercasedMessage.includes(LEDGER_ERROR_CODES.REJECTED_ALT)
@@ -40,13 +46,13 @@ export const handleLedgerErrorAndShowAlert = ({
     lowercasedMessage.includes(LEDGER_ERROR_CODES.COMMUNICATION_ERROR)
   ) {
     title = 'App not ready'
-    description = `Please ensure the ${ledgerAppName} app is open and ready`
+    description = `Please ensure the ${appName} app is open and ready`
   } else if (lowercasedMessage.includes(LEDGER_ERROR_CODES.DEVICE_LOCKED)) {
     title = 'Device locked'
     description = 'Your Ledger device is locked. Please unlock it to continue.'
   } else if (lowercasedMessage.includes(LEDGER_ERROR_CODES.UPDATE_REQUIRED)) {
     title = 'Update required'
-    description = `Update the ${ledgerAppName} app on your Ledger device to continue`
+    description = `Update the ${appName} app on your Ledger device to continue`
   } else if (
     lowercasedMessage.includes(LEDGER_ERROR_CODES.USER_CANCELLED) ||
     lowercasedMessage.includes(TRANSACTION_CANCELLED_BY_USER.toLowerCase()) ||

@@ -19,8 +19,10 @@ import bs58 from 'bs58'
 import { Platform, PermissionsAndroid, Alert, Linking } from 'react-native'
 import {
   LEDGER_TIMEOUTS,
-  getSolanaDerivationPath
+  getSolanaDerivationPath,
+  MAX_BITCOIN_APP_VERSION
 } from 'new/features/ledger/consts'
+import { isVersionExceeding } from 'new/features/ledger/utils'
 import { assertNotNull } from 'utils/assertions'
 import { Curve } from 'utils/publicKeys'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
@@ -42,6 +44,7 @@ import {
 class LedgerService {
   #transport: TransportBLE | null = null
   private currentAppType: LedgerAppType = LedgerAppType.UNKNOWN
+  private currentAppVersion = ''
   private appPollingInterval: number | null = null
   private appPollingEnabled = false
   private isDisconnected = false
@@ -137,6 +140,7 @@ class LedgerService {
         )
         Logger.info(`Immediately detected app type: ${detectedAppType}`)
         this.currentAppType = detectedAppType
+        this.currentAppVersion = testAppInfo.version
       } catch (error) {
         Logger.info(
           'Immediate get current app info failed, will rely on polling'
@@ -175,6 +179,7 @@ class LedgerService {
           )
           this.currentAppType = newAppType
         }
+        this.currentAppVersion = appInfo.version
       } catch (error) {
         Logger.error('Error polling app info', error)
         // Don't stop polling on error, just log it
@@ -390,15 +395,42 @@ class LedgerService {
         return LedgerAppType.ETHEREUM
       case 'bitcoin':
         return LedgerAppType.BITCOIN
+      case 'bitcoin recovery':
+        return LedgerAppType.BITCOIN_RECOVERY
       default:
         Logger.info(`Unknown app name detected: "${appName}"`)
         return LedgerAppType.UNKNOWN
     }
   }
 
+  // Returns true when detectedApp satisfies a request for requiredApp.
+  // Bitcoin Recovery is accepted as a substitute for Bitcoin.
+  // For the regular Bitcoin app, only versions within the supported range are accepted.
+  private isAppCompatible(
+    detectedApp: LedgerAppType,
+    requiredApp: LedgerAppType
+  ): boolean {
+    if (requiredApp === LedgerAppType.BITCOIN) {
+      if (detectedApp === LedgerAppType.BITCOIN_RECOVERY) return true
+      if (detectedApp === LedgerAppType.BITCOIN) {
+        return !isVersionExceeding(
+          this.currentAppVersion,
+          MAX_BITCOIN_APP_VERSION
+        )
+      }
+      return false
+    }
+    return detectedApp === requiredApp
+  }
+
   // Get current app type (passive detection)
   getCurrentAppType(): LedgerAppType {
     return this.currentAppType
+  }
+
+  // Get current app version (passive detection)
+  getCurrentAppVersion(): string {
+    return this.currentAppVersion
   }
 
   checkApp = async (appType: LedgerAppType): Promise<boolean> => {
@@ -413,8 +445,10 @@ class LedgerService {
         this.currentAppType = detectedAppType
       }
 
-      if (this.currentAppType === appType) {
-        Logger.info(`${appType} app is ready`)
+      if (this.isAppCompatible(this.currentAppType, appType)) {
+        Logger.info(
+          `${appType} app is ready (detected: ${this.currentAppType})`
+        )
         return true
       }
     } catch (error) {
@@ -436,8 +470,10 @@ class LedgerService {
       Logger.info(`Waiting for ${appType} app (timeout: ${timeoutMs}ms)...`)
 
       // Check if app is already available
-      if (this.currentAppType === appType) {
-        Logger.info(`${appType} app is ready`)
+      if (this.isAppCompatible(this.currentAppType, appType)) {
+        Logger.info(
+          `${appType} app is ready (detected: ${this.currentAppType})`
+        )
         resolve()
         return
       }
@@ -503,7 +539,7 @@ class LedgerService {
     try {
       const appInfo = await this.getCurrentAppInfo()
       const currentAppType = this.mapAppNameToType(appInfo.applicationName)
-      return currentAppType === appType
+      return this.isAppCompatible(currentAppType, appType)
     } catch (error) {
       Logger.error('Error checking app status', error)
       return false
@@ -991,6 +1027,7 @@ class LedgerService {
       await this.#transport.close()
       this.#transport = null
       this.currentAppType = LedgerAppType.UNKNOWN
+      this.currentAppVersion = ''
       this.stopAppPolling() // Stop polling on disconnect
     }
   }

@@ -71,6 +71,10 @@ export const getSolanaDerivationPath = (accountIndex: number): string => {
   return DERIVATION_PATHS.LEDGER_LIVE.SOLANA(accountIndex)
 }
 
+// Bitcoin app versions 2.4.3+ broke Core's Ledger integration.
+// Users must use the Bitcoin Recovery app for versions beyond this.
+export const MAX_BITCOIN_APP_VERSION = '2.4.2'
+
 // Timeout constants
 export const LEDGER_TIMEOUTS = {
   SCAN_TIMEOUT: 30000, // 30 seconds

@@ -13,6 +13,7 @@ export enum LedgerAppType {
   SOLANA = 'Solana',
   ETHEREUM = 'Ethereum',
   BITCOIN = 'Bitcoin',
+  BITCOIN_RECOVERY = 'Bitcoin Recovery',
   UNKNOWN = 'Unknown'
 }
 
