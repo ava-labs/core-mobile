@@ -27,7 +27,7 @@ export const useFeeEstimation = ({
   quote: Quote | null
   fromNetwork?: NetworkWithCaip2ChainId
   gasSafetyBps?: number
-}): { gasFee: bigint | undefined; error: unknown } => {
+}): { gasFee: bigint | undefined; error: unknown; isFetching: boolean } => {
   const feeUnitsMarginBps = useSelector(selectFusionFeeUnitsMarginBps)
   const { data: networkFee } = useNetworkFee(fromNetwork)
 
@@ -36,7 +36,11 @@ export const useFeeEstimation = ({
     [feeUnitsMarginBps, networkFee]
   )
 
-  const { data: gasFee, error } = useQuery({
+  const {
+    data: gasFee,
+    error,
+    isFetching
+  } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [
       ReactQueryKeys.FUSION_SWAP_FEE_ESTIMATE,
@@ -46,13 +50,13 @@ export const useFeeEstimation = ({
     ],
     queryFn: quote
       ? async () => {
-          const { totalFee } = await FusionService.estimateNativeFee(
+          const { totalUpfrontFee } = await FusionService.estimateNativeFee(
             quote,
             feeOptions
           )
           return gasSafetyBps > 0
-            ? (totalFee * (10000n + BigInt(gasSafetyBps))) / 10000n
-            : totalFee
+            ? (totalUpfrontFee * (10000n + BigInt(gasSafetyBps))) / 10000n
+            : totalUpfrontFee
         }
       : skipToken,
     staleTime: 0,
@@ -63,5 +67,5 @@ export const useFeeEstimation = ({
     if (error) logSdkError('[useFeeEstimation] estimateNativeFee error', error)
   }, [error])
 
-  return { gasFee, error }
+  return { gasFee, error, isFetching }
 }

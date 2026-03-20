@@ -9,20 +9,41 @@ type SwapStatusCardProps = {
   networkName?: string
   networkLogoUri?: string
   status: NotificationSwapStatus
+  note?: string
+  confirmations?: { count: number; required: number }
 }
 
 export const SwapStatusCard = ({
   directionLabel,
   networkName,
   networkLogoUri,
-  status
+  status,
+  note,
+  confirmations
 }: SwapStatusCardProps): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
 
-  const isCompleted = status === 'completed'
-  const isFailed = status === 'failed'
+  let statusTitle: string
+  let statusColor: string
+  switch (status) {
+    case NotificationSwapStatus.Completed:
+      statusTitle = 'Complete'
+      statusColor = colors.$textSuccess
+      break
+    case NotificationSwapStatus.Failed:
+      statusTitle = 'Failed'
+      statusColor = colors.$textDanger
+      break
+    case NotificationSwapStatus.Incomplete:
+      statusTitle = 'Incomplete'
+      statusColor = colors.$textDanger
+      break
+    default:
+      statusTitle = 'Pending...'
+      statusColor = colors.$textSecondary
+  }
 
   return (
     <View
@@ -78,16 +99,92 @@ export const SwapStatusCard = ({
             sx={{
               lineHeight: 22,
               fontWeight: '500',
-              color: isCompleted
-                ? colors.$textSuccess
-                : isFailed
-                ? colors.$textDanger
-                : colors.$textSecondary
+              color: statusColor
             }}>
-            {isCompleted ? 'Complete' : isFailed ? 'Failed' : 'Pending...'}
+            {statusTitle}
           </Text>
         </View>
       </View>
+
+      {confirmations !== undefined && (
+        <>
+          <Separator />
+          <View style={{ paddingVertical: 14, gap: 8 }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+              <Text
+                variant="body1"
+                sx={{
+                  color: '$textPrimary',
+                  lineHeight: 22,
+                  fontWeight: '500'
+                }}>
+                Confirmations
+              </Text>
+              <Text
+                variant="body1"
+                sx={{ color: '$textSecondary', lineHeight: 22 }}>
+                {confirmations.count}/{confirmations.required}
+              </Text>
+            </View>
+            <View
+              style={{
+                height: 5,
+                borderRadius: 5,
+                backgroundColor: colors.$borderPrimary,
+                overflow: 'hidden'
+              }}>
+              <View
+                style={{
+                  height: '100%',
+                  borderRadius: 5,
+                  backgroundColor: colors.$textSuccess,
+                  width: `${Math.min(
+                    (confirmations.count /
+                      Math.max(confirmations.required, 1)) *
+                      100,
+                    100
+                  )}%`
+                }}
+              />
+            </View>
+          </View>
+        </>
+      )}
+
+      {note !== undefined && (
+        <>
+          <Separator />
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingVertical: 14
+            }}>
+            <Text
+              variant="body1"
+              sx={{ color: '$textPrimary', lineHeight: 22, fontWeight: '500' }}>
+              Note
+            </Text>
+            <Text
+              variant="body2"
+              sx={{
+                color: '$textSecondary',
+                lineHeight: 20,
+                flex: 1,
+                textAlign: 'right',
+                marginLeft: 16
+              }}>
+              {note}
+            </Text>
+          </View>
+        </>
+      )}
     </View>
   )
 }

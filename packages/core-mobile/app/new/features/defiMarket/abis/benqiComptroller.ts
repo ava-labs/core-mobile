@@ -159,5 +159,36 @@ export const BENQI_COMPTROLLER_ABI = [
     payable: false,
     stateMutability: 'view',
     type: 'function'
+  },
+  {
+    constant: true,
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'qToken',
+        type: 'address'
+      }
+    ],
+    name: 'markets',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: 'isListed',
+        type: 'bool'
+      },
+      {
+        internalType: 'uint256',
+        name: 'collateralFactorMantissa',
+        type: 'uint256'
+      },
+      {
+        internalType: 'bool',
+        name: 'isQied',
+        type: 'bool'
+      }
+    ],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function'
   }
 ] as const

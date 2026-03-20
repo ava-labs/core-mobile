@@ -269,7 +269,9 @@ describe('BitcoinWalletPolicyService', () => {
   describe('storeBtcWalletPolicy', () => {
     const mockWalletData = {
       deviceId: 'test-device',
-      publicKeys: mockPublicKeys
+      deviceName: 'Test Device',
+      derivationPathSpec: 'BIP44',
+      publicKeys: { 0: mockPublicKeys }
     }
 
     beforeEach(() => {
@@ -313,10 +315,10 @@ describe('BitcoinWalletPolicyService', () => {
       )
 
       expect(storedData.publicKeys).toBeDefined()
-      expect(storedData.publicKeys.length).toBe(mockPublicKeys.length)
+      expect(storedData.publicKeys[0].length).toBe(mockPublicKeys.length)
 
       // Find the EVM key
-      const evmKey = storedData.publicKeys.find(
+      const evmKey = storedData.publicKeys[0].find(
         (pk: PublicKey) =>
           pk.curve === Curve.SECP256K1 &&
           pk.derivationPath === "m/44'/60'/0'/0/0"
@@ -337,12 +339,12 @@ describe('BitcoinWalletPolicyService', () => {
       )
 
       // Check that non-EVM keys are unchanged
-      const avalancheKey = storedData.publicKeys.find(
+      const avalancheKey = storedData.publicKeys[0].find(
         (pk: PublicKey) => pk.key === 'avalanche-public-key'
       )
       expect(avalancheKey).toEqual(mockPublicKeys[1])
 
-      const solanaKey = storedData.publicKeys.find(
+      const solanaKey = storedData.publicKeys[0].find(
         (pk: PublicKey) => pk.key === 'solana-public-key'
       )
       expect(solanaKey).toEqual(mockPublicKeys[2])
@@ -448,7 +450,9 @@ describe('BitcoinWalletPolicyService', () => {
         success: true,
         value: JSON.stringify({
           deviceId: 'test-device',
-          publicKeys: publicKeysWithAccount2
+          deviceName: 'Test Device',
+          derivationPathSpec: 'BIP44',
+          publicKeys: { 2: publicKeysWithAccount2 }
         })
       })
 
@@ -468,7 +472,7 @@ describe('BitcoinWalletPolicyService', () => {
         (mockStoreWalletSecret as jest.Mock).mock.calls[0][1]
       )
 
-      const updatedKey = storedData.publicKeys.find(
+      const updatedKey = storedData.publicKeys[2].find(
         (pk: PublicKey) => pk.derivationPath === "m/44'/60'/2'/0/0"
       )
       expect(updatedKey?.btcWalletPolicy).toEqual(mockBtcPolicy)

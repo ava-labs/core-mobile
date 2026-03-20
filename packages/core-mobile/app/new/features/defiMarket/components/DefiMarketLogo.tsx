@@ -8,21 +8,24 @@ type DefiMarketLogoProps = {
   networkLogoUri?: string
   width?: number
   networkLogoWidth?: number
+  borderWidth?: number
+  borderColor?: string
 }
 
 export const DefiMarketLogo = ({
   marketName,
   networkLogoUri,
   width = 36,
-  networkLogoWidth = 18
+  networkLogoWidth = 18,
+  borderWidth = 2,
+  borderColor: borderColorProp
 }: DefiMarketLogoProps): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const borderColor = colors.$surfaceSecondary
+  const borderColor = borderColorProp ?? colors.$surfaceSecondary
 
   const networkLogoInset = -4
-  const borderWidth = 2
 
   const isAave =
     marketName === MarketNames.aave || marketName.toLowerCase() === 'aave'
@@ -38,7 +41,10 @@ export const DefiMarketLogo = ({
         style={{
           width: width,
           height: width,
-          borderRadius: width / 2
+          borderRadius: width / 2,
+          borderWidth,
+          borderColor,
+          backgroundColor: borderColor
         }}
         testID={`protocol_logo__${marketName}`}
       />

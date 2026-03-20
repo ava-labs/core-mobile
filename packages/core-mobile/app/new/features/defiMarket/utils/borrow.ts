@@ -11,7 +11,7 @@ import {
   AAVE_PRICE_ORACLE_C_CHAIN_ADDRESS,
   BENQI_COMPTROLLER_C_CHAIN_ADDRESS,
   BENQI_PRICE_ORACLE_C_CHAIN_ADDRESS,
-  WAD
+  WAD_SCALE
 } from '../consts'
 
 export async function fetchAaveUserBorrowData(
@@ -59,7 +59,7 @@ export async function fetchAaveUserBorrowData(
     totalDebtBase,
     availableBorrowsBase,
     currentLiquidationThreshold,
-    ,
+    ltv,
     healthFactor
   ] = accountData
 
@@ -75,6 +75,7 @@ export async function fetchAaveUserBorrowData(
     totalDebtUSD: totalDebtBase,
     healthFactor,
     liquidationThreshold: currentLiquidationThreshold,
+    ltv,
     tokenPriceUSD
   }
 }
@@ -158,22 +159,44 @@ export async function fetchBenqiUserBorrowData(
         // Note: price is scaled by 10^(36-decimals), and borrowBalance is in token decimals
         // The result is in 18 decimals (WAD)
         if (borrowBalance > 0n) {
-          totalBorrowUSD += (borrowBalance * price) / 10n ** BigInt(WAD)
+          totalBorrowUSD += (borrowBalance * price) / WAD_SCALE
         }
       }
     }
   }
 
-  // Get token price if qToken address provided
+  // Get token price and collateral factor if qToken address provided
   let tokenPriceUSD = 0n
+  let collateralFactor = 0n
   if (qTokenAddress) {
-    const priceResult = await networkClient.readContract({
-      address: BENQI_PRICE_ORACLE_C_CHAIN_ADDRESS,
-      abi: BENQI_PRICE_ORACLE,
-      functionName: 'getUnderlyingPrice',
-      args: [qTokenAddress]
+    const [priceResult, marketsResult] = await multicall(networkClient, {
+      contracts: [
+        {
+          address: BENQI_PRICE_ORACLE_C_CHAIN_ADDRESS,
+          abi: BENQI_PRICE_ORACLE,
+          functionName: 'getUnderlyingPrice',
+          args: [qTokenAddress]
+        },
+        {
+          address: BENQI_COMPTROLLER_C_CHAIN_ADDRESS,
+          abi: BENQI_COMPTROLLER_ABI,
+          functionName: 'markets',
+          args: [qTokenAddress]
+        }
+      ] as const
     })
-    tokenPriceUSD = priceResult
+
+    if (priceResult.status === 'success') {
+      tokenPriceUSD = priceResult.result as bigint
+    }
+    if (marketsResult.status === 'success') {
+      const [, collateralFactorMantissa] = marketsResult.result as [
+        boolean,
+        bigint,
+        boolean
+      ]
+      collateralFactor = collateralFactorMantissa
+    }
   }
 
   // For Benqi: availableBorrowsUSD = liquidity (in 18 decimals)
@@ -182,9 +205,9 @@ export async function fetchBenqiUserBorrowData(
     totalDebtUSD: totalBorrowUSD,
     tokenPriceUSD,
     liquidity,
-    shortfall
+    shortfall,
+    collateralFactor
   }
 }
 
 // Re-export for backward compatibility
-export { convertUsdToTokenAmount } from './convertUsdToTokenAmount'

@@ -1,3 +1,4 @@
+import { Curve } from 'utils/publicKeys'
 import { toSegments } from './toSegments'
 
 describe('toSegments', () => {
@@ -97,37 +98,37 @@ describe('toSegments', () => {
   describe('invalid inputs - insufficient segments', () => {
     it('should throw error for empty string', () => {
       expect(() => toSegments('')).toThrow(
-        "Invalid derivation path: . Expected full format: m/purpose'/coinType'/account'/change/addressIndex"
+        "Invalid derivation path: . Expected format: m/purpose'/coinType'/account'/change/addressIndex"
       )
     })
 
     it('should throw error for path with only m', () => {
       expect(() => toSegments('m')).toThrow(
-        "Invalid derivation path: m. Expected full format: m/purpose'/coinType'/account'/change/addressIndex"
+        "Invalid derivation path: m. Expected format: m/purpose'/coinType'/account'/change/addressIndex"
       )
     })
 
     it('should throw error for path with 2 segments', () => {
       expect(() => toSegments('m/44')).toThrow(
-        "Invalid derivation path: m/44. Expected full format: m/purpose'/coinType'/account'/change/addressIndex"
+        "Invalid derivation path: m/44. Expected format: m/purpose'/coinType'/account'/change/addressIndex"
       )
     })
 
     it('should throw error for path with 3 segments', () => {
       expect(() => toSegments('m/44/60')).toThrow(
-        "Invalid derivation path: m/44/60. Expected full format: m/purpose'/coinType'/account'/change/addressIndex"
+        "Invalid derivation path: m/44/60. Expected format: m/purpose'/coinType'/account'/change/addressIndex"
       )
     })
 
     it('should throw error for path with 4 segments', () => {
       expect(() => toSegments('m/44/60/0')).toThrow(
-        "Invalid derivation path: m/44/60/0. Expected full format: m/purpose'/coinType'/account'/change/addressIndex"
+        "Invalid derivation path: m/44/60/0. Expected format: m/purpose'/coinType'/account'/change/addressIndex"
       )
     })
 
     it('should throw error for path with 5 segments', () => {
       expect(() => toSegments('m/44/60/0/0')).toThrow(
-        "Invalid derivation path: m/44/60/0/0. Expected full format: m/purpose'/coinType'/account'/change/addressIndex"
+        "Invalid derivation path: m/44/60/0/0. Expected format: m/purpose'/coinType'/account'/change/addressIndex"
       )
     })
   })
@@ -321,6 +322,32 @@ describe('toSegments', () => {
         change: 0,
         addressIndex: 0
       })
+    })
+
+    it('should parse Solana 5-segment ED25519 path', () => {
+      const result = toSegments("m/44'/501'/0'/0'", Curve.ED25519)
+
+      expect(result).toEqual({
+        m: 'm',
+        purpose: '44',
+        coinType: 501,
+        accountIndex: 0,
+        change: 0,
+        addressIndex: 0
+      })
+    })
+
+    it('should parse Solana ED25519 path with non-zero account index', () => {
+      const result = toSegments("m/44'/501'/2'/0'", Curve.ED25519)
+
+      expect(result.accountIndex).toBe(2)
+      expect(result.addressIndex).toBe(0)
+    })
+
+    it('should throw for 5-segment path without ED25519 curve', () => {
+      expect(() => toSegments("m/44'/501'/0'/0'")).toThrow(
+        'Invalid derivation path'
+      )
     })
   })
 })

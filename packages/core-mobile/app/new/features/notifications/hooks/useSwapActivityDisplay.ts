@@ -7,6 +7,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import type { Transfer } from '@avalabs/fusion-sdk'
 import { FusionTransfer } from 'features/swap/types'
 import { NotificationSwapStatus } from '../types'
 import {
@@ -14,6 +15,30 @@ import {
   mapTransferToSwapStatus,
   mapTransferToTargetChainStatus
 } from '../utils'
+
+function buildRefundNote(
+  transfer: Transfer,
+  getNetworkByCaip2ChainId: (
+    chainId: string
+  ) => { chainName: string } | undefined
+): string | undefined {
+  if (!('refund' in transfer) || !transfer.refund?.asset) return undefined
+  const { refund } = transfer
+  const { asset } = refund
+  if (!asset) return undefined
+  const refundTokenUnit = new TokenUnit(
+    refund.amount,
+    asset.decimals,
+    asset.symbol
+  )
+  const plurality = refundTokenUnit.gt(1) ? 'were' : 'was'
+  const chainName =
+    getNetworkByCaip2ChainId(refund.chainId)?.chainName ??
+    transfer.targetChain.chainName
+  return `${refundTokenUnit.toDisplay()} ${
+    asset.symbol
+  } ${plurality} refunded to your wallet on ${chainName}`
+}
 
 export type SwapActivityDisplay = {
   fromToken: string
@@ -35,6 +60,14 @@ export type SwapActivityDisplay = {
   /** Status for the target (To) chain leg only. */
   toChainStatus: NotificationSwapStatus
   txHash?: string
+  /** Refund note shown on the target card when the swap was partially refunded. */
+  refundNote?: string
+  /** Error reason shown on failed swaps. */
+  errorReason?: string
+  /** Confirmation progress for the source (From) chain leg. */
+  fromConfirmations?: { count: number; required: number }
+  /** Confirmation progress for the target (To) chain leg. */
+  toConfirmations?: { count: number; required: number }
 }
 
 /**
@@ -153,6 +186,11 @@ export function useSwapActivityDisplay(
         ? getNetworkByCaip2ChainId(transfer.targetChain.chainId)
         : undefined
 
+    const refundNote =
+      mapTransferToSwapStatus(transfer) === NotificationSwapStatus.Refunded
+        ? buildRefundNote(transfer, getNetworkByCaip2ChainId)
+        : undefined
+
     return {
       fromToken: transfer.sourceAsset.symbol,
       toToken: transfer.targetAsset.symbol,
@@ -169,7 +207,23 @@ export function useSwapActivityDisplay(
       status: mapTransferToSwapStatus(transfer),
       fromChainStatus: mapTransferToSourceChainStatus(transfer),
       toChainStatus: mapTransferToTargetChainStatus(transfer),
-      txHash: transfer.source?.txHash
+      txHash: transfer.source?.txHash,
+      refundNote,
+      errorReason: 'errorReason' in transfer ? transfer.errorReason : undefined,
+      fromConfirmations:
+        'source' in transfer && transfer.source !== undefined
+          ? {
+              count: transfer.source.confirmationCount,
+              required: transfer.source.requiredConfirmationCount
+            }
+          : undefined,
+      toConfirmations:
+        'target' in transfer && transfer.target != null
+          ? {
+              count: transfer.target.confirmationCount,
+              required: transfer.target.requiredConfirmationCount
+            }
+          : undefined
     }
   }, [
     item,

@@ -130,6 +130,7 @@ export interface AvalancheKey {
     evm: string
     avalanche: string
   }
+  publicKeys: PublicKeyInfo[]
 }
 
 export interface LedgerKeys {
@@ -184,7 +185,7 @@ export interface WalletUpdateSolanaOptions {
 interface BaseLedgerWalletData {
   deviceId: string
   transport?: TransportBLE // Optional for backward compatibility
-  publicKeys: PublicKey[]
+  publicKeys: PerAccountPublicKeys
 }
 
 // Per-account extended public keys format
@@ -193,6 +194,11 @@ export interface PerAccountExtendedPublicKeys {
     evm: string
     avalanche: string
   }
+}
+
+// Per-account public keys format
+export interface PerAccountPublicKeys {
+  [accountIndex: number]: Array<PublicKey>
 }
 
 // BIP44 specific wallet data

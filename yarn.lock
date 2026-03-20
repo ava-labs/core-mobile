@@ -509,7 +509,7 @@ __metadata:
     "@avalabs/core-utils-sdk": 3.1.0-alpha.74
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.69
     "@avalabs/evm-module": 3.1.3
-    "@avalabs/fusion-sdk": 0.10.0
+    "@avalabs/fusion-sdk": 0.12.0
     "@avalabs/glacier-sdk": 3.1.0-alpha.69
     "@avalabs/k2-alpine": "workspace:*"
     "@avalabs/svm-module": 3.1.3
@@ -598,7 +598,7 @@ __metadata:
     "@reown/walletkit": 1.0.0
     "@rushstack/eslint-patch": 1.10.4
     "@sentry/react-native": 7.4.0
-    "@shopify/flash-list": 2.0.2
+    "@shopify/flash-list": 2.3.0
     "@shopify/react-native-performance": 4.1.2
     "@shopify/react-native-skia": 2.2.12
     "@solana-program/token": 0.5.1
@@ -951,9 +951,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/fusion-sdk@npm:0.10.0":
-  version: 0.10.0
-  resolution: "@avalabs/fusion-sdk@npm:0.10.0"
+"@avalabs/fusion-sdk@npm:0.12.0":
+  version: 0.12.0
+  resolution: "@avalabs/fusion-sdk@npm:0.12.0"
   dependencies:
     "@bitcoinerlab/secp256k1": ^1.2.0
     "@layerzerolabs/lz-v2-utilities": ^3.0.17
@@ -968,7 +968,7 @@ __metadata:
     "@solana/kit": ^5.0.0
     viem: ^2.38.0
     zod: ^4.1.0
-  checksum: b2eca92605a6328bca7a8bf77c51392c63d9d0eb69e59662c3367ac753c7fea0e66c5720fdfac7f2605d753e031893091ea29831072f7c54706e3cfa60b49a06
+  checksum: f1fc67921c217e870d8b60f4c0c83ede17ae066126118c64c9b71df962b95811620553e7ffc3367dea55bc441d77bea25d4f2df826941ed631a93514a50fa31e
   languageName: node
   linkType: hard
 
@@ -14454,16 +14454,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@shopify/flash-list@npm:2.0.2":
-  version: 2.0.2
-  resolution: "@shopify/flash-list@npm:2.0.2"
-  dependencies:
-    tslib: 2.8.1
+"@shopify/flash-list@npm:2.3.0":
+  version: 2.3.0
+  resolution: "@shopify/flash-list@npm:2.3.0"
   peerDependencies:
     "@babel/runtime": "*"
     react: "*"
     react-native: "*"
-  checksum: cfb3a6528eb123632218b68ecea881a2866d56183427a91a5454e57cd053ef28a4d40c8a6c9fc2d36ad3d1af997eaad0e4fcd632de538c3b335065cf4f3dd8dc
+  checksum: 94b7234534dcc6b944489d12320c34b5cc6d8a048a2a61457a7414f526d57d53720a7da0206166e6c5badcbe79d57eb21ded87c950d386d2598d38208d766e3b
   languageName: node
   linkType: hard
 
@@ -41076,17 +41074,17 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"tslib@npm:2.8.1, tslib@npm:^2.0.1, tslib@npm:^2.3.0, tslib@npm:^2.6.2, tslib@npm:^2.8.0":
-  version: 2.8.1
-  resolution: "tslib@npm:2.8.1"
-  checksum: e4aba30e632b8c8902b47587fd13345e2827fa639e7c3121074d5ee0880723282411a8838f830b55100cbe4517672f84a2472667d355b81e8af165a55dc6203a
-  languageName: node
-  linkType: hard
-
 "tslib@npm:^2.0.0, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.5.3":
   version: 2.6.2
   resolution: "tslib@npm:2.6.2"
   checksum: 329ea56123005922f39642318e3d1f0f8265d1e7fcb92c633e0809521da75eeaca28d2cf96d7248229deb40e5c19adf408259f4b9640afd20d13aecc1430f3ad
+  languageName: node
+  linkType: hard
+
+"tslib@npm:^2.0.1, tslib@npm:^2.3.0, tslib@npm:^2.6.2, tslib@npm:^2.8.0":
+  version: 2.8.1
+  resolution: "tslib@npm:2.8.1"
+  checksum: e4aba30e632b8c8902b47587fd13345e2827fa639e7c3121074d5ee0880723282411a8838f830b55100cbe4517672f84a2472667d355b81e8af165a55dc6203a
   languageName: node
   linkType: hard
 

@@ -10,6 +10,8 @@ import { useCChainGasCost } from 'common/hooks/useCChainGasCost'
 import { DefiMarket, DepositAsset } from '../../types'
 import { APPROVE_GAS_AMOUNT, MINT_GAS_AMOUNT } from '../../consts'
 import { useBenqiDepositErc20 } from '../../hooks/benqi/useBenqiDepositErc20'
+import { useBenqiBorrowData } from '../../hooks/benqi/useBenqiBorrowData'
+import { useBenqiHealthScore } from '../../hooks/benqi/useBenqiHealthScore'
 import { SelectAmountFormBase } from '../SelectAmountFormBase'
 
 export const BenqiErc20SelectAmountForm = ({
@@ -49,6 +51,17 @@ export const BenqiErc20SelectAmountForm = ({
     onConfirmed,
     onReverted,
     onError
+  })
+
+  const { data: borrowData } = useBenqiBorrowData(
+    market.asset.mintTokenAddress as Address
+  )
+  const isUsedAsCollateral = market.usageAsCollateralEnabledOnUser === true
+
+  const { currentHealthScore, calculateHealthScore } = useBenqiHealthScore({
+    borrowData,
+    direction: 'deposit',
+    isUsedAsCollateral
   })
 
   const validateAmount = useCallback(
@@ -111,6 +124,8 @@ export const BenqiErc20SelectAmountForm = ({
       validateAmount={validateAmount}
       submit={benqiDepositErc20}
       onSubmitted={onSubmitted}
+      currentHealthScore={currentHealthScore}
+      calculateHealthScore={calculateHealthScore}
     />
   )
 }

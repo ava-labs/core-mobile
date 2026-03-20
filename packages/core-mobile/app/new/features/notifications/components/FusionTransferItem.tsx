@@ -4,9 +4,15 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { FusionTransfer } from 'features/swap/types'
 import { mapTransferToSwapStatus } from '../utils'
+import { NotificationSwapStatus } from '../types'
 import NotificationListItem from './NotificationListItem'
 import { SwapIcon } from './SwapIcon'
-import { RetrySwapButton } from './RetrySwapButton'
+
+const SUBTITLE_MAP = {
+  [NotificationSwapStatus.Completed]: 'Completed',
+  [NotificationSwapStatus.Failed]: 'Failed',
+  [NotificationSwapStatus.Refunded]: undefined
+} as const
 
 type FusionTransferItemProps = {
   item: FusionTransfer
@@ -58,33 +64,41 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
     }
   }, [item.transfer])
 
-  const shouldBePlural = useMemo(() => {
-    return !!fromAmount?.gt(1)
-  }, [fromAmount])
-
   const title = useMemo(() => {
+    if (
+      status === NotificationSwapStatus.Refunded &&
+      'refund' in item.transfer
+    ) {
+      const { refund } = item.transfer
+      if (refund.asset) {
+        const refundUnit = new TokenUnit(
+          refund.amount,
+          refund.asset.decimals,
+          refund.asset.symbol
+        )
+        return `${refundUnit.toDisplay()} ${
+          refund.asset.symbol
+        } refunded to your wallet`
+      }
+    }
     const from = fromAmount
       ? `${fromAmount.toDisplay()} ${fromSymbol}`
       : fromSymbol
     const to = toAmount ? `${toAmount.toDisplay()} ${toSymbol}` : toSymbol
-    return status === 'failed'
-      ? `${from} swapped for ${to}`
-      : status === 'completed'
-      ? `${from} ${shouldBePlural ? 'were' : 'was'} swapped for ${to}`
-      : `Swapping ${fromSymbol} to ${toSymbol} in progress...`
-  }, [fromAmount, fromSymbol, shouldBePlural, toAmount, toSymbol, status])
+    return status === NotificationSwapStatus.InProgress
+      ? `Swapping ${fromSymbol} to ${toSymbol} in progress...`
+      : `${from} swapped for ${to}`
+  }, [fromAmount, fromSymbol, toAmount, toSymbol, status, item.transfer])
 
   const subtitle =
-    status === 'completed'
-      ? 'Completed'
-      : status === 'failed'
-      ? 'Failed'
+    status in SUBTITLE_MAP
+      ? SUBTITLE_MAP[status as keyof typeof SUBTITLE_MAP]
       : 'Tap for more details'
 
-  const accessoryType =
-    status === 'completed' || status === 'failed' ? 'none' : 'chevron'
+  const accessoryType = 'chevron'
 
   const renderSubtitle = useCallback(() => {
+    if (!subtitle) return null
     return (
       <Text
         variant="body2"
@@ -92,9 +106,9 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
           lineHeight: 15,
           fontWeight: 500,
           color:
-            status === 'completed'
+            status === NotificationSwapStatus.Completed
               ? '$textSuccess'
-              : status === 'failed'
+              : status === NotificationSwapStatus.Failed
               ? '$textDanger'
               : '$textSecondary'
         }}
@@ -110,11 +124,10 @@ export const FusionTransferItem: FC<FusionTransferItemProps> = ({
       title={title}
       subtitle={renderSubtitle()}
       icon={<SwapIcon status={status} networkLogoUri={fromNetworkLogoUri} />}
-      timestamp={status === 'failed' ? undefined : item.timestamp}
+      timestamp={item.timestamp}
       showSeparator={showSeparator}
       accessoryType={accessoryType}
       testID={testID}
-      rightAccessory={<RetrySwapButton status={status} item={item} />}
     />
   )
 }

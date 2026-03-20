@@ -286,11 +286,13 @@ describe('Fusion listeners', () => {
       expect(FusionService.trackTransfer).toHaveBeenCalledTimes(2)
       expect(FusionService.trackTransfer).toHaveBeenCalledWith(
         transfer1,
-        updateFusionTransfer
+        updateFusionTransfer,
+        expect.any(Function)
       )
       expect(FusionService.trackTransfer).toHaveBeenCalledWith(
         transfer2,
-        updateFusionTransfer
+        updateFusionTransfer,
+        expect.any(Function)
       )
     })
 
@@ -387,7 +389,8 @@ describe('Fusion listeners', () => {
 
       expect(FusionService.trackTransfer).toHaveBeenCalledWith(
         transfer,
-        updateFusionTransfer
+        updateFusionTransfer,
+        expect.any(Function)
       )
 
       jest.useRealTimers()

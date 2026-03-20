@@ -171,7 +171,8 @@ export const useAaveAvailableMarkets = ({
                   historicalBorrowApyPercent,
                   borrowingEnabled: market.borrowingEnabled,
                   canBeUsedAsCollateral: market.usageAsCollateralEnabled,
-                  usageAsCollateralEnabledOnUser
+                  usageAsCollateralEnabledOnUser,
+                  baseLTVasCollateral: market.baseLTVasCollateral
                 }
 
                 return {

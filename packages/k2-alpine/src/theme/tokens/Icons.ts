@@ -114,6 +114,7 @@ import IconTxTypeContractCall from '../../assets/icons/contract-call.svg'
 import IconTxTypeReceive from '../../assets/icons/receive.svg'
 import IconTxTypeSend from '../../assets/icons/tx-type-send.svg'
 import IconCompare from '../../assets/icons/compare.svg'
+import IconRestart from '../../assets/icons/restart_alt.svg'
 import IconTxTypeBridge from '../../assets/icons/transaction-bridge.svg'
 import IconTxTypeSubnet from '../../assets/icons/transaction-subnet.svg'
 import IconTxTypeUnwrap from '../../assets/icons/unwrap.svg'
@@ -318,6 +319,7 @@ export const Icons = {
     QRScanCustom: IconQRScanCustom,
     TxTypeSend: IconTxTypeSend,
     Compare: IconCompare,
+    Restart: IconRestart,
     Bridge: IconTxTypeBridge,
     Subnet: IconTxTypeSubnet,
     Unwrap: IconTxTypeUnwrap,

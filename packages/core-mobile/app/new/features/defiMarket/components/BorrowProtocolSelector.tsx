@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo } from 'react'
 import { Icons, Image, Text, useTheme, View } from '@avalabs/k2-alpine'
-import { TouchableOpacity } from 'react-native-gesture-handler'
 import { DropdownGroup, DropdownMenu } from 'common/components/DropdownMenu'
 import { MarketName, MarketNames } from '../types'
 import { useSelectedBorrowProtocol } from '../hooks/useBorrowProtocol'
@@ -50,32 +49,33 @@ export const BorrowProtocolSelector = (): React.JSX.Element => {
     <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
       <Text variant="heading2">Borrow on </Text>
       <DropdownMenu groups={dropdownGroups} onPressAction={handlePressAction}>
-        <TouchableOpacity>
-          <View
-            sx={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              backgroundColor: '$surfaceSecondary',
-              paddingVertical: 6,
-              paddingLeft: 8,
-              paddingRight: 4,
-              borderRadius: 20,
-              gap: 6
-            }}>
-            <Image
-              source={PROTOCOL_LOGOS[selectedProtocol]}
-              style={{ width: 28, height: 28, borderRadius: 14 }}
-            />
-            <Text variant="heading2">
-              {PROTOCOL_DISPLAY_NAMES[selectedProtocol]}
-            </Text>
-            <Icons.Navigation.ExpandMore
-              width={24}
-              height={24}
-              color={theme.colors.$textSecondary}
-            />
-          </View>
-        </TouchableOpacity>
+        <View
+          sx={{
+            marginTop: -4,
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: '$surfaceSecondary',
+            paddingTop: 6,
+            paddingBottom: 2,
+            paddingLeft: 8,
+            paddingRight: 6,
+            borderRadius: 100,
+            gap: 6
+          }}>
+          <Image
+            source={PROTOCOL_LOGOS[selectedProtocol]}
+            style={{ width: 27, height: 27, borderRadius: 14, marginTop: -4 }}
+          />
+          <Text variant="heading2">
+            {PROTOCOL_DISPLAY_NAMES[selectedProtocol]}
+          </Text>
+          <Icons.Navigation.ExpandMore
+            style={{ marginTop: -2 }}
+            width={24}
+            height={24}
+            color={theme.colors.$textSecondary}
+          />
+        </View>
       </DropdownMenu>
     </View>
   )

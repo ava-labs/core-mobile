@@ -129,7 +129,10 @@ export const SpendLimitOptions = ({
   )
 
   return (
-    <DropdownMenu onPressAction={onPressAction} groups={menuItems}>
+    <DropdownMenu
+      onPressAction={onPressAction}
+      groups={menuItems}
+      style={{ flexDirection: 'row', alignItems: 'center' }}>
       <View
         style={{
           flexDirection: 'row',
@@ -139,22 +142,14 @@ export const SpendLimitOptions = ({
           variant="body1"
           numberOfLines={1}
           sx={{
-            ...sharedValueStyle,
-            flexGrow: 1,
-            width: '45%',
-            textAlign: 'right'
+            ...sharedValueStyle
           }}>
-          {displayValue}
+          {displayValue} {token.symbol}
         </Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text variant="body1" sx={sharedValueStyle}>
-            {' ' + token.symbol}
-          </Text>
-          <Icons.Navigation.ChevronRight
-            color={colors.$textSecondary}
-            style={{ marginRight: -8 }}
-          />
-        </View>
+        <Icons.Navigation.ChevronRight
+          color={colors.$textSecondary}
+          style={{ marginRight: -8 }}
+        />
       </View>
     </DropdownMenu>
   )

@@ -1,5 +1,5 @@
 import { ZustandStorageKeys } from 'resources/Constants'
-import { zustandMMKVStorage } from 'utils/mmkv/storages'
+import { zustandPersistStorage } from 'utils/mmkv/storages'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { getAppReviewConfig } from 'features/appReview/config'
@@ -70,7 +70,7 @@ export const appReviewStore = create<AppReviewState>()(
     }),
     {
       name: ZustandStorageKeys.APP_REVIEW,
-      storage: zustandMMKVStorage,
+      storage: zustandPersistStorage,
       version: 1
     }
   )

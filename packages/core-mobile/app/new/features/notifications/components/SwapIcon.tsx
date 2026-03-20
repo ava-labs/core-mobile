@@ -13,8 +13,9 @@ type SwapIconProps = {
 
 /**
  * Icon shown on the left of each swap item:
- *  - completed  → grey circle with Compare arrows (→←) + optional network badge
- *  - failed     → grey circle with Compare arrows (→←) + optional network badge
+ *  - completed   → grey circle with Compare arrows (→←) + optional network badge
+ *  - failed      → grey circle with Compare arrows (→←) + optional network badge
+ *  - refunded    → grey circle with Restart icon + optional network badge
  *  - in_progress → grey circle with a continuously spinning sync icon + optional network badge
  */
 export const SwapIcon: FC<SwapIconProps> = ({ status, networkLogoUri }) => {
@@ -22,7 +23,34 @@ export const SwapIcon: FC<SwapIconProps> = ({ status, networkLogoUri }) => {
     theme: { colors }
   } = useTheme()
 
-  if (status === 'completed' || status === 'failed') {
+  if (status === NotificationSwapStatus.Refunded) {
+    return (
+      <View sx={{ width: ICON_SIZE }}>
+        <View
+          sx={{
+            width: ICON_SIZE,
+            height: ICON_SIZE,
+            borderRadius: ICON_SIZE / 2,
+            backgroundColor: '$surfaceSecondary',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+          <Icons.Custom.Restart color={colors.$textPrimary} />
+        </View>
+        {networkLogoUri && (
+          <NetworkBadge
+            logoUri={networkLogoUri}
+            borderColor={colors.$surfacePrimary}
+          />
+        )}
+      </View>
+    )
+  }
+
+  if (
+    status === NotificationSwapStatus.Completed ||
+    status === NotificationSwapStatus.Failed
+  ) {
     return (
       <View sx={{ width: ICON_SIZE }}>
         <View

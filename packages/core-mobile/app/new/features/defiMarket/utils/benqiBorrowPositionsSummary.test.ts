@@ -57,6 +57,7 @@ const createMockBenqiBorrowData = (
   totalDebtUSD: 300000000000000000000n, // 300 USD
   liquidity: 200000000000000000000n, // 200 USD (collateral buffer)
   shortfall: 0n,
+  collateralFactor: 750000000000000000n, // 75% (18 decimals)
   ...overrides
 })
 

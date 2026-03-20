@@ -1,4 +1,10 @@
+import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { HEALTH_SCORE_CAUTION_COLOR } from '../consts'
+
+const integerFormatter = new Intl.NumberFormat('en-US', {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0
+})
 
 export enum HealthRisk {
   LOW = 'low',
@@ -79,7 +85,9 @@ export const formatHealthScore = (
     return `${maxDisplay}+`
   }
   if (score >= 100) {
-    return Math.round(score).toString()
+    return formatNumber(Math.round(score), {
+      normalFormatter: integerFormatter
+    })
   }
   return score.toFixed(fractionDigits)
 }

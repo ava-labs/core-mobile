@@ -1,9 +1,13 @@
 import React, { useCallback, useMemo } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { Address } from 'viem'
+import { WAVAX_ADDRESS } from 'features/swap/consts'
 import { DefiMarket, DepositAsset } from '../../types'
 import { DEPOSIT_ETH_GAS_AMOUNT } from '../../consts'
 import { useMaxDepositAmount } from '../../hooks/useMaxDepositAmount'
 import { useAaveDepositAvax } from '../../hooks/aave/useAaveDepositAvax'
+import { useAaveBorrowData } from '../../hooks/aave/useAaveBorrowData'
+import { useAaveHealthScore } from '../../hooks/aave/useAaveHealthScore'
 import { SelectAmountFormBase } from '../SelectAmountFormBase'
 
 export const AaveAvaxSelectAmountForm = ({
@@ -40,6 +44,16 @@ export const AaveAvaxSelectAmountForm = ({
     gasAmount: DEPOSIT_ETH_GAS_AMOUNT
   })
 
+  const { data: borrowData } = useAaveBorrowData(WAVAX_ADDRESS as Address)
+  const isUsedAsCollateral = market.usageAsCollateralEnabledOnUser === true
+
+  const { currentHealthScore, calculateHealthScore } = useAaveHealthScore({
+    borrowData,
+    tokenDecimals: asset.token.decimals,
+    direction: 'deposit',
+    isUsedAsCollateral
+  })
+
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {
       if (tokenBalance && amt.gt(tokenBalance)) {
@@ -63,6 +77,8 @@ export const AaveAvaxSelectAmountForm = ({
       validateAmount={validateAmount}
       submit={aaveDepositAvax}
       onSubmitted={onSubmitted}
+      currentHealthScore={currentHealthScore}
+      calculateHealthScore={calculateHealthScore}
     />
   )
 }

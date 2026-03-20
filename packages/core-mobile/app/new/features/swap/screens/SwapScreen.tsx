@@ -48,6 +48,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
 import { SwapStatus, useSwapContext } from '../contexts/SwapContext'
+import { fusionTransfersStore } from '../hooks/useZustandStore'
 import { FusionQuoteError, fusionErrors } from '../utils/fusionErrors'
 import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
@@ -61,7 +62,7 @@ import { getTokenKey } from '../utils/tokenKey'
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const { navigate, dismissAll } = useRouter()
+  const { navigate, dismissAll, push } = useRouter()
   const navigation = useNavigation()
 
   const params = useGlobalSearchParams<{
@@ -90,7 +91,8 @@ export const SwapScreen = (): JSX.Element => {
     autoSlippage,
     setAmount,
     quoteError,
-    swapStatus
+    swapStatus,
+    successTransferId
   } = useSwapContext()
   const [fromTokenValue, setFromTokenValue] = useState<bigint>()
   const [toTokenValue, setToTokenValue] = useState<bigint>()
@@ -331,7 +333,9 @@ export const SwapScreen = (): JSX.Element => {
     [setDestination, setAmount]
   )
 
-  const handleSelectFromToken = useCallback((): void => {
+  const handleSelectFromToken = useCallback(async (): Promise<void> => {
+    await dismissKeyboardIfNeeded()
+
     const tokenParams = fromToken?.networkChainId
       ? { networkChainId: fromToken.networkChainId.toString() }
       : {}
@@ -342,7 +346,9 @@ export const SwapScreen = (): JSX.Element => {
     })
   }, [navigate, fromToken])
 
-  const handleSelectToToken = useCallback((): void => {
+  const handleSelectToToken = useCallback(async (): Promise<void> => {
+    await dismissKeyboardIfNeeded()
+
     const tokenParams = fromToken?.networkChainId
       ? { networkChainId: fromToken.networkChainId.toString() }
       : {}
@@ -537,13 +543,28 @@ export const SwapScreen = (): JSX.Element => {
 
   useEffect(() => {
     if (swapStatus === SwapStatus.Success) {
+      if (successTransferId) {
+        const transfer =
+          fusionTransfersStore.getState().transfers[successTransferId]?.transfer
+        const isCrossChain =
+          transfer !== undefined &&
+          transfer.sourceChain.chainId !== transfer.targetChain.chainId
+        if (isCrossChain) {
+          dismissAll()
+          push({
+            pathname: '/notifications/swapDetail',
+            params: { id: successTransferId }
+          })
+          return
+        }
+      }
       if (navigation.getParent()?.canGoBack()) {
         navigation.getParent()?.goBack()
       } else {
         dismissAll()
       }
     }
-  }, [navigation, dismissAll, swapStatus])
+  }, [navigation, dismissAll, push, swapStatus, successTransferId])
 
   // Trigger quote fetch when debounced amount settles, skip if below minimum
   const syncDebouncedAmount = useCallback(() => {

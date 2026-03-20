@@ -18,7 +18,8 @@ import {
   NetworkVMType,
   RpcMethod,
   TypedData,
-  TypedDataV1
+  TypedDataV1,
+  DerivationPathType
 } from '@avalabs/vm-module-types'
 import { SpanName } from 'services/sentry/types'
 import { Curve } from 'utils/publicKeys'
@@ -176,13 +177,21 @@ class WalletService {
     walletType: WalletType,
     accountIndex: number
   ): Promise<PubKeyType> {
+    const derivationPathType: DerivationPathType | undefined =
+      walletType !== WalletType.LEDGER && walletType !== WalletType.LEDGER_LIVE
+        ? undefined
+        : walletType === WalletType.LEDGER
+        ? 'bip44'
+        : 'ledger_live'
     const derivationPathEVM = getAddressDerivationPath({
       accountIndex,
-      vmType: NetworkVMType.EVM
+      vmType: NetworkVMType.EVM,
+      derivationPathType
     })
     const derivationPathAVM = getAddressDerivationPath({
       accountIndex,
-      vmType: NetworkVMType.AVM
+      vmType: NetworkVMType.AVM,
+      derivationPathType
     })
 
     // Check cache first for both keys
@@ -275,7 +284,10 @@ class WalletService {
       walletType
     })
 
-    const publicKey = await wallet.getPublicKeyFor({ derivationPath, curve })
+    const publicKey = await wallet.getPublicKeyFor({
+      derivationPath,
+      curve
+    })
 
     // Cache the result
     WalletFactory.cache.setPublicKey(walletId, cacheKey, curve, publicKey)

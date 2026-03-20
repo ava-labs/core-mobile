@@ -1,3 +1,4 @@
+import type { CompletedTransfer, FailedTransfer, RefundedTransfer } from '@avalabs/fusion-sdk'
 import {
   BitcoinFunctions,
   createTransferManager,
@@ -19,8 +20,10 @@ import {
 import type { FeatureFlags } from 'services/posthog/types'
 import Logger from 'utils/Logger'
 import { fusionErrors } from '../utils/fusionErrors'
-import { MARKR_API_URL, MARKR_EVM_PARTNER_ID } from '../consts'
-import { isTransferInProgress } from '../utils/transferStatus'
+import { MARKR_EVM_PARTNER_ID } from '../consts'
+import {
+  isConcludedTransfer,
+} from '../utils/transferStatus'
 import type {
   FusionConfig,
   FusionSigners,
@@ -94,7 +97,6 @@ class FusionService implements IFusionService {
             type: serviceType,
             evmSigner: signers.evm,
             solanaSigner: signers.svm,
-            markrApiUrl: MARKR_API_URL,
             markrAppId: MARKR_EVM_PARTNER_ID,
             getTargetChainAssets: () => Promise.resolve([])
             // eslint-disable-next-line prettier/prettier
@@ -288,10 +290,14 @@ class FusionService implements IFusionService {
    * Calls updateListener on each status update and when the transfer completes
    * @param transfer The transfer to track
    * @param updateListener Callback invoked on every status change
+   * @param onCompleted Optional callback invoked once when tracking concludes
    */
   trackTransfer(
     transfer: Transfer,
-    updateListener: (updated: Transfer) => void
+    updateListener: (updated: Transfer) => void,
+    onCompleted?: (
+      concluded: CompletedTransfer | FailedTransfer | RefundedTransfer
+    ) => void
   ): void {
     const wrappedListener = (updated: Transfer): void => {
       Logger.info('[FusionService] new transfer status', {
@@ -299,9 +305,6 @@ class FusionService implements IFusionService {
         status: updated.status
       })
       updateListener(updated)
-      if (!isTransferInProgress(updated)) {
-        this.#trackingCancels.delete(updated.id)
-      }
     }
 
     const { cancel, result } = this.transferManager.trackTransfer({
@@ -311,10 +314,17 @@ class FusionService implements IFusionService {
 
     this.#trackingCancels.set(transfer.id, cancel)
 
-    result.catch(err => {
-      Logger.error('[FusionService] trackTransfer error', err)
-      this.#trackingCancels.delete(transfer.id)
-    })
+    result
+      .then(concluded => {
+        if (isConcludedTransfer(concluded)) {
+          this.#trackingCancels.delete(concluded.id)
+          onCompleted?.(concluded)
+        }
+      })
+      .catch(err => {
+        Logger.error('[FusionService] trackTransfer error', err)
+        this.#trackingCancels.delete(transfer.id)
+      })
   }
 
   /**
