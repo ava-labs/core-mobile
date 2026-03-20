@@ -1,19 +1,26 @@
 import { Button, showAlert, View } from '@avalabs/k2-alpine'
 import * as bip39 from 'bip39'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import React, { useCallback, useState } from 'react'
+import { useAfterScreenEnterTransition } from 'common/hooks/useAfterScreenEnterTransition'
+import { TextInput } from 'react-native'
+import React, { useCallback, useRef, useState } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import WalletSDK from 'utils/WalletSDK'
 import { MINIMUM_MNEMONIC_WORDS } from 'common/consts'
 import RecoveryPhraseInput from './RecoveryPhraseInput'
 
-export const EnterRecoveryPhrase = ({
-  onNext
-}: {
+type EnterRecoveryPhraseProps = {
   onNext: (mnemonic: string) => void
-}): React.JSX.Element => {
+}
+
+export function EnterRecoveryPhrase({
+  onNext
+}: EnterRecoveryPhraseProps): React.JSX.Element {
+  const recoveryPhraseInputRef = useRef<TextInput>(null)
   const [mnemonic, setMnemonic] = useState('')
   const testMnemonic = WalletSDK.testMnemonic()
+
+  useAfterScreenEnterTransition(() => recoveryPhraseInputRef.current?.focus())
 
   const handleNext = useCallback(() => {
     const trimmed = mnemonic.toLowerCase().trim()
@@ -82,7 +89,10 @@ export const EnterRecoveryPhrase = ({
         style={{
           marginTop: 24
         }}>
-        <RecoveryPhraseInput onChangeText={setMnemonic} />
+        <RecoveryPhraseInput
+          ref={recoveryPhraseInputRef}
+          onChangeText={setMnemonic}
+        />
       </View>
     </ScrollScreen>
   )

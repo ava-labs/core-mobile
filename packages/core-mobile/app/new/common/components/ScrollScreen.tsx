@@ -168,9 +168,10 @@ export const ScrollScreen = ({
     if (title || subtitle || renderHeader) {
       const hasTitle = Boolean(title || subtitle)
       return (
-        <View>
+        <View collapsable={false}>
           <View
             ref={headerRef}
+            collapsable={false}
             style={[headerStyle, hasTitle ? { gap: 8 } : undefined]}>
             {title ? (
               <Animated.View style={[animatedHeaderStyle]}>
@@ -195,6 +196,7 @@ export const ScrollScreen = ({
       return (
         <View
           ref={headerRef}
+          collapsable={false}
           style={[
             headerStyle,
             {
@@ -316,7 +318,7 @@ export const ScrollScreen = ({
   // If you have an input on the screen, you need to enable this prop
   if (shouldAvoidKeyboard) {
     return (
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1 }} collapsable={false}>
         <KeyboardScrollView
           testID={testID}
           extraKeyboardSpace={
@@ -354,7 +356,7 @@ export const ScrollScreen = ({
   // All of our screens have to be scrollable
   // If we don't have an input on the screen then we should not enable keyboard avoiding
   return (
-    <View style={[{ flex: 1 }, props.style]}>
+    <View style={[{ flex: 1 }, props.style]} collapsable={false}>
       <ScrollView
         testID={testID}
         style={{ flex: 1 }}

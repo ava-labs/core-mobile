@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef } from 'react'
-import { useFocusEffect } from 'expo-router'
 import {
   GroupList,
   PinInput,
@@ -9,9 +8,10 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useAfterScreenEnterTransition } from 'common/hooks/useAfterScreenEnterTransition'
 import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
-import { InteractionManager } from 'react-native'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
+import { Keyboard } from 'react-native'
 
 export const CreatePin = ({
   useBiometrics,
@@ -53,20 +53,20 @@ export const CreatePin = ({
     }
   })
 
-  useFocusEffect(
-    useCallback(() => {
-      resetPin()
-      processedValidPinRef.current = undefined
-      InteractionManager.runAfterInteractions(() => {
-        ref.current?.focus()
-      })
-    }, [resetPin])
-  )
+  const onScreenFocus = useCallback(() => {
+    resetPin()
+    processedValidPinRef.current = undefined
+  }, [resetPin])
+
+  useAfterScreenEnterTransition(() => ref.current?.focus(), {
+    onScreenFocus
+  })
 
   useEffect(() => {
     // Only process the valid pin if it hasn't been processed yet
     if (validPin && processedValidPinRef.current !== validPin) {
       processedValidPinRef.current = validPin
+      Keyboard.dismiss()
       onEnteredValidPin(validPin)
     }
   }, [validPin, onEnteredValidPin])
@@ -117,7 +117,6 @@ export const CreatePin = ({
         }}>
         <PinInput
           ref={ref}
-          autoFocus={true}
           length={6}
           value={chosenPinEntered ? confirmedPin : chosenPin}
           onChangePin={

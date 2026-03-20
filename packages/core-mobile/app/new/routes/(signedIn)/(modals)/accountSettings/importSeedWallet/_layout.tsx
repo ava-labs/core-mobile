@@ -10,7 +10,7 @@ export default function ImportSeedWalletLayout(): JSX.Element {
         headerShown: false
       }}>
       <Stack.Screen name="index" />
-      <Stack.Screen name="importSeedWallet" />
+      <Stack.Screen name="setWalletName" />
     </Stack>
   )
 }
