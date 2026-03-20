@@ -59,12 +59,6 @@ These have defaults but can be customized:
   - Default: `us-west-2` (if AWS_DEFAULT_REGION not set)
   - Example: `us-west-2`
 
-- **`AWS_SESSION_TOKEN`** (Optional)
-  - Type: Secret (mark as sensitive)
-  - Description: Required only if using temporary AWS credentials
-  - Example: `FQoGZXIvYXdzE...` (long token)
-  - **⚠️ Mark as "Is exposed? = NO" to hide in logs**
-
 - **`WAIT_FOR_COMPLETION`** (Optional)
   - Type: Environment Variable
   - Description: Whether to wait for test completion before finishing

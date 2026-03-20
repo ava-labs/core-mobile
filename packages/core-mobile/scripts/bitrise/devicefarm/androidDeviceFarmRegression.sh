@@ -16,10 +16,10 @@ echo "✅ Node.js version: $(node --version)"
 echo "✅ npm version: $(npm --version)"
 
 # Verify AWS credentials are configured
-# Bitrise should provide these via environment variables
-if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+# Bitrise: set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in secrets (from the Device Farm IAM role)
+if [ -z "${AWS_ACCESS_KEY_ID:-}" ] || [ -z "${AWS_SECRET_ACCESS_KEY:-}" ]; then
   echo "⚠️  AWS credentials not found in environment variables."
-  echo "Please set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in Bitrise secrets."
+  echo "In Bitrise Secrets, set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY."
   exit 1
 fi
 

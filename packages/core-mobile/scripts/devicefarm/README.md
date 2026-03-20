@@ -24,6 +24,38 @@ This directory contains scripts and configuration for running Appium tests on AW
    - iOS: `.ipa` file
    - You can either build locally or download from Bitrise (see below)
 
+5. **IAM user/role** with Device Farm permissions (for trigger script and Bitrise)
+   - The trigger script uses the **project ARN** and **device pool ARN** to tell Device Farm where to upload files and which devices to use. These are not the IAM user ARN.
+   - The IAM principal (e.g. `bitrise-devicefarm-sa`) must have the following actions allowed on the project (and related resources):
+
+### Required IAM policy for Device Farm trigger (Bitrise / local)
+
+Attach an IAM policy to the user or role used to run the trigger script (e.g. `bitrise-devicefarm-sa`). Without these, you will see `AccessDeniedException` for `devicefarm:CreateUpload` or similar.
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "devicefarm:GetProject",
+        "devicefarm:CreateUpload",
+        "devicefarm:GetUpload",
+        "devicefarm:ScheduleRun"
+      ],
+      "Resource": [
+        "arn:aws:devicefarm:us-west-2:YOUR_ACCOUNT_ID:project:YOUR_PROJECT_ID",
+        "arn:aws:devicefarm:us-west-2:YOUR_ACCOUNT_ID:devicepool:YOUR_POOL_ID",
+        "arn:aws:devicefarm:us-west-2:YOUR_ACCOUNT_ID:upload:*"
+      ]
+    }
+  ]
+}
+```
+
+Replace `YOUR_ACCOUNT_ID`, `YOUR_PROJECT_ID`, and `YOUR_POOL_ID` with your values, or use a wildcard for the project/upload resources if you prefer. The script runs a pre-flight `GetProject` to verify credentials and access before uploading.
+
 ## Getting the APK
 
 ### Option 1: Download from Bitrise (Recommended)

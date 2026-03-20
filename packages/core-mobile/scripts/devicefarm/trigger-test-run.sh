@@ -69,28 +69,24 @@ if [ -z "${AWS_DEVICE_FARM_APPIUM_SERVER_URL:-}" ]; then
   IS_LOCAL_RUN="true"
 fi
 
-# If running locally, download latest APK from Bitrise
-if [ "$IS_LOCAL_RUN" = "true" ]; then
-  echo -e "${BLUE}📥 Running locally - downloading latest internalE2E APK from Bitrise...${NC}"
+# If running locally and APK does not exist, download latest from Bitrise
+if [ "$IS_LOCAL_RUN" = "true" ] && [ ! -f "$DEVICEFARM_APP_PATH" ]; then
+  echo -e "${BLUE}📥 Running locally - APK not found, downloading latest internalE2E APK from Bitrise...${NC}"
   
   # Check for Bitrise credentials
   if [ -z "${BITRISE_APP_SLUG:-}" ]; then
-    echo -e "${RED}❌ BITRISE_APP_SLUG environment variable is required for local runs${NC}"
-    echo "   Set it with: export BITRISE_APP_SLUG=\"your-app-slug\""
+    echo -e "${RED}❌ BITRISE_APP_SLUG required when APK is missing. Set it or build locally and set DEVICEFARM_APP_PATH.${NC}"
     exit 1
   fi
   
   if [ -z "${BITRISE_ARTIFACTS_TOKEN:-}" ]; then
-    echo -e "${RED}❌ BITRISE_ARTIFACTS_TOKEN environment variable is required for local runs${NC}"
-    echo "   Get it from: Bitrise Dashboard > Settings > API > Artifacts Access Token"
+    echo -e "${RED}❌ BITRISE_ARTIFACTS_TOKEN required when APK is missing. Get it from Bitrise Dashboard > Settings > API.${NC}"
     exit 1
   fi
   
   # Ensure output directory exists
   mkdir -p "$(dirname "$DEVICEFARM_APP_PATH")"
   
-  # Download the latest internalE2E APK (buildIndex 0 = latest)
-  # If branch filter is specified, pass it as the 4th argument
   cd "$CORE_MOBILE_DIR"
   if [ -n "$BRANCH_FILTER" ]; then
     echo -e "${BLUE}   Filtering by branch: ${BRANCH_FILTER}${NC}"
@@ -110,6 +106,8 @@ if [ "$IS_LOCAL_RUN" = "true" ]; then
       exit 1
     fi
   fi
+elif [ "$IS_LOCAL_RUN" = "true" ] && [ -f "$DEVICEFARM_APP_PATH" ]; then
+  echo -e "${GREEN}✅ Using local APK: $DEVICEFARM_APP_PATH${NC}\n"
 fi
 
 # Verify APK exists

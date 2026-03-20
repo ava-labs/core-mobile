@@ -2,7 +2,7 @@
 
 This directory contains scripts for running Appium tests on AWS Device Farm from Bitrise CI.
 
-## Bitrise Workflow: `android-devicefarm-regression-run`
+## Bitrise Workflow: `android-internal-e2e-aws-regression-run`
 
 This workflow:
 1. Builds the Android app (internal E2E variant)
@@ -34,7 +34,6 @@ Set these in your Bitrise project settings:
 
 **Optional:**
 - `AWS_DEFAULT_REGION` - AWS region (defaults to `us-west-2`)
-- `AWS_SESSION_TOKEN` - For temporary credentials
 - `WAIT_FOR_COMPLETION` - Set to `true` to wait for test completion (default: `true`)
 
 ### Bitrise Stack Requirements
@@ -55,7 +54,7 @@ The workflow can be triggered:
 1. **Manually** from Bitrise dashboard
    - Go to your Bitrise app
    - Click "Start/Schedule a Build"
-   - Select the `android-devicefarm-regression-run` workflow
+   - Select the `android-internal-e2e-aws-regression-run` workflow
 
 2. **Via Bitrise API** (Programmatic trigger)
    ```bash
@@ -68,7 +67,7 @@ The workflow can be triggered:
          "type": "bitrise"
        },
        "build_params": {
-         "workflow_id": "android-devicefarm-regression-run",
+         "workflow_id": "android-internal-e2e-aws-regression-run",
          "branch": "main"
        }
      }'

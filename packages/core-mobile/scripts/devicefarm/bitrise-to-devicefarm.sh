@@ -12,8 +12,8 @@ set -euo pipefail
 #   BITRISE_ARTIFACTS_TOKEN - Bitrise artifacts access token
 #   DEVICEFARM_PROJECT_ARN - AWS Device Farm project ARN
 #   DEVICEFARM_DEVICE_POOL_ARN - AWS Device Farm device pool ARN
-#   AWS_ACCESS_KEY_ID - AWS access key
-#   AWS_SECRET_ACCESS_KEY - AWS secret access key
+#   AWS_ACCESS_KEY_ID - IAM access key for Device Farm
+#   AWS_SECRET_ACCESS_KEY - IAM secret key for Device Farm
 #
 # Environment variables (optional):
 #   BITRISE_BUILD_INDEX - Which build to download (0 = latest). Default: 0
@@ -78,7 +78,7 @@ if [ -z "${DEVICEFARM_DEVICE_POOL_ARN:-}" ]; then
 fi
 
 if [ -z "${AWS_ACCESS_KEY_ID:-}" ] || [ -z "${AWS_SECRET_ACCESS_KEY:-}" ]; then
-  echo -e "${RED}❌ AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables are required${NC}"
+  echo -e "${RED}❌ AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are required. Set them in Bitrise Secrets.${NC}"
   exit 1
 fi
 

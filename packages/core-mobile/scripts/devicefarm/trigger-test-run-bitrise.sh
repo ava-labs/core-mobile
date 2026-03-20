@@ -9,12 +9,12 @@ set -euo pipefail
 #   This script is designed to run in Bitrise CI/CD workflows
 #   It expects the APK to be available at $BITRISE_APK_PATH
 #
-# Required Bitrise Environment Variables:
+# Required Bitrise Environment Variables (set in Bitrise Secrets):
 #   BITRISE_APK_PATH - Path to the APK artifact from the current build
 #   DEVICEFARM_PROJECT_ARN - AWS Device Farm project ARN
 #   DEVICEFARM_DEVICE_POOL_ARN - AWS Device Farm device pool ARN
-#   AWS_ACCESS_KEY_ID - AWS access key ID
-#   AWS_SECRET_ACCESS_KEY - AWS secret access key
+#   AWS_ACCESS_KEY_ID - IAM access key for Device Farm
+#   AWS_SECRET_ACCESS_KEY - IAM secret key for Device Farm
 #
 # Optional Environment Variables:
 #   PLATFORM - Platform (android/ios). Default: android
@@ -52,8 +52,7 @@ if [ -z "${DEVICEFARM_DEVICE_POOL_ARN:-}" ]; then
 fi
 
 if [ -z "${AWS_ACCESS_KEY_ID:-}" ] || [ -z "${AWS_SECRET_ACCESS_KEY:-}" ]; then
-  echo -e "${RED}❌ AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables are required${NC}"
-  echo "   Set them in Bitrise Secrets"
+  echo -e "${RED}❌ AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are required. Set them in Bitrise Secrets.${NC}"
   exit 1
 fi
 

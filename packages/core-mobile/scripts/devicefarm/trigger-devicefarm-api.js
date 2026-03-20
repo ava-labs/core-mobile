@@ -5,6 +5,11 @@
  *
  * This script triggers a test run on AWS Device Farm using the AWS SDK for JavaScript.
  *
+ * Credentials (pick one):
+ *   - Bitrise/CI: Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in env (e.g. Bitrise Secrets).
+ *   - Local: Run `aws configure --profile bitrise-devicefarm` then set AWS_PROFILE=bitrise-devicefarm,
+ *     or export AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.
+ *
  * Usage:
  *   node trigger-devicefarm-api.js \
  *     --project-arn "arn:aws:devicefarm:..." \
@@ -21,6 +26,14 @@
  *   DEVICEFARM_TEST_PACKAGE_PATH=...
  *   DEVICEFARM_TEST_SPEC_PATH=...
  *   PLATFORM=android
+ *
+ * Why ARNs? The Device Farm API requires a project ARN (where to upload app/tests) and
+ * a device pool ARN (which devices to run on). These are not the IAM user ARN.
+ *
+ * Required IAM actions for the trigger user (e.g. bitrise-devicefarm-sa):
+ *   devicefarm:GetProject, devicefarm:CreateUpload, devicefarm:GetUpload,
+ *   devicefarm:ScheduleRun (and optionally devicefarm:GetRun if waiting for completion).
+ * See scripts/devicefarm/README.md for an example IAM policy.
  */
 
 const fs = require('fs')
@@ -31,6 +44,7 @@ const {
   DeviceFarmClient,
   CreateUploadCommand,
   GetUploadCommand,
+  GetProjectCommand,
   ScheduleRunCommand
 } = require('@aws-sdk/client-device-farm')
 
@@ -77,6 +91,31 @@ if (missing.length > 0) {
 
 // Initialize AWS clients
 const deviceFarmClient = new DeviceFarmClient({ region: config.region })
+
+/**
+ * Pre-flight: verify credentials and read access to the project.
+ * Fails fast with a clear error if the IAM user cannot access the project.
+ * Does not verify CreateUpload/ScheduleRun; those are required separately (see README).
+ */
+async function verifyProjectAccess(projectArn) {
+  console.log('🔐 Verifying AWS credentials and project access...')
+  try {
+    const getProjectCommand = new GetProjectCommand({ arn: projectArn })
+    const response = await deviceFarmClient.send(getProjectCommand)
+    console.log(`   Project: ${response.project?.name || projectArn}`)
+    console.log('✅ Credentials and project access OK\n')
+  } catch (err) {
+    if (err.name === 'InvalidSignatureException' || err.message?.includes('security token')) {
+      console.error('❌ Invalid AWS credentials. Check AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY (or AWS_PROFILE).')
+    } else if (err.name === 'AccessDeniedException' || err.name === 'NotFoundException') {
+      console.error(`❌ No access to project or project not found: ${err.message}`)
+      console.error('   Ensure the IAM user has devicefarm:GetProject on this project.')
+    } else {
+      console.error(`❌ Pre-flight failed: ${err.message}`)
+    }
+    throw err
+  }
+}
 
 /**
  * Upload a file to Device Farm
@@ -186,11 +225,18 @@ function sleep(ms) {
 async function main() {
   try {
     console.log('🚀 Starting AWS Device Farm test run via API...')
-    console.log(`   Project ARN: ${config.projectArn}`)
-    console.log(`   Device Pool ARN: ${config.devicePoolArn}`)
-    console.log(`   Platform: ${config.platform}`)
-    console.log(`   App: ${config.appPath}`)
-    console.log(`   Test Package: ${config.testPackagePath}`)
+    console.log('')
+    console.log('📋 Parameters being sent to AWS:')
+    console.log(`   projectArn:      ${config.projectArn}`)
+    console.log(`   devicePoolArn:  ${config.devicePoolArn}`)
+    console.log(`   region:         ${config.region}`)
+    console.log(`   platform:       ${config.platform}`)
+    console.log(`   appPath:        ${config.appPath}`)
+    console.log(`   testPackagePath: ${config.testPackagePath}`)
+    console.log(`   testSpecPath:   ${config.testSpecPath || '(not set)'}`)
+    console.log('')
+
+    await verifyProjectAccess(config.projectArn)
 
     // Determine upload types
     const appType = config.platform === 'android' ? 'ANDROID_APP' : 'IOS_APP'
