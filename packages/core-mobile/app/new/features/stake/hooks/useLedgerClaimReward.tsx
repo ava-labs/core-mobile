@@ -124,7 +124,7 @@ export const useLedgerClaimReward = (
   const cancelLedger = useCallback(async (): Promise<void> => {
     resetLedgerState()
     onCancel?.()
-    await LedgerService.disconnect().catch()
+    await LedgerService.disconnect().catch(() => undefined)
   }, [resetLedgerState, onCancel])
 
   const stepConfig = useMemo(
