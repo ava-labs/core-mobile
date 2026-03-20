@@ -137,6 +137,7 @@ export const ListScreenV2 = <T,>({
   // State for React re-renders (used in useMemo)
   const [contentHeaderHeight, setContentHeaderHeight] = useState<number>(0)
   const [renderHeaderHeight, setRenderHeaderHeight] = useState<number>(0)
+  const [headerSentinelHeight, setHeaderSentinelHeight] = useState<number>(0)
   const [footerHeight, setFooterHeight] = useState<number>(0)
   const [showFooter, setShowFooter] = useState(false)
 
@@ -232,6 +233,10 @@ export const ListScreenV2 = <T,>({
   const handleContentHeaderLayout = useCallback((event: LayoutChangeEvent) => {
     const { height } = event.nativeEvent.layout
     setContentHeaderHeight(height)
+  }, [])
+
+  const handleHeaderSentinelLayout = useCallback((event: LayoutChangeEvent) => {
+    setHeaderSentinelHeight(event.nativeEvent.layout.height)
   }, [])
 
   const animatedHeaderContainerStyle = useAnimatedStyle(() => {
@@ -364,7 +369,9 @@ export const ListScreenV2 = <T,>({
 
   const headerContent = useMemo(() => {
     return (
-      <View style={{ overflow: 'hidden' }}>
+      <View
+        style={{ overflow: 'hidden' }}
+        onLayout={handleHeaderSentinelLayout}>
         <Animated.View style={[animatedHeaderContainerStyle]}>
           <View
             style={{
@@ -445,6 +452,7 @@ export const ListScreenV2 = <T,>({
     renderHeader,
     headerHeight,
     headerBgColor,
+    handleHeaderSentinelLayout,
     handleContentHeaderLayout,
     title,
     handleTitleLayout,
@@ -454,31 +462,23 @@ export const ListScreenV2 = <T,>({
   ])
 
   const emptyContentHeight = useMemo(() => {
-    const headerTotal =
-      (isAndroidModal ? 16 : headerHeight + 16) +
-      contentHeaderHeight +
-      12 +
-      renderHeaderHeight +
-      (renderHeader ? 12 : 0)
+    const bottomPadding = contentContainerStyle.paddingBottom
     return Math.max(
       0,
-      frame.height - flashListMarginTop - headerTotal - insets.bottom
+      frame.height - flashListMarginTop - headerSentinelHeight - bottomPadding
     )
   }, [
-    isAndroidModal,
-    headerHeight,
-    contentHeaderHeight,
-    renderHeaderHeight,
-    renderHeader,
     frame.height,
     flashListMarginTop,
-    insets.bottom
+    headerSentinelHeight,
+    contentContainerStyle.paddingBottom
   ])
 
   const emptyContent = useMemo(() => {
     const style = {
       minHeight: emptyContentHeight,
-      justifyContent: 'center' as const
+      justifyContent: 'center' as const,
+      paddingBottom: emptyContentHeight * 0.1 // optical center offset
     }
     if (renderEmpty) {
       return <View style={style}>{renderEmpty()}</View>
