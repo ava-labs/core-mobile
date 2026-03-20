@@ -14,7 +14,7 @@ import type {
   FusionTransfer,
   FusionTransfersMap
 } from '../types'
-import { isTransferInProgress } from '../utils/transferStatus'
+import { isConcludedTransfer } from '../utils/transferStatus'
 
 // Token selection stores
 export const useSwapSelectedFromToken = createZustandStore<
@@ -189,7 +189,7 @@ export function updateFusionTransfer(updatedTransfer: Transfer): void {
 
 // Returns all transfers that need re-tracking after app restart
 export function getPendingFusionTransfers(): FusionTransfer[] {
-  return Object.values(fusionTransfersStore.getState().transfers).filter(ft =>
-    isTransferInProgress(ft.transfer)
+  return Object.values(fusionTransfersStore.getState().transfers).filter(
+    ft => !isConcludedTransfer(ft.transfer)
   )
 }
