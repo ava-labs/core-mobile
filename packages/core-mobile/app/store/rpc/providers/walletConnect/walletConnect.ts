@@ -11,9 +11,30 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import { transactionSnackbar } from 'new/common/utils/toast'
+import { Account } from 'store/account/types'
+import { getAddressForChainId } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import { AgnosticRpcProvider, RpcMethod, RpcProvider } from '../../types'
+import { isTxSendMethod } from '../../utils/txSendMethods'
 import { isSessionProposal, isUserRejectedError } from './utils'
 import { transformSolanaParams } from './solanaRequestUtils'
+
+// Solana signing methods require the result to be wrapped in a specific shape
+// before being returned to the dapp via WalletConnect
+const transformResult = (method: RpcMethod, result: unknown): unknown => {
+  if (method === RpcMethod.SOLANA_SIGN_MESSAGE) return { signature: result }
+  if (method === RpcMethod.SOLANA_SIGN_TRANSACTION) {
+    return { transaction: result }
+  }
+  return result
+}
+
+const getAddressForChain = (
+  account: Account | null | undefined,
+  caip2ChainId: string
+): string => {
+  if (!account) return ''
+  return getAddressForChainId(caip2ChainId, account) ?? ''
+}
 
 const chainAgnosticMethods = [
   RpcMethod.AVALANCHE_CREATE_CONTACT,
@@ -131,12 +152,51 @@ class WalletConnectProvider implements AgnosticRpcProvider {
       const topic = request.data.topic
       const requestId = request.data.id
 
-      let transformedResult = result
+      const transformedResult = transformResult(request.method, result)
 
-      if (request.method === RpcMethod.SOLANA_SIGN_MESSAGE) {
-        transformedResult = { signature: result }
-      } else if (request.method === RpcMethod.SOLANA_SIGN_TRANSACTION) {
-        transformedResult = { transaction: result }
+      // fire _success when the txHash is returned (transaction submitted to mempool)
+      // _confirmed fires later via ApprovalController.onTransactionConfirmed once the VM module
+      // polls getTransactionReceipt and the chain finalizes the transaction
+      // skip capture if result is not a non-empty string — a missing txHash would produce
+      // misleading "success" events and skew MTU / lifecycle metrics
+      if (
+        isTxSendMethod(request.method) &&
+        typeof result === 'string' &&
+        result
+      ) {
+        const chainId = request.data.params.chainId
+        const address = getAddressForChain(
+          selectActiveAccount(listenerApi.getState()),
+          chainId
+        )
+        AnalyticsService.captureWithEncryption(`${request.method}_success`, {
+          dAppUrl: request.peerMeta.url,
+          address,
+          chainId,
+          txHash: result
+        })
+      }
+
+      // For solana_signTransaction the dApp handles broadcast, so we never receive a txHash.
+      // Fire _approved on successful signing to enable usage measurement.
+      else if (
+        request.method === RpcMethod.SOLANA_SIGN_TRANSACTION &&
+        typeof result === 'string' &&
+        result
+      ) {
+        const chainId = request.data.params.chainId
+        const address = getAddressForChain(
+          selectActiveAccount(listenerApi.getState()),
+          chainId
+        )
+        AnalyticsService.captureWithEncryption(
+          'solana_signTransaction_approved',
+          {
+            dAppUrl: request.peerMeta.url,
+            address,
+            chainId
+          }
+        )
       }
 
       try {

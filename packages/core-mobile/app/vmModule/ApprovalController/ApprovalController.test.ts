@@ -1,4 +1,5 @@
-import { RpcRequest } from '@avalabs/vm-module-types'
+import { RpcMethod, RpcRequest } from '@avalabs/vm-module-types'
+import { AvalancheCaip2ChainId } from '@avalabs/core-chains-sdk'
 import { WalletType } from 'services/wallet/types'
 import { NavigationPresentationMode } from 'new/common/types'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
@@ -8,6 +9,8 @@ import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
 import { showLedgerReviewTransaction } from 'features/ledger/utils'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { getAddressForChainId } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import {
   isToastsAndConfettiEnabled,
   isInAppAvalancheRequest,
@@ -73,6 +76,10 @@ jest.mock('./onApprove', () => ({ onApprove: jest.fn() }))
 jest.mock('./onReject', () => ({ onReject: jest.fn() }))
 jest.mock('./utils', () => ({ handleLedgerErrorAndShowAlert: jest.fn() }))
 jest.mock('common/consts', () => ({ CONFETTI_DURATION_MS: 3000 }))
+jest.mock('services/analytics/AnalyticsService')
+jest.mock('store/rpc/handlers/wc_sessionRequest/utils', () => ({
+  getAddressForChainId: jest.fn()
+}))
 
 // ─── Typed mock aliases ────────────────────────────────────────────────────────
 
@@ -91,20 +98,75 @@ const mockCurrentRouteStore = currentRouteStore as jest.Mocked<
 const mockShowLedgerReviewTransaction = showLedgerReviewTransaction as jest.Mock
 const mockWalletConnectCacheSet = walletConnectCache.approvalParams
   .set as jest.Mock
+const mockGetAddressForChainId = getAddressForChainId as jest.Mock
 const mockGetPublicKeyFor = jest.requireMock('services/wallet/WalletService')
   .default.getPublicKeyFor as jest.Mock
 const mockDisconnect = jest.requireMock('services/ledger/LedgerService').default
   .disconnect as jest.Mock
+
+global.confetti = { restart: jest.fn() } as unknown as typeof global.confetti
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
 function makeRequest(overrides: Partial<RpcRequest> = {}): RpcRequest {
   return {
     requestId: 'req-1',
+    sessionId: 'session-1',
+    method: RpcMethod.ETH_SEND_TRANSACTION,
     chainId: 'eip155:43114',
+    params: {},
+    dappInfo: { name: 'TestDApp', url: 'https://test.example.com', icon: '' },
     context: {},
     ...overrides
   } as unknown as RpcRequest
+}
+
+const DAPP_URL = 'https://app.uniswap.org'
+const DAPP_SESSION_ID = 'wc-topic-abc123'
+const TX_HASH = '0xdeadbeef'
+const EVM_ADDRESS = '0xcA0E993876152ccA6053eeDFC753092c8cE712D0'
+
+const makeDappRequest = (method: RpcMethod, chainId = 'eip155:1'): RpcRequest =>
+  ({
+    requestId: 'req-1',
+    sessionId: DAPP_SESSION_ID,
+    method,
+    chainId,
+    params: {},
+    dappInfo: { name: 'Uniswap', url: DAPP_URL, icon: '' }
+  } as unknown as RpcRequest)
+
+const mockAccount = {
+  addressC: EVM_ADDRESS,
+  addressBTC: 'tb1qlzsvluv4cahzz8zzwud40x2hn3zq4c7zak6spw',
+  addressAVM: 'X-avax1abc',
+  addressPVM: 'P-avax1abc',
+  addressCoreEth: EVM_ADDRESS,
+  addressSVM: '9gQmZ7fTTgv5hVScrr9QqT6SpBs7i4cKLDdj4tuae3sW'
+} as never
+
+/**
+ * Helper: triggers requestApproval → onApprove to populate the signingAddressMap,
+ * so that onTransactionConfirmed / onTransactionReverted can read the cached address.
+ */
+const populateSigningAddressCache = async (
+  request: RpcRequest,
+  address: string | undefined = EVM_ADDRESS
+): Promise<void> => {
+  mockGetAddressForChainId.mockReturnValue(address)
+  const signingData = { type: 'eth_sendTransaction', data: {} } as never
+  const displayData = {} as never
+  approvalController.requestApproval({ request, displayData, signingData })
+  const { onApprove: capturedOnApprove } =
+    mockWalletConnectCacheSet.mock.calls[
+      mockWalletConnectCacheSet.mock.calls.length - 1
+    ][0]
+  await capturedOnApprove({
+    walletType: WalletType.MNEMONIC,
+    walletId: 'w1',
+    network: {},
+    account: mockAccount
+  })
 }
 
 // ─── Tests ─────────────────────────────────────────────────────────────────────
@@ -175,14 +237,16 @@ describe('ApprovalController', () => {
   // ── onTransactionConfirmed ────────────────────────────────────────────────
 
   describe('onTransactionConfirmed', () => {
-    jest.useFakeTimers()
+    beforeAll(() => jest.useFakeTimers())
+    afterAll(() => jest.useRealTimers())
 
     const confirmedArgs = (request: RpcRequest) => ({
+      txHash: '0xabc',
       explorerLink: 'https://example.com',
       request
     })
 
-    it('does nothing when toasts and confetti are disabled', () => {
+    it('skips UI effects when toasts and confetti are disabled', () => {
       mockIsToastsAndConfettiEnabled.mockReturnValue(false)
 
       approvalController.onTransactionConfirmed(confirmedArgs(makeRequest()))
@@ -192,6 +256,23 @@ describe('ApprovalController', () => {
       expect(
         promptForAppReviewAfterSuccessfulTransaction
       ).not.toHaveBeenCalled()
+    })
+
+    it('still fires analytics when toasts and confetti are disabled', async () => {
+      mockIsToastsAndConfettiEnabled.mockReturnValue(false)
+      const request = makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+      await populateSigningAddressCache(request)
+
+      approvalController.onTransactionConfirmed({
+        txHash: TX_HASH,
+        explorerLink: '',
+        request
+      })
+
+      expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+        'eth_sendTransaction_confirmed',
+        expect.objectContaining({ txHash: TX_HASH })
+      )
     })
 
     it('schedules app-review prompt when isInAppReview is true', () => {
@@ -218,7 +299,11 @@ describe('ApprovalController', () => {
       const request = makeRequest()
       const explorerLink = 'https://explorer.example.com'
 
-      approvalController.onTransactionConfirmed({ explorerLink, request })
+      approvalController.onTransactionConfirmed({
+        txHash: '0xabc',
+        explorerLink,
+        request
+      })
 
       expect(transactionSnackbar.success).toHaveBeenCalledWith({
         explorerLink,
@@ -250,16 +335,282 @@ describe('ApprovalController', () => {
 
       expect(mockShowConfetti).not.toHaveBeenCalled()
     })
+
+    describe('dapp analytics', () => {
+      it('fires captureWithEncryption with _confirmed event for dapp requests', async () => {
+        const request = makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+        await populateSigningAddressCache(request)
+
+        approvalController.onTransactionConfirmed({
+          txHash: TX_HASH,
+          explorerLink: 'https://explorer.com/tx/0xdeadbeef',
+          request
+        })
+
+        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+          'eth_sendTransaction_confirmed',
+          {
+            dAppUrl: DAPP_URL,
+            address: EVM_ADDRESS,
+            chainId: 'eip155:1',
+            txHash: TX_HASH
+          }
+        )
+      })
+
+      it('fires correct event name for avalanche_sendTransaction', async () => {
+        const request = makeDappRequest(
+          RpcMethod.AVALANCHE_SEND_TRANSACTION,
+          'eip155:43114'
+        )
+        await populateSigningAddressCache(request)
+
+        approvalController.onTransactionConfirmed({
+          txHash: TX_HASH,
+          explorerLink: '',
+          request
+        })
+
+        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+          'avalanche_sendTransaction_confirmed',
+          expect.objectContaining({ txHash: TX_HASH })
+        )
+      })
+
+      it('fires correct event for avalanche_sendTransaction with AVAX C-chain chainId', async () => {
+        const request = makeDappRequest(
+          RpcMethod.AVALANCHE_SEND_TRANSACTION,
+          AvalancheCaip2ChainId.C
+        )
+        await populateSigningAddressCache(request)
+
+        approvalController.onTransactionConfirmed({
+          txHash: TX_HASH,
+          explorerLink: '',
+          request
+        })
+
+        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+          'avalanche_sendTransaction_confirmed',
+          expect.objectContaining({
+            chainId: AvalancheCaip2ChainId.C,
+            txHash: TX_HASH
+          })
+        )
+      })
+
+      it('does NOT fire analytics for in-app requests', () => {
+        mockIsInAppRequest.mockReturnValue(true)
+
+        approvalController.onTransactionConfirmed({
+          txHash: TX_HASH,
+          explorerLink: '',
+          request: makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+        })
+
+        expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
+      })
+
+      it('uses getAddressForChainId to resolve the signing address', async () => {
+        const request = makeDappRequest(
+          RpcMethod.ETH_SEND_TRANSACTION,
+          'eip155:137'
+        )
+        await populateSigningAddressCache(request, '0xBBBB')
+
+        approvalController.onTransactionConfirmed({
+          txHash: TX_HASH,
+          explorerLink: '',
+          request
+        })
+
+        expect(mockGetAddressForChainId).toHaveBeenCalledWith(
+          'eip155:137',
+          mockAccount
+        )
+        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+          'eth_sendTransaction_confirmed',
+          expect.objectContaining({ address: '0xBBBB' })
+        )
+      })
+
+      it('uses empty string for address when cache has no entry', () => {
+        approvalController.onTransactionConfirmed({
+          txHash: TX_HASH,
+          explorerLink: '',
+          request: makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+        })
+
+        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+          'eth_sendTransaction_confirmed',
+          expect.objectContaining({ address: '' })
+        )
+      })
+
+      it('cleans up cached address after use', async () => {
+        const request = makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+        await populateSigningAddressCache(request)
+
+        // First call uses the cached address
+        approvalController.onTransactionConfirmed({
+          txHash: TX_HASH,
+          explorerLink: '',
+          request
+        })
+
+        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+          'eth_sendTransaction_confirmed',
+          expect.objectContaining({ address: EVM_ADDRESS })
+        )
+
+        // Second call should get empty string (cache was cleaned up)
+        ;(AnalyticsService.captureWithEncryption as jest.Mock).mockClear()
+        approvalController.onTransactionConfirmed({
+          txHash: TX_HASH,
+          explorerLink: '',
+          request
+        })
+
+        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+          'eth_sendTransaction_confirmed',
+          expect.objectContaining({ address: '' })
+        )
+      })
+
+      it('does not cache signing address for in-app requests', async () => {
+        mockIsInAppRequest.mockReturnValue(true)
+        const request = makeRequest({ method: RpcMethod.ETH_SEND_TRANSACTION })
+
+        const signingData = { type: 'eth_sendTransaction', data: {} } as never
+        const displayData = {} as never
+        approvalController.requestApproval({
+          request,
+          displayData,
+          signingData
+        })
+        const { onApprove: capturedOnApprove } =
+          mockWalletConnectCacheSet.mock.calls[
+            mockWalletConnectCacheSet.mock.calls.length - 1
+          ][0]
+        await capturedOnApprove({
+          walletType: WalletType.MNEMONIC,
+          walletId: 'w1',
+          network: {},
+          account: mockAccount
+        })
+
+        expect(mockGetAddressForChainId).not.toHaveBeenCalled()
+      })
+
+      it('does not cache signing address for non-tx-send methods', async () => {
+        const request = makeDappRequest(RpcMethod.PERSONAL_SIGN)
+
+        const signingData = { type: 'personal_sign', data: {} } as never
+        const displayData = {} as never
+        approvalController.requestApproval({
+          request,
+          displayData,
+          signingData
+        })
+        const { onApprove: capturedOnApprove } =
+          mockWalletConnectCacheSet.mock.calls[
+            mockWalletConnectCacheSet.mock.calls.length - 1
+          ][0]
+        await capturedOnApprove({
+          walletType: WalletType.MNEMONIC,
+          walletId: 'w1',
+          network: {},
+          account: mockAccount
+        })
+
+        expect(mockGetAddressForChainId).not.toHaveBeenCalled()
+      })
+    })
   })
 
   // ── onTransactionReverted ─────────────────────────────────────────────────
 
   describe('onTransactionReverted', () => {
     it('shows an error toast', () => {
-      approvalController.onTransactionReverted()
+      approvalController.onTransactionReverted({
+        txHash: '0xabc',
+        request: makeRequest()
+      })
 
       expect(transactionSnackbar.error).toHaveBeenCalledWith({
         error: 'Transaction reverted'
+      })
+    })
+
+    describe('dapp analytics', () => {
+      it('fires captureWithEncryption with _failed event including txHash for dapp requests', async () => {
+        const request = makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+        await populateSigningAddressCache(request)
+
+        approvalController.onTransactionReverted({
+          txHash: TX_HASH,
+          request
+        })
+
+        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+          'eth_sendTransaction_failed',
+          {
+            dAppUrl: DAPP_URL,
+            address: EVM_ADDRESS,
+            chainId: 'eip155:1',
+            txHash: TX_HASH
+          }
+        )
+      })
+
+      it('fires bitcoin_sendTransaction_failed for bitcoin reverts', async () => {
+        const btcAddress = 'tb1qlzsvluv4cahzz8zzwud40x2hn3zq4c7zak6spw'
+        const request = makeDappRequest(
+          RpcMethod.BITCOIN_SEND_TRANSACTION,
+          'bip122:000000000019d6689c085ae165831e93'
+        )
+        await populateSigningAddressCache(request, btcAddress)
+
+        approvalController.onTransactionReverted({
+          txHash: 'btctxhash',
+          request
+        })
+
+        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+          'bitcoin_sendTransaction_failed',
+          expect.objectContaining({
+            address: btcAddress,
+            txHash: 'btctxhash'
+          })
+        )
+      })
+
+      it('does NOT fire analytics for in-app requests', () => {
+        mockIsInAppRequest.mockReturnValue(true)
+
+        approvalController.onTransactionReverted({
+          txHash: TX_HASH,
+          request: makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+        })
+
+        expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
+      })
+
+      it('always includes txHash in _failed payload (matches Extension behavior)', async () => {
+        const request = makeDappRequest(
+          RpcMethod.SOLANA_SIGN_AND_SEND_TRANSACTION,
+          'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'
+        )
+        await populateSigningAddressCache(request)
+
+        approvalController.onTransactionReverted({
+          txHash: '0xrevertedtx',
+          request
+        })
+
+        const call = (AnalyticsService.captureWithEncryption as jest.Mock).mock
+          .calls[0]
+        expect(call[1]).toHaveProperty('txHash', '0xrevertedtx')
       })
     })
   })
@@ -394,7 +745,6 @@ describe('ApprovalController', () => {
       const request = makeApprovalRequest()
       approvalController.requestApproval({ request, displayData, signingData })
 
-      // Capture the onApprove callback set in walletConnectCache
       const { onApprove: capturedOnApprove } =
         mockWalletConnectCacheSet.mock.calls[0][0]
 
