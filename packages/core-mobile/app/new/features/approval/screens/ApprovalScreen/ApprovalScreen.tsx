@@ -174,9 +174,7 @@ const ApprovalScreen = ({
     } catch (error: unknown) {
       Logger.error('Error approving transaction', error)
     } finally {
-      if (!isLedger) {
-        setSubmitting(false)
-      }
+      setSubmitting(false)
     }
   }, [
     approveDisabled,
