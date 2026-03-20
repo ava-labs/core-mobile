@@ -23,6 +23,22 @@ const SelectSwapFromTokenScreen = (): JSX.Element => {
   // When TO is Bitcoin and browsing Avalanche as source, only BTC.b is eligible
   const tokenFilter = useCallback(
     (token: LocalTokenWithBalance, selectedNetwork: Network | undefined) => {
+      // Hide the currently selected FROM token (no point re-selecting it)
+      if (
+        selectedFromToken &&
+        token.internalId === selectedFromToken.internalId &&
+        token.networkChainId === selectedFromToken.networkChainId
+      ) {
+        return false
+      }
+      // Hide the TO token to prevent selecting the same token on both sides
+      if (
+        selectedToToken &&
+        token.internalId === selectedToToken.internalId &&
+        token.networkChainId === selectedToToken.networkChainId
+      ) {
+        return false
+      }
       if (
         selectedToToken?.networkChainId &&
         isBitcoinChainId(selectedToToken.networkChainId) &&
@@ -33,7 +49,7 @@ const SelectSwapFromTokenScreen = (): JSX.Element => {
       }
       return true
     },
-    [selectedToToken?.networkChainId]
+    [selectedFromToken, selectedToToken]
   )
 
   return (
