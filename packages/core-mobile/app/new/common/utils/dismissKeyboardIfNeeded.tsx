@@ -23,11 +23,12 @@ export const dismissKeyboardIfNeeded = (): Promise<void> => {
         if (!resolved) {
           resolved = true
           subscription.remove()
+          clearTimeout(timer)
           resolve()
         }
       }
       const subscription = Keyboard.addListener('keyboardDidHide', done)
-      setTimeout(done, KEYBOARD_DISMISS_TIMEOUT_MS)
+      const timer = setTimeout(done, KEYBOARD_DISMISS_TIMEOUT_MS)
     } else {
       resolve()
     }

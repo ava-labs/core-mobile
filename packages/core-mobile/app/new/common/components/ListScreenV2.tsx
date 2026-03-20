@@ -332,13 +332,16 @@ export const ListScreenV2 = <T,>({
     return {
       contentContainerStyle: {
         ...contentContainerStyle,
-        ...(data.length === 0 ? { flex: 1 } : {}),
-        minHeight:
-          frame.height +
-          contentHeaderHeight +
-          extraPadding -
-          flashListMarginTop -
-          (shouldShowStickyHeader ? renderHeaderHeight : 0)
+        ...(data.length === 0
+          ? { flex: 1 }
+          : {
+              minHeight:
+                frame.height +
+                contentHeaderHeight +
+                extraPadding -
+                flashListMarginTop -
+                (shouldShowStickyHeader ? renderHeaderHeight : 0)
+            })
       }
     }
   }, [
@@ -446,7 +449,7 @@ export const ListScreenV2 = <T,>({
         </Animated.View>
       </View>
     )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- animated styles from useAnimatedStyle are stable worklet refs
   }, [
     isAndroidModal,
     renderHeader,
