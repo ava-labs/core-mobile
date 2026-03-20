@@ -150,6 +150,7 @@ class ApprovalController implements VmModuleApprovalController {
   }: {
     resolve: (value: ApprovalResponse | PromiseLike<ApprovalResponse>) => void
   }): Promise<void> => {
+    ledgerParamsStore.getState().setReviewTransactionParams(null)
     await LedgerService.disconnect()
     onReject({ resolve })
   }

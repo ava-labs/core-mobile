@@ -70,6 +70,8 @@ export const useLedgerClaimReward = (
       operation: Operation | null
     ): void => {
       if (operation === null) {
+        setLedgerCurrentStep(step + 1) // Convert to 1-based index for user display
+        setLedgerPhase(LedgerReviewPhase.COMPLETE)
         return
       }
       setLedgerCurrentStep(step + 1) // Convert to 1-based index for user display
@@ -119,10 +121,10 @@ export const useLedgerClaimReward = (
     pendingActionRef.current = undefined
   }, [])
 
-  const cancelLedger = useCallback((): void => {
+  const cancelLedger = useCallback(async (): Promise<void> => {
     resetLedgerState()
     onCancel?.()
-    LedgerService.disconnect()
+    await LedgerService.disconnect().catch()
   }, [resetLedgerState, onCancel])
 
   const stepConfig = useMemo(

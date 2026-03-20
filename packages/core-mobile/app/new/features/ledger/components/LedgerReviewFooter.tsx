@@ -14,7 +14,8 @@ import { AnimatedIconWithText } from './AnimatedIconWithText'
 export enum LedgerReviewPhase {
   IDLE = 'idle',
   CONNECTING = 'connecting',
-  PROGRESS = 'progress'
+  PROGRESS = 'progress',
+  COMPLETE = 'complete'
 }
 
 type StepConfig = {
@@ -204,6 +205,29 @@ export const LedgerReviewFooter = ({
         <Button type="tertiary" size="large" onPress={onCancel}>
           Cancel
         </Button>
+      </View>
+    )
+  }
+
+  if (ledgerPhase === LedgerReviewPhase.COMPLETE) {
+    return (
+      <View sx={{ gap: 16, marginTop: 24 }}>
+        <AnimatedIconWithText
+          icon={
+            <Icons.Custom.Ledger
+              color={theme.colors.$textPrimary}
+              width={32}
+              height={32}
+            />
+          }
+          space={16}
+          animationSize={{ width: 120, height: 120 }}
+          title="Transaction Submitted"
+          titleStyle={{ fontSize: 16 }}
+          subtitle="All steps completed successfully"
+          subtitleStyle={{ fontSize: 12 }}
+          showAnimation={false}
+        />
       </View>
     )
   }

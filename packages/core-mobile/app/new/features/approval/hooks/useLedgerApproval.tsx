@@ -45,9 +45,17 @@ export const useLedgerApproval = (
     connectionStatus
   } = useLedgerBLEConnection({
     isLedger,
-    isConnecting: ledgerPhase === 'connecting',
+    isConnecting: ledgerPhase === LedgerReviewPhase.CONNECTING,
     appType
   })
+
+  // Reset state when params are cleared (e.g. after successful signing)
+  useEffect(() => {
+    if (!isLedger || reviewTransactionParams !== null) return
+    prevParamsRef.current = null
+    setLedgerPhase(LedgerReviewPhase.IDLE)
+    setApprovalInProgress(false)
+  }, [reviewTransactionParams, isLedger])
 
   // Transition to connecting when new params arrive
   useEffect(() => {
@@ -62,7 +70,7 @@ export const useLedgerApproval = (
   useEffect(() => {
     if (
       !isLedger ||
-      ledgerPhase !== 'connecting' ||
+      ledgerPhase !== LedgerReviewPhase.CONNECTING ||
       !isLedgerConnected ||
       !isRequiredAppOpen ||
       approvalInProgress
@@ -100,11 +108,11 @@ export const useLedgerApproval = (
     setApprovalInProgress(false)
   }, [])
 
-  const cancelLedger = useCallback((): void => {
+  const cancelLedger = useCallback(async (): Promise<void> => {
     resetLedgerState()
     reviewTransactionParams?.onReject(TRANSACTION_CANCELLED_BY_USER)
     ledgerParamsStore.getState().setReviewTransactionParams(null)
-    LedgerService.disconnect()
+    await LedgerService.disconnect().catch()
   }, [resetLedgerState, reviewTransactionParams])
 
   const renderLedgerFooter = useCallback((): JSX.Element | null => {
