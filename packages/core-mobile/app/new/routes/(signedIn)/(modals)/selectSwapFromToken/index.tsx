@@ -11,7 +11,6 @@ import {
 } from 'features/swap/hooks/useZustandStore'
 import { useSupportedChains } from 'features/swap/hooks/useSupportedChains'
 import { tokenIds } from 'consts/tokenIds'
-import { getTokenKey } from 'features/swap/utils/tokenKey'
 
 const SelectSwapFromTokenScreen = (): JSX.Element => {
   const [selectedFromToken, setSelectedFromToken] = useSwapSelectedFromToken()
@@ -24,15 +23,6 @@ const SelectSwapFromTokenScreen = (): JSX.Element => {
   // When TO is Bitcoin and browsing Avalanche as source, only BTC.b is eligible
   const tokenFilter = useCallback(
     (token: LocalTokenWithBalance, selectedNetwork: Network | undefined) => {
-      const tokenKey = getTokenKey(token)
-      // Hide the currently selected FROM token (no point re-selecting it)
-      if (selectedFromToken && tokenKey === getTokenKey(selectedFromToken)) {
-        return false
-      }
-      // Hide the TO token to prevent selecting the same token on both sides
-      if (selectedToToken && tokenKey === getTokenKey(selectedToToken)) {
-        return false
-      }
       if (
         selectedToToken?.networkChainId &&
         isBitcoinChainId(selectedToToken.networkChainId) &&
@@ -43,7 +33,7 @@ const SelectSwapFromTokenScreen = (): JSX.Element => {
       }
       return true
     },
-    [selectedFromToken, selectedToToken]
+    [selectedToToken?.networkChainId]
   )
 
   return (
