@@ -108,11 +108,10 @@ export const useLedgerApproval = (
     setApprovalInProgress(false)
   }, [])
 
-  const cancelLedger = useCallback(async (): Promise<void> => {
+  const cancelLedger = useCallback((): void => {
     resetLedgerState()
-    reviewTransactionParams?.onReject(TRANSACTION_CANCELLED_BY_USER)
     ledgerParamsStore.getState().setReviewTransactionParams(null)
-    await LedgerService.disconnect().catch()
+    reviewTransactionParams?.onReject(TRANSACTION_CANCELLED_BY_USER)
   }, [resetLedgerState, reviewTransactionParams])
 
   const renderLedgerFooter = useCallback((): JSX.Element | null => {
