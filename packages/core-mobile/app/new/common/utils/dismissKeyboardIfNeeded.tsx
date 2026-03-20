@@ -3,10 +3,14 @@ import { Keyboard, Platform } from 'react-native'
 const KEYBOARD_DISMISS_TIMEOUT_MS = 500
 
 /**
- * Dismisses the keyboard if visible.
- * On Android, waits for the keyboard to fully hide before resolving,
- * so callers can await before navigating to avoid the keyboard
- * lingering over the next screen.
+ * Dismisses the keyboard and returns a promise that resolves when done.
+ *
+ * - iOS: resolves immediately (iOS handles keyboard dismiss during transitions).
+ * - Android: waits for `keyboardDidHide` event before resolving, with a
+ *   {@link KEYBOARD_DISMISS_TIMEOUT_MS} fallback to prevent indefinite hangs.
+ *
+ * Callers can `await` this before navigating to ensure the keyboard is fully
+ * dismissed before the next screen appears.
  */
 export const dismissKeyboardIfNeeded = (): Promise<void> => {
   return new Promise(resolve => {
