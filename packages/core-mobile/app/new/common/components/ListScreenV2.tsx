@@ -1,5 +1,9 @@
-import { NavigationTitleHeader, Separator, Text } from '@avalabs/k2-alpine'
-import { BlurViewWithFallback } from '@avalabs/k2-alpine/src/components/BlurViewWithFallback/BlurViewWithFallback'
+import {
+  NavigationTitleHeader,
+  Separator,
+  Text,
+  useTheme
+} from '@avalabs/k2-alpine'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { FlashList, FlashListProps, FlashListRef } from '@shopify/flash-list'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
@@ -115,6 +119,7 @@ export const ListScreenV2 = <T,>({
   flatListRef,
   ...props
 }: ListScreenProps<T>): JSX.Element => {
+  const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const headerHeight = useEffectiveHeaderHeight()
   const keyboard = useKeyboardState()
@@ -355,87 +360,91 @@ export const ListScreenV2 = <T,>({
     return items
   }, [data])
 
+  const headerBgColor = backgroundColor ?? theme.colors.$surfacePrimary
+
   const headerContent = useMemo(() => {
     return (
-      <Animated.View style={[animatedHeaderContainerStyle]}>
-        <View
-          style={{
-            paddingTop: isAndroidModal ? 16 : headerHeight + 16,
-            paddingBottom: renderHeader ? 12 : 0
-          }}>
+      <View style={{ overflow: 'hidden' }}>
+        <Animated.View style={[animatedHeaderContainerStyle]}>
+          <View
+            style={{
+              paddingTop: isAndroidModal ? 16 : headerHeight + 16,
+              paddingBottom: renderHeader ? 12 : 0
+            }}>
+            <Animated.View
+              style={[
+                animatedHeaderBlurStyle,
+                {
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0
+                }
+              ]}>
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: headerBgColor
+                }}
+              />
+            </Animated.View>
+            <View
+              onLayout={handleContentHeaderLayout}
+              style={{
+                gap: 6,
+                paddingHorizontal: 16,
+                paddingBottom: 12
+              }}>
+              {title ? (
+                <Animated.View
+                  onLayout={handleTitleLayout}
+                  style={animatedTitleStyle}>
+                  <Text variant="heading2">{title}</Text>
+                </Animated.View>
+              ) : null}
+
+              {subtitle ? (
+                <Animated.View
+                  onLayout={handleSubtitleLayout}
+                  style={[animatedSubtitleStyle]}>
+                  <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
+                    {subtitle}
+                  </Text>
+                </Animated.View>
+              ) : null}
+            </View>
+            {renderHeader && (
+              <View
+                onLayout={handleRenderHeaderLayout}
+                style={{
+                  paddingHorizontal: 16
+                }}>
+                {renderHeader?.()}
+              </View>
+            )}
+          </View>
           <Animated.View
             style={[
-              animatedHeaderBlurStyle,
+              animatedBorderStyle,
               {
                 position: 'absolute',
-                top: 0,
+                bottom: 0,
                 left: 0,
-                right: 0,
-                bottom: 0
+                right: 0
               }
             ]}>
-            <BlurViewWithFallback
-              backgroundColor={backgroundColor}
-              style={{
-                flex: 1
-              }}
-            />
+            <Separator />
           </Animated.View>
-          <View
-            onLayout={handleContentHeaderLayout}
-            style={{
-              gap: 6,
-              paddingHorizontal: 16,
-              paddingBottom: 12
-            }}>
-            {title ? (
-              <Animated.View
-                onLayout={handleTitleLayout}
-                style={animatedTitleStyle}>
-                <Text variant="heading2">{title}</Text>
-              </Animated.View>
-            ) : null}
-
-            {subtitle ? (
-              <Animated.View
-                onLayout={handleSubtitleLayout}
-                style={[animatedSubtitleStyle]}>
-                <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
-                  {subtitle}
-                </Text>
-              </Animated.View>
-            ) : null}
-          </View>
-          {renderHeader && (
-            <View
-              onLayout={handleRenderHeaderLayout}
-              style={{
-                paddingHorizontal: 16
-              }}>
-              {renderHeader?.()}
-            </View>
-          )}
-        </View>
-        <Animated.View
-          style={[
-            animatedBorderStyle,
-            {
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0
-            }
-          ]}>
-          <Separator />
         </Animated.View>
-      </Animated.View>
+      </View>
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isAndroidModal,
     renderHeader,
     headerHeight,
-    backgroundColor,
+    headerBgColor,
     handleContentHeaderLayout,
     title,
     handleTitleLayout,
@@ -444,18 +453,44 @@ export const ListScreenV2 = <T,>({
     handleRenderHeaderLayout
   ])
 
+  const emptyContentHeight = useMemo(() => {
+    const headerTotal =
+      (isAndroidModal ? 16 : headerHeight + 16) +
+      contentHeaderHeight +
+      12 +
+      renderHeaderHeight +
+      (renderHeader ? 12 : 0)
+    return Math.max(
+      0,
+      frame.height - flashListMarginTop - headerTotal - insets.bottom
+    )
+  }, [
+    isAndroidModal,
+    headerHeight,
+    contentHeaderHeight,
+    renderHeaderHeight,
+    renderHeader,
+    frame.height,
+    flashListMarginTop,
+    insets.bottom
+  ])
+
   const emptyContent = useMemo(() => {
+    const style = {
+      minHeight: emptyContentHeight,
+      justifyContent: 'center' as const
+    }
     if (renderEmpty) {
-      return <View style={{ flex: 1 }}>{renderEmpty()}</View>
+      return <View style={style}>{renderEmpty()}</View>
     }
     return (
       <ErrorState
-        sx={{ flex: 1 }}
+        sx={style}
         title="No results"
         description="Try a different search"
       />
     )
-  }, [renderEmpty])
+  }, [renderEmpty, emptyContentHeight])
 
   const internalRenderItem = useCallback(
     (info: { item: T | SentinelItem; index: number }) => {
