@@ -74,8 +74,6 @@ export interface ListScreenProps<T>
   hasParent?: boolean
   /** Whether this screen is presented as a modal */
   isModal?: boolean
-  /** Whether this screen has a tab bar */
-  hasTabBar?: boolean
   /** Optional background color */
   backgroundColor?: string
   /** Whether to show the navigation header title */
@@ -107,7 +105,6 @@ export const ListScreen = <T,>({
   navigationTitle,
   showNavigationHeaderTitle = true,
   hasParent,
-  hasTabBar,
   backgroundColor,
   isModal,
   renderEmpty,
