@@ -10,11 +10,6 @@ const KEYBOARD_DISMISS_TIMEOUT_MS = 500
  */
 export const dismissKeyboardIfNeeded = (): Promise<void> => {
   return new Promise(resolve => {
-    if (!Keyboard.isVisible()) {
-      resolve()
-      return
-    }
-
     Keyboard.dismiss()
 
     if (Platform.OS === 'android') {
