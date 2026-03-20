@@ -7,10 +7,15 @@ import { Button, showAlert, Text, useTheme, View } from '@avalabs/k2-alpine'
 import * as bip39 from 'bip39'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { MINIMUM_MNEMONIC_WORDS } from 'common/consts'
+import {
+  FORM_SHEET_FOCUS_BUFFER_MS,
+  useAfterScreenEnterTransition
+} from 'common/hooks/useAfterScreenEnterTransition'
 import { useCheckIfAccountExists } from 'common/hooks/useCheckIfAccountExists'
 import { useRouter } from 'expo-router'
 import RecoveryPhraseInput from 'new/features/onboarding/components/RecoveryPhraseInput'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { TextInput } from 'react-native'
 import Logger from 'utils/Logger'
 
 interface DerivedAddressItem {
@@ -24,6 +29,11 @@ const ImportSeedWallet = (): React.JSX.Element => {
   } = useTheme()
   const { navigate } = useRouter()
   const [mnemonic, setMnemonic] = useState('')
+  const recoveryPhraseInputRef = useRef<TextInput>(null)
+
+  useAfterScreenEnterTransition(() => recoveryPhraseInputRef.current?.focus(), {
+    layoutBufferMs: FORM_SHEET_FOCUS_BUFFER_MS
+  })
   const [derivedAddresses, setDerivedAddresses] = useState<
     DerivedAddressItem[]
   >([])
@@ -131,7 +141,10 @@ const ImportSeedWallet = (): React.JSX.Element => {
         style={{
           paddingTop: 16
         }}>
-        <RecoveryPhraseInput onChangeText={setMnemonic} />
+        <RecoveryPhraseInput
+          ref={recoveryPhraseInputRef}
+          onChangeText={setMnemonic}
+        />
         {errorMessage ? (
           <View sx={{ alignItems: 'center', marginTop: 8 }}>
             <Text variant="caption" sx={{ color: '$textDanger' }}>

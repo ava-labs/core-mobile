@@ -1,6 +1,6 @@
-import React from 'react'
-import { useRouter } from 'expo-router'
 import { EnterRecoveryPhrase as Component } from 'features/onboarding/components/EnterRecoveryPhrase'
+import { useRouter } from 'expo-router'
+import React from 'react'
 
 export default function EnterRecoveryPhrase(): JSX.Element {
   const { navigate } = useRouter()
