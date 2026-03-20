@@ -10,6 +10,7 @@ import { LoadingState } from 'common/components/LoadingState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { getBridgeAssetSymbol } from 'common/utils/bridgeUtils'
 import { ActivityList } from 'features/activity/components/ActivityList'
+import { useLowValueFilteredActivityTransactions } from 'features/activity/hooks/useLowValueFilteredActivityTransactions'
 import {
   buildGroupedData,
   getDateGroups,
@@ -106,6 +107,11 @@ const TransactionHistory: FC<Props> = ({
       .filter(tx => !isPendingBridge(tx))
   }, [token, transactions, isPendingBridge])
 
+  const lowValueFilteredTransactions = useLowValueFilteredActivityTransactions(
+    transactionsBySymbol,
+    network
+  )
+
   const filters: DropdownGroup[] | undefined = useMemo(() => {
     if (token?.networkChainId) {
       const newFilters = [...(TOKEN_DETAIL_FILTERS[0]?.items ?? [])]
@@ -140,7 +146,7 @@ const TransactionHistory: FC<Props> = ({
   }, [token?.networkChainId, token?.symbol])
 
   const { data, filter, sort } = useTokenDetailFilterAndSort({
-    transactions: transactionsBySymbol,
+    transactions: lowValueFilteredTransactions,
     filters
   })
 
