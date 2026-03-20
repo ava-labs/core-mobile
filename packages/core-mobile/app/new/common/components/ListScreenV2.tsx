@@ -66,7 +66,15 @@ type SentinelItem = typeof HEADER_SENTINEL | typeof EMPTY_SENTINEL
 export interface ListScreenProps<T>
   extends Omit<
     FlashListProps<T>,
-    'ListHeaderComponent' | 'ListFooterComponent'
+    | 'ListHeaderComponent'
+    | 'ListFooterComponent'
+    | 'ListEmptyComponent'
+    | 'stickyHeaderIndices'
+    | 'initialScrollIndex'
+    | 'getItemLayout'
+    | 'onViewableItemsChanged'
+    | 'viewabilityConfig'
+    | 'viewabilityConfigCallbackPairs'
   > {
   /** The title displayed in the screen header */
   title: string
