@@ -2,13 +2,25 @@ import { ChainId } from '@avalabs/core-chains-sdk'
 import { TokenType, TransactionType } from '@avalabs/vm-module-types'
 import { MarketToken } from 'store/watchlist'
 import { Transaction } from 'store/transaction'
+import { C_CHAIN_TOKEN_THRESHOLDS } from './constants/cChainTokenThresholds'
 import {
+  buildSymbolToPriceMapFromMarketTokens,
   filterOutLowValueActivityTransactions,
   parseTxTokenAmount,
   shouldFilterLowValueActivityTransaction
 } from './filterLowValueActivity'
 
 const USDC_MAINNET = '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E'
+
+const nativeCChainThresholdRow = C_CHAIN_TOKEN_THRESHOLDS.find(
+  r => r.contractAddress === null
+)
+if (nativeCChainThresholdRow === undefined) {
+  throw new Error(
+    'expected native C-Chain threshold row (contractAddress null)'
+  )
+}
+const NATIVE_C_CHAIN_MIN_QTY = nativeCChainThresholdRow.quantity
 
 function makeEvmTx(
   overrides: Partial<Transaction> & {
@@ -38,12 +50,21 @@ describe('parseTxTokenAmount', () => {
   })
 })
 
+describe('buildSymbolToPriceMapFromMarketTokens', () => {
+  it('keeps first token per symbol like getMarketTokenBySymbol', () => {
+    const map = buildSymbolToPriceMapFromMarketTokens([
+      { symbol: 'AAA', currentPrice: 0.5 } as MarketToken,
+      { symbol: 'aaa', currentPrice: 0.9 } as MarketToken
+    ])
+    expect(map.get('aaa')).toBe(0.5)
+  })
+})
+
 describe('shouldFilterLowValueActivityTransaction', () => {
-  const noPrice = (): MarketToken | undefined => undefined
+  const emptyPriceMap = new Map<string, number>()
 
   it('filters priced activity below $0.01', () => {
-    const getMarketTokenBySymbol = (symbol: string): MarketToken | undefined =>
-      symbol === 'TKN' ? ({ currentPrice: 1 } as MarketToken) : undefined
+    const symbolToPriceUsd = new Map<string, number>([['tkn', 1]])
 
     const tx = makeEvmTx({
       tokens: [
@@ -58,14 +79,13 @@ describe('shouldFilterLowValueActivityTransaction', () => {
       txType: TransactionType.SEND
     })
 
-    expect(
-      shouldFilterLowValueActivityTransaction(tx, getMarketTokenBySymbol)
-    ).toBe(true)
+    expect(shouldFilterLowValueActivityTransaction(tx, symbolToPriceUsd)).toBe(
+      true
+    )
   })
 
   it('keeps priced activity at or above $0.01', () => {
-    const getMarketTokenBySymbol = (symbol: string): MarketToken | undefined =>
-      symbol === 'TKN' ? ({ currentPrice: 1 } as MarketToken) : undefined
+    const symbolToPriceUsd = new Map<string, number>([['tkn', 1]])
 
     const tx = makeEvmTx({
       tokens: [
@@ -80,9 +100,9 @@ describe('shouldFilterLowValueActivityTransaction', () => {
       txType: TransactionType.SEND
     })
 
-    expect(
-      shouldFilterLowValueActivityTransaction(tx, getMarketTokenBySymbol)
-    ).toBe(false)
+    expect(shouldFilterLowValueActivityTransaction(tx, symbolToPriceUsd)).toBe(
+      false
+    )
   })
 
   it('on C-Chain mainnet without price, keeps USDC when amount >= JSON threshold', () => {
@@ -99,7 +119,9 @@ describe('shouldFilterLowValueActivityTransaction', () => {
       txType: TransactionType.SEND
     })
 
-    expect(shouldFilterLowValueActivityTransaction(tx, noPrice)).toBe(false)
+    expect(shouldFilterLowValueActivityTransaction(tx, emptyPriceMap)).toBe(
+      false
+    )
   })
 
   it('on C-Chain mainnet without price, filters USDC when amount < JSON threshold', () => {
@@ -116,7 +138,9 @@ describe('shouldFilterLowValueActivityTransaction', () => {
       txType: TransactionType.SEND
     })
 
-    expect(shouldFilterLowValueActivityTransaction(tx, noPrice)).toBe(true)
+    expect(shouldFilterLowValueActivityTransaction(tx, emptyPriceMap)).toBe(
+      true
+    )
   })
 
   it('without price, keeps unknown tokens on C-Chain (not in JSON)', () => {
@@ -133,16 +157,16 @@ describe('shouldFilterLowValueActivityTransaction', () => {
       txType: TransactionType.SEND
     })
 
-    expect(shouldFilterLowValueActivityTransaction(tx, noPrice)).toBe(false)
+    expect(shouldFilterLowValueActivityTransaction(tx, emptyPriceMap)).toBe(
+      false
+    )
   })
 
   it('uses only tokens[0] for priced swaps (ignores larger second leg)', () => {
-    const getMarketTokenBySymbol = (symbol: string): MarketToken | undefined =>
-      symbol === 'SMALL'
-        ? ({ currentPrice: 1 } as MarketToken)
-        : symbol === 'BIG'
-        ? ({ currentPrice: 1 } as MarketToken)
-        : undefined
+    const symbolToPriceUsd = new Map<string, number>([
+      ['small', 1],
+      ['big', 1]
+    ])
 
     const tx = makeEvmTx({
       txType: TransactionType.SWAP,
@@ -164,9 +188,94 @@ describe('shouldFilterLowValueActivityTransaction', () => {
       ]
     })
 
-    expect(
-      shouldFilterLowValueActivityTransaction(tx, getMarketTokenBySymbol)
-    ).toBe(true)
+    expect(shouldFilterLowValueActivityTransaction(tx, symbolToPriceUsd)).toBe(
+      true
+    )
+  })
+
+  it('never filters NFT transactions even when token value would be below threshold', () => {
+    const symbolToPriceUsd = new Map<string, number>([['usdc', 1]])
+    const tx = makeEvmTx({
+      txType: TransactionType.NFT_SEND,
+      tokens: [
+        {
+          type: TokenType.ERC20,
+          address: USDC_MAINNET,
+          name: 'USD Coin',
+          symbol: 'USDC',
+          amount: '0.001'
+        }
+      ]
+    })
+
+    expect(shouldFilterLowValueActivityTransaction(tx, symbolToPriceUsd)).toBe(
+      false
+    )
+    expect(shouldFilterLowValueActivityTransaction(tx, emptyPriceMap)).toBe(
+      false
+    )
+  })
+
+  it('never filters ERC721/ERC1155 collectible transactions (paired collectible id)', () => {
+    const symbolToPriceUsd = new Map<string, number>([['cool', 0.000001]])
+    const tx = makeEvmTx({
+      tokens: [
+        {
+          type: TokenType.ERC721,
+          address: '0xCollection',
+          name: 'Cool NFT',
+          symbol: 'COOL',
+          amount: '1'
+        },
+        {
+          type: TokenType.ERC721,
+          address: '0xCollection',
+          name: 'Cool NFT',
+          symbol: 'COOL',
+          amount: '1',
+          collectableTokenId: '42'
+        }
+      ]
+    })
+
+    expect(shouldFilterLowValueActivityTransaction(tx, symbolToPriceUsd)).toBe(
+      false
+    )
+  })
+
+  it('on C-Chain without price, filters native AVAX below native threshold', () => {
+    const belowMin = (NATIVE_C_CHAIN_MIN_QTY / 2).toString()
+    const tx = makeEvmTx({
+      tokens: [
+        {
+          type: TokenType.NATIVE,
+          name: 'Avalanche',
+          symbol: 'AVAX',
+          amount: belowMin
+        }
+      ]
+    })
+
+    expect(shouldFilterLowValueActivityTransaction(tx, emptyPriceMap)).toBe(
+      true
+    )
+  })
+
+  it('on C-Chain without price, keeps native AVAX at or above native threshold', () => {
+    const tx = makeEvmTx({
+      tokens: [
+        {
+          type: TokenType.NATIVE,
+          name: 'Avalanche',
+          symbol: 'AVAX',
+          amount: String(NATIVE_C_CHAIN_MIN_QTY)
+        }
+      ]
+    })
+
+    expect(shouldFilterLowValueActivityTransaction(tx, emptyPriceMap)).toBe(
+      false
+    )
   })
 })
 
@@ -187,7 +296,7 @@ describe('filterOutLowValueActivityTransactions', () => {
 
     const out = filterOutLowValueActivityTransactions([tx], {
       isTestnet: true,
-      getMarketTokenBySymbol: () => undefined
+      symbolToPriceUsd: new Map()
     })
     expect(out).toHaveLength(1)
   })

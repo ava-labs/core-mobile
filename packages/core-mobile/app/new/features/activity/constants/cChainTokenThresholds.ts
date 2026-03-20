@@ -6,6 +6,8 @@ export type CChainTokenThresholdRow = {
   ticker: string
   quantity: number
   contractAddress: string | null
+  /** Optional product / source note (not used by filter logic). */
+  note?: string
 }
 
 export const C_CHAIN_TOKEN_THRESHOLDS: CChainTokenThresholdRow[] = [
@@ -42,8 +44,9 @@ export const C_CHAIN_TOKEN_THRESHOLDS: CChainTokenThresholdRow[] = [
   },
   {
     ticker: 'SOL',
-    quantity: 0.35,
-    contractAddress: '0xFE6B19286885a4F7F55AdAD09C3Cd1f906D2478F'
+    quantity: 0.00011,
+    contractAddress: '0xFE6B19286885a4F7F55AdAD09C3Cd1f906D2478F',
+    note: 'Wormhole-bridged Wrapped SOL on Avalanche C-Chain.'
   },
   {
     ticker: 'WETH.e',
