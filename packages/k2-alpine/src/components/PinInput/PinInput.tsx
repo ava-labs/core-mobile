@@ -1,5 +1,12 @@
 import React, { forwardRef, useImperativeHandle, useMemo, useRef } from 'react'
-import { Platform, TextInput, Vibration, ViewStyle } from 'react-native'
+import {
+  Platform,
+  StyleSheet,
+  TextInput,
+  Vibration,
+  View,
+  ViewStyle
+} from 'react-native'
 import Animated, {
   cancelAnimation,
   SharedValue,
@@ -125,14 +132,6 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
       )
     }
 
-    function vibratePhone(): void {
-      Vibration.vibrate(
-        Platform.OS === 'android'
-          ? [0, 150, 10, 150, 10, 150, 10, 150, 10, 150]
-          : [0, 10, 10, 10, 10]
-      )
-    }
-
     const handleInputChange = (text: string): void => {
       const numericInput = text.replace(/[^0-9]/g, '').slice(0, length)
       onChangePin(numericInput)
@@ -155,24 +154,18 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
       stopLoadingAnimation
     }))
 
+    const Container = Platform.OS === 'ios' ? TouchableOpacity : View
+    const containerProps =
+      Platform.OS === 'ios'
+        ? {
+            disabled,
+            onPress: () => textInputRef.current?.focus(),
+            activeOpacity: 1 as const
+          }
+        : {}
+
     return (
-      <TouchableOpacity
-        disabled={disabled}
-        onPress={() => textInputRef.current?.focus()}
-        activeOpacity={1}>
-        {/* Hidden TextInput for capturing input */}
-        <TextInput
-          accessibilityLabel="pin_input"
-          testID="pin_input"
-          ref={textInputRef}
-          style={{ position: 'absolute', opacity: 0 }}
-          value={value}
-          onChangeText={handleInputChange}
-          keyboardType="number-pad"
-          autoFocus={autoFocus}
-          maxLength={length}
-          allowFontScaling={false}
-        />
+      <Container {...containerProps}>
         {/* Display for input dots */}
         <Animated.View
           style={[
@@ -197,7 +190,27 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
             )
           })}
         </Animated.View>
-      </TouchableOpacity>
+        {/* TextInput covers the full area as an invisible overlay.
+             Rendered last so it is on top in z-order to capture keyboard input.
+             On iOS, taps are handled by the parent Container (TouchableOpacity),
+             which focuses this input; on other platforms the TextInput itself
+             may receive taps directly. */}
+        <TextInput
+          accessibilityLabel="pin_input"
+          testID="pin_input"
+          ref={textInputRef}
+          style={[StyleSheet.absoluteFillObject, { opacity: 0 }]}
+          value={value}
+          onChangeText={handleInputChange}
+          keyboardType={Platform.OS === 'ios' ? 'number-pad' : undefined}
+          inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
+          autoFocus={autoFocus}
+          maxLength={length}
+          allowFontScaling={false}
+          caretHidden={true}
+          editable={!disabled}
+        />
+      </Container>
     )
   }
 )
@@ -287,6 +300,14 @@ const useLoadingDotAnimations = (length: number): SharedValue<number>[] => {
       loadingDotAnimation8,
       length
     ]
+  )
+}
+
+function vibratePhone(): void {
+  Vibration.vibrate(
+    Platform.OS === 'android'
+      ? [0, 150, 10, 150, 10, 150, 10, 150, 10, 150]
+      : [0, 10, 10, 10, 10]
   )
 }
 

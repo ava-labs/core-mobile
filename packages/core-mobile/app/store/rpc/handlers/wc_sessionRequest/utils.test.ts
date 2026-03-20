@@ -1,4 +1,64 @@
-import { isCoreMethod, isCoreDomain } from './utils'
+import {
+  AvalancheCaip2ChainId,
+  BitcoinCaip2ChainId,
+  SolanaCaip2ChainId
+} from '@avalabs/core-chains-sdk'
+import { isCoreMethod, isCoreDomain, getAddressForChainId } from './utils'
+
+const mockAccount = {
+  addressC: '0xC000',
+  addressBTC: 'bc1qtest',
+  addressAVM: 'X-avax1abc',
+  addressPVM: 'P-avax1abc',
+  addressCoreEth: '0xC000',
+  addressSVM: 'So1ana1abc'
+}
+
+describe('getAddressForChainId', () => {
+  it('returns addressC for AvalancheCaip2ChainId.C', () => {
+    expect(getAddressForChainId(AvalancheCaip2ChainId.C, mockAccount)).toBe(
+      '0xC000'
+    )
+  })
+
+  it('returns addressC for AvalancheCaip2ChainId.C_TESTNET', () => {
+    expect(
+      getAddressForChainId(AvalancheCaip2ChainId.C_TESTNET, mockAccount)
+    ).toBe('0xC000')
+  })
+
+  it('returns addressAVM for AvalancheCaip2ChainId.X', () => {
+    expect(getAddressForChainId(AvalancheCaip2ChainId.X, mockAccount)).toBe(
+      'X-avax1abc'
+    )
+  })
+
+  it('returns addressPVM for AvalancheCaip2ChainId.P', () => {
+    expect(getAddressForChainId(AvalancheCaip2ChainId.P, mockAccount)).toBe(
+      'P-avax1abc'
+    )
+  })
+
+  it('returns addressBTC for BitcoinCaip2ChainId.MAINNET', () => {
+    expect(getAddressForChainId(BitcoinCaip2ChainId.MAINNET, mockAccount)).toBe(
+      'bc1qtest'
+    )
+  })
+
+  it('returns addressSVM for SolanaCaip2ChainId.MAINNET', () => {
+    expect(getAddressForChainId(SolanaCaip2ChainId.MAINNET, mockAccount)).toBe(
+      'So1ana1abc'
+    )
+  })
+
+  it('returns addressC for eip155:43114 (EVM default)', () => {
+    expect(getAddressForChainId('eip155:43114', mockAccount)).toBe('0xC000')
+  })
+
+  it('returns addressC for eip155:1 (EVM default)', () => {
+    expect(getAddressForChainId('eip155:1', mockAccount)).toBe('0xC000')
+  })
+})
 
 describe('isCoreMethod', () => {
   it('should return true if method is a Core method', () => {
