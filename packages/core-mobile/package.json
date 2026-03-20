@@ -104,7 +104,7 @@
     "@reduxjs/toolkit": "1.8.1",
     "@reown/walletkit": "1.0.0",
     "@sentry/react-native": "7.4.0",
-    "@shopify/flash-list": "2.0.2",
+    "@shopify/flash-list": "2.3.0",
     "@shopify/react-native-performance": "4.1.2",
     "@shopify/react-native-skia": "2.2.12",
     "@solana-program/token": "0.5.1",
