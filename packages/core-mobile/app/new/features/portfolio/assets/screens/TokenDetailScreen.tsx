@@ -47,7 +47,7 @@ import { useSendSelectedToken } from 'features/send/store'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'
+import { UI, isUIDisabledForNetwork } from 'utils/isUIDisabled'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
@@ -181,11 +181,11 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     [token]
   )
 
-  const isBridgeUIDisabledForNetwork = useIsUIDisabledForNetwork(
+  const isBridgeUIDisabledForNetwork = isUIDisabledForNetwork(
     UI.Bridge,
     token?.networkChainId
   )
-  const isSwapUIDisabledForNetwork = useIsUIDisabledForNetwork(
+  const isSwapUIDisabledForNetwork = isUIDisabledForNetwork(
     UI.Swap,
     token?.networkChainId
   )

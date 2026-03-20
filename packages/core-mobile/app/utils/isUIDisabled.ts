@@ -16,10 +16,7 @@ const disabledUIs: Partial<Record<UI, number[]>> = {
   [UI.Swap]: [ChainId.AVALANCHE_P, ChainId.AVALANCHE_X]
 }
 
-export const useIsUIDisabledForNetwork = (
-  ui: UI,
-  chainId?: number
-): boolean => {
+export const isUIDisabledForNetwork = (ui: UI, chainId?: number): boolean => {
   if (chainId === undefined) {
     return false
   }
