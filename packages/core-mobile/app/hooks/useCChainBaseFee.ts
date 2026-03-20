@@ -25,7 +25,14 @@ export const useCChainBaseFee = (): UseQueryResult<
     // no need to retry failed request as we are already doing interval fetching
     retry: false,
     refetchInterval: REFETCH_INTERVAL,
-    queryKey: ['cChainBaseFee', isDeveloperMode, cChainNetwork, avaxProvider],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- avaxProvider is derived from isDeveloperMode which is already in the key
+    queryKey: [
+      'cChainBaseFee',
+      isDeveloperMode,
+      cChainNetwork?.chainId,
+      cChainNetwork?.networkToken.decimals,
+      cChainNetwork?.networkToken.symbol
+    ],
     enabled: !!avaxProvider && !!cChainNetwork,
     queryFn: async () => {
       if (!cChainNetwork || !avaxProvider) {
