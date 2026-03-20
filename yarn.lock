@@ -925,6 +925,43 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@avalabs/core-wallets-sdk@npm:3.1.0-alpha.79":
+  version: 3.1.0-alpha.79
+  resolution: "@avalabs/core-wallets-sdk@npm:3.1.0-alpha.79"
+  dependencies:
+    "@avalabs/avalanchejs": 5.1.0-alpha.2
+    "@avalabs/core-chains-sdk": 3.1.0-alpha.61
+    "@avalabs/core-utils-sdk": 3.1.0-alpha.61
+    "@avalabs/glacier-sdk": 3.1.0-alpha.61
+    "@avalabs/hw-app-avalanche": 1.1.1
+    "@ledgerhq/hw-app-btc": 10.11.0
+    "@ledgerhq/hw-app-eth": 6.45.18
+    "@ledgerhq/hw-app-solana": 7.5.3
+    "@ledgerhq/hw-transport": 6.31.10
+    "@metamask/eth-sig-util": 7.0.2
+    "@noble/curves": 1.6.0
+    "@noble/hashes": 1.7.1
+    "@scure/base": 1.2.4
+    "@solana-program/system": 0.7.0
+    "@solana-program/token": 0.5.1
+    "@solana/kit": 2.1.0
+    bip174: 2.1.1
+    bip32: 2.0.6
+    bip32-path: 0.4.2
+    bip39: 3.1.0
+    bitcoinjs-lib: 5.2.0
+    coinselect: 3.1.13
+    create-hash: 1.2.0
+    hdkey: 2.0.1
+    ledger-bitcoin: 0.2.3
+    micro-key-producer: 0.7.5
+    xss: 1.0.14
+  peerDependencies:
+    ethers: ^6.7.1
+  checksum: 3be90645c2e94f2ed98be31cbfe997bf0772305d5a4dd8c2a202a4fc5a55a7b2741a081adb46940d75f07ede3cd1fa016a097edbc873c9437928fb2e0ba48855
+  languageName: node
+  linkType: hard
+
 "@avalabs/evm-module@npm:3.4.0":
   version: 3.4.0
   resolution: "@avalabs/evm-module@npm:3.4.0"
@@ -1111,10 +1148,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/types@npm:3.1.0-alpha.69":
-  version: 3.1.0-alpha.69
-  resolution: "@avalabs/types@npm:3.1.0-alpha.69"
-  checksum: 9fd111c017ff7ea44b48106c30b7b5e71d963d69608c872e353e25e20fe92d2e459a071335b64f8822c937a2a7e673d988d60af5beabeec2f6e2a4c68341580b
+"@avalabs/types@npm:3.1.0-alpha.71":
+  version: 3.1.0-alpha.71
+  resolution: "@avalabs/types@npm:3.1.0-alpha.71"
+  checksum: 0d52aaea932cf85a0b6e52459f660959a2a1f96604724fc281e7faa083cc76b36c751fd38e16130944998af778ef7e23a5f497a1796e821c92fcdac221ef86d7
+  languageName: node
+  linkType: hard
+
+"@avalabs/types@npm:3.1.0-alpha.79":
+  version: 3.1.0-alpha.79
+  resolution: "@avalabs/types@npm:3.1.0-alpha.79"
+  checksum: 77f74991d677fa2d0a15beed8a4f53f51b7d8cc5c4f4bbc0ad503de61d5f1e71cfb23df322ab8baa071d3db84ad07afa79b7d6ea68d0d8ee3b1dc6942b029c95
   languageName: node
   linkType: hard
 
