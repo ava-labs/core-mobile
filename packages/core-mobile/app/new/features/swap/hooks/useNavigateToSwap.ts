@@ -3,7 +3,6 @@ import { caip2ChainIds } from 'consts/caip2ChainIds'
 import { tokenIds } from 'consts/tokenIds'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 
 interface NavigateToSwapParams {
   fromTokenId?: string // internalId or raw contract address
@@ -16,9 +15,6 @@ export const useNavigateToSwap = (): {
   navigateToSwap: (params?: NavigateToSwapParams) => void
 } => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const shouldHideOnboarding = useSelector(
-    selectHasBeenViewedOnce(ViewOnceKey.SWAP_ONBOARDING)
-  )
   const { navigate } = useRouter()
 
   const navigateToSwap = ({
@@ -52,18 +48,8 @@ export const useNavigateToSwap = (): {
             (isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN)
         }
 
-    if (!shouldHideOnboarding) {
-      navigate({
-        pathname: '/swap/onboarding',
-        params
-      })
-      return
-    }
-
-    navigate({
-      pathname: '/swap/swap',
-      params
-    })
+    // @ts-ignore navigate to modal root so _layout.tsx decides between onboarding/swap
+    navigate({ pathname: '/swap', params })
   }
 
   return { navigateToSwap }
