@@ -1,7 +1,8 @@
 import { ChainId } from '@avalabs/core-chains-sdk'
 
 export enum UI {
-  Bridge = 'Bridge'
+  Bridge = 'Bridge',
+  Swap = 'Swap'
 }
 
 // The list of features we want to disable on certain networks (blacklist)
@@ -11,7 +12,8 @@ const disabledUIs: Partial<Record<UI, number[]>> = {
     ChainId.DFK_TESTNET,
     ChainId.SWIMMER,
     ChainId.SWIMMER_TESTNET
-  ]
+  ],
+  [UI.Swap]: [ChainId.AVALANCHE_P, ChainId.AVALANCHE_X]
 }
 
 export const useIsUIDisabledForNetwork = (

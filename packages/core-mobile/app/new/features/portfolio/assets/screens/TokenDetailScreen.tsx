@@ -4,7 +4,7 @@ import {
 } from '@avalabs/avalanche-module'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import { ChainId, SolanaCaip2ChainId } from '@avalabs/core-chains-sdk'
+import { ChainId } from '@avalabs/core-chains-sdk'
 import {
   NavigationTitleHeader,
   SegmentedControl,
@@ -185,6 +185,10 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     UI.Bridge,
     token?.networkChainId
   )
+  const isSwapUIDisabledForNetwork = useIsUIDisabledForNetwork(
+    UI.Swap,
+    token?.networkChainId
+  )
   const isBridgeDisabled = useMemo(() => {
     if (!isLegacyBridgeEnabled || isBridgeUIDisabledForNetwork) {
       return true
@@ -238,32 +242,12 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend }
     ]
 
-    if (isFusionEnabled) {
+    if (isFusionEnabled && !isSwapUIDisabledForNetwork) {
       const fromTokenId = token?.internalId
-
-      let fromCaip2Id: string | undefined
-      let toTokenId: string | undefined
-      let toCaip2Id: string | undefined
-
-      switch (fromTokenId) {
-        case tokenIds.AVAX:
-          toTokenId = tokenIds.USDC
-          break
-        case tokenIds.SOL: {
-          toTokenId = tokenIds.USDC
-          const caip2ChainId = isDeveloperMode
-            ? SolanaCaip2ChainId.DEVNET
-            : SolanaCaip2ChainId.MAINNET
-          fromCaip2Id = caip2ChainId
-          toCaip2Id = caip2ChainId
-          break
-        }
-        case tokenIds.USDC:
-          toTokenId = tokenIds.AVAX
-          break
-        default:
-          toTokenId = tokenIds.USDC
-      }
+      const fromCaip2Id = getNetwork(token?.networkChainId)?.caip2ChainId
+      const toCaip2Id = fromCaip2Id
+      const toTokenId =
+        fromTokenId === tokenIds.USDC ? tokenIds.AVAX : tokenIds.USDC
 
       buttons.push({
         title: ActionButtonTitle.Swap,
@@ -324,7 +308,8 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     canAddStake,
     addStake,
     navigateToWithdraw,
-    isDeveloperMode
+    getNetwork,
+    isSwapUIDisabledForNetwork
   ])
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
