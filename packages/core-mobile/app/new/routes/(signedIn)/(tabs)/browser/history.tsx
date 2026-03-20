@@ -146,7 +146,6 @@ const HistoryScreen = (): JSX.Element => {
   return (
     <ListScreen
       title="History"
-      hasTabBar
       data={filterHistories}
       renderItem={renderItem}
       renderHeader={renderHeader}
