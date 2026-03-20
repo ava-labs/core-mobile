@@ -6,7 +6,6 @@ import { useLedgerBLEConnection } from 'features/ledger/hooks/useLedgerBLEConnec
 import { ledgerParamsStore, useLedgerParams } from 'features/ledger/store'
 import { getLedgerAppName } from 'features/ledger/utils'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import LedgerService from 'services/ledger/LedgerService'
 import { TRANSACTION_CANCELLED_BY_USER } from 'vmModule/ApprovalController/utils'
 
 type UseLedgerApprovalReturn = {
