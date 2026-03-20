@@ -11,6 +11,7 @@ import {
 import { useSupportedChains } from 'features/swap/hooks/useSupportedChains'
 import { tokenIds } from 'consts/tokenIds'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+import { getTokenKey } from 'features/swap/utils/tokenKey'
 
 const SelectSwapToTokenScreen = (): JSX.Element => {
   const [selectedToToken, setSelectedToToken] = useSwapSelectedToToken()
@@ -28,20 +29,13 @@ const SelectSwapToTokenScreen = (): JSX.Element => {
   // When FROM is Bitcoin and browsing Avalanche as destination, only BTC.b is eligible
   const tokenFilter = useCallback(
     (token: LocalTokenWithBalance, selectedNetwork: Network | undefined) => {
+      const tokenKey = getTokenKey(token)
       // Hide the currently selected TO token (no point re-selecting it)
-      if (
-        selectedToToken &&
-        token.internalId === selectedToToken.internalId &&
-        token.networkChainId === selectedToToken.networkChainId
-      ) {
+      if (selectedToToken && tokenKey === getTokenKey(selectedToToken)) {
         return false
       }
       // Hide the FROM token to prevent selecting the same token on both sides
-      if (
-        selectedFromToken &&
-        token.internalId === selectedFromToken.internalId &&
-        token.networkChainId === selectedFromToken.networkChainId
-      ) {
+      if (selectedFromToken && tokenKey === getTokenKey(selectedFromToken)) {
         return false
       }
       if (
