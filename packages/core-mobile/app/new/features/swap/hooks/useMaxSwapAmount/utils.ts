@@ -29,24 +29,31 @@ export const computeMaxAmount = ({
   isNative,
   bufferedGas,
   bridgeFee,
+  additiveFee,
   hasEstimationError
 }: {
   fromToken: LocalTokenWithBalance | undefined
   isNative: boolean
   bufferedGas: bigint | undefined
   bridgeFee: bigint
+  additiveFee: bigint
   hasEstimationError: boolean
 }): bigint | undefined => {
   if (!fromToken) return undefined
 
-  // Non-native: gas is paid in the chain's native asset — full balance available
-  // Also fall back to full balance if fee estimation failed
-  if (!isNative || hasEstimationError) return fromToken.balance
+  if (isNative) {
+    // Fall back to full balance if fee estimation failed
+    if (hasEstimationError) return fromToken.balance
 
-  // Native without fee estimate yet: return undefined so the Max button stays disabled
-  if (bufferedGas === undefined) return undefined
+    // Wait for fee estimate before enabling Max button
+    if (bufferedGas === undefined) return undefined
 
-  const max = fromToken.balance - bufferedGas - bridgeFee
-  // Return undefined when balance can't cover fees — keeps Max button disabled
+    const max = fromToken.balance - bufferedGas - bridgeFee
+    return max > 0n ? max : undefined
+  }
+
+  // ERC20/SPL: gas is paid in the chain's native asset, but non-bridge
+  // additive fees are denominated in the source token and must be deducted.
+  const max = fromToken.balance - additiveFee
   return max > 0n ? max : undefined
 }

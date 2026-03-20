@@ -240,7 +240,21 @@ export const SwapScreen = (): JSX.Element => {
       debouncedFromTokenValue !== undefined &&
       debouncedFromTokenValue > fromMaxSwapAmount
     ) {
-      setValidationError(fusionErrors.insufficientBalanceForFees())
+      if (
+        fromToken &&
+        fromToken.type !== TokenType.NATIVE &&
+        'decimals' in fromToken
+      ) {
+        const formattedMax = `${formatTokenAmount(
+          bigintToBig(fromMaxSwapAmount, fromToken.decimals),
+          fromToken.decimals
+        )} ${fromToken.symbol}`
+        setValidationError(
+          fusionErrors.insufficientBalanceForAdditiveFee(formattedMax)
+        )
+      } else {
+        setValidationError(fusionErrors.insufficientBalanceForFees())
+      }
     } else if (feeValidationError) {
       setValidationError(feeValidationError)
     } else {

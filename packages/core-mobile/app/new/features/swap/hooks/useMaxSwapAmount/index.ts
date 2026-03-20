@@ -8,7 +8,8 @@ import type { LocalTokenWithBalance } from 'store/balance'
 import { NetworkWithCaip2ChainId } from 'store/network'
 import {
   selectFusionMaxAmountGasSafetyBps,
-  selectFusionBridgeFeeSafetyBps
+  selectFusionBridgeFeeSafetyBps,
+  selectFusionAdditiveFeesSafetyBps
 } from 'store/posthog'
 import FusionService from '../../services/FusionService'
 import { logSdkError } from '../../utils/fusionLogger'
@@ -17,7 +18,10 @@ import type { Quote } from '../../types'
 import type { QuoterParams } from '../../services/types'
 import { useIsFusionServiceReady } from '../useZustandStore'
 import { useFeeEstimation } from '../useFeeEstimation'
-import { getNativeBridgeFee } from '../../utils/bridgeFee'
+import {
+  getNativeBridgeFee,
+  getSourceTokenAdditiveFee
+} from '../../utils/bridgeFee'
 import { getTokenKey } from '../../utils/tokenKey'
 import { computeMaxAmount } from './utils'
 
@@ -72,7 +76,6 @@ type DummyQuoteEntry = {
 } | null
 
 const useDummyQuote = ({
-  isNative,
   isFusionServiceReady,
   fromToken,
   toToken,
@@ -82,7 +85,6 @@ const useDummyQuote = ({
   toAddress,
   minimumTransferAmount
 }: {
-  isNative: boolean
   isFusionServiceReady: boolean
   fromToken: LocalTokenWithBalance | undefined
   toToken: LocalTokenWithBalance | undefined
@@ -97,7 +99,6 @@ const useDummyQuote = ({
 
   useEffect(() => {
     const prerequisitesMet =
-      isNative &&
       isFusionServiceReady &&
       !!fromToken &&
       !!toToken &&
@@ -150,7 +151,6 @@ const useDummyQuote = ({
 
     return cleanup
   }, [
-    isNative,
     isFusionServiceReady,
     fromToken,
     toToken,
@@ -180,13 +180,14 @@ const useDummyQuote = ({
  * For native tokens, the following fees are estimated upfront using a dummy quote at the
  * minimum transfer amount and subtracted from the balance:
  * - Gas: estimated via estimateNativeFee with a safety buffer from feature flags
- * - Bridge fee: extracted from quote.fees (a calculation sum of the blockchain fee + network fee, independent of swap amount)
+ * - Bridge fee: extracted from quote.fees (flat cross-chain fee, independent of swap amount)
+ *
+ * For ERC20/SPL tokens, non-bridge additive fees denominated in the source token
+ * are subtracted from the balance. These are fees where fundingModel === 'additive'
+ * and the fee token matches the source token.
  *
  * Returns undefined while the estimate is loading so the Max button stays
  * disabled until the correct value is known.
- *
- * For non-native tokens, the full balance is returned immediately since gas is
- * paid in the chain's native asset.
  */
 export const useMaxSwapAmount = ({
   fromToken,
@@ -202,6 +203,7 @@ export const useMaxSwapAmount = ({
   const activeAccount = useSelector(selectActiveAccount)
   const maxAmountGasSafetyBps = useSelector(selectFusionMaxAmountGasSafetyBps)
   const bridgeFeeSafetyBps = useSelector(selectFusionBridgeFeeSafetyBps)
+  const additiveFeesBufferBps = useSelector(selectFusionAdditiveFeesSafetyBps)
 
   const fromNetwork = useMemo(
     () => (fromToken ? getNetwork(fromToken.networkChainId) : undefined),
@@ -229,7 +231,6 @@ export const useMaxSwapAmount = ({
   const isNative = fromToken?.type === TokenType.NATIVE
 
   const { quote: dummyQuote, failed: dummyQuoteFailed } = useDummyQuote({
-    isNative,
     isFusionServiceReady,
     fromToken,
     toToken,
@@ -245,6 +246,14 @@ export const useMaxSwapAmount = ({
   const bridgeFee = useMemo(
     () => getNativeBridgeFee(isNative, dummyQuote, bridgeFeeSafetyBps),
     [isNative, dummyQuote, bridgeFeeSafetyBps]
+  )
+
+  // Non-bridge additive fee in the source token (e.g. ERC20/SPL protocol fees).
+  // Only non-native tokens can have this; native tokens use bridgeFee instead.
+  const additiveFee = useMemo(
+    () =>
+      getSourceTokenAdditiveFee(fromToken, dummyQuote, additiveFeesBufferBps),
+    [fromToken, dummyQuote, additiveFeesBufferBps]
   )
 
   const {
@@ -264,6 +273,7 @@ export const useMaxSwapAmount = ({
         isNative,
         bufferedGas: bufferedFee,
         bridgeFee,
+        additiveFee,
         hasEstimationError:
           (!!feeEstimationError && !isFeeEstimationFetching) || dummyQuoteFailed
       }),
@@ -272,6 +282,7 @@ export const useMaxSwapAmount = ({
       isNative,
       bufferedFee,
       bridgeFee,
+      additiveFee,
       feeEstimationError,
       dummyQuoteFailed,
       isFeeEstimationFetching

@@ -61,7 +61,8 @@ export enum FeatureVars {
   FUSION_FEE_UNITS_MARGIN_BPS = 'fusion-fee-units-margin-bps',
   FUSION_MAX_AMOUNT_GAS_SAFETY_BPS = 'fusion-max-amount-gas-safety-bps',
   FUSION_BRIDGE_FEE_SAFETY_BPS = 'fusion-bridge-fee-safety-bps',
-  FUSION_TRANSFER_GAS_MARGIN_BPS = 'fusion-transfer-gas-margin-bps'
+  FUSION_TRANSFER_GAS_MARGIN_BPS = 'fusion-transfer-gas-margin-bps',
+  FUSION_ADDITIVE_FEES_BUFFER_BPS = 'fusion-additive-fees-buffer-bps'
 }
 
 // posthog response can be an empty object when all features are disabled

@@ -317,6 +317,13 @@ export const selectFusionTransferGasMarginBps = (state: RootState): number => {
   )
 }
 
+export const selectFusionAdditiveFeesSafetyBps = (state: RootState): number => {
+  const { featureFlags } = state.posthog
+  return parseInt(
+    featureFlags[FeatureVars.FUSION_ADDITIVE_FEES_BUFFER_BPS] as string
+  )
+}
+
 export const selectMarkrSwapMaxRetries = (state: RootState): number => {
   const { featureFlags } = state.posthog
   return parseInt(featureFlags[FeatureVars.MARKR_SWAP_MAX_RETRIES] as string)
