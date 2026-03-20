@@ -334,6 +334,8 @@ export const SwapScreen = (): JSX.Element => {
   )
 
   const handleSelectFromToken = useCallback((): void => {
+    dismissKeyboardIfNeeded()
+
     const tokenParams = fromToken?.networkChainId
       ? { networkChainId: fromToken.networkChainId.toString() }
       : {}
@@ -345,6 +347,8 @@ export const SwapScreen = (): JSX.Element => {
   }, [navigate, fromToken])
 
   const handleSelectToToken = useCallback((): void => {
+    dismissKeyboardIfNeeded()
+
     const tokenParams = fromToken?.networkChainId
       ? { networkChainId: fromToken.networkChainId.toString() }
       : {}

@@ -43,6 +43,10 @@ import { ErrorState } from './ErrorState'
 import Grabber from './Grabber'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 
+const HEADER_SENTINEL = Symbol('ListScreenV2Header')
+const EMPTY_SENTINEL = Symbol('ListScreenV2Empty')
+type SentinelItem = typeof HEADER_SENTINEL | typeof EMPTY_SENTINEL
+
 // Use this component when you need to display a list of items in a screen.
 // It handles all the logic for the header and footer, including keyboard interactions and gestures.
 
@@ -72,8 +76,6 @@ export interface ListScreenProps<T>
   hasParent?: boolean
   /** Whether this screen is presented as a modal */
   isModal?: boolean
-  /** Whether this screen has a tab bar */
-  hasTabBar?: boolean
   /** Optional background color */
   backgroundColor?: string
   /** Whether to show the navigation header title */
@@ -103,7 +105,6 @@ export const ListScreenV2 = <T,>({
   navigationTitle,
   showNavigationHeaderTitle = true,
   hasParent,
-  hasTabBar,
   backgroundColor,
   isModal,
   renderEmpty,
@@ -231,13 +232,12 @@ export const ListScreenV2 = <T,>({
   const animatedHeaderContainerStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
       scrollY.value,
-      [0, headerHeight],
-      [0, -headerHeight],
+      [0, contentHeaderHeight],
+      [0, -contentHeaderHeight - (isModal ? 16 : 20)],
       Extrapolation.CLAMP
     )
 
     return {
-      zIndex: 10,
       transform: [
         {
           translateY: shouldShowStickyHeader ? translateY : 0
@@ -269,8 +269,6 @@ export const ListScreenV2 = <T,>({
   })
 
   const animatedHeaderBlurStyle = useAnimatedStyle(() => {
-    // if we have a background color, we need to animate the opacity of the blur view
-    // so that it blends with the background color after scrolling
     return {
       opacity: !shouldShowStickyHeader
         ? 0
@@ -287,140 +285,82 @@ export const ListScreenV2 = <T,>({
     }
   })
 
-  const animatedListContainer = useAnimatedStyle(() => {
-    const top = interpolate(
-      scrollY.value,
-      [0, headerHeight],
-      [0, -headerHeight],
-      Extrapolation.CLAMP
-    )
-
-    const bottom = interpolate(
-      scrollY.value,
-      [0, headerHeight],
-      [-headerHeight, 0],
-      Extrapolation.CLAMP
-    )
-
-    return {
-      flex: 1,
-      position: 'absolute',
-      top,
-      bottom,
-      left: 0,
-      right: 0
-    }
-  })
-
-  const minHeight = useMemo(() => {
-    const extraPadding = Platform.OS === 'android' ? (isModal ? 24 : 8) : -40
-
-    return (
-      frame.height -
-      headerHeight -
-      contentHeaderHeight -
-      renderHeaderHeight -
-      extraPadding -
-      (keyboard.isVisible ? keyboard.height : 0)
-    )
-  }, [
-    contentHeaderHeight,
-    frame.height,
-    headerHeight,
-    isModal,
-    keyboard.height,
-    keyboard.isVisible,
-    renderHeaderHeight
-  ])
+  const {
+    renderItem,
+    keyExtractor,
+    getItemType,
+    contentContainerStyle: _contentContainerStyle,
+    ...restProps
+  } = props
 
   const contentContainerStyle = useMemo(() => {
-    // FlashList's contentContainerStyle only supports:
-    // backgroundColor, paddingTop, paddingBottom, paddingLeft, paddingRight, padding
-    // Do NOT pass minHeight, flex, or other unsupported properties
+    const footerPadding = renderFooter ? footerHeight : 0
+    const paddingBottom = keyboard.isVisible
+      ? keyboard.height + 16
+      : insets.bottom + 16 + footerPadding
+
     return {
-      ...((props?.contentContainerStyle as ViewStyle) ?? {}),
-      paddingBottom: renderFooter
-        ? footerHeight + 16
-        : contentHeaderHeight +
-          renderHeaderHeight +
-          (renderHeader ? 12 : 0) +
-          insets.bottom +
-          16
+      ...((_contentContainerStyle as ViewStyle) ?? {}),
+      paddingBottom
     }
   }, [
-    renderFooter,
-    footerHeight,
-    contentHeaderHeight,
-    renderHeaderHeight,
-    renderHeader,
+    keyboard.isVisible,
+    keyboard.height,
     insets.bottom,
-    props?.contentContainerStyle
+    _contentContainerStyle,
+    renderFooter,
+    footerHeight
   ])
 
-  const animatedEmptyComponent = useAnimatedStyle(() => {
-    const translateY = interpolate(
-      scrollY.value,
-      [0, headerHeight],
-      [-headerHeight, 0],
-      Extrapolation.CLAMP
-    )
+  const isAndroidModal = Platform.OS === 'android' && isModal
+  const flashListMarginTop = isAndroidModal ? headerHeight : 0
+
+  const overrideProps = useMemo(() => {
+    const extraPadding =
+      Platform.OS === 'android' ? (isModal ? insets.top : 8) : 16
 
     return {
-      minHeight,
-      alignItems: 'center',
-      justifyContent: 'center',
-      transform: [
-        {
-          translateY
-        }
-      ]
+      contentContainerStyle: {
+        ...contentContainerStyle,
+        ...(data.length === 0 ? { flex: 1 } : {}),
+        minHeight:
+          frame.height +
+          contentHeaderHeight +
+          extraPadding -
+          flashListMarginTop -
+          (shouldShowStickyHeader ? renderHeaderHeight : 0)
+      }
     }
-  })
+  }, [
+    contentContainerStyle,
+    data.length,
+    frame.height,
+    contentHeaderHeight,
+    isModal,
+    insets.top,
+    shouldShowStickyHeader,
+    renderHeaderHeight,
+    flashListMarginTop
+  ])
 
-  const renderEmptyComponent = useCallback(() => {
-    if (renderEmpty) {
-      return renderEmpty()
+  // Prepend header sentinel (and empty sentinel when no data) so
+  // stickyHeaderIndices={[0]} pins the header as a data item.
+  const dataWithSentinels = useMemo(() => {
+    const items: (T | SentinelItem)[] = [HEADER_SENTINEL]
+    if (data.length === 0) {
+      items.push(EMPTY_SENTINEL)
+    } else {
+      items.push(...data)
     }
-    return (
-      <ErrorState title="No results" description="Try a different search" />
-    )
-  }, [renderEmpty])
+    return items
+  }, [data])
 
-  const ListEmptyComponent = useMemo(() => {
-    return (
-      <Animated.View style={animatedEmptyComponent}>
-        {renderEmptyComponent()}
-      </Animated.View>
-    )
-  }, [animatedEmptyComponent, renderEmptyComponent])
-
-  const renderGrabber = useCallback(() => {
-    if (isModal)
-      return (
-        <View
-          style={{
-            position: 'absolute',
-            top: Platform.OS === 'android' ? insets.top - 2 : 9,
-            left: 0,
-            right: 0,
-            zIndex: 1000
-          }}>
-          <Grabber />
-        </View>
-      )
-  }, [insets.top, isModal])
-
-  const handleFooterLayout = useCallback((event: LayoutChangeEvent) => {
-    const { height } = event.nativeEvent.layout
-    setFooterHeight(height)
-  }, [])
-
-  const renderHeaderComponent = useCallback(() => {
+  const headerContent = useMemo(() => {
     return (
       <Animated.View style={[animatedHeaderContainerStyle]}>
         <View
           style={{
-            paddingTop: headerHeight + 16,
+            paddingTop: isAndroidModal ? 16 : headerHeight + 16,
             paddingBottom: renderHeader ? 12 : 0
           }}>
           <Animated.View
@@ -492,6 +432,7 @@ export const ListScreenV2 = <T,>({
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    isAndroidModal,
     renderHeader,
     headerHeight,
     backgroundColor,
@@ -502,6 +443,76 @@ export const ListScreenV2 = <T,>({
     handleSubtitleLayout,
     handleRenderHeaderLayout
   ])
+
+  const emptyContent = useMemo(() => {
+    if (renderEmpty) {
+      return <View style={{ flex: 1 }}>{renderEmpty()}</View>
+    }
+    return (
+      <ErrorState
+        sx={{ flex: 1 }}
+        title="No results"
+        description="Try a different search"
+      />
+    )
+  }, [renderEmpty])
+
+  const internalRenderItem = useCallback(
+    (info: { item: T | SentinelItem; index: number }) => {
+      if (info.item === HEADER_SENTINEL) return headerContent
+      if (info.item === EMPTY_SENTINEL) return emptyContent
+      return (
+        renderItem?.({
+          ...info,
+          item: info.item as T,
+          index: info.index - 1
+        } as Parameters<NonNullable<FlashListProps<T>['renderItem']>>[0]) ??
+        null
+      )
+    },
+    [headerContent, emptyContent, renderItem]
+  )
+
+  const internalKeyExtractor = useCallback(
+    (item: T | SentinelItem, index: number) => {
+      if (item === HEADER_SENTINEL) return '__list_screen_header__'
+      if (item === EMPTY_SENTINEL) return '__list_screen_empty__'
+      return keyExtractor
+        ? keyExtractor(item as T, index - 1)
+        : String(index - 1)
+    },
+    [keyExtractor]
+  )
+
+  const internalGetItemType = useCallback(
+    (item: T | SentinelItem, index: number) => {
+      if (item === HEADER_SENTINEL) return 'header'
+      if (item === EMPTY_SENTINEL) return 'empty'
+      return getItemType ? getItemType(item as T, index - 1) : undefined
+    },
+    [getItemType]
+  )
+
+  const renderGrabber = useCallback(() => {
+    if (isModal)
+      return (
+        <View
+          style={{
+            position: 'absolute',
+            top: Platform.OS === 'android' ? insets.top - 2 : 9,
+            left: 0,
+            right: 0,
+            zIndex: 1000
+          }}>
+          <Grabber />
+        </View>
+      )
+  }, [insets.top, isModal])
+
+  const handleFooterLayout = useCallback((event: LayoutChangeEvent) => {
+    const { height } = event.nativeEvent.layout
+    setFooterHeight(height)
+  }, [])
 
   const renderFooterContent = useCallback(() => {
     if (renderFooter && showFooter) {
@@ -525,44 +536,38 @@ export const ListScreenV2 = <T,>({
     return null
   }, [renderFooter, showFooter, handleFooterLayout, insets.bottom])
 
-  const overrideProps = useMemo(() => {
-    return {
-      contentContainerStyle: {
-        ...contentContainerStyle,
-        minHeight
-      }
-    }
-  }, [contentContainerStyle, minHeight])
-
   return (
     <Animated.View
       style={[{ flex: 1 }]}
       entering={getListItemEnteringAnimation(0)}>
-      {renderHeaderComponent()}
-
-      <View style={{ flex: 1, position: 'relative' }}>
-        <Animated.View style={animatedListContainer}>
-          <FlashList
-            data={data}
-            ref={scrollViewRef}
-            renderScrollComponent={RenderScrollComponent}
-            onScroll={onScrollEvent}
-            onScrollEndDrag={onScrollEndDrag}
-            keyboardDismissMode="interactive"
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-            overrideProps={overrideProps}
-            contentContainerStyle={contentContainerStyle}
-            {...props}
-            style={{
-              backgroundColor: backgroundColor ?? 'transparent',
-              ...props.style
-            }}
-            ListEmptyComponent={ListEmptyComponent}
-          />
-        </Animated.View>
-      </View>
-
+      <FlashList
+        ref={scrollViewRef}
+        renderScrollComponent={RenderScrollComponent}
+        onScroll={onScrollEvent}
+        onScrollEndDrag={onScrollEndDrag}
+        keyboardDismissMode="interactive"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        stickyHeaderIndices={shouldShowStickyHeader ? [0] : undefined}
+        overrideProps={overrideProps}
+        contentContainerStyle={contentContainerStyle}
+        {...restProps}
+        data={dataWithSentinels as T[]}
+        renderItem={
+          internalRenderItem as unknown as FlashListProps<T>['renderItem']
+        }
+        keyExtractor={
+          internalKeyExtractor as (item: T, index: number) => string
+        }
+        getItemType={internalGetItemType as FlashListProps<T>['getItemType']}
+        style={[
+          {
+            backgroundColor: backgroundColor ?? 'transparent',
+            marginTop: flashListMarginTop
+          },
+          restProps.style
+        ]}
+      />
       {renderGrabber()}
       {renderFooterContent()}
     </Animated.View>
@@ -572,4 +577,10 @@ export const ListScreenV2 = <T,>({
 const RenderScrollComponent = React.forwardRef<
   KeyboardAwareScrollViewRef,
   ScrollViewProps
->((props, ref) => <KeyboardAwareScrollView {...props} ref={ref} />)
+>((props, ref) => (
+  <KeyboardAwareScrollView
+    {...props}
+    ref={ref}
+    nestedScrollEnabled={Platform.OS === 'android'}
+  />
+))
