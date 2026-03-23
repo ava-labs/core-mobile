@@ -707,7 +707,7 @@ __metadata:
     react-native-aes-crypto: 3.1.0
     react-native-argon2: 2.0.1
     react-native-big-list: 1.6.1
-    react-native-ble-plx: 3.4.0
+    react-native-ble-plx: 3.5.1
     react-native-bootsplash: 6.3.11
     react-native-bottom-tabs: 1.1.0
     react-native-branch: 6.8.0
@@ -35218,13 +35218,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-ble-plx@npm:3.4.0":
-  version: 3.4.0
-  resolution: "react-native-ble-plx@npm:3.4.0"
+"react-native-ble-plx@npm:3.5.1":
+  version: 3.5.1
+  resolution: "react-native-ble-plx@npm:3.5.1"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: f255e4ffc621b3656561a571c75d199677eb1332d5ea36c4ed5c5b88926c7135c67f7fea2a09e00cba0fe33df7577ab02308d12bce4b65e6c25f3f9df54d09e1
+  checksum: a66f2af098e7c5bf73fd537496da93541ea742b96a716c13c759d0ab04376a9361f35495145f484ac583ee87305324f13d74bf90479d3cd1ac5bcf450a2abc9e
   languageName: node
   linkType: hard
 
