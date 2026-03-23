@@ -10,14 +10,22 @@ if [[ -z "${BITRISE_SOURCE_DIR:-}" ]]; then
   exit 1
 fi
 
-# Resolve sibling script path — do not use BITRISE_SOURCE_DIR/packages/core-mobile/... here:
-# Bitrise often sets BITRISE_SOURCE_DIR to packages/core-mobile already (after "Change Working Directory"),
-# which would incorrectly produce .../packages/core-mobile/packages/core-mobile/...
-STEP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REGRESSION_SCRIPT="${STEP_DIR}/../androidDeviceFarmRegression.sh"
+# Bitrise copies ONLY this step folder to a temp dir (e.g. /tmp/.../step_src/) — sibling files like
+# androidDeviceFarmRegression.sh are NOT copied. Never resolve via dirname(BASH_SOURCE)/../...
+#
+# BITRISE_SOURCE_DIR may be monorepo root or packages/core-mobile (after "Change Working Directory").
+REGRESSION_SCRIPT=""
+if [[ -f "${BITRISE_SOURCE_DIR}/packages/core-mobile/scripts/bitrise/devicefarm/androidDeviceFarmRegression.sh" ]]; then
+  REGRESSION_SCRIPT="${BITRISE_SOURCE_DIR}/packages/core-mobile/scripts/bitrise/devicefarm/androidDeviceFarmRegression.sh"
+elif [[ -f "${BITRISE_SOURCE_DIR}/scripts/bitrise/devicefarm/androidDeviceFarmRegression.sh" ]]; then
+  REGRESSION_SCRIPT="${BITRISE_SOURCE_DIR}/scripts/bitrise/devicefarm/androidDeviceFarmRegression.sh"
+fi
 
-if [[ ! -f "$REGRESSION_SCRIPT" ]]; then
-  echo "❌ Device Farm regression script not found: $REGRESSION_SCRIPT"
+if [[ -z "$REGRESSION_SCRIPT" ]] || [[ ! -f "$REGRESSION_SCRIPT" ]]; then
+  echo "❌ Device Farm regression script not found under BITRISE_SOURCE_DIR=${BITRISE_SOURCE_DIR}"
+  echo "   Tried:"
+  echo "     - \${BITRISE_SOURCE_DIR}/packages/core-mobile/scripts/bitrise/devicefarm/androidDeviceFarmRegression.sh"
+  echo "     - \${BITRISE_SOURCE_DIR}/scripts/bitrise/devicefarm/androidDeviceFarmRegression.sh"
   exit 1
 fi
 

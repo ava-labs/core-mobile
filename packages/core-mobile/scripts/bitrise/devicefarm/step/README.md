@@ -6,7 +6,9 @@ This folder is a **Bitrise path step** (`path::./packages/core-mobile/scripts/bi
 
 ## What it runs
 
-`step.sh` → `../androidDeviceFarmRegression.sh` → `yarn devicefarm:package` → `node scripts/devicefarm/trigger-devicefarm-api.js`
+`step.sh` resolves `androidDeviceFarmRegression.sh` under **`$BITRISE_SOURCE_DIR`** (see `step.sh` — not a relative path from this folder). Bitrise copies only the `step/` directory to a temp path, so files next to `step/` in git are **not** available via `../` at runtime.
+
+Then: `androidDeviceFarmRegression.sh` → `yarn devicefarm:package` → `node scripts/devicefarm/trigger-devicefarm-api.js`
 
 ## Workflow snippet
 
