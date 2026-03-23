@@ -444,6 +444,7 @@ class LedgerService {
         )
         this.currentAppType = detectedAppType
       }
+      this.currentAppVersion = appInfo.version
 
       if (this.isAppCompatible(this.currentAppType, appType)) {
         Logger.info(
@@ -539,6 +540,7 @@ class LedgerService {
     try {
       const appInfo = await this.getCurrentAppInfo()
       const currentAppType = this.mapAppNameToType(appInfo.applicationName)
+      this.currentAppVersion = appInfo.version
       return this.isAppCompatible(currentAppType, appType)
     } catch (error) {
       Logger.error('Error checking app status', error)

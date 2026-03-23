@@ -23,9 +23,13 @@ export const handleLedgerErrorAndShowAlert = ({
   const lowercasedMessage = message.toLowerCase()
 
   const version = LedgerService.getCurrentAppVersion()
+  const detectedAppType = LedgerService.getCurrentAppType()
   const ledgerAppName = getLedgerAppName(network)
-  const compatible = isBitcoinCompatibleApp(ledgerAppName, version)
-  const unsupported = ledgerAppName === LedgerAppType.BITCOIN && !compatible
+  const compatible = isBitcoinCompatibleApp(detectedAppType, version)
+  const unsupported =
+    ledgerAppName === LedgerAppType.BITCOIN &&
+    detectedAppType === LedgerAppType.BITCOIN &&
+    !compatible
 
   const appName = unsupported ? LedgerAppType.BITCOIN_RECOVERY : ledgerAppName
 
