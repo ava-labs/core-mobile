@@ -107,9 +107,63 @@ function formatPercent(value) {
   return `${value.toFixed(2)}%`
 }
 
-function metricValue(summary, metricName) {
+function formatCount(value) {
+  if (!Number.isFinite(value)) {
+    return 'n/a'
+  }
+
+  return String(value)
+}
+
+function formatThreshold(threshold) {
+  if (!Number.isFinite(threshold)) {
+    return 'n/a'
+  }
+
+  return `${threshold}%`
+}
+
+function formatDelta(delta) {
+  if (!Number.isFinite(delta)) {
+    return 'n/a'
+  }
+
+  const sign = delta >= 0 ? '+' : ''
+  return `${sign}${delta.toFixed(2)}%`
+}
+
+function packageStatusEmoji(workspace) {
+  return workspace.thresholdsPassed ? '🟢' : '🔴'
+}
+
+function reportStatusEmoji(report) {
+  if (report.packages.length === 0) {
+    return '⚪'
+  }
+
+  return report.allThresholdsPassed ? '✅' : '❌'
+}
+
+function metricSummary(summary, metricName) {
   const metric = summary?.total?.[metricName]
-  return typeof metric?.pct === 'number' ? metric.pct : Number.NaN
+  return {
+    pct: typeof metric?.pct === 'number' ? metric.pct : Number.NaN,
+    covered: typeof metric?.covered === 'number' ? metric.covered : Number.NaN,
+    total: typeof metric?.total === 'number' ? metric.total : Number.NaN
+  }
+}
+
+function metricPercentageText(metric, threshold) {
+  const delta = metric.pct - threshold
+  const directionIcon = delta > 0 ? '▲' : delta < 0 ? '▼' : '•'
+
+  return `**${formatPercent(metric.pct)}** (${formatDelta(delta)} vs ${formatThreshold(
+    threshold
+  )} ${directionIcon})`
+}
+
+function metricCoveredText(metric) {
+  return `${formatCount(metric.covered)}/${formatCount(metric.total)}`
 }
 
 function relativeTo(rootDir, filePath) {
@@ -130,6 +184,12 @@ const artifactsDir = path.resolve(process.cwd(), args['artifacts-dir'] || 'cover
 const runUrl = args['run-url'] || ''
 const files = walkFiles(artifactsDir)
 const metrics = ['lines', 'statements', 'functions', 'branches']
+const metricDisplayOrder = [
+  ['statements', 'Statements'],
+  ['branches', 'Branches'],
+  ['functions', 'Functions'],
+  ['lines', 'Lines']
+]
 
 const packages = []
 const missingPackages = []
@@ -146,11 +206,11 @@ for (const workspace of workspaces) {
   const summary = readJson(summaryPath)
   const thresholds = readJson(thresholdPath)
   const actual = Object.fromEntries(
-    metrics.map((metricName) => [metricName, metricValue(summary, metricName)])
+    metrics.map((metricName) => [metricName, metricSummary(summary, metricName)])
   )
 
   const thresholdsPassed = metrics.every((metricName) => {
-    return Number.isFinite(actual[metricName]) && actual[metricName] >= thresholds[metricName]
+    return Number.isFinite(actual[metricName].pct) && actual[metricName].pct >= thresholds[metricName]
   })
 
   packages.push({
@@ -175,29 +235,75 @@ const report = {
     : false
 }
 
+const passingPackages = packages.filter((workspace) => workspace.thresholdsPassed)
+const failingPackages = packages.filter((workspace) => !workspace.thresholdsPassed)
+const overallStatus = reportStatusEmoji(report)
+
 const markdownLines = [
-  '# Mobile PR Coverage',
+  `## Coverage report ${overallStatus}`,
   '',
   packages.length > 0
-    ? `Overall thresholds: ${report.allThresholdsPassed ? 'PASS' : 'FAIL'}`
+    ? `**${passingPackages.length}/${packages.length} packages passed thresholds**`
     : 'No coverage summaries were found in the uploaded artifact.',
-  '',
-  '| Package | Lines | Statements | Functions | Branches | Thresholds |',
-  '| --- | --- | --- | --- | --- | --- |'
+  packages.length > 0
+    ? 'Thresholds are shown inline against each package baseline.'
+    : '',
 ]
 
-for (const workspace of packages) {
+if (failingPackages.length > 0) {
   markdownLines.push(
-    `| ${workspace.packageName} | ${formatPercent(workspace.actual.lines)} (>= ${workspace.thresholds.lines}%) | ${formatPercent(workspace.actual.statements)} (>= ${workspace.thresholds.statements}%) | ${formatPercent(workspace.actual.functions)} (>= ${workspace.thresholds.functions}%) | ${formatPercent(workspace.actual.branches)} (>= ${workspace.thresholds.branches}%) | ${workspace.thresholdsPassed ? 'PASS' : 'FAIL'} |`
+    '',
+    `**Failing packages:** ${failingPackages
+      .map((workspace) => `\`${workspace.packageName}\``)
+      .join(', ')}`
   )
 }
 
-if (packages.length === 0) {
-  markdownLines.push('| n/a | n/a | n/a | n/a | n/a | n/a |')
+if (missingPackages.length > 0) {
+  markdownLines.push(
+    '',
+    `**Missing coverage data:** ${missingPackages
+      .map((packageName) => `\`${packageName}\``)
+      .join(', ')}`
+  )
 }
 
-if (missingPackages.length > 0) {
-  markdownLines.push('', `Missing coverage data for: ${missingPackages.join(', ')}`)
+if (packages.length > 0) {
+  for (const workspace of packages) {
+    markdownLines.push('', `### ${packageStatusEmoji(workspace)} ${workspace.packageName}`, '')
+    markdownLines.push(
+      '| St. | Category | Percentage | Covered / Total |',
+      '| --- | --- | --- | --- |'
+    )
+
+    for (const [metricName, label] of metricDisplayOrder) {
+      const metric = workspace.actual[metricName]
+      const threshold = workspace.thresholds[metricName]
+      const passed = Number.isFinite(metric.pct) && metric.pct >= threshold
+
+      markdownLines.push(
+        `| ${passed ? '🟢' : '🔴'} | ${label} | ${metricPercentageText(
+          metric,
+          threshold
+        )} | ${metricCoveredText(metric)} |`
+      )
+    }
+  }
+
+  markdownLines.push(
+    '',
+    '<details>',
+    '<summary>Artifacts and threshold sources</summary>',
+    ''
+  )
+
+  for (const workspace of packages) {
+    markdownLines.push(
+      `- \`${workspace.packageName}\`: summary \`${workspace.summaryPath}\`, thresholds \`${workspace.thresholdPath}\``
+    )
+  }
+
+  markdownLines.push('', '</details>')
 }
 
 if (runUrl) {
