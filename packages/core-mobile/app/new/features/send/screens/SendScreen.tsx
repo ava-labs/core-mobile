@@ -128,7 +128,7 @@ export const SendScreen = (): JSX.Element => {
         return (
           <ErrorState
             title="Unable to send"
-            description="P-Chain address not available"
+            description="Required account address not available"
           />
         )
       }
@@ -147,7 +147,7 @@ export const SendScreen = (): JSX.Element => {
         return (
           <ErrorState
             title="Unable to send"
-            description="X-Chain address not available"
+            description="Required account address not available"
           />
         )
       }
@@ -177,7 +177,7 @@ export const SendScreen = (): JSX.Element => {
         return (
           <ErrorState
             title="Unable to send"
-            description="Solana address not available"
+            description="Required account address not available"
           />
         )
       }
