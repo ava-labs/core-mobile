@@ -232,6 +232,10 @@ describe('useEvmInjectedProvider', () => {
             useEvmInjectedProvider(mockWebViewRef)
           )
 
+          act(() => {
+            result.current.setCurrentUrl('https://example.com')
+          })
+
           const payload = JSON.stringify({
             id: 10,
             request: {
@@ -261,6 +265,10 @@ describe('useEvmInjectedProvider', () => {
           useEvmInjectedProvider(mockWebViewRef)
         )
 
+        act(() => {
+          result.current.setCurrentUrl('https://example.com')
+        })
+
         const payload = JSON.stringify({
           id: 20,
           request: {
@@ -274,7 +282,7 @@ describe('useEvmInjectedProvider', () => {
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
-          'window.__coreProviderRespond(20, null, "0xSignatureResult"); true;'
+          'if(window.location.origin==="https://example.com"){window.__coreProviderRespond(20, null, "0xSignatureResult");}true;'
         )
       })
 
@@ -287,6 +295,10 @@ describe('useEvmInjectedProvider', () => {
         const { result } = renderHook(() =>
           useEvmInjectedProvider(mockWebViewRef)
         )
+
+        act(() => {
+          result.current.setCurrentUrl('https://example.com')
+        })
 
         const payload = JSON.stringify({
           id: 21,
@@ -308,12 +320,7 @@ describe('useEvmInjectedProvider', () => {
         )
       })
 
-      it('defaults to error code 4001 when rejection has no code', async () => {
-        const mockRequest = jest
-          .fn()
-          .mockRejectedValue({ message: 'Something went wrong' })
-        mockCreateInAppRequest.mockReturnValue(mockRequest)
-
+      it('rejects signing when origin is unavailable', () => {
         const { result } = renderHook(() =>
           useEvmInjectedProvider(mockWebViewRef)
         )
@@ -323,12 +330,77 @@ describe('useEvmInjectedProvider', () => {
           request: { method: 'eth_sign', params: [] }
         })
 
+        act(() => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('"code":-32603')
+        )
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('Origin unavailable')
+        )
+      })
+
+      it('preserves well-formed RPC errors without re-serializing', async () => {
+        const mockRequest = jest
+          .fn()
+          .mockRejectedValue({ code: 4902, message: 'Unrecognized chain ID' })
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef)
+        )
+
+        act(() => {
+          result.current.setCurrentUrl('https://example.com')
+        })
+
+        const payload = JSON.stringify({
+          id: 23,
+          request: { method: 'eth_sign', params: [] }
+        })
+
         await act(async () => {
           result.current.handleProviderMessage(payload)
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
-          expect.stringContaining('"code":4001')
+          expect.stringContaining('"code":4902')
+        )
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('"message":"Unrecognized chain ID"')
+        )
+      })
+
+      it('serializes unknown errors via serializeError', async () => {
+        const mockRequest = jest
+          .fn()
+          .mockRejectedValue({ message: 'Something went wrong' })
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef)
+        )
+
+        act(() => {
+          result.current.setCurrentUrl('https://example.com')
+        })
+
+        const payload = JSON.stringify({
+          id: 24,
+          request: { method: 'eth_sign', params: [] }
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('__coreProviderRespond(24,')
+        )
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('"code"')
         )
       })
     })
@@ -525,6 +597,10 @@ describe('useEvmInjectedProvider', () => {
           useEvmInjectedProvider(mockWebViewRef)
         )
 
+        act(() => {
+          result.current.setCurrentUrl('https://example.com')
+        })
+
         const payload = JSON.stringify({
           id: 300,
           request: { method: 'personal_sign' }
@@ -537,6 +613,54 @@ describe('useEvmInjectedProvider', () => {
         expect(mockRequest).toHaveBeenCalledWith(
           expect.objectContaining({ params: [] })
         )
+      })
+    })
+
+    describe('validation and security', () => {
+      it('rejects malformed payloads with -32600', () => {
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef)
+        )
+
+        const payload = JSON.stringify({
+          id: 400,
+          request: { method: 123 }
+        })
+
+        act(() => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('"code":-32600')
+        )
+      })
+
+      it('rejects unknown methods with -32601', () => {
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef)
+        )
+
+        const payload = JSON.stringify({
+          id: 401,
+          request: { method: 'eth_unknownMethod', params: [] }
+        })
+
+        act(() => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('"code":-32601')
+        )
+      })
+
+      it('exposes setCurrentUrl', () => {
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef)
+        )
+
+        expect(typeof result.current.setCurrentUrl).toBe('function')
       })
     })
   })
