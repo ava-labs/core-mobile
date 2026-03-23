@@ -21,6 +21,7 @@ import { DropdownGroup } from 'common/components/DropdownMenu'
 import { useActivity } from '../store'
 import { ActivityListItem, buildGroupedData, getDateGroups } from '../utils'
 import { isSupportedNftChainId } from '../utils'
+import { useLowValueFilteredActivityTransactions } from './useLowValueFilteredActivityTransactions'
 
 export type ActivityNetworkFilter = {
   filterName: string
@@ -123,6 +124,11 @@ export const useActivityFilterAndSearch = ({
     )
   }, [transactions, isPendingBridge])
 
+  const lowValueFilteredTransactions = useLowValueFilteredActivityTransactions(
+    transactionsBySymbol,
+    network
+  )
+
   const filters: DropdownGroup[] | undefined = useMemo(() => {
     if (selectedNetwork?.chainId) {
       const newFilters = [...(TOKEN_DETAIL_FILTERS[0]?.items ?? [])]
@@ -174,7 +180,7 @@ export const useActivityFilterAndSearch = ({
   }, [isXpChain, selectedNetwork?.chainId])
 
   const { data, filter, sort, resetFilter } = useTokenDetailFilterAndSort({
-    transactions: transactionsBySymbol,
+    transactions: lowValueFilteredTransactions,
     filters
   })
 
