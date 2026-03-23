@@ -4,8 +4,7 @@ import { Stack } from 'common/components/Stack'
 import {
   stackNavigatorScreenOptions,
   stackScreensOptions,
-  useModalScreensOptions,
-  ledgerModalScreensOptions
+  useModalScreensOptions
 } from 'common/consts/screenOptions'
 import { useTriggerAfterLoginFlows } from 'common/hooks/useTriggerAfterLoginFlows'
 import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
@@ -267,14 +266,6 @@ export default function WalletLayout(): JSX.Element {
                 animation: 'fade_from_bottom',
                 animationDuration: 200
               }}
-            />
-            <Stack.Screen
-              name="(modals)/ledgerReviewTransaction"
-              options={ledgerModalScreensOptions}
-            />
-            <Stack.Screen
-              name="(modals)/ledgerReviewStaking"
-              options={ledgerModalScreensOptions}
             />
             <Stack.Screen
               name="(modals)/solanaConnection"

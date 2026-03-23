@@ -19,9 +19,9 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NavigationPresentationMode } from 'new/common/types'
 import WalletService from 'services/wallet/WalletService'
 import { Curve } from 'utils/publicKeys'
+import { ledgerParamsStore } from 'features/ledger/store'
 import { OnApproveParams } from 'services/walletconnectv2/walletConnectCache/types'
 import { WalletType } from 'services/wallet/types'
-import { showLedgerReviewTransaction } from 'features/ledger/utils'
 import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
 import { CONFETTI_DURATION_MS } from 'common/consts'
 import { currentRouteStore } from 'new/routes/store'
@@ -150,7 +150,8 @@ class ApprovalController implements VmModuleApprovalController {
   }: {
     resolve: (value: ApprovalResponse | PromiseLike<ApprovalResponse>) => void
   }): Promise<void> => {
-    await LedgerService.disconnect()
+    ledgerParamsStore.getState().setReviewTransactionParams(null)
+    await LedgerService.disconnect().catch()
     onReject({ resolve })
   }
 
@@ -216,12 +217,13 @@ class ApprovalController implements VmModuleApprovalController {
         })
       } else {
         resolve(value)
+        ledgerParamsStore.getState().setReviewTransactionParams(null)
         this.handleGoBackIfNeeded()
         this.userCancelledMap.delete(requestId)
       }
     }
 
-    showLedgerReviewTransaction({
+    ledgerParamsStore.getState().setReviewTransactionParams({
       rpcMethod: request.method,
       network: params.network,
       onApprove: () =>
@@ -230,7 +232,7 @@ class ApprovalController implements VmModuleApprovalController {
           signingData,
           resolve: resolveWithRetry
         }),
-      onReject: () => {
+      onReject: (_message?: string) => {
         this.userCancelledMap.set(requestId, true)
         this.handleLedgerOnReject({ resolve })
         this.handleGoBackIfNeeded()

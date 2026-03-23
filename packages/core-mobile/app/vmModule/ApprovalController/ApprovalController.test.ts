@@ -8,7 +8,6 @@ import { currentRouteStore } from 'new/routes/store'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
-import { showLedgerReviewTransaction } from 'features/ledger/utils'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getAddressForChainId } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import {
@@ -66,8 +65,13 @@ jest.mock('services/wallet/WalletService', () => ({
   __esModule: true,
   default: { getPublicKeyFor: jest.fn() }
 }))
-jest.mock('features/ledger/utils', () => ({
-  showLedgerReviewTransaction: jest.fn()
+const mockSetReviewTransactionParams = jest.fn()
+jest.mock('features/ledger/store', () => ({
+  ledgerParamsStore: {
+    getState: jest.fn(() => ({
+      setReviewTransactionParams: mockSetReviewTransactionParams
+    }))
+  }
 }))
 jest.mock('new/routes/store', () => ({
   currentRouteStore: { getState: jest.fn(() => ({ currentRoute: '' })) }
@@ -95,7 +99,6 @@ const mockRouter = router as jest.Mocked<typeof router>
 const mockCurrentRouteStore = currentRouteStore as jest.Mocked<
   typeof currentRouteStore
 >
-const mockShowLedgerReviewTransaction = showLedgerReviewTransaction as jest.Mock
 const mockWalletConnectCacheSet = walletConnectCache.approvalParams
   .set as jest.Mock
 const mockGetAddressForChainId = getAddressForChainId as jest.Mock
@@ -762,7 +765,7 @@ describe('ApprovalController', () => {
       )
     })
 
-    it('shows Ledger review screen for LEDGER wallet type', async () => {
+    it('sets ledger review params in store for LEDGER wallet type', async () => {
       const request = makeApprovalRequest()
       approvalController.requestApproval({ request, displayData, signingData })
 
@@ -771,10 +774,17 @@ describe('ApprovalController', () => {
       const params = { walletType: WalletType.LEDGER } as never
       await capturedOnApprove(params)
 
-      expect(mockShowLedgerReviewTransaction).toHaveBeenCalledTimes(1)
+      expect(mockSetReviewTransactionParams).toHaveBeenCalledTimes(1)
+      expect(mockSetReviewTransactionParams).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rpcMethod: request.method,
+          onApprove: expect.any(Function),
+          onReject: expect.any(Function)
+        })
+      )
     })
 
-    it('shows Ledger review screen for LEDGER_LIVE wallet type', async () => {
+    it('sets ledger review params in store for LEDGER_LIVE wallet type', async () => {
       const request = makeApprovalRequest()
       approvalController.requestApproval({ request, displayData, signingData })
 
@@ -783,7 +793,14 @@ describe('ApprovalController', () => {
       const params = { walletType: WalletType.LEDGER_LIVE } as never
       await capturedOnApprove(params)
 
-      expect(mockShowLedgerReviewTransaction).toHaveBeenCalledTimes(1)
+      expect(mockSetReviewTransactionParams).toHaveBeenCalledTimes(1)
+      expect(mockSetReviewTransactionParams).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rpcMethod: request.method,
+          onApprove: expect.any(Function),
+          onReject: expect.any(Function)
+        })
+      )
     })
 
     it('calls onReject with the rejection message when the user rejects', () => {
