@@ -3,8 +3,8 @@ import { SxProp } from 'dripsy'
 import React, {
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState
 } from 'react'
@@ -17,10 +17,9 @@ import { Button } from '../Button/Button'
 import { Text, View } from '../Primitives'
 import { TokenUnitInput, TokenUnitInputHandle } from './TokenUnitInput'
 
-interface PresetAmount {
+type PresetDefinition = {
   text: string
   amount: TokenUnit
-  isSelected: boolean
 }
 
 export type SendTokenUnitInputWidgetHandle = {
@@ -80,16 +79,15 @@ export const SendTokenUnitInputWidget = forwardRef<
 
     const [errorMessage, setErrorMessage] = useState<string>()
     const textInputRef = useRef<TokenUnitInputHandle>(null)
-    const [presetAmonuntButtons, setPresetAmonuntButtons] = useState<
-      PresetAmount[]
-    >([])
 
     useImperativeHandle(ref, () => ({
       setValue: (newValue: string) => textInputRef.current?.setValue(newValue)
     }))
 
-    useEffect(() => {
-      const presets = []
+    // Preset targets depend only on balance/max/token — not on `amount`, so typing
+    // does not rebuild this array and avoids preset button flicker.
+    const presetAmountButtons = useMemo((): PresetDefinition[] => {
+      const presets: PresetDefinition[] = []
       const base = maxAmount ?? balance
       if (presetPercentages && presetPercentages.length > 0) {
         presetPercentages.forEach(percentage => {
@@ -100,10 +98,7 @@ export const SendTokenUnitInputWidget = forwardRef<
               value.toSubUnit(),
               base.getMaxDecimals(),
               base.getSymbol()
-            ),
-            isSelected: amount
-              ? amount.toSubUnit() === value.toSubUnit()
-              : false
+            )
           })
         })
       } else {
@@ -114,8 +109,7 @@ export const SendTokenUnitInputWidget = forwardRef<
               5 * 10 ** token.maxDecimals,
               balance.getMaxDecimals(),
               balance.getSymbol()
-            ),
-            isSelected: false
+            )
           })
         }
         if (balance.gt(10)) {
@@ -125,8 +119,7 @@ export const SendTokenUnitInputWidget = forwardRef<
               10 * 10 ** token.maxDecimals,
               balance.getMaxDecimals(),
               balance.getSymbol()
-            ),
-            isSelected: false
+            )
           })
         }
         if (balance.gt(20)) {
@@ -136,8 +129,7 @@ export const SendTokenUnitInputWidget = forwardRef<
               20 * 10 ** token.maxDecimals,
               balance.getMaxDecimals(),
               balance.getSymbol()
-            ),
-            isSelected: false
+            )
           })
         }
       }
@@ -145,12 +137,11 @@ export const SendTokenUnitInputWidget = forwardRef<
       const max = maxAmount ?? balance
       presets.push({
         text: 'Max',
-        amount: max,
-        isSelected: amount ? amount.toSubUnit() === max.toSubUnit() : false
+        amount: max
       })
 
-      setPresetAmonuntButtons(presets)
-    }, [balance, token, maxAmount, presetPercentages, amount])
+      return presets
+    }, [balance, token, maxAmount, presetPercentages])
 
     const handleValidateAmount = useCallback(
       async (value: TokenUnit): Promise<void> => {
@@ -169,34 +160,21 @@ export const SendTokenUnitInputWidget = forwardRef<
       [validateAmount]
     )
 
-    const handlePressPresetButton = (amt: TokenUnit, index: number): void => {
+    const handlePressPresetButton = (amt: TokenUnit): void => {
       textInputRef.current?.setValue(amt.toString())
 
       onChange?.(amt)
 
       handleValidateAmount(amt)
-
-      setPresetAmonuntButtons(prevButtons =>
-        prevButtons.map((b, i) =>
-          i === index ? { ...b, isSelected: true } : { ...b, isSelected: false }
-        )
-      )
     }
 
     const handleChange = useCallback(
       async (value: TokenUnit): Promise<void> => {
-        setPresetAmonuntButtons(prevButtons =>
-          prevButtons.map(b => ({
-            ...b,
-            isSelected: value.eq(balance.mul(b.amount))
-          }))
-        )
-
         onChange?.(value)
 
         handleValidateAmount(value)
       },
-      [onChange, balance, handleValidateAmount]
+      [onChange, handleValidateAmount]
     )
 
     return (
@@ -222,21 +200,26 @@ export const SendTokenUnitInputWidget = forwardRef<
             autoFocus={autoFocus}
           />
           <View sx={{ flexDirection: 'row', gap: 7, marginTop: 25 }}>
-            {presetAmonuntButtons.map((button, index) => (
-              <Button
-                key={index}
-                size="small"
-                type={button.isSelected ? 'primary' : 'secondary'}
-                style={{
-                  minWidth: 72
-                }}
-                disabled={maxAmount?.eq(0)}
-                onPress={() => {
-                  handlePressPresetButton(button.amount, index)
-                }}>
-                {button.text}
-              </Button>
-            ))}
+            {presetAmountButtons.map((button, index) => {
+              const isSelected =
+                amount !== undefined &&
+                amount.toSubUnit() === button.amount.toSubUnit()
+              return (
+                <Button
+                  key={`${button.text}-${index}`}
+                  size="small"
+                  type={isSelected ? 'primary' : 'secondary'}
+                  style={{
+                    minWidth: 72
+                  }}
+                  disabled={maxAmount?.eq(0)}
+                  onPress={() => {
+                    handlePressPresetButton(button.amount)
+                  }}>
+                  {button.text}
+                </Button>
+              )
+            })}
           </View>
           {accessory !== undefined && (
             <View
