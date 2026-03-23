@@ -1,4 +1,7 @@
 import { useRouter } from 'expo-router'
+import { useSelector } from 'react-redux'
+import { selectHasBeenViewedOnce } from 'store/viewOnce/slice'
+import { ViewOnceKey } from 'store/viewOnce/types'
 
 interface NavigateToSwapParams {
   fromTokenId?: string // internalId or raw contract address
@@ -11,7 +14,9 @@ export const useNavigateToSwap = (): {
   navigateToSwap: (params?: NavigateToSwapParams) => void
 } => {
   const { navigate } = useRouter()
-
+  const shouldHideOnboarding = useSelector(
+    selectHasBeenViewedOnce(ViewOnceKey.SWAP_ONBOARDING)
+  )
   const navigateToSwap = ({
     fromTokenId,
     toTokenId,
@@ -24,8 +29,11 @@ export const useNavigateToSwap = (): {
       initialFromCaip2Id: fromCaip2Id,
       initialToCaip2Id: toCaip2Id
     }
-    // @ts-ignore navigate to modal root so _layout.tsx decides between onboarding/swap
-    navigate({ pathname: '/swap', params: swapParams })
+    if (shouldHideOnboarding) {
+      navigate({ pathname: '/swap/swap', params: swapParams })
+    } else {
+      navigate({ pathname: '/swap/onboarding', params: swapParams })
+    }
   }
 
   return { navigateToSwap }
