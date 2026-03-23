@@ -251,7 +251,19 @@ Device Farm provides these environment variables automatically:
 
 ## CI/CD Integration
 
-### Bitrise Workflow Example
+### Bitrise (recommended): in-repo path step
+
+The **`android-internal-e2e-aws-regression-run`** workflow uses a **path step** (AWS SDK v3, no deprecated marketplace upload steps):
+
+```yaml
+- path::./packages/core-mobile/scripts/bitrise/devicefarm/step:
+    title: AWS Device Farm — upload & schedule run
+    no_output_timeout: 1800
+```
+
+See `scripts/bitrise/devicefarm/BITRISE_SETUP.md`. **Avoid** the marketplace step **Amazon Device Farm File Deploy** (`peartherapeutics/bitrise-aws-device-farm-file-deploy`).
+
+### Bitrise Workflow Example (alternate scripts)
 
 You can integrate this into your Bitrise workflow. The `bitrise-to-devicefarm.sh` script handles everything:
 

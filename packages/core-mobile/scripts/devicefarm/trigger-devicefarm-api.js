@@ -310,6 +310,23 @@ async function main() {
       // This is left as an exercise or can be added if needed
     }
 
+    // Expose for Bitrise follow-up steps (Slack, etc.) via envman
+    try {
+      const { execFileSync } = require('child_process')
+      execFileSync(
+        'envman',
+        ['add', '--key', 'DEVICEFARM_RUN_ARN', '--value', runArn],
+        { stdio: 'ignore' }
+      )
+      execFileSync(
+        'envman',
+        ['add', '--key', 'DEVICEFARM_RUN_URL', '--value', runUrl],
+        { stdio: 'ignore' }
+      )
+    } catch {
+      // envman not on PATH (e.g. local runs) — ignore
+    }
+
     // Return run ARN for use in scripts
     console.log(`\nRun ARN: ${runArn}`)
     return runArn
@@ -324,7 +341,10 @@ async function main() {
 
 // Run if called directly
 if (require.main === module) {
-  main()
+  main().catch(err => {
+    console.error('❌ Unhandled error:', err)
+    process.exit(1)
+  })
 }
 
 module.exports = { main, uploadFile, waitForUpload }

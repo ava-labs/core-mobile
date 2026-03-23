@@ -2,6 +2,15 @@
 
 This directory contains scripts for running Appium tests on AWS Device Farm from Bitrise CI.
 
+## Bitrise workflows
+
+| Workflow | When to use |
+|----------|-------------|
+| **`android-internal-e2e-aws-regression-run`** | Single build: installs deps, **builds** internal E2e APK, packages tests, uploads to Device Farm, schedules run. |
+| **`android-internal-e2e-aws-regression-from-pipeline`** | **Pipeline stage 2+** only: **pulls** the signed APK produced by an earlier stage (`deploy-to-bitrise-io` + `pipeline_intermediate_files`), then Device Farm. Does **not** rebuild. |
+
+If you see `stat .../app-internal-e2e-bitrise-signed.apk: no such file`, you are usually on a **later pipeline stage** without `pull-intermediate-files` — switch stage 2 to **`android-internal-e2e-aws-regression-from-pipeline`** (or add `_pull_app_files` before the Device Farm step).
+
 ## Bitrise Workflow: `android-internal-e2e-aws-regression-run`
 
 This workflow:
@@ -12,7 +21,9 @@ This workflow:
 
 ## How It Works
 
-The workflow uses the Node.js API script (`trigger-devicefarm-api.js`) which:
+The workflow runs the **in-repo Bitrise path step** at `scripts/bitrise/devicefarm/step` (not the deprecated marketplace **Amazon Device Farm File Deploy** step).
+
+That step invokes `androidDeviceFarmRegression.sh`, which uses the Node.js API script (`trigger-devicefarm-api.js`) to:
 - Uses the AWS SDK for JavaScript to interact with Device Farm
 - Uploads the app, test package, and test spec via API
 - Schedules the test run programmatically
@@ -93,7 +104,7 @@ The workflow can be triggered:
 1. **`_install-and-set-env`** - Installs Node.js and sets up environment
 2. **`_set-version`** - Sets app version and build number
 3. **`_build-android-internal-for-testing`** - Builds the Android APK
-4. **Run Device Farm Tests** - Packages and runs tests on Device Farm
+4. **AWS Device Farm — upload & schedule run** — path step `packages/core-mobile/scripts/bitrise/devicefarm/step`; packages tests and schedules the run via AWS SDK v3. Exposes `DEVICEFARM_RUN_ARN` and `DEVICEFARM_RUN_URL` for later steps.
 5. **`_send-test-result-notification-slack`** - Sends results to Slack
 
 ## Monitoring Test Runs

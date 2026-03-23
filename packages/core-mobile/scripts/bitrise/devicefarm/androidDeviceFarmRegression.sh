@@ -28,12 +28,46 @@ if [ -z "$AWS_DEFAULT_REGION" ] && [ -z "$AWS_REGION" ]; then
   export AWS_DEFAULT_REGION="us-west-2"
 fi
 
-# Verify APK exists
-if [ ! -f "$BITRISE_APK_PATH" ]; then
-  echo "❌ APK not found at: $BITRISE_APK_PATH"
+# Resolve APK path (Bitrise sets BITRISE_APK_PATH inconsistently across single builds vs Pipelines)
+# 1) $BITRISE_APK_PATH — set by android-build / sign-apk / deploy-to-bitrise-io, or shared from another stage
+# 2) Signed artifact path used by deploy-to-bitrise-io pipeline_intermediate_files in bitrise.yml
+# 3) Gradle output when build ran on this machine but deploy path differs
+APK_CANDIDATES=()
+if [ -n "${BITRISE_APK_PATH:-}" ]; then
+  APK_CANDIDATES+=("$BITRISE_APK_PATH")
+fi
+if [ -n "${BITRISE_DEPLOY_DIR:-}" ]; then
+  APK_CANDIDATES+=("$BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk")
+fi
+APK_CANDIDATES+=("$BITRISE_SOURCE_DIR/packages/core-mobile/android/app/build/outputs/apk/internal/e2e/app-internal-e2e.apk")
+
+RESOLVED_APK=""
+for p in "${APK_CANDIDATES[@]}"; do
+  if [ -f "$p" ]; then
+    RESOLVED_APK="$p"
+    break
+  fi
+done
+
+if [ -z "$RESOLVED_APK" ]; then
+  echo "❌ No internal E2E APK found."
+  echo "   Tried:"
+  for p in "${APK_CANDIDATES[@]}"; do
+    echo "     - $p"
+  done
+  echo ""
+  echo "   Single-workflow: use android-internal-e2e-aws-regression-run (builds APK in before_run)."
+  echo "   Bitrise Pipeline stage 2: use workflow android-internal-e2e-aws-regression-from-pipeline"
+  echo "   (runs pull-intermediate-files so the signed APK exists under BITRISE_DEPLOY_DIR)."
+  if [ -n "${BITRISE_DEPLOY_DIR:-}" ]; then
+    echo ""
+    echo "   Listing $BITRISE_DEPLOY_DIR:"
+    ls -la "$BITRISE_DEPLOY_DIR" 2>/dev/null || true
+  fi
   exit 1
 fi
 
+export BITRISE_APK_PATH="$RESOLVED_APK"
 echo "📱 APK path: $BITRISE_APK_PATH"
 ls -lh "$BITRISE_APK_PATH"
 

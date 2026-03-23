@@ -108,6 +108,9 @@ android {
 
         // required for react native config to work properly across different build variants
         resValue "string", "build_config_package", "com.avaxwallet"
+
+        // Main manifest uses android:usesCleartextTraffic="${usesCleartextTraffic}" — must be defined for every variant (e.g. internalE2e on CI).
+        manifestPlaceholders = [usesCleartextTraffic: "false"]
         
         // Default new architecture enabled (can be overridden per build type)
         buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", 
@@ -127,6 +130,8 @@ android {
         debug {
             signingConfig signingConfigs.debug
             minifyEnabled false
+            // Metro / local dev need HTTP; matches src/debug/AndroidManifest.xml
+            manifestPlaceholders = [usesCleartextTraffic: "true"]
             // necessary for old versions of Android to run on dev mode
             testCoverageEnabled true
             dexOptions {
@@ -144,6 +149,8 @@ android {
             initWith release
             minifyEnabled false
             signingConfig signingConfigs.debug  // Sign with debug keystore for Device Farm testing
+            // Align with src/e2e/AndroidManifest.xml (cleartext for test tooling / parity with debug)
+            manifestPlaceholders = [usesCleartextTraffic: "true"]
 
             // this is for libraries without an e2e build to know to fall back to release
             matchingFallbacks = ['release']

@@ -2,6 +2,34 @@
 
 This document lists all the environment variables and secrets you need to configure in Bitrise to run Device Farm tests.
 
+## Use the in-repo step (not the marketplace “Device Farm File Deploy”)
+
+### One workflow vs Bitrise Pipelines (two stages)
+
+| Scenario | Workflow to run |
+|----------|-----------------|
+| **Single build** — build APK and schedule Device Farm in one job | **`android-internal-e2e-aws-regression-run`** (`before_run` includes `_build-android-internal-for-testing`) |
+| **Pipeline** — stage 1 builds & uploads intermediate APK, stage 2 only runs Device Farm | Stage 1: a workflow that runs `_build-android-internal-for-testing` (e.g. same as above, or your internal E2e build). Stage 2: **`android-internal-e2e-aws-regression-from-pipeline`** (`before_run` runs **`_pull_app_files`** so `/bitrise/deploy/app-internal-e2e-bitrise-signed.apk` exists) |
+
+If stage 2 uses `BITRISE_APK_PATH=/bitrise/deploy/app-internal-e2e-bitrise-signed.apk` but **`pull-intermediate-files` never ran**, that path will not exist → use **`android-internal-e2e-aws-regression-from-pipeline`**.
+
+Workflow **`android-internal-e2e-aws-regression-run`** uses a **path step** in this repo:
+
+`path::./packages/core-mobile/scripts/bitrise/devicefarm/step`
+
+It runs `androidDeviceFarmRegression.sh` → `trigger-devicefarm-api.js` (`@aws-sdk/client-device-farm`) to upload the APK, Appium test zip, and `aws_test_spec.yaml`, then schedule the run.
+
+**Do not add** the Bitrise Integrations step **Amazon Device Farm File Deploy** (`peartherapeutics/bitrise-aws-device-farm-file-deploy`). It is effectively unmaintained and defaults to **`AWS_ACCESS_KEY` / `AWS_SECRET_KEY`**, not the standard **`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`**, which causes empty credential errors.
+
+### Step outputs (for follow-up steps)
+
+After a successful schedule, the API script registers:
+
+- **`DEVICEFARM_RUN_ARN`** — run ARN  
+- **`DEVICEFARM_RUN_URL`** — console URL  
+
+Use `$DEVICEFARM_RUN_URL` in Slack or other notification steps.
+
 ## How to Set Environment Variables in Bitrise
 
 1. Go to your Bitrise app dashboard
@@ -111,6 +139,7 @@ Your AWS credentials need the following permissions:
     {
       "Effect": "Allow",
       "Action": [
+        "devicefarm:GetProject",
         "devicefarm:CreateUpload",
         "devicefarm:GetUpload",
         "devicefarm:ScheduleRun",
@@ -131,7 +160,7 @@ After setting up the environment variables:
 
 1. Go to Bitrise dashboard
 2. Click **"Start/Schedule a Build"**
-3. Select workflow: `android-devicefarm-regression-run`
+3. Select workflow: `android-internal-e2e-aws-regression-run`
 4. Click **"Start Build"**
 5. Monitor the build logs to verify:
    - AWS credentials are working
