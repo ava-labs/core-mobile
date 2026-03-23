@@ -119,6 +119,14 @@ export const SendScreen = (): JSX.Element => {
       )
 
     case NetworkVMType.PVM:
+      if (!activeAccount.addressPVM || !activeAccount.addressCoreEth) {
+        return (
+          <ErrorState
+            title="Unable to send"
+            description="P-Chain address not available"
+          />
+        )
+      }
       return (
         <SendPVM
           onSuccess={handleSuccess}
@@ -130,6 +138,14 @@ export const SendScreen = (): JSX.Element => {
       )
 
     case NetworkVMType.AVM:
+      if (!activeAccount.addressAVM || !activeAccount.addressCoreEth) {
+        return (
+          <ErrorState
+            title="Unable to send"
+            description="X-Chain address not available"
+          />
+        )
+      }
       return (
         <SendAVM
           onSuccess={handleSuccess}
@@ -152,6 +168,14 @@ export const SendScreen = (): JSX.Element => {
       )
 
     case NetworkVMType.SVM:
+      if (!activeAccount.addressSVM) {
+        return (
+          <ErrorState
+            title="Unable to send"
+            description="Solana address not available"
+          />
+        )
+      }
       return (
         <SendSVM
           onSuccess={handleSuccess}

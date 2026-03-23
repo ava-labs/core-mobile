@@ -112,6 +112,10 @@ export const useDelegation = (): {
         throw new Error('No active account')
       }
 
+      if (!activeAccount.addressPVM || !activeAccount.addressCoreEth) {
+        throw new Error('P-Chain address not available for active account')
+      }
+
       if (!avalancheEvmProvider) {
         throw new Error('No avalanche EVM provider')
       }

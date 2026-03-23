@@ -1,8 +1,8 @@
 import { pvm } from '@avalabs/avalanchejs'
-import { Account } from 'store/account'
+import { PvmCapableAccount } from 'common/hooks/send/utils/types'
 
 export type AddDelegatorTransactionProps = {
-  account: Account
+  account: PvmCapableAccount
   // Id of the node to delegate. starts with “NodeID-”
   nodeId: string
   //Amount to be delegated in nAVAX

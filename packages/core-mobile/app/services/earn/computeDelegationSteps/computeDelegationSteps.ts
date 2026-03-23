@@ -52,6 +52,11 @@ export const computeDelegationSteps = async ({
   xpAddresses: string[]
   // eslint-disable-next-line sonarjs/cognitive-complexity
 }): Promise<Step[]> => {
+  const { addressPVM } = account
+  if (!addressPVM) {
+    throw new Error('P-Chain address not available for account')
+  }
+
   const availablePChainBalance =
     pChainBalance?.balancePerType.unlockedUnstaked ?? 0n
   const isTestnet = Boolean(avaxXPNetwork.isTestnet)
@@ -75,7 +80,7 @@ export const computeDelegationSteps = async ({
           stakeAmount,
           account,
           isTestnet,
-          rewardAddress: account.addressPVM ?? '',
+          rewardAddress: addressPVM,
           feeState,
           provider,
           pFeeAdjustmentThreshold,
@@ -102,7 +107,7 @@ export const computeDelegationSteps = async ({
         const importPFee = await getImportPFee({
           account,
           isTestnet,
-          destinationAddress: account.addressPVM ?? '',
+          destinationAddress: addressPVM,
           feeState,
           provider,
           xpAddresses
