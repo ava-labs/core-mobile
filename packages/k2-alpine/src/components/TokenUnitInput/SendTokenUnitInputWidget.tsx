@@ -206,7 +206,7 @@ export const SendTokenUnitInputWidget = forwardRef<
                 amount.toSubUnit() === button.amount.toSubUnit()
               return (
                 <Button
-                  key={`${button.text}-${index}`}
+                  key={index}
                   size="small"
                   type={isSelected ? 'primary' : 'secondary'}
                   style={{
