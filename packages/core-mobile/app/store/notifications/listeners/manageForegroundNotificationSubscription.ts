@@ -6,7 +6,6 @@ export async function manageForegroundNotificationSubscription(
   listenerApi: AppListenerEffectAPI
 ): Promise<void> {
   const { dispatch } = listenerApi
-  await FCMService.registerForRemoteMessages()
   FCMService.listenForMessagesForeground()
   FCMService.listenForTokenRefresh(() => {
     dispatch(onFcmTokenChange)

@@ -291,8 +291,8 @@ const StakeConfirmScreen = (): JSX.Element => {
     (e: Error): void => {
       if (!isUserRejectedError(e)) {
         AnalyticsService.capture('StakeDelegationFail', {
-        isAdvanced: nodeId !== undefined
-      })
+          isAdvanced: nodeId !== undefined
+        })
       }
 
       resetLedgerState()

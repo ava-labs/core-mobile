@@ -19,7 +19,7 @@ const getQueryKey = (
 
 const getQueryFn = (network: Network) => () =>
   NetworkFeeService.getNetworkFee(network).catch(error => {
-    Logger.error(error)
+    Logger.error('[useNetworkFee] failed to fetch network fee', error)
     throw error
   })
 

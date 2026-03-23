@@ -45,14 +45,12 @@ export const EVENT_TO_CH_ID: Record<string, ChannelId> = {
  * Wrapper for @react-native-firebase/messaging
  */
 class FCMService {
-  // call once at app startup to register for remote messages on iOS
-  registerForRemoteMessages = async (): Promise<void> => {
+  getFCMToken = async (): Promise<string> => {
+    // registerDeviceForRemoteMessages is required on iOS before getToken().
+    // It's idempotent so safe to call on every token fetch.
     if (Platform.OS === 'ios') {
       await messaging().registerDeviceForRemoteMessages()
     }
-  }
-
-  getFCMToken = async (): Promise<string> => {
     return await messaging().getToken()
   }
 
