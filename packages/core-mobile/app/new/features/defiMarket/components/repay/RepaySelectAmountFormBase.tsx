@@ -52,11 +52,6 @@ export function RepaySelectAmountFormBase({
     )
   }, [borrowPosition, market])
 
-  const maxRepayAmount = useMemo(() => {
-    if (!borrowedAmountUnit || !balance) return undefined
-    return borrowedAmountUnit.lt(balance) ? borrowedAmountUnit : balance
-  }, [borrowedAmountUnit, balance])
-
   const calculateHealthScoreAfterRepay = useCallback(
     (repayAmount: TokenUnit): number | undefined => {
       if (currentHealthScore === undefined || Number.isNaN(currentHealthScore))
@@ -124,14 +119,14 @@ export function RepaySelectAmountFormBase({
 
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {
-      if (maxRepayAmount && amt.gt(maxRepayAmount)) {
-        throw new Error('The specified amount exceeds available to repay')
+      if (balance && amt.gt(balance)) {
+        throw new Error('The specified amount exceeds your balance')
       }
       if (borrowedAmountUnit && amt.gt(borrowedAmountUnit)) {
         throw new Error('The specified amount exceeds your debt')
       }
     },
-    [maxRepayAmount, borrowedAmountUnit]
+    [borrowedAmountUnit, balance]
   )
 
   const handleSubmit = useCallback(async () => {
@@ -161,8 +156,10 @@ export function RepaySelectAmountFormBase({
     !isSubmitting &&
     amount &&
     amount.gt(0) &&
-    maxRepayAmount &&
-    (amount.lt(maxRepayAmount) || amount.eq(maxRepayAmount))
+    borrowedAmountUnit &&
+    (amount.lt(borrowedAmountUnit) || amount.eq(borrowedAmountUnit)) &&
+    balance &&
+    (amount.lt(balance) || amount.eq(balance))
 
   const renderFooter = useCallback(() => {
     return (
@@ -201,7 +198,7 @@ export function RepaySelectAmountFormBase({
           validateAmount={validateAmount}
           disabled={isSubmitting}
           autoFocus
-          maxAmount={maxRepayAmount}
+          maxAmount={borrowedAmountUnit}
           presetPercentages={[25, 50]}
         />
 

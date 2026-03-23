@@ -30,8 +30,6 @@ export const useTokenBalance = (
 
     const token = findMatchingTokenWithBalance(asset, tokens)
 
-    if (token?.balance === undefined) return undefined
-
-    return new TokenUnit(token.balance, asset.decimals, asset.symbol)
+    return new TokenUnit(token?.balance ?? 0n, asset.decimals, asset.symbol)
   }, [asset, tokens])
 }
