@@ -254,7 +254,7 @@ class EarnService {
     const startDateUnix = getUnixTime(startDate)
     const endDateUnix = getUnixTime(endDate)
     const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isTestnet)
-    const rewardAddress = account.addressPVM
+    const rewardAddress = account.addressPVM ?? ''
 
     const unsignedTx = await AvalancheWalletService.createAddDelegatorTx({
       account,

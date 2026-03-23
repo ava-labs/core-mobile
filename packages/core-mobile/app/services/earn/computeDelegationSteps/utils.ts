@@ -117,7 +117,7 @@ export const getDelegationFeePostPImport = async ({
       account,
       isTestnet,
       stakeAmountInNAvax: stakeAmount,
-      destinationAddress: account.addressPVM,
+      destinationAddress: account.addressPVM ?? '',
       feeState,
       xpAddresses
     })
@@ -125,7 +125,7 @@ export const getDelegationFeePostPImport = async ({
   const tx = await Avalanche.parseAvalancheTx(
     unsignedTx,
     provider,
-    account.addressPVM
+    account.addressPVM ?? ''
   )
 
   return tx.txFee
@@ -185,7 +185,7 @@ export const getDelegationFeePostCExportAndPImport = async ({
         account,
         isTestnet,
         stakeAmountInNAvax: stakeAmount,
-        destinationAddress: account.addressPVM,
+        destinationAddress: account.addressPVM ?? '',
         feeState,
         xpAddresses
       })
@@ -227,7 +227,7 @@ export const getDelegationFeePostCExportAndPImport = async ({
         account,
         isTestnet,
         stakeAmountInNAvax: stakeAmount,
-        destinationAddress: account.addressPVM,
+        destinationAddress: account.addressPVM ?? '',
         feeState,
         xpAddresses
       })
@@ -236,7 +236,7 @@ export const getDelegationFeePostCExportAndPImport = async ({
   const tx = await Avalanche.parseAvalancheTx(
     unsignedTx,
     provider,
-    account.addressPVM
+    account.addressPVM ?? ''
   )
 
   return tx.txFee
@@ -316,7 +316,7 @@ export const getImportPFeePostCExport = async ({
     account,
     isTestnet,
     sourceChain: 'C',
-    destinationAddress: account.addressPVM,
+    destinationAddress: account.addressPVM ?? '',
     feeState,
     xpAddresses
   })
@@ -324,7 +324,7 @@ export const getImportPFeePostCExport = async ({
   const tx = await Avalanche.parseAvalancheTx(
     unsignedTx,
     provider,
-    account.addressPVM
+    account.addressPVM ?? ''
   )
 
   return tx.txFee
@@ -357,7 +357,7 @@ export const getExportCFee = async ({
     account,
     isTestnet,
     destinationChain: 'P',
-    destinationAddress: account.addressPVM,
+    destinationAddress: account.addressPVM ?? '',
     shouldValidateBurnedAmount: true,
     avalancheEvmProvider,
     xpAddresses

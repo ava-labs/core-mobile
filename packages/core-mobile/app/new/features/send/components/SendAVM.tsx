@@ -3,6 +3,7 @@ import { TokenWithBalanceAVM } from '@avalabs/vm-module-types'
 import { Account } from 'store/account'
 import { Network } from '@avalabs/core-chains-sdk'
 import useAVMSend from 'common/hooks/send/useAVMSend'
+import type { AvmCapableAccount } from 'common/hooks/send/utils/types'
 import { useSendSelectedToken } from '../store'
 import { useSendContext } from '../context/sendContext'
 import { SendToken } from './SendToken'
@@ -22,14 +23,14 @@ export const SendAVM = ({
 }): JSX.Element => {
   const { maxFee } = useSendContext()
   const [selectedToken] = useSendSelectedToken()
-  const fromAddress = account.addressAVM
+  const fromAddress = account.addressAVM ?? ''
 
   const { send } = useAVMSend({
     fromAddress,
     network,
     maxFee,
     nativeToken,
-    account
+    account: account as AvmCapableAccount
   })
 
   const handleSend = async (): Promise<void> => {

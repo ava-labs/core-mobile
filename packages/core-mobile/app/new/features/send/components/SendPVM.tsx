@@ -2,6 +2,7 @@ import React from 'react'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
 import { Account } from 'store/account'
 import usePVMSend from 'common/hooks/send/usePVMSend'
+import type { PvmCapableAccount } from 'common/hooks/send/utils/types'
 import { Network } from '@avalabs/core-chains-sdk'
 import { useSendSelectedToken } from '../store'
 import { useSendContext } from '../context/sendContext'
@@ -22,14 +23,14 @@ export const SendPVM = ({
 }): JSX.Element => {
   const { maxFee } = useSendContext()
   const [selectedToken] = useSendSelectedToken()
-  const fromAddress = account.addressPVM
+  const fromAddress = account.addressPVM ?? ''
 
   const { send } = usePVMSend({
     network,
     fromAddress,
     maxFee,
     nativeToken,
-    account
+    account: account as PvmCapableAccount
   })
 
   const handleSend = async (): Promise<void> => {

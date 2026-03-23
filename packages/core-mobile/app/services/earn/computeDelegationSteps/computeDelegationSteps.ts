@@ -75,7 +75,7 @@ export const computeDelegationSteps = async ({
           stakeAmount,
           account,
           isTestnet,
-          rewardAddress: account.addressPVM,
+          rewardAddress: account.addressPVM ?? '',
           feeState,
           provider,
           pFeeAdjustmentThreshold,
@@ -102,7 +102,7 @@ export const computeDelegationSteps = async ({
         const importPFee = await getImportPFee({
           account,
           isTestnet,
-          destinationAddress: account.addressPVM,
+          destinationAddress: account.addressPVM ?? '',
           feeState,
           provider,
           xpAddresses

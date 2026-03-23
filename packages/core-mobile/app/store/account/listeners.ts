@@ -139,14 +139,14 @@ const initAccounts = async (
         [acc.id]: {
           mainnet: {
             addressBTC: mainnetAccount.addressBTC,
-            addressAVM: mainnetAccount.addressAVM,
-            addressPVM: mainnetAccount.addressPVM,
+            addressAVM: mainnetAccount.addressAVM ?? '',
+            addressPVM: mainnetAccount.addressPVM ?? '',
             addressCoreEth: mainnetAccount.addressCoreEth ?? ''
           },
           testnet: {
             addressBTC: testnetAccount.addressBTC,
-            addressAVM: testnetAccount.addressAVM,
-            addressPVM: testnetAccount.addressPVM,
+            addressAVM: testnetAccount.addressAVM ?? '',
+            addressPVM: testnetAccount.addressPVM ?? '',
             addressCoreEth: testnetAccount.addressCoreEth ?? ''
           },
           walletId: activeWallet.id,

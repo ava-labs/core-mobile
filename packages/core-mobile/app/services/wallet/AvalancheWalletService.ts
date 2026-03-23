@@ -484,7 +484,7 @@ class AvalancheWalletService {
       account.addressC,
       stripAddressPrefix(account.addressCoreEth),
       xpAddresses,
-      stripAddressPrefix(account.addressPVM),
+      stripAddressPrefix(account.addressPVM ?? ''),
       provXP
     )
   }

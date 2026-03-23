@@ -34,7 +34,7 @@ class GaslessService {
       return null
     }
     const appCheckToken = (await AppCheckService.getToken()).token
-    this.sdk.setAppCheckToken(appCheckToken)
+    this.sdk.setHeaders({ 'X-Firebase-AppCheck': appCheckToken })
     return this.sdk
   }
 

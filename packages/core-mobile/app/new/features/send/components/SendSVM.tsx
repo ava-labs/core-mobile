@@ -3,6 +3,7 @@ import useSVMSend from 'common/hooks/send/useSVMSend'
 import { Network } from '@avalabs/core-chains-sdk'
 import { TokenType, TokenWithBalanceSVM } from '@avalabs/vm-module-types'
 import { Account } from 'store/account'
+import type { SvmCapableAccount } from 'common/hooks/send/utils/types'
 import { Address, address as toAddress } from '@solana/kit'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
@@ -40,11 +41,11 @@ export const SendSVM = ({
   const [minimumSendAmount, setMinimumSendAmount] = useState<TokenUnit>()
 
   const { send } = useSVMSend({
-    fromAddress: account.addressSVM,
+    fromAddress: account.addressSVM ?? '',
     network,
     maxFee,
     nativeToken,
-    account
+    account: account as SvmCapableAccount
   })
 
   const handleSend = async (): Promise<void> => {
