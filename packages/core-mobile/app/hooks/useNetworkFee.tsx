@@ -18,7 +18,10 @@ const getQueryKey = (
 ]
 
 const getQueryFn = (network: Network) => () =>
-  NetworkFeeService.getNetworkFee(network).catch(Logger.error)
+  NetworkFeeService.getNetworkFee(network).catch(error => {
+    Logger.error(error)
+    throw error
+  })
 
 export const prefetchNetworkFee = (network: Network | undefined): void => {
   if (network) {

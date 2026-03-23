@@ -102,10 +102,11 @@ const StakeConfirmScreen = (): JSX.Element => {
   const localValidatedStakingEndTime = useMemo(() => {
     return new Date(validatedStakingEndTime.getTime())
   }, [validatedStakingEndTime])
+  // skip reward estimation until validator is loaded to avoid passing NaN delegationFee
   const estimatedReward = useStakeEstimatedReward({
     amount: stakeAmount,
-    duration: validatedStakingDuration,
-    delegationFee: Number(validator?.delegationFee)
+    duration: validator ? validatedStakingDuration : undefined,
+    delegationFee: Number(validator?.delegationFee ?? 0)
   })
   const [isAlertVisible, setIsAlertVisible] = useState(false)
 
