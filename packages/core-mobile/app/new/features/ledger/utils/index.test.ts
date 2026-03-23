@@ -90,21 +90,15 @@ describe('isBitcoinCompatibleApp', () => {
     })
 
     it('is not compatible when version exceeds the max (patch bump)', () => {
-      expect(isBitcoinCompatibleApp(LedgerAppType.BITCOIN, '2.4.3')).toBe(
-        false
-      )
+      expect(isBitcoinCompatibleApp(LedgerAppType.BITCOIN, '2.4.3')).toBe(false)
     })
 
     it('is not compatible when version exceeds the max (minor bump)', () => {
-      expect(isBitcoinCompatibleApp(LedgerAppType.BITCOIN, '2.5.0')).toBe(
-        false
-      )
+      expect(isBitcoinCompatibleApp(LedgerAppType.BITCOIN, '2.5.0')).toBe(false)
     })
 
     it('is not compatible when version exceeds the max (major bump)', () => {
-      expect(isBitcoinCompatibleApp(LedgerAppType.BITCOIN, '3.0.0')).toBe(
-        false
-      )
+      expect(isBitcoinCompatibleApp(LedgerAppType.BITCOIN, '3.0.0')).toBe(false)
     })
   })
 
@@ -126,9 +120,7 @@ describe('isBitcoinCompatibleApp', () => {
     })
 
     it('Unknown app is not compatible', () => {
-      expect(isBitcoinCompatibleApp(LedgerAppType.UNKNOWN, '1.0.0')).toBe(
-        false
-      )
+      expect(isBitcoinCompatibleApp(LedgerAppType.UNKNOWN, '1.0.0')).toBe(false)
     })
   })
 })
