@@ -10,7 +10,11 @@ if [[ -z "${BITRISE_SOURCE_DIR:-}" ]]; then
   exit 1
 fi
 
-REGRESSION_SCRIPT="${BITRISE_SOURCE_DIR}/packages/core-mobile/scripts/bitrise/devicefarm/androidDeviceFarmRegression.sh"
+# Resolve sibling script path — do not use BITRISE_SOURCE_DIR/packages/core-mobile/... here:
+# Bitrise often sets BITRISE_SOURCE_DIR to packages/core-mobile already (after "Change Working Directory"),
+# which would incorrectly produce .../packages/core-mobile/packages/core-mobile/...
+STEP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REGRESSION_SCRIPT="${STEP_DIR}/../androidDeviceFarmRegression.sh"
 
 if [[ ! -f "$REGRESSION_SCRIPT" ]]; then
   echo "❌ Device Farm regression script not found: $REGRESSION_SCRIPT"

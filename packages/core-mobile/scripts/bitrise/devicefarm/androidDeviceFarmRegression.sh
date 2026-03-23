@@ -3,8 +3,23 @@ set -ex
 
 echo "🚀 Running Android Appium tests on AWS Device Farm via API..."
 
-# Change to the core-mobile directory
-cd "$BITRISE_SOURCE_DIR/packages/core-mobile"
+if [[ -z "${BITRISE_SOURCE_DIR:-}" ]]; then
+  echo "❌ BITRISE_SOURCE_DIR is not set (expected on Bitrise CI)."
+  exit 1
+fi
+
+# BITRISE_SOURCE_DIR may be monorepo root (/bitrise/src) or already packages/core-mobile
+# (e.g. after Bitrise "Change Working Directory"). Resolve the package root once.
+if [[ -d "${BITRISE_SOURCE_DIR}/packages/core-mobile/android" ]]; then
+  CORE_MOBILE_DIR="${BITRISE_SOURCE_DIR}/packages/core-mobile"
+elif [[ -d "${BITRISE_SOURCE_DIR}/android" ]]; then
+  CORE_MOBILE_DIR="${BITRISE_SOURCE_DIR}"
+else
+  echo "❌ Could not find core-mobile Android project under BITRISE_SOURCE_DIR=${BITRISE_SOURCE_DIR}"
+  exit 1
+fi
+
+cd "$CORE_MOBILE_DIR"
 
 # Verify Node.js is available
 if ! command -v node &> /dev/null; then
@@ -39,7 +54,7 @@ fi
 if [ -n "${BITRISE_DEPLOY_DIR:-}" ]; then
   APK_CANDIDATES+=("$BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk")
 fi
-APK_CANDIDATES+=("$BITRISE_SOURCE_DIR/packages/core-mobile/android/app/build/outputs/apk/internal/e2e/app-internal-e2e.apk")
+APK_CANDIDATES+=("$CORE_MOBILE_DIR/android/app/build/outputs/apk/internal/e2e/app-internal-e2e.apk")
 
 RESOLVED_APK=""
 for p in "${APK_CANDIDATES[@]}"; do
@@ -76,7 +91,7 @@ echo "📦 Packaging tests for Device Farm..."
 yarn devicefarm:package
 
 # Verify test package was created
-TEST_PACKAGE="$BITRISE_SOURCE_DIR/packages/core-mobile/e2e-appium/appium-tests-devicefarm.zip"
+TEST_PACKAGE="$CORE_MOBILE_DIR/e2e-appium/appium-tests-devicefarm.zip"
 if [ ! -f "$TEST_PACKAGE" ]; then
   echo "❌ Test package not found at: $TEST_PACKAGE"
   exit 1
@@ -86,7 +101,7 @@ echo "✅ Test package created: $TEST_PACKAGE"
 ls -lh "$TEST_PACKAGE"
 
 # Verify test spec exists
-TEST_SPEC="$BITRISE_SOURCE_DIR/packages/core-mobile/e2e-appium/aws_test_spec.yaml"
+TEST_SPEC="$CORE_MOBILE_DIR/e2e-appium/aws_test_spec.yaml"
 if [ ! -f "$TEST_SPEC" ]; then
   echo "❌ Test spec not found at: $TEST_SPEC"
   exit 1
