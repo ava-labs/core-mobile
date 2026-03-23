@@ -27,6 +27,11 @@ import { SendEVM } from '../components/SendEVM'
 import { useNativeTokenWithBalanceByNetwork } from '../hooks/useNativeTokenWithBalanceByNetwork'
 import { useSendSelectedToken } from '../store'
 import { SendSVM } from '../components/SendSVM'
+import {
+  AvmCapableAccount,
+  PvmCapableAccount,
+  SvmCapableAccount
+} from 'common/hooks/send/utils/types'
 
 export const SendScreen = (): JSX.Element => {
   const { canGoBack, back } = useRouter()
@@ -132,7 +137,7 @@ export const SendScreen = (): JSX.Element => {
           onSuccess={handleSuccess}
           onFailure={handleFailure}
           nativeToken={nativeToken as TokenWithBalancePVM}
-          account={activeAccount}
+          account={activeAccount as PvmCapableAccount}
           network={network}
         />
       )
@@ -151,7 +156,7 @@ export const SendScreen = (): JSX.Element => {
           onSuccess={handleSuccess}
           onFailure={handleFailure}
           nativeToken={nativeToken as TokenWithBalanceAVM}
-          account={activeAccount}
+          account={activeAccount as AvmCapableAccount}
           network={network}
         />
       )
@@ -181,7 +186,7 @@ export const SendScreen = (): JSX.Element => {
           onSuccess={handleSuccess}
           onFailure={handleFailure}
           nativeToken={nativeToken as TokenWithBalanceSVM}
-          account={activeAccount}
+          account={activeAccount as SvmCapableAccount}
           network={network}
         />
       )

@@ -26,6 +26,7 @@ import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { selectActiveAccount } from 'store/account'
 import { getMinimumStakeDurationMs } from 'services/earn/utils'
 import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
+import { PvmCapableAccount } from 'common/hooks/send/utils/types'
 import {
   useAvalancheEvmProvider,
   useAvalancheXpProvider
@@ -171,7 +172,7 @@ export const useDelegation = (): {
             txHash = await EarnService.issueAddDelegatorTransaction({
               walletId: activeWallet.id,
               walletType: activeWallet.type,
-              account: activeAccount,
+              account: activeAccount as PvmCapableAccount,
               endDate: delegateEndDate,
               isTestnet: isDeveloperMode,
               nodeId,
