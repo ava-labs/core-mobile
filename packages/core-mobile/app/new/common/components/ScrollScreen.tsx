@@ -7,7 +7,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import {
   LayoutChangeEvent,
   LayoutRectangle,
@@ -145,13 +145,13 @@ export const ScrollScreen = ({
     }
   })
 
-  useLayoutEffect(() => {
-    // eslint-disable-next-line max-params
-    headerRef?.current?.measure((x, y, width, height) => {
-      contentHeaderHeight.value = height
-      setHeaderLayout({ x, y, width, height })
-    })
-  }, [contentHeaderHeight])
+  // Header: onLayout (not one-shot measure) so fading nav separator stays correct when only
+  // renderHeader is used — works together with footer onLayout below (CP-13638 padding).
+  const onHeaderLayout = useCallback((event: LayoutChangeEvent) => {
+    const { x, y, width, height } = event.nativeEvent.layout
+    contentHeaderHeight.value = height
+    setHeaderLayout({ x, y, width, height })
+  }, [])
 
   const onFooterLayout = useCallback((event: LayoutChangeEvent) => {
     setFooterMeasuredHeight(event.nativeEvent.layout.height)
@@ -172,6 +172,7 @@ export const ScrollScreen = ({
           <View
             ref={headerRef}
             collapsable={false}
+            onLayout={onHeaderLayout}
             style={[headerStyle, hasTitle ? { gap: 8 } : undefined]}>
             {title ? (
               <Animated.View style={[animatedHeaderStyle]}>
@@ -197,6 +198,7 @@ export const ScrollScreen = ({
         <View
           ref={headerRef}
           collapsable={false}
+          onLayout={onHeaderLayout}
           style={[
             headerStyle,
             {
@@ -213,6 +215,7 @@ export const ScrollScreen = ({
     headerRef,
     headerHeight,
     headerStyle,
+    onHeaderLayout,
     renderHeader,
     subtitle,
     title,
@@ -224,7 +227,7 @@ export const ScrollScreen = ({
       const footer = renderFooter()
       if (footer) {
         const footerInner = (
-          <View onLayout={onFooterLayout}>
+          <View collapsable={false} onLayout={onFooterLayout}>
             <LinearGradientBottomWrapper>
               <Animated.View
                 style={{

@@ -96,11 +96,10 @@ export const useFadingHeaderNavigation = ({
     const latestTargetLayout = targetLayoutRef.current
 
     if (latestTargetLayout && contentOffsetY !== undefined) {
-      targetHiddenProgress.value = clamp(
-        contentOffsetY / latestTargetLayout.height,
-        0,
-        1
-      )
+      const h = latestTargetLayout.height
+      // Avoid divide-by-zero: 0 height makes progress NaN/Infinity and forces full-opacity separator (Android).
+      targetHiddenProgress.value =
+        h > 0 ? clamp(contentOffsetY / h, 0, 1) : 0
       scrollY.value = contentOffsetY
     }
   }
