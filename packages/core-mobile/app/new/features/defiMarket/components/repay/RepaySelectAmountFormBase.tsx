@@ -84,10 +84,7 @@ export function RepaySelectAmountFormBase({
       if (amount.toSubUnit() === 0n) return currentHealthScore
 
       // Full repay of this token — check if all debt would be cleared
-      if (
-        borrowedAmountUnit &&
-        amount.toSubUnit() >= borrowedAmountUnit.toSubUnit()
-      ) {
+      if (amount.toSubUnit() >= borrowedAmountUnit.toSubUnit()) {
         const pricePerToken =
           market.asset.mintTokenBalance.price.value.toNumber()
         const tokenDebtUsd =
@@ -109,7 +106,7 @@ export function RepaySelectAmountFormBase({
   ])
 
   const remainingDebt = useMemo(() => {
-    if (!borrowedAmountUnit || !amount) return borrowedAmountUnit
+    if (!amount) return borrowedAmountUnit
     try {
       const debtRaw = borrowedAmountUnit.toSubUnit()
       const repayRaw = amount.toSubUnit()
@@ -126,10 +123,10 @@ export function RepaySelectAmountFormBase({
 
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {
-      if (exceedsBalance(amt, balance)) {
+      if (amt.gt(balance)) {
         throw new Error('The specified amount exceeds your balance')
       }
-      if (exceedsDebt(amt, borrowedAmountUnit)) {
+      if (amt.gt(borrowedAmountUnit)) {
         throw new Error('The specified amount exceeds your debt')
       }
     },
@@ -137,7 +134,7 @@ export function RepaySelectAmountFormBase({
   )
 
   const handleSubmit = useCallback(async () => {
-    if (!amount || !borrowedAmountUnit) return
+    if (!amount) return
 
     const isMaxRepay =
       amount.gt(borrowedAmountUnit) || amount.eq(borrowedAmountUnit)
@@ -163,9 +160,8 @@ export function RepaySelectAmountFormBase({
     !isSubmitting &&
     !!amount &&
     amount.gt(0) &&
-    borrowedAmountUnit !== undefined &&
-    !exceedsDebt(amount, borrowedAmountUnit) &&
-    !exceedsBalance(amount, balance)
+    !amount.gt(borrowedAmountUnit) &&
+    !amount.gt(balance)
 
   const renderFooter = useCallback(() => {
     return (
@@ -245,17 +241,4 @@ export function RepaySelectAmountFormBase({
       </View>
     </ScrollScreen>
   )
-}
-
-/** True when `amt` is strictly greater than wallet balance (only when balance is known). */
-function exceedsBalance(
-  amt: TokenUnit,
-  balance: TokenUnit | undefined
-): boolean {
-  return balance !== undefined && amt.gt(balance)
-}
-
-/** True when `amt` is strictly greater than borrowed debt for this market. */
-function exceedsDebt(amt: TokenUnit, debt: TokenUnit | undefined): boolean {
-  return debt !== undefined && amt.gt(debt)
 }
