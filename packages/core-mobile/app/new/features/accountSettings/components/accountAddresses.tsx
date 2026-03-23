@@ -17,10 +17,10 @@ import { NetworkVMType } from '@avalabs/vm-module-types'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
-import { WalletType } from 'services/wallet/types'
 import { useSelector } from 'react-redux'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { useRouter } from 'expo-router'
+import { selectIsWalletLedger } from 'store/wallet/slice'
 
 export const AccountAddresses = ({
   account
@@ -33,18 +33,11 @@ export const AccountAddresses = ({
   const activeWallet = useActiveWallet()
   const { networks } = useCombinedPrimaryNetworks({ hideEmptySolana: false })
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
-
+  const isLedger = useSelector(selectIsWalletLedger(activeWallet.id))
   const isMissingSolanaAddress = useMemo(
     () => account?.addressSVM === undefined || account?.addressSVM.length === 0,
     [account?.addressSVM]
   )
-
-  const isLedger = useMemo(() => {
-    return (
-      activeWallet.type === WalletType.LEDGER_LIVE ||
-      activeWallet.type === WalletType.LEDGER
-    )
-  }, [activeWallet.type])
 
   const onCopyAddress = useCallback((value: string, message: string): void => {
     copyToClipboard(value, message)

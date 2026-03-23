@@ -48,5 +48,5 @@ export enum RecoveryEvents {
   /**
    * We cannot obtain atomic UTXOs for some reason
    */
-  GetAtomicUTXOsFailIng
+  GetAtomicUTXOsFailing
 }

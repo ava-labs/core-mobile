@@ -5,6 +5,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { ThunkApi } from 'store/types'
 import {
   selectActiveWalletId,
+  selectIsWalletLedger,
   selectWalletById,
   setActiveWallet
 } from 'store/wallet/slice'
@@ -31,6 +32,7 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
   async (walletId, thunkApi) => {
     const state = thunkApi.getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
+    const isLedger = selectIsWalletLedger(walletId)(state)
 
     const wallet = selectWalletById(walletId)(state)
     if (!wallet) {
@@ -52,10 +54,7 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
     thunkApi.dispatch(setAccount(acc))
     thunkApi.dispatch(setActiveAccountId(acc.id))
 
-    if (
-      wallet.type === WalletType.LEDGER ||
-      wallet.type === WalletType.LEDGER_LIVE
-    ) {
+    if (isLedger) {
       // Store the xpub for this account in wallet secret
       if (result.xpub) {
         const secretResult = await BiometricsSDK.loadWalletSecret(walletId)
