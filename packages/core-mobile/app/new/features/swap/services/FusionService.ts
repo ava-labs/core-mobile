@@ -316,8 +316,8 @@ class FusionService implements IFusionService {
 
     result
       .then(concluded => {
+        this.#trackingCancels.delete(concluded.id)
         if (isConcludedTransfer(concluded)) {
-          this.#trackingCancels.delete(concluded.id)
           onCompleted?.(concluded)
         }
       })
