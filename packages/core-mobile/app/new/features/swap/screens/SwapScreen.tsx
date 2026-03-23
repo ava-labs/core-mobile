@@ -60,6 +60,7 @@ import { useMaxSwapAmount } from '../hooks/useMaxSwapAmount'
 import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 import { useFeeValidation } from '../hooks/useFeeValidation'
 import { getTokenKey } from '../utils/tokenKey'
+import { caip2ChainIds } from 'consts/caip2ChainIds'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -73,6 +74,34 @@ export const SwapScreen = (): JSX.Element => {
     initialFromCaip2Id?: string
     initialToCaip2Id?: string
   }>()
+
+  const initialTokenInfo = useMemo(() => {
+    const isDefaultSwapPair =
+      params.initialTokenIdFrom === undefined &&
+      params.initialTokenIdTo === undefined
+    if (isDefaultSwapPair) {
+      return {
+        initialTokenIdFrom: tokenIds.AVAX,
+        initialTokenIdTo: tokenIds.USDC,
+        initialFromCaip2Id: isDeveloperMode
+          ? caip2ChainIds.FUJI
+          : caip2ChainIds.C_CHAIN,
+        initialToCaip2Id: isDeveloperMode
+          ? caip2ChainIds.FUJI
+          : caip2ChainIds.C_CHAIN
+      }
+    }
+    return {
+      initialTokenIdFrom: params.initialTokenIdFrom,
+      initialTokenIdTo: params.initialTokenIdTo,
+      initialFromCaip2Id:
+        params.initialFromCaip2Id ??
+        (isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN),
+      initialToCaip2Id:
+        params.initialToCaip2Id ??
+        (isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN)
+    }
+  }, [params, isDeveloperMode])
 
   const { formatCurrency } = useFormatCurrency()
   const { getMarketTokenById } = useWatchlist()
@@ -113,7 +142,7 @@ export const SwapScreen = (): JSX.Element => {
   })
 
   const { isTokensLoading, btcBLocalToken } = useFusionTokenLookup({
-    params,
+    tokenInfo: initialTokenInfo,
     accountTokens,
     isDeveloperMode,
     setFromToken,

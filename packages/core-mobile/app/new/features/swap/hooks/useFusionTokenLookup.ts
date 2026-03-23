@@ -11,7 +11,7 @@ import { EvmChainId } from '@avalabs/fusion-sdk'
 import { LocalTokenWithBalance } from 'store/balance'
 import { buildLocalToken } from '../utils/buildLocalToken'
 
-type Params = {
+type InitialTokenInfo = {
   initialTokenIdFrom?: string
   initialTokenIdTo?: string
   initialFromCaip2Id?: string
@@ -40,13 +40,13 @@ const toTokensKey = (id: string, caip2Id?: string): string => {
 }
 
 export function useFusionTokenLookup({
-  params,
+  tokenInfo,
   accountTokens,
   isDeveloperMode,
   setFromToken,
   setToToken
 }: {
-  params: Params
+  tokenInfo: InitialTokenInfo
   accountTokens: LocalTokenWithBalance[]
   isDeveloperMode: boolean
   setFromToken: (token: LocalTokenWithBalance | undefined) => void
@@ -60,39 +60,44 @@ export function useFusionTokenLookup({
     const ids: Array<Caip2IdAddressPair | InternalId> = [
       { internalId: tokenIds.BTC_B }
     ]
-    if (params.initialTokenIdFrom)
+    if (tokenInfo.initialTokenIdFrom)
       ids.push(
-        toLookupEntry(params.initialTokenIdFrom, params.initialFromCaip2Id)
+        toLookupEntry(
+          tokenInfo.initialTokenIdFrom,
+          tokenInfo.initialFromCaip2Id
+        )
       )
-    if (params.initialTokenIdTo)
-      ids.push(toLookupEntry(params.initialTokenIdTo, params.initialToCaip2Id))
+    if (tokenInfo.initialTokenIdTo)
+      ids.push(
+        toLookupEntry(tokenInfo.initialTokenIdTo, tokenInfo.initialToCaip2Id)
+      )
     return ids
   }, [
-    params.initialTokenIdFrom,
-    params.initialTokenIdTo,
-    params.initialFromCaip2Id,
-    params.initialToCaip2Id
+    tokenInfo.initialTokenIdFrom,
+    tokenInfo.initialTokenIdTo,
+    tokenInfo.initialFromCaip2Id,
+    tokenInfo.initialToCaip2Id
   ])
 
   const { data: tokens, isLoading: isTokensLoading } =
     useTokenLookup(lookupTokenIds)
 
   const fromTokenChainId = useMemo(() => {
-    if (!params.initialFromCaip2Id) return undefined
-    return getChainIdFromCaip2(params.initialFromCaip2Id)
-  }, [params.initialFromCaip2Id])
+    if (!tokenInfo.initialFromCaip2Id) return undefined
+    return getChainIdFromCaip2(tokenInfo.initialFromCaip2Id)
+  }, [tokenInfo.initialFromCaip2Id])
 
   const toTokenChainId = useMemo(() => {
-    if (!params.initialToCaip2Id) return undefined
-    return getChainIdFromCaip2(params.initialToCaip2Id)
-  }, [params.initialToCaip2Id])
+    if (!tokenInfo.initialToCaip2Id) return undefined
+    return getChainIdFromCaip2(tokenInfo.initialToCaip2Id)
+  }, [tokenInfo.initialToCaip2Id])
 
   const btcBLocalToken = useMemo(() => {
-    const tokenInfo = tokens[tokenIds.BTC_B.toLowerCase()]
-    if (!tokenInfo) return undefined
+    const token = tokens[tokenIds.BTC_B.toLowerCase()]
+    if (!token) return undefined
     return buildLocalToken({
       accountTokens,
-      tokenInfo,
+      tokenInfo: token,
       caip2Id: isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN,
       chainId: isDeveloperMode
         ? EvmChainId.AVALANCHE_TESTNET
@@ -105,8 +110,8 @@ export function useFusionTokenLookup({
   const setInitialTokensFx = useCallback(() => {
     if (initialized.current) return
 
-    const initialTokenIdFrom = params.initialTokenIdFrom
-    const initialTokenIdTo = params.initialTokenIdTo
+    const initialTokenIdFrom = tokenInfo.initialTokenIdFrom
+    const initialTokenIdTo = tokenInfo.initialTokenIdTo
 
     if (!initialTokenIdFrom && !initialTokenIdTo) {
       initialized.current = true
@@ -120,16 +125,16 @@ export function useFusionTokenLookup({
     let initialFromToken: LocalTokenWithBalance | undefined
     if (initialTokenIdFrom) {
       const fromTokenInfo =
-        tokens[toTokensKey(initialTokenIdFrom, params.initialFromCaip2Id)]
+        tokens[toTokensKey(initialTokenIdFrom, tokenInfo.initialFromCaip2Id)]
 
       initialFromToken =
         fromTokenInfo &&
-        params.initialFromCaip2Id &&
+        tokenInfo.initialFromCaip2Id &&
         Number.isFinite(fromTokenChainId)
           ? buildLocalToken({
               accountTokens,
               tokenInfo: fromTokenInfo,
-              caip2Id: params.initialFromCaip2Id,
+              caip2Id: tokenInfo.initialFromCaip2Id,
               chainId: fromTokenChainId as number
             })
           : undefined
@@ -139,16 +144,16 @@ export function useFusionTokenLookup({
     let initialToToken: LocalTokenWithBalance | undefined
     if (initialTokenIdTo) {
       const toTokenInfo =
-        tokens[toTokensKey(initialTokenIdTo, params.initialToCaip2Id)]
+        tokens[toTokensKey(initialTokenIdTo, tokenInfo.initialToCaip2Id)]
 
       initialToToken =
         toTokenInfo &&
-        params.initialToCaip2Id &&
+        tokenInfo.initialToCaip2Id &&
         Number.isFinite(toTokenChainId)
           ? buildLocalToken({
               accountTokens,
               tokenInfo: toTokenInfo,
-              caip2Id: params.initialToCaip2Id,
+              caip2Id: tokenInfo.initialToCaip2Id,
               chainId: toTokenChainId as number
             })
           : undefined
@@ -160,10 +165,10 @@ export function useFusionTokenLookup({
     accountTokens,
     fromTokenChainId,
     isTokensLoading,
-    params.initialFromCaip2Id,
-    params.initialToCaip2Id,
-    params.initialTokenIdFrom,
-    params.initialTokenIdTo,
+    tokenInfo.initialFromCaip2Id,
+    tokenInfo.initialToCaip2Id,
+    tokenInfo.initialTokenIdFrom,
+    tokenInfo.initialTokenIdTo,
     setFromToken,
     setToToken,
     toTokenChainId,
