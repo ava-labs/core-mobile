@@ -27,7 +27,7 @@ export function buildEvmProviderShim({
   'use strict';
 
   // ──────────────────────────────────────────────
-  // 1. Injection guards (ported from Core extension)
+  // 1. Injection guards
   // ──────────────────────────────────────────────
   function doctypeCheck() {
     var dt = document.doctype;
@@ -54,6 +54,11 @@ export function buildEvmProviderShim({
   var _requestId = 0;
   var _callbacks = {};
   var _listeners = {};
+  var _pendingInteractive = {};
+  var INTERACTIVE_METHODS = {
+    'wallet_switchEthereumChain': true,
+    'wallet_addEthereumChain': true
+  };
   var _chainId = '${chainId}';
   var _address = '${address}';
   var _connected = !!_address;
@@ -158,15 +163,31 @@ export function buildEvmProviderShim({
         return Promise.resolve(perms);
       }
 
+      if (INTERACTIVE_METHODS[method] && _pendingInteractive[method]) {
+        return Promise.reject({ code: -32002, message: 'Request of type ' + method + ' already pending for origin. Please wait.' });
+      }
+      var isInteractive = !!INTERACTIVE_METHODS[method];
+      if (isInteractive) _pendingInteractive[method] = true;
+
       // Everything else goes to native
       var id = ++_requestId;
       return new Promise(function(resolve, reject) {
-        _callbacks[id] = { resolve: resolve, reject: reject };
+        _callbacks[id] = {
+          resolve: function(r) {
+            if (isInteractive) delete _pendingInteractive[method];
+            resolve(r);
+          },
+          reject: function(e) {
+            if (isInteractive) delete _pendingInteractive[method];
+            reject(e);
+          }
+        };
 
         var message = {
           method: 'provider_request',
           payload: JSON.stringify({
             id: id,
+            origin: window.location.origin,
             request: { method: method, params: params }
           })
         };
@@ -175,6 +196,7 @@ export function buildEvmProviderShim({
           window.ReactNativeWebView.postMessage(JSON.stringify(message));
         } catch(e) {
           delete _callbacks[id];
+          if (isInteractive) delete _pendingInteractive[method];
           reject({ code: -32603, message: 'Bridge unavailable' });
         }
       });
@@ -239,7 +261,7 @@ export function buildEvmProviderShim({
   };
 
   // ──────────────────────────────────────────────
-  // 5. Install provider globals (mimic Core browser extension)
+  // 5. Install provider globals
   // ──────────────────────────────────────────────
   // window.ethereum — standard EIP-1193 provider
   Object.defineProperty(window, 'ethereum', {
