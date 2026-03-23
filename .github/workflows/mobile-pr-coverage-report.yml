@@ -1,0 +1,128 @@
+name: Mobile PR Coverage Report
+
+on:
+  workflow_run:
+    workflows:
+      - Mobile PR
+    types:
+      - completed
+
+permissions:
+  actions: read
+  checks: write
+  contents: read
+
+jobs:
+  report:
+    name: Coverage Report
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Capture workflow context
+        id: context
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pullRequests = context.payload.workflow_run.pull_requests || []
+            core.setOutput('has_pr', pullRequests.length > 0 ? 'true' : 'false')
+            core.setOutput('head_sha', context.payload.workflow_run.head_sha)
+            core.setOutput('run_id', String(context.payload.workflow_run.id))
+            core.setOutput('run_url', context.payload.workflow_run.html_url)
+            core.setOutput(
+              'workflow_conclusion',
+              context.payload.workflow_run.conclusion || 'unknown'
+            )
+
+      - name: Find coverage artifact
+        id: artifact
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const artifactName = 'mobile-pr-coverage'
+            const runId = Number('${{ steps.context.outputs.run_id }}')
+            const { data } = await github.rest.actions.listWorkflowRunArtifacts({
+              ...context.repo,
+              run_id: runId
+            })
+
+            const artifact = data.artifacts.find((item) => {
+              return item.name === artifactName && !item.expired
+            })
+
+            core.setOutput('exists', artifact ? 'true' : 'false')
+            core.setOutput('name', artifact?.name || '')
+
+      - name: Create artifact directory
+        run: mkdir -p coverage-artifacts
+
+      - name: Download coverage artifact
+        if: ${{ steps.artifact.outputs.exists == 'true' }}
+        uses: actions/download-artifact@v5
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.context.outputs.run_id }}
+          name: ${{ steps.artifact.outputs.name }}
+          path: coverage-artifacts
+
+      - name: Generate coverage summary
+        run: |
+          node scripts/github/coverage/summarizeCoverage.js \
+            --artifacts-dir coverage-artifacts \
+            --run-url "${{ steps.context.outputs.run_url }}" \
+            --json-out coverage-report.json \
+            --markdown-out coverage-report.md
+
+      - name: Publish coverage check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs')
+            const report = JSON.parse(fs.readFileSync('coverage-report.json', 'utf8'))
+            const markdown = fs.readFileSync('coverage-report.md', 'utf8')
+            const hasPr = '${{ steps.context.outputs.has_pr }}' === 'true'
+            const artifactExists = '${{ steps.artifact.outputs.exists }}' === 'true'
+            const workflowConclusion = '${{ steps.context.outputs.workflow_conclusion }}'
+            const runUrl = '${{ steps.context.outputs.run_url }}'
+
+            let conclusion = 'neutral'
+            let title = 'Coverage report unavailable'
+            let summary = markdown
+
+            if (!hasPr) {
+              title = 'Coverage report unavailable'
+              summary = [
+                'This Mobile PR run is not attached to a pull request.',
+                '',
+                `Source run: [Mobile PR](${runUrl})`
+              ].join('\n')
+            } else if (!artifactExists) {
+              title = 'Coverage artifact not found'
+              summary = [
+                'The Mobile PR workflow completed without uploading a coverage artifact.',
+                '',
+                `Source run: [Mobile PR](${runUrl})`
+              ].join('\n')
+            } else if (report.packages.length === 0) {
+              title = 'Coverage data not found'
+            } else if (workflowConclusion === 'success' && report.allThresholdsPassed) {
+              conclusion = 'success'
+              title = 'Coverage thresholds passed'
+            } else {
+              title = 'Coverage data available; upstream workflow did not pass'
+            }
+
+            await github.rest.checks.create({
+              ...context.repo,
+              name: 'Coverage Report',
+              head_sha: '${{ steps.context.outputs.head_sha }}',
+              status: 'completed',
+              conclusion,
+              details_url: runUrl,
+              output: {
+                title,
+                summary
+              }
+            })
