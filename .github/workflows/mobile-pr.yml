@@ -40,4 +40,16 @@ jobs:
       - name: Test
         env:
           NODE_OPTIONS: '--max_old_space_size=4096'
-        run: yarn test --ci --silent
+        run: yarn test:coverage --silent
+
+      - name: Upload coverage artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-pr-coverage
+          if-no-files-found: warn
+          path: |
+            packages/core-mobile/coverage
+            packages/core-mobile/coverage-thresholds.json
+            packages/k2-alpine/coverage
+            packages/k2-alpine/coverage-thresholds.json
