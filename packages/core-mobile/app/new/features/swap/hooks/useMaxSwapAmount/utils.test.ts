@@ -1,7 +1,12 @@
 import { TokenType } from '@avalabs/vm-module-types'
 import type { NetworkFees } from '@avalabs/vm-module-types'
 import type { LocalTokenWithBalance } from 'store/balance'
-import { buildFeeOptions, computeMaxAmount } from './utils'
+import {
+  buildFeeOptions,
+  computeMaxAmount,
+  getRouteAdditiveBps,
+  RouteAdditiveBpsConfig
+} from './utils'
 
 const makeToken = (
   balance: bigint,
@@ -48,7 +53,6 @@ describe('computeMaxAmount', () => {
       fromToken: undefined,
       isNative: true,
       bufferedGas: 1000n,
-      bridgeFee: 100n,
       additiveFee: 0n,
       hasEstimationError: false
     })
@@ -65,7 +69,6 @@ describe('computeMaxAmount', () => {
       fromToken: token,
       isNative: true,
       bufferedGas: 1000n,
-      bridgeFee: 100n,
       additiveFee: 0n,
       hasEstimationError: true
     })
@@ -78,21 +81,31 @@ describe('computeMaxAmount', () => {
       fromToken: token,
       isNative: true,
       bufferedGas: undefined,
-      bridgeFee: 100n,
       additiveFee: 0n,
       hasEstimationError: false
     })
     expect(result).toBeUndefined()
   })
 
-  it('returns balance minus gas and bridge fee for native tokens', () => {
+  it('returns balance minus gas for native token with no additive fees', () => {
     const token = makeToken(5000n)
     const result = computeMaxAmount({
       fromToken: token,
       isNative: true,
       bufferedGas: 1000n,
-      bridgeFee: 200n,
       additiveFee: 0n,
+      hasEstimationError: false
+    })
+    expect(result).toBe(4000n)
+  })
+
+  it('returns balance minus gas and additive fee for native tokens', () => {
+    const token = makeToken(5000n)
+    const result = computeMaxAmount({
+      fromToken: token,
+      isNative: true,
+      bufferedGas: 1000n,
+      additiveFee: 200n,
       hasEstimationError: false
     })
     expect(result).toBe(3800n)
@@ -104,8 +117,7 @@ describe('computeMaxAmount', () => {
       fromToken: token,
       isNative: true,
       bufferedGas: 400n,
-      bridgeFee: 200n,
-      additiveFee: 0n,
+      additiveFee: 200n,
       hasEstimationError: false
     })
     expect(result).toBeUndefined()
@@ -121,7 +133,6 @@ describe('computeMaxAmount', () => {
       fromToken: token,
       isNative: false,
       bufferedGas: 1000n,
-      bridgeFee: 0n,
       additiveFee: 0n,
       hasEstimationError: false
     })
@@ -134,7 +145,6 @@ describe('computeMaxAmount', () => {
       fromToken: token,
       isNative: false,
       bufferedGas: 1000n,
-      bridgeFee: 0n,
       additiveFee: 300n,
       hasEstimationError: false
     })
@@ -147,7 +157,6 @@ describe('computeMaxAmount', () => {
       fromToken: token,
       isNative: false,
       bufferedGas: 0n,
-      bridgeFee: 0n,
       additiveFee: 500n,
       hasEstimationError: false
     })
@@ -160,7 +169,6 @@ describe('computeMaxAmount', () => {
       fromToken: token,
       isNative: false,
       bufferedGas: 0n,
-      bridgeFee: 0n,
       additiveFee: 1000n,
       hasEstimationError: false
     })
@@ -173,11 +181,94 @@ describe('computeMaxAmount', () => {
       fromToken: token,
       isNative: false,
       bufferedGas: undefined,
-      bridgeFee: 0n,
       additiveFee: 200n,
       hasEstimationError: true
     })
     // ERC20 path always runs regardless of estimation error
     expect(result).toBe(4800n)
+  })
+})
+
+describe('getRouteAdditiveBps', () => {
+  const config: RouteAdditiveBpsConfig = {
+    default: 1500,
+    evmToSolana: 5500,
+    solanaToEvm: 500
+  }
+
+  // -------------------------------------------------------------------------
+  // Missing chain IDs
+  // -------------------------------------------------------------------------
+
+  it('returns default when fromChainId is undefined', () => {
+    expect(getRouteAdditiveBps(undefined, 'solana:mainnet', config)).toBe(1500)
+  })
+
+  it('returns default when toChainId is undefined', () => {
+    expect(getRouteAdditiveBps('eip155:43114', undefined, config)).toBe(1500)
+  })
+
+  it('returns default when both chain IDs are undefined', () => {
+    expect(getRouteAdditiveBps(undefined, undefined, config)).toBe(1500)
+  })
+
+  // -------------------------------------------------------------------------
+  // EVM → Solana
+  // -------------------------------------------------------------------------
+
+  it('returns evmToSolana bps for eip155 → solana', () => {
+    expect(getRouteAdditiveBps('eip155:43114', 'solana:mainnet', config)).toBe(
+      5500
+    )
+  })
+
+  it('returns evmToSolana bps for any eip155 chain → solana', () => {
+    expect(getRouteAdditiveBps('eip155:1', 'solana:mainnet', config)).toBe(5500)
+  })
+
+  // -------------------------------------------------------------------------
+  // Solana → EVM
+  // -------------------------------------------------------------------------
+
+  it('returns solanaToEvm bps for solana → eip155', () => {
+    expect(getRouteAdditiveBps('solana:mainnet', 'eip155:43114', config)).toBe(
+      500
+    )
+  })
+
+  it('returns solanaToEvm bps for solana → any eip155 chain', () => {
+    expect(getRouteAdditiveBps('solana:mainnet', 'eip155:1', config)).toBe(500)
+  })
+
+  // -------------------------------------------------------------------------
+  // Default routes
+  // -------------------------------------------------------------------------
+
+  it('returns default for evm → evm', () => {
+    expect(getRouteAdditiveBps('eip155:43114', 'eip155:1', config)).toBe(1500)
+  })
+
+  it('returns default for solana → solana', () => {
+    expect(
+      getRouteAdditiveBps('solana:mainnet', 'solana:mainnet', config)
+    ).toBe(1500)
+  })
+
+  it('returns default for unknown → evm', () => {
+    expect(getRouteAdditiveBps('bitcoin:mainnet', 'eip155:1', config)).toBe(
+      1500
+    )
+  })
+
+  it('returns default for evm → unknown', () => {
+    expect(getRouteAdditiveBps('eip155:43114', 'bitcoin:mainnet', config)).toBe(
+      1500
+    )
+  })
+
+  it('returns default for unknown → unknown', () => {
+    expect(
+      getRouteAdditiveBps('bitcoin:mainnet', 'bitcoin:mainnet', config)
+    ).toBe(1500)
   })
 })

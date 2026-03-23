@@ -303,13 +303,6 @@ export const selectFusionMaxAmountGasSafetyBps = (state: RootState): number => {
   )
 }
 
-export const selectFusionBridgeFeeSafetyBps = (state: RootState): number => {
-  const { featureFlags } = state.posthog
-  return parseInt(
-    featureFlags[FeatureVars.FUSION_BRIDGE_FEE_SAFETY_BPS] as string
-  )
-}
-
 export const selectFusionTransferGasMarginBps = (state: RootState): number => {
   const { featureFlags } = state.posthog
   return parseInt(
@@ -317,10 +310,34 @@ export const selectFusionTransferGasMarginBps = (state: RootState): number => {
   )
 }
 
-export const selectFusionAdditiveFeesSafetyBps = (state: RootState): number => {
+export const selectFusionMaxAmountAdditiveBpsDefault = (
+  state: RootState
+): number => {
   const { featureFlags } = state.posthog
   return parseInt(
-    featureFlags[FeatureVars.FUSION_ADDITIVE_FEES_BUFFER_BPS] as string
+    featureFlags[FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_DEFAULT] as string
+  )
+}
+
+export const selectFusionMaxAmountAdditiveBpsEvmToSolana = (
+  state: RootState
+): number => {
+  const { featureFlags } = state.posthog
+  return parseInt(
+    featureFlags[
+      FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_EVM_TO_SOLANA
+    ] as string
+  )
+}
+
+export const selectFusionMaxAmountAdditiveBpsSolanaToEvm = (
+  state: RootState
+): number => {
+  const { featureFlags } = state.posthog
+  return parseInt(
+    featureFlags[
+      FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_SOLANA_TO_EVM
+    ] as string
   )
 }
 
