@@ -20,7 +20,14 @@ export type RepaySelectAmountFormBaseProps = {
   borrowPosition: BorrowPosition
   totalDebtUsd: number
   currentHealthScore: number | undefined
-  balance: TokenUnit | undefined
+  /**
+   * Wallet balance of the underlying asset (same decimals/symbol as the borrow).
+   * Pass `useRepayTokenBalance(borrowPosition.market.asset, chainId)` after the
+   * position is loaded — that hook returns a `TokenUnit` (including `0n` when the
+   * wallet holds none) whenever `asset` is defined; do not render this form
+   * without a resolved balance.
+   */
+  balance: TokenUnit
   formatInCurrency: (amt: TokenUnit, symbol: string) => string
   submit: (params: {
     amount: TokenUnit
@@ -119,10 +126,10 @@ export function RepaySelectAmountFormBase({
 
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {
-      if (balance && amt.gt(balance)) {
+      if (exceedsBalance(amt, balance)) {
         throw new Error('The specified amount exceeds your balance')
       }
-      if (borrowedAmountUnit && amt.gt(borrowedAmountUnit)) {
+      if (exceedsDebt(amt, borrowedAmountUnit)) {
         throw new Error('The specified amount exceeds your debt')
       }
     },
@@ -154,12 +161,11 @@ export function RepaySelectAmountFormBase({
 
   const canSubmit =
     !isSubmitting &&
-    amount &&
+    !!amount &&
     amount.gt(0) &&
-    borrowedAmountUnit &&
-    (amount.lt(borrowedAmountUnit) || amount.eq(borrowedAmountUnit)) &&
-    balance &&
-    (amount.lt(balance) || amount.eq(balance))
+    borrowedAmountUnit !== undefined &&
+    !exceedsDebt(amount, borrowedAmountUnit) &&
+    !exceedsBalance(amount, balance)
 
   const renderFooter = useCallback(() => {
     return (
@@ -189,10 +195,7 @@ export function RepaySelectAmountFormBase({
             maxDecimals: market.asset.decimals,
             symbol: market.asset.symbol
           }}
-          balance={
-            balance ??
-            new TokenUnit(0n, market.asset.decimals, market.asset.symbol)
-          }
+          balance={balance}
           formatInCurrency={amt => formatInCurrency(amt, market.asset.symbol)}
           onChange={setAmount}
           validateAmount={validateAmount}
@@ -242,4 +245,17 @@ export function RepaySelectAmountFormBase({
       </View>
     </ScrollScreen>
   )
+}
+
+/** True when `amt` is strictly greater than wallet balance (only when balance is known). */
+function exceedsBalance(
+  amt: TokenUnit,
+  balance: TokenUnit | undefined
+): boolean {
+  return balance !== undefined && amt.gt(balance)
+}
+
+/** True when `amt` is strictly greater than borrowed debt for this market. */
+function exceedsDebt(amt: TokenUnit, debt: TokenUnit | undefined): boolean {
+  return debt !== undefined && amt.gt(debt)
 }
