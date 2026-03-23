@@ -19,8 +19,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repo
+      # This privileged workflow intentionally uses trusted reporter code from the
+      # default branch rather than checking out unreviewed PR code.
+      - name: Check out trusted reporter code
         uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.event.repository.default_branch }}
 
       - name: Capture workflow context
         id: context
@@ -88,6 +93,7 @@ jobs:
             const artifactExists = '${{ steps.artifact.outputs.exists }}' === 'true'
             const workflowConclusion = '${{ steps.context.outputs.workflow_conclusion }}'
             const runUrl = '${{ steps.context.outputs.run_url }}'
+            const thresholdsFailed = report.packages.length > 0 && !report.allThresholdsPassed
 
             let conclusion = 'neutral'
             let title = 'Coverage report unavailable'
@@ -112,6 +118,10 @@ jobs:
             } else if (workflowConclusion === 'success' && report.allThresholdsPassed) {
               conclusion = 'success'
               title = 'Coverage thresholds passed'
+            } else if (workflowConclusion === 'success' && thresholdsFailed) {
+              title = 'Coverage thresholds failed'
+            } else if (thresholdsFailed) {
+              title = 'Coverage thresholds failed in upstream workflow'
             } else {
               title = 'Coverage data available; upstream workflow did not pass'
             }
@@ -142,6 +152,7 @@ jobs:
             const runUrl = '${{ steps.context.outputs.run_url }}'
             const issueNumber = Number('${{ steps.context.outputs.pr_number }}')
             const marker = '<!-- mobile-coverage-report -->'
+            const thresholdsFailed = report.packages.length > 0 && !report.allThresholdsPassed
 
             let body = [
               marker,
@@ -171,7 +182,9 @@ jobs:
                 marker,
                 markdown,
                 '',
-                'Note: the upstream `Mobile PR` workflow did not complete successfully.'
+                thresholdsFailed
+                  ? 'Note: the upstream `Mobile PR` workflow failed because coverage thresholds were not met.'
+                  : 'Note: the upstream `Mobile PR` workflow did not complete successfully.'
               ]
             }
 
