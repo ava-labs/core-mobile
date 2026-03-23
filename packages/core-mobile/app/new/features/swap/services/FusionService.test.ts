@@ -1058,6 +1058,136 @@ describe('FusionService', () => {
       expect(updateListener).not.toHaveBeenCalled()
     })
 
+    const makeTrackTransferManager = (concludedStatus: string) => {
+      const concludedTransfer = {
+        id: 'transfer-1',
+        status: concludedStatus
+      } as any
+      const mockTransferManager = {
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateNativeFee: jest.fn(),
+        trackTransfer: jest.fn().mockReturnValue({
+          cancel: jest.fn(),
+          result: Promise.resolve(concludedTransfer)
+        })
+      }
+      return { concludedTransfer, mockTransferManager }
+    }
+
+    it('should call onCompleted when result resolves with a completed transfer', async () => {
+      const { concludedTransfer, mockTransferManager } =
+        makeTrackTransferManager('completed')
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      await FusionService.init({
+        bitcoinProvider: mockBitcoinProvider,
+        config: {
+          environment: Environment.PROD,
+          enabledServices: [],
+          fetch: mockFetch
+        },
+        signers: mockSigners
+      })
+
+      const onCompleted = jest.fn()
+      FusionService.trackTransfer(
+        { id: 'transfer-1', status: 'source-pending' } as any,
+        jest.fn(),
+        onCompleted
+      )
+      await Promise.resolve()
+
+      expect(onCompleted).toHaveBeenCalledWith(concludedTransfer)
+      expect(onCompleted).toHaveBeenCalledTimes(1)
+    })
+
+    it('should call onCompleted when result resolves with a failed transfer', async () => {
+      const { concludedTransfer, mockTransferManager } =
+        makeTrackTransferManager('failed')
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      await FusionService.init({
+        bitcoinProvider: mockBitcoinProvider,
+        config: {
+          environment: Environment.PROD,
+          enabledServices: [],
+          fetch: mockFetch
+        },
+        signers: mockSigners
+      })
+
+      const onCompleted = jest.fn()
+      FusionService.trackTransfer(
+        { id: 'transfer-1', status: 'source-pending' } as any,
+        jest.fn(),
+        onCompleted
+      )
+      await Promise.resolve()
+
+      expect(onCompleted).toHaveBeenCalledWith(concludedTransfer)
+    })
+
+    it('should call onCompleted when result resolves with a refunded transfer', async () => {
+      const { concludedTransfer, mockTransferManager } =
+        makeTrackTransferManager('refunded')
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      await FusionService.init({
+        bitcoinProvider: mockBitcoinProvider,
+        config: {
+          environment: Environment.PROD,
+          enabledServices: [],
+          fetch: mockFetch
+        },
+        signers: mockSigners
+      })
+
+      const onCompleted = jest.fn()
+      FusionService.trackTransfer(
+        { id: 'transfer-1', status: 'source-pending' } as any,
+        jest.fn(),
+        onCompleted
+      )
+      await Promise.resolve()
+
+      expect(onCompleted).toHaveBeenCalledWith(concludedTransfer)
+    })
+
+    it('should not call onCompleted when result resolves with an in-progress transfer', async () => {
+      const { mockTransferManager } = makeTrackTransferManager('target-pending')
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      await FusionService.init({
+        bitcoinProvider: mockBitcoinProvider,
+        config: {
+          environment: Environment.PROD,
+          enabledServices: [],
+          fetch: mockFetch
+        },
+        signers: mockSigners
+      })
+
+      const onCompleted = jest.fn()
+      FusionService.trackTransfer(
+        { id: 'transfer-1', status: 'source-pending' } as any,
+        jest.fn(),
+        onCompleted
+      )
+      await Promise.resolve()
+
+      expect(onCompleted).not.toHaveBeenCalled()
+    })
+
     it('should throw error when service is not initialized', () => {
       const transfer = { id: 'transfer-1', status: 'source-pending' } as any
       const updateListener = jest.fn()

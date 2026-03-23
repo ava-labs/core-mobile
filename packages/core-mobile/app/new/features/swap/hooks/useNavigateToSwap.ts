@@ -23,10 +23,11 @@ export const useNavigateToSwap = (): {
     fromCaip2Id,
     toCaip2Id
   }: NavigateToSwapParams = {}): void => {
-    if (fromTokenId === undefined && toTokenId === undefined) {
-      navigate({
-        pathname: '/swap/swap',
-        params: {
+    const isDefaultSwapPair =
+      fromTokenId === undefined && toTokenId === undefined
+
+    const params = isDefaultSwapPair
+      ? {
           initialTokenIdFrom: tokenIds.AVAX,
           initialTokenIdTo: tokenIds.USDC,
           initialFromCaip2Id: isDeveloperMode
@@ -36,24 +37,19 @@ export const useNavigateToSwap = (): {
             ? caip2ChainIds.FUJI
             : caip2ChainIds.C_CHAIN
         }
-      })
+      : {
+          initialTokenIdFrom: fromTokenId,
+          initialTokenIdTo: toTokenId,
+          initialFromCaip2Id:
+            fromCaip2Id ??
+            (isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN),
+          initialToCaip2Id:
+            toCaip2Id ??
+            (isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN)
+        }
 
-      return
-    }
-
-    navigate({
-      pathname: '/swap/swap',
-      params: {
-        initialTokenIdFrom: fromTokenId,
-        initialTokenIdTo: toTokenId,
-        initialFromCaip2Id:
-          fromCaip2Id ??
-          (isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN),
-        initialToCaip2Id:
-          toCaip2Id ??
-          (isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN)
-      }
-    })
+    // @ts-ignore navigate to modal root so _layout.tsx decides between onboarding/swap
+    navigate({ pathname: '/swap', params })
   }
 
   return { navigateToSwap }

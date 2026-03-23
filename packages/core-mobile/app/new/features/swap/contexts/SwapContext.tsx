@@ -208,15 +208,31 @@ export const SwapContextProvider = ({
       transfer: Transfer
       quote: Quote
       address: string
+      targetAddress: string
       fromTokenData: LocalTokenWithBalance
       toTokenData: LocalTokenWithBalance
+      quoteSelectionMode: 'manual' | 'auto'
+      autoRetryAttempt?: number
     }) => {
-      const { transfer, quote, address, fromTokenData, toTokenData } = params
+      const {
+        transfer,
+        quote,
+        address,
+        targetAddress,
+        fromTokenData,
+        toTokenData,
+        quoteSelectionMode,
+        autoRetryAttempt
+      } = params
       audioFeedback(Audios.Send)
       AnalyticsService.captureWithEncryption('SwapConfirmed', {
-        address,
-        chainId: quote.sourceChain.chainId,
-        txHash: transfer.id
+        sourceAddress: address,
+        targetAddress,
+        sourceChainId: quote.sourceChain.chainId,
+        targetChainId: quote.targetChain.chainId,
+        sourceTxHash: transfer.source?.txHash,
+        quoteSelectionMode,
+        autoRetryAttempt
       })
 
       Logger.info('[SwapContext] transfer executed', {
@@ -279,26 +295,18 @@ export const SwapContextProvider = ({
     [dispatch, setTransfers]
   )
 
-  // Handle swap error: logging, toast, and analytics
-  const handleSwapError = useCallback(
-    (error: unknown, quote: Quote, address: string) => {
-      setSwapStatus(SwapStatus.Fail)
+  // Handle swap error: logging, toast
+  const handleSwapError = useCallback((error: unknown) => {
+    setSwapStatus(SwapStatus.Fail)
 
-      // Show error toast (only for non-transaction errors)
-      transactionSnackbar.error({
-        message: 'Swap failed',
-        error: getSwapErrorMessage(error)
-      })
+    // Show error toast (only for non-transaction errors)
+    transactionSnackbar.error({
+      message: 'Swap failed',
+      error: getSwapErrorMessage(error)
+    })
 
-      AnalyticsService.captureWithEncryption('SwapFailed', {
-        address,
-        chainId: quote.sourceChain.chainId
-      })
-
-      logSdkError('[handleSwapError] error', error)
-    },
-    []
-  )
+    logSdkError('[handleSwapError] error', error)
+  }, [])
 
   // Swap execution with retry logic
   const swap = useCallback(
@@ -345,8 +353,11 @@ export const SwapContextProvider = ({
           transfer,
           quote: quoteToUse,
           address: fromAddress,
+          targetAddress: toAddress,
           fromTokenData: fromToken,
-          toTokenData: toToken
+          toTokenData: toToken,
+          quoteSelectionMode: userQuote ? 'manual' : 'auto',
+          autoRetryAttempt: !userQuote && retries > 0 ? retries : undefined
         })
       } catch (error) {
         // Handle user rejection - silent exit, no error shown
@@ -383,7 +394,7 @@ export const SwapContextProvider = ({
 
         // All retries exhausted or non-retryable error
         isSwappingRef.current = false
-        handleSwapError(error, quoteToUse, fromAddress)
+        handleSwapError(error)
       }
     },
     [

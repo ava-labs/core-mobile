@@ -10,6 +10,12 @@ import {
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
+import {
+  isTxSendMethod,
+  TxSendConfirmedEvent,
+  TxSendFailedEvent
+} from 'store/rpc/utils/txSendMethods'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NavigationPresentationMode } from 'new/common/types'
 import WalletService from 'services/wallet/WalletService'
 import { Curve } from 'utils/publicKeys'
@@ -20,6 +26,7 @@ import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview
 import { CONFETTI_DURATION_MS } from 'common/consts'
 import { currentRouteStore } from 'new/routes/store'
 import { BoundedMap } from 'common/utils/boundedMap'
+import { getAddressForChainId } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import {
   isToastsAndConfettiEnabled,
   isConfettiEnabled,
@@ -33,6 +40,7 @@ import { handleLedgerErrorAndShowAlert } from './utils'
 
 class ApprovalController implements VmModuleApprovalController {
   private userCancelledMap = new BoundedMap<string, boolean>(10)
+  private signingAddressMap = new BoundedMap<string, string>(10)
 
   async requestPublicKey({
     secretId,
@@ -49,7 +57,7 @@ class ApprovalController implements VmModuleApprovalController {
     })
   }
 
-  onTransactionPending({
+  onTransactionPending = ({
     txHash: _txHash,
     request,
     explorerLink: _explorerLink
@@ -57,7 +65,7 @@ class ApprovalController implements VmModuleApprovalController {
     txHash: string
     request: RpcRequest
     explorerLink?: string
-  }): void {
+  }): void => {
     if (!isToastsAndConfettiEnabled(request)) return
 
     if (isInAppAvalancheRequest(request)) {
@@ -73,13 +81,27 @@ class ApprovalController implements VmModuleApprovalController {
     }
   }
 
-  onTransactionConfirmed({
+  onTransactionConfirmed = ({
+    txHash,
     explorerLink,
     request
   }: {
+    txHash: string
     explorerLink: string
     request: RpcRequest
-  }): void {
+  }): void => {
+    if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
+      const address = this.signingAddressMap.get(request.requestId) ?? ''
+      this.signingAddressMap.delete(request.requestId)
+      const eventName = `${request.method}_confirmed` as TxSendConfirmedEvent
+      AnalyticsService.captureWithEncryption(eventName, {
+        dAppUrl: request.dappInfo.url,
+        address,
+        chainId: request.chainId,
+        txHash
+      })
+    }
+
     if (!isToastsAndConfettiEnabled(request)) return
 
     if (isInAppReview(request)) {
@@ -101,8 +123,26 @@ class ApprovalController implements VmModuleApprovalController {
     }
   }
 
-  onTransactionReverted(): void {
+  onTransactionReverted = ({
+    txHash,
+    request
+  }: {
+    txHash: string
+    request: RpcRequest
+  }): void => {
     transactionSnackbar.error({ error: 'Transaction reverted' })
+
+    if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
+      const address = this.signingAddressMap.get(request.requestId) ?? ''
+      this.signingAddressMap.delete(request.requestId)
+      const eventName = `${request.method}_failed` as TxSendFailedEvent
+      AnalyticsService.captureWithEncryption(eventName, {
+        dAppUrl: request.dappInfo.url,
+        address,
+        chainId: request.chainId,
+        txHash
+      })
+    }
   }
 
   handleLedgerOnReject = async ({
@@ -125,6 +165,79 @@ class ApprovalController implements VmModuleApprovalController {
     }
   }
 
+  private cacheSigningAddress(
+    requestId: string,
+    chainId: string,
+    account: OnApproveParams['account']
+  ): void {
+    const address = getAddressForChainId(chainId, account)
+    if (address) {
+      this.signingAddressMap.set(requestId, address)
+    }
+  }
+
+  private handleLedgerApproval({
+    requestId,
+    request,
+    params,
+    signingData,
+    resolve
+  }: {
+    requestId: string
+    request: ApprovalParams['request']
+    params: OnApproveParams
+    signingData: ApprovalParams['signingData']
+    resolve: (value: ApprovalResponse | PromiseLike<ApprovalResponse>) => void
+  }): void {
+    const resolveWithRetry = (
+      value: ApprovalResponse | PromiseLike<ApprovalResponse>
+    ): void => {
+      if ('error' in value) {
+        // Don't show alert if user explicitly cancelled
+        if (this.userCancelledMap.get(requestId)) {
+          this.userCancelledMap.delete(requestId)
+          return
+        }
+
+        handleLedgerErrorAndShowAlert({
+          error: value.error,
+          network: params.network,
+          onRetry: () =>
+            onApprove({
+              ...params,
+              signingData,
+              resolve: resolveWithRetry
+            }),
+          onCancel: () => {
+            this.userCancelledMap.set(requestId, true)
+            this.handleGoBackIfNeeded()
+            this.handleLedgerOnReject({ resolve })
+          }
+        })
+      } else {
+        resolve(value)
+        this.handleGoBackIfNeeded()
+        this.userCancelledMap.delete(requestId)
+      }
+    }
+
+    showLedgerReviewTransaction({
+      rpcMethod: request.method,
+      network: params.network,
+      onApprove: () =>
+        onApprove({
+          ...params,
+          signingData,
+          resolve: resolveWithRetry
+        }),
+      onReject: () => {
+        this.userCancelledMap.set(requestId, true)
+        this.handleLedgerOnReject({ resolve })
+        this.handleGoBackIfNeeded()
+      }
+    })
+  }
+
   async requestApproval({
     request,
     displayData,
@@ -140,56 +253,20 @@ class ApprovalController implements VmModuleApprovalController {
         displayData,
         signingData,
         onApprove: async (params: OnApproveParams) => {
+          if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
+            this.cacheSigningAddress(requestId, request.chainId, params.account)
+          }
+
           if (
             params.walletType === WalletType.LEDGER ||
             params.walletType === WalletType.LEDGER_LIVE
           ) {
-            const resolveWithRetry = (
-              value: ApprovalResponse | PromiseLike<ApprovalResponse>
-            ): void => {
-              if ('error' in value) {
-                // Don't show alert if user explicitly cancelled
-                if (this.userCancelledMap.get(requestId)) {
-                  this.userCancelledMap.delete(requestId)
-                  return
-                }
-
-                handleLedgerErrorAndShowAlert({
-                  error: value.error,
-                  network: params.network,
-                  onRetry: () =>
-                    onApprove({
-                      ...params,
-                      signingData,
-                      resolve: resolveWithRetry
-                    }),
-                  onCancel: () => {
-                    this.userCancelledMap.set(requestId, true)
-                    this.handleGoBackIfNeeded()
-                    this.handleLedgerOnReject({ resolve })
-                  }
-                })
-              } else {
-                resolve(value)
-                this.handleGoBackIfNeeded()
-                this.userCancelledMap.delete(requestId)
-              }
-            }
-
-            showLedgerReviewTransaction({
-              rpcMethod: request.method,
-              network: params.network,
-              onApprove: () =>
-                onApprove({
-                  ...params,
-                  signingData,
-                  resolve: resolveWithRetry
-                }),
-              onReject: () => {
-                this.userCancelledMap.set(requestId, true)
-                this.handleLedgerOnReject({ resolve })
-                this.handleGoBackIfNeeded()
-              }
+            this.handleLedgerApproval({
+              requestId,
+              request,
+              params,
+              signingData,
+              resolve
             })
           } else {
             return onApprove({ ...params, resolve, signingData })
