@@ -3,7 +3,8 @@ import { buildEvmProviderShim } from './evmProviderShim'
 describe('buildEvmProviderShim', () => {
   const defaultParams = {
     chainId: '0xa86a',
-    address: '0x1234567890abcdef1234567890abcdef12345678'
+    address: '0x1234567890abcdef1234567890abcdef12345678',
+    uuid: 'test-uuid-1234'
   }
 
   it('returns a non-empty string', () => {

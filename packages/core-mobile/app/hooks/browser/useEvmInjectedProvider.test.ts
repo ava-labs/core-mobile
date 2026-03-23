@@ -27,8 +27,8 @@ jest.mock('./evmProviderShim', () => ({
   )
 }))
 
-jest.mock('./getProviderUuid', () => ({
-  getProviderUuid: () => 'test-uuid-1234'
+jest.mock('./getInjectedProviderUuid', () => ({
+  getInjectedProviderUuid: () => 'test-uuid-1234'
 }))
 
 const mockInjectJavaScript = jest.fn()
