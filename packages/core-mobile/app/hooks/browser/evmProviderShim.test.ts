@@ -43,7 +43,11 @@ describe('buildEvmProviderShim', () => {
     })
 
     it('embeds an empty address when not provided', () => {
-      const shim = buildEvmProviderShim({ chainId: '0xa86a', address: '' })
+      const shim = buildEvmProviderShim({
+        chainId: '0xa86a',
+        address: '',
+        uuid: defaultParams.uuid
+      })
       expect(shim).toContain("var _address = ''")
     })
   })
