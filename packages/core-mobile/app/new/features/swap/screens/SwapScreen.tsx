@@ -48,6 +48,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
 import { AdditiveFeesNotice } from '../components/AdditiveFeesNotice'
 import { FeeDebugTable } from '../components/FeeDebugTable'
+import { caip2ChainIds } from 'consts/caip2ChainIds'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
 import { SwapStatus, useSwapContext } from '../contexts/SwapContext'
 import { fusionTransfersStore } from '../hooks/useZustandStore'
@@ -60,7 +61,6 @@ import { useMaxSwapAmount } from '../hooks/useMaxSwapAmount'
 import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 import { useFeeValidation } from '../hooks/useFeeValidation'
 import { getTokenKey } from '../utils/tokenKey'
-import { caip2ChainIds } from 'consts/caip2ChainIds'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
