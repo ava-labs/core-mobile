@@ -19,6 +19,11 @@ import {
 import { ErrorState } from 'common/components/ErrorState'
 import { useNavigation } from '@react-navigation/native'
 import { addRecentContact } from 'store/addressBook'
+import {
+  AvmCapableAccount,
+  PvmCapableAccount,
+  SvmCapableAccount
+} from 'common/hooks/send/utils/types'
 import { useSendContext } from '../context/sendContext'
 import { SendAVM } from '../components/SendAVM'
 import { SendPVM } from '../components/SendPVM'
@@ -27,11 +32,6 @@ import { SendEVM } from '../components/SendEVM'
 import { useNativeTokenWithBalanceByNetwork } from '../hooks/useNativeTokenWithBalanceByNetwork'
 import { useSendSelectedToken } from '../store'
 import { SendSVM } from '../components/SendSVM'
-import {
-  AvmCapableAccount,
-  PvmCapableAccount,
-  SvmCapableAccount
-} from 'common/hooks/send/utils/types'
 
 export const SendScreen = (): JSX.Element => {
   const { canGoBack, back } = useRouter()
