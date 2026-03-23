@@ -72,7 +72,7 @@ export const useDelegation = (): {
       const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
       const result = await computeDelegationSteps({
-        account: activeAccount,
+        account: activeAccount as PvmCapableAccount,
         pChainBalance,
         cChainBalance,
         avaxXPNetwork: network,

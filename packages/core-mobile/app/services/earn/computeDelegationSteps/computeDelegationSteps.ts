@@ -4,8 +4,8 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { pvm } from '@avalabs/avalanchejs'
 import { weiToNano } from 'utils/units/converter'
 import Logger from 'utils/Logger'
-import { Account } from 'store/account'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
+import { PvmCapableAccount } from 'common/hooks/send/utils/types'
 import { Step, Operation, Case } from './types'
 import {
   getPChainAtomicBalance,
@@ -39,7 +39,7 @@ export const computeDelegationSteps = async ({
 }: {
   stakeAmount: bigint
   avaxXPNetwork: Network
-  account: Account
+  account: PvmCapableAccount
   feeState: pvm.FeeState
   pChainBalance: TokenWithBalancePVM | undefined
   cChainBalance: TokenUnit | undefined
@@ -53,9 +53,6 @@ export const computeDelegationSteps = async ({
   // eslint-disable-next-line sonarjs/cognitive-complexity
 }): Promise<Step[]> => {
   const { addressPVM } = account
-  if (!addressPVM) {
-    throw new Error('P-Chain address not available for account')
-  }
 
   const availablePChainBalance =
     pChainBalance?.balancePerType.unlockedUnstaked ?? 0n
