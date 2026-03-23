@@ -122,7 +122,11 @@ export const useDelegation = (): {
 
       Logger.info(
         'Processing the following steps:',
-        JSON.stringify(steps, null, 2)
+        JSON.stringify(
+          steps,
+          (_, v) => (typeof v === 'bigint' ? v.toString() : v),
+          2
+        )
       )
 
       setSteps(steps)
