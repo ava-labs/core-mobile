@@ -9,19 +9,11 @@ import { RpcMethod } from '@avalabs/vm-module-types'
 
 type WalletId = string
 
-// Types for ledger review transaction params
-export type StakingProgressParams = {
-  totalSteps: number
-  onComplete: () => void
-  onCancel: () => void
-}
-
 export type LedgerReviewTransactionParams = {
   rpcMethod?: RpcMethod
   network: Network
   onApprove: (onProgress?: OnDelegationProgress) => Promise<void>
   onReject: (message?: string) => void
-  stakingProgress?: StakingProgressParams
 }
 
 interface LedgerParamsState {

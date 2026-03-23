@@ -86,7 +86,6 @@ export async function importC({
       cause: e
     })
   }
-
   Logger.trace('txID', txID)
 
   try {

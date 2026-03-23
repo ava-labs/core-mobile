@@ -30,26 +30,46 @@ import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 import { CONFETTI_DURATION_MS } from 'common/consts'
 import { selectIsInAppReviewBlocked } from 'store/posthog/slice'
 import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview/utils/promptForAppReviewAfterSuccessfulTransaction'
+import { WalletType } from 'services/wallet/types'
+import { selectActiveWallet } from 'store/wallet/slice'
+import { useLedgerClaimReward } from 'features/stake/hooks/useLedgerClaimReward'
+import { OnDelegationProgress } from 'contexts/DelegationContext'
+
+// Claim reward flow has 2 steps: Export from P-Chain + Import to C-Chain
+const CLAIM_TOTAL_STEPS = 2
 
 export const ClaimStakeRewardScreen = (): JSX.Element => {
   const isInAppReviewBlocked = useSelector(selectIsInAppReviewBlocked)
-  const { navigate, back } = useRouter()
+  const { navigate, back, dismissAll } = useRouter()
   const { formatTokenInCurrency } = useFormatCurrency()
   const pChainBalance = usePChainBalance()
   const ref = useRef<TokenUnitInputHandle>(null)
   const [claimableAmountInAvax, setClaimableAmountInAvax] =
     useState<TokenUnit>()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const activeWallet = useSelector(selectActiveWallet)
+  const isLedger =
+    activeWallet?.type === WalletType.LEDGER ||
+    activeWallet?.type === WalletType.LEDGER_LIVE
   const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const avaxPrice = useAvaxPrice()
   const refreshStakingBalances = useRefreshStakingBalances()
+
+  // Use a ref to break the circular dependency between useLedgerClaimReward and useClaimRewards
+  const onLedgerCancelRef = useRef<(() => void) | undefined>(undefined)
+  const { startLedgerClaimReward, resetLedgerState, renderLedgerFooter } =
+    useLedgerClaimReward(
+      isLedger,
+      useCallback(() => onLedgerCancelRef.current?.(), [])
+    )
+
   const onClaimSuccess = (): void => {
     refreshStakingBalances({ shouldRefreshStakes: false })
 
     AnalyticsService.capture('StakeClaimSuccess')
 
     transactionSnackbar.success({ message: 'Stake reward claimed' })
-    back()
+    dismissAll()
 
     setTimeout(() => {
       confetti.restart()
@@ -64,6 +84,7 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
   }
 
   const onClaimError = (error: Error): void => {
+    resetLedgerState()
     AnalyticsService.capture('StakeClaimFail')
     transactionSnackbar.error({ error: error.message })
   }
@@ -80,7 +101,7 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
         },
         {
           text: 'Try again',
-          onPress: issueClaimRewards
+          onPress: handleClaimNow
         }
       ]
     })
@@ -89,9 +110,11 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
   const {
     claimRewards,
     isPending: isClaimRewardsPending,
+    reset: resetClaimRewards,
     totalFees,
     feeCalculationError
   } = useClaimRewards(onClaimSuccess, onClaimError, onFundsStuck)
+  onLedgerCancelRef.current = resetClaimRewards
 
   const unableToGetFees = totalFees === undefined
 
@@ -131,10 +154,21 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
     navigate('/stake')
   }, [back, navigate])
 
-  const issueClaimRewards = useCallback(() => {
-    AnalyticsService.capture('StakeIssueClaim')
-    claimRewards()
-  }, [claimRewards])
+  const issueClaimRewards = useCallback(
+    (onProgress?: OnDelegationProgress) => {
+      AnalyticsService.capture('StakeIssueClaim')
+      claimRewards(onProgress)
+    },
+    [claimRewards]
+  )
+
+  const handleClaimNow = useCallback(() => {
+    if (isLedger) {
+      startLedgerClaimReward(issueClaimRewards)
+    } else {
+      issueClaimRewards()
+    }
+  }, [isLedger, startLedgerClaimReward, issueClaimRewards])
 
   const formatInCurrency = useCallback(
     (amount: TokenUnit): string => {
@@ -191,6 +225,9 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
   }, [pChainBalance, back])
 
   const renderFooter = useCallback(() => {
+    const ledgerFooter = renderLedgerFooter(CLAIM_TOTAL_STEPS)
+    if (ledgerFooter) return ledgerFooter
+
     return (
       <View
         sx={{
@@ -201,7 +238,7 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
           accessible={true}
           type="primary"
           size="large"
-          onPress={issueClaimRewards}
+          onPress={handleClaimNow}
           disabled={shouldDisableClaimButton}>
           {isClaimRewardsPending ? <ActivityIndicator /> : 'Claim now'}
         </Button>
@@ -215,9 +252,10 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
       </View>
     )
   }, [
+    renderLedgerFooter,
     isClaimRewardsPending,
     handleCancel,
-    issueClaimRewards,
+    handleClaimNow,
     shouldDisableClaimButton
   ])
 
