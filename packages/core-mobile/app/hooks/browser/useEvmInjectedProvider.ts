@@ -64,7 +64,8 @@ const SIGNING_METHODS: Record<string, RpcMethod> = {
 const ALLOWED_METHODS = new Set([
   ...READ_ONLY_METHODS,
   ...Object.keys(SIGNING_METHODS),
-  'wallet_switchEthereumChain'
+  'wallet_switchEthereumChain',
+  'wallet_addEthereumChain'
 ])
 
 function validateProviderRequest(data: unknown): data is ProviderRequest {
