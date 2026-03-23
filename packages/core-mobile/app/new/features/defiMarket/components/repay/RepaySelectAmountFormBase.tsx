@@ -137,10 +137,10 @@ export function RepaySelectAmountFormBase({
   )
 
   const handleSubmit = useCallback(async () => {
-    if (!amount) return
+    if (!amount || !borrowedAmountUnit) return
 
-    const debtUnit = borrowedAmountUnit ?? new TokenUnit(0n, 0, '')
-    const isMaxRepay = amount.gt(debtUnit) || amount.eq(debtUnit)
+    const isMaxRepay =
+      amount.gt(borrowedAmountUnit) || amount.eq(borrowedAmountUnit)
 
     try {
       setIsSubmitting(true)
