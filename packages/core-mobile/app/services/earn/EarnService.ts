@@ -9,6 +9,8 @@ import {
   AddDelegatorTransactionProps,
   RecoveryEvents
 } from 'services/earn/types'
+import { OnDelegationProgress } from 'contexts/DelegationContext'
+import { Operation } from 'services/earn/computeDelegationSteps/types'
 import NetworkService from 'services/network/NetworkService'
 import WalletService from 'services/wallet/WalletService'
 import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
@@ -85,7 +87,7 @@ class EarnService {
     const { pChainUtxo, cChainUtxo } = await retry({
       operation: retryIndex => {
         if (retryIndex !== 0) {
-          progressEvents?.(RecoveryEvents.GetAtomicUTXOsFailIng)
+          progressEvents?.(RecoveryEvents.GetAtomicUTXOsFailing)
         }
         return AvalancheWalletService.getAtomicUTXOs({
           account,
@@ -146,7 +148,8 @@ class EarnService {
     feeState,
     cBaseFeeMultiplier,
     xpAddresses,
-    xpAddressDictionary
+    xpAddressDictionary,
+    onProgress
   }: {
     walletId: string
     walletType: WalletType
@@ -158,7 +161,10 @@ class EarnService {
     cBaseFeeMultiplier: number
     xpAddresses: string[]
     xpAddressDictionary: XPAddressDictionary
+    onProgress?: OnDelegationProgress
   }): Promise<void> {
+    onProgress?.(0, Operation.EXPORT_P)
+
     await exportP({
       walletId,
       walletType,
@@ -170,6 +176,14 @@ class EarnService {
       xpAddresses,
       xpAddressDictionary
     })
+    // defer the progress update so the UI can re-render before the blocking importC call starts
+    await new Promise<void>(resolve => {
+      setTimeout(() => {
+        onProgress?.(1, Operation.IMPORT_C)
+        resolve()
+      }, 10)
+    })
+
     await importC({
       walletId,
       walletType,
@@ -177,6 +191,13 @@ class EarnService {
       isTestnet,
       cBaseFeeMultiplier,
       xpAddresses
+    })
+    // defer the completion progress update so the UI reflects the finished state after importC resolves
+    await new Promise<void>(resolve => {
+      setTimeout(() => {
+        onProgress?.(2, null)
+        resolve()
+      }, 10)
     })
   }
 
