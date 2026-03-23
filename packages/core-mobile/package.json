@@ -331,7 +331,7 @@
     "postinstall-postinstall": "2.1.0",
     "puppeteer-extra-plugin-stealth": "2.11.2",
     "react-dom": "19.1.0",
-    "react-native-ble-plx": "3.4.0",
+    "react-native-ble-plx": "3.5.1",
     "react-native-svg-transformer": "1.5.1",
     "react-test-renderer": "19.0.0",
     "reactotron-react-native": "5.1.18",
