@@ -2,16 +2,23 @@ import React, { useCallback } from 'react'
 import { TransactionOnboarding } from 'common/components/TransactionOnboarding'
 import { Icons } from '@avalabs/k2-alpine'
 import { ViewOnceKey } from 'store/viewOnce'
-import { useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 
 export const SwapOnboardingScreen = (): JSX.Element => {
   const { navigate } = useRouter()
+  const params = useLocalSearchParams<{
+    initialTokenIdFrom?: string
+    initialTokenIdTo?: string
+    initialFromCaip2Id?: string
+    initialToCaip2Id?: string
+  }>()
 
   const handlePressNext = useCallback(() => {
     navigate({
-      pathname: '/swap/swap'
+      pathname: '/swap/swap',
+      params
     })
-  }, [navigate])
+  }, [navigate, params])
 
   return (
     <TransactionOnboarding

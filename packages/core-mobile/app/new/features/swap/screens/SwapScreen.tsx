@@ -24,7 +24,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useGlobalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
 import { useDebounce } from 'hooks/useDebounce'
@@ -68,7 +68,7 @@ export const SwapScreen = (): JSX.Element => {
   const { navigate, dismissAll, push } = useRouter()
   const navigation = useNavigation()
 
-  const params = useGlobalSearchParams<{
+  const params = useLocalSearchParams<{
     initialTokenIdFrom?: string // internalId
     initialTokenIdTo?: string // internalId
     initialFromCaip2Id?: string
