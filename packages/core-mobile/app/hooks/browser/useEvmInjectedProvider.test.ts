@@ -27,6 +27,10 @@ jest.mock('./evmProviderShim', () => ({
   )
 }))
 
+jest.mock('./getProviderUuid', () => ({
+  getProviderUuid: () => 'test-uuid-1234'
+}))
+
 const mockInjectJavaScript = jest.fn()
 const mockWebViewRef = {
   current: { injectJavaScript: mockInjectJavaScript }
@@ -252,7 +256,10 @@ describe('useEvmInjectedProvider', () => {
           expect(mockRequest).toHaveBeenCalledWith({
             method: rpcMethod,
             params: ['param1', 'param2'],
-            chainId: 'eip155:43114'
+            chainId: 'eip155:43114',
+            peerMeta: expect.objectContaining({
+              url: 'https://example.com'
+            })
           })
         }
       )

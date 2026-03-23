@@ -6,7 +6,7 @@ import {
   onInAppRequestSucceeded,
   onRequest
 } from '../slice'
-import { RpcMethod } from '../types'
+import { PeerMeta, RpcMethod } from '../types'
 import { generateInAppRequestPayload } from './generateInAppRequestPayload'
 
 const EVENTS_TO_SUBSCRIBE = isAnyOf(
@@ -18,12 +18,14 @@ export type Request = ({
   method,
   params,
   chainId,
-  context
+  context,
+  peerMeta
 }: {
   method: VmModuleRpcMethod
   params: unknown
   chainId?: string
   context?: Record<string, unknown>
+  peerMeta?: PeerMeta
 }) => Promise<string>
 
 /**
@@ -49,14 +51,15 @@ export type Request = ({
  * })
  */
 export const createInAppRequest = (dispatch: Dispatch): Request => {
-  return ({ method, params, chainId, context }) => {
+  return ({ method, params, chainId, context, peerMeta }) => {
     return new Promise((resolve, reject) => {
       // create and dispatch the request
       const inAppRequest = generateInAppRequestPayload({
         method: method as unknown as RpcMethod,
         params,
         chainId,
-        context
+        context,
+        peerMeta
       })
       dispatch(onRequest(inAppRequest))
 
