@@ -35,7 +35,8 @@ describe('buildEvmProviderShim', () => {
     it('embeds a different chain ID when provided', () => {
       const shim = buildEvmProviderShim({
         chainId: '0x1',
-        address: defaultParams.address
+        address: defaultParams.address,
+        uuid: defaultParams.uuid
       })
       expect(shim).toContain("var _chainId = '0x1'")
       expect(shim).not.toContain("var _chainId = '0xa86a'")
