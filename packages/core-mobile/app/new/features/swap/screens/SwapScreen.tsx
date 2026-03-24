@@ -68,7 +68,12 @@ export const SwapScreen = (): JSX.Element => {
   const { navigate, dismissAll, push } = useRouter()
   const navigation = useNavigation()
 
-  const params = useLocalSearchParams<{
+  const {
+    initialTokenIdFrom: rawTokenIdFrom,
+    initialTokenIdTo: rawTokenIdTo,
+    initialFromCaip2Id: rawFromCaip2Id,
+    initialToCaip2Id: rawToCaip2Id
+  } = useLocalSearchParams<{
     initialTokenIdFrom?: string // internalId
     initialTokenIdTo?: string // internalId
     initialFromCaip2Id?: string
@@ -76,13 +81,10 @@ export const SwapScreen = (): JSX.Element => {
   }>()
 
   const initialTokenInfo = useMemo(() => {
-    const normalize = (v: string | undefined): string | undefined =>
-      v === undefined || v === '' || v === 'undefined' ? undefined : v
-
-    const tokenIdFrom = normalize(params.initialTokenIdFrom)
-    const tokenIdTo = normalize(params.initialTokenIdTo)
-    const fromCaip2Id = normalize(params.initialFromCaip2Id)
-    const toCaip2Id = normalize(params.initialToCaip2Id)
+    const tokenIdFrom = rawTokenIdFrom || undefined
+    const tokenIdTo = rawTokenIdTo || undefined
+    const fromCaip2Id = rawFromCaip2Id || undefined
+    const toCaip2Id = rawToCaip2Id || undefined
 
     const isDefaultSwapPair =
       tokenIdFrom === undefined && tokenIdTo === undefined
@@ -108,7 +110,7 @@ export const SwapScreen = (): JSX.Element => {
         toCaip2Id ??
         (isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN)
     }
-  }, [params, isDeveloperMode])
+  }, [rawTokenIdFrom, rawTokenIdTo, rawFromCaip2Id, rawToCaip2Id, isDeveloperMode])
 
   const { formatCurrency } = useFormatCurrency()
   const { getMarketTokenById } = useWatchlist()

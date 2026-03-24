@@ -23,12 +23,11 @@ export const useNavigateToSwap = (): {
     fromCaip2Id,
     toCaip2Id
   }: NavigateToSwapParams = {}): void => {
-    const swapParams = {
-      initialTokenIdFrom: fromTokenId,
-      initialTokenIdTo: toTokenId,
-      initialFromCaip2Id: fromCaip2Id,
-      initialToCaip2Id: toCaip2Id
-    }
+    const swapParams: Record<string, string> = {}
+    if (fromTokenId !== undefined) swapParams.initialTokenIdFrom = fromTokenId
+    if (toTokenId !== undefined) swapParams.initialTokenIdTo = toTokenId
+    if (fromCaip2Id !== undefined) swapParams.initialFromCaip2Id = fromCaip2Id
+    if (toCaip2Id !== undefined) swapParams.initialToCaip2Id = toCaip2Id
     if (shouldHideOnboarding) {
       navigate({ pathname: '/swap/swap', params: swapParams })
     } else {
