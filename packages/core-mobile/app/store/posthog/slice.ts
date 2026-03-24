@@ -21,7 +21,7 @@ export const posthogSlice = createSlice({
       state.isAnalyticsEnabled = value
     },
     setFeatureFlags: (state, action: PayloadAction<FeatureFlags>) => {
-      state.featureFlags = { ...DefaultFeatureFlagConfig, ...action.payload }
+      state.featureFlags = action.payload
     }
   }
 })
@@ -100,31 +100,58 @@ export const selectIsCoinbasePayBlocked = (state: RootState): boolean => {
   )
 }
 
+/**
+ * Parses a PostHog feature-var string as an integer.
+ * Falls back to the compiled-in default only when the flag is absent (NaN).
+ * A PostHog value of "0" is treated as a valid zero — it does NOT fall back.
+ */
+const parseIntFlag = (raw: unknown, fallback: string): number => {
+  const n = parseInt(raw as string)
+  return Number.isNaN(n) ? parseInt(fallback) : n
+}
+
+/**
+ * Parses a PostHog feature-var string as a float.
+ * Falls back to the compiled-in default only when the flag is absent (NaN).
+ * A PostHog value of "0" is treated as a valid zero — it does NOT fall back.
+ */
+const parseFloatFlag = (raw: unknown, fallback: string): number => {
+  const n = parseFloat(raw as string)
+  return Number.isNaN(n) ? parseFloat(fallback) : n
+}
+
 export const selectSentrySampleRate = (state: RootState): number => {
   const { featureFlags } = state.posthog
   return (
-    parseInt((featureFlags[FeatureVars.SENTRY_SAMPLE_RATE] as string) ?? '0') /
-    100
+    parseIntFlag(
+      featureFlags[FeatureVars.SENTRY_SAMPLE_RATE],
+      DefaultFeatureFlagConfig[FeatureVars.SENTRY_SAMPLE_RATE]
+    ) / 100
   )
 }
 
 export const selectPFeeAdjustmentThreshold = (state: RootState): number => {
   const { featureFlags } = state.posthog
-  return parseFloat(
-    featureFlags[FeatureVars.P_FEE_ADJUSTMENT_THRESHOLD] as string
+  return parseFloatFlag(
+    featureFlags[FeatureVars.P_FEE_ADJUSTMENT_THRESHOLD],
+    DefaultFeatureFlagConfig[FeatureVars.P_FEE_ADJUSTMENT_THRESHOLD]
   )
 }
 
 export const selectCrossChainFeesMultiplier = (state: RootState): number => {
   const { featureFlags } = state.posthog
-  return parseFloat(
-    featureFlags[FeatureVars.CROSS_CHAIN_FEES_MULTIPLIER] as string
+  return parseFloatFlag(
+    featureFlags[FeatureVars.CROSS_CHAIN_FEES_MULTIPLIER],
+    DefaultFeatureFlagConfig[FeatureVars.CROSS_CHAIN_FEES_MULTIPLIER]
   )
 }
 
 export const selectCBaseFeeMultiplier = (state: RootState): number => {
   const { featureFlags } = state.posthog
-  return parseFloat(featureFlags[FeatureVars.C_BASE_FEE_MULTIPLIER] as string)
+  return parseFloatFlag(
+    featureFlags[FeatureVars.C_BASE_FEE_MULTIPLIER],
+    DefaultFeatureFlagConfig[FeatureVars.C_BASE_FEE_MULTIPLIER]
+  )
 }
 
 export const selectIsSeedlessOnboardingBlocked = (
@@ -291,22 +318,25 @@ export const selectIsKeystoneBlocked = (state: RootState): boolean => {
 
 export const selectFusionFeeUnitsMarginBps = (state: RootState): number => {
   const { featureFlags } = state.posthog
-  return parseInt(
-    featureFlags[FeatureVars.FUSION_FEE_UNITS_MARGIN_BPS] as string
+  return parseIntFlag(
+    featureFlags[FeatureVars.FUSION_FEE_UNITS_MARGIN_BPS],
+    DefaultFeatureFlagConfig[FeatureVars.FUSION_FEE_UNITS_MARGIN_BPS]
   )
 }
 
 export const selectFusionMaxAmountGasSafetyBps = (state: RootState): number => {
   const { featureFlags } = state.posthog
-  return parseInt(
-    featureFlags[FeatureVars.FUSION_MAX_AMOUNT_GAS_SAFETY_BPS] as string
+  return parseIntFlag(
+    featureFlags[FeatureVars.FUSION_MAX_AMOUNT_GAS_SAFETY_BPS],
+    DefaultFeatureFlagConfig[FeatureVars.FUSION_MAX_AMOUNT_GAS_SAFETY_BPS]
   )
 }
 
 export const selectFusionTransferGasMarginBps = (state: RootState): number => {
   const { featureFlags } = state.posthog
-  return parseInt(
-    featureFlags[FeatureVars.FUSION_TRANSFER_GAS_MARGIN_BPS] as string
+  return parseIntFlag(
+    featureFlags[FeatureVars.FUSION_TRANSFER_GAS_MARGIN_BPS],
+    DefaultFeatureFlagConfig[FeatureVars.FUSION_TRANSFER_GAS_MARGIN_BPS]
   )
 }
 
@@ -314,8 +344,9 @@ export const selectFusionMaxAmountAdditiveBpsDefault = (
   state: RootState
 ): number => {
   const { featureFlags } = state.posthog
-  return parseInt(
-    featureFlags[FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_DEFAULT] as string
+  return parseIntFlag(
+    featureFlags[FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_DEFAULT],
+    DefaultFeatureFlagConfig[FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_DEFAULT]
   )
 }
 
@@ -323,10 +354,11 @@ export const selectFusionMaxAmountAdditiveBpsEvmToSolana = (
   state: RootState
 ): number => {
   const { featureFlags } = state.posthog
-  return parseInt(
-    featureFlags[
+  return parseIntFlag(
+    featureFlags[FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_EVM_TO_SOLANA],
+    DefaultFeatureFlagConfig[
       FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_EVM_TO_SOLANA
-    ] as string
+    ]
   )
 }
 
@@ -334,16 +366,20 @@ export const selectFusionMaxAmountAdditiveBpsSolanaToEvm = (
   state: RootState
 ): number => {
   const { featureFlags } = state.posthog
-  return parseInt(
-    featureFlags[
+  return parseIntFlag(
+    featureFlags[FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_SOLANA_TO_EVM],
+    DefaultFeatureFlagConfig[
       FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_SOLANA_TO_EVM
-    ] as string
+    ]
   )
 }
 
 export const selectMarkrSwapMaxRetries = (state: RootState): number => {
   const { featureFlags } = state.posthog
-  return parseInt(featureFlags[FeatureVars.MARKR_SWAP_MAX_RETRIES] as string)
+  return parseIntFlag(
+    featureFlags[FeatureVars.MARKR_SWAP_MAX_RETRIES],
+    DefaultFeatureFlagConfig[FeatureVars.MARKR_SWAP_MAX_RETRIES]
+  )
 }
 
 export const selectIsSolanaSwapBlocked = (state: RootState): boolean => {
@@ -367,7 +403,10 @@ export const selectStakeAnnualPercentageYieldBPS = (
   state: RootState
 ): number => {
   const { featureFlags } = state.posthog
-  return parseInt(featureFlags[FeatureVars.STAKE_APY_BPS] as string)
+  return parseIntFlag(
+    featureFlags[FeatureVars.STAKE_APY_BPS],
+    DefaultFeatureFlagConfig[FeatureVars.STAKE_APY_BPS]
+  )
 }
 
 export const selectIsInAppUpdateAndroidBlocked = (
