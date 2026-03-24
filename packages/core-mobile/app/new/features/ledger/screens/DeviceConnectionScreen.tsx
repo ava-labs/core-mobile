@@ -9,6 +9,7 @@ import { LedgerDeviceList } from 'new/features/ledger/components/LedgerDeviceLis
 import LedgerService from 'services/ledger/LedgerService'
 import { LedgerDevice } from 'services/ledger/types'
 import { isLedgerBluetoothPermissionError } from 'services/ledger/LedgerBluetoothPermissionError'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 interface DeviceConnectionScreenProps {
   onNavigateToAppConnection: () => void
@@ -70,7 +71,7 @@ export default function DeviceConnectionScreen({
     async (deviceId: string, deviceName: string) => {
       try {
         await connectToDevice(deviceId, deviceName)
-
+        AnalyticsService.capture('ImportLedger_BT_Connected')
         onNavigateToAppConnection()
       } catch (error) {
         if (isLedgerBluetoothPermissionError(error)) {

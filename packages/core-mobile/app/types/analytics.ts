@@ -284,6 +284,19 @@ export type AnalyticsEvents = {
   EarnRepaySuccess: undefined
   EarnRepayFailure: undefined
 
+  // IMPORT LEDGER FLOW
+  ImportLedger_Started: undefined
+  ImportLedger_BIP44_Selected: undefined
+  ImportLedger_LedgerLive_Selected: undefined
+  ImportLedger_BT_Connected: undefined
+  ImportLedger_BT_ConnectFailed: undefined
+  ImportLedger_WalletAdded: undefined
+  ImportLedger_WalletAddFailed: undefined
+  ImportLedger_AccountAdded: undefined
+  ImportLedger_AccountAddFailed: undefined
+  ImportLedger_SolanaEnabled: undefined
+  ImportLedger_SolanaEnableFailed: undefined
+
   // NEST EGG CAMPAIGN
   NestEggCampaignModalViewed: { addressC: string }
   NestEggSuccessModalViewed: { addressC: string }

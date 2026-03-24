@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router'
 import { DerivationPathSelector } from 'new/features/ledger/components/DerivationPathSelector'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import { LedgerDerivationPathType } from 'services/ledger/types'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 interface PathSelectionScreenProps {
   onNavigateToDeviceConnection: (path: LedgerDerivationPathType) => void
@@ -16,6 +17,11 @@ export default function PathSelectionScreen({
 
   const handleDerivationPathSelect = useCallback(
     (derivationPathType: LedgerDerivationPathType) => {
+      AnalyticsService.capture(
+        derivationPathType === LedgerDerivationPathType.BIP44
+          ? 'ImportLedger_BIP44_Selected'
+          : 'ImportLedger_LedgerLive_Selected'
+      )
       setSelectedDerivationPath(derivationPathType)
       onNavigateToDeviceConnection(derivationPathType)
     },
