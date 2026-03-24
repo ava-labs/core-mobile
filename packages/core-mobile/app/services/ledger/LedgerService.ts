@@ -19,10 +19,9 @@ import bs58 from 'bs58'
 import { Platform, PermissionsAndroid, Alert, Linking } from 'react-native'
 import {
   LEDGER_TIMEOUTS,
-  getSolanaDerivationPath,
-  MAX_BITCOIN_APP_VERSION
+  getSolanaDerivationPath
 } from 'new/features/ledger/consts'
-import { isVersionExceeding } from 'new/features/ledger/utils'
+import { isBitcoinCompatibleApp } from 'new/features/ledger/utils'
 import { assertNotNull } from 'utils/assertions'
 import { Curve } from 'utils/publicKeys'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
@@ -411,14 +410,7 @@ class LedgerService {
     requiredApp: LedgerAppType
   ): boolean {
     if (requiredApp === LedgerAppType.BITCOIN) {
-      if (detectedApp === LedgerAppType.BITCOIN_RECOVERY) return true
-      if (detectedApp === LedgerAppType.BITCOIN) {
-        return !isVersionExceeding(
-          this.currentAppVersion,
-          MAX_BITCOIN_APP_VERSION
-        )
-      }
-      return false
+      return isBitcoinCompatibleApp(detectedApp, this.currentAppVersion)
     }
     return detectedApp === requiredApp
   }
