@@ -33,7 +33,8 @@ export const ActionSheet = ({
   alert,
   sx,
   isModal,
-  shouldAvoidKeyboard
+  shouldAvoidKeyboard,
+  renderFooterOverride
 }: {
   title?: string
   navigationTitle?: string
@@ -42,6 +43,7 @@ export const ActionSheet = ({
   sx?: SxProp
   isModal?: boolean
   shouldAvoidKeyboard?: boolean
+  renderFooterOverride?: () => JSX.Element | null
 } & ActionButtonsProps): JSX.Element => {
   const navigation = useNavigation()
 
@@ -72,8 +74,12 @@ export const ActionSheet = ({
   }, [navigation, onClose, alert])
 
   const renderFooter = useCallback(() => {
+    if (renderFooterOverride) {
+      const overrideResult = renderFooterOverride()
+      if (overrideResult != null) return overrideResult
+    }
     return <ActionButtons confirm={confirm} cancel={cancel} alert={alert} />
-  }, [confirm, cancel, alert])
+  }, [renderFooterOverride, confirm, cancel, alert])
 
   return (
     <ScrollScreen

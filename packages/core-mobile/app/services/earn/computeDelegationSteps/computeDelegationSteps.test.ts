@@ -2,7 +2,6 @@ import { pvm } from '@avalabs/avalanchejs'
 import { Network } from '@avalabs/core-chains-sdk'
 import { Avalanche, JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { Account } from 'store/account'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
 import * as utils from './utils'
 import { computeDelegationSteps } from './computeDelegationSteps'
@@ -34,7 +33,11 @@ describe('computeDelegationSteps', () => {
     stakeAmount: 100n,
     currency: 'AVAX',
     avaxXPNetwork: {} as Network,
-    account: { index: 0 } as Account,
+    account: {
+      index: 0,
+      addressPVM: 'test-pvm-address',
+      addressCoreEth: 'test-core-eth-address'
+    } as never,
     feeState: {} as pvm.FeeState,
     cAddress: 'test-c-address',
     cChainBalance: {} as TokenUnit,

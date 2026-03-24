@@ -31,6 +31,7 @@ export const useIssueDelegation = ({
     onProgress?: OnDelegationProgress
   }) => Promise<void>
   isPending: boolean
+  reset: () => void
 } => {
   const { delegate, computeSteps, steps } = useDelegationContext()
   const [stakeAmount] = useStakeAmount()
@@ -82,7 +83,7 @@ export const useIssueDelegation = ({
     [onFundsStuck, onError]
   )
 
-  const { safeMutate, isPending } = useUiSafeMutation({
+  const { safeMutate, isPending, safeReset } = useUiSafeMutation({
     mutationFn,
     onSuccess,
     onError: handleError
@@ -90,6 +91,7 @@ export const useIssueDelegation = ({
 
   return {
     issueDelegation: safeMutate,
-    isPending
+    isPending,
+    reset: safeReset
   }
 }

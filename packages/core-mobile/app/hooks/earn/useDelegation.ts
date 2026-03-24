@@ -26,6 +26,7 @@ import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { selectActiveAccount } from 'store/account'
 import { getMinimumStakeDurationMs } from 'services/earn/utils'
 import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
+import { PvmCapableAccount } from 'common/hooks/send/utils/types'
 import {
   useAvalancheEvmProvider,
   useAvalancheXpProvider
@@ -33,6 +34,34 @@ import {
 import { usePChainBalance } from './usePChainBalance'
 
 const EMPTY_STEPS: Step[] = []
+
+function computeDelegateDates(
+  startDate: Date,
+  endDate: Date,
+  isDeveloperMode: boolean
+): { delegateStartDate: Date; delegateEndDate: Date } {
+  // always use current date + 1 minute for the start date
+  // the recompute step logic could take a while, so we need to ensure the start date is not in the past
+  // otherwise, the transaction will fail with a "Start date must be in future" error
+  const delegateStartDate = new Date(Date.now() + 1 * 60 * 1000)
+
+  // get the difference in milliseconds between the original start date and the fresh start date
+  const differenceInMilliseconds =
+    delegateStartDate.getTime() - startDate.getTime()
+
+  const minimumStakeDurationMs = getMinimumStakeDurationMs(isDeveloperMode)
+
+  const isStakingMinimumDuration =
+    endDate.getTime() - startDate.getTime() <= minimumStakeDurationMs
+
+  // add the difference in milliseconds to the original end date, so the duration is the same as the original
+  const delegateEndDate = new Date(
+    endDate.getTime() +
+      (isStakingMinimumDuration ? differenceInMilliseconds : 0)
+  )
+
+  return { delegateStartDate, delegateEndDate }
+}
 
 export const useDelegation = (): {
   computeSteps: ComputeSteps
@@ -71,7 +100,7 @@ export const useDelegation = (): {
       const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
       const result = await computeDelegationSteps({
-        account: activeAccount,
+        account: activeAccount as PvmCapableAccount,
         pChainBalance,
         cChainBalance,
         avaxXPNetwork: network,
@@ -112,6 +141,10 @@ export const useDelegation = (): {
         throw new Error('No active account')
       }
 
+      if (!activeAccount.addressPVM || !activeAccount.addressCoreEth) {
+        throw new Error('P-Chain address not available for active account')
+      }
+
       if (!avalancheEvmProvider) {
         throw new Error('No avalanche EVM provider')
       }
@@ -122,7 +155,11 @@ export const useDelegation = (): {
 
       Logger.info(
         'Processing the following steps:',
-        JSON.stringify(steps, null, 2)
+        JSON.stringify(
+          steps,
+          (_, v) => (typeof v === 'bigint' ? v.toString() : v),
+          2
+        )
       )
 
       setSteps(steps)
@@ -143,31 +180,16 @@ export const useDelegation = (): {
               `delegating ${step.amount} with estimated fee ${step.fee}`
             )
 
-            // always use current date + 1 minute for the start date
-            // the recompute step logic could take a while, so we need to ensure the start date is not in the past
-            // otherwise, the transaction will fail with a "Start date must be in future" error
-            const delegateStartDate = new Date(Date.now() + 1 * 60 * 1000)
-
-            // get the difference in milliseconds between the original start date and the fresh start date
-            const differenceInMilliseconds =
-              delegateStartDate.getTime() - startDate.getTime()
-
-            const minimumStakeDurationMs =
-              getMinimumStakeDurationMs(isDeveloperMode)
-
-            const isStakingMinimumDuration =
-              endDate.getTime() - startDate.getTime() <= minimumStakeDurationMs
-
-            // add the difference in milliseconds to the original end date, so the duration is the same as the original
-            const delegateEndDate = new Date(
-              endDate.getTime() +
-                (isStakingMinimumDuration ? differenceInMilliseconds : 0)
+            const { delegateStartDate, delegateEndDate } = computeDelegateDates(
+              startDate,
+              endDate,
+              isDeveloperMode
             )
 
             txHash = await EarnService.issueAddDelegatorTransaction({
               walletId: activeWallet.id,
               walletType: activeWallet.type,
-              account: activeAccount,
+              account: activeAccount as PvmCapableAccount,
               endDate: delegateEndDate,
               isTestnet: isDeveloperMode,
               nodeId,

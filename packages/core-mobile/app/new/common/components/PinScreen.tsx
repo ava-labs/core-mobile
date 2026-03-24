@@ -39,6 +39,7 @@ import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
 import { StorageKey } from 'resources/Constants'
 import * as LocalAuthentication from 'expo-local-authentication'
+import { manualLockStore } from 'features/accountSettings/store'
 
 export const PinScreen = ({
   onForgotPin,
@@ -213,7 +214,13 @@ export const PinScreen = ({
   const handleLoginOptions = useCallback(async () => {
     const accessType = BiometricsSDK.getAccessType()
     const enrolledBiometrics = await LocalAuthentication.isEnrolledAsync()
-    if (accessType === 'BIO' && enrolledBiometrics) {
+    const { wasManuallyLocked } = manualLockStore.getState()
+
+    if (wasManuallyLocked) {
+      manualLockStore.setState({ wasManuallyLocked: false })
+    }
+
+    if (accessType === 'BIO' && enrolledBiometrics && !wasManuallyLocked) {
       handlePromptBioLogin()
     } else {
       InteractionManager.runAfterInteractions(() => {

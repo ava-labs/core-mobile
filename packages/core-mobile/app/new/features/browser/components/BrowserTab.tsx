@@ -80,8 +80,12 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       injectGetPageStyles
     } = useInjectedJavascript()
 
-    const { providerShimJs, handleProviderMessage, handleDomainMetadata } =
-      useEvmInjectedProvider(webViewRef)
+    const {
+      providerShimJs,
+      handleProviderMessage,
+      handleDomainMetadata,
+      setCurrentUrl
+    } = useEvmInjectedProvider(webViewRef)
 
     const isInjectedProviderBlocked = useSelector(
       selectIsInjectedProviderBlocked
@@ -329,6 +333,10 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
               handleDomainMetadata(wrapper.payload)
               break
             }
+            case 'nav_change': {
+              setCurrentUrl(wrapper.payload)
+              break
+            }
             case 'window_ethereum_used': {
               if (injectedProviderEnabled) break
               const sessions = WalletConnectService.getSessions()
@@ -366,6 +374,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         showWalletConnectDialog,
         handleProviderMessage,
         handleDomainMetadata,
+        setCurrentUrl,
         urlToLoad
       ]
     )
@@ -394,6 +403,8 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         canGoBack: navState.canGoBack,
         canGoForward: navState.canGoForward
       }
+
+      setCurrentUrl(navState.url ?? '')
 
       const nextUrl = navState.url
       if (!nextUrl?.length || nextUrl.startsWith('about:')) return

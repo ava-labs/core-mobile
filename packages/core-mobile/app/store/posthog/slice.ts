@@ -5,7 +5,7 @@ import { WalletType } from 'services/wallet/types'
 import { uuid } from 'utils/uuid'
 import { selectActiveWallet } from 'store/wallet/slice'
 import { selectCoreAnalyticsConsent } from 'store/settings/securityPrivacy'
-import { initialState } from './types'
+import { initialState, DefaultFeatureFlagConfig } from './types'
 
 const reducerName = 'posthog'
 
@@ -21,7 +21,7 @@ export const posthogSlice = createSlice({
       state.isAnalyticsEnabled = value
     },
     setFeatureFlags: (state, action: PayloadAction<FeatureFlags>) => {
-      state.featureFlags = action.payload
+      state.featureFlags = { ...DefaultFeatureFlagConfig, ...action.payload }
     }
   }
 })
@@ -303,17 +303,41 @@ export const selectFusionMaxAmountGasSafetyBps = (state: RootState): number => {
   )
 }
 
-export const selectFusionBridgeFeeSafetyBps = (state: RootState): number => {
-  const { featureFlags } = state.posthog
-  return parseInt(
-    featureFlags[FeatureVars.FUSION_BRIDGE_FEE_SAFETY_BPS] as string
-  )
-}
-
 export const selectFusionTransferGasMarginBps = (state: RootState): number => {
   const { featureFlags } = state.posthog
   return parseInt(
     featureFlags[FeatureVars.FUSION_TRANSFER_GAS_MARGIN_BPS] as string
+  )
+}
+
+export const selectFusionMaxAmountAdditiveBpsDefault = (
+  state: RootState
+): number => {
+  const { featureFlags } = state.posthog
+  return parseInt(
+    featureFlags[FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_DEFAULT] as string
+  )
+}
+
+export const selectFusionMaxAmountAdditiveBpsEvmToSolana = (
+  state: RootState
+): number => {
+  const { featureFlags } = state.posthog
+  return parseInt(
+    featureFlags[
+      FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_EVM_TO_SOLANA
+    ] as string
+  )
+}
+
+export const selectFusionMaxAmountAdditiveBpsSolanaToEvm = (
+  state: RootState
+): number => {
+  const { featureFlags } = state.posthog
+  return parseInt(
+    featureFlags[
+      FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_SOLANA_TO_EVM
+    ] as string
   )
 }
 

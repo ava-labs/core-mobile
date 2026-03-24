@@ -12,6 +12,7 @@
     "lint": "yarn workspaces foreach -p run lint",
     "tsc": "yarn workspaces foreach -p run tsc",
     "test": "yarn workspaces foreach -p run test",
+    "test:coverage": "yarn workspaces foreach -p run test:coverage",
     "core": "yarn workspace @avalabs/core-mobile",
     "crypto": "yarn workspace react-native-nitro-avalabs-crypto",
     "k2": "yarn workspace @avalabs/k2-alpine"
@@ -40,8 +41,6 @@
     "@noble/secp256k1": "2.1.0",
     "bip32": "3.0.1",
     "bip39": "3.1.0",
-    "@avalabs/core-wallets-sdk": "3.1.0-alpha.69",
-    "@avalabs/types": "3.1.0-alpha.69",
     "@avalabs/avalanchejs/@noble/hashes": "1.8.0",
     "@avalabs/bridge-unified/@noble/hashes": "1.8.0",
     "@avalabs/core-gasless-sdk/@noble/hashes": "1.8.0",
@@ -74,7 +73,8 @@
     "@bitcoinerlab/secp256k1@^1.0.5": "patch:@bitcoinerlab/secp256k1@npm%3A1.2.0#./.yarn/patches/@bitcoinerlab-secp256k1-npm-1.2.0-1098d4b329.patch",
     "react-native-is-edge-to-edge": "1.2.1",
     "react-native-reanimated": "4.2.1",
-    "react-native-worklets": "0.7.1"
+    "react-native-worklets": "0.7.1",
+    "react-native-ble-plx": "3.5.1"
   },
   "engines": {
     "node": ">=20.18.0",

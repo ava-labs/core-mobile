@@ -6,12 +6,18 @@ import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import RNWebView from 'react-native-webview'
 import Logger from 'utils/Logger'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
+import { PeerMeta } from 'store/rpc/types'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
+import { rpcErrors, serializeError } from '@metamask/rpc-errors'
 import { buildEvmProviderShim } from './evmProviderShim'
+import { getInjectedProviderUuid } from './getInjectedProviderUuid'
+
+export const MAX_MESSAGE_SIZE = 1_048_576
 
 type ProviderRequest = {
   id: number
+  origin?: string
   request: {
     method: string
     params: unknown[]
@@ -57,6 +63,74 @@ const SIGNING_METHODS: Record<string, RpcMethod> = {
   [RpcMethod.SIGN_TYPED_DATA_V4]: RpcMethod.SIGN_TYPED_DATA_V4
 }
 
+const ALLOWED_METHODS = new Set([
+  ...READ_ONLY_METHODS,
+  ...Object.keys(SIGNING_METHODS),
+  'wallet_switchEthereumChain',
+  'wallet_addEthereumChain'
+])
+
+function validateProviderRequest(data: unknown): data is ProviderRequest {
+  if (typeof data !== 'object' || data === null) return false
+  const obj = data as Record<string, unknown>
+  if (typeof obj.id !== 'number') return false
+  if (typeof obj.request !== 'object' || obj.request === null) return false
+  const req = obj.request as Record<string, unknown>
+  return typeof req.method === 'string'
+}
+
+function getOriginFromUrl(url: string): string | undefined {
+  if (!url) return undefined
+  try {
+    const origin = new URL(url).origin
+    return origin !== 'null' ? origin : undefined
+  } catch {
+    return undefined
+  }
+}
+
+function parseProviderPayload(
+  payload: string,
+  respondWithError: (id: number, error: unknown) => void
+): ProviderRequest | undefined {
+  if (payload.length > MAX_MESSAGE_SIZE) {
+    Logger.warn(
+      `[InjectedProvider] Message exceeds ${MAX_MESSAGE_SIZE} byte limit`
+    )
+    try {
+      const { id } = JSON.parse(payload) as { id?: unknown }
+      if (typeof id === 'number') {
+        respondWithError(
+          id,
+          rpcErrors.invalidRequest('Message exceeds size limit')
+        )
+      }
+    } catch {
+      /* oversized and unparseable */
+    }
+    return undefined
+  }
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(payload)
+  } catch {
+    Logger.error('[InjectedProvider] Invalid JSON payload')
+    return undefined
+  }
+
+  if (!validateProviderRequest(parsed)) {
+    Logger.error('[InjectedProvider] Malformed provider_request')
+    const maybeId = (parsed as Record<string, unknown>)?.id
+    if (typeof maybeId === 'number') {
+      respondWithError(maybeId, rpcErrors.invalidRequest('Malformed request'))
+    }
+    return undefined
+  }
+
+  return parsed
+}
+
 /**
  * Hook providing EVM injected provider functionality for the in-app browser.
  *
@@ -71,6 +145,12 @@ export function useEvmInjectedProvider(
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
   const dappMetadata = useRef<DomainMetadata | null>(null)
+  const currentUrlRef = useRef<string>('')
+  const pendingOrigins = useRef<Map<number, string>>(new Map())
+
+  const setCurrentUrl = useCallback((url: string) => {
+    currentUrlRef.current = url
+  }, [])
 
   const chainIdHex = useMemo(() => {
     if (activeNetwork.vmName !== NetworkVMType.EVM) return '0x1'
@@ -82,15 +162,51 @@ export function useEvmInjectedProvider(
   const providerShimJs = useMemo(() => {
     return buildEvmProviderShim({
       chainId: chainIdHex,
-      address: evmAddress
+      address: evmAddress,
+      uuid: getInjectedProviderUuid()
     })
   }, [chainIdHex, evmAddress])
 
   const sendResponse = useCallback(
     (id: number, error: unknown, result: unknown) => {
-      const errorJson = error ? JSON.stringify(error) : 'null'
+      let errorPayload: { code: number; message: string } | null = null
+      if (error != null) {
+        const err = error as Record<string, unknown>
+        if (
+          typeof err.code === 'number' &&
+          Number.isInteger(err.code) &&
+          typeof err.message === 'string'
+        ) {
+          errorPayload = {
+            code: err.code,
+            message: err.message
+          }
+        } else {
+          const serialized = serializeError(error, {
+            shouldIncludeStack: false
+          })
+          errorPayload = {
+            code: serialized.code,
+            message: serialized.message
+          }
+        }
+      }
+      const errorJson = errorPayload ? JSON.stringify(errorPayload) : 'null'
       const resultJson = result !== undefined ? JSON.stringify(result) : 'null'
-      const js = `window.__coreProviderRespond(${id}, ${errorJson}, ${resultJson}); true;`
+      const call = `window.__coreProviderRespond(${id}, ${errorJson}, ${resultJson});`
+
+      const expectedOrigin = pendingOrigins.current.get(id)
+      pendingOrigins.current.delete(id)
+
+      // Gate response delivery: if we recorded the page origin at request
+      // time, only deliver if the page is still on the same origin
+      // (prevents leaking response data after cross-origin navigation).
+      const js = expectedOrigin
+        ? `if(window.location.origin===${JSON.stringify(
+            expectedOrigin
+          )}){${call}}true;`
+        : `${call} true;`
+
       webViewRef.current?.injectJavaScript(js)
     },
     [webViewRef]
@@ -112,7 +228,7 @@ export function useEvmInjectedProvider(
         if (!rpcUrl) {
           sendResponse(
             id,
-            { code: -32603, message: 'No RPC URL configured' },
+            rpcErrors.internal('No RPC URL configured'),
             undefined
           )
           return
@@ -140,15 +256,24 @@ export function useEvmInjectedProvider(
         }
       } catch (e) {
         Logger.error('[InjectedProvider] RPC proxy error', e)
-        sendResponse(
-          id,
-          { code: -32603, message: 'RPC request failed' },
-          undefined
-        )
+        sendResponse(id, rpcErrors.internal('RPC request failed'), undefined)
       }
     },
     [activeNetwork.rpcUrl, sendResponse]
   )
+
+  const buildDappPeerMeta = useCallback((): PeerMeta | undefined => {
+    const meta = dappMetadata.current
+    const nativeUrl = currentUrlRef.current
+    if (!meta && !nativeUrl) return undefined
+
+    return {
+      name: meta?.name ?? new URL(nativeUrl).hostname,
+      description: '',
+      url: nativeUrl || meta?.url || '',
+      icons: meta?.icon ? [meta.icon] : []
+    }
+  }, [])
 
   const dispatchSigningRequest = useCallback(
     async (id: number, method: string, params: unknown[]) => {
@@ -156,7 +281,7 @@ export function useEvmInjectedProvider(
       if (!rpcMethod) {
         sendResponse(
           id,
-          { code: -32601, message: `Method not supported: ${method}` },
+          rpcErrors.methodNotFound(`Method not supported: ${method}`),
           undefined
         )
         return
@@ -169,57 +294,67 @@ export function useEvmInjectedProvider(
         const result = await request({
           method: rpcMethod,
           params,
-          chainId: caip2ChainId
+          chainId: caip2ChainId,
+          peerMeta: buildDappPeerMeta()
         })
         sendResponse(id, null, result)
       } catch (e) {
-        const error = e as { code?: number; message?: string }
-        sendResponse(
-          id,
-          {
-            code: error.code ?? 4001,
-            message: error.message ?? 'User rejected'
-          },
-          undefined
-        )
+        sendResponse(id, e, undefined)
       }
     },
-    [dispatch, activeNetwork.chainId, sendResponse]
+    [dispatch, activeNetwork.chainId, sendResponse, buildDappPeerMeta]
   )
 
   const handleProviderMessage = useCallback(
     (payload: string) => {
-      let parsed: ProviderRequest
-      try {
-        parsed = JSON.parse(payload)
-      } catch {
-        Logger.error('[InjectedProvider] Invalid provider_request payload')
-        return
-      }
+      const respondWithError = (id: number, error: unknown): void =>
+        sendResponse(id, error, undefined)
 
-      const { id, request } = parsed
-      const { method, params } = request
+      const parsed = parseProviderPayload(payload, respondWithError)
+      if (!parsed) return
+
+      const { id, origin: pageOrigin, request: rpc } = parsed
+      const { method, params } = rpc
+
+      const nativeOrigin = getOriginFromUrl(currentUrlRef.current)
+      if (pageOrigin && nativeOrigin && pageOrigin !== nativeOrigin) {
+        Logger.warn(
+          `[InjectedProvider] Origin mismatch: page=${pageOrigin} native=${nativeOrigin}`
+        )
+      }
 
       Logger.trace(`[InjectedProvider] ${method}`, params)
 
-      // Connection methods (eth_requestAccounts, wallet_requestPermissions, etc.)
-      // are handled entirely in the JS shim for instant response.
-      // Only signing and read-only RPC methods reach native.
+      if (!ALLOWED_METHODS.has(method)) {
+        sendResponse(
+          id,
+          rpcErrors.methodNotFound(`Unsupported method: ${method}`),
+          undefined
+        )
+        return
+      }
+
+      if (nativeOrigin) {
+        pendingOrigins.current.set(id, nativeOrigin)
+      }
+
       if (method === 'wallet_switchEthereumChain') {
         Logger.info(
           '[InjectedProvider] wallet_switchEthereumChain requested (demo stub)'
         )
         sendResponse(id, null, null)
       } else if (method in SIGNING_METHODS) {
+        if (!nativeOrigin) {
+          sendResponse(
+            id,
+            rpcErrors.internal('Origin unavailable — cannot sign'),
+            undefined
+          )
+          return
+        }
         dispatchSigningRequest(id, method, params ?? [])
       } else if (READ_ONLY_METHODS.has(method)) {
         proxyToRpc(id, method, params ?? [])
-      } else {
-        sendResponse(
-          id,
-          { code: -32601, message: `Method not supported: ${method}` },
-          undefined
-        )
       }
     },
     [sendResponse, proxyToRpc, dispatchSigningRequest]
@@ -239,6 +374,7 @@ export function useEvmInjectedProvider(
     handleProviderMessage,
     handleDomainMetadata,
     emitEvent,
-    dappMetadata
+    dappMetadata,
+    setCurrentUrl
   }
 }

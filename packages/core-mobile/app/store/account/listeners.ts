@@ -13,6 +13,7 @@ import { recentAccountsStore } from 'new/features/accountSettings/store'
 import {
   selectActiveWallet,
   selectIsMigratingActiveAccounts,
+  selectIsWalletLedger,
   selectSeedlessWallet,
   selectWallets,
   setWalletName
@@ -52,6 +53,7 @@ const initAccounts = async (
   const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
   const activeWallet = selectActiveWallet(state)
   const accounts: AccountCollection = {}
+  const isLedger = selectIsWalletLedger(activeWallet?.id)(state)
 
   if (!activeWallet) {
     throw new Error('Active wallet is not set')
@@ -120,10 +122,7 @@ const initAccounts = async (
     listenerApi.dispatch(setActiveAccountId(firstAccountId))
   }
 
-  if (
-    activeWallet.type === WalletType.LEDGER ||
-    activeWallet.type === WalletType.LEDGER_LIVE
-  ) {
+  if (isLedger) {
     const ledgerResult = await AccountsService.createNextAccount({
       index: 0,
       walletType: activeWallet.type,
@@ -139,14 +138,14 @@ const initAccounts = async (
         [acc.id]: {
           mainnet: {
             addressBTC: mainnetAccount.addressBTC,
-            addressAVM: mainnetAccount.addressAVM,
-            addressPVM: mainnetAccount.addressPVM,
+            addressAVM: mainnetAccount.addressAVM ?? '',
+            addressPVM: mainnetAccount.addressPVM ?? '',
             addressCoreEth: mainnetAccount.addressCoreEth ?? ''
           },
           testnet: {
             addressBTC: testnetAccount.addressBTC,
-            addressAVM: testnetAccount.addressAVM,
-            addressPVM: testnetAccount.addressPVM,
+            addressAVM: testnetAccount.addressAVM ?? '',
+            addressPVM: testnetAccount.addressPVM ?? '',
             addressCoreEth: testnetAccount.addressCoreEth ?? ''
           },
           walletId: activeWallet.id,

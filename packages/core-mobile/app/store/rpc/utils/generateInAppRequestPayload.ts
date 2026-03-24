@@ -1,5 +1,6 @@
 import { generateRandomNumberId } from 'utils/generateRandomNumberId'
 import {
+  PeerMeta,
   RpcMethod,
   RpcProvider,
   RpcRequest,
@@ -11,12 +12,14 @@ export const generateInAppRequestPayload = ({
   method,
   params,
   chainId,
-  context
+  context,
+  peerMeta
 }: {
   method: RpcMethod
   params: unknown
   chainId?: string
   context?: Record<string, unknown>
+  peerMeta?: PeerMeta
 }): RpcRequest<RpcMethod> => ({
   provider: RpcProvider.CORE_MOBILE,
   method,
@@ -31,6 +34,6 @@ export const generateInAppRequestPayload = ({
       chainId: chainId ?? ''
     }
   },
-  peerMeta: CORE_MOBILE_META,
+  peerMeta: peerMeta ?? CORE_MOBILE_META,
   context
 })

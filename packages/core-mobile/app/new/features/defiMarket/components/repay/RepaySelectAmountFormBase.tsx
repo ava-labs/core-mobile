@@ -20,7 +20,14 @@ export type RepaySelectAmountFormBaseProps = {
   borrowPosition: BorrowPosition
   totalDebtUsd: number
   currentHealthScore: number | undefined
-  balance: TokenUnit | undefined
+  /**
+   * Wallet balance of the underlying asset (same decimals/symbol as the borrow).
+   * Pass `useRepayTokenBalance(borrowPosition.market.asset, chainId)` after the
+   * position is loaded — that hook returns a `TokenUnit` (including `0n` when the
+   * wallet holds none) whenever `asset` is defined; do not render this form
+   * without a resolved balance.
+   */
+  balance: TokenUnit
   formatInCurrency: (amt: TokenUnit, symbol: string) => string
   submit: (params: {
     amount: TokenUnit
@@ -52,11 +59,6 @@ export function RepaySelectAmountFormBase({
     )
   }, [borrowPosition, market])
 
-  const maxRepayAmount = useMemo(() => {
-    if (!borrowedAmountUnit || !balance) return undefined
-    return borrowedAmountUnit.lt(balance) ? borrowedAmountUnit : balance
-  }, [borrowedAmountUnit, balance])
-
   const calculateHealthScoreAfterRepay = useCallback(
     (repayAmount: TokenUnit): number | undefined => {
       if (currentHealthScore === undefined || Number.isNaN(currentHealthScore))
@@ -82,10 +84,7 @@ export function RepaySelectAmountFormBase({
       if (amount.toSubUnit() === 0n) return currentHealthScore
 
       // Full repay of this token — check if all debt would be cleared
-      if (
-        borrowedAmountUnit &&
-        amount.toSubUnit() >= borrowedAmountUnit.toSubUnit()
-      ) {
+      if (amount.toSubUnit() >= borrowedAmountUnit.toSubUnit()) {
         const pricePerToken =
           market.asset.mintTokenBalance.price.value.toNumber()
         const tokenDebtUsd =
@@ -107,7 +106,7 @@ export function RepaySelectAmountFormBase({
   ])
 
   const remainingDebt = useMemo(() => {
-    if (!borrowedAmountUnit || !amount) return borrowedAmountUnit
+    if (!amount) return borrowedAmountUnit
     try {
       const debtRaw = borrowedAmountUnit.toSubUnit()
       const repayRaw = amount.toSubUnit()
@@ -124,21 +123,21 @@ export function RepaySelectAmountFormBase({
 
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {
-      if (maxRepayAmount && amt.gt(maxRepayAmount)) {
-        throw new Error('The specified amount exceeds available to repay')
+      if (amt.gt(balance)) {
+        throw new Error('The specified amount exceeds your balance')
       }
-      if (borrowedAmountUnit && amt.gt(borrowedAmountUnit)) {
+      if (amt.gt(borrowedAmountUnit)) {
         throw new Error('The specified amount exceeds your debt')
       }
     },
-    [maxRepayAmount, borrowedAmountUnit]
+    [borrowedAmountUnit, balance]
   )
 
   const handleSubmit = useCallback(async () => {
     if (!amount) return
 
-    const debtUnit = borrowedAmountUnit ?? new TokenUnit(0n, 0, '')
-    const isMaxRepay = amount.gt(debtUnit) || amount.eq(debtUnit)
+    const isMaxRepay =
+      amount.gt(borrowedAmountUnit) || amount.eq(borrowedAmountUnit)
 
     try {
       setIsSubmitting(true)
@@ -159,10 +158,10 @@ export function RepaySelectAmountFormBase({
 
   const canSubmit =
     !isSubmitting &&
-    amount &&
+    !!amount &&
     amount.gt(0) &&
-    maxRepayAmount &&
-    (amount.lt(maxRepayAmount) || amount.eq(maxRepayAmount))
+    !amount.gt(borrowedAmountUnit) &&
+    !amount.gt(balance)
 
   const renderFooter = useCallback(() => {
     return (
@@ -192,16 +191,13 @@ export function RepaySelectAmountFormBase({
             maxDecimals: market.asset.decimals,
             symbol: market.asset.symbol
           }}
-          balance={
-            balance ??
-            new TokenUnit(0n, market.asset.decimals, market.asset.symbol)
-          }
+          balance={balance}
           formatInCurrency={amt => formatInCurrency(amt, market.asset.symbol)}
           onChange={setAmount}
           validateAmount={validateAmount}
           disabled={isSubmitting}
           autoFocus
-          maxAmount={maxRepayAmount}
+          maxAmount={borrowedAmountUnit}
           presetPercentages={[25, 50]}
         />
 

@@ -91,6 +91,11 @@ export const getDelegationFeePostPImport = async ({
   provider: Avalanche.JsonRpcProvider
   xpAddresses: string[]
 }): Promise<bigint> => {
+  const { addressPVM } = account
+  if (!addressPVM) {
+    throw new Error('P-Chain address not available for account')
+  }
+
   const assetId = getAvaxAssetId(isTestnet)
 
   const pChainUTXOs = await AvalancheWalletService.getPChainUTXOs({
@@ -117,16 +122,12 @@ export const getDelegationFeePostPImport = async ({
       account,
       isTestnet,
       stakeAmountInNAvax: stakeAmount,
-      destinationAddress: account.addressPVM,
+      destinationAddress: addressPVM,
       feeState,
       xpAddresses
     })
 
-  const tx = await Avalanche.parseAvalancheTx(
-    unsignedTx,
-    provider,
-    account.addressPVM
-  )
+  const tx = await Avalanche.parseAvalancheTx(unsignedTx, provider, addressPVM)
 
   return tx.txFee
 }
@@ -150,6 +151,11 @@ export const getDelegationFeePostCExportAndPImport = async ({
   pFeeAdjustmentThreshold: number
   xpAddresses: string[]
 }): Promise<bigint> => {
+  const { addressPVM } = account
+  if (!addressPVM) {
+    throw new Error('P-Chain address not available for account')
+  }
+
   const assetId = getAvaxAssetId(isTestnet)
 
   const pChainUTXOs = await AvalancheWalletService.getPChainUTXOs({
@@ -185,7 +191,7 @@ export const getDelegationFeePostCExportAndPImport = async ({
         account,
         isTestnet,
         stakeAmountInNAvax: stakeAmount,
-        destinationAddress: account.addressPVM,
+        destinationAddress: addressPVM,
         feeState,
         xpAddresses
       })
@@ -227,17 +233,13 @@ export const getDelegationFeePostCExportAndPImport = async ({
         account,
         isTestnet,
         stakeAmountInNAvax: stakeAmount,
-        destinationAddress: account.addressPVM,
+        destinationAddress: addressPVM,
         feeState,
         xpAddresses
       })
   }
 
-  const tx = await Avalanche.parseAvalancheTx(
-    unsignedTx,
-    provider,
-    account.addressPVM
-  )
+  const tx = await Avalanche.parseAvalancheTx(unsignedTx, provider, addressPVM)
 
   return tx.txFee
 }
@@ -309,6 +311,11 @@ export const getImportPFeePostCExport = async ({
     ...atomicPChainUTXOs.getUTXOs()
   ]
 
+  const { addressPVM } = account
+  if (!addressPVM) {
+    throw new Error('P-Chain address not available for account')
+  }
+
   const utxoSet = new utils.UtxoSet(simulatedAtomicUTXOs)
 
   const unsignedTx = await AvalancheWalletService.simulateImportPTx({
@@ -316,16 +323,12 @@ export const getImportPFeePostCExport = async ({
     account,
     isTestnet,
     sourceChain: 'C',
-    destinationAddress: account.addressPVM,
+    destinationAddress: addressPVM,
     feeState,
     xpAddresses
   })
 
-  const tx = await Avalanche.parseAvalancheTx(
-    unsignedTx,
-    provider,
-    account.addressPVM
-  )
+  const tx = await Avalanche.parseAvalancheTx(unsignedTx, provider, addressPVM)
 
   return tx.txFee
 }
@@ -345,6 +348,11 @@ export const getExportCFee = async ({
   avalancheEvmProvider: JsonRpcBatchInternal
   xpAddresses: string[]
 }): Promise<bigint> => {
+  const { addressPVM } = account
+  if (!addressPVM) {
+    throw new Error('P-Chain address not available for account')
+  }
+
   const paddedCChainBaseFee = addBufferToCChainBaseFee(
     cChainBaseFee,
     cBaseFeeMultiplier
@@ -357,7 +365,7 @@ export const getExportCFee = async ({
     account,
     isTestnet,
     destinationChain: 'P',
-    destinationAddress: account.addressPVM,
+    destinationAddress: addressPVM,
     shouldValidateBurnedAmount: true,
     avalancheEvmProvider,
     xpAddresses

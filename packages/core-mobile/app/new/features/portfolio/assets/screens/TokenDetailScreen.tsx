@@ -4,7 +4,7 @@ import {
 } from '@avalabs/avalanche-module'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import { ChainId, SolanaCaip2ChainId } from '@avalabs/core-chains-sdk'
+import { ChainId } from '@avalabs/core-chains-sdk'
 import {
   NavigationTitleHeader,
   SegmentedControl,
@@ -47,7 +47,7 @@ import { useSendSelectedToken } from 'features/send/store'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'
+import { UI, isUIDisabledForNetwork } from 'utils/isUIDisabled'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
@@ -181,8 +181,12 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     [token]
   )
 
-  const isBridgeUIDisabledForNetwork = useIsUIDisabledForNetwork(
+  const isBridgeUIDisabledForNetwork = isUIDisabledForNetwork(
     UI.Bridge,
+    token?.networkChainId
+  )
+  const isSwapUIDisabledForNetwork = isUIDisabledForNetwork(
+    UI.Swap,
     token?.networkChainId
   )
   const isBridgeDisabled = useMemo(() => {
@@ -238,32 +242,12 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend }
     ]
 
-    if (isFusionEnabled) {
+    if (isFusionEnabled && !isSwapUIDisabledForNetwork) {
       const fromTokenId = token?.internalId
-
-      let fromCaip2Id: string | undefined
-      let toTokenId: string | undefined
-      let toCaip2Id: string | undefined
-
-      switch (fromTokenId) {
-        case tokenIds.AVAX:
-          toTokenId = tokenIds.USDC
-          break
-        case tokenIds.SOL: {
-          toTokenId = tokenIds.USDC
-          const caip2ChainId = isDeveloperMode
-            ? SolanaCaip2ChainId.DEVNET
-            : SolanaCaip2ChainId.MAINNET
-          fromCaip2Id = caip2ChainId
-          toCaip2Id = caip2ChainId
-          break
-        }
-        case tokenIds.USDC:
-          toTokenId = tokenIds.AVAX
-          break
-        default:
-          toTokenId = tokenIds.USDC
-      }
+      const fromCaip2Id = getNetwork(token?.networkChainId)?.caip2ChainId
+      const toCaip2Id = fromCaip2Id
+      const toTokenId =
+        fromTokenId === tokenIds.USDC ? tokenIds.AVAX : tokenIds.USDC
 
       buttons.push({
         title: ActionButtonTitle.Swap,
@@ -324,7 +308,8 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     canAddStake,
     addStake,
     navigateToWithdraw,
-    isDeveloperMode
+    getNetwork,
+    isSwapUIDisabledForNetwork
   ])
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({

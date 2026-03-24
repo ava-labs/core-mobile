@@ -1,192 +1,41 @@
 import { TokenType } from '@avalabs/vm-module-types'
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { getAddressByNetwork } from 'store/account/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import type { LocalTokenWithBalance } from 'store/balance'
-import { NetworkWithCaip2ChainId } from 'store/network'
 import {
   selectFusionMaxAmountGasSafetyBps,
-  selectFusionBridgeFeeSafetyBps
+  selectFusionMaxAmountAdditiveBpsDefault,
+  selectFusionMaxAmountAdditiveBpsEvmToSolana,
+  selectFusionMaxAmountAdditiveBpsSolanaToEvm
 } from 'store/posthog'
-import FusionService from '../../services/FusionService'
-import { logSdkError } from '../../utils/fusionLogger'
-import { toSwappableAsset, toChain } from '../../utils/fusionTypeConverters'
-import type { Quote } from '../../types'
-import type { QuoterParams } from '../../services/types'
 import { useIsFusionServiceReady } from '../useZustandStore'
 import { useFeeEstimation } from '../useFeeEstimation'
-import { getNativeBridgeFee } from '../../utils/bridgeFee'
-import { getTokenKey } from '../../utils/tokenKey'
-import { computeMaxAmount } from './utils'
-
-/**
- * Subscribes to the first quote emitted by a Quoter for the given params,
- * calls onQuote with it, then unsubscribes. Returns a cleanup function or
- * undefined if the quoter could not be created.
- */
-const subscribeToFirstQuote = (
-  params: QuoterParams,
-  onQuote: (quote: Quote) => void,
-  onFailed: () => void
-): (() => void) | undefined => {
-  try {
-    const quoter = FusionService.getQuoter(params)
-    if (!quoter) return undefined
-
-    let settled = false
-    const unsubscribe = quoter.subscribe((event, data) => {
-      if (settled) return
-      if (event === 'quote') {
-        settled = true
-        onQuote(data.bestQuote)
-        unsubscribe()
-      } else if (event === 'done' || event === 'error') {
-        settled = true
-        onFailed()
-        unsubscribe()
-      }
-    })
-    return () => {
-      settled = true
-      unsubscribe()
-    }
-  } catch (error) {
-    logSdkError('[subscribeToFirstQuote] error', error)
-    return undefined
-  }
-}
-
-/**
- * Fetches a single dummy quote using minimumTransferAmount to estimate fees
- * before the user has entered any amount. Only active for native tokens.
- *
- * The bridge fee in quote.fees is a flat fee independent of amount, so using
- * minimumTransferAmount produces the same bridge fee as the full balance.
- */
-type DummyQuoteEntry = {
-  quote: Quote
-  fromId: string
-  toId: string
-} | null
-
-const useDummyQuote = ({
-  isNative,
-  isFusionServiceReady,
-  fromToken,
-  toToken,
-  fromNetwork,
-  toNetwork,
-  fromAddress,
-  toAddress,
-  minimumTransferAmount
-}: {
-  isNative: boolean
-  isFusionServiceReady: boolean
-  fromToken: LocalTokenWithBalance | undefined
-  toToken: LocalTokenWithBalance | undefined
-  fromNetwork: NetworkWithCaip2ChainId | undefined
-  toNetwork: NetworkWithCaip2ChainId | undefined
-  fromAddress: string | undefined
-  toAddress: string | undefined
-  minimumTransferAmount: bigint | null | undefined
-}): { quote: Quote | null; failed: boolean } => {
-  const [dummyQuoteEntry, setDummyQuoteEntry] = useState<DummyQuoteEntry>(null)
-  const [failed, setFailed] = useState(false)
-
-  useEffect(() => {
-    const prerequisitesMet =
-      isNative &&
-      isFusionServiceReady &&
-      !!fromToken &&
-      !!toToken &&
-      !!fromNetwork &&
-      !!toNetwork &&
-      !!fromAddress &&
-      !!toAddress
-
-    // minimumTransferAmount === undefined means still loading — wait
-    if (!prerequisitesMet || minimumTransferAmount === undefined) {
-      setDummyQuoteEntry(null)
-      setFailed(false)
-      return
-    }
-
-    // null means the SDK couldn't provide a minimum; <= 0n would be unusable — treat both as failure
-    if (minimumTransferAmount === null || minimumTransferAmount <= 0n) {
-      setDummyQuoteEntry(null)
-      setFailed(true)
-      return
-    }
-
-    const fromId = getTokenKey(fromToken)
-    const toId = getTokenKey(toToken)
-
-    const cleanup = subscribeToFirstQuote(
-      {
-        fromAddress,
-        toAddress,
-        sourceAsset: toSwappableAsset(fromToken),
-        sourceChain: toChain(fromNetwork),
-        targetAsset: toSwappableAsset(toToken),
-        targetChain: toChain(toNetwork),
-        amount: minimumTransferAmount
-      },
-      quote => {
-        setFailed(false)
-        setDummyQuoteEntry({ quote, fromId, toId })
-      },
-      () => {
-        setDummyQuoteEntry(null)
-        setFailed(true)
-      }
-    )
-
-    if (!cleanup) {
-      setDummyQuoteEntry(null)
-      setFailed(true)
-    }
-
-    return cleanup
-  }, [
-    isNative,
-    isFusionServiceReady,
-    fromToken,
-    toToken,
-    fromNetwork,
-    toNetwork,
-    fromAddress,
-    toAddress,
-    minimumTransferAmount
-  ])
-
-  // Derive quote synchronously in render: return null when the stored entry
-  // belongs to a different token pair
-  const isCurrentPair =
-    dummyQuoteEntry?.fromId ===
-      (fromToken ? getTokenKey(fromToken) : undefined) &&
-    dummyQuoteEntry?.toId === (toToken ? getTokenKey(toToken) : undefined)
-
-  return {
-    quote: isCurrentPair ? dummyQuoteEntry?.quote ?? null : null,
-    failed: isCurrentPair ? failed : false
-  }
-}
+import { getTotalAdditiveSourceFee } from '../../utils/getTotalAdditiveSourceFee'
+import { usePreQuote } from './usePreQuote'
+import {
+  computeMaxAmount,
+  getPreQuoteAmount,
+  getRouteAdditiveBps,
+  resolveAdditiveFeeForMax
+} from './utils'
 
 /**
  * Returns the maximum amount the user can swap from their balance.
  *
- * For native tokens, the following fees are estimated upfront using a dummy quote at the
- * minimum transfer amount and subtracted from the balance:
- * - Gas: estimated via estimateNativeFee with a safety buffer from feature flags
- * - Bridge fee: extracted from quote.fees (a calculation sum of the blockchain fee + network fee, independent of swap amount)
+ * Fetches a pre-quote to estimate fees before the user has entered an amount.
+ * All additive fees denominated in the source token (fundingModel === 'additive',
+ * matching token type and address) are summed and buffered by a route-based
+ * safety margin from feature flags.
  *
- * Returns undefined while the estimate is loading so the Max button stays
- * disabled until the correct value is known.
+ * For native tokens, buffered gas is also subtracted.
+ * For non-native tokens (ERC20/SPL), gas is paid in the native asset so only additive fees
+ * in the source token are deducted.
  *
- * For non-native tokens, the full balance is returned immediately since gas is
- * paid in the chain's native asset.
+ * Returns undefined while the pre-quote or gas estimate is loading so the Max
+ * button stays disabled until the correct value is known.
  */
 export const useMaxSwapAmount = ({
   fromToken,
@@ -196,12 +45,28 @@ export const useMaxSwapAmount = ({
   fromToken: LocalTokenWithBalance | undefined
   toToken: LocalTokenWithBalance | undefined
   minimumTransferAmount: bigint | null | undefined
-}): bigint | undefined => {
+}): {
+  max: bigint | undefined
+  rawAdditiveFee: bigint
+  bufferedAdditiveFee: bigint
+  routeAdditiveBps: number
+  rawGasFee: bigint | undefined
+  bufferedGasFee: bigint | undefined
+  gasSafetyBps: number
+} => {
   const [isFusionServiceReady] = useIsFusionServiceReady()
   const { getNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
   const maxAmountGasSafetyBps = useSelector(selectFusionMaxAmountGasSafetyBps)
-  const bridgeFeeSafetyBps = useSelector(selectFusionBridgeFeeSafetyBps)
+  const additiveBpsDefault = useSelector(
+    selectFusionMaxAmountAdditiveBpsDefault
+  )
+  const additiveBpsEvmToSolana = useSelector(
+    selectFusionMaxAmountAdditiveBpsEvmToSolana
+  )
+  const additiveBpsSolanaToEvm = useSelector(
+    selectFusionMaxAmountAdditiveBpsSolanaToEvm
+  )
 
   const fromNetwork = useMemo(
     () => (fromToken ? getNetwork(fromToken.networkChainId) : undefined),
@@ -228,8 +93,12 @@ export const useMaxSwapAmount = ({
 
   const isNative = fromToken?.type === TokenType.NATIVE
 
-  const { quote: dummyQuote, failed: dummyQuoteFailed } = useDummyQuote({
-    isNative,
+  const preQuoteAmount = useMemo(
+    () => getPreQuoteAmount(minimumTransferAmount, fromToken),
+    [minimumTransferAmount, fromToken]
+  )
+
+  const { quote: preQuote, failed: preQuoteFailed } = usePreQuote({
     isFusionServiceReady,
     fromToken,
     toToken,
@@ -237,44 +106,70 @@ export const useMaxSwapAmount = ({
     toNetwork,
     fromAddress,
     toAddress,
-    minimumTransferAmount
+    minimumTransferAmount: preQuoteAmount
   })
 
-  // Bridge fee on the source chain (independent of swap amount).
-  // Extracted separately from quote.fees because estimateNativeFee only returns gas.
-  const bridgeFee = useMemo(
-    () => getNativeBridgeFee(isNative, dummyQuote, bridgeFeeSafetyBps),
-    [isNative, dummyQuote, bridgeFeeSafetyBps]
+  const routeAdditiveBps = getRouteAdditiveBps(
+    fromNetwork?.caip2ChainId,
+    toNetwork?.caip2ChainId,
+    {
+      default: additiveBpsDefault,
+      evmToSolana: additiveBpsEvmToSolana,
+      solanaToEvm: additiveBpsSolanaToEvm
+    }
   )
+
+  // All additive fees in the source token, with a uniform route-based buffer.
+  const additiveFeeResult = useMemo(
+    () => getTotalAdditiveSourceFee(fromToken, preQuote, routeAdditiveBps),
+    [fromToken, preQuote, routeAdditiveBps]
+  )
+  const bufferedAdditiveFee = additiveFeeResult.buffered
+  const rawAdditiveFee = additiveFeeResult.raw
 
   const {
     gasFee: bufferedFee,
+    rawGasFee,
     error: feeEstimationError,
     isFetching: isFeeEstimationFetching
   } = useFeeEstimation({
-    quote: dummyQuote,
+    quote: preQuote,
     fromNetwork,
     gasSafetyBps: maxAmountGasSafetyBps
   })
 
-  return useMemo(
-    () =>
-      computeMaxAmount({
-        fromToken,
-        isNative,
-        bufferedGas: bufferedFee,
-        bridgeFee,
-        hasEstimationError:
-          (!!feeEstimationError && !isFeeEstimationFetching) || dummyQuoteFailed
-      }),
-    [
+  const additiveFeeForMax = resolveAdditiveFeeForMax(
+    preQuoteFailed,
+    preQuote !== null,
+    bufferedAdditiveFee
+  )
+
+  const max = useMemo(() => {
+    return computeMaxAmount({
       fromToken,
       isNative,
-      bufferedFee,
-      bridgeFee,
-      feeEstimationError,
-      dummyQuoteFailed,
-      isFeeEstimationFetching
-    ]
-  )
+      bufferedGas: bufferedFee,
+      additiveFee: additiveFeeForMax,
+      hasEstimationError:
+        (!!feeEstimationError && !isFeeEstimationFetching) || preQuoteFailed
+    })
+  }, [
+    fromToken,
+    isNative,
+    bufferedFee,
+    additiveFeeForMax,
+    feeEstimationError,
+    preQuoteFailed,
+    isFeeEstimationFetching
+  ])
+
+  return {
+    max,
+    rawAdditiveFee,
+    bufferedAdditiveFee,
+    routeAdditiveBps,
+    rawGasFee,
+    bufferedGasFee: bufferedFee,
+    gasSafetyBps: maxAmountGasSafetyBps
+  }
 }
