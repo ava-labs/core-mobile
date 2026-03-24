@@ -97,8 +97,9 @@ const sanitizeContext = (value: unknown): unknown => {
       )
     )
   } catch {
-    // Fall back to a safe representation to ensure Sentry logging never throws.
-    return '[unserializable]'
+    // Fall back to a safe object shape so setContext always receives a valid
+    // Record and Sentry logging never throws.
+    return { value: '[unserializable]' }
   }
 }
 

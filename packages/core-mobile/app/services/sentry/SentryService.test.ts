@@ -23,6 +23,7 @@ jest.mock('@sentry/react-native', () => ({
 }))
 
 jest.mock('react-native-config', () => ({
+  __esModule: true,
   default: { SENTRY_DSN: 'MOCK_SENTRY_DSN' }
 }))
 
@@ -182,6 +183,17 @@ describe('SentryService', () => {
         expect(mockScope.setContext).toHaveBeenCalledWith('details', {
           count: 3,
           label: 'hello'
+        })
+      })
+
+      it('passes { value: "[unserializable]" } to setContext when context cannot be serialized', () => {
+        const circular: Record<string, unknown> = {}
+        circular.self = circular
+
+        service.captureMessage('msg', circular)
+
+        expect(mockScope.setContext).toHaveBeenCalledWith('details', {
+          value: '[unserializable]'
         })
       })
     })
