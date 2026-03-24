@@ -1,7 +1,7 @@
 import { AvatarType } from '@avalabs/k2-alpine'
 import { Contact as _Contact } from '@avalabs/types'
 
-export type Contact = Omit<_Contact, 'address'> & {
+export type Contact = Omit<_Contact, 'address' | 'avatar'> & {
   address?: string
   avatar?: AvatarType
   type: AddrBookItemType
