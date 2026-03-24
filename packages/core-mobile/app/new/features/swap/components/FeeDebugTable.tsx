@@ -3,6 +3,7 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 import { StyleSheet, Text, View } from 'react-native'
 import { selectFusionFeeUnitsMarginBps } from 'store/posthog'
+import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 
 type Props = {
   decimals: number
@@ -36,7 +37,7 @@ export const FeeDebugTable = ({
 }: Props): React.ReactElement | null => {
   const feeUnitsMarginBps = useSelector(selectFusionFeeUnitsMarginBps)
 
-  if (!__DEV__) return null
+  if (!__DEV__ || !DevDebuggingConfig.SWAP_FEE_DEBUG_TABLE) return null
 
   const f = (raw: bigint | undefined): string => format(raw, decimals)
 
