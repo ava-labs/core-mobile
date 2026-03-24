@@ -119,7 +119,6 @@ export const ScrollScreen = ({
 
   const headerRef = useRef<View>(null)
   const contentHeaderHeight = useSharedValue<number>(0)
-  const [footerMeasuredHeight, setFooterMeasuredHeight] = useState(0)
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
@@ -151,10 +150,7 @@ export const ScrollScreen = ({
     const { x, y, width, height } = event.nativeEvent.layout
     contentHeaderHeight.value = height
     setHeaderLayout({ x, y, width, height })
-  }, [])
-
-  const onFooterLayout = useCallback((event: LayoutChangeEvent) => {
-    setFooterMeasuredHeight(event.nativeEvent.layout.height)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const animatedBorderStyle = useAnimatedStyle(() => {
@@ -227,7 +223,7 @@ export const ScrollScreen = ({
       const footer = renderFooter()
       if (footer) {
         const footerInner = (
-          <View collapsable={false} onLayout={onFooterLayout}>
+          <View collapsable={false}>
             <LinearGradientBottomWrapper>
               <Animated.View
                 style={{
@@ -257,13 +253,7 @@ export const ScrollScreen = ({
     }
 
     return null
-  }, [
-    renderFooter,
-    shouldAvoidKeyboard,
-    disableStickyFooter,
-    insets.bottom,
-    onFooterLayout
-  ])
+  }, [renderFooter, shouldAvoidKeyboard, disableStickyFooter, insets.bottom])
 
   const renderGrabber = useCallback(() => {
     if (isModal)
@@ -324,9 +314,7 @@ export const ScrollScreen = ({
       <View style={{ flex: 1 }} collapsable={false}>
         <KeyboardScrollView
           testID={testID}
-          extraKeyboardSpace={
-            disableStickyFooter ? -footerMeasuredHeight - insets.bottom : 0
-          }
+          extraKeyboardSpace={disableStickyFooter ? -insets.bottom : 0}
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -337,9 +325,7 @@ export const ScrollScreen = ({
           contentContainerStyle={[
             props?.contentContainerStyle,
             {
-              paddingBottom: disableStickyFooter
-                ? insets.bottom + 24
-                : footerMeasuredHeight + 16,
+              paddingBottom: disableStickyFooter ? insets.bottom + 24 : 24,
               paddingTop: headerHeight
             }
           ]}
@@ -348,10 +334,10 @@ export const ScrollScreen = ({
           {children}
         </KeyboardScrollView>
 
+        {renderGrabber()}
         {renderFooterContent()}
         {renderHeaderBackground()}
         {headerCenterOverlay}
-        {renderGrabber()}
       </View>
     )
   }
@@ -370,9 +356,7 @@ export const ScrollScreen = ({
         contentContainerStyle={[
           props?.contentContainerStyle,
           {
-            paddingBottom: renderFooter
-              ? footerMeasuredHeight + 16
-              : insets.bottom + 24,
+            paddingBottom: renderFooter ? 24 : insets.bottom + 24,
             paddingTop: headerHeight
           }
         ]}
