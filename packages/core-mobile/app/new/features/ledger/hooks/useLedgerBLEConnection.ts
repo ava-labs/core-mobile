@@ -108,6 +108,7 @@ export const useLedgerBLEConnection = ({
           // Version not yet populated; wait for the next poll
           setIsAvalancheAppOpen(false)
           setIsUnsupportedBtcVersion(false)
+          setCurrentBtcVersion('')
           return
         }
         const compatible = isBitcoinCompatibleApp(currentAppType, version)
