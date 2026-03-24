@@ -1,7 +1,21 @@
+const coverageThreshold = require('./coverage-thresholds.json')
+
 module.exports = {
   preset: 'react-native',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   clearMocks: true,
+  coverageDirectory: '<rootDir>/coverage',
+  coverageReporters: ['json-summary', 'lcov', 'html', 'text-summary'],
+  collectCoverageFrom: [
+    'app/**/*.{ts,tsx}',
+    '!app/**/*.d.ts',
+    '!app/**/*.test.{ts,tsx}',
+    '!app/**/*.stories.{ts,tsx}',
+    '!app/**/__mocks__/**'
+  ],
+  coverageThreshold: {
+    global: coverageThreshold
+  },
   moduleNameMapper: {
     '^react-native$': '<rootDir>/node_modules/react-native',
     'react-native-safe-area-context':

@@ -10,6 +10,7 @@
     "setup": "yarn allow-scripts",
     "start": "expo start",
     "test": "jest",
+    "test:coverage": "jest --ci --coverage",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "lint": "eslint .",

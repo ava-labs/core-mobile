@@ -10,6 +10,7 @@
     "ios": "ENVFILE=.env.development react-native run-ios",
     "start": "expo start --dev-client",
     "test": "jest",
+    "test:coverage": "jest --ci --coverage",
     "tsc": "tsc -p .",
     "lint": "eslint .",
     "clean": "./scripts/clean",
