@@ -52,7 +52,7 @@ Set these in your Bitrise project settings:
 The workflow requires:
 - **Node.js 20.19.0+** - Handled by `_install-and-set-env` workflow
 - **npm** - Comes with Node.js
-- **AWS SDK** - Installed automatically via `npm install @aws-sdk/client-device-farm`
+- **AWS SDK** - `@aws-sdk/client-device-farm` is a **devDependency** (installed by `yarn install`). Do not run `npm install` in `packages/core-mobile` (npm fails on Yarn `workspace:*`). See `scripts/devicefarm/ensure-client-device-farm.sh` for the temp-dir fallback.
 
 **Note:** The workflow no longer requires AWS CLI or jq, as it uses the AWS SDK directly.
 

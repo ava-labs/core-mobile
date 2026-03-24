@@ -129,12 +129,10 @@ if [ ! -f "$DEVICEFARM_TEST_SPEC_PATH" ]; then
   exit 1
 fi
 
-# Install AWS SDK if needed
 cd "$CORE_MOBILE_DIR"
-if [ ! -d "node_modules/@aws-sdk/client-device-farm" ]; then
-  echo -e "${BLUE}📦 Installing AWS SDK for Device Farm...${NC}"
-  npm install @aws-sdk/client-device-farm --no-save --silent
-fi
+# shellcheck source=ensure-client-device-farm.sh
+source "$CORE_MOBILE_DIR/scripts/devicefarm/ensure-client-device-farm.sh"
+ensure_client_device_farm
 
 # Export environment variables for the Node.js script
 export DEVICEFARM_PROJECT_ARN
@@ -159,10 +157,12 @@ echo -e "${BLUE}🚀 Triggering Device Farm test run...${NC}\n"
 cd "$CORE_MOBILE_DIR"
 
 if node "$SCRIPT_DIR/trigger-devicefarm-api.js"; then
+  cleanup_client_device_farm_tmp
   echo -e "\n${GREEN}✅ Device Farm test run triggered successfully!${NC}"
   echo -e "${BLUE}💡 Check the AWS Device Farm console for progress${NC}"
 else
   EXIT_CODE=$?
+  cleanup_client_device_farm_tmp
   echo -e "\n${RED}❌ Device Farm test run failed with exit code: $EXIT_CODE${NC}"
   exit $EXIT_CODE
 fi

@@ -144,16 +144,12 @@ fi
 
 echo -e "${GREEN}✅ Test spec found${NC}\n"
 
-# Step 4: Install AWS SDK if needed
+# Step 4: Ensure AWS SDK for Device Farm (never npm install in workspace — workspace:* breaks npm)
 echo -e "${BLUE}📦 Step 4: Checking AWS SDK...${NC}"
-if [ ! -d "$CORE_MOBILE_DIR/node_modules/@aws-sdk/client-device-farm" ]; then
-  echo "   Installing AWS SDK..."
-  cd "$CORE_MOBILE_DIR"
-  npm install @aws-sdk/client-device-farm --no-save --silent
-else
-  echo "   AWS SDK already installed"
-fi
-
+cd "$CORE_MOBILE_DIR"
+# shellcheck source=ensure-client-device-farm.sh
+source "$CORE_MOBILE_DIR/scripts/devicefarm/ensure-client-device-farm.sh"
+ensure_client_device_farm
 echo -e "${GREEN}✅ AWS SDK ready${NC}\n"
 
 # Step 5: Trigger Device Farm tests
@@ -177,6 +173,7 @@ export WAIT_FOR_COMPLETION
 
 # Run the Device Farm trigger script
 if node "$SCRIPT_DIR/trigger-devicefarm-api.js"; then
+  cleanup_client_device_farm_tmp
   echo -e "\n${GREEN}✅ Device Farm test run triggered successfully!${NC}"
   
   if [ "$WAIT_FOR_COMPLETION" = "true" ]; then
@@ -189,6 +186,7 @@ if node "$SCRIPT_DIR/trigger-devicefarm-api.js"; then
   exit 0
 else
   EXIT_CODE=$?
+  cleanup_client_device_farm_tmp
   echo -e "\n${RED}❌ Device Farm test run failed with exit code: $EXIT_CODE${NC}"
   exit $EXIT_CODE
 fi

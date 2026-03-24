@@ -120,9 +120,11 @@ if [ -z "$DEVICEFARM_DEVICE_POOL_ARN" ]; then
   exit 1
 fi
 
-# Install AWS SDK if not already installed
-echo "📦 Installing AWS SDK for Device Farm..."
-npm install @aws-sdk/client-device-farm --no-save
+# AWS SDK: listed in package.json devDependencies (installed by Bitrise yarn).
+# Never `npm install` in this directory — npm errors on Yarn "workspace:*" (EUNSUPPORTEDPROTOCOL).
+# shellcheck source=../../devicefarm/ensure-client-device-farm.sh
+source "$CORE_MOBILE_DIR/scripts/devicefarm/ensure-client-device-farm.sh"
+ensure_client_device_farm
 
 # Set environment variables for Node.js script
 export DEVICEFARM_APP_PATH="$BITRISE_APK_PATH"
@@ -140,8 +142,8 @@ echo "Test Spec: $DEVICEFARM_TEST_SPEC_PATH"
 
 # Run the Node.js API script
 node scripts/devicefarm/trigger-devicefarm-api.js
-
 EXIT_CODE=$?
+cleanup_client_device_farm_tmp
 
 if [ $EXIT_CODE -eq 0 ]; then
   echo "✅ Device Farm test run triggered successfully via API"
