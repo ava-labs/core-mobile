@@ -5,8 +5,8 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
-import { useTokenBalance } from 'common/hooks/useTokenBalance'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import { useRepayTokenBalance } from '../../hooks/useRepayTokenBalance'
 import { useAaveBorrowPositionsSummary } from '../../hooks/aave/useAaveBorrowPositionsSummary'
 import { useAaveRepay } from '../../hooks/aave/useAaveRepay'
 import { RepaySelectAmountFormBase } from './RepaySelectAmountFormBase'
@@ -36,7 +36,7 @@ export function AaveRepaySelectAmountForm({
     [marketId, aaveSummary.positions]
   )
 
-  const balance = useTokenBalance(
+  const balance = useRepayTokenBalance(
     borrowPosition?.market.asset,
     cChainNetwork?.chainId
   )
@@ -82,6 +82,16 @@ export function AaveRepaySelectAmountForm({
         sx={{ flex: 1 }}
         title="Position not found"
         description="Unable to load borrow position"
+      />
+    )
+  }
+
+  if (balance === undefined) {
+    return (
+      <ErrorState
+        sx={{ flex: 1 }}
+        title="Unable to load balance"
+        description="Wallet balance for this asset could not be loaded. Try again."
       />
     )
   }
