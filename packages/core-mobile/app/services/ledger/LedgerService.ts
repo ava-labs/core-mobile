@@ -42,8 +42,30 @@ import {
 
 class LedgerService {
   #transport: TransportBLE | null = null
-  private currentAppType: LedgerAppType = LedgerAppType.UNKNOWN
-  private currentAppVersion = ''
+  private _currentAppType: LedgerAppType = LedgerAppType.UNKNOWN
+  private _currentAppVersion = ''
+
+  private get currentAppType(): LedgerAppType {
+    return this._currentAppType
+  }
+
+  private set currentAppType(value: LedgerAppType) {
+    this._currentAppType = value
+
+    // When resetting app type (e.g. at the start of a new connect()),
+    // also clear the cached version to avoid using stale data.
+    if (value === LedgerAppType.UNKNOWN) {
+      this._currentAppVersion = ''
+    }
+  }
+
+  private get currentAppVersion(): string {
+    return this._currentAppVersion
+  }
+
+  private set currentAppVersion(version: string) {
+    this._currentAppVersion = version
+  }
   private appPollingInterval: number | null = null
   private appPollingEnabled = false
   private isDisconnected = false
