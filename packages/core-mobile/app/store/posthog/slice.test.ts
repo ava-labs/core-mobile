@@ -1,12 +1,23 @@
-import { FeatureGates } from 'services/posthog/types'
+import { FeatureGates, FeatureVars } from 'services/posthog/types'
 import { WalletType } from 'services/wallet/types'
 import { RootState } from 'store/types'
 import {
+  setFeatureFlags,
   selectIsSeedlessSigningBlocked,
   selectIsLegacyBridgeEnabled,
-  selectIsFusionEnabled
+  selectIsFusionEnabled,
+  selectFusionFeeUnitsMarginBps,
+  selectFusionMaxAmountGasSafetyBps,
+  selectFusionTransferGasMarginBps,
+  selectFusionMaxAmountAdditiveBpsDefault,
+  selectFusionMaxAmountAdditiveBpsEvmToSolana,
+  selectFusionMaxAmountAdditiveBpsSolanaToEvm,
+  selectMarkrSwapMaxRetries,
+  selectSentrySampleRate,
+  selectStakeAnnualPercentageYieldBPS,
+  posthogSlice
 } from './slice'
-import { DefaultFeatureFlagConfig } from './types'
+import { DefaultFeatureFlagConfig, initialState } from './types'
 
 const createMockRootState = (overrides: {
   walletType?: WalletType
@@ -26,6 +37,191 @@ const createMockRootState = (overrides: {
     }
   } as RootState
 }
+
+// ---------------------------------------------------------------------------
+// Helper: state with only the given flags (no defaults mixed in)
+// ---------------------------------------------------------------------------
+
+const stateWithFlags = (flags: Record<string, unknown> = {}): RootState =>
+  ({
+    app: { walletType: WalletType.MNEMONIC },
+    posthog: { featureFlags: flags }
+  } as unknown as RootState)
+
+// ---------------------------------------------------------------------------
+// setFeatureFlags reducer
+// ---------------------------------------------------------------------------
+
+describe('setFeatureFlags', () => {
+  it('replaces featureFlags entirely with the payload', () => {
+    // Start from initial state (which has DefaultFeatureFlagConfig)
+    const before = initialState
+    const payload = { [FeatureGates.FUSION]: true }
+    const after = posthogSlice.reducer(before, setFeatureFlags(payload))
+
+    // Only the payload key should be present — not the full DefaultFeatureFlagConfig
+    expect(after.featureFlags).toEqual(payload)
+  })
+
+  it('does not re-enable flags that PostHog omits (disabled on backend)', () => {
+    // PostHog only returns enabled flags; EVERYTHING is absent → should be absent, not true
+    const payload = { [FeatureGates.FUSION]: true }
+    const after = posthogSlice.reducer(initialState, setFeatureFlags(payload))
+
+    expect(after.featureFlags[FeatureGates.EVERYTHING]).toBeUndefined()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Numeric selectors — PostHog value present
+// ---------------------------------------------------------------------------
+
+describe('numeric selectors — PostHog value present', () => {
+  it('selectFusionFeeUnitsMarginBps returns parsed PostHog value', () => {
+    const state = stateWithFlags({
+      [FeatureVars.FUSION_FEE_UNITS_MARGIN_BPS]: '3000'
+    })
+    expect(selectFusionFeeUnitsMarginBps(state)).toBe(3000)
+  })
+
+  it('selectFusionMaxAmountGasSafetyBps returns parsed PostHog value', () => {
+    const state = stateWithFlags({
+      [FeatureVars.FUSION_MAX_AMOUNT_GAS_SAFETY_BPS]: '8000'
+    })
+    expect(selectFusionMaxAmountGasSafetyBps(state)).toBe(8000)
+  })
+
+  it('selectFusionTransferGasMarginBps returns parsed PostHog value', () => {
+    const state = stateWithFlags({
+      [FeatureVars.FUSION_TRANSFER_GAS_MARGIN_BPS]: '1000'
+    })
+    expect(selectFusionTransferGasMarginBps(state)).toBe(1000)
+  })
+
+  it('selectFusionMaxAmountAdditiveBpsDefault returns parsed PostHog value', () => {
+    const state = stateWithFlags({
+      [FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_DEFAULT]: '2000'
+    })
+    expect(selectFusionMaxAmountAdditiveBpsDefault(state)).toBe(2000)
+  })
+
+  it('selectFusionMaxAmountAdditiveBpsEvmToSolana returns parsed PostHog value', () => {
+    const state = stateWithFlags({
+      [FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_EVM_TO_SOLANA]: '9000'
+    })
+    expect(selectFusionMaxAmountAdditiveBpsEvmToSolana(state)).toBe(9000)
+  })
+
+  it('selectFusionMaxAmountAdditiveBpsSolanaToEvm returns parsed PostHog value', () => {
+    const state = stateWithFlags({
+      [FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_SOLANA_TO_EVM]: '700'
+    })
+    expect(selectFusionMaxAmountAdditiveBpsSolanaToEvm(state)).toBe(700)
+  })
+
+  it('selectMarkrSwapMaxRetries returns parsed PostHog value', () => {
+    const state = stateWithFlags({
+      [FeatureVars.MARKR_SWAP_MAX_RETRIES]: '5'
+    })
+    expect(selectMarkrSwapMaxRetries(state)).toBe(5)
+  })
+
+  it('selectSentrySampleRate returns parsed PostHog value divided by 100', () => {
+    const state = stateWithFlags({
+      [FeatureVars.SENTRY_SAMPLE_RATE]: '50'
+    })
+    expect(selectSentrySampleRate(state)).toBe(0.5)
+  })
+
+  it('selectStakeAnnualPercentageYieldBPS returns parsed PostHog value', () => {
+    const state = stateWithFlags({
+      [FeatureVars.STAKE_APY_BPS]: '999'
+    })
+    expect(selectStakeAnnualPercentageYieldBPS(state)).toBe(999)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Numeric selectors — PostHog flag absent (falls back to DefaultFeatureFlagConfig)
+// ---------------------------------------------------------------------------
+
+describe('numeric selectors — PostHog flag absent', () => {
+  const emptyState = stateWithFlags()
+
+  it('selectFusionFeeUnitsMarginBps falls back to default', () => {
+    expect(selectFusionFeeUnitsMarginBps(emptyState)).toBe(
+      parseInt(
+        DefaultFeatureFlagConfig[FeatureVars.FUSION_FEE_UNITS_MARGIN_BPS]
+      )
+    )
+  })
+
+  it('selectFusionMaxAmountGasSafetyBps falls back to default', () => {
+    expect(selectFusionMaxAmountGasSafetyBps(emptyState)).toBe(
+      parseInt(
+        DefaultFeatureFlagConfig[FeatureVars.FUSION_MAX_AMOUNT_GAS_SAFETY_BPS]
+      )
+    )
+  })
+
+  it('selectFusionTransferGasMarginBps falls back to default', () => {
+    expect(selectFusionTransferGasMarginBps(emptyState)).toBe(
+      parseInt(
+        DefaultFeatureFlagConfig[FeatureVars.FUSION_TRANSFER_GAS_MARGIN_BPS]
+      )
+    )
+  })
+
+  it('selectFusionMaxAmountAdditiveBpsDefault falls back to default', () => {
+    expect(selectFusionMaxAmountAdditiveBpsDefault(emptyState)).toBe(
+      parseInt(
+        DefaultFeatureFlagConfig[
+          FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_DEFAULT
+        ]
+      )
+    )
+  })
+
+  it('selectFusionMaxAmountAdditiveBpsEvmToSolana falls back to default', () => {
+    expect(selectFusionMaxAmountAdditiveBpsEvmToSolana(emptyState)).toBe(
+      parseInt(
+        DefaultFeatureFlagConfig[
+          FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_EVM_TO_SOLANA
+        ]
+      )
+    )
+  })
+
+  it('selectFusionMaxAmountAdditiveBpsSolanaToEvm falls back to default', () => {
+    expect(selectFusionMaxAmountAdditiveBpsSolanaToEvm(emptyState)).toBe(
+      parseInt(
+        DefaultFeatureFlagConfig[
+          FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_SOLANA_TO_EVM
+        ]
+      )
+    )
+  })
+
+  it('selectMarkrSwapMaxRetries falls back to default', () => {
+    expect(selectMarkrSwapMaxRetries(emptyState)).toBe(
+      parseInt(DefaultFeatureFlagConfig[FeatureVars.MARKR_SWAP_MAX_RETRIES])
+    )
+  })
+
+  it('selectSentrySampleRate falls back to default divided by 100', () => {
+    expect(selectSentrySampleRate(emptyState)).toBe(
+      parseInt(DefaultFeatureFlagConfig[FeatureVars.SENTRY_SAMPLE_RATE]) / 100
+    )
+  })
+
+  it('selectStakeAnnualPercentageYieldBPS falls back to default', () => {
+    expect(selectStakeAnnualPercentageYieldBPS(emptyState)).toBe(
+      parseInt(DefaultFeatureFlagConfig[FeatureVars.STAKE_APY_BPS])
+    )
+  })
+})
+
+// ---------------------------------------------------------------------------
 
 describe('selectIsSeedlessSigningBlocked', () => {
   it('should return false for non-seedless wallets regardless of flags', () => {
