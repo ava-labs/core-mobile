@@ -202,8 +202,7 @@ export const SendTokenUnitInputWidget = forwardRef<
           <View sx={{ flexDirection: 'row', gap: 7, marginTop: 25 }}>
             {presetAmountButtons.map((button, index) => {
               const isSelected =
-                amount !== undefined &&
-                amount.toSubUnit() === button.amount.toSubUnit()
+                amount !== undefined && amount.eq(button.amount)
               return (
                 <Button
                   key={index}
