@@ -480,6 +480,10 @@ class AvalancheWalletService {
   }): Promise<Avalanche.AddressWallet> {
     const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
 
+    if (!account.addressPVM) {
+      throw new Error('P-Chain address not available for account')
+    }
+
     return new Avalanche.AddressWallet(
       account.addressC,
       stripAddressPrefix(account.addressCoreEth),

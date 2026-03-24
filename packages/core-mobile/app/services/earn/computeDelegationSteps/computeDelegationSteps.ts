@@ -4,8 +4,8 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { pvm } from '@avalabs/avalanchejs'
 import { weiToNano } from 'utils/units/converter'
 import Logger from 'utils/Logger'
-import { Account } from 'store/account'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
+import { PvmCapableAccount } from 'common/hooks/send/utils/types'
 import { Step, Operation, Case } from './types'
 import {
   getPChainAtomicBalance,
@@ -39,7 +39,7 @@ export const computeDelegationSteps = async ({
 }: {
   stakeAmount: bigint
   avaxXPNetwork: Network
-  account: Account
+  account: PvmCapableAccount
   feeState: pvm.FeeState
   pChainBalance: TokenWithBalancePVM | undefined
   cChainBalance: TokenUnit | undefined
@@ -52,6 +52,8 @@ export const computeDelegationSteps = async ({
   xpAddresses: string[]
   // eslint-disable-next-line sonarjs/cognitive-complexity
 }): Promise<Step[]> => {
+  const { addressPVM } = account
+
   const availablePChainBalance =
     pChainBalance?.balancePerType.unlockedUnstaked ?? 0n
   const isTestnet = Boolean(avaxXPNetwork.isTestnet)
@@ -75,7 +77,7 @@ export const computeDelegationSteps = async ({
           stakeAmount,
           account,
           isTestnet,
-          rewardAddress: account.addressPVM,
+          rewardAddress: addressPVM,
           feeState,
           provider,
           pFeeAdjustmentThreshold,
@@ -102,7 +104,7 @@ export const computeDelegationSteps = async ({
         const importPFee = await getImportPFee({
           account,
           isTestnet,
-          destinationAddress: account.addressPVM,
+          destinationAddress: addressPVM,
           feeState,
           provider,
           xpAddresses

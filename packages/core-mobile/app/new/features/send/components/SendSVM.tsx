@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import useSVMSend from 'common/hooks/send/useSVMSend'
 import { Network } from '@avalabs/core-chains-sdk'
 import { TokenType, TokenWithBalanceSVM } from '@avalabs/vm-module-types'
-import { Account } from 'store/account'
+import type { SvmCapableAccount } from 'common/hooks/send/utils/types'
 import { Address, address as toAddress } from '@solana/kit'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
@@ -31,7 +31,7 @@ export const SendSVM = ({
 }: {
   nativeToken: TokenWithBalanceSVM
   network: Network
-  account: Account
+  account: SvmCapableAccount
   onSuccess: (txHash: string) => void
   onFailure: (txError: unknown) => void
 }): JSX.Element => {

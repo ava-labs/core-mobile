@@ -24,6 +24,7 @@ export type InjectedJsMessageWrapper = {
     | 'walletConnect_deeplink_blocked'
     | 'provider_request'
     | 'domain_metadata'
+    | 'nav_change'
   payload: string
 }
 

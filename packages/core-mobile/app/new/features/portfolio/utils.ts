@@ -19,10 +19,10 @@ export const isTxSentFromAccount = (
   if (!account) return false
 
   return [
-    account.addressAVM.toLowerCase(),
-    account.addressSVM.toLowerCase(),
+    account.addressAVM?.toLowerCase(),
+    account.addressSVM?.toLowerCase(),
     account.addressBTC.toLowerCase(),
-    account.addressPVM.toLowerCase(),
+    account.addressPVM?.toLowerCase(),
     account.addressC.toLowerCase()
   ].includes(txFrom.toLowerCase())
 }

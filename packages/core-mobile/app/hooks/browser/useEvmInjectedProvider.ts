@@ -6,10 +6,12 @@ import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import RNWebView from 'react-native-webview'
 import Logger from 'utils/Logger'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
+import { PeerMeta } from 'store/rpc/types'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { rpcErrors, serializeError } from '@metamask/rpc-errors'
 import { buildEvmProviderShim } from './evmProviderShim'
+import { getInjectedProviderUuid } from './getInjectedProviderUuid'
 
 export const MAX_MESSAGE_SIZE = 1_048_576
 
@@ -160,7 +162,8 @@ export function useEvmInjectedProvider(
   const providerShimJs = useMemo(() => {
     return buildEvmProviderShim({
       chainId: chainIdHex,
-      address: evmAddress
+      address: evmAddress,
+      uuid: getInjectedProviderUuid()
     })
   }, [chainIdHex, evmAddress])
 
@@ -259,6 +262,19 @@ export function useEvmInjectedProvider(
     [activeNetwork.rpcUrl, sendResponse]
   )
 
+  const buildDappPeerMeta = useCallback((): PeerMeta | undefined => {
+    const meta = dappMetadata.current
+    const nativeUrl = currentUrlRef.current
+    if (!meta && !nativeUrl) return undefined
+
+    return {
+      name: meta?.name ?? new URL(nativeUrl).hostname,
+      description: '',
+      url: nativeUrl || meta?.url || '',
+      icons: meta?.icon ? [meta.icon] : []
+    }
+  }, [])
+
   const dispatchSigningRequest = useCallback(
     async (id: number, method: string, params: unknown[]) => {
       const rpcMethod = SIGNING_METHODS[method]
@@ -278,14 +294,15 @@ export function useEvmInjectedProvider(
         const result = await request({
           method: rpcMethod,
           params,
-          chainId: caip2ChainId
+          chainId: caip2ChainId,
+          peerMeta: buildDappPeerMeta()
         })
         sendResponse(id, null, result)
       } catch (e) {
         sendResponse(id, e, undefined)
       }
     },
-    [dispatch, activeNetwork.chainId, sendResponse]
+    [dispatch, activeNetwork.chainId, sendResponse, buildDappPeerMeta]
   )
 
   const handleProviderMessage = useCallback(
