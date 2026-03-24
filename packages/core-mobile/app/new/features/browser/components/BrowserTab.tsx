@@ -333,6 +333,10 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
               handleDomainMetadata(wrapper.payload)
               break
             }
+            case 'nav_change': {
+              setCurrentUrl(wrapper.payload)
+              break
+            }
             case 'window_ethereum_used': {
               if (injectedProviderEnabled) break
               const sessions = WalletConnectService.getSessions()
@@ -370,6 +374,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         showWalletConnectDialog,
         handleProviderMessage,
         handleDomainMetadata,
+        setCurrentUrl,
         urlToLoad
       ]
     )
