@@ -77,7 +77,7 @@ export const fusionErrors = {
   },
   insufficientBalanceForAdditiveFee(formattedMax: string): FusionQuoteError {
     return new FusionQuoteError(
-      `Insufficient balance to cover swap amount and fees. Max: ${formattedMax}`
+      `Insufficient balance to cover swap amount and fees.\nMax amount is: ${formattedMax}`
     )
   },
   gasEstimationFailed(): FusionQuoteError {

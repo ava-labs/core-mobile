@@ -46,6 +46,7 @@ import Logger from 'utils/Logger'
 import { tokenIds } from 'consts/tokenIds'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
+import { AdditiveFeesNotice } from '../components/AdditiveFeesNotice'
 import { FeeDebugTable } from '../components/FeeDebugTable'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
 import { SwapStatus, useSwapContext } from '../contexts/SwapContext'
@@ -735,6 +736,18 @@ export const SwapScreen = (): JSX.Element => {
     )
   }, [activeError])
 
+  const renderAdditiveFeesNotice = useCallback(() => {
+    if (
+      !fromToken ||
+      !activeQuote ||
+      activeError ||
+      liveRawAdditiveFee === 0n
+    ) {
+      return null
+    }
+    return <AdditiveFeesNotice fee={liveRawAdditiveFee} fromToken={fromToken} />
+  }, [fromToken, activeQuote, activeError, liveRawAdditiveFee])
+
   const renderPartnerFee = useCallback(() => {
     if (coreFeeMessage === undefined) return null
     return (
@@ -867,6 +880,7 @@ export const SwapScreen = (): JSX.Element => {
       shouldAvoidKeyboard
       contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
       {renderFromAndToSections()}
+      {renderAdditiveFeesNotice()}
       {renderError()}
       <View style={{ marginTop: 24 }}>
         <GroupList data={data} separatorMarginRight={16} />
