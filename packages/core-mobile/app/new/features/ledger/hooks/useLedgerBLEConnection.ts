@@ -93,12 +93,14 @@ export const useLedgerBLEConnection = ({
         if (!connected) {
           setIsAvalancheAppOpen(false)
           setIsUnsupportedBtcVersion(false)
+          setCurrentBtcVersion('')
           return
         }
         const currentAppType = LedgerService.getCurrentAppType()
         if (appType !== LedgerAppType.BITCOIN) {
           setIsAvalancheAppOpen(currentAppType === appType)
           setIsUnsupportedBtcVersion(false)
+          setCurrentBtcVersion('')
           return
         }
         const version = LedgerService.getCurrentAppVersion()

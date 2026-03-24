@@ -1,7 +1,7 @@
 import { Button, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import React from 'react'
-import { Linking } from 'react-native'
 import { HELP_URL } from 'common/consts/urls'
+import { openInSystemBrowser } from 'utils/openInSystemBrowser'
 
 const BITCOIN_RECOVERY_HELP_URL = `${HELP_URL}articles/13145665-why-doesn-t-my-bitcoin-ledger-application-work-with-core`
 
@@ -19,7 +19,7 @@ export const UnsupportedBitcoinApp = ({
   } = useTheme()
 
   const handleLearnMore = (): void => {
-    Linking.openURL(BITCOIN_RECOVERY_HELP_URL)
+    openInSystemBrowser(BITCOIN_RECOVERY_HELP_URL)
   }
 
   return (
