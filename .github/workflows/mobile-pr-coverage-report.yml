@@ -1,0 +1,215 @@
+name: Mobile PR Coverage Report
+
+on:
+  workflow_run:
+    workflows:
+      - Mobile PR
+    types:
+      - completed
+
+permissions:
+  actions: read
+  checks: write
+  contents: read
+  issues: write
+
+jobs:
+  report:
+    name: Coverage Report
+    runs-on: ubuntu-latest
+
+    steps:
+      # This privileged workflow intentionally uses trusted reporter code from the
+      # default branch rather than checking out unreviewed PR code.
+      - name: Check out trusted reporter code
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Capture workflow context
+        id: context
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pullRequests = context.payload.workflow_run.pull_requests || []
+            core.setOutput('has_pr', pullRequests.length > 0 ? 'true' : 'false')
+            core.setOutput('pr_number', pullRequests[0] ? String(pullRequests[0].number) : '')
+            core.setOutput('head_sha', context.payload.workflow_run.head_sha)
+            core.setOutput('run_id', String(context.payload.workflow_run.id))
+            core.setOutput('run_url', context.payload.workflow_run.html_url)
+            core.setOutput(
+              'workflow_conclusion',
+              context.payload.workflow_run.conclusion || 'unknown'
+            )
+
+      - name: Find coverage artifact
+        id: artifact
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const artifactName = 'mobile-pr-coverage'
+            const runId = Number('${{ steps.context.outputs.run_id }}')
+            const { data } = await github.rest.actions.listWorkflowRunArtifacts({
+              ...context.repo,
+              run_id: runId
+            })
+
+            const artifact = data.artifacts.find((item) => {
+              return item.name === artifactName && !item.expired
+            })
+
+            core.setOutput('exists', artifact ? 'true' : 'false')
+            core.setOutput('name', artifact?.name || '')
+
+      - name: Create artifact directory
+        run: mkdir -p coverage-artifacts
+
+      - name: Download coverage artifact
+        if: ${{ steps.artifact.outputs.exists == 'true' }}
+        uses: actions/download-artifact@v5
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.context.outputs.run_id }}
+          name: ${{ steps.artifact.outputs.name }}
+          path: coverage-artifacts
+
+      - name: Generate coverage summary
+        run: |
+          node scripts/github/coverage/summarizeCoverage.js \
+            --artifacts-dir coverage-artifacts \
+            --run-url "${{ steps.context.outputs.run_url }}" \
+            --json-out coverage-report.json \
+            --markdown-out coverage-report.md
+
+      - name: Publish coverage check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs')
+            const report = JSON.parse(fs.readFileSync('coverage-report.json', 'utf8'))
+            const markdown = fs.readFileSync('coverage-report.md', 'utf8')
+            const hasPr = '${{ steps.context.outputs.has_pr }}' === 'true'
+            const artifactExists = '${{ steps.artifact.outputs.exists }}' === 'true'
+            const workflowConclusion = '${{ steps.context.outputs.workflow_conclusion }}'
+            const runUrl = '${{ steps.context.outputs.run_url }}'
+            const thresholdsFailed = report.packages.length > 0 && !report.allThresholdsPassed
+
+            let conclusion = 'neutral'
+            let title = 'Coverage report unavailable'
+            let summary = markdown
+
+            if (!hasPr) {
+              title = 'Coverage report unavailable'
+              summary = [
+                'This Mobile PR run is not attached to a pull request.',
+                '',
+                `Source run: [Mobile PR](${runUrl})`
+              ].join('\n')
+            } else if (!artifactExists) {
+              title = 'Coverage artifact not found'
+              summary = [
+                'The Mobile PR workflow completed without uploading a coverage artifact.',
+                '',
+                `Source run: [Mobile PR](${runUrl})`
+              ].join('\n')
+            } else if (report.packages.length === 0) {
+              title = 'Coverage data not found'
+            } else if (workflowConclusion === 'success' && report.allThresholdsPassed) {
+              conclusion = 'success'
+              title = 'Coverage thresholds passed'
+            } else if (workflowConclusion === 'success' && thresholdsFailed) {
+              title = 'Coverage thresholds failed'
+            } else if (thresholdsFailed) {
+              title = 'Coverage thresholds failed in upstream workflow'
+            } else {
+              title = 'Coverage data available; upstream workflow did not pass'
+            }
+
+            await github.rest.checks.create({
+              ...context.repo,
+              name: 'Coverage Report',
+              head_sha: '${{ steps.context.outputs.head_sha }}',
+              status: 'completed',
+              conclusion,
+              details_url: runUrl,
+              output: {
+                title,
+                summary
+              }
+            })
+
+      - name: Sync coverage PR comment
+        if: ${{ steps.context.outputs.has_pr == 'true' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs')
+            const report = JSON.parse(fs.readFileSync('coverage-report.json', 'utf8'))
+            const markdown = fs.readFileSync('coverage-report.md', 'utf8').trim()
+            const artifactExists = '${{ steps.artifact.outputs.exists }}' === 'true'
+            const workflowConclusion = '${{ steps.context.outputs.workflow_conclusion }}'
+            const runUrl = '${{ steps.context.outputs.run_url }}'
+            const issueNumber = Number('${{ steps.context.outputs.pr_number }}')
+            const marker = '<!-- mobile-coverage-report -->'
+            const thresholdsFailed = report.packages.length > 0 && !report.allThresholdsPassed
+
+            let body = [
+              marker,
+              markdown
+            ]
+
+            if (!artifactExists) {
+              body = [
+                marker,
+                '## Mobile PR Coverage',
+                '',
+                'Coverage artifact not found for the latest `Mobile PR` workflow run.',
+                '',
+                `Source run: [Mobile PR](${runUrl})`
+              ]
+            } else if (report.packages.length === 0) {
+              body = [
+                marker,
+                '## Mobile PR Coverage',
+                '',
+                'Coverage data was not found in the uploaded artifact.',
+                '',
+                `Source run: [Mobile PR](${runUrl})`
+              ]
+            } else if (workflowConclusion !== 'success') {
+              body = [
+                marker,
+                markdown,
+                '',
+                thresholdsFailed
+                  ? 'Note: the upstream `Mobile PR` workflow failed because coverage thresholds were not met.'
+                  : 'Note: the upstream `Mobile PR` workflow did not complete successfully.'
+              ]
+            }
+
+            const commentBody = `${body.join('\n')}\n`
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              ...context.repo,
+              issue_number: issueNumber,
+              per_page: 100
+            })
+
+            const existingComment = comments.find((comment) => {
+              return comment.user?.type === 'Bot' && comment.body?.includes(marker)
+            })
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                ...context.repo,
+                comment_id: existingComment.id,
+                body: commentBody
+              })
+              return
+            }
+
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: issueNumber,
+              body: commentBody
+            })
