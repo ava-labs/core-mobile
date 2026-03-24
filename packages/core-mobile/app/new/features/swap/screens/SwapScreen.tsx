@@ -24,7 +24,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useGlobalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
 import { useDebounce } from 'hooks/useDebounce'
@@ -46,6 +46,7 @@ import Logger from 'utils/Logger'
 import { tokenIds } from 'consts/tokenIds'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
+import { caip2ChainIds } from 'consts/caip2ChainIds'
 import { AdditiveFeesNotice } from '../components/AdditiveFeesNotice'
 import { FeeDebugTable } from '../components/FeeDebugTable'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
@@ -67,12 +68,55 @@ export const SwapScreen = (): JSX.Element => {
   const { navigate, dismissAll, push } = useRouter()
   const navigation = useNavigation()
 
-  const params = useGlobalSearchParams<{
+  const {
+    initialTokenIdFrom: rawTokenIdFrom,
+    initialTokenIdTo: rawTokenIdTo,
+    initialFromCaip2Id: rawFromCaip2Id,
+    initialToCaip2Id: rawToCaip2Id
+  } = useLocalSearchParams<{
     initialTokenIdFrom?: string // internalId
     initialTokenIdTo?: string // internalId
     initialFromCaip2Id?: string
     initialToCaip2Id?: string
   }>()
+
+  const initialTokenInfo = useMemo(() => {
+    const tokenIdFrom = rawTokenIdFrom || undefined
+    const tokenIdTo = rawTokenIdTo || undefined
+    const fromCaip2Id = rawFromCaip2Id || undefined
+    const toCaip2Id = rawToCaip2Id || undefined
+
+    const isDefaultSwapPair =
+      tokenIdFrom === undefined && tokenIdTo === undefined
+    if (isDefaultSwapPair) {
+      return {
+        initialTokenIdFrom: tokenIds.AVAX,
+        initialTokenIdTo: tokenIds.USDC,
+        initialFromCaip2Id: isDeveloperMode
+          ? caip2ChainIds.FUJI
+          : caip2ChainIds.C_CHAIN,
+        initialToCaip2Id: isDeveloperMode
+          ? caip2ChainIds.FUJI
+          : caip2ChainIds.C_CHAIN
+      }
+    }
+    return {
+      initialTokenIdFrom: tokenIdFrom,
+      initialTokenIdTo: tokenIdTo,
+      initialFromCaip2Id:
+        fromCaip2Id ??
+        (isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN),
+      initialToCaip2Id:
+        toCaip2Id ??
+        (isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN)
+    }
+  }, [
+    rawTokenIdFrom,
+    rawTokenIdTo,
+    rawFromCaip2Id,
+    rawToCaip2Id,
+    isDeveloperMode
+  ])
 
   const { formatCurrency } = useFormatCurrency()
   const { getMarketTokenById } = useWatchlist()
@@ -113,7 +157,7 @@ export const SwapScreen = (): JSX.Element => {
   })
 
   const { isTokensLoading, btcBLocalToken } = useFusionTokenLookup({
-    params,
+    tokenInfo: initialTokenInfo,
     accountTokens,
     isDeveloperMode,
     setFromToken,
