@@ -148,7 +148,11 @@ echo -e "${GREEN}✅ Test spec found${NC}\n"
 echo -e "${BLUE}📦 Step 4: Checking AWS SDK...${NC}"
 cd "$CORE_MOBILE_DIR"
 # shellcheck source=ensure-client-device-farm.sh
-source "$CORE_MOBILE_DIR/scripts/devicefarm/ensure-client-device-farm.sh"
+if [[ ! -f "$SCRIPT_DIR/ensure-client-device-farm.sh" ]]; then
+  echo -e "${RED}❌ Missing $SCRIPT_DIR/ensure-client-device-farm.sh (must be committed to git)${NC}"
+  exit 1
+fi
+source "$SCRIPT_DIR/ensure-client-device-farm.sh"
 ensure_client_device_farm
 echo -e "${GREEN}✅ AWS SDK ready${NC}\n"
 

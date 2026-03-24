@@ -122,8 +122,15 @@ fi
 
 # AWS SDK: listed in package.json devDependencies (installed by Bitrise yarn).
 # Never `npm install` in this directory — npm errors on Yarn "workspace:*" (EUNSUPPORTEDPROTOCOL).
+# Resolve helper from this file's location (not CORE_MOBILE_DIR — avoids wrong base if env is odd).
+_REGRESSION_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+_ENSURE_CLIENT_DEVICE_FARM="$_REGRESSION_SCRIPT_DIR/../../devicefarm/ensure-client-device-farm.sh"
+if [[ ! -f "$_ENSURE_CLIENT_DEVICE_FARM" ]]; then
+  echo "❌ Missing required helper (commit it to git): $_ENSURE_CLIENT_DEVICE_FARM"
+  exit 1
+fi
 # shellcheck source=../../devicefarm/ensure-client-device-farm.sh
-source "$CORE_MOBILE_DIR/scripts/devicefarm/ensure-client-device-farm.sh"
+source "$_ENSURE_CLIENT_DEVICE_FARM"
 ensure_client_device_farm
 
 # Set environment variables for Node.js script

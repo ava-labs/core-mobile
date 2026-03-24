@@ -131,7 +131,11 @@ fi
 
 cd "$CORE_MOBILE_DIR"
 # shellcheck source=ensure-client-device-farm.sh
-source "$CORE_MOBILE_DIR/scripts/devicefarm/ensure-client-device-farm.sh"
+if [[ ! -f "$SCRIPT_DIR/ensure-client-device-farm.sh" ]]; then
+  echo -e "${RED}❌ Missing $SCRIPT_DIR/ensure-client-device-farm.sh (must be committed to git)${NC}"
+  exit 1
+fi
+source "$SCRIPT_DIR/ensure-client-device-farm.sh"
 ensure_client_device_farm
 
 # Export environment variables for the Node.js script
