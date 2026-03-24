@@ -167,6 +167,7 @@ export const SwapScreen = (): JSX.Element => {
 
   const {
     error: feeValidationError,
+    isValidating: isFeeValidating,
     rawAdditiveFee: liveRawAdditiveFee,
     bufferedAdditiveFee: liveBufferedAdditiveFee,
     rawGasFee: liveRawGasFee,
@@ -181,7 +182,11 @@ export const SwapScreen = (): JSX.Element => {
   const activeError = validationError ?? quoteError
 
   const canSwap: boolean =
-    !activeError && !!fromToken && !!toToken && !!activeQuote
+    !activeError &&
+    !isFeeValidating &&
+    !!fromToken &&
+    !!toToken &&
+    !!activeQuote
 
   const isSwapping = swapStatus === SwapStatus.Swapping
 

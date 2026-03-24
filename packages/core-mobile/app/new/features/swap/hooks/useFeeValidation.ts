@@ -36,6 +36,7 @@ export const useFeeValidation = ({
   quote: Quote | null
 }): {
   error: FusionQuoteError | undefined
+  isValidating: boolean
   rawAdditiveFee: bigint
   bufferedAdditiveFee: bigint
   rawGasFee: bigint | undefined
@@ -116,6 +117,7 @@ export const useFeeValidation = ({
 
   return {
     error: validationError,
+    isValidating: isFetching,
     rawAdditiveFee,
     bufferedAdditiveFee,
     rawGasFee,
