@@ -24,8 +24,7 @@ import {
 } from 'react-native-keyboard-controller'
 import Animated, {
   interpolate,
-  useAnimatedStyle,
-  useSharedValue
+  useAnimatedStyle
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Grabber from './Grabber'
@@ -118,7 +117,6 @@ export const ScrollScreen = ({
   >()
 
   const headerRef = useRef<View>(null)
-  const contentHeaderHeight = useSharedValue<number>(0)
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
@@ -145,12 +143,10 @@ export const ScrollScreen = ({
   })
 
   // Header: onLayout (not one-shot measure) so fading nav separator stays correct when only
-  // renderHeader is used — works together with footer onLayout below (CP-13638 padding).
+  // renderHeader is used
   const onHeaderLayout = useCallback((event: LayoutChangeEvent) => {
     const { x, y, width, height } = event.nativeEvent.layout
-    contentHeaderHeight.value = height
     setHeaderLayout({ x, y, width, height })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const animatedBorderStyle = useAnimatedStyle(() => {
