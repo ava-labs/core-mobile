@@ -9,11 +9,13 @@ import { selectActiveWalletId } from 'store/wallet/slice'
 type UseLedgerBLEConnectionParams = {
   isLedger: boolean
   isConnecting: boolean
+  appType?: LedgerAppType
 }
 
 type UseLedgerBLEConnectionReturn = {
   isLedgerConnected: boolean
   isAvalancheAppOpen: boolean
+  isReconnecting: boolean
   deviceForWallet: LedgerDevice | undefined
   handleReconnect: () => Promise<void>
   connectionStatus: string
@@ -21,10 +23,12 @@ type UseLedgerBLEConnectionReturn = {
 
 export const useLedgerBLEConnection = ({
   isLedger,
-  isConnecting
+  isConnecting,
+  appType = LedgerAppType.AVALANCHE
 }: UseLedgerBLEConnectionParams): UseLedgerBLEConnectionReturn => {
   const [isLedgerConnected, setIsLedgerConnected] = useState(false)
   const [isAvalancheAppOpen, setIsAvalancheAppOpen] = useState(false)
+  const [isReconnecting, setIsReconnecting] = useState(false)
 
   const isMountedRef = useRef(true)
   useEffect(() => {
@@ -50,6 +54,7 @@ export const useLedgerBLEConnection = ({
 
   const handleReconnect = useCallback(async (): Promise<void> => {
     if (!deviceForWallet || !isMountedRef.current) return
+    setIsReconnecting(true)
     try {
       await LedgerService.ensureConnection(deviceForWallet.id)
       if (!isMountedRef.current) return
@@ -57,6 +62,10 @@ export const useLedgerBLEConnection = ({
     } catch {
       if (!isMountedRef.current) return
       setIsLedgerConnected(false)
+    } finally {
+      if (isMountedRef.current) {
+        setIsReconnecting(false)
+      }
     }
   }, [deviceForWallet])
 
@@ -66,7 +75,7 @@ export const useLedgerBLEConnection = ({
     handleReconnect()
   }, [isLedger, isConnecting, deviceForWallet, handleReconnect])
 
-  // Poll for device connection and Avalanche app status
+  // Poll for device connection and required app status
   useEffect(() => {
     if (!isLedger || !isConnecting) return
 
@@ -75,8 +84,8 @@ export const useLedgerBLEConnection = ({
         const connected = LedgerService.isConnected()
         setIsLedgerConnected(connected)
         if (connected) {
-          const appType = LedgerService.getCurrentAppType()
-          setIsAvalancheAppOpen(appType === LedgerAppType.AVALANCHE)
+          const currentAppType = LedgerService.getCurrentAppType()
+          setIsAvalancheAppOpen(currentAppType === appType)
         } else {
           setIsAvalancheAppOpen(false)
         }
@@ -92,25 +101,26 @@ export const useLedgerBLEConnection = ({
       LEDGER_DEVICE_BRIEF_DELAY_MS
     )
     return () => clearInterval(pollInterval)
-  }, [isLedger, isConnecting])
+  }, [isLedger, isConnecting, appType])
 
   const connectionStatus = useMemo((): string => {
     if (!isLedgerConnected) {
       return deviceForWallet
-        ? `Connect ${deviceForWallet.name} and open the Avalanche app`
-        : 'Connect your Ledger and open the Avalanche app'
+        ? `Connect ${deviceForWallet.name} and open the ${appType} app`
+        : `Connect your Ledger and open the ${appType} app`
     }
     if (!isAvalancheAppOpen) {
       return deviceForWallet
-        ? `Open the Avalanche app on ${deviceForWallet.name}`
-        : 'Open the Avalanche app on your Ledger'
+        ? `Open the ${appType} app on ${deviceForWallet.name}`
+        : `Open the ${appType} app on your Ledger`
     }
     return 'Ready — starting transaction...'
-  }, [isLedgerConnected, isAvalancheAppOpen, deviceForWallet])
+  }, [isLedgerConnected, isAvalancheAppOpen, deviceForWallet, appType])
 
   return {
     isLedgerConnected,
     isAvalancheAppOpen,
+    isReconnecting,
     deviceForWallet,
     handleReconnect,
     connectionStatus

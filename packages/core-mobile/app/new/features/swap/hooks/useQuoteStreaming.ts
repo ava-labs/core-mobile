@@ -3,6 +3,8 @@ import type { LocalTokenWithBalance } from 'store/balance'
 import Logger from 'utils/Logger'
 import { NetworkWithCaip2ChainId } from 'store/network'
 import { isSdkError } from '@avalabs/fusion-sdk'
+import SentryService from 'services/sentry/SentryService'
+import { SentryTag } from 'services/sentry/types'
 import FusionService from '../services/FusionService'
 import { toSwappableAsset, toChain } from '../utils/fusionTypeConverters'
 import { fusionErrors } from '../utils/fusionErrors'
@@ -185,9 +187,19 @@ export function useQuoteStreaming(
           if (data.reason === 'no-quotes') {
             setError(fusionErrors.noQuotes())
             onNoQuotesError?.(retry)
+            SentryService.captureMessage(
+              'Fusion quoter: no-quotes',
+              data.data,
+              { source: SentryTag.FusionSdk }
+            )
           }
           if (data.reason === 'no-eligible-services') {
             setError(fusionErrors.noEligibleServices())
+            SentryService.captureMessage(
+              'Fusion quoter: no-eligible-services',
+              data.data,
+              { source: SentryTag.FusionSdk }
+            )
           }
 
           break

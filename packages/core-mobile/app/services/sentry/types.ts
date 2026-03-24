@@ -41,3 +41,7 @@ export type OpName =
   | 'svc.send.avm.validate_and_calc_fees'
 
 export const SentryStorage = 'sentry_sample_rate'
+
+export const SentryTag = {
+  FusionSdk: 'fusion-sdk'
+} as const

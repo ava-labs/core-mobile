@@ -39,7 +39,8 @@ export const useEarnCalcEstimatedRewards = ({
   const { networkToken } = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
   return useQuery({
-    queryKey: ['currentSupply', provider],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- avaxProvider is derived from isDeveloperMode which is already in the key
+    queryKey: ['currentSupply', isDeveloperMode],
     queryFn: async () => {
       if (provider === undefined) {
         throw new Error('Avalanche provider is not available')

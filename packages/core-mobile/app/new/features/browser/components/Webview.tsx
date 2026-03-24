@@ -33,12 +33,12 @@ export const WebView = ({
       allowsInlineMediaPlayback={true}
       testID={testID}
       ref={webViewRef}
-      injectedJavaScriptForMainFrameOnly={false}
+      injectedJavaScriptForMainFrameOnly={true}
       injectedJavaScript={injectedJavaScript}
       injectedJavaScriptBeforeContentLoaded={
         injectedJavaScriptBeforeContentLoaded
       }
-      injectedJavaScriptBeforeContentLoadedForMainFrameOnly={false}
+      injectedJavaScriptBeforeContentLoadedForMainFrameOnly={true}
       source={{ uri: url }}
       setSupportMultipleWindows={false}
       onError={event => {

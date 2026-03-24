@@ -46,6 +46,8 @@ import Logger from 'utils/Logger'
 import { tokenIds } from 'consts/tokenIds'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
+import { AdditiveFeesNotice } from '../components/AdditiveFeesNotice'
+import { FeeDebugTable } from '../components/FeeDebugTable'
 import { useFusionTokenLookup } from '../hooks/useFusionTokenLookup'
 import { SwapStatus, useSwapContext } from '../contexts/SwapContext'
 import { fusionTransfersStore } from '../hooks/useZustandStore'
@@ -100,12 +102,6 @@ export const SwapScreen = (): JSX.Element => {
     useState<FusionQuoteError | null>(null)
   const minimumTransferAmount = useMinimumTransferAmount({ fromToken, toToken })
 
-  const fromMaxSwapAmount = useMaxSwapAmount({
-    fromToken,
-    toToken,
-    minimumTransferAmount
-  })
-
   const {
     debounced: debouncedFromTokenValue,
     setValueImmediately: resetDebouncedFromTokenValue
@@ -143,6 +139,20 @@ export const SwapScreen = (): JSX.Element => {
   const activeQuote = userQuote ?? bestQuote
   Logger.info('activeQuote', activeQuote)
 
+  const {
+    max: fromMaxSwapAmount,
+    rawAdditiveFee: maxRawAdditiveFee,
+    bufferedAdditiveFee: maxBufferedAdditiveFee,
+    routeAdditiveBps: maxRouteAdditiveBps,
+    rawGasFee: maxRawGasFee,
+    bufferedGasFee: maxBufferedGasFee,
+    gasSafetyBps: maxGasSafetyBps
+  } = useMaxSwapAmount({
+    fromToken,
+    toToken,
+    minimumTransferAmount
+  })
+
   const nativeFromToken = useMemo(
     () =>
       fromToken
@@ -155,7 +165,14 @@ export const SwapScreen = (): JSX.Element => {
     [fromToken, accountTokens]
   )
 
-  const feeValidationError = useFeeValidation({
+  const {
+    error: feeValidationError,
+    isValidating: isFeeValidating,
+    rawAdditiveFee: liveRawAdditiveFee,
+    bufferedAdditiveFee: liveBufferedAdditiveFee,
+    rawGasFee: liveRawGasFee,
+    bufferedGasFee: liveBufferedGasFee
+  } = useFeeValidation({
     fromToken,
     nativeTokenBalance: nativeFromToken?.balance,
     amount: debouncedFromTokenValue,
@@ -165,7 +182,11 @@ export const SwapScreen = (): JSX.Element => {
   const activeError = validationError ?? quoteError
 
   const canSwap: boolean =
-    !activeError && !!fromToken && !!toToken && !!activeQuote
+    !activeError &&
+    !isFeeValidating &&
+    !!fromToken &&
+    !!toToken &&
+    !!activeQuote
 
   const isSwapping = swapStatus === SwapStatus.Swapping
 
@@ -235,12 +256,6 @@ export const SwapScreen = (): JSX.Element => {
       debouncedFromTokenValue > fromToken.balance
     ) {
       setValidationError(fusionErrors.exceedsBalance())
-    } else if (
-      fromMaxSwapAmount !== undefined &&
-      debouncedFromTokenValue !== undefined &&
-      debouncedFromTokenValue > fromMaxSwapAmount
-    ) {
-      setValidationError(fusionErrors.insufficientBalanceForFees())
     } else if (feeValidationError) {
       setValidationError(feeValidationError)
     } else {
@@ -251,7 +266,6 @@ export const SwapScreen = (): JSX.Element => {
     debouncedFromTokenValue,
     minimumTransferAmount,
     fromToken,
-    fromMaxSwapAmount,
     feeValidationError
   ])
 
@@ -582,19 +596,34 @@ export const SwapScreen = (): JSX.Element => {
   useEffect(applyQuote, [applyQuote])
   useEffect(syncDebouncedAmount, [syncDebouncedAmount])
 
-  // Reset from amount when the user selects a different from token.
+  // Reset from amount when the token pair changes (from or to), so we don't
+  // show a stale Max value or a spurious error while the new max is loading.
   const prevFromTokenKeyRef = useRef(
     fromToken ? getTokenKey(fromToken) : undefined
   )
+  const prevToTokenKeyRef = useRef(toToken ? getTokenKey(toToken) : undefined)
   useEffect(() => {
-    const key = fromToken ? getTokenKey(fromToken) : undefined
-    const prevKey = prevFromTokenKeyRef.current
-    prevFromTokenKeyRef.current = key
-    if (prevKey === undefined || prevKey === key) return
+    const fromKey = fromToken ? getTokenKey(fromToken) : undefined
+    const toKey = toToken ? getTokenKey(toToken) : undefined
+    const prevFromKey = prevFromTokenKeyRef.current
+    const prevToKey = prevToTokenKeyRef.current
+    prevFromTokenKeyRef.current = fromKey
+    prevToTokenKeyRef.current = toKey
+
+    const fromChanged = prevFromKey !== undefined && prevFromKey !== fromKey
+    const toChanged = prevToKey !== undefined && prevToKey !== toKey
+    if (!fromChanged && !toChanged) return
+
     setFromTokenValue(undefined)
     resetDebouncedFromTokenValue(undefined)
     setAmount(undefined)
-  }, [fromToken, setFromTokenValue, setAmount, resetDebouncedFromTokenValue])
+  }, [
+    fromToken,
+    toToken,
+    setFromTokenValue,
+    setAmount,
+    resetDebouncedFromTokenValue
+  ])
 
   const prevFromRef = useRef(fromToken)
   const prevToRef = useRef(toToken)
@@ -711,6 +740,18 @@ export const SwapScreen = (): JSX.Element => {
       </Animated.View>
     )
   }, [activeError])
+
+  const renderAdditiveFeesNotice = useCallback(() => {
+    if (
+      !fromToken ||
+      !activeQuote ||
+      activeError ||
+      liveRawAdditiveFee === 0n
+    ) {
+      return null
+    }
+    return <AdditiveFeesNotice fee={liveRawAdditiveFee} fromToken={fromToken} />
+  }, [fromToken, activeQuote, activeError, liveRawAdditiveFee])
 
   const renderPartnerFee = useCallback(() => {
     if (coreFeeMessage === undefined) return null
@@ -833,6 +874,9 @@ export const SwapScreen = (): JSX.Element => {
     toToken
   ])
 
+  const decimals =
+    fromToken && 'decimals' in fromToken ? fromToken.decimals : 18
+
   return (
     <ScrollScreen
       title="Swap"
@@ -841,11 +885,25 @@ export const SwapScreen = (): JSX.Element => {
       shouldAvoidKeyboard
       contentContainerStyle={{ flexGrow: 1, padding: 16 }}>
       {renderFromAndToSections()}
+      {renderAdditiveFeesNotice()}
       {renderError()}
       <View style={{ marginTop: 24 }}>
         <GroupList data={data} separatorMarginRight={16} />
         {renderPartnerFee()}
       </View>
+      <FeeDebugTable
+        decimals={decimals}
+        maxRawGasFee={maxRawGasFee}
+        maxBufferedGasFee={maxBufferedGasFee}
+        maxGasSafetyBps={maxGasSafetyBps}
+        liveRawGasFee={liveRawGasFee}
+        liveBufferedGasFee={liveBufferedGasFee}
+        maxRawAdditiveFee={maxRawAdditiveFee}
+        maxBufferedAdditiveFee={maxBufferedAdditiveFee}
+        maxRouteAdditiveBps={maxRouteAdditiveBps}
+        liveRawAdditiveFee={liveRawAdditiveFee}
+        liveBufferedAdditiveFee={liveBufferedAdditiveFee}
+      />
     </ScrollScreen>
   )
 }

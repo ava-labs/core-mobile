@@ -120,8 +120,8 @@ export const getAddressForChainId = (
 const coreAccountAddresses = z.object({
   addressC: z.string(),
   addressBTC: z.string(),
-  addressAVM: z.string(),
-  addressPVM: z.string(),
+  addressAVM: z.string().optional(),
+  addressPVM: z.string().optional(),
   addressCoreEth: z.string(),
   addressSVM: z.string().optional()
 })

@@ -19,6 +19,11 @@ import {
 import { ErrorState } from 'common/components/ErrorState'
 import { useNavigation } from '@react-navigation/native'
 import { addRecentContact } from 'store/addressBook'
+import {
+  AvmCapableAccount,
+  PvmCapableAccount,
+  SvmCapableAccount
+} from 'common/hooks/send/utils/types'
 import { useSendContext } from '../context/sendContext'
 import { SendAVM } from '../components/SendAVM'
 import { SendPVM } from '../components/SendPVM'
@@ -119,23 +124,39 @@ export const SendScreen = (): JSX.Element => {
       )
 
     case NetworkVMType.PVM:
+      if (!activeAccount.addressPVM || !activeAccount.addressCoreEth) {
+        return (
+          <ErrorState
+            title="Unable to send"
+            description="Required account address not available"
+          />
+        )
+      }
       return (
         <SendPVM
           onSuccess={handleSuccess}
           onFailure={handleFailure}
           nativeToken={nativeToken as TokenWithBalancePVM}
-          account={activeAccount}
+          account={activeAccount as PvmCapableAccount}
           network={network}
         />
       )
 
     case NetworkVMType.AVM:
+      if (!activeAccount.addressAVM || !activeAccount.addressCoreEth) {
+        return (
+          <ErrorState
+            title="Unable to send"
+            description="Required account address not available"
+          />
+        )
+      }
       return (
         <SendAVM
           onSuccess={handleSuccess}
           onFailure={handleFailure}
           nativeToken={nativeToken as TokenWithBalanceAVM}
-          account={activeAccount}
+          account={activeAccount as AvmCapableAccount}
           network={network}
         />
       )
@@ -152,12 +173,20 @@ export const SendScreen = (): JSX.Element => {
       )
 
     case NetworkVMType.SVM:
+      if (!activeAccount.addressSVM) {
+        return (
+          <ErrorState
+            title="Unable to send"
+            description="Required account address not available"
+          />
+        )
+      }
       return (
         <SendSVM
           onSuccess={handleSuccess}
           onFailure={handleFailure}
           nativeToken={nativeToken as TokenWithBalanceSVM}
-          account={activeAccount}
+          account={activeAccount as SvmCapableAccount}
           network={network}
         />
       )

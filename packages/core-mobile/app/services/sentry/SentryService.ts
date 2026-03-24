@@ -85,9 +85,51 @@ const captureException = (message: string, value?: unknown): void => {
   }
 }
 
+/**
+ * Converts bigint values to strings so the context can be safely serialized
+ * by Sentry (which uses JSON.stringify internally).
+ */
+const sanitizeContext = (value: unknown): unknown => {
+  try {
+    return JSON.parse(
+      JSON.stringify(value, (_key, val) =>
+        typeof val === 'bigint' ? val.toString() : val
+      )
+    )
+  } catch {
+    // Fall back to a safe object shape so setContext always receives a valid
+    // Record and Sentry logging never throws.
+    return { value: '[unserializable]' }
+  }
+}
+
+const captureMessage = (
+  message: string,
+  context?: Record<string, unknown>,
+  tags?: Record<string, string>
+): void => {
+  if (!isAvailable) {
+    return
+  }
+
+  Sentry.withScope(scope => {
+    if (context) {
+      scope.setContext(
+        'details',
+        sanitizeContext(context) as Record<string, unknown>
+      )
+    }
+    if (tags) {
+      scope.setTags(tags)
+    }
+    Sentry.captureMessage(message)
+  })
+}
+
 export default {
   init,
   isAvailable,
   captureException,
+  captureMessage,
   navigationIntegration
 }

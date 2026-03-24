@@ -12,7 +12,7 @@ import { useManageWallet } from 'common/hooks/useManageWallet'
 import { AccountDisplayData, WalletDisplayData } from 'common/types'
 import { AccountListItem } from 'features/wallets/components/AccountListItem'
 import { WalletBalance } from 'features/wallets/components/WalletBalance'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
   FlatList,
   LayoutChangeEvent,
@@ -22,6 +22,8 @@ import {
 } from 'react-native'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { WalletType } from 'services/wallet/types'
+import { selectIsWalletLedger } from 'store/wallet/slice'
+import { useSelector } from 'react-redux'
 import { DropdownMenu } from './DropdownMenu'
 import { WalletIcon } from './WalletIcon'
 
@@ -47,6 +49,7 @@ const WalletCard = ({
   const {
     theme: { colors }
   } = useTheme()
+  const isLedger = useSelector(selectIsWalletLedger(wallet.id))
 
   const {
     getDropdownItems,
@@ -54,13 +57,6 @@ const WalletCard = ({
     handleAddAccount: handleAddAccountToWallet,
     isAddingAccount
   } = useManageWallet()
-
-  const isLedger = useMemo(() => {
-    return (
-      wallet?.type === WalletType.LEDGER_LIVE ||
-      wallet?.type === WalletType.LEDGER
-    )
-  }, [wallet?.type])
 
   const renderExpansionIcon = useCallback(() => {
     return (

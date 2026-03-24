@@ -73,12 +73,11 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
           })
 
           Logger.info('Account created successfully, dismissing modals')
-          // Stop polling since we no longer need app detection
-          showSnackbar('Account added successfully')
         } catch (error) {
           Logger.error('Account creation failed', error)
           showSnackbar('Unable to add account')
         } finally {
+          // Stop polling since we no longer need app detection
           LedgerService.stopAppPolling()
           setIsUpdatingWallet(false)
           resetSetup()

@@ -109,6 +109,24 @@ export const selectRemovableWallets = createSelector(
     )
 )
 
+export const selectIsActiveWalletLedger = createSelector(
+  [selectActiveWallet],
+  (wallet): boolean =>
+    wallet?.type === WalletType.LEDGER ||
+    wallet?.type === WalletType.LEDGER_LIVE
+)
+
+export const selectIsWalletLedger =
+  (walletId?: string) =>
+  (state: RootState): boolean => {
+    if (!walletId) return false
+    const wallet = state.wallet.wallets[walletId]
+    return (
+      wallet?.type === WalletType.LEDGER ||
+      wallet?.type === WalletType.LEDGER_LIVE
+    )
+  }
+
 // actions
 export const {
   addWallet,

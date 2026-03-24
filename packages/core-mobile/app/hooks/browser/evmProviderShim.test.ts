@@ -3,7 +3,8 @@ import { buildEvmProviderShim } from './evmProviderShim'
 describe('buildEvmProviderShim', () => {
   const defaultParams = {
     chainId: '0xa86a',
-    address: '0x1234567890abcdef1234567890abcdef12345678'
+    address: '0x1234567890abcdef1234567890abcdef12345678',
+    uuid: 'test-uuid-1234'
   }
 
   it('returns a non-empty string', () => {
@@ -34,14 +35,19 @@ describe('buildEvmProviderShim', () => {
     it('embeds a different chain ID when provided', () => {
       const shim = buildEvmProviderShim({
         chainId: '0x1',
-        address: defaultParams.address
+        address: defaultParams.address,
+        uuid: defaultParams.uuid
       })
       expect(shim).toContain("var _chainId = '0x1'")
       expect(shim).not.toContain("var _chainId = '0xa86a'")
     })
 
     it('embeds an empty address when not provided', () => {
-      const shim = buildEvmProviderShim({ chainId: '0xa86a', address: '' })
+      const shim = buildEvmProviderShim({
+        chainId: '0xa86a',
+        address: '',
+        uuid: defaultParams.uuid
+      })
       expect(shim).toContain("var _address = ''")
     })
   })
