@@ -1,7 +1,6 @@
 import { useRouter } from 'expo-router'
 import { useSelector } from 'react-redux'
-import { selectHasBeenViewedOnce } from 'store/viewOnce/slice'
-import { ViewOnceKey } from 'store/viewOnce/types'
+import { ViewOnceKey, selectHasBeenViewedOnce } from 'store/viewOnce'
 
 interface NavigateToSwapParams {
   fromTokenId?: string // internalId or raw contract address
