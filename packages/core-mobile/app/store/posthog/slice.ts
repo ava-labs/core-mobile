@@ -5,7 +5,7 @@ import { WalletType } from 'services/wallet/types'
 import { uuid } from 'utils/uuid'
 import { selectActiveWallet } from 'store/wallet/slice'
 import { selectCoreAnalyticsConsent } from 'store/settings/securityPrivacy'
-import { initialState } from './types'
+import { initialState, DefaultFeatureFlagConfig } from './types'
 
 const reducerName = 'posthog'
 
@@ -21,7 +21,7 @@ export const posthogSlice = createSlice({
       state.isAnalyticsEnabled = value
     },
     setFeatureFlags: (state, action: PayloadAction<FeatureFlags>) => {
-      state.featureFlags = action.payload
+      state.featureFlags = { ...DefaultFeatureFlagConfig, ...action.payload }
     }
   }
 })

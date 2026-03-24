@@ -90,11 +90,16 @@ const captureException = (message: string, value?: unknown): void => {
  * by Sentry (which uses JSON.stringify internally).
  */
 const sanitizeContext = (value: unknown): unknown => {
-  return JSON.parse(
-    JSON.stringify(value, (_key, val) =>
-      typeof val === 'bigint' ? val.toString() : val
+  try {
+    return JSON.parse(
+      JSON.stringify(value, (_key, val) =>
+        typeof val === 'bigint' ? val.toString() : val
+      )
     )
-  )
+  } catch {
+    // Fall back to a safe representation to ensure Sentry logging never throws.
+    return '[unserializable]'
+  }
 }
 
 const captureMessage = (

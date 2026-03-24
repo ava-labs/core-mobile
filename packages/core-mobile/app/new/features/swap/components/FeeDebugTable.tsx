@@ -1,6 +1,8 @@
 import { bigintToBig } from '@avalabs/core-utils-sdk'
 import React from 'react'
+import { useSelector } from 'react-redux'
 import { StyleSheet, Text, View } from 'react-native'
+import { selectFusionFeeUnitsMarginBps } from 'store/posthog'
 
 type Props = {
   decimals: number
@@ -32,6 +34,8 @@ export const FeeDebugTable = ({
   liveRawAdditiveFee,
   liveBufferedAdditiveFee
 }: Props): React.ReactElement | null => {
+  const feeUnitsMarginBps = useSelector(selectFusionFeeUnitsMarginBps)
+
   if (!__DEV__) return null
 
   const f = (raw: bigint | undefined): string => format(raw, decimals)
@@ -47,7 +51,7 @@ export const FeeDebugTable = ({
       {/* Gas raw row */}
       <View style={[styles.row, styles.rowBorder]}>
         <Text style={[styles.cell, styles.label]}>
-          {'gas raw\n(+20% built-in)'}
+          {`gas raw\n(+${feeUnitsMarginBps / 100}% built-in)`}
         </Text>
         <Text style={styles.cell}>{f(maxRawGasFee)}</Text>
         <Text style={styles.cell}>{f(liveRawGasFee)}</Text>

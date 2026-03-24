@@ -4,7 +4,9 @@ import type { LocalTokenWithBalance } from 'store/balance'
 import {
   buildFeeOptions,
   computeMaxAmount,
+  getPreQuoteAmount,
   getRouteAdditiveBps,
+  resolveAdditiveFeeForMax,
   RouteAdditiveBpsConfig
 } from './utils'
 
@@ -186,6 +188,72 @@ describe('computeMaxAmount', () => {
     })
     // ERC20 path always runs regardless of estimation error
     expect(result).toBe(4800n)
+  })
+
+  it('returns undefined for ERC20 when additiveFee is undefined (pre-quote loading)', () => {
+    const token = makeToken(5000n, TokenType.ERC20)
+    const result = computeMaxAmount({
+      fromToken: token,
+      isNative: false,
+      bufferedGas: undefined,
+      additiveFee: undefined,
+      hasEstimationError: false
+    })
+    expect(result).toBeUndefined()
+  })
+
+  it('returns undefined for SPL when additiveFee is undefined (pre-quote loading)', () => {
+    const token = makeToken(10000n, TokenType.SPL)
+    const result = computeMaxAmount({
+      fromToken: token,
+      isNative: false,
+      bufferedGas: undefined,
+      additiveFee: undefined,
+      hasEstimationError: false
+    })
+    expect(result).toBeUndefined()
+  })
+})
+
+describe('getPreQuoteAmount', () => {
+  it('returns undefined when minimumTransferAmount is undefined', () => {
+    expect(getPreQuoteAmount(undefined, undefined)).toBeUndefined()
+  })
+
+  it('returns null when minimumTransferAmount is null', () => {
+    expect(getPreQuoteAmount(null, undefined)).toBeNull()
+  })
+
+  it('returns minimumTransferAmount when fromToken is undefined', () => {
+    expect(getPreQuoteAmount(100n, undefined)).toBe(100n)
+  })
+
+  it('returns minimumTransferAmount when half balance is smaller', () => {
+    const token = makeToken(100n)
+    expect(getPreQuoteAmount(100n, token)).toBe(100n)
+  })
+
+  it('returns half balance when it exceeds minimumTransferAmount', () => {
+    const token = makeToken(1000n)
+    expect(getPreQuoteAmount(100n, token)).toBe(500n)
+  })
+})
+
+describe('resolveAdditiveFeeForMax', () => {
+  it('returns 0n when pre-quote failed', () => {
+    expect(resolveAdditiveFeeForMax(true, false, 500n)).toBe(0n)
+  })
+
+  it('returns undefined when pre-quote is not yet ready', () => {
+    expect(resolveAdditiveFeeForMax(false, false, 500n)).toBeUndefined()
+  })
+
+  it('returns bufferedAdditiveFee when pre-quote is ready', () => {
+    expect(resolveAdditiveFeeForMax(false, true, 500n)).toBe(500n)
+  })
+
+  it('returns 0n when failed even if isQuoteReady is true', () => {
+    expect(resolveAdditiveFeeForMax(true, true, 500n)).toBe(0n)
   })
 })
 

@@ -21,7 +21,12 @@ import { useIsFusionServiceReady } from '../useZustandStore'
 import { useFeeEstimation } from '../useFeeEstimation'
 import { getTotalAdditiveSourceFee } from '../../utils/getTotalAdditiveSourceFee'
 import { getTokenKey } from '../../utils/tokenKey'
-import { computeMaxAmount, getRouteAdditiveBps } from './utils'
+import {
+  computeMaxAmount,
+  getPreQuoteAmount,
+  getRouteAdditiveBps,
+  resolveAdditiveFeeForMax
+} from './utils'
 
 /**
  * Subscribes to the first quote emitted by a Quoter for the given params,
@@ -63,13 +68,13 @@ const subscribeToFirstQuote = (
 /**
  * Fetches a pre-quote to estimate fees before the user has entered any amount.
  */
-type DummyQuoteEntry = {
+type PreQuoteEntry = {
   quote: Quote
   fromId: string
   toId: string
 } | null
 
-const useDummyQuote = ({
+const usePreQuote = ({
   isFusionServiceReady,
   fromToken,
   toToken,
@@ -88,7 +93,7 @@ const useDummyQuote = ({
   toAddress: string | undefined
   minimumTransferAmount: bigint | null | undefined
 }): { quote: Quote | null; failed: boolean } => {
-  const [dummyQuoteEntry, setDummyQuoteEntry] = useState<DummyQuoteEntry>(null)
+  const [preQuoteEntry, setPreQuoteEntry] = useState<PreQuoteEntry>(null)
   const [failed, setFailed] = useState(false)
 
   useEffect(() => {
@@ -103,14 +108,14 @@ const useDummyQuote = ({
 
     // minimumTransferAmount === undefined means still loading — wait
     if (!prerequisitesMet || minimumTransferAmount === undefined) {
-      setDummyQuoteEntry(null)
+      setPreQuoteEntry(null)
       setFailed(false)
       return
     }
 
     // null means the SDK couldn't provide a minimum; <= 0n would be unusable — treat both as failure
     if (minimumTransferAmount === null || minimumTransferAmount <= 0n) {
-      setDummyQuoteEntry(null)
+      setPreQuoteEntry(null)
       setFailed(true)
       return
     }
@@ -130,16 +135,16 @@ const useDummyQuote = ({
       },
       quote => {
         setFailed(false)
-        setDummyQuoteEntry({ quote, fromId, toId })
+        setPreQuoteEntry({ quote, fromId, toId })
       },
       () => {
-        setDummyQuoteEntry(null)
+        setPreQuoteEntry(null)
         setFailed(true)
       }
     )
 
     if (!cleanup) {
-      setDummyQuoteEntry(null)
+      setPreQuoteEntry(null)
       setFailed(true)
     }
 
@@ -158,12 +163,12 @@ const useDummyQuote = ({
   // Derive quote synchronously in render: return null when the stored entry
   // belongs to a different token pair
   const isCurrentPair =
-    dummyQuoteEntry?.fromId ===
+    preQuoteEntry?.fromId ===
       (fromToken ? getTokenKey(fromToken) : undefined) &&
-    dummyQuoteEntry?.toId === (toToken ? getTokenKey(toToken) : undefined)
+    preQuoteEntry?.toId === (toToken ? getTokenKey(toToken) : undefined)
 
   return {
-    quote: isCurrentPair ? dummyQuoteEntry?.quote ?? null : null,
+    quote: isCurrentPair ? preQuoteEntry?.quote ?? null : null,
     failed: isCurrentPair ? failed : false
   }
 }
@@ -239,22 +244,12 @@ export const useMaxSwapAmount = ({
 
   const isNative = fromToken?.type === TokenType.NATIVE
 
-  // Use max(50% of balance, minimumTransferAmount) as the pre-quote amount.
-  // Using minimumTransferAmount alone sometimes can result in a 'done/no-quotes' error
-  // from the SDK; a larger amount (50% of balance) increases the chance of
-  // getting a quote back in these cases.
-  const dummyAmount = useMemo((): bigint | null | undefined => {
-    if (minimumTransferAmount === undefined || minimumTransferAmount === null) {
-      return minimumTransferAmount
-    }
-    if (!fromToken) return minimumTransferAmount
-    const halfBalance = fromToken.balance / 2n
-    return halfBalance > minimumTransferAmount
-      ? halfBalance
-      : minimumTransferAmount
-  }, [minimumTransferAmount, fromToken])
+  const preQuoteAmount = useMemo(
+    () => getPreQuoteAmount(minimumTransferAmount, fromToken),
+    [minimumTransferAmount, fromToken]
+  )
 
-  const { quote: dummyQuote, failed: dummyQuoteFailed } = useDummyQuote({
+  const { quote: preQuote, failed: preQuoteFailed } = usePreQuote({
     isFusionServiceReady,
     fromToken,
     toToken,
@@ -262,7 +257,7 @@ export const useMaxSwapAmount = ({
     toNetwork,
     fromAddress,
     toAddress,
-    minimumTransferAmount: dummyAmount
+    minimumTransferAmount: preQuoteAmount
   })
 
   const routeAdditiveBps = getRouteAdditiveBps(
@@ -277,8 +272,8 @@ export const useMaxSwapAmount = ({
 
   // All additive fees in the source token, with a uniform route-based buffer.
   const additiveFeeResult = useMemo(
-    () => getTotalAdditiveSourceFee(fromToken, dummyQuote, routeAdditiveBps),
-    [fromToken, dummyQuote, routeAdditiveBps]
+    () => getTotalAdditiveSourceFee(fromToken, preQuote, routeAdditiveBps),
+    [fromToken, preQuote, routeAdditiveBps]
   )
   const bufferedAdditiveFee = additiveFeeResult.buffered
   const rawAdditiveFee = additiveFeeResult.raw
@@ -289,27 +284,33 @@ export const useMaxSwapAmount = ({
     error: feeEstimationError,
     isFetching: isFeeEstimationFetching
   } = useFeeEstimation({
-    quote: dummyQuote,
+    quote: preQuote,
     fromNetwork,
     gasSafetyBps: maxAmountGasSafetyBps
   })
+
+  const additiveFeeForMax = resolveAdditiveFeeForMax(
+    preQuoteFailed,
+    preQuote !== null,
+    bufferedAdditiveFee
+  )
 
   const max = useMemo(() => {
     return computeMaxAmount({
       fromToken,
       isNative,
       bufferedGas: bufferedFee,
-      additiveFee: bufferedAdditiveFee,
+      additiveFee: additiveFeeForMax,
       hasEstimationError:
-        (!!feeEstimationError && !isFeeEstimationFetching) || dummyQuoteFailed
+        (!!feeEstimationError && !isFeeEstimationFetching) || preQuoteFailed
     })
   }, [
     fromToken,
     isNative,
     bufferedFee,
-    bufferedAdditiveFee,
+    additiveFeeForMax,
     feeEstimationError,
-    dummyQuoteFailed,
+    preQuoteFailed,
     isFeeEstimationFetching
   ])
 
