@@ -29,6 +29,7 @@ export function useRepayTokenBalance(
 
     const token = findMatchingTokenWithBalance(asset, tokens)
 
+    // No portfolio row or missing balance → treat as 0 so repay validation always runs against a number.
     return new TokenUnit(token?.balance ?? 0n, asset.decimals, asset.symbol)
   }, [asset, tokens])
 }
