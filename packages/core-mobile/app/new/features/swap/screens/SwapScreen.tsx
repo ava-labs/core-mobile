@@ -76,9 +76,16 @@ export const SwapScreen = (): JSX.Element => {
   }>()
 
   const initialTokenInfo = useMemo(() => {
+    const normalize = (v: string | undefined): string | undefined =>
+      v === undefined || v === '' || v === 'undefined' ? undefined : v
+
+    const tokenIdFrom = normalize(params.initialTokenIdFrom)
+    const tokenIdTo = normalize(params.initialTokenIdTo)
+    const fromCaip2Id = normalize(params.initialFromCaip2Id)
+    const toCaip2Id = normalize(params.initialToCaip2Id)
+
     const isDefaultSwapPair =
-      params.initialTokenIdFrom === undefined &&
-      params.initialTokenIdTo === undefined
+      tokenIdFrom === undefined && tokenIdTo === undefined
     if (isDefaultSwapPair) {
       return {
         initialTokenIdFrom: tokenIds.AVAX,
@@ -92,13 +99,13 @@ export const SwapScreen = (): JSX.Element => {
       }
     }
     return {
-      initialTokenIdFrom: params.initialTokenIdFrom,
-      initialTokenIdTo: params.initialTokenIdTo,
+      initialTokenIdFrom: tokenIdFrom,
+      initialTokenIdTo: tokenIdTo,
       initialFromCaip2Id:
-        params.initialFromCaip2Id ??
+        fromCaip2Id ??
         (isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN),
       initialToCaip2Id:
-        params.initialToCaip2Id ??
+        toCaip2Id ??
         (isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN)
     }
   }, [params, isDeveloperMode])
