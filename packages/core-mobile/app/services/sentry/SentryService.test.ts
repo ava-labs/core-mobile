@@ -22,6 +22,10 @@ jest.mock('@sentry/react-native', () => ({
   getGlobalScope: jest.fn(() => ({ setUser: jest.fn() }))
 }))
 
+jest.mock('react-native-config', () => ({
+  default: { SENTRY_DSN: 'MOCK_SENTRY_DSN' }
+}))
+
 jest.mock('utils/debugging/DevDebuggingConfig', () => ({
   default: { SENTRY_SPOTLIGHT: false }
 }))
@@ -84,7 +88,7 @@ describe('SentryService', () => {
 
     beforeAll(() => {
       // __DEV__ = false makes !__DEV__ = true, so isAvailable = true
-      // (SENTRY_DSN is 'MOCK_SENTRY_DSN' from react-native-config mock)
+      // (SENTRY_DSN is set via the react-native-config mock above)
       const g = global as unknown as Record<string, unknown>
       const prevDev = g.__DEV__
       g.__DEV__ = false
