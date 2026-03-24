@@ -133,11 +133,25 @@ describe('numeric selectors — PostHog value present', () => {
     expect(selectSentrySampleRate(state)).toBe(0.5)
   })
 
+  it('selectSentrySampleRate treats "0" as valid (does not fall back to default)', () => {
+    const state = stateWithFlags({
+      [FeatureVars.SENTRY_SAMPLE_RATE]: '0'
+    })
+    expect(selectSentrySampleRate(state)).toBe(0)
+  })
+
   it('selectStakeAnnualPercentageYieldBPS returns parsed PostHog value', () => {
     const state = stateWithFlags({
       [FeatureVars.STAKE_APY_BPS]: '999'
     })
     expect(selectStakeAnnualPercentageYieldBPS(state)).toBe(999)
+  })
+
+  it('selectFusionFeeUnitsMarginBps treats "0" as valid (does not fall back to default)', () => {
+    const state = stateWithFlags({
+      [FeatureVars.FUSION_FEE_UNITS_MARGIN_BPS]: '0'
+    })
+    expect(selectFusionFeeUnitsMarginBps(state)).toBe(0)
   })
 })
 
