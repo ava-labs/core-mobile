@@ -17,9 +17,9 @@ import Logger from 'utils/Logger'
 import { uuid } from 'utils/uuid'
 import { CoreAccountType } from '@avalabs/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { LedgerWalletSecretSchema } from '../utils'
 import { useLedgerWalletMap } from '../store'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export interface UseLedgerWalletReturn {
   isLoading: boolean
