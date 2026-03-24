@@ -110,7 +110,13 @@ export const SwapScreen = (): JSX.Element => {
         toCaip2Id ??
         (isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN)
     }
-  }, [rawTokenIdFrom, rawTokenIdTo, rawFromCaip2Id, rawToCaip2Id, isDeveloperMode])
+  }, [
+    rawTokenIdFrom,
+    rawTokenIdTo,
+    rawFromCaip2Id,
+    rawToCaip2Id,
+    isDeveloperMode
+  ])
 
   const { formatCurrency } = useFormatCurrency()
   const { getMarketTokenById } = useWatchlist()
