@@ -16,8 +16,10 @@ export const DefaultFeatureFlagConfig = {
   [FeatureVars.STAKE_APY_BPS]: `${DEFAULT_ANNUAL_PERCENTAGE_YIELD_BPS}`,
   [FeatureVars.FUSION_FEE_UNITS_MARGIN_BPS]: '2000', // 20% fee units buffer
   [FeatureVars.FUSION_MAX_AMOUNT_GAS_SAFETY_BPS]: '5000', // 50% safety margin on gas (Max swap amount)
-  [FeatureVars.FUSION_BRIDGE_FEE_SAFETY_BPS]: '4000', // 40% safety margin on bridge fee
   [FeatureVars.FUSION_TRANSFER_GAS_MARGIN_BPS]: '2000', // 20% gas units buffer for transfers
+  [FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_DEFAULT]: '1500', // 15% additive fee buffer for Max swap amount (default routes)
+  [FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_EVM_TO_SOLANA]: '5500', // 55% additive fee buffer for Max swap amount (evm→solana)
+  [FeatureVars.FUSION_MAX_AMOUNT_ADDITIVE_BPS_SOLANA_TO_EVM]: '500', // 5% additive fee buffer for Max swap amount (solana→evm)
   [FeatureGates.BUY_COINBASE_PAY]: true,
   [FeatureGates.SEEDLESS_ONBOARDING]: true,
   [FeatureGates.SEEDLESS_ONBOARDING_GOOGLE]: true,

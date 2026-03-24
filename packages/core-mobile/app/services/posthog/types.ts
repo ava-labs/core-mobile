@@ -60,8 +60,10 @@ export enum FeatureVars {
   STAKE_APY_BPS = 'stake-apy-bps',
   FUSION_FEE_UNITS_MARGIN_BPS = 'fusion-fee-units-margin-bps',
   FUSION_MAX_AMOUNT_GAS_SAFETY_BPS = 'fusion-max-amount-gas-safety-bps',
-  FUSION_BRIDGE_FEE_SAFETY_BPS = 'fusion-bridge-fee-safety-bps',
-  FUSION_TRANSFER_GAS_MARGIN_BPS = 'fusion-transfer-gas-margin-bps'
+  FUSION_TRANSFER_GAS_MARGIN_BPS = 'fusion-transfer-gas-margin-bps',
+  FUSION_MAX_AMOUNT_ADDITIVE_BPS_DEFAULT = 'fusion-max-amount-additive-bps-default',
+  FUSION_MAX_AMOUNT_ADDITIVE_BPS_EVM_TO_SOLANA = 'fusion-max-amount-additive-bps-evm-to-solana',
+  FUSION_MAX_AMOUNT_ADDITIVE_BPS_SOLANA_TO_EVM = 'fusion-max-amount-additive-bps-solana-to-evm'
 }
 
 // posthog response can be an empty object when all features are disabled

@@ -9,7 +9,8 @@ const DevDebuggingConfig = {
   SHOW_DEMO_NFTS: false,
   API_MOCKING: false,
   SENTRY_SPOTLIGHT: false,
-  METRO_DEV_MENU: false
+  METRO_DEV_MENU: false,
+  SWAP_FEE_DEBUG_TABLE: false
 }
 
 export default DevDebuggingConfig
