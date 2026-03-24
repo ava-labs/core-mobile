@@ -594,10 +594,8 @@ export const ListScreenV2 = <T,>({
         }
         getItemType={internalGetItemType as FlashListProps<T>['getItemType']}
         style={StyleSheet.flatten([
-          {
-            backgroundColor: backgroundColor ?? 'transparent',
-            ...restProps.style
-          }
+          { backgroundColor: backgroundColor ?? 'transparent' },
+          restProps.style
         ])}
       />
       {renderGrabber()}
