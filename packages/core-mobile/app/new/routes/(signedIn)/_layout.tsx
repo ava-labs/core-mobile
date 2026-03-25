@@ -10,7 +10,6 @@ import { useTriggerAfterLoginFlows } from 'common/hooks/useTriggerAfterLoginFlow
 import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
 import { LedgerSetupProvider } from 'features/ledger'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
-import { MigrateFavoriteIds } from 'new/common/components/MigrateFavoriteIds'
 import { NavigationPresentationMode } from 'new/common/types'
 import React from 'react'
 import { useSelector } from 'react-redux'
@@ -92,8 +91,8 @@ export default function WalletLayout(): JSX.Element {
               name="(modals)/collectibleSend"
               options={modalScreensOptions}
             />
-            <Stack.Screen name="(modals)/send" options={modalScreensOptions} />
-            <Stack.Screen name="(modals)/swap" options={modalScreensOptions} />
+            <Stack.Screen name="(modals)/send" />
+            <Stack.Screen name="(modals)/swap" />
             <Stack.Screen
               name="(modals)/selectSwapFromToken"
               options={secondaryModalScreensOptions}
@@ -278,7 +277,6 @@ export default function WalletLayout(): JSX.Element {
           </Stack>
           <PolyfillCrypto />
           <LastTransactedNetworks />
-          <MigrateFavoriteIds />
         </LedgerSetupProvider>
       </CollectiblesProvider>
     </BridgeProvider>
