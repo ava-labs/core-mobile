@@ -321,7 +321,12 @@ describe('LedgerService', () => {
       PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
       PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-    ].filter((permission): permission is string => Boolean(permission))
+    ].filter(
+      (
+        permission
+      ): permission is (typeof PermissionsAndroid.PERMISSIONS)[keyof typeof PermissionsAndroid.PERMISSIONS] =>
+        Boolean(permission)
+    )
 
     const makePermissionResult = (
       status: typeof PermissionsAndroid.RESULTS[keyof typeof PermissionsAndroid.RESULTS]
