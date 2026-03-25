@@ -5,9 +5,11 @@ import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import {
   isInAppAvalancheRequest,
-  isToastsAndConfettiEnabled,
+  isTxFeedbackEnabled,
   isConfettiEnabled,
   isInAppReview,
+  isSuccessToastEnabled,
+  isImmediateSentToast,
   showConfetti
 } from './requestContext'
 
@@ -67,23 +69,23 @@ describe('isInAppAvalancheRequest', () => {
   })
 })
 
-describe('isToastsAndConfettiEnabled', () => {
-  it('returns true when TOASTS_AND_CONFETTI_DISABLED is not set', () => {
-    expect(isToastsAndConfettiEnabled(makeRequest())).toBe(true)
+describe('isTxFeedbackEnabled', () => {
+  it('returns true when SUPPRESS_TX_FEEDBACK is not set', () => {
+    expect(isTxFeedbackEnabled(makeRequest())).toBe(true)
   })
 
-  it('returns false when TOASTS_AND_CONFETTI_DISABLED is true', () => {
+  it('returns false when SUPPRESS_TX_FEEDBACK is true', () => {
     expect(
-      isToastsAndConfettiEnabled(
-        makeRequest({ [RequestContext.TOASTS_AND_CONFETTI_DISABLED]: true })
+      isTxFeedbackEnabled(
+        makeRequest({ [RequestContext.SUPPRESS_TX_FEEDBACK]: true })
       )
     ).toBe(false)
   })
 
-  it('returns true when TOASTS_AND_CONFETTI_DISABLED is false', () => {
+  it('returns true when SUPPRESS_TX_FEEDBACK is false', () => {
     expect(
-      isToastsAndConfettiEnabled(
-        makeRequest({ [RequestContext.TOASTS_AND_CONFETTI_DISABLED]: false })
+      isTxFeedbackEnabled(
+        makeRequest({ [RequestContext.SUPPRESS_TX_FEEDBACK]: false })
       )
     ).toBe(true)
   })
@@ -125,6 +127,50 @@ describe('isInAppReview', () => {
   it('returns false when IN_APP_REVIEW is false', () => {
     expect(
       isInAppReview(makeRequest({ [RequestContext.IN_APP_REVIEW]: false }))
+    ).toBe(false)
+  })
+})
+
+describe('isSuccessToastEnabled', () => {
+  it('returns true when SUCCESS_TOAST_DISABLED is not set', () => {
+    expect(isSuccessToastEnabled(makeRequest())).toBe(true)
+  })
+
+  it('returns false when SUCCESS_TOAST_DISABLED is true', () => {
+    expect(
+      isSuccessToastEnabled(
+        makeRequest({ [RequestContext.SUCCESS_TOAST_DISABLED]: true })
+      )
+    ).toBe(false)
+  })
+
+  it('returns true when SUCCESS_TOAST_DISABLED is false', () => {
+    expect(
+      isSuccessToastEnabled(
+        makeRequest({ [RequestContext.SUCCESS_TOAST_DISABLED]: false })
+      )
+    ).toBe(true)
+  })
+})
+
+describe('isImmediateSentToast', () => {
+  it('returns false when IMMEDIATE_SENT_TOAST is not set', () => {
+    expect(isImmediateSentToast(makeRequest())).toBe(false)
+  })
+
+  it('returns true when IMMEDIATE_SENT_TOAST is true', () => {
+    expect(
+      isImmediateSentToast(
+        makeRequest({ [RequestContext.IMMEDIATE_SENT_TOAST]: true })
+      )
+    ).toBe(true)
+  })
+
+  it('returns false when IMMEDIATE_SENT_TOAST is false', () => {
+    expect(
+      isImmediateSentToast(
+        makeRequest({ [RequestContext.IMMEDIATE_SENT_TOAST]: false })
+      )
     ).toBe(false)
   })
 })
