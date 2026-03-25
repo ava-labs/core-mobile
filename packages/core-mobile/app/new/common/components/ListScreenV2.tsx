@@ -331,6 +331,9 @@ export const ListScreenV2 = <T,>({
     footerHeight
   ])
 
+  const isAndroidModal = Platform.OS === 'android' && isModal
+  const flashListMarginTop = isAndroidModal ? headerHeight : 0
+
   const overrideProps = useMemo(() => {
     const extraPadding =
       Platform.OS === 'android' ? (isModal ? insets.top : 8) : 16
@@ -345,6 +348,7 @@ export const ListScreenV2 = <T,>({
                 frame.height +
                 contentHeaderHeight +
                 extraPadding -
+                flashListMarginTop -
                 (shouldShowStickyHeader ? renderHeaderHeight : 0)
             })
       }
@@ -357,7 +361,8 @@ export const ListScreenV2 = <T,>({
     isModal,
     insets.top,
     shouldShowStickyHeader,
-    renderHeaderHeight
+    renderHeaderHeight,
+    flashListMarginTop
   ])
 
   // Prepend header sentinel (and empty sentinel when no data) so
@@ -382,7 +387,7 @@ export const ListScreenV2 = <T,>({
         <Animated.View style={[animatedHeaderContainerStyle]}>
           <View
             style={{
-              paddingTop: headerHeight + 16,
+              paddingTop: isAndroidModal ? 16 : headerHeight + 16,
               paddingBottom: renderHeader ? 12 : 0
             }}>
             <Animated.View
@@ -455,6 +460,7 @@ export const ListScreenV2 = <T,>({
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps -- animated styles from useAnimatedStyle are stable worklet refs
   }, [
+    isAndroidModal,
     renderHeader,
     headerHeight,
     headerBgColor,
@@ -469,8 +475,16 @@ export const ListScreenV2 = <T,>({
 
   const emptyContentHeight = useMemo(() => {
     const bottomPadding = contentContainerStyle.paddingBottom
-    return Math.max(0, frame.height - headerSentinelHeight - bottomPadding)
-  }, [frame.height, headerSentinelHeight, contentContainerStyle.paddingBottom])
+    return Math.max(
+      0,
+      frame.height - flashListMarginTop - headerSentinelHeight - bottomPadding
+    )
+  }, [
+    frame.height,
+    flashListMarginTop,
+    headerSentinelHeight,
+    contentContainerStyle.paddingBottom
+  ])
 
   const emptyContent = useMemo(() => {
     const style = {
@@ -594,7 +608,10 @@ export const ListScreenV2 = <T,>({
         }
         getItemType={internalGetItemType as FlashListProps<T>['getItemType']}
         style={StyleSheet.flatten([
-          { backgroundColor: backgroundColor ?? 'transparent' },
+          {
+            backgroundColor: backgroundColor ?? 'transparent',
+            marginTop: flashListMarginTop
+          },
           restProps.style
         ])}
       />
