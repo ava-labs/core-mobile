@@ -116,8 +116,15 @@ export const useGasless = ({
         (result?.error?.category === 'RETRY_WITH_NEW_CHALLENGE' &&
           attempts === MAX_ATTEMPTS)
       ) {
-        AnalyticsService.capture('GaslessFundFailed')
-        Logger.error(`[ApprovalPopup.tsx][handleGaslessTx]${error}`)
+        const errorMessage = error
+          ? String(error)
+          : result?.error?.message ?? 'unknown'
+        const errorCategory = result?.error?.category ?? 'unknown'
+        AnalyticsService.capture('GaslessFundFailed', {
+          errorMessage,
+          errorCategory
+        })
+        Logger.error(`[useGasless.ts][handleGaslessTx]${errorMessage}`)
         showGaslessError()
         return undefined
       }

@@ -94,7 +94,8 @@ class WatchlistService {
   > {
     const coins = await TokenService.getTokenSearch(query)
 
-    const coinIds = coins?.map(tk => tk.id)
+    // cap coin IDs to avoid 414 URI Too Long errors from coingecko query params
+    const coinIds = coins?.slice(0, 50).map(tk => tk.id)
 
     if (coinIds && coinIds.length > 0) {
       const pricePromise = this.getPriceWithMarketDataByCoinIds(

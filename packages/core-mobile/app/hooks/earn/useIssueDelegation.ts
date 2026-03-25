@@ -4,6 +4,7 @@ import {
 } from 'contexts/DelegationContext'
 import { useCallback } from 'react'
 import { useUiSafeMutation } from 'hooks/useUiSafeMutation'
+import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from './errors'
 import { useStakeAmount } from './useStakeAmount'
@@ -73,7 +74,9 @@ export const useIssueDelegation = ({
 
   const handleError = useCallback(
     (error: unknown) => {
-      Logger.error('delegation failed', error)
+      if (!isUserRejectedError(error)) {
+        Logger.error('delegation failed', error)
+      }
       if (error instanceof FundsStuckError) {
         onFundsStuck(error)
       } else if (error instanceof Error) {
