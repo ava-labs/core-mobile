@@ -201,7 +201,7 @@ describe('ApprovalController', () => {
       explorerLink: 'https://example.com'
     })
 
-    it('does nothing when toasts and confetti are disabled', () => {
+    it('does nothing when SUPPRESS_TX_FEEDBACK is set', () => {
       mockIsTxFeedbackEnabled.mockReturnValue(false)
 
       approvalController.onTransactionPending(pendingArgs(makeRequest()))
@@ -268,7 +268,7 @@ describe('ApprovalController', () => {
       request
     })
 
-    it('skips UI effects when toasts and confetti are disabled', () => {
+    it('skips all feedback when SUPPRESS_TX_FEEDBACK is set', () => {
       mockIsTxFeedbackEnabled.mockReturnValue(false)
 
       approvalController.onTransactionConfirmed(confirmedArgs(makeRequest()))
@@ -280,7 +280,7 @@ describe('ApprovalController', () => {
       ).not.toHaveBeenCalled()
     })
 
-    it('still fires analytics when toasts and confetti are disabled', async () => {
+    it('still fires analytics when SUPPRESS_TX_FEEDBACK is set', async () => {
       mockIsTxFeedbackEnabled.mockReturnValue(false)
       const request = makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
       await populateSigningAddressCache(request)
