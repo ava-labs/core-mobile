@@ -315,6 +315,103 @@ export function useEvmInjectedProvider(
     [dispatch, sendResponse, buildDappPeerMeta]
   )
 
+  const handleSwitchEthereumChain = useCallback(
+    (id: number, params: unknown[]) => {
+      const param = params[0] as { chainId?: string } | undefined
+      const hexChainId = param?.chainId
+      if (!hexChainId) {
+        sendResponse(
+          id,
+          rpcErrors.invalidParams('Missing chainId param'),
+          undefined
+        )
+        return
+      }
+      const requestedChainId = parseInt(hexChainId, 16)
+      if (isNaN(requestedChainId)) {
+        sendResponse(id, rpcErrors.invalidParams('Invalid chainId'), undefined)
+        return
+      }
+      if (!(String(requestedChainId) in allNetworks)) {
+        // Return 4902 (unrecognized chain) so ConnectKit/wagmi can trigger the
+        // wallet_addEthereumChain flow instead. The shim already fired
+        // chainChanged(target) optimistically and will not roll it back, so
+        // wagmi's chain state stays at target — preventing ConnectKit from
+        // re-triggering switchChain in a loop (React error #185).
+        sendResponse(
+          id,
+          {
+            code: 4902,
+            message: `Chain ${requestedChainId} has not been added to your wallet.`
+          },
+          undefined
+        )
+        return
+      }
+      if (requestedChainId === browserNetworkRef.current.chainId) {
+        sendResponse(id, null, null)
+        return
+      }
+      // Auto-approve: update Redux so the chain persists across page reloads,
+      // then sync browserNetworkRef so subsequent RPC calls (read-only and signing)
+      // are routed to the correct chain. The shim already fired chainChanged
+      // synchronously before the round-trip (prevents React #185 loop), so we
+      // do NOT re-emit it here.
+      const switchedNetwork = allNetworks[requestedChainId]
+      dispatch(setActive(requestedChainId))
+      browserNetworkRef.current = {
+        chainId: requestedChainId,
+        rpcUrl: switchedNetwork?.rpcUrl ?? ''
+      }
+      sendResponse(id, null, null)
+    },
+    [sendResponse, allNetworks, dispatch]
+  )
+
+  const handleAddEthereumChain = useCallback(
+    async (id: number, params: unknown[]) => {
+      const addParam = params[0] as
+        | { chainId?: string; rpcUrls?: string[] }
+        | undefined
+      const addHexChainId = addParam?.chainId
+      const addRpcUrl = addParam?.rpcUrls?.[0]
+      const inAppRequest = createInAppRequest(dispatch)
+      try {
+        await inAppRequest({
+          method: 'wallet_addEthereumChain' as unknown as RpcMethod,
+          params,
+          chainId: getEvmCaip2ChainId(browserNetworkRef.current.chainId),
+          peerMeta: buildDappPeerMeta()
+        })
+        // User approved — switch browser chain to the new network and notify dApp
+        if (addHexChainId) {
+          const newChainId = parseInt(addHexChainId, 16)
+          if (!isNaN(newChainId)) {
+            const addedNetwork = allNetworks[newChainId]
+            browserNetworkRef.current = {
+              chainId: newChainId,
+              rpcUrl: addedNetwork?.rpcUrl ?? addRpcUrl ?? ''
+            }
+            emitEvent('chainChanged', addHexChainId)
+          }
+        }
+        sendResponse(id, null, null)
+      } catch (e) {
+        sendResponse(id, e, undefined)
+      }
+    },
+    [sendResponse, allNetworks, dispatch, emitEvent, buildDappPeerMeta]
+  )
+
+  const handleRevokePermissions = useCallback(
+    (id: number) => {
+      emitEvent('accountsChanged', [])
+      emitEvent('disconnect', { code: 4900, message: 'User disconnected' })
+      sendResponse(id, null, null)
+    },
+    [emitEvent, sendResponse]
+  )
+
   const handleProviderMessage = useCallback(
     async (payload: string) => {
       const respondWithError = (id: number, error: unknown): void =>
@@ -349,95 +446,11 @@ export function useEvmInjectedProvider(
       }
 
       if (method === 'wallet_switchEthereumChain') {
-        const param = (params ?? [])[0] as { chainId?: string } | undefined
-        const hexChainId = param?.chainId
-        if (!hexChainId) {
-          sendResponse(
-            id,
-            rpcErrors.invalidParams('Missing chainId param'),
-            undefined
-          )
-          return
-        }
-        const requestedChainId = parseInt(hexChainId, 16)
-        if (isNaN(requestedChainId)) {
-          sendResponse(
-            id,
-            rpcErrors.invalidParams('Invalid chainId'),
-            undefined
-          )
-          return
-        }
-        if (!(String(requestedChainId) in allNetworks)) {
-          // Return 4902 (unrecognized chain) so ConnectKit/wagmi can trigger the
-          // wallet_addEthereumChain flow instead. The shim already fired
-          // chainChanged(target) optimistically and will not roll it back, so
-          // wagmi's chain state stays at target — preventing ConnectKit from
-          // re-triggering switchChain in a loop (React error #185).
-          sendResponse(
-            id,
-            {
-              code: 4902,
-              message: `Chain ${requestedChainId} has not been added to your wallet.`
-            },
-            undefined
-          )
-          return
-        }
-        if (requestedChainId === browserNetworkRef.current.chainId) {
-          sendResponse(id, null, null)
-          return
-        }
-
-        // Auto-approve: update Redux so the chain persists across page reloads,
-        // then sync browserNetworkRef so subsequent RPC calls (read-only and signing)
-        // are routed to the correct chain. The shim already fired chainChanged
-        // synchronously before the round-trip (prevents React #185 loop), so we
-        // do NOT re-emit it here.
-        const switchedNetwork = allNetworks[requestedChainId]
-        dispatch(setActive(requestedChainId))
-        browserNetworkRef.current = {
-          chainId: requestedChainId,
-          rpcUrl: switchedNetwork?.rpcUrl ?? ''
-        }
-        sendResponse(id, null, null)
+        handleSwitchEthereumChain(id, params ?? [])
       } else if (method === 'wallet_addEthereumChain') {
-        const addParam = (params ?? [])[0] as
-          | { chainId?: string; rpcUrls?: string[] }
-          | undefined
-        const addHexChainId = addParam?.chainId
-        const addRpcUrl = addParam?.rpcUrls?.[0]
-
-        const previousAddChainId = browserNetworkRef.current.chainId
-
-        const inAppRequest = createInAppRequest(dispatch)
-        try {
-          await inAppRequest({
-            method: method as unknown as RpcMethod,
-            params: params ?? [],
-            chainId: getEvmCaip2ChainId(previousAddChainId),
-            peerMeta: buildDappPeerMeta()
-          })
-          // User approved — switch browser chain to the new network and notify dApp
-          if (addHexChainId) {
-            const newChainId = parseInt(addHexChainId, 16)
-            if (!isNaN(newChainId)) {
-              const addedNetwork = allNetworks[newChainId]
-              browserNetworkRef.current = {
-                chainId: newChainId,
-                rpcUrl: addedNetwork?.rpcUrl ?? addRpcUrl ?? ''
-              }
-              emitEvent('chainChanged', addHexChainId)
-            }
-          }
-          sendResponse(id, null, null)
-        } catch (e) {
-          sendResponse(id, e, undefined)
-        }
+        await handleAddEthereumChain(id, params ?? [])
       } else if (method === 'wallet_revokePermissions') {
-        emitEvent('accountsChanged', [])
-        emitEvent('disconnect', { code: 4900, message: 'User disconnected' })
-        sendResponse(id, null, null)
+        handleRevokePermissions(id)
       } else if (method in SIGNING_METHODS) {
         if (!nativeOrigin) {
           sendResponse(
@@ -456,10 +469,9 @@ export function useEvmInjectedProvider(
       sendResponse,
       proxyToRpc,
       dispatchSigningRequest,
-      allNetworks,
-      dispatch,
-      emitEvent,
-      buildDappPeerMeta
+      handleSwitchEthereumChain,
+      handleAddEthereumChain,
+      handleRevokePermissions
     ]
   )
 
