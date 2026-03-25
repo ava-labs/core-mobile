@@ -19,8 +19,8 @@ export default function PathSelectionScreen({
     (derivationPathType: LedgerDerivationPathType) => {
       AnalyticsService.capture(
         derivationPathType === LedgerDerivationPathType.BIP44
-          ? 'ImportLedger_BIP44_Selected'
-          : 'ImportLedger_LedgerLive_Selected'
+          ? 'LedgerDerivationPathBIP44Selected'
+          : 'LedgerDerivationPathLedgerLiveSelected'
       )
       setSelectedDerivationPath(derivationPathType)
       onNavigateToDeviceConnection(derivationPathType)

@@ -26,7 +26,7 @@ const ImportWalletScreen = (): JSX.Element => {
     }
 
     const handleImportLedger = (): void => {
-      AnalyticsService.capture('ImportLedger_Started')
+      AnalyticsService.capture('AddWalletWithLedgerClicked')
       navigate({ pathname: '/accountSettings/ledger/pathSelection' })
     }
 

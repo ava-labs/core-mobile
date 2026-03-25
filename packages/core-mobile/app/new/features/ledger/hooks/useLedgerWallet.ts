@@ -128,11 +128,11 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         dispatch(setActiveAccountId(newAccountId))
 
         Logger.info('Ledger wallet created successfully:', newWalletId)
-        AnalyticsService.capture('ImportLedger_WalletAdded')
+        AnalyticsService.capture('LedgerWalletAdded')
         showSnackbar('Ledger wallet created successfully!')
         return { walletId: newWalletId, accountId: newAccountId }
       } catch (error) {
-        AnalyticsService.capture('ImportLedger_WalletAddFailed')
+        AnalyticsService.capture('LedgerWalletAddFailed')
         Logger.error('Failed to create Ledger wallet:', error)
         throw error
       } finally {
@@ -245,11 +245,11 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         dispatch(setActiveAccountId(newAccountId))
 
         Logger.info('Account created successfully')
-        AnalyticsService.capture('ImportLedger_AccountAdded')
+        AnalyticsService.capture('LedgerAccountAdded')
         showSnackbar('Account created successfully!')
         return { walletId, accountId: newAccountId }
       } catch (error) {
-        AnalyticsService.capture('ImportLedger_AccountAddFailed')
+        AnalyticsService.capture('LedgerAccountAddFailed')
         Logger.error('Failed to create account:', error)
         throw error
       } finally {
@@ -326,12 +326,12 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         dispatch(setAccount(updatedAccount))
 
         Logger.info('Solana address derived successfully')
-        AnalyticsService.capture('ImportLedger_SolanaEnabled')
+        AnalyticsService.capture('LedgerSolanaKeysDerived')
 
         showSnackbar('Solana address derived successfully!')
       } catch (error) {
         Logger.error('Failed to derive Solana address:', error)
-        AnalyticsService.capture('ImportLedger_SolanaEnableFailed')
+        AnalyticsService.capture('LedgerSolanaKeysFailed')
         throw error
       } finally {
         setIsLoading(false)

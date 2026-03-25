@@ -71,7 +71,7 @@ export default function DeviceConnectionScreen({
     async (deviceId: string, deviceName: string) => {
       try {
         await connectToDevice(deviceId, deviceName)
-        AnalyticsService.capture('ImportLedger_BT_Connected')
+        AnalyticsService.capture('LedgerConnected')
         onNavigateToAppConnection()
       } catch (error) {
         if (isLedgerBluetoothPermissionError(error)) {
