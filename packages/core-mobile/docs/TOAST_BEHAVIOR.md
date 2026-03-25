@@ -42,11 +42,11 @@ This document describes what the user sees (toasts and confetti) at each stage o
 
 Behavior is controlled by `RequestContext` flags set on each RPC request before it is sent to the VM module. The flags are read in `ApprovalController` inside `onTransactionPending` and `onTransactionConfirmed`.
 
-| Flag | Effect |
-|---|---|
-| `SUPPRESS_TX_FEEDBACK` | Suppresses all toasts and confetti at every stage |
-| `IMMEDIATE_SENT_TOAST` | Shows "Transaction sent" in `onTransactionPending` instead of a pending toast |
-| `SUCCESS_TOAST_DISABLED` | Suppresses the success toast in `onTransactionConfirmed` |
-| `CONFETTI_DISABLED` | Suppresses confetti wherever it would otherwise appear |
+Flag | Effect
+--- | ---
+`SUPPRESS_TX_FEEDBACK` | Suppresses all toasts, confetti, and the in-app review prompt on confirmation
+`IMMEDIATE_SENT_TOAST` | Shows "Transaction sent" in `onTransactionPending` instead of a pending toast
+`SUCCESS_TOAST_DISABLED` | Suppresses the success toast in `onTransactionConfirmed`
+`CONFETTI_DISABLED` | Suppresses confetti wherever it would otherwise appear
 
 For Fusion swaps, flags are set in `buildRequestContext` (`new/features/swap/utils/buildRequestContext.ts`).

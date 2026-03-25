@@ -29,8 +29,8 @@ function makeStepDetails(
   const {
     currentSignature = 1,
     requiredSignatures = 1,
-    sourceChainId = AVAX_CHAIN_ID,
-    targetChainId = AVAX_CHAIN_ID
+    sourceChainId = SOLANA_CHAIN_ID,
+    targetChainId = SOLANA_CHAIN_ID
   } = overrides
 
   return {
@@ -46,9 +46,10 @@ function makeStepDetails(
 
 describe('buildRequestContext', () => {
   beforeEach(() => {
-    // Default: non-Avalanche chain
-    mockGetChainIdFromCaip2.mockReturnValue(1)
-    mockIsAvalancheChainId.mockReturnValue(false)
+    // Default: Solana — getChainIdFromCaip2 returns undefined for non-EVM chains,
+    // so isAvalancheChainId is never reached (short-circuit in the implementation)
+    mockGetChainIdFromCaip2.mockReturnValue(undefined)
+    mockIsAvalancheChainId.mockReset()
   })
 
   describe(`${RequestContext.SUPPRESS_TX_FEEDBACK}`, () => {
@@ -137,12 +138,7 @@ describe('buildRequestContext', () => {
 
   describe(`${RequestContext.CONFETTI_DISABLED}`, () => {
     it('is true for a non-Avalanche same-chain final step', () => {
-      const ctx = buildRequestContext(
-        makeStepDetails({
-          sourceChainId: SOLANA_CHAIN_ID,
-          targetChainId: SOLANA_CHAIN_ID
-        })
-      )
+      const ctx = buildRequestContext(makeStepDetails())
       expect(ctx[RequestContext.CONFETTI_DISABLED]).toBe(true)
     })
 

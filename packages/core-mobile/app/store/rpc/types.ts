@@ -186,9 +186,8 @@ export enum RequestContext {
   // intermediate or cross-chain swap steps
   SUPPRESS_TX_FEEDBACK = 'suppressTxFeedback',
 
-  // used to suppress only the success toast (and confetti) on confirmation, while still
-  // allowing the pending toast — used for Fusion swaps where the notification center
-  // tracks the authoritative final status
+  // used to suppress only the success toast on confirmation, while still allowing the
+  // pending toast — confetti is controlled separately by CONFETTI_DISABLED
   SUCCESS_TOAST_DISABLED = 'successToastDisabled',
 
   // used to show "Transaction sent" immediately in onTransactionPending instead of a
