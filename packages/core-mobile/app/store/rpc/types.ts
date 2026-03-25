@@ -182,6 +182,16 @@ export enum RequestContext {
   // used to signal that the in-app review logic should be triggered
   IN_APP_REVIEW = 'inAppReview',
 
-  // used to suppress all toasts and confetti for intermediate or cross-chain swap steps
-  TOASTS_AND_CONFETTI_DISABLED = 'toastsAndConfettiDisabled'
+  // used to suppress all transaction feedback (toasts, confetti, in-app review) for
+  // intermediate or cross-chain swap steps
+  SUPPRESS_TX_FEEDBACK = 'suppressTxFeedback',
+
+  // used to suppress only the success toast (and confetti) on confirmation, while still
+  // allowing the pending toast — used for Fusion swaps where the notification center
+  // tracks the authoritative final status
+  SUCCESS_TOAST_DISABLED = 'successToastDisabled',
+
+  // used to show "Transaction sent" immediately in onTransactionPending instead of a
+  // pending toast — used when no confirmed toast will follow (e.g. Fusion same-chain swap)
+  IMMEDIATE_SENT_TOAST = 'immediateSentToast'
 }
