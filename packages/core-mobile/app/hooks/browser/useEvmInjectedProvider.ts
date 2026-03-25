@@ -1,7 +1,11 @@
 import { useCallback, useMemo, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account/slice'
-import { selectActiveNetwork } from 'store/network/slice'
+import {
+  selectActiveNetwork,
+  selectAllNetworks,
+  setActive
+} from 'store/network/slice'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import RNWebView from 'react-native-webview'
 import Logger from 'utils/Logger'
@@ -67,7 +71,8 @@ const ALLOWED_METHODS = new Set([
   ...READ_ONLY_METHODS,
   ...Object.keys(SIGNING_METHODS),
   'wallet_switchEthereumChain',
-  'wallet_addEthereumChain'
+  'wallet_addEthereumChain',
+  'wallet_revokePermissions'
 ])
 
 function validateProviderRequest(data: unknown): data is ProviderRequest {
@@ -144,9 +149,14 @@ export function useEvmInjectedProvider(
   const dispatch = useDispatch()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
+  const allNetworks = useSelector(selectAllNetworks)
   const dappMetadata = useRef<DomainMetadata | null>(null)
   const currentUrlRef = useRef<string>('')
   const pendingOrigins = useRef<Map<number, string>>(new Map())
+  const browserNetworkRef = useRef({
+    chainId: activeNetwork.chainId,
+    rpcUrl: activeNetwork.rpcUrl
+  })
 
   const setCurrentUrl = useCallback((url: string) => {
     currentUrlRef.current = url
@@ -224,7 +234,7 @@ export function useEvmInjectedProvider(
   const proxyToRpc = useCallback(
     async (id: number, method: string, params: unknown[]) => {
       try {
-        const rpcUrl = activeNetwork.rpcUrl
+        const rpcUrl = browserNetworkRef.current.rpcUrl
         if (!rpcUrl) {
           sendResponse(
             id,
@@ -259,7 +269,7 @@ export function useEvmInjectedProvider(
         sendResponse(id, rpcErrors.internal('RPC request failed'), undefined)
       }
     },
-    [activeNetwork.rpcUrl, sendResponse]
+    [sendResponse]
   )
 
   const buildDappPeerMeta = useCallback((): PeerMeta | undefined => {
@@ -287,7 +297,7 @@ export function useEvmInjectedProvider(
         return
       }
 
-      const caip2ChainId = getEvmCaip2ChainId(activeNetwork.chainId)
+      const caip2ChainId = getEvmCaip2ChainId(browserNetworkRef.current.chainId)
       const request = createInAppRequest(dispatch)
 
       try {
@@ -302,11 +312,11 @@ export function useEvmInjectedProvider(
         sendResponse(id, e, undefined)
       }
     },
-    [dispatch, activeNetwork.chainId, sendResponse, buildDappPeerMeta]
+    [dispatch, sendResponse, buildDappPeerMeta]
   )
 
   const handleProviderMessage = useCallback(
-    (payload: string) => {
+    async (payload: string) => {
       const respondWithError = (id: number, error: unknown): void =>
         sendResponse(id, error, undefined)
 
@@ -339,9 +349,94 @@ export function useEvmInjectedProvider(
       }
 
       if (method === 'wallet_switchEthereumChain') {
-        Logger.info(
-          '[InjectedProvider] wallet_switchEthereumChain requested (demo stub)'
-        )
+        const param = (params ?? [])[0] as { chainId?: string } | undefined
+        const hexChainId = param?.chainId
+        if (!hexChainId) {
+          sendResponse(
+            id,
+            rpcErrors.invalidParams('Missing chainId param'),
+            undefined
+          )
+          return
+        }
+        const requestedChainId = parseInt(hexChainId, 16)
+        if (isNaN(requestedChainId)) {
+          sendResponse(
+            id,
+            rpcErrors.invalidParams('Invalid chainId'),
+            undefined
+          )
+          return
+        }
+        if (!(String(requestedChainId) in allNetworks)) {
+          // Return 4902 (unrecognized chain) so ConnectKit/wagmi can trigger the
+          // wallet_addEthereumChain flow instead. The shim already fired
+          // chainChanged(target) optimistically and will not roll it back, so
+          // wagmi's chain state stays at target — preventing ConnectKit from
+          // re-triggering switchChain in a loop (React error #185).
+          sendResponse(
+            id,
+            {
+              code: 4902,
+              message: `Chain ${requestedChainId} has not been added to your wallet.`
+            },
+            undefined
+          )
+          return
+        }
+        if (requestedChainId === browserNetworkRef.current.chainId) {
+          sendResponse(id, null, null)
+          return
+        }
+
+        // Auto-approve: update Redux so the chain persists across page reloads,
+        // then sync browserNetworkRef so subsequent RPC calls (read-only and signing)
+        // are routed to the correct chain. The shim already fired chainChanged
+        // synchronously before the round-trip (prevents React #185 loop), so we
+        // do NOT re-emit it here.
+        const switchedNetwork = allNetworks[requestedChainId]
+        dispatch(setActive(requestedChainId))
+        browserNetworkRef.current = {
+          chainId: requestedChainId,
+          rpcUrl: switchedNetwork?.rpcUrl ?? ''
+        }
+        sendResponse(id, null, null)
+      } else if (method === 'wallet_addEthereumChain') {
+        const addParam = (params ?? [])[0] as
+          | { chainId?: string; rpcUrls?: string[] }
+          | undefined
+        const addHexChainId = addParam?.chainId
+        const addRpcUrl = addParam?.rpcUrls?.[0]
+
+        const previousAddChainId = browserNetworkRef.current.chainId
+
+        const inAppRequest = createInAppRequest(dispatch)
+        try {
+          await inAppRequest({
+            method: method as unknown as RpcMethod,
+            params: params ?? [],
+            chainId: getEvmCaip2ChainId(previousAddChainId),
+            peerMeta: buildDappPeerMeta()
+          })
+          // User approved — switch browser chain to the new network and notify dApp
+          if (addHexChainId) {
+            const newChainId = parseInt(addHexChainId, 16)
+            if (!isNaN(newChainId)) {
+              const addedNetwork = allNetworks[newChainId]
+              browserNetworkRef.current = {
+                chainId: newChainId,
+                rpcUrl: addedNetwork?.rpcUrl ?? addRpcUrl ?? ''
+              }
+              emitEvent('chainChanged', addHexChainId)
+            }
+          }
+          sendResponse(id, null, null)
+        } catch (e) {
+          sendResponse(id, e, undefined)
+        }
+      } else if (method === 'wallet_revokePermissions') {
+        emitEvent('accountsChanged', [])
+        emitEvent('disconnect', { code: 4900, message: 'User disconnected' })
         sendResponse(id, null, null)
       } else if (method in SIGNING_METHODS) {
         if (!nativeOrigin) {
@@ -357,7 +452,15 @@ export function useEvmInjectedProvider(
         proxyToRpc(id, method, params ?? [])
       }
     },
-    [sendResponse, proxyToRpc, dispatchSigningRequest]
+    [
+      sendResponse,
+      proxyToRpc,
+      dispatchSigningRequest,
+      allNetworks,
+      dispatch,
+      emitEvent,
+      buildDappPeerMeta
+    ]
   )
 
   const handleDomainMetadata = useCallback((payload: string) => {

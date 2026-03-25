@@ -3,12 +3,26 @@ import { useSelector, useDispatch } from 'react-redux'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { RpcMethod } from 'store/rpc/types'
 import RNWebView from 'react-native-webview'
+import {
+  selectAllNetworks,
+  selectActiveNetwork,
+  setActive
+} from 'store/network/slice'
 import { useEvmInjectedProvider } from './useEvmInjectedProvider'
 
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),
   useSelector: jest.fn(),
   useDispatch: jest.fn()
+}))
+
+jest.mock('store/network/slice', () => ({
+  selectAllNetworks: jest.fn(),
+  selectActiveNetwork: jest.fn(),
+  setActive: jest.fn((chainId: number) => ({
+    type: 'network/setActive',
+    payload: chainId
+  }))
 }))
 
 const mockCreateInAppRequest = jest.fn()
@@ -48,6 +62,11 @@ const mockActiveNetwork = {
   rpcUrl: 'https://api.avax.network/ext/bc/C/rpc'
 }
 
+const mockAllNetworks = {
+  43114: mockActiveNetwork,
+  1: { ...mockActiveNetwork, chainId: 1 }
+}
+
 const mockUseSelector = useSelector as jest.MockedFunction<typeof useSelector>
 const mockUseDispatch = useDispatch as jest.MockedFunction<typeof useDispatch>
 
@@ -55,25 +74,24 @@ function setupMocks(
   overrides: {
     account?: typeof mockActiveAccount | null
     network?: typeof mockActiveNetwork
+    allNetworks?: Record<number, unknown>
   } = {}
 ): void {
   const account =
     overrides.account === undefined ? mockActiveAccount : overrides.account
   const network = overrides.network ?? mockActiveNetwork
+  const allNetworks = overrides.allNetworks ?? mockAllNetworks
 
   mockUseSelector.mockImplementation(
     (selector: (state: unknown) => unknown) => {
+      if (selector === (selectAllNetworks as unknown)) return allNetworks
+      if (selector === (selectActiveNetwork as unknown)) return network
       const selectorStr = selector.toString()
       if (
         selectorStr.includes('activeAccount') ||
         selectorStr.includes('Account')
       )
         return account
-      if (
-        selectorStr.includes('activeNetwork') ||
-        selectorStr.includes('Network')
-      )
-        return network
       return undefined
     }
   )
@@ -176,17 +194,188 @@ describe('useEvmInjectedProvider', () => {
       expect(mockInjectJavaScript).not.toHaveBeenCalled()
     })
 
-    describe('wallet_switchEthereumChain (stub)', () => {
-      it('responds with null result', () => {
+    describe('wallet_switchEthereumChain', () => {
+      it('auto-approves, dispatches setActive, and responds null', async () => {
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef)
+        )
+
+        act(() => {
+          result.current.setCurrentUrl('https://example.com')
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(
+            JSON.stringify({
+              id: 1,
+              request: {
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: '0x1' }]
+              }
+            })
+          )
+        })
+
+        expect(mockDispatch).toHaveBeenCalledWith(setActive(1))
+        // chainChanged is emitted by the shim, not by native
+        expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+          expect.stringContaining("__coreProviderEmit('chainChanged'")
+        )
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('__coreProviderRespond(1, null, null)')
+        )
+      })
+
+      it('uses browser chain for signing after wallet_switchEthereumChain', async () => {
+        const mockSignFn = jest.fn().mockResolvedValue('0xSig')
+        mockCreateInAppRequest.mockReturnValue(mockSignFn)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef)
+        )
+
+        act(() => {
+          result.current.setCurrentUrl('https://example.com')
+        })
+
+        // Switch browser to chain 1 (auto-approved)
+        await act(async () => {
+          result.current.handleProviderMessage(
+            JSON.stringify({
+              id: 1,
+              request: {
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: '0x1' }]
+              }
+            })
+          )
+        })
+
+        // Sign — should use browser chain 1, not global active 43114
+        await act(async () => {
+          result.current.handleProviderMessage(
+            JSON.stringify({
+              id: 2,
+              request: { method: 'personal_sign', params: ['0xMsg', '0xAddr'] }
+            })
+          )
+        })
+
+        expect(mockSignFn).toHaveBeenCalledWith(
+          expect.objectContaining({ chainId: 'eip155:1' })
+        )
+      })
+
+      it('uses browser chain RPC URL for read-only methods after wallet_switchEthereumChain', async () => {
+        const mockResponse = {
+          ok: true,
+          json: jest.fn().mockResolvedValue({ result: '0x1' })
+        }
+        global.fetch = jest.fn().mockResolvedValue(mockResponse)
+
+        setupMocks({
+          allNetworks: {
+            43114: {
+              ...mockActiveNetwork,
+              chainId: 43114,
+              rpcUrl: 'https://avax.rpc'
+            },
+            1: { ...mockActiveNetwork, chainId: 1, rpcUrl: 'https://eth.rpc' }
+          }
+        })
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef)
+        )
+
+        // Switch browser to chain 1 (auto-approved)
+        await act(async () => {
+          result.current.handleProviderMessage(
+            JSON.stringify({
+              id: 1,
+              request: {
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: '0x1' }]
+              }
+            })
+          )
+        })
+
+        // Read-only call — should use chain 1's RPC, not Avalanche's
+        await act(async () => {
+          result.current.handleProviderMessage(
+            JSON.stringify({
+              id: 2,
+              request: { method: 'eth_blockNumber', params: [] }
+            })
+          )
+        })
+
+        expect(global.fetch).toHaveBeenCalledWith(
+          'https://eth.rpc',
+          expect.anything()
+        )
+      })
+
+      it('returns null immediately when requested chain is already active', () => {
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef)
+        )
+
+        // 43114 is the active chain
+        const payload = JSON.stringify({
+          id: 2,
+          request: {
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0xa86a' }]
+          }
+        })
+
+        act(() => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        expect(mockDispatch).not.toHaveBeenCalledWith(setActive(43114))
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          'window.__coreProviderRespond(2, null, null); true;'
+        )
+      })
+
+      it('returns error 4902 when chain is not in wallet (shim no-rollback prevents wagmi re-trigger loop)', () => {
         const { result } = renderHook(() =>
           useEvmInjectedProvider(mockWebViewRef)
         )
 
         const payload = JSON.stringify({
-          id: 1,
+          id: 3,
           request: {
             method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0x1' }]
+            params: [{ chainId: '0x999' }] // chainId 2457, not in mockAllNetworks
+          }
+        })
+
+        act(() => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        expect(mockDispatch).not.toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'network/setActive' })
+        )
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('"code":4902')
+        )
+      })
+
+      it('returns error when chainId param is missing', () => {
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef)
+        )
+
+        const payload = JSON.stringify({
+          id: 4,
+          request: {
+            method: 'wallet_switchEthereumChain',
+            params: [{}]
           }
         })
 
@@ -195,7 +384,179 @@ describe('useEvmInjectedProvider', () => {
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
-          'window.__coreProviderRespond(1, null, null); true;'
+          expect.stringContaining('"code":-32602')
+        )
+      })
+    })
+
+    describe('wallet_addEthereumChain', () => {
+      it('routes through createInAppRequest, switches to the added chain, and responds null on success', async () => {
+        const mockRequest = jest.fn().mockResolvedValue(null)
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef)
+        )
+
+        act(() => {
+          result.current.setCurrentUrl('https://example.com')
+        })
+
+        const payload = JSON.stringify({
+          id: 5,
+          request: {
+            method: 'wallet_addEthereumChain',
+            params: [{ chainId: '0xaa36a7', chainName: 'Sepolia' }]
+          }
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        expect(mockCreateInAppRequest).toHaveBeenCalledWith(mockDispatch)
+        expect(mockRequest).toHaveBeenCalledWith(
+          expect.objectContaining({
+            method: 'wallet_addEthereumChain',
+            params: [{ chainId: '0xaa36a7', chainName: 'Sepolia' }]
+          })
+        )
+        // Per EIP-3085: must NOT dispatch global setActive — use browser-scoped chain only
+        expect(setActive).not.toHaveBeenCalled()
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining(
+            '__coreProviderEmit(\'chainChanged\', "0xaa36a7")'
+          )
+        )
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('__coreProviderRespond(5, null, null)')
+        )
+      })
+
+      it('does not emit chainChanged before approval for wallet_addEthereumChain', async () => {
+        // Aave crash root cause: emitting chainChanged BEFORE approval caused wagmi/Aave
+        // to re-render with an inconsistent state, crashing the page.
+        // chainChanged must only fire AFTER the user approves.
+        let chainChangedEmittedBeforeApproval = false
+
+        const mockRequest = jest.fn().mockImplementation(async () => {
+          chainChangedEmittedBeforeApproval =
+            mockInjectJavaScript.mock.calls.some(call =>
+              call[0].includes("__coreProviderEmit('chainChanged'")
+            )
+          return null
+        })
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef)
+        )
+
+        await act(async () => {
+          result.current.handleProviderMessage(
+            JSON.stringify({
+              id: 98,
+              request: {
+                method: 'wallet_addEthereumChain',
+                params: [
+                  { chainId: '0xaa36a7', rpcUrls: ['https://rpc.sepolia.dev'] }
+                ]
+              }
+            })
+          )
+        })
+
+        expect(chainChangedEmittedBeforeApproval).toBe(false)
+      })
+
+      it('does not emit chainChanged when wallet_addEthereumChain is rejected', async () => {
+        const mockRequest = jest
+          .fn()
+          .mockRejectedValue({ code: 4001, message: 'User rejected' })
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef)
+        )
+
+        await act(async () => {
+          result.current.handleProviderMessage(
+            JSON.stringify({
+              id: 99,
+              request: {
+                method: 'wallet_addEthereumChain',
+                params: [
+                  { chainId: '0xaa36a7', rpcUrls: ['https://rpc.sepolia.dev'] }
+                ]
+              }
+            })
+          )
+        })
+
+        const chainChangedCalls = mockInjectJavaScript.mock.calls.filter(call =>
+          call[0].includes("__coreProviderEmit('chainChanged'")
+        )
+        expect(chainChangedCalls).toHaveLength(0)
+      })
+
+      it('responds with error when user rejects', async () => {
+        const mockRequest = jest
+          .fn()
+          .mockRejectedValue({ code: 4001, message: 'User rejected' })
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef)
+        )
+
+        act(() => {
+          result.current.setCurrentUrl('https://example.com')
+        })
+
+        const payload = JSON.stringify({
+          id: 6,
+          request: {
+            method: 'wallet_addEthereumChain',
+            params: [{ chainId: '0xaa36a7', chainName: 'Sepolia' }]
+          }
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('"code":4001')
+        )
+      })
+    })
+
+    describe('wallet_revokePermissions', () => {
+      it('emits accountsChanged and disconnect events then responds null', () => {
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef)
+        )
+
+        const payload = JSON.stringify({
+          id: 7,
+          request: {
+            method: 'wallet_revokePermissions',
+            params: [{ eth_accounts: {} }]
+          }
+        })
+
+        act(() => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining("__coreProviderEmit('accountsChanged', [])")
+        )
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining("__coreProviderEmit('disconnect'")
+        )
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('__coreProviderRespond(7, null, null)')
         )
       })
     })

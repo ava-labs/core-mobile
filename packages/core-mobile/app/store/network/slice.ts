@@ -158,14 +158,16 @@ export const selectActiveNetwork = (state: RootState): Network => {
   return network === undefined ? defaultNetwork : network
 }
 
-export const selectAllNetworks = (state: RootState): Networks => {
-  const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
-  const rawNetworks = getNetworksFromCache({
-    includeSolana: !isSolanaSupportBlocked
-  })
-  const customNetworks = selectCustomNetworks(state)
-  return { ...rawNetworks, ...customNetworks }
-}
+export const selectAllNetworks = createSelector(
+  selectIsSolanaSupportBlocked,
+  selectCustomNetworks,
+  (isSolanaSupportBlocked, customNetworks): Networks => {
+    const rawNetworks = getNetworksFromCache({
+      includeSolana: !isSolanaSupportBlocked
+    })
+    return { ...rawNetworks, ...customNetworks }
+  }
+)
 
 export const selectNetwork =
   (chainId: number) =>

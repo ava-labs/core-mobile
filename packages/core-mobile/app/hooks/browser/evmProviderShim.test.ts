@@ -71,8 +71,8 @@ describe('buildEvmProviderShim', () => {
       shim = buildEvmProviderShim(defaultParams)
     })
 
-    it('sets isMetaMask flag', () => {
-      expect(shim).toContain('isMetaMask: true')
+    it('sets isMetaMask flag to false (Core wallet is not MetaMask)', () => {
+      expect(shim).toContain('isMetaMask: false')
     })
 
     it('sets isCore flag', () => {
@@ -247,6 +247,15 @@ describe('buildEvmProviderShim', () => {
       expect(shim).toContain('window.__coreProviderRespond = function(id')
     })
 
+    it('rejects with an Error instance so wagmi/viem instanceof checks pass (EIP-1193 compliance)', () => {
+      // EIP-1193: "the Provider MUST reject with an Error object"
+      // wagmi uses instanceof checks on errors; plain-object rejections
+      // lose their .code and crash dApps like Aave when handling 4902.
+      expect(shim).toContain('var e = new Error(error.message')
+      expect(shim).toContain('e.code = error.code')
+      expect(shim).toContain('cb.reject(e)')
+    })
+
     it('defines __coreProviderEmit on window', () => {
       expect(shim).toContain('window.__coreProviderEmit = function(eventName')
     })
@@ -272,17 +281,14 @@ describe('buildEvmProviderShim', () => {
     })
   })
 
-  describe('auto-connect event firing', () => {
-    it('auto-fires connect event on listener attachment', () => {
+  describe('event listener (no auto-fire)', () => {
+    it('does NOT auto-fire connect/accountsChanged on listener attachment (prevents React #185 loop)', () => {
+      // Auto-firing current state to new listeners causes wagmi to re-subscribe
+      // during its cleanup/setup cycle, which feeds back into another auto-fire,
+      // producing React error #185 (infinite update loop) when dApps trigger chain-switch UI.
       const shim = buildEvmProviderShim(defaultParams)
-      expect(shim).toContain("event === 'connect'")
-      expect(shim).toContain('fn({ chainId: _chainId })')
-    })
-
-    it('auto-fires accountsChanged event on listener attachment', () => {
-      const shim = buildEvmProviderShim(defaultParams)
-      expect(shim).toContain("event === 'accountsChanged'")
-      expect(shim).toContain('fn(_accounts.slice())')
+      expect(shim).not.toContain("event === 'connect'")
+      expect(shim).not.toContain("event === 'accountsChanged'")
     })
   })
 })
