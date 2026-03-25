@@ -1,5 +1,6 @@
 import { onInAppRequestFailed, onInAppRequestSucceeded } from '../slice'
 import { AgnosticRpcProvider, RpcProvider } from '../types'
+import { captureDappSuccessAnalytics } from './captureDappSuccessAnalytics'
 
 class CoreMobileProvider implements AgnosticRpcProvider {
   provider = RpcProvider.CORE_MOBILE
@@ -19,6 +20,7 @@ class CoreMobileProvider implements AgnosticRpcProvider {
     listenerApi
   }) => {
     const requestId = request.data.id
+    captureDappSuccessAnalytics({ request, result, listenerApi })
     listenerApi.dispatch(
       onInAppRequestSucceeded({ requestId, txHash: result as string })
     )

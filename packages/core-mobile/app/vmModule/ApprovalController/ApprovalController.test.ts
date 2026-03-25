@@ -131,6 +131,7 @@ function makeRequest(overrides: Partial<RpcRequest> = {}): RpcRequest {
 }
 
 const DAPP_URL = 'https://app.uniswap.org'
+const CORE_URL = 'https://core.app/'
 const DAPP_SESSION_ID = 'wc-topic-abc123'
 const TX_HASH = '0xdeadbeef'
 const EVM_ADDRESS = '0xcA0E993876152ccA6053eeDFC753092c8cE712D0'
@@ -143,6 +144,28 @@ const makeDappRequest = (method: RpcMethod, chainId = 'eip155:1'): RpcRequest =>
     chainId,
     params: {},
     dappInfo: { name: 'Uniswap', url: DAPP_URL, icon: '' }
+  } as unknown as RpcRequest)
+
+const makeBrowserInAppDappRequest = (
+  method: RpcMethod,
+  chainId = 'eip155:1'
+): RpcRequest =>
+  ({
+    ...makeDappRequest(method, chainId),
+    sessionId: 'core-mobile-topic'
+  } as unknown as RpcRequest)
+
+const makeCoreInAppRequest = (
+  method: RpcMethod,
+  chainId = 'eip155:1'
+): RpcRequest =>
+  ({
+    requestId: 'req-1',
+    sessionId: 'core-mobile-topic',
+    method,
+    chainId,
+    params: {},
+    dappInfo: { name: 'Core', url: CORE_URL, icon: '' }
   } as unknown as RpcRequest)
 
 const mockAccount = {
@@ -431,16 +454,39 @@ describe('ApprovalController', () => {
         )
       })
 
-      it('does NOT fire analytics for in-app requests', () => {
+      it('does NOT fire analytics for Core internal in-app requests', () => {
         mockIsInAppRequest.mockReturnValue(true)
 
         approvalController.onTransactionConfirmed({
           txHash: TX_HASH,
           explorerLink: '',
-          request: makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+          request: makeCoreInAppRequest(RpcMethod.ETH_SEND_TRANSACTION)
         })
 
         expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
+      })
+
+      it('fires analytics for browser-originated in-app dapp requests', async () => {
+        mockIsInAppRequest.mockReturnValue(true)
+        const request = makeBrowserInAppDappRequest(
+          RpcMethod.ETH_SEND_TRANSACTION
+        )
+        await populateSigningAddressCache(request)
+
+        approvalController.onTransactionConfirmed({
+          txHash: TX_HASH,
+          explorerLink: '',
+          request
+        })
+
+        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+          'eth_sendTransaction_confirmed',
+          expect.objectContaining({
+            dAppUrl: DAPP_URL,
+            address: EVM_ADDRESS,
+            txHash: TX_HASH
+          })
+        )
       })
 
       it('uses getAddressForChainId to resolve the signing address', async () => {
@@ -509,9 +555,9 @@ describe('ApprovalController', () => {
         )
       })
 
-      it('does not cache signing address for in-app requests', async () => {
+      it('does not cache signing address for Core internal in-app requests', async () => {
         mockIsInAppRequest.mockReturnValue(true)
-        const request = makeRequest({ method: RpcMethod.ETH_SEND_TRANSACTION })
+        const request = makeCoreInAppRequest(RpcMethod.ETH_SEND_TRANSACTION)
 
         const signingData = { type: 'eth_sendTransaction', data: {} } as never
         const displayData = {} as never
@@ -532,6 +578,36 @@ describe('ApprovalController', () => {
         })
 
         expect(mockGetAddressForChainId).not.toHaveBeenCalled()
+      })
+
+      it('caches signing address for browser-originated in-app dapp requests', async () => {
+        mockIsInAppRequest.mockReturnValue(true)
+        const request = makeBrowserInAppDappRequest(
+          RpcMethod.ETH_SEND_TRANSACTION
+        )
+
+        const signingData = { type: 'eth_sendTransaction', data: {} } as never
+        const displayData = {} as never
+        approvalController.requestApproval({
+          request,
+          displayData,
+          signingData
+        })
+        const { onApprove: capturedOnApprove } =
+          mockWalletConnectCacheSet.mock.calls[
+            mockWalletConnectCacheSet.mock.calls.length - 1
+          ][0]
+        await capturedOnApprove({
+          walletType: WalletType.MNEMONIC,
+          walletId: 'w1',
+          network: {},
+          account: mockAccount
+        })
+
+        expect(mockGetAddressForChainId).toHaveBeenCalledWith(
+          'eip155:1',
+          mockAccount
+        )
       })
 
       it('does not cache signing address for non-tx-send methods', async () => {
@@ -617,15 +693,37 @@ describe('ApprovalController', () => {
         )
       })
 
-      it('does NOT fire analytics for in-app requests', () => {
+      it('does NOT fire analytics for Core internal in-app requests', () => {
         mockIsInAppRequest.mockReturnValue(true)
 
         approvalController.onTransactionReverted({
           txHash: TX_HASH,
-          request: makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
+          request: makeCoreInAppRequest(RpcMethod.ETH_SEND_TRANSACTION)
         })
 
         expect(AnalyticsService.captureWithEncryption).not.toHaveBeenCalled()
+      })
+
+      it('fires analytics for browser-originated in-app dapp requests', async () => {
+        mockIsInAppRequest.mockReturnValue(true)
+        const request = makeBrowserInAppDappRequest(
+          RpcMethod.ETH_SEND_TRANSACTION
+        )
+        await populateSigningAddressCache(request)
+
+        approvalController.onTransactionReverted({
+          txHash: TX_HASH,
+          request
+        })
+
+        expect(AnalyticsService.captureWithEncryption).toHaveBeenCalledWith(
+          'eth_sendTransaction_failed',
+          expect.objectContaining({
+            dAppUrl: DAPP_URL,
+            address: EVM_ADDRESS,
+            txHash: TX_HASH
+          })
+        )
       })
 
       it('always includes txHash in _failed payload (matches Extension behavior)', async () => {

@@ -15,6 +15,7 @@ import {
   TxSendConfirmedEvent,
   TxSendFailedEvent
 } from 'store/rpc/utils/txSendMethods'
+import { isExternalDappUrl } from 'store/rpc/utils/isExternalDappUrl'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { NavigationPresentationMode } from 'new/common/types'
 import WalletService from 'services/wallet/WalletService'
@@ -39,6 +40,12 @@ import {
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { handleLedgerErrorAndShowAlert } from './utils'
+
+const shouldCaptureDappAnalytics = (request: RpcRequest): boolean => {
+  return (
+    isTxSendMethod(request.method) && isExternalDappUrl(request.dappInfo?.url)
+  )
+}
 
 class ApprovalController implements VmModuleApprovalController {
   private userCancelledMap = new BoundedMap<string, boolean>(10)
@@ -94,7 +101,7 @@ class ApprovalController implements VmModuleApprovalController {
     explorerLink: string
     request: RpcRequest
   }): void => {
-    if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
+    if (shouldCaptureDappAnalytics(request)) {
       const address = this.signingAddressMap.get(request.requestId) ?? ''
       this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_confirmed` as TxSendConfirmedEvent
@@ -138,7 +145,7 @@ class ApprovalController implements VmModuleApprovalController {
   }): void => {
     transactionSnackbar.error({ error: 'Transaction reverted' })
 
-    if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
+    if (shouldCaptureDappAnalytics(request)) {
       const address = this.signingAddressMap.get(request.requestId) ?? ''
       this.signingAddressMap.delete(request.requestId)
       const eventName = `${request.method}_failed` as TxSendFailedEvent
@@ -261,7 +268,7 @@ class ApprovalController implements VmModuleApprovalController {
         displayData,
         signingData,
         onApprove: async (params: OnApproveParams) => {
-          if (!isInAppRequest(request) && isTxSendMethod(request.method)) {
+          if (shouldCaptureDappAnalytics(request)) {
             this.cacheSigningAddress(requestId, request.chainId, params.account)
           }
 
