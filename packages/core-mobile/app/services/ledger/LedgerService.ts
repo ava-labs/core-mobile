@@ -132,6 +132,14 @@ class LedgerService {
   async connect(deviceId: string): Promise<void> {
     try {
       Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
+      const hasPermissions = await this.requestBluetoothPermissions()
+      if (!hasPermissions) {
+        this.showBluetoothPermissionRequiredAlert('connect')
+        throw new Error(
+          'Bluetooth permissions are required to connect to Ledger devices.'
+        )
+      }
+
       this.isDisconnected = false // Reset disconnect flag on new connection
       // Use a longer timeout for connection
       await TransportBLE.disconnectDevice(deviceId)
@@ -227,9 +235,25 @@ class LedgerService {
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
         ].filter(Boolean)
 
-        const granted = await PermissionsAndroid.requestMultiple(permissions)
-        return Object.values(granted).every(
-          permission => permission === 'granted'
+        const permissionChecks = await Promise.all(
+          permissions.map(permission => PermissionsAndroid.check(permission))
+        )
+
+        if (permissionChecks.every(Boolean)) {
+          return true
+        }
+
+        const missingPermissions = permissions.filter(
+          (_, index) => !permissionChecks[index]
+        )
+
+        const granted = await PermissionsAndroid.requestMultiple(
+          missingPermissions
+        )
+
+        return missingPermissions.every(
+          permission =>
+            granted[permission] === PermissionsAndroid.RESULTS.GRANTED
         )
       } catch (err) {
         Logger.error('Error requesting Bluetooth permissions:', err)
@@ -237,6 +261,17 @@ class LedgerService {
       }
     }
     return true
+  }
+
+  private showBluetoothPermissionRequiredAlert(
+    action: 'scan' | 'connect'
+  ): void {
+    const actionDescription = action === 'scan' ? 'scan for' : 'connect to'
+
+    Alert.alert(
+      'Permission Required',
+      `Bluetooth permissions are required to ${actionDescription} Ledger devices.`
+    )
   }
 
   // Handle scan errors (matching original implementation)
@@ -276,10 +311,7 @@ class LedgerService {
     // Request permissions first
     const hasPermissions = await this.requestBluetoothPermissions()
     if (!hasPermissions) {
-      Alert.alert(
-        'Permission Required',
-        'Bluetooth permissions are required to scan for Ledger devices.'
-      )
+      this.showBluetoothPermissionRequiredAlert('scan')
       return
     }
 
