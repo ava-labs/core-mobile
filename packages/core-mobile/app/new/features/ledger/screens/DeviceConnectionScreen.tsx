@@ -7,7 +7,10 @@ import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupC
 import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIconWithText'
 import { LedgerDeviceList } from 'new/features/ledger/components/LedgerDeviceList'
 import LedgerService from 'services/ledger/LedgerService'
-import { LedgerDevice } from 'services/ledger/types'
+import {
+  isLedgerBluetoothPermissionError,
+  LedgerDevice
+} from 'services/ledger/types'
 
 export default function DeviceConnectionScreen(): JSX.Element {
   const { push, back } = useRouter()
@@ -67,6 +70,11 @@ export default function DeviceConnectionScreen(): JSX.Element {
         // Navigate to app connection step
         push('/accountSettings/ledger/appConnection')
       } catch (error) {
+        if (isLedgerBluetoothPermissionError(error)) {
+          Alert.alert('Permission Required', error.message)
+          return
+        }
+
         Alert.alert(
           'Connection failed',
           'Failed to connect to Ledger device. Please try again.',

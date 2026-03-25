@@ -19,6 +19,7 @@ import { Alert, Platform, View } from 'react-native'
 import { useSelector } from 'react-redux'
 import LedgerService from 'services/ledger/LedgerService'
 import {
+  isLedgerBluetoothPermissionError,
   LedgerDerivationPathType,
   LedgerKeysByNetwork
 } from 'services/ledger/types'
@@ -190,6 +191,10 @@ export default function AppConnectionScreen({
     } catch (err) {
       Logger.error('Failed to connect to Avalanche app', err)
       setAppConnectionStep(AppConnectionStep.AVALANCHE_CONNECT)
+      if (isLedgerBluetoothPermissionError(err)) {
+        Alert.alert('Permission Required', err.message, [{ text: 'OK' }])
+        return
+      }
       Alert.alert(
         'Connection Failed',
         'Failed to connect to Avalanche app. Please make sure the Avalanche app is open on your Ledger.',
@@ -236,6 +241,10 @@ export default function AppConnectionScreen({
     } catch (err) {
       Logger.error('Failed to connect to Solana app', err)
       setAppConnectionStep(AppConnectionStep.SOLANA_CONNECT)
+      if (isLedgerBluetoothPermissionError(err)) {
+        Alert.alert('Permission Required', err.message, [{ text: 'OK' }])
+        return
+      }
       Alert.alert(
         'Connection Failed',
         'Failed to connect to Solana app. Please make sure the Solana app is installed and open on your Ledger.',

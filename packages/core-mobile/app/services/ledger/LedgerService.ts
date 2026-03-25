@@ -37,7 +37,9 @@ import {
   LedgerDevice,
   AvalancheKey,
   LEDGER_ERROR_CODES,
-  LedgerDerivationPathType
+  LedgerDerivationPathType,
+  LedgerBluetoothPermissionError,
+  isLedgerBluetoothPermissionError
 } from './types'
 
 class LedgerService {
@@ -134,10 +136,7 @@ class LedgerService {
       Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
       const hasPermissions = await this.requestBluetoothPermissions()
       if (!hasPermissions) {
-        this.showBluetoothPermissionRequiredAlert('connect')
-        throw new Error(
-          'Bluetooth permissions are required to connect to Ledger devices.'
-        )
+        throw new LedgerBluetoothPermissionError()
       }
 
       this.isDisconnected = false // Reset disconnect flag on new connection
@@ -177,6 +176,9 @@ class LedgerService {
       }
     } catch (error) {
       Logger.error('Failed to connect to Ledger', error)
+      if (isLedgerBluetoothPermissionError(error)) {
+        throw error
+      }
       throw new Error(
         `Failed to connect to Ledger: ${
           error instanceof Error ? error.message : 'Unknown error'

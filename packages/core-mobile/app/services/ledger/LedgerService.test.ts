@@ -3,7 +3,7 @@ import { Alert, PermissionsAndroid, Platform } from 'react-native'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Logger from 'utils/Logger'
 import LedgerService from './LedgerService'
-import { LedgerAppType } from './types'
+import { isLedgerBluetoothPermissionError, LedgerAppType } from './types'
 
 jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
   __esModule: true,
@@ -321,25 +321,23 @@ describe('LedgerService', () => {
       PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
       PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-    ]
+    ].filter((permission): permission is string => Boolean(permission))
 
-    const grantedPermissions = {
-      [PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN]:
-        PermissionsAndroid.RESULTS.GRANTED,
-      [PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT]:
-        PermissionsAndroid.RESULTS.GRANTED,
-      [PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION]:
-        PermissionsAndroid.RESULTS.GRANTED
+    const makePermissionResult = (
+      status: typeof PermissionsAndroid.RESULTS[keyof typeof PermissionsAndroid.RESULTS]
+    ): Record<string, string> => {
+      return Object.fromEntries(
+        bluetoothPermissions.map(permission => [permission, status])
+      )
     }
 
-    const deniedPermissions = {
-      [PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN]:
-        PermissionsAndroid.RESULTS.DENIED,
-      [PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT]:
-        PermissionsAndroid.RESULTS.DENIED,
-      [PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION]:
-        PermissionsAndroid.RESULTS.DENIED
-    }
+    const grantedPermissions = makePermissionResult(
+      PermissionsAndroid.RESULTS.GRANTED
+    )
+
+    const deniedPermissions = makePermissionResult(
+      PermissionsAndroid.RESULTS.DENIED
+    )
 
     const mockTransport = {
       exchange: jest.fn().mockRejectedValue(new Error('No app info') as never),
@@ -442,15 +440,19 @@ describe('LedgerService', () => {
         deniedPermissions as never
       )
 
-      await expect(LedgerService.ensureConnection('device-id')).rejects.toThrow(
-        'Bluetooth permissions are required to connect to Ledger devices.'
-      )
+      try {
+        await LedgerService.ensureConnection('device-id')
+        throw new Error('Expected ensureConnection to fail')
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+        expect((error as Error).message).toBe(
+          'Bluetooth permissions are required to connect to Ledger devices.'
+        )
+        expect(isLedgerBluetoothPermissionError(error)).toBe(true)
+      }
 
       expect(transportBLEMock.open).not.toHaveBeenCalled()
-      expect(Alert.alert).toHaveBeenCalledWith(
-        'Permission Required',
-        'Bluetooth permissions are required to connect to Ledger devices.'
-      )
+      expect(Alert.alert).not.toHaveBeenCalled()
     })
   })
 })

@@ -13,6 +13,7 @@ import { Button } from '@avalabs/k2-alpine'
 import { PrimaryAccount, selectAccountById } from 'store/account'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useSelector } from 'react-redux'
+import { isLedgerBluetoothPermissionError } from 'services/ledger/types'
 import { useLedgerWalletMap } from '../store'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 
@@ -91,6 +92,10 @@ export default function SolanaConnectionScreen(): JSX.Element {
     } catch (err) {
       Logger.error('Failed to connect to Solana app', err)
       setAppConnectionStep(AppConnectionStep.SOLANA_CONNECT)
+      if (isLedgerBluetoothPermissionError(err)) {
+        Alert.alert('Permission Required', err.message, [{ text: 'OK' }])
+        return
+      }
       Alert.alert(
         'Connection Failed',
         'Failed to connect to Solana app. Please make sure the Solana app is installed and open on your Ledger.',

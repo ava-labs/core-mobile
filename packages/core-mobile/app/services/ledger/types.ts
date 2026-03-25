@@ -48,8 +48,34 @@ export const LEDGER_ERROR_CODES = {
   TRANSPORT_RACE_CONDITION: 'transportracecondition',
   TRANSPORT_RACE_CONDITION_ALT:
     'an action was already pending on the ledger device',
-  BLIND_SIGNATURE: 'blind'
+  BLIND_SIGNATURE: 'blind',
+  BLUETOOTH_PERMISSION: 'ledger_bluetooth_permission_required'
 } as const
+
+export const LEDGER_BLUETOOTH_PERMISSION_MESSAGE =
+  'Bluetooth permissions are required to connect to Ledger devices.'
+
+export class LedgerBluetoothPermissionError extends Error {
+  readonly code = LEDGER_ERROR_CODES.BLUETOOTH_PERMISSION
+
+  constructor(message = LEDGER_BLUETOOTH_PERMISSION_MESSAGE) {
+    super(message)
+    this.name = 'LedgerBluetoothPermissionError'
+    Object.setPrototypeOf(this, LedgerBluetoothPermissionError.prototype)
+  }
+}
+
+export const isLedgerBluetoothPermissionError = (
+  error: unknown
+): error is LedgerBluetoothPermissionError => {
+  return (
+    error instanceof LedgerBluetoothPermissionError ||
+    (error instanceof Error &&
+      error.name === 'LedgerBluetoothPermissionError' &&
+      'code' in error &&
+      error.code === LEDGER_ERROR_CODES.BLUETOOTH_PERMISSION)
+  )
+}
 
 export type LedgerReturnCodeType =
   typeof LedgerReturnCode[keyof typeof LedgerReturnCode]
