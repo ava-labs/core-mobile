@@ -2,6 +2,42 @@ import { ChainId, Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { LedgerAppType, LedgerDerivationPathType } from 'services/ledger/types'
 import { z } from 'zod'
 import { Curve } from 'utils/publicKeys'
+import { MAX_BITCOIN_APP_VERSION } from '../consts'
+
+/**
+ * Returns true if version is strictly greater than maxVersion (semver comparison).
+ */
+export const isVersionExceeding = (
+  version: string,
+  maxVersion: string
+): boolean => {
+  const parse = (v: string): number[] => v.split('.').map(Number)
+  const v = parse(version)
+  const max = parse(maxVersion)
+  for (let i = 0; i < Math.max(v.length, max.length); i++) {
+    const a = v[i] ?? 0
+    const b = max[i] ?? 0
+    if (a > b) return true
+    if (a < b) return false
+  }
+  return false
+}
+
+/**
+ * Returns true if the detected app type is compatible with a Bitcoin signing request.
+ * - Bitcoin Recovery app is always accepted as a substitute.
+ * - Regular Bitcoin app is only accepted if its version is within the supported range.
+ */
+export const isBitcoinCompatibleApp = (
+  appType: LedgerAppType,
+  appVersion: string
+): boolean => {
+  if (appType === LedgerAppType.BITCOIN_RECOVERY) return true
+  if (appType === LedgerAppType.BITCOIN) {
+    return !isVersionExceeding(appVersion, MAX_BITCOIN_APP_VERSION)
+  }
+  return false
+}
 
 export const getLedgerAppName = (network?: Network): LedgerAppType => {
   return network?.chainId === ChainId.AVALANCHE_MAINNET_ID ||
