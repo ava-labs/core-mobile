@@ -2,6 +2,7 @@ import {
   LedgerReviewFooter,
   LedgerReviewPhase
 } from 'features/ledger/components/LedgerReviewFooter'
+import { UnsupportedBitcoinApp } from 'features/ledger/components/UnsupportedBitcoinApp'
 import { useLedgerBLEConnection } from 'features/ledger/hooks/useLedgerBLEConnection'
 import { ledgerParamsStore, useLedgerParams } from 'features/ledger/store'
 import { getLedgerAppName } from 'features/ledger/utils'
@@ -38,6 +39,8 @@ export const useLedgerApproval = (
   const {
     isLedgerConnected,
     isAvalancheAppOpen: isRequiredAppOpen,
+    isUnsupportedBtcVersion,
+    currentBtcVersion,
     isReconnecting,
     deviceForWallet,
     handleReconnect,
@@ -116,6 +119,15 @@ export const useLedgerApproval = (
   const renderLedgerFooter = useCallback((): JSX.Element | null => {
     if (!isLedger || ledgerPhase === LedgerReviewPhase.IDLE) return null
 
+    if (isUnsupportedBtcVersion) {
+      return (
+        <UnsupportedBitcoinApp
+          currentVersion={currentBtcVersion}
+          onCancel={cancelLedger}
+        />
+      )
+    }
+
     return (
       <LedgerReviewFooter
         ledgerPhase={ledgerPhase as LedgerReviewPhase}
@@ -134,6 +146,8 @@ export const useLedgerApproval = (
   }, [
     isLedger,
     ledgerPhase,
+    isUnsupportedBtcVersion,
+    currentBtcVersion,
     deviceForWallet,
     connectionStatus,
     isLedgerConnected,
