@@ -6,35 +6,20 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 
 export const SwapOnboardingScreen = (): JSX.Element => {
   const { navigate } = useRouter()
-  const {
-    initialTokenIdFrom,
-    initialTokenIdTo,
-    initialFromCaip2Id,
-    initialToCaip2Id
-  } = useLocalSearchParams<{
-    initialTokenIdFrom: string
-    initialTokenIdTo: string
-    initialFromCaip2Id: string
-    initialToCaip2Id: string
+  const params = useLocalSearchParams<{
+    initialTokenIdFrom?: string
+    initialTokenIdTo?: string
+    initialFromCaip2Id?: string
+    initialToCaip2Id?: string
   }>()
 
   const handlePressNext = useCallback(() => {
     navigate({
       pathname: '/swap/swap',
-      params: {
-        initialTokenIdFrom,
-        initialTokenIdTo,
-        initialFromCaip2Id,
-        initialToCaip2Id
-      }
+      params
     })
-  }, [
-    initialFromCaip2Id,
-    initialToCaip2Id,
-    initialTokenIdFrom,
-    initialTokenIdTo,
-    navigate
-  ])
+  }, [navigate, params])
+
   return (
     <TransactionOnboarding
       icon={{ component: Icons.Custom.Compare, size: 75 }}

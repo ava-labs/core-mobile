@@ -36,6 +36,9 @@ import {
   selectIsPrivacyModeEnabled,
   togglePrivacyMode
 } from 'store/settings/securityPrivacy'
+import { onAppLocked, setIsLocked, setWalletState } from 'store/app/slice'
+import { WalletState } from 'store/app/types'
+import { manualLockStore } from 'features/accountSettings/store'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -50,6 +53,13 @@ const AccountSettingsScreen = (): JSX.Element => {
   const { avatar } = useAvatar()
   const appUpdateStatus = useAppUpdateStatus()
   const { openUrl } = useInAppBrowser()
+
+  const handleLockWallet = useCallback((): void => {
+    manualLockStore.setState({ wasManuallyLocked: true })
+    dispatch(setIsLocked(true))
+    dispatch(onAppLocked())
+    dispatch(setWalletState(WalletState.INACTIVE))
+  }, [dispatch])
 
   const renderHeaderRight = useCallback(() => {
     return (
@@ -221,6 +231,20 @@ const AccountSettingsScreen = (): JSX.Element => {
             <Support onPressItem={handlePressAboutItem} />
             <About onPressItem={handlePressAboutItem} />
           </View>
+          <TouchableOpacity
+            sx={{
+              alignItems: 'center',
+              backgroundColor: colors.$surfaceSecondary,
+              borderRadius: 12,
+              padding: 14
+            }}
+            onPress={handleLockWallet}>
+            <Text
+              variant="body1"
+              sx={{ color: colors.$textPrimary, lineHeight: 20 }}>
+              Lock wallet
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity
             sx={{
               alignItems: 'center',

@@ -259,12 +259,13 @@ describe('handleAfterLoginFlows - promptEnableNotificationsIfNeeded', () => {
   })
 
   describe('"Turn on" button', () => {
-    it('should open system settings and resolve when status is DENIED (previously denied)', async () => {
+    it('should call getAllPermissions, capture rejection, and open settings when status is DENIED', async () => {
       mockGetNotificationSettings.mockResolvedValue(AuthorizationStatus.DENIED)
       ;(selectHasBeenViewedOnce as jest.Mock).mockReturnValue(() => false)
       ;(selectIsEnableNotificationPromptBlocked as jest.Mock).mockReturnValue(
         false
       )
+      mockGetAllPermissions.mockResolvedValue({ permission: 'denied' })
 
       mockShowAlert.mockImplementation(({ buttons }) => {
         const turnOn = (buttons as AlertButton[]).find(
@@ -276,12 +277,13 @@ describe('handleAfterLoginFlows - promptEnableNotificationsIfNeeded', () => {
       const listenerApi = createListenerApi()
       await handleAfterLoginFlows(action, listenerApi)
 
+      expect(mockGetAllPermissions).toHaveBeenCalledWith(false)
+      expect(mockCapture).toHaveBeenCalledWith('PushNotificationRejected')
       expect(mockOpenSystemSettings).toHaveBeenCalled()
-      expect(mockGetAllPermissions).not.toHaveBeenCalled()
       expect(listenerApi.dispatch).not.toHaveBeenCalledWith(TURN_ON_ALL_ACTION)
     })
 
-    it('should capture PushNotificationRejected when OS prompt is rejected (NOT_DETERMINED -> user declines)', async () => {
+    it('should capture PushNotificationRejected and open settings when OS prompt is rejected (NOT_DETERMINED -> user declines)', async () => {
       mockGetNotificationSettings.mockResolvedValue(
         AuthorizationStatus.NOT_DETERMINED
       )
@@ -299,7 +301,7 @@ describe('handleAfterLoginFlows - promptEnableNotificationsIfNeeded', () => {
 
       expect(mockGetAllPermissions).toHaveBeenCalledWith(false)
       expect(mockCapture).toHaveBeenCalledWith('PushNotificationRejected')
-      expect(mockOpenSystemSettings).not.toHaveBeenCalled()
+      expect(mockOpenSystemSettings).toHaveBeenCalled()
       expect(listenerApi.dispatch).not.toHaveBeenCalledWith(TURN_ON_ALL_ACTION)
     })
 

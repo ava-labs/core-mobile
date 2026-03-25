@@ -141,8 +141,11 @@ export const useSeedlessRegister = (): ReturnType => {
         throw new Error(SeedlessUserRegistrationResult.ERROR)
       }
     } catch (error) {
-      AnalyticsService.capture('SeedlessLoginFailed')
-      Logger.error('useSeedlessRegister error', error)
+      const reason = error instanceof Error ? error.message : String(error)
+      if (reason !== 'USER_CANCELED') {
+        AnalyticsService.capture('SeedlessLoginFailed', { reason })
+        Logger.error('useSeedlessRegister error', error)
+      }
       throw new Error(SeedlessUserRegistrationResult.ERROR)
     } finally {
       setIsRegistering(false)

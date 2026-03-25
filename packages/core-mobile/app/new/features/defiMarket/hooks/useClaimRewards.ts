@@ -10,6 +10,7 @@ import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import Logger from 'utils/Logger'
+import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { MERKL_DISTRIBUTOR_ABI } from '../abis/merklDistributor'
 import { BENQI_COMPTROLLER_ABI } from '../abis/benqiComptroller'
 import {
@@ -154,7 +155,9 @@ export const useClaimRewards = (): {
       AnalyticsService.capture('EarnClaimSuccess')
     } catch (error) {
       Logger.error('[DefiMarket] claimRewards Error:', error)
-      AnalyticsService.capture('EarnClaimFailure')
+      if (!isUserRejectedError(error)) {
+        AnalyticsService.capture('EarnClaimFailure')
+      }
     } finally {
       setClaimStatus('idle')
     }
