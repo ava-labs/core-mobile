@@ -640,34 +640,24 @@ export const SwapScreen = (): JSX.Element => {
   useEffect(applyQuote, [applyQuote])
   useEffect(syncDebouncedAmount, [syncDebouncedAmount])
 
-  // Reset from amount when the token pair changes (from or to), so we don't
-  // show a stale Max value or a spurious error while the new max is loading.
+  // Reset from amount only when the pay token changes, so we don't show a stale
+  // Max value or a spurious error while the new max is loading.
+  // Changing the receive token keeps the entered amount — the receive amount
+  // resets automatically when a new quote is fetched.
   const prevFromTokenKeyRef = useRef(
     fromToken ? getTokenKey(fromToken) : undefined
   )
-  const prevToTokenKeyRef = useRef(toToken ? getTokenKey(toToken) : undefined)
   useEffect(() => {
     const fromKey = fromToken ? getTokenKey(fromToken) : undefined
-    const toKey = toToken ? getTokenKey(toToken) : undefined
     const prevFromKey = prevFromTokenKeyRef.current
-    const prevToKey = prevToTokenKeyRef.current
     prevFromTokenKeyRef.current = fromKey
-    prevToTokenKeyRef.current = toKey
 
-    const fromChanged = prevFromKey !== undefined && prevFromKey !== fromKey
-    const toChanged = prevToKey !== undefined && prevToKey !== toKey
-    if (!fromChanged && !toChanged) return
+    if (prevFromKey === undefined || prevFromKey === fromKey) return
 
     setFromTokenValue(undefined)
     resetDebouncedFromTokenValue(undefined)
     setAmount(undefined)
-  }, [
-    fromToken,
-    toToken,
-    setFromTokenValue,
-    setAmount,
-    resetDebouncedFromTokenValue
-  ])
+  }, [fromToken, setFromTokenValue, setAmount, resetDebouncedFromTokenValue])
 
   const prevFromRef = useRef(fromToken)
   const prevToRef = useRef(toToken)
