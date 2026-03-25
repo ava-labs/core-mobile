@@ -443,6 +443,14 @@ export function useEvmInjectedProvider(
 
       if (nativeOrigin) {
         pendingOrigins.current.set(id, nativeOrigin)
+      } else if (method in SIGNING_METHODS) {
+        // Signing methods require a verified page origin — reject without one.
+        sendResponse(
+          id,
+          rpcErrors.internal('Origin unavailable — cannot sign'),
+          undefined
+        )
+        return
       }
 
       if (method === 'wallet_switchEthereumChain') {
@@ -452,14 +460,6 @@ export function useEvmInjectedProvider(
       } else if (method === 'wallet_revokePermissions') {
         handleRevokePermissions(id)
       } else if (method in SIGNING_METHODS) {
-        if (!nativeOrigin) {
-          sendResponse(
-            id,
-            rpcErrors.internal('Origin unavailable — cannot sign'),
-            undefined
-          )
-          return
-        }
         dispatchSigningRequest(id, method, params ?? [])
       } else if (READ_ONLY_METHODS.has(method)) {
         proxyToRpc(id, method, params ?? [])
