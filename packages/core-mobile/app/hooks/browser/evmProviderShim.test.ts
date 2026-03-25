@@ -71,8 +71,8 @@ describe('buildEvmProviderShim', () => {
       shim = buildEvmProviderShim(defaultParams)
     })
 
-    it('sets isMetaMask flag to false (Core wallet is not MetaMask)', () => {
-      expect(shim).toContain('isMetaMask: false')
+    it('sets isMetaMask flag to true for broad dApp compatibility', () => {
+      expect(shim).toContain('isMetaMask: true')
     })
 
     it('sets isCore flag', () => {

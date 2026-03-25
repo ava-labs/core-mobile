@@ -112,7 +112,7 @@ export function buildEvmProviderShim({
   // 4. EIP-1193 provider
   // ──────────────────────────────────────────────
   var provider = {
-    isMetaMask: false,
+    isMetaMask: true,
     isCore: true,
     isAvalanche: true,
     _isConnected: _connected,
