@@ -15,9 +15,25 @@ export const buildLocalToken = ({
   caip2Id: string
   chainId: number
 }): LocalTokenWithBalance => {
-  const balanceData = accountTokens.find(
-    t => t.internalId === tokenInfo.internalId && t.networkChainId === chainId
-  )
+  // Match by internalId first; fall back to type+address matching
+  // since internalId formatting can differ between API and accountTokens.
+  const balanceData =
+    accountTokens.find(
+      t => t.internalId === tokenInfo.internalId && t.networkChainId === chainId
+    ) ??
+    (tokenInfo.isNative
+      ? accountTokens.find(
+          t => t.type === TokenType.NATIVE && t.networkChainId === chainId
+        )
+      : accountTokens.find(t => {
+          const address = tokenInfo.platforms?.[caip2Id]
+          return (
+            address !== undefined &&
+            'address' in t &&
+            t.address.toLowerCase() === address.toLowerCase() &&
+            t.networkChainId === chainId
+          )
+        }))
   const isNative = balanceData?.type === TokenType.NATIVE || tokenInfo.isNative
 
   const nativeDecimals =
