@@ -93,13 +93,7 @@ export function MarketCard({ market, onPress }: MarketCardProps): JSX.Element {
                 backgroundColor: '#ffffff'
               }}
             />
-            <Text
-              sx={{
-                color: '#ffffff',
-                fontSize: 11,
-                fontFamily: 'Inter-Medium',
-                lineHeight: 12
-              }}>
+            <Text variant="caption" sx={{ color: '#ffffff' }}>
               Live
             </Text>
           </View>
@@ -107,14 +101,7 @@ export function MarketCard({ market, onPress }: MarketCardProps): JSX.Element {
       </View>
 
       {/* Title */}
-      <Text
-        sx={{
-          fontFamily: 'Aeonik-Bold',
-          fontSize: 24,
-          lineHeight: 26,
-          marginBottom: 12
-        }}
-        numberOfLines={4}>
+      <Text variant="heading4" sx={{ marginBottom: 12 }} numberOfLines={4}>
         {market.title ?? ''}
       </Text>
 
@@ -128,7 +115,7 @@ export function MarketCard({ market, onPress }: MarketCardProps): JSX.Element {
             height: 24,
             gap: 6
           }}>
-          <Text sx={{ fontSize: 11, fontFamily: 'Inter-Medium', width: 22 }}>
+          <Text variant="caption" sx={{ width: 22 }}>
             Yes
           </Text>
           <View
@@ -148,13 +135,7 @@ export function MarketCard({ market, onPress }: MarketCardProps): JSX.Element {
               }}
             />
           </View>
-          <Text
-            sx={{
-              fontSize: 12,
-              fontFamily: 'Inter-SemiBold',
-              width: 32,
-              textAlign: 'right'
-            }}>
+          <Text variant="buttonSmall" sx={{ width: 32, textAlign: 'right' }}>
             {Math.round(yesProb * 100)}%
           </Text>
         </View>
@@ -167,7 +148,7 @@ export function MarketCard({ market, onPress }: MarketCardProps): JSX.Element {
             height: 24,
             gap: 6
           }}>
-          <Text sx={{ fontSize: 11, fontFamily: 'Inter-Medium', width: 22 }}>
+          <Text variant="caption" sx={{ width: 22 }}>
             No
           </Text>
           <View
@@ -187,20 +168,14 @@ export function MarketCard({ market, onPress }: MarketCardProps): JSX.Element {
               }}
             />
           </View>
-          <Text
-            sx={{
-              fontSize: 12,
-              fontFamily: 'Inter-SemiBold',
-              width: 32,
-              textAlign: 'right'
-            }}>
+          <Text variant="buttonSmall" sx={{ width: 32, textAlign: 'right' }}>
             {Math.round(noProb * 100)}%
           </Text>
         </View>
       </View>
 
       {/* Expiry */}
-      <Text sx={{ fontSize: 11, fontFamily: 'Inter-Regular', opacity: 0.5 }}>
+      <Text variant="caption" sx={{ opacity: 0.5 }}>
         {expiryLabel}
       </Text>
     </Pressable>

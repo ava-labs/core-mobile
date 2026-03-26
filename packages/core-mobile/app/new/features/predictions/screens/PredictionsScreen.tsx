@@ -1,12 +1,14 @@
 import {
   Chip,
   NavigationTitleHeader,
+  SegmentedControl,
   Text,
   View,
   useTheme
 } from '@avalabs/k2-alpine'
 import type { TradableMarket } from '@avalabs/prediction-market-sdk'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import { CollapsibleTabList } from 'common/components/CollapsibleTabList'
 import {
   CollapsibleTabs,
@@ -31,69 +33,87 @@ import {
 import type { TabBarProps } from 'react-native-collapsible-tab-view'
 import { ScrollView } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
+import { useSharedValue } from 'react-native-reanimated'
 
 const MARKETS_MOCK = [
   {
-    category: 'Finance',
-    seriesTicker: 'INXD-24-B4900',
-    featuredImageUrl: 'https://via.placeholder.com/150',
-    subTitle: 'Subtitle 1',
-    tickerId: '1',
-    yesMarketId: '1',
-    noMarketId: '2',
-    title: 'Market 1',
-    imageUrl: 'https://via.placeholder.com/150',
-    volume: '100',
-    volume24h: '100',
-    expectedExpirationTime: '2026-01-01',
-    openTime: '2026-01-01',
-    closeTime: '2026-01-01',
-    result: null,
-    yesQuote: {
-      maxBidPrice: '100',
-      minAskPrice: '100'
-    },
-    competition: 'Competition 1',
-    competitionScope: 'Competition Scope 1',
-    openInterest: '100',
-    rulesPrimary: 'Rules Primary 1',
+    tickerId: 'SPORTS-LIVE-TILE',
+    title: 'Tile layout for live events',
+    category: 'Sports',
+    imageUrl: null,
+    openTime: '2026-01-01T00:00:00Z',
+    closeTime: '2027-06-01T00:00:00Z',
+    expectedExpirationTime: '2027-06-01T00:00:00Z',
+    volume: '8200',
+    volume24h: '1400',
     kycRequired: false,
-    noQuote: {
-      maxBidPrice: '100',
-      minAskPrice: '100'
-    }
+    result: null,
+    yesQuote: { maxBidPrice: '0.73', minAskPrice: '0.75' },
+    noQuote: { maxBidPrice: '0.23', minAskPrice: '0.25' }
   },
   {
-    category: 'Finance',
-    seriesTicker: 'INXD-24-B4900',
-    featuredImageUrl: 'https://via.placeholder.com/150',
-    subTitle: 'Subtitle 2',
-    tickerId: '2',
-    yesMarketId: '2',
-    noMarketId: '3',
-    title: 'Market 2',
-    competition: 'Competition 2',
-    competitionScope: 'Competition Scope 2',
-    openInterest: '100',
-    rulesPrimary: 'Rules Primary 2',
+    tickerId: 'EPL-WINNER-2026',
+    title: 'English Premier League Winner',
+    category: 'Sports',
+    imageUrl: 'https://via.placeholder.com/30',
+    openTime: '2026-01-01T00:00:00Z',
+    closeTime: '2027-05-20T00:00:00Z',
+    expectedExpirationTime: '2027-05-20T00:00:00Z',
+    volume: '24500',
+    volume24h: '3800',
     kycRequired: false,
-    imageUrl: 'https://via.placeholder.com/150',
-    volume: '100',
-    volume24h: '100',
-    expectedExpirationTime: '2026-01-01',
-    openTime: '2026-01-01',
-    closeTime: '2026-01-01',
     result: null,
-    yesQuote: {
-      maxBidPrice: '60',
-      minAskPrice: '100'
-    },
-    noQuote: {
-      maxBidPrice: '60',
-      minAskPrice: '100'
-    }
+    yesQuote: { maxBidPrice: '0.77', minAskPrice: '0.79' },
+    noQuote: { maxBidPrice: '0.16', minAskPrice: '0.18' }
+  },
+  {
+    tickerId: 'OSCARS-2026-BEST-PICTURE',
+    title: 'Oscars 2026: Best Picture Winner',
+    category: 'Entertainment',
+    imageUrl: 'https://via.placeholder.com/30',
+    openTime: '2026-01-01T00:00:00Z',
+    closeTime: '2027-03-28T00:00:00Z',
+    expectedExpirationTime: '2027-03-28T00:00:00Z',
+    volume: '11000',
+    volume24h: '2100',
+    kycRequired: false,
+    result: null,
+    yesQuote: { maxBidPrice: '0.69', minAskPrice: '0.71' },
+    noQuote: { maxBidPrice: '0.16', minAskPrice: '0.18' }
+  },
+  {
+    tickerId: 'BTC-150K-JUNE-2026',
+    title: 'Will Bitcoin reach $150k by the end of June?',
+    category: 'Crypto',
+    imageUrl: 'https://via.placeholder.com/30',
+    openTime: '2026-01-01T00:00:00Z',
+    closeTime: '2026-06-30T00:00:00Z',
+    expectedExpirationTime: '2026-06-30T00:00:00Z',
+    volume: '43000',
+    volume24h: '7200',
+    kycRequired: false,
+    result: null,
+    yesQuote: { maxBidPrice: '0.02', minAskPrice: '0.04' },
+    noQuote: { maxBidPrice: '0.94', minAskPrice: '0.96' }
+  },
+  {
+    tickerId: 'LOREM-IPSUM-POLITICS',
+    title: 'Lorem ipsum dolor sit amet?',
+    category: 'Politics',
+    imageUrl: null,
+    openTime: '2026-01-01T00:00:00Z',
+    closeTime: '2026-12-31T00:00:00Z',
+    expectedExpirationTime: '2026-12-31T00:00:00Z',
+    volume: '5600',
+    volume24h: '900',
+    kycRequired: false,
+    result: null,
+    yesQuote: { maxBidPrice: '0.73', minAskPrice: '0.75' },
+    noQuote: { maxBidPrice: '0.23', minAskPrice: '0.25' }
   }
 ] as unknown as TradableMarket[]
+
+const SEGMENT_ITEMS = [{ title: 'Predictions' }, { title: 'Perps' }]
 
 function renderEmptyTabBar(_props: TabBarProps): JSX.Element {
   return <></>
@@ -117,6 +137,12 @@ export function PredictionsScreen(): JSX.Element {
     LayoutRectangle | undefined
   >()
 
+  const [segmentedControlLayout, setSegmentedControlLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+
+  const selectedSegmentIndex = useSharedValue(0)
+
   const { markets, isLoading: marketsLoading, refetch } = useTradableMarkets()
   const { series } = useMarketSeries()
   const { selectedChip, filteredMarkets, selectChip } =
@@ -125,6 +151,20 @@ export function PredictionsScreen(): JSX.Element {
   const handleHeaderLayout = useCallback((event: LayoutChangeEvent) => {
     setHeaderLayout(event.nativeEvent.layout)
   }, [])
+
+  const handleSegmentedControlLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      setSegmentedControlLayout(event.nativeEvent.layout)
+    },
+    []
+  )
+
+  const handleSelectSegment = useCallback(
+    (index: number): void => {
+      selectedSegmentIndex.value = index
+    },
+    [selectedSegmentIndex]
+  )
 
   const header = useMemo(
     () => <NavigationTitleHeader title={'Predictions'} />,
@@ -157,34 +197,25 @@ export function PredictionsScreen(): JSX.Element {
     () => (
       <View
         onLayout={handleHeaderLayout}
-        sx={{ paddingHorizontal: 16, paddingBottom: 14 }}>
-        <Text
+        sx={{ paddingHorizontal: 16, paddingVertical: 14 }}>
+        <View
           sx={{
-            fontFamily: 'Aeonik-Bold',
-            fontSize: 36,
-            lineHeight: 36,
-            marginBottom: 4
+            backgroundColor: theme.colors.$surfacePrimary,
+            gap: 8
           }}>
-          Predictions
-        </Text>
-        <Text
-          sx={{
-            fontFamily: 'Inter-Regular',
-            fontSize: 15,
-            lineHeight: 20,
-            opacity: 0.6,
-            marginBottom: 16,
-            width: 300
-          }}>
-          Bet on anything, choose your outcome with your crypto
-        </Text>
+          <Text variant="heading2">Predictions</Text>
+          <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
+            Bet on anything, choose your outcome with your crypto
+          </Text>
+        </View>
+
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
             flexDirection: 'row',
             gap: 8,
-            paddingRight: 8
+            marginTop: 18
           }}>
           {chips.map(chip => (
             <Chip
@@ -198,7 +229,13 @@ export function PredictionsScreen(): JSX.Element {
         </ScrollView>
       </View>
     ),
-    [handleHeaderLayout, chips, selectedChip, selectChip]
+    [
+      handleHeaderLayout,
+      theme.colors.$surfacePrimary,
+      chips,
+      selectedChip,
+      selectChip
+    ]
   )
 
   const renderItem = useCallback(
@@ -257,8 +294,8 @@ export function PredictionsScreen(): JSX.Element {
               extraData={{ selectedChip }}
               listKey="predictions-browse"
               contentContainerStyle={{
-                paddingHorizontal: 12,
-                paddingBottom: 40
+                paddingHorizontal: 8,
+                paddingBottom: (segmentedControlLayout?.height ?? 0) + 32
               }}
             />
           </Animated.View>
@@ -271,8 +308,25 @@ export function PredictionsScreen(): JSX.Element {
       keyExtractor,
       renderEmptyComponent,
       marketsLoading,
-      selectedChip
+      selectedChip,
+      segmentedControlLayout?.height
     ]
+  )
+
+  const renderSegmentedControl = useCallback(
+    (): JSX.Element => (
+      <SegmentedControl
+        dynamicItemWidth={false}
+        items={SEGMENT_ITEMS}
+        selectedSegmentIndex={selectedSegmentIndex}
+        onSelectSegment={handleSelectSegment}
+        style={{
+          marginHorizontal: 16,
+          marginBottom: 16
+        }}
+      />
+    ),
+    [handleSelectSegment, selectedSegmentIndex]
   )
 
   return (
@@ -284,6 +338,17 @@ export function PredictionsScreen(): JSX.Element {
         tabs={tabs}
         onScrollY={onScroll}
       />
+
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0
+        }}
+        onLayout={handleSegmentedControlLayout}>
+        <BottomTabWrapper>{renderSegmentedControl()}</BottomTabWrapper>
+      </View>
     </BlurredBarsContentLayout>
   )
 }
