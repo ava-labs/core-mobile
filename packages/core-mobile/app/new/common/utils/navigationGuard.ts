@@ -33,7 +33,11 @@ const pendingCallbacks: Array<() => void> = []
 function flush(): void {
   const pending = pendingCallbacks.splice(0)
   for (const cb of pending) {
-    cb()
+    try {
+      guardNavigation(cb)
+    } catch {
+      // Swallow errors from individual callbacks so remaining navigations still flush.
+    }
   }
 }
 
