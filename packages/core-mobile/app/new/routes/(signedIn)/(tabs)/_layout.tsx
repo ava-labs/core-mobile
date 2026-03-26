@@ -76,7 +76,10 @@ export default function TabLayout(): JSX.Element {
     <BottomTabs
       labeled
       translucent
-      disablePageAnimations={true}
+      // on Android, page animations are disabled to improve performance.
+      // on iOS, animations remain enabled as they are needed to fix the
+      // BlurView rendering issue in the navigation header.
+      disablePageAnimations={isIOS ? false : true}
       tabBarActiveTintColor={theme.colors.$textPrimary}
       scrollEdgeAppearance={'default'}
       tabBarInactiveTintColor={tabBarInactiveTintColor}
@@ -99,6 +102,16 @@ export default function TabLayout(): JSX.Element {
           title: 'Track',
           tabBarIcon: () => trackIcon,
           freezeOnBlur
+        }}
+      />
+      <BottomTabs.Screen
+        name="predictions"
+        options={{
+          tabBarButtonTestID: 'predictions_tab',
+          title: 'Predict',
+          tabBarIcon: () => predictionsIcon,
+          freezeOnBlur,
+          tabBarItemHidden: isPredictionsBlocked
         }}
       />
       {hasXpAddresses && (
@@ -141,16 +154,6 @@ export default function TabLayout(): JSX.Element {
           freezeOnBlur,
           // Hide when borrow feature is enabled (Activity moves to Portfolio sub-tab)
           tabBarItemHidden: !isInAppDefiBorrowBlocked
-        }}
-      />
-      <BottomTabs.Screen
-        name="predictions"
-        options={{
-          tabBarButtonTestID: 'predictions_tab',
-          title: 'Predict',
-          tabBarIcon: () => predictionsIcon,
-          freezeOnBlur,
-          tabBarItemHidden: isPredictionsBlocked
         }}
       />
     </BottomTabs>

@@ -1,6 +1,14 @@
-import { Stack } from 'expo-router'
+import { Stack } from 'common/components/Stack'
+import {
+  homeScreenOptions,
+  stackNavigatorScreenOptions
+} from 'common/consts/screenOptions'
 import React from 'react'
 
 export default function PredictionsLayout(): JSX.Element {
-  return <Stack screenOptions={{ headerShown: false }} />
+  return (
+    <Stack screenOptions={stackNavigatorScreenOptions}>
+      <Stack.Screen name="index" options={homeScreenOptions} />
+    </Stack>
+  )
 }
