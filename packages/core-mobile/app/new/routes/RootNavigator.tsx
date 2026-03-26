@@ -9,6 +9,10 @@ import { WalletState } from 'store/app/types'
 import { useSelector } from 'react-redux'
 import { selectIsReady, selectWalletState } from 'store/app/slice'
 import { PinScreenOverlay } from 'common/components/PinScreenOverlay'
+import {
+  onClosingTransitionEnd,
+  onClosingTransitionStart
+} from 'common/utils/navigationGuard'
 import { currentRouteStore } from './store'
 
 export function RootNavigator(): JSX.Element {
@@ -33,10 +37,20 @@ export function RootNavigator(): JSX.Element {
         screenListeners={({ navigation }) => {
           const state =
             navigation.getState().routes[navigation.getState().index]?.state
-          if (!state || state.index === undefined) return
-          const currentRoute = state?.routes[state.index]?.name
-          if (!currentRoute) return
-          currentRouteStore.getState().setCurrentRoute(currentRoute)
+          if (state && state.index !== undefined) {
+            const currentRoute = state?.routes[state.index]?.name
+            if (currentRoute) {
+              currentRouteStore.getState().setCurrentRoute(currentRoute)
+            }
+          }
+          return {
+            transitionStart: (e: { data: { closing: boolean } }) => {
+              if (e.data.closing) onClosingTransitionStart()
+            },
+            transitionEnd: (e: { data: { closing: boolean } }) => {
+              if (e.data.closing) onClosingTransitionEnd()
+            }
+          }
         }}
         screenOptions={{
           ...stackNavigatorScreenOptions,
