@@ -2,6 +2,7 @@ import { TokenType } from '@avalabs/vm-module-types'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { caip2ChainIds } from 'consts/caip2ChainIds'
 import type { LocalTokenWithBalance } from 'store/balance'
 import { isSdkError } from '@avalabs/fusion-sdk'
 import {
@@ -9,7 +10,11 @@ import {
   selectFusionMaxAmountAdditiveBpsEvmToSolana,
   selectFusionMaxAmountAdditiveBpsSolanaToEvm
 } from 'store/posthog'
-import { FusionQuoteError, fusionErrors } from '../../utils/fusionErrors'
+import {
+  FusionQuoteError,
+  fusionErrors,
+  isGasOnlyNetworkFeeError
+} from '../../utils/fusionErrors'
 import type { Quote } from '../../types'
 import {
   getTotalAdditiveSourceFee,
@@ -154,8 +159,21 @@ export const useFeeValidation = ({
     bufferedNativeAdditiveFee
   ])
 
+  // On C-chain, gasless covers gas fees outside the user's balance.
+  // Downgrade pure gas-fee errors to warnings so the swap button stays enabled.
+  const adjustedValidationError = useMemo(() => {
+    if (
+      validationError &&
+      fromNetwork?.caip2ChainId === caip2ChainIds.C_CHAIN &&
+      isGasOnlyNetworkFeeError(validationError)
+    ) {
+      return new FusionQuoteError(validationError.message, { isWarning: true })
+    }
+    return validationError
+  }, [validationError, fromNetwork])
+
   return {
-    error: validationError,
+    error: adjustedValidationError,
     isValidating: isFetching,
     rawAdditiveFee,
     bufferedAdditiveFee,

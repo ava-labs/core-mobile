@@ -1,16 +1,28 @@
 import { isSdkError } from '@avalabs/fusion-sdk'
 import type { QuoterDoneReason } from '@avalabs/fusion-sdk'
 
+export type FusionQuoteErrorKind =
+  | 'network-fee-only' // gas alone exceeds balance; no bridge fee involved
+  | 'other'
+
 export class FusionQuoteError extends Error {
+  public readonly reason?: QuoterDoneReason
+  public readonly isWarning?: boolean
+  public readonly kind: FusionQuoteErrorKind
+
   constructor(
     message: string,
-    public readonly reason?: QuoterDoneReason,
-    public readonly isWarning?: boolean
+    options?: {
+      reason?: QuoterDoneReason
+      isWarning?: boolean
+      kind?: FusionQuoteErrorKind
+    }
   ) {
     super(message)
     this.name = 'FusionQuoteError'
-    this.isWarning = isWarning
-    this.reason = reason
+    this.reason = options?.reason
+    this.isWarning = options?.isWarning
+    this.kind = options?.kind ?? 'other'
   }
 }
 
@@ -19,13 +31,13 @@ export const fusionErrors = {
   noQuotes(): FusionQuoteError {
     return new FusionQuoteError(
       'No quotes available right now. Please try again.',
-      'no-quotes'
+      { reason: 'no-quotes' }
     )
   },
   noEligibleServices(): FusionQuoteError {
     return new FusionQuoteError(
       'Swap not supported for this token pair.\nPlease try a different pair.',
-      'no-eligible-services'
+      { reason: 'no-eligible-services' }
     )
   },
 
@@ -78,7 +90,8 @@ export const fusionErrors = {
   // Native token: gas alone exceeds balance (no bridge fee)
   networkFeeExceedsBalance(formattedFee: string): FusionQuoteError {
     return new FusionQuoteError(
-      `Network fee exceeds your balance.\nNetwork fee: ${formattedFee}`
+      `Network fee exceeds your balance.\nNetwork fee: ${formattedFee}`,
+      { kind: 'network-fee-only' }
     )
   },
   // Native token: gas + bridge fees exceed balance
@@ -90,7 +103,8 @@ export const fusionErrors = {
   // Native token: balance covers gas but not gas + swap amount (no bridge fee)
   amountExceedsBalanceAfterNetworkFee(formattedFee: string): FusionQuoteError {
     return new FusionQuoteError(
-      `Insufficient balance to cover the swap amount and network fee.\nNetwork fee: ${formattedFee}`
+      `Insufficient balance to cover the swap amount and network fee.\nNetwork fee: ${formattedFee}`,
+      { kind: 'network-fee-only' }
     )
   },
   // Native token: balance covers fees but not fees + swap amount
@@ -105,7 +119,8 @@ export const fusionErrors = {
     formattedAmount: string
   ): FusionQuoteError {
     return new FusionQuoteError(
-      `Network fee exceeds your ${symbol} balance.\nNetwork fee: ${formattedAmount}.`
+      `Network fee exceeds your ${symbol} balance.\nNetwork fee: ${formattedAmount}.`,
+      { kind: 'network-fee-only' }
     )
   },
   // Non-native token: not enough native balance to pay gas + bridge fee
@@ -130,13 +145,22 @@ export const fusionErrors = {
     )
   },
   gasEstimationFailed(): FusionQuoteError {
-    return new FusionQuoteError('Unable to estimate gas', undefined, true)
+    return new FusionQuoteError('Unable to estimate gas', { isWarning: true })
   },
   swapAmountTooSmall(): FusionQuoteError {
     return new FusionQuoteError(
       'Swap amount is too small for this token pair.\nTry a larger amount.'
     )
   }
+}
+
+/**
+ * Returns true for errors caused solely by insufficient gas balance (no bridge
+ * fee component). These can be downgraded to warnings on networks with gasless
+ * support, since the gas fee will be covered outside the user's balance.
+ */
+export function isGasOnlyNetworkFeeError(error: FusionQuoteError): boolean {
+  return error.kind === 'network-fee-only'
 }
 
 /**

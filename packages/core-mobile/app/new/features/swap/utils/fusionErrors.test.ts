@@ -1,5 +1,6 @@
 import {
   fusionErrors,
+  isGasOnlyNetworkFeeError,
   isUserRejectionError,
   isGasEstimationError,
   isInvalidResponseError,
@@ -278,5 +279,58 @@ describe('getSwapErrorMessage', () => {
     expect(getSwapErrorMessage({ message: 'object error' })).toBe(
       'Unknown error occurred'
     )
+  })
+})
+
+describe('isGasOnlyNetworkFeeError', () => {
+  it('returns true for networkFeeExceedsBalance', () => {
+    expect(
+      isGasOnlyNetworkFeeError(
+        fusionErrors.networkFeeExceedsBalance('0.001 AVAX')
+      )
+    ).toBe(true)
+  })
+
+  it('returns true for amountExceedsBalanceAfterNetworkFee', () => {
+    expect(
+      isGasOnlyNetworkFeeError(
+        fusionErrors.amountExceedsBalanceAfterNetworkFee('0.001 AVAX')
+      )
+    ).toBe(true)
+  })
+
+  it('returns true for networkFeeExceedsNativeBalance', () => {
+    expect(
+      isGasOnlyNetworkFeeError(
+        fusionErrors.networkFeeExceedsNativeBalance('AVAX', '0.001 AVAX')
+      )
+    ).toBe(true)
+  })
+
+  it('returns false for feesExceedBalance (includes bridge fee)', () => {
+    expect(
+      isGasOnlyNetworkFeeError(fusionErrors.feesExceedBalance('0.002 AVAX'))
+    ).toBe(false)
+  })
+
+  it('returns false for feesExceedNativeBalance (includes bridge fee)', () => {
+    expect(
+      isGasOnlyNetworkFeeError(
+        fusionErrors.feesExceedNativeBalance('AVAX', '0.002 AVAX')
+      )
+    ).toBe(false)
+  })
+
+  it('returns false for amountExceedsBalanceAfterFees (includes bridge fee)', () => {
+    expect(
+      isGasOnlyNetworkFeeError(
+        fusionErrors.amountExceedsBalanceAfterFees('0.002 AVAX')
+      )
+    ).toBe(false)
+  })
+
+  it('returns false for unrelated errors', () => {
+    expect(isGasOnlyNetworkFeeError(fusionErrors.exceedsBalance())).toBe(false)
+    expect(isGasOnlyNetworkFeeError(fusionErrors.enterAmount())).toBe(false)
   })
 })
