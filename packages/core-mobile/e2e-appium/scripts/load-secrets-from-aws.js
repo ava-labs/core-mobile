@@ -12,6 +12,25 @@ const {
 } = require("@aws-sdk/client-secrets-manager");
 const fs = require('fs');
 
+/**
+ * Only allow standard shell variable names so the generated `export` line cannot
+ * inject additional commands.
+ */
+function isValidShellVarName(name) {
+  return typeof name === 'string' && /^[A-Za-z_][A-Za-z0-9_]*$/.test(name);
+}
+
+/**
+ * Produce a bash-safe single-quoted literal for `export NAME=...`.
+ * Unlike double-quoted strings, single-quoted strings do not expand `$`, `` ` ``,
+ * or `$(...)`. Embedded single quotes use the `'\''` idiom.
+ */
+function bashSingleQuotedLiteral(value) {
+  const s = String(value);
+  const escaped = s.replace(/'/g, "'\\''");
+  return `'${escaped}'`;
+}
+
 const secret_name = "core/dev/mobile/.env.internal.e2e";
 // Align default with Device Farm tooling (trigger-devicefarm-api.js uses us-west-2).
 const region =
@@ -67,19 +86,23 @@ async function loadSecrets() {
       }
     }
     
-    // Write to a file that can be sourced in bash
+    // Write to a file that can be sourced in bash (single-quoted values; no eval-style expansion)
     const envFile = '/tmp/devicefarm-env-vars.sh';
-    const envContent = envVars.map(({ key, value }) => {
-      // Escape special characters for bash: escape $, ", \, and newlines
-      const escapedValue = value
-        .replace(/\\/g, '\\\\')  // Escape backslashes first
-        .replace(/\$/g, '\\$')   // Escape dollar signs
-        .replace(/"/g, '\\"')    // Escape double quotes
-        .replace(/'/g, "\\'")    // Escape single quotes
-        .replace(/\n/g, '\\n')   // Escape newlines
-        .replace(/\r/g, '\\r');  // Escape carriage returns
-      return `export ${key}="${escapedValue}"`;
-    }).join('\n');
+    const envContent = envVars
+      .filter(({ key }) => {
+        if (!isValidShellVarName(key)) {
+          console.error(
+            `⚠️ Skipping env key (not a safe shell identifier): ${key}`
+          );
+          return false;
+        }
+        return true;
+      })
+      .map(
+        ({ key, value }) =>
+          `export ${key}=${bashSingleQuotedLiteral(value)}`
+      )
+      .join('\n');
     
     fs.writeFileSync(envFile, envContent);
     

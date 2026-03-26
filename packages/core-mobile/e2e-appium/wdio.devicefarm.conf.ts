@@ -92,10 +92,21 @@ const caps = platformToRun
     )
   : allCaps
 
+/** When `IS_PERFORMANCE` / `TEST_TYPE=performance`, only run specs under `specs/performance/`. */
+function getSpecs(): string[] {
+  if (
+    process.env.TEST_TYPE === 'performance' ||
+    process.env.IS_PERFORMANCE === 'true'
+  ) {
+    return ['./specs/performance/**/*.ts']
+  }
+  return ['./specs/**/*.ts']
+}
+
 export const config: WebdriverIO.Config = {
   runner: 'local',
   tsConfigPath: './tsconfig.json',
-  specs: ['./specs/**/*.ts'],
+  specs: getSpecs(),
   exclude: [
     // 'path/to/excluded/files'
     './specs/login.e2e.ts'

@@ -6,6 +6,12 @@ import browserPage from './browser.page'
 import commonElsPage from './commonEls.page'
 import portfolioPage from './portfolio.page'
 
+/**
+ * Avoid re-running onboarding dismissal in the same Node process.
+ * WDIO parallel workers are separate processes and do not share this flag.
+ */
+let transactionOnboardingDismissedThisProcess = false
+
 class TransactionsPage {
   get sendButton() {
     return selectors.getById(txLoc.sendButton)
@@ -164,11 +170,9 @@ class TransactionsPage {
   }
 
   async dismissTransactionOnboarding() {
-    // Check if onboarding was already dismissed in a previous test
-    // This allows concurrent tests to skip the check if onboarding was already dismissed
-    if (process.env.NEXT_BTN_DISMISSED === 'true') {
+    if (transactionOnboardingDismissedThisProcess) {
       console.log(
-        'Transaction onboarding already dismissed in previous test - skipping check'
+        'Transaction onboarding already dismissed earlier in this run — skipping check'
       )
       return
     }
@@ -181,7 +185,7 @@ class TransactionsPage {
         'Transaction onboarding next button visible - dismissing onboarding'
       )
       await actions.tap(this.transactionOnboardingNext)
-      process.env.NEXT_BTN_DISMISSED = 'true'
+      transactionOnboardingDismissedThisProcess = true
     } else {
       console.log(
         'Transaction onboarding not found - may have been dismissed already'
