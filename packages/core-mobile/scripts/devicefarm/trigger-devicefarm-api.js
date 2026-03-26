@@ -105,11 +105,23 @@ async function verifyProjectAccess(projectArn) {
     console.log(`   Project: ${response.project?.name || projectArn}`)
     console.log('✅ Credentials and project access OK\n')
   } catch (err) {
-    if (err.name === 'InvalidSignatureException' || err.message?.includes('security token')) {
-      console.error('❌ Invalid AWS credentials. Check AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY (or AWS_PROFILE).')
-    } else if (err.name === 'AccessDeniedException' || err.name === 'NotFoundException') {
-      console.error(`❌ No access to project or project not found: ${err.message}`)
-      console.error('   Ensure the IAM user has devicefarm:GetProject on this project.')
+    if (
+      err.name === 'InvalidSignatureException' ||
+      err.message?.includes('security token')
+    ) {
+      console.error(
+        '❌ Invalid AWS credentials. Check AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY (or AWS_PROFILE).'
+      )
+    } else if (
+      err.name === 'AccessDeniedException' ||
+      err.name === 'NotFoundException'
+    ) {
+      console.error(
+        `❌ No access to project or project not found: ${err.message}`
+      )
+      console.error(
+        '   Ensure the IAM user has devicefarm:GetProject on this project.'
+      )
     } else {
       console.error(`❌ Pre-flight failed: ${err.message}`)
     }
