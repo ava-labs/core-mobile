@@ -37,10 +37,12 @@ import {
   LedgerDevice,
   AvalancheKey,
   LEDGER_ERROR_CODES,
-  LedgerDerivationPathType,
+  LedgerDerivationPathType
+} from './types'
+import {
   LedgerBluetoothPermissionError,
   isLedgerBluetoothPermissionError
-} from './types'
+} from './LedgerBluetoothPermissionError'
 
 class LedgerService {
   #transport: TransportBLE | null = null

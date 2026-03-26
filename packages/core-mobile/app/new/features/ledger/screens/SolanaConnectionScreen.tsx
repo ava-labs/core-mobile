@@ -1,6 +1,6 @@
 import React, { useCallback, useState, useEffect, useMemo } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { Alert } from 'react-native'
+import { Alert, Linking } from 'react-native'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import {
   AppConnectionStep,
@@ -13,7 +13,7 @@ import { Button } from '@avalabs/k2-alpine'
 import { PrimaryAccount, selectAccountById } from 'store/account'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useSelector } from 'react-redux'
-import { isLedgerBluetoothPermissionError } from 'services/ledger/types'
+import { isLedgerBluetoothPermissionError } from 'services/ledger/LedgerBluetoothPermissionError'
 import { useLedgerWalletMap } from '../store'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 
@@ -93,7 +93,19 @@ export default function SolanaConnectionScreen(): JSX.Element {
       Logger.error('Failed to connect to Solana app', err)
       setAppConnectionStep(AppConnectionStep.SOLANA_CONNECT)
       if (isLedgerBluetoothPermissionError(err)) {
-        Alert.alert('Permission Required', err.message, [{ text: 'OK' }])
+        Alert.alert(
+          'Bluetooth Permission Required',
+          'Please enable Bluetooth permissions in your device settings to connect to Ledger devices.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Open Settings',
+              onPress: () => {
+                Linking.openSettings()
+              }
+            }
+          ]
+        )
         return
       }
       Alert.alert(

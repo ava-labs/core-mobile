@@ -15,14 +15,14 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { Alert, Platform, View } from 'react-native'
+import { Alert, Linking, Platform, View } from 'react-native'
 import { useSelector } from 'react-redux'
 import LedgerService from 'services/ledger/LedgerService'
 import {
-  isLedgerBluetoothPermissionError,
   LedgerDerivationPathType,
   LedgerKeysByNetwork
 } from 'services/ledger/types'
+import { isLedgerBluetoothPermissionError } from 'services/ledger/LedgerBluetoothPermissionError'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import Logger from 'utils/Logger'
@@ -192,7 +192,19 @@ export default function AppConnectionScreen({
       Logger.error('Failed to connect to Avalanche app', err)
       setAppConnectionStep(AppConnectionStep.AVALANCHE_CONNECT)
       if (isLedgerBluetoothPermissionError(err)) {
-        Alert.alert('Permission Required', err.message, [{ text: 'OK' }])
+        Alert.alert(
+          'Bluetooth Permission Required',
+          'Please enable Bluetooth permissions in your device settings to connect to Ledger devices.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Open Settings',
+              onPress: () => {
+                Linking.openSettings()
+              }
+            }
+          ]
+        )
         return
       }
       Alert.alert(
@@ -242,7 +254,19 @@ export default function AppConnectionScreen({
       Logger.error('Failed to connect to Solana app', err)
       setAppConnectionStep(AppConnectionStep.SOLANA_CONNECT)
       if (isLedgerBluetoothPermissionError(err)) {
-        Alert.alert('Permission Required', err.message, [{ text: 'OK' }])
+        Alert.alert(
+          'Bluetooth Permission Required',
+          'Please enable Bluetooth permissions in your device settings to connect to Ledger devices.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Open Settings',
+              onPress: () => {
+                Linking.openSettings()
+              }
+            }
+          ]
+        )
         return
       }
       Alert.alert(

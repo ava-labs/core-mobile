@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react'
-import { View, Alert, ActivityIndicator } from 'react-native'
+import { View, Alert, ActivityIndicator, Linking } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Button, useTheme, Icons } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -7,10 +7,8 @@ import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupC
 import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIconWithText'
 import { LedgerDeviceList } from 'new/features/ledger/components/LedgerDeviceList'
 import LedgerService from 'services/ledger/LedgerService'
-import {
-  isLedgerBluetoothPermissionError,
-  LedgerDevice
-} from 'services/ledger/types'
+import { LedgerDevice } from 'services/ledger/types'
+import { isLedgerBluetoothPermissionError } from 'services/ledger/LedgerBluetoothPermissionError'
 
 export default function DeviceConnectionScreen(): JSX.Element {
   const { push, back } = useRouter()
@@ -71,7 +69,19 @@ export default function DeviceConnectionScreen(): JSX.Element {
         push('/accountSettings/ledger/appConnection')
       } catch (error) {
         if (isLedgerBluetoothPermissionError(error)) {
-          Alert.alert('Permission Required', error.message)
+          Alert.alert(
+            'Bluetooth Permission Required',
+            'Please enable Bluetooth permissions in your device settings to connect to Ledger devices.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Open Settings',
+                onPress: () => {
+                  Linking.openSettings()
+                }
+              }
+            ]
+          )
           return
         }
 

@@ -3,7 +3,8 @@ import { Alert, PermissionsAndroid, Platform } from 'react-native'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Logger from 'utils/Logger'
 import LedgerService from './LedgerService'
-import { isLedgerBluetoothPermissionError, LedgerAppType } from './types'
+import { LedgerAppType } from './types'
+import { isLedgerBluetoothPermissionError } from './LedgerBluetoothPermissionError'
 
 jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
   __esModule: true,
@@ -324,7 +325,7 @@ describe('LedgerService', () => {
     ].filter(
       (
         permission
-      ): permission is (typeof PermissionsAndroid.PERMISSIONS)[keyof typeof PermissionsAndroid.PERMISSIONS] =>
+      ): permission is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
         Boolean(permission)
     )
 
