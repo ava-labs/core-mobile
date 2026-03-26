@@ -7,7 +7,8 @@ import {
   selectIsFusionMarkrEnabled,
   selectIsFusionAvalancheEvmEnabled,
   selectIsFusionLombardBtcToBtcbEnabled,
-  selectIsFusionLombardBtcbToBtcEnabled
+  selectIsFusionLombardBtcbToBtcEnabled,
+  selectFusionDisableCrossChainSwaps
 } from 'store/posthog/slice'
 import Logger from 'utils/Logger'
 import FusionService from '../services/FusionService'
@@ -43,6 +44,7 @@ jest.mock('store/posthog/slice', () => ({
   selectIsFusionAvalancheEvmEnabled: jest.fn(),
   selectIsFusionLombardBtcToBtcbEnabled: jest.fn(),
   selectIsFusionLombardBtcbToBtcEnabled: jest.fn(),
+  selectFusionDisableCrossChainSwaps: jest.fn(),
   setFeatureFlags: { type: 'posthog/setFeatureFlags' }
 }))
 
@@ -112,6 +114,8 @@ const mockSelectIsFusionLombardBtcToBtcbEnabled =
   selectIsFusionLombardBtcToBtcbEnabled as jest.Mock
 const mockSelectIsFusionLombardBtcbToBtcEnabled =
   selectIsFusionLombardBtcbToBtcEnabled as jest.Mock
+const mockSelectFusionDisableCrossChainSwaps =
+  selectFusionDisableCrossChainSwaps as jest.Mock
 const mockGetPendingFusionTransfers = getPendingFusionTransfers as jest.Mock
 const mockUseIsFusionServiceReady = useIsFusionServiceReady as any
 
@@ -142,6 +146,7 @@ describe('Fusion listeners', () => {
     mockSelectIsFusionAvalancheEvmEnabled.mockReturnValue(false)
     mockSelectIsFusionLombardBtcToBtcbEnabled.mockReturnValue(false)
     mockSelectIsFusionLombardBtcbToBtcEnabled.mockReturnValue(false)
+    mockSelectFusionDisableCrossChainSwaps.mockReturnValue(false)
 
     mockUseIsFusionServiceReady.getState.mockReturnValue(false)
     mockGetPendingFusionTransfers.mockReturnValue([])
@@ -194,8 +199,23 @@ describe('Fusion listeners', () => {
             'fusion-markr': true,
             'fusion-avalanche-evm': true,
             'fusion-lombard-btc-to-btcb': false,
-            'fusion-lombard-btcb-to-btc': false
+            'fusion-lombard-btcb-to-btc': false,
+            'fusion-disable-cross-chain-swaps': false
           }
+        })
+      )
+    })
+
+    it('should pass fusion-disable-cross-chain-swaps=true when flag is enabled', async () => {
+      mockSelectFusionDisableCrossChainSwaps.mockReturnValue(true)
+
+      await initFusionService({}, makeListenerApi())
+
+      expect(FusionService.initWithFeatureFlags).toHaveBeenCalledWith(
+        expect.objectContaining({
+          featureFlags: expect.objectContaining({
+            'fusion-disable-cross-chain-swaps': true
+          })
         })
       )
     })
@@ -233,6 +253,17 @@ describe('Fusion listeners', () => {
       it('should cleanup and reinit when a relevant feature flag changes', async () => {
         // markr: prevState=false (first call), currentState=true (subsequent calls)
         mockSelectIsFusionMarkrEnabled
+          .mockReturnValueOnce(false)
+          .mockReturnValue(true)
+
+        await initFusionService({}, makeListenerApi())
+
+        expect(FusionService.cleanup).toHaveBeenCalled()
+        expect(FusionService.initWithFeatureFlags).toHaveBeenCalled()
+      })
+
+      it('should cleanup and reinit when fusion-disable-cross-chain-swaps changes', async () => {
+        mockSelectFusionDisableCrossChainSwaps
           .mockReturnValueOnce(false)
           .mockReturnValue(true)
 

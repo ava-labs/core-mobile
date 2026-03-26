@@ -15,13 +15,14 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { Alert, Platform, View } from 'react-native'
+import { Alert, Linking, Platform, View } from 'react-native'
 import { useSelector } from 'react-redux'
 import LedgerService from 'services/ledger/LedgerService'
 import {
   LedgerDerivationPathType,
   LedgerKeysByNetwork
 } from 'services/ledger/types'
+import { isLedgerBluetoothPermissionError } from 'services/ledger/LedgerBluetoothPermissionError'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import Logger from 'utils/Logger'
@@ -190,6 +191,22 @@ export default function AppConnectionScreen({
     } catch (err) {
       Logger.error('Failed to connect to Avalanche app', err)
       setAppConnectionStep(AppConnectionStep.AVALANCHE_CONNECT)
+      if (isLedgerBluetoothPermissionError(err)) {
+        Alert.alert(
+          'Bluetooth Permission Required',
+          'Please enable Bluetooth permissions in your device settings to connect to Ledger devices.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Open Settings',
+              onPress: () => {
+                Linking.openSettings()
+              }
+            }
+          ]
+        )
+        return
+      }
       Alert.alert(
         'Connection Failed',
         'Failed to connect to Avalanche app. Please make sure the Avalanche app is open on your Ledger.',
@@ -236,6 +253,22 @@ export default function AppConnectionScreen({
     } catch (err) {
       Logger.error('Failed to connect to Solana app', err)
       setAppConnectionStep(AppConnectionStep.SOLANA_CONNECT)
+      if (isLedgerBluetoothPermissionError(err)) {
+        Alert.alert(
+          'Bluetooth Permission Required',
+          'Please enable Bluetooth permissions in your device settings to connect to Ledger devices.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Open Settings',
+              onPress: () => {
+                Linking.openSettings()
+              }
+            }
+          ]
+        )
+        return
+      }
       Alert.alert(
         'Connection Failed',
         'Failed to connect to Solana app. Please make sure the Solana app is installed and open on your Ledger.',

@@ -1,3 +1,5 @@
+import { FeatureGates } from 'services/posthog/types'
+import type { FeatureFlags } from 'services/posthog/types'
 import type {
   BitcoinFunctions,
   BtcSigner,
@@ -16,12 +18,25 @@ import type {
 } from '@avalabs/fusion-sdk'
 
 /**
+ * The subset of PostHog feature flags consumed by FusionService.
+ */
+export type FusionServiceFlags = Pick<
+  FeatureFlags,
+  | FeatureGates.FUSION_MARKR
+  | FeatureGates.FUSION_AVALANCHE_EVM
+  | FeatureGates.FUSION_LOMBARD_BTC_TO_BTCB
+  | FeatureGates.FUSION_LOMBARD_BTCB_TO_BTC
+  | FeatureGates.FUSION_DISABLE_CROSS_CHAIN_SWAPS
+>
+
+/**
  * Configuration for initializing the Fusion SDK
  */
 export interface FusionConfig {
   environment: Environment
   enabledServices: ServiceType[]
   fetch: Fetch
+  disableCrossChainSwaps?: boolean
 }
 
 /**

@@ -1,10 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Environment, ServiceType, QuoterInterface } from '@avalabs/fusion-sdk'
-import type { FeatureFlags } from 'services/posthog/types'
 import { createTransferManager } from '@avalabs/fusion-sdk'
 import Logger from 'utils/Logger'
 import FusionService from './FusionService'
-import type { FusionConfig, FusionSigners, QuoterParams } from './types'
+import type {
+  FusionConfig,
+  FusionServiceFlags,
+  FusionSigners,
+  QuoterParams
+} from './types'
 
 // Mock the fusion-sdk
 jest.mock('@avalabs/fusion-sdk', () => ({
@@ -234,7 +238,7 @@ describe('FusionService', () => {
         mockTransferManager
       )
 
-      const featureFlags: Partial<FeatureFlags> = {
+      const featureFlags: Partial<FusionServiceFlags> = {
         'fusion-markr': true
       }
 
@@ -242,7 +246,7 @@ describe('FusionService', () => {
         bitcoinProvider: mockBitcoinProvider,
         fetch: mockFetch,
         environment: Environment.PROD,
-        featureFlags: featureFlags as FeatureFlags,
+        featureFlags: featureFlags as FusionServiceFlags,
         signers: mockSigners
       })
 
@@ -265,7 +269,7 @@ describe('FusionService', () => {
         mockTransferManager
       )
 
-      const featureFlags: Partial<FeatureFlags> = {
+      const featureFlags: Partial<FusionServiceFlags> = {
         'fusion-markr': true,
         'fusion-avalanche-evm': true,
         'fusion-lombard-btc-to-btcb': true,
@@ -276,7 +280,7 @@ describe('FusionService', () => {
         bitcoinProvider: mockBitcoinProvider,
         fetch: mockFetch,
         environment: Environment.PROD,
-        featureFlags: featureFlags as FeatureFlags,
+        featureFlags: featureFlags as FusionServiceFlags,
         signers: mockSigners
       })
 
@@ -295,7 +299,7 @@ describe('FusionService', () => {
         mockTransferManager
       )
 
-      const featureFlags: Partial<FeatureFlags> = {
+      const featureFlags: Partial<FusionServiceFlags> = {
         'fusion-markr': false,
         'fusion-avalanche-evm': false
       }
@@ -304,7 +308,7 @@ describe('FusionService', () => {
         bitcoinProvider: mockBitcoinProvider,
         fetch: mockFetch,
         environment: Environment.PROD,
-        featureFlags: featureFlags as FeatureFlags,
+        featureFlags: featureFlags as FusionServiceFlags,
         signers: mockSigners
       })
 
@@ -315,6 +319,67 @@ describe('FusionService', () => {
       expect(call.serviceInitializers[0]).toMatchObject({
         type: ServiceType.WRAP_UNWRAP
       })
+    })
+
+    it('should pass disableCrossChainSwaps=true to MARKR initializer when flag is set', async () => {
+      const mockTransferManager = {
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateNativeFee: jest.fn()
+      }
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      const featureFlags: Partial<FusionServiceFlags> = {
+        'fusion-markr': true,
+        'fusion-disable-cross-chain-swaps': true
+      }
+
+      await FusionService.initWithFeatureFlags({
+        bitcoinProvider: mockBitcoinProvider,
+        fetch: mockFetch,
+        environment: Environment.PROD,
+        featureFlags: featureFlags as FusionServiceFlags,
+        signers: mockSigners
+      })
+
+      const call = (createTransferManager as jest.Mock).mock.calls[0][0]
+      const markrInitializer = call.serviceInitializers.find(
+        (s: { type: string }) => s.type === ServiceType.MARKR
+      )
+      expect(markrInitializer).toMatchObject({ disableCrossChainSwaps: true })
+    })
+
+    it('should pass disableCrossChainSwaps=false to MARKR initializer by default', async () => {
+      const mockTransferManager = {
+        getQuoter: jest.fn(),
+        getSupportedChains: jest.fn(),
+        transferAsset: jest.fn(),
+        estimateNativeFee: jest.fn()
+      }
+      ;(createTransferManager as jest.Mock).mockResolvedValue(
+        mockTransferManager
+      )
+
+      const featureFlags: Partial<FusionServiceFlags> = {
+        'fusion-markr': true
+      }
+
+      await FusionService.initWithFeatureFlags({
+        bitcoinProvider: mockBitcoinProvider,
+        fetch: mockFetch,
+        environment: Environment.PROD,
+        featureFlags: featureFlags as FusionServiceFlags,
+        signers: mockSigners
+      })
+
+      const call = (createTransferManager as jest.Mock).mock.calls[0][0]
+      const markrInitializer = call.serviceInitializers.find(
+        (s: { type: string }) => s.type === ServiceType.MARKR
+      )
+      expect(markrInitializer).toMatchObject({ disableCrossChainSwaps: false })
     })
   })
 
