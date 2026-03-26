@@ -1,7 +1,11 @@
 import { TokenType } from '@avalabs/vm-module-types'
 import type { Network } from '@avalabs/core-chains-sdk'
 import type { LocalTokenWithBalance } from 'store/balance'
-import { validateNativeToken, validateNonNativeToken } from './utils'
+import {
+  validateNativeToken,
+  validateNonNativeToken,
+  deriveValidationAdditiveBps
+} from './utils'
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
@@ -234,5 +238,27 @@ describe('validateNonNativeToken', () => {
       })
       expect(error).toBeUndefined()
     })
+  })
+})
+
+describe('deriveValidationAdditiveBps', () => {
+  it('subtracts the default reduction of 1000', () => {
+    expect(deriveValidationAdditiveBps(4000)).toBe(3000)
+  })
+
+  it('accepts a custom reduction', () => {
+    expect(deriveValidationAdditiveBps(5500, 500)).toBe(5000)
+  })
+
+  it('clamps to 0 when maxBps is less than the reduction', () => {
+    expect(deriveValidationAdditiveBps(500)).toBe(0)
+  })
+
+  it('returns 0 when maxBps equals the reduction', () => {
+    expect(deriveValidationAdditiveBps(1000)).toBe(0)
+  })
+
+  it('returns 0 when maxBps is 0', () => {
+    expect(deriveValidationAdditiveBps(0)).toBe(0)
   })
 })

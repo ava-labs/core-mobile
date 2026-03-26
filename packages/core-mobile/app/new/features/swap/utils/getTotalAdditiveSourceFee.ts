@@ -62,7 +62,7 @@ export const getTotalAdditiveSourceFee = (
     raw += f.amount
   }
 
-  const buffered = (raw * (10000n + BigInt(safetyBps))) / 10000n
+  const buffered = (raw * (10000n + BigInt(Math.max(0, safetyBps)))) / 10000n
 
   return { buffered, raw }
 }
@@ -97,7 +97,7 @@ export const getTotalAdditiveNativeFee = (
     raw += f.amount
   }
 
-  const buffered = (raw * (10000n + BigInt(safetyBps))) / 10000n
+  const buffered = (raw * (10000n + BigInt(Math.max(0, safetyBps)))) / 10000n
 
   return { buffered, raw }
 }

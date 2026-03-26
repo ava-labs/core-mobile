@@ -1,3 +1,13 @@
+/**
+ * Derives a validation-time additive bps value from the Max bps flag.
+ * Subtracts a reduction to give Max a 10% head-room, clamped to 0
+ * so a low PostHog value never produces negative buffered fees.
+ */
+export const deriveValidationAdditiveBps = (
+  maxBps: number,
+  reduction = 1000
+): number => Math.max(0, maxBps - reduction)
+
 import { bigintToBig } from '@avalabs/core-utils-sdk'
 import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
 import type { Network } from '@avalabs/core-chains-sdk'

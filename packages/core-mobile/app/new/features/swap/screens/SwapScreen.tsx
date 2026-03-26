@@ -232,7 +232,9 @@ export const SwapScreen = (): JSX.Element => {
   const activeError = validationError ?? quoteError
 
   const canSwap: boolean =
-    !(activeError && 'isWarning' in activeError && !activeError.isWarning) &&
+    (activeError === null ||
+      (activeError instanceof FusionQuoteError &&
+        activeError.isWarning === true)) &&
     !isFeeValidating &&
     !!fromToken &&
     !!toToken &&

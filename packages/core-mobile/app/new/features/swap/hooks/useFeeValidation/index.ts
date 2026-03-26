@@ -17,7 +17,11 @@ import {
 } from '../../utils/getTotalAdditiveSourceFee'
 import { useFeeEstimation } from '../useFeeEstimation'
 import { getRouteAdditiveBps } from '../useMaxSwapAmount/utils'
-import { validateNativeToken, validateNonNativeToken } from './utils'
+import {
+  validateNativeToken,
+  validateNonNativeToken,
+  deriveValidationAdditiveBps
+} from './utils'
 
 export const useFeeValidation = ({
   fromToken,
@@ -50,12 +54,15 @@ export const useFeeValidation = ({
   // bridge fees are stable enough that a small margin suffices, and this
   // ensures the Max amount always passes validation.
   const gasSafetyBps = 0
-  const additiveBpsDefault =
-    useSelector(selectFusionMaxAmountAdditiveBpsDefault) - 1000
-  const additiveBpsEvmToSolana =
-    useSelector(selectFusionMaxAmountAdditiveBpsEvmToSolana) - 1000
-  const additiveBpsSolanaToEvm =
-    useSelector(selectFusionMaxAmountAdditiveBpsSolanaToEvm) - 1000
+  const additiveBpsDefault = deriveValidationAdditiveBps(
+    useSelector(selectFusionMaxAmountAdditiveBpsDefault)
+  )
+  const additiveBpsEvmToSolana = deriveValidationAdditiveBps(
+    useSelector(selectFusionMaxAmountAdditiveBpsEvmToSolana)
+  )
+  const additiveBpsSolanaToEvm = deriveValidationAdditiveBps(
+    useSelector(selectFusionMaxAmountAdditiveBpsSolanaToEvm)
+  )
 
   const isNative = fromToken?.type === TokenType.NATIVE
 
