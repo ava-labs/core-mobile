@@ -199,8 +199,7 @@ class OnboardingPage {
     const isToggleOn = await actions.isBiometricToggleOn(1500)
     if (isToggleOn) {
       const toggleOn = selectors.getById('toggle_biometrics_on')
-      await toggleOn.click()
-      await driver.pause(1000)
+      await actions.tap(toggleOn)
     }
     
     await this.tapZero(pin)

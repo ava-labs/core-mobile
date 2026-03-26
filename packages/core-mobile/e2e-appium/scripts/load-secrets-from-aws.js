@@ -3,7 +3,8 @@
  * Script to load environment variables from AWS Secrets Manager
  * Fetches the secret "core/dev/mobile/.env.internal.e2e" and exports all variables
  * 
- * This script is designed to run in AWS Device Farm's pre_test phase
+ * This script is designed to run in AWS Device Farm's pre_test phase.
+ * On success, stdout is only the generated env file path (logs go to stderr).
  */
 
 const {
@@ -42,7 +43,9 @@ const client = new SecretsManagerClient({
 
 async function loadSecrets() {
   try {
-    console.log(`Fetching secret "${secret_name}" from AWS Secrets Manager (region: ${region})...`);
+    console.error(
+      `Fetching secret "${secret_name}" from AWS Secrets Manager (region: ${region})...`
+    );
     
     const response = await client.send(
       new GetSecretValueCommand({
@@ -58,7 +61,7 @@ async function loadSecrets() {
       process.exit(1);
     }
 
-    console.log("✅ Successfully retrieved secret from AWS Secrets Manager");
+    console.error('✅ Successfully retrieved secret from AWS Secrets Manager');
     
     // Parse the secret (it should be in .env format: KEY=VALUE)
     const lines = secret.split('\n');

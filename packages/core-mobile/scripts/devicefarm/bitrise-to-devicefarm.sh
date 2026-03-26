@@ -35,6 +35,8 @@ NC='\033[0m' # No Color
 # Configuration
 BITRISE_BUILD_INDEX="${BITRISE_BUILD_INDEX:-0}"
 PLATFORM="${PLATFORM:-android}"
+# Bitrise workflows set PLATFORM=Android / iOS; normalize for path logic (same as run-devicefarm.sh)
+PLATFORM="$(echo "$PLATFORM" | tr '[:upper:]' '[:lower:]')"
 AWS_REGION="${AWS_REGION:-${AWS_DEFAULT_REGION:-us-west-2}}"
 WAIT_FOR_COMPLETION="${WAIT_FOR_COMPLETION:-false}"
 

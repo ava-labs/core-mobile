@@ -61,6 +61,8 @@ buck-out/
 /vendor/bundle/
 
 package-lock.json
+# Device Farm test zip uses npm ci — lockfile must be tracked (see scripts/devicefarm/package-tests.sh)
+!e2e-appium/package-lock.json
 .markdownlint.json
 /.env*
 !/.env.example
