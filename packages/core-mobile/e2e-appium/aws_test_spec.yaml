@@ -50,10 +50,8 @@ phases:
         if [ -d "e2e-appium" ]; then
           cd e2e-appium
         fi
-      # Install dependencies from package.json
+      # Install dependencies from package.json (@aws-sdk/client-secrets-manager is listed there)
       - npm install
-      # Install AWS SDK for Secrets Manager (needed to fetch environment variables)
-      - npm install @aws-sdk/client-secrets-manager --no-save
       # Verify that dependencies were installed correctly
       - npm list --depth=0 || true
 

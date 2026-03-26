@@ -109,12 +109,13 @@ The workflow can be triggered:
 
 ## Monitoring Test Runs
 
-Test runs are monitored in real-time. The script will:
+When `WAIT_FOR_COMPLETION=true`, `trigger-devicefarm-api.js` polls `GetRun` until the run `status` is `COMPLETED` (exponential backoff; optional `WAIT_FOR_COMPLETION_TIMEOUT_SEC`, default 7200). Otherwise it exits after scheduling. The flow is:
+
 - Upload the app to Device Farm
 - Upload the test package
 - Schedule the test run
-- Wait for completion (if `WAIT_FOR_COMPLETION=true`)
-- Report results
+- Optionally wait for completion and surface non-success results as a failed step
+- Expose `DEVICEFARM_RUN_ARN` / `DEVICEFARM_RUN_URL` (e.g. via envman on Bitrise)
 
 View test runs in the [AWS Device Farm Console](https://console.aws.amazon.com/devicefarm).
 

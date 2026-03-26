@@ -116,7 +116,8 @@ class OnboardingPage {
   async exitMetro() {
     // Skip Metro dev menu handling for E2E builds or when running on AWS Device Farm
     // Device Farm uses E2E builds and doesn't have Metro bundler
-    const isE2EBuild = process.env.E2E || process.env.E2E_LOCAL_PATH
+    const isE2EBuild =
+      process.env.E2E === 'true' || !!process.env.E2E_LOCAL_PATH
     const isDeviceFarm = !!process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL
 
     if (isE2EBuild || isDeviceFarm) {
@@ -140,9 +141,10 @@ class OnboardingPage {
 
   async exitMetroAfterLogin() {
     // Skip Metro dev menu handling for E2E builds or when running on AWS Device Farm
-    const isE2EBuild = process.env.E2E === 'true'
+    const isE2EBuild =
+      process.env.E2E === 'true' || !!process.env.E2E_LOCAL_PATH
     const isDeviceFarm = !!process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL
-    
+
     if (!isE2EBuild && !isDeviceFarm) {
       try {
         const dismissBtn = selectors.getByText("AvaxWallet")

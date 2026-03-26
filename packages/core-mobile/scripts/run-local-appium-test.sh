@@ -8,8 +8,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Script is in packages/core-mobile/scripts/, so go up one level to get core-mobile directory
 CORE_MOBILE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# Default values
-APP_PATH="${1:-}"
+# Default values: positional APK overrides APP_PATH env
+APP_PATH="${1:-${APP_PATH:-}}"
 TEST_SPEC="${2:-specs/debug/recoveryPhraseLocator.spec.ts}"
 
 # Check if device is connected and authorized

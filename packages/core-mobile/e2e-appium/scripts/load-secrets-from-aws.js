@@ -13,7 +13,9 @@ const {
 const fs = require('fs');
 
 const secret_name = "core/dev/mobile/.env.internal.e2e";
-const region = process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || "us-east-2";
+// Align default with Device Farm tooling (trigger-devicefarm-api.js uses us-west-2).
+const region =
+  process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-west-2';
 
 const client = new SecretsManagerClient({
   region: region,
