@@ -224,6 +224,14 @@ export const CollectiblesScreen = ({
 
   const renderEmpty = useCallback(() => emptyComponent, [emptyComponent])
 
+  const handleSortSelected = useCallback(
+    (value: string): void => {
+      onScrollResync()
+      sort.onSelected(value)
+    },
+    [onScrollResync, sort]
+  )
+
   const renderHeader = useCallback((): JSX.Element | null => {
     if (collectibles.length === 0 && (!isEnabled || isLoading)) return null
     if (collectibles.length === 0) return null
@@ -241,7 +249,7 @@ export const CollectiblesScreen = ({
             paddingBottom: CollectibleView.ListView === listType ? 8 : 16
           }}
           filter={filter}
-          sort={sort}
+          sort={{ ...sort, onSelected: handleSortSelected }}
           view={{ ...view, onSelected: handleManageList }}
         />
       </View>
@@ -254,7 +262,8 @@ export const CollectiblesScreen = ({
     filter,
     sort,
     view,
-    handleManageList
+    handleManageList,
+    handleSortSelected
   ])
 
   const contentContainerStyle = useMemo(
