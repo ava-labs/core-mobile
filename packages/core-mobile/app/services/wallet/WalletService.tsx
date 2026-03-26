@@ -358,12 +358,74 @@ class WalletService {
       accountIndex
     })
 
+    return this.getAddressesForExtendedPublicKey({
+      extendedPublicKey: xpubXP,
+      networkType,
+      isTestnet,
+      onlyWithActivity
+    })
+  }
+
+  public async hasActivityFromXpubXP({
+    walletId,
+    walletType,
+    accountIndex,
+    isTestnet = false
+  }: {
+    walletId: string
+    walletType: WalletType
+    accountIndex: number
+    isTestnet?: boolean
+  }): Promise<boolean> {
+    if (!this.hasXpub(walletType)) {
+      return false
+    }
+
+    // Keystone currently exposes an XP xpub only for account 0.
+    // Skip non-primary accounts until the SDK supports per-account XP xpubs.
+    if (walletType === WalletType.KEYSTONE && accountIndex > 0) {
+      return false
+    }
+
+    const xpubXP = await this.getRawXpubXP({
+      walletId,
+      walletType,
+      accountIndex
+    })
+
+    return resolveAnyTrue([
+      this.getAddressesForExtendedPublicKey({
+        extendedPublicKey: xpubXP,
+        networkType: NetworkVMType.AVM,
+        isTestnet,
+        onlyWithActivity: true
+      }).then(hasActiveDerivedAddresses),
+      this.getAddressesForExtendedPublicKey({
+        extendedPublicKey: xpubXP,
+        networkType: NetworkVMType.PVM,
+        isTestnet,
+        onlyWithActivity: true
+      }).then(hasActiveDerivedAddresses)
+    ])
+  }
+
+  private async getAddressesForExtendedPublicKey({
+    extendedPublicKey,
+    networkType,
+    isTestnet,
+    onlyWithActivity
+  }: {
+    extendedPublicKey: string
+    networkType: NetworkVMType.AVM | NetworkVMType.PVM
+    isTestnet: boolean
+    onlyWithActivity: boolean
+  }): Promise<GetAddressesResponse> {
     try {
       const response = await postV1GetAddresses({
         client: profileApiClient,
         body: {
           networkType: networkType,
-          extendedPublicKey: xpubXP,
+          extendedPublicKey,
           isTestnet,
           onlyWithActivity
         }
@@ -375,7 +437,7 @@ class WalletService {
 
       return response.data
     } catch (err) {
-      Logger.error(`[WalletService.ts][getAddressesFromXpubXP]${err}`)
+      Logger.error(`[WalletService.ts][getAddressesForExtendedPublicKey]${err}`)
       throw err
     }
   }
@@ -405,6 +467,45 @@ class WalletService {
       WalletType.LEDGER
     ].includes(walletType)
   }
+}
+
+const hasActiveDerivedAddresses = (response: GetAddressesResponse): boolean =>
+  response.externalAddresses.length > 0 || response.internalAddresses.length > 0
+
+const resolveAnyTrue = async (checks: Promise<boolean>[]): Promise<boolean> => {
+  if (checks.length === 0) {
+    return false
+  }
+
+  const wrappedChecks = checks.map((check, index) =>
+    check
+      .then(value => ({
+        index,
+        value
+      }))
+      .catch(() => ({
+        index,
+        value: false
+      }))
+  )
+
+  const remaining = new Set(wrappedChecks.map((_, index) => index))
+
+  while (remaining.size > 0) {
+    const result = await Promise.race(
+      [...remaining].map(index => wrappedChecks[index] as Promise<{
+        index: number
+        value: boolean
+      }>)
+    )
+
+    remaining.delete(result.index)
+    if (result.value) {
+      return true
+    }
+  }
+
+  return false
 }
 
 // Keep as singleton
