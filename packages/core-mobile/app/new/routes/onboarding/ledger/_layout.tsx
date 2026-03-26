@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Stack } from 'common/components/Stack'
 import { PageControl } from '@avalabs/k2-alpine'
 import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
@@ -24,8 +24,11 @@ export default function LedgerOnboardingLayout(): JSX.Element {
     }
   }, [rootState])
 
-  const renderPageControl = (): React.ReactNode => (
-    <PageControl numberOfPage={screens.length} currentPage={currentPage} />
+  const renderPageControl = useCallback(
+    (): React.ReactNode => (
+      <PageControl numberOfPage={screens.length} currentPage={currentPage} />
+    ),
+    [screens.length, currentPage]
   )
 
   useEffect(() => {
