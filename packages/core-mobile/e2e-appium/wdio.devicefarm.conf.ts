@@ -22,7 +22,8 @@ const useWdioAppiumService =
   !isDeviceFarm && process.env.APPIUM_MANUAL !== 'true'
 const appiumServerUrl =
   process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL || 'http://localhost:4723'
-const appPath = process.env.AWS_DEVICE_FARM_APP_PATH || ''
+const appPath =
+  process.env.AWS_DEVICE_FARM_APP_PATH || process.env.APP_PATH || ''
 const platformToRun =
   process.env.PLATFORM || process.env.DEVICEFARM_DEVICE_PLATFORM_NAME
 

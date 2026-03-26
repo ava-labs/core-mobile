@@ -92,6 +92,8 @@ fi
 # Export environment variables
 export PLATFORM=android
 export APP_PATH="$APP_PATH"
+# WDIO devicefarm template reads AWS_DEVICE_FARM_APP_PATH; keep in sync for local runs.
+export AWS_DEVICE_FARM_APP_PATH="$APP_PATH"
 export DEVICE_UDID="$DEVICE_UDID"
 export DEVICE_NAME="$DEVICE_MODEL"
 export PLATFORM_VERSION="$ANDROID_VERSION"
@@ -162,6 +164,10 @@ fi
 
 # Run the test using the appium:android script from package.json
 # The script expects specs relative to e2e-appium directory
-# WDIO starts Appium via the appium service unless APPIUM_MANUAL=true (this script starts Appium separately)
+#
+# e2e-appium/wdio.conf.ts registers @wdio/appium-service when NOT on Device Farm and
+# APPIUM_MANUAL is unset/false (see useWdioAppiumService and `services`). This script often
+# starts Appium above (or you start it yourself), so we set APPIUM_MANUAL=true to connect
+# to that existing server and avoid spawning a second Appium process.
 export APPIUM_MANUAL=true
 yarn appium:android --spec="e2e-appium/$TEST_SPEC"

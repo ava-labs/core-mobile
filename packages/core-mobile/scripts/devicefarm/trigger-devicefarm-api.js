@@ -25,7 +25,7 @@
  *   DEVICEFARM_APP_PATH=...
  *   DEVICEFARM_TEST_PACKAGE_PATH=...
  *   DEVICEFARM_TEST_SPEC_PATH=...
- *   PLATFORM=android
+ *   PLATFORM=android   (case-insensitive: Android / IOS from CI are accepted)
  *
  * Why ARNs? The Device Farm API requires a project ARN (where to upload app/tests) and
  * a device pool ARN (which devices to run on). These are not the IAM user ARN.
@@ -85,7 +85,14 @@ for (let i = 0; i < args.length; i += 2) {
   }
 }
 
-config.platform = (config.platform || 'android').toLowerCase()
+// Normalize once: CI often sets PLATFORM=Android / iOS (e.g. Bitrise); all comparisons use lowercase.
+config.platform = String(config.platform || 'android').trim().toLowerCase()
+if (config.platform !== 'android' && config.platform !== 'ios') {
+  console.error(
+    `❌ PLATFORM must be android or ios (received: ${JSON.stringify(config.platform)})`
+  )
+  process.exit(1)
+}
 if (typeof config.waitForCompletion === 'string') {
   config.waitForCompletion = config.waitForCompletion === 'true'
 }
@@ -163,7 +170,15 @@ async function uploadFile(filePath, projectArn, uploadType, name) {
   const uploadUrl = uploadResponse.upload.url
 
   console.log(`   Upload ARN: ${uploadArn}`)
-  console.log(`   Upload URL: ${uploadUrl}`)
+  // Presigned URLs include credentials in the query string — do not log the full URL.
+  try {
+    const u = new URL(uploadUrl)
+    console.log(
+      `   Upload URL: ${u.origin}${u.pathname}${u.search ? '?…(redacted)' : ''}`
+    )
+  } catch {
+    console.log('   Upload URL: (omitted)')
+  }
 
   // Upload the file
   console.log(`📤 Uploading file: ${filePath}...`)
@@ -305,12 +320,18 @@ async function main() {
 
     await verifyProjectAccess(config.projectArn)
 
+    for (const [label, p] of [
+      ['app', config.appPath],
+      ['test package', config.testPackagePath]
+    ]) {
+      if (!fs.existsSync(p)) {
+        throw new Error(`${label} path does not exist or is not readable: ${p}`)
+      }
+    }
+
     // Determine upload types
     const appType = config.platform === 'android' ? 'ANDROID_APP' : 'IOS_APP'
-    const testSpecType =
-      config.platform === 'android'
-        ? 'APPIUM_NODE_TEST_SPEC'
-        : 'APPIUM_NODE_TEST_SPEC'
+    const testSpecType = 'APPIUM_NODE_TEST_SPEC'
 
     // 1. Upload app
     const appUploadArn = await uploadFile(
@@ -364,7 +385,8 @@ async function main() {
 
     const runResponse = await deviceFarmClient.send(scheduleRunCommand)
     const runArn = runResponse.run.arn
-    const runUrl = `https://console.aws.amazon.com/devicefarm/home?region=${config.region}#/projects/${encodeURIComponent(config.projectArn)}/runs/${encodeURIComponent(runArn)}`
+    // Fragment path segments must be percent-encoded: ARNs contain ':' and other reserved characters.
+    const runUrl = `https://console.aws.amazon.com/devicefarm/home?region=${encodeURIComponent(config.region)}#/projects/${encodeURIComponent(config.projectArn)}/runs/${encodeURIComponent(runArn)}`
 
     console.log('✅ Test run scheduled successfully!')
     console.log(`   Run ARN: ${runArn}`)
@@ -414,4 +436,4 @@ if (require.main === module) {
   })
 }
 
-module.exports = { main, uploadFile, waitForUpload }
+module.exports = { main, uploadFile, uploadToUrl, waitForUpload }
