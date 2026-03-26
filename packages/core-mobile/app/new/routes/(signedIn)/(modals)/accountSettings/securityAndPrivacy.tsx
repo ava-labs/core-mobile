@@ -134,7 +134,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   ])
 
   const shouldHideRecoveryData = useMemo(
-    () => [WalletType.KEYSTONE].includes(wallet.type),
+    () => [WalletType.KEYSTONE, WalletType.PRIVATE_KEY].includes(wallet.type),
     [wallet.type]
   )
 

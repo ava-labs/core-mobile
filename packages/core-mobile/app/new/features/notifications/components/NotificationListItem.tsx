@@ -66,7 +66,7 @@ const NotificationListItem: FC<NotificationListItemProps> = ({
             ellipsizeMode="tail"
             sx={{
               color: '$textPrimary',
-              lineHeight: 15
+              lineHeight: 22
             }}>
             {title}
           </Text>

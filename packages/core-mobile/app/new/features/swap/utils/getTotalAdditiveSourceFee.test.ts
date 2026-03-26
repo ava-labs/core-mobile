@@ -1,7 +1,10 @@
 import { TokenType } from '@avalabs/vm-module-types'
 import type { LocalTokenWithBalance } from 'store/balance'
 import type { Quote } from '../types'
-import { getTotalAdditiveSourceFee } from './getTotalAdditiveSourceFee'
+import {
+  getTotalAdditiveSourceFee,
+  getTotalAdditiveNativeFee
+} from './getTotalAdditiveSourceFee'
 
 const makeQuote = (fees: Quote['fees']): Quote =>
   ({
@@ -470,5 +473,183 @@ describe('getTotalAdditiveSourceFee', () => {
       4000
     )
     expect(result.buffered).toBe(0n)
+  })
+
+  describe('negative safetyBps clamping', () => {
+    it('clamps negative safetyBps to 0 — buffered equals raw', () => {
+      const quote = makeQuote([
+        makeFee({
+          type: 'bridge',
+          tokenType: 'native',
+          chainId: SOURCE_CHAIN,
+          amount: 1000n
+        })
+      ])
+      const result = getTotalAdditiveSourceFee(makeNativeToken(), quote, -2000)
+      expect(result.raw).toBe(1000n)
+      expect(result.buffered).toBe(1000n)
+    })
+
+    it('clamps safetyBps of -10001 to 0 — no negative buffered fee', () => {
+      const quote = makeQuote([
+        makeFee({
+          type: 'bridge',
+          tokenType: 'native',
+          chainId: SOURCE_CHAIN,
+          amount: 500n
+        })
+      ])
+      const result = getTotalAdditiveSourceFee(makeNativeToken(), quote, -10001)
+      expect(result.buffered).toBe(500n)
+    })
+  })
+})
+
+describe('getTotalAdditiveNativeFee', () => {
+  it('returns zeros when fromToken is undefined', () => {
+    expect(getTotalAdditiveNativeFee(undefined, makeQuote([]), 4000)).toEqual({
+      buffered: 0n,
+      raw: 0n
+    })
+  })
+
+  it('returns zeros when quote is null', () => {
+    expect(
+      getTotalAdditiveNativeFee(makeErc20Token('0xabc'), null, 4000)
+    ).toEqual({ buffered: 0n, raw: 0n })
+  })
+
+  it('returns zeros for native source tokens (already covered by getTotalAdditiveSourceFee)', () => {
+    const quote = makeQuote([
+      makeFee({
+        type: 'bridge',
+        tokenType: 'native',
+        chainId: SOURCE_CHAIN,
+        amount: 1000n
+      })
+    ])
+    const result = getTotalAdditiveNativeFee(makeNativeToken(), quote, 4000)
+    expect(result.raw).toBe(0n)
+    expect(result.buffered).toBe(0n)
+  })
+
+  it('sums native additive fees for ERC-20 source token', () => {
+    const quote = makeQuote([
+      makeFee({
+        type: 'bridge',
+        tokenType: 'native',
+        chainId: SOURCE_CHAIN,
+        amount: 500n
+      }),
+      makeFee({
+        type: 'bridge',
+        tokenType: 'native',
+        chainId: SOURCE_CHAIN,
+        amount: 300n
+      })
+    ])
+    const result = getTotalAdditiveNativeFee(
+      makeErc20Token('0xabc'),
+      quote,
+      4000
+    )
+    // raw = 800, buffered = 800 * 14000 / 10000 = 1120
+    expect(result.raw).toBe(800n)
+    expect(result.buffered).toBe(1120n)
+  })
+
+  it('ignores non-additive fees', () => {
+    const quote = makeQuote([
+      makeFee({
+        type: 'protocol',
+        fundingModel: 'included',
+        tokenType: 'native',
+        chainId: SOURCE_CHAIN,
+        amount: 999n
+      }),
+      makeFee({
+        type: 'bridge',
+        tokenType: 'native',
+        chainId: SOURCE_CHAIN,
+        amount: 200n
+      })
+    ])
+    const result = getTotalAdditiveNativeFee(makeErc20Token('0xabc'), quote, 0)
+    expect(result.raw).toBe(200n)
+  })
+
+  it('ignores fees from a different chain', () => {
+    const quote = makeQuote([
+      makeFee({
+        type: 'bridge',
+        tokenType: 'native',
+        chainId: 'eip155:1',
+        amount: 1000n
+      })
+    ])
+    const result = getTotalAdditiveNativeFee(
+      makeErc20Token('0xabc'),
+      quote,
+      4000
+    )
+    expect(result.raw).toBe(0n)
+    expect(result.buffered).toBe(0n)
+  })
+
+  it('ignores non-native fee tokens', () => {
+    const quote = makeQuote([
+      makeFee({
+        type: 'bridge',
+        tokenType: 'erc20',
+        tokenAddress: '0xfee',
+        chainId: SOURCE_CHAIN,
+        amount: 1000n
+      })
+    ])
+    const result = getTotalAdditiveNativeFee(
+      makeErc20Token('0xabc'),
+      quote,
+      4000
+    )
+    expect(result.raw).toBe(0n)
+  })
+
+  it('applies safetyBps buffer correctly', () => {
+    const quote = makeQuote([
+      makeFee({
+        type: 'bridge',
+        tokenType: 'native',
+        chainId: SOURCE_CHAIN,
+        amount: 1000n
+      })
+    ])
+    // buffered = 1000 * 15000 / 10000 = 1500
+    const result = getTotalAdditiveNativeFee(
+      makeErc20Token('0xabc'),
+      quote,
+      5000
+    )
+    expect(result.raw).toBe(1000n)
+    expect(result.buffered).toBe(1500n)
+  })
+
+  describe('negative safetyBps clamping', () => {
+    it('clamps negative safetyBps to 0 — buffered equals raw', () => {
+      const quote = makeQuote([
+        makeFee({
+          type: 'bridge',
+          tokenType: 'native',
+          chainId: SOURCE_CHAIN,
+          amount: 800n
+        })
+      ])
+      const result = getTotalAdditiveNativeFee(
+        makeErc20Token('0xtoken'),
+        quote,
+        -3000
+      )
+      expect(result.raw).toBe(800n)
+      expect(result.buffered).toBe(800n)
+    })
   })
 })

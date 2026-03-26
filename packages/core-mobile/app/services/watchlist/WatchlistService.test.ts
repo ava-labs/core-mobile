@@ -259,4 +259,35 @@ describe('tokenSearch', () => {
     const result = await WatchlistService.tokenSearch('unknown', 'usd')
     expect(result).toBeUndefined()
   })
+
+  it('should cap coin IDs at 50 when search returns more than 50 results', async () => {
+    const coins = Array.from({ length: 75 }, (_, i) => ({
+      id: `coin-${i}`,
+      symbol: `C${i}`,
+      name: `Coin ${i}`
+    }))
+    getTokenSearchMock.mockResolvedValue(coins)
+    getMarketsMock.mockResolvedValue([])
+    getSimplePriceMock.mockResolvedValue({})
+
+    await WatchlistService.tokenSearch('test', 'usd')
+
+    const expectedIds = coins.slice(0, 50).map(c => c.id)
+
+    expect(getMarketsMock).toHaveBeenCalledWith(
+      expect.objectContaining({ coinIds: expectedIds })
+    )
+    expect(getSimplePriceMock).toHaveBeenCalledWith(
+      expect.objectContaining({ coinIds: expectedIds })
+    )
+  })
+
+  it('should not throw when getTokenSearch returns undefined', async () => {
+    getTokenSearchMock.mockResolvedValue(undefined)
+
+    const result = await WatchlistService.tokenSearch('test', 'usd')
+    expect(result).toBeUndefined()
+    expect(getMarketsMock).not.toHaveBeenCalled()
+    expect(getSimplePriceMock).not.toHaveBeenCalled()
+  })
 })

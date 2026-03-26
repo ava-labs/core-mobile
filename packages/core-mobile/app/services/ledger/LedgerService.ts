@@ -21,6 +21,7 @@ import {
   LEDGER_TIMEOUTS,
   getSolanaDerivationPath
 } from 'new/features/ledger/consts'
+import { isBitcoinCompatibleApp } from 'new/features/ledger/utils'
 import { assertNotNull } from 'utils/assertions'
 import { Curve } from 'utils/publicKeys'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
@@ -38,10 +39,37 @@ import {
   LEDGER_ERROR_CODES,
   LedgerDerivationPathType
 } from './types'
+import {
+  LedgerBluetoothPermissionError,
+  isLedgerBluetoothPermissionError
+} from './LedgerBluetoothPermissionError'
 
 class LedgerService {
   #transport: TransportBLE | null = null
-  private currentAppType: LedgerAppType = LedgerAppType.UNKNOWN
+  private _currentAppType: LedgerAppType = LedgerAppType.UNKNOWN
+  private _currentAppVersion = ''
+
+  private get currentAppType(): LedgerAppType {
+    return this._currentAppType
+  }
+
+  private set currentAppType(value: LedgerAppType) {
+    this._currentAppType = value
+
+    // When resetting app type (e.g. at the start of a new connect()),
+    // also clear the cached version to avoid using stale data.
+    if (value === LedgerAppType.UNKNOWN) {
+      this._currentAppVersion = ''
+    }
+  }
+
+  private get currentAppVersion(): string {
+    return this._currentAppVersion
+  }
+
+  private set currentAppVersion(version: string) {
+    this._currentAppVersion = version
+  }
   private appPollingInterval: number | null = null
   private appPollingEnabled = false
   private isDisconnected = false
@@ -108,6 +136,11 @@ class LedgerService {
   async connect(deviceId: string): Promise<void> {
     try {
       Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
+      const hasPermissions = await this.requestBluetoothPermissions()
+      if (!hasPermissions) {
+        throw new LedgerBluetoothPermissionError()
+      }
+
       this.isDisconnected = false // Reset disconnect flag on new connection
       // Use a longer timeout for connection
       await TransportBLE.disconnectDevice(deviceId)
@@ -137,6 +170,7 @@ class LedgerService {
         )
         Logger.info(`Immediately detected app type: ${detectedAppType}`)
         this.currentAppType = detectedAppType
+        this.currentAppVersion = testAppInfo.version
       } catch (error) {
         Logger.info(
           'Immediate get current app info failed, will rely on polling'
@@ -144,6 +178,9 @@ class LedgerService {
       }
     } catch (error) {
       Logger.error('Failed to connect to Ledger', error)
+      if (isLedgerBluetoothPermissionError(error)) {
+        throw error
+      }
       throw new Error(
         `Failed to connect to Ledger: ${
           error instanceof Error ? error.message : 'Unknown error'
@@ -175,6 +212,7 @@ class LedgerService {
           )
           this.currentAppType = newAppType
         }
+        this.currentAppVersion = appInfo.version
       } catch (error) {
         Logger.error('Error polling app info', error)
         // Don't stop polling on error, just log it
@@ -201,9 +239,25 @@ class LedgerService {
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
         ].filter(Boolean)
 
-        const granted = await PermissionsAndroid.requestMultiple(permissions)
-        return Object.values(granted).every(
-          permission => permission === 'granted'
+        const permissionChecks = await Promise.all(
+          permissions.map(permission => PermissionsAndroid.check(permission))
+        )
+
+        if (permissionChecks.every(Boolean)) {
+          return true
+        }
+
+        const missingPermissions = permissions.filter(
+          (_, index) => !permissionChecks[index]
+        )
+
+        const granted = await PermissionsAndroid.requestMultiple(
+          missingPermissions
+        )
+
+        return missingPermissions.every(
+          permission =>
+            granted[permission] === PermissionsAndroid.RESULTS.GRANTED
         )
       } catch (err) {
         Logger.error('Error requesting Bluetooth permissions:', err)
@@ -211,6 +265,17 @@ class LedgerService {
       }
     }
     return true
+  }
+
+  private showBluetoothPermissionRequiredAlert(
+    action: 'scan' | 'connect'
+  ): void {
+    const actionDescription = action === 'scan' ? 'scan for' : 'connect to'
+
+    Alert.alert(
+      'Permission Required',
+      `Bluetooth permissions are required to ${actionDescription} Ledger devices.`
+    )
   }
 
   // Handle scan errors (matching original implementation)
@@ -250,10 +315,7 @@ class LedgerService {
     // Request permissions first
     const hasPermissions = await this.requestBluetoothPermissions()
     if (!hasPermissions) {
-      Alert.alert(
-        'Permission Required',
-        'Bluetooth permissions are required to scan for Ledger devices.'
-      )
+      this.showBluetoothPermissionRequiredAlert('scan')
       return
     }
 
@@ -390,15 +452,35 @@ class LedgerService {
         return LedgerAppType.ETHEREUM
       case 'bitcoin':
         return LedgerAppType.BITCOIN
+      case 'bitcoin recovery':
+        return LedgerAppType.BITCOIN_RECOVERY
       default:
         Logger.info(`Unknown app name detected: "${appName}"`)
         return LedgerAppType.UNKNOWN
     }
   }
 
+  // Returns true when detectedApp satisfies a request for requiredApp.
+  // Bitcoin Recovery is accepted as a substitute for Bitcoin.
+  // For the regular Bitcoin app, only versions within the supported range are accepted.
+  private isAppCompatible(
+    detectedApp: LedgerAppType,
+    requiredApp: LedgerAppType
+  ): boolean {
+    if (requiredApp === LedgerAppType.BITCOIN) {
+      return isBitcoinCompatibleApp(detectedApp, this.currentAppVersion)
+    }
+    return detectedApp === requiredApp
+  }
+
   // Get current app type (passive detection)
   getCurrentAppType(): LedgerAppType {
     return this.currentAppType
+  }
+
+  // Get current app version (passive detection)
+  getCurrentAppVersion(): string {
+    return this.currentAppVersion
   }
 
   checkApp = async (appType: LedgerAppType): Promise<boolean> => {
@@ -412,9 +494,12 @@ class LedgerService {
         )
         this.currentAppType = detectedAppType
       }
+      this.currentAppVersion = appInfo.version
 
-      if (this.currentAppType === appType) {
-        Logger.info(`${appType} app is ready`)
+      if (this.isAppCompatible(this.currentAppType, appType)) {
+        Logger.info(
+          `${appType} app is ready (detected: ${this.currentAppType})`
+        )
         return true
       }
     } catch (error) {
@@ -436,8 +521,10 @@ class LedgerService {
       Logger.info(`Waiting for ${appType} app (timeout: ${timeoutMs}ms)...`)
 
       // Check if app is already available
-      if (this.currentAppType === appType) {
-        Logger.info(`${appType} app is ready`)
+      if (this.isAppCompatible(this.currentAppType, appType)) {
+        Logger.info(
+          `${appType} app is ready (detected: ${this.currentAppType})`
+        )
         resolve()
         return
       }
@@ -503,7 +590,8 @@ class LedgerService {
     try {
       const appInfo = await this.getCurrentAppInfo()
       const currentAppType = this.mapAppNameToType(appInfo.applicationName)
-      return currentAppType === appType
+      this.currentAppVersion = appInfo.version
+      return this.isAppCompatible(currentAppType, appType)
     } catch (error) {
       Logger.error('Error checking app status', error)
       return false
@@ -991,6 +1079,7 @@ class LedgerService {
       await this.#transport.close()
       this.#transport = null
       this.currentAppType = LedgerAppType.UNKNOWN
+      this.currentAppVersion = ''
       this.stopAppPolling() // Stop polling on disconnect
     }
   }

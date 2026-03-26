@@ -11,10 +11,12 @@ import { promptForAppReviewAfterSuccessfulTransaction } from 'features/appReview
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getAddressForChainId } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import {
-  isToastsAndConfettiEnabled,
+  isTxFeedbackEnabled,
   isInAppAvalancheRequest,
   isConfettiEnabled,
   isInAppReview,
+  isSuccessToastEnabled,
+  isImmediateSentToast,
   showConfetti
 } from '../utils/requestContext'
 import { onApprove } from './onApprove'
@@ -24,10 +26,12 @@ import { approvalController } from './ApprovalController'
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
 jest.mock('../utils/requestContext', () => ({
-  isToastsAndConfettiEnabled: jest.fn(() => true),
+  isTxFeedbackEnabled: jest.fn(() => true),
   isInAppAvalancheRequest: jest.fn(() => false),
   isConfettiEnabled: jest.fn(() => true),
   isInAppReview: jest.fn(() => false),
+  isSuccessToastEnabled: jest.fn(() => true),
+  isImmediateSentToast: jest.fn(() => false),
   showConfetti: jest.fn()
 }))
 
@@ -87,10 +91,12 @@ jest.mock('store/rpc/handlers/wc_sessionRequest/utils', () => ({
 
 // ─── Typed mock aliases ────────────────────────────────────────────────────────
 
-const mockIsToastsAndConfettiEnabled = isToastsAndConfettiEnabled as jest.Mock
+const mockIsTxFeedbackEnabled = isTxFeedbackEnabled as jest.Mock
 const mockIsInAppAvalancheRequest = isInAppAvalancheRequest as jest.Mock
 const mockIsConfettiEnabled = isConfettiEnabled as jest.Mock
 const mockIsInAppReview = isInAppReview as jest.Mock
+const mockIsSuccessToastEnabled = isSuccessToastEnabled as jest.Mock
+const mockIsImmediateSentToast = isImmediateSentToast as jest.Mock
 const mockShowConfetti = showConfetti as jest.Mock
 const mockIsInAppRequest = isInAppRequest as jest.Mock
 const mockOnApprove = onApprove as jest.Mock
@@ -177,10 +183,12 @@ const populateSigningAddressCache = async (
 describe('ApprovalController', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockIsToastsAndConfettiEnabled.mockReturnValue(true)
+    mockIsTxFeedbackEnabled.mockReturnValue(true)
     mockIsInAppAvalancheRequest.mockReturnValue(false)
     mockIsConfettiEnabled.mockReturnValue(true)
     mockIsInAppReview.mockReturnValue(false)
+    mockIsSuccessToastEnabled.mockReturnValue(true)
+    mockIsImmediateSentToast.mockReturnValue(false)
     mockIsInAppRequest.mockReturnValue(false)
   })
 
@@ -193,8 +201,8 @@ describe('ApprovalController', () => {
       explorerLink: 'https://example.com'
     })
 
-    it('does nothing when toasts and confetti are disabled', () => {
-      mockIsToastsAndConfettiEnabled.mockReturnValue(false)
+    it('does nothing when SUPPRESS_TX_FEEDBACK is set', () => {
+      mockIsTxFeedbackEnabled.mockReturnValue(false)
 
       approvalController.onTransactionPending(pendingArgs(makeRequest()))
 
@@ -235,6 +243,17 @@ describe('ApprovalController', () => {
       })
       expect(transactionSnackbar.success).not.toHaveBeenCalled()
     })
+
+    it('shows "Transaction sent" immediately when IMMEDIATE_SENT_TOAST is set (e.g. Fusion same-chain swap)', () => {
+      mockIsImmediateSentToast.mockReturnValue(true)
+
+      approvalController.onTransactionPending(pendingArgs(makeRequest()))
+
+      expect(transactionSnackbar.success).toHaveBeenCalledWith({
+        message: 'Transaction sent'
+      })
+      expect(transactionSnackbar.pending).not.toHaveBeenCalled()
+    })
   })
 
   // ── onTransactionConfirmed ────────────────────────────────────────────────
@@ -249,8 +268,8 @@ describe('ApprovalController', () => {
       request
     })
 
-    it('skips UI effects when toasts and confetti are disabled', () => {
-      mockIsToastsAndConfettiEnabled.mockReturnValue(false)
+    it('skips all feedback when SUPPRESS_TX_FEEDBACK is set', () => {
+      mockIsTxFeedbackEnabled.mockReturnValue(false)
 
       approvalController.onTransactionConfirmed(confirmedArgs(makeRequest()))
 
@@ -261,8 +280,8 @@ describe('ApprovalController', () => {
       ).not.toHaveBeenCalled()
     })
 
-    it('still fires analytics when toasts and confetti are disabled', async () => {
-      mockIsToastsAndConfettiEnabled.mockReturnValue(false)
+    it('still fires analytics when SUPPRESS_TX_FEEDBACK is set', async () => {
+      mockIsTxFeedbackEnabled.mockReturnValue(false)
       const request = makeDappRequest(RpcMethod.ETH_SEND_TRANSACTION)
       await populateSigningAddressCache(request)
 
@@ -296,6 +315,16 @@ describe('ApprovalController', () => {
       approvalController.onTransactionConfirmed(confirmedArgs(makeRequest()))
 
       expect(transactionSnackbar.success).not.toHaveBeenCalled()
+    })
+
+    it('skips only the success toast when SUCCESS_TOAST_DISABLED is set (confetti controlled separately)', () => {
+      mockIsSuccessToastEnabled.mockReturnValue(false)
+      mockIsInAppRequest.mockReturnValue(true)
+
+      approvalController.onTransactionConfirmed(confirmedArgs(makeRequest()))
+
+      expect(transactionSnackbar.success).not.toHaveBeenCalled()
+      expect(mockShowConfetti).toHaveBeenCalledTimes(1)
     })
 
     it('shows success toast with explorerLink for non-Avalanche requests', () => {

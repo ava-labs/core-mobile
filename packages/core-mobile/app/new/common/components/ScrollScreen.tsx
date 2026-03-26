@@ -7,7 +7,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import {
   LayoutChangeEvent,
   LayoutRectangle,
@@ -24,8 +24,7 @@ import {
 } from 'react-native-keyboard-controller'
 import Animated, {
   interpolate,
-  useAnimatedStyle,
-  useSharedValue
+  useAnimatedStyle
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Grabber from './Grabber'
@@ -117,9 +116,11 @@ export const ScrollScreen = ({
     LayoutRectangle | undefined
   >()
 
+  const [footerLayout, setFooterLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+
   const headerRef = useRef<View>(null)
-  const contentHeaderHeight = useSharedValue<number>(0)
-  const [footerMeasuredHeight, setFooterMeasuredHeight] = useState(0)
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
@@ -145,16 +146,14 @@ export const ScrollScreen = ({
     }
   })
 
-  useLayoutEffect(() => {
-    // eslint-disable-next-line max-params
-    headerRef?.current?.measure((x, y, width, height) => {
-      contentHeaderHeight.value = height
-      setHeaderLayout({ x, y, width, height })
-    })
-  }, [contentHeaderHeight])
+  const handleHeaderLayout = useCallback((event: LayoutChangeEvent) => {
+    const { x, y, width, height } = event.nativeEvent.layout
+    setHeaderLayout({ x, y, width, height })
+  }, [])
 
-  const onFooterLayout = useCallback((event: LayoutChangeEvent) => {
-    setFooterMeasuredHeight(event.nativeEvent.layout.height)
+  const handleFooterLayout = useCallback((event: LayoutChangeEvent) => {
+    const { x, y, width, height } = event.nativeEvent.layout
+    setFooterLayout({ x, y, width, height })
   }, [])
 
   const animatedBorderStyle = useAnimatedStyle(() => {
@@ -172,6 +171,7 @@ export const ScrollScreen = ({
           <View
             ref={headerRef}
             collapsable={false}
+            onLayout={handleHeaderLayout}
             style={[headerStyle, hasTitle ? { gap: 8 } : undefined]}>
             {title ? (
               <Animated.View style={[animatedHeaderStyle]}>
@@ -197,6 +197,7 @@ export const ScrollScreen = ({
         <View
           ref={headerRef}
           collapsable={false}
+          onLayout={handleHeaderLayout}
           style={[
             headerStyle,
             {
@@ -213,6 +214,7 @@ export const ScrollScreen = ({
     headerRef,
     headerHeight,
     headerStyle,
+    handleHeaderLayout,
     renderHeader,
     subtitle,
     title,
@@ -224,15 +226,22 @@ export const ScrollScreen = ({
       const footer = renderFooter()
       if (footer) {
         const footerInner = (
-          <View onLayout={onFooterLayout}>
+          <View
+            collapsable={false}
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0
+            }}>
             <LinearGradientBottomWrapper>
-              <Animated.View
+              <View
                 style={{
                   paddingHorizontal: 16,
                   paddingBottom: insets.bottom + 16
                 }}>
-                {footer}
-              </Animated.View>
+                <View onLayout={handleFooterLayout}>{footer}</View>
+              </View>
             </LinearGradientBottomWrapper>
           </View>
         )
@@ -256,10 +265,10 @@ export const ScrollScreen = ({
     return null
   }, [
     renderFooter,
-    shouldAvoidKeyboard,
-    disableStickyFooter,
     insets.bottom,
-    onFooterLayout
+    handleFooterLayout,
+    shouldAvoidKeyboard,
+    disableStickyFooter
   ])
 
   const renderGrabber = useCallback(() => {
@@ -321,9 +330,7 @@ export const ScrollScreen = ({
       <View style={{ flex: 1 }} collapsable={false}>
         <KeyboardScrollView
           testID={testID}
-          extraKeyboardSpace={
-            disableStickyFooter ? -footerMeasuredHeight - insets.bottom : 0
-          }
+          extraKeyboardSpace={disableStickyFooter ? -insets.bottom : 0}
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -335,8 +342,8 @@ export const ScrollScreen = ({
             props?.contentContainerStyle,
             {
               paddingBottom: disableStickyFooter
-                ? insets.bottom + 24
-                : footerMeasuredHeight + 16,
+                ? insets.bottom + 32
+                : (footerLayout?.height ?? 0) + 32,
               paddingTop: headerHeight
             }
           ]}
@@ -345,10 +352,10 @@ export const ScrollScreen = ({
           {children}
         </KeyboardScrollView>
 
+        {renderGrabber()}
         {renderFooterContent()}
         {renderHeaderBackground()}
         {headerCenterOverlay}
-        {renderGrabber()}
       </View>
     )
   }
@@ -367,9 +374,7 @@ export const ScrollScreen = ({
         contentContainerStyle={[
           props?.contentContainerStyle,
           {
-            paddingBottom: renderFooter
-              ? footerMeasuredHeight + 16
-              : insets.bottom + 24,
+            paddingBottom: (footerLayout?.height ?? 0) + insets.bottom + 32,
             paddingTop: headerHeight
           }
         ]}

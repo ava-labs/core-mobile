@@ -1,10 +1,106 @@
 import {
+  fusionErrors,
+  isGasOnlyNetworkFeeError,
   isUserRejectionError,
   isGasEstimationError,
   isInvalidResponseError,
   shouldRetryWithNextQuote,
   getSwapErrorMessage
 } from './fusionErrors'
+
+describe('fusionErrors', () => {
+  describe('networkFeeExceedsBalance', () => {
+    it('should include required fee in message', () => {
+      const error = fusionErrors.networkFeeExceedsBalance('0.001 AVAX')
+      expect(error.message).toBe(
+        'Network fee exceeds your balance.\nNetwork fee: 0.001 AVAX'
+      )
+    })
+  })
+
+  describe('amountExceedsBalanceAfterNetworkFee', () => {
+    it('should include required fee in message', () => {
+      const error =
+        fusionErrors.amountExceedsBalanceAfterNetworkFee('0.001 AVAX')
+      expect(error.message).toBe(
+        'Insufficient balance to cover the swap amount and network fee.\nNetwork fee: 0.001 AVAX'
+      )
+    })
+  })
+
+  describe('feesExceedBalance', () => {
+    it('should include required fees in message', () => {
+      const error = fusionErrors.feesExceedBalance('0.001234 AVAX')
+      expect(error.message).toBe(
+        'Network and bridge fees exceed your balance.\nRequired fees: 0.001234 AVAX'
+      )
+    })
+  })
+
+  describe('amountExceedsBalanceAfterFees', () => {
+    it('should include required fees in message', () => {
+      const error = fusionErrors.amountExceedsBalanceAfterFees('0.001234 AVAX')
+      expect(error.message).toBe(
+        'Insufficient balance to cover the swap amount and fees.\nRequired fees: 0.001234 AVAX'
+      )
+    })
+  })
+
+  describe('networkFeeExceedsNativeBalance', () => {
+    it('should include symbol and formatted amount in message', () => {
+      const error = fusionErrors.networkFeeExceedsNativeBalance(
+        'AVAX',
+        '0.001 AVAX'
+      )
+      expect(error.message).toBe(
+        'Network fee exceeds your AVAX balance.\nNetwork fee: 0.001 AVAX.'
+      )
+    })
+  })
+
+  describe('feesExceedNativeBalance', () => {
+    it('should include symbol and formatted amount in message', () => {
+      const error = fusionErrors.feesExceedNativeBalance('ETH', '0.002 ETH')
+      expect(error.message).toBe(
+        'Network and bridge fees exceed your ETH balance.\nRequired fees: 0.002 ETH.'
+      )
+    })
+
+    it('should fall back gracefully for unknown native tokens', () => {
+      const error = fusionErrors.feesExceedNativeBalance('native', '1000000')
+      expect(error.message).toContain(
+        'Network and bridge fees exceed your native balance.'
+      )
+    })
+  })
+
+  describe('bridgeFeeExceedsBalance', () => {
+    it('should include required fee in message', () => {
+      const error = fusionErrors.bridgeFeeExceedsBalance('0.5 USDC')
+      expect(error.message).toBe(
+        'Bridge fee exceeds your balance.\nBridge fee: 0.5 USDC'
+      )
+    })
+  })
+
+  describe('amountExceedsBalanceAfterBridgeFee', () => {
+    it('should include bridge fee in message', () => {
+      const error = fusionErrors.amountExceedsBalanceAfterBridgeFee('0.5 USDC')
+      expect(error.message).toBe(
+        'Insufficient balance to cover the swap amount and bridge fee.\nBridge fee: 0.5 USDC'
+      )
+    })
+  })
+
+  describe('swapAmountTooSmall', () => {
+    it('should return a user-friendly message', () => {
+      const error = fusionErrors.swapAmountTooSmall()
+      expect(error.message).toBe(
+        'Swap amount is too small for this token pair.\nTry a larger amount.'
+      )
+    })
+  })
+})
 
 describe('isUserRejectionError', () => {
   it('should return true for "user rejected" message', () => {
@@ -135,10 +231,10 @@ describe('shouldRetryWithNextQuote', () => {
 describe('getSwapErrorMessage', () => {
   it('should return insufficient balance message for insufficient funds errors', () => {
     expect(getSwapErrorMessage(new Error('insufficient funds for gas'))).toBe(
-      'Insufficient balance to complete swap and cover gas fees'
+      'Insufficient balance to cover swap amount and fees.'
     )
     expect(getSwapErrorMessage(new Error('insufficient funds'))).toBe(
-      'Insufficient balance to complete swap and cover gas fees'
+      'Insufficient balance to cover swap amount and fees.'
     )
   })
 
@@ -183,5 +279,58 @@ describe('getSwapErrorMessage', () => {
     expect(getSwapErrorMessage({ message: 'object error' })).toBe(
       'Unknown error occurred'
     )
+  })
+})
+
+describe('isGasOnlyNetworkFeeError', () => {
+  it('returns true for networkFeeExceedsBalance', () => {
+    expect(
+      isGasOnlyNetworkFeeError(
+        fusionErrors.networkFeeExceedsBalance('0.001 AVAX')
+      )
+    ).toBe(true)
+  })
+
+  it('returns true for amountExceedsBalanceAfterNetworkFee', () => {
+    expect(
+      isGasOnlyNetworkFeeError(
+        fusionErrors.amountExceedsBalanceAfterNetworkFee('0.001 AVAX')
+      )
+    ).toBe(true)
+  })
+
+  it('returns true for networkFeeExceedsNativeBalance', () => {
+    expect(
+      isGasOnlyNetworkFeeError(
+        fusionErrors.networkFeeExceedsNativeBalance('AVAX', '0.001 AVAX')
+      )
+    ).toBe(true)
+  })
+
+  it('returns false for feesExceedBalance (includes bridge fee)', () => {
+    expect(
+      isGasOnlyNetworkFeeError(fusionErrors.feesExceedBalance('0.002 AVAX'))
+    ).toBe(false)
+  })
+
+  it('returns false for feesExceedNativeBalance (includes bridge fee)', () => {
+    expect(
+      isGasOnlyNetworkFeeError(
+        fusionErrors.feesExceedNativeBalance('AVAX', '0.002 AVAX')
+      )
+    ).toBe(false)
+  })
+
+  it('returns false for amountExceedsBalanceAfterFees (includes bridge fee)', () => {
+    expect(
+      isGasOnlyNetworkFeeError(
+        fusionErrors.amountExceedsBalanceAfterFees('0.002 AVAX')
+      )
+    ).toBe(false)
+  })
+
+  it('returns false for unrelated errors', () => {
+    expect(isGasOnlyNetworkFeeError(fusionErrors.exceedsBalance())).toBe(false)
+    expect(isGasOnlyNetworkFeeError(fusionErrors.enterAmount())).toBe(false)
   })
 })

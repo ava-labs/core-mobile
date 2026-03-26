@@ -24,6 +24,7 @@ import {
   NativeSyntheticEvent,
   Platform,
   ScrollViewProps,
+  StyleSheet,
   View,
   ViewStyle
 } from 'react-native'
@@ -606,13 +607,13 @@ export const ListScreenV2 = <T,>({
           internalKeyExtractor as (item: T, index: number) => string
         }
         getItemType={internalGetItemType as FlashListProps<T>['getItemType']}
-        style={[
+        style={StyleSheet.flatten([
           {
             backgroundColor: backgroundColor ?? 'transparent',
             marginTop: flashListMarginTop
           },
           restProps.style
-        ]}
+        ])}
       />
       {renderGrabber()}
       {renderFooterContent()}

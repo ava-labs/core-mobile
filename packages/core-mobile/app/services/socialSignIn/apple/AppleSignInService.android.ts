@@ -44,6 +44,14 @@ class AppleSigninService implements AppleSigninServiceInterface {
 
       return { oidcToken: response.id_token }
     } catch (error) {
+      if (
+        error instanceof Error &&
+        'code' in error &&
+        (error as Error & { code: string }).code ===
+          appleAuthAndroid.Error.SIGNIN_CANCELLED
+      ) {
+        throw new Error('USER_CANCELED')
+      }
       Logger.error('Android Apple sign in error', error)
       throw new Error('Android Apple sign in error')
     }
