@@ -104,6 +104,7 @@ import IconSwapProviderAuto from '../../assets/icons/swap_auto.svg'
 import IconLedger from '../../assets/icons/ledger_logo.svg'
 import AvalancheLogo from '../../assets/icons/avalanche_logo.svg'
 import SolanaLogo from '../../assets/icons/solana_logo.svg'
+import IconPrediction from '../../assets/icons/prediction.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -353,7 +354,8 @@ export const Icons = {
     Bluetooth: IconBluetooth,
     Avalanche: AvalancheLogo,
     Solana: SolanaLogo,
-    MoneyBag: IconMoneyBag
+    MoneyBag: IconMoneyBag,
+    Prediction: IconPrediction
   },
   RecoveryMethod: {
     Passkey: IconPasskey,

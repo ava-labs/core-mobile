@@ -336,4 +336,6 @@ export type AnalyticsEvents = {
   PredictionsKYCRejected: { reason: string }
 
   PredictionsSearched: { query: string; resultCount: number }
+  PredictionsClicked: undefined
+  PerpsClicked: undefined
 }

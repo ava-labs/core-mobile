@@ -27,15 +27,20 @@ import { useTradableMarkets } from 'features/predictions/hooks/useTradableMarket
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
+  InteractionManager,
   LayoutChangeEvent,
   LayoutRectangle
 } from 'react-native'
 import type { TabBarProps } from 'react-native-collapsible-tab-view'
 import { ScrollView } from 'react-native-gesture-handler'
-import Animated from 'react-native-reanimated'
-import { useSharedValue } from 'react-native-reanimated'
+import Animated, { useSharedValue } from 'react-native-reanimated'
+import { AnalyticsEventName } from 'services/analytics/types'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { MarketOption } from '../components/MarketCardOption'
 
-const MARKETS_MOCK = [
+type MockMarket = TradableMarket & { options: MarketOption[] }
+
+const MARKETS_MOCK: MockMarket[] = [
   {
     tickerId: 'SPORTS-LIVE-TILE',
     title: 'Tile layout for live events',
@@ -49,13 +54,25 @@ const MARKETS_MOCK = [
     kycRequired: false,
     result: null,
     yesQuote: { maxBidPrice: '0.73', minAskPrice: '0.75' },
-    noQuote: { maxBidPrice: '0.23', minAskPrice: '0.25' }
+    noQuote: { maxBidPrice: '0.23', minAskPrice: '0.25' },
+    options: [
+      {
+        label: 'Team 1',
+        imageUrl: 'https://picsum.photos/17',
+        probability: 0.75
+      },
+      {
+        label: 'Team 2',
+        imageUrl: 'https://picsum.photos/17',
+        probability: 0.25
+      }
+    ]
   },
   {
     tickerId: 'EPL-WINNER-2026',
     title: 'English Premier League Winner',
     category: 'Sports',
-    imageUrl: 'https://via.placeholder.com/30',
+    imageUrl: 'https://picsum.photos/30',
     openTime: '2026-01-01T00:00:00Z',
     closeTime: '2027-05-20T00:00:00Z',
     expectedExpirationTime: '2027-05-20T00:00:00Z',
@@ -64,13 +81,22 @@ const MARKETS_MOCK = [
     kycRequired: false,
     result: null,
     yesQuote: { maxBidPrice: '0.77', minAskPrice: '0.79' },
-    noQuote: { maxBidPrice: '0.16', minAskPrice: '0.18' }
+    noQuote: { maxBidPrice: '0.16', minAskPrice: '0.18' },
+    options: [
+      {
+        label: 'Arsenal',
+        imageUrl: 'https://placehold.co/17x17',
+        probability: 0.79
+      },
+      { label: 'Man City', imageUrl: null, probability: 0.18 },
+      { label: 'Aston Villa', imageUrl: null, probability: 0.03 }
+    ]
   },
   {
     tickerId: 'OSCARS-2026-BEST-PICTURE',
     title: 'Oscars 2026: Best Picture Winner',
     category: 'Entertainment',
-    imageUrl: 'https://via.placeholder.com/30',
+    imageUrl: 'https://picsum.photos/30',
     openTime: '2026-01-01T00:00:00Z',
     closeTime: '2027-03-28T00:00:00Z',
     expectedExpirationTime: '2027-03-28T00:00:00Z',
@@ -79,13 +105,18 @@ const MARKETS_MOCK = [
     kycRequired: false,
     result: null,
     yesQuote: { maxBidPrice: '0.69', minAskPrice: '0.71' },
-    noQuote: { maxBidPrice: '0.16', minAskPrice: '0.18' }
+    noQuote: { maxBidPrice: '0.16', minAskPrice: '0.18' },
+    options: [
+      { label: 'One Battle at a Time', imageUrl: null, probability: 0.71 },
+      { label: 'Sinners', imageUrl: null, probability: 0.18 },
+      { label: 'Hamnet', imageUrl: null, probability: 0.05 }
+    ]
   },
   {
     tickerId: 'BTC-150K-JUNE-2026',
     title: 'Will Bitcoin reach $150k by the end of June?',
     category: 'Crypto',
-    imageUrl: 'https://via.placeholder.com/30',
+    imageUrl: 'https://picsum.photos/30',
     openTime: '2026-01-01T00:00:00Z',
     closeTime: '2026-06-30T00:00:00Z',
     expectedExpirationTime: '2026-06-30T00:00:00Z',
@@ -94,7 +125,11 @@ const MARKETS_MOCK = [
     kycRequired: false,
     result: null,
     yesQuote: { maxBidPrice: '0.02', minAskPrice: '0.04' },
-    noQuote: { maxBidPrice: '0.94', minAskPrice: '0.96' }
+    noQuote: { maxBidPrice: '0.94', minAskPrice: '0.96' },
+    options: [
+      { label: 'No', imageUrl: null, probability: 0.96 },
+      { label: 'Yes', imageUrl: null, probability: 0.04 }
+    ]
   },
   {
     tickerId: 'LOREM-IPSUM-POLITICS',
@@ -109,11 +144,20 @@ const MARKETS_MOCK = [
     kycRequired: false,
     result: null,
     yesQuote: { maxBidPrice: '0.73', minAskPrice: '0.75' },
-    noQuote: { maxBidPrice: '0.23', minAskPrice: '0.25' }
+    noQuote: { maxBidPrice: '0.23', minAskPrice: '0.25' },
+    options: [
+      { label: 'Yes', imageUrl: null, probability: 0.75 },
+      { label: 'No', imageUrl: null, probability: 0.25 }
+    ]
   }
-] as unknown as TradableMarket[]
+] as unknown as MockMarket[]
 
 const SEGMENT_ITEMS = [{ title: 'Predictions' }, { title: 'Perps' }]
+
+const SEGMENT_EVENT_MAP: Record<number, AnalyticsEventName> = {
+  0: 'PredictionsClicked',
+  1: 'PerpsClicked'
+}
 
 function renderEmptyTabBar(_props: TabBarProps): JSX.Element {
   return <></>
@@ -143,10 +187,11 @@ export function PredictionsScreen(): JSX.Element {
 
   const selectedSegmentIndex = useSharedValue(0)
 
-  const { markets, isLoading: marketsLoading, refetch } = useTradableMarkets()
+  const { isLoading: marketsLoading, refetch } = useTradableMarkets()
   const { series } = useMarketSeries()
-  const { selectedChip, filteredMarkets, selectChip } =
-    usePredictionsFilter(MARKETS_MOCK)
+  const { selectedChip, filteredMarkets, selectChip } = usePredictionsFilter(
+    MARKETS_MOCK as unknown as TradableMarket[]
+  )
 
   const handleHeaderLayout = useCallback((event: LayoutChangeEvent) => {
     setHeaderLayout(event.nativeEvent.layout)
@@ -161,7 +206,19 @@ export function PredictionsScreen(): JSX.Element {
 
   const handleSelectSegment = useCallback(
     (index: number): void => {
+      const eventName = SEGMENT_EVENT_MAP[index]
+
+      if (eventName) {
+        AnalyticsService.capture(eventName)
+      }
+
       selectedSegmentIndex.value = index
+
+      InteractionManager.runAfterInteractions(() => {
+        if (tabViewRef.current?.getCurrentIndex() !== index) {
+          tabViewRef.current?.setIndex(index)
+        }
+      })
     },
     [selectedSegmentIndex]
   )
@@ -238,19 +295,20 @@ export function PredictionsScreen(): JSX.Element {
     ]
   )
 
-  const renderItem = useCallback(
-    ({ item }: { item: TradableMarket }) => (
+  const renderItem = useCallback(({ item }: { item: TradableMarket }) => {
+    const options = (item as MockMarket).options ?? []
+    return (
       <View sx={{ flex: 1, marginHorizontal: 7, marginBottom: 13 }}>
         <MarketCard
           market={item}
+          options={options}
           onPress={() => {
             // Navigation to detail screen — wired in CP-13831
           }}
         />
       </View>
-    ),
-    []
-  )
+    )
+  }, [])
 
   const keyExtractor = useCallback((item: TradableMarket) => item.tickerId, [])
 
@@ -276,10 +334,10 @@ export function PredictionsScreen(): JSX.Element {
   const tabs = useMemo(
     () => [
       {
-        tabName: 'Browse',
+        tabName: 'Predictions',
         component: (
           <Animated.View
-            testID="portfolio_token_list"
+            testID="trade-predictions"
             entering={getListItemEnteringAnimation(10)}
             style={{
               flex: 1
@@ -291,13 +349,27 @@ export function PredictionsScreen(): JSX.Element {
               renderEmpty={renderEmptyComponent}
               isRefreshing={marketsLoading}
               numColumns={2}
+              masonry
               extraData={{ selectedChip }}
-              listKey="predictions-browse"
+              listKey="trade-predictions"
               contentContainerStyle={{
                 paddingHorizontal: 8,
                 paddingBottom: (segmentedControlLayout?.height ?? 0) + 32
               }}
             />
+          </Animated.View>
+        )
+      },
+      {
+        tabName: 'Perps',
+        component: (
+          <Animated.View
+            testID="trade-perps"
+            entering={getListItemEnteringAnimation(10)}
+            style={{
+              flex: 1
+            }}>
+            <Text>Perps</Text>
           </Animated.View>
         )
       }

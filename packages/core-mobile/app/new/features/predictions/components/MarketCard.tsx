@@ -1,11 +1,18 @@
-import React, { useMemo } from 'react'
-import { Image, Pressable, Text, View, useTheme } from '@avalabs/k2-alpine'
+import {
+  AnimatedPressable,
+  Icons,
+  Image,
+  Text,
+  View,
+  useTheme
+} from '@avalabs/k2-alpine'
 import type { TradableMarket } from '@avalabs/prediction-market-sdk'
-
-// No StyleSheet — use sx prop for static values, style prop for dynamic values.
+import React from 'react'
+import { MarketCardOption, MarketOption } from './MarketCardOption'
 
 interface MarketCardProps {
   market: TradableMarket
+  options: MarketOption[]
   onPress?: () => void
 }
 
@@ -15,9 +22,14 @@ interface MarketCardProps {
  * Does NOT accept a width prop — fills its container.
  * In BrowseScreen, wrap each card in a View with sx={{ flex: 1, marginHorizontal: 7, marginBottom: 13 }}.
  *
- * Probability is derived from minAskPrice (best available ask = market price).
+ * Each option row renders a fill bar (proportional to probability) with the label
+ * and percentage overlaid inside, matching the Figma masonry card design.
  */
-export function MarketCard({ market, onPress }: MarketCardProps): JSX.Element {
+export function MarketCard({
+  market,
+  options,
+  onPress
+}: MarketCardProps): JSX.Element {
   const { theme } = useTheme()
 
   const now = Date.now()
@@ -25,40 +37,17 @@ export function MarketCard({ market, onPress }: MarketCardProps): JSX.Element {
     new Date(market.openTime).getTime() <= now &&
     now < new Date(market.closeTime).getTime()
 
-  const yesProb = useMemo(
-    () => Math.min(1, Math.max(0, parseFloat(market.yesQuote.minAskPrice))),
-    [market.yesQuote.minAskPrice]
-  )
-  const noProb = useMemo(
-    () => Math.min(1, Math.max(0, parseFloat(market.noQuote.minAskPrice))),
-    [market.noQuote.minAskPrice]
-  )
-
-  const expiryLabel = useMemo(
-    () =>
-      new Date(market.expectedExpirationTime).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      }),
-    [market.expectedExpirationTime]
-  )
-
-  const yesFill = `rgba(31, 169, 94, ${(0.2 + yesProb * 0.4).toFixed(2)})`
-  const noFill = `rgba(40, 40, 46, ${(0.1 + noProb * 0.15).toFixed(2)})`
-
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={onPress}
-      sx={{
+      style={{
         flex: 1,
         borderRadius: 18,
         padding: 16,
         borderWidth: 1,
-        borderColor: 'rgba(0,0,0,0.1)'
-      }}
-      style={{ backgroundColor: theme.colors.$surfaceSecondary }}>
-      {/* Thumbnail + Live badge */}
+        borderColor: theme.colors.$borderPrimary,
+        backgroundColor: theme.colors.$surfaceSecondary
+      }}>
       <View
         sx={{
           flexDirection: 'column',
@@ -67,11 +56,39 @@ export function MarketCard({ market, onPress }: MarketCardProps): JSX.Element {
           marginBottom: 8
         }}>
         {market.imageUrl ? (
-          <Image
-            source={{ uri: market.imageUrl }}
-            sx={{ width: 30, height: 30, borderRadius: 8 }}
-            resizeMode="cover"
-          />
+          <View
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: 8,
+              backgroundColor: theme.colors.$surfacePrimary,
+              borderWidth: 1,
+              borderColor: theme.colors.$borderPrimary,
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden'
+            }}>
+            <Image
+              source={{ uri: market.imageUrl }}
+              style={{ width: 30, height: 30 }}
+            />
+            <View
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                left: 0,
+                top: 0,
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+              <Icons.Custom.Prediction
+                color={theme.colors.$textPrimary}
+                width={16}
+                height={16}
+              />
+            </View>
+          </View>
         ) : null}
         {isLive ? (
           <View
@@ -80,104 +97,46 @@ export function MarketCard({ market, onPress }: MarketCardProps): JSX.Element {
               alignItems: 'center',
               backgroundColor: '#ff2a6d',
               borderRadius: 100,
+              borderWidth: 1,
+              borderColor: theme.colors.$borderPrimary,
               paddingHorizontal: 6,
-              paddingVertical: 2,
               gap: 4,
+              height: 16,
               alignSelf: 'flex-start'
             }}>
             <View
               sx={{
-                width: 5,
-                height: 5,
+                width: 6,
+                height: 6,
                 borderRadius: 3,
-                backgroundColor: '#ffffff'
+                backgroundColor: theme.colors.$white
               }}
             />
-            <Text variant="caption" sx={{ color: '#ffffff' }}>
+            <Text
+              variant="caption"
+              sx={{
+                fontFamily: 'Inter-Medium',
+                lineHeight: 12,
+                color: theme.colors.$white
+              }}>
               Live
             </Text>
           </View>
         ) : null}
       </View>
 
-      {/* Title */}
-      <Text variant="heading4" sx={{ marginBottom: 12 }} numberOfLines={4}>
+      <Text
+        variant="heading4"
+        sx={{ marginBottom: 16, lineHeight: 22 }}
+        numberOfLines={4}>
         {market.title ?? ''}
       </Text>
 
-      {/* Probability bars */}
-      <View sx={{ gap: 4, marginBottom: 10 }}>
-        {/* Yes */}
-        <View
-          sx={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            height: 24,
-            gap: 6
-          }}>
-          <Text variant="caption" sx={{ width: 22 }}>
-            Yes
-          </Text>
-          <View
-            sx={{
-              flex: 1,
-              height: 24,
-              borderRadius: 8,
-              overflow: 'hidden',
-              backgroundColor: 'rgba(40,40,46,0.06)'
-            }}>
-            <View
-              style={{
-                width: `${Math.round(yesProb * 100)}%`,
-                height: '100%',
-                borderRadius: 8,
-                backgroundColor: yesFill
-              }}
-            />
-          </View>
-          <Text variant="buttonSmall" sx={{ width: 32, textAlign: 'right' }}>
-            {Math.round(yesProb * 100)}%
-          </Text>
-        </View>
-
-        {/* No */}
-        <View
-          sx={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            height: 24,
-            gap: 6
-          }}>
-          <Text variant="caption" sx={{ width: 22 }}>
-            No
-          </Text>
-          <View
-            sx={{
-              flex: 1,
-              height: 24,
-              borderRadius: 8,
-              overflow: 'hidden',
-              backgroundColor: 'rgba(40,40,46,0.06)'
-            }}>
-            <View
-              style={{
-                width: `${Math.round(noProb * 100)}%`,
-                height: '100%',
-                borderRadius: 8,
-                backgroundColor: noFill
-              }}
-            />
-          </View>
-          <Text variant="buttonSmall" sx={{ width: 32, textAlign: 'right' }}>
-            {Math.round(noProb * 100)}%
-          </Text>
-        </View>
+      <View sx={{ gap: 4 }}>
+        {options.map(option => (
+          <MarketCardOption key={option.label} option={option} />
+        ))}
       </View>
-
-      {/* Expiry */}
-      <Text variant="caption" sx={{ opacity: 0.5 }}>
-        {expiryLabel}
-      </Text>
-    </Pressable>
+    </AnimatedPressable>
   )
 }
