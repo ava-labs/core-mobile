@@ -1,5 +1,6 @@
 import { Text, useTheme, View } from '@avalabs/k2-alpine'
 import { TokenLogo } from 'common/components/TokenLogo'
+import { SubTextNumber } from 'common/components/SubTextNumber'
 import React from 'react'
 
 const TOKEN_LOGO_SIZE = 40
@@ -39,17 +40,29 @@ export const TokenAmountRow = ({
         </Text>
       </View>
       {amount !== undefined && (
-        <View style={{ alignItems: 'flex-end' }}>
-          <Text
-            variant="heading2"
-            sx={{
-              fontWeight: '500',
-              color: isDebit ? colors.$textDanger : colors.$textPrimary
-            }}>
-            {isDebit ? `-${amount}` : amount}
-          </Text>
+        <View style={{ alignItems: 'flex-end', flexShrink: 1 }}>
+          {isNaN(Number(amount)) ? (
+            <Text
+              numberOfLines={1}
+              variant="heading2"
+              sx={{
+                fontWeight: '500',
+                color: isDebit ? colors.$textDanger : colors.$textPrimary
+              }}>
+              {isDebit ? `-${amount}` : amount}
+            </Text>
+          ) : (
+            <SubTextNumber
+              number={isDebit ? `-${amount}` : amount}
+              textVariant="heading2"
+              fontWeight="500"
+              textColor={isDebit ? colors.$textDanger : colors.$textPrimary}
+              style={{ maxWidth: '100%' }}
+            />
+          )}
           {amountInCurrency !== undefined && (
             <Text
+              numberOfLines={1}
               variant="body2"
               sx={{
                 color: isDebit ? colors.$textDanger : colors.$textSecondary
