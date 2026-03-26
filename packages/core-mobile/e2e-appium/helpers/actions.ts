@@ -133,28 +133,23 @@ async function getVisible(ele: ChainablePromiseElement) {
 }
 
 /**
- * Check if element is visible within timeout
- * Returns true if visible, false if timeout or error
- * Uses Promise.race() to return immediately when element appears or timeout expires
+ * Check if element is visible within timeout.
+ * Waits up to `timeout` ms using WebdriverIO's display polling; returns false on timeout or error.
  */
 async function isElementVisible(
   element: ChainablePromiseElement,
   timeout = 2000
 ): Promise<boolean> {
-  const timeoutPromise = new Promise<false>(resolve =>
-    setTimeout(() => resolve(false), timeout)
-  )
-
-  return Promise.race([
-    element.isDisplayed().then(() => true),
-    timeoutPromise
-  ]).catch(() => false)
+  try {
+    await element.waitForDisplayed({ timeout })
+    return await element.isDisplayed()
+  } catch {
+    return false
+  }
 }
 
 /**
- * Check if biometric toggle is ON
- * Returns true if toggle is ON, false otherwise
- * Uses Promise.race() to return immediately when toggle is found or timeout expires
+ * Check if biometric toggle is ON (visible “on” testID within timeout).
  */
 async function isBiometricToggleOn(timeout = 1500): Promise<boolean> {
   const toggleOn = selectors.getById('toggle_biometrics_on')
