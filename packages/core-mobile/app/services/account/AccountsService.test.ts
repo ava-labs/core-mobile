@@ -60,7 +60,7 @@ const createBalanceStream = (...items: unknown[]): AsyncGenerator<unknown> =>
     }
   })()
 
-const createDeferred = <T>() => {
+const createDeferred = <T,>() => {
   let resolve!: (value: T | PromiseLike<T>) => void
   let reject!: (reason?: unknown) => void
   const promise = new Promise<T>((res, rej) => {
@@ -220,10 +220,7 @@ describe('AccountsService', () => {
             maxScan: number
             scanWindow: number
             maxConsecutiveInactive: number
-          }): Promise<{
-            accounts: Array<{ id: string; index: number }>
-            completedCleanly: boolean
-          }>
+          }): Promise<Array<{ id: string; index: number }>>
         }
       ).discoverSeedBasedActiveAccounts({
         walletId: 'wallet-1',
@@ -240,8 +237,8 @@ describe('AccountsService', () => {
           accountIndex: 2
         })
       )
-      expect(result.accounts).toHaveLength(1)
-      expect(result.accounts[0]).toEqual(
+      expect(result).toHaveLength(1)
+      expect(result[0]).toEqual(
         expect.objectContaining({
           id: 'scan-1',
           index: 1
@@ -445,10 +442,7 @@ describe('AccountsService', () => {
             maxScan: number
             scanWindow: number
             maxConsecutiveInactive: number
-          }): Promise<{
-            accounts: Array<{ id: string; index: number }>
-            completedCleanly: boolean
-          }>
+          }): Promise<Array<{ id: string; index: number }>>
         }
       ).discoverSeedBasedActiveAccounts({
         walletId: 'wallet-1',
@@ -461,9 +455,7 @@ describe('AccountsService', () => {
 
       const discoveryResultOrTimeout = await Promise.race([
         discoveryPromise,
-        new Promise<'timeout'>(resolve =>
-          setTimeout(() => resolve('timeout'), 100)
-        )
+        new Promise<'timeout'>(resolve => setTimeout(() => resolve('timeout'), 100))
       ])
 
       deferredAccount4.resolve('inactive')
@@ -473,7 +465,7 @@ describe('AccountsService', () => {
 
       const result = await discoveryPromise
 
-      expect(result.accounts).toEqual([
+      expect(result).toEqual([
         expect.objectContaining({
           id: 'scan-1',
           index: 1
@@ -545,13 +537,13 @@ describe('AccountsService', () => {
         )
         .mockResolvedValue('inactive')
 
-      const result = await AccountsService.fetchRemainingActiveAccounts({
+      const accounts = await AccountsService.fetchRemainingActiveAccounts({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
         startIndex: 1
       })
 
-      expect(Object.values(result.accounts)).toEqual([
+      expect(Object.values(accounts)).toEqual([
         expect.objectContaining({
           index: 1,
           addressC: '0x111',
@@ -559,95 +551,6 @@ describe('AccountsService', () => {
         })
       ])
       expect(ModuleManager.deriveAddresses).toHaveBeenCalledTimes(6)
-    })
-
-    it('fills index gaps so accounts are contiguous up to the highest active index', async () => {
-      // Spy on discoverSeedBasedActiveAccounts to return non-contiguous indexes [1, 3]
-      const discoverSpy = jest
-        .spyOn(
-          AccountsService as unknown as {
-            discoverSeedBasedActiveAccounts: (params: unknown) => Promise<{
-              accounts: Array<{
-                id: string
-                index: number
-                addresses: AddressRecord
-              }>
-              completedCleanly: boolean
-            }>
-          },
-          'discoverSeedBasedActiveAccounts'
-        )
-        .mockResolvedValue({
-          accounts: [
-            {
-              id: 'scan-1',
-              index: 1,
-              addresses: createAddresses({
-                [NetworkVMType.EVM]: '0xActive1',
-                [NetworkVMType.BITCOIN]: 'bc1-active-1'
-              })
-            },
-            {
-              id: 'scan-3',
-              index: 3,
-              addresses: createAddresses({
-                [NetworkVMType.EVM]: '0xActive3',
-                [NetworkVMType.BITCOIN]: 'bc1-active-3'
-              })
-            }
-          ],
-          completedCleanly: true
-        })
-
-      // deriveAddresses will be called for the gap at index 2
-      ;(ModuleManager.deriveAddresses as jest.Mock).mockResolvedValue(
-        createAddresses({
-          [NetworkVMType.EVM]: '0xGap2',
-          [NetworkVMType.BITCOIN]: 'bc1-gap-2'
-        })
-      )
-
-      const result = await AccountsService.fetchRemainingActiveAccounts({
-        walletId: 'wallet-1',
-        walletType: WalletType.MNEMONIC,
-        startIndex: 1
-      })
-
-      const accountList = Object.values(result.accounts).sort(
-        (a, b) => a.index - b.index
-      )
-
-      // Should have 3 accounts: index 1, 2 (gap-filled), and 3
-      expect(accountList).toHaveLength(3)
-      expect(accountList[0]).toEqual(
-        expect.objectContaining({
-          index: 1,
-          addressC: '0xActive1',
-          addressBTC: 'bc1-active-1'
-        })
-      )
-      expect(accountList[1]).toEqual(
-        expect.objectContaining({
-          index: 2,
-          addressC: '0xGap2',
-          addressBTC: 'bc1-gap-2'
-        })
-      )
-      expect(accountList[2]).toEqual(
-        expect.objectContaining({
-          index: 3,
-          addressC: '0xActive3',
-          addressBTC: 'bc1-active-3'
-        })
-      )
-
-      // deriveAddresses should have been called once for gap index 2
-      expect(ModuleManager.deriveAddresses).toHaveBeenCalledTimes(1)
-      expect(ModuleManager.deriveAddresses).toHaveBeenCalledWith(
-        expect.objectContaining({ accountIndex: 2 })
-      )
-
-      discoverSpy.mockRestore()
     })
   })
 })

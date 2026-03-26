@@ -8,11 +8,18 @@ import { transactionSnackbar } from 'common/utils/toast'
 import { WalletState } from 'store/app/types'
 import { recentAccountsStore } from 'features/accountSettings/store'
 import { Account, AccountCollection } from './types'
+import { transactionSnackbar } from 'common/utils/toast'
+import { WalletState } from 'store/app/types'
+import { recentAccountsStore } from 'features/accountSettings/store'
+import { Account, AccountCollection } from './types'
 import {
   isAddressMissing,
   isHardwareWalletType,
   isMemonicOrSeedlessWallet,
   canRederiveAccountAddresses,
+  rederiveAvmPvmAddressesForAccount,
+  discoverRemainingActiveAccounts,
+  migrateRemainingActiveAccounts
   rederiveAvmPvmAddressesForAccount,
   discoverRemainingActiveAccounts,
   migrateRemainingActiveAccounts
@@ -27,6 +34,23 @@ jest.mock('common/utils/toast', () => ({
   transactionSnackbar: {
     pending: jest.fn(),
     success: jest.fn(),
+    error: jest.fn(),
+    plain: jest.fn()
+  }
+}))
+jest.mock('utils/uuid', () => ({
+  uuid: jest.fn().mockReturnValue('mock-uuid')
+}))
+jest.mock('utils/mmkv', () => ({
+  commonStorage: {}
+}))
+jest.mock('utils/mmkv/storages', () => ({
+  appendToStoredArray: jest.fn(),
+  loadArrayFromStorage: jest.fn().mockReturnValue([]),
+  zustandPersistStorage: {
+    getItem: jest.fn().mockReturnValue(null),
+    setItem: jest.fn(),
+    removeItem: jest.fn()
     error: jest.fn(),
     plain: jest.fn()
   }
@@ -326,10 +350,7 @@ describe('account/utils', () => {
     }
 
     it('returns discovered accounts when found', async () => {
-      mockFetchRemainingActiveAccounts.mockResolvedValue({
-        accounts: mockAccounts,
-        completedCleanly: true
-      })
+      mockFetchRemainingActiveAccounts.mockResolvedValue(mockAccounts)
 
       const result = await discoverRemainingActiveAccounts({
         walletId: 'wallet-1',
@@ -347,10 +368,7 @@ describe('account/utils', () => {
     })
 
     it('returns empty when no accounts found', async () => {
-      mockFetchRemainingActiveAccounts.mockResolvedValue({
-        accounts: {},
-        completedCleanly: true
-      })
+      mockFetchRemainingActiveAccounts.mockResolvedValue({})
 
       const result = await discoverRemainingActiveAccounts({
         walletId: 'wallet-1',
@@ -363,10 +381,7 @@ describe('account/utils', () => {
     })
 
     it('shows pending and success toasts for mnemonic wallets', async () => {
-      mockFetchRemainingActiveAccounts.mockResolvedValue({
-        accounts: mockAccounts,
-        completedCleanly: true
-      })
+      mockFetchRemainingActiveAccounts.mockResolvedValue(mockAccounts)
 
       await discoverRemainingActiveAccounts({
         walletId: 'wallet-1',
@@ -385,10 +400,7 @@ describe('account/utils', () => {
     })
 
     it('shows plain toast when no accounts found for mnemonic', async () => {
-      mockFetchRemainingActiveAccounts.mockResolvedValue({
-        accounts: {},
-        completedCleanly: true
-      })
+      mockFetchRemainingActiveAccounts.mockResolvedValue({})
 
       await discoverRemainingActiveAccounts({
         walletId: 'wallet-1',
@@ -403,10 +415,7 @@ describe('account/utils', () => {
     })
 
     it('does not show toasts for seedless wallets', async () => {
-      mockFetchRemainingActiveAccounts.mockResolvedValue({
-        accounts: mockAccounts,
-        completedCleanly: true
-      })
+      mockFetchRemainingActiveAccounts.mockResolvedValue(mockAccounts)
 
       await discoverRemainingActiveAccounts({
         walletId: 'wallet-1',
@@ -422,10 +431,7 @@ describe('account/utils', () => {
       const singleAccount: AccountCollection = {
         'acc-1': createMockAccount({ id: 'acc-1', index: 1 })
       }
-      mockFetchRemainingActiveAccounts.mockResolvedValue({
-        accounts: singleAccount,
-        completedCleanly: true
-      })
+      mockFetchRemainingActiveAccounts.mockResolvedValue(singleAccount)
 
       await discoverRemainingActiveAccounts({
         walletId: 'wallet-1',
@@ -482,17 +488,14 @@ describe('account/utils', () => {
     const createMockState = (walletState: WalletState) =>
       ({
         app: { walletState }
-      } as unknown as import('store/types').RootState)
+      }) as unknown as import('store/types').RootState
 
     beforeEach(() => {
       mockGetState.mockReturnValue(createMockState(WalletState.ACTIVE))
     })
 
     it('sets isMigratingActiveAccounts flag and resets on completion', async () => {
-      mockFetchRemainingActiveAccounts.mockResolvedValue({
-        accounts: {},
-        completedCleanly: true
-      })
+      mockFetchRemainingActiveAccounts.mockResolvedValue({})
 
       await migrateRemainingActiveAccounts({
         listenerApi: mockListenerApi,
@@ -521,7 +524,7 @@ describe('account/utils', () => {
           Object.values(mockAccounts).forEach(account => {
             onAccountCreated?.(account)
           })
-          return { accounts: mockAccounts, completedCleanly: true }
+          return mockAccounts
         }
       )
 
@@ -548,10 +551,7 @@ describe('account/utils', () => {
     })
 
     it('dispatches setAccounts for seedless wallets', async () => {
-      mockFetchRemainingActiveAccounts.mockResolvedValue({
-        accounts: mockAccounts,
-        completedCleanly: true
-      })
+      mockFetchRemainingActiveAccounts.mockResolvedValue(mockAccounts)
 
       await migrateRemainingActiveAccounts({
         listenerApi: mockListenerApi,
@@ -581,7 +581,7 @@ describe('account/utils', () => {
           Object.values(mockAccounts).forEach(account => {
             onAccountCreated?.(account)
           })
-          return { accounts: mockAccounts, completedCleanly: true }
+          return mockAccounts
         }
       )
 
@@ -598,10 +598,7 @@ describe('account/utils', () => {
     })
 
     it('does not dispatch account actions when none found', async () => {
-      mockFetchRemainingActiveAccounts.mockResolvedValue({
-        accounts: {},
-        completedCleanly: true
-      })
+      mockFetchRemainingActiveAccounts.mockResolvedValue({})
 
       await migrateRemainingActiveAccounts({
         listenerApi: mockListenerApi,
@@ -620,14 +617,7 @@ describe('account/utils', () => {
 
     it('skips dispatch when wallet is not active', async () => {
       mockGetState.mockReturnValue(createMockState(WalletState.INACTIVE))
-      mockFetchRemainingActiveAccounts.mockImplementation(
-        async ({ onAccountCreated }) => {
-          Object.values(mockAccounts).forEach(account => {
-            onAccountCreated?.(account)
-          })
-          return { accounts: mockAccounts, completedCleanly: true }
-        }
-      )
+      mockFetchRemainingActiveAccounts.mockResolvedValue(mockAccounts)
 
       await migrateRemainingActiveAccounts({
         listenerApi: mockListenerApi,
@@ -643,40 +633,6 @@ describe('account/utils', () => {
       expect(accountDispatches).toHaveLength(0)
       expect(Logger.error).toHaveBeenCalledWith(
         'Wallet is not active, skipping migrateRemainingActiveAccounts'
-      )
-    })
-
-    it('stops dispatching if wallet becomes inactive mid-discovery', async () => {
-      let callCount = 0
-      mockGetState.mockImplementation(() => {
-        callCount++
-        if (callCount <= 2) return createMockState(WalletState.ACTIVE)
-        return createMockState(WalletState.INACTIVE)
-      })
-
-      mockFetchRemainingActiveAccounts.mockImplementation(
-        async ({ onAccountCreated }) => {
-          Object.values(mockAccounts).forEach(account => {
-            onAccountCreated?.(account)
-          })
-          return { accounts: mockAccounts, completedCleanly: true }
-        }
-      )
-
-      await migrateRemainingActiveAccounts({
-        listenerApi: mockListenerApi,
-        walletId: 'wallet-1',
-        walletType: WalletType.MNEMONIC,
-        startIndex: 1
-      })
-
-      const accountDispatches = mockDispatch.mock.calls.filter(
-        ([action]: [{ type: string }]) =>
-          action.type === 'account/setNonActiveAccounts'
-      )
-      expect(accountDispatches).toHaveLength(1)
-      expect(Logger.error).toHaveBeenCalledWith(
-        'Wallet became inactive during discovery, skipping dispatch'
       )
     })
 

@@ -6,6 +6,7 @@ import {
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { AnyAction } from '@reduxjs/toolkit'
 import { onAppUnlocked, onWalletImported } from 'store/app/slice'
+import { onAppUnlocked, onWalletImported } from 'store/app/slice'
 import { WalletType } from 'services/wallet/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
