@@ -41,12 +41,25 @@ export const TokenAmountRow = ({
       </View>
       {amount !== undefined && (
         <View style={{ alignItems: 'flex-end', flexShrink: 1 }}>
-          <SubTextNumber
-            number={isDebit ? `-${amount}` : amount}
-            textVariant="heading2"
-            textColor={isDebit ? colors.$textDanger : colors.$textPrimary}
-            style={{ maxWidth: '100%' }}
-          />
+          {isNaN(Number(amount)) ? (
+            <Text
+              numberOfLines={1}
+              variant="heading2"
+              sx={{
+                fontWeight: '500',
+                color: isDebit ? colors.$textDanger : colors.$textPrimary
+              }}>
+              {isDebit ? `-${amount}` : amount}
+            </Text>
+          ) : (
+            <SubTextNumber
+              number={isDebit ? `-${amount}` : amount}
+              textVariant="heading2"
+              fontWeight="500"
+              textColor={isDebit ? colors.$textDanger : colors.$textPrimary}
+              style={{ maxWidth: '100%' }}
+            />
+          )}
           {amountInCurrency !== undefined && (
             <Text
               numberOfLines={1}
