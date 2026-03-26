@@ -1,6 +1,17 @@
 #!/usr/bin/env node
 /**
- * Script to download the internal APK from Bitrise
+ * Download an internal Android APK from Bitrise via the public API.
+ *
+ * Scope (what this file does NOT do):
+ * - Does not upload to AWS Device Farm, package tests, or run Appium.
+ * - Does not read BITRISE_APK_PATH from the current CI job (that artifact is already on disk in Bitrise).
+ *
+ * Callers (orchestration scripts that invoke this as step 1 before Device Farm):
+ * - scripts/devicefarm/bitrise-to-devicefarm.sh — download → package tests → trigger-devicefarm-api.js
+ * - scripts/devicefarm/trigger-test-run.sh — optional download when DEVICEFARM_APP_PATH is not set
+ *
+ * Bitrise CI: workflows that build the APK in the same pipeline (e.g. android-internal-e2e-aws-regression-run)
+ * use the APK produced by Gradle and pass it to the in-repo Device Farm step; they do not run this script.
  *
  * Usage:
  *   BITRISE_APP_SLUG=<slug> BITRISE_ARTIFACTS_TOKEN=<token> node scripts/devicefarm/download-bitrise-apk.js [buildType] [buildIndex] [outputPath] [branch]
@@ -276,7 +287,7 @@ const downloadApk = async (artifactsUrl, artifactSlug, outputPath) => {
   })
 }
 
-// Main execution
+// Main: list builds (workflow android-internal-e2e | android-internal) → pick successful build → find APK artifact → download to disk
 async function main() {
   try {
     console.log(`🚀 Downloading internal ${buildType} APK from Bitrise...\n`)

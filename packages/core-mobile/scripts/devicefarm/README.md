@@ -105,10 +105,10 @@ The APK will be at: `app/build/outputs/apk/internal/e2e/app-internal-e2e.apk`
    ```
 
    This script:
-   - Copies the Device Farm config to `wdio.conf.ts`
-   - Creates `appium-tests-devicefarm.zip` directly in the `e2e-appium` directory
+   - Temporarily copies `wdio.devicefarm.conf.ts` → `wdio.conf.ts` for the archive, then **restores** your tracked `wdio.conf.ts` on exit (so the working tree is not left dirty).
+   - Creates `appium-tests-devicefarm.zip` directly in the `e2e-appium` directory.
    
-   The zip file contains all test files, configuration, and `package.json`. AWS Device Farm will extract it and run `npm install` to install dependencies.
+   The zip file contains all test files, configuration, and `package.json`. AWS Device Farm extracts it and runs `npm install` to install dependencies.
 
 2. **Set environment variables:**
    ```bash
@@ -218,36 +218,42 @@ cd packages/core-mobile
 
 ### WebdriverIO Config
 
-The Device Farm configuration is in `e2e-appium/wdio.devicefarm.conf.ts`. This config:
-- Connects to Device Farm's Appium server (provided via environment variables)
-- Uses Device Farm's app path
-- Automatically detects device information from Device Farm environment variables
+- **`e2e-appium/wdio.conf.ts`** — default for local runs (`yarn appium:android` / `yarn appium:ios` from `packages/core-mobile`).
+- **`e2e-appium/wdio.devicefarm.conf.ts`** — Device Farm–oriented config; copied over `wdio.conf.ts` only while building the test zip (see `package-tests.sh`).
+
+**AWS Device Farm** — when `AWS_DEVICE_FARM_APPIUM_SERVER_URL` is set (host sets this in `aws_test_spec.yaml`), both configs:
+- Connect to Device Farm’s Appium server
+- Use `AWS_DEVICE_FARM_APP_PATH` / `DEVICEFARM_DEVICE_*` for app path and device capabilities
+
+**Local runs** — when not on Device Farm, `e2e-appium/helpers/resolve-local-device.ts` fills `appium:deviceName`, `appium:platformVersion`, and `appium:udid` from the machine:
+- **Android:** `adb devices` + `getprop` on the chosen device (see `ANDROID_SERIAL` if multiple devices).
+- **iOS:** booted Simulator via `xcrun simctl list devices booted -j`, or a specific simulator UDID with `IOS_UDID`, or a physical device with `IOS_UDID` + `IOS_DEVICE_NAME` + `IOS_PLATFORM_VERSION`.
+- **`PLATFORM` unset** (local): if `adb` shows a device, only Android caps are resolved; otherwise iOS Simulator is used.
+
+Also set **`APP_PATH`** (or `AWS_DEVICE_FARM_APP_PATH`) to your `.apk` / `.app` when running locally.
 
 ### Test Package Structure
 
-The test package is created using `npm-bundle` which includes:
-- All test specs (`specs/`)
-- Page objects (`pages/`)
-- Locators (`locators/`)
-- Helpers (`helpers/`)
-- TestRail integration (`testrail/`)
-- Configuration files (`wdio.devicefarm.conf.ts` → `wdio.conf.ts`, `tsconfig.json`)
-- `package.json` with all dependencies
-- Dependencies will be installed by AWS Device Farm from `package.json`
-
-The `package.json` in the `e2e-appium` folder defines all required dependencies. The bundling process:
-1. Installs dependencies locally
-2. Creates an npm bundle (`.tgz`) using `npm-bundle`
-3. Zips the bundle for upload to AWS Device Farm
+`package-tests.sh` zips the `e2e-appium` tree (excluding `node_modules`, lockfiles, etc.), including:
+- Test specs (`specs/`), page objects (`pages/`), helpers (`helpers/`), TestRail (`testrail/`)
+- `wdio.devicefarm.conf.ts` (as `wdio.conf.ts` inside the zip), `tsconfig.json`, `aws_test_spec.yaml`
+- `package.json` — Device Farm runs `npm install` after extract
 
 ## Environment Variables
 
-Device Farm provides these environment variables automatically:
-- `AWS_DEVICE_FARM_APPIUM_SERVER_URL` - Appium server URL
-- `AWS_DEVICE_FARM_APP_PATH` - Path to the app on the device
-- `DEVICEFARM_DEVICE_NAME` - Device name
-- `DEVICEFARM_DEVICE_OS_VERSION` - OS version
-- `DEVICEFARM_DEVICE_PLATFORM_NAME` - Platform (Android/iOS)
+**On AWS Device Farm** (injected by the host — see `e2e-appium/aws_test_spec.yaml`):
+- `AWS_DEVICE_FARM_APPIUM_SERVER_URL` — Appium server URL
+- `AWS_DEVICE_FARM_APP_PATH` — Path to the app under test
+- `DEVICEFARM_DEVICE_NAME` — Device name
+- `DEVICEFARM_DEVICE_OS_VERSION` — OS version
+- `DEVICEFARM_DEVICE_PLATFORM_NAME` — Platform (Android/iOS)
+- `DEVICEFARM_DEVICE_UDID`, `DEVICEFARM_CHROMEDRIVER_EXECUTABLE_DIR` — as provided by Device Farm
+
+**Local WebdriverIO** (optional overrides; see `helpers/resolve-local-device.ts`):
+- `APP_PATH` — `.apk` / `.app` for `appium:app`
+- `ANDROID_SERIAL`, `ADB_PATH` — Android device selection
+- `IOS_UDID` — Simulator or physical device; for physical iPhones also set `IOS_DEVICE_NAME` and `IOS_PLATFORM_VERSION`
+- `APPIUM_MANUAL=true` — WDIO skips starting the Appium service (use when Appium is already running)
 
 ## CI/CD Integration
 
@@ -317,8 +323,11 @@ You can integrate this into your Bitrise workflow. The `bitrise-to-devicefarm.sh
 
 ### Dependencies missing
 - Ensure all dependencies are listed in `e2e-appium/package.json`
-- The `npm-bundle` command will include all dependencies from `package.json`
-- AWS Device Farm will run `npm install` when extracting the bundle
+- AWS Device Farm will run `npm install` when extracting the test zip
+
+### Local run: “No Android device” or “No booted iOS Simulator”
+- Android: start an emulator or plug in a device; confirm `adb devices` shows `device`.
+- iOS: open Simulator and boot a device, or set `IOS_UDID` to a simulator UDID (`xcrun simctl list devices`).
 
 ## Resources
 

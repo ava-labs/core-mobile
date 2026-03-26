@@ -177,12 +177,27 @@ async function uploadFile(filePath, projectArn, uploadType, name) {
 }
 
 /**
- * Upload file to a presigned URL
+ * Upload file to a presigned URL (S3 / Device Farm upload URL).
+ * Drains non-2xx response bodies so the socket can close cleanly; aborts the request if the read stream fails.
  */
 function uploadToUrl(filePath, url) {
   return new Promise((resolve, reject) => {
+    let settled = false
+    const finish = (fn) => {
+      if (settled) return
+      settled = true
+      fn()
+    }
+
+    let fileSize
+    try {
+      fileSize = fs.statSync(filePath).size
+    } catch (e) {
+      reject(e)
+      return
+    }
+
     const fileStream = fs.createReadStream(filePath)
-    const fileSize = fs.statSync(filePath).size
 
     const parsedUrl = new URL(url)
     const client = parsedUrl.protocol === 'https:' ? https : http
@@ -199,14 +214,36 @@ function uploadToUrl(filePath, url) {
 
     const req = client.request(options, res => {
       if (res.statusCode >= 200 && res.statusCode < 300) {
-        resolve()
-      } else {
-        reject(new Error(`Upload failed with status ${res.statusCode}`))
+        res.resume()
+        res.on('end', () => finish(() => resolve()))
+        res.on('error', err => finish(() => reject(err)))
+        return
       }
+      const chunks = []
+      res.on('data', chunk => {
+        chunks.push(chunk)
+      })
+      res.on('end', () => {
+        const body = Buffer.concat(chunks).toString('utf8').trim()
+        const detail = body ? body.slice(0, 500) : ''
+        finish(() =>
+          reject(
+            new Error(
+              `Upload failed with status ${res.statusCode}${detail ? `: ${detail}` : ''}`
+            )
+          )
+        )
+      })
+      res.on('error', err => {
+        finish(() => reject(err))
+      })
     })
 
-    req.on('error', reject)
-    fileStream.on('error', reject)
+    req.on('error', err => finish(() => reject(err)))
+    fileStream.on('error', err => {
+      req.destroy(err)
+      finish(() => reject(err))
+    })
     fileStream.pipe(req)
   })
 }
