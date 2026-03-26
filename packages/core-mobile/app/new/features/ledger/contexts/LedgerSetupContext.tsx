@@ -77,8 +77,11 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
   )
 
   const handleDisconnectDevice = useCallback(async () => {
-    await LedgerService.disconnect()
-    resetSetup()
+    try {
+      await LedgerService.disconnect()
+    } finally {
+      resetSetup()
+    }
   }, [resetSetup])
 
   const contextValue: LedgerSetupContextValue = useMemo(
