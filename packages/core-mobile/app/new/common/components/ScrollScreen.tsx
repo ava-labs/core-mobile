@@ -341,7 +341,9 @@ export const ScrollScreen = ({
           contentContainerStyle={[
             props?.contentContainerStyle,
             {
-              paddingBottom: disableStickyFooter ? insets.bottom + 32 : 32,
+              paddingBottom: disableStickyFooter
+                ? insets.bottom + 32
+                : (footerLayout?.height ?? 0) + 32,
               paddingTop: headerHeight
             }
           ]}
