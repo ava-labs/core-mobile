@@ -98,15 +98,16 @@ The APK will be at: `app/build/outputs/apk/internal/e2e/app-internal-e2e.apk`
 
 ## Setup
 
-1. **Package the tests using npm-bundle:**
+1. **Package the tests for upload (zip, not npm-bundle):**
    ```bash
    cd packages/core-mobile
    ./scripts/devicefarm/package-tests.sh
    ```
 
    This script:
+   - Builds `e2e-appium/appium-tests-devicefarm.zip` with **`zip -r`** (source tree + `package.json` + `package-lock.json`; excludes `node_modules` and other artifacts). Dependencies are installed on Device Farm via **`npm ci`** from that lockfile.
    - Temporarily copies `wdio.devicefarm.conf.ts` → `wdio.conf.ts` for the archive, then **restores** your tracked `wdio.conf.ts` on exit (so the working tree is not left dirty).
-   - Creates `appium-tests-devicefarm.zip` directly in the `e2e-appium` directory.
+   - Writes the zip into the `e2e-appium` directory.
    
    The zip file contains all test files, configuration, `package.json`, and **`package-lock.json`**. AWS Device Farm runs **`npm ci`** for a reproducible install. Regenerate the lockfile after dependency changes: `cd e2e-appium && npm install`.
 
@@ -307,7 +308,7 @@ You can integrate this into your Bitrise workflow. The `bitrise-to-devicefarm.sh
 
 ### Test package too large
 - Device Farm has a 4GB limit for test packages
-- `npm-bundle` only includes production dependencies
+- The zip omits `node_modules`; runtime deps are installed on the host with `npm ci`. Large zips usually mean many specs/assets—trim or exclude if needed.
 - Check the bundle size before uploading
 - Consider removing unnecessary test files if needed
 

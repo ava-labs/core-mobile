@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Script to package Appium tests for AWS Device Farm upload
-# This creates a zip file directly with all test files and package.json
+# Script to package Appium tests for AWS Device Farm upload.
+# Creates appium-tests-devicefarm.zip via zip(1) (not npm-bundle): sources, package.json, package-lock.json;
+# Device Farm runs npm ci from the extracted tree.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Script is in packages/core-mobile/scripts/devicefarm/

@@ -22,6 +22,18 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+# Presigned upload URLs include credentials in the query string — never log the full URL (CI logs).
+log_redacted_upload_url() {
+  local prefix=$1
+  local url=$2
+  local base="${url%%\?*}"
+  if [[ "$url" == *"?"* ]]; then
+    echo "${prefix} ${base}?…(redacted)"
+  else
+    echo "${prefix} ${base}"
+  fi
+}
+
 # Check prerequisites
 if ! command -v aws &> /dev/null; then
   echo -e "${RED}❌ AWS CLI not found. Please install it first.${NC}"
@@ -79,7 +91,7 @@ APP_UPLOAD_ARN=$(echo "$APP_UPLOAD_OUTPUT" | jq -r '.upload.arn')
 APP_UPLOAD_URL=$(echo "$APP_UPLOAD_OUTPUT" | jq -r '.upload.url')
 
 echo "App Upload ARN: $APP_UPLOAD_ARN"
-echo "Uploading app to: $APP_UPLOAD_URL"
+log_redacted_upload_url "Uploading app to:" "$APP_UPLOAD_URL"
 
 curl -T "$APP_PATH" "$APP_UPLOAD_URL"
 
@@ -110,7 +122,7 @@ TEST_UPLOAD_ARN=$(echo "$TEST_UPLOAD_OUTPUT" | jq -r '.upload.arn')
 TEST_UPLOAD_URL=$(echo "$TEST_UPLOAD_OUTPUT" | jq -r '.upload.url')
 
 echo "Test Upload ARN: $TEST_UPLOAD_ARN"
-echo "Uploading test package to: $TEST_UPLOAD_URL"
+log_redacted_upload_url "Uploading test package to:" "$TEST_UPLOAD_URL"
 
 curl -T "$ZIP_FILE" "$TEST_UPLOAD_URL"
 
@@ -147,7 +159,7 @@ TEST_SPEC_UPLOAD_ARN=$(echo "$TEST_SPEC_UPLOAD_OUTPUT" | jq -r '.upload.arn')
 TEST_SPEC_UPLOAD_URL=$(echo "$TEST_SPEC_UPLOAD_OUTPUT" | jq -r '.upload.url')
 
 echo "Test Spec Upload ARN: $TEST_SPEC_UPLOAD_ARN"
-echo "Uploading test spec to: $TEST_SPEC_UPLOAD_URL"
+log_redacted_upload_url "Uploading test spec to:" "$TEST_SPEC_UPLOAD_URL"
 
 curl -T "$TEST_SPEC_PATH" "$TEST_SPEC_UPLOAD_URL"
 

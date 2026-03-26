@@ -2,6 +2,38 @@ import assert from 'assert'
 import { ChainablePromiseElement } from 'webdriverio'
 import { selectors } from './selectors'
 
+/**
+ * First fulfillment wins; rejects only if both reject (Promise.any semantics for two promises).
+ * Avoids Promise.race + side .catch: the loser can still reject later and confuse loggers.
+ */
+function firstFulfillment<T>(a: Promise<T>, b: Promise<T>): Promise<T> {
+  return new Promise((resolve, reject) => {
+    let done = false
+    let rejectCount = 0
+    let firstError: unknown
+
+    const onFulfill = (v: T) => {
+      if (done) return
+      done = true
+      resolve(v)
+    }
+    const onReject = (err: unknown) => {
+      if (done) return
+      if (rejectCount === 0) {
+        firstError = err
+      }
+      rejectCount += 1
+      if (rejectCount === 2) {
+        done = true
+        reject(firstError)
+      }
+    }
+
+    void a.then(onFulfill, onReject)
+    void b.then(onFulfill, onReject)
+  })
+}
+
 async function type(element: ChainablePromiseElement, text: string | number) {
   // Validate input
   if (text === undefined || text === null) {
@@ -80,19 +112,16 @@ async function verifyElementText(
 }
 
 async function waitFor(ele: ChainablePromiseElement, timeout = 20000) {
-  // Race between waitForExist and waitForDisplayed to return as soon as either succeeds.
-  // Attach .catch on each so the loser’s timeout rejection is handled (Promise.race does not cancel it).
-  const pExist = ele.waitForExist({ timeout })
-  const pDisplayed = ele.waitForDisplayed({ timeout })
-  void pExist.catch(() => {})
-  void pDisplayed.catch(() => {})
   try {
-    await Promise.race([pExist, pDisplayed])
+    await firstFulfillment(
+      ele.waitForExist({ timeout }),
+      ele.waitForDisplayed({ timeout })
+    )
   } catch {
-    // If both race promises reject, try waitForDisplayed as final fallback
-    // This handles edge cases where element exists but isn't displayed yet
     await ele.waitForDisplayed({ timeout })
+    return
   }
+  await ele.waitForDisplayed({ timeout })
 }
 
 async function waitForDisplayed(ele: ChainablePromiseElement, timeout = 20000) {
@@ -119,11 +148,10 @@ async function waitForNotVisible(
   ele: ChainablePromiseElement,
   timeout = 20000
 ) {
-  const pDisplayed = ele.waitForDisplayed({ timeout, reverse: true })
-  const pExist = ele.waitForExist({ timeout, reverse: true })
-  void pDisplayed.catch(() => {})
-  void pExist.catch(() => {})
-  await Promise.race([pDisplayed, pExist])
+  await firstFulfillment(
+    ele.waitForDisplayed({ timeout, reverse: true }),
+    ele.waitForExist({ timeout, reverse: true })
+  )
   const eleSelector = await ele.selector
   console.log(`[${eleSelector}] is not visible as expected`)
 }

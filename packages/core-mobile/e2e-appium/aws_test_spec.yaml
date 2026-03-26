@@ -146,7 +146,7 @@ phases:
   test:
     commands:
       # Your test package is downloaded and unpackaged into the $DEVICEFARM_TEST_PACKAGE_PATH directory.
-      # The zip file contains all test files and package.json. After npm install, we can run tests directly.
+      # Dependencies were installed in install phase (npm ci). Run tests from the extracted package.
       - cd $DEVICEFARM_TEST_PACKAGE_PATH
       # If the zip contains an e2e-appium folder, navigate into it
       - |
