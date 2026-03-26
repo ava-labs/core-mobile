@@ -27,10 +27,20 @@ type NavigationOptions = Parameters<typeof router.push>[1]
  * navigations triggered while closingTransitionCount > 0 are queued, so any
  * modal whose closing animation does not invoke onClosingTransitionStart/End
  * will not be guarded by this helper.
+ *
+ * Failsafe: each onClosingTransitionStart() schedules a timeout. If the
+ * matching onClosingTransitionEnd() is never fired (e.g. an interrupted
+ * transition or a stack that lacks the listener), the timeout auto-releases
+ * that transition slot so the queue cannot stay stuck indefinitely.
  */
+
+// Generous upper bound — iOS sheet animations finish well under 500 ms.
+export const TRANSITION_FAILSAFE_MS = 1000
 
 let closingTransitionCount = 0
 const pendingCallbacks: Array<() => void> = []
+// One handle per outstanding transition in FIFO order.
+const failsafeHandles: ReturnType<typeof setTimeout>[] = []
 
 function flush(): void {
   const pending = pendingCallbacks.splice(0)
@@ -51,17 +61,27 @@ function guardNavigation(cb: () => void): void {
   }
 }
 
+function scheduleFailsafe(): void {
+  const handle = setTimeout(() => {
+    const idx = failsafeHandles.indexOf(handle)
+    if (idx !== -1) failsafeHandles.splice(idx, 1)
+    if (closingTransitionCount > 0) closingTransitionCount--
+    if (closingTransitionCount === 0) flush()
+  }, TRANSITION_FAILSAFE_MS)
+  failsafeHandles.push(handle)
+}
+
 export function onClosingTransitionStart(): void {
   closingTransitionCount++
+  scheduleFailsafe()
 }
 
 export function onClosingTransitionEnd(): void {
-  if (closingTransitionCount > 0) {
-    closingTransitionCount--
-  }
-  if (closingTransitionCount === 0) {
-    flush()
-  }
+  // Cancel the oldest failsafe — it corresponds to the earliest unmatched start.
+  const handle = failsafeHandles.shift()
+  if (handle !== undefined) clearTimeout(handle)
+  if (closingTransitionCount > 0) closingTransitionCount--
+  if (closingTransitionCount === 0) flush()
 }
 
 const originalPush = router.push.bind(router)

@@ -16,9 +16,15 @@ describe('navigationGuard', () => {
   let originalPush: jest.Mock
   let originalNavigate: jest.Mock
   let originalReplace: jest.Mock
-  let routerMock: { push: Function; navigate: Function; replace: Function }
+  type RouterMethod = (href: unknown, options?: unknown) => void
+  let routerMock: {
+    push: RouterMethod
+    navigate: RouterMethod
+    replace: RouterMethod
+  }
   let onClosingTransitionStart: () => void
   let onClosingTransitionEnd: () => void
+  let TRANSITION_FAILSAFE_MS: number
 
   beforeEach(() => {
     originalPush = jest.fn()
@@ -36,6 +42,7 @@ describe('navigationGuard', () => {
       const guard = require('./navigationGuard')
       onClosingTransitionStart = guard.onClosingTransitionStart
       onClosingTransitionEnd = guard.onClosingTransitionEnd
+      TRANSITION_FAILSAFE_MS = guard.TRANSITION_FAILSAFE_MS
       // After this point routerMock.push/navigate/replace are the patched wrappers;
       // originalPush/Navigate/Replace still point to the original jest.fn()s.
     })
@@ -128,6 +135,51 @@ describe('navigationGuard', () => {
       expect(originalPush).not.toHaveBeenCalled()
 
       onClosingTransitionEnd() // counter goes 1 → 0, flush
+      expect(originalPush).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('failsafe timeout', () => {
+    beforeEach(() => {
+      jest.useFakeTimers()
+    })
+
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
+    it('auto-flushes the queue when onClosingTransitionEnd is never called', () => {
+      onClosingTransitionStart()
+      routerMock.push('/home')
+
+      expect(originalPush).not.toHaveBeenCalled()
+
+      jest.advanceTimersByTime(TRANSITION_FAILSAFE_MS)
+
+      expect(originalPush).toHaveBeenCalledTimes(1)
+      expect(originalPush).toHaveBeenCalledWith('/home', undefined)
+    })
+
+    it('does not double-flush when onClosingTransitionEnd is called before the failsafe fires', () => {
+      onClosingTransitionStart()
+      routerMock.push('/home')
+
+      onClosingTransitionEnd() // normal path — flushes and cancels the timer
+      expect(originalPush).toHaveBeenCalledTimes(1)
+
+      jest.advanceTimersByTime(TRANSITION_FAILSAFE_MS) // cancelled timer must not fire again
+      expect(originalPush).toHaveBeenCalledTimes(1)
+    })
+
+    it('only releases the missed transition when one of two overlapping transitions lacks an end', () => {
+      onClosingTransitionStart() // transition A
+      onClosingTransitionStart() // transition B
+      routerMock.push('/home')
+
+      onClosingTransitionEnd() // ends A normally, counter 2 → 1
+      expect(originalPush).not.toHaveBeenCalled()
+
+      jest.advanceTimersByTime(TRANSITION_FAILSAFE_MS) // failsafe for B fires, counter 1 → 0, flush
       expect(originalPush).toHaveBeenCalledTimes(1)
     })
   })
