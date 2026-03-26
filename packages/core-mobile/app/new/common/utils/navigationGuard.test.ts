@@ -27,7 +27,7 @@ describe('navigationGuard', () => {
     routerMock = {
       push: originalPush,
       navigate: originalNavigate,
-      replace: originalReplace,
+      replace: originalReplace
     }
 
     jest.isolateModules(() => {
