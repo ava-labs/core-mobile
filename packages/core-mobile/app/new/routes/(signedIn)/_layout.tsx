@@ -6,6 +6,10 @@ import {
   stackScreensOptions,
   useModalScreensOptions
 } from 'common/consts/screenOptions'
+import {
+  onClosingTransitionEnd,
+  onClosingTransitionStart
+} from 'common/utils/navigationGuard'
 import { useTriggerAfterLoginFlows } from 'common/hooks/useTriggerAfterLoginFlows'
 import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
 import { LedgerSetupProvider } from 'features/ledger'
@@ -44,7 +48,16 @@ export default function WalletLayout(): JSX.Element {
     <BridgeProvider>
       <CollectiblesProvider>
         <LedgerSetupProvider>
-          <Stack screenOptions={{ headerShown: false }}>
+          <Stack
+            screenOptions={{ headerShown: false }}
+            screenListeners={{
+              transitionStart: e => {
+                if (e.data.closing) onClosingTransitionStart()
+              },
+              transitionEnd: e => {
+                if (e.data.closing) onClosingTransitionEnd()
+              }
+            }}>
             <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
             <Stack.Screen
               name="(modals)/accountSettings"
