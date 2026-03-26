@@ -190,7 +190,9 @@ export const SwapScreen = (): JSX.Element => {
     routeAdditiveBps: maxRouteAdditiveBps,
     rawGasFee: maxRawGasFee,
     bufferedGasFee: maxBufferedGasFee,
-    gasSafetyBps: maxGasSafetyBps
+    gasSafetyBps: maxGasSafetyBps,
+    rawNativeAdditiveFee: maxRawNativeAdditiveFee,
+    bufferedNativeAdditiveFee: maxBufferedNativeAdditiveFee
   } = useMaxSwapAmount({
     fromToken,
     toToken,
@@ -214,8 +216,12 @@ export const SwapScreen = (): JSX.Element => {
     isValidating: isFeeValidating,
     rawAdditiveFee: liveRawAdditiveFee,
     bufferedAdditiveFee: liveBufferedAdditiveFee,
+    rawNativeAdditiveFee: liveRawNativeAdditiveFee,
+    bufferedNativeAdditiveFee: liveBufferedNativeAdditiveFee,
     rawGasFee: liveRawGasFee,
-    bufferedGasFee: liveBufferedGasFee
+    bufferedGasFee: liveBufferedGasFee,
+    gasSafetyBps: liveGasSafetyBps,
+    routeAdditiveBps: liveRouteAdditiveBps
   } = useFeeValidation({
     fromToken,
     nativeTokenBalance: nativeFromToken?.balance,
@@ -226,7 +232,7 @@ export const SwapScreen = (): JSX.Element => {
   const activeError = validationError ?? quoteError
 
   const canSwap: boolean =
-    !activeError &&
+    !(activeError && 'isWarning' in activeError && !activeError.isWarning) &&
     !isFeeValidating &&
     !!fromToken &&
     !!toToken &&
@@ -780,12 +786,26 @@ export const SwapScreen = (): JSX.Element => {
       !fromToken ||
       !activeQuote ||
       activeError ||
-      liveRawAdditiveFee === 0n
+      (liveBufferedAdditiveFee === 0n && liveBufferedNativeAdditiveFee === 0n)
     ) {
       return null
     }
-    return <AdditiveFeesNotice fee={liveRawAdditiveFee} fromToken={fromToken} />
-  }, [fromToken, activeQuote, activeError, liveRawAdditiveFee])
+    return (
+      <AdditiveFeesNotice
+        fee={liveBufferedAdditiveFee}
+        fromToken={fromToken}
+        nativeFee={liveBufferedNativeAdditiveFee}
+        nativeFromToken={nativeFromToken}
+      />
+    )
+  }, [
+    fromToken,
+    activeQuote,
+    activeError,
+    liveBufferedAdditiveFee,
+    liveBufferedNativeAdditiveFee,
+    nativeFromToken
+  ])
 
   const renderPartnerFee = useCallback(() => {
     if (coreFeeMessage === undefined) return null
@@ -937,6 +957,17 @@ export const SwapScreen = (): JSX.Element => {
         maxRouteAdditiveBps={maxRouteAdditiveBps}
         liveRawAdditiveFee={liveRawAdditiveFee}
         liveBufferedAdditiveFee={liveBufferedAdditiveFee}
+        liveGasSafetyBps={liveGasSafetyBps}
+        liveRouteAdditiveBps={liveRouteAdditiveBps}
+        maxRawNativeAdditiveFee={maxRawNativeAdditiveFee}
+        maxBufferedNativeAdditiveFee={maxBufferedNativeAdditiveFee}
+        liveRawNativeAdditiveFee={liveRawNativeAdditiveFee}
+        liveBufferedNativeAdditiveFee={liveBufferedNativeAdditiveFee}
+        nativeDecimals={
+          nativeFromToken && 'decimals' in nativeFromToken
+            ? nativeFromToken.decimals
+            : 18
+        }
       />
     </ScrollScreen>
   )

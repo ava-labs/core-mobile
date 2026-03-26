@@ -21,7 +21,13 @@ type InitialTokenInfo = {
 // internalIds are either NATIVE-* or CAIP-2 formatted (contain ':')
 // anything else is treated as a raw contract address
 const isRawAddress = (id: string): boolean =>
-  !id.startsWith('NATIVE') && !id.includes(':')
+  !id.toUpperCase().startsWith('NATIVE') && !id.includes(':')
+
+// Normalize NATIVE-* IDs to canonical form (e.g. "NATIVE-AVAX" → "NATIVE-avax")
+const normalizeId = (id: string): string =>
+  id.toUpperCase().startsWith('NATIVE-')
+    ? `NATIVE-${id.slice(7).toLowerCase()}`
+    : id.toLowerCase()
 
 // Build the lookup entry for the token aggregator API
 const toLookupEntry = (
@@ -30,13 +36,13 @@ const toLookupEntry = (
 ): Caip2IdAddressPair | InternalId =>
   isRawAddress(id) && caip2Id
     ? { caip2Id, address: id.toLowerCase() }
-    : { internalId: id.startsWith('NATIVE') ? id : id.toLowerCase() }
+    : { internalId: normalizeId(id) }
 
 // Build the map key matching tokenToKey in useTokensWithPrice
 const toTokensKey = (id: string, caip2Id?: string): string => {
   if (isRawAddress(id) && caip2Id)
     return `${caip2Id.toLowerCase()}-${id.toLowerCase()}`
-  return id.startsWith('NATIVE') ? id : id.toLowerCase()
+  return normalizeId(id)
 }
 
 export function useFusionTokenLookup({
