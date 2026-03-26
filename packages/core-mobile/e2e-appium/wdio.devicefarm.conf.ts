@@ -6,34 +6,47 @@ import {
   sendResult,
   uploadScreenshotToResult
 } from './testrail/testrail.service'
+import {
+  inferRunPlatforms,
+  resolveDeviceCaps,
+  unusedPlatformCaps
+} from './helpers/resolve-local-device'
 
 let runId: number | undefined
 const sectionCache: Record<string, number> = {}
 
 // AWS Device Farm provides these environment variables
 const isDeviceFarm = !!process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL
+/** Packaged runs set AWS_DEVICE_FARM_APPIUM_SERVER_URL; keep Appium off. Local use of this file can start Appium like wdio.conf. */
+const useWdioAppiumService =
+  !isDeviceFarm && process.env.APPIUM_MANUAL !== 'true'
 const appiumServerUrl =
   process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL || 'http://localhost:4723'
 const appPath = process.env.AWS_DEVICE_FARM_APP_PATH || ''
 const platformToRun =
   process.env.PLATFORM || process.env.DEVICEFARM_DEVICE_PLATFORM_NAME
 
-// Device Farm provides device info via environment variables
-const deviceName = process.env.DEVICEFARM_DEVICE_NAME || 'device'
-const platformVersion = process.env.DEVICEFARM_DEVICE_OS_VERSION || '14.0'
-const deviceUdid = process.env.DEVICEFARM_DEVICE_UDID || ''
 const chromedriverExecutableDir =
   process.env.DEVICEFARM_CHROMEDRIVER_EXECUTABLE_DIR || ''
+
+const { runAndroid, runIos } = inferRunPlatforms(platformToRun, isDeviceFarm)
+const androidResolved = runAndroid
+  ? resolveDeviceCaps('Android', isDeviceFarm)
+  : unusedPlatformCaps()
+const iosResolved = runIos
+  ? resolveDeviceCaps('iOS', isDeviceFarm)
+  : unusedPlatformCaps()
 
 const allCaps = [
   {
     platformName: 'Android',
-    'appium:deviceName': deviceName,
-    'appium:platformVersion': platformVersion,
+    'appium:deviceName': androidResolved.deviceName,
+    'appium:platformVersion': androidResolved.platformVersion,
     'appium:automationName': 'UiAutomator2',
     'appium:app': appPath,
-    // Include Device Farm specific capabilities if available
-    ...(deviceUdid ? { 'appium:udid': deviceUdid } : {}),
+    ...(androidResolved.deviceUdid
+      ? { 'appium:udid': androidResolved.deviceUdid }
+      : {}),
     ...(chromedriverExecutableDir
       ? { 'appium:chromedriverExecutableDir': chromedriverExecutableDir }
       : {}),
@@ -53,12 +66,13 @@ const allCaps = [
   },
   {
     platformName: 'iOS',
-    'appium:deviceName': deviceName,
+    'appium:deviceName': iosResolved.deviceName,
     'appium:waitForIdleTimeout': 0,
     'appium:maxTypingFrequency': 30,
-    'appium:platformVersion': platformVersion,
+    'appium:platformVersion': iosResolved.platformVersion,
     'appium:automationName': 'xcuitest',
     'appium:app': appPath,
+    ...(iosResolved.deviceUdid ? { 'appium:udid': iosResolved.deviceUdid } : {}),
     'appium:autoAcceptAlerts': true,
     'appium:autoDismissAlerts': true,
     'appium:wdaStartupRetries': 5,
@@ -104,8 +118,7 @@ export const config: WebdriverIO.Config = {
         path: '/',
         protocol: 'http' as const
       }),
-  // No Appium service needed - Device Farm manages it
-  services: [],
+  services: useWdioAppiumService ? [['appium', { command: 'appium' }]] : [],
   logLevel: 'info', // More verbose for Device Farm debugging
   bail: 0,
   waitforTimeout: 20000,
@@ -123,15 +136,26 @@ export const config: WebdriverIO.Config = {
   // hoook before: make or get testRun before test
   before: async () => {
     const platform = driver.isAndroid ? 'Android' : 'iOS'
-    const isSmoke = process.env.TEST_TYPE === 'smoke' || false
-    const isPerformance = process.env.TEST_TYPE === 'performance' || false
+    const testType = process.env.TEST_TYPE
+    const isSmoke =
+      testType === 'smoke' || process.env.IS_SMOKE === 'true'
+    const isPerformance =
+      testType === 'performance' || process.env.IS_PERFORMANCE === 'true'
     runId = await getTestRun(platform, isSmoke, isPerformance)
-    console.log(`------------Starting test run on AWS Device Farm------------`)
+    console.log(
+      `------------Starting test run${isDeviceFarm ? ' on AWS Device Farm' : ''}------------`
+    )
     console.log(`Platform: ${platform}`)
-    console.log(`Device: ${deviceName}`)
-    console.log(`OS Version: ${platformVersion}`)
-    if (deviceUdid) {
-      console.log(`Device UDID: ${deviceUdid}`)
+    const caps = driver.capabilities as Record<string, unknown>
+    console.log(
+      `Device: ${String(caps['appium:deviceName'] ?? caps.deviceName ?? '')}`
+    )
+    console.log(
+      `OS Version: ${String(caps['appium:platformVersion'] ?? caps.platformVersion ?? '')}`
+    )
+    const udid = caps['appium:udid'] ?? caps.udid
+    if (udid) {
+      console.log(`Device UDID: ${String(udid)}`)
     }
     if (chromedriverExecutableDir) {
       console.log(`ChromeDriver Dir: ${chromedriverExecutableDir}`)

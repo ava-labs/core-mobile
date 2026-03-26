@@ -13,7 +13,8 @@ ZIP_FILE="$CORE_MOBILE_DIR/e2e-appium/appium-tests-devicefarm.zip"
 PROJECT_ARN="${DEVICEFARM_PROJECT_ARN:-}"
 DEVICE_POOL_ARN="${DEVICEFARM_DEVICE_POOL_ARN:-}"
 APP_PATH="${DEVICEFARM_APP_PATH:-}"  # Path to .apk or .ipa file
-PLATFORM="${PLATFORM:-android}"  # android or ios
+PLATFORM="$(echo "${PLATFORM:-android}" | tr '[:upper:]' '[:lower:]')" # android or ios
+AWS_REGION="${AWS_REGION:-${AWS_DEFAULT_REGION:-us-west-2}}"
 
 # Colors for output
 RED='\033[0;31m'
@@ -68,7 +69,7 @@ echo "Test Package: $ZIP_FILE"
 # Upload app
 echo -e "${GREEN}📤 Uploading app...${NC}"
 APP_UPLOAD_OUTPUT=$(aws devicefarm create-upload \
-  --region us-west-2 \
+  --region "$AWS_REGION" \
   --project-arn "$PROJECT_ARN" \
   --name "$(basename "$APP_PATH")" \
   --type "$([ "$PLATFORM" = "android" ] && echo "ANDROID_APP" || echo "IOS_APP")" \
@@ -85,7 +86,7 @@ curl -T "$APP_PATH" "$APP_UPLOAD_URL"
 # Wait for app upload to complete
 echo -e "${GREEN}⏳ Waiting for app upload to complete...${NC}"
 while true; do
-  STATUS=$(aws devicefarm get-upload --region us-west-2 --arn "$APP_UPLOAD_ARN" --output json | jq -r '.upload.status')
+  STATUS=$(aws devicefarm get-upload --region "$AWS_REGION" --arn "$APP_UPLOAD_ARN" --output json | jq -r '.upload.status')
   echo "App upload status: $STATUS"
   if [ "$STATUS" = "SUCCEEDED" ]; then
     break
@@ -99,7 +100,7 @@ done
 # Upload test package
 echo -e "${GREEN}📤 Uploading test package...${NC}"
 TEST_UPLOAD_OUTPUT=$(aws devicefarm create-upload \
-  --region us-west-2 \
+  --region "$AWS_REGION" \
   --project-arn "$PROJECT_ARN" \
   --name "appium-tests.zip" \
   --type "APPIUM_NODE_TEST_PACKAGE" \
@@ -116,7 +117,7 @@ curl -T "$ZIP_FILE" "$TEST_UPLOAD_URL"
 # Wait for test upload to complete
 echo -e "${GREEN}⏳ Waiting for test package upload to complete...${NC}"
 while true; do
-  STATUS=$(aws devicefarm get-upload --region us-west-2 --arn "$TEST_UPLOAD_ARN" --output json | jq -r '.upload.status')
+  STATUS=$(aws devicefarm get-upload --region "$AWS_REGION" --arn "$TEST_UPLOAD_ARN" --output json | jq -r '.upload.status')
   echo "Test upload status: $STATUS"
   if [ "$STATUS" = "SUCCEEDED" ]; then
     break
@@ -136,7 +137,7 @@ if [ ! -f "$TEST_SPEC_PATH" ]; then
 fi
 
 TEST_SPEC_UPLOAD_OUTPUT=$(aws devicefarm create-upload \
-  --region us-west-2 \
+  --region "$AWS_REGION" \
   --project-arn "$PROJECT_ARN" \
   --name "aws_test_spec.yaml" \
   --type "APPIUM_NODE_TEST_SPEC" \
@@ -153,7 +154,7 @@ curl -T "$TEST_SPEC_PATH" "$TEST_SPEC_UPLOAD_URL"
 # Wait for test spec upload to complete
 echo -e "${GREEN}⏳ Waiting for test spec upload to complete...${NC}"
 while true; do
-  STATUS=$(aws devicefarm get-upload --region us-west-2 --arn "$TEST_SPEC_UPLOAD_ARN" --output json | jq -r '.upload.status')
+  STATUS=$(aws devicefarm get-upload --region "$AWS_REGION" --arn "$TEST_SPEC_UPLOAD_ARN" --output json | jq -r '.upload.status')
   echo "Test spec upload status: $STATUS"
   if [ "$STATUS" = "SUCCEEDED" ]; then
     break
@@ -179,7 +180,7 @@ cat > "$TEST_SPEC_FILE" <<EOF
 EOF
 
 RUN_OUTPUT=$(aws devicefarm schedule-run \
-  --region us-west-2 \
+  --region "$AWS_REGION" \
   --project-arn "$PROJECT_ARN" \
   --app-arn "$APP_UPLOAD_ARN" \
   --device-pool-arn "$DEVICE_POOL_ARN" \
@@ -190,7 +191,10 @@ RUN_OUTPUT=$(aws devicefarm schedule-run \
 rm -f "$TEST_SPEC_FILE"
 
 RUN_ARN=$(echo "$RUN_OUTPUT" | jq -r '.run.arn')
-RUN_URL="https://console.aws.amazon.com/devicefarm/home?region=us-west-2#/projects/$PROJECT_ARN/runs/$RUN_ARN"
+# Encode ARNs for console hash route (colons etc.)
+PROJECT_ENC=$(node -e "console.log(encodeURIComponent(process.argv[1]))" "$PROJECT_ARN")
+RUN_ENC=$(node -e "console.log(encodeURIComponent(process.argv[1]))" "$RUN_ARN")
+RUN_URL="https://console.aws.amazon.com/devicefarm/home?region=${AWS_REGION}#/projects/${PROJECT_ENC}/runs/${RUN_ENC}"
 
 echo -e "${GREEN}✅ Test run scheduled!${NC}"
 echo "Run ARN: $RUN_ARN"
@@ -200,7 +204,7 @@ echo "View run at: $RUN_URL"
 if [ "${WAIT_FOR_COMPLETION:-false}" = "true" ]; then
   echo -e "${GREEN}⏳ Waiting for test run to complete...${NC}"
   while true; do
-    STATUS=$(aws devicefarm get-run --region us-west-2 --arn "$RUN_ARN" --output json | jq -r '.run.status')
+    STATUS=$(aws devicefarm get-run --region "$AWS_REGION" --arn "$RUN_ARN" --output json | jq -r '.run.status')
     echo "Test run status: $STATUS"
     if [ "$STATUS" = "COMPLETED" ] || [ "$STATUS" = "ERRORED" ] || [ "$STATUS" = "STOPPED" ]; then
       break
@@ -209,7 +213,7 @@ if [ "${WAIT_FOR_COMPLETION:-false}" = "true" ]; then
   done
   
   # Get results
-  RESULT=$(aws devicefarm get-run --region us-west-2 --arn "$RUN_ARN" --output json)
+  RESULT=$(aws devicefarm get-run --region "$AWS_REGION" --arn "$RUN_ARN" --output json)
   RESULT_STATUS=$(echo "$RESULT" | jq -r '.run.result')
   echo -e "${GREEN}📊 Test run completed with result: $RESULT_STATUS${NC}"
 fi

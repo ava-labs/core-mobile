@@ -162,6 +162,6 @@ fi
 
 # Run the test using the appium:android script from package.json
 # The script expects specs relative to e2e-appium directory
-# Set APPIUM_MANUAL=true to skip the Appium service (assumes Appium is already running)
+# WDIO starts Appium via the appium service unless APPIUM_MANUAL=true (this script starts Appium separately)
 export APPIUM_MANUAL=true
 yarn appium:android --spec="e2e-appium/$TEST_SPEC"

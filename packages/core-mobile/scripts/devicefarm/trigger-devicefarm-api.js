@@ -64,13 +64,30 @@ const config = {
   waitForCompletion: process.env.WAIT_FOR_COMPLETION === 'true'
 }
 
-// Parse CLI arguments
+// Parse CLI arguments (--flag value). Map kebab-case flags to config keys (not raw dash-stripping).
+const cliFlagToConfigKey = {
+  'project-arn': 'projectArn',
+  'device-pool-arn': 'devicePoolArn',
+  'app-path': 'appPath',
+  'test-package-path': 'testPackagePath',
+  'test-spec-path': 'testSpecPath',
+  platform: 'platform',
+  region: 'region',
+  'wait-for-completion': 'waitForCompletion'
+}
 for (let i = 0; i < args.length; i += 2) {
-  const key = args[i]?.replace('--', '')
+  const flag = args[i]?.replace(/^--/, '')
   const value = args[i + 1]
-  if (key && value) {
-    config[key.replace(/-/g, '')] = value
+  if (!flag || value === undefined) continue
+  const configKey = cliFlagToConfigKey[flag]
+  if (configKey) {
+    config[configKey] = value
   }
+}
+
+config.platform = (config.platform || 'android').toLowerCase()
+if (typeof config.waitForCompletion === 'string') {
+  config.waitForCompletion = config.waitForCompletion === 'true'
 }
 
 // Validate required parameters
@@ -189,6 +206,7 @@ function uploadToUrl(filePath, url) {
     })
 
     req.on('error', reject)
+    fileStream.on('error', reject)
     fileStream.pipe(req)
   })
 }
@@ -309,7 +327,7 @@ async function main() {
 
     const runResponse = await deviceFarmClient.send(scheduleRunCommand)
     const runArn = runResponse.run.arn
-    const runUrl = `https://console.aws.amazon.com/devicefarm/home?region=${config.region}#/projects/${config.projectArn}/runs/${runArn}`
+    const runUrl = `https://console.aws.amazon.com/devicefarm/home?region=${config.region}#/projects/${encodeURIComponent(config.projectArn)}/runs/${encodeURIComponent(runArn)}`
 
     console.log('✅ Test run scheduled successfully!')
     console.log(`   Run ARN: ${runArn}`)

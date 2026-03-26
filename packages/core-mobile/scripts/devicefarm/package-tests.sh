@@ -23,7 +23,24 @@ rm -f "$E2E_DIR"/*.tgz
 rm -f "$OUTPUT_DIR/$ZIP_NAME"
 rm -rf "$E2E_DIR/node_modules"
 
-# Copy devicefarm config to wdio.conf.ts for Device Farm
+# Copy devicefarm config to wdio.conf.ts for zipping only; restore tracked file on exit (avoid dirty tree).
+WDIO_CONF_BACKUP=""
+WDIO_CONF_EXISTED=false
+if [[ -f wdio.conf.ts ]]; then
+  WDIO_CONF_EXISTED=true
+  WDIO_CONF_BACKUP=$(mktemp)
+  cp wdio.conf.ts "$WDIO_CONF_BACKUP"
+fi
+restore_wdio_conf() {
+  if [[ "$WDIO_CONF_EXISTED" == true ]] && [[ -n "${WDIO_CONF_BACKUP}" ]] && [[ -f "${WDIO_CONF_BACKUP}" ]]; then
+    cp "$WDIO_CONF_BACKUP" wdio.conf.ts
+    rm -f "${WDIO_CONF_BACKUP}"
+  elif [[ "$WDIO_CONF_EXISTED" == false ]]; then
+    rm -f wdio.conf.ts
+  fi
+}
+trap restore_wdio_conf EXIT INT TERM
+
 echo "📋 Setting up configuration for Device Farm..."
 cp wdio.devicefarm.conf.ts wdio.conf.ts
 
