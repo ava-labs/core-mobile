@@ -7,7 +7,7 @@
     "envs": "./scripts/getEnvs.sh && ./scripts/getGoogleServices.sh",
     "android": "ENVFILE=.env.development react-native run-android --mode=internalDebug --appIdSuffix internal",
     "podInstall": "bundle _2.1.4_ install && cd ios && bundle exec pod install",
-    "ios": "ENVFILE=.env.development react-native run-ios --buildFolder ios",
+    "ios": "ENVFILE=.env.development react-native run-ios",
     "start": "expo start --dev-client",
     "test": "jest",
     "test:coverage": "jest --ci --coverage",

@@ -1,5 +1,4 @@
 import React from 'react'
-import Config from 'react-native-config'
 
 let FloatingDevToolsCore: React.ComponentType<{
   environment: string
@@ -17,13 +16,8 @@ if (__DEV__) {
   }
 }
 
-/** Buoy is opt-in: set ENABLE_BUOY_DEV_TOOLS=true in .env.development to show the floating dev tools and welcome popup. */
-const isBuoyEnabled =
-  Config.ENABLE_BUOY_DEV_TOOLS === 'true' ||
-  Config.ENABLE_BUOY_DEV_TOOLS === '1'
-
 export const FloatingDevTools = (): JSX.Element | null => {
-  if (__DEV__ && FloatingDevToolsCore && isBuoyEnabled) {
+  if (__DEV__ && FloatingDevToolsCore) {
     return <FloatingDevToolsCore environment="local" userRole="admin" />
   }
 

@@ -111,10 +111,6 @@ android {
 
         // Main manifest uses android:usesCleartextTraffic="${usesCleartextTraffic}" — must be defined for every variant (e.g. internalE2e on CI).
         manifestPlaceholders = [usesCleartextTraffic: "false"]
-        
-        // Default new architecture enabled (can be overridden per build type)
-        buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", 
-            (project.findProperty("newArchEnabled") ?: "true")
     }
 
     signingConfigs {
@@ -130,8 +126,6 @@ android {
         debug {
             signingConfig signingConfigs.debug
             minifyEnabled false
-            // Metro / local dev need HTTP; matches src/debug/AndroidManifest.xml
-            manifestPlaceholders = [usesCleartextTraffic: "true"]
             // necessary for old versions of Android to run on dev mode
             testCoverageEnabled true
             dexOptions {

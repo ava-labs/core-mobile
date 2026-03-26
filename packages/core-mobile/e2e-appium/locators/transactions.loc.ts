@@ -21,8 +21,6 @@ export default {
   solSendingAmount: '0.001',
   myAccounts: 'My Accounts',
   sendTitle: 'Send',
-  amountToSend: 'token_amount_input_field',
-  amountToStake: 'token_amount_input_field AVAX',
   amountInput: 'token_amount_input_field',
   swapAmountInput: 'token_amount_input_field__you_pay',
   sendSelectTokenListBtn: 'send_select_token_list_btn',

@@ -152,21 +152,6 @@ async function isElementVisible(
 }
 
 /**
- * Wait for biometric prompt to appear
- * Returns true if prompt is visible, false if timeout (biometrics not enabled in OS)
- * Uses Promise.race() to return immediately when prompt appears or timeout expires
- *
- * Note: If this returns false, it means biometrics are not enabled in OS settings
- * and the biometric prompt will never appear. The calling code should skip biometric handling.
- */
-async function waitForBiometricPrompt(timeout = 2000): Promise<boolean> {
-  const usePinButton = selectors.getByXpath(
-    '//*[@package="com.android.systemui" and (@text="Use PIN" or @resource-id="com.android.systemui:id/button_use_credential")]'
-  )
-  return isElementVisible(usePinButton, timeout)
-}
-
-/**
  * Check if biometric toggle is ON
  * Returns true if toggle is ON, false otherwise
  * Uses Promise.race() to return immediately when toggle is found or timeout expires
@@ -514,6 +499,5 @@ export const actions = {
   waitForNotVisible,
   assertPerformance,
   isElementVisible,
-  waitForBiometricPrompt,
   isBiometricToggleOn
 }
