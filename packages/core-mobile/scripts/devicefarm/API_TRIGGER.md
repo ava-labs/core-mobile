@@ -24,8 +24,13 @@ The existing script uses AWS CLI, which calls the AWS API under the hood:
 A Node.js script that uses the AWS SDK directly:
 
 ```bash
-# Install AWS SDK (if not already installed)
-npm install @aws-sdk/client-device-farm
+cd packages/core-mobile
+
+# This repo uses Yarn workspaces with workspace:* — do not run npm install here.
+# Prefer a normal workspace install from the monorepo root:
+#   yarn install && yarn setup
+# If node_modules is missing the client only, use the temp-dir helper (same as bitrise-to-devicefarm.sh):
+#   source scripts/devicefarm/ensure-client-device-farm.sh && ensure_client_device_farm
 
 # Run the script
 node scripts/devicefarm/trigger-devicefarm-api.js \
@@ -112,9 +117,12 @@ The Bitrise workflow already triggers tests via the shell script, which uses AWS
    - script@1:
        inputs:
          - content: |
-             npm install @aws-sdk/client-device-farm
+             cd packages/core-mobile
+             source scripts/devicefarm/ensure-client-device-farm.sh
+             ensure_client_device_farm
              node scripts/devicefarm/trigger-devicefarm-api.js
    ```
+   (Or rely on `yarn install` from the monorepo root in an earlier step so `@aws-sdk/client-device-farm` is already in `node_modules`; do not `npm install` inside `packages/core-mobile`.)
 
 2. **Use Bitrise API to trigger the workflow:**
    ```bash
@@ -163,7 +171,8 @@ All methods require AWS credentials configured:
     inputs:
       - content: |
           cd packages/core-mobile
-          npm install @aws-sdk/client-device-farm
+          source scripts/devicefarm/ensure-client-device-farm.sh
+          ensure_client_device_farm
           node scripts/devicefarm/trigger-devicefarm-api.js
     envs:
       - DEVICEFARM_PROJECT_ARN: $DEVICEFARM_PROJECT_ARN
