@@ -27,7 +27,6 @@ import Animated, {
   useAnimatedStyle
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { isIOS26AndAbove } from 'common/utils/isIOS26AndAbove'
 import Grabber from './Grabber'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
@@ -114,10 +113,6 @@ export const ScrollScreen = ({
   const insets = useSafeAreaInsets()
   const headerHeight = useEffectiveHeaderHeight()
   const [headerLayout, setHeaderLayout] = useState<
-    LayoutRectangle | undefined
-  >()
-
-  const [footerLayout, setFooterLayout] = useState<
     LayoutRectangle | undefined
   >()
 
