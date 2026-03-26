@@ -5,12 +5,13 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { selectIsKeystoneBlocked } from 'store/posthog'
+import { selectIsKeystoneBlocked, selectIsLedgerSupportBlocked } from 'store/posthog'
 
 const AccessWalletScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { navigate } = useRouter()
   const isKeystoneBlocked = useSelector(selectIsKeystoneBlocked)
+  const isLedgerBlocked = useSelector(selectIsLedgerSupportBlocked)
 
   const handleEnterRecoveryPhrase = useCallback((): void => {
     navigate({
@@ -22,6 +23,12 @@ const AccessWalletScreen = (): JSX.Element => {
   const handleEnterKeystone = useCallback((): void => {
     navigate({
       pathname: '/onboarding/keystone/termsAndConditions'
+    })
+  }, [navigate])
+
+  const handleEnterLedger = useCallback((): void => {
+    navigate({
+      pathname: '/onboarding/ledger/termsAndConditions'
     })
   }, [navigate])
 
@@ -45,6 +52,19 @@ const AccessWalletScreen = (): JSX.Element => {
         onPress: handleEnterKeystone
       })
     }
+    if (!isLedgerBlocked) {
+      res.push({
+        title: 'Add using Ledger',
+        leftIcon: (
+          <Icons.Custom.Ledger
+            color={theme.colors.$textPrimary}
+            width={24}
+            height={24}
+          />
+        ),
+        onPress: handleEnterLedger
+      })
+    }
     res.push({
       title: 'Create a new wallet',
       leftIcon: <Icons.Content.Add color={theme.colors.$textPrimary} />,
@@ -54,8 +74,10 @@ const AccessWalletScreen = (): JSX.Element => {
   }, [
     handleCreateMnemonicWallet,
     handleEnterKeystone,
+    handleEnterLedger,
     handleEnterRecoveryPhrase,
     isKeystoneBlocked,
+    isLedgerBlocked,
     theme.colors
   ])
 

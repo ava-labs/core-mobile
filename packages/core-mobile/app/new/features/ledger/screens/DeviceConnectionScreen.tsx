@@ -10,7 +10,15 @@ import LedgerService from 'services/ledger/LedgerService'
 import { LedgerDevice } from 'services/ledger/types'
 import { isLedgerBluetoothPermissionError } from 'services/ledger/LedgerBluetoothPermissionError'
 
-export default function DeviceConnectionScreen(): JSX.Element {
+interface DeviceConnectionScreenProps {
+  onNavigateToAppConnection?: () => void
+  onCancel?: () => void
+}
+
+export default function DeviceConnectionScreen({
+  onNavigateToAppConnection,
+  onCancel
+}: DeviceConnectionScreenProps = {}): JSX.Element {
   const { push, back } = useRouter()
   const {
     theme: { colors }
@@ -65,8 +73,11 @@ export default function DeviceConnectionScreen(): JSX.Element {
       try {
         await connectToDevice(deviceId, deviceName)
 
-        // Navigate to app connection step
-        push('/accountSettings/ledger/appConnection')
+        if (onNavigateToAppConnection) {
+          onNavigateToAppConnection()
+        } else {
+          push('/accountSettings/ledger/appConnection')
+        }
       } catch (error) {
         if (isLedgerBluetoothPermissionError(error)) {
           Alert.alert(
@@ -100,13 +111,17 @@ export default function DeviceConnectionScreen(): JSX.Element {
         )
       }
     },
-    [connectToDevice, push, resetSetup]
+    [connectToDevice, push, resetSetup, onNavigateToAppConnection]
   )
 
   const handleCancel = useCallback(() => {
-    resetSetup()
-    back()
-  }, [resetSetup, back])
+    if (onCancel) {
+      onCancel()
+    } else {
+      resetSetup()
+      back()
+    }
+  }, [resetSetup, back, onCancel])
 
   const renderFooter = useCallback(() => {
     return (
