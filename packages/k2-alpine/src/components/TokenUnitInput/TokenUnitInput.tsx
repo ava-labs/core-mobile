@@ -18,6 +18,7 @@ import {
 import { useTheme } from '../../hooks'
 import { alpha } from '../../utils'
 import {
+  computeMaxLength,
   normalizeNumericTextInput,
   normalizeValue,
   parseDecimalToBigInt
@@ -198,13 +199,3 @@ export const TokenUnitInput = forwardRef<
 )
 
 const PLACEHOLDER = '0.00'
-
-function computeMaxLength(
-  value: string,
-  maxDecimals: number
-): number | undefined {
-  if (!value) return undefined
-  const [front] = value.split('.')
-  const sanitized = front?.replace(/^0+(?!$)/, '') ?? ''
-  return sanitized.length + 1 + maxDecimals
-}

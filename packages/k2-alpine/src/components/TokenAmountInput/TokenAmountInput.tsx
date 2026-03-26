@@ -18,6 +18,7 @@ import {
 } from 'react-native'
 import { useTheme } from '../../hooks'
 import {
+  computeMaxLength,
   normalizeNumericTextInput,
   splitIntegerAndFraction
 } from '../../utils/tokenUnitInput'
@@ -139,12 +140,10 @@ export const TokenAmountInput = forwardRef<
       [moveCursorToEnd, onFocus]
     )
 
-    const maxLength = useMemo(() => {
-      if (!valueAsString) return undefined
-      const [intPart] = valueAsString.split('.')
-      const intLength = (intPart?.replace(/^0+(?!$)/, '') ?? '0').length
-      return intLength + 1 + denomination
-    }, [valueAsString, denomination])
+    const maxLength = useMemo(
+      () => computeMaxLength(valueAsString, denomination),
+      [valueAsString, denomination]
+    )
 
     return (
       <AutoSizeTextInput
