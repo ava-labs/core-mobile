@@ -562,7 +562,7 @@ describe('getTotalAdditiveNativeFee', () => {
     const quote = makeQuote([
       makeFee({
         type: 'protocol',
-        fundingModel: 'deducted',
+        fundingModel: 'included',
         tokenType: 'native',
         chainId: SOURCE_CHAIN,
         amount: 999n
