@@ -18,8 +18,7 @@ import { SvgProps } from 'react-native-svg'
 import { useSelector } from 'react-redux'
 import {
   selectIsInAppDefiBlocked,
-  selectIsInAppDefiBorrowBlocked,
-  selectIsPredictionsBlocked
+  selectIsInAppDefiBorrowBlocked
 } from 'store/posthog'
 
 const isIOS = Platform.OS === 'ios'
@@ -30,7 +29,7 @@ const stakeIcon = require('../../../assets/icons/tabs/psychiatry.png')
 const browserIcon = require('../../../assets/icons/tabs/compass.png')
 const activityIcon = require('../../../assets/icons/tabs/activity.png')
 const earnPngIcon = require('../../../assets/icons/tabs/whatshot.png')
-const predictionsIcon = require('../../../assets/icons/tabs/whatshot.png') // placeholder — replace when design ships the icon
+const tradeIcon = require('../../../assets/icons/tabs/trade.png')
 
 const tabLabelStyle = {
   fontSize: 10,
@@ -66,7 +65,7 @@ export default function TabLayout(): JSX.Element {
   }, [theme.colors.$white, theme.isDark])
   const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
   const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
-  const isPredictionsBlocked = useSelector(selectIsPredictionsBlocked)
+  // const isPredictionsBlocked = useSelector(selectIsPredictionsBlocked)
 
   // Show 'Earn' title only when: borrow disabled + DeFi enabled (existing behavior)
   const stakeTabTitle =
@@ -76,6 +75,7 @@ export default function TabLayout(): JSX.Element {
     <BottomTabs
       labeled
       translucent
+      sidebarAdaptable={isIOS}
       // on Android, page animations are disabled to improve performance.
       // on iOS, animations remain enabled as they are needed to fix the
       // BlurView rendering issue in the navigation header.
@@ -102,16 +102,6 @@ export default function TabLayout(): JSX.Element {
           title: 'Track',
           tabBarIcon: () => trackIcon,
           freezeOnBlur
-        }}
-      />
-      <BottomTabs.Screen
-        name="predictions"
-        options={{
-          tabBarButtonTestID: 'predictions_tab',
-          title: 'Predict',
-          tabBarIcon: () => predictionsIcon,
-          freezeOnBlur,
-          tabBarItemHidden: isPredictionsBlocked
         }}
       />
       {hasXpAddresses && (
@@ -143,6 +133,18 @@ export default function TabLayout(): JSX.Element {
           title: 'Browser',
           tabBarIcon: () => browserIcon,
           freezeOnBlur
+        }}
+      />
+      <BottomTabs.Screen
+        name="trade"
+        options={{
+          tabBarButtonTestID: 'trade_tab',
+          title: 'Trade',
+          tabBarIcon: () => tradeIcon,
+          freezeOnBlur,
+          // Only block in development mode
+          // tabBarItemHidden: isPredictionsBlocked
+          tabBarItemHidden: !__DEV__
         }}
       />
       <BottomTabs.Screen
@@ -268,8 +270,8 @@ function getIcon(name: string): FC<SvgProps> {
       return Icons.Navigation.Browser
     case 'activity':
       return Icons.Navigation.History
-    case 'predictions':
-      return Icons.Navigation.Layers // placeholder — replace with correct icon from k2-alpine
+    case 'trade':
+      return Icons.Navigation.Trade
     default:
       return Icons.Navigation.Layers
   }
