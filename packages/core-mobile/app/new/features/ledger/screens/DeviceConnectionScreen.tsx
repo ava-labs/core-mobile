@@ -1,11 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react'
-import {
-  View,
-  Alert,
-  ActivityIndicator,
-  Platform,
-  PermissionsAndroid
-} from 'react-native'
+import { View, Alert, ActivityIndicator, Linking } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Button, useTheme, Icons } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -14,7 +8,7 @@ import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIco
 import { LedgerDeviceList } from 'new/features/ledger/components/LedgerDeviceList'
 import LedgerService from 'services/ledger/LedgerService'
 import { LedgerDevice } from 'services/ledger/types'
-import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import { isLedgerBluetoothPermissionError } from 'services/ledger/LedgerBluetoothPermissionError'
 
 export default function DeviceConnectionScreen(): JSX.Element {
   const { push, back } = useRouter()
@@ -27,29 +21,6 @@ export default function DeviceConnectionScreen(): JSX.Element {
   // Local device management
   const [devices, setDevices] = useState<LedgerDevice[]>([])
   const [isScanning, setIsScanning] = useState(false)
-  const [transportState, setTransportState] = useState({ available: false })
-
-  // Monitor BLE transport state
-  useEffect(() => {
-    const subscription = TransportBLE.observeState({
-      next: (event: { available: boolean }) => {
-        setTransportState({ available: event.available })
-      },
-      error: (error: Error) => {
-        Alert.alert(
-          'BLE Error',
-          `Failed to monitor BLE state: ${error.message}`
-        )
-      },
-      complete: () => {
-        // BLE scan complete
-      }
-    })
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [])
 
   // Set up device listener for LedgerService
   useEffect(() => {
@@ -74,47 +45,8 @@ export default function DeviceConnectionScreen(): JSX.Element {
     }
   }, [])
 
-  // Request Bluetooth permissions
-  const requestBluetoothPermissions =
-    useCallback(async (): Promise<boolean> => {
-      if (Platform.OS !== 'android') {
-        return true
-      }
-
-      try {
-        const granted = await PermissionsAndroid.requestMultiple([
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-        ])
-
-        return Object.values(granted).every(
-          permission => permission === PermissionsAndroid.RESULTS.GRANTED
-        )
-      } catch (error) {
-        return false
-      }
-    }, [])
-
   // Scan for devices
   const scanForDevices = useCallback(async () => {
-    if (!transportState.available) {
-      Alert.alert(
-        'Bluetooth Unavailable',
-        'Please enable Bluetooth to scan for Ledger devices'
-      )
-      return
-    }
-
-    const hasPermissions = await requestBluetoothPermissions()
-    if (!hasPermissions) {
-      Alert.alert(
-        'Permission Required',
-        'Bluetooth permissions are required to scan for Ledger devices.'
-      )
-      return
-    }
-
     try {
       await LedgerService.startDeviceScanning()
     } catch (error) {
@@ -125,7 +57,7 @@ export default function DeviceConnectionScreen(): JSX.Element {
         }`
       )
     }
-  }, [transportState.available, requestBluetoothPermissions])
+  }, [])
 
   // Handle device connection
   const handleDeviceConnection = useCallback(
@@ -136,6 +68,23 @@ export default function DeviceConnectionScreen(): JSX.Element {
         // Navigate to app connection step
         push('/accountSettings/ledger/appConnection')
       } catch (error) {
+        if (isLedgerBluetoothPermissionError(error)) {
+          Alert.alert(
+            'Bluetooth Permission Required',
+            'Please enable Bluetooth permissions in your device settings to connect to Ledger devices.',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Open Settings',
+                onPress: () => {
+                  Linking.openSettings()
+                }
+              }
+            ]
+          )
+          return
+        }
+
         Alert.alert(
           'Connection failed',
           'Failed to connect to Ledger device. Please try again.',

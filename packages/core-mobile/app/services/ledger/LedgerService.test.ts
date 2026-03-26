@@ -1,7 +1,19 @@
 import { jest } from '@jest/globals'
+import { Alert, PermissionsAndroid, Platform } from 'react-native'
+import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Logger from 'utils/Logger'
 import LedgerService from './LedgerService'
 import { LedgerAppType } from './types'
+import { isLedgerBluetoothPermissionError } from './LedgerBluetoothPermissionError'
+
+jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
+  __esModule: true,
+  default: {
+    open: jest.fn(),
+    listen: jest.fn(),
+    disconnectDevice: jest.fn()
+  }
+}))
 
 describe('LedgerService', () => {
   describe('openApp', () => {
@@ -296,6 +308,157 @@ describe('LedgerService', () => {
       const actualBytes = apdu.slice(5)
 
       expect(actualBytes).toEqual(expectedBytes)
+    })
+  })
+
+  describe('bluetooth permissions', () => {
+    const transportBLEMock = TransportBLE as unknown as {
+      open: jest.Mock
+      listen: jest.Mock
+      disconnectDevice: jest.Mock
+    }
+
+    const bluetoothPermissions = [
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+    ].filter(
+      (
+        permission
+      ): permission is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
+        Boolean(permission)
+    )
+
+    const makePermissionResult = (
+      status: typeof PermissionsAndroid.RESULTS[keyof typeof PermissionsAndroid.RESULTS]
+    ): Record<string, string> => {
+      return Object.fromEntries(
+        bluetoothPermissions.map(permission => [permission, status])
+      )
+    }
+
+    const grantedPermissions = makePermissionResult(
+      PermissionsAndroid.RESULTS.GRANTED
+    )
+
+    const deniedPermissions = makePermissionResult(
+      PermissionsAndroid.RESULTS.DENIED
+    )
+
+    const mockTransport = {
+      exchange: jest.fn().mockRejectedValue(new Error('No app info') as never),
+      isConnected: true,
+      close: jest.fn()
+    }
+
+    const originalPlatformOS = Platform.OS
+
+    beforeEach(() => {
+      jest.useFakeTimers()
+      jest.spyOn(Logger, 'info').mockImplementation(jest.fn())
+      jest.spyOn(Logger, 'error').mockImplementation(jest.fn())
+      jest.spyOn(Alert, 'alert').mockImplementation(jest.fn())
+      jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
+      jest
+        .spyOn(PermissionsAndroid, 'requestMultiple')
+        .mockResolvedValue(grantedPermissions as never)
+
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: 'android'
+      })
+
+      transportBLEMock.listen.mockReturnValue({
+        unsubscribe: jest.fn()
+      })
+      transportBLEMock.disconnectDevice.mockResolvedValue(undefined as never)
+      transportBLEMock.open.mockResolvedValue(mockTransport as never)
+    })
+
+    afterEach(async () => {
+      await LedgerService.disconnect().catch(() => undefined)
+      LedgerService.stopDeviceScanning()
+      LedgerService.stopAppPolling()
+      jest.runOnlyPendingTimers()
+      jest.useRealTimers()
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: originalPlatformOS
+      })
+      jest.restoreAllMocks()
+    })
+
+    it('requests permissions when scanning for devices', async () => {
+      await LedgerService.startDeviceScanning()
+
+      expect(PermissionsAndroid.check).toHaveBeenCalledTimes(
+        bluetoothPermissions.length
+      )
+      expect(PermissionsAndroid.requestMultiple).toHaveBeenCalledWith(
+        bluetoothPermissions
+      )
+      expect(transportBLEMock.listen).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not start scanning when permissions are denied', async () => {
+      ;(PermissionsAndroid.requestMultiple as jest.Mock).mockResolvedValue(
+        deniedPermissions as never
+      )
+
+      await LedgerService.startDeviceScanning()
+
+      expect(transportBLEMock.listen).not.toHaveBeenCalled()
+      expect(Alert.alert).toHaveBeenCalledWith(
+        'Permission Required',
+        'Bluetooth permissions are required to scan for Ledger devices.'
+      )
+    })
+
+    it('requests permissions when establishing a connection', async () => {
+      await LedgerService.ensureConnection('device-id')
+
+      expect(PermissionsAndroid.check).toHaveBeenCalledTimes(
+        bluetoothPermissions.length
+      )
+      expect(PermissionsAndroid.requestMultiple).toHaveBeenCalledWith(
+        bluetoothPermissions
+      )
+      expect(transportBLEMock.open).toHaveBeenCalledWith(
+        'device-id',
+        expect.any(Number)
+      )
+    })
+
+    it('does not reopen permission prompts when permissions are already granted', async () => {
+      ;(PermissionsAndroid.check as jest.Mock).mockResolvedValue(true as never)
+
+      await LedgerService.ensureConnection('device-id')
+
+      expect(PermissionsAndroid.requestMultiple).not.toHaveBeenCalled()
+      expect(transportBLEMock.open).toHaveBeenCalledWith(
+        'device-id',
+        expect.any(Number)
+      )
+    })
+
+    it('fails connection before opening transport when permissions are denied', async () => {
+      ;(PermissionsAndroid.requestMultiple as jest.Mock).mockResolvedValue(
+        deniedPermissions as never
+      )
+
+      try {
+        await LedgerService.ensureConnection('device-id')
+        throw new Error('Expected ensureConnection to fail')
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+        expect((error as Error).message).toBe(
+          'Bluetooth permissions are required to connect to Ledger devices.'
+        )
+        expect(isLedgerBluetoothPermissionError(error)).toBe(true)
+      }
+
+      expect(transportBLEMock.open).not.toHaveBeenCalled()
+      expect(Alert.alert).not.toHaveBeenCalled()
     })
   })
 })
