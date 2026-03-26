@@ -374,6 +374,13 @@ export const selectFusionMaxAmountAdditiveBpsSolanaToEvm = (
   )
 }
 
+export const selectFusionDisableCrossChainSwaps = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return !!featureFlags[FeatureGates.FUSION_DISABLE_CROSS_CHAIN_SWAPS]
+}
+
 export const selectMarkrSwapMaxRetries = (state: RootState): number => {
   const { featureFlags } = state.posthog
   return parseIntFlag(

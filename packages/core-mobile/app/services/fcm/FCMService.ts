@@ -46,6 +46,11 @@ export const EVENT_TO_CH_ID: Record<string, ChannelId> = {
  */
 class FCMService {
   getFCMToken = async (): Promise<string> => {
+    // registerDeviceForRemoteMessages is required on iOS before getToken().
+    // It's idempotent so safe to call on every token fetch.
+    if (Platform.OS === 'ios') {
+      await messaging().registerDeviceForRemoteMessages()
+    }
     return await messaging().getToken()
   }
 

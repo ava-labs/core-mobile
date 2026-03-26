@@ -13,8 +13,16 @@ export function isInAppAvalancheRequest(request: RpcRequest): boolean {
   )
 }
 
-export function isToastsAndConfettiEnabled(request: RpcRequest): boolean {
-  return !request.context?.[RequestContext.TOASTS_AND_CONFETTI_DISABLED]
+export function isTxFeedbackEnabled(request: RpcRequest): boolean {
+  return !request.context?.[RequestContext.SUPPRESS_TX_FEEDBACK]
+}
+
+export function isSuccessToastEnabled(request: RpcRequest): boolean {
+  return !request.context?.[RequestContext.SUCCESS_TOAST_DISABLED]
+}
+
+export function isImmediateSentToast(request: RpcRequest): boolean {
+  return Boolean(request.context?.[RequestContext.IMMEDIATE_SENT_TOAST])
 }
 
 export function isConfettiEnabled(request: RpcRequest): boolean {

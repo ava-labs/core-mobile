@@ -6,11 +6,14 @@ import {
   stackScreensOptions,
   useModalScreensOptions
 } from 'common/consts/screenOptions'
+import {
+  onClosingTransitionEnd,
+  onClosingTransitionStart
+} from 'common/utils/navigationGuard'
 import { useTriggerAfterLoginFlows } from 'common/hooks/useTriggerAfterLoginFlows'
 import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
 import { LedgerSetupProvider } from 'features/ledger'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
-import { MigrateFavoriteIds } from 'new/common/components/MigrateFavoriteIds'
 import { NavigationPresentationMode } from 'new/common/types'
 import React from 'react'
 import { useSelector } from 'react-redux'
@@ -44,7 +47,16 @@ export default function WalletLayout(): JSX.Element {
     <BridgeProvider>
       <CollectiblesProvider>
         <LedgerSetupProvider>
-          <Stack screenOptions={{ headerShown: false }}>
+          <Stack
+            screenOptions={{ headerShown: false }}
+            screenListeners={{
+              transitionStart: e => {
+                if (e.data.closing) onClosingTransitionStart()
+              },
+              transitionEnd: e => {
+                if (e.data.closing) onClosingTransitionEnd()
+              }
+            }}>
             <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
             <Stack.Screen
               name="(modals)/accountSettings"
@@ -278,7 +290,6 @@ export default function WalletLayout(): JSX.Element {
           </Stack>
           <PolyfillCrypto />
           <LastTransactedNetworks />
-          <MigrateFavoriteIds />
         </LedgerSetupProvider>
       </CollectiblesProvider>
     </BridgeProvider>

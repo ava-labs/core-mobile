@@ -28,10 +28,12 @@ import { currentRouteStore } from 'new/routes/store'
 import { BoundedMap } from 'common/utils/boundedMap'
 import { getAddressForChainId } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import {
-  isToastsAndConfettiEnabled,
+  isTxFeedbackEnabled,
   isConfettiEnabled,
   isInAppAvalancheRequest,
   isInAppReview,
+  isSuccessToastEnabled,
+  isImmediateSentToast,
   showConfetti
 } from '../utils/requestContext'
 import { onApprove } from './onApprove'
@@ -66,7 +68,7 @@ class ApprovalController implements VmModuleApprovalController {
     request: RpcRequest
     explorerLink?: string
   }): void => {
-    if (!isToastsAndConfettiEnabled(request)) return
+    if (!isTxFeedbackEnabled(request)) return
 
     if (isInAppAvalancheRequest(request)) {
       transactionSnackbar.success({
@@ -76,6 +78,8 @@ class ApprovalController implements VmModuleApprovalController {
       if (isConfettiEnabled(request)) {
         showConfetti()
       }
+    } else if (isImmediateSentToast(request)) {
+      transactionSnackbar.success({ message: 'Transaction sent' })
     } else {
       transactionSnackbar.pending({ toastId: request.requestId })
     }
@@ -102,7 +106,7 @@ class ApprovalController implements VmModuleApprovalController {
       })
     }
 
-    if (!isToastsAndConfettiEnabled(request)) return
+    if (!isTxFeedbackEnabled(request)) return
 
     if (isInAppReview(request)) {
       // Run the app-review prompt flow after confetti finishes
@@ -115,7 +119,9 @@ class ApprovalController implements VmModuleApprovalController {
       return // do not show success toast for in-app avalanche transactions as we've already shown it in onTransactionPending
     }
 
-    transactionSnackbar.success({ explorerLink, toastId: request.requestId })
+    if (isSuccessToastEnabled(request)) {
+      transactionSnackbar.success({ explorerLink, toastId: request.requestId })
+    }
 
     // only show confetti for in-app requests
     if (isInAppRequest(request) && isConfettiEnabled(request)) {

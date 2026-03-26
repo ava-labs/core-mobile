@@ -127,16 +127,12 @@ const promptEnableNotificationsIfNeeded = async (
         {
           text: 'Turn on',
           onPress: async () => {
-            if (authorizationStatus === AuthorizationStatus.DENIED) {
-              NotificationsService.openSystemSettings()
-              resolve()
-              return
-            }
             const { permission } = await NotificationsService.getAllPermissions(
               false
             )
             if (permission !== 'authorized') {
               AnalyticsService.capture('PushNotificationRejected')
+              NotificationsService.openSystemSettings()
               resolve()
               return
             }

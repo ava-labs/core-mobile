@@ -46,6 +46,7 @@ export enum FeatureGates {
   FUSION_AVALANCHE_EVM = 'fusion-avalanche-evm',
   FUSION_LOMBARD_BTC_TO_BTCB = 'fusion-lombard-btc-to-btcb',
   FUSION_LOMBARD_BTCB_TO_BTC = 'fusion-lombard-btcb-to-btc',
+  FUSION_DISABLE_CROSS_CHAIN_SWAPS = 'fusion-disable-cross-chain-swaps',
   ALTERNATE_APP_ICONS = 'alternate-app-icons',
   LEGACY_BRIDGE = 'legacy-bridge',
   INJECTED_PROVIDER = 'injected-provider',

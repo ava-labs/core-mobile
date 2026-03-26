@@ -36,6 +36,13 @@ class AppleSigninService implements AppleSigninServiceInterface {
 
       return { oidcToken: identityToken }
     } catch (error) {
+      if (
+        error instanceof Error &&
+        'code' in error &&
+        (error as Error & { code: string }).code === appleAuth.Error.CANCELED
+      ) {
+        throw new Error('USER_CANCELED')
+      }
       Logger.error('iOS Apple sign in error', error)
       throw new Error('iOS Apple sign in error')
     }

@@ -1,4 +1,8 @@
-import { GoogleSignin } from '@react-native-google-signin/google-signin'
+import {
+  GoogleSignin,
+  isErrorWithCode,
+  statusCodes
+} from '@react-native-google-signin/google-signin'
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import { OidcPayload } from 'seedless/types'
@@ -36,14 +40,24 @@ class GoogleSigninService {
 
       if (userInfo.data?.idToken) {
         return { oidcToken: userInfo.data.idToken }
-      } else {
-        const error = 'Google sign in error: empty token'
-        Logger.error(error)
-        throw new Error(error)
       }
+      Logger.warn('Google sign in: empty token received')
+      throw new Error('Google sign in error: empty token')
     } catch (error) {
+      if (
+        isErrorWithCode(error) &&
+        error.code === statusCodes.SIGN_IN_CANCELLED
+      ) {
+        throw new Error('USER_CANCELED')
+      }
+      if (
+        error instanceof Error &&
+        error.message === 'Google sign in error: empty token'
+      ) {
+        throw error
+      }
       Logger.error('Google sign in error', error)
-      throw new Error('Google sign in error')
+      throw error instanceof Error ? error : new Error('Google sign in error')
     }
   }
 

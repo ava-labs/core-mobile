@@ -93,7 +93,7 @@ export type AnalyticsEvents = {
   SeedlessExportPhraseHidden: undefined
   SeedlessExportPhraseRevealed: undefined
   SeedlessMfaVerified: { type: string }
-  SeedlessLoginFailed: undefined
+  SeedlessLoginFailed: { reason: string }
   SeedlessRegisterTOTPStartFailed: undefined
   SeedlessSignIn: { oidcProvider: number }
   SeedlessSignUp: { oidcProvider: number }
@@ -218,7 +218,7 @@ export type AnalyticsEvents = {
 
   //Gasless
   GaslessFundSuccessful: { fundTxHash: string }
-  GaslessFundFailed: undefined
+  GaslessFundFailed: { errorMessage: string; errorCategory: string }
 
   // PUSH NOTIFICATIONS
   PushNotificationPromptShown: undefined
