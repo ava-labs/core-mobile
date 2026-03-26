@@ -72,7 +72,8 @@ const ALLOWED_METHODS = new Set([
   ...Object.keys(SIGNING_METHODS),
   'wallet_switchEthereumChain',
   'wallet_addEthereumChain',
-  'wallet_revokePermissions'
+  'wallet_revokePermissions',
+  'wallet_watchAsset'
 ])
 
 function validateProviderRequest(data: unknown): data is ProviderRequest {
@@ -412,6 +413,27 @@ export function useEvmInjectedProvider(
     [emitEvent, sendResponse]
   )
 
+  const handleWatchAsset = useCallback(
+    async (id: number, params: unknown[] | unknown) => {
+      // Normalize: some dApps send object form { type, options } instead of array
+      const normalizedParams = Array.isArray(params) ? params : [params]
+      const inAppRequest = createInAppRequest(dispatch)
+      try {
+        await inAppRequest({
+          method: 'wallet_watchAsset' as unknown as RpcMethod,
+          params: normalizedParams,
+          chainId: getEvmCaip2ChainId(browserNetworkRef.current.chainId),
+          peerMeta: buildDappPeerMeta()
+        })
+        sendResponse(id, null, true)
+      } catch {
+        // EIP-747: user rejection returns false, not an error
+        sendResponse(id, null, false)
+      }
+    },
+    [sendResponse, dispatch, buildDappPeerMeta]
+  )
+
   const handleProviderMessage = useCallback(
     async (payload: string) => {
       const respondWithError = (id: number, error: unknown): void =>
@@ -459,6 +481,8 @@ export function useEvmInjectedProvider(
         await handleAddEthereumChain(id, params ?? [])
       } else if (method === 'wallet_revokePermissions') {
         handleRevokePermissions(id)
+      } else if (method === 'wallet_watchAsset') {
+        handleWatchAsset(id, params ?? [])
       } else if (method in SIGNING_METHODS) {
         dispatchSigningRequest(id, method, params ?? [])
       } else if (READ_ONLY_METHODS.has(method)) {
@@ -471,7 +495,8 @@ export function useEvmInjectedProvider(
       dispatchSigningRequest,
       handleSwitchEthereumChain,
       handleAddEthereumChain,
-      handleRevokePermissions
+      handleRevokePermissions,
+      handleWatchAsset
     ]
   )
 

@@ -561,6 +561,109 @@ describe('useEvmInjectedProvider', () => {
       })
     })
 
+    describe('wallet_watchAsset', () => {
+      function makeWatchAssetPayload(id: number, params: unknown): string {
+        return JSON.stringify({
+          id,
+          request: { method: 'wallet_watchAsset', params }
+        })
+      }
+
+      it('routes through createInAppRequest and responds true on approval', async () => {
+        const mockRequest = jest.fn().mockResolvedValue(true)
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef)
+        )
+
+        act(() => {
+          result.current.setCurrentUrl('https://example.com')
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(
+            makeWatchAssetPayload(1, [
+              {
+                type: 'ERC20',
+                options: { address: '0xToken', symbol: 'TKN', decimals: 18 }
+              }
+            ])
+          )
+        })
+
+        expect(mockCreateInAppRequest).toHaveBeenCalledWith(mockDispatch)
+        expect(mockRequest).toHaveBeenCalledWith(
+          expect.objectContaining({
+            method: 'wallet_watchAsset',
+            chainId: `eip155:${mockActiveNetwork.chainId}`
+          })
+        )
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('__coreProviderRespond(1, null, true)')
+        )
+      })
+
+      it('normalizes object-form params to array before passing to handler', async () => {
+        const mockRequest = jest.fn().mockResolvedValue(true)
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef)
+        )
+
+        act(() => {
+          result.current.setCurrentUrl('https://example.com')
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(
+            makeWatchAssetPayload(2, {
+              type: 'ERC20',
+              options: { address: '0xToken', symbol: 'TKN', decimals: 18 }
+            })
+          )
+        })
+
+        const passedParams = mockRequest.mock.calls[0][0].params
+        expect(Array.isArray(passedParams)).toBe(true)
+      })
+
+      it('responds false (not an error) when user rejects, per EIP-747', async () => {
+        const mockRequest = jest
+          .fn()
+          .mockRejectedValue({ code: 4001, message: 'User rejected' })
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef)
+        )
+
+        act(() => {
+          result.current.setCurrentUrl('https://example.com')
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(
+            makeWatchAssetPayload(3, [
+              {
+                type: 'ERC20',
+                options: { address: '0xToken', symbol: 'TKN', decimals: 18 }
+              }
+            ])
+          )
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('__coreProviderRespond(3, null, false)')
+        )
+        // Must not send an error — EIP-747 rejection is not an error
+        expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+          expect.stringContaining('"code"')
+        )
+      })
+    })
+
     describe('signing methods', () => {
       const signingMethods = [
         { dappMethod: 'personal_sign', rpcMethod: RpcMethod.PERSONAL_SIGN },
