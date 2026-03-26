@@ -27,6 +27,7 @@ import Animated, {
   useAnimatedStyle
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { isIOS26AndAbove } from 'common/utils/isIOS26AndAbove'
 import Grabber from './Grabber'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
@@ -116,6 +117,10 @@ export const ScrollScreen = ({
     LayoutRectangle | undefined
   >()
 
+  const [footerLayout, setFooterLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+
   const headerRef = useRef<View>(null)
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
@@ -147,6 +152,11 @@ export const ScrollScreen = ({
   const onHeaderLayout = useCallback((event: LayoutChangeEvent) => {
     const { x, y, width, height } = event.nativeEvent.layout
     setHeaderLayout({ x, y, width, height })
+  }, [])
+
+  const handleFooterLayout = useCallback((event: LayoutChangeEvent) => {
+    const { x, y, width, height } = event.nativeEvent.layout
+    setFooterLayout({ x, y, width, height })
   }, [])
 
   const animatedBorderStyle = useAnimatedStyle(() => {
@@ -226,7 +236,7 @@ export const ScrollScreen = ({
                   paddingHorizontal: 16,
                   paddingBottom: insets.bottom + 16
                 }}>
-                {footer}
+                <View onLayout={handleFooterLayout}>{footer}</View>
               </Animated.View>
             </LinearGradientBottomWrapper>
           </View>
@@ -249,7 +259,13 @@ export const ScrollScreen = ({
     }
 
     return null
-  }, [renderFooter, shouldAvoidKeyboard, disableStickyFooter, insets.bottom])
+  }, [
+    renderFooter,
+    insets.bottom,
+    handleFooterLayout,
+    shouldAvoidKeyboard,
+    disableStickyFooter
+  ])
 
   const renderGrabber = useCallback(() => {
     if (isModal)
@@ -321,7 +337,7 @@ export const ScrollScreen = ({
           contentContainerStyle={[
             props?.contentContainerStyle,
             {
-              paddingBottom: disableStickyFooter ? insets.bottom + 24 : 24,
+              paddingBottom: disableStickyFooter ? insets.bottom + 32 : 32,
               paddingTop: headerHeight
             }
           ]}
@@ -352,7 +368,9 @@ export const ScrollScreen = ({
         contentContainerStyle={[
           props?.contentContainerStyle,
           {
-            paddingBottom: renderFooter ? 24 : insets.bottom + 24,
+            paddingBottom: isIOS26AndAbove
+              ? (footerLayout?.height ?? 0) + insets.bottom + 32
+              : insets.bottom + 32,
             paddingTop: headerHeight
           }
         ]}
