@@ -475,18 +475,19 @@ export function useEvmInjectedProvider(
         return
       }
 
+      const safeParams = params ?? []
       if (method === 'wallet_switchEthereumChain') {
-        handleSwitchEthereumChain(id, params ?? [])
+        handleSwitchEthereumChain(id, safeParams)
       } else if (method === 'wallet_addEthereumChain') {
-        await handleAddEthereumChain(id, params ?? [])
+        await handleAddEthereumChain(id, safeParams)
       } else if (method === 'wallet_revokePermissions') {
         handleRevokePermissions(id)
       } else if (method === 'wallet_watchAsset') {
-        handleWatchAsset(id, params ?? [])
+        handleWatchAsset(id, safeParams)
       } else if (method in SIGNING_METHODS) {
-        dispatchSigningRequest(id, method, params ?? [])
+        dispatchSigningRequest(id, method, safeParams)
       } else if (READ_ONLY_METHODS.has(method)) {
-        proxyToRpc(id, method, params ?? [])
+        proxyToRpc(id, method, safeParams)
       }
     },
     [
