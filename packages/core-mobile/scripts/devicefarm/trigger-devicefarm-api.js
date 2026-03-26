@@ -26,7 +26,7 @@
  *   DEVICEFARM_TEST_PACKAGE_PATH=...
  *   DEVICEFARM_TEST_SPEC_PATH=...
  *   PLATFORM=android   (case-insensitive: Android / IOS from CI are accepted)
- *   WAIT_FOR_COMPLETION=true   (optional; poll until run completes — needs devicefarm:GetRun)
+ *   WAIT_FOR_COMPLETION=true   (optional; poll until run completes — needs devicefarm:GetRun; also accepts yes/1)
  *   WAIT_FOR_COMPLETION_TIMEOUT_SEC=7200   (optional; default 2 hours when waiting)
  *
  * Why ARNs? The Device Farm API requires a project ARN (where to upload app/tests) and
@@ -51,6 +51,19 @@ const {
   ScheduleRunCommand
 } = require('@aws-sdk/client-device-farm')
 
+/** Case-insensitive truthy env (1, true, yes). */
+function parseBoolEnv(name) {
+  const v = process.env[name]
+  if (v === undefined || v === '') return false
+  return /^(1|true|yes)$/i.test(String(v).trim())
+}
+
+function coerceBool(value) {
+  if (typeof value === 'boolean') return value
+  if (value === undefined || value === '') return false
+  return /^(1|true|yes)$/i.test(String(value).trim())
+}
+
 // Parse command line arguments
 const args = process.argv.slice(2)
 const config = {
@@ -64,7 +77,7 @@ const config = {
   platform: process.env.PLATFORM || 'android',
   region:
     process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'us-west-2',
-  waitForCompletion: process.env.WAIT_FOR_COMPLETION === 'true'
+  waitForCompletion: parseBoolEnv('WAIT_FOR_COMPLETION')
 }
 
 // Parse CLI arguments (--flag value). Map kebab-case flags to config keys (not raw dash-stripping).
@@ -97,7 +110,7 @@ if (config.platform !== 'android' && config.platform !== 'ios') {
   process.exit(1)
 }
 if (typeof config.waitForCompletion === 'string') {
-  config.waitForCompletion = config.waitForCompletion === 'true'
+  config.waitForCompletion = coerceBool(config.waitForCompletion)
 }
 
 // Validate required parameters
@@ -450,6 +463,10 @@ async function main() {
     if (config.waitForCompletion) {
       console.log('⏳ Waiting for test run to complete (GetRun polling)...')
       await waitForRunCompletion(runArn)
+    } else {
+      console.log(
+        'ℹ️  Exiting after schedule (set WAIT_FOR_COMPLETION=true to poll until the run finishes).'
+      )
     }
 
     // Expose for Bitrise follow-up steps (Slack, etc.) via envman

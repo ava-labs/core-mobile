@@ -175,18 +175,16 @@ export DEVICEFARM_TEST_SPEC_PATH="$TEST_SPEC"
 export PLATFORM
 export WAIT_FOR_COMPLETION
 
-# Run the Device Farm trigger script
+# Run the Device Farm trigger script (when WAIT_FOR_COMPLETION=true it polls GetRun until terminal state)
 if node "$SCRIPT_DIR/trigger-devicefarm-api.js"; then
   cleanup_client_device_farm_tmp
-  echo -e "\n${GREEN}✅ Device Farm test run triggered successfully!${NC}"
-  
   if [ "$WAIT_FOR_COMPLETION" = "true" ]; then
-    echo -e "${GREEN}✅ Test run completed${NC}"
+    echo -e "\n${GREEN}✅ Device Farm run finished (trigger script waited until AWS reported COMPLETED).${NC}"
   else
-    echo -e "${YELLOW}ℹ️  Test run is executing in the background${NC}"
-    echo "   Check AWS Device Farm console for progress"
+    echo -e "\n${GREEN}✅ Device Farm run scheduled successfully.${NC}"
+    echo -e "${YELLOW}ℹ️  Tests run asynchronously on AWS; check the Device Farm console for progress.${NC}"
   fi
-  
+
   exit 0
 else
   EXIT_CODE=$?
