@@ -129,22 +129,18 @@ export const discoverRemainingActiveAccounts = async ({
 
     const accountIds = Object.keys(accounts)
 
-    if (accountIds.length > 0) {
-      if (shouldShowToast) {
-        transactionSnackbar.success({
-          message: `${accountIds.length} ${
-            accountIds.length > 1 ? 'accounts' : 'account'
-          } successfully added`,
-          toastId
-        })
-      }
-    } else {
-      if (shouldShowToast) {
-        transactionSnackbar.plain({
-          message: 'No additional accounts found',
-          toastId
-        })
-      }
+    if (shouldShowToast && accountIds.length > 0) {
+      transactionSnackbar.success({
+        message: `${accountIds.length} ${
+          accountIds.length > 1 ? 'accounts' : 'account'
+        } successfully added`,
+        toastId
+      })
+    } else if (shouldShowToast) {
+      transactionSnackbar.plain({
+        message: 'No additional accounts found',
+        toastId
+      })
     }
 
     markWalletAsMigrated(walletId)
@@ -181,6 +177,16 @@ export const migrateRemainingActiveAccounts = async ({
   dispatch(setIsMigratingActiveAccounts(true))
 
   try {
+    // Early guard: skip discovery entirely if wallet is already inactive
+    const initialWalletState = selectWalletState(getState())
+    if (initialWalletState !== WalletState.ACTIVE) {
+      Logger.error(
+        'Wallet is not active, skipping migrateRemainingActiveAccounts'
+      )
+      global.toast?.hideAll()
+      return
+    }
+
     // For seedless wallets, batch all accounts at once since XP balance
     // fetching iterates over all accounts — dispatching one at a time
     // would trigger redundant balance updates.
@@ -194,13 +200,20 @@ export const migrateRemainingActiveAccounts = async ({
       onAccountCreated: isSeedless
         ? undefined
         : account => {
+            // Re-check wallet state before each dispatch to handle
+            // the case where wallet becomes inactive mid-discovery.
+            const currentWalletState = selectWalletState(getState())
+            if (currentWalletState !== WalletState.ACTIVE) {
+              Logger.error(
+                'Wallet became inactive during discovery, skipping dispatch'
+              )
+              return
+            }
             // Dispatch each account to Redux as it's created so it
             // appears in the UI immediately rather than waiting for
             // all accounts to finish.
             dispatch(setNonActiveAccounts({ [account.id]: account }))
-            recentAccountsStore
-              .getState()
-              .addRecentAccounts([account.id])
+            recentAccountsStore.getState().addRecentAccounts([account.id])
           }
     })
 

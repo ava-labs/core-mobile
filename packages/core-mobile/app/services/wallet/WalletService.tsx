@@ -493,10 +493,13 @@ const resolveAnyTrue = async (checks: Promise<boolean>[]): Promise<boolean> => {
 
   while (remaining.size > 0) {
     const result = await Promise.race(
-      [...remaining].map(index => wrappedChecks[index] as Promise<{
-        index: number
-        value: boolean
-      }>)
+      [...remaining].map(
+        index =>
+          wrappedChecks[index] as Promise<{
+            index: number
+            value: boolean
+          }>
+      )
     )
 
     remaining.delete(result.index)

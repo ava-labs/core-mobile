@@ -473,7 +473,17 @@ class AccountsService {
         ...(scanWindow !== undefined && { scanWindow })
       })
 
-      for (const discoveredAccount of discoveredAccounts) {
+      // Fill index gaps so accounts are contiguous from startIndex
+      // to the highest discovered index. This prevents index collisions
+      // when addAccount uses accountsByWalletId.length as the next index.
+      const contiguousAccounts = await this.fillDiscoveredAccountGaps({
+        discoveredAccounts,
+        startIndex,
+        walletId,
+        walletType
+      })
+
+      for (const discoveredAccount of contiguousAccounts) {
         const name = await this.getAccountName({
           walletType,
           accountIndex: discoveredAccount.index
@@ -516,6 +526,47 @@ class AccountsService {
   async getSeedlessActiveAccountCount(): Promise<number> {
     const pubKeys = await SeedlessPubKeysStorage.retrieve()
     return pubKeys.filter(isEvmPublicKey).length
+  }
+
+  /**
+   * Ensures discovered accounts are contiguous from startIndex to the
+   * highest active index by filling gaps with derived addresses.
+   */
+  private async fillDiscoveredAccountGaps({
+    discoveredAccounts,
+    startIndex,
+    walletId,
+    walletType
+  }: {
+    discoveredAccounts: DiscoveredSeedBasedAccount[]
+    startIndex: number
+    walletId: string
+    walletType: WalletType.MNEMONIC | WalletType.KEYSTONE
+  }): Promise<DiscoveredSeedBasedAccount[]> {
+    if (discoveredAccounts.length === 0) {
+      return discoveredAccounts
+    }
+
+    const maxIndex = Math.max(...discoveredAccounts.map(a => a.index))
+    const byIndex = new Map(discoveredAccounts.map(a => [a.index, a]))
+    const contiguous: DiscoveredSeedBasedAccount[] = []
+
+    for (let idx = startIndex; idx <= maxIndex; idx++) {
+      const existing = byIndex.get(idx)
+      if (existing) {
+        contiguous.push(existing)
+      } else {
+        const addresses = await this.getAddresses({
+          walletId,
+          walletType,
+          accountIndex: idx,
+          isTestnet: false
+        })
+        contiguous.push({ id: `scan-${idx}`, index: idx, addresses })
+      }
+    }
+
+    return contiguous
   }
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -754,7 +805,10 @@ class AccountsService {
 
     const xpubResults = await runWithConcurrency({
       items: xpubCapableAccounts,
-      concurrency: Math.min(MAX_PARALLEL_XPUB_LOOKUPS, xpubCapableAccounts.length),
+      concurrency: Math.min(
+        MAX_PARALLEL_XPUB_LOOKUPS,
+        xpubCapableAccounts.length
+      ),
       task: async account => {
         try {
           return {
@@ -1097,11 +1151,14 @@ class AccountsService {
 
     while (remaining.size > 0) {
       const result = await Promise.race(
-        [...remaining].map(index => wrappedResults[index] as Promise<{
-          index: number
-          value: boolean
-          hadError: boolean
-        }>)
+        [...remaining].map(
+          index =>
+            wrappedResults[index] as Promise<{
+              index: number
+              value: boolean
+              hadError: boolean
+            }>
+        )
       )
 
       remaining.delete(result.index)

@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { WalletType } from 'services/wallet/types'
 import WalletService from './WalletService'
 
 const mockPostV1GetAddresses = jest.fn()
 
-const createDeferred = <T,>() => {
+const createDeferred = <T>() => {
   let resolve!: (value: T | PromiseLike<T>) => void
   let reject!: (reason?: unknown) => void
   const promise = new Promise<T>((res, rej) => {
@@ -46,7 +45,9 @@ describe('WalletService.hasActivityFromXpubXP', () => {
       .mockResolvedValueOnce({
         data: {
           networkType: 'AVM',
-          externalAddresses: [{ address: 'X-avax1', index: 0, hasActivity: true }],
+          externalAddresses: [
+            { address: 'X-avax1', index: 0, hasActivity: true }
+          ],
           internalAddresses: []
         }
       })
@@ -111,8 +112,16 @@ describe('WalletService.hasActivityFromXpubXP', () => {
     const pendingPvmResponse = createDeferred<{
       data: {
         networkType: string
-        externalAddresses: Array<{ address: string; index: number; hasActivity: boolean }>
-        internalAddresses: Array<{ address: string; index: number; hasActivity: boolean }>
+        externalAddresses: Array<{
+          address: string
+          index: number
+          hasActivity: boolean
+        }>
+        internalAddresses: Array<{
+          address: string
+          index: number
+          hasActivity: boolean
+        }>
       }
     }>()
 
@@ -137,7 +146,9 @@ describe('WalletService.hasActivityFromXpubXP', () => {
 
     const resultOrTimeout = await Promise.race([
       hasActivityPromise,
-      new Promise<'timeout'>(resolve => setTimeout(() => resolve('timeout'), 100))
+      new Promise<'timeout'>(resolve =>
+        setTimeout(() => resolve('timeout'), 100)
+      )
     ])
 
     pendingPvmResponse.resolve({

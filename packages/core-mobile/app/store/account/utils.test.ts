@@ -464,7 +464,7 @@ describe('account/utils', () => {
     const createMockState = (walletState: WalletState) =>
       ({
         app: { walletState }
-      }) as unknown as import('store/types').RootState
+      } as unknown as import('store/types').RootState)
 
     beforeEach(() => {
       mockGetState.mockReturnValue(createMockState(WalletState.ACTIVE))
@@ -593,7 +593,14 @@ describe('account/utils', () => {
 
     it('skips dispatch when wallet is not active', async () => {
       mockGetState.mockReturnValue(createMockState(WalletState.INACTIVE))
-      mockFetchRemainingActiveAccounts.mockResolvedValue(mockAccounts)
+      mockFetchRemainingActiveAccounts.mockImplementation(
+        async ({ onAccountCreated }) => {
+          Object.values(mockAccounts).forEach(account => {
+            onAccountCreated?.(account)
+          })
+          return mockAccounts
+        }
+      )
 
       await migrateRemainingActiveAccounts({
         listenerApi: mockListenerApi,
@@ -609,6 +616,40 @@ describe('account/utils', () => {
       expect(accountDispatches).toHaveLength(0)
       expect(Logger.error).toHaveBeenCalledWith(
         'Wallet is not active, skipping migrateRemainingActiveAccounts'
+      )
+    })
+
+    it('stops dispatching if wallet becomes inactive mid-discovery', async () => {
+      let callCount = 0
+      mockGetState.mockImplementation(() => {
+        callCount++
+        if (callCount <= 2) return createMockState(WalletState.ACTIVE)
+        return createMockState(WalletState.INACTIVE)
+      })
+
+      mockFetchRemainingActiveAccounts.mockImplementation(
+        async ({ onAccountCreated }) => {
+          Object.values(mockAccounts).forEach(account => {
+            onAccountCreated?.(account)
+          })
+          return mockAccounts
+        }
+      )
+
+      await migrateRemainingActiveAccounts({
+        listenerApi: mockListenerApi,
+        walletId: 'wallet-1',
+        walletType: WalletType.MNEMONIC,
+        startIndex: 1
+      })
+
+      const accountDispatches = mockDispatch.mock.calls.filter(
+        ([action]: [{ type: string }]) =>
+          action.type === 'account/setNonActiveAccounts'
+      )
+      expect(accountDispatches).toHaveLength(1)
+      expect(Logger.error).toHaveBeenCalledWith(
+        'Wallet became inactive during discovery, skipping dispatch'
       )
     })
 
