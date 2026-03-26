@@ -187,26 +187,26 @@ const getApkArtifact = async (buildSlug, buildType) => {
   const artifacts = response.data.data
   console.log(`   Found ${artifacts.length} artifacts`)
 
-  // Find the internal signed APK (e2e or release)
-  const apkPattern =
+  // Match artifact title: e2e = exact Bitrise name; release = internal * -signed.apk
+  const apkTitleMatcher =
     buildType === 'e2e'
       ? 'app-internal-e2e-bitrise-signed.apk'
-      : 'app-internal.*-signed.apk'
+      : /app-internal.*-signed\.apk/i
 
-  const apkArtifact = artifacts.find(
-    artifact =>
-      artifact.title &&
-      (buildType === 'e2e'
-        ? artifact.title.includes('app-internal-e2e-bitrise-signed.apk')
-        : artifact.title.includes('app-internal') &&
-          artifact.title.includes('signed.apk')) &&
-      artifact.artifact_type === 'android-apk'
-  )
+  const apkArtifact = artifacts.find(artifact => {
+    if (!artifact.title || artifact.artifact_type !== 'android-apk') {
+      return false
+    }
+    const t = artifact.title
+    return typeof apkTitleMatcher === 'string'
+      ? t.includes(apkTitleMatcher)
+      : apkTitleMatcher.test(t)
+  })
 
   if (!apkArtifact) {
     const expectedName =
-      buildType === 'e2e'
-        ? 'app-internal-e2e-bitrise-signed.apk'
+      typeof apkTitleMatcher === 'string'
+        ? apkTitleMatcher
         : 'app-internal-*-signed.apk'
     console.error(`\n❌ Could not find ${expectedName} artifact`)
     if (artifacts.length > 0) {
