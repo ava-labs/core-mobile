@@ -26,6 +26,8 @@
  *   DEVICEFARM_TEST_PACKAGE_PATH=...
  *   DEVICEFARM_TEST_SPEC_PATH=...
  *   PLATFORM=android   (case-insensitive: Android / IOS from CI are accepted)
+ *   WAIT_FOR_COMPLETION=true   (optional; poll until run completes — needs devicefarm:GetRun)
+ *   WAIT_FOR_COMPLETION_TIMEOUT_SEC=7200   (optional; default 2 hours when waiting)
  *
  * Why ARNs? The Device Farm API requires a project ARN (where to upload app/tests) and
  * a device pool ARN (which devices to run on). These are not the IAM user ARN.
@@ -45,6 +47,7 @@ const {
   CreateUploadCommand,
   GetUploadCommand,
   GetProjectCommand,
+  GetRunCommand,
   ScheduleRunCommand
 } = require('@aws-sdk/client-device-farm')
 
@@ -301,6 +304,58 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+/** Outcomes that exit 0 after status COMPLETED */
+const SUCCESS_RESULTS = new Set(['PASSED', 'WARNED', 'SKIPPED'])
+
+/**
+ * Poll GetRun until the run reaches a terminal state (status COMPLETED) or timeout.
+ * Uses exponential backoff between polls (5s → capped at 60s).
+ */
+async function waitForRunCompletion(runArn) {
+  const rawTimeout = process.env.WAIT_FOR_COMPLETION_TIMEOUT_SEC
+  const parsed = parseInt(
+    rawTimeout !== undefined && rawTimeout !== '' ? rawTimeout : '7200',
+    10
+  )
+  const timeoutSec = Number.isFinite(parsed)
+    ? Math.max(60, parsed)
+    : 7200
+  const deadline = Date.now() + timeoutSec * 1000
+  let delayMs = 5000
+  const maxDelayMs = 60000
+
+  while (Date.now() < deadline) {
+    const response = await deviceFarmClient.send(
+      new GetRunCommand({ arn: runArn })
+    )
+    const run = response.run
+    const status = run?.status
+    const result = run?.result
+
+    console.log(
+      `   Run status: ${status ?? '(unknown)'}, result: ${result ?? '(pending)'}`
+    )
+
+    if (status === 'COMPLETED') {
+      if (result && SUCCESS_RESULTS.has(result)) {
+        console.log(`✅ Run finished successfully (${result})`)
+        return
+      }
+      const detail = run?.message ? `: ${run.message}` : ''
+      throw new Error(
+        `Run completed with result ${result ?? 'UNKNOWN'}${detail}`
+      )
+    }
+
+    await sleep(Math.min(delayMs, maxDelayMs))
+    delayMs = Math.min(maxDelayMs, Math.floor(delayMs * 1.5))
+  }
+
+  throw new Error(
+    `Timed out waiting for run after ${timeoutSec}s (set WAIT_FOR_COMPLETION_TIMEOUT_SEC to adjust)`
+  )
+}
+
 /**
  * Main function to trigger test run
  */
@@ -392,11 +447,9 @@ async function main() {
     console.log(`   Run ARN: ${runArn}`)
     console.log(`   View run at: ${runUrl}`)
 
-    // Optionally wait for completion
     if (config.waitForCompletion) {
-      console.log('⏳ Waiting for test run to complete...')
-      // You can implement wait logic here using GetRunCommand
-      // This is left as an exercise or can be added if needed
+      console.log('⏳ Waiting for test run to complete (GetRun polling)...')
+      await waitForRunCompletion(runArn)
     }
 
     // Expose for Bitrise follow-up steps (Slack, etc.) via envman
@@ -436,4 +489,10 @@ if (require.main === module) {
   })
 }
 
-module.exports = { main, uploadFile, uploadToUrl, waitForUpload }
+module.exports = {
+  main,
+  uploadFile,
+  uploadToUrl,
+  waitForUpload,
+  waitForRunCompletion
+}
