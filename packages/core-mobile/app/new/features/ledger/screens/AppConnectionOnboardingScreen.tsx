@@ -38,13 +38,6 @@ export const AppConnectionOnboardingScreen = ({
   const handleComplete = useCallback(
     async (keys: LedgerKeysByNetwork) => {
       const keysByNetwork = isDeveloperMode ? keys.testnet : keys.mainnet
-      Logger.info('handleComplete called', {
-        hasAvalancheKeys: !!keysByNetwork.avalancheKeys,
-        hasConnectedDeviceId: !!connectedDeviceId,
-        hasSelectedDerivationPath: !!selectedDerivationPath,
-        isUpdatingWallet,
-        solanaKeysCount: keysByNetwork.solanaKeys?.length ?? 0
-      })
 
       // If wallet hasn't been created yet, create it now
       if (

@@ -5,7 +5,10 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { selectIsKeystoneBlocked, selectIsLedgerSupportBlocked } from 'store/posthog'
+import {
+  selectIsKeystoneBlocked,
+  selectIsLedgerSupportBlocked
+} from 'store/posthog'
 
 const AccessWalletScreen = (): JSX.Element => {
   const { theme } = useTheme()
