@@ -29,13 +29,14 @@ import { snapshotsReducer as snapshots } from './snapshots/slice'
 import { reduxStorage } from './reduxStorage'
 import { walletsReducer as wallet } from './wallet/slice'
 import { nestEggReducer as nestEgg } from './nestEgg/slice'
+import { predictionsReducer as predictions } from 'features/predictions/store/predictionsSlice'
 
 const VERSION = 26
 const STORAGE_WRITE_THROTTLE = 200
 
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform
-const blacklist = ['swap', 'rpc', transactionApi.reducerPath]
+const blacklist = ['swap', 'rpc', transactionApi.reducerPath, 'predictions']
 
 const combinedReducer = combineReducers({
   app,
@@ -54,6 +55,7 @@ const combinedReducer = combineReducers({
   browser,
   snapshots,
   nestEgg,
+  predictions,
 
   // user preferences
   settings,

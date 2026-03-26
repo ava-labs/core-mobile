@@ -296,4 +296,44 @@ export type AnalyticsEvents = {
     fromAmountUsd: number
     timestamp: number
   }
+
+  // PREDICTIONS
+  PredictionsBetStarted: {
+    tickerId: string
+    outcome: 'YES' | 'NO'
+    amountUsd: number
+    limitPrice: string
+  }
+  PredictionsBetSucceeded: {
+    tickerId: string
+    outcome: 'YES' | 'NO'
+    amountUsd: number
+  }
+  PredictionsBetFailed: {
+    tickerId: string
+    outcome: 'YES' | 'NO'
+    error: string
+  }
+
+  PredictionsDepositStarted: { tokenSymbol: string; amountUsd: number }
+  PredictionsDepositSucceeded: {
+    tokenSymbol: string
+    amountUsd: number
+    usdcReceived: number
+  }
+  PredictionsDepositFailed: { tokenSymbol: string; error: string }
+
+  PredictionsWithdrawStarted: {
+    tickerId: string
+    outcome: 'YES' | 'NO'
+    count: string
+  }
+  PredictionsWithdrawSucceeded: { tickerId: string; usdcReceived: number }
+  PredictionsWithdrawFailed: { tickerId: string; error: string }
+
+  PredictionsKYCStarted: undefined
+  PredictionsKYCApproved: undefined
+  PredictionsKYCRejected: { reason: string }
+
+  PredictionsSearched: { query: string; resultCount: number }
 }

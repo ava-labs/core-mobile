@@ -494,6 +494,7 @@ __metadata:
     "@avalabs/fusion-sdk": 0.14.1
     "@avalabs/glacier-sdk": 3.1.0-alpha.79
     "@avalabs/k2-alpine": "workspace:*"
+    "@avalabs/prediction-market-sdk": ^0.2.0
     "@avalabs/svm-module": 3.4.0
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": 3.1.0-alpha.79
@@ -1014,6 +1015,18 @@ __metadata:
     react-native-worklets: 0.7.1
   languageName: unknown
   linkType: soft
+
+"@avalabs/prediction-market-sdk@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@avalabs/prediction-market-sdk@npm:0.2.0"
+  dependencies:
+    viem: ^2.38.3
+  peerDependencies:
+    viem: ^2.38.3
+    zod: ^4.1.0
+  checksum: f2473ba800446184737168f918306a5db807f5f00bce07fdd6606d081d5dd26477b017b0ea3bb6bb1723ec8395d8f1b23b81bd01a8a2f543d84369edc521292b
+  languageName: node
+  linkType: hard
 
 "@avalabs/svm-module@npm:3.4.0":
   version: 3.4.0
@@ -33556,6 +33569,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ox@npm:0.14.7":
+  version: 0.14.7
+  resolution: "ox@npm:0.14.7"
+  dependencies:
+    "@adraffy/ens-normalize": ^1.11.0
+    "@noble/ciphers": ^1.3.0
+    "@noble/curves": 1.9.1
+    "@noble/hashes": ^1.8.0
+    "@scure/bip32": ^1.7.0
+    "@scure/bip39": ^1.6.0
+    abitype: ^1.2.3
+    eventemitter3: 5.0.1
+  peerDependencies:
+    typescript: ">=5.4.0"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 072768caa20419f6fba739aa28cca3896789b37e59e33d811d7a265a6c1044b4a03ff6abd82613f3da0e3965c517994b4841afa36da2c1bbf545fcf16680e885
+  languageName: node
+  linkType: hard
+
 "p-limit@npm:^2.0.0, p-limit@npm:^2.2.0":
   version: 2.3.0
   resolution: "p-limit@npm:2.3.0"
@@ -35983,7 +36017,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: e08d1254d04f3074970b63cdf0a363d6b189009270d457e868a26ef534addd69b320b85bef2a22e4eddb79006751bded431b56aaf2baf41976a6d0a5a2a2b91e
+  checksum: 3e4689674406deb2ad9efa9f529597341b4ab33e379b7c7cd72aff8d5e37862fda1a37aba984951a67cc3938969be138bc3c4469e4963dd170b172148339e056
   languageName: node
   linkType: hard
 
@@ -41283,6 +41317,27 @@ react-native-webview@ava-labs/react-native-webview:
     typescript:
       optional: true
   checksum: 5207f8e5c9ae33ca928094f97ce68c739d9b32ff35646f00c699a74431e518fbcf828bbe3ed0d054bc02437c0fbe0b3b41a4c5439135954b3804785fb985dfd5
+  languageName: node
+  linkType: hard
+
+"viem@npm:^2.38.3":
+  version: 2.47.6
+  resolution: "viem@npm:2.47.6"
+  dependencies:
+    "@noble/curves": 1.9.1
+    "@noble/hashes": 1.8.0
+    "@scure/bip32": 1.7.0
+    "@scure/bip39": 1.6.0
+    abitype: 1.2.3
+    isows: 1.0.7
+    ox: 0.14.7
+    ws: 8.18.3
+  peerDependencies:
+    typescript: ">=5.0.4"
+  peerDependenciesMeta:
+    typescript:
+      optional: true
+  checksum: 3aefa1edc74598affb715f2b2c325db0fad2330e193a94fa7ff0293acd4b24b8a9ea3d082d78dc40c763e051b07853320074a69b1e72621ac339ccb1995ac92b
   languageName: node
   linkType: hard
 

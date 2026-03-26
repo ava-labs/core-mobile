@@ -612,6 +612,14 @@ export const selectIsInjectedProviderBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsPredictionsBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.PREDICTIONS] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions

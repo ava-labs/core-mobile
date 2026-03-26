@@ -48,7 +48,8 @@ export enum FeatureGates {
   FUSION_LOMBARD_BTCB_TO_BTC = 'fusion-lombard-btcb-to-btc',
   ALTERNATE_APP_ICONS = 'alternate-app-icons',
   LEGACY_BRIDGE = 'legacy-bridge',
-  INJECTED_PROVIDER = 'injected-provider'
+  INJECTED_PROVIDER = 'injected-provider',
+  PREDICTIONS = 'predictions'
 }
 
 export enum FeatureVars {
