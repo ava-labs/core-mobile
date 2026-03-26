@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState
 } from 'react'
@@ -122,20 +123,6 @@ export const TokenAmountInput = forwardRef<
       }
     }, [valueAsString])
 
-    useEffect(() => {
-      if (autoFocus) {
-        requestAnimationFrame(() => {
-          inputRef.current?.focus()
-        })
-      }
-    }, [autoFocus])
-
-    useEffect(() => {
-      if (inputRef.current) {
-        inputRef.current?.setNativeProps({ text: valueAsString })
-      }
-    }, [valueAsString])
-
     const handleBlur = useCallback(
       (e: BlurEvent): void => {
         onBlur?.(e)
@@ -152,12 +139,20 @@ export const TokenAmountInput = forwardRef<
       [moveCursorToEnd, onFocus]
     )
 
+    const maxLength = useMemo(() => {
+      if (!valueAsString) return undefined
+      const [intPart] = valueAsString.split('.')
+      const intLength = (intPart?.replace(/^0+(?!$)/, '') ?? '0').length
+      return intLength + 1 + denomination
+    }, [valueAsString, denomination])
+
     return (
       <AutoSizeTextInput
         {...props}
         value={valueAsString}
         ref={inputRef}
         testID={testID}
+        maxLength={maxLength}
         keyboardType={Platform.OS === 'ios' ? 'numeric' : undefined}
         inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
         onChangeText={handleChangeText}

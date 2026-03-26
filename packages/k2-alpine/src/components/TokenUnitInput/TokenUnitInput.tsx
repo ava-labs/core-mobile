@@ -105,17 +105,10 @@ export const TokenUnitInput = forwardRef<
           (!endValue || endValue.length <= token.maxDecimals)
 
         if (isInputValid) {
-          const sanitizedFrontValue = frontValue.replace(/^0+(?!$)/, '')
+          const normalizedValue = normalizeValue(changedValue)
 
           //setting maxLength to TextInput prevents flickering, see https://reactnative.dev/docs/textinput#value
-          setMaxLength(
-            Math.min(
-              20,
-              sanitizedFrontValue.length + '.'.length + token.maxDecimals
-            )
-          )
-
-          const normalizedValue = normalizeValue(changedValue)
+          setMaxLength(computeMaxLength(normalizedValue, token.maxDecimals))
 
           setValue(normalizedValue)
           onChange?.(
@@ -137,7 +130,10 @@ export const TokenUnitInput = forwardRef<
     }
 
     useImperativeHandle(ref, () => ({
-      setValue: (newValue: string) => setValue(newValue),
+      setValue: (newValue: string) => {
+        setValue(newValue)
+        setMaxLength(computeMaxLength(newValue, token.maxDecimals))
+      },
       focus: () => textInputRef.current?.focus(),
       blur: () => textInputRef.current?.blur()
     }))
@@ -202,3 +198,13 @@ export const TokenUnitInput = forwardRef<
 )
 
 const PLACEHOLDER = '0.00'
+
+function computeMaxLength(
+  value: string,
+  maxDecimals: number
+): number | undefined {
+  if (!value) return undefined
+  const [front] = value.split('.')
+  const sanitized = front?.replace(/^0+(?!$)/, '') ?? ''
+  return sanitized.length + 1 + maxDecimals
+}
