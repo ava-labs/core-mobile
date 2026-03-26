@@ -46,6 +46,12 @@ cp wdio.devicefarm.conf.ts wdio.conf.ts
 
 # Create zip file directly with all test files
 echo "🗜️  Creating zip file for AWS Device Farm..."
+if [[ ! -f package-lock.json ]]; then
+  echo "❌ e2e-appium/package-lock.json is missing (required for deterministic npm ci on Device Farm)." >&2
+  echo "   From e2e-appium: npm install" >&2
+  exit 1
+fi
+
 zip -r "$OUTPUT_DIR/$ZIP_NAME" . \
   -x "*.tgz" \
   -x "*.zip" \
@@ -55,8 +61,7 @@ zip -r "$OUTPUT_DIR/$ZIP_NAME" . \
   -x "*.log" \
   -x ".npm/*" \
   -x ".yarn/*" \
-  -x "yarn.lock" \
-  -x "package-lock.json"
+  -x "yarn.lock"
 
 echo "✅ Package created: $OUTPUT_DIR/$ZIP_NAME"
 echo "📊 Package size: $(du -h "$OUTPUT_DIR/$ZIP_NAME" | cut -f1)"
@@ -69,6 +74,12 @@ if echo "$ZIP_LIST" | grep -q "package.json"; then
 else
   echo "⚠️  Warning: package.json not found in zip file"
   echo "$ZIP_LIST" | grep -E "(package|json)" | head -5
+  exit 1
+fi
+if echo "$ZIP_LIST" | grep -q "package-lock.json"; then
+  echo "✅ Verified package-lock.json is included (npm ci on Device Farm)"
+else
+  echo "❌ package-lock.json missing from zip" >&2
   exit 1
 fi
 echo "🎉 Packaging complete!"

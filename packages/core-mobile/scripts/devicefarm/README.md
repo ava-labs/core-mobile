@@ -108,7 +108,7 @@ The APK will be at: `app/build/outputs/apk/internal/e2e/app-internal-e2e.apk`
    - Temporarily copies `wdio.devicefarm.conf.ts` → `wdio.conf.ts` for the archive, then **restores** your tracked `wdio.conf.ts` on exit (so the working tree is not left dirty).
    - Creates `appium-tests-devicefarm.zip` directly in the `e2e-appium` directory.
    
-   The zip file contains all test files, configuration, and `package.json`. AWS Device Farm extracts it and runs `npm install` to install dependencies.
+   The zip file contains all test files, configuration, `package.json`, and **`package-lock.json`**. AWS Device Farm runs **`npm ci`** for a reproducible install. Regenerate the lockfile after dependency changes: `cd e2e-appium && npm install`.
 
 2. **Set environment variables:**
    ```bash
@@ -237,7 +237,7 @@ Also set **`APP_PATH`** (or `AWS_DEVICE_FARM_APP_PATH`) to your `.apk` / `.app` 
 `package-tests.sh` zips the `e2e-appium` tree (excluding `node_modules`, lockfiles, etc.), including:
 - Test specs (`specs/`), page objects (`pages/`), helpers (`helpers/`), TestRail (`testrail/`)
 - `wdio.devicefarm.conf.ts` (as `wdio.conf.ts` inside the zip), `tsconfig.json`, `aws_test_spec.yaml`
-- `package.json` — Device Farm runs `npm install` after extract
+- `package.json` + `package-lock.json` — Device Farm runs `npm ci` after extract
 
 ## Environment Variables
 
@@ -323,7 +323,7 @@ You can integrate this into your Bitrise workflow. The `bitrise-to-devicefarm.sh
 
 ### Dependencies missing
 - Ensure all dependencies are listed in `e2e-appium/package.json`
-- AWS Device Farm will run `npm install` when extracting the test zip
+- AWS Device Farm runs `npm ci` when extracting the test zip (lockfile must stay in sync with `package.json`)
 
 ### Local run: “No Android device” or “No booted iOS Simulator”
 - Android: start an emulator or plug in a device; confirm `adb devices` shows `device`.

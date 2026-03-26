@@ -106,4 +106,3 @@ devicefarm-package/
 e2e-appium/appium-tests-devicefarm.zip
 e2e-appium/*.tgz
 e2e-appium/node_modules/
-e2e-appium/package-lock.json
