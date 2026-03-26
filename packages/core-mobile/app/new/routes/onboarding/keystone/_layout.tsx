@@ -25,7 +25,10 @@ export default function KeystoneOnboardingLayout(): JSX.Element {
 
   const renderPageControl = useCallback(
     (): React.ReactNode => (
-      <PageControl numberOfPage={screens.length - 1} currentPage={currentPage} />
+      <PageControl
+        numberOfPage={screens.length - 1}
+        currentPage={currentPage}
+      />
     ),
     [screens.length, currentPage]
   )
