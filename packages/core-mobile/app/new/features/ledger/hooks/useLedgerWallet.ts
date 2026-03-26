@@ -1,14 +1,9 @@
-import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import { showSnackbar } from 'new/common/utils/toast'
-import { useCallback, useEffect, useState } from 'react'
-import { Alert } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectIsLedgerSupportBlocked } from 'store/posthog'
-import LedgerService from 'services/ledger/LedgerService'
+import { useCallback, useState } from 'react'
+import { useDispatch } from 'react-redux'
 import {
   LedgerDerivationPathType,
   LedgerKeys,
-  LedgerTransportState,
   WalletCreationOptions,
   WalletUpdateOptions,
   WalletUpdateSolanaOptions
@@ -26,14 +21,9 @@ import { LedgerWalletSecretSchema } from '../utils'
 import { useLedgerWalletMap } from '../store'
 
 export interface UseLedgerWalletReturn {
-  // Connection state
-  isConnecting: boolean
   isLoading: boolean
-  transportState: LedgerTransportState
 
   // Methods
-  connectToDevice: (deviceId: string) => Promise<void>
-  disconnectDevice: () => Promise<void>
   createLedgerWallet: (
     options: WalletCreationOptions & LedgerKeys
   ) => Promise<{ walletId: string; accountId: string }>
@@ -48,66 +38,7 @@ export interface UseLedgerWalletReturn {
 export function useLedgerWallet(): UseLedgerWalletReturn {
   const { setLedgerWalletMap } = useLedgerWalletMap()
   const dispatch = useDispatch<AppThunkDispatch>()
-  const isLedgerBlocked = useSelector(selectIsLedgerSupportBlocked)
-  const [transportState, setTransportState] = useState<LedgerTransportState>({
-    available: false,
-    powered: false
-  })
-  const [isConnecting, setIsConnecting] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-
-  // Monitor BLE transport state (skip if Ledger support is blocked to avoid requesting Bluetooth permissions)
-  useEffect(() => {
-    if (isLedgerBlocked) {
-      return
-    }
-
-    const subscription = TransportBLE.observeState({
-      next: (event: { available: boolean }) => {
-        setTransportState({
-          available: event.available,
-          powered: false
-        })
-      },
-      error: (error: Error) => {
-        Alert.alert(
-          'BLE Error',
-          `Failed to monitor BLE state: ${error.message}`
-        )
-      },
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      complete: () => {}
-    })
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [isLedgerBlocked])
-
-  // Connect to device
-  const connectToDevice = useCallback(async (deviceId: string) => {
-    setIsConnecting(true)
-    try {
-      await LedgerService.ensureConnection(deviceId)
-      Logger.info('Connected to Ledger device')
-    } catch (error) {
-      Logger.error('Failed to connect to device', error)
-      throw error
-    } finally {
-      setIsConnecting(false)
-    }
-  }, [])
-
-  // Disconnect device
-  const disconnectDevice = useCallback(async () => {
-    try {
-      await LedgerService.disconnect()
-      Logger.info('Disconnected from Ledger device')
-    } catch (error) {
-      Logger.error('Failed to disconnect', error)
-      throw error
-    }
-  }, [])
 
   const createLedgerWallet = useCallback(
     async ({
@@ -402,10 +333,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
   )
 
   return {
-    isConnecting,
-    transportState,
-    connectToDevice,
-    disconnectDevice,
     isLoading,
     createLedgerWallet,
     updateSolanaForLedgerWallet,

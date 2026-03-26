@@ -116,6 +116,10 @@ export const ScrollScreen = ({
     LayoutRectangle | undefined
   >()
 
+  const [footerLayout, setFooterLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+
   const headerRef = useRef<View>(null)
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
@@ -142,11 +146,14 @@ export const ScrollScreen = ({
     }
   })
 
-  // Header: onLayout (not one-shot measure) so fading nav separator stays correct when only
-  // renderHeader is used
-  const onHeaderLayout = useCallback((event: LayoutChangeEvent) => {
+  const handleHeaderLayout = useCallback((event: LayoutChangeEvent) => {
     const { x, y, width, height } = event.nativeEvent.layout
     setHeaderLayout({ x, y, width, height })
+  }, [])
+
+  const handleFooterLayout = useCallback((event: LayoutChangeEvent) => {
+    const { x, y, width, height } = event.nativeEvent.layout
+    setFooterLayout({ x, y, width, height })
   }, [])
 
   const animatedBorderStyle = useAnimatedStyle(() => {
@@ -164,7 +171,7 @@ export const ScrollScreen = ({
           <View
             ref={headerRef}
             collapsable={false}
-            onLayout={onHeaderLayout}
+            onLayout={handleHeaderLayout}
             style={[headerStyle, hasTitle ? { gap: 8 } : undefined]}>
             {title ? (
               <Animated.View style={[animatedHeaderStyle]}>
@@ -190,7 +197,7 @@ export const ScrollScreen = ({
         <View
           ref={headerRef}
           collapsable={false}
-          onLayout={onHeaderLayout}
+          onLayout={handleHeaderLayout}
           style={[
             headerStyle,
             {
@@ -207,7 +214,7 @@ export const ScrollScreen = ({
     headerRef,
     headerHeight,
     headerStyle,
-    onHeaderLayout,
+    handleHeaderLayout,
     renderHeader,
     subtitle,
     title,
@@ -219,15 +226,22 @@ export const ScrollScreen = ({
       const footer = renderFooter()
       if (footer) {
         const footerInner = (
-          <View collapsable={false}>
+          <View
+            collapsable={false}
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0
+            }}>
             <LinearGradientBottomWrapper>
-              <Animated.View
+              <View
                 style={{
                   paddingHorizontal: 16,
                   paddingBottom: insets.bottom + 16
                 }}>
-                {footer}
-              </Animated.View>
+                <View onLayout={handleFooterLayout}>{footer}</View>
+              </View>
             </LinearGradientBottomWrapper>
           </View>
         )
@@ -249,7 +263,13 @@ export const ScrollScreen = ({
     }
 
     return null
-  }, [renderFooter, shouldAvoidKeyboard, disableStickyFooter, insets.bottom])
+  }, [
+    renderFooter,
+    insets.bottom,
+    handleFooterLayout,
+    shouldAvoidKeyboard,
+    disableStickyFooter
+  ])
 
   const renderGrabber = useCallback(() => {
     if (isModal)
@@ -321,7 +341,9 @@ export const ScrollScreen = ({
           contentContainerStyle={[
             props?.contentContainerStyle,
             {
-              paddingBottom: disableStickyFooter ? insets.bottom + 24 : 24,
+              paddingBottom: disableStickyFooter
+                ? insets.bottom + 32
+                : (footerLayout?.height ?? 0) + 32,
               paddingTop: headerHeight
             }
           ]}
@@ -352,7 +374,7 @@ export const ScrollScreen = ({
         contentContainerStyle={[
           props?.contentContainerStyle,
           {
-            paddingBottom: renderFooter ? 24 : insets.bottom + 24,
+            paddingBottom: (footerLayout?.height ?? 0) + insets.bottom + 32,
             paddingTop: headerHeight
           }
         ]}

@@ -17,7 +17,7 @@ import {
   TransferManager,
   Fetch
 } from '@avalabs/fusion-sdk'
-import type { FeatureFlags } from 'services/posthog/types'
+import { FeatureGates } from 'services/posthog/types'
 import Logger from 'utils/Logger'
 import { fusionErrors } from '../utils/fusionErrors'
 import { MARKR_EVM_PARTNER_ID } from '../consts'
@@ -26,6 +26,7 @@ import {
 } from '../utils/transferStatus'
 import type {
   FusionConfig,
+  FusionServiceFlags,
   FusionSigners,
   IFusionService,
   QuoterParams
@@ -54,7 +55,7 @@ class FusionService implements IFusionService {
   /**
    * Get enabled services based on feature flags
    */
-  private getEnabledServices(featureFlags: FeatureFlags): ServiceType[] {
+  private getEnabledServices(featureFlags: FusionServiceFlags): ServiceType[] {
     const services: ServiceType[] = []
 
     if (featureFlags['fusion-markr']) {
@@ -82,11 +83,13 @@ class FusionService implements IFusionService {
   private getServiceInitializers({
     btcFunctions,
     enabledServices,
-    signers
+    signers,
+    disableCrossChainSwaps
   }: {
     btcFunctions: BitcoinFunctions
     enabledServices: ServiceType[]
     signers: FusionSigners
+    disableCrossChainSwaps: boolean
   }): ServiceInitializer[] {
     const initializers: ServiceInitializer[] = []
 
@@ -98,7 +101,8 @@ class FusionService implements IFusionService {
             evmSigner: signers.evm,
             solanaSigner: signers.svm,
             markrAppId: MARKR_EVM_PARTNER_ID,
-            getTargetChainAssets: () => Promise.resolve([])
+            getTargetChainAssets: () => Promise.resolve([]),
+            disableCrossChainSwaps
             // eslint-disable-next-line prettier/prettier
           } satisfies MarkrServiceInitializer)
           break
@@ -149,7 +153,8 @@ class FusionService implements IFusionService {
       const initializers = this.getServiceInitializers({
         btcFunctions: bitcoinProvider,
         enabledServices: config.enabledServices,
-        signers
+        signers,
+        disableCrossChainSwaps: config.disableCrossChainSwaps ?? false
       })
 
       // Ensure at least one service is enabled
@@ -197,14 +202,16 @@ class FusionService implements IFusionService {
     bitcoinProvider: BitcoinFunctions
     fetch: Fetch
     environment: Environment
-    featureFlags: FeatureFlags
+    featureFlags: FusionServiceFlags
     signers: FusionSigners
   }): Promise<void> {
     const enabledServices = this.getEnabledServices(featureFlags)
+    const disableCrossChainSwaps =
+      !!featureFlags[FeatureGates.FUSION_DISABLE_CROSS_CHAIN_SWAPS]
 
     return this.init({
       bitcoinProvider,
-      config: { environment, enabledServices, fetch },
+      config: { environment, enabledServices, fetch, disableCrossChainSwaps },
       signers
     })
   }

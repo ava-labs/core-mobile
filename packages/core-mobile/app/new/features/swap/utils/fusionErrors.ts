@@ -1,13 +1,28 @@
 import { isSdkError } from '@avalabs/fusion-sdk'
 import type { QuoterDoneReason } from '@avalabs/fusion-sdk'
 
-const INSUFFICIENT_BALANCE_FOR_FEES =
-  'Insufficient balance to complete swap and cover gas fees'
+export type FusionQuoteErrorKind =
+  | 'network-fee-only' // gas alone exceeds balance; no bridge fee involved
+  | 'other'
 
 export class FusionQuoteError extends Error {
-  constructor(message: string, public readonly reason?: QuoterDoneReason) {
+  public readonly reason?: QuoterDoneReason
+  public readonly isWarning?: boolean
+  public readonly kind: FusionQuoteErrorKind
+
+  constructor(
+    message: string,
+    options?: {
+      reason?: QuoterDoneReason
+      isWarning?: boolean
+      kind?: FusionQuoteErrorKind
+    }
+  ) {
     super(message)
     this.name = 'FusionQuoteError'
+    this.reason = options?.reason
+    this.isWarning = options?.isWarning
+    this.kind = options?.kind ?? 'other'
   }
 }
 
@@ -16,13 +31,13 @@ export const fusionErrors = {
   noQuotes(): FusionQuoteError {
     return new FusionQuoteError(
       'No quotes available right now. Please try again.',
-      'no-quotes'
+      { reason: 'no-quotes' }
     )
   },
   noEligibleServices(): FusionQuoteError {
     return new FusionQuoteError(
       'Swap not supported for this token pair.\nPlease try a different pair.',
-      'no-eligible-services'
+      { reason: 'no-eligible-services' }
     )
   },
 
@@ -72,17 +87,80 @@ export const fusionErrors = {
   belowMinimumAmount(formattedMin: string): FusionQuoteError {
     return new FusionQuoteError(`Minimum amount is ${formattedMin}.`)
   },
-  insufficientBalanceForFees(): FusionQuoteError {
-    return new FusionQuoteError(INSUFFICIENT_BALANCE_FOR_FEES)
-  },
-  insufficientBalanceForAdditiveFee(formattedMax: string): FusionQuoteError {
+  // Native token: gas alone exceeds balance (no bridge fee)
+  networkFeeExceedsBalance(formattedFee: string): FusionQuoteError {
     return new FusionQuoteError(
-      `Insufficient balance to cover swap amount and fees.\nMax amount is: ${formattedMax}`
+      `Network fee exceeds your balance.\nNetwork fee: ${formattedFee}`,
+      { kind: 'network-fee-only' }
+    )
+  },
+  // Native token: gas + bridge fees exceed balance
+  feesExceedBalance(formattedFee: string): FusionQuoteError {
+    return new FusionQuoteError(
+      `Network and bridge fees exceed your balance.\nRequired fees: ${formattedFee}`
+    )
+  },
+  // Native token: balance covers gas but not gas + swap amount (no bridge fee)
+  amountExceedsBalanceAfterNetworkFee(formattedFee: string): FusionQuoteError {
+    return new FusionQuoteError(
+      `Insufficient balance to cover the swap amount and network fee.\nNetwork fee: ${formattedFee}`,
+      { kind: 'network-fee-only' }
+    )
+  },
+  // Native token: balance covers fees but not fees + swap amount
+  amountExceedsBalanceAfterFees(formattedFee: string): FusionQuoteError {
+    return new FusionQuoteError(
+      `Insufficient balance to cover the swap amount and fees.\nRequired fees: ${formattedFee}`
+    )
+  },
+  // Non-native token: not enough native balance to pay gas (no bridge fee)
+  networkFeeExceedsNativeBalance(
+    symbol: string,
+    formattedAmount: string
+  ): FusionQuoteError {
+    return new FusionQuoteError(
+      `Network fee exceeds your ${symbol} balance.\nNetwork fee: ${formattedAmount}.`,
+      { kind: 'network-fee-only' }
+    )
+  },
+  // Non-native token: not enough native balance to pay gas + bridge fee
+  feesExceedNativeBalance(
+    symbol: string,
+    formattedAmount: string
+  ): FusionQuoteError {
+    return new FusionQuoteError(
+      `Network and bridge fees exceed your ${symbol} balance.\nRequired fees: ${formattedAmount}.`
+    )
+  },
+  // Non-native token: bridge fee alone exceeds token balance
+  bridgeFeeExceedsBalance(formattedFee: string): FusionQuoteError {
+    return new FusionQuoteError(
+      `Bridge fee exceeds your balance.\nBridge fee: ${formattedFee}`
+    )
+  },
+  // Non-native token: token balance covers the fee but not fee + swap amount
+  amountExceedsBalanceAfterBridgeFee(formattedFee: string): FusionQuoteError {
+    return new FusionQuoteError(
+      `Insufficient balance to cover the swap amount and bridge fee.\nBridge fee: ${formattedFee}`
     )
   },
   gasEstimationFailed(): FusionQuoteError {
-    return new FusionQuoteError('Unable to estimate gas')
+    return new FusionQuoteError('Unable to estimate gas', { isWarning: true })
+  },
+  swapAmountTooSmall(): FusionQuoteError {
+    return new FusionQuoteError(
+      'Swap amount is too small for this token pair.\nTry a larger amount.'
+    )
   }
+}
+
+/**
+ * Returns true for errors caused solely by insufficient gas balance (no bridge
+ * fee component). These can be downgraded to warnings on networks with gasless
+ * support, since the gas fee will be covered outside the user's balance.
+ */
+export function isGasOnlyNetworkFeeError(error: FusionQuoteError): boolean {
+  return error.kind === 'network-fee-only'
 }
 
 /**
@@ -142,7 +220,7 @@ export function getSwapErrorMessage(error: unknown): string {
 
   // Common error patterns
   if (message.includes('insufficient funds')) {
-    return INSUFFICIENT_BALANCE_FOR_FEES
+    return 'Insufficient balance to cover swap amount and fees.'
   }
   if (message.includes('slippage')) {
     return 'Price moved too much. Try increasing slippage tolerance.'
