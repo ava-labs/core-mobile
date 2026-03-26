@@ -80,14 +80,15 @@ async function verifyElementText(
 }
 
 async function waitFor(ele: ChainablePromiseElement, timeout = 20000) {
-  // Race between waitForExist and waitForDisplayed to return as soon as either succeeds
-  // This is faster than sequential fallback which waits for the first to timeout
+  // Race between waitForExist and waitForDisplayed to return as soon as either succeeds.
+  // Attach .catch on each so the loser’s timeout rejection is handled (Promise.race does not cancel it).
+  const pExist = ele.waitForExist({ timeout })
+  const pDisplayed = ele.waitForDisplayed({ timeout })
+  void pExist.catch(() => {})
+  void pDisplayed.catch(() => {})
   try {
-    await Promise.race([
-      ele.waitForExist({ timeout }),
-      ele.waitForDisplayed({ timeout })
-    ])
-  } catch (e) {
+    await Promise.race([pExist, pDisplayed])
+  } catch {
     // If both race promises reject, try waitForDisplayed as final fallback
     // This handles edge cases where element exists but isn't displayed yet
     await ele.waitForDisplayed({ timeout })
@@ -118,12 +119,11 @@ async function waitForNotVisible(
   ele: ChainablePromiseElement,
   timeout = 20000
 ) {
-  // Race between waitForDisplayed and waitForExist (both reverse) to return as soon as either succeeds
-  // This is faster than sequential fallback
-  await Promise.race([
-    ele.waitForDisplayed({ timeout, reverse: true }),
-    ele.waitForExist({ timeout, reverse: true })
-  ])
+  const pDisplayed = ele.waitForDisplayed({ timeout, reverse: true })
+  const pExist = ele.waitForExist({ timeout, reverse: true })
+  void pDisplayed.catch(() => {})
+  void pExist.catch(() => {})
+  await Promise.race([pDisplayed, pExist])
   const eleSelector = await ele.selector
   console.log(`[${eleSelector}] is not visible as expected`)
 }
