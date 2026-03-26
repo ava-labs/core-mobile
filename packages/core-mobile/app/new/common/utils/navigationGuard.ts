@@ -1,4 +1,6 @@
-import { Href, router, NavigationOptions } from 'expo-router'
+import { Href, router } from 'expo-router'
+
+type NavigationOptions = Parameters<typeof router.push>[1]
 
 /**
  * Navigation guard that prevents new screens from being presented while a
