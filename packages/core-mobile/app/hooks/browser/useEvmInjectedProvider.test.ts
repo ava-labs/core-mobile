@@ -1028,7 +1028,10 @@ describe('useEvmInjectedProvider', () => {
         const emptyRpcNetwork = { ...mockActiveNetwork, rpcUrl: '' }
         setupMocks({
           network: emptyRpcNetwork as typeof mockActiveNetwork,
-          allNetworks: { 43114: emptyRpcNetwork, 1: { ...mockActiveNetwork, chainId: 1 } }
+          allNetworks: {
+            43114: emptyRpcNetwork,
+            1: { ...mockActiveNetwork, chainId: 1 }
+          }
         })
 
         const { result } = renderHook(() =>
