@@ -88,6 +88,10 @@ class WalletWatchAssetHandler
     const caip2ChainId = payload.request.data.params.chainId
     const chainId = Number(caip2ChainId.split(':')[1])
 
+    if (!Number.isInteger(chainId) || chainId <= 0) {
+      return { success: false, error: rpcErrors.internal('Invalid chainId') }
+    }
+
     dispatch(addCustomToken({ chainId, token: data.token }))
     return { success: true, value: true }
   }

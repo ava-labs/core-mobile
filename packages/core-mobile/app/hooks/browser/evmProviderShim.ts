@@ -81,6 +81,7 @@ export function buildEvmProviderShim({
     if (error) {
       var e = new Error(error.message || 'Unknown error');
       e.code = error.code;
+      if (error.data !== undefined) { e.data = error.data; }
       cb.reject(e);
     } else {
       cb.resolve(result);
@@ -423,45 +424,6 @@ export function buildEvmProviderShim({
       onUrlChange();
     };
     window.addEventListener('popstate', onUrlChange);
-  })();
-
-  // ──────────────────────────────────────────────
-  // 10. Error capture — forward JS errors to Metro for debugging
-  // ──────────────────────────────────────────────
-  (function() {
-    var origConsoleError = console.error;
-    console.error = function() {
-      var args = Array.prototype.slice.call(arguments);
-      var msg = args.map(function(a) {
-        try {
-          if (a instanceof Error) {
-              var errLabel = (a.name || 'Error') + ': ' + (a.message || '');
-              return errLabel + (a.stack ? '\\n' + a.stack : '');
-            }
-          if (typeof a === 'object' && a !== null) {
-            var json = JSON.stringify(a);
-            return (json === '{}' || json === 'null') ? String(a) : json;
-          }
-          return String(a);
-        } catch(e) { return String(a); }
-      }).join(' ');
-      safeSend({ method: 'log', payload: '[console.error] ' + msg });
-      origConsoleError.apply(console, arguments);
-    };
-    window.addEventListener('unhandledrejection', function(e) {
-      var reason = '';
-      try {
-        if (e.reason instanceof Error) {
-          reason = (e.reason.name || 'Error') + ': ' + (e.reason.message || '') + (e.reason.stack ? '\\n' + e.reason.stack : '');
-        } else {
-          reason = String(e.reason);
-        }
-      } catch(_) { reason = 'unknown'; }
-      safeSend({ method: 'log', payload: '[unhandledrejection] ' + reason });
-    });
-    window.addEventListener('error', function(e) {
-      safeSend({ method: 'log', payload: '[error] ' + e.message + ' at ' + e.filename + ':' + e.lineno + ':' + e.colno });
-    });
   })();
 
   safeSend({ method: 'log', payload: 'Core EVM provider injected (chainId=' + _chainId + ')' });

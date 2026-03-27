@@ -153,7 +153,15 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         }
       }
 
-      // Always keep `urlToLoad` in sync with redux. Skip only when already equal.
+      // Avoid writing the same URL back into WebView when navigation already happened
+      // inside WebView (redirects/SPA transitions). Re-applying source on iOS can
+      // trigger extra loads and amplify redirect chains.
+      const isWebViewDrivenNavigation =
+        !!lastNavStateRef.current.url && lastNavStateRef.current.url === next
+      if (isWebViewDrivenNavigation) {
+        return
+      }
+
       if (next !== urlToLoad) {
         setUrlToLoad(next)
       }
@@ -569,7 +577,6 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             nestedScrollEnabled
             pullToRefreshEnabled
             allowsBackForwardNavigationGestures
-            userAgent="Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
             style={{
               backgroundColor
             }}

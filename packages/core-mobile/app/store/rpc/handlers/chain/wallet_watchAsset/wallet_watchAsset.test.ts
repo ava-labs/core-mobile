@@ -213,6 +213,24 @@ describe('wallet_watchAsset handler', () => {
       )
     })
 
+    it('returns internal error for malformed CAIP-2 chainId', async () => {
+      for (const badChainId of ['eip155:', 'eip155:abc', 'malformed', '']) {
+        const request = createRequest(
+          [{ type: 'ERC20', options: validOptions }],
+          badChainId
+        )
+        const result = await handler.approve(
+          { request, data: { token } },
+          mockListenerApi
+        )
+        expect(result).toEqual({
+          success: false,
+          error: rpcErrors.internal('Invalid chainId')
+        })
+      }
+      expect(mockDispatch).not.toHaveBeenCalled()
+    })
+
     it('returns internal error when approve data has no token', async () => {
       const request = createRequest([{ type: 'ERC20', options: validOptions }])
 

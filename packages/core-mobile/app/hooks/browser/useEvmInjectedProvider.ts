@@ -426,9 +426,14 @@ export function useEvmInjectedProvider(
           peerMeta: buildDappPeerMeta()
         })
         sendResponse(id, null, true)
-      } catch {
-        // EIP-747: user rejection returns false, not an error
-        sendResponse(id, null, false)
+      } catch (e) {
+        // EIP-747: explicit user rejection (4001) returns false; all other
+        // errors (invalid params, internal) are surfaced as real RPC errors
+        if ((e as { code?: number })?.code === 4001) {
+          sendResponse(id, null, false)
+        } else {
+          sendResponse(id, e, undefined)
+        }
       }
     },
     [sendResponse, dispatch, buildDappPeerMeta]
