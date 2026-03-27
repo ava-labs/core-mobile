@@ -22,8 +22,16 @@ const useWdioAppiumService =
   !isDeviceFarm && process.env.APPIUM_MANUAL !== 'true'
 const appiumServerUrl =
   process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL || 'http://localhost:4723'
-const appPath =
+const rawAppPath =
   process.env.AWS_DEVICE_FARM_APP_PATH || process.env.APP_PATH || ''
+if (!rawAppPath) {
+  const expectedEnvVar = isDeviceFarm ? 'AWS_DEVICE_FARM_APP_PATH' : 'APP_PATH'
+  throw new Error(
+    `Mobile app path not configured. Set the ${expectedEnvVar} environment variable ` +
+      '(use APP_PATH for local runs and AWS_DEVICE_FARM_APP_PATH on AWS Device Farm).'
+  )
+}
+const appPath = rawAppPath
 const platformToRun =
   process.env.PLATFORM || process.env.DEVICEFARM_DEVICE_PLATFORM_NAME
 
@@ -73,7 +81,9 @@ const allCaps = [
     'appium:platformVersion': iosResolved.platformVersion,
     'appium:automationName': 'xcuitest',
     'appium:app': appPath,
-    ...(iosResolved.deviceUdid ? { 'appium:udid': iosResolved.deviceUdid } : {}),
+    ...(iosResolved.deviceUdid
+      ? { 'appium:udid': iosResolved.deviceUdid }
+      : {}),
     'appium:autoAcceptAlerts': true,
     'appium:autoDismissAlerts': true,
     'appium:wdaStartupRetries': 5,
@@ -165,23 +175,30 @@ export const config: WebdriverIO.Config = {
   before: async () => {
     const platform = driver.isAndroid ? 'Android' : 'iOS'
     const testType = process.env.TEST_TYPE
-    const isSmoke =
-      testType === 'smoke' || process.env.IS_SMOKE === 'true'
+    const isSmoke = testType === 'smoke' || process.env.IS_SMOKE === 'true'
     const isPerformance =
       testType === 'performance' || process.env.IS_PERFORMANCE === 'true'
     runId = await getTestRun(platform, isSmoke, isPerformance)
     console.log(
-      `------------Starting test run${isDeviceFarm ? ' on AWS Device Farm' : ''}------------`
+      `------------Starting test run${
+        isDeviceFarm ? ' on AWS Device Farm' : ''
+      }------------`
     )
     console.log(`Platform: ${platform}`)
-    const caps = driver.capabilities as Record<string, unknown>
+    const sessionCaps = driver.capabilities as Record<string, unknown>
     console.log(
-      `Device: ${String(caps['appium:deviceName'] ?? caps.deviceName ?? '')}`
+      `Device: ${String(
+        sessionCaps['appium:deviceName'] ?? sessionCaps.deviceName ?? ''
+      )}`
     )
     console.log(
-      `OS Version: ${String(caps['appium:platformVersion'] ?? caps.platformVersion ?? '')}`
+      `OS Version: ${String(
+        sessionCaps['appium:platformVersion'] ??
+          sessionCaps.platformVersion ??
+          ''
+      )}`
     )
-    const udid = caps['appium:udid'] ?? caps.udid
+    const udid = sessionCaps['appium:udid'] ?? sessionCaps.udid
     if (udid) {
       console.log(`Device UDID: ${String(udid)}`)
     }

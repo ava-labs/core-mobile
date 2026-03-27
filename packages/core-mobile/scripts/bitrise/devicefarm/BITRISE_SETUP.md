@@ -92,7 +92,7 @@ These have defaults but can be customized:
   - Description: Whether to wait for test completion before finishing
   - Default: `true`
   - Values: `true` or `false`
-  - Note: Currently the script triggers the run but doesn't wait (can be enhanced)
+  - Note: When `true`, the Device Farm trigger script waits/polls for the run to complete before finishing; when `false`, it only schedules the run and exits.
 
 ## Automatically Set Variables
 

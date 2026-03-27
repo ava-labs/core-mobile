@@ -181,14 +181,16 @@ For backwards compatibility, these scripts are still available:
 ./scripts/devicefarm/run-devicefarm.sh
 ```
 
-### Option 2: Using the script with local APK
+### Option 4: Local APK with `run-devicefarm.sh`
+
+If you already have a packaged test zip and want to drive uploads/scheduling from the shell script:
 
 ```bash
 cd packages/core-mobile
 ./scripts/devicefarm/run-devicefarm.sh
 ```
 
-### Option 3: Manual AWS CLI commands
+### Option 5: Manual AWS CLI commands
 
 1. **Upload the app:**
    ```bash

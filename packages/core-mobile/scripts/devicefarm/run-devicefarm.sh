@@ -203,9 +203,12 @@ RUN_OUTPUT=$(aws devicefarm schedule-run \
 rm -f "$TEST_SPEC_FILE"
 
 RUN_ARN=$(echo "$RUN_OUTPUT" | jq -r '.run.arn')
-# Encode ARNs for console hash route (colons etc.)
-PROJECT_ENC=$(node -e "console.log(encodeURIComponent(process.argv[1]))" "$PROJECT_ARN")
-RUN_ENC=$(node -e "console.log(encodeURIComponent(process.argv[1]))" "$RUN_ARN")
+# Encode ARNs for console hash route (colons etc.) — use jq (already required) instead of node
+uri_encode() {
+  printf '%s' "$1" | jq -sRr @uri
+}
+PROJECT_ENC=$(uri_encode "$PROJECT_ARN")
+RUN_ENC=$(uri_encode "$RUN_ARN")
 RUN_URL="https://console.aws.amazon.com/devicefarm/home?region=${AWS_REGION}#/projects/${PROJECT_ENC}/runs/${RUN_ENC}"
 
 echo -e "${GREEN}✅ Test run scheduled!${NC}"

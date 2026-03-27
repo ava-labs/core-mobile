@@ -21,7 +21,8 @@ module.exports = {
     'expo-env.d.ts',
     'ios/DerivedData',
     'app/utils/api/generated/**',
-    'e2e-appium/scripts/load-secrets-from-aws.js' // Node script for Device Farm; not in tsconfig
+    // Standalone Node script; not in tsconfig — type-aware rules from the shared config cannot run on it
+    'e2e-appium/scripts/load-secrets-from-aws.js'
   ],
   overrides: [
     {
@@ -46,16 +47,6 @@ module.exports = {
         'no-console': 0,
         '@typescript-eslint/explicit-function-return-type': 0,
         'no-param-reassign': 0
-      }
-    },
-    {
-      files: ['e2e-appium/**/*.js'],
-      parserOptions: {
-        ecmaVersion: 2020,
-        sourceType: 'script'
-      },
-      rules: {
-        'no-console': 0
       }
     },
     {
