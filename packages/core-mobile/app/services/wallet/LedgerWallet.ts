@@ -30,7 +30,7 @@ import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Transport from '@ledgerhq/hw-transport'
 import { networks } from 'bitcoinjs-lib'
 import bs58 from 'bs58'
-import { TransactionRequest, TypedDataEncoder } from 'ethers'
+import { Transaction, TransactionRequest, TypedDataEncoder } from 'ethers'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import LedgerService from 'services/ledger/LedgerService'
 import BiometricsSDK from 'utils/BiometricsSDK'
@@ -693,8 +693,6 @@ export class LedgerWallet implements Wallet {
       )
       Logger.info('Using derivation path:', derivationPath)
 
-      // Import ethers for transaction handling
-      const { Transaction } = await import('ethers')
       const tx = {
         chainId,
         nonce: transaction.nonce || 0,

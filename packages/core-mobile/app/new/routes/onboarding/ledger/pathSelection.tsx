@@ -6,7 +6,7 @@ export default function PathSelection(): JSX.Element {
   const { navigate } = useRouter()
 
   const handleNavigateToDeviceConnection = useCallback(() => {
-    navigate('/accountSettings/ledger/deviceConnection')
+    navigate('/onboarding/ledger/deviceConnection')
   }, [navigate])
 
   return (

@@ -6,7 +6,7 @@ export default function AppConnection(): JSX.Element {
   const { navigate } = useRouter()
 
   const handleNavigateToComplete = useCallback(() => {
-    navigate('/accountSettings/ledger/complete')
+    navigate('/onboarding/ledger/setWalletName')
   }, [navigate])
 
   return (
