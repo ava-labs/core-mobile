@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-set -ex
+# Do not use set -x: xtrace expands variables and can leak AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY in CI logs.
+set -e
 
 echo "🚀 Running Android Appium tests on AWS Device Farm via API..."
 

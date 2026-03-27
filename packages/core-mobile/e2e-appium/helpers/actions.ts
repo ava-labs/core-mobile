@@ -446,7 +446,7 @@ async function typeSlowly(
     await driver.pause(500) // Wait for focus and keyboard
   } catch (e) {
     console.log(
-      'Warning: Could not click element before typingSlowly, continuing anyway'
+      'Warning: Could not click element before typeSlowly, continuing anyway'
     )
   }
 
@@ -468,11 +468,13 @@ async function typeSlowly(
     }
   }
 
-  // Use setValue for both platforms since we've already cleared the value
-  // setValue is more reliable for TextInputs with children components
-  // Note: If setValue has issues on iOS, we can fall back to character-by-character addValue
-  await element.setValue(textToType)
-  await driver.pause(300)
+  // Character-by-character input so PIN fields / masked inputs get per-keystroke events (setValue alone can skip that).
+  const perCharMs = 55
+  for (const char of textToType) {
+    await element.addValue(char)
+    await driver.pause(perCharMs)
+  }
+  await driver.pause(200)
 }
 
 async function assertPerformance(start: number, expectedTime = 20000) {
