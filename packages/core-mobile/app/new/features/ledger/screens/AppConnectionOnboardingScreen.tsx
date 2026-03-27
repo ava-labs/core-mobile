@@ -119,6 +119,7 @@ export const AppConnectionOnboardingScreen = ({
       isUpdatingWallet={isUpdatingWallet}
       disconnectDevice={disconnectDevice}
       accountIndex={0} // intentionally setting it to zero here as this screen is used for importing the wallet for the first time
+      showProgressDots={false}
     />
   )
 }

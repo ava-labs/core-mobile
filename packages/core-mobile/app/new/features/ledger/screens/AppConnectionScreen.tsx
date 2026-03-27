@@ -35,7 +35,8 @@ export default function AppConnectionScreen({
   deviceId,
   deviceName = 'Ledger Device',
   disconnectDevice,
-  accountIndex
+  accountIndex,
+  showProgressDots = true
 }: {
   selectedDerivationPath?: LedgerDerivationPathType
   completeStepTitle: string
@@ -45,6 +46,7 @@ export default function AppConnectionScreen({
   disconnectDevice: () => Promise<void>
   handleComplete: (keys: LedgerKeysByNetwork) => Promise<void>
   accountIndex: number
+  showProgressDots?: boolean
 }): JSX.Element {
   const { back } = useRouter()
   const headerHeight = useEffectiveHeaderHeight()
@@ -116,6 +118,8 @@ export default function AppConnectionScreen({
   }, [])
 
   const headerCenterOverlay = useMemo(() => {
+    if (!showProgressDots) return undefined
+
     const paddingTop = Platform.OS === 'ios' ? 15 : 50
 
     return (
@@ -142,7 +146,7 @@ export default function AppConnectionScreen({
         </View>
       </View>
     )
-  }, [headerHeight, isSolanaSupportBlocked, progressDotsCurrentStep])
+  }, [showProgressDots, headerHeight, isSolanaSupportBlocked, progressDotsCurrentStep])
 
   const handleConnectAvalanche = useCallback(async () => {
     try {
