@@ -40,6 +40,7 @@
 
 const fs = require('fs')
 const path = require('path')
+const { Buffer } = require('node:buffer')
 const https = require('https')
 const http = require('http')
 const {
@@ -102,10 +103,14 @@ for (let i = 0; i < args.length; i += 2) {
 }
 
 // Normalize once: CI often sets PLATFORM=Android / iOS (e.g. Bitrise); all comparisons use lowercase.
-config.platform = String(config.platform || 'android').trim().toLowerCase()
+config.platform = String(config.platform || 'android')
+  .trim()
+  .toLowerCase()
 if (config.platform !== 'android' && config.platform !== 'ios') {
   console.error(
-    `❌ PLATFORM must be android or ios (received: ${JSON.stringify(config.platform)})`
+    `❌ PLATFORM must be android or ios (received: ${JSON.stringify(
+      config.platform
+    )})`
   )
   process.exit(1)
 }
@@ -207,6 +212,35 @@ async function uploadFile(filePath, projectArn, uploadType, name) {
   return uploadArn
 }
 
+function makeUploadFailedError(statusCode, chunks) {
+  const body = Buffer.concat(chunks).toString('utf8').trim()
+  const detail = body ? body.slice(0, 500) : ''
+  const msg =
+    'Upload failed with status ' +
+    String(statusCode) +
+    (detail ? ': ' + detail : '')
+  return new Error(msg)
+}
+
+function attachUploadSuccessHandlers(res, finish, resolve, reject) {
+  res.resume()
+  res.on('end', () => finish(() => resolve()))
+  res.on('error', err => finish(() => reject(err)))
+}
+
+function attachUploadFailureHandlers(res, finish, reject) {
+  const chunks = []
+  res.on('data', chunk => {
+    chunks.push(chunk)
+  })
+  res.on('end', () => {
+    finish(() => reject(makeUploadFailedError(res.statusCode, chunks)))
+  })
+  res.on('error', err => {
+    finish(() => reject(err))
+  })
+}
+
 /**
  * Upload file to a presigned URL (S3 / Device Farm upload URL).
  * Drains non-2xx response bodies so the socket can close cleanly; aborts the request if the read stream fails.
@@ -214,7 +248,7 @@ async function uploadFile(filePath, projectArn, uploadType, name) {
 function uploadToUrl(filePath, url) {
   return new Promise((resolve, reject) => {
     let settled = false
-    const finish = (fn) => {
+    const finish = fn => {
       if (settled) return
       settled = true
       fn()
@@ -245,29 +279,10 @@ function uploadToUrl(filePath, url) {
 
     const req = client.request(options, res => {
       if (res.statusCode >= 200 && res.statusCode < 300) {
-        res.resume()
-        res.on('end', () => finish(() => resolve()))
-        res.on('error', err => finish(() => reject(err)))
+        attachUploadSuccessHandlers(res, finish, resolve, reject)
         return
       }
-      const chunks = []
-      res.on('data', chunk => {
-        chunks.push(chunk)
-      })
-      res.on('end', () => {
-        const body = Buffer.concat(chunks).toString('utf8').trim()
-        const detail = body ? body.slice(0, 500) : ''
-        finish(() =>
-          reject(
-            new Error(
-              `Upload failed with status ${res.statusCode}${detail ? `: ${detail}` : ''}`
-            )
-          )
-        )
-      })
-      res.on('error', err => {
-        finish(() => reject(err))
-      })
+      attachUploadFailureHandlers(res, finish, reject)
     })
 
     req.on('error', err => finish(() => reject(err)))
@@ -320,19 +335,31 @@ function sleep(ms) {
 /** Outcomes that exit 0 after status COMPLETED */
 const SUCCESS_RESULTS = new Set(['PASSED', 'WARNED', 'SKIPPED'])
 
-/**
- * Poll GetRun until the run reaches a terminal state (status COMPLETED) or timeout.
- * Uses exponential backoff between polls (5s → capped at 60s).
- */
-async function waitForRunCompletion(runArn) {
+function parseWaitForCompletionTimeoutSec() {
   const rawTimeout = process.env.WAIT_FOR_COMPLETION_TIMEOUT_SEC
   const parsed = parseInt(
     rawTimeout !== undefined && rawTimeout !== '' ? rawTimeout : '7200',
     10
   )
-  const timeoutSec = Number.isFinite(parsed)
-    ? Math.max(60, parsed)
-    : 7200
+  return Number.isFinite(parsed) ? Math.max(60, parsed) : 7200
+}
+
+function handleCompletedDeviceFarmRun(run) {
+  const result = run?.result
+  if (result && SUCCESS_RESULTS.has(result)) {
+    console.log(`✅ Run finished successfully (${result})`)
+    return
+  }
+  const detail = run?.message ? ': ' + run.message : ''
+  throw new Error(`Run completed with result ${result ?? 'UNKNOWN'}${detail}`)
+}
+
+/**
+ * Poll GetRun until the run reaches a terminal state (status COMPLETED) or timeout.
+ * Uses exponential backoff between polls (5s → capped at 60s).
+ */
+async function waitForRunCompletion(runArn) {
+  const timeoutSec = parseWaitForCompletionTimeoutSec()
   const deadline = Date.now() + timeoutSec * 1000
   let delayMs = 5000
   const maxDelayMs = 60000
@@ -346,18 +373,14 @@ async function waitForRunCompletion(runArn) {
     const result = run?.result
 
     console.log(
-      `   Run status: ${status ?? '(unknown)'}, result: ${result ?? '(pending)'}`
+      `   Run status: ${status ?? '(unknown)'}, result: ${
+        result ?? '(pending)'
+      }`
     )
 
     if (status === 'COMPLETED') {
-      if (result && SUCCESS_RESULTS.has(result)) {
-        console.log(`✅ Run finished successfully (${result})`)
-        return
-      }
-      const detail = run?.message ? `: ${run.message}` : ''
-      throw new Error(
-        `Run completed with result ${result ?? 'UNKNOWN'}${detail}`
-      )
+      handleCompletedDeviceFarmRun(run)
+      return
     }
 
     await sleep(Math.min(delayMs, maxDelayMs))
@@ -454,7 +477,11 @@ async function main() {
     const runResponse = await deviceFarmClient.send(scheduleRunCommand)
     const runArn = runResponse.run.arn
     // Fragment path segments must be percent-encoded: ARNs contain ':' and other reserved characters.
-    const runUrl = `https://console.aws.amazon.com/devicefarm/home?region=${encodeURIComponent(config.region)}#/projects/${encodeURIComponent(config.projectArn)}/runs/${encodeURIComponent(runArn)}`
+    const runUrl = `https://console.aws.amazon.com/devicefarm/home?region=${encodeURIComponent(
+      config.region
+    )}#/projects/${encodeURIComponent(
+      config.projectArn
+    )}/runs/${encodeURIComponent(runArn)}`
 
     console.log('✅ Test run scheduled successfully!')
     console.log(`   Run ARN: ${runArn}`)

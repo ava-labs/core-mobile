@@ -82,7 +82,9 @@ export function getAndroidSerial(): string | null {
   if (preferred && devices.includes(preferred)) return preferred
   if (devices.length > 1 && !preferred) {
     console.warn(
-      `[resolve-local-device] Multiple Android devices (${devices.join(', ')}); using ${devices[0]}. Set ANDROID_SERIAL to pick one.`
+      `[resolve-local-device] Multiple Android devices (${devices.join(
+        ', '
+      )}); using ${devices[0]}. Set ANDROID_SERIAL to pick one.`
     )
   }
   return devices[0] ?? null
@@ -162,49 +164,32 @@ function findSimulatorByUdid(udid: string): {
   return null
 }
 
-function resolveIosLocal(): ResolvedDeviceCaps {
-  const udidFromEnv = process.env.IOS_UDID?.trim()
-  if (udidFromEnv) {
-    const found = findSimulatorByUdid(udidFromEnv)
-    if (found) {
-      return {
-        deviceName: found.name,
-        platformVersion: found.platformVersion,
-        deviceUdid: found.udid
-      }
+function resolveIosCapsForExplicitUdid(udid: string): ResolvedDeviceCaps {
+  const found = findSimulatorByUdid(udid)
+  if (found) {
+    return {
+      deviceName: found.name,
+      platformVersion: found.platformVersion,
+      deviceUdid: found.udid
     }
-    const physicalName = process.env.IOS_DEVICE_NAME?.trim()
-    const physicalVer = process.env.IOS_PLATFORM_VERSION?.trim()
-    if (physicalName && physicalVer) {
-      return {
-        deviceName: physicalName,
-        platformVersion: physicalVer,
-        deviceUdid: udidFromEnv
-      }
-    }
-    throw new Error(
-      '[resolve-local-device] IOS_UDID is set but not found in simctl. For a physical device, set IOS_DEVICE_NAME and IOS_PLATFORM_VERSION. Otherwise clear IOS_UDID to use the booted Simulator.'
-    )
   }
+  const physicalName = process.env.IOS_DEVICE_NAME?.trim()
+  const physicalVer = process.env.IOS_PLATFORM_VERSION?.trim()
+  if (physicalName && physicalVer) {
+    return {
+      deviceName: physicalName,
+      platformVersion: physicalVer,
+      deviceUdid: udid
+    }
+  }
+  throw new Error(
+    '[resolve-local-device] IOS_UDID is set but not found in simctl. For a physical device, set IOS_DEVICE_NAME and IOS_PLATFORM_VERSION. Otherwise clear IOS_UDID to use the booted Simulator.'
+  )
+}
 
-  let raw: string
-  try {
-    raw = execSync('xcrun simctl list devices booted -j', {
-      encoding: 'utf8',
-      maxBuffer: 1024 * 1024
-    })
-  } catch (e) {
-    throw new Error(
-      `[resolve-local-device] Failed to list booted iOS simulators: ${e instanceof Error ? e.message : String(e)}`
-    )
-  }
-  const parsed = JSON.parse(raw) as SimctlDevicesJson
-  const buckets = parsed.devices
-  if (!buckets) {
-    throw new Error(
-      '[resolve-local-device] No booted iOS Simulator. Open Simulator, boot a device, or set IOS_UDID to a simulator UDID (see `xcrun simctl list devices`).'
-    )
-  }
+function firstBootedSimulatorInBuckets(
+  buckets: NonNullable<SimctlDevicesJson['devices']>
+): ResolvedDeviceCaps | null {
   for (const [runtime, list] of Object.entries(buckets)) {
     if (!Array.isArray(list)) continue
     for (const d of list) {
@@ -217,6 +202,39 @@ function resolveIosLocal(): ResolvedDeviceCaps {
         }
       }
     }
+  }
+  return null
+}
+
+function resolveIosLocal(): ResolvedDeviceCaps {
+  const udidFromEnv = process.env.IOS_UDID?.trim()
+  if (udidFromEnv) {
+    return resolveIosCapsForExplicitUdid(udidFromEnv)
+  }
+
+  let raw: string
+  try {
+    raw = execSync('xcrun simctl list devices booted -j', {
+      encoding: 'utf8',
+      maxBuffer: 1024 * 1024
+    })
+  } catch (e) {
+    throw new Error(
+      `[resolve-local-device] Failed to list booted iOS simulators: ${
+        e instanceof Error ? e.message : String(e)
+      }`
+    )
+  }
+  const parsed = JSON.parse(raw) as SimctlDevicesJson
+  const buckets = parsed.devices
+  if (!buckets) {
+    throw new Error(
+      '[resolve-local-device] No booted iOS Simulator. Open Simulator, boot a device, or set IOS_UDID to a simulator UDID (see `xcrun simctl list devices`).'
+    )
+  }
+  const booted = firstBootedSimulatorInBuckets(buckets)
+  if (booted) {
+    return booted
   }
   throw new Error(
     '[resolve-local-device] No booted iOS Simulator. Open Simulator, boot a device, or set IOS_UDID to a simulator UDID.'
