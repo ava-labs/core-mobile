@@ -5,37 +5,27 @@ import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupC
 import { LedgerDerivationPathType } from 'services/ledger/types'
 
 interface PathSelectionScreenProps {
-  onNavigateToDeviceConnection?: (path: LedgerDerivationPathType) => void
-  onCancel?: () => void
+  onNavigateToDeviceConnection: (path: LedgerDerivationPathType) => void
 }
 
 export default function PathSelectionScreen({
-  onNavigateToDeviceConnection,
-  onCancel
-}: PathSelectionScreenProps = {}): JSX.Element {
-  const { push, back } = useRouter()
+  onNavigateToDeviceConnection
+}: PathSelectionScreenProps): JSX.Element {
+  const { back } = useRouter()
   const { setSelectedDerivationPath, resetSetup } = useLedgerSetupContext()
 
   const handleDerivationPathSelect = useCallback(
     (derivationPathType: LedgerDerivationPathType) => {
       setSelectedDerivationPath(derivationPathType)
-      if (onNavigateToDeviceConnection) {
-        onNavigateToDeviceConnection(derivationPathType)
-      } else {
-        push('/accountSettings/ledger/deviceConnection')
-      }
+      onNavigateToDeviceConnection(derivationPathType)
     },
-    [setSelectedDerivationPath, push, onNavigateToDeviceConnection]
+    [setSelectedDerivationPath, onNavigateToDeviceConnection]
   )
 
   const handleCancel = useCallback(() => {
-    if (onCancel) {
-      onCancel()
-    } else {
-      resetSetup()
-      back()
-    }
-  }, [resetSetup, back, onCancel])
+    resetSetup()
+    back()
+  }, [resetSetup, back])
 
   return (
     <DerivationPathSelector

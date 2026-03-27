@@ -1,3 +1,17 @@
+import React, { useCallback } from 'react'
+import { useRouter } from 'expo-router'
 import DeviceConnectionScreen from 'new/features/ledger/screens/DeviceConnectionScreen'
 
-export { DeviceConnectionScreen as default }
+export default function DeviceConnection(): JSX.Element {
+  const { navigate } = useRouter()
+
+  const handleNavigateToAppConnection = useCallback(() => {
+    navigate('/accountSettings/ledger/appConnection')
+  }, [navigate])
+
+  return (
+    <DeviceConnectionScreen
+      onNavigateToAppConnection={handleNavigateToAppConnection}
+    />
+  )
+}

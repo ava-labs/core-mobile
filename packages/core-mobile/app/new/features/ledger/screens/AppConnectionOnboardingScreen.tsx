@@ -8,21 +8,19 @@ import {
   LedgerDerivationPathType,
   LedgerKeysByNetwork
 } from 'services/ledger/types'
-import { useRouter } from 'expo-router'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useLedgerSetupContext } from '../contexts/LedgerSetupContext'
 import { useSetLedgerAddress } from '../hooks/useSetLedgerAddress'
 import AppConnectionScreen from './AppConnectionScreen'
 
 interface AppConnectionOnboardingScreenProps {
-  onNavigateToComplete?: () => void
+  onNavigateToComplete: () => void
 }
 
 export const AppConnectionOnboardingScreen = ({
   onNavigateToComplete
-}: AppConnectionOnboardingScreenProps = {}): JSX.Element => {
+}: AppConnectionOnboardingScreenProps): JSX.Element => {
   const { createLedgerWallet } = useLedgerWallet()
-  const { push } = useRouter()
   const { setLedgerAddress } = useSetLedgerAddress()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
@@ -70,11 +68,7 @@ export const AppConnectionOnboardingScreen = ({
           )
           // Stop polling since we no longer need app detection
           LedgerService.stopAppPolling()
-          if (onNavigateToComplete) {
-            onNavigateToComplete()
-          } else {
-            push('/accountSettings/ledger/complete')
-          }
+          onNavigateToComplete()
         } catch (error) {
           Logger.error('Wallet creation failed', error)
           Alert.alert(
@@ -97,11 +91,7 @@ export const AppConnectionOnboardingScreen = ({
             isUpdatingWallet
           }
         )
-        if (onNavigateToComplete) {
-          onNavigateToComplete()
-        } else {
-          push('/accountSettings/ledger/complete')
-        }
+        onNavigateToComplete()
       }
     },
     [
@@ -113,7 +103,6 @@ export const AppConnectionOnboardingScreen = ({
       connectedDeviceName,
       setLedgerAddress,
       isDeveloperMode,
-      push,
       onNavigateToComplete
     ]
   )
