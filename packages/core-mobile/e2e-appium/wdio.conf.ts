@@ -90,7 +90,11 @@ const caps = platformToRun
   ? allCaps.filter(
       cap => cap.platformName.toLowerCase() === platformToRun.toLowerCase()
     )
-  : allCaps
+  : allCaps.filter(
+      cap =>
+        (runAndroid && cap.platformName === 'Android') ||
+        (runIos && cap.platformName === 'iOS')
+    )
 
 /** When `IS_PERFORMANCE` / `TEST_TYPE=performance`, only run specs under `specs/performance/`. */
 function getSpecs(): string[] {
