@@ -130,7 +130,17 @@ export const config: WebdriverIO.Config = {
         path: '/',
         protocol: 'http' as const
       }),
-  services: useWdioAppiumService ? [['appium', { command: 'appium' }]] : [],
+  services: useWdioAppiumService
+    ? [
+        [
+          'appium',
+          {
+            args: { relaxedSecurity: true },
+            appiumStartTimeout: 120000
+          }
+        ]
+      ]
+    : [],
   logLevel: 'info', // More verbose for Device Farm debugging
   bail: 0,
   waitforTimeout: 20000,

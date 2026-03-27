@@ -130,7 +130,19 @@ export const config: WebdriverIO.Config = {
         path: '/',
         protocol: 'http' as const
       }),
-  services: useWdioAppiumService ? [['appium', { command: 'appium' }]] : [],
+  // Do not set `command: 'appium'`: that spawns the shell binary and can miss PATH on CI.
+  // Omitting `command` makes @wdio/appium-service run `node` + the resolved local `appium` entry.
+  services: useWdioAppiumService
+    ? [
+        [
+          'appium',
+          {
+            args: { relaxedSecurity: true },
+            appiumStartTimeout: 120000
+          }
+        ]
+      ]
+    : [],
   logLevel: 'info', // More verbose for Device Farm debugging
   bail: 0,
   waitforTimeout: 20000,
