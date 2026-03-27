@@ -1,0 +1,7 @@
+{
+  "name": "client-device-farm-isolated",
+  "private": true,
+  "dependencies": {
+    "@aws-sdk/client-device-farm": "3.986.0"
+  }
+}

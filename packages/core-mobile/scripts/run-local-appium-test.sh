@@ -80,10 +80,22 @@ if [ -f "$CORE_MOBILE_DIR/.env.development.e2e" ]; then
     # Split on first = only
     key="${line%%=*}"
     value="${line#*=}"
-    
+    key=$(echo "$key" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    # export KEY=value
+    if [[ "$key" =~ ^export[[:space:]]+(.+)$ ]]; then
+      key="${BASH_REMATCH[1]}"
+      key=$(echo "$key" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    fi
+    [[ -z "$key" ]] && continue
+    if [[ ! "$key" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+      echo "⚠️  Skipping invalid env variable name in .env.development.e2e: $key" >&2
+      continue
+    fi
+
+    value=$(echo "$value" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     # Remove quotes if present (but preserve the value)
     value=$(echo "$value" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
-    
+
     # Export using declare for safer handling of special characters
     declare -x "${key}"="${value}"
   done < "$CORE_MOBILE_DIR/.env.development.e2e"
