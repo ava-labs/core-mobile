@@ -20,10 +20,11 @@ if [ "$DEVICES" -eq 0 ]; then
   echo "❌ No authorized Android devices found!"
   echo ""
   echo "Please:"
-  echo "1. Connect your Pixel 5 via USB"
-  echo "2. Enable USB debugging on your device"
-  echo "3. Authorize the computer when prompted"
+  echo "1. Connect an Android device or start an emulator via USB"
+  echo "2. Enable USB debugging on physical devices"
+  echo "3. Authorize the computer when prompted (physical devices)"
   echo "4. Run 'adb devices' to verify it shows 'device' (not 'unauthorized')"
+  echo "   If multiple devices are listed, set ANDROID_SERIAL to pick one."
   exit 1
 fi
 

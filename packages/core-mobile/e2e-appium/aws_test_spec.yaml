@@ -122,9 +122,11 @@ phases:
           ls -la scripts/ 2>&1 || echo "   scripts/ directory not found"
           echo "⚠️  Continuing without secrets - tests may fail if E2E_MNEMONIC is required"
         else
-          # stdout is only the env file path (see load-secrets-from-aws.js); use $? not PIPESTATUS inside $()
+          # stdout is only the env file path (see load-secrets-from-aws.js). Temporarily allow failure so we can branch on $? (set -e would exit the phase first).
+          set +e
           ENV_FILE_PATH=$(node "$SCRIPT_PATH")
           SECRETS_EXIT_CODE=$?
+          set -e
           if [ $SECRETS_EXIT_CODE -eq 0 ] && [ -n "$ENV_FILE_PATH" ] && [ -f "$ENV_FILE_PATH" ]; then
             echo "Sourcing environment variables from $ENV_FILE_PATH"
             source "$ENV_FILE_PATH"

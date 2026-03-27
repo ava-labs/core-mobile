@@ -125,8 +125,8 @@ class OnboardingPage {
     } else {
       try {
         console.log('you are using a dev build, skipping metro dev menu now...')
-        const preceedingHost = driver.isIOS ? 'localhost' : '10.0.2.2'
-        const metroDevMenu = selectors.getByText(`http://${preceedingHost}:8081`)
+        const precedingHost = driver.isIOS ? 'localhost' : '10.0.2.2'
+        const metroDevMenu = selectors.getByText(`http://${precedingHost}:8081`)
         const dismissBtn = selectors.getByText('AvaxWallet')
         await actions.waitFor(metroDevMenu)
         await actions.tap(metroDevMenu, dismissBtn)

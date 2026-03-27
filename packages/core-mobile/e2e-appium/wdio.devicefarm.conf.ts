@@ -169,7 +169,7 @@ export const config: WebdriverIO.Config = {
     timeout: 600000
   },
 
-  // hoook before: make or get testRun before test
+  // hook before: make or get testRun before test
   before: async () => {
     const platform = driver.isAndroid ? 'Android' : 'iOS'
     const testType = process.env.TEST_TYPE
@@ -205,7 +205,7 @@ export const config: WebdriverIO.Config = {
     }
   },
 
-  // hoook beforeTest: make or get testSection before test
+  // hook beforeTest: make or get testSection before test
   beforeTest: async test => {
     const sectionTitle = test.parent
     sectionCache[sectionTitle] = await getSection(sectionTitle)
@@ -217,7 +217,7 @@ export const config: WebdriverIO.Config = {
     await new Promise(res => setTimeout(res, 500))
   },
 
-  // hoook afterTest: make or get testCase and send result after test
+  // hook afterTest: make or get testCase and send result after test
   afterTest: async (test, _, { passed, error }) => {
     const sectionTitle = test.parent
     const sectionId = sectionCache[sectionTitle]
