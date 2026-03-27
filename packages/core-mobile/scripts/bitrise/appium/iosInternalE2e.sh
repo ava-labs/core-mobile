@@ -30,12 +30,19 @@ which node
 node -v
 yarn -v
 
-# Ensure xcuitest driver exists (install is non-idempotent — fails if already present after yarn hoists appium-xcuitest-driver)
+# Install xcuitest; Appium exits non-zero if already present — treat that as success.
 echo "Ensuring Appium xcuitest driver..."
-if "$APPIUM_BIN" driver list --installed 2>/dev/null | grep -qE 'xcuitest@'; then
-  echo "xcuitest driver already installed"
-else
-  "$APPIUM_BIN" driver install xcuitest
+set +e
+xcuitest_install_out=$("$APPIUM_BIN" driver install xcuitest 2>&1)
+xcuitest_install_code=$?
+set -e
+if [ "$xcuitest_install_code" -ne 0 ]; then
+  if echo "$xcuitest_install_out" | grep -qi 'already installed'; then
+    echo "xcuitest driver already installed"
+  else
+    echo "$xcuitest_install_out" >&2
+    exit "$xcuitest_install_code"
+  fi
 fi
 
 # Verify installation
