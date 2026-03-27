@@ -305,6 +305,7 @@ export const CollectiblesScreen = ({
         masonry
         nestedScrollEnabled
         removeClippedSubviews={Platform.OS === 'android'}
+        maintainVisibleContentPosition={{ disabled: true }}
       />
     </Animated.View>
   )
