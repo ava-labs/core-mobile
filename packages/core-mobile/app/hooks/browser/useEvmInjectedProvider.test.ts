@@ -208,7 +208,7 @@ describe('useEvmInjectedProvider', () => {
     })
 
     describe('wallet_switchEthereumChain', () => {
-      it('auto-approves, dispatches setActive, and responds null', async () => {
+      it('auto-approves, dispatches setTabChainId for the tab, and responds null', async () => {
         const { result } = renderHook(() =>
           useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
         )
