@@ -18,9 +18,13 @@ adb shell settings put global window_animation_scale 0
 adb shell settings put global transition_animation_scale 0
 adb shell settings put global animator_duration_scale 0
 
-# Install uiautomator2 driver for Appium 2.x+
-echo "Installing Appium uiautomator2 driver..."
-"$APPIUM_BIN" driver install uiautomator2
+# Ensure uiautomator2 driver exists (install errors if already registered via npm deps)
+echo "Ensuring Appium uiautomator2 driver..."
+if "$APPIUM_BIN" driver list --installed 2>/dev/null | grep -qE 'uiautomator2@'; then
+  echo "uiautomator2 driver already installed"
+else
+  "$APPIUM_BIN" driver install uiautomator2
+fi
 
 # Verify installation
 "$APPIUM_BIN" driver list || true

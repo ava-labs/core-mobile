@@ -30,9 +30,13 @@ which node
 node -v
 yarn -v
 
-# Install xcuitest driver for Appium 2.x+ (required for WDIO-spawned Appium on this host)
-echo "Installing Appium xcuitest driver..."
-"$APPIUM_BIN" driver install xcuitest
+# Ensure xcuitest driver exists (install is non-idempotent — fails if already present after yarn hoists appium-xcuitest-driver)
+echo "Ensuring Appium xcuitest driver..."
+if "$APPIUM_BIN" driver list --installed 2>/dev/null | grep -qE 'xcuitest@'; then
+  echo "xcuitest driver already installed"
+else
+  "$APPIUM_BIN" driver install xcuitest
+fi
 
 # Verify installation
 "$APPIUM_BIN" -v || true
