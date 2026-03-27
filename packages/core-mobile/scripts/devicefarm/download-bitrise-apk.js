@@ -40,7 +40,7 @@
  *   node scripts/devicefarm/download-bitrise-apk.js e2e 0 ./app.apk feature/my-branch
  */
 
-const { createWriteStream } = require('fs')
+const { createWriteStream, statSync } = require('fs')
 const { dirname } = require('path')
 const { mkdir } = require('fs').promises
 const axios = require('axios')
@@ -269,21 +269,28 @@ const downloadApk = async (artifactsUrl, artifactSlug, outputPath) => {
       }
     })
 
-    response.data.on('end', () => {
+    // Resolve only after the file write stream finishes (all bytes flushed), not on HTTP `end`.
+    response.data.on('error', err => {
+      writer.destroy(err)
+      reject(err)
+    })
+    writer.on('error', err => {
+      response.data.destroy()
+      reject(err)
+    })
+    writer.on('finish', () => {
       console.log('\n✅ Download complete!')
+      try {
+        const stats = statSync(outputPath)
+        console.log(`📦 APK size: ${(stats.size / 1024 / 1024).toFixed(2)} MB`)
+      } catch (e) {
+        reject(e)
+        return
+      }
       resolve()
     })
 
-    response.data.on('error', reject)
     response.data.pipe(writer)
-
-    writer.on('error', reject)
-    writer.on('finish', () => {
-      // Get file size
-      const { statSync } = require('fs')
-      const stats = statSync(outputPath)
-      console.log(`📦 APK size: ${(stats.size / 1024 / 1024).toFixed(2)} MB`)
-    })
   })
 }
 
