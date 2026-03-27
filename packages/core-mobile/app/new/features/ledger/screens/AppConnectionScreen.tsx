@@ -146,7 +146,12 @@ export default function AppConnectionScreen({
         </View>
       </View>
     )
-  }, [showProgressDots, headerHeight, isSolanaSupportBlocked, progressDotsCurrentStep])
+  }, [
+    showProgressDots,
+    headerHeight,
+    isSolanaSupportBlocked,
+    progressDotsCurrentStep
+  ])
 
   const handleConnectAvalanche = useCallback(async () => {
     try {
