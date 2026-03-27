@@ -243,7 +243,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     ]
 
     if (isFusionEnabled && !isSwapUIDisabledForNetwork) {
-      const fromTokenId = token?.internalId
+      const fromTokenId = token?.internalId ?? token?.localId
       const fromCaip2Id = getNetwork(token?.networkChainId)?.caip2ChainId
       const toCaip2Id = fromCaip2Id
       const toTokenId =

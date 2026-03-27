@@ -11,6 +11,7 @@ import {
   selectIsFusionAvalancheEvmEnabled,
   selectIsFusionLombardBtcToBtcbEnabled,
   selectIsFusionLombardBtcbToBtcEnabled,
+  selectFusionDisableCrossChainSwaps,
   setFeatureFlags
 } from 'store/posthog/slice'
 import Logger from 'utils/Logger'
@@ -52,6 +53,7 @@ const getFusionFeatureStates = (
   isFusionAvalancheEvmEnabled: boolean
   isFusionLombardBtcToBtcbEnabled: boolean
   isFusionLombardBtcbToBtcEnabled: boolean
+  isFusionDisableCrossChainSwaps: boolean
   isDeveloperMode: boolean
 } => ({
   isFusionEnabled: selectIsFusionEnabled(state),
@@ -59,6 +61,7 @@ const getFusionFeatureStates = (
   isFusionAvalancheEvmEnabled: selectIsFusionAvalancheEvmEnabled(state),
   isFusionLombardBtcToBtcbEnabled: selectIsFusionLombardBtcToBtcbEnabled(state),
   isFusionLombardBtcbToBtcEnabled: selectIsFusionLombardBtcbToBtcEnabled(state),
+  isFusionDisableCrossChainSwaps: selectFusionDisableCrossChainSwaps(state),
   isDeveloperMode: selectIsDeveloperMode(state)
 })
 
@@ -84,6 +87,8 @@ const shouldReinitializeFusion = (
       currentFeatures.isFusionLombardBtcToBtcbEnabled ||
     prevFeatures.isFusionLombardBtcbToBtcEnabled !==
       currentFeatures.isFusionLombardBtcbToBtcEnabled ||
+    prevFeatures.isFusionDisableCrossChainSwaps !==
+      currentFeatures.isFusionDisableCrossChainSwaps ||
     prevFeatures.isDeveloperMode !== currentFeatures.isDeveloperMode
   )
 }
@@ -172,7 +177,9 @@ export const initFusionService = async (
       'fusion-lombard-btc-to-btcb':
         featureStates.isFusionLombardBtcToBtcbEnabled,
       'fusion-lombard-btcb-to-btc':
-        featureStates.isFusionLombardBtcbToBtcEnabled
+        featureStates.isFusionLombardBtcbToBtcEnabled,
+      'fusion-disable-cross-chain-swaps':
+        featureStates.isFusionDisableCrossChainSwaps
     }
 
     const bitcoinProvider = await getBitcoinProvider(

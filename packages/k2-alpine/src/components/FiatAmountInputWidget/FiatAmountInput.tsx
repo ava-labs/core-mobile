@@ -15,6 +15,7 @@ import {
   TouchableWithoutFeedback
 } from 'react-native'
 import {
+  computeMaxLength,
   normalizeNumericTextInput,
   normalizeValue
 } from '../../utils/tokenUnitInput'
@@ -108,17 +109,14 @@ export const FiatAmountInput = forwardRef<
         const isInputValid =
           frontValue !== undefined &&
           !isNaN(Number(changedValue)) &&
-          (!endValue || endValue.length <= 5)
+          (!endValue || endValue.length <= FIAT_MAX_DECIMALS)
 
         if (isInputValid) {
-          const sanitizedFrontValue = frontValue.replace(/^0+(?!$)/, '')
+          const normalizedValue = normalizeValue(changedValue)
 
           //setting maxLength to TextInput prevents flickering, see https://reactnative.dev/docs/textinput#value
-          setMaxLength(
-            Math.min(20, sanitizedFrontValue.length + '.'.length + 5)
-          )
+          setMaxLength(computeMaxLength(normalizedValue, FIAT_MAX_DECIMALS))
 
-          const normalizedValue = normalizeValue(changedValue)
           setValue(normalizedValue)
           onChange?.(normalizedValue)
         } else {
@@ -141,7 +139,10 @@ export const FiatAmountInput = forwardRef<
     }, [autoFocus])
 
     useImperativeHandle(ref, () => ({
-      setValue: (newValue: string) => setValue(newValue),
+      setValue: (newValue: string) => {
+        setValue(newValue)
+        setMaxLength(computeMaxLength(newValue, FIAT_MAX_DECIMALS))
+      },
       focus: () => textInputRef.current?.focus(),
       blur: () => textInputRef.current?.blur()
     }))
@@ -191,6 +192,7 @@ export const FiatAmountInput = forwardRef<
 )
 
 const PLACEHOLDER = '0.00'
+const FIAT_MAX_DECIMALS = 5
 
 // returns matching currency symbol for the amount with symbol
 // e.g '$' | '€' | '£' | '¥' | '₹'
