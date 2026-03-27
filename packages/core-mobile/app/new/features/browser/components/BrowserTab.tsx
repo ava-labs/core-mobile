@@ -85,7 +85,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       handleProviderMessage,
       handleDomainMetadata,
       setCurrentUrl
-    } = useEvmInjectedProvider(webViewRef)
+    } = useEvmInjectedProvider(webViewRef, tabId)
 
     const isInjectedProviderBlocked = useSelector(
       selectIsInjectedProviderBlocked

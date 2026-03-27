@@ -123,6 +123,22 @@ describe('wallet_watchAsset handler', () => {
       expect(walletConnectCache.watchAssetParams.set).not.toHaveBeenCalled()
     })
 
+    it('returns invalidParams error when address is not a valid EVM address', async () => {
+      const request = createRequest([
+        {
+          type: 'ERC20',
+          options: { ...validOptions, address: 'not-an-address' }
+        }
+      ])
+
+      const result = await handler.handle(request, mockListenerApi)
+
+      expect(result).toEqual({
+        success: false,
+        error: rpcErrors.invalidParams('Invalid wallet_watchAsset params')
+      })
+    })
+
     it('returns invalidParams error when address is missing', async () => {
       const { address, ...optionsWithoutAddress } = validOptions
       const request = createRequest([
@@ -154,6 +170,58 @@ describe('wallet_watchAsset handler', () => {
     it('returns invalidParams error when decimals is a non-numeric string', async () => {
       const request = createRequest([
         { type: 'ERC20', options: { ...validOptions, decimals: 'bad' } }
+      ])
+
+      const result = await handler.handle(request, mockListenerApi)
+
+      expect(result).toEqual({
+        success: false,
+        error: rpcErrors.invalidParams('Invalid wallet_watchAsset params')
+      })
+    })
+
+    it('returns invalidParams error when decimals is a float string (e.g. "6.5")', async () => {
+      const request = createRequest([
+        { type: 'ERC20', options: { ...validOptions, decimals: '6.5' } }
+      ])
+
+      const result = await handler.handle(request, mockListenerApi)
+
+      expect(result).toEqual({
+        success: false,
+        error: rpcErrors.invalidParams('Invalid wallet_watchAsset params')
+      })
+    })
+
+    it('returns invalidParams error when decimals has trailing non-numeric chars (e.g. "18abc")', async () => {
+      const request = createRequest([
+        { type: 'ERC20', options: { ...validOptions, decimals: '18abc' } }
+      ])
+
+      const result = await handler.handle(request, mockListenerApi)
+
+      expect(result).toEqual({
+        success: false,
+        error: rpcErrors.invalidParams('Invalid wallet_watchAsset params')
+      })
+    })
+
+    it('returns invalidParams error when decimals is out of range (> 255)', async () => {
+      const request = createRequest([
+        { type: 'ERC20', options: { ...validOptions, decimals: 256 } }
+      ])
+
+      const result = await handler.handle(request, mockListenerApi)
+
+      expect(result).toEqual({
+        success: false,
+        error: rpcErrors.invalidParams('Invalid wallet_watchAsset params')
+      })
+    })
+
+    it('returns invalidParams error when decimals is negative', async () => {
+      const request = createRequest([
+        { type: 'ERC20', options: { ...validOptions, decimals: -1 } }
       ])
 
       const result = await handler.handle(request, mockListenerApi)

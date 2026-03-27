@@ -1,11 +1,9 @@
 import { useCallback, useMemo, useRef } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account/slice'
-import {
-  selectActiveNetwork,
-  selectAllNetworks,
-  setActive
-} from 'store/network/slice'
+import { selectActiveNetwork, selectAllNetworks } from 'store/network/slice'
+import { selectTabChainId, setTabChainId } from 'store/browser/slices/tabs'
+import { TabId } from 'store/browser/types'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import RNWebView from 'react-native-webview'
 import Logger from 'utils/Logger'
@@ -145,18 +143,22 @@ function parseProviderPayload(
  * Read-only methods are proxied directly to the network RPC endpoint.
  */
 export function useEvmInjectedProvider(
-  webViewRef: React.RefObject<RNWebView | null>
+  webViewRef: React.RefObject<RNWebView | null>,
+  tabId: TabId
 ) {
   const dispatch = useDispatch()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
-  const allNetworks = useSelector(selectAllNetworks)
+  const allNetworks = useSelector(selectAllNetworks, shallowEqual)
+  const tabChainId = useSelector(selectTabChainId(tabId))
   const dappMetadata = useRef<DomainMetadata | null>(null)
   const currentUrlRef = useRef<string>('')
   const pendingOrigins = useRef<Map<number, string>>(new Map())
+  const initialChainId = tabChainId ?? activeNetwork.chainId
+  const initialNetwork = allNetworks[initialChainId] ?? activeNetwork
   const browserNetworkRef = useRef({
-    chainId: activeNetwork.chainId,
-    rpcUrl: activeNetwork.rpcUrl
+    chainId: initialChainId,
+    rpcUrl: initialNetwork.rpcUrl
   })
 
   const setCurrentUrl = useCallback((url: string) => {
@@ -353,20 +355,20 @@ export function useEvmInjectedProvider(
         sendResponse(id, null, null)
         return
       }
-      // Auto-approve: update Redux so the chain persists across page reloads,
-      // then sync browserNetworkRef so subsequent RPC calls (read-only and signing)
-      // are routed to the correct chain. The shim already fired chainChanged
+      // Persist the chain switch for this tab only (survives tab eviction/remount).
+      // browserNetworkRef ensures all subsequent RPC calls in this session are
+      // routed to the correct chain. The shim already fired chainChanged
       // synchronously before the round-trip (prevents React #185 loop), so we
       // do NOT re-emit it here.
       const switchedNetwork = allNetworks[requestedChainId]
-      dispatch(setActive(requestedChainId))
+      dispatch(setTabChainId({ tabId, chainId: requestedChainId }))
       browserNetworkRef.current = {
         chainId: requestedChainId,
         rpcUrl: switchedNetwork?.rpcUrl ?? ''
       }
       sendResponse(id, null, null)
     },
-    [sendResponse, allNetworks, dispatch]
+    [sendResponse, allNetworks, dispatch, tabId]
   )
 
   const handleAddEthereumChain = useCallback(
@@ -393,6 +395,7 @@ export function useEvmInjectedProvider(
               chainId: newChainId,
               rpcUrl: addedNetwork?.rpcUrl ?? addRpcUrl ?? ''
             }
+            dispatch(setTabChainId({ tabId, chainId: newChainId }))
             emitEvent('chainChanged', addHexChainId)
           }
         }
@@ -401,7 +404,7 @@ export function useEvmInjectedProvider(
         sendResponse(id, e, undefined)
       }
     },
-    [sendResponse, allNetworks, dispatch, emitEvent, buildDappPeerMeta]
+    [sendResponse, allNetworks, dispatch, emitEvent, buildDappPeerMeta, tabId]
   )
 
   const handleRevokePermissions = useCallback(

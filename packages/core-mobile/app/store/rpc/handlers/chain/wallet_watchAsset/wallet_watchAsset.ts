@@ -1,5 +1,6 @@
 import { rpcErrors } from '@metamask/rpc-errors'
 import { ERC20Token, TokenType } from '@avalabs/vm-module-types'
+import { isAddress } from 'ethers'
 import { router } from 'expo-router'
 import { addCustomToken } from 'store/customToken/slice'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
@@ -33,17 +34,18 @@ class WalletWatchAssetHandler
 
     const decimalsRaw = param?.options?.decimals
     const decimals =
-      typeof decimalsRaw === 'number'
-        ? decimalsRaw
-        : typeof decimalsRaw === 'string'
-        ? parseInt(decimalsRaw, 10)
+      typeof decimalsRaw === 'number' || typeof decimalsRaw === 'string'
+        ? Number(decimalsRaw)
         : NaN
+    const isValidDecimals =
+      Number.isInteger(decimals) && decimals >= 0 && decimals <= 255
 
     if (
       param?.type !== 'ERC20' ||
       typeof param.options?.address !== 'string' ||
+      !isAddress(param.options.address) ||
       typeof param.options?.symbol !== 'string' ||
-      isNaN(decimals)
+      !isValidDecimals
     ) {
       return {
         success: false,
