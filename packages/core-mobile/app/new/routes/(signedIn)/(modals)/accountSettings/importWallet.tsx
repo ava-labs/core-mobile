@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router'
 import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectIsLedgerSupportBlocked } from 'store/posthog'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const ITEM_HEIGHT = 70
 
@@ -25,6 +26,7 @@ const ImportWalletScreen = (): JSX.Element => {
     }
 
     const handleImportLedger = (): void => {
+      AnalyticsService.capture('AddWalletWithLedgerClicked')
       navigate({ pathname: '/accountSettings/ledger/pathSelection' })
     }
 
