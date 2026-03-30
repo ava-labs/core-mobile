@@ -1,1 +1,1 @@
-export { PredictionsScreen as default } from 'features/predictions/screens/PredictionsScreen'
+export { TradeScreen as default } from 'features/trade/screens/TradeScreen'

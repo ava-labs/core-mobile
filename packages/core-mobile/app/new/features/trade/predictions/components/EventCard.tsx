@@ -1,18 +1,11 @@
-import {
-  AnimatedPressable,
-  Icons,
-  Image,
-  Text,
-  View,
-  useTheme
-} from '@avalabs/k2-alpine'
-import type { TradableMarket } from '@avalabs/prediction-market-sdk'
+import { AnimatedPressable, Text, View, useTheme } from '@avalabs/k2-alpine'
+import { EventResponse } from '@avalabs/prediction-market-sdk'
 import React from 'react'
-import { MarketCardOption, MarketOption } from './MarketCardOption'
+import { EventCardOption } from './EventCardOption'
 
-interface MarketCardProps {
-  market: TradableMarket
-  options: MarketOption[]
+interface EventCardProps {
+  event: EventResponse
+  options: EventCardOption[]
   onPress?: () => void
 }
 
@@ -25,17 +18,14 @@ interface MarketCardProps {
  * Each option row renders a fill bar (proportional to probability) with the label
  * and percentage overlaid inside, matching the Figma masonry card design.
  */
-export function MarketCard({
-  market,
+export function EventCard({
+  event,
   options,
   onPress
-}: MarketCardProps): JSX.Element {
+}: EventCardProps): JSX.Element {
   const { theme } = useTheme()
 
-  const now = Date.now()
-  const isLive =
-    new Date(market.openTime).getTime() <= now &&
-    now < new Date(market.closeTime).getTime()
+  const isLive = false
 
   return (
     <AnimatedPressable
@@ -55,41 +45,9 @@ export function MarketCard({
           gap: 6,
           marginBottom: 8
         }}>
-        {market.imageUrl ? (
-          <View
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 8,
-              backgroundColor: theme.colors.$surfacePrimary,
-              borderWidth: 1,
-              borderColor: theme.colors.$borderPrimary,
-              alignItems: 'center',
-              justifyContent: 'center',
-              overflow: 'hidden'
-            }}>
-            <Image
-              source={{ uri: market.imageUrl }}
-              style={{ width: 30, height: 30 }}
-            />
-            <View
-              style={{
-                position: 'absolute',
-                bottom: 0,
-                right: 0,
-                left: 0,
-                top: 0,
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}>
-              <Icons.Custom.Prediction
-                color={theme.colors.$textPrimary}
-                width={16}
-                height={16}
-              />
-            </View>
-          </View>
-        ) : null}
+        {/* {event.markets[0].imageUrl ? (
+          <TradeThumbnail url={event.markets[0].imageUrl} />
+        ) : null} */}
         {isLive ? (
           <View
             sx={{
@@ -129,12 +87,12 @@ export function MarketCard({
         variant="heading4"
         sx={{ marginBottom: 16, lineHeight: 22 }}
         numberOfLines={4}>
-        {market.title ?? ''}
+        {event.title ?? ''}
       </Text>
 
       <View sx={{ gap: 4 }}>
         {options.map(option => (
-          <MarketCardOption key={option.label} option={option} />
+          <EventCardOption key={option.label} option={option} />
         ))}
       </View>
     </AnimatedPressable>

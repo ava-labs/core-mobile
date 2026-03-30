@@ -39,7 +39,7 @@
     "@avalabs/fusion-sdk": "0.14.4",
     "@avalabs/glacier-sdk": "3.1.0-alpha.82",
     "@avalabs/k2-alpine": "workspace:*",
-    "@avalabs/prediction-market-sdk": "^0.2.0",
+    "@avalabs/prediction-market-sdk": "0.0.0-feat-configure-openapi-codegen-20260327204829",
     "@avalabs/svm-module": "3.6.0",
     "@avalabs/types": "3.1.0-alpha.82",
     "@avalabs/vm-module-types": "3.6.0",

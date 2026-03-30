@@ -1,3 +1,4 @@
+import type { KycStatus, MarketSummary } from '../types'
 import {
   predictionsReducer,
   setKycStatus,
@@ -8,8 +9,7 @@ import {
   initialState,
   selectKycStatus,
   selectMarkets
-} from './predictionsSlice'
-import type { KycStatus, MarketSummary } from '../types'
+} from './slice'
 
 const mockMarket: MarketSummary = {
   tickerId: 'INXD-24-B4900',

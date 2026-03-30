@@ -3,6 +3,7 @@ import React, { useMemo } from 'react'
 import { Platform, RefreshControlProps, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import { RefreshControl } from 'react-native-gesture-handler'
+import { ActivityIndicator, useTheme, View } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from './CollapsibleTabs'
 
 type CollapsibleTabListProps<T> = {
@@ -82,6 +83,10 @@ type CollapsibleTabListProps<T> = {
    * FlashList visible-content anchoring behavior
    */
   maintainVisibleContentPosition?: FlashListProps<T>['maintainVisibleContentPosition']
+  /**
+   * Callback when the list reaches the end
+   */
+  onEndReached?: () => void
 }
 
 /**
@@ -109,14 +114,25 @@ export function CollapsibleTabList<T>({
   contentContainerStyle: additionalContentStyle,
   nestedScrollEnabled,
   removeClippedSubviews,
-  maintainVisibleContentPosition
+  maintainVisibleContentPosition,
+  onEndReached
 }: CollapsibleTabListProps<T>): JSX.Element {
   const header = useHeaderMeasurements()
+  const { theme } = useTheme()
   const collapsibleHeaderHeight = header?.height ?? 0
 
   // When data is empty, use ScrollView to ensure scroll events propagate to the collapsible header
   // FlashList's ListEmptyComponent doesn't properly propagate scroll events in newer versions
   const shouldUseScrollView = data.length === 0
+
+  const ListFooterComponent = useMemo(() => {
+    if (!onEndReached) return undefined
+    return (
+      <View sx={{ paddingVertical: 16, alignItems: 'center' }}>
+        <ActivityIndicator color={theme.colors.$textPrimary} />
+      </View>
+    )
+  }, [onEndReached, theme.colors.$textPrimary])
 
   const refreshControl = useMemo(() => {
     if (!onRefresh) return undefined
@@ -179,6 +195,7 @@ export function CollapsibleTabList<T>({
       showsVerticalScrollIndicator={false}
       nestedScrollEnabled={nestedScrollEnabled}
       removeClippedSubviews={removeClippedSubviews}
+      ListFooterComponent={ListFooterComponent}
     />
   )
 }

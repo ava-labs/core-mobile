@@ -494,7 +494,7 @@ __metadata:
     "@avalabs/fusion-sdk": 0.14.4
     "@avalabs/glacier-sdk": 3.1.0-alpha.82
     "@avalabs/k2-alpine": "workspace:*"
-    "@avalabs/prediction-market-sdk": ^0.2.0
+    "@avalabs/prediction-market-sdk": 0.0.0-feat-configure-openapi-codegen-20260327204829
     "@avalabs/svm-module": 3.6.0
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": 3.1.0-alpha.82
@@ -1017,15 +1017,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/prediction-market-sdk@npm:^0.2.0":
-  version: 0.2.0
-  resolution: "@avalabs/prediction-market-sdk@npm:0.2.0"
+"@avalabs/prediction-market-sdk@npm:0.0.0-feat-configure-openapi-codegen-20260327204829":
+  version: 0.0.0-feat-configure-openapi-codegen-20260327204829
+  resolution: "@avalabs/prediction-market-sdk@npm:0.0.0-feat-configure-openapi-codegen-20260327204829"
   dependencies:
     viem: ^2.38.3
   peerDependencies:
     viem: ^2.38.3
     zod: ^4.1.0
-  checksum: f2473ba800446184737168f918306a5db807f5f00bce07fdd6606d081d5dd26477b017b0ea3bb6bb1723ec8395d8f1b23b81bd01a8a2f543d84369edc521292b
+  checksum: 487dbb7e1501b0dee2040e2f0e7e6f05d9b79c0bc42d1ce3b9d8d6ba865e24f6c8c5c46213014f06c1254d8f75ddc299d07562de237836e183a73bc443fa73b0
   languageName: node
   linkType: hard
 

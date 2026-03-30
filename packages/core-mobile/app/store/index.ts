@@ -6,6 +6,7 @@ import { unifiedBridgeReducer as unifiedBridge } from 'store/unifiedBridge/slice
 import { migrations } from 'store/migrations'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { EncryptThenMacTransform } from 'store/transforms/EncryptThenMacTransform'
+import { predictionsReducer as predictions } from 'features/trade/predictions/store/slice'
 import reactotron from '../../ReactotronConfig'
 import { networkReducer as network } from './network/slice'
 import { appReducer as app, onLogOut, onRehydrationComplete } from './app/slice'
@@ -29,7 +30,6 @@ import { snapshotsReducer as snapshots } from './snapshots/slice'
 import { reduxStorage } from './reduxStorage'
 import { walletsReducer as wallet } from './wallet/slice'
 import { nestEggReducer as nestEgg } from './nestEgg/slice'
-import { predictionsReducer as predictions } from 'features/predictions/store/predictionsSlice'
 
 const VERSION = 26
 const STORAGE_WRITE_THROTTLE = 200

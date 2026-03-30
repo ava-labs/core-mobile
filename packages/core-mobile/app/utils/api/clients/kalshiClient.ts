@@ -5,7 +5,7 @@ import {
 } from 'utils/api/common/fetchWithValidation'
 
 const KALSHI_BASE = 'https://api.elections.kalshi.com/trade-api/v2'
-const KYC_PROXY_BASE = `${Config.PROXY_URL}/proxy/kalshi`
+const HASHFLOW_PROXY_BASE = `${Config.PROXY_URL}/proxy/hashflow`
 
 // --- Historical data types (unauthenticated, direct) ---
 
@@ -44,7 +44,7 @@ export type GetCandlesticksParams = {
 
 // --- KYC types (via proxy) ---
 
-export type KycRegisterResponse = {
+export type KycAccessTokenResponse = {
   /** Sumsub access token */
   accessToken: string
 }
@@ -87,21 +87,28 @@ export const kalshiDirectClient = {
   },
 
   /**
-   * Register user for KYC — returns a Sumsub access token.
-   * Routes through Core backend proxy (RSA-PSS auth added server-side).
-   * ⚠️ Path unconfirmed — update once Hashflow confirms the endpoint.
+   * Generate a Sumsub access token for the given customer ID.
+   * Routes through Core backend proxy (auth added server-side).
+   * customerId: stable opaque string derived from wallet (xpub hash, CubeSigner user_id hash, or EVM address hash).
    */
-  registerKyc: (): Promise<KycRegisterResponse> =>
-    fetchJson<KycRegisterResponse>(`${KYC_PROXY_BASE}/kyc/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
-    }),
+  genAccessToken: (customerId: string): Promise<KycAccessTokenResponse> =>
+    fetchJson<KycAccessTokenResponse>(
+      `${HASHFLOW_PROXY_BASE}/v1/kyc/gen-access-token`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerId })
+      }
+    ),
 
   /**
-   * Get KYC approval status for the current user.
-   * Routes through Core backend proxy.
-   * ⚠️ Path unconfirmed — update once Hashflow confirms the endpoint.
+   * Get KYC approval status for the given customer ID.
+   * Routes through Core backend proxy (auth added server-side).
    */
-  getKycStatus: (): Promise<KycStatusResponse> =>
-    fetchJson<KycStatusResponse>(`${KYC_PROXY_BASE}/kyc/status`)
+  getKycStatus: (customerId: string): Promise<KycStatusResponse> => {
+    const query = buildQueryString({ customerId })
+    return fetchJson<KycStatusResponse>(
+      `${HASHFLOW_PROXY_BASE}/v1/kyc/status${query}`
+    )
+  }
 }

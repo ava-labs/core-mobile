@@ -1,12 +1,11 @@
 jest.mock('utils/api/common/fetchWithValidation', () => ({
   fetchJson: jest.fn(),
-  buildQueryString: jest.requireActual(
-    'utils/api/common/fetchWithValidation'
-  ).buildQueryString
+  buildQueryString: jest.requireActual('utils/api/common/fetchWithValidation')
+    .buildQueryString
 }))
 
 import { fetchJson } from 'utils/api/common/fetchWithValidation'
-import { kalshiDirectClient } from './kalshiDirectClient'
+import { kalshiDirectClient } from './kalshiClient'
 
 const mockFetchJson = fetchJson as jest.MockedFunction<typeof fetchJson>
 
@@ -26,7 +25,9 @@ describe('getHistoricalCutoff', () => {
   })
 
   it('throws on HTTP error', async () => {
-    mockFetchJson.mockRejectedValueOnce(new Error('HTTP 500: Internal Server Error'))
+    mockFetchJson.mockRejectedValueOnce(
+      new Error('HTTP 500: Internal Server Error')
+    )
     await expect(kalshiDirectClient.getHistoricalCutoff()).rejects.toThrow(
       'HTTP 500'
     )
@@ -90,13 +91,13 @@ describe('getCandlesticks', () => {
   })
 })
 
-describe('registerKyc (proxy)', () => {
+describe('genAccessToken (proxy)', () => {
   it('returns access token on success', async () => {
     mockFetchJson.mockResolvedValueOnce({ accessToken: 'tok_abc123' })
-    const result = await kalshiDirectClient.registerKyc()
+    const result = await kalshiDirectClient.genAccessToken('customer-id-123')
     expect(result.accessToken).toBe('tok_abc123')
     expect(mockFetchJson).toHaveBeenCalledWith(
-      expect.stringContaining('/kyc/register'),
+      expect.stringContaining('/proxy/hashflow/v1/kyc/gen-access-token'),
       expect.objectContaining({ method: 'POST' })
     )
   })
@@ -105,10 +106,10 @@ describe('registerKyc (proxy)', () => {
 describe('getKycStatus (proxy)', () => {
   it('returns approved status', async () => {
     mockFetchJson.mockResolvedValueOnce({ status: 'approved' })
-    const result = await kalshiDirectClient.getKycStatus()
+    const result = await kalshiDirectClient.getKycStatus('customer-id-123')
     expect(result.status).toBe('approved')
     expect(mockFetchJson).toHaveBeenCalledWith(
-      expect.stringContaining('/kyc/status')
+      expect.stringContaining('/proxy/hashflow/v1/kyc/status')
     )
   })
 })

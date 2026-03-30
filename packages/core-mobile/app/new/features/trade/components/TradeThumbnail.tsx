@@ -2,11 +2,11 @@ import React from 'react'
 import { Icons, useTheme, View } from '@avalabs/k2-alpine'
 import { Image } from 'expo-image'
 
-export const MarketCardThumbnail = ({
+export const TradeThumbnail = ({
   url,
   variant = 'default'
 }: {
-  url: string
+  url?: string | null
   variant?: 'default' | 'small'
 }): JSX.Element => {
   const { theme } = useTheme()
@@ -14,8 +14,8 @@ export const MarketCardThumbnail = ({
   return (
     <View
       style={{
-        width: variant === 'small' ? 17 : 30,
-        height: variant === 'small' ? 17 : 30,
+        width: variant === 'small' ? 18 : 30,
+        height: variant === 'small' ? 18 : 30,
         borderRadius: variant === 'small' ? 5 : 8,
         backgroundColor: theme.colors.$surfacePrimary,
         borderWidth: 1,
@@ -24,14 +24,16 @@ export const MarketCardThumbnail = ({
         justifyContent: 'center',
         overflow: 'hidden'
       }}>
-      <Image
-        source={{ uri: url }}
-        style={{
-          width: variant === 'small' ? 17 : 30,
-          height: variant === 'small' ? 17 : 30
-        }}
-        contentFit="cover"
-      />
+      {url ? (
+        <Image
+          source={{ uri: url }}
+          style={{
+            width: variant === 'small' ? 18 : 30,
+            height: variant === 'small' ? 18 : 30
+          }}
+          contentFit="cover"
+        />
+      ) : null}
       <View
         style={{
           position: 'absolute',
@@ -44,8 +46,8 @@ export const MarketCardThumbnail = ({
         }}>
         <Icons.Custom.Prediction
           color={theme.colors.$textPrimary}
-          width={8}
-          height={8}
+          width={variant === 'small' ? 8 : 20}
+          height={variant === 'small' ? 8 : 20}
         />
       </View>
     </View>

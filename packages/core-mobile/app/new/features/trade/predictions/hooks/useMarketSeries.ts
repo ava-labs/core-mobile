@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
-import type { Series } from '@avalabs/prediction-market-sdk'
+import type { SeriesResponse } from '@avalabs/prediction-market-sdk'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { predictionMarketClient } from 'features/predictions/services/predictionMarketClient'
+import { predictionMarketClient } from 'features/trade/predictions/services/predictionMarketClient'
 
 const STALE_TIME = 5 * 60 * 1000 // 5 minutes — series change infrequently
 
@@ -10,7 +10,7 @@ const STALE_TIME = 5 * 60 * 1000 // 5 minutes — series change infrequently
  * Series provide the category labels used for filter chips on BrowseScreen.
  */
 export function useMarketSeries(): {
-  series: Series[]
+  series: SeriesResponse[]
   isLoading: boolean
   error: Error | null
 } {
