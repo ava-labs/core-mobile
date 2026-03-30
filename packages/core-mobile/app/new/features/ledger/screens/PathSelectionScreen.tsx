@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react'
-import { useRouter } from 'expo-router'
 import { DerivationPathSelector } from 'new/features/ledger/components/DerivationPathSelector'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import { LedgerDerivationPathType } from 'services/ledger/types'
@@ -15,8 +14,7 @@ interface PathSelectionScreenProps {
 export default function PathSelectionScreen({
   onNavigateToDeviceConnection
 }: PathSelectionScreenProps): JSX.Element {
-  const { back } = useRouter()
-  const { setSelectedDerivationPath, resetSetup } = useLedgerSetupContext()
+  const { setSelectedDerivationPath } = useLedgerSetupContext()
   const walletState = useSelector(selectWalletState)
 
   const handleDerivationPathSelect = useCallback(
@@ -41,15 +39,5 @@ export default function PathSelectionScreen({
     [setSelectedDerivationPath, onNavigateToDeviceConnection, walletState]
   )
 
-  const handleCancel = useCallback(() => {
-    resetSetup()
-    back()
-  }, [resetSetup, back])
-
-  return (
-    <DerivationPathSelector
-      onSelect={handleDerivationPathSelect}
-      onCancel={handleCancel}
-    />
-  )
+  return <DerivationPathSelector onSelect={handleDerivationPathSelect} />
 }
