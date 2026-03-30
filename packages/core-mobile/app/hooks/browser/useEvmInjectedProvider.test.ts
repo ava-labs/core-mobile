@@ -1155,6 +1155,83 @@ describe('useEvmInjectedProvider', () => {
     })
   })
 
+  describe('global active network sync effect', () => {
+    it('emits chainChanged with the new hex chainId when the global active network changes on a tab with no persisted chain', () => {
+      setupMocks({ network: mockActiveNetwork })
+      const { rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+
+      mockInjectJavaScript.mockClear()
+
+      // Simulate a global network change to Ethereum mainnet (chainId 1)
+      setupMocks({ network: { ...mockActiveNetwork, chainId: 1 } })
+      rerender()
+
+      const chainChangedCalls = mockInjectJavaScript.mock.calls.filter(call =>
+        call[0].includes("__coreProviderEmit('chainChanged'")
+      )
+      expect(chainChangedCalls).toHaveLength(1)
+      expect(chainChangedCalls[0][0]).toContain("'chainChanged', '0x1'")
+    })
+
+    it('does not emit chainChanged when the global network changes but the tab has a persisted chainId', () => {
+      ;(selectTabChainId as jest.Mock).mockReturnValue(jest.fn(() => 1))
+      mockUseSelector.mockImplementation(
+        (selector: (state: unknown) => unknown) => {
+          if (selector === (selectAllNetworks as unknown))
+            return mockAllNetworks
+          if (selector === (selectActiveNetwork as unknown))
+            return mockActiveNetwork
+          const tabChainIdSelector = (selectTabChainId as jest.Mock).mock
+            .results[0]?.value
+          if (selector === tabChainIdSelector) return 1
+          const selectorStr = selector.toString()
+          if (
+            selectorStr.includes('activeAccount') ||
+            selectorStr.includes('Account')
+          )
+            return mockActiveAccount
+          return undefined
+        }
+      )
+
+      const { rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+
+      mockInjectJavaScript.mockClear()
+
+      // Simulate a global network change — tab has persisted chain so should be ignored
+      setupMocks({ network: { ...mockActiveNetwork, chainId: 1 } })
+      ;(selectTabChainId as jest.Mock).mockReturnValue(jest.fn(() => 1))
+      rerender()
+
+      const chainChangedCalls = mockInjectJavaScript.mock.calls.filter(call =>
+        call[0].includes("__coreProviderEmit('chainChanged'")
+      )
+      expect(chainChangedCalls).toHaveLength(0)
+    })
+
+    it('does not emit chainChanged when the active network chainId has not actually changed', () => {
+      setupMocks({ network: mockActiveNetwork })
+      const { rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+
+      mockInjectJavaScript.mockClear()
+
+      // Re-render with the same network — no change
+      setupMocks({ network: mockActiveNetwork })
+      rerender()
+
+      const chainChangedCalls = mockInjectJavaScript.mock.calls.filter(call =>
+        call[0].includes("__coreProviderEmit('chainChanged'")
+      )
+      expect(chainChangedCalls).toHaveLength(0)
+    })
+  })
+
   describe('handleDomainMetadata', () => {
     it('stores valid domain metadata', () => {
       const { result } = renderHook(() =>
