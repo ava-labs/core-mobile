@@ -5,11 +5,8 @@ import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   Button,
-  CircularButton,
-  getButtonBackgroundColor,
   GroupList,
   GroupListItem,
-  Icons,
   Separator,
   Text,
   useTheme,
@@ -173,12 +170,6 @@ export const SwapScreen = (): JSX.Element => {
 
   const { getNetwork } = useNetworks()
 
-  const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
-  const swapButtonBackgroundColor = useMemo(
-    () => getButtonBackgroundColor('secondary', theme),
-    [theme]
-  )
-
   // userQuote takes precedence over bestQuote
   const activeQuote = userQuote ?? bestQuote
   Logger.info('activeQuote', activeQuote)
@@ -336,35 +327,6 @@ export const SwapScreen = (): JSX.Element => {
     }
   }, [activeQuote, debouncedFromTokenValue])
 
-  const handleToggleTokens = useCallback(() => {
-    if (
-      tokensWithZeroBalance.some(
-        token =>
-          token.name === toToken?.name && token.symbol === toToken?.symbol
-      )
-    ) {
-      setValidationError(fusionErrors.noDestinationToken(toToken?.symbol ?? ''))
-      return
-    }
-
-    const [to, from] = [fromToken, toToken]
-    setFromToken(from)
-    setToToken(to)
-    setDestination(SwapSide.SELL)
-    setFromTokenValue(undefined)
-    setToTokenValue(undefined)
-    setAmount(undefined)
-  }, [
-    fromToken,
-    toToken,
-    setFromToken,
-    setToToken,
-    setDestination,
-    setFromTokenValue,
-    setAmount,
-    tokensWithZeroBalance
-  ])
-
   const showFeesAndSlippage = activeQuote?.serviceType === ServiceType.MARKR
 
   const isLombard =
@@ -486,11 +448,9 @@ export const SwapScreen = (): JSX.Element => {
           formatInCurrency={amount => formatInCurrency(fromToken, amount)}
           onAmountChange={handleFromAmountChange}
           onFocus={() => {
-            setIsInputFocused(true)
             // Mark that we've auto-focused
             hasAutoFocused.current = true
           }}
-          onBlur={() => setIsInputFocused(false)}
           onSelectToken={handleSelectFromToken}
           maximum={fromMaxSwapAmount}
           valid={!validationError}
@@ -868,64 +828,20 @@ export const SwapScreen = (): JSX.Element => {
     return (
       <Animated.View layout={LinearTransition}>
         {renderFromSection()}
-        <Animated.View
+        <View
           style={{
-            backgroundColor: theme.colors.$surfaceSecondary,
-            zIndex: 100
+            backgroundColor: theme.colors.$surfaceSecondary
           }}>
-          <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Separator
-              sx={{
-                marginLeft: 16,
-                marginRight: isInputFocused ? 0 : 20,
-                flex: 1
-              }}
-            />
-            <Separator
-              sx={{
-                marginLeft: isInputFocused ? 0 : 20,
-                marginRight: 16,
-                flex: 1
-              }}
-            />
-          </View>
-          {isInputFocused === false && (
-            <Animated.View
-              entering={FadeIn}
-              exiting={FadeOut}
-              style={{
-                position: 'absolute',
-                top: -20,
-                left: 0,
-                right: 0
-              }}>
-              <CircularButton
-                testID="swap_vertical_icon"
-                backgroundColor={swapButtonBackgroundColor}
-                style={{
-                  width: 40,
-                  height: 40,
-                  alignSelf: 'center'
-                }}
-                disabled={isSwapping}
-                onPress={handleToggleTokens}>
-                <Icons.Custom.SwapVertical />
-              </CircularButton>
-            </Animated.View>
-          )}
-        </Animated.View>
+          <Separator sx={{ marginHorizontal: 16 }} />
+        </View>
         {renderToSection()}
       </Animated.View>
     )
   }, [
     fromToken,
-    handleToggleTokens,
-    isInputFocused,
     isTokensLoading,
-    isSwapping,
     renderFromSection,
     renderToSection,
-    swapButtonBackgroundColor,
     theme.colors.$surfaceSecondary,
     toToken
   ])
