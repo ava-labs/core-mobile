@@ -343,9 +343,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/avalanche-module@npm:3.6.0":
-  version: 3.6.0
-  resolution: "@avalabs/avalanche-module@npm:3.6.0"
+"@avalabs/avalanche-module@npm:3.6.1":
+  version: 3.6.1
+  resolution: "@avalabs/avalanche-module@npm:3.6.1"
   dependencies:
     "@avalabs/avalanchejs": 5.1.0-alpha.2
     "@avalabs/core-chains-sdk": 3.1.0-alpha.82
@@ -355,12 +355,12 @@ __metadata:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.82
     "@avalabs/glacier-sdk": 3.1.0-alpha.82
     "@avalabs/types": 3.1.0-alpha.82
-    "@avalabs/vm-module-types": 3.6.0
+    "@avalabs/vm-module-types": 3.6.1
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: 4d22be3367fe5296cfc2f81f7400d7fe811d4beca6711ed7cf626fef73d2249cf51cbade1df4d13a4b7445f5a0da8d92e97ff7737b1b7da666383ca2ccbc0eb4
+  checksum: c2ba64ee151e4bddce45fbe4f641129d9fbaa09ff3f44d850c2fc13e499eebaf172e58385e439629bc7140eed9ad06f7d27288a3b682078bb7c48feee8ff9c42
   languageName: node
   linkType: hard
 
@@ -377,20 +377,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/bitcoin-module@npm:3.6.0":
-  version: 3.6.0
-  resolution: "@avalabs/bitcoin-module@npm:3.6.0"
+"@avalabs/bitcoin-module@npm:3.6.1":
+  version: 3.6.1
+  resolution: "@avalabs/bitcoin-module@npm:3.6.1"
   dependencies:
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.82
     "@avalabs/core-utils-sdk": 3.1.0-alpha.82
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.82
-    "@avalabs/vm-module-types": 3.6.0
+    "@avalabs/vm-module-types": 3.6.1
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
     bitcoinjs-lib: 5.2.0
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: b5d82316de9dbacda40a71773255cb701efebc7ae3f6e3a6679e027b0b86439e88aa03f937ac929bd5c20ab678c5903c33c36b8a6f8ae10e12ee1ca46af897a9
+  checksum: e8788a6c607027c627f260afb99f575d912dca9606322c30b78fbe2173184c628695aa7d4edfbd3a27bc89535ac7b494ab0fcd5bf937fe6ae56d9bed0389fb9b
   languageName: node
   linkType: hard
 
@@ -480,9 +480,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/core-mobile@workspace:packages/core-mobile"
   dependencies:
-    "@avalabs/avalanche-module": 3.6.0
+    "@avalabs/avalanche-module": 3.6.1
     "@avalabs/avalanchejs": 5.1.0-alpha.2
-    "@avalabs/bitcoin-module": 3.6.0
+    "@avalabs/bitcoin-module": 3.6.1
     "@avalabs/bridge-unified": 4.4.1
     "@avalabs/core-bridge-sdk": 3.1.0-alpha.82
     "@avalabs/core-chains-sdk": 3.1.0-alpha.82
@@ -490,14 +490,14 @@ __metadata:
     "@avalabs/core-gasless-sdk": 3.1.0-alpha.82
     "@avalabs/core-utils-sdk": 3.1.0-alpha.82
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.82
-    "@avalabs/evm-module": 3.6.0
+    "@avalabs/evm-module": 3.6.1
     "@avalabs/fusion-sdk": 0.14.4
     "@avalabs/glacier-sdk": 3.1.0-alpha.82
     "@avalabs/k2-alpine": "workspace:*"
-    "@avalabs/svm-module": 3.6.0
+    "@avalabs/svm-module": 3.6.1
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": 3.1.0-alpha.82
-    "@avalabs/vm-module-types": 3.6.0
+    "@avalabs/vm-module-types": 3.6.1
     "@aws-sdk/client-device-farm": 3.986.0
     "@babel/core": 7.28.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
@@ -867,9 +867,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/evm-module@npm:3.6.0":
-  version: 3.6.0
-  resolution: "@avalabs/evm-module@npm:3.6.0"
+"@avalabs/evm-module@npm:3.6.1":
+  version: 3.6.1
+  resolution: "@avalabs/evm-module@npm:3.6.1"
   dependencies:
     "@avalabs/core-chains-sdk": 3.1.0-alpha.82
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.82
@@ -878,7 +878,7 @@ __metadata:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.82
     "@avalabs/glacier-sdk": 3.1.0-alpha.82
     "@avalabs/types": 3.1.0-alpha.82
-    "@avalabs/vm-module-types": 3.6.0
+    "@avalabs/vm-module-types": 3.6.1
     "@blockaid/client": 0.48.0
     "@metamask/rpc-errors": 6.3.0
     "@openzeppelin/contracts": 4.9.6
@@ -888,7 +888,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: 6.13.5
-  checksum: d15083e7975c01ae37d9a520ccab9f26796e6730e69aea30e45fed35ed6f6545ecae77c10616a140d869757b21372222222c74c26eaa189d01efbb7eb9a8bd7b
+  checksum: d14d30f4e79972cd67625db50414d988d848a449b54d8028c1ae70402b40b251f2b2e95d288d685d4f45668e2db2e7950c51d6b889004ec4a95bcb8c96e6dc40
   languageName: node
   linkType: hard
 
@@ -1017,15 +1017,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/svm-module@npm:3.6.0":
-  version: 3.6.0
-  resolution: "@avalabs/svm-module@npm:3.6.0"
+"@avalabs/svm-module@npm:3.6.1":
+  version: 3.6.1
+  resolution: "@avalabs/svm-module@npm:3.6.1"
   dependencies:
     "@avalabs/core-chains-sdk": 3.1.0-alpha.82
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.82
     "@avalabs/core-utils-sdk": 3.1.0-alpha.82
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.82
-    "@avalabs/vm-module-types": 3.6.0
+    "@avalabs/vm-module-types": 3.6.1
     "@blockaid/client": 0.48.0
     "@metamask/rpc-errors": 6.3.0
     "@scure/base": 1.2.4
@@ -1036,7 +1036,7 @@ __metadata:
     "@wallet-standard/base": 1.1.0
     "@wallet-standard/features": 1.1.0
     zod: 3.23.8
-  checksum: 8db0a6083e20753931cbb43637fb15d196b370750a2049b825a130233c87091c801cab6bccdfb27862af1da6becd26217effc41079b2dd095291f7216e0a61c5
+  checksum: 1173109177fed7825cb5e0a0e9788dd680e24b9d89411f96bcb2624c9a8663f876bee6c1fca42542f6a3005101b5bf6802380d8c33e08f570d4b5c9396154ee6
   languageName: node
   linkType: hard
 
@@ -1053,9 +1053,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/vm-module-types@npm:3.6.0":
-  version: 3.6.0
-  resolution: "@avalabs/vm-module-types@npm:3.6.0"
+"@avalabs/vm-module-types@npm:3.6.1":
+  version: 3.6.1
+  resolution: "@avalabs/vm-module-types@npm:3.6.1"
   dependencies:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.82
     "@avalabs/glacier-sdk": 3.1.0-alpha.82
@@ -1066,7 +1066,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: 6.13.5
-  checksum: 29eb38d37ceeace603c47b31d77d1993316ab9adfc5842af6a6f47f61bf0d1d19c6a1cdb1faea0008b5324a76b22375cc82f52c7bd5b3faaa59f84d5f60d1b1e
+  checksum: af1d9a9f80d23b27d0dc6d2a5b456255de7f4e7119b8ff066fe0358d3ce4d632c9c7242ab2e6c5f89e5df173bcbdd6c7fe72ddac99bbbdc5d6f30bc670cc259e
   languageName: node
   linkType: hard
 
@@ -1215,61 +1215,61 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/credential-provider-ini@npm:^3.972.25":
-  version: 3.972.25
-  resolution: "@aws-sdk/credential-provider-ini@npm:3.972.25"
+"@aws-sdk/credential-provider-ini@npm:^3.972.26":
+  version: 3.972.26
+  resolution: "@aws-sdk/credential-provider-ini@npm:3.972.26"
   dependencies:
     "@aws-sdk/core": ^3.973.25
     "@aws-sdk/credential-provider-env": ^3.972.23
     "@aws-sdk/credential-provider-http": ^3.972.25
-    "@aws-sdk/credential-provider-login": ^3.972.25
+    "@aws-sdk/credential-provider-login": ^3.972.26
     "@aws-sdk/credential-provider-process": ^3.972.23
-    "@aws-sdk/credential-provider-sso": ^3.972.25
-    "@aws-sdk/credential-provider-web-identity": ^3.972.25
-    "@aws-sdk/nested-clients": ^3.996.15
+    "@aws-sdk/credential-provider-sso": ^3.972.26
+    "@aws-sdk/credential-provider-web-identity": ^3.972.26
+    "@aws-sdk/nested-clients": ^3.996.16
     "@aws-sdk/types": ^3.973.6
     "@smithy/credential-provider-imds": ^4.2.12
     "@smithy/property-provider": ^4.2.12
     "@smithy/shared-ini-file-loader": ^4.4.7
     "@smithy/types": ^4.13.1
     tslib: ^2.6.2
-  checksum: 2e1fc506f9a7941e3007924ad9edd236ca09b0b42be3552a03b90d2ef358f94a680b1f3e84b5824c0818c9b04db31b855ac9660c41b87d0ad4af6456436db390
+  checksum: a329f0510b9f808ab952c1163b3cd694ef67caf26f9b2cfa585d05374b5ab7cb8fac28c2269e906532cbdf27e2af9091d9b33106c84ee12d793a9ec6723dfc9a
   languageName: node
   linkType: hard
 
-"@aws-sdk/credential-provider-login@npm:^3.972.25":
-  version: 3.972.25
-  resolution: "@aws-sdk/credential-provider-login@npm:3.972.25"
+"@aws-sdk/credential-provider-login@npm:^3.972.26":
+  version: 3.972.26
+  resolution: "@aws-sdk/credential-provider-login@npm:3.972.26"
   dependencies:
     "@aws-sdk/core": ^3.973.25
-    "@aws-sdk/nested-clients": ^3.996.15
+    "@aws-sdk/nested-clients": ^3.996.16
     "@aws-sdk/types": ^3.973.6
     "@smithy/property-provider": ^4.2.12
     "@smithy/protocol-http": ^5.3.12
     "@smithy/shared-ini-file-loader": ^4.4.7
     "@smithy/types": ^4.13.1
     tslib: ^2.6.2
-  checksum: 49375c69cb794fdba039187eb5fe9d4c3968e2bdbd1362d3b771256c05aa222bfbc26ee7fd90bf195b86b27cceaa1a388a7a0760d9980db32d0ddc0fbdf95ea6
+  checksum: 6ddacf4ef17ce4f202de179332b540d7840d627cb4a56f327eaedae8678063d4670d6b8235054bfcda3eb707ec65bbb0580ae7e05a68d8f594115365843c3a51
   languageName: node
   linkType: hard
 
 "@aws-sdk/credential-provider-node@npm:^3.972.6":
-  version: 3.972.26
-  resolution: "@aws-sdk/credential-provider-node@npm:3.972.26"
+  version: 3.972.27
+  resolution: "@aws-sdk/credential-provider-node@npm:3.972.27"
   dependencies:
     "@aws-sdk/credential-provider-env": ^3.972.23
     "@aws-sdk/credential-provider-http": ^3.972.25
-    "@aws-sdk/credential-provider-ini": ^3.972.25
+    "@aws-sdk/credential-provider-ini": ^3.972.26
     "@aws-sdk/credential-provider-process": ^3.972.23
-    "@aws-sdk/credential-provider-sso": ^3.972.25
-    "@aws-sdk/credential-provider-web-identity": ^3.972.25
+    "@aws-sdk/credential-provider-sso": ^3.972.26
+    "@aws-sdk/credential-provider-web-identity": ^3.972.26
     "@aws-sdk/types": ^3.973.6
     "@smithy/credential-provider-imds": ^4.2.12
     "@smithy/property-provider": ^4.2.12
     "@smithy/shared-ini-file-loader": ^4.4.7
     "@smithy/types": ^4.13.1
     tslib: ^2.6.2
-  checksum: dd62c2774a44a7843afec60e6b20797cfcf9b20204ee5f85b1901a34666105ffae50426814e6c6f982aaed36e9d619777996a116e31aceaf90df800b210b54d6
+  checksum: acbd4110c7414192be6d9d9a3cfe24d4e503cd6266e0f96b544bef133cc73e247a0b603fa6120c8b8c7480b3984422801bac655b1524829fb2d8ababc0847950
   languageName: node
   linkType: hard
 
@@ -1287,34 +1287,34 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/credential-provider-sso@npm:^3.972.25":
-  version: 3.972.25
-  resolution: "@aws-sdk/credential-provider-sso@npm:3.972.25"
+"@aws-sdk/credential-provider-sso@npm:^3.972.26":
+  version: 3.972.26
+  resolution: "@aws-sdk/credential-provider-sso@npm:3.972.26"
   dependencies:
     "@aws-sdk/core": ^3.973.25
-    "@aws-sdk/nested-clients": ^3.996.15
-    "@aws-sdk/token-providers": 3.1018.0
+    "@aws-sdk/nested-clients": ^3.996.16
+    "@aws-sdk/token-providers": 3.1019.0
     "@aws-sdk/types": ^3.973.6
     "@smithy/property-provider": ^4.2.12
     "@smithy/shared-ini-file-loader": ^4.4.7
     "@smithy/types": ^4.13.1
     tslib: ^2.6.2
-  checksum: bb5595b8f12ec81d77bbe47a4222fb14da3639accd71340c5bfa87e4e07dd5c9aee42e5a2caf7fd2253cdf19eef48f6b6c5bbca989475a00ef780cf1e766f417
+  checksum: 689f2add9cd6b89ab2e569c0359519a1b05006be59496d9297f6454db4aec00975f7d855c475156e4555aaef06a9a3ca93333fb3feb10909d73eb04b47afc8e1
   languageName: node
   linkType: hard
 
-"@aws-sdk/credential-provider-web-identity@npm:^3.972.25":
-  version: 3.972.25
-  resolution: "@aws-sdk/credential-provider-web-identity@npm:3.972.25"
+"@aws-sdk/credential-provider-web-identity@npm:^3.972.26":
+  version: 3.972.26
+  resolution: "@aws-sdk/credential-provider-web-identity@npm:3.972.26"
   dependencies:
     "@aws-sdk/core": ^3.973.25
-    "@aws-sdk/nested-clients": ^3.996.15
+    "@aws-sdk/nested-clients": ^3.996.16
     "@aws-sdk/types": ^3.973.6
     "@smithy/property-provider": ^4.2.12
     "@smithy/shared-ini-file-loader": ^4.4.7
     "@smithy/types": ^4.13.1
     tslib: ^2.6.2
-  checksum: 50be0af98a304e74db6ca85dde8b058b844fa5e428f1ccbebf1dde7fe01e9bdb5a0ba093f146ef79cbb55033a42a66d564c8629b06cb52318eaae07b68ac95ba
+  checksum: 5b8bca2211c2389f09d30d537cea70f3bbe2c3b9ca29cb2232bc0e20c2992bcc3c5c744d13e04a682acc934ed1e00f1ce08d15217c0bca211b73c8a8f673453a
   languageName: node
   linkType: hard
 
@@ -1370,9 +1370,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/nested-clients@npm:^3.996.15":
-  version: 3.996.15
-  resolution: "@aws-sdk/nested-clients@npm:3.996.15"
+"@aws-sdk/nested-clients@npm:^3.996.16":
+  version: 3.996.16
+  resolution: "@aws-sdk/nested-clients@npm:3.996.16"
   dependencies:
     "@aws-crypto/sha256-browser": 5.2.0
     "@aws-crypto/sha256-js": 5.2.0
@@ -1412,7 +1412,7 @@ __metadata:
     "@smithy/util-retry": ^4.2.12
     "@smithy/util-utf8": ^4.2.2
     tslib: ^2.6.2
-  checksum: cd9f12f5e9faf231d9fb3ede4c06d506d13342eb5583a67a20f5c6bdd10541ea8277f8c8888845dc6907b7cb7561b62790e759f0ef93cc75b43c2de2776ff4ce
+  checksum: f5ea286fc31dc81f73ac456c3b6ef1daa92c53de970a4636584fc2d2443cd5ea806d016bf1eaa4a49288dd479a07f587696f228dddadf4179aa5757be0b82234
   languageName: node
   linkType: hard
 
@@ -1429,18 +1429,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@aws-sdk/token-providers@npm:3.1018.0":
-  version: 3.1018.0
-  resolution: "@aws-sdk/token-providers@npm:3.1018.0"
+"@aws-sdk/token-providers@npm:3.1019.0":
+  version: 3.1019.0
+  resolution: "@aws-sdk/token-providers@npm:3.1019.0"
   dependencies:
     "@aws-sdk/core": ^3.973.25
-    "@aws-sdk/nested-clients": ^3.996.15
+    "@aws-sdk/nested-clients": ^3.996.16
     "@aws-sdk/types": ^3.973.6
     "@smithy/property-provider": ^4.2.12
     "@smithy/shared-ini-file-loader": ^4.4.7
     "@smithy/types": ^4.13.1
     tslib: ^2.6.2
-  checksum: 7ab9e0e0bfb65855579ee9719adddbbc0b177b57ff79645eef2fa600e50dc1dd57eda89b1fc90215788ba6b9467dfa030632fa9f5368da9f13422e1430278b1a
+  checksum: f08dcc17ca4db29f32d81fb21952df00b0d9b744bc90ddbcd08608c54e55b35d52334e96e63cf804a80b8b604d56da56becad38eb557c1e6bd67297bca0dc871
   languageName: node
   linkType: hard
 
@@ -34882,14 +34882,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"path-expression-matcher@npm:^1.1.3":
-  version: 1.1.3
-  resolution: "path-expression-matcher@npm:1.1.3"
-  checksum: 9b045e857fd812a8c36f987fae44e49f5843b25408f69e7776540fbb0b59e7f5484aff6cf8b98ee45425ae36a979dfe557a24e385127a9a1aaa85953811eb4c9
-  languageName: node
-  linkType: hard
-
-"path-expression-matcher@npm:^1.2.0":
+"path-expression-matcher@npm:^1.1.3, path-expression-matcher@npm:^1.2.0":
   version: 1.2.0
   resolution: "path-expression-matcher@npm:1.2.0"
   checksum: 2811aab3269c288893aef09e5127124d3c434bfc7e1352fea6b7dd81ed20260001b072ff60bdcaaa393d50a4333725290dbad47bb612d95f5448e499b4ac887f
