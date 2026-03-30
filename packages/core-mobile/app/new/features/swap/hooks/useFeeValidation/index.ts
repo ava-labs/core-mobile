@@ -111,7 +111,12 @@ export const useFeeValidation = ({
     rawGasFee,
     error,
     isFetching
-  } = useFeeEstimation({ quote, fromNetwork, gasSafetyBps })
+  } = useFeeEstimation({
+    quote,
+    fromNetwork,
+    gasSafetyBps,
+    solanaToEvmFeeMultiplier: 12
+  })
 
   const validationError = useMemo(() => {
     if (error && !isFetching) {

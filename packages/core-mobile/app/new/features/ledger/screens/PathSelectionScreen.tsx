@@ -4,17 +4,22 @@ import { DerivationPathSelector } from 'new/features/ledger/components/Derivatio
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import { LedgerDerivationPathType } from 'services/ledger/types'
 
-export default function PathSelectionScreen(): JSX.Element {
-  const { push, back } = useRouter()
+interface PathSelectionScreenProps {
+  onNavigateToDeviceConnection: (path: LedgerDerivationPathType) => void
+}
+
+export default function PathSelectionScreen({
+  onNavigateToDeviceConnection
+}: PathSelectionScreenProps): JSX.Element {
+  const { back } = useRouter()
   const { setSelectedDerivationPath, resetSetup } = useLedgerSetupContext()
 
   const handleDerivationPathSelect = useCallback(
     (derivationPathType: LedgerDerivationPathType) => {
       setSelectedDerivationPath(derivationPathType)
-      // Navigate to device connection step
-      push('/accountSettings/ledger/deviceConnection')
+      onNavigateToDeviceConnection(derivationPathType)
     },
-    [setSelectedDerivationPath, push]
+    [setSelectedDerivationPath, onNavigateToDeviceConnection]
   )
 
   const handleCancel = useCallback(() => {
