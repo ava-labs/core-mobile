@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account/slice'
 import { selectActiveNetwork, selectAllNetworks } from 'store/network/slice'
@@ -161,14 +161,30 @@ export function useEvmInjectedProvider(
     rpcUrl: initialNetwork.rpcUrl
   })
 
+  // When the tab has no persisted chainId, keep browserNetworkRef in sync with
+  // the global active network so read-only RPC and signing requests are routed
+  // to the correct chain after the user switches networks wallet-wide.
+  useEffect(() => {
+    if (tabChainId !== undefined) return
+    if (browserNetworkRef.current.chainId === activeNetwork.chainId) return
+    browserNetworkRef.current = {
+      chainId: activeNetwork.chainId,
+      rpcUrl: activeNetwork.rpcUrl
+    }
+    const hexChainId = '0x' + activeNetwork.chainId.toString(16)
+    webViewRef.current?.injectJavaScript(
+      `window.__coreProviderEmit('chainChanged', '${hexChainId}'); true;`
+    )
+  }, [activeNetwork, tabChainId, webViewRef])
+
   const setCurrentUrl = useCallback((url: string) => {
     currentUrlRef.current = url
   }, [])
 
   const chainIdHex = useMemo(() => {
     if (activeNetwork.vmName !== NetworkVMType.EVM) return '0x1'
-    return '0x' + activeNetwork.chainId.toString(16)
-  }, [activeNetwork])
+    return '0x' + initialChainId.toString(16)
+  }, [activeNetwork.vmName, initialChainId])
 
   const evmAddress = activeAccount?.addressC ?? ''
 
