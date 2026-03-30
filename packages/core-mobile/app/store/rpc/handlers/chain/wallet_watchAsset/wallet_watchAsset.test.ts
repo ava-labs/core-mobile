@@ -111,6 +111,32 @@ describe('wallet_watchAsset handler', () => {
       expect(cached.token.logoUri).toBe('')
     })
 
+    it('defaults logoUri to empty string when image is not a string', async () => {
+      const request = createRequest([
+        { type: 'ERC20', options: { ...validOptions, image: 123 } }
+      ])
+
+      await handler.handle(request, mockListenerApi)
+
+      const cached = (walletConnectCache.watchAssetParams.set as jest.Mock).mock
+        .calls[0][0]
+      expect(cached.token.logoUri).toBe('')
+    })
+
+    it('returns invalidParams error when decimals is an empty string', async () => {
+      const request = createRequest([
+        { type: 'ERC20', options: { ...validOptions, decimals: '' } }
+      ])
+
+      const result = await handler.handle(request, mockListenerApi)
+
+      expect(result).toEqual({
+        success: false,
+        error: rpcErrors.invalidParams('Invalid wallet_watchAsset params')
+      })
+      expect(walletConnectCache.watchAssetParams.set).not.toHaveBeenCalled()
+    })
+
     it('returns invalidParams error for non-ERC20 type', async () => {
       const request = createRequest([{ type: 'ERC721', options: validOptions }])
 

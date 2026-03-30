@@ -459,7 +459,7 @@ export function useEvmInjectedProvider(
   )
 
   const handleProviderMessage = useCallback(
-    async (payload: string) => {
+    (payload: string) => {
       const respondWithError = (id: number, error: unknown): void =>
         sendResponse(id, error, undefined)
 
@@ -499,15 +499,19 @@ export function useEvmInjectedProvider(
         return
       }
 
-      const safeParams = params ?? []
+      // Ensure params is always an array for handlers that expect one.
+      // wallet_watchAsset is the only method that legitimately accepts object-form
+      // params (some dApps send { type, options } instead of [{ type, options }]);
+      // its handler normalizes internally.
+      const safeParams = Array.isArray(params) ? params : []
       if (method === 'wallet_switchEthereumChain') {
         handleSwitchEthereumChain(id, safeParams)
       } else if (method === 'wallet_addEthereumChain') {
-        await handleAddEthereumChain(id, safeParams)
+        handleAddEthereumChain(id, safeParams)
       } else if (method === 'wallet_revokePermissions') {
         handleRevokePermissions(id)
       } else if (method === 'wallet_watchAsset') {
-        handleWatchAsset(id, safeParams)
+        handleWatchAsset(id, params)
       } else if (method in SIGNING_METHODS) {
         dispatchSigningRequest(id, method, safeParams)
       } else if (READ_ONLY_METHODS.has(method)) {

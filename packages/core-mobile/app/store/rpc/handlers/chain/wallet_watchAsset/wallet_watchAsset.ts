@@ -33,12 +33,22 @@ class WalletWatchAssetHandler
       | undefined
 
     const decimalsRaw = param?.options?.decimals
-    const decimals =
-      typeof decimalsRaw === 'number' || typeof decimalsRaw === 'string'
-        ? Number(decimalsRaw)
-        : NaN
+    // Accept only a non-negative integer or a string of digits — rejects '', ' ',
+    // '1.5', etc. that Number() would silently coerce to an unexpected value.
+    let decimals: number
+    if (typeof decimalsRaw === 'number') {
+      decimals = decimalsRaw
+    } else if (typeof decimalsRaw === 'string' && /^\d+$/.test(decimalsRaw)) {
+      decimals = Number(decimalsRaw)
+    } else {
+      decimals = NaN
+    }
     const isValidDecimals =
       Number.isInteger(decimals) && decimals >= 0 && decimals <= 255
+
+    // Validate image before use — only accept it when it is actually a string.
+    const imageRaw = param?.options?.image
+    const image = typeof imageRaw === 'string' ? imageRaw : undefined
 
     if (
       param?.type !== 'ERC20' ||
@@ -53,11 +63,8 @@ class WalletWatchAssetHandler
       }
     }
 
-    const { address, symbol, image } = param.options as {
-      address: string
-      symbol: string
-      image?: string
-    }
+    const address = param.options.address as string
+    const symbol = param.options.symbol as string
 
     const token: ERC20Token = {
       type: TokenType.ERC20,
