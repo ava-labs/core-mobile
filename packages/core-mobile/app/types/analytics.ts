@@ -285,17 +285,26 @@ export type AnalyticsEvents = {
   EarnRepayFailure: undefined
 
   // IMPORT LEDGER FLOW
+  OnboardingImportLedgerSelected: undefined
+  OnboardingLedgerDerivationPathBIP44Selected: undefined
+  OnboardingLedgerDerivationPathLedgerLiveSelected: undefined
+  OnboardingLedgerConnected: undefined
+  OnboardingLedgerConnectionFailed: undefined
+  OnboardingLedgerWalletAdded: undefined
+  OnboardingLedgerWalletAddFailed: undefined
+  OnboardingLedgerSolanaKeysDerived: undefined
+  OnboardingLedgerSolanaKeysDerivedFailed: undefined
   AddWalletWithLedgerClicked: undefined
-  LedgerDerivationPathBIP44Selected: undefined
-  LedgerDerivationPathLedgerLiveSelected: undefined
-  LedgerConnected: undefined
-  LedgerConnectionFailed: undefined
-  LedgerWalletAdded: undefined
-  LedgerWalletAddFailed: undefined
-  LedgerAccountAdded: undefined
-  LedgerAccountAddFailed: undefined
-  LedgerSolanaKeysDerived: undefined
-  LedgerSolanaKeysFailed: undefined
+  WalletImportLedgerDerivationPathBIP44Selected: undefined
+  WalletImportLedgerDerivationPathLedgerLiveSelected: undefined
+  WalletImportLedgerConnected: undefined
+  WalletImportLedgerConnectionFailed: undefined
+  WalletImportLedgerWalletAdded: undefined
+  WalletImportLedgerWalletAddFailed: undefined
+  WalletImportLedgerAccountAdded: undefined
+  WalletImportLedgerAccountAddFailed: undefined
+  WalletImportLedgerSolanaKeysDerived: undefined
+  WalletImportLedgerSolanaKeysDerivedFailed: undefined
 
   // NEST EGG CAMPAIGN
   NestEggCampaignModalViewed: { addressC: string }

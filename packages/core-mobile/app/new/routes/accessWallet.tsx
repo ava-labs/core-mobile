@@ -9,6 +9,7 @@ import {
   selectIsKeystoneBlocked,
   selectIsLedgerSupportBlocked
 } from 'store/posthog'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 const AccessWalletScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -24,21 +25,16 @@ const AccessWalletScreen = (): JSX.Element => {
   }, [navigate])
 
   const handleEnterKeystone = useCallback((): void => {
-    navigate({
-      pathname: '/onboarding/keystone/termsAndConditions'
-    })
+    navigate('/onboarding/keystone/termsAndConditions')
   }, [navigate])
 
   const handleEnterLedger = useCallback((): void => {
-    navigate({
-      pathname: '/onboarding/ledger/termsAndConditions'
-    })
+    AnalyticsService.capture('OnboardingImportLedgerSelected')
+    navigate('/onboarding/ledger/termsAndConditions')
   }, [navigate])
 
   const handleCreateMnemonicWallet = useCallback((): void => {
-    navigate({
-      pathname: '/onboarding/mnemonic/termsAndConditions'
-    })
+    navigate('/onboarding/mnemonic/termsAndConditions')
   }, [navigate])
 
   const data = useMemo(() => {
