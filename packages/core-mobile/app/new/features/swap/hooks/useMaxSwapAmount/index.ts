@@ -148,7 +148,8 @@ export const useMaxSwapAmount = ({
   } = useFeeEstimation({
     quote: preQuote,
     fromNetwork,
-    gasSafetyBps: maxAmountGasSafetyBps
+    gasSafetyBps: maxAmountGasSafetyBps,
+    solanaToEvmFeeMultiplier: 15
   })
 
   const additiveFeeForMax = resolveAdditiveFeeForMax(

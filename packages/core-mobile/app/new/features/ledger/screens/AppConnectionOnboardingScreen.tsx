@@ -8,15 +8,19 @@ import {
   LedgerDerivationPathType,
   LedgerKeysByNetwork
 } from 'services/ledger/types'
-import { useRouter } from 'expo-router'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useLedgerSetupContext } from '../contexts/LedgerSetupContext'
 import { useSetLedgerAddress } from '../hooks/useSetLedgerAddress'
 import AppConnectionScreen from './AppConnectionScreen'
 
-export const AppConnectionOnboardingScreen = (): JSX.Element => {
+interface AppConnectionOnboardingScreenProps {
+  onNavigateToComplete: () => void
+}
+
+export const AppConnectionOnboardingScreen = ({
+  onNavigateToComplete
+}: AppConnectionOnboardingScreenProps): JSX.Element => {
   const { createLedgerWallet } = useLedgerWallet()
-  const { push } = useRouter()
   const { setLedgerAddress } = useSetLedgerAddress()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
@@ -32,13 +36,6 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
   const handleComplete = useCallback(
     async (keys: LedgerKeysByNetwork) => {
       const keysByNetwork = isDeveloperMode ? keys.testnet : keys.mainnet
-      Logger.info('handleComplete called', {
-        hasAvalancheKeys: !!keysByNetwork.avalancheKeys,
-        hasConnectedDeviceId: !!connectedDeviceId,
-        hasSelectedDerivationPath: !!selectedDerivationPath,
-        isUpdatingWallet,
-        solanaKeysCount: keysByNetwork.solanaKeys?.length ?? 0
-      })
 
       // If wallet hasn't been created yet, create it now
       if (
@@ -71,7 +68,7 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
           )
           // Stop polling since we no longer need app detection
           LedgerService.stopAppPolling()
-          push('/accountSettings/ledger/complete')
+          onNavigateToComplete()
         } catch (error) {
           Logger.error('Wallet creation failed', error)
           Alert.alert(
@@ -94,7 +91,7 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
             isUpdatingWallet
           }
         )
-        push('/accountSettings/ledger/complete')
+        onNavigateToComplete()
       }
     },
     [
@@ -106,7 +103,7 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
       connectedDeviceName,
       setLedgerAddress,
       isDeveloperMode,
-      push
+      onNavigateToComplete
     ]
   )
 
@@ -122,6 +119,7 @@ export const AppConnectionOnboardingScreen = (): JSX.Element => {
       isUpdatingWallet={isUpdatingWallet}
       disconnectDevice={disconnectDevice}
       accountIndex={0} // intentionally setting it to zero here as this screen is used for importing the wallet for the first time
+      showProgressDots={false}
     />
   )
 }

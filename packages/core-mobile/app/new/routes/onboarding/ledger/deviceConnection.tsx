@@ -6,7 +6,7 @@ export default function DeviceConnection(): JSX.Element {
   const { navigate } = useRouter()
 
   const handleNavigateToAppConnection = useCallback(() => {
-    navigate('/accountSettings/ledger/appConnection')
+    navigate('/onboarding/ledger/appConnection')
   }, [navigate])
 
   return (
