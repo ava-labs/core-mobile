@@ -9,6 +9,7 @@ import {
   GroupListItem,
   Separator,
   Text,
+  Tooltip,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -54,6 +55,18 @@ import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
 import { ServiceType } from '../types'
+import { usePriceImpact } from '../hooks/usePriceImpact'
+import {
+  PRICE_IMPACT_HIGH_THRESHOLD,
+  PRICE_IMPACT_DISABLE_THRESHOLD,
+  PRICE_IMPACT_ROW_TITLE,
+  PRICE_IMPACT_TOOLTIP_BODY,
+  PRICE_IMPACT_UNKNOWN_RISK_TITLE,
+  PRICE_IMPACT_UNKNOWN_RISK_DESCRIPTION,
+  PRICE_IMPACT_SWAP_DISABLED_TITLE,
+  PRICE_IMPACT_SWAP_DISABLED_DESCRIPTION,
+  PRICE_IMPACT_HIGH_TITLE
+} from '../consts'
 import { useMaxSwapAmount } from '../hooks/useMaxSwapAmount'
 import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 import { useFeeValidation } from '../hooks/useFeeValidation'
@@ -222,6 +235,16 @@ export const SwapScreen = (): JSX.Element => {
 
   const activeError = validationError ?? quoteError
 
+  const { priceImpactPercent } = usePriceImpact({
+    quote: activeQuote,
+    fromToken,
+    toToken
+  })
+
+  const isPriceImpactTooHigh =
+    priceImpactPercent !== null &&
+    priceImpactPercent >= PRICE_IMPACT_DISABLE_THRESHOLD
+
   const canSwap: boolean =
     (activeError === null ||
       (activeError instanceof FusionQuoteError &&
@@ -229,7 +252,8 @@ export const SwapScreen = (): JSX.Element => {
     !isFeeValidating &&
     !!fromToken &&
     !!toToken &&
-    !!activeQuote
+    !!activeQuote &&
+    !isPriceImpactTooHigh
 
   const isSwapping = swapStatus === SwapStatus.Swapping
 
@@ -523,6 +547,57 @@ export const SwapScreen = (): JSX.Element => {
     toToken
   })
 
+  const priceImpactItem = useMemo((): GroupListItem => {
+    let color: string
+    let displayText: string
+    let tooltipTitle: string
+    let tooltipDescription: string
+
+    if (priceImpactPercent === null) {
+      color = theme.colors.$textDanger
+      displayText = PRICE_IMPACT_UNKNOWN_RISK_TITLE
+      tooltipTitle = PRICE_IMPACT_UNKNOWN_RISK_TITLE
+      tooltipDescription = PRICE_IMPACT_UNKNOWN_RISK_DESCRIPTION
+    } else if (isPriceImpactTooHigh) {
+      color = theme.colors.$textDanger
+      displayText = `${priceImpactPercent.toFixed(2)}% (High)`
+      tooltipTitle = PRICE_IMPACT_SWAP_DISABLED_TITLE
+      tooltipDescription = PRICE_IMPACT_SWAP_DISABLED_DESCRIPTION
+    } else if (priceImpactPercent >= PRICE_IMPACT_HIGH_THRESHOLD) {
+      color = theme.colors.$textDanger
+      displayText = `${priceImpactPercent.toFixed(2)}% (High)`
+      tooltipTitle = PRICE_IMPACT_HIGH_TITLE
+      tooltipDescription = PRICE_IMPACT_TOOLTIP_BODY
+    } else {
+      color = theme.colors.$textSecondary
+      displayText = `${priceImpactPercent.toFixed(2)}%`
+      tooltipTitle = PRICE_IMPACT_ROW_TITLE
+      tooltipDescription = PRICE_IMPACT_TOOLTIP_BODY
+    }
+
+    return {
+      title: PRICE_IMPACT_ROW_TITLE,
+      value: (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <Tooltip
+            title={tooltipTitle}
+            description={tooltipDescription}
+            button={{ text: 'Dismiss' }}
+            size={14}
+          />
+          <Text variant="body1" style={{ color }}>
+            {displayText}
+          </Text>
+        </View>
+      )
+    }
+  }, [
+    priceImpactPercent,
+    isPriceImpactTooHigh,
+    theme.colors.$textDanger,
+    theme.colors.$textSecondary
+  ])
+
   const data = useMemo(() => {
     const items: GroupListItem[] = []
 
@@ -552,6 +627,8 @@ export const SwapScreen = (): JSX.Element => {
       })
     }
 
+    items.push(priceImpactItem)
+
     return items
   }, [
     fromToken,
@@ -563,6 +640,7 @@ export const SwapScreen = (): JSX.Element => {
     slippage,
     autoSlippage,
     isSwapping,
+    priceImpactItem,
     handleSelectPricingDetails,
     handleSelectSlippageDetails
   ])

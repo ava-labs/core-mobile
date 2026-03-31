@@ -20,6 +20,33 @@ export const MIN_SLIPPAGE_PERCENT = 0.1
 export const MAX_SLIPPAGE_PERCENT = 50
 
 /**
+ * Price impact threshold above which the value is shown in red as "High".
+ * @example 5 -> 5%
+ */
+export const PRICE_IMPACT_HIGH_THRESHOLD = 5
+
+/**
+ * Price impact threshold at or above which the swap is disabled.
+ * @example 50 -> 50%
+ */
+export const PRICE_IMPACT_DISABLE_THRESHOLD = 50
+
+export const PRICE_IMPACT_ROW_TITLE = 'Price impact'
+
+export const PRICE_IMPACT_TOOLTIP_BODY =
+  'Price impact is the effect of your swap on the price of the token. It is influenced by your order size and available liquidity. Core has no control over price impact.'
+
+export const PRICE_IMPACT_UNKNOWN_RISK_TITLE = 'Unknown risk'
+export const PRICE_IMPACT_UNKNOWN_RISK_DESCRIPTION =
+  "Price data unavailable for one or more tokens. Core can't estimate how much this swap may impact the price. Proceed with caution."
+
+export const PRICE_IMPACT_SWAP_DISABLED_TITLE = 'Swap disabled'
+export const PRICE_IMPACT_SWAP_DISABLED_DESCRIPTION =
+  'The price impact is too high to complete this swap'
+
+export const PRICE_IMPACT_HIGH_TITLE = 'High price impact'
+
+/**
  * Determines the Fusion Service environment based on app settings
  */
 export function getFusionEnvironment(isDeveloperMode: boolean): Environment {
