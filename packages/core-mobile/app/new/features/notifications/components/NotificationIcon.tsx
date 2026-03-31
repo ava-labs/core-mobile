@@ -59,21 +59,12 @@ const NotificationIcon: FC<NotificationIconProps> = ({ notification }) => {
   }
 
   const renderIcon = (): React.JSX.Element => {
-    switch (notification.type) {
-      case 'BALANCE_CHANGES':
-        return renderBalanceChangeIcon()
-      case 'PRICE_ALERTS':
-        return <Icons.Custom.TrendingArrowUp color={colors.$textPrimary} />
-      case 'NEWS':
-      default:
-        return (
-          <Logos.AppIcons.Core
-            color={colors.$textPrimary}
-            width={24}
-            height={7}
-          />
-        )
+    if (isBalanceChangeNotification(notification)) {
+      return renderBalanceChangeIcon()
     }
+    return (
+      <Logos.AppIcons.Core color={colors.$textPrimary} width={24} height={7} />
+    )
   }
 
   // Get chain logo for balance change notifications
