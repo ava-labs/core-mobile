@@ -550,6 +550,17 @@ export const SwapScreen = (): JSX.Element => {
     let tooltipTitle: string
     let tooltipDescription: string
 
+    if (priceImpactAvailability === 'calculating') {
+      return {
+        title: PRICE_IMPACT_ROW_TITLE,
+        value: (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <ActivityIndicator size="small" />
+          </View>
+        )
+      }
+    }
+
     if (priceImpactAvailability === 'unavailable') {
       color = theme.colors.$textDanger
       displayText = PRICE_IMPACT_UNKNOWN_RISK_TITLE
