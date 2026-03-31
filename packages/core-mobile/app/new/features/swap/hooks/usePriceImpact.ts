@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { calculatePriceImpactFromQuote } from '@avalabs/fusion-sdk'
 import { bigintToBig } from '@avalabs/core-utils-sdk'
-import { LocalTokenWithBalance } from 'store/balance'
+import type { LocalTokenWithBalance } from 'store/balance'
 import type { Quote } from '../types'
 
 export type PriceImpactSeverity = 'low' | 'high' | 'critical'
