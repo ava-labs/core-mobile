@@ -57,6 +57,8 @@ import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
 import { ServiceType } from '../types'
 import { usePriceImpact } from '../hooks/usePriceImpact'
 import {
+  PriceImpactAvailability,
+  PriceImpactSeverity,
   PRICE_IMPACT_ROW_TITLE,
   PRICE_IMPACT_TOOLTIP_BODY,
   PRICE_IMPACT_UNKNOWN_RISK_TITLE,
@@ -233,13 +235,13 @@ export const SwapScreen = (): JSX.Element => {
 
   const activeError = validationError ?? quoteError
 
-  const { priceImpact, priceImpactSeverity, priceImpactAvailability } =
-    usePriceImpact(activeQuote, fromToken, toToken)
-
-  const isPriceImpactTooHigh =
-    priceImpactAvailability === 'ready' && priceImpactSeverity === 'critical'
-
-  const isPriceImpactCalculating = priceImpactAvailability === 'calculating'
+  const {
+    priceImpact,
+    priceImpactSeverity,
+    priceImpactAvailability,
+    isPriceImpactTooHigh,
+    isPriceImpactCalculating
+  } = usePriceImpact(activeQuote, fromToken, toToken)
 
   const canSwap: boolean =
     (activeError === null ||
@@ -550,7 +552,7 @@ export const SwapScreen = (): JSX.Element => {
     let tooltipTitle: string
     let tooltipDescription: string
 
-    if (priceImpactAvailability === 'calculating') {
+    if (priceImpactAvailability === PriceImpactAvailability.Calculating) {
       return {
         title: PRICE_IMPACT_ROW_TITLE,
         value: (
@@ -566,12 +568,12 @@ export const SwapScreen = (): JSX.Element => {
       displayText = PRICE_IMPACT_UNKNOWN_RISK_TITLE
       tooltipTitle = PRICE_IMPACT_UNKNOWN_RISK_TITLE
       tooltipDescription = PRICE_IMPACT_UNKNOWN_RISK_DESCRIPTION
-    } else if (priceImpactSeverity === 'critical') {
+    } else if (priceImpactSeverity === PriceImpactSeverity.Critical) {
       color = theme.colors.$textDanger
       displayText = `${priceImpact?.toFixed(2)}% (High)`
       tooltipTitle = PRICE_IMPACT_SWAP_DISABLED_TITLE
       tooltipDescription = PRICE_IMPACT_SWAP_DISABLED_DESCRIPTION
-    } else if (priceImpactSeverity === 'high') {
+    } else if (priceImpactSeverity === PriceImpactSeverity.High) {
       color = theme.colors.$textDanger
       displayText = `${priceImpact?.toFixed(2)}% (High)`
       tooltipTitle = PRICE_IMPACT_HIGH_TITLE

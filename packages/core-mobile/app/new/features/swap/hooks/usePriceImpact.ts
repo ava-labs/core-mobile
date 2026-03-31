@@ -1,16 +1,8 @@
 import { useEffect, useState } from 'react'
-import { calculatePriceImpactFromQuote } from '@avalabs/fusion-sdk'
-import { bigintToBig } from '@avalabs/core-utils-sdk'
 import type { LocalTokenWithBalance } from 'store/balance'
+import fusionService from '../services/FusionService'
 import type { Quote } from '../types'
-
-export type PriceImpactSeverity = 'low' | 'high' | 'critical'
-
-export type PriceImpactAvailability =
-  | 'hidden'
-  | 'calculating'
-  | 'unavailable'
-  | 'ready'
+import { PriceImpactAvailability, PriceImpactSeverity } from '../consts'
 
 const HIGH_IMPACT_THRESHOLD = 5
 const CRITICAL_IMPACT_THRESHOLD = 50
@@ -19,20 +11,22 @@ type PriceImpactResult = {
   priceImpact: number | undefined
   priceImpactSeverity: PriceImpactSeverity
   priceImpactAvailability: PriceImpactAvailability
+  isPriceImpactTooHigh: boolean
+  isPriceImpactCalculating: boolean
 }
 
 export function getPriceImpactSeverity(
   priceImpact: number | undefined
 ): PriceImpactSeverity {
   if (priceImpact === undefined || priceImpact < HIGH_IMPACT_THRESHOLD) {
-    return 'low'
+    return PriceImpactSeverity.Low
   }
 
   if (priceImpact >= CRITICAL_IMPACT_THRESHOLD) {
-    return 'critical'
+    return PriceImpactSeverity.Critical
   }
 
-  return 'high'
+  return PriceImpactSeverity.High
 }
 
 export function usePriceImpact(
@@ -42,7 +36,7 @@ export function usePriceImpact(
 ): PriceImpactResult {
   const [priceImpact, setPriceImpact] = useState<number | undefined>(undefined)
   const [priceImpactAvailability, setPriceImpactAvailability] =
-    useState<PriceImpactAvailability>('hidden')
+    useState<PriceImpactAvailability>(PriceImpactAvailability.Hidden)
 
   const sourcePrice = fromToken?.priceInCurrency
   const targetPrice = toToken?.priceInCurrency
@@ -50,43 +44,30 @@ export function usePriceImpact(
   useEffect(() => {
     if (!quote || !fromToken || !toToken) {
       setPriceImpact(undefined)
-      setPriceImpactAvailability('hidden')
+      setPriceImpactAvailability(PriceImpactAvailability.Hidden)
       return
     }
 
     if (!sourcePrice || !targetPrice) {
       setPriceImpact(undefined)
-      setPriceImpactAvailability('unavailable')
+      setPriceImpactAvailability(PriceImpactAvailability.Unavailable)
       return
     }
 
     setPriceImpact(undefined)
-    setPriceImpactAvailability('calculating')
+    setPriceImpactAvailability(PriceImpactAvailability.Calculating)
 
     let cancelled = false
 
     const sourcePriceSnapshot = sourcePrice
     const targetPriceSnapshot = targetPrice
 
-    calculatePriceImpactFromQuote(quote, async (input, output) => {
-      if (cancelled) {
-        return [0, 0]
-      }
-
-      const inputAmount = bigintToBig(
-        input.amount,
-        input.asset.decimals
-      ).toNumber()
-      const outputAmount = bigintToBig(
-        output.amount,
-        output.asset.decimals
-      ).toNumber()
-
-      return [
-        inputAmount * sourcePriceSnapshot,
-        outputAmount * targetPriceSnapshot
-      ]
-    })
+    fusionService
+      .calculatePriceImpactFromQuote(
+        quote,
+        sourcePriceSnapshot,
+        targetPriceSnapshot
+      )
       .then(bps => {
         if (cancelled) {
           return
@@ -94,17 +75,17 @@ export function usePriceImpact(
 
         if (bps === null) {
           setPriceImpact(undefined)
-          setPriceImpactAvailability('unavailable')
+          setPriceImpactAvailability(PriceImpactAvailability.Unavailable)
         } else {
           // SDK returns basis points; convert to percentage and clamp favorable impact to 0
           setPriceImpact(Math.max(bps / 100, 0))
-          setPriceImpactAvailability('ready')
+          setPriceImpactAvailability(PriceImpactAvailability.Ready)
         }
       })
       .catch(() => {
         if (!cancelled) {
           setPriceImpact(undefined)
-          setPriceImpactAvailability('unavailable')
+          setPriceImpactAvailability(PriceImpactAvailability.Unavailable)
         }
       })
 
@@ -113,9 +94,16 @@ export function usePriceImpact(
     }
   }, [fromToken, quote, sourcePrice, targetPrice, toToken])
 
+  const priceImpactSeverity = getPriceImpactSeverity(priceImpact)
+
   return {
     priceImpact,
-    priceImpactSeverity: getPriceImpactSeverity(priceImpact),
-    priceImpactAvailability
+    priceImpactSeverity,
+    priceImpactAvailability,
+    isPriceImpactTooHigh:
+      priceImpactAvailability === PriceImpactAvailability.Ready &&
+      priceImpactSeverity === PriceImpactSeverity.Critical,
+    isPriceImpactCalculating:
+      priceImpactAvailability === PriceImpactAvailability.Calculating
   }
 }

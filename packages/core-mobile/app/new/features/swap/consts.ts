@@ -1,6 +1,19 @@
 import { Environment } from '@avalabs/fusion-sdk'
 import { tokenIds } from 'consts/tokenIds'
 
+export enum PriceImpactSeverity {
+  Low = 'low',
+  High = 'high',
+  Critical = 'critical'
+}
+
+export enum PriceImpactAvailability {
+  Hidden = 'hidden',
+  Calculating = 'calculating',
+  Unavailable = 'unavailable',
+  Ready = 'ready'
+}
+
 /**
  * The partner ID Markr uses for EVM swaps.
  */
