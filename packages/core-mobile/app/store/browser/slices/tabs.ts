@@ -188,6 +188,16 @@ const tabSlice = createSlice({
         id: tabId,
         changes: { chainId }
       })
+    },
+    clearTabChainId: (
+      state: TabState,
+      action: PayloadAction<{ tabId: TabId }>
+    ) => {
+      const { tabId } = action.payload
+      tabAdapter.updateOne(state, {
+        id: tabId,
+        changes: { chainId: undefined }
+      })
     }
   },
   extraReducers: builder => {
@@ -277,7 +287,8 @@ export const {
   removeAllTabs,
   setActiveTabId,
   updateActiveHistoryForTab,
-  setTabChainId
+  setTabChainId,
+  clearTabChainId
 } = tabSlice.actions
 
 export const tabReducer = tabSlice.reducer
