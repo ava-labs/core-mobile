@@ -61,14 +61,13 @@ export const getGridCardHeight = (
   index: number
 ): number => {
   switch (type) {
-    case CollectibleView.ListView:
-      return LIST_ITEM_HEIGHT
     case CollectibleView.CompactGrid: {
       return getCompactGridCardHeight(index)
     }
     case CollectibleView.LargeGrid: {
       return getLargeGridCardHeight(index)
     }
+    case CollectibleView.ListView:
     default: {
       return LIST_ITEM_HEIGHT
     }
