@@ -170,6 +170,7 @@ export function CollapsibleTabList<T>({
   if (columnItems) {
     return (
       <CollapsibleTabs.ScrollView
+        key={listKey}
         refreshControl={refreshControl}
         contentContainerStyle={baseContentContainerStyle}
         showsVerticalScrollIndicator={false}
@@ -178,13 +179,15 @@ export function CollapsibleTabList<T>({
         <View style={{ flexDirection: 'row' }}>
           {columnItems.map((col, colIndex) => (
             <View key={colIndex} style={{ flex: 1 }}>
-              {col.map(entry =>
-                renderItem({
-                  item: entry.item,
-                  index: entry.index,
-                  target: 'Cell'
-                })
-              )}
+              {col.map(entry => (
+                <React.Fragment key={keyExtractor(entry.item, entry.index)}>
+                  {renderItem({
+                    item: entry.item,
+                    index: entry.index,
+                    target: 'Cell'
+                  })}
+                </React.Fragment>
+              ))}
             </View>
           ))}
         </View>
