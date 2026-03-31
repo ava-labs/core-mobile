@@ -115,7 +115,9 @@ export function filterByTab(
       )
     case NotificationTab.PRICE_UPDATES:
       return notifications.filter(
-        n => n.category === NotificationCategory.PRICE_UPDATE
+        n =>
+          n.category === NotificationCategory.PRICE_UPDATE ||
+          (n.type === 'NEWS' && n.data?.event === 'PRICE_ALERTS')
       )
     default:
       return notifications

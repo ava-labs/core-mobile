@@ -14,10 +14,17 @@ export const customTokenSlice = createSlice({
       action: PayloadAction<{ chainId: number; token: NetworkContractToken }>
     ) => {
       const { chainId, token } = action.payload
+      const normalizedAddress = token.address.toLowerCase()
+      const normalizedToken = { ...token, address: normalizedAddress }
 
       if (!state.tokens[chainId]) state.tokens[chainId] = []
 
-      state.tokens[chainId]?.push(token)
+      const alreadyExists = state.tokens[chainId]?.some(
+        t => t.address.toLowerCase() === normalizedAddress
+      )
+      if (alreadyExists) return
+
+      state.tokens[chainId]?.push(normalizedToken)
     }
   }
 })
