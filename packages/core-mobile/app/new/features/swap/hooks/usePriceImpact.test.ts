@@ -36,6 +36,10 @@ const makeToken = (
     priceInCurrency
   } as unknown as LocalTokenWithBalance)
 
+/** Flush all pending microtasks and macrotasks */
+const flushPromises = (): Promise<void> =>
+  new Promise(resolve => setTimeout(resolve, 0))
+
 describe('getPriceImpactSeverity', () => {
   it('returns low when priceImpact is undefined', () => {
     expect(getPriceImpactSeverity(undefined)).toBe('low')
@@ -133,9 +137,7 @@ describe('usePriceImpact', () => {
         usePriceImpact(makeQuote(), makeToken(1.5), makeToken(1.5))
       )
 
-      await act(async () => {
-        await Promise.resolve()
-      })
+      await act(flushPromises)
 
       expect(result.current.priceImpact).toBeUndefined()
       expect(result.current.priceImpactAvailability).toBe('unavailable')
@@ -148,9 +150,7 @@ describe('usePriceImpact', () => {
         usePriceImpact(makeQuote(), makeToken(1.5), makeToken(1.5))
       )
 
-      await act(async () => {
-        await Promise.resolve()
-      })
+      await act(flushPromises)
 
       expect(result.current.priceImpact).toBeUndefined()
       expect(result.current.priceImpactAvailability).toBe('unavailable')
@@ -166,9 +166,7 @@ describe('usePriceImpact', () => {
         usePriceImpact(makeQuote(), makeToken(1.5), makeToken(1.5))
       )
 
-      await act(async () => {
-        await Promise.resolve()
-      })
+      await act(flushPromises)
 
       expect(result.current.priceImpact).toBe(5)
       expect(result.current.priceImpactAvailability).toBe('ready')
@@ -183,9 +181,7 @@ describe('usePriceImpact', () => {
         usePriceImpact(makeQuote(), makeToken(1.5), makeToken(1.5))
       )
 
-      await act(async () => {
-        await Promise.resolve()
-      })
+      await act(flushPromises)
 
       expect(result.current.priceImpact).toBe(0)
       expect(result.current.priceImpactAvailability).toBe('ready')
@@ -199,9 +195,7 @@ describe('usePriceImpact', () => {
         usePriceImpact(makeQuote(), makeToken(1.5), makeToken(1.5))
       )
 
-      await act(async () => {
-        await Promise.resolve()
-      })
+      await act(flushPromises)
 
       expect(result.current.priceImpactSeverity).toBe('low')
     })
@@ -213,9 +207,7 @@ describe('usePriceImpact', () => {
         usePriceImpact(makeQuote(), makeToken(1.5), makeToken(1.5))
       )
 
-      await act(async () => {
-        await Promise.resolve()
-      })
+      await act(flushPromises)
 
       expect(result.current.priceImpactSeverity).toBe('high')
     })
@@ -227,9 +219,7 @@ describe('usePriceImpact', () => {
         usePriceImpact(makeQuote(), makeToken(1.5), makeToken(1.5))
       )
 
-      await act(async () => {
-        await Promise.resolve()
-      })
+      await act(flushPromises)
 
       expect(result.current.priceImpactSeverity).toBe('critical')
     })
@@ -254,7 +244,7 @@ describe('usePriceImpact', () => {
 
       await act(async () => {
         resolveImpact(1000)
-        await Promise.resolve()
+        await flushPromises()
       })
 
       // State should remain as 'calculating' — cancelled flag prevents update
@@ -285,14 +275,12 @@ describe('usePriceImpact', () => {
       rerender({ quote: quote2 })
 
       // Let the second promise resolve
-      await act(async () => {
-        await Promise.resolve()
-      })
+      await act(flushPromises)
 
       // Resolve the first (now-cancelled) promise — should not affect state
       await act(async () => {
         resolveFirst(9999)
-        await Promise.resolve()
+        await flushPromises()
       })
 
       // Only the second result (2%) should be reflected

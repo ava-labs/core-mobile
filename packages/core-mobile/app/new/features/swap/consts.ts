@@ -19,7 +19,6 @@ export const MIN_SLIPPAGE_PERCENT = 0.1
  */
 export const MAX_SLIPPAGE_PERCENT = 50
 
-
 export const PRICE_IMPACT_ROW_TITLE = 'Price impact'
 
 export const PRICE_IMPACT_TOOLTIP_BODY =
