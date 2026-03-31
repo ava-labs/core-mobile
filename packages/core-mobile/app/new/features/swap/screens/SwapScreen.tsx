@@ -589,12 +589,12 @@ export const SwapScreen = (): JSX.Element => {
     return {
       title: PRICE_IMPACT_ROW_TITLE,
       value: (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <Tooltip
             title={tooltipTitle}
             description={tooltipDescription}
             button={{ text: 'Dismiss' }}
-            size={14}
+            size={18}
           />
           <Text variant="body1" style={{ color }}>
             {displayText}
