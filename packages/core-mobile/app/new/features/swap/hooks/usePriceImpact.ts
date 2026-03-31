@@ -111,7 +111,7 @@ export function usePriceImpact(
     return () => {
       cancelled = true
     }
-  }, [quote, fromToken, toToken, sourcePrice, targetPrice])
+  }, [fromToken, quote, sourcePrice, targetPrice, toToken])
 
   return {
     priceImpact,

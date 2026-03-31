@@ -236,7 +236,10 @@ export const SwapScreen = (): JSX.Element => {
   const { priceImpact, priceImpactSeverity, priceImpactAvailability } =
     usePriceImpact(activeQuote, fromToken, toToken)
 
-  const isPriceImpactTooHigh = priceImpactSeverity === 'critical'
+  const isPriceImpactTooHigh =
+    priceImpactAvailability === 'ready' && priceImpactSeverity === 'critical'
+
+  const isPriceImpactCalculating = priceImpactAvailability === 'calculating'
 
   const canSwap: boolean =
     (activeError === null ||
@@ -246,6 +249,7 @@ export const SwapScreen = (): JSX.Element => {
     !!fromToken &&
     !!toToken &&
     !!activeQuote &&
+    !isPriceImpactCalculating &&
     !isPriceImpactTooHigh
 
   const isSwapping = swapStatus === SwapStatus.Swapping
