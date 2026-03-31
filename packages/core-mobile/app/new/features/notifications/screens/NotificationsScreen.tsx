@@ -57,7 +57,9 @@ const SWIPE_DURATION = 500 // animation duration for each swipe
 const MAX_ANIMATED_ITEMS = 10 // only animate visible items, rest disappear instantly
 
 /**
- * Check if notification is a price alert with metadata
+ * Check if notification is a price alert with metadata.
+ * Handles both direct PRICE_ALERTS type and NEWS-wrapped price alerts
+ * (type:"NEWS" with data.event:"PRICE_ALERTS").
  */
 const isPriceAlertWithData = (notification: AppNotification): boolean => {
   if (!isPriceAlertNotification(notification)) return false

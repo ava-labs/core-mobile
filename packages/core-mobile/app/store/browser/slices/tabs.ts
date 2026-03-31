@@ -178,6 +178,26 @@ const tabSlice = createSlice({
           activeHistory
         }
       })
+    },
+    setTabChainId: (
+      state: TabState,
+      action: PayloadAction<{ tabId: TabId; chainId: number }>
+    ) => {
+      const { tabId, chainId } = action.payload
+      tabAdapter.updateOne(state, {
+        id: tabId,
+        changes: { chainId }
+      })
+    },
+    clearTabChainId: (
+      state: TabState,
+      action: PayloadAction<{ tabId: TabId }>
+    ) => {
+      const { tabId } = action.payload
+      tabAdapter.updateOne(state, {
+        id: tabId,
+        changes: { chainId: undefined }
+      })
     }
   },
   extraReducers: builder => {
@@ -250,6 +270,11 @@ export const selectActiveHistory = (state: RootState): History | undefined => {
   return activeTab?.activeHistory
 }
 
+export const selectTabChainId =
+  (tabId: TabId) =>
+  (state: RootState): number | undefined =>
+    tabAdapterSelectors.selectById(state.browser.tabs, tabId)?.chainId
+
 // actions
 export const goForward = createAction(`${reducerName}/goForward`)
 export const goBackward = createAction(`${reducerName}/goBackward`)
@@ -261,7 +286,9 @@ export const {
   removeTab,
   removeAllTabs,
   setActiveTabId,
-  updateActiveHistoryForTab
+  updateActiveHistoryForTab,
+  setTabChainId,
+  clearTabChainId
 } = tabSlice.actions
 
 export const tabReducer = tabSlice.reducer

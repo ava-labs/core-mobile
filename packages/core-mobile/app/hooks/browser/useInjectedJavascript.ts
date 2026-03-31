@@ -75,7 +75,7 @@ export function useInjectedJavascript(): InjectedJavascripts {
       injected: [
         {
           injected_id: 'isAvalanche',
-          namespace: ${BlockchainNamespace.EIP155},
+          namespace: '${BlockchainNamespace.EIP155}',
         }
       ],
       rdns: null,

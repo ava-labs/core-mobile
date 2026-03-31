@@ -170,6 +170,14 @@ describe('wallet_addEthereumChain handler', () => {
       }
     })
 
+    it('should succeed when dApp passes extra elements beyond the chain info', async () => {
+      const testRequest = createRequest([sepoliaMainnetInfo, null, 'extraData'])
+
+      const result = await handler.handle(testRequest, mockListenerApi)
+
+      expect(result).toEqual({ success: true, value: expect.any(Symbol) })
+    })
+
     it('should return success when requested chain is already an existing chain and is active', async () => {
       const testParams = [avalancheMainnetInfo]
 
@@ -216,17 +224,19 @@ describe('wallet_addEthereumChain handler', () => {
       expect(result).toEqual({ success: true, value: null })
     })
 
-    it('should return error when network is not valid', async () => {
+    it('shows modal immediately without pre-validating the RPC URL', async () => {
+      // isValidRPCUrl must NOT be called in handle() — dApps like Aave time out
+      // and crash waiting for the async RPC check before the approval modal appears.
+      // The extension shows the modal first; we follow the same pattern.
       mockIsValidRPCUrl.mockImplementationOnce(() => false)
 
       const testRequest = createRequest([sepoliaMainnetInfo])
 
       const result = await handler.handle(testRequest, mockListenerApi)
 
-      expect(result).toEqual({
-        success: false,
-        error: rpcErrors.invalidParams('ChainID does not match the rpc url')
-      })
+      expect(mockIsValidRPCUrl).not.toHaveBeenCalled()
+      expect(router.navigate).toHaveBeenCalledWith('/addEthereumChain')
+      expect(result).toEqual({ success: true, value: expect.any(Symbol) })
     })
 
     describe('when request contains isTestnet field', () => {
