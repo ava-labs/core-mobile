@@ -17,7 +17,6 @@ interface DerivationPathOption {
 
 interface DerivationPathSelectorProps {
   onSelect: (derivationPathType: LedgerDerivationPathType) => void
-  onCancel?: () => void
 }
 
 interface ListItemProps {
