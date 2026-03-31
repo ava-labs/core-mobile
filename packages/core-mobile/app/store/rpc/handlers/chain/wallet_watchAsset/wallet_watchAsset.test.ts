@@ -267,6 +267,22 @@ describe('wallet_watchAsset handler', () => {
       }
     })
 
+    it('returns invalidParams error for malformed CAIP-2 chainId', async () => {
+      for (const badChainId of ['eip155:', 'eip155:abc', 'malformed', '']) {
+        const request = createRequest(
+          [{ type: 'ERC20', options: validOptions }],
+          badChainId
+        )
+        const result = await handler.handle(request, mockListenerApi)
+        expect(result).toEqual({
+          success: false,
+          error: rpcErrors.invalidParams('Invalid chainId')
+        })
+      }
+      expect(walletConnectCache.watchAssetParams.set).not.toHaveBeenCalled()
+      expect(router.navigate).not.toHaveBeenCalled()
+    })
+
     it('returns success immediately when token is already in custom token store (case-insensitive)', async () => {
       const checksumAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F'
       mockListenerApi.getState.mockReturnValue({
@@ -371,7 +387,7 @@ describe('wallet_watchAsset handler', () => {
       expect(mockDispatch).not.toHaveBeenCalled()
     })
 
-    it('returns false and skips dispatch when token already exists (case-insensitive)', async () => {
+    it('returns true and skips dispatch when token already exists (case-insensitive)', async () => {
       const checksumAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F'
       mockListenerApi.getState.mockReturnValue({
         customToken: {
@@ -396,7 +412,7 @@ describe('wallet_watchAsset handler', () => {
         mockListenerApi
       )
 
-      expect(result).toEqual({ success: true, value: false })
+      expect(result).toEqual({ success: true, value: true })
       expect(mockDispatch).not.toHaveBeenCalled()
     })
   })

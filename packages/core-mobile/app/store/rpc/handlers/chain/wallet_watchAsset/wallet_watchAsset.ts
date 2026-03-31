@@ -39,6 +39,12 @@ class WalletWatchAssetHandler
 
     const caip2ChainId = request.data.params.chainId
     const chainId = Number(caip2ChainId.split(':')[1])
+    if (!Number.isInteger(chainId) || chainId <= 0) {
+      return {
+        success: false,
+        error: rpcErrors.invalidParams('Invalid chainId')
+      }
+    }
     const allCustomTokens = selectAllCustomTokens(listenerApi.getState())
     const tokensForChain = allCustomTokens[chainId] ?? []
     const alreadyAdded = tokensForChain.some(
@@ -92,7 +98,7 @@ class WalletWatchAssetHandler
     if (!alreadyAdded) {
       dispatch(addCustomToken({ chainId, token }))
     }
-    return { success: true, value: !alreadyAdded }
+    return { success: true, value: true }
   }
 }
 
