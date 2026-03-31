@@ -1,63 +1,121 @@
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
+import { calculatePriceImpactFromQuote } from '@avalabs/fusion-sdk'
+import { bigintToBig } from '@avalabs/core-utils-sdk'
 import { LocalTokenWithBalance } from 'store/balance'
-import { formatUnits } from 'viem'
 import type { Quote } from '../types'
 
-export type PriceImpactResult = {
-  /**
-   * Price impact as a percentage (e.g. 5.3 means 5.3%).
-   * null when price data is unavailable for one or more tokens (unknown risk).
-   */
-  priceImpactPercent: number | null
+export type PriceImpactSeverity = 'low' | 'high' | 'critical'
+
+export type PriceImpactAvailability =
+  | 'hidden'
+  | 'calculating'
+  | 'unavailable'
+  | 'ready'
+
+const HIGH_IMPACT_THRESHOLD = 5
+const CRITICAL_IMPACT_THRESHOLD = 50
+
+type PriceImpactResult = {
+  priceImpact: number | undefined
+  priceImpactSeverity: PriceImpactSeverity
+  priceImpactAvailability: PriceImpactAvailability
 }
 
-/**
- * Calculates the price impact of a swap quote by comparing the fiat value
- * of the input amount vs the output amount using token market prices.
- *
- * Formula: ((fromValueInFiat - toValueInFiat) / fromValueInFiat) * 100
- *
- * Returns null (unknown risk) when price data is missing for either token.
- */
-export const usePriceImpact = ({
-  quote,
-  fromToken,
-  toToken
-}: {
-  quote: Quote | null | undefined
-  fromToken: LocalTokenWithBalance | undefined
+export function getPriceImpactSeverity(
+  priceImpact: number | undefined
+): PriceImpactSeverity {
+  if (priceImpact === undefined || priceImpact < HIGH_IMPACT_THRESHOLD) {
+    return 'low'
+  }
+
+  if (priceImpact >= CRITICAL_IMPACT_THRESHOLD) {
+    return 'critical'
+  }
+
+  return 'high'
+}
+
+export function usePriceImpact(
+  quote: Quote | null | undefined,
+  fromToken: LocalTokenWithBalance | undefined,
   toToken: LocalTokenWithBalance | undefined
-}): PriceImpactResult => {
-  const priceImpactPercent = useMemo(() => {
-    if (!quote || !fromToken || !toToken) return null
+): PriceImpactResult {
+  const [priceImpact, setPriceImpact] = useState<number | undefined>(undefined)
+  const [priceImpactAvailability, setPriceImpactAvailability] =
+    useState<PriceImpactAvailability>('hidden')
 
-    const fromDecimals = (fromToken as { decimals?: number }).decimals
-    const toDecimals = (toToken as { decimals?: number }).decimals
+  const sourcePrice = fromToken?.priceInCurrency
+  const targetPrice = toToken?.priceInCurrency
 
-    if (fromDecimals === undefined || toDecimals === undefined) return null
+  useEffect(() => {
+    if (!quote || !fromToken || !toToken) {
+      setPriceImpact(undefined)
+      setPriceImpactAvailability('hidden')
+      return
+    }
 
-    if (!fromToken.priceInCurrency || !toToken.priceInCurrency) return null
+    if (!sourcePrice || !targetPrice) {
+      setPriceImpact(undefined)
+      setPriceImpactAvailability('unavailable')
+      return
+    }
 
-    const amountInDecimal = parseFloat(
-      formatUnits(quote.amountIn, fromDecimals)
-    )
-    const amountOutDecimal = parseFloat(
-      formatUnits(quote.amountOut, toDecimals)
-    )
+    setPriceImpact(undefined)
+    setPriceImpactAvailability('calculating')
 
-    if (amountInDecimal === 0) return null
+    let cancelled = false
 
-    const fromValueInFiat = amountInDecimal * fromToken.priceInCurrency
-    const toValueInFiat = amountOutDecimal * toToken.priceInCurrency
+    const sourcePriceSnapshot = sourcePrice
+    const targetPriceSnapshot = targetPrice
 
-    if (fromValueInFiat === 0) return null
+    calculatePriceImpactFromQuote(quote, async (input, output) => {
+      if (cancelled) {
+        return [0, 0]
+      }
 
-    // Clamp to 0: negative impact means stale/mismatched prices, not a real gain
-    return Math.max(
-      0,
-      ((fromValueInFiat - toValueInFiat) / fromValueInFiat) * 100
-    )
-  }, [quote, fromToken, toToken])
+      const inputAmount = bigintToBig(
+        input.amount,
+        input.asset.decimals
+      ).toNumber()
+      const outputAmount = bigintToBig(
+        output.amount,
+        output.asset.decimals
+      ).toNumber()
 
-  return { priceImpactPercent }
+      return [
+        inputAmount * sourcePriceSnapshot,
+        outputAmount * targetPriceSnapshot
+      ]
+    })
+      .then(bps => {
+        if (cancelled) {
+          return
+        }
+
+        if (bps === null) {
+          setPriceImpact(undefined)
+          setPriceImpactAvailability('unavailable')
+        } else {
+          // SDK returns basis points; convert to percentage and clamp favorable impact to 0
+          setPriceImpact(Math.max(bps / 100, 0))
+          setPriceImpactAvailability('ready')
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setPriceImpact(undefined)
+          setPriceImpactAvailability('unavailable')
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [quote, fromToken, toToken, sourcePrice, targetPrice])
+
+  return {
+    priceImpact,
+    priceImpactSeverity: getPriceImpactSeverity(priceImpact),
+    priceImpactAvailability
+  }
 }

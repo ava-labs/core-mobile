@@ -19,17 +19,6 @@ export const MIN_SLIPPAGE_PERCENT = 0.1
  */
 export const MAX_SLIPPAGE_PERCENT = 50
 
-/**
- * Price impact threshold above which the value is shown in red as "High".
- * @example 5 -> 5%
- */
-export const PRICE_IMPACT_HIGH_THRESHOLD = 5
-
-/**
- * Price impact threshold at or above which the swap is disabled.
- * @example 50 -> 50%
- */
-export const PRICE_IMPACT_DISABLE_THRESHOLD = 50
 
 export const PRICE_IMPACT_ROW_TITLE = 'Price impact'
 

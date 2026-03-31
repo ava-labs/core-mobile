@@ -57,8 +57,6 @@ import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
 import { ServiceType } from '../types'
 import { usePriceImpact } from '../hooks/usePriceImpact'
 import {
-  PRICE_IMPACT_HIGH_THRESHOLD,
-  PRICE_IMPACT_DISABLE_THRESHOLD,
   PRICE_IMPACT_ROW_TITLE,
   PRICE_IMPACT_TOOLTIP_BODY,
   PRICE_IMPACT_UNKNOWN_RISK_TITLE,
@@ -235,15 +233,10 @@ export const SwapScreen = (): JSX.Element => {
 
   const activeError = validationError ?? quoteError
 
-  const { priceImpactPercent } = usePriceImpact({
-    quote: activeQuote,
-    fromToken,
-    toToken
-  })
+  const { priceImpact, priceImpactSeverity, priceImpactAvailability } =
+    usePriceImpact(activeQuote, fromToken, toToken)
 
-  const isPriceImpactTooHigh =
-    priceImpactPercent !== null &&
-    priceImpactPercent >= PRICE_IMPACT_DISABLE_THRESHOLD
+  const isPriceImpactTooHigh = priceImpactSeverity === 'critical'
 
   const canSwap: boolean =
     (activeError === null ||
@@ -553,24 +546,25 @@ export const SwapScreen = (): JSX.Element => {
     let tooltipTitle: string
     let tooltipDescription: string
 
-    if (priceImpactPercent === null) {
+    if (priceImpactAvailability === 'unavailable') {
       color = theme.colors.$textDanger
       displayText = PRICE_IMPACT_UNKNOWN_RISK_TITLE
       tooltipTitle = PRICE_IMPACT_UNKNOWN_RISK_TITLE
       tooltipDescription = PRICE_IMPACT_UNKNOWN_RISK_DESCRIPTION
-    } else if (isPriceImpactTooHigh) {
+    } else if (priceImpactSeverity === 'critical') {
       color = theme.colors.$textDanger
-      displayText = `${priceImpactPercent.toFixed(2)}% (High)`
+      displayText = `${priceImpact?.toFixed(2)}% (High)`
       tooltipTitle = PRICE_IMPACT_SWAP_DISABLED_TITLE
       tooltipDescription = PRICE_IMPACT_SWAP_DISABLED_DESCRIPTION
-    } else if (priceImpactPercent >= PRICE_IMPACT_HIGH_THRESHOLD) {
+    } else if (priceImpactSeverity === 'high') {
       color = theme.colors.$textDanger
-      displayText = `${priceImpactPercent.toFixed(2)}% (High)`
+      displayText = `${priceImpact?.toFixed(2)}% (High)`
       tooltipTitle = PRICE_IMPACT_HIGH_TITLE
       tooltipDescription = PRICE_IMPACT_TOOLTIP_BODY
     } else {
       color = theme.colors.$textSecondary
-      displayText = `${priceImpactPercent.toFixed(2)}%`
+      displayText =
+        priceImpact !== undefined ? `${priceImpact.toFixed(2)}%` : '—'
       tooltipTitle = PRICE_IMPACT_ROW_TITLE
       tooltipDescription = PRICE_IMPACT_TOOLTIP_BODY
     }
@@ -592,8 +586,9 @@ export const SwapScreen = (): JSX.Element => {
       )
     }
   }, [
-    priceImpactPercent,
-    isPriceImpactTooHigh,
+    priceImpact,
+    priceImpactSeverity,
+    priceImpactAvailability,
     theme.colors.$textDanger,
     theme.colors.$textSecondary
   ])
