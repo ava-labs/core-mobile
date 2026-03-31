@@ -77,10 +77,9 @@ export const ReactQueryProvider: React.FC<PropsWithChildren> = ({
   // manage online status
   useEffect(() => {
     return NetInfo.addEventListener(state => {
-      const online =
-        state.isConnected != null &&
-        state.isConnected &&
-        Boolean(state.isInternetReachable)
+      // Use only isConnected — isInternetReachable can be false on working
+      // networks when the reachability check host is blocked (VPN, captive portals).
+      const online = state.isConnected !== false
 
       onlineManager.setOnline(online)
     })
