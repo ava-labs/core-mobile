@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Environment, ServiceType, QuoterInterface } from '@avalabs/fusion-sdk'
-import { createTransferManager } from '@avalabs/fusion-sdk'
+import {
+  createTransferManager,
+  calculatePriceImpactFromQuote
+} from '@avalabs/fusion-sdk'
+import { bigintToBig } from '@avalabs/core-utils-sdk'
 import Logger from 'utils/Logger'
 import FusionService from './FusionService'
 import type {
@@ -23,7 +27,12 @@ jest.mock('@avalabs/fusion-sdk', () => ({
     LOMBARD_BTCB_TO_BTC: 'LOMBARD_BTCB_TO_BTC',
     WRAP_UNWRAP: 'WRAP_UNWRAP'
   },
-  createTransferManager: jest.fn()
+  createTransferManager: jest.fn(),
+  calculatePriceImpactFromQuote: jest.fn()
+}))
+
+jest.mock('@avalabs/core-utils-sdk', () => ({
+  bigintToBig: jest.fn()
 }))
 
 // Mock Logger
@@ -1477,6 +1486,76 @@ describe('FusionService', () => {
       await expect(
         FusionService.getMinimumTransferAmount(props)
       ).rejects.toThrow('Fusion service is not initialized')
+    })
+  })
+
+  describe('calculatePriceImpactFromQuote', () => {
+    it('should return bps value from the SDK', async () => {
+      ;(calculatePriceImpactFromQuote as jest.Mock).mockResolvedValue(150)
+
+      const mockQuote = { id: 'quote-1' } as any
+      const result = await FusionService.calculatePriceImpactFromQuote(
+        mockQuote,
+        1.5,
+        2.0
+      )
+
+      expect(result).toBe(150)
+      expect(calculatePriceImpactFromQuote).toHaveBeenCalledWith(
+        mockQuote,
+        expect.any(Function)
+      )
+    })
+
+    it('should return null when SDK cannot determine price impact', async () => {
+      ;(calculatePriceImpactFromQuote as jest.Mock).mockResolvedValue(null)
+
+      const mockQuote = { id: 'quote-1' } as any
+      const result = await FusionService.calculatePriceImpactFromQuote(
+        mockQuote,
+        1.5,
+        2.0
+      )
+
+      expect(result).toBeNull()
+    })
+
+    it('should pass correct USD values to the SDK pricing callback', async () => {
+      let capturedCallback: (
+        input: any,
+        output: any
+      ) => Promise<[number, number]>
+      ;(calculatePriceImpactFromQuote as jest.Mock).mockImplementation(
+        (_quote: any, callback: any) => {
+          capturedCallback = callback
+          return Promise.resolve(200)
+        }
+      )
+      ;(bigintToBig as jest.Mock)
+        .mockReturnValueOnce({ toNumber: () => 5 })
+        .mockReturnValueOnce({ toNumber: () => 3 })
+
+      const mockQuote = { id: 'quote-1' } as any
+      await FusionService.calculatePriceImpactFromQuote(mockQuote, 2.0, 4.0)
+
+      const mockInput = { amount: 5000000n, asset: { decimals: 6 } }
+      const mockOutput = { amount: 3000000n, asset: { decimals: 6 } }
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const [inputUsd, outputUsd] = await capturedCallback!(
+        mockInput,
+        mockOutput
+      )
+
+      expect(bigintToBig).toHaveBeenCalledWith(
+        mockInput.amount,
+        mockInput.asset.decimals
+      )
+      expect(bigintToBig).toHaveBeenCalledWith(
+        mockOutput.amount,
+        mockOutput.asset.decimals
+      )
+      expect(inputUsd).toBe(10) // 5 * 2.0
+      expect(outputUsd).toBe(12) // 3 * 4.0
     })
   })
 })
