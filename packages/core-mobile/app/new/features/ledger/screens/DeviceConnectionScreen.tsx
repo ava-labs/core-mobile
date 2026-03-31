@@ -9,6 +9,10 @@ import { LedgerDeviceList } from 'new/features/ledger/components/LedgerDeviceLis
 import LedgerService from 'services/ledger/LedgerService'
 import { LedgerDevice } from 'services/ledger/types'
 import { isLedgerBluetoothPermissionError } from 'services/ledger/LedgerBluetoothPermissionError'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useSelector } from 'react-redux'
+import { selectWalletState } from 'store/app'
+import { WalletState } from 'store/app/types'
 
 interface DeviceConnectionScreenProps {
   onNavigateToAppConnection: () => void
@@ -22,6 +26,7 @@ export default function DeviceConnectionScreen({
     theme: { colors }
   } = useTheme()
 
+  const walletState = useSelector(selectWalletState)
   const { isConnecting, connectToDevice, resetSetup } = useLedgerSetupContext()
 
   // Local device management
@@ -70,9 +75,18 @@ export default function DeviceConnectionScreen({
     async (deviceId: string, deviceName: string) => {
       try {
         await connectToDevice(deviceId, deviceName)
-
+        if (walletState === WalletState.NONEXISTENT) {
+          AnalyticsService.capture('OnboardingLedgerConnected')
+        } else {
+          AnalyticsService.capture('WalletImportLedgerConnected')
+        }
         onNavigateToAppConnection()
       } catch (error) {
+        if (walletState === WalletState.NONEXISTENT) {
+          AnalyticsService.capture('OnboardingLedgerConnectionFailed')
+        } else {
+          AnalyticsService.capture('WalletImportLedgerConnectionFailed')
+        }
         if (isLedgerBluetoothPermissionError(error)) {
           Alert.alert(
             'Bluetooth Permission Required',
@@ -105,7 +119,7 @@ export default function DeviceConnectionScreen({
         )
       }
     },
-    [connectToDevice, resetSetup, onNavigateToAppConnection]
+    [connectToDevice, resetSetup, onNavigateToAppConnection, walletState]
   )
 
   const handleCancel = useCallback(() => {
