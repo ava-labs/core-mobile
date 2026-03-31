@@ -12,7 +12,7 @@ export const useNoInternetToast = (): void => {
   const isDismissedRef = useRef(false)
   const isConnectedRef = useRef(true)
   const toastIdRef = useRef(uuid())
-  const segments = useSegments()
+  const segments = useSegments() as string[]
 
   const triggerToast = (): void => {
     toastIdRef.current = uuid()
