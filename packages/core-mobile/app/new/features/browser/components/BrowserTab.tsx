@@ -85,7 +85,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       handleProviderMessage,
       handleDomainMetadata,
       setCurrentUrl
-    } = useEvmInjectedProvider(webViewRef)
+    } = useEvmInjectedProvider(webViewRef, tabId)
 
     const isInjectedProviderBlocked = useSelector(
       selectIsInjectedProviderBlocked
@@ -153,7 +153,15 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
         }
       }
 
-      // Always keep `urlToLoad` in sync with redux. Skip only when already equal.
+      // Avoid writing the same URL back into WebView when navigation already happened
+      // inside WebView (redirects/SPA transitions). Re-applying source on iOS can
+      // trigger extra loads and amplify redirect chains.
+      const isWebViewDrivenNavigation =
+        !!lastNavStateRef.current.url && lastNavStateRef.current.url === next
+      if (isWebViewDrivenNavigation) {
+        return
+      }
+
       if (next !== urlToLoad) {
         setUrlToLoad(next)
       }
@@ -350,7 +358,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
               break
             }
             case 'log':
-              Logger.trace('------> wrapper.payload', wrapper.payload)
+              Logger.trace('[WebView]', wrapper.payload)
               break
             case 'walletConnect_deeplink_blocked':
               Logger.info(

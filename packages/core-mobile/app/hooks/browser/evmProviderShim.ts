@@ -64,8 +64,8 @@ export function buildEvmProviderShim({
   var _listeners = {};
   var _pendingInteractive = {};
   var INTERACTIVE_METHODS = {
-    'wallet_switchEthereumChain': true,
-    'wallet_addEthereumChain': true
+    'wallet_addEthereumChain': true,
+    'wallet_watchAsset': true
   };
   var _chainId = '${chainId}';
   var _address = '${address}';
@@ -80,7 +80,10 @@ export function buildEvmProviderShim({
     if (!cb) return;
     delete _callbacks[id];
     if (error) {
-      cb.reject(typeof error === 'object' ? error : { code: -32603, message: String(error) });
+      var e = new Error(error.message || 'Unknown error');
+      e.code = error.code;
+      if (error.data !== undefined) { e.data = error.data; }
+      cb.reject(e);
     } else {
       cb.resolve(result);
     }
@@ -171,6 +174,57 @@ export function buildEvmProviderShim({
         return Promise.resolve(perms);
       }
 
+      // wallet_switchEthereumChain: optimistically update local chain state
+      // SYNCHRONOUSLY before the bridge round-trip.  This fires chainChanged
+      // before wagmi sets status:'pending', so ConnectKit re-renders already
+      // see the target chainId and don't call switchChain again — preventing
+      // the React error #185 infinite-loop that occurs over an async bridge.
+      if (method === 'wallet_switchEthereumChain') {
+        if (_pendingInteractive['wallet_switchEthereumChain']) {
+          return Promise.reject({ code: -32002, message: 'wallet_switchEthereumChain already pending' });
+        }
+        var swTargetChainId = (params[0] && params[0].chainId) || null;
+        if (swTargetChainId && swTargetChainId !== _chainId) {
+          _chainId = swTargetChainId;
+          provider.chainId = swTargetChainId;
+          provider.networkVersion = String(parseInt(swTargetChainId, 16));
+          emit('chainChanged', swTargetChainId);
+        }
+        _pendingInteractive['wallet_switchEthereumChain'] = true;
+        var swId = ++_requestId;
+        return new Promise(function(resolve, reject) {
+          _callbacks[swId] = {
+            resolve: function(r) {
+              delete _pendingInteractive['wallet_switchEthereumChain'];
+              resolve(r);
+            },
+            reject: function(e) {
+              delete _pendingInteractive['wallet_switchEthereumChain'];
+              // Do NOT roll back _chainId on rejection. Rolling back fires
+              // chainChanged(original), which ConnectKit's "ensure correct chain"
+              // useEffect sees as a mismatch and re-calls switchChain — producing
+              // React error #185 (infinite update loop). wagmi enters status:'error'
+              // from the 4001 rejection; keeping _chainId at target prevents the
+              // re-trigger. The dApp receives the 4001 and shows its rejection UX.
+              reject(e);
+            }
+          };
+          try {
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+              method: 'provider_request',
+              payload: JSON.stringify({
+                id: swId,
+                origin: window.location.origin,
+                request: { method: method, params: params }
+              })
+            }));
+          } catch(swErr) {
+            delete _pendingInteractive['wallet_switchEthereumChain'];
+            reject({ code: -32603, message: 'Bridge unavailable' });
+          }
+        });
+      }
+
       if (INTERACTIVE_METHODS[method] && _pendingInteractive[method]) {
         return Promise.reject({ code: -32002, message: 'Request of type ' + method + ' already pending for origin. Please wait.' });
       }
@@ -236,15 +290,13 @@ export function buildEvmProviderShim({
     on: function(event, fn) {
       if (!_listeners[event]) _listeners[event] = [];
       _listeners[event].push(fn);
-      // Auto-fire for already-connected state so wagmi's connector
-      // picks up the connection during setup() and triggers auto-connect
-      if (_connected && _accounts.length > 0) {
-        if (event === 'connect') {
-          setTimeout(function() { try { fn({ chainId: _chainId }); } catch(e) {} }, 0);
-        } else if (event === 'accountsChanged') {
-          setTimeout(function() { try { fn(_accounts.slice()); } catch(e) {} }, 0);
-        }
-      }
+      // NOTE: do NOT auto-fire current state to new listeners here.
+      // Auto-firing 'accountsChanged'/'connect' on every on() call causes
+      // wagmi to re-subscribe during its cleanup/setup cycle, which feeds
+      // back into another auto-fire, producing React error #185 (infinite
+      // update loop) when a dApp triggers chain-switch UI.
+      // wagmi discovers initial connection state via eth_accounts /
+      // eth_requestAccounts requests, not via event replays.
       return provider;
     },
     removeListener: function(event, fn) {
