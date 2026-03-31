@@ -555,11 +555,7 @@ export const SwapScreen = (): JSX.Element => {
     if (priceImpactAvailability === PriceImpactAvailability.Calculating) {
       return {
         title: PRICE_IMPACT_ROW_TITLE,
-        value: (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <ActivityIndicator size="small" />
-          </View>
-        )
+        value: <ActivityIndicator size="small" />
       }
     }
 
