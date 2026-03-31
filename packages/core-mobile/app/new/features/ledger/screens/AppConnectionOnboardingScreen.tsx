@@ -15,10 +15,12 @@ import AppConnectionScreen from './AppConnectionScreen'
 
 interface AppConnectionOnboardingScreenProps {
   onNavigateToComplete: () => void
+  showConnectionToasts?: boolean
 }
 
 export const AppConnectionOnboardingScreen = ({
-  onNavigateToComplete
+  onNavigateToComplete,
+  showConnectionToasts = false
 }: AppConnectionOnboardingScreenProps): JSX.Element => {
   const { createLedgerWallet } = useLedgerWallet()
   const { setLedgerAddress } = useSetLedgerAddress()
@@ -120,6 +122,7 @@ export const AppConnectionOnboardingScreen = ({
       disconnectDevice={disconnectDevice}
       accountIndex={0} // intentionally setting it to zero here as this screen is used for importing the wallet for the first time
       showProgressDots={false}
+      showConnectionToasts={showConnectionToasts}
     />
   )
 }
