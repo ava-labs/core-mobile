@@ -1,8 +1,8 @@
 import { renderHook, act } from '@testing-library/react-hooks'
 import { calculatePriceImpactFromQuote } from '@avalabs/fusion-sdk'
-import { usePriceImpact, getPriceImpactSeverity } from './usePriceImpact'
-import type { Quote } from '../types'
 import type { LocalTokenWithBalance } from 'store/balance'
+import type { Quote } from '../types'
+import { usePriceImpact, getPriceImpactSeverity } from './usePriceImpact'
 
 jest.mock('@avalabs/fusion-sdk', () => ({
   calculatePriceImpactFromQuote: jest.fn()
@@ -35,10 +35,6 @@ const makeToken = (
   ({
     priceInCurrency
   } as unknown as LocalTokenWithBalance)
-
-/** Flush all pending microtasks and macrotasks */
-const flushPromises = (): Promise<void> =>
-  new Promise(resolve => setTimeout(resolve, 0))
 
 describe('getPriceImpactSeverity', () => {
   it('returns low when priceImpact is undefined', () => {
@@ -131,26 +127,46 @@ describe('usePriceImpact', () => {
     })
 
     it('returns unavailable when calculatePriceImpactFromQuote returns null', async () => {
-      mockCalculatePriceImpact.mockResolvedValue(null)
+      let resolve!: (v: number | null) => void
+      mockCalculatePriceImpact.mockReturnValue(
+        new Promise(res => {
+          resolve = res
+        })
+      )
 
-      const { result } = renderHook(() =>
+      const { result, waitFor } = renderHook(() =>
         usePriceImpact(makeQuote(), makeToken(1.5), makeToken(1.5))
       )
 
-      await act(flushPromises)
+      resolve(null)
+
+      await waitFor(
+        () => result.current.priceImpactAvailability === 'unavailable',
+        { timeout: 2000 }
+      )
 
       expect(result.current.priceImpact).toBeUndefined()
       expect(result.current.priceImpactAvailability).toBe('unavailable')
     })
 
     it('returns unavailable when calculatePriceImpactFromQuote throws', async () => {
-      mockCalculatePriceImpact.mockRejectedValue(new Error('network error'))
+      let reject!: (e: Error) => void
+      mockCalculatePriceImpact.mockReturnValue(
+        new Promise((_, rej) => {
+          reject = rej
+        })
+      )
 
-      const { result } = renderHook(() =>
+      const { result, waitFor } = renderHook(() =>
         usePriceImpact(makeQuote(), makeToken(1.5), makeToken(1.5))
       )
 
-      await act(flushPromises)
+      reject(new Error('network error'))
+
+      await waitFor(
+        () => result.current.priceImpactAvailability === 'unavailable',
+        { timeout: 2000 }
+      )
 
       expect(result.current.priceImpact).toBeUndefined()
       expect(result.current.priceImpactAvailability).toBe('unavailable')
@@ -158,15 +174,30 @@ describe('usePriceImpact', () => {
   })
 
   describe('ready state', () => {
-    it('converts basis points to percentage', async () => {
-      // 500 bps = 5%
-      mockCalculatePriceImpact.mockResolvedValue(500)
+    async function renderAndResolve(bps: number) {
+      let resolve!: (v: number | null) => void
+      mockCalculatePriceImpact.mockReturnValue(
+        new Promise(res => {
+          resolve = res
+        })
+      )
 
-      const { result } = renderHook(() =>
+      const { result, waitFor } = renderHook(() =>
         usePriceImpact(makeQuote(), makeToken(1.5), makeToken(1.5))
       )
 
-      await act(flushPromises)
+      resolve(bps)
+
+      await waitFor(() => result.current.priceImpactAvailability === 'ready', {
+        timeout: 2000
+      })
+
+      return result
+    }
+
+    it('converts basis points to percentage', async () => {
+      // 500 bps = 5%
+      const result = await renderAndResolve(500)
 
       expect(result.current.priceImpact).toBe(5)
       expect(result.current.priceImpactAvailability).toBe('ready')
@@ -175,13 +206,7 @@ describe('usePriceImpact', () => {
 
     it('clamps negative basis points to 0', async () => {
       // negative bps = favorable swap (output worth more than input)
-      mockCalculatePriceImpact.mockResolvedValue(-200)
-
-      const { result } = renderHook(() =>
-        usePriceImpact(makeQuote(), makeToken(1.5), makeToken(1.5))
-      )
-
-      await act(flushPromises)
+      const result = await renderAndResolve(-200)
 
       expect(result.current.priceImpact).toBe(0)
       expect(result.current.priceImpactAvailability).toBe('ready')
@@ -189,37 +214,19 @@ describe('usePriceImpact', () => {
     })
 
     it('returns low severity for impact below 5%', async () => {
-      mockCalculatePriceImpact.mockResolvedValue(499) // 4.99%
-
-      const { result } = renderHook(() =>
-        usePriceImpact(makeQuote(), makeToken(1.5), makeToken(1.5))
-      )
-
-      await act(flushPromises)
+      const result = await renderAndResolve(499) // 4.99%
 
       expect(result.current.priceImpactSeverity).toBe('low')
     })
 
     it('returns high severity for impact between 5% and 50%', async () => {
-      mockCalculatePriceImpact.mockResolvedValue(2500) // 25%
-
-      const { result } = renderHook(() =>
-        usePriceImpact(makeQuote(), makeToken(1.5), makeToken(1.5))
-      )
-
-      await act(flushPromises)
+      const result = await renderAndResolve(2500) // 25%
 
       expect(result.current.priceImpactSeverity).toBe('high')
     })
 
     it('returns critical severity for impact >= 50%', async () => {
-      mockCalculatePriceImpact.mockResolvedValue(5000) // 50%
-
-      const { result } = renderHook(() =>
-        usePriceImpact(makeQuote(), makeToken(1.5), makeToken(1.5))
-      )
-
-      await act(flushPromises)
+      const result = await renderAndResolve(5000) // 50%
 
       expect(result.current.priceImpactSeverity).toBe('critical')
     })
@@ -227,10 +234,10 @@ describe('usePriceImpact', () => {
 
   describe('cleanup', () => {
     it('does not update state after unmount', async () => {
-      let resolveImpact!: (value: number | null) => void
+      let resolve!: (v: number | null) => void
       mockCalculatePriceImpact.mockReturnValue(
-        new Promise(resolve => {
-          resolveImpact = resolve
+        new Promise(res => {
+          resolve = res
         })
       )
 
@@ -243,8 +250,7 @@ describe('usePriceImpact', () => {
       unmount()
 
       await act(async () => {
-        resolveImpact(1000)
-        await flushPromises()
+        resolve(1000)
       })
 
       // State should remain as 'calculating' — cancelled flag prevents update
@@ -253,20 +259,26 @@ describe('usePriceImpact', () => {
 
     it('ignores stale result when quote changes before promise resolves', async () => {
       let resolveFirst!: (value: number | null) => void
+      let resolveSecond!: (value: number | null) => void
+
       mockCalculatePriceImpact
         .mockReturnValueOnce(
-          new Promise(resolve => {
-            resolveFirst = resolve
+          new Promise(res => {
+            resolveFirst = res
           })
         )
-        .mockResolvedValue(200) // 2% for second call
+        .mockReturnValueOnce(
+          new Promise(res => {
+            resolveSecond = res
+          })
+        )
 
       const quote1 = makeQuote()
       const quote2 = makeQuote()
       const fromToken = makeToken(1.5)
       const toToken = makeToken(1.5)
 
-      const { result, rerender } = renderHook(
+      const { result, rerender, waitFor } = renderHook(
         ({ quote }) => usePriceImpact(quote, fromToken, toToken),
         { initialProps: { quote: quote1 } }
       )
@@ -274,13 +286,14 @@ describe('usePriceImpact', () => {
       // Trigger re-render with new quote — cancels the first calculation
       rerender({ quote: quote2 })
 
-      // Let the second promise resolve
-      await act(flushPromises)
-
       // Resolve the first (now-cancelled) promise — should not affect state
-      await act(async () => {
-        resolveFirst(9999)
-        await flushPromises()
+      resolveFirst(9999)
+
+      // Resolve the second (active) promise with 2%
+      resolveSecond(200)
+
+      await waitFor(() => result.current.priceImpactAvailability === 'ready', {
+        timeout: 2000
       })
 
       // Only the second result (2%) should be reflected
