@@ -438,13 +438,13 @@ export function useEvmInjectedProvider(
       const normalizedParams = Array.isArray(params) ? params : [params]
       const inAppRequest = createInAppRequest(dispatch)
       try {
-        await inAppRequest({
+        const result = await inAppRequest({
           method: 'wallet_watchAsset' as unknown as RpcMethod,
           params: normalizedParams,
           chainId: getEvmCaip2ChainId(browserNetworkRef.current.chainId),
           peerMeta: buildDappPeerMeta()
         })
-        sendResponse(id, null, true)
+        sendResponse(id, null, result)
       } catch (e) {
         // EIP-747: explicit user rejection (4001) returns false; all other
         // errors (invalid params, internal) are surfaced as real RPC errors

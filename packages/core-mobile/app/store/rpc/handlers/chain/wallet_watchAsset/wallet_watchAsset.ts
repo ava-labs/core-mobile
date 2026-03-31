@@ -1,7 +1,7 @@
 import { rpcErrors } from '@metamask/rpc-errors'
 import { ERC20Token, TokenType } from '@avalabs/vm-module-types'
 import { router } from 'expo-router'
-import { addCustomToken } from 'store/customToken/slice'
+import { addCustomToken, selectAllCustomTokens } from 'store/customToken/slice'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { AppListenerEffectAPI } from 'store/types'
 import { RpcMethod, RpcRequest } from '../../../types'
@@ -23,7 +23,7 @@ class WalletWatchAssetHandler
 
   handle = async (
     request: WalletWatchAssetRpcRequest,
-    _listenerApi: AppListenerEffectAPI
+    listenerApi: AppListenerEffectAPI
   ): HandleResponse => {
     const { params } = request.data.params.request
     const result = parseRequestParams(params)
@@ -36,6 +36,17 @@ class WalletWatchAssetHandler
     }
 
     const { address, symbol, decimals, image } = result.data.options
+
+    const caip2ChainId = request.data.params.chainId
+    const chainId = Number(caip2ChainId.split(':')[1])
+    const allCustomTokens = selectAllCustomTokens(listenerApi.getState())
+    const tokensForChain = allCustomTokens[chainId] ?? []
+    const alreadyAdded = tokensForChain.some(
+      t => t.address.toLowerCase() === address.toLowerCase()
+    )
+    if (alreadyAdded) {
+      return { success: true, value: true }
+    }
 
     const token: ERC20Token = {
       type: TokenType.ERC20,
@@ -72,8 +83,16 @@ class WalletWatchAssetHandler
       return { success: false, error: rpcErrors.internal('Invalid chainId') }
     }
 
-    dispatch(addCustomToken({ chainId, token: result.data.token }))
-    return { success: true, value: true }
+    const { token } = result.data
+    const allCustomTokens = selectAllCustomTokens(listenerApi.getState())
+    const tokensForChain = allCustomTokens[chainId] ?? []
+    const alreadyAdded = tokensForChain.some(
+      t => t.address.toLowerCase() === token.address.toLowerCase()
+    )
+    if (!alreadyAdded) {
+      dispatch(addCustomToken({ chainId, token }))
+    }
+    return { success: true, value: !alreadyAdded }
   }
 }
 

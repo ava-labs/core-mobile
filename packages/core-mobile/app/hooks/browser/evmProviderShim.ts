@@ -64,7 +64,8 @@ export function buildEvmProviderShim({
   var _listeners = {};
   var _pendingInteractive = {};
   var INTERACTIVE_METHODS = {
-    'wallet_addEthereumChain': true
+    'wallet_addEthereumChain': true,
+    'wallet_watchAsset': true
   };
   var _chainId = '${chainId}';
   var _address = '${address}';

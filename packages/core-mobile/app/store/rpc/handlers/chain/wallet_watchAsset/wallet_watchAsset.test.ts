@@ -19,7 +19,7 @@ jest.mock(
 
 const mockDispatch = jest.fn()
 const mockListenerApi = {
-  getState: jest.fn(),
+  getState: jest.fn().mockReturnValue({ customToken: { tokens: {} } }),
   dispatch: mockDispatch
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
@@ -51,6 +51,7 @@ const validOptions = {
 describe('wallet_watchAsset handler', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockListenerApi.getState.mockReturnValue({ customToken: { tokens: {} } })
   })
 
   it('contains correct methods', () => {
@@ -265,6 +266,38 @@ describe('wallet_watchAsset handler', () => {
         expect(result.success).toBe(false)
       }
     })
+
+    it('returns success immediately when token is already in custom token store (case-insensitive)', async () => {
+      const checksumAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F'
+      mockListenerApi.getState.mockReturnValue({
+        customToken: {
+          tokens: {
+            1: [
+              {
+                address: checksumAddress.toLowerCase(),
+                symbol: 'DAI',
+                decimals: 18
+              }
+            ]
+          }
+        }
+      })
+      const request = createRequest(
+        [
+          {
+            type: 'ERC20',
+            options: { ...validOptions, address: checksumAddress }
+          }
+        ],
+        'eip155:1'
+      )
+
+      const result = await handler.handle(request, mockListenerApi)
+
+      expect(result).toEqual({ success: true, value: true })
+      expect(walletConnectCache.watchAssetParams.set).not.toHaveBeenCalled()
+      expect(router.navigate).not.toHaveBeenCalled()
+    })
   })
 
   describe('approve', () => {
@@ -335,6 +368,35 @@ describe('wallet_watchAsset handler', () => {
           error: rpcErrors.internal('Invalid approve data')
         })
       }
+      expect(mockDispatch).not.toHaveBeenCalled()
+    })
+
+    it('returns false and skips dispatch when token already exists (case-insensitive)', async () => {
+      const checksumAddress = '0x6B175474E89094C44Da98b954EedeAC495271d0F'
+      mockListenerApi.getState.mockReturnValue({
+        customToken: {
+          tokens: {
+            1: [
+              {
+                address: checksumAddress.toLowerCase(),
+                symbol: 'DAI',
+                decimals: 18
+              }
+            ]
+          }
+        }
+      })
+      const request = createRequest(
+        [{ type: 'ERC20', options: validOptions }],
+        'eip155:1'
+      )
+
+      const result = await handler.approve(
+        { request, data: { token: { ...token, address: checksumAddress } } },
+        mockListenerApi
+      )
+
+      expect(result).toEqual({ success: true, value: false })
       expect(mockDispatch).not.toHaveBeenCalled()
     })
   })
