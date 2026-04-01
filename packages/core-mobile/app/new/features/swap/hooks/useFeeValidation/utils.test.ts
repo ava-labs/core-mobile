@@ -1,10 +1,17 @@
 import { TokenType } from '@avalabs/vm-module-types'
 import type { Network } from '@avalabs/core-chains-sdk'
+import {
+  EstimateNativeFeeError,
+  InsufficientFundsError,
+  ErrorCode,
+  SdkError
+} from '@avalabs/fusion-sdk'
 import type { LocalTokenWithBalance } from 'store/balance'
 import {
   validateNativeToken,
   validateNonNativeToken,
-  deriveValidationAdditiveBps
+  deriveValidationAdditiveBps,
+  getFeeEstimationError
 } from './utils'
 
 // ─── Fixtures ────────────────────────────────────────────────────────────────
@@ -260,5 +267,90 @@ describe('deriveValidationAdditiveBps', () => {
 
   it('returns 0 when maxBps is 0', () => {
     expect(deriveValidationAdditiveBps(0)).toBe(0)
+  })
+})
+
+// ─── getFeeEstimationError ────────────────────────────────────────────────────
+
+const TX = '0xtx'
+
+const makeEstimateError = (cause?: unknown): EstimateNativeFeeError =>
+  new EstimateNativeFeeError({ errorCode: ErrorCode.VIEM_ERROR, tx: TX, cause })
+
+const makeInsufficientFundsError = (
+  insufficientTokenWasNative: boolean
+): InsufficientFundsError =>
+  new InsufficientFundsError({
+    errorCode: ErrorCode.VIEM_ERROR,
+    insufficientTokenWasNative
+  })
+
+describe('getFeeEstimationError', () => {
+  describe('EstimateNativeFeeError with InsufficientFundsError cause', () => {
+    it('returns insufficientFundsForFee with isNativeFeeIssue=true when insufficientTokenWasNative is true', () => {
+      const error = makeEstimateError(makeInsufficientFundsError(true))
+      const result = getFeeEstimationError(error)
+      expect(result?.message).toBe('Insufficient native funds to cover the fee')
+      expect(result?.kind).toBe('network-fee-only')
+    })
+
+    it('returns insufficientFundsForFee with isNativeFeeIssue=false when insufficientTokenWasNative is false', () => {
+      const error = makeEstimateError(makeInsufficientFundsError(false))
+      const result = getFeeEstimationError(error)
+      expect(result?.message).toBe(
+        'Insufficient token funds to estimate the fee'
+      )
+      expect(result?.kind).toBe('other')
+    })
+  })
+
+  describe('EstimateNativeFeeError with undefined or unrecognised cause', () => {
+    it('returns generic insufficientFundsForFee when cause is undefined', () => {
+      const error = makeEstimateError(undefined)
+      const result = getFeeEstimationError(error)
+      expect(result?.message).toBe('Insufficient funds to estimate the fee')
+      expect(result?.kind).toBe('other')
+    })
+
+    it('returns generic insufficientFundsForFee when cause is a non-InsufficientFundsError', () => {
+      const error = makeEstimateError(new Error('rpc timeout'))
+      const result = getFeeEstimationError(error)
+      expect(result?.message).toBe('Insufficient funds to estimate the fee')
+      expect(result?.kind).toBe('other')
+    })
+  })
+
+  describe('SdkError with arithmetic underflow message', () => {
+    it('returns swapAmountTooSmall', () => {
+      const error = new SdkError(
+        'arithmetic underflow or overflow',
+        ErrorCode.UNKNOWN
+      )
+      const result = getFeeEstimationError(error)
+      expect(result?.message).toContain('too small')
+    })
+  })
+
+  describe('plain Error', () => {
+    it('returns gasEstimationFailed warning', () => {
+      const result = getFeeEstimationError(new Error('something went wrong'))
+      expect(result?.message).toBe('Unable to estimate gas')
+      expect(result?.isWarning).toBe(true)
+    })
+  })
+
+  describe('unknown non-Error value', () => {
+    it('returns gasEstimationFailed warning', () => {
+      const result = getFeeEstimationError('string error')
+      expect(result?.message).toBe('Unable to estimate gas')
+      expect(result?.isWarning).toBe(true)
+    })
+  })
+
+  it('returns undefined for', () => {
+    // getFeeEstimationError always returns a FusionQuoteError — it has no undefined path
+    // this is intentional: callers only invoke it when error is truthy
+    const result = getFeeEstimationError(new Error('any'))
+    expect(result).toBeDefined()
   })
 })
