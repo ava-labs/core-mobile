@@ -1226,6 +1226,64 @@ class LedgerService {
     }
   }
 
+  /**
+   * Derive Avalanche keys for a range of account indices (0 to count-1).
+   * Returns an array where each element is the AvalancheKey for that index,
+   * or null if derivation failed for that index.
+   * Throws if index 0 fails (index 0 is required).
+   */
+  async getAvalancheKeysForRange(
+    count: number,
+    isTestnet: boolean,
+    derivationPath: LedgerDerivationPathType = LedgerDerivationPathType.BIP44
+  ): Promise<(AvalancheKey | null)[]> {
+    const results: (AvalancheKey | null)[] = []
+
+    for (let i = 0; i < count; i++) {
+      try {
+        const keys = await this.getAvalancheKeys(i, isTestnet, derivationPath)
+        results.push(keys)
+      } catch (error) {
+        if (i === 0) {
+          throw error
+        }
+        Logger.error(
+          `Failed to derive Avalanche keys for index ${i}, skipping`,
+          error
+        )
+        results.push(null)
+      }
+    }
+
+    return results
+  }
+
+  /**
+   * Derive Solana keys for a range of account indices (0 to count-1).
+   * Returns an array where each element is the PublicKeyInfo[] for that index,
+   * or null if derivation failed.
+   */
+  async getSolanaKeysForRange(
+    count: number
+  ): Promise<(PublicKeyInfo[] | null)[]> {
+    const results: (PublicKeyInfo[] | null)[] = []
+
+    for (let i = 0; i < count; i++) {
+      try {
+        const keys = await this.getSolanaKeys(i)
+        results.push(keys)
+      } catch (error) {
+        Logger.error(
+          `Failed to derive Solana keys for index ${i}, skipping`,
+          error
+        )
+        results.push(null)
+      }
+    }
+
+    return results
+  }
+
   // Helper to build the “open app” APDU for a given app name
   buildOpenAppApdu(appName: string): Buffer {
     const cla = 0xe0
