@@ -133,7 +133,6 @@ export function buildEvmProviderShim({
   // ──────────────────────────────────────────────
   var provider = {
     isMetaMask: true,
-    isCore: true,
     isAvalanche: true,
     _isConnected: _connected,
 
@@ -160,20 +159,15 @@ export function buildEvmProviderShim({
       }
       if (method === 'eth_requestAccounts') {
         if (!_address) return Promise.reject({ code: 4100, message: 'No account available' });
-        _connected = true;
-        provider._isConnected = true;
         _accounts = [_address];
         provider.selectedAddress = _address;
         setTimeout(function() {
-          emit('connect', { chainId: _chainId });
           emit('accountsChanged', _accounts);
         }, 0);
         return Promise.resolve([_address]);
       }
       if (method === 'wallet_requestPermissions') {
         if (!_address) return Promise.reject({ code: 4100, message: 'No account available' });
-        _connected = true;
-        provider._isConnected = true;
         _accounts = [_address];
         provider.selectedAddress = _address;
         setTimeout(function() { emit('accountsChanged', _accounts); }, 0);
@@ -190,6 +184,12 @@ export function buildEvmProviderShim({
           caveats: [{ type: 'restrictReturnedAccounts', value: [_address] }]
         }] : [];
         return Promise.resolve(perms);
+      }
+      if (method === 'wallet_revokePermissions') {
+        _accounts = [];
+        provider.selectedAddress = null;
+        setTimeout(function() { emit('accountsChanged', []); }, 0);
+        return Promise.resolve(null);
       }
 
       // wallet_switchEthereumChain: optimistically update local chain state
@@ -364,8 +364,7 @@ export function buildEvmProviderShim({
     configurable: false
   });
 
-  // window.core — RainbowKit/wagmi Core wallet connectors look for
-  // window.core?.ethereum to get the provider
+  // window.core — some dApps check window.core?.ethereum for Core wallet
   var coreNamespace = { ethereum: provider, isCore: true };
   Object.defineProperty(window, 'core', {
     get: function() { return coreNamespace; },
@@ -373,7 +372,7 @@ export function buildEvmProviderShim({
     configurable: false
   });
 
-  // window.avalanche — fallback used by some Core wallet connectors
+  // window.avalanche — legacy Core wallet detection used by some dApps
   Object.defineProperty(window, 'avalanche', {
     get: function() { return provider; },
     set: function() {},

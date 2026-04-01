@@ -83,12 +83,12 @@ describe('buildEvmProviderShim', () => {
       expect(shim).toContain('isMetaMask: true')
     })
 
-    it('sets isCore flag', () => {
-      expect(shim).toContain('isCore: true')
+    it('sets isAvalanche flag (prevents wagmi MetaMask connector from claiming our provider)', () => {
+      expect(shim).toContain('isAvalanche: true')
     })
 
-    it('sets isAvalanche flag', () => {
-      expect(shim).toContain('isAvalanche: true')
+    it('sets isCore flag on window.core namespace', () => {
+      expect(shim).toContain('isCore: true')
     })
 
     it('implements request method', () => {
@@ -119,7 +119,8 @@ describe('buildEvmProviderShim', () => {
       'eth_coinbase',
       'eth_requestAccounts',
       'wallet_requestPermissions',
-      'wallet_getPermissions'
+      'wallet_getPermissions',
+      'wallet_revokePermissions'
     ])('handles %s locally', method => {
       expect(shim).toContain(`method === '${method}'`)
     })
