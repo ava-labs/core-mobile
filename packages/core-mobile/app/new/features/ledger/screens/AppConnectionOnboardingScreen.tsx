@@ -1,17 +1,19 @@
 import React, { useCallback } from 'react'
 import Logger from 'utils/Logger'
-import { useSelector } from 'react-redux'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { Alert } from 'react-native'
 import LedgerService from 'services/ledger/LedgerService'
 import {
   LedgerDerivationPathType,
-  LedgerKeysByNetwork
+  LedgerMultiIndexKeys
 } from 'services/ledger/types'
 import { useRouter } from 'expo-router'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useLedgerSetupContext } from '../contexts/LedgerSetupContext'
 import { useSetLedgerAddress } from '../hooks/useSetLedgerAddress'
+import {
+  getActiveAccountIndices,
+  LedgerDerivedAccount
+} from '../utils/discoverLedgerAccounts'
 import AppConnectionScreen from './AppConnectionScreen'
 
 interface AppConnectionOnboardingScreenProps {
@@ -25,9 +27,8 @@ export const AppConnectionOnboardingScreen = ({
   showConnectionToasts,
   showCancelOnComplete
 }: AppConnectionOnboardingScreenProps): JSX.Element => {
-  const { createLedgerWallet } = useLedgerWallet()
-  const { setLedgerAddress } = useSetLedgerAddress()
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const { createLedgerWalletWithDiscovery } = useLedgerWallet()
+  const { setLedgerAddressesForMultipleAccounts } = useSetLedgerAddress()
   const { canGoBack, back } = useRouter()
 
   const {
@@ -47,37 +48,71 @@ export const AppConnectionOnboardingScreen = ({
   }, [disconnectDevice, canGoBack, back])
 
   const handleComplete = useCallback(
-    async (keys: LedgerKeysByNetwork) => {
-      const keysByNetwork = isDeveloperMode ? keys.testnet : keys.mainnet
+    async (multiIndexKeys: LedgerMultiIndexKeys) => {
+      const hasAnyKeys = Object.values(multiIndexKeys.mainnet).some(
+        keys => keys.avalancheKeys !== undefined
+      )
+
+      Logger.info('handleComplete called', {
+        hasAnyKeys,
+        mainnetIndexCount: Object.keys(multiIndexKeys.mainnet).length,
+        hasConnectedDeviceId: !!connectedDeviceId,
+        hasSelectedDerivationPath: !!selectedDerivationPath,
+        isUpdatingWallet
+      })
 
       // If wallet hasn't been created yet, create it now
       if (
-        keysByNetwork.avalancheKeys &&
+        hasAnyKeys &&
         connectedDeviceId &&
         selectedDerivationPath &&
         !isUpdatingWallet
       ) {
-        Logger.info('All conditions met, creating wallet...')
+        Logger.info('All conditions met, creating wallet with discovery...')
         setIsUpdatingWallet(true)
 
         try {
-          const { walletId, accountId } = await createLedgerWallet({
-            deviceId: connectedDeviceId,
-            deviceName: connectedDeviceName,
-            derivationPathType: selectedDerivationPath,
-            avalancheKeys: keysByNetwork.avalancheKeys,
-            solanaKeys: keysByNetwork.solanaKeys
-          })
+          // Convert multi-index keys to LedgerDerivedAccount[] for activity check
+          const derivedAccounts: LedgerDerivedAccount[] = Object.entries(
+            multiIndexKeys.mainnet
+          )
+            .filter(([_, keys]) => keys.avalancheKeys !== undefined)
+            .map(([indexStr, keys]) => ({
+              index: Number(indexStr),
+              addressC: keys.avalancheKeys!.addresses.evm,
+              addressBTC: keys.avalancheKeys!.addresses.btc,
+              xpubXP: keys.avalancheKeys!.xpubs.avalanche,
+              addressSVM: keys.solanaKeys?.[0]?.key
+            }))
 
-          await setLedgerAddress({
-            accountIndex: 0,
-            walletId,
-            accountId,
-            keys
-          })
+          // Determine which account indices have on-chain activity
+          const activeIndices = await getActiveAccountIndices(derivedAccounts)
+          Logger.info('Active account indices discovered', { activeIndices })
+
+          // Create wallet with all active accounts
+          const { walletId, createdAccounts } =
+            await createLedgerWalletWithDiscovery({
+              deviceId: connectedDeviceId,
+              deviceName: connectedDeviceName,
+              derivationPathType: selectedDerivationPath,
+              multiIndexKeys,
+              activeIndices
+            })
+
+          // Store ledger addresses for all created accounts
+          await setLedgerAddressesForMultipleAccounts(
+            createdAccounts.map(({ accountId, accountIndex }) => ({
+              walletId,
+              accountId,
+              accountIndex,
+              mainnetKeys: multiIndexKeys.mainnet[accountIndex],
+              testnetKeys: multiIndexKeys.testnet[accountIndex]
+            }))
+          )
 
           Logger.info(
-            'Wallet created successfully, navigating to complete screen'
+            'Wallet created successfully with discovered accounts, navigating to complete screen',
+            { accountCount: createdAccounts.length }
           )
           // Stop polling since we no longer need app detection
           LedgerService.stopAppPolling()
@@ -97,7 +132,7 @@ export const AppConnectionOnboardingScreen = ({
       } else {
         const errorMsg = 'Ledger wallet creation conditions not met'
         Logger.error(errorMsg, {
-          hasAvalancheKeys: !!keysByNetwork.avalancheKeys,
+          hasAnyKeys,
           hasConnectedDeviceId: !!connectedDeviceId,
           hasSelectedDerivationPath: !!selectedDerivationPath,
           isUpdatingWallet
@@ -114,10 +149,9 @@ export const AppConnectionOnboardingScreen = ({
       selectedDerivationPath,
       isUpdatingWallet,
       setIsUpdatingWallet,
-      createLedgerWallet,
+      createLedgerWalletWithDiscovery,
       connectedDeviceName,
-      setLedgerAddress,
-      isDeveloperMode,
+      setLedgerAddressesForMultipleAccounts,
       onNavigateToComplete,
       handleCancel
     ]
