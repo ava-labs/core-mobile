@@ -103,8 +103,8 @@ export const AppConnectionOnboardingScreen = ({
           isUpdatingWallet
         })
         Alert.alert(
-          'Wallet Setup Failed',
-          'Unable to complete ledger wallet setup. Please restart the setup process.',
+          'Wallet setup failed',
+          'Unable to complete Ledger wallet setup. Please restart the setup process.',
           [{ text: 'OK', onPress: handleCancel }]
         )
       }
