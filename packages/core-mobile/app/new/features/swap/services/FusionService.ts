@@ -1,6 +1,11 @@
-import type { CompletedTransfer, FailedTransfer, RefundedTransfer } from '@avalabs/fusion-sdk'
+import type {
+  CompletedTransfer,
+  FailedTransfer,
+  RefundedTransfer
+} from '@avalabs/fusion-sdk'
 import {
   BitcoinFunctions,
+  calculatePriceImpactFromQuote as _calculatePriceImpactFromQuote,
   createTransferManager,
   Environment,
   EstimateNativeFeeOptions,
@@ -17,13 +22,12 @@ import {
   TransferManager,
   Fetch
 } from '@avalabs/fusion-sdk'
+import { bigintToBig } from '@avalabs/core-utils-sdk'
 import { FeatureGates } from 'services/posthog/types'
 import Logger from 'utils/Logger'
 import { fusionErrors } from '../utils/fusionErrors'
 import { MARKR_EVM_PARTNER_ID } from '../consts'
-import {
-  isConcludedTransfer,
-} from '../utils/transferStatus'
+import { isConcludedTransfer } from '../utils/transferStatus'
 import type {
   FusionConfig,
   FusionServiceFlags,
@@ -178,12 +182,17 @@ class FusionService implements IFusionService {
         enabledServices: config.enabledServices
       })
     } catch (error) {
-      Logger.error(`Failed to initialize Fusion service: ${error instanceof Error ? error.message : 'Unknown error'}`, {
-        error,
-        environment: config.environment,
-        enabledServices: config.enabledServices
-      })
-     
+      Logger.error(
+        `Failed to initialize Fusion service: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+        {
+          error,
+          environment: config.environment,
+          enabledServices: config.enabledServices
+        }
+      )
+
       throw error
     }
   }
@@ -268,7 +277,10 @@ class FusionService implements IFusionService {
    * @param estimateGasMarginBps Margin in basis points added to the gas estimate to reduce out-of-gas risk
    * @returns Transfer object with status and transaction details
    */
-  async transferAsset(quote: Quote, estimateGasMarginBps: number): Promise<Transfer> {
+  async transferAsset(
+    quote: Quote,
+    estimateGasMarginBps: number
+  ): Promise<Transfer> {
     try {
       Logger.info('Executing transfer with quote:', {
         aggregator: quote.aggregator.name,
@@ -352,6 +364,32 @@ class FusionService implements IFusionService {
     props: GetMinimumTransferAmountProps
   ): Promise<{ [key in ServiceType]?: bigint } | null> {
     return this.transferManager.getMinimumTransferAmount(props)
+  }
+
+  /**
+   * Calculate price impact for the given quote.
+   * Returns basis points (bps) or null if the SDK cannot determine the impact.
+   * @param quote The quote to evaluate
+   * @param sourcePrice USD price per unit of the source token
+   * @param targetPrice USD price per unit of the target token
+   */
+  async calculatePriceImpactFromQuote(
+    quote: Quote,
+    sourcePrice: number,
+    targetPrice: number
+  ): Promise<number | null> {
+    return _calculatePriceImpactFromQuote(quote, async (input, output) => {
+      const inputAmount = bigintToBig(
+        input.amount,
+        input.asset.decimals
+      ).toNumber()
+      const outputAmount = bigintToBig(
+        output.amount,
+        output.asset.decimals
+      ).toNumber()
+
+      return [inputAmount * sourcePrice, outputAmount * targetPrice]
+    })
   }
 
   /**

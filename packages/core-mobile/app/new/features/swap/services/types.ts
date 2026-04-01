@@ -119,6 +119,19 @@ export interface IFusionService {
   ): Promise<{ [key in ServiceType]?: bigint } | null>
 
   /**
+   * Calculate price impact for the given quote.
+   * Returns basis points (bps) or null if unavailable.
+   * @param quote The quote to evaluate
+   * @param sourcePrice USD price per unit of the source token
+   * @param targetPrice USD price per unit of the target token
+   */
+  calculatePriceImpactFromQuote(
+    quote: Quote,
+    sourcePrice: number,
+    targetPrice: number
+  ): Promise<number | null>
+
+  /**
    * Cleanup and reset the service
    */
   cleanup(): void
