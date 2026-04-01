@@ -55,7 +55,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
       }
       const keysByNetwork = isDeveloperMode ? keys.testnet : keys.mainnet
       if (
-        keysByNetwork.avalancheKeys &&
+        keysByNetwork?.avalancheKeys &&
         device &&
         wallet &&
         accounts?.length > 0 &&

@@ -14,6 +14,8 @@ import {
   GetBalancesResponse,
   SvmGetBalancesRequestItem
 } from 'utils/api/generated/balanceApi.client'
+import ModuleManager from 'vmModule/ModuleManager'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import Logger from 'utils/Logger'
 
 const DISCOVERY_BALANCE_CURRENCY = 'usd'
@@ -313,7 +315,42 @@ export const getActiveAccountIndices = async (
       'Failed to check Ledger account activity via Balance API',
       error
     )
-    return [0]
+  }
+
+  // For EVM addresses not detected by balance, check C-Chain transaction history.
+  // This catches accounts that had past activity but now have zero balance.
+  try {
+    const inactiveEvmAccounts = accounts.filter(
+      a => a.addressC && !activeIndicesSet.has(a.index)
+    )
+
+    if (inactiveEvmAccounts.length > 0) {
+      await ModuleManager.init()
+      const evmModule = await ModuleManager.loadModuleByNetwork(
+        AVALANCHE_MAINNET_NETWORK
+      )
+      const evmNetwork = mapToVmNetwork(AVALANCHE_MAINNET_NETWORK)
+
+      for (const account of inactiveEvmAccounts) {
+        try {
+          const response = await evmModule.getTransactionHistory({
+            network: evmNetwork,
+            address: account.addressC,
+            offset: 1
+          })
+          if (response.transactions.length > 0) {
+            activeIndicesSet.add(account.index)
+          }
+        } catch {
+          // Skip this account on failure — treat as inactive
+        }
+      }
+    }
+  } catch (error) {
+    Logger.error(
+      'Failed to check C-Chain transaction history during discovery',
+      error
+    )
   }
 
   // Always include index 0

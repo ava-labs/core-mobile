@@ -47,6 +47,17 @@ jest.mock('services/network/consts', () => ({
   }
 }))
 
+jest.mock('vmModule/ModuleManager', () => ({
+  init: jest.fn(),
+  loadModuleByNetwork: jest.fn(() => ({
+    getTransactionHistory: jest.fn().mockResolvedValue({ transactions: [] })
+  }))
+}))
+
+jest.mock('vmModule/utils/mapToVmNetwork', () => ({
+  mapToVmNetwork: jest.fn(() => ({ chainId: 43114 }))
+}))
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -399,8 +410,9 @@ describe('AppConnectionOnboardingScreen – discovery integration', () => {
 
     const result = await getActiveAccountIndices(accounts)
 
-    // On API failure, the function falls back to [0] regardless of partial data
-    expect(result).toEqual([0])
+    // Partial data from before the error is preserved — indices 0 and 2
+    // were detected as active, so the result is contiguous [0, 1, 2]
+    expect(result).toEqual([0, 1, 2])
 
     // Verify the error was logged
     expect(Logger.error).toHaveBeenCalledWith(

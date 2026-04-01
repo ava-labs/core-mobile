@@ -5,7 +5,7 @@ import {
   LedgerDerivationPathType,
   LedgerKeys,
   LedgerMultiIndexKeys,
-  LedgerTransportState,
+  PublicKeyInfo,
   WalletCreationOptions,
   WalletUpdateOptions,
   WalletUpdateSolanaOptions
@@ -320,8 +320,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           number,
           { evm: string; avalanche: string }
         > = {}
-        const publicKeys: Record<number, Array<{ key: string; type: string }>> =
-          {}
+        const publicKeys: Record<number, PublicKeyInfo[]> = {}
 
         for (const index of activeIndices) {
           const mainnetKeys = multiIndexKeys.mainnet[index]
@@ -351,10 +350,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
               pk !== undefined && arr.findIndex(k => k?.key === pk.key) === idx
           )
 
-          publicKeys[index] = uniqueKeys as Array<{
-            key: string
-            type: string
-          }>
+          publicKeys[index] = uniqueKeys as PublicKeyInfo[]
         }
 
         // Store the wallet secret with all xpubs/publicKeys
@@ -433,9 +429,21 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           `Ledger wallet created with ${createdAccounts.length} accounts:`,
           newWalletId
         )
-        showSnackbar('Ledger wallet created successfully!')
+        AnalyticsService.capture(
+          walletState === WalletState.NONEXISTENT
+            ? 'OnboardingLedgerWalletAdded'
+            : 'WalletImportLedgerWalletAdded'
+        )
+        if (walletState !== WalletState.NONEXISTENT) {
+          showSnackbar('Ledger wallet created successfully!')
+        }
         return { walletId: newWalletId, createdAccounts }
       } catch (error) {
+        AnalyticsService.capture(
+          walletState === WalletState.NONEXISTENT
+            ? 'OnboardingLedgerWalletAddFailed'
+            : 'WalletImportLedgerWalletAddFailed'
+        )
         Logger.error(
           'Failed to create Ledger wallet with discovery:',
           error

@@ -48,6 +48,20 @@ jest.mock('services/network/consts', () => ({
   }
 }))
 
+const mockGetTransactionHistory = jest.fn()
+
+jest.mock('vmModule/ModuleManager', () => ({
+  init: jest.fn(),
+  loadModuleByNetwork: jest.fn(() => ({
+    getTransactionHistory: (...args: unknown[]) =>
+      mockGetTransactionHistory(...args)
+  }))
+}))
+
+jest.mock('vmModule/utils/mapToVmNetwork', () => ({
+  mapToVmNetwork: jest.fn(() => ({ chainId: 43114 }))
+}))
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -114,6 +128,8 @@ const makeEvmResponse = (
 describe('discoverLedgerAccounts', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    // Default: no transaction history
+    mockGetTransactionHistory.mockResolvedValue({ transactions: [] })
   })
 
   describe('buildLedgerBalanceRequestItems', () => {
@@ -257,6 +273,52 @@ describe('discoverLedgerAccounts', () => {
         (async function* () {
           throw new Error('Network error')
         })()
+      )
+
+      const result = await getActiveAccountIndices(accounts)
+      expect(result).toEqual([0])
+    })
+
+    it('detects accounts with zero balance but past C-Chain transaction history', async () => {
+      const accounts = [makeAccount(0), makeAccount(1), makeAccount(2)]
+
+      // All balances are zero
+      mockGetBalances.mockReturnValue(
+        createAsyncGenerator([
+          makeEvmResponse('0xEVM0', '0'),
+          makeEvmResponse('0xEVM1', '0'),
+          makeEvmResponse('0xEVM2', '0')
+        ])
+      )
+
+      // But index 2 has past transaction history
+      mockGetTransactionHistory.mockImplementation(
+        async ({ address }: { address: string }) => {
+          if (address === '0xEVM2') {
+            return { transactions: [{ hash: '0xabc' }] }
+          }
+          return { transactions: [] }
+        }
+      )
+
+      const result = await getActiveAccountIndices(accounts)
+      // Index 2 has history -> contiguous 0, 1, 2
+      expect(result).toEqual([0, 1, 2])
+    })
+
+    it('returns [0] when both balance and tx history checks fail', async () => {
+      const accounts = [makeAccount(0), makeAccount(1)]
+
+      // Balance API fails
+      mockGetBalances.mockReturnValue(
+        (async function* () {
+          throw new Error('Network error')
+        })()
+      )
+
+      // Tx history also fails
+      mockGetTransactionHistory.mockRejectedValue(
+        new Error('Module init failed')
       )
 
       const result = await getActiveAccountIndices(accounts)
