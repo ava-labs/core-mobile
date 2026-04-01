@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
 import { StorageKey } from 'resources/Constants'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
 import BiometricsSDK, { BiometricType } from 'utils/BiometricsSDK'
+import { selectWalletState } from 'store/app/slice'
+import { WalletState } from 'store/app/types'
 
 export const useStoredBiometrics = (): {
   /** Whether biometric authentication is currently enabled by the user */
@@ -14,6 +17,7 @@ export const useStoredBiometrics = (): {
   /** The type of biometric authentication available on the device (e.g. fingerprint, face) */
   biometricType: BiometricType
 } => {
+  const walletState = useSelector(selectWalletState)
   const [isBiometricAvailable, setIsBiometricAvailable] = useState(false)
   const [useBiometrics, setUseBiometrics] = useState(true)
   const [biometricType, setBiometricType] = useState<BiometricType>(
@@ -26,22 +30,23 @@ export const useStoredBiometrics = (): {
       setBiometricType(type)
     }
     getBiometryType().catch(Logger.error)
-  }, [])
-
-  useEffect(() => {
     BiometricsSDK.canUseBiometry()
       .then((canUseBiometry: boolean) => {
         setIsBiometricAvailable(canUseBiometry)
       })
       .catch(Logger.error)
+  }, [])
 
+  useEffect(() => {
     const type = commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
     if (type) {
       setUseBiometrics(type === 'BIO')
-    } else {
+    } else if (walletState !== WalletState.NONEXISTENT) {
+      // key is legitimately absent during onboarding (NONEXISTENT), so only
+      // log an error for already-onboarded users where the missing key is unexpected
       Logger.error('Secure access type not found')
     }
-  }, [])
+  }, [walletState])
 
   return {
     useBiometrics,
