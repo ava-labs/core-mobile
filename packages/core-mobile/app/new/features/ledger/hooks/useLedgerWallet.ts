@@ -1,6 +1,6 @@
 import { showSnackbar } from 'new/common/utils/toast'
 import { useCallback, useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   LedgerDerivationPathType,
   LedgerKeys,
@@ -10,6 +10,8 @@ import {
 } from 'services/ledger/types'
 import { WalletType } from 'services/wallet/types'
 import { PrimaryAccount, setAccount, setActiveAccountId } from 'store/account'
+import { selectWalletState } from 'store/app'
+import { WalletState } from 'store/app/types'
 import { AppThunkDispatch } from 'store/types'
 import { setActiveWallet } from 'store/wallet/slice'
 import { storeWallet } from 'store/wallet/thunks'
@@ -17,6 +19,7 @@ import Logger from 'utils/Logger'
 import { uuid } from 'utils/uuid'
 import { CoreAccountType } from '@avalabs/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { LedgerWalletSecretSchema } from '../utils'
 import { useLedgerWalletMap } from '../store'
 
@@ -38,6 +41,7 @@ export interface UseLedgerWalletReturn {
 export function useLedgerWallet(): UseLedgerWalletReturn {
   const { setLedgerWalletMap } = useLedgerWalletMap()
   const dispatch = useDispatch<AppThunkDispatch>()
+  const walletState = useSelector(selectWalletState)
   const [isLoading, setIsLoading] = useState(false)
 
   const createLedgerWallet = useCallback(
@@ -127,16 +131,28 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         dispatch(setActiveAccountId(newAccountId))
 
         Logger.info('Ledger wallet created successfully:', newWalletId)
-        showSnackbar('Ledger wallet created successfully!')
+        AnalyticsService.capture(
+          walletState === WalletState.NONEXISTENT
+            ? 'OnboardingLedgerWalletAdded'
+            : 'WalletImportLedgerWalletAdded'
+        )
+        if (walletState !== WalletState.NONEXISTENT) {
+          showSnackbar('Ledger wallet created successfully!')
+        }
         return { walletId: newWalletId, accountId: newAccountId }
       } catch (error) {
+        AnalyticsService.capture(
+          walletState === WalletState.NONEXISTENT
+            ? 'OnboardingLedgerWalletAddFailed'
+            : 'WalletImportLedgerWalletAddFailed'
+        )
         Logger.error('Failed to create Ledger wallet:', error)
         throw error
       } finally {
         setIsLoading(false)
       }
     },
-    [dispatch, setLedgerWalletMap]
+    [dispatch, setLedgerWalletMap, walletState]
   )
 
   const createLedgerAccount = useCallback(
@@ -242,9 +258,11 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         dispatch(setActiveAccountId(newAccountId))
 
         Logger.info('Account created successfully')
+        AnalyticsService.capture('WalletImportLedgerAccountAdded')
         showSnackbar('Account created successfully!')
         return { walletId, accountId: newAccountId }
       } catch (error) {
+        AnalyticsService.capture('WalletImportLedgerAccountAddFailed')
         Logger.error('Failed to create account:', error)
         throw error
       } finally {
@@ -321,15 +339,26 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         dispatch(setAccount(updatedAccount))
 
         Logger.info('Solana address derived successfully')
+        AnalyticsService.capture(
+          walletState === WalletState.NONEXISTENT
+            ? 'OnboardingLedgerSolanaKeysDerived'
+            : 'WalletImportLedgerSolanaKeysDerived'
+        )
+
         showSnackbar('Solana address derived successfully!')
       } catch (error) {
         Logger.error('Failed to derive Solana address:', error)
+        AnalyticsService.capture(
+          walletState === WalletState.NONEXISTENT
+            ? 'OnboardingLedgerSolanaKeysDerivedFailed'
+            : 'WalletImportLedgerSolanaKeysDerivedFailed'
+        )
         throw error
       } finally {
         setIsLoading(false)
       }
     },
-    [dispatch]
+    [dispatch, walletState]
   )
 
   return {

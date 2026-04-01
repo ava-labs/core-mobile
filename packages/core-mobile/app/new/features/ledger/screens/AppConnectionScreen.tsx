@@ -3,7 +3,6 @@ import { ProgressDots } from 'common/components/ProgressDots'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { showSnackbar } from 'common/utils/toast'
-import { useRouter } from 'expo-router'
 import {
   AppConnectionStep,
   LedgerAppConnection
@@ -34,21 +33,24 @@ export default function AppConnectionScreen({
   handleComplete,
   deviceId,
   deviceName = 'Ledger Device',
-  disconnectDevice,
+  handleCancel,
   accountIndex,
-  showProgressDots = true
+  showProgressDots = true,
+  showConnectionToasts,
+  showCancelOnComplete
 }: {
   selectedDerivationPath?: LedgerDerivationPathType
   completeStepTitle: string
   isUpdatingWallet: boolean
   deviceId?: string | null
   deviceName?: string
-  disconnectDevice: () => Promise<void>
+  handleCancel: () => Promise<void>
   handleComplete: (keys: LedgerKeysByNetwork) => Promise<void>
   accountIndex: number
   showProgressDots?: boolean
+  showConnectionToasts: boolean
+  showCancelOnComplete: boolean
 }): JSX.Element {
-  const { back } = useRouter()
   const headerHeight = useEffectiveHeaderHeight()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
@@ -70,11 +72,6 @@ export default function AppConnectionScreen({
   const [currentAppConnectionStep, setAppConnectionStep] =
     useState<AppConnectionStep>(AppConnectionStep.AVALANCHE_CONNECT)
   const [skipSolana, setSkipSolana] = useState(false)
-
-  const handleCancel = useCallback(async () => {
-    await disconnectDevice()
-    back()
-  }, [disconnectDevice, back])
 
   const progressDotsCurrentStep = useMemo(() => {
     if (isSolanaSupportBlocked) {
@@ -190,7 +187,7 @@ export default function AppConnectionScreen({
       })
 
       // Show success toast notification
-      showSnackbar('Avalanche app connected')
+      if (showConnectionToasts) showSnackbar('Avalanche app connected')
       // if get avalanche keys succeeds move forward to solana connect
       setAppConnectionStep(
         isSolanaSupportBlocked
@@ -227,7 +224,8 @@ export default function AppConnectionScreen({
     deviceId,
     isDeveloperMode,
     isSolanaSupportBlocked,
-    selectedDerivationPath
+    selectedDerivationPath,
+    showConnectionToasts
   ])
 
   const handleConnectSolana = useCallback(async () => {
@@ -255,7 +253,7 @@ export default function AppConnectionScreen({
       }))
 
       // Show success toast notification
-      showSnackbar('Solana app connected')
+      if (showConnectionToasts) showSnackbar('Solana app connected')
 
       // Skip success step and go directly to complete
       setAppConnectionStep(AppConnectionStep.COMPLETE)
@@ -284,7 +282,7 @@ export default function AppConnectionScreen({
         [{ text: 'OK' }]
       )
     }
-  }, [accountIndex, deviceId])
+  }, [accountIndex, deviceId, showConnectionToasts])
 
   const handleSkipSolana = useCallback(() => {
     // Skip Solana and proceed to complete step
@@ -341,10 +339,12 @@ export default function AppConnectionScreen({
           onPress: () => handleComplete(keys),
           disable: isUpdatingWallet
         }
-        secondary = {
-          text: 'Cancel',
-          onPress: handleCancel,
-          disable: isUpdatingWallet
+        if (showCancelOnComplete) {
+          secondary = {
+            text: 'Cancel',
+            onPress: handleCancel,
+            disable: isUpdatingWallet
+          }
         }
         break
     }
@@ -378,7 +378,8 @@ export default function AppConnectionScreen({
     handleSkipSolana,
     hasDeviceId,
     isUpdatingWallet,
-    keys
+    keys,
+    showCancelOnComplete
   ])
 
   return (

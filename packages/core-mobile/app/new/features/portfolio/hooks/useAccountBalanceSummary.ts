@@ -24,7 +24,8 @@ export function useAccountBalanceSummary(
     refetchInterval?: number | false
   }
 ): AccountBalanceSummary {
-  const { data, isLoading, isRefetching } = useAccountBalances(account, options)
+  const { data, isLoading, isRefetching, isError, isOffline } =
+    useAccountBalances(account, options)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const enabledChainIds = useSelector(selectEnabledChainIds)
   const networks = useSelector(selectEnabledNetworksMap)
@@ -43,11 +44,13 @@ export function useAccountBalanceSummary(
       }
     }
 
-    const isBalanceLoaded = data.length > 0
+    const isBalanceLoaded = data.length > 0 || isError || isOffline
     const isAllBalancesInaccurate =
-      isBalanceLoaded && data.every(balance => balance.dataAccurate === false)
+      data.length > 0 && data.every(balance => balance.dataAccurate === false)
     const isAllBalancesError =
-      isBalanceLoaded && data.every(balance => balance.error != null)
+      isError ||
+      isOffline ||
+      (data.length > 0 && data.every(balance => balance.error != null))
 
     // Calculate total balance
     const balancesForAccount = data.filter(
@@ -89,6 +92,8 @@ export function useAccountBalanceSummary(
     data,
     isLoading,
     isRefetching,
+    isError,
+    isOffline,
     tokenVisibility,
     enabledChainIds,
     networks,
