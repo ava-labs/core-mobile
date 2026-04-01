@@ -8,6 +8,7 @@ import {
   LedgerDerivationPathType,
   LedgerKeysByNetwork
 } from 'services/ledger/types'
+import { useRouter } from 'expo-router'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useLedgerSetupContext } from '../contexts/LedgerSetupContext'
 import { useSetLedgerAddress } from '../hooks/useSetLedgerAddress'
@@ -27,6 +28,7 @@ export const AppConnectionOnboardingScreen = ({
   const { createLedgerWallet } = useLedgerWallet()
   const { setLedgerAddress } = useSetLedgerAddress()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const { canGoBack, back } = useRouter()
 
   const {
     connectedDeviceId,
@@ -36,6 +38,11 @@ export const AppConnectionOnboardingScreen = ({
     isUpdatingWallet,
     setIsUpdatingWallet
   } = useLedgerSetupContext()
+
+  const handleCancel = useCallback(async () => {
+    await disconnectDevice()
+    canGoBack() && back()
+  }, [disconnectDevice, canGoBack, back])
 
   const handleComplete = useCallback(
     async (keys: LedgerKeysByNetwork) => {
@@ -96,7 +103,7 @@ export const AppConnectionOnboardingScreen = ({
         Alert.alert(
           'Wallet Setup Failed',
           'Unable to complete ledger wallet setup. Please restart the setup process.',
-          [{ text: 'OK' }]
+          [{ text: 'OK', onPress: handleCancel }]
         )
       }
     },
@@ -109,7 +116,8 @@ export const AppConnectionOnboardingScreen = ({
       connectedDeviceName,
       setLedgerAddress,
       isDeveloperMode,
-      onNavigateToComplete
+      onNavigateToComplete,
+      handleCancel
     ]
   )
 
@@ -123,7 +131,7 @@ export const AppConnectionOnboardingScreen = ({
       deviceId={connectedDeviceId}
       deviceName={connectedDeviceName}
       isUpdatingWallet={isUpdatingWallet}
-      disconnectDevice={disconnectDevice}
+      handleCancel={handleCancel}
       accountIndex={0} // intentionally setting it to zero here as this screen is used for importing the wallet for the first time
       showProgressDots={false}
       showConnectionToasts={showConnectionToasts}

@@ -3,7 +3,6 @@ import { ProgressDots } from 'common/components/ProgressDots'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { showSnackbar } from 'common/utils/toast'
-import { useRouter } from 'expo-router'
 import {
   AppConnectionStep,
   LedgerAppConnection
@@ -34,7 +33,7 @@ export default function AppConnectionScreen({
   handleComplete,
   deviceId,
   deviceName = 'Ledger Device',
-  disconnectDevice,
+  handleCancel,
   accountIndex,
   showProgressDots = true,
   showConnectionToasts,
@@ -45,14 +44,13 @@ export default function AppConnectionScreen({
   isUpdatingWallet: boolean
   deviceId?: string | null
   deviceName?: string
-  disconnectDevice: () => Promise<void>
+  handleCancel: () => Promise<void>
   handleComplete: (keys: LedgerKeysByNetwork) => Promise<void>
   accountIndex: number
   showProgressDots?: boolean
   showConnectionToasts: boolean
   showCancelOnComplete: boolean
 }): JSX.Element {
-  const { back } = useRouter()
   const headerHeight = useEffectiveHeaderHeight()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
@@ -74,11 +72,6 @@ export default function AppConnectionScreen({
   const [currentAppConnectionStep, setAppConnectionStep] =
     useState<AppConnectionStep>(AppConnectionStep.AVALANCHE_CONNECT)
   const [skipSolana, setSkipSolana] = useState(false)
-
-  const handleCancel = useCallback(async () => {
-    await disconnectDevice()
-    back()
-  }, [disconnectDevice, back])
 
   const progressDotsCurrentStep = useMemo(() => {
     if (isSolanaSupportBlocked) {
