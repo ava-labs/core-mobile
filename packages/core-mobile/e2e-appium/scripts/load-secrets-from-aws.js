@@ -107,7 +107,8 @@ async function loadSecrets() {
       )
       .join('\n');
     
-    fs.writeFileSync(envFile, envContent);
+    fs.writeFileSync(envFile, envContent, { mode: 0o600 });
+    fs.chmodSync(envFile, 0o600);
     
     // Output to stderr so it doesn't interfere with sourcing
     console.error(`✅ Environment variables written to ${envFile}`);

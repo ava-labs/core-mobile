@@ -118,18 +118,32 @@ if (typeof config.waitForCompletion === 'string') {
   config.waitForCompletion = coerceBool(config.waitForCompletion)
 }
 
-// Validate required parameters
-const required = ['projectArn', 'devicePoolArn', 'appPath', 'testPackagePath']
+// Validate required parameters (test spec drives Device Farm install/pre_test; do not schedule without it)
+const required = [
+  'projectArn',
+  'devicePoolArn',
+  'appPath',
+  'testPackagePath',
+  'testSpecPath'
+]
 const missing = required.filter(key => !config[key])
 if (missing.length > 0) {
   console.error(`❌ Missing required parameters: ${missing.join(', ')}`)
   console.error('\nUsage:')
   console.error(
-    '  node trigger-devicefarm-api.js --project-arn <arn> --device-pool-arn <arn> --app-path <path> --test-package-path <path>'
+    '  node trigger-devicefarm-api.js --project-arn <arn> --device-pool-arn <arn> --app-path <path> --test-package-path <path> --test-spec-path <path>'
   )
   console.error('\nOr set environment variables:')
   console.error(
-    '  DEVICEFARM_PROJECT_ARN, DEVICEFARM_DEVICE_POOL_ARN, DEVICEFARM_APP_PATH, DEVICEFARM_TEST_PACKAGE_PATH'
+    '  DEVICEFARM_PROJECT_ARN, DEVICEFARM_DEVICE_POOL_ARN, DEVICEFARM_APP_PATH, DEVICEFARM_TEST_PACKAGE_PATH, DEVICEFARM_TEST_SPEC_PATH'
+  )
+  process.exit(1)
+}
+
+if (!fs.existsSync(config.testSpecPath)) {
+  console.error(`❌ Test spec file not found: ${config.testSpecPath}`)
+  console.error(
+    '   Device Farm runs need aws_test_spec.yaml (install/pre_test). Set DEVICEFARM_TEST_SPEC_PATH or --test-spec-path.'
   )
   process.exit(1)
 }
@@ -406,7 +420,7 @@ async function main() {
     console.log(`   platform:       ${config.platform}`)
     console.log(`   appPath:        ${config.appPath}`)
     console.log(`   testPackagePath: ${config.testPackagePath}`)
-    console.log(`   testSpecPath:   ${config.testSpecPath || '(not set)'}`)
+    console.log(`   testSpecPath:   ${config.testSpecPath}`)
     console.log('')
 
     await verifyProjectAccess(config.projectArn)
@@ -440,16 +454,13 @@ async function main() {
       'appium-tests.zip'
     )
 
-    // 3. Upload test spec (if provided)
-    let testSpecUploadArn = null
-    if (config.testSpecPath && fs.existsSync(config.testSpecPath)) {
-      testSpecUploadArn = await uploadFile(
-        config.testSpecPath,
-        config.projectArn,
-        testSpecType,
-        'aws_test_spec.yaml'
-      )
-    }
+    // 3. Upload test spec (required; validated before main upload flow)
+    const testSpecUploadArn = await uploadFile(
+      config.testSpecPath,
+      config.projectArn,
+      testSpecType,
+      'aws_test_spec.yaml'
+    )
 
     // 4. Schedule test run
     console.log('📅 Scheduling test run...')
@@ -462,9 +473,7 @@ async function main() {
       testPackageArn: testPackageUploadArn
     }
 
-    if (testSpecUploadArn) {
-      testConfig.testSpecArn = testSpecUploadArn
-    }
+    testConfig.testSpecArn = testSpecUploadArn
 
     const scheduleRunCommand = new ScheduleRunCommand({
       projectArn: config.projectArn,

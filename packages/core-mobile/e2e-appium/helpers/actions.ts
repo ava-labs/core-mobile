@@ -67,7 +67,8 @@ async function type(element: ChainablePromiseElement, text: string | number) {
     // If clearValue fails, try selecting all and deleting
     if (driver.isAndroid) {
       try {
-        await driver.pressKeyCode(29, 113) // Ctrl+A (select all)
+        // 29 = KEYCODE_A, 4096 = META_CTRL_ON (Ctrl+A = select all)
+        await driver.pressKeyCode(29, 4096)
         await driver.pause(100)
         await driver.pressKeyCode(67) // Delete
         await driver.pause(200)
@@ -458,7 +459,8 @@ async function typeSlowly(
     // If clearValue fails, try selecting all and deleting
     if (driver.isAndroid) {
       try {
-        await driver.pressKeyCode(29, 113) // Ctrl+A (select all)
+        // 29 = KEYCODE_A, 4096 = META_CTRL_ON (Ctrl+A = select all)
+        await driver.pressKeyCode(29, 4096)
         await driver.pause(100)
         await driver.pressKeyCode(67) // Delete
         await driver.pause(200)
