@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { StorageKey } from 'resources/Constants'
 import Logger from 'utils/Logger'
@@ -18,6 +18,7 @@ export const useStoredBiometrics = (): {
   biometricType: BiometricType
 } => {
   const walletState = useSelector(selectWalletState)
+  const hasLoggedMissingKey = useRef(false)
   const [isBiometricAvailable, setIsBiometricAvailable] = useState(false)
   const [useBiometrics, setUseBiometrics] = useState(true)
   const [biometricType, setBiometricType] = useState<BiometricType>(
@@ -41,9 +42,14 @@ export const useStoredBiometrics = (): {
     const type = commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
     if (type) {
       setUseBiometrics(type === 'BIO')
-    } else if (walletState !== WalletState.NONEXISTENT) {
+    } else if (
+      walletState !== WalletState.NONEXISTENT &&
+      !hasLoggedMissingKey.current
+    ) {
       // key is legitimately absent during onboarding (NONEXISTENT), so only
-      // log an error for already-onboarded users where the missing key is unexpected
+      // log an error for already-onboarded users where the missing key is unexpected.
+      // guard with a ref to avoid repeated Sentry events across lock/unlock transitions
+      hasLoggedMissingKey.current = true
       Logger.error('Secure access type not found')
     }
   }, [walletState])
