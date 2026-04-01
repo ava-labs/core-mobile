@@ -218,3 +218,19 @@ export interface LedgerLiveWalletData extends BaseLedgerWalletData {
 
 // Union type for all possible Ledger wallet data
 export type LedgerWalletData = BIP44LedgerWalletData | LedgerLiveWalletData
+
+// ============================================================================
+// LEDGER ACCOUNT DISCOVERY
+// ============================================================================
+
+/** Maximum number of account indices to derive during Ledger import discovery */
+export const MAX_LEDGER_DISCOVERY_ACCOUNTS = 10
+
+/**
+ * Keys for multiple account indices, keyed by account index.
+ * Used during Ledger import to hold derived keys before activity checking.
+ */
+export type LedgerMultiIndexKeys = {
+  mainnet: { [accountIndex: number]: LedgerKeys }
+  testnet: { [accountIndex: number]: LedgerKeys }
+}
