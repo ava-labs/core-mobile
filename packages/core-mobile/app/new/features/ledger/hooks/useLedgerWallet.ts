@@ -429,21 +429,16 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           `Ledger wallet created with ${createdAccounts.length} accounts:`,
           newWalletId
         )
-        AnalyticsService.capture(
-          walletState === WalletState.NONEXISTENT
-            ? 'OnboardingLedgerWalletAdded'
-            : 'WalletImportLedgerWalletAdded'
-        )
+        AnalyticsService.capture('LedgerAccountDiscoveryCompleted', {
+          accountCount: createdAccounts.length,
+          activeIndices
+        })
         if (walletState !== WalletState.NONEXISTENT) {
           showSnackbar('Ledger wallet created successfully!')
         }
         return { walletId: newWalletId, createdAccounts }
       } catch (error) {
-        AnalyticsService.capture(
-          walletState === WalletState.NONEXISTENT
-            ? 'OnboardingLedgerWalletAddFailed'
-            : 'WalletImportLedgerWalletAddFailed'
-        )
+        AnalyticsService.capture('LedgerAccountDiscoveryFailed')
         Logger.error(
           'Failed to create Ledger wallet with discovery:',
           error
