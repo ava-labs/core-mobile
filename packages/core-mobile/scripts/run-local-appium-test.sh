@@ -30,8 +30,25 @@ fi
 
 echo "✅ Found $DEVICES authorized device(s)"
 
+# Match resolve-local-device.ts: prefer ANDROID_SERIAL when set; otherwise first authorized device
+if [ -n "${ANDROID_SERIAL:-}" ]; then
+  DEVICE_STATE=$(adb devices | awk -v s="$ANDROID_SERIAL" '$1 == s { print $2 }')
+  if [ "$DEVICE_STATE" = "device" ]; then
+    DEVICE_UDID="$ANDROID_SERIAL"
+    echo "📌 Using ANDROID_SERIAL=$DEVICE_UDID"
+  else
+    echo "❌ ANDROID_SERIAL=$ANDROID_SERIAL is not listed as an authorized device."
+    echo "   Run adb devices — the second column must be \"device\" (not unauthorized or offline)."
+    exit 1
+  fi
+else
+  DEVICE_UDID=$(adb devices | grep -v "List" | grep "device$" | head -1 | awk '{print $1}')
+  export ANDROID_SERIAL="$DEVICE_UDID"
+  echo "📌 ANDROID_SERIAL was unset; using first device and exporting ANDROID_SERIAL=$DEVICE_UDID"
+  echo "   (Set ANDROID_SERIAL yourself when multiple devices are connected.)"
+fi
+
 # Get device info
-DEVICE_UDID=$(adb devices | grep -v "List" | grep "device$" | head -1 | awk '{print $1}')
 DEVICE_MODEL=$(adb -s "$DEVICE_UDID" shell getprop ro.product.model | tr -d '\r\n')
 ANDROID_VERSION=$(adb -s "$DEVICE_UDID" shell getprop ro.build.version.release | tr -d '\r\n')
 
