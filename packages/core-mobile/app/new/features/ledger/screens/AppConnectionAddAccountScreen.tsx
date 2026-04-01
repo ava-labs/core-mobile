@@ -17,7 +17,7 @@ import AppConnectionScreen from './AppConnectionScreen'
 
 export const AppConnectionAddAccountScreen = (): JSX.Element => {
   const { walletId } = useLocalSearchParams<{ walletId: string }>()
-  const { dismiss } = useRouter()
+  const { dismiss, canGoBack, back } = useRouter()
   const { createLedgerAccount } = useLedgerWallet()
   const { setLedgerAddress } = useSetLedgerAddress()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -37,6 +37,13 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
     isUpdatingWallet,
     setIsUpdatingWallet
   } = useLedgerSetupContext()
+
+  const handleCancel = useCallback(async () => {
+    await disconnectDevice().catch(error => {
+      Logger.error('Failed to disconnect Ledger device on cancel', error)
+    })
+    canGoBack() && back()
+  }, [disconnectDevice, canGoBack, back])
 
   const handleComplete = useCallback(
     async (keys: LedgerKeysByNetwork) => {
@@ -121,9 +128,11 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
       handleComplete={handleComplete}
       deviceId={device?.id}
       deviceName={device?.name ?? 'Ledger Device'}
-      disconnectDevice={disconnectDevice}
+      handleCancel={handleCancel}
       isUpdatingWallet={isUpdatingWallet}
       accountIndex={accounts?.length ?? 0}
+      showCancelOnComplete={true}
+      showConnectionToasts={true}
     />
   )
 }
