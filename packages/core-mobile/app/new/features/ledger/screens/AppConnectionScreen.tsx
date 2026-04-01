@@ -23,7 +23,9 @@ import {
 import LedgerService from 'services/ledger/LedgerService'
 import {
   LedgerDerivationPathType,
-  LedgerKeysByNetwork
+  LedgerKeysByNetwork,
+  LedgerMultiIndexKeys,
+  MAX_LEDGER_DISCOVERY_ACCOUNTS
 } from 'services/ledger/types'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -48,7 +50,7 @@ export default function AppConnectionScreen({
   deviceId?: string | null
   deviceName?: string
   handleCancel: () => Promise<void>
-  handleComplete: (keys: LedgerKeysByNetwork) => Promise<void>
+  handleComplete: (keys: LedgerMultiIndexKeys) => Promise<void>
   accountIndex: number
   showProgressDots?: boolean
   showConnectionToasts: boolean
@@ -61,15 +63,9 @@ export default function AppConnectionScreen({
   const hasDeviceId = !!deviceId
 
   // Local key state - managed only in this component
-  const [keys, setKeys] = useState<LedgerKeysByNetwork>({
-    mainnet: {
-      solanaKeys: [],
-      avalancheKeys: undefined
-    },
-    testnet: {
-      solanaKeys: [],
-      avalancheKeys: undefined
-    }
+  const [multiIndexKeys, setMultiIndexKeys] = useState<LedgerMultiIndexKeys>({
+    mainnet: {},
+    testnet: {}
   })
 
   const [currentAppConnectionStep, setAppConnectionStep] =
@@ -162,32 +158,39 @@ export default function AppConnectionScreen({
       setAppConnectionStep(AppConnectionStep.AVALANCHE_LOADING)
 
       // Get keys from service
-      const avalancheKeys = await LedgerService.getAvalancheKeys(
-        accountIndex,
-        isDeveloperMode,
-        selectedDerivationPath
-      )
-      const oppositeAvalancheKeys = await LedgerService.getAvalancheKeys(
-        accountIndex,
-        !isDeveloperMode,
-        selectedDerivationPath
-      )
+      const count = isUpdatingWallet ? 1 : MAX_LEDGER_DISCOVERY_ACCOUNTS
 
-      // Update local state
-      setKeys({
-        mainnet: {
-          avalancheKeys: isDeveloperMode
-            ? oppositeAvalancheKeys
-            : avalancheKeys,
-          solanaKeys: []
-        },
-        testnet: {
-          avalancheKeys: isDeveloperMode
-            ? avalancheKeys
-            : oppositeAvalancheKeys,
-          solanaKeys: []
+      const keysForCurrentNetwork =
+        await LedgerService.getAvalancheKeysForRange(
+          count,
+          isDeveloperMode,
+          selectedDerivationPath
+        )
+      const keysForOppositeNetwork =
+        await LedgerService.getAvalancheKeysForRange(
+          count,
+          !isDeveloperMode,
+          selectedDerivationPath
+        )
+
+      // Build multi-index keys
+      const mainnetKeys: LedgerMultiIndexKeys['mainnet'] = {}
+      const testnetKeys: LedgerMultiIndexKeys['testnet'] = {}
+
+      for (let i = 0; i < count; i++) {
+        const currentKey = keysForCurrentNetwork[i]
+        const oppositeKey = keysForOppositeNetwork[i]
+        if (currentKey) {
+          const mainnetEntry = isDeveloperMode ? oppositeKey : currentKey
+          const testnetEntry = isDeveloperMode ? currentKey : oppositeKey
+          if (mainnetEntry)
+            mainnetKeys[i] = { avalancheKeys: mainnetEntry, solanaKeys: [] }
+          if (testnetEntry)
+            testnetKeys[i] = { avalancheKeys: testnetEntry, solanaKeys: [] }
         }
-      })
+      }
+
+      setMultiIndexKeys({ mainnet: mainnetKeys, testnet: testnetKeys })
 
       // Show success toast notification
       if (showConnectionToasts) showSnackbar('Avalanche app connected')
@@ -211,10 +214,10 @@ export default function AppConnectionScreen({
       )
     }
   }, [
-    accountIndex,
     deviceId,
     isDeveloperMode,
     isSolanaSupportBlocked,
+    isUpdatingWallet,
     selectedDerivationPath,
     showConnectionToasts
   ])
@@ -228,20 +231,22 @@ export default function AppConnectionScreen({
       setAppConnectionStep(AppConnectionStep.SOLANA_LOADING)
 
       // Get keys from service
-      const solanaKeys = await LedgerService.getSolanaKeys(accountIndex)
+      const count = isUpdatingWallet ? 1 : MAX_LEDGER_DISCOVERY_ACCOUNTS
+      const solanaKeysRange = await LedgerService.getSolanaKeysForRange(count)
 
       // Update local state
-      setKeys(prev => ({
-        ...prev,
-        mainnet: {
-          ...prev.mainnet,
-          solanaKeys
-        },
-        testnet: {
-          ...prev.testnet,
-          solanaKeys
+      setMultiIndexKeys(prev => {
+        const updatedMainnet = { ...prev.mainnet }
+        const updatedTestnet = { ...prev.testnet }
+        for (let i = 0; i < count; i++) {
+          const solKeys = solanaKeysRange[i] ?? []
+          if (updatedMainnet[i])
+            updatedMainnet[i] = { ...updatedMainnet[i], solanaKeys: solKeys }
+          if (updatedTestnet[i])
+            updatedTestnet[i] = { ...updatedTestnet[i], solanaKeys: solKeys }
         }
-      }))
+        return { mainnet: updatedMainnet, testnet: updatedTestnet }
+      })
 
       // Show success toast notification
       if (showConnectionToasts) showSnackbar('Solana app connected')
@@ -261,7 +266,7 @@ export default function AppConnectionScreen({
         [{ text: 'OK' }]
       )
     }
-  }, [accountIndex, deviceId, showConnectionToasts])
+  }, [deviceId, isUpdatingWallet, showConnectionToasts])
 
   const handleSkipSolana = useCallback(() => {
     // Skip Solana and proceed to complete step
@@ -315,7 +320,7 @@ export default function AppConnectionScreen({
       case AppConnectionStep.COMPLETE:
         primary = {
           text: isUpdatingWallet ? <ActivityIndicator /> : 'Complete setup',
-          onPress: () => handleComplete(keys),
+          onPress: () => handleComplete(multiIndexKeys),
           disable: isUpdatingWallet
         }
         if (showCancelOnComplete) {
@@ -357,9 +362,20 @@ export default function AppConnectionScreen({
     handleSkipSolana,
     hasDeviceId,
     isUpdatingWallet,
-    keys,
+    multiIndexKeys,
     showCancelOnComplete
   ])
+
+  const displayKeys: LedgerKeysByNetwork = {
+    mainnet: multiIndexKeys.mainnet[0] ?? {
+      solanaKeys: [],
+      avalancheKeys: undefined
+    },
+    testnet: multiIndexKeys.testnet[0] ?? {
+      solanaKeys: [],
+      avalancheKeys: undefined
+    }
+  }
 
   return (
     <ScrollScreen
@@ -379,7 +395,7 @@ export default function AppConnectionScreen({
         completeStepTitle={completeStepTitle}
         connectedDeviceId={deviceId}
         connectedDeviceName={deviceName}
-        keys={keys}
+        keys={displayKeys}
         appConnectionStep={currentAppConnectionStep}
         skipSolana={skipSolana}
       />
