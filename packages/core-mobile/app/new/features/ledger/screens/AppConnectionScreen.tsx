@@ -37,7 +37,8 @@ export default function AppConnectionScreen({
   disconnectDevice,
   accountIndex,
   showProgressDots = true,
-  showConnectionToasts = true
+  showConnectionToasts,
+  showCancelOnComplete
 }: {
   selectedDerivationPath?: LedgerDerivationPathType
   completeStepTitle: string
@@ -48,7 +49,8 @@ export default function AppConnectionScreen({
   handleComplete: (keys: LedgerKeysByNetwork) => Promise<void>
   accountIndex: number
   showProgressDots?: boolean
-  showConnectionToasts?: boolean
+  showConnectionToasts: boolean
+  showCancelOnComplete: boolean
 }): JSX.Element {
   const { back } = useRouter()
   const headerHeight = useEffectiveHeaderHeight()
@@ -344,10 +346,12 @@ export default function AppConnectionScreen({
           onPress: () => handleComplete(keys),
           disable: isUpdatingWallet
         }
-        secondary = {
-          text: 'Cancel',
-          onPress: handleCancel,
-          disable: isUpdatingWallet
+        if (showCancelOnComplete) {
+          secondary = {
+            text: 'Cancel',
+            onPress: handleCancel,
+            disable: isUpdatingWallet
+          }
         }
         break
     }
@@ -381,7 +385,8 @@ export default function AppConnectionScreen({
     handleSkipSolana,
     hasDeviceId,
     isUpdatingWallet,
-    keys
+    keys,
+    showCancelOnComplete
   ])
 
   return (

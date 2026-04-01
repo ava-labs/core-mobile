@@ -15,12 +15,14 @@ import AppConnectionScreen from './AppConnectionScreen'
 
 interface AppConnectionOnboardingScreenProps {
   onNavigateToComplete: () => void
-  showConnectionToasts?: boolean
+  showConnectionToasts: boolean
+  showCancelOnComplete: boolean
 }
 
 export const AppConnectionOnboardingScreen = ({
   onNavigateToComplete,
-  showConnectionToasts = false
+  showConnectionToasts,
+  showCancelOnComplete
 }: AppConnectionOnboardingScreenProps): JSX.Element => {
   const { createLedgerWallet } = useLedgerWallet()
   const { setLedgerAddress } = useSetLedgerAddress()
@@ -84,16 +86,18 @@ export const AppConnectionOnboardingScreen = ({
           setIsUpdatingWallet(false)
         }
       } else {
-        Logger.error(
-          'Wallet creation conditions not met, skipping wallet creation',
-          {
-            hasAvalancheKeys: !!keysByNetwork.avalancheKeys,
-            hasConnectedDeviceId: !!connectedDeviceId,
-            hasSelectedDerivationPath: !!selectedDerivationPath,
-            isUpdatingWallet
-          }
+        const errorMsg = 'Ledger wallet creation conditions not met'
+        Logger.error(errorMsg, {
+          hasAvalancheKeys: !!keysByNetwork.avalancheKeys,
+          hasConnectedDeviceId: !!connectedDeviceId,
+          hasSelectedDerivationPath: !!selectedDerivationPath,
+          isUpdatingWallet
+        })
+        Alert.alert(
+          'Wallet Setup Failed',
+          'Unable to complete ledger wallet setup. Please restart the setup process.',
+          [{ text: 'OK' }]
         )
-        onNavigateToComplete()
       }
     },
     [
@@ -123,6 +127,7 @@ export const AppConnectionOnboardingScreen = ({
       accountIndex={0} // intentionally setting it to zero here as this screen is used for importing the wallet for the first time
       showProgressDots={false}
       showConnectionToasts={showConnectionToasts}
+      showCancelOnComplete={showCancelOnComplete}
     />
   )
 }
