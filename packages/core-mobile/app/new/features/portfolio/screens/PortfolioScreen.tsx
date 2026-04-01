@@ -137,7 +137,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
     isBalanceLoaded,
     isLoading: isLoadingBalances,
     isRefetching: isRefetchingBalance,
-    isAllBalancesInaccurate: allBalancesInaccurate
+    isAllBalancesInaccurate: allBalancesInaccurate,
+    isAllBalancesError
   } = useAccountBalanceSummary(activeAccount)
 
   const totalPriceChange = useBalanceTotalPriceChangeForAccount(activeAccount)
@@ -334,11 +335,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }, [totalPriceChange, valueChange24h, indicatorStatus, percentChange24h])
 
   const errorMessage = useMemo(() => {
-    if (allBalancesInaccurate) {
+    if (allBalancesInaccurate || isAllBalancesError) {
       return 'Unable to load balances'
     }
     return undefined
-  }, [allBalancesInaccurate])
+  }, [allBalancesInaccurate, isAllBalancesError])
 
   const renderHeader = useCallback((): JSX.Element => {
     return (

@@ -160,10 +160,10 @@ export const selectActiveNetwork = (state: RootState): Network => {
 
 export const selectAllNetworks = (state: RootState): Networks => {
   const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
+  const customNetworks = selectCustomNetworks(state)
   const rawNetworks = getNetworksFromCache({
     includeSolana: !isSolanaSupportBlocked
   })
-  const customNetworks = selectCustomNetworks(state)
   return { ...rawNetworks, ...customNetworks }
 }
 

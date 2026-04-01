@@ -8,6 +8,7 @@ import {
   LedgerDerivationPathType,
   LedgerKeysByNetwork
 } from 'services/ledger/types'
+import { useRouter } from 'expo-router'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useLedgerSetupContext } from '../contexts/LedgerSetupContext'
 import { useSetLedgerAddress } from '../hooks/useSetLedgerAddress'
@@ -15,14 +16,19 @@ import AppConnectionScreen from './AppConnectionScreen'
 
 interface AppConnectionOnboardingScreenProps {
   onNavigateToComplete: () => void
+  showConnectionToasts: boolean
+  showCancelOnComplete: boolean
 }
 
 export const AppConnectionOnboardingScreen = ({
-  onNavigateToComplete
+  onNavigateToComplete,
+  showConnectionToasts,
+  showCancelOnComplete
 }: AppConnectionOnboardingScreenProps): JSX.Element => {
   const { createLedgerWallet } = useLedgerWallet()
   const { setLedgerAddress } = useSetLedgerAddress()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const { canGoBack, back } = useRouter()
 
   const {
     connectedDeviceId,
@@ -32,6 +38,13 @@ export const AppConnectionOnboardingScreen = ({
     isUpdatingWallet,
     setIsUpdatingWallet
   } = useLedgerSetupContext()
+
+  const handleCancel = useCallback(async () => {
+    await disconnectDevice().catch(error => {
+      Logger.error('Failed to disconnect Ledger device on cancel', error)
+    })
+    canGoBack() && back()
+  }, [disconnectDevice, canGoBack, back])
 
   const handleComplete = useCallback(
     async (keys: LedgerKeysByNetwork) => {
@@ -72,26 +85,28 @@ export const AppConnectionOnboardingScreen = ({
         } catch (error) {
           Logger.error('Wallet creation failed', error)
           Alert.alert(
-            'Wallet Creation Failed',
+            'Wallet creation failed',
             error instanceof Error
               ? error.message
               : 'Failed to create Ledger wallet. Please try again.',
-            [{ text: 'OK' }]
+            [{ text: 'OK', onPress: handleCancel }]
           )
         } finally {
           setIsUpdatingWallet(false)
         }
       } else {
-        Logger.error(
-          'Wallet creation conditions not met, skipping wallet creation',
-          {
-            hasAvalancheKeys: !!keysByNetwork.avalancheKeys,
-            hasConnectedDeviceId: !!connectedDeviceId,
-            hasSelectedDerivationPath: !!selectedDerivationPath,
-            isUpdatingWallet
-          }
+        const errorMsg = 'Ledger wallet creation conditions not met'
+        Logger.error(errorMsg, {
+          hasAvalancheKeys: !!keysByNetwork.avalancheKeys,
+          hasConnectedDeviceId: !!connectedDeviceId,
+          hasSelectedDerivationPath: !!selectedDerivationPath,
+          isUpdatingWallet
+        })
+        Alert.alert(
+          'Wallet setup failed',
+          'Unable to complete Ledger wallet setup. Please restart the setup process.',
+          [{ text: 'OK', onPress: handleCancel }]
         )
-        onNavigateToComplete()
       }
     },
     [
@@ -103,7 +118,8 @@ export const AppConnectionOnboardingScreen = ({
       connectedDeviceName,
       setLedgerAddress,
       isDeveloperMode,
-      onNavigateToComplete
+      onNavigateToComplete,
+      handleCancel
     ]
   )
 
@@ -117,9 +133,11 @@ export const AppConnectionOnboardingScreen = ({
       deviceId={connectedDeviceId}
       deviceName={connectedDeviceName}
       isUpdatingWallet={isUpdatingWallet}
-      disconnectDevice={disconnectDevice}
+      handleCancel={handleCancel}
       accountIndex={0} // intentionally setting it to zero here as this screen is used for importing the wallet for the first time
       showProgressDots={false}
+      showConnectionToasts={showConnectionToasts}
+      showCancelOnComplete={showCancelOnComplete}
     />
   )
 }

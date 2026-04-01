@@ -11,6 +11,7 @@ export type Tab = {
   lastVisited?: number // unix timestamp, last time this tab was visited, delete oldest if more than 99 tabs active
   activeHistoryIndex: number
   activeHistory?: History
+  chainId?: number // per-tab EVM chain; undefined = use global active network
 }
 
 export type History = {

@@ -1,6 +1,5 @@
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { rpcErrors } from '@metamask/rpc-errors'
-import { isValidRPCUrl } from 'services/network/utils/isValidRpcUrl'
 import { AppListenerEffectAPI } from 'store/types'
 import {
   addCustomNetwork,
@@ -104,17 +103,6 @@ class WalletAddEthereumChainHandler
       vmId: '',
       primaryColor: '',
       vmName: NetworkVMType.EVM
-    }
-
-    const isValid = await isValidRPCUrl(
-      customNetwork.chainId,
-      customNetwork.rpcUrl
-    )
-    if (!isValid) {
-      return {
-        success: false,
-        error: rpcErrors.invalidParams('ChainID does not match the rpc url')
-      }
     }
 
     walletConnectCache.addEthereumChainParams.set({

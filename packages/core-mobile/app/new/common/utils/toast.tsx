@@ -63,7 +63,10 @@ export const GlobalToast = (): JSX.Element => {
                 type={toast.data.type}
                 title={toast.data.title}
                 message={toast.data.message}
-                onPress={() => dismissToast(toast.id)}
+                onPress={() => {
+                  dismissToast(toast.id)
+                  toast.data.onDismiss?.()
+                }}
               />
             )
           case ToastType.TRANSACTION_SNACKBAR: {
@@ -76,6 +79,7 @@ export const GlobalToast = (): JSX.Element => {
 
             const onPress = (): void => {
               dismissToast(toast.id)
+              toast.data.onDismiss?.()
 
               if (!isActionable) return
 
@@ -123,7 +127,12 @@ type SnackbarToast = {
 type NotificationAlertToast = {
   toastType: ToastType.NOTIFICATION_ALERT
   toastId?: string
-  content: { type: NotificationAlertType; title: string; message?: string }
+  content: {
+    type: NotificationAlertType
+    title: string
+    message?: string
+    onDismiss?: () => void
+  }
 }
 
 type TransactionSnackbarToast =
@@ -140,7 +149,12 @@ type TransactionSnackbarToast =
   | {
       toastType: ToastType.TRANSACTION_SNACKBAR
       toastId?: string
-      content: { type: 'error'; message?: string; error?: string }
+      content: {
+        type: 'error'
+        message?: string
+        error?: string
+        onDismiss?: () => void
+      }
     }
   | {
       toastType: ToastType.TRANSACTION_SNACKBAR
@@ -202,6 +216,25 @@ function updateToast({
 function dismissToast(toastId: string): void {
   global?.toast?.hide(toastId)
 }
+
+export function showNoInternetToast(
+  toastId: string,
+  onDismiss: () => void
+): void {
+  global.toast?.hideAll()
+  global?.toast?.show('', {
+    type: ToastType.TRANSACTION_SNACKBAR,
+    duration: DURATION_INDEFINITE,
+    id: toastId,
+    data: {
+      message: 'No internet connection',
+      type: 'error',
+      onDismiss
+    }
+  })
+}
+
+export { dismissToast }
 
 export function showSnackbar(message: string): void {
   showToast({
