@@ -39,7 +39,9 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
   } = useLedgerSetupContext()
 
   const handleCancel = useCallback(async () => {
-    await disconnectDevice()
+    await disconnectDevice().catch(error => {
+      Logger.error('Failed to disconnect Ledger device on cancel', error)
+    })
     canGoBack() && back()
   }, [disconnectDevice, canGoBack, back])
 
