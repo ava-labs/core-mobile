@@ -57,7 +57,25 @@ export function buildEvmProviderShim({
   if (!doctypeCheck() || !suffixCheck() || !documentElementCheck()) return;
 
   // ──────────────────────────────────────────────
-  // 2. State
+  // 3. Desktop user-agent override
+  // ──────────────────────────────────────────────
+  // dApp wallet-connect libraries (RainbowKit, Web3Modal, etc.) render
+  // a stripped-down mobile modal that hides EIP-6963 injected wallets.
+  // Their desktop modals show all detected wallets including an
+  // "Installed" section. Overriding navigator.userAgent to a desktop
+  // string makes these libraries render the full desktop connect UI.
+  // CSS media queries still use the real viewport, so page layout stays
+  // mobile-responsive — only JS-based mobile detection is affected.
+  try {
+    var _desktopUA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+    Object.defineProperty(navigator, 'userAgent', {
+      get: function() { return _desktopUA; },
+      configurable: true
+    });
+  } catch(_uaErr) {}
+
+  // ──────────────────────────────────────────────
+  // 4. State
   // ──────────────────────────────────────────────
   var _requestId = 0;
   var _callbacks = {};
@@ -69,7 +87,7 @@ export function buildEvmProviderShim({
   };
   var _chainId = '${chainId}';
   var _address = '${address}';
-  var _connected = !!_address;
+  var _connected = true;
   var _accounts = _address ? [_address] : [];
 
   // ──────────────────────────────────────────────
@@ -111,7 +129,7 @@ export function buildEvmProviderShim({
   }
 
   // ──────────────────────────────────────────────
-  // 4. EIP-1193 provider
+  // 5. EIP-1193 provider
   // ──────────────────────────────────────────────
   var provider = {
     isMetaMask: true,
@@ -290,14 +308,17 @@ export function buildEvmProviderShim({
     on: function(event, fn) {
       if (!_listeners[event]) _listeners[event] = [];
       _listeners[event].push(fn);
-      // NOTE: do NOT auto-fire current state to new listeners here.
-      // Auto-firing 'accountsChanged'/'connect' on every on() call causes
-      // wagmi to re-subscribe during its cleanup/setup cycle, which feeds
-      // back into another auto-fire, producing React error #185 (infinite
-      // update loop) when a dApp triggers chain-switch UI.
-      // wagmi discovers initial connection state via eth_accounts /
-      // eth_requestAccounts requests, not via event replays.
       return provider;
+    },
+    addListener: function(event, fn) {
+      return provider.on(event, fn);
+    },
+    once: function(event, fn) {
+      function wrapped(data) {
+        provider.removeListener(event, wrapped);
+        fn(data);
+      }
+      return provider.on(event, wrapped);
     },
     removeListener: function(event, fn) {
       var fns = _listeners[event];
@@ -305,14 +326,27 @@ export function buildEvmProviderShim({
       _listeners[event] = fns.filter(function(f) { return f !== fn; });
       return provider;
     },
+    off: function(event, fn) {
+      return provider.removeListener(event, fn);
+    },
     removeAllListeners: function(event) {
       if (event) delete _listeners[event];
       else _listeners = {};
       return provider;
     },
+    listenerCount: function(event) {
+      return (_listeners[event] || []).length;
+    },
+    listeners: function(event) {
+      return (_listeners[event] || []).slice();
+    },
 
     isConnected: function() {
       return _connected;
+    },
+
+    _metamask: {
+      isUnlocked: function() { return Promise.resolve(true); }
     },
 
     chainId: _chainId,
@@ -321,7 +355,7 @@ export function buildEvmProviderShim({
   };
 
   // ──────────────────────────────────────────────
-  // 5. Install provider globals
+  // 6. Install provider globals
   // ──────────────────────────────────────────────
   // window.ethereum — standard EIP-1193 provider
   Object.defineProperty(window, 'ethereum', {
@@ -347,30 +381,44 @@ export function buildEvmProviderShim({
   });
 
   // ──────────────────────────────────────────────
-  // 6. EIP-6963 announcement
+  // 7. EIP-6963 announcement
   // ──────────────────────────────────────────────
-  var providerInfo = {
+  var providerInfo = Object.freeze({
     uuid: '${uuid}',
     name: '${INJECTED_PROVIDER_NAME}',
     icon: '${INJECTED_PROVIDER_ICON}',
     rdns: '${INJECTED_PROVIDER_RDNS}'
-  };
+  });
+
+  var _providerDetail = Object.freeze({
+    info: providerInfo,
+    provider: provider
+  });
 
   function announceProvider() {
     window.dispatchEvent(new CustomEvent('eip6963:announceProvider', {
-      detail: Object.freeze({ info: providerInfo, provider: provider })
+      detail: _providerDetail
     }));
   }
   window.addEventListener('eip6963:requestProvider', announceProvider);
+
   announceProvider();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', announceProvider);
+  }
+  window.addEventListener('load', announceProvider);
+
+  setTimeout(announceProvider, 100);
+  setTimeout(announceProvider, 1000);
+  setTimeout(announceProvider, 3000);
 
   // ──────────────────────────────────────────────
-  // 7. Legacy events
+  // 8. Legacy events
   // ──────────────────────────────────────────────
   window.dispatchEvent(new Event('ethereum#initialized'));
 
   // ──────────────────────────────────────────────
-  // 8. Send domain metadata to native (deferred until DOM is ready)
+  // 9. Send domain metadata to native (deferred until DOM is ready)
   // ──────────────────────────────────────────────
   function safeSend(msg) {
     try {
@@ -403,7 +451,7 @@ export function buildEvmProviderShim({
   }
 
   // ──────────────────────────────────────────────
-  // 9. SPA navigation listener
+  // 10. SPA navigation listener
   // ──────────────────────────────────────────────
   (function() {
     var lastUrl = window.location.href;
