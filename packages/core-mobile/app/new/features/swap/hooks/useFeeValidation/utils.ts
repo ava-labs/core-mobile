@@ -9,9 +9,7 @@ import {
 import type { LocalTokenWithBalance } from 'store/balance'
 import { FusionQuoteError, fusionErrors } from '../../utils/fusionErrors'
 
-export const getFeeEstimationError = (
-  error: unknown
-): FusionQuoteError | undefined => {
+export const getFeeEstimationError = (error: unknown): FusionQuoteError => {
   // treat as insufficient funds if the SDK explicitly says so, or if cause is
   // undefined (e.g. Solana Kit did not throw during simulation, so no cause was attached)
   if (isEstimateNativeFeeError(error)) {

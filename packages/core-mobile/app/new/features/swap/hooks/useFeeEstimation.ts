@@ -5,8 +5,9 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { selectFusionFeeUnitsMarginBps } from 'store/posthog'
 import type { NetworkWithCaip2ChainId } from 'store/network'
 import { useNetworkFee } from 'hooks/useNetworkFee'
-import Logger from 'utils/Logger'
 import { isEstimateNativeFeeError } from '@avalabs/fusion-sdk'
+import Logger from 'utils/Logger'
+import SentryService from 'services/sentry/SentryService'
 import FusionService from '../services/FusionService'
 import { logSdkError } from '../utils/fusionLogger'
 import type { Quote } from '../types'
@@ -69,10 +70,13 @@ export const useFeeEstimation = ({
   useEffect(() => {
     if (!error) return
     if (isEstimateNativeFeeError(error) && error.details) {
-      Logger.error('[useFeeEstimation] estimateNativeFee revert error', {
-        ...error.details,
-        cause: error.cause
-      })
+      Logger.warn('[useFeeEstimation] estimateNativeFee revert error', error)
+      // Use captureMessage (not Logger.error) for Sentry so that BigInt values
+      // in error.details.args are serialized to strings by sanitizeContext.
+      SentryService.captureMessage(
+        '[useFeeEstimation] estimateNativeFee revert error',
+        { ...error.details, cause: error.cause }
+      )
     } else {
       logSdkError('[useFeeEstimation] estimateNativeFee error', error)
     }
