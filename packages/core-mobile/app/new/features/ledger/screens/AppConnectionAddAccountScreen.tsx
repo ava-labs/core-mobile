@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { LedgerKeysByNetwork } from 'services/ledger/types'
+import { LedgerMultiIndexKeys } from 'services/ledger/types'
 import Logger from 'utils/Logger'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import LedgerService from 'services/ledger/LedgerService'
@@ -46,7 +46,13 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
   }, [disconnectDevice, canGoBack, back])
 
   const handleComplete = useCallback(
-    async (keys: LedgerKeysByNetwork) => {
+    async (multiIndexKeys: LedgerMultiIndexKeys) => {
+      // When adding a single account, only index 0 in the multi-index keys is populated
+      const accountIndex = accounts?.length ?? 0
+      const keys = {
+        mainnet: multiIndexKeys.mainnet[0],
+        testnet: multiIndexKeys.testnet[0]
+      }
       const keysByNetwork = isDeveloperMode ? keys.testnet : keys.mainnet
       if (
         keysByNetwork.avalancheKeys &&
@@ -64,7 +70,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
             walletId: wallet.id,
             walletName: wallet.name,
             walletType: wallet.type,
-            accountIndexToUse: accounts?.length ?? 0,
+            accountIndexToUse: accountIndex,
             deviceId: device.id,
             deviceName: device.name,
             derivationPathType,
@@ -73,10 +79,13 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
           })
 
           await setLedgerAddress({
-            accountIndex: accounts?.length ?? 0,
+            accountIndex: accountIndex,
             walletId,
             accountId,
-            keys
+            keys: {
+              mainnet: keys.mainnet ?? { solanaKeys: [], avalancheKeys: undefined },
+              testnet: keys.testnet ?? { solanaKeys: [], avalancheKeys: undefined }
+            }
           })
 
           Logger.info('Account created successfully, dismissing modals')
