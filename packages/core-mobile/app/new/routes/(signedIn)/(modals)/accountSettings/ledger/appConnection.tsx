@@ -13,6 +13,7 @@ export default function AppConnection(): JSX.Element {
     <AppConnectionOnboardingScreen
       onNavigateToComplete={handleNavigateToComplete}
       showConnectionToasts={true}
+      showCancelOnComplete={true}
     />
   )
 }
