@@ -4,6 +4,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import {
   LedgerDerivationPathType,
   LedgerKeys,
+  LedgerMultiIndexKeys,
+  LedgerTransportState,
   WalletCreationOptions,
   WalletUpdateOptions,
   WalletUpdateSolanaOptions
@@ -36,6 +38,16 @@ export interface UseLedgerWalletReturn {
   createLedgerAccount: (
     options: WalletUpdateOptions & LedgerKeys
   ) => Promise<{ walletId: string; accountId: string }>
+  createLedgerWalletWithDiscovery: (options: {
+    deviceId: string
+    deviceName: string
+    derivationPathType: LedgerDerivationPathType
+    multiIndexKeys: LedgerMultiIndexKeys
+    activeIndices: number[]
+  }) => Promise<{
+    walletId: string
+    createdAccounts: Array<{ accountId: string; accountIndex: number }>
+  }>
 }
 
 export function useLedgerWallet(): UseLedgerWalletReturn {
@@ -272,6 +284,170 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
     [dispatch, setLedgerWalletMap]
   )
 
+  const createLedgerWalletWithDiscovery = useCallback(
+    async ({
+      deviceId,
+      deviceName = 'Ledger Device',
+      derivationPathType = LedgerDerivationPathType.BIP44,
+      multiIndexKeys,
+      activeIndices
+    }: {
+      deviceId: string
+      deviceName: string
+      derivationPathType: LedgerDerivationPathType
+      multiIndexKeys: LedgerMultiIndexKeys
+      activeIndices: number[]
+    }) => {
+      try {
+        setIsLoading(true)
+
+        Logger.info(
+          `Creating ${derivationPathType} Ledger wallet with discovery for ${activeIndices.length} accounts...`
+        )
+
+        // Validate that index 0 keys exist
+        const index0MainnetKeys = multiIndexKeys.mainnet[0]
+        if (!index0MainnetKeys?.avalancheKeys) {
+          throw new Error(
+            'Missing Avalanche keys for account index 0 during wallet creation'
+          )
+        }
+
+        const newWalletId = uuid()
+
+        // Build extendedPublicKeys and publicKeys for ALL active indices
+        const extendedPublicKeys: Record<
+          number,
+          { evm: string; avalanche: string }
+        > = {}
+        const publicKeys: Record<number, Array<{ key: string; type: string }>> =
+          {}
+
+        for (const index of activeIndices) {
+          const mainnetKeys = multiIndexKeys.mainnet[index]
+          const testnetKeys = multiIndexKeys.testnet[index]
+
+          if (
+            derivationPathType === LedgerDerivationPathType.BIP44 &&
+            mainnetKeys?.avalancheKeys?.xpubs
+          ) {
+            extendedPublicKeys[index] = {
+              evm: mainnetKeys.avalancheKeys.xpubs.evm,
+              avalanche: mainnetKeys.avalancheKeys.xpubs.avalanche
+            }
+          }
+
+          const allPublicKeys = [
+            ...(mainnetKeys?.avalancheKeys?.publicKeys ?? []),
+            ...(mainnetKeys?.solanaKeys?.length
+              ? [mainnetKeys.solanaKeys[0]]
+              : []),
+            ...(testnetKeys?.avalancheKeys?.publicKeys ?? [])
+          ].filter(Boolean)
+
+          // Deduplicate public keys by key value
+          const uniqueKeys = allPublicKeys.filter(
+            (pk, idx, arr) =>
+              pk !== undefined && arr.findIndex(k => k?.key === pk.key) === idx
+          )
+
+          publicKeys[index] = uniqueKeys as Array<{
+            key: string
+            type: string
+          }>
+        }
+
+        // Store the wallet secret with all xpubs/publicKeys
+        await dispatch(
+          storeWallet({
+            walletId: newWalletId,
+            name: `Ledger ${deviceName}`,
+            walletSecret: JSON.stringify({
+              deviceId,
+              deviceName,
+              derivationPathSpec: derivationPathType,
+              ...(derivationPathType === LedgerDerivationPathType.BIP44 && {
+                extendedPublicKeys
+              }),
+              publicKeys
+            }),
+            type:
+              derivationPathType === LedgerDerivationPathType.BIP44
+                ? WalletType.LEDGER
+                : WalletType.LEDGER_LIVE
+          })
+        ).unwrap()
+
+        setLedgerWalletMap(
+          newWalletId,
+          { id: deviceId, name: deviceName || 'Ledger Device' },
+          derivationPathType
+        )
+
+        dispatch(setActiveWallet(newWalletId))
+
+        // Create Redux accounts for each active index
+        const createdAccounts: Array<{
+          accountId: string
+          accountIndex: number
+        }> = []
+
+        for (const index of activeIndices) {
+          const mainnetKeys = multiIndexKeys.mainnet[index]
+          const addresses = mainnetKeys?.avalancheKeys?.addresses
+
+          const formattedAddresses = addresses
+            ? getFormattedAddresses(addresses)
+            : { evm: '', avm: '', pvm: '', btc: '', coreEth: '' }
+
+          const solanaKey = mainnetKeys?.solanaKeys?.[0]?.key ?? ''
+
+          const newAccountId = uuid()
+          const newAccount: PrimaryAccount = {
+            id: newAccountId,
+            walletId: newWalletId,
+            name: `Account ${index + 1}`,
+            type: CoreAccountType.PRIMARY,
+            index,
+            addressC: formattedAddresses.evm,
+            addressBTC: formattedAddresses.btc,
+            addressAVM: formattedAddresses.avm,
+            addressPVM: formattedAddresses.pvm,
+            addressSVM: solanaKey,
+            addressCoreEth: formattedAddresses.coreEth
+          }
+
+          dispatch(setAccount(newAccount))
+          createdAccounts.push({ accountId: newAccountId, accountIndex: index })
+        }
+
+        // Set account 0 as the active account
+        const firstAccount = createdAccounts.find(
+          a => a.accountIndex === 0
+        )
+        if (firstAccount) {
+          dispatch(setActiveAccountId(firstAccount.accountId))
+        }
+
+        Logger.info(
+          `Ledger wallet created with ${createdAccounts.length} accounts:`,
+          newWalletId
+        )
+        showSnackbar('Ledger wallet created successfully!')
+        return { walletId: newWalletId, createdAccounts }
+      } catch (error) {
+        Logger.error(
+          'Failed to create Ledger wallet with discovery:',
+          error
+        )
+        throw error
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [dispatch, setLedgerWalletMap]
+  )
+
   const updateSolanaForLedgerWallet = useCallback(
     async ({
       deviceId,
@@ -364,6 +540,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
   return {
     isLoading,
     createLedgerWallet,
+    createLedgerWalletWithDiscovery,
     updateSolanaForLedgerWallet,
     createLedgerAccount
   }
