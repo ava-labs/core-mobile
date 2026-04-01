@@ -167,7 +167,7 @@ export function buildEvmProviderShim({
         return Promise.resolve(String(parseInt(_chainId, 16)));
       }
       if (method === 'eth_coinbase') {
-        return Promise.resolve(_address || null);
+        return Promise.resolve(_accounts.length > 0 ? _accounts[0] : null);
       }
       if (method === 'eth_requestAccounts') {
         if (!_address) return Promise.reject({ code: 4100, message: 'No account available' });
@@ -190,10 +190,10 @@ export function buildEvmProviderShim({
         }]);
       }
       if (method === 'wallet_getPermissions') {
-        var perms = _address ? [{
+        var perms = _accounts.length > 0 ? [{
           parentCapability: 'eth_accounts',
           date: Date.now(),
-          caveats: [{ type: 'restrictReturnedAccounts', value: [_address] }]
+          caveats: [{ type: 'restrictReturnedAccounts', value: [_accounts[0]] }]
         }] : [];
         return Promise.resolve(perms);
       }
@@ -424,9 +424,15 @@ export function buildEvmProviderShim({
   setTimeout(announceProvider, 3000);
 
   // ──────────────────────────────────────────────
-  // 8. Legacy events
+  // 8. Legacy events & initial EIP-1193 connect
   // ──────────────────────────────────────────────
   window.dispatchEvent(new Event('ethereum#initialized'));
+
+  // EIP-1193: signal initial network connectivity.
+  // Fired once via macrotask so that page scripts registering
+  // listeners synchronously during HTML parsing can receive it.
+  // disconnect is reserved for actual network/bridge loss.
+  setTimeout(function() { emit('connect', { chainId: _chainId }); }, 0);
 
   // ──────────────────────────────────────────────
   // 9. Send domain metadata to native (deferred until DOM is ready)

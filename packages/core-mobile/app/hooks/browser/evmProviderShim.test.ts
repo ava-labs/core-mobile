@@ -331,10 +331,15 @@ describe('buildEvmProviderShim', () => {
     })
   })
 
-  describe('legacy event dispatch', () => {
+  describe('legacy event dispatch & initial connect', () => {
     it('dispatches ethereum#initialized event', () => {
       const shim = buildEvmProviderShim(defaultParams)
       expect(shim).toContain("new Event('ethereum#initialized')")
+    })
+
+    it('emits EIP-1193 connect event once at initialisation', () => {
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain("emit('connect', { chainId: _chainId })")
     })
   })
 
