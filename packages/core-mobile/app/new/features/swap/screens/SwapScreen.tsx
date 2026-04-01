@@ -9,6 +9,7 @@ import {
   GroupListItem,
   Separator,
   Text,
+  Tooltip,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -54,6 +55,18 @@ import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
 import { ServiceType } from '../types'
+import { usePriceImpact } from '../hooks/usePriceImpact'
+import {
+  PriceImpactAvailability,
+  PriceImpactSeverity,
+  PRICE_IMPACT_ROW_TITLE,
+  PRICE_IMPACT_TOOLTIP_BODY,
+  PRICE_IMPACT_UNKNOWN_RISK_TITLE,
+  PRICE_IMPACT_UNKNOWN_RISK_DESCRIPTION,
+  PRICE_IMPACT_SWAP_DISABLED_TITLE,
+  PRICE_IMPACT_SWAP_DISABLED_DESCRIPTION,
+  PRICE_IMPACT_HIGH_TITLE
+} from '../consts'
 import { useMaxSwapAmount } from '../hooks/useMaxSwapAmount'
 import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 import { useFeeValidation } from '../hooks/useFeeValidation'
@@ -222,6 +235,14 @@ export const SwapScreen = (): JSX.Element => {
 
   const activeError = validationError ?? quoteError
 
+  const {
+    priceImpact,
+    priceImpactSeverity,
+    priceImpactAvailability,
+    isPriceImpactTooHigh,
+    isPriceImpactCalculating
+  } = usePriceImpact(activeQuote, fromToken, toToken)
+
   const canSwap: boolean =
     (activeError === null ||
       (activeError instanceof FusionQuoteError &&
@@ -229,7 +250,9 @@ export const SwapScreen = (): JSX.Element => {
     !isFeeValidating &&
     !!fromToken &&
     !!toToken &&
-    !!activeQuote
+    !!activeQuote &&
+    !isPriceImpactCalculating &&
+    !isPriceImpactTooHigh
 
   const isSwapping = swapStatus === SwapStatus.Swapping
 
@@ -523,6 +546,66 @@ export const SwapScreen = (): JSX.Element => {
     toToken
   })
 
+  const priceImpactItem = useMemo((): GroupListItem => {
+    let color: string
+    let displayText: string
+    let tooltipTitle: string
+    let tooltipDescription: string
+
+    if (priceImpactAvailability === PriceImpactAvailability.Calculating) {
+      return {
+        title: PRICE_IMPACT_ROW_TITLE,
+        value: <ActivityIndicator size="small" />
+      }
+    }
+
+    if (priceImpactAvailability === 'unavailable') {
+      color = theme.colors.$textDanger
+      displayText = PRICE_IMPACT_UNKNOWN_RISK_TITLE
+      tooltipTitle = PRICE_IMPACT_UNKNOWN_RISK_TITLE
+      tooltipDescription = PRICE_IMPACT_UNKNOWN_RISK_DESCRIPTION
+    } else if (priceImpactSeverity === PriceImpactSeverity.Critical) {
+      color = theme.colors.$textDanger
+      displayText = `${priceImpact?.toFixed(2)}% (High)`
+      tooltipTitle = PRICE_IMPACT_SWAP_DISABLED_TITLE
+      tooltipDescription = PRICE_IMPACT_SWAP_DISABLED_DESCRIPTION
+    } else if (priceImpactSeverity === PriceImpactSeverity.High) {
+      color = theme.colors.$textDanger
+      displayText = `${priceImpact?.toFixed(2)}% (High)`
+      tooltipTitle = PRICE_IMPACT_HIGH_TITLE
+      tooltipDescription = PRICE_IMPACT_TOOLTIP_BODY
+    } else {
+      color = theme.colors.$textSecondary
+      displayText =
+        priceImpact !== undefined ? `${priceImpact.toFixed(2)}%` : '—'
+      tooltipTitle = PRICE_IMPACT_ROW_TITLE
+      tooltipDescription = PRICE_IMPACT_TOOLTIP_BODY
+    }
+
+    return {
+      title: PRICE_IMPACT_ROW_TITLE,
+      value: (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Tooltip
+            title={tooltipTitle}
+            description={tooltipDescription}
+            button={{ text: 'Dismiss' }}
+            size={18}
+          />
+          <Text variant="body1" style={{ color }}>
+            {displayText}
+          </Text>
+        </View>
+      )
+    }
+  }, [
+    priceImpact,
+    priceImpactSeverity,
+    priceImpactAvailability,
+    theme.colors.$textDanger,
+    theme.colors.$textSecondary
+  ])
+
   const data = useMemo(() => {
     const items: GroupListItem[] = []
 
@@ -552,6 +635,8 @@ export const SwapScreen = (): JSX.Element => {
       })
     }
 
+    items.push(priceImpactItem)
+
     return items
   }, [
     fromToken,
@@ -563,6 +648,7 @@ export const SwapScreen = (): JSX.Element => {
     slippage,
     autoSlippage,
     isSwapping,
+    priceImpactItem,
     handleSelectPricingDetails,
     handleSelectSlippageDetails
   ])
