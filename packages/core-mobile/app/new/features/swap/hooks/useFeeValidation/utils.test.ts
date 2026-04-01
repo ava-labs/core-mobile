@@ -347,9 +347,7 @@ describe('getFeeEstimationError', () => {
     })
   })
 
-  it('returns undefined for', () => {
-    // getFeeEstimationError always returns a FusionQuoteError — it has no undefined path
-    // this is intentional: callers only invoke it when error is truthy
+  it('always returns a FusionQuoteError — never undefined', () => {
     const result = getFeeEstimationError(new Error('any'))
     expect(result).toBeDefined()
   })
