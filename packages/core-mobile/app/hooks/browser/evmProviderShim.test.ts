@@ -233,8 +233,8 @@ describe('buildEvmProviderShim', () => {
       expect(shim).toContain("rdns: 'app.core.mobile'")
     })
 
-    it('sets provider name to Core', () => {
-      expect(shim).toContain("name: 'Core'")
+    it('sets provider name to Core Mobile', () => {
+      expect(shim).toContain("name: 'Core Mobile'")
     })
 
     it('includes a base64 SVG icon', () => {
@@ -338,7 +338,7 @@ describe('buildEvmProviderShim', () => {
     })
   })
 
-  describe('desktop user-agent override', () => {
+  describe('desktop user-agent override (deferred)', () => {
     let shim: string
 
     beforeAll(() => {
@@ -354,8 +354,14 @@ describe('buildEvmProviderShim', () => {
       expect(shim).toContain('Chrome/')
     })
 
-    it('wraps the override in a try-catch for safety', () => {
-      expect(shim).toContain('catch(_uaErr)')
+    it('defers the override until after page load', () => {
+      expect(shim).toContain("window.addEventListener('load'")
+      expect(shim).toContain('_applyDesktopUA')
+      expect(shim).toContain('_uaOverridden')
+    })
+
+    it('has a fallback timeout for pages that do not fire load', () => {
+      expect(shim).toContain('setTimeout(_applyDesktopUA, 4000)')
     })
   })
 

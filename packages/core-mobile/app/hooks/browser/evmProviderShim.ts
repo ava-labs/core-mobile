@@ -57,25 +57,37 @@ export function buildEvmProviderShim({
   if (!doctypeCheck() || !suffixCheck() || !documentElementCheck()) return;
 
   // ──────────────────────────────────────────────
-  // 3. Desktop user-agent override
+  // 2. Desktop user-agent override (DEFERRED)
   // ──────────────────────────────────────────────
   // dApp wallet-connect libraries (RainbowKit, Web3Modal, etc.) render
   // a stripped-down mobile modal that hides EIP-6963 injected wallets.
   // Their desktop modals show all detected wallets including an
-  // "Installed" section. Overriding navigator.userAgent to a desktop
+  // "Installed" section.  Overriding navigator.userAgent to a desktop
   // string makes these libraries render the full desktop connect UI.
-  // CSS media queries still use the real viewport, so page layout stays
-  // mobile-responsive — only JS-based mobile detection is affected.
-  try {
-    var _desktopUA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
-    Object.defineProperty(navigator, 'userAgent', {
-      get: function() { return _desktopUA; },
-      configurable: true
-    });
-  } catch(_uaErr) {}
+  //
+  // IMPORTANT: The override is DEFERRED until after page load so that
+  // dApps can still detect the mobile environment during initialisation
+  // and auto-connect to window.ethereum (e.g. Aave, Uniswap).
+  // Once the page has loaded, the override activates — any connect modal
+  // opened afterwards (RainbowKit, Web3Modal) will render the desktop UI
+  // that shows EIP-6963 detected wallets.
+  var _desktopUA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+  var _uaOverridden = false;
+  function _applyDesktopUA() {
+    if (_uaOverridden) return;
+    _uaOverridden = true;
+    try {
+      Object.defineProperty(navigator, 'userAgent', {
+        get: function() { return _desktopUA; },
+        configurable: true
+      });
+    } catch(_e) {}
+  }
+  window.addEventListener('load', function() { setTimeout(_applyDesktopUA, 200); });
+  setTimeout(_applyDesktopUA, 4000);
 
   // ──────────────────────────────────────────────
-  // 4. State
+  // 3. State
   // ──────────────────────────────────────────────
   var _requestId = 0;
   var _callbacks = {};
@@ -91,7 +103,7 @@ export function buildEvmProviderShim({
   var _accounts = _address ? [_address] : [];
 
   // ──────────────────────────────────────────────
-  // 3. Native response / event bridge
+  // 4. Native response / event bridge
   // ──────────────────────────────────────────────
   window.__coreProviderRespond = function(id, error, result) {
     var cb = _callbacks[id];
