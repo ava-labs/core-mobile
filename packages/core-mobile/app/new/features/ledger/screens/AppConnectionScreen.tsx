@@ -36,7 +36,8 @@ export default function AppConnectionScreen({
   deviceName = 'Ledger Device',
   disconnectDevice,
   accountIndex,
-  showProgressDots = true
+  showProgressDots = true,
+  showConnectionToasts = true
 }: {
   selectedDerivationPath?: LedgerDerivationPathType
   completeStepTitle: string
@@ -47,6 +48,7 @@ export default function AppConnectionScreen({
   handleComplete: (keys: LedgerKeysByNetwork) => Promise<void>
   accountIndex: number
   showProgressDots?: boolean
+  showConnectionToasts?: boolean
 }): JSX.Element {
   const { back } = useRouter()
   const headerHeight = useEffectiveHeaderHeight()
@@ -190,7 +192,7 @@ export default function AppConnectionScreen({
       })
 
       // Show success toast notification
-      showSnackbar('Avalanche app connected')
+      if (showConnectionToasts) showSnackbar('Avalanche app connected')
       // if get avalanche keys succeeds move forward to solana connect
       setAppConnectionStep(
         isSolanaSupportBlocked
@@ -227,7 +229,8 @@ export default function AppConnectionScreen({
     deviceId,
     isDeveloperMode,
     isSolanaSupportBlocked,
-    selectedDerivationPath
+    selectedDerivationPath,
+    showConnectionToasts
   ])
 
   const handleConnectSolana = useCallback(async () => {
@@ -255,7 +258,7 @@ export default function AppConnectionScreen({
       }))
 
       // Show success toast notification
-      showSnackbar('Solana app connected')
+      if (showConnectionToasts) showSnackbar('Solana app connected')
 
       // Skip success step and go directly to complete
       setAppConnectionStep(AppConnectionStep.COMPLETE)
@@ -284,7 +287,7 @@ export default function AppConnectionScreen({
         [{ text: 'OK' }]
       )
     }
-  }, [accountIndex, deviceId])
+  }, [accountIndex, deviceId, showConnectionToasts])
 
   const handleSkipSolana = useCallback(() => {
     // Skip Solana and proceed to complete step
