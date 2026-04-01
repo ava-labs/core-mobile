@@ -85,11 +85,11 @@ export const AppConnectionOnboardingScreen = ({
         } catch (error) {
           Logger.error('Wallet creation failed', error)
           Alert.alert(
-            'Wallet Creation Failed',
+            'Wallet creation failed',
             error instanceof Error
               ? error.message
               : 'Failed to create Ledger wallet. Please try again.',
-            [{ text: 'OK' }]
+            [{ text: 'OK', onPress: handleCancel }]
           )
         } finally {
           setIsUpdatingWallet(false)
