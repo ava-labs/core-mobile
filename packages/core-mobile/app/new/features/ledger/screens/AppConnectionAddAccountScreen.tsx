@@ -104,7 +104,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
         Logger.error(
           'Account creation conditions not met, skipping account creation',
           {
-            hasAvalancheKeys: !!keysByNetwork.avalancheKeys,
+            hasAvalancheKeys: !!keysByNetwork?.avalancheKeys,
             hasConnectedDeviceId: !!device?.id,
             hasSelectedDerivationPath: !!derivationPathType,
             isUpdatingWallet

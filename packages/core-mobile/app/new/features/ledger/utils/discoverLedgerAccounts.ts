@@ -356,10 +356,6 @@ export const getActiveAccountIndices = async (
   // Always include index 0
   activeIndicesSet.add(0)
 
-  if (activeIndicesSet.size === 0) {
-    return [0]
-  }
-
   // Fill gaps up to the highest active index so we get a contiguous range.
   const maxActive = Math.max(...activeIndicesSet)
   const result: number[] = []
