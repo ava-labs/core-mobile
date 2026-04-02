@@ -20,6 +20,7 @@ import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesF
 import { getCachedXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { CurrentAvalancheAccount } from '@avalabs/avalanche-module'
 import { AgnosticRpcProvider, Request, RequestContext } from '../../types'
+import { sanitizeRpcParams } from '../../utils/sanitizeTransactionParams'
 
 export const handleRequestViaVMModule = async ({
   module,
@@ -89,7 +90,7 @@ export const handleRequestViaVMModule = async ({
     return
   }
 
-  const params = request.data.params.request.params
+  const params = sanitizeRpcParams(request.data.params.request.params)
   const method = request.method as unknown as VmModuleRpcMethod
 
   let context =
