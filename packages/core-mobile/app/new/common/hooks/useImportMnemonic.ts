@@ -2,7 +2,6 @@ import { useNavigation, useRouter } from 'expo-router'
 import { showSnackbar } from 'new/common/utils/toast'
 import { useCallback, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
 import { onWalletImported } from 'store/app/slice'
 import { AppThunkDispatch } from 'store/types'
@@ -34,9 +33,6 @@ export const useImportMnemonic = (): {
           })
         ).unwrap()
 
-        AnalyticsService.capture('MnemonicWalletImported', {
-          walletType: WalletType.MNEMONIC
-        })
         showSnackbar('Wallet imported successfully!')
 
         if (canGoBack()) {
