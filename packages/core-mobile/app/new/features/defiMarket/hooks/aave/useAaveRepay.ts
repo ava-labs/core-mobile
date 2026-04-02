@@ -13,6 +13,7 @@ import { useInAppRequest } from 'hooks/useInAppRequest'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { useETHSendTransaction } from 'common/hooks/useETHSendTransaction'
 import { ensureAllowance } from 'common/utils/evm/ensureAllowance'
+import { getOnChainErc20Balance } from 'common/utils/evm/getOnChainErc20Balance'
 import { WAVAX_ADDRESS } from 'features/swap/consts'
 import { TransactionParams } from '@avalabs/evm-module'
 import { AAVE_AVALANCHE3_POOL_PROXY_ABI } from '../../abis/aaveAvalanche3PoolProxy'
@@ -134,6 +135,18 @@ export const useAaveRepay = ({
       const repayAmountParam = isMaxRepay ? MAX_UINT256 : actualAmount
       const tokenAddress = market.asset.contractAddress as Address
       if (!tokenAddress) throw new Error('Token address not found')
+      if (isMaxRepay) {
+        const onChainBalance = await getOnChainErc20Balance({
+          tokenAddress,
+          userAddress: accountAddress,
+          provider
+        })
+        if (onChainBalance < actualAmount) {
+          throw new Error(
+            `Your ${market.asset.symbol} balance is no longer sufficient to repay the full loan due to accrued interest. Please enter a smaller repay amount.`
+          )
+        }
+      }
       const signAndSend = (
         txParams: [TransactionParams],
         context?: Record<string, unknown>
