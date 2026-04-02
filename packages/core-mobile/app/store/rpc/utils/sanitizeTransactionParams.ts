@@ -1,0 +1,25 @@
+/**
+ * Sanitizes RPC params before they reach the evm-module Zod validator.
+ *
+ * Some dapps (e.g. Snowscan) send `null` for optional transaction fields like
+ * `maxFeePerGas` and `maxPriorityFeePerGas`. The evm-module schema accepts
+ * `string | undefined` but rejects `null`, causing a ZodError.
+ *
+ * This function converts `null` values in transaction objects to `undefined`
+ * so the module can estimate gas fees itself — matching MetaMask behaviour.
+ */
+export function sanitizeRpcParams(params: unknown): unknown {
+  if (!Array.isArray(params)) return params
+
+  return params.map(item => {
+    if (item === null || typeof item !== 'object') return item
+
+    const sanitized: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(
+      item as Record<string, unknown>
+    )) {
+      sanitized[key] = value === null ? undefined : value
+    }
+    return sanitized
+  })
+}
