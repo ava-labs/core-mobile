@@ -454,7 +454,7 @@ class AccountsService {
     startIndex: number
     onAccountCreated?: (account: Account) => void
     scanWindow?: number
-  }): Promise<AccountCollection> {
+  }): Promise<{ accounts: AccountCollection; completedCleanly: boolean }> {
     /**
      * note:
      * adding accounts cannot be parallelized, they need to be added one-by-one.
@@ -466,7 +466,7 @@ class AccountsService {
       walletType === WalletType.MNEMONIC ||
       walletType === WalletType.KEYSTONE
     ) {
-      const discoveredAccounts = await this.discoverSeedBasedActiveAccounts({
+      const discovery = await this.discoverSeedBasedActiveAccounts({
         walletId,
         walletType,
         startIndex,
@@ -477,7 +477,7 @@ class AccountsService {
       // to the highest discovered index. This prevents index collisions
       // when addAccount uses accountsByWalletId.length as the next index.
       const contiguousAccounts = await this.fillDiscoveredAccountGaps({
-        discoveredAccounts,
+        discoveredAccounts: discovery.accounts,
         startIndex,
         walletId,
         walletType
@@ -498,7 +498,7 @@ class AccountsService {
         onAccountCreated?.(account)
       }
 
-      return accounts
+      return { accounts, completedCleanly: discovery.completedCleanly }
     }
 
     const activeAccountsCount = await this.getSeedlessActiveAccountCount()
@@ -520,7 +520,7 @@ class AccountsService {
       onAccountCreated?.(result.account)
     }
 
-    return accounts
+    return { accounts, completedCleanly: true }
   }
 
   async getSeedlessActiveAccountCount(): Promise<number> {
@@ -584,9 +584,13 @@ class AccountsService {
     startIndex?: number
     maxScan?: number
     scanWindow?: number
-  }): Promise<DiscoveredSeedBasedAccount[]> {
+  }): Promise<{
+    accounts: DiscoveredSeedBasedAccount[]
+    completedCleanly: boolean
+  }> {
     const discoveredAccounts: DiscoveredSeedBasedAccount[] = []
     let consecutiveInactive = 0
+    let stoppedDueToError = false
     let i = startIndex
     let currentScanWindow = Math.min(
       scanWindow,
@@ -705,12 +709,14 @@ class AccountsService {
           const addressResult = addressResults[k]
 
           if (status === 'unknown') {
+            stoppedDueToError = true
             shouldStop = true
             return false
           }
 
           if (status === 'active') {
             if (addressResult?.status !== 'fulfilled') {
+              stoppedDueToError = true
               shouldStop = true
               return false
             }
@@ -745,7 +751,7 @@ class AccountsService {
       }
     }
 
-    return discoveredAccounts
+    return { accounts: discoveredAccounts, completedCleanly: !stoppedDueToError }
   }
 
   // eslint-disable-next-line sonarjs/cognitive-complexity

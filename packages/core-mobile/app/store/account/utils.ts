@@ -119,13 +119,14 @@ export const discoverRemainingActiveAccounts = async ({
   }
 
   try {
-    const accounts = await AccountsService.fetchRemainingActiveAccounts({
-      walletId,
-      walletType,
-      startIndex,
-      onAccountCreated,
-      scanWindow
-    })
+    const { accounts, completedCleanly } =
+      await AccountsService.fetchRemainingActiveAccounts({
+        walletId,
+        walletType,
+        startIndex,
+        onAccountCreated,
+        scanWindow
+      })
 
     const accountIds = Object.keys(accounts)
 
@@ -143,7 +144,9 @@ export const discoverRemainingActiveAccounts = async ({
       })
     }
 
-    markWalletAsMigrated(walletId)
+    if (completedCleanly) {
+      markWalletAsMigrated(walletId)
+    }
     return { accounts, accountIds }
   } catch (error) {
     Logger.error('Failed to fetch remaining active accounts', error)

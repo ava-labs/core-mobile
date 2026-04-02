@@ -220,7 +220,7 @@ describe('AccountsService', () => {
             maxScan: number
             scanWindow: number
             maxConsecutiveInactive: number
-          }): Promise<Array<{ id: string; index: number }>>
+          }): Promise<{ accounts: Array<{ id: string; index: number }>; completedCleanly: boolean }>
         }
       ).discoverSeedBasedActiveAccounts({
         walletId: 'wallet-1',
@@ -237,8 +237,8 @@ describe('AccountsService', () => {
           accountIndex: 2
         })
       )
-      expect(result).toHaveLength(1)
-      expect(result[0]).toEqual(
+      expect(result.accounts).toHaveLength(1)
+      expect(result.accounts[0]).toEqual(
         expect.objectContaining({
           id: 'scan-1',
           index: 1
@@ -442,7 +442,7 @@ describe('AccountsService', () => {
             maxScan: number
             scanWindow: number
             maxConsecutiveInactive: number
-          }): Promise<Array<{ id: string; index: number }>>
+          }): Promise<{ accounts: Array<{ id: string; index: number }>; completedCleanly: boolean }>
         }
       ).discoverSeedBasedActiveAccounts({
         walletId: 'wallet-1',
@@ -467,7 +467,7 @@ describe('AccountsService', () => {
 
       const result = await discoveryPromise
 
-      expect(result).toEqual([
+      expect(result.accounts).toEqual([
         expect.objectContaining({
           id: 'scan-1',
           index: 1
@@ -539,13 +539,13 @@ describe('AccountsService', () => {
         )
         .mockResolvedValue('inactive')
 
-      const accounts = await AccountsService.fetchRemainingActiveAccounts({
+      const result = await AccountsService.fetchRemainingActiveAccounts({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
         startIndex: 1
       })
 
-      expect(Object.values(accounts)).toEqual([
+      expect(Object.values(result.accounts)).toEqual([
         expect.objectContaining({
           index: 1,
           addressC: '0x111',
@@ -560,34 +560,38 @@ describe('AccountsService', () => {
       const discoverSpy = jest
         .spyOn(
           AccountsService as unknown as {
-            discoverSeedBasedActiveAccounts: (params: unknown) => Promise<
-              Array<{
+            discoverSeedBasedActiveAccounts: (params: unknown) => Promise<{
+              accounts: Array<{
                 id: string
                 index: number
                 addresses: AddressRecord
               }>
-            >
+              completedCleanly: boolean
+            }>
           },
           'discoverSeedBasedActiveAccounts'
         )
-        .mockResolvedValue([
-          {
-            id: 'scan-1',
-            index: 1,
-            addresses: createAddresses({
-              [NetworkVMType.EVM]: '0xActive1',
-              [NetworkVMType.BITCOIN]: 'bc1-active-1'
-            })
-          },
-          {
-            id: 'scan-3',
-            index: 3,
-            addresses: createAddresses({
-              [NetworkVMType.EVM]: '0xActive3',
-              [NetworkVMType.BITCOIN]: 'bc1-active-3'
-            })
-          }
-        ])
+        .mockResolvedValue({
+          accounts: [
+            {
+              id: 'scan-1',
+              index: 1,
+              addresses: createAddresses({
+                [NetworkVMType.EVM]: '0xActive1',
+                [NetworkVMType.BITCOIN]: 'bc1-active-1'
+              })
+            },
+            {
+              id: 'scan-3',
+              index: 3,
+              addresses: createAddresses({
+                [NetworkVMType.EVM]: '0xActive3',
+                [NetworkVMType.BITCOIN]: 'bc1-active-3'
+              })
+            }
+          ],
+          completedCleanly: true
+        })
 
       // deriveAddresses will be called for the gap at index 2
       ;(ModuleManager.deriveAddresses as jest.Mock).mockResolvedValue(
@@ -597,13 +601,13 @@ describe('AccountsService', () => {
         })
       )
 
-      const accounts = await AccountsService.fetchRemainingActiveAccounts({
+      const result = await AccountsService.fetchRemainingActiveAccounts({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
         startIndex: 1
       })
 
-      const accountList = Object.values(accounts).sort(
+      const accountList = Object.values(result.accounts).sort(
         (a, b) => a.index - b.index
       )
 

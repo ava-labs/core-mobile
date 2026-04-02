@@ -395,7 +395,7 @@ class WalletService {
       accountIndex
     })
 
-    return resolveAnyTrue([
+    const checks = [
       this.getAddressesForExtendedPublicKey({
         extendedPublicKey: xpubXP,
         networkType: NetworkVMType.AVM,
@@ -408,7 +408,9 @@ class WalletService {
         isTestnet,
         onlyWithActivity: true
       }).then(hasActiveDerivedAddresses)
-    ])
+    ]
+
+    return raceAnyTrueOrThrow(checks)
   }
 
   private async getAddressesForExtendedPublicKey({
@@ -471,40 +473,52 @@ class WalletService {
   }
 }
 
-const resolveAnyTrue = async (checks: Promise<boolean>[]): Promise<boolean> => {
+/**
+ * Races boolean promises, returning true as soon as any resolves true.
+ * Unlike the previous resolveAnyTrue, rejections are NOT swallowed —
+ * if no promise resolves true and at least one rejected, the first
+ * rejection is re-thrown so callers can treat the result as 'unknown'.
+ */
+const raceAnyTrueOrThrow = async (
+  checks: Promise<boolean>[]
+): Promise<boolean> => {
   if (checks.length === 0) {
     return false
   }
 
+  type SettledResult = {
+    index: number
+    value: boolean
+    error?: unknown
+  }
+
   const wrappedChecks = checks.map((check, index) =>
     check
-      .then(value => ({
-        index,
-        value
-      }))
-      .catch(() => ({
-        index,
-        value: false
-      }))
+      .then(value => ({ index, value }))
+      .catch((error: unknown) => ({ index, value: false, error }))
   )
 
   const remaining = new Set(wrappedChecks.map((_, index) => index))
+  let firstError: unknown
 
   while (remaining.size > 0) {
-    const result = await Promise.race(
-      [...remaining].map(
-        index =>
-          wrappedChecks[index] as Promise<{
-            index: number
-            value: boolean
-          }>
-      )
+    const result: SettledResult = await Promise.race(
+      [...remaining].map(index => wrappedChecks[index] as Promise<SettledResult>)
     )
 
     remaining.delete(result.index)
+
     if (result.value) {
       return true
     }
+
+    if (result.error !== undefined && firstError === undefined) {
+      firstError = result.error
+    }
+  }
+
+  if (firstError !== undefined) {
+    throw firstError
   }
 
   return false
