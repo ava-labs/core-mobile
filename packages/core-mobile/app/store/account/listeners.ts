@@ -182,7 +182,7 @@ const initAccounts = async (
     ) {
       await deriveMissingSeedlessSessionKeys(activeWallet.id)
       // reload only when there are accounts without Solana addresses
-      reloadAccounts(_action, listenerApi)
+      await reloadAccounts(_action, listenerApi)
     }
   }
 
@@ -301,7 +301,7 @@ const migrateSolanaAddressesIfNeeded = async (
       await deriveMissingSeedlessSessionKeys(seedlessWallet.id)
     }
     // reload only when there are accounts without Solana addresses
-    reloadAccounts(_action, listenerApi)
+    await reloadAccounts(_action, listenerApi)
   }
 }
 
