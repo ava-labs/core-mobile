@@ -220,7 +220,10 @@ describe('AccountsService', () => {
             maxScan: number
             scanWindow: number
             maxConsecutiveInactive: number
-          }): Promise<{ accounts: Array<{ id: string; index: number }>; completedCleanly: boolean }>
+          }): Promise<{
+            accounts: Array<{ id: string; index: number }>
+            completedCleanly: boolean
+          }>
         }
       ).discoverSeedBasedActiveAccounts({
         walletId: 'wallet-1',
@@ -442,7 +445,10 @@ describe('AccountsService', () => {
             maxScan: number
             scanWindow: number
             maxConsecutiveInactive: number
-          }): Promise<{ accounts: Array<{ id: string; index: number }>; completedCleanly: boolean }>
+          }): Promise<{
+            accounts: Array<{ id: string; index: number }>
+            completedCleanly: boolean
+          }>
         }
       ).discoverSeedBasedActiveAccounts({
         walletId: 'wallet-1',

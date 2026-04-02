@@ -751,7 +751,10 @@ class AccountsService {
       }
     }
 
-    return { accounts: discoveredAccounts, completedCleanly: !stoppedDueToError }
+    return {
+      accounts: discoveredAccounts,
+      completedCleanly: !stoppedDueToError
+    }
   }
 
   // eslint-disable-next-line sonarjs/cognitive-complexity

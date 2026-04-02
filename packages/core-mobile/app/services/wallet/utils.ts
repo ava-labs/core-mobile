@@ -21,8 +21,7 @@ import {
 export const hasActiveDerivedAddresses = (
   response: GetAddressesResponse
 ): boolean =>
-  response.externalAddresses.length > 0 ||
-  response.internalAddresses.length > 0
+  response.externalAddresses.length > 0 || response.internalAddresses.length > 0
 
 export const MAINNET_AVAX_ASSET_ID = Avalanche.MainnetContext.avaxAssetID
 export const TESTNET_AVAX_ASSET_ID = Avalanche.FujiContext.avaxAssetID

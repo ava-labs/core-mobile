@@ -503,7 +503,9 @@ const raceAnyTrueOrThrow = async (
 
   while (remaining.size > 0) {
     const result: SettledResult = await Promise.race(
-      [...remaining].map(index => wrappedChecks[index] as Promise<SettledResult>)
+      [...remaining].map(
+        index => wrappedChecks[index] as Promise<SettledResult>
+      )
     )
 
     remaining.delete(result.index)
