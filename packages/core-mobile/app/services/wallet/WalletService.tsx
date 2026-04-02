@@ -383,6 +383,7 @@ class WalletService {
 
     // Keystone currently exposes an XP xpub only for account 0.
     // Skip non-primary accounts until the SDK supports per-account XP xpubs.
+    // See: https://ava-labs.atlassian.net/browse/CP-12615
     if (walletType === WalletType.KEYSTONE && accountIndex > 0) {
       return false
     }

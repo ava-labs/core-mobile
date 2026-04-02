@@ -419,6 +419,8 @@ export const addAccountListeners = (
         return
       }
 
+      // scanWindow controls how many accounts are checked per batch,
+      // not the total number of discoverable accounts.
       await migrateRemainingActiveAccounts({
         listenerApi,
         walletId,
