@@ -11,6 +11,7 @@ import { useInAppRequest } from 'hooks/useInAppRequest'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { useETHSendTransaction } from 'common/hooks/useETHSendTransaction'
 import { ensureAllowance } from 'common/utils/evm/ensureAllowance'
+import { getOnChainErc20Balance } from 'common/utils/evm/getOnChainErc20Balance'
 import { TransactionParams } from '@avalabs/evm-module'
 import { BENQI_Q_TOKEN } from '../../abis/benqiQToken'
 import { BENQI_QI_AVAX } from '../../abis/benqiQiAvax'
@@ -132,6 +133,19 @@ export const useBenqiRepay = ({
       const underlyingAddress = market.asset.contractAddress
       if (!underlyingAddress) {
         throw new Error('Underlying token address not found')
+      }
+
+      if (isMaxRepay) {
+        const onChainBalance = await getOnChainErc20Balance({
+          tokenAddress: underlyingAddress,
+          userAddress: address,
+          provider
+        })
+        if (onChainBalance < amount.toSubUnit()) {
+          throw new Error(
+            `Your ${market.asset.symbol} balance is no longer sufficient to repay the full loan due to accrued interest. Please enter a smaller repay amount.`
+          )
+        }
       }
 
       const chainId = getEvmCaip2ChainId(market.network.chainId)
