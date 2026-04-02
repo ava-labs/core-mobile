@@ -1,26 +1,33 @@
 #!/usr/bin/env node
 /**
- * Estimates Appium/WebdriverIO e2e "coverage" of app features by correlating
- * spec paths under e2e-appium/ (and light content hints) with feature folders
- * under app/new/features and modal routes. Deprecated Detox tests in e2e/ are
- * intentionally excluded. This is not line coverage — it highlights gaps
- * between product surface and automated Appium specs.
+ * Estimates Appium/WebdriverIO e2e "coverage" by correlating `e2e-appium` specs
+ * with top-level folders under `packages/core-mobile/app/new/features/` only
+ * (not legacy `app/`, not other packages). Modal routes are separate. Deprecated
+ * Detox tests in e2e/ are excluded. This is not line coverage.
  *
- * Also scans `testID={...}` values under each feature’s `.tsx` files and checks
- * whether those strings (or dynamic prefixes before `${`) appear in
- * `e2e-appium` `*.spec.ts` files only (not page objects or locators). A feature
- * counts as covered if either a spec path matches OR at least one declared
- * testID string appears in a spec file.
+ * For each feature folder, `FEATURE_SIGNALS` maps spec paths (and optional regex)
+ * to that feature. Non-test `.tsx` files are scanned for `testID={...}`; a
+ * feature is “covered” (checklist O) if a spec path matches **or** any declared
+ * testID string appears in a `*.spec.ts` file. Using testIDs in production UI is
+ * optional; path-based matching alone can justify O.
  *
- * **Total coverage %** (summary): average of (1) % of mapped features with a
- * matching spec path and (2) % of all declared testIDs (across features) that
- * appear in spec files. If the app declares no testIDs, (2) is skipped and the
- * total equals the spec-path % only.
+ * **Total coverage %** = % of in-scope **mapped** features that are covered by that
+ * union (same as checklist O among those rows). A separate **testID literal %**
+ * (share of declared IDs that appear in `*.spec.ts` only) is reported for
+ * curiosity — not blended into Total, since teams often keep IDs in pages/locators.
+ *
+ * Folders in E2E_COVERAGE_EXCLUDED_FEATURES (hardware wallets, seedless-only flows,
+ * QR / WalletConnect, store in-app review, deprecated code such as bridge, etc.)
+ * are omitted from percent denominators and gap lists. They still appear in the
+ * checklist as △ for visibility.
  *
  * Usage:
  *   node scripts/e2e-feature-coverage.js
  *   node scripts/e2e-feature-coverage.js --json
  *   node scripts/e2e-feature-coverage.js --verbose
+ *
+ * Text output lists each `app/new/features/<name>` folder with O / X / △. JSON
+ * includes per-feature detail and modals.
  */
 
 const fs = require('fs')
@@ -53,6 +60,7 @@ const FEATURE_SIGNALS = {
     pathSubstrings: ['customnetwork', 'addcustomnetwork', 'networks']
   },
   appReview: { pathSubstrings: ['appreview', 'app_review'] },
+  // ApprovalScreen: dApp / WalletConnect (and similar RPC) sign & approve UI — not swap/send screens themselves
   approval: {
     pathSubstrings: ['approval'],
     content: /\b(approval|signMessage|signTransaction)\b/i
@@ -62,6 +70,7 @@ const FEATURE_SIGNALS = {
     pathSubstrings: ['browser'],
     content: /\b(browserTab|browser_tab|webview)\b/i
   },
+  // Thin buy entry; Meld on/off-ramp UI lives in `meld` — separate folder, separate coverage row
   buy: { pathSubstrings: ['buy', 'onramp'] },
   collectibleSend: {
     pathSubstrings: ['collectible', 'sendnft', 'sendethnft', 'nft']
@@ -73,7 +82,8 @@ const FEATURE_SIGNALS = {
   editContact: { pathSubstrings: ['contact', 'addressbook'] },
   keystone: { pathSubstrings: ['keystone'] },
   ledger: { pathSubstrings: ['ledger'] },
-  meld: { pathSubstrings: ['meld'] },
+  // Same Appium specs as `buy` (onramp); implementation lives here — count both O when buy flow is tested
+  meld: { pathSubstrings: ['meld', 'buy', 'onramp'] },
   nestEgg: { pathSubstrings: ['nestegg', 'nest_egg'] },
   notifications: {
     pathSubstrings: ['notification'],
@@ -137,7 +147,7 @@ const FEATURE_SIGNALS = {
   },
   track: {
     pathSubstrings: ['tracktab/', 'trending', 'favorites'],
-    content: /\b(trackTab|track_tab|tapTrack)\b/i
+    content: /\b(trackTab|track_tab|tapTrackTab|swapOnTrack|tapTrack)\b/i
   },
   transactionSuccessful: {
     pathSubstrings: ['transaction.spec', 'successtoast'],
@@ -151,6 +161,11 @@ const FEATURE_SIGNALS = {
       'importwallet',
       'wallets'
     ]
+  },
+  // No dedicated watchAsset spec; map to Track / favorites–style E2E (e.g. swap.spec tapTrackTab + swapOnTrack)
+  watchAsset: {
+    pathSubstrings: ['favorites', 'trending', 'tracktab/'],
+    content: /\b(trackTab|track_tab|tapTrackTab|swapOnTrack|tapTrack)\b/i
   }
 }
 
@@ -216,6 +231,49 @@ const MODAL_FEATURE_LINK = {
   withdraw: 'send',
   addAccountAppConnection: 'ledger',
   appUpdate: 'onboarding'
+}
+
+/**
+ * `app/new/features` directory names not expected to be covered by Appium UI E2E.
+ * Excluded from feature-level % denominators, testID totals, the mapped-feature gap
+ * list, and modal metrics when coverage would rely only on a linked excluded feature.
+ */
+const E2E_COVERAGE_EXCLUDED_FEATURES = new Set([
+  'appReview',
+  'bridge',
+  'keystone',
+  'ledger',
+  'nestEgg',
+  'rpc'
+])
+
+/** @param {string} featureFolder */
+function excludedFromCoverageMetrics(featureFolder) {
+  return E2E_COVERAGE_EXCLUDED_FEATURES.has(featureFolder)
+}
+
+/**
+ * Modals tied only to an excluded feature (no spec path hit) are out of scope.
+ * @param {{ coveredByPath: boolean, linkedFeature: string | null }} m
+ */
+function modalInCoverageMetricsScope(m) {
+  if (m.coveredByPath) return true
+  const lf = m.linkedFeature
+  if (!lf) return true
+  return !E2E_COVERAGE_EXCLUDED_FEATURES.has(lf)
+}
+
+/**
+ * @param {string} f feature folder name
+ * @param {Record<string, { tests: string[], testIdsDeclared: number, testIdsReferencedInSpec: number }>} stats
+ * @returns {'O' | 'X' | '△'}
+ */
+function featureCoverageMark(f, stats) {
+  if (excludedFromCoverageMetrics(f)) return '△'
+  const s = stats[f]
+  const spec = s.tests.length > 0
+  const tid = s.testIdsDeclared > 0 && s.testIdsReferencedInSpec > 0
+  return spec || tid ? 'O' : 'X'
 }
 
 /** Only Appium specs; packages/core-mobile/e2e/ (Detox) is deprecated. */
@@ -565,24 +623,29 @@ function main() {
   }
 
   const featuresWithSignals = featureNames.filter(f => FEATURE_SIGNALS[f])
-  const coveredBySpec = featuresWithSignals.filter(
+  const excludedFeatureList = [...E2E_COVERAGE_EXCLUDED_FEATURES].sort()
+  const featuresWithSignalsInScope = featuresWithSignals.filter(
+    f => !excludedFromCoverageMetrics(f)
+  )
+
+  const coveredBySpec = featuresWithSignalsInScope.filter(
     f => featureStats[f].tests.length > 0
   ).length
   const specPct =
-    featuresWithSignals.length === 0
+    featuresWithSignalsInScope.length === 0
       ? 0
-      : Math.round((100 * coveredBySpec) / featuresWithSignals.length)
+      : Math.round((100 * coveredBySpec) / featuresWithSignalsInScope.length)
 
-  const coveredByTestId = featuresWithSignals.filter(f => {
+  const coveredByTestId = featuresWithSignalsInScope.filter(f => {
     const s = featureStats[f]
     return s.testIdsDeclared > 0 && s.testIdsReferencedInSpec > 0
   }).length
   const testIdPct =
-    featuresWithSignals.length === 0
+    featuresWithSignalsInScope.length === 0
       ? 0
-      : Math.round((100 * coveredByTestId) / featuresWithSignals.length)
+      : Math.round((100 * coveredByTestId) / featuresWithSignalsInScope.length)
 
-  const coveredEither = featuresWithSignals.filter(f => {
+  const coveredEither = featuresWithSignalsInScope.filter(f => {
     const s = featureStats[f]
     const spec = s.tests.length > 0
     const tid =
@@ -590,13 +653,14 @@ function main() {
     return spec || tid
   }).length
   const eitherPct =
-    featuresWithSignals.length === 0
+    featuresWithSignalsInScope.length === 0
       ? 0
-      : Math.round((100 * coveredEither) / featuresWithSignals.length)
+      : Math.round((100 * coveredEither) / featuresWithSignalsInScope.length)
 
   let totalDeclaredTestIds = 0
   let totalReferencedTestIdsInSpec = 0
   for (const f of featureNames) {
+    if (excludedFromCoverageMetrics(f)) continue
     const s = featureStats[f]
     totalDeclaredTestIds += s.testIdsDeclared
     totalReferencedTestIdsInSpec += s.testIdsReferencedInSpec
@@ -607,10 +671,7 @@ function main() {
       : Math.round(
           (100 * totalReferencedTestIdsInSpec) / totalDeclaredTestIds
         )
-  const totalCoveragePercent =
-    testIdLiteralInSpecPct === null
-      ? specPct
-      : Math.round((specPct + testIdLiteralInSpecPct) / 2)
+  const totalCoveragePercent = eitherPct
 
   let modals = []
   if (fs.existsSync(modalsDir)) {
@@ -647,16 +708,17 @@ function main() {
     }
   })
 
-  const coveredModalsPath = modalCoverage.filter(m => m.coveredByPath).length
-  const coveredModalsEither = modalCoverage.filter(m => m.covered).length
+  const modalsInScope = modalCoverage.filter(modalInCoverageMetricsScope)
+  const coveredModalsPath = modalsInScope.filter(m => m.coveredByPath).length
+  const coveredModalsEither = modalsInScope.filter(m => m.covered).length
   const modalPctPath =
-    modals.length === 0
+    modalsInScope.length === 0
       ? 0
-      : Math.round((100 * coveredModalsPath) / modals.length)
+      : Math.round((100 * coveredModalsPath) / modalsInScope.length)
   const modalPctEither =
-    modals.length === 0
+    modalsInScope.length === 0
       ? 0
-      : Math.round((100 * coveredModalsEither) / modals.length)
+      : Math.round((100 * coveredModalsEither) / modalsInScope.length)
 
   if (json) {
     console.log(
@@ -669,8 +731,12 @@ function main() {
             testIdsReferencedInSpecTotal: totalReferencedTestIdsInSpec,
             testIdLiteralCoverageInSpecPercent: testIdLiteralInSpecPct,
             totalCoveragePercent,
+            totalCoveragePercentBasis:
+              'inScopeMappedFeatures_union_specPathOrTestIdInSpec',
             featuresTotal: featureNames.length,
             featuresWithMapping: featuresWithSignals.length,
+            featuresExcludedFromMetrics: excludedFeatureList,
+            featuresWithMappingInScope: featuresWithSignalsInScope.length,
             featuresTouchedBySpecPath: coveredBySpec,
             featureSpecPathCoveragePercent: specPct,
             featuresWithDeclaredTestIdsReferencedInSpec: coveredByTestId,
@@ -678,6 +744,7 @@ function main() {
             featuresTouchedBySpecOrTestIdInSpec: coveredEither,
             featureCombinedCoveragePercent: eitherPct,
             modalsTotal: modals.length,
+            modalsInScopeForMetrics: modalsInScope.length,
             modalsTouchedByE2ePath: coveredModalsPath,
             modalPathCoveragePercent: modalPctPath,
             modalsTouchedByPathOrLinkedFeature: coveredModalsEither,
@@ -695,6 +762,8 @@ function main() {
               name: f,
               ...rest,
               hasMapping: Boolean(FEATURE_SIGNALS[f]),
+              excludedFromCoverageMetrics: excludedFromCoverageMetrics(f),
+              coverageMark: featureCoverageMark(f, featureStats),
               coveredBySpecPath: s.tests.length > 0,
               coveredByTestIdInSpec:
                 s.testIdsDeclared > 0 && s.testIdsReferencedInSpec > 0,
@@ -707,7 +776,10 @@ function main() {
             }
           }),
           tests: testToFeatures,
-          modals: modalCoverage
+          modals: modalCoverage.map(m => ({
+            ...m,
+            inCoverageMetricsScope: modalInCoverageMetricsScope(m)
+          }))
         },
         null,
         2
@@ -718,32 +790,45 @@ function main() {
 
   console.log('Appium e2e ↔ feature coverage (heuristic, not line coverage)')
   console.log('Package:', pkgRoot)
+  console.log(`Features: app/new/features/<folder> → ${featuresDir}`)
   console.log('Specs:   e2e-appium/ only (e2e/ Detox excluded)')
-  console.log('testIDs: matched only inside *.spec.ts (not pages/locators)')
+  console.log('testIDs: all feature .tsx (excl. *.test.tsx); matched in *.spec.ts only (not pages/locators)')
+  console.log(
+    `Excluded from metrics (△): ${excludedFeatureList.join(', ')} (${excludedFeatureList.length} folders)`
+  )
+  console.log(
+    '  → Percent denominators omit △ folders. Total % = checklist O rate for in-scope mapped features (spec path OR testID in *.spec.ts).'
+  )
   console.log('')
-  if (testIdLiteralInSpecPct === null) {
+  console.log(
+    `Total coverage:    ${totalCoveragePercent}%  (${coveredEither}/${featuresWithSignalsInScope.length} in-scope mapped features — spec path match OR ≥1 feature testID in a *.spec.ts)`
+  )
+  if (testIdLiteralInSpecPct !== null) {
     console.log(
-      `Total coverage:    ${totalCoveragePercent}%  (spec-path only; no testIDs declared in feature .tsx)`
+      `Supplemental:      testID strings in *.spec.ts only: ${testIdLiteralInSpecPct}% (${totalReferencedTestIdsInSpec}/${totalDeclaredTestIds} IDs on in-scope .tsx — often low if IDs live in pages/locators)`
     )
   } else {
     console.log(
-      `Total coverage:    ${totalCoveragePercent}%  (average of spec-path ${specPct}% and testID-in-spec ${testIdLiteralInSpecPct}% — ${totalReferencedTestIdsInSpec}/${totalDeclaredTestIds} IDs found in spec files)`
+      'Supplemental:      no testIDs declared on in-scope feature .tsx (testID literal % N/A)'
     )
   }
   console.log(
-    `Features (mapped): ${coveredEither}/${featuresWithSignals.length} with spec path OR testID in a spec (${eitherPct}%)  [union]`
+    `Breakdown (same denominator): ${coveredBySpec}/${featuresWithSignalsInScope.length} spec-path only (${specPct}%)`
   )
   console.log(
-    `                   ${coveredBySpec}/${featuresWithSignals.length} with ≥1 matching Appium spec path (${specPct}%)`
+    `                              ${coveredByTestId}/${featuresWithSignalsInScope.length} ≥1 feature testID in a *.spec.ts (${testIdPct}%)`
   )
   console.log(
-    `                   ${coveredByTestId}/${featuresWithSignals.length} with ≥1 declared testID appearing in a spec file (${testIdPct}%)`
+    `Mapping scope:     ${featuresWithSignals.length} folders with FEATURE_SIGNALS; ${featuresWithSignals.length - featuresWithSignalsInScope.length} of those excluded (△)`
   )
   console.log(
-    `Modals:   ${coveredModalsPath}/${modals.length} path/filename match (${modalPctPath}%)`
+    `Modals (in scope): ${coveredModalsPath}/${modalsInScope.length} path/filename match (${modalPctPath}%)`
   )
   console.log(
-    `          ${coveredModalsEither}/${modals.length} path match OR linked feature (spec OR testID) (${modalPctEither}%)`
+    `                   ${coveredModalsEither}/${modalsInScope.length} path match OR linked feature (spec OR testID) (${modalPctEither}%)`
+  )
+  console.log(
+    `                   (${modals.length} modal routes; ${modals.length - modalsInScope.length} omitted — no path hit and linked feature excluded from metrics)`
   )
   console.log(
     `Appium: ${testFiles.length} spec files scanned for paths + testID text`
@@ -751,9 +836,49 @@ function main() {
   console.log('')
 
   console.log(
+    'All app/new/features folders (order: O A–Z, then all X by .tsx count ↓, then all △ by .tsx count ↓):'
+  )
+  console.log(
+    '  O  = spec path heuristic match OR any declared testID from that feature appears in a *.spec.ts'
+  )
+  console.log(
+    '  X  = in-scope gap: add/extend Appium specs (or FEATURE_SIGNALS / testIDs)'
+  )
+  console.log(
+    '  △  = excluded from metrics (see E2E_COVERAGE_EXCLUDED_FEATURES)'
+  )
+  console.log('')
+  const nameColWidth = Math.max(...featureNames.map(n => n.length), 1)
+  const sortedFeatureNamesForList = [...featureNames].sort((a, b) => {
+    const markA = featureCoverageMark(a, featureStats)
+    const markB = featureCoverageMark(b, featureStats)
+    const listTier = m => {
+      if (m === 'O') return 0
+      if (m === 'X') return 1
+      return 2
+    }
+    const byTier = listTier(markA) - listTier(markB)
+    if (byTier !== 0) return byTier
+    if (markA === 'O') return a.localeCompare(b)
+    const ca = featureStats[a].components
+    const cb = featureStats[b].components
+    if (cb !== ca) return cb - ca
+    const ta = featureStats[a].testIdsDeclared
+    const tb = featureStats[b].testIdsDeclared
+    if (tb !== ta) return tb - ta
+    return a.localeCompare(b)
+  })
+  for (const f of sortedFeatureNamesForList) {
+    const mark = featureCoverageMark(f, featureStats)
+    const unmapped = !FEATURE_SIGNALS[f] ? '  [no FEATURE_SIGNALS in script]' : ''
+    console.log(`${mark}  ${f.padEnd(nameColWidth)}${unmapped}`)
+  }
+  console.log('')
+
+  console.log(
     'Mapped features with neither spec path nor testID string in any spec:'
   )
-  for (const f of featuresWithSignals) {
+  for (const f of featuresWithSignalsInScope) {
     const s = featureStats[f]
     const spec = s.tests.length > 0
     const tid =
@@ -782,7 +907,8 @@ function main() {
     for (const f of featureNames) {
       if (!FEATURE_SIGNALS[f]) continue
       const tests = featureStats[f].tests
-      console.log(`\n${f} (${tests.length}):`)
+      const ex = excludedFromCoverageMetrics(f) ? ' [excluded from metrics]' : ''
+      console.log(`\n${f} (${tests.length})${ex}:`)
       for (const t of [...new Set(tests)].sort()) {
         console.log(`  ${t}`)
       }
@@ -807,9 +933,12 @@ function main() {
         }
       }
     }
-    console.log('\nModals with no path match AND no linked-feature (spec OR testID):')
+    console.log(
+      '\nModals (in scope) with no path match AND no linked-feature (spec OR testID):'
+    )
     for (const m of modalCoverage) {
-      if (!m.covered) console.log(`  - ${m.modal}`)
+      if (!modalInCoverageMetricsScope(m) || m.covered) continue
+      console.log(`  - ${m.modal}`)
     }
   } else {
     console.log('Run with --verbose for per-feature spec lists and unmatched modals.')
