@@ -28,6 +28,7 @@ import { postV1GetAddresses } from 'utils/api/generated/profileApi.client'
 import { profileApiClient } from 'utils/api/clients/profileApiClient'
 import {
   getAddressDerivationPath,
+  hasActiveDerivedAddresses,
   isAvalancheTransactionRequest,
   isBtcTransactionRequest,
   isSolanaTransactionRequest
@@ -469,9 +470,6 @@ class WalletService {
     ].includes(walletType)
   }
 }
-
-const hasActiveDerivedAddresses = (response: GetAddressesResponse): boolean =>
-  response.externalAddresses.length > 0 || response.internalAddresses.length > 0
 
 const resolveAnyTrue = async (checks: Promise<boolean>[]): Promise<boolean> => {
   if (checks.length === 0) {
