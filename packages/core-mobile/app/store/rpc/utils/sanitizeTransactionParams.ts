@@ -7,6 +7,10 @@
  *
  * This function converts `null` values in transaction objects to `undefined`
  * so the module can estimate gas fees itself — matching MetaMask behaviour.
+ *
+ * Intentionally shallow: only sanitizes top-level properties of objects in the
+ * array. Nested objects (e.g. accessList entries) are passed through as-is,
+ * since the evm-module schema only has flat optional string fields at the top level.
  */
 export function sanitizeRpcParams(params: unknown): unknown {
   if (!Array.isArray(params)) return params

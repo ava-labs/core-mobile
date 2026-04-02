@@ -75,4 +75,24 @@ describe('sanitizeRpcParams', () => {
     expect(sanitizeRpcParams(null)).toBeNull()
     expect(sanitizeRpcParams('hello')).toBe('hello')
   })
+
+  it('preserves nested objects within array items', () => {
+    const params = [
+      {
+        from: '0xabc',
+        accessList: [{ address: '0x1', storageKeys: ['0x2'] }],
+        maxFeePerGas: null
+      }
+    ]
+
+    const result = sanitizeRpcParams(params)
+
+    expect(result).toEqual([
+      {
+        from: '0xabc',
+        accessList: [{ address: '0x1', storageKeys: ['0x2'] }],
+        maxFeePerGas: undefined
+      }
+    ])
+  })
 })

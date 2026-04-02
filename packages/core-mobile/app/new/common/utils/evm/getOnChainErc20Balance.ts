@@ -10,6 +10,12 @@ export async function getOnChainErc20Balance({
   userAddress: string
   provider: JsonRpcBatchInternal
 }): Promise<bigint> {
-  const contract = ERC20__factory.connect(tokenAddress, provider)
-  return contract.balanceOf(userAddress)
+  try {
+    const contract = ERC20__factory.connect(tokenAddress, provider)
+    return await contract.balanceOf(userAddress)
+  } catch {
+    throw new Error(
+      `Failed to verify on-chain balance for token ${tokenAddress}`
+    )
+  }
 }

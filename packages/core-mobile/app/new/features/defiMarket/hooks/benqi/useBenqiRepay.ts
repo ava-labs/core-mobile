@@ -128,20 +128,26 @@ export const useBenqiRepay = ({
 
       // ERC20 qToken: repayBorrow(repayAmount)
       // User must approve qToken to spend their underlying
-      const repayAmount = isMaxRepay ? MAX_UINT256 : amount.toSubUnit()
+      const actualAmount = amount.toSubUnit()
+      const repayAmount = isMaxRepay ? MAX_UINT256 : actualAmount
 
       const underlyingAddress = market.asset.contractAddress
       if (!underlyingAddress) {
         throw new Error('Underlying token address not found')
       }
 
+      // Pre-flight balance check: MAX_UINT256 resolves to the real-time debt
+      // on-chain (including interest accrued since the UI fetched data). If the
+      // user's token balance can't cover that, the tx would revert. Note: a
+      // small race window remains (interest accrues during the approval step),
+      // but this eliminates the vast majority of failures.
       if (isMaxRepay) {
         const onChainBalance = await getOnChainErc20Balance({
           tokenAddress: underlyingAddress,
           userAddress: address,
           provider
         })
-        if (onChainBalance < amount.toSubUnit()) {
+        if (onChainBalance < actualAmount) {
           throw new Error(
             `Your ${market.asset.symbol} balance is no longer sufficient to repay the full loan due to accrued interest. Please enter a smaller repay amount.`
           )

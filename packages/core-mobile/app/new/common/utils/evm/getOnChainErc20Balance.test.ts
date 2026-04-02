@@ -40,6 +40,8 @@ describe('getOnChainErc20Balance', () => {
         userAddress: '0xUserAddress',
         provider: mockProvider
       })
-    ).rejects.toThrow('RPC error')
+    ).rejects.toThrow(
+      'Failed to verify on-chain balance for token 0xTokenAddress'
+    )
   })
 })

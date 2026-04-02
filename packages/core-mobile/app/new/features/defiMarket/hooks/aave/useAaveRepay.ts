@@ -135,6 +135,11 @@ export const useAaveRepay = ({
       const repayAmountParam = isMaxRepay ? MAX_UINT256 : actualAmount
       const tokenAddress = market.asset.contractAddress as Address
       if (!tokenAddress) throw new Error('Token address not found')
+      // Pre-flight balance check: MAX_UINT256 resolves to the real-time debt
+      // on-chain (including interest accrued since the UI fetched data). If the
+      // user's token balance can't cover that, the tx would revert. Note: a
+      // small race window remains (interest accrues during the approval step),
+      // but this eliminates the vast majority of failures.
       if (isMaxRepay) {
         const onChainBalance = await getOnChainErc20Balance({
           tokenAddress,
