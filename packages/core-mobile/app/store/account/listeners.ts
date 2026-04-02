@@ -301,7 +301,7 @@ const migrateSolanaAddressesIfNeeded = async (
       await deriveMissingSeedlessSessionKeys(seedlessWallet.id)
     }
     // reload only when there are accounts without Solana addresses
-    await reloadAccounts(_action, listenerApi)
+    reloadAccounts(_action, listenerApi)
   }
 }
 
