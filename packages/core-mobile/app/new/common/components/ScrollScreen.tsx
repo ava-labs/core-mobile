@@ -247,12 +247,16 @@ export const ScrollScreen = ({
         )
 
         if (shouldAvoidKeyboard) {
+          const measuredFooterHeight = footerLayout?.height ?? 0
+          const footerMinHeight =
+            measuredFooterHeight > 0 ? measuredFooterHeight : 88
           return (
             <KeyboardStickyView
               enabled={!disableStickyFooter}
               offset={{
                 opened: insets.bottom
-              }}>
+              }}
+              style={{ minHeight: footerMinHeight }}>
               {footerInner}
             </KeyboardStickyView>
           )
@@ -265,6 +269,7 @@ export const ScrollScreen = ({
     return null
   }, [
     renderFooter,
+    footerLayout?.height,
     insets.bottom,
     handleFooterLayout,
     shouldAvoidKeyboard,
