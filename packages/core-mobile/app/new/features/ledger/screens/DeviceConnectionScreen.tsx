@@ -91,6 +91,11 @@ export default function DeviceConnectionScreen({
         }
         onNavigateToAppConnection()
       } catch (error) {
+        if (walletState === WalletState.NONEXISTENT) {
+          AnalyticsService.capture('OnboardingLedgerConnectionFailed')
+        } else {
+          AnalyticsService.capture('WalletImportLedgerConnectionFailed')
+        }
         Alert.alert(
           'Connection failed',
           'Failed to connect to Ledger device. Please try again.',
