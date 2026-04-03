@@ -16,7 +16,7 @@ import { useBluetooth } from 'common/hooks/useBluetooth'
 import {
   isLedgerBluetoothError,
   showBluetoothErrorAlert
-} from 'services/ledger/LedgerBluetoothBluetoothError'
+} from 'services/ledger/LedgerBluetoothError'
 
 interface DeviceConnectionScreenProps {
   onNavigateToAppConnection: () => void

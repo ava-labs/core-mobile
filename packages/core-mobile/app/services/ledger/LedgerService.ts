@@ -49,7 +49,7 @@ import {
   LedgerBluetoothRadioOffError,
   LedgerBluetoothUnknownError,
   LedgerBluetoothUnsupportedError
-} from './LedgerBluetoothBluetoothError'
+} from './LedgerBluetoothError'
 
 class LedgerService {
   #transport: TransportBLE | null = null

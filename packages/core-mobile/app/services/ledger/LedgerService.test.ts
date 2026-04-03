@@ -4,7 +4,7 @@ import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Logger from 'utils/Logger'
 import LedgerService from './LedgerService'
 import { LedgerAppType } from './types'
-import { isLedgerBluetoothPermissionError } from './LedgerBluetoothBluetoothError'
+import { isLedgerBluetoothPermissionError } from './LedgerBluetoothError'
 
 jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
   __esModule: true,

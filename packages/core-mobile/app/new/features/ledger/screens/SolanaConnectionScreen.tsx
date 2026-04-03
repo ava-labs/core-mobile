@@ -16,7 +16,7 @@ import { useSelector } from 'react-redux'
 import {
   isLedgerBluetoothError,
   showBluetoothErrorAlert
-} from 'services/ledger/LedgerBluetoothBluetoothError'
+} from 'services/ledger/LedgerBluetoothError'
 import { useLedgerWalletMap } from '../store'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 

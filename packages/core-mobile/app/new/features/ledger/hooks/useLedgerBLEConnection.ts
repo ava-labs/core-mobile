@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux'
 import {
   isLedgerBluetoothError,
   showBluetoothErrorAlert
-} from 'services/ledger/LedgerBluetoothBluetoothError'
+} from 'services/ledger/LedgerBluetoothError'
 import LedgerService from 'services/ledger/LedgerService'
 import { LedgerAppType, LedgerDevice } from 'services/ledger/types'
 import { selectActiveWalletId } from 'store/wallet/slice'
