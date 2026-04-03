@@ -122,8 +122,13 @@ describe('requestPermissionsAsync', () => {
 
   describe('Android', () => {
     beforeEach(() => {
-      Object.defineProperty(Platform, 'OS', { configurable: true, value: 'android' })
-      jest.spyOn(PermissionsAndroid, 'requestMultiple').mockResolvedValue({} as never)
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: 'android'
+      })
+      jest
+        .spyOn(PermissionsAndroid, 'requestMultiple')
+        .mockResolvedValue({} as never)
     })
 
     it('returns true when all permissions are already granted', async () => {
@@ -137,17 +142,19 @@ describe('requestPermissionsAsync', () => {
 
     it('returns true when missing permissions are granted after request', async () => {
       jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
-      jest.spyOn(PermissionsAndroid, 'requestMultiple').mockResolvedValue(
-        Object.fromEntries(
-          [
-            PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-            PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-          ]
-            .filter(Boolean)
-            .map(p => [p, PermissionsAndroid.RESULTS.GRANTED])
-        ) as never
-      )
+      jest
+        .spyOn(PermissionsAndroid, 'requestMultiple')
+        .mockResolvedValue(
+          Object.fromEntries(
+            [
+              PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+              PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+              PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+            ]
+              .filter(Boolean)
+              .map(p => [p, PermissionsAndroid.RESULTS.GRANTED])
+          ) as never
+        )
 
       const result = await requestPermissionsAsync()
 
@@ -156,22 +163,24 @@ describe('requestPermissionsAsync', () => {
 
     it('returns false when any permission is denied after request', async () => {
       jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
-      jest.spyOn(PermissionsAndroid, 'requestMultiple').mockResolvedValue(
-        Object.fromEntries(
-          [
-            PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-            PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-          ]
-            .filter(Boolean)
-            .map((p, i) => [
-              p,
-              i === 0
-                ? PermissionsAndroid.RESULTS.DENIED
-                : PermissionsAndroid.RESULTS.GRANTED
-            ])
-        ) as never
-      )
+      jest
+        .spyOn(PermissionsAndroid, 'requestMultiple')
+        .mockResolvedValue(
+          Object.fromEntries(
+            [
+              PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+              PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+              PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+            ]
+              .filter(Boolean)
+              .map((p, i) => [
+                p,
+                i === 0
+                  ? PermissionsAndroid.RESULTS.DENIED
+                  : PermissionsAndroid.RESULTS.GRANTED
+              ])
+          ) as never
+        )
 
       const result = await requestPermissionsAsync()
 
@@ -191,7 +200,10 @@ describe('requestPermissionsAsync', () => {
 
   describe('iOS', () => {
     beforeEach(() => {
-      Object.defineProperty(Platform, 'OS', { configurable: true, value: 'ios' })
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: 'ios'
+      })
     })
 
     it('returns false when Bluetooth permission is blocked', async () => {
@@ -411,20 +423,21 @@ describe('useBluetooth', () => {
   })
 
   describe('isBluetoothBlocked', () => {
-    it.each([BluetoothState.POWERED_OFF, BluetoothState.UNAUTHORIZED, BluetoothState.UNSUPPORTED])(
-      'is true when radio state is %s',
-      async state => {
-        setupObserveState(state)
+    it.each([
+      BluetoothState.POWERED_OFF,
+      BluetoothState.UNAUTHORIZED,
+      BluetoothState.UNSUPPORTED
+    ])('is true when radio state is %s', async state => {
+      setupObserveState(state)
 
-        const { result } = renderHook(() => useBluetooth())
+      const { result } = renderHook(() => useBluetooth())
 
-        await act(async () => {
-          await new Promise(resolve => setTimeout(resolve, 0))
-        })
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 0))
+      })
 
-        expect(result.current.isBluetoothBlocked).toBe(true)
-      }
-    )
+      expect(result.current.isBluetoothBlocked).toBe(true)
+    })
 
     it('is true when radio is on but permission is denied', async () => {
       mockCheck.mockResolvedValue(RESULTS.BLOCKED)
@@ -574,7 +587,10 @@ describe('useBluetooth', () => {
 
   describe('Android permissions', () => {
     beforeEach(() => {
-      Object.defineProperty(Platform, 'OS', { configurable: true, value: 'android' })
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: 'android'
+      })
       setupObserveState(BluetoothState.POWERED_ON)
     })
 
