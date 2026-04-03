@@ -1,6 +1,12 @@
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AppState, PermissionsAndroid, Platform } from 'react-native'
+import {
+  Alert,
+  AppState,
+  Linking,
+  PermissionsAndroid,
+  Platform
+} from 'react-native'
 import { check, PERMISSIONS, RESULTS } from 'react-native-permissions'
 import Logger from 'utils/Logger'
 
@@ -31,6 +37,41 @@ interface UseBluetoothReturn {
   bluetoothState: BluetoothState
   /** Imperatively request OS permissions (needed on Android before scanning) */
   requestPermissions: () => Promise<BluetoothAvailability>
+}
+
+export function showBluetoothPermissionRequiredAlert(
+  description?: string
+): void {
+  Alert.alert('Permission Required', description, [
+    { text: 'Cancel', style: 'cancel' },
+    { text: 'Open Settings', onPress: () => Linking.openSettings() }
+  ])
+}
+
+export function showBluetoothRadioOffAlert(state: BluetoothState): void {
+  switch (state) {
+    case BluetoothState.POWERED_OFF:
+    case BluetoothState.UNAUTHORIZED:
+      Alert.alert(
+        `Bluetooth Off`,
+        `Bluetooth is turned off. Please enable Bluetooth to connect to Ledger devices.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Open Settings', onPress: () => Linking.openSettings() }
+        ]
+      )
+      return
+    case BluetoothState.UNSUPPORTED:
+      Alert.alert(
+        `Bluetooth Unsupported`,
+        `This device does not support Bluetooth connectivity, which is required to connect to Ledger devices.`
+      )
+      return
+    case BluetoothState.UNKNOWN:
+    case BluetoothState.RESETTING:
+      Logger.info(`Bluetooth is not ready for scanning yet (state: ${state}).`)
+      return
+  }
 }
 
 async function requestAndroidPermissions(): Promise<boolean> {

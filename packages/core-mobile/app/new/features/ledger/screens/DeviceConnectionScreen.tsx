@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react'
-import { View, Alert, ActivityIndicator, Linking } from 'react-native'
+import { View, Alert, ActivityIndicator, Linking, Platform } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Button, useTheme, Icons, Text } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -8,7 +8,6 @@ import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIco
 import { LedgerDeviceList } from 'new/features/ledger/components/LedgerDeviceList'
 import LedgerService from 'services/ledger/LedgerService'
 import { LedgerDevice } from 'services/ledger/types'
-import { isLedgerBluetoothPermissionError } from 'services/ledger/LedgerBluetoothPermissionError'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useSelector } from 'react-redux'
 import { selectWalletState } from 'store/app'
@@ -84,28 +83,6 @@ export default function DeviceConnectionScreen({
         }
         onNavigateToAppConnection()
       } catch (error) {
-        if (walletState === WalletState.NONEXISTENT) {
-          AnalyticsService.capture('OnboardingLedgerConnectionFailed')
-        } else {
-          AnalyticsService.capture('WalletImportLedgerConnectionFailed')
-        }
-        if (isLedgerBluetoothPermissionError(error)) {
-          Alert.alert(
-            'Bluetooth Permission Required',
-            'Please enable Bluetooth permissions in your device settings to connect to Ledger devices.',
-            [
-              { text: 'Cancel', style: 'cancel' },
-              {
-                text: 'Open Settings',
-                onPress: () => {
-                  Linking.openSettings()
-                }
-              }
-            ]
-          )
-          return
-        }
-
         Alert.alert(
           'Connection failed',
           'Failed to connect to Ledger device. Please try again.',
@@ -162,7 +139,10 @@ export default function DeviceConnectionScreen({
             type="primary"
             size="large"
             onPress={scanForDevices}
-            disabled={!isBluetoothAvailable || isInitializingBluetooth}>
+            disabled={
+              (!isBluetoothAvailable && Platform.OS === 'ios') ||
+              isInitializingBluetooth
+            }>
             Scan for Device
           </Button>
         )}

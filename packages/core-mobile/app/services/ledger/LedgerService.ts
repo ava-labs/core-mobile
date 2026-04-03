@@ -28,7 +28,9 @@ import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { bip32 } from 'utils/bip32'
 import {
   BluetoothState,
-  ensureBluetoothAvailable
+  ensureBluetoothAvailable,
+  showBluetoothPermissionRequiredAlert,
+  showBluetoothRadioOffAlert
 } from 'common/hooks/useBluetooth'
 import {
   AddressInfo,
@@ -43,10 +45,6 @@ import {
   LEDGER_ERROR_CODES,
   LedgerDerivationPathType
 } from './types'
-import {
-  isLedgerBluetoothPermissionError,
-  isLedgerBluetoothRadioOffError
-} from './LedgerBluetoothPermissionError'
 
 class LedgerService {
   #transport: TransportBLE | null = null
@@ -138,22 +136,30 @@ class LedgerService {
 
   private async assertBluetoothAvailable(
     action: 'scan' | 'connect'
-  ): Promise<void> {
+  ): Promise<boolean> {
     const { hasPermission, state } = await ensureBluetoothAvailable()
     if (!hasPermission) {
-      this.showBluetoothPermissionRequiredAlert(action)
-      return
+      const description = `Bluetooth permissions are required to ${
+        action === 'scan' ? 'scan for' : 'connect to'
+      } Ledger devices.`
+      showBluetoothPermissionRequiredAlert(description)
+      return false
     }
     if (state !== BluetoothState.POWERED_ON) {
-      this.showBluetoothRadioOffAlert()
+      showBluetoothRadioOffAlert(state)
+      return false
     }
+    return true
   }
 
   // Connect to Ledger device (transport only, no apps)
   async connect(deviceId: string): Promise<void> {
     try {
       Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
-      await this.assertBluetoothAvailable('connect')
+      const bluetoothAvailable = await this.assertBluetoothAvailable('connect')
+      if (!bluetoothAvailable) {
+        return
+      }
 
       this.isDisconnected = false // Reset disconnect flag on new connection
       // Use a longer timeout for connection
@@ -192,13 +198,6 @@ class LedgerService {
       }
     } catch (error) {
       Logger.error('Failed to connect to Ledger', error)
-      if (
-        isLedgerBluetoothPermissionError(error) ||
-        isLedgerBluetoothRadioOffError(error)
-      ) {
-        throw error
-      }
-
       throw new Error(
         `Failed to connect to Ledger: ${
           error instanceof Error ? error.message : 'Unknown error'
@@ -247,32 +246,6 @@ class LedgerService {
     this.appPollingEnabled = false
   }
 
-  private showBluetoothPermissionRequiredAlert(
-    action: 'scan' | 'connect'
-  ): void {
-    const actionDescription = action === 'scan' ? 'scan for' : 'connect to'
-
-    Alert.alert(
-      'Permission Required',
-      `Bluetooth permissions are required to ${actionDescription} Ledger devices.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Open Settings', onPress: () => Linking.openSettings() }
-      ]
-    )
-  }
-
-  private showBluetoothRadioOffAlert(): void {
-    Alert.alert(
-      `Bluetooth Off`,
-      `Bluetooth is turned off. Please enable Bluetooth to connect to Ledger devices.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Open Settings', onPress: () => Linking.openSettings() }
-      ]
-    )
-  }
-
   // Handle scan errors (matching original implementation)
   private handleScanError(error: Error): void {
     Logger.error('Scan error:', error)
@@ -308,7 +281,10 @@ class LedgerService {
     }
 
     // Request permissions first
-    await this.assertBluetoothAvailable('scan')
+    const bluetoothAvailable = await this.assertBluetoothAvailable('scan')
+    if (!bluetoothAvailable) {
+      return
+    }
 
     Logger.info('Starting device scanning...')
     this.isScanning = true

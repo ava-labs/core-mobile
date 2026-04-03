@@ -12,10 +12,12 @@ jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
     open: jest.fn(),
     listen: jest.fn(),
     disconnectDevice: jest.fn(),
-    observeState: jest.fn(({ next }: { next: (e: { type: string }) => void }) => {
-      next({ type: 'PoweredOn' })
-      return { unsubscribe: jest.fn() }
-    })
+    observeState: jest.fn(
+      ({ next }: { next: (e: { type: string }) => void }) => {
+        next({ type: 'PoweredOn' })
+        return { unsubscribe: jest.fn() }
+      }
+    )
   }
 }))
 
@@ -329,12 +331,12 @@ describe('LedgerService', () => {
     ].filter(
       (
         permission
-      ): permission is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
+      ): permission is (typeof PermissionsAndroid.PERMISSIONS)[keyof typeof PermissionsAndroid.PERMISSIONS] =>
         Boolean(permission)
     )
 
     const makePermissionResult = (
-      status: typeof PermissionsAndroid.RESULTS[keyof typeof PermissionsAndroid.RESULTS]
+      status: (typeof PermissionsAndroid.RESULTS)[keyof typeof PermissionsAndroid.RESULTS]
     ): Record<string, string> => {
       return Object.fromEntries(
         bluetoothPermissions.map(permission => [permission, status])
