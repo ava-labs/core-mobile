@@ -1,6 +1,6 @@
 import { WalletType } from 'services/wallet/types'
-import WalletService from './WalletService'
 import * as profileApiClientModule from 'utils/api/generated/profileApi.client'
+import WalletService from './WalletService'
 
 const createDeferred = <T>() => {
   let resolve!: (value: T | PromiseLike<T>) => void
