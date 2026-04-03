@@ -411,17 +411,15 @@ describe('LedgerService', () => {
         deniedPermissions as never
       )
 
-      await LedgerService.startDeviceScanning()
+      try {
+        await LedgerService.startDeviceScanning()
+        throw new Error('Expected startDeviceScanning to fail')
+      } catch (error) {
+        expect(isLedgerBluetoothPermissionError(error)).toBe(true)
+      }
 
       expect(transportBLEMock.listen).not.toHaveBeenCalled()
-      expect(Alert.alert).toHaveBeenCalledWith(
-        'Permission Required',
-        'Bluetooth permissions are required to scan for Ledger devices.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Open Settings', onPress: expect.any(Function) }
-        ]
-      )
+      expect(Alert.alert).not.toHaveBeenCalled()
     })
 
     it('requests permissions when establishing a connection', async () => {
