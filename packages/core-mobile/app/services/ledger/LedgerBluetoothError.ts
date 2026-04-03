@@ -142,7 +142,7 @@ export const isLedgerBluetoothError = (
 }
 
 export function showBluetoothErrorAlert(error: LedgerBluetoothError): void {
-  if (error instanceof LedgerBluetoothPermissionError) {
+  if (isLedgerBluetoothPermissionError(error)) {
     Alert.alert(
       LEDGER_BLUETOOTH_PERMISSION_TITLE,
       LEDGER_BLUETOOTH_PERMISSION_MESSAGE,
@@ -153,7 +153,7 @@ export function showBluetoothErrorAlert(error: LedgerBluetoothError): void {
     )
     return
   }
-  if (error instanceof LedgerBluetoothRadioOffError) {
+  if (isLedgerBluetoothRadioOffError(error)) {
     Alert.alert(
       LEDGER_BLUETOOTH_RADIO_OFF_TITLE,
       LEDGER_BLUETOOTH_RADIO_OFF_MESSAGE,
@@ -164,14 +164,14 @@ export function showBluetoothErrorAlert(error: LedgerBluetoothError): void {
     )
     return
   }
-  if (error instanceof LedgerBluetoothUnsupportedError) {
+  if (isLedgerBluetoothUnsupportedError(error)) {
     Alert.alert(
       LEDGER_BLUETOOTH_UNSUPPORTED_TITLE,
       LEDGER_BLUETOOTH_UNSUPPORTED_MESSAGE
     )
     return
   }
-  if (error instanceof LedgerBluetoothUnknownError) {
+  if (isLedgerBluetoothUnknownError(error)) {
     Logger.error('Ledger Bluetooth is in unknown state')
     Alert.alert(
       LEDGER_BLUETOOTH_UNKNOWN_TITLE,
