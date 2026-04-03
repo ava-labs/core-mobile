@@ -16,7 +16,7 @@ import { networks } from 'bitcoinjs-lib'
 import { networkIDs } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
 import bs58 from 'bs58'
-import { Platform, PermissionsAndroid, Alert, Linking } from 'react-native'
+import { Alert, Linking } from 'react-native'
 import {
   LEDGER_TIMEOUTS,
   getSolanaDerivationPath
@@ -26,6 +26,7 @@ import { assertNotNull } from 'utils/assertions'
 import { Curve } from 'utils/publicKeys'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { bip32 } from 'utils/bip32'
+import { ensureBluetoothAvailable } from 'common/hooks/useBluetooth'
 import {
   AddressInfo,
   LedgerAddressType,
@@ -136,8 +137,8 @@ class LedgerService {
   async connect(deviceId: string): Promise<void> {
     try {
       Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
-      const hasPermissions = await this.requestBluetoothPermissions()
-      if (!hasPermissions) {
+      const bluetoothAvailable = await ensureBluetoothAvailable()
+      if (!bluetoothAvailable) {
         throw new LedgerBluetoothPermissionError()
       }
 
@@ -229,44 +230,6 @@ class LedgerService {
     this.appPollingEnabled = false
   }
 
-  // Request Bluetooth permissions (matching original implementation)
-  private async requestBluetoothPermissions(): Promise<boolean> {
-    if (Platform.OS === 'android') {
-      try {
-        const permissions = [
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-        ].filter(Boolean)
-
-        const permissionChecks = await Promise.all(
-          permissions.map(permission => PermissionsAndroid.check(permission))
-        )
-
-        if (permissionChecks.every(Boolean)) {
-          return true
-        }
-
-        const missingPermissions = permissions.filter(
-          (_, index) => !permissionChecks[index]
-        )
-
-        const granted = await PermissionsAndroid.requestMultiple(
-          missingPermissions
-        )
-
-        return missingPermissions.every(
-          permission =>
-            granted[permission] === PermissionsAndroid.RESULTS.GRANTED
-        )
-      } catch (err) {
-        Logger.error('Error requesting Bluetooth permissions:', err)
-        return false
-      }
-    }
-    return true
-  }
-
   private showBluetoothPermissionRequiredAlert(
     action: 'scan' | 'connect'
   ): void {
@@ -274,7 +237,11 @@ class LedgerService {
 
     Alert.alert(
       'Permission Required',
-      `Bluetooth permissions are required to ${actionDescription} Ledger devices.`
+      `Bluetooth permissions are required to ${actionDescription} Ledger devices.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Open Settings', onPress: () => Linking.openSettings() }
+      ]
     )
   }
 
@@ -313,8 +280,8 @@ class LedgerService {
     }
 
     // Request permissions first
-    const hasPermissions = await this.requestBluetoothPermissions()
-    if (!hasPermissions) {
+    const bluetoothAvailable = await ensureBluetoothAvailable()
+    if (!bluetoothAvailable) {
       this.showBluetoothPermissionRequiredAlert('scan')
       return
     }

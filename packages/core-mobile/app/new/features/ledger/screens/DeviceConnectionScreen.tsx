@@ -1,7 +1,13 @@
 import React, { useCallback, useState, useEffect } from 'react'
 import { View, Alert, ActivityIndicator, Linking } from 'react-native'
 import { useRouter } from 'expo-router'
-import { Button, useTheme, Icons } from '@avalabs/k2-alpine'
+import {
+  Button,
+  useTheme,
+  Icons,
+  Text,
+  TouchableOpacity
+} from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIconWithText'
@@ -13,6 +19,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useSelector } from 'react-redux'
 import { selectWalletState } from 'store/app'
 import { WalletState } from 'store/app/types'
+import { useBluetooth } from 'common/hooks/useBluetooth'
 
 interface DeviceConnectionScreenProps {
   onNavigateToAppConnection: () => void
@@ -32,6 +39,7 @@ export default function DeviceConnectionScreen({
   // Local device management
   const [devices, setDevices] = useState<LedgerDevice[]>([])
   const [isScanning, setIsScanning] = useState(false)
+  const { isBluetoothAvailable, isInitializingBluetooth } = useBluetooth()
 
   // Set up device listener for LedgerService
   useEffect(() => {
@@ -127,11 +135,47 @@ export default function DeviceConnectionScreen({
     back()
   }, [resetSetup, back])
 
+  const renderBluetoothPermissionError = useCallback(() => {
+    if (isBluetoothAvailable) return null
+    return (
+      <View style={{ gap: 12, marginTop: 4 }}>
+        <View
+          style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
+          <Icons.Alert.ErrorOutline
+            color={colors.$textDanger}
+            width={20}
+            height={20}
+          />
+          <Text
+            variant="body2"
+            sx={{ color: '$textDanger', flex: 1, flexWrap: 'wrap' }}>
+            To connect you need to allow Bluetooth in your device settings
+          </Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => Linking.openSettings()}
+          style={{
+            alignSelf: 'flex-start',
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            borderRadius: 100,
+            backgroundColor: colors.$surfaceSecondary
+          }}>
+          <Text variant="buttonSmall">Open device settings</Text>
+        </TouchableOpacity>
+      </View>
+    )
+  }, [isBluetoothAvailable, colors])
+
   const renderFooter = useCallback(() => {
     return (
       <View style={{ gap: 12 }}>
         {!isScanning && devices.length === 0 && (
-          <Button type="primary" size="large" onPress={scanForDevices}>
+          <Button
+            type="primary"
+            size="large"
+            onPress={scanForDevices}
+            disabled={!isBluetoothAvailable || isInitializingBluetooth}>
             Scan for Device
           </Button>
         )}
@@ -158,13 +202,16 @@ export default function DeviceConnectionScreen({
     scanForDevices,
     devices.length,
     colors.$textPrimary,
-    handleCancel
+    handleCancel,
+    isBluetoothAvailable,
+    isInitializingBluetooth
   ])
 
   return (
     <ScrollScreen
       title={`Connect \nYour Ledger`}
       isModal
+      renderHeader={renderBluetoothPermissionError}
       renderFooter={renderFooter}
       contentContainerStyle={{ flex: 1, marginHorizontal: 16 }}>
       <View style={{ flex: 1 }}>

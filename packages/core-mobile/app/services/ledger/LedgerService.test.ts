@@ -11,7 +11,11 @@ jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
   default: {
     open: jest.fn(),
     listen: jest.fn(),
-    disconnectDevice: jest.fn()
+    disconnectDevice: jest.fn(),
+    observeState: jest.fn(({ next }: { next: (e: { type: string }) => void }) => {
+      next({ type: 'PoweredOn' })
+      return { unsubscribe: jest.fn() }
+    })
   }
 }))
 
@@ -410,7 +414,11 @@ describe('LedgerService', () => {
       expect(transportBLEMock.listen).not.toHaveBeenCalled()
       expect(Alert.alert).toHaveBeenCalledWith(
         'Permission Required',
-        'Bluetooth permissions are required to scan for Ledger devices.'
+        'Bluetooth permissions are required to scan for Ledger devices.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Open Settings', onPress: expect.any(Function) }
+        ]
       )
     })
 
