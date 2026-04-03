@@ -1,13 +1,7 @@
 import React, { useCallback, useState, useEffect } from 'react'
 import { View, Alert, ActivityIndicator, Linking } from 'react-native'
 import { useRouter } from 'expo-router'
-import {
-  Button,
-  useTheme,
-  Icons,
-  Text,
-  TouchableOpacity
-} from '@avalabs/k2-alpine'
+import { Button, useTheme, Icons, Text } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIconWithText'
