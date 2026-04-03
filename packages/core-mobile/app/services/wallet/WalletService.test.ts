@@ -1,7 +1,6 @@
 import { WalletType } from 'services/wallet/types'
 import WalletService from './WalletService'
-
-const mockPostV1GetAddresses = jest.fn()
+import * as profileApiClientModule from 'utils/api/generated/profileApi.client'
 
 const createDeferred = <T>() => {
   let resolve!: (value: T | PromiseLike<T>) => void
@@ -15,7 +14,8 @@ const createDeferred = <T>() => {
 }
 
 jest.mock('utils/api/generated/profileApi.client', () => ({
-  postV1GetAddresses: (...args: unknown[]) => mockPostV1GetAddresses(...args)
+  __esModule: true,
+  postV1GetAddresses: jest.fn()
 }))
 
 jest.mock('utils/api/clients/profileApiClient', () => ({
@@ -30,6 +30,9 @@ jest.mock('utils/Logger', () => ({
     error: jest.fn()
   }
 }))
+
+const mockPostV1GetAddresses =
+  profileApiClientModule.postV1GetAddresses as jest.Mock
 
 describe('WalletService.hasActivityFromXpubXP', () => {
   beforeEach(() => {
