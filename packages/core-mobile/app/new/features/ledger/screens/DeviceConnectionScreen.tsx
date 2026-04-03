@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react'
-import { View, Alert, ActivityIndicator, Linking, Platform } from 'react-native'
+import { View, Alert, ActivityIndicator, Linking } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Button, useTheme, Icons, Text } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -13,6 +13,10 @@ import { useSelector } from 'react-redux'
 import { selectWalletState } from 'store/app'
 import { WalletState } from 'store/app/types'
 import { useBluetooth } from 'common/hooks/useBluetooth'
+import {
+  isLedgerBluetoothError,
+  showBluetoothErrorAlert
+} from 'services/ledger/LedgerBluetoothBluetoothError'
 
 interface DeviceConnectionScreenProps {
   onNavigateToAppConnection: () => void
@@ -32,7 +36,7 @@ export default function DeviceConnectionScreen({
   // Local device management
   const [devices, setDevices] = useState<LedgerDevice[]>([])
   const [isScanning, setIsScanning] = useState(false)
-  const { isBluetoothAvailable, isInitializingBluetooth } = useBluetooth()
+  const { isBluetoothReady, isInitializingBluetooth } = useBluetooth()
 
   // Set up device listener for LedgerService
   useEffect(() => {
@@ -62,6 +66,10 @@ export default function DeviceConnectionScreen({
     try {
       await LedgerService.startDeviceScanning()
     } catch (error) {
+      if (isLedgerBluetoothError(error)) {
+        showBluetoothErrorAlert(error)
+        return
+      }
       Alert.alert(
         'Scan Error',
         `Failed to scan for devices: ${
@@ -107,7 +115,7 @@ export default function DeviceConnectionScreen({
   }, [resetSetup, back])
 
   const renderBluetoothPermissionError = useCallback(() => {
-    if (isBluetoothAvailable) return null
+    if (isBluetoothReady) return null
     return (
       <View style={{ gap: 12, marginTop: 4, paddingRight: 16 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -129,7 +137,7 @@ export default function DeviceConnectionScreen({
         </Button>
       </View>
     )
-  }, [isBluetoothAvailable, colors])
+  }, [isBluetoothReady, colors])
 
   const renderFooter = useCallback(() => {
     return (
@@ -139,10 +147,7 @@ export default function DeviceConnectionScreen({
             type="primary"
             size="large"
             onPress={scanForDevices}
-            disabled={
-              (!isBluetoothAvailable && Platform.OS === 'ios') ||
-              isInitializingBluetooth
-            }>
+            disabled={!isBluetoothReady || isInitializingBluetooth}>
             Scan for Device
           </Button>
         )}
@@ -170,7 +175,7 @@ export default function DeviceConnectionScreen({
     devices.length,
     colors.$textPrimary,
     handleCancel,
-    isBluetoothAvailable,
+    isBluetoothReady,
     isInitializingBluetooth
   ])
 
