@@ -13,6 +13,13 @@ export enum BluetoothState {
   UNKNOWN = 'Unknown'
 }
 
+export interface BluetoothAvailability {
+  /** Whether the OS has granted Bluetooth permission to this app */
+  hasPermission: boolean
+  /** Current Bluetooth radio state */
+  state: BluetoothState
+}
+
 interface UseBluetoothReturn {
   /** Radio is on and the app has permission — safe to scan/connect */
   isBluetoothAvailable: boolean
@@ -23,7 +30,7 @@ interface UseBluetoothReturn {
   /** Raw state from TransportBLE.observeState */
   bluetoothState: BluetoothState
   /** Imperatively request OS permissions (needed on Android before scanning) */
-  requestPermissions: () => Promise<boolean>
+  requestPermissions: () => Promise<BluetoothAvailability>
 }
 
 async function requestAndroidPermissions(): Promise<boolean> {
@@ -85,11 +92,12 @@ export async function getBluetoothStateAsync(): Promise<BluetoothState> {
   })
 }
 
-export async function ensureBluetoothAvailable(): Promise<boolean> {
-  const hasPermissions = await requestPermissionsAsync()
-  if (!hasPermissions) return false
-  const state = await getBluetoothStateAsync()
-  return state === BluetoothState.POWERED_ON
+export async function ensureBluetoothAvailable(): Promise<BluetoothAvailability> {
+  const [hasPermission, state] = await Promise.all([
+    requestPermissionsAsync(),
+    getBluetoothStateAsync()
+  ])
+  return { hasPermission, state }
 }
 
 // Check-only variant — never shows a dialog, safe to call from AppState listeners.
@@ -223,6 +231,7 @@ export function useBluetooth(): UseBluetoothReturn {
   const isBluetoothBlocked =
     bluetoothState === BluetoothState.POWERED_OFF ||
     bluetoothState === BluetoothState.UNAUTHORIZED ||
+    bluetoothState === BluetoothState.UNSUPPORTED ||
     !isPermissionGranted
 
   const isBluetoothAvailable =

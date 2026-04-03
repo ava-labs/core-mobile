@@ -49,7 +49,8 @@ export const LEDGER_ERROR_CODES = {
   TRANSPORT_RACE_CONDITION_ALT:
     'an action was already pending on the ledger device',
   BLIND_SIGNATURE: 'blind',
-  BLUETOOTH_PERMISSION: 'ledger_bluetooth_permission_required'
+  BLUETOOTH_PERMISSION: 'ledger_bluetooth_permission_required',
+  BLUETOOTH_RADIO_OFF: 'ledger_bluetooth_radio_off'
 } as const
 
 export type LedgerReturnCodeType =
