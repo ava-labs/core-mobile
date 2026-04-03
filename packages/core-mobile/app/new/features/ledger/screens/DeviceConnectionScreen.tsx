@@ -138,31 +138,24 @@ export default function DeviceConnectionScreen({
   const renderBluetoothPermissionError = useCallback(() => {
     if (isBluetoothAvailable) return null
     return (
-      <View style={{ gap: 12, marginTop: 4 }}>
-        <View
-          style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
+      <View style={{ gap: 12, marginTop: 4, paddingRight: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Icons.Alert.ErrorOutline
             color={colors.$textDanger}
             width={20}
             height={20}
           />
-          <Text
-            variant="body2"
-            sx={{ color: '$textDanger', flex: 1, flexWrap: 'wrap' }}>
+          <Text variant="subtitle1" sx={{ color: '$textDanger' }}>
             To connect you need to allow Bluetooth in your device settings
           </Text>
         </View>
-        <TouchableOpacity
+        <Button
+          size="small"
+          type="secondary"
           onPress={() => Linking.openSettings()}
-          style={{
-            alignSelf: 'flex-start',
-            paddingHorizontal: 16,
-            paddingVertical: 8,
-            borderRadius: 100,
-            backgroundColor: colors.$surfaceSecondary
-          }}>
-          <Text variant="buttonSmall">Open device settings</Text>
-        </TouchableOpacity>
+          style={{ width: 165, marginLeft: 28 }}>
+          Open device settings
+        </Button>
       </View>
     )
   }, [isBluetoothAvailable, colors])
