@@ -1,3 +1,4 @@
+import { GetAddressesResponse } from 'utils/api/generated/profileApi.client/types.gen'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { cChainToken } from 'utils/units/knownTokens'
@@ -16,6 +17,11 @@ import {
   SignTransactionRequest,
   SolanaTransactionRequest
 } from './types'
+
+export const hasActiveDerivedAddresses = (
+  response: GetAddressesResponse
+): boolean =>
+  response.externalAddresses.length > 0 || response.internalAddresses.length > 0
 
 export const MAINNET_AVAX_ASSET_ID = Avalanche.MainnetContext.avaxAssetID
 export const TESTNET_AVAX_ASSET_ID = Avalanche.FujiContext.avaxAssetID
