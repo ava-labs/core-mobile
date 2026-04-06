@@ -549,7 +549,7 @@ describe('useEvmInjectedProvider', () => {
     })
 
     describe('wallet_revokePermissions', () => {
-      it('emits accountsChanged and disconnect events then responds null', () => {
+      it('emits accountsChanged (not disconnect) then responds null', () => {
         const { result } = renderHook(() =>
           useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
         )
@@ -569,7 +569,9 @@ describe('useEvmInjectedProvider', () => {
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
           expect.stringContaining("__coreProviderEmit('accountsChanged', [])")
         )
-        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+        // Per EIP-1193, 'disconnect' means network loss — not user revocation.
+        // Emitting it causes wagmi to mark the provider as offline.
+        expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
           expect.stringContaining("__coreProviderEmit('disconnect'")
         )
         expect(mockInjectJavaScript).toHaveBeenCalledWith(

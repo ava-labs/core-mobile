@@ -5,6 +5,10 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { selectFusionFeeUnitsMarginBps } from 'store/posthog'
 import type { NetworkWithCaip2ChainId } from 'store/network'
 import { useNetworkFee } from 'hooks/useNetworkFee'
+import { isEstimateNativeFeeError } from '@avalabs/fusion-sdk'
+import Logger from 'utils/Logger'
+import SentryService from 'services/sentry/SentryService'
+import { SentryTag } from 'services/sentry/types'
 import FusionService from '../services/FusionService'
 import { logSdkError } from '../utils/fusionLogger'
 import type { Quote } from '../types'
@@ -17,23 +21,16 @@ import { buildFeeOptions } from './useMaxSwapAmount/utils'
  * points). Use gasSafetyBps for the Max button (needs extra headroom); omit it
  * for balance validation (standard estimate is sufficient).
  *
- * solanaToEvmFeeMultiplier: temporary workaround for the SDK under-reporting
- * fees on Solana→EVM routes. Multiplied into the raw fee before gasSafetyBps
- * is applied. Use 12 for validation, 15 for Max. No effect on other routes.
- *
  * Returns gasFee as undefined while the estimate is loading.
  */
 export const useFeeEstimation = ({
   quote,
   fromNetwork,
-  gasSafetyBps = 0,
-  solanaToEvmFeeMultiplier = 1
+  gasSafetyBps = 0
 }: {
   quote: Quote | null
   fromNetwork?: NetworkWithCaip2ChainId
   gasSafetyBps?: number
-  /** Temporary workaround: SDK under-reports fees on Solana→EVM routes */
-  solanaToEvmFeeMultiplier?: number
 }): {
   gasFee: bigint | undefined
   rawGasFee: bigint | undefined
@@ -54,27 +51,19 @@ export const useFeeEstimation = ({
       ReactQueryKeys.FUSION_SWAP_FEE_ESTIMATE,
       quote?.id,
       feeOptions.feeUnitsMarginBps,
-      gasSafetyBps,
-      solanaToEvmFeeMultiplier
+      feeOptions.overrides?.maxFeePerGas.toString(),
+      feeOptions.overrides?.maxPriorityFeePerGas.toString(),
+      gasSafetyBps
     ],
     queryFn: quote
       ? async () => {
-          const { totalUpfrontFee } = await FusionService.estimateNativeFee(
-            quote,
-            feeOptions
-          )
-          const isSolanaToEvm =
-            quote.sourceChain.chainId.startsWith('solana:') &&
-            quote.targetChain.chainId.startsWith('eip155:')
-          const adjustedFee =
-            isSolanaToEvm && solanaToEvmFeeMultiplier > 1
-              ? totalUpfrontFee * BigInt(solanaToEvmFeeMultiplier)
-              : totalUpfrontFee
+          const { totalFee, totalFeeWithoutMargin } =
+            await FusionService.estimateNativeFee(quote, feeOptions)
           const buffered =
             gasSafetyBps > 0
-              ? (adjustedFee * (10000n + BigInt(gasSafetyBps))) / 10000n
-              : adjustedFee
-          return { raw: totalUpfrontFee, buffered }
+              ? (totalFee * (10000n + BigInt(gasSafetyBps))) / 10000n
+              : totalFee
+          return { raw: totalFeeWithoutMargin, buffered }
         }
       : skipToken,
     staleTime: 0,
@@ -82,7 +71,19 @@ export const useFeeEstimation = ({
   })
 
   useEffect(() => {
-    if (error) logSdkError('[useFeeEstimation] estimateNativeFee error', error)
+    if (!error) return
+    if (isEstimateNativeFeeError(error) && error.details) {
+      Logger.warn('[useFeeEstimation] estimateNativeFee revert error', error)
+      // Use captureMessage (not Logger.error) for Sentry so that BigInt values
+      // in error.details.args are serialized to strings by sanitizeContext.
+      SentryService.captureMessage(
+        '[useFeeEstimation] estimateNativeFee revert error',
+        { ...error.details, cause: error.cause },
+        { source: SentryTag.FusionSdk }
+      )
+    } else {
+      logSdkError('[useFeeEstimation] estimateNativeFee error', error)
+    }
   }, [error])
 
   return {

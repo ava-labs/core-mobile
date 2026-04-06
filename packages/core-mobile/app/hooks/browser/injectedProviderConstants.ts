@@ -1,4 +1,4 @@
-export const INJECTED_PROVIDER_NAME = 'Core'
+export const INJECTED_PROVIDER_NAME = 'Core Mobile'
 export const INJECTED_PROVIDER_RDNS = 'app.core.mobile'
 export const INJECTED_PROVIDER_DESCRIPTION = 'Core Mobile Wallet'
 
