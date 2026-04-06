@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 /**
  * Estimates Appium/WebdriverIO e2e "coverage" by correlating `e2e-appium` specs
  * with top-level folders under `packages/core-mobile/app/new/features/` only
@@ -35,10 +36,7 @@ const path = require('path')
 
 const pkgRoot = path.resolve(__dirname, '..')
 const featuresDir = path.join(pkgRoot, 'app/new/features')
-const modalsDir = path.join(
-  pkgRoot,
-  'app/new/routes/(signedIn)/(modals)'
-)
+const modalsDir = path.join(pkgRoot, 'app/new/routes/(signedIn)/(modals)')
 
 /** @type {Record<string, { pathSubstrings?: string[]; content?: RegExp }>} */
 const FEATURE_SIGNALS = {
@@ -279,9 +277,32 @@ function featureCoverageMark(f, stats) {
 /** Only Appium specs; packages/core-mobile/e2e/ (Detox) is deprecated. */
 const E2E_APPIUM_DIR = path.join(pkgRoot, 'e2e-appium')
 
+/** @param {string} abs */
+function safeStatSync(abs) {
+  try {
+    return fs.statSync(abs)
+  } catch {
+    return null
+  }
+}
+
+/**
+ * @param {string} abs
+ * @param {string} rel
+ * @param {(rel: string, base: string) => boolean} ignore
+ * @param {(abs: string, rel: string) => void} walkFn
+ */
+function walkTestsDirectory(abs, rel, ignore, walkFn) {
+  const base = path.basename(abs)
+  if (ignore(rel, base)) return
+  for (const name of fs.readdirSync(abs)) {
+    walkFn(path.join(abs, name), rel ? `${rel}/${name}` : name)
+  }
+}
+
 /**
  * @param {string} dir
- * @param {(rel: string) => boolean} ignore
+ * @param {(rel: string, base: string) => boolean} ignore
  * @param {string[]} exts
  * @returns {string[]} relative posix paths from pkgRoot
  */
@@ -290,18 +311,10 @@ function walkTests(dir, ignore, exts) {
   if (!fs.existsSync(dir)) return out
 
   function walk(abs, rel) {
-    let stat
-    try {
-      stat = fs.statSync(abs)
-    } catch {
-      return
-    }
+    const stat = safeStatSync(abs)
+    if (!stat) return
     if (stat.isDirectory()) {
-      const base = path.basename(abs)
-      if (ignore(rel, base)) return
-      for (const name of fs.readdirSync(abs)) {
-        walk(path.join(abs, name), rel ? `${rel}/${name}` : name)
-      }
+      walkTestsDirectory(abs, rel, ignore, walk)
       return
     }
     if (!exts.some(ext => abs.endsWith(ext))) return
@@ -313,35 +326,50 @@ function walkTests(dir, ignore, exts) {
 }
 
 /**
+ * @param {Set<string>} ids
+ * @param {string | undefined} s
+ */
+function addSanitizedTestId(ids, s) {
+  if (!s || typeof s !== 'string') return
+  const t = s.trim()
+  if (t.length === 0 || t.length > 200) return
+  if (t === 'string' || t === 'boolean' || t === 'undefined') return
+  ids.add(t)
+}
+
+/**
+ * @param {Set<string>} ids
+ * @param {RegExpMatchArray} m
+ */
+function addTestIdsFromTemplateLiteralMatch(ids, m) {
+  const raw = m[1].replace(/\\`/g, '`')
+  if (!raw.includes('${')) {
+    addSanitizedTestId(ids, raw)
+    return
+  }
+  const pre = raw.split('${')[0]
+  if (pre.length >= 3) addSanitizedTestId(ids, pre)
+}
+
+/**
  * Extract static testID strings from TSX (and dynamic template prefixes).
  * @param {string} content
  * @returns {Set<string>}
  */
 function extractTestIdsFromTsx(content) {
   const ids = new Set()
-
-  const add = s => {
-    if (!s || typeof s !== 'string') return
-    const t = s.trim()
-    if (t.length === 0 || t.length > 200) return
-    if (t === 'string' || t === 'boolean' || t === 'undefined') return
-    ids.add(t)
-  }
+  const add = s => addSanitizedTestId(ids, s)
 
   for (const m of content.matchAll(/testID\s*=\s*"([^"]+)"/g)) add(m[1])
   for (const m of content.matchAll(/testID\s*=\s*'([^']+)'/g)) add(m[1])
-  for (const m of content.matchAll(/testID\s*=\s*\{\s*["']([^'"]+)["']\s*\}/g)) {
+  for (const m of content.matchAll(
+    /testID\s*=\s*\{\s*["']([^'"]+)["']\s*\}/g
+  )) {
     add(m[1])
   }
 
   for (const m of content.matchAll(/testID\s*=\s*\{\s*`([^`]+)`\s*\}/g)) {
-    const raw = m[1].replace(/\\`/g, '`')
-    if (!raw.includes('${')) {
-      add(raw)
-    } else {
-      const pre = raw.split('${')[0]
-      if (pre.length >= 3) add(pre)
-    }
+    addTestIdsFromTemplateLiteralMatch(ids, m)
   }
 
   for (const m of content.matchAll(/testID\s*=\s*\{([^}]+)\}/g)) {
@@ -470,7 +498,10 @@ function countFeatureTsx(featureDir) {
     if (abs.endsWith('.test.tsx')) return
     components += 1
     const base = path.basename(abs)
-    if (base.includes('Screen') || abs.includes(`${path.sep}screens${path.sep}`)) {
+    if (
+      base.includes('Screen') ||
+      abs.includes(`${path.sep}screens${path.sep}`)
+    ) {
       screens += 1
     }
   }
@@ -487,13 +518,13 @@ function countFeatureTsx(featureDir) {
 function featureMatches(relTestPath, content, feature) {
   const sig = FEATURE_SIGNALS[feature]
   if (!sig) return false
-  if (sig.pathSubstrings) {
-    for (const s of sig.pathSubstrings) {
-      if (relTestPath.includes(s.toLowerCase())) return true
-    }
-  }
-  if (sig.content && content && sig.content.test(content)) return true
-  return false
+  const pathHit =
+    sig.pathSubstrings?.some(s => relTestPath.includes(s.toLowerCase())) ??
+    false
+  const contentHit = Boolean(
+    sig.content && content && sig.content.test(content)
+  )
+  return pathHit || contentHit
 }
 
 /**
@@ -501,18 +532,17 @@ function featureMatches(relTestPath, content, feature) {
  * @param {string} relLower
  */
 function modalMatchesTest(modalName, relLower) {
-  if (modalName === 'notifications' && relLower.includes('notification')) {
-    return true
-  }
+  const notificationsHit =
+    modalName === 'notifications' && relLower.includes('notification')
   const compact = modalName.toLowerCase()
-  if (relLower.includes(compact)) return true
+  const compactHit = relLower.includes(compact)
   const slug = modalName
     .replace(/([A-Z])/g, '_$1')
     .toLowerCase()
     .replace(/^_/, '')
   const squashed = slug.replace(/_/g, '')
-  if (squashed.length >= 4 && relLower.includes(squashed)) return true
-  return false
+  const squashedHit = squashed.length >= 4 && relLower.includes(squashed)
+  return notificationsHit || compactHit || squashedHit
 }
 
 /**
@@ -520,26 +550,24 @@ function modalMatchesTest(modalName, relLower) {
  * @param {string[]} featureNames
  */
 function modalLinkedFeature(modalName, featureNames) {
-  if (MODAL_FEATURE_LINK[modalName]) return MODAL_FEATURE_LINK[modalName]
-  if (featureNames.includes(modalName)) return modalName
-  return null
+  return (
+    MODAL_FEATURE_LINK[modalName] ??
+    (featureNames.includes(modalName) ? modalName : null)
+  )
 }
 
-function main() {
-  const json = process.argv.includes('--json')
-  const verbose = process.argv.includes('--verbose')
-
+function loadAppiumSpecFiles() {
   const ignoreAppium = (rel, base) => base === 'node_modules'
-
-  const testFiles = walkTests(
-    E2E_APPIUM_DIR,
-    ignoreAppium,
-    ['.spec.ts']
-  ).map(rel => ({
+  return walkTests(E2E_APPIUM_DIR, ignoreAppium, ['.spec.ts']).map(rel => ({
     rel,
     abs: path.join(E2E_APPIUM_DIR, ...rel.split('/'))
   }))
+}
 
+/**
+ * @param {{ rel: string, abs: string }[]} testFiles
+ */
+function buildSpecLiteralsAndCorpus(testFiles) {
   const specLiteralSet = new Set()
   const specCorpusParts = []
   for (const { abs } of testFiles) {
@@ -552,16 +580,35 @@ function main() {
     specCorpusParts.push(text)
     collectStringLiteralsFromTs(text, specLiteralSet)
   }
-  const specCorpus = specCorpusParts.join('\n')
-  const specLiteralList = [...specLiteralSet]
+  return {
+    specLiteralSet,
+    specCorpus: specCorpusParts.join('\n'),
+    specLiteralList: [...specLiteralSet]
+  }
+}
 
-  const featureNames = fs
+function readFeatureFolderNames() {
+  return fs
     .readdirSync(featuresDir, { withFileTypes: true })
     .filter(d => d.isDirectory())
     .map(d => d.name)
     .sort()
+}
 
-  const featureStats = {}
+/**
+ * @param {string[]} featureNames
+ * @param {Record<string, object>} featureStats
+ * @param {Set<string>} specLiteralSet
+ * @param {string} specCorpus
+ * @param {string[]} specLiteralList
+ */
+function populateFeatureStats(
+  featureNames,
+  featureStats,
+  specLiteralSet,
+  specCorpus,
+  specLiteralList
+) {
   for (const name of featureNames) {
     const featAbs = path.join(featuresDir, name)
     const counts = countFeatureTsx(featAbs)
@@ -599,9 +646,15 @@ function main() {
       testIdsUnreferencedList
     }
   }
+}
 
+/**
+ * @param {{ rel: string, abs: string }[]} testFiles
+ * @param {string[]} featureNames
+ * @param {Record<string, { tests: string[] }>} featureStats
+ */
+function matchSpecsToFeatures(testFiles, featureNames, featureStats) {
   const testToFeatures = []
-
   for (const { rel, abs } of testFiles) {
     const relLower = rel.toLowerCase()
     let content = ''
@@ -621,9 +674,16 @@ function main() {
     }
     testToFeatures.push({ rel, features: matched })
   }
+  return testToFeatures
+}
 
+/**
+ * @param {string[]} featureNames
+ * @param {Record<string, object>} featureStats
+ * @param {string[]} excludedFeatureList
+ */
+function buildCoverageCounts(featureNames, featureStats, excludedFeatureList) {
   const featuresWithSignals = featureNames.filter(f => FEATURE_SIGNALS[f])
-  const excludedFeatureList = [...E2E_COVERAGE_EXCLUDED_FEATURES].sort()
   const featuresWithSignalsInScope = featuresWithSignals.filter(
     f => !excludedFromCoverageMetrics(f)
   )
@@ -631,31 +691,25 @@ function main() {
   const coveredBySpec = featuresWithSignalsInScope.filter(
     f => featureStats[f].tests.length > 0
   ).length
+  const nInScope = featuresWithSignalsInScope.length
   const specPct =
-    featuresWithSignalsInScope.length === 0
-      ? 0
-      : Math.round((100 * coveredBySpec) / featuresWithSignalsInScope.length)
+    nInScope === 0 ? 0 : Math.round((100 * coveredBySpec) / nInScope)
 
   const coveredByTestId = featuresWithSignalsInScope.filter(f => {
     const s = featureStats[f]
     return s.testIdsDeclared > 0 && s.testIdsReferencedInSpec > 0
   }).length
   const testIdPct =
-    featuresWithSignalsInScope.length === 0
-      ? 0
-      : Math.round((100 * coveredByTestId) / featuresWithSignalsInScope.length)
+    nInScope === 0 ? 0 : Math.round((100 * coveredByTestId) / nInScope)
 
   const coveredEither = featuresWithSignalsInScope.filter(f => {
     const s = featureStats[f]
     const spec = s.tests.length > 0
-    const tid =
-      s.testIdsDeclared > 0 && s.testIdsReferencedInSpec > 0
+    const tid = s.testIdsDeclared > 0 && s.testIdsReferencedInSpec > 0
     return spec || tid
   }).length
   const eitherPct =
-    featuresWithSignalsInScope.length === 0
-      ? 0
-      : Math.round((100 * coveredEither) / featuresWithSignalsInScope.length)
+    nInScope === 0 ? 0 : Math.round((100 * coveredEither) / nInScope)
 
   let totalDeclaredTestIds = 0
   let totalReferencedTestIdsInSpec = 0
@@ -668,133 +722,257 @@ function main() {
   const testIdLiteralInSpecPct =
     totalDeclaredTestIds === 0
       ? null
-      : Math.round(
-          (100 * totalReferencedTestIdsInSpec) / totalDeclaredTestIds
-        )
-  const totalCoveragePercent = eitherPct
+      : Math.round((100 * totalReferencedTestIdsInSpec) / totalDeclaredTestIds)
 
-  let modals = []
-  if (fs.existsSync(modalsDir)) {
-    modals = fs
-      .readdirSync(modalsDir, { withFileTypes: true })
-      .filter(d => d.isDirectory())
-      .map(d => d.name)
-      .sort()
+  return {
+    featuresWithSignals,
+    excludedFeatureList,
+    featuresWithSignalsInScope,
+    coveredBySpec,
+    specPct,
+    coveredByTestId,
+    testIdPct,
+    coveredEither,
+    eitherPct,
+    totalDeclaredTestIds,
+    totalReferencedTestIdsInSpec,
+    testIdLiteralInSpecPct,
+    totalCoveragePercent: eitherPct
   }
+}
 
-  const modalCoverage = modals.map(m => {
-    const relHits = testFiles.filter(({ rel }) =>
-      modalMatchesTest(m, rel.toLowerCase())
-    )
-    const linked = modalLinkedFeature(m, featureNames)
-    const linkedFeat = linked ? featureStats[linked] : null
-    const linkedSpecHit = Boolean(linkedFeat && linkedFeat.tests.length > 0)
-    const linkedTestIdHit = Boolean(
-      linkedFeat &&
-        linkedFeat.testIdsDeclared > 0 &&
-        linkedFeat.testIdsReferencedInSpec > 0
-    )
-    const featureHit = linkedSpecHit || linkedTestIdHit
-    const pathHit = relHits.length > 0
-    return {
-      modal: m,
-      linkedFeature: linked,
-      coveredByPath: pathHit,
-      coveredByLinkedFeature: featureHit,
-      coveredByLinkedSpec: linkedSpecHit,
-      coveredByLinkedTestIds: linkedTestIdHit,
-      covered: pathHit || featureHit,
-      pathTests: relHits.map(h => h.rel)
-    }
-  })
+function readModalFolderNames() {
+  if (!fs.existsSync(modalsDir)) return []
+  return fs
+    .readdirSync(modalsDir, { withFileTypes: true })
+    .filter(d => d.isDirectory())
+    .map(d => d.name)
+    .sort()
+}
 
-  const modalsInScope = modalCoverage.filter(modalInCoverageMetricsScope)
+/**
+ * @param {string} m
+ * @param {{ rel: string, abs: string }[]} testFiles
+ * @param {string[]} featureNames
+ * @param {Record<string, object>} featureStats
+ */
+function buildOneModalCoverage(m, testFiles, featureNames, featureStats) {
+  const relHits = testFiles.filter(({ rel }) =>
+    modalMatchesTest(m, rel.toLowerCase())
+  )
+  const linked = modalLinkedFeature(m, featureNames)
+  const linkedFeat = linked ? featureStats[linked] : null
+  const linkedSpecHit = Boolean(linkedFeat && linkedFeat.tests.length > 0)
+  const linkedTestIdHit = Boolean(
+    linkedFeat &&
+      linkedFeat.testIdsDeclared > 0 &&
+      linkedFeat.testIdsReferencedInSpec > 0
+  )
+  const featureHit = linkedSpecHit || linkedTestIdHit
+  const pathHit = relHits.length > 0
+  return {
+    modal: m,
+    linkedFeature: linked,
+    coveredByPath: pathHit,
+    coveredByLinkedFeature: featureHit,
+    coveredByLinkedSpec: linkedSpecHit,
+    coveredByLinkedTestIds: linkedTestIdHit,
+    covered: pathHit || featureHit,
+    pathTests: relHits.map(h => h.rel)
+  }
+}
+
+/**
+ * @param {string[]} modals
+ * @param {{ rel: string, abs: string }[]} testFiles
+ * @param {string[]} featureNames
+ * @param {Record<string, object>} featureStats
+ */
+function buildModalCoverage(modals, testFiles, featureNames, featureStats) {
+  return modals.map(m =>
+    buildOneModalCoverage(m, testFiles, featureNames, featureStats)
+  )
+}
+
+/**
+ * @param {object[]} modalCoverage
+ * @param {object[]} modalsInScope
+ * @param {string[]} modals
+ */
+function computeModalPercents(modalCoverage, modalsInScope, modals) {
   const coveredModalsPath = modalsInScope.filter(m => m.coveredByPath).length
   const coveredModalsEither = modalsInScope.filter(m => m.covered).length
-  const modalPctPath =
-    modalsInScope.length === 0
-      ? 0
-      : Math.round((100 * coveredModalsPath) / modalsInScope.length)
+  const n = modalsInScope.length
+  const modalPctPath = n === 0 ? 0 : Math.round((100 * coveredModalsPath) / n)
   const modalPctEither =
-    modalsInScope.length === 0
-      ? 0
-      : Math.round((100 * coveredModalsEither) / modalsInScope.length)
-
-  if (json) {
-    console.log(
-      JSON.stringify(
-        {
-          summary: {
-            e2eSource: 'e2e-appium',
-            appiumSpecFiles: testFiles.length,
-            testIdsDeclaredTotal: totalDeclaredTestIds,
-            testIdsReferencedInSpecTotal: totalReferencedTestIdsInSpec,
-            testIdLiteralCoverageInSpecPercent: testIdLiteralInSpecPct,
-            totalCoveragePercent,
-            totalCoveragePercentBasis:
-              'inScopeMappedFeatures_union_specPathOrTestIdInSpec',
-            featuresTotal: featureNames.length,
-            featuresWithMapping: featuresWithSignals.length,
-            featuresExcludedFromMetrics: excludedFeatureList,
-            featuresWithMappingInScope: featuresWithSignalsInScope.length,
-            featuresTouchedBySpecPath: coveredBySpec,
-            featureSpecPathCoveragePercent: specPct,
-            featuresWithDeclaredTestIdsReferencedInSpec: coveredByTestId,
-            featureTestIdInSpecCoveragePercent: testIdPct,
-            featuresTouchedBySpecOrTestIdInSpec: coveredEither,
-            featureCombinedCoveragePercent: eitherPct,
-            modalsTotal: modals.length,
-            modalsInScopeForMetrics: modalsInScope.length,
-            modalsTouchedByE2ePath: coveredModalsPath,
-            modalPathCoveragePercent: modalPctPath,
-            modalsTouchedByPathOrLinkedFeature: coveredModalsEither,
-            modalCoveragePercentPathOrLinkedFeature: modalPctEither
-          },
-          features: featureNames.map(f => {
-            const s = featureStats[f]
-            const {
-              testIdsDeclaredList,
-              testIdsReferencedList,
-              testIdsUnreferencedList,
-              ...rest
-            } = s
-            return {
-              name: f,
-              ...rest,
-              hasMapping: Boolean(FEATURE_SIGNALS[f]),
-              excludedFromCoverageMetrics: excludedFromCoverageMetrics(f),
-              coverageMark: featureCoverageMark(f, featureStats),
-              coveredBySpecPath: s.tests.length > 0,
-              coveredByTestIdInSpec:
-                s.testIdsDeclared > 0 && s.testIdsReferencedInSpec > 0,
-              coveredBySpecOrTestIdInSpec:
-                s.tests.length > 0 ||
-                (s.testIdsDeclared > 0 && s.testIdsReferencedInSpec > 0),
-              testIdsDeclaredList,
-              testIdsReferencedList,
-              testIdsUnreferencedList
-            }
-          }),
-          tests: testToFeatures,
-          modals: modalCoverage.map(m => ({
-            ...m,
-            inCoverageMetricsScope: modalInCoverageMetricsScope(m)
-          }))
-        },
-        null,
-        2
-      )
-    )
-    return
+    n === 0 ? 0 : Math.round((100 * coveredModalsEither) / n)
+  return {
+    coveredModalsPath,
+    coveredModalsEither,
+    modalPctPath,
+    modalPctEither,
+    modalsOmittedCount: modals.length - modalsInScope.length
   }
+}
+
+/**
+ * @param {object} ctx
+ */
+function printJsonReport(ctx) {
+  const {
+    testFiles,
+    featureNames,
+    featureStats,
+    testToFeatures,
+    modalCoverage,
+    modals,
+    modalsInScope,
+    counts
+  } = ctx
+  const {
+    featuresWithSignals,
+    excludedFeatureList,
+    featuresWithSignalsInScope,
+    coveredBySpec,
+    specPct,
+    coveredByTestId,
+    testIdPct,
+    coveredEither,
+    eitherPct,
+    totalDeclaredTestIds,
+    totalReferencedTestIdsInSpec,
+    testIdLiteralInSpecPct,
+    totalCoveragePercent,
+    coveredModalsPath,
+    coveredModalsEither,
+    modalPctPath,
+    modalPctEither
+  } = counts
+
+  console.log(
+    JSON.stringify(
+      {
+        summary: {
+          e2eSource: 'e2e-appium',
+          appiumSpecFiles: testFiles.length,
+          testIdsDeclaredTotal: totalDeclaredTestIds,
+          testIdsReferencedInSpecTotal: totalReferencedTestIdsInSpec,
+          testIdLiteralCoverageInSpecPercent: testIdLiteralInSpecPct,
+          totalCoveragePercent,
+          totalCoveragePercentBasis:
+            'inScopeMappedFeatures_union_specPathOrTestIdInSpec',
+          featuresTotal: featureNames.length,
+          featuresWithMapping: featuresWithSignals.length,
+          featuresExcludedFromMetrics: excludedFeatureList,
+          featuresWithMappingInScope: featuresWithSignalsInScope.length,
+          featuresTouchedBySpecPath: coveredBySpec,
+          featureSpecPathCoveragePercent: specPct,
+          featuresWithDeclaredTestIdsReferencedInSpec: coveredByTestId,
+          featureTestIdInSpecCoveragePercent: testIdPct,
+          featuresTouchedBySpecOrTestIdInSpec: coveredEither,
+          featureCombinedCoveragePercent: eitherPct,
+          modalsTotal: modals.length,
+          modalsInScopeForMetrics: modalsInScope.length,
+          modalsTouchedByE2ePath: coveredModalsPath,
+          modalPathCoveragePercent: modalPctPath,
+          modalsTouchedByPathOrLinkedFeature: coveredModalsEither,
+          modalCoveragePercentPathOrLinkedFeature: modalPctEither
+        },
+        features: featureNames.map(f => {
+          const s = featureStats[f]
+          const {
+            testIdsDeclaredList,
+            testIdsReferencedList,
+            testIdsUnreferencedList,
+            ...rest
+          } = s
+          return {
+            name: f,
+            ...rest,
+            hasMapping: Boolean(FEATURE_SIGNALS[f]),
+            excludedFromCoverageMetrics: excludedFromCoverageMetrics(f),
+            coverageMark: featureCoverageMark(f, featureStats),
+            coveredBySpecPath: s.tests.length > 0,
+            coveredByTestIdInSpec:
+              s.testIdsDeclared > 0 && s.testIdsReferencedInSpec > 0,
+            coveredBySpecOrTestIdInSpec:
+              s.tests.length > 0 ||
+              (s.testIdsDeclared > 0 && s.testIdsReferencedInSpec > 0),
+            testIdsDeclaredList,
+            testIdsReferencedList,
+            testIdsUnreferencedList
+          }
+        }),
+        tests: testToFeatures,
+        modals: modalCoverage.map(m => ({
+          ...m,
+          inCoverageMetricsScope: modalInCoverageMetricsScope(m)
+        }))
+      },
+      null,
+      2
+    )
+  )
+}
+
+function featureListSortKey(a, b, featureStats) {
+  const markA = featureCoverageMark(a, featureStats)
+  const markB = featureCoverageMark(b, featureStats)
+  const listTier = m => {
+    if (m === 'O') return 0
+    if (m === 'X') return 1
+    return 2
+  }
+  const byTier = listTier(markA) - listTier(markB)
+  if (byTier !== 0) return byTier
+  if (markA === 'O') return a.localeCompare(b)
+  const ca = featureStats[a].components
+  const cb = featureStats[b].components
+  if (cb !== ca) return cb - ca
+  const ta = featureStats[a].testIdsDeclared
+  const tb = featureStats[b].testIdsDeclared
+  if (tb !== ta) return tb - ta
+  return a.localeCompare(b)
+}
+
+/**
+ * @param {object} ctx
+ */
+function printTextReportHeader(ctx) {
+  const {
+    excludedFeatureList,
+    totalCoveragePercent,
+    coveredEither,
+    featuresWithSignalsInScope,
+    testIdLiteralInSpecPct,
+    totalReferencedTestIdsInSpec,
+    totalDeclaredTestIds,
+    coveredBySpec,
+    specPct,
+    coveredByTestId,
+    testIdPct,
+    featuresWithSignals,
+    coveredModalsPath,
+    modalsInScope,
+    modalPctPath,
+    coveredModalsEither,
+    modalPctEither,
+    modals,
+    modalsOmittedCount,
+    testFiles
+  } = ctx
 
   console.log('Appium e2e ↔ feature coverage (heuristic, not line coverage)')
   console.log('Package:', pkgRoot)
   console.log(`Features: app/new/features/<folder> → ${featuresDir}`)
   console.log('Specs:   e2e-appium/ only (e2e/ Detox excluded)')
-  console.log('testIDs: all feature .tsx (excl. *.test.tsx); matched in *.spec.ts only (not pages/locators)')
   console.log(
-    `Excluded from metrics (△): ${excludedFeatureList.join(', ')} (${excludedFeatureList.length} folders)`
+    'testIDs: all feature .tsx (excl. *.test.tsx); matched in *.spec.ts only (not pages/locators)'
+  )
+  console.log(
+    `Excluded from metrics (△): ${excludedFeatureList.join(', ')} (${
+      excludedFeatureList.length
+    } folders)`
   )
   console.log(
     '  → Percent denominators omit △ folders. Total % = checklist O rate for in-scope mapped features (spec path OR testID in *.spec.ts).'
@@ -819,7 +997,11 @@ function main() {
     `                              ${coveredByTestId}/${featuresWithSignalsInScope.length} ≥1 feature testID in a *.spec.ts (${testIdPct}%)`
   )
   console.log(
-    `Mapping scope:     ${featuresWithSignals.length} folders with FEATURE_SIGNALS; ${featuresWithSignals.length - featuresWithSignalsInScope.length} of those excluded (△)`
+    `Mapping scope:     ${
+      featuresWithSignals.length
+    } folders with FEATURE_SIGNALS; ${
+      featuresWithSignals.length - featuresWithSignalsInScope.length
+    } of those excluded (△)`
   )
   console.log(
     `Modals (in scope): ${coveredModalsPath}/${modalsInScope.length} path/filename match (${modalPctPath}%)`
@@ -828,12 +1010,25 @@ function main() {
     `                   ${coveredModalsEither}/${modalsInScope.length} path match OR linked feature (spec OR testID) (${modalPctEither}%)`
   )
   console.log(
-    `                   (${modals.length} modal routes; ${modals.length - modalsInScope.length} omitted — no path hit and linked feature excluded from metrics)`
+    `                   (${modals.length} modal routes; ${modalsOmittedCount} omitted — no path hit and linked feature excluded from metrics)`
   )
   console.log(
     `Appium: ${testFiles.length} spec files scanned for paths + testID text`
   )
   console.log('')
+}
+
+/**
+ * @param {object} ctx
+ */
+function printTextReportBody(ctx) {
+  const {
+    featureNames,
+    featureStats,
+    featuresWithSignalsInScope,
+    modalCoverage,
+    verbose
+  } = ctx
 
   console.log(
     'All app/new/features folders (order: O A–Z, then all X by .tsx count ↓, then all △ by .tsx count ↓):'
@@ -849,28 +1044,14 @@ function main() {
   )
   console.log('')
   const nameColWidth = Math.max(...featureNames.map(n => n.length), 1)
-  const sortedFeatureNamesForList = [...featureNames].sort((a, b) => {
-    const markA = featureCoverageMark(a, featureStats)
-    const markB = featureCoverageMark(b, featureStats)
-    const listTier = m => {
-      if (m === 'O') return 0
-      if (m === 'X') return 1
-      return 2
-    }
-    const byTier = listTier(markA) - listTier(markB)
-    if (byTier !== 0) return byTier
-    if (markA === 'O') return a.localeCompare(b)
-    const ca = featureStats[a].components
-    const cb = featureStats[b].components
-    if (cb !== ca) return cb - ca
-    const ta = featureStats[a].testIdsDeclared
-    const tb = featureStats[b].testIdsDeclared
-    if (tb !== ta) return tb - ta
-    return a.localeCompare(b)
-  })
+  const sortedFeatureNamesForList = [...featureNames].sort((a, b) =>
+    featureListSortKey(a, b, featureStats)
+  )
   for (const f of sortedFeatureNamesForList) {
     const mark = featureCoverageMark(f, featureStats)
-    const unmapped = !FEATURE_SIGNALS[f] ? '  [no FEATURE_SIGNALS in script]' : ''
+    const unmapped = !FEATURE_SIGNALS[f]
+      ? '  [no FEATURE_SIGNALS in script]'
+      : ''
     console.log(`${mark}  ${f.padEnd(nameColWidth)}${unmapped}`)
   }
   console.log('')
@@ -881,8 +1062,7 @@ function main() {
   for (const f of featuresWithSignalsInScope) {
     const s = featureStats[f]
     const spec = s.tests.length > 0
-    const tid =
-      s.testIdsDeclared > 0 && s.testIdsReferencedInSpec > 0
+    const tid = s.testIdsDeclared > 0 && s.testIdsReferencedInSpec > 0
     if (!spec && !tid) {
       const { components, screens, testIdsDeclared } = s
       console.log(
@@ -903,46 +1083,149 @@ function main() {
   }
 
   if (verbose) {
-    console.log('Per-feature matching specs:')
-    for (const f of featureNames) {
-      if (!FEATURE_SIGNALS[f]) continue
-      const tests = featureStats[f].tests
-      const ex = excludedFromCoverageMetrics(f) ? ' [excluded from metrics]' : ''
-      console.log(`\n${f} (${tests.length})${ex}:`)
-      for (const t of [...new Set(tests)].sort()) {
-        console.log(`  ${t}`)
-      }
-    }
-    console.log(
-      '\nPer-feature testIDs (declared in feature .tsx vs found in *.spec.ts only):'
-    )
-    for (const f of featureNames) {
-      const s = featureStats[f]
-      if (s.testIdsDeclared === 0) continue
-      console.log(
-        `\n${f}: ${s.testIdsReferencedInSpec}/${s.testIdsDeclared} referenced (${s.testIdReferencePercent}%)`
-      )
-      const show = s.testIdsUnreferencedList.slice(0, 15)
-      if (show.length > 0) {
-        console.log('  not seen in any spec (sample):')
-        for (const id of show) console.log(`    ${id}`)
-        if (s.testIdsUnreferencedList.length > show.length) {
-          console.log(
-            `    … +${s.testIdsUnreferencedList.length - show.length} more`
-          )
-        }
-      }
-    }
-    console.log(
-      '\nModals (in scope) with no path match AND no linked-feature (spec OR testID):'
-    )
-    for (const m of modalCoverage) {
-      if (!modalInCoverageMetricsScope(m) || m.covered) continue
-      console.log(`  - ${m.modal}`)
-    }
+    printVerboseReport({ featureNames, featureStats, modalCoverage })
   } else {
-    console.log('Run with --verbose for per-feature spec lists and unmatched modals.')
+    console.log(
+      'Run with --verbose for per-feature spec lists and unmatched modals.'
+    )
   }
+}
+
+/**
+ * @param {string[]} featureNames
+ * @param {Record<string, object>} featureStats
+ */
+function printVerboseSpecMatches(featureNames, featureStats) {
+  console.log('Per-feature matching specs:')
+  for (const f of featureNames) {
+    if (!FEATURE_SIGNALS[f]) continue
+    const tests = featureStats[f].tests
+    const ex = excludedFromCoverageMetrics(f) ? ' [excluded from metrics]' : ''
+    console.log(`\n${f} (${tests.length})${ex}:`)
+    for (const t of [...new Set(tests)].sort()) {
+      console.log(`  ${t}`)
+    }
+  }
+}
+
+/**
+ * @param {string[]} featureNames
+ * @param {Record<string, object>} featureStats
+ */
+function printVerboseTestIdGaps(featureNames, featureStats) {
+  console.log(
+    '\nPer-feature testIDs (declared in feature .tsx vs found in *.spec.ts only):'
+  )
+  for (const f of featureNames) {
+    const s = featureStats[f]
+    if (s.testIdsDeclared === 0) continue
+    console.log(
+      `\n${f}: ${s.testIdsReferencedInSpec}/${s.testIdsDeclared} referenced (${s.testIdReferencePercent}%)`
+    )
+    const show = s.testIdsUnreferencedList.slice(0, 15)
+    if (show.length === 0) continue
+    console.log('  not seen in any spec (sample):')
+    for (const id of show) console.log(`    ${id}`)
+    if (s.testIdsUnreferencedList.length > show.length) {
+      console.log(
+        `    … +${s.testIdsUnreferencedList.length - show.length} more`
+      )
+    }
+  }
+}
+
+/** @param {object[]} modalCoverage */
+function printVerboseUncoveredModals(modalCoverage) {
+  console.log(
+    '\nModals (in scope) with no path match AND no linked-feature (spec OR testID):'
+  )
+  for (const m of modalCoverage) {
+    if (!modalInCoverageMetricsScope(m) || m.covered) continue
+    console.log(`  - ${m.modal}`)
+  }
+}
+
+/**
+ * @param {object} ctx
+ */
+function printVerboseReport(ctx) {
+  const { featureNames, featureStats, modalCoverage } = ctx
+  printVerboseSpecMatches(featureNames, featureStats)
+  printVerboseTestIdGaps(featureNames, featureStats)
+  printVerboseUncoveredModals(modalCoverage)
+}
+
+function main() {
+  const json = process.argv.includes('--json')
+  const verbose = process.argv.includes('--verbose')
+
+  const testFiles = loadAppiumSpecFiles()
+  const { specLiteralSet, specCorpus, specLiteralList } =
+    buildSpecLiteralsAndCorpus(testFiles)
+  const featureNames = readFeatureFolderNames()
+  const featureStats = {}
+  populateFeatureStats(
+    featureNames,
+    featureStats,
+    specLiteralSet,
+    specCorpus,
+    specLiteralList
+  )
+  const testToFeatures = matchSpecsToFeatures(
+    testFiles,
+    featureNames,
+    featureStats
+  )
+
+  const excludedFeatureList = [...E2E_COVERAGE_EXCLUDED_FEATURES].sort()
+  const coverageBase = buildCoverageCounts(
+    featureNames,
+    featureStats,
+    excludedFeatureList
+  )
+  const modals = readModalFolderNames()
+  const modalCoverage = buildModalCoverage(
+    modals,
+    testFiles,
+    featureNames,
+    featureStats
+  )
+  const modalsInScope = modalCoverage.filter(modalInCoverageMetricsScope)
+  const modalPercents = computeModalPercents(
+    modalCoverage,
+    modalsInScope,
+    modals
+  )
+  const counts = { ...coverageBase, ...modalPercents }
+
+  if (json) {
+    printJsonReport({
+      testFiles,
+      featureNames,
+      featureStats,
+      testToFeatures,
+      modalCoverage,
+      modals,
+      modalsInScope,
+      counts
+    })
+    return
+  }
+
+  printTextReportHeader({
+    ...counts,
+    excludedFeatureList,
+    testFiles,
+    modals,
+    modalsInScope
+  })
+  printTextReportBody({
+    featureNames,
+    featureStats,
+    featuresWithSignalsInScope: counts.featuresWithSignalsInScope,
+    modalCoverage,
+    verbose
+  })
 }
 
 main()
