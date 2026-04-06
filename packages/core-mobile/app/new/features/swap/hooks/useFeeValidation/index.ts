@@ -4,7 +4,6 @@ import { useSelector } from 'react-redux'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { caip2ChainIds } from 'consts/caip2ChainIds'
 import type { LocalTokenWithBalance } from 'store/balance'
-import { isSdkError } from '@avalabs/fusion-sdk'
 import {
   selectFusionMaxAmountAdditiveBpsDefault,
   selectFusionMaxAmountAdditiveBpsEvmToSolana,
@@ -12,7 +11,6 @@ import {
 } from 'store/posthog'
 import {
   FusionQuoteError,
-  fusionErrors,
   isGasOnlyNetworkFeeError
 } from '../../utils/fusionErrors'
 import type { Quote } from '../../types'
@@ -25,7 +23,8 @@ import { getRouteAdditiveBps } from '../useMaxSwapAmount/utils'
 import {
   validateNativeToken,
   validateNonNativeToken,
-  deriveValidationAdditiveBps
+  deriveValidationAdditiveBps,
+  getFeeEstimationError
 } from './utils'
 
 export const useFeeValidation = ({
@@ -114,21 +113,12 @@ export const useFeeValidation = ({
   } = useFeeEstimation({
     quote,
     fromNetwork,
-    gasSafetyBps,
-    solanaToEvmFeeMultiplier: 12
+    gasSafetyBps
   })
 
   const validationError = useMemo(() => {
     if (error && !isFetching) {
-      const message = isSdkError(error)
-        ? error.walk().message
-        : error instanceof Error
-        ? error.message
-        : ''
-      if (message.toLowerCase().includes('arithmetic underflow or overflow')) {
-        return fusionErrors.swapAmountTooSmall()
-      }
-      return fusionErrors.gasEstimationFailed()
+      return getFeeEstimationError(error)
     }
 
     if (!fromToken || bufferedGasFee === undefined) return undefined
