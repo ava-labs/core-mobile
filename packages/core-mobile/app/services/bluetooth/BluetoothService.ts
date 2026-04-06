@@ -20,23 +20,24 @@ export class BluetoothService {
     return true
   }
 
+  observeBluetoothState(onChange: (state: BluetoothState) => void): {
+    unsubscribe: () => void
+  } {
+    return TransportBLE.observeState({
+      next: (e: { type: string }) => onChange(e.type as BluetoothState),
+      error: () => onChange(BluetoothState.UNKNOWN),
+      complete: () => undefined
+    })
+  }
+
   async getBluetoothStateAsync(): Promise<BluetoothState> {
     return new Promise(resolve => {
-      const sub = TransportBLE.observeState({
-        next: (e: { type: string }) => {
-          resolve(e.type as BluetoothState)
-          // Defer unsubscribe so `sub` is fully initialized even for synchronous observables
-          Promise.resolve()
-            .then(() => sub.unsubscribe())
-            .catch(() => undefined)
-        },
-        error: () => {
-          resolve(BluetoothState.UNKNOWN)
-          Promise.resolve()
-            .then(() => sub.unsubscribe())
-            .catch(() => undefined)
-        },
-        complete: () => undefined
+      const sub = this.observeBluetoothState(state => {
+        resolve(state)
+        // Defer unsubscribe so `sub` is fully initialized even for synchronous observables
+        Promise.resolve()
+          .then(() => sub.unsubscribe())
+          .catch(() => undefined)
       })
     })
   }

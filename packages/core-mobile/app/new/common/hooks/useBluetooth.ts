@@ -1,4 +1,3 @@
-import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AppState, Platform } from 'react-native'
 import BluetoothService from 'services/bluetooth/BluetoothService'
@@ -70,15 +69,8 @@ export function useBluetooth(): UseBluetoothReturn {
   // Subscribe to BT radio state changes via TransportBLE
   useEffect(() => {
     if (subscriptionRef.current) return
-    subscriptionRef.current = TransportBLE.observeState({
-      next: (e: { type: string }) => {
-        setBluetoothState(e.type as BluetoothState)
-      },
-      error: () => {
-        setBluetoothState(BluetoothState.UNKNOWN)
-      },
-      complete: () => undefined
-    })
+    subscriptionRef.current =
+      BluetoothService.observeBluetoothState(setBluetoothState)
     return () => {
       subscriptionRef.current?.unsubscribe()
       subscriptionRef.current = null
