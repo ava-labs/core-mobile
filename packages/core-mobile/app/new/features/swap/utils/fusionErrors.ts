@@ -144,6 +144,27 @@ export const fusionErrors = {
       `Insufficient balance to cover the swap amount and bridge fee.\nBridge fee: ${formattedFee}`
     )
   },
+  // isNativeFeeIssue=true  → native token shortfall (network-fee-only)
+  // isNativeFeeIssue=false → token shortfall
+  // isNativeFeeIssue=undefined → unknown (e.g. Solana simulation, no cause attached)
+  insufficientFundsForFee(
+    isNativeFeeIssue: boolean | undefined
+  ): FusionQuoteError {
+    if (isNativeFeeIssue === true) {
+      return new FusionQuoteError(
+        'Insufficient native funds to cover the fee',
+        {
+          kind: 'network-fee-only'
+        }
+      )
+    }
+    if (isNativeFeeIssue === false) {
+      return new FusionQuoteError(
+        'Insufficient token funds to estimate the fee'
+      )
+    }
+    return new FusionQuoteError('Insufficient funds to estimate the fee')
+  },
   gasEstimationFailed(): FusionQuoteError {
     return new FusionQuoteError('Unable to estimate gas', { isWarning: true })
   },
