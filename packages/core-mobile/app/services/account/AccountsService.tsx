@@ -16,6 +16,8 @@ import ModuleManager from 'vmModule/ModuleManager'
 import { AVALANCHE_MAINNET_NETWORK } from 'services/network/consts'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import Logger from 'utils/Logger'
+import SentryService from 'services/sentry/SentryService'
+import { SentryTag } from 'services/sentry/types'
 import { LedgerWallet } from 'services/wallet/LedgerWallet'
 
 class AccountsService {
@@ -84,6 +86,27 @@ class AccountsService {
    * @param walletType The wallet type to reload the accounts for.
    * @returns The reloaded accounts.
    */
+  private resolveAddressC({
+    derived,
+    stored,
+    accountIndex,
+    walletId
+  }: {
+    derived: string | undefined
+    stored: string | undefined
+    accountIndex: number
+    walletId: string
+  }): string | undefined {
+    if (!derived) {
+      SentryService.captureMessage(
+        '[AccountsService] reloadAccounts: EVM address derivation returned empty, falling back to stored addressC',
+        { accountIndex, walletId, storedAddressC: stored },
+        { source: SentryTag.AccountService }
+      )
+    }
+    return derived || stored
+  }
+
   async reloadAccounts({
     accounts,
     ledgerAddressesCollection = {},
@@ -111,6 +134,13 @@ class AccountsService {
         isTestnet
       })
 
+      const addressC = this.resolveAddressC({
+        derived: addresses[NetworkVMType.EVM],
+        stored: account.addressC,
+        accountIndex: account.index,
+        walletId
+      })
+
       reloadedAccounts[key] = {
         id: account.id,
         name: account.name,
@@ -118,7 +148,7 @@ class AccountsService {
         walletId: account.walletId,
         index: account.index,
         addressBTC: addresses[NetworkVMType.BITCOIN],
-        addressC: addresses[NetworkVMType.EVM] || account.addressC,
+        addressC,
         addressAVM: addresses[NetworkVMType.AVM],
         addressPVM: addresses[NetworkVMType.PVM],
         addressCoreEth: addresses[NetworkVMType.CoreEth],
