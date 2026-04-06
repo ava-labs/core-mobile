@@ -435,6 +435,7 @@ const ApprovalScreen = ({
   return (
     <ActionSheet
       isModal
+      requireScrollToConfirm
       title={displayData.dAppInfo ? undefined : displayData.title}
       navigationTitle={
         displayData.dAppInfo ? displayData?.dAppInfo?.name : displayData.title
