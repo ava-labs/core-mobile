@@ -45,10 +45,7 @@ import {
 } from './types'
 import {
   isLedgerBluetoothError,
-  LedgerBluetoothPermissionError,
-  LedgerBluetoothRadioOffError,
-  LedgerBluetoothUnknownError,
-  LedgerBluetoothUnsupportedError,
+  ledgerBluetoothErrors,
   showBluetoothErrorAlert
 } from './LedgerBluetoothError'
 
@@ -143,19 +140,19 @@ class LedgerService {
   private async assertBluetoothAvailable(): Promise<void> {
     const { hasPermission, state } = await ensureBluetoothAvailable()
     if (!hasPermission || state === BluetoothState.UNAUTHORIZED) {
-      throw new LedgerBluetoothPermissionError()
+      throw ledgerBluetoothErrors.permissionDenied()
     }
     if (state === BluetoothState.POWERED_OFF) {
-      throw new LedgerBluetoothRadioOffError()
+      throw ledgerBluetoothErrors.radioOff()
     }
     if (state === BluetoothState.UNSUPPORTED) {
-      throw new LedgerBluetoothUnsupportedError()
+      throw ledgerBluetoothErrors.unsupported()
     }
     if (
       state === BluetoothState.RESETTING ||
       state === BluetoothState.UNKNOWN
     ) {
-      throw new LedgerBluetoothUnknownError()
+      throw ledgerBluetoothErrors.unknown()
     }
   }
 

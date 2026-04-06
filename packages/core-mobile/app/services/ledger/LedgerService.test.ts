@@ -4,7 +4,8 @@ import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Logger from 'utils/Logger'
 import LedgerService from './LedgerService'
 import { LedgerAppType } from './types'
-import { isLedgerBluetoothPermissionError } from './LedgerBluetoothError'
+import { isLedgerBluetoothError } from './LedgerBluetoothError'
+import { LEDGER_ERROR_CODES } from './types'
 
 jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
   __esModule: true,
@@ -415,7 +416,7 @@ describe('LedgerService', () => {
         await LedgerService.startDeviceScanning()
         throw new Error('Expected startDeviceScanning to fail')
       } catch (error) {
-        expect(isLedgerBluetoothPermissionError(error)).toBe(true)
+        expect(isLedgerBluetoothError(error) && error.code === LEDGER_ERROR_CODES.BLUETOOTH_PERMISSION).toBe(true)
       }
 
       expect(transportBLEMock.listen).not.toHaveBeenCalled()
@@ -462,7 +463,7 @@ describe('LedgerService', () => {
         expect((error as Error).message).toBe(
           'Bluetooth permissions are required to connect to Ledger devices.'
         )
-        expect(isLedgerBluetoothPermissionError(error)).toBe(true)
+        expect(isLedgerBluetoothError(error) && error.code === LEDGER_ERROR_CODES.BLUETOOTH_PERMISSION).toBe(true)
       }
 
       expect(transportBLEMock.open).not.toHaveBeenCalled()

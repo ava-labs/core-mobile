@@ -1,24 +1,8 @@
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AppState, Linking, PermissionsAndroid, Platform } from 'react-native'
-import { check, PERMISSIONS, RESULTS } from 'react-native-permissions'
-import Logger from 'utils/Logger'
-
-export enum BluetoothState {
-  POWERED_ON = 'PoweredOn',
-  POWERED_OFF = 'PoweredOff',
-  UNAUTHORIZED = 'Unauthorized',
-  RESETTING = 'Resetting',
-  UNSUPPORTED = 'Unsupported',
-  UNKNOWN = 'Unknown'
-}
-
-export interface BluetoothAvailability {
-  /** Whether the OS has granted Bluetooth permission to this app */
-  hasPermission: boolean
-  /** Current Bluetooth radio state */
-  state: BluetoothState
-}
+import { AppState, Platform } from 'react-native'
+import BluetoothService from 'services/bluetooth/BluetoothService'
+import { BluetoothState } from 'services/bluetooth/types'
 
 interface UseBluetoothReturn {
   /** Bluetooth is available and ready to use (permissions granted, radio on, and initialized) */
@@ -37,104 +21,23 @@ interface UseBluetoothReturn {
   openSettings: () => void
 }
 
-async function requestAndroidPermissions(): Promise<boolean> {
-  try {
-    const permissions = [
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-    ].filter(Boolean)
+// iOS: tracks permission state on mount and foreground resume.
+// Safe to call check(PERMISSIONS.IOS.BLUETOOTH) here — it never shows a dialog,
+// so AppState changes won't cause an infinite loop.
 
-    const checks = await Promise.all(
-      permissions.map(p => PermissionsAndroid.check(p))
-    )
-    if (checks.every(Boolean)) return true
-
-    const missing = permissions.filter((_, i) => !checks[i])
-    const granted = await PermissionsAndroid.requestMultiple(missing)
-
-    return missing.every(p => granted[p] === PermissionsAndroid.RESULTS.GRANTED)
-  } catch (err) {
-    Logger.error('useBluetooth: requestAndroidPermissions failed', err)
-    return false
-  }
-}
-
-export async function requestPermissionsAsync(): Promise<boolean> {
-  if (Platform.OS === 'android') {
-    return requestAndroidPermissions()
-  }
-  if (Platform.OS === 'ios') {
-    try {
-      const status = await check(PERMISSIONS.IOS.BLUETOOTH)
-      if (status === RESULTS.BLOCKED) return false
-    } catch (err) {
-      Logger.error('useBluetooth: iOS permission check failed', err)
-    }
-  }
-  return true
-}
-
-export async function getBluetoothStateAsync(): Promise<BluetoothState> {
-  return new Promise(resolve => {
-    const sub = TransportBLE.observeState({
-      next: (e: { type: string }) => {
-        resolve(e.type as BluetoothState)
-        // Defer unsubscribe so `sub` is fully initialized even for synchronous observables
-        Promise.resolve()
-          .then(() => sub.unsubscribe())
-          .catch(() => undefined)
-      },
-      error: () => {
-        resolve(BluetoothState.UNKNOWN)
-        Promise.resolve()
-          .then(() => sub.unsubscribe())
-          .catch(() => undefined)
-      },
-      complete: () => undefined
-    })
-  })
-}
-
-export async function ensureBluetoothAvailable(): Promise<BluetoothAvailability> {
-  const [state, hasPermission] = await Promise.all([
-    getBluetoothStateAsync(),
-    requestPermissionsAsync()
-  ])
-  return { hasPermission, state }
-}
-
-// Check-only variant — never shows a dialog, safe to call from AppState listeners.
-// requestAndroidPermissions shows a system dialog which itself triggers AppState
-// changes, causing an infinite loop if called from within an AppState listener.
-async function checkAndroidPermissionsGranted(): Promise<boolean> {
-  try {
-    const permissions = [
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-    ].filter(Boolean)
-    const results = await Promise.all(
-      permissions.map(p => PermissionsAndroid.check(p))
-    )
-    return results.every(Boolean)
-  } catch (err) {
-    Logger.error('useBluetooth: checkAndroidPermissions failed', err)
-    return false
-  }
-}
-
-// Tracks Android permission state without showing dialogs.
+// Android: tracks permission state without showing dialogs.
 // Permission prompts are triggered elsewhere via the async permission-request flow.
 // AppState listener uses check-only to detect grants made in Settings or after an explicit request.
-function useAndroidBluetoothPermission(): boolean {
+function useBluetoothPermission(): boolean {
   const [isPermissionGranted, setIsPermissionGranted] = useState(false)
 
   useEffect(() => {
     if (Platform.OS !== 'android') return
 
     const checkPermission = async (): Promise<void> => {
-      const granted = await checkAndroidPermissionsGranted()
+      const granted = await (Platform.OS === 'ios'
+        ? BluetoothService.requestPermissionsAsync()
+        : BluetoothService.checkAndroidPermissionsGranted())
       setIsPermissionGranted(granted)
     }
 
@@ -142,6 +45,8 @@ function useAndroidBluetoothPermission(): boolean {
 
     const appStateRef = { current: AppState.currentState }
     const subscription = AppState.addEventListener('change', nextState => {
+      // this is a treatment for android only, otherwise android will trigger checkPermission infinitely.
+      // for iOS, simply checking nextState === 'active' is enough
       if (appStateRef.current !== 'active' && nextState === 'active') {
         checkPermission()
       }
@@ -154,87 +59,13 @@ function useAndroidBluetoothPermission(): boolean {
   return isPermissionGranted
 }
 
-// iOS only: tracks permission state on mount and foreground resume.
-// Safe to call check(PERMISSIONS.IOS.BLUETOOTH) here — it never shows a dialog,
-// so AppState changes won't cause an infinite loop.
-function useIosBluetoothPermission(): boolean {
-  const [isPermissionGranted, setIsPermissionGranted] = useState(false)
-
-  useEffect(() => {
-    if (Platform.OS !== 'ios') return
-
-    const checkPermission = async (): Promise<void> => {
-      try {
-        const granted = await requestPermissionsAsync()
-        setIsPermissionGranted(granted)
-      } catch (err) {
-        Logger.error('useBluetooth permission check failed', err)
-      }
-    }
-
-    checkPermission()
-
-    const subscription = AppState.addEventListener('change', nextState => {
-      if (nextState === 'active') checkPermission()
-    })
-
-    return () => subscription.remove()
-  }, [])
-
-  return isPermissionGranted
-}
-
-export const openSystemBluetoothSettings = (
-  platform: 'android' | 'ios'
-): void => {
-  if (platform === 'android') {
-    Linking.sendIntent('android.settings.BLUETOOTH_SETTINGS').catch(
-      Logger.error
-    )
-  } else if (platform === 'ios') {
-    Linking.openURL('App-Prefs:Bluetooth').catch(Logger.error)
-  }
-}
-
-function openAndroidSettingsForState(bluetoothState: BluetoothState): void {
-  if (bluetoothState === BluetoothState.POWERED_OFF) {
-    openSystemBluetoothSettings('android')
-    return
-  }
-  // Open app-specific settings so user can grant Bluetooth permission
-  Linking.openSettings().catch(Logger.error)
-}
-
-const openIosSettingsForState = (bluetoothState: BluetoothState): void => {
-  if (bluetoothState === BluetoothState.POWERED_OFF) {
-    openSystemBluetoothSettings('ios')
-    return
-  }
-  // Deep link to Bluetooth settings on iOS (works on iOS 10+)
-  Linking.openSettings().catch(Logger.error)
-}
-
-function openSettingsForState(bluetoothState: BluetoothState): void {
-  if (Platform.OS === 'android') {
-    openAndroidSettingsForState(bluetoothState)
-  } else if (Platform.OS === 'ios') {
-    openIosSettingsForState(bluetoothState)
-  }
-}
-
 export function useBluetooth(): UseBluetoothReturn {
   const [bluetoothState, setBluetoothState] = useState<BluetoothState>(
     BluetoothState.UNKNOWN
   )
   const subscriptionRef = useRef<{ unsubscribe: () => void } | null>(null)
 
-  const isAndroidPermissionGranted = useAndroidBluetoothPermission()
-  const iosPermissionGranted = useIosBluetoothPermission()
-
-  const isPermissionGranted =
-    Platform.OS === 'android'
-      ? isAndroidPermissionGranted
-      : iosPermissionGranted
+  const isPermissionGranted = useBluetoothPermission()
 
   // Subscribe to BT radio state changes via TransportBLE
   useEffect(() => {
@@ -257,7 +88,7 @@ export function useBluetooth(): UseBluetoothReturn {
   // Re-check BT state when app comes to foreground (e.g. user enabled BT in Settings)
   useEffect(() => {
     const recheckState = async (): Promise<void> => {
-      const state = await getBluetoothStateAsync()
+      const state = await BluetoothService.getBluetoothStateAsync()
       setBluetoothState(state)
     }
 
@@ -289,7 +120,10 @@ export function useBluetooth(): UseBluetoothReturn {
     bluetoothState === BluetoothState.RESETTING
 
   const openSettings = useCallback(() => {
-    openSettingsForState(bluetoothState)
+    BluetoothService.openSettingsForState(
+      bluetoothState,
+      Platform.OS as 'android' | 'ios'
+    )
   }, [bluetoothState])
 
   return {
