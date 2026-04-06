@@ -19,7 +19,6 @@ export default async function warmup(
   await onboardingPage.tapImport()
   // Enter PIN (this will also disable the biometrics toggle if needed)
   await onboardingPage.enterPin()
-  await onboardingPage.enterWalletName()
   await onboardingPage.tapNextBtnOnNameWallet()
   await onboardingPage.tapNextBtnOnAvatarScreen()
   await onboardingPage.tapLetsGo()

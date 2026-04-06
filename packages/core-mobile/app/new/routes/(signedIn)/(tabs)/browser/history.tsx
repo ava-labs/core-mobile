@@ -90,6 +90,7 @@ const HistoryScreen = (): JSX.Element => {
   const renderHeader = (): JSX.Element => {
     return (
       <SearchBar
+        testID="search_bar"
         onTextChanged={setSearchText}
         searchText={searchText}
         placeholder="Search or Type URL"

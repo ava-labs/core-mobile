@@ -118,7 +118,7 @@ class AccountsService {
         walletId: account.walletId,
         index: account.index,
         addressBTC: addresses[NetworkVMType.BITCOIN],
-        addressC: addresses[NetworkVMType.EVM],
+        addressC: addresses[NetworkVMType.EVM] || account.addressC,
         addressAVM: addresses[NetworkVMType.AVM],
         addressPVM: addresses[NetworkVMType.PVM],
         addressCoreEth: addresses[NetworkVMType.CoreEth],
