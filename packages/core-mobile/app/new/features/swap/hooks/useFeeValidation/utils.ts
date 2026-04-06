@@ -10,9 +10,9 @@ import type { LocalTokenWithBalance } from 'store/balance'
 import { FusionQuoteError, fusionErrors } from '../../utils/fusionErrors'
 
 export const getFeeEstimationError = (error: unknown): FusionQuoteError => {
-  // treat as insufficient funds if the SDK explicitly says so, or if cause is
-  // undefined (e.g. Solana Kit did not throw during simulation, so no cause was attached)
   if (isEstimateNativeFeeError(error)) {
+    // When the SDK confirms the cause is an InsufficientFundsError we can
+    // surface a precise message (native vs token shortfall).
     if (
       error.causedByInsufficientFunds() &&
       isInsufficientFundsError(error.cause)
@@ -22,8 +22,10 @@ export const getFeeEstimationError = (error: unknown): FusionQuoteError => {
       )
     }
 
-    // cause is undefined or unknown, so we don't know the exact reason
-    // return generic insufficient funds message
+    // For any other EstimateNativeFeeError (cause absent, e.g. Solana Kit
+    // simulation failure, or cause present but unrecognised) we fall back to a
+    // generic insufficient-funds message rather than propagating an opaque
+    // gas-estimation-failed error.
     return fusionErrors.insufficientFundsForFee(undefined)
   }
 

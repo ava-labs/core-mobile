@@ -8,6 +8,7 @@ import { useNetworkFee } from 'hooks/useNetworkFee'
 import { isEstimateNativeFeeError } from '@avalabs/fusion-sdk'
 import Logger from 'utils/Logger'
 import SentryService from 'services/sentry/SentryService'
+import { SentryTag } from 'services/sentry/types'
 import FusionService from '../services/FusionService'
 import { logSdkError } from '../utils/fusionLogger'
 import type { Quote } from '../types'
@@ -50,6 +51,8 @@ export const useFeeEstimation = ({
       ReactQueryKeys.FUSION_SWAP_FEE_ESTIMATE,
       quote?.id,
       feeOptions.feeUnitsMarginBps,
+      feeOptions.overrides?.maxFeePerGas.toString(),
+      feeOptions.overrides?.maxPriorityFeePerGas.toString(),
       gasSafetyBps
     ],
     queryFn: quote
@@ -75,7 +78,8 @@ export const useFeeEstimation = ({
       // in error.details.args are serialized to strings by sanitizeContext.
       SentryService.captureMessage(
         '[useFeeEstimation] estimateNativeFee revert error',
-        { ...error.details, cause: error.cause }
+        { ...error.details, cause: error.cause },
+        { source: SentryTag.FusionSdk }
       )
     } else {
       logSdkError('[useFeeEstimation] estimateNativeFee error', error)
