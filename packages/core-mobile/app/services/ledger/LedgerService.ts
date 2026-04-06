@@ -142,13 +142,10 @@ class LedgerService {
 
   private async assertBluetoothAvailable(): Promise<void> {
     const { hasPermission, state } = await ensureBluetoothAvailable()
-    if (!hasPermission) {
+    if (!hasPermission || state === BluetoothState.UNAUTHORIZED) {
       throw new LedgerBluetoothPermissionError()
     }
-    if (
-      state === BluetoothState.UNAUTHORIZED ||
-      state === BluetoothState.POWERED_OFF
-    ) {
+    if (state === BluetoothState.POWERED_OFF) {
       throw new LedgerBluetoothRadioOffError()
     }
     if (state === BluetoothState.UNSUPPORTED) {

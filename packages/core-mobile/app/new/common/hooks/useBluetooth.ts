@@ -125,8 +125,8 @@ async function checkAndroidPermissionsGranted(): Promise<boolean> {
 }
 
 // Tracks Android permission state without showing dialogs.
-// Dialogs are only shown via the returned requestPermissions (explicit user action).
-// AppState listener uses check-only to detect when the user grants access in Settings.
+// Permission prompts are triggered elsewhere via the async permission-request flow.
+// AppState listener uses check-only to detect grants made in Settings or after an explicit request.
 function useAndroidBluetoothPermission(): boolean {
   const [isPermissionGranted, setIsPermissionGranted] = useState(false)
 
