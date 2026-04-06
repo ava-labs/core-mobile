@@ -136,19 +136,18 @@ export const SpendLimitOptions = ({
       <View
         style={{
           flexDirection: 'row',
-          alignItems: 'center'
+          alignItems: 'center',
+          justifyContent: 'flex-end'
         }}>
         <Text
           variant="body1"
           numberOfLines={1}
-          sx={{
-            ...sharedValueStyle
-          }}>
-          {displayValue} {token.symbol}
+          sx={{ ...sharedValueStyle, marginRight: 16 }}>
+          {`${displayValue} ${token.symbol}`}
         </Text>
         <Icons.Navigation.ChevronRight
           color={colors.$textSecondary}
-          style={{ marginRight: -8 }}
+          style={{ position: 'absolute', right: -8 }}
         />
       </View>
     </DropdownMenu>
