@@ -1,3 +1,46 @@
+import { bigintToBig } from '@avalabs/core-utils-sdk'
+import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
+import type { Network } from '@avalabs/core-chains-sdk'
+import {
+  isSdkError,
+  isEstimateNativeFeeError,
+  isInsufficientFundsError
+} from '@avalabs/fusion-sdk'
+import type { LocalTokenWithBalance } from 'store/balance'
+import { FusionQuoteError, fusionErrors } from '../../utils/fusionErrors'
+
+export const getFeeEstimationError = (error: unknown): FusionQuoteError => {
+  if (isEstimateNativeFeeError(error)) {
+    // When the SDK confirms the cause is an InsufficientFundsError we can
+    // surface a precise message (native vs token shortfall).
+    if (
+      error.causedByInsufficientFunds() &&
+      isInsufficientFundsError(error.cause)
+    ) {
+      return fusionErrors.insufficientFundsForFee(
+        error.cause.insufficientTokenWasNative
+      )
+    }
+
+    // For any other EstimateNativeFeeError (cause absent, e.g. Solana Kit
+    // simulation failure, or cause present but unrecognised) we fall back to a
+    // generic insufficient-funds message rather than propagating an opaque
+    // gas-estimation-failed error.
+    return fusionErrors.insufficientFundsForFee(undefined)
+  }
+
+  const message = isSdkError(error)
+    ? error.walk().message
+    : error instanceof Error
+    ? error.message
+    : ''
+  if (message.toLowerCase().includes('arithmetic underflow or overflow')) {
+    return fusionErrors.swapAmountTooSmall()
+  }
+
+  return fusionErrors.gasEstimationFailed()
+}
+
 /**
  * Derives a validation-time additive bps value from the Max bps flag.
  * Subtracts a reduction to give Max a 10% head-room, clamped to 0
@@ -7,12 +50,6 @@ export const deriveValidationAdditiveBps = (
   maxBps: number,
   reduction = 1000
 ): number => Math.max(0, maxBps - reduction)
-
-import { bigintToBig } from '@avalabs/core-utils-sdk'
-import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
-import type { Network } from '@avalabs/core-chains-sdk'
-import type { LocalTokenWithBalance } from 'store/balance'
-import { FusionQuoteError, fusionErrors } from '../../utils/fusionErrors'
 
 /**
  * Validates balance for native token swaps.
