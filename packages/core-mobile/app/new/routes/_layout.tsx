@@ -7,7 +7,7 @@ import { GlobalToast } from 'common/utils/toast'
 import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { setStatusBarStyle } from 'expo-status-bar'
 import { RecoveryMethodProvider } from 'features/onboarding/contexts/RecoveryMethodProvider'
-import { NoInternetBanner } from 'common/components/NoInternetBanner'
+import { useNoInternetToast } from 'common/hooks/useNoInternetToast'
 import { PrivacyScreen } from 'features/privacyScreen/components/PrivacyScreen'
 import React, { useEffect } from 'react'
 import { Appearance as RnAppearance } from 'react-native'
@@ -48,6 +48,7 @@ export default function Root(): JSX.Element | null {
   }, [colorScheme])
 
   useLoadFonts()
+  useNoInternetToast()
 
   useEffect(() => {
     Bootsplash.hide()

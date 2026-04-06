@@ -99,7 +99,11 @@ export function isPriceAlertNotification(
   type: 'PRICE_ALERTS'
   data?: PriceAlertsMetadata
 } {
-  return notification.type === 'PRICE_ALERTS'
+  return (
+    notification.type === 'PRICE_ALERTS' ||
+    (notification.category === 'NEWS' &&
+      notification.data?.event === 'PRICE_ALERTS')
+  )
 }
 
 /**

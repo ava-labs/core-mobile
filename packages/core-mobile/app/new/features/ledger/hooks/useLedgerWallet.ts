@@ -136,7 +136,9 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
             ? 'OnboardingLedgerWalletAdded'
             : 'WalletImportLedgerWalletAdded'
         )
-        showSnackbar('Ledger wallet created successfully!')
+        if (walletState !== WalletState.NONEXISTENT) {
+          showSnackbar('Ledger wallet created successfully!')
+        }
         return { walletId: newWalletId, accountId: newAccountId }
       } catch (error) {
         AnalyticsService.capture(
