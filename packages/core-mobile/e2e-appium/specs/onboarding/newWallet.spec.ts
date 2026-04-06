@@ -28,7 +28,6 @@ describe('[Smoke] Onboarding', () => {
     await onboardingPage.enterPin()
 
     // enter wallet name
-    await onboardingPage.enterWalletName()
     await onboardingPage.tapNextBtnOnNameWallet()
 
     // tap next on avatar screen
