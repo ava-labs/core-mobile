@@ -2,7 +2,6 @@ import { useNavigation, useRouter } from 'expo-router'
 import { showSnackbar } from 'new/common/utils/toast'
 import { useCallback, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { WalletType } from 'services/wallet/types'
 import { onWalletImported } from 'store/app/slice'
 import { AppThunkDispatch } from 'store/types'
 import { importMnemonicWalletAndAccount } from 'store/wallet/thunks'
@@ -45,8 +44,7 @@ export const useImportMnemonic = (): {
         setTimeout(() => {
           dispatch(
             onWalletImported({
-              walletId,
-              walletType: WalletType.MNEMONIC
+              walletId
             })
           )
         }, 1500)

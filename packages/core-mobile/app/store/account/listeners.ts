@@ -15,6 +15,7 @@ import {
   selectIsMigratingActiveAccounts,
   selectIsWalletLedger,
   selectSeedlessWallet,
+  selectWalletById,
   selectWallets,
   setWalletName
 } from 'store/wallet/slice'
@@ -406,7 +407,14 @@ export const addAccountListeners = (
   startListening({
     actionCreator: onWalletImported,
     effect: async (action, listenerApi) => {
-      const { walletId, walletType } = action.payload
+      const { walletId } = action.payload
+      const state = listenerApi.getState()
+      const wallet = selectWalletById(walletId)(state)
+
+      if (!wallet) {
+        Logger.error('Wallet not found in store after import')
+        return
+      }
 
       // Load wallet secret to initialize keychain session for the new wallet.
       // This mirrors what initAccounts does on app restart (line 62) and is
@@ -424,7 +432,7 @@ export const addAccountListeners = (
       await migrateRemainingActiveAccounts({
         listenerApi,
         walletId,
-        walletType,
+        walletType: wallet.type,
         startIndex: 1,
         scanWindow: 10
       })

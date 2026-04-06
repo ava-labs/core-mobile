@@ -82,7 +82,6 @@ export const onLogOut = createAction(`${reducerName}/onLogOut`)
 // when user has imported a mnemonic wallet and Account #0 has been created
 export const onWalletImported = createAction<{
   walletId: string
-  walletType: WalletType.MNEMONIC
 }>(`${reducerName}/onWalletImported`)
 
 export const {

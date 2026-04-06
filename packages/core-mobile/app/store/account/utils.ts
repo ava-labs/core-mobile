@@ -106,7 +106,7 @@ export const discoverRemainingActiveAccounts = async ({
   scanWindow
 }: {
   walletId: string
-  walletType: WalletType.SEEDLESS | WalletType.MNEMONIC | WalletType.KEYSTONE
+  walletType: WalletType
   startIndex: number
   onAccountCreated?: (account: Account) => void
   scanWindow?: number
@@ -172,7 +172,7 @@ export const migrateRemainingActiveAccounts = async ({
 }: {
   listenerApi: AppListenerEffectAPI
   walletId: string
-  walletType: WalletType.SEEDLESS | WalletType.MNEMONIC | WalletType.KEYSTONE
+  walletType: WalletType
   startIndex: number
   scanWindow?: number
 }): Promise<void> => {
