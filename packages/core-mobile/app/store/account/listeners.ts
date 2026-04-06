@@ -5,7 +5,7 @@ import {
 } from 'store/settings/advanced'
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { AnyAction } from '@reduxjs/toolkit'
-import { onAppUnlocked } from 'store/app/slice'
+import { onAppUnlocked, onWalletImported } from 'store/app/slice'
 import { WalletType } from 'services/wallet/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
@@ -15,6 +15,7 @@ import {
   selectIsMigratingActiveAccounts,
   selectIsWalletLedger,
   selectSeedlessWallet,
+  selectWalletById,
   selectWallets,
   setWalletName
 } from 'store/wallet/slice'
@@ -401,5 +402,40 @@ export const addAccountListeners = (
   startListening({
     actionCreator: onAppUnlocked,
     effect: rederiveAvmPvmAddressesIfNeeded
+  })
+
+  startListening({
+    actionCreator: onWalletImported,
+    effect: async (action, listenerApi) => {
+      const { walletId } = action.payload
+      const state = listenerApi.getState()
+      const wallet = selectWalletById(walletId)(state)
+
+      if (!wallet) {
+        Logger.error('Wallet not found in store after import')
+        return
+      }
+
+      // Load wallet secret to initialize keychain session for the new wallet.
+      // This mirrors what initAccounts does on app restart (line 62) and is
+      // required before modules can derive addresses for account discovery.
+      const walletSecret = await BiometricsSDK.loadWalletSecret(walletId)
+      if (!walletSecret.success) {
+        Logger.error(
+          'Failed to load wallet secret for account discovery after import'
+        )
+        return
+      }
+
+      // scanWindow controls how many accounts are checked per batch,
+      // not the total number of discoverable accounts.
+      await migrateRemainingActiveAccounts({
+        listenerApi,
+        walletId,
+        walletType: wallet.type,
+        startIndex: 1,
+        scanWindow: 10
+      })
+    }
   })
 }
