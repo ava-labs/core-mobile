@@ -101,7 +101,7 @@ class AccountsService {
       SentryService.captureMessage(
         '[AccountsService] reloadAccounts: EVM address derivation returned empty, falling back to stored addressC',
         { accountIndex, walletId, storedAddressC: stored },
-        { source: SentryTag.Glacier }
+        { source: SentryTag.AccountService }
       )
     }
     return derived || stored
