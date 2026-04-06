@@ -99,7 +99,6 @@ export function buildEvmProviderShim({
   };
   var _chainId = '${chainId}';
   var _address = '${address}';
-  var _connected = true;
   var _accounts = _address ? [_address] : [];
 
   // ──────────────────────────────────────────────
@@ -146,7 +145,7 @@ export function buildEvmProviderShim({
   var provider = {
     isMetaMask: true,
     isAvalanche: true,
-    _isConnected: _connected,
+    _isConnected: true,
 
     request: function(args) {
       if (!args || typeof args.method !== 'string') {
@@ -354,7 +353,7 @@ export function buildEvmProviderShim({
     },
 
     isConnected: function() {
-      return _connected;
+      return true;
     },
 
     _metamask: {
