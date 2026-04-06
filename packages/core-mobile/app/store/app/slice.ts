@@ -79,6 +79,11 @@ export const onLogIn = createAction(`${reducerName}/onLogIn`)
 // when user has successfully "destroyed" a wallet
 export const onLogOut = createAction(`${reducerName}/onLogOut`)
 
+// when user has imported a mnemonic wallet and Account #0 has been created
+export const onWalletImported = createAction<{
+  walletId: string
+}>(`${reducerName}/onWalletImported`)
+
 export const {
   setIsReady,
   setIsLocked,
