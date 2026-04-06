@@ -425,8 +425,11 @@ export function useEvmInjectedProvider(
 
   const handleRevokePermissions = useCallback(
     (id: number) => {
+      // Only emit accountsChanged([]) — NOT disconnect. Per EIP-1193,
+      // 'disconnect' means the provider lost network connectivity, not
+      // that the user revoked access. Emitting disconnect causes wagmi
+      // to mark the provider as offline and refuse to auto-reconnect.
       emitEvent('accountsChanged', [])
-      emitEvent('disconnect', { code: 4900, message: 'User disconnected' })
       sendResponse(id, null, null)
     },
     [emitEvent, sendResponse]
