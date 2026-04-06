@@ -7,6 +7,15 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Script is in packages/core-mobile/scripts/, so go up one level to get core-mobile directory
 CORE_MOBILE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+MONOREPO_ROOT="$(cd "$CORE_MOBILE_DIR/../.." && pwd)"
+
+# Appium CLI from the workspace (package.json devDependency), not global PATH — same idea as bitrise InternalE2e scripts.
+APPIUM_BIN=""
+if [ -x "$CORE_MOBILE_DIR/node_modules/.bin/appium" ]; then
+  APPIUM_BIN="$CORE_MOBILE_DIR/node_modules/.bin/appium"
+elif [ -x "$MONOREPO_ROOT/node_modules/.bin/appium" ]; then
+  APPIUM_BIN="$MONOREPO_ROOT/node_modules/.bin/appium"
+fi
 
 # Default values: positional APK overrides APP_PATH env
 APP_PATH="${1:-${APP_PATH:-}}"
@@ -145,7 +154,14 @@ echo ""
 if ! curl -s http://localhost:4723/status > /dev/null 2>&1; then
   echo "⚠️  Appium is not running on port 4723"
   echo ""
+  if [ -z "$APPIUM_BIN" ]; then
+    echo "❌ Appium CLI not found. Install monorepo dependencies, then retry:"
+    echo "   cd \"$MONOREPO_ROOT\" && yarn install"
+    echo "   Expected: $CORE_MOBILE_DIR/node_modules/.bin/appium (or hoisted: $MONOREPO_ROOT/node_modules/.bin/appium)"
+    exit 1
+  fi
   echo "Starting Appium with compatible Node version..."
+  echo "   Using: $APPIUM_BIN"
   
   # Try to source nvm and use a compatible Node version
   if [ -s "$HOME/.nvm/nvm.sh" ]; then
@@ -154,7 +170,7 @@ if ! curl -s http://localhost:4723/status > /dev/null 2>&1; then
     if nvm use 20 > /dev/null 2>&1 || nvm use 22 > /dev/null 2>&1 || nvm use 24 > /dev/null 2>&1; then
       echo "✅ Using Node $(node --version)"
       # Start Appium in the background
-      appium > /tmp/appium.log 2>&1 &
+      "$APPIUM_BIN" > /tmp/appium.log 2>&1 &
       APPIUM_PID=$!
       echo "🚀 Started Appium (PID: $APPIUM_PID)"
       echo "   Logs: /tmp/appium.log"
@@ -175,18 +191,18 @@ if ! curl -s http://localhost:4723/status > /dev/null 2>&1; then
       echo "Please start Appium manually in another terminal:"
       echo "  source ~/.nvm/nvm.sh"
       echo "  nvm use 20  # or 22, or 24"
-      echo "  appium"
+      echo "  \"$APPIUM_BIN\""
       echo ""
       read -p "Press Enter once Appium is running, or Ctrl+C to cancel..."
     fi
   else
     echo "Please start Appium manually in another terminal:"
-    echo "  appium"
+    echo "  \"$APPIUM_BIN\""
     echo ""
     echo "Or if you have Node version issues, use a compatible Node version:"
     echo "  source ~/.nvm/nvm.sh"
     echo "  nvm use 20  # or 22, or 24"
-    echo "  appium"
+    echo "  \"$APPIUM_BIN\""
     echo ""
     read -p "Press Enter once Appium is running, or Ctrl+C to cancel..."
   fi
