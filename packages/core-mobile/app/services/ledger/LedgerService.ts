@@ -16,7 +16,7 @@ import { networks } from 'bitcoinjs-lib'
 import { networkIDs } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
 import bs58 from 'bs58'
-import { Alert, Linking } from 'react-native'
+import { Alert } from 'react-native'
 import {
   LEDGER_TIMEOUTS,
   getSolanaDerivationPath
@@ -48,7 +48,8 @@ import {
   LedgerBluetoothPermissionError,
   LedgerBluetoothRadioOffError,
   LedgerBluetoothUnknownError,
-  LedgerBluetoothUnsupportedError
+  LedgerBluetoothUnsupportedError,
+  showBluetoothErrorAlert
 } from './LedgerBluetoothError'
 
 class LedgerService {
@@ -260,26 +261,11 @@ class LedgerService {
     Logger.error('Scan error:', error)
     this.stopDeviceScanning()
 
-    if (
-      error.message?.includes('not authorized') ||
-      error.message?.includes('Origin: 101')
-    ) {
-      Alert.alert(
-        'Bluetooth Permission Required',
-        'Please enable Bluetooth permissions in your device settings to scan for Ledger devices.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Open Settings',
-            onPress: () => {
-              Linking.openSettings()
-            }
-          }
-        ]
-      )
-    } else {
-      Alert.alert('Scan Error', `Failed to scan for devices: ${error.message}`)
+    if (isLedgerBluetoothError(error)) {
+      showBluetoothErrorAlert(error)
+      return
     }
+    Alert.alert('Scan Error', `Failed to scan for devices: ${error.message}`)
   }
 
   // Device scanning methods (matching original implementation)

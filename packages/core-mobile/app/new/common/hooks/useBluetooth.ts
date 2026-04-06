@@ -1,6 +1,6 @@
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AppState, PermissionsAndroid, Platform } from 'react-native'
+import { AppState, Linking, PermissionsAndroid, Platform } from 'react-native'
 import { check, PERMISSIONS, RESULTS } from 'react-native-permissions'
 import Logger from 'utils/Logger'
 
@@ -33,8 +33,8 @@ interface UseBluetoothReturn {
   isInitializingBluetooth: boolean
   /** Raw state from TransportBLE.observeState */
   bluetoothState: BluetoothState
-  /** Imperatively request OS permissions (needed on Android before scanning) */
-  requestPermissions: () => Promise<BluetoothAvailability>
+  /** Open Bluetooth system settings or app settings */
+  openSettings: () => void
 }
 
 async function requestAndroidPermissions(): Promise<boolean> {
@@ -184,6 +184,44 @@ function useIosBluetoothPermission(): boolean {
   return isPermissionGranted
 }
 
+export const openSystemBluetoothSettings = (
+  platform: 'android' | 'ios'
+): void => {
+  if (platform === 'android') {
+    Linking.sendIntent('android.settings.BLUETOOTH_SETTINGS').catch(
+      Logger.error
+    )
+  } else if (platform === 'ios') {
+    Linking.openURL('App-Prefs:Bluetooth').catch(Logger.error)
+  }
+}
+
+function openAndroidSettingsForState(bluetoothState: BluetoothState): void {
+  if (bluetoothState === BluetoothState.POWERED_OFF) {
+    openSystemBluetoothSettings('android')
+    return
+  }
+  // Open app-specific settings so user can grant Bluetooth permission
+  Linking.openSettings().catch(Logger.error)
+}
+
+const openIosSettingsForState = (bluetoothState: BluetoothState): void => {
+  if (bluetoothState === BluetoothState.POWERED_OFF) {
+    openSystemBluetoothSettings('ios')
+    return
+  }
+  // Deep link to Bluetooth settings on iOS (works on iOS 10+)
+  Linking.openSettings().catch(Logger.error)
+}
+
+function openSettingsForState(bluetoothState: BluetoothState): void {
+  if (Platform.OS === 'android') {
+    openAndroidSettingsForState(bluetoothState)
+  } else if (Platform.OS === 'ios') {
+    openIosSettingsForState(bluetoothState)
+  }
+}
+
 export function useBluetooth(): UseBluetoothReturn {
   const [bluetoothState, setBluetoothState] = useState<BluetoothState>(
     BluetoothState.UNKNOWN
@@ -230,8 +268,6 @@ export function useBluetooth(): UseBluetoothReturn {
     return () => subscription.remove()
   }, [])
 
-  const requestPermissions = useCallback(() => ensureBluetoothAvailable(), [])
-
   const isBluetoothBlocked =
     bluetoothState === BluetoothState.POWERED_OFF ||
     bluetoothState === BluetoothState.UNAUTHORIZED ||
@@ -252,6 +288,10 @@ export function useBluetooth(): UseBluetoothReturn {
     bluetoothState === BluetoothState.UNKNOWN ||
     bluetoothState === BluetoothState.RESETTING
 
+  const openSettings = useCallback(() => {
+    openSettingsForState(bluetoothState)
+  }, [bluetoothState])
+
   return {
     isBluetoothReady,
     isBluetoothOnAndPermissionGranted,
@@ -259,6 +299,6 @@ export function useBluetooth(): UseBluetoothReturn {
     isBluetoothBlocked,
     isInitializingBluetooth,
     bluetoothState,
-    requestPermissions
+    openSettings
   }
 }

@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useEffect } from 'react'
-import { View, Alert, ActivityIndicator, Linking } from 'react-native'
+import { View, Alert, ActivityIndicator } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Button, useTheme, Icons, Text } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -36,7 +36,8 @@ export default function DeviceConnectionScreen({
   // Local device management
   const [devices, setDevices] = useState<LedgerDevice[]>([])
   const [isScanning, setIsScanning] = useState(false)
-  const { isBluetoothReady, isInitializingBluetooth } = useBluetooth()
+  const { isBluetoothReady, isInitializingBluetooth, openSettings } =
+    useBluetooth()
 
   // Set up device listener for LedgerService
   useEffect(() => {
@@ -136,13 +137,13 @@ export default function DeviceConnectionScreen({
         <Button
           size="small"
           type="secondary"
-          onPress={() => Linking.openSettings()}
+          onPress={openSettings}
           style={{ width: 165, marginLeft: 28 }}>
           Open device settings
         </Button>
       </View>
     )
-  }, [isBluetoothReady, colors])
+  }, [isBluetoothReady, colors, openSettings])
 
   const renderFooter = useCallback(() => {
     return (

@@ -1,5 +1,6 @@
-import { Alert, Linking } from 'react-native'
+import { Alert, Linking, Platform } from 'react-native'
 import Logger from 'utils/Logger'
+import { openSystemBluetoothSettings } from 'common/hooks/useBluetooth'
 import { LEDGER_ERROR_CODES } from './types'
 
 const LEDGER_BLUETOOTH_PERMISSION_ERROR = 'LedgerBluetoothPermissionError'
@@ -148,7 +149,10 @@ export function showBluetoothErrorAlert(error: LedgerBluetoothError): void {
       LEDGER_BLUETOOTH_PERMISSION_MESSAGE,
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Open Settings', onPress: () => Linking.openSettings() }
+        {
+          text: 'Open Settings',
+          onPress: () => Linking.openSettings().catch(Logger.error)
+        }
       ]
     )
     return
@@ -159,7 +163,13 @@ export function showBluetoothErrorAlert(error: LedgerBluetoothError): void {
       LEDGER_BLUETOOTH_RADIO_OFF_MESSAGE,
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Open Settings', onPress: () => Linking.openSettings() }
+        {
+          text: 'Open Settings',
+          onPress: () =>
+            openSystemBluetoothSettings(
+              Platform.OS === 'android' ? 'android' : 'ios'
+            )
+        }
       ]
     )
     return
