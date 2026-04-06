@@ -26,10 +26,8 @@ import { assertNotNull } from 'utils/assertions'
 import { Curve } from 'utils/publicKeys'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { bip32 } from 'utils/bip32'
-import {
-  BluetoothState,
-  ensureBluetoothAvailable
-} from 'common/hooks/useBluetooth'
+import { BluetoothState } from 'services/bluetooth/types'
+import BluetoothService from 'services/bluetooth/BluetoothService'
 import {
   AddressInfo,
   LedgerAddressType,
@@ -138,7 +136,8 @@ class LedgerService {
   }
 
   private async assertBluetoothAvailable(): Promise<void> {
-    const { hasPermission, state } = await ensureBluetoothAvailable()
+    const { hasPermission, state } =
+      await BluetoothService.ensureBluetoothAvailable()
     if (!hasPermission || state === BluetoothState.UNAUTHORIZED) {
       throw ledgerBluetoothErrors.permissionDenied()
     }

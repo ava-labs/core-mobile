@@ -31,8 +31,6 @@ function useBluetoothPermission(): boolean {
   const [isPermissionGranted, setIsPermissionGranted] = useState(false)
 
   useEffect(() => {
-    if (Platform.OS !== 'android') return
-
     const checkPermission = async (): Promise<void> => {
       const granted = await (Platform.OS === 'ios'
         ? BluetoothService.requestPermissionsAsync()
