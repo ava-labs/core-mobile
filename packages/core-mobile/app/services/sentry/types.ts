@@ -43,5 +43,6 @@ export type OpName =
 export const SentryStorage = 'sentry_sample_rate'
 
 export const SentryTag = {
-  FusionSdk: 'fusion-sdk'
+  FusionSdk: 'fusion-sdk',
+  AccountService: 'accounts-service'
 } as const
