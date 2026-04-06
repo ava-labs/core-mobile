@@ -55,7 +55,7 @@ describe('buildEvmProviderShim', () => {
   describe('pre-connected state', () => {
     it('always returns true from isConnected (EIP-1193: network connectivity, not account auth)', () => {
       const shim = buildEvmProviderShim(defaultParams)
-      expect(shim).toContain('return true')
+      expect(shim).toContain('_isConnected: true')
     })
 
     it('stays true even when address is empty', () => {
@@ -63,7 +63,7 @@ describe('buildEvmProviderShim', () => {
         ...defaultParams,
         address: ''
       })
-      expect(shim).toContain('return true')
+      expect(shim).toContain('_isConnected: true')
     })
 
     it('initializes _accounts from _address', () => {
