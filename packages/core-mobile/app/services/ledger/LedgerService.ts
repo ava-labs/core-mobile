@@ -1284,6 +1284,107 @@ class LedgerService {
     return results
   }
 
+  /**
+   * Fetch only extended public keys for a range of account indices (BIP44).
+   * This is much faster than getAvalancheKeysForRange because it skips
+   * getAllAddresses() (3 APDU per account) and only fetches xpubs (2 APDU per account).
+   * Addresses are derived offline from the xpubs by the caller.
+   */
+  async getExtendedPublicKeysForRange(
+    startIndex: number,
+    count: number
+  ): Promise<
+    Array<{ evm: ExtendedPublicKey; avalanche: ExtendedPublicKey } | null>
+  > {
+    const results: Array<{
+      evm: ExtendedPublicKey
+      avalanche: ExtendedPublicKey
+    } | null> = []
+
+    for (let i = startIndex; i < startIndex + count; i++) {
+      try {
+        const xpubs = await this.getExtendedPublicKeys(i)
+        results.push(xpubs)
+      } catch (error) {
+        Logger.error(
+          `Failed to get extended public keys for index ${i}, skipping`,
+          error
+        )
+        results.push(null)
+      }
+    }
+
+    return results
+  }
+
+  /**
+   * Fetch only public keys for a range of account indices (LedgerLive).
+   * Skips getAllAddresses() and fetches 2 public keys per account
+   * (EVM path + Avalanche path). Addresses are derived offline by the caller.
+   */
+  async getPublicKeysForRange(
+    startIndex: number,
+    count: number
+  ): Promise<
+    Array<{
+      evmPubKey: string
+      avalanchePubKey: string
+      evmPath: string
+      avalanchePath: string
+    } | null>
+  > {
+    await this.waitForApp(LedgerAppType.AVALANCHE)
+    const avalancheApp = new AppAvalanche(this.transport as Transport)
+
+    const results: Array<{
+      evmPubKey: string
+      avalanchePubKey: string
+      evmPath: string
+      avalanchePath: string
+    } | null> = []
+
+    for (let i = startIndex; i < startIndex + count; i++) {
+      try {
+        const evmPath = getAddressDerivationPath({
+          accountIndex: i,
+          vmType: NetworkVMType.EVM,
+          derivationPathType: 'ledger_live'
+        })
+        const avalanchePath = getAddressDerivationPath({
+          accountIndex: i,
+          vmType: NetworkVMType.AVM,
+          derivationPathType: 'ledger_live'
+        })
+
+        const evmResponse = await avalancheApp.getAddressAndPubKey(
+          evmPath,
+          false,
+          'avax'
+        )
+        const avalancheResponse = await avalancheApp.getAddressAndPubKey(
+          avalanchePath,
+          false,
+          'avax'
+        )
+
+        results.push({
+          evmPubKey: evmResponse.publicKey.toString('hex'),
+          avalanchePubKey: avalancheResponse.publicKey.toString('hex'),
+          evmPath,
+          avalanchePath
+        })
+      } catch (error) {
+        Logger.error(
+          `Failed to get public keys for LedgerLive index ${i}, skipping`,
+          error
+        )
+        results.push(null)
+      }
+    }
+
+    return results
+  }
+
   // Helper to build the “open app” APDU for a given app name
   buildOpenAppApdu(appName: string): Buffer {
     const cla = 0xe0

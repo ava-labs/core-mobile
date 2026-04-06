@@ -47,11 +47,11 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
 
   const handleComplete = useCallback(
     async (multiIndexKeys: LedgerMultiIndexKeys) => {
-      // When adding a single account, only index 0 in the multi-index keys is populated
+      // When adding a single account, the keys are stored at the account index
       const accountIndex = accounts?.length ?? 0
       const keys = {
-        mainnet: multiIndexKeys.mainnet[0],
-        testnet: multiIndexKeys.testnet[0]
+        mainnet: multiIndexKeys.mainnet[accountIndex],
+        testnet: multiIndexKeys.testnet[accountIndex]
       }
       const keysByNetwork = isDeveloperMode ? keys.testnet : keys.mainnet
       if (

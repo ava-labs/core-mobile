@@ -62,8 +62,14 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       deviceName = 'Ledger Device',
       derivationPathType = LedgerDerivationPathType.BIP44,
       avalancheKeys,
-      solanaKeys = []
-    }: WalletCreationOptions & LedgerKeys) => {
+      solanaKeys = [],
+      additionalXpubs,
+      additionalSolanaAddresses
+    }: WalletCreationOptions &
+      LedgerKeys & {
+        additionalXpubs?: Record<number, { evm: string; avalanche: string }>
+        additionalSolanaAddresses?: Record<number, string>
+      }) => {
       try {
         setIsLoading(true)
 
@@ -92,12 +98,13 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
               derivationPathSpec: derivationPathType,
               ...(derivationPathType === LedgerDerivationPathType.BIP44 && {
                 // Store in per-account format: { [accountIndex]: { evm, avalanche } }
-                // This supports storing xpubs for additional accounts later
+                // Account 0's xpubs plus any additional xpubs for discovery
                 extendedPublicKeys: {
                   0: {
-                    evm: xpubs.evm, // Store base58 xpub for derivation
-                    avalanche: xpubs.avalanche // Store base58 xpub for derivation
-                  }
+                    evm: xpubs.evm,
+                    avalanche: xpubs.avalanche
+                  },
+                  ...(additionalXpubs ?? {})
                 }
               }),
               publicKeys: {
@@ -105,7 +112,12 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
                   ...publicKeys,
                   ...(solanaKeys?.length > 0 ? [solanaKeys[0]] : [])
                 ].filter(Boolean)
-              }
+              },
+              // Store Solana addresses for background discovery
+              ...(additionalSolanaAddresses &&
+                Object.keys(additionalSolanaAddresses).length > 0 && {
+                  solanaAddresses: additionalSolanaAddresses
+                })
             }),
             type:
               derivationPathType === LedgerDerivationPathType.BIP44

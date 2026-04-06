@@ -3,7 +3,7 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import AccountsService from 'services/account/AccountsService'
 import { RootState } from 'store/types'
 import { uuid } from 'utils/uuid'
-import { storeWallet, importMnemonicWalletAndAccount, importMnemonicWalletAndAccount } from './thunks'
+import { storeWallet, importMnemonicWalletAndAccount } from './thunks'
 
 jest.mock('utils/BiometricsSDK')
 jest.mock('services/account/AccountsService')

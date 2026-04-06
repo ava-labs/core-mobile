@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react'
+import { useDispatch } from 'react-redux'
 import Logger from 'utils/Logger'
 import { Alert } from 'react-native'
 import LedgerService from 'services/ledger/LedgerService'
@@ -7,13 +8,11 @@ import {
   LedgerMultiIndexKeys
 } from 'services/ledger/types'
 import { useRouter } from 'expo-router'
+import { WalletType } from 'services/wallet/types'
+import { onWalletImported } from 'store/app/slice'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useLedgerSetupContext } from '../contexts/LedgerSetupContext'
 import { useSetLedgerAddress } from '../hooks/useSetLedgerAddress'
-import {
-  getActiveAccountIndices,
-  LedgerDerivedAccount
-} from '../utils/discoverLedgerAccounts'
 import AppConnectionScreen from './AppConnectionScreen'
 
 interface AppConnectionOnboardingScreenProps {
@@ -27,9 +26,10 @@ export const AppConnectionOnboardingScreen = ({
   showConnectionToasts,
   showCancelOnComplete
 }: AppConnectionOnboardingScreenProps): JSX.Element => {
-  const { createLedgerWalletWithDiscovery } = useLedgerWallet()
-  const { setLedgerAddressesForMultipleAccounts } = useSetLedgerAddress()
+  const { createLedgerWallet } = useLedgerWallet()
+  const { setLedgerAddress } = useSetLedgerAddress()
   const { canGoBack, back } = useRouter()
+  const dispatch = useDispatch()
 
   const {
     connectedDeviceId,
@@ -49,74 +49,77 @@ export const AppConnectionOnboardingScreen = ({
 
   const handleComplete = useCallback(
     async (multiIndexKeys: LedgerMultiIndexKeys) => {
-      const hasAnyKeys = Object.values(multiIndexKeys.mainnet).some(
-        keys => keys.avalancheKeys !== undefined
-      )
+      // Account 0's keys are at index 0 in the multi-index map.
+      // Additional indices hold xpubs/pubkeys that will be used for
+      // background discovery after onboarding completes.
+      const index0Mainnet = multiIndexKeys.mainnet[0]
+      const index0Testnet = multiIndexKeys.testnet[0]
 
       Logger.info('handleComplete called', {
-        hasAnyKeys,
-        mainnetIndexCount: Object.keys(multiIndexKeys.mainnet).length,
+        hasAccount0Keys: !!index0Mainnet?.avalancheKeys,
+        totalIndices: Object.keys(multiIndexKeys.mainnet).length,
         hasConnectedDeviceId: !!connectedDeviceId,
         hasSelectedDerivationPath: !!selectedDerivationPath,
         isUpdatingWallet
       })
 
-      // If wallet hasn't been created yet, create it now
+      // Fall back to BIP44 if context was reset (e.g. after a prior import)
+      const derivationPath =
+        selectedDerivationPath ?? LedgerDerivationPathType.BIP44
+
       if (
-        hasAnyKeys &&
+        index0Mainnet?.avalancheKeys &&
         connectedDeviceId &&
-        selectedDerivationPath &&
         !isUpdatingWallet
       ) {
-        Logger.info('All conditions met, creating wallet with discovery...')
+        Logger.info('Creating wallet with account 0...')
         setIsUpdatingWallet(true)
 
         try {
-          // Convert multi-index keys to LedgerDerivedAccount[] for activity check
-          const derivedAccounts: LedgerDerivedAccount[] = Object.entries(
-            multiIndexKeys.mainnet
-          )
-            .filter(([_, keys]) => keys.avalancheKeys !== undefined)
-            .map(([indexStr, keys]) => ({
-              index: Number(indexStr),
-              addressC: keys.avalancheKeys!.addresses.evm,
-              addressBTC: keys.avalancheKeys!.addresses.btc,
-              xpubXP: keys.avalancheKeys!.xpubs.avalanche,
-              addressSVM: keys.solanaKeys?.[0]?.key
-            }))
+          // Create wallet with account 0 only — fast path.
+          // The wallet secret includes xpubs for indices 1-9 so background
+          // discovery can derive addresses and create accounts later.
+          const { additionalXpubs, solanaAddresses } =
+            buildAdditionalData(multiIndexKeys)
 
-          // Determine which account indices have on-chain activity
-          const activeIndices = await getActiveAccountIndices(derivedAccounts)
-          Logger.info('Active account indices discovered', { activeIndices })
+          const { walletId, accountId } = await createLedgerWallet({
+            deviceId: connectedDeviceId,
+            deviceName: connectedDeviceName,
+            derivationPathType: derivationPath,
+            avalancheKeys: index0Mainnet.avalancheKeys,
+            solanaKeys: index0Mainnet.solanaKeys,
+            // Pass xpubs + Solana addresses for background discovery
+            additionalXpubs,
+            additionalSolanaAddresses: solanaAddresses
+          })
 
-          // Create wallet with all active accounts
-          const { walletId, createdAccounts } =
-            await createLedgerWalletWithDiscovery({
-              deviceId: connectedDeviceId,
-              deviceName: connectedDeviceName,
-              derivationPathType: selectedDerivationPath,
-              multiIndexKeys,
-              activeIndices
-            })
+          // Store ledger addresses for account 0 (mainnet + testnet)
+          await setLedgerAddress({
+            accountIndex: 0,
+            walletId,
+            accountId,
+            keys: {
+              mainnet: index0Mainnet,
+              testnet: index0Testnet ?? {
+                solanaKeys: [],
+                avalancheKeys: undefined
+              }
+            }
+          })
 
-          // Store ledger addresses for all created accounts
-          await setLedgerAddressesForMultipleAccounts(
-            createdAccounts.map(({ accountId, accountIndex }) => ({
-              walletId,
-              accountId,
-              accountIndex,
-              mainnetKeys: multiIndexKeys.mainnet[accountIndex],
-              testnetKeys: multiIndexKeys.testnet[accountIndex]
-            }))
-          )
-
-          Logger.info(
-            'Wallet created successfully with discovered accounts, navigating to complete screen',
-            { accountCount: createdAccounts.length }
-          )
-          // Stop polling since we no longer need app detection
           LedgerService.stopAppPolling()
           onNavigateToComplete()
+
+          // Trigger background discovery for accounts 1-9.
+          // This runs after navigation — the user doesn't wait.
+          const walletType =
+            derivationPath === LedgerDerivationPathType.BIP44
+              ? WalletType.LEDGER
+              : WalletType.LEDGER_LIVE
+
+          setTimeout(() => {
+            dispatch(onWalletImported({ walletId, walletType }))
+          }, 1500)
         } catch (error) {
           Logger.error('Wallet creation failed', error)
           Alert.alert(
@@ -130,9 +133,8 @@ export const AppConnectionOnboardingScreen = ({
           setIsUpdatingWallet(false)
         }
       } else {
-        const errorMsg = 'Ledger wallet creation conditions not met'
-        Logger.error(errorMsg, {
-          hasAnyKeys,
+        Logger.error('Ledger wallet creation conditions not met', {
+          hasAccount0Keys: !!index0Mainnet?.avalancheKeys,
           hasConnectedDeviceId: !!connectedDeviceId,
           hasSelectedDerivationPath: !!selectedDerivationPath,
           isUpdatingWallet
@@ -149,11 +151,12 @@ export const AppConnectionOnboardingScreen = ({
       selectedDerivationPath,
       isUpdatingWallet,
       setIsUpdatingWallet,
-      createLedgerWalletWithDiscovery,
+      createLedgerWallet,
       connectedDeviceName,
-      setLedgerAddressesForMultipleAccounts,
+      setLedgerAddress,
       onNavigateToComplete,
-      handleCancel
+      handleCancel,
+      dispatch
     ]
   )
 
@@ -168,10 +171,42 @@ export const AppConnectionOnboardingScreen = ({
       deviceName={connectedDeviceName}
       isUpdatingWallet={isUpdatingWallet}
       handleCancel={handleCancel}
-      accountIndex={0} // intentionally setting it to zero here as this screen is used for importing the wallet for the first time
+      accountIndex={0}
       showProgressDots={false}
       showConnectionToasts={showConnectionToasts}
       showCancelOnComplete={showCancelOnComplete}
     />
   )
+}
+
+/**
+ * Extract xpubs and Solana addresses for indices 1-9 from the multi-index keys,
+ * to be stored in the wallet secret for background discovery.
+ */
+function buildAdditionalData(multiIndexKeys: LedgerMultiIndexKeys): {
+  additionalXpubs: Record<number, { evm: string; avalanche: string }>
+  solanaAddresses: Record<number, string>
+} {
+  const additionalXpubs: Record<number, { evm: string; avalanche: string }> =
+    {}
+  const solanaAddresses: Record<number, string> = {}
+
+  Object.entries(multiIndexKeys.mainnet).forEach(([indexStr, keys]) => {
+    const index = Number(indexStr)
+    if (index === 0) return // Account 0 is stored by createLedgerWallet
+
+    if (keys.avalancheKeys?.xpubs) {
+      additionalXpubs[index] = {
+        evm: keys.avalancheKeys.xpubs.evm,
+        avalanche: keys.avalancheKeys.xpubs.avalanche
+      }
+    }
+
+    const solKey = keys.solanaKeys?.[0]?.key
+    if (solKey) {
+      solanaAddresses[index] = solKey
+    }
+  })
+
+  return { additionalXpubs, solanaAddresses }
 }

@@ -317,8 +317,8 @@ export const getActiveAccountIndices = async (
     )
   }
 
-  // For EVM addresses not detected by balance, check C-Chain transaction history.
-  // This catches accounts that had past activity but now have zero balance.
+  // For EVM addresses not detected by balance, check C-Chain transaction history
+  // concurrently. This catches accounts that had past activity but now have zero balance.
   try {
     const inactiveEvmAccounts = accounts.filter(
       a => a.addressC && !activeIndicesSet.has(a.index)
@@ -331,18 +331,26 @@ export const getActiveAccountIndices = async (
       )
       const evmNetwork = mapToVmNetwork(AVALANCHE_MAINNET_NETWORK)
 
-      for (const account of inactiveEvmAccounts) {
-        try {
+      const results = await Promise.allSettled(
+        inactiveEvmAccounts.map(async account => {
           const response = await evmModule.getTransactionHistory({
             network: evmNetwork,
             address: account.addressC,
             offset: 1
           })
-          if (response.transactions.length > 0) {
-            activeIndicesSet.add(account.index)
+          return {
+            index: account.index,
+            hasActivity: response.transactions.length > 0
           }
-        } catch {
-          // Skip this account on failure — treat as inactive
+        })
+      )
+
+      for (const result of results) {
+        if (
+          result.status === 'fulfilled' &&
+          result.value.hasActivity
+        ) {
+          activeIndicesSet.add(result.value.index)
         }
       }
     }
