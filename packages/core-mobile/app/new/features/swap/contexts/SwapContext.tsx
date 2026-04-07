@@ -24,6 +24,10 @@ import {
 } from 'store/posthog'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { swapCompleted } from 'store/nestEgg'
+import {
+  selectEnabledChainIds,
+  toggleEnabledChainId
+} from 'store/network'
 import type { Quote, Transfer } from '../types'
 import {
   useSwapSelectedFromToken,
@@ -132,6 +136,7 @@ export const SwapContextProvider = ({
   const activeAccount = useSelector(selectActiveAccount)
   const maxRetries = useSelector(selectMarkrSwapMaxRetries)
   const transferGasMarginBps = useSelector(selectFusionTransferGasMarginBps)
+  const enabledChainIds = useSelector(selectEnabledChainIds)
   const { getNetwork } = useNetworks()
   const fromNetwork = useMemo(
     () => (fromToken ? getNetwork(fromToken.networkChainId) : undefined),
@@ -261,6 +266,12 @@ export const SwapContextProvider = ({
       setSuccessTransferId(transfer.id)
       setSwapStatus(SwapStatus.Success)
 
+      // Add TO network to enabled networks if not already enabled
+      const toChainId = Number(quote.targetChain.chainId.split(':')[1])
+      if (!enabledChainIds.includes(toChainId)) {
+        dispatch(toggleEnabledChainId(toChainId))
+      }
+
       // Dispatch trackFusionTransfer to start tracking transfer status
       dispatch(trackFusionTransfer(transfer))
 
@@ -292,7 +303,7 @@ export const SwapContextProvider = ({
         )
       }
     },
-    [dispatch, setTransfers]
+    [dispatch, enabledChainIds, setTransfers]
   )
 
   // Handle swap error: logging, toast

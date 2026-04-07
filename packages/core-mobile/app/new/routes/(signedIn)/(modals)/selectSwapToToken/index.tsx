@@ -62,6 +62,8 @@ const SelectSwapToTokenScreen = (): JSX.Element => {
       // Pass filtered networks
       networks={networks}
       tokenFilter={tokenFilter}
+      // Show tokens for all Fusion-supported networks, not just enabled ones
+      filterByEnabledChains={false}
     />
   )
 }

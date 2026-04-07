@@ -64,7 +64,8 @@ export function useSupportedChains(sourceChainId?: number): {
   isLoading: boolean
   error: Error | null
 } {
-  const { getEnabledNetworkByCaip2ChainId } = useNetworks()
+  const { getEnabledNetworkByCaip2ChainId, getNetworkByCaip2ChainId } =
+    useNetworks()
   const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
   const [isFusionServiceReady] = useIsFusionServiceReady()
 
@@ -128,9 +129,9 @@ export function useSupportedChains(sourceChainId?: number): {
       return []
     }
 
-    // Convert destination CAIP-2 IDs to Network objects
+    // Convert destination CAIP-2 IDs to Network objects (all networks, not just enabled)
     const networks = Array.from(destCaip2Ids)
-      .map(caip2Id => getEnabledNetworkByCaip2ChainId(caip2Id))
+      .map(caip2Id => getNetworkByCaip2ChainId(caip2Id))
       .filter((network): network is Network => network !== undefined)
 
     const destNetworks = filterAndSortNetworks(networks, isSolanaSwapBlocked)
@@ -141,12 +142,7 @@ export function useSupportedChains(sourceChainId?: number): {
     )
 
     return destNetworks
-  }, [
-    sourceChainId,
-    chainsMap,
-    getEnabledNetworkByCaip2ChainId,
-    isSolanaSwapBlocked
-  ])
+  }, [sourceChainId, chainsMap, getNetworkByCaip2ChainId, isSolanaSwapBlocked])
 
   // Function to check if a destination chain is valid for a source chain
   const isValidDestination = useCallback(
@@ -163,14 +159,14 @@ export function useSupportedChains(sourceChainId?: number): {
         return false
       }
 
-      // Check if destination network is enabled
-      const destNetwork = getEnabledNetworkByCaip2ChainId(destCaip2)
+      // Check if destination network exists (not just enabled)
+      const destNetwork = getNetworkByCaip2ChainId(destCaip2)
       if (!destNetwork) return false
 
       // Check Solana blocking - return true if not blocked
       return !(isSolanaSwapBlocked && isSolanaNetwork(destNetwork))
     },
-    [chainsMap, getEnabledNetworkByCaip2ChainId, isSolanaSwapBlocked]
+    [chainsMap, getNetworkByCaip2ChainId, isSolanaSwapBlocked]
   )
 
   useEffect(() => {

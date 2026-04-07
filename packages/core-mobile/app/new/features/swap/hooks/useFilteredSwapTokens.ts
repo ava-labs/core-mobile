@@ -10,11 +10,13 @@ import { isAddressLikeSearch } from 'common/utils/isAddressLikeSearch'
 export const useFilteredSwapTokens = ({
   tokens,
   searchText,
-  hideZeroBalance
+  hideZeroBalance,
+  filterByEnabledChains = true
 }: {
   tokens: LocalTokenWithBalance[]
   searchText: string
   hideZeroBalance: boolean
+  filterByEnabledChains?: boolean
 }): LocalTokenWithBalance[] => {
   const tokenVisibility = useSelector(selectTokenVisibility)
   const enabledChainIds = useSelector(selectEnabledChainIds)
@@ -28,10 +30,12 @@ export const useFilteredSwapTokens = ({
       isTokenVisible(tokenVisibility, token)
     )
 
-    // Filter out tokens from disabled chains
-    filteredTokens = filteredTokens.filter(token =>
-      enabledChainIds.includes(token.networkChainId)
-    )
+    // Filter out tokens from disabled chains (skip for TO token selection)
+    if (filterByEnabledChains) {
+      filteredTokens = filteredTokens.filter(token =>
+        enabledChainIds.includes(token.networkChainId)
+      )
+    }
 
     // Filter by balance if hideZeroBalance is true
     if (hideZeroBalance) {
@@ -59,6 +63,7 @@ export const useFilteredSwapTokens = ({
     tokens,
     searchText,
     hideZeroBalance,
+    filterByEnabledChains,
     tokenVisibility,
     enabledChainIds,
     isDeveloperMode

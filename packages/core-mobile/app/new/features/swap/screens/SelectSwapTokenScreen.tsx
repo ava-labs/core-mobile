@@ -28,6 +28,7 @@ export const SelectSwapTokenScreen = ({
   setSelectedToken,
   defaultNetworkChainId,
   hideZeroBalance = false,
+  filterByEnabledChains = true,
   networks,
   tokenFilter
 }: {
@@ -35,6 +36,7 @@ export const SelectSwapTokenScreen = ({
   setSelectedToken: (token: LocalTokenWithBalance) => void
   defaultNetworkChainId?: number
   hideZeroBalance?: boolean
+  filterByEnabledChains?: boolean
   networks: Network[] | undefined
   tokenFilter?: (
     token: LocalTokenWithBalance,
@@ -79,7 +81,8 @@ export const SelectSwapTokenScreen = ({
   const baseResults = useFilteredSwapTokens({
     tokens,
     searchText,
-    hideZeroBalance
+    hideZeroBalance,
+    filterByEnabledChains
   })
   const results = useMemo(
     () =>
