@@ -1,38 +1,45 @@
 import { retry } from 'utils/js/retry'
 
 describe('success case', () => {
-  it('should last 1 second when succeeds on 2nd try', async () => {
-    const startTs = new Date().getTime()
+  beforeEach(() => {
+    jest.useFakeTimers()
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  it('should wait 1s backoff when succeeds on 2nd try', async () => {
     let counter = 0
     const getAndIncrementCounter = async () => {
       return counter++
     }
-    const output = await retry({
+    const outputPromise = retry({
       operation: getAndIncrementCounter,
       shouldStop: result => result === 1
     })
-    const elapsedTimeMs = new Date().getTime() - startTs
-    expect(elapsedTimeMs).toBeGreaterThanOrEqual(1000)
-    expect(elapsedTimeMs).toBeLessThan(1100)
 
-    expect(output).toBe(1)
+    await Promise.resolve()
+    await jest.advanceTimersByTimeAsync(1000)
+
+    await expect(outputPromise).resolves.toBe(1)
   })
 
-  it('should last 3 seconds when succeeds on 3rd try', async () => {
-    const startTs = new Date().getTime()
+  it('should wait 1s then 2s backoff when succeeds on 3rd try', async () => {
     let counter = 0
     const getAndIncrementCounter = async () => {
       return counter++
     }
-    const output = await retry({
+    const outputPromise = retry({
       operation: getAndIncrementCounter,
       shouldStop: result => result === 2
     })
-    const elapsedTimeMs = new Date().getTime() - startTs
-    expect(elapsedTimeMs).toBeGreaterThanOrEqual(3000)
-    expect(elapsedTimeMs).toBeLessThan(3100)
 
-    expect(output).toBe(2)
+    await Promise.resolve()
+    await jest.advanceTimersByTimeAsync(1000)
+    await jest.advanceTimersByTimeAsync(2000)
+
+    await expect(outputPromise).resolves.toBe(2)
   })
 })
 
