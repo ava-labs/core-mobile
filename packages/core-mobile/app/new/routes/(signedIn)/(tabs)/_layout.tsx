@@ -74,8 +74,8 @@ export default function TabLayout(): JSX.Element {
       labeled
       translucent
       // (iOS only) By default disablePageAnimations is false
-      // false prevents the tabs expo-blur from breaking intensity when switching tabs
-      // Do not set it to true
+      // Keeping this false prevents the tab blur intensity from breaking when switching tabs
+      // Do not set this to true
       disablePageAnimations={false}
       tabBarActiveTintColor={theme.colors.$textPrimary}
       scrollEdgeAppearance={'default'}
