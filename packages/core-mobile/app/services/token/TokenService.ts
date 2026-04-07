@@ -21,7 +21,8 @@ import { coingeckoProxyClient } from 'services/token/coingeckoProxyClient'
 import Logger from 'utils/Logger'
 import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
 import { TrendingToken } from 'utils/api/types'
-import { watchListClient } from 'utils/api/fetches/nitroWatchlistFetchClient'
+import { getV1WatchlistTrending } from 'utils/api/generated/tokenAggregator/aggregatorApi.client/sdk.gen'
+import { tokenAggregatorApi } from 'utils/api/clients/aggregatedTokensApiClient'
 import {
   ChartData,
   CoinMarket,
@@ -291,7 +292,10 @@ export class TokenService {
     data = getCache(cacheId)
 
     if (data === undefined) {
-      data = await watchListClient.getTrendingTokens()
+      const { data: trendingData } = await getV1WatchlistTrending({
+        client: tokenAggregatorApi
+      })
+      data = trendingData ?? []
 
       if (exchangeRate && exchangeRate !== 1) {
         data = applyExchangeRateToTrendingTokens(data, exchangeRate)

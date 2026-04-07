@@ -1,5 +1,6 @@
 import { Separator } from '@avalabs/k2-alpine'
 import { tokenIds } from 'consts/tokenIds'
+import { caip2ChainIds } from 'consts/caip2ChainIds'
 import { useBuy } from 'features/meld/hooks/useBuy'
 import { useBalanceTotalForAccount } from 'features/portfolio/hooks/useBalanceTotalForAccount'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
@@ -46,13 +47,16 @@ const TrendingTokensScreen = ({
   )
 
   const onBuyPress = useCallback(
-    (initialTokenIdTo?: string) => {
+    (item: MarketToken) => {
+      const tokenAddress = getTokenAddress(item)
       if (isZeroBalance) {
-        openBuy(initialTokenIdTo)
+        openBuy(tokenAddress)
       } else {
         navigateToSwap({
           fromTokenId: tokenIds.AVAX,
-          toTokenId: initialTokenIdTo
+          fromCaip2Id: caip2ChainIds.C_CHAIN,
+          toTokenId: item.id,
+          toCaip2Id: caip2ChainIds.C_CHAIN
         })
       }
     },
@@ -75,7 +79,7 @@ const TrendingTokensScreen = ({
           token={item}
           index={index}
           showBuyButton={showBuyButton}
-          onBuyPress={() => onBuyPress(tokenAddress)}
+          onBuyPress={() => onBuyPress(item)}
           onPress={() => {
             goToMarketDetail(item.id, item.marketType)
           }}
