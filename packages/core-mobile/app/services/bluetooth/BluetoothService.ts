@@ -121,7 +121,12 @@ export class BluetoothService {
         Logger.error
       )
     } else if (platform === 'ios') {
-      Linking.openURL('App-Prefs:Bluetooth').catch(Logger.error)
+      // 'App-Prefs:BLUETOOTH' deep-links to system Bluetooth settings on iOS < 16.
+      // On iOS 16+ Apple blocked private URL schemes for third-party apps, so we
+      // fall back to the app's own Settings page where the Bluetooth toggle is visible.
+      Linking.openURL('App-Prefs:BLUETOOTH').catch(() =>
+        Linking.openSettings().catch(Logger.error)
+      )
     }
   }
 
