@@ -363,6 +363,65 @@ describe('BalanceService', () => {
       // Ethereum should be retried via VM modules since it was filtered out
       expect(mockLoadModuleByNetwork).toHaveBeenCalledWith(ethereumNetwork)
     })
+
+    it('should retry EVM networks silently omitted from the streaming response', async () => {
+      // Both C-Chain and Ethereum are in the request (both are supported),
+      // but the streaming response only returns C-Chain — Ethereum is silently
+      // absent (simulates a server-side timeout or EVM indexer outage that
+      // causes a clean stream close before the EVM entry is emitted).
+      mockGetSupportedChainsFromCache.mockResolvedValue([
+        'eip155:43114',
+        'eip155:1'
+      ])
+
+      mockGetBalancesStream.mockReturnValue(
+        createAsyncIterator([
+          {
+            caip2Id: 'eip155:43114',
+            networkType: 'evm',
+            id: testAccount.addressC
+          }
+          // Ethereum is intentionally missing from the stream
+        ])
+      )
+
+      mockMapBalanceResponseToLegacy.mockReturnValue({
+        accountId: testAccount.id,
+        chainId: 43114,
+        tokens: [{ symbol: 'AVAX', balance: 1000n }],
+        dataAccurate: true,
+        error: null
+      })
+
+      // VM module recovers Ethereum balance
+      const mockModule = {
+        getBalances: jest.fn().mockResolvedValue({
+          [testAccount.addressC]: {
+            eth: {
+              name: 'Ethereum',
+              symbol: 'ETH',
+              decimals: 18,
+              balance: '500000000000000000',
+              type: TokenType.NATIVE
+            }
+          }
+        })
+      }
+      mockLoadModuleByNetwork.mockResolvedValue(mockModule)
+
+      const result = await balanceService.getBalancesForAccount({
+        networks: [cChainNetwork as any, ethereumNetwork as any],
+        account: testAccount,
+        currency: 'usd',
+        xpAddresses: []
+      })
+
+      // Ethereum was silently missing → must be retried via VM modules
+      expect(mockLoadModuleByNetwork).toHaveBeenCalledWith(ethereumNetwork)
+      // Both C-Chain (from stream) and Ethereum (from VM fallback) in result
+      expect(result).toHaveLength(2)
+      expect(result.map(r => r.chainId).sort()).toEqual([1, 43114])
+    })
   })
 
   describe('getBalancesForAccounts', () => {
@@ -993,7 +1052,9 @@ describe('BalanceService', () => {
       expect(result).toEqual({})
     })
 
-    it('should skip balances when mapBalanceResponseToLegacy returns null', async () => {
+    it('should retry via VM modules when mapBalanceResponseToLegacy returns null', async () => {
+      // The streaming API returns a response but it can't be parsed (returns null).
+      // The network is treated as "missing from the response" and retried via VM modules.
       const mockStreamResponse = [
         {
           caip2Id: 'eip155:43114',
@@ -1007,6 +1068,21 @@ describe('BalanceService', () => {
       )
       mockMapBalanceResponseToLegacy.mockReturnValue(null)
 
+      const mockModule = {
+        getBalances: jest.fn().mockResolvedValue({
+          [testAccount.addressC]: {
+            avax: {
+              name: 'Avalanche',
+              symbol: 'AVAX',
+              decimals: 18,
+              balance: '1000000000000000000',
+              type: TokenType.NATIVE
+            }
+          }
+        })
+      }
+      mockLoadModuleByNetwork.mockResolvedValue(mockModule)
+
       const onBalanceLoaded = jest.fn()
 
       const result = await balanceService.getBalancesForAccount({
@@ -1017,9 +1093,11 @@ describe('BalanceService', () => {
         xpAddresses: ['avax1test1', 'avax1test2']
       })
 
-      // No results because mapBalanceResponseToLegacy returned null
-      expect(result).toHaveLength(0)
-      expect(onBalanceLoaded).not.toHaveBeenCalled()
+      // The unparseable streaming response is treated as a missing network,
+      // so the VM module fallback fires and recovers the balance.
+      expect(mockLoadModuleByNetwork).toHaveBeenCalledWith(cChainNetwork)
+      expect(result).toHaveLength(1)
+      expect(result[0]?.chainId).toBe(43114)
     })
 
     it('should work without onBalanceLoaded callback', async () => {
