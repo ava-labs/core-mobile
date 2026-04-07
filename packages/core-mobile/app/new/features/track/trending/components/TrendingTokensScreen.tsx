@@ -1,6 +1,5 @@
 import { Separator } from '@avalabs/k2-alpine'
 import { tokenIds } from 'consts/tokenIds'
-import { caip2ChainIds } from 'consts/caip2ChainIds'
 import { useBuy } from 'features/meld/hooks/useBuy'
 import { useBalanceTotalForAccount } from 'features/portfolio/hooks/useBalanceTotalForAccount'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
@@ -54,9 +53,7 @@ const TrendingTokensScreen = ({
       } else {
         navigateToSwap({
           fromTokenId: tokenIds.AVAX,
-          fromCaip2Id: caip2ChainIds.C_CHAIN,
-          toTokenId: item.id,
-          toCaip2Id: caip2ChainIds.C_CHAIN
+          toTokenId: item.id
         })
       }
     },

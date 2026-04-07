@@ -127,7 +127,10 @@ describe('transformTrendingTokens', () => {
 
   it('returns undefined logoUri when logoURI is null', () => {
     const { tokens } = transformTrendingTokens([
-      { ...BASE_TOKEN, logoURI: null }
+      {
+        ...BASE_TOKEN,
+        logoURI: null
+      }
     ])
 
     expect(tokens.avax?.logoUri).toBeUndefined()
