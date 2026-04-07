@@ -266,6 +266,7 @@ export function RepaySelectAmountFormBase({
           disabled={isSubmitting}
           autoFocus
           maxAmount={repayMaxFillAmount}
+          maxAmountZeroMessage={`You don't have any ${market.asset.symbol} available to repay with`}
           presetPercentages={[25, 50]}
         />
 
