@@ -104,7 +104,7 @@ export const networks: Network[] = [
     name: common.base,
     haveToggle: true,
     data: {
-      rpcUrl: 'https://base.drpc.org',
+      rpcUrl: 'https://proxy-api.avax.network/proxy/nownodes/base',
       explorerUrl: 'https://basescan.org',
       chainId: '8453',
       tokenSymbol: 'ETH',
