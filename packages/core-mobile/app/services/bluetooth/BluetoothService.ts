@@ -38,7 +38,7 @@ export class BluetoothService {
       const status = await check(PERMISSIONS.IOS.BLUETOOTH)
       return !(status === RESULTS.BLOCKED)
     } catch (err) {
-      Logger.error('BluetoothService: iOS permission check failed', err)
+      Logger.error('BluetoothService: checkIosPermissions failed', err)
       return false
     }
   }
@@ -53,7 +53,7 @@ export class BluetoothService {
       )
     } catch (err) {
       Logger.error('BluetoothService: checkAndroidPermissions failed', err)
-      return [false, false, false]
+      return Array(ANDROID_PERMISSIONS.length).fill(false)
     }
   }
 

@@ -3,6 +3,12 @@ import Logger from 'utils/Logger'
 import BluetoothService from 'services/bluetooth/BluetoothService'
 import { LEDGER_ERROR_CODES } from './types'
 
+export type BluetoothLedgerErrorCode =
+  | LEDGER_ERROR_CODES.BLUETOOTH_PERMISSION
+  | LEDGER_ERROR_CODES.BLUETOOTH_RADIO_OFF
+  | LEDGER_ERROR_CODES.BLUETOOTH_UNSUPPORTED
+  | LEDGER_ERROR_CODES.BLUETOOTH_UNKNOWN
+
 export const LEDGER_BLUETOOTH_PERMISSION_TITLE = 'Bluetooth Permission Required'
 export const LEDGER_BLUETOOTH_PERMISSION_MESSAGE =
   'Bluetooth permissions are required to connect to Ledger devices.'
@@ -20,9 +26,9 @@ export const LEDGER_BLUETOOTH_UNKNOWN_MESSAGE =
   'Bluetooth is not ready yet. Please wait and try again.'
 
 export class LedgerBluetoothError extends Error {
-  readonly code: LEDGER_ERROR_CODES
+  readonly code: BluetoothLedgerErrorCode
 
-  constructor(message: string, code: LEDGER_ERROR_CODES) {
+  constructor(message: string, code: BluetoothLedgerErrorCode) {
     super(message)
     this.name = 'LedgerBluetoothError'
     this.code = code
@@ -70,13 +76,16 @@ export const isLedgerBluetoothError = (
     name?: unknown
     code?: unknown
   }
-  const bluetoothCodes: string[] = [
+  const bluetoothCodes: BluetoothLedgerErrorCode[] = [
     LEDGER_ERROR_CODES.BLUETOOTH_PERMISSION,
     LEDGER_ERROR_CODES.BLUETOOTH_RADIO_OFF,
     LEDGER_ERROR_CODES.BLUETOOTH_UNSUPPORTED,
     LEDGER_ERROR_CODES.BLUETOOTH_UNKNOWN
   ]
-  return name === 'LedgerBluetoothError' && bluetoothCodes.includes(code as LEDGER_ERROR_CODES)
+  return (
+    name === 'LedgerBluetoothError' &&
+    bluetoothCodes.includes(code as BluetoothLedgerErrorCode)
+  )
 }
 
 export function showBluetoothErrorAlert(error: LedgerBluetoothError): void {
