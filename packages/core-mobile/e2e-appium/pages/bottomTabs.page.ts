@@ -63,6 +63,7 @@ class BottomsTabsPage {
 
   async tapEarnTab() {
     await actions.longPress(this.earnTab)
+    await actions.waitFor(earnPage.earnSubtitle)
     await commonElsPage.pullToRefresh(earnPage.earnSubtitle)
   }
 

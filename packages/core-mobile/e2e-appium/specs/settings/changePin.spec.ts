@@ -3,7 +3,7 @@ import { actions } from '../../helpers/actions'
 import warmup from '../../helpers/warmup'
 
 describe('Settings', () => {
-  it('Change PIN - should change PIN', async () => {
+  it('Change Pin - should change PIN', async () => {
     // go to change pin page
     await warmup()
     await settings.goSettings()
@@ -13,7 +13,7 @@ describe('Settings', () => {
     await settings.setNewPin()
   })
 
-  it('Change PIN - should verify the new pin', async () => {
+  it('Change Pin - should verify the new pin', async () => {
     // Enter the current pin
     await settings.tapChangePin()
     await settings.enterCurrentPin()
