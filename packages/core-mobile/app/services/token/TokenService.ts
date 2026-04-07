@@ -20,9 +20,6 @@ import promiseWithTimeout, { TimeoutError } from 'utils/js/promiseWithTimeout'
 import { coingeckoProxyClient } from 'services/token/coingeckoProxyClient'
 import Logger from 'utils/Logger'
 import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
-import { TrendingToken } from 'utils/api/types'
-import { getV1WatchlistTrending } from 'utils/api/generated/tokenAggregator/aggregatorApi.client/sdk.gen'
-import { tokenAggregatorApi } from 'utils/api/clients/aggregatedTokensApiClient'
 import {
   ChartData,
   CoinMarket,
@@ -35,7 +32,6 @@ import {
 } from './types'
 import {
   coingeckoRetry,
-  applyExchangeRateToTrendingTokens,
   transformMartketChartRawPrices,
   transformSimplePriceResponse
 } from './utils'
@@ -278,30 +274,6 @@ export class TokenService {
       )
     } catch {
       data = undefined
-    }
-
-    return data
-  }
-
-  async getTrendingTokens(
-    exchangeRate: number | undefined
-  ): Promise<TrendingToken[]> {
-    let data: TrendingToken[] | undefined
-    const cacheId = `getTrendingTokens-${exchangeRate}`
-
-    data = getCache(cacheId)
-
-    if (data === undefined) {
-      const { data: trendingData } = await getV1WatchlistTrending({
-        client: tokenAggregatorApi
-      })
-      data = trendingData ?? []
-
-      if (exchangeRate && exchangeRate !== 1) {
-        data = applyExchangeRateToTrendingTokens(data, exchangeRate)
-      }
-
-      setCache(cacheId, data)
     }
 
     return data

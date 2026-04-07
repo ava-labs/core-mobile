@@ -1,6 +1,5 @@
 import * as sdk from '@avalabs/core-coingecko-sdk'
 import * as inMemoryCache from 'utils/InMemoryCache'
-import { getV1WatchlistTrending } from 'utils/api/generated/tokenAggregator/aggregatorApi.client/sdk.gen'
 import TokenService from './TokenService'
 import { coingeckoProxyClient as proxy } from './coingeckoProxyClient'
 import WATCHLIST_PRICE from './__mocks__/watchlistPrice.json'
@@ -8,17 +7,6 @@ import MARKET_CHART from './__mocks__/marketChart.json'
 import COIN_INFO from './__mocks__/coinInfo.json'
 import MARKET_DATA from './__mocks__/marketData.json'
 import RAW_WATCHLIST_PRICE from './__mocks__/rawWatchlistPrice.json'
-
-jest.mock(
-  'utils/api/generated/tokenAggregator/aggregatorApi.client/sdk.gen',
-  () => ({
-    getV1WatchlistTrending: jest.fn()
-  })
-)
-
-jest.mock('utils/api/clients/aggregatedTokensApiClient', () => ({
-  tokenAggregatorApi: {}
-}))
 
 jest.mock('@avalabs/core-coingecko-sdk', () => ({
   ...jest.requireActual('@avalabs/core-coingecko-sdk'),
@@ -169,73 +157,6 @@ describe('getCoinInfo', () => {
     expect(coinsInfo).toHaveBeenCalledTimes(1)
     expect(proxyMock).not.toHaveBeenCalled()
     expect(result?.id).toEqual('test')
-  })
-})
-
-describe('getTrendingTokens', () => {
-  const getTrendingMock = getV1WatchlistTrending as jest.Mock
-
-  beforeEach(() => {
-    jest.clearAllMocks()
-    inMemoryCacheMock.mockImplementation(() => undefined)
-  })
-
-  it('should return trending tokens from the aggregator API', async () => {
-    const mockToken = {
-      internalId: 'avax',
-      name: 'Avalanche',
-      symbol: 'AVAX',
-      price: 30,
-      liquidity: 1000000,
-      address: '0x123',
-      decimals: 18,
-      lastUpdated: '2024-01-01',
-      sparkline: null,
-      platforms: null,
-      isNative: true
-    }
-    getTrendingMock.mockResolvedValue({ data: [mockToken] })
-
-    const result = await TokenService.getTrendingTokens(undefined)
-
-    expect(getTrendingMock).toHaveBeenCalledTimes(1)
-    expect(result).toEqual([mockToken])
-  })
-
-  it('should apply exchange rate to token prices', async () => {
-    const mockToken = {
-      internalId: 'avax',
-      name: 'Avalanche',
-      symbol: 'AVAX',
-      price: 30,
-      marketcap: 1000,
-      fdv: 2000,
-      volume24hUSD: 500,
-      liquidity: 100,
-      address: '0x123',
-      decimals: 18,
-      lastUpdated: '2024-01-01',
-      sparkline: null,
-      platforms: null,
-      isNative: true
-    }
-    getTrendingMock.mockResolvedValue({ data: [mockToken] })
-
-    const result = await TokenService.getTrendingTokens(2)
-
-    expect(result[0]?.price).toEqual(60)
-    expect(result[0]?.marketcap).toEqual(2000)
-    expect(result[0]?.fdv).toEqual(4000)
-    expect(result[0]?.volume24hUSD).toEqual(1000)
-    expect(result[0]?.liquidity).toEqual(200)
-  })
-
-  it('should return empty array when API returns no data', async () => {
-    getTrendingMock.mockResolvedValue({ data: undefined })
-
-    const result = await TokenService.getTrendingTokens(undefined)
-
-    expect(result).toEqual([])
   })
 })
 
