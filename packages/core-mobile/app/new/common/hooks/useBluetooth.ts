@@ -16,11 +16,10 @@ interface UseBluetoothReturn {
   bluetoothState: BluetoothState
   /** Open Bluetooth system settings or app settings */
   openSettings: () => void
-  // Request Bluetooth permissions
+  /** Request Bluetooth permissions */
   requestPermissions: () => Promise<boolean>
 }
 
-// tracks permission state without showing dialogs.
 // Permission prompts are triggered elsewhere via the async permission-request flow.
 // AppState listener uses check-only to detect grants made in Settings or after an explicit request.
 function useBluetoothPermission(): boolean {

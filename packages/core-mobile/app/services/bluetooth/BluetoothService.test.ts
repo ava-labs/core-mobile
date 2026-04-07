@@ -1,6 +1,6 @@
 import { PermissionsAndroid, Platform } from 'react-native'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
-import { check, RESULTS } from 'react-native-permissions'
+import { check, request, RESULTS } from 'react-native-permissions'
 import BluetoothService from './BluetoothService'
 import { BluetoothState } from './types'
 
@@ -17,6 +17,7 @@ jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
 
 jest.mock('react-native-permissions', () => ({
   check: jest.fn(),
+  request: jest.fn(),
   PERMISSIONS: {
     IOS: { BLUETOOTH: 'ios.permission.BLUETOOTH' }
   },
@@ -42,6 +43,7 @@ const mockTransportBLE = TransportBLE as unknown as {
   observeState: jest.Mock
 }
 const mockCheck = check as jest.Mock
+const mockRequest = request as jest.Mock
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -160,6 +162,27 @@ describe('requestPermissions', () => {
       expect(result).toBe(false)
     })
 
+    it('returns true when permissions are denied (not permanently) after request', async () => {
+      jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
+      jest
+        .spyOn(PermissionsAndroid, 'requestMultiple')
+        .mockResolvedValue(
+          Object.fromEntries(
+            [
+              PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+              PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+              PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+            ]
+              .filter(Boolean)
+              .map(p => [p, PermissionsAndroid.RESULTS.DENIED])
+          ) as never
+        )
+
+      const result = await BluetoothService.requestPermissions()
+
+      expect(result).toBe(true)
+    })
+
     it('returns false and logs on unexpected error', async () => {
       jest
         .spyOn(PermissionsAndroid, 'check')
@@ -193,6 +216,33 @@ describe('requestPermissions', () => {
       const result = await BluetoothService.requestPermissions()
 
       expect(result).toBe(true)
+    })
+
+    it('returns true when check returns DENIED and request returns DENIED', async () => {
+      mockCheck.mockResolvedValue(RESULTS.DENIED)
+      mockRequest.mockResolvedValue(RESULTS.DENIED)
+
+      const result = await BluetoothService.requestPermissions()
+
+      expect(result).toBe(true)
+    })
+
+    it('returns true when check returns DENIED and request returns GRANTED', async () => {
+      mockCheck.mockResolvedValue(RESULTS.DENIED)
+      mockRequest.mockResolvedValue(RESULTS.GRANTED)
+
+      const result = await BluetoothService.requestPermissions()
+
+      expect(result).toBe(true)
+    })
+
+    it('returns false when check returns DENIED and request returns BLOCKED', async () => {
+      mockCheck.mockResolvedValue(RESULTS.DENIED)
+      mockRequest.mockResolvedValue(RESULTS.BLOCKED)
+
+      const result = await BluetoothService.requestPermissions()
+
+      expect(result).toBe(false)
     })
 
     it('returns false when check throws', async () => {

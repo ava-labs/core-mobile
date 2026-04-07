@@ -60,7 +60,20 @@ export const ledgerBluetoothErrors = {
 export const isLedgerBluetoothError = (
   error: unknown
 ): error is LedgerBluetoothError => {
-  return error instanceof LedgerBluetoothError
+  if (error instanceof LedgerBluetoothError) {
+    return true
+  }
+  if (typeof error !== 'object' || error === null) {
+    return false
+  }
+  const { name, code } = error as {
+    name?: unknown
+    code?: unknown
+  }
+  return (
+    name === 'LedgerBluetoothError' &&
+    Object.values(LEDGER_ERROR_CODES).includes(code as LEDGER_ERROR_CODES)
+  )
 }
 
 export function showBluetoothErrorAlert(error: LedgerBluetoothError): void {
