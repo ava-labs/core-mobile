@@ -103,7 +103,7 @@ export async function createLedgerAccountFromXpubs(
     addressBTC: mainnetAddresses.btc,
     addressAVM: mainnetAddresses.avm,
     addressPVM: mainnetAddresses.pvm,
-    addressSVM: solanaAddresses[accountIndex] ?? '',
+    addressSVM: solanaAddresses[accountIndex] ?? undefined,
     addressCoreEth: mainnetAddresses.coreEth
   }
 

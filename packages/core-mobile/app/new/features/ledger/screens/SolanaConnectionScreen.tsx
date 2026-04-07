@@ -18,6 +18,7 @@ import {
   showBluetoothErrorAlert
 } from 'services/ledger/LedgerBluetoothError'
 import { useLedgerWalletMap } from '../store'
+import { handleLedgerConnectionError } from '../utils/handleLedgerConnectionError'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 
 export default function SolanaConnectionScreen(): JSX.Element {

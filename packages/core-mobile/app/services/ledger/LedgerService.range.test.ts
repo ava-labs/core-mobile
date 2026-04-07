@@ -1,5 +1,5 @@
-import LedgerService from '../LedgerService'
-import { LedgerDerivationPathType, AvalancheKey } from '../types'
+import LedgerService from './LedgerService'
+import { LedgerDerivationPathType, AvalancheKey } from './types'
 
 // Mock Logger to prevent console noise
 jest.mock('utils/Logger', () => ({

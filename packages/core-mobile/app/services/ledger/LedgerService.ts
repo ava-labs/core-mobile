@@ -25,7 +25,7 @@ import { isBitcoinCompatibleApp } from 'new/features/ledger/utils'
 import { assertNotNull } from 'utils/assertions'
 import { Curve } from 'utils/publicKeys'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
-import { bip32 } from 'utils/bip32'
+import { derivePublicKey, extendedPublicKeyToXpub } from 'utils/bip32'
 import { BluetoothState } from 'services/bluetooth/types'
 import BluetoothService from 'services/bluetooth/BluetoothService'
 import {
@@ -1131,32 +1131,19 @@ class LedgerService {
       // BIP44: fetch account-level xpubs and derive address-level public keys
       const extendedKeys = await this.getExtendedPublicKeys(accountIndex)
 
-      const evmXpub = bip32
-        .fromPublicKey(
-          Buffer.from(extendedKeys.evm.key, 'hex'),
-          Buffer.from(extendedKeys.evm.chainCode, 'hex')
-        )
-        .toBase58()
+      const evmXpub = extendedPublicKeyToXpub(
+        extendedKeys.evm.key,
+        extendedKeys.evm.chainCode
+      )
 
-      const avalancheXpub = bip32
-        .fromPublicKey(
-          Buffer.from(extendedKeys.avalanche.key, 'hex'),
-          Buffer.from(extendedKeys.avalanche.chainCode, 'hex')
-        )
-        .toBase58()
+      const avalancheXpub = extendedPublicKeyToXpub(
+        extendedKeys.avalanche.key,
+        extendedKeys.avalanche.chainCode
+      )
 
-      const evmPublicKey =
-        bip32
-          .fromBase58(evmXpub)
-          .derive(0)
-          .derive(0)
-          .publicKey?.toString('hex') ?? ''
+      const evmPublicKey = derivePublicKey(evmXpub, 0, 0)?.toString('hex') ?? ''
       const avalanchePublicKey =
-        bip32
-          .fromBase58(avalancheXpub)
-          .derive(0)
-          .derive(0)
-          .publicKey?.toString('hex') ?? ''
+        derivePublicKey(avalancheXpub, 0, 0)?.toString('hex') ?? ''
 
       return {
         addresses: {

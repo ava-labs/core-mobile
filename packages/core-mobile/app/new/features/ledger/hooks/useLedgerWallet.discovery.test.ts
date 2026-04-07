@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { LedgerDerivationPathType } from 'services/ledger/types'
 import type { LedgerMultiIndexKeys } from 'services/ledger/types'
 import { Curve } from 'utils/publicKeys'
-import { useLedgerWallet } from '../useLedgerWallet'
+import { useLedgerWallet } from './useLedgerWallet'
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
@@ -67,7 +67,7 @@ jest.mock('utils/BiometricsSDK', () => ({
   }
 }))
 
-jest.mock('../../store', () => ({
+jest.mock('../store', () => ({
   useLedgerWalletMap: jest.fn()
 }))
 
@@ -189,7 +189,7 @@ describe('useLedgerWallet - createLedgerWalletWithDiscovery', () => {
     ;(useDispatch as unknown as jest.Mock).mockReturnValue(mockDispatch)
     ;(useSelector as unknown as jest.Mock).mockReturnValue(false)
 
-    const { useLedgerWalletMap } = require('../../store')
+    const { useLedgerWalletMap } = require('../store')
     useLedgerWalletMap.mockReturnValue({
       setLedgerWalletMap: mockSetLedgerWalletMap,
       ledgerWalletMap: {},

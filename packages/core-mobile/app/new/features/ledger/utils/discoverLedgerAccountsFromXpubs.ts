@@ -305,7 +305,7 @@ async function buildDiscoveredAccounts({
       addressBTC: addresses.mainnet.btc,
       addressAVM: addresses.mainnet.avm,
       addressPVM: addresses.mainnet.pvm,
-      addressSVM: solanaAddresses[index] ?? '',
+      addressSVM: solanaAddresses[index] ?? undefined,
       addressCoreEth: addresses.mainnet.coreEth
     }
 

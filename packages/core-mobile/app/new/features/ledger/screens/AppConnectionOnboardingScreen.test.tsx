@@ -2,7 +2,7 @@ import { GetBalancesResponse } from 'utils/api/generated/balanceApi.client'
 import {
   getActiveAccountIndices,
   LedgerDerivedAccount
-} from '../../utils/discoverLedgerAccounts'
+} from '../utils/discoverLedgerAccounts'
 
 // ---------------------------------------------------------------------------
 // Mocks

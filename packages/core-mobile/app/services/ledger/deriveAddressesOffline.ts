@@ -12,7 +12,7 @@ import {
 } from '@avalabs/core-wallets-sdk'
 import { secp256k1, utils, networkIDs } from '@avalabs/avalanchejs'
 import { networks } from 'bitcoinjs-lib'
-import { bip32 } from 'utils/bip32'
+import { derivePublicKey } from 'utils/bip32'
 
 export interface DerivedAddresses {
   evm: string
@@ -62,17 +62,11 @@ export function deriveAddressesFromXpub(
 
   // EVM: derive from shared account-level xpub at m/44'/60'/0'
   // Address for account N is at child path 0/{N}
-  const evmPubKey = bip32
-    .fromBase58(evmXpub)
-    .derive(0)
-    .derive(evmAddressIndex).publicKey
+  const evmPubKey = derivePublicKey(evmXpub, 0, evmAddressIndex)
 
   // Avalanche: derive from per-account xpub at m/44'/9000'/{accountIndex}'
   // Address is always at child path 0/0 within the account
-  const avalanchePubKey = bip32
-    .fromBase58(avalancheXpub)
-    .derive(0)
-    .derive(0).publicKey
+  const avalanchePubKey = derivePublicKey(avalancheXpub, 0, 0)
 
   const avaxBech32 = avalancheBech32FromPubKey(avalanchePubKey, hrp)
   const coreEthBech32 = avalancheBech32FromPubKey(evmPubKey, hrp)

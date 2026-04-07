@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react-hooks'
 import { useDispatch } from 'react-redux'
 import { setLedgerAddresses } from 'store/account'
 import { LedgerKeys } from 'services/ledger/types'
-import { useSetLedgerAddress } from '../useSetLedgerAddress'
+import { useSetLedgerAddress } from './useSetLedgerAddress'
 
 // ---------------------------------------------------------------------------
 // Mocks
