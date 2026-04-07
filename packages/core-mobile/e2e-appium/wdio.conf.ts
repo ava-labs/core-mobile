@@ -15,7 +15,7 @@ const goHeadless = isBitrise ? true : false
 const goRetry = isBitrise ? 1 : 0
 const iosLocalPath = process.env.E2E_LOCAL_PATH
   ? '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
-  : './ios/build/Debug-iphonesimulator/AvaxWallet.app'
+  : './ios/build/Debug-iphonesimulator/AvaxWalletInternal.app'
 const androidLocalPath = process.env.E2E_LOCAL_PATH
   ? '/Users/eunji.song/Downloads/app-internal-e2e-bitrise-signed.apk'
   : './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'

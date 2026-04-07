@@ -122,6 +122,7 @@ class OnboardingPage {
       const preceedingHost = driver.isIOS ? 'localhost' : '10.0.2.2'
       const metroDevMenu = selectors.getByText(`http://${preceedingHost}:8081`)
       const dismissBtn = selectors.getByText("AvaxWallet")
+      await actions.delay(3000)
       await actions.waitFor(metroDevMenu)
       await actions.tap(metroDevMenu, dismissBtn)
       await actions.waitFor(dismissBtn, 30000)
@@ -212,6 +213,7 @@ class OnboardingPage {
 async verifyLoggedIn() {
     await actions.waitFor(commonElsPage.accountOne, 40000)
     await actions.waitFor(portfolioPage.portfolioBalanceHeader)
+    await actions.waitForNotVisible(portfolioPage.noAssetsFound)
     console.log('Verified you are logged in')
   }
 
