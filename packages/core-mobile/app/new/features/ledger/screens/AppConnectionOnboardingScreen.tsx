@@ -5,7 +5,8 @@ import { Alert } from 'react-native'
 import LedgerService from 'services/ledger/LedgerService'
 import {
   LedgerDerivationPathType,
-  LedgerMultiIndexKeys
+  LedgerMultiIndexKeys,
+  PublicKeyInfo
 } from 'services/ledger/types'
 import { useRouter } from 'expo-router'
 import { WalletType } from 'services/wallet/types'
@@ -79,7 +80,7 @@ export const AppConnectionOnboardingScreen = ({
           // Create wallet with account 0 only — fast path.
           // The wallet secret includes xpubs for indices 1-9 so background
           // discovery can derive addresses and create accounts later.
-          const { additionalXpubs, solanaAddresses } =
+          const { additionalXpubs, additionalPublicKeys, solanaAddresses } =
             buildAdditionalData(multiIndexKeys)
 
           const { walletId, accountId } = await createLedgerWallet({
@@ -88,8 +89,9 @@ export const AppConnectionOnboardingScreen = ({
             derivationPathType: derivationPath,
             avalancheKeys: index0Mainnet.avalancheKeys,
             solanaKeys: index0Mainnet.solanaKeys,
-            // Pass xpubs + Solana addresses for background discovery
+            // Pass xpubs, public keys, + Solana addresses for background discovery
             additionalXpubs,
+            additionalPublicKeys,
             additionalSolanaAddresses: solanaAddresses
           })
 
@@ -180,15 +182,20 @@ export const AppConnectionOnboardingScreen = ({
 }
 
 /**
- * Extract xpubs and Solana addresses for indices 1-9 from the multi-index keys,
- * to be stored in the wallet secret for background discovery.
+ * Extract xpubs, public keys, and Solana addresses for indices 1-9 from the
+ * multi-index keys, to be stored in the wallet secret for background discovery.
+ *
+ * BIP44 wallets use xpubs for offline derivation.
+ * LedgerLive wallets use raw public keys (no xpubs available).
  */
 function buildAdditionalData(multiIndexKeys: LedgerMultiIndexKeys): {
   additionalXpubs: Record<number, { evm: string; avalanche: string }>
+  additionalPublicKeys: Record<number, PublicKeyInfo[]>
   solanaAddresses: Record<number, string>
 } {
   const additionalXpubs: Record<number, { evm: string; avalanche: string }> =
     {}
+  const additionalPublicKeys: Record<number, PublicKeyInfo[]> = {}
   const solanaAddresses: Record<number, string> = {}
 
   Object.entries(multiIndexKeys.mainnet).forEach(([indexStr, keys]) => {
@@ -202,11 +209,20 @@ function buildAdditionalData(multiIndexKeys: LedgerMultiIndexKeys): {
       }
     }
 
+    if (keys.avalancheKeys?.publicKeys) {
+      const pubKeys: PublicKeyInfo[] = [...keys.avalancheKeys.publicKeys]
+      const solKey = keys.solanaKeys?.[0]
+      if (solKey) {
+        pubKeys.push(solKey)
+      }
+      additionalPublicKeys[index] = pubKeys
+    }
+
     const solKey = keys.solanaKeys?.[0]?.key
     if (solKey) {
       solanaAddresses[index] = solKey
     }
   })
 
-  return { additionalXpubs, solanaAddresses }
+  return { additionalXpubs, additionalPublicKeys, solanaAddresses }
 }

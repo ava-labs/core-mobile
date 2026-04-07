@@ -67,10 +67,7 @@ const isPositiveBalance = (value: string | undefined): boolean => {
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const hasBalanceActivity = (response: GetBalancesResponse): boolean => {
-  if (
-    !('networkType' in response) ||
-    ('error' in response && response.error)
-  ) {
+  if (!('networkType' in response) || ('error' in response && response.error)) {
     return false
   }
 
@@ -98,8 +95,8 @@ const hasBalanceActivity = (response: GetBalancesResponse): boolean => {
     case 'svm':
       return (
         isPositiveBalance(balances.nativeTokenBalance?.balance) ||
-        (balances.splTokenBalances ?? []).some(
-          (token: { balance?: string }) => isPositiveBalance(token.balance)
+        (balances.splTokenBalances ?? []).some((token: { balance?: string }) =>
+          isPositiveBalance(token.balance)
         )
       )
 
@@ -112,9 +109,7 @@ const hasBalanceActivity = (response: GetBalancesResponse): boolean => {
           ...Object.values(
             balances.categories?.atomicMemoryUnlocked ?? {}
           ).flat(),
-          ...Object.values(
-            balances.categories?.atomicMemoryLocked ?? {}
-          ).flat()
+          ...Object.values(balances.categories?.atomicMemoryLocked ?? {}).flat()
         ].some((asset: { balance?: string }) =>
           isPositiveBalance(asset.balance)
         )
@@ -235,6 +230,84 @@ export const buildLedgerBalanceRequestItems = (
 }
 
 /**
+ * Constructs the batch request items for querying Ledger-derived accounts' balances
+ * across multiple supported blockchains (EVM, Bitcoin, Avalanche, Solana).
+ *
+ * For each type of supported address found in the provided accounts, appropriate
+ * request items are prepared, following the namespace conventions:
+ *
+ * - EIP155 for EVM-based chains (using addresses from `addressC`)
+ * - BIP122 for Bitcoin (using addresses from `addressBTC`)
+ * - AVAX for Avalanche X/P chains (using `xpubXP`)
+ * - SOLANA for Solana (using addresses from `addressSVM`)
+ *
+ * Returns an array of request items compatible with the multi-chain balance query API.
+ *
+ * @param accounts - The array of LedgerDerivedAccount objects
+ * @returns Array of balance request items for all discovered addresses/xpubs
+ */
+const buildIdToIndexMap = (
+  accounts: LedgerDerivedAccount[]
+): Map<string, number> => {
+  const idToIndex = new Map<string, number>()
+  for (const account of accounts) {
+    if (account.addressC) {
+      idToIndex.set(account.addressC.toLowerCase(), account.index)
+    }
+    if (account.addressBTC) {
+      idToIndex.set(account.addressBTC, account.index)
+    }
+    if (account.addressSVM) {
+      idToIndex.set(account.addressSVM, account.index)
+    }
+    if (account.xpubXP) {
+      idToIndex.set(`ledger-${account.index}`, account.index)
+    }
+  }
+  return idToIndex
+}
+
+const setActiveIndicesByActiveBalanceResponse = async (
+  activeIndicesSet: Set<number>,
+  requestItems: GetBalancesRequestBody['data'],
+  idToIndex: Map<string, number>
+): Promise<Set<number>> => {
+  try {
+    for await (const response of streamingBalanceApiClient.getBalances({
+      data: requestItems,
+      currency: DISCOVERY_BALANCE_CURRENCY
+    })) {
+      // If the response does not have activity, skip it
+      if (!hasBalanceActivity(response)) {
+        continue
+      }
+
+      const responseId = 'id' in response ? response.id : undefined
+      // If the response does not have an ID, skip it
+      if (!responseId) {
+        continue
+      }
+
+      // For EVM responses the ID is the address — match case-insensitively
+      const isEvm = 'networkType' in response && response.networkType === 'evm'
+      const normalizedId = isEvm ? responseId.toLowerCase() : responseId
+
+      const index = idToIndex.get(normalizedId)
+      if (index !== undefined) {
+        activeIndicesSet.add(index)
+      }
+    }
+  } catch (error) {
+    Logger.error(
+      'Failed to check Ledger account activity via Balance API',
+      error
+    )
+  }
+
+  return activeIndicesSet
+}
+
+/**
  * Checks which Ledger account indices have on-chain activity by querying the
  * streaming Balance API in a single batch request.
  *
@@ -263,59 +336,15 @@ export const getActiveAccountIndices = async (
   // EVM responses use the address (lowercased) as the ID.
   // BTC/SVM responses use the address as the ID.
   // AVAX xpub responses use the `ledger-{index}` ID we supplied.
-  const idToIndex = new Map<string, number>()
-
-  for (const account of accounts) {
-    if (account.addressC) {
-      idToIndex.set(account.addressC.toLowerCase(), account.index)
-    }
-
-    if (account.addressBTC) {
-      idToIndex.set(account.addressBTC, account.index)
-    }
-
-    if (account.addressSVM) {
-      idToIndex.set(account.addressSVM, account.index)
-    }
-
-    // xpub-based AVAX lookup uses `ledger-{index}` as the ID
-    if (account.xpubXP) {
-      idToIndex.set(`ledger-${account.index}`, account.index)
-    }
-  }
+  const idToIndex = buildIdToIndexMap(accounts)
 
   const activeIndicesSet = new Set<number>()
 
-  try {
-    for await (const response of streamingBalanceApiClient.getBalances({
-      data: requestItems,
-      currency: DISCOVERY_BALANCE_CURRENCY
-    })) {
-      if (!hasBalanceActivity(response)) {
-        continue
-      }
-
-      const responseId = 'id' in response ? response.id : undefined
-      if (!responseId) {
-        continue
-      }
-
-      // For EVM responses the ID is the address — match case-insensitively
-      const isEvm =
-        'networkType' in response && response.networkType === 'evm'
-      const normalizedId = isEvm ? responseId.toLowerCase() : responseId
-
-      const index = idToIndex.get(normalizedId)
-      if (index !== undefined) {
-        activeIndicesSet.add(index)
-      }
-    }
-  } catch (error) {
-    Logger.error(
-      'Failed to check Ledger account activity via Balance API',
-      error
-    )
-  }
+  await setActiveIndicesByActiveBalanceResponse(
+    activeIndicesSet,
+    requestItems,
+    idToIndex
+  )
 
   // For EVM addresses not detected by balance, check C-Chain transaction history
   // concurrently. This catches accounts that had past activity but now have zero balance.
@@ -346,10 +375,7 @@ export const getActiveAccountIndices = async (
       )
 
       for (const result of results) {
-        if (
-          result.status === 'fulfilled' &&
-          result.value.hasActivity
-        ) {
+        if (result.status === 'fulfilled' && result.value.hasActivity) {
           activeIndicesSet.add(result.value.index)
         }
       }

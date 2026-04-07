@@ -179,6 +179,50 @@ export interface WalletUpdateSolanaOptions {
 }
 
 // ============================================================================
+// WALLET SECRET BUILDING TYPES
+// ============================================================================
+
+export const WalletSecretOperation = {
+  NEW: 'new',
+  UPDATE: 'update',
+  SOLANA_UPDATE: 'solana-update'
+} as const
+
+interface BaseWalletSecretParams {
+  deviceId: string
+  deviceName: string
+  derivationPathType: LedgerDerivationPathType
+}
+
+export interface NewWalletSecretParams extends BaseWalletSecretParams {
+  type: typeof WalletSecretOperation.NEW
+  extendedPublicKeys?: Record<number, { evm: string; avalanche: string }>
+  publicKeys: Record<number, PublicKeyInfo[]>
+  solanaAddresses?: Record<number, string>
+}
+
+export interface UpdateWalletSecretParams extends BaseWalletSecretParams {
+  type: typeof WalletSecretOperation.UPDATE
+  existingWalletSecret: Record<string, unknown>
+  accountIndex: number
+  newXpubs?: { evm: string; avalanche: string }
+  newPublicKeys: PublicKeyInfo[]
+  newSolanaKeys?: PublicKeyInfo[]
+}
+
+export interface SolanaUpdateSecretParams extends BaseWalletSecretParams {
+  type: typeof WalletSecretOperation.SOLANA_UPDATE
+  existingWalletSecret: Record<string, unknown>
+  accountIndex: number
+  newSolanaKeys: PublicKeyInfo[]
+}
+
+export type WalletSecretParams =
+  | NewWalletSecretParams
+  | UpdateWalletSecretParams
+  | SolanaUpdateSecretParams
+
+// ============================================================================
 // LEDGER WALLET DATA TYPES
 // ============================================================================
 

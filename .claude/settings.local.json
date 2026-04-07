@@ -10,7 +10,9 @@
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(./node_modules/.bin/tsc:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(git:*)",
+      "Bash(/opt/homebrew/bin/yarn test:*)"
     ]
   }
 }
