@@ -20,10 +20,7 @@ export class BluetoothService {
     return new Promise(resolve => {
       const sub = this.observeBluetoothState(state => {
         resolve(state)
-        // Defer unsubscribe so `sub` is fully initialized even for synchronous observables
-        Promise.resolve()
-          .then(() => sub.unsubscribe())
-          .catch(() => undefined)
+        sub.unsubscribe()
       })
     })
   }
