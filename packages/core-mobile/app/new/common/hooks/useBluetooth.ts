@@ -20,8 +20,8 @@ interface UseBluetoothReturn {
   requestPermissions: () => Promise<boolean>
 }
 
-// Permission prompts are triggered elsewhere via the async permission-request flow.
-// AppState listener uses check-only to detect grants made in Settings or after an explicit request.
+// On mount, requestPermissions() is called to prompt the user if not yet determined.
+// The AppState listener uses check-only to detect grants made in Settings after the initial prompt.
 function useBluetoothPermission(): boolean {
   const [isPermissionGranted, setIsPermissionGranted] = useState(false)
 
@@ -33,7 +33,6 @@ function useBluetoothPermission(): boolean {
 
     checkAndRequestPermissions()
 
-    const appStateRef = { current: AppState.currentState }
     const subscription = AppState.addEventListener(
       'change',
       async nextState => {
@@ -41,7 +40,6 @@ function useBluetoothPermission(): boolean {
           const granted = await BluetoothService.checkPermissions()
           setIsPermissionGranted(granted)
         }
-        appStateRef.current = nextState
       }
     )
 

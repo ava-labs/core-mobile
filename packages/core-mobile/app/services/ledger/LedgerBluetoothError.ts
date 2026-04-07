@@ -70,10 +70,13 @@ export const isLedgerBluetoothError = (
     name?: unknown
     code?: unknown
   }
-  return (
-    name === 'LedgerBluetoothError' &&
-    Object.values(LEDGER_ERROR_CODES).includes(code as LEDGER_ERROR_CODES)
-  )
+  const bluetoothCodes: string[] = [
+    LEDGER_ERROR_CODES.BLUETOOTH_PERMISSION,
+    LEDGER_ERROR_CODES.BLUETOOTH_RADIO_OFF,
+    LEDGER_ERROR_CODES.BLUETOOTH_UNSUPPORTED,
+    LEDGER_ERROR_CODES.BLUETOOTH_UNKNOWN
+  ]
+  return name === 'LedgerBluetoothError' && bluetoothCodes.includes(code as LEDGER_ERROR_CODES)
 }
 
 export function showBluetoothErrorAlert(error: LedgerBluetoothError): void {
