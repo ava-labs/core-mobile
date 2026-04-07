@@ -14,8 +14,8 @@ import {
   deriveAddressesFromXpub,
   DerivedAddresses
 } from 'services/ledger/deriveAddressesOffline'
-import { LedgerWalletSecretSchema } from '../utils'
 import { Account } from 'store/account'
+import { LedgerWalletSecretSchema } from '../utils'
 
 export interface OfflineLedgerAccountResult {
   account: Account

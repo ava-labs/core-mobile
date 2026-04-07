@@ -158,7 +158,9 @@ describe('buildLedgerBalanceRequestItems', () => {
   })
 
   it('builds EVM request item', () => {
-    const accounts = [makeAccount(0, { addressBTC: '', xpubXP: '', addressSVM: undefined })]
+    const accounts = [
+      makeAccount(0, { addressBTC: '', xpubXP: '', addressSVM: undefined })
+    ]
     const items = buildLedgerBalanceRequestItems(accounts)
 
     expect(items).toHaveLength(1)
@@ -169,7 +171,9 @@ describe('buildLedgerBalanceRequestItems', () => {
   })
 
   it('builds BTC request item with correct reference', () => {
-    const accounts = [makeAccount(0, { addressC: '', xpubXP: '', addressSVM: undefined })]
+    const accounts = [
+      makeAccount(0, { addressC: '', xpubXP: '', addressSVM: undefined })
+    ]
     const items = buildLedgerBalanceRequestItems(accounts)
 
     expect(items).toHaveLength(1)
@@ -180,7 +184,9 @@ describe('buildLedgerBalanceRequestItems', () => {
   })
 
   it('builds AVAX xpub request item with X and P references', () => {
-    const accounts = [makeAccount(0, { addressC: '', addressBTC: '', addressSVM: undefined })]
+    const accounts = [
+      makeAccount(0, { addressC: '', addressBTC: '', addressSVM: undefined })
+    ]
     const items = buildLedgerBalanceRequestItems(accounts)
 
     expect(items).toHaveLength(1)
@@ -189,13 +195,15 @@ describe('buildLedgerBalanceRequestItems', () => {
       namespace: BlockchainNamespace.AVAX,
       filterOutDustUtxos: false
     })
-    expect((avaxItem as Record<string, unknown>).extendedPublicKeyDetails).toEqual([
-      { id: 'ledger-0', extendedPublicKey: 'xpub_0' }
-    ])
+    expect(
+      (avaxItem as Record<string, unknown>).extendedPublicKeyDetails
+    ).toEqual([{ id: 'ledger-0', extendedPublicKey: 'xpub_0' }])
   })
 
   it('builds SVM request item', () => {
-    const accounts = [makeAccount(0, { addressC: '', addressBTC: '', xpubXP: '' })]
+    const accounts = [
+      makeAccount(0, { addressC: '', addressBTC: '', xpubXP: '' })
+    ]
     const items = buildLedgerBalanceRequestItems(accounts)
 
     expect(items).toHaveLength(1)
@@ -209,9 +217,7 @@ describe('buildLedgerBalanceRequestItems', () => {
     const accounts = [makeAccount(0)]
     const items = buildLedgerBalanceRequestItems(accounts)
 
-    const namespaces = items.map(
-      i => (i as Record<string, unknown>).namespace
-    )
+    const namespaces = items.map(i => (i as Record<string, unknown>).namespace)
     expect(namespaces).toContain(BlockchainNamespace.EIP155)
     expect(namespaces).toContain(BlockchainNamespace.BIP122)
     expect(namespaces).toContain(BlockchainNamespace.AVAX)
@@ -223,7 +229,8 @@ describe('buildLedgerBalanceRequestItems', () => {
     const items = buildLedgerBalanceRequestItems(accounts)
 
     const evmItem = items.find(
-      i => (i as Record<string, unknown>).namespace === BlockchainNamespace.EIP155
+      i =>
+        (i as Record<string, unknown>).namespace === BlockchainNamespace.EIP155
     ) as Record<string, unknown>
     expect((evmItem.addresses as string[]).sort()).toEqual([
       '0xEVM_0',
@@ -237,13 +244,16 @@ describe('buildLedgerBalanceRequestItems', () => {
     const items = buildLedgerBalanceRequestItems(accounts)
 
     const svmItem = items.find(
-      i => (i as Record<string, unknown>).namespace === BlockchainNamespace.SOLANA
+      i =>
+        (i as Record<string, unknown>).namespace === BlockchainNamespace.SOLANA
     )
     expect(svmItem).toBeUndefined()
   })
 
   it('uses CAIP-2 reference for BTC mainnet', () => {
-    const accounts = [makeAccount(0, { addressC: '', xpubXP: '', addressSVM: undefined })]
+    const accounts = [
+      makeAccount(0, { addressC: '', xpubXP: '', addressSVM: undefined })
+    ]
     const items = buildLedgerBalanceRequestItems(accounts)
 
     const btcItem = items[0] as Record<string, unknown>
@@ -252,7 +262,9 @@ describe('buildLedgerBalanceRequestItems', () => {
   })
 
   it('uses CAIP-2 references for AVAX X and P chains', () => {
-    const accounts = [makeAccount(0, { addressC: '', addressBTC: '', addressSVM: undefined })]
+    const accounts = [
+      makeAccount(0, { addressC: '', addressBTC: '', addressSVM: undefined })
+    ]
     const items = buildLedgerBalanceRequestItems(accounts)
 
     const avaxItem = items[0] as Record<string, unknown>
@@ -263,7 +275,9 @@ describe('buildLedgerBalanceRequestItems', () => {
   })
 
   it('uses CAIP-2 reference for Solana mainnet', () => {
-    const accounts = [makeAccount(0, { addressC: '', addressBTC: '', xpubXP: '' })]
+    const accounts = [
+      makeAccount(0, { addressC: '', addressBTC: '', xpubXP: '' })
+    ]
     const items = buildLedgerBalanceRequestItems(accounts)
 
     const svmItem = items[0] as Record<string, unknown>

@@ -8,18 +8,11 @@ import { transactionSnackbar } from 'common/utils/toast'
 import { WalletState } from 'store/app/types'
 import { recentAccountsStore } from 'features/accountSettings/store'
 import { Account, AccountCollection } from './types'
-import { transactionSnackbar } from 'common/utils/toast'
-import { WalletState } from 'store/app/types'
-import { recentAccountsStore } from 'features/accountSettings/store'
-import { Account, AccountCollection } from './types'
 import {
   isAddressMissing,
   isHardwareWalletType,
   isMemonicOrSeedlessWallet,
   canRederiveAccountAddresses,
-  rederiveAvmPvmAddressesForAccount,
-  discoverRemainingActiveAccounts,
-  migrateRemainingActiveAccounts
   rederiveAvmPvmAddressesForAccount,
   discoverRemainingActiveAccounts,
   migrateRemainingActiveAccounts
@@ -34,23 +27,6 @@ jest.mock('common/utils/toast', () => ({
   transactionSnackbar: {
     pending: jest.fn(),
     success: jest.fn(),
-    error: jest.fn(),
-    plain: jest.fn()
-  }
-}))
-jest.mock('utils/uuid', () => ({
-  uuid: jest.fn().mockReturnValue('mock-uuid')
-}))
-jest.mock('utils/mmkv', () => ({
-  commonStorage: {}
-}))
-jest.mock('utils/mmkv/storages', () => ({
-  appendToStoredArray: jest.fn(),
-  loadArrayFromStorage: jest.fn().mockReturnValue([]),
-  zustandPersistStorage: {
-    getItem: jest.fn().mockReturnValue(null),
-    setItem: jest.fn(),
-    removeItem: jest.fn()
     error: jest.fn(),
     plain: jest.fn()
   }
@@ -350,7 +326,10 @@ describe('account/utils', () => {
     }
 
     it('returns discovered accounts when found', async () => {
-      mockFetchRemainingActiveAccounts.mockResolvedValue(mockAccounts)
+      mockFetchRemainingActiveAccounts.mockResolvedValue({
+        accounts: mockAccounts,
+        completedCleanly: true
+      })
 
       const result = await discoverRemainingActiveAccounts({
         walletId: 'wallet-1',
@@ -368,7 +347,10 @@ describe('account/utils', () => {
     })
 
     it('returns empty when no accounts found', async () => {
-      mockFetchRemainingActiveAccounts.mockResolvedValue({})
+      mockFetchRemainingActiveAccounts.mockResolvedValue({
+        accounts: {},
+        completedCleanly: true
+      })
 
       const result = await discoverRemainingActiveAccounts({
         walletId: 'wallet-1',
@@ -381,7 +363,10 @@ describe('account/utils', () => {
     })
 
     it('shows pending and success toasts for mnemonic wallets', async () => {
-      mockFetchRemainingActiveAccounts.mockResolvedValue(mockAccounts)
+      mockFetchRemainingActiveAccounts.mockResolvedValue({
+        accounts: mockAccounts,
+        completedCleanly: true
+      })
 
       await discoverRemainingActiveAccounts({
         walletId: 'wallet-1',
@@ -400,7 +385,10 @@ describe('account/utils', () => {
     })
 
     it('shows plain toast when no accounts found for mnemonic', async () => {
-      mockFetchRemainingActiveAccounts.mockResolvedValue({})
+      mockFetchRemainingActiveAccounts.mockResolvedValue({
+        accounts: {},
+        completedCleanly: true
+      })
 
       await discoverRemainingActiveAccounts({
         walletId: 'wallet-1',
@@ -415,7 +403,10 @@ describe('account/utils', () => {
     })
 
     it('does not show toasts for seedless wallets', async () => {
-      mockFetchRemainingActiveAccounts.mockResolvedValue(mockAccounts)
+      mockFetchRemainingActiveAccounts.mockResolvedValue({
+        accounts: mockAccounts,
+        completedCleanly: true
+      })
 
       await discoverRemainingActiveAccounts({
         walletId: 'wallet-1',
@@ -431,7 +422,10 @@ describe('account/utils', () => {
       const singleAccount: AccountCollection = {
         'acc-1': createMockAccount({ id: 'acc-1', index: 1 })
       }
-      mockFetchRemainingActiveAccounts.mockResolvedValue(singleAccount)
+      mockFetchRemainingActiveAccounts.mockResolvedValue({
+        accounts: singleAccount,
+        completedCleanly: true
+      })
 
       await discoverRemainingActiveAccounts({
         walletId: 'wallet-1',
@@ -495,7 +489,10 @@ describe('account/utils', () => {
     })
 
     it('sets isMigratingActiveAccounts flag and resets on completion', async () => {
-      mockFetchRemainingActiveAccounts.mockResolvedValue({})
+      mockFetchRemainingActiveAccounts.mockResolvedValue({
+        accounts: {},
+        completedCleanly: true
+      })
 
       await migrateRemainingActiveAccounts({
         listenerApi: mockListenerApi,
@@ -524,7 +521,7 @@ describe('account/utils', () => {
           Object.values(mockAccounts).forEach(account => {
             onAccountCreated?.(account)
           })
-          return mockAccounts
+          return { accounts: mockAccounts, completedCleanly: true }
         }
       )
 
@@ -551,7 +548,10 @@ describe('account/utils', () => {
     })
 
     it('dispatches setAccounts for seedless wallets', async () => {
-      mockFetchRemainingActiveAccounts.mockResolvedValue(mockAccounts)
+      mockFetchRemainingActiveAccounts.mockResolvedValue({
+        accounts: mockAccounts,
+        completedCleanly: true
+      })
 
       await migrateRemainingActiveAccounts({
         listenerApi: mockListenerApi,
@@ -581,7 +581,7 @@ describe('account/utils', () => {
           Object.values(mockAccounts).forEach(account => {
             onAccountCreated?.(account)
           })
-          return mockAccounts
+          return { accounts: mockAccounts, completedCleanly: true }
         }
       )
 
@@ -598,7 +598,10 @@ describe('account/utils', () => {
     })
 
     it('does not dispatch account actions when none found', async () => {
-      mockFetchRemainingActiveAccounts.mockResolvedValue({})
+      mockFetchRemainingActiveAccounts.mockResolvedValue({
+        accounts: {},
+        completedCleanly: true
+      })
 
       await migrateRemainingActiveAccounts({
         listenerApi: mockListenerApi,
@@ -622,7 +625,7 @@ describe('account/utils', () => {
           Object.values(mockAccounts).forEach(account => {
             onAccountCreated?.(account)
           })
-          return mockAccounts
+          return { accounts: mockAccounts, completedCleanly: true }
         }
       )
 
@@ -656,7 +659,7 @@ describe('account/utils', () => {
           Object.values(mockAccounts).forEach(account => {
             onAccountCreated?.(account)
           })
-          return mockAccounts
+          return { accounts: mockAccounts, completedCleanly: true }
         }
       )
 

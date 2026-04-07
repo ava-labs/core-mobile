@@ -725,10 +725,7 @@ describe('buildLedgerWalletSecret', () => {
 
       const keys0 = result.publicKeys[0]
       expect(keys0).toHaveLength(2)
-      expect(keys0.map((k: PublicKeyInfo) => k.key)).toEqual([
-        'pk_0',
-        'sol_0'
-      ])
+      expect(keys0.map((k: PublicKeyInfo) => k.key)).toEqual(['pk_0', 'sol_0'])
     })
 
     it('does not touch public keys for other indices', () => {
@@ -843,9 +840,7 @@ describe('buildLedgerWalletSecret', () => {
         newXpubs: { evm: 'xpub_evm_1', avalanche: 'xpub_avax_1' }
       })
 
-      const parsed2 = LedgerWalletSecretSchema.parse(
-        JSON.parse(updatedSecret)
-      )
+      const parsed2 = LedgerWalletSecretSchema.parse(JSON.parse(updatedSecret))
       expect(Object.keys(parsed2.extendedPublicKeys!)).toHaveLength(2)
       expect(Object.keys(parsed2.publicKeys)).toHaveLength(2)
 
@@ -860,9 +855,7 @@ describe('buildLedgerWalletSecret', () => {
         newSolanaKeys: [solanaPk]
       })
 
-      const parsed3 = LedgerWalletSecretSchema.parse(
-        JSON.parse(solanaSecret)
-      )
+      const parsed3 = LedgerWalletSecretSchema.parse(JSON.parse(solanaSecret))
       // Account 0 should now have original pk + solana pk
       expect(parsed3.publicKeys[0]).toHaveLength(2)
       // Account 1 should be untouched

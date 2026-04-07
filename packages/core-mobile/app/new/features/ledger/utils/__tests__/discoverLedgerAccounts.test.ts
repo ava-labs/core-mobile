@@ -1,9 +1,9 @@
+import { GetBalancesResponse } from 'utils/api/generated/balanceApi.client'
 import {
   buildLedgerBalanceRequestItems,
   getActiveAccountIndices,
   LedgerDerivedAccount
 } from '../discoverLedgerAccounts'
-import { GetBalancesResponse } from 'utils/api/generated/balanceApi.client'
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -82,7 +82,8 @@ function createAsyncGenerator<T>(items: T[]): AsyncGenerator<T> {
     throw: async () => ({ value: undefined as unknown as T, done: true }),
     [Symbol.asyncIterator]() {
       return this
-    }
+    },
+    async [Symbol.asyncDispose]() {}
   }
 }
 
@@ -119,7 +120,7 @@ const makeEvmResponse = (
     },
     currency: 'usd',
     error: null
-  }) as unknown as GetBalancesResponse
+  } as unknown as GetBalancesResponse)
 
 // ---------------------------------------------------------------------------
 // Tests

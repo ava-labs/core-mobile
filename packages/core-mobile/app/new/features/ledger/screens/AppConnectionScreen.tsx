@@ -236,13 +236,6 @@ export default function AppConnectionScreen({
             if (!xpubs) continue
 
             const idx = i + 1
-            // For storage, we still store the per-index xpub from the device
-            const perIndexEvmXpub = bip32
-              .fromPublicKey(
-                Buffer.from(xpubs.evm.key, 'hex'),
-                Buffer.from(xpubs.evm.chainCode, 'hex')
-              )
-              .toBase58()
             const avalancheXpub = bip32
               .fromPublicKey(
                 Buffer.from(xpubs.avalanche.key, 'hex'),
@@ -266,23 +259,33 @@ export default function AppConnectionScreen({
 
             // Derive address-level public keys for storage
             // EVM: use account 0 xpub with correct address index
-            const evmPubKey = bip32
-              .fromBase58(evmAccount0Xpub)
-              .derive(0)
-              .derive(idx)
-              .publicKey?.toString('hex') ?? ''
-            const avalanchePubKey = bip32
-              .fromBase58(avalancheXpub)
-              .derive(0)
-              .derive(0)
-              .publicKey?.toString('hex') ?? ''
+            const evmPubKey =
+              bip32
+                .fromBase58(evmAccount0Xpub)
+                .derive(0)
+                .derive(idx)
+                .publicKey?.toString('hex') ?? ''
+            const avalanchePubKey =
+              bip32
+                .fromBase58(avalancheXpub)
+                .derive(0)
+                .derive(0)
+                .publicKey?.toString('hex') ?? ''
 
             const evmPath = `m/44'/60'/${idx}'/0/0`
             const avalanchePath = `m/44'/9000'/${idx}'/0/0`
 
             const publicKeys = [
-              { key: evmPubKey, derivationPath: evmPath, curve: Curve.SECP256K1 },
-              { key: avalanchePubKey, derivationPath: avalanchePath, curve: Curve.SECP256K1 }
+              {
+                key: evmPubKey,
+                derivationPath: evmPath,
+                curve: Curve.SECP256K1
+              },
+              {
+                key: avalanchePubKey,
+                derivationPath: avalanchePath,
+                curve: Curve.SECP256K1
+              }
             ]
 
             mainnetKeys[idx] = {
@@ -326,8 +329,16 @@ export default function AppConnectionScreen({
             )
 
             const publicKeys = [
-              { key: keys.evmPubKey, derivationPath: keys.evmPath, curve: Curve.SECP256K1 },
-              { key: keys.avalanchePubKey, derivationPath: keys.avalanchePath, curve: Curve.SECP256K1 }
+              {
+                key: keys.evmPubKey,
+                derivationPath: keys.evmPath,
+                curve: Curve.SECP256K1
+              },
+              {
+                key: keys.avalanchePubKey,
+                derivationPath: keys.avalanchePath,
+                curve: Curve.SECP256K1
+              }
             ]
 
             mainnetKeys[idx] = {

@@ -13,8 +13,7 @@ const mockGetSolanaKeys = jest.fn()
 
 const originalGetAvalancheKeys =
   LedgerService.getAvalancheKeys.bind(LedgerService)
-const originalGetSolanaKeys =
-  LedgerService.getSolanaKeys.bind(LedgerService)
+const originalGetSolanaKeys = LedgerService.getSolanaKeys.bind(LedgerService)
 
 beforeEach(() => {
   jest.clearAllMocks()

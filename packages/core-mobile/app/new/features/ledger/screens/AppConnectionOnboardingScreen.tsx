@@ -193,8 +193,7 @@ function buildAdditionalData(multiIndexKeys: LedgerMultiIndexKeys): {
   additionalPublicKeys: Record<number, PublicKeyInfo[]>
   solanaAddresses: Record<number, string>
 } {
-  const additionalXpubs: Record<number, { evm: string; avalanche: string }> =
-    {}
+  const additionalXpubs: Record<number, { evm: string; avalanche: string }> = {}
   const additionalPublicKeys: Record<number, PublicKeyInfo[]> = {}
   const solanaAddresses: Record<number, string> = {}
 

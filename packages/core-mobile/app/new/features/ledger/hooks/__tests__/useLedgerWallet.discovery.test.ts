@@ -2,6 +2,7 @@ import { renderHook, act } from '@testing-library/react-hooks'
 import { useSelector, useDispatch } from 'react-redux'
 import { LedgerDerivationPathType } from 'services/ledger/types'
 import type { LedgerMultiIndexKeys } from 'services/ledger/types'
+import { Curve } from 'utils/publicKeys'
 import { useLedgerWallet } from '../useLedgerWallet'
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
@@ -109,9 +110,7 @@ function nextUuid(): string {
  * Each index gets deterministic addresses/xpubs/publicKeys so assertions
  * can verify per-account data is stored correctly.
  */
-function buildMultiIndexKeys(
-  indices: number[]
-): LedgerMultiIndexKeys {
+function buildMultiIndexKeys(indices: number[]): LedgerMultiIndexKeys {
   const mainnet: LedgerMultiIndexKeys['mainnet'] = {}
   const testnet: LedgerMultiIndexKeys['testnet'] = {}
 
@@ -133,7 +132,7 @@ function buildMultiIndexKeys(
           {
             key: `pk_mainnet_${idx}`,
             derivationPath: `m/44'/60'/0'/0/${idx}`,
-            curve: 'secp256k1' as const
+            curve: Curve.SECP256K1
           }
         ]
       },
@@ -141,7 +140,7 @@ function buildMultiIndexKeys(
         {
           key: `sol_${idx}`,
           derivationPath: `m/44'/501'/${idx}'/0'`,
-          curve: 'ed25519' as const
+          curve: Curve.ED25519
         }
       ]
     }
@@ -163,7 +162,7 @@ function buildMultiIndexKeys(
           {
             key: `pk_testnet_${idx}`,
             derivationPath: `m/44'/60'/0'/0/${idx}`,
-            curve: 'secp256k1' as const
+            curve: Curve.SECP256K1
           }
         ]
       }
@@ -211,7 +210,12 @@ describe('useLedgerWallet - createLedgerWalletWithDiscovery', () => {
 
     const { result } = renderHook(() => useLedgerWallet())
 
-    let outcome: { walletId: string; createdAccounts: Array<{ accountId: string; accountIndex: number }> } | undefined
+    let outcome:
+      | {
+          walletId: string
+          createdAccounts: Array<{ accountId: string; accountIndex: number }>
+        }
+      | undefined
 
     await act(async () => {
       outcome = await result.current.createLedgerWalletWithDiscovery({
@@ -278,9 +282,11 @@ describe('useLedgerWallet - createLedgerWalletWithDiscovery', () => {
     const walletSecret = JSON.parse(call.walletSecret)
 
     // extendedPublicKeys should have entries for indices 0, 2, 5
-    expect(Object.keys(walletSecret.extendedPublicKeys).sort()).toEqual(
-      ['0', '2', '5']
-    )
+    expect(Object.keys(walletSecret.extendedPublicKeys).sort()).toEqual([
+      '0',
+      '2',
+      '5'
+    ])
     expect(walletSecret.extendedPublicKeys[0]).toEqual({
       evm: 'xpub_evm_0',
       avalanche: 'xpub_avalanche_0'

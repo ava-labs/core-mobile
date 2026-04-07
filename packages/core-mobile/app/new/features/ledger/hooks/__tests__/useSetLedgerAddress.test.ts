@@ -189,7 +189,7 @@ describe('useSetLedgerAddress', () => {
         await result.current.setLedgerAddressesForMultipleAccounts(entries)
       })
 
-      const call = (setLedgerAddresses as jest.Mock).mock.calls[0][0]
+      const call = (setLedgerAddresses as unknown as jest.Mock).mock.calls[0][0]
 
       // Verify walletId mapping
       expect(call['acct-10'].walletId).toBe('wallet-A')

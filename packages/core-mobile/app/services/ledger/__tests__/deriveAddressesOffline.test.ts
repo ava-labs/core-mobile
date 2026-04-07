@@ -37,9 +37,7 @@ function deriveXpubFromMnemonic(
   const seed = mnemonicToSeedSync(mnemonic)
   const root = bip32.fromSeed(seed)
   // Account-level path: m/44'/coinType'/accountIndex'
-  const accountNode = root.derivePath(
-    `m/44'/${coinType}'/${accountIndex}'`
-  )
+  const accountNode = root.derivePath(`m/44'/${coinType}'/${accountIndex}'`)
   return accountNode.neutered().toBase58()
 }
 
@@ -54,9 +52,7 @@ function deriveAddressFromMnemonic(
 ): Buffer {
   const seed = mnemonicToSeedSync(mnemonic)
   const root = bip32.fromSeed(seed)
-  const node = root.derivePath(
-    `m/44'/${coinType}'/${accountIndex}'/0/0`
-  )
+  const node = root.derivePath(`m/44'/${coinType}'/${accountIndex}'/0/0`)
   return node.publicKey
 }
 
@@ -143,10 +139,7 @@ describe('Offline address derivation validation', () => {
       const addressBytes = secp256k1.publicKeyBytesToAddress(
         Uint8Array.from(pubKey)
       )
-      const bech32Addr = utils.formatBech32(
-        networkIDs.MainnetHRP,
-        addressBytes
-      )
+      const bech32Addr = utils.formatBech32(networkIDs.MainnetHRP, addressBytes)
 
       const xAddr = `X-${bech32Addr}`
       const pAddr = `P-${bech32Addr}`
@@ -166,10 +159,7 @@ describe('Offline address derivation validation', () => {
       const addressBytes = secp256k1.publicKeyBytesToAddress(
         Uint8Array.from(pubKey)
       )
-      const bech32Addr = utils.formatBech32(
-        networkIDs.MainnetHRP,
-        addressBytes
-      )
+      const bech32Addr = utils.formatBech32(networkIDs.MainnetHRP, addressBytes)
 
       const coreEthAddr = `C-${bech32Addr}`
       expect(coreEthAddr).toMatch(/^C-avax1[a-z0-9]+$/)
@@ -190,10 +180,7 @@ describe('Offline address derivation validation', () => {
         networkIDs.MainnetHRP,
         mainnetBytes
       )
-      const testnetAddr = utils.formatBech32(
-        networkIDs.FujiHRP,
-        testnetBytes
-      )
+      const testnetAddr = utils.formatBech32(networkIDs.FujiHRP, testnetBytes)
 
       expect(mainnetAddr).toContain('avax1')
       expect(testnetAddr).toContain('fuji1')

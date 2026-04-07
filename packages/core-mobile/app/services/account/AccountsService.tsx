@@ -12,15 +12,7 @@ import {
   NetworkVMType,
   SolanaCaip2ChainId
 } from '@avalabs/core-chains-sdk'
-import {
-  AvalancheCaip2ChainId,
-  BITCOIN_NETWORK,
-  BitcoinCaip2ChainId,
-  BlockchainNamespace,
-  Network,
-  NetworkVMType,
-  SolanaCaip2ChainId
-} from '@avalabs/core-chains-sdk'
+
 import SeedlessService from 'seedless/services/SeedlessService'
 import { CoreAccountType } from '@avalabs/types'
 import { uuid } from 'utils/uuid'
@@ -36,12 +28,7 @@ import {
   NETWORK_SOLANA,
   NETWORK_X
 } from 'services/network/consts'
-import {
-  AVALANCHE_MAINNET_NETWORK,
-  NETWORK_P,
-  NETWORK_SOLANA,
-  NETWORK_X
-} from 'services/network/consts'
+
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import Logger from 'utils/Logger'
 import SentryService from 'services/sentry/SentryService'
@@ -467,9 +454,6 @@ class AccountsService {
     walletId: string
     walletType: WalletType
     startIndex: number
-    onAccountCreated?: (account: Account) => void
-    scanWindow?: number
-  }): Promise<AccountCollection> {
     onAccountCreated?: (account: Account) => void
     scanWindow?: number
   }): Promise<{ accounts: AccountCollection; completedCleanly: boolean }> {

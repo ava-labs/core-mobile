@@ -1,6 +1,5 @@
 import { AVM, EVM, PVM, VM } from '@avalabs/avalanchejs'
 import { Account, AccountCollection } from 'store/account/types'
-import { Account, AccountCollection } from 'store/account/types'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import WalletFactory from 'services/wallet/WalletFactory'
 import { WalletType } from 'services/wallet/types'
@@ -100,12 +99,8 @@ export const deriveMissingSeedlessSessionKeys = async (
 }
 
 export const discoverRemainingActiveAccounts = async ({
-export const discoverRemainingActiveAccounts = async ({
   walletId,
   walletType,
-  startIndex,
-  onAccountCreated,
-  scanWindow
   startIndex,
   onAccountCreated,
   scanWindow
@@ -118,21 +113,13 @@ export const discoverRemainingActiveAccounts = async ({
 }): Promise<{ accounts: AccountCollection; accountIds: string[] }> => {
   const toastId = uuid()
   const shouldShowToast = walletType !== WalletType.SEEDLESS
-  onAccountCreated?: (account: Account) => void
-  scanWindow?: number
-}): Promise<{ accounts: AccountCollection; accountIds: string[] }> => {
-  const toastId = uuid()
-  const shouldShowToast = walletType !== WalletType.SEEDLESS
 
-  if (shouldShowToast) {
-    transactionSnackbar.pending({ message: 'Adding accounts...', toastId })
-  }
   if (shouldShowToast) {
     transactionSnackbar.pending({ message: 'Adding accounts...', toastId })
   }
 
   try {
-    const accounts = await AccountsService.fetchRemainingActiveAccounts({
+    const { accounts } = await AccountsService.fetchRemainingActiveAccounts({
       walletId,
       walletType,
       startIndex,
@@ -182,7 +169,7 @@ export const migrateRemainingActiveAccounts = async ({
 }: {
   listenerApi: AppListenerEffectAPI
   walletId: string
-  walletType: WalletType.SEEDLESS | WalletType.MNEMONIC | WalletType.KEYSTONE
+  walletType: WalletType
   startIndex: number
   scanWindow?: number
 }): Promise<void> => {

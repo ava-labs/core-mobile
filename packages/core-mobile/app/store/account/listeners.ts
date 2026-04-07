@@ -6,7 +6,6 @@ import {
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { AnyAction } from '@reduxjs/toolkit'
 import { onAppUnlocked, onWalletImported } from 'store/app/slice'
-import { onAppUnlocked, onWalletImported } from 'store/app/slice'
 import { WalletType } from 'services/wallet/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
@@ -16,7 +15,6 @@ import {
   selectIsMigratingActiveAccounts,
   selectIsWalletLedger,
   selectSeedlessWallet,
-  selectWalletById,
   selectWallets,
   setIsMigratingActiveAccounts,
   setWalletName
@@ -505,14 +503,9 @@ export const addAccountListeners = (
   startListening({
     actionCreator: onWalletImported,
     effect: async (action, listenerApi) => {
-      const { walletId } = action.payload
-      const state = listenerApi.getState()
-      const wallet = selectWalletById(walletId)(state)
-
-      if (!wallet) {
-        Logger.error('Wallet not found in store after import')
-        return
-      }
+      // Read walletType from the action payload rather than the store
+      // to avoid a dependency on wallet already being persisted in Redux.
+      const { walletId, walletType } = action.payload
 
       // Load wallet secret to initialize keychain session for the new wallet.
       // This mirrors what initAccounts does on app restart (line 62) and is

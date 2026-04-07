@@ -1,8 +1,8 @@
+import { GetBalancesResponse } from 'utils/api/generated/balanceApi.client'
 import {
   getActiveAccountIndices,
   LedgerDerivedAccount
 } from '../../utils/discoverLedgerAccounts'
-import { GetBalancesResponse } from 'utils/api/generated/balanceApi.client'
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -78,7 +78,8 @@ function createAsyncGenerator<T>(items: T[]): AsyncGenerator<T> {
     throw: async () => ({ value: undefined as unknown as T, done: true }),
     [Symbol.asyncIterator]() {
       return this
-    }
+    },
+    async [Symbol.asyncDispose]() {}
   }
 }
 
@@ -127,7 +128,7 @@ const makeEvmResponse = (
     },
     currency: 'usd',
     error: null
-  }) as unknown as GetBalancesResponse
+  } as unknown as GetBalancesResponse)
 
 const makeBtcResponse = (
   address: string,
@@ -149,7 +150,7 @@ const makeBtcResponse = (
     },
     currency: 'usd',
     error: null
-  }) as unknown as GetBalancesResponse
+  } as unknown as GetBalancesResponse)
 
 const makeSvmResponse = (
   address: string,
@@ -171,7 +172,7 @@ const makeSvmResponse = (
     },
     currency: 'usd',
     error: null
-  }) as unknown as GetBalancesResponse
+  } as unknown as GetBalancesResponse)
 
 /**
  * Creates an Avalanche X-chain (avm) response keyed by `ledger-{index}` ID.
@@ -201,7 +202,7 @@ const makeAvmXpubResponse = (
     },
     currency: 'usd',
     error: null
-  }) as unknown as GetBalancesResponse
+  } as unknown as GetBalancesResponse)
 
 /**
  * Creates an Avalanche P-chain (pvm) response keyed by `ledger-{index}` ID.
@@ -235,7 +236,7 @@ const makePvmXpubResponse = (
     },
     currency: 'usd',
     error: null
-  }) as unknown as GetBalancesResponse
+  } as unknown as GetBalancesResponse)
 
 // ---------------------------------------------------------------------------
 // Integration Tests – Discovery Flow

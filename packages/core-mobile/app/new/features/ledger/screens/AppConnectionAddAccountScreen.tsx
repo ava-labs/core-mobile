@@ -83,8 +83,14 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
             walletId,
             accountId,
             keys: {
-              mainnet: keys.mainnet ?? { solanaKeys: [], avalancheKeys: undefined },
-              testnet: keys.testnet ?? { solanaKeys: [], avalancheKeys: undefined }
+              mainnet: keys.mainnet ?? {
+                solanaKeys: [],
+                avalancheKeys: undefined
+              },
+              testnet: keys.testnet ?? {
+                solanaKeys: [],
+                avalancheKeys: undefined
+              }
             }
           })
 

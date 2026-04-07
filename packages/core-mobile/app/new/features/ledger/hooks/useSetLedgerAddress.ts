@@ -103,22 +103,16 @@ export const useSetLedgerAddress = (): {
         ({ walletId, accountId, accountIndex, mainnetKeys, testnetKeys }) => {
           ledgerAddressMap[accountId] = {
             mainnet: {
-              addressBTC:
-                mainnetKeys?.avalancheKeys?.addresses.btc ?? '',
-              addressAVM:
-                mainnetKeys?.avalancheKeys?.addresses.avm ?? '',
-              addressPVM:
-                mainnetKeys?.avalancheKeys?.addresses.pvm ?? '',
+              addressBTC: mainnetKeys?.avalancheKeys?.addresses.btc ?? '',
+              addressAVM: mainnetKeys?.avalancheKeys?.addresses.avm ?? '',
+              addressPVM: mainnetKeys?.avalancheKeys?.addresses.pvm ?? '',
               addressCoreEth:
                 mainnetKeys?.avalancheKeys?.addresses.coreEth ?? ''
             },
             testnet: {
-              addressBTC:
-                testnetKeys?.avalancheKeys?.addresses.btc ?? '',
-              addressAVM:
-                testnetKeys?.avalancheKeys?.addresses.avm ?? '',
-              addressPVM:
-                testnetKeys?.avalancheKeys?.addresses.pvm ?? '',
+              addressBTC: testnetKeys?.avalancheKeys?.addresses.btc ?? '',
+              addressAVM: testnetKeys?.avalancheKeys?.addresses.avm ?? '',
+              addressPVM: testnetKeys?.avalancheKeys?.addresses.pvm ?? '',
               addressCoreEth:
                 testnetKeys?.avalancheKeys?.addresses.coreEth ?? ''
             },

@@ -539,7 +539,7 @@ describe('AccountsService', () => {
         )
         .mockResolvedValue('inactive')
 
-      const accounts = await AccountsService.fetchRemainingActiveAccounts({
+      const { accounts } = await AccountsService.fetchRemainingActiveAccounts({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
         startIndex: 1
@@ -597,7 +597,7 @@ describe('AccountsService', () => {
         })
       )
 
-      const accounts = await AccountsService.fetchRemainingActiveAccounts({
+      const { accounts } = await AccountsService.fetchRemainingActiveAccounts({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
         startIndex: 1
