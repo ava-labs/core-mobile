@@ -78,6 +78,25 @@ describe('useTokenLookup', () => {
       expect(checksummedKey).toEqual(lowercasedKey)
     })
 
+    it('deduplicates tokens with the same key before building queries', () => {
+      renderHook(() =>
+        useTokenLookup([
+          { internalId: 'NATIVE-avax' },
+          { internalId: 'native-avax' } // duplicate — different casing, same key
+        ])
+      )
+
+      expect(mockUseQueries).toHaveBeenCalledWith(
+        expect.objectContaining({
+          queries: [
+            expect.objectContaining({
+              queryKey: [ReactQueryKeys.TOKEN_LOOKUP, 'native-avax']
+            })
+          ]
+        })
+      )
+    })
+
     it('builds a separate query entry per token', () => {
       renderHook(() =>
         useTokenLookup([

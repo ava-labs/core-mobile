@@ -8,7 +8,8 @@ export const applyExchangeRateToTrendingTokens = (
 ): TrendingToken[] => {
   return trendingTokens.map(item => ({
     ...item,
-    price: (item.price ?? 0) * exchangeRate,
+    price:
+      typeof item.price === 'number' ? item.price * exchangeRate : item.price,
     marketcap:
       typeof item.marketcap === 'number'
         ? item.marketcap * exchangeRate

@@ -192,6 +192,7 @@ describe('applyExchangeRateToTrendingTokens', () => {
   it('leaves null/undefined numeric fields unchanged', () => {
     const token = {
       ...BASE_TOKEN,
+      price: null,
       volume24hUSD: null,
       marketcap: null,
       fdv: undefined,
@@ -199,6 +200,7 @@ describe('applyExchangeRateToTrendingTokens', () => {
     }
     const converted = applyExchangeRateToTrendingTokens([token], 0.85)
 
+    expect(converted[0]?.price).toBeNull()
     expect(converted[0]?.volume24hUSD).toBeNull()
     expect(converted[0]?.marketcap).toBeNull()
     expect(converted[0]?.fdv).toBeUndefined()

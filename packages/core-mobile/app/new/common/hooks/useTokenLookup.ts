@@ -16,8 +16,13 @@ const STALE_TIME = 60 * 1000 // 60 seconds
 export function useTokenLookup(
   tokens: Array<Caip2IdAddressPair | InternalId>
 ): { data: { [key: string]: TokenInfo }; isLoading: boolean } {
+  const uniqueTokens = tokens.filter(
+    (token, index, arr) =>
+      arr.findIndex(t => tokenToKey(t) === tokenToKey(token)) === index
+  )
+
   return useQueries({
-    queries: tokens.map(token => ({
+    queries: uniqueTokens.map(token => ({
       queryKey: [ReactQueryKeys.TOKEN_LOOKUP, tokenToKey(token)],
       queryFn: async () => {
         const response = await postV1TokenLookup({
