@@ -1,5 +1,4 @@
-import { useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQueries } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import {
   postV1TokenLookup,
@@ -12,26 +11,29 @@ import { tokenToKey } from './useTokensWithPrice'
 
 export type { TokenInfo }
 
-const STALE_TIME = 30 * 1000 // 30 seconds
+const STALE_TIME = 60 * 1000 // 60 seconds
 
 export function useTokenLookup(
   tokens: Array<Caip2IdAddressPair | InternalId>
 ): { data: { [key: string]: TokenInfo }; isLoading: boolean } {
-  const tokenKeys = useMemo(() => tokens.map(tokenToKey), [tokens])
-
-  const { data, isLoading } = useQuery({
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: [ReactQueryKeys.TOKEN_LOOKUP, tokenKeys],
-    queryFn: async () => {
-      const response = await postV1TokenLookup({
-        client: tokenAggregatorApi,
-        body: { tokens }
-      })
-      return response.data?.data ?? {}
-    },
-    enabled: tokens.length > 0,
-    staleTime: STALE_TIME
+  return useQueries({
+    queries: tokens.map(token => ({
+      queryKey: [ReactQueryKeys.TOKEN_LOOKUP, tokenToKey(token)],
+      queryFn: async () => {
+        const response = await postV1TokenLookup({
+          client: tokenAggregatorApi,
+          body: { tokens: [token] }
+        })
+        return response.data?.data ?? {}
+      },
+      staleTime: STALE_TIME
+    })),
+    combine: results => ({
+      data: results.reduce<{ [key: string]: TokenInfo }>(
+        (acc, result) => ({ ...acc, ...result.data }),
+        {}
+      ),
+      isLoading: results.some(r => r.isLoading)
+    })
   })
-
-  return { data: data ?? {}, isLoading }
 }
