@@ -349,7 +349,7 @@ describe('LedgerService', () => {
     )
 
     const deniedPermissions = makePermissionResult(
-      PermissionsAndroid.RESULTS.DENIED
+      PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN
     )
 
     const mockTransport = {
@@ -416,7 +416,10 @@ describe('LedgerService', () => {
         await LedgerService.startDeviceScanning()
         throw new Error('Expected startDeviceScanning to fail')
       } catch (error) {
-        expect(isLedgerBluetoothError(error) && error.code === LEDGER_ERROR_CODES.BLUETOOTH_PERMISSION).toBe(true)
+        expect(
+          isLedgerBluetoothError(error) &&
+            error.code === LEDGER_ERROR_CODES.BLUETOOTH_PERMISSION
+        ).toBe(true)
       }
 
       expect(transportBLEMock.listen).not.toHaveBeenCalled()
@@ -463,7 +466,10 @@ describe('LedgerService', () => {
         expect((error as Error).message).toBe(
           'Bluetooth permissions are required to connect to Ledger devices.'
         )
-        expect(isLedgerBluetoothError(error) && error.code === LEDGER_ERROR_CODES.BLUETOOTH_PERMISSION).toBe(true)
+        expect(
+          isLedgerBluetoothError(error) &&
+            error.code === LEDGER_ERROR_CODES.BLUETOOTH_PERMISSION
+        ).toBe(true)
       }
 
       expect(transportBLEMock.open).not.toHaveBeenCalled()

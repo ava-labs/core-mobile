@@ -4,11 +4,9 @@ import BluetoothService from 'services/bluetooth/BluetoothService'
 import { BluetoothState } from 'services/bluetooth/types'
 
 interface UseBluetoothReturn {
-  /** Bluetooth is available and ready to use (permissions granted, radio on, and initialized) */
-  isBluetoothReady: boolean
   /** Radio is on and the app has permission — safe to scan/connect */
   isBluetoothOnAndPermissionGranted: boolean
-  /** Radio is on — safe to scan/connect for android to request permissions*/
+  /** Radio is on — safe to scan/connect, but may need to request permissions */
   isBluetoothAvailable: boolean
   /** User must open Settings to fix (radio off, app permission denied/unauthorized) */
   isBluetoothBlocked: boolean
@@ -18,37 +16,35 @@ interface UseBluetoothReturn {
   bluetoothState: BluetoothState
   /** Open Bluetooth system settings or app settings */
   openSettings: () => void
+  // Request Bluetooth permissions
+  requestPermissions: () => Promise<boolean>
 }
 
-// iOS: tracks permission state on mount and foreground resume.
-// Safe to call check(PERMISSIONS.IOS.BLUETOOTH) here — it never shows a dialog,
-// so AppState changes won't cause an infinite loop.
-
-// Android: tracks permission state without showing dialogs.
+// tracks permission state without showing dialogs.
 // Permission prompts are triggered elsewhere via the async permission-request flow.
 // AppState listener uses check-only to detect grants made in Settings or after an explicit request.
 function useBluetoothPermission(): boolean {
   const [isPermissionGranted, setIsPermissionGranted] = useState(false)
 
   useEffect(() => {
-    const checkPermission = async (): Promise<void> => {
-      const granted = await (Platform.OS === 'ios'
-        ? BluetoothService.requestPermissionsAsync()
-        : BluetoothService.checkAndroidPermissionsGranted())
+    const checkAndRequestPermissions = async (): Promise<void> => {
+      const granted = await BluetoothService.requestPermissions()
       setIsPermissionGranted(granted)
     }
 
-    checkPermission()
+    checkAndRequestPermissions()
 
     const appStateRef = { current: AppState.currentState }
-    const subscription = AppState.addEventListener('change', nextState => {
-      // this is a treatment for android only, otherwise android will trigger checkPermission infinitely.
-      // for iOS, simply checking nextState === 'active' is enough
-      if (appStateRef.current !== 'active' && nextState === 'active') {
-        checkPermission()
+    const subscription = AppState.addEventListener(
+      'change',
+      async nextState => {
+        if (nextState === 'active') {
+          const granted = await BluetoothService.checkPermissions()
+          setIsPermissionGranted(granted)
+        }
+        appStateRef.current = nextState
       }
-      appStateRef.current = nextState
-    })
+    )
 
     return () => subscription.remove()
   }, [])
@@ -78,7 +74,7 @@ export function useBluetooth(): UseBluetoothReturn {
   // Re-check BT state when app comes to foreground (e.g. user enabled BT in Settings)
   useEffect(() => {
     const recheckState = async (): Promise<void> => {
-      const state = await BluetoothService.getBluetoothStateAsync()
+      const state = await BluetoothService.getBluetoothState()
       setBluetoothState(state)
     }
 
@@ -95,15 +91,10 @@ export function useBluetooth(): UseBluetoothReturn {
     bluetoothState === BluetoothState.UNSUPPORTED ||
     !isPermissionGranted
 
-  const isBluetoothAvailable =
-    bluetoothState === BluetoothState.POWERED_ON && isPermissionGranted
+  const isBluetoothAvailable = bluetoothState === BluetoothState.POWERED_ON
 
   const isBluetoothOnAndPermissionGranted =
     isBluetoothAvailable && isPermissionGranted
-
-  const isBluetoothReady =
-    (isBluetoothAvailable && Platform.OS === 'android') ||
-    (isBluetoothOnAndPermissionGranted && Platform.OS === 'ios')
 
   const isInitializingBluetooth =
     bluetoothState === BluetoothState.UNKNOWN ||
@@ -116,13 +107,17 @@ export function useBluetooth(): UseBluetoothReturn {
     )
   }, [bluetoothState])
 
+  const requestPermissions = useCallback(async (): Promise<boolean> => {
+    return BluetoothService.requestPermissions()
+  }, [])
+
   return {
-    isBluetoothReady,
     isBluetoothOnAndPermissionGranted,
     isBluetoothAvailable,
     isBluetoothBlocked,
     isInitializingBluetooth,
     bluetoothState,
-    openSettings
+    openSettings,
+    requestPermissions
   }
 }

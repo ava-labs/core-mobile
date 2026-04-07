@@ -36,8 +36,12 @@ export default function DeviceConnectionScreen({
   // Local device management
   const [devices, setDevices] = useState<LedgerDevice[]>([])
   const [isScanning, setIsScanning] = useState(false)
-  const { isBluetoothReady, isInitializingBluetooth, openSettings } =
-    useBluetooth()
+  const {
+    isBluetoothOnAndPermissionGranted,
+    isInitializingBluetooth,
+    isBluetoothAvailable,
+    openSettings
+  } = useBluetooth()
 
   // Set up device listener for LedgerService
   useEffect(() => {
@@ -121,7 +125,7 @@ export default function DeviceConnectionScreen({
   }, [resetSetup, back])
 
   const renderBluetoothPermissionError = useCallback(() => {
-    if (isBluetoothReady) return null
+    if (isBluetoothOnAndPermissionGranted) return null
     return (
       <View style={{ gap: 12, marginTop: 4, paddingRight: 16 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -143,7 +147,7 @@ export default function DeviceConnectionScreen({
         </Button>
       </View>
     )
-  }, [isBluetoothReady, colors, openSettings])
+  }, [isBluetoothOnAndPermissionGranted, colors, openSettings])
 
   const renderFooter = useCallback(() => {
     return (
@@ -153,7 +157,7 @@ export default function DeviceConnectionScreen({
             type="primary"
             size="large"
             onPress={scanForDevices}
-            disabled={!isBluetoothReady || isInitializingBluetooth}>
+            disabled={!isBluetoothAvailable || isInitializingBluetooth}>
             Scan for Device
           </Button>
         )}
@@ -181,7 +185,7 @@ export default function DeviceConnectionScreen({
     devices.length,
     colors.$textPrimary,
     handleCancel,
-    isBluetoothReady,
+    isBluetoothAvailable,
     isInitializingBluetooth
   ])
 

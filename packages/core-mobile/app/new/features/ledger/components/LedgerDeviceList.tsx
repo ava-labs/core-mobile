@@ -39,8 +39,8 @@ export const LedgerDeviceList: React.FC<LedgerDeviceListProps> = ({
   const {
     theme: { colors }
   } = useTheme()
-  const { isBluetoothReady } = useBluetooth()
-  const isDisabled = isConnecting || !isBluetoothReady
+  const { isBluetoothOnAndPermissionGranted } = useBluetooth()
+  const isDisabled = isConnecting || !isBluetoothOnAndPermissionGranted
 
   const deviceListData: GroupListItem[] = useMemo(
     () =>

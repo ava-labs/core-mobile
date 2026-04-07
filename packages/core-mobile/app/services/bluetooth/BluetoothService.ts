@@ -1,25 +1,11 @@
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import { Linking, PermissionsAndroid, Platform } from 'react-native'
-import { check, PERMISSIONS, RESULTS } from 'react-native-permissions'
+import { request, PERMISSIONS, RESULTS, check } from 'react-native-permissions'
 import Logger from 'utils/Logger'
 import { BluetoothAvailability, BluetoothState } from './types'
+import { ANDROID_PERMISSIONS } from './consts'
 
 export class BluetoothService {
-  async requestPermissionsAsync(): Promise<boolean> {
-    if (Platform.OS === 'android') {
-      return this.requestAndroidPermissions()
-    }
-    if (Platform.OS === 'ios') {
-      try {
-        const status = await check(PERMISSIONS.IOS.BLUETOOTH)
-        if (status === RESULTS.BLOCKED) return false
-      } catch (err) {
-        Logger.error('BluetoothService: iOS permission check failed', err)
-      }
-    }
-    return true
-  }
-
   observeBluetoothState(onChange: (state: BluetoothState) => void): {
     unsubscribe: () => void
   } {
@@ -30,7 +16,7 @@ export class BluetoothService {
     })
   }
 
-  async getBluetoothStateAsync(): Promise<BluetoothState> {
+  async getBluetoothState(): Promise<BluetoothState> {
     return new Promise(resolve => {
       const sub = this.observeBluetoothState(state => {
         resolve(state)
@@ -44,30 +30,89 @@ export class BluetoothService {
 
   async ensureBluetoothAvailable(): Promise<BluetoothAvailability> {
     const [state, hasPermission] = await Promise.all([
-      this.getBluetoothStateAsync(),
-      this.requestPermissionsAsync()
+      this.getBluetoothState(),
+      this.requestPermissions()
     ])
     return { hasPermission, state }
+  }
+
+  async checkIosPermissions(): Promise<boolean> {
+    try {
+      const status = await check(PERMISSIONS.IOS.BLUETOOTH)
+      return !(status === RESULTS.BLOCKED)
+    } catch (err) {
+      Logger.error('BluetoothService: iOS permission check failed', err)
+      return false
+    }
   }
 
   // Check-only variant — never shows a dialog, safe to call from AppState listeners.
   // requestAndroidPermissions shows a system dialog which itself triggers AppState
   // changes, causing an infinite loop if called from within an AppState listener.
-  async checkAndroidPermissionsGranted(): Promise<boolean> {
+  async checkAndroidPermissions(): Promise<boolean[]> {
     try {
-      const permissions = [
-        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-        PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-      ].filter(Boolean)
-      const results = await Promise.all(
-        permissions.map(p => PermissionsAndroid.check(p))
+      return await Promise.all(
+        ANDROID_PERMISSIONS.map(p => PermissionsAndroid.check(p))
       )
-      return results.every(Boolean)
     } catch (err) {
       Logger.error('BluetoothService: checkAndroidPermissions failed', err)
+      return [false, false, false]
+    }
+  }
+
+  private async requestIOSPermissions(): Promise<boolean> {
+    try {
+      const checkResult = await check(PERMISSIONS.IOS.BLUETOOTH)
+      if (checkResult === RESULTS.GRANTED || checkResult === RESULTS.LIMITED) {
+        return true
+      }
+      if (checkResult === RESULTS.BLOCKED) {
+        return false
+      }
+      const status = await request(PERMISSIONS.IOS.BLUETOOTH)
+      Logger.info('BluetoothService: iOS Bluetooth permission request result', {
+        status
+      })
+      return !(status === RESULTS.BLOCKED)
+    } catch (err) {
+      Logger.error('BluetoothService: requestIOSPermissions failed', err)
       return false
     }
+  }
+
+  private async requestAndroidPermissions(): Promise<boolean> {
+    try {
+      const checks = await this.checkAndroidPermissions()
+
+      if (checks.every(Boolean)) return true
+
+      const missing = ANDROID_PERMISSIONS.filter((_, i) => !checks[i])
+      const granted = await PermissionsAndroid.requestMultiple(missing)
+
+      return missing.every(
+        p =>
+          granted[p] === PermissionsAndroid.RESULTS.GRANTED ||
+          granted[p] === PermissionsAndroid.RESULTS.DENIED // treat "denied" as granted for our purposes since it just means "ask me again next time" rather than "never ask again"
+      )
+    } catch (err) {
+      Logger.error('BluetoothService: requestAndroidPermissions failed', err)
+      return false
+    }
+  }
+
+  async checkPermissions(): Promise<boolean> {
+    if (Platform.OS === 'android') {
+      const checks = await this.checkAndroidPermissions()
+      return checks.every(Boolean)
+    }
+    return await this.checkIosPermissions()
+  }
+
+  async requestPermissions(): Promise<boolean> {
+    if (Platform.OS === 'android') {
+      return await this.requestAndroidPermissions()
+    }
+    return await this.requestIOSPermissions()
   }
 
   openSystemBluetoothSettings(platform: 'android' | 'ios'): void {
@@ -77,31 +122,6 @@ export class BluetoothService {
       )
     } else if (platform === 'ios') {
       Linking.openURL('App-Prefs:Bluetooth').catch(Logger.error)
-    }
-  }
-
-  private async requestAndroidPermissions(): Promise<boolean> {
-    try {
-      const permissions = [
-        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-        PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-      ].filter(Boolean)
-
-      const checks = await Promise.all(
-        permissions.map(p => PermissionsAndroid.check(p))
-      )
-      if (checks.every(Boolean)) return true
-
-      const missing = permissions.filter((_, i) => !checks[i])
-      const granted = await PermissionsAndroid.requestMultiple(missing)
-
-      return missing.every(
-        p => granted[p] === PermissionsAndroid.RESULTS.GRANTED
-      )
-    } catch (err) {
-      Logger.error('BluetoothService: requestAndroidPermissions failed', err)
-      return false
     }
   }
 

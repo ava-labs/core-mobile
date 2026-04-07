@@ -7,6 +7,12 @@ export enum BluetoothState {
   UNKNOWN = 'Unknown'
 }
 
+export enum BluetoothPermissionStatus {
+  GRANTED = 'granted',
+  DENIED = 'denied',
+  BLOCKED = 'blocked',
+  UNAVAILABLE = 'unavailable'
+}
 export interface BluetoothAvailability {
   /** Whether the OS has granted Bluetooth permission to this app */
   hasPermission: boolean

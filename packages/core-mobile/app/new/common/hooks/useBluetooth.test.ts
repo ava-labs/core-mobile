@@ -151,7 +151,7 @@ describe('useBluetooth', () => {
         await new Promise(resolve => setTimeout(resolve, 0))
       })
 
-      expect(result.current.isBluetoothAvailable).toBe(false)
+      expect(result.current.isBluetoothOnAndPermissionGranted).toBe(false)
     })
 
     it('is false when permission is granted but radio is off', async () => {
@@ -316,7 +316,7 @@ describe('useBluetooth', () => {
         await new Promise(resolve => setTimeout(resolve, 0))
       })
 
-      expect(result.current.isBluetoothAvailable).toBe(false)
+      expect(result.current.isBluetoothOnAndPermissionGranted).toBe(false)
 
       // User grants permission in Settings and returns to the app
       mockCheck.mockResolvedValue(RESULTS.GRANTED)
@@ -360,7 +360,7 @@ describe('useBluetooth', () => {
         await new Promise(resolve => setTimeout(resolve, 0))
       })
 
-      expect(result.current.isBluetoothAvailable).toBe(false)
+      expect(result.current.isBluetoothOnAndPermissionGranted).toBe(false)
     })
 
     it('re-checks Android permissions when the app returns to the foreground', async () => {
@@ -372,7 +372,7 @@ describe('useBluetooth', () => {
         await new Promise(resolve => setTimeout(resolve, 0))
       })
 
-      expect(result.current.isBluetoothAvailable).toBe(false)
+      expect(result.current.isBluetoothOnAndPermissionGranted).toBe(false)
 
       // User grants in Settings and returns
       jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(true as never)

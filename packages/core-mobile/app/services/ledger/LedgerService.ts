@@ -100,7 +100,6 @@ class LedgerService {
   // Wrap transport's exchange method to automatically handle busy state
   private wrapTransportExchange(): void {
     if (!this.#transport) return
-
     const originalExchange = this.#transport.exchange.bind(this.#transport)
 
     // Replace exchange method with wrapped version
@@ -109,7 +108,6 @@ class LedgerService {
       if (this.#transport?.exchangeBusyPromise) {
         await new Promise(res => setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY))
       }
-
       try {
         return await originalExchange(apdu)
       } catch (error) {
@@ -135,9 +133,10 @@ class LedgerService {
     }
   }
 
-  private async assertBluetoothAvailable(): Promise<void> {
+  async assertBluetoothAvailable(): Promise<void> {
     const { hasPermission, state } =
       await BluetoothService.ensureBluetoothAvailable()
+
     if (!hasPermission || state === BluetoothState.UNAUTHORIZED) {
       throw ledgerBluetoothErrors.permissionDenied()
     }
@@ -160,7 +159,6 @@ class LedgerService {
     try {
       Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
       await this.assertBluetoothAvailable()
-
       this.isDisconnected = false // Reset disconnect flag on new connection
       // Use a longer timeout for connection
       await TransportBLE.disconnectDevice(deviceId)
@@ -584,7 +582,6 @@ class LedgerService {
     // Create Avalanche app instance
     const avalancheApp = new AppAvalanche(this.transport as Transport)
     Logger.info('Avalanche app instance created')
-
     try {
       // Get EVM extended public key (m/44'/60'/0')
       Logger.info('Getting EVM extended public key...')

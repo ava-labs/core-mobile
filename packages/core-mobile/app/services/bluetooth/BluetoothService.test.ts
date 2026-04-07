@@ -84,7 +84,7 @@ const originalPlatformOS = Platform.OS
 // requestPermissionsAsync
 // ---------------------------------------------------------------------------
 
-describe('requestPermissionsAsync', () => {
+describe('requestPermissions', () => {
   afterEach(() => {
     Object.defineProperty(Platform, 'OS', {
       configurable: true,
@@ -107,7 +107,7 @@ describe('requestPermissionsAsync', () => {
     it('returns true when all permissions are already granted', async () => {
       jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(true as never)
 
-      const result = await BluetoothService.requestPermissionsAsync()
+      const result = await BluetoothService.requestPermissions()
 
       expect(result).toBe(true)
       expect(PermissionsAndroid.requestMultiple).not.toHaveBeenCalled()
@@ -129,12 +129,12 @@ describe('requestPermissionsAsync', () => {
           ) as never
         )
 
-      const result = await BluetoothService.requestPermissionsAsync()
+      const result = await BluetoothService.requestPermissions()
 
       expect(result).toBe(true)
     })
 
-    it('returns false when any permission is denied after request', async () => {
+    it('returns false when any permission is permanently denied (never ask again)', async () => {
       jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
       jest
         .spyOn(PermissionsAndroid, 'requestMultiple')
@@ -149,13 +149,13 @@ describe('requestPermissionsAsync', () => {
               .map((p, i) => [
                 p,
                 i === 0
-                  ? PermissionsAndroid.RESULTS.DENIED
+                  ? PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN
                   : PermissionsAndroid.RESULTS.GRANTED
               ])
           ) as never
         )
 
-      const result = await BluetoothService.requestPermissionsAsync()
+      const result = await BluetoothService.requestPermissions()
 
       expect(result).toBe(false)
     })
@@ -165,7 +165,7 @@ describe('requestPermissionsAsync', () => {
         .spyOn(PermissionsAndroid, 'check')
         .mockRejectedValue(new Error('permission check failed') as never)
 
-      const result = await BluetoothService.requestPermissionsAsync()
+      const result = await BluetoothService.requestPermissions()
 
       expect(result).toBe(false)
     })
@@ -182,7 +182,7 @@ describe('requestPermissionsAsync', () => {
     it('returns false when Bluetooth permission is blocked', async () => {
       mockCheck.mockResolvedValue(RESULTS.BLOCKED)
 
-      const result = await BluetoothService.requestPermissionsAsync()
+      const result = await BluetoothService.requestPermissions()
 
       expect(result).toBe(false)
     })
@@ -190,17 +190,17 @@ describe('requestPermissionsAsync', () => {
     it('returns true when Bluetooth permission is granted', async () => {
       mockCheck.mockResolvedValue(RESULTS.GRANTED)
 
-      const result = await BluetoothService.requestPermissionsAsync()
+      const result = await BluetoothService.requestPermissions()
 
       expect(result).toBe(true)
     })
 
-    it('returns true (optimistic) when check throws — delegates to CoreBluetooth', async () => {
+    it('returns false when check throws', async () => {
       mockCheck.mockRejectedValue(new Error('permission api unavailable'))
 
-      const result = await BluetoothService.requestPermissionsAsync()
+      const result = await BluetoothService.requestPermissions()
 
-      expect(result).toBe(true)
+      expect(result).toBe(false)
     })
   })
 })
@@ -209,7 +209,7 @@ describe('requestPermissionsAsync', () => {
 // getBluetoothStateAsync
 // ---------------------------------------------------------------------------
 
-describe('getBluetoothStateAsync', () => {
+describe('getBluetoothState', () => {
   afterEach(() => jest.clearAllMocks())
 
   it.each([
@@ -220,13 +220,13 @@ describe('getBluetoothStateAsync', () => {
   ])('resolves with %s when observeState emits it', async state => {
     setupObserveState(state)
 
-    await expect(BluetoothService.getBluetoothStateAsync()).resolves.toBe(state)
+    await expect(BluetoothService.getBluetoothState()).resolves.toBe(state)
   })
 
   it('resolves with UNKNOWN when observeState fires the error callback', async () => {
     setupObserveStateError()
 
-    await expect(BluetoothService.getBluetoothStateAsync()).resolves.toBe(
+    await expect(BluetoothService.getBluetoothState()).resolves.toBe(
       BluetoothState.UNKNOWN
     )
   })
