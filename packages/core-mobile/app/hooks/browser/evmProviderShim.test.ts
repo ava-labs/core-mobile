@@ -53,9 +53,17 @@ describe('buildEvmProviderShim', () => {
   })
 
   describe('pre-connected state', () => {
-    it('sets _connected to true when address is provided', () => {
+    it('always returns true from isConnected (EIP-1193: network connectivity, not account auth)', () => {
       const shim = buildEvmProviderShim(defaultParams)
-      expect(shim).toContain('var _connected = !!_address')
+      expect(shim).toContain('_isConnected: true')
+    })
+
+    it('stays true even when address is empty', () => {
+      const shim = buildEvmProviderShim({
+        ...defaultParams,
+        address: ''
+      })
+      expect(shim).toContain('_isConnected: true')
     })
 
     it('initializes _accounts from _address', () => {
@@ -75,12 +83,12 @@ describe('buildEvmProviderShim', () => {
       expect(shim).toContain('isMetaMask: true')
     })
 
-    it('sets isCore flag', () => {
-      expect(shim).toContain('isCore: true')
+    it('sets isAvalanche flag (prevents wagmi MetaMask connector from claiming our provider)', () => {
+      expect(shim).toContain('isAvalanche: true')
     })
 
-    it('sets isAvalanche flag', () => {
-      expect(shim).toContain('isAvalanche: true')
+    it('sets isCore flag on window.core namespace', () => {
+      expect(shim).toContain('isCore: true')
     })
 
     it('implements request method', () => {
@@ -89,6 +97,11 @@ describe('buildEvmProviderShim', () => {
 
     it('implements isConnected method', () => {
       expect(shim).toContain('isConnected: function()')
+    })
+
+    it('provides _metamask.isUnlocked() for wagmi compatibility', () => {
+      expect(shim).toContain('_metamask:')
+      expect(shim).toContain('isUnlocked: function()')
     })
   })
 
@@ -106,7 +119,8 @@ describe('buildEvmProviderShim', () => {
       'eth_coinbase',
       'eth_requestAccounts',
       'wallet_requestPermissions',
-      'wallet_getPermissions'
+      'wallet_getPermissions',
+      'wallet_revokePermissions'
     ])('handles %s locally', method => {
       expect(shim).toContain(`method === '${method}'`)
     })
@@ -143,12 +157,32 @@ describe('buildEvmProviderShim', () => {
       expect(shim).toContain('on: function(event, fn)')
     })
 
+    it('implements addListener()', () => {
+      expect(shim).toContain('addListener: function(event, fn)')
+    })
+
+    it('implements once()', () => {
+      expect(shim).toContain('once: function(event, fn)')
+    })
+
     it('implements removeListener()', () => {
       expect(shim).toContain('removeListener: function(event, fn)')
     })
 
+    it('implements off()', () => {
+      expect(shim).toContain('off: function(event, fn)')
+    })
+
     it('implements removeAllListeners()', () => {
       expect(shim).toContain('removeAllListeners: function(event)')
+    })
+
+    it('implements listenerCount()', () => {
+      expect(shim).toContain('listenerCount: function(event)')
+    })
+
+    it('implements listeners()', () => {
+      expect(shim).toContain('listeners: function(event)')
     })
   })
 
@@ -199,12 +233,35 @@ describe('buildEvmProviderShim', () => {
       expect(shim).toContain("rdns: 'app.core.mobile'")
     })
 
-    it('sets provider name to Core', () => {
-      expect(shim).toContain("name: 'Core'")
+    it('sets provider name to Core Mobile', () => {
+      expect(shim).toContain("name: 'Core Mobile'")
     })
 
     it('includes a base64 SVG icon', () => {
       expect(shim).toContain("icon: 'data:image/svg+xml;base64,")
+    })
+
+    it('freezes providerInfo per EIP-6963 spec', () => {
+      expect(shim).toContain('var providerInfo = Object.freeze(')
+    })
+
+    it('freezes _providerDetail per EIP-6963 spec', () => {
+      expect(shim).toContain('var _providerDetail = Object.freeze(')
+    })
+
+    it('re-announces on DOMContentLoaded and load events', () => {
+      expect(shim).toContain(
+        "document.addEventListener('DOMContentLoaded', announceProvider)"
+      )
+      expect(shim).toContain(
+        "window.addEventListener('load', announceProvider)"
+      )
+    })
+
+    it('uses staggered timeouts for late-initialising libraries', () => {
+      expect(shim).toContain('setTimeout(announceProvider, 100)')
+      expect(shim).toContain('setTimeout(announceProvider, 1000)')
+      expect(shim).toContain('setTimeout(announceProvider, 3000)')
     })
   })
 
@@ -274,10 +331,42 @@ describe('buildEvmProviderShim', () => {
     })
   })
 
-  describe('legacy event dispatch', () => {
+  describe('legacy event dispatch & initial connect', () => {
     it('dispatches ethereum#initialized event', () => {
       const shim = buildEvmProviderShim(defaultParams)
       expect(shim).toContain("new Event('ethereum#initialized')")
+    })
+
+    it('emits EIP-1193 connect event once at initialisation', () => {
+      const shim = buildEvmProviderShim(defaultParams)
+      expect(shim).toContain("emit('connect', { chainId: _chainId })")
+    })
+  })
+
+  describe('desktop user-agent override (deferred)', () => {
+    let shim: string
+
+    beforeAll(() => {
+      shim = buildEvmProviderShim(defaultParams)
+    })
+
+    it('overrides navigator.userAgent via Object.defineProperty', () => {
+      expect(shim).toContain("Object.defineProperty(navigator, 'userAgent'")
+    })
+
+    it('uses a desktop Chrome user-agent string', () => {
+      expect(shim).toContain('Macintosh; Intel Mac OS X')
+      expect(shim).toContain('Chrome/')
+    })
+
+    it('defers the override until after page load', () => {
+      expect(shim).toContain("window.addEventListener('load'")
+      expect(shim).toContain('_applyDesktopUA')
+      expect(shim).toContain('_uaOverridden')
+    })
+
+    it('has a fallback timeout for pages that do not fire load', () => {
+      expect(shim).toContain('setTimeout(_applyDesktopUA, 4000)')
     })
   })
 

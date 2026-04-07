@@ -11,6 +11,8 @@ import React, { useCallback, useRef, useState } from 'react'
 import {
   LayoutChangeEvent,
   LayoutRectangle,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   Platform,
   StyleProp,
   View,
@@ -84,6 +86,8 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   headerCenterOverlay?: React.ReactNode
   /** TestID for the screen */
   testID?: string
+  /** Called when the scroll position reaches the end of the content */
+  onScrolledToEnd?: (reachedEnd: boolean) => void
 }
 
 const KeyboardScrollView = Animated.createAnimatedComponent(
@@ -108,10 +112,69 @@ export const ScrollScreen = ({
   renderHeader,
   renderFooter,
   renderHeaderRight,
+  onScrolledToEnd,
   ...props
 }: ScrollScreenProps): JSX.Element => {
   const insets = useSafeAreaInsets()
   const headerHeight = useEffectiveHeaderHeight()
+
+  // scroll to end tracking
+  const scrollContentHeight = useRef(0)
+  const scrollViewHeight = useRef(0)
+  const hasReachedEndRef = useRef(false)
+
+  const SCROLL_END_THRESHOLD = 20
+
+  const checkScrolledToEnd = useCallback(
+    (contentOffsetY: number) => {
+      if (!onScrolledToEnd || hasReachedEndRef.current) return
+
+      const maxScroll = scrollContentHeight.current - scrollViewHeight.current
+      const isAtEnd =
+        maxScroll <= 0 || contentOffsetY >= maxScroll - SCROLL_END_THRESHOLD
+
+      if (isAtEnd) {
+        hasReachedEndRef.current = true
+        onScrolledToEnd(true)
+      }
+    },
+    [onScrolledToEnd]
+  )
+
+  const checkScrollableAfterLayout = useCallback(() => {
+    if (!onScrolledToEnd) return
+
+    const maxScroll = scrollContentHeight.current - scrollViewHeight.current
+    if (maxScroll <= 0 && scrollContentHeight.current > 0) {
+      // content doesn't require scroll
+      hasReachedEndRef.current = true
+      onScrolledToEnd(true)
+    }
+  }, [onScrolledToEnd])
+
+  const handleContentSizeChange = useCallback(
+    (_w: number, h: number) => {
+      const prevHeight = scrollContentHeight.current
+      scrollContentHeight.current = h
+
+      if (!onScrolledToEnd) return
+
+      if (Math.abs(h - prevHeight) > 1) {
+        hasReachedEndRef.current = false
+        onScrolledToEnd(false)
+        checkScrollableAfterLayout()
+      }
+    },
+    [onScrolledToEnd, checkScrollableAfterLayout]
+  )
+
+  const handleScrollViewLayout = useCallback(
+    (e: LayoutChangeEvent) => {
+      scrollViewHeight.current = e.nativeEvent.layout.height
+      checkScrollableAfterLayout()
+    },
+    [checkScrollableAfterLayout]
+  )
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -122,16 +185,42 @@ export const ScrollScreen = ({
 
   const headerRef = useRef<View>(null)
 
-  const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
-    {
-      header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
-      targetLayout: headerLayout,
-      shouldHeaderHaveGrabber: isModal,
-      hasParent,
-      hideHeaderBackground,
-      renderHeaderRight,
-      showNavigationHeaderTitle
-    }
+  const {
+    onScroll: onFadingScroll,
+    scrollY,
+    targetHiddenProgress
+  } = useFadingHeaderNavigation({
+    header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
+    targetLayout: headerLayout,
+    shouldHeaderHaveGrabber: isModal,
+    hasParent,
+    hideHeaderBackground,
+    renderHeaderRight,
+    showNavigationHeaderTitle
+  })
+
+  const onScroll = useCallback(
+    (
+      event:
+        | NativeSyntheticEvent<NativeScrollEvent>
+        | NativeScrollEvent
+        | number
+    ) => {
+      onFadingScroll(event)
+
+      if (onScrolledToEnd) {
+        let offsetY = 0
+        if (typeof event === 'number') {
+          offsetY = event
+        } else if ('nativeEvent' in event) {
+          offsetY = event.nativeEvent.contentOffset.y
+        } else {
+          offsetY = event.contentOffset.y
+        }
+        checkScrolledToEnd(offsetY)
+      }
+    },
+    [onFadingScroll, onScrolledToEnd, checkScrolledToEnd]
   )
 
   const animatedHeaderStyle = useAnimatedStyle(() => {
@@ -352,7 +441,11 @@ export const ScrollScreen = ({
               paddingTop: headerHeight
             }
           ]}
-          onScroll={onScroll}>
+          onScroll={onScroll}
+          onContentSizeChange={
+            onScrolledToEnd ? handleContentSizeChange : undefined
+          }
+          onLayout={onScrolledToEnd ? handleScrollViewLayout : undefined}>
           {renderHeaderContent()}
           {children}
         </KeyboardScrollView>
@@ -383,7 +476,11 @@ export const ScrollScreen = ({
             paddingTop: headerHeight
           }
         ]}
-        onScroll={onScroll}>
+        onScroll={onScroll}
+        onContentSizeChange={
+          onScrolledToEnd ? handleContentSizeChange : undefined
+        }
+        onLayout={onScrolledToEnd ? handleScrollViewLayout : undefined}>
         {renderHeaderContent()}
         {children}
       </ScrollView>

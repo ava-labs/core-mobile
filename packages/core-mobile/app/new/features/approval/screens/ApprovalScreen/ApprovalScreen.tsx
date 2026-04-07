@@ -14,6 +14,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { useGasless } from 'hooks/useGasless'
 import { useSpendLimits } from 'hooks/useSpendLimits'
 import { ActionSheet } from 'new/common/components/ActionSheet'
+import { AlertBody } from 'new/features/approval/components/AlertBody'
 import { TokenLogo } from 'new/common/components/TokenLogo'
 import { Warning } from 'new/common/components/Warning'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
@@ -432,9 +433,17 @@ const ApprovalScreen = ({
       }
     : undefined
 
+  const renderAlertBody = useCallback((): JSX.Element | null => {
+    const body = displayData.alert?.details.body
+    if (!body || body.length === 0) return null
+
+    return <AlertBody reasons={body} />
+  }, [displayData.alert?.details.body])
+
   return (
     <ActionSheet
       isModal
+      requireScrollToConfirm
       title={displayData.dAppInfo ? undefined : displayData.title}
       navigationTitle={
         displayData.dAppInfo ? displayData?.dAppInfo?.name : displayData.title
@@ -460,6 +469,7 @@ const ApprovalScreen = ({
       {renderAccountAndNetwork()}
       {renderDetails()}
       {renderNetworkFeeSelectorWithGasless()}
+      {renderAlertBody()}
     </ActionSheet>
   )
 }
