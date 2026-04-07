@@ -29,6 +29,11 @@ export type RepaySelectAmountFormBaseProps = {
    */
   balance: TokenUnit
   formatInCurrency: (amt: TokenUnit, symbol: string) => string
+  /**
+   * `isMaxRepay` is true only when wallet balance exceeds debt and the user is
+   * repaying the full debt amount (Aave/Benqi: MAX_UINT256 clears accrued interest).
+   * If balance ≤ debt, always exact `amount`.
+   */
   submit: (params: {
     amount: TokenUnit
     isMaxRepay: boolean
@@ -58,6 +63,18 @@ export function RepaySelectAmountFormBase({
       market.asset.symbol
     )
   }, [borrowPosition, market])
+
+  /**
+   * Amount the Max chip and % presets use as their cap:
+   * - balance > debt → full debt (UI shows debt; submit can use MAX_UINT256 when amount equals debt)
+   * - balance ≤ debt → whole wallet balance (exact repay only)
+   */
+  const repayMaxFillAmount = useMemo(() => {
+    if (balance.gt(borrowedAmountUnit)) {
+      return borrowedAmountUnit
+    }
+    return balance
+  }, [balance, borrowedAmountUnit])
 
   const calculateHealthScoreAfterRepay = useCallback(
     (repayAmount: TokenUnit): number | undefined => {
@@ -137,7 +154,7 @@ export function RepaySelectAmountFormBase({
     if (!amount) return
 
     const isMaxRepay =
-      amount.gt(borrowedAmountUnit) || amount.eq(borrowedAmountUnit)
+      balance.gt(borrowedAmountUnit) && amount.eq(borrowedAmountUnit)
 
     try {
       setIsSubmitting(true)
@@ -154,7 +171,7 @@ export function RepaySelectAmountFormBase({
     } finally {
       setIsSubmitting(false)
     }
-  }, [amount, borrowedAmountUnit, submit, onSubmitted])
+  }, [amount, balance, borrowedAmountUnit, submit, onSubmitted])
 
   const canSubmit =
     !isSubmitting &&
@@ -197,7 +214,7 @@ export function RepaySelectAmountFormBase({
           validateAmount={validateAmount}
           disabled={isSubmitting}
           autoFocus
-          maxAmount={borrowedAmountUnit}
+          maxAmount={repayMaxFillAmount}
           presetPercentages={[25, 50]}
         />
 
