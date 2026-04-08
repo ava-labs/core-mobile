@@ -2,6 +2,7 @@ import {
   Erc1155Token,
   Erc721Token,
   Glacier,
+  GetNativeBalanceResponse,
   ListAddressChainsResponse
 } from '@avalabs/glacier-sdk'
 import Config from 'react-native-config'
@@ -93,6 +94,19 @@ class GlacierService {
     address: string
   }): Promise<ListAddressChainsResponse> {
     return this.glacierSdk.evmChains.listAddressChains({
+      address
+    })
+  }
+
+  async getNativeBalance({
+    chainId,
+    address
+  }: {
+    chainId: string
+    address: string
+  }): Promise<GetNativeBalanceResponse> {
+    return this.glacierSdk.evmBalances.getNativeBalance({
+      chainId,
       address
     })
   }

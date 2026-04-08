@@ -88,6 +88,13 @@ export const networkSlice = createSlice({
         }
       })
     },
+    enableChainIds: (state, action: PayloadAction<number[]>) => {
+      action.payload.forEach(chainId => {
+        if (!state.enabledChainIds.includes(chainId)) {
+          state.enabledChainIds.push(chainId)
+        }
+      })
+    },
     toggleDisabledLastTransactedChainId: (
       state,
       action: PayloadAction<number>
@@ -308,7 +315,8 @@ export const {
   addCustomNetwork,
   removeCustomNetwork,
   updateCustomNetwork,
-  enableL2ChainIds
+  enableL2ChainIds,
+  enableChainIds
 } = networkSlice.actions
 
 export const networkReducer = networkSlice.reducer
