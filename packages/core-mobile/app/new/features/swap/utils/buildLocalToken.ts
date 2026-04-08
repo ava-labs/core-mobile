@@ -51,7 +51,7 @@ export const buildLocalToken = ({
       decimals:
         isNative && nativeDecimals !== undefined
           ? nativeDecimals
-          : tokenInfo.meta?.decimals?.[caip2Id] ?? null,
+          : tokenInfo.meta?.decimals?.[caip2Id] ?? 18,
       isNative,
       internalId: balanceData?.internalId ?? tokenInfo.internalId,
       logoUri: balanceData?.logoUri ?? tokenInfo.meta?.logoUri ?? null
