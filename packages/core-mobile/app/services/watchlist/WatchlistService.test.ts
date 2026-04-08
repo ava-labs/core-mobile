@@ -1,7 +1,10 @@
 import TokenService from 'services/token/TokenService'
 import { transformSparklineData } from 'services/token/utils'
 import { MarketType } from 'store/watchlist'
-import { getV1WatchlistMarkets } from 'utils/api/generated/tokenAggregator/aggregatorApi.client/sdk.gen'
+import {
+  getV1WatchlistMarkets,
+  getV1WatchlistTrending
+} from 'utils/api/generated/tokenAggregator/aggregatorApi.client/sdk.gen'
 import WatchlistService from './WatchlistService'
 
 jest.mock('services/token/utils', () => ({
@@ -19,9 +22,14 @@ jest.mock('services/token/TokenService', () => ({
 jest.mock(
   'utils/api/generated/tokenAggregator/aggregatorApi.client/sdk.gen',
   () => ({
-    getV1WatchlistMarkets: jest.fn()
+    getV1WatchlistMarkets: jest.fn(),
+    getV1WatchlistTrending: jest.fn()
   })
 )
+
+jest.mock('utils/api/clients/aggregatedTokensApiClient', () => ({
+  tokenAggregatorApi: {}
+}))
 
 describe('getTopMarkets', () => {
   const getV1WatchlistMarketsMock = getV1WatchlistMarkets as jest.Mock
@@ -168,6 +176,72 @@ describe('getTopMarkets', () => {
       priceChange24h: undefined,
       priceChangePercentage24h: undefined
     })
+  })
+})
+
+describe('getTrendingTokens', () => {
+  const getTrendingMock = getV1WatchlistTrending as jest.Mock
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should return trending tokens from the aggregator API', async () => {
+    const mockToken = {
+      internalId: 'avax',
+      name: 'Avalanche',
+      symbol: 'AVAX',
+      price: 30,
+      liquidity: 1000000,
+      address: '0x123',
+      decimals: 18,
+      lastUpdated: '2024-01-01',
+      sparkline: null,
+      platforms: null,
+      isNative: true
+    }
+    getTrendingMock.mockResolvedValue({ data: [mockToken] })
+
+    const result = await WatchlistService.getTrendingTokens(undefined)
+
+    expect(getTrendingMock).toHaveBeenCalledTimes(1)
+    expect(result).toEqual([mockToken])
+  })
+
+  it('should apply exchange rate to token prices', async () => {
+    const mockToken = {
+      internalId: 'avax',
+      name: 'Avalanche',
+      symbol: 'AVAX',
+      price: 30,
+      marketcap: 1000,
+      fdv: 2000,
+      volume24hUSD: 500,
+      liquidity: 100,
+      address: '0x123',
+      decimals: 18,
+      lastUpdated: '2024-01-01',
+      sparkline: null,
+      platforms: null,
+      isNative: true
+    }
+    getTrendingMock.mockResolvedValue({ data: [mockToken] })
+
+    const result = await WatchlistService.getTrendingTokens(2)
+
+    expect(result[0]?.price).toEqual(60)
+    expect(result[0]?.marketcap).toEqual(2000)
+    expect(result[0]?.fdv).toEqual(4000)
+    expect(result[0]?.volume24hUSD).toEqual(1000)
+    expect(result[0]?.liquidity).toEqual(200)
+  })
+
+  it('should return empty array when API returns no data', async () => {
+    getTrendingMock.mockResolvedValue({ data: undefined })
+
+    const result = await WatchlistService.getTrendingTokens(undefined)
+
+    expect(result).toEqual([])
   })
 })
 

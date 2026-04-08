@@ -246,14 +246,11 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       const fromTokenId = token?.internalId ?? token?.localId
       const fromCaip2Id = getNetwork(token?.networkChainId)?.caip2ChainId
       const toCaip2Id = fromCaip2Id
-      const toTokenId =
-        fromTokenId === tokenIds.USDC ? tokenIds.AVAX : tokenIds.USDC
 
       buttons.push({
         title: ActionButtonTitle.Swap,
         icon: 'swap',
-        onPress: () =>
-          navigateToSwap({ fromTokenId, toTokenId, fromCaip2Id, toCaip2Id })
+        onPress: () => navigateToSwap({ fromTokenId, fromCaip2Id, toCaip2Id })
       })
     }
 
