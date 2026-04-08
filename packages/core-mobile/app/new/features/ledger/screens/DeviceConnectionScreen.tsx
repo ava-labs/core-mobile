@@ -1,18 +1,22 @@
 import React, { useCallback, useState, useEffect } from 'react'
-import { View, Alert, ActivityIndicator, Linking } from 'react-native'
+import { View, Alert, ActivityIndicator } from 'react-native'
 import { useRouter } from 'expo-router'
-import { Button, useTheme, Icons } from '@avalabs/k2-alpine'
+import { Button, useTheme, Icons, Text } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIconWithText'
 import { LedgerDeviceList } from 'new/features/ledger/components/LedgerDeviceList'
 import LedgerService from 'services/ledger/LedgerService'
 import { LedgerDevice } from 'services/ledger/types'
-import { isLedgerBluetoothPermissionError } from 'services/ledger/LedgerBluetoothPermissionError'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useSelector } from 'react-redux'
 import { selectWalletState } from 'store/app'
 import { WalletState } from 'store/app/types'
+import { useBluetooth } from 'common/hooks/useBluetooth'
+import {
+  isLedgerBluetoothError,
+  showBluetoothErrorAlert
+} from 'services/ledger/LedgerBluetoothError'
 
 interface DeviceConnectionScreenProps {
   onNavigateToAppConnection: () => void
@@ -32,6 +36,12 @@ export default function DeviceConnectionScreen({
   // Local device management
   const [devices, setDevices] = useState<LedgerDevice[]>([])
   const [isScanning, setIsScanning] = useState(false)
+  const {
+    isBluetoothOnAndPermissionGranted,
+    isInitializingBluetooth,
+    isBluetoothAvailable,
+    openSettings
+  } = useBluetooth()
 
   // Set up device listener for LedgerService
   useEffect(() => {
@@ -61,6 +71,10 @@ export default function DeviceConnectionScreen({
     try {
       await LedgerService.startDeviceScanning()
     } catch (error) {
+      if (isLedgerBluetoothError(error)) {
+        showBluetoothErrorAlert(error)
+        return
+      }
       Alert.alert(
         'Scan Error',
         `Failed to scan for devices: ${
@@ -87,23 +101,6 @@ export default function DeviceConnectionScreen({
         } else {
           AnalyticsService.capture('WalletImportLedgerConnectionFailed')
         }
-        if (isLedgerBluetoothPermissionError(error)) {
-          Alert.alert(
-            'Bluetooth Permission Required',
-            'Please enable Bluetooth permissions in your device settings to connect to Ledger devices.',
-            [
-              { text: 'Cancel', style: 'cancel' },
-              {
-                text: 'Open Settings',
-                onPress: () => {
-                  Linking.openSettings()
-                }
-              }
-            ]
-          )
-          return
-        }
-
         Alert.alert(
           'Connection failed',
           'Failed to connect to Ledger device. Please try again.',
@@ -127,11 +124,40 @@ export default function DeviceConnectionScreen({
     back()
   }, [resetSetup, back])
 
+  const renderBluetoothPermissionError = useCallback(() => {
+    if (isBluetoothOnAndPermissionGranted) return null
+    return (
+      <View style={{ gap: 12, marginTop: 4, paddingRight: 16 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Icons.Alert.ErrorOutline
+            color={colors.$textDanger}
+            width={20}
+            height={20}
+          />
+          <Text variant="subtitle1" sx={{ color: '$textDanger' }}>
+            To connect you need to allow Bluetooth in your device settings
+          </Text>
+        </View>
+        <Button
+          size="small"
+          type="secondary"
+          onPress={openSettings}
+          style={{ width: 165, marginLeft: 28 }}>
+          Open device settings
+        </Button>
+      </View>
+    )
+  }, [isBluetoothOnAndPermissionGranted, colors, openSettings])
+
   const renderFooter = useCallback(() => {
     return (
       <View style={{ gap: 12 }}>
         {!isScanning && devices.length === 0 && (
-          <Button type="primary" size="large" onPress={scanForDevices}>
+          <Button
+            type="primary"
+            size="large"
+            onPress={scanForDevices}
+            disabled={!isBluetoothAvailable || isInitializingBluetooth}>
             Scan for Device
           </Button>
         )}
@@ -158,13 +184,16 @@ export default function DeviceConnectionScreen({
     scanForDevices,
     devices.length,
     colors.$textPrimary,
-    handleCancel
+    handleCancel,
+    isBluetoothAvailable,
+    isInitializingBluetooth
   ])
 
   return (
     <ScrollScreen
       title={`Connect \nYour Ledger`}
       isModal
+      renderHeader={renderBluetoothPermissionError}
       renderFooter={renderFooter}
       contentContainerStyle={{ flex: 1, marginHorizontal: 16 }}>
       <View style={{ flex: 1 }}>
