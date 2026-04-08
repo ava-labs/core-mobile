@@ -55,12 +55,12 @@ export const ActionSheet = ({
   }, [])
 
   const adjustedConfirm = useMemo(() => {
-    return requireScrollToConfirm
-      ? {
-          ...confirm,
-          disabled: confirm.disabled || !hasScrolledToEnd
-        }
-      : confirm
+    if (requireScrollToConfirm)
+      return {
+        ...confirm,
+        disabled: confirm.disabled || !hasScrolledToEnd
+      }
+    return confirm
   }, [confirm, hasScrolledToEnd, requireScrollToConfirm])
   React.useEffect(() => {
     const onBackPress = (): boolean => {
