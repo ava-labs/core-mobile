@@ -85,7 +85,9 @@ const getChartDataFromTimestamp = (
   let minDiff = Infinity
 
   for (let i = 0; i < dataPoints.length; i++) {
-    const diff = Math.abs(dataPoints[i].date.getTime() - timestampMs)
+    const diff = Math.abs(
+      (dataPoints[i]?.date.getTime() ?? -timestampMs) - timestampMs
+    )
     if (diff < minDiff) {
       minDiff = diff
       closestIndex = i
@@ -112,9 +114,12 @@ const getChart = (
   )
   if (slicedPoints.length < 2) return undefined
 
-  const firstValue = slicedPoints[0].value
-  const lastValue = slicedPoints[slicedPoints.length - 1].value
-  const negative = lastValue < firstValue
+  const firstValue = slicedPoints[0]?.value
+  const lastValue = slicedPoints[slicedPoints.length - 1]?.value
+  const negative =
+    lastValue !== undefined && firstValue !== undefined
+      ? lastValue < firstValue
+      : false
 
   return (
     <MiniChart
