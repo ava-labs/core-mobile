@@ -1,8 +1,25 @@
 import { TokenType } from '@avalabs/vm-module-types'
 import { TokenInfo } from 'common/hooks/useTokenLookup'
 import { LocalTokenWithBalance } from 'store/balance/types'
-import { NATIVE_DECIMALS } from '../consts'
+import { DEFAULT_TOKEN_DECIMALS, NATIVE_DECIMALS } from '../consts'
 import { mapApiTokenToLocal } from './mapApiTokenToLocal'
+
+const resolveDecimals = (
+  isNative: boolean,
+  nativeDecimals: number | undefined,
+  {
+    metaDecimals,
+    balanceData
+  }: {
+    metaDecimals: number | null | undefined
+    balanceData: LocalTokenWithBalance | undefined
+  }
+): number => {
+  if (isNative && nativeDecimals !== undefined) return nativeDecimals
+  if (typeof metaDecimals === 'number') return metaDecimals
+  if (balanceData && 'decimals' in balanceData) return balanceData.decimals
+  return DEFAULT_TOKEN_DECIMALS
+}
 
 export const buildLocalToken = ({
   accountTokens,
@@ -48,10 +65,10 @@ export const buildLocalToken = ({
       symbol: balanceData?.symbol ?? tokenInfo.symbol,
       name: balanceData?.name ?? tokenInfo.name,
       address,
-      decimals:
-        isNative && nativeDecimals !== undefined
-          ? nativeDecimals
-          : tokenInfo.meta?.decimals?.[caip2Id] ?? 18,
+      decimals: resolveDecimals(isNative, nativeDecimals, {
+        metaDecimals: tokenInfo.meta?.decimals?.[caip2Id],
+        balanceData
+      }),
       isNative,
       internalId: balanceData?.internalId ?? tokenInfo.internalId,
       logoUri: balanceData?.logoUri ?? tokenInfo.meta?.logoUri ?? null
