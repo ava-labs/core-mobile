@@ -19,12 +19,12 @@ const SelectSwapToTokenScreen = (): JSX.Element => {
   const { networkChainId } = useLocalSearchParams<{ networkChainId?: string }>()
 
   // Get supported chains and filtered destinations
-  const { chains, destinations } = useSupportedChains(
+  const { allChains, destinations } = useSupportedChains(
     selectedFromToken?.networkChainId
   )
 
-  // Use filtered destinations if FROM token selected, otherwise show all source chains
-  const networks = selectedFromToken?.networkChainId ? destinations : chains
+  // Use filtered destinations if FROM token selected, otherwise show all Fusion-supported chains
+  const networks = selectedFromToken?.networkChainId ? destinations : allChains
 
   // When FROM is Bitcoin and browsing Avalanche as destination, only BTC.b is eligible
   const tokenFilter = useCallback(

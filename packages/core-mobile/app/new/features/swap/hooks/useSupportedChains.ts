@@ -59,6 +59,7 @@ function filterAndSortNetworks(
  */
 export function useSupportedChains(sourceChainId?: number): {
   chains: Network[] | undefined
+  allChains: Network[] | undefined
   destinations: Network[] | undefined
   isValidDestination: (sourceChainId: number, destChainId: number) => boolean
   isLoading: boolean
@@ -83,7 +84,7 @@ export function useSupportedChains(sourceChainId?: number): {
     staleTime: STALE_TIME
   })
 
-  // Convert CAIP-2 IDs (Map keys) to Network objects - all source chains
+  // Convert CAIP-2 IDs (Map keys) to Network objects - enabled source chains only
   const chains = useMemo(() => {
     if (!chainsMap) return undefined
 
@@ -106,6 +107,17 @@ export function useSupportedChains(sourceChainId?: number): {
 
     return supportedNetworks
   }, [chainsMap, getEnabledNetworkByCaip2ChainId, isSolanaSwapBlocked])
+
+  // All Fusion-supported source chains regardless of enabled state
+  const allChains = useMemo(() => {
+    if (!chainsMap) return undefined
+
+    const networks = Array.from(chainsMap.keys())
+      .map(caip2Id => getNetworkByCaip2ChainId(caip2Id))
+      .filter((network): network is Network => network !== undefined)
+
+    return filterAndSortNetworks(networks, isSolanaSwapBlocked)
+  }, [chainsMap, getNetworkByCaip2ChainId, isSolanaSwapBlocked])
 
   // Convert source chainId to CAIP-2 and look up destinations (optional)
   const destinations = useMemo(() => {
@@ -176,6 +188,7 @@ export function useSupportedChains(sourceChainId?: number): {
 
   return {
     chains,
+    allChains,
     destinations,
     isValidDestination,
     isLoading,
