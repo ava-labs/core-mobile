@@ -80,12 +80,31 @@ export function RepaySelectAmountFormBase({
       const repayAmountUsd =
         repayAmount.toDisplay({ asNumber: true }) * pricePerToken
 
-      const newTotalDebtUsd = Math.max(0, totalDebtUsd - repayAmountUsd)
-      if (newTotalDebtUsd === 0) return Infinity
+      const debtRaw = borrowedAmountUnit.toSubUnit()
+      const repayRaw = repayAmount.toSubUnit()
+      const remainingRaw = debtRaw >= repayRaw ? debtRaw - repayRaw : 0n
+
+      let newTotalDebtUsd = Math.max(0, totalDebtUsd - repayAmountUsd)
+
+      // Float USD can round to 0 while on-chain / TokenUnit debt remains — use token-anchored floor.
+      if (remainingRaw > 0n) {
+        const remainingUnit = new TokenUnit(
+          remainingRaw.toString(),
+          borrowedAmountUnit.getMaxDecimals(),
+          borrowedAmountUnit.getSymbol()
+        )
+        const remainingUsd =
+          remainingUnit.toDisplay({ asNumber: true }) * pricePerToken
+        newTotalDebtUsd = Math.max(newTotalDebtUsd, remainingUsd)
+      }
+
+      if (remainingRaw === 0n && newTotalDebtUsd === 0) return Infinity
+
+      if (newTotalDebtUsd <= 0) return undefined
 
       return currentHealthScore * (totalDebtUsd / newTotalDebtUsd)
     },
-    [currentHealthScore, totalDebtUsd, market]
+    [currentHealthScore, totalDebtUsd, market, borrowedAmountUnit]
   )
 
   const healthScoreAfterRepay = useMemo(() => {
@@ -93,13 +112,14 @@ export function RepaySelectAmountFormBase({
     try {
       if (amount.toSubUnit() === 0n) return currentHealthScore
 
-      // Full repay of this token — check if all debt would be cleared
+      // Full repay of this position's UI debt — Infinity only if portfolio debt clears (in USD).
       if (amount.toSubUnit() >= borrowedAmountUnit.toSubUnit()) {
         const pricePerToken =
           market.asset.mintTokenBalance.price.value.toNumber()
         const tokenDebtUsd =
           borrowedAmountUnit.toDisplay({ asNumber: true }) * pricePerToken
-        if (totalDebtUsd - tokenDebtUsd < 0.01) return Infinity
+        const otherDebtUsd = Math.max(0, totalDebtUsd - tokenDebtUsd)
+        if (otherDebtUsd < 0.01) return Infinity
       }
 
       return calculateHealthScoreAfterRepay(amount)
