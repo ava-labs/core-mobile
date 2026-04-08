@@ -77,6 +77,24 @@ const Subtitle = ({
   )
 }
 
+const getChartDataFromTimestamp = (
+  dataPoints: ChartData['dataPoints'],
+  timestampMs: number
+): ChartData['dataPoints'] => {
+  let closestIndex = 0
+  let minDiff = Infinity
+
+  for (let i = 0; i < dataPoints.length; i++) {
+    const diff = Math.abs(dataPoints[i].date.getTime() - timestampMs)
+    if (diff < minDiff) {
+      minDiff = diff
+      closestIndex = i
+    }
+  }
+
+  return dataPoints.slice(closestIndex)
+}
+
 const getChart = (
   notification: AppNotification,
   getWatchlistChart: (id: string) => ChartData
@@ -88,11 +106,21 @@ const getChart = (
   const chartData = getWatchlistChart(tokenId)
   if (chartData.dataPoints.length === 0) return undefined
 
+  const slicedPoints = getChartDataFromTimestamp(
+    chartData.dataPoints,
+    notification.timestamp
+  )
+  if (slicedPoints.length < 2) return undefined
+
+  const firstValue = slicedPoints[0].value
+  const lastValue = slicedPoints[slicedPoints.length - 1].value
+  const negative = lastValue < firstValue
+
   return (
     <MiniChart
       style={{ width: CHART_WIDTH, height: CHART_HEIGHT }}
-      data={chartData.dataPoints}
-      negative={chartData.ranges.diffValue < 0}
+      data={slicedPoints}
+      negative={negative}
       showReferenceLine
     />
   )
