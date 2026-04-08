@@ -233,7 +233,7 @@ export function RepaySelectAmountFormBase({
                     color: '$textPrimary',
                     fontWeight: 500
                   }}>
-                  {remainingDebt?.toString() ?? UNKNOWN_AMOUNT}{' '}
+                  {remainingDebt?.toDisplay() ?? UNKNOWN_AMOUNT}{' '}
                   {market.asset.symbol}
                 </Text>
                 <Text variant="caption" sx={{ color: '$textSecondary' }}>
