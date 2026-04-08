@@ -70,7 +70,9 @@ describe('WalletService.hasActivityFromXpubXP', () => {
         if (options.body.networkType === 'PVM') {
           return Promise.resolve({ data: pvmEmptyResponse })
         }
-        return Promise.resolve({ data: pvmEmptyResponse })
+        throw new Error(
+          `Unexpected postV1GetAddresses networkType: ${options.body.networkType}`
+        )
       }
     )
 
@@ -132,7 +134,9 @@ describe('WalletService.hasActivityFromXpubXP', () => {
         if (options.body.networkType === 'PVM') {
           return pendingPvmResponse.promise
         }
-        return Promise.resolve({ data: pvmEmptyResponse })
+        throw new Error(
+          `Unexpected postV1GetAddresses networkType: ${options.body.networkType}`
+        )
       }
     )
 
@@ -150,8 +154,28 @@ describe('WalletService.hasActivityFromXpubXP', () => {
       )
     ])
 
-    pendingPvmResponse.resolve({ data: pvmEmptyResponse })
-
     expect(resultOrTimeout).toBe(true)
+
+    expect(mockPostV1GetAddresses).toHaveBeenCalledTimes(2)
+    expect(mockPostV1GetAddresses).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({
+          extendedPublicKey: 'xpub-123',
+          networkType: 'AVM',
+          onlyWithActivity: true
+        })
+      })
+    )
+    expect(mockPostV1GetAddresses).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({
+          extendedPublicKey: 'xpub-123',
+          networkType: 'PVM',
+          onlyWithActivity: true
+        })
+      })
+    )
+
+    pendingPvmResponse.resolve({ data: pvmEmptyResponse })
   })
 })
