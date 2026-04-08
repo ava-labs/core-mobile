@@ -25,6 +25,7 @@ import {
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { swapCompleted } from 'store/nestEgg'
 import { selectEnabledChainIds, toggleEnabledChainId } from 'store/network'
+import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import type { Quote, Transfer } from '../types'
 import {
   useSwapSelectedFromToken,
@@ -43,7 +44,6 @@ import {
 } from '../utils/fusionErrors'
 import { trackFusionTransfer } from '../store/actions'
 import { logSdkError } from '../utils/fusionLogger'
-import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 
 const DEFAULT_SLIPPAGE = 0.2
 
