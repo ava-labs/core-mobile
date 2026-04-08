@@ -443,7 +443,9 @@ const ApprovalScreen = ({
   return (
     <ActionSheet
       isModal
-      requireScrollToConfirm
+      // disabled for now to avoid the issue with the scroll to confirm on approval screen
+      // TODO: enable this once the issue is fixed
+      // requireScrollToConfirm
       title={displayData.dAppInfo ? undefined : displayData.title}
       navigationTitle={
         displayData.dAppInfo ? displayData?.dAppInfo?.name : displayData.title
