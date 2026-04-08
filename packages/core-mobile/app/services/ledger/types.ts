@@ -35,25 +35,24 @@ export const LedgerReturnCode = {
   COMMAND_NOT_ALLOWED: 0x6986
 } as const
 
-export const LEDGER_ERROR_CODES = {
-  WRONG_APP: '0x6a80',
-  COMMUNICATION_ERROR: '0x6511',
-  REJECTED: '0x6985',
-  REJECTED_ALT: '0x6986',
-  NOT_READY: '0x6a86',
-  DEVICE_LOCKED: '0x5515',
-  UPDATE_REQUIRED: '0x6e00',
-  USER_CANCELLED: 'user_cancelled',
-  DISCONNECTED_DEVICE: 'disconnecteddevice',
-  TRANSPORT_RACE_CONDITION: 'transportracecondition',
-  TRANSPORT_RACE_CONDITION_ALT:
-    'an action was already pending on the ledger device',
-  BLIND_SIGNATURE: 'blind',
-  BLUETOOTH_PERMISSION: 'ledger_bluetooth_permission_required'
-} as const
-
-export type LedgerReturnCodeType =
-  typeof LedgerReturnCode[keyof typeof LedgerReturnCode]
+export enum LEDGER_ERROR_CODES {
+  WRONG_APP = '0x6a80',
+  COMMUNICATION_ERROR = '0x6511',
+  REJECTED = '0x6985',
+  REJECTED_ALT = '0x6986',
+  NOT_READY = '0x6a86',
+  DEVICE_LOCKED = '0x5515',
+  UPDATE_REQUIRED = '0x6e00',
+  USER_CANCELLED = 'user_cancelled',
+  DISCONNECTED_DEVICE = 'disconnecteddevice',
+  TRANSPORT_RACE_CONDITION = 'transportracecondition',
+  TRANSPORT_RACE_CONDITION_ALT = 'an action was already pending on the ledger device',
+  BLIND_SIGNATURE = 'blind',
+  BLUETOOTH_PERMISSION = 'ledger_bluetooth_permission_required',
+  BLUETOOTH_RADIO_OFF = 'ledger_bluetooth_radio_off',
+  BLUETOOTH_UNSUPPORTED = 'ledger_bluetooth_unsupported',
+  BLUETOOTH_UNKNOWN = 'ledger_bluetooth_unknown'
+}
 
 // ============================================================================
 // LEDGER DEVICE TYPES
