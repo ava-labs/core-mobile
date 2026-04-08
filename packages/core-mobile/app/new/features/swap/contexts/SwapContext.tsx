@@ -24,10 +24,7 @@ import {
 } from 'store/posthog'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { swapCompleted } from 'store/nestEgg'
-import {
-  selectEnabledChainIds,
-  toggleEnabledChainId
-} from 'store/network'
+import { selectEnabledChainIds, toggleEnabledChainId } from 'store/network'
 import type { Quote, Transfer } from '../types'
 import {
   useSwapSelectedFromToken,
@@ -46,6 +43,7 @@ import {
 } from '../utils/fusionErrors'
 import { trackFusionTransfer } from '../store/actions'
 import { logSdkError } from '../utils/fusionLogger'
+import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 
 const DEFAULT_SLIPPAGE = 0.2
 
@@ -267,8 +265,8 @@ export const SwapContextProvider = ({
       setSwapStatus(SwapStatus.Success)
 
       // Add TO network to enabled networks if not already enabled
-      const toChainId = Number(quote.targetChain.chainId.split(':')[1])
-      if (!enabledChainIds.includes(toChainId)) {
+      const toChainId = getChainIdFromCaip2(quote.targetChain.chainId)
+      if (toChainId && !enabledChainIds.includes(toChainId)) {
         dispatch(toggleEnabledChainId(toChainId))
       }
 

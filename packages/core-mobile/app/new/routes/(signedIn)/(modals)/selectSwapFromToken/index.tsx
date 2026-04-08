@@ -21,11 +21,12 @@ const SelectSwapFromTokenScreen = (): JSX.Element => {
   const { networkChainId } = useLocalSearchParams<{ networkChainId?: string }>()
   const activeAccount = useSelector(selectActiveAccount)
 
-  // Get all source chains (no filtering for FROM selection)
+  // Get all supported swap source chains (filtered to networks with balance below)
   const { chains } = useSupportedChains()
 
   // Get balance data to filter out networks with no tokens
-  const { data: balances } = useAccountBalances(activeAccount)
+  const { data: balances, isLoading: isBalancesLoading } =
+    useAccountBalances(activeAccount)
 
   // Build set of chainIds that have at least one token with balance > 0
   const chainIdsWithBalance = useMemo(() => {
@@ -36,13 +37,21 @@ const SelectSwapFromTokenScreen = (): JSX.Element => {
     )
   }, [balances])
 
-  // Filter out networks with no tokens with balance > 0, but only once balance
-  // data has loaded for at least one network (avoids filtering before data arrives)
+  // Filter out networks with no tokens with balance > 0, but only once all
+  // balance data has fully loaded (isBalancesLoading is false when every
+  // enabled network has returned results). Filtering while still loading would
+  // temporarily hide networks whose data hasn't arrived yet.
+  // If all supported source networks have zero balance, fall back to all chains
+  // so the token screen can render its empty state instead of staying in a
+  // loading state.
   const networksWithTokens = useMemo(() => {
     if (!chains) return chains
-    if (balances.length === 0) return chains
-    return chains.filter(n => chainIdsWithBalance.has(n.chainId))
-  }, [chains, balances.length, chainIdsWithBalance])
+    if (isBalancesLoading) return chains
+    const filteredChains = chains.filter(n =>
+      chainIdsWithBalance.has(n.chainId)
+    )
+    return filteredChains.length > 0 ? filteredChains : chains
+  }, [chains, isBalancesLoading, chainIdsWithBalance])
 
   // When TO is Bitcoin and browsing Avalanche as source, only BTC.b is eligible
   const tokenFilter = useCallback(
