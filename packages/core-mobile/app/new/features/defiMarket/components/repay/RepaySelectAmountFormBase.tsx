@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   ActivityIndicator,
   Button,
@@ -130,64 +130,6 @@ export function RepaySelectAmountFormBase({
       return borrowedAmountUnit
     }
   }, [borrowedAmountUnit, amount])
-
-  useEffect(() => {
-    if (!__DEV__) return
-    try {
-      const decimals = borrowedAmountUnit.getMaxDecimals()
-      const symbol = borrowedAmountUnit.getSymbol()
-      const debtRaw = borrowedAmountUnit.toSubUnit()
-
-      if (!amount) {
-        // eslint-disable-next-line no-console -- local-only parity check vs core-web repay UI
-        console.log(
-          '[RepaySelectAmountFormBase] repay sub-units (no repay amount yet)',
-          {
-            hint: 'Compare debtRaw with web formatted debt → sub-units (same decimals).',
-            symbol,
-            decimals,
-            debtRaw: debtRaw.toString(),
-            debtHuman: borrowedAmountUnit.toString()
-          }
-        )
-        return
-      }
-
-      const repayRaw = amount.toSubUnit()
-      const remainingRaw = debtRaw >= repayRaw ? debtRaw - repayRaw : 0n
-      const remainingUnit = new TokenUnit(
-        remainingRaw.toString(),
-        decimals,
-        symbol
-      )
-
-      // eslint-disable-next-line no-console -- local-only parity check vs core-web repay UI
-      console.log(
-        '[RepaySelectAmountFormBase] repay sub-units (compare with web)',
-        {
-          hint: 'If debtRaw/repayRaw match web but remaining differs: display/rounding. If repayRaw differs by 1: input formatting vs web.',
-          symbol,
-          decimals,
-          debtRaw: debtRaw.toString(),
-          repayRaw: repayRaw.toString(),
-          remainingRaw: remainingRaw.toString(),
-          deltaDebtMinusRepay: (debtRaw - repayRaw).toString(),
-          human: {
-            debt: borrowedAmountUnit.toString(),
-            repay: amount.toString(),
-            remainingToString: remainingUnit.toString(),
-            remainingToDisplay: remainingUnit.toDisplay(),
-            remainingToDisplayFixed8: remainingUnit.toDisplay({ fixedDp: 8 })
-          }
-        }
-      )
-    } catch (e) {
-      Logger.warn(
-        '[RepaySelectAmountFormBase] dev repay sub-unit log failed',
-        e
-      )
-    }
-  }, [amount, borrowedAmountUnit])
 
   const validateAmount = useCallback(
     async (amt: TokenUnit) => {
