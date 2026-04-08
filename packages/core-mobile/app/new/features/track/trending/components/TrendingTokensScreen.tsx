@@ -4,7 +4,7 @@ import { useBuy } from 'features/meld/hooks/useBuy'
 import { useBalanceTotalForAccount } from 'features/portfolio/hooks/useBalanceTotalForAccount'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { getTokenAddress } from 'features/track/utils/utils'
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import { StyleSheet, ViewStyle } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
@@ -32,8 +32,12 @@ const TrendingTokensScreen = ({
   const { navigateToBuy } = useBuy()
 
   const balanceTotal = useBalanceTotalForAccount(activeAccount)
-
   const isZeroBalance = balanceTotal === 0n
+
+  const isZeroBalanceRef = useRef(isZeroBalance)
+  useEffect(() => {
+    isZeroBalanceRef.current = isZeroBalance
+  }, [isZeroBalance])
 
   const openBuy = useCallback(
     (initialTokenIdTo?: string) => {
@@ -48,7 +52,7 @@ const TrendingTokensScreen = ({
   const onBuyPress = useCallback(
     (item: MarketToken) => {
       const tokenAddress = getTokenAddress(item)
-      if (isZeroBalance) {
+      if (isZeroBalanceRef.current) {
         openBuy(tokenAddress)
       } else {
         navigateToSwap({
@@ -57,7 +61,7 @@ const TrendingTokensScreen = ({
         })
       }
     },
-    [isZeroBalance, openBuy, navigateToSwap]
+    [openBuy, navigateToSwap]
   )
 
   const renderItem = useCallback(
