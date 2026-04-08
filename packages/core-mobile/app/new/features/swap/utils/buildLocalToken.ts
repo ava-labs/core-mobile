@@ -1,7 +1,7 @@
 import { TokenType } from '@avalabs/vm-module-types'
 import { TokenInfo } from 'common/hooks/useTokenLookup'
 import { LocalTokenWithBalance } from 'store/balance/types'
-import { NATIVE_DECIMALS } from '../consts'
+import { DEFAULT_TOKEN_DECIMALS, NATIVE_DECIMALS } from '../consts'
 import { mapApiTokenToLocal } from './mapApiTokenToLocal'
 
 const resolveDecimals = (
@@ -18,7 +18,7 @@ const resolveDecimals = (
   if (isNative && nativeDecimals !== undefined) return nativeDecimals
   if (typeof metaDecimals === 'number') return metaDecimals
   if (balanceData && 'decimals' in balanceData) return balanceData.decimals
-  return 0
+  return DEFAULT_TOKEN_DECIMALS
 }
 
 export const buildLocalToken = ({

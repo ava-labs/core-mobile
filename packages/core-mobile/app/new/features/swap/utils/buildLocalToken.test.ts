@@ -198,7 +198,7 @@ describe('buildLocalToken', () => {
       expect(result.decimals).toBe(6)
     })
 
-    it('defaults to 0 when meta.decimals is null', () => {
+    it('defaults to 18 when meta.decimals is null', () => {
       const tokenInfo = makeTokenInfo({
         platforms: { [AVAX_CAIP2]: '0xtoken' },
         meta: { logoUri: null, decimals: null }
@@ -211,10 +211,10 @@ describe('buildLocalToken', () => {
         chainId: ChainId.AVALANCHE_MAINNET_ID
       }) as any
 
-      expect(result.decimals).toBe(0)
+      expect(result.decimals).toBe(18)
     })
 
-    it('defaults to 0 when meta is absent', () => {
+    it('defaults to 18 when meta is absent', () => {
       const tokenInfo = makeTokenInfo({
         platforms: { [AVAX_CAIP2]: '0xtoken' },
         meta: null
@@ -227,7 +227,7 @@ describe('buildLocalToken', () => {
         chainId: ChainId.AVALANCHE_MAINNET_ID
       }) as any
 
-      expect(result.decimals).toBe(0)
+      expect(result.decimals).toBe(18)
     })
   })
 
