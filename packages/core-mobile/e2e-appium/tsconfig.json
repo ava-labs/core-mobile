@@ -9,6 +9,7 @@
   },
   "include": [
     "**/*.ts",
-    "wdio.conf.ts"
+    "wdio.conf.ts",
+    "scripts/**/*.js"
   ]
 }

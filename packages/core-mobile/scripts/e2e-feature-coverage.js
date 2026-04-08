@@ -22,10 +22,21 @@
  * are omitted from percent denominators and gap lists. They still appear in the
  * checklist as △ for visibility.
  *
+ * **TestRail (optional):** When `TESTRAIL_API_KEY` is set, the script loads the
+ * latest run whose name matches `[REGRESSION] iOS Test Run: YYYY-MM-DD` (same
+ * naming as `e2e-appium/wdio.conf.ts` + `testrail/testrail.service.ts`), maps
+ * each result to a local `*.spec.ts` via TestRail section + case title (Mocha
+ * `describe` / `it`), and treats non-passing results as maintenance/UI drift
+ * for specs that touch a feature. **Regression-adjusted coverage %** = in-scope
+ * mapped features that are checklist-O *and* have no mapped failing regression
+ * test (path match or feature testIDs referenced in the failed spec file).
+ * Use `--no-testrail` to skip network calls.
+ *
  * Usage:
  *   node scripts/e2e-feature-coverage.js
  *   node scripts/e2e-feature-coverage.js --json
  *   node scripts/e2e-feature-coverage.js --verbose
+ *   node scripts/e2e-feature-coverage.js --no-testrail
  *
  * Text output lists each `app/new/features/<name>` folder with O / X / △. JSON
  * includes per-feature detail and modals.
@@ -33,6 +44,9 @@
 
 const fs = require('fs')
 const path = require('path')
+const { createRequire } = require('module')
+
+const pkgRequire = createRequire(path.join(__dirname, '../package.json'))
 
 const pkgRoot = path.resolve(__dirname, '..')
 const featuresDir = path.join(pkgRoot, 'app/new/features')
@@ -245,6 +259,47 @@ const E2E_COVERAGE_EXCLUDED_FEATURES = new Set([
   'rpc'
 ])
 
+/** Mirrors `e2e-appium/testrail/testrail.config.ts` (API user is not secret). */
+const TESTRAIL_DOMAIN =
+  process.env.TESTRAIL_DOMAIN || 'https://avalabs.testrail.io'
+const TESTRAIL_USERNAME =
+  process.env.TESTRAIL_USERNAME || 'mobiledevs@avalabs.org'
+const TESTRAIL_PROJECT_ID = Number(process.env.TESTRAIL_PROJECT_ID || 3)
+
+/** WDIO posts status_id 1 = pass, 5 = fail (`sendResult` in testrail.service.ts). */
+const TESTRAIL_STATUS_PASSED = 1
+const TESTRAIL_STATUS_FAILED = 5
+
+/**
+ * Specs that use dynamic `it(\`...\${...}\`)` titles; keys are paths relative to
+ * `e2e-appium/` (same as `loadAppiumSpecFiles` `rel`).
+ */
+const DYNAMIC_SUITE_CASES_BY_SPEC_REL = {
+  'specs/transactions/receive.spec.ts': {
+    suite: '[Smoke] Receive',
+    titles: [
+      'should verify Avalanche C-Chain/EVM address',
+      'should verify Avalanche X/P-Chain address',
+      'should verify Bitcoin address',
+      'should verify Solana address'
+    ]
+  },
+  'specs/transactions/buy.spec.ts': {
+    suite: 'Buy',
+    titles: [
+      'should follow buy flow AVAX',
+      'should follow buy flow USDC',
+      'should follow buy flow ETH',
+      'should follow buy flow BTC',
+      'should follow buy flow SOL',
+      'should set locale via Buy flow'
+    ]
+  }
+}
+
+const IOS_REGRESSION_RUN_RE =
+  /\[REGRESSION\]\s+iOS\s+Test\s+Run:\s*\d{4}-\d{2}-\d{2}/i
+
 /** @param {string} featureFolder */
 function excludedFromCoverageMetrics(featureFolder) {
   return E2E_COVERAGE_EXCLUDED_FEATURES.has(featureFolder)
@@ -276,6 +331,262 @@ function featureCoverageMark(f, stats) {
 
 /** Only Appium specs; packages/core-mobile/e2e/ (Detox) is deprecated. */
 const E2E_APPIUM_DIR = path.join(pkgRoot, 'e2e-appium')
+
+function loadAxios() {
+  return pkgRequire('axios')
+}
+
+function createTestrailClient() {
+  const apiKey = process.env.TESTRAIL_API_KEY
+  if (!apiKey) return null
+  const axios = loadAxios()
+  return axios.create({
+    baseURL: `${TESTRAIL_DOMAIN}/index.php?/api/v2`,
+    auth: { username: TESTRAIL_USERNAME, password: apiKey },
+    timeout: 120000
+  })
+}
+
+/**
+ * @param {import('axios').AxiosInstance} client
+ */
+async function fetchAllProjectRuns(client) {
+  const all = []
+  let offset = 0
+  const limit = 250
+  for (;;) {
+    const { data } = await client.get(`/get_runs/${TESTRAIL_PROJECT_ID}`, {
+      params: { offset, limit }
+    })
+    const batch = Array.isArray(data) ? data : data.runs || []
+    if (!Array.isArray(batch) || batch.length === 0) break
+    all.push(...batch)
+    if (batch.length < limit) break
+    offset += limit
+  }
+  return all
+}
+
+/**
+ * @param {import('axios').AxiosInstance} client
+ * @param {number} runId
+ */
+async function fetchAllTestsForRun(client, runId) {
+  const all = []
+  let offset = 0
+  const limit = 250
+  for (;;) {
+    const { data } = await client.get(`/get_tests/${runId}`, {
+      params: { offset, limit }
+    })
+    const batch = Array.isArray(data) ? data : data.tests || []
+    if (!Array.isArray(batch) || batch.length === 0) break
+    all.push(...batch)
+    if (batch.length < limit) break
+    offset += limit
+  }
+  return all
+}
+
+/** @param {object[]} runs */
+function pickLatestIosRegressionRun(runs) {
+  const hits = runs.filter(
+    r => r && typeof r.name === 'string' && IOS_REGRESSION_RUN_RE.test(r.name)
+  )
+  hits.sort((a, b) => (b.created_on || 0) - (a.created_on || 0))
+  return hits[0] || null
+}
+
+/**
+ * @param {string} src
+ */
+function extractFirstDescribeTitle(src) {
+  const m = src.match(/describe\s*\(\s*(['"`])((?:\\.|(?!\1).)*)\1/)
+  if (!m) return null
+  return unescapeJsString(m[2])
+}
+
+/**
+ * @param {string} src
+ * @returns {string[]}
+ */
+function extractStaticItTitles(src) {
+  const titles = []
+  const re = /\bit\s*\(\s*(['"`])((?:\\.|(?!\1).)*)\1/g
+  let m
+  while ((m = re.exec(src)) !== null) {
+    const q = m[1]
+    const inner = unescapeJsString(m[2])
+    if (q === '`' && inner.includes('${')) continue
+    titles.push(inner)
+  }
+  return titles
+}
+
+/**
+ * Map `"<describe title>\\t<it title>"` → spec rel paths (see WDIO `beforeTest` / `afterTest`).
+ * @param {{ rel: string, abs: string }[]} testFiles
+ */
+function addSuiteCaseKeysForSpec(map, rel, suite, titles) {
+  const s = suite.trim()
+  for (const raw of titles) {
+    const t = raw.trim()
+    if (!t) continue
+    const key = `${s}\t${t}`
+    if (!map.has(key)) map.set(key, new Set())
+    map.get(key).add(rel)
+  }
+}
+
+function buildSuiteCaseToSpecRelMap(testFiles) {
+  /** @type {Map<string, Set<string>>} */
+  const map = new Map()
+  for (const { rel, abs } of testFiles) {
+    let text = ''
+    try {
+      text = fs.readFileSync(abs, 'utf8')
+    } catch {
+      continue
+    }
+    const manual = DYNAMIC_SUITE_CASES_BY_SPEC_REL[rel]
+    const suite = manual?.suite ?? extractFirstDescribeTitle(text)
+    if (!suite) continue
+    const titles = manual?.titles ?? extractStaticItTitles(text)
+    addSuiteCaseKeysForSpec(map, rel, suite, titles)
+  }
+  /** @type {Map<string, string[]>} */
+  const out = new Map()
+  for (const [k, set] of map) {
+    out.set(k, [...set])
+  }
+  return out
+}
+
+function createTestrailCaseResolver(client) {
+  const caseMeta = new Map()
+  const sectionNameById = new Map()
+
+  return async function resolveCase(caseId) {
+    if (caseMeta.has(caseId)) return caseMeta.get(caseId)
+    const { data } = await client.get(`/get_case/${caseId}`)
+    const caseTitle = (data.title || '').trim()
+    const secId = data.section_id
+    if (!sectionNameById.has(secId)) {
+      const { data: sec } = await client.get(`/get_section/${secId}`)
+      sectionNameById.set(secId, (sec.name || '').trim())
+    }
+    const sectionName = sectionNameById.get(secId) || ''
+    const meta = { sectionName, caseTitle }
+    caseMeta.set(caseId, meta)
+    return meta
+  }
+}
+
+/**
+ * @param {(id: number) => Promise<{ sectionName: string, caseTitle: string }>} resolveCase
+ * @param {{ unmappedCount: number, unmappedFailedCount: number, unmappedSamples: string[] }} acc
+ */
+async function tryResolveTestrailCaseMeta(resolveCase, caseId, sid, acc) {
+  try {
+    return await resolveCase(caseId)
+  } catch {
+    acc.unmappedCount += 1
+    if (sid === TESTRAIL_STATUS_FAILED) acc.unmappedFailedCount += 1
+    if (acc.unmappedSamples.length < 8) {
+      acc.unmappedSamples.push(`(case ${caseId} API error)`)
+    }
+    return null
+  }
+}
+
+/**
+ * @param {object} t TestRail test row
+ * @param {Map<string, string[]>} suiteCaseToSpecRels
+ * @param {(id: number) => Promise<{ sectionName: string, caseTitle: string }>} resolveCase
+ * @param {{ failedSet: Set<string>, mappedTotal: number, mappedPassed: number, mappedFailed: number, unmappedCount: number, unmappedFailedCount: number, unmappedSamples: string[] }} acc
+ */
+async function applyTestrailTestRow(t, suiteCaseToSpecRels, resolveCase, acc) {
+  const sid = t.status_id
+  const caseId = t.case_id
+  const meta = await tryResolveTestrailCaseMeta(resolveCase, caseId, sid, acc)
+  if (!meta) return
+
+  const mapKey = `${meta.sectionName}\t${meta.caseTitle}`
+  const rels = suiteCaseToSpecRels.get(mapKey)
+  if (!rels || rels.length === 0) {
+    acc.unmappedCount += 1
+    if (sid === TESTRAIL_STATUS_FAILED) acc.unmappedFailedCount += 1
+    if (acc.unmappedSamples.length < 12) acc.unmappedSamples.push(mapKey)
+    return
+  }
+
+  acc.mappedTotal += 1
+  if (sid === TESTRAIL_STATUS_PASSED) acc.mappedPassed += 1
+  else if (sid === TESTRAIL_STATUS_FAILED) acc.mappedFailed += 1
+
+  if (sid === TESTRAIL_STATUS_FAILED) {
+    for (const rel of rels) acc.failedSet.add(rel)
+  }
+}
+
+/**
+ * @param {import('axios').AxiosInstance} client
+ * @param {Map<string, string[]>} suiteCaseToSpecRels
+ */
+async function fetchTestrailIosRegressionContext(client, suiteCaseToSpecRels) {
+  const runs = await fetchAllProjectRuns(client)
+  const run = pickLatestIosRegressionRun(runs)
+  if (!run) {
+    return {
+      ok: false,
+      error:
+        'No iOS [REGRESSION] Test Run: YYYY-MM-DD found in TestRail project',
+      run: null,
+      failedSpecRels: [],
+      mappedTotal: 0,
+      mappedPassed: 0,
+      mappedFailed: 0,
+      unmappedCount: 0,
+      unmappedFailedCount: 0,
+      unmappedSamples: /** @type {string[]} */ ([])
+    }
+  }
+
+  const tests = await fetchAllTestsForRun(client, run.id)
+  const resolveCase = createTestrailCaseResolver(client)
+  const acc = {
+    failedSet: new Set(),
+    mappedTotal: 0,
+    mappedPassed: 0,
+    mappedFailed: 0,
+    unmappedCount: 0,
+    unmappedFailedCount: 0,
+    unmappedSamples: /** @type {string[]} */ ([])
+  }
+  for (const t of tests) {
+    await applyTestrailTestRow(t, suiteCaseToSpecRels, resolveCase, acc)
+  }
+
+  const failedSpecRels = [...acc.failedSet].sort()
+  const mappedPassPct =
+    acc.mappedTotal === 0
+      ? null
+      : Math.round((100 * acc.mappedPassed) / acc.mappedTotal)
+
+  return {
+    ok: true,
+    error: null,
+    run,
+    failedSpecRels,
+    mappedTotal: acc.mappedTotal,
+    mappedPassed: acc.mappedPassed,
+    mappedFailed: acc.mappedFailed,
+    mappedPassPct,
+    unmappedCount: acc.unmappedCount,
+    unmappedFailedCount: acc.unmappedFailedCount,
+    unmappedSamples: acc.unmappedSamples
+  }
+}
 
 /** @param {string} abs */
 function safeStatSync(abs) {
@@ -435,6 +746,91 @@ function isTestIdReferencedInSpecSources(id, literals, corpus, literalList) {
     }
   }
   return false
+}
+
+/**
+ * Features touched by failing regression tests (spec path heuristic or feature
+ * testIDs referenced in the failed spec source).
+ * @param {string[]} failedSpecRels
+ * @param {string[]} featureNames
+ * @param {Record<string, object>} featureStats
+ */
+function addFeaturesTouchedByFailedSpec(
+  rel,
+  featureNames,
+  featureStats,
+  failed
+) {
+  const abs = path.join(E2E_APPIUM_DIR, ...rel.split('/'))
+  let specText = ''
+  try {
+    specText = fs.readFileSync(abs, 'utf8')
+  } catch {
+    specText = ''
+  }
+  const literals = new Set()
+  collectStringLiteralsFromTs(specText, literals)
+  const literalList = [...literals]
+  const relLower = rel.toLowerCase()
+  for (const f of featureNames) {
+    if (!FEATURE_SIGNALS[f] || excludedFromCoverageMetrics(f)) continue
+    if (featureMatches(relLower, specText, f)) {
+      failed.add(f)
+      continue
+    }
+    const ids = featureStats[f].testIdsDeclaredList
+    if (!ids || ids.length === 0) continue
+    for (const id of ids) {
+      if (
+        isTestIdReferencedInSpecSources(id, literals, specText, literalList)
+      ) {
+        failed.add(f)
+        break
+      }
+    }
+  }
+}
+
+function computeRegressionFailedFeatures(
+  failedSpecRels,
+  featureNames,
+  featureStats
+) {
+  const failed = new Set()
+  for (const rel of failedSpecRels) {
+    addFeaturesTouchedByFailedSpec(rel, featureNames, featureStats, failed)
+  }
+  return failed
+}
+
+/**
+ * @param {string[]} featuresWithSignalsInScope
+ * @param {Record<string, object>} featureStats
+ * @param {Set<string>} regressionFailedFeatures
+ */
+function computeRegressionAdjustedMetrics(
+  featuresWithSignalsInScope,
+  featureStats,
+  regressionFailedFeatures
+) {
+  const nInScope = featuresWithSignalsInScope.length
+  const stableCount = featuresWithSignalsInScope.filter(f => {
+    const s = featureStats[f]
+    const o =
+      s.tests.length > 0 ||
+      (s.testIdsDeclared > 0 && s.testIdsReferencedInSpec > 0)
+    return o && !regressionFailedFeatures.has(f)
+  }).length
+  const unstableCount = featuresWithSignalsInScope.filter(f =>
+    regressionFailedFeatures.has(f)
+  ).length
+  const stablePct =
+    nInScope === 0 ? 0 : Math.round((100 * stableCount) / nInScope)
+  return {
+    regressionAdjustedCoveragePercent: stablePct,
+    regressionStableFeatureCount: stableCount,
+    regressionFailedFeatureCount: unstableCount
+  }
 }
 
 /**
@@ -846,7 +1242,12 @@ function printJsonReport(ctx) {
     coveredModalsPath,
     coveredModalsEither,
     modalPctPath,
-    modalPctEither
+    modalPctEither,
+    regressionAdjustedCoveragePercent,
+    regressionStableFeatureCount,
+    regressionFailedFeatureCount,
+    testrail,
+    regressionFailedFeatureNames
   } = counts
 
   console.log(
@@ -861,6 +1262,13 @@ function printJsonReport(ctx) {
           totalCoveragePercent,
           totalCoveragePercentBasis:
             'inScopeMappedFeatures_union_specPathOrTestIdInSpec',
+          regressionAdjustedCoveragePercent,
+          regressionAdjustedCoveragePercentBasis:
+            'inScopeMappedFeatures_heuristicO_and_noMappedIosRegressionFailure',
+          regressionStableFeatureCount,
+          regressionFailedFeatureCount,
+          regressionFailedFeatureNames,
+          testrail,
           featuresTotal: featureNames.length,
           featuresWithMapping: featuresWithSignals.length,
           featuresExcludedFromMetrics: excludedFeatureList,
@@ -886,6 +1294,7 @@ function printJsonReport(ctx) {
             testIdsUnreferencedList,
             ...rest
           } = s
+          const regFail = regressionFailedFeatureNames.includes(f)
           return {
             name: f,
             ...rest,
@@ -898,6 +1307,7 @@ function printJsonReport(ctx) {
             coveredBySpecOrTestIdInSpec:
               s.tests.length > 0 ||
               (s.testIdsDeclared > 0 && s.testIdsReferencedInSpec > 0),
+            iosRegressionMappedFailure: regFail,
             testIdsDeclaredList,
             testIdsReferencedList,
             testIdsUnreferencedList
@@ -1015,47 +1425,49 @@ function printTextReportHeader(ctx) {
   console.log(
     `Appium: ${testFiles.length} spec files scanned for paths + testID text`
   )
+  printTestrailRegressionSummary(ctx)
   console.log('')
 }
 
-/**
- * @param {object} ctx
- */
-function printTextReportBody(ctx) {
+function printTestrailRegressionSummary(ctx) {
   const {
-    featureNames,
-    featureStats,
-    featuresWithSignalsInScope,
-    modalCoverage,
-    verbose
+    testrail: tr,
+    regressionAdjustedCoveragePercent: rAdj,
+    regressionStableFeatureCount: rStable,
+    featuresWithSignalsInScope
   } = ctx
-
-  console.log(
-    'All app/new/features folders (order: O A–Z, then all X by .tsx count ↓, then all △ by .tsx count ↓):'
-  )
-  console.log(
-    '  O  = spec path heuristic match OR any declared testID from that feature appears in a *.spec.ts'
-  )
-  console.log(
-    '  X  = in-scope gap: add/extend Appium specs (or FEATURE_SIGNALS / testIDs)'
-  )
-  console.log(
-    '  △  = excluded from metrics (see E2E_COVERAGE_EXCLUDED_FEATURES)'
-  )
-  console.log('')
-  const nameColWidth = Math.max(...featureNames.map(n => n.length), 1)
-  const sortedFeatureNamesForList = [...featureNames].sort((a, b) =>
-    featureListSortKey(a, b, featureStats)
-  )
-  for (const f of sortedFeatureNamesForList) {
-    const mark = featureCoverageMark(f, featureStats)
-    const unmapped = !FEATURE_SIGNALS[f]
-      ? '  [no FEATURE_SIGNALS in script]'
-      : ''
-    console.log(`${mark}  ${f.padEnd(nameColWidth)}${unmapped}`)
+  if (tr?.enabled) {
+    console.log('')
+    console.log(
+      `Regression-adjusted: ${rAdj}%  (${rStable}/${featuresWithSignalsInScope.length} in-scope mapped features — heuristic O and no failing test in latest iOS regression run mapped to that feature)`
+    )
+    console.log(
+      `TestRail iOS run:   "${tr.runName}" (id ${tr.runId}) — mapped results: ${
+        tr.mappedPassed
+      } pass, ${tr.mappedFailed} fail / ${tr.mappedTestsInRun} (${
+        tr.mappedPassPercent ?? 'n/a'
+      }% pass); ${tr.unmappedTestResults} unmapped rows (${
+        tr.unmappedFailedTestResults
+      } failed)`
+    )
+    if (tr.failedSpecRelPaths?.length) {
+      console.log(
+        `  Failing specs (maintenance / UI drift): ${tr.failedSpecRelPaths.join(
+          ', '
+        )}`
+      )
+    }
+    return
   }
-  console.log('')
+  if (tr) {
+    console.log('')
+    console.log(
+      `TestRail: skipped (${tr.skipReason}). Regression-adjusted % equals heuristic total when skipped.`
+    )
+  }
+}
 
+function printMappedFeatureGaps(featuresWithSignalsInScope, featureStats) {
   console.log(
     'Mapped features with neither spec path nor testID string in any spec:'
   )
@@ -1071,19 +1483,77 @@ function printTextReportBody(ctx) {
     }
   }
   console.log('')
+}
 
+function printUnmappedFeatureSignalGaps(featureNames, featureStats) {
   const unmappedFeatures = featureNames.filter(f => !FEATURE_SIGNALS[f])
-  if (unmappedFeatures.length > 0) {
-    console.log('Unmapped feature folders (add signals in script if needed):')
-    for (const f of unmappedFeatures) {
-      const { components, screens } = featureStats[f]
-      console.log(`  - ${f} (${screens} screen-like, ${components} .tsx)`)
-    }
-    console.log('')
+  if (unmappedFeatures.length === 0) return
+  console.log('Unmapped feature folders (add signals in script if needed):')
+  for (const f of unmappedFeatures) {
+    const { components, screens } = featureStats[f]
+    console.log(`  - ${f} (${screens} screen-like, ${components} .tsx)`)
   }
+  console.log('')
+}
+
+/**
+ * @param {object} ctx
+ */
+function printTextReportBody(ctx) {
+  const {
+    featureNames,
+    featureStats,
+    featuresWithSignalsInScope,
+    modalCoverage,
+    verbose,
+    regressionFailedFeatures,
+    testrail
+  } = ctx
+
+  console.log(
+    'All app/new/features folders (order: O A–Z, then all X by .tsx count ↓, then all △ by .tsx count ↓):'
+  )
+  console.log(
+    '  O  = spec path heuristic match OR any declared testID from that feature appears in a *.spec.ts'
+  )
+  console.log(
+    '  X  = in-scope gap: add/extend Appium specs (or FEATURE_SIGNALS / testIDs)'
+  )
+  console.log(
+    '  △  = excluded from metrics (see E2E_COVERAGE_EXCLUDED_FEATURES)'
+  )
+  console.log(
+    '  trailing * = mapped failing case in latest iOS TestRail regression run (spec path or testIDs in that spec)'
+  )
+  console.log('')
+  const nameColWidth = Math.max(...featureNames.map(n => n.length), 1)
+  const regSet =
+    regressionFailedFeatures instanceof Set
+      ? regressionFailedFeatures
+      : new Set(regressionFailedFeatures || [])
+  const sortedFeatureNamesForList = [...featureNames].sort((a, b) =>
+    featureListSortKey(a, b, featureStats)
+  )
+  for (const f of sortedFeatureNamesForList) {
+    const mark = featureCoverageMark(f, featureStats)
+    const unmapped = !FEATURE_SIGNALS[f]
+      ? '  [no FEATURE_SIGNALS in script]'
+      : ''
+    const reg = regSet.has(f) ? '*' : ' '
+    console.log(`${mark}${reg} ${f.padEnd(nameColWidth)}${unmapped}`)
+  }
+  console.log('')
+
+  printMappedFeatureGaps(featuresWithSignalsInScope, featureStats)
+  printUnmappedFeatureSignalGaps(featureNames, featureStats)
 
   if (verbose) {
-    printVerboseReport({ featureNames, featureStats, modalCoverage })
+    printVerboseReport({
+      featureNames,
+      featureStats,
+      modalCoverage,
+      testrail
+    })
   } else {
     console.log(
       'Run with --verbose for per-feature spec lists and unmatched modals.'
@@ -1148,14 +1618,96 @@ function printVerboseUncoveredModals(modalCoverage) {
 /**
  * @param {object} ctx
  */
+function printVerboseTestrailFailures(testrail) {
+  if (!testrail?.enabled || !testrail.failedSpecRelPaths?.length) return
+  console.log('\nTestRail — specs with failing results in mapped run:')
+  for (const p of testrail.failedSpecRelPaths) console.log(`  ${p}`)
+}
+
 function printVerboseReport(ctx) {
-  const { featureNames, featureStats, modalCoverage } = ctx
+  const { featureNames, featureStats, modalCoverage, testrail } = ctx
   printVerboseSpecMatches(featureNames, featureStats)
   printVerboseTestIdGaps(featureNames, featureStats)
   printVerboseUncoveredModals(modalCoverage)
+  printVerboseTestrailFailures(testrail)
 }
 
-function main() {
+/**
+ * @param {{ rel: string, abs: string }[]} testFiles
+ * @param {string[]} featureNames
+ * @param {Record<string, object>} featureStats
+ */
+async function loadTestrailRegressionSummary(
+  testFiles,
+  featureNames,
+  featureStats
+) {
+  /** @type {{ enabled: boolean, skipReason?: string, runId?: number, runName?: string, mappedTestsInRun?: number, mappedPassed?: number, mappedFailed?: number, mappedPassPercent?: number | null, unmappedTestResults?: number, unmappedFailedTestResults?: number, failedSpecRelPaths?: string[], unmappedKeySamples?: string[] }} */
+  let testrail = { enabled: false, skipReason: 'TESTRAIL_API_KEY not set' }
+  let regressionFailedFeatures = new Set()
+
+  if (process.argv.includes('--no-testrail')) {
+    return {
+      testrail: { enabled: false, skipReason: '--no-testrail' },
+      regressionFailedFeatures
+    }
+  }
+
+  const useTestrail = Boolean(process.env.TESTRAIL_API_KEY)
+  if (!useTestrail) {
+    return { testrail, regressionFailedFeatures }
+  }
+
+  const client = createTestrailClient()
+  if (!client) {
+    return {
+      testrail: { enabled: false, skipReason: 'createTestrailClient failed' },
+      regressionFailedFeatures
+    }
+  }
+
+  try {
+    const suiteCaseToSpecRels = buildSuiteCaseToSpecRelMap(testFiles)
+    const tr = await fetchTestrailIosRegressionContext(
+      client,
+      suiteCaseToSpecRels
+    )
+    if (tr.ok && tr.run) {
+      regressionFailedFeatures = computeRegressionFailedFeatures(
+        tr.failedSpecRels,
+        featureNames,
+        featureStats
+      )
+      testrail = {
+        enabled: true,
+        runId: tr.run.id,
+        runName: tr.run.name,
+        mappedTestsInRun: tr.mappedTotal,
+        mappedPassed: tr.mappedPassed,
+        mappedFailed: tr.mappedFailed,
+        mappedPassPercent: tr.mappedPassPct,
+        unmappedTestResults: tr.unmappedCount,
+        unmappedFailedTestResults: tr.unmappedFailedCount,
+        failedSpecRelPaths: tr.failedSpecRels,
+        unmappedKeySamples: tr.unmappedSamples
+      }
+    } else {
+      testrail = {
+        enabled: false,
+        skipReason: tr.error || 'TestRail fetch incomplete'
+      }
+    }
+  } catch (e) {
+    testrail = {
+      enabled: false,
+      skipReason: e instanceof Error ? e.message : String(e)
+    }
+  }
+
+  return { testrail, regressionFailedFeatures }
+}
+
+async function main() {
   const json = process.argv.includes('--json')
   const verbose = process.argv.includes('--verbose')
 
@@ -1196,7 +1748,24 @@ function main() {
     modalsInScope,
     modals
   )
-  const counts = { ...coverageBase, ...modalPercents }
+
+  const { testrail, regressionFailedFeatures } =
+    await loadTestrailRegressionSummary(testFiles, featureNames, featureStats)
+
+  const regressionAdj = computeRegressionAdjustedMetrics(
+    coverageBase.featuresWithSignalsInScope,
+    featureStats,
+    regressionFailedFeatures
+  )
+  const regressionFailedFeatureNames = [...regressionFailedFeatures].sort()
+
+  const counts = {
+    ...coverageBase,
+    ...modalPercents,
+    ...regressionAdj,
+    testrail,
+    regressionFailedFeatureNames
+  }
 
   if (json) {
     printJsonReport({
@@ -1217,15 +1786,21 @@ function main() {
     excludedFeatureList,
     testFiles,
     modals,
-    modalsInScope
+    modalsInScope,
+    testrail: counts.testrail
   })
   printTextReportBody({
     featureNames,
     featureStats,
     featuresWithSignalsInScope: counts.featuresWithSignalsInScope,
     modalCoverage,
-    verbose
+    verbose,
+    regressionFailedFeatures,
+    testrail: counts.testrail
   })
 }
 
-main()
+main().catch(err => {
+  console.error(err)
+  process.exit(1)
+})
