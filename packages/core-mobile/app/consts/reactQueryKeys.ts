@@ -52,6 +52,7 @@ export enum ReactQueryKeys {
   FUSION_TOKENS = 'fusionTokens',
   FUSION_MINIMUM_TRANSFER_AMOUNT = 'fusionMinimumTransferAmount',
   FUSION_SWAP_FEE_ESTIMATE = 'fusionSwapFeeEstimate',
+  FUSION_SWAP_BALANCE = 'fusionSwapBalance',
 
   // token aggregator
   TOKEN_LOOKUP = 'tokenLookup',

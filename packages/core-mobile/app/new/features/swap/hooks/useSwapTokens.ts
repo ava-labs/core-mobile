@@ -5,8 +5,6 @@ import { getV1Tokens } from 'utils/api/generated/tokenAggregator/aggregatorApi.c
 import { tokenAggregatorApi } from 'utils/api/clients/aggregatedTokensApiClient'
 import { LocalTokenWithBalance } from 'store/balance'
 import { getChainIdFromCaip2, isSvmChainId } from 'utils/caip2ChainIds'
-import { selectActiveAccount } from 'store/account'
-import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { TokenType } from '@avalabs/vm-module-types'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
@@ -14,6 +12,7 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { selectIsSolanaSwapBlocked } from 'store/posthog'
 import { mapApiTokenToLocal } from '../utils/mapApiTokenToLocal'
 import { getLocalTokenIdFromApi } from '../utils/getLocalTokenIdFromApi'
+import { useSwapNetworkBalances } from './useSwapNetworkBalances'
 
 const STALE_TIME = 5 * 60 * 1000 // 5 minutes
 
@@ -46,7 +45,7 @@ export const useSwapTokens = (
 
   // Derive chainId from caip2Id
   const chainId = useMemo(() => getChainIdFromCaip2(caip2Id), [caip2Id])
-  const activeAccount = useSelector(selectActiveAccount)
+
   const { getNetwork } = useNetworks()
 
   // Get current network
@@ -55,11 +54,8 @@ export const useSwapTokens = (
     [chainId, getNetwork]
   )
 
-  // Get balances
-  const balances = useTokensWithBalanceByNetworkForAccount(
-    activeAccount,
-    chainId
-  )
+  // Balances for this network — works for both enabled and disabled networks
+  const balances = useSwapNetworkBalances(chainId)
 
   // Fetch tokens from API
   const query = useQuery({
