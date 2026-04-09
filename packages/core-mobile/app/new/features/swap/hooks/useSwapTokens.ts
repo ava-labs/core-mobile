@@ -16,6 +16,7 @@ import { getLocalTokenIdFromApi } from '../utils/getLocalTokenIdFromApi'
 
 const STALE_TIME = 2 * 60 * 1000 // 2 minutes
 const PAGE_LIMIT = 50 // max tokens per page
+const EMPTY_SEARCH_PARAMS = {} // stable reference to avoid spurious query key changes
 
 type UseSwapTokensResult = {
   tokens: LocalTokenWithBalance[]
@@ -59,9 +60,11 @@ export const useSwapTokens = (
   )
 
   // Determine server-side search params
+  // Use a stable constant for the empty case so the query key doesn't change
+  // on every keystroke while the search term is still too short to send.
   const searchParams = useMemo(() => {
     const trimmed = searchText?.trim() ?? ''
-    if (trimmed.length < 2) return {}
+    if (trimmed.length < 2) return EMPTY_SEARCH_PARAMS
     if (isAddressLikeSearch(trimmed, isDeveloperMode)) {
       return { address: trimmed }
     }

@@ -235,7 +235,7 @@ export const SelectToSwapTokenScreen = ({
       renderEmpty={renderEmpty}
       onEndReached={handleEndReached}
       onEndReachedThreshold={0.5}
-      renderFooter={renderListFooter}
+      renderListFooter={renderListFooter}
     />
   )
 }

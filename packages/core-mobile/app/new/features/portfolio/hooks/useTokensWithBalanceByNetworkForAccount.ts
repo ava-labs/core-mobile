@@ -9,8 +9,8 @@ type Result = {
 }
 
 /**
- * Returns token balances for a specific account + network (chainId).
- * Returns [] if data not yet available or if no account or chainId is provided.
+ * Returns token balances and loading state for a specific account + network (chainId).
+ * Returns `{ tokens: [], isLoading }` if data not yet available or if no account or chainId is provided.
  */
 export function useTokensWithBalanceByNetworkForAccount(
   account?: Account,
