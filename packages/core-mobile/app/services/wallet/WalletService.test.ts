@@ -1,6 +1,19 @@
 import { WalletType } from 'services/wallet/types'
 import * as profileApiClientModule from 'utils/api/generated/profileApi.client'
+import type { GetAddressesResponse } from 'utils/api/generated/profileApi.client/types.gen'
 import WalletService from './WalletService'
+
+const avmWithActivityResponse: GetAddressesResponse = {
+  networkType: 'AVM',
+  externalAddresses: [{ address: 'X-avax1', index: 0, hasActivity: true }],
+  internalAddresses: []
+}
+
+const pvmEmptyResponse: GetAddressesResponse = {
+  networkType: 'PVM',
+  externalAddresses: [],
+  internalAddresses: []
+}
 
 const createDeferred = <T>() => {
   let resolve!: (value: T | PromiseLike<T>) => void
@@ -36,7 +49,11 @@ const mockPostV1GetAddresses =
 
 describe('WalletService.hasActivityFromXpubXP', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    mockPostV1GetAddresses.mockReset()
+  })
+
+  afterEach(() => {
+    jest.spyOn(WalletService, 'getRawXpubXP').mockRestore()
   })
 
   it('reuses one XP xpub for AVM and PVM activity lookups', async () => {
@@ -44,23 +61,18 @@ describe('WalletService.hasActivityFromXpubXP', () => {
       .spyOn(WalletService, 'getRawXpubXP')
       .mockResolvedValue('xpub-123')
 
-    mockPostV1GetAddresses
-      .mockResolvedValueOnce({
-        data: {
-          networkType: 'AVM',
-          externalAddresses: [
-            { address: 'X-avax1', index: 0, hasActivity: true }
-          ],
-          internalAddresses: []
+    // AVM and PVM requests run in parallel; mockResolvedValueOnce order is not stable across environments.
+    mockPostV1GetAddresses.mockImplementation(
+      (options: { body: { networkType: string } }) => {
+        if (options.body.networkType === 'AVM') {
+          return Promise.resolve({ data: avmWithActivityResponse })
         }
-      })
-      .mockResolvedValueOnce({
-        data: {
-          networkType: 'PVM',
-          externalAddresses: [],
-          internalAddresses: []
+        if (options.body.networkType === 'PVM') {
+          return Promise.resolve({ data: pvmEmptyResponse })
         }
-      })
+        return Promise.resolve({ data: pvmEmptyResponse })
+      }
+    )
 
     const hasActivity = await WalletService.hasActivityFromXpubXP({
       walletId: 'wallet-1',
@@ -72,8 +84,7 @@ describe('WalletService.hasActivityFromXpubXP', () => {
     expect(hasActivity).toBe(true)
     expect(getRawXpubXPSpy).toHaveBeenCalledTimes(1)
     expect(mockPostV1GetAddresses).toHaveBeenCalledTimes(2)
-    expect(mockPostV1GetAddresses).toHaveBeenNthCalledWith(
-      1,
+    expect(mockPostV1GetAddresses).toHaveBeenCalledWith(
       expect.objectContaining({
         body: expect.objectContaining({
           extendedPublicKey: 'xpub-123',
@@ -82,8 +93,7 @@ describe('WalletService.hasActivityFromXpubXP', () => {
         })
       })
     )
-    expect(mockPostV1GetAddresses).toHaveBeenNthCalledWith(
-      2,
+    expect(mockPostV1GetAddresses).toHaveBeenCalledWith(
       expect.objectContaining({
         body: expect.objectContaining({
           extendedPublicKey: 'xpub-123',
@@ -112,33 +122,19 @@ describe('WalletService.hasActivityFromXpubXP', () => {
   it('returns as soon as one XP network reports activity', async () => {
     jest.spyOn(WalletService, 'getRawXpubXP').mockResolvedValue('xpub-123')
 
-    const pendingPvmResponse = createDeferred<{
-      data: {
-        networkType: string
-        externalAddresses: Array<{
-          address: string
-          index: number
-          hasActivity: boolean
-        }>
-        internalAddresses: Array<{
-          address: string
-          index: number
-          hasActivity: boolean
-        }>
-      }
-    }>()
+    const pendingPvmResponse = createDeferred<{ data: GetAddressesResponse }>()
 
-    mockPostV1GetAddresses
-      .mockResolvedValueOnce({
-        data: {
-          networkType: 'AVM',
-          externalAddresses: [
-            { address: 'X-avax1', index: 0, hasActivity: true }
-          ],
-          internalAddresses: []
+    mockPostV1GetAddresses.mockImplementation(
+      (options: { body: { networkType: string } }) => {
+        if (options.body.networkType === 'AVM') {
+          return Promise.resolve({ data: avmWithActivityResponse })
         }
-      })
-      .mockImplementationOnce(() => pendingPvmResponse.promise)
+        if (options.body.networkType === 'PVM') {
+          return pendingPvmResponse.promise
+        }
+        return Promise.resolve({ data: pvmEmptyResponse })
+      }
+    )
 
     const hasActivityPromise = WalletService.hasActivityFromXpubXP({
       walletId: 'wallet-1',
@@ -154,13 +150,7 @@ describe('WalletService.hasActivityFromXpubXP', () => {
       )
     ])
 
-    pendingPvmResponse.resolve({
-      data: {
-        networkType: 'PVM',
-        externalAddresses: [],
-        internalAddresses: []
-      }
-    })
+    pendingPvmResponse.resolve({ data: pvmEmptyResponse })
 
     expect(resultOrTimeout).toBe(true)
   })
