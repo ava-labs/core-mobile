@@ -12,6 +12,7 @@ import {
   NetworkVMType,
   SolanaCaip2ChainId
 } from '@avalabs/core-chains-sdk'
+
 import SeedlessService from 'seedless/services/SeedlessService'
 import { CoreAccountType } from '@avalabs/types'
 import { uuid } from 'utils/uuid'
@@ -27,6 +28,7 @@ import {
   NETWORK_SOLANA,
   NETWORK_X
 } from 'services/network/consts'
+
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import Logger from 'utils/Logger'
 import SentryService from 'services/sentry/SentryService'

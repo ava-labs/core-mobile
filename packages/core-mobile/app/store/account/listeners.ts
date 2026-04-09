@@ -15,19 +15,22 @@ import {
   selectIsMigratingActiveAccounts,
   selectIsWalletLedger,
   selectSeedlessWallet,
-  selectWalletById,
   selectWallets,
+  setIsMigratingActiveAccounts,
   setWalletName
 } from 'store/wallet/slice'
+import { transactionSnackbar } from 'common/utils/toast'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import KeystoneService from 'features/keystone/services/KeystoneService'
+import { discoverLedgerAccountsFromXpubs } from 'new/features/ledger/utils/discoverLedgerAccountsFromXpubs'
 import { pendingSeedlessWalletNameStore } from 'features/onboarding/store'
 import {
   selectAccounts,
   setAccounts,
   setActiveAccountId,
+  setNonActiveAccounts,
   selectAccountsByWalletId,
   selectActiveAccount,
   setLedgerAddresses,
@@ -376,6 +379,99 @@ const rederiveAvmPvmAddressesIfNeeded = async (
   }
 }
 
+const migrateLedgerActiveAccounts = async ({
+  listenerApi,
+  walletId
+}: {
+  listenerApi: AppListenerEffectAPI
+  walletId: string
+}): Promise<void> => {
+  Logger.info('migrateLedgerActiveAccounts: ENTERED')
+  const { dispatch } = listenerApi
+  dispatch(setIsMigratingActiveAccounts(true))
+
+  try {
+    // Skip wallet state check for Ledger — we're explicitly triggered from
+    // onWalletImported which only fires during import. The wallet may not
+    // be ACTIVE yet during onboarding (still navigating to home screen).
+
+    Logger.info(
+      'migrateLedgerActiveAccounts: calling discoverLedgerAccountsFromXpubs'
+    )
+    const discovered = await discoverLedgerAccountsFromXpubs(walletId)
+    Logger.info('migrateLedgerActiveAccounts: discovery returned', {
+      count: discovered.length
+    })
+
+    if (discovered.length === 0) {
+      Logger.info('No additional Ledger accounts discovered')
+      return
+    }
+
+    // Build ledger addresses and accounts for Redux
+    const accounts: AccountCollection = {}
+    const ledgerAddressEntries: Record<
+      string,
+      {
+        mainnet: {
+          addressBTC: string
+          addressAVM: string
+          addressPVM: string
+          addressCoreEth: string
+        }
+        testnet: {
+          addressBTC: string
+          addressAVM: string
+          addressPVM: string
+          addressCoreEth: string
+        }
+        walletId: string
+        index: number
+        id: string
+      }
+    > = {}
+
+    for (const { account, mainnetAddresses, testnetAddresses } of discovered) {
+      accounts[account.id] = account
+      ledgerAddressEntries[account.id] = {
+        mainnet: {
+          addressBTC: mainnetAddresses.btc,
+          addressAVM: mainnetAddresses.avm,
+          addressPVM: mainnetAddresses.pvm,
+          addressCoreEth: mainnetAddresses.coreEth
+        },
+        testnet: {
+          addressBTC: testnetAddresses.btc,
+          addressAVM: testnetAddresses.avm,
+          addressPVM: testnetAddresses.pvm,
+          addressCoreEth: testnetAddresses.coreEth
+        },
+        walletId,
+        index: account.index,
+        id: account.id
+      }
+      recentAccountsStore.getState().addRecentAccounts([account.id])
+    }
+
+    dispatch(setNonActiveAccounts(accounts))
+    dispatch(setLedgerAddresses(ledgerAddressEntries))
+
+    transactionSnackbar.success({
+      message: `${discovered.length} ${
+        discovered.length > 1 ? 'accounts' : 'account'
+      } added`
+    })
+
+    Logger.info(
+      `Ledger discovery complete: ${discovered.length} accounts created`
+    )
+  } catch (error) {
+    Logger.error('Failed Ledger background account discovery', error)
+  } finally {
+    dispatch(setIsMigratingActiveAccounts(false))
+  }
+}
+
 export const addAccountListeners = (
   startListening: AppStartListening
 ): void => {
@@ -407,14 +503,9 @@ export const addAccountListeners = (
   startListening({
     actionCreator: onWalletImported,
     effect: async (action, listenerApi) => {
-      const { walletId } = action.payload
-      const state = listenerApi.getState()
-      const wallet = selectWalletById(walletId)(state)
-
-      if (!wallet) {
-        Logger.error('Wallet not found in store after import')
-        return
-      }
+      // Read walletType from the action payload rather than the store
+      // to avoid a dependency on wallet already being persisted in Redux.
+      const { walletId, walletType } = action.payload
 
       // Load wallet secret to initialize keychain session for the new wallet.
       // This mirrors what initAccounts does on app restart (line 62) and is
@@ -427,15 +518,28 @@ export const addAccountListeners = (
         return
       }
 
-      // scanWindow controls how many accounts are checked per batch,
-      // not the total number of discoverable accounts.
-      await migrateRemainingActiveAccounts({
-        listenerApi,
-        walletId,
-        walletType: wallet.type,
-        startIndex: 1,
-        scanWindow: 10
-      })
+      if (
+        walletType === WalletType.LEDGER ||
+        walletType === WalletType.LEDGER_LIVE
+      ) {
+        Logger.info('onWalletImported: starting Ledger account discovery', {
+          walletId,
+          walletType
+        })
+        // Ledger: discover accounts from stored xpubs (offline derivation)
+        await migrateLedgerActiveAccounts({
+          listenerApi,
+          walletId
+        })
+      } else {
+        await migrateRemainingActiveAccounts({
+          listenerApi,
+          walletId,
+          walletType,
+          startIndex: 1,
+          scanWindow: 10
+        })
+      }
     }
   })
 }
