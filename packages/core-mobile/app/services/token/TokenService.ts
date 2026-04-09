@@ -2,6 +2,7 @@ import {
   coinsInfo,
   coinsMarket,
   coinsMarketChart,
+  coinsMarketChartRange,
   coinsSearch,
   getBasicCoingeckoHttp,
   simplePrice,
@@ -289,6 +290,64 @@ export class TokenService {
     return coinsInfo(coingeckoBasicClient, {
       coinId: coingeckoId
     })
+  }
+
+  async getChartDataForCoinRange({
+    coingeckoId,
+    from,
+    to,
+    currency = VsCurrencyType.USD
+  }: {
+    coingeckoId: string
+    from: number
+    to: number
+    currency?: VsCurrencyType
+  }): Promise<ChartData | undefined> {
+    try {
+      return await coingeckoRetry<ChartData | undefined>(useCoingeckoProxy =>
+        this.fetchChartDataForCoinRange({
+          coingeckoId,
+          from,
+          to,
+          currency,
+          useCoingeckoProxy
+        })
+      )
+    } catch {
+      return undefined
+    }
+  }
+
+  private async fetchChartDataForCoinRange({
+    coingeckoId,
+    from,
+    to,
+    currency = VsCurrencyType.USD,
+    useCoingeckoProxy = false
+  }: {
+    coingeckoId: string
+    from: number
+    to: number
+    currency: VsCurrencyType
+    useCoingeckoProxy?: boolean
+  }): Promise<ChartData | undefined> {
+    let rawData: ContractMarketChartResponse | undefined
+    if (useCoingeckoProxy) {
+      rawData = await coingeckoProxyClient.marketChartRangeByCoinId({
+        id: coingeckoId,
+        vs_currency: currency,
+        from,
+        to
+      })
+    } else {
+      rawData = await coinsMarketChartRange(coingeckoBasicClient, {
+        coinId: coingeckoId,
+        from,
+        to,
+        currency
+      })
+    }
+    return rawData ? transformMartketChartRawPrices(rawData.prices) : undefined
   }
 
   private async fetchChartDataForCoin({
