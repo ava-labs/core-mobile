@@ -34,7 +34,7 @@ export const useFilteredSwapTokens = ({
     }
 
     // Sort by balance in currency (highest first)
-    return filteredTokens.sort(
+    return [...filteredTokens].sort(
       (a, b) => (b.balanceInCurrency ?? 0) - (a.balanceInCurrency ?? 0)
     )
   }, [tokens, hideZeroBalance, tokenVisibility, enabledChainIds])

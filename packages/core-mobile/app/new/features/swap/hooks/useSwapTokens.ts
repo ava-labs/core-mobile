@@ -20,8 +20,8 @@ const PAGE_LIMIT = 50 // max tokens per page
 type UseSwapTokensResult = {
   tokens: LocalTokenWithBalance[]
   isLoading: boolean
-  error: Error | null
-  fetchNextPage: () => void
+  error: unknown | null
+  fetchNextPage: () => Promise<unknown>
   hasNextPage: boolean
   isFetchingNextPage: boolean
 }
@@ -53,7 +53,7 @@ export const useSwapTokens = (
   const chainId = useMemo(() => getChainIdFromCaip2(caip2Id), [caip2Id])
   const activeAccount = useSelector(selectActiveAccount)
 
-  const balances = useTokensWithBalanceByNetworkForAccount(
+  const { tokens: balances } = useTokensWithBalanceByNetworkForAccount(
     activeAccount,
     chainId
   )

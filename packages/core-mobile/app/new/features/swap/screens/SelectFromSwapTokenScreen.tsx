@@ -22,6 +22,8 @@ import { ListRenderItem } from '@shopify/flash-list'
 import { LocalTokenWithBalance } from 'store/balance'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { isAddressLikeSearch } from 'common/utils/isAddressLikeSearch'
 import { useFilteredSwapTokens } from '../hooks/useFilteredSwapTokens'
 
 /**
@@ -56,6 +58,7 @@ export const SelectFromSwapTokenScreen = ({
   )
 
   const activeAccount = useSelector(selectActiveAccount)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   useEffect(() => {
     if (!networks || networks.length === 0) return
@@ -67,10 +70,11 @@ export const SelectFromSwapTokenScreen = ({
     }
   }, [defaultNetworkChainId, networks])
 
-  const portfolioTokens = useTokensWithBalanceByNetworkForAccount(
-    activeAccount,
-    selectedNetwork?.chainId
-  )
+  const { tokens: portfolioTokens, isLoading: isBalanceLoading } =
+    useTokensWithBalanceByNetworkForAccount(
+      activeAccount,
+      selectedNetwork?.chainId
+    )
 
   // Apply visibility/chain/zero-balance filtering
   const filteredTokens = useFilteredSwapTokens({
@@ -82,13 +86,14 @@ export const SelectFromSwapTokenScreen = ({
   const searchedResults = useMemo(() => {
     const q = searchText.trim().toLowerCase()
     if (q.length === 0) return filteredTokens
-    return filteredTokens.filter(
-      token =>
-        token.name.toLowerCase().includes(q) ||
-        token.symbol.toLowerCase().includes(q) ||
-        token.localId.toLowerCase().includes(q)
+    const addressLike = isAddressLikeSearch(searchText.trim(), isDeveloperMode)
+    return filteredTokens.filter(token =>
+      addressLike
+        ? token.localId.toLowerCase().includes(q)
+        : token.name.toLowerCase().includes(q) ||
+          token.symbol.toLowerCase().includes(q)
     )
-  }, [filteredTokens, searchText])
+  }, [filteredTokens, searchText, isDeveloperMode])
 
   const results = useMemo(
     () =>
@@ -202,11 +207,11 @@ export const SelectFromSwapTokenScreen = ({
   )
 
   const renderEmpty = useCallback(() => {
-    if (!networks || !selectedNetwork) {
+    if (!networks || !selectedNetwork || isBalanceLoading) {
       return <ActivityIndicator />
     }
     return <ErrorState icon={undefined} title="No tokens found" />
-  }, [networks, selectedNetwork])
+  }, [networks, selectedNetwork, isBalanceLoading])
 
   return (
     <ListScreenV2
