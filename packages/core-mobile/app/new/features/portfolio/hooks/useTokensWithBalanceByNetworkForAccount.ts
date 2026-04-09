@@ -18,8 +18,6 @@ export function useTokensWithBalanceByNetworkForAccount(
 ): Result {
   const { data, isLoading } = useAccountBalances(account)
 
-  // TODO: fix type mismatch after fully migrating to the new backend balance types
-  // @ts-ignore
   const tokens = useMemo(() => {
     if (!account || !chainId) return []
 
@@ -32,5 +30,7 @@ export function useTokensWithBalanceByNetworkForAccount(
     return balanceForNetwork?.tokens ?? []
   }, [account, chainId, data])
 
+  // TODO: fix type mismatch after fully migrating to the new backend balance types
+  // @ts-ignore
   return { tokens, isLoading }
 }
