@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import Logger from 'utils/Logger'
 import { Alert } from 'react-native'
 import LedgerService from 'services/ledger/LedgerService'
@@ -31,6 +32,7 @@ export const AppConnectionOnboardingScreen = ({
   const { setLedgerAddress } = useSetLedgerAddress()
   const { canGoBack, back } = useRouter()
   const dispatch = useDispatch()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const {
     connectedDeviceId,
@@ -55,9 +57,11 @@ export const AppConnectionOnboardingScreen = ({
       // background discovery after onboarding completes.
       const index0Mainnet = multiIndexKeys.mainnet[0]
       const index0Testnet = multiIndexKeys.testnet[0]
+      // Use current network's keys for the Account object (matches add-account behavior)
+      const index0Current = isDeveloperMode ? index0Testnet : index0Mainnet
 
       Logger.info('handleComplete called', {
-        hasAccount0Keys: !!index0Mainnet?.avalancheKeys,
+        hasAccount0Keys: !!index0Current?.avalancheKeys,
         totalIndices: Object.keys(multiIndexKeys.mainnet).length,
         hasConnectedDeviceId: !!connectedDeviceId,
         hasSelectedDerivationPath: !!selectedDerivationPath,
@@ -69,7 +73,7 @@ export const AppConnectionOnboardingScreen = ({
         selectedDerivationPath ?? LedgerDerivationPathType.BIP44
 
       if (
-        index0Mainnet?.avalancheKeys &&
+        index0Current?.avalancheKeys &&
         connectedDeviceId &&
         !isUpdatingWallet
       ) {
@@ -87,8 +91,8 @@ export const AppConnectionOnboardingScreen = ({
             deviceId: connectedDeviceId,
             deviceName: connectedDeviceName,
             derivationPathType: derivationPath,
-            avalancheKeys: index0Mainnet.avalancheKeys,
-            solanaKeys: index0Mainnet.solanaKeys,
+            avalancheKeys: index0Current.avalancheKeys,
+            solanaKeys: index0Current.solanaKeys,
             // Pass xpubs, public keys, + Solana addresses for background discovery
             additionalXpubs,
             additionalPublicKeys,
@@ -101,7 +105,10 @@ export const AppConnectionOnboardingScreen = ({
             walletId,
             accountId,
             keys: {
-              mainnet: index0Mainnet,
+              mainnet: index0Mainnet ?? {
+                solanaKeys: [],
+                avalancheKeys: undefined
+              },
               testnet: index0Testnet ?? {
                 solanaKeys: [],
                 avalancheKeys: undefined
@@ -156,6 +163,7 @@ export const AppConnectionOnboardingScreen = ({
       createLedgerWallet,
       connectedDeviceName,
       setLedgerAddress,
+      isDeveloperMode,
       onNavigateToComplete,
       handleCancel,
       dispatch
