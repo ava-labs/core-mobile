@@ -25,7 +25,8 @@ import {
   LedgerDerivationPathType,
   LedgerKeysByNetwork,
   LedgerMultiIndexKeys,
-  MAX_LEDGER_DISCOVERY_ACCOUNTS
+  MAX_LEDGER_DISCOVERY_ACCOUNTS,
+  PublicKeyInfo
 } from 'services/ledger/types'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -229,23 +230,15 @@ export default function AppConnectionScreen({
       // Get keys from service
       const count = isUpdatingWallet ? 1 : MAX_LEDGER_DISCOVERY_ACCOUNTS
       const startIndex = isUpdatingWallet ? accountIndex : 0
-      const solanaKeysRange =
-        await LedgerService.getSolanaKeysForRange(count, startIndex)
+      const solanaKeysRange = await LedgerService.getSolanaKeysForRange(
+        count,
+        startIndex
+      )
 
       // Update local state
-      setMultiIndexKeys(prev => {
-        const updatedMainnet = { ...prev.mainnet }
-        const updatedTestnet = { ...prev.testnet }
-        for (let i = 0; i < count; i++) {
-          const idx = startIndex + i
-          const solKeys = solanaKeysRange[i] ?? []
-          if (updatedMainnet[idx])
-            updatedMainnet[idx] = { ...updatedMainnet[idx], solanaKeys: solKeys }
-          if (updatedTestnet[idx])
-            updatedTestnet[idx] = { ...updatedTestnet[idx], solanaKeys: solKeys }
-        }
-        return { mainnet: updatedMainnet, testnet: updatedTestnet }
-      })
+      setMultiIndexKeys(prev =>
+        mergeSolanaKeys(prev, solanaKeysRange, { startIndex, count })
+      )
 
       // Show success toast notification
       if (showConnectionToasts) showSnackbar('Solana app connected')
@@ -399,4 +392,33 @@ export default function AppConnectionScreen({
       />
     </ScrollScreen>
   )
+}
+
+function mergeSolanaKeys(
+  prev: LedgerMultiIndexKeys,
+  solanaKeysRange: (PublicKeyInfo[] | null)[],
+  opts: { startIndex: number; count: number }
+): LedgerMultiIndexKeys {
+  const updatedMainnet = { ...prev.mainnet }
+  const updatedTestnet = { ...prev.testnet }
+
+  for (let i = 0; i < opts.count; i++) {
+    const idx = opts.startIndex + i
+    const solKeys = solanaKeysRange[i] ?? []
+
+    if (updatedMainnet[idx]) {
+      updatedMainnet[idx] = {
+        ...updatedMainnet[idx],
+        solanaKeys: solKeys
+      }
+    }
+    if (updatedTestnet[idx]) {
+      updatedTestnet[idx] = {
+        ...updatedTestnet[idx],
+        solanaKeys: solKeys
+      }
+    }
+  }
+
+  return { mainnet: updatedMainnet, testnet: updatedTestnet }
 }
