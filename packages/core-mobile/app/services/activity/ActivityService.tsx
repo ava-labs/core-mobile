@@ -69,6 +69,8 @@ export class ActivityService {
    * Unlike EVM networks which include token metadata in the main /networks endpoint,
    * Solana networks return empty tokens arrays and require fetching from /tokenlist?includeSolana.
    * This ensures SPL tokens show proper symbols (e.g., "ORCA") instead of "Unknown" in activity.
+   *
+   * TODO: when integrating with networks api v2, recheck this to see if it is still needed
    */
   private async enrichNetworkWithTokens(network: Network): Promise<Network> {
     if (network.vmName !== NetworkVMType.SVM) {
