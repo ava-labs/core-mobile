@@ -35,8 +35,10 @@ export function RepaySelectAmountScreen(): JSX.Element {
     AnalyticsService.capture('EarnRepaySuccess')
   }, [])
 
-  const handleError = useCallback(() => {
-    AnalyticsService.capture('EarnRepayFailure')
+  const handleError = useCallback((error?: unknown) => {
+    AnalyticsService.capture('EarnRepayFailure', {
+      errorMessage: error instanceof Error ? error.message : String(error ?? '')
+    })
   }, [])
 
   if (protocol === MarketNames.aave) {

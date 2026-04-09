@@ -55,8 +55,10 @@ export const SelectAmountScreen = (): JSX.Element => {
   }, [redirectToBorrow, setRedirectToBorrow, navigate])
 
   // Called when transaction is reverted or fails
-  const handleError = useCallback(() => {
-    AnalyticsService.capture('EarnDepositFailure')
+  const handleError = useCallback((error?: unknown) => {
+    AnalyticsService.capture('EarnDepositFailure', {
+      errorMessage: error instanceof Error ? error.message : String(error ?? '')
+    })
   }, [])
 
   if (!selectedAsset || !selectedMarket) {

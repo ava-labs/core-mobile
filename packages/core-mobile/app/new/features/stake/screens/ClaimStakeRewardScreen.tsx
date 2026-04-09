@@ -87,7 +87,9 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
   const onClaimError = (error: Error): void => {
     resetLedgerState()
     if (!isUserRejectedError(error)) {
-      AnalyticsService.capture('StakeClaimFail')
+      AnalyticsService.capture('StakeClaimFail', {
+        errorMessage: error.message
+      })
     }
     transactionSnackbar.error({ error: error.message })
   }

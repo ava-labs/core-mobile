@@ -106,11 +106,11 @@ export type AnalyticsEvents = {
   SeedlessSignIn: { oidcProvider: number }
   SeedlessSignUp: { oidcProvider: number }
   StakeCancelClaim: undefined
-  StakeClaimFail: undefined
+  StakeClaimFail: { errorMessage?: string }
   StakeClaimSuccess: undefined
   StakeCountStakes: { active: number; history: number; total: number }
   StakeDelegationSuccess: { isAdvanced: boolean }
-  StakeDelegationFail: { isAdvanced: boolean }
+  StakeDelegationFail: { isAdvanced: boolean; errorMessage?: string }
   StakeIssueClaim: undefined
   StakeIssueDelegation: undefined
   StakeOpened: undefined
@@ -237,7 +237,7 @@ export type AnalyticsEvents = {
     address: string
   }
   EarnDepositSuccess: undefined
-  EarnDepositFailure: undefined
+  EarnDepositFailure: { errorMessage?: string }
   EarnWithdrawStart: undefined
   EarnWithdrawSubmitted: {
     token: string
@@ -247,9 +247,9 @@ export type AnalyticsEvents = {
     address: string
   }
   EarnWithdrawSuccess: undefined
-  EarnWithdrawFailure: undefined
+  EarnWithdrawFailure: { errorMessage?: string }
   EarnClaimSuccess: undefined
-  EarnClaimFailure: undefined
+  EarnClaimFailure: { errorMessage?: string }
   EarnBorrowStart: undefined
   EarnBorrowSubmitted: {
     token: string
@@ -259,7 +259,7 @@ export type AnalyticsEvents = {
     address: string
   }
   EarnBorrowSuccess: undefined
-  EarnBorrowFailure: undefined
+  EarnBorrowFailure: { errorMessage?: string }
   EarnRepayStart: undefined
   EarnRepaySubmitted: {
     token: string
@@ -269,7 +269,7 @@ export type AnalyticsEvents = {
     address: string
   }
   EarnRepaySuccess: undefined
-  EarnRepayFailure: undefined
+  EarnRepayFailure: { errorMessage?: string }
 
   // IMPORT LEDGER FLOW
   OnboardingImportLedgerSelected: undefined

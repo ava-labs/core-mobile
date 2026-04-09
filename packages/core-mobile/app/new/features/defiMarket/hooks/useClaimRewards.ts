@@ -156,7 +156,10 @@ export const useClaimRewards = (): {
     } catch (error) {
       Logger.error('[DefiMarket] claimRewards Error:', error)
       if (!isUserRejectedError(error)) {
-        AnalyticsService.capture('EarnClaimFailure')
+        AnalyticsService.capture('EarnClaimFailure', {
+          errorMessage:
+            error instanceof Error ? error.message : String(error ?? '')
+        })
       }
     } finally {
       setClaimStatus('idle')
