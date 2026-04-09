@@ -33,22 +33,31 @@ export const btcSendTransaction = async ({
   try {
     let transaction: BtcTransactionRequest = { inputs, outputs }
 
-    // we need to re-create the transaction when fee rate has changed
+    // Re-create the transaction when fee rate has changed.
+    // Fetch fresh UTXOs from the network instead of using the stale snapshot
+    // from when the approval dialog was first shown — UTXOs can become spent
+    // between then and now, causing coinselect to fail.
     if (finalFeeRate !== 0 && finalFeeRate !== feeRate) {
       const provider = await ModuleManager.bitcoinModule.getProvider(
         mapToVmNetwork(network)
+      )
+      const freshBalance = await provider.getUtxoBalance(
+        account.addressBTC,
+        true
       )
       const updatedTx = createTransferTx(
         to,
         account.addressBTC,
         amount,
         finalFeeRate,
-        balance.utxos as BitcoinInputUTXO[],
+        (freshBalance?.utxos ?? balance.utxos) as BitcoinInputUTXO[],
         provider.getNetwork()
       )
 
       if (!updatedTx.inputs || !updatedTx.outputs) {
-        throw new Error('Unable to create transaction')
+        throw new Error(
+          `Unable to create transaction: insufficient funds for fee (${updatedTx.fee} sats required)`
+        )
       }
 
       transaction = { inputs: updatedTx.inputs, outputs: updatedTx.outputs }
@@ -67,9 +76,11 @@ export const btcSendTransaction = async ({
       signedData: signedTx
     })
   } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Failed to sign btc transaction'
     resolve({
       error: rpcErrors.internal({
-        message: 'Failed to sign btc transaction',
+        message,
         data: { cause: error }
       })
     })
