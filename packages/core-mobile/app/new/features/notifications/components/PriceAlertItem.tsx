@@ -1,9 +1,14 @@
-import React, { FC, useMemo } from 'react'
-import { Icons, MiniChart, Text, View } from '@avalabs/k2-alpine'
+import React, { FC } from 'react'
+import {
+  ActivityIndicator,
+  Icons,
+  MiniChart,
+  Text,
+  View
+} from '@avalabs/k2-alpine'
 import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { ChartData } from 'services/token/types'
+import { usePriceAlertChart } from '../hooks/usePriceAlertChart'
 import { AppNotification, isPriceAlertNotification } from '../types'
 import NotificationListItem from './NotificationListItem'
 import NotificationIcon from './NotificationIcon'
@@ -77,73 +82,38 @@ const Subtitle = ({
   )
 }
 
-const getChartDataFromTimestamp = (
-  dataPoints: ChartData['dataPoints'],
-  timestampMs: number
-): ChartData['dataPoints'] => {
-  let closestIndex = 0
-  let minDiff = Infinity
-
-  for (let i = 0; i < dataPoints.length; i++) {
-    const diff = Math.abs(
-      (dataPoints[i]?.date.getTime() ?? -timestampMs) - timestampMs
-    )
-    if (diff < minDiff) {
-      minDiff = diff
-      closestIndex = i
-    }
-  }
-
-  return dataPoints.slice(closestIndex)
-}
-
-const getChart = (
-  notification: AppNotification,
-  getWatchlistChart: (id: string) => ChartData
-): React.JSX.Element | undefined => {
-  if (!isPriceAlertNotification(notification)) return undefined
-  const tokenId = notification.data?.tokenId
-  if (!tokenId) return undefined
-
-  const chartData = getWatchlistChart(tokenId)
-  if (chartData.dataPoints.length === 0) return undefined
-
-  const slicedPoints = getChartDataFromTimestamp(
-    chartData.dataPoints,
-    notification.timestamp
-  )
-  if (slicedPoints.length < 2) return undefined
-
-  const firstValue = slicedPoints[0]?.value
-  const lastValue = slicedPoints[slicedPoints.length - 1]?.value
-  const negative =
-    lastValue !== undefined && firstValue !== undefined
-      ? lastValue < firstValue
-      : false
-
-  return (
-    <MiniChart
-      style={{ width: CHART_WIDTH, height: CHART_HEIGHT }}
-      data={slicedPoints}
-      negative={negative}
-      showReferenceLine
-    />
-  )
-}
-
 const PriceAlertItem: FC<PriceAlertItemProps> = ({
   notification,
   showSeparator,
   accessoryType,
   testID
 }) => {
-  const { getWatchlistChart } = useWatchlist()
   const { formatCurrency } = useFormatCurrency()
+  const { chartData, isLoading } = usePriceAlertChart(notification)
 
-  const chart = useMemo(
-    () => getChart(notification, getWatchlistChart),
-    [notification, getWatchlistChart]
-  )
+  let chart: React.JSX.Element | undefined
+  if (isLoading) {
+    chart = (
+      <View
+        style={{
+          width: CHART_WIDTH,
+          height: CHART_HEIGHT,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+        <ActivityIndicator size="small" />
+      </View>
+    )
+  } else if (chartData && chartData.dataPoints.length >= 2) {
+    chart = (
+      <MiniChart
+        style={{ width: CHART_WIDTH, height: CHART_HEIGHT }}
+        data={chartData.dataPoints}
+        negative={chartData.ranges.diffValue < 0}
+        showReferenceLine
+      />
+    )
+  }
 
   return (
     <NotificationListItem
