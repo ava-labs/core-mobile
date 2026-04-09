@@ -169,7 +169,9 @@ describe('getChartDataForCoinRange', () => {
   const TO = 1700086400 // FROM + 24 hours
 
   it('should return data from sdk and forward from/to', async () => {
-    coinsMarketChartRange.mockImplementationOnce(async () => MARKET_CHART as never)
+    coinsMarketChartRange.mockImplementationOnce(
+      async () => MARKET_CHART as never
+    )
     const result = await TokenService.getChartDataForCoinRange({
       coingeckoId: 'test',
       from: FROM,
@@ -192,7 +194,12 @@ describe('getChartDataForCoinRange', () => {
       to: TO
     })
     expect(proxyMock).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'test', from: FROM, to: TO, vs_currency: 'usd' })
+      expect.objectContaining({
+        id: 'test',
+        from: FROM,
+        to: TO,
+        vs_currency: 'usd'
+      })
     )
     expect(result).not.toBeUndefined()
     expect(result?.dataPoints.length).toBeGreaterThan(0)
