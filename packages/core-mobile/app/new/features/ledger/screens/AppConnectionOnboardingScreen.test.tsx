@@ -79,7 +79,7 @@ function createAsyncGenerator<T>(items: T[]): AsyncGenerator<T> {
     [Symbol.asyncIterator]() {
       return this
     },
-    async [Symbol.asyncDispose]() {}
+    [Symbol.asyncDispose]: () => Promise.resolve()
   }
 }
 

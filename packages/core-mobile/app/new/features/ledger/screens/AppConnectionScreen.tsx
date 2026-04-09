@@ -30,7 +30,6 @@ import {
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import Logger from 'utils/Logger'
-import { handleLedgerConnectionError } from '../utils/handleLedgerConnectionError'
 import {
   buildFirstAccountKeys,
   deriveRangeKeys
