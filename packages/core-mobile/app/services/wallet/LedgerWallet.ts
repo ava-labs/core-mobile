@@ -48,7 +48,7 @@ import {
   LEDGER_TIMEOUTS,
   getSolanaDerivationPath
 } from 'new/features/ledger/consts'
-import { bip32 } from 'utils/bip32'
+import { bip32, extendedPublicKeyToXpub } from 'utils/bip32'
 import Logger from 'utils/Logger'
 import {
   Curve,
@@ -1418,18 +1418,14 @@ export class LedgerWallet implements Wallet {
     if (this.isBIP44()) {
       const extendedKeys = await LedgerService.getExtendedPublicKeys(index)
       xpub = {
-        evm: bip32
-          .fromPublicKey(
-            Buffer.from(extendedKeys.evm.key, 'hex'),
-            Buffer.from(extendedKeys.evm.chainCode, 'hex')
-          )
-          .toBase58(),
-        avalanche: bip32
-          .fromPublicKey(
-            Buffer.from(extendedKeys.avalanche.key, 'hex'),
-            Buffer.from(extendedKeys.avalanche.chainCode, 'hex')
-          )
-          .toBase58()
+        evm: extendedPublicKeyToXpub(
+          extendedKeys.evm.key,
+          extendedKeys.evm.chainCode
+        ),
+        avalanche: extendedPublicKeyToXpub(
+          extendedKeys.avalanche.key,
+          extendedKeys.avalanche.chainCode
+        )
       }
     }
 
