@@ -91,7 +91,10 @@ const PriceAlertItem: FC<PriceAlertItemProps> = ({
   testID
 }) => {
   const { formatCurrency } = useFormatCurrency()
-  const { chartData, isLoading } = usePriceAlertChart(notification, index)
+  const { chartData, isLoading } = usePriceAlertChart(
+    notification,
+    (index ?? 0) * 100
+  )
 
   let chart: React.JSX.Element | undefined
   if (isLoading) {

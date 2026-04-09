@@ -11,7 +11,7 @@ import { AppNotification, isPriceAlertNotification } from '../types'
 
 export function usePriceAlertChart(
   notification: AppNotification,
-  index = 0
+  delay = 0
 ): {
   chartData: ChartData | undefined
   isLoading: boolean
@@ -19,14 +19,14 @@ export function usePriceAlertChart(
   const { getMarketTokenById } = useWatchlist()
   const currency = useSelector(selectSelectedCurrency)
 
-  // Stagger fetches by index to avoid bursting all chart requests simultaneously.
-  // Index 0 starts immediately; each subsequent item waits an additional 100ms.
-  const [isMounted, setIsMounted] = useState(index === 0)
+  // Stagger fetches to avoid bursting all chart requests simultaneously.
+  // delay=0 starts immediately; positive values defer the fetch by that many ms.
+  const [canFetch, setCanFetch] = useState(delay === 0)
   useEffect(() => {
-    if (index === 0) return
-    const timer = setTimeout(() => setIsMounted(true), index * 100)
+    if (delay === 0) return
+    const timer = setTimeout(() => setCanFetch(true), delay)
     return () => clearTimeout(timer)
-  }, [index])
+  }, [delay])
 
   const tokenId = isPriceAlertNotification(notification)
     ? notification.data?.tokenId
@@ -54,7 +54,7 @@ export function usePriceAlertChart(
         to,
         currency: currency.toLowerCase() as VsCurrencyType
       }),
-    enabled: !!coingeckoId && isMounted,
+    enabled: !!coingeckoId && canFetch,
     staleTime: Infinity
   })
 
