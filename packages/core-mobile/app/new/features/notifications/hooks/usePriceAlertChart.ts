@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useSelector } from 'react-redux'
@@ -8,12 +9,24 @@ import { ChartData } from 'services/token/types'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { AppNotification, isPriceAlertNotification } from '../types'
 
-export function usePriceAlertChart(notification: AppNotification): {
+export function usePriceAlertChart(
+  notification: AppNotification,
+  index = 0
+): {
   chartData: ChartData | undefined
   isLoading: boolean
 } {
   const { getMarketTokenById } = useWatchlist()
   const currency = useSelector(selectSelectedCurrency)
+
+  // Stagger fetches by index to avoid bursting all chart requests simultaneously.
+  // Index 0 starts immediately; each subsequent item waits an additional 100ms.
+  const [isMounted, setIsMounted] = useState(index === 0)
+  useEffect(() => {
+    if (index === 0) return
+    const timer = setTimeout(() => setIsMounted(true), index * 100)
+    return () => clearTimeout(timer)
+  }, [index])
 
   const tokenId = isPriceAlertNotification(notification)
     ? notification.data?.tokenId
@@ -41,8 +54,8 @@ export function usePriceAlertChart(notification: AppNotification): {
         to,
         currency: currency.toLowerCase() as VsCurrencyType
       }),
-    enabled: !!coingeckoId,
-    staleTime: Infinity // Chart data won't change, so we can set it to Infinity
+    enabled: !!coingeckoId && isMounted,
+    staleTime: Infinity
   })
 
   return { chartData: data ?? undefined, isLoading: !!coingeckoId && isLoading }

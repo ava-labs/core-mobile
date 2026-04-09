@@ -20,6 +20,7 @@ type PriceAlertItemProps = {
   notification: AppNotification
   showSeparator: boolean
   accessoryType: 'chevron' | 'none'
+  index?: number
   testID?: string
 }
 
@@ -86,10 +87,11 @@ const PriceAlertItem: FC<PriceAlertItemProps> = ({
   notification,
   showSeparator,
   accessoryType,
+  index,
   testID
 }) => {
   const { formatCurrency } = useFormatCurrency()
-  const { chartData, isLoading } = usePriceAlertChart(notification)
+  const { chartData, isLoading } = usePriceAlertChart(notification, index)
 
   let chart: React.JSX.Element | undefined
   if (isLoading) {
