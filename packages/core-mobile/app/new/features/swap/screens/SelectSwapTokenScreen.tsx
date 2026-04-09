@@ -20,6 +20,7 @@ import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNe
 import { ListRenderItem } from '@shopify/flash-list'
 import { LocalTokenWithBalance } from 'store/balance'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
+import { useDebounce } from 'hooks/useDebounce'
 import { useFilteredSwapTokens } from '../hooks/useFilteredSwapTokens'
 import { useSwapTokens } from '../hooks/useSwapTokens'
 
@@ -46,6 +47,7 @@ export const SelectSwapTokenScreen = ({
   } = useTheme()
   const { back, canGoBack } = useRouter()
   const [searchText, setSearchText] = useState<string>('')
+  const { debounced: debouncedSearchText } = useDebounce(searchText, 300)
 
   // Selected network state (default to first network or provided default)
   const [selectedNetwork, setSelectedNetwork] = useState<Network | undefined>(
@@ -73,12 +75,12 @@ export const SelectSwapTokenScreen = ({
   }, [selectedNetwork])
 
   // Lazy load tokens for selected network (with balance data merged)
-  const { tokens, isLoading } = useSwapTokens(caip2Id)
+  const { tokens, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useSwapTokens(caip2Id, debouncedSearchText)
 
   // Filter and sort tokens
   const baseResults = useFilteredSwapTokens({
     tokens,
-    searchText,
     hideZeroBalance
   })
   const results = useMemo(
@@ -97,6 +99,19 @@ export const SelectSwapTokenScreen = ({
     },
     [setSelectedToken, canGoBack, back]
   )
+
+  // Handle end reached for infinite scroll pagination
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage()
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+
+  // Render footer spinner while fetching next page
+  const renderListFooter = useCallback(() => {
+    if (!isFetchingNextPage) return null
+    return <ActivityIndicator sx={{ paddingVertical: 16 }} />
+  }, [isFetchingNextPage])
 
   // Render network tabs
   const renderNetworkSelector = useCallback(() => {
@@ -218,6 +233,9 @@ export const SelectSwapTokenScreen = ({
       }
       renderHeader={renderHeader}
       renderEmpty={renderEmpty}
+      onEndReached={handleEndReached}
+      onEndReachedThreshold={0.5}
+      renderFooter={renderListFooter}
     />
   )
 }
