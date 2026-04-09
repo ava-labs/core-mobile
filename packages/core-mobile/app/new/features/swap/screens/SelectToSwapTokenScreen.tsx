@@ -24,7 +24,7 @@ import { useDebounce } from 'hooks/useDebounce'
 import { useFilteredSwapTokens } from '../hooks/useFilteredSwapTokens'
 import { useSwapTokens } from '../hooks/useSwapTokens'
 
-export const SelectSwapTokenScreen = ({
+export const SelectToSwapTokenScreen = ({
   selectedToken,
   setSelectedToken,
   defaultNetworkChainId,
