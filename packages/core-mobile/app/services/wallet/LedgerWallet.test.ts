@@ -134,7 +134,8 @@ jest.mock('utils/bip32', () => ({
   bip32: {
     fromBase58: jest.fn(),
     fromPublicKey: jest.fn()
-  }
+  },
+  extendedPublicKeyToXpub: jest.fn().mockReturnValue('xpub-mock')
 }))
 
 // Mock providerUtils

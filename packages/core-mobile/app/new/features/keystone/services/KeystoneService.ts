@@ -1,6 +1,6 @@
 import { UR } from '@ngraveio/bc-ur'
 import KeystoneSDK from '@keystonehq/keystone-sdk'
-import { bip32 } from 'utils/bip32'
+import { extendedPublicKeyToXpub } from 'utils/bip32'
 import { KeystoneDataStorage } from 'features/keystone/storage/KeystoneDataStorage'
 
 class KeystoneService {
@@ -20,18 +20,14 @@ class KeystoneService {
       throw new Error('No ETH or AVAX account found')
     }
 
-    this.walletInfo.evm = bip32
-      .fromPublicKey(
-        Buffer.from(ethAccount.publicKey, 'hex'),
-        Buffer.from(ethAccount.chainCode, 'hex')
-      )
-      .toBase58()
-    this.walletInfo.xp = bip32
-      .fromPublicKey(
-        Buffer.from(avaxAccount.publicKey, 'hex'),
-        Buffer.from(avaxAccount.chainCode, 'hex')
-      )
-      .toBase58()
+    this.walletInfo.evm = extendedPublicKeyToXpub(
+      ethAccount.publicKey,
+      ethAccount.chainCode
+    )
+    this.walletInfo.xp = extendedPublicKeyToXpub(
+      avaxAccount.publicKey,
+      avaxAccount.chainCode
+    )
     this.walletInfo.mfp = mfp
   }
 
