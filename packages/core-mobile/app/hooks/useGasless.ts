@@ -99,11 +99,19 @@ export const useGasless = ({
     const MAX_ATTEMPTS = 1
 
     if (!network || !chainId) {
+      AnalyticsService.capture('GaslessFundFailed', {
+        errorMessage: 'network or chainId not available',
+        errorCategory: 'DO_NOT_RETRY'
+      })
       showGaslessError()
       return undefined
     }
     const provider = await NetworkService.getProviderForNetwork(network)
     if (!(provider instanceof JsonRpcBatchInternal)) {
+      AnalyticsService.capture('GaslessFundFailed', {
+        errorMessage: 'incompatible provider',
+        errorCategory: 'DO_NOT_RETRY'
+      })
       showGaslessError()
       return undefined
     }
@@ -154,6 +162,14 @@ export const useGasless = ({
 
       attempts++
     }
+
+    // Loop exhausted without success or a captured error — should not
+    // normally happen, but ensures we never silently fail without analytics.
+    AnalyticsService.capture('GaslessFundFailed', {
+      errorMessage: 'max attempts exhausted',
+      errorCategory: 'unknown'
+    })
+    showGaslessError()
     return undefined
   }
 
