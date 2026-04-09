@@ -1,3 +1,4 @@
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { formatUnits } from 'viem'
 import { WAD, WAD_SCALE } from '../consts'
 import {
@@ -48,8 +49,10 @@ export const buildBenqiBorrowPositions = ({
       return []
     }
 
-    const borrowedAmount = Number(
-      formatUnits(borrowedBalance, market.asset.decimals)
+    const borrowedAmount = new TokenUnit(
+      borrowedBalance,
+      market.asset.decimals,
+      market.asset.symbol
     )
 
     return [
@@ -58,7 +61,8 @@ export const buildBenqiBorrowPositions = ({
         borrowedBalance,
         borrowedAmount,
         borrowedAmountUsd:
-          borrowedAmount * market.asset.mintTokenBalance.price.value.toNumber()
+          borrowedAmount.toDisplay({ asNumber: true }) *
+          market.asset.mintTokenBalance.price.value.toNumber()
       }
     ]
   })
