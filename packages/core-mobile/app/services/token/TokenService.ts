@@ -333,7 +333,7 @@ export class TokenService {
   }): Promise<ChartData | undefined> {
     let rawData: ContractMarketChartResponse | undefined
     if (useCoingeckoProxy) {
-      rawData = await coingeckoProxyClient.marketChartRangeByCoingeckoId({
+      rawData = await coingeckoProxyClient.marketChartRangeByCoinId({
         id: coingeckoId,
         vs_currency: currency,
         from,

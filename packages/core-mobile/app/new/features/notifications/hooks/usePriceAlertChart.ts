@@ -42,7 +42,7 @@ export function usePriceAlertChart(notification: AppNotification): {
         currency: currency.toLowerCase() as VsCurrencyType
       }),
     enabled: !!coingeckoId,
-    staleTime: 1000 * 60 * 5 // 5 minutes
+    staleTime: Infinity // Chart data won't change, so we can set it to Infinity
   })
 
   return { chartData: data ?? undefined, isLoading: !!coingeckoId && isLoading }

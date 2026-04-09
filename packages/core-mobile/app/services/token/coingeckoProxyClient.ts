@@ -134,7 +134,7 @@ export const coingeckoProxyClient = {
   },
 
   // POST /coins/:id/market_chart/range
-  marketChartRangeByCoingeckoId: async ({
+  marketChartRangeByCoinId: async ({
     id,
     vs_currency,
     from,
