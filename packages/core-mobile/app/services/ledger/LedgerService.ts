@@ -1246,16 +1246,17 @@ class LedgerService {
   }
 
   /**
-   * Derive Solana keys for a range of account indices (0 to count-1).
+   * Derive Solana keys for a range of account indices.
    * Returns an array where each element is the PublicKeyInfo[] for that index,
    * or null if derivation failed.
    */
   async getSolanaKeysForRange(
-    count: number
+    count: number,
+    startIndex = 0
   ): Promise<(PublicKeyInfo[] | null)[]> {
     const results: (PublicKeyInfo[] | null)[] = []
 
-    for (let i = 0; i < count; i++) {
+    for (let i = startIndex; i < startIndex + count; i++) {
       try {
         const keys = await this.getSolanaKeys(i)
         results.push(keys)

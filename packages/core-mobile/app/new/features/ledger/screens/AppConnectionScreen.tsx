@@ -228,18 +228,21 @@ export default function AppConnectionScreen({
 
       // Get keys from service
       const count = isUpdatingWallet ? 1 : MAX_LEDGER_DISCOVERY_ACCOUNTS
-      const solanaKeysRange = await LedgerService.getSolanaKeysForRange(count)
+      const startIndex = isUpdatingWallet ? accountIndex : 0
+      const solanaKeysRange =
+        await LedgerService.getSolanaKeysForRange(count, startIndex)
 
       // Update local state
       setMultiIndexKeys(prev => {
         const updatedMainnet = { ...prev.mainnet }
         const updatedTestnet = { ...prev.testnet }
         for (let i = 0; i < count; i++) {
+          const idx = startIndex + i
           const solKeys = solanaKeysRange[i] ?? []
-          if (updatedMainnet[i])
-            updatedMainnet[i] = { ...updatedMainnet[i], solanaKeys: solKeys }
-          if (updatedTestnet[i])
-            updatedTestnet[i] = { ...updatedTestnet[i], solanaKeys: solKeys }
+          if (updatedMainnet[idx])
+            updatedMainnet[idx] = { ...updatedMainnet[idx], solanaKeys: solKeys }
+          if (updatedTestnet[idx])
+            updatedTestnet[idx] = { ...updatedTestnet[idx], solanaKeys: solKeys }
         }
         return { mainnet: updatedMainnet, testnet: updatedTestnet }
       })
@@ -262,7 +265,7 @@ export default function AppConnectionScreen({
         [{ text: 'OK' }]
       )
     }
-  }, [deviceId, isUpdatingWallet, showConnectionToasts])
+  }, [accountIndex, deviceId, isUpdatingWallet, showConnectionToasts])
 
   const handleSkipSolana = useCallback(() => {
     // Skip Solana and proceed to complete step

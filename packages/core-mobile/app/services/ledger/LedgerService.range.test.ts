@@ -124,6 +124,23 @@ describe('getSolanaKeysForRange', () => {
     expect(result[2]?.[0]?.key).toBe('sol2')
   })
 
+  it('derives solana keys starting from a custom startIndex', async () => {
+    mockGetSolanaKeys.mockImplementation(async (index: number) => [
+      {
+        key: `sol${index}`,
+        derivationPath: `44'/501'/${index}'/0/0`,
+        curve: 'ed25519' as any
+      }
+    ])
+    const result = await LedgerService.getSolanaKeysForRange(2, 3)
+    expect(mockGetSolanaKeys).toHaveBeenCalledTimes(2)
+    expect(mockGetSolanaKeys).toHaveBeenCalledWith(3)
+    expect(mockGetSolanaKeys).toHaveBeenCalledWith(4)
+    expect(result).toHaveLength(2)
+    expect(result[0]?.[0]?.key).toBe('sol3')
+    expect(result[1]?.[0]?.key).toBe('sol4')
+  })
+
   it('returns null for failed indices but does not throw', async () => {
     mockGetSolanaKeys
       .mockResolvedValueOnce([
