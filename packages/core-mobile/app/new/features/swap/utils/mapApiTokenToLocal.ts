@@ -1,5 +1,6 @@
 import { TokenType } from '@avalabs/vm-module-types'
 import { LocalTokenWithBalance } from 'store/balance'
+import { AdjustedLocalTokenWithBalance } from 'services/balance/types'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { DEFAULT_TOKEN_DECIMALS } from '../consts'
@@ -9,7 +10,7 @@ import { getLocalTokenIdFromApi } from './getLocalTokenIdFromApi'
 export const mapApiTokenToLocal = (
   apiToken: ApiToken,
   networkChainId: number,
-  balanceData?: LocalTokenWithBalance
+  balanceData?: AdjustedLocalTokenWithBalance
 ): LocalTokenWithBalance => {
   const getTokenType = ():
     | TokenType.NATIVE

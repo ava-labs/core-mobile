@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import { getV1Tokens } from 'utils/api/generated/tokenAggregator/aggregatorApi.client'
 import { tokenAggregatorApi } from 'utils/api/clients/aggregatedTokensApiClient'
 import { LocalTokenWithBalance } from 'store/balance'
+import { AdjustedLocalTokenWithBalance } from 'services/balance/types'
 import { getChainIdFromCaip2, isSvmChainId } from 'utils/caip2ChainIds'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { TokenType } from '@avalabs/vm-module-types'
@@ -79,7 +80,7 @@ export const useSwapTokens = (
     if (!chainId || query.data === undefined) return []
 
     // Create balance lookup map by localId
-    const balanceMap = new Map<string, LocalTokenWithBalance>()
+    const balanceMap = new Map<string, AdjustedLocalTokenWithBalance>()
     balances?.forEach(balance => {
       if (balance.localId) {
         balanceMap.set(balance.localId.toLowerCase(), balance)
