@@ -103,6 +103,7 @@ const PriceAlertItem: FC<PriceAlertItemProps> = ({
         style={{
           width: CHART_WIDTH,
           height: CHART_HEIGHT,
+          marginLeft: 4,
           justifyContent: 'center',
           alignItems: 'center'
         }}>
@@ -112,7 +113,7 @@ const PriceAlertItem: FC<PriceAlertItemProps> = ({
   } else if (chartData && chartData.dataPoints.length >= 2) {
     chart = (
       <MiniChart
-        style={{ width: CHART_WIDTH, height: CHART_HEIGHT }}
+        style={{ width: CHART_WIDTH, height: CHART_HEIGHT, marginLeft: 4 }}
         data={chartData.dataPoints}
         negative={chartData.ranges.diffValue < 0}
         showReferenceLine
