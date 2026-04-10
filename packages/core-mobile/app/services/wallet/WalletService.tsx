@@ -425,7 +425,7 @@ class WalletService {
     onlyWithActivity: boolean
   }): Promise<GetAddressesResponse> {
     try {
-      const response = await postV1GetAddresses({
+      const raw = await postV1GetAddresses({
         client: profileApiClient,
         body: {
           networkType: networkType,
@@ -435,11 +435,13 @@ class WalletService {
         }
       })
 
-      if (!response.data) {
+      const body = unwrapPostV1GetAddressesResult(raw)
+
+      if (!isGetAddressesResponseBody(body)) {
         throw new Error('Failed to get addresses from postV1GetAddresses')
       }
 
-      return response.data
+      return body
     } catch (err) {
       Logger.error(`[WalletService.ts][getAddressesForExtendedPublicKey]${err}`)
       throw err
@@ -472,6 +474,31 @@ class WalletService {
     ].includes(walletType)
   }
 }
+
+/**
+ * @hey-api client returns either `{ data }` (responseStyle: 'fields', default)
+ * or the parsed JSON body directly (responseStyle: 'data').
+ */
+const unwrapPostV1GetAddressesResult = (raw: unknown): unknown => {
+  if (
+    raw &&
+    typeof raw === 'object' &&
+    'data' in raw &&
+    (raw as { data: unknown }).data !== undefined
+  ) {
+    return (raw as { data: unknown }).data
+  }
+  return raw
+}
+
+const isGetAddressesResponseBody = (
+  value: unknown
+): value is GetAddressesResponse =>
+  typeof value === 'object' &&
+  value !== null &&
+  'networkType' in value &&
+  Array.isArray((value as GetAddressesResponse).externalAddresses) &&
+  Array.isArray((value as GetAddressesResponse).internalAddresses)
 
 /**
  * Races boolean promises, returning true as soon as any resolves true.

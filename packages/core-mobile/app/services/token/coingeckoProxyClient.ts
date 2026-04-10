@@ -133,6 +133,29 @@ export const coingeckoProxyClient = {
     )
   },
 
+  // POST /coins/:id/market_chart/range
+  marketChartRangeByCoinId: async ({
+    id,
+    vs_currency,
+    from,
+    to
+  }: {
+    id: string
+    vs_currency: string
+    from: number
+    to: number
+  }): Promise<ContractMarketChartResponse> => {
+    const queryString = buildQueryString({ vs_currency, from, to })
+    return fetchJson(
+      `${baseUrl}/coins/${id}/market_chart/range${queryString}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      },
+      ContractMarketChartResponseSchema
+    )
+  },
+
   // POST /search
   searchCoins: async (query: string): Promise<CoinsSearchResponse> => {
     const queryString = buildQueryString({ query })

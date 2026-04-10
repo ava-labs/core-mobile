@@ -5,8 +5,12 @@ import { transformSparklineData } from 'services/token/utils'
 import { Charts, MarketToken, MarketType, Prices } from 'store/watchlist/types'
 import Logger from 'utils/Logger'
 import { TrendingToken, WatchlistMarketsResponse } from 'utils/api/types'
-import { getV1WatchlistMarkets } from 'utils/api/generated/tokenAggregator/aggregatorApi.client/sdk.gen'
+import {
+  getV1WatchlistMarkets,
+  getV1WatchlistTrending
+} from 'utils/api/generated/tokenAggregator/aggregatorApi.client/sdk.gen'
 import { tokenAggregatorApi } from 'utils/api/clients/aggregatedTokensApiClient'
+import { applyExchangeRateToTrendingTokens } from './utils/transform'
 
 /**
  * Fetches top markets from the token aggregator API
@@ -169,7 +173,16 @@ class WatchlistService {
   async getTrendingTokens(
     exchangeRate: number | undefined
   ): Promise<TrendingToken[]> {
-    return TokenService.getTrendingTokens(exchangeRate)
+    const { data: trendingData } = await getV1WatchlistTrending({
+      client: tokenAggregatorApi
+    })
+    const data = trendingData ?? []
+
+    if (exchangeRate && exchangeRate !== 1) {
+      return applyExchangeRateToTrendingTokens(data, exchangeRate)
+    }
+
+    return data
   }
 
   private async getPriceWithMarketDataByCoinIds(

@@ -98,6 +98,7 @@ const renderNotificationItem = (
   props: {
     showSeparator: boolean
     accessoryType: 'chevron' | 'none'
+    index: number
     testID: string
   }
 ): React.JSX.Element => {
@@ -333,6 +334,7 @@ export const NotificationsScreen = (): JSX.Element => {
           {renderNotificationItem(notification, {
             showSeparator: !isLast,
             accessoryType: hasActionableUrl(notification) ? 'chevron' : 'none',
+            index,
             testID: `notification-item-${notification.id}`
           })}
         </SwipeableRow>

@@ -17,24 +17,31 @@ import { ErrorState } from 'common/components/ErrorState'
 import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
+import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
 import { ListRenderItem } from '@shopify/flash-list'
 import { LocalTokenWithBalance } from 'store/balance'
-import { getCaip2ChainId } from 'utils/caip2ChainIds'
+import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { isAddressLikeSearch } from 'common/utils/isAddressLikeSearch'
 import { useFilteredSwapTokens } from '../hooks/useFilteredSwapTokens'
-import { useSwapTokens } from '../hooks/useSwapTokens'
 
-export const SelectSwapTokenScreen = ({
+/**
+ * Token selection screen for the "from" side of a swap.
+ *
+ * Uses the user's portfolio directly — no API call, client-side search.
+ * Only shows tokens the user actually owns (non-zero balance).
+ */
+export const SelectFromSwapTokenScreen = ({
   selectedToken,
   setSelectedToken,
   defaultNetworkChainId,
-  hideZeroBalance = false,
   networks,
   tokenFilter
 }: {
   selectedToken: LocalTokenWithBalance | undefined
   setSelectedToken: (token: LocalTokenWithBalance) => void
   defaultNetworkChainId?: number
-  hideZeroBalance?: boolean
   networks: Network[] | undefined
   tokenFilter?: (
     token: LocalTokenWithBalance,
@@ -46,16 +53,15 @@ export const SelectSwapTokenScreen = ({
   } = useTheme()
   const { back, canGoBack } = useRouter()
   const [searchText, setSearchText] = useState<string>('')
-
-  // Selected network state (default to first network or provided default)
   const [selectedNetwork, setSelectedNetwork] = useState<Network | undefined>(
     undefined
   )
 
-  // Set default network once when networks are loaded
+  const activeAccount = useSelector(selectActiveAccount)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+
   useEffect(() => {
     if (!networks || networks.length === 0) return
-
     if (defaultNetworkChainId) {
       const found = networks.find(n => n.chainId === defaultNetworkChainId)
       setSelectedNetwork(found ?? networks[0])
@@ -64,32 +70,39 @@ export const SelectSwapTokenScreen = ({
     }
   }, [defaultNetworkChainId, networks])
 
-  // Get CAIP2 ID for selected network
-  const caip2Id = useMemo(() => {
-    if (selectedNetwork) {
-      return getCaip2ChainId(selectedNetwork.chainId)
-    }
-    return ''
-  }, [selectedNetwork])
+  const { tokens: portfolioTokens, isLoading: isBalanceLoading } =
+    useTokensWithBalanceByNetworkForAccount(
+      activeAccount,
+      selectedNetwork?.chainId
+    )
 
-  // Lazy load tokens for selected network (with balance data merged)
-  const { tokens, isLoading } = useSwapTokens(caip2Id)
-
-  // Filter and sort tokens
-  const baseResults = useFilteredSwapTokens({
-    tokens,
-    searchText,
-    hideZeroBalance
+  // Apply visibility/chain/zero-balance filtering
+  const filteredTokens = useFilteredSwapTokens({
+    tokens: portfolioTokens,
+    hideZeroBalance: true
   })
+
+  // Client-side text search against portfolio (small set, no API needed)
+  const searchedResults = useMemo(() => {
+    const q = searchText.trim().toLowerCase()
+    if (q.length === 0) return filteredTokens
+    const addressLike = isAddressLikeSearch(searchText.trim(), isDeveloperMode)
+    return filteredTokens.filter(token =>
+      addressLike
+        ? token.localId.toLowerCase().includes(q)
+        : token.name.toLowerCase().includes(q) ||
+          token.symbol.toLowerCase().includes(q)
+    )
+  }, [filteredTokens, searchText, isDeveloperMode])
+
   const results = useMemo(
     () =>
       tokenFilter
-        ? baseResults.filter(t => tokenFilter(t, selectedNetwork))
-        : baseResults,
-    [baseResults, tokenFilter, selectedNetwork]
+        ? searchedResults.filter(t => tokenFilter(t, selectedNetwork))
+        : searchedResults,
+    [searchedResults, tokenFilter, selectedNetwork]
   )
 
-  // Handle token selection
   const handleSelectToken = useCallback(
     (token: LocalTokenWithBalance) => {
       setSelectedToken(token)
@@ -98,7 +111,6 @@ export const SelectSwapTokenScreen = ({
     [setSelectedToken, canGoBack, back]
   )
 
-  // Render network tabs
   const renderNetworkSelector = useCallback(() => {
     if (!networks || networks.length <= 1) return null
 
@@ -128,7 +140,6 @@ export const SelectSwapTokenScreen = ({
     )
   }, [networks, selectedNetwork])
 
-  // Render token item
   const renderItem: ListRenderItem<LocalTokenWithBalance> = useCallback(
     ({ item, index }) => {
       const isSelected =
@@ -185,7 +196,6 @@ export const SelectSwapTokenScreen = ({
     [selectedToken, results.length, handleSelectToken, colors]
   )
 
-  // Render header with search and network selector
   const renderHeader = useCallback(
     () => (
       <View sx={{ gap: 12 }}>
@@ -197,15 +207,11 @@ export const SelectSwapTokenScreen = ({
   )
 
   const renderEmpty = useCallback(() => {
-    // Show loading if:
-    // - Networks not loaded yet
-    // - Network not selected yet (initializing)
-    // - Token data is loading
-    if (!networks || !selectedNetwork || isLoading) {
+    if (!networks || !selectedNetwork || isBalanceLoading) {
       return <ActivityIndicator />
     }
     return <ErrorState icon={undefined} title="No tokens found" />
-  }, [networks, selectedNetwork, isLoading])
+  }, [networks, selectedNetwork, isBalanceLoading])
 
   return (
     <ListScreenV2

@@ -305,6 +305,11 @@ export type AnalyticsEvents = {
   WalletImportLedgerAccountAddFailed: undefined
   WalletImportLedgerSolanaKeysDerived: undefined
   WalletImportLedgerSolanaKeysDerivedFailed: undefined
+  LedgerAccountDiscoveryCompleted: {
+    accountCount: number
+    activeIndices: number[]
+  }
+  LedgerAccountDiscoveryFailed: undefined
 
   // NEST EGG CAMPAIGN
   NestEggCampaignModalViewed: { addressC: string }

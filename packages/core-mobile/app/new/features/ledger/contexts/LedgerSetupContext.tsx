@@ -43,7 +43,7 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
     null
   )
   const [connectedDeviceName, setConnectedDeviceName] =
-    useState<string>('Ledger Device')
+    useState<string>('Ledger')
   const [isUpdatingWallet, setIsUpdatingWallet] = useState<boolean>(false)
   const [isConnecting, setIsConnecting] = useState<boolean>(false)
 
@@ -58,7 +58,7 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
   const resetSetup = useCallback(() => {
     setSelectedDerivationPath(null)
     setConnectedDeviceId(null)
-    setConnectedDeviceName('Ledger Device')
+    setConnectedDeviceName('Ledger')
     setIsUpdatingWallet(false)
     setIsConnecting(false)
   }, [])
@@ -68,7 +68,7 @@ export const LedgerSetupProvider: React.FC<LedgerSetupProviderProps> = ({
       setIsConnecting(true)
       try {
         await LedgerService.ensureConnection(deviceId)
-        handleSetConnectedDevice(deviceId, deviceName || 'Ledger Device')
+        handleSetConnectedDevice(deviceId, deviceName || 'Ledger')
       } finally {
         setIsConnecting(false)
       }

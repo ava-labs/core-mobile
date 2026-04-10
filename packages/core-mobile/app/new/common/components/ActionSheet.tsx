@@ -1,5 +1,5 @@
 import { SxProp, View } from '@avalabs/k2-alpine'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { BackHandler } from 'react-native'
 
 /**
@@ -54,13 +54,14 @@ export const ActionSheet = ({
     setHasScrolledToEnd(reachedEnd)
   }, [])
 
-  const adjustedConfirm = requireScrollToConfirm
-    ? {
+  const adjustedConfirm = useMemo(() => {
+    if (requireScrollToConfirm)
+      return {
         ...confirm,
         disabled: confirm.disabled || !hasScrolledToEnd
       }
-    : confirm
-
+    return confirm
+  }, [confirm, hasScrolledToEnd, requireScrollToConfirm])
   React.useEffect(() => {
     const onBackPress = (): boolean => {
       // modal is being dismissed via physical back button

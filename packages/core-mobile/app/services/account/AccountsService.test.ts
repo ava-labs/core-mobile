@@ -545,13 +545,13 @@ describe('AccountsService', () => {
         )
         .mockResolvedValue('inactive')
 
-      const result = await AccountsService.fetchRemainingActiveAccounts({
+      const { accounts } = await AccountsService.fetchRemainingActiveAccounts({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
         startIndex: 1
       })
 
-      expect(Object.values(result.accounts)).toEqual([
+      expect(Object.values(accounts)).toEqual([
         expect.objectContaining({
           index: 1,
           addressC: '0x111',
@@ -607,13 +607,13 @@ describe('AccountsService', () => {
         })
       )
 
-      const result = await AccountsService.fetchRemainingActiveAccounts({
+      const { accounts } = await AccountsService.fetchRemainingActiveAccounts({
         walletId: 'wallet-1',
         walletType: WalletType.MNEMONIC,
         startIndex: 1
       })
 
-      const accountList = Object.values(result.accounts).sort(
+      const accountList = Object.values(accounts).sort(
         (a, b) => a.index - b.index
       )
 
