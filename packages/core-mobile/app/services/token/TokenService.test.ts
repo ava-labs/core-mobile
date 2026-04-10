@@ -13,6 +13,7 @@ jest.mock('@avalabs/core-coingecko-sdk', () => ({
   coinsSearch: jest.fn(),
   simplePrice: jest.fn(),
   coinsMarketChart: jest.fn(),
+  coinsMarketChartRange: jest.fn(),
   coinsInfo: jest.fn(),
   coinsMarket: jest.fn()
 }))
@@ -157,6 +158,62 @@ describe('getCoinInfo', () => {
     expect(coinsInfo).toHaveBeenCalledTimes(1)
     expect(proxyMock).not.toHaveBeenCalled()
     expect(result?.id).toEqual('test')
+  })
+})
+
+describe('getChartDataForCoinRange', () => {
+  const proxyMock = jest.spyOn(proxy, 'marketChartRangeByCoinId')
+  const { coinsMarketChartRange } = require('@avalabs/core-coingecko-sdk')
+
+  const FROM = 1700000000 // Unix seconds
+  const TO = 1700086400 // FROM + 24 hours
+
+  it('should return data from sdk and forward from/to', async () => {
+    coinsMarketChartRange.mockImplementationOnce(
+      async () => MARKET_CHART as never
+    )
+    const result = await TokenService.getChartDataForCoinRange({
+      coingeckoId: 'test',
+      from: FROM,
+      to: TO
+    })
+    expect(coinsMarketChartRange).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ coinId: 'test', from: FROM, to: TO })
+    )
+    expect(result).not.toBeUndefined()
+    expect(result?.dataPoints.length).toBeGreaterThan(0)
+  })
+
+  it('should fall back to proxy on sdk failure and forward from/to', async () => {
+    coinsMarketChartRange.mockRejectedValueOnce(MOCK_429)
+    proxyMock.mockImplementationOnce(async () => MARKET_CHART as never)
+    const result = await TokenService.getChartDataForCoinRange({
+      coingeckoId: 'test',
+      from: FROM,
+      to: TO
+    })
+    expect(proxyMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'test',
+        from: FROM,
+        to: TO,
+        vs_currency: 'usd'
+      })
+    )
+    expect(result).not.toBeUndefined()
+    expect(result?.dataPoints.length).toBeGreaterThan(0)
+  })
+
+  it('should return undefined when both sdk and proxy fail', async () => {
+    coinsMarketChartRange.mockRejectedValueOnce(MOCK_429)
+    proxyMock.mockRejectedValueOnce(new Error('proxy error'))
+    const result = await TokenService.getChartDataForCoinRange({
+      coingeckoId: 'test',
+      from: FROM,
+      to: TO
+    })
+    expect(result).toBeUndefined()
   })
 })
 

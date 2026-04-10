@@ -72,5 +72,6 @@ export enum ReactQueryKeys {
   BENQI_REWARDS = 'benqiRewards',
 
   // notifications
-  NOTIFICATION_CENTER_LIST = 'notificationCenterList'
+  NOTIFICATION_CENTER_LIST = 'notificationCenterList',
+  PRICE_ALERT_CHART = 'priceAlertChart'
 }
