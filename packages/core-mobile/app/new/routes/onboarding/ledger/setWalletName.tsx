@@ -5,9 +5,11 @@ import { useRouter } from 'expo-router'
 import { SetWalletName as Component } from 'features/onboarding/components/SetWalletName'
 import { setWalletName } from 'store/wallet/slice'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
 
 export default function SetWalletName(): JSX.Element {
-  const [name, setName] = useState<string>('Wallet 1')
+  const { connectedDeviceName } = useLedgerSetupContext()
+  const [name, setName] = useState<string>(connectedDeviceName)
   const dispatch = useDispatch()
   const { navigate } = useRouter()
   const activeWallet = useActiveWallet()
