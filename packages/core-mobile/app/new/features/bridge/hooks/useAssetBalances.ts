@@ -22,7 +22,7 @@ export function useAssetBalances(sourceNetworkChainId?: number): {
 } {
   const tokenVisibility = useSelector(selectTokenVisibility)
   const activeAccount = useSelector(selectActiveAccount)
-  const tokens = useTokensWithBalanceByNetworkForAccount(
+  const { tokens } = useTokensWithBalanceByNetworkForAccount(
     activeAccount,
     sourceNetworkChainId
   )
