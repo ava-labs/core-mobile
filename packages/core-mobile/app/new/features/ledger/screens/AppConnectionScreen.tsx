@@ -42,7 +42,7 @@ export default function AppConnectionScreen({
   isUpdatingWallet,
   handleComplete,
   deviceId,
-  deviceName = 'Ledger Device',
+  deviceName = 'Ledger',
   handleCancel,
   accountIndex,
   showProgressDots = true,

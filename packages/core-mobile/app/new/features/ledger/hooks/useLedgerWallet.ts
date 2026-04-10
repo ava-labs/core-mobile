@@ -70,7 +70,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
   const createLedgerWallet = useCallback(
     async ({
       deviceId,
-      deviceName = 'Ledger Device',
+      deviceName = 'Ledger',
       derivationPathType = LedgerDerivationPathType.BIP44,
       avalancheKeys,
       solanaKeys = [],
@@ -104,7 +104,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         await dispatch(
           storeWallet({
             walletId: newWalletId,
-            name: `Ledger ${deviceName}`,
+            name: deviceName,
             walletSecret: buildLedgerWalletSecret({
               type: WalletSecretOperation.NEW,
               deviceId,
@@ -132,7 +132,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 
         setLedgerWalletMap(
           newWalletId,
-          { id: deviceId, name: deviceName || 'Ledger Device' },
+          { id: deviceId, name: deviceName || 'Ledger' },
           derivationPathType
         )
 
@@ -236,7 +236,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
             walletSecret: buildLedgerWalletSecret({
               type: WalletSecretOperation.UPDATE,
               deviceId,
-              deviceName: deviceName || 'Ledger Device',
+              deviceName: deviceName || 'Ledger',
               derivationPathType,
               existingWalletSecret: parsedWalletSecret as unknown as Record<
                 string,
@@ -252,7 +252,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 
         setLedgerWalletMap(
           walletId,
-          { id: deviceId, name: deviceName || 'Ledger Device' },
+          { id: deviceId, name: deviceName || 'Ledger' },
           derivationPathType
         )
 
@@ -292,7 +292,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
   const createLedgerWalletWithDiscovery = useCallback(
     async ({
       deviceId,
-      deviceName = 'Ledger Device',
+      deviceName = 'Ledger',
       derivationPathType = LedgerDerivationPathType.BIP44,
       multiIndexKeys,
       activeIndices
@@ -330,7 +330,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         await dispatch(
           storeWallet({
             walletId: newWalletId,
-            name: `Ledger ${deviceName}`,
+            name: deviceName,
             walletSecret: buildLedgerWalletSecret({
               type: WalletSecretOperation.NEW,
               deviceId,
@@ -348,7 +348,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 
         setLedgerWalletMap(
           newWalletId,
-          { id: deviceId, name: deviceName || 'Ledger Device' },
+          { id: deviceId, name: deviceName || 'Ledger' },
           derivationPathType
         )
 
