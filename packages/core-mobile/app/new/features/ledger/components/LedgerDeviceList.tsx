@@ -45,7 +45,7 @@ export const LedgerDeviceList: React.FC<LedgerDeviceListProps> = ({
   const deviceListData: GroupListItem[] = useMemo(
     () =>
       devices.map((device: LedgerDevice) => ({
-        title: device.name || 'Ledger Device',
+        title: device.name || 'Ledger',
         subtitle: (
           <Text
             variant="caption"
