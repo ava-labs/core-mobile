@@ -79,7 +79,7 @@ export const AppConnectionOnboardingScreen = ({
         connectedDeviceId &&
         !isUpdatingWallet
       ) {
-        if (checkIfLedgerWalletExists(connectedDeviceId)) {
+        if (checkIfLedgerWalletExists(connectedDeviceId, derivationPath)) {
           Alert.alert(
             'Wallet already exists',
             'This Ledger wallet has already been imported.',
