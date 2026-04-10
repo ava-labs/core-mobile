@@ -60,7 +60,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   } = useTheme()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
-  const deviceName = connectedDeviceName || 'Ledger Device'
+  const deviceName = connectedDeviceName || 'Ledger'
   const keysByNetwork = isDeveloperMode ? keys?.testnet : keys?.mainnet
 
   const hasAllKeys = useMemo(() => {

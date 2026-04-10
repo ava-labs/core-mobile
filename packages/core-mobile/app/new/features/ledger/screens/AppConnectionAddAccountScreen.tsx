@@ -142,7 +142,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
       completeStepTitle={`Your Account\nis being set up`}
       handleComplete={handleComplete}
       deviceId={device?.id}
-      deviceName={device?.name ?? 'Ledger Device'}
+      deviceName={device?.name ?? 'Ledger'}
       handleCancel={handleCancel}
       isUpdatingWallet={isUpdatingWallet}
       accountIndex={accounts?.length ?? 0}

@@ -16,3 +16,6 @@ packages/*/coverage/
 /AvaxWallet.iml
 /.idea/
 /packages/core-mobile/boosts/
+
+# Migration
+/docs/local/
