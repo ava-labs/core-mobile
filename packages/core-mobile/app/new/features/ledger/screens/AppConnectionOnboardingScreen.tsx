@@ -75,84 +75,10 @@ export const AppConnectionOnboardingScreen = ({
         selectedDerivationPath ?? LedgerDerivationPathType.BIP44
 
       if (
-        index0Current?.avalancheKeys &&
-        connectedDeviceId &&
-        !isUpdatingWallet
+        !index0Current?.avalancheKeys ||
+        !connectedDeviceId ||
+        isUpdatingWallet
       ) {
-        if (checkIfLedgerWalletExists(connectedDeviceId, derivationPath)) {
-          Alert.alert(
-            'Wallet already exists',
-            'This Ledger wallet has already been imported.',
-            [{ text: 'OK', onPress: handleCancel }]
-          )
-          return
-        }
-
-        Logger.info('Creating wallet with account 0...')
-        setIsUpdatingWallet(true)
-
-        try {
-          // Create wallet with account 0 only — fast path.
-          // The wallet secret includes xpubs for indices 1-9 so background
-          // discovery can derive addresses and create accounts later.
-          const { additionalXpubs, additionalPublicKeys, solanaAddresses } =
-            buildAdditionalData(multiIndexKeys)
-
-          const { walletId, accountId } = await createLedgerWallet({
-            deviceId: connectedDeviceId,
-            deviceName: connectedDeviceName,
-            derivationPathType: derivationPath,
-            avalancheKeys: index0Current.avalancheKeys,
-            solanaKeys: index0Current.solanaKeys,
-            // Pass xpubs, public keys, + Solana addresses for background discovery
-            additionalXpubs,
-            additionalPublicKeys,
-            additionalSolanaAddresses: solanaAddresses
-          })
-
-          // Store ledger addresses for account 0 (mainnet + testnet)
-          await setLedgerAddress({
-            accountIndex: 0,
-            walletId,
-            accountId,
-            keys: {
-              mainnet: index0Mainnet ?? {
-                solanaKeys: [],
-                avalancheKeys: undefined
-              },
-              testnet: index0Testnet ?? {
-                solanaKeys: [],
-                avalancheKeys: undefined
-              }
-            }
-          })
-
-          LedgerService.stopAppPolling()
-          onNavigateToComplete()
-
-          // Trigger background discovery for accounts 1-9.
-          // This runs after navigation — the user doesn't wait.
-          const walletType =
-            derivationPath === LedgerDerivationPathType.BIP44
-              ? WalletType.LEDGER
-              : WalletType.LEDGER_LIVE
-
-          setTimeout(() => {
-            dispatch(onWalletImported({ walletId, walletType }))
-          }, 1500)
-        } catch (error) {
-          Logger.error('Wallet creation failed', error)
-          Alert.alert(
-            'Wallet creation failed',
-            error instanceof Error
-              ? error.message
-              : 'Failed to create Ledger wallet. Please try again.',
-            [{ text: 'OK', onPress: handleCancel }]
-          )
-        } finally {
-          setIsUpdatingWallet(false)
-        }
-      } else {
         Logger.error('Ledger wallet creation conditions not met', {
           hasAccount0Keys: !!index0Mainnet?.avalancheKeys,
           hasConnectedDeviceId: !!connectedDeviceId,
@@ -164,6 +90,81 @@ export const AppConnectionOnboardingScreen = ({
           'Unable to complete Ledger wallet setup. Please restart the setup process.',
           [{ text: 'OK', onPress: handleCancel }]
         )
+        return
+      }
+
+      if (checkIfLedgerWalletExists(connectedDeviceId, derivationPath)) {
+        Alert.alert(
+          'Wallet already exists',
+          'This Ledger wallet has already been imported.',
+          [{ text: 'OK', onPress: handleCancel }]
+        )
+        return
+      }
+
+      Logger.info('Creating wallet with account 0...')
+      setIsUpdatingWallet(true)
+
+      try {
+        // Create wallet with account 0 only — fast path.
+        // The wallet secret includes xpubs for indices 1-9 so background
+        // discovery can derive addresses and create accounts later.
+        const { additionalXpubs, additionalPublicKeys, solanaAddresses } =
+          buildAdditionalData(multiIndexKeys)
+
+        const { walletId, accountId } = await createLedgerWallet({
+          deviceId: connectedDeviceId,
+          deviceName: connectedDeviceName,
+          derivationPathType: derivationPath,
+          avalancheKeys: index0Current.avalancheKeys,
+          solanaKeys: index0Current.solanaKeys,
+          // Pass xpubs, public keys, + Solana addresses for background discovery
+          additionalXpubs,
+          additionalPublicKeys,
+          additionalSolanaAddresses: solanaAddresses
+        })
+
+        // Store ledger addresses for account 0 (mainnet + testnet)
+        await setLedgerAddress({
+          accountIndex: 0,
+          walletId,
+          accountId,
+          keys: {
+            mainnet: index0Mainnet ?? {
+              solanaKeys: [],
+              avalancheKeys: undefined
+            },
+            testnet: index0Testnet ?? {
+              solanaKeys: [],
+              avalancheKeys: undefined
+            }
+          }
+        })
+
+        LedgerService.stopAppPolling()
+        onNavigateToComplete()
+
+        // Trigger background discovery for accounts 1-9.
+        // This runs after navigation — the user doesn't wait.
+        const walletType =
+          derivationPath === LedgerDerivationPathType.BIP44
+            ? WalletType.LEDGER
+            : WalletType.LEDGER_LIVE
+
+        setTimeout(() => {
+          dispatch(onWalletImported({ walletId, walletType }))
+        }, 1500)
+      } catch (error) {
+        Logger.error('Wallet creation failed', error)
+        Alert.alert(
+          'Wallet creation failed',
+          error instanceof Error
+            ? error.message
+            : 'Failed to create Ledger wallet. Please try again.',
+          [{ text: 'OK', onPress: handleCancel }]
+        )
+      } finally {
+        setIsUpdatingWallet(false)
       }
     },
     [
