@@ -23,8 +23,8 @@ import { LocalTokenWithBalance } from 'store/balance'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { isAddressLikeSearch } from 'common/utils/isAddressLikeSearch'
 import { useFilteredSwapTokens } from '../hooks/useFilteredSwapTokens'
+import { tokenMatchesSearch } from '../utils/tokenMatchesSearch'
 
 /**
  * Token selection screen for the "from" side of a swap.
@@ -84,14 +84,9 @@ export const SelectFromSwapTokenScreen = ({
 
   // Client-side text search against portfolio (small set, no API needed)
   const searchedResults = useMemo(() => {
-    const q = searchText.trim().toLowerCase()
-    if (q.length === 0) return filteredTokens
-    const addressLike = isAddressLikeSearch(searchText.trim(), isDeveloperMode)
+    if (searchText.trim().length === 0) return filteredTokens
     return filteredTokens.filter(token =>
-      addressLike
-        ? token.localId.toLowerCase().includes(q)
-        : token.name.toLowerCase().includes(q) ||
-          token.symbol.toLowerCase().includes(q)
+      tokenMatchesSearch(token, searchText, isDeveloperMode)
     )
   }, [filteredTokens, searchText, isDeveloperMode])
 
