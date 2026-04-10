@@ -10,92 +10,8 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import Logger from 'utils/Logger'
 import { useDeviceArn } from 'common/hooks/useDeviceArn'
 import NotificationCenterService from '../services/NotificationCenterService'
-import {
-  AppNotification,
-  BackendNotification,
-  NotificationCategory,
-  NotificationTab
-} from '../types'
+import { AppNotification, BackendNotification, NotificationTab } from '../types'
 import { filterByTab } from '../utils'
-
-// TODO: remove before merging — local dev mocks for notification UI verification
-const MOCK_NOTIFICATIONS: BackendNotification[] = [
-  {
-    id: 'mock-price-alert-1',
-    category: NotificationCategory.PRICE_UPDATE,
-    type: 'PRICE_ALERTS',
-    title: 'AVAX reached $35.00',
-    body: 'Avalanche price alert triggered',
-    // 2 hours ago
-    timestamp: Date.now() - 2 * 60 * 60 * 1000,
-    deepLinkUrl: 'https://core.app/token/avax',
-    data: {
-      tokenId: 'eip155:1-0x514910771af9ca656af840dff83e8264ecf986ca',
-      tokenName: 'Avalanche',
-      tokenSymbol: 'AVAX',
-      currentPrice: 35.0,
-      priceChangePercent: 5.23,
-      url: 'https://core.app/token/avax'
-    }
-  },
-  {
-    id: 'mock-price-alert-2',
-    category: NotificationCategory.PRICE_UPDATE,
-    type: 'PRICE_ALERTS',
-    title: 'BTC reached $95,000.00',
-    body: 'Bitcoin price alert triggered',
-    // 6 hours ago
-    timestamp: Date.now() - 6 * 60 * 60 * 1000,
-    data: {
-      tokenId: 'eip155:1-0xbtc',
-      tokenName: 'Bitcoin',
-      tokenSymbol: 'BTC',
-      currentPrice: 95000.0,
-      priceChangePercent: -2.1,
-      url: 'https://core.app/token/btc'
-    }
-  },
-  {
-    id: 'mock-balance-change-1',
-    category: NotificationCategory.TRANSACTION,
-    type: 'BALANCE_CHANGES',
-    title: 'You received 10 USDC',
-    body: 'A transfer was received on Ethereum',
-    // 24 hours ago
-    timestamp: Date.now() - 24 * 60 * 60 * 1000,
-    data: {
-      event: 'BALANCES_RECEIVED',
-      chainId: 'eip155:1',
-      chainName: 'Ethereum',
-      transactionHash: '0xabc123',
-      accountAddress: '0x1234567890abcdef',
-      transfers: [
-        { tokenSymbol: 'USDC', amount: '10.00', partnerAddress: '0xdeadbeef' }
-      ],
-      url: 'https://core.app/tx/0xabc123'
-    }
-  },
-  {
-    id: 'mock-balance-change-2',
-    category: NotificationCategory.TRANSACTION,
-    type: 'BALANCE_CHANGES',
-    title: 'You sent 0.5 ETH',
-    body: 'A transfer was sent on Ethereum',
-    // 48 hours ago
-    timestamp: Date.now() - 48 * 60 * 60 * 1000,
-    data: {
-      event: 'BALANCES_SPENT',
-      chainId: 'eip155:1',
-      chainName: 'Ethereum',
-      transactionHash: '0xdef456',
-      accountAddress: '0x1234567890abcdef',
-      transfers: [
-        { tokenSymbol: 'ETH', amount: '0.5', partnerAddress: '0xcafebabe' }
-      ],
-      url: 'https://core.app/tx/0xdef456'
-    }
-  }
-]
 
 /**
  * Hook to fetch notifications from backend
@@ -108,13 +24,10 @@ export function useBackendNotifications(): UseQueryResult<
 
   return useQuery<BackendNotification[], Error>({
     queryKey: [ReactQueryKeys.NOTIFICATION_CENTER_LIST, deviceArn],
-    queryFn: async () => {
-      const real = deviceArn
-        ? await NotificationCenterService.fetchNotifications(deviceArn)
-        : []
-      return [...MOCK_NOTIFICATIONS, ...real]
-    },
-    enabled: true,
+    queryFn: async () =>
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      NotificationCenterService.fetchNotifications(deviceArn!),
+    enabled: !!deviceArn,
     staleTime: 1000 * 60 * 1, // 1 minute
     refetchInterval: 1000 * 60 * 1 // 1 minute
   })
