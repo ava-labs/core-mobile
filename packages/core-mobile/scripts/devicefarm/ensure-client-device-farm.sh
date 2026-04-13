@@ -7,7 +7,7 @@
 #   npm error Unsupported URL Type "workspace:": workspace:*
 #
 # Flow:
-# 1) If the workspace already has the module (Bitrise after `yarn install`), nothing to do.
+# 1) If Node can resolve the module from cwd (including hoisted monorepo root), nothing to do.
 # 2) Otherwise copy scripts/devicefarm/client-device-farm-isolated/ (package.json + lockfile) into
 #    a temp directory, run npm ci for a reproducible tree, and prepend NODE_PATH.
 #    The isolated package version must match @aws-sdk/client-device-farm in packages/core-mobile/package.json;
@@ -23,7 +23,7 @@ DF_CLIENT_DEVICE_FARM_TMP=""
 _DF_PREV_NODE_PATH="${NODE_PATH:-}"
 
 ensure_client_device_farm() {
-  if [[ -d "node_modules/@aws-sdk/client-device-farm" ]]; then
+  if node -e "require.resolve('@aws-sdk/client-device-farm')" >/dev/null 2>&1; then
     return 0
   fi
   local _iso_dir

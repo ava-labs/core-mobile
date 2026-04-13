@@ -26,6 +26,16 @@ BRANCH_FILTER=""
 while [[ $# -gt 0 ]]; do
   case $1 in
     --branch)
+      if [[ $# -lt 2 ]]; then
+        echo -e "${RED}❌ --branch requires a branch name${NC}"
+        echo "Usage: $0 [--branch BRANCH_NAME]"
+        exit 1
+      fi
+      if [[ "$2" == -* ]]; then
+        echo -e "${RED}❌ --branch requires a branch name (got \"${2}\")${NC}"
+        echo "Usage: $0 [--branch BRANCH_NAME]"
+        exit 1
+      fi
       BRANCH_FILTER="$2"
       shift 2
       ;;

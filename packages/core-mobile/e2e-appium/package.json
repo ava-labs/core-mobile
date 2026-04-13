@@ -40,21 +40,5 @@
     "axios",
     "form-data",
     "@types/node"
-  ],
-  "bundleDependencies": [
-    "@aws-sdk/client-secrets-manager",
-    "@wdio/cli",
-    "@wdio/local-runner",
-    "@wdio/mocha-framework",
-    "@wdio/spec-reporter",
-    "@wdio/types",
-    "webdriverio",
-    "mocha",
-    "typescript",
-    "ts-node",
-    "testrail-api",
-    "axios",
-    "form-data",
-    "@types/node"
   ]
 }
