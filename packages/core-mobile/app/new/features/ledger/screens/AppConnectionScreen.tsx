@@ -66,6 +66,7 @@ export default function AppConnectionScreen({
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
 
   const hasDeviceId = !!deviceId
+  const isAddingAccount = accountIndex > 0
 
   // Local key state - managed only in this component
   const [multiIndexKeys, setMultiIndexKeys] = useState<LedgerMultiIndexKeys>({
@@ -162,9 +163,9 @@ export default function AppConnectionScreen({
       await LedgerService.ensureConnection(deviceId)
       setAppConnectionStep(AppConnectionStep.AVALANCHE_LOADING)
 
-      const count = isUpdatingWallet ? 1 : MAX_LEDGER_DISCOVERY_ACCOUNTS
+      const count = isAddingAccount ? 1 : MAX_LEDGER_DISCOVERY_ACCOUNTS
       const isBIP44 = selectedDerivationPath === LedgerDerivationPathType.BIP44
-      const startIndex = isUpdatingWallet ? accountIndex : 0
+      const startIndex = isAddingAccount ? accountIndex : 0
 
       const firstAccountKeys = await LedgerService.getAvalancheKeys(
         startIndex,
@@ -212,9 +213,9 @@ export default function AppConnectionScreen({
   }, [
     accountIndex,
     deviceId,
+    isAddingAccount,
     isDeveloperMode,
     isSolanaSupportBlocked,
-    isUpdatingWallet,
     selectedDerivationPath,
     showConnectionToasts
   ])
@@ -228,8 +229,8 @@ export default function AppConnectionScreen({
       setAppConnectionStep(AppConnectionStep.SOLANA_LOADING)
 
       // Get keys from service
-      const count = isUpdatingWallet ? 1 : MAX_LEDGER_DISCOVERY_ACCOUNTS
-      const startIndex = isUpdatingWallet ? accountIndex : 0
+      const count = isAddingAccount ? 1 : MAX_LEDGER_DISCOVERY_ACCOUNTS
+      const startIndex = isAddingAccount ? accountIndex : 0
       const solanaKeysRange = await LedgerService.getSolanaKeysForRange(
         count,
         startIndex
@@ -258,7 +259,7 @@ export default function AppConnectionScreen({
         [{ text: 'OK' }]
       )
     }
-  }, [accountIndex, deviceId, isUpdatingWallet, showConnectionToasts])
+  }, [accountIndex, deviceId, isAddingAccount, showConnectionToasts])
 
   const handleSkipSolana = useCallback(() => {
     // Skip Solana and proceed to complete step
