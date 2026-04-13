@@ -359,9 +359,8 @@ export default function AppConnectionScreen({
   ])
 
   const emptyKeys = { solanaKeys: [], avalancheKeys: undefined }
-  const displayIndex = isUpdatingWallet ? accountIndex : 0
-  const firstMainnetKey = multiIndexKeys.mainnet[displayIndex]
-  const firstTestnetKey = multiIndexKeys.testnet[displayIndex]
+  const firstMainnetKey = multiIndexKeys.mainnet[accountIndex]
+  const firstTestnetKey = multiIndexKeys.testnet[accountIndex]
   const displayKeys: LedgerKeysByNetwork = {
     mainnet: firstMainnetKey ?? emptyKeys,
     testnet: firstTestnetKey ?? emptyKeys
