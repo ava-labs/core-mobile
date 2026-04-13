@@ -25,6 +25,7 @@ import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useFilteredSwapTokens } from '../hooks/useFilteredSwapTokens'
 import { useSwapTokens } from '../hooks/useSwapTokens'
+import { useTestnetToTokens } from '../hooks/useTestnetToTokens'
 import { getTokenKey } from '../utils/tokenKey'
 import { tokenMatchesSearch } from '../utils/tokenMatchesSearch'
 
@@ -79,14 +80,21 @@ export const SelectToSwapTokenScreen = ({
     return ''
   }, [selectedNetwork])
 
-  // Lazy load tokens for selected network (with balance data merged)
+  // Mainnet: paginated token list from token aggregator API
   const {
-    tokens,
-    isLoading: isLoadingTokens,
+    tokens: mainnetTokens,
+    isLoading: isLoadingMainnet,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage
-  } = useSwapTokens(caip2Id, debouncedSearchText)
+  } = useSwapTokens(isDeveloperMode ? '' : caip2Id, debouncedSearchText)
+
+  // Testnet: SDK-driven list via getBridgeableAssets (small set, no pagination)
+  const { tokens: testnetTokens, isLoading: isLoadingTestnet } =
+    useTestnetToTokens(isDeveloperMode ? caip2Id : '')
+
+  const tokens = isDeveloperMode ? testnetTokens : mainnetTokens
+  const isLoadingTokens = isDeveloperMode ? isLoadingTestnet : isLoadingMainnet
 
   // Filter and sort tokens
   const baseResults = useFilteredSwapTokens({
