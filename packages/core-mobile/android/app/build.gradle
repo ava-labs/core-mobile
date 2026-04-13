@@ -154,11 +154,11 @@ android {
         internal {
             applicationIdSuffix ".internal"
             buildConfigField "boolean", "ENABLE_FLAG_SECURE", "false"
-            manifestPlaceholders = [BRANCH_TEST_MODE:"true"]
+            manifestPlaceholders = [BRANCH_TEST_MODE:"true", usesCleartextTraffic: false]
         }
         external {
             buildConfigField "boolean", "ENABLE_FLAG_SECURE", "false"
-            manifestPlaceholders = [BRANCH_TEST_MODE:"false"]
+            manifestPlaceholders = [BRANCH_TEST_MODE:"false", usesCleartextTraffic: false]
         }
     }
 
