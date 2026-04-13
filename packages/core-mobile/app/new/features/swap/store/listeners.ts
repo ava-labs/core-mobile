@@ -196,7 +196,8 @@ export const initFusionService = async (
         evm: evmSigner,
         btc: btcSigner,
         svm: svmSigner
-      }
+      },
+      isDeveloperMode: featureStates.isDeveloperMode
     })
 
     // Mark as ready after successful init
