@@ -5,6 +5,7 @@ import type {
   NativeAsset,
   SplAsset
 } from '@avalabs/fusion-sdk'
+import type { Address as SolanaAddress } from '@solana/kit'
 import { TokenType } from '@avalabs/fusion-sdk'
 import { getV2Tokens } from 'utils/api/generated/tokenAggregator/aggregatorApi.client'
 import { tokenAggregatorApi } from 'utils/api/clients/aggregatedTokensApiClient'
@@ -29,7 +30,7 @@ export const fetchTargetChainAssets = async (
       query: { caip2Id: targetChainId, limit: PAGE_LIMIT, page: 1 }
     })
 
-    const tokens = response.data?.tokens ?? []
+    const tokens = response.data?.data?.tokens ?? []
 
     return tokens.map((token): Asset => {
       if (token.isNative) {
@@ -48,7 +49,7 @@ export const fetchTargetChainAssets = async (
           name: token.name,
           symbol: token.symbol,
           decimals: token.decimals,
-          address: token.address,
+          address: token.address as SolanaAddress,
           logoUri: token.logoUri ?? undefined
         }
         return splAsset

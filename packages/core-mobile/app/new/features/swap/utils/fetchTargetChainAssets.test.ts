@@ -15,25 +15,27 @@ const mockGetV2Tokens = sdk.getV2Tokens as jest.MockedFunction<
   typeof sdk.getV2Tokens
 >
 
+const mockResponse = (tokens: unknown[]) => ({
+  data: { data: { tokens } }
+})
+
 describe('fetchTargetChainAssets', () => {
   beforeEach(() => jest.clearAllMocks())
 
   it('returns ERC20 assets from v2 API', async () => {
-    mockGetV2Tokens.mockResolvedValueOnce({
-      data: {
-        tokens: [
-          {
-            internalId: 'usdc-fuji',
-            address: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
-            name: 'USD Coin',
-            symbol: 'USDC',
-            isNative: false,
-            logoUri: 'https://example.com/usdc.png',
-            decimals: 6
-          }
-        ]
-      }
-    } as any)
+    mockGetV2Tokens.mockResolvedValueOnce(
+      mockResponse([
+        {
+          internalId: 'usdc-fuji',
+          address: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
+          name: 'USD Coin',
+          symbol: 'USDC',
+          isNative: false,
+          logoUri: 'https://example.com/usdc.png',
+          decimals: 6
+        }
+      ]) as any
+    )
 
     const result = await fetchTargetChainAssets('eip155:43113')
 
@@ -48,21 +50,19 @@ describe('fetchTargetChainAssets', () => {
   })
 
   it('returns native tokens from v2 API as NativeAsset', async () => {
-    mockGetV2Tokens.mockResolvedValueOnce({
-      data: {
-        tokens: [
-          {
-            internalId: 'avax-native',
-            address: '',
-            name: 'Avalanche',
-            symbol: 'AVAX',
-            isNative: true,
-            logoUri: 'https://example.com/avax.png',
-            decimals: 18
-          }
-        ]
-      }
-    } as any)
+    mockGetV2Tokens.mockResolvedValueOnce(
+      mockResponse([
+        {
+          internalId: 'avax-native',
+          address: '',
+          name: 'Avalanche',
+          symbol: 'AVAX',
+          isNative: true,
+          logoUri: 'https://example.com/avax.png',
+          decimals: 18
+        }
+      ]) as any
+    )
 
     const result = await fetchTargetChainAssets('eip155:43113')
 
@@ -71,25 +71,50 @@ describe('fetchTargetChainAssets', () => {
   })
 
   it('handles null logoUri', async () => {
-    mockGetV2Tokens.mockResolvedValueOnce({
-      data: {
-        tokens: [
-          {
-            internalId: 'usdc-fuji',
-            address: '0xabc',
-            name: 'USD Coin',
-            symbol: 'USDC',
-            isNative: false,
-            logoUri: null,
-            decimals: 6
-          }
-        ]
-      }
-    } as any)
+    mockGetV2Tokens.mockResolvedValueOnce(
+      mockResponse([
+        {
+          internalId: 'usdc-fuji',
+          address: '0xabc',
+          name: 'USD Coin',
+          symbol: 'USDC',
+          isNative: false,
+          logoUri: null,
+          decimals: 6
+        }
+      ]) as any
+    )
 
     const result = await fetchTargetChainAssets('eip155:43113')
 
     expect(result[0]).toMatchObject({ logoUri: undefined })
+  })
+
+  it('returns SPL assets for Solana target chains', async () => {
+    mockGetV2Tokens.mockResolvedValueOnce(
+      mockResponse([
+        {
+          internalId: 'usdc-solana',
+          address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+          name: 'USD Coin',
+          symbol: 'USDC',
+          isNative: false,
+          logoUri: null,
+          decimals: 6
+        }
+      ]) as any
+    )
+
+    const result = await fetchTargetChainAssets(
+      'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'
+    )
+
+    expect(result).toHaveLength(1)
+    expect(result[0]).toMatchObject({
+      type: TokenType.SPL,
+      symbol: 'USDC',
+      address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
+    })
   })
 
   it('returns empty array when API call fails', async () => {
@@ -108,37 +133,8 @@ describe('fetchTargetChainAssets', () => {
     expect(result).toEqual([])
   })
 
-  it('returns SPL assets for Solana target chains', async () => {
-    mockGetV2Tokens.mockResolvedValueOnce({
-      data: {
-        tokens: [
-          {
-            internalId: 'usdc-solana',
-            address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-            name: 'USD Coin',
-            symbol: 'USDC',
-            isNative: false,
-            logoUri: null,
-            decimals: 6
-          }
-        ]
-      }
-    } as any)
-
-    const result = await fetchTargetChainAssets(
-      'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'
-    )
-
-    expect(result).toHaveLength(1)
-    expect(result[0]).toMatchObject({
-      type: TokenType.SPL,
-      symbol: 'USDC',
-      address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
-    })
-  })
-
   it('passes caip2Id, limit: 1000, and page: 1 to the API', async () => {
-    mockGetV2Tokens.mockResolvedValueOnce({ data: { tokens: [] } } as any)
+    mockGetV2Tokens.mockResolvedValueOnce(mockResponse([]) as any)
 
     await fetchTargetChainAssets('eip155:43113')
 
