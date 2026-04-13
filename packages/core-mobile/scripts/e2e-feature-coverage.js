@@ -72,6 +72,27 @@ const pkgRequire = createRequire(path.join(__dirname, '../package.json'))
 const pkgRoot = path.resolve(__dirname, '..')
 
 /**
+ * @param {string} line trimmed non-empty, non-comment env line
+ * @returns {{ key: string, val: string } | null}
+ */
+function parseCoreMobileEnvLine(line) {
+  let l = line
+  if (l.startsWith('export ')) l = l.slice(7).trim()
+  const eq = l.indexOf('=')
+  if (eq <= 0) return null
+  const key = l.slice(0, eq).trim()
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) return null
+  let val = l.slice(eq + 1).trim()
+  if (
+    (val.startsWith('"') && val.endsWith('"')) ||
+    (val.startsWith("'") && val.endsWith("'"))
+  ) {
+    val = val.slice(1, -1)
+  }
+  return { key, val }
+}
+
+/**
  * Load `packages/core-mobile/.env` into `process.env` when present (KEY=val lines).
  * Does not override variables already set in the environment.
  */
@@ -84,22 +105,15 @@ function loadOptionalCoreMobileEnv() {
     return
   }
   for (const raw of text.split(/\r?\n/)) {
-    let line = raw.trim()
+    const line = raw.trim()
     if (!line || line.startsWith('#')) continue
-    if (line.startsWith('export ')) line = line.slice(7).trim()
-    const eq = line.indexOf('=')
-    if (eq <= 0) continue
-    const key = line.slice(0, eq).trim()
-    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) continue
-    let val = line.slice(eq + 1).trim()
+    const parsed = parseCoreMobileEnvLine(line)
+    if (!parsed) continue
     if (
-      (val.startsWith('"') && val.endsWith('"')) ||
-      (val.startsWith("'") && val.endsWith("'"))
+      process.env[parsed.key] === undefined ||
+      process.env[parsed.key] === ''
     ) {
-      val = val.slice(1, -1)
-    }
-    if (process.env[key] === undefined || process.env[key] === '') {
-      process.env[key] = val
+      process.env[parsed.key] = parsed.val
     }
   }
 }
@@ -510,9 +524,7 @@ async function fetchAllProjectRuns(client) {
         offset,
         limit,
         suite_id: TESTRAIL_SUITE_ID_FOR_RUN_LIST,
-        ...(createdAfterUnix != null
-          ? { created_after: createdAfterUnix }
-          : {})
+        ...(createdAfterUnix != null ? { created_after: createdAfterUnix } : {})
       }
     })
     const batch = Array.isArray(data) ? data : data.runs || []
@@ -632,6 +644,16 @@ async function fetchRunSuiteId(client, run) {
  * @param {number | null} suiteId
  * @returns {Promise<Map<number, string>>}
  */
+/**
+ * @param {Map<number, string>} map
+ * @param {object[]} batch
+ */
+function mergeSectionBatchIntoMap(map, batch) {
+  for (const s of batch) {
+    if (s?.id != null) map.set(Number(s.id), String(s.name || '').trim())
+  }
+}
+
 async function fetchSectionNameByIdMap(client, suiteId) {
   /** @type {Map<number, string>} */
   const map = new Map()
@@ -645,13 +667,33 @@ async function fetchSectionNameByIdMap(client, suiteId) {
     )
     const batch = Array.isArray(data) ? data : data.sections || []
     if (!Array.isArray(batch) || batch.length === 0) break
-    for (const s of batch) {
-      if (s?.id != null) map.set(Number(s.id), String(s.name || '').trim())
-    }
+    mergeSectionBatchIntoMap(map, batch)
     if (batch.length < limit) break
     offset += limit
   }
   return map
+}
+
+/**
+ * @param {import('axios').AxiosInstance} client
+ * @param {number} caseId
+ * @param {Map<number, string>} sectionNameById
+ */
+async function fetchCaseMetaForId(client, caseId, sectionNameById) {
+  try {
+    const { data } = await client.get(`/get_case/${caseId}`)
+    const caseTitle = (data.title || '').trim()
+    const secId = data.section_id != null ? Number(data.section_id) : null
+    let sectionName = secId != null ? sectionNameById.get(secId) || '' : ''
+    if (!sectionName && secId != null) {
+      const { data: sec } = await client.get(`/get_section/${secId}`)
+      sectionName = String(sec.name || '').trim()
+      sectionNameById.set(secId, sectionName)
+    }
+    return { sectionName, caseTitle }
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -671,7 +713,9 @@ async function fetchCaseMetaByIdsParallel(
 ) {
   /** @type {Map<number, { sectionName: string, caseTitle: string } | null>} */
   const backing = sharedCaseMetaById ?? new Map()
-  const ids = [...new Set(caseIds)].filter(id => id != null && !Number.isNaN(id))
+  const ids = [...new Set(caseIds)].filter(
+    id => id != null && !Number.isNaN(id)
+  )
   const toFetch = ids.filter(id => !backing.has(id))
   const concurrency = Math.max(
     1,
@@ -686,37 +730,33 @@ async function fetchCaseMetaByIdsParallel(
       const i = cursor++
       if (i >= toFetch.length) return
       const caseId = toFetch[i]
-      try {
-        const { data } = await client.get(`/get_case/${caseId}`)
-        const caseTitle = (data.title || '').trim()
-        const secId =
-          data.section_id != null ? Number(data.section_id) : null
-        let sectionName =
-          secId != null ? sectionNameById.get(secId) || '' : ''
-        if (!sectionName && secId != null) {
-          const { data: sec } = await client.get(`/get_section/${secId}`)
-          sectionName = String(sec.name || '').trim()
-          sectionNameById.set(secId, sectionName)
-        }
-        backing.set(caseId, { sectionName, caseTitle })
-      } catch {
-        backing.set(caseId, null)
-      }
+      const meta = await fetchCaseMetaForId(client, caseId, sectionNameById)
+      backing.set(caseId, meta)
     }
   }
   if (toFetch.length > 0) {
-    await Promise.all(
-      Array.from(
-        { length: Math.min(concurrency, toFetch.length) },
-        () => worker()
-      )
-    )
+    const n = Math.min(concurrency, toFetch.length)
+    await Promise.all(Array.from({ length: n }, () => worker()))
   }
   const slice = new Map()
   for (const id of ids) {
     slice.set(id, backing.get(id) ?? null)
   }
   return slice
+}
+
+/**
+ * @param {{ unmappedCount: number, unmappedFailedCount: number, unmappedSamples: string[] }} acc
+ * @param {number} sid
+ * @param {string} sample
+ * @param {number} maxSamples
+ */
+function recordTestrailUnmapped(acc, sid, sample, maxSamples) {
+  acc.unmappedCount += 1
+  if (sid === TESTRAIL_STATUS_FAILED) acc.unmappedFailedCount += 1
+  if (acc.unmappedSamples.length < maxSamples) {
+    acc.unmappedSamples.push(sample)
+  }
 }
 
 /**
@@ -730,20 +770,14 @@ function applyTestrailTestRowSync(t, suiteCaseToSpecRels, caseMetaById, acc) {
   const caseId = t.case_id
   const row = caseMetaById.get(caseId)
   if (!row) {
-    acc.unmappedCount += 1
-    if (sid === TESTRAIL_STATUS_FAILED) acc.unmappedFailedCount += 1
-    if (acc.unmappedSamples.length < 8) {
-      acc.unmappedSamples.push(`(case ${caseId} API error)`)
-    }
+    recordTestrailUnmapped(acc, sid, `(case ${caseId} API error)`, 8)
     return
   }
   const caseTitle = String(t.title || row.caseTitle || '').trim()
   const mapKey = `${row.sectionName}\t${caseTitle}`
   const rels = suiteCaseToSpecRels.get(mapKey)
   if (!rels || rels.length === 0) {
-    acc.unmappedCount += 1
-    if (sid === TESTRAIL_STATUS_FAILED) acc.unmappedFailedCount += 1
-    if (acc.unmappedSamples.length < 12) acc.unmappedSamples.push(mapKey)
+    recordTestrailUnmapped(acc, sid, mapKey, 12)
     return
   }
 
