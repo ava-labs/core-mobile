@@ -1,4 +1,5 @@
 import { ChainId, Network, NetworkVMType } from '@avalabs/core-chains-sdk'
+import { RpcMethod } from '@avalabs/vm-module-types'
 import {
   LedgerAppType,
   LedgerDerivationPathType,
@@ -46,7 +47,19 @@ export const isBitcoinCompatibleApp = (
   return false
 }
 
-export const getLedgerAppName = (network?: Network): LedgerAppType => {
+export const getLedgerAppName = (
+  network?: Network,
+  rpcMethod?: RpcMethod
+): LedgerAppType => {
+  // personal_sign and eth_sign always require the Ethereum app,
+  // even on Avalanche C-Chain
+  if (
+    rpcMethod === RpcMethod.PERSONAL_SIGN ||
+    rpcMethod === RpcMethod.ETH_SIGN
+  ) {
+    return LedgerAppType.ETHEREUM
+  }
+
   return network?.chainId === ChainId.AVALANCHE_MAINNET_ID ||
     network?.chainId === ChainId.AVALANCHE_TESTNET_ID ||
     network?.vmName === NetworkVMType.AVM ||

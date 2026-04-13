@@ -1,6 +1,6 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { showAlert } from '@avalabs/k2-alpine'
-import { RpcError } from '@avalabs/vm-module-types'
+import { RpcError, RpcMethod } from '@avalabs/vm-module-types'
 import { getLedgerAppName, isBitcoinCompatibleApp } from 'features/ledger/utils'
 import LedgerService from 'services/ledger/LedgerService'
 import { LEDGER_ERROR_CODES, LedgerAppType } from 'services/ledger/types'
@@ -10,11 +10,13 @@ export const TRANSACTION_CANCELLED_BY_USER = 'Transaction cancelled by user'
 export const handleLedgerErrorAndShowAlert = ({
   error,
   network,
+  rpcMethod,
   onRetry,
   onCancel
 }: {
   error: RpcError
   network: Network
+  rpcMethod?: RpcMethod
   onRetry: () => void
   onCancel: () => void
 }): void => {
@@ -24,7 +26,7 @@ export const handleLedgerErrorAndShowAlert = ({
 
   const version = LedgerService.getCurrentAppVersion()
   const detectedAppType = LedgerService.getCurrentAppType()
-  const ledgerAppName = getLedgerAppName(network)
+  const ledgerAppName = getLedgerAppName(network, rpcMethod)
   const compatible = isBitcoinCompatibleApp(detectedAppType, version)
   const unsupported =
     ledgerAppName === LedgerAppType.BITCOIN &&

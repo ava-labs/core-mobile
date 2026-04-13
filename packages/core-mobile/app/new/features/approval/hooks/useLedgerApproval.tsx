@@ -7,8 +7,6 @@ import { useLedgerBLEConnection } from 'features/ledger/hooks/useLedgerBLEConnec
 import { ledgerParamsStore, useLedgerParams } from 'features/ledger/store'
 import { getLedgerAppName } from 'features/ledger/utils'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { LedgerAppType } from 'services/ledger/types'
-import { RpcMethod } from '@avalabs/vm-module-types'
 import { TRANSACTION_CANCELLED_BY_USER } from 'vmModule/ApprovalController/utils'
 
 type UseLedgerApprovalReturn = {
@@ -33,15 +31,14 @@ export const useLedgerApproval = (
   const { reviewTransactionParams } = useLedgerParams()
   const prevParamsRef = useRef(reviewTransactionParams)
 
-  const appType = useMemo(() => {
-    const method = reviewTransactionParams?.rpcMethod
-    // personal_sign and eth_sign always require the Ethereum app,
-    // even on Avalanche C-Chain
-    if (method === RpcMethod.PERSONAL_SIGN || method === RpcMethod.ETH_SIGN) {
-      return LedgerAppType.ETHEREUM
-    }
-    return getLedgerAppName(reviewTransactionParams?.network)
-  }, [reviewTransactionParams?.rpcMethod, reviewTransactionParams?.network])
+  const appType = useMemo(
+    () =>
+      getLedgerAppName(
+        reviewTransactionParams?.network,
+        reviewTransactionParams?.rpcMethod
+      ),
+    [reviewTransactionParams?.rpcMethod, reviewTransactionParams?.network]
+  )
 
   const {
     isLedgerConnected,
