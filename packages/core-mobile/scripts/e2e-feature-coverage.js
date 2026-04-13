@@ -29,15 +29,27 @@
  * Each run is mapped to local `*.spec.ts` files via TestRail section + case title
  * (Mocha `describe` / `it`). **Regression-adjusted coverage %** is computed
  * separately per platform: in-scope mapped features that are checklist-O *and*
- * have no mapped failing result from that platform’s regression run. If no
- * Android run exists yet, the Android row is skipped and adjusted Android %
- * equals the heuristic total. Use `--no-testrail` to skip network calls.
+ * have no mapped failing result from that platform’s regression run. If the
+ * latest matching run’s **date in the run name** is older than
+ * `E2E_COVERAGE_REGRESSION_MAX_AGE_DAYS` (default **7**), that platform’s
+ * regression-adjusted % is **N/A** (stale run is not applied). If TestRail is
+ * skipped (`--no-testrail`, no API key), adjusted % equals the heuristic total.
  *
  * Usage:
  *   node scripts/e2e-feature-coverage.js
  *   node scripts/e2e-feature-coverage.js --json
  *   node scripts/e2e-feature-coverage.js --verbose
  *   node scripts/e2e-feature-coverage.js --no-testrail
+ *
+ * Optional: `E2E_COVERAGE_REGRESSION_MAX_AGE_DAYS` (default 7) — max age of the
+ * `YYYY-MM-DD` in `[REGRESSION] iOS|Android Test Run: …` for regression-adjusted metrics.
+ *
+ * Optional: `E2E_COVERAGE_TESTRAIL_CASE_CONCURRENCY` (default 12, max 32) —
+ * parallel `get_case` calls when resolving a run (fewer round-trips in wall time).
+ *
+ * If `packages/core-mobile/.env` exists, simple `KEY=value` lines are loaded
+ * before TestRail runs (existing env vars are not overwritten). Handy for
+ * `TESTRAIL_API_KEY` without exporting in the shell.
  *
  * Text output lists each `app/new/features/<name>` folder with O / X / △. JSON
  * includes per-feature detail and modals.
@@ -50,6 +62,42 @@ const { createRequire } = require('module')
 const pkgRequire = createRequire(path.join(__dirname, '../package.json'))
 
 const pkgRoot = path.resolve(__dirname, '..')
+
+/**
+ * Load `packages/core-mobile/.env` into `process.env` when present (KEY=val lines).
+ * Does not override variables already set in the environment.
+ */
+function loadOptionalCoreMobileEnv() {
+  const envPath = path.join(pkgRoot, '.env')
+  let text
+  try {
+    text = fs.readFileSync(envPath, 'utf8')
+  } catch {
+    return
+  }
+  for (const raw of text.split(/\r?\n/)) {
+    let line = raw.trim()
+    if (!line || line.startsWith('#')) continue
+    if (line.startsWith('export ')) line = line.slice(7).trim()
+    const eq = line.indexOf('=')
+    if (eq <= 0) continue
+    const key = line.slice(0, eq).trim()
+    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) continue
+    let val = line.slice(eq + 1).trim()
+    if (
+      (val.startsWith('"') && val.endsWith('"')) ||
+      (val.startsWith("'") && val.endsWith("'"))
+    ) {
+      val = val.slice(1, -1)
+    }
+    if (process.env[key] === undefined || process.env[key] === '') {
+      process.env[key] = val
+    }
+  }
+}
+
+loadOptionalCoreMobileEnv()
+
 const featuresDir = path.join(pkgRoot, 'app/new/features')
 const modalsDir = path.join(pkgRoot, 'app/new/routes/(signedIn)/(modals)')
 
@@ -267,6 +315,11 @@ const TESTRAIL_USERNAME =
   process.env.TESTRAIL_USERNAME || 'mobiledevs@avalabs.org'
 const TESTRAIL_PROJECT_ID = Number(process.env.TESTRAIL_PROJECT_ID || 3)
 
+/** Parsed from `[REGRESSION] … Test Run: YYYY-MM-DD` in the run name; stale runs do not drive regression-adjusted %. */
+const REGRESSION_RUN_MAX_AGE_DAYS = Number(
+  process.env.E2E_COVERAGE_REGRESSION_MAX_AGE_DAYS || 7
+)
+
 /** WDIO posts status_id 1 = pass, 5 = fail (`sendResult` in testrail.service.ts). */
 const TESTRAIL_STATUS_PASSED = 1
 const TESTRAIL_STATUS_FAILED = 5
@@ -315,6 +368,58 @@ function pickLatestPlatformRegressionRun(runs, platform) {
   )
   hits.sort((a, b) => (b.created_on || 0) - (a.created_on || 0))
   return hits[0] || null
+}
+
+/**
+ * @param {string} name TestRail run name
+ * @returns {number | null} UTC ms at start of the `YYYY-MM-DD` calendar day in the name
+ */
+function parseRegressionRunDateMsFromName(name) {
+  const m = String(name).match(/Test\s+Run:\s*(\d{4}-\d{2}-\d{2})/i)
+  if (!m) return null
+  const [y, mo, d] = m[1].split('-').map(Number)
+  if (!y || !mo || !d) return null
+  return Date.UTC(y, mo - 1, d)
+}
+
+/**
+ * @param {string} name
+ * @param {number} maxAgeDays
+ */
+function regressionRunNameIsWithinMaxAge(name, maxAgeDays) {
+  const runDayMs = parseRegressionRunDateMsFromName(name)
+  if (runDayMs === null) return false
+  const maxAgeMs = maxAgeDays * 24 * 60 * 60 * 1000
+  return Date.now() - runDayMs <= maxAgeMs
+}
+
+/**
+ * Regression-adjusted headline numbers: N/A when TestRail row is stale, else
+ * computed metrics. When TestRail is skipped (`enabled: false`), use `adj`
+ * (same as heuristic total).
+ * @param {{ enabled?: boolean, staleRun?: boolean, regressionAdjustedNotApplicable?: boolean } | undefined} tr
+ * @param {{ regressionAdjustedCoveragePercent: number, regressionStableFeatureCount: number, regressionFailedFeatureCount: number }} adj
+ */
+function pickRegressionAdjustedCounts(tr, adj) {
+  if (tr?.regressionAdjustedNotApplicable || tr?.staleRun) {
+    return {
+      regressionAdjustedCoveragePercent: null,
+      regressionStableFeatureCount: null,
+      regressionFailedFeatureCount: null
+    }
+  }
+  if (!tr?.enabled) {
+    return {
+      regressionAdjustedCoveragePercent: adj.regressionAdjustedCoveragePercent,
+      regressionStableFeatureCount: adj.regressionStableFeatureCount,
+      regressionFailedFeatureCount: adj.regressionFailedFeatureCount
+    }
+  }
+  return {
+    regressionAdjustedCoveragePercent: adj.regressionAdjustedCoveragePercent,
+    regressionStableFeatureCount: adj.regressionStableFeatureCount,
+    regressionFailedFeatureCount: adj.regressionFailedFeatureCount
+  }
 }
 
 /** @param {string} featureFolder */
@@ -470,56 +575,113 @@ function buildSuiteCaseToSpecRelMap(testFiles) {
   return out
 }
 
-function createTestrailCaseResolver(client) {
-  const caseMeta = new Map()
-  const sectionNameById = new Map()
-
-  return async function resolveCase(caseId) {
-    if (caseMeta.has(caseId)) return caseMeta.get(caseId)
-    const { data } = await client.get(`/get_case/${caseId}`)
-    const caseTitle = (data.title || '').trim()
-    const secId = data.section_id
-    if (!sectionNameById.has(secId)) {
-      const { data: sec } = await client.get(`/get_section/${secId}`)
-      sectionNameById.set(secId, (sec.name || '').trim())
-    }
-    const sectionName = sectionNameById.get(secId) || ''
-    const meta = { sectionName, caseTitle }
-    caseMeta.set(caseId, meta)
-    return meta
-  }
+/**
+ * @param {import('axios').AxiosInstance} client
+ * @param {object} run TestRail run (from get_runs / picker)
+ */
+async function fetchRunSuiteId(client, run) {
+  if (run?.suite_id != null && run.suite_id !== '') return Number(run.suite_id)
+  const { data } = await client.get(`/get_run/${run.id}`)
+  return data?.suite_id != null ? Number(data.suite_id) : null
 }
 
 /**
- * @param {(id: number) => Promise<{ sectionName: string, caseTitle: string }>} resolveCase
- * @param {{ unmappedCount: number, unmappedFailedCount: number, unmappedSamples: string[] }} acc
+ * All section names for a suite (one paginated endpoint family vs many get_section).
+ * @param {import('axios').AxiosInstance} client
+ * @param {number | null} suiteId
+ * @returns {Promise<Map<number, string>>}
  */
-async function tryResolveTestrailCaseMeta(resolveCase, caseId, sid, acc) {
-  try {
-    return await resolveCase(caseId)
-  } catch {
+async function fetchSectionNameByIdMap(client, suiteId) {
+  /** @type {Map<number, string>} */
+  const map = new Map()
+  if (suiteId == null || Number.isNaN(suiteId)) return map
+  let offset = 0
+  const limit = 250
+  for (;;) {
+    const { data } = await client.get(
+      `/get_sections/${TESTRAIL_PROJECT_ID}&suite_id=${suiteId}`,
+      { params: { offset, limit } }
+    )
+    const batch = Array.isArray(data) ? data : data.sections || []
+    if (!Array.isArray(batch) || batch.length === 0) break
+    for (const s of batch) {
+      if (s?.id != null) map.set(Number(s.id), String(s.name || '').trim())
+    }
+    if (batch.length < limit) break
+    offset += limit
+  }
+  return map
+}
+
+/**
+ * Parallel `get_case` for unique IDs (bounded concurrency). Uses prefetched
+ * section map; falls back to `get_section` only if a case references an id
+ * missing from the map.
+ * @param {import('axios').AxiosInstance} client
+ * @param {number[]} caseIds
+ * @param {Map<number, string>} sectionNameById — mutated when fallback get_section runs
+ */
+async function fetchCaseMetaByIdsParallel(client, caseIds, sectionNameById) {
+  /** @type {Map<number, { sectionName: string, caseTitle: string } | null>} */
+  const out = new Map()
+  const ids = [...new Set(caseIds)].filter(id => id != null && !Number.isNaN(id))
+  const concurrency = Math.max(
+    1,
+    Math.min(
+      32,
+      Number(process.env.E2E_COVERAGE_TESTRAIL_CASE_CONCURRENCY || 12)
+    )
+  )
+  let cursor = 0
+  async function worker() {
+    for (;;) {
+      const i = cursor++
+      if (i >= ids.length) return
+      const caseId = ids[i]
+      try {
+        const { data } = await client.get(`/get_case/${caseId}`)
+        const caseTitle = (data.title || '').trim()
+        const secId =
+          data.section_id != null ? Number(data.section_id) : null
+        let sectionName =
+          secId != null ? sectionNameById.get(secId) || '' : ''
+        if (!sectionName && secId != null) {
+          const { data: sec } = await client.get(`/get_section/${secId}`)
+          sectionName = String(sec.name || '').trim()
+          sectionNameById.set(secId, sectionName)
+        }
+        out.set(caseId, { sectionName, caseTitle })
+      } catch {
+        out.set(caseId, null)
+      }
+    }
+  }
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, ids.length) }, () => worker())
+  )
+  return out
+}
+
+/**
+ * @param {object} t TestRail test row (`get_tests` includes `title` = case title)
+ * @param {Map<string, string[]>} suiteCaseToSpecRels
+ * @param {Map<number, { sectionName: string, caseTitle: string } | null>} caseMetaById
+ * @param {{ failedSet: Set<string>, mappedTotal: number, mappedPassed: number, mappedFailed: number, unmappedCount: number, unmappedFailedCount: number, unmappedSamples: string[] }} acc
+ */
+function applyTestrailTestRowSync(t, suiteCaseToSpecRels, caseMetaById, acc) {
+  const sid = t.status_id
+  const caseId = t.case_id
+  const row = caseMetaById.get(caseId)
+  if (!row) {
     acc.unmappedCount += 1
     if (sid === TESTRAIL_STATUS_FAILED) acc.unmappedFailedCount += 1
     if (acc.unmappedSamples.length < 8) {
       acc.unmappedSamples.push(`(case ${caseId} API error)`)
     }
-    return null
+    return
   }
-}
-
-/**
- * @param {object} t TestRail test row
- * @param {Map<string, string[]>} suiteCaseToSpecRels
- * @param {(id: number) => Promise<{ sectionName: string, caseTitle: string }>} resolveCase
- * @param {{ failedSet: Set<string>, mappedTotal: number, mappedPassed: number, mappedFailed: number, unmappedCount: number, unmappedFailedCount: number, unmappedSamples: string[] }} acc
- */
-async function applyTestrailTestRow(t, suiteCaseToSpecRels, resolveCase, acc) {
-  const sid = t.status_id
-  const caseId = t.case_id
-  const meta = await tryResolveTestrailCaseMeta(resolveCase, caseId, sid, acc)
-  if (!meta) return
-
-  const mapKey = `${meta.sectionName}\t${meta.caseTitle}`
+  const caseTitle = String(t.title || row.caseTitle || '').trim()
+  const mapKey = `${row.sectionName}\t${caseTitle}`
   const rels = suiteCaseToSpecRels.get(mapKey)
   if (!rels || rels.length === 0) {
     acc.unmappedCount += 1
@@ -553,6 +715,7 @@ async function fetchTestrailPlatformRegressionContext(
   if (!run) {
     return {
       ok: false,
+      staleRun: false,
       error: `No [REGRESSION] ${platform} Test Run: YYYY-MM-DD found in TestRail project`,
       run: null,
       failedSpecRels: [],
@@ -565,8 +728,32 @@ async function fetchTestrailPlatformRegressionContext(
     }
   }
 
+  if (!regressionRunNameIsWithinMaxAge(run.name, REGRESSION_RUN_MAX_AGE_DAYS)) {
+    return {
+      ok: true,
+      staleRun: true,
+      error: null,
+      run,
+      failedSpecRels: [],
+      mappedTotal: 0,
+      mappedPassed: 0,
+      mappedFailed: 0,
+      mappedPassPct: null,
+      unmappedCount: 0,
+      unmappedFailedCount: 0,
+      unmappedSamples: /** @type {string[]} */ ([])
+    }
+  }
+
   const tests = await fetchAllTestsForRun(client, run.id)
-  const resolveCase = createTestrailCaseResolver(client)
+  const suiteId = await fetchRunSuiteId(client, run)
+  const sectionNameById = await fetchSectionNameByIdMap(client, suiteId)
+  const uniqueCaseIds = tests.map(t => t.case_id).filter(Boolean)
+  const caseMetaById = await fetchCaseMetaByIdsParallel(
+    client,
+    uniqueCaseIds,
+    sectionNameById
+  )
   const acc = {
     failedSet: new Set(),
     mappedTotal: 0,
@@ -577,7 +764,7 @@ async function fetchTestrailPlatformRegressionContext(
     unmappedSamples: /** @type {string[]} */ ([])
   }
   for (const t of tests) {
-    await applyTestrailTestRow(t, suiteCaseToSpecRels, resolveCase, acc)
+    applyTestrailTestRowSync(t, suiteCaseToSpecRels, caseMetaById, acc)
   }
 
   const failedSpecRels = [...acc.failedSet].sort()
@@ -588,6 +775,7 @@ async function fetchTestrailPlatformRegressionContext(
 
   return {
     ok: true,
+    staleRun: false,
     error: null,
     run,
     failedSpecRels,
@@ -602,12 +790,14 @@ async function fetchTestrailPlatformRegressionContext(
 }
 
 /**
- * @param {{ ok: boolean, error: string | null, run: object | null, failedSpecRels: string[], mappedTotal: number, mappedPassed: number, mappedFailed: number, mappedPassPct: number | null, unmappedCount: number, unmappedFailedCount: number, unmappedSamples: string[] }} tr
+ * @param {{ ok: boolean, staleRun?: boolean, error: string | null, run: object | null, failedSpecRels: string[], mappedTotal: number, mappedPassed: number, mappedFailed: number, mappedPassPct: number | null, unmappedCount: number, unmappedFailedCount: number, unmappedSamples: string[] }} tr
  */
 function testrailUiSummaryFromFetch(tr) {
   if (tr.ok && tr.run) {
-    return {
+    const base = {
       enabled: true,
+      regressionRunMaxAgeDays: REGRESSION_RUN_MAX_AGE_DAYS,
+      staleRun: Boolean(tr.staleRun),
       runId: tr.run.id,
       runName: tr.run.name,
       mappedTestsInRun: tr.mappedTotal,
@@ -619,6 +809,14 @@ function testrailUiSummaryFromFetch(tr) {
       failedSpecRelPaths: tr.failedSpecRels,
       unmappedKeySamples: tr.unmappedSamples
     }
+    if (tr.staleRun) {
+      return {
+        ...base,
+        regressionAdjustedNotApplicable: true,
+        regressionAdjustedNotApplicableReason: `Latest matching run is older than ${REGRESSION_RUN_MAX_AGE_DAYS} day(s) (date in run name); regression-adjusted % and mapped failures are not applied.`
+      }
+    }
+    return base
   }
   return {
     enabled: false,
@@ -1305,14 +1503,18 @@ function printJsonReport(ctx) {
           totalCoveragePercentBasis:
             'inScopeMappedFeatures_union_specPathOrTestIdInSpec',
           regressionAdjustedCoveragePercentIos,
-          regressionAdjustedCoveragePercentIosBasis:
-            'inScopeMappedFeatures_heuristicO_and_noMappedIosRegressionFailure',
+          regressionAdjustedCoveragePercentIosBasis: testrail?.ios
+            ?.regressionAdjustedNotApplicable
+            ? `not_applicable_ios_regression_run_older_than_${REGRESSION_RUN_MAX_AGE_DAYS}_days`
+            : 'inScopeMappedFeatures_heuristicO_and_noMappedIosRegressionFailure',
           regressionStableFeatureCountIos,
           regressionFailedFeatureCountIos,
           regressionFailedFeatureNamesIos,
           regressionAdjustedCoveragePercentAndroid,
-          regressionAdjustedCoveragePercentAndroidBasis:
-            'inScopeMappedFeatures_heuristicO_and_noMappedAndroidRegressionFailure',
+          regressionAdjustedCoveragePercentAndroidBasis: testrail?.android
+            ?.regressionAdjustedNotApplicable
+            ? `not_applicable_android_regression_run_older_than_${REGRESSION_RUN_MAX_AGE_DAYS}_days`
+            : 'inScopeMappedFeatures_heuristicO_and_noMappedAndroidRegressionFailure',
           regressionStableFeatureCountAndroid,
           regressionFailedFeatureCountAndroid,
           regressionFailedFeatureNamesAndroid,
@@ -1480,6 +1682,16 @@ function printTextReportHeader(ctx) {
 }
 
 function printTestrailPlatformBlock(tr, label, rAdj, rStable, nScope) {
+  if (tr?.enabled && tr?.staleRun) {
+    console.log('')
+    console.log(
+      `Regression-adjusted (${label}): N/A — latest matching run is older than ${REGRESSION_RUN_MAX_AGE_DAYS} day(s) (“${tr.runName}”).`
+    )
+    console.log(
+      `TestRail ${label} (reference): id ${tr.runId} — not used for regression-adjusted % or checklist ${label} fail markers (stale).`
+    )
+    return
+  }
   if (tr?.enabled) {
     console.log('')
     console.log(
@@ -1774,7 +1986,7 @@ async function loadTestrailRegressionSummary(
     )
 
     const regressionFailedFeaturesIos =
-      trIos.ok && trIos.run
+      trIos.ok && trIos.run && !trIos.staleRun
         ? computeRegressionFailedFeatures(
             trIos.failedSpecRels,
             featureNames,
@@ -1782,7 +1994,7 @@ async function loadTestrailRegressionSummary(
           )
         : new Set()
     const regressionFailedFeaturesAndroid =
-      trAndroid.ok && trAndroid.run
+      trAndroid.ok && trAndroid.run && !trAndroid.staleRun
         ? computeRegressionFailedFeatures(
             trAndroid.failedSpecRels,
             featureNames,
@@ -1868,21 +2080,25 @@ async function main() {
     regressionFailedFeaturesAndroid
   )
 
+  const iosAdj = pickRegressionAdjustedCounts(testrailIos, regressionAdjIos)
+  const androidAdj = pickRegressionAdjustedCounts(
+    testrailAndroid,
+    regressionAdjAndroid
+  )
+
   const counts = {
     ...coverageBase,
     ...modalPercents,
     regressionAdjustedCoveragePercentIos:
-      regressionAdjIos.regressionAdjustedCoveragePercent,
-    regressionStableFeatureCountIos:
-      regressionAdjIos.regressionStableFeatureCount,
-    regressionFailedFeatureCountIos:
-      regressionAdjIos.regressionFailedFeatureCount,
+      iosAdj.regressionAdjustedCoveragePercent,
+    regressionStableFeatureCountIos: iosAdj.regressionStableFeatureCount,
+    regressionFailedFeatureCountIos: iosAdj.regressionFailedFeatureCount,
     regressionAdjustedCoveragePercentAndroid:
-      regressionAdjAndroid.regressionAdjustedCoveragePercent,
+      androidAdj.regressionAdjustedCoveragePercent,
     regressionStableFeatureCountAndroid:
-      regressionAdjAndroid.regressionStableFeatureCount,
+      androidAdj.regressionStableFeatureCount,
     regressionFailedFeatureCountAndroid:
-      regressionAdjAndroid.regressionFailedFeatureCount,
+      androidAdj.regressionFailedFeatureCount,
     testrail: { ios: testrailIos, android: testrailAndroid },
     regressionFailedFeatureNamesIos: [...regressionFailedFeaturesIos].sort(),
     regressionFailedFeatureNamesAndroid: [
