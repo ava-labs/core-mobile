@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import BalanceService from 'services/balance/BalanceService'
 import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
 import { Account } from 'store/account/types'
-import { selectEnabledNetworks } from 'store/network/slice'
+import { selectAllNetworksForBalanceFetch } from 'store/network/slice'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { Network } from '@avalabs/core-chains-sdk'
 import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
@@ -37,9 +37,12 @@ export const balanceKey = (account: Account | undefined, network?: Network[]) =>
   ] as const
 
 /**
- * Fetches balances for the specified account across all enabled networks (C-Chain, X-Chain, P-Chain, other EVMs, BTC, SOL, etc.)
+ * Fetches balances for the specified account across all available networks
+ * (enabled and disabled alike), so that portfolio and swap screens can show
+ * real balances regardless of the user's network visibility settings.
  *
- * 🔁 Runs one query for all enabled networks via React Query.
+ * 🔁 Runs one query for all networks via React Query; each network streams
+ * in via onBalanceLoaded as it resolves.
  */
 export function useAccountBalances(
   account?: Account,
@@ -65,12 +68,12 @@ export function useAccountBalances(
   // when the reachability check host is blocked or slow (VPN, captive portals).
   const isOnline = netInfo.isConnected !== false
 
-  const enabledNetworks = useSelector(selectEnabledNetworks)
+  const networks = useSelector(selectAllNetworksForBalanceFetch)
   const currency = useSelector(selectSelectedCurrency)
   const { xpAddresses } = useXPAddresses(account)
   const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
 
-  const isNotReady = !account || enabledNetworks.length === 0 || !wallet
+  const isNotReady = !account || networks.length === 0 || !wallet
 
   const enabled = !isNotReady
 
@@ -82,7 +85,7 @@ export function useAccountBalances(
     refetch: refetchFn
   } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: balanceKey(account, enabledNetworks),
+    queryKey: balanceKey(account, networks),
     enabled,
     refetchInterval: options?.refetchInterval ?? refetchInterval,
     staleTime,
@@ -96,14 +99,14 @@ export function useAccountBalances(
       })
 
       return await BalanceService.getBalancesForAccount({
-        networks: enabledNetworks,
+        networks: networks,
         account,
         currency: currency.toLowerCase(),
         xpAddresses,
         xpub,
         onBalanceLoaded: balance => {
           queryClient.setQueryData(
-            balanceKey(account, enabledNetworks),
+            balanceKey(account, networks),
             (prev: AdjustedNormalizedBalancesForAccount[] | undefined) => {
               if (!prev) return [balance]
               const filtered = prev.filter(p => p.chainId !== balance.chainId)
@@ -138,15 +141,11 @@ export function useAccountBalances(
 
     // still loading if:
     // - account missing, OR
-    // - no data, OR
-    // - fewer results than enabled networks
-    return (
-      !account ||
-      !data ||
-      data.length === 0 ||
-      data.length < enabledNetworks.length
-    )
-  }, [account, data, enabledNetworks.length, isError, isOnline])
+    // - no data yet at all
+    // (we no longer wait for all networks since we now fetch all available
+    // networks and each one streams in via onBalanceLoaded)
+    return !account || !data || data.length === 0
+  }, [account, data, isError, isOnline])
 
   return {
     data: data ?? [],

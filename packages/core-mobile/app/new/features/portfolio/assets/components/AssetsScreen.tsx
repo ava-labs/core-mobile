@@ -19,7 +19,7 @@ import {
   AssetNetworkFilter,
   LocalTokenWithBalance
 } from 'store/balance'
-import { selectEnabledNetworks } from 'store/network'
+import { selectAllNetworksForBalanceFetch } from 'store/network/slice'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { EmptyState } from './EmptyState'
 import { TokenListItem } from './TokenListItem'
@@ -46,7 +46,7 @@ const AssetsScreen: FC<Props> = ({
   const listType = view.selected
 
   const activeAccount = useSelector(selectActiveAccount)
-  const enabledNetworks = useSelector(selectEnabledNetworks)
+  const allNetworks = useSelector(selectAllNetworksForBalanceFetch)
   const {
     isAllBalancesInaccurate,
     isBalanceLoaded,
@@ -156,7 +156,7 @@ const AssetsScreen: FC<Props> = ({
 
   const renderEmptyComponent = useCallback(() => {
     // Only show loading state during initial load, not background polling
-    if (isInitialLoading || !isBalanceLoaded || enabledNetworks.length === 0) {
+    if (isInitialLoading || !isBalanceLoaded || allNetworks.length === 0) {
       return (
         <CollapsibleTabs.ContentWrapper>
           <LoadingState />
@@ -205,7 +205,7 @@ const AssetsScreen: FC<Props> = ({
   }, [
     isInitialLoading,
     isBalanceLoaded,
-    enabledNetworks.length,
+    allNetworks.length,
     isAllBalancesError,
     isAllBalancesInaccurate,
     filter.selected,

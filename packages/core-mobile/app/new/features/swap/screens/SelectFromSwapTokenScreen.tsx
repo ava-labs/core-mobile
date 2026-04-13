@@ -18,6 +18,7 @@ import { ListScreenV2 } from 'common/components/ListScreenV2'
 import { useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
+import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
 import { ListRenderItem } from '@shopify/flash-list'
 import { LocalTokenWithBalance } from 'store/balance'
 import { useSelector } from 'react-redux'
@@ -60,15 +61,33 @@ export const SelectFromSwapTokenScreen = ({
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
+  const { data: allBalances } = useAccountBalances(activeAccount)
+
+  const networksWithBalance = useMemo(() => {
+    if (!networks) return undefined
+    const chainIdsWithBalance = new Set(
+      allBalances
+        .filter(
+          b =>
+            b.accountId === activeAccount?.id &&
+            b.tokens.some(t => t.balance > 0n)
+        )
+        .map(b => b.chainId)
+    )
+    return networks.filter(n => chainIdsWithBalance.has(n.chainId))
+  }, [networks, allBalances, activeAccount?.id])
+
   useEffect(() => {
-    if (!networks || networks.length === 0) return
+    if (!networksWithBalance || networksWithBalance.length === 0) return
     if (defaultNetworkChainId) {
-      const found = networks.find(n => n.chainId === defaultNetworkChainId)
-      setSelectedNetwork(found ?? networks[0])
+      const found = networksWithBalance.find(
+        n => n.chainId === defaultNetworkChainId
+      )
+      setSelectedNetwork(found ?? networksWithBalance[0])
     } else {
-      setSelectedNetwork(networks[0])
+      setSelectedNetwork(networksWithBalance[0])
     }
-  }, [defaultNetworkChainId, networks])
+  }, [defaultNetworkChainId, networksWithBalance])
 
   const { tokens: portfolioTokens, isLoading: isBalanceLoading } =
     useTokensWithBalanceByNetworkForAccount(
@@ -107,14 +126,14 @@ export const SelectFromSwapTokenScreen = ({
   )
 
   const renderNetworkSelector = useCallback(() => {
-    if (!networks || networks.length <= 1) return null
+    if (!networksWithBalance || networksWithBalance.length <= 1) return null
 
     return (
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ gap: 8 }}>
-        {networks.map(network => (
+        {networksWithBalance.map(network => (
           <Button
             key={network.chainId}
             testID={`network_selector__${network.chainName}`}
@@ -133,7 +152,7 @@ export const SelectFromSwapTokenScreen = ({
         ))}
       </ScrollView>
     )
-  }, [networks, selectedNetwork])
+  }, [networksWithBalance, selectedNetwork])
 
   const renderItem: ListRenderItem<LocalTokenWithBalance> = useCallback(
     ({ item, index }) => {
@@ -202,11 +221,11 @@ export const SelectFromSwapTokenScreen = ({
   )
 
   const renderEmpty = useCallback(() => {
-    if (!networks || !selectedNetwork || isBalanceLoading) {
+    if (!networksWithBalance || !selectedNetwork || isBalanceLoading) {
       return <ActivityIndicator />
     }
     return <ErrorState icon={undefined} title="No tokens found" />
-  }, [networks, selectedNetwork, isBalanceLoading])
+  }, [networksWithBalance, selectedNetwork, isBalanceLoading])
 
   return (
     <ListScreenV2

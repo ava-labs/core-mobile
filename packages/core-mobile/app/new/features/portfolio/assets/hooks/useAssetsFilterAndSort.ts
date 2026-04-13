@@ -11,13 +11,16 @@ import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { DropdownSelection } from 'common/types'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useSelector } from 'react-redux'
-import { selectEnabledNetworks } from 'store/network'
+import {
+  alwaysEnabledChainIds,
+  selectAllNetworksForBalanceFetch,
+  selectEnabledChainIds
+} from 'store/network/slice'
+import { sortPrimaryNetworks } from 'common/utils/sortPrimaryNetworks'
 import { usePrevious } from 'common/hooks/usePrevious'
 import { ActivityNetworkFilter } from 'features/activity/hooks/useActivityFilterAndSearch'
 import { isEqual } from 'lodash'
 import { usePortfolioView } from 'features/portfolio/store'
-import { selectActiveAccount } from 'store/account'
-import { NetworkVMType } from '@avalabs/vm-module-types'
 
 export const useAssetsFilterAndSort = (): {
   onResetFilter: () => void
@@ -29,41 +32,50 @@ export const useAssetsFilterAndSort = (): {
   isRefetching: boolean
   isLoading: boolean
 } => {
-  const account = useSelector(selectActiveAccount)
   const { selectedView, setSelectedView } = usePortfolioView()
 
   const erc20ContractTokens = useErc20ContractTokens()
-  const enabledNetworks = useSelector(selectEnabledNetworks)
-
-  // remove solana network from the list if account has no SVM address
-  const filteredEnabledNetworks = useMemo(() => {
-    const accountHasSvmAddress =
-      account?.addressSVM !== undefined && account?.addressSVM.length > 0
-    if (accountHasSvmAddress) {
-      return enabledNetworks
-    }
-    return enabledNetworks.filter(
-      network => network.vmName !== NetworkVMType.SVM
-    )
-  }, [account?.addressSVM, enabledNetworks])
+  const allNetworks = useSelector(selectAllNetworksForBalanceFetch)
+  const enabledChainIds = useSelector(selectEnabledChainIds)
 
   const { filteredTokenList, refetch, isRefetching, isLoading } =
     useSearchableTokenList({
-      tokens: erc20ContractTokens
+      tokens: erc20ContractTokens,
+      hideDisabled: false
     })
 
   const networkFilters = useMemo(() => {
-    const enabledNetworksFilter = filteredEnabledNetworks.map(network => {
-      return { filterName: network.chainName, chainId: network.chainId }
-    })
+    const chainIdsWithBalance = new Set(
+      filteredTokenList.map(token => token.networkChainId)
+    )
+    const enabledSet = new Set(enabledChainIds)
+    const alwaysEnabledSet = new Set(alwaysEnabledChainIds)
+    const networksFilter = allNetworks
+      .filter(
+        network =>
+          chainIdsWithBalance.has(network.chainId) ||
+          alwaysEnabledSet.has(network.chainId)
+      )
+      .sort((a, b) => {
+        const primaryDiff = sortPrimaryNetworks(a, b)
+        if (primaryDiff !== 0) return primaryDiff
+        return (
+          (enabledSet.has(a.chainId) ? 0 : 1) -
+          (enabledSet.has(b.chainId) ? 0 : 1)
+        )
+      })
+      .map(network => ({
+        filterName: network.chainName,
+        chainId: network.chainId
+      }))
     return [
       {
         filterName: AssetNetworkFilter.AllNetworks as string,
         chainId: undefined
       },
-      ...enabledNetworksFilter
+      ...networksFilter
     ]
-  }, [filteredEnabledNetworks])
+  }, [allNetworks, enabledChainIds, filteredTokenList])
 
   const [selectedNetworkFilters, setSelectedNetworkFilters] =
     useState<ActivityNetworkFilter[]>(networkFilters)

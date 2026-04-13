@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
-import { selectEnabledNetworksMap } from 'store/network/slice'
+import { selectNetworks } from 'store/network/slice'
 import { Account } from 'store/account/types'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import { isDefined } from 'new/common/utils/isDefined'
@@ -16,8 +16,8 @@ import { balanceKey, useAccountBalances } from './useAccountBalances'
 /**
  * Returns token balances for a specific account.
  * - If `chainId` is provided → returns tokens for that network only.
- * - If no `chainId` is provided → returns tokens across all enabled networks
- *   (filtered by developer mode to include only testnet/mainnet as appropriate).
+ * - If no `chainId` is provided → returns tokens across all networks (enabled
+ *   and disabled), filtered by developer mode to include only testnet/mainnet.
  *
  * Notes: when source data is provided, it will be used instead of data from useAccountBalances
  */
@@ -31,7 +31,7 @@ export function useTokensWithBalanceForAccount({
   sourceData?: AdjustedNormalizedBalancesForAccount[]
 }): LocalTokenWithBalance[] {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const networks = useSelector(selectEnabledNetworksMap)
+  const networks = useSelector(selectNetworks)
   const { data: fetchedData } = useAccountBalances(
     sourceData ? undefined : account
   )

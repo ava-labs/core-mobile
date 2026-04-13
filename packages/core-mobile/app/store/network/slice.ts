@@ -265,6 +265,26 @@ export const selectEnabledNetworksMap = createSelector(
   }
 )
 
+/**
+ * Returns ALL available networks for the current developer mode (mainnet or testnet),
+ * with the Solana account check applied. Unlike selectEnabledNetworks, this selector
+ * ignores the user's enabled/disabled preference so balance fetches cover every network.
+ */
+export const selectAllNetworksForBalanceFetch = createSelector(
+  [selectNetworks, selectActiveAccount],
+  (networks, activeAccount) => {
+    return Object.values(networks).filter(network => {
+      if (network.vmName === NetworkVMType.SVM) {
+        return (
+          activeAccount?.addressSVM !== undefined &&
+          activeAccount.addressSVM.length > 0
+        )
+      }
+      return true
+    })
+  }
+)
+
 export const selectEnabledNetworksByTestnet =
   (isTestnet: boolean) => (state: RootState) => {
     const networks = selectNetworks(state)
