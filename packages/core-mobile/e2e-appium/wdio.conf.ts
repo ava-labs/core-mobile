@@ -1,3 +1,5 @@
+import path from 'node:path'
+
 import {
   addCaseToRun,
   getSection,
@@ -15,24 +17,8 @@ import {
 let runId: number | undefined
 const sectionCache: Record<string, number> = {}
 
-const isBitrise = process.env.CI === 'true'
-const goHeadless = isBitrise ? true : false
-const goRetry = isBitrise ? 1 : 0
-const iosLocalPath = process.env.E2E_LOCAL_PATH
-  ? '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
-  : './ios/build/Debug-iphonesimulator/AvaxWalletInternal.app'
-const androidLocalPath = process.env.E2E_LOCAL_PATH
-  ? '/Users/eunji.song/Downloads/app-internal-e2e-bitrise-signed.apk'
-  : './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
-const iosPath = isBitrise
-  ? process.env.BITRISE_APP_DIR_PATH
-  : path.resolve(iosLocalPath)
-const androidPath = isBitrise
-  ? process.env.BITRISE_APK_PATH
-  : path.resolve(androidLocalPath)
-const platformToRun = process.env.PLATFORM
-const isSmoke = process.env.IS_SMOKE === 'true'
-const isPerformance = process.env.IS_PERFORMANCE === 'true'
+const platformToRun =
+  process.env.PLATFORM || process.env.DEVICEFARM_DEVICE_PLATFORM_NAME
 
 // AWS Device Farm provides these environment variables
 const isDeviceFarm = !!process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL
@@ -51,8 +37,6 @@ if (!rawAppPath) {
   )
 }
 const appPath = rawAppPath
-const platformToRun =
-  process.env.PLATFORM || process.env.DEVICEFARM_DEVICE_PLATFORM_NAME
 
 const chromedriverExecutableDir =
   process.env.DEVICEFARM_CHROMEDRIVER_EXECUTABLE_DIR || ''
@@ -249,7 +233,6 @@ export const config: WebdriverIO.Config = {
     if (!passed) {
       try {
         const fs = require('fs')
-        const path = require('path')
         const pageSource = await driver.getPageSource()
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
         const sanitizedTestName = test.title

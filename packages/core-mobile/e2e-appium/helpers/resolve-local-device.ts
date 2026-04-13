@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process'
+import { execFileSync } from 'node:child_process'
 
 export type ResolvedDeviceCaps = {
   deviceName: string
@@ -14,6 +14,20 @@ const EMPTY: ResolvedDeviceCaps = {
 
 function trim(s: string): string {
   return s.replace(/\r?\n+$/, '').trim()
+}
+
+const CHILD_MAX_BUFFER = 1024 * 1024
+
+function getAdbExecutable(): string {
+  const fromEnv = process.env.ADB_PATH?.trim()
+  return fromEnv && fromEnv.length > 0 ? fromEnv : 'adb'
+}
+
+function adbExecFileSync(args: string[]): string {
+  return execFileSync(getAdbExecutable(), args, {
+    encoding: 'utf8',
+    maxBuffer: CHILD_MAX_BUFFER
+  })
 }
 
 /**
@@ -60,13 +74,9 @@ export function resolveDeviceCaps(
 }
 
 export function getAndroidSerial(): string | null {
-  const adb = process.env.ADB_PATH || 'adb'
   let out: string
   try {
-    out = execSync(`${adb} devices`, {
-      encoding: 'utf8',
-      maxBuffer: 1024 * 1024
-    })
+    out = adbExecFileSync(['devices'])
   } catch {
     return null
   }
@@ -91,7 +101,6 @@ export function getAndroidSerial(): string | null {
 }
 
 function resolveAndroidLocal(): ResolvedDeviceCaps {
-  const adb = process.env.ADB_PATH || 'adb'
   const serial = getAndroidSerial()
   if (!serial) {
     throw new Error(
@@ -99,16 +108,16 @@ function resolveAndroidLocal(): ResolvedDeviceCaps {
     )
   }
   const version = trim(
-    execSync(`${adb} -s ${serial} shell getprop ro.build.version.release`, {
-      encoding: 'utf8',
-      maxBuffer: 1024 * 1024
-    })
+    adbExecFileSync([
+      '-s',
+      serial,
+      'shell',
+      'getprop',
+      'ro.build.version.release'
+    ])
   )
   const model = trim(
-    execSync(`${adb} -s ${serial} shell getprop ro.product.model`, {
-      encoding: 'utf8',
-      maxBuffer: 1024 * 1024
-    })
+    adbExecFileSync(['-s', serial, 'shell', 'getprop', 'ro.product.model'])
   )
   return {
     deviceName: model || serial,
@@ -138,9 +147,9 @@ function findSimulatorByUdid(udid: string): {
 } | null {
   let raw: string
   try {
-    raw = execSync('xcrun simctl list devices -j', {
+    raw = execFileSync('xcrun', ['simctl', 'list', 'devices', '-j'], {
       encoding: 'utf8',
-      maxBuffer: 1024 * 1024
+      maxBuffer: CHILD_MAX_BUFFER
     })
   } catch {
     return null
@@ -214,9 +223,9 @@ function resolveIosLocal(): ResolvedDeviceCaps {
 
   let raw: string
   try {
-    raw = execSync('xcrun simctl list devices booted -j', {
+    raw = execFileSync('xcrun', ['simctl', 'list', 'devices', 'booted', '-j'], {
       encoding: 'utf8',
-      maxBuffer: 1024 * 1024
+      maxBuffer: CHILD_MAX_BUFFER
     })
   } catch (e) {
     throw new Error(

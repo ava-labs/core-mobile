@@ -53,7 +53,7 @@ async function type(element: ChainablePromiseElement, text: string | number) {
     // Click the element to focus it
     await element.click()
     await driver.pause(500) // Wait for focus and keyboard
-  } catch (e) {
+  } catch {
     console.log(
       'Warning: Could not click element before typing, continuing anyway'
     )
@@ -63,7 +63,7 @@ async function type(element: ChainablePromiseElement, text: string | number) {
   try {
     await element.clearValue()
     await driver.pause(200)
-  } catch (e) {
+  } catch {
     // If clearValue fails, try selecting all and deleting
     if (driver.isAndroid) {
       try {
@@ -72,7 +72,7 @@ async function type(element: ChainablePromiseElement, text: string | number) {
         await driver.pause(100)
         await driver.pressKeyCode(67) // Delete
         await driver.pause(200)
-      } catch (e2) {
+      } catch {
         // Continue anyway
       }
     }
@@ -221,7 +221,7 @@ async function tap(
     if (expectedEle) {
       try {
         await waitFor(expectedEle)
-      } catch (e) {
+      } catch {
         if (await getVisible(ele)) {
           await ele.click()
           console.log(`Tapped again "${selector}"`)
@@ -247,7 +247,7 @@ async function longPress(
     if (expectedEle) {
       try {
         await waitFor(expectedEle)
-      } catch (e) {
+      } catch {
         await ele.longPress()
         console.log(`longPress again "${selector}"`)
       }
@@ -267,7 +267,7 @@ async function dismissKeyboard(id = 'Return') {
   if (driver.isIOS) {
     try {
       await click(selectors.getById(id))
-    } catch (e) {
+    } catch {
       await click(selectors.getById('Done'))
     }
   } else {
@@ -280,7 +280,7 @@ async function tapEnterOnKeyboard(id = 'Return') {
   if (driver.isIOS) {
     try {
       await click(selectors.getById(id))
-    } catch (e) {
+    } catch {
       await click(selectors.getById('Done'))
     }
   } else {
@@ -445,7 +445,7 @@ async function typeSlowly(
     // Click the element to focus it
     await element.click()
     await driver.pause(500) // Wait for focus and keyboard
-  } catch (e) {
+  } catch {
     console.log(
       'Warning: Could not click element before typeSlowly, continuing anyway'
     )
@@ -455,7 +455,7 @@ async function typeSlowly(
   try {
     await element.clearValue()
     await driver.pause(200)
-  } catch (e) {
+  } catch {
     // If clearValue fails, try selecting all and deleting
     if (driver.isAndroid) {
       try {
@@ -464,7 +464,7 @@ async function typeSlowly(
         await driver.pause(100)
         await driver.pressKeyCode(67) // Delete
         await driver.pause(200)
-      } catch (e2) {
+      } catch {
         // Continue anyway
       }
     }

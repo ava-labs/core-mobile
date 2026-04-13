@@ -183,6 +183,7 @@ RUN_NAME="Appium Test Run - $(date +%Y-%m-%d-%H-%M-%S)"
 
 # Create test spec file that references both the test package and test spec
 TEST_SPEC_FILE=$(mktemp)
+trap 'rm -f "${TEST_SPEC_FILE:-}"' EXIT INT TERM HUP
 cat > "$TEST_SPEC_FILE" <<EOF
 {
   "type": "APPIUM_NODE",
@@ -199,8 +200,6 @@ RUN_OUTPUT=$(aws devicefarm schedule-run \
   --name "$RUN_NAME" \
   --test file://"$TEST_SPEC_FILE" \
   --output json)
-
-rm -f "$TEST_SPEC_FILE"
 
 RUN_ARN=$(echo "$RUN_OUTPUT" | jq -r '.run.arn')
 # Encode ARNs for console hash route (colons etc.) — use jq (already required) instead of node
