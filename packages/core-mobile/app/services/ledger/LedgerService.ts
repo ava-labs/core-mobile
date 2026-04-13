@@ -1101,13 +1101,29 @@ class LedgerService {
   // ============================================================================
 
   /**
-   * Get Solana keys from the connected Ledger device
+   * Get Solana keys from the connected Ledger device.
+   * @param accountIndex - BIP44 account index to derive
+   * @param signal - Optional AbortSignal to cancel the operation mid-flight
+   *                 (e.g. when the user taps "Skip Solana" during onboarding)
    * @returns Array of Solana keys with derivation paths
    */
-  async getSolanaKeys(accountIndex: number): Promise<PublicKeyInfo[]> {
+  async getSolanaKeys(
+    accountIndex: number,
+    signal?: AbortSignal
+  ): Promise<PublicKeyInfo[]> {
     Logger.info('Getting Solana keys with passive app detection')
     await this.openApp(LedgerAppType.SOLANA)
-    await this.waitForApp(LedgerAppType.SOLANA)
+
+    // Pass the signal to waitForApp so cancellation stops the polling loop
+    // before it sends further APDU queries to the Ledger device.
+    await this.waitForApp(LedgerAppType.SOLANA, undefined, signal)
+
+    // Check if the operation was cancelled while we were waiting for the app.
+    // This prevents sending a getAddress APDU after the user has already
+    // chosen to skip Solana.
+    if (signal?.aborted) {
+      throw new Error(LEDGER_ERROR_CODES.USER_CANCELLED)
+    }
 
     // Get address directly from Solana app
     const transport = await this.getTransport()
@@ -1296,18 +1312,45 @@ class LedgerService {
    * Derive Solana keys for a range of account indices.
    * Returns an array where each element is the PublicKeyInfo[] for that index,
    * or null if derivation failed.
+   *
+   * @param count - Number of indices to derive
+   * @param startIndex - First account index
+   * @param signal - Optional AbortSignal to cancel iteration early
+   *                 (e.g. when the user taps "Skip Solana" during onboarding).
+   *                 When aborted, the loop stops and returns only the keys
+   *                 that were successfully retrieved before cancellation.
    */
   async getSolanaKeysForRange(
     count: number,
-    startIndex = 0
+    startIndex = 0,
+    signal?: AbortSignal
   ): Promise<(PublicKeyInfo[] | null)[]> {
     const results: (PublicKeyInfo[] | null)[] = []
 
     for (let i = startIndex; i < startIndex + count; i++) {
+      // Stop iterating if the caller cancelled the operation.
+      // This prevents sending additional APDU requests to the Ledger
+      // device after the user chose to skip Solana onboarding.
+      if (signal?.aborted) {
+        Logger.info(
+          `getSolanaKeysForRange: aborting before index ${i} (pre-iteration)`
+        )
+        break
+      }
+
       try {
-        const keys = await this.getSolanaKeys(i)
+        const keys = await this.getSolanaKeys(i, signal)
         results.push(keys)
       } catch (error) {
+        // If the abort signal fired during getSolanaKeys, stop the loop
+        // instead of logging the cancellation as a derivation failure.
+        if (signal?.aborted) {
+          Logger.info(
+            `getSolanaKeysForRange: aborting at index ${i} (post-error)`
+          )
+          break
+        }
+
         Logger.error(
           `Failed to derive Solana keys for index ${i}, skipping`,
           error

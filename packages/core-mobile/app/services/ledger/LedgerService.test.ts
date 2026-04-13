@@ -544,4 +544,58 @@ describe('LedgerService', () => {
       checkAppSpy.mockRestore()
     })
   })
+
+  describe('getSolanaKeysForRange', () => {
+    beforeEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      jest.spyOn(Logger, 'info').mockImplementation(() => {})
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      jest.spyOn(Logger, 'error').mockImplementation(() => {})
+    })
+
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should stop iterating when signal is aborted', async () => {
+      const controller = new AbortController()
+
+      // Mock getSolanaKeys to abort the controller on the second call,
+      // simulating the user tapping "Skip" while keys are being retrieved.
+      const getSolanaKeysSpy = jest
+        .spyOn(LedgerService, 'getSolanaKeys')
+        .mockImplementation(async (index: number, _signal?: AbortSignal) => {
+          if (index === 1) {
+            controller.abort()
+          }
+          // Check signal after potential abort
+          if (controller.signal.aborted) {
+            throw new Error(LEDGER_ERROR_CODES.USER_CANCELLED)
+          }
+          return [
+            {
+              key: `solana-key-${index}`,
+              derivationPath: `m/44'/501'/${index}'/0'`,
+              curve: 'ed25519' as any
+            }
+          ]
+        })
+
+      // Request 5 keys starting at index 0
+      const results = await LedgerService.getSolanaKeysForRange(
+        5,
+        0,
+        controller.signal
+      )
+
+      // Should have stopped after index 1 aborted — only index 0 succeeded
+      expect(results).toHaveLength(1)
+      expect(results[0]?.[0]?.key).toBe('solana-key-0')
+
+      // getSolanaKeys should not have been called for indices 2, 3, 4
+      expect(getSolanaKeysSpy).toHaveBeenCalledTimes(2)
+
+      getSolanaKeysSpy.mockRestore()
+    })
+  })
 })
