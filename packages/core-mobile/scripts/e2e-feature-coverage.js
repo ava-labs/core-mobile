@@ -50,6 +50,11 @@
  * Optional: `E2E_COVERAGE_TESTRAIL_RUNS_MAX_PAGES` (default 15, max 50) —
  * max `get_runs` pages (250 runs/page) so we do not scan unbounded project history.
  *
+ * Optional: `E2E_COVERAGE_TESTRAIL_SUITE_ID` (default 3) — `suite_id` filter on
+ * `get_runs` (same as WDIO TestRail config). `E2E_COVERAGE_TESTRAIL_RUNS_CREATED_AFTER_DAYS`
+ * (default 180) — `created_after` on `get_runs` (UNIX). Set
+ * `E2E_COVERAGE_TESTRAIL_RUNS_NO_CREATED_AFTER=1` to omit that filter.
+ *
  * If `packages/core-mobile/.env` exists, simple `KEY=value` lines are loaded
  * before TestRail runs (existing env vars are not overwritten). Handy for
  * `TESTRAIL_API_KEY` without exporting in the shell.
@@ -317,6 +322,10 @@ const TESTRAIL_DOMAIN =
 const TESTRAIL_USERNAME =
   process.env.TESTRAIL_USERNAME || 'mobiledevs@avalabs.org'
 const TESTRAIL_PROJECT_ID = Number(process.env.TESTRAIL_PROJECT_ID || 3)
+/** Default matches `e2e-appium/testrail/testrail.config.ts` `suiteId` (filters `get_runs`). */
+const TESTRAIL_SUITE_ID_FOR_RUN_LIST = Number(
+  process.env.E2E_COVERAGE_TESTRAIL_SUITE_ID || 3
+)
 
 /** Parsed from `[REGRESSION] … Test Run: YYYY-MM-DD` in the run name; stale runs do not drive regression-adjusted %. */
 const REGRESSION_RUN_MAX_AGE_DAYS = Number(
@@ -474,9 +483,8 @@ function createTestrailClient() {
 
 /**
  * Paginates `get_runs` until a short page or `E2E_COVERAGE_TESTRAIL_RUNS_MAX_PAGES`
- * (default 15, max 50) is reached—avoids scanning the entire project history
- * (TestRail rate limits / timeouts). Raise the env value if your latest
- * `[REGRESSION] iOS|Android Test Run: …` runs are not in the first few thousand rows.
+ * (default 15, max 50) is reached. Requests are scoped with `suite_id` and
+ * optional `created_after` (see file header) to reduce payload vs full history.
  * @param {import('axios').AxiosInstance} client
  */
 async function fetchAllProjectRuns(client) {
@@ -487,9 +495,25 @@ async function fetchAllProjectRuns(client) {
     1,
     Math.min(50, Number(process.env.E2E_COVERAGE_TESTRAIL_RUNS_MAX_PAGES || 15))
   )
+  const createdAfterDays = Math.max(
+    REGRESSION_RUN_MAX_AGE_DAYS + 1,
+    Number(process.env.E2E_COVERAGE_TESTRAIL_RUNS_CREATED_AFTER_DAYS || 180)
+  )
+  const useCreatedAfter =
+    process.env.E2E_COVERAGE_TESTRAIL_RUNS_NO_CREATED_AFTER !== '1'
+  const createdAfterUnix = useCreatedAfter
+    ? Math.floor(Date.now() / 1000) - createdAfterDays * 24 * 60 * 60
+    : undefined
   for (let page = 0; page < maxPages; page++) {
     const { data } = await client.get(`/get_runs/${TESTRAIL_PROJECT_ID}`, {
-      params: { offset, limit }
+      params: {
+        offset,
+        limit,
+        suite_id: TESTRAIL_SUITE_ID_FOR_RUN_LIST,
+        ...(createdAfterUnix != null
+          ? { created_after: createdAfterUnix }
+          : {})
+      }
     })
     const batch = Array.isArray(data) ? data : data.runs || []
     if (!Array.isArray(batch) || batch.length === 0) break
@@ -522,21 +546,27 @@ async function fetchAllTestsForRun(client, runId) {
 }
 
 /**
+ * First suite title from Mocha `describe` / `describe.skip` / `describe.only` or
+ * `context` variants (used for TestRail section name ↔ spec mapping).
  * @param {string} src
  */
 function extractFirstDescribeTitle(src) {
-  const m = src.match(/describe\s*\(\s*(['"`])((?:\\.|(?!\1).)*)\1/)
+  const m = src.match(
+    /\b(?:describe|context)(?:\.(?:skip|only))?\s*\(\s*(['"`])((?:\\.|(?!\1).)*)\1/
+  )
   if (!m) return null
   return unescapeJsString(m[2])
 }
 
 /**
+ * Static `it` / `it.skip` / `it.only` / `test` / `test.skip` / `test.only` titles.
  * @param {string} src
  * @returns {string[]}
  */
 function extractStaticItTitles(src) {
   const titles = []
-  const re = /\bit\s*\(\s*(['"`])((?:\\.|(?!\1).)*)\1/g
+  const re =
+    /\b(?:it|test)(?:\.(?:skip|only))?\s*\(\s*(['"`])((?:\\.|(?!\1).)*)\1/g
   let m
   while ((m = re.exec(src)) !== null) {
     const q = m[1]
@@ -631,11 +661,18 @@ async function fetchSectionNameByIdMap(client, suiteId) {
  * @param {import('axios').AxiosInstance} client
  * @param {number[]} caseIds
  * @param {Map<number, string>} sectionNameById — mutated when fallback get_section runs
+ * @param {Map<number, { sectionName: string, caseTitle: string } | null> | undefined} sharedCaseMetaById — when set (same Map for iOS + Android in one script run), reuses `get_case` results across platforms
  */
-async function fetchCaseMetaByIdsParallel(client, caseIds, sectionNameById) {
+async function fetchCaseMetaByIdsParallel(
+  client,
+  caseIds,
+  sectionNameById,
+  sharedCaseMetaById
+) {
   /** @type {Map<number, { sectionName: string, caseTitle: string } | null>} */
-  const out = new Map()
+  const backing = sharedCaseMetaById ?? new Map()
   const ids = [...new Set(caseIds)].filter(id => id != null && !Number.isNaN(id))
+  const toFetch = ids.filter(id => !backing.has(id))
   const concurrency = Math.max(
     1,
     Math.min(
@@ -647,8 +684,8 @@ async function fetchCaseMetaByIdsParallel(client, caseIds, sectionNameById) {
   async function worker() {
     for (;;) {
       const i = cursor++
-      if (i >= ids.length) return
-      const caseId = ids[i]
+      if (i >= toFetch.length) return
+      const caseId = toFetch[i]
       try {
         const { data } = await client.get(`/get_case/${caseId}`)
         const caseTitle = (data.title || '').trim()
@@ -661,16 +698,25 @@ async function fetchCaseMetaByIdsParallel(client, caseIds, sectionNameById) {
           sectionName = String(sec.name || '').trim()
           sectionNameById.set(secId, sectionName)
         }
-        out.set(caseId, { sectionName, caseTitle })
+        backing.set(caseId, { sectionName, caseTitle })
       } catch {
-        out.set(caseId, null)
+        backing.set(caseId, null)
       }
     }
   }
-  await Promise.all(
-    Array.from({ length: Math.min(concurrency, ids.length) }, () => worker())
-  )
-  return out
+  if (toFetch.length > 0) {
+    await Promise.all(
+      Array.from(
+        { length: Math.min(concurrency, toFetch.length) },
+        () => worker()
+      )
+    )
+  }
+  const slice = new Map()
+  for (const id of ids) {
+    slice.set(id, backing.get(id) ?? null)
+  }
+  return slice
 }
 
 /**
@@ -715,12 +761,14 @@ function applyTestrailTestRowSync(t, suiteCaseToSpecRels, caseMetaById, acc) {
  * @param {Map<string, string[]>} suiteCaseToSpecRels
  * @param {object[]} runs — from `fetchAllProjectRuns` (reused for iOS + Android)
  * @param {'iOS' | 'Android'} platform
+ * @param {Map<number, { sectionName: string, caseTitle: string } | null> | undefined} caseMetaByIdCache — shared across both platforms in one invocation to avoid duplicate `get_case` calls
  */
 async function fetchTestrailPlatformRegressionContext(
   client,
   suiteCaseToSpecRels,
   runs,
-  platform
+  platform,
+  caseMetaByIdCache
 ) {
   const run = pickLatestPlatformRegressionRun(runs, platform)
   if (!run) {
@@ -763,7 +811,8 @@ async function fetchTestrailPlatformRegressionContext(
   const caseMetaById = await fetchCaseMetaByIdsParallel(
     client,
     uniqueCaseIds,
-    sectionNameById
+    sectionNameById,
+    caseMetaByIdCache
   )
   const acc = {
     failedSet: new Set(),
@@ -1982,17 +2031,21 @@ async function loadTestrailRegressionSummary(
   try {
     const runs = await fetchAllProjectRuns(client)
     const suiteCaseToSpecRels = buildSuiteCaseToSpecRelMap(testFiles)
+    /** Reuse `get_case` results between iOS and Android runs in one process. */
+    const caseMetaByIdCache = new Map()
     const trIos = await fetchTestrailPlatformRegressionContext(
       client,
       suiteCaseToSpecRels,
       runs,
-      'iOS'
+      'iOS',
+      caseMetaByIdCache
     )
     const trAndroid = await fetchTestrailPlatformRegressionContext(
       client,
       suiteCaseToSpecRels,
       runs,
-      'Android'
+      'Android',
+      caseMetaByIdCache
     )
 
     const regressionFailedFeaturesIos =
