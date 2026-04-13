@@ -2,7 +2,8 @@ import type {
   Asset,
   Caip2ChainId,
   Erc20Asset,
-  NativeAsset
+  NativeAsset,
+  SplAsset
 } from '@avalabs/fusion-sdk'
 import { TokenType } from '@avalabs/fusion-sdk'
 import { getV2Tokens } from 'utils/api/generated/tokenAggregator/aggregatorApi.client'
@@ -40,6 +41,17 @@ export const fetchTargetChainAssets = async (
           logoUri: token.logoUri ?? undefined
         }
         return nativeAsset
+      }
+      if (targetChainId.startsWith('solana:')) {
+        const splAsset: SplAsset = {
+          type: TokenType.SPL,
+          name: token.name,
+          symbol: token.symbol,
+          decimals: token.decimals,
+          address: token.address,
+          logoUri: token.logoUri ?? undefined
+        }
+        return splAsset
       }
       const erc20Asset: Erc20Asset = {
         type: TokenType.ERC20,

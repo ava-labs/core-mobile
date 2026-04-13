@@ -108,6 +108,35 @@ describe('fetchTargetChainAssets', () => {
     expect(result).toEqual([])
   })
 
+  it('returns SPL assets for Solana target chains', async () => {
+    mockGetV2Tokens.mockResolvedValueOnce({
+      data: {
+        tokens: [
+          {
+            internalId: 'usdc-solana',
+            address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+            name: 'USD Coin',
+            symbol: 'USDC',
+            isNative: false,
+            logoUri: null,
+            decimals: 6
+          }
+        ]
+      }
+    } as any)
+
+    const result = await fetchTargetChainAssets(
+      'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'
+    )
+
+    expect(result).toHaveLength(1)
+    expect(result[0]).toMatchObject({
+      type: TokenType.SPL,
+      symbol: 'USDC',
+      address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
+    })
+  })
+
   it('passes caip2Id, limit: 1000, and page: 1 to the API', async () => {
     mockGetV2Tokens.mockResolvedValueOnce({ data: { tokens: [] } } as any)
 
