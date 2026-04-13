@@ -4,12 +4,9 @@ import { useSelector } from 'react-redux'
 import type {
   Asset,
   BridgeableUiAsset,
-  Caip2ChainId,
-  Erc20Asset,
-  NativeAsset
+  Caip2ChainId
 } from '@avalabs/fusion-sdk'
 import { TokenType as FusionTokenType } from '@avalabs/fusion-sdk'
-import { TokenType } from '@avalabs/vm-module-types'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { selectActiveAccount } from 'store/account'
 import type { LocalTokenWithBalance } from 'store/balance'
@@ -17,6 +14,7 @@ import { getChainIdFromCaip2, getCaip2ChainId } from 'utils/caip2ChainIds'
 import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
 import FusionService from '../services/FusionService'
 import { mapSdkAssetToLocal } from '../utils/mapSdkAssetToLocal'
+import { toSwappableAsset } from '../utils/fusionTypeConverters'
 import {
   useIsFusionServiceReady,
   useSwapSelectedFromToken
@@ -27,28 +25,11 @@ const STALE_TIME = 2 * 60 * 1000 // 2 minutes
 const toFusionSourceAsset = (
   token: LocalTokenWithBalance
 ): Asset | undefined => {
-  if (token.type === TokenType.NATIVE) {
-    const nativeAsset: NativeAsset = {
-      type: FusionTokenType.NATIVE,
-      name: token.name,
-      symbol: token.symbol,
-      decimals: token.decimals,
-      logoUri: token.logoUri
-    }
-    return nativeAsset
+  try {
+    return toSwappableAsset(token)
+  } catch {
+    return undefined
   }
-  if (token.address) {
-    const erc20Asset: Erc20Asset = {
-      type: FusionTokenType.ERC20,
-      name: token.name,
-      symbol: token.symbol,
-      decimals: token.decimals,
-      address: token.address as `0x${string}`,
-      logoUri: token.logoUri
-    }
-    return erc20Asset
-  }
-  return undefined
 }
 
 /**
