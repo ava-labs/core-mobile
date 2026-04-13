@@ -36,6 +36,7 @@ import {
   isImmediateSentToast,
   showConfetti
 } from '../utils/requestContext'
+import { maybeInjectSiweAlert } from '../utils/siwe/getSiweAlert'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { handleLedgerErrorAndShowAlert } from './utils'
@@ -255,10 +256,17 @@ class ApprovalController implements VmModuleApprovalController {
     // Clear any previous cancellation state for this request
     this.userCancelledMap.delete(requestId)
 
+    // Check for EIP-4361 (SIWE) domain/scheme/port mismatch
+    const enrichedDisplayData = maybeInjectSiweAlert({
+      request,
+      signingData,
+      displayData
+    })
+
     return new Promise<ApprovalResponse>(resolve => {
       walletConnectCache.approvalParams.set({
         request,
-        displayData,
+        displayData: enrichedDisplayData,
         signingData,
         onApprove: async (params: OnApproveParams) => {
           if (!isInAppRequest(request) && isTxSendMethod(request.method)) {

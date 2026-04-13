@@ -237,6 +237,10 @@ class PortfolioPage {
     return selectors.getById(portfolio.portfolioBalanceHeader)
   }
 
+  get noAssetsFound() {
+    return selectors.getByText(portfolio.noAssetsFound)
+  }
+
   get loadingPortfolioBalanceHeader() {
     return selectors.getById(portfolio.loadingPortfolioBalanceHeader)
   }

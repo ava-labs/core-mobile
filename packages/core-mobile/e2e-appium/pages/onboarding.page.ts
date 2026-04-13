@@ -133,6 +133,7 @@ class OnboardingPage {
         await actions.waitFor(dismissBtn, 30000)
         await actions.dragAndDrop(dismissBtn, [0, 1500])
         console.log('Dismissed Metro dev menu')
+
       } catch (e) {
         console.log('Metro dev menu not found or already dismissed')
       }
@@ -232,6 +233,7 @@ class OnboardingPage {
   async verifyLoggedIn() {
     await actions.waitFor(commonElsPage.accountOne, 40000)
     await actions.waitFor(portfolioPage.portfolioBalanceHeader)
+    await actions.waitForNotVisible(portfolioPage.noAssetsFound)
     console.log('Verified you are logged in')
   }
 

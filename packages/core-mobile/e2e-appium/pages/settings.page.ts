@@ -845,9 +845,14 @@ class Settings {
 
   async selectAppIcon(iconId?: string) {
     if (!iconId) {
-      iconId = ['Light', 'Old', 'Bling', 'Shiny', 'Marker', 'Minimalism'][
-        Math.floor(Math.random() * 6)
-      ] as string
+      iconId = [
+        'Core light',
+        'Old school Core',
+        'Bling',
+        'So shiny',
+        'Marker',
+        'Minimalism'
+      ][Math.floor(Math.random() * 6)] as string
     }
     await actions.tap(selectors.getById(`app_icon_${iconId}`))
     return iconId

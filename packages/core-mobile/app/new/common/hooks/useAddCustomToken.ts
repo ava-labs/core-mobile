@@ -81,7 +81,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
 
   const tokens = useNetworkContractTokens(selectedNetwork)
   const activeAccount = useSelector(selectActiveAccount)
-  const tokensWithBalance = useTokensWithBalanceByNetworkForAccount(
+  const { tokens: tokensWithBalance } = useTokensWithBalanceByNetworkForAccount(
     activeAccount,
     chainId
   )

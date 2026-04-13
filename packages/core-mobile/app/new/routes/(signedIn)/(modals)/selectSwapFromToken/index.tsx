@@ -4,7 +4,7 @@ import type { Network } from '@avalabs/core-chains-sdk'
 import type { LocalTokenWithBalance } from 'store/balance'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
-import { SelectSwapTokenScreen } from 'features/swap/screens/SelectSwapTokenScreen'
+import { SelectFromSwapTokenScreen } from 'features/swap/screens/SelectFromSwapTokenScreen'
 import {
   useSwapSelectedFromToken,
   useSwapSelectedToToken
@@ -37,10 +37,9 @@ const SelectSwapFromTokenScreen = (): JSX.Element => {
   )
 
   return (
-    <SelectSwapTokenScreen
+    <SelectFromSwapTokenScreen
       selectedToken={selectedFromToken}
       setSelectedToken={setSelectedFromToken}
-      hideZeroBalance={true}
       // Pre-select network to match "to" token's network
       defaultNetworkChainId={
         networkChainId ? parseInt(networkChainId, 10) : undefined

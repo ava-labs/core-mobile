@@ -1,9 +1,14 @@
-import React, { FC, useMemo } from 'react'
-import { Icons, MiniChart, Text, View } from '@avalabs/k2-alpine'
+import React, { FC } from 'react'
+import {
+  ActivityIndicator,
+  Icons,
+  MiniChart,
+  Text,
+  View
+} from '@avalabs/k2-alpine'
 import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { ChartData } from 'services/token/types'
+import { usePriceAlertChart } from '../hooks/usePriceAlertChart'
 import { AppNotification, isPriceAlertNotification } from '../types'
 import NotificationListItem from './NotificationListItem'
 import NotificationIcon from './NotificationIcon'
@@ -15,6 +20,7 @@ type PriceAlertItemProps = {
   notification: AppNotification
   showSeparator: boolean
   accessoryType: 'chevron' | 'none'
+  index?: number
   testID?: string
 }
 
@@ -77,40 +83,43 @@ const Subtitle = ({
   )
 }
 
-const getChart = (
-  notification: AppNotification,
-  getWatchlistChart: (id: string) => ChartData
-): React.JSX.Element | undefined => {
-  if (!isPriceAlertNotification(notification)) return undefined
-  const tokenId = notification.data?.tokenId
-  if (!tokenId) return undefined
-
-  const chartData = getWatchlistChart(tokenId)
-  if (chartData.dataPoints.length === 0) return undefined
-
-  return (
-    <MiniChart
-      style={{ width: CHART_WIDTH, height: CHART_HEIGHT }}
-      data={chartData.dataPoints}
-      negative={chartData.ranges.diffValue < 0}
-      showReferenceLine
-    />
-  )
-}
-
 const PriceAlertItem: FC<PriceAlertItemProps> = ({
   notification,
   showSeparator,
   accessoryType,
+  index,
   testID
 }) => {
-  const { getWatchlistChart } = useWatchlist()
   const { formatCurrency } = useFormatCurrency()
-
-  const chart = useMemo(
-    () => getChart(notification, getWatchlistChart),
-    [notification, getWatchlistChart]
+  const { chartData, isLoading } = usePriceAlertChart(
+    notification,
+    (index ?? 0) * 100
   )
+
+  let chart: React.JSX.Element | undefined
+  if (isLoading) {
+    chart = (
+      <View
+        style={{
+          width: CHART_WIDTH,
+          height: CHART_HEIGHT,
+          marginLeft: 4,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+        <ActivityIndicator size="small" />
+      </View>
+    )
+  } else if (chartData && chartData.dataPoints.length >= 2) {
+    chart = (
+      <MiniChart
+        style={{ width: CHART_WIDTH, height: CHART_HEIGHT, marginLeft: 4 }}
+        data={chartData.dataPoints}
+        negative={chartData.ranges.diffValue < 0}
+        showReferenceLine
+      />
+    )
+  }
 
   return (
     <NotificationListItem

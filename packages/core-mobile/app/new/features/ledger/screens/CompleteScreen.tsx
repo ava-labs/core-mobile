@@ -1,19 +1,29 @@
-import { Button, Icons, Text, useTheme } from '@avalabs/k2-alpine'
+import { Button, Text, useTheme } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
-import React from 'react'
-import { View } from 'react-native'
+import React, { useEffect, useRef } from 'react'
+import { InteractionManager, View } from 'react-native'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useNavigation } from '@react-navigation/native'
+import LottieView from 'lottie-react-native'
+
+const SUCCESS_CHECKMARK = require('assets/lotties/success-checkmark.json')
 
 export default function CompleteScreen(): JSX.Element {
   const navigation = useNavigation()
   const router = useRouter()
   const {
-    theme: { colors }
+    theme: { colors, isDark }
   } = useTheme()
+  const lottieRef = useRef<LottieView>(null)
 
   const { resetSetup } = useLedgerSetupContext()
+
+  useEffect(() => {
+    InteractionManager.runAfterInteractions(() => {
+      lottieRef.current?.play()
+    })
+  }, [])
 
   const handleComplete = (): void => {
     resetSetup()
@@ -50,10 +60,15 @@ export default function CompleteScreen(): JSX.Element {
           alignItems: 'center',
           paddingHorizontal: 24
         }}>
-        <Icons.Action.CheckCircleOutline
-          color={colors.$textSuccess}
-          width={75}
-          height={75}
+        <LottieView
+          ref={lottieRef}
+          source={SUCCESS_CHECKMARK}
+          colorFilters={[
+            { keypath: '**', color: isDark ? '#1CC51D' : '#1FA95E' }
+          ]}
+          autoPlay
+          loop={false}
+          style={{ width: 96, height: 96 }}
         />
         <Text
           variant="heading3"

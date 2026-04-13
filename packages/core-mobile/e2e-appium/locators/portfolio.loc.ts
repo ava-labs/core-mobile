@@ -1,5 +1,6 @@
 export default {
   // NEW BELOW:
+  noAssetsFound: 'No assets found',
   testnetModeIsOn: 'testnet_mode_is_on',
   sendButton: 'action_button__Send',
   swapButton: 'action_button__Swap',

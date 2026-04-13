@@ -8,6 +8,7 @@ import {
   Icons,
   GroupListItem
 } from '@avalabs/k2-alpine'
+import { useBluetooth } from 'common/hooks/useBluetooth'
 
 interface LedgerDevice {
   id: string
@@ -38,11 +39,13 @@ export const LedgerDeviceList: React.FC<LedgerDeviceListProps> = ({
   const {
     theme: { colors }
   } = useTheme()
+  const { isBluetoothOnAndPermissionGranted } = useBluetooth()
+  const isDisabled = isConnecting || !isBluetoothOnAndPermissionGranted
 
   const deviceListData: GroupListItem[] = useMemo(
     () =>
       devices.map((device: LedgerDevice) => ({
-        title: device.name || 'Ledger Device',
+        title: device.name || 'Ledger',
         subtitle: (
           <Text
             variant="caption"
@@ -73,11 +76,11 @@ export const LedgerDeviceList: React.FC<LedgerDeviceListProps> = ({
               type="primary"
               size="small"
               onPress={() => onDevicePress(device.id, device.name)}
-              disabled={isConnecting}>
+              disabled={isDisabled}>
               {isConnecting ? buttonLoadingText : buttonText}
             </Button>
           ),
-          onPress: () => onDevicePress(device.id, device.name)
+          onPress: () => !isDisabled && onDevicePress(device.id, device.name)
         })
       })),
     [
@@ -85,11 +88,12 @@ export const LedgerDeviceList: React.FC<LedgerDeviceListProps> = ({
       colors.$textSecondary,
       colors.$surfaceSecondary,
       colors.$textPrimary,
+      subtitleText,
       onDevicePress,
+      isDisabled,
       isConnecting,
-      buttonText,
       buttonLoadingText,
-      subtitleText
+      buttonText
     ]
   )
 

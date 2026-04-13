@@ -3,6 +3,10 @@ import { useLedgerWalletMap } from 'features/ledger/store'
 import { isBitcoinCompatibleApp } from 'features/ledger/utils'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
+import {
+  isLedgerBluetoothError,
+  showBluetoothErrorAlert
+} from 'services/ledger/LedgerBluetoothError'
 import LedgerService from 'services/ledger/LedgerService'
 import { LedgerAppType, LedgerDevice } from 'services/ledger/types'
 import { selectActiveWalletId } from 'store/wallet/slice'
@@ -66,9 +70,13 @@ export const useLedgerBLEConnection = ({
       await LedgerService.ensureConnection(deviceForWallet.id)
       if (!isMountedRef.current) return
       setIsLedgerConnected(true)
-    } catch {
+    } catch (err) {
       if (!isMountedRef.current) return
       setIsLedgerConnected(false)
+      if (isLedgerBluetoothError(err)) {
+        showBluetoothErrorAlert(err)
+        return
+      }
     } finally {
       if (isMountedRef.current) {
         setIsReconnecting(false)

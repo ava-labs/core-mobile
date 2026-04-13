@@ -147,6 +147,7 @@ export const discoverRemainingActiveAccounts = async ({
     if (completedCleanly) {
       markWalletAsMigrated(walletId)
     }
+
     return { accounts, accountIds }
   } catch (error) {
     Logger.error('Failed to fetch remaining active accounts', error)

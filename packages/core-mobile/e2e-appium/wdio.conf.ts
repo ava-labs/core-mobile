@@ -15,6 +15,25 @@ import {
 let runId: number | undefined
 const sectionCache: Record<string, number> = {}
 
+const isBitrise = process.env.CI === 'true'
+const goHeadless = isBitrise ? true : false
+const goRetry = isBitrise ? 1 : 0
+const iosLocalPath = process.env.E2E_LOCAL_PATH
+  ? '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
+  : './ios/build/Debug-iphonesimulator/AvaxWalletInternal.app'
+const androidLocalPath = process.env.E2E_LOCAL_PATH
+  ? '/Users/eunji.song/Downloads/app-internal-e2e-bitrise-signed.apk'
+  : './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
+const iosPath = isBitrise
+  ? process.env.BITRISE_APP_DIR_PATH
+  : path.resolve(iosLocalPath)
+const androidPath = isBitrise
+  ? process.env.BITRISE_APK_PATH
+  : path.resolve(androidLocalPath)
+const platformToRun = process.env.PLATFORM
+const isSmoke = process.env.IS_SMOKE === 'true'
+const isPerformance = process.env.IS_PERFORMANCE === 'true'
+
 // AWS Device Farm provides these environment variables
 const isDeviceFarm = !!process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL
 /** Start Appium via WDIO unless Device Farm (host runs Appium) or APPIUM_MANUAL=true (you started Appium yourself). */
