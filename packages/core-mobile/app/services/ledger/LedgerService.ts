@@ -478,12 +478,20 @@ class LedgerService {
     // Check if app is already available — resolve before entering the
     // Promise constructor so no abort listener is registered unnecessarily.
     if (this.isAppCompatible(this.currentAppType, appType)) {
-      Logger.info(
-        `${appType} app is ready (detected: ${this.currentAppType})`
-      )
+      Logger.info(`${appType} app is ready (detected: ${this.currentAppType})`)
       return Promise.resolve()
     }
 
+    return this.pollForApp(appType, timeoutMs, signal)
+  }
+
+  // Poll the Ledger device until the requested app is open, the timeout
+  // expires, or the operation is cancelled via signal/disconnect.
+  private pollForApp(
+    appType: LedgerAppType,
+    timeoutMs: number,
+    signal?: AbortSignal
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
       const startTime = Date.now()
       let settled = false
@@ -491,26 +499,18 @@ class LedgerService {
 
       let checkInterval: ReturnType<typeof setInterval> | null = null
 
-      const cleanup = (): void => {
+      // Settle helper — prevents double resolve/reject after cleanup races.
+      const settle = (outcome: 'resolve' | 'reject', error?: Error): void => {
+        if (settled) return
+        settled = true
         if (checkInterval) {
           clearInterval(checkInterval)
           checkInterval = null
         }
-        // Stop listening for abort once we've settled, so the listener
-        // doesn't fire after resolve/reject and leak references.
+        // Stop listening for abort once settled to prevent leaks.
         if (signal) {
           signal.removeEventListener('abort', onAbort)
         }
-      }
-
-      // Settle helper — prevents double resolve/reject after cleanup races.
-      const settle = (
-        outcome: 'resolve' | 'reject',
-        error?: Error
-      ): void => {
-        if (settled) return
-        settled = true
-        cleanup()
         if (outcome === 'resolve') {
           resolve()
         } else {
@@ -529,57 +529,60 @@ class LedgerService {
         signal.addEventListener('abort', onAbort)
       }
 
-      // Do immediate check
+      // Do immediate check, then start polling interval if not found.
       this.checkApp(appType)
         .then(appFound => {
           if (appFound) {
             settle('resolve')
             return
           }
-
-          // Set up polling interval
-          checkInterval = setInterval(async () => {
-            const elapsed = Date.now() - startTime
-            if (elapsed >= timeoutMs) {
-              Logger.error(
-                `Timeout waiting for ${appType} app after ${timeoutMs}ms`
-              )
-              settle(
-                'reject',
-                new Error(
-                  `Timeout waiting for ${appType} app. Please open the ${appType} app on your Ledger device.`
-                )
-              )
-              return
-            }
-
-            // Check if disconnect was called — abort waiting.
-            // The return ensures we don't fall through to checkApp below,
-            // which would send another APDU to the device. (Fixes CP-13966)
-            if (this.isDisconnected) {
-              Logger.info('Aborting waitForApp due to disconnect')
-              settle(
-                'reject',
-                new Error(LEDGER_ERROR_CODES.USER_CANCELLED)
-              )
-              return
-            }
-
-            // If the signal was aborted between ticks, the onAbort listener
-            // already settled the promise — skip the APDU call.
-            if (settled) return
-
-            const isFound = await this.checkApp(appType)
-            if (isFound) {
-              settle('resolve')
-            }
-          }, LEDGER_TIMEOUTS.APP_CHECK_DELAY)
+          checkInterval = setInterval(
+            () => this.pollTick(appType, timeoutMs, startTime, settled, settle),
+            LEDGER_TIMEOUTS.APP_CHECK_DELAY
+          )
         })
         .catch(error => {
           Logger.error('Error checking app:', error)
           settle('reject', error)
         })
     })
+  }
+
+  // Single polling tick: check timeout, disconnect, and app status.
+  private async pollTick(
+    appType: LedgerAppType,
+    timeoutMs: number,
+    startTime: number,
+    settled: boolean,
+    settle: (outcome: 'resolve' | 'reject', error?: Error) => void
+  ): Promise<void> {
+    if (settled) return
+
+    const elapsed = Date.now() - startTime
+    if (elapsed >= timeoutMs) {
+      Logger.error(`Timeout waiting for ${appType} app after ${timeoutMs}ms`)
+      settle(
+        'reject',
+        new Error(
+          `Timeout waiting for ${appType} app. Please open the ${appType} app on your Ledger device.`
+        )
+      )
+      return
+    }
+
+    // Check if disconnect was called — abort waiting.
+    // The return ensures we don't fall through to checkApp below,
+    // which would send another APDU to the device. (Fixes CP-13966)
+    if (this.isDisconnected) {
+      Logger.info('Aborting waitForApp due to disconnect')
+      settle('reject', new Error(LEDGER_ERROR_CODES.USER_CANCELLED))
+      return
+    }
+
+    const isFound = await this.checkApp(appType)
+    if (isFound) {
+      settle('resolve')
+    }
   }
 
   // Check if specific app is currently open

@@ -1,12 +1,11 @@
 import { jest } from '@jest/globals'
 import { Alert, PermissionsAndroid, Platform } from 'react-native'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import { LEDGER_TIMEOUTS } from 'new/features/ledger/consts'
 import Logger from 'utils/Logger'
 import LedgerService from './LedgerService'
-import { LedgerAppType } from './types'
 import { isLedgerBluetoothError } from './LedgerBluetoothError'
-import { LEDGER_ERROR_CODES } from './types'
-import { LEDGER_TIMEOUTS } from 'new/features/ledger/consts'
+import { LedgerAppType, LEDGER_ERROR_CODES } from './types'
 
 jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
   __esModule: true,
@@ -496,11 +495,7 @@ describe('LedgerService', () => {
       controller.abort()
 
       await expect(
-        LedgerService.waitForApp(
-          LedgerAppType.SOLANA,
-          5000,
-          controller.signal
-        )
+        LedgerService.waitForApp(LedgerAppType.SOLANA, 5000, controller.signal)
       ).rejects.toThrow(LEDGER_ERROR_CODES.USER_CANCELLED)
     })
 
