@@ -995,17 +995,16 @@ workflows:
       opts:
         is_expand: false
     steps:
-    - avd-manager@2.0.2:
+    - avd-manager@1.2:
         inputs:
         - api_level: "35"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
-        - tag: google_apis
+        - create_command_flags: --sdcard 512M
+        - tag: default
         - abi: x86_64
         - profile: pixel_7_pro
-        - ram_size: 4096
-        - heap_size: 1024
-    - wait-for-android-emulator@1.0.9: {}
+    - wait-for-android-emulator@1: {}
     - script-runner@0:
         title: Appium Android testing
         no_output_timeout: 300
