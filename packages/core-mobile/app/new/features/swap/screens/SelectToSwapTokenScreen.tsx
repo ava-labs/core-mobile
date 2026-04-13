@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback, useEffect } from 'react'
+import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import { ScrollView } from 'react-native'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import {
@@ -21,8 +21,12 @@ import { ListRenderItem } from '@shopify/flash-list'
 import { LocalTokenWithBalance } from 'store/balance'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { useDebounce } from 'hooks/useDebounce'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useFilteredSwapTokens } from '../hooks/useFilteredSwapTokens'
 import { useSwapTokens } from '../hooks/useSwapTokens'
+import { getTokenKey } from '../utils/tokenKey'
+import { tokenMatchesSearch } from '../utils/tokenMatchesSearch'
 
 export const SelectToSwapTokenScreen = ({
   selectedToken,
@@ -46,6 +50,7 @@ export const SelectToSwapTokenScreen = ({
     theme: { colors }
   } = useTheme()
   const { back, canGoBack } = useRouter()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [searchText, setSearchText] = useState<string>('')
   const { debounced: debouncedSearchText } = useDebounce(searchText, 300)
 
@@ -75,21 +80,52 @@ export const SelectToSwapTokenScreen = ({
   }, [selectedNetwork])
 
   // Lazy load tokens for selected network (with balance data merged)
-  const { tokens, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useSwapTokens(caip2Id, debouncedSearchText)
+  const {
+    tokens,
+    isLoading: isLoadingTokens,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useSwapTokens(caip2Id, debouncedSearchText)
 
   // Filter and sort tokens
   const baseResults = useFilteredSwapTokens({
     tokens,
     hideZeroBalance
   })
-  const results = useMemo(
-    () =>
-      tokenFilter
-        ? baseResults.filter(t => tokenFilter(t, selectedNetwork))
-        : baseResults,
-    [baseResults, tokenFilter, selectedNetwork]
-  )
+  const results = useMemo(() => {
+    const filtered = tokenFilter
+      ? baseResults.filter(t => tokenFilter(t, selectedNetwork))
+      : baseResults
+
+    // Wait until loading is done so the selected token and the rest of the list
+    // appear at the same time, avoiding a flash where the pinned token shows alone
+    if (
+      !selectedToken ||
+      selectedToken.networkChainId !== selectedNetwork?.chainId ||
+      isLoadingTokens
+    )
+      return filtered
+
+    // Don't pin the selected token if it doesn't match the current search text
+    if (
+      !tokenMatchesSearch(selectedToken, debouncedSearchText, isDeveloperMode)
+    )
+      return filtered
+
+    // Pin the selected token to the top, deduplicating if it already appears in the list
+    const selectedKey = getTokenKey(selectedToken)
+    const withoutSelected = filtered.filter(t => getTokenKey(t) !== selectedKey)
+    return [selectedToken, ...withoutSelected]
+  }, [
+    baseResults,
+    tokenFilter,
+    selectedNetwork,
+    selectedToken,
+    isLoadingTokens,
+    debouncedSearchText,
+    isDeveloperMode
+  ])
 
   // Handle token selection
   const handleSelectToken = useCallback(
@@ -100,12 +136,32 @@ export const SelectToSwapTokenScreen = ({
     [setSelectedToken, canGoBack, back]
   )
 
+  // Stop paginating if a completed page fetch didn't add any new filtered results.
+  // This prevents an infinite fetch loop when a restrictive tokenFilter means
+  // only 1–2 tokens pass (e.g. BTC.b only), causing onEndReached to fire immediately.
+  const resultsLengthBeforeFetchRef = useRef<number | null>(null)
+  const stopPaginatingRef = useRef(false)
+
+  useEffect(() => {
+    stopPaginatingRef.current = false
+    resultsLengthBeforeFetchRef.current = null
+  }, [caip2Id, debouncedSearchText])
+
+  useEffect(() => {
+    if (!isFetchingNextPage && resultsLengthBeforeFetchRef.current !== null) {
+      if (results.length === resultsLengthBeforeFetchRef.current) {
+        stopPaginatingRef.current = true
+      }
+      resultsLengthBeforeFetchRef.current = null
+    }
+  }, [isFetchingNextPage, results.length])
+
   // Handle end reached for infinite scroll pagination
   const handleEndReached = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage()
-    }
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+    if (!hasNextPage || isFetchingNextPage || stopPaginatingRef.current) return
+    resultsLengthBeforeFetchRef.current = results.length
+    fetchNextPage()
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage, results.length])
 
   // Render footer spinner while fetching next page
   const renderListFooter = useCallback(() => {
@@ -216,11 +272,11 @@ export const SelectToSwapTokenScreen = ({
     // - Networks not loaded yet
     // - Network not selected yet (initializing)
     // - Token data is loading
-    if (!networks || !selectedNetwork || isLoading) {
+    if (!networks || !selectedNetwork || isLoadingTokens) {
       return <ActivityIndicator />
     }
     return <ErrorState icon={undefined} title="No tokens found" />
-  }, [networks, selectedNetwork, isLoading])
+  }, [networks, selectedNetwork, isLoadingTokens])
 
   return (
     <ListScreenV2
