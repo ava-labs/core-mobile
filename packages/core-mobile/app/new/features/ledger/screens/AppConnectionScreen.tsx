@@ -358,11 +358,10 @@ export default function AppConnectionScreen({
     showCancelOnComplete
   ])
 
-  // For display, show the first available account's keys (index 0 during import,
-  // or the specific accountIndex when adding a single account)
   const emptyKeys = { solanaKeys: [], avalancheKeys: undefined }
-  const firstMainnetKey = Object.values(multiIndexKeys.mainnet)[0]
-  const firstTestnetKey = Object.values(multiIndexKeys.testnet)[0]
+  const displayIndex = isUpdatingWallet ? accountIndex : 0
+  const firstMainnetKey = multiIndexKeys.mainnet[displayIndex]
+  const firstTestnetKey = multiIndexKeys.testnet[displayIndex]
   const displayKeys: LedgerKeysByNetwork = {
     mainnet: firstMainnetKey ?? emptyKeys,
     testnet: firstTestnetKey ?? emptyKeys
