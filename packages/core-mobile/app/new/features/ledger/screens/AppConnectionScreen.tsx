@@ -266,7 +266,7 @@ export default function AppConnectionScreen({
     } catch (err) {
       // If the user cancelled (Skip Solana or unmount), don't show an error —
       // the cancellation was intentional.
-      if (controller.signal.aborted) {
+      if (solanaAbortControllerRef.current?.signal.aborted) {
         Logger.info('Solana connection cancelled by user')
         return
       }
