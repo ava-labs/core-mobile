@@ -8,6 +8,7 @@ import {
   BITCOIN_NETWORK,
   BitcoinCaip2ChainId,
   BlockchainNamespace,
+  ChainId,
   Network,
   NetworkVMType,
   SolanaCaip2ChainId
@@ -29,6 +30,7 @@ import {
   NETWORK_X
 } from 'services/network/consts'
 
+import { defaultEnabledL2ChainIds } from 'store/network/slice'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import Logger from 'utils/Logger'
 import SentryService from 'services/sentry/SentryService'
@@ -927,7 +929,11 @@ class AccountsService {
       requestItems.push({
         namespace: BlockchainNamespace.EIP155,
         addresses: [...evmAddresses],
-        references: [String(AVALANCHE_MAINNET_NETWORK.chainId)]
+        references: [
+          String(ChainId.AVALANCHE_MAINNET_ID),
+          String(ChainId.ETHEREUM_HOMESTEAD),
+          ...defaultEnabledL2ChainIds.map(String)
+        ]
       } as EvmGetBalancesRequestItem)
     }
 
