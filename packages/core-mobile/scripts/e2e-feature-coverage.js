@@ -47,6 +47,9 @@
  * Optional: `E2E_COVERAGE_TESTRAIL_CASE_CONCURRENCY` (default 12, max 32) —
  * parallel `get_case` calls when resolving a run (fewer round-trips in wall time).
  *
+ * Optional: `E2E_COVERAGE_TESTRAIL_RUNS_MAX_PAGES` (default 15, max 50) —
+ * max `get_runs` pages (250 runs/page) so we do not scan unbounded project history.
+ *
  * If `packages/core-mobile/.env` exists, simple `KEY=value` lines are loaded
  * before TestRail runs (existing env vars are not overwritten). Handy for
  * `TESTRAIL_API_KEY` without exporting in the shell.
@@ -470,13 +473,21 @@ function createTestrailClient() {
 }
 
 /**
+ * Paginates `get_runs` until a short page or `E2E_COVERAGE_TESTRAIL_RUNS_MAX_PAGES`
+ * (default 15, max 50) is reached—avoids scanning the entire project history
+ * (TestRail rate limits / timeouts). Raise the env value if your latest
+ * `[REGRESSION] iOS|Android Test Run: …` runs are not in the first few thousand rows.
  * @param {import('axios').AxiosInstance} client
  */
 async function fetchAllProjectRuns(client) {
   const all = []
   let offset = 0
   const limit = 250
-  for (;;) {
+  const maxPages = Math.max(
+    1,
+    Math.min(50, Number(process.env.E2E_COVERAGE_TESTRAIL_RUNS_MAX_PAGES || 15))
+  )
+  for (let page = 0; page < maxPages; page++) {
     const { data } = await client.get(`/get_runs/${TESTRAIL_PROJECT_ID}`, {
       params: { offset, limit }
     })
@@ -614,9 +625,9 @@ async function fetchSectionNameByIdMap(client, suiteId) {
 }
 
 /**
- * Parallel `get_case` for unique IDs (bounded concurrency). Uses prefetched
- * section map; falls back to `get_section` only if a case references an id
- * missing from the map.
+ * Parallel `get_case` for unique case IDs (bounded concurrency), plus one
+ * suite-wide `get_sections` map—avoids N+1 sequential `get_case`/`get_section`
+ * per test row. Uses `get_tests` `title` when applying rows (see `applyTestrailTestRowSync`).
  * @param {import('axios').AxiosInstance} client
  * @param {number[]} caseIds
  * @param {Map<number, string>} sectionNameById — mutated when fallback get_section runs
@@ -985,11 +996,12 @@ function isTestIdReferencedInSpecSources(id, literals, corpus, literalList) {
 }
 
 /**
- * Features touched by failing regression tests (spec path heuristic or feature
- * testIDs referenced in the failed spec source).
- * @param {string[]} failedSpecRels
+ * Adds to `failed` any mapped in-scope features touched by one failed spec
+ * (path heuristic or feature testIDs referenced in that spec’s source).
+ * @param {string} rel Path relative to `e2e-appium/` (e.g. `specs/foo.spec.ts`)
  * @param {string[]} featureNames
  * @param {Record<string, object>} featureStats
+ * @param {Set<string>} failed
  */
 function addFeaturesTouchedByFailedSpec(
   rel,
@@ -1923,9 +1935,7 @@ function printVerboseReport(ctx) {
 }
 
 /**
- * @param {{ rel: string, abs: string }[]} testFiles
- * @param {string[]} featureNames
- * @param {Record<string, object>} featureStats
+ * @param {string} reason Human-readable reason TestRail was not applied
  */
 function emptyTestrailSkip(reason) {
   return { enabled: false, skipReason: reason }
