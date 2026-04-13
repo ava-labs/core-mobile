@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { LedgerMultiIndexKeys } from 'services/ledger/types'
@@ -25,6 +25,10 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
   const accounts = useSelector((state: RootState) =>
     selectAccountsByWalletId(state, walletId)
   )
+  // Capture the account index once so it stays stable when Redux state
+  // updates mid-flow (e.g. after setAccount dispatch in handleComplete).
+  const accountIndexRef = useRef(accounts?.length ?? 0)
+  const accountIndex = accountIndexRef.current
   const { getLedgerInfoByWalletId } = useLedgerWalletMap()
 
   const { device, derivationPathType } = useMemo(() => {
@@ -47,8 +51,6 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
 
   const handleComplete = useCallback(
     async (multiIndexKeys: LedgerMultiIndexKeys) => {
-      // When adding a single account, the keys are stored at the account index
-      const accountIndex = accounts?.length ?? 0
       const keys = {
         mainnet: multiIndexKeys.mainnet[accountIndex],
         testnet: multiIndexKeys.testnet[accountIndex]
@@ -121,6 +123,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
       }
     },
     [
+      accountIndex,
       device,
       wallet,
       accounts?.length,
@@ -145,7 +148,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
       deviceName={device?.name ?? 'Ledger'}
       handleCancel={handleCancel}
       isUpdatingWallet={isUpdatingWallet}
-      accountIndex={accounts?.length ?? 0}
+      accountIndex={accountIndex}
       showCancelOnComplete={true}
       showConnectionToasts={true}
     />
