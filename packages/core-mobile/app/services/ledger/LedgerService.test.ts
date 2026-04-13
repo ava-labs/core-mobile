@@ -6,6 +6,7 @@ import LedgerService from './LedgerService'
 import { LedgerAppType } from './types'
 import { isLedgerBluetoothError } from './LedgerBluetoothError'
 import { LEDGER_ERROR_CODES } from './types'
+import { LEDGER_TIMEOUTS } from 'new/features/ledger/consts'
 
 jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
   __esModule: true,
@@ -474,6 +475,73 @@ describe('LedgerService', () => {
 
       expect(transportBLEMock.open).not.toHaveBeenCalled()
       expect(Alert.alert).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('waitForApp', () => {
+    beforeEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      jest.spyOn(Logger, 'info').mockImplementation(() => {})
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      jest.spyOn(Logger, 'error').mockImplementation(() => {})
+    })
+
+    afterEach(() => {
+      jest.clearAllMocks()
+      jest.useRealTimers()
+    })
+
+    it('should reject immediately when signal is already aborted', async () => {
+      const controller = new AbortController()
+      controller.abort()
+
+      await expect(
+        LedgerService.waitForApp(
+          LedgerAppType.SOLANA,
+          5000,
+          controller.signal
+        )
+      ).rejects.toThrow(LEDGER_ERROR_CODES.USER_CANCELLED)
+    })
+
+    it('should reject when signal is aborted during polling', async () => {
+      jest.useFakeTimers()
+
+      // Make isAppCompatible return false so waitForApp enters polling
+      const isAppCompatibleSpy = jest
+        .spyOn(LedgerService as any, 'isAppCompatible')
+        .mockReturnValue(false)
+
+      // Make checkApp always return false (app never opens)
+      const checkAppSpy = jest
+        .spyOn(LedgerService as any, 'checkApp')
+        .mockResolvedValue(false)
+
+      const controller = new AbortController()
+
+      const waitPromise = LedgerService.waitForApp(
+        LedgerAppType.SOLANA,
+        30000,
+        controller.signal
+      )
+
+      // Let the immediate checkApp resolve and the interval start
+      await jest.advanceTimersByTimeAsync(100)
+
+      // Abort after polling has started, then immediately attach the
+      // rejection handler so Jest doesn't see an unhandled rejection.
+      controller.abort()
+      const rejectPromise = expect(waitPromise).rejects.toThrow(
+        LEDGER_ERROR_CODES.USER_CANCELLED
+      )
+
+      // Advance past the next polling tick so any remaining cleanup runs
+      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.APP_CHECK_DELAY + 100)
+
+      await rejectPromise
+
+      isAppCompatibleSpy.mockRestore()
+      checkAppSpy.mockRestore()
     })
   })
 })
