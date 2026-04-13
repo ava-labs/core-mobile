@@ -1,6 +1,8 @@
 import type {
+  BridgeableUiAsset,
   CompletedTransfer,
   FailedTransfer,
+  GetBridgeableAssetsProps,
   RefundedTransfer
 } from '@avalabs/fusion-sdk'
 import {
@@ -25,6 +27,7 @@ import {
 import { bigintToBig } from '@avalabs/core-utils-sdk'
 import { FeatureGates } from 'services/posthog/types'
 import Logger from 'utils/Logger'
+import { fetchTargetChainAssets } from '../utils/fetchTargetChainAssets'
 import { fusionErrors } from '../utils/fusionErrors'
 import { MARKR_EVM_PARTNER_ID } from '../consts'
 import { isConcludedTransfer } from '../utils/transferStatus'
@@ -105,7 +108,7 @@ class FusionService implements IFusionService {
             evmSigner: signers.evm,
             solanaSigner: signers.svm,
             markrAppId: MARKR_EVM_PARTNER_ID,
-            getTargetChainAssets: () => Promise.resolve([]),
+            getTargetChainAssets: fetchTargetChainAssets,
             disableCrossChainSwaps
             // eslint-disable-next-line prettier/prettier
           } satisfies MarkrServiceInitializer)
@@ -251,6 +254,21 @@ class FusionService implements IFusionService {
       return chainsMap
     } catch (error) {
       Logger.error('Failed to fetch supported chains map', error)
+      throw error
+    }
+  }
+
+  /**
+   * Returns assets bridgeable to the target chain for a given source asset and chain.
+   * The MARKR service internally calls `getTargetChainAssets` and filters by supported routes.
+   */
+  async getBridgeableAssets(
+    props: GetBridgeableAssetsProps
+  ): Promise<readonly BridgeableUiAsset[]> {
+    try {
+      return await this.transferManager.getBridgeableAssets(props)
+    } catch (error) {
+      Logger.error('[FusionService] getBridgeableAssets failed', error)
       throw error
     }
   }
