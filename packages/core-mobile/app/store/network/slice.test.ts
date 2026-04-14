@@ -12,10 +12,10 @@ import {
   selectCustomNetworks,
   selectEnabledNetworks,
   selectEnabledNetworksByTestnet,
-  selectAllNetworksForBalanceFetch,
   networkReducer,
   setActive,
   toggleEnabledChainId,
+  enableChainId,
   toggleDisabledLastTransactedChainId,
   addCustomNetwork,
   updateCustomNetwork,
@@ -46,23 +46,6 @@ const mockGetNetworks = getNetworksFromCache as jest.MockedFunction<
 
 describe('network slice', () => {
   describe('selectors', () => {
-    const mockPolygonNetwork = {
-      chainId: 137,
-      chainName: 'Polygon',
-      isTestnet: false,
-      vmName: NetworkVMType.EVM,
-      networkToken: {
-        name: 'POL',
-        symbol: 'POL',
-        description: 'Polygon',
-        decimals: 18,
-        logoUri: ''
-      },
-      rpcUrl: 'https://polygon-rpc.com',
-      explorerUrl: 'https://polygonscan.com',
-      logoUri: ''
-    }
-
     const mockNetworks = {
       43114: {
         chainId: 43114,
@@ -309,132 +292,6 @@ describe('network slice', () => {
 
         const result = selectEnabledNetworksByTestnet(false)(state)
         expect(result).toEqual([])
-      })
-    })
-    describe('selectAllNetworksForBalanceFetch', () => {
-      it('includes disabled EVM networks for the current dev mode', () => {
-        // Polygon (137) is in mockNetworks but NOT in enabledChainIds
-        mockGetNetworks.mockReturnValue({ ...mockNetworks, 137: mockPolygonNetwork })
-        const state = createMockState() // enabledChainIds: [43114, 1]
-        const result = selectAllNetworksForBalanceFetch(state)
-        const chainIds = result.map(n => n.chainId)
-        expect(chainIds).toContain(43114)
-        expect(chainIds).toContain(1)
-        expect(chainIds).toContain(137) // disabled but should be included
-      })
-
-      it('excludes SVM networks when active account has no SVM address', () => {
-        const state = createMockState({
-          account: {
-            active: 'account-1',
-            accounts: {
-              'account-1': { id: 'account-1', addressSVM: undefined }
-            },
-            accountsState: {},
-            ledgerAddresses: {},
-            activeAccountIndex: 0
-          }
-        } as Partial<RootState>)
-        const result = selectAllNetworksForBalanceFetch(state)
-        expect(result.map(n => n.chainId)).not.toContain(
-          ChainsSDKChainId.SOLANA_MAINNET_ID
-        )
-      })
-
-      it('excludes SVM networks when active account has an empty SVM address', () => {
-        const state = createMockState({
-          account: {
-            active: 'account-1',
-            accounts: {
-              'account-1': { id: 'account-1', addressSVM: '' }
-            },
-            accountsState: {},
-            ledgerAddresses: {},
-            activeAccountIndex: 0
-          }
-        } as Partial<RootState>)
-        const result = selectAllNetworksForBalanceFetch(state)
-        expect(result.map(n => n.chainId)).not.toContain(
-          ChainsSDKChainId.SOLANA_MAINNET_ID
-        )
-      })
-
-      it('includes SVM networks when active account has a valid SVM address', () => {
-        const state = createMockState({
-          account: {
-            active: 'account-1',
-            accounts: {
-              'account-1': {
-                id: 'account-1',
-                addressSVM: 'SomeSolanaAddress11111111111111111111111111111'
-              }
-            },
-            accountsState: {},
-            ledgerAddresses: {},
-            activeAccountIndex: 0
-          }
-        } as Partial<RootState>)
-        const result = selectAllNetworksForBalanceFetch(state)
-        expect(result.map(n => n.chainId)).toContain(
-          ChainsSDKChainId.SOLANA_MAINNET_ID
-        )
-      })
-
-      it('excludes testnet networks in mainnet mode', () => {
-        const fujiNetwork = {
-          chainId: 43113,
-          chainName: 'Avalanche Fuji Testnet',
-          isTestnet: true,
-          vmName: NetworkVMType.EVM,
-          networkToken: {
-            name: 'AVAX',
-            symbol: 'AVAX',
-            description: 'Avalanche',
-            decimals: 18,
-            logoUri: ''
-          },
-          rpcUrl: 'https://api.avax-test.network/ext/bc/C/rpc',
-          explorerUrl: 'https://testnet.snowtrace.io',
-          logoUri: ''
-        }
-        mockGetNetworks.mockReturnValue({ ...mockNetworks, 43113: fujiNetwork })
-        const state = createMockState() // isDeveloperMode: false
-        const result = selectAllNetworksForBalanceFetch(state)
-        expect(result.map(n => n.chainId)).not.toContain(43113)
-      })
-
-      it('only includes testnet networks in developer mode', () => {
-        const fujiNetwork = {
-          chainId: 43113,
-          chainName: 'Avalanche Fuji Testnet',
-          isTestnet: true,
-          vmName: NetworkVMType.EVM,
-          networkToken: {
-            name: 'AVAX',
-            symbol: 'AVAX',
-            description: 'Avalanche',
-            decimals: 18,
-            logoUri: ''
-          },
-          rpcUrl: 'https://api.avax-test.network/ext/bc/C/rpc',
-          explorerUrl: 'https://testnet.snowtrace.io',
-          logoUri: ''
-        }
-        mockGetNetworks.mockReturnValue({ ...mockNetworks, 43113: fujiNetwork })
-        const state = createMockState({
-          settings: { advanced: { isDeveloperMode: true } }
-        } as Partial<RootState>)
-        const result = selectAllNetworksForBalanceFetch(state)
-        const chainIds = result.map(n => n.chainId)
-        expect(chainIds).toContain(43113)
-        expect(chainIds).not.toContain(43114) // mainnet excluded in dev mode
-        expect(chainIds).not.toContain(1)
-      })
-
-      it('returns an array (not a map)', () => {
-        const state = createMockState()
-        const result = selectAllNetworksForBalanceFetch(state)
-        expect(Array.isArray(result)).toBe(true)
       })
     })
   })
@@ -762,6 +619,40 @@ describe('network slice', () => {
 
         expect(result.customNetworks[99999]).toBeUndefined()
         expect(result.enabledChainIds).not.toContain(99999)
+      })
+    })
+
+    describe('enableChainId', () => {
+      it('should add chainId when not already enabled', () => {
+        const result = networkReducer(initialState, enableChainId(8453))
+
+        expect(result.enabledChainIds).toContain(8453)
+        expect(result.enabledChainIds).toHaveLength(3)
+      })
+
+      it('should not duplicate chainId when already enabled', () => {
+        const result = networkReducer(
+          initialState,
+          enableChainId(ChainsSDKChainId.AVALANCHE_MAINNET_ID)
+        )
+
+        const count = result.enabledChainIds.filter(
+          id => id === ChainsSDKChainId.AVALANCHE_MAINNET_ID
+        ).length
+        expect(count).toBe(1)
+        expect(result.enabledChainIds).toHaveLength(2)
+      })
+
+      it('should not disable a chainId (unlike toggleEnabledChainId)', () => {
+        const result = networkReducer(
+          initialState,
+          enableChainId(ChainsSDKChainId.ETHEREUM_HOMESTEAD)
+        )
+
+        expect(result.enabledChainIds).toContain(
+          ChainsSDKChainId.ETHEREUM_HOMESTEAD
+        )
+        expect(result.enabledChainIds).toHaveLength(2)
       })
     })
 

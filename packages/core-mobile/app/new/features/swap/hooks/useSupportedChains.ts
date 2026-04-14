@@ -9,6 +9,7 @@ import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { isSolanaNetwork } from 'utils/network/isSolanaNetwork'
 import { selectIsSolanaSwapBlocked } from 'store/posthog'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import FusionService from '../services/FusionService'
 import { logSdkError } from '../utils/fusionLogger'
 import { useIsFusionServiceReady } from './useZustandStore'
@@ -59,13 +60,16 @@ function filterAndSortNetworks(
  */
 export function useSupportedChains(sourceChainId?: number): {
   chains: Network[] | undefined
+  allChains: Network[] | undefined
   destinations: Network[] | undefined
   isValidDestination: (sourceChainId: number, destChainId: number) => boolean
   isLoading: boolean
   error: Error | null
 } {
-  const { getNetworkByCaip2ChainId } = useNetworks()
+  const { getEnabledNetworkByCaip2ChainId, getNetworkByCaip2ChainId } =
+    useNetworks()
   const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [isFusionServiceReady] = useIsFusionServiceReady()
 
   // Fetch supported chains Map from Fusion Service
@@ -90,7 +94,7 @@ export function useSupportedChains(sourceChainId?: number): {
     const caip2ChainIds = Array.from(chainsMap.keys())
 
     const networks = caip2ChainIds
-      .map(caip2Id => getNetworkByCaip2ChainId(caip2Id))
+      .map(caip2Id => getEnabledNetworkByCaip2ChainId(caip2Id))
       .filter((network): network is Network => network !== undefined)
 
     const supportedNetworks = filterAndSortNetworks(
@@ -104,7 +108,26 @@ export function useSupportedChains(sourceChainId?: number): {
     )
 
     return supportedNetworks
-  }, [chainsMap, getNetworkByCaip2ChainId, isSolanaSwapBlocked])
+  }, [chainsMap, getEnabledNetworkByCaip2ChainId, isSolanaSwapBlocked])
+
+  // All swap-supported networks regardless of enabled state (used to pre-fetch
+  // balances for disabled networks so ManageNetworks can read from cache)
+  const allChains = useMemo(() => {
+    if (!chainsMap) return undefined
+
+    const caip2ChainIds = Array.from(chainsMap.keys())
+    const networks = caip2ChainIds
+      .map(caip2Id => getNetworkByCaip2ChainId(caip2Id))
+      .filter((network): network is Network => network !== undefined)
+      .filter(network => network.isTestnet === isDeveloperMode)
+
+    return filterAndSortNetworks(networks, isSolanaSwapBlocked)
+  }, [
+    chainsMap,
+    getNetworkByCaip2ChainId,
+    isSolanaSwapBlocked,
+    isDeveloperMode
+  ])
 
   // Convert source chainId to CAIP-2 and look up destinations (optional)
   const destinations = useMemo(() => {
@@ -130,7 +153,7 @@ export function useSupportedChains(sourceChainId?: number): {
 
     // Convert destination CAIP-2 IDs to Network objects
     const networks = Array.from(destCaip2Ids)
-      .map(caip2Id => getNetworkByCaip2ChainId(caip2Id))
+      .map(caip2Id => getEnabledNetworkByCaip2ChainId(caip2Id))
       .filter((network): network is Network => network !== undefined)
 
     const destNetworks = filterAndSortNetworks(networks, isSolanaSwapBlocked)
@@ -141,7 +164,12 @@ export function useSupportedChains(sourceChainId?: number): {
     )
 
     return destNetworks
-  }, [sourceChainId, chainsMap, getNetworkByCaip2ChainId, isSolanaSwapBlocked])
+  }, [
+    sourceChainId,
+    chainsMap,
+    getEnabledNetworkByCaip2ChainId,
+    isSolanaSwapBlocked
+  ])
 
   // Function to check if a destination chain is valid for a source chain
   const isValidDestination = useCallback(
@@ -159,13 +187,13 @@ export function useSupportedChains(sourceChainId?: number): {
       }
 
       // Check if destination network exists (enabled or disabled)
-      const destNetwork = getNetworkByCaip2ChainId(destCaip2)
+      const destNetwork = getEnabledNetworkByCaip2ChainId(destCaip2)
       if (!destNetwork) return false
 
       // Check Solana blocking - return true if not blocked
       return !(isSolanaSwapBlocked && isSolanaNetwork(destNetwork))
     },
-    [chainsMap, getNetworkByCaip2ChainId, isSolanaSwapBlocked]
+    [chainsMap, getEnabledNetworkByCaip2ChainId, isSolanaSwapBlocked]
   )
 
   useEffect(() => {
@@ -175,6 +203,7 @@ export function useSupportedChains(sourceChainId?: number): {
 
   return {
     chains,
+    allChains,
     destinations,
     isValidDestination,
     isLoading,

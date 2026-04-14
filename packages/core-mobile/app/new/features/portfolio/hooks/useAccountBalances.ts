@@ -1,17 +1,20 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useCallback, useMemo } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import BalanceService from 'services/balance/BalanceService'
 import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
 import { Account } from 'store/account/types'
-import { selectAllNetworksForBalanceFetch } from 'store/network/slice'
+import { enableChainId, selectEnabledNetworks } from 'store/network/slice'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { Network } from '@avalabs/core-chains-sdk'
 import { useXPAddresses } from 'hooks/useXPAddresses/useXPAddresses'
 import { selectWalletById } from 'store/wallet/slice'
 import { getXpubXPIfAvailable } from 'utils/getAddressesFromXpubXP/getAddressesFromXpubXP'
 import { useNetInfo } from '@react-native-community/netinfo'
+import { useSupportedChains } from 'features/swap/hooks/useSupportedChains'
+import { selectHasBeenViewedOnce, setViewOnce } from 'store/viewOnce/slice'
+import { ViewOnceKey } from 'store/viewOnce/types'
 import * as store from '../store'
 
 /**
@@ -37,12 +40,9 @@ export const balanceKey = (account: Account | undefined, network?: Network[]) =>
   ] as const
 
 /**
- * Fetches balances for the specified account across all available networks
- * (enabled and disabled alike), so that portfolio and swap screens can show
- * real balances regardless of the user's network visibility settings.
+ * Fetches balances for the specified account across all enabled networks (C-Chain, X-Chain, P-Chain, other EVMs, BTC, SOL, etc.)
  *
- * 🔁 Runs one query for all networks via React Query; each network streams
- * in via onBalanceLoaded as it resolves.
+ * 🔁 Runs one query for all enabled networks via React Query.
  */
 export function useAccountBalances(
   account?: Account,
@@ -68,12 +68,31 @@ export function useAccountBalances(
   // when the reachability check host is blocked or slow (VPN, captive portals).
   const isOnline = netInfo.isConnected !== false
 
-  const networks = useSelector(selectAllNetworksForBalanceFetch)
+  const dispatch = useDispatch()
+  const enabledNetworks = useSelector(selectEnabledNetworks)
+  const hasAutoEnabledSwapNetworks = useSelector(
+    selectHasBeenViewedOnce(ViewOnceKey.AUTO_ENABLE_SWAP_NETWORKS)
+  )
   const currency = useSelector(selectSelectedCurrency)
   const { xpAddresses } = useXPAddresses(account)
   const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
+  const { allChains } = useSupportedChains()
 
-  const isNotReady = !account || networks.length === 0 || !wallet
+  // Include all swap-supported networks so their balances are pre-fetched and
+  // cached before the user opens ManageNetworks or triggers auto-enable logic.
+  const networksToFetch = useMemo(() => {
+    if (!allChains || allChains.length === 0) return enabledNetworks
+    const enabledSet = new Set(enabledNetworks.map(n => n.chainId))
+    const extraNetworks = allChains.filter(n => !enabledSet.has(n.chainId))
+    return [...enabledNetworks, ...extraNetworks]
+  }, [enabledNetworks, allChains])
+
+  const enabledNetworkIds = useMemo(
+    () => new Set(enabledNetworks.map(n => n.chainId)),
+    [enabledNetworks]
+  )
+
+  const isNotReady = !account || networksToFetch.length === 0 || !wallet
 
   const enabled = !isNotReady
 
@@ -85,7 +104,7 @@ export function useAccountBalances(
     refetch: refetchFn
   } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps
-    queryKey: balanceKey(account, networks),
+    queryKey: balanceKey(account, networksToFetch),
     enabled,
     refetchInterval: options?.refetchInterval ?? refetchInterval,
     staleTime,
@@ -98,21 +117,33 @@ export function useAccountBalances(
         accountIndex: account.index
       })
 
-      return await BalanceService.getBalancesForAccount({
-        networks: networks,
+      return BalanceService.getBalancesForAccount({
+        networks: networksToFetch,
         account,
         currency: currency.toLowerCase(),
         xpAddresses,
         xpub,
         onBalanceLoaded: balance => {
           queryClient.setQueryData(
-            balanceKey(account, networks),
+            balanceKey(account, networksToFetch),
             (prev: AdjustedNormalizedBalancesForAccount[] | undefined) => {
               if (!prev) return [balance]
               const filtered = prev.filter(p => p.chainId !== balance.chainId)
               return [...filtered, balance]
             }
           )
+          // Auto-enable disabled swap networks that have balance — once per login only.
+          // hasAutoEnabledSwapNetworks is cleared on logout so this re-runs next login,
+          // but won't re-enable networks the user deliberately disables afterwards.
+          if (
+            !hasAutoEnabledSwapNetworks &&
+            !enabledNetworkIds.has(balance.chainId) &&
+            balance.tokens.some(t => t.balance > 0n)
+          ) {
+            dispatch(enableChainId(balance.chainId))
+            // Mark auto-enable as done for this login session after all balances have loaded.
+            dispatch(setViewOnce(ViewOnceKey.AUTO_ENABLE_SWAP_NETWORKS))
+          }
         }
       })
     }
@@ -141,11 +172,15 @@ export function useAccountBalances(
 
     // still loading if:
     // - account missing, OR
-    // - no data yet at all
-    // (we no longer wait for all networks since we now fetch all available
-    // networks and each one streams in via onBalanceLoaded)
-    return !account || !data || data.length === 0
-  }, [account, data, isError, isOnline])
+    // - no data, OR
+    // - fewer results than enabled networks
+    return (
+      !account ||
+      !data ||
+      data.length === 0 ||
+      data.length < enabledNetworks.length
+    )
+  }, [account, data, enabledNetworks.length, isError, isOnline])
 
   return {
     data: data ?? [],
