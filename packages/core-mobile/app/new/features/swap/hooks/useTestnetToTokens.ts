@@ -35,11 +35,11 @@ const toFusionSourceAsset = (
 /**
  * Fetches the bridgeable "to" token list for testnet mode.
  *
- * Uses the Fusion SDK's getBridgeableAssets which internally calls getTargetChainAssets
- * (backed by the v2 token API) to ensure only SDK-supported tokens are shown.
- * v2 returns native tokens so no manual injection is needed.
- *
- * Mainnet uses the separate paginated useSwapTokens hook.
+ * Uses the Fusion SDK's getBridgeableAssets to ensure only SDK-supported tokens are shown.
+ * In testnet, the set of supported tokens is small and fixed (Avalanche EVM brige, wrap/unwrap,
+ * and Lombard) so the SDK can own the list without pagination.
+ * In mainnet, MARKR supports 6000+ tokens per network and the SDK does not support
+ * pagination, so we manage the list ourselves via the separate paginated useSwapTokens hook.
  */
 export const useTestnetToTokens = (
   targetCaip2Id: string

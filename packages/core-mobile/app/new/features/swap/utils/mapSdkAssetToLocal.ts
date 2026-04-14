@@ -1,10 +1,10 @@
 import { TokenType as FusionTokenType } from '@avalabs/fusion-sdk'
-import type { BridgeableUiAsset } from '@avalabs/fusion-sdk'
+import type { Asset } from '@avalabs/fusion-sdk'
 import { TokenType } from '@avalabs/vm-module-types'
 import type { LocalTokenWithBalance } from 'store/balance'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 
-const getLocalIdFromSdkAsset = (asset: BridgeableUiAsset): string => {
+const getLocalIdFromSdkAsset = (asset: Asset): string => {
   if (asset.type === FusionTokenType.NATIVE) {
     return `NATIVE-${asset.symbol.toLowerCase()}`
   }
@@ -12,7 +12,7 @@ const getLocalIdFromSdkAsset = (asset: BridgeableUiAsset): string => {
 }
 
 const getTokenTypeFromSdkAsset = (
-  asset: BridgeableUiAsset
+  asset: Asset
 ): TokenType.NATIVE | TokenType.ERC20 | TokenType.SPL => {
   if (asset.type === FusionTokenType.NATIVE) return TokenType.NATIVE
   if (asset.type === FusionTokenType.SPL) return TokenType.SPL
@@ -20,14 +20,14 @@ const getTokenTypeFromSdkAsset = (
 }
 
 /**
- * Converts a Fusion SDK BridgeableUiAsset to a LocalTokenWithBalance for display.
+ * Converts a Fusion SDK Asset to a LocalTokenWithBalance for display.
  * Optionally merges portfolio balance data so tokens the user holds show their balance.
  *
- * Handles both ERC20 and native assets — v2 API returns native tokens so no
+ * Handles ERC20, SPL, and native assets — v2 API returns native tokens so no
  * manual injection is needed; this function maps them correctly from SDK types.
  */
 export const mapSdkAssetToLocal = (
-  asset: BridgeableUiAsset,
+  asset: Asset,
   networkChainId: number,
   balanceData?: LocalTokenWithBalance
 ): LocalTokenWithBalance => {

@@ -148,7 +148,10 @@ export function useFusionTokenLookup({
     setFromToken(initialFromToken)
 
     let initialToToken: LocalTokenWithBalance | undefined
-    if (initialTokenIdTo) {
+    // In testnet (developer mode), skip preselecting a "to" token.
+    // Initial to-token IDs (e.g. USDC) are mainnet-specific and no services
+    // support them in testnet, which would lead to a broken no-quotes state.
+    if (initialTokenIdTo && !isDeveloperMode) {
       const toTokenInfo =
         tokens[toTokensKey(initialTokenIdTo, tokenInfo.initialToCaip2Id)]
 
@@ -170,6 +173,7 @@ export function useFusionTokenLookup({
   }, [
     accountTokens,
     fromTokenChainId,
+    isDeveloperMode,
     isTokensLoading,
     tokenInfo.initialFromCaip2Id,
     tokenInfo.initialToCaip2Id,
