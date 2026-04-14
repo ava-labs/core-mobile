@@ -536,6 +536,9 @@ class LedgerService {
             settle('resolve')
             return
           }
+          // Guard: if abort fired while checkApp was in-flight, settle()
+          // already ran — don't start an interval that would never be cleared.
+          if (settled) return
           checkInterval = setInterval(
             () => this.pollTick(appType, timeoutMs, startTime, settled, settle),
             LEDGER_TIMEOUTS.APP_CHECK_DELAY
@@ -579,9 +582,17 @@ class LedgerService {
       return
     }
 
-    const isFound = await this.checkApp(appType)
-    if (isFound) {
-      settle('resolve')
+    try {
+      const isFound = await this.checkApp(appType)
+      if (isFound) {
+        settle('resolve')
+      }
+    } catch (error) {
+      Logger.error(`Error while polling for ${appType} app`, error)
+      settle(
+        'reject',
+        error instanceof Error ? error : new Error(String(error))
+      )
     }
   }
 

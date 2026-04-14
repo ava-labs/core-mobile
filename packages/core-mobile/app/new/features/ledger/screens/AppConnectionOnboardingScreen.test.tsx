@@ -29,6 +29,10 @@ jest.mock('@avalabs/core-chains-sdk', () => ({
     BIP122: 'bip122',
     SOLANA: 'solana'
   },
+  ChainId: {
+    AVALANCHE_MAINNET_ID: 43114,
+    ETHEREUM_HOMESTEAD: 1
+  },
   AvalancheCaip2ChainId: {
     X: 'avax:imji8papUf2EhV3le337w1vgFauqkJg-',
     P: 'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo'
@@ -45,6 +49,10 @@ jest.mock('services/network/consts', () => ({
   AVALANCHE_MAINNET_NETWORK: {
     chainId: 43114
   }
+}))
+
+jest.mock('store/network/slice', () => ({
+  defaultEnabledL2ChainIds: [42161, 8453, 10]
 }))
 
 jest.mock('vmModule/ModuleManager', () => ({
