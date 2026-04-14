@@ -45,8 +45,11 @@ const allCaps = [
     'appium:automationName': 'UiAutomator2',
     'appium:app': androidPath,
     'appium:appWaitActivity': '*',
+    'appium:appWaitDuration': 60000,
+    'appium:adbExecTimeout': 60000,
     'appium:disableWindowAnimation': true,
-    'appium:autoGrantPermissions': true
+    'appium:autoGrantPermissions': true,
+    'appium:newCommandTimeout': 300
   },
   {
     platformName: 'iOS',

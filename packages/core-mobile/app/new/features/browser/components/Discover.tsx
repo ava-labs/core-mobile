@@ -19,6 +19,7 @@ export const Discover = (): JSX.Element => {
 
   return (
     <ScrollView
+      testID="discover_page"
       showsVerticalScrollIndicator={false}
       style={{
         height: '100%',

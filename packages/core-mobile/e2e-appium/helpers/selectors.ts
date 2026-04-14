@@ -61,6 +61,13 @@ function getBySomeText(text: string) {
   )
 }
 
+function getByIdContaining(prefix: string) {
+  return withPlatform(
+    `-ios predicate string:name CONTAINS "${prefix}" AND accessible == true`,
+    `//*[contains(@content-desc, '${prefix}')]`
+  )
+}
+
 export const selectors = {
   getByText,
   getById,
@@ -68,5 +75,6 @@ export const selectors = {
   getByTextWithIndex,
   getBySomeText,
   getByXpath,
-  getBySmartText
+  getBySmartText,
+  getByIdContaining
 }

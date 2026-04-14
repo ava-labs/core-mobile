@@ -25,6 +25,7 @@ interface BrowserItemProps {
   loading?: boolean
   onPress?: () => void
   onRemove?: () => void
+  testID?: string
 }
 
 const LIST_ITEM_HEIGHT = 62
@@ -112,7 +113,8 @@ export const ListItem = memo(
     onRemove,
     onPress,
     isLast,
-    loading
+    loading,
+    testID
   }: BrowserItemProps): JSX.Element => {
     const { theme } = useTheme()
 
@@ -164,6 +166,7 @@ export const ListItem = memo(
 
     return (
       <Pressable
+        testID={testID}
         onPress={onPress}
         style={[
           {

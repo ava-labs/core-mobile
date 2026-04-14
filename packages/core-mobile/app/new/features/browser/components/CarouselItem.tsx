@@ -12,7 +12,9 @@ export const CarouselItem = ({
   description,
   renderImage,
   loading,
-  onPress
+  onPress,
+  testID,
+  accessible
 }: {
   title?: string
   image?: string
@@ -20,6 +22,8 @@ export const CarouselItem = ({
   loading?: boolean
   renderImage?: ReactNode
   onPress?: () => void
+  testID?: string
+  accessible?: boolean
 }): ReactNode => {
   const { theme } = useTheme()
 
@@ -149,6 +153,8 @@ export const CarouselItem = ({
 
   return (
     <AnimatedPressable
+      testID={testID}
+      accessible={accessible}
       style={{
         width: 240,
         height: 300

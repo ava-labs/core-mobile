@@ -269,6 +269,7 @@ export const BrowserInputMenu = ({
 
   return (
     <DropdownMenu
+      testID="browser_more_menu"
       onOpenChange={onOpenChange}
       onPressAction={onPressAction}
       style={{

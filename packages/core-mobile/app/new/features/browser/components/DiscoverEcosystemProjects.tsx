@@ -56,6 +56,8 @@ export const DiscoverEcosystemProjects = (): ReactNode => {
         image={item.logo?.url}
         description={item.description}
         onPress={() => handlePress(item)}
+        testID={`discover_ecosystem_item__${item.name}`}
+        accessible={true}
       />
     )
   }

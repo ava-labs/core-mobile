@@ -60,6 +60,8 @@ export const DiscoverLearn = (): ReactNode => {
       <CarouselItem
         title={item.headline}
         onPress={() => handlePress(item)}
+        testID={`discover_learn_item__${item.headline}`}
+        accessible={true}
         renderImage={
           <View
             style={{

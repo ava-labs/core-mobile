@@ -21,12 +21,13 @@ node -v
 yarn -v
 
 # Install xcuitest driver for Appium 2.x+
+# Note: "yarn appium" maps to wdio, so use npx for driver management
 echo "Installing Appium xcuitest driver..."
-yarn appium driver install xcuitest || npx appium driver install xcuitest || true
+npx appium driver install xcuitest || npx appium driver update xcuitest || true
 
 # Verify installation
-yarn appium -v || true
-yarn appium driver list || true
+npx appium -v || true
+npx appium driver list --installed || true
 
 if [[ "$IS_SMOKE" == "true" ]]; then
   echo "Running iOS SMOKE tests"
