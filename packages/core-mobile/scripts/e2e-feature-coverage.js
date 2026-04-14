@@ -330,20 +330,50 @@ const E2E_COVERAGE_EXCLUDED_FEATURES = new Set([
   'rpc'
 ])
 
+/**
+ * Parse base-10 integer env; returns `defaultVal` if empty, non-finite, or outside `[min,max]`.
+ * @param {string | undefined} raw
+ * @param {number} defaultVal
+ * @param {{ min?: number, max?: number }} [bounds]
+ */
+function parseEnvInt(raw, defaultVal, bounds = {}) {
+  const trimmed = String(raw ?? '').trim()
+  if (trimmed === '') return defaultVal
+  const n = Number.parseInt(trimmed, 10)
+  if (!Number.isFinite(n)) return defaultVal
+  const { min, max } = bounds
+  if (min != null && n < min) return defaultVal
+  if (max != null && n > max) return defaultVal
+  return n
+}
+
 /** Mirrors `e2e-appium/testrail/testrail.config.ts` (API user is not secret). */
 const TESTRAIL_DOMAIN =
   process.env.TESTRAIL_DOMAIN || 'https://avalabs.testrail.io'
 const TESTRAIL_USERNAME =
   process.env.TESTRAIL_USERNAME || 'mobiledevs@avalabs.org'
-const TESTRAIL_PROJECT_ID = Number(process.env.TESTRAIL_PROJECT_ID || 3)
+const TESTRAIL_PROJECT_ID = parseEnvInt(process.env.TESTRAIL_PROJECT_ID, 3, {
+  min: 1
+})
 /** Default matches `e2e-appium/testrail/testrail.config.ts` `suiteId` (filters `get_runs`). */
-const TESTRAIL_SUITE_ID_FOR_RUN_LIST = Number(
-  process.env.E2E_COVERAGE_TESTRAIL_SUITE_ID || 3
+const TESTRAIL_SUITE_ID_FOR_RUN_LIST = parseEnvInt(
+  process.env.E2E_COVERAGE_TESTRAIL_SUITE_ID,
+  3,
+  { min: 1 }
 )
 
 /** Parsed from `[REGRESSION] … Test Run: YYYY-MM-DD` in the run name; stale runs do not drive regression-adjusted %. */
-const REGRESSION_RUN_MAX_AGE_DAYS = Number(
-  process.env.E2E_COVERAGE_REGRESSION_MAX_AGE_DAYS || 7
+const REGRESSION_RUN_MAX_AGE_DAYS = parseEnvInt(
+  process.env.E2E_COVERAGE_REGRESSION_MAX_AGE_DAYS,
+  7,
+  { min: 1, max: 3660 }
+)
+
+/** Parallel `get_case` fan-out; invalid env falls back to 12 (see file header). */
+const E2E_COVERAGE_TESTRAIL_CASE_CONCURRENCY = parseEnvInt(
+  process.env.E2E_COVERAGE_TESTRAIL_CASE_CONCURRENCY,
+  12,
+  { min: 1, max: 32 }
 )
 
 /** WDIO posts status_id 1 = pass, 5 = fail (`sendResult` in testrail.service.ts). */
@@ -415,8 +445,27 @@ function parseRegressionRunDateMsFromName(name) {
 function regressionRunNameIsWithinMaxAge(name, maxAgeDays) {
   const runDayMs = parseRegressionRunDateMsFromName(name)
   if (runDayMs === null) return false
+  if (!Number.isFinite(maxAgeDays) || maxAgeDays < 1) return false
   const maxAgeMs = maxAgeDays * 24 * 60 * 60 * 1000
   return Date.now() - runDayMs <= maxAgeMs
+}
+
+/**
+ * JSON `summary.*Basis` for regression-adjusted %: stale run vs TestRail off vs mapped failure semantics.
+ * @param {'ios' | 'android'} platformKey
+ * @param {{ ios?: object, android?: object } | undefined} testrail
+ */
+function regressionAdjustedCoveragePercentBasis(platformKey, testrail) {
+  const tr = testrail?.[platformKey]
+  if (tr?.regressionAdjustedNotApplicable) {
+    return `not_applicable_${platformKey}_regression_run_older_than_${REGRESSION_RUN_MAX_AGE_DAYS}_days`
+  }
+  if (!tr?.enabled) {
+    return 'heuristic_total_testrail_skipped'
+  }
+  return platformKey === 'ios'
+    ? 'inScopeMappedFeatures_heuristicO_and_noMappedIosRegressionFailure'
+    : 'inScopeMappedFeatures_heuristicO_and_noMappedAndroidRegressionFailure'
 }
 
 /**
@@ -505,13 +554,19 @@ async function fetchAllProjectRuns(client) {
   const all = []
   let offset = 0
   const limit = 250
-  const maxPages = Math.max(
-    1,
-    Math.min(50, Number(process.env.E2E_COVERAGE_TESTRAIL_RUNS_MAX_PAGES || 15))
+  const maxPages = parseEnvInt(
+    process.env.E2E_COVERAGE_TESTRAIL_RUNS_MAX_PAGES,
+    15,
+    { min: 1, max: 50 }
+  )
+  const createdAfterDaysFallback = parseEnvInt(
+    process.env.E2E_COVERAGE_TESTRAIL_RUNS_CREATED_AFTER_DAYS,
+    180,
+    { min: 1, max: 3660 }
   )
   const createdAfterDays = Math.max(
     REGRESSION_RUN_MAX_AGE_DAYS + 1,
-    Number(process.env.E2E_COVERAGE_TESTRAIL_RUNS_CREATED_AFTER_DAYS || 180)
+    createdAfterDaysFallback
   )
   const useCreatedAfter =
     process.env.E2E_COVERAGE_TESTRAIL_RUNS_NO_CREATED_AFTER !== '1'
@@ -717,13 +772,7 @@ async function fetchCaseMetaByIdsParallel(
     id => id != null && !Number.isNaN(id)
   )
   const toFetch = ids.filter(id => !backing.has(id))
-  const concurrency = Math.max(
-    1,
-    Math.min(
-      32,
-      Number(process.env.E2E_COVERAGE_TESTRAIL_CASE_CONCURRENCY || 12)
-    )
-  )
+  const concurrency = E2E_COVERAGE_TESTRAIL_CASE_CONCURRENCY
   let cursor = 0
   async function worker() {
     for (;;) {
@@ -1598,18 +1647,14 @@ function printJsonReport(ctx) {
           totalCoveragePercentBasis:
             'inScopeMappedFeatures_union_specPathOrTestIdInSpec',
           regressionAdjustedCoveragePercentIos,
-          regressionAdjustedCoveragePercentIosBasis: testrail?.ios
-            ?.regressionAdjustedNotApplicable
-            ? `not_applicable_ios_regression_run_older_than_${REGRESSION_RUN_MAX_AGE_DAYS}_days`
-            : 'inScopeMappedFeatures_heuristicO_and_noMappedIosRegressionFailure',
+          regressionAdjustedCoveragePercentIosBasis:
+            regressionAdjustedCoveragePercentBasis('ios', testrail),
           regressionStableFeatureCountIos,
           regressionFailedFeatureCountIos,
           regressionFailedFeatureNamesIos,
           regressionAdjustedCoveragePercentAndroid,
-          regressionAdjustedCoveragePercentAndroidBasis: testrail?.android
-            ?.regressionAdjustedNotApplicable
-            ? `not_applicable_android_regression_run_older_than_${REGRESSION_RUN_MAX_AGE_DAYS}_days`
-            : 'inScopeMappedFeatures_heuristicO_and_noMappedAndroidRegressionFailure',
+          regressionAdjustedCoveragePercentAndroidBasis:
+            regressionAdjustedCoveragePercentBasis('android', testrail),
           regressionStableFeatureCountAndroid,
           regressionFailedFeatureCountAndroid,
           regressionFailedFeatureNamesAndroid,
