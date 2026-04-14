@@ -37,6 +37,10 @@ jest.mock('utils/api/clients/profileApiClient', () => ({
   profileApiClient: {}
 }))
 
+jest.mock('utils/caip2ChainIds', () => ({
+  applyTempChainIdConversion: jest.fn((id: number) => id)
+}))
+
 jest.mock('utils/Logger', () => ({
   __esModule: true,
   default: {
