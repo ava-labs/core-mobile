@@ -494,15 +494,17 @@ class LedgerService {
   ): Promise<void> {
     return new Promise((resolve, reject) => {
       const startTime = Date.now()
-      let settled = false
+      // Wrapped in an object so pollTick's closure captures the mutable
+      // reference rather than a frozen primitive boolean value.
+      const state = { settled: false }
       Logger.info(`Waiting for ${appType} app (timeout: ${timeoutMs}ms)...`)
 
       let checkInterval: ReturnType<typeof setInterval> | null = null
 
       // Settle helper — prevents double resolve/reject after cleanup races.
       const settle = (outcome: 'resolve' | 'reject', error?: Error): void => {
-        if (settled) return
-        settled = true
+        if (state.settled) return
+        state.settled = true
         if (checkInterval) {
           clearInterval(checkInterval)
           checkInterval = null
@@ -538,9 +540,9 @@ class LedgerService {
           }
           // Guard: if abort fired while checkApp was in-flight, settle()
           // already ran — don't start an interval that would never be cleared.
-          if (settled) return
+          if (state.settled) return
           checkInterval = setInterval(
-            () => this.pollTick(appType, timeoutMs, startTime, settled, settle),
+            () => this.pollTick(appType, timeoutMs, startTime, state, settle),
             LEDGER_TIMEOUTS.APP_CHECK_DELAY
           )
         })
@@ -556,10 +558,10 @@ class LedgerService {
     appType: LedgerAppType,
     timeoutMs: number,
     startTime: number,
-    settled: boolean,
+    state: { settled: boolean },
     settle: (outcome: 'resolve' | 'reject', error?: Error) => void
   ): Promise<void> {
-    if (settled) return
+    if (state.settled) return
 
     const elapsed = Date.now() - startTime
     if (elapsed >= timeoutMs) {
