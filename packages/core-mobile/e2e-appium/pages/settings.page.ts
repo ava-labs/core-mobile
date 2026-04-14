@@ -820,20 +820,20 @@ class Settings {
   async verifyAppIconScreen(selectedIconId: string) {
     await actions.waitFor(selectors.getById(settings.appIconTitle))
     const appIcons = [
-      'Light',
-      'Old',
+      'Core light',
+      'Old school Core',
       'Bling',
-      'Shiny',
+      'So shiny',
       'Marker',
       'Minimalism',
       'Neon'
     ]
-    if (selectedIconId !== 'Default') {
+    if (selectedIconId !== settings.core) {
       const idx = appIcons.indexOf(selectedIconId)
       if (idx !== -1) {
         appIcons.splice(idx, 1)
       }
-      appIcons.push('Default')
+      appIcons.push(settings.core)
     }
     await actions.isVisible(
       selectors.getById(`app_icon_${selectedIconId}_selected`)

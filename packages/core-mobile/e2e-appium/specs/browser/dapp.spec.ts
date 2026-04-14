@@ -4,7 +4,7 @@ import browserPage from '../../pages/browser.page'
 import browserLoc from '../../locators/browser.loc'
 
 describe('Browser - dApp', () => {
-  it('Should expose connected Core EVM account on core.app, Aave, and BENQI', async () => {
+  it('Should verify the injected provider on dapps', async () => {
     await warmup()
     await bottomTabsPage.tapBrowserTab()
 
@@ -16,7 +16,7 @@ describe('Browser - dApp', () => {
     await browserPage.verifyInjectedDapp()
   })
 
-  it('Should initiate a swap from each dApp and reach native transaction approval', async () => {
+  it('Should swap on dapp', async () => {
     await bottomTabsPage.tapBrowserTab()
     await browserPage.goToUrl(browserLoc.blackholeSwap)
     await browserPage.verifyInjectedDapp()

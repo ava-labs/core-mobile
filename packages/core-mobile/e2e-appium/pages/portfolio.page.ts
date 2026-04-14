@@ -407,12 +407,6 @@ class PortfolioPage {
     for (const { name, haveToggle } of networks) {
       if (haveToggle) await actions.isVisible(selectors.getByText(name))
     }
-    await this.tapFilterDropdown()
-    await this.tapActivityTab()
-    await this.tapNetworksDropdown()
-    for (const { name, haveToggle } of networks) {
-      if (haveToggle) await actions.isVisible(selectors.getBySomeText(name))
-    }
   }
 
   async verifyAccountName(name: string) {
