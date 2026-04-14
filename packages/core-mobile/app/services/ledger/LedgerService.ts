@@ -16,7 +16,7 @@ import { networks } from 'bitcoinjs-lib'
 import { networkIDs } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
 import bs58 from 'bs58'
-import { Platform, PermissionsAndroid, Alert, Linking } from 'react-native'
+import { Alert } from 'react-native'
 import {
   LEDGER_TIMEOUTS,
   getSolanaDerivationPath
@@ -25,7 +25,9 @@ import { isBitcoinCompatibleApp } from 'new/features/ledger/utils'
 import { assertNotNull } from 'utils/assertions'
 import { Curve } from 'utils/publicKeys'
 import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
-import { bip32 } from 'utils/bip32'
+import { derivePublicKey, extendedPublicKeyToXpub } from 'utils/bip32'
+import { BluetoothState } from 'services/bluetooth/types'
+import BluetoothService from 'services/bluetooth/BluetoothService'
 import {
   AddressInfo,
   LedgerAddressType,
@@ -40,9 +42,10 @@ import {
   LedgerDerivationPathType
 } from './types'
 import {
-  LedgerBluetoothPermissionError,
-  isLedgerBluetoothPermissionError
-} from './LedgerBluetoothPermissionError'
+  isLedgerBluetoothError,
+  ledgerBluetoothErrors,
+  showBluetoothErrorAlert
+} from './LedgerBluetoothError'
 
 class LedgerService {
   #transport: TransportBLE | null = null
@@ -97,7 +100,6 @@ class LedgerService {
   // Wrap transport's exchange method to automatically handle busy state
   private wrapTransportExchange(): void {
     if (!this.#transport) return
-
     const originalExchange = this.#transport.exchange.bind(this.#transport)
 
     // Replace exchange method with wrapped version
@@ -106,7 +108,6 @@ class LedgerService {
       if (this.#transport?.exchangeBusyPromise) {
         await new Promise(res => setTimeout(res, LEDGER_TIMEOUTS.REQUEST_DELAY))
       }
-
       try {
         return await originalExchange(apdu)
       } catch (error) {
@@ -132,15 +133,32 @@ class LedgerService {
     }
   }
 
+  async assertBluetoothAvailable(): Promise<void> {
+    const { hasPermission, state } =
+      await BluetoothService.ensureBluetoothAvailable()
+
+    if (!hasPermission || state === BluetoothState.UNAUTHORIZED) {
+      throw ledgerBluetoothErrors.permissionDenied()
+    }
+    if (state === BluetoothState.POWERED_OFF) {
+      throw ledgerBluetoothErrors.radioOff()
+    }
+    if (state === BluetoothState.UNSUPPORTED) {
+      throw ledgerBluetoothErrors.unsupported()
+    }
+    if (
+      state === BluetoothState.RESETTING ||
+      state === BluetoothState.UNKNOWN
+    ) {
+      throw ledgerBluetoothErrors.unknown()
+    }
+  }
+
   // Connect to Ledger device (transport only, no apps)
   async connect(deviceId: string): Promise<void> {
     try {
       Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
-      const hasPermissions = await this.requestBluetoothPermissions()
-      if (!hasPermissions) {
-        throw new LedgerBluetoothPermissionError()
-      }
-
+      await this.assertBluetoothAvailable()
       this.isDisconnected = false // Reset disconnect flag on new connection
       // Use a longer timeout for connection
       await TransportBLE.disconnectDevice(deviceId)
@@ -178,7 +196,7 @@ class LedgerService {
       }
     } catch (error) {
       Logger.error('Failed to connect to Ledger', error)
-      if (isLedgerBluetoothPermissionError(error)) {
+      if (isLedgerBluetoothError(error)) {
         throw error
       }
       throw new Error(
@@ -229,80 +247,16 @@ class LedgerService {
     this.appPollingEnabled = false
   }
 
-  // Request Bluetooth permissions (matching original implementation)
-  private async requestBluetoothPermissions(): Promise<boolean> {
-    if (Platform.OS === 'android') {
-      try {
-        const permissions = [
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-        ].filter(Boolean)
-
-        const permissionChecks = await Promise.all(
-          permissions.map(permission => PermissionsAndroid.check(permission))
-        )
-
-        if (permissionChecks.every(Boolean)) {
-          return true
-        }
-
-        const missingPermissions = permissions.filter(
-          (_, index) => !permissionChecks[index]
-        )
-
-        const granted = await PermissionsAndroid.requestMultiple(
-          missingPermissions
-        )
-
-        return missingPermissions.every(
-          permission =>
-            granted[permission] === PermissionsAndroid.RESULTS.GRANTED
-        )
-      } catch (err) {
-        Logger.error('Error requesting Bluetooth permissions:', err)
-        return false
-      }
-    }
-    return true
-  }
-
-  private showBluetoothPermissionRequiredAlert(
-    action: 'scan' | 'connect'
-  ): void {
-    const actionDescription = action === 'scan' ? 'scan for' : 'connect to'
-
-    Alert.alert(
-      'Permission Required',
-      `Bluetooth permissions are required to ${actionDescription} Ledger devices.`
-    )
-  }
-
   // Handle scan errors (matching original implementation)
   private handleScanError(error: Error): void {
     Logger.error('Scan error:', error)
     this.stopDeviceScanning()
 
-    if (
-      error.message?.includes('not authorized') ||
-      error.message?.includes('Origin: 101')
-    ) {
-      Alert.alert(
-        'Bluetooth Permission Required',
-        'Please enable Bluetooth permissions in your device settings to scan for Ledger devices.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Open Settings',
-            onPress: () => {
-              Linking.openSettings()
-            }
-          }
-        ]
-      )
-    } else {
-      Alert.alert('Scan Error', `Failed to scan for devices: ${error.message}`)
+    if (isLedgerBluetoothError(error)) {
+      showBluetoothErrorAlert(error)
+      return
     }
+    Alert.alert('Scan Error', `Failed to scan for devices: ${error.message}`)
   }
 
   // Device scanning methods (matching original implementation)
@@ -313,11 +267,7 @@ class LedgerService {
     }
 
     // Request permissions first
-    const hasPermissions = await this.requestBluetoothPermissions()
-    if (!hasPermissions) {
-      this.showBluetoothPermissionRequiredAlert('scan')
-      return
-    }
+    await this.assertBluetoothAvailable()
 
     Logger.info('Starting device scanning...')
     this.isScanning = true
@@ -632,7 +582,6 @@ class LedgerService {
     // Create Avalanche app instance
     const avalancheApp = new AppAvalanche(this.transport as Transport)
     Logger.info('Avalanche app instance created')
-
     try {
       // Get EVM extended public key (m/44'/60'/0')
       Logger.info('Getting EVM extended public key...')
@@ -1182,32 +1131,19 @@ class LedgerService {
       // BIP44: fetch account-level xpubs and derive address-level public keys
       const extendedKeys = await this.getExtendedPublicKeys(accountIndex)
 
-      const evmXpub = bip32
-        .fromPublicKey(
-          Buffer.from(extendedKeys.evm.key, 'hex'),
-          Buffer.from(extendedKeys.evm.chainCode, 'hex')
-        )
-        .toBase58()
+      const evmXpub = extendedPublicKeyToXpub(
+        extendedKeys.evm.key,
+        extendedKeys.evm.chainCode
+      )
 
-      const avalancheXpub = bip32
-        .fromPublicKey(
-          Buffer.from(extendedKeys.avalanche.key, 'hex'),
-          Buffer.from(extendedKeys.avalanche.chainCode, 'hex')
-        )
-        .toBase58()
+      const avalancheXpub = extendedPublicKeyToXpub(
+        extendedKeys.avalanche.key,
+        extendedKeys.avalanche.chainCode
+      )
 
-      const evmPublicKey =
-        bip32
-          .fromBase58(evmXpub)
-          .derive(0)
-          .derive(0)
-          .publicKey?.toString('hex') ?? ''
+      const evmPublicKey = derivePublicKey(evmXpub, 0, 0)?.toString('hex') ?? ''
       const avalanchePublicKey =
-        bip32
-          .fromBase58(avalancheXpub)
-          .derive(0)
-          .derive(0)
-          .publicKey?.toString('hex') ?? ''
+        derivePublicKey(avalancheXpub, 0, 0)?.toString('hex') ?? ''
 
       return {
         addresses: {
@@ -1275,6 +1211,166 @@ class LedgerService {
         }
       ]
     }
+  }
+
+  /**
+   * Derive Avalanche keys for a range of account indices (0 to count-1).
+   * Returns an array where each element is the AvalancheKey for that index,
+   * or null if derivation failed for that index.
+   * Throws if index 0 fails (index 0 is required).
+   */
+  async getAvalancheKeysForRange(
+    count: number,
+    isTestnet: boolean,
+    derivationPath: LedgerDerivationPathType = LedgerDerivationPathType.BIP44
+  ): Promise<(AvalancheKey | null)[]> {
+    const results: (AvalancheKey | null)[] = []
+
+    for (let i = 0; i < count; i++) {
+      try {
+        const keys = await this.getAvalancheKeys(i, isTestnet, derivationPath)
+        results.push(keys)
+      } catch (error) {
+        if (i === 0) {
+          throw error
+        }
+        Logger.error(
+          `Failed to derive Avalanche keys for index ${i}, skipping`,
+          error
+        )
+        results.push(null)
+      }
+    }
+
+    return results
+  }
+
+  /**
+   * Derive Solana keys for a range of account indices.
+   * Returns an array where each element is the PublicKeyInfo[] for that index,
+   * or null if derivation failed.
+   */
+  async getSolanaKeysForRange(
+    count: number,
+    startIndex = 0
+  ): Promise<(PublicKeyInfo[] | null)[]> {
+    const results: (PublicKeyInfo[] | null)[] = []
+
+    for (let i = startIndex; i < startIndex + count; i++) {
+      try {
+        const keys = await this.getSolanaKeys(i)
+        results.push(keys)
+      } catch (error) {
+        Logger.error(
+          `Failed to derive Solana keys for index ${i}, skipping`,
+          error
+        )
+        results.push(null)
+      }
+    }
+
+    return results
+  }
+
+  /**
+   * Fetch only extended public keys for a range of account indices (BIP44).
+   * This is much faster than getAvalancheKeysForRange because it skips
+   * getAllAddresses() (3 APDU per account) and only fetches xpubs (2 APDU per account).
+   * Addresses are derived offline from the xpubs by the caller.
+   */
+  async getExtendedPublicKeysForRange(
+    startIndex: number,
+    count: number
+  ): Promise<
+    Array<{ evm: ExtendedPublicKey; avalanche: ExtendedPublicKey } | null>
+  > {
+    const results: Array<{
+      evm: ExtendedPublicKey
+      avalanche: ExtendedPublicKey
+    } | null> = []
+
+    for (let i = startIndex; i < startIndex + count; i++) {
+      try {
+        const xpubs = await this.getExtendedPublicKeys(i)
+        results.push(xpubs)
+      } catch (error) {
+        Logger.error(
+          `Failed to get extended public keys for index ${i}, skipping`,
+          error
+        )
+        results.push(null)
+      }
+    }
+
+    return results
+  }
+
+  /**
+   * Fetch only public keys for a range of account indices (LedgerLive).
+   * Skips getAllAddresses() and fetches 2 public keys per account
+   * (EVM path + Avalanche path). Addresses are derived offline by the caller.
+   */
+  async getPublicKeysForRange(
+    startIndex: number,
+    count: number
+  ): Promise<
+    Array<{
+      evmPubKey: string
+      avalanchePubKey: string
+      evmPath: string
+      avalanchePath: string
+    } | null>
+  > {
+    await this.waitForApp(LedgerAppType.AVALANCHE)
+    const avalancheApp = new AppAvalanche(this.transport as Transport)
+
+    const results: Array<{
+      evmPubKey: string
+      avalanchePubKey: string
+      evmPath: string
+      avalanchePath: string
+    } | null> = []
+
+    for (let i = startIndex; i < startIndex + count; i++) {
+      try {
+        const evmPath = getAddressDerivationPath({
+          accountIndex: i,
+          vmType: NetworkVMType.EVM,
+          derivationPathType: 'ledger_live'
+        })
+        const avalanchePath = getAddressDerivationPath({
+          accountIndex: i,
+          vmType: NetworkVMType.AVM,
+          derivationPathType: 'ledger_live'
+        })
+
+        const evmResponse = await avalancheApp.getAddressAndPubKey(
+          evmPath,
+          false,
+          'avax'
+        )
+        const avalancheResponse = await avalancheApp.getAddressAndPubKey(
+          avalanchePath,
+          false,
+          'avax'
+        )
+
+        results.push({
+          evmPubKey: evmResponse.publicKey.toString('hex'),
+          avalanchePubKey: avalancheResponse.publicKey.toString('hex'),
+          evmPath,
+          avalanchePath
+        })
+      } catch (error) {
+        Logger.error(
+          `Failed to get public keys for LedgerLive index ${i}, skipping`,
+          error
+        )
+        results.push(null)
+      }
+    }
+
+    return results
   }
 
   // Helper to build the “open app” APDU for a given app name

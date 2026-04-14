@@ -2,6 +2,7 @@ import { TokenType } from '@avalabs/vm-module-types'
 import { LocalTokenWithBalance } from 'store/balance'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { DEFAULT_TOKEN_DECIMALS } from '../consts'
 import { ApiToken } from '../types'
 import { getLocalTokenIdFromApi } from './getLocalTokenIdFromApi'
 
@@ -27,7 +28,7 @@ export const mapApiTokenToLocal = (
   const localId = getLocalTokenIdFromApi(apiToken)
 
   // Format balance using TokenUnit
-  const decimals = apiToken.decimals ?? 18
+  const decimals = apiToken.decimals ?? DEFAULT_TOKEN_DECIMALS
   const balance = balanceData?.balance ?? 0n
   const balanceDisplayValue = new TokenUnit(
     balance,

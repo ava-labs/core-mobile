@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { LedgerKeysByNetwork } from 'services/ledger/types'
+import { LedgerMultiIndexKeys } from 'services/ledger/types'
 import Logger from 'utils/Logger'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import LedgerService from 'services/ledger/LedgerService'
@@ -46,10 +46,16 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
   }, [disconnectDevice, canGoBack, back])
 
   const handleComplete = useCallback(
-    async (keys: LedgerKeysByNetwork) => {
+    async (multiIndexKeys: LedgerMultiIndexKeys) => {
+      // When adding a single account, the keys are stored at the account index
+      const accountIndex = accounts?.length ?? 0
+      const keys = {
+        mainnet: multiIndexKeys.mainnet[accountIndex],
+        testnet: multiIndexKeys.testnet[accountIndex]
+      }
       const keysByNetwork = isDeveloperMode ? keys.testnet : keys.mainnet
       if (
-        keysByNetwork.avalancheKeys &&
+        keysByNetwork?.avalancheKeys &&
         device &&
         wallet &&
         accounts?.length > 0 &&
@@ -64,7 +70,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
             walletId: wallet.id,
             walletName: wallet.name,
             walletType: wallet.type,
-            accountIndexToUse: accounts?.length ?? 0,
+            accountIndexToUse: accountIndex,
             deviceId: device.id,
             deviceName: device.name,
             derivationPathType,
@@ -73,10 +79,19 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
           })
 
           await setLedgerAddress({
-            accountIndex: accounts?.length ?? 0,
+            accountIndex: accountIndex,
             walletId,
             accountId,
-            keys
+            keys: {
+              mainnet: keys.mainnet ?? {
+                solanaKeys: [],
+                avalancheKeys: undefined
+              },
+              testnet: keys.testnet ?? {
+                solanaKeys: [],
+                avalancheKeys: undefined
+              }
+            }
           })
 
           Logger.info('Account created successfully, dismissing modals')
@@ -95,7 +110,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
         Logger.error(
           'Account creation conditions not met, skipping account creation',
           {
-            hasAvalancheKeys: !!keysByNetwork.avalancheKeys,
+            hasAvalancheKeys: !!keysByNetwork?.avalancheKeys,
             hasConnectedDeviceId: !!device?.id,
             hasSelectedDerivationPath: !!derivationPathType,
             isUpdatingWallet
@@ -127,7 +142,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
       completeStepTitle={`Your Account\nis being set up`}
       handleComplete={handleComplete}
       deviceId={device?.id}
-      deviceName={device?.name ?? 'Ledger Device'}
+      deviceName={device?.name ?? 'Ledger'}
       handleCancel={handleCancel}
       isUpdatingWallet={isUpdatingWallet}
       accountIndex={accounts?.length ?? 0}

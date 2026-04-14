@@ -1,4 +1,5 @@
 import Big from 'big.js'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { CurrencyCode } from '@avalabs/glacier-sdk'
 import { WAVAX_ADDRESS } from 'features/swap/consts'
 import {
@@ -82,7 +83,7 @@ describe('buildAaveBorrowPositions', () => {
 
       expect(result).toHaveLength(1)
       expect(result[0]?.borrowedBalance).toBe(1000000n)
-      expect(result[0]?.borrowedAmount).toBe(1)
+      expect(result[0]?.borrowedAmount.eq(1)).toBe(true)
       expect(result[0]?.market).toBe(market)
     })
 
@@ -232,12 +233,21 @@ describe('getAaveBorrowSummary', () => {
   const createMockPosition = (
     market: DefiMarket,
     borrowedAmountUsd: number
-  ): BorrowPosition => ({
-    market,
-    borrowedBalance: BigInt(borrowedAmountUsd * 1e6),
-    borrowedAmount: borrowedAmountUsd,
-    borrowedAmountUsd
-  })
+  ): BorrowPosition => {
+    const borrowedBalance =
+      BigInt(borrowedAmountUsd) * 10n ** BigInt(market.asset.decimals)
+
+    return {
+      market,
+      borrowedBalance,
+      borrowedAmount: new TokenUnit(
+        borrowedBalance,
+        market.asset.decimals,
+        market.asset.symbol
+      ),
+      borrowedAmountUsd
+    }
+  }
 
   describe('basic functionality', () => {
     it('should return undefined when positions array is empty', () => {

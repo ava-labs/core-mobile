@@ -4,14 +4,21 @@ import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Logger from 'utils/Logger'
 import LedgerService from './LedgerService'
 import { LedgerAppType } from './types'
-import { isLedgerBluetoothPermissionError } from './LedgerBluetoothPermissionError'
+import { isLedgerBluetoothError } from './LedgerBluetoothError'
+import { LEDGER_ERROR_CODES } from './types'
 
 jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
   __esModule: true,
   default: {
     open: jest.fn(),
     listen: jest.fn(),
-    disconnectDevice: jest.fn()
+    disconnectDevice: jest.fn(),
+    observeState: jest.fn(
+      ({ next }: { next: (e: { type: string }) => void }) => {
+        next({ type: 'PoweredOn' })
+        return { unsubscribe: jest.fn() }
+      }
+    )
   }
 }))
 
@@ -342,7 +349,7 @@ describe('LedgerService', () => {
     )
 
     const deniedPermissions = makePermissionResult(
-      PermissionsAndroid.RESULTS.DENIED
+      PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN
     )
 
     const mockTransport = {
@@ -405,13 +412,18 @@ describe('LedgerService', () => {
         deniedPermissions as never
       )
 
-      await LedgerService.startDeviceScanning()
+      try {
+        await LedgerService.startDeviceScanning()
+        throw new Error('Expected startDeviceScanning to fail')
+      } catch (error) {
+        expect(
+          isLedgerBluetoothError(error) &&
+            error.code === LEDGER_ERROR_CODES.BLUETOOTH_PERMISSION
+        ).toBe(true)
+      }
 
       expect(transportBLEMock.listen).not.toHaveBeenCalled()
-      expect(Alert.alert).toHaveBeenCalledWith(
-        'Permission Required',
-        'Bluetooth permissions are required to scan for Ledger devices.'
-      )
+      expect(Alert.alert).not.toHaveBeenCalled()
     })
 
     it('requests permissions when establishing a connection', async () => {
@@ -454,7 +466,10 @@ describe('LedgerService', () => {
         expect((error as Error).message).toBe(
           'Bluetooth permissions are required to connect to Ledger devices.'
         )
-        expect(isLedgerBluetoothPermissionError(error)).toBe(true)
+        expect(
+          isLedgerBluetoothError(error) &&
+            error.code === LEDGER_ERROR_CODES.BLUETOOTH_PERMISSION
+        ).toBe(true)
       }
 
       expect(transportBLEMock.open).not.toHaveBeenCalled()
