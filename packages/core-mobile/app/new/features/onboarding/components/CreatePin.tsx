@@ -81,6 +81,7 @@ export const CreatePin = ({
               <Toggle
                 onValueChange={setUseBiometrics}
                 value={useBiometrics}
+                disabled={!isBiometricAvailable}
                 testID={
                   useBiometrics
                     ? 'toggle_biometrics_on'
@@ -92,7 +93,7 @@ export const CreatePin = ({
         ]}
       />
     )
-  }, [useBiometrics, setUseBiometrics, biometricType])
+  }, [useBiometrics, setUseBiometrics, biometricType, isBiometricAvailable])
 
   return (
     <ScrollScreen

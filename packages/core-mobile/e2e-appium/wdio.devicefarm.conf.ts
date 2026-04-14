@@ -1,5 +1,3 @@
-import path from 'node:path'
-
 import {
   addCaseToRun,
   getSection,
@@ -17,12 +15,9 @@ import {
 let runId: number | undefined
 const sectionCache: Record<string, number> = {}
 
-const platformToRun =
-  process.env.PLATFORM || process.env.DEVICEFARM_DEVICE_PLATFORM_NAME
-
 // AWS Device Farm provides these environment variables
 const isDeviceFarm = !!process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL
-/** Start Appium via WDIO unless Device Farm (host runs Appium) or APPIUM_MANUAL=true (you started Appium yourself). */
+/** Packaged runs set AWS_DEVICE_FARM_APPIUM_SERVER_URL; keep Appium off. Local use of this file can start Appium like wdio.conf. */
 const useWdioAppiumService =
   !isDeviceFarm && process.env.APPIUM_MANUAL !== 'true'
 const appiumServerUrl =
@@ -37,6 +32,8 @@ if (!rawAppPath) {
   )
 }
 const appPath = rawAppPath
+const platformToRun =
+  process.env.PLATFORM || process.env.DEVICEFARM_DEVICE_PLATFORM_NAME
 
 const chromedriverExecutableDir =
   process.env.DEVICEFARM_CHROMEDRIVER_EXECUTABLE_DIR || ''
@@ -147,8 +144,6 @@ export const config: WebdriverIO.Config = {
         path: '/',
         protocol: 'http' as const
       }),
-  // Do not set `command: 'appium'`: that spawns the shell binary and can miss PATH on CI.
-  // Omitting `command` makes @wdio/appium-service run `node` + the resolved local `appium` entry.
   services: useWdioAppiumService
     ? [
         [
@@ -233,6 +228,7 @@ export const config: WebdriverIO.Config = {
     if (!passed) {
       try {
         const fs = require('fs')
+        const path = require('path')
         const pageSource = await driver.getPageSource()
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
         const sanitizedTestName = test.title
