@@ -108,9 +108,6 @@ android {
 
         // required for react native config to work properly across different build variants
         resValue "string", "build_config_package", "com.avaxwallet"
-
-        // Main manifest uses android:usesCleartextTraffic="${usesCleartextTraffic}" — must be defined for every variant (e.g. internalE2e on CI).
-        manifestPlaceholders = [usesCleartextTraffic: "false"]
     }
 
     signingConfigs {
@@ -142,20 +139,12 @@ android {
         e2e {
             initWith release
             minifyEnabled false
-            signingConfig signingConfigs.debug  // Sign with debug keystore for Device Farm testing
-            // Align with src/e2e/AndroidManifest.xml (cleartext for test tooling / parity with debug)
-            manifestPlaceholders = [usesCleartextTraffic: "true"]
 
             // this is for libraries without an e2e build to know to fall back to release
             matchingFallbacks = ['release']
 
             // Detox-specific additions to pro-guard
             proguardFile "${rootProject.projectDir}/../node_modules/detox/android/detox/proguard-rules-app.pro"
-            
-            // Disable new architecture for e2e builds to avoid Reanimated compatibility issues
-            // Note: This sets the runtime flag. To fully disable at build time, use:
-            // ./gradlew assembleInternalE2e -PnewArchEnabled=false
-            buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", "false"
         }
     }
 
