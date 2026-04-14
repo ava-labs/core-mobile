@@ -21,7 +21,7 @@ module.exports = {
     'expo-env.d.ts',
     'ios/DerivedData',
     'app/utils/api/generated/**',
-    // Standalone Node script; not in tsconfig — type-aware rules from the shared config cannot run on it
+    // Ignored: large prettier/sonar debt; other e2e-appium/scripts/*.js are linted via override + e2e-appium/tsconfig.json
     'e2e-appium/scripts/load-secrets-from-aws.js'
   ],
   overrides: [
@@ -38,7 +38,7 @@ module.exports = {
       }
     },
     {
-      files: ['e2e-appium/**/*.ts'],
+      files: ['e2e-appium/**/*.ts', 'e2e-appium/scripts/**/*.js'],
       parserOptions: {
         project: './e2e-appium/tsconfig.json',
         tsconfigRootDir: __dirname
