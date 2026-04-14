@@ -1130,7 +1130,11 @@ class LedgerService {
 
     // Pass the signal to waitForApp so cancellation stops the polling loop
     // before it sends further APDU queries to the Ledger device.
-    await this.waitForApp(LedgerAppType.SOLANA, undefined, signal)
+    await this.waitForApp(
+      LedgerAppType.SOLANA,
+      LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT,
+      signal
+    )
 
     // Check if the operation was cancelled while we were waiting for the app.
     // This prevents sending a getAddress APDU after the user has already

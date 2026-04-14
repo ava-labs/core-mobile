@@ -30,7 +30,7 @@ import {
   NETWORK_X
 } from 'services/network/consts'
 
-import { defaultEnabledL2ChainIds } from 'store/network/slice'
+import { defaultEnabledL2ChainIds } from 'services/network/consts'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import Logger from 'utils/Logger'
 import SentryService from 'services/sentry/SentryService'

@@ -6,7 +6,7 @@ import {
   SolanaCaip2ChainId
 } from '@avalabs/core-chains-sdk'
 import { AVALANCHE_MAINNET_NETWORK } from 'services/network/consts'
-import { defaultEnabledL2ChainIds } from 'store/network/slice'
+import { defaultEnabledL2ChainIds } from 'services/network/consts'
 import { streamingBalanceApiClient } from 'utils/api/clients/balanceApiClient'
 import {
   AvalancheXpGetBalancesRequestItem,

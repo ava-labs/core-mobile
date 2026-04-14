@@ -37,10 +37,6 @@ jest.mock('utils/api/clients/profileApiClient', () => ({
   profileApiClient: {}
 }))
 
-jest.mock('store/network/slice', () => ({
-  defaultEnabledL2ChainIds: [42161, 8453, 10]
-}))
-
 jest.mock('utils/Logger', () => ({
   __esModule: true,
   default: {

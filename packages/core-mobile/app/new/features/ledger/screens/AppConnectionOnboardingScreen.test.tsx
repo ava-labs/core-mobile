@@ -48,10 +48,7 @@ jest.mock('@avalabs/core-chains-sdk', () => ({
 jest.mock('services/network/consts', () => ({
   AVALANCHE_MAINNET_NETWORK: {
     chainId: 43114
-  }
-}))
-
-jest.mock('store/network/slice', () => ({
+  },
   defaultEnabledL2ChainIds: [42161, 8453, 10]
 }))
 

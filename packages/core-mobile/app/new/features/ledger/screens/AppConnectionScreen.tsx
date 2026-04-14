@@ -253,6 +253,10 @@ export default function AppConnectionScreen({
         controller.signal
       )
 
+      // If the user tapped "Skip Solana" while we were fetching keys,
+      // don't merge partial results or show a success toast.
+      if (controller.signal.aborted) return
+
       // Update local state
       setMultiIndexKeys(prev =>
         mergeSolanaKeys(prev, solanaKeysRange, { startIndex, count })
