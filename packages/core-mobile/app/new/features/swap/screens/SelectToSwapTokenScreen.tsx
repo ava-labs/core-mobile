@@ -93,7 +93,17 @@ export const SelectToSwapTokenScreen = ({
   const { tokens: testnetTokens, isLoading: isLoadingTestnet } =
     useTestnetToTokens(isDeveloperMode ? caip2Id : '')
 
-  const tokens = isDeveloperMode ? testnetTokens : mainnetTokens
+  // Mainnet search is handled server-side via useSwapTokens; testnet needs
+  // client-side filtering since the SDK list is fetched in full without pagination.
+  const filteredTestnetTokens = useMemo(
+    () =>
+      testnetTokens.filter(t =>
+        tokenMatchesSearch(t, debouncedSearchText, isDeveloperMode)
+      ),
+    [testnetTokens, debouncedSearchText, isDeveloperMode]
+  )
+
+  const tokens = isDeveloperMode ? filteredTestnetTokens : mainnetTokens
   const isLoadingTokens = isDeveloperMode ? isLoadingTestnet : isLoadingMainnet
 
   // Filter and sort tokens

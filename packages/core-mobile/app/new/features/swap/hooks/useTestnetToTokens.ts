@@ -36,7 +36,7 @@ const toFusionSourceAsset = (
  * Fetches the bridgeable "to" token list for testnet mode.
  *
  * Uses the Fusion SDK's getBridgeableAssets to ensure only SDK-supported tokens are shown.
- * In testnet, the set of supported tokens is small and fixed (Avalanche EVM brige, wrap/unwrap,
+ * In testnet, the set of supported tokens is small and fixed (Avalanche EVM bridge, wrap/unwrap,
  * and Lombard) so the SDK can own the list without pagination.
  * In mainnet, MARKR supports 6000+ tokens per network and the SDK does not support
  * pagination, so we manage the list ourselves via the separate paginated useSwapTokens hook.
@@ -117,7 +117,7 @@ export const useTestnetToTokens = (
       const localId =
         asset.type !== FusionTokenType.NATIVE
           ? asset.address.toLowerCase()
-          : `NATIVE-${asset.symbol.toLowerCase()}`
+          : `NATIVE-${asset.symbol}`
       const balanceData = balanceMap.get(localId)
       return mapSdkAssetToLocal(asset, chainId ?? 0, balanceData)
     })

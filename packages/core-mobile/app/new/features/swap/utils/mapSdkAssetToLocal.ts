@@ -6,7 +6,7 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 
 const getLocalIdFromSdkAsset = (asset: Asset): string => {
   if (asset.type === FusionTokenType.NATIVE) {
-    return `NATIVE-${asset.symbol.toLowerCase()}`
+    return `NATIVE-${asset.symbol}`
   }
   return asset.address.toLowerCase()
 }

@@ -107,7 +107,7 @@ describe('mapSdkAssetToLocal', () => {
 
       expect(result.type).toBe(TokenType.NATIVE)
       expect(result.symbol).toBe('AVAX')
-      expect(result.localId).toBe('NATIVE-avax')
+      expect(result.localId).toBe('NATIVE-AVAX')
     })
   })
 })
