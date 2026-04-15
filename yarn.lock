@@ -491,7 +491,7 @@ __metadata:
     "@avalabs/core-utils-sdk": 3.1.0-alpha.82
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.82
     "@avalabs/evm-module": 3.6.1
-    "@avalabs/fusion-sdk": 0.15.0
+    "@avalabs/fusion-sdk": 0.0.0-fix-fusion-price-impact-20260415104810
     "@avalabs/glacier-sdk": 3.1.0-alpha.82
     "@avalabs/k2-alpine": "workspace:*"
     "@avalabs/svm-module": 3.6.1
@@ -892,9 +892,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/fusion-sdk@npm:0.15.0":
-  version: 0.15.0
-  resolution: "@avalabs/fusion-sdk@npm:0.15.0"
+"@avalabs/fusion-sdk@npm:0.0.0-fix-fusion-price-impact-20260415104810":
+  version: 0.0.0-fix-fusion-price-impact-20260415104810
+  resolution: "@avalabs/fusion-sdk@npm:0.0.0-fix-fusion-price-impact-20260415104810"
   dependencies:
     "@bitcoinerlab/secp256k1": ^1.2.0
     "@layerzerolabs/lz-v2-utilities": ^3.0.17
@@ -909,7 +909,7 @@ __metadata:
     "@solana/kit": ^5.0.0 || ^6.0.0
     viem: ^2.38.0
     zod: ^4.1.0
-  checksum: 1624076117fcbd277a6c35b7353270345fae09df8d86185f53f2552c954288e168a98da2a65220a994c561239cee9a4e8d886a6ad60ac6e432a14da60035a790
+  checksum: 8b0bc25dbf8756cd66db5ae51158ac2354a78fb691039db93b8c881264afa05a5247cf6751c94fbd54fd6a28c30b9847e8662d81da4fae02a6b335494e921833
   languageName: node
   linkType: hard
 
@@ -36979,7 +36979,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 5626fe58ec789ff8b2a62625e758ae9891078b64563e1099120c6af4ebb541cbb4de5d3bb33c1eafd31686221ccf8cb8f0d4b179e7e4eff961deaa8ac4e6da00
+  checksum: d6ceb75e1d0f5755370d6d91f67902bd2b8a23a3ca43cb853d2964b43798f30477e8ab0223ea8b620534fbdf5f56d39550f40d24bec2d2398c323ccfe8a5a556
   languageName: node
   linkType: hard
 
