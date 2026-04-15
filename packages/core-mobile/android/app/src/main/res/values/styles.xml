@@ -21,7 +21,6 @@
              in light mode on Android, especially in transparent-header screens. -->
         <item name="colorSurface">@color/white</item>
         <item name="android:colorBackground">@color/white</item>
-        <item name="colorBackground">@color/white</item>
         <item name="colorSurfaceVariant">@color/neutral50</item>
         <item name="colorSurfaceContainerLowest">@color/white</item>
         <item name="colorSurfaceContainerLow">@color/white</item>

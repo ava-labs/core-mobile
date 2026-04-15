@@ -5,7 +5,6 @@
              tints from the default M3 baseline purple seed color. -->
         <item name="colorSurface">@color/neutral850</item>
         <item name="android:colorBackground">@color/neutral850</item>
-        <item name="colorBackground">@color/neutral850</item>
         <item name="colorSurfaceVariant">@color/neutral800</item>
         <item name="colorSurfaceContainerLowest">@color/neutral900</item>
         <item name="colorSurfaceContainerLow">@color/neutral850</item>
