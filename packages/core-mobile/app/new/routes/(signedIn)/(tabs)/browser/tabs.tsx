@@ -179,6 +179,7 @@ const TabsScreen = (): JSX.Element => {
         </Pressable>
 
         <DropdownMenu
+          testID="browser_tabs_more_btn"
           style={{
             height: '100%',
             justifyContent: 'center',
@@ -188,7 +189,7 @@ const TabsScreen = (): JSX.Element => {
           }}
           onPressAction={onPressAction}
           groups={[{ id: 'menu-actions', items: MENU_ACTIONS }]}>
-          <View testID="browser_tabs_more_btn" style={{ paddingRight: 21 }}>
+          <View style={{ paddingRight: 21 }}>
             <Icons.Navigation.MoreHoriz color={theme.colors.$textPrimary} />
           </View>
         </DropdownMenu>

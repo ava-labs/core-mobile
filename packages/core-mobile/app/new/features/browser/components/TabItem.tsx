@@ -111,7 +111,10 @@ export const TabItem = ({
   })
 
   return (
-    <AnimatedPressable onPress={handleTabPress} style={style}>
+    <AnimatedPressable
+      accessible={false}
+      onPress={handleTabPress}
+      style={style}>
       <Animated.View
         style={[
           cardStyle,
@@ -144,6 +147,7 @@ export const TabItem = ({
               borderColor: theme.colors.$borderPrimary
             }}>
             <Image
+              accessible={false}
               source={{ uri: verifiedImageSource }}
               renderToHardwareTextureAndroid={false}
               style={{ height: '100%' }}
@@ -178,8 +182,9 @@ export const TabItem = ({
                 {title}
               </Text>
 
-              <Pressable testID="tab_item_close_btn" hitSlop={10} onPress={handleOnClose}>
+              <Pressable hitSlop={10} onPress={handleOnClose}>
                 <Icons.Content.Close
+                  testID={`close_btn__${index}`}
                   color={theme.colors.$textPrimary}
                   height={24}
                   width={24}

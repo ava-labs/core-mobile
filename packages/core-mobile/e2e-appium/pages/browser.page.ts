@@ -50,10 +50,6 @@ class BrowserPage {
     return selectors.getById(browserLoc.urlMenuTrigger)
   }
 
-  get tabItemCloseBtn() {
-    return selectors.getById(browserLoc.tabItemCloseBtn)
-  }
-
   get ecosystemCarouselItem0() {
     return selectors.getById(browserLoc.ecosystemCarouselItem0)
   }
@@ -64,6 +60,30 @@ class BrowserPage {
 
   get suggestedItem0() {
     return selectors.getById(browserLoc.suggestedItem0)
+  }
+
+  get clearAllHistoryBtn() {
+    return selectors.getById(browserLoc.clearAll)
+  }
+
+  get browsingHistoryMenu() {
+    return selectors.getByText(browserLoc.browsingHistoryMenu)
+  }
+
+  get closeAllTabsMenu() {
+    return selectors.getByText(browserLoc.closeAllTabsMenu)
+  }
+
+  get noHistory() {
+    return selectors.getByText(browserLoc.noHistory)
+  }
+
+  get historyTitle() {
+    return selectors.getByText(browserLoc.historyTitle)
+  }
+
+  get browserHistoryItem() {
+    return selectors.getById(browserLoc.browserHistoryItem)
   }
 
   async goToUrl(url: string) {
@@ -156,8 +176,8 @@ class BrowserPage {
     await actions.tap(this.urlMenuTrigger)
   }
 
-  async tapTabItemCloseBtn() {
-    await actions.tap(this.tabItemCloseBtn)
+  async tapTabItemCloseBtn(index = 0) {
+    await actions.tap(selectors.getById(`close_btn__${index}`))
   }
 
   async tapFirstEcosystemCarouselItem() {
@@ -188,22 +208,30 @@ class BrowserPage {
   }
 
   async tapCloseAllTabsMenu() {
-    await actions.tap(selectors.getByText(browserLoc.closeAllTabsMenu))
-    await actions.tap(selectors.getByText('Yes'))
+    await actions.tap(this.closeAllTabsMenu)
   }
 
   async tapBrowsingHistoryMenu() {
-    await actions.tap(selectors.getByText(browserLoc.browsingHistoryMenu))
+    await actions.tap(this.browsingHistoryMenu)
   }
 
   async tapClearAllHistory() {
-    await actions.tap(selectors.getByText(browserLoc.clearAll))
-    await actions.tap(selectors.getByText('Yes'))
+    await actions.tap(this.clearAllHistoryBtn)
   }
 
   async verifyNoHistory() {
-    await actions.waitFor(selectors.getBySomeText(browserLoc.noHistory))
-    await actions.isVisible(selectors.getBySomeText(browserLoc.noHistory))
+    await actions.waitFor(this.noHistory)
+  }
+
+  async verifyBrowserDiscoveryScreen() {
+    await actions.waitFor(this.searchBar)
+    await actions.waitFor(this.ecosystemCarouselItem0)
+  }
+
+  async verifyHistoryScreen() {
+    await actions.waitFor(this.historyTitle)
+    await actions.isVisible(this.browserHistoryItem)
+    await actions.isVisible(this.searchBar)
   }
 }
 

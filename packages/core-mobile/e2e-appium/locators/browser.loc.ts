@@ -1,4 +1,5 @@
 export default {
+  browserHistoryItem: 'browser_history_item',
   close: 'Close',
   androidChromePager: 'com.android.chrome:id/fre_pager',
   searchBar: 'search_bar',
@@ -17,7 +18,6 @@ export default {
   tabsAddBtn: 'browser_tabs_add_btn',
   tabsMoreBtn: 'browser_tabs_more_btn',
   urlMenuTrigger: 'browser_url_menu_trigger',
-  tabItemCloseBtn: 'tab_item_close_btn',
   // Discovery section items (index-based testIDs)
   ecosystemCarouselItem0: 'browser_ecosystem_item__0',
   learnCarouselItem0: 'browser_learn_item__0',
@@ -27,8 +27,9 @@ export default {
   openNewTab: 'Open new tab',
   closeAllTabsMenu: 'Close all tabs',
   browsingHistoryMenu: 'Browsing history',
-  clearAll: 'Clear all',
+  clearAll: 'clear_all_history_btn',
   // Expected text in UI
   noHistory: 'You have no History',
-  supportCoreApp: 'support.core.app'
+  supportCoreApp: 'support.core.app',
+  historyTitle: 'History'
 }
