@@ -10,7 +10,6 @@ export const TRANSACTION_CANCELLED_BY_USER = 'Transaction cancelled by user'
 export const handleLedgerErrorAndShowAlert = ({
   error,
   network,
-  rpcMethod,
   onRetry,
   onCancel
 }: {
@@ -26,7 +25,7 @@ export const handleLedgerErrorAndShowAlert = ({
 
   const version = LedgerService.getCurrentAppVersion()
   const detectedAppType = LedgerService.getCurrentAppType()
-  const ledgerAppName = getLedgerAppName(network, rpcMethod)
+  const ledgerAppName = getLedgerAppName(network)
   const compatible = isBitcoinCompatibleApp(detectedAppType, version)
   const unsupported =
     ledgerAppName === LedgerAppType.BITCOIN &&

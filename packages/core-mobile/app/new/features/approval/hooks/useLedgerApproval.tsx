@@ -32,12 +32,8 @@ export const useLedgerApproval = (
   const prevParamsRef = useRef(reviewTransactionParams)
 
   const appType = useMemo(
-    () =>
-      getLedgerAppName(
-        reviewTransactionParams?.network,
-        reviewTransactionParams?.rpcMethod
-      ),
-    [reviewTransactionParams?.rpcMethod, reviewTransactionParams?.network]
+    () => getLedgerAppName(reviewTransactionParams?.network),
+    [reviewTransactionParams?.network]
   )
 
   const {

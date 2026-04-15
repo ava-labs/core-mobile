@@ -1,5 +1,4 @@
 import { ChainId, Network, NetworkVMType } from '@avalabs/core-chains-sdk'
-import { RpcMethod } from '@avalabs/vm-module-types'
 import {
   LedgerAppType,
   LedgerDerivationPathType,
@@ -47,10 +46,7 @@ export const isBitcoinCompatibleApp = (
   return false
 }
 
-export const getLedgerAppName = (
-  network?: Network,
-  _rpcMethod?: RpcMethod
-): LedgerAppType => {
+export const getLedgerAppName = (network?: Network): LedgerAppType => {
   if (!network) return LedgerAppType.UNKNOWN
 
   const isAvalancheChain =
