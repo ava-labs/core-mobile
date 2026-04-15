@@ -23,7 +23,8 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 10000,
-      gcTime: Infinity
+      gcTime: Infinity,
+      refetchOnReconnect: true
     }
   },
   queryCache: new QueryCache({
@@ -71,20 +72,47 @@ const onAppStateChange = (status: AppStateStatus): void => {
   focusManager.setFocused(status === 'active')
 }
 
+// Connectivity detection via NetInfo with HTTP-based reachability.
+//
+// useNativeReachability=false makes NetInfo use NSURLSession HTTP checks
+// instead of SCNetworkReachability for determining isInternetReachable.
+// This provides more accurate connectivity state — verifying actual
+// internet access rather than just local network connection.
+//
+// NOTE: iOS Simulator has a known Apple bug (rdar://29913522, since iOS 10)
+// where SCNetworkReachability callbacks never fire when transitioning from
+// offline to online. This causes the entire network stack (fetch, NetInfo,
+// NSURLSession) to remain stuck after starting offline. This does NOT affect
+// real iOS devices or Android — both recover correctly in all scenarios.
+// See: https://github.com/react-native-netinfo/react-native-netinfo/issues/7
+
+const REACHABILITY_URL = 'https://clients3.google.com/generate_204'
+
+NetInfo.configure({
+  reachabilityUrl: REACHABILITY_URL,
+  reachabilityTest: async (response: Response) => response.status === 204,
+  reachabilityShortTimeout: 5 * 1000,
+  reachabilityLongTimeout: 10 * 1000,
+  reachabilityRequestTimeout: 3 * 1000,
+  useNativeReachability: false
+})
+
+// NetInfo event listener: uses HTTP-based isInternetReachable as primary
+// signal, with isConnected as fast fallback for disconnect detection.
+onlineManager.setEventListener(setOnline => {
+  const unsub = NetInfo.addEventListener(state => {
+    if (state.isInternetReachable !== null) {
+      setOnline(state.isInternetReachable)
+    } else if (state.isConnected === false) {
+      setOnline(false)
+    }
+  })
+  return () => unsub()
+})
+
 export const ReactQueryProvider: React.FC<PropsWithChildren> = ({
   children
 }) => {
-  // manage online status
-  useEffect(() => {
-    return NetInfo.addEventListener(state => {
-      // Use only isConnected — isInternetReachable can be false on working
-      // networks when the reachability check host is blocked (VPN, captive portals).
-      const online = state.isConnected !== false
-
-      onlineManager.setOnline(online)
-    })
-  }, [])
-
   // manage app focus status
   useEffect(() => {
     const sub = AppState.addEventListener('change', onAppStateChange)
