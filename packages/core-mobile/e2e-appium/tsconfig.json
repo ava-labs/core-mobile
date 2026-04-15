@@ -29,6 +29,7 @@
   "include": [
     "**/*.ts",
     "wdio.conf.ts",
+    "scripts/**/*.js",
     "wdio.devicefarm.conf.ts"
   ],
   "exclude": ["node_modules"]
