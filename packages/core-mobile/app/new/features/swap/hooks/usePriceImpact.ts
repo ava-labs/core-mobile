@@ -101,15 +101,18 @@ export function usePriceImpact(
   }, [fromToken, quote, sourcePrice, targetPrice, toToken])
 
   const priceImpactSeverity = getPriceImpactSeverity(priceImpact)
+  const isMarkrQuote = quote?.serviceType === ServiceType.MARKR
 
   return {
     priceImpact,
     priceImpactSeverity,
     priceImpactAvailability,
     isPriceImpactTooHigh:
+      isMarkrQuote &&
       priceImpactAvailability === PriceImpactAvailability.Ready &&
       priceImpactSeverity === PriceImpactSeverity.Critical,
     isPriceImpactCalculating:
+      isMarkrQuote &&
       priceImpactAvailability === PriceImpactAvailability.Calculating
   }
 }
