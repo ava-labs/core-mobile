@@ -131,6 +131,7 @@ android {
                 javaMaxHeapSize "4g"
                 preDexLibraries true
             }
+            manifestPlaceholders = [usesCleartextTraffic: true]
         }
 
         release {
@@ -147,6 +148,8 @@ android {
 
             // Detox-specific additions to pro-guard
             proguardFile "${rootProject.projectDir}/../node_modules/detox/android/detox/proguard-rules-app.pro"
+
+            manifestPlaceholders = [usesCleartextTraffic: true]
         }
     }
 
