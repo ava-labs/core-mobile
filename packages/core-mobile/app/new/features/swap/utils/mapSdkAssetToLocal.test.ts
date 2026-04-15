@@ -110,4 +110,31 @@ describe('mapSdkAssetToLocal', () => {
       expect(result.localId).toBe('NATIVE-AVAX')
     })
   })
+
+  describe('SPL assets', () => {
+    it('maps an SPL Asset to LocalTokenWithBalance with SPL type', () => {
+      // Real USDC mint address on Solana mainnet
+      const mintAddress = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
+      const asset: Asset = {
+        type: FusionTokenType.SPL,
+        name: 'USD Coin',
+        symbol: 'USDC',
+        decimals: 6,
+        address: mintAddress as any,
+        logoUri: 'https://example.com/usdc.png'
+      }
+
+      const result = mapSdkAssetToLocal(asset, ChainId.AVALANCHE_TESTNET_ID)
+
+      expect(result.type).toBe(TokenType.SPL)
+      expect(result.symbol).toBe('USDC')
+      expect(result.name).toBe('USD Coin')
+      expect(result.decimals).toBe(6)
+      expect(result.address).toBe(mintAddress)
+      // SPL localId uses lowercased mint address (same as ERC20)
+      expect(result.localId).toBe(mintAddress.toLowerCase())
+      expect(result.networkChainId).toBe(ChainId.AVALANCHE_TESTNET_ID)
+      expect(result.balance).toBe(0n)
+    })
+  })
 })
