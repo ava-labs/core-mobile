@@ -13,6 +13,7 @@ import NetworkService from 'services/network/NetworkService'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { resolve } from '@avalabs/core-utils-sdk'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { selectActiveAccount } from 'store/account'
 
 type Params = {
   maxFeePerGas: bigint | undefined
@@ -34,6 +35,7 @@ export const useGasless = ({
   caip2ChainId
 }: Params): Return => {
   const { getNetwork } = useNetworks()
+  const activeAccount = useSelector(selectActiveAccount)
   const chainId = getChainIdFromCaip2(caip2ChainId)
   const network = getNetwork(chainId)
   const [isGaslessEligible, setIsGaslessEligible] = useState(false)
@@ -53,11 +55,19 @@ export const useGasless = ({
         return
       }
       const isEligibleForChain = await GaslessService.isEligibleForChain(
-        chainId.toString()
+        chainId.toString(),
+        activeAccount?.addressC
       ).catch(err => {
         Logger.error('Error checking gasless eligibility', err)
         return false
       })
+      console.log(
+        '------> isEligibleForChain result:',
+        isEligibleForChain,
+        'for address:',
+        activeAccount?.addressC
+      )
+
       const isEligibleForTxType =
         GaslessService.isEligibleForTxType(signingData)
       const isEligible = isEligibleForTxType && isEligibleForChain
@@ -65,7 +75,7 @@ export const useGasless = ({
       setIsGaslessEligible(isEligible)
     }
     checkGaslessEligibility()
-  }, [chainId, signingData])
+  }, [chainId, signingData, activeAccount?.addressC])
 
   const showGaslessError = useCallback(() => {
     setGaslessError(
@@ -89,16 +99,20 @@ export const useGasless = ({
       return undefined
     }
 
+    console.log('------> GaslessService fundTx signingData', signingData)
     while (attempts <= MAX_ATTEMPTS) {
       const [result, error] = await resolve(
         GaslessService.fundTx({
           signingData,
           addressFrom,
           maxFeePerGas,
+          network,
           provider,
           waitForConfirmation: isGaslessInstantBlocked
         })
       )
+
+      console.log('------> GaslessService fundTx result', result)
 
       if (result?.txHash) {
         AnalyticsService.capture('GaslessFundSuccessful', {

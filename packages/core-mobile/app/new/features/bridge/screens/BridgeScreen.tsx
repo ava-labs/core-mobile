@@ -546,7 +546,8 @@ export const BridgeScreen = (): JSX.Element => {
 
       try {
         const isEligible = await GaslessService.isEligibleForChain(
-          sourceNetwork.chainId.toString()
+          sourceNetwork.chainId.toString(),
+          activeAccount?.addressC
         )
         setIsGaslessEligible(isEligible)
       } catch (err) {
@@ -556,7 +557,7 @@ export const BridgeScreen = (): JSX.Element => {
     }
 
     checkGaslessEligibility()
-  }, [sourceNetwork?.chainId, selectedBridgeAsset])
+  }, [sourceNetwork?.chainId, selectedBridgeAsset, activeAccount?.addressC])
 
   useEffect(() => {
     if (!sourceNetwork) return

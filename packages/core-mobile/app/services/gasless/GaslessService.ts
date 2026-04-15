@@ -7,10 +7,11 @@ import {
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import AppCheckService from 'services/fcm/AppCheckService'
-import { Transaction, TransactionLike } from 'ethers'
+import { getAddress, Transaction, TransactionLike } from 'ethers'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { resolve } from '@avalabs/core-utils-sdk'
 import { FundTxParams } from 'services/gasless/types'
+import NetworkFeeService from 'services/networkFee/NetworkFeeService'
 
 if (!Config.GAS_STATION_URL) {
   Logger.warn(
@@ -38,10 +39,13 @@ class GaslessService {
     return this.sdk
   }
 
-  isEligibleForChain = async (chainId: string): Promise<boolean> => {
+  isEligibleForChain = async (
+    chainId: string,
+    from?: string
+  ): Promise<boolean> => {
     const sdk = await this.getSdk()
     if (!sdk) return false
-    return await sdk.isEligibleForChain({ chainId })
+    return await sdk.isEligibleForChain({ chainId, from })
   }
 
   isEligibleForTxType = (signingData: SigningData): boolean => {
@@ -58,6 +62,7 @@ class GaslessService {
     signingData,
     addressFrom,
     provider,
+    network,
     maxFeePerGas,
     waitForConfirmation
   }: FundTxParams): Promise<FundResult> => {
@@ -81,12 +86,41 @@ class GaslessService {
     }
 
     const { difficulty, challengeHex } = await sdk.fetchChallenge()
+
+    console.log(
+      '------> GaslessService fundTx challengeHex',
+      challengeHex,
+      difficulty,
+      addressFrom,
+      getAddress(addressFrom)
+    )
+
     const { solutionHex } = await sdk.solveChallenge(challengeHex, difficulty)
+
+    console.log('------> GaslessService fundTx solutionHex', solutionHex)
+    const networkFee = await NetworkFeeService.getNetworkFee(network).catch(
+      () => null
+    )
+
+    console.log('------> GaslessService fundTx networkFee', networkFee)
+    const resolvedMaxFeePerGas = networkFee?.medium.maxFeePerGas ?? maxFeePerGas
+
     const txHex = Transaction.from({
       ...signingData.data,
-      maxFeePerGas,
+      maxFeePerGas: resolvedMaxFeePerGas,
       from: null
     } as TransactionLike).unsignedSerialized
+
+    console.log('------> GaslessService fundTx txHex', txHex)
+
+    const appCheckToken = (await AppCheckService.getToken()).token
+    console.log(
+      'AppCheck token length:',
+      appCheckToken.length,
+      'prefix:',
+      appCheckToken.slice(0, 20)
+    )
+    // sdk.setHeaders({ 'X-Firebase-AppCheck': appCheckToken })
 
     const result = await sdk.fundTx({
       challengeHex,
@@ -94,6 +128,12 @@ class GaslessService {
       txHex,
       from: addressFrom
     })
+
+    if (!result) {
+      return { error: { category: 'DO_NOT_RETRY', message: 'INTERNAL_ERROR' } }
+    }
+
+    console.log('------> GaslessService fundTx result', result)
 
     if (result.txHash && waitForConfirmation) {
       const isConfirmed = await this.waitForConfirmation(
