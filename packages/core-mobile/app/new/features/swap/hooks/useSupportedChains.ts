@@ -9,6 +9,7 @@ import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { isSolanaNetwork } from 'utils/network/isSolanaNetwork'
 import { selectIsSolanaSwapBlocked } from 'store/posthog'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import FusionService from '../services/FusionService'
 import { logSdkError } from '../utils/fusionLogger'
 import { useIsFusionServiceReady } from './useZustandStore'
@@ -66,6 +67,7 @@ export function useSupportedChains(sourceChainId?: number): {
 } {
   const { getEnabledNetworkByCaip2ChainId } = useNetworks()
   const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [isFusionServiceReady] = useIsFusionServiceReady()
 
   // Fetch supported chains Map from Fusion Service
@@ -74,7 +76,10 @@ export function useSupportedChains(sourceChainId?: number): {
     isLoading,
     error
   } = useQuery({
-    queryKey: [ReactQueryKeys.FUSION_SUPPORTED_CHAINS],
+    // isDeveloperMode is included so mainnet and testnet have separate cache
+    // entries — without it, toggling developer mode within the stale window
+    // would serve chains from the previous environment's TransferManager.
+    queryKey: [ReactQueryKeys.FUSION_SUPPORTED_CHAINS, isDeveloperMode],
     queryFn: async () => {
       return FusionService.getSupportedChains()
     },
