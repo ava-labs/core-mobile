@@ -8,28 +8,19 @@ describe('Browser - Tab Management', () => {
     await warmup()
     await bottomTabsPage.tapBrowserTab()
 
-    // Navigate to a URL so the tab has content
+    // go to core
     await browserPage.goToUrl(browserLoc.core)
     await browserPage.verifyUrl(browserLoc.injectedCore)
 
-    // Open tabs screen and add a second tab so we don't close the last one
+    // add tab and go to aave
     await browserPage.tapTabsBtn()
     await browserPage.tapTabsAddBtn()
-
-    // Navigate in the new tab so it has content too
     await browserPage.goToUrl(browserLoc.aave)
     await browserPage.verifyUrl(browserLoc.aave)
   })
 
   it('Should be able to close tabs', async () => {
-    // Open tabs screen again — now 2 tabs are visible
-    await browserPage.tapTabsBtn()
-    // Delete core tab
-    await browserPage.tapTabItemCloseBtn()
-    // Delete aave tab
-    await browserPage.tapTabItemCloseBtn()
-
-    await browserPage.verifyBrowserDiscoveryScreen()
+    await browserPage.removeAllTabs()
   })
 
   it('Should close all tabs via the more menu', async () => {
@@ -43,8 +34,6 @@ describe('Browser - Tab Management', () => {
 
   it('Should clear all history via the more menu', async () => {
     await browserPage.tapTabsBtn()
-
-    // Open more menu → Browsing history
     await browserPage.tapTabsMoreBtn()
     await browserPage.tapBrowsingHistoryMenu()
 
