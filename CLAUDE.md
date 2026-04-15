@@ -149,7 +149,7 @@ The monorepo uses Bitrise for CI/CD (see `bitrise.yml`):
 - Android builds with Java 17 and NDK 27.1.12297006
 - iOS builds with Xcode
 - Detox E2E tests
-- Appium smoke tests
+- Appium / WebDriverIO tests in `packages/core-mobile/e2e-appium/` (see `packages/core-mobile/scripts/devicefarm/README.md` for AWS Device Farm)
 - TestRail integration for test reporting
 
 ## Git Workflow

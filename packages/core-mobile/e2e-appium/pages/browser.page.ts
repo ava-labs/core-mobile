@@ -68,8 +68,24 @@ class BrowserPage {
     if (driver.isIOS) {
       await actions.tap(this.close)
     } else {
-      await actions.waitFor(this.androidChromePager)
-      await commonElsPage.goAndroidBack()
+      try {
+        await driver.switchContext('NATIVE_APP')
+      } catch {
+        /* already in native context */
+      }
+      try {
+        const menuTrigger = selectors.getById('browser_url_menu_trigger')
+        await actions.waitFor(menuTrigger, 5000)
+        await actions.tap(menuTrigger)
+        const backBtn = selectors.getByText('Back')
+        await actions.waitFor(backBtn, 5000)
+        await actions.tap(backBtn)
+      } catch {
+        await commonElsPage.goAndroidBack()
+        await actions.delay(500)
+        await commonElsPage.goAndroidBack()
+      }
+      await actions.delay(1000)
     }
   }
 }

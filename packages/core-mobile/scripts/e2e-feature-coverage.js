@@ -22,10 +22,42 @@
  * are omitted from percent denominators and gap lists. They still appear in the
  * checklist as △ for visibility.
  *
+ * **TestRail (optional):** When `TESTRAIL_API_KEY` is set, the script loads the
+ * latest **iOS** and **Android** runs whose names match
+ * `[REGRESSION] iOS Test Run: YYYY-MM-DD` and `[REGRESSION] Android Test Run: YYYY-MM-DD`
+ * (same naming as `e2e-appium/wdio.conf.ts` + `testrail/testrail.service.ts`).
+ * Each run is mapped to local `*.spec.ts` files via TestRail section + case title
+ * (Mocha `describe` / `it`). **Regression-adjusted coverage %** is computed
+ * separately per platform: in-scope mapped features that are checklist-O *and*
+ * have no mapped failing result from that platform’s regression run. If the
+ * latest matching run’s **date in the run name** is older than
+ * `E2E_COVERAGE_REGRESSION_MAX_AGE_DAYS` (default **7**), that platform’s
+ * regression-adjusted % is **N/A** (stale run is not applied). If TestRail is
+ * skipped (`--no-testrail`, no API key), adjusted % equals the heuristic total.
+ *
  * Usage:
  *   node scripts/e2e-feature-coverage.js
  *   node scripts/e2e-feature-coverage.js --json
  *   node scripts/e2e-feature-coverage.js --verbose
+ *   node scripts/e2e-feature-coverage.js --no-testrail
+ *
+ * Optional: `E2E_COVERAGE_REGRESSION_MAX_AGE_DAYS` (default 7) — max age of the
+ * `YYYY-MM-DD` in `[REGRESSION] iOS|Android Test Run: …` for regression-adjusted metrics.
+ *
+ * Optional: `E2E_COVERAGE_TESTRAIL_CASE_CONCURRENCY` (default 12, max 32) —
+ * parallel `get_case` calls when resolving a run (fewer round-trips in wall time).
+ *
+ * Optional: `E2E_COVERAGE_TESTRAIL_RUNS_MAX_PAGES` (default 15, max 50) —
+ * max `get_runs` pages (250 runs/page) so we do not scan unbounded project history.
+ *
+ * Optional: `E2E_COVERAGE_TESTRAIL_SUITE_ID` (default 3) — `suite_id` filter on
+ * `get_runs` (same as WDIO TestRail config). `E2E_COVERAGE_TESTRAIL_RUNS_CREATED_AFTER_DAYS`
+ * (default 180) — `created_after` on `get_runs` (UNIX). Set
+ * `E2E_COVERAGE_TESTRAIL_RUNS_NO_CREATED_AFTER=1` to omit that filter.
+ *
+ * If `packages/core-mobile/.env` exists, simple `KEY=value` lines are loaded
+ * before TestRail runs (existing env vars are not overwritten). Handy for
+ * `TESTRAIL_API_KEY` without exporting in the shell.
  *
  * Text output lists each `app/new/features/<name>` folder with O / X / △. JSON
  * includes per-feature detail and modals.
@@ -33,8 +65,61 @@
 
 const fs = require('fs')
 const path = require('path')
+const { createRequire } = require('module')
+
+const pkgRequire = createRequire(path.join(__dirname, '../package.json'))
 
 const pkgRoot = path.resolve(__dirname, '..')
+
+/**
+ * @param {string} line trimmed non-empty, non-comment env line
+ * @returns {{ key: string, val: string } | null}
+ */
+function parseCoreMobileEnvLine(line) {
+  let l = line
+  if (l.startsWith('export ')) l = l.slice(7).trim()
+  const eq = l.indexOf('=')
+  if (eq <= 0) return null
+  const key = l.slice(0, eq).trim()
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) return null
+  let val = l.slice(eq + 1).trim()
+  if (
+    (val.startsWith('"') && val.endsWith('"')) ||
+    (val.startsWith("'") && val.endsWith("'"))
+  ) {
+    val = val.slice(1, -1)
+  }
+  return { key, val }
+}
+
+/**
+ * Load `packages/core-mobile/.env` into `process.env` when present (KEY=val lines).
+ * Does not override variables already set in the environment.
+ */
+function loadOptionalCoreMobileEnv() {
+  const envPath = path.join(pkgRoot, '.env')
+  let text
+  try {
+    text = fs.readFileSync(envPath, 'utf8')
+  } catch {
+    return
+  }
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim()
+    if (!line || line.startsWith('#')) continue
+    const parsed = parseCoreMobileEnvLine(line)
+    if (!parsed) continue
+    if (
+      process.env[parsed.key] === undefined ||
+      process.env[parsed.key] === ''
+    ) {
+      process.env[parsed.key] = parsed.val
+    }
+  }
+}
+
+loadOptionalCoreMobileEnv()
+
 const featuresDir = path.join(pkgRoot, 'app/new/features')
 const modalsDir = path.join(pkgRoot, 'app/new/routes/(signedIn)/(modals)')
 
@@ -245,6 +330,173 @@ const E2E_COVERAGE_EXCLUDED_FEATURES = new Set([
   'rpc'
 ])
 
+/**
+ * Parse base-10 integer env; returns `defaultVal` if empty, non-finite, or outside `[min,max]`.
+ * @param {string | undefined} raw
+ * @param {number} defaultVal
+ * @param {{ min?: number, max?: number }} [bounds]
+ */
+function parseEnvInt(raw, defaultVal, bounds = {}) {
+  const trimmed = String(raw ?? '').trim()
+  if (trimmed === '') return defaultVal
+  const n = Number.parseInt(trimmed, 10)
+  if (!Number.isFinite(n)) return defaultVal
+  const { min, max } = bounds
+  if (min != null && n < min) return defaultVal
+  if (max != null && n > max) return defaultVal
+  return n
+}
+
+/** Mirrors `e2e-appium/testrail/testrail.config.ts` (API user is not secret). */
+const TESTRAIL_DOMAIN =
+  process.env.TESTRAIL_DOMAIN || 'https://avalabs.testrail.io'
+const TESTRAIL_USERNAME =
+  process.env.TESTRAIL_USERNAME || 'mobiledevs@avalabs.org'
+const TESTRAIL_PROJECT_ID = parseEnvInt(process.env.TESTRAIL_PROJECT_ID, 3, {
+  min: 1
+})
+/** Default matches `e2e-appium/testrail/testrail.config.ts` `suiteId` (filters `get_runs`). */
+const TESTRAIL_SUITE_ID_FOR_RUN_LIST = parseEnvInt(
+  process.env.E2E_COVERAGE_TESTRAIL_SUITE_ID,
+  3,
+  { min: 1 }
+)
+
+/** Parsed from `[REGRESSION] … Test Run: YYYY-MM-DD` in the run name; stale runs do not drive regression-adjusted %. */
+const REGRESSION_RUN_MAX_AGE_DAYS = parseEnvInt(
+  process.env.E2E_COVERAGE_REGRESSION_MAX_AGE_DAYS,
+  7,
+  { min: 1, max: 3660 }
+)
+
+/** Parallel `get_case` fan-out; invalid env falls back to 12 (see file header). */
+const E2E_COVERAGE_TESTRAIL_CASE_CONCURRENCY = parseEnvInt(
+  process.env.E2E_COVERAGE_TESTRAIL_CASE_CONCURRENCY,
+  12,
+  { min: 1, max: 32 }
+)
+
+/** WDIO posts status_id 1 = pass, 5 = fail (`sendResult` in testrail.service.ts). */
+const TESTRAIL_STATUS_PASSED = 1
+const TESTRAIL_STATUS_FAILED = 5
+
+/**
+ * Specs that use dynamic `it(\`...\${...}\`)` titles; keys are paths relative to
+ * `e2e-appium/` (same as `loadAppiumSpecFiles` `rel`).
+ */
+const DYNAMIC_SUITE_CASES_BY_SPEC_REL = {
+  'specs/transactions/receive.spec.ts': {
+    suite: '[Smoke] Receive',
+    titles: [
+      'should verify Avalanche C-Chain/EVM address',
+      'should verify Avalanche X/P-Chain address',
+      'should verify Bitcoin address',
+      'should verify Solana address'
+    ]
+  },
+  'specs/transactions/buy.spec.ts': {
+    suite: 'Buy',
+    titles: [
+      'should follow buy flow AVAX',
+      'should follow buy flow USDC',
+      'should follow buy flow ETH',
+      'should follow buy flow BTC',
+      'should follow buy flow SOL',
+      'should set locale via Buy flow'
+    ]
+  }
+}
+
+/** @param {'iOS' | 'Android'} platform */
+function platformRegressionRunRe(platform) {
+  const esc = platform.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(
+    `\\[REGRESSION\\]\\s+${esc}\\s+Test\\s+Run:\\s*\\d{4}-\\d{2}-\\d{2}`,
+    'i'
+  )
+}
+
+/** @param {object[]} runs @param {'iOS' | 'Android'} platform */
+function pickLatestPlatformRegressionRun(runs, platform) {
+  const re = platformRegressionRunRe(platform)
+  const hits = runs.filter(
+    r => r && typeof r.name === 'string' && re.test(r.name)
+  )
+  hits.sort((a, b) => (b.created_on || 0) - (a.created_on || 0))
+  return hits[0] || null
+}
+
+/**
+ * @param {string} name TestRail run name
+ * @returns {number | null} UTC ms at start of the `YYYY-MM-DD` calendar day in the name
+ */
+function parseRegressionRunDateMsFromName(name) {
+  const m = String(name).match(/Test\s+Run:\s*(\d{4}-\d{2}-\d{2})/i)
+  if (!m) return null
+  const [y, mo, d] = m[1].split('-').map(Number)
+  if (!y || !mo || !d) return null
+  return Date.UTC(y, mo - 1, d)
+}
+
+/**
+ * @param {string} name
+ * @param {number} maxAgeDays
+ */
+function regressionRunNameIsWithinMaxAge(name, maxAgeDays) {
+  const runDayMs = parseRegressionRunDateMsFromName(name)
+  if (runDayMs === null) return false
+  if (!Number.isFinite(maxAgeDays) || maxAgeDays < 1) return false
+  const maxAgeMs = maxAgeDays * 24 * 60 * 60 * 1000
+  return Date.now() - runDayMs <= maxAgeMs
+}
+
+/**
+ * JSON `summary.*Basis` for regression-adjusted %: stale run vs TestRail off vs mapped failure semantics.
+ * @param {'ios' | 'android'} platformKey
+ * @param {{ ios?: object, android?: object } | undefined} testrail
+ */
+function regressionAdjustedCoveragePercentBasis(platformKey, testrail) {
+  const tr = testrail?.[platformKey]
+  if (tr?.regressionAdjustedNotApplicable) {
+    return `not_applicable_${platformKey}_regression_run_older_than_${REGRESSION_RUN_MAX_AGE_DAYS}_days`
+  }
+  if (!tr?.enabled) {
+    return 'heuristic_total_testrail_skipped'
+  }
+  return platformKey === 'ios'
+    ? 'inScopeMappedFeatures_heuristicO_and_noMappedIosRegressionFailure'
+    : 'inScopeMappedFeatures_heuristicO_and_noMappedAndroidRegressionFailure'
+}
+
+/**
+ * Regression-adjusted headline numbers: N/A when TestRail row is stale, else
+ * computed metrics. When TestRail is skipped (`enabled: false`), use `adj`
+ * (same as heuristic total).
+ * @param {{ enabled?: boolean, staleRun?: boolean, regressionAdjustedNotApplicable?: boolean } | undefined} tr
+ * @param {{ regressionAdjustedCoveragePercent: number, regressionStableFeatureCount: number, regressionFailedFeatureCount: number }} adj
+ */
+function pickRegressionAdjustedCounts(tr, adj) {
+  if (tr?.regressionAdjustedNotApplicable || tr?.staleRun) {
+    return {
+      regressionAdjustedCoveragePercent: null,
+      regressionStableFeatureCount: null,
+      regressionFailedFeatureCount: null
+    }
+  }
+  if (!tr?.enabled) {
+    return {
+      regressionAdjustedCoveragePercent: adj.regressionAdjustedCoveragePercent,
+      regressionStableFeatureCount: adj.regressionStableFeatureCount,
+      regressionFailedFeatureCount: adj.regressionFailedFeatureCount
+    }
+  }
+  return {
+    regressionAdjustedCoveragePercent: adj.regressionAdjustedCoveragePercent,
+    regressionStableFeatureCount: adj.regressionStableFeatureCount,
+    regressionFailedFeatureCount: adj.regressionFailedFeatureCount
+  }
+}
+
 /** @param {string} featureFolder */
 function excludedFromCoverageMetrics(featureFolder) {
   return E2E_COVERAGE_EXCLUDED_FEATURES.has(featureFolder)
@@ -276,6 +528,444 @@ function featureCoverageMark(f, stats) {
 
 /** Only Appium specs; packages/core-mobile/e2e/ (Detox) is deprecated. */
 const E2E_APPIUM_DIR = path.join(pkgRoot, 'e2e-appium')
+
+function loadAxios() {
+  return pkgRequire('axios')
+}
+
+function createTestrailClient() {
+  const apiKey = process.env.TESTRAIL_API_KEY
+  if (!apiKey) return null
+  const axios = loadAxios()
+  return axios.create({
+    baseURL: `${TESTRAIL_DOMAIN}/index.php?/api/v2`,
+    auth: { username: TESTRAIL_USERNAME, password: apiKey },
+    timeout: 120000
+  })
+}
+
+/**
+ * Paginates `get_runs` until a short page or `E2E_COVERAGE_TESTRAIL_RUNS_MAX_PAGES`
+ * (default 15, max 50) is reached. Requests are scoped with `suite_id` and
+ * optional `created_after` (see file header) to reduce payload vs full history.
+ * @param {import('axios').AxiosInstance} client
+ */
+async function fetchAllProjectRuns(client) {
+  const all = []
+  let offset = 0
+  const limit = 250
+  const maxPages = parseEnvInt(
+    process.env.E2E_COVERAGE_TESTRAIL_RUNS_MAX_PAGES,
+    15,
+    { min: 1, max: 50 }
+  )
+  const createdAfterDaysFallback = parseEnvInt(
+    process.env.E2E_COVERAGE_TESTRAIL_RUNS_CREATED_AFTER_DAYS,
+    180,
+    { min: 1, max: 3660 }
+  )
+  const createdAfterDays = Math.max(
+    REGRESSION_RUN_MAX_AGE_DAYS + 1,
+    createdAfterDaysFallback
+  )
+  const useCreatedAfter =
+    process.env.E2E_COVERAGE_TESTRAIL_RUNS_NO_CREATED_AFTER !== '1'
+  const createdAfterUnix = useCreatedAfter
+    ? Math.floor(Date.now() / 1000) - createdAfterDays * 24 * 60 * 60
+    : undefined
+  for (let page = 0; page < maxPages; page++) {
+    const { data } = await client.get(`/get_runs/${TESTRAIL_PROJECT_ID}`, {
+      params: {
+        offset,
+        limit,
+        suite_id: TESTRAIL_SUITE_ID_FOR_RUN_LIST,
+        ...(createdAfterUnix != null ? { created_after: createdAfterUnix } : {})
+      }
+    })
+    const batch = Array.isArray(data) ? data : data.runs || []
+    if (!Array.isArray(batch) || batch.length === 0) break
+    all.push(...batch)
+    if (batch.length < limit) break
+    offset += limit
+  }
+  return all
+}
+
+/**
+ * @param {import('axios').AxiosInstance} client
+ * @param {number} runId
+ */
+async function fetchAllTestsForRun(client, runId) {
+  const all = []
+  let offset = 0
+  const limit = 250
+  for (;;) {
+    const { data } = await client.get(`/get_tests/${runId}`, {
+      params: { offset, limit }
+    })
+    const batch = Array.isArray(data) ? data : data.tests || []
+    if (!Array.isArray(batch) || batch.length === 0) break
+    all.push(...batch)
+    if (batch.length < limit) break
+    offset += limit
+  }
+  return all
+}
+
+/**
+ * First suite title from Mocha `describe` / `describe.skip` / `describe.only` or
+ * `context` variants (used for TestRail section name ↔ spec mapping).
+ * @param {string} src
+ */
+function extractFirstDescribeTitle(src) {
+  const m = src.match(
+    /\b(?:describe|context)(?:\.(?:skip|only))?\s*\(\s*(['"`])((?:\\.|(?!\1).)*)\1/
+  )
+  if (!m) return null
+  return unescapeJsString(m[2])
+}
+
+/**
+ * Static `it` / `it.skip` / `it.only` / `test` / `test.skip` / `test.only` titles.
+ * @param {string} src
+ * @returns {string[]}
+ */
+function extractStaticItTitles(src) {
+  const titles = []
+  const re =
+    /\b(?:it|test)(?:\.(?:skip|only))?\s*\(\s*(['"`])((?:\\.|(?!\1).)*)\1/g
+  let m
+  while ((m = re.exec(src)) !== null) {
+    const q = m[1]
+    const inner = unescapeJsString(m[2])
+    if (q === '`' && inner.includes('${')) continue
+    titles.push(inner)
+  }
+  return titles
+}
+
+/**
+ * Map `"<describe title>\\t<it title>"` → spec rel paths (see WDIO `beforeTest` / `afterTest`).
+ * @param {{ rel: string, abs: string }[]} testFiles
+ */
+function addSuiteCaseKeysForSpec(map, rel, suite, titles) {
+  const s = suite.trim()
+  for (const raw of titles) {
+    const t = raw.trim()
+    if (!t) continue
+    const key = `${s}\t${t}`
+    if (!map.has(key)) map.set(key, new Set())
+    map.get(key).add(rel)
+  }
+}
+
+function buildSuiteCaseToSpecRelMap(testFiles) {
+  /** @type {Map<string, Set<string>>} */
+  const map = new Map()
+  for (const { rel, abs } of testFiles) {
+    let text = ''
+    try {
+      text = fs.readFileSync(abs, 'utf8')
+    } catch {
+      continue
+    }
+    const manual = DYNAMIC_SUITE_CASES_BY_SPEC_REL[rel]
+    const suite = manual?.suite ?? extractFirstDescribeTitle(text)
+    if (!suite) continue
+    const titles = manual?.titles ?? extractStaticItTitles(text)
+    addSuiteCaseKeysForSpec(map, rel, suite, titles)
+  }
+  /** @type {Map<string, string[]>} */
+  const out = new Map()
+  for (const [k, set] of map) {
+    out.set(k, [...set])
+  }
+  return out
+}
+
+/**
+ * @param {import('axios').AxiosInstance} client
+ * @param {object} run TestRail run (from get_runs / picker)
+ */
+async function fetchRunSuiteId(client, run) {
+  if (run?.suite_id != null && run.suite_id !== '') return Number(run.suite_id)
+  const { data } = await client.get(`/get_run/${run.id}`)
+  return data?.suite_id != null ? Number(data.suite_id) : null
+}
+
+/**
+ * All section names for a suite (one paginated endpoint family vs many get_section).
+ * @param {import('axios').AxiosInstance} client
+ * @param {number | null} suiteId
+ * @returns {Promise<Map<number, string>>}
+ */
+/**
+ * @param {Map<number, string>} map
+ * @param {object[]} batch
+ */
+function mergeSectionBatchIntoMap(map, batch) {
+  for (const s of batch) {
+    if (s?.id != null) map.set(Number(s.id), String(s.name || '').trim())
+  }
+}
+
+async function fetchSectionNameByIdMap(client, suiteId) {
+  /** @type {Map<number, string>} */
+  const map = new Map()
+  if (suiteId == null || Number.isNaN(suiteId)) return map
+  let offset = 0
+  const limit = 250
+  for (;;) {
+    const { data } = await client.get(
+      `/get_sections/${TESTRAIL_PROJECT_ID}&suite_id=${suiteId}`,
+      { params: { offset, limit } }
+    )
+    const batch = Array.isArray(data) ? data : data.sections || []
+    if (!Array.isArray(batch) || batch.length === 0) break
+    mergeSectionBatchIntoMap(map, batch)
+    if (batch.length < limit) break
+    offset += limit
+  }
+  return map
+}
+
+/**
+ * @param {import('axios').AxiosInstance} client
+ * @param {number} caseId
+ * @param {Map<number, string>} sectionNameById
+ */
+async function fetchCaseMetaForId(client, caseId, sectionNameById) {
+  try {
+    const { data } = await client.get(`/get_case/${caseId}`)
+    const caseTitle = (data.title || '').trim()
+    const secId = data.section_id != null ? Number(data.section_id) : null
+    let sectionName = secId != null ? sectionNameById.get(secId) || '' : ''
+    if (!sectionName && secId != null) {
+      const { data: sec } = await client.get(`/get_section/${secId}`)
+      sectionName = String(sec.name || '').trim()
+      sectionNameById.set(secId, sectionName)
+    }
+    return { sectionName, caseTitle }
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Parallel `get_case` for unique case IDs (bounded concurrency), plus one
+ * suite-wide `get_sections` map—avoids N+1 sequential `get_case`/`get_section`
+ * per test row. Uses `get_tests` `title` when applying rows (see `applyTestrailTestRowSync`).
+ * @param {import('axios').AxiosInstance} client
+ * @param {number[]} caseIds
+ * @param {Map<number, string>} sectionNameById — mutated when fallback get_section runs
+ * @param {Map<number, { sectionName: string, caseTitle: string } | null> | undefined} sharedCaseMetaById — when set (same Map for iOS + Android in one script run), reuses `get_case` results across platforms
+ */
+async function fetchCaseMetaByIdsParallel(
+  client,
+  caseIds,
+  sectionNameById,
+  sharedCaseMetaById
+) {
+  /** @type {Map<number, { sectionName: string, caseTitle: string } | null>} */
+  const backing = sharedCaseMetaById ?? new Map()
+  const ids = [...new Set(caseIds)].filter(
+    id => id != null && !Number.isNaN(id)
+  )
+  const toFetch = ids.filter(id => !backing.has(id))
+  const concurrency = E2E_COVERAGE_TESTRAIL_CASE_CONCURRENCY
+  let cursor = 0
+  async function worker() {
+    for (;;) {
+      const i = cursor++
+      if (i >= toFetch.length) return
+      const caseId = toFetch[i]
+      const meta = await fetchCaseMetaForId(client, caseId, sectionNameById)
+      backing.set(caseId, meta)
+    }
+  }
+  if (toFetch.length > 0) {
+    const n = Math.min(concurrency, toFetch.length)
+    await Promise.all(Array.from({ length: n }, () => worker()))
+  }
+  const slice = new Map()
+  for (const id of ids) {
+    slice.set(id, backing.get(id) ?? null)
+  }
+  return slice
+}
+
+/**
+ * @param {{ unmappedCount: number, unmappedFailedCount: number, unmappedSamples: string[] }} acc
+ * @param {number} sid
+ * @param {string} sample
+ * @param {number} maxSamples
+ */
+function recordTestrailUnmapped(acc, sid, sample, maxSamples) {
+  acc.unmappedCount += 1
+  if (sid === TESTRAIL_STATUS_FAILED) acc.unmappedFailedCount += 1
+  if (acc.unmappedSamples.length < maxSamples) {
+    acc.unmappedSamples.push(sample)
+  }
+}
+
+/**
+ * @param {object} t TestRail test row (`get_tests` includes `title` = case title)
+ * @param {Map<string, string[]>} suiteCaseToSpecRels
+ * @param {Map<number, { sectionName: string, caseTitle: string } | null>} caseMetaById
+ * @param {{ failedSet: Set<string>, mappedTotal: number, mappedPassed: number, mappedFailed: number, unmappedCount: number, unmappedFailedCount: number, unmappedSamples: string[] }} acc
+ */
+function applyTestrailTestRowSync(t, suiteCaseToSpecRels, caseMetaById, acc) {
+  const sid = t.status_id
+  const caseId = t.case_id
+  const row = caseMetaById.get(caseId)
+  if (!row) {
+    recordTestrailUnmapped(acc, sid, `(case ${caseId} API error)`, 8)
+    return
+  }
+  const caseTitle = String(t.title || row.caseTitle || '').trim()
+  const mapKey = `${row.sectionName}\t${caseTitle}`
+  const rels = suiteCaseToSpecRels.get(mapKey)
+  if (!rels || rels.length === 0) {
+    recordTestrailUnmapped(acc, sid, mapKey, 12)
+    return
+  }
+
+  acc.mappedTotal += 1
+  if (sid === TESTRAIL_STATUS_PASSED) acc.mappedPassed += 1
+  else if (sid === TESTRAIL_STATUS_FAILED) acc.mappedFailed += 1
+
+  if (sid === TESTRAIL_STATUS_FAILED) {
+    for (const rel of rels) acc.failedSet.add(rel)
+  }
+}
+
+/**
+ * @param {import('axios').AxiosInstance} client
+ * @param {Map<string, string[]>} suiteCaseToSpecRels
+ * @param {object[]} runs — from `fetchAllProjectRuns` (reused for iOS + Android)
+ * @param {'iOS' | 'Android'} platform
+ * @param {Map<number, { sectionName: string, caseTitle: string } | null> | undefined} caseMetaByIdCache — shared across both platforms in one invocation to avoid duplicate `get_case` calls
+ */
+async function fetchTestrailPlatformRegressionContext(
+  client,
+  suiteCaseToSpecRels,
+  runs,
+  platform,
+  caseMetaByIdCache
+) {
+  const run = pickLatestPlatformRegressionRun(runs, platform)
+  if (!run) {
+    return {
+      ok: false,
+      staleRun: false,
+      error: `No [REGRESSION] ${platform} Test Run: YYYY-MM-DD found in TestRail project`,
+      run: null,
+      failedSpecRels: [],
+      mappedTotal: 0,
+      mappedPassed: 0,
+      mappedFailed: 0,
+      unmappedCount: 0,
+      unmappedFailedCount: 0,
+      unmappedSamples: /** @type {string[]} */ ([])
+    }
+  }
+
+  if (!regressionRunNameIsWithinMaxAge(run.name, REGRESSION_RUN_MAX_AGE_DAYS)) {
+    return {
+      ok: true,
+      staleRun: true,
+      error: null,
+      run,
+      failedSpecRels: [],
+      mappedTotal: 0,
+      mappedPassed: 0,
+      mappedFailed: 0,
+      mappedPassPct: null,
+      unmappedCount: 0,
+      unmappedFailedCount: 0,
+      unmappedSamples: /** @type {string[]} */ ([])
+    }
+  }
+
+  const tests = await fetchAllTestsForRun(client, run.id)
+  const suiteId = await fetchRunSuiteId(client, run)
+  const sectionNameById = await fetchSectionNameByIdMap(client, suiteId)
+  const uniqueCaseIds = tests.map(t => t.case_id).filter(Boolean)
+  const caseMetaById = await fetchCaseMetaByIdsParallel(
+    client,
+    uniqueCaseIds,
+    sectionNameById,
+    caseMetaByIdCache
+  )
+  const acc = {
+    failedSet: new Set(),
+    mappedTotal: 0,
+    mappedPassed: 0,
+    mappedFailed: 0,
+    unmappedCount: 0,
+    unmappedFailedCount: 0,
+    unmappedSamples: /** @type {string[]} */ ([])
+  }
+  for (const t of tests) {
+    applyTestrailTestRowSync(t, suiteCaseToSpecRels, caseMetaById, acc)
+  }
+
+  const failedSpecRels = [...acc.failedSet].sort()
+  const mappedPassPct =
+    acc.mappedTotal === 0
+      ? null
+      : Math.round((100 * acc.mappedPassed) / acc.mappedTotal)
+
+  return {
+    ok: true,
+    staleRun: false,
+    error: null,
+    run,
+    failedSpecRels,
+    mappedTotal: acc.mappedTotal,
+    mappedPassed: acc.mappedPassed,
+    mappedFailed: acc.mappedFailed,
+    mappedPassPct,
+    unmappedCount: acc.unmappedCount,
+    unmappedFailedCount: acc.unmappedFailedCount,
+    unmappedSamples: acc.unmappedSamples
+  }
+}
+
+/**
+ * @param {{ ok: boolean, staleRun?: boolean, error: string | null, run: object | null, failedSpecRels: string[], mappedTotal: number, mappedPassed: number, mappedFailed: number, mappedPassPct: number | null, unmappedCount: number, unmappedFailedCount: number, unmappedSamples: string[] }} tr
+ */
+function testrailUiSummaryFromFetch(tr) {
+  if (tr.ok && tr.run) {
+    const base = {
+      enabled: true,
+      regressionRunMaxAgeDays: REGRESSION_RUN_MAX_AGE_DAYS,
+      staleRun: Boolean(tr.staleRun),
+      runId: tr.run.id,
+      runName: tr.run.name,
+      mappedTestsInRun: tr.mappedTotal,
+      mappedPassed: tr.mappedPassed,
+      mappedFailed: tr.mappedFailed,
+      mappedPassPercent: tr.mappedPassPct,
+      unmappedTestResults: tr.unmappedCount,
+      unmappedFailedTestResults: tr.unmappedFailedCount,
+      failedSpecRelPaths: tr.failedSpecRels,
+      unmappedKeySamples: tr.unmappedSamples
+    }
+    if (tr.staleRun) {
+      return {
+        ...base,
+        regressionAdjustedNotApplicable: true,
+        regressionAdjustedNotApplicableReason: `Latest matching run is older than ${REGRESSION_RUN_MAX_AGE_DAYS} day(s) (date in run name); regression-adjusted % and mapped failures are not applied.`
+      }
+    }
+    return base
+  }
+  return {
+    enabled: false,
+    skipReason: tr.error || 'TestRail fetch incomplete'
+  }
+}
 
 /** @param {string} abs */
 function safeStatSync(abs) {
@@ -435,6 +1125,92 @@ function isTestIdReferencedInSpecSources(id, literals, corpus, literalList) {
     }
   }
   return false
+}
+
+/**
+ * Adds to `failed` any mapped in-scope features touched by one failed spec
+ * (path heuristic or feature testIDs referenced in that spec’s source).
+ * @param {string} rel Path relative to `e2e-appium/` (e.g. `specs/foo.spec.ts`)
+ * @param {string[]} featureNames
+ * @param {Record<string, object>} featureStats
+ * @param {Set<string>} failed
+ */
+function addFeaturesTouchedByFailedSpec(
+  rel,
+  featureNames,
+  featureStats,
+  failed
+) {
+  const abs = path.join(E2E_APPIUM_DIR, ...rel.split('/'))
+  let specText = ''
+  try {
+    specText = fs.readFileSync(abs, 'utf8')
+  } catch {
+    specText = ''
+  }
+  const literals = new Set()
+  collectStringLiteralsFromTs(specText, literals)
+  const literalList = [...literals]
+  const relLower = rel.toLowerCase()
+  for (const f of featureNames) {
+    if (!FEATURE_SIGNALS[f] || excludedFromCoverageMetrics(f)) continue
+    if (featureMatches(relLower, specText, f)) {
+      failed.add(f)
+      continue
+    }
+    const ids = featureStats[f].testIdsDeclaredList
+    if (!ids || ids.length === 0) continue
+    for (const id of ids) {
+      if (
+        isTestIdReferencedInSpecSources(id, literals, specText, literalList)
+      ) {
+        failed.add(f)
+        break
+      }
+    }
+  }
+}
+
+function computeRegressionFailedFeatures(
+  failedSpecRels,
+  featureNames,
+  featureStats
+) {
+  const failed = new Set()
+  for (const rel of failedSpecRels) {
+    addFeaturesTouchedByFailedSpec(rel, featureNames, featureStats, failed)
+  }
+  return failed
+}
+
+/**
+ * @param {string[]} featuresWithSignalsInScope
+ * @param {Record<string, object>} featureStats
+ * @param {Set<string>} regressionFailedFeatures
+ */
+function computeRegressionAdjustedMetrics(
+  featuresWithSignalsInScope,
+  featureStats,
+  regressionFailedFeatures
+) {
+  const nInScope = featuresWithSignalsInScope.length
+  const stableCount = featuresWithSignalsInScope.filter(f => {
+    const s = featureStats[f]
+    const o =
+      s.tests.length > 0 ||
+      (s.testIdsDeclared > 0 && s.testIdsReferencedInSpec > 0)
+    return o && !regressionFailedFeatures.has(f)
+  }).length
+  const unstableCount = featuresWithSignalsInScope.filter(f =>
+    regressionFailedFeatures.has(f)
+  ).length
+  const stablePct =
+    nInScope === 0 ? 0 : Math.round((100 * stableCount) / nInScope)
+  return {
+    regressionAdjustedCoveragePercent: stablePct,
+    regressionStableFeatureCount: stableCount,
+    regressionFailedFeatureCount: unstableCount
+  }
 }
 
 /**
@@ -846,7 +1622,16 @@ function printJsonReport(ctx) {
     coveredModalsPath,
     coveredModalsEither,
     modalPctPath,
-    modalPctEither
+    modalPctEither,
+    regressionAdjustedCoveragePercentIos,
+    regressionStableFeatureCountIos,
+    regressionFailedFeatureCountIos,
+    regressionAdjustedCoveragePercentAndroid,
+    regressionStableFeatureCountAndroid,
+    regressionFailedFeatureCountAndroid,
+    testrail,
+    regressionFailedFeatureNamesIos,
+    regressionFailedFeatureNamesAndroid
   } = counts
 
   console.log(
@@ -861,6 +1646,19 @@ function printJsonReport(ctx) {
           totalCoveragePercent,
           totalCoveragePercentBasis:
             'inScopeMappedFeatures_union_specPathOrTestIdInSpec',
+          regressionAdjustedCoveragePercentIos,
+          regressionAdjustedCoveragePercentIosBasis:
+            regressionAdjustedCoveragePercentBasis('ios', testrail),
+          regressionStableFeatureCountIos,
+          regressionFailedFeatureCountIos,
+          regressionFailedFeatureNamesIos,
+          regressionAdjustedCoveragePercentAndroid,
+          regressionAdjustedCoveragePercentAndroidBasis:
+            regressionAdjustedCoveragePercentBasis('android', testrail),
+          regressionStableFeatureCountAndroid,
+          regressionFailedFeatureCountAndroid,
+          regressionFailedFeatureNamesAndroid,
+          testrail,
           featuresTotal: featureNames.length,
           featuresWithMapping: featuresWithSignals.length,
           featuresExcludedFromMetrics: excludedFeatureList,
@@ -886,6 +1684,8 @@ function printJsonReport(ctx) {
             testIdsUnreferencedList,
             ...rest
           } = s
+          const iosFail = regressionFailedFeatureNamesIos.includes(f)
+          const androidFail = regressionFailedFeatureNamesAndroid.includes(f)
           return {
             name: f,
             ...rest,
@@ -898,6 +1698,8 @@ function printJsonReport(ctx) {
             coveredBySpecOrTestIdInSpec:
               s.tests.length > 0 ||
               (s.testIdsDeclared > 0 && s.testIdsReferencedInSpec > 0),
+            iosRegressionMappedFailure: iosFail,
+            androidRegressionMappedFailure: androidFail,
             testIdsDeclaredList,
             testIdsReferencedList,
             testIdsUnreferencedList
@@ -1015,47 +1817,73 @@ function printTextReportHeader(ctx) {
   console.log(
     `Appium: ${testFiles.length} spec files scanned for paths + testID text`
   )
+  printTestrailRegressionSummary(ctx)
   console.log('')
 }
 
-/**
- * @param {object} ctx
- */
-function printTextReportBody(ctx) {
-  const {
-    featureNames,
-    featureStats,
-    featuresWithSignalsInScope,
-    modalCoverage,
-    verbose
-  } = ctx
-
-  console.log(
-    'All app/new/features folders (order: O A–Z, then all X by .tsx count ↓, then all △ by .tsx count ↓):'
-  )
-  console.log(
-    '  O  = spec path heuristic match OR any declared testID from that feature appears in a *.spec.ts'
-  )
-  console.log(
-    '  X  = in-scope gap: add/extend Appium specs (or FEATURE_SIGNALS / testIDs)'
-  )
-  console.log(
-    '  △  = excluded from metrics (see E2E_COVERAGE_EXCLUDED_FEATURES)'
-  )
-  console.log('')
-  const nameColWidth = Math.max(...featureNames.map(n => n.length), 1)
-  const sortedFeatureNamesForList = [...featureNames].sort((a, b) =>
-    featureListSortKey(a, b, featureStats)
-  )
-  for (const f of sortedFeatureNamesForList) {
-    const mark = featureCoverageMark(f, featureStats)
-    const unmapped = !FEATURE_SIGNALS[f]
-      ? '  [no FEATURE_SIGNALS in script]'
-      : ''
-    console.log(`${mark}  ${f.padEnd(nameColWidth)}${unmapped}`)
+function printTestrailPlatformBlock(tr, label, rAdj, rStable, nScope) {
+  if (tr?.enabled && tr?.staleRun) {
+    console.log('')
+    console.log(
+      `Regression-adjusted (${label}): N/A — latest matching run is older than ${REGRESSION_RUN_MAX_AGE_DAYS} day(s) (“${tr.runName}”).`
+    )
+    console.log(
+      `TestRail ${label} (reference): id ${tr.runId} — not used for regression-adjusted % or checklist ${label} fail markers (stale).`
+    )
+    return
   }
-  console.log('')
+  if (tr?.enabled) {
+    console.log('')
+    console.log(
+      `Regression-adjusted (${label}): ${rAdj}%  (${rStable}/${nScope} in-scope mapped features — heuristic O and no failing mapped ${label} regression test)`
+    )
+    console.log(
+      `TestRail ${label} run:   "${tr.runName}" (id ${
+        tr.runId
+      }) — mapped results: ${tr.mappedPassed} pass, ${tr.mappedFailed} fail / ${
+        tr.mappedTestsInRun
+      } (${tr.mappedPassPercent ?? 'n/a'}% pass); ${
+        tr.unmappedTestResults
+      } unmapped rows (${tr.unmappedFailedTestResults} failed)`
+    )
+    if (tr.failedSpecRelPaths?.length) {
+      console.log(
+        `  Failing specs (${label}, maintenance / UI drift): ${tr.failedSpecRelPaths.join(
+          ', '
+        )}`
+      )
+    }
+    return
+  }
+  if (tr?.skipReason) {
+    console.log('')
+    console.log(
+      `TestRail ${label}: skipped (${tr.skipReason}). Regression-adjusted (${label}) % equals heuristic total when skipped.`
+    )
+  }
+}
 
+function printTestrailRegressionSummary(ctx) {
+  const {
+    testrail,
+    regressionAdjustedCoveragePercentIos: rAdjIos,
+    regressionStableFeatureCountIos: rStableIos,
+    regressionAdjustedCoveragePercentAndroid: rAdjAnd,
+    regressionStableFeatureCountAndroid: rStableAnd,
+    featuresWithSignalsInScope
+  } = ctx
+  const n = featuresWithSignalsInScope.length
+  printTestrailPlatformBlock(testrail?.ios, 'iOS', rAdjIos, rStableIos, n)
+  printTestrailPlatformBlock(
+    testrail?.android,
+    'Android',
+    rAdjAnd,
+    rStableAnd,
+    n
+  )
+}
+
+function printMappedFeatureGaps(featuresWithSignalsInScope, featureStats) {
   console.log(
     'Mapped features with neither spec path nor testID string in any spec:'
   )
@@ -1071,19 +1899,83 @@ function printTextReportBody(ctx) {
     }
   }
   console.log('')
+}
 
+function printUnmappedFeatureSignalGaps(featureNames, featureStats) {
   const unmappedFeatures = featureNames.filter(f => !FEATURE_SIGNALS[f])
-  if (unmappedFeatures.length > 0) {
-    console.log('Unmapped feature folders (add signals in script if needed):')
-    for (const f of unmappedFeatures) {
-      const { components, screens } = featureStats[f]
-      console.log(`  - ${f} (${screens} screen-like, ${components} .tsx)`)
-    }
-    console.log('')
+  if (unmappedFeatures.length === 0) return
+  console.log('Unmapped feature folders (add signals in script if needed):')
+  for (const f of unmappedFeatures) {
+    const { components, screens } = featureStats[f]
+    console.log(`  - ${f} (${screens} screen-like, ${components} .tsx)`)
   }
+  console.log('')
+}
+
+/**
+ * @param {object} ctx
+ */
+function printTextReportBody(ctx) {
+  const {
+    featureNames,
+    featureStats,
+    featuresWithSignalsInScope,
+    modalCoverage,
+    verbose,
+    regressionFailedFeaturesIos,
+    regressionFailedFeaturesAndroid,
+    testrail
+  } = ctx
+
+  console.log(
+    'All app/new/features folders (order: O A–Z, then all X by .tsx count ↓, then all △ by .tsx count ↓):'
+  )
+  console.log(
+    '  O  = spec path heuristic match OR any declared testID from that feature appears in a *.spec.ts'
+  )
+  console.log(
+    '  X  = in-scope gap: add/extend Appium specs (or FEATURE_SIGNALS / testIDs)'
+  )
+  console.log(
+    '  △  = excluded from metrics (see E2E_COVERAGE_EXCLUDED_FEATURES)'
+  )
+  console.log(
+    '  columns after O/X/△: * = iOS regression failure, # = Android regression failure (mapped spec or testIDs in that spec)'
+  )
+  console.log('')
+  const nameColWidth = Math.max(...featureNames.map(n => n.length), 1)
+  const regIos =
+    regressionFailedFeaturesIos instanceof Set
+      ? regressionFailedFeaturesIos
+      : new Set(regressionFailedFeaturesIos || [])
+  const regAnd =
+    regressionFailedFeaturesAndroid instanceof Set
+      ? regressionFailedFeaturesAndroid
+      : new Set(regressionFailedFeaturesAndroid || [])
+  const sortedFeatureNamesForList = [...featureNames].sort((a, b) =>
+    featureListSortKey(a, b, featureStats)
+  )
+  for (const f of sortedFeatureNamesForList) {
+    const mark = featureCoverageMark(f, featureStats)
+    const unmapped = !FEATURE_SIGNALS[f]
+      ? '  [no FEATURE_SIGNALS in script]'
+      : ''
+    const iMark = regIos.has(f) ? '*' : ' '
+    const aMark = regAnd.has(f) ? '#' : ' '
+    console.log(`${mark}${iMark}${aMark} ${f.padEnd(nameColWidth)}${unmapped}`)
+  }
+  console.log('')
+
+  printMappedFeatureGaps(featuresWithSignalsInScope, featureStats)
+  printUnmappedFeatureSignalGaps(featureNames, featureStats)
 
   if (verbose) {
-    printVerboseReport({ featureNames, featureStats, modalCoverage })
+    printVerboseReport({
+      featureNames,
+      featureStats,
+      modalCoverage,
+      testrail
+    })
   } else {
     console.log(
       'Run with --verbose for per-feature spec lists and unmatched modals.'
@@ -1146,16 +2038,131 @@ function printVerboseUncoveredModals(modalCoverage) {
 }
 
 /**
- * @param {object} ctx
+ * @param {{ ios?: object, android?: object } | undefined} testrail
  */
+function printVerboseTestrailFailures(testrail) {
+  for (const [label, key] of [
+    ['iOS', 'ios'],
+    ['Android', 'android']
+  ]) {
+    const tr = testrail?.[key]
+    if (!tr?.enabled || !tr.failedSpecRelPaths?.length) continue
+    console.log(
+      `\nTestRail ${label} — specs with failing results in mapped run:`
+    )
+    for (const p of tr.failedSpecRelPaths) console.log(`  ${p}`)
+  }
+}
+
 function printVerboseReport(ctx) {
-  const { featureNames, featureStats, modalCoverage } = ctx
+  const { featureNames, featureStats, modalCoverage, testrail } = ctx
   printVerboseSpecMatches(featureNames, featureStats)
   printVerboseTestIdGaps(featureNames, featureStats)
   printVerboseUncoveredModals(modalCoverage)
+  printVerboseTestrailFailures(testrail)
 }
 
-function main() {
+/**
+ * @param {string} reason Human-readable reason TestRail was not applied
+ */
+function emptyTestrailSkip(reason) {
+  return { enabled: false, skipReason: reason }
+}
+
+async function loadTestrailRegressionSummary(
+  testFiles,
+  featureNames,
+  featureStats
+) {
+  const noKey = emptyTestrailSkip('TESTRAIL_API_KEY not set')
+  const empty = {
+    testrailIos: noKey,
+    testrailAndroid: noKey,
+    regressionFailedFeaturesIos: new Set(),
+    regressionFailedFeaturesAndroid: new Set()
+  }
+
+  if (process.argv.includes('--no-testrail')) {
+    const skip = emptyTestrailSkip('--no-testrail')
+    return {
+      testrailIos: skip,
+      testrailAndroid: skip,
+      regressionFailedFeaturesIos: new Set(),
+      regressionFailedFeaturesAndroid: new Set()
+    }
+  }
+
+  if (!process.env.TESTRAIL_API_KEY) {
+    return empty
+  }
+
+  const client = createTestrailClient()
+  if (!client) {
+    const fail = emptyTestrailSkip('createTestrailClient failed')
+    return {
+      testrailIos: fail,
+      testrailAndroid: fail,
+      regressionFailedFeaturesIos: new Set(),
+      regressionFailedFeaturesAndroid: new Set()
+    }
+  }
+
+  try {
+    const runs = await fetchAllProjectRuns(client)
+    const suiteCaseToSpecRels = buildSuiteCaseToSpecRelMap(testFiles)
+    /** Reuse `get_case` results between iOS and Android runs in one process. */
+    const caseMetaByIdCache = new Map()
+    const trIos = await fetchTestrailPlatformRegressionContext(
+      client,
+      suiteCaseToSpecRels,
+      runs,
+      'iOS',
+      caseMetaByIdCache
+    )
+    const trAndroid = await fetchTestrailPlatformRegressionContext(
+      client,
+      suiteCaseToSpecRels,
+      runs,
+      'Android',
+      caseMetaByIdCache
+    )
+
+    const regressionFailedFeaturesIos =
+      trIos.ok && trIos.run && !trIos.staleRun
+        ? computeRegressionFailedFeatures(
+            trIos.failedSpecRels,
+            featureNames,
+            featureStats
+          )
+        : new Set()
+    const regressionFailedFeaturesAndroid =
+      trAndroid.ok && trAndroid.run && !trAndroid.staleRun
+        ? computeRegressionFailedFeatures(
+            trAndroid.failedSpecRels,
+            featureNames,
+            featureStats
+          )
+        : new Set()
+
+    return {
+      testrailIos: testrailUiSummaryFromFetch(trIos),
+      testrailAndroid: testrailUiSummaryFromFetch(trAndroid),
+      regressionFailedFeaturesIos,
+      regressionFailedFeaturesAndroid
+    }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    const err = emptyTestrailSkip(msg)
+    return {
+      testrailIos: err,
+      testrailAndroid: err,
+      regressionFailedFeaturesIos: new Set(),
+      regressionFailedFeaturesAndroid: new Set()
+    }
+  }
+}
+
+async function main() {
   const json = process.argv.includes('--json')
   const verbose = process.argv.includes('--verbose')
 
@@ -1196,7 +2203,52 @@ function main() {
     modalsInScope,
     modals
   )
-  const counts = { ...coverageBase, ...modalPercents }
+
+  const {
+    testrailIos,
+    testrailAndroid,
+    regressionFailedFeaturesIos,
+    regressionFailedFeaturesAndroid
+  } = await loadTestrailRegressionSummary(testFiles, featureNames, featureStats)
+
+  const regressionAdjIos = computeRegressionAdjustedMetrics(
+    coverageBase.featuresWithSignalsInScope,
+    featureStats,
+    regressionFailedFeaturesIos
+  )
+  const regressionAdjAndroid = computeRegressionAdjustedMetrics(
+    coverageBase.featuresWithSignalsInScope,
+    featureStats,
+    regressionFailedFeaturesAndroid
+  )
+
+  const iosAdj = pickRegressionAdjustedCounts(testrailIos, regressionAdjIos)
+  const androidAdj = pickRegressionAdjustedCounts(
+    testrailAndroid,
+    regressionAdjAndroid
+  )
+
+  const counts = {
+    ...coverageBase,
+    ...modalPercents,
+    regressionAdjustedCoveragePercentIos:
+      iosAdj.regressionAdjustedCoveragePercent,
+    regressionStableFeatureCountIos: iosAdj.regressionStableFeatureCount,
+    regressionFailedFeatureCountIos: iosAdj.regressionFailedFeatureCount,
+    regressionAdjustedCoveragePercentAndroid:
+      androidAdj.regressionAdjustedCoveragePercent,
+    regressionStableFeatureCountAndroid:
+      androidAdj.regressionStableFeatureCount,
+    regressionFailedFeatureCountAndroid:
+      androidAdj.regressionFailedFeatureCount,
+    testrail: { ios: testrailIos, android: testrailAndroid },
+    regressionFailedFeatureNamesIos: [...regressionFailedFeaturesIos].sort(),
+    regressionFailedFeatureNamesAndroid: [
+      ...regressionFailedFeaturesAndroid
+    ].sort(),
+    regressionFailedFeaturesIos,
+    regressionFailedFeaturesAndroid
+  }
 
   if (json) {
     printJsonReport({
@@ -1224,8 +2276,14 @@ function main() {
     featureStats,
     featuresWithSignalsInScope: counts.featuresWithSignalsInScope,
     modalCoverage,
-    verbose
+    verbose,
+    regressionFailedFeaturesIos: counts.regressionFailedFeaturesIos,
+    regressionFailedFeaturesAndroid: counts.regressionFailedFeaturesAndroid,
+    testrail: counts.testrail
   })
 }
 
-main()
+main().catch(err => {
+  console.error(err)
+  process.exit(1)
+})

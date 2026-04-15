@@ -17,5 +17,4 @@ packages/*/coverage/
 /.idea/
 /packages/core-mobile/boosts/
 
-# Migration
 /docs/local/
