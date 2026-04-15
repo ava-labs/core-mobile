@@ -694,32 +694,33 @@ export class LedgerWallet implements Wallet {
       Logger.info('Using derivation path:', derivationPath)
 
       const tx = {
+        type: 2,
         chainId,
         nonce: transaction.nonce || 0,
-        gasPrice: transaction.maxFeePerGas, // Use maxFeePerGas as gasPrice
+        maxFeePerGas: transaction.maxFeePerGas,
+        maxPriorityFeePerGas: transaction.maxPriorityFeePerGas,
         gasLimit: transaction.gasLimit || 0,
         to: transaction.to?.toString() || '0x',
         value: transaction.value || 0,
-        data: transaction.data || '0x'
+        data: transaction.data || '0x',
+        accessList: transaction.accessList ?? []
       }
 
       Logger.info('Transaction data:', tx)
 
-      // Create and serialize as legacy transaction
-      const serializedTx = Transaction.from({
-        ...tx,
-        type: undefined // Force legacy transaction format
-      }).unsignedSerialized
-      // For legacy tx, remove '0x' prefix
+      // Serialize as EIP-1559 transaction (type 2)
+      // unsignedSerialized = '0x' + '02' + RLP([...fields])
+      // slice(2) removes the '0x' prefix, preserving the '02' type byte for Ledger
+      const serializedTx = Transaction.from(tx).unsignedSerialized
       const unsignedTx = serializedTx.slice(2)
       Logger.info('Full serialized transaction:', serializedTx)
-      Logger.info('Unsigned transaction (without type prefix):', unsignedTx)
+      Logger.info('Unsigned transaction hex:', unsignedTx)
 
       const signature: SignatureRSV = await (isAvalanche
         ? this.getCChainSignature({ transport, derivationPath, unsignedTx })
         : this.getEvmSignature({ transport, derivationPath, unsignedTx }))
 
-      // Create the signed transaction
+      // Create the signed EIP-1559 transaction
       const signedTx = Transaction.from({
         ...tx,
         signature: {
