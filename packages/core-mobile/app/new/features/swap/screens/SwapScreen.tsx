@@ -95,30 +95,27 @@ export const SwapScreen = (): JSX.Element => {
     const tokenIdTo = rawTokenIdTo || undefined
     const fromCaip2Id = rawFromCaip2Id || undefined
     const toCaip2Id = rawToCaip2Id || undefined
+    const defaultCaip2Id = isDeveloperMode
+      ? caip2ChainIds.FUJI
+      : caip2ChainIds.C_CHAIN
 
     const isDefaultSwapPair =
       tokenIdFrom === undefined && tokenIdTo === undefined
     if (isDefaultSwapPair) {
       return {
         initialTokenIdFrom: tokenIds.AVAX,
-        initialTokenIdTo: tokenIds.USDC,
-        initialFromCaip2Id: isDeveloperMode
-          ? caip2ChainIds.FUJI
-          : caip2ChainIds.C_CHAIN,
-        initialToCaip2Id: isDeveloperMode
-          ? caip2ChainIds.FUJI
-          : caip2ChainIds.C_CHAIN
+        // In testnet, USDC is a mainnet-only token with no supported services,
+        // so we skip preselecting it to avoid a broken no-quotes state.
+        initialTokenIdTo: isDeveloperMode ? undefined : tokenIds.USDC,
+        initialFromCaip2Id: defaultCaip2Id,
+        initialToCaip2Id: isDeveloperMode ? undefined : defaultCaip2Id
       }
     }
     return {
       initialTokenIdFrom: tokenIdFrom,
       initialTokenIdTo: tokenIdTo,
-      initialFromCaip2Id:
-        fromCaip2Id ??
-        (isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN),
-      initialToCaip2Id:
-        toCaip2Id ??
-        (isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN)
+      initialFromCaip2Id: fromCaip2Id ?? defaultCaip2Id,
+      initialToCaip2Id: toCaip2Id ?? defaultCaip2Id
     }
   }, [
     rawTokenIdFrom,
@@ -750,11 +747,12 @@ export const SwapScreen = (): JSX.Element => {
 
       // Skip if TO is already BTC.b — avoids overriding a valid selection
       // or causing unnecessary state writes on re-renders.
-      const toIsBtcB = toToken?.internalId === tokenIds.BTC_B
+      const btcBTokenId = isDeveloperMode ? tokenIds.BTC_B_FUJI : tokenIds.BTC_B
+      const toIsBtcB = toToken?.internalId === btcBTokenId
       if (toIsBtcB) return
 
       const btcb = [btcBLocalToken, ...tokensWithZeroBalance].find(
-        tk => tk?.internalId === tokenIds.BTC_B
+        tk => tk?.internalId === btcBTokenId
       )
       if (btcb) setToToken(btcb)
     }
@@ -770,7 +768,8 @@ export const SwapScreen = (): JSX.Element => {
     setFromToken,
     setAmount,
     tokensWithZeroBalance,
-    btcBLocalToken
+    btcBLocalToken,
+    isDeveloperMode
   ])
 
   // Validate token pair compatibility - clear TO token if incompatible with FROM chain

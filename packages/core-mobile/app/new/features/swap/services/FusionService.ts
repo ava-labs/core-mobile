@@ -1,6 +1,8 @@
 import type {
+  BridgeableUiAsset,
   CompletedTransfer,
   FailedTransfer,
+  GetBridgeableAssetsProps,
   RefundedTransfer
 } from '@avalabs/fusion-sdk'
 import {
@@ -96,7 +98,6 @@ class FusionService implements IFusionService {
     disableCrossChainSwaps: boolean
   }): ServiceInitializer[] {
     const initializers: ServiceInitializer[] = []
-
     for (const serviceType of enabledServices) {
       switch (serviceType) {
         case ServiceType.MARKR:
@@ -251,6 +252,21 @@ class FusionService implements IFusionService {
       return chainsMap
     } catch (error) {
       Logger.error('Failed to fetch supported chains map', error)
+      throw error
+    }
+  }
+
+  /**
+   * Returns assets bridgeable to the target chain for a given source asset and chain.
+   * The MARKR service internally calls `getTargetChainAssets` and filters by supported routes.
+   */
+  async getBridgeableAssets(
+    props: GetBridgeableAssetsProps
+  ): Promise<readonly BridgeableUiAsset[]> {
+    try {
+      return await this.transferManager.getBridgeableAssets(props)
+    } catch (error) {
+      Logger.error('[FusionService] getBridgeableAssets failed', error)
       throw error
     }
   }
