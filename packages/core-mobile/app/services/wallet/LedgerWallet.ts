@@ -1303,13 +1303,19 @@ export class LedgerWallet implements Wallet {
 
   private async handleEthAndPersonalSign({
     data,
-    derivationPath
+    derivationPath,
+    chainId
   }: {
     data: string | TypedDataV1 | TypedData<MessageTypes>
     derivationPath: string
+    chainId: number
   }): Promise<string> {
-    const appType = LedgerAppType.ETHEREUM
-    // Get transport and create Ethereum app instance
+    // Use the Avalanche app when on an Avalanche chain — the Avalanche Ledger
+    // app exposes EVM signing through the same transport, so we can create an
+    // Eth instance without switching apps (matches core-web/extension behavior).
+    const appType = isAvalancheChainId(chainId)
+      ? LedgerAppType.AVALANCHE
+      : LedgerAppType.ETHEREUM
     const transport = await this.handleAppConnection(appType)
     const app = new Eth(transport as Transport)
 
@@ -1363,7 +1369,11 @@ export class LedgerWallet implements Wallet {
         rpcMethod === RpcMethod.ETH_SIGN ||
         rpcMethod === RpcMethod.PERSONAL_SIGN
       ) {
-        return this.handleEthAndPersonalSign({ data, derivationPath })
+        return this.handleEthAndPersonalSign({
+          data,
+          derivationPath,
+          chainId: network.chainId
+        })
       } else {
         throw new Error('This function is not supported on your wallet')
       }

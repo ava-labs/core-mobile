@@ -49,29 +49,34 @@ export const isBitcoinCompatibleApp = (
 
 export const getLedgerAppName = (
   network?: Network,
-  rpcMethod?: RpcMethod
+  _rpcMethod?: RpcMethod
 ): LedgerAppType => {
-  // personal_sign and eth_sign always require the Ethereum app,
-  // even on Avalanche C-Chain
-  if (
-    rpcMethod === RpcMethod.PERSONAL_SIGN ||
-    rpcMethod === RpcMethod.ETH_SIGN
-  ) {
-    return LedgerAppType.ETHEREUM
-  }
+  if (!network) return LedgerAppType.UNKNOWN
 
-  return network?.chainId === ChainId.AVALANCHE_MAINNET_ID ||
-    network?.chainId === ChainId.AVALANCHE_TESTNET_ID ||
-    network?.vmName === NetworkVMType.AVM ||
-    network?.vmName === NetworkVMType.PVM
-    ? LedgerAppType.AVALANCHE
-    : network?.vmName === NetworkVMType.EVM
-    ? LedgerAppType.ETHEREUM
-    : network?.vmName === NetworkVMType.BITCOIN
-    ? LedgerAppType.BITCOIN
-    : network?.vmName === NetworkVMType.SVM
-    ? LedgerAppType.SOLANA
-    : LedgerAppType.UNKNOWN
+  const isAvalancheChain =
+    network.chainId === ChainId.AVALANCHE_MAINNET_ID ||
+    network.chainId === ChainId.AVALANCHE_TESTNET_ID
+
+  const isAvalancheVM = [NetworkVMType.AVM, NetworkVMType.PVM].includes(
+    network.vmName
+  )
+
+  const isAvalancheL1 =
+    network.vmName === NetworkVMType.EVM && Boolean(network.subnetId)
+
+  if (isAvalancheChain || isAvalancheVM || isAvalancheL1)
+    return LedgerAppType.AVALANCHE
+
+  switch (network.vmName) {
+    case NetworkVMType.EVM:
+      return LedgerAppType.ETHEREUM
+    case NetworkVMType.BITCOIN:
+      return LedgerAppType.BITCOIN
+    case NetworkVMType.SVM:
+      return LedgerAppType.SOLANA
+    default:
+      return LedgerAppType.UNKNOWN
+  }
 }
 
 const BtcWalletPolicySchema = z.object({
