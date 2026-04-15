@@ -29,6 +29,7 @@ export default {
   addressField: 'end_token__send_field',
   searchBarOnSelectToken: 'search_bar__select_token',
   searchBar: 'search_bar',
+  networkSelectorScroll: 'network_selector_scroll',
   selectTokenTitle: 'Select a token',
   sendTo: 'Send To',
   max: 'Max',

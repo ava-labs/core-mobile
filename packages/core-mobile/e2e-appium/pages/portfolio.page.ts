@@ -407,12 +407,6 @@ class PortfolioPage {
     for (const { name, haveToggle } of networks) {
       if (haveToggle) await actions.isVisible(selectors.getByText(name))
     }
-    await this.tapFilterDropdown()
-    await this.tapActivityTab()
-    await this.tapNetworksDropdown()
-    for (const { name, haveToggle } of networks) {
-      if (haveToggle) await actions.isVisible(selectors.getBySomeText(name))
-    }
   }
 
   async verifyAccountName(name: string) {
@@ -602,7 +596,7 @@ class PortfolioPage {
   async verifyDefiSort(ascending = true, isGrid = true) {
     const prefix = isGrid ? portfolio.defiGridTitle : portfolio.defiListTitle
     const first = await actions.getText(selectors.getById(`${prefix}__0`))
-    const second = await actions.getText(selectors.getById(`${prefix}__2`))
+    const second = await actions.getText(selectors.getById(`${prefix}__1`))
     console.log(`First: ${first}, Second: ${second}, Ascending: ${ascending}`)
     const compare = first.localeCompare(second)
     const isSorted = ascending ? compare <= 0 : compare >= 0

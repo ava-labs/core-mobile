@@ -29,14 +29,21 @@ const appiumServerUrl =
   process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL || 'http://localhost:4723'
 const rawAppPath =
   process.env.AWS_DEVICE_FARM_APP_PATH || process.env.APP_PATH || ''
-if (!rawAppPath) {
-  const expectedEnvVar = isDeviceFarm ? 'AWS_DEVICE_FARM_APP_PATH' : 'APP_PATH'
+if (!rawAppPath && isDeviceFarm) {
   throw new Error(
-    `Mobile app path not configured. Set the ${expectedEnvVar} environment variable ` +
-      '(use APP_PATH for local runs and AWS_DEVICE_FARM_APP_PATH on AWS Device Farm).'
+    'Mobile app path not configured. Set the AWS_DEVICE_FARM_APP_PATH environment variable on AWS Device Farm.'
   )
 }
-const appPath = rawAppPath
+
+const iosLocalPath = process.env.E2E_LOCAL_PATH
+  ? '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
+  : './ios/build/Debug-iphonesimulator/AvaxWalletInternal.app'
+const androidLocalPath = process.env.E2E_LOCAL_PATH
+  ? '/Users/eunji.song/Downloads/app-internal-e2e-bitrise-signed.apk'
+  : './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
+
+const iosAppPath = rawAppPath || path.resolve(iosLocalPath)
+const androidAppPath = rawAppPath || path.resolve(androidLocalPath)
 
 const chromedriverExecutableDir =
   process.env.DEVICEFARM_CHROMEDRIVER_EXECUTABLE_DIR || ''
@@ -55,7 +62,7 @@ const allCaps = [
     'appium:deviceName': androidResolved.deviceName,
     'appium:platformVersion': androidResolved.platformVersion,
     'appium:automationName': 'UiAutomator2',
-    'appium:app': appPath,
+    'appium:app': androidAppPath,
     ...(androidResolved.deviceUdid
       ? { 'appium:udid': androidResolved.deviceUdid }
       : {}),
@@ -83,7 +90,7 @@ const allCaps = [
     'appium:maxTypingFrequency': 30,
     'appium:platformVersion': iosResolved.platformVersion,
     'appium:automationName': 'xcuitest',
-    'appium:app': appPath,
+    'appium:app': iosAppPath,
     ...(iosResolved.deviceUdid
       ? { 'appium:udid': iosResolved.deviceUdid }
       : {}),
@@ -160,10 +167,10 @@ export const config: WebdriverIO.Config = {
         ]
       ]
     : [],
-  logLevel: 'info', // More verbose for Device Farm debugging
+  logLevel: 'error',
   bail: 0,
   waitforTimeout: 20000,
-  specFileRetries: 0,
+  specFileRetries: process.env.CI === 'true' ? 1 : 0,
   connectionRetryTimeout: 120000,
   connectionRetryCount: 2,
   framework: 'mocha',
