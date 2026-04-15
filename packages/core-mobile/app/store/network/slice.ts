@@ -18,8 +18,6 @@ import { defaultEnabledL2ChainIds } from 'services/network/consts'
 import { RootState } from '../types'
 import { ChainID, Networks, NetworkState } from './types'
 
-export { defaultEnabledL2ChainIds }
-
 export const defaultNetwork = BITCOIN_NETWORK
 
 export const noActiveNetwork = 0

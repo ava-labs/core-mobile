@@ -16,8 +16,8 @@ import { useRouter } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useState } from 'react'
 import { ListRenderItem } from 'react-native'
-import { ChainName } from 'services/network/consts'
-import { alwaysEnabledChainIds, defaultEnabledL2ChainIds } from 'store/network'
+import { ChainName, defaultEnabledL2ChainIds } from 'services/network/consts'
+import { alwaysEnabledChainIds } from 'store/network'
 import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
 
 enum SectionTypeEnum {
