@@ -747,11 +747,12 @@ export const SwapScreen = (): JSX.Element => {
 
       // Skip if TO is already BTC.b — avoids overriding a valid selection
       // or causing unnecessary state writes on re-renders.
-      const toIsBtcB = toToken?.internalId === tokenIds.BTC_B
+      const btcBTokenId = isDeveloperMode ? tokenIds.BTC_B_FUJI : tokenIds.BTC_B
+      const toIsBtcB = toToken?.internalId === btcBTokenId
       if (toIsBtcB) return
 
       const btcb = [btcBLocalToken, ...tokensWithZeroBalance].find(
-        tk => tk?.internalId === tokenIds.BTC_B
+        tk => tk?.internalId === btcBTokenId
       )
       if (btcb) setToToken(btcb)
     }
@@ -767,7 +768,8 @@ export const SwapScreen = (): JSX.Element => {
     setFromToken,
     setAmount,
     tokensWithZeroBalance,
-    btcBLocalToken
+    btcBLocalToken,
+    isDeveloperMode
   ])
 
   // Validate token pair compatibility - clear TO token if incompatible with FROM chain

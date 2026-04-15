@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react'
+import { useSelector } from 'react-redux'
 import { useLocalSearchParams } from 'expo-router'
 import type { Network } from '@avalabs/core-chains-sdk'
 import type { LocalTokenWithBalance } from 'store/balance'
@@ -11,10 +12,13 @@ import {
 import { useSupportedChains } from 'features/swap/hooks/useSupportedChains'
 import { tokenIds } from 'consts/tokenIds'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 const SelectSwapToTokenScreen = (): JSX.Element => {
   const [selectedToToken, setSelectedToToken] = useSwapSelectedToToken()
   const [selectedFromToken] = useSwapSelectedFromToken()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const btcBTokenId = isDeveloperMode ? tokenIds.BTC_B_FUJI : tokenIds.BTC_B
   const { networkChainId } = useLocalSearchParams<{ networkChainId?: string }>()
 
   // Get supported chains and filtered destinations
@@ -42,11 +46,11 @@ const SelectSwapToTokenScreen = (): JSX.Element => {
         selectedNetwork !== undefined &&
         isAvalancheCChainId(selectedNetwork.chainId)
       ) {
-        return token.internalId === tokenIds.BTC_B
+        return token.internalId === btcBTokenId
       }
       return true
     },
-    [selectedFromToken]
+    [selectedFromToken, btcBTokenId]
   )
 
   return (
