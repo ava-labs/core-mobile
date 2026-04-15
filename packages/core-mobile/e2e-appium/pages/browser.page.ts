@@ -22,6 +22,10 @@ class BrowserPage {
     return selectors.getById(browserLoc.searchBar)
   }
 
+  get closeTabBtn() {
+    return selectors.getById(browserLoc.closeTabBtn)
+  }
+
   get blackholeAmountInput() {
     return selectors.getByXpath(browserLoc.blackholeAmountInput)
   }
@@ -84,6 +88,10 @@ class BrowserPage {
 
   get browserHistoryItem() {
     return selectors.getById(browserLoc.browserHistoryItem)
+  }
+
+  get openTrendingProjectBtn() {
+    return selectors.getByText(browserLoc.openTrendingProjectBtn)
   }
 
   async goToUrl(url: string) {
@@ -151,13 +159,22 @@ class BrowserPage {
   }
 
   async verifyUrlLoaded() {
-    await actions.waitFor(this.searchBar, 30000)
+    await actions.waitFor(this.searchBar)
     const uiUrl = await actions.getText(this.searchBar)
     assert.ok(
       uiUrl.startsWith('https://'),
       `Expected a loaded URL, got: "${uiUrl}"`
     )
     console.log('URL text: ', uiUrl)
+  }
+
+  async removeAllTabs() {
+    await this.tapTabsBtn()
+    while (await actions.getVisible(this.closeTabBtn)) {
+      await this.tapTabItemCloseBtn()
+      await actions.delay(1000)
+    }
+    await this.verifyBrowserDiscoveryScreen()
   }
 
   async tapTabsBtn() {
@@ -176,29 +193,25 @@ class BrowserPage {
     await actions.tap(this.urlMenuTrigger)
   }
 
-  async tapTabItemCloseBtn(index = 0) {
-    await actions.tap(selectors.getById(`close_btn__${index}`))
+  async tapTabItemCloseBtn() {
+    await actions.tap(this.closeTabBtn)
   }
 
   async tapFirstEcosystemCarouselItem() {
-    await actions.waitFor(this.ecosystemCarouselItem0, 15000)
     await actions.tap(this.ecosystemCarouselItem0)
   }
 
   async tapFirstLearnItem() {
-    await actions.waitFor(this.learnCarouselItem0, 15000)
+    await actions.dragAndDrop(this.ecosystemCarouselItem0, [0, -300])
     await actions.tap(this.learnCarouselItem0)
   }
 
   async tapFirstSuggestedItem() {
-    await actions.waitFor(this.suggestedItem0, 15000)
     await actions.tap(this.suggestedItem0)
   }
 
   async tapFirstTrendingProjectOpenBtn() {
-    const openBtn = selectors.getByText(browserLoc.openBtn)
-    await actions.waitFor(openBtn, 15000)
-    await actions.tap(openBtn)
+    await actions.tap(this.openTrendingProjectBtn)
   }
 
   async openNewTabViaMenu() {

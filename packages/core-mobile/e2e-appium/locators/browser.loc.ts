@@ -1,8 +1,10 @@
 export default {
   browserHistoryItem: 'browser_history_item',
+  openTrendingProjectBtn: 'trending_project_open_btn__0',
   close: 'Close',
   androidChromePager: 'com.android.chrome:id/fre_pager',
   searchBar: 'search_bar',
+  closeTabBtn: 'close_btn__0',
   myWebview: 'myWebview',
   blackholeAmountInput: '//XCUIElementTypeTextField[1]',
   blackholeSwapTitle: 'SWAP',
