@@ -7,6 +7,7 @@
     <color name="dialogTextColor">#28282E</color>
     <color name="neutral900">#1A1A1C</color>
     <color name="neutral850">#2A2A2D</color>
+    <color name="neutral800">#3E3E43</color>
     <color name="bootsplash_background">#28282E</color>
     <color name="iconBackgroundBling">#000000</color>
     <color name="iconBackgroundGrid">#091B25</color>
