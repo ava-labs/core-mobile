@@ -632,7 +632,9 @@ export const SwapScreen = (): JSX.Element => {
       })
     }
 
-    items.push(priceImpactItem)
+    if (activeQuote.serviceType === ServiceType.MARKR) {
+      items.push(priceImpactItem)
+    }
 
     return items
   }, [
