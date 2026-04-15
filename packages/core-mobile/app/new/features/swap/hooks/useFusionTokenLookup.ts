@@ -137,14 +137,7 @@ export function useFusionTokenLookup({
 
   const lookupTokenIds = useMemo(
     () => buildLookupTokenIds({ btcBTokenId, tokenInfo }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      btcBTokenId,
-      tokenInfo.initialTokenIdFrom,
-      tokenInfo.initialTokenIdTo,
-      tokenInfo.initialFromCaip2Id,
-      tokenInfo.initialToCaip2Id
-    ]
+    [btcBTokenId, tokenInfo]
   )
 
   const { data: tokens, isLoading: isTokensLoading } =
