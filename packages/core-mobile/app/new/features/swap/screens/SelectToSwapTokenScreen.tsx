@@ -213,6 +213,8 @@ export const SelectToSwapTokenScreen = ({
               ? 'Avalanche (C-Chain)'
               : network.chainId === ChainId.AVALANCHE_TESTNET_ID
               ? 'Avalanche (C-Chain Testnet)'
+              : network.chainId === ChainId.SOLANA_MAINNET_ID
+              ? 'Solana '
               : network.chainName}
           </Button>
         ))}

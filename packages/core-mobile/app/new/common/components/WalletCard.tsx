@@ -24,6 +24,7 @@ import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { WalletType } from 'services/wallet/types'
 import { selectIsWalletLedger } from 'store/wallet/slice'
 import { useSelector } from 'react-redux'
+import { LedgerDerivationPathType } from 'services/ledger/types'
 import { DropdownMenu } from './DropdownMenu'
 import { WalletIcon } from './WalletIcon'
 
@@ -233,13 +234,26 @@ const WalletCard = ({
               <Text
                 numberOfLines={1}
                 style={{
+                  marginTop: 4,
                   fontSize: 12,
                   lineHeight: 12,
                   color: colors.$textSecondary
                 }}>
-                {wallet.accounts.length > 1
-                  ? `${wallet.accounts.length} accounts`
-                  : '1 account'}
+                {(() => {
+                  const accountCountText =
+                    wallet.accounts.length > 1
+                      ? `${wallet.accounts.length} accounts`
+                      : '1 account'
+                  const derivationPathLabel =
+                    wallet.type === WalletType.LEDGER
+                      ? LedgerDerivationPathType.BIP44
+                      : wallet.type === WalletType.LEDGER_LIVE
+                      ? LedgerDerivationPathType.LedgerLive
+                      : null
+                  return derivationPathLabel
+                    ? `${derivationPathLabel} – ${accountCountText}`
+                    : accountCountText
+                })()}
               </Text>
             </View>
           </View>
