@@ -30,7 +30,7 @@ export const mapSdkAssetToLocal = (
   asset: Asset,
   networkChainId: number,
   balanceData?: LocalTokenWithBalance
-): LocalTokenWithBalance => {
+): LocalTokenWithBalance & { decimals: number; address?: string } => {
   const localId = getLocalIdFromSdkAsset(asset)
   const { decimals, symbol } = asset
   const balance = balanceData?.balance ?? 0n
@@ -59,5 +59,5 @@ export const mapSdkAssetToLocal = (
     balanceInCurrency: balanceData?.balanceInCurrency ?? 0,
     priceInCurrency: balanceData?.priceInCurrency ?? 0,
     reputation: null
-  } as LocalTokenWithBalance
+  } as LocalTokenWithBalance & { decimals: number; address?: string }
 }

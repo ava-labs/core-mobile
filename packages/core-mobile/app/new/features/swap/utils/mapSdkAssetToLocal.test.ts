@@ -1,24 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { TokenType as FusionTokenType, ServiceType } from '@avalabs/fusion-sdk'
+import { TokenType as FusionTokenType } from '@avalabs/fusion-sdk'
 import { TokenType } from '@avalabs/vm-module-types'
 import { ChainId } from '@avalabs/core-chains-sdk'
-import type { BridgeableUiAsset } from '@avalabs/fusion-sdk'
+import type { Asset } from '@avalabs/fusion-sdk'
 import type { LocalTokenWithBalance } from 'store/balance'
 import { mapSdkAssetToLocal } from './mapSdkAssetToLocal'
 
-const BRIDGE_PROVIDERS = [ServiceType.MARKR] as const
-
 describe('mapSdkAssetToLocal', () => {
   describe('ERC20 assets', () => {
-    it('maps an ERC20 BridgeableUiAsset to LocalTokenWithBalance', () => {
-      const asset: BridgeableUiAsset = {
+    it('maps an ERC20 Asset to LocalTokenWithBalance', () => {
+      const asset: Asset = {
         type: FusionTokenType.ERC20,
         name: 'USD Coin',
         symbol: 'USDC',
         decimals: 6,
         address: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
-        logoUri: 'https://example.com/usdc.png',
-        bridgeProviders: BRIDGE_PROVIDERS
+        logoUri: 'https://example.com/usdc.png'
       }
 
       const result = mapSdkAssetToLocal(asset, ChainId.AVALANCHE_TESTNET_ID)
@@ -38,14 +35,13 @@ describe('mapSdkAssetToLocal', () => {
     })
 
     it('merges portfolio balance data when provided', () => {
-      const asset: BridgeableUiAsset = {
+      const asset: Asset = {
         type: FusionTokenType.ERC20,
         name: 'USD Coin',
         symbol: 'USDC',
         decimals: 6,
         address: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E',
-        logoUri: null,
-        bridgeProviders: BRIDGE_PROVIDERS
+        logoUri: undefined
       }
 
       const balanceData: Partial<LocalTokenWithBalance> = {
@@ -67,14 +63,13 @@ describe('mapSdkAssetToLocal', () => {
     })
 
     it('sets localId to lowercase address for ERC20', () => {
-      const asset: BridgeableUiAsset = {
+      const asset: Asset = {
         type: FusionTokenType.ERC20,
         name: 'Token',
         symbol: 'TKN',
         decimals: 18,
         address: '0xABCDEF1234567890',
-        logoUri: null,
-        bridgeProviders: BRIDGE_PROVIDERS
+        logoUri: undefined
       }
 
       const result = mapSdkAssetToLocal(asset, ChainId.AVALANCHE_TESTNET_ID)
@@ -83,14 +78,13 @@ describe('mapSdkAssetToLocal', () => {
     })
 
     it('handles null logoUri', () => {
-      const asset: BridgeableUiAsset = {
+      const asset: Asset = {
         type: FusionTokenType.ERC20,
         name: 'Token',
         symbol: 'TKN',
         decimals: 18,
         address: '0xabc',
-        logoUri: null,
-        bridgeProviders: BRIDGE_PROVIDERS
+        logoUri: undefined
       }
 
       const result = mapSdkAssetToLocal(asset, ChainId.AVALANCHE_TESTNET_ID)
@@ -101,13 +95,12 @@ describe('mapSdkAssetToLocal', () => {
 
   describe('Native assets', () => {
     it('maps a NativeAsset to LocalTokenWithBalance with NATIVE type', () => {
-      const asset: BridgeableUiAsset = {
+      const asset: Asset = {
         type: FusionTokenType.NATIVE,
         name: 'Avalanche',
         symbol: 'AVAX',
         decimals: 18,
-        logoUri: 'https://example.com/avax.png',
-        bridgeProviders: BRIDGE_PROVIDERS
+        logoUri: 'https://example.com/avax.png'
       }
 
       const result = mapSdkAssetToLocal(asset, ChainId.AVALANCHE_TESTNET_ID)
