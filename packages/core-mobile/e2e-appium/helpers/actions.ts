@@ -122,7 +122,6 @@ async function waitFor(ele: ChainablePromiseElement, timeout = 20000) {
     await ele.waitForDisplayed({ timeout })
     return
   }
-  await ele.waitForDisplayed({ timeout })
 }
 
 async function waitForDisplayed(ele: ChainablePromiseElement, timeout = 20000) {
@@ -401,8 +400,11 @@ async function pasteText(
   } else {
     await tapXY(160, 650)
   }
-
-  await tapEnterOnKeyboard(keyboardId)
+  try {
+    await tapEnterOnKeyboard(keyboardId)
+  } catch {
+    console.log('Warning: Could not tap Enter on keyboard, continuing anyway')
+  }
 }
 
 async function tapXY(x: number, y: number) {

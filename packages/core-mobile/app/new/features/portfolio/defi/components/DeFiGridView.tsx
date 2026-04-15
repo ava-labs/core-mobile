@@ -73,6 +73,7 @@ export const DeFiGridView = ({
             <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <MaskedText
                 testID={`defi_grid_price__${index}`}
+                accessible={true}
                 shouldMask={isPrivacyModeEnabled}
                 sx={{ color: '$textSecondary', lineHeight: 18 }}
                 numberOfLines={1}>

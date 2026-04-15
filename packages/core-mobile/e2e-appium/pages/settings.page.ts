@@ -543,6 +543,7 @@ class Settings {
   }
 
   async tapNotifications() {
+    await this.swipeSettings(0.3)
     await actions.tap(this.notificationsPreferences)
   }
 
