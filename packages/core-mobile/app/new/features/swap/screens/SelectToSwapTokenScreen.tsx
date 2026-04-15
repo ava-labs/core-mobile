@@ -200,6 +200,8 @@ export const SelectToSwapTokenScreen = ({
             style={{ flexShrink: 0 }}>
             {network.chainId === ChainId.AVALANCHE_MAINNET_ID
               ? 'Avalanche (C-Chain)'
+              : network.chainId === ChainId.AVALANCHE_TESTNET_ID
+              ? 'Avalanche (C-Chain Testnet)'
               : network.chainName}
           </Button>
         ))}
