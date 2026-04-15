@@ -167,6 +167,7 @@ const TabsScreen = (): JSX.Element => {
           height: '100%'
         }}>
         <Pressable
+          testID="browser_tabs_add_btn"
           onPress={handleAddTab}
           style={{
             height: '100%',
@@ -187,7 +188,7 @@ const TabsScreen = (): JSX.Element => {
           }}
           onPressAction={onPressAction}
           groups={[{ id: 'menu-actions', items: MENU_ACTIONS }]}>
-          <View style={{ paddingRight: 21 }}>
+          <View testID="browser_tabs_more_btn" style={{ paddingRight: 21 }}>
             <Icons.Navigation.MoreHoriz color={theme.colors.$textPrimary} />
           </View>
         </DropdownMenu>

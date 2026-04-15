@@ -34,6 +34,38 @@ class BrowserPage {
     return selectors.getById(browserLoc.blackholeSwapButton)
   }
 
+  get tabsBtn() {
+    return selectors.getById(browserLoc.tabsBtn)
+  }
+
+  get tabsAddBtn() {
+    return selectors.getById(browserLoc.tabsAddBtn)
+  }
+
+  get tabsMoreBtn() {
+    return selectors.getById(browserLoc.tabsMoreBtn)
+  }
+
+  get urlMenuTrigger() {
+    return selectors.getById(browserLoc.urlMenuTrigger)
+  }
+
+  get tabItemCloseBtn() {
+    return selectors.getById(browserLoc.tabItemCloseBtn)
+  }
+
+  get ecosystemCarouselItem0() {
+    return selectors.getById(browserLoc.ecosystemCarouselItem0)
+  }
+
+  get learnCarouselItem0() {
+    return selectors.getById(browserLoc.learnCarouselItem0)
+  }
+
+  get suggestedItem0() {
+    return selectors.getById(browserLoc.suggestedItem0)
+  }
+
   async goToUrl(url: string) {
     await actions.waitFor(this.searchBar, 30000)
     await actions.tap(this.searchBar)
@@ -87,6 +119,92 @@ class BrowserPage {
       }
       await actions.delay(1000)
     }
+  }
+
+  async verifyUrlContains(substring: string) {
+    await actions.waitFor(this.searchBar)
+    const uiUrl = await actions.getText(this.searchBar)
+    assert.ok(
+      uiUrl.includes(substring),
+      `URL "${uiUrl}" does not contain "${substring}"`
+    )
+    console.log('URL text: ', uiUrl)
+  }
+
+  async verifyUrlLoaded() {
+    await actions.waitFor(this.searchBar, 30000)
+    const uiUrl = await actions.getText(this.searchBar)
+    assert.ok(
+      uiUrl.startsWith('https://'),
+      `Expected a loaded URL, got: "${uiUrl}"`
+    )
+    console.log('URL text: ', uiUrl)
+  }
+
+  async tapTabsBtn() {
+    await actions.tap(this.tabsBtn)
+  }
+
+  async tapTabsAddBtn() {
+    await actions.tap(this.tabsAddBtn)
+  }
+
+  async tapTabsMoreBtn() {
+    await actions.tap(this.tabsMoreBtn)
+  }
+
+  async tapUrlMenuTrigger() {
+    await actions.tap(this.urlMenuTrigger)
+  }
+
+  async tapTabItemCloseBtn() {
+    await actions.tap(this.tabItemCloseBtn)
+  }
+
+  async tapFirstEcosystemCarouselItem() {
+    await actions.waitFor(this.ecosystemCarouselItem0, 15000)
+    await actions.tap(this.ecosystemCarouselItem0)
+  }
+
+  async tapFirstLearnItem() {
+    await actions.waitFor(this.learnCarouselItem0, 15000)
+    await actions.tap(this.learnCarouselItem0)
+  }
+
+  async tapFirstSuggestedItem() {
+    await actions.waitFor(this.suggestedItem0, 15000)
+    await actions.tap(this.suggestedItem0)
+  }
+
+  async tapFirstTrendingProjectOpenBtn() {
+    const openBtn = selectors.getByText(browserLoc.openBtn)
+    await actions.waitFor(openBtn, 15000)
+    await actions.tap(openBtn)
+  }
+
+  async openNewTabViaMenu() {
+    await this.tapUrlMenuTrigger()
+    await actions.tap(selectors.getByText(browserLoc.openNewTab))
+    await actions.delay(1000)
+  }
+
+  async tapCloseAllTabsMenu() {
+    await actions.tap(selectors.getByText(browserLoc.closeAllTabsMenu))
+    await actions.tap(selectors.getByText('Yes'))
+  }
+
+  async tapBrowsingHistoryMenu() {
+    await actions.tap(selectors.getByText(browserLoc.browsingHistoryMenu))
+  }
+
+  async tapClearAllHistory() {
+    await actions.tap(selectors.getByText(browserLoc.clearAll))
+    await actions.tap(selectors.getByText('Yes'))
+  }
+
+  async verifyNoHistory() {
+    await actions.waitFor(selectors.getBySomeText(browserLoc.noHistory))
+    await actions.isVisible(selectors.getBySomeText(browserLoc.noHistory))
   }
 }
 
