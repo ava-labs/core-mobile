@@ -6,12 +6,6 @@ import browserPage from './browser.page'
 import commonElsPage from './commonEls.page'
 import portfolioPage from './portfolio.page'
 
-/**
- * Avoid re-running onboarding dismissal in the same Node process.
- * WDIO parallel workers are separate processes and do not share this flag.
- */
-let transactionOnboardingDismissedThisProcess = false
-
 class TransactionsPage {
   get sendButton() {
     return selectors.getById(txLoc.sendButton)
@@ -55,6 +49,10 @@ class TransactionsPage {
 
   get searchBar() {
     return selectors.getById(txLoc.searchBar)
+  }
+
+  get networkSelectorScroll() {
+    return selectors.getById(txLoc.networkSelectorScroll)
   }
 
   get selectTokenTitle() {
@@ -170,26 +168,10 @@ class TransactionsPage {
   }
 
   async dismissTransactionOnboarding() {
-    if (transactionOnboardingDismissedThisProcess) {
-      console.log(
-        'Transaction onboarding already dismissed earlier in this run — skipping check'
-      )
-      return
-    }
-    const isNextButtonVisible = await actions.isElementVisible(
-      this.transactionOnboardingNext,
-      10000
-    )
-    if (isNextButtonVisible) {
-      console.log(
-        'Transaction onboarding next button visible - dismissing onboarding'
-      )
+    try {
       await actions.tap(this.transactionOnboardingNext)
-      transactionOnboardingDismissedThisProcess = true
-    } else {
-      console.log(
-        'Transaction onboarding not found - may have been dismissed already'
-      )
+    } catch (e) {
+      console.log('Transaction onboarding not found')
     }
   }
 
@@ -224,9 +206,11 @@ class TransactionsPage {
   }
 
   async selectToken(tokenName: string, network?: string) {
-    if (network) {
-      await actions.tap(selectors.getById(`network_selector__${network}`))
+    const networkBtn = selectors.getById(`network_selector__${network}`)
+    if (!(await actions.getVisible(networkBtn))) {
+      await actions.dragAndDrop(this.networkSelectorScroll, [-300, 0])
     }
+    await actions.tap(networkBtn)
     await actions.type(this.searchBar, tokenName)
     try {
       await actions.dismissKeyboard()

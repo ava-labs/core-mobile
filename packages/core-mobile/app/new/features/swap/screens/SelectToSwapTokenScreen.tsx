@@ -193,6 +193,7 @@ export const SelectToSwapTokenScreen = ({
 
     return (
       <ScrollView
+        testID="network_selector_scroll"
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ gap: 8 }}>

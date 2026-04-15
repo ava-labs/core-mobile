@@ -43,10 +43,9 @@ class BrowserPage {
   }
 
   async swapBlackhole() {
-    await actions.pasteText(this.blackholeAmountInput, '0.001')
+    await actions.pasteText(this.blackholeAmountInput, '0.001', 'selected')
     await actions.swipe('up', 0.5, this.blackholeSwapTitle)
-    await actions.tap(this.blackholeSwapButton)
-    await actions.waitFor(txPage.approveTitle, 40000)
+    await actions.tap(this.blackholeSwapButton, txPage.approveTitle)
     await txPage.tapApprove()
     await actions.delay(4000)
   }
