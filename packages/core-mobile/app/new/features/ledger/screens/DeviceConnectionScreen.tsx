@@ -7,7 +7,7 @@ import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupC
 import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIconWithText'
 import { LedgerDeviceList } from 'new/features/ledger/components/LedgerDeviceList'
 import LedgerService from 'services/ledger/LedgerService'
-import { LedgerDevice } from 'services/ledger/types'
+import { LedgerDevice, LedgerDerivationPathType } from 'services/ledger/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useSelector } from 'react-redux'
 import { selectWalletState } from 'store/app'
@@ -17,6 +17,7 @@ import {
   isLedgerBluetoothError,
   showBluetoothErrorAlert
 } from 'services/ledger/LedgerBluetoothError'
+import { useCheckIfLedgerWalletExists } from '../hooks/useCheckIfLedgerWalletExists'
 
 interface DeviceConnectionScreenProps {
   onNavigateToAppConnection: () => void
@@ -31,7 +32,9 @@ export default function DeviceConnectionScreen({
   } = useTheme()
 
   const walletState = useSelector(selectWalletState)
-  const { isConnecting, connectToDevice, resetSetup } = useLedgerSetupContext()
+  const checkIfLedgerWalletExists = useCheckIfLedgerWalletExists()
+  const { isConnecting, connectToDevice, resetSetup, selectedDerivationPath } =
+    useLedgerSetupContext()
 
   // Local device management
   const [devices, setDevices] = useState<LedgerDevice[]>([])
@@ -87,6 +90,18 @@ export default function DeviceConnectionScreen({
   // Handle device connection
   const handleDeviceConnection = useCallback(
     async (deviceId: string, deviceName: string) => {
+      const derivationPath =
+        selectedDerivationPath ?? LedgerDerivationPathType.BIP44
+
+      if (checkIfLedgerWalletExists(deviceId, derivationPath)) {
+        Alert.alert(
+          'Wallet already exists',
+          'This Ledger wallet has already been imported.',
+          [{ text: 'OK' }]
+        )
+        return
+      }
+
       try {
         await connectToDevice(deviceId, deviceName)
         if (walletState === WalletState.NONEXISTENT) {
@@ -116,7 +131,14 @@ export default function DeviceConnectionScreen({
         )
       }
     },
-    [connectToDevice, resetSetup, onNavigateToAppConnection, walletState]
+    [
+      selectedDerivationPath,
+      checkIfLedgerWalletExists,
+      connectToDevice,
+      resetSetup,
+      onNavigateToAppConnection,
+      walletState
+    ]
   )
 
   const handleCancel = useCallback(() => {

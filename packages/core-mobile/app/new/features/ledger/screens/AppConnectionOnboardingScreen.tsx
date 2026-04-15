@@ -15,7 +15,6 @@ import { onWalletImported } from 'store/app/slice'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useLedgerSetupContext } from '../contexts/LedgerSetupContext'
 import { useSetLedgerAddress } from '../hooks/useSetLedgerAddress'
-import { useCheckIfLedgerWalletExists } from '../hooks/useCheckIfLedgerWalletExists'
 import AppConnectionScreen from './AppConnectionScreen'
 
 interface AppConnectionOnboardingScreenProps {
@@ -31,7 +30,6 @@ export const AppConnectionOnboardingScreen = ({
 }: AppConnectionOnboardingScreenProps): JSX.Element => {
   const { createLedgerWallet } = useLedgerWallet()
   const { setLedgerAddress } = useSetLedgerAddress()
-  const checkIfLedgerWalletExists = useCheckIfLedgerWalletExists()
   const { canGoBack, back } = useRouter()
   const dispatch = useDispatch()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -88,15 +86,6 @@ export const AppConnectionOnboardingScreen = ({
         Alert.alert(
           'Wallet setup failed',
           'Unable to complete Ledger wallet setup. Please restart the setup process.',
-          [{ text: 'OK', onPress: handleCancel }]
-        )
-        return
-      }
-
-      if (checkIfLedgerWalletExists(connectedDeviceId, derivationPath)) {
-        Alert.alert(
-          'Wallet already exists',
-          'This Ledger wallet has already been imported.',
           [{ text: 'OK', onPress: handleCancel }]
         )
         return
@@ -178,8 +167,7 @@ export const AppConnectionOnboardingScreen = ({
       isDeveloperMode,
       onNavigateToComplete,
       handleCancel,
-      dispatch,
-      checkIfLedgerWalletExists
+      dispatch
     ]
   )
 
