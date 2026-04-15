@@ -125,7 +125,7 @@ export const SelectFromSwapTokenScreen = ({
                 : 'secondary'
             }
             onPress={() => setSelectedNetwork(network)}
-            style={{ flexShrink: 0 }}>
+            style={{ flexShrink: 0, alignSelf: 'flex-start' }}>
             {network.chainId === ChainId.AVALANCHE_MAINNET_ID
               ? 'Avalanche (C-Chain)'
               : network.chainId === ChainId.AVALANCHE_TESTNET_ID

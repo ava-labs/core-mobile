@@ -118,7 +118,7 @@ export const useTestnetToTokens = (
         asset.type !== FusionTokenType.NATIVE
           ? asset.address.toLowerCase()
           : `NATIVE-${asset.symbol}`
-      const balanceData = balanceMap.get(localId)
+      const balanceData = balanceMap.get(localId.toLowerCase())
       return mapSdkAssetToLocal(asset, chainId ?? 0, balanceData)
     })
   }, [rawAssets, balanceMap, chainId])
