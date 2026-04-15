@@ -96,14 +96,13 @@ export const TokenListView = ({
                 sx={{ lineHeight: 16, flex: 1 }}
                 ellipsizeMode="tail"
                 numberOfLines={1}>
-                <View
-                  testID={`list_token_balance__${index}`}
-                  sx={{ flexDirection: 'row' }}>
+                <View sx={{ flexDirection: 'row' }}>
                   <SubTextNumber
                     number={token.balanceDisplayValue}
                     textVariant="body2"
                   />
                   <Text
+                    testID={`list_token_balance__${index}`}
                     variant="body2"
                     sx={{
                       marginTop: 1,

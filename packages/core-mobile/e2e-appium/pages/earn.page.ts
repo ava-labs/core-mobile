@@ -3,6 +3,7 @@ import { selectors } from '../helpers/selectors'
 import earnLoc from '../locators/earn.loc'
 import txPage from './transactions.page'
 import bottomTabsPage from './bottomTabs.page'
+import commonElsPage from './commonEls.page'
 
 class EarnPage {
   get earnSubtitle() {
@@ -65,6 +66,22 @@ class EarnPage {
     return selectors.getByText(earnLoc.selectDepositsToUseAsCollateralTitle)
   }
 
+  get depositFormTitle() {
+    return selectors.getByText(earnLoc.depositFormTitle)
+  }
+
+  get borrowFormTitle() {
+    return selectors.getByText(earnLoc.borrowFormTitle)
+  }
+
+  get withdrawFormTitle() {
+    return selectors.getByText(earnLoc.withdrawFormTitle)
+  }
+
+  get repayFormTitle() {
+    return selectors.getByText(earnLoc.repayFormTitle)
+  }
+
   selectDepositTokenBtn(tokenSymbol: string) {
     return selectors.getById(`depositOrBuy__${tokenSymbol}`)
   }
@@ -119,7 +136,7 @@ class EarnPage {
     await txPage.tapNext()
     await this.selectBorrowAsset(token)
     await txPage.tapMax()
-    await txPage.tapAddCard()
+    await actions.tap(this.borrowFormTitle)
     await txPage.tapNext()
     await txPage.tapApprove()
     if (token === 'AVAX') {
@@ -137,7 +154,7 @@ class EarnPage {
     await this.selectDepositAsset(token)
     await this.selectPool(pool)
     await this.enterAmount(amount)
-    await txPage.tapAddCard()
+    await actions.tap(this.depositFormTitle)
     await txPage.tapNext()
     if (token !== 'AVAX') {
       await txPage.approveSpendLimitIfNeeded()
@@ -171,6 +188,7 @@ class EarnPage {
   }
 
   async tapBorrowCard(pool = 'aave', token = 'AVAX') {
+    await commonElsPage.pullToRefresh(this.borrowOn)
     await actions.tap(this.borrowCard(pool, token))
   }
 
@@ -194,7 +212,7 @@ class EarnPage {
   async repay(pool = 'aave', token = 'AVAX') {
     await this.tapRepay(pool, token)
     await txPage.tapMax()
-    await txPage.tapAddCard()
+    await actions.tap(this.repayFormTitle)
     await txPage.tapNext()
     await txPage.tapApprove()
     await txPage.verifySuccessToast()
@@ -205,7 +223,7 @@ class EarnPage {
     await this.tapWithdraw(pool, token)
     if (amount.toLowerCase() === 'max') {
       await txPage.tapMax()
-      await txPage.tapAddCard()
+      await actions.tap(this.withdrawFormTitle)
     } else {
       await this.enterAmount(amount)
     }

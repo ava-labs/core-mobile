@@ -69,14 +69,13 @@ describe('Portfolio tab', () => {
   })
 
   it('Assets - view assets by grid and list', async () => {
+    await portfolioPage.verifyAssetRow(0)
+    await portfolioPage.verifyAssetRow(1)
+    await portfolioPage.verifyAssetRow(2)
+
     await commonElsPage.selectDropdown('view', 'Grid view')
     await portfolioPage.verifyAssetRow(0, false)
     await portfolioPage.verifyAssetRow(1, false)
     await portfolioPage.verifyAssetRow(2, false)
-
-    await commonElsPage.selectDropdown('view', 'List view')
-    await portfolioPage.verifyAssetRow(0)
-    await portfolioPage.verifyAssetRow(1)
-    await portfolioPage.verifyAssetRow(2)
   })
 })
