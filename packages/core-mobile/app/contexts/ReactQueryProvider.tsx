@@ -97,13 +97,28 @@ NetInfo.configure({
   useNativeReachability: false
 })
 
+// Track confirmed reachability so we can detect the first online
+// confirmation (null → true) and offline → online transitions.
+let lastReachable: boolean | null = null
+
 // NetInfo event listener: uses HTTP-based isInternetReachable as primary
 // signal, with isConnected as fast fallback for disconnect detection.
 onlineManager.setEventListener(setOnline => {
   const unsub = NetInfo.addEventListener(state => {
     if (state.isInternetReachable !== null) {
+      const wasReachable = lastReachable
+      lastReachable = state.isInternetReachable
+
       setOnline(state.isInternetReachable)
+
+      // When internet becomes reachable from any non-confirmed state
+      // (null = cold start, false = was offline), invalidate all queries
+      // so active observers refetch fresh data.
+      if (state.isInternetReachable && wasReachable !== true) {
+        queryClient.invalidateQueries()
+      }
     } else if (state.isConnected === false) {
+      lastReachable = false
       setOnline(false)
     }
   })

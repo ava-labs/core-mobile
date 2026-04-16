@@ -110,7 +110,13 @@ const AssetsScreen: FC<Props> = ({
   // Only show loading state for initial load
   const isInitialLoading = isLoadingBalance && !isBalanceLoaded
 
-  const hasNoAssets = data.length === 0 && isBalanceLoaded && !isInitialLoading
+  // Suppress partial token data until all chains have loaded so tokens
+  // appear together instead of in two waves (e.g. BTC/XP first, then
+  // EVM/SOL seconds later on iOS after reconnecting from offline).
+  const effectiveData = isBalanceLoaded ? data : []
+
+  const hasNoAssets =
+    effectiveData.length === 0 && isBalanceLoaded && !isInitialLoading
 
   const renderItem = useCallback(
     ({
@@ -187,7 +193,7 @@ const AssetsScreen: FC<Props> = ({
     // if the filter is the default filter, this error state does not apply
     if (
       filter.selected !== AssetNetworkFilter.AllNetworks &&
-      data.length === 0
+      effectiveData.length === 0
     ) {
       return (
         <CollapsibleTabs.ContentWrapper>
@@ -210,7 +216,7 @@ const AssetsScreen: FC<Props> = ({
     isAllBalancesInaccurate,
     filter.selected,
     hasNoAssets,
-    data.length,
+    effectiveData.length,
     refetch,
     goToBuy,
     onResetFilter
@@ -276,7 +282,7 @@ const AssetsScreen: FC<Props> = ({
         flex: 1
       }}>
       <CollapsibleTabList
-        data={data}
+        data={effectiveData}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         containerStyle={containerStyle}

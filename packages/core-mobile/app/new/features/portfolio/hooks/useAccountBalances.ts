@@ -131,16 +131,15 @@ export function useAccountBalances(
   const isLoading = useMemo(() => {
     if (isError || !isOnline) return false
 
-    // still loading if:
-    // - account missing, OR
-    // - no data, OR
-    // - fewer results than enabled networks
-    return (
-      !account ||
-      !data ||
-      data.length === 0 ||
-      data.length < enabledNetworks.length
-    )
+    if (!account || !data || data.length === 0) return true
+
+    // Count only chains that returned real data (not error stubs).
+    // VM module fallback creates entries with dataAccurate === false
+    // for failed chains; these shouldn't count as "loaded".
+    const loadedCount = data.filter(d => d.dataAccurate !== false).length
+    const result = loadedCount < enabledNetworks.length
+
+    return result
   }, [account, data, enabledNetworks.length, isError, isOnline])
 
   return {
