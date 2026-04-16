@@ -640,12 +640,14 @@ class LedgerService {
     accountIndex: number,
     derivationPathType?: LedgerDerivationPathType
   ): string {
-    if (derivationPathType === LedgerDerivationPathType.BIP44) {
-      return DERIVATION_PATHS.BIP44.EVM(0, accountIndex)
-    }
+    const sdkDerivationPathType =
+      derivationPathType === LedgerDerivationPathType.LedgerLive
+        ? 'ledger_live'
+        : 'bip44'
     return getAddressDerivationPath({
       accountIndex,
-      vmType: NetworkVMType.EVM
+      vmType: NetworkVMType.EVM,
+      derivationPathType: sdkDerivationPathType
     })
   }
 
