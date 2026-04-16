@@ -1403,7 +1403,12 @@ export class LedgerWallet implements Wallet {
     const appType = LedgerAppType.AVALANCHE
     await this.handleAppConnection(appType)
 
-    const addresses = await LedgerService.getAllAddresses(index, 1, isTestnet)
+    const addresses = await LedgerService.getAllAddresses(
+      index,
+      1,
+      isTestnet,
+      this.derivationPathSpec
+    )
     const findAddress = (type: LedgerAddressType): string | undefined =>
       addresses.find(addr => addr.type === type)?.address
 
@@ -1426,7 +1431,10 @@ export class LedgerWallet implements Wallet {
     let xpub = { evm: '', avalanche: '' }
     // Get extended public keys for this account (device is already connected)
     if (this.isBIP44()) {
-      const extendedKeys = await LedgerService.getExtendedPublicKeys(index)
+      const extendedKeys = await LedgerService.getExtendedPublicKeys(
+        index,
+        this.derivationPathSpec
+      )
       xpub = {
         evm: extendedPublicKeyToXpub(
           extendedKeys.evm.key,
