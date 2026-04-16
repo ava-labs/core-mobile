@@ -331,6 +331,7 @@ export const BrowserInput = (): ReactNode => {
                 borderRadius: 100
               }}>
               <Pressable
+                testID="browser_tabs_btn"
                 onPress={navigateToTabs}
                 style={{
                   height: '100%',
