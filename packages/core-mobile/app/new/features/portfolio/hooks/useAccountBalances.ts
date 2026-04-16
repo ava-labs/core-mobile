@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
@@ -56,7 +56,6 @@ export function useAccountBalances(
   isRefetching: boolean
   refetch: () => Promise<void>
 } {
-  const queryClient = useQueryClient()
   const [isRefetching, setIsRefetching] = store.useIsRefetchingAccountBalances()
   const isOnline = useOnlineStatus()
 
@@ -95,17 +94,7 @@ export function useAccountBalances(
         account,
         currency: currency.toLowerCase(),
         xpAddresses,
-        xpub,
-        onBalanceLoaded: balance => {
-          queryClient.setQueryData(
-            balanceKey(account, enabledNetworks),
-            (prev: AdjustedNormalizedBalancesForAccount[] | undefined) => {
-              if (!prev) return [balance]
-              const filtered = prev.filter(p => p.chainId !== balance.chainId)
-              return [...filtered, balance]
-            }
-          )
-        }
+        xpub
       })
     }
   })
@@ -131,15 +120,9 @@ export function useAccountBalances(
   const isLoading = useMemo(() => {
     if (isError || !isOnline) return false
 
-    if (!account || !data || data.length === 0) return true
-
-    // Count only chains that returned real data (not error stubs).
-    // VM module fallback creates entries with dataAccurate === false
-    // for failed chains; these shouldn't count as "loaded".
-    const loadedCount = data.filter(d => d.dataAccurate !== false).length
-    const result = loadedCount < enabledNetworks.length
-
-    return result
+    return (
+      !account || !data || data.length === 0 || data.length < enabledNetworks.length
+    )
   }, [account, data, enabledNetworks.length, isError, isOnline])
 
   return {

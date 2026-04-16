@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { Account } from 'store/account'
 import { selectEnabledChainIds, selectEnabledNetworksMap } from 'store/network'
@@ -31,28 +31,6 @@ export function useAccountBalanceSummary(
   const networks = useSelector(selectEnabledNetworksMap)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
-  // Safety valve: accept partial data after 15 s to prevent an
-  // infinite loading screen if a chain is permanently unreachable.
-  const [acceptPartial, setAcceptPartial] = useState(false)
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  useEffect(() => {
-    const hasPartialData = data !== undefined && data.length > 0 && isLoading
-
-    if (hasPartialData && !acceptPartial) {
-      timerRef.current = setTimeout(() => setAcceptPartial(true), 15_000)
-    } else if (!isLoading && acceptPartial) {
-      setAcceptPartial(false)
-    }
-
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current)
-        timerRef.current = null
-      }
-    }
-  }, [data, isLoading, acceptPartial])
-
   return useMemo(() => {
     if (!account || !data) {
       return {
@@ -66,14 +44,7 @@ export function useAccountBalanceSummary(
       }
     }
 
-    // Consider balances "loaded" when:
-    // - we have data AND all networks have responded (!isLoading), OR
-    // - the 15 s safety timer accepted partial data, OR
-    // - we are confirmed offline.
-    // This prevents showing tokens in two waves (e.g. BTC/XP first, then
-    // EVM/SOL seconds later) on iOS after reconnecting from offline.
-    const isBalanceLoaded =
-      (data.length > 0 && (!isLoading || acceptPartial)) || isOffline
+    const isBalanceLoaded = data.length > 0 || isError || isOffline
 
     const isAllBalancesInaccurate =
       data.length > 0 && data.every(balance => balance.dataAccurate === false)
@@ -115,9 +86,7 @@ export function useAccountBalanceSummary(
       isLoading,
       isPolling: false,
       isRefetching,
-      // Suppress partial totals until all chains have reported so the
-      // header doesn't jump from a BTC/XP-only amount to the full amount.
-      totalBalanceInCurrency: isBalanceLoaded ? totalBalanceInCurrency : 0
+      totalBalanceInCurrency
     }
   }, [
     account,
@@ -126,7 +95,6 @@ export function useAccountBalanceSummary(
     isRefetching,
     isError,
     isOffline,
-    acceptPartial,
     tokenVisibility,
     enabledChainIds,
     networks,
