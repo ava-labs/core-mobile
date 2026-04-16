@@ -279,7 +279,7 @@ export const BrowserInputMenu = ({
         height: '100%'
       }}
       groups={sections}>
-      <View>
+      <View testID="browser_url_menu_trigger">
         <Icons.Navigation.MoreHoriz color={theme.colors.$textPrimary} />
       </View>
     </DropdownMenu>

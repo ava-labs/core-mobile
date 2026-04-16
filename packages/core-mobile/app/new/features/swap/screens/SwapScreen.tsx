@@ -347,7 +347,7 @@ export const SwapScreen = (): JSX.Element => {
     }
   }, [activeQuote, debouncedFromTokenValue])
 
-  const showFeesAndSlippage = activeQuote?.serviceType === ServiceType.MARKR
+  const isMarkrRoute = activeQuote?.serviceType === ServiceType.MARKR
 
   const isLombard =
     activeQuote?.serviceType === ServiceType.LOMBARD_BTC_TO_BTCB ||
@@ -619,7 +619,7 @@ export const SwapScreen = (): JSX.Element => {
       })
     }
 
-    if (showFeesAndSlippage) {
+    if (isMarkrRoute) {
       const displayValue = getDisplaySlippageValue({
         autoSlippage,
         quoteSlippageBps: activeQuote?.slippageBps,
@@ -632,7 +632,9 @@ export const SwapScreen = (): JSX.Element => {
       })
     }
 
-    items.push(priceImpactItem)
+    if (isMarkrRoute) {
+      items.push(priceImpactItem)
+    }
 
     return items
   }, [
@@ -641,7 +643,7 @@ export const SwapScreen = (): JSX.Element => {
     rate,
     activeQuote,
     allQuotes,
-    showFeesAndSlippage,
+    isMarkrRoute,
     slippage,
     autoSlippage,
     isSwapping,
