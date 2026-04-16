@@ -1210,7 +1210,12 @@ class LedgerService {
     Logger.info('Getting Avalanche keys')
 
     // Get addresses for display
-    const addresses = await this.getAllAddresses(accountIndex, 1, isTestnet)
+    const addresses = await this.getAllAddresses(
+      accountIndex,
+      1,
+      isTestnet,
+      derivationPath
+    )
 
     const findAddress = (type: LedgerAddressType): string =>
       addresses.find(addr => addr.type === type)?.address || ''
@@ -1238,7 +1243,10 @@ class LedgerService {
 
     if (derivationPath === LedgerDerivationPathType.BIP44) {
       // BIP44: fetch account-level xpubs and derive address-level public keys
-      const extendedKeys = await this.getExtendedPublicKeys(accountIndex)
+      const extendedKeys = await this.getExtendedPublicKeys(
+        accountIndex,
+        derivationPath
+      )
 
       const evmXpub = extendedPublicKeyToXpub(
         extendedKeys.evm.key,
@@ -1427,7 +1435,10 @@ class LedgerService {
 
     for (let i = startIndex; i < startIndex + count; i++) {
       try {
-        const xpubs = await this.getExtendedPublicKeys(i)
+        const xpubs = await this.getExtendedPublicKeys(
+          i,
+          LedgerDerivationPathType.BIP44
+        )
         results.push(xpubs)
       } catch (error) {
         Logger.error(
