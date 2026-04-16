@@ -539,6 +539,12 @@ function featureCoverageMark(f, stats) {
 /** Only Appium specs; packages/core-mobile/e2e/ (Detox) is deprecated. */
 const E2E_APPIUM_DIR = path.join(pkgRoot, 'e2e-appium')
 
+/** `required-scenarios.config.json` walletMode values with detection logic in this script. */
+const SUPPORTED_REQUIRED_SCENARIO_WALLET_MODES = new Set([
+  'mnemonic',
+  'seedless'
+])
+
 /** Feature folder names too generic for token-only breadth matching (false positives). */
 const BREADTH_AMBIGUOUS_FEATURE_DIRS = new Set([])
 
@@ -574,7 +580,7 @@ const BREADTH_GENERIC_FEATURE_TOKENS = new Set([
 ])
 
 /**
- * @returns {{ weights: { e2eFeatureCoveragePercent: number, requiredScenariosPercent: number, featureFolderWalletSlotPercent: number }, impliedUncertaintyPercentagePoints: number, definition?: string }}
+ * @returns {{ weights: { e2eFeatureCoveragePercent: number, requiredScenariosPercent: number, featureFolderWalletSlotPercent: number }, impliedUncertaintyPercentagePoints: number, definition?: string, configPath: string }}
  */
 function loadCoverageModelConfig() {
   const configPath = path.join(E2E_APPIUM_DIR, 'coverage-model.config.json')
@@ -641,9 +647,27 @@ function loadRequiredScenariosConfig() {
   }
   try {
     const raw = JSON.parse(fs.readFileSync(configPath, 'utf8'))
-    const walletModes = Array.isArray(raw.walletModes) && raw.walletModes.length
-      ? raw.walletModes.filter(m => m !== 'ledger')
+    const rawModes = Array.isArray(raw.walletModes) && raw.walletModes.length
+      ? raw.walletModes.map(m => String(m).trim())
       : defaults.walletModes
+    if (rawModes.includes('ledger')) {
+      console.warn(
+        'e2e-feature-coverage: walletMode "ledger" is ignored in required-scenarios (not automatable in Appium).'
+      )
+    }
+    const unsupported = rawModes.filter(
+      m => m !== 'ledger' && !SUPPORTED_REQUIRED_SCENARIO_WALLET_MODES.has(m)
+    )
+    if (unsupported.length) {
+      console.warn(
+        `e2e-feature-coverage: required-scenarios walletModes ignored (no detection logic): ${unsupported.join(
+          ', '
+        )}. Supported: ${[...SUPPORTED_REQUIRED_SCENARIO_WALLET_MODES].join(', ')}.`
+      )
+    }
+    const walletModes = rawModes.filter(
+      m => m !== 'ledger' && SUPPORTED_REQUIRED_SCENARIO_WALLET_MODES.has(m)
+    )
     return {
       flows: Array.isArray(raw.flows) && raw.flows.length ? raw.flows : defaults.flows,
       walletModes: walletModes.length ? walletModes : defaults.walletModes,
@@ -833,28 +857,20 @@ function specHasMnemonicContext(relLower, text) {
 }
 
 /**
- * @param {{ rel: string, abs: string }[]} testFiles
+ * @param {{ rel: string, abs: string, relLower: string, text: string }[]} specEntries
  * @param {{ flows: string[], walletModes: string[] }} cfg
  */
-function computeRequiredScenarioMatrixMobile(testFiles, cfg) {
+function computeRequiredScenarioMatrixMobile(specEntries, cfg) {
   /** @type {{ id: string, flow: string, walletMode: string, implemented: boolean, evidence: string[] }[]} */
   const scenarios = []
 
   for (const flow of cfg.flows) {
     for (const mode of cfg.walletModes) {
-      if (mode === 'ledger') continue
       const id = `${flow}-${mode}`
       const evidence = []
       let implemented = false
 
-      for (const { rel, abs } of testFiles) {
-        const relLower = rel.toLowerCase()
-        let txt = ''
-        try {
-          txt = fs.readFileSync(abs, 'utf8')
-        } catch {
-          txt = ''
-        }
+      for (const { rel, relLower, text: txt } of specEntries) {
         if (!specCoversFlowMobile(flow, relLower, txt)) continue
 
         if (mode === 'mnemonic') {
@@ -868,6 +884,10 @@ function computeRequiredScenarioMatrixMobile(testFiles, cfg) {
           if (!specHasSeedlessContext(relLower, txt)) continue
           implemented = true
           evidence.push(rel)
+        } else {
+          throw new Error(
+            `e2e-feature-coverage: unhandled walletMode "${mode}" (add detection or filter in loadRequiredScenariosConfig)`
+          )
         }
       }
 
@@ -895,18 +915,12 @@ function computeRequiredScenarioMatrixMobile(testFiles, cfg) {
 }
 
 /**
- * @param {{ rel: string, abs: string }[]} testFiles
+ * @param {{ rel: string, abs: string, relLower: string, text: string }[]} specEntries
  * @param {string[]} foldersInScope breadth denominator: `app/new/features/*` minus exclusions
  */
-function computeE2eFeatureBreadth(testFiles, foldersInScope) {
+function computeE2eFeatureBreadth(specEntries, foldersInScope) {
   const claimed = new Set()
-  for (const { rel, abs } of testFiles) {
-    let content = ''
-    try {
-      content = fs.readFileSync(abs, 'utf8')
-    } catch {
-      content = ''
-    }
+  for (const { rel, text: content } of specEntries) {
     const base = path.basename(rel, path.extname(rel))
     const stem = base.replace(/\.spec$/i, '') || base
     const describeTitle = extractFirstDescribeTitle(content)
@@ -1084,7 +1098,6 @@ function extractStaticItTitles(src) {
 
 /**
  * Map `"<describe title>\\t<it title>"` → spec rel paths (see WDIO `beforeTest` / `afterTest`).
- * @param {{ rel: string, abs: string }[]} testFiles
  */
 function addSuiteCaseKeysForSpec(map, rel, suite, titles) {
   const s = suite.trim()
@@ -1097,16 +1110,13 @@ function addSuiteCaseKeysForSpec(map, rel, suite, titles) {
   }
 }
 
-function buildSuiteCaseToSpecRelMap(testFiles) {
+/**
+ * @param {{ rel: string, text: string }[]} specEntries
+ */
+function buildSuiteCaseToSpecRelMap(specEntries) {
   /** @type {Map<string, Set<string>>} */
   const map = new Map()
-  for (const { rel, abs } of testFiles) {
-    let text = ''
-    try {
-      text = fs.readFileSync(abs, 'utf8')
-    } catch {
-      continue
-    }
+  for (const { rel, text } of specEntries) {
     const manual = DYNAMIC_SUITE_CASES_BY_SPEC_REL[rel]
     const suite = manual?.suite ?? extractFirstDescribeTitle(text)
     if (!suite) continue
@@ -1779,18 +1789,29 @@ function loadAppiumSpecFiles() {
 }
 
 /**
+ * Single `readFileSync` per spec; reuse for literals/corpus, breadth, scenarios, feature matching, TestRail map.
  * @param {{ rel: string, abs: string }[]} testFiles
+ * @returns {{ rel: string, abs: string, relLower: string, text: string }[]}
  */
-function buildSpecLiteralsAndCorpus(testFiles) {
-  const specLiteralSet = new Set()
-  const specCorpusParts = []
-  for (const { abs } of testFiles) {
-    let text
+function buildAppiumSpecEntries(testFiles) {
+  return testFiles.map(({ rel, abs }) => {
+    let text = ''
     try {
       text = fs.readFileSync(abs, 'utf8')
     } catch {
-      continue
+      text = ''
     }
+    return { rel, abs, relLower: rel.toLowerCase(), text }
+  })
+}
+
+/**
+ * @param {{ rel: string, abs: string, relLower: string, text: string }[]} specEntries
+ */
+function buildSpecLiteralsAndCorpusFromEntries(specEntries) {
+  const specLiteralSet = new Set()
+  const specCorpusParts = []
+  for (const { text } of specEntries) {
     specCorpusParts.push(text)
     collectStringLiteralsFromTs(text, specLiteralSet)
   }
@@ -1863,21 +1884,13 @@ function populateFeatureStats(
 }
 
 /**
- * @param {{ rel: string, abs: string }[]} testFiles
+ * @param {{ rel: string, abs: string, relLower: string, text: string }[]} specEntries
  * @param {string[]} featureNames
  * @param {Record<string, { tests: string[] }>} featureStats
  */
-function matchSpecsToFeatures(testFiles, featureNames, featureStats) {
+function matchSpecsToFeatures(specEntries, featureNames, featureStats) {
   const testToFeatures = []
-  for (const { rel, abs } of testFiles) {
-    const relLower = rel.toLowerCase()
-    let content = ''
-    try {
-      content = fs.readFileSync(abs, 'utf8')
-    } catch {
-      content = ''
-    }
-
+  for (const { rel, relLower, text: content } of specEntries) {
     const matched = []
     for (const f of featureNames) {
       if (!FEATURE_SIGNALS[f]) continue
@@ -1966,12 +1979,12 @@ function readModalFolderNames() {
 
 /**
  * @param {string} m
- * @param {{ rel: string, abs: string }[]} testFiles
+ * @param {{ rel: string, abs: string, relLower?: string, text?: string }[]} specEntries
  * @param {string[]} featureNames
  * @param {Record<string, object>} featureStats
  */
-function buildOneModalCoverage(m, testFiles, featureNames, featureStats) {
-  const relHits = testFiles.filter(({ rel }) =>
+function buildOneModalCoverage(m, specEntries, featureNames, featureStats) {
+  const relHits = specEntries.filter(({ rel }) =>
     modalMatchesTest(m, rel.toLowerCase())
   )
   const linked = modalLinkedFeature(m, featureNames)
@@ -1998,13 +2011,13 @@ function buildOneModalCoverage(m, testFiles, featureNames, featureStats) {
 
 /**
  * @param {string[]} modals
- * @param {{ rel: string, abs: string }[]} testFiles
+ * @param {{ rel: string, abs: string, relLower?: string, text?: string }[]} specEntries
  * @param {string[]} featureNames
  * @param {Record<string, object>} featureStats
  */
-function buildModalCoverage(modals, testFiles, featureNames, featureStats) {
+function buildModalCoverage(modals, specEntries, featureNames, featureStats) {
   return modals.map(m =>
-    buildOneModalCoverage(m, testFiles, featureNames, featureStats)
+    buildOneModalCoverage(m, specEntries, featureNames, featureStats)
   )
 }
 
@@ -2530,7 +2543,7 @@ function emptyTestrailSkip(reason) {
 }
 
 async function loadTestrailRegressionSummary(
-  testFiles,
+  specEntries,
   featureNames,
   featureStats
 ) {
@@ -2569,7 +2582,7 @@ async function loadTestrailRegressionSummary(
 
   try {
     const runs = await fetchAllProjectRuns(client)
-    const suiteCaseToSpecRels = buildSuiteCaseToSpecRelMap(testFiles)
+    const suiteCaseToSpecRels = buildSuiteCaseToSpecRelMap(specEntries)
     /** Reuse `get_case` results between iOS and Android runs in one process. */
     const caseMetaByIdCache = new Map()
     const trIos = await fetchTestrailPlatformRegressionContext(
@@ -2627,8 +2640,9 @@ async function main() {
   const verbose = process.argv.includes('--verbose')
 
   const testFiles = loadAppiumSpecFiles()
+  const specEntries = buildAppiumSpecEntries(testFiles)
   const { specLiteralSet, specCorpus, specLiteralList } =
-    buildSpecLiteralsAndCorpus(testFiles)
+    buildSpecLiteralsAndCorpusFromEntries(specEntries)
   const featureNames = readFeatureFolderNames()
   const featureStats = {}
   populateFeatureStats(
@@ -2639,7 +2653,7 @@ async function main() {
     specLiteralList
   )
   const testToFeatures = matchSpecsToFeatures(
-    testFiles,
+    specEntries,
     featureNames,
     featureStats
   )
@@ -2653,7 +2667,7 @@ async function main() {
   const modals = readModalFolderNames()
   const modalCoverage = buildModalCoverage(
     modals,
-    testFiles,
+    specEntries,
     featureNames,
     featureStats
   )
@@ -2669,7 +2683,7 @@ async function main() {
     testrailAndroid,
     regressionFailedFeaturesIos,
     regressionFailedFeaturesAndroid
-  } = await loadTestrailRegressionSummary(testFiles, featureNames, featureStats)
+  } = await loadTestrailRegressionSummary(specEntries, featureNames, featureStats)
 
   const regressionAdjIos = computeRegressionAdjustedMetrics(
     coverageBase.featuresWithSignalsInScope,
@@ -2694,11 +2708,11 @@ async function main() {
   const coverageModelCfg = loadCoverageModelConfig()
   const requiredScenariosCfg = loadRequiredScenariosConfig()
   const e2eFeatureBreadth = computeE2eFeatureBreadth(
-    testFiles,
+    specEntries,
     foldersInBreadthScope
   )
   const requiredScenarioMatrix = computeRequiredScenarioMatrixMobile(
-    testFiles,
+    specEntries,
     requiredScenariosCfg
   )
   /** Slot denominator = in-scope folders × wallet modes in required-scenarios config. */
@@ -2750,7 +2764,7 @@ async function main() {
         coverageModelCfg.impliedUncertaintyPercentagePoints,
       definition:
         coverageModelCfg.definition ??
-        'Weighted blend of breadth, required flow×wallet cells, and folder×2-wallet-slot assumption (codebase only; TestRail not included).',
+        'Weighted blend of breadth, required flow×wallet cells, and folder×N-wallet-slot assumption (codebase only; TestRail not included).',
       configPath: path.relative(
         pkgRoot,
         coverageModelCfg.configPath ??
