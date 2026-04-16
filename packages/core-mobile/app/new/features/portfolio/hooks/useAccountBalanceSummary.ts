@@ -12,6 +12,7 @@ export type AccountBalanceSummary = {
   isAllBalancesInaccurate: boolean
   isBalanceLoaded: boolean
   isAllBalancesError: boolean
+  isFetching: boolean
   isLoading: boolean
   isPolling: boolean
   isRefetching: boolean
@@ -24,7 +25,7 @@ export function useAccountBalanceSummary(
     refetchInterval?: number | false
   }
 ): AccountBalanceSummary {
-  const { data, isLoading, isRefetching, isError, isOffline } =
+  const { data, isLoading, isFetching, isRefetching, isError, isOffline } =
     useAccountBalances(account, options)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const enabledChainIds = useSelector(selectEnabledChainIds)
@@ -37,6 +38,7 @@ export function useAccountBalanceSummary(
         isAllBalancesInaccurate: false,
         isBalanceLoaded: false,
         isAllBalancesError: false,
+        isFetching: false,
         isLoading: false,
         isPolling: false,
         isRefetching: false,
@@ -83,6 +85,7 @@ export function useAccountBalanceSummary(
       isAllBalancesInaccurate,
       isBalanceLoaded,
       isAllBalancesError,
+      isFetching,
       isLoading,
       isPolling: false,
       isRefetching,
@@ -91,6 +94,7 @@ export function useAccountBalanceSummary(
   }, [
     account,
     data,
+    isFetching,
     isLoading,
     isRefetching,
     isError,

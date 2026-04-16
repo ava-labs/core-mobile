@@ -365,10 +365,6 @@ describe('BalanceService', () => {
     })
 
     it('should retry EVM networks silently omitted from the streaming response', async () => {
-      // Both C-Chain and Ethereum are in the request (both are supported),
-      // but the streaming response only returns C-Chain — Ethereum is silently
-      // absent (simulates a server-side timeout or EVM indexer outage that
-      // causes a clean stream close before the EVM entry is emitted).
       mockGetSupportedChainsFromCache.mockResolvedValue([
         'eip155:43114',
         'eip155:1'
@@ -393,7 +389,6 @@ describe('BalanceService', () => {
         error: null
       })
 
-      // VM module recovers Ethereum balance
       const mockModule = {
         getBalances: jest.fn().mockResolvedValue({
           [testAccount.addressC]: {
@@ -416,9 +411,7 @@ describe('BalanceService', () => {
         xpAddresses: []
       })
 
-      // Ethereum was silently missing → must be retried via VM modules
       expect(mockLoadModuleByNetwork).toHaveBeenCalledWith(ethereumNetwork)
-      // Both C-Chain (from stream) and Ethereum (from VM fallback) in result
       expect(result).toHaveLength(2)
       expect(result.map(r => r.chainId).sort()).toEqual([1, 43114])
     })
@@ -1053,8 +1046,6 @@ describe('BalanceService', () => {
     })
 
     it('should retry via VM modules when mapBalanceResponseToLegacy returns null', async () => {
-      // The streaming API returns a response but it can't be parsed (returns null).
-      // The network is treated as "missing from the response" and retried via VM modules.
       const mockStreamResponse = [
         {
           caip2Id: 'eip155:43114',
@@ -1093,8 +1084,6 @@ describe('BalanceService', () => {
         xpAddresses: ['avax1test1', 'avax1test2']
       })
 
-      // The unparseable streaming response is treated as a missing network,
-      // so the VM module fallback fires and recovers the balance.
       expect(mockLoadModuleByNetwork).toHaveBeenCalledWith(cChainNetwork)
       expect(result).toHaveLength(1)
       expect(result[0]?.chainId).toBe(43114)
