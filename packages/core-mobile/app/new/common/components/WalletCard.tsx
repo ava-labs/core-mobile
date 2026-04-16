@@ -11,6 +11,7 @@ import { useManageWallet } from 'common/hooks/useManageWallet'
 import { WalletDisplayData } from 'common/types'
 import { AccountListItem } from 'features/wallets/components/AccountListItem'
 import { computeAccountBalance } from 'features/portfolio/utils/computeAccountBalance'
+import { useWalletBalances } from 'features/portfolio/hooks/useWalletBalances'
 import { WalletBalance } from 'features/wallets/components/WalletBalance'
 import React, { useCallback, useMemo, useState } from 'react'
 import { LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native'
@@ -19,10 +20,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming
 } from 'react-native-reanimated'
-import {
-  AdjustedNormalizedBalancesForAccount,
-  AdjustedNormalizedBalancesForAccounts
-} from 'services/balance/types'
+import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
 import { WalletType } from 'services/wallet/types'
 import {
   selectEnabledChainIds,
@@ -51,8 +49,6 @@ interface WalletCardProps {
   isActive: boolean
   isExpanded: boolean
   isRefreshing: boolean
-  walletBalancesData: AdjustedNormalizedBalancesForAccounts
-  isBalancesError: boolean
   showMoreButton?: boolean
   style?: StyleProp<ViewStyle>
   onToggleExpansion: (walletId: string) => void
@@ -65,8 +61,6 @@ const WalletCard = ({
   isActive,
   isExpanded,
   isRefreshing,
-  walletBalancesData,
-  isBalancesError,
   showMoreButton = true,
   style,
   onToggleExpansion,
@@ -76,6 +70,13 @@ const WalletCard = ({
   const {
     theme: { colors }
   } = useTheme()
+
+  const accountIds = useMemo(
+    () => wallet.accounts.map(a => a.account.id),
+    [wallet.accounts]
+  )
+  const { data: walletBalancesData, isError: isBalancesError } =
+    useWalletBalances(accountIds)
 
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const enabledNetworksMap = useSelector(selectEnabledNetworksMap)
@@ -395,36 +396,17 @@ const AddAccountButton = React.memo(
   }
 )
 
-function areBalancesEqual(
-  prev: AdjustedNormalizedBalancesForAccounts,
-  next: AdjustedNormalizedBalancesForAccounts
-): boolean {
-  if (prev === next) return true
-  const prevKeys = Object.keys(prev)
-  const nextKeys = Object.keys(next)
-  if (prevKeys.length !== nextKeys.length) return false
-  for (const key of prevKeys) {
-    if (prev[key] !== next[key]) return false
-  }
-  return true
-}
-
 function arePropsEqual(prev: WalletCardProps, next: WalletCardProps): boolean {
   if (
     prev.isActive !== next.isActive ||
     prev.isExpanded !== next.isExpanded ||
     prev.isRefreshing !== next.isRefreshing ||
     prev.showMoreButton !== next.showMoreButton ||
-    prev.isBalancesError !== next.isBalancesError ||
     prev.style !== next.style ||
     prev.onToggleExpansion !== next.onToggleExpansion ||
     prev.onSetActiveAccount !== next.onSetActiveAccount ||
     prev.onAccountDetails !== next.onAccountDetails
   ) {
-    return false
-  }
-
-  if (!areBalancesEqual(prev.walletBalancesData, next.walletBalancesData)) {
     return false
   }
 

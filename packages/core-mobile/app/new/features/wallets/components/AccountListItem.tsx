@@ -8,8 +8,8 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { AccountDisplayData } from 'common/types'
-import { AccountBalanceData } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
 import React, { useCallback } from 'react'
+import { AccountBalanceData } from 'features/portfolio/utils/computeAccountBalance'
 import { AccountBalance } from './AccountBalance'
 
 const AccountListItem = ({

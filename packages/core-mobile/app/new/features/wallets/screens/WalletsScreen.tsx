@@ -9,10 +9,6 @@ import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { WalletDisplayData } from 'common/types'
 import { useRouter } from 'expo-router'
 import { useAllBalances } from 'features/portfolio/hooks/useAllBalances'
-import {
-  AdjustedNormalizedBalancesForAccount,
-  AdjustedNormalizedBalancesForAccounts
-} from 'services/balance/types'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
@@ -28,8 +24,6 @@ import {
   IMPORTED_ACCOUNTS_VIRTUAL_WALLET_NAME
 } from '../consts'
 
-const emptyAccountBalances: AdjustedNormalizedBalancesForAccount[] = []
-
 export const WalletsScreen = (): JSX.Element => {
   const {
     theme: { colors, isDark }
@@ -43,12 +37,7 @@ export const WalletsScreen = (): JSX.Element => {
   const activeAccountId = activeAccount?.id
   const activeAccountWalletId = activeAccount?.walletId
   const activeAccountType = activeAccount?.type
-  const {
-    data: allBalancesData,
-    isLoading,
-    isError: isBalancesError,
-    refetch
-  } = useAllBalances()
+  const { data: allBalancesData, isLoading, refetch } = useAllBalances()
   const isBalanceAccurate = useMemo(() => {
     if (!allBalancesData) return false
     const allEntries = Object.values(allBalancesData).flat()
@@ -280,43 +269,6 @@ export const WalletsScreen = (): JSX.Element => {
     )
   }, [colors.$textDanger, errorMessage])
 
-  const prevWalletBalancesRef = useRef<
-    Record<string, AdjustedNormalizedBalancesForAccounts>
-  >({})
-
-  const walletBalancesMap = useMemo(() => {
-    const prev = prevWalletBalancesRef.current
-    const next: Record<string, AdjustedNormalizedBalancesForAccounts> = {}
-
-    for (const wallet of walletsDisplayData) {
-      const candidate: AdjustedNormalizedBalancesForAccounts = {}
-      let changed = false
-      const prevWallet = prev[wallet.id]
-
-      for (const acc of wallet.accounts) {
-        const id = acc.account.id
-        const bal = allBalancesData[id] ?? emptyAccountBalances
-        candidate[id] = bal
-        if (!changed && (!prevWallet || prevWallet[id] !== bal)) {
-          changed = true
-        }
-      }
-
-      if (
-        !changed &&
-        prevWallet &&
-        Object.keys(prevWallet).length === wallet.accounts.length
-      ) {
-        next[wallet.id] = prevWallet
-      } else {
-        next[wallet.id] = candidate
-      }
-    }
-
-    prevWalletBalancesRef.current = next
-    return next
-  }, [walletsDisplayData, allBalancesData])
-
   const cardStyle = useMemo(
     () => ({
       marginHorizontal: 16,
@@ -326,11 +278,6 @@ export const WalletsScreen = (): JSX.Element => {
       borderWidth: 1
     }),
     [colors.$surfacePrimary, colors.$borderPrimary]
-  )
-
-  const emptyBalancesMap = useMemo<AdjustedNormalizedBalancesForAccounts>(
-    () => ({}),
-    []
   )
 
   const renderItem = useCallback(
@@ -347,8 +294,6 @@ export const WalletsScreen = (): JSX.Element => {
           isActive={isActive}
           isRefreshing={isRefreshing}
           isExpanded={isExpanded}
-          walletBalancesData={walletBalancesMap[item.id] ?? emptyBalancesMap}
-          isBalancesError={isBalancesError}
           onToggleExpansion={toggleWalletExpansion}
           onSetActiveAccount={handleSetActiveAccount}
           onAccountDetails={gotoAccountDetails}
@@ -359,9 +304,6 @@ export const WalletsScreen = (): JSX.Element => {
     [
       isActiveWalletId,
       isRefreshing,
-      walletBalancesMap,
-      emptyBalancesMap,
-      isBalancesError,
       toggleWalletExpansion,
       handleSetActiveAccount,
       gotoAccountDetails,
