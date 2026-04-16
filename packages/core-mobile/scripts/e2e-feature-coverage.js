@@ -600,7 +600,8 @@ function loadCoverageModelConfig() {
     const w = raw.weights
     const weights = {
       e2eFeatureCoveragePercent: Number(
-        w?.e2eFeatureCoveragePercent ?? defaults.weights.e2eFeatureCoveragePercent
+        w?.e2eFeatureCoveragePercent ??
+          defaults.weights.e2eFeatureCoveragePercent
       ),
       requiredScenariosPercent: Number(
         w?.requiredScenariosPercent ?? defaults.weights.requiredScenariosPercent
@@ -625,7 +626,8 @@ function loadCoverageModelConfig() {
         raw.impliedUncertaintyPercentagePoints ??
           defaults.impliedUncertaintyPercentagePoints
       ),
-      definition: typeof raw.definition === 'string' ? raw.definition : undefined,
+      definition:
+        typeof raw.definition === 'string' ? raw.definition : undefined,
       configPath
     }
   } catch {
@@ -647,9 +649,10 @@ function loadRequiredScenariosConfig() {
   }
   try {
     const raw = JSON.parse(fs.readFileSync(configPath, 'utf8'))
-    const rawModes = Array.isArray(raw.walletModes) && raw.walletModes.length
-      ? raw.walletModes.map(m => String(m).trim())
-      : defaults.walletModes
+    const rawModes =
+      Array.isArray(raw.walletModes) && raw.walletModes.length
+        ? raw.walletModes.map(m => String(m).trim())
+        : defaults.walletModes
     if (rawModes.includes('ledger')) {
       console.warn(
         'e2e-feature-coverage: walletMode "ledger" is ignored in required-scenarios (not automatable in Appium).'
@@ -662,16 +665,22 @@ function loadRequiredScenariosConfig() {
       console.warn(
         `e2e-feature-coverage: required-scenarios walletModes ignored (no detection logic): ${unsupported.join(
           ', '
-        )}. Supported: ${[...SUPPORTED_REQUIRED_SCENARIO_WALLET_MODES].join(', ')}.`
+        )}. Supported: ${[...SUPPORTED_REQUIRED_SCENARIO_WALLET_MODES].join(
+          ', '
+        )}.`
       )
     }
     const walletModes = rawModes.filter(
       m => m !== 'ledger' && SUPPORTED_REQUIRED_SCENARIO_WALLET_MODES.has(m)
     )
     return {
-      flows: Array.isArray(raw.flows) && raw.flows.length ? raw.flows : defaults.flows,
+      flows:
+        Array.isArray(raw.flows) && raw.flows.length
+          ? raw.flows
+          : defaults.flows,
       walletModes: walletModes.length ? walletModes : defaults.walletModes,
-      definition: typeof raw.definition === 'string' ? raw.definition : undefined,
+      definition:
+        typeof raw.definition === 'string' ? raw.definition : undefined,
       configPath
     }
   } catch {
@@ -695,6 +704,32 @@ function featureDirMatchTokens(dirName) {
 }
 
 /**
+ * @param {{ dir: string, dirLower: string, corpus: string, minTokenLen: number, matched: Set<string> }} o
+ */
+function addMatchedDirsFromTokens(o) {
+  const { dir, dirLower, corpus, minTokenLen, matched } = o
+  if (dirLower.length >= 8 && corpus.includes(dirLower)) {
+    matched.add(dir)
+    return
+  }
+  for (const tok of featureDirMatchTokens(dir)) {
+    if (tok.length < minTokenLen) continue
+    try {
+      const re = new RegExp(
+        `\\b${tok.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`,
+        'i'
+      )
+      if (re.test(corpus)) {
+        matched.add(dir)
+        break
+      }
+    } catch {
+      // ignore bad regex
+    }
+  }
+}
+
+/**
  * @param {string[]} foldersInScope
  * @param {string[]} corpusParts
  * @param {{ minTokenLen?: number }} [opts]
@@ -705,36 +740,28 @@ function inferMatchedFeatureFolders(foldersInScope, corpusParts, opts = {}) {
   const matched = new Set()
   for (const dir of foldersInScope) {
     if (BREADTH_AMBIGUOUS_FEATURE_DIRS.has(dir)) continue
-    const dirLower = dir.toLowerCase()
-    if (dirLower.length >= 8 && corpus.includes(dirLower)) {
-      matched.add(dir)
-      continue
-    }
-    for (const tok of featureDirMatchTokens(dir)) {
-      if (tok.length < minTokenLen) continue
-      try {
-        const re = new RegExp(
-          `\\b${tok.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`,
-          'i'
-        )
-        if (re.test(corpus)) {
-          matched.add(dir)
-          break
-        }
-      } catch {
-        // ignore bad regex
-      }
-    }
+    addMatchedDirsFromTokens({
+      dir,
+      dirLower: dir.toLowerCase(),
+      corpus,
+      minTokenLen,
+      matched
+    })
   }
   return matched
 }
 
 /**
- * @param {string} content
+ * First suite title from Mocha `describe` / `describe.skip` / `describe.only` or
+ * `context` variants (breadth + TestRail section mapping).
+ * @param {string} src
  */
-function extractFirstDescribeTitle(content) {
-  const m = String(content).match(/\bdescribe\s*\(\s*['"]([^'"]+)['"]/)
-  return m ? m[1] : null
+function extractFirstDescribeTitle(src) {
+  const m = src.match(
+    /\b(?:describe|context)(?:\.(?:skip|only))?\s*\(\s*(['"`])((?:\\.|(?!\1).)*)\1/
+  )
+  if (!m) return null
+  return unescapeJsString(m[2])
 }
 
 /**
@@ -753,70 +780,53 @@ function collectItAndDescribeTitles(content, outerDescribe) {
   return out
 }
 
+/** @type {Record<string, (relLower: string, text: string) => boolean>} */
+const SPEC_COVERS_FLOW_MOBILE = {
+  send: (relLower, text) =>
+    /\/send|withdraw|sendnft|xpchain|sendethereum|sendsolana|sendbitcoin|cchain\/send|ethereum\/send|solana\/send/i.test(
+      relLower
+    ) ||
+    /\.send\s*\(/i.test(text) ||
+    /\btxPage\.send\b/i.test(text) ||
+    /\bsendXPChain\b/i.test(text) ||
+    /\bsendEthereum\b/i.test(text) ||
+    /\bsendSolana\b/i.test(text),
+  swap: (relLower, text) =>
+    /swap/i.test(relLower) ||
+    /\bswapOnTrack\b/i.test(text) ||
+    /\btxPage\.swap\b/i.test(text) ||
+    /describe\s*\(\s*['"][^'"]*swap/i.test(text),
+  'cross-chain-transfer': (relLower, text) =>
+    /cross.chain|crosschain|subnet.transfer|export.?chain|import.?chain|c.?bridge/i.test(
+      text
+    ) || /\/bridge\/|cross.chain|subnet/i.test(relLower),
+  'stake-delegate': (relLower, text) =>
+    /stake|staking|delegate|p.chain|addstake/i.test(relLower) ||
+    /\bstakeTestnet\b/i.test(text) ||
+    /\bstaking\b/i.test(text),
+  defi: (relLower, text) =>
+    /\/defi\/|\/earn\/|borrow|deposit/i.test(relLower) ||
+    /\bdefiPage\b/i.test(text) ||
+    /\bdefi\b/i.test(relLower),
+  collectibles: (relLower, _text) =>
+    /collectible|nft|sendnft|sendethnft/i.test(relLower),
+  activity: (relLower, text) =>
+    /\/activity/i.test(relLower) ||
+    /\bactivityTab\b/i.test(text) ||
+    /\bactivity_tab\b/i.test(text),
+  settings: (relLower, _text) => relLower.includes('specs/settings/'),
+  accounts: (relLower, _text) => /accounts\.spec/i.test(relLower)
+}
+
 /**
  * @param {string} flow
  * @param {string} relLower
  * @param {string} text
  */
 function specCoversFlowMobile(flow, relLower, text) {
-  if (flow === 'send') {
-    return (
-      /\/send|withdraw|sendnft|xpchain|sendethereum|sendsolana|sendbitcoin|cchain\/send|ethereum\/send|solana\/send/i.test(
-        relLower
-      ) ||
-      /\.send\s*\(/i.test(text) ||
-      /\btxPage\.send\b/i.test(text) ||
-      /\bsendXPChain\b/i.test(text) ||
-      /\bsendEthereum\b/i.test(text) ||
-      /\bsendSolana\b/i.test(text)
-    )
-  }
-  if (flow === 'swap') {
-    return (
-      /swap/i.test(relLower) ||
-      /\bswapOnTrack\b/i.test(text) ||
-      /\btxPage\.swap\b/i.test(text) ||
-      /describe\s*\(\s*['"][^'"]*swap/i.test(text)
-    )
-  }
-  if (flow === 'cross-chain-transfer') {
-    return (
-      /cross.chain|crosschain|subnet.transfer|export.?chain|import.?chain|c.?bridge/i.test(
-        text
-      ) || /\/bridge\/|cross.chain|subnet/i.test(relLower)
-    )
-  }
-  if (flow === 'stake-delegate') {
-    return (
-      /stake|staking|delegate|p.chain|addstake/i.test(relLower) ||
-      /\bstakeTestnet\b/i.test(text) ||
-      /\bstaking\b/i.test(text)
-    )
-  }
-  if (flow === 'defi') {
-    return (
-      /\/defi\/|\/earn\/|borrow|deposit/i.test(relLower) ||
-      /\bdefiPage\b/i.test(text) ||
-      /\bdefi\b/i.test(relLower)
-    )
-  }
-  if (flow === 'collectibles') {
-    return /collectible|nft|sendnft|sendethnft/i.test(relLower)
-  }
-  if (flow === 'activity') {
-    return (
-      /\/activity/i.test(relLower) ||
-      /\bactivityTab\b/i.test(text) ||
-      /\bactivity_tab\b/i.test(text)
-    )
-  }
-  if (flow === 'settings') {
-    return relLower.includes('specs/settings/')
-  }
-  if (flow === 'accounts') {
-    return /accounts\.spec/i.test(relLower)
-  }
-  return false
+  const fn = SPEC_COVERS_FLOW_MOBILE[flow]
+  if (!fn) return false
+  return fn(relLower, text)
 }
 
 /**
@@ -857,6 +867,29 @@ function specHasMnemonicContext(relLower, text) {
 }
 
 /**
+ * @param {string} mode
+ * @param {string} relLower
+ * @param {string} txt
+ */
+function specImplementsRequiredScenarioMode(mode, relLower, txt) {
+  if (mode === 'mnemonic') {
+    if (
+      specHasSeedlessContext(relLower, txt) &&
+      !specHasMnemonicContext(relLower, txt)
+    ) {
+      return false
+    }
+    return specHasMnemonicContext(relLower, txt)
+  }
+  if (mode === 'seedless') {
+    return specHasSeedlessContext(relLower, txt)
+  }
+  throw new Error(
+    `e2e-feature-coverage: unhandled walletMode "${mode}" (add detection or filter in loadRequiredScenariosConfig)`
+  )
+}
+
+/**
  * @param {{ rel: string, abs: string, relLower: string, text: string }[]} specEntries
  * @param {{ flows: string[], walletModes: string[] }} cfg
  */
@@ -866,37 +899,20 @@ function computeRequiredScenarioMatrixMobile(specEntries, cfg) {
 
   for (const flow of cfg.flows) {
     for (const mode of cfg.walletModes) {
-      const id = `${flow}-${mode}`
       const evidence = []
-      let implemented = false
-
       for (const { rel, relLower, text: txt } of specEntries) {
         if (!specCoversFlowMobile(flow, relLower, txt)) continue
-
-        if (mode === 'mnemonic') {
-          if (specHasSeedlessContext(relLower, txt) && !specHasMnemonicContext(relLower, txt)) {
-            continue
-          }
-          if (!specHasMnemonicContext(relLower, txt)) continue
-          implemented = true
+        if (specImplementsRequiredScenarioMode(mode, relLower, txt)) {
           evidence.push(rel)
-        } else if (mode === 'seedless') {
-          if (!specHasSeedlessContext(relLower, txt)) continue
-          implemented = true
-          evidence.push(rel)
-        } else {
-          throw new Error(
-            `e2e-feature-coverage: unhandled walletMode "${mode}" (add detection or filter in loadRequiredScenariosConfig)`
-          )
         }
       }
-
+      const evidenceSorted = [...new Set(evidence)].sort()
       scenarios.push({
-        id,
+        id: `${flow}-${mode}`,
         flow,
         walletMode: mode,
-        implemented,
-        evidence: [...new Set(evidence)].sort()
+        implemented: evidenceSorted.length > 0,
+        evidence: evidenceSorted
       })
     }
   }
@@ -904,7 +920,9 @@ function computeRequiredScenarioMatrixMobile(specEntries, cfg) {
   const totalRequired = scenarios.length
   const implementedCount = scenarios.filter(s => s.implemented).length
   const pct =
-    totalRequired === 0 ? 0 : Math.round((100 * implementedCount) / totalRequired)
+    totalRequired === 0
+      ? 0
+      : Math.round((100 * implementedCount) / totalRequired)
   return {
     scenarios,
     totalRequired,
@@ -924,18 +942,23 @@ function computeE2eFeatureBreadth(specEntries, foldersInScope) {
     const base = path.basename(rel, path.extname(rel))
     const stem = base.replace(/\.spec$/i, '') || base
     const describeTitle = extractFirstDescribeTitle(content)
-    const primaryCorpus = [stem, ...(describeTitle ? [describeTitle] : [])].filter(
-      Boolean
-    )
+    const primaryCorpus = [
+      stem,
+      ...(describeTitle ? [describeTitle] : [])
+    ].filter(Boolean)
     const matchedPrimary = inferMatchedFeatureFolders(
       foldersInScope,
       primaryCorpus,
       { minTokenLen: 4 }
     )
     const looseTitles = collectItAndDescribeTitles(content, describeTitle)
-    const matchedLoose = inferMatchedFeatureFolders(foldersInScope, looseTitles, {
-      minTokenLen: 8
-    })
+    const matchedLoose = inferMatchedFeatureFolders(
+      foldersInScope,
+      looseTitles,
+      {
+        minTokenLen: 8
+      }
+    )
     for (const d of matchedPrimary) claimed.add(d)
     for (const d of matchedLoose) claimed.add(d)
   }
@@ -943,7 +966,9 @@ function computeE2eFeatureBreadth(specEntries, foldersInScope) {
   const totalAppFeatureAreas = foldersInScope.length
   const matchedSet = new Set(claimed)
   const featureAreasMatchedBySpecs = matchedSet.size
-  const uncoveredFeatureAreas = foldersInScope.filter(f => !matchedSet.has(f)).sort()
+  const uncoveredFeatureAreas = foldersInScope
+    .filter(f => !matchedSet.has(f))
+    .sort()
   const pct =
     totalAppFeatureAreas === 0
       ? 0
@@ -1062,19 +1087,6 @@ async function fetchAllTestsForRun(client, runId) {
     offset += limit
   }
   return all
-}
-
-/**
- * First suite title from Mocha `describe` / `describe.skip` / `describe.only` or
- * `context` variants (used for TestRail section name ↔ spec mapping).
- * @param {string} src
- */
-function extractFirstDescribeTitle(src) {
-  const m = src.match(
-    /\b(?:describe|context)(?:\.(?:skip|only))?\s*\(\s*(['"`])((?:\\.|(?!\1).)*)\1/
-  )
-  if (!m) return null
-  return unescapeJsString(m[2])
 }
 
 /**
@@ -2683,7 +2695,11 @@ async function main() {
     testrailAndroid,
     regressionFailedFeaturesIos,
     regressionFailedFeaturesAndroid
-  } = await loadTestrailRegressionSummary(specEntries, featureNames, featureStats)
+  } = await loadTestrailRegressionSummary(
+    specEntries,
+    featureNames,
+    featureStats
+  )
 
   const regressionAdjIos = computeRegressionAdjustedMetrics(
     coverageBase.featuresWithSignalsInScope,
@@ -2803,7 +2819,8 @@ async function main() {
         'Assumes each in-scope feature folder should be covered under N wallet modes (N = walletModes in required-scenarios.config.json); credits one slot per folder with any breadth match. Denominator = folders×N.',
       walletModesAssumed: walletModesAssumedForSlots,
       totalSlots: featureWalletSlotsTotal,
-      filledSlotsCredited: e2eFeatureBreadth.featureAreasMatchedByAtLeastOneSpec,
+      filledSlotsCredited:
+        e2eFeatureBreadth.featureAreasMatchedByAtLeastOneSpec,
       percent: featureWalletSlotPercent
     }
   }
