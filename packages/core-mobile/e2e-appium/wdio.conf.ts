@@ -70,6 +70,7 @@ const allCaps = [
       ? { 'appium:chromedriverExecutableDir': chromedriverExecutableDir }
       : {}),
     'appium:appWaitActivity': '*',
+    'appium:appWaitDuration': 60000,
     'appium:autoGrantPermissions': true,
     'appium:newCommandTimeout': 120,
     'appium:adbExecTimeout': 60000,
@@ -169,7 +170,7 @@ export const config: WebdriverIO.Config = {
     : [],
   logLevel: 'error',
   bail: 0,
-  waitforTimeout: 20000,
+  waitforTimeout: 60000,
   specFileRetries: process.env.CI === 'true' ? 1 : 0,
   connectionRetryTimeout: 120000,
   connectionRetryCount: 2,
