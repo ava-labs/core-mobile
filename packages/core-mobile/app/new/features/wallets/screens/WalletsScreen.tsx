@@ -9,12 +9,11 @@ import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { WalletDisplayData } from 'common/types'
 import { useRouter } from 'expo-router'
 import { useAllBalances } from 'features/portfolio/hooks/useAllBalances'
-import { useIsAllBalancesAccurate } from 'features/portfolio/hooks/useIsAllBalancesAccurate'
 import {
   AdjustedNormalizedBalancesForAccount,
   AdjustedNormalizedBalancesForAccounts
 } from 'services/balance/types'
-import React, { RefObject, useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { RefreshControl } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
@@ -50,7 +49,11 @@ export const WalletsScreen = (): JSX.Element => {
     isError: isBalancesError,
     refetch
   } = useAllBalances()
-  const isBalanceAccurate = useIsAllBalancesAccurate()
+  const isBalanceAccurate = useMemo(() => {
+    if (!allBalancesData) return false
+    const allEntries = Object.values(allBalancesData).flat()
+    return allEntries.every(balance => balance.dataAccurate)
+  }, [allBalancesData])
   const listRef = useRef<ListScreenRef<WalletDisplayData>>(null)
 
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -385,9 +388,7 @@ export const WalletsScreen = (): JSX.Element => {
 
   return (
     <ListScreenV2
-      flatListRef={
-        listRef as unknown as RefObject<ListScreenRef<WalletDisplayData>>
-      }
+      flatListRef={listRef}
       title="My wallets"
       subtitle={`An overview of your wallets\nand associated accounts`}
       data={walletsDisplayData}

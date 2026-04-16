@@ -445,6 +445,7 @@ function arePropsEqual(prev: WalletCardProps, next: WalletCardProps): boolean {
     if (!prevAcc || !nextAcc) return false
     if (
       prevAcc.account.id !== nextAcc.account.id ||
+      prevAcc.account.name !== nextAcc.account.name ||
       prevAcc.isActive !== nextAcc.isActive ||
       prevAcc.hideSeparator !== nextAcc.hideSeparator
     ) {
