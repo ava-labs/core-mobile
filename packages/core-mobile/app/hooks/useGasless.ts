@@ -13,8 +13,6 @@ import NetworkService from 'services/network/NetworkService'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { resolve } from '@avalabs/core-utils-sdk'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { selectActiveAccount } from 'store/account'
-import NetworkFeeService from 'services/networkFee/NetworkFeeService'
 
 type Params = {
   maxFeePerGas: bigint | undefined
@@ -36,7 +34,6 @@ export const useGasless = ({
   caip2ChainId
 }: Params): Return => {
   const { getNetwork } = useNetworks()
-  const activeAccount = useSelector(selectActiveAccount)
   const chainId = getChainIdFromCaip2(caip2ChainId)
   const network = getNetwork(chainId)
   const [isGaslessEligible, setIsGaslessEligible] = useState(false)
@@ -55,14 +52,18 @@ export const useGasless = ({
         setIsGaslessEligible(false)
         return
       }
+      const isEthSendTx = GaslessService.isEthSendTx(signingData)
+      const fromAddress =
+        isEthSendTx && signingData.data.from != null
+          ? String(signingData.data.from)
+          : undefined
       const nonce =
-        GaslessService.isEthSendTx(signingData) &&
-        signingData.data.nonce != null
-          ? signingData.data.nonce
+        isEthSendTx && signingData.data.nonce != null
+          ? Number(signingData.data.nonce)
           : undefined
       const isEligibleForChain = await GaslessService.isEligibleForChain(
         chainId.toString(),
-        activeAccount?.addressC,
+        fromAddress,
         nonce
       ).catch(err => {
         Logger.error('Error checking gasless eligibility', err)
@@ -76,7 +77,7 @@ export const useGasless = ({
       setIsGaslessEligible(isEligible)
     }
     checkGaslessEligibility()
-  }, [chainId, signingData, activeAccount?.addressC])
+  }, [chainId, signingData])
 
   const showGaslessError = useCallback(() => {
     setGaslessError(
@@ -100,16 +101,12 @@ export const useGasless = ({
       return undefined
     }
 
-    const networkFee = await NetworkFeeService.getNetworkFee(network).catch(
-      () => null
-    )
-
     while (attempts <= MAX_ATTEMPTS) {
       const [result, error] = await resolve(
         GaslessService.fundTx({
           signingData,
           addressFrom,
-          maxFeePerGas: networkFee?.medium.maxFeePerGas ?? maxFeePerGas,
+          maxFeePerGas,
           provider,
           waitForConfirmation: isGaslessInstantBlocked
         })
