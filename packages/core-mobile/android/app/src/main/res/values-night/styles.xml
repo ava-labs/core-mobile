@@ -1,8 +1,10 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="AppTheme" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Override Material3 surface colors in dark mode to prevent unwanted
-             tints from the default M3 baseline purple seed color. -->
+    <!-- Dark mode application theme.
+         Inherits all shared items from BaseAppTheme (defined in values/styles.xml)
+         and overrides Material3 surface colors to prevent unwanted tints from
+         the default M3 baseline purple seed color. -->
+    <style name="AppTheme" parent="BaseAppTheme">
         <item name="colorSurface">@color/neutral850</item>
         <item name="android:colorBackground">@color/neutral850</item>
         <item name="colorSurfaceVariant">@color/neutral800</item>
