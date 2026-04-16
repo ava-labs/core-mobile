@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
@@ -56,6 +56,7 @@ export function useAccountBalances(
   isRefetching: boolean
   refetch: () => Promise<void>
 } {
+  const queryClient = useQueryClient()
   const [isRefetching, setIsRefetching] = store.useIsRefetchingAccountBalances()
   const isOnline = useOnlineStatus()
 
@@ -94,7 +95,17 @@ export function useAccountBalances(
         account,
         currency: currency.toLowerCase(),
         xpAddresses,
-        xpub
+        xpub,
+        onBalanceLoaded: balance => {
+          queryClient.setQueryData(
+            balanceKey(account, enabledNetworks),
+            (prev: AdjustedNormalizedBalancesForAccount[] | undefined) => {
+              if (!prev) return [balance]
+              const filtered = prev.filter(p => p.chainId !== balance.chainId)
+              return [...filtered, balance]
+            }
+          )
+        }
       })
     }
   })
@@ -121,7 +132,10 @@ export function useAccountBalances(
     if (isError || !isOnline) return false
 
     return (
-      !account || !data || data.length === 0 || data.length < enabledNetworks.length
+      !account ||
+      !data ||
+      data.length === 0 ||
+      data.length < enabledNetworks.length
     )
   }, [account, data, enabledNetworks.length, isError, isOnline])
 
