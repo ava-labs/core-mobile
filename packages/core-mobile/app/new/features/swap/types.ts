@@ -1,4 +1,4 @@
-import { NetworkTokensByCaip2Response } from 'utils/api/generated/tokenAggregator/aggregatorApi.client'
+import type { NetworkTokensByCaip2Response } from 'utils/api/generated/tokenAggregator/aggregatorApi.client'
 import type { Transfer } from '@avalabs/fusion-sdk'
 
 // Token Aggregator API types — now using v2 token shape
