@@ -14,12 +14,16 @@ import {
 import type { Account, AccountCollection } from 'store/account/types'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { useBalanceInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
+import { useAllBalances } from 'features/portfolio/hooks/useAllBalances'
+import { AdjustedNormalizedBalancesForAccount } from 'services/balance/types'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { useSelector } from 'react-redux'
 import { WalletIcon } from 'common/components/WalletIcon'
 import { selectAccountById } from 'store/account'
 import { selectWalletById, selectWalletsCount } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
+
+const emptyAccountBalances: AdjustedNormalizedBalancesForAccount[] = []
 
 type Props = {
   onSelect: (account: Account) => void
@@ -35,6 +39,7 @@ export const SelectAccounts = ({
   const {
     theme: { colors }
   } = useTheme()
+  const { data: balancesData, isError: isBalancesError } = useAllBalances()
 
   const data = useMemo(() => {
     const allAccounts = Object.values(accounts)
@@ -95,6 +100,10 @@ export const SelectAccounts = ({
                   isSelected={isSelected}
                   onSelect={onSelect}
                   lastItem={lastItem}
+                  accountBalances={
+                    balancesData[account.id] ?? emptyAccountBalances
+                  }
+                  isBalancesError={isBalancesError}
                 />
               )
             })}
@@ -102,7 +111,14 @@ export const SelectAccounts = ({
         )
       }
     ]
-  }, [accounts, colors.$textPrimary, onSelect, selectedAccounts])
+  }, [
+    accounts,
+    colors.$textPrimary,
+    onSelect,
+    selectedAccounts,
+    balancesData,
+    isBalancesError
+  ])
   return <GroupList data={data} />
 }
 
@@ -111,19 +127,23 @@ const Account = ({
   onSelect,
   lastItem,
   isSelected,
-  testID
+  testID,
+  accountBalances,
+  isBalancesError
 }: {
   account: Account
   onSelect: (account: Account) => void
   lastItem: boolean
   isSelected: boolean
   testID?: string
+  accountBalances: AdjustedNormalizedBalancesForAccount[]
+  isBalancesError: boolean
 }): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const { balance: accountBalance, isLoadingBalance } =
-    useBalanceInCurrencyForAccount(account.id)
+    useBalanceInCurrencyForAccount(accountBalances, isBalancesError)
   const { formatCurrency } = useFormatCurrency()
   const accountData = useSelector(selectAccountById(account.id))
   const wallet = useSelector(selectWalletById(accountData?.walletId ?? ''))

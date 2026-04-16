@@ -7,39 +7,41 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useBalanceInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
-import React from 'react'
-import Animated, { Easing, LinearTransition } from 'react-native-reanimated'
-import { Account } from 'store/account'
-import { Wallet } from 'store/wallet/types'
+import { AccountDisplayData } from 'common/types'
+import { AccountBalanceData } from 'features/portfolio/hooks/useBalanceInCurrencyForAccount'
+import React, { useCallback } from 'react'
 import { AccountBalance } from './AccountBalance'
 
-export const AccountListItem = ({
+const AccountListItem = ({
   testID,
-  account,
-  wallet,
-  isActive,
+  displayData,
   isRefreshing,
-  hideSeparator,
-  onPress,
-  onPressDetails
+  balanceData,
+  onSetActiveAccount,
+  onAccountDetails
 }: {
   testID: string
-  account: Account
-  wallet: Wallet
+  displayData: AccountDisplayData
   isRefreshing: boolean
-  isActive: boolean
-  hideSeparator: boolean
-  onPress: () => void
-  onPressDetails: () => void
+  balanceData: AccountBalanceData
+  onSetActiveAccount: (accountId: string) => void
+  onAccountDetails: (accountId: string) => void
 }): JSX.Element => {
+  const { account, wallet, isActive, hideSeparator } = displayData
   const { theme } = useTheme()
-  const balance = useBalanceInCurrencyForAccount(account.id)
+
+  const handlePress = useCallback(() => {
+    onSetActiveAccount(account.id)
+  }, [onSetActiveAccount, account.id])
+
+  const handlePressDetails = useCallback(() => {
+    onAccountDetails(account.id)
+  }, [onAccountDetails, account.id])
 
   return (
-    <Animated.View layout={LinearTransition.easing(Easing.inOut(Easing.ease))}>
+    <View>
       <TouchableOpacity
-        onPress={onPress}
+        onPress={handlePress}
         style={{
           flexDirection: 'row',
           alignItems: 'center',
@@ -101,17 +103,17 @@ export const AccountListItem = ({
               }}>
               <AccountBalance
                 isActive={isActive}
-                balance={balance.balance}
-                errorMessage={balance.error ?? ''}
-                isLoading={balance.isLoadingBalance}
+                balance={balanceData.balance}
+                errorMessage={balanceData.error ?? ''}
+                isLoading={balanceData.isLoadingBalance}
                 isRefreshing={isRefreshing}
-                hasLoaded={balance.hasBalanceData}
-                isAccurate={balance.dataAccurate}
+                hasLoaded={balanceData.hasBalanceData}
+                isAccurate={balanceData.dataAccurate}
                 variant="skeleton"
               />
               <TouchableOpacity
                 hitSlop={16}
-                onPress={onPressDetails}
+                onPress={handlePressDetails}
                 testID={`account_detail_icon__${wallet.name}__${account.name}`}>
                 <Icons.Alert.AlertCircle
                   color={theme.colors.$textPrimary}
@@ -124,6 +126,9 @@ export const AccountListItem = ({
         </View>
       </TouchableOpacity>
       {!hideSeparator && <Separator sx={{ marginLeft: 46 }} />}
-    </Animated.View>
+    </View>
   )
 }
+
+const MemoizedAccountListItem = React.memo(AccountListItem)
+export { MemoizedAccountListItem as AccountListItem }

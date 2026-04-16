@@ -1,6 +1,5 @@
 import {
   ActivityIndicator,
-  ANIMATED,
   Button,
   Icons,
   Text,
@@ -9,96 +8,86 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useManageWallet } from 'common/hooks/useManageWallet'
-import { AccountDisplayData, WalletDisplayData } from 'common/types'
+import { WalletDisplayData } from 'common/types'
 import { AccountListItem } from 'features/wallets/components/AccountListItem'
+import { computeAccountBalance } from 'features/portfolio/utils/computeAccountBalance'
 import { WalletBalance } from 'features/wallets/components/WalletBalance'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
+import { LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native'
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  withTiming
+} from 'react-native-reanimated'
 import {
-  FlatList,
-  LayoutChangeEvent,
-  ListRenderItem,
-  StyleProp,
-  ViewStyle
-} from 'react-native'
-import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
+  AdjustedNormalizedBalancesForAccount,
+  AdjustedNormalizedBalancesForAccounts
+} from 'services/balance/types'
 import { WalletType } from 'services/wallet/types'
+import {
+  selectEnabledChainIds,
+  selectEnabledNetworks,
+  selectEnabledNetworksMap
+} from 'store/network/slice'
+import { selectTokenVisibility } from 'store/portfolio'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsWalletLedger } from 'store/wallet/slice'
 import { useSelector } from 'react-redux'
 import { LedgerDerivationPathType } from 'services/ledger/types'
+import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { DropdownMenu } from './DropdownMenu'
 import { WalletIcon } from './WalletIcon'
 
 const HEADER_HEIGHT = 64
+const EXPAND_TIMING = {
+  duration: 300,
+  easing: Easing.bezier(0.25, 1, 0.5, 1)
+}
+
+const emptyAccountBalances: AdjustedNormalizedBalancesForAccount[] = []
+
+interface WalletCardProps {
+  wallet: WalletDisplayData
+  isActive: boolean
+  isExpanded: boolean
+  isRefreshing: boolean
+  walletBalancesData: AdjustedNormalizedBalancesForAccounts
+  isBalancesError: boolean
+  showMoreButton?: boolean
+  style?: StyleProp<ViewStyle>
+  onToggleExpansion: (walletId: string) => void
+  onSetActiveAccount: (accountId: string) => void
+  onAccountDetails: (accountId: string) => void
+}
 
 const WalletCard = ({
   wallet,
   isActive,
   isExpanded,
   isRefreshing,
+  walletBalancesData,
+  isBalancesError,
   showMoreButton = true,
   style,
-  onToggleExpansion
-}: {
-  wallet: WalletDisplayData
-  isActive: boolean
-  isExpanded: boolean
-  isRefreshing: boolean
-  showMoreButton?: boolean
-  style?: StyleProp<ViewStyle>
-  onToggleExpansion: () => void
-}): React.JSX.Element => {
+  onToggleExpansion,
+  onSetActiveAccount,
+  onAccountDetails
+}: WalletCardProps): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const isLedger = useSelector(selectIsWalletLedger(wallet.id))
 
-  const {
-    getDropdownItems,
-    handleDropdownSelect,
-    handleAddAccount: handleAddAccountToWallet,
-    isAddingAccount
-  } = useManageWallet()
+  const enabledNetworks = useSelector(selectEnabledNetworks)
+  const enabledNetworksMap = useSelector(selectEnabledNetworksMap)
+  const enabledChainIds = useFocusedSelector(selectEnabledChainIds)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const tokenVisibility = useFocusedSelector(selectTokenVisibility)
 
-  const renderExpansionIcon = useCallback(() => {
-    return (
-      <Icons.Navigation.ChevronRight
-        color={colors.$textSecondary}
-        width={20}
-        height={20}
-        transform={[{ rotate: isExpanded ? '-90deg' : '90deg' }]}
-      />
-    )
-  }, [colors.$textSecondary, isExpanded])
+  const handleToggle = useCallback(() => {
+    onToggleExpansion(wallet.id)
+  }, [onToggleExpansion, wallet.id])
 
-  const renderAccountItem: ListRenderItem<AccountDisplayData> = useCallback(
-    ({ item }) => {
-      return (
-        <AccountListItem
-          testID={`manage_accounts_list__${wallet.name}__${item.account.name}`}
-          isRefreshing={isRefreshing}
-          {...item}
-        />
-      )
-    },
-    [isRefreshing, wallet.name]
-  )
-
-  const renderEmpty = useCallback(() => {
-    return (
-      <View
-        sx={{
-          paddingVertical: 20,
-          alignItems: 'center',
-          backgroundColor: colors.$surfaceSecondary
-        }}>
-        <Text sx={{ color: colors.$textSecondary }}>
-          No accounts in this wallet.
-        </Text>
-      </View>
-    )
-  }, [colors.$surfaceSecondary, colors.$textSecondary])
-
-  const [contentHeight, setContentHeight] = useState(HEADER_HEIGHT)
+  const [contentHeight, setContentHeight] = useState(0)
   const onContentLayout = useCallback((event: LayoutChangeEvent) => {
     const { height } = event.nativeEvent.layout
     setContentHeight(height)
@@ -108,10 +97,76 @@ const WalletCard = ({
     return {
       minHeight: withTiming(
         isExpanded ? contentHeight + HEADER_HEIGHT : HEADER_HEIGHT,
-        ANIMATED.TIMING_CONFIG
+        EXPAND_TIMING
       )
     }
   })
+
+  const balanceSx = useMemo(
+    () => ({
+      color: isActive ? colors.$textPrimary : colors.$textSecondary
+    }),
+    [isActive, colors.$textPrimary, colors.$textSecondary]
+  )
+
+  const accountsList = useMemo(() => {
+    if (!isExpanded) return null
+    if (wallet.accounts.length === 0) {
+      return (
+        <View
+          style={{
+            paddingVertical: 20,
+            alignItems: 'center',
+            backgroundColor: colors.$surfaceSecondary
+          }}>
+          <Text style={{ color: colors.$textSecondary }}>
+            No accounts in this wallet.
+          </Text>
+        </View>
+      )
+    }
+
+    return wallet.accounts.map(item => {
+      const balResult = computeAccountBalance({
+        accountBalances:
+          walletBalancesData[item.account.id] ?? emptyAccountBalances,
+        enabledNetworksCount: enabledNetworks.length,
+        enabledNetworksMap,
+        enabledChainIds,
+        isDeveloperMode,
+        tokenVisibility,
+        isError: isBalancesError
+      })
+
+      return (
+        <AccountListItem
+          key={item.account.id}
+          testID={`manage_accounts_list__${wallet.name}__${item.account.name}`}
+          displayData={item}
+          isRefreshing={isRefreshing}
+          balanceData={balResult}
+          onSetActiveAccount={onSetActiveAccount}
+          onAccountDetails={onAccountDetails}
+        />
+      )
+    })
+  }, [
+    isExpanded,
+    wallet.accounts,
+    wallet.name,
+    isRefreshing,
+    onSetActiveAccount,
+    onAccountDetails,
+    colors.$surfaceSecondary,
+    colors.$textSecondary,
+    walletBalancesData,
+    isBalancesError,
+    enabledNetworks.length,
+    enabledNetworksMap,
+    enabledChainIds,
+    isDeveloperMode,
+    tokenVisibility
+  ])
 
   return (
     <Animated.View
@@ -135,48 +190,18 @@ const WalletCard = ({
           left: 0,
           right: 0
         }}>
-        <FlatList
-          data={wallet.accounts}
-          renderItem={renderAccountItem}
-          keyExtractor={item => item.account.id}
-          ListEmptyComponent={renderEmpty}
-          scrollEnabled={false}
-          style={{
-            // Add 1px padding to the top of the list
-            //  to prevent if the first account is active the background color from being visible
-            paddingTop: 1
-          }}
-        />
-
-        {wallet.type !== WalletType.PRIVATE_KEY ? (
-          <Button
-            size="medium"
-            leftIcon={
-              isAddingAccount ? undefined : (
-                <Icons.Content.Add
-                  color={colors.$textPrimary}
-                  width={24}
-                  height={24}
-                />
-              )
-            }
-            type="secondary"
-            disabled={isAddingAccount}
-            testID={`add_account_btn__${wallet.name}`}
-            onPress={() => handleAddAccountToWallet(wallet)}>
-            {isAddingAccount ? (
-              <ActivityIndicator size="small" color={colors.$textPrimary} />
-            ) : (
-              'Add account'
+        {isExpanded && (
+          <>
+            <View style={{ paddingTop: 1 }}>{accountsList}</View>
+            {wallet.type !== WalletType.PRIVATE_KEY && (
+              <AddAccountButton wallet={wallet} />
             )}
-          </Button>
-        ) : (
-          <></>
+          </>
         )}
       </View>
 
       <TouchableOpacity
-        onPress={onToggleExpansion}
+        onPress={handleToggle}
         sx={{
           flexDirection: 'row',
           alignItems: 'center',
@@ -198,7 +223,12 @@ const WalletCard = ({
               gap: 2,
               paddingLeft: 5
             }}>
-            {renderExpansionIcon()}
+            <Icons.Navigation.ChevronRight
+              color={colors.$textSecondary}
+              width={20}
+              height={20}
+              transform={[{ rotate: isExpanded ? '-90deg' : '90deg' }]}
+            />
             <WalletIcon wallet={wallet} isExpanded={isExpanded} />
           </View>
           <View
@@ -214,7 +244,6 @@ const WalletCard = ({
                   testID={`manage_accounts_wallet_name__${wallet.name}`}
                   variant="heading4"
                   style={{
-                    // this is needed for emojis to be displayed correctly
                     lineHeight: 27
                   }}
                   numberOfLines={1}>
@@ -266,45 +295,17 @@ const WalletCard = ({
             paddingRight: showMoreButton ? 0 : 24
           }}>
           <WalletBalance
-            balanceSx={{
-              color: isActive ? colors.$textPrimary : colors.$textSecondary
-            }}
+            balanceSx={balanceSx}
             isRefreshing={isRefreshing}
-            wallet={wallet}
+            walletBalancesData={walletBalancesData}
+            isBalancesError={isBalancesError}
+            enabledNetworksCount={enabledNetworks.length}
+            enabledNetworksMap={enabledNetworksMap}
+            enabledChainIds={enabledChainIds}
+            isDeveloperMode={isDeveloperMode}
+            tokenVisibility={tokenVisibility}
           />
-          {showMoreButton && (
-            <DropdownMenu
-              testID={`more_icon__${wallet.name}`}
-              groups={[
-                {
-                  key: 'wallet-actions',
-                  items: getDropdownItems(wallet, isLedger)
-                }
-              ]}
-              onPressAction={(event: { nativeEvent: { event: string } }) =>
-                handleDropdownSelect(event.nativeEvent.event, wallet)
-              }>
-              <TouchableOpacity
-                style={{
-                  minHeight: HEADER_HEIGHT,
-                  justifyContent: 'center',
-                  alignItems: 'flex-end'
-                }}>
-                <View
-                  style={{
-                    minWidth: 54,
-                    paddingRight: 21,
-                    alignItems: 'flex-end'
-                  }}>
-                  <Icons.Navigation.MoreHoriz
-                    color={colors.$textPrimary}
-                    width={24}
-                    height={24}
-                  />
-                </View>
-              </TouchableOpacity>
-            </DropdownMenu>
-          )}
+          {showMoreButton && <WalletMoreMenu wallet={wallet} />}
         </View>
       </TouchableOpacity>
 
@@ -313,4 +314,145 @@ const WalletCard = ({
   )
 }
 
-export default WalletCard
+const WalletMoreMenu = React.memo(
+  ({ wallet }: { wallet: WalletDisplayData }) => {
+    const {
+      theme: { colors }
+    } = useTheme()
+    const selectLedger = useMemo(
+      () => selectIsWalletLedger(wallet.id),
+      [wallet.id]
+    )
+    const isLedger = useSelector(selectLedger)
+    const { getDropdownItems, handleDropdownSelect } = useManageWallet()
+
+    return (
+      <DropdownMenu
+        testID={`more_icon__${wallet.name}`}
+        groups={[
+          {
+            key: 'wallet-actions',
+            items: getDropdownItems(wallet, isLedger)
+          }
+        ]}
+        onPressAction={(event: { nativeEvent: { event: string } }) =>
+          handleDropdownSelect(event.nativeEvent.event, wallet)
+        }>
+        <TouchableOpacity
+          style={{
+            minHeight: HEADER_HEIGHT,
+            justifyContent: 'center',
+            alignItems: 'flex-end'
+          }}>
+          <View
+            style={{
+              minWidth: 54,
+              paddingRight: 21,
+              alignItems: 'flex-end'
+            }}>
+            <Icons.Navigation.MoreHoriz
+              color={colors.$textPrimary}
+              width={24}
+              height={24}
+            />
+          </View>
+        </TouchableOpacity>
+      </DropdownMenu>
+    )
+  }
+)
+
+const AddAccountButton = React.memo(
+  ({ wallet }: { wallet: WalletDisplayData }) => {
+    const {
+      theme: { colors }
+    } = useTheme()
+    const { handleAddAccount, isAddingAccount } = useManageWallet()
+
+    return (
+      <Button
+        size="medium"
+        leftIcon={
+          isAddingAccount ? undefined : (
+            <Icons.Content.Add
+              color={colors.$textPrimary}
+              width={24}
+              height={24}
+            />
+          )
+        }
+        type="secondary"
+        disabled={isAddingAccount}
+        testID={`add_account_btn__${wallet.name}`}
+        onPress={() => handleAddAccount(wallet)}>
+        {isAddingAccount ? (
+          <ActivityIndicator size="small" color={colors.$textPrimary} />
+        ) : (
+          'Add account'
+        )}
+      </Button>
+    )
+  }
+)
+
+function areBalancesEqual(
+  prev: AdjustedNormalizedBalancesForAccounts,
+  next: AdjustedNormalizedBalancesForAccounts
+): boolean {
+  if (prev === next) return true
+  const prevKeys = Object.keys(prev)
+  const nextKeys = Object.keys(next)
+  if (prevKeys.length !== nextKeys.length) return false
+  for (const key of prevKeys) {
+    if (prev[key] !== next[key]) return false
+  }
+  return true
+}
+
+function arePropsEqual(prev: WalletCardProps, next: WalletCardProps): boolean {
+  if (
+    prev.isActive !== next.isActive ||
+    prev.isExpanded !== next.isExpanded ||
+    prev.isRefreshing !== next.isRefreshing ||
+    prev.showMoreButton !== next.showMoreButton ||
+    prev.isBalancesError !== next.isBalancesError ||
+    prev.style !== next.style ||
+    prev.onToggleExpansion !== next.onToggleExpansion ||
+    prev.onSetActiveAccount !== next.onSetActiveAccount ||
+    prev.onAccountDetails !== next.onAccountDetails
+  ) {
+    return false
+  }
+
+  if (!areBalancesEqual(prev.walletBalancesData, next.walletBalancesData)) {
+    return false
+  }
+
+  if (prev.wallet === next.wallet) return true
+
+  if (
+    prev.wallet.id !== next.wallet.id ||
+    prev.wallet.name !== next.wallet.name ||
+    prev.wallet.type !== next.wallet.type ||
+    prev.wallet.accounts.length !== next.wallet.accounts.length
+  ) {
+    return false
+  }
+
+  for (let i = 0; i < prev.wallet.accounts.length; i++) {
+    const prevAcc = prev.wallet.accounts[i]
+    const nextAcc = next.wallet.accounts[i]
+    if (!prevAcc || !nextAcc) return false
+    if (
+      prevAcc.account.id !== nextAcc.account.id ||
+      prevAcc.isActive !== nextAcc.isActive ||
+      prevAcc.hideSeparator !== nextAcc.hideSeparator
+    ) {
+      return false
+    }
+  }
+
+  return true
+}
+
+export default React.memo(WalletCard, arePropsEqual)
