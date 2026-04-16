@@ -72,6 +72,8 @@ const allCaps = [
     'appium:appWaitActivity': '*',
     'appium:appWaitDuration': 60000,
     'appium:autoGrantPermissions': true,
+    'appium:autoAcceptAlerts': true,
+    'appium:autoDismissAlerts': true,
     'appium:newCommandTimeout': 120,
     'appium:adbExecTimeout': 60000,
     'appium:uiautomator2ServerLaunchTimeout': 60000,
