@@ -18,6 +18,7 @@ import Logger from 'utils/Logger'
 import bs58 from 'bs58'
 import { Alert } from 'react-native'
 import {
+  DERIVATION_PATHS,
   LEDGER_TIMEOUTS,
   getSolanaDerivationPath
 } from 'new/features/ledger/consts'
@@ -629,8 +630,30 @@ class LedgerService {
     }
   }
 
+  /**
+   * Get the correct EVM derivation path for a given account index.
+   *
+   * BIP44:      m/44'/60'/0'/0/{accountIndex}  (shared account, varying address index)
+   * LedgerLive: m/44'/60'/{accountIndex}'/0/0  (per-account, fixed address index)
+   */
+  private getEvmDerivationPath(
+    accountIndex: number,
+    derivationPathType?: LedgerDerivationPathType
+  ): string {
+    if (derivationPathType === LedgerDerivationPathType.BIP44) {
+      return DERIVATION_PATHS.BIP44.EVM(0, accountIndex)
+    }
+    return getAddressDerivationPath({
+      accountIndex,
+      vmType: NetworkVMType.EVM
+    })
+  }
+
   // Get extended public keys for BIP44 derivation
-  async getExtendedPublicKeys(accountIndex: number): Promise<{
+  async getExtendedPublicKeys(
+    accountIndex: number,
+    derivationPathType?: LedgerDerivationPathType
+  ): Promise<{
     evm: ExtendedPublicKey
     avalanche: ExtendedPublicKey
   }> {
@@ -648,10 +671,13 @@ class LedgerService {
     try {
       // Get EVM extended public key (m/44'/60'/0')
       Logger.info('Getting EVM extended public key...')
-      const evmPath = getAddressDerivationPath({
-        accountIndex,
-        vmType: NetworkVMType.EVM
-      }).replace('/0/0', '')
+      const evmPath =
+        derivationPathType === LedgerDerivationPathType.BIP44
+          ? DERIVATION_PATHS.EXTENDED.EVM(0)
+          : getAddressDerivationPath({
+              accountIndex,
+              vmType: NetworkVMType.EVM
+            }).replace('/0/0', '')
       Logger.info('EVM derivation path:', evmPath)
 
       const evmXpubResponse = await avalancheApp.getExtendedPubKey(
@@ -949,7 +975,8 @@ class LedgerService {
   async getAllAddresses(
     startIndex: number,
     count: number,
-    isTestnet: boolean
+    isTestnet: boolean,
+    derivationPathType?: LedgerDerivationPathType
   ): Promise<AddressInfo[]> {
     // Connect to Avalanche app
     await this.openApp(LedgerAppType.AVALANCHE)
@@ -965,10 +992,7 @@ class LedgerService {
       // Derive addresses for each chain
       for (let i = startIndex; i < startIndex + count; i++) {
         // EVM addresses (Ethereum/Avalanche C-Chain) - get from device
-        const evmPath = getAddressDerivationPath({
-          accountIndex: i,
-          vmType: NetworkVMType.EVM
-        })
+        const evmPath = this.getEvmDerivationPath(i, derivationPathType)
         const evmAddressResponse = await avalancheApp.getETHAddress(
           evmPath,
           false // don't display on device
@@ -1060,7 +1084,8 @@ class LedgerService {
   async getAllAddressesWithSolana(
     startIndex: number,
     count: number,
-    isTestnet: boolean
+    isTestnet: boolean,
+    derivationPathType?: LedgerDerivationPathType
   ): Promise<AddressInfo[]> {
     const addresses: AddressInfo[] = []
 
@@ -1069,7 +1094,8 @@ class LedgerService {
       const avalancheAddresses = await this.getAllAddresses(
         startIndex,
         count,
-        isTestnet
+        isTestnet,
+        derivationPathType
       )
       addresses.push(...avalancheAddresses)
 
