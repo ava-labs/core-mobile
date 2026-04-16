@@ -4,10 +4,14 @@ import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import { configureEncryptedStore } from 'store'
 import Aes from 'react-native-aes-crypto'
+import BootSplash from 'react-native-bootsplash'
+import Logger from 'utils/Logger'
 
 type EncryptionKey = string | null
 const SERVICE_KEY = 'sec-store-provider'
 const MAC_KEY = 'sec-store-provider-mac'
+const MAX_RETRIES = 3
+const RETRY_DELAY_MS = 2000
 
 /**
  * Set up the encrypted redux store.
@@ -38,12 +42,32 @@ const useEncryptedStore = (): ReturnType<
   > | null>(null)
 
   useEffect(() => {
-    ;(async () => {
-      const encryptionKey = await getEncryptionKey()
-      const macKey = await getMacKey()
-      if (!encryptionKey || !macKey) return
-      setEncryptedStore(configureEncryptedStore(encryptionKey, macKey))
-    })()
+    let cancelled = false
+
+    const tryInit = async (attempt: number): Promise<void> => {
+      try {
+        const encryptionKey = await getEncryptionKey()
+        const macKey = await getMacKey()
+        if (cancelled) return
+        if (!encryptionKey || !macKey) return
+        setEncryptedStore(configureEncryptedStore(encryptionKey, macKey))
+      } catch (e) {
+        Logger.error(`EncryptedStoreProvider: Keychain init failed (attempt ${attempt})`, e)
+        if (cancelled) return
+        if (attempt < MAX_RETRIES) {
+          setTimeout(() => tryInit(attempt + 1), RETRY_DELAY_MS)
+        } else {
+          Logger.error('EncryptedStoreProvider: all retries exhausted, hiding splash')
+          BootSplash.hide()
+        }
+      }
+    }
+
+    tryInit(1)
+
+    return () => {
+      cancelled = true
+    }
   }, []) // only once!
 
   return encryptedStore
