@@ -10,9 +10,6 @@
     "settings",
     "accounts"
   ],
-  "walletModes": [
-    "mnemonic",
-    "seedless"
-  ],
-  "definition": "Each listed product flow should have Appium coverage under mnemonic-style login (recovery phrase / warmup). Seedless E2E is not automated on mobile yet — add `seedless` to `walletModes` when that suite exists. Ledger is omitted (not automatable in Appium). Extend `flows` when you add heuristics in e2e-feature-coverage.js."
+  "walletModes": ["mnemonic"],
+  "definition": "Each listed product flow should have Appium coverage under mnemonic-style login (recovery phrase / warmup). Seedless is not in `walletModes` until seedless Appium exists — add it here when that suite lands. Ledger is omitted (not automatable in Appium). Unknown `flows` keys are ignored with a console warning (see SPEC_COVERS_FLOW_MOBILE in e2e-feature-coverage.js)."
 }

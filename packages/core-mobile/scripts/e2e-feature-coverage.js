@@ -580,6 +580,18 @@ const BREADTH_GENERIC_FEATURE_TOKENS = new Set([
 ])
 
 /**
+ * @param {unknown} rawVal
+ * @param {number} defaultVal
+ */
+function coalesceFiniteNonNegativeWeight(rawVal, defaultVal) {
+  const n = Number(rawVal ?? defaultVal)
+  if (!Number.isFinite(n) || n < 0) {
+    return defaultVal
+  }
+  return n
+}
+
+/**
  * @returns {{ weights: { e2eFeatureCoveragePercent: number, requiredScenariosPercent: number, featureFolderWalletSlotPercent: number }, impliedUncertaintyPercentagePoints: number, definition?: string, configPath: string }}
  */
 function loadCoverageModelConfig() {
@@ -598,34 +610,62 @@ function loadCoverageModelConfig() {
   try {
     const raw = JSON.parse(fs.readFileSync(configPath, 'utf8'))
     const w = raw.weights
+    const weightKeys = [
+      'e2eFeatureCoveragePercent',
+      'requiredScenariosPercent',
+      'featureFolderWalletSlotPercent'
+    ]
+    const hadInvalidWeight = weightKeys.some(
+      k =>
+        w?.[k] != null &&
+        (!Number.isFinite(Number(w[k])) || Number(w[k]) < 0)
+    )
+    if (hadInvalidWeight) {
+      console.warn(
+        'e2e-feature-coverage: coverage-model.config.json weights contained non-finite or negative values; defaults used for those entries.'
+      )
+    }
     const weights = {
-      e2eFeatureCoveragePercent: Number(
-        w?.e2eFeatureCoveragePercent ??
-          defaults.weights.e2eFeatureCoveragePercent
+      e2eFeatureCoveragePercent: coalesceFiniteNonNegativeWeight(
+        w?.e2eFeatureCoveragePercent,
+        defaults.weights.e2eFeatureCoveragePercent
       ),
-      requiredScenariosPercent: Number(
-        w?.requiredScenariosPercent ?? defaults.weights.requiredScenariosPercent
+      requiredScenariosPercent: coalesceFiniteNonNegativeWeight(
+        w?.requiredScenariosPercent,
+        defaults.weights.requiredScenariosPercent
       ),
-      featureFolderWalletSlotPercent: Number(
-        w?.featureFolderWalletSlotPercent ??
-          defaults.weights.featureFolderWalletSlotPercent
+      featureFolderWalletSlotPercent: coalesceFiniteNonNegativeWeight(
+        w?.featureFolderWalletSlotPercent,
+        defaults.weights.featureFolderWalletSlotPercent
       )
     }
     const sum =
       weights.e2eFeatureCoveragePercent +
       weights.requiredScenariosPercent +
       weights.featureFolderWalletSlotPercent
-    if (sum > 0 && Math.abs(sum - 1) > 0.02) {
+    if (Number.isFinite(sum) && sum > 0 && Math.abs(sum - 1) > 0.02) {
       weights.e2eFeatureCoveragePercent /= sum
       weights.requiredScenariosPercent /= sum
       weights.featureFolderWalletSlotPercent /= sum
     }
+    const impliedRaw = raw.impliedUncertaintyPercentagePoints
+    const impliedInvalid =
+      impliedRaw != null &&
+      (!Number.isFinite(Number(impliedRaw)) || Number(impliedRaw) < 0)
+    if (impliedInvalid) {
+      console.warn(
+        'e2e-feature-coverage: impliedUncertaintyPercentagePoints invalid; using default.'
+      )
+    }
+    const impliedUncertaintyPercentagePoints = impliedInvalid
+      ? defaults.impliedUncertaintyPercentagePoints
+      : coalesceFiniteNonNegativeWeight(
+          impliedRaw,
+          defaults.impliedUncertaintyPercentagePoints
+        )
     return {
       weights,
-      impliedUncertaintyPercentagePoints: Number(
-        raw.impliedUncertaintyPercentagePoints ??
-          defaults.impliedUncertaintyPercentagePoints
-      ),
+      impliedUncertaintyPercentagePoints,
       definition:
         typeof raw.definition === 'string' ? raw.definition : undefined,
       configPath
@@ -673,11 +713,25 @@ function loadRequiredScenariosConfig() {
     const walletModes = rawModes.filter(
       m => m !== 'ledger' && SUPPORTED_REQUIRED_SCENARIO_WALLET_MODES.has(m)
     )
+    const rawFlows =
+      Array.isArray(raw.flows) && raw.flows.length
+        ? raw.flows.map(f => String(f).trim())
+        : defaults.flows
+    const unknownFlows = rawFlows.filter(
+      f => !Object.prototype.hasOwnProperty.call(SPEC_COVERS_FLOW_MOBILE, f)
+    )
+    if (unknownFlows.length) {
+      console.warn(
+        `e2e-feature-coverage: required-scenarios flows ignored (no heuristic in SPEC_COVERS_FLOW_MOBILE): ${unknownFlows.join(
+          ', '
+        )}`
+      )
+    }
+    const flows = rawFlows.filter(f =>
+      Object.prototype.hasOwnProperty.call(SPEC_COVERS_FLOW_MOBILE, f)
+    )
     return {
-      flows:
-        Array.isArray(raw.flows) && raw.flows.length
-          ? raw.flows
-          : defaults.flows,
+      flows: flows.length ? flows : defaults.flows,
       walletModes: walletModes.length ? walletModes : defaults.walletModes,
       definition:
         typeof raw.definition === 'string' ? raw.definition : undefined,
