@@ -17,10 +17,10 @@ import {
   getEvmAddressFromPubKey,
   getBtcAddressFromPubKey
 } from '@avalabs/core-wallets-sdk'
-import { deriveAddressesFromXpub } from './deriveAddressesOffline'
 import { secp256k1, utils, networkIDs } from '@avalabs/avalanchejs'
 import { networks } from 'bitcoinjs-lib'
 import { mnemonicToSeedSync } from 'bip39'
+import { deriveAddressesFromXpub } from './deriveAddressesOffline'
 
 // Standard BIP39 test mnemonic (DO NOT use in production)
 const TEST_MNEMONIC =
@@ -228,7 +228,11 @@ describe('BIP44 EVM multi-account derivation', () => {
     const addresses: string[] = []
 
     for (let i = 0; i < 3; i++) {
-      const accountAvalancheXpub = deriveXpubFromMnemonic(TEST_MNEMONIC, i, 9000)
+      const accountAvalancheXpub = deriveXpubFromMnemonic(
+        TEST_MNEMONIC,
+        i,
+        9000
+      )
       const { evm } = deriveAddressesFromXpub(
         sharedEvmXpub,
         accountAvalancheXpub,
