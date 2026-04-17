@@ -210,6 +210,7 @@ class ApprovalController implements VmModuleApprovalController {
         handleLedgerErrorAndShowAlert({
           error: value.error,
           network: params.network,
+          rpcMethod: request.method,
           onRetry: () =>
             onApprove({
               ...params,
