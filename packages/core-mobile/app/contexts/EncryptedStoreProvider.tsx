@@ -12,6 +12,18 @@ const SERVICE_KEY = 'sec-store-provider'
 const MAC_KEY = 'sec-store-provider-mac'
 const MAX_RETRIES = 3
 const RETRY_DELAY_MS = 2000
+const KEYCHAIN_TIMEOUT_MS = 8000
+
+const withKeychainTimeout = <T,>(promise: Promise<T>): Promise<T> =>
+  Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(
+        () => reject(new Error(`Keychain timed out after ${KEYCHAIN_TIMEOUT_MS}ms`)),
+        KEYCHAIN_TIMEOUT_MS
+      )
+    )
+  ])
 
 /**
  * Set up the encrypted redux store.
@@ -87,19 +99,17 @@ const useEncryptedStore = (): ReturnType<
  * @private
  */
 const getEncryptionKey = async (): Promise<EncryptionKey> => {
-  const existingCredentials = await Keychain.getGenericPassword({
-    service: SERVICE_KEY
-  })
+  const existingCredentials = await withKeychainTimeout(
+    Keychain.getGenericPassword({ service: SERVICE_KEY })
+  )
   if (existingCredentials) {
     return existingCredentials.password
   }
 
   // Generate new credentials based on random string
   const key: string = await Aes.randomKey(32)
-  const hasSetCredentials = await Keychain.setGenericPassword(
-    SERVICE_KEY,
-    key,
-    { service: SERVICE_KEY }
+  const hasSetCredentials = await withKeychainTimeout(
+    Keychain.setGenericPassword(SERVICE_KEY, key, { service: SERVICE_KEY })
   )
   if (hasSetCredentials) {
     return key
@@ -112,18 +122,18 @@ const getEncryptionKey = async (): Promise<EncryptionKey> => {
  * @private
  */
 const getMacKey = async (): Promise<EncryptionKey> => {
-  const existingCredentials = await Keychain.getGenericPassword({
-    service: MAC_KEY
-  })
+  const existingCredentials = await withKeychainTimeout(
+    Keychain.getGenericPassword({ service: MAC_KEY })
+  )
   if (existingCredentials) {
     return existingCredentials.password
   }
 
   // Generate new credentials based on random string
   const key: string = await Aes.randomKey(32)
-  const hasSetCredentials = await Keychain.setGenericPassword(MAC_KEY, key, {
-    service: MAC_KEY
-  })
+  const hasSetCredentials = await withKeychainTimeout(
+    Keychain.setGenericPassword(MAC_KEY, key, { service: MAC_KEY })
+  )
   if (hasSetCredentials) {
     return key
   }
