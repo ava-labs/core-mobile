@@ -24,8 +24,13 @@ export function validateSiweOrigin(
 
   if (!dappOrigin) return undefined
 
-  const domainMismatch =
-    normalizeDomain(siwe.domain) !== normalizeDomain(dappOrigin.hostname ?? '')
+  const parsedDomain = safeParseUrl(siwe.domain)
+  const domainHasScheme = siwe.domain.includes('://')
+
+  const domainMismatch = parsedDomain
+    ? domainFieldMismatch(parsedDomain, domainHasScheme, dappOrigin)
+    : normalizeDomain(siwe.domain) !==
+      normalizeDomain(dappOrigin.hostname ?? '')
 
   const uriMismatch =
     siweUri !== undefined &&
@@ -86,6 +91,32 @@ const DEFAULT_PORTS: Record<string, string> = {
 
 function effectivePort(url: URL): string {
   return url.port || DEFAULT_PORTS[url.protocol] || ''
+}
+
+function domainFieldMismatch(
+  parsedDomain: URL,
+  hasScheme: boolean,
+  dappOrigin: URL
+): boolean {
+  if (
+    normalizeDomain(parsedDomain.hostname) !==
+    normalizeDomain(dappOrigin.hostname ?? '')
+  ) {
+    return true
+  }
+
+  if (
+    hasScheme &&
+    normalizeScheme(parsedDomain.protocol) !==
+      normalizeScheme(dappOrigin.protocol)
+  ) {
+    return true
+  }
+
+  return (
+    parsedDomain.port !== '' &&
+    effectivePort(parsedDomain) !== effectivePort(dappOrigin)
+  )
 }
 
 function formatOrigin(url: URL, fallback: string): string {
