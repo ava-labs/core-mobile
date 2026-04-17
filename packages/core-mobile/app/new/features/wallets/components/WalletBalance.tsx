@@ -57,10 +57,7 @@ const WalletBalanceComponent = ({
   const { isLoading, balanceTotalInCurrency } = useMemo(() => {
     const accountEntries = Object.values(walletBalancesData)
 
-    const loading =
-      accountEntries.length === 0 ||
-      accountEntries.some(balances => !balances || balances.length === 0)
-
+    let loading = accountEntries.length === 0
     let total = 0
     for (const accountBalances of accountEntries) {
       const result = computeAccountBalance({
@@ -72,6 +69,7 @@ const WalletBalanceComponent = ({
         tokenVisibility,
         isError: isBalancesError
       })
+      if (result.isLoadingBalance) loading = true
       total += result.balance
     }
 
