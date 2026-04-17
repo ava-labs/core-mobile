@@ -1,7 +1,6 @@
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Transport from '@ledgerhq/hw-transport'
-import { AppState, AppStateStatus } from 'react-native'
-import { BleErrorCode, BleIOSErrorCode } from 'react-native-ble-plx'
+import { Alert, AppState, AppStateStatus } from 'react-native'
 import AppAvalanche from '@avalabs/hw-app-avalanche'
 import AppSolana from '@ledgerhq/hw-app-solana'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
@@ -19,7 +18,6 @@ import { getAddress } from 'ethers'
 import { networkIDs } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
 import bs58 from 'bs58'
-import { Alert } from 'react-native'
 import {
   DERIVATION_PATHS,
   LEDGER_TIMEOUTS,
@@ -49,6 +47,7 @@ import {
 } from './types'
 import {
   isLedgerBluetoothError,
+  isLedgerConnectionFailed,
   ledgerBluetoothErrors,
   showBluetoothErrorAlert
 } from './LedgerBluetoothError'
@@ -225,7 +224,7 @@ class LedgerService {
           throw error // radio/permission errors — no point retrying
         }
         if (
-          !this.isRetryableConnectionError(error) ||
+          !isLedgerConnectionFailed(error) ||
           attempt === LEDGER_CONNECT_RETRY_COUNT
         ) {
           break
@@ -1153,26 +1152,6 @@ class LedgerService {
       Logger.error('Failed to get all addresses with Solana', error)
       throw error
     }
-  }
-
-  private isRetryableConnectionError(error: unknown): boolean {
-    if (
-      typeof error !== 'object' ||
-      error === null ||
-      !('errorCode' in error)
-    ) {
-      return false
-    }
-    if (
-      error.errorCode === BleErrorCode.DeviceConnectionFailed ||
-      error.errorCode === BleErrorCode.OperationTimedOut
-    ) {
-      return true
-    }
-    return (
-      'iosErrorCode' in error &&
-      error.iosErrorCode === BleIOSErrorCode.ConnectionTimeout
-    )
   }
 
   // Disconnect from Ledger device
