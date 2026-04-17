@@ -80,7 +80,8 @@ const allCaps = [
     'appium:enforceAppInstall': true,
     'appium:uiautomator2ServerReadTimeout': 60000,
     'appium:skipDeviceInitialization': false,
-    'appium:skipLogcatCapture': false
+    'appium:skipLogcatCapture': false,
+    'appium:isHeadless': true
   },
   {
     platformName: 'iOS',
@@ -101,7 +102,7 @@ const allCaps = [
     'appium:shouldUseSingletonTestManager': false,
     'appium:showXcodeLog': true,
     'appium:settings[snapshotMaxDepth]': 70,
-    'appium:isHeadless': true
+    'appium:isHeadless': false
   }
 ]
 
