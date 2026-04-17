@@ -1303,13 +1303,19 @@ export class LedgerWallet implements Wallet {
 
   private async handleEthAndPersonalSign({
     data,
-    derivationPath
+    derivationPath,
+    chainId
   }: {
     data: string | TypedDataV1 | TypedData<MessageTypes>
     derivationPath: string
+    chainId: number
   }): Promise<string> {
-    const appType = LedgerAppType.ETHEREUM
-    // Get transport and create Ethereum app instance
+    // Use the Avalanche app when on an Avalanche chain — the Avalanche Ledger
+    // app exposes EVM signing through the same transport, so we can create an
+    // Eth instance without switching apps (matches core-web/extension behavior).
+    const appType = isAvalancheChainId(chainId)
+      ? LedgerAppType.AVALANCHE
+      : LedgerAppType.ETHEREUM
     const transport = await this.handleAppConnection(appType)
     const app = new Eth(transport as Transport)
 
@@ -1363,7 +1369,11 @@ export class LedgerWallet implements Wallet {
         rpcMethod === RpcMethod.ETH_SIGN ||
         rpcMethod === RpcMethod.PERSONAL_SIGN
       ) {
-        return this.handleEthAndPersonalSign({ data, derivationPath })
+        return this.handleEthAndPersonalSign({
+          data,
+          derivationPath,
+          chainId: network.chainId
+        })
       } else {
         throw new Error('This function is not supported on your wallet')
       }
@@ -1393,7 +1403,12 @@ export class LedgerWallet implements Wallet {
     const appType = LedgerAppType.AVALANCHE
     await this.handleAppConnection(appType)
 
-    const addresses = await LedgerService.getAllAddresses(index, 1, isTestnet)
+    const addresses = await LedgerService.getAllAddresses(
+      index,
+      1,
+      isTestnet,
+      this.derivationPathSpec
+    )
     const findAddress = (type: LedgerAddressType): string | undefined =>
       addresses.find(addr => addr.type === type)?.address
 
@@ -1416,7 +1431,10 @@ export class LedgerWallet implements Wallet {
     let xpub = { evm: '', avalanche: '' }
     // Get extended public keys for this account (device is already connected)
     if (this.isBIP44()) {
-      const extendedKeys = await LedgerService.getExtendedPublicKeys(index)
+      const extendedKeys = await LedgerService.getExtendedPublicKeys(
+        index,
+        this.derivationPathSpec
+      )
       xpub = {
         evm: extendedPublicKeyToXpub(
           extendedKeys.evm.key,

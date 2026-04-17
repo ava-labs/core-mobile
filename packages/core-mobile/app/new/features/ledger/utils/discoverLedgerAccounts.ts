@@ -2,9 +2,11 @@ import {
   AvalancheCaip2ChainId,
   BitcoinCaip2ChainId,
   BlockchainNamespace,
+  ChainId,
   SolanaCaip2ChainId
 } from '@avalabs/core-chains-sdk'
 import { AVALANCHE_MAINNET_NETWORK } from 'services/network/consts'
+import { defaultEnabledL2ChainIds } from 'services/network/consts'
 import { streamingBalanceApiClient } from 'utils/api/clients/balanceApiClient'
 import {
   AvalancheXpGetBalancesRequestItem,
@@ -194,7 +196,11 @@ export const buildLedgerBalanceRequestItems = (
     requestItems.push({
       namespace: BlockchainNamespace.EIP155,
       addresses: evmAddresses,
-      references: [String(AVALANCHE_MAINNET_NETWORK.chainId)]
+      references: [
+        String(ChainId.AVALANCHE_MAINNET_ID),
+        String(ChainId.ETHEREUM_HOMESTEAD),
+        ...defaultEnabledL2ChainIds.map(String)
+      ]
     } as EvmGetBalancesRequestItem)
   }
 
