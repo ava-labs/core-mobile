@@ -1,5 +1,6 @@
 import { Alert, Linking, Platform } from 'react-native'
 import Logger from 'utils/Logger'
+import { BleErrorCode, BleIOSErrorCode } from 'react-native-ble-plx'
 import BluetoothService from 'services/bluetooth/BluetoothService'
 import { LEDGER_ERROR_CODES } from './types'
 
@@ -89,6 +90,18 @@ export const isLedgerBluetoothError = (
   return (
     name === 'LedgerBluetoothError' &&
     bluetoothCodes.includes(code as BluetoothLedgerErrorCode)
+  )
+}
+
+export const isLedgerConnectionFailed = (error: unknown): boolean => {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'errorCode' in error &&
+    (error.errorCode === BleErrorCode.DeviceConnectionFailed ||
+      error.errorCode === BleErrorCode.OperationTimedOut ||
+      ('iosErrorCode' in error &&
+        error.iosErrorCode === BleIOSErrorCode.ConnectionTimeout))
   )
 }
 
