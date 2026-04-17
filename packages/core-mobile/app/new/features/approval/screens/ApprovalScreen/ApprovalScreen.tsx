@@ -129,9 +129,9 @@ const ApprovalScreen = ({
   // in-flight resolveWithRetry skips the retry alert and any already-visible
   // retry alert's Retry button becomes a no-op.
   const handleClose = useCallback((): void => {
-    cancelLedger()
+    if (isLedger) cancelLedger()
     onReject()
-  }, [cancelLedger, onReject])
+  }, [cancelLedger, isLedger, onReject])
 
   const handleGaslessPreApprove = useCallback(async (): Promise<boolean> => {
     if (!shouldShowGaslessSwitch || !gaslessEnabled) return true
