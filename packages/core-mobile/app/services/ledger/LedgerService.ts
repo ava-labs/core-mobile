@@ -1029,7 +1029,11 @@ class LedgerService {
         // xp addresses - get from device
         const avalancheChainPath = getAddressDerivationPath({
           accountIndex: i,
-          vmType: NetworkVMType.AVM
+          vmType: NetworkVMType.AVM,
+          derivationPathType:
+            derivationPathType === LedgerDerivationPathType.LedgerLive
+              ? 'ledger_live'
+              : 'bip44'
         })
         const avalancheChainAddressResponse =
           await avalancheApp.getAddressAndPubKey(
