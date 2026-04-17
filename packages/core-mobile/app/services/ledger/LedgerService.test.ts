@@ -3,13 +3,13 @@ import { Alert, PermissionsAndroid, Platform } from 'react-native'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import { LEDGER_TIMEOUTS } from 'new/features/ledger/consts'
 import Logger from 'utils/Logger'
-import LedgerService from './LedgerService'
-import { isLedgerBluetoothError } from './LedgerBluetoothError'
-import { LedgerAppType, LEDGER_ERROR_CODES } from './types'
 import {
   LEDGER_CONNECT_RETRY_COUNT,
   LEDGER_CONNECT_RETRY_DELAY_MS
 } from 'new/features/ledger/consts'
+import LedgerService from './LedgerService'
+import { isLedgerBluetoothError } from './LedgerBluetoothError'
+import { LedgerAppType, LEDGER_ERROR_CODES } from './types'
 
 jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
   __esModule: true,
@@ -336,12 +336,12 @@ describe('LedgerService', () => {
     ].filter(
       (
         permission
-      ): permission is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
+      ): permission is (typeof PermissionsAndroid.PERMISSIONS)[keyof typeof PermissionsAndroid.PERMISSIONS] =>
         Boolean(permission)
     )
 
     const makePermissionResult = (
-      status: typeof PermissionsAndroid.RESULTS[keyof typeof PermissionsAndroid.RESULTS]
+      status: (typeof PermissionsAndroid.RESULTS)[keyof typeof PermissionsAndroid.RESULTS]
     ): Record<string, string> => {
       return Object.fromEntries(
         bluetoothPermissions.map(permission => [permission, status])
@@ -494,7 +494,7 @@ describe('LedgerService', () => {
     ].filter(
       (
         p
-      ): p is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
+      ): p is (typeof PermissionsAndroid.PERMISSIONS)[keyof typeof PermissionsAndroid.PERMISSIONS] =>
         Boolean(p)
     )
 
@@ -615,7 +615,9 @@ describe('LedgerService', () => {
       )
       await assertion
 
-      expect(transportBLEMock.open).toHaveBeenCalledTimes(LEDGER_CONNECT_RETRY_COUNT)
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(
+        LEDGER_CONNECT_RETRY_COUNT
+      )
     })
 
     it('does not retry on a generic non-retryable error', async () => {
@@ -659,7 +661,6 @@ describe('LedgerService', () => {
       const isAppCompatibleSpy = jest
         .spyOn(LedgerService as any, 'isAppCompatible')
         .mockReturnValue(false)
-
 
       // Make checkApp always return false (app never opens)
       const checkAppSpy = jest
