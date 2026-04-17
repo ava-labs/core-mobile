@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { LocalTokenWithBalance } from 'store/balance'
 import fusionService from '../services/FusionService'
-import type { Quote } from '../types'
+import { type Quote, ServiceType } from '../types'
 import { PriceImpactAvailability, PriceImpactSeverity } from '../consts'
 
 const HIGH_IMPACT_THRESHOLD = 5
@@ -43,6 +43,12 @@ export function usePriceImpact(
 
   useEffect(() => {
     if (!quote || !fromToken || !toToken) {
+      setPriceImpact(undefined)
+      setPriceImpactAvailability(PriceImpactAvailability.Hidden)
+      return
+    }
+
+    if (quote.serviceType !== ServiceType.MARKR) {
       setPriceImpact(undefined)
       setPriceImpactAvailability(PriceImpactAvailability.Hidden)
       return
@@ -95,15 +101,18 @@ export function usePriceImpact(
   }, [fromToken, quote, sourcePrice, targetPrice, toToken])
 
   const priceImpactSeverity = getPriceImpactSeverity(priceImpact)
+  const isMarkrQuote = quote?.serviceType === ServiceType.MARKR
 
   return {
     priceImpact,
     priceImpactSeverity,
     priceImpactAvailability,
     isPriceImpactTooHigh:
+      isMarkrQuote &&
       priceImpactAvailability === PriceImpactAvailability.Ready &&
       priceImpactSeverity === PriceImpactSeverity.Critical,
     isPriceImpactCalculating:
+      isMarkrQuote &&
       priceImpactAvailability === PriceImpactAvailability.Calculating
   }
 }
