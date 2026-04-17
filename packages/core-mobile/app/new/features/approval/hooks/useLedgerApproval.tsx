@@ -11,6 +11,7 @@ import { TRANSACTION_CANCELLED_BY_USER } from 'vmModule/ApprovalController/utils
 
 type UseLedgerApprovalReturn = {
   renderLedgerFooter: () => JSX.Element | null
+  cancelLedger: () => void
 }
 
 export const useLedgerApproval = (
@@ -156,5 +157,5 @@ export const useLedgerApproval = (
     cancelLedger
   ])
 
-  return { renderLedgerFooter }
+  return { renderLedgerFooter, cancelLedger }
 }
