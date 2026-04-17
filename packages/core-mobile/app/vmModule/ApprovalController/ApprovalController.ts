@@ -215,6 +215,7 @@ class ApprovalController implements VmModuleApprovalController {
             // Guard: if the approval sheet was dismissed while the alert was
             // visible, userCancelledMap will be set — don't retry in that case.
             if (this.userCancelledMap.get(requestId)) {
+              this.userCancelledMap.delete(requestId)
               return
             }
             onApprove({
