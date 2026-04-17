@@ -336,12 +336,12 @@ describe('LedgerService', () => {
     ].filter(
       (
         permission
-      ): permission is (typeof PermissionsAndroid.PERMISSIONS)[keyof typeof PermissionsAndroid.PERMISSIONS] =>
+      ): permission is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
         Boolean(permission)
     )
 
     const makePermissionResult = (
-      status: (typeof PermissionsAndroid.RESULTS)[keyof typeof PermissionsAndroid.RESULTS]
+      status: typeof PermissionsAndroid.RESULTS[keyof typeof PermissionsAndroid.RESULTS]
     ): Record<string, string> => {
       return Object.fromEntries(
         bluetoothPermissions.map(permission => [permission, status])
@@ -494,7 +494,7 @@ describe('LedgerService', () => {
     ].filter(
       (
         p
-      ): p is (typeof PermissionsAndroid.PERMISSIONS)[keyof typeof PermissionsAndroid.PERMISSIONS] =>
+      ): p is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
         Boolean(p)
     )
 
