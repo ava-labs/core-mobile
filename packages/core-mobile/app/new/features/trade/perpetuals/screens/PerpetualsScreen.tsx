@@ -14,17 +14,17 @@ import { ErrorState } from 'common/components/ErrorState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useMemo } from 'react'
-import { ScrollView, ViewStyle } from 'react-native'
-import Animated from 'react-native-reanimated'
-import { EventCard } from '../components/EventCard'
-import { useMarketSeries } from '../hooks/useMarketSeries'
+import { EventCard } from 'features/trade/predictions/components/EventCard'
+import { useMarketSeries } from 'features/trade/predictions/hooks/useMarketSeries'
 import {
   TRENDING_CHIP,
   usePredictionEvents
-} from '../hooks/usePredictionEvents'
+} from 'features/trade/predictions/hooks/usePredictionEvents'
+import React, { useCallback, useMemo } from 'react'
+import { ScrollView, ViewStyle } from 'react-native'
+import Animated from 'react-native-reanimated'
 
-export const PredictionsScreen = ({
+export const PerpetualsScreen = ({
   containerStyle
 }: {
   containerStyle: ViewStyle
@@ -44,11 +44,6 @@ export const PredictionsScreen = ({
     filteredEvents,
     selectChip
   } = usePredictionEvents()
-
-  const listContentStyle = useMemo(
-    () => ({ ...containerStyle, paddingHorizontal: 9 }),
-    [containerStyle]
-  )
 
   const onEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -75,14 +70,13 @@ export const PredictionsScreen = ({
     () => (
       <View
         sx={{
-          paddingBottom: 14,
+          paddingVertical: 14,
           backgroundColor: theme.colors.$surfacePrimary
         }}>
         <View
           style={{
             gap: 10,
             flexDirection: 'row',
-            marginHorizontal: -9,
             paddingRight: 16
           }}>
           <View sx={{ flex: 1 }}>
@@ -169,12 +163,7 @@ export const PredictionsScreen = ({
   const renderItem = useCallback(
     ({ item }: { item: EventResponse }) => {
       return (
-        <View
-          sx={{
-            flex: 1,
-            paddingHorizontal: 7,
-            marginBottom: 14
-          }}>
+        <View sx={{ flex: 1, marginHorizontal: 7, marginBottom: 13 }}>
           <EventCard
             event={item}
             onPress={() => {
@@ -213,7 +202,7 @@ export const PredictionsScreen = ({
 
   return (
     <Animated.View
-      testID="trade-predictions"
+      testID="trade-perpetuals"
       entering={getListItemEnteringAnimation(10)}
       style={{
         flex: 1
@@ -225,11 +214,11 @@ export const PredictionsScreen = ({
         renderEmpty={renderEmptyComponent}
         isRefreshing={isRefreshing}
         renderHeader={renderHeader}
-        contentContainerStyle={listContentStyle}
+        contentContainerStyle={containerStyle}
         numColumns={2}
         masonry
         extraData={{ selectedChip }}
-        listKey="trade-predictions"
+        listKey="trade-perpetuals"
         onRefresh={refetch}
         onEndReached={onEndReached}
       />

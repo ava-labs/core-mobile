@@ -14,7 +14,7 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { renderHook } from '@testing-library/react-hooks'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { predictionMarketClient } from 'features/trade/predictions/services/predictionMarketClient'
-import { useTradableEvents } from './useTradableMarkets'
+import { useTradableEvents } from './useTradableEvents'
 
 const mockUseInfiniteQuery = useInfiniteQuery as jest.MockedFunction<
   typeof useInfiniteQuery
@@ -40,7 +40,7 @@ const eventB = {
 
 beforeEach(() => {
   jest.clearAllMocks()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   mockUseInfiniteQuery.mockReturnValue({
     data: undefined,
     error: null,
@@ -125,15 +125,14 @@ describe('useTradableEvents', () => {
     })
 
     renderHook(() => useTradableEvents())
+    expect(getNextPageParam?.({ events: [eventA], cursor: 'abc' })).toBe('abc')
     expect(
-      getNextPageParam?.({ events: [eventA], cursor: 'abc' })
-    ).toBe('abc')
-    expect(getNextPageParam?.({ events: [eventA], cursor: null })).toBeUndefined()
+      getNextPageParam?.({ events: [eventA], cursor: null })
+    ).toBeUndefined()
     expect(getNextPageParam?.({ events: [eventA], cursor: '' })).toBeUndefined()
   })
 
   it('flattens paginated events', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockUseInfiniteQuery.mockReturnValue({
       data: {
         pages: [
@@ -160,7 +159,6 @@ describe('useTradableEvents', () => {
   })
 
   it('derives isRefreshing when refetching but not loading next page', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockUseInfiniteQuery.mockReturnValue({
       data: { pages: [{ events: [eventA] }] },
       error: null,
@@ -176,7 +174,6 @@ describe('useTradableEvents', () => {
   })
 
   it('isRefreshing is false while fetching next page', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mockUseInfiniteQuery.mockReturnValue({
       data: { pages: [{ events: [eventA] }] },
       error: null,

@@ -1,6 +1,6 @@
 import { EventResponse } from '@avalabs/prediction-market-sdk'
 import { useMemo, useState } from 'react'
-import { useTradableEvents } from './useTradableMarkets'
+import { useTradableEvents } from './useTradableEvents'
 
 export const TRENDING_CHIP = 'Trending'
 

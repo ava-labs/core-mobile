@@ -1,1 +1,1 @@
-export { default } from 'features/trade/predictions/screens/MarketDetailScreen'
+export { default } from 'features/trade/predictions/screens/EventDetailsScreen'

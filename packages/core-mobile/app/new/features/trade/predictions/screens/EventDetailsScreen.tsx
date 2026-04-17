@@ -1,5 +1,6 @@
 import {
   alpha,
+  Button,
   GroupList,
   Icons,
   Text,
@@ -12,38 +13,36 @@ import { useLocalSearchParams } from 'expo-router'
 import { TradeThumbnail } from 'features/trade/components/TradeThumbnail'
 import React, { useMemo, useState } from 'react'
 import { Pressable, ScrollView } from 'react-native'
-import { OutcomeRow } from '../components/OutcomeRow'
+import { MarketOutcomeRow } from '../components/MarketOutcomeRow'
 import {
   OUTCOME_COLORS,
   OutcomeSeries,
   ProbabilityChart
 } from '../components/ProbabilityChart'
-import { MARKETS_MOCK, MockMarket } from '../mocks'
+import { useGetEventDetail } from '../hooks/useGetEventDetail'
 import { generateHistory, tickerToSeed } from '../utils'
+import { MarketWithQuotes } from '../types'
 
-const COLLAPSED_COUNT = 3
+const COLLAPSED_COUNT = 5
 const TIME_RANGES = ['1H', '1D', '1W', '1M', 'ALL'] as const
 type TimeRange = typeof TIME_RANGES[number]
 
-const MarketDetailScreen = (): JSX.Element => {
+const EventDetailsScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const { tickerId } = useLocalSearchParams<{ tickerId: string }>()
-  const [selectedRange, setSelectedRange] = useState<TimeRange>('1M')
-  const [showAllOutcomes, setShowAllOutcomes] = useState(false)
 
-  const market: MockMarket | undefined = useMemo(
-    () => MARKETS_MOCK.find(m => m.tickerId === tickerId),
-    [tickerId]
-  )
+  const [selectedRange, setSelectedRange] = useState<TimeRange>('1M')
+
+  const { tickerId } = useLocalSearchParams<{ tickerId: string }>()
+  const { event } = useGetEventDetail(tickerId)
 
   const chartSeries: OutcomeSeries[] = useMemo(() => {
-    if (!market) return []
-    const seed = tickerToSeed(market.tickerId)
-    return market.options.map((opt, i) => ({
-      label: opt.label,
-      points: generateHistory(opt.probability, seed, i)
+    if (!event) return []
+    const seed = tickerToSeed(event.eventTicker)
+    return event.markets?.map((opt, i) => ({
+      label: opt.result ?? '',
+      points: generateHistory(parseFloat(opt.lastPrice), seed, i)
     }))
-  }, [market])
+  }, [event])
 
   const lastUpdateText = useMemo(() => {
     const now = new Date()
@@ -57,20 +56,14 @@ const MarketDetailScreen = (): JSX.Element => {
     })
   }, [])
 
-  const allOptions = market?.options ?? []
-  const hasMore = allOptions.length > COLLAPSED_COUNT
-  const visibleOptions = showAllOutcomes
-    ? allOptions
-    : allOptions.slice(0, COLLAPSED_COUNT)
-  const overflowOption =
-    !showAllOutcomes && hasMore ? allOptions[COLLAPSED_COUNT] : undefined
+  const allOptions = event?.markets ?? []
 
   return (
-    <ScrollScreen navigationTitle={market?.title ?? ''}>
+    <ScrollScreen navigationTitle={event?.title ?? ''}>
       <View style={{ gap: 10, paddingTop: 16 }}>
         <View style={{ gap: 10, paddingHorizontal: 16 }}>
-          <TradeThumbnail url={market?.imageUrl} />
-          <Text variant="heading2">{market?.title ?? ''}</Text>
+          <TradeThumbnail url={event?.imageUrl} />
+          <Text variant="heading2">{event?.title ?? ''}</Text>
         </View>
 
         <ScrollView
@@ -84,7 +77,7 @@ const MarketDetailScreen = (): JSX.Element => {
           }}>
           {allOptions.map((opt, i) => (
             <View
-              key={opt.label}
+              key={opt.ticker}
               style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <View
                 style={{
@@ -99,10 +92,10 @@ const MarketDetailScreen = (): JSX.Element => {
                 variant="subtitle2"
                 style={{ color: alpha(theme.colors.$textPrimary, 0.6) }}
                 numberOfLines={1}>
-                {opt.label}
+                {opt.yesSubTitle}
               </Text>
               <Text variant="subtitle2" style={{ fontFamily: 'Inter-Medium' }}>
-                {Math.round(opt.probability * 1000) / 10}%
+                {Math.round(parseFloat(opt.lastPrice) * 1000) / 10}%
               </Text>
             </View>
           ))}
@@ -129,57 +122,10 @@ const MarketDetailScreen = (): JSX.Element => {
 
         <View style={{ paddingTop: 24, gap: 8 }}>
           <Text variant="heading3">Outcomes</Text>
-          <View style={{ gap: 8 }}>
-            {visibleOptions.map((opt, i) => (
-              <OutcomeRow
-                key={opt.label}
-                label={opt.label}
-                probability={opt.probability}
-                volume={Number(market?.volume ?? 0) * opt.probability * 0.1}
-                trendUp={i % 2 === 0}
-                trendPct={0.02 + opt.probability * 0.01}
-              />
-            ))}
-          </View>
-
-          {overflowOption !== undefined && (
-            <View style={{ height: 110 }}>
-              <OutcomeRow
-                label={overflowOption.label}
-                probability={overflowOption.probability}
-                volume={
-                  Number(market?.volume ?? 0) * overflowOption.probability * 0.1
-                }
-                trendUp={false}
-                trendPct={0.02 + overflowOption.probability * 0.01}
-              />
-              <LinearGradient
-                colors={['rgba(255,255,255,0)', theme.colors.$surfacePrimary]}
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  bottom: 31,
-                  height: 120,
-                  pointerEvents: 'none'
-                }}
-              />
-              <Pressable
-                onPress={() => setShowAllOutcomes(true)}
-                style={{
-                  position: 'absolute',
-                  bottom: 31,
-                  alignSelf: 'center',
-                  backgroundColor: alpha(theme.colors.$textPrimary, 0.1),
-                  borderRadius: 20,
-                  height: 28,
-                  width: 100,
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                <Text variant="buttonSmall">Show more</Text>
-              </Pressable>
-            </View>
+          {allOptions.length === 1 && allOptions[0] ? (
+            <SingleOutcome market={allOptions[0]} />
+          ) : (
+            <MultipleOutcomes markets={allOptions} />
           )}
         </View>
 
@@ -206,11 +152,19 @@ const MarketDetailScreen = (): JSX.Element => {
             data={[
               {
                 title: 'Rules summary',
-                accordion: <View style={{ padding: 16 }} />
+                accordion: (
+                  <View style={{ padding: 16 }}>
+                    <Text variant="body1">Rules summary</Text>
+                  </View>
+                )
               },
               {
                 title: 'Timeline and payout',
-                accordion: <View style={{ padding: 16 }} />
+                accordion: (
+                  <View style={{ padding: 16 }}>
+                    <Text variant="body1">Rules summary</Text>
+                  </View>
+                )
               },
               {
                 title: 'About this market',
@@ -221,6 +175,83 @@ const MarketDetailScreen = (): JSX.Element => {
         </View>
       </View>
     </ScrollScreen>
+  )
+}
+
+export default EventDetailsScreen
+
+const MultipleOutcomes = ({
+  markets
+}: {
+  markets: MarketWithQuotes[]
+}): JSX.Element => {
+  const { theme } = useTheme()
+  const [showAllOutcomes, setShowAllOutcomes] = useState(false)
+
+  const hasMore = markets.length > COLLAPSED_COUNT
+  const visibleMarkets = showAllOutcomes
+    ? markets
+    : markets.slice(0, COLLAPSED_COUNT)
+  const overflowOption =
+    !showAllOutcomes && hasMore ? markets[COLLAPSED_COUNT] : undefined
+
+  return (
+    <View sx={{ paddingBottom: showAllOutcomes ? 8 : 16 }}>
+      <View sx={{ gap: 8 }}>
+        {visibleMarkets.map((market, i) => (
+          <MarketOutcomeRow
+            key={market.result}
+            label={market.yesSubTitle ?? ''}
+            probability={parseFloat(market.lastPrice)}
+            volume={Number(market.volume ?? 0)}
+            trendUp={i % 2 === 0}
+            trendPct={0.02 + parseFloat(market.lastPrice) * 0.01}
+          />
+        ))}
+      </View>
+      {overflowOption !== undefined && (
+        <View
+          style={{
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            top: -8
+          }}>
+          <LinearGradient
+            colors={['rgba(255,255,255,0)', theme.colors.$surfacePrimary]}
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 16,
+              height: 120,
+              pointerEvents: 'none'
+            }}
+          />
+          <Button
+            type="secondary"
+            size="small"
+            onPress={() => setShowAllOutcomes(true)}>
+            Show more
+          </Button>
+        </View>
+      )}
+    </View>
+  )
+}
+
+const SingleOutcome = ({
+  market
+}: {
+  market: MarketWithQuotes
+}): JSX.Element => {
+  return (
+    <MarketOutcomeRow
+      label={market.result ?? ''}
+      probability={parseFloat(market.lastPrice)}
+      volume={Number(market?.volume ?? 0) * parseFloat(market.lastPrice) * 0.1}
+      trendUp={false}
+      trendPct={0.02 + parseFloat(market.lastPrice) * 0.01}
+    />
   )
 }
 
@@ -272,5 +303,3 @@ function TimeRangeSelector({
     </View>
   )
 }
-
-export default MarketDetailScreen

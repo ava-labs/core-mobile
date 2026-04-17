@@ -1,7 +1,7 @@
+import { EventResponse } from '@avalabs/prediction-market-sdk'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { predictionMarketClient } from 'features/trade/predictions/services/predictionMarketClient'
-import { EventResponse } from '@avalabs/prediction-market-sdk'
 import { useMemo } from 'react'
 
 const STALE_TIME = 60 * 1000 // 1 minute
@@ -47,18 +47,15 @@ export function useTradableEvents(): {
       lastPage.cursor != null && lastPage.cursor !== ''
         ? lastPage.cursor
         : undefined,
-    staleTime: STALE_TIME,
-    networkMode: 'always'
+    staleTime: STALE_TIME
   })
 
-  const events = useMemo(
-    () => data?.pages.flatMap(page => page.events) ?? [],
-    [data]
-  )
+  const events = useMemo(() => {
+    return data?.pages.flatMap(page => page.events) ?? []
+  }, [data])
 
   const isLoading = isPending
-  const isRefreshing =
-    isFetching && !isPending && !isFetchingNextPage
+  const isRefreshing = isFetching && !isPending && !isFetchingNextPage
 
   return {
     events,

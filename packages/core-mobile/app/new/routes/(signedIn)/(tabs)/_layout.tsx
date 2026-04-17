@@ -19,6 +19,7 @@ import { useSelector } from 'react-redux'
 import {
   selectIsInAppDefiBlocked,
   selectIsInAppDefiBorrowBlocked
+  // selectIsPredictionsBlocked
 } from 'store/posthog'
 
 const isIOS = Platform.OS === 'ios'
@@ -142,9 +143,9 @@ export default function TabLayout(): JSX.Element {
           title: 'Trade',
           tabBarIcon: () => tradeIcon,
           freezeOnBlur,
-          // Only block in development mode
+          //TODO: uncomment when predictions is ready
           // tabBarItemHidden: isPredictionsBlocked
-          tabBarItemHidden: !__DEV__
+          tabBarItemHidden: true
         }}
       />
       <BottomTabs.Screen

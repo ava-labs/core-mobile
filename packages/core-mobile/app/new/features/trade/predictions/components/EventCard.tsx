@@ -5,27 +5,19 @@ import { EventCardOption } from './EventCardOption'
 
 interface EventCardProps {
   event: EventResponse
-  options: EventCardOption[]
   onPress?: () => void
 }
 
 /**
  * Displays a single tradable Kalshi market card.
  *
- * Does NOT accept a width prop — fills its container.
- * In BrowseScreen, wrap each card in a View with sx={{ flex: 1, marginHorizontal: 7, marginBottom: 13 }}.
- *
  * Each option row renders a fill bar (proportional to probability) with the label
  * and percentage overlaid inside, matching the Figma masonry card design.
  */
-export function EventCard({
-  event,
-  options,
-  onPress
-}: EventCardProps): JSX.Element {
+export function EventCard({ event, onPress }: EventCardProps): JSX.Element {
   const { theme } = useTheme()
 
-  const isLive = false
+  const isLive = new Date(event.strikeDate ?? '').getTime() < Date.now()
 
   return (
     <AnimatedPressable
@@ -45,8 +37,8 @@ export function EventCard({
           gap: 6,
           marginBottom: 8
         }}>
-        {/* {event.markets[0].imageUrl ? (
-          <TradeThumbnail url={event.markets[0].imageUrl} />
+        {/* {event.markets?.[0]?.imageUrl ? (
+          <TradeThumbnail url={event.markets?.[0]?.imageUrl} />
         ) : null} */}
         {isLive ? (
           <View
@@ -91,8 +83,8 @@ export function EventCard({
       </Text>
 
       <View sx={{ gap: 4 }}>
-        {options.map(option => (
-          <EventCardOption key={option.label} option={option} />
+        {event.markets?.slice(0, 3).map(option => (
+          <EventCardOption key={option.ticker} market={option} />
         ))}
       </View>
     </AnimatedPressable>

@@ -1,29 +1,49 @@
-import type { MarketBase } from '@avalabs/prediction-market-sdk'
-import type { EventCardOption } from './components/EventCardOption'
+import {
+  EventResponse,
+  ListMarketQuotesResponse,
+  QuoteResponse
+} from '@avalabs/prediction-market-sdk'
 import { GraphPoint } from 'react-native-graph'
+import { MarketWithQuotes, PredictionsEventMarket } from './types'
 
-/** Maps API markets to card rows; `lastPrice` is treated as probability (0–1 or 0–100). */
-export function marketsToEventCardOptions(
-  markets: MarketBase[] | null | undefined
-): EventCardOption[] {
-  if (markets == null || markets.length === 0) return []
+export function normalizeEventMarkets(
+  markets: EventResponse['markets']
+): PredictionsEventMarket[] {
+  return (markets ?? []).map(m => ({ ...m, tickerId: m.ticker }))
+}
 
-  return markets.map(m => {
-    const raw = parseFloat(m.lastPrice)
-    let probability = Number.isFinite(raw) ? raw : 0
-    if (probability > 1) probability /= 100
-    probability = Math.min(1, Math.max(0, probability))
+export function attachQuotesToMarkets({
+  markets,
+  quotesData,
+  isFetching = false,
+  isError = false
+}: {
+  markets: PredictionsEventMarket[]
+  quotesData?: ListMarketQuotesResponse
+  isFetching?: boolean
+  isError?: boolean
+}): MarketWithQuotes[] {
+  const quotesById = new Map<
+    string,
+    { yesQuote: QuoteResponse; noQuote: QuoteResponse }
+  >()
 
-    const imageUrl =
-      'imageUrl' in m &&
-      typeof (m as MarketBase & { imageUrl?: string }).imageUrl === 'string'
-        ? (m as MarketBase & { imageUrl: string }).imageUrl
-        : undefined
+  for (const quote of quotesData?.quotes ?? []) {
+    quotesById.set(quote.tickerId, {
+      yesQuote: quote.yesQuote,
+      noQuote: quote.noQuote
+    })
+  }
+
+  return markets.map(market => {
+    const quotes = quotesById.get(market.tickerId)
 
     return {
-      label: m.yesSubTitle || m.ticker,
-      imageUrl,
-      probability
+      ...market,
+      yesQuote: quotes?.yesQuote,
+      noQuote: quotes?.noQuote,
+      isLoadingQuotes: isFetching && !quotesById.has(market.tickerId),
+      isQuotesError: isError && !quotesById.has(market.tickerId)
     }
   })
 }
@@ -66,4 +86,24 @@ export function generateHistory(
 
 export function tickerToSeed(tickerId: string): number {
   return tickerId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
+}
+
+export function hasAvailableQuote(quote?: QuoteResponse): boolean {
+  if (quote === undefined) {
+    return false
+  }
+  const SENTINEL_BID_PRICE = '-0.03'
+  const SENTINEL_ASK_PRICE = '1.03'
+
+  return !(
+    quote.maxBidPrice === SENTINEL_BID_PRICE &&
+    quote.minAskPrice === SENTINEL_ASK_PRICE
+  )
+}
+
+export function hasAvailableMarketQuotes(
+  yesQuote?: QuoteResponse,
+  noQuote?: QuoteResponse
+): boolean {
+  return hasAvailableQuote(yesQuote) || hasAvailableQuote(noQuote)
 }

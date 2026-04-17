@@ -196,6 +196,8 @@ export function CollapsibleTabList<T>({
       nestedScrollEnabled={nestedScrollEnabled}
       removeClippedSubviews={removeClippedSubviews}
       ListFooterComponent={ListFooterComponent}
+      onEndReached={onEndReached}
+      onEndReachedThreshold={0.5}
     />
   )
 }

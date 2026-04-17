@@ -76,5 +76,8 @@ export enum ReactQueryKeys {
 
   // predictions
   PREDICTIONS_MARKETS = 'predictionsMarkets',
-  PREDICTIONS_SERIES = 'predictionsSeries'
+  PREDICTIONS_SERIES = 'predictionsSeries',
+  PREDICTIONS_MARKET_DETAIL = 'predictionsMarketDetail',
+  PREDICTIONS_EVENT_DETAIL = 'predictionsEventDetail',
+  PREDICTIONS_MARKET_QUOTES = 'predictionsMarketQuotes'
 }

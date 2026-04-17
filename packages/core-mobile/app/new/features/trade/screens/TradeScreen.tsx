@@ -26,7 +26,12 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AnalyticsEventName } from 'services/analytics/types'
 import { useEffectiveHeaderHeight } from 'common/hooks/useEffectiveHeaderHeight'
 import { useSafeAreaFrame } from 'react-native-safe-area-context'
+import { PredictionBalanceRow } from '../predictions/components/PredictionBalanceRow'
 import { PredictionsScreen } from '../predictions/screens/PredictionsScreen'
+
+const BALANCE_ROW_HEIGHT = 60
+const BALANCE_ROW_VERTICAL_MARGIN = 28 // 14 top + 14 bottom
+const MIN_HEADER_HEIGHT = BALANCE_ROW_HEIGHT + BALANCE_ROW_VERTICAL_MARGIN
 
 const SEGMENT_ITEMS = [{ title: 'Predictions' }, { title: 'Perps' }]
 
@@ -55,6 +60,7 @@ export function TradeScreen(): JSX.Element {
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
 
   const selectedSegmentIndex = useSharedValue(0)
+  const [selectedTab, setSelectedTab] = useState(0)
 
   const [segmentedControlLayout, setSegmentedControlLayout] = useState<
     LayoutRectangle | undefined
@@ -76,6 +82,7 @@ export function TradeScreen(): JSX.Element {
       }
 
       selectedSegmentIndex.value = index
+      setSelectedTab(index)
 
       InteractionManager.runAfterInteractions(() => {
         if (tabViewRef.current?.getCurrentIndex() !== index) {
@@ -86,9 +93,15 @@ export function TradeScreen(): JSX.Element {
     [selectedSegmentIndex]
   )
 
+  const tabTitle = selectedTab === 0 ? 'Predictions' : 'Perps'
+  const tabDescription =
+    selectedTab === 0
+      ? 'Trade what happens next in global markets powered by Kalshi'
+      : 'Trade perpetual futures long or short with leverage powered by Hyperliquid'
+
   const header = useMemo(
-    () => <NavigationTitleHeader title={'Predictions'} />,
-    []
+    () => <NavigationTitleHeader title={tabTitle} />,
+    [tabTitle]
   )
 
   const { onScroll } = useFadingHeaderNavigation({
@@ -148,9 +161,31 @@ export function TradeScreen(): JSX.Element {
     data => {
       if (selectedSegmentIndex.value === data.prevIndex) {
         selectedSegmentIndex.value = data.index
+        setSelectedTab(data.index)
       }
     },
     [selectedSegmentIndex]
+  )
+
+  const renderContainerHeader = useCallback(
+    (): JSX.Element => (
+      <View
+        style={{
+          paddingTop: 14,
+          paddingBottom: 16
+        }}>
+        <View style={{ paddingHorizontal: 16, gap: 8 }}>
+          <Text variant="heading2">{tabTitle}</Text>
+          <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
+            {tabDescription}
+          </Text>
+        </View>
+        <View style={{ marginTop: 14, marginHorizontal: 16 }}>
+          <PredictionBalanceRow />
+        </View>
+      </View>
+    ),
+    [tabTitle, tabDescription]
   )
 
   const renderSegmentedControl = useCallback(
@@ -177,7 +212,8 @@ export function TradeScreen(): JSX.Element {
         tabs={tabs}
         onScrollY={onScroll}
         onTabChange={onTabChange}
-        renderHeader={() => <></>}
+        renderHeader={renderContainerHeader}
+        minHeaderHeight={MIN_HEADER_HEIGHT}
       />
 
       <View

@@ -494,7 +494,7 @@ __metadata:
     "@avalabs/fusion-sdk": 0.14.4
     "@avalabs/glacier-sdk": 3.1.0-alpha.82
     "@avalabs/k2-alpine": "workspace:*"
-    "@avalabs/prediction-market-sdk": 0.0.0-feat-configure-openapi-codegen-20260327204829
+    "@avalabs/prediction-market-sdk": 0.0.0-feat-update-hashflow-api-20260415183059
     "@avalabs/svm-module": 3.6.0
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": 3.1.0-alpha.82
@@ -590,6 +590,7 @@ __metadata:
     "@storybook/addon-ondevice-backgrounds": 7.6.20
     "@storybook/addon-ondevice-controls": 7.6.20
     "@storybook/react-native": 7.6.20
+    "@sumsub/react-native-mobilesdk-module": ^1.42.0
     "@tanstack/query-sync-storage-persister": 5.59.6
     "@tanstack/react-query": 5.59.8
     "@tanstack/react-query-persist-client": 5.59.6
@@ -1017,15 +1018,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/prediction-market-sdk@npm:0.0.0-feat-configure-openapi-codegen-20260327204829":
-  version: 0.0.0-feat-configure-openapi-codegen-20260327204829
-  resolution: "@avalabs/prediction-market-sdk@npm:0.0.0-feat-configure-openapi-codegen-20260327204829"
+"@avalabs/prediction-market-sdk@npm:0.0.0-feat-update-hashflow-api-20260415183059":
+  version: 0.0.0-feat-update-hashflow-api-20260415183059
+  resolution: "@avalabs/prediction-market-sdk@npm:0.0.0-feat-update-hashflow-api-20260415183059"
   dependencies:
     viem: ^2.38.3
   peerDependencies:
     viem: ^2.38.3
     zod: ^4.1.0
-  checksum: 487dbb7e1501b0dee2040e2f0e7e6f05d9b79c0bc42d1ce3b9d8d6ba865e24f6c8c5c46213014f06c1254d8f75ddc299d07562de237836e183a73bc443fa73b0
+  checksum: 6af0666e2566cd92cda9880a34dcd82cf75f5e18e185c33fdcede8ec231d6b57939481853e4bde215083ae46cac6db424f9dd86da1121d2ffc12d499d6df9fdc
   languageName: node
   linkType: hard
 
@@ -15255,6 +15256,15 @@ __metadata:
     "@types/express": ^4.7.0
     file-system-cache: 2.3.0
   checksum: 1e0ae196c63ace6a9a0f06a42c7294cfc840665d1ff7ae6d9fd2466ed3d78387672951aa7a9064a719384938c57d8eb25c8089657710d95c546344fbc28d8df6
+  languageName: node
+  linkType: hard
+
+"@sumsub/react-native-mobilesdk-module@npm:^1.42.0":
+  version: 1.42.0
+  resolution: "@sumsub/react-native-mobilesdk-module@npm:1.42.0"
+  peerDependencies:
+    react-native: ">=0.60.0-rc.0 <1.0.x"
+  checksum: 14af14e05a641be24dfe1290d61ffea1b167933d2f62625dcf19aced31a58533a0c0fd869c8369b9e440bd4a8e9d694b46a9d6bfe1c52a00f41dd8e81141e640
   languageName: node
   linkType: hard
 
