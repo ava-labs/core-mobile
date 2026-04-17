@@ -19,10 +19,13 @@
         <item name="colorPrimary">@color/dialogTextColor</item>
     </style>
 
-    <!-- Light mode application theme.
-         Overrides Material3 surface colors to prevent the default purple/lavender
-         tint (from the M3 baseline seed color) from appearing as a pink header
-         in light mode on Android, especially in transparent-header screens. -->
+    <!-- Application theme for both light and dark mode.
+         Overrides Material3 surface/container colors to prevent the default
+         purple/lavender tint (from the M3 baseline seed color) from appearing
+         as a pink header in light mode on Android.
+         Light vs. dark surface values are driven by the resource-qualified color
+         resources appSurfacePrimary and appSurfaceSecondary, defined in
+         values/colors.xml (light) and values-night/colors.xml (dark). -->
     <style name="AppTheme" parent="BaseAppTheme">
         <item name="colorSurface">@color/appSurfacePrimary</item>
         <item name="android:colorBackground">@color/appSurfacePrimary</item>
