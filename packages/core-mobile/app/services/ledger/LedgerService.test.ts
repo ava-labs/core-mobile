@@ -6,6 +6,10 @@ import LedgerService from './LedgerService'
 import { LedgerAppType } from './types'
 import { isLedgerBluetoothError } from './LedgerBluetoothError'
 import { LEDGER_ERROR_CODES } from './types'
+import {
+  LEDGER_CONNECT_RETRY_COUNT,
+  LEDGER_CONNECT_RETRY_DELAY_MS
+} from 'features/ledger/consts'
 
 jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
   __esModule: true,
@@ -474,6 +478,155 @@ describe('LedgerService', () => {
 
       expect(transportBLEMock.open).not.toHaveBeenCalled()
       expect(Alert.alert).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('connect retry behavior', () => {
+    const transportBLEMock = TransportBLE as unknown as {
+      open: jest.Mock
+      disconnectDevice: jest.Mock
+    }
+
+    const bluetoothPermissions = [
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+    ].filter(
+      (
+        p
+      ): p is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
+        Boolean(p)
+    )
+
+    const grantedPermissions = Object.fromEntries(
+      bluetoothPermissions.map(p => [p, PermissionsAndroid.RESULTS.GRANTED])
+    )
+
+    const mockTransport = {
+      id: 'test-device-id',
+      exchange: jest.fn().mockRejectedValue(new Error('No app info') as never),
+      isConnected: true,
+      close: jest.fn(),
+      exchangeBusyPromise: null
+    }
+
+    const DEVICE_ID = 'test-device-id'
+    const originalPlatformOS = Platform.OS
+
+    beforeEach(() => {
+      jest.useFakeTimers()
+      jest.spyOn(Logger, 'info').mockImplementation(jest.fn())
+      jest.spyOn(Logger, 'error').mockImplementation(jest.fn())
+      jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
+      jest
+        .spyOn(PermissionsAndroid, 'requestMultiple')
+        .mockResolvedValue(grantedPermissions as never)
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: 'android'
+      })
+      transportBLEMock.disconnectDevice.mockResolvedValue(undefined as never)
+      transportBLEMock.open.mockResolvedValue(mockTransport as never)
+    })
+
+    afterEach(async () => {
+      await LedgerService.disconnect().catch(() => undefined)
+      LedgerService.stopAppPolling()
+      jest.runOnlyPendingTimers()
+      jest.useRealTimers()
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: originalPlatformOS
+      })
+      jest.restoreAllMocks()
+    })
+
+    it('retries on DeviceConnectionFailed (200) and succeeds on the second attempt', async () => {
+      // BleErrorCode.DeviceConnectionFailed = 200
+      transportBLEMock.open
+        .mockRejectedValueOnce({ errorCode: 200 } as never)
+        .mockResolvedValueOnce(mockTransport as never)
+
+      const connectPromise = LedgerService.connect(DEVICE_ID)
+      // Advance by exactly the retry delay so the second attempt fires.
+      // Avoid runAllTimersAsync — it triggers the startAppPolling setInterval indefinitely.
+      await jest.advanceTimersByTimeAsync(LEDGER_CONNECT_RETRY_DELAY_MS)
+      await connectPromise
+
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(2)
+    })
+
+    it('waits LEDGER_CONNECT_RETRY_DELAY_MS before the next attempt', async () => {
+      transportBLEMock.open
+        .mockRejectedValueOnce({ errorCode: 200 } as never)
+        .mockResolvedValueOnce(mockTransport as never)
+
+      const connectPromise = LedgerService.connect(DEVICE_ID)
+
+      // Delay not yet elapsed — second attempt must not have fired
+      await jest.advanceTimersByTimeAsync(LEDGER_CONNECT_RETRY_DELAY_MS - 1)
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(1)
+
+      // Delay now elapsed — second attempt fires and succeeds
+      await jest.advanceTimersByTimeAsync(1)
+      await connectPromise
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(2)
+    })
+
+    it('retries on OperationTimedOut (3) and succeeds on the second attempt', async () => {
+      // BleErrorCode.OperationTimedOut = 3
+      transportBLEMock.open
+        .mockRejectedValueOnce({ errorCode: 3 } as never)
+        .mockResolvedValueOnce(mockTransport as never)
+
+      const connectPromise = LedgerService.connect(DEVICE_ID)
+      await jest.advanceTimersByTimeAsync(LEDGER_CONNECT_RETRY_DELAY_MS)
+      await connectPromise
+
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(2)
+    })
+
+    it('retries on iOS ConnectionTimeout and succeeds on the second attempt', async () => {
+      // BleIOSErrorCode.ConnectionTimeout = 6; must also carry errorCode to satisfy the
+      // initial 'errorCode' in err guard in isRetryableConnectionError
+      transportBLEMock.open
+        .mockRejectedValueOnce({ errorCode: 14, iosErrorCode: 6 } as never)
+        .mockResolvedValueOnce(mockTransport as never)
+
+      const connectPromise = LedgerService.connect(DEVICE_ID)
+      await jest.advanceTimersByTimeAsync(LEDGER_CONNECT_RETRY_DELAY_MS)
+      await connectPromise
+
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(2)
+    })
+
+    it('exhausts all LEDGER_CONNECT_RETRY_COUNT attempts and throws when every attempt fails', async () => {
+      // 3 attempts = 2 inter-attempt delays; no delay after the final failure.
+      // Register the rejection assertion BEFORE advancing timers so the handler
+      // is attached before the promise settles, avoiding an unhandled-rejection report.
+      transportBLEMock.open.mockRejectedValue({ errorCode: 200 } as never)
+
+      const connectPromise = LedgerService.connect(DEVICE_ID)
+      const assertion = expect(connectPromise).rejects.toThrow(
+        'Failed to connect to Ledger'
+      )
+      await jest.advanceTimersByTimeAsync(
+        LEDGER_CONNECT_RETRY_DELAY_MS * (LEDGER_CONNECT_RETRY_COUNT - 1)
+      )
+      await assertion
+
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(LEDGER_CONNECT_RETRY_COUNT)
+    })
+
+    it('does not retry on a generic non-retryable error', async () => {
+      transportBLEMock.open.mockRejectedValueOnce(
+        new Error('Unexpected transport error') as never
+      )
+
+      await expect(LedgerService.connect(DEVICE_ID)).rejects.toThrow(
+        'Failed to connect to Ledger: Unexpected transport error'
+      )
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(1)
     })
   })
 })

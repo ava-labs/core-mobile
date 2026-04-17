@@ -125,7 +125,7 @@ export const useManageWallet = (): {
                 wallet.type === WalletType.LEDGER_LIVE
               ) {
                 removeLedgerWallet(wallet.id)
-                LedgerService.disconnect()
+                LedgerService.disconnect().catch(Logger.error)
               }
             }
           }

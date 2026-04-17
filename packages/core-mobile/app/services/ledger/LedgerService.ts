@@ -89,7 +89,7 @@ class LedgerService {
         this.isConnected()
       ) {
         Logger.info('App backgrounded — disconnecting Ledger BLE')
-        this.disconnect()
+        this.disconnect().catch(Logger.error)
       }
     })
   }
@@ -1091,7 +1091,11 @@ class LedgerService {
       this.currentAppType = LedgerAppType.UNKNOWN
       this.currentAppVersion = ''
       this.stopAppPolling()
-      await TransportBLE.disconnectDevice(deviceId)
+      try {
+        await TransportBLE.disconnectDevice(deviceId)
+      } catch (error) {
+        Logger.error('Failed to disconnect Ledger BLE device', error)
+      }
     }
   }
 
