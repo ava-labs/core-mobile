@@ -15,6 +15,7 @@ import {
   getLedgerAppInfo
 } from '@avalabs/core-wallets-sdk'
 import { networks } from 'bitcoinjs-lib'
+import { getAddress } from 'ethers'
 import { networkIDs } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
 import bs58 from 'bs58'
@@ -1040,7 +1041,7 @@ class LedgerService {
         addresses.push({
           id: `${LedgerAddressType.EVM}-${i}`,
           type: LedgerAddressType.EVM,
-          address: evmAddressResponse.address,
+          address: getAddress(evmAddressResponse.address),
           derivationPath: evmPath
         })
 
