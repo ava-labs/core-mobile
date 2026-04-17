@@ -49,7 +49,16 @@ const useEncryptedStore = (): ReturnType<
         const encryptionKey = await getEncryptionKey()
         const macKey = await getMacKey()
         if (cancelled) return
-        if (!encryptionKey || !macKey) return
+        if (!encryptionKey || !macKey) {
+          Logger.error(`EncryptedStoreProvider: encryption key or mac key is null/empty (attempt ${attempt})`)
+          if (attempt < MAX_RETRIES) {
+            setTimeout(() => tryInit(attempt + 1), RETRY_DELAY_MS)
+          } else {
+            Logger.error('EncryptedStoreProvider: all retries exhausted with null key, hiding splash')
+            BootSplash.hide()
+          }
+          return
+        }
         setEncryptedStore(configureEncryptedStore(encryptionKey, macKey))
       } catch (e) {
         Logger.error(`EncryptedStoreProvider: Keychain init failed (attempt ${attempt})`, e)

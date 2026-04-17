@@ -84,7 +84,7 @@ class BiometricsSDK {
    * early and mask it with splash for smoother UX
    */
   async warmup(): Promise<void> {
-    await Keychain.getAllGenericPasswordServices()
+    await Keychain.getAllGenericPasswordServices({ skipUIAuth: true })
   }
 
   getAccessType(): string | undefined {

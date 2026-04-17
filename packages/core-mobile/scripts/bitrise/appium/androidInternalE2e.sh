@@ -18,21 +18,6 @@ adb shell settings put global window_animation_scale 0
 adb shell settings put global transition_animation_scale 0
 adb shell settings put global animator_duration_scale 0
 
-# Install uiautomator2; non-zero if already present — treat as success (same as iOS xcuitest).
-echo "Ensuring Appium uiautomator2 driver..."
-set +e
-u2_install_out=$("$APPIUM_BIN" driver install uiautomator2 2>&1)
-u2_install_code=$?
-set -e
-if [ "$u2_install_code" -ne 0 ]; then
-  if echo "$u2_install_out" | grep -qi 'already installed'; then
-    echo "uiautomator2 driver already installed"
-  else
-    echo "$u2_install_out" >&2
-    exit "$u2_install_code"
-  fi
-fi
-
 # Verify installation
 "$APPIUM_BIN" driver list || true
 
