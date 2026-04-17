@@ -1,7 +1,8 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { defaultEnabledL2ChainIds, selectNetworks } from 'store/network'
+import { defaultEnabledL2ChainIds } from 'services/network/consts'
+import { selectNetworks } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export function useL2Networks(): {

@@ -169,6 +169,18 @@ export const NETWORK_SOLANA_DEVNET = {
   caip2Id: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'
 } as Network
 
+// Default L2 chain IDs that are enabled for balance checks and discovery.
+// Kept here (rather than in the Redux slice) to avoid pulling store
+// implementation details into service/utility modules.
+export const defaultEnabledL2ChainIds = [
+  42161, // Arbitrum One
+  // 421614, // Arbitrum Sepolia
+  10, // Optimism
+  // 11155420, // Optimism Sepolia
+  8453 // Base Mainnet
+  // 84532 // Base Sepolia
+]
+
 // Primary networks are the ones that are always enabled in the app
 export const MAIN_PRIMARY_NETWORKS = [
   AVALANCHE_MAINNET_NETWORK,
