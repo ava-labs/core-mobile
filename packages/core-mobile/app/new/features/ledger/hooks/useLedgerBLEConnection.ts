@@ -2,10 +2,14 @@ import { LEDGER_DEVICE_BRIEF_DELAY_MS } from 'features/ledger/consts'
 import { useLedgerWalletMap } from 'features/ledger/store'
 import { isBitcoinCompatibleApp } from 'features/ledger/utils'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Alert } from 'react-native'
+import { BleErrorCode, BleIOSErrorCode } from 'react-native-ble-plx'
 import { useSelector } from 'react-redux'
 import {
   isLedgerBluetoothError,
-  showBluetoothErrorAlert
+  showBluetoothErrorAlert,
+  LEDGER_CONNECTION_FAILED_TITLE,
+  LEDGER_CONNECTION_FAILED_ALREADY_CONNECTED_MESSAGE
 } from 'services/ledger/LedgerBluetoothError'
 import LedgerService from 'services/ledger/LedgerService'
 import { LedgerAppType, LedgerDevice } from 'services/ledger/types'
@@ -76,6 +80,20 @@ export const useLedgerBLEConnection = ({
       if (isLedgerBluetoothError(err)) {
         showBluetoothErrorAlert(err)
         return
+      }
+      const isConnectionFailed =
+        typeof err === 'object' &&
+        err !== null &&
+        'errorCode' in err &&
+        (err.errorCode === BleErrorCode.DeviceConnectionFailed ||
+          err.errorCode === BleErrorCode.OperationTimedOut ||
+          ('iosErrorCode' in err &&
+            err.iosErrorCode === BleIOSErrorCode.ConnectionTimeout))
+      if (isConnectionFailed) {
+        Alert.alert(
+          LEDGER_CONNECTION_FAILED_TITLE,
+          LEDGER_CONNECTION_FAILED_ALREADY_CONNECTED_MESSAGE
+        )
       }
     } finally {
       if (isMountedRef.current) {

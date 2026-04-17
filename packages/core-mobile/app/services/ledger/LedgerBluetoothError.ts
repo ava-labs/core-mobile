@@ -25,6 +25,10 @@ export const LEDGER_BLUETOOTH_UNKNOWN_TITLE = 'Bluetooth not ready'
 export const LEDGER_BLUETOOTH_UNKNOWN_MESSAGE =
   'Bluetooth is not ready yet. Please wait and try again.'
 
+export const LEDGER_CONNECTION_FAILED_TITLE = 'Connection failed'
+export const LEDGER_CONNECTION_FAILED_ALREADY_CONNECTED_MESSAGE =
+  'Failed to connect to your Ledger. It may already be connected to another device — try closing the Core app on other devices and reconnect.'
+
 export class LedgerBluetoothError extends Error {
   readonly code: BluetoothLedgerErrorCode
 

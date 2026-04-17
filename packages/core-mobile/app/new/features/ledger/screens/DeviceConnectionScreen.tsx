@@ -15,8 +15,11 @@ import { WalletState } from 'store/app/types'
 import { useBluetooth } from 'common/hooks/useBluetooth'
 import {
   isLedgerBluetoothError,
-  showBluetoothErrorAlert
+  showBluetoothErrorAlert,
+  LEDGER_CONNECTION_FAILED_TITLE,
+  LEDGER_CONNECTION_FAILED_ALREADY_CONNECTED_MESSAGE
 } from 'services/ledger/LedgerBluetoothError'
+import { BleErrorCode, BleIOSErrorCode } from 'react-native-ble-plx'
 import { useCheckIfLedgerWalletExists } from '../hooks/useCheckIfLedgerWalletExists'
 
 interface DeviceConnectionScreenProps {
@@ -116,9 +119,19 @@ export default function DeviceConnectionScreen({
         } else {
           AnalyticsService.capture('WalletImportLedgerConnectionFailed')
         }
+        const isConnectionFailed =
+          typeof error === 'object' &&
+          error !== null &&
+          'errorCode' in error &&
+          (error.errorCode === BleErrorCode.DeviceConnectionFailed ||
+            error.errorCode === BleErrorCode.OperationTimedOut ||
+            ('iosErrorCode' in error &&
+              error.iosErrorCode === BleIOSErrorCode.ConnectionTimeout))
         Alert.alert(
-          'Connection failed',
-          'Failed to connect to Ledger device. Please try again.',
+          LEDGER_CONNECTION_FAILED_TITLE,
+          isConnectionFailed
+            ? LEDGER_CONNECTION_FAILED_ALREADY_CONNECTED_MESSAGE
+            : 'Failed to connect to Ledger device. Please try again.',
           [
             {
               text: 'OK',
@@ -147,7 +160,8 @@ export default function DeviceConnectionScreen({
   }, [resetSetup, back])
 
   const renderBluetoothPermissionError = useCallback(() => {
-    if (isBluetoothOnAndPermissionGranted) return null
+    if (isBluetoothOnAndPermissionGranted || isInitializingBluetooth)
+      return null
     return (
       <View style={{ gap: 12, marginTop: 4, paddingRight: 16 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -169,7 +183,12 @@ export default function DeviceConnectionScreen({
         </Button>
       </View>
     )
-  }, [isBluetoothOnAndPermissionGranted, colors, openSettings])
+  }, [
+    isBluetoothOnAndPermissionGranted,
+    isInitializingBluetooth,
+    colors,
+    openSettings
+  ])
 
   const renderFooter = useCallback(() => {
     return (

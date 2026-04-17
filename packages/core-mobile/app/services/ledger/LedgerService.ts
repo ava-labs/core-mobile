@@ -1,5 +1,7 @@
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Transport from '@ledgerhq/hw-transport'
+import { AppState, AppStateStatus } from 'react-native'
+import { BleErrorCode, BleIOSErrorCode } from 'react-native-ble-plx'
 import AppAvalanche from '@avalabs/hw-app-avalanche'
 import AppSolana from '@ledgerhq/hw-app-solana'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
@@ -19,6 +21,8 @@ import bs58 from 'bs58'
 import { Alert } from 'react-native'
 import {
   LEDGER_TIMEOUTS,
+  LEDGER_CONNECT_RETRY_COUNT,
+  LEDGER_CONNECT_RETRY_DELAY_MS,
   getSolanaDerivationPath
 } from 'new/features/ledger/consts'
 import { isBitcoinCompatibleApp } from 'new/features/ledger/utils'
@@ -76,6 +80,19 @@ class LedgerService {
   private appPollingInterval: number | null = null
   private appPollingEnabled = false
   private isDisconnected = false
+
+  constructor() {
+    // Auto-disconnect BLE when app goes to background so other devices can connect
+    AppState.addEventListener('change', (nextState: AppStateStatus) => {
+      if (
+        (nextState === 'background' || nextState === 'inactive') &&
+        this.isConnected()
+      ) {
+        Logger.info('App backgrounded — disconnecting Ledger BLE')
+        this.disconnect()
+      }
+    })
+  }
 
   // Device scanning state
   private scanSubscription: { unsubscribe: () => void } | null = null
@@ -156,55 +173,76 @@ class LedgerService {
 
   // Connect to Ledger device (transport only, no apps)
   async connect(deviceId: string): Promise<void> {
-    try {
-      Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
-      await this.assertBluetoothAvailable()
-      this.isDisconnected = false // Reset disconnect flag on new connection
-      // Use a longer timeout for connection
-      await TransportBLE.disconnectDevice(deviceId)
+    await this.assertBluetoothAvailable()
+    this.isDisconnected = false // Reset disconnect flag on new connection
 
-      this.transport = await TransportBLE.open(
-        deviceId,
-        LEDGER_TIMEOUTS.CONNECTION_TIMEOUT
-      )
-      Logger.info('BLE transport connected successfully')
-
-      // Wrap the transport's exchange method to automatically handle busy state
-      this.wrapTransportExchange()
-
-      this.currentAppType = LedgerAppType.UNKNOWN
-
-      // Start passive app detection
-      Logger.info('Starting app polling...')
-      this.startAppPolling()
-      Logger.info('App polling started')
-
-      // Test immediate app info call and update currentAppType
+    let lastError: unknown
+    for (let attempt = 1; attempt <= LEDGER_CONNECT_RETRY_COUNT; attempt++) {
       try {
-        const testAppInfo = await this.getCurrentAppInfo()
-        // Update currentAppType immediately so waitForApp doesn't have to wait
-        const detectedAppType = this.mapAppNameToType(
-          testAppInfo.applicationName
-        )
-        Logger.info(`Immediately detected app type: ${detectedAppType}`)
-        this.currentAppType = detectedAppType
-        this.currentAppVersion = testAppInfo.version
-      } catch (error) {
         Logger.info(
-          'Immediate get current app info failed, will rely on polling'
+          `BLE connection attempt ${attempt}/${LEDGER_CONNECT_RETRY_COUNT} for deviceId:`,
+          deviceId
+        )
+        await TransportBLE.disconnectDevice(deviceId)
+
+        this.transport = await TransportBLE.open(
+          deviceId,
+          LEDGER_TIMEOUTS.CONNECTION_TIMEOUT
+        )
+        Logger.info('BLE transport connected successfully')
+
+        // Wrap the transport's exchange method to automatically handle busy state
+        this.wrapTransportExchange()
+
+        this.currentAppType = LedgerAppType.UNKNOWN
+
+        // Start passive app detection
+        Logger.info('Starting app polling...')
+        this.startAppPolling()
+        Logger.info('App polling started')
+
+        // Test immediate app info call and update currentAppType
+        try {
+          const testAppInfo = await this.getCurrentAppInfo()
+          // Update currentAppType immediately so waitForApp doesn't have to wait
+          const detectedAppType = this.mapAppNameToType(
+            testAppInfo.applicationName
+          )
+          Logger.info(`Immediately detected app type: ${detectedAppType}`)
+          this.currentAppType = detectedAppType
+          this.currentAppVersion = testAppInfo.version
+        } catch {
+          Logger.info(
+            'Immediate get current app info failed, will rely on polling'
+          )
+        }
+        return // success
+      } catch (error) {
+        lastError = error
+        if (isLedgerBluetoothError(error)) {
+          throw error // radio/permission errors — no point retrying
+        }
+        if (
+          !this.isRetryableConnectionError(error) ||
+          attempt === LEDGER_CONNECT_RETRY_COUNT
+        ) {
+          break
+        }
+        Logger.info(
+          `BLE connection attempt ${attempt} failed with retryable error — retrying in ${LEDGER_CONNECT_RETRY_DELAY_MS}ms`
+        )
+        await new Promise(resolve =>
+          setTimeout(resolve, LEDGER_CONNECT_RETRY_DELAY_MS)
         )
       }
-    } catch (error) {
-      Logger.error('Failed to connect to Ledger', error)
-      if (isLedgerBluetoothError(error)) {
-        throw error
-      }
-      throw new Error(
-        `Failed to connect to Ledger: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`
-      )
     }
+
+    Logger.error('Failed to connect to Ledger', lastError)
+    throw new Error(
+      `Failed to connect to Ledger: ${
+        lastError instanceof Error ? lastError.message : 'Unknown error'
+      }`
+    )
   }
 
   // Start passive app detection polling
@@ -1021,15 +1059,39 @@ class LedgerService {
     }
   }
 
+  private isRetryableConnectionError(error: unknown): boolean {
+    if (
+      typeof error !== 'object' ||
+      error === null ||
+      !('errorCode' in error)
+    ) {
+      return false
+    }
+    if (
+      error.errorCode === BleErrorCode.DeviceConnectionFailed ||
+      error.errorCode === BleErrorCode.OperationTimedOut
+    ) {
+      return true
+    }
+    return (
+      'iosErrorCode' in error &&
+      error.iosErrorCode === BleIOSErrorCode.ConnectionTimeout
+    )
+  }
+
   // Disconnect from Ledger device
   async disconnect(): Promise<void> {
     this.isDisconnected = true // Signal pending operations to abort
     if (this.#transport) {
-      await this.#transport.close()
+      // Use disconnectDevice directly instead of transport.close() — close() intentionally
+      // delays the physical BLE disconnect by up to 5 seconds, which blocks other devices
+      // from connecting during that window.
+      const deviceId = this.#transport.id
       this.#transport = null
       this.currentAppType = LedgerAppType.UNKNOWN
       this.currentAppVersion = ''
-      this.stopAppPolling() // Stop polling on disconnect
+      this.stopAppPolling()
+      await TransportBLE.disconnectDevice(deviceId)
     }
   }
 

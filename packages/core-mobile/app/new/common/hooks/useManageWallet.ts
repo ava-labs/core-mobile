@@ -30,6 +30,7 @@ import Logger from 'utils/Logger'
 import { useLedgerWalletMap } from 'features/ledger/store'
 import { LEDGER_DEVICE_BRIEF_DELAY_MS } from 'features/ledger/consts'
 import { createLedgerAccountFromXpubs } from 'features/ledger/utils/createLedgerAccountFromXpubs'
+import LedgerService from 'services/ledger/LedgerService'
 
 export const useManageWallet = (): {
   handleAddAccount: (wallet: Wallet) => void
@@ -124,6 +125,7 @@ export const useManageWallet = (): {
                 wallet.type === WalletType.LEDGER_LIVE
               ) {
                 removeLedgerWallet(wallet.id)
+                LedgerService.disconnect()
               }
             }
           }
