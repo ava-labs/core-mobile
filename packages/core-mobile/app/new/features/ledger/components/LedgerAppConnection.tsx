@@ -16,7 +16,10 @@ import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { LedgerDerivationPathType, LedgerKeysByNetwork } from 'services/ledger/types'
+import {
+  LedgerDerivationPathType,
+  LedgerKeysByNetwork
+} from 'services/ledger/types'
 import { LedgerDeviceList } from './LedgerDeviceList'
 import { AnimatedIconWithText } from './AnimatedIconWithText'
 
@@ -416,6 +419,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     colors.$textSecondary,
     completeStepTitle,
     currentStep,
+    derivationPathType,
     getStepConfig
   ])
 
