@@ -160,7 +160,7 @@ export const config: WebdriverIO.Config = {
         [
           'appium',
           {
-            args: { relaxedSecurity: true },
+            args: { relaxedSecurity: true, allowCors: true },
             appiumStartTimeout: 120000
           }
         ]
