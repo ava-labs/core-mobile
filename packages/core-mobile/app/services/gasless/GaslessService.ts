@@ -38,10 +38,14 @@ class GaslessService {
     return this.sdk
   }
 
-  isEligibleForChain = async (chainId: string): Promise<boolean> => {
+  isEligibleForChain = async (
+    chainId: string,
+    from?: string,
+    nonce?: number
+  ): Promise<boolean> => {
     const sdk = await this.getSdk()
     if (!sdk) return false
-    return await sdk.isEligibleForChain({ chainId })
+    return await sdk.isEligibleForChain({ chainId, from, nonce })
   }
 
   isEligibleForTxType = (signingData: SigningData): boolean => {
@@ -82,6 +86,7 @@ class GaslessService {
 
     const { difficulty, challengeHex } = await sdk.fetchChallenge()
     const { solutionHex } = await sdk.solveChallenge(challengeHex, difficulty)
+
     const txHex = Transaction.from({
       ...signingData.data,
       maxFeePerGas,
