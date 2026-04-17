@@ -14,8 +14,6 @@ import {
   AccountBalanceData
 } from 'features/portfolio/utils/computeAccountBalance'
 
-export { computeAccountBalance, type AccountBalanceData }
-
 /**
  * Hook wrapper around computeAccountBalance.
  * Subscribes to Redux selectors internally — use only when
