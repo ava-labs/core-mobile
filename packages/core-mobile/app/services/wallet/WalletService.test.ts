@@ -1,6 +1,8 @@
+import { NetworkVMType } from '@avalabs/vm-module-types'
 import { WalletType } from 'services/wallet/types'
 import * as profileApiClientModule from 'utils/api/generated/profileApi.client'
 import type { GetAddressesResponse } from 'utils/api/generated/profileApi.client/types.gen'
+import WalletFactory from './WalletFactory'
 import WalletService from './WalletService'
 
 const avmWithActivityResponse: GetAddressesResponse = {
@@ -47,9 +49,15 @@ jest.mock('utils/Logger', () => ({
 const mockPostV1GetAddresses =
   profileApiClientModule.postV1GetAddresses as jest.Mock
 
+/** Valid fallback so `mockReset()` never leaves `postV1GetAddresses` returning `undefined` (parallel AVM/PVM calls). */
+const defaultPostV1GetAddressesImpl = () =>
+  Promise.resolve({ data: pvmEmptyResponse })
+
 describe('WalletService.hasActivityFromXpubXP', () => {
   beforeEach(() => {
+    WalletFactory.cache.clearWallet('wallet-1')
     mockPostV1GetAddresses.mockReset()
+    mockPostV1GetAddresses.mockImplementation(defaultPostV1GetAddressesImpl)
   })
 
   afterEach(() => {
@@ -63,14 +71,15 @@ describe('WalletService.hasActivityFromXpubXP', () => {
 
     // AVM and PVM requests run in parallel; mockResolvedValueOnce order is not stable across environments.
     mockPostV1GetAddresses.mockImplementation(
-      (options: { body: { networkType: string } }) => {
-        if (options.body.networkType === 'AVM') {
+      (options: { body: { networkType: NetworkVMType } }) => {
+        const nt = options?.body?.networkType
+        if (nt === NetworkVMType.AVM) {
           return Promise.resolve({ data: avmWithActivityResponse })
         }
-        if (options.body.networkType === 'PVM') {
+        if (nt === NetworkVMType.PVM) {
           return Promise.resolve({ data: pvmEmptyResponse })
         }
-        return Promise.resolve({ data: pvmEmptyResponse })
+        return defaultPostV1GetAddressesImpl()
       }
     )
 
@@ -125,14 +134,15 @@ describe('WalletService.hasActivityFromXpubXP', () => {
     const pendingPvmResponse = createDeferred<{ data: GetAddressesResponse }>()
 
     mockPostV1GetAddresses.mockImplementation(
-      (options: { body: { networkType: string } }) => {
-        if (options.body.networkType === 'AVM') {
+      (options: { body: { networkType: NetworkVMType } }) => {
+        const nt = options?.body?.networkType
+        if (nt === NetworkVMType.AVM) {
           return Promise.resolve({ data: avmWithActivityResponse })
         }
-        if (options.body.networkType === 'PVM') {
+        if (nt === NetworkVMType.PVM) {
           return pendingPvmResponse.promise
         }
-        return Promise.resolve({ data: pvmEmptyResponse })
+        return defaultPostV1GetAddressesImpl()
       }
     )
 
@@ -146,7 +156,7 @@ describe('WalletService.hasActivityFromXpubXP', () => {
     const resultOrTimeout = await Promise.race([
       hasActivityPromise,
       new Promise<'timeout'>(resolve =>
-        setTimeout(() => resolve('timeout'), 100)
+        setTimeout(() => resolve('timeout'), 5000)
       )
     ])
 

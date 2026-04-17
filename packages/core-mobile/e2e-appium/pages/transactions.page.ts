@@ -51,6 +51,10 @@ class TransactionsPage {
     return selectors.getById(txLoc.searchBar)
   }
 
+  get networkSelectorScroll() {
+    return selectors.getById(txLoc.networkSelectorScroll)
+  }
+
   get selectTokenTitle() {
     return selectors.getByText(txLoc.selectTokenTitle)
   }
@@ -165,8 +169,7 @@ class TransactionsPage {
 
   async dismissTransactionOnboarding() {
     try {
-      await actions.waitFor(this.transactionOnboardingNext, 10000)
-      await actions.click(this.transactionOnboardingNext)
+      await actions.tap(this.transactionOnboardingNext)
     } catch (e) {
       console.log('Transaction onboarding not found')
     }
@@ -203,9 +206,11 @@ class TransactionsPage {
   }
 
   async selectToken(tokenName: string, network?: string) {
-    if (network) {
-      await actions.tap(selectors.getById(`network_selector__${network}`))
+    const networkBtn = selectors.getById(`network_selector__${network}`)
+    if (!(await actions.getVisible(networkBtn))) {
+      await actions.dragAndDrop(this.networkSelectorScroll, [-300, 0])
     }
+    await actions.tap(networkBtn)
     await actions.type(this.searchBar, tokenName)
     try {
       await actions.dismissKeyboard()

@@ -116,6 +116,7 @@ const HistoryScreen = (): JSX.Element => {
     if (isIOS26AndAbove)
       return (
         <TouchableOpacity
+          testID="clear_all_history_btn"
           onPress={removeAll}
           style={{
             paddingHorizontal: 10

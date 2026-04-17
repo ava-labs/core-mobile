@@ -114,27 +114,39 @@ class OnboardingPage {
   }
 
   async exitMetro() {
-    if (process.env.E2E || process.env.E2E_LOCAL_PATH) {
+    // Skip Metro dev menu handling for E2E builds or when running on AWS Device Farm
+    // Device Farm uses E2E builds and doesn't have Metro bundler
+    const isE2EBuild =
+      process.env.E2E === 'true' || !!process.env.E2E_LOCAL_PATH
+    const isDeviceFarm = !!process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL
+
+    if (isE2EBuild || isDeviceFarm) {
       console.log('you are using the e2e build, skipping metro dev menu')
     } else {
       try {
-      console.log('you are using a dev build, skipping metro dev menu now...')
-      const preceedingHost = driver.isIOS ? 'localhost' : '10.0.2.2'
-      const metroDevMenu = selectors.getByText(`http://${preceedingHost}:8081`)
-      const dismissBtn = selectors.getByText("AvaxWallet")
-      await actions.delay(3000)
-      await actions.waitFor(metroDevMenu)
-      await actions.tap(metroDevMenu, dismissBtn)
-      await actions.waitFor(dismissBtn, 30000)
-      await actions.dragAndDrop(dismissBtn, [0, 1500])
+        console.log('you are using a dev build, skipping metro dev menu now...')
+        const precedingHost = driver.isIOS ? 'localhost' : '10.0.2.2'
+        const metroDevMenu = selectors.getByText(`http://${precedingHost}:8081`)
+        const dismissBtn = selectors.getByText('AvaxWallet')
+        await actions.waitFor(metroDevMenu)
+        await actions.tap(metroDevMenu, dismissBtn)
+        await actions.waitFor(dismissBtn, 30000)
+        await actions.dragAndDrop(dismissBtn, [0, 1500])
+        console.log('Dismissed Metro dev menu')
+
       } catch (e) {
-        console.log('Metro dev menu is not found...')
+        console.log('Metro dev menu not found or already dismissed')
       }
     }
   }
 
   async exitMetroAfterLogin() {
-    if (process.env.E2E !== 'true') {
+    // Skip Metro dev menu handling for E2E builds or when running on AWS Device Farm
+    const isE2EBuild =
+      process.env.E2E === 'true' || !!process.env.E2E_LOCAL_PATH
+    const isDeviceFarm = !!process.env.AWS_DEVICE_FARM_APPIUM_SERVER_URL
+
+    if (!isE2EBuild && !isDeviceFarm) {
       try {
         const dismissBtn = selectors.getByText("AvaxWallet")
         await actions.dragAndDrop(dismissBtn, [0, 1500])
@@ -183,6 +195,14 @@ class OnboardingPage {
 
   async enterPin(pin = '000000') {
     await actions.waitFor(this.enterPinFirstScreenTitle)
+    
+    // Disable biometrics toggle if it's enabled (to avoid biometric prompt during login)
+    const isToggleOn = await actions.isBiometricToggleOn(1500)
+    if (isToggleOn) {
+      const toggleOn = selectors.getById('toggle_biometrics_on')
+      await actions.tap(toggleOn)
+    }
+    
     await this.tapZero(pin)
     await actions.waitFor(this.enterPinSecondScreenTitle)
     await this.tapZero(pin)
@@ -210,7 +230,7 @@ class OnboardingPage {
     await actions.dragAndDrop(element, [0, 500])
   }
 
-async verifyLoggedIn() {
+  async verifyLoggedIn() {
     await actions.waitFor(commonElsPage.accountOne, 40000)
     await actions.waitFor(portfolioPage.portfolioBalanceHeader)
     await actions.waitForNotVisible(portfolioPage.noAssetsFound)
