@@ -30,7 +30,15 @@ const createDeferred = <T>() => {
 
 jest.mock('utils/api/generated/profileApi.client', () => ({
   __esModule: true,
-  postV1GetAddresses: jest.fn()
+  postV1GetAddresses: jest.fn(() =>
+    Promise.resolve({
+      data: {
+        networkType: 'PVM',
+        externalAddresses: [],
+        internalAddresses: []
+      }
+    })
+  )
 }))
 
 jest.mock('utils/api/clients/profileApiClient', () => ({
@@ -60,7 +68,10 @@ const defaultPostV1GetAddressesImpl = () =>
 describe('WalletService.hasActivityFromXpubXP', () => {
   beforeEach(() => {
     WalletFactory.cache.clearWallet('wallet-1')
-    mockPostV1GetAddresses.mockReset()
+    // Re-apply the default implementation each test. Do NOT use mockReset() —
+    // it clears the factory-level default and leaves the mock returning
+    // undefined if mockImplementation is re-set asynchronously. CI has been
+    // observed to hit that window and fail isGetAddressesResponseBody(body).
     mockPostV1GetAddresses.mockImplementation(defaultPostV1GetAddressesImpl)
   })
 
