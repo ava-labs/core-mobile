@@ -1179,19 +1179,24 @@ class LedgerService {
   async disconnect(): Promise<void> {
     this.isDisconnected = true // Signal pending operations to abort
     if (this.#transport) {
-      // Use disconnectDevice directly instead of transport.close() — close() intentionally
-      // delays the physical BLE disconnect by up to 5 seconds, which blocks other devices
-      // from connecting during that window.
-      const deviceId = this.#transport.id
+      // Capture transport before nulling so we can still call close() below.
+      const transport = this.#transport
+      const deviceId = transport.id
       this.#transport = null
       this.currentAppType = LedgerAppType.UNKNOWN
       this.currentAppVersion = ''
       this.stopAppPolling()
+      // disconnectDevice() immediately drops the physical BLE link so other
+      // devices can connect without the ~5 s delay that transport.close() imposes.
       try {
         await TransportBLE.disconnectDevice(deviceId)
       } catch (error) {
         Logger.error('Failed to disconnect Ledger BLE device', error)
       }
+      // Fire-and-forget close() for SDK-side cleanup (cancels pending exchanges,
+      // removes internal BLE listeners, resets transport state). The BLE link is
+      // already down at this point so the delay inside close() has no effect.
+      transport.close().catch(Logger.error)
     }
   }
 
