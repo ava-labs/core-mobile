@@ -27,7 +27,9 @@ jest.mock('utils/uuid', () => ({
 const mockUseOnlineStatus = useOnlineStatus as jest.MockedFunction<
   typeof useOnlineStatus
 >
-const mockUseSegments = useSegments as jest.MockedFunction<typeof useSegments>
+const mockUseSegments = useSegments as unknown as jest.MockedFunction<
+  () => string[]
+>
 const mockShowNoInternetToast = showNoInternetToast as jest.MockedFunction<
   typeof showNoInternetToast
 >

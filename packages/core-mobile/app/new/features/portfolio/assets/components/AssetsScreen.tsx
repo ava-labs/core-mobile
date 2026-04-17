@@ -110,8 +110,7 @@ const AssetsScreen: FC<Props> = ({
   // Only show loading state for initial load
   const isInitialLoading = isLoadingBalance && !isBalanceLoaded
 
-  const hasNoAssets =
-    data.length === 0 && isBalanceLoaded && !isInitialLoading
+  const hasNoAssets = data.length === 0 && isBalanceLoaded && !isInitialLoading
 
   const renderItem = useCallback(
     ({

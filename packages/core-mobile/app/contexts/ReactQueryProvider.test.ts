@@ -19,12 +19,10 @@ jest.mock('@react-native-community/netinfo', () => ({
   __esModule: true,
   default: {
     configure: jest.fn(),
-    addEventListener: jest.fn(
-      (cb: (state: Partial<NetInfoState>) => void) => {
-        mockNetInfoListener = cb
-        return jest.fn() // unsubscribe
-      }
-    )
+    addEventListener: jest.fn((cb: (state: Partial<NetInfoState>) => void) => {
+      mockNetInfoListener = cb
+      return jest.fn() // unsubscribe
+    })
   }
 }))
 
@@ -85,7 +83,6 @@ jest.mock('utils/Logger', () => ({
 // ---------------------------------------------------------------------------
 
 beforeAll(() => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('./ReactQueryProvider')
 })
 
