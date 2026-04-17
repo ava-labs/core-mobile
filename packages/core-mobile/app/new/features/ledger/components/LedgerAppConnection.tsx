@@ -334,7 +334,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
                     lineHeight: 20
                   }}>
                   {derivationPathType === LedgerDerivationPathType.LedgerLive
-                    ? `The Ledger Live setup is in progress. This may take longer as each account requires device authorization. Keep your device connected during setup.`
+                    ? `The Ledger Live setup is in progress. Keep your device connected during setup.`
                     : `The BIP44 setup is in progress and should take about 15 seconds. Keep your device connected during setup.`}
                 </Text>
               </View>
