@@ -1,7 +1,26 @@
 import { jest } from '@jest/globals'
+import { Alert, PermissionsAndroid, Platform } from 'react-native'
+import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import { LEDGER_TIMEOUTS } from 'new/features/ledger/consts'
 import Logger from 'utils/Logger'
 import LedgerService from './LedgerService'
-import { LedgerAppType } from './types'
+import { isLedgerBluetoothError } from './LedgerBluetoothError'
+import { LedgerAppType, LEDGER_ERROR_CODES } from './types'
+
+jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
+  __esModule: true,
+  default: {
+    open: jest.fn(),
+    listen: jest.fn(),
+    disconnectDevice: jest.fn(),
+    observeState: jest.fn(
+      ({ next }: { next: (e: { type: string }) => void }) => {
+        next({ type: 'PoweredOn' })
+        return { unsubscribe: jest.fn() }
+      }
+    )
+  }
+}))
 
 describe('LedgerService', () => {
   describe('openApp', () => {
@@ -296,6 +315,282 @@ describe('LedgerService', () => {
       const actualBytes = apdu.slice(5)
 
       expect(actualBytes).toEqual(expectedBytes)
+    })
+  })
+
+  describe('bluetooth permissions', () => {
+    const transportBLEMock = TransportBLE as unknown as {
+      open: jest.Mock
+      listen: jest.Mock
+      disconnectDevice: jest.Mock
+    }
+
+    const bluetoothPermissions = [
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+    ].filter(
+      (
+        permission
+      ): permission is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
+        Boolean(permission)
+    )
+
+    const makePermissionResult = (
+      status: typeof PermissionsAndroid.RESULTS[keyof typeof PermissionsAndroid.RESULTS]
+    ): Record<string, string> => {
+      return Object.fromEntries(
+        bluetoothPermissions.map(permission => [permission, status])
+      )
+    }
+
+    const grantedPermissions = makePermissionResult(
+      PermissionsAndroid.RESULTS.GRANTED
+    )
+
+    const deniedPermissions = makePermissionResult(
+      PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN
+    )
+
+    const mockTransport = {
+      exchange: jest.fn().mockRejectedValue(new Error('No app info') as never),
+      isConnected: true,
+      close: jest.fn()
+    }
+
+    const originalPlatformOS = Platform.OS
+
+    beforeEach(() => {
+      jest.useFakeTimers()
+      jest.spyOn(Logger, 'info').mockImplementation(jest.fn())
+      jest.spyOn(Logger, 'error').mockImplementation(jest.fn())
+      jest.spyOn(Alert, 'alert').mockImplementation(jest.fn())
+      jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
+      jest
+        .spyOn(PermissionsAndroid, 'requestMultiple')
+        .mockResolvedValue(grantedPermissions as never)
+
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: 'android'
+      })
+
+      transportBLEMock.listen.mockReturnValue({
+        unsubscribe: jest.fn()
+      })
+      transportBLEMock.disconnectDevice.mockResolvedValue(undefined as never)
+      transportBLEMock.open.mockResolvedValue(mockTransport as never)
+    })
+
+    afterEach(async () => {
+      await LedgerService.disconnect().catch(() => undefined)
+      LedgerService.stopDeviceScanning()
+      LedgerService.stopAppPolling()
+      jest.runOnlyPendingTimers()
+      jest.useRealTimers()
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: originalPlatformOS
+      })
+      jest.restoreAllMocks()
+    })
+
+    it('requests permissions when scanning for devices', async () => {
+      await LedgerService.startDeviceScanning()
+
+      expect(PermissionsAndroid.check).toHaveBeenCalledTimes(
+        bluetoothPermissions.length
+      )
+      expect(PermissionsAndroid.requestMultiple).toHaveBeenCalledWith(
+        bluetoothPermissions
+      )
+      expect(transportBLEMock.listen).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not start scanning when permissions are denied', async () => {
+      ;(PermissionsAndroid.requestMultiple as jest.Mock).mockResolvedValue(
+        deniedPermissions as never
+      )
+
+      try {
+        await LedgerService.startDeviceScanning()
+        throw new Error('Expected startDeviceScanning to fail')
+      } catch (error) {
+        expect(
+          isLedgerBluetoothError(error) &&
+            error.code === LEDGER_ERROR_CODES.BLUETOOTH_PERMISSION
+        ).toBe(true)
+      }
+
+      expect(transportBLEMock.listen).not.toHaveBeenCalled()
+      expect(Alert.alert).not.toHaveBeenCalled()
+    })
+
+    it('requests permissions when establishing a connection', async () => {
+      await LedgerService.ensureConnection('device-id')
+
+      expect(PermissionsAndroid.check).toHaveBeenCalledTimes(
+        bluetoothPermissions.length
+      )
+      expect(PermissionsAndroid.requestMultiple).toHaveBeenCalledWith(
+        bluetoothPermissions
+      )
+      expect(transportBLEMock.open).toHaveBeenCalledWith(
+        'device-id',
+        expect.any(Number)
+      )
+    })
+
+    it('does not reopen permission prompts when permissions are already granted', async () => {
+      ;(PermissionsAndroid.check as jest.Mock).mockResolvedValue(true as never)
+
+      await LedgerService.ensureConnection('device-id')
+
+      expect(PermissionsAndroid.requestMultiple).not.toHaveBeenCalled()
+      expect(transportBLEMock.open).toHaveBeenCalledWith(
+        'device-id',
+        expect.any(Number)
+      )
+    })
+
+    it('fails connection before opening transport when permissions are denied', async () => {
+      ;(PermissionsAndroid.requestMultiple as jest.Mock).mockResolvedValue(
+        deniedPermissions as never
+      )
+
+      try {
+        await LedgerService.ensureConnection('device-id')
+        throw new Error('Expected ensureConnection to fail')
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error)
+        expect((error as Error).message).toBe(
+          'Bluetooth permissions are required to connect to Ledger devices.'
+        )
+        expect(
+          isLedgerBluetoothError(error) &&
+            error.code === LEDGER_ERROR_CODES.BLUETOOTH_PERMISSION
+        ).toBe(true)
+      }
+
+      expect(transportBLEMock.open).not.toHaveBeenCalled()
+      expect(Alert.alert).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('waitForApp', () => {
+    beforeEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      jest.spyOn(Logger, 'info').mockImplementation(() => {})
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      jest.spyOn(Logger, 'error').mockImplementation(() => {})
+    })
+
+    afterEach(() => {
+      jest.clearAllMocks()
+      jest.useRealTimers()
+    })
+
+    it('should reject immediately when signal is already aborted', async () => {
+      const controller = new AbortController()
+      controller.abort()
+
+      await expect(
+        LedgerService.waitForApp(LedgerAppType.SOLANA, 5000, controller.signal)
+      ).rejects.toThrow(LEDGER_ERROR_CODES.USER_CANCELLED)
+    })
+
+    it('should reject when signal is aborted during polling', async () => {
+      jest.useFakeTimers()
+
+      // Make isAppCompatible return false so waitForApp enters polling
+      const isAppCompatibleSpy = jest
+        .spyOn(LedgerService as any, 'isAppCompatible')
+        .mockReturnValue(false)
+
+      // Make checkApp always return false (app never opens)
+      const checkAppSpy = jest
+        .spyOn(LedgerService as any, 'checkApp')
+        .mockResolvedValue(false)
+
+      const controller = new AbortController()
+
+      const waitPromise = LedgerService.waitForApp(
+        LedgerAppType.SOLANA,
+        30000,
+        controller.signal
+      )
+
+      // Let the immediate checkApp resolve and the interval start
+      await jest.advanceTimersByTimeAsync(100)
+
+      // Abort after polling has started, then immediately attach the
+      // rejection handler so Jest doesn't see an unhandled rejection.
+      controller.abort()
+      const rejectPromise = expect(waitPromise).rejects.toThrow(
+        LEDGER_ERROR_CODES.USER_CANCELLED
+      )
+
+      // Advance past the next polling tick so any remaining cleanup runs
+      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.APP_CHECK_DELAY + 100)
+
+      await rejectPromise
+
+      isAppCompatibleSpy.mockRestore()
+      checkAppSpy.mockRestore()
+    })
+  })
+
+  describe('getSolanaKeysForRange', () => {
+    beforeEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      jest.spyOn(Logger, 'info').mockImplementation(() => {})
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      jest.spyOn(Logger, 'error').mockImplementation(() => {})
+    })
+
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should stop iterating when signal is aborted', async () => {
+      const controller = new AbortController()
+
+      // Mock getSolanaKeys to abort the controller on the second call,
+      // simulating the user tapping "Skip" while keys are being retrieved.
+      const getSolanaKeysSpy = jest
+        .spyOn(LedgerService, 'getSolanaKeys')
+        .mockImplementation(async (index: number, _signal?: AbortSignal) => {
+          if (index === 1) {
+            controller.abort()
+          }
+          // Check signal after potential abort
+          if (controller.signal.aborted) {
+            throw new Error(LEDGER_ERROR_CODES.USER_CANCELLED)
+          }
+          return [
+            {
+              key: `solana-key-${index}`,
+              derivationPath: `m/44'/501'/${index}'/0'`,
+              curve: 'ed25519' as any
+            }
+          ]
+        })
+
+      // Request 5 keys starting at index 0
+      const results = await LedgerService.getSolanaKeysForRange(
+        5,
+        0,
+        controller.signal
+      )
+
+      // Should have stopped after index 1 aborted — only index 0 succeeded
+      expect(results).toHaveLength(1)
+      expect(results[0]?.[0]?.key).toBe('solana-key-0')
+
+      // getSolanaKeys should not have been called for indices 2, 3, 4
+      expect(getSolanaKeysSpy).toHaveBeenCalledTimes(2)
+
+      getSolanaKeysSpy.mockRestore()
     })
   })
 })

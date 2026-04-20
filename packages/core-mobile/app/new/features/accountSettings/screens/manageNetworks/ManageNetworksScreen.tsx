@@ -16,7 +16,8 @@ import { useRouter } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useState } from 'react'
 import { ListRenderItem } from 'react-native'
-import { alwaysEnabledChainIds, defaultEnabledL2ChainIds } from 'store/network'
+import { ChainName, defaultEnabledL2ChainIds } from 'services/network/consts'
+import { alwaysEnabledChainIds } from 'store/network'
 import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
 
 enum SectionTypeEnum {
@@ -93,11 +94,11 @@ export const ManageNetworksScreen = (): JSX.Element => {
     const primaryNetworks = Object.values(networks)
       .filter(network => {
         if (ChainId.AVALANCHE_MAINNET_ID === network.chainId) {
-          network.chainName = 'Avalanche C-Chain'
+          network.chainName = ChainName.AVALANCHE_C
         }
 
         if (ChainId.AVALANCHE_TESTNET_ID === network.chainId) {
-          network.chainName = 'Avalanche C-Chain Testnet'
+          network.chainName = ChainName.AVALANCHE_C_TESTNET
         }
 
         return (

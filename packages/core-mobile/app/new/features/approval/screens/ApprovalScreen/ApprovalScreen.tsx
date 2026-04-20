@@ -14,6 +14,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { useGasless } from 'hooks/useGasless'
 import { useSpendLimits } from 'hooks/useSpendLimits'
 import { ActionSheet } from 'new/common/components/ActionSheet'
+import { AlertBody } from 'new/features/approval/components/AlertBody'
 import { TokenLogo } from 'new/common/components/TokenLogo'
 import { Warning } from 'new/common/components/Warning'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
@@ -56,7 +57,7 @@ const ApprovalScreen = ({
   const activeWallet = useActiveWallet()
   const isLedger = useSelector(selectIsWalletLedger(activeWallet.id))
   const isGaslessInstantBlocked = useSelector(selectIsGaslessInstantBlocked)
-  const { renderLedgerFooter } = useLedgerApproval(isLedger)
+  const { renderLedgerFooter, cancelLedger } = useLedgerApproval(isLedger)
 
   const symbol = chainId
     ? (L2_NETWORK_SYMBOL_MAPPING[chainId] as NetworkTokenSymbols)
@@ -122,6 +123,15 @@ const ApprovalScreen = ({
     },
     [onReject]
   )
+
+  // When the sheet is closed via the X button or swipe (not the in-footer Cancel
+  // button), cancelLedger ensures the userCancelledMap flag is set so any
+  // in-flight resolveWithRetry skips the retry alert and any already-visible
+  // retry alert's Retry button becomes a no-op.
+  const handleClose = useCallback((): void => {
+    if (isLedger) cancelLedger()
+    onReject()
+  }, [cancelLedger, isLedger, onReject])
 
   const handleGaslessPreApprove = useCallback(async (): Promise<boolean> => {
     if (!shouldShowGaslessSwitch || !gaslessEnabled) return true
@@ -432,14 +442,24 @@ const ApprovalScreen = ({
       }
     : undefined
 
+  const renderAlertBody = useCallback((): JSX.Element | null => {
+    const body = displayData.alert?.details.body
+    if (!body || body.length === 0) return null
+
+    return <AlertBody reasons={body} />
+  }, [displayData.alert?.details.body])
+
   return (
     <ActionSheet
       isModal
+      // disabled for now to avoid the issue with the scroll to confirm on approval screen
+      // TODO: enable this once the issue is fixed
+      // requireScrollToConfirm
       title={displayData.dAppInfo ? undefined : displayData.title}
       navigationTitle={
         displayData.dAppInfo ? displayData?.dAppInfo?.name : displayData.title
       }
-      onClose={onReject}
+      onClose={handleClose}
       alert={alert}
       confirm={{
         label: 'Approve',
@@ -460,6 +480,7 @@ const ApprovalScreen = ({
       {renderAccountAndNetwork()}
       {renderDetails()}
       {renderNetworkFeeSelectorWithGasless()}
+      {renderAlertBody()}
     </ActionSheet>
   )
 }

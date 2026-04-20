@@ -1,7 +1,9 @@
-import { useCallback, useMemo, useRef } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account/slice'
-import { selectActiveNetwork } from 'store/network/slice'
+import { selectActiveNetwork, selectAllNetworks } from 'store/network/slice'
+import { selectTabChainId, setTabChainId } from 'store/browser/slices/tabs'
+import { TabId } from 'store/browser/types'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import RNWebView from 'react-native-webview'
 import Logger from 'utils/Logger'
@@ -67,7 +69,9 @@ const ALLOWED_METHODS = new Set([
   ...READ_ONLY_METHODS,
   ...Object.keys(SIGNING_METHODS),
   'wallet_switchEthereumChain',
-  'wallet_addEthereumChain'
+  'wallet_addEthereumChain',
+  'wallet_revokePermissions',
+  'wallet_watchAsset'
 ])
 
 function validateProviderRequest(data: unknown): data is ProviderRequest {
@@ -139,14 +143,39 @@ function parseProviderPayload(
  * Read-only methods are proxied directly to the network RPC endpoint.
  */
 export function useEvmInjectedProvider(
-  webViewRef: React.RefObject<RNWebView | null>
+  webViewRef: React.RefObject<RNWebView | null>,
+  tabId: TabId
 ) {
   const dispatch = useDispatch()
   const activeAccount = useSelector(selectActiveAccount)
   const activeNetwork = useSelector(selectActiveNetwork)
+  const allNetworks = useSelector(selectAllNetworks, shallowEqual)
+  const tabChainId = useSelector(selectTabChainId(tabId))
   const dappMetadata = useRef<DomainMetadata | null>(null)
   const currentUrlRef = useRef<string>('')
   const pendingOrigins = useRef<Map<number, string>>(new Map())
+  const initialChainId = tabChainId ?? activeNetwork.chainId
+  const initialNetwork = allNetworks[initialChainId] ?? activeNetwork
+  const browserNetworkRef = useRef({
+    chainId: initialChainId,
+    rpcUrl: initialNetwork.rpcUrl
+  })
+
+  // When the tab has no persisted chainId, keep browserNetworkRef in sync with
+  // the global active network so read-only RPC and signing requests are routed
+  // to the correct chain after the user switches networks wallet-wide.
+  useEffect(() => {
+    if (tabChainId !== undefined) return
+    if (browserNetworkRef.current.chainId === activeNetwork.chainId) return
+    browserNetworkRef.current = {
+      chainId: activeNetwork.chainId,
+      rpcUrl: activeNetwork.rpcUrl
+    }
+    const hexChainId = '0x' + activeNetwork.chainId.toString(16)
+    webViewRef.current?.injectJavaScript(
+      `window.__coreProviderEmit('chainChanged', '${hexChainId}'); true;`
+    )
+  }, [activeNetwork, tabChainId, webViewRef])
 
   const setCurrentUrl = useCallback((url: string) => {
     currentUrlRef.current = url
@@ -154,8 +183,8 @@ export function useEvmInjectedProvider(
 
   const chainIdHex = useMemo(() => {
     if (activeNetwork.vmName !== NetworkVMType.EVM) return '0x1'
-    return '0x' + activeNetwork.chainId.toString(16)
-  }, [activeNetwork])
+    return '0x' + initialChainId.toString(16)
+  }, [activeNetwork.vmName, initialChainId])
 
   const evmAddress = activeAccount?.addressC ?? ''
 
@@ -224,7 +253,7 @@ export function useEvmInjectedProvider(
   const proxyToRpc = useCallback(
     async (id: number, method: string, params: unknown[]) => {
       try {
-        const rpcUrl = activeNetwork.rpcUrl
+        const rpcUrl = browserNetworkRef.current.rpcUrl
         if (!rpcUrl) {
           sendResponse(
             id,
@@ -259,7 +288,7 @@ export function useEvmInjectedProvider(
         sendResponse(id, rpcErrors.internal('RPC request failed'), undefined)
       }
     },
-    [activeNetwork.rpcUrl, sendResponse]
+    [sendResponse]
   )
 
   const buildDappPeerMeta = useCallback((): PeerMeta | undefined => {
@@ -287,7 +316,7 @@ export function useEvmInjectedProvider(
         return
       }
 
-      const caip2ChainId = getEvmCaip2ChainId(activeNetwork.chainId)
+      const caip2ChainId = getEvmCaip2ChainId(browserNetworkRef.current.chainId)
       const request = createInAppRequest(dispatch)
 
       try {
@@ -302,7 +331,134 @@ export function useEvmInjectedProvider(
         sendResponse(id, e, undefined)
       }
     },
-    [dispatch, activeNetwork.chainId, sendResponse, buildDappPeerMeta]
+    [dispatch, sendResponse, buildDappPeerMeta]
+  )
+
+  const handleSwitchEthereumChain = useCallback(
+    (id: number, params: unknown[]) => {
+      const param = params[0] as { chainId?: string } | undefined
+      const hexChainId = param?.chainId
+      if (!hexChainId) {
+        sendResponse(
+          id,
+          rpcErrors.invalidParams('Missing chainId param'),
+          undefined
+        )
+        return
+      }
+      const requestedChainId = parseInt(hexChainId, 16)
+      if (isNaN(requestedChainId)) {
+        sendResponse(id, rpcErrors.invalidParams('Invalid chainId'), undefined)
+        return
+      }
+      if (!(String(requestedChainId) in allNetworks)) {
+        // Return 4902 (unrecognized chain) so ConnectKit/wagmi can trigger the
+        // wallet_addEthereumChain flow instead. The shim already fired
+        // chainChanged(target) optimistically and will not roll it back, so
+        // wagmi's chain state stays at target — preventing ConnectKit from
+        // re-triggering switchChain in a loop (React error #185).
+        sendResponse(
+          id,
+          {
+            code: 4902,
+            message: `Chain ${requestedChainId} has not been added to your wallet.`
+          },
+          undefined
+        )
+        return
+      }
+      if (requestedChainId === browserNetworkRef.current.chainId) {
+        sendResponse(id, null, null)
+        return
+      }
+      // Persist the chain switch for this tab only (survives tab eviction/remount).
+      // browserNetworkRef ensures all subsequent RPC calls in this session are
+      // routed to the correct chain. The shim already fired chainChanged
+      // synchronously before the round-trip (prevents React #185 loop), so we
+      // do NOT re-emit it here.
+      const switchedNetwork = allNetworks[requestedChainId]
+      dispatch(setTabChainId({ tabId, chainId: requestedChainId }))
+      browserNetworkRef.current = {
+        chainId: requestedChainId,
+        rpcUrl: switchedNetwork?.rpcUrl ?? ''
+      }
+      sendResponse(id, null, null)
+    },
+    [sendResponse, allNetworks, dispatch, tabId]
+  )
+
+  const handleAddEthereumChain = useCallback(
+    async (id: number, params: unknown[]) => {
+      const addParam = params[0] as
+        | { chainId?: string; rpcUrls?: string[] }
+        | undefined
+      const addHexChainId = addParam?.chainId
+      const addRpcUrl = addParam?.rpcUrls?.[0]
+      const inAppRequest = createInAppRequest(dispatch)
+      try {
+        await inAppRequest({
+          method: 'wallet_addEthereumChain' as unknown as RpcMethod,
+          params,
+          chainId: getEvmCaip2ChainId(browserNetworkRef.current.chainId),
+          peerMeta: buildDappPeerMeta()
+        })
+        // User approved — switch browser chain to the new network and notify dApp
+        if (addHexChainId) {
+          const newChainId = parseInt(addHexChainId, 16)
+          if (!isNaN(newChainId)) {
+            const addedNetwork = allNetworks[newChainId]
+            browserNetworkRef.current = {
+              chainId: newChainId,
+              rpcUrl: addedNetwork?.rpcUrl ?? addRpcUrl ?? ''
+            }
+            dispatch(setTabChainId({ tabId, chainId: newChainId }))
+            emitEvent('chainChanged', addHexChainId)
+          }
+        }
+        sendResponse(id, null, null)
+      } catch (e) {
+        sendResponse(id, e, undefined)
+      }
+    },
+    [sendResponse, allNetworks, dispatch, emitEvent, buildDappPeerMeta, tabId]
+  )
+
+  const handleRevokePermissions = useCallback(
+    (id: number) => {
+      // Only emit accountsChanged([]) — NOT disconnect. Per EIP-1193,
+      // 'disconnect' means the provider lost network connectivity, not
+      // that the user revoked access. Emitting disconnect causes wagmi
+      // to mark the provider as offline and refuse to auto-reconnect.
+      emitEvent('accountsChanged', [])
+      sendResponse(id, null, null)
+    },
+    [emitEvent, sendResponse]
+  )
+
+  const handleWatchAsset = useCallback(
+    async (id: number, params: unknown[] | unknown) => {
+      // Normalize: some dApps send object form { type, options } instead of array
+      const normalizedParams = Array.isArray(params) ? params : [params]
+      const inAppRequest = createInAppRequest(dispatch)
+      try {
+        const result = await inAppRequest({
+          method: 'wallet_watchAsset' as unknown as RpcMethod,
+          params: normalizedParams,
+          chainId: getEvmCaip2ChainId(browserNetworkRef.current.chainId),
+          peerMeta: buildDappPeerMeta()
+        })
+        sendResponse(id, null, result)
+      } catch (e) {
+        // EIP-747: explicit user rejection (4001) returns false; all other
+        // errors (invalid params, internal) are surfaced as real RPC errors
+        if ((e as { code?: number })?.code === 4001) {
+          sendResponse(id, null, false)
+        } else {
+          sendResponse(id, e, undefined)
+        }
+      }
+    },
+    [sendResponse, dispatch, buildDappPeerMeta]
   )
 
   const handleProviderMessage = useCallback(
@@ -336,28 +492,44 @@ export function useEvmInjectedProvider(
 
       if (nativeOrigin) {
         pendingOrigins.current.set(id, nativeOrigin)
+      } else if (method in SIGNING_METHODS) {
+        // Signing methods require a verified page origin — reject without one.
+        sendResponse(
+          id,
+          rpcErrors.internal('Origin unavailable — cannot sign'),
+          undefined
+        )
+        return
       }
 
+      // Ensure params is always an array for handlers that expect one.
+      // wallet_watchAsset is the only method that legitimately accepts object-form
+      // params (some dApps send { type, options } instead of [{ type, options }]);
+      // its handler normalizes internally.
+      const safeParams = Array.isArray(params) ? params : []
       if (method === 'wallet_switchEthereumChain') {
-        Logger.info(
-          '[InjectedProvider] wallet_switchEthereumChain requested (demo stub)'
-        )
-        sendResponse(id, null, null)
+        handleSwitchEthereumChain(id, safeParams)
+      } else if (method === 'wallet_addEthereumChain') {
+        handleAddEthereumChain(id, safeParams)
+      } else if (method === 'wallet_revokePermissions') {
+        handleRevokePermissions(id)
+      } else if (method === 'wallet_watchAsset') {
+        handleWatchAsset(id, params)
       } else if (method in SIGNING_METHODS) {
-        if (!nativeOrigin) {
-          sendResponse(
-            id,
-            rpcErrors.internal('Origin unavailable — cannot sign'),
-            undefined
-          )
-          return
-        }
-        dispatchSigningRequest(id, method, params ?? [])
+        dispatchSigningRequest(id, method, safeParams)
       } else if (READ_ONLY_METHODS.has(method)) {
-        proxyToRpc(id, method, params ?? [])
+        proxyToRpc(id, method, safeParams)
       }
     },
-    [sendResponse, proxyToRpc, dispatchSigningRequest]
+    [
+      sendResponse,
+      proxyToRpc,
+      dispatchSigningRequest,
+      handleSwitchEthereumChain,
+      handleAddEthereumChain,
+      handleRevokePermissions,
+      handleWatchAsset
+    ]
   )
 
   const handleDomainMetadata = useCallback((payload: string) => {

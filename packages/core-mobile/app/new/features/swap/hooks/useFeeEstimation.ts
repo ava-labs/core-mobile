@@ -5,6 +5,10 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { selectFusionFeeUnitsMarginBps } from 'store/posthog'
 import type { NetworkWithCaip2ChainId } from 'store/network'
 import { useNetworkFee } from 'hooks/useNetworkFee'
+import { isEstimateNativeFeeError } from '@avalabs/fusion-sdk'
+import Logger from 'utils/Logger'
+import SentryService from 'services/sentry/SentryService'
+import { SentryTag } from 'services/sentry/types'
 import FusionService from '../services/FusionService'
 import { logSdkError } from '../utils/fusionLogger'
 import type { Quote } from '../types'
@@ -47,19 +51,19 @@ export const useFeeEstimation = ({
       ReactQueryKeys.FUSION_SWAP_FEE_ESTIMATE,
       quote?.id,
       feeOptions.feeUnitsMarginBps,
+      feeOptions.overrides?.maxFeePerGas.toString(),
+      feeOptions.overrides?.maxPriorityFeePerGas.toString(),
       gasSafetyBps
     ],
     queryFn: quote
       ? async () => {
-          const { totalUpfrontFee } = await FusionService.estimateNativeFee(
-            quote,
-            feeOptions
-          )
+          const { totalFee, totalFeeWithoutMargin } =
+            await FusionService.estimateNativeFee(quote, feeOptions)
           const buffered =
             gasSafetyBps > 0
-              ? (totalUpfrontFee * (10000n + BigInt(gasSafetyBps))) / 10000n
-              : totalUpfrontFee
-          return { raw: totalUpfrontFee, buffered }
+              ? (totalFee * (10000n + BigInt(gasSafetyBps))) / 10000n
+              : totalFee
+          return { raw: totalFeeWithoutMargin, buffered }
         }
       : skipToken,
     staleTime: 0,
@@ -67,7 +71,19 @@ export const useFeeEstimation = ({
   })
 
   useEffect(() => {
-    if (error) logSdkError('[useFeeEstimation] estimateNativeFee error', error)
+    if (!error) return
+    if (isEstimateNativeFeeError(error) && error.details) {
+      Logger.warn('[useFeeEstimation] estimateNativeFee revert error', error)
+      // Use captureMessage (not Logger.error) for Sentry so that BigInt values
+      // in error.details.args are serialized to strings by sanitizeContext.
+      SentryService.captureMessage(
+        '[useFeeEstimation] estimateNativeFee revert error',
+        { ...error.details, cause: error.cause },
+        { source: SentryTag.FusionSdk }
+      )
+    } else {
+      logSdkError('[useFeeEstimation] estimateNativeFee error', error)
+    }
   }, [error])
 
   return {

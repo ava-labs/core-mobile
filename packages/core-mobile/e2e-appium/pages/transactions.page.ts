@@ -51,6 +51,10 @@ class TransactionsPage {
     return selectors.getById(txLoc.searchBar)
   }
 
+  get networkSelectorScroll() {
+    return selectors.getById(txLoc.networkSelectorScroll)
+  }
+
   get selectTokenTitle() {
     return selectors.getByText(txLoc.selectTokenTitle)
   }
@@ -165,8 +169,7 @@ class TransactionsPage {
 
   async dismissTransactionOnboarding() {
     try {
-      await actions.waitFor(this.transactionOnboardingNext, 10000)
-      await actions.click(this.transactionOnboardingNext)
+      await actions.tap(this.transactionOnboardingNext)
     } catch (e) {
       console.log('Transaction onboarding not found')
     }
@@ -203,11 +206,14 @@ class TransactionsPage {
   }
 
   async selectToken(tokenName: string, network?: string) {
-    if (network) {
-      await actions.tap(selectors.getById(`network_selector__${network}`))
+    const networkBtn = selectors.getById(`network_selector__${network}`)
+    if (!(await actions.getVisible(networkBtn))) {
+      await actions.dragAndDrop(this.networkSelectorScroll, [-300, 0])
     }
+    await actions.tap(networkBtn)
     await actions.type(this.searchBar, tokenName)
     try {
+      await actions.dismissKeyboard()
       await actions.tap(selectors.getById(`token_selector__${tokenName}`))
     } catch (e) {
       await actions.typeSlowly(this.searchBar, tokenName)
@@ -278,7 +284,7 @@ class TransactionsPage {
   }
 
   async tapClaimCard() {
-    await actions.longPress(this.claimCard)
+    await actions.longPress(this.claimCard, this.claimNow)
   }
 
   async tapClaimNow() {
@@ -406,18 +412,15 @@ class TransactionsPage {
     await this.tapSwap()
     await this.dismissTransactionOnboarding()
 
-    // select tokens
-    const fromTokenOnUi = await actions.getText(this.youPay)
-    if (from !== fromTokenOnUi) {
-      await this.tapYouPay()
-      await this.selectToken(from, network)
-    }
+    // select pay token
+    await this.tapYouPay()
+    await this.selectToken(from, network)
 
-    const toTokenOnUi = await actions.getText(this.youReceive)
-    if (to !== toTokenOnUi) {
-      await this.tapYouReceive()
-      await this.selectToken(to, network)
-    }
+    // select receive token
+    await this.tapYouReceive()
+    await this.selectToken(to, network)
+
+    // enter amount
     await this.enterAmountAndAdjust(amount, this.swapAmountInput)
     await this.tapNext(this.approveBtn)
 
@@ -425,6 +428,14 @@ class TransactionsPage {
     if (from !== 'AVAX' && network === txLoc.cChain) {
       await this.approveSpendLimitIfNeeded()
     }
+    await actions.waitFor(this.approveTitle, 40000)
+    await this.tapApprove()
+  }
+
+  async quickSwap(amount = '0.000001') {
+    await this.dismissTransactionOnboarding()
+    await this.enterAmountAndAdjust(amount, this.swapAmountInput)
+    await this.tapNext(this.approveBtn)
     await actions.waitFor(this.approveTitle, 40000)
     await this.tapApprove()
   }
@@ -449,11 +460,7 @@ class TransactionsPage {
 
   async swapOnTrack(index = 1, amount = '0.001') {
     await this.tapTrackBuyBtn(index)
-    await this.dismissTransactionOnboarding()
-    await this.enterAmountAndAdjust(amount, this.swapAmountInput)
-    await this.tapNext()
-    await this.tapApprove()
-    await this.verifySuccessToast()
+    await this.quickSwap(amount)
   }
 
   async sendNft(nftName = 'ABC', account = txLoc.accountTwo) {

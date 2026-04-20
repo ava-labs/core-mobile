@@ -1,7 +1,7 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { LedgerKeysByNetwork } from 'services/ledger/types'
+import { LedgerMultiIndexKeys } from 'services/ledger/types'
 import Logger from 'utils/Logger'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import LedgerService from 'services/ledger/LedgerService'
@@ -17,7 +17,7 @@ import AppConnectionScreen from './AppConnectionScreen'
 
 export const AppConnectionAddAccountScreen = (): JSX.Element => {
   const { walletId } = useLocalSearchParams<{ walletId: string }>()
-  const { dismiss } = useRouter()
+  const { dismiss, canGoBack, back } = useRouter()
   const { createLedgerAccount } = useLedgerWallet()
   const { setLedgerAddress } = useSetLedgerAddress()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -25,6 +25,10 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
   const accounts = useSelector((state: RootState) =>
     selectAccountsByWalletId(state, walletId)
   )
+  // Capture the account index once so it stays stable when Redux state
+  // updates mid-flow (e.g. after setAccount dispatch in handleComplete).
+  const accountIndexRef = useRef(accounts?.length ?? 0)
+  const accountIndex = accountIndexRef.current
   const { getLedgerInfoByWalletId } = useLedgerWalletMap()
 
   const { device, derivationPathType } = useMemo(() => {
@@ -38,11 +42,22 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
     setIsUpdatingWallet
   } = useLedgerSetupContext()
 
+  const handleCancel = useCallback(async () => {
+    await disconnectDevice().catch(error => {
+      Logger.error('Failed to disconnect Ledger device on cancel', error)
+    })
+    canGoBack() && back()
+  }, [disconnectDevice, canGoBack, back])
+
   const handleComplete = useCallback(
-    async (keys: LedgerKeysByNetwork) => {
+    async (multiIndexKeys: LedgerMultiIndexKeys) => {
+      const keys = {
+        mainnet: multiIndexKeys.mainnet[accountIndex],
+        testnet: multiIndexKeys.testnet[accountIndex]
+      }
       const keysByNetwork = isDeveloperMode ? keys.testnet : keys.mainnet
       if (
-        keysByNetwork.avalancheKeys &&
+        keysByNetwork?.avalancheKeys &&
         device &&
         wallet &&
         accounts?.length > 0 &&
@@ -57,7 +72,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
             walletId: wallet.id,
             walletName: wallet.name,
             walletType: wallet.type,
-            accountIndexToUse: accounts?.length ?? 0,
+            accountIndexToUse: accountIndex,
             deviceId: device.id,
             deviceName: device.name,
             derivationPathType,
@@ -66,10 +81,19 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
           })
 
           await setLedgerAddress({
-            accountIndex: accounts?.length ?? 0,
+            accountIndex: accountIndex,
             walletId,
             accountId,
-            keys
+            keys: {
+              mainnet: keys.mainnet ?? {
+                solanaKeys: [],
+                avalancheKeys: undefined
+              },
+              testnet: keys.testnet ?? {
+                solanaKeys: [],
+                avalancheKeys: undefined
+              }
+            }
           })
 
           Logger.info('Account created successfully, dismissing modals')
@@ -88,7 +112,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
         Logger.error(
           'Account creation conditions not met, skipping account creation',
           {
-            hasAvalancheKeys: !!keysByNetwork.avalancheKeys,
+            hasAvalancheKeys: !!keysByNetwork?.avalancheKeys,
             hasConnectedDeviceId: !!device?.id,
             hasSelectedDerivationPath: !!derivationPathType,
             isUpdatingWallet
@@ -99,6 +123,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
       }
     },
     [
+      accountIndex,
       device,
       wallet,
       accounts?.length,
@@ -120,10 +145,12 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
       completeStepTitle={`Your Account\nis being set up`}
       handleComplete={handleComplete}
       deviceId={device?.id}
-      deviceName={device?.name ?? 'Ledger Device'}
-      disconnectDevice={disconnectDevice}
+      deviceName={device?.name ?? 'Ledger'}
+      handleCancel={handleCancel}
       isUpdatingWallet={isUpdatingWallet}
-      accountIndex={accounts?.length ?? 0}
+      accountIndex={accountIndex}
+      showCancelOnComplete={true}
+      showConnectionToasts={true}
     />
   )
 }

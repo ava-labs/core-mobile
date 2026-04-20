@@ -76,11 +76,10 @@ export default function TabLayout(): JSX.Element {
     <BottomTabs
       labeled
       translucent
-      sidebarAdaptable={isIOS}
-      // on Android, page animations are disabled to improve performance.
-      // on iOS, animations remain enabled as they are needed to fix the
-      // BlurView rendering issue in the navigation header.
-      disablePageAnimations={isIOS ? false : true}
+      // (iOS only) By default disablePageAnimations is false
+      // Keeping this false prevents the tab blur intensity from breaking when switching tabs
+      // Do not set this to true
+      disablePageAnimations={false}
       tabBarActiveTintColor={theme.colors.$textPrimary}
       scrollEdgeAppearance={'default'}
       tabBarInactiveTintColor={tabBarInactiveTintColor}

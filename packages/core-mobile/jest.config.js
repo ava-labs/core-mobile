@@ -25,7 +25,9 @@ module.exports = {
     '^react-native-reanimated$':
       '<rootDir>/node_modules/react-native-reanimated/mock.js',
     '^react-native-worklets$':
-      '<rootDir>/node_modules/react-native-worklets/src/mock.ts'
+      '<rootDir>/node_modules/react-native-worklets/src/mock.ts',
+    '^react-native-permissions$':
+      '<rootDir>/node_modules/react-native-permissions/mock.js'
   },
   testPathIgnorePatterns: [
     '<rootDir>/e2e/tests/playwright/',

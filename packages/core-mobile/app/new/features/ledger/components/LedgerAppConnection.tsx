@@ -16,7 +16,10 @@ import { stripAddressPrefix } from 'common/utils/stripAddressPrefix'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { LedgerKeysByNetwork } from 'services/ledger/types'
+import {
+  LedgerDerivationPathType,
+  LedgerKeysByNetwork
+} from 'services/ledger/types'
 import { LedgerDeviceList } from './LedgerDeviceList'
 import { AnimatedIconWithText } from './AnimatedIconWithText'
 
@@ -44,6 +47,7 @@ interface LedgerAppConnectionProps {
   appConnectionStep: AppConnectionStep
   skipSolana?: boolean
   onlySolana?: boolean
+  derivationPathType?: LedgerDerivationPathType
 }
 
 export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
@@ -53,14 +57,15 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   keys,
   appConnectionStep: currentStep,
   skipSolana,
-  onlySolana = false
+  onlySolana = false,
+  derivationPathType = LedgerDerivationPathType.BIP44
 }) => {
   const {
     theme: { colors }
   } = useTheme()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
-  const deviceName = connectedDeviceName || 'Ledger Device'
+  const deviceName = connectedDeviceName || 'Ledger'
   const keysByNetwork = isDeveloperMode ? keys?.testnet : keys?.mainnet
 
   const hasAllKeys = useMemo(() => {
@@ -328,7 +333,9 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
                     color: colors.$textPrimary,
                     lineHeight: 20
                   }}>
-                  {`The BIP44 setup is in progress and should take about 15 seconds. Keep your device connected during setup.`}
+                  {derivationPathType === LedgerDerivationPathType.LedgerLive
+                    ? `The Ledger Live setup is in progress. Keep your device connected during setup.`
+                    : `The BIP44 setup is in progress and should take about 15 seconds. Keep your device connected during setup.`}
                 </Text>
               </View>
             </View>
@@ -414,6 +421,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     colors.$textSecondary,
     completeStepTitle,
     currentStep,
+    derivationPathType,
     getStepConfig
   ])
 

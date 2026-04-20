@@ -196,6 +196,10 @@ export default function WalletLayout(): JSX.Element {
               options={modalScreensOptions}
             />
             <Stack.Screen
+              name="(modals)/watchAsset"
+              options={modalScreensOptions}
+            />
+            <Stack.Screen
               name="(modals)/selectCustomTokenNetwork"
               options={secondaryModalScreensOptions}
             />

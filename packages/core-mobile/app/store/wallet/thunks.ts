@@ -100,7 +100,7 @@ export const importPrivateKeyWalletAndAccount = createAsyncThunk<
 )
 
 export const importMnemonicWalletAndAccount = createAsyncThunk<
-  void,
+  { walletId: string },
   { mnemonic: string; name?: string },
   ThunkApi
 >(
@@ -153,6 +153,8 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
     AnalyticsService.capture('MnemonicWalletImported', {
       walletType
     })
+
+    return { walletId: newWalletId }
   }
 )
 

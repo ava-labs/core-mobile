@@ -107,5 +107,6 @@ export default {
   saveNetworkBtn: 'save_network_btn',
   appIcon: 'App icon',
   appIconTitle: 'Customize\nthe app icon',
-  default: 'Default'
+  default: 'Default',
+  core: 'Core'
 }

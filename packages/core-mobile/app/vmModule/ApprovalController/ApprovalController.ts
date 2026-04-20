@@ -36,6 +36,7 @@ import {
   isImmediateSentToast,
   showConfetti
 } from '../utils/requestContext'
+import { maybeInjectSiweAlert } from '../utils/siwe/getSiweAlert'
 import { onApprove } from './onApprove'
 import { onReject } from './onReject'
 import { handleLedgerErrorAndShowAlert } from './utils'
@@ -209,12 +210,20 @@ class ApprovalController implements VmModuleApprovalController {
         handleLedgerErrorAndShowAlert({
           error: value.error,
           network: params.network,
-          onRetry: () =>
+          rpcMethod: request.method,
+          onRetry: () => {
+            // Guard: if the approval sheet was dismissed while the alert was
+            // visible, userCancelledMap will be set — don't retry in that case.
+            if (this.userCancelledMap.get(requestId)) {
+              this.userCancelledMap.delete(requestId)
+              return
+            }
             onApprove({
               ...params,
               signingData,
               resolve: resolveWithRetry
-            }),
+            })
+          },
           onCancel: () => {
             this.userCancelledMap.set(requestId, true)
             this.handleGoBackIfNeeded()
@@ -255,10 +264,17 @@ class ApprovalController implements VmModuleApprovalController {
     // Clear any previous cancellation state for this request
     this.userCancelledMap.delete(requestId)
 
+    // Check for EIP-4361 (SIWE) domain/scheme/port mismatch
+    const enrichedDisplayData = maybeInjectSiweAlert({
+      request,
+      signingData,
+      displayData
+    })
+
     return new Promise<ApprovalResponse>(resolve => {
       walletConnectCache.approvalParams.set({
         request,
-        displayData,
+        displayData: enrichedDisplayData,
         signingData,
         onApprove: async (params: OnApproveParams) => {
           if (!isInAppRequest(request) && isTxSendMethod(request.method)) {

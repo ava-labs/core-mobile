@@ -5,13 +5,11 @@ import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   Button,
-  CircularButton,
-  getButtonBackgroundColor,
   GroupList,
   GroupListItem,
-  Icons,
   Separator,
   Text,
+  Tooltip,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -57,6 +55,18 @@ import { useSwapRate } from '../hooks/useSwapRate'
 import { useSupportedChains } from '../hooks/useSupportedChains'
 import { getDisplaySlippageValue } from '../utils/getDisplaySlippageValue'
 import { ServiceType } from '../types'
+import { usePriceImpact } from '../hooks/usePriceImpact'
+import {
+  PriceImpactAvailability,
+  PriceImpactSeverity,
+  PRICE_IMPACT_ROW_TITLE,
+  PRICE_IMPACT_TOOLTIP_BODY,
+  PRICE_IMPACT_UNKNOWN_RISK_TITLE,
+  PRICE_IMPACT_UNKNOWN_RISK_DESCRIPTION,
+  PRICE_IMPACT_SWAP_DISABLED_TITLE,
+  PRICE_IMPACT_SWAP_DISABLED_DESCRIPTION,
+  PRICE_IMPACT_HIGH_TITLE
+} from '../consts'
 import { useMaxSwapAmount } from '../hooks/useMaxSwapAmount'
 import { useMinimumTransferAmount } from '../hooks/useMinimumTransferAmount'
 import { useFeeValidation } from '../hooks/useFeeValidation'
@@ -85,30 +95,27 @@ export const SwapScreen = (): JSX.Element => {
     const tokenIdTo = rawTokenIdTo || undefined
     const fromCaip2Id = rawFromCaip2Id || undefined
     const toCaip2Id = rawToCaip2Id || undefined
+    const defaultCaip2Id = isDeveloperMode
+      ? caip2ChainIds.FUJI
+      : caip2ChainIds.C_CHAIN
 
     const isDefaultSwapPair =
       tokenIdFrom === undefined && tokenIdTo === undefined
     if (isDefaultSwapPair) {
       return {
         initialTokenIdFrom: tokenIds.AVAX,
-        initialTokenIdTo: tokenIds.USDC,
-        initialFromCaip2Id: isDeveloperMode
-          ? caip2ChainIds.FUJI
-          : caip2ChainIds.C_CHAIN,
-        initialToCaip2Id: isDeveloperMode
-          ? caip2ChainIds.FUJI
-          : caip2ChainIds.C_CHAIN
+        // In testnet, USDC is a mainnet-only token with no supported services,
+        // so we skip preselecting it to avoid a broken no-quotes state.
+        initialTokenIdTo: isDeveloperMode ? undefined : tokenIds.USDC,
+        initialFromCaip2Id: defaultCaip2Id,
+        initialToCaip2Id: isDeveloperMode ? undefined : defaultCaip2Id
       }
     }
     return {
       initialTokenIdFrom: tokenIdFrom,
       initialTokenIdTo: tokenIdTo,
-      initialFromCaip2Id:
-        fromCaip2Id ??
-        (isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN),
-      initialToCaip2Id:
-        toCaip2Id ??
-        (isDeveloperMode ? caip2ChainIds.FUJI : caip2ChainIds.C_CHAIN)
+      initialFromCaip2Id: fromCaip2Id ?? defaultCaip2Id,
+      initialToCaip2Id: toCaip2Id ?? defaultCaip2Id
     }
   }, [
     rawTokenIdFrom,
@@ -173,12 +180,6 @@ export const SwapScreen = (): JSX.Element => {
 
   const { getNetwork } = useNetworks()
 
-  const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
-  const swapButtonBackgroundColor = useMemo(
-    () => getButtonBackgroundColor('secondary', theme),
-    [theme]
-  )
-
   // userQuote takes precedence over bestQuote
   const activeQuote = userQuote ?? bestQuote
   Logger.info('activeQuote', activeQuote)
@@ -231,6 +232,14 @@ export const SwapScreen = (): JSX.Element => {
 
   const activeError = validationError ?? quoteError
 
+  const {
+    priceImpact,
+    priceImpactSeverity,
+    priceImpactAvailability,
+    isPriceImpactTooHigh,
+    isPriceImpactCalculating
+  } = usePriceImpact(activeQuote, fromToken, toToken)
+
   const canSwap: boolean =
     (activeError === null ||
       (activeError instanceof FusionQuoteError &&
@@ -238,7 +247,9 @@ export const SwapScreen = (): JSX.Element => {
     !isFeeValidating &&
     !!fromToken &&
     !!toToken &&
-    !!activeQuote
+    !!activeQuote &&
+    !isPriceImpactCalculating &&
+    !isPriceImpactTooHigh
 
   const isSwapping = swapStatus === SwapStatus.Swapping
 
@@ -336,36 +347,7 @@ export const SwapScreen = (): JSX.Element => {
     }
   }, [activeQuote, debouncedFromTokenValue])
 
-  const handleToggleTokens = useCallback(() => {
-    if (
-      tokensWithZeroBalance.some(
-        token =>
-          token.name === toToken?.name && token.symbol === toToken?.symbol
-      )
-    ) {
-      setValidationError(fusionErrors.noDestinationToken(toToken?.symbol ?? ''))
-      return
-    }
-
-    const [to, from] = [fromToken, toToken]
-    setFromToken(from)
-    setToToken(to)
-    setDestination(SwapSide.SELL)
-    setFromTokenValue(undefined)
-    setToTokenValue(undefined)
-    setAmount(undefined)
-  }, [
-    fromToken,
-    toToken,
-    setFromToken,
-    setToToken,
-    setDestination,
-    setFromTokenValue,
-    setAmount,
-    tokensWithZeroBalance
-  ])
-
-  const showFeesAndSlippage = activeQuote?.serviceType === ServiceType.MARKR
+  const isMarkrRoute = activeQuote?.serviceType === ServiceType.MARKR
 
   const isLombard =
     activeQuote?.serviceType === ServiceType.LOMBARD_BTC_TO_BTCB ||
@@ -486,11 +468,9 @@ export const SwapScreen = (): JSX.Element => {
           formatInCurrency={amount => formatInCurrency(fromToken, amount)}
           onAmountChange={handleFromAmountChange}
           onFocus={() => {
-            setIsInputFocused(true)
             // Mark that we've auto-focused
             hasAutoFocused.current = true
           }}
-          onBlur={() => setIsInputFocused(false)}
           onSelectToken={handleSelectFromToken}
           maximum={fromMaxSwapAmount}
           valid={!validationError}
@@ -563,6 +543,66 @@ export const SwapScreen = (): JSX.Element => {
     toToken
   })
 
+  const priceImpactItem = useMemo((): GroupListItem => {
+    let color: string
+    let displayText: string
+    let tooltipTitle: string
+    let tooltipDescription: string
+
+    if (priceImpactAvailability === PriceImpactAvailability.Calculating) {
+      return {
+        title: PRICE_IMPACT_ROW_TITLE,
+        value: <ActivityIndicator size="small" />
+      }
+    }
+
+    if (priceImpactAvailability === 'unavailable') {
+      color = theme.colors.$textDanger
+      displayText = PRICE_IMPACT_UNKNOWN_RISK_TITLE
+      tooltipTitle = PRICE_IMPACT_UNKNOWN_RISK_TITLE
+      tooltipDescription = PRICE_IMPACT_UNKNOWN_RISK_DESCRIPTION
+    } else if (priceImpactSeverity === PriceImpactSeverity.Critical) {
+      color = theme.colors.$textDanger
+      displayText = `${priceImpact?.toFixed(2)}% (High)`
+      tooltipTitle = PRICE_IMPACT_SWAP_DISABLED_TITLE
+      tooltipDescription = PRICE_IMPACT_SWAP_DISABLED_DESCRIPTION
+    } else if (priceImpactSeverity === PriceImpactSeverity.High) {
+      color = theme.colors.$textDanger
+      displayText = `${priceImpact?.toFixed(2)}% (High)`
+      tooltipTitle = PRICE_IMPACT_HIGH_TITLE
+      tooltipDescription = PRICE_IMPACT_TOOLTIP_BODY
+    } else {
+      color = theme.colors.$textSecondary
+      displayText =
+        priceImpact !== undefined ? `${priceImpact.toFixed(2)}%` : '—'
+      tooltipTitle = PRICE_IMPACT_ROW_TITLE
+      tooltipDescription = PRICE_IMPACT_TOOLTIP_BODY
+    }
+
+    return {
+      title: PRICE_IMPACT_ROW_TITLE,
+      value: (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Tooltip
+            title={tooltipTitle}
+            description={tooltipDescription}
+            button={{ text: 'Dismiss' }}
+            size={18}
+          />
+          <Text variant="body1" style={{ color }}>
+            {displayText}
+          </Text>
+        </View>
+      )
+    }
+  }, [
+    priceImpact,
+    priceImpactSeverity,
+    priceImpactAvailability,
+    theme.colors.$textDanger,
+    theme.colors.$textSecondary
+  ])
+
   const data = useMemo(() => {
     const items: GroupListItem[] = []
 
@@ -579,7 +619,7 @@ export const SwapScreen = (): JSX.Element => {
       })
     }
 
-    if (showFeesAndSlippage) {
+    if (isMarkrRoute) {
       const displayValue = getDisplaySlippageValue({
         autoSlippage,
         quoteSlippageBps: activeQuote?.slippageBps,
@@ -592,6 +632,10 @@ export const SwapScreen = (): JSX.Element => {
       })
     }
 
+    if (isMarkrRoute) {
+      items.push(priceImpactItem)
+    }
+
     return items
   }, [
     fromToken,
@@ -599,10 +643,11 @@ export const SwapScreen = (): JSX.Element => {
     rate,
     activeQuote,
     allQuotes,
-    showFeesAndSlippage,
+    isMarkrRoute,
     slippage,
     autoSlippage,
     isSwapping,
+    priceImpactItem,
     handleSelectPricingDetails,
     handleSelectSlippageDetails
   ])
@@ -704,11 +749,12 @@ export const SwapScreen = (): JSX.Element => {
 
       // Skip if TO is already BTC.b — avoids overriding a valid selection
       // or causing unnecessary state writes on re-renders.
-      const toIsBtcB = toToken?.internalId === tokenIds.BTC_B
+      const btcBTokenId = isDeveloperMode ? tokenIds.BTC_B_FUJI : tokenIds.BTC_B
+      const toIsBtcB = toToken?.internalId === btcBTokenId
       if (toIsBtcB) return
 
       const btcb = [btcBLocalToken, ...tokensWithZeroBalance].find(
-        tk => tk?.internalId === tokenIds.BTC_B
+        tk => tk?.internalId === btcBTokenId
       )
       if (btcb) setToToken(btcb)
     }
@@ -724,7 +770,8 @@ export const SwapScreen = (): JSX.Element => {
     setFromToken,
     setAmount,
     tokensWithZeroBalance,
-    btcBLocalToken
+    btcBLocalToken,
+    isDeveloperMode
   ])
 
   // Validate token pair compatibility - clear TO token if incompatible with FROM chain
@@ -868,64 +915,20 @@ export const SwapScreen = (): JSX.Element => {
     return (
       <Animated.View layout={LinearTransition}>
         {renderFromSection()}
-        <Animated.View
+        <View
           style={{
-            backgroundColor: theme.colors.$surfaceSecondary,
-            zIndex: 100
+            backgroundColor: theme.colors.$surfaceSecondary
           }}>
-          <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Separator
-              sx={{
-                marginLeft: 16,
-                marginRight: isInputFocused ? 0 : 20,
-                flex: 1
-              }}
-            />
-            <Separator
-              sx={{
-                marginLeft: isInputFocused ? 0 : 20,
-                marginRight: 16,
-                flex: 1
-              }}
-            />
-          </View>
-          {isInputFocused === false && (
-            <Animated.View
-              entering={FadeIn}
-              exiting={FadeOut}
-              style={{
-                position: 'absolute',
-                top: -20,
-                left: 0,
-                right: 0
-              }}>
-              <CircularButton
-                testID="swap_vertical_icon"
-                backgroundColor={swapButtonBackgroundColor}
-                style={{
-                  width: 40,
-                  height: 40,
-                  alignSelf: 'center'
-                }}
-                disabled={isSwapping}
-                onPress={handleToggleTokens}>
-                <Icons.Custom.SwapVertical />
-              </CircularButton>
-            </Animated.View>
-          )}
-        </Animated.View>
+          <Separator sx={{ marginHorizontal: 16 }} />
+        </View>
         {renderToSection()}
       </Animated.View>
     )
   }, [
     fromToken,
-    handleToggleTokens,
-    isInputFocused,
     isTokensLoading,
-    isSwapping,
     renderFromSection,
     renderToSection,
-    swapButtonBackgroundColor,
     theme.colors.$surfaceSecondary,
     toToken
   ])

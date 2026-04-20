@@ -158,7 +158,8 @@ export function useSwapActivityDisplay(
       ?.priceInCurrency
     if (!price || !fromTokenUnit) return undefined
     return formatTokenInCurrency({
-      amount: fromTokenUnit.mul(price).toDisplay({ asNumber: true })
+      amount: fromTokenUnit.mul(price).toDisplay({ asNumber: true }),
+      showLessThanThreshold: true
     })
   }, [fromTokenUnit, fromTokenData, formatTokenInCurrency])
 
@@ -167,7 +168,8 @@ export function useSwapActivityDisplay(
       ?.priceInCurrency
     if (!price || !toTokenUnit) return undefined
     return formatTokenInCurrency({
-      amount: toTokenUnit.mul(price).toDisplay({ asNumber: true })
+      amount: toTokenUnit.mul(price).toDisplay({ asNumber: true }),
+      showLessThanThreshold: true
     })
   }, [toTokenUnit, toTokenData, formatTokenInCurrency])
 

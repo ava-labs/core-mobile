@@ -101,10 +101,12 @@ export interface ListScreenProps<T>
   renderEmpty?: () => React.ReactNode
   /** Optional function to render a fixed footer at the bottom of the screen */
   renderFooter?: () => React.ReactNode
+  /** Optional function to render a true list footer rendered after the last item (maps to FlashList's ListFooterComponent). Use this for infinite-scroll spinners instead of renderFooter. */
+  renderListFooter?: () => React.ReactNode
   /** Whether to show the sticky header */
   shouldShowStickyHeader?: boolean
   /** Optional ref to the flat list */
-  flatListRef?: RefObject<ListScreenRef<T>>
+  flatListRef?: RefObject<ListScreenRef<T> | null>
 }
 
 export type ListScreenRef<T> = {
@@ -124,6 +126,7 @@ export const ListScreenV2 = <T,>({
   renderHeader,
   renderHeaderRight,
   renderFooter,
+  renderListFooter,
   shouldShowStickyHeader = true,
   flatListRef,
   ...props
@@ -607,6 +610,7 @@ export const ListScreenV2 = <T,>({
           internalKeyExtractor as (item: T, index: number) => string
         }
         getItemType={internalGetItemType as FlashListProps<T>['getItemType']}
+        ListFooterComponent={renderListFooter ? renderListFooter : undefined}
         style={StyleSheet.flatten([
           {
             backgroundColor: backgroundColor ?? 'transparent',

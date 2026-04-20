@@ -81,3 +81,19 @@ export const parseDecimalToBigInt = (
 
   return BigInt(trimmed)
 }
+
+/**
+ * Computes the appropriate maxLength for a TextInput displaying a numeric value.
+ * This prevents flickering on controlled TextInput while ensuring the value is
+ * never truncated by maxLength.
+ * See: https://reactnative.dev/docs/textinput#value
+ */
+export function computeMaxLength(
+  value: string,
+  maxDecimals: number
+): number | undefined {
+  if (!value) return undefined
+  const [front] = value.split('.')
+  const sanitized = front?.replace(/^0+(?!$)/, '') ?? ''
+  return sanitized.length + 1 + maxDecimals
+}

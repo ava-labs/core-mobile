@@ -7,12 +7,14 @@ export const SubTextNumber = ({
   number,
   testID,
   textColor,
+  fontWeight,
   style,
   textVariant = 'body1'
 }: {
   number: number | string | undefined
   testID?: string
   textColor?: string
+  fontWeight?: TextStyle['fontWeight']
   style?: ViewStyle
   textVariant?: SubTextNumberVariant
 }): JSX.Element => {
@@ -30,26 +32,30 @@ export const SubTextNumber = ({
   )
 
   const _textColor = textColor ?? alpha(colors.$textPrimary, 0.6)
+  const _fontWeight = fontWeight ?? subTextStyle.fontWeight
 
   return (
     <View style={[styles.container, style]} testID={testID}>
       <Text
         numberOfLines={1}
         variant={textVariant}
-        style={[{ color: _textColor, fontWeight: subTextStyle.fontWeight }]}>
+        style={[{ color: _textColor, fontWeight: _fontWeight }]}>
         {mainTextBefore}
       </Text>
       {subText && (
         <Text
           variant={textVariant}
-          style={[subTextStyle, { color: _textColor }]}>
+          style={[
+            subTextStyle,
+            { color: _textColor, fontWeight: _fontWeight }
+          ]}>
           {subText}
         </Text>
       )}
       {mainTextAfter && (
         <Text
           variant={textVariant}
-          style={[{ color: _textColor, fontWeight: subTextStyle.fontWeight }]}>
+          style={[{ color: _textColor, fontWeight: _fontWeight }]}>
           {mainTextAfter}
         </Text>
       )}

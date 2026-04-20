@@ -1,9 +1,9 @@
+import { ActivityIndicator, useTheme } from '@avalabs/k2-alpine'
 import { FlashListProps, ListRenderItem } from '@shopify/flash-list'
 import React, { useMemo } from 'react'
-import { Platform, RefreshControlProps, ViewStyle } from 'react-native'
+import { Platform, RefreshControlProps, View, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import { RefreshControl } from 'react-native-gesture-handler'
-import { ActivityIndicator, useTheme, View } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from './CollapsibleTabs'
 
 type CollapsibleTabListProps<T> = {
@@ -52,10 +52,6 @@ type CollapsibleTabListProps<T> = {
    */
   extraData?: FlashListProps<T>['extraData']
   /**
-   * Use masonry layout (for CollapsibleTabs.FlashList)
-   */
-  masonry?: boolean
-  /**
    * Unique key for the list (useful when switching between list types)
    */
   listKey?: string
@@ -87,6 +83,13 @@ type CollapsibleTabListProps<T> = {
    * Callback when the list reaches the end
    */
   onEndReached?: () => void
+  /**
+   * Pre-computed column assignments for masonry layouts.
+   * Each inner array is a column containing { item, index } tuples where
+   * index is the item's position in the original data array.
+   * When provided, renders a ScrollView with manually laid-out columns instead of relying on FlashList masonry internals.
+   */
+  columnItems?: { item: T; index: number }[][]
 }
 
 /**
@@ -108,14 +111,14 @@ export function CollapsibleTabList<T>({
   onRefresh,
   numColumns = 1,
   extraData,
-  masonry,
   listKey,
   overrideProps,
   contentContainerStyle: additionalContentStyle,
   nestedScrollEnabled,
   removeClippedSubviews,
   maintainVisibleContentPosition,
-  onEndReached
+  onEndReached,
+  columnItems
 }: CollapsibleTabListProps<T>): JSX.Element {
   const header = useHeaderMeasurements()
   const { theme } = useTheme()
@@ -128,7 +131,7 @@ export function CollapsibleTabList<T>({
   const ListFooterComponent = useMemo(() => {
     if (!onEndReached) return undefined
     return (
-      <View sx={{ paddingVertical: 16, alignItems: 'center' }}>
+      <View style={{ paddingVertical: 16, alignItems: 'center' }}>
         <ActivityIndicator color={theme.colors.$textPrimary} />
       </View>
     )
@@ -177,6 +180,36 @@ export function CollapsibleTabList<T>({
     )
   }
 
+  // When pre-computed column assignments are provided, render columns manually in a
+  // ScrollView instead of relying on FlashList masonry to determine item placement.
+  if (columnItems) {
+    return (
+      <CollapsibleTabs.ScrollView
+        key={listKey}
+        refreshControl={refreshControl}
+        contentContainerStyle={baseContentContainerStyle}
+        showsVerticalScrollIndicator={false}
+        nestedScrollEnabled={nestedScrollEnabled}>
+        {renderHeader?.()}
+        <View style={{ flexDirection: 'row' }}>
+          {columnItems.map((col, colIndex) => (
+            <View key={colIndex} style={{ flex: 1 }}>
+              {col.map(entry => (
+                <React.Fragment key={keyExtractor(entry.item, entry.index)}>
+                  {renderItem({
+                    item: entry.item,
+                    index: entry.index,
+                    target: 'Cell'
+                  })}
+                </React.Fragment>
+              ))}
+            </View>
+          ))}
+        </View>
+      </CollapsibleTabs.ScrollView>
+    )
+  }
+
   return (
     <CollapsibleTabs.FlashList
       key={listKey}
@@ -185,7 +218,6 @@ export function CollapsibleTabList<T>({
       keyExtractor={keyExtractor}
       renderItem={renderItem}
       numColumns={numColumns}
-      masonry={masonry}
       overrideProps={finalOverrideProps}
       contentContainerStyle={baseContentContainerStyle}
       refreshControl={refreshControl}

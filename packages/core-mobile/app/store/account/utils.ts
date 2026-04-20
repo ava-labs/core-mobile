@@ -1,5 +1,5 @@
 import { AVM, EVM, PVM, VM } from '@avalabs/avalanchejs'
-import { Account } from 'store/account/types'
+import { Account, AccountCollection } from 'store/account/types'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import WalletFactory from 'services/wallet/WalletFactory'
 import { WalletType } from 'services/wallet/types'
@@ -98,75 +98,57 @@ export const deriveMissingSeedlessSessionKeys = async (
   }
 }
 
-export const migrateRemainingActiveAccounts = async ({
-  listenerApi,
+export const discoverRemainingActiveAccounts = async ({
   walletId,
   walletType,
-  startIndex
+  startIndex,
+  onAccountCreated,
+  scanWindow
 }: {
-  listenerApi: AppListenerEffectAPI
   walletId: string
-  walletType: WalletType.SEEDLESS | WalletType.MNEMONIC | WalletType.KEYSTONE
+  walletType: WalletType
   startIndex: number
-  // eslint-disable-next-line sonarjs/cognitive-complexity
-}): Promise<void> => {
-  const { getState, dispatch } = listenerApi
-  dispatch(setIsMigratingActiveAccounts(true))
+  onAccountCreated?: (account: Account) => void
+  scanWindow?: number
+}): Promise<{ accounts: AccountCollection; accountIds: string[] }> => {
+  const toastId = uuid()
+  const shouldShowToast = walletType !== WalletType.SEEDLESS
+
+  if (shouldShowToast) {
+    transactionSnackbar.pending({ message: 'Adding accounts...', toastId })
+  }
 
   try {
-    const toastId = uuid()
-    const shouldShowToast = walletType !== WalletType.SEEDLESS
-
-    if (shouldShowToast) {
-      transactionSnackbar.pending({ message: 'Adding accounts...', toastId })
-    }
-
-    const accounts = await AccountsService.fetchRemainingActiveAccounts({
-      walletId,
-      walletType,
-      startIndex
-    })
-
-    const state = getState()
-    const walletState = selectWalletState(state)
-    if (walletState !== WalletState.ACTIVE) {
-      Logger.error(
-        'Wallet is not active, skipping migrateRemainingActiveAccounts'
-      )
-      dispatch(setIsMigratingActiveAccounts(false))
-      global.toast?.hideAll()
-      return
-    }
+    const { accounts, completedCleanly } =
+      await AccountsService.fetchRemainingActiveAccounts({
+        walletId,
+        walletType,
+        startIndex,
+        onAccountCreated,
+        scanWindow
+      })
 
     const accountIds = Object.keys(accounts)
-    if (accountIds.length > 0) {
-      // set accounts for seedless wallet, which trigger balance update
-      // * seedless wallet fetches xp balances by iterating over xp addresses over all accounts
-      // * so we need to wait for all accounts to be fetched to update balances
-      walletType === WalletType.SEEDLESS
-        ? listenerApi.dispatch(setAccounts(accounts))
-        : listenerApi.dispatch(setNonActiveAccounts(accounts))
 
-      recentAccountsStore.getState().addRecentAccounts(accountIds)
-
-      if (shouldShowToast) {
-        transactionSnackbar.success({
-          message: `${accountIds.length} ${
-            accountIds.length > 1 ? 'accounts' : 'account'
-          } successfully added`,
-          toastId
-        })
-      }
-    } else {
-      if (shouldShowToast) {
-        transactionSnackbar.plain({
-          message: 'No additional accounts found',
-          toastId
-        })
-      }
+    if (shouldShowToast && accountIds.length > 0) {
+      transactionSnackbar.success({
+        message: `${accountIds.length} ${
+          accountIds.length > 1 ? 'accounts' : 'account'
+        } successfully added`,
+        toastId
+      })
+    } else if (shouldShowToast) {
+      transactionSnackbar.plain({
+        message: 'No additional accounts found',
+        toastId
+      })
     }
 
-    markWalletAsMigrated(walletId)
+    if (completedCleanly) {
+      markWalletAsMigrated(walletId)
+    }
+
+    return { accounts, accountIds }
   } catch (error) {
     Logger.error('Failed to fetch remaining active accounts', error)
     transactionSnackbar.error({
@@ -178,6 +160,81 @@ export const migrateRemainingActiveAccounts = async ({
           ? error
           : undefined
     })
+    return { accounts: {}, accountIds: [] }
+  }
+}
+
+export const migrateRemainingActiveAccounts = async ({
+  listenerApi,
+  walletId,
+  walletType,
+  startIndex,
+  scanWindow
+}: {
+  listenerApi: AppListenerEffectAPI
+  walletId: string
+  walletType: WalletType
+  startIndex: number
+  scanWindow?: number
+}): Promise<void> => {
+  const { getState, dispatch } = listenerApi
+  dispatch(setIsMigratingActiveAccounts(true))
+
+  try {
+    // Early guard: skip discovery entirely if wallet is already inactive
+    const initialWalletState = selectWalletState(getState())
+    if (initialWalletState !== WalletState.ACTIVE) {
+      Logger.error(
+        'Wallet is not active, skipping migrateRemainingActiveAccounts'
+      )
+      global.toast?.hideAll()
+      return
+    }
+
+    // For seedless wallets, batch all accounts at once since XP balance
+    // fetching iterates over all accounts — dispatching one at a time
+    // would trigger redundant balance updates.
+    const isSeedless = walletType === WalletType.SEEDLESS
+
+    const { accounts, accountIds } = await discoverRemainingActiveAccounts({
+      walletId,
+      walletType,
+      startIndex,
+      scanWindow,
+      onAccountCreated: isSeedless
+        ? undefined
+        : account => {
+            // Re-check wallet state before each dispatch to handle
+            // the case where wallet becomes inactive mid-discovery.
+            const currentWalletState = selectWalletState(getState())
+            if (currentWalletState !== WalletState.ACTIVE) {
+              Logger.error(
+                'Wallet became inactive during discovery, skipping dispatch'
+              )
+              return
+            }
+            // Dispatch each account to Redux as it's created so it
+            // appears in the UI immediately rather than waiting for
+            // all accounts to finish.
+            dispatch(setNonActiveAccounts({ [account.id]: account }))
+            recentAccountsStore.getState().addRecentAccounts([account.id])
+          }
+    })
+
+    const state = getState()
+    const walletState = selectWalletState(state)
+    if (walletState !== WalletState.ACTIVE) {
+      Logger.error(
+        'Wallet is not active, skipping migrateRemainingActiveAccounts'
+      )
+      global.toast?.hideAll()
+      return
+    }
+
+    if (isSeedless && accountIds.length > 0) {
+      dispatch(setAccounts(accounts))
+      recentAccountsStore.getState().addRecentAccounts(accountIds)
+    }
   } finally {
     dispatch(setIsMigratingActiveAccounts(false))
   }

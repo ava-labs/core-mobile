@@ -3,12 +3,35 @@ import { useSelector, useDispatch } from 'react-redux'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { RpcMethod } from 'store/rpc/types'
 import RNWebView from 'react-native-webview'
+import {
+  selectAllNetworks,
+  selectActiveNetwork,
+  setActive
+} from 'store/network/slice'
+import { selectTabChainId, setTabChainId } from 'store/browser/slices/tabs'
 import { useEvmInjectedProvider } from './useEvmInjectedProvider'
 
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),
   useSelector: jest.fn(),
   useDispatch: jest.fn()
+}))
+
+jest.mock('store/network/slice', () => ({
+  selectAllNetworks: jest.fn(),
+  selectActiveNetwork: jest.fn(),
+  setActive: jest.fn((chainId: number) => ({
+    type: 'network/setActive',
+    payload: chainId
+  }))
+}))
+
+jest.mock('store/browser/slices/tabs', () => ({
+  selectTabChainId: jest.fn(() => jest.fn(() => undefined)),
+  setTabChainId: jest.fn((payload: { tabId: string; chainId: number }) => ({
+    type: 'browser/tabs/setTabChainId',
+    payload
+  }))
 }))
 
 const mockCreateInAppRequest = jest.fn()
@@ -48,6 +71,11 @@ const mockActiveNetwork = {
   rpcUrl: 'https://api.avax.network/ext/bc/C/rpc'
 }
 
+const mockAllNetworks = {
+  43114: mockActiveNetwork,
+  1: { ...mockActiveNetwork, chainId: 1 }
+}
+
 const mockUseSelector = useSelector as jest.MockedFunction<typeof useSelector>
 const mockUseDispatch = useDispatch as jest.MockedFunction<typeof useDispatch>
 
@@ -55,25 +83,28 @@ function setupMocks(
   overrides: {
     account?: typeof mockActiveAccount | null
     network?: typeof mockActiveNetwork
+    allNetworks?: Record<number, unknown>
   } = {}
 ): void {
   const account =
     overrides.account === undefined ? mockActiveAccount : overrides.account
   const network = overrides.network ?? mockActiveNetwork
+  const allNetworks = overrides.allNetworks ?? mockAllNetworks
+
+  const mockTabChainIdSelector = jest.fn(() => undefined)
+  ;(selectTabChainId as jest.Mock).mockReturnValue(mockTabChainIdSelector)
 
   mockUseSelector.mockImplementation(
     (selector: (state: unknown) => unknown) => {
+      if (selector === (selectAllNetworks as unknown)) return allNetworks
+      if (selector === (selectActiveNetwork as unknown)) return network
+      if (selector === mockTabChainIdSelector) return undefined
       const selectorStr = selector.toString()
       if (
         selectorStr.includes('activeAccount') ||
         selectorStr.includes('Account')
       )
         return account
-      if (
-        selectorStr.includes('activeNetwork') ||
-        selectorStr.includes('Network')
-      )
-        return network
       return undefined
     }
   )
@@ -89,7 +120,7 @@ describe('useEvmInjectedProvider', () => {
   describe('providerShimJs', () => {
     it('generates shim with active account and network', () => {
       const { result } = renderHook(() =>
-        useEvmInjectedProvider(mockWebViewRef)
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
       )
       expect(result.current.providerShimJs).toBe(
         'SHIM(0xa86a,0xTestAddress1234567890)'
@@ -101,7 +132,7 @@ describe('useEvmInjectedProvider', () => {
         network: { ...mockActiveNetwork, vmName: NetworkVMType.BITCOIN }
       })
       const { result } = renderHook(() =>
-        useEvmInjectedProvider(mockWebViewRef)
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
       )
       expect(result.current.providerShimJs).toBe(
         'SHIM(0x1,0xTestAddress1234567890)'
@@ -111,7 +142,7 @@ describe('useEvmInjectedProvider', () => {
     it('uses empty address when no active account', () => {
       setupMocks({ account: null })
       const { result } = renderHook(() =>
-        useEvmInjectedProvider(mockWebViewRef)
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
       )
       expect(result.current.providerShimJs).toBe('SHIM(0xa86a,)')
     })
@@ -120,7 +151,7 @@ describe('useEvmInjectedProvider', () => {
   describe('sendResponse', () => {
     it('injects __coreProviderRespond with result', () => {
       const { result } = renderHook(() =>
-        useEvmInjectedProvider(mockWebViewRef)
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
       )
 
       act(() => {
@@ -136,7 +167,7 @@ describe('useEvmInjectedProvider', () => {
   describe('emitEvent', () => {
     it('injects __coreProviderEmit with event name and data', () => {
       const { result } = renderHook(() =>
-        useEvmInjectedProvider(mockWebViewRef)
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
       )
 
       act(() => {
@@ -150,7 +181,7 @@ describe('useEvmInjectedProvider', () => {
 
     it('injects accountsChanged with array data', () => {
       const { result } = renderHook(() =>
-        useEvmInjectedProvider(mockWebViewRef)
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
       )
 
       act(() => {
@@ -166,7 +197,7 @@ describe('useEvmInjectedProvider', () => {
   describe('handleProviderMessage', () => {
     it('ignores invalid JSON payload', () => {
       const { result } = renderHook(() =>
-        useEvmInjectedProvider(mockWebViewRef)
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
       )
 
       act(() => {
@@ -176,17 +207,192 @@ describe('useEvmInjectedProvider', () => {
       expect(mockInjectJavaScript).not.toHaveBeenCalled()
     })
 
-    describe('wallet_switchEthereumChain (stub)', () => {
-      it('responds with null result', () => {
+    describe('wallet_switchEthereumChain', () => {
+      it('auto-approves, dispatches setTabChainId for the tab, and responds null', async () => {
         const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef)
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+
+        act(() => {
+          result.current.setCurrentUrl('https://example.com')
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(
+            JSON.stringify({
+              id: 1,
+              request: {
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: '0x1' }]
+              }
+            })
+          )
+        })
+
+        expect(mockDispatch).toHaveBeenCalledWith(
+          setTabChainId({ tabId: 'test-tab-id', chainId: 1 })
+        )
+        // chainChanged is emitted by the shim, not by native
+        expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+          expect.stringContaining("__coreProviderEmit('chainChanged'")
+        )
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('__coreProviderRespond(1, null, null)')
+        )
+      })
+
+      it('uses browser chain for signing after wallet_switchEthereumChain', async () => {
+        const mockSignFn = jest.fn().mockResolvedValue('0xSig')
+        mockCreateInAppRequest.mockReturnValue(mockSignFn)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+
+        act(() => {
+          result.current.setCurrentUrl('https://example.com')
+        })
+
+        // Switch browser to chain 1 (auto-approved)
+        await act(async () => {
+          result.current.handleProviderMessage(
+            JSON.stringify({
+              id: 1,
+              request: {
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: '0x1' }]
+              }
+            })
+          )
+        })
+
+        // Sign — should use browser chain 1, not global active 43114
+        await act(async () => {
+          result.current.handleProviderMessage(
+            JSON.stringify({
+              id: 2,
+              request: { method: 'personal_sign', params: ['0xMsg', '0xAddr'] }
+            })
+          )
+        })
+
+        expect(mockSignFn).toHaveBeenCalledWith(
+          expect.objectContaining({ chainId: 'eip155:1' })
+        )
+      })
+
+      it('uses browser chain RPC URL for read-only methods after wallet_switchEthereumChain', async () => {
+        const mockResponse = {
+          ok: true,
+          json: jest.fn().mockResolvedValue({ result: '0x1' })
+        }
+        global.fetch = jest.fn().mockResolvedValue(mockResponse)
+
+        setupMocks({
+          allNetworks: {
+            43114: {
+              ...mockActiveNetwork,
+              chainId: 43114,
+              rpcUrl: 'https://avax.rpc'
+            },
+            1: { ...mockActiveNetwork, chainId: 1, rpcUrl: 'https://eth.rpc' }
+          }
+        })
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+
+        // Switch browser to chain 1 (auto-approved)
+        await act(async () => {
+          result.current.handleProviderMessage(
+            JSON.stringify({
+              id: 1,
+              request: {
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: '0x1' }]
+              }
+            })
+          )
+        })
+
+        // Read-only call — should use chain 1's RPC, not Avalanche's
+        await act(async () => {
+          result.current.handleProviderMessage(
+            JSON.stringify({
+              id: 2,
+              request: { method: 'eth_blockNumber', params: [] }
+            })
+          )
+        })
+
+        expect(global.fetch).toHaveBeenCalledWith(
+          'https://eth.rpc',
+          expect.anything()
+        )
+      })
+
+      it('returns null immediately when requested chain is already active', () => {
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+
+        // 43114 is the active chain
+        const payload = JSON.stringify({
+          id: 2,
+          request: {
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0xa86a' }]
+          }
+        })
+
+        act(() => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        expect(mockDispatch).not.toHaveBeenCalledWith(
+          setTabChainId({ tabId: 'test-tab-id', chainId: 43114 })
+        )
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          'window.__coreProviderRespond(2, null, null); true;'
+        )
+      })
+
+      it('returns error 4902 when chain is not in wallet (shim no-rollback prevents wagmi re-trigger loop)', () => {
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
         )
 
         const payload = JSON.stringify({
-          id: 1,
+          id: 3,
           request: {
             method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0x1' }]
+            params: [{ chainId: '0x999' }] // chainId 2457, not in mockAllNetworks
+          }
+        })
+
+        act(() => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        expect(mockDispatch).not.toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'browser/tabs/setTabChainId' })
+        )
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('"code":4902')
+        )
+      })
+
+      it('returns error when chainId param is missing', () => {
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+
+        const payload = JSON.stringify({
+          id: 4,
+          request: {
+            method: 'wallet_switchEthereumChain',
+            params: [{}]
           }
         })
 
@@ -195,7 +401,284 @@ describe('useEvmInjectedProvider', () => {
         })
 
         expect(mockInjectJavaScript).toHaveBeenCalledWith(
-          'window.__coreProviderRespond(1, null, null); true;'
+          expect.stringContaining('"code":-32602')
+        )
+      })
+    })
+
+    describe('wallet_addEthereumChain', () => {
+      it('routes through createInAppRequest, switches to the added chain, and responds null on success', async () => {
+        const mockRequest = jest.fn().mockResolvedValue(null)
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+
+        act(() => {
+          result.current.setCurrentUrl('https://example.com')
+        })
+
+        const payload = JSON.stringify({
+          id: 5,
+          request: {
+            method: 'wallet_addEthereumChain',
+            params: [{ chainId: '0xaa36a7', chainName: 'Sepolia' }]
+          }
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        expect(mockCreateInAppRequest).toHaveBeenCalledWith(mockDispatch)
+        expect(mockRequest).toHaveBeenCalledWith(
+          expect.objectContaining({
+            method: 'wallet_addEthereumChain',
+            params: [{ chainId: '0xaa36a7', chainName: 'Sepolia' }]
+          })
+        )
+        // Per EIP-3085: must NOT dispatch global setActive — setTabChainId scopes to this tab only
+        expect(setActive).not.toHaveBeenCalled()
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining(
+            '__coreProviderEmit(\'chainChanged\', "0xaa36a7")'
+          )
+        )
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('__coreProviderRespond(5, null, null)')
+        )
+      })
+
+      it('does not emit chainChanged before approval for wallet_addEthereumChain', async () => {
+        // Aave crash root cause: emitting chainChanged BEFORE approval caused wagmi/Aave
+        // to re-render with an inconsistent state, crashing the page.
+        // chainChanged must only fire AFTER the user approves.
+        let chainChangedEmittedBeforeApproval = false
+
+        const mockRequest = jest.fn().mockImplementation(async () => {
+          chainChangedEmittedBeforeApproval =
+            mockInjectJavaScript.mock.calls.some(call =>
+              call[0].includes("__coreProviderEmit('chainChanged'")
+            )
+          return null
+        })
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+
+        await act(async () => {
+          result.current.handleProviderMessage(
+            JSON.stringify({
+              id: 98,
+              request: {
+                method: 'wallet_addEthereumChain',
+                params: [
+                  { chainId: '0xaa36a7', rpcUrls: ['https://rpc.sepolia.dev'] }
+                ]
+              }
+            })
+          )
+        })
+
+        expect(chainChangedEmittedBeforeApproval).toBe(false)
+      })
+
+      it('does not emit chainChanged when wallet_addEthereumChain is rejected', async () => {
+        const mockRequest = jest
+          .fn()
+          .mockRejectedValue({ code: 4001, message: 'User rejected' })
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+
+        await act(async () => {
+          result.current.handleProviderMessage(
+            JSON.stringify({
+              id: 99,
+              request: {
+                method: 'wallet_addEthereumChain',
+                params: [
+                  { chainId: '0xaa36a7', rpcUrls: ['https://rpc.sepolia.dev'] }
+                ]
+              }
+            })
+          )
+        })
+
+        const chainChangedCalls = mockInjectJavaScript.mock.calls.filter(call =>
+          call[0].includes("__coreProviderEmit('chainChanged'")
+        )
+        expect(chainChangedCalls).toHaveLength(0)
+      })
+
+      it('responds with error when user rejects', async () => {
+        const mockRequest = jest
+          .fn()
+          .mockRejectedValue({ code: 4001, message: 'User rejected' })
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+
+        act(() => {
+          result.current.setCurrentUrl('https://example.com')
+        })
+
+        const payload = JSON.stringify({
+          id: 6,
+          request: {
+            method: 'wallet_addEthereumChain',
+            params: [{ chainId: '0xaa36a7', chainName: 'Sepolia' }]
+          }
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('"code":4001')
+        )
+      })
+    })
+
+    describe('wallet_revokePermissions', () => {
+      it('emits accountsChanged (not disconnect) then responds null', () => {
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+
+        const payload = JSON.stringify({
+          id: 7,
+          request: {
+            method: 'wallet_revokePermissions',
+            params: [{ eth_accounts: {} }]
+          }
+        })
+
+        act(() => {
+          result.current.handleProviderMessage(payload)
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining("__coreProviderEmit('accountsChanged', [])")
+        )
+        // Per EIP-1193, 'disconnect' means network loss — not user revocation.
+        // Emitting it causes wagmi to mark the provider as offline.
+        expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+          expect.stringContaining("__coreProviderEmit('disconnect'")
+        )
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('__coreProviderRespond(7, null, null)')
+        )
+      })
+    })
+
+    describe('wallet_watchAsset', () => {
+      function makeWatchAssetPayload(id: number, params: unknown): string {
+        return JSON.stringify({
+          id,
+          request: { method: 'wallet_watchAsset', params }
+        })
+      }
+
+      it('routes through createInAppRequest and responds true on approval', async () => {
+        const mockRequest = jest.fn().mockResolvedValue(true)
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+
+        act(() => {
+          result.current.setCurrentUrl('https://example.com')
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(
+            makeWatchAssetPayload(1, [
+              {
+                type: 'ERC20',
+                options: { address: '0xToken', symbol: 'TKN', decimals: 18 }
+              }
+            ])
+          )
+        })
+
+        expect(mockCreateInAppRequest).toHaveBeenCalledWith(mockDispatch)
+        expect(mockRequest).toHaveBeenCalledWith(
+          expect.objectContaining({
+            method: 'wallet_watchAsset',
+            chainId: `eip155:${mockActiveNetwork.chainId}`
+          })
+        )
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('__coreProviderRespond(1, null, true)')
+        )
+      })
+
+      it('normalizes object-form params to array before passing to handler', async () => {
+        const mockRequest = jest.fn().mockResolvedValue(true)
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+
+        act(() => {
+          result.current.setCurrentUrl('https://example.com')
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(
+            makeWatchAssetPayload(2, {
+              type: 'ERC20',
+              options: { address: '0xToken', symbol: 'TKN', decimals: 18 }
+            })
+          )
+        })
+
+        const passedParams = mockRequest.mock.calls[0][0].params
+        expect(Array.isArray(passedParams)).toBe(true)
+      })
+
+      it('responds false (not an error) when user rejects, per EIP-747', async () => {
+        const mockRequest = jest
+          .fn()
+          .mockRejectedValue({ code: 4001, message: 'User rejected' })
+        mockCreateInAppRequest.mockReturnValue(mockRequest)
+
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+
+        act(() => {
+          result.current.setCurrentUrl('https://example.com')
+        })
+
+        await act(async () => {
+          result.current.handleProviderMessage(
+            makeWatchAssetPayload(3, [
+              {
+                type: 'ERC20',
+                options: { address: '0xToken', symbol: 'TKN', decimals: 18 }
+              }
+            ])
+          )
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining('__coreProviderRespond(3, null, false)')
+        )
+        // Must not send an error — EIP-747 rejection is not an error
+        expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+          expect.stringContaining('"code"')
         )
       })
     })
@@ -233,7 +716,7 @@ describe('useEvmInjectedProvider', () => {
           mockCreateInAppRequest.mockReturnValue(mockRequest)
 
           const { result } = renderHook(() =>
-            useEvmInjectedProvider(mockWebViewRef)
+            useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
           )
 
           act(() => {
@@ -269,7 +752,7 @@ describe('useEvmInjectedProvider', () => {
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
         const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef)
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
         )
 
         act(() => {
@@ -300,7 +783,7 @@ describe('useEvmInjectedProvider', () => {
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
         const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef)
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
         )
 
         act(() => {
@@ -329,7 +812,7 @@ describe('useEvmInjectedProvider', () => {
 
       it('rejects signing when origin is unavailable', () => {
         const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef)
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
         )
 
         const payload = JSON.stringify({
@@ -356,7 +839,7 @@ describe('useEvmInjectedProvider', () => {
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
         const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef)
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
         )
 
         act(() => {
@@ -387,7 +870,7 @@ describe('useEvmInjectedProvider', () => {
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
         const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef)
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
         )
 
         act(() => {
@@ -443,7 +926,7 @@ describe('useEvmInjectedProvider', () => {
         global.fetch = jest.fn().mockResolvedValue(mockResponse)
 
         const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef)
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
         )
 
         const payload = JSON.stringify({
@@ -473,7 +956,7 @@ describe('useEvmInjectedProvider', () => {
         global.fetch = jest.fn().mockResolvedValue(mockResponse)
 
         const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef)
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
         )
 
         const payload = JSON.stringify({
@@ -502,7 +985,7 @@ describe('useEvmInjectedProvider', () => {
         global.fetch = jest.fn().mockResolvedValue(mockResponse)
 
         const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef)
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
         )
 
         const payload = JSON.stringify({
@@ -523,7 +1006,7 @@ describe('useEvmInjectedProvider', () => {
         global.fetch = jest.fn().mockRejectedValue(new Error('Network error'))
 
         const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef)
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
         )
 
         const payload = JSON.stringify({
@@ -544,15 +1027,17 @@ describe('useEvmInjectedProvider', () => {
       })
 
       it('handles missing RPC URL', async () => {
+        const emptyRpcNetwork = { ...mockActiveNetwork, rpcUrl: '' }
         setupMocks({
-          network: {
-            ...mockActiveNetwork,
-            rpcUrl: ''
-          } as typeof mockActiveNetwork
+          network: emptyRpcNetwork as typeof mockActiveNetwork,
+          allNetworks: {
+            43114: emptyRpcNetwork,
+            1: { ...mockActiveNetwork, chainId: 1 }
+          }
         })
 
         const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef)
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
         )
 
         const payload = JSON.stringify({
@@ -574,7 +1059,7 @@ describe('useEvmInjectedProvider', () => {
     describe('unsupported methods', () => {
       it('returns error -32601 for unknown methods', () => {
         const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef)
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
         )
 
         const payload = JSON.stringify({
@@ -601,7 +1086,7 @@ describe('useEvmInjectedProvider', () => {
         mockCreateInAppRequest.mockReturnValue(mockRequest)
 
         const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef)
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
         )
 
         act(() => {
@@ -626,7 +1111,7 @@ describe('useEvmInjectedProvider', () => {
     describe('validation and security', () => {
       it('rejects malformed payloads with -32600', () => {
         const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef)
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
         )
 
         const payload = JSON.stringify({
@@ -645,7 +1130,7 @@ describe('useEvmInjectedProvider', () => {
 
       it('rejects unknown methods with -32601', () => {
         const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef)
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
         )
 
         const payload = JSON.stringify({
@@ -664,7 +1149,7 @@ describe('useEvmInjectedProvider', () => {
 
       it('exposes setCurrentUrl', () => {
         const { result } = renderHook(() =>
-          useEvmInjectedProvider(mockWebViewRef)
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
         )
 
         expect(typeof result.current.setCurrentUrl).toBe('function')
@@ -672,10 +1157,87 @@ describe('useEvmInjectedProvider', () => {
     })
   })
 
+  describe('global active network sync effect', () => {
+    it('emits chainChanged with the new hex chainId when the global active network changes on a tab with no persisted chain', () => {
+      setupMocks({ network: mockActiveNetwork })
+      const { rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+
+      mockInjectJavaScript.mockClear()
+
+      // Simulate a global network change to Ethereum mainnet (chainId 1)
+      setupMocks({ network: { ...mockActiveNetwork, chainId: 1 } })
+      rerender()
+
+      const chainChangedCalls = mockInjectJavaScript.mock.calls.filter(call =>
+        call[0].includes("__coreProviderEmit('chainChanged'")
+      )
+      expect(chainChangedCalls).toHaveLength(1)
+      expect(chainChangedCalls[0][0]).toContain("'chainChanged', '0x1'")
+    })
+
+    it('does not emit chainChanged when the global network changes but the tab has a persisted chainId', () => {
+      ;(selectTabChainId as jest.Mock).mockReturnValue(jest.fn(() => 1))
+      mockUseSelector.mockImplementation(
+        (selector: (state: unknown) => unknown) => {
+          if (selector === (selectAllNetworks as unknown))
+            return mockAllNetworks
+          if (selector === (selectActiveNetwork as unknown))
+            return mockActiveNetwork
+          const tabChainIdSelector = (selectTabChainId as jest.Mock).mock
+            .results[0]?.value
+          if (selector === tabChainIdSelector) return 1
+          const selectorStr = selector.toString()
+          if (
+            selectorStr.includes('activeAccount') ||
+            selectorStr.includes('Account')
+          )
+            return mockActiveAccount
+          return undefined
+        }
+      )
+
+      const { rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+
+      mockInjectJavaScript.mockClear()
+
+      // Simulate a global network change — tab has persisted chain so should be ignored
+      setupMocks({ network: { ...mockActiveNetwork, chainId: 1 } })
+      ;(selectTabChainId as jest.Mock).mockReturnValue(jest.fn(() => 1))
+      rerender()
+
+      const chainChangedCalls = mockInjectJavaScript.mock.calls.filter(call =>
+        call[0].includes("__coreProviderEmit('chainChanged'")
+      )
+      expect(chainChangedCalls).toHaveLength(0)
+    })
+
+    it('does not emit chainChanged when the active network chainId has not actually changed', () => {
+      setupMocks({ network: mockActiveNetwork })
+      const { rerender } = renderHook(() =>
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+      )
+
+      mockInjectJavaScript.mockClear()
+
+      // Re-render with the same network — no change
+      setupMocks({ network: mockActiveNetwork })
+      rerender()
+
+      const chainChangedCalls = mockInjectJavaScript.mock.calls.filter(call =>
+        call[0].includes("__coreProviderEmit('chainChanged'")
+      )
+      expect(chainChangedCalls).toHaveLength(0)
+    })
+  })
+
   describe('handleDomainMetadata', () => {
     it('stores valid domain metadata', () => {
       const { result } = renderHook(() =>
-        useEvmInjectedProvider(mockWebViewRef)
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
       )
 
       const metadata = {
@@ -694,7 +1256,7 @@ describe('useEvmInjectedProvider', () => {
 
     it('handles invalid JSON gracefully', () => {
       const { result } = renderHook(() =>
-        useEvmInjectedProvider(mockWebViewRef)
+        useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
       )
 
       act(() => {

@@ -14,21 +14,13 @@ import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { selectActiveAccount } from 'store/account'
+import { defaultEnabledL2ChainIds } from 'services/network/consts'
 import { RootState } from '../types'
 import { ChainID, Networks, NetworkState } from './types'
 
 export const defaultNetwork = BITCOIN_NETWORK
 
 export const noActiveNetwork = 0
-
-export const defaultEnabledL2ChainIds = [
-  42161, // Arbitrum One
-  // 421614, // Arbitrum Sepolia
-  10, // Optimism
-  // 11155420, // Optimism Sepolia
-  8453 // Base Mainnet
-  // 84532 // Base Sepolia
-]
 
 export const alwaysEnabledChainIds = [
   ChainsSDKChainId.AVALANCHE_MAINNET_ID,
@@ -160,10 +152,10 @@ export const selectActiveNetwork = (state: RootState): Network => {
 
 export const selectAllNetworks = (state: RootState): Networks => {
   const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
+  const customNetworks = selectCustomNetworks(state)
   const rawNetworks = getNetworksFromCache({
     includeSolana: !isSolanaSupportBlocked
   })
-  const customNetworks = selectCustomNetworks(state)
   return { ...rawNetworks, ...customNetworks }
 }
 

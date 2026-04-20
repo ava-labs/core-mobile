@@ -8,7 +8,7 @@ describe('Settings', () => {
     await settings.goSettings()
     await settings.verifySettingsRow(settingsLoc.appIcon, settingsLoc.default)
     await settings.tapAppIcon()
-    await settings.verifyAppIconScreen(settingsLoc.default)
+    await settings.verifyAppIconScreen(settingsLoc.core)
   })
 
   it('App icon - should change app icon', async () => {
@@ -19,9 +19,9 @@ describe('Settings', () => {
   })
 
   it('App icon - should restore Default icon', async () => {
-    await settings.selectAppIcon(settingsLoc.default)
+    await settings.selectAppIcon(settingsLoc.core)
     await settings.verifySettingsRow(settingsLoc.appIcon, settingsLoc.default)
     await settings.tapAppIcon()
-    await settings.verifyAppIconScreen(settingsLoc.default)
+    await settings.verifyAppIconScreen(settingsLoc.core)
   })
 })

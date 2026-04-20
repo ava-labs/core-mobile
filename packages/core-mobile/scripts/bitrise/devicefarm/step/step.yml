@@ -1,0 +1,49 @@
+---
+format_version: "11"
+
+title: AWS Device Farm — upload & schedule (Core Mobile)
+summary: Upload Android APK, Appium test package, and test spec; schedule a run via AWS SDK v3.
+description: |-
+  In-repo replacement for deprecated third-party steps (e.g. peartherapeutics/aws-device-farm-file-deploy).
+
+  Uses `@aws-sdk/client-device-farm` and `scripts/devicefarm/trigger-devicefarm-api.js` to:
+  - Create uploads and PUT artifacts to Device Farm
+  - Schedule an APPIUM_NODE run with your `aws_test_spec.yaml`
+
+  **Required environment variables** (Bitrise Secrets / workflow env):
+  - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` — standard AWS names (not `AWS_ACCESS_KEY`)
+  - `DEVICEFARM_PROJECT_ARN`, `DEVICEFARM_DEVICE_POOL_ARN`
+  - `BITRISE_APK_PATH` — APK file path (set by build + deploy, or by `_pull_app_files` in Pipelines)
+
+  Optional: `AWS_DEFAULT_REGION` or `AWS_REGION` (default `us-west-2`).
+
+  See `packages/core-mobile/scripts/bitrise/devicefarm/BITRISE_SETUP.md`.
+website: https://aws.amazon.com/device-farm/
+source_code_url: https://docs.aws.amazon.com/devicefarm/latest/developerguide/
+support_url: https://docs.aws.amazon.com/devicefarm/latest/developerguide/
+
+type_tags:
+  - test
+
+project_type_tags:
+  - android
+
+is_requires_admin_user: false
+is_always_run: false
+is_skippable: false
+
+toolkit:
+  bash:
+    entry_file: step.sh
+
+inputs: []
+
+outputs:
+  - DEVICEFARM_RUN_ARN:
+    opts:
+      title: Device Farm run ARN
+      summary: Set via envman on Bitrise when scheduling succeeds.
+  - DEVICEFARM_RUN_URL:
+    opts:
+      title: Device Farm console URL for the run
+      summary: Set via envman on Bitrise when scheduling succeeds.

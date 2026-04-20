@@ -88,7 +88,11 @@ const AppIconRow = ({
 
   return (
     <TouchableOpacity
-      testID={isSelected ? `app_icon_${icon}_selected` : `app_icon_${icon}`}
+      testID={
+        isSelected
+          ? `app_icon_${APP_ICON_DISPLAY_NAMES[icon]}_selected`
+          : `app_icon_${APP_ICON_DISPLAY_NAMES[icon]}`
+      }
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}

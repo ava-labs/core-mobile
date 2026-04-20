@@ -30,7 +30,7 @@ import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Transport from '@ledgerhq/hw-transport'
 import { networks } from 'bitcoinjs-lib'
 import bs58 from 'bs58'
-import { TransactionRequest, TypedDataEncoder } from 'ethers'
+import { Transaction, TransactionRequest, TypedDataEncoder } from 'ethers'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import LedgerService from 'services/ledger/LedgerService'
 import BiometricsSDK from 'utils/BiometricsSDK'
@@ -48,7 +48,7 @@ import {
   LEDGER_TIMEOUTS,
   getSolanaDerivationPath
 } from 'new/features/ledger/consts'
-import { bip32 } from 'utils/bip32'
+import { bip32, extendedPublicKeyToXpub } from 'utils/bip32'
 import Logger from 'utils/Logger'
 import {
   Curve,
@@ -693,35 +693,34 @@ export class LedgerWallet implements Wallet {
       )
       Logger.info('Using derivation path:', derivationPath)
 
-      // Import ethers for transaction handling
-      const { Transaction } = await import('ethers')
       const tx = {
+        type: 2,
         chainId,
         nonce: transaction.nonce || 0,
-        gasPrice: transaction.maxFeePerGas, // Use maxFeePerGas as gasPrice
+        maxFeePerGas: transaction.maxFeePerGas,
+        maxPriorityFeePerGas: transaction.maxPriorityFeePerGas,
         gasLimit: transaction.gasLimit || 0,
         to: transaction.to?.toString() || '0x',
         value: transaction.value || 0,
-        data: transaction.data || '0x'
+        data: transaction.data || '0x',
+        accessList: transaction.accessList ?? []
       }
 
       Logger.info('Transaction data:', tx)
 
-      // Create and serialize as legacy transaction
-      const serializedTx = Transaction.from({
-        ...tx,
-        type: undefined // Force legacy transaction format
-      }).unsignedSerialized
-      // For legacy tx, remove '0x' prefix
+      // Serialize as EIP-1559 transaction (type 2)
+      // unsignedSerialized = '0x' + '02' + RLP([...fields])
+      // slice(2) removes the '0x' prefix, preserving the '02' type byte for Ledger
+      const serializedTx = Transaction.from(tx).unsignedSerialized
       const unsignedTx = serializedTx.slice(2)
       Logger.info('Full serialized transaction:', serializedTx)
-      Logger.info('Unsigned transaction (without type prefix):', unsignedTx)
+      Logger.info('Unsigned transaction hex:', unsignedTx)
 
       const signature: SignatureRSV = await (isAvalanche
         ? this.getCChainSignature({ transport, derivationPath, unsignedTx })
         : this.getEvmSignature({ transport, derivationPath, unsignedTx }))
 
-      // Create the signed transaction
+      // Create the signed EIP-1559 transaction
       const signedTx = Transaction.from({
         ...tx,
         signature: {
@@ -1305,13 +1304,19 @@ export class LedgerWallet implements Wallet {
 
   private async handleEthAndPersonalSign({
     data,
-    derivationPath
+    derivationPath,
+    chainId
   }: {
     data: string | TypedDataV1 | TypedData<MessageTypes>
     derivationPath: string
+    chainId: number
   }): Promise<string> {
-    const appType = LedgerAppType.ETHEREUM
-    // Get transport and create Ethereum app instance
+    // Use the Avalanche app when on an Avalanche chain — the Avalanche Ledger
+    // app exposes EVM signing through the same transport, so we can create an
+    // Eth instance without switching apps (matches core-web/extension behavior).
+    const appType = isAvalancheChainId(chainId)
+      ? LedgerAppType.AVALANCHE
+      : LedgerAppType.ETHEREUM
     const transport = await this.handleAppConnection(appType)
     const app = new Eth(transport as Transport)
 
@@ -1365,7 +1370,11 @@ export class LedgerWallet implements Wallet {
         rpcMethod === RpcMethod.ETH_SIGN ||
         rpcMethod === RpcMethod.PERSONAL_SIGN
       ) {
-        return this.handleEthAndPersonalSign({ data, derivationPath })
+        return this.handleEthAndPersonalSign({
+          data,
+          derivationPath,
+          chainId: network.chainId
+        })
       } else {
         throw new Error('This function is not supported on your wallet')
       }
@@ -1395,7 +1404,12 @@ export class LedgerWallet implements Wallet {
     const appType = LedgerAppType.AVALANCHE
     await this.handleAppConnection(appType)
 
-    const addresses = await LedgerService.getAllAddresses(index, 1, isTestnet)
+    const addresses = await LedgerService.getAllAddresses(
+      index,
+      1,
+      isTestnet,
+      this.derivationPathSpec
+    )
     const findAddress = (type: LedgerAddressType): string | undefined =>
       addresses.find(addr => addr.type === type)?.address
 
@@ -1418,20 +1432,19 @@ export class LedgerWallet implements Wallet {
     let xpub = { evm: '', avalanche: '' }
     // Get extended public keys for this account (device is already connected)
     if (this.isBIP44()) {
-      const extendedKeys = await LedgerService.getExtendedPublicKeys(index)
+      const extendedKeys = await LedgerService.getExtendedPublicKeys(
+        index,
+        this.derivationPathSpec
+      )
       xpub = {
-        evm: bip32
-          .fromPublicKey(
-            Buffer.from(extendedKeys.evm.key, 'hex'),
-            Buffer.from(extendedKeys.evm.chainCode, 'hex')
-          )
-          .toBase58(),
-        avalanche: bip32
-          .fromPublicKey(
-            Buffer.from(extendedKeys.avalanche.key, 'hex'),
-            Buffer.from(extendedKeys.avalanche.chainCode, 'hex')
-          )
-          .toBase58()
+        evm: extendedPublicKeyToXpub(
+          extendedKeys.evm.key,
+          extendedKeys.evm.chainCode
+        ),
+        avalanche: extendedPublicKeyToXpub(
+          extendedKeys.avalanche.key,
+          extendedKeys.avalanche.chainCode
+        )
       }
     }
 

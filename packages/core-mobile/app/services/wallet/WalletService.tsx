@@ -28,6 +28,7 @@ import { postV1GetAddresses } from 'utils/api/generated/profileApi.client'
 import { profileApiClient } from 'utils/api/clients/profileApiClient'
 import {
   getAddressDerivationPath,
+  hasActiveDerivedAddresses,
   isAvalancheTransactionRequest,
   isBtcTransactionRequest,
   isSolanaTransactionRequest
@@ -358,24 +359,91 @@ class WalletService {
       accountIndex
     })
 
+    return this.getAddressesForExtendedPublicKey({
+      extendedPublicKey: xpubXP,
+      networkType,
+      isTestnet,
+      onlyWithActivity
+    })
+  }
+
+  public async hasActivityFromXpubXP({
+    walletId,
+    walletType,
+    accountIndex,
+    isTestnet = false
+  }: {
+    walletId: string
+    walletType: WalletType
+    accountIndex: number
+    isTestnet?: boolean
+  }): Promise<boolean> {
+    if (!this.hasXpub(walletType)) {
+      return false
+    }
+
+    // Keystone currently exposes an XP xpub only for account 0.
+    // Skip non-primary accounts until the SDK supports per-account XP xpubs.
+    // See: https://ava-labs.atlassian.net/browse/CP-12615
+    if (walletType === WalletType.KEYSTONE && accountIndex > 0) {
+      return false
+    }
+
+    const xpubXP = await this.getRawXpubXP({
+      walletId,
+      walletType,
+      accountIndex
+    })
+
+    const checks = [
+      this.getAddressesForExtendedPublicKey({
+        extendedPublicKey: xpubXP,
+        networkType: NetworkVMType.AVM,
+        isTestnet,
+        onlyWithActivity: true
+      }).then(hasActiveDerivedAddresses),
+      this.getAddressesForExtendedPublicKey({
+        extendedPublicKey: xpubXP,
+        networkType: NetworkVMType.PVM,
+        isTestnet,
+        onlyWithActivity: true
+      }).then(hasActiveDerivedAddresses)
+    ]
+
+    return raceAnyTrueOrThrow(checks)
+  }
+
+  private async getAddressesForExtendedPublicKey({
+    extendedPublicKey,
+    networkType,
+    isTestnet,
+    onlyWithActivity
+  }: {
+    extendedPublicKey: string
+    networkType: NetworkVMType.AVM | NetworkVMType.PVM
+    isTestnet: boolean
+    onlyWithActivity: boolean
+  }): Promise<GetAddressesResponse> {
     try {
-      const response = await postV1GetAddresses({
+      const raw = await postV1GetAddresses({
         client: profileApiClient,
         body: {
           networkType: networkType,
-          extendedPublicKey: xpubXP,
+          extendedPublicKey,
           isTestnet,
           onlyWithActivity
         }
       })
 
-      if (!response.data) {
+      const body = unwrapPostV1GetAddressesResult(raw)
+
+      if (!isGetAddressesResponseBody(body)) {
         throw new Error('Failed to get addresses from postV1GetAddresses')
       }
 
-      return response.data
+      return body
     } catch (err) {
-      Logger.error(`[WalletService.ts][getAddressesFromXpubXP]${err}`)
+      Logger.error(`[WalletService.ts][getAddressesForExtendedPublicKey]${err}`)
       throw err
     }
   }
@@ -405,6 +473,84 @@ class WalletService {
       WalletType.LEDGER
     ].includes(walletType)
   }
+}
+
+/**
+ * @hey-api client returns either `{ data }` (responseStyle: 'fields', default)
+ * or the parsed JSON body directly (responseStyle: 'data').
+ */
+const unwrapPostV1GetAddressesResult = (raw: unknown): unknown => {
+  if (
+    raw &&
+    typeof raw === 'object' &&
+    'data' in raw &&
+    (raw as { data: unknown }).data !== undefined
+  ) {
+    return (raw as { data: unknown }).data
+  }
+  return raw
+}
+
+const isGetAddressesResponseBody = (
+  value: unknown
+): value is GetAddressesResponse =>
+  typeof value === 'object' &&
+  value !== null &&
+  'networkType' in value &&
+  Array.isArray((value as GetAddressesResponse).externalAddresses) &&
+  Array.isArray((value as GetAddressesResponse).internalAddresses)
+
+/**
+ * Races boolean promises, returning true as soon as any resolves true.
+ * Unlike the previous resolveAnyTrue, rejections are NOT swallowed —
+ * if no promise resolves true and at least one rejected, the first
+ * rejection is re-thrown so callers can treat the result as 'unknown'.
+ */
+const raceAnyTrueOrThrow = async (
+  checks: Promise<boolean>[]
+): Promise<boolean> => {
+  if (checks.length === 0) {
+    return false
+  }
+
+  type SettledResult = {
+    index: number
+    value: boolean
+    error?: unknown
+  }
+
+  const wrappedChecks = checks.map((check, index) =>
+    check
+      .then(value => ({ index, value }))
+      .catch((error: unknown) => ({ index, value: false, error }))
+  )
+
+  const remaining = new Set(wrappedChecks.map((_, index) => index))
+  let firstError: unknown
+
+  while (remaining.size > 0) {
+    const result: SettledResult = await Promise.race(
+      [...remaining].map(
+        index => wrappedChecks[index] as Promise<SettledResult>
+      )
+    )
+
+    remaining.delete(result.index)
+
+    if (result.value) {
+      return true
+    }
+
+    if (result.error !== undefined && firstError === undefined) {
+      firstError = result.error
+    }
+  }
+
+  if (firstError !== undefined) {
+    throw firstError
+  }
+
+  return false
 }
 
 // Keep as singleton

@@ -2,6 +2,7 @@ import portfolioPage from '../../../pages/portfolio.page'
 import commonElsPage from '../../../pages/commonEls.page'
 import warmup from '../../../helpers/warmup'
 import commonElsLoc from '../../../locators/commonEls.loc'
+import { actions } from '../../../helpers/actions'
 
 describe('Portfolio Assets', () => {
   const tokens = {
@@ -20,6 +21,12 @@ describe('Portfolio Assets', () => {
     await warmup()
   })
 
+  afterEach(async () => {
+    if (await actions.getVisible(commonElsPage.backButton)) {
+      await commonElsPage.goBack()
+    }
+  })
+
   it('AVAX owned token detail', async () => {
     await commonElsPage.filter(commonElsLoc.cChain_2)
     await portfolioPage.verifyOwnedTokenDetail('Avalanche', tokens.avax)
@@ -36,7 +43,7 @@ describe('Portfolio Assets', () => {
 
   it('ETH owned token detail', async () => {
     await commonElsPage.filter(commonElsLoc.ethereum)
-    await portfolioPage.verifyOwnedTokenDetail('ETH', tokens.eth)
+    await portfolioPage.verifyOwnedTokenDetail('Ether', tokens.eth)
   })
 
   it('Ethereum ERC20 owned token detail', async () => {
@@ -45,7 +52,7 @@ describe('Portfolio Assets', () => {
 
   it('SOL owned token detail', async () => {
     await commonElsPage.filter(commonElsLoc.solana)
-    await portfolioPage.verifyOwnedTokenDetail('SOL', tokens.sol)
+    await portfolioPage.verifyOwnedTokenDetail('Solana', tokens.sol)
   })
 
   it('Solana SPL owned token detail', async () => {

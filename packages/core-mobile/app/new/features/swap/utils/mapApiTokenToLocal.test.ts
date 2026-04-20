@@ -15,7 +15,9 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: true,
         internalId: 'avax-native',
-        logoUri: 'https://example.com/avax.png'
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
@@ -40,7 +42,9 @@ describe('mapApiTokenToLocal', () => {
         decimals: 9,
         isNative: true,
         internalId: 'sol-native',
-        logoUri: 'https://example.com/sol.png'
+        logoUri: 'https://example.com/sol.png',
+        networkCaip2Id: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+        top250Rank: null
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.SOLANA_MAINNET_ID)
@@ -63,7 +67,9 @@ describe('mapApiTokenToLocal', () => {
         decimals: 6,
         isNative: false,
         internalId: 'usdc-avax-c',
-        logoUri: 'https://example.com/usdc.png'
+        logoUri: 'https://example.com/usdc.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
@@ -89,7 +95,9 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: false,
         internalId: 'dai-ethereum',
-        logoUri: 'https://example.com/dai.png'
+        logoUri: 'https://example.com/dai.png',
+        networkCaip2Id: 'eip155:1',
+        top250Rank: null
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.ETHEREUM_HOMESTEAD)
@@ -110,7 +118,9 @@ describe('mapApiTokenToLocal', () => {
         decimals: 6,
         isNative: false,
         internalId: 'usdc-solana',
-        logoUri: 'https://example.com/usdc.png'
+        logoUri: 'https://example.com/usdc.png',
+        networkCaip2Id: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+        top250Rank: null
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.SOLANA_MAINNET_ID)
@@ -135,7 +145,9 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: true,
         internalId: 'avax-native',
-        logoUri: 'https://example.com/avax.png'
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null
       }
 
       const balanceData: Partial<LocalTokenWithBalance> = {
@@ -167,7 +179,9 @@ describe('mapApiTokenToLocal', () => {
         decimals: 6,
         isNative: false,
         internalId: 'usdc-avax-c',
-        logoUri: 'https://example.com/usdc.png'
+        logoUri: 'https://example.com/usdc.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null
       }
 
       const balanceData: Partial<LocalTokenWithBalance> = {
@@ -198,7 +212,9 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: true,
         internalId: 'avax-native',
-        logoUri: 'https://example.com/avax.png'
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
@@ -258,7 +274,9 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: true,
         internalId: 'avax-native',
-        logoUri: 'https://example.com/avax.png'
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
@@ -279,7 +297,9 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: true,
         internalId: 'avax-native',
-        logoUri: 'https://example.com/avax.png'
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
@@ -298,7 +318,9 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: true,
         internalId: 'avax-native',
-        logoUri: 'https://example.com/avax.png'
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
@@ -317,7 +339,9 @@ describe('mapApiTokenToLocal', () => {
         decimals: 6,
         isNative: false,
         internalId: 'usdc-avax-c-chain',
-        logoUri: 'https://example.com/usdc.png'
+        logoUri: 'https://example.com/usdc.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
@@ -336,7 +360,9 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: true,
         internalId: 'avax-native',
-        logoUri: 'https://example.com/avax.png'
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null
       }
 
       const result = mapApiTokenToLocal(apiToken, ChainId.AVALANCHE_MAINNET_ID)
@@ -357,7 +383,9 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: true,
         internalId: 'test-token',
-        logoUri: 'https://example.com/test.png'
+        logoUri: 'https://example.com/test.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null
       }
 
       const balanceData: Partial<LocalTokenWithBalance> = {
@@ -385,7 +413,9 @@ describe('mapApiTokenToLocal', () => {
         decimals: 18,
         isNative: true,
         internalId: 'avax-native',
-        logoUri: 'https://example.com/avax.png'
+        logoUri: 'https://example.com/avax.png',
+        networkCaip2Id: 'eip155:43114',
+        top250Rank: null
       }
 
       const balanceData: Partial<LocalTokenWithBalance> = {
