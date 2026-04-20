@@ -491,7 +491,7 @@ __metadata:
     "@avalabs/core-utils-sdk": 3.1.0-alpha.82
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.82
     "@avalabs/evm-module": 3.6.1
-    "@avalabs/fusion-sdk": 0.15.1
+    "@avalabs/fusion-sdk": 0.0.0-fix-unsubscribe-20260420150218
     "@avalabs/glacier-sdk": 3.1.0-alpha.82
     "@avalabs/k2-alpine": "workspace:*"
     "@avalabs/prediction-market-sdk": 0.3.0
@@ -893,9 +893,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/fusion-sdk@npm:0.15.1":
-  version: 0.15.1
-  resolution: "@avalabs/fusion-sdk@npm:0.15.1"
+"@avalabs/fusion-sdk@npm:0.0.0-fix-unsubscribe-20260420150218":
+  version: 0.0.0-fix-unsubscribe-20260420150218
+  resolution: "@avalabs/fusion-sdk@npm:0.0.0-fix-unsubscribe-20260420150218"
   dependencies:
     "@bitcoinerlab/secp256k1": ^1.2.0
     "@layerzerolabs/lz-v2-utilities": ^3.0.17
@@ -910,7 +910,7 @@ __metadata:
     "@solana/kit": ^5.0.0 || ^6.0.0
     viem: ^2.38.0
     zod: ^4.1.0
-  checksum: 1f7d703e04d8a923fdb2e87216bd486a8c2e3be94d848e7a4bce68f5d3ad685dbaa991f93bb065167ded09ace56818d0584445ba995e75b6dceed3cd1a54934f
+  checksum: c11025b0a06f722e6d5d4b7a87bfb3e54faf477f99d36ee762e5e82f0e5d3573e889f5968b6e4a9a012d3e891dfe116a185677ff16ee962335b051b21ba99fb4
   languageName: node
   linkType: hard
 
