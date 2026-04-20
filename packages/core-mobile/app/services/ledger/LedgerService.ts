@@ -21,8 +21,6 @@ import bs58 from 'bs58'
 import {
   DERIVATION_PATHS,
   LEDGER_TIMEOUTS,
-  LEDGER_CONNECT_RETRY_COUNT,
-  LEDGER_CONNECT_RETRY_DELAY_MS,
   getSolanaDerivationPath
 } from 'new/features/ledger/consts'
 import { isBitcoinCompatibleApp } from 'new/features/ledger/utils'
@@ -47,7 +45,8 @@ import {
 } from './types'
 import {
   isLedgerBluetoothError,
-  isLedgerConnectionFailed,
+  LEDGER_SCAN_FAILED_ALREADY_CONNECTED_MESSAGE,
+  LEDGER_SCAN_FAILED_TITLE,
   ledgerBluetoothErrors,
   showBluetoothErrorAlert
 } from './LedgerBluetoothError'
@@ -176,74 +175,35 @@ class LedgerService {
   async connect(deviceId: string): Promise<void> {
     await this.assertBluetoothAvailable()
     this.isDisconnected = false // Reset disconnect flag on new connection
+    await TransportBLE.disconnectDevice(deviceId)
 
-    let lastError: unknown
-    for (let attempt = 1; attempt <= LEDGER_CONNECT_RETRY_COUNT; attempt++) {
-      try {
-        Logger.info(
-          `BLE connection attempt ${attempt}/${LEDGER_CONNECT_RETRY_COUNT} for deviceId:`,
-          deviceId
-        )
-        await TransportBLE.disconnectDevice(deviceId)
-
-        this.transport = await TransportBLE.open(
-          deviceId,
-          LEDGER_TIMEOUTS.CONNECTION_TIMEOUT
-        )
-        Logger.info('BLE transport connected successfully')
-
-        // Wrap the transport's exchange method to automatically handle busy state
-        this.wrapTransportExchange()
-
-        this.currentAppType = LedgerAppType.UNKNOWN
-
-        // Start passive app detection
-        Logger.info('Starting app polling...')
-        this.startAppPolling()
-        Logger.info('App polling started')
-
-        // Test immediate app info call and update currentAppType
-        try {
-          const testAppInfo = await this.getCurrentAppInfo()
-          // Update currentAppType immediately so waitForApp doesn't have to wait
-          const detectedAppType = this.mapAppNameToType(
-            testAppInfo.applicationName
-          )
-          Logger.info(`Immediately detected app type: ${detectedAppType}`)
-          this.currentAppType = detectedAppType
-          this.currentAppVersion = testAppInfo.version
-        } catch {
-          Logger.info(
-            'Immediate get current app info failed, will rely on polling'
-          )
-        }
-        return // success
-      } catch (error) {
-        lastError = error
-        if (isLedgerBluetoothError(error)) {
-          throw error // radio/permission errors — no point retrying
-        }
-        if (
-          !isLedgerConnectionFailed(error) ||
-          attempt === LEDGER_CONNECT_RETRY_COUNT
-        ) {
-          break
-        }
-        Logger.info(
-          `BLE connection attempt ${attempt} failed with retryable error — retrying in ${LEDGER_CONNECT_RETRY_DELAY_MS}ms`
-        )
-        await new Promise(resolve =>
-          setTimeout(resolve, LEDGER_CONNECT_RETRY_DELAY_MS)
-        )
-      }
-    }
-
-    Logger.error('Failed to connect to Ledger', lastError)
-    throw new Error(
-      `Failed to connect to Ledger: ${
-        lastError instanceof Error ? lastError.message : 'Unknown error'
-      }`
+    this.transport = await TransportBLE.open(
+      deviceId,
+      LEDGER_TIMEOUTS.CONNECTION_TIMEOUT
     )
+    Logger.info('BLE transport connected successfully')
+
+    // Wrap the transport's exchange method to automatically handle busy state
+    this.wrapTransportExchange()
+
+    this.currentAppType = LedgerAppType.UNKNOWN
+
+    // Start passive app detection
+    Logger.info('Starting app polling...')
+    this.startAppPolling()
+    Logger.info('App polling started')
+
+    // Test immediate app info call and update currentAppType
+    try {
+      const testAppInfo = await this.getCurrentAppInfo()
+      // Update currentAppType immediately so waitForApp doesn't have to wait
+      const detectedAppType = this.mapAppNameToType(testAppInfo.applicationName)
+      Logger.info(`Immediately detected app type: ${detectedAppType}`)
+      this.currentAppType = detectedAppType
+      this.currentAppVersion = testAppInfo.version
+    } catch {
+      Logger.info('Immediate get current app info failed, will rely on polling')
+    }
   }
 
   // Start passive app detection polling
@@ -353,6 +313,14 @@ class LedgerService {
       setTimeout(() => {
         Logger.info('Scan timeout reached, stopping...')
         this.stopDeviceScanning()
+
+        if (!this.currentDevices || this.currentDevices.length === 0) {
+          Alert.alert(
+            LEDGER_SCAN_FAILED_TITLE,
+            LEDGER_SCAN_FAILED_ALREADY_CONNECTED_MESSAGE,
+            [{ text: 'OK' }]
+          )
+        }
       }, LEDGER_TIMEOUTS.SCAN_TIMEOUT)
     } catch (error) {
       Logger.error('Failed to start device scanning:', error)

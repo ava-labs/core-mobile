@@ -85,7 +85,4 @@ export const LEDGER_TIMEOUTS = {
   REQUEST_DELAY: 3000 // 3s delay between APDU commands
 } as const
 
-export const LEDGER_CONNECT_RETRY_COUNT = 3
-export const LEDGER_CONNECT_RETRY_DELAY_MS = 3000 // 3s — gives BLE time to release after disconnect
-
 export const LEDGER_DEVICE_BRIEF_DELAY_MS = 1000

@@ -29,6 +29,9 @@ export const LEDGER_BLUETOOTH_UNKNOWN_MESSAGE =
 export const LEDGER_CONNECTION_FAILED_TITLE = 'Connection failed'
 export const LEDGER_CONNECTION_FAILED_ALREADY_CONNECTED_MESSAGE =
   'Failed to connect to your Ledger. It may already be connected to another device — try closing the Core app on other devices and reconnect.'
+export const LEDGER_SCAN_FAILED_TITLE = 'Scan failed'
+export const LEDGER_SCAN_FAILED_ALREADY_CONNECTED_MESSAGE =
+  'Failed to scan for your Ledger. It may already be connected to another device — try closing the Core app on other devices and reconnect.'
 
 export class LedgerBluetoothError extends Error {
   readonly code: BluetoothLedgerErrorCode
