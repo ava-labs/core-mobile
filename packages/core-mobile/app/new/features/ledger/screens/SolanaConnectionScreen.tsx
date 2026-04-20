@@ -30,6 +30,10 @@ export default function SolanaConnectionScreen(): JSX.Element {
     AppConnectionStep.SOLANA_CONNECT | AppConnectionStep.SOLANA_LOADING
   >(AppConnectionStep.SOLANA_CONNECT)
 
+  // useRef instead of useState: the ref flips synchronously, so a second tap
+  // cannot enter handleConnectSolana before the first invocation finishes.
+  // useState is async — rapid taps could race past the isUpdatingWallet guard
+  // before React re-renders with the updated value.
   const isHandlingCompleteRef = useRef(false)
 
   const {

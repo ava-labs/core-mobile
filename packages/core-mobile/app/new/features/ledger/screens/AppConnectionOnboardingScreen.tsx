@@ -35,6 +35,10 @@ export const AppConnectionOnboardingScreen = ({
   const { canGoBack, back } = useRouter()
   const dispatch = useDispatch()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  // useRef instead of useState: the ref flips synchronously, so a second tap
+  // cannot enter handleComplete before the first invocation finishes. useState
+  // is async — rapid taps could race past the isUpdatingWallet guard before
+  // React re-renders with the updated value.
   const isHandlingCompleteRef = useRef(false)
 
   const {
