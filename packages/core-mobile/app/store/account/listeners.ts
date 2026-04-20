@@ -298,10 +298,12 @@ const migrateSolanaAddressesIfNeeded = async (
   const accounts = selectAccounts(state)
   const entries = Object.values(accounts)
   const seedlessWallet = selectSeedlessWallet(state)
-  const hasAccountsWithoutSVM = entries.some(account => !account.addressSVM)
+  const hasAccountsWithoutSVM = entries.some(account =>
+    isAddressMissing(account.addressSVM)
+  )
   const hasSeedlessAccountsWithoutSVM = entries.some(
     account =>
-      account.addressSVM === undefined &&
+      isAddressMissing(account.addressSVM) &&
       account.walletId === seedlessWallet?.id
   )
 
