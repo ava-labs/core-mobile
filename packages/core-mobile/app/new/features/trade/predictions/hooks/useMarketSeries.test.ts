@@ -1,4 +1,4 @@
-jest.mock('features/predictions/services/predictionMarketClient', () => ({
+jest.mock('features/trade/predictions/services/predictionMarketClient', () => ({
   predictionMarketClient: {
     markets: {
       listSeries: jest.fn()
