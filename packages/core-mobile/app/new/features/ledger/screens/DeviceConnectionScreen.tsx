@@ -15,7 +15,10 @@ import { WalletState } from 'store/app/types'
 import { useBluetooth } from 'common/hooks/useBluetooth'
 import {
   isLedgerBluetoothError,
-  showBluetoothErrorAlert
+  isLedgerConnectionFailed,
+  showBluetoothErrorAlert,
+  LEDGER_CONNECTION_FAILED_TITLE,
+  LEDGER_CONNECTION_FAILED_ALREADY_CONNECTED_MESSAGE
 } from 'services/ledger/LedgerBluetoothError'
 import { useCheckIfLedgerWalletExists } from '../hooks/useCheckIfLedgerWalletExists'
 
@@ -117,8 +120,10 @@ export default function DeviceConnectionScreen({
           AnalyticsService.capture('WalletImportLedgerConnectionFailed')
         }
         Alert.alert(
-          'Connection failed',
-          'Failed to connect to Ledger device. Please try again.',
+          LEDGER_CONNECTION_FAILED_TITLE,
+          isLedgerConnectionFailed(error)
+            ? LEDGER_CONNECTION_FAILED_ALREADY_CONNECTED_MESSAGE
+            : 'Failed to connect to Ledger device. Please try again.',
           [
             {
               text: 'OK',
@@ -147,7 +152,8 @@ export default function DeviceConnectionScreen({
   }, [resetSetup, back])
 
   const renderBluetoothPermissionError = useCallback(() => {
-    if (isBluetoothOnAndPermissionGranted) return null
+    if (isBluetoothOnAndPermissionGranted || isInitializingBluetooth)
+      return null
     return (
       <View style={{ gap: 12, marginTop: 4, paddingRight: 16 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -169,7 +175,12 @@ export default function DeviceConnectionScreen({
         </Button>
       </View>
     )
-  }, [isBluetoothOnAndPermissionGranted, colors, openSettings])
+  }, [
+    isBluetoothOnAndPermissionGranted,
+    isInitializingBluetooth,
+    colors,
+    openSettings
+  ])
 
   const renderFooter = useCallback(() => {
     return (

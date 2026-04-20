@@ -1,5 +1,6 @@
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Transport from '@ledgerhq/hw-transport'
+import { Alert, AppState, AppStateStatus } from 'react-native'
 import AppAvalanche from '@avalabs/hw-app-avalanche'
 import AppSolana from '@ledgerhq/hw-app-solana'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
@@ -17,7 +18,6 @@ import { getAddress } from 'ethers'
 import { networkIDs } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
 import bs58 from 'bs58'
-import { Alert } from 'react-native'
 import {
   DERIVATION_PATHS,
   LEDGER_TIMEOUTS,
@@ -45,6 +45,9 @@ import {
 } from './types'
 import {
   isLedgerBluetoothError,
+  isLedgerConnectionFailed,
+  LEDGER_SCAN_FAILED_ALREADY_CONNECTED_MESSAGE,
+  LEDGER_SCAN_FAILED_TITLE,
   ledgerBluetoothErrors,
   showBluetoothErrorAlert
 } from './LedgerBluetoothError'
@@ -78,6 +81,19 @@ class LedgerService {
   private appPollingInterval: number | null = null
   private appPollingEnabled = false
   private isDisconnected = false
+
+  constructor() {
+    // Auto-disconnect BLE when app goes to background so other devices can connect
+    AppState.addEventListener('change', (nextState: AppStateStatus) => {
+      if (
+        (nextState === 'background' || nextState === 'inactive') &&
+        this.isConnected()
+      ) {
+        Logger.info('App backgrounded — disconnecting Ledger BLE')
+        this.disconnect().catch(Logger.error)
+      }
+    })
+  }
 
   // Device scanning state
   private scanSubscription: { unsubscribe: () => void } | null = null
@@ -198,7 +214,7 @@ class LedgerService {
       }
     } catch (error) {
       Logger.error('Failed to connect to Ledger', error)
-      if (isLedgerBluetoothError(error)) {
+      if (isLedgerBluetoothError(error) || isLedgerConnectionFailed(error)) {
         throw error
       }
       throw new Error(
@@ -316,6 +332,14 @@ class LedgerService {
       setTimeout(() => {
         Logger.info('Scan timeout reached, stopping...')
         this.stopDeviceScanning()
+
+        if (!this.currentDevices || this.currentDevices.length === 0) {
+          Alert.alert(
+            LEDGER_SCAN_FAILED_TITLE,
+            LEDGER_SCAN_FAILED_ALREADY_CONNECTED_MESSAGE,
+            [{ text: 'OK' }]
+          )
+        }
       }, LEDGER_TIMEOUTS.SCAN_TIMEOUT)
     } catch (error) {
       Logger.error('Failed to start device scanning:', error)
@@ -1121,11 +1145,24 @@ class LedgerService {
   async disconnect(): Promise<void> {
     this.isDisconnected = true // Signal pending operations to abort
     if (this.#transport) {
-      await this.#transport.close()
+      // Capture transport before nulling so we can still call close() below.
+      const transport = this.#transport
+      const deviceId = transport.id
       this.#transport = null
       this.currentAppType = LedgerAppType.UNKNOWN
       this.currentAppVersion = ''
-      this.stopAppPolling() // Stop polling on disconnect
+      this.stopAppPolling()
+      // disconnectDevice() immediately drops the physical BLE link so other
+      // devices can connect without the ~5 s delay that transport.close() imposes.
+      try {
+        await TransportBLE.disconnectDevice(deviceId)
+      } catch (error) {
+        Logger.error('Failed to disconnect Ledger BLE device', error)
+      }
+      // Fire-and-forget close() for SDK-side cleanup (cancels pending exchanges,
+      // removes internal BLE listeners, resets transport state). The BLE link is
+      // already down at this point so the delay inside close() has no effect.
+      transport.close().catch(Logger.error)
     }
   }
 

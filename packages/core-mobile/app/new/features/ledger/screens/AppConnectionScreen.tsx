@@ -420,6 +420,7 @@ export default function AppConnectionScreen({
         keys={displayKeys}
         appConnectionStep={currentAppConnectionStep}
         skipSolana={skipSolana}
+        derivationPathType={selectedDerivationPath}
       />
     </ScrollScreen>
   )
