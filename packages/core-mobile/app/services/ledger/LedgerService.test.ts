@@ -675,7 +675,8 @@ describe('LedgerService', () => {
 
       const scanError = new Error('Hardware failure')
       transportBLEMock.listen.mockImplementation(observer => {
-        observer.error(scanError)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(observer as any).error(scanError)
         return { unsubscribe: jest.fn() }
       })
 
@@ -694,7 +695,8 @@ describe('LedgerService', () => {
 
       const bleError = ledgerBluetoothErrors.radioOff()
       transportBLEMock.listen.mockImplementation(observer => {
-        observer.error(bleError)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(observer as any).error(bleError)
         return { unsubscribe: jest.fn() }
       })
 
