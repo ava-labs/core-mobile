@@ -99,9 +99,6 @@ class LedgerService {
   private scanSubscription: { unsubscribe: () => void } | null = null
   private scanInterval: ReturnType<typeof setInterval> | null = null
   private deviceListeners: Set<(devices: LedgerDevice[]) => void> = new Set()
-  private scanErrorListeners: Set<
-    (error: { title: string; message: string }) => void
-  > = new Set()
   private currentDevices: LedgerDevice[] = []
   private isScanning = false
 
@@ -269,7 +266,10 @@ class LedgerService {
   }
 
   // Handle scan errors (matching original implementation)
-  private handleScanError(error: Error): void {
+  private handleScanError(
+    error: Error,
+    onScanError: (error: { title: string; message: string }) => void
+  ): void {
     Logger.error('Scan error:', error)
     this.stopDeviceScanning()
 
@@ -277,14 +277,16 @@ class LedgerService {
       showBluetoothErrorAlert(error)
       return
     }
-    this.notifyScanError(
-      'Scan Error',
-      `Failed to scan for devices: ${error.message}`
-    )
+    onScanError({
+      title: 'Scan Error',
+      message: `Failed to scan for devices: ${error.message}`
+    })
   }
 
   // Device scanning methods (matching original implementation)
-  async startDeviceScanning(): Promise<void> {
+  async startDeviceScanning(
+    onScanError: (error: { title: string; message: string }) => void
+  ): Promise<void> {
     if (this.isScanning) {
       Logger.info('Device scanning already in progress')
       return
@@ -326,7 +328,7 @@ class LedgerService {
           }
         },
         error: (error: Error) => {
-          this.handleScanError(error)
+          this.handleScanError(error, onScanError)
         },
 
         complete: () => {
@@ -340,16 +342,16 @@ class LedgerService {
         this.stopDeviceScanning()
 
         if (!this.currentDevices || this.currentDevices.length === 0) {
-          this.notifyScanError(
-            LEDGER_SCAN_FAILED_TITLE,
-            LEDGER_SCAN_FAILED_ALREADY_CONNECTED_MESSAGE
-          )
+          onScanError({
+            title: LEDGER_SCAN_FAILED_TITLE,
+            message: LEDGER_SCAN_FAILED_ALREADY_CONNECTED_MESSAGE
+          })
         }
       }, LEDGER_TIMEOUTS.SCAN_TIMEOUT)
     } catch (error) {
       Logger.error('Failed to start device scanning:', error)
       this.isScanning = false
-      this.handleScanError(error as Error)
+      this.handleScanError(error as Error, onScanError)
     }
   }
 
@@ -369,28 +371,6 @@ class LedgerService {
     }
 
     this.isScanning = false
-  }
-
-  addScanErrorListener(
-    callback: (error: { title: string; message: string }) => void
-  ): void {
-    this.scanErrorListeners.add(callback)
-  }
-
-  removeScanErrorListener(
-    callback: (error: { title: string; message: string }) => void
-  ): void {
-    this.scanErrorListeners.delete(callback)
-  }
-
-  private notifyScanError(title: string, message: string): void {
-    this.scanErrorListeners.forEach(callback => {
-      try {
-        callback({ title, message })
-      } catch (error) {
-        Logger.error('Error in scan error listener callback:', error)
-      }
-    })
   }
 
   addDeviceListener(callback: (devices: LedgerDevice[]) => void): void {

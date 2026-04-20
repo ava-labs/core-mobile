@@ -77,29 +77,17 @@ export default function DeviceConnectionScreen({
     back()
   }, [resetSetup, back])
 
-  useEffect(() => {
-    const onScanError = ({
-      title,
-      message
-    }: {
-      title: string
-      message: string
-    }): void => {
-      Alert.alert(title, message, [
-        {
-          text: 'OK',
-          onPress: resetSetup
-        }
-      ])
-    }
-    LedgerService.addScanErrorListener(onScanError)
-    return () => LedgerService.removeScanErrorListener(onScanError)
-  }, [resetSetup])
+  const onScanError = useCallback(
+    ({ title, message }: { title: string; message: string }): void => {
+      Alert.alert(title, message, [{ text: 'OK', onPress: resetSetup }])
+    },
+    [resetSetup]
+  )
 
   // Scan for devices
   const scanForDevices = useCallback(async () => {
     try {
-      await LedgerService.startDeviceScanning()
+      await LedgerService.startDeviceScanning(onScanError)
     } catch (error) {
       if (isLedgerBluetoothError(error)) {
         showBluetoothErrorAlert(error)
@@ -113,7 +101,7 @@ export default function DeviceConnectionScreen({
         [{ text: 'OK', onPress: resetSetup }]
       )
     }
-  }, [resetSetup])
+  }, [resetSetup, onScanError])
 
   // Handle device connection
   const handleDeviceConnection = useCallback(

@@ -401,7 +401,7 @@ describe('LedgerService', () => {
     })
 
     it('requests permissions when scanning for devices', async () => {
-      await LedgerService.startDeviceScanning()
+      await LedgerService.startDeviceScanning(jest.fn())
 
       expect(PermissionsAndroid.check).toHaveBeenCalledTimes(
         bluetoothPermissions.length
@@ -418,7 +418,7 @@ describe('LedgerService', () => {
       )
 
       try {
-        await LedgerService.startDeviceScanning()
+        await LedgerService.startDeviceScanning(jest.fn())
         throw new Error('Expected startDeviceScanning to fail')
       } catch (error) {
         expect(
@@ -617,7 +617,7 @@ describe('LedgerService', () => {
     })
   })
 
-  describe('scan error listeners', () => {
+  describe('scan errors', () => {
     const transportBLEMock = TransportBLE as unknown as {
       listen: jest.Mock
       disconnectDevice: jest.Mock
@@ -658,9 +658,6 @@ describe('LedgerService', () => {
     })
 
     afterEach(async () => {
-      // Clear all listeners to prevent leakage between tests
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(LedgerService as any).scanErrorListeners.clear()
       await LedgerService.disconnect().catch(() => undefined)
       LedgerService.stopDeviceScanning()
       LedgerService.stopAppPolling()
@@ -673,62 +670,8 @@ describe('LedgerService', () => {
       jest.restoreAllMocks()
     })
 
-    it('calls a registered listener with the correct title and message', () => {
-      const listener = jest.fn()
-      LedgerService.addScanErrorListener(listener)
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(LedgerService as any).notifyScanError('Test Title', 'Test message')
-
-      expect(listener).toHaveBeenCalledTimes(1)
-      expect(listener).toHaveBeenCalledWith({
-        title: 'Test Title',
-        message: 'Test message'
-      })
-    })
-
-    it('calls all registered listeners when an error is notified', () => {
-      const listener1 = jest.fn()
-      const listener2 = jest.fn()
-      LedgerService.addScanErrorListener(listener1)
-      LedgerService.addScanErrorListener(listener2)
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(LedgerService as any).notifyScanError('Title', 'Message')
-
-      expect(listener1).toHaveBeenCalledTimes(1)
-      expect(listener2).toHaveBeenCalledTimes(1)
-    })
-
-    it('does not call a listener after it has been removed', () => {
-      const listener = jest.fn()
-      LedgerService.addScanErrorListener(listener)
-      LedgerService.removeScanErrorListener(listener)
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(LedgerService as any).notifyScanError('Title', 'Message')
-
-      expect(listener).not.toHaveBeenCalled()
-    })
-
-    it('continues notifying remaining listeners when one listener throws', () => {
-      const throwingListener = jest.fn().mockImplementation(() => {
-        throw new Error('listener error')
-      })
-      const normalListener = jest.fn()
-      LedgerService.addScanErrorListener(throwingListener)
-      LedgerService.addScanErrorListener(normalListener)
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(LedgerService as any).notifyScanError('Title', 'Message')
-
-      expect(throwingListener).toHaveBeenCalledTimes(1)
-      expect(normalListener).toHaveBeenCalledTimes(1)
-    })
-
-    it('notifies scan error listeners (not Alert.alert) when TransportBLE.listen fires a non-BLE error', async () => {
-      const listener = jest.fn()
-      LedgerService.addScanErrorListener(listener)
+    it('calls onScanError (not Alert.alert) when TransportBLE.listen fires a non-BLE error', async () => {
+      const onScanError = jest.fn()
 
       const scanError = new Error('Hardware failure')
       transportBLEMock.listen.mockImplementation(
@@ -738,19 +681,18 @@ describe('LedgerService', () => {
         }
       )
 
-      await LedgerService.startDeviceScanning()
+      await LedgerService.startDeviceScanning(onScanError)
 
-      expect(listener).toHaveBeenCalledTimes(1)
-      expect(listener).toHaveBeenCalledWith({
+      expect(onScanError).toHaveBeenCalledTimes(1)
+      expect(onScanError).toHaveBeenCalledWith({
         title: 'Scan Error',
         message: `Failed to scan for devices: ${scanError.message}`
       })
       expect(Alert.alert).not.toHaveBeenCalled()
     })
 
-    it('calls showBluetoothErrorAlert (not scan error listeners) when TransportBLE.listen fires a BLE error', async () => {
-      const listener = jest.fn()
-      LedgerService.addScanErrorListener(listener)
+    it('calls showBluetoothErrorAlert (not onScanError) when TransportBLE.listen fires a BLE error', async () => {
+      const onScanError = jest.fn()
 
       const bleError = ledgerBluetoothErrors.radioOff()
       transportBLEMock.listen.mockImplementation(
@@ -760,30 +702,28 @@ describe('LedgerService', () => {
         }
       )
 
-      await LedgerService.startDeviceScanning()
+      await LedgerService.startDeviceScanning(onScanError)
 
-      expect(listener).not.toHaveBeenCalled()
+      expect(onScanError).not.toHaveBeenCalled()
       expect(Alert.alert).toHaveBeenCalledTimes(1)
     })
 
-    it('notifies scan error listeners with LEDGER_SCAN_FAILED title when scan times out with no devices', async () => {
-      const listener = jest.fn()
-      LedgerService.addScanErrorListener(listener)
+    it('calls onScanError with LEDGER_SCAN_FAILED title when scan times out with no devices', async () => {
+      const onScanError = jest.fn()
 
-      await LedgerService.startDeviceScanning()
+      await LedgerService.startDeviceScanning(onScanError)
 
       jest.advanceTimersByTime(LEDGER_TIMEOUTS.SCAN_TIMEOUT + 100)
 
-      expect(listener).toHaveBeenCalledTimes(1)
-      expect(listener).toHaveBeenCalledWith({
+      expect(onScanError).toHaveBeenCalledTimes(1)
+      expect(onScanError).toHaveBeenCalledWith({
         title: LEDGER_SCAN_FAILED_TITLE,
         message: LEDGER_SCAN_FAILED_ALREADY_CONNECTED_MESSAGE
       })
     })
 
-    it('does not notify scan error listeners when scan times out after devices were found', async () => {
-      const listener = jest.fn()
-      LedgerService.addScanErrorListener(listener)
+    it('does not call onScanError when scan times out after devices were found', async () => {
+      const onScanError = jest.fn()
 
       transportBLEMock.listen.mockImplementation(
         (observer: {
@@ -800,26 +740,25 @@ describe('LedgerService', () => {
         }
       )
 
-      await LedgerService.startDeviceScanning()
+      await LedgerService.startDeviceScanning(onScanError)
 
       jest.advanceTimersByTime(LEDGER_TIMEOUTS.SCAN_TIMEOUT + 100)
 
-      expect(listener).not.toHaveBeenCalled()
+      expect(onScanError).not.toHaveBeenCalled()
     })
 
-    it('notifies scan error listeners when TransportBLE.listen throws synchronously', async () => {
-      const listener = jest.fn()
-      LedgerService.addScanErrorListener(listener)
+    it('calls onScanError when TransportBLE.listen throws synchronously', async () => {
+      const onScanError = jest.fn()
 
       const syncError = new Error('Listen threw synchronously')
       transportBLEMock.listen.mockImplementation(() => {
         throw syncError
       })
 
-      await LedgerService.startDeviceScanning()
+      await LedgerService.startDeviceScanning(onScanError)
 
-      expect(listener).toHaveBeenCalledTimes(1)
-      expect(listener).toHaveBeenCalledWith({
+      expect(onScanError).toHaveBeenCalledTimes(1)
+      expect(onScanError).toHaveBeenCalledWith({
         title: 'Scan Error',
         message: `Failed to scan for devices: ${syncError.message}`
       })
