@@ -1,6 +1,6 @@
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Transport from '@ledgerhq/hw-transport'
-import { Alert, AppState, AppStateStatus } from 'react-native'
+import { AppState, AppStateStatus } from 'react-native'
 import AppAvalanche from '@avalabs/hw-app-avalanche'
 import AppSolana from '@ledgerhq/hw-app-solana'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
@@ -266,7 +266,10 @@ class LedgerService {
   }
 
   // Handle scan errors (matching original implementation)
-  private handleScanError(error: Error): void {
+  private handleScanError(
+    error: Error,
+    onScanError: (error: { title: string; message: string }) => void
+  ): void {
     Logger.error('Scan error:', error)
     this.stopDeviceScanning()
 
@@ -274,11 +277,16 @@ class LedgerService {
       showBluetoothErrorAlert(error)
       return
     }
-    Alert.alert('Scan Error', `Failed to scan for devices: ${error.message}`)
+    onScanError({
+      title: 'Scan Error',
+      message: `Failed to scan for devices: ${error.message}`
+    })
   }
 
   // Device scanning methods (matching original implementation)
-  async startDeviceScanning(): Promise<void> {
+  async startDeviceScanning(
+    onScanError: (error: { title: string; message: string }) => void
+  ): Promise<void> {
     if (this.isScanning) {
       Logger.info('Device scanning already in progress')
       return
@@ -320,7 +328,7 @@ class LedgerService {
           }
         },
         error: (error: Error) => {
-          this.handleScanError(error)
+          this.handleScanError(error, onScanError)
         },
 
         complete: () => {
@@ -334,17 +342,16 @@ class LedgerService {
         this.stopDeviceScanning()
 
         if (!this.currentDevices || this.currentDevices.length === 0) {
-          Alert.alert(
-            LEDGER_SCAN_FAILED_TITLE,
-            LEDGER_SCAN_FAILED_ALREADY_CONNECTED_MESSAGE,
-            [{ text: 'OK' }]
-          )
+          onScanError({
+            title: LEDGER_SCAN_FAILED_TITLE,
+            message: LEDGER_SCAN_FAILED_ALREADY_CONNECTED_MESSAGE
+          })
         }
       }, LEDGER_TIMEOUTS.SCAN_TIMEOUT)
     } catch (error) {
       Logger.error('Failed to start device scanning:', error)
       this.isScanning = false
-      this.handleScanError(error as Error)
+      this.handleScanError(error as Error, onScanError)
     }
   }
 
