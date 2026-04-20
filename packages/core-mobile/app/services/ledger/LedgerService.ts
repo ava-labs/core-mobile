@@ -1,6 +1,6 @@
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import Transport from '@ledgerhq/hw-transport'
-import { Alert, AppState, AppStateStatus } from 'react-native'
+import { AppState, AppStateStatus } from 'react-native'
 import AppAvalanche from '@avalabs/hw-app-avalanche'
 import AppSolana from '@ledgerhq/hw-app-solana'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
@@ -99,6 +99,9 @@ class LedgerService {
   private scanSubscription: { unsubscribe: () => void } | null = null
   private scanInterval: ReturnType<typeof setInterval> | null = null
   private deviceListeners: Set<(devices: LedgerDevice[]) => void> = new Set()
+  private scanErrorListeners: Set<
+    (error: { title: string; message: string }) => void
+  > = new Set()
   private currentDevices: LedgerDevice[] = []
   private isScanning = false
 
@@ -274,7 +277,10 @@ class LedgerService {
       showBluetoothErrorAlert(error)
       return
     }
-    Alert.alert('Scan Error', `Failed to scan for devices: ${error.message}`)
+    this.notifyScanError(
+      'Scan Error',
+      `Failed to scan for devices: ${error.message}`
+    )
   }
 
   // Device scanning methods (matching original implementation)
@@ -334,10 +340,9 @@ class LedgerService {
         this.stopDeviceScanning()
 
         if (!this.currentDevices || this.currentDevices.length === 0) {
-          Alert.alert(
+          this.notifyScanError(
             LEDGER_SCAN_FAILED_TITLE,
-            LEDGER_SCAN_FAILED_ALREADY_CONNECTED_MESSAGE,
-            [{ text: 'OK' }]
+            LEDGER_SCAN_FAILED_ALREADY_CONNECTED_MESSAGE
           )
         }
       }, LEDGER_TIMEOUTS.SCAN_TIMEOUT)
@@ -364,6 +369,28 @@ class LedgerService {
     }
 
     this.isScanning = false
+  }
+
+  addScanErrorListener(
+    callback: (error: { title: string; message: string }) => void
+  ): void {
+    this.scanErrorListeners.add(callback)
+  }
+
+  removeScanErrorListener(
+    callback: (error: { title: string; message: string }) => void
+  ): void {
+    this.scanErrorListeners.delete(callback)
+  }
+
+  private notifyScanError(title: string, message: string): void {
+    this.scanErrorListeners.forEach(callback => {
+      try {
+        callback({ title, message })
+      } catch (error) {
+        Logger.error('Error in scan error listener callback:', error)
+      }
+    })
   }
 
   addDeviceListener(callback: (devices: LedgerDevice[]) => void): void {

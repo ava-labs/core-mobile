@@ -72,6 +72,30 @@ export default function DeviceConnectionScreen({
     }
   }, [])
 
+  const handleCancel = useCallback(() => {
+    resetSetup()
+    back()
+  }, [resetSetup, back])
+
+  useEffect(() => {
+    const onScanError = ({
+      title,
+      message
+    }: {
+      title: string
+      message: string
+    }): void => {
+      Alert.alert(title, message, [
+        {
+          text: 'OK',
+          onPress: resetSetup
+        }
+      ])
+    }
+    LedgerService.addScanErrorListener(onScanError)
+    return () => LedgerService.removeScanErrorListener(onScanError)
+  }, [resetSetup, back])
+
   // Scan for devices
   const scanForDevices = useCallback(async () => {
     try {
@@ -85,10 +109,11 @@ export default function DeviceConnectionScreen({
         'Scan Error',
         `Failed to scan for devices: ${
           error instanceof Error ? error.message : 'Unknown error'
-        }`
+        }`,
+        [{ text: 'OK', onPress: resetSetup }]
       )
     }
-  }, [])
+  }, [resetSetup])
 
   // Handle device connection
   const handleDeviceConnection = useCallback(
@@ -145,11 +170,6 @@ export default function DeviceConnectionScreen({
       walletState
     ]
   )
-
-  const handleCancel = useCallback(() => {
-    resetSetup()
-    back()
-  }, [resetSetup, back])
 
   const renderBluetoothPermissionError = useCallback(() => {
     if (isBluetoothOnAndPermissionGranted || isInitializingBluetooth)
