@@ -35,6 +35,8 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
     return getLedgerInfoByWalletId(walletId)
   }, [getLedgerInfoByWalletId, walletId])
 
+  const isHandlingCompleteRef = useRef(false)
+
   const {
     resetSetup,
     disconnectDevice,
@@ -51,6 +53,9 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
 
   const handleComplete = useCallback(
     async (multiIndexKeys: LedgerMultiIndexKeys) => {
+      if (isHandlingCompleteRef.current) return
+      isHandlingCompleteRef.current = true
+
       const keys = {
         mainnet: multiIndexKeys.mainnet[accountIndex],
         testnet: multiIndexKeys.testnet[accountIndex]
@@ -104,6 +109,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
           // Stop polling since we no longer need app detection
           LedgerService.stopAppPolling()
           setIsUpdatingWallet(false)
+          isHandlingCompleteRef.current = false
           resetSetup()
           dismiss()
         }
@@ -118,6 +124,7 @@ export const AppConnectionAddAccountScreen = (): JSX.Element => {
             isUpdatingWallet
           }
         )
+        isHandlingCompleteRef.current = false
         resetSetup()
         dismiss()
       }

@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useMemo } from 'react'
+import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Alert } from 'react-native'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -30,6 +30,8 @@ export default function SolanaConnectionScreen(): JSX.Element {
     AppConnectionStep.SOLANA_CONNECT | AppConnectionStep.SOLANA_LOADING
   >(AppConnectionStep.SOLANA_CONNECT)
 
+  const isHandlingCompleteRef = useRef(false)
+
   const {
     connectedDeviceId,
     connectedDeviceName,
@@ -54,6 +56,9 @@ export default function SolanaConnectionScreen(): JSX.Element {
   }, [])
 
   const handleConnectSolana = useCallback(async () => {
+    if (isHandlingCompleteRef.current) return
+    isHandlingCompleteRef.current = true
+
     try {
       if (!account) {
         throw new Error('Account not found')
@@ -106,6 +111,7 @@ export default function SolanaConnectionScreen(): JSX.Element {
       )
     } finally {
       setIsUpdatingWallet(false)
+      isHandlingCompleteRef.current = false
     }
   }, [
     account,

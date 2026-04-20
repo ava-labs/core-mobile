@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import Logger from 'utils/Logger'
@@ -35,6 +35,7 @@ export const AppConnectionOnboardingScreen = ({
   const { canGoBack, back } = useRouter()
   const dispatch = useDispatch()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const isHandlingCompleteRef = useRef(false)
 
   const {
     connectedDeviceId,
@@ -54,6 +55,9 @@ export const AppConnectionOnboardingScreen = ({
 
   const handleComplete = useCallback(
     async (multiIndexKeys: LedgerMultiIndexKeys) => {
+      if (isHandlingCompleteRef.current) return
+      isHandlingCompleteRef.current = true
+
       // Account 0's keys are at index 0 in the multi-index map.
       // Additional indices hold xpubs/pubkeys that will be used for
       // background discovery after onboarding completes.
@@ -82,6 +86,7 @@ export const AppConnectionOnboardingScreen = ({
       ) {
         Logger.info('Ledger wallet already exists, skipping duplicate import')
         LedgerService.stopAppPolling()
+        isHandlingCompleteRef.current = false
         onNavigateToComplete()
         return
       }
@@ -97,6 +102,7 @@ export const AppConnectionOnboardingScreen = ({
           hasSelectedDerivationPath: !!selectedDerivationPath,
           isUpdatingWallet
         })
+        isHandlingCompleteRef.current = false
         Alert.alert(
           'Wallet setup failed',
           'Unable to complete Ledger wallet setup. Please restart the setup process.',
@@ -168,6 +174,7 @@ export const AppConnectionOnboardingScreen = ({
         )
       } finally {
         setIsUpdatingWallet(false)
+        isHandlingCompleteRef.current = false
       }
     },
     [
