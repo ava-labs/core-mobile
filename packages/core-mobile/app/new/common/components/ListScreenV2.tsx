@@ -106,7 +106,7 @@ export interface ListScreenProps<T>
   /** Whether to show the sticky header */
   shouldShowStickyHeader?: boolean
   /** Optional ref to the flat list */
-  flatListRef?: RefObject<ListScreenRef<T>>
+  flatListRef?: RefObject<ListScreenRef<T> | null>
 }
 
 export type ListScreenRef<T> = {

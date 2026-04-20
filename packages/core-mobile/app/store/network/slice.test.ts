@@ -5,6 +5,7 @@ import {
   NetworkVMType
 } from '@avalabs/core-chains-sdk'
 import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
+import { defaultEnabledL2ChainIds } from 'services/network/consts'
 import { RootState } from 'store/types'
 import {
   selectActiveChainId,
@@ -21,7 +22,6 @@ import {
   removeCustomNetwork,
   enableL2ChainIds,
   alwaysEnabledChainIds,
-  defaultEnabledL2ChainIds,
   noActiveNetwork
 } from './slice'
 import { NetworkState } from './types'

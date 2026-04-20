@@ -15,7 +15,7 @@ import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 
-export const AccountBalance = ({
+const AccountBalanceComponent = ({
   isActive,
   balance,
   isLoading,
@@ -138,3 +138,5 @@ export const AccountBalance = ({
     </View>
   )
 }
+
+export const AccountBalance = React.memo(AccountBalanceComponent)

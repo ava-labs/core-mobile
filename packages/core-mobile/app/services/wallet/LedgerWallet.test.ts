@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Avalanche, BitcoinProviderAbstract } from '@avalabs/core-wallets-sdk'
 import { RpcMethod } from '@avalabs/vm-module-types'
@@ -157,6 +159,7 @@ jest.mock('services/network/utils/isAvalancheNetwork', () => ({
 }))
 
 // Import after mocking
+import { Transaction } from 'ethers'
 import LedgerService from 'services/ledger/LedgerService'
 import { bip32 } from 'utils/bip32'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
@@ -940,6 +943,146 @@ describe('LedgerWallet', () => {
       })
 
       expect(result.account.addressCoreEth).toBe('C-fuji1correctatomic')
+    })
+  })
+
+  // ========================================
+  // signEvmTransaction Tests
+  // ========================================
+
+  describe('signEvmTransaction', () => {
+    const mockNetwork = { chainId: 1 } as Network
+    const mockProvider = {} as never
+
+    const baseTransaction = {
+      chainId: 1,
+      nonce: 5,
+      maxFeePerGas: BigInt('30000000000'), // 30 gwei
+      maxPriorityFeePerGas: BigInt('2000000000'), // 2 gwei
+      gasLimit: BigInt('21000'),
+      to: '0x1234567890123456789012345678901234567890',
+      value: BigInt('1000000000000000000'), // 1 ETH
+      data: '0xdeadbeef',
+      accessList: []
+    }
+
+    const mockSignature = { r: 'aaaa', s: 'bbbb', v: '1c' }
+
+    beforeEach(() => {
+      ;(isAvalancheChainId as jest.Mock).mockReturnValue(false)
+      mockEthGetAddress.mockResolvedValue({ address: '0xabc' })
+      mockEthSignTransaction.mockResolvedValue(mockSignature)
+    })
+
+    it('serializes the transaction as EIP-1559 (type 2) — unsigned hex starts with 02', async () => {
+      await ledgerWallet.signEvmTransaction({
+        accountIndex: 0,
+        transaction: baseTransaction,
+        network: mockNetwork,
+        provider: mockProvider
+      })
+
+      const [, capturedHex] = mockEthSignTransaction.mock.calls[0]
+      // The '0x' prefix was sliced off; prepend it to decode
+      const decoded = Transaction.from('0x' + capturedHex)
+      expect(decoded.type).toBe(2)
+      // Raw hex also starts with the type byte 02
+      expect(capturedHex.slice(0, 2)).toBe('02')
+    })
+
+    it('encodes maxFeePerGas and maxPriorityFeePerGas — not gasPrice', async () => {
+      await ledgerWallet.signEvmTransaction({
+        accountIndex: 0,
+        transaction: baseTransaction,
+        network: mockNetwork,
+        provider: mockProvider
+      })
+
+      const [, capturedHex] = mockEthSignTransaction.mock.calls[0]
+      const decoded = Transaction.from('0x' + capturedHex)
+      expect(decoded.maxFeePerGas).toBe(baseTransaction.maxFeePerGas)
+      expect(decoded.maxPriorityFeePerGas).toBe(
+        baseTransaction.maxPriorityFeePerGas
+      )
+      expect(decoded.gasPrice).toBeNull()
+    })
+
+    it('does not swap maxFeePerGas and maxPriorityFeePerGas', async () => {
+      const tx = {
+        ...baseTransaction,
+        maxFeePerGas: BigInt('50000000000'), // 50 gwei — higher
+        maxPriorityFeePerGas: BigInt('1000000000') // 1 gwei — lower
+      }
+
+      await ledgerWallet.signEvmTransaction({
+        accountIndex: 0,
+        transaction: tx,
+        network: mockNetwork,
+        provider: mockProvider
+      })
+
+      const [, capturedHex] = mockEthSignTransaction.mock.calls[0]
+      const decoded = Transaction.from('0x' + capturedHex)
+      expect(decoded.maxFeePerGas).toBe(tx.maxFeePerGas)
+      expect(decoded.maxPriorityFeePerGas).toBe(tx.maxPriorityFeePerGas)
+    })
+
+    it('uses getEvmSignature (Ethereum app) for non-Avalanche chains', async () => {
+      ;(isAvalancheChainId as jest.Mock).mockReturnValue(false)
+
+      await ledgerWallet.signEvmTransaction({
+        accountIndex: 0,
+        transaction: { ...baseTransaction, chainId: 1 },
+        network: mockNetwork,
+        provider: mockProvider
+      })
+
+      expect(mockEthSignTransaction).toHaveBeenCalledTimes(1)
+      expect(mockSignEVMTransaction).not.toHaveBeenCalled()
+    })
+
+    it('uses getCChainSignature (Avalanche app) for Avalanche chains', async () => {
+      ;(isAvalancheChainId as jest.Mock).mockReturnValue(true)
+      mockGetETHAddress.mockResolvedValue({ address: '0xabc' })
+      mockSignEVMTransaction.mockResolvedValue(mockSignature)
+
+      await ledgerWallet.signEvmTransaction({
+        accountIndex: 0,
+        transaction: { ...baseTransaction, chainId: 43114 },
+        network: mockNetwork,
+        provider: mockProvider
+      })
+
+      expect(mockSignEVMTransaction).toHaveBeenCalledTimes(1)
+      expect(mockEthSignTransaction).not.toHaveBeenCalled()
+    })
+
+    it('returns a serialized signed transaction string', async () => {
+      const result = await ledgerWallet.signEvmTransaction({
+        accountIndex: 0,
+        transaction: baseTransaction,
+        network: mockNetwork,
+        provider: mockProvider
+      })
+
+      expect(typeof result).toBe('string')
+      expect(result.startsWith('0x')).toBe(true)
+    })
+
+    it('defaults nonce to 0 and data to 0x when absent', async () => {
+      const { nonce: _nonce, data: _data, ...rest } = baseTransaction
+
+      await ledgerWallet.signEvmTransaction({
+        accountIndex: 0,
+        transaction: rest,
+        network: mockNetwork,
+        provider: mockProvider
+      })
+
+      const [, capturedHex] = mockEthSignTransaction.mock.calls[0]
+      const decoded = Transaction.from('0x' + capturedHex)
+      expect(decoded.nonce).toBe(0)
+      expect(decoded.data).toBe('0x')
     })
   })
 

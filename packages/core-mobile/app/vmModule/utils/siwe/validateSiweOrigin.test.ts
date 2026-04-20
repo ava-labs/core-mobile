@@ -118,6 +118,67 @@ describe('validateSiweOrigin', () => {
     expect(result).toBeUndefined()
   })
 
+  it('returns undefined when domain includes matching scheme', () => {
+    const siwe = { ...baseSiwe, domain: 'https://example.com' }
+    const result = validateSiweOrigin(siwe, 'https://example.com')
+    expect(result).toBeUndefined()
+  })
+
+  it('returns DANGER when domain includes mismatched scheme', () => {
+    const siwe = { ...baseSiwe, domain: 'http://example.com' }
+    const result = validateSiweOrigin(siwe, 'https://example.com')
+    expect(result).toBeDefined()
+    expect(result?.type).toBe(AlertType.DANGER)
+  })
+
+  it('returns undefined when domain has no scheme (scheme is optional per EIP-4361)', () => {
+    const siwe = { ...baseSiwe, domain: 'example.com' }
+    const result = validateSiweOrigin(siwe, 'https://example.com')
+    expect(result).toBeUndefined()
+  })
+
+  it('returns undefined when domain includes matching port', () => {
+    const siwe = {
+      ...baseSiwe,
+      domain: 'localhost:3000',
+      uri: 'http://localhost:3000'
+    }
+    const result = validateSiweOrigin(siwe, 'http://localhost:3000')
+    expect(result).toBeUndefined()
+  })
+
+  it('returns DANGER when domain includes mismatched port', () => {
+    const siwe = {
+      ...baseSiwe,
+      domain: 'localhost:3000',
+      uri: 'http://localhost:4000'
+    }
+    const result = validateSiweOrigin(siwe, 'http://localhost:4000')
+    expect(result).toBeDefined()
+    expect(result?.type).toBe(AlertType.DANGER)
+  })
+
+  it('returns undefined when domain has scheme and port that match', () => {
+    const siwe = {
+      ...baseSiwe,
+      domain: 'http://localhost:3000',
+      uri: 'http://localhost:3000'
+    }
+    const result = validateSiweOrigin(siwe, 'http://localhost:3000')
+    expect(result).toBeUndefined()
+  })
+
+  it('returns DANGER when domain has scheme and port with scheme mismatch', () => {
+    const siwe = {
+      ...baseSiwe,
+      domain: 'http://localhost:3000',
+      uri: 'https://localhost:3000'
+    }
+    const result = validateSiweOrigin(siwe, 'https://localhost:3000')
+    expect(result).toBeDefined()
+    expect(result?.type).toBe(AlertType.DANGER)
+  })
+
   it('reports multiple mismatches at once', () => {
     const siwe = {
       ...baseSiwe,
