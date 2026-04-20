@@ -617,8 +617,7 @@ function loadCoverageModelConfig() {
     ]
     const hadInvalidWeight = weightKeys.some(
       k =>
-        w?.[k] != null &&
-        (!Number.isFinite(Number(w[k])) || Number(w[k]) < 0)
+        w?.[k] != null && (!Number.isFinite(Number(w[k])) || Number(w[k]) < 0)
     )
     if (hadInvalidWeight) {
       console.warn(
