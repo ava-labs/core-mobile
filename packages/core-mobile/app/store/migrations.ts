@@ -347,7 +347,7 @@ export const migrations = {
       portfolio: {
         ...state.portfolio,
         collectibleVisibility,
-        collectibleUnprocessableVisibility: false
+        collectibleUnprocessableVisibility: true
       }
     }
     delete newState.nft

@@ -17,7 +17,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { NftItem, NftLocalStatus } from 'services/nft/types'
 import { CollectibleView } from 'store/balance'
-import { NftContentType } from 'store/nft'
+import { NftContentType } from 'services/nft/types'
 import {
   getCollectibleDescription,
   getCollectibleName,

@@ -15,7 +15,7 @@ import {
   CollectibleStatus,
   CollectibleTypeFilter
 } from 'store/balance'
-import { NftContentType } from 'store/nft'
+import { NftContentType } from 'services/nft/types'
 import { isCollectibleVisible } from 'store/nft/utils'
 import {
   selectCollectibleUnprocessableVisibility,
@@ -219,20 +219,24 @@ export const useCollectiblesFilterAndSort = (
 
   const getSorted = useCallback(
     (filtered: NftItem[]) => {
+      let sorted = filtered
+
       if (sort.selected === CollectibleSort.NameAToZ)
-        return filtered.sort((a, b) =>
+        sorted = filtered.sort((a, b) =>
           getCollectibleName(a) > getCollectibleName(b) ? 1 : -1
         )
-
-      if (sort.selected === CollectibleSort.NameZToA)
-        return filtered.sort((a, b) =>
+      else if (sort.selected === CollectibleSort.NameZToA)
+        sorted = filtered.sort((a, b) =>
           getCollectibleName(a) < getCollectibleName(b) ? 1 : -1
         )
+      else if (sort.selected === CollectibleSort.DateAdded)
+        sorted = filtered.sort(sortNftsByDateUpdated)
 
-      if (sort.selected === CollectibleSort.DateAdded)
-        return filtered.sort(sortNftsByDateUpdated)
-
-      return filtered
+      return sorted.sort((a, b) => {
+        const aUnprocessable = a.status === NftLocalStatus.Unprocessable ? 1 : 0
+        const bUnprocessable = b.status === NftLocalStatus.Unprocessable ? 1 : 0
+        return aUnprocessable - bUnprocessable
+      })
     },
     [sort.selected]
   )
