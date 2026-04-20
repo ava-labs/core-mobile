@@ -190,7 +190,10 @@ export const PredictionsScreen = ({
     [router]
   )
 
-  const keyExtractor = useCallback((item: EventResponse) => item.title, [])
+  const keyExtractor = useCallback(
+    (item: EventResponse) => item.eventTicker,
+    []
+  )
 
   const renderEmptyComponent = useCallback(
     () => (
@@ -231,6 +234,7 @@ export const PredictionsScreen = ({
         listKey="trade-predictions"
         onRefresh={refetch}
         onEndReached={onEndReached}
+        isFetchingNextPage={isFetchingNextPage}
       />
     </Animated.View>
   )

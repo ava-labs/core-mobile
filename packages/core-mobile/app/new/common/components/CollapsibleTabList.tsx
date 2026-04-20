@@ -84,6 +84,11 @@ type CollapsibleTabListProps<T> = {
    */
   onEndReached?: () => void
   /**
+   * Whether a next-page fetch is currently in flight. When true, the footer
+   * spinner is rendered; otherwise the footer is empty.
+   */
+  isFetchingNextPage?: boolean
+  /**
    * Pre-computed column assignments for masonry layouts.
    * Each inner array is a column containing { item, index } tuples where
    * index is the item's position in the original data array.
@@ -118,6 +123,7 @@ export function CollapsibleTabList<T>({
   removeClippedSubviews,
   maintainVisibleContentPosition,
   onEndReached,
+  isFetchingNextPage = false,
   columnItems
 }: CollapsibleTabListProps<T>): JSX.Element {
   const header = useHeaderMeasurements()
@@ -129,13 +135,13 @@ export function CollapsibleTabList<T>({
   const shouldUseScrollView = data.length === 0
 
   const ListFooterComponent = useMemo(() => {
-    if (!onEndReached) return undefined
+    if (!isFetchingNextPage) return undefined
     return (
       <View style={{ paddingVertical: 16, alignItems: 'center' }}>
         <ActivityIndicator color={theme.colors.$textPrimary} />
       </View>
     )
-  }, [onEndReached, theme.colors.$textPrimary])
+  }, [isFetchingNextPage, theme.colors.$textPrimary])
 
   const refreshControl = useMemo(() => {
     if (!onRefresh) return undefined

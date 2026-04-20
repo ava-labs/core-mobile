@@ -17,8 +17,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
   LayoutChangeEvent,
-  LayoutRectangle,
-  Platform
+  LayoutRectangle
 } from 'react-native'
 import type { TabBarProps } from 'react-native-collapsible-tab-view'
 import Animated, { useSharedValue } from 'react-native-reanimated'
@@ -118,12 +117,10 @@ export function TradeScreen(): JSX.Element {
     shouldDelayBlurOniOS: true
   })
 
-  const tabHeight = useMemo(() => {
-    return Platform.select({
-      ios: frame.height - headerHeight,
-      android: frame.height - headerHeight
-    })
-  }, [frame.height, headerHeight])
+  const tabHeight = useMemo(
+    () => frame.height - headerHeight,
+    [frame.height, headerHeight]
+  )
 
   const contentContainerStyle = useMemo(() => {
     return {

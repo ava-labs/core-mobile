@@ -44,6 +44,8 @@ const EventDetailsScreen = (): JSX.Element => {
     }))
   }, [event])
 
+  // TODO: replace with the actual last-update timestamp from the
+  // backend once the endpoint exposes it. Currently shows the client "now".
   const lastUpdateText = useMemo(() => {
     const now = new Date()
     return now.toLocaleDateString('en-US', {
@@ -217,7 +219,10 @@ const MultipleOutcomes = ({
             top: -8
           }}>
           <LinearGradient
-            colors={['rgba(255,255,255,0)', theme.colors.$surfacePrimary]}
+            colors={[
+              alpha(theme.colors.$surfacePrimary, 0),
+              theme.colors.$surfacePrimary
+            ]}
             style={{
               position: 'absolute',
               left: 0,
@@ -244,6 +249,10 @@ const SingleOutcome = ({
 }: {
   market: MarketWithQuotes
 }): JSX.Element => {
+  // Placeholder volume heuristic: the API returns a single `volume` for the
+  // market, not a per-outcome breakdown. Until the backend exposes it, we
+  // approximate this outcome's share as `totalVolume * probability * 0.1`.
+  // Safe to replace once real per-outcome volume is wired in.
   return (
     <MarketOutcomeRow
       label={market.result ?? ''}

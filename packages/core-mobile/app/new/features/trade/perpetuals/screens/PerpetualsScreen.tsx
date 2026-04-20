@@ -179,7 +179,10 @@ export const PerpetualsScreen = ({
     [router]
   )
 
-  const keyExtractor = useCallback((item: EventResponse) => item.title, [])
+  const keyExtractor = useCallback(
+    (item: EventResponse) => item.eventTicker,
+    []
+  )
 
   const renderEmptyComponent = useCallback(
     () => (
@@ -220,6 +223,7 @@ export const PerpetualsScreen = ({
         listKey="trade-perpetuals"
         onRefresh={refetch}
         onEndReached={onEndReached}
+        isFetchingNextPage={isFetchingNextPage}
       />
     </Animated.View>
   )
