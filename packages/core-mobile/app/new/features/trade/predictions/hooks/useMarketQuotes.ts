@@ -15,6 +15,6 @@ export function useMarketQuotes(tickerIds: string[]): {
     queryKey: [ReactQueryKeys.PREDICTIONS_MARKET_QUOTES, tickerIds],
     queryFn: () => predictionMarketClient.markets.listMarketQuotes(tickerIds),
     enabled: tickerIds.length > 0,
-    staleTime: STALE_TIME,
+    staleTime: STALE_TIME
   })
 }

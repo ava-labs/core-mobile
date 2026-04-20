@@ -227,7 +227,6 @@ export const PredictionsScreen = ({
         renderHeader={renderHeader}
         contentContainerStyle={listContentStyle}
         numColumns={2}
-        masonry
         extraData={{ selectedChip }}
         listKey="trade-predictions"
         onRefresh={refetch}

@@ -494,7 +494,7 @@ __metadata:
     "@avalabs/fusion-sdk": 0.15.1
     "@avalabs/glacier-sdk": 3.1.0-alpha.82
     "@avalabs/k2-alpine": "workspace:*"
-    "@avalabs/prediction-market-sdk": 0.0.0-feat-update-hashflow-api-20260415183059
+    "@avalabs/prediction-market-sdk": 0.3.0
     "@avalabs/svm-module": 3.6.1
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": 3.1.0-alpha.82
@@ -1019,15 +1019,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/prediction-market-sdk@npm:0.0.0-feat-update-hashflow-api-20260415183059":
-  version: 0.0.0-feat-update-hashflow-api-20260415183059
-  resolution: "@avalabs/prediction-market-sdk@npm:0.0.0-feat-update-hashflow-api-20260415183059"
+"@avalabs/prediction-market-sdk@npm:0.3.0":
+  version: 0.3.0
+  resolution: "@avalabs/prediction-market-sdk@npm:0.3.0"
   dependencies:
     viem: ^2.38.3
   peerDependencies:
     viem: ^2.38.3
     zod: ^4.1.0
-  checksum: 6af0666e2566cd92cda9880a34dcd82cf75f5e18e185c33fdcede8ec231d6b57939481853e4bde215083ae46cac6db424f9dd86da1121d2ffc12d499d6df9fdc
+  checksum: d83aaaee21fbafb5374e72df441c7137c4b82f5679ee36eba1aaeafd39fb988199ab35a2267e2696e6adfb32c23a828405d6a5476a4f1fdcf9df8dccaeae2a71
   languageName: node
   linkType: hard
 

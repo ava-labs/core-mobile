@@ -16,7 +16,7 @@ export function useMarketByTickerId(tickerId: string | undefined): {
     queryFn: () =>
       predictionMarketClient.markets.getMarketByTickerId(tickerId as string),
     enabled: tickerId !== undefined && tickerId !== '',
-    staleTime: STALE_TIME,
+    staleTime: STALE_TIME
   })
 
   return {

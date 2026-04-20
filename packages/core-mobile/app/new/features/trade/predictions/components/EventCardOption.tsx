@@ -30,7 +30,7 @@ export const EventCardOption = ({
       <View
         style={{
           paddingRight: 8,
-          paddingLeft: market?.imageUrl ? 4 : 8,
+          // paddingLeft: market?.imageUrl ? 4 : 8,
           flexDirection: 'row',
           alignItems: 'center',
           height: '100%',

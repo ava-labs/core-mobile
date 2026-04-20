@@ -216,7 +216,6 @@ export const PerpetualsScreen = ({
         renderHeader={renderHeader}
         contentContainerStyle={containerStyle}
         numColumns={2}
-        masonry
         extraData={{ selectedChip }}
         listKey="trade-perpetuals"
         onRefresh={refetch}

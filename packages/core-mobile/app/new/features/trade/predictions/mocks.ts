@@ -1,5 +1,3 @@
-import type { EventCardOption } from './components/EventCardOption'
-
 export type MockMarket = {
   tickerId: string
   title: string
@@ -14,7 +12,6 @@ export type MockMarket = {
   result: string | null
   yesQuote: { maxBidPrice: string; minAskPrice: string }
   noQuote: { maxBidPrice: string; minAskPrice: string }
-  options: EventCardOption[]
 }
 
 export const MARKETS_MOCK: MockMarket[] = [

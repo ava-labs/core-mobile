@@ -21,7 +21,7 @@ export function useGetEventDetail(eventTicker: string | undefined): {
         withNestedMarkets: true
       }),
     enabled: eventTicker !== undefined && eventTicker !== '',
-    staleTime: STALE_TIME,
+    staleTime: STALE_TIME
   })
 
   const marketTickerIds = useMemo(
