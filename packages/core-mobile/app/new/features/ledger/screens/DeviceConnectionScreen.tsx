@@ -94,7 +94,7 @@ export default function DeviceConnectionScreen({
     }
     LedgerService.addScanErrorListener(onScanError)
     return () => LedgerService.removeScanErrorListener(onScanError)
-  }, [resetSetup, back])
+  }, [resetSetup])
 
   // Scan for devices
   const scanForDevices = useCallback(async () => {

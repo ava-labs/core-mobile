@@ -4,7 +4,12 @@ import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import { LEDGER_TIMEOUTS } from 'new/features/ledger/consts'
 import Logger from 'utils/Logger'
 import LedgerService from './LedgerService'
-import { isLedgerBluetoothError } from './LedgerBluetoothError'
+import {
+  isLedgerBluetoothError,
+  ledgerBluetoothErrors,
+  LEDGER_SCAN_FAILED_TITLE,
+  LEDGER_SCAN_FAILED_ALREADY_CONNECTED_MESSAGE
+} from './LedgerBluetoothError'
 import { LedgerAppType, LEDGER_ERROR_CODES } from './types'
 
 jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
@@ -609,6 +614,215 @@ describe('LedgerService', () => {
 
       isAppCompatibleSpy.mockRestore()
       checkAppSpy.mockRestore()
+    })
+  })
+
+  describe('scan error listeners', () => {
+    const transportBLEMock = TransportBLE as unknown as {
+      listen: jest.Mock
+      disconnectDevice: jest.Mock
+    }
+
+    const bluetoothPermissions = [
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+    ].filter(
+      (
+        p
+      ): p is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
+        Boolean(p)
+    )
+
+    const grantedPermissions = Object.fromEntries(
+      bluetoothPermissions.map(p => [p, PermissionsAndroid.RESULTS.GRANTED])
+    )
+
+    const originalPlatformOS = Platform.OS
+
+    beforeEach(() => {
+      jest.useFakeTimers()
+      jest.spyOn(Logger, 'info').mockImplementation(jest.fn())
+      jest.spyOn(Logger, 'error').mockImplementation(jest.fn())
+      jest.spyOn(Alert, 'alert').mockImplementation(jest.fn())
+      jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
+      jest
+        .spyOn(PermissionsAndroid, 'requestMultiple')
+        .mockResolvedValue(grantedPermissions as never)
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: 'android'
+      })
+      transportBLEMock.listen.mockReturnValue({ unsubscribe: jest.fn() })
+      transportBLEMock.disconnectDevice.mockResolvedValue(undefined as never)
+    })
+
+    afterEach(async () => {
+      // Clear all listeners to prevent leakage between tests
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(LedgerService as any).scanErrorListeners.clear()
+      await LedgerService.disconnect().catch(() => undefined)
+      LedgerService.stopDeviceScanning()
+      LedgerService.stopAppPolling()
+      jest.runOnlyPendingTimers()
+      jest.useRealTimers()
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: originalPlatformOS
+      })
+      jest.restoreAllMocks()
+    })
+
+    it('calls a registered listener with the correct title and message', () => {
+      const listener = jest.fn()
+      LedgerService.addScanErrorListener(listener)
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(LedgerService as any).notifyScanError('Test Title', 'Test message')
+
+      expect(listener).toHaveBeenCalledTimes(1)
+      expect(listener).toHaveBeenCalledWith({
+        title: 'Test Title',
+        message: 'Test message'
+      })
+    })
+
+    it('calls all registered listeners when an error is notified', () => {
+      const listener1 = jest.fn()
+      const listener2 = jest.fn()
+      LedgerService.addScanErrorListener(listener1)
+      LedgerService.addScanErrorListener(listener2)
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(LedgerService as any).notifyScanError('Title', 'Message')
+
+      expect(listener1).toHaveBeenCalledTimes(1)
+      expect(listener2).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not call a listener after it has been removed', () => {
+      const listener = jest.fn()
+      LedgerService.addScanErrorListener(listener)
+      LedgerService.removeScanErrorListener(listener)
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(LedgerService as any).notifyScanError('Title', 'Message')
+
+      expect(listener).not.toHaveBeenCalled()
+    })
+
+    it('continues notifying remaining listeners when one listener throws', () => {
+      const throwingListener = jest.fn().mockImplementation(() => {
+        throw new Error('listener error')
+      })
+      const normalListener = jest.fn()
+      LedgerService.addScanErrorListener(throwingListener)
+      LedgerService.addScanErrorListener(normalListener)
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(LedgerService as any).notifyScanError('Title', 'Message')
+
+      expect(throwingListener).toHaveBeenCalledTimes(1)
+      expect(normalListener).toHaveBeenCalledTimes(1)
+    })
+
+    it('notifies scan error listeners (not Alert.alert) when TransportBLE.listen fires a non-BLE error', async () => {
+      const listener = jest.fn()
+      LedgerService.addScanErrorListener(listener)
+
+      const scanError = new Error('Hardware failure')
+      transportBLEMock.listen.mockImplementation(
+        (observer: { error: (e: Error) => void }) => {
+          observer.error(scanError)
+          return { unsubscribe: jest.fn() }
+        }
+      )
+
+      await LedgerService.startDeviceScanning()
+
+      expect(listener).toHaveBeenCalledTimes(1)
+      expect(listener).toHaveBeenCalledWith({
+        title: 'Scan Error',
+        message: `Failed to scan for devices: ${scanError.message}`
+      })
+      expect(Alert.alert).not.toHaveBeenCalled()
+    })
+
+    it('calls showBluetoothErrorAlert (not scan error listeners) when TransportBLE.listen fires a BLE error', async () => {
+      const listener = jest.fn()
+      LedgerService.addScanErrorListener(listener)
+
+      const bleError = ledgerBluetoothErrors.radioOff()
+      transportBLEMock.listen.mockImplementation(
+        (observer: { error: (e: Error) => void }) => {
+          observer.error(bleError)
+          return { unsubscribe: jest.fn() }
+        }
+      )
+
+      await LedgerService.startDeviceScanning()
+
+      expect(listener).not.toHaveBeenCalled()
+      expect(Alert.alert).toHaveBeenCalledTimes(1)
+    })
+
+    it('notifies scan error listeners with LEDGER_SCAN_FAILED title when scan times out with no devices', async () => {
+      const listener = jest.fn()
+      LedgerService.addScanErrorListener(listener)
+
+      await LedgerService.startDeviceScanning()
+
+      jest.advanceTimersByTime(LEDGER_TIMEOUTS.SCAN_TIMEOUT + 100)
+
+      expect(listener).toHaveBeenCalledTimes(1)
+      expect(listener).toHaveBeenCalledWith({
+        title: LEDGER_SCAN_FAILED_TITLE,
+        message: LEDGER_SCAN_FAILED_ALREADY_CONNECTED_MESSAGE
+      })
+    })
+
+    it('does not notify scan error listeners when scan times out after devices were found', async () => {
+      const listener = jest.fn()
+      LedgerService.addScanErrorListener(listener)
+
+      transportBLEMock.listen.mockImplementation(
+        (observer: {
+          next: (event: {
+            type: string
+            descriptor: { id: string; name: string }
+          }) => void
+        }) => {
+          observer.next({
+            type: 'add',
+            descriptor: { id: 'device-1', name: 'Ledger Nano X' }
+          })
+          return { unsubscribe: jest.fn() }
+        }
+      )
+
+      await LedgerService.startDeviceScanning()
+
+      jest.advanceTimersByTime(LEDGER_TIMEOUTS.SCAN_TIMEOUT + 100)
+
+      expect(listener).not.toHaveBeenCalled()
+    })
+
+    it('notifies scan error listeners when TransportBLE.listen throws synchronously', async () => {
+      const listener = jest.fn()
+      LedgerService.addScanErrorListener(listener)
+
+      const syncError = new Error('Listen threw synchronously')
+      transportBLEMock.listen.mockImplementation(() => {
+        throw syncError
+      })
+
+      await LedgerService.startDeviceScanning()
+
+      expect(listener).toHaveBeenCalledTimes(1)
+      expect(listener).toHaveBeenCalledWith({
+        title: 'Scan Error',
+        message: `Failed to scan for devices: ${syncError.message}`
+      })
     })
   })
 
