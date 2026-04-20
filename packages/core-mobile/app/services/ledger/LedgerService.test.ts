@@ -674,12 +674,10 @@ describe('LedgerService', () => {
       const onScanError = jest.fn()
 
       const scanError = new Error('Hardware failure')
-      transportBLEMock.listen.mockImplementation(
-        (observer: { error: (e: Error) => void }) => {
-          observer.error(scanError)
-          return { unsubscribe: jest.fn() }
-        }
-      )
+      transportBLEMock.listen.mockImplementation(observer => {
+        observer.error(scanError)
+        return { unsubscribe: jest.fn() }
+      })
 
       await LedgerService.startDeviceScanning(onScanError)
 
@@ -695,12 +693,10 @@ describe('LedgerService', () => {
       const onScanError = jest.fn()
 
       const bleError = ledgerBluetoothErrors.radioOff()
-      transportBLEMock.listen.mockImplementation(
-        (observer: { error: (e: Error) => void }) => {
-          observer.error(bleError)
-          return { unsubscribe: jest.fn() }
-        }
-      )
+      transportBLEMock.listen.mockImplementation(observer => {
+        observer.error(bleError)
+        return { unsubscribe: jest.fn() }
+      })
 
       await LedgerService.startDeviceScanning(onScanError)
 
@@ -725,20 +721,14 @@ describe('LedgerService', () => {
     it('does not call onScanError when scan times out after devices were found', async () => {
       const onScanError = jest.fn()
 
-      transportBLEMock.listen.mockImplementation(
-        (observer: {
-          next: (event: {
-            type: string
-            descriptor: { id: string; name: string }
-          }) => void
-        }) => {
-          observer.next({
-            type: 'add',
-            descriptor: { id: 'device-1', name: 'Ledger Nano X' }
-          })
-          return { unsubscribe: jest.fn() }
-        }
-      )
+      transportBLEMock.listen.mockImplementation(observer => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(observer as any).next({
+          type: 'add',
+          descriptor: { id: 'device-1', name: 'Ledger Nano X' }
+        })
+        return { unsubscribe: jest.fn() }
+      })
 
       await LedgerService.startDeviceScanning(onScanError)
 
