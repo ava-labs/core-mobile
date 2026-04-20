@@ -297,11 +297,19 @@ const migrateSolanaAddressesIfNeeded = async (
   const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
   const accounts = selectAccounts(state)
   const entries = Object.values(accounts)
+  const seedlessWallet = selectSeedlessWallet(state)
+  const hasAccountsWithoutSVM = entries.some(account =>
+    isAddressMissing(account.addressSVM)
+  )
+  const hasSeedlessAccountsWithoutSVM = entries.some(
+    account =>
+      isAddressMissing(account.addressSVM) &&
+      account.walletId === seedlessWallet?.id
+  )
 
   // Only migrate Solana addresses if Solana support is enabled
-  if (!isSolanaSupportBlocked && entries.some(account => !account.addressSVM)) {
-    const seedlessWallet = selectSeedlessWallet(state)
-    if (seedlessWallet) {
+  if (!isSolanaSupportBlocked && hasAccountsWithoutSVM) {
+    if (seedlessWallet && hasSeedlessAccountsWithoutSVM) {
       await deriveMissingSeedlessSessionKeys(seedlessWallet.id)
     }
     // reload only when there are accounts without Solana addresses
