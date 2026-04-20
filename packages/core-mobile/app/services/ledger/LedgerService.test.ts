@@ -477,6 +477,78 @@ describe('LedgerService', () => {
     })
   })
 
+  describe('connect retry behavior', () => {
+    const transportBLEMock = TransportBLE as unknown as {
+      open: jest.Mock
+      disconnectDevice: jest.Mock
+    }
+
+    const bluetoothPermissions = [
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+    ].filter(
+      (
+        p
+      ): p is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
+        Boolean(p)
+    )
+
+    const grantedPermissions = Object.fromEntries(
+      bluetoothPermissions.map(p => [p, PermissionsAndroid.RESULTS.GRANTED])
+    )
+
+    const mockTransport = {
+      id: 'test-device-id',
+      exchange: jest.fn().mockRejectedValue(new Error('No app info') as never),
+      isConnected: true,
+      close: jest.fn(),
+      exchangeBusyPromise: null
+    }
+
+    const DEVICE_ID = 'test-device-id'
+    const originalPlatformOS = Platform.OS
+
+    beforeEach(() => {
+      jest.useFakeTimers()
+      jest.spyOn(Logger, 'info').mockImplementation(jest.fn())
+      jest.spyOn(Logger, 'error').mockImplementation(jest.fn())
+      jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
+      jest
+        .spyOn(PermissionsAndroid, 'requestMultiple')
+        .mockResolvedValue(grantedPermissions as never)
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: 'android'
+      })
+      transportBLEMock.disconnectDevice.mockResolvedValue(undefined as never)
+      transportBLEMock.open.mockResolvedValue(mockTransport as never)
+    })
+
+    afterEach(async () => {
+      await LedgerService.disconnect().catch(() => undefined)
+      LedgerService.stopAppPolling()
+      jest.runOnlyPendingTimers()
+      jest.useRealTimers()
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: originalPlatformOS
+      })
+      jest.restoreAllMocks()
+    })
+
+    it('does not retry on a generic non-retryable error', async () => {
+      transportBLEMock.open.mockRejectedValueOnce(
+        new Error('Unexpected transport error') as never
+      )
+
+      await expect(LedgerService.connect(DEVICE_ID)).rejects.toThrow(
+        'Failed to connect to Ledger: Unexpected transport error'
+      )
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(1)
+    })
+  })
+
   describe('waitForApp', () => {
     beforeEach(() => {
       // eslint-disable-next-line @typescript-eslint/no-empty-function

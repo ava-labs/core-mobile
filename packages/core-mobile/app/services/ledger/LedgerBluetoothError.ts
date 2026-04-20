@@ -1,5 +1,6 @@
 import { Alert, Linking, Platform } from 'react-native'
 import Logger from 'utils/Logger'
+import { BleErrorCode, BleIOSErrorCode } from 'react-native-ble-plx'
 import BluetoothService from 'services/bluetooth/BluetoothService'
 import { LEDGER_ERROR_CODES } from './types'
 
@@ -24,6 +25,13 @@ export const LEDGER_BLUETOOTH_UNSUPPORTED_MESSAGE =
 export const LEDGER_BLUETOOTH_UNKNOWN_TITLE = 'Bluetooth not ready'
 export const LEDGER_BLUETOOTH_UNKNOWN_MESSAGE =
   'Bluetooth is not ready yet. Please wait and try again.'
+
+export const LEDGER_CONNECTION_FAILED_TITLE = 'Connection failed'
+export const LEDGER_CONNECTION_FAILED_ALREADY_CONNECTED_MESSAGE =
+  'Failed to connect to your Ledger. It may already be connected to another device — try closing the Core app on other devices and reconnect.'
+export const LEDGER_SCAN_FAILED_TITLE = 'Scan failed'
+export const LEDGER_SCAN_FAILED_ALREADY_CONNECTED_MESSAGE =
+  'Failed to scan for your Ledger. It may already be connected to another device — try closing the Core app on other devices and reconnect.'
 
 export class LedgerBluetoothError extends Error {
   readonly code: BluetoothLedgerErrorCode
@@ -85,6 +93,18 @@ export const isLedgerBluetoothError = (
   return (
     name === 'LedgerBluetoothError' &&
     bluetoothCodes.includes(code as BluetoothLedgerErrorCode)
+  )
+}
+
+export const isLedgerConnectionFailed = (error: unknown): boolean => {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'errorCode' in error &&
+    (error.errorCode === BleErrorCode.DeviceConnectionFailed ||
+      error.errorCode === BleErrorCode.OperationTimedOut ||
+      ('iosErrorCode' in error &&
+        error.iosErrorCode === BleIOSErrorCode.ConnectionTimeout))
   )
 }
 
