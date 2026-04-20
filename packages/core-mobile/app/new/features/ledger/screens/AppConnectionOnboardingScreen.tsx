@@ -15,6 +15,7 @@ import { onWalletImported } from 'store/app/slice'
 import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { useLedgerSetupContext } from '../contexts/LedgerSetupContext'
 import { useSetLedgerAddress } from '../hooks/useSetLedgerAddress'
+import { useCheckIfLedgerWalletExists } from '../hooks/useCheckIfLedgerWalletExists'
 import AppConnectionScreen from './AppConnectionScreen'
 
 interface AppConnectionOnboardingScreenProps {
@@ -30,6 +31,7 @@ export const AppConnectionOnboardingScreen = ({
 }: AppConnectionOnboardingScreenProps): JSX.Element => {
   const { createLedgerWallet } = useLedgerWallet()
   const { setLedgerAddress } = useSetLedgerAddress()
+  const checkIfLedgerWalletExists = useCheckIfLedgerWalletExists()
   const { canGoBack, back } = useRouter()
   const dispatch = useDispatch()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -71,6 +73,18 @@ export const AppConnectionOnboardingScreen = ({
       // Fall back to BIP44 if context was reset (e.g. after a prior import)
       const derivationPath =
         selectedDerivationPath ?? LedgerDerivationPathType.BIP44
+
+      // If the wallet was already imported (e.g. user went back from naming
+      // screen and tapped Complete setup again), just navigate forward.
+      if (
+        connectedDeviceId &&
+        checkIfLedgerWalletExists(connectedDeviceId, derivationPath)
+      ) {
+        Logger.info('Ledger wallet already exists, skipping duplicate import')
+        LedgerService.stopAppPolling()
+        onNavigateToComplete()
+        return
+      }
 
       if (
         !index0Current?.avalancheKeys ||
@@ -167,7 +181,8 @@ export const AppConnectionOnboardingScreen = ({
       isDeveloperMode,
       onNavigateToComplete,
       handleCancel,
-      dispatch
+      dispatch,
+      checkIfLedgerWalletExists
     ]
   )
 
