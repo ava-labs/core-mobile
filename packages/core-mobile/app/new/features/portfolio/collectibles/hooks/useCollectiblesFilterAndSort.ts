@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
-import { NftItem, NftLocalStatus } from 'services/nft/types'
+import { NftContentType, NftItem, NftLocalStatus } from 'services/nft/types'
 import {
   AssetNetworkFilter,
   COLLECTIBLE_FILTERS,
@@ -15,7 +15,6 @@ import {
   CollectibleStatus,
   CollectibleTypeFilter
 } from 'store/balance'
-import { NftContentType } from 'store/nft'
 import { isCollectibleVisible } from 'store/nft/utils'
 import {
   selectCollectibleUnprocessableVisibility,
@@ -219,20 +218,28 @@ export const useCollectiblesFilterAndSort = (
 
   const getSorted = useCallback(
     (filtered: NftItem[]) => {
-      if (sort.selected === CollectibleSort.NameAToZ)
-        return filtered.sort((a, b) =>
-          getCollectibleName(a) > getCollectibleName(b) ? 1 : -1
-        )
+      const compareByStatus = (a: NftItem, b: NftItem): number => {
+        const aUnprocessable = a.status === NftLocalStatus.Unprocessable ? 1 : 0
+        const bUnprocessable = b.status === NftLocalStatus.Unprocessable ? 1 : 0
+        return aUnprocessable - bUnprocessable
+      }
 
-      if (sort.selected === CollectibleSort.NameZToA)
-        return filtered.sort((a, b) =>
-          getCollectibleName(a) < getCollectibleName(b) ? 1 : -1
-        )
+      const compareBySelected = (a: NftItem, b: NftItem): number => {
+        switch (sort.selected) {
+          case CollectibleSort.NameAToZ:
+            return getCollectibleName(a) > getCollectibleName(b) ? 1 : -1
+          case CollectibleSort.NameZToA:
+            return getCollectibleName(a) < getCollectibleName(b) ? 1 : -1
+          case CollectibleSort.DateAdded:
+            return sortNftsByDateUpdated(a, b)
+          default:
+            return 0
+        }
+      }
 
-      if (sort.selected === CollectibleSort.DateAdded)
-        return filtered.sort(sortNftsByDateUpdated)
-
-      return filtered
+      return [...filtered].sort(
+        (a, b) => compareByStatus(a, b) || compareBySelected(a, b)
+      )
     },
     [sort.selected]
   )
