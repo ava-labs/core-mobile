@@ -1816,7 +1816,8 @@ describe('LedgerWallet', () => {
         expect(mockEthGetAddress).toHaveBeenCalledWith("m/44'/60'/0'/0/0")
         expect(mockEthSignTransaction).toHaveBeenCalledWith(
           "m/44'/60'/0'/0/0",
-          'fedcba987654'
+          'fedcba987654',
+          null
         )
         expect(result).toEqual({
           r: 'cccc',
