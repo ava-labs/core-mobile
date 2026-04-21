@@ -1,7 +1,7 @@
 export const initialState: PortfolioState = {
   tokenVisibility: {},
   collectibleVisibility: {},
-  collectibleUnprocessableVisibility: false
+  collectibleUnprocessableVisibility: true
 }
 
 export type TokenVisibility = Record<string, boolean>
