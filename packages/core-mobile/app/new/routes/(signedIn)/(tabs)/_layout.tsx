@@ -19,6 +19,7 @@ import { useSelector } from 'react-redux'
 import {
   selectIsInAppDefiBlocked,
   selectIsInAppDefiBorrowBlocked
+  // selectIsPredictionsBlocked
 } from 'store/posthog'
 
 const isIOS = Platform.OS === 'ios'
@@ -29,6 +30,7 @@ const stakeIcon = require('../../../assets/icons/tabs/psychiatry.png')
 const browserIcon = require('../../../assets/icons/tabs/compass.png')
 const activityIcon = require('../../../assets/icons/tabs/activity.png')
 const earnPngIcon = require('../../../assets/icons/tabs/whatshot.png')
+const tradeIcon = require('../../../assets/icons/tabs/trade.png')
 
 const tabLabelStyle = {
   fontSize: 10,
@@ -64,6 +66,7 @@ export default function TabLayout(): JSX.Element {
   }, [theme.colors.$white, theme.isDark])
   const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
   const isInAppDefiBorrowBlocked = useSelector(selectIsInAppDefiBorrowBlocked)
+  // const isPredictionsBlocked = useSelector(selectIsPredictionsBlocked)
 
   // Show 'Earn' title only when: borrow disabled + DeFi enabled (existing behavior)
   const stakeTabTitle =
@@ -130,6 +133,18 @@ export default function TabLayout(): JSX.Element {
           title: 'Browser',
           tabBarIcon: () => browserIcon,
           freezeOnBlur
+        }}
+      />
+      <BottomTabs.Screen
+        name="trade"
+        options={{
+          tabBarButtonTestID: 'trade_tab',
+          title: 'Trade',
+          tabBarIcon: () => tradeIcon,
+          freezeOnBlur,
+          //TODO: uncomment when predictions is ready
+          // tabBarItemHidden: isPredictionsBlocked
+          tabBarItemHidden: true
         }}
       />
       <BottomTabs.Screen
@@ -255,6 +270,8 @@ function getIcon(name: string): FC<SvgProps> {
       return Icons.Navigation.Browser
     case 'activity':
       return Icons.Navigation.History
+    case 'trade':
+      return Icons.Navigation.Trade
     default:
       return Icons.Navigation.Layers
   }
