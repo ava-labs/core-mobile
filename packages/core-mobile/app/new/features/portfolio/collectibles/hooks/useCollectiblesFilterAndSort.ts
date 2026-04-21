@@ -219,18 +219,18 @@ export const useCollectiblesFilterAndSort = (
 
   const getSorted = useCallback(
     (filtered: NftItem[]) => {
-      let sorted = filtered
+      const sorted = [...filtered]
 
       if (sort.selected === CollectibleSort.NameAToZ)
-        sorted = filtered.sort((a, b) =>
+        sorted.sort((a, b) =>
           getCollectibleName(a) > getCollectibleName(b) ? 1 : -1
         )
       else if (sort.selected === CollectibleSort.NameZToA)
-        sorted = filtered.sort((a, b) =>
+        sorted.sort((a, b) =>
           getCollectibleName(a) < getCollectibleName(b) ? 1 : -1
         )
       else if (sort.selected === CollectibleSort.DateAdded)
-        sorted = filtered.sort(sortNftsByDateUpdated)
+        sorted.sort(sortNftsByDateUpdated)
 
       return sorted.sort((a, b) => {
         const aUnprocessable = a.status === NftLocalStatus.Unprocessable ? 1 : 0
