@@ -39,7 +39,7 @@ const EventDetailsScreen = (): JSX.Element => {
     if (!event) return []
     const seed = tickerToSeed(event.eventTicker)
     return event.markets?.map((opt, i) => ({
-      label: opt.result ?? '',
+      label: opt.tickerId,
       points: generateHistory(parseFloat(opt.lastPrice), seed, i)
     }))
   }, [event])
@@ -202,7 +202,7 @@ const MultipleOutcomes = ({
       <View sx={{ gap: 8 }}>
         {visibleMarkets.map((market, i) => (
           <MarketOutcomeRow
-            key={market.result}
+            key={market.tickerId}
             label={market.yesSubTitle ?? ''}
             probability={parseFloat(market.lastPrice)}
             volume={Number(market.volume ?? 0)}

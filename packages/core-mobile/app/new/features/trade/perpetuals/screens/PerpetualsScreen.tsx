@@ -55,15 +55,17 @@ export const PerpetualsScreen = ({
     const cats = series
       .map(s => s.category)
       .filter((c, i, arr) => arr.indexOf(c) === i)
-    return [
-      TRENDING_CHIP,
-      'Live',
-      'Sports',
-      'Tech',
-      'Finance',
-      'Agriculture',
-      ...cats
-    ]
+    return Array.from(
+      new Set([
+        TRENDING_CHIP,
+        'Live',
+        'Sports',
+        'Tech',
+        'Finance',
+        'Agriculture',
+        ...cats
+      ])
+    )
   }, [series])
 
   const renderHeader = useCallback(

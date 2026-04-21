@@ -12,6 +12,11 @@ export type MockMarket = {
   result: string | null
   yesQuote: { maxBidPrice: string; minAskPrice: string }
   noQuote: { maxBidPrice: string; minAskPrice: string }
+  options: {
+    label: string
+    imageUrl: string | null
+    probability: number
+  }[]
 }
 
 export const MARKETS_MOCK: MockMarket[] = [
@@ -125,4 +130,4 @@ export const MARKETS_MOCK: MockMarket[] = [
       { label: 'No', imageUrl: null, probability: 0.25 }
     ]
   }
-] as unknown as MockMarket[]
+]

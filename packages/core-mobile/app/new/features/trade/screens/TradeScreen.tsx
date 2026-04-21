@@ -44,14 +44,8 @@ function renderEmptyTabBar(_props: TabBarProps): JSX.Element {
 }
 
 /**
- * Browse screen — shows all open prediction markets in a 2-column card grid.
- *
- * Uses CollapsibleTabs.Container (same pattern as Portfolio) for a collapsible
- * header containing the title, subtitle and chip filter row.
- * A single tab with CollapsibleTabs.FlashList renders the 2-column card grid.
- *
- * Chip row: "Trending" (always first) + unique categories from listSeries().
- * Default sort: volume24h descending.
+ * Trade screen with a collapsible header and segmented navigation between
+ * the Predictions and Perps tabs.
  */
 export function TradeScreen(): JSX.Element {
   const headerHeight = useEffectiveHeaderHeight()

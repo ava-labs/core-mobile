@@ -62,15 +62,17 @@ export const PredictionsScreen = ({
       .filter((c, i, arr) => arr.indexOf(c) === i)
     // TODO: Replace the hardcoded chips with categories returned by the
     // prediction-market-sdk once it exposes them.
-    return [
-      TRENDING_CHIP,
-      'Live',
-      'Sports',
-      'Tech',
-      'Finance',
-      'Agriculture',
-      ...cats
-    ]
+    return Array.from(
+      new Set([
+        TRENDING_CHIP,
+        'Live',
+        'Sports',
+        'Tech',
+        'Finance',
+        'Agriculture',
+        ...cats
+      ])
+    )
   }, [series])
 
   const renderHeader = useCallback(
