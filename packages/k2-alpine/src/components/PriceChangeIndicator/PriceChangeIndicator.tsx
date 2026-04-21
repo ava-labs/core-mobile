@@ -19,17 +19,23 @@ export const PriceChangeIndicator = ({
   animated = false,
   overrideTheme,
   shouldMask = false,
-  maskWidth
+  maskWidth,
+  signIndicator,
+  priceSx,
+  percentSx
 }: {
   status: PriceChangeStatus
   formattedPercent?: string
   formattedPrice?: string
+  signIndicator?: string
   textVariant?: TextVariants
   animated?: boolean
   testID?: string
   overrideTheme?: K2AlpineTheme
   shouldMask?: boolean
   maskWidth?: number
+  priceSx?: SxProp
+  percentSx?: SxProp
 }): JSX.Element => {
   const { theme: defaultTheme } = useTheme()
   const theme = overrideTheme ?? defaultTheme
@@ -44,7 +50,7 @@ export const PriceChangeIndicator = ({
     status === PriceChangeStatus.Neutral
       ? theme.colors.$textSecondary
       : theme.colors.$textPrimary
-  const signIndicator =
+  const signIndicatorText =
     status === PriceChangeStatus.Up
       ? '+'
       : status === PriceChangeStatus.Down
@@ -52,7 +58,7 @@ export const PriceChangeIndicator = ({
       : ''
 
   const formattedPriceText = formattedPrice
-    ? `${signIndicator}${formattedPrice}`
+    ? `${signIndicator ?? signIndicatorText}${formattedPrice}`
     : undefined
 
   const arrowSx = getArrowMargin(textVariant, status, formattedPercent)
@@ -78,6 +84,8 @@ export const PriceChangeIndicator = ({
       status={status}
       arrowSx={arrowSx}
       arrowSize={arrowSize}
+      priceSx={priceSx}
+      percentSx={percentSx}
     />
   ) : (
     <PlainComponent
@@ -89,6 +97,8 @@ export const PriceChangeIndicator = ({
       status={status}
       arrowSx={arrowSx}
       arrowSize={arrowSize}
+      priceSx={priceSx}
+      percentSx={percentSx}
     />
   )
 }
@@ -101,7 +111,9 @@ const AnimatedComponent = ({
   formattedPercent,
   status,
   arrowSx,
-  arrowSize
+  arrowSize,
+  priceSx,
+  percentSx
 }: ComponentProps): JSX.Element => {
   const showArrow =
     status === PriceChangeStatus.Down || status === PriceChangeStatus.Up
@@ -112,7 +124,8 @@ const AnimatedComponent = ({
           variant={textVariant}
           characters={formattedPrice}
           sx={{
-            color: tintColor
+            color: tintColor,
+            ...priceSx
           }}
         />
       )}
@@ -127,7 +140,8 @@ const AnimatedComponent = ({
             variant={textVariant}
             characters={formattedPercent}
             sx={{
-              color: percentChangeColor
+              color: percentChangeColor,
+              ...percentSx
             }}
           />
         )}
@@ -144,7 +158,9 @@ const PlainComponent = ({
   formattedPercent,
   status,
   arrowSx,
-  arrowSize
+  arrowSize,
+  priceSx,
+  percentSx
 }: ComponentProps): JSX.Element => {
   const showArrow =
     status === PriceChangeStatus.Down || status === PriceChangeStatus.Up
@@ -155,7 +171,8 @@ const PlainComponent = ({
         <Text
           variant={textVariant}
           sx={{
-            color: tintColor
+            color: tintColor,
+            ...priceSx
           }}>
           {formattedPrice}
         </Text>
@@ -170,7 +187,8 @@ const PlainComponent = ({
           <Text
             variant={textVariant}
             sx={{
-              color: percentChangeColor
+              color: percentChangeColor,
+              ...percentSx
             }}>
             {formattedPercent}
           </Text>
@@ -217,6 +235,8 @@ type ComponentProps = {
   status: PriceChangeStatus
   arrowSx: SxProp
   arrowSize: number
+  priceSx?: SxProp
+  percentSx?: SxProp
 }
 
 const ICON_SIZE = 10
