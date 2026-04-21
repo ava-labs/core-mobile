@@ -40,7 +40,7 @@ export type NftItemExternalData = {
   attributes: NftItemExternalDataAttribute[]
   description: string
   external_url: string
-  animation_url: string | null
+  animation_url: string | undefined
 }
 
 export type NftItemExternalDataAttribute = {
