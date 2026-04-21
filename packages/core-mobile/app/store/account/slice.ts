@@ -77,7 +77,7 @@ export const selectAccounts = (state: RootState): AccountCollection =>
 
 export const selectLedgerAddresses = (
   state: RootState
-): LedgerAddressesCollection => state.account.ledgerAddresses
+): LedgerAddressesCollection => state.account.ledgerAddresses ?? {}
 
 export const selectAccountByAddress =
   (address: string) =>
