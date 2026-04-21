@@ -52,12 +52,24 @@ export const useGasless = ({
         setIsGaslessEligible(false)
         return
       }
+      const isEthSendTx = GaslessService.isEthSendTx(signingData)
+      const fromAddress =
+        isEthSendTx && signingData.data.from != null
+          ? String(signingData.data.from)
+          : undefined
+      const nonce =
+        isEthSendTx && signingData.data.nonce != null
+          ? Number(signingData.data.nonce)
+          : undefined
       const isEligibleForChain = await GaslessService.isEligibleForChain(
-        chainId.toString()
+        chainId.toString(),
+        fromAddress,
+        nonce
       ).catch(err => {
         Logger.error('Error checking gasless eligibility', err)
         return false
       })
+
       const isEligibleForTxType =
         GaslessService.isEligibleForTxType(signingData)
       const isEligible = isEligibleForTxType && isEligibleForChain

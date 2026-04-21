@@ -15,7 +15,10 @@ import { WalletState } from 'store/app/types'
 import { useBluetooth } from 'common/hooks/useBluetooth'
 import {
   isLedgerBluetoothError,
-  showBluetoothErrorAlert
+  isLedgerConnectionFailed,
+  showBluetoothErrorAlert,
+  LEDGER_CONNECTION_FAILED_TITLE,
+  LEDGER_CONNECTION_FAILED_ALREADY_CONNECTED_MESSAGE
 } from 'services/ledger/LedgerBluetoothError'
 import { useCheckIfLedgerWalletExists } from '../hooks/useCheckIfLedgerWalletExists'
 
@@ -69,10 +72,22 @@ export default function DeviceConnectionScreen({
     }
   }, [])
 
+  const handleCancel = useCallback(() => {
+    resetSetup()
+    back()
+  }, [resetSetup, back])
+
+  const onScanError = useCallback(
+    ({ title, message }: { title: string; message: string }): void => {
+      Alert.alert(title, message, [{ text: 'OK', onPress: resetSetup }])
+    },
+    [resetSetup]
+  )
+
   // Scan for devices
   const scanForDevices = useCallback(async () => {
     try {
-      await LedgerService.startDeviceScanning()
+      await LedgerService.startDeviceScanning(onScanError)
     } catch (error) {
       if (isLedgerBluetoothError(error)) {
         showBluetoothErrorAlert(error)
@@ -82,10 +97,11 @@ export default function DeviceConnectionScreen({
         'Scan Error',
         `Failed to scan for devices: ${
           error instanceof Error ? error.message : 'Unknown error'
-        }`
+        }`,
+        [{ text: 'OK', onPress: resetSetup }]
       )
     }
-  }, [])
+  }, [resetSetup, onScanError])
 
   // Handle device connection
   const handleDeviceConnection = useCallback(
@@ -117,8 +133,10 @@ export default function DeviceConnectionScreen({
           AnalyticsService.capture('WalletImportLedgerConnectionFailed')
         }
         Alert.alert(
-          'Connection failed',
-          'Failed to connect to Ledger device. Please try again.',
+          LEDGER_CONNECTION_FAILED_TITLE,
+          isLedgerConnectionFailed(error)
+            ? LEDGER_CONNECTION_FAILED_ALREADY_CONNECTED_MESSAGE
+            : 'Failed to connect to Ledger device. Please try again.',
           [
             {
               text: 'OK',
@@ -141,13 +159,9 @@ export default function DeviceConnectionScreen({
     ]
   )
 
-  const handleCancel = useCallback(() => {
-    resetSetup()
-    back()
-  }, [resetSetup, back])
-
   const renderBluetoothPermissionError = useCallback(() => {
-    if (isBluetoothOnAndPermissionGranted) return null
+    if (isBluetoothOnAndPermissionGranted || isInitializingBluetooth)
+      return null
     return (
       <View style={{ gap: 12, marginTop: 4, paddingRight: 16 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -169,7 +183,12 @@ export default function DeviceConnectionScreen({
         </Button>
       </View>
     )
-  }, [isBluetoothOnAndPermissionGranted, colors, openSettings])
+  }, [
+    isBluetoothOnAndPermissionGranted,
+    isInitializingBluetooth,
+    colors,
+    openSettings
+  ])
 
   const renderFooter = useCallback(() => {
     return (

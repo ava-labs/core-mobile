@@ -1,11 +1,16 @@
 import { jest } from '@jest/globals'
 import { Alert, PermissionsAndroid, Platform } from 'react-native'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import { LEDGER_TIMEOUTS } from 'new/features/ledger/consts'
 import Logger from 'utils/Logger'
 import LedgerService from './LedgerService'
-import { LedgerAppType } from './types'
-import { isLedgerBluetoothError } from './LedgerBluetoothError'
-import { LEDGER_ERROR_CODES } from './types'
+import {
+  isLedgerBluetoothError,
+  ledgerBluetoothErrors,
+  LEDGER_SCAN_FAILED_TITLE,
+  LEDGER_SCAN_FAILED_ALREADY_CONNECTED_MESSAGE
+} from './LedgerBluetoothError'
+import { LedgerAppType, LEDGER_ERROR_CODES } from './types'
 
 jest.mock('@ledgerhq/react-native-hw-transport-ble', () => ({
   __esModule: true,
@@ -396,7 +401,7 @@ describe('LedgerService', () => {
     })
 
     it('requests permissions when scanning for devices', async () => {
-      await LedgerService.startDeviceScanning()
+      await LedgerService.startDeviceScanning(jest.fn())
 
       expect(PermissionsAndroid.check).toHaveBeenCalledTimes(
         bluetoothPermissions.length
@@ -413,7 +418,7 @@ describe('LedgerService', () => {
       )
 
       try {
-        await LedgerService.startDeviceScanning()
+        await LedgerService.startDeviceScanning(jest.fn())
         throw new Error('Expected startDeviceScanning to fail')
       } catch (error) {
         expect(
@@ -474,6 +479,335 @@ describe('LedgerService', () => {
 
       expect(transportBLEMock.open).not.toHaveBeenCalled()
       expect(Alert.alert).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('connect retry behavior', () => {
+    const transportBLEMock = TransportBLE as unknown as {
+      open: jest.Mock
+      disconnectDevice: jest.Mock
+    }
+
+    const bluetoothPermissions = [
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+    ].filter(
+      (
+        p
+      ): p is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
+        Boolean(p)
+    )
+
+    const grantedPermissions = Object.fromEntries(
+      bluetoothPermissions.map(p => [p, PermissionsAndroid.RESULTS.GRANTED])
+    )
+
+    const mockTransport = {
+      id: 'test-device-id',
+      exchange: jest.fn().mockRejectedValue(new Error('No app info') as never),
+      isConnected: true,
+      close: jest.fn(),
+      exchangeBusyPromise: null
+    }
+
+    const DEVICE_ID = 'test-device-id'
+    const originalPlatformOS = Platform.OS
+
+    beforeEach(() => {
+      jest.useFakeTimers()
+      jest.spyOn(Logger, 'info').mockImplementation(jest.fn())
+      jest.spyOn(Logger, 'error').mockImplementation(jest.fn())
+      jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
+      jest
+        .spyOn(PermissionsAndroid, 'requestMultiple')
+        .mockResolvedValue(grantedPermissions as never)
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: 'android'
+      })
+      transportBLEMock.disconnectDevice.mockResolvedValue(undefined as never)
+      transportBLEMock.open.mockResolvedValue(mockTransport as never)
+    })
+
+    afterEach(async () => {
+      await LedgerService.disconnect().catch(() => undefined)
+      LedgerService.stopAppPolling()
+      jest.runOnlyPendingTimers()
+      jest.useRealTimers()
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: originalPlatformOS
+      })
+      jest.restoreAllMocks()
+    })
+
+    it('does not retry on a generic non-retryable error', async () => {
+      transportBLEMock.open.mockRejectedValueOnce(
+        new Error('Unexpected transport error') as never
+      )
+
+      await expect(LedgerService.connect(DEVICE_ID)).rejects.toThrow(
+        'Failed to connect to Ledger: Unexpected transport error'
+      )
+      expect(transportBLEMock.open).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('waitForApp', () => {
+    beforeEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      jest.spyOn(Logger, 'info').mockImplementation(() => {})
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      jest.spyOn(Logger, 'error').mockImplementation(() => {})
+    })
+
+    afterEach(() => {
+      jest.clearAllMocks()
+      jest.useRealTimers()
+    })
+
+    it('should reject immediately when signal is already aborted', async () => {
+      const controller = new AbortController()
+      controller.abort()
+
+      await expect(
+        LedgerService.waitForApp(LedgerAppType.SOLANA, 5000, controller.signal)
+      ).rejects.toThrow(LEDGER_ERROR_CODES.USER_CANCELLED)
+    })
+
+    it('should reject when signal is aborted during polling', async () => {
+      jest.useFakeTimers()
+
+      // Make isAppCompatible return false so waitForApp enters polling
+      const isAppCompatibleSpy = jest
+        .spyOn(LedgerService as any, 'isAppCompatible')
+        .mockReturnValue(false)
+
+      // Make checkApp always return false (app never opens)
+      const checkAppSpy = jest
+        .spyOn(LedgerService as any, 'checkApp')
+        .mockResolvedValue(false)
+
+      const controller = new AbortController()
+
+      const waitPromise = LedgerService.waitForApp(
+        LedgerAppType.SOLANA,
+        30000,
+        controller.signal
+      )
+
+      // Let the immediate checkApp resolve and the interval start
+      await jest.advanceTimersByTimeAsync(100)
+
+      // Abort after polling has started, then immediately attach the
+      // rejection handler so Jest doesn't see an unhandled rejection.
+      controller.abort()
+      const rejectPromise = expect(waitPromise).rejects.toThrow(
+        LEDGER_ERROR_CODES.USER_CANCELLED
+      )
+
+      // Advance past the next polling tick so any remaining cleanup runs
+      await jest.advanceTimersByTimeAsync(LEDGER_TIMEOUTS.APP_CHECK_DELAY + 100)
+
+      await rejectPromise
+
+      isAppCompatibleSpy.mockRestore()
+      checkAppSpy.mockRestore()
+    })
+  })
+
+  describe('scan errors', () => {
+    const transportBLEMock = TransportBLE as unknown as {
+      listen: jest.Mock
+      disconnectDevice: jest.Mock
+    }
+
+    const bluetoothPermissions = [
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+    ].filter(
+      (
+        p
+      ): p is typeof PermissionsAndroid.PERMISSIONS[keyof typeof PermissionsAndroid.PERMISSIONS] =>
+        Boolean(p)
+    )
+
+    const grantedPermissions = Object.fromEntries(
+      bluetoothPermissions.map(p => [p, PermissionsAndroid.RESULTS.GRANTED])
+    )
+
+    const originalPlatformOS = Platform.OS
+
+    beforeEach(() => {
+      jest.useFakeTimers()
+      jest.spyOn(Logger, 'info').mockImplementation(jest.fn())
+      jest.spyOn(Logger, 'error').mockImplementation(jest.fn())
+      jest.spyOn(Alert, 'alert').mockImplementation(jest.fn())
+      jest.spyOn(PermissionsAndroid, 'check').mockResolvedValue(false as never)
+      jest
+        .spyOn(PermissionsAndroid, 'requestMultiple')
+        .mockResolvedValue(grantedPermissions as never)
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: 'android'
+      })
+      transportBLEMock.listen.mockReturnValue({ unsubscribe: jest.fn() })
+      transportBLEMock.disconnectDevice.mockResolvedValue(undefined as never)
+    })
+
+    afterEach(async () => {
+      await LedgerService.disconnect().catch(() => undefined)
+      LedgerService.stopDeviceScanning()
+      LedgerService.stopAppPolling()
+      jest.runOnlyPendingTimers()
+      jest.useRealTimers()
+      Object.defineProperty(Platform, 'OS', {
+        configurable: true,
+        value: originalPlatformOS
+      })
+      jest.restoreAllMocks()
+    })
+
+    it('calls onScanError (not Alert.alert) when TransportBLE.listen fires a non-BLE error', async () => {
+      const onScanError = jest.fn()
+
+      const scanError = new Error('Hardware failure')
+      transportBLEMock.listen.mockImplementation(observer => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(observer as any).error(scanError)
+        return { unsubscribe: jest.fn() }
+      })
+
+      await LedgerService.startDeviceScanning(onScanError)
+
+      expect(onScanError).toHaveBeenCalledTimes(1)
+      expect(onScanError).toHaveBeenCalledWith({
+        title: 'Scan Error',
+        message: `Failed to scan for devices: ${scanError.message}`
+      })
+      expect(Alert.alert).not.toHaveBeenCalled()
+    })
+
+    it('calls showBluetoothErrorAlert (not onScanError) when TransportBLE.listen fires a BLE error', async () => {
+      const onScanError = jest.fn()
+
+      const bleError = ledgerBluetoothErrors.radioOff()
+      transportBLEMock.listen.mockImplementation(observer => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(observer as any).error(bleError)
+        return { unsubscribe: jest.fn() }
+      })
+
+      await LedgerService.startDeviceScanning(onScanError)
+
+      expect(onScanError).not.toHaveBeenCalled()
+      expect(Alert.alert).toHaveBeenCalledTimes(1)
+    })
+
+    it('calls onScanError with LEDGER_SCAN_FAILED title when scan times out with no devices', async () => {
+      const onScanError = jest.fn()
+
+      await LedgerService.startDeviceScanning(onScanError)
+
+      jest.advanceTimersByTime(LEDGER_TIMEOUTS.SCAN_TIMEOUT + 100)
+
+      expect(onScanError).toHaveBeenCalledTimes(1)
+      expect(onScanError).toHaveBeenCalledWith({
+        title: LEDGER_SCAN_FAILED_TITLE,
+        message: LEDGER_SCAN_FAILED_ALREADY_CONNECTED_MESSAGE
+      })
+    })
+
+    it('does not call onScanError when scan times out after devices were found', async () => {
+      const onScanError = jest.fn()
+
+      transportBLEMock.listen.mockImplementation(observer => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(observer as any).next({
+          type: 'add',
+          descriptor: { id: 'device-1', name: 'Ledger Nano X' }
+        })
+        return { unsubscribe: jest.fn() }
+      })
+
+      await LedgerService.startDeviceScanning(onScanError)
+
+      jest.advanceTimersByTime(LEDGER_TIMEOUTS.SCAN_TIMEOUT + 100)
+
+      expect(onScanError).not.toHaveBeenCalled()
+    })
+
+    it('calls onScanError when TransportBLE.listen throws synchronously', async () => {
+      const onScanError = jest.fn()
+
+      const syncError = new Error('Listen threw synchronously')
+      transportBLEMock.listen.mockImplementation(() => {
+        throw syncError
+      })
+
+      await LedgerService.startDeviceScanning(onScanError)
+
+      expect(onScanError).toHaveBeenCalledTimes(1)
+      expect(onScanError).toHaveBeenCalledWith({
+        title: 'Scan Error',
+        message: `Failed to scan for devices: ${syncError.message}`
+      })
+    })
+  })
+
+  describe('getSolanaKeysForRange', () => {
+    beforeEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      jest.spyOn(Logger, 'info').mockImplementation(() => {})
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      jest.spyOn(Logger, 'error').mockImplementation(() => {})
+    })
+
+    afterEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should stop iterating when signal is aborted', async () => {
+      const controller = new AbortController()
+
+      // Mock getSolanaKeys to abort the controller on the second call,
+      // simulating the user tapping "Skip" while keys are being retrieved.
+      const getSolanaKeysSpy = jest
+        .spyOn(LedgerService, 'getSolanaKeys')
+        .mockImplementation(async (index: number, _signal?: AbortSignal) => {
+          if (index === 1) {
+            controller.abort()
+          }
+          // Check signal after potential abort
+          if (controller.signal.aborted) {
+            throw new Error(LEDGER_ERROR_CODES.USER_CANCELLED)
+          }
+          return [
+            {
+              key: `solana-key-${index}`,
+              derivationPath: `m/44'/501'/${index}'/0'`,
+              curve: 'ed25519' as any
+            }
+          ]
+        })
+
+      // Request 5 keys starting at index 0
+      const results = await LedgerService.getSolanaKeysForRange(
+        5,
+        0,
+        controller.signal
+      )
+
+      // Should have stopped after index 1 aborted — only index 0 succeeded
+      expect(results).toHaveLength(1)
+      expect(results[0]?.[0]?.key).toBe('solana-key-0')
+
+      // getSolanaKeys should not have been called for indices 2, 3, 4
+      expect(getSolanaKeysSpy).toHaveBeenCalledTimes(2)
+
+      getSolanaKeysSpy.mockRestore()
     })
   })
 })

@@ -210,12 +210,20 @@ class ApprovalController implements VmModuleApprovalController {
         handleLedgerErrorAndShowAlert({
           error: value.error,
           network: params.network,
-          onRetry: () =>
+          rpcMethod: request.method,
+          onRetry: () => {
+            // Guard: if the approval sheet was dismissed while the alert was
+            // visible, userCancelledMap will be set — don't retry in that case.
+            if (this.userCancelledMap.get(requestId)) {
+              this.userCancelledMap.delete(requestId)
+              return
+            }
             onApprove({
               ...params,
               signingData,
               resolve: resolveWithRetry
-            }),
+            })
+          },
           onCancel: () => {
             this.userCancelledMap.set(requestId, true)
             this.handleGoBackIfNeeded()

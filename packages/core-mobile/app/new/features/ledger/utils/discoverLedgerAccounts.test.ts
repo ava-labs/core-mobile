@@ -48,7 +48,8 @@ jest.mock('utils/Logger', () => ({
 }))
 
 jest.mock('services/network/consts', () => ({
-  AVALANCHE_MAINNET_NETWORK: { chainId: 43114 }
+  AVALANCHE_MAINNET_NETWORK: { chainId: 43114 },
+  defaultEnabledL2ChainIds: [42161, 8453, 10]
 }))
 
 // ---------------------------------------------------------------------------

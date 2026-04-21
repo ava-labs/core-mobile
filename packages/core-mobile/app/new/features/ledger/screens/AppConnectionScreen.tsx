@@ -12,6 +12,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState
 } from 'react'
 import { Alert, Platform, View } from 'react-native'
@@ -66,6 +67,7 @@ export default function AppConnectionScreen({
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
 
   const hasDeviceId = !!deviceId
+  const isAddingAccount = accountIndex > 0
 
   // Local key state - managed only in this component
   const [multiIndexKeys, setMultiIndexKeys] = useState<LedgerMultiIndexKeys>({
@@ -76,6 +78,11 @@ export default function AppConnectionScreen({
   const [currentAppConnectionStep, setAppConnectionStep] =
     useState<AppConnectionStep>(AppConnectionStep.AVALANCHE_CONNECT)
   const [skipSolana, setSkipSolana] = useState(false)
+
+  // AbortController for cancelling in-flight Solana key retrieval.
+  // Created fresh each time handleConnectSolana runs; aborted when the
+  // user taps "Skip Solana" or the component unmounts.
+  const solanaAbortControllerRef = useRef<AbortController | null>(null)
 
   const progressDotsCurrentStep = useMemo(() => {
     if (isSolanaSupportBlocked) {
@@ -110,10 +117,12 @@ export default function AppConnectionScreen({
     }
   }, [currentAppConnectionStep, isSolanaSupportBlocked])
 
-  // Cleanup: Stop polling when component unmounts
+  // Cleanup: Stop polling and cancel any in-flight Solana requests
+  // when the component unmounts (e.g. navigating away).
   useEffect(() => {
     return () => {
       Logger.info('AppConnectionScreen unmounting, stopping app polling')
+      solanaAbortControllerRef.current?.abort()
       LedgerService.stopAppPolling()
     }
   }, [])
@@ -162,9 +171,9 @@ export default function AppConnectionScreen({
       await LedgerService.ensureConnection(deviceId)
       setAppConnectionStep(AppConnectionStep.AVALANCHE_LOADING)
 
-      const count = isUpdatingWallet ? 1 : MAX_LEDGER_DISCOVERY_ACCOUNTS
+      const count = isAddingAccount ? 1 : MAX_LEDGER_DISCOVERY_ACCOUNTS
       const isBIP44 = selectedDerivationPath === LedgerDerivationPathType.BIP44
-      const startIndex = isUpdatingWallet ? accountIndex : 0
+      const startIndex = isAddingAccount ? accountIndex : 0
 
       const firstAccountKeys = await LedgerService.getAvalancheKeys(
         startIndex,
@@ -212,9 +221,9 @@ export default function AppConnectionScreen({
   }, [
     accountIndex,
     deviceId,
+    isAddingAccount,
     isDeveloperMode,
     isSolanaSupportBlocked,
-    isUpdatingWallet,
     selectedDerivationPath,
     showConnectionToasts
   ])
@@ -227,13 +236,26 @@ export default function AppConnectionScreen({
       await LedgerService.ensureConnection(deviceId)
       setAppConnectionStep(AppConnectionStep.SOLANA_LOADING)
 
+      // Create a fresh AbortController for this connection attempt.
+      // If the user taps "Skip Solana" or the component unmounts while
+      // we're waiting, handleSkipSolana / cleanup will call abort() on
+      // this controller, which cancels waitForApp polling and the
+      // getSolanaKeysForRange loop.
+      const controller = new AbortController()
+      solanaAbortControllerRef.current = controller
+
       // Get keys from service
-      const count = isUpdatingWallet ? 1 : MAX_LEDGER_DISCOVERY_ACCOUNTS
-      const startIndex = isUpdatingWallet ? accountIndex : 0
+      const count = isAddingAccount ? 1 : MAX_LEDGER_DISCOVERY_ACCOUNTS
+      const startIndex = isAddingAccount ? accountIndex : 0
       const solanaKeysRange = await LedgerService.getSolanaKeysForRange(
         count,
-        startIndex
+        startIndex,
+        controller.signal
       )
+
+      // If the user tapped "Skip Solana" while we were fetching keys,
+      // don't merge partial results or show a success toast.
+      if (controller.signal.aborted) return
 
       // Update local state
       setMultiIndexKeys(prev =>
@@ -246,6 +268,13 @@ export default function AppConnectionScreen({
       // Skip success step and go directly to complete
       setAppConnectionStep(AppConnectionStep.COMPLETE)
     } catch (err) {
+      // If the user cancelled (Skip Solana or unmount), don't show an error —
+      // the cancellation was intentional.
+      if (solanaAbortControllerRef.current?.signal.aborted) {
+        Logger.info('Solana connection cancelled by user')
+        return
+      }
+
       Logger.error('Failed to connect to Solana app', err)
       setAppConnectionStep(AppConnectionStep.SOLANA_CONNECT)
       if (isLedgerBluetoothError(err)) {
@@ -258,10 +287,14 @@ export default function AppConnectionScreen({
         [{ text: 'OK' }]
       )
     }
-  }, [accountIndex, deviceId, isUpdatingWallet, showConnectionToasts])
+  }, [accountIndex, deviceId, isAddingAccount, showConnectionToasts])
 
   const handleSkipSolana = useCallback(() => {
-    // Skip Solana and proceed to complete step
+    // Cancel any in-flight Solana key retrieval. This aborts the
+    // waitForApp polling loop and getSolanaKeysForRange iteration so the
+    // Ledger device stops receiving APDU requests for the Solana app.
+    solanaAbortControllerRef.current?.abort()
+
     setSkipSolana(true)
     setAppConnectionStep(AppConnectionStep.COMPLETE)
   }, [setAppConnectionStep])
@@ -358,11 +391,9 @@ export default function AppConnectionScreen({
     showCancelOnComplete
   ])
 
-  // For display, show the first available account's keys (index 0 during import,
-  // or the specific accountIndex when adding a single account)
   const emptyKeys = { solanaKeys: [], avalancheKeys: undefined }
-  const firstMainnetKey = Object.values(multiIndexKeys.mainnet)[0]
-  const firstTestnetKey = Object.values(multiIndexKeys.testnet)[0]
+  const firstMainnetKey = multiIndexKeys.mainnet[accountIndex]
+  const firstTestnetKey = multiIndexKeys.testnet[accountIndex]
   const displayKeys: LedgerKeysByNetwork = {
     mainnet: firstMainnetKey ?? emptyKeys,
     testnet: firstTestnetKey ?? emptyKeys
@@ -389,6 +420,7 @@ export default function AppConnectionScreen({
         keys={displayKeys}
         appConnectionStep={currentAppConnectionStep}
         skipSolana={skipSolana}
+        derivationPathType={selectedDerivationPath}
       />
     </ScrollScreen>
   )
