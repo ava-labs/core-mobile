@@ -1274,5 +1274,105 @@ describe('useEvmInjectedProvider', () => {
 
       expect(result.current.dappMetadata.current).toBeNull()
     })
+
+    describe('primes _accounts on page load', () => {
+      const metadata = JSON.stringify({
+        domain: 'opensea.io',
+        name: 'OpenSea',
+        icon: '',
+        url: 'https://opensea.io/'
+      })
+
+      const withPermission = (addr: string): ReturnType<typeof useStore> =>
+        ({
+          getState: () => ({
+            permissions: {
+              grants: {
+                'https://opensea.io': {
+                  [addr]: ['EVM']
+                }
+              }
+            }
+          }),
+          dispatch: jest.fn(),
+          subscribe: jest.fn(() => () => undefined)
+        } as unknown as ReturnType<typeof useStore>)
+
+      it('injects accountsChanged([address]) when the origin has a grant for the active account', () => {
+        mockUseStore.mockReturnValue(withPermission(mockActiveAccount.addressC))
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+        act(() => {
+          result.current.setCurrentUrl('https://opensea.io/')
+        })
+        mockInjectJavaScript.mockClear()
+
+        act(() => {
+          result.current.handleDomainMetadata(metadata)
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining(
+            `__coreProviderEmit('accountsChanged', ["${mockActiveAccount.addressC}"])`
+          )
+        )
+      })
+
+      it('injects accountsChanged([]) when no grant exists for the origin', () => {
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+        act(() => {
+          result.current.setCurrentUrl('https://opensea.io/')
+        })
+        mockInjectJavaScript.mockClear()
+
+        act(() => {
+          result.current.handleDomainMetadata(metadata)
+        })
+
+        expect(mockInjectJavaScript).toHaveBeenCalledWith(
+          expect.stringContaining(
+            "__coreProviderEmit('accountsChanged', [])"
+          )
+        )
+      })
+
+      it('does not inject accountsChanged when origin is missing', () => {
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+        // currentUrlRef is never set, so origin stays ''
+        mockInjectJavaScript.mockClear()
+
+        act(() => {
+          result.current.handleDomainMetadata(metadata)
+        })
+
+        expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+          expect.stringContaining("__coreProviderEmit('accountsChanged'")
+        )
+      })
+
+      it('does not inject accountsChanged when there is no active account', () => {
+        setupMocks({ account: null })
+        const { result } = renderHook(() =>
+          useEvmInjectedProvider(mockWebViewRef, 'test-tab-id')
+        )
+        act(() => {
+          result.current.setCurrentUrl('https://opensea.io/')
+        })
+        mockInjectJavaScript.mockClear()
+
+        act(() => {
+          result.current.handleDomainMetadata(metadata)
+        })
+
+        expect(mockInjectJavaScript).not.toHaveBeenCalledWith(
+          expect.stringContaining("__coreProviderEmit('accountsChanged'")
+        )
+      })
+    })
   })
 })

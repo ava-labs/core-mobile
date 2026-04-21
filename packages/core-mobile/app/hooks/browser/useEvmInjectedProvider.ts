@@ -286,14 +286,38 @@ export function useEvmInjectedProvider(
     [router]
   )
 
-  const handleDomainMetadata = useCallback((payload: string) => {
-    try {
-      dappMetadata.current = JSON.parse(payload)
-      Logger.trace('[InjectedProvider] domain_metadata', dappMetadata.current)
-    } catch {
-      Logger.error('[InjectedProvider] Invalid domain_metadata payload')
-    }
-  }, [])
+  const handleDomainMetadata = useCallback(
+    (payload: string) => {
+      try {
+        dappMetadata.current = JSON.parse(payload)
+        Logger.trace('[InjectedProvider] domain_metadata', dappMetadata.current)
+      } catch {
+        Logger.error('[InjectedProvider] Invalid domain_metadata payload')
+      }
+
+      // Prime the shim's _accounts cache on page load: if the current origin
+      // already has an EVM grant for the active account, emit accountsChanged
+      // so dApps with auto-reconnect (wagmi autoConnect, etc.) see the
+      // connection immediately without prompting. If no grant exists, emit
+      // an empty array to keep the shim in sync (e.g. after the user revoked
+      // the grant from Connected Sites while the tab was open).
+      const origin = getOriginFromUrl(currentUrlRef.current)
+      const active = activeAccountRef.current
+      if (!origin || !active?.addressC) return
+      const granted = selectHasPermission({
+        domain: origin,
+        address: active.addressC,
+        vmType: NetworkVMType.EVM
+      })(store.getState())
+      const accounts = granted ? [active.addressC] : []
+      webViewRef.current?.injectJavaScript(
+        `window.__coreProviderEmit && window.__coreProviderEmit('accountsChanged', ${JSON.stringify(
+          accounts
+        )}); true;`
+      )
+    },
+    [store, webViewRef]
+  )
 
   return {
     providerShimJs,

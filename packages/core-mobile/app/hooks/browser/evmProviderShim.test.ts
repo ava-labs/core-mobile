@@ -25,11 +25,9 @@ describe('buildEvmProviderShim', () => {
       expect(shim).toContain("var _chainId = '0xa86a'")
     })
 
-    it('embeds the address', () => {
+    it('does not embed the address (no pre-seeded account)', () => {
       const shim = buildEvmProviderShim(defaultParams)
-      expect(shim).toContain(
-        "var _address = '0x1234567890abcdef1234567890abcdef12345678'"
-      )
+      expect(shim).not.toContain('var _address =')
     })
 
     it('embeds a different chain ID when provided', () => {
@@ -42,13 +40,13 @@ describe('buildEvmProviderShim', () => {
       expect(shim).not.toContain("var _chainId = '0xa86a'")
     })
 
-    it('embeds an empty address when not provided', () => {
+    it('accepts an empty address without embedding it', () => {
       const shim = buildEvmProviderShim({
         chainId: '0xa86a',
         address: '',
         uuid: defaultParams.uuid
       })
-      expect(shim).toContain("var _address = ''")
+      expect(shim).not.toContain('var _address =')
     })
   })
 
@@ -66,9 +64,9 @@ describe('buildEvmProviderShim', () => {
       expect(shim).toContain('_isConnected: true')
     })
 
-    it('initializes _accounts from _address', () => {
+    it('starts _accounts empty — native primes on load based on permissions', () => {
       const shim = buildEvmProviderShim(defaultParams)
-      expect(shim).toContain('var _accounts = _address ? [_address] : []')
+      expect(shim).toContain('var _accounts = []')
     })
   })
 

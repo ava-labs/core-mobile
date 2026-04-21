@@ -100,8 +100,11 @@ export function buildEvmProviderShim({
     'wallet_watchAsset': true
   };
   var _chainId = '${chainId}';
-  var _address = '${address}';
-  var _accounts = _address ? [_address] : [];
+  // _accounts is seeded empty. Native primes it via
+  // __coreProviderEmit('accountsChanged', [...]) on page load if the origin
+  // already has a permission grant; otherwise the dApp must call
+  // eth_requestAccounts to trigger the approval UI.
+  var _accounts = [];
 
   // ──────────────────────────────────────────────
   // 4. Native response / event bridge
@@ -334,7 +337,7 @@ export function buildEvmProviderShim({
 
     chainId: _chainId,
     networkVersion: String(parseInt(_chainId, 16)),
-    selectedAddress: _address || null
+    selectedAddress: null
   };
 
   // ──────────────────────────────────────────────
