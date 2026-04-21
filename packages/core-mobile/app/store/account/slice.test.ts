@@ -1,8 +1,5 @@
 import { RootState } from 'store/types'
-import {
-  selectLedgerAddresses,
-  selectLedgerAddressesByWalletId
-} from './slice'
+import { selectLedgerAddresses, selectLedgerAddressesByWalletId } from './slice'
 import { LedgerAddresses } from './types'
 
 const makeLedgerAddress = (
@@ -41,7 +38,7 @@ const createMockState = (overrides?: Partial<RootState>): RootState =>
       ...((overrides?.posthog ?? {}) as Record<string, unknown>)
     },
     ...overrides
-  }) as unknown as RootState
+  } as unknown as RootState)
 
 describe('selectLedgerAddresses', () => {
   it('returns ledgerAddresses from state', () => {
