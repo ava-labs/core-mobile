@@ -21,6 +21,7 @@ import {
 import AppAvax from '@avalabs/hw-app-avalanche'
 import AppSolana from '@ledgerhq/hw-app-solana'
 import Eth from '@ledgerhq/hw-app-eth'
+import ledgerService from '@ledgerhq/hw-app-eth/lib/services/ledger'
 import {
   AppClient as BtcClient,
   DefaultWalletPolicy,
@@ -1484,13 +1485,28 @@ export class LedgerWallet implements Wallet {
     const addressResult = await avaxApp.getETHAddress(derivationPath)
     Logger.info('Got address from Ledger:', addressResult.address)
 
-    // Get the resolution for proper display
-    const resolution = {
-      externalPlugin: [],
-      erc20Tokens: [],
-      nfts: [],
-      plugin: [],
-      domains: []
+    // Resolve transaction metadata for clear signing (NFTs, ERC-20s, plugins).
+    // Without this, the Ledger device falls back to blind signing.
+    let resolution
+    try {
+      resolution = await ledgerService.resolveTransaction(
+        unsignedTx,
+        {},
+        { nft: true, erc20: true, externalPlugins: true }
+      )
+      Logger.info('Resolved C-Chain transaction for clear signing:', resolution)
+    } catch (error) {
+      Logger.warn(
+        'Failed to resolve C-Chain transaction, using empty resolution',
+        error
+      )
+      resolution = {
+        externalPlugin: [],
+        erc20Tokens: [],
+        nfts: [],
+        plugin: [],
+        domains: []
+      }
     }
 
     // Sign with Avalanche app
@@ -1527,9 +1543,30 @@ export class LedgerWallet implements Wallet {
     const addressResult = await ethApp.getAddress(derivationPath)
     Logger.info('Got address from Ledger:', addressResult.address)
 
+    // Resolve transaction metadata for clear signing (NFTs, ERC-20s, plugins).
+    // Without this, the Ledger device falls back to blind signing.
+    let resolution
+    try {
+      resolution = await ledgerService.resolveTransaction(
+        unsignedTx,
+        {},
+        { nft: true, erc20: true, externalPlugins: true }
+      )
+      Logger.info('Resolved transaction for clear signing:', resolution)
+    } catch (error) {
+      Logger.warn(
+        'Failed to resolve transaction for clear signing, falling back to blind signing',
+        error
+      )
+    }
+
     // Sign with Ethereum app
     Logger.info('Signing transaction with Ethereum app')
-    const result = await ethApp.signTransaction(derivationPath, unsignedTx)
+    const result = await ethApp.signTransaction(
+      derivationPath,
+      unsignedTx,
+      resolution ?? null
+    )
 
     if (!result) {
       throw new Error('signTransaction returned undefined')
