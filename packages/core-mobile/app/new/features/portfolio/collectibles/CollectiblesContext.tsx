@@ -101,31 +101,33 @@ export const CollectiblesProvider = ({
   )
 
   const processImageData = useCallback(
-    (localId: NftLocalId, logoUri: string): void => {
-      if (logoUri)
-        NftProcessor.fetchImage(logoUri)
-          .then(result => {
-            setImageData(prevData => ({
-              ...prevData,
-              [localId]: result
-            }))
-            setStatusData(prevData => ({
-              ...prevData,
-              [localId]: NftLocalStatus.Processed
-            }))
-          })
-          .catch(e => {
-            setStatusData(prevData => ({
-              ...prevData,
-              [localId]: NftLocalStatus.Unprocessable
-            }))
-            Logger.error(e)
-          })
-      else
+    (localId: NftLocalId, uri: string | null | undefined): void => {
+      if (!uri) {
         setStatusData(prevData => ({
           ...prevData,
           [localId]: NftLocalStatus.Unprocessable
         }))
+        return
+      }
+
+      NftProcessor.fetchImage(uri)
+        .then(result => {
+          setImageData(prevData => ({
+            ...prevData,
+            [localId]: result
+          }))
+          setStatusData(prevData => ({
+            ...prevData,
+            [localId]: NftLocalStatus.Processed
+          }))
+        })
+        .catch(e => {
+          setStatusData(prevData => ({
+            ...prevData,
+            [localId]: NftLocalStatus.Unprocessable
+          }))
+          Logger.error(e)
+        })
     },
     []
   )
@@ -143,10 +145,7 @@ export const CollectiblesProvider = ({
       if (tokenUri)
         NftProcessor.fetchMetadata(getTokenUri({ tokenId, tokenUri }))
           .then(result => {
-            processImageData(
-              localId,
-              result.image || result.animation_url || ''
-            )
+            processImageData(localId, result.image || result.animation_url)
             setProcessedMetadata(prevData => ({
               ...prevData,
               [localId]: result
@@ -208,8 +207,10 @@ export const CollectiblesProvider = ({
         nft.tokenId
       )
 
-      newMetadata.imageUri &&
-        processImageData(nft.localId, newMetadata.imageUri)
+      const refreshedMediaUri = newMetadata.imageUri || newMetadata.animationUri
+      if (refreshedMediaUri) {
+        processImageData(nft.localId, refreshedMediaUri)
+      }
 
       const updatedTimestamp = newMetadata.metadataLastUpdatedTimestamp
 

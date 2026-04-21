@@ -6,6 +6,10 @@ export class NftProcessor {
   private base64Prefix = 'data:image/svg+xml;base64,'
 
   async fetchImage(imageData: string): Promise<NftImageData> {
+    if (!imageData) {
+      throw new Error('[NftProcessor] fetchImage called with empty uri')
+    }
+
     if (this.isBase64Svg(imageData)) {
       const svg = this.decodeBase64Svg(imageData)
       return { uri: svg, type: NftContentType.SVG }
